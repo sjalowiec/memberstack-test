@@ -188,7 +188,7 @@ describe("Hat Pattern persist notice page wiring", () => {
   });
 
   it("uses ViewerAccessState so active membership is not inferred from login alone", () => {
-    expect(hatPatternPageScript).toContain("resolveHatPatternViewerAccessState");
+    expect(hatPatternPageScript).toContain("bindHatPatternWorkspaceAccessLifecycle");
     expect(hatPatternPageScript).toContain("applyHatPatternWorkspaceChrome");
     expect(hatPatternPageScript).toContain("applyHatPatternMembershipChrome");
     expect(hatPatternPageScript).not.toMatch(

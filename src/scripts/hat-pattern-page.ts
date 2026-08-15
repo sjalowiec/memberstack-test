@@ -28,8 +28,12 @@ import { dispatchHatYarnDimensions } from "../lib/patterns/hat/hatYarnEstimation
 import { bindHatPatternMyPatternsDisabledGuard } from "../lib/patterns/hat/hatPatternMyPatternsAccess";
 import {
   applyHatPatternWorkspaceChrome,
-  resolveHatPatternViewerAccessState,
+  bindHatPatternWorkspaceAccessLifecycle,
 } from "../lib/patterns/hat/hatPatternWorkspaceAccess";
+import {
+  logHatPatternAccessDiagnostics,
+  noteHatPatternKinMemberAccessEvent,
+} from "../lib/patterns/hat/hatPatternWorkspaceAccessDebug";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
 import { isEditingSavedHatProject } from "../lib/patterns/hat/hatSavedProject";
@@ -52,11 +56,7 @@ function applyHatPatternMembershipChrome(state: ViewerAccessState): void {
   applyHatPatternWorkspaceChrome(document, state, {
     isEditingSavedProject: isEditingSavedHatProject(),
   });
-}
-
-async function syncHatPatternPersistNoticeMembership(): Promise<void> {
-  const state = await resolveHatPatternViewerAccessState();
-  applyHatPatternMembershipChrome(state);
+  logHatPatternAccessDiagnostics(state);
 }
 
 function scrapOffPatternTooltip(): string {
@@ -383,12 +383,13 @@ export function initHatPatternPage() {
   const run = () => {
     bindInlinePrintLink();
     bindHatPatternMyPatternsDisabledGuard(document);
-    // Fail closed until membership resolves — My Patterns stays disabled / non-navigating.
-    applyHatPatternMembershipChrome("loggedOut");
     initHatPatternNewPattern(document);
     initHatPatternYarnDrawer();
-    void syncHatPatternPersistNoticeMembership().catch(() => {
-      applyHatPatternMembershipChrome("loggedOut");
+    // Listeners first, then snapshot, then Memberstack — never miss kin:member-access
+    // and never re-fetch a plan-less payload that would downgrade memberAccess.
+    bindHatPatternWorkspaceAccessLifecycle({
+      apply: applyHatPatternMembershipChrome,
+      onKinMemberAccess: noteHatPatternKinMemberAccessEvent,
     });
     void (async () => {
       await ensureUrlRequestedSavedPatternHydrated();
@@ -401,32 +402,6 @@ export function initHatPatternPage() {
         );
       }
     })();
-
-    window.addEventListener("kin:member-access", (event: Event) => {
-      const detail = (event as CustomEvent<{ viewerAccessState?: ViewerAccessState }>).detail;
-      if (detail?.viewerAccessState === "memberAccess") {
-        // Confirm with getAppAndMember so a stale snapshot cannot unlock save controls.
-        void syncHatPatternPersistNoticeMembership();
-        return;
-      }
-      if (detail?.viewerAccessState) {
-        applyHatPatternMembershipChrome(detail.viewerAccessState);
-      }
-    });
-
-    const ms = window.$memberstackDom;
-    if (ms && typeof ms.on === "function") {
-      try {
-        ms.on("member.login", () => {
-          void syncHatPatternPersistNoticeMembership();
-        });
-        ms.on("member.logout", () => {
-          applyHatPatternMembershipChrome("loggedOut");
-        });
-      } catch {
-        /* memberstack event wiring is best-effort */
-      }
-    }
   };
 
   if (document.readyState === "loading") {

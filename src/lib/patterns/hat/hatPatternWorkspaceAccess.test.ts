@@ -203,6 +203,15 @@ describe("Hat member resolution does not use getCurrentMember plan-less snapshot
     expect(getViewerAccessState(payload)).toBe("memberAccess");
   });
 
+  it("does not let a plan-less getAppAndMember payload downgrade a memberAccess snapshot", () => {
+    expect(
+      decideHatPatternViewerAccessState({
+        memberPayload: loggedInNoPlansPayload(),
+        persistedSnapshot: { hasMemberAccess: true, viewerAccessState: "memberAccess" },
+      }),
+    ).toBe("memberAccess");
+  });
+
   it("trusts a real persisted memberAccess snapshot and prefers Memberstack payloads", () => {
     expect(
       decideHatPatternViewerAccessState({
@@ -224,11 +233,13 @@ describe("Hat member resolution does not use getCurrentMember plan-less snapshot
     ).toBe("memberAccess");
   });
 
-  it("page wiring uses getAppAndMember and does not classify via getCurrentMember", () => {
-    expect(hatPatternPageScript).toContain("resolveHatPatternViewerAccessState");
+  it("page wiring binds the shared access lifecycle and does not classify via getCurrentMember", () => {
+    expect(hatPatternPageScript).toContain("bindHatPatternWorkspaceAccessLifecycle");
     expect(hatPatternPageScript).toContain("applyHatPatternWorkspaceChrome");
-    expect(hatPatternPageScript).toContain("kin:member-access");
+    expect(hatPatternPageScript).not.toContain("Confirm with getAppAndMember");
     expect(hatPatternPageScript).not.toContain("getCurrentMember");
+    expect(hatWorkspaceAccessSource).toContain("kin:member-access");
+    expect(hatWorkspaceAccessSource).toContain("auth:updated");
     expect(hatWorkspaceAccessSource).toContain("getAppAndMember");
     expect(hatWorkspaceAccessSource).toContain("getCurrentMember can return");
     expect(hatWorkspaceAccessSource).not.toMatch(/ms\?\.getCurrentMember/);
