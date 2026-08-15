@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   detectMemberstackMode,
   detectSiteEnvironment,
+  isLocalhostStyleHostname,
   memberstackModeLabel,
   shouldShowEnvironmentBanner,
   siteEnvironmentLabel,
@@ -19,6 +20,15 @@ describe("detectSiteEnvironment", () => {
     expect(detectSiteEnvironment("127.0.0.1")).toBe("localhost");
     expect(detectSiteEnvironment("0.0.0.0")).toBe("localhost");
     expect(detectSiteEnvironment("mybox.local")).toBe("localhost");
+  });
+
+  it("isLocalhostStyleHostname ignores Vite and only checks the host", () => {
+    expect(isLocalhostStyleHostname("localhost")).toBe(true);
+    expect(isLocalhostStyleHostname("127.0.0.1")).toBe(true);
+    expect(isLocalhostStyleHostname("::1")).toBe(true);
+    expect(isLocalhostStyleHostname("studio.local")).toBe(true);
+    expect(isLocalhostStyleHostname("kin-dev.netlify.app")).toBe(false);
+    expect(isLocalhostStyleHostname("knititnow.com")).toBe(false);
   });
 
   it("always treats *.netlify.app hosts as dev (incl. kin-dev and previews)", () => {

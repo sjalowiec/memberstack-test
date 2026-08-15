@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { watsonAdminNavHref } from "../../lib/adminRoutes";
 import "../../styles/watson.css";
 
 interface Props {
@@ -10,6 +11,10 @@ interface Props {
 }
 
 const { title, description, heading, intro } = Astro.props;
+const adminHref = watsonAdminNavHref(Astro.url.hostname, {
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  isViteDev: import.meta.env.DEV,
+});
 ---
 
 <BaseLayout title={title} description={description} bodyClass="watson-body">
@@ -30,7 +35,7 @@ const { title, description, heading, intro } = Astro.props;
         <a href="/watson/course-admin/111">Course 111 Admin</a>
         <a href="/watson/current">Current</a>
         <a href="/watson/legacy-renewals">Legacy Renewals</a>
-        <a href="/admin">Admin</a>
+        <a href={adminHref}>Admin</a>
         <form class="watson__logout" method="post" action="/api/watson/logout">
           <button type="submit">Logout</button>
         </form>

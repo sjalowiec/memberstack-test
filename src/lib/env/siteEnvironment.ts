@@ -39,6 +39,12 @@ function normalizeHost(hostname: string | null | undefined): string {
   return (hostname || "").trim().toLowerCase();
 }
 
+/** True for localhost / loopback / `*.local` hosts. Does not use `import.meta.env.DEV`. */
+export function isLocalhostStyleHostname(hostname: string | null | undefined): boolean {
+  const host = normalizeHost(hostname);
+  return LOCAL_HOSTNAMES.has(host) || host.endsWith(".local");
+}
+
 /**
  * Decide which environment a request/page is running in.
  *
@@ -59,7 +65,7 @@ export function detectSiteEnvironment(
   const host = normalizeHost(hostname);
 
   if (options.isViteDev === true) return "localhost";
-  if (LOCAL_HOSTNAMES.has(host) || host.endsWith(".local")) return "localhost";
+  if (isLocalhostStyleHostname(host)) return "localhost";
 
   if (host.endsWith(".netlify.app") || host === "netlify.app") return "dev";
 
