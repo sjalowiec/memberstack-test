@@ -203,25 +203,23 @@ describe("Hat member resolution does not use getCurrentMember plan-less snapshot
     expect(getViewerAccessState(payload)).toBe("memberAccess");
   });
 
-  it("trusts a real persisted memberAccess snapshot and ignores localhost preview bypass", () => {
+  it("trusts a real persisted memberAccess snapshot and prefers Memberstack payloads", () => {
     expect(
       decideHatPatternViewerAccessState({
         persistedSnapshot: { hasMemberAccess: true, viewerAccessState: "memberAccess" },
-        bypassOn: false,
       }),
     ).toBe("memberAccess");
 
     expect(
       decideHatPatternViewerAccessState({
-        persistedSnapshot: { hasMemberAccess: true, viewerAccessState: "memberAccess" },
-        bypassOn: true,
+        persistedSnapshot: { hasMemberAccess: false, viewerAccessState: "loggedOut" },
       }),
     ).toBe("loggedOut");
 
     expect(
       decideHatPatternViewerAccessState({
         memberPayload: memberPayload(MEMBERSHIPS.membership.memberstackPlanId),
-        bypassOn: true,
+        persistedSnapshot: { hasMemberAccess: false, viewerAccessState: "loggedOut" },
       }),
     ).toBe("memberAccess");
   });
@@ -234,6 +232,7 @@ describe("Hat member resolution does not use getCurrentMember plan-less snapshot
     expect(hatWorkspaceAccessSource).toContain("getAppAndMember");
     expect(hatWorkspaceAccessSource).toContain("getCurrentMember can return");
     expect(hatWorkspaceAccessSource).not.toMatch(/ms\?\.getCurrentMember/);
+    expect(hatWorkspaceAccessSource).not.toContain("localMemberPreviewBypass");
   });
 });
 

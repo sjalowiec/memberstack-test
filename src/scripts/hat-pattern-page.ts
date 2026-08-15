@@ -405,8 +405,7 @@ export function initHatPatternPage() {
     window.addEventListener("kin:member-access", (event: Event) => {
       const detail = (event as CustomEvent<{ viewerAccessState?: ViewerAccessState }>).detail;
       if (detail?.viewerAccessState === "memberAccess") {
-        // Confirm with getAppAndMember so localhost preview bypass cannot unlock
-        // Hat saved-project controls on its own.
+        // Confirm with getAppAndMember so a stale snapshot cannot unlock save controls.
         void syncHatPatternPersistNoticeMembership();
         return;
       }

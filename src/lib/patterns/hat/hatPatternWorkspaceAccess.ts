@@ -12,10 +12,6 @@ import {
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../../memberAccess";
-import {
-  localMemberPreviewBypassIsOn,
-  type SharedMemberAccessSnapshot,
-} from "../../localMemberPreviewBypass";
 import { applyHatPatternPersistNotice } from "./hatPatternPersistNotice";
 import {
   applyHatPatternMyPatternsAccess,
@@ -48,7 +44,13 @@ export function hatPatternHasMemberSavedProjectPrivileges(
 
 export { shouldShowHatTemporaryPatternNotice } from "./hatPatternPersistNotice";
 
-function readPersistedSnapshot(): SharedMemberAccessSnapshot | null {
+/** BaseLayout `window.__KIN_MEMBER_ACCESS__` snapshot (getAppAndMember). */
+export type HatMemberAccessSnapshot = {
+  hasMemberAccess: boolean;
+  viewerAccessState: ViewerAccessState;
+};
+
+function readPersistedSnapshot(): HatMemberAccessSnapshot | null {
   if (typeof window === "undefined") return null;
   return window.__KIN_MEMBER_ACCESS__ ?? null;
 }
@@ -92,17 +94,15 @@ export async function waitForHatPatternMemberstackPayload(options?: {
 }
 
 export type ResolveHatPatternViewerAccessStateInput = {
-  persistedSnapshot?: SharedMemberAccessSnapshot | null;
-  bypassOn?: boolean;
+  persistedSnapshot?: HatMemberAccessSnapshot | null;
   memberPayload?: unknown;
 };
 
 /**
  * Pure decision used by the async resolver and tests.
  *
- * Localhost `?member=true` preview must not unlock Hat saved-project controls.
- * A real BaseLayout snapshot of `memberAccess` (bypass off) can be trusted
- * immediately so the page does not wait on a second Memberstack round-trip.
+ * A Memberstack payload is authoritative. Otherwise reuse the BaseLayout
+ * `getAppAndMember` snapshot (`__KIN_MEMBER_ACCESS__`) when present.
  */
 export function decideHatPatternViewerAccessState(
   input: ResolveHatPatternViewerAccessStateInput,
@@ -110,30 +110,21 @@ export function decideHatPatternViewerAccessState(
   if (input.memberPayload !== undefined) {
     return getViewerAccessState(input.memberPayload);
   }
-  if (input.bypassOn) return "loggedOut";
-  if (input.persistedSnapshot?.viewerAccessState === "memberAccess") {
-    return "memberAccess";
-  }
   return input.persistedSnapshot?.viewerAccessState ?? "loggedOut";
 }
 
 export async function resolveHatPatternViewerAccessState(): Promise<ViewerAccessState> {
   if (typeof window === "undefined") return "loggedOut";
 
-  const bypassOn = localMemberPreviewBypassIsOn();
-  const persisted = bypassOn ? null : readPersistedSnapshot();
-  if (persisted?.viewerAccessState === "memberAccess") {
-    logMemberAccessDebug("hat-pattern.workspace", null, {
-      source: "persisted-snapshot",
-      viewerAccessState: "memberAccess",
-    });
-    return "memberAccess";
-  }
-
   const payload = await waitForHatPatternMemberstackPayload();
-  const state = getViewerAccessState(payload);
+  const persisted = readPersistedSnapshot();
+  const state = decideHatPatternViewerAccessState({
+    memberPayload: payload ?? undefined,
+    persistedSnapshot: persisted,
+  });
+
   logMemberAccessDebug("hat-pattern.workspace", payload, {
-    source: "getAppAndMember",
+    source: payload == null ? "persisted-snapshot" : "getAppAndMember",
     persistedViewerAccessState: persisted?.viewerAccessState ?? null,
   });
   return state;
