@@ -1,7 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
-import SleevelessPatternMemberGate from '../../components/patterns/SleevelessPatternMemberGate.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
 
@@ -34,16 +33,13 @@ const availablePatterns = [
     copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
     button: 'Create sleeveless sweater',
   },
-  // Hat Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog.
-  // /patterns/hat permanently redirects to the current builder at /patterns/hat/builder.
-  // Uncomment this entry to bring the Hat builder back to the catalog.
-  // {
-  //   title: 'Hat Pattern Builder',
-  //   href: '/patterns/hat/builder',
-  //   image: '/images/patterns/basic-hat.webp',
-  //   copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
-  //   button: 'Create your hat',
-  // },
+  {
+    title: 'Hat',
+    href: '/patterns/hat/builder',
+    image: '/images/patterns/Hat_builder.png',
+    copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
+    button: 'Create your hat',
+  },
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
   // route /patterns/diy-blanket is intact and reachable by direct URL for future development/testing.
@@ -74,14 +70,13 @@ const comingSoonPatterns = [
 
 <Layout title="Choose a Pattern">
 
-  <SleevelessPatternMemberGate>
   <div class="patterns-page">
 
     <header class="patterns-hero">
       <div class="patterns-hero__text">
         <h1 class="patterns-intro__title">Choose a Pattern</h1>
         <p class="patterns-intro__subtitle">
-          Pick a sweater builder — sized for your machine, your measurements, and your gauge.
+          Choose a pattern to get started
         </p>
         <p class="patterns-intro__home-link">
           <a href={PATTERN_BUILDERS_HOME_HREF}>← Pattern Builders home</a>
@@ -132,7 +127,6 @@ const comingSoonPatterns = [
     </section>
 
   </div>
-  </SleevelessPatternMemberGate>
 
 </Layout>
 

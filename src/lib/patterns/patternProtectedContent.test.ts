@@ -28,9 +28,9 @@ describe("protected pattern markup (no flash / fail closed)", () => {
     expect(about).not.toMatch(/noindex/i);
   });
 
-  it("wraps the pattern catalog behind the membership gate", () => {
+  it("keeps the pattern catalog public so the free Hat card is visible without membership", () => {
     const catalog = readFileSync(resolve(root, "src/pages/patterns/index.astro"), "utf8");
-    expect(catalog).toMatch(/SleevelessPatternMemberGate/);
+    expect(catalog).not.toMatch(/SleevelessPatternMemberGate/);
   });
 
   it("keeps the legacy sleeveless unlock URL membership-only (no individual purchase)", () => {
