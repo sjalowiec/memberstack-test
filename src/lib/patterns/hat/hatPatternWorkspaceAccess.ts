@@ -55,13 +55,6 @@ function readPersistedSnapshot(): HatMemberAccessSnapshot | null {
   return window.__KIN_MEMBER_ACCESS__ ?? null;
 }
 
-let lastResolvedMemberstackPayload: unknown = null;
-
-/** Last getAppAndMember payload from Hat resolution (for temporary diagnostics). */
-export function readLastHatPatternMemberstackPayload(): unknown {
-  return lastResolvedMemberstackPayload;
-}
-
 /**
  * Wait for getAppAndMember (never prefer getCurrentMember).
  * Early getCurrentMember can return a logged-in member without planConnections,
@@ -169,7 +162,6 @@ export function applyHatPatternMemberAccessEvent(
 export type HatPatternWorkspaceAccessLifecycle = {
   apply: (state: ViewerAccessState) => void;
   resolve?: () => Promise<ViewerAccessState>;
-  onKinMemberAccess?: (state: ViewerAccessState) => void;
 };
 
 /**
@@ -195,9 +187,6 @@ export function bindHatPatternWorkspaceAccessLifecycle(
 
   const onMemberAccess = (event: Event): void => {
     const detail = (event as CustomEvent<HatMemberAccessSnapshot>).detail;
-    if (detail?.viewerAccessState) {
-      options.onKinMemberAccess?.(detail.viewerAccessState);
-    }
     applyHatPatternMemberAccessEvent(detail, apply);
   };
 
@@ -256,7 +245,6 @@ export async function resolveHatPatternViewerAccessState(): Promise<ViewerAccess
   if (typeof window === "undefined") return "loggedOut";
 
   const payload = await waitForHatPatternMemberstackPayload();
-  lastResolvedMemberstackPayload = payload;
   const persisted = readPersistedSnapshot();
   const state = decideHatPatternViewerAccessState({
     memberPayload: payload ?? undefined,

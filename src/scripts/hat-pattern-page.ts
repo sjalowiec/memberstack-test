@@ -30,10 +30,6 @@ import {
   applyHatPatternWorkspaceChrome,
   bindHatPatternWorkspaceAccessLifecycle,
 } from "../lib/patterns/hat/hatPatternWorkspaceAccess";
-import {
-  logHatPatternAccessDiagnostics,
-  noteHatPatternKinMemberAccessEvent,
-} from "../lib/patterns/hat/hatPatternWorkspaceAccessDebug";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
 import { isEditingSavedHatProject } from "../lib/patterns/hat/hatSavedProject";
@@ -56,7 +52,6 @@ function applyHatPatternMembershipChrome(state: ViewerAccessState): void {
   applyHatPatternWorkspaceChrome(document, state, {
     isEditingSavedProject: isEditingSavedHatProject(),
   });
-  logHatPatternAccessDiagnostics(state);
 }
 
 function scrapOffPatternTooltip(): string {
@@ -389,7 +384,6 @@ export function initHatPatternPage() {
     // and never re-fetch a plan-less payload that would downgrade memberAccess.
     bindHatPatternWorkspaceAccessLifecycle({
       apply: applyHatPatternMembershipChrome,
-      onKinMemberAccess: noteHatPatternKinMemberAccessEvent,
     });
     void (async () => {
       await ensureUrlRequestedSavedPatternHydrated();

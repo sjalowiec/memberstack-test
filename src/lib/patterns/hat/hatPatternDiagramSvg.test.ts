@@ -500,11 +500,8 @@ describe("buildHatPatternDiagramSvg", () => {
           // Section labels remain.
           expect(svg).toContain(">Body<");
           expect(svg).toMatch(/>Brim<|>Rolled Brim</);
-          if (crown === "spiral" || crown === "wedge-4-decrease") {
-            expect(svg).not.toContain(">Total<");
-          } else {
-            expect(svg).toContain(">Total<");
-          }
+          // Shared length chip owns the label; no SVG "Total" caption in any crown.
+          expect(svg).not.toContain(">Total<");
           // Three measurement arrows remain (length / brim / width).
           expect(svg).toMatch(/x1="54"[^>]*stroke="#52682d"/);
           expect(svg).toMatch(/x1="338"[^>]*y1="[^"]+"[^>]*y2="[^"]+"[^>]*stroke="#52682d"/);
@@ -604,6 +601,57 @@ describe("buildHatPatternDiagramSvg", () => {
       return Number(m![1]);
     };
     expect(widthOf(wideSvg)).toBeGreaterThan(widthOf(narrowSvg));
+  });
+
+  it("gathered summaryEdit omits the Total caption where the Finished hat length chip sits", () => {
+    const fourGoreSummary = buildHatPatternDiagramSvg(
+      calcFor({ crown: "wedge-4-decrease" }),
+      "inches",
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+
+    for (const unit of ["inches", "cm"] as const) {
+      const calc = calcFor({ crown: "gathered", displayUnit: unit });
+      const svg = buildHatPatternDiagramSvg(
+        calc,
+        unit,
+        formatters,
+        HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+      );
+
+      expect(svg).toContain('data-crown="gathered"');
+      expect(svg).toContain('data-hat-diagram-mode="summaryEdit"');
+      // Length arrow remains; the shared chip is the only length label/value.
+      expect(svg).toMatch(/x1="54"[^>]*stroke="#52682d"/);
+      expect(svg).toContain('id="target_hat_length"');
+      expect(svg).not.toContain(">Total<");
+      expect(svg).not.toMatch(/rotate\(-90[^)]*\)"[^>]*>Total</);
+      const heightLabel =
+        unit === "inches"
+          ? formatLengthWithUnit(calc.hatHeight, "inches")
+          : formatLengthWithUnit(
+              convertLength(calc.hatHeight, "inches", "cm"),
+              "cm",
+            );
+      expect(svg).not.toContain(heightLabel);
+      expect(svg).not.toMatch(/>\d+(?:\.\d+)?"</);
+      expect(svg).not.toMatch(/>\d+(?:\.\d+)?\s*cm</i);
+    }
+
+    // Four-Gore Summary/Edit already omitted this caption — leave it unchanged.
+    expect(fourGoreSummary).toContain('data-crown="wedge-4-decrease"');
+    expect(fourGoreSummary).not.toContain(">Total<");
+    expect(fourGoreSummary).toMatch(/x1="54"[^>]*stroke="#52682d"/);
+    expect(fourGoreSummary).toContain('id="target_hat_length"');
+
+    // Pattern-mode Gathered still shows the rotated Total caption beside the arrow.
+    const gatheredPattern = buildHatPatternDiagramSvg(
+      calcFor({ crown: "gathered" }),
+      "inches",
+      formatters,
+    );
+    expect(gatheredPattern).toContain(">Total<");
   });
 });
 

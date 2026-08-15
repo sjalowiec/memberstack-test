@@ -618,8 +618,9 @@ function drawMeasurements(
   const heightLabelX = 36;
   const midHeightY = (frame.crownTop + frame.hatBottom) / 2;
 
-  // Total height (left). summaryEdit: arrow only — editable chip is the value source.
-  // Swirl / Four-Gore: keep the arrow + value, omit the "Total" caption.
+  // Total height (left). summaryEdit: arrow only — the Finished hat length chip
+  // owns the label/value. Pattern-mode Gathered keeps a rotated "Total" caption;
+  // Swirl / Four-Gore omit that caption in every mode.
   parts.push(
     verticalArrow(
       leftX,
@@ -629,7 +630,7 @@ function drawMeasurements(
       heightLabelX,
     ),
   );
-  if (!frame.isSpiral && !frame.isWedge) {
+  if (!summaryEdit && frame.isGathered) {
     parts.push(
       `<text x="${fmtNum(totalLabelX)}" y="${fmtNum(midHeightY)}" text-anchor="middle" transform="rotate(-90 ${fmtNum(totalLabelX)} ${fmtNum(midHeightY)})" fill="${MUTED}" ${textFont(FS_SUPPORT)}>Total</text>`,
     );
