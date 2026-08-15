@@ -10,7 +10,11 @@ import {
   type RoundNecklineSkillBuilderExerciseId,
   type RoundNecklineSkillBuilderId,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilders";
-import { skillBuilderVideoSlot } from "../../lib/skillBuilders/roundNecklineSkillBuilderVideos";
+import {
+  SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY,
+  SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
+  skillBuilderVideoSlot,
+} from "../../lib/skillBuilders/roundNecklineSkillBuilderVideos";
 
 interface Props {
   builderId: RoundNecklineSkillBuilderId;
@@ -34,19 +38,6 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   <p>{builder.purpose}</p>
 </section>
 
-{
-  video && (
-    <section class="sb-worksheet__section no-print" aria-label="Video">
-      <h2>Watch</h2>
-      <GatedVimeoEmbed
-        videoId={video.vimeoId}
-        title={video.title ?? exercise.title}
-        access_level={memberOnly ? "member" : "open"}
-      />
-    </section>
-  )
-}
-
 <section class="sb-practice-panel no-print" aria-labelledby="sb-gauge-heading">
   <h2 id="sb-gauge-heading" class="sb-practice-panel__title">Your Gauge</h2>
   <SkillBuilderGaugeInput id={gaugeId} />
@@ -63,6 +54,26 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   <section class="sb-worksheet__section" aria-labelledby="sb-begin-heading">
     <h2 id="sb-begin-heading">Before You Begin</h2>
     <p data-sb-before-begin></p>
+    {
+      video && (
+        <aside
+          class="sb-video-helper no-print"
+          aria-labelledby="sb-video-help-heading"
+          data-sb-video-content-id={String(video.contentId)}
+        >
+          <h3 id="sb-video-help-heading">{SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING}</h3>
+          <p class="sb-video-helper__note">{SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY}</p>
+          <div class="sb-video-helper__embed">
+            <GatedVimeoEmbed
+              videoId={video.vimeoId}
+              title={video.title ?? exercise.title}
+              access_level={memberOnly ? "member" : "open"}
+              privacyHash={video.privacyHash ?? ""}
+            />
+          </div>
+        </aside>
+      )
+    }
   </section>
 
   <section class="sb-card sb-shoulders" aria-labelledby="sb-shoulders-heading">
@@ -226,6 +237,29 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     line-height: 1.55;
     color: #243015;
     font-size: 1rem;
+  }
+
+  .sb-video-helper {
+    margin: 0.85rem 0 0;
+  }
+
+  .sb-video-helper > h3 {
+    margin: 0 0 0.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4d5a48;
+  }
+
+  .sb-worksheet__section .sb-video-helper__note {
+    margin: 0 0 0.65rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #666;
+    font-style: italic;
+  }
+
+  .sb-video-helper__embed {
+    max-width: 30rem;
   }
 
   .sb-finish-list {

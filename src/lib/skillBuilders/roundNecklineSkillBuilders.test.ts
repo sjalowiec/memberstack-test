@@ -16,7 +16,10 @@ import {
   SHOULDER_WORKFLOW_HEADING,
   SHOULDER_WORKFLOW_TEACHING_NOTE,
 } from "./roundNecklineSkillBuilders";
-import { ROUND_NECKLINE_SKILL_BUILDER_VIDEOS } from "./roundNecklineSkillBuilderVideos";
+import {
+  ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS,
+  skillBuilderVideoSlot,
+} from "./roundNecklineSkillBuilderVideos";
 import { formatCenterStitchesLabel } from "../patterns/shapingMapSvg";
 
 const SAMPLE_GAUGE = { stitchesPerFourInches: 16, rowsPerFourInches: 24 };
@@ -42,8 +45,24 @@ describe("round neckline Skill Builder catalog", () => {
       "round-neckline-basics",
       "round-necklines-shaped-shoulders",
     ]);
+    expect(ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].title).toBe(
+      "Round Neckline Basics: Bind Off & Decrease",
+    );
+    expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].title).toBe(
+      "Round Necklines with Shaped Shoulders",
+    );
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].exercises).toHaveLength(2);
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].exercises).toHaveLength(2);
+    const basicsShallow = ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].exercises[0];
+    expect(basicsShallow.id).toBe("shallow-back");
+    expect(basicsShallow.title).toBe("Shallow Back Neckline: Straight Shoulders");
+    expect(basicsShallow.subtitle).toBe("Shaping with Bind-Offs & Decreases");
+    expect(ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].exercises[1].subtitle).toBeUndefined();
+    expect(
+      ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].exercises.map(
+        (exercise) => exercise.subtitle,
+      ),
+    ).toEqual([undefined, undefined]);
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].prerequisiteNote).toMatch(
       /Complete Round Neckline Basics first/,
     );
@@ -51,10 +70,16 @@ describe("round neckline Skill Builder catalog", () => {
     expect(roundNecklineSkillBuilderIsMemberOnly("round-necklines-shaped-shoulders")).toBe(true);
   });
 
-  it("keeps video slots configured but empty so no broken embeds are created", () => {
-    for (const slot of Object.values(ROUND_NECKLINE_SKILL_BUILDER_VIDEOS)) {
-      expect(slot).toBeNull();
-    }
+  it("adds the catalog video only to the shallow-back straight-shoulder practice", () => {
+    expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/shallow-back"]).toBe(
+      2212,
+    );
+    expect(skillBuilderVideoSlot("round-neckline-basics/shallow-back")?.vimeoId).toBe("1218264661");
+    expect(skillBuilderVideoSlot("round-neckline-basics")).toBeNull();
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")).toBeNull();
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders")).toBeNull();
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/shallow-back")).toBeNull();
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/deep-front")).toBeNull();
   });
 });
 

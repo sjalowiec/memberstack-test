@@ -17,10 +17,13 @@ const {
   ctaText = "Become a Member",
   /** When true, iframe uses Vimeo Player.js (`api=1`) and a stable `id` for programmatic seek. */
   enableVimeoPlayerApi = false,
+  /** Unlisted privacy hash from catalog `vimeo_hash`. Used only on the player embed (`h=`). */
+  privacyHash: rawPrivacyHash = "",
 } = Astro.props;
 
 // Coerce the Vimeo ID to a trimmed string (JSON may store it as a number).
 const videoId = rawVideoId != null ? String(rawVideoId).trim() : "";
+const privacyHash = String(rawPrivacyHash ?? "").trim();
 
 // Normalize access level so gating only ever deals with "open" | "member".
 // Public synonyms ("public", "free", "open") all mean "show to everyone".
@@ -39,10 +42,15 @@ function paddingPercent(aspectStr: string) {
 
 const pad = paddingPercent(aspect);
 const iframePlayerId = `kbm-gated-vimeo-${videoId}`;
-const iframeBase = `https://player.vimeo.com/video/${videoId}`;
-const iframeSrc = enableVimeoPlayerApi
-  ? `${iframeBase}?api=1&player_id=${encodeURIComponent(iframePlayerId)}`
-  : iframeBase;
+const iframeUrl = new URL(`https://player.vimeo.com/video/${videoId || "0"}`);
+if (privacyHash && /^[a-zA-Z0-9]+$/.test(privacyHash)) {
+  iframeUrl.searchParams.set("h", privacyHash);
+}
+if (enableVimeoPlayerApi) {
+  iframeUrl.searchParams.set("api", "1");
+  iframeUrl.searchParams.set("player_id", iframePlayerId);
+}
+const iframeSrc = videoId ? iframeUrl.toString() : "";
 ---
 
 <div

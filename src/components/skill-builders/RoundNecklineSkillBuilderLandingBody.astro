@@ -34,6 +34,7 @@ const video = skillBuilderVideoSlot(builderId);
         videoId={video.vimeoId}
         title={video.title ?? builder.title}
         access_level={memberOnly ? "member" : "open"}
+        privacyHash={video.privacyHash ?? ""}
       />
     </section>
   )

@@ -22,6 +22,7 @@ const exercise = builder.exercises.find((item) => item.id === exerciseId);
 if (!exercise) {
   throw new Error(`Unknown Skill Builder exercise: ${builderId}/${exerciseId}`);
 }
+const subtitle = exercise.subtitle ?? builder.title;
 ---
 
 <div
@@ -34,7 +35,7 @@ if (!exercise) {
 
   <header class="sb-practice-hero">
     <SkillBuilderPageHeader title={exercise.title} />
-    <p class="sb-practice-hero__intro">{builder.title}</p>
+    <p class="sb-practice-hero__intro">{subtitle}</p>
   </header>
 
   {
