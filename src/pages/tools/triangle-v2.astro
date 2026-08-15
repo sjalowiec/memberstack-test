@@ -1,6 +1,4 @@
 ---
-import fs from "node:fs";
-import path from "node:path";
 import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import "../../styles/wizard.css";
@@ -14,6 +12,8 @@ import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/favorites.css";
+import trianglePreviewIsoHtml from "../../../public/images/tools/triangle-iso.svg?raw";
+import trianglePreviewRightHtml from "../../../public/images/tools/triangle-right-icon.svg?raw";
 
 const tools = toolsData as Array<{
   id?: number;
@@ -24,16 +24,6 @@ const tools = toolsData as Array<{
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 const toolTitle = tool?.title ?? "Triangle Calculator";
 const toolContentId = tool?.id != null ? String(tool.id) : "";
-
-const toolsSvgDir = path.join(process.cwd(), "public", "images", "tools");
-const trianglePreviewIsoHtml = fs.readFileSync(
-  path.join(toolsSvgDir, "triangle-iso.svg"),
-  "utf-8"
-);
-const trianglePreviewRightHtml = fs.readFileSync(
-  path.join(toolsSvgDir, "triangle-right-icon.svg"),
-  "utf-8"
-);
 
 ---
 <Layout title="Triangle Calculator" toolPrintTitle="Triangle Calculator">

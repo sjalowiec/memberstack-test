@@ -3,8 +3,12 @@
  * Reusable Skill Builder schematic: load an SVG template and replace {{TOKEN}} placeholders.
  * Generic renderer - pass any placeholder map; no skill-specific logic here.
  */
-import { readFileSync } from "node:fs";
 import { renderSkillBuilderDiagramSvg } from "../../lib/skillBuilders/skillBuilderDiagram";
+
+const skillBuilderSvgModules = import.meta.glob(
+  "../../../public/images/skill-builders/*.svg",
+  { query: "?raw", import: "default", eager: true },
+) as Record<string, string>;
 
 interface Props {
   /** SVG filename without path or extension (e.g. "round-neckline"). */
@@ -19,12 +23,12 @@ const { svg, values, class: className = "", id } = Astro.props;
 let innerHtml = "";
 if (values && Object.keys(values).length > 0) {
   try {
-    const svgFile = new URL(
-      `../../../public/images/skill-builders/${svg.replace(/\.svg$/i, "")}.svg`,
-      import.meta.url,
+    const filename = `${svg.replace(/\.svg$/i, "")}.svg`;
+    const match = Object.entries(skillBuilderSvgModules).find(([key]) =>
+      key.endsWith(`/skill-builders/${filename}`),
     );
-    const svgText = readFileSync(svgFile, "utf8");
-    innerHtml = renderSkillBuilderDiagramSvg(svgText, values);
+    if (!match) throw new Error(`Skill builder SVG not found: ${filename}`);
+    innerHtml = renderSkillBuilderDiagramSvg(match[1], values);
   } catch (error) {
     console.error(`SkillBuilderDiagram: failed to load ${svg}`, error);
   }

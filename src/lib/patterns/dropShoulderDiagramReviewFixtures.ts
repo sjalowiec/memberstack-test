@@ -5,8 +5,6 @@
  * This module does not invent stitch/row values or configuration options.
  */
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { buildDropShoulderBackStitchesRowsSvg } from "./dropShoulderBackPatternDiagramSvg";
 import { buildDropShoulderFrontStitchesRowsSvg } from "./dropShoulderFrontPatternDiagramSvg";
 import {
@@ -28,13 +26,21 @@ import { applyGarmentDiagramSvgReplacements } from "./sleevelessGarmentDiagramSv
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
+import kidsChart from "../../../public/data/sizing_sweaters_kids.json";
+import missesChart from "../../../public/data/sizing_sweaters_misses.json";
 
-const KIDS_ROWS = JSON.parse(
-  readFileSync(resolve("public/data/sizing_sweaters_kids.json"), "utf8"),
-) as ChartRow[];
-const MISSES_ROWS = JSON.parse(
-  readFileSync(resolve("public/data/sizing_sweaters_misses.json"), "utf8"),
-) as ChartRow[];
+/**
+ * Import diagram SVGs as modules. Do not `readFileSync(public/…)` here: the
+ * Netlify adapter traces dynamic `public/` paths with @vercel/nft and copies
+ * the entire public tree into the SSR function.
+ */
+const DROP_SHOULDER_SVG_MODULES = import.meta.glob(
+  "../../../public/images/patterns/drop-shoulder/**/*.svg",
+  { query: "?raw", import: "default", eager: true },
+) as Record<string, string>;
+
+const KIDS_ROWS = kidsChart as ChartRow[];
+const MISSES_ROWS = missesChart as ChartRow[];
 
 const KIDS_10 = KIDS_ROWS.find((r) => String(r.size).includes("10"));
 if (!KIDS_10) throw new Error("kids sizing chart missing size 10 yr");
@@ -42,15 +48,15 @@ if (!KIDS_10) throw new Error("kids sizing chart missing size 10 yr");
 const MISSES_8 = MISSES_ROWS.find((r) => String(r.size) === "8");
 if (!MISSES_8) throw new Error("misses sizing chart missing size 8");
 
-const publicSvgCache = new Map<string, string>();
-
 function readPublicSvg(src: string): string {
-  const cached = publicSvgCache.get(src);
-  if (cached) return cached;
-  const rel = src.replace(/^\//, "");
-  const text = readFileSync(resolve("public", rel), "utf8");
-  publicSvgCache.set(src, text);
-  return text;
+  const relative = src.replace(/^\/images\/patterns\/drop-shoulder\//, "");
+  const match = Object.entries(DROP_SHOULDER_SVG_MODULES).find(([key]) =>
+    key.replace(/\\/g, "/").endsWith(`/drop-shoulder/${relative}`),
+  );
+  if (!match) {
+    throw new Error(`Missing drop-shoulder diagram SVG: ${src}`);
+  }
+  return match[1];
 }
 
 function dropShoulderStyle(

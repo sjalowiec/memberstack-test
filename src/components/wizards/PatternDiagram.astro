@@ -7,13 +7,22 @@ interface Props {
 
 const { template, values, class: className = '' } = Astro.props;
 
-// Load SVG template from public/diagrams directory
+// Import diagram SVGs as modules. Do not fetch `../../public${path}` — NFT
+// traces that dynamic public/ URL and copies the entire public tree into SSR.
+const diagramModules = import.meta.glob("../../../public/diagrams/*.svg", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+
 let svgContent = '';
 try {
-  const templatePath = `/diagrams/${template}.svg`;
-  const response = await fetch(new URL(`../../public${templatePath}`, import.meta.url));
-  svgContent = await response.text();
-  
+  const match = Object.entries(diagramModules).find(([key]) =>
+    key.endsWith(`/diagrams/${template}.svg`),
+  );
+  if (!match) throw new Error(`Diagram not found: ${template}`);
+  svgContent = match[1];
+
   // Replace all placeholders with actual values
   // Placeholders in SVG should be in format: {{PLACEHOLDER_NAME}}
   Object.entries(values).forEach(([key, value]) => {
