@@ -42,11 +42,12 @@ function viewerStateForPlan(planId: string | null) {
 }
 
 describe("resolveHatPatternPersistNotice", () => {
-  it("uses SAVE YOUR PATTERN heading and temporary-pattern copy for all visitors", () => {
+  it("uses SAVE YOUR PATTERN heading and temporary-pattern copy for non-members", () => {
     expect(HAT_PATTERN_PERSIST_NOTICE_TITLE).toBe("SAVE YOUR PATTERN");
-    for (const state of ["loggedOut", "loggedInNoAccess", "memberAccess"] as const) {
+    for (const state of ["loggedOut", "loggedInNoAccess"] as const) {
       const notice = resolveHatPatternPersistNotice(state);
       expect(notice.title).toBe("SAVE YOUR PATTERN");
+      expect(notice.showNotice).toBe(true);
       expect(notice.warningLead).toBe(HAT_PATTERN_PERSIST_WARNING_LEAD);
       expect(notice.warningEmphasis).toBe(HAT_PATTERN_PERSIST_WARNING_EMPHASIS);
       expect(notice.warningText).toContain("temporary");
@@ -105,21 +106,18 @@ describe("resolveHatPatternPersistNotice", () => {
     expect(state).toBe("memberAccess");
 
     const notice = resolveHatPatternPersistNotice(state);
+    expect(notice.showNotice).toBe(false);
     expect(notice.showMembershipCta).toBe(false);
     expect(notice.membershipPitch).toBeNull();
     expect(notice.membershipCta).toBeNull();
   });
 
-  it("active members still see a temporary-pattern message and are not told the pattern is saved", () => {
+  it("active members do not see a temporary-pattern or Explore Membership upsell", () => {
     const notice = resolveHatPatternPersistNotice("memberAccess");
-    expect(notice.title).toBe("SAVE YOUR PATTERN");
-    expect(notice.warningText).toMatch(/temporary/i);
-    expect(notice.warningText).toMatch(/isn.?t saved/i);
-    expect(notice.warningText.toLowerCase()).not.toMatch(
-      /\b(has been|is|was|can be|will be) saved\b/,
-    );
-    expect(notice.membershipPitch).toBeNull();
+    expect(notice.showNotice).toBe(false);
     expect(notice.showMembershipCta).toBe(false);
+    expect(notice.membershipPitch).toBeNull();
+    expect(notice.membershipCta).toBeNull();
   });
 });
 
@@ -190,11 +188,12 @@ describe("Hat Pattern persist notice page wiring", () => {
   });
 
   it("uses ViewerAccessState so active membership is not inferred from login alone", () => {
-    expect(hatPatternPageScript).toContain("getViewerAccessState");
-    expect(hatPatternPageScript).toContain("applyHatPatternPersistNoticeMembership");
-    expect(hatPatternPageScript).toContain("applyHatPatternMyPatternsAccess");
+    expect(hatPatternPageScript).toContain("resolveHatPatternViewerAccessState");
+    expect(hatPatternPageScript).toContain("applyHatPatternWorkspaceChrome");
+    expect(hatPatternPageScript).toContain("applyHatPatternMembershipChrome");
     expect(hatPatternPageScript).not.toMatch(
       /getViewerAccessState[\s\S]{0,200}isMemberLoggedIn\(\)/,
     );
+    expect(hatPatternPageScript).not.toContain("getCurrentMember");
   });
 });

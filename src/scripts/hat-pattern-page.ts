@@ -8,7 +8,7 @@ import {
   formatLength,
   formatLengthWithUnit,
 } from "../components/wizards/utils/unitHelpers";
-import { getViewerAccessState, type ViewerAccessState } from "../lib/memberAccess";
+import { type ViewerAccessState } from "../lib/memberAccess";
 import { buildHatSizingBuilderRows } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import { ensureHatDraftMigrated, readHatDraft } from "../lib/patterns/hat/hatDraft";
 import { buildHatPatternDiagramSvg } from "../lib/patterns/hat/hatPatternDiagramSvg";
@@ -25,19 +25,15 @@ import {
   type HatSizingPatternRow,
 } from "../lib/patterns/hat/hatPatternFromDraft";
 import { dispatchHatYarnDimensions } from "../lib/patterns/hat/hatYarnEstimation";
-import { applyHatPatternPersistNoticeMembership } from "../lib/patterns/hat/hatPatternPersistNotice";
+import { bindHatPatternMyPatternsDisabledGuard } from "../lib/patterns/hat/hatPatternMyPatternsAccess";
 import {
-  applyHatPatternMyPatternsAccess,
-  bindHatPatternMyPatternsDisabledGuard,
-} from "../lib/patterns/hat/hatPatternMyPatternsAccess";
+  applyHatPatternWorkspaceChrome,
+  resolveHatPatternViewerAccessState,
+} from "../lib/patterns/hat/hatPatternWorkspaceAccess";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
 import { isEditingSavedHatProject } from "../lib/patterns/hat/hatSavedProject";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
-import {
-  waitForMemberstackDom,
-  waitForMemberstackReady,
-} from "../lib/patterns/sleevelessPatternLoginGate";
 import {
   applyPatternPrintPersonalizationToDom,
   triggerPatternPrint,
@@ -48,23 +44,14 @@ import type { HatDisplayUnit, HatPatternCalc } from "../lib/patterns/hat/hatMath
 const HAT_ZERO_BODY_ROWS_WARNING =
   "Your current settings don't leave any room for the body of the hat. Try increasing the finished hat length, reducing the brim height, or choosing a shallower crown style.";
 
-async function resolveHatPatternViewerAccessState(): Promise<ViewerAccessState> {
-  if (typeof window === "undefined") return "loggedOut";
-  await waitForMemberstackDom();
-  const ms = window.$memberstackDom;
-  if (!ms?.getCurrentMember) return "loggedOut";
-  try {
-    await waitForMemberstackReady(ms);
-    const res = await ms.getCurrentMember();
-    return getViewerAccessState(res);
-  } catch {
-    return "loggedOut";
-  }
-}
+/** Last resolved viewer state so pattern re-renders cannot re-show the guest upsell. */
+let lastHatPatternViewerAccessState: ViewerAccessState = "loggedOut";
 
 function applyHatPatternMembershipChrome(state: ViewerAccessState): void {
-  applyHatPatternPersistNoticeMembership(document, state);
-  applyHatPatternMyPatternsAccess(document, state);
+  lastHatPatternViewerAccessState = state;
+  applyHatPatternWorkspaceChrome(document, state, {
+    isEditingSavedProject: isEditingSavedHatProject(),
+  });
 }
 
 async function syncHatPatternPersistNoticeMembership(): Promise<void> {
@@ -320,10 +307,7 @@ export async function renderHatPattern() {
   const hatPrint = resolveHatPatternPrintFields({ draft: readyDraft });
   applyPatternPrintPersonalizationToDom(hatPrint.title, hatPrint.notes);
 
-  const persistNotice = document.querySelector("[data-hat-pattern-persist-notice]");
-  if (persistNotice instanceof HTMLElement) {
-    persistNotice.hidden = isEditingSavedHatProject();
-  }
+  applyHatPatternMembershipChrome(lastHatPatternViewerAccessState);
 
   const zeroBody = document.querySelector("[data-hat-zero-body-warning]");
   if (zeroBody instanceof HTMLElement) {
@@ -400,7 +384,7 @@ export function initHatPatternPage() {
     bindInlinePrintLink();
     bindHatPatternMyPatternsDisabledGuard(document);
     // Fail closed until membership resolves — My Patterns stays disabled / non-navigating.
-    applyHatPatternMyPatternsAccess(document, "loggedOut");
+    applyHatPatternMembershipChrome("loggedOut");
     initHatPatternNewPattern(document);
     initHatPatternYarnDrawer();
     void syncHatPatternPersistNoticeMembership().catch(() => {
@@ -417,6 +401,19 @@ export function initHatPatternPage() {
         );
       }
     })();
+
+    window.addEventListener("kin:member-access", (event: Event) => {
+      const detail = (event as CustomEvent<{ viewerAccessState?: ViewerAccessState }>).detail;
+      if (detail?.viewerAccessState === "memberAccess") {
+        // Confirm with getAppAndMember so localhost preview bypass cannot unlock
+        // Hat saved-project controls on its own.
+        void syncHatPatternPersistNoticeMembership();
+        return;
+      }
+      if (detail?.viewerAccessState) {
+        applyHatPatternMembershipChrome(detail.viewerAccessState);
+      }
+    });
 
     const ms = window.$memberstackDom;
     if (ms && typeof ms.on === "function") {

@@ -1,6 +1,9 @@
 /**
  * Soft persist notice for the free finished Hat Pattern page.
- * Uses global ViewerAccessState — active members are not pitched membership.
+ *
+ * Shown only when the visitor does not have member saved-project privileges.
+ * Free Hat view/build stays ungated; members keep save / My Patterns / rename
+ * and must not see the temporary-pattern / Explore Membership upsell.
  */
 
 import type { ViewerAccessState } from "../../memberAccess";
@@ -31,6 +34,8 @@ export type HatPatternPersistNoticePresentation = {
   warningEmphasis: typeof HAT_PATTERN_PERSIST_WARNING_EMPHASIS;
   /** Full temporary-pattern warning (lead + emphasized preserve sentence). */
   warningText: string;
+  /** Whether the temporary-pattern notice should render at all. */
+  showNotice: boolean;
   /** Membership benefit line; null for active members. */
   membershipPitch: string | null;
   showMembershipCta: boolean;
@@ -46,8 +51,22 @@ function warningText(): string {
 }
 
 /**
+ * Temporary-pattern / Explore Membership notice is for non-members only.
+ * Members never see it — including on an unsaved free Hat — because they have
+ * saved-project privileges. A leftover local saved-project link also hides it.
+ */
+export function shouldShowHatTemporaryPatternNotice(
+  state: ViewerAccessState,
+  isEditingSavedProject = false,
+): boolean {
+  if (state === "memberAccess") return false;
+  if (isEditingSavedProject) return false;
+  return true;
+}
+
+/**
  * Resolve persist notice copy + membership CTA from ViewerAccessState.
- * Active members keep the temporary-pattern message only (pattern is still not saved).
+ * Active members do not see the temporary-pattern / membership upsell.
  */
 export function resolveHatPatternPersistNotice(
   state: ViewerAccessState,
@@ -62,6 +81,7 @@ export function resolveHatPatternPersistNotice(
   if (state === "memberAccess") {
     return {
       ...base,
+      showNotice: false,
       membershipPitch: null,
       showMembershipCta: false,
       membershipCta: null,
@@ -70,6 +90,7 @@ export function resolveHatPatternPersistNotice(
 
   return {
     ...base,
+    showNotice: true,
     membershipPitch: HAT_PATTERN_PERSIST_MEMBERSHIP_PITCH,
     showMembershipCta: true,
     membershipCta: {
@@ -80,14 +101,39 @@ export function resolveHatPatternPersistNotice(
   };
 }
 
-/** Show membership pitch + CTA only for non-members (logged-out / logged-in without access). */
+export type ApplyHatPatternPersistNoticeOptions = {
+  isEditingSavedProject?: boolean;
+};
+
+/** Hide/show the whole persist notice and membership pitch from ViewerAccessState. */
+export function applyHatPatternPersistNotice(
+  root: ParentNode | null,
+  state: ViewerAccessState,
+  options: ApplyHatPatternPersistNoticeOptions = {},
+): void {
+  if (!root || typeof root.querySelector !== "function") return;
+  const presentation = resolveHatPatternPersistNotice(state);
+  const showNotice = shouldShowHatTemporaryPatternNotice(
+    state,
+    options.isEditingSavedProject === true,
+  );
+
+  const notice = root.querySelector("[data-hat-pattern-persist-notice]");
+  if (notice && "hidden" in notice) {
+    (notice as HTMLElement).hidden = !showNotice;
+  }
+
+  const membership = root.querySelector("[data-hat-pattern-persist-membership]");
+  if (membership && "hidden" in membership) {
+    (membership as HTMLElement).hidden = !presentation.showMembershipCta;
+  }
+}
+
+/** @deprecated Use {@link applyHatPatternPersistNotice}. */
 export function applyHatPatternPersistNoticeMembership(
   root: ParentNode | null,
   state: ViewerAccessState,
+  options: ApplyHatPatternPersistNoticeOptions = {},
 ): void {
-  if (!root || typeof root.querySelector !== "function") return;
-  const membership = root.querySelector("[data-hat-pattern-persist-membership]");
-  if (!membership || !("hidden" in membership)) return;
-  const presentation = resolveHatPatternPersistNotice(state);
-  (membership as HTMLElement).hidden = !presentation.showMembershipCta;
+  applyHatPatternPersistNotice(root, state, options);
 }

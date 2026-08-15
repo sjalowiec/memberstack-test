@@ -169,9 +169,9 @@ describe("hat finished-pattern navigation markup", () => {
   });
 
   it("wires membership My Patterns + New Pattern on the hat pattern page script", () => {
-    expect(pageScript).toContain("applyHatPatternMyPatternsAccess");
-    expect(pageScript).toContain("initHatPatternNewPattern");
+    expect(pageScript).toContain("applyHatPatternWorkspaceChrome");
     expect(pageScript).toContain("bindHatPatternMyPatternsDisabledGuard");
+    expect(pageScript).toContain("initHatPatternNewPattern");
     expect(builderScript).toContain("applyHatNewSessionFromUrl");
   });
 });
