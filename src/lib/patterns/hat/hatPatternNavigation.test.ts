@@ -123,6 +123,7 @@ describe("hat finished-pattern navigation markup", () => {
   });
 
   it("matches sweater My Patterns / New Pattern icons, classes, and test ids", () => {
+    expect(patternPage).toContain('data-ms-content="members"');
     expect(patternPage).toContain("data-hat-pattern-my-patterns");
     expect(patternPage).toContain('data-testid="pattern-workspace-library-trigger"');
     expect(patternPage).toContain("fa-folder-open");

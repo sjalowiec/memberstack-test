@@ -14,11 +14,14 @@ export const PATTERNS_LANDING_MEMBER_CTA_HREF = PATTERN_CATALOG_HREF;
 export const PATTERNS_LANDING_MEMBERSHIP_HEADING = "Create a Pattern";
 export const PATTERNS_LANDING_MEMBERSHIP_BODY =
   "Dynamic Patterns are included with an active Knit it Now membership. Each pattern is customized for your machine, gauge, yarn, and measurements.";
+/** Catalog (`/patterns`) membership pitch: sweaters require membership; Hat is free. */
+export const PATTERN_CATALOG_MEMBERSHIP_BODY =
+  "Sweater pattern builders are included with an active Knit It Now membership. Explore the available patterns below, including our free Hat Pattern.";
 export const PATTERNS_LANDING_BECOME_MEMBER_LABEL = "Become a Member";
 export const PATTERNS_LANDING_BECOME_MEMBER_HREF = "/membership";
 export const PATTERNS_LANDING_LOGIN_LABEL = "Already a Member? Log In";
 
-/** Future ActivePresenter walkthrough mount point ù do not invent a video URL. */
+/** Future ActivePresenter walkthrough mount point ? do not invent a video URL. */
 export const PATTERNS_LANDING_DEMO_PLACEHOLDER_ATTR = "data-patterns-landing-demo-placeholder";
 
 export type PatternsLandingCtaMode = "member" | "prospect";
@@ -39,7 +42,7 @@ function applyMode(root: HTMLElement, mode: PatternsLandingCtaMode): void {
   }
 }
 
-/** Wires `[data-patterns-landing-cta]`. Defaults to prospect (fail closed ù no catalog link). */
+/** Wires `[data-patterns-landing-cta]`. Defaults to prospect (fail closed ? no catalog link). */
 export async function initPatternsLandingCta(root: HTMLElement): Promise<void> {
   applyMode(root, "prospect");
 

@@ -21,6 +21,78 @@ function helpHubPanel(): string {
   return headerSource.slice(panelStart, panelEnd + "</ul>".length);
 }
 
+/** Isolate the Patterns dropdown panel markup for order-sensitive assertions. */
+function patternsPanel(): string {
+  const triggerIdx = headerSource.indexOf('data-testid="nav-patterns"');
+  expect(triggerIdx).toBeGreaterThan(-1);
+  const panelStart = headerSource.indexOf('<ul class="nav-dropdown-menu dd-panel"', triggerIdx);
+  const panelEnd = headerSource.indexOf("</ul>", panelStart);
+  expect(panelStart).toBeGreaterThan(-1);
+  expect(panelEnd).toBeGreaterThan(panelStart);
+  return headerSource.slice(panelStart, panelEnd + "</ul>".length);
+}
+
+describe("Header Patterns navigation", () => {
+  it("links the top-level Patterns menu to the public catalog", () => {
+    const topLevel = headerSource.match(
+      /<a[\s\S]*?data-testid="nav-patterns"[\s\S]*?<\/a>/,
+    )?.[0];
+    expect(topLevel).toBeTruthy();
+    expect(topLevel).toMatch(/href=\{PATTERN_CATALOG_HREF\}/);
+    expect(topLevel).not.toMatch(/href=\{PATTERN_BUILDERS_HOME_HREF\}/);
+  });
+
+  it("keeps About Knit It Now Patterns visible for everyone in the dropdown", () => {
+    const panel = patternsPanel();
+    const aboutLi = panel.match(
+      /<li(?![\s\S]*?data-ms-content)[\s\S]*?data-testid="nav-patterns-about"[\s\S]*?<\/li>/,
+    )?.[0];
+
+    expect(aboutLi).toBeTruthy();
+    expect(aboutLi).toMatch(/href=\{PATTERN_BUILDERS_HOME_HREF\}/);
+    expect(aboutLi).toContain("About Knit It Now Patterns");
+    expect(aboutLi).not.toMatch(/data-ms-content="!members"/);
+  });
+
+  it("shows My Patterns only for logged-in users in the dropdown", () => {
+    const panel = patternsPanel();
+    const myPatternsLi = panel.match(
+      /<li[\s\S]*?data-ms-content="members"[\s\S]*?data-testid="nav-my-patterns"[\s\S]*?<\/li>/,
+    )?.[0];
+
+    expect(myPatternsLi).toBeTruthy();
+    expect(myPatternsLi).toContain("data-pattern-workspace-library-trigger");
+    expect(myPatternsLi).not.toContain('href="/account#my-patterns"');
+  });
+
+  it("keeps Stitch Browser and Sizing Charts visible for everyone", () => {
+    const panel = patternsPanel();
+
+    expect(panel).toContain('href="/stitch"');
+    expect(panel).toContain('href="/reference/sizing-charts"');
+    expect(panel).not.toContain("Pattern Builders");
+  });
+
+  it("orders logged-out items as Catalog, About, Stitch Browser, Sizing Charts", () => {
+    const panel = patternsPanel();
+    const catalogIdx = panel.indexOf('data-testid="nav-pattern-catalog"');
+    const aboutIdx = panel.indexOf('data-testid="nav-patterns-about"');
+    const myPatternsIdx = panel.indexOf('data-testid="nav-my-patterns"');
+    const stitchIdx = panel.indexOf('data-testid="nav-stitch-library"');
+    const sizingIdx = panel.indexOf('data-testid="nav-sizing-charts"');
+
+    expect(catalogIdx).toBeGreaterThan(-1);
+    expect(myPatternsIdx).toBeGreaterThan(catalogIdx);
+    expect(aboutIdx).toBeGreaterThan(myPatternsIdx);
+    expect(stitchIdx).toBeGreaterThan(aboutIdx);
+    expect(sizingIdx).toBeGreaterThan(stitchIdx);
+  });
+
+  it("adds exactly one top-level Patterns navigation entry", () => {
+    expect([...headerSource.matchAll(/data-testid="nav-patterns"/g)]).toHaveLength(1);
+  });
+});
+
 describe("Header Help Hub navigation dropdown", () => {
   it("keeps Help Hub first, What's New second, and Tip of the Week third", () => {
     const panel = helpHubPanel();

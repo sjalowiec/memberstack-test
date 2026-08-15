@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MEMBERSHIPS } from "../../config/memberships";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
 import {
+  PATTERN_CATALOG_MEMBERSHIP_BODY,
   PATTERNS_LANDING_BECOME_MEMBER_LABEL,
   PATTERNS_LANDING_LOGIN_LABEL,
   PATTERNS_LANDING_MEMBERSHIP_BODY,
@@ -84,5 +85,12 @@ describe("patterns landing CTA", () => {
     expect(copy).not.toMatch(/sign up free/i);
     expect(copy).not.toMatch(/create an account/i);
     expect(copy).toMatch(/active Knit it Now membership/i);
+  });
+
+  it("catalog membership copy does not imply every pattern requires membership", () => {
+    expect(PATTERN_CATALOG_MEMBERSHIP_BODY).toBe(
+      "Sweater pattern builders are included with an active Knit It Now membership. Explore the available patterns below, including our free Hat Pattern.",
+    );
+    expect(PATTERN_CATALOG_MEMBERSHIP_BODY).not.toMatch(/Dynamic Patterns are included/i);
   });
 });

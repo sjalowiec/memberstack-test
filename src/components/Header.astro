@@ -1,7 +1,10 @@
 ---
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
 
-import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import {
+  PATTERN_BUILDERS_HOME_HREF,
+  PATTERN_CATALOG_HREF,
+} from "../lib/patterns/customPatternProjectNavigation";
 import { EBOOK_SALES_PAUSED } from "../lib/legacy/legacyEbookSalesHold";
 import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDrawer.astro";
 
@@ -1692,7 +1695,7 @@ div[data-ms-modal-overlay] {
           <ul class="kbm-menu">
             <li class="nav-item nav-dropdown dd">
               <a
-                href={PATTERN_BUILDERS_HOME_HREF}
+                href={PATTERN_CATALOG_HREF}
                 class="nav-link nav-dropdown-toggle dd-trigger"
                 aria-haspopup="true"
                 aria-expanded="false"
@@ -1703,11 +1706,11 @@ div[data-ms-modal-overlay] {
 
               <ul class="nav-dropdown-menu dd-panel" role="menu">
                 <li>
-                  <a href={PATTERN_BUILDERS_HOME_HREF} data-testid="nav-pattern-builders">
-                    Pattern Builders
+                  <a href={PATTERN_CATALOG_HREF} data-testid="nav-pattern-catalog">
+                    Pattern Catalog
                   </a>
                 </li>
-                <li>
+                <li data-ms-content="members">
                   <a
                     href="#"
                     data-pattern-workspace-library-trigger
@@ -1717,6 +1720,11 @@ div[data-ms-modal-overlay] {
                     aria-expanded="false"
                   >
                     My Patterns
+                  </a>
+                </li>
+                <li>
+                  <a href={PATTERN_BUILDERS_HOME_HREF} data-testid="nav-patterns-about">
+                    About Knit It Now Patterns
                   </a>
                 </li>
                 <li>
