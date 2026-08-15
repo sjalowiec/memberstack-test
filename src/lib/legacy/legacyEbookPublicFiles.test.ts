@@ -7,11 +7,13 @@ import {
   LEGACY_EBOOK_ENTITLEMENT_CATALOG,
   LEGACY_EBOOK_EXCLUDED_ITEM_IDS,
   approvedLegacyEbookTitleCount,
-  findMissingLegacyEbookPublicFiles,
   getLegacyEbookEntitlement,
-  legacyEbookPublicFileExists,
   legacyEbookPublicUrlToFilesystemPath,
 } from "./legacyEbookEntitlements";
+import {
+  findMissingLegacyEbookPublicFiles,
+  legacyEbookPublicFileExists,
+} from "./legacyEbookPublicFileCheck";
 
 describe("legacy ebook public file verification", () => {
   it("has exactly 47 approved entitlements and zero missing public files", () => {

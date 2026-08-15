@@ -4,15 +4,17 @@ import {
   LEGACY_EBOOK_EXCLUDED_ITEM_IDS,
   LEGACY_EBOOK_EXCLUSION_REASON,
   approvedLegacyEbookTitleCount,
-  findMissingLegacyEbookPublicFiles,
   getLegacyEbookEntitlement,
   isLegacyEbookItemApproved,
   isLegacyEbookItemExcluded,
   legacyEbookPublicDownloadUrl,
-  legacyEbookPublicFileExists,
   normalizeLegacyPurchaseEmail,
   toCustomerLegacyEbookEntitlement,
 } from "./legacyEbookEntitlements";
+import {
+  findMissingLegacyEbookPublicFiles,
+  legacyEbookPublicFileExists,
+} from "./legacyEbookPublicFileCheck";
 import {
   buildApprovedLegacyEbookOwnershipRecords,
   clearLegacyEbookOwnershipIndexCache,

@@ -6,7 +6,6 @@
  * themselves are intentionally unprotected (accepted tradeoff).
  */
 
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 export const LEGACY_EBOOK_EXCLUSION_REASON =
@@ -64,14 +63,6 @@ export function legacyEbookPublicUrlToFilesystemPath(
   if (segments.some((s) => s === ".." || s.includes("\0"))) return null;
 
   return join(projectRoot, "public", "downloads", "shop", ...segments);
-}
-
-export function legacyEbookPublicFileExists(
-  downloadUrl: string,
-  projectRoot: string = process.cwd(),
-): boolean {
-  const fsPath = legacyEbookPublicUrlToFilesystemPath(downloadUrl, projectRoot);
-  return Boolean(fsPath && existsSync(fsPath));
 }
 
 export type LegacyEbookEntitlementEntry = {
@@ -575,7 +566,8 @@ export function approvedLegacyEbookTitleCount(): number {
 
 /**
  * True when the entitlement has a non-empty public download URL.
- * Callers that need physical verification should also use legacyEbookPublicFileExists.
+ * Disk verification lives in tests (`legacyEbookPublicFileCheck.ts`) so the
+ * Netlify adapter does not copy `public/downloads` into the SSR function.
  */
 export function hasVerifiedLegacyEbookDownloadMapping(
   entry: LegacyEbookEntitlementEntry,
@@ -593,25 +585,4 @@ export function toCustomerLegacyEbookEntitlement(
     title: entry.title,
     downloadUrl: entry.downloadUrl,
   };
-}
-
-/**
- * Verify every approved catalog entry maps to an existing file under public/.
- * Returns missing item IDs (empty when all 47 resolve).
- */
-export function findMissingLegacyEbookPublicFiles(
-  projectRoot: string = process.cwd(),
-): Array<{ itemId: string; title: string; downloadUrl: string }> {
-  const missing: Array<{ itemId: string; title: string; downloadUrl: string }> =
-    [];
-  for (const entry of LEGACY_EBOOK_ENTITLEMENT_CATALOG) {
-    if (!legacyEbookPublicFileExists(entry.downloadUrl, projectRoot)) {
-      missing.push({
-        itemId: entry.itemId,
-        title: entry.title,
-        downloadUrl: entry.downloadUrl,
-      });
-    }
-  }
-  return missing;
 }
