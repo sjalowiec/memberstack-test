@@ -78,19 +78,21 @@ const hatZeroBodyRowsWarningMessage =
       <div class="calculator-card hat-builder-inputs">
         <div class="pattern-action-bar no-print" data-pattern-action-bar>
           <div class="pattern-action-bar__group pattern-action-bar__group--start">
-            <button
-              type="button"
-              class="sleeveless-pattern-edit-action no-print is-disabled"
-              data-hat-pattern-my-patterns
-              data-testid="pattern-workspace-library-trigger"
-              aria-haspopup="dialog"
-              aria-controls="pattern-workspace-library-drawer-panel"
-              aria-expanded="false"
-              aria-disabled="true"
-              title="Saving patterns is available with membership."
-            >
-              <i class="fa-solid fa-folder-open" aria-hidden="true"></i> My Patterns
-            </button>
+            <div data-ms-content="members">
+              <button
+                type="button"
+                class="sleeveless-pattern-edit-action no-print is-disabled"
+                data-hat-pattern-my-patterns
+                data-testid="pattern-workspace-library-trigger"
+                aria-haspopup="dialog"
+                aria-controls="pattern-workspace-library-drawer-panel"
+                aria-expanded="false"
+                aria-disabled="true"
+                title="Saving patterns is available with membership."
+              >
+                <i class="fa-solid fa-folder-open" aria-hidden="true"></i> My Patterns
+              </button>
+            </div>
             <button
               type="button"
               class="sleeveless-pattern-edit-action no-print"

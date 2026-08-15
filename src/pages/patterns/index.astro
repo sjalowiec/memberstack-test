@@ -3,9 +3,17 @@ import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
+import {
+  PATTERN_CATALOG_MEMBERSHIP_BODY,
+  PATTERNS_LANDING_BECOME_MEMBER_HREF,
+  PATTERNS_LANDING_BECOME_MEMBER_LABEL,
+  PATTERNS_LANDING_LOGIN_LABEL,
+  PATTERNS_LANDING_MEMBERSHIP_HEADING,
+} from '../../lib/patterns/patternsLandingCta';
 
 // Marketing hero and feature grid live on {@link PATTERN_BUILDERS_HOME_HREF}.
-// This page is the pattern catalog — pick a builder to start.
+// This page is the public pattern catalog — pick a builder to start.
+// Membership CTA is informational only; sweater builders enforce their own gates.
 
 const hideDropShoulderInCatalog = isDropShoulderProductionBlocked(Astro.url.hostname, {
   isViteDev: import.meta.env.DEV,
@@ -72,18 +80,56 @@ const comingSoonPatterns = [
 
   <div class="patterns-page">
 
+    <nav
+      class="patterns-action-bar"
+      aria-label="Pattern builder actions"
+      data-patterns-landing-cta
+      data-cta-mode="prospect"
+    >
+      <div class="patterns-action-bar__prospect" data-patterns-landing-cta-prospect>
+        <div class="patterns-action-bar__membership-copy">
+          <h2 class="patterns-action-bar__heading">{PATTERNS_LANDING_MEMBERSHIP_HEADING}</h2>
+          <p class="patterns-action-bar__body">{PATTERN_CATALOG_MEMBERSHIP_BODY}</p>
+        </div>
+        <div class="patterns-action-bar__prospect-actions">
+          <a
+            href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
+            class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
+          >
+            {PATTERNS_LANDING_BECOME_MEMBER_LABEL}
+          </a>
+          <a
+            href="#"
+            class="patterns-action-bar__login kbm-btn kbm-btn-outline"
+            data-ms-modal="login"
+            data-ms-redirect="current-url"
+          >
+            {PATTERNS_LANDING_LOGIN_LABEL}
+          </a>
+        </div>
+      </div>
+    </nav>
+
     <header class="patterns-hero">
       <div class="patterns-hero__text">
         <h1 class="patterns-intro__title">Choose a Pattern</h1>
         <p class="patterns-intro__subtitle">
           Choose a pattern to get started
         </p>
-        <p class="patterns-intro__home-link">
-          <a href={PATTERN_BUILDERS_HOME_HREF}>← Pattern Builders home</a>
-        </p>
       </div>
       <div class="patterns-hero__actions">
-        <PatternBuilderMyPatternsLink class="patterns-hero__btn kbm-btn kbm-btn-outline" />
+        <div data-ms-content="!members">
+          <a
+            href={PATTERN_BUILDERS_HOME_HREF}
+            class="patterns-hero__btn kbm-btn kbm-btn-outline"
+            data-testid="patterns-catalog-about"
+          >
+            About Knit It Now Patterns
+          </a>
+        </div>
+        <div data-ms-content="members">
+          <PatternBuilderMyPatternsLink class="patterns-hero__btn kbm-btn kbm-btn-outline" />
+        </div>
       </div>
     </header>
 
@@ -130,11 +176,92 @@ const comingSoonPatterns = [
 
 </Layout>
 
+<script>
+  import { initPatternsLandingCta } from "../../lib/patterns/patternsLandingCta";
+
+  function boot(): void {
+    const root = document.querySelector("[data-patterns-landing-cta]");
+    if (!(root instanceof HTMLElement)) return;
+    void initPatternsLandingCta(root);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>
+
 <style>
 .patterns-page {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* Membership CTA — visible for logged-out / non-members; catalog cards stay public. */
+.patterns-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.patterns-action-bar[data-cta-mode="member"] {
+  display: none;
+}
+
+.patterns-action-bar__prospect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 40rem;
+  text-align: center;
+}
+
+.patterns-action-bar__membership-copy {
+  max-width: 36rem;
+}
+
+.patterns-action-bar__heading {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c3a57;
+}
+
+.patterns-action-bar__body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.patterns-action-bar__prospect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.patterns-action-bar__primary,
+.patterns-action-bar__login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 14rem;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.25rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
 }
 
 /* Hero / header */
@@ -165,21 +292,6 @@ const comingSoonPatterns = [
   font-size: 1.02rem;
   line-height: 1.55;
   color: #4d5a48;
-}
-
-.patterns-intro__home-link {
-  margin: 0.65rem 0 0;
-  font-size: 0.95rem;
-}
-
-.patterns-intro__home-link a {
-  color: #52682d;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.patterns-intro__home-link a:hover {
-  text-decoration: underline;
 }
 
 .patterns-hero__actions {
