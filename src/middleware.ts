@@ -1,5 +1,9 @@
 import { defineMiddleware } from "astro:middleware";
 import {
+  isDropShoulderDiagramReviewProductionBlocked,
+  isDropShoulderDiagramReviewRoute,
+} from "./lib/dev/dropShoulderDiagramReviewAccess";
+import {
   isCoursePreviewProductionBlocked,
   isCoursePreviewRoute,
 } from "./lib/legacy_kin/coursePreviewProductionAccess";
@@ -53,6 +57,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isDropShoulderProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/patterns/", 302);
+  }
+
+  if (
+    isDropShoulderDiagramReviewRoute(u.pathname) &&
+    isDropShoulderDiagramReviewProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
   }
 
   if (
