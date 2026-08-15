@@ -2,10 +2,13 @@
  * Minimal, read-only Stripe reporting client for the Watson Sales Report.
  *
  * Uses the Stripe REST API over `fetch` (no `stripe` SDK dependency, matching
- * the existing Shopify Admin client pattern). Retrieves succeeded charges for a
- * UTC instant window, with invoice lines expanded so the caller can classify
- * membership payments and account for (partial) refunds. The secret key is read
- * server-side only and is NEVER sent to the browser or written to logs.
+ * the existing Shopify Admin client pattern). Retrieves Charges created in a
+ * UTC instant window (the canonical collected-revenue object), with invoice
+ * lines expanded so the caller can classify membership vs other Stripe
+ * payments and account for (partial) refunds. Paid invoices, Checkout,
+ * payment links, and subscriptions are counted when they produce a Charge.
+ * The secret key is read server-side only and is NEVER sent to the browser
+ * or written to logs.
  *
  * Local TLS: some dev machines sit behind SSL inspection with an incomplete
  * certificate chain, which makes Node's fetch throw UNABLE_TO_VERIFY_LEAF_SIGNATURE.
@@ -41,7 +44,7 @@ export function readStripeReportingConfig(
   if (!secretKey) {
     return {
       error:
-        "STRIPE_SECRET_KEY is not set. Add a restricted (read-only) Stripe key to report membership revenue.",
+        "STRIPE_SECRET_KEY is not set. Add a restricted (read-only) Stripe key to report collected Stripe revenue.",
     };
   }
   const apiBase = (env.STRIPE_API_BASE ?? "").trim() || STRIPE_API_BASE;
@@ -283,11 +286,19 @@ export interface NormalizedStripeCharge {
   paid: boolean;
   /** Gross amount collected, in major currency units (e.g. dollars). */
   amount: number;
+  /** Charge.amount in major units (invoice/face value before capture). */
+  amountRequested: number;
   /** Amount refunded so far, in major currency units. Handles partial refunds. */
   amountRefunded: number;
   lines: StripeChargeLineRef[];
   /** True when the charge looks Shopify-originated (dedup safety signal). */
   hasShopifyMarker: boolean;
+  /** Why hasShopifyMarker was set; null when not flagged. */
+  shopifyMarkerReason: string | null;
+  description: string;
+  invoiceId: string | null;
+  paymentIntentId: string | null;
+  paymentMethodType: string | null;
 }
 
 interface RawStripePrice {
@@ -303,6 +314,7 @@ interface RawStripeInvoiceLine {
 interface RawStripeCharge {
   id: string;
   amount?: number | null;
+  amount_captured?: number | null;
   amount_refunded?: number | null;
   currency?: string | null;
   created?: number | null;
@@ -318,6 +330,8 @@ interface RawStripeCharge {
         id?: string;
         lines?: { data?: RawStripeInvoiceLine[] | null } | null;
       };
+  payment_intent?: string | { id?: string | null } | null;
+  payment_method_details?: { type?: string | null } | null;
 }
 
 interface RawStripeListResponse {
@@ -358,20 +372,49 @@ function lineRefsOf(charge: RawStripeCharge): StripeChargeLineRef[] {
   });
 }
 
-function detectShopifyMarker(charge: RawStripeCharge): boolean {
+export function detectShopifyMarker(charge: {
+  description?: string | null;
+  metadata?: Record<string, string> | null;
+}): { hasShopifyMarker: boolean; shopifyMarkerReason: string | null } {
   const description = (charge.description ?? "").toLowerCase();
-  if (description.includes("shopify")) return true;
+  if (description.includes("shopify")) {
+    return { hasShopifyMarker: true, shopifyMarkerReason: 'description contains "shopify"' };
+  }
   const metadata = charge.metadata ?? {};
   for (const [key, value] of Object.entries(metadata)) {
     const haystack = `${key} ${value}`.toLowerCase();
-    if (haystack.includes("shopify") || haystack.includes("order_id")) return true;
+    if (haystack.includes("shopify")) {
+      return {
+        hasShopifyMarker: true,
+        shopifyMarkerReason: `metadata "${key}" contains "shopify"`,
+      };
+    }
+    if (haystack.includes("order_id")) {
+      return {
+        hasShopifyMarker: true,
+        shopifyMarkerReason: `metadata "${key}" contains "order_id"`,
+      };
+    }
   }
-  return false;
+  return { hasShopifyMarker: false, shopifyMarkerReason: null };
+}
+
+function invoiceIdOf(charge: RawStripeCharge): string | null {
+  const invoice = charge.invoice;
+  if (!invoice) return null;
+  if (typeof invoice === "string") return invoice;
+  return invoice.id ?? null;
 }
 
 export function normalizeStripeCharge(charge: RawStripeCharge): NormalizedStripeCharge {
   const currency = (charge.currency ?? "usd").toLowerCase();
   const created = charge.created ?? 0;
+  // Prefer amount actually captured when Stripe reports it (partial capture);
+  // otherwise fall back to the Charge amount. Never use invoice face value.
+  const collectedMinor =
+    typeof charge.amount_captured === "number" ? charge.amount_captured : (charge.amount ?? 0);
+  const shopify = detectShopifyMarker(charge);
+  const paymentIntent = charge.payment_intent;
   return {
     id: charge.id,
     created,
@@ -380,10 +423,17 @@ export function normalizeStripeCharge(charge: RawStripeCharge): NormalizedStripe
     livemode: charge.livemode ?? false,
     status: charge.status ?? "unknown",
     paid: charge.paid ?? false,
-    amount: stripeMinorToMajor(charge.amount ?? 0, currency),
+    amount: stripeMinorToMajor(collectedMinor, currency),
+    amountRequested: stripeMinorToMajor(charge.amount ?? 0, currency),
     amountRefunded: stripeMinorToMajor(charge.amount_refunded ?? 0, currency),
     lines: lineRefsOf(charge),
-    hasShopifyMarker: detectShopifyMarker(charge),
+    hasShopifyMarker: shopify.hasShopifyMarker,
+    shopifyMarkerReason: shopify.shopifyMarkerReason,
+    description: charge.description ?? "",
+    invoiceId: invoiceIdOf(charge),
+    paymentIntentId:
+      typeof paymentIntent === "string" ? paymentIntent : paymentIntent?.id ?? null,
+    paymentMethodType: charge.payment_method_details?.type ?? null,
   };
 }
 
