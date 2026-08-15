@@ -52,6 +52,9 @@ import {
   writeDropShoulderSleeveConstruction,
   type DropShoulderSleeveDirection,
 } from "../lib/patterns/dropShoulderSleeveConstruction.ts";
+import { buildDropShoulderBackStitchesRowsModel, buildDropShoulderFrontStitchesRowsModel } from "../lib/patterns/dropShoulderPatternDiagramModel.ts";
+import { buildDropShoulderBackStitchesRowsSvg } from "../lib/patterns/dropShoulderBackPatternDiagramSvg.ts";
+import { buildDropShoulderFrontStitchesRowsSvg } from "../lib/patterns/dropShoulderFrontPatternDiagramSvg.ts";
 import {
   DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC,
   resolveDropShoulderSleeveMeasurementSvgSrc,
@@ -3332,6 +3335,46 @@ table {
     }
   }
 
+  function appendGeneratedDropShoulderBackStsRowsCompare(hostEl, result, unit, hydrateGeneration) {
+    if (!(hostEl instanceof HTMLElement)) return;
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const model = buildDropShoulderBackStitchesRowsModel(result, diagramUnit);
+    if (!model) return;
+    const generated = buildDropShoulderBackStitchesRowsSvg(model);
+    const wrap = document.createElement("div");
+    wrap.className = "ds-generated-back-compare no-print";
+    wrap.setAttribute("data-ds-generated-back-compare", "");
+    wrap.innerHTML =
+      `<p class="ds-generated-back-compare__label">Generated (preview)</p>` +
+      `<div class="ds-generated-back-compare__svg" data-ds-generated-back-host>${generated}</div>`;
+    hostEl.appendChild(wrap);
+  }
+
+  function appendGeneratedDropShoulderFrontStsRowsCompare(hostEl, result, unit, patternData, hydrateGeneration) {
+    if (!(hostEl instanceof HTMLElement)) return;
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const model = buildDropShoulderFrontStitchesRowsModel(result, patternData, diagramUnit);
+    if (!model) return;
+    const generated = buildDropShoulderFrontStitchesRowsSvg(model);
+    const wrap = document.createElement("div");
+    wrap.className = "ds-generated-front-compare no-print";
+    wrap.setAttribute("data-ds-generated-front-compare", "");
+    wrap.innerHTML =
+      `<p class="ds-generated-front-compare__label">Generated (preview)</p>` +
+      `<div class="ds-generated-front-compare__svg" data-ds-generated-front-host>${generated}</div>`;
+    hostEl.appendChild(wrap);
+  }
+
   async function hydrateDropShoulderBackDiagram(
     el,
     mode,
@@ -3368,6 +3411,7 @@ table {
       hydrateGeneration,
       undefined,
     );
+    appendGeneratedDropShoulderBackStsRowsCompare(el, result, unit, hydrateGeneration);
   }
 
   async function hydrateDropShoulderFrontDiagram(
@@ -3415,6 +3459,7 @@ table {
       hydrateGeneration,
       undefined,
     );
+    appendGeneratedDropShoulderFrontStsRowsCompare(el, result, unit, patternData, hydrateGeneration);
   }
 
   function bindDropShoulderBodyDiagramMode(root) {
