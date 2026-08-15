@@ -455,6 +455,10 @@ const isProduction =
         hasMemberAccess,
         logMemberAccessDebug,
       } from "../lib/memberAccess";
+      import {
+        localMemberPreviewBypassIsOn,
+        resolveSharedMemberAccessSnapshot,
+      } from "../lib/localMemberPreviewBypass";
 
       // Wait for the Memberstack SDK to be ready instead of bailing on the first
       // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
@@ -485,12 +489,21 @@ const isProduction =
         const member = (data?.member ?? data) || null;
         const rawKinAccess = member?.customFields?.["kin-access"];
         const memberHasAccess = hasMemberAccess(res);
+        const viewerAccessState = getViewerAccessState(res);
+        const bypassOn = localMemberPreviewBypassIsOn();
+        const accessDetail = resolveSharedMemberAccessSnapshot({
+          memberHasAccess,
+          viewerAccessState,
+          bypassOn,
+        });
 
         // Detailed log first (always runs, even when access is false) so we can
         // see activePlanIds vs the global allow list and which gate decided.
         logMemberAccessDebug("BaseLayout.ms-logged-in", res, {
           rawKinAccess,
-          viewerAccessState: getViewerAccessState(res),
+          viewerAccessState,
+          localMemberPreviewBypass: bypassOn,
+          snapshotHasMemberAccess: accessDetail.hasMemberAccess,
         });
 
         // Temporary: raw plan connections (all statuses) so we can see the exact
@@ -508,7 +521,7 @@ const isProduction =
           rawPlanConnections,
         });
 
-        if (memberHasAccess) {
+        if (accessDetail.hasMemberAccess) {
           document.body.classList.add("ms-logged-in");
         } else {
           document.body.classList.remove("ms-logged-in");
@@ -517,15 +530,12 @@ const isProduction =
         console.log("[KIN member access] BaseLayout.ms-logged-in applied", {
           gate: "BaseLayout",
           msLoggedIn: document.body.classList.contains("ms-logged-in"),
-          hasMemberAccess: memberHasAccess,
+          hasMemberAccess: accessDetail.hasMemberAccess,
+          localMemberPreviewBypass: bypassOn,
         });
 
         // Persist then notify so late-loading lesson gate can mount even if it
         // missed this event (BaseLayout often resolves before the page module).
-        const accessDetail = {
-          hasMemberAccess: memberHasAccess,
-          viewerAccessState: getViewerAccessState(res),
-        };
         window.__KIN_MEMBER_ACCESS__ = accessDetail;
         window.dispatchEvent(
           new CustomEvent("kin:member-access", { detail: accessDetail }),
@@ -547,20 +557,17 @@ const isProduction =
         if (!ms || typeof ms.on !== "function") return;
         ms.on("member.login", refreshMemberAccess);
         ms.on("member.logout", () => {
-          document.body.classList.remove("ms-logged-in");
-          window.__KIN_MEMBER_ACCESS__ = {
-            hasMemberAccess: false,
-            viewerAccessState: "loggedOut",
-          };
-          window.dispatchEvent(
-            new CustomEvent("kin:member-access", {
-              detail: window.__KIN_MEMBER_ACCESS__,
-            }),
-          );
+          // Re-run the snapshot so localhost `?member=true` stays granted after logout.
+          applyMsLoggedIn(null);
         });
       }
 
       async function initMsLoggedIn() {
+        // Opt-in preview: write the shared snapshot immediately so late-loading
+        // gates do not wait on Memberstack. Real access still wins when it arrives.
+        if (localMemberPreviewBypassIsOn()) {
+          applyMsLoggedIn(null);
+        }
         const res = await waitForMemberstackReady(30, 200);
         applyMsLoggedIn(res);
         bindAuthEvents();
@@ -575,9 +582,16 @@ const isProduction =
 
     <script is:inline>
       (function () {
+        var host = String(window.location.hostname || "").toLowerCase();
+        var isLocalhostHost =
+          host === "localhost" ||
+          host === "127.0.0.1" ||
+          host === "0.0.0.0" ||
+          host === "::1" ||
+          host === "[::1]" ||
+          host.slice(-6) === ".local";
         var params = new URLSearchParams(window.location.search);
-        var localMember =
-          window.location.hostname === "localhost" && params.get("member") === "true";
+        var localMember = isLocalhostHost && params.get("member") === "true";
 
         if (!localMember) return;
 

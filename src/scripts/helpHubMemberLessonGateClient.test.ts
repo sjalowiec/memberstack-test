@@ -306,6 +306,7 @@ function installLessonDom() {
     document: doc,
     addEventListener: doc.addEventListener.bind(doc),
     dispatchEvent: doc.dispatchEvent.bind(doc),
+    location: { hostname: "localhost", search: "" },
     $memberstackDom: undefined as unknown,
   });
 
@@ -464,6 +465,11 @@ describe("syncLessonPageMemberGate mount behavior", () => {
 });
 
 describe("lesson mount markup contract", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
   it("does not put data-gated=content on the deferred mount", async () => {
     const { readFileSync } = await import("node:fs");
     const { dirname, join } = await import("node:path");
@@ -487,6 +493,47 @@ describe("lesson mount markup contract", () => {
     expect(src).not.toMatch(/getAppAndMember\s*\?\?\s*ms\?\.getCurrentMember/);
     expect(src).toContain("kin:member-access");
     expect(src).toContain("__KIN_MEMBER_ACCESS__");
+    expect(src).toContain("localMemberPreviewBypassIsOn");
+  });
+
+  it("localhost ?member=true / body.dev-member unlocks without waiting on Memberstack", async () => {
+    vi.resetModules();
+    const { body } = installLessonDom();
+    body.classList.add("dev-member");
+    const getAppAndMember = vi.fn();
+    (window as Window & { $memberstackDom?: { getAppAndMember: unknown } }).$memberstackDom = {
+      getAppAndMember,
+    };
+
+    const { resolveHelpHubMemberLessonViewerState } = await import(
+      "./helpHubMemberLessonGateClient"
+    );
+    const state = await resolveHelpHubMemberLessonViewerState("test.localhost-preview");
+
+    expect(state).toBe("memberAccess");
+    expect(getAppAndMember).not.toHaveBeenCalled();
+  });
+
+  it("does not treat body.dev-member as access off localhost", async () => {
+    vi.resetModules();
+    const { body } = installLessonDom();
+    body.classList.add("dev-member");
+    (window as Window & { location: { hostname: string; search: string } }).location = {
+      hostname: "knititnow.com",
+      search: "?member=true",
+    };
+    const getAppAndMember = vi.fn(async () => null);
+    (window as Window & { $memberstackDom?: { getAppAndMember: unknown } }).$memberstackDom = {
+      getAppAndMember,
+    };
+
+    const { resolveHelpHubMemberLessonViewerState } = await import(
+      "./helpHubMemberLessonGateClient"
+    );
+    const state = await resolveHelpHubMemberLessonViewerState("test.production-preview");
+
+    expect(state).toBe("loggedOut");
+    expect(getAppAndMember).toHaveBeenCalled();
   });
 
   it("lesson page uses a single runtime-selected client script (not a script ternary)", async () => {

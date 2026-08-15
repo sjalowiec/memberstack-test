@@ -61,7 +61,7 @@ declare global {
     /** rAF + short retry until PinUtils exists (tab-hidden embeds); optional root for scoped build */
     kbmSchedulePinterestEmbedsRefresh?: (root?: Document | Element | null) => void;
     __DEV_BYPASS_GATING?: boolean;
-    /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
+    /** Localhost + ?member=true: set in BaseLayout; shared snapshot also grants memberAccess. */
     __KBM_DEV_MEMBER__?: boolean;
     /** Latest member-access resolution from BaseLayout (for late-loading page gates). */
     __KIN_MEMBER_ACCESS__?: {
