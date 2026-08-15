@@ -69,6 +69,7 @@ describe("loadPublicTipOfTheWeekPage", () => {
       tipId: "taming-the-curl-2026-08",
       title: "Tame the Dreaded Stockinette Curl",
       intro: "Preview intro",
+      introGlossarySlug: "",
       videoContentId: "339",
       availableFrom: "2026-08-08",
       availableThrough: "2026-08-14",

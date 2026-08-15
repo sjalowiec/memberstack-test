@@ -18,6 +18,7 @@ const TIP_SELECT = `
   tip_id,
   title,
   intro,
+  intro_glossary_slug,
   video_content_id,
   available_from,
   available_through,
@@ -109,6 +110,7 @@ async function insertTip(
         tip_id,
         title,
         intro,
+        intro_glossary_slug,
         video_content_id,
         available_from,
         available_through,
@@ -123,7 +125,7 @@ async function insertTip(
         updated_at
       )
       VALUES (
-        $1, $2, $3, $4, $5::date, $6::date, $7, $8, $9, $10, $11, $12, $13, $14, NOW()
+        $1, $2, $3, $4, $5, $6::date, $7::date, $8, $9, $10, $11, $12, $13, $14, $15, NOW()
       )
       RETURNING ${TIP_SELECT}
     `,
@@ -131,6 +133,7 @@ async function insertTip(
       value.tipId,
       value.title,
       value.intro,
+      value.introGlossarySlug,
       value.videoContentId,
       value.availableFrom,
       value.availableThrough,
@@ -184,6 +187,11 @@ export async function updateTipOfTheWeek(
     tipId: input.tipId ?? input.tip_id ?? existing.tipId,
     title: input.title ?? existing.title,
     intro: input.intro ?? existing.intro,
+    introGlossarySlug:
+      input.introGlossarySlug ??
+      input.intro_glossary_slug ??
+      input.glossaryTooltip ??
+      existing.introGlossarySlug,
     videoContentId:
       input.videoContentId ?? input.video_content_id ?? existing.videoContentId,
     availableFrom:
@@ -222,17 +230,18 @@ export async function updateTipOfTheWeek(
           tip_id = $2,
           title = $3,
           intro = $4,
-          video_content_id = $5,
-          available_from = $6::date,
-          available_through = $7::date,
-          status = $8,
-          availability_notice = $9,
-          availability_footer_template = $10,
-          try_copy = $11,
-          sue_tip_copy = $12,
-          learn_points_json = $13,
-          related_links_json = $14,
-          eyebrow = $15,
+          intro_glossary_slug = $5,
+          video_content_id = $6,
+          available_from = $7::date,
+          available_through = $8::date,
+          status = $9,
+          availability_notice = $10,
+          availability_footer_template = $11,
+          try_copy = $12,
+          sue_tip_copy = $13,
+          learn_points_json = $14,
+          related_links_json = $15,
+          eyebrow = $16,
           updated_at = NOW()
         WHERE id = $1
         RETURNING ${TIP_SELECT}
@@ -242,6 +251,7 @@ export async function updateTipOfTheWeek(
         validated.value.tipId,
         validated.value.title,
         validated.value.intro,
+        validated.value.introGlossarySlug,
         validated.value.videoContentId,
         validated.value.availableFrom,
         validated.value.availableThrough,

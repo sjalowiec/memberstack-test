@@ -116,6 +116,24 @@ describe("Watson Tip of the Week page", () => {
     expect(script).not.toMatch(/drag-and-drop|draggable/i);
   });
 
+  it("lets Watson set an optional intro glossary tooltip by slug or phrase", () => {
+    const introIdx = page.indexOf("Short introduction");
+    const glossaryIdx = page.indexOf("Glossary tooltip (optional)");
+    const eyebrowIdx = page.indexOf('name="eyebrow"');
+    expect(introIdx).toBeGreaterThan(-1);
+    expect(glossaryIdx).toBeGreaterThan(introIdx);
+    expect(eyebrowIdx).toBeGreaterThan(glossaryIdx);
+    expect(page).toContain('name="introGlossarySlug"');
+    expect(page).toContain(
+      "Enter the glossary slug or phrase to tooltip in the introduction. Only the first occurrence will be linked.",
+    );
+    expect(page).toContain('placeholder="floats"');
+    expect(script).toContain("introGlossarySlug");
+    expect(script).toContain('set("introGlossarySlug"');
+    expect(script).not.toContain("data-GlossaryId");
+    expect(script).not.toContain("glossaryhelp");
+  });
+
   it("uses the billboard-style rich-text editor for Try It only", () => {
     expect(page).toContain("data-totw-try-rte");
     expect(page).toContain('data-wn-rte-cmd="bold"');

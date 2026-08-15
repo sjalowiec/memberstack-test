@@ -11,6 +11,7 @@ import {
   TIP_DEFAULT_EYEBROW,
   TIP_DEFAULT_FOOTER_TEMPLATE,
   TIP_ID_MAX,
+  TIP_INTRO_GLOSSARY_SLUG_MAX,
   TIP_INTRO_MAX,
   TIP_LEARN_POINT_MAX,
   TIP_LEARN_POINTS_MAX,
@@ -29,6 +30,7 @@ export type ValidatedTipInput = {
   tipId: string;
   title: string;
   intro: string;
+  introGlossarySlug: string;
   videoContentId: string;
   availableFrom: string;
   availableThrough: string;
@@ -369,6 +371,14 @@ export function validateTipOfTheWeekInput(
   const intro = requireTrimmed(input.intro, "Introduction", TIP_INTRO_MAX);
   if (!intro.ok) return intro;
 
+  const introGlossarySlug = optionalTrimmed(
+    input.introGlossarySlug ?? input.intro_glossary_slug ?? input.glossaryTooltip,
+    "Glossary tooltip",
+    TIP_INTRO_GLOSSARY_SLUG_MAX,
+    "",
+  );
+  if (!introGlossarySlug.ok) return introGlossarySlug;
+
   const videoContentId = parseVideoContentId(
     input.videoContentId ?? input.video_content_id,
   );
@@ -494,6 +504,7 @@ export function validateTipOfTheWeekInput(
     tipId: tipId.value,
     title: title.value,
     intro: intro.value,
+    introGlossarySlug: introGlossarySlug.value,
     videoContentId: videoContentId.value,
     availableFrom: availableFrom.value,
     availableThrough: availableThrough.value,

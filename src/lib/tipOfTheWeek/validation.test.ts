@@ -42,6 +42,33 @@ describe("validateTipOfTheWeekInput", () => {
     });
     expect(result.value.tryCopy).toBe("<p>Knit a swatch.</p>");
     expect(result.value.sueTipCopy).toContain("machine");
+    expect(result.value.introGlossarySlug).toBe("");
+  });
+
+  it("accepts an optional intro glossary slug or phrase without requiring a numeric id", () => {
+    const result = validateTipOfTheWeekInput({
+      ...base,
+      introGlossarySlug: "floats",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.introGlossarySlug).toBe("floats");
+
+    const hyphen = validateTipOfTheWeekInput({
+      ...base,
+      glossaryTooltip: "fair-isle",
+    });
+    expect(hyphen.ok).toBe(true);
+    if (!hyphen.ok) return;
+    expect(hyphen.value.introGlossarySlug).toBe("fair-isle");
+
+    const cleared = validateTipOfTheWeekInput({
+      ...base,
+      introGlossarySlug: "  ",
+    });
+    expect(cleared.ok).toBe(true);
+    if (!cleared.ok) return;
+    expect(cleared.value.introGlossarySlug).toBe("");
   });
 
   it("converts plain Try It text to safe HTML and strips unsafe markup", () => {

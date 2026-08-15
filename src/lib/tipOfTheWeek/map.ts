@@ -230,6 +230,7 @@ export function buildTipOfTheWeekRecord(
     tipId,
     title,
     intro: String(row.intro || "").trim(),
+    introGlossarySlug: String(row.intro_glossary_slug || "").trim(),
     videoContentId: String(row.video_content_id || "").trim(),
     availableFrom: toIsoDateOnly(row.available_from),
     availableThrough: toIsoDateOnly(row.available_through),

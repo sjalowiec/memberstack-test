@@ -20,6 +20,7 @@ export const TIP_DEFAULT_FOOTER_TEMPLATE =
 
 export const TIP_TITLE_MAX = 160;
 export const TIP_INTRO_MAX = 1200;
+export const TIP_INTRO_GLOSSARY_SLUG_MAX = 80;
 export const TIP_COPY_MAX = 2000;
 export const TIP_ID_MAX = 80;
 export const TIP_LEARN_POINT_MAX = 240;
@@ -71,6 +72,8 @@ export type TipOfTheWeekRecord = {
   tipId: string;
   title: string;
   intro: string;
+  /** Optional glossary slug or phrase; first intro match becomes a tooltip. */
+  introGlossarySlug: string;
   videoContentId: string;
   availableFrom: string;
   availableThrough: string;
@@ -91,6 +94,7 @@ export type TipOfTheWeekRow = {
   tip_id: string;
   title: string;
   intro: string;
+  intro_glossary_slug?: string | null;
   video_content_id: string;
   available_from: string | Date;
   available_through: string | Date;

@@ -66,6 +66,19 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).not.toContain("set:html={tip.tryCopy}");
   });
 
+  it("uses GlossaryTooltip for the first glossary mention in the intro", () => {
+    expect(pageSource).toContain("GlossaryTooltip");
+    expect(pageSource).toContain("tipOfTheWeekIntroParts");
+    expect(pageSource).toContain("tip.introGlossarySlug");
+    expect(pageSource).toContain("introParts");
+    expect(pageSource).toContain("part.glossaryId");
+    expect(pageSource).toContain('class="totw-lede"');
+    expect(pageSource).not.toContain("{tip.intro}");
+    expect(pageSource).not.toContain("data-GlossaryId");
+    expect(pageSource).not.toContain("glossaryhelp");
+    expect(pageSource).not.toContain("TIP_OF_THE_WEEK_FLOATS");
+  });
+
   it("places What You’ll Learn above the featured video", () => {
     const learnIdx = pageSource.indexOf('id="totw-learn-heading"');
     const videoIdx = pageSource.indexOf('class="totw-video"');
