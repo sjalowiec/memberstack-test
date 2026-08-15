@@ -1,6 +1,7 @@
 /**
- * Regression: hat.astro must use the current patternTipDismiss API after bust-dart
- * cherry-picks (updateTipsResetLinkVisibility was removed).
+ * Regression: finished Hat Pattern uses the current patternTipDismiss API
+ * (updateTipsResetLinkVisibility was removed). The legacy /patterns/hat wizard
+ * is a redirect and no longer hosts tip-dismiss wiring.
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -10,6 +11,14 @@ import * as tipDismiss from "./patternTipDismiss";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const hatAstro = readFileSync(join(root, "src/pages/patterns/hat.astro"), "utf8");
+const hatPatternAstro = readFileSync(
+  join(root, "src/pages/patterns/hat/pattern.astro"),
+  "utf8",
+);
+const tipsToggleAstro = readFileSync(
+  join(root, "src/components/patterns/PatternTipsToggle.astro"),
+  "utf8",
+);
 
 describe("hat pattern-tip dismiss API (production)", () => {
   it("patternTipDismiss no longer exports updateTipsResetLinkVisibility", () => {
@@ -19,21 +28,25 @@ describe("hat pattern-tip dismiss API (production)", () => {
     expect(typeof tipDismiss.bindPatternTipDismiss).toBe("function");
   });
 
-  it("hat.astro imports and uses resetDismissedTips, not the removed reset-link helper", () => {
-    expect(hatAstro).toMatch(/resetDismissedTips/);
-    expect(hatAstro).toMatch(/window\.kbmResetDismissedTips\s*=\s*resetDismissedTips/);
-    expect(hatAstro).toMatch(/kbmResetDismissedTips\('hat-show-tips'\)/);
+  it("legacy /patterns/hat is a redirect and does not host tip-dismiss wiring", () => {
+    expect(hatAstro).toContain("buildHatLegacyEntryRedirect");
+    expect(hatAstro).toContain("Astro.redirect");
+    expect(hatAstro).not.toMatch(/resetDismissedTips/);
+    expect(hatAstro).not.toMatch(/bindPatternTipDismiss/);
     expect(hatAstro).not.toMatch(/updateTipsResetLinkVisibility/);
     expect(hatAstro).not.toMatch(/kbmUpdateTipsResetLinkVisibility/);
   });
 
-  it("hat tip init uses the two-argument bindPatternTipDismiss signature", () => {
-    expect(hatAstro).toMatch(/bindPatternTipDismiss\(\s*scope,\s*HAT_TIPS_STORAGE_KEY\s*\)/);
-    expect(hatAstro).not.toMatch(/bindPatternTipDismiss\(\s*scope,\s*HAT_TIPS_STORAGE_KEY\s*,/);
+  it("finished Hat Pattern uses PatternTipsToggle with the hat storage key", () => {
+    expect(hatPatternAstro).toContain("PatternTipsToggle");
+    expect(hatPatternAstro).toContain('storageKey="hat-show-tips"');
+    expect(hatPatternAstro).not.toMatch(/updateTipsResetLinkVisibility/);
+    expect(hatPatternAstro).not.toMatch(/installPatternBuilderAccountGate\s*\(/);
+    expect(hatPatternAstro).not.toMatch(/lockPatternBuilderForLoggedOut\s*\(/);
   });
 
-  it("hat tip init does not call the removed membership lock helpers", () => {
-    expect(hatAstro).not.toMatch(/installPatternBuilderAccountGate\s*\(/);
-    expect(hatAstro).not.toMatch(/lockPatternBuilderForLoggedOut\s*\(/);
+  it("PatternTipsToggle uses the two-argument bindPatternTipDismiss signature", () => {
+    expect(tipsToggleAstro).toMatch(/bindPatternTipDismiss\(\s*scope,\s*key\s*\)/);
+    expect(tipsToggleAstro).not.toMatch(/bindPatternTipDismiss\(\s*scope,\s*key\s*,/);
   });
 });

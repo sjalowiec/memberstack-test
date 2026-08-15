@@ -1,0 +1,330 @@
+---
+/**
+ * Hat Summary/Edit page — shared PatternSummaryEditWorkspace Lego block.
+ * Entry paths (sweater `generated=1` convention):
+ * - From builder (`?generated=1`): review choices → View My Pattern → finished pattern.
+ *   Back to Builder returns to the builder without writing summary edits.
+ * - From Edit Pattern (`?edit=1` or bare): Update Pattern → finished pattern.
+ *   Cancel returns to the finished pattern without writing.
+ * Free / ungated — no membership required to complete builder → summary → pattern.
+ */
+import Layout from "../../../../layouts/Layout.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+} from "../../../../lib/patterns/hat/hatAvailableNeedles";
+import {
+  HAT_PATTERN_BUILDER_HREF,
+  HAT_SUMMARY_CANCEL_FROM_EDIT_LABEL,
+  HAT_SUMMARY_HINT_FROM_EDIT,
+  HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
+} from "../../../../lib/patterns/hat/hatPatternNavigation";
+import { HAT_SUMMARY_MEASUREMENT_FIELDS } from "../../../../lib/patterns/hat/hatPatternEditTargets";
+import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
+import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
+import PatternSummaryDiagramStage from "../../../../components/patterns/PatternSummaryDiagramStage.astro";
+import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
+
+import "../../../../styles/wizard.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-editable-pencil.css";
+---
+
+<Layout
+  title="Edit Hat Pattern | Knit it Now"
+  description="Edit your custom machine-knit hat pattern measurements, choices, and gauge."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell hat-summary-page"
+    data-hat-summary-page
+    data-testid="hat-summary-edit-page"
+  >
+    <div class="wizard-container">
+      <div class="calculator-card hat-builder-inputs">
+        <div class="hat-pattern-empty" data-hat-summary-empty role="status" hidden>
+          <h1 class="hat-pattern-empty__title">Hat Pattern</h1>
+          <p class="hat-pattern-empty__message" data-hat-summary-empty-message>
+            Create a hat pattern first, then come back to edit your instructions.
+          </p>
+          <a
+            href={HAT_PATTERN_BUILDER_HREF}
+            class="kbm-btn kbm-btn-accent"
+            data-testid="hat-summary-empty-cta"
+          >
+            Go to Hat Builder
+          </a>
+        </div>
+
+        <!--
+          Full-page Summary/Edit workspace (shared Lego block).
+          Left: Pattern choices + Gauge. Right: generated hat diagram with measurement chips.
+        -->
+        <div
+          class="hat-summary-workspace"
+          data-hat-summary-workspace
+          data-testid="hat-summary-workspace"
+          data-hat-summary-entry="from-finished-pattern"
+          hidden
+        >
+          <PatternSummaryEditWorkspace
+            measurePaneAttr="data-hat-measure-pane"
+            actionsAttr="data-hat-edit-actions"
+          >
+            <Fragment slot="quick">
+              <div class="sl-edit-field" data-hat-edit-title-field hidden>
+                <label class="sl-edit-label" for="hat-edit-title">
+                  <span class="pattern-editable-heading">
+                    Pattern title
+                    <PatternEditablePencilIcon />
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  id="hat-edit-title"
+                  class="sl-edit-input"
+                  data-hat-edit-title
+                  data-testid="hat-edit-title"
+                  placeholder="Hat"
+                  autocomplete="off"
+                />
+              </div>
+
+              <section class="sl-edit-section sl-edit-units-section" aria-labelledby="hat-edit-units-heading">
+                <h3 class="sl-edit-section__title" id="hat-edit-units-heading">Units</h3>
+                <div
+                  class="sl-edit-units-toggle"
+                  role="group"
+                  aria-labelledby="hat-edit-units-heading"
+                  data-hat-edit-units
+                >
+                  <button
+                    type="button"
+                    class="sl-edit-unit-btn is-active"
+                    data-hat-edit-unit="inches"
+                    aria-pressed="true"
+                  >
+                    Inches
+                  </button>
+                  <button
+                    type="button"
+                    class="sl-edit-unit-btn"
+                    data-hat-edit-unit="cm"
+                    aria-pressed="false"
+                  >
+                    Centimeters
+                  </button>
+                </div>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="hat-edit-choices-heading">
+                <h3 class="sl-edit-section__title" id="hat-edit-choices-heading">
+                  Pattern choices
+                </h3>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="hat-edit-size">Finished hat size</label>
+                  <select
+                    id="hat-edit-size"
+                    class="sl-edit-input sl-edit-select"
+                    data-hat-edit-size
+                    data-testid="hat-edit-size"
+                  >
+                    <option value="">Loading sizes…</option>
+                  </select>
+                </div>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="hat-edit-fit">Finished hat length</label>
+                  <select
+                    id="hat-edit-fit"
+                    class="sl-edit-input sl-edit-select"
+                    data-hat-edit-fit
+                    data-testid="hat-edit-fit"
+                  >
+                    <option value="">Loading lengths…</option>
+                  </select>
+                </div>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="hat-edit-brim-type">Brim type</label>
+                  <select
+                    id="hat-edit-brim-type"
+                    class="sl-edit-input sl-edit-select"
+                    data-hat-edit-brim-type
+                    data-testid="hat-edit-brim-type"
+                  >
+                    <option value="">Choose brim type</option>
+                    <option value="rolled">Rolled Brim</option>
+                    <option value="single">Single Layer</option>
+                    <option value="folded">Folded Hem</option>
+                  </select>
+                  <p class="sl-edit-field-error hat-edit-field-error" data-hat-edit-error="brimType" hidden role="alert"></p>
+                </div>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="hat-edit-crown">Crown style</label>
+                  <select
+                    id="hat-edit-crown"
+                    class="sl-edit-input sl-edit-select"
+                    data-hat-edit-crown
+                    data-testid="hat-edit-crown"
+                  >
+                    <option value="">Choose crown style</option>
+                    <option value="gathered">Gathered</option>
+                    <option value="wedge-4-decrease">Four-Gore</option>
+                    <option value="spiral">Swirl Top</option>
+                  </select>
+                  <p class="sl-edit-field-error hat-edit-field-error" data-hat-edit-error="crownShaping" hidden role="alert"></p>
+                </div>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="hat-edit-gauge-heading">
+                <h3 class="sl-edit-section__title" id="hat-edit-gauge-heading">
+                  Gauge
+                </h3>
+                <p class="sl-edit-ease" data-hat-edit-gauge-help>stitches / rows over 4 inches</p>
+                <div class="hat-edit-gauge-grid">
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-stitch-gauge">Stitch gauge</label>
+                    <input
+                      id="hat-edit-stitch-gauge"
+                      class="sl-edit-input"
+                      type="number"
+                      inputmode="decimal"
+                      step="0.1"
+                      min="0"
+                      data-hat-edit-stitch-gauge
+                      data-testid="hat-edit-stitch-gauge"
+                    />
+                    <p class="sl-edit-field-error hat-edit-field-error" data-hat-edit-error="stitchGauge" hidden role="alert"></p>
+                  </div>
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-row-gauge">Row gauge</label>
+                    <input
+                      id="hat-edit-row-gauge"
+                      class="sl-edit-input"
+                      type="number"
+                      inputmode="decimal"
+                      step="0.1"
+                      min="0"
+                      data-hat-edit-row-gauge
+                      data-testid="hat-edit-row-gauge"
+                    />
+                    <p class="sl-edit-field-error hat-edit-field-error" data-hat-edit-error="rowGauge" hidden role="alert"></p>
+                  </div>
+                </div>
+                <div class="sl-edit-field hat-edit-needles-field">
+                  <label class="sl-edit-sublabel" for="hat-edit-available-needles"
+                    >{AVAILABLE_NEEDLES_LABEL}</label
+                  >
+                  <input
+                    id="hat-edit-available-needles"
+                    class="sl-edit-input"
+                    type="number"
+                    inputmode="numeric"
+                    min="1"
+                    step="1"
+                    data-hat-edit-available-needles
+                    data-testid="hat-edit-available-needles"
+                  />
+                  <p class="sl-edit-ease">{AVAILABLE_NEEDLES_HELPER_TEXT}</p>
+                  <p
+                    class="sl-edit-field-error hat-edit-field-error"
+                    data-hat-edit-error="availableNeedles"
+                    hidden
+                    role="alert"
+                  ></p>
+                </div>
+              </section>
+            </Fragment>
+
+            <Fragment slot="notes">
+              <p class="sl-edit-error-note" data-hat-edit-form-error hidden role="alert"></p>
+            </Fragment>
+
+            <Fragment slot="actions">
+              <button
+                type="button"
+                class="sl-edit-btn sl-edit-btn--ghost"
+                data-hat-edit-cancel
+                data-testid="button-edit-cancel"
+              >
+                {HAT_SUMMARY_CANCEL_FROM_EDIT_LABEL}
+              </button>
+              <button
+                type="button"
+                class="sl-edit-btn sl-edit-btn--primary"
+                data-hat-edit-update
+                data-testid="button-edit-update"
+              >
+                {HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL}
+              </button>
+            </Fragment>
+
+            <span slot="hint" data-hat-summary-hint>
+              {HAT_SUMMARY_HINT_FROM_EDIT}
+            </span>
+
+            <Fragment slot="diagram">
+              <PatternSummaryDiagramStage
+                stageTestId="hat-edit-diagram-area"
+                diagramAttr="data-hat-edit-diagram"
+                overlayAttr="data-hat-edit-overlay"
+                stageInnerAttr="data-hat-edit-stage"
+              >
+                {HAT_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
+                  <PatternSummaryMeasurementChip field={field} />
+                ))}
+              </PatternSummaryDiagramStage>
+            </Fragment>
+          </PatternSummaryEditWorkspace>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* —— Empty state (same as finished pattern) —— */
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .hat-summary-workspace[hidden] {
+    display: none;
+  }
+
+  .hat-edit-gauge-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .hat-edit-needles-field {
+    max-width: 14rem;
+  }
+</style>
+
+<script>
+  import "/src/scripts/hat-pattern-summary-page.ts";
+</script>

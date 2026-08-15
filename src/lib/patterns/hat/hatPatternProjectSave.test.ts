@@ -1,0 +1,263 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { stubLocalStorage } from "../test/stubLocalStorage";
+import type { CustomPatternProject } from "../customPatternProjectTypes";
+import { createEmptyHatDraft, writeHatDraft } from "./hatDraft";
+import {
+  isEditingSavedHatProject,
+  readHatActiveProjectId,
+} from "./hatSavedProject";
+import {
+  persistHatPatternProject,
+  resolveHatPatternPersistAction,
+  resolveHatPatternPersistActionFromViewer,
+} from "./hatPatternProjectSave";
+import {
+  HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL,
+  HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
+  HAT_SUMMARY_PRIMARY_SAVE_LABEL,
+} from "./hatPatternNavigation";
+
+vi.mock("../customPatternProjectClient", () => ({
+  createCustomPatternProject: vi.fn(),
+  updateCustomPatternProject: vi.fn(),
+  loadCustomPatternProject: vi.fn(),
+  listCustomPatternProjects: vi.fn(async () => ({ ok: true, projects: [] })),
+}));
+
+import {
+  createCustomPatternProject,
+  loadCustomPatternProject,
+  updateCustomPatternProject,
+} from "../customPatternProjectClient";
+
+const summaryScript = readFileSync(resolve("src/scripts/hat-pattern-summary-page.ts"), "utf8");
+
+function hatDraft(partial?: Parameters<typeof createEmptyHatDraft>[0]) {
+  return createEmptyHatDraft({
+    sizeSel: "adult_woman",
+    brimType: "single",
+    brimLength: "2",
+    crownShaping: "gathered",
+    fit: "watchcap",
+    ...partial,
+  });
+}
+
+describe("Hat Save Pattern vs Update Pattern source of truth", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it("uses the active Hat project id, not Summary/Edit entry path", () => {
+    expect(
+      resolveHatPatternPersistAction({
+        hasMemberSavedProjectPrivileges: true,
+        activeProjectId: null,
+        entryPath: "from-finished-pattern",
+      }),
+    ).toMatchObject({
+      kind: "save",
+      label: HAT_SUMMARY_PRIMARY_SAVE_LABEL,
+      persist: "create",
+    });
+
+    expect(
+      resolveHatPatternPersistAction({
+        hasMemberSavedProjectPrivileges: true,
+        activeProjectId: "proj-hat-1",
+        entryPath: "from-builder",
+      }),
+    ).toMatchObject({
+      kind: "update",
+      label: HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
+      persist: "update",
+    });
+  });
+
+  it("keeps guest Summary/Edit labels on the entry path (no persistent save/update)", () => {
+    expect(
+      resolveHatPatternPersistAction({
+        hasMemberSavedProjectPrivileges: false,
+        activeProjectId: null,
+        entryPath: "from-builder",
+      }),
+    ).toMatchObject({
+      kind: "view",
+      label: HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL,
+      persist: "local-only",
+    });
+
+    expect(
+      resolveHatPatternPersistAction({
+        hasMemberSavedProjectPrivileges: false,
+        activeProjectId: null,
+        entryPath: "from-finished-pattern",
+      }),
+    ).toMatchObject({
+      kind: "apply-local",
+      label: HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
+      persist: "local-only",
+    });
+  });
+
+  it("treats a leftover project id as local-only for guests", () => {
+    expect(
+      resolveHatPatternPersistActionFromViewer({
+        viewerAccessState: "loggedOut",
+        activeProjectId: "proj-hat-1",
+        entryPath: "from-finished-pattern",
+      }).persist,
+    ).toBe("local-only");
+  });
+});
+
+describe("Hat member save → update → same project lifecycle", () => {
+  const store = new Map<string, CustomPatternProject>();
+
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+    store.clear();
+    vi.clearAllMocks();
+
+    vi.mocked(createCustomPatternProject).mockImplementation(async (payload) => {
+      const project: CustomPatternProject = {
+        id: `proj-hat-${store.size + 1}`,
+        name: payload.name,
+        family: payload.family ?? "sleeveless",
+        source: payload.source ?? "express",
+        notes: payload.notes ?? "",
+        createdAt: "2026-08-15T00:00:00.000Z",
+        updatedAt: "2026-08-15T00:00:00.000Z",
+        version: 1,
+        customOverrides: payload.customOverrides ?? {},
+        pattern: payload.pattern,
+      };
+      store.set(project.id, project);
+      return { ok: true, project };
+    });
+
+    vi.mocked(loadCustomPatternProject).mockImplementation(async (id) => {
+      const project = store.get(id);
+      if (!project) return { ok: false, error: "not found" };
+      return { ok: true, project };
+    });
+
+    vi.mocked(updateCustomPatternProject).mockImplementation(async (payload) => {
+      const previous = store.get(payload.id);
+      if (!previous) return { ok: false, error: "not found" };
+      const project: CustomPatternProject = {
+        ...previous,
+        name: payload.name,
+        notes: payload.notes ?? previous.notes,
+        pattern: payload.pattern,
+        version: previous.version + 1,
+        updatedAt: "2026-08-15T01:00:00.000Z",
+      };
+      store.set(payload.id, project);
+      return { ok: true, project };
+    });
+  });
+
+  it("member new Hat: Save Pattern creates an id, then Update Pattern updates that same project", async () => {
+    writeHatDraft(hatDraft());
+    expect(readHatActiveProjectId()).toBe("");
+    expect(isEditingSavedHatProject()).toBe(false);
+
+    const beforeSave = resolveHatPatternPersistActionFromViewer({
+      viewerAccessState: "memberAccess",
+      activeProjectId: readHatActiveProjectId(),
+      entryPath: "from-finished-pattern",
+    });
+    expect(beforeSave.label).toBe("Save Pattern");
+    expect(beforeSave.persist).toBe("create");
+
+    const created = await persistHatPatternProject({
+      draft: hatDraft(),
+      mode: "create",
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    expect(createCustomPatternProject).toHaveBeenCalledTimes(1);
+    expect(updateCustomPatternProject).not.toHaveBeenCalled();
+    expect(readHatActiveProjectId()).toBe(created.project.id);
+    expect(isEditingSavedHatProject()).toBe(true);
+
+    const afterSave = resolveHatPatternPersistActionFromViewer({
+      viewerAccessState: "memberAccess",
+      activeProjectId: readHatActiveProjectId(),
+      entryPath: "from-finished-pattern",
+    });
+    expect(afterSave.label).toBe("Update Pattern");
+    expect(afterSave.persist).toBe("update");
+
+    const updated = await persistHatPatternProject({
+      draft: hatDraft({ brimLength: "2.5" }),
+      name: created.project.name,
+      mode: "update",
+    });
+    expect(updated.ok).toBe(true);
+    if (!updated.ok) return;
+
+    expect(createCustomPatternProject).toHaveBeenCalledTimes(1);
+    expect(updateCustomPatternProject).toHaveBeenCalledTimes(1);
+    expect(updated.project.id).toBe(created.project.id);
+    expect(readHatActiveProjectId()).toBe(created.project.id);
+    const pattern = updated.project.pattern as { brimLength?: string };
+    expect(pattern.brimLength).toBe("2.5");
+  });
+
+  it("opening an existing saved Hat starts with Update Pattern and does not create", async () => {
+    const created = await persistHatPatternProject({
+      draft: hatDraft({ patternProject: { title: "Camp Hat", notes: "", titleCustomized: true } }),
+      name: "Camp Hat",
+      mode: "create",
+    });
+    expect(created.ok).toBe(true);
+    vi.mocked(createCustomPatternProject).mockClear();
+
+    const action = resolveHatPatternPersistActionFromViewer({
+      viewerAccessState: "memberAccess",
+      activeProjectId: readHatActiveProjectId(),
+      entryPath: "from-finished-pattern",
+    });
+    expect(action.label).toBe("Update Pattern");
+    expect(action.persist).toBe("update");
+
+    const updated = await persistHatPatternProject({
+      draft: hatDraft({
+        brimLength: "3",
+        patternProject: { title: "Camp Hat", notes: "", titleCustomized: true },
+      }),
+      name: "Camp Hat",
+      mode: "update",
+    });
+    expect(updated.ok).toBe(true);
+    expect(createCustomPatternProject).not.toHaveBeenCalled();
+    expect(updateCustomPatternProject).toHaveBeenCalled();
+  });
+
+  it("does not let Update Pattern create a new project when no id exists", async () => {
+    const res = await persistHatPatternProject({
+      draft: hatDraft(),
+      mode: "update",
+    });
+    expect(res.ok).toBe(false);
+    expect(createCustomPatternProject).not.toHaveBeenCalled();
+    expect(updateCustomPatternProject).not.toHaveBeenCalled();
+    expect(readHatActiveProjectId()).toBe("");
+  });
+
+  it("guest persist stays local-only in the Summary/Edit wiring", () => {
+    expect(summaryScript).toContain("persistHatPatternProject");
+    expect(summaryScript).toContain("resolveHatPatternPersistActionFromViewer");
+    expect(summaryScript).toContain("bindHatPatternWorkspaceAccessLifecycle");
+    expect(summaryScript).not.toContain("smartSaveCustomPatternProject");
+    expect(summaryScript).not.toContain("writeActiveCustomPatternProjectId");
+  });
+});

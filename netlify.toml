@@ -103,14 +103,3 @@
   to = "/reference/repairs"
   status = 301
   force = true
-
-# Retired hat pattern landing page → patterns hub (with and without trailing slash).
-[[redirects]]
-  from = "/patterns/hat"
-  to = "/patterns"
-  status = 301
-
-[[redirects]]
-  from = "/patterns/hat/"
-  to = "/patterns"
-  status = 301

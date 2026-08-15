@@ -1,6 +1,7 @@
 import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { isHatCustomPatternProject } from "./patternSystemId";
 import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
 import { withSavedPatternProjectId } from "./savedPatternViewUrl";
 
@@ -14,6 +15,8 @@ export const PATTERN_CATALOG_HREF = "/patterns";
 
 export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 export const DROP_SHOULDER_OPEN_PATTERN_HREF = "/patterns/drop-shoulder/pattern/";
+export const HAT_OPEN_PATTERN_HREF = "/patterns/hat/pattern/";
+export const HAT_SUMMARY_EDIT_HREF = "/patterns/hat/summary/";
 
 /**
  * Query flag appended to {@link OPEN_PATTERN_HREF} when the knitter chose Edit (not View).
@@ -28,6 +31,10 @@ export const OPEN_PATTERN_EDIT_WORKSPACE_HREF = `${OPEN_PATTERN_HREF}?${PATTERN_
 /** Drop-shoulder saved pattern page with Edit Pattern Workspace auto-opened. */
 export const DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
+/** Saved hat Summary/Edit workspace (hat uses a dedicated summary page, not an overlay drawer). */
+export const HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
+  `${HAT_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
 /** Query flag for first arrival on the workspace after builder completion (see handoff module). */
 export const PATTERN_WORKSPACE_GENERATED_QUERY = `${PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY}=1`;
@@ -73,6 +80,9 @@ export function getContinueEditingHref(
   // Drop Shoulder is an Express-only construction with no Custom Build route, so a Drop Shoulder
   // project always edits on the drop-shoulder workspace — never a /patterns/sleeveless/ builder
   // route, regardless of the stored source.
+  if (project && isHatCustomPatternProject(project)) {
+    return HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+  }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_CONTINUE_EDITING_HREF;
   }
@@ -93,6 +103,7 @@ export function isDropShoulderCustomPatternProject(
 export function getOpenPatternHrefForProject(
   project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
 ): string {
+  if (isHatCustomPatternProject(project)) return HAT_OPEN_PATTERN_HREF;
   return isDropShoulderCustomPatternProject(project)
     ? DROP_SHOULDER_OPEN_PATTERN_HREF
     : OPEN_PATTERN_HREF;
@@ -119,6 +130,9 @@ export function getSavedCustomPatternOpenHref(
   // Drop Shoulder is an Express-only construction with no Custom Build route, so every Drop Shoulder
   // project edits on the drop-shoulder pattern workspace — never a /patterns/sleeveless/ builder
   // route, regardless of the stored source.
+  if (project && isHatCustomPatternProject(project)) {
+    return HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+  }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }

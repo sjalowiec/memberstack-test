@@ -1,0 +1,673 @@
+/**
+ * Shared Summary/Edit workspace layout (pattern Lego block).
+ *
+ * Owns page structure, breakpoints, actions, compact measurement chips, and
+ * stacked-vs-overlay chip behavior. Pattern families supply left-column controls
+ * and a pattern-specific diagram via slots — no garment-name branching here.
+ *
+ * Two-column vs stacked uses a container query on `.sl-edit-workspace` at
+ * EDIT_WORKSPACE_TWO_COLUMN_MIN_PX (1100px), matching the sweater edit contract.
+ */
+
+.sl-edit-workspace {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, #fdfcf7);
+  border-radius: 12px;
+  container-type: inline-size;
+  container-name: sl-edit-workspace;
+}
+
+.sl-edit-drawer--workspace .sl-edit-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  background: transparent;
+}
+
+.sl-edit-workspace__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: min(var(--pattern-shell-max, 1480px), 100%);
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 4vw, 2.5rem);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.sl-edit-drawer--workspace .sl-edit-workspace__layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sl-edit-workspace__quick {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sl-edit-workspace .sl-edit-drawer__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0;
+  min-width: 0;
+}
+
+.sl-edit-workspace__measure {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.sl-edit-workspace__measure-head {
+  flex-shrink: 0;
+  margin: 0 0 0.5rem;
+}
+
+.sl-edit-workspace__measure-headrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.sl-edit-workspace__measure-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--kbm-green, #52682d);
+}
+
+.sl-edit-workspace__measure-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.sl-edit-workspace__measure-actions .sl-edit-workspace__notes {
+  width: 100%;
+  min-width: 0;
+}
+
+.sl-edit-workspace__measure-actions .sl-edit-error-note,
+.sl-edit-workspace__measure-actions .sl-edit-saved-note {
+  margin: 0;
+}
+
+.sl-edit-workspace__measure-actions .sl-edit-error-note[hidden],
+.sl-edit-workspace__measure-actions .sl-edit-saved-note[hidden] {
+  display: none;
+}
+
+.sl-edit-workspace__measure-hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+.sl-edit-workspace__notes {
+  min-width: 0;
+}
+
+.sl-edit-error-note {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #991b1b;
+  background: #fff4f4;
+  border: 1px solid #f5c2c7;
+  border-radius: 8px;
+}
+
+.sl-edit-error-note[hidden] {
+  display: none;
+}
+
+.sl-edit-drawer__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.sl-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  padding: 0.55rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sl-edit-btn--ghost {
+  color: #4b5563;
+  background: #fff;
+  border: 1px solid #d1d5db;
+}
+
+.sl-edit-btn--ghost:hover {
+  background: #f3f4f6;
+  border-color: #c4c9d1;
+}
+
+.sl-edit-btn--primary {
+  color: #fff;
+  background: var(--kbm-green, #52682d);
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 85%, #000);
+}
+
+.sl-edit-btn--primary:hover {
+  background: var(--kbm-green-hover, #445626);
+}
+
+.sl-edit-btn--secondary {
+  gap: 0.45rem;
+  color: var(--kbm-green, #52682d);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 40%, #d1d5db);
+}
+
+.sl-edit-btn--secondary:hover {
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+  border-color: var(--kbm-green, #52682d);
+  color: var(--kbm-green-hover, #445626);
+}
+
+.sl-edit-btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.sl-edit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Units + left-column form primitives (shared visual language). */
+.sl-edit-workspace .sl-edit-section {
+  margin: 0;
+  padding: 0.85rem 0 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e5e7eb);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sl-edit-workspace .sl-edit-units-section {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.sl-edit-workspace .sl-edit-section__title {
+  margin: 0;
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--kbm-green, #52682d);
+}
+
+.sl-edit-workspace .sl-edit-field {
+  margin: 0;
+}
+
+.sl-edit-workspace .sl-edit-sublabel {
+  display: block;
+  margin: 0 0 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #6b7280;
+}
+
+.sl-edit-workspace .sl-edit-label {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sl-edit-workspace .sl-edit-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 0.65rem;
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  color: #1f2937;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.sl-edit-workspace .sl-edit-input.sl-edit-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L1 3h10z'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 14px;
+  padding-right: 2.4rem;
+  cursor: pointer;
+}
+
+.sl-edit-workspace .sl-edit-input:focus {
+  outline: 2px solid #52682d;
+  outline-offset: 1px;
+  border-color: #52682d;
+}
+
+.sl-edit-workspace .sl-edit-ease {
+  margin: 0.2rem 0 0;
+  font-size: 0.76rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #9ca3af;
+}
+
+.sl-edit-units-toggle {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.sl-edit-unit-btn {
+  padding: 6px 14px;
+  border: 1px solid #9aa38f;
+  background: #f3f4ef;
+  color: #38412f;
+  font-weight: 600;
+  line-height: 1.2;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sl-edit-unit-btn + .sl-edit-unit-btn {
+  border-left: none;
+}
+
+.sl-edit-unit-btn.is-active {
+  background: #52682d;
+  color: #ffffff;
+  border-color: #52682d;
+}
+
+.sl-edit-unit-btn:hover:not(.is-active) {
+  background: #e7eadf;
+  border-color: #8f987f;
+}
+
+.sl-edit-unit-btn:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.sl-edit-field-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: #b91c1c;
+}
+
+/* Compact diagram-associated measurement chips. */
+.ps-measure {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.ps-measure-stage {
+  position: relative;
+  width: 100%;
+  max-width: min(100%, 1000px);
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.ps-measure-stage__inner {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.15rem;
+  overflow: visible;
+}
+
+/*
+ * Desktop overlay: chip gutters are part of the diagram composition so side/bottom
+ * chips sit beside their dimension lines without overflowing the stage.
+ * Right gutter sized for a compact chip parked to the right of a vertical dimension.
+ */
+.ps-measure-stage__inner[data-measurement-overlay-mode="desktop"] {
+  padding: 0.35rem 5.5rem 2.35rem 0.5rem;
+}
+
+.ps-measure-art {
+  width: 100%;
+  max-width: 100%;
+}
+
+.ps-measure-art svg,
+.ps-measure-art :global(svg) {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.ps-measure-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ps-measure-chip {
+  position: absolute;
+  z-index: 2;
+  min-width: 0;
+  max-width: 7.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.ps-measure-chip__field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+  margin: 0;
+}
+
+.ps-measure-chip__lab {
+  font-size: 0.62rem;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: #3f4a36;
+}
+
+.ps-measure-chip__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.22rem;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 5.75rem;
+  padding: 0.16rem 0.4rem 0.16rem 0.42rem;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 24%, #c5c9c2);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 7%, #fff);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.72);
+  white-space: nowrap;
+}
+
+.ps-measure-chip__value:focus-within {
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #9fa59a);
+  background: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
+}
+
+.ps-measure-chip--invalid .ps-measure-chip__value {
+  border-color: color-mix(in srgb, #b91c1c 55%, #ccc);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.65),
+    0 0 0 1px color-mix(in srgb, #b91c1c 12%, transparent);
+}
+
+.ps-measure-chip__input {
+  /*
+   * 6.5ch fits realistic ###.# values (11.5, 21.5, 29.2, 54.6, 127.0) in
+   * tabular-nums without clipping. Number spinners are hidden so they cannot
+   * steal that width.
+   */
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  width: 6.5ch;
+  min-width: 6.5ch;
+  max-width: none;
+  padding: 0.04rem 0.12rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: #2a2a2a;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.ps-measure-chip__input::-webkit-outer-spin-button,
+.ps-measure-chip__input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.ps-measure-chip__input:focus,
+.ps-measure-chip__input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.ps-measure-chip__unit {
+  flex: 0 0 auto;
+  min-width: 1.45em;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 44%, #666);
+}
+
+.ps-measure-chip__secondary {
+  margin: 0.15rem 0 0;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: #6b7280;
+}
+
+.ps-measure-chip__error {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #b91c1c;
+}
+
+.ps-measure-chip__error[hidden] {
+  display: none;
+}
+
+.ps-measure-chip__readonly {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Narrow stage: stack chips under the diagram (no horizontal scroll). */
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] {
+  padding: 0;
+}
+
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] .ps-measure-overlay,
+.ps-measure-overlay[data-measurement-overlay-mode="mobile"] {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  pointer-events: auto;
+}
+
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] .ps-measure-chip,
+.ps-measure-overlay[data-measurement-overlay-mode="mobile"] .ps-measure-chip {
+  position: static;
+  max-width: none;
+  width: 100%;
+  transform: none !important;
+  left: auto !important;
+  top: auto !important;
+}
+
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] .ps-measure-chip__field,
+.ps-measure-overlay[data-measurement-overlay-mode="mobile"] .ps-measure-chip__field {
+  align-items: stretch;
+}
+
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] .ps-measure-chip__lab,
+.ps-measure-overlay[data-measurement-overlay-mode="mobile"] .ps-measure-chip__lab {
+  font-size: 0.82rem;
+}
+
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] .ps-measure-chip__value,
+.ps-measure-overlay[data-measurement-overlay-mode="mobile"] .ps-measure-chip__value {
+  width: 100%;
+  min-height: 2.75rem;
+  justify-content: flex-start;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+}
+
+.ps-measure-stage__inner[data-measurement-overlay-mode="mobile"] .ps-measure-chip__input,
+.ps-measure-overlay[data-measurement-overlay-mode="mobile"] .ps-measure-chip__input {
+  width: 4.5rem;
+  max-width: 6rem;
+  font-size: 1rem;
+  text-align: left;
+}
+
+@container sl-edit-workspace (min-width: 1100px) {
+  .sl-edit-workspace__layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: clamp(1.5rem, 2.5vw, 2.5rem);
+    padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
+  }
+
+  .sl-edit-drawer--workspace .sl-edit-workspace__layout {
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .sl-edit-workspace__quick {
+    flex: 0 0 clamp(320px, 26vw, 380px);
+    max-width: 380px;
+    overflow: visible;
+  }
+
+  .sl-edit-workspace .sl-edit-drawer__body {
+    gap: 0.85rem;
+  }
+
+  .sl-edit-workspace .sl-edit-section {
+    gap: 0.7rem;
+    padding-top: 0.95rem;
+  }
+
+  .sl-edit-drawer--workspace .sl-edit-segment__pill {
+    min-height: 2.3rem;
+  }
+
+  .sl-edit-drawer--workspace .sl-edit-grid {
+    gap: 0.6rem;
+  }
+
+  .sl-edit-workspace__measure {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .sl-edit-drawer--workspace .sl-edit-workspace__measure {
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .ps-measure-stage {
+    margin: 0;
+  }
+}
+
+@container sl-edit-workspace (max-width: 1099.98px) {
+  .sl-edit-workspace__layout {
+    padding-bottom: 6.5rem;
+  }
+
+  .sl-edit-workspace__measure-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem 0.65rem;
+    padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
+    background: rgba(253, 252, 247, 0.96);
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
+    box-shadow: 0 -4px 16px rgba(17, 24, 39, 0.12);
+  }
+
+  .sl-edit-workspace__measure-actions .sl-edit-workspace__notes {
+    flex: 1 1 100%;
+    order: -1;
+  }
+
+  .sl-edit-workspace__measure-actions .sl-edit-drawer__actions {
+    width: 100%;
+  }
+
+  .sl-edit-workspace__measure-actions .sl-edit-drawer__actions .sl-edit-btn {
+    flex: 1 1 0;
+    min-height: 2.9rem;
+  }
+}

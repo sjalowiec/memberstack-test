@@ -7,6 +7,7 @@ import {
   formatAccountMyPatternsCountLabel,
   initAccountMyPatternsList,
   resolveAccountMyPatternsSystem,
+  shouldOfferSavedPatternRename,
 } from "./accountMyPatternsList";
 import {
   readActiveCustomPatternProjectId,
@@ -343,6 +344,75 @@ describe("accountMyPatternsList", () => {
     expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]")[0].textContent).toBe(
       "Delete",
     );
+  });
+
+  it("offers Rename only on saved Hat patterns, using the shared rename helper", async () => {
+    const { root, status, list } = makeAccountRoot();
+    const hat = {
+      id: "proj-hat",
+      name: "Hat",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "hat" as const,
+      updatedAt: "2026-03-01T00:00:00.000Z",
+    };
+    const sweater = {
+      id: "proj-a",
+      name: "Alpha pullover",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "sleeveless" as const,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [hat, sweater],
+    });
+    renameMock.mockResolvedValue({
+      ok: true,
+      project: { ...hat, name: "Sue's Hiking Hat" },
+    });
+    const prompt = vi.fn(() => "Sue's Hiking Hat");
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: {
+            id: "ms_member",
+            planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }],
+          },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
+
+    expect(shouldOfferSavedPatternRename("hat")).toBe(true);
+    expect(shouldOfferSavedPatternRename("sleeveless")).toBe(false);
+    expect(shouldOfferSavedPatternRename("drop-shoulder")).toBe(false);
+
+    await initAccountMyPatternsList(root);
+
+    const hatRow = collectMatches(list._children, "[data-kbm-my-patterns-row]").find(
+      (r) => r.dataset.patternSystem === "hat",
+    );
+    const sweaterRow = collectMatches(list._children, "[data-kbm-my-patterns-row]").find(
+      (r) => r.dataset.patternSystem === "sleeveless",
+    );
+    expect(collectMatches(hatRow!._children, "[data-kbm-my-patterns-rename]").length).toBe(1);
+    expect(collectMatches(sweaterRow!._children, "[data-kbm-my-patterns-rename]").length).toBe(0);
+
+    const renameBtn = collectMatches(hatRow!._children, "[data-kbm-my-patterns-rename]")[0];
+    expect(renameBtn.textContent).toBe("Rename");
+    await renameBtn._click?.();
+    await flushAsync();
+
+    expect(prompt).toHaveBeenCalledWith("Rename this saved pattern:", "Hat");
+    expect(renameMock).toHaveBeenCalledWith("proj-hat", "Sue's Hiking Hat", "sleeveless");
+    expect(status.textContent).toContain("Sue's Hiking Hat");
+    const renamedName = collectMatches(list._children, "[data-kbm-my-patterns-row]").find(
+      (r) => r.dataset.patternSystem === "hat",
+    )?._children[0]?._children[0]?.textContent;
+    expect(renamedName).toBe("Sue's Hiking Hat");
   });
 
   it("offers Copy on every supported saved pattern type in the expanded list", async () => {

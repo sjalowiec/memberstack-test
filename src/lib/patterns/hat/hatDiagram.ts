@@ -1,0 +1,156 @@
+/**
+ * Hat pattern diagram helpers (Phase A).
+ * Ported from `generateDiagram` in `src/pages/patterns/hat.astro`.
+ *
+ * Spiral reuses the gathered crown diagram template for now.
+ */
+
+import { applyHatCrownCastOnAdjustment, hatKnittedFinishedCircumferenceInches, type HatPatternCalc } from "./hatMath";
+
+export type HatDiagramFormatters = {
+  convertLength: (value: number, from: string, to: string) => number;
+  formatLengthWithUnit: (value: number, unit: string) => string;
+};
+
+/**
+ * Inches represented by an actual generated row count at the working row gauge.
+ * Used for diagram section labels that sit beside those row counts.
+ */
+export function hatDiagramSectionInchesFromRows(
+  rows: number,
+  rowGaugePerInch: number,
+): number {
+  if (!(Number.isFinite(rows) && rows >= 0)) return 0;
+  if (!(Number.isFinite(rowGaugePerInch) && rowGaugePerInch > 0)) return 0;
+  return rows / rowGaugePerInch;
+}
+
+/** Format {@link hatDiagramSectionInchesFromRows} with the hat length-display convention. */
+export function formatHatDiagramSectionLengthFromRows(
+  rows: number,
+  rowGaugePerInch: number,
+  unit: "inches" | "cm",
+  formatters: HatDiagramFormatters,
+): string {
+  const inches = hatDiagramSectionInchesFromRows(rows, rowGaugePerInch);
+  const value =
+    unit === "inches" ? inches : formatters.convertLength(inches, "inches", unit);
+  return formatters.formatLengthWithUnit(value, unit);
+}
+
+/** Map crown style to `/diagrams/{name}.svg` template (spiral → gathered). */
+export function resolveHatDiagramTemplateName(crown: string): string {
+  if (crown === "wedge-4" || crown === "wedge-4-decrease") return "hat-4-wedge";
+  return "hat-gathered";
+}
+
+export type HatDiagramTokens = Record<string, string>;
+
+/** Build placeholder replacement map for the SVG diagram template. */
+export function buildHatDiagramTokens(
+  calc: HatPatternCalc,
+  currentUnit: "inches" | "cm",
+  formatters: HatDiagramFormatters,
+): HatDiagramTokens {
+  const { convertLength, formatLengthWithUnit } = formatters;
+  const {
+    hatHeight,
+    castOnSts,
+    brimRows,
+    bodyRows,
+    crown,
+    crownRowCount,
+    stGaugePerInch,
+    rowGaugePerInch,
+  } = calc;
+
+  const knittedWidth = hatKnittedFinishedCircumferenceInches(calc);
+  const displayWidth = formatLengthWithUnit(
+    currentUnit === "inches" ? knittedWidth : convertLength(knittedWidth, "inches", currentUnit),
+    currentUnit,
+  );
+
+  const displayHeight = formatLengthWithUnit(
+    currentUnit === "inches" ? hatHeight : convertLength(hatHeight, "inches", currentUnit),
+    currentUnit,
+  );
+
+  const displayBrimDepth = formatHatDiagramSectionLengthFromRows(
+    brimRows,
+    rowGaugePerInch,
+    currentUnit,
+    formatters,
+  );
+  const displayBodyHeight = formatHatDiagramSectionLengthFromRows(
+    bodyRows,
+    rowGaugePerInch,
+    currentUnit,
+    formatters,
+  );
+  const displayCrownDepth = formatHatDiagramSectionLengthFromRows(
+    crownRowCount,
+    rowGaugePerInch,
+    currentUnit,
+    formatters,
+  );
+
+  const displayCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
+
+  const isWedgeCrown = crown === "wedge-4" || crown === "wedge-4-decrease";
+  let wedgeStsLabel = "";
+  let wedgeWidthLabel = "";
+
+  if (isWedgeCrown && castOnSts) {
+    const wedgeSts = Math.round(displayCastOnSts / 4);
+    const finishedWidth = knittedWidth || displayCastOnSts / stGaugePerInch;
+    const wedgeWidth = finishedWidth / 4;
+    wedgeStsLabel = String(wedgeSts);
+    wedgeWidthLabel = formatLengthWithUnit(
+      currentUnit === "inches" ? wedgeWidth : convertLength(wedgeWidth, "inches", currentUnit),
+      currentUnit,
+    );
+  }
+
+  return {
+    "{{WIDTH}}": displayWidth,
+    "{{HEIGHT}}": displayHeight,
+    "{{BRIM_DEPTH}}": displayBrimDepth,
+    "{{BODY_HEIGHT}}": displayBodyHeight,
+    "{{CROWN_DEPTH}}": displayCrownDepth,
+    "{{CAST_ON_STS}}": `${displayCastOnSts} sts`,
+    "{{BRIM_ROWS}}": `${brimRows} rows`,
+    "{{BODY_ROWS}}": `${bodyRows} rows`,
+    "{{CROWN_ROWS}}": `${crownRowCount} rows`,
+    "{{WEDGE_STS}}": wedgeStsLabel,
+    "{{WEDGE_WIDTH}}": wedgeWidthLabel,
+  };
+}
+
+export function applyHatDiagramTokens(svgContent: string, tokens: HatDiagramTokens): string {
+  let out = svgContent;
+  for (const [token, value] of Object.entries(tokens)) {
+    out = out.split(token).join(value);
+  }
+  return out;
+}
+
+/**
+ * Fetch diagram SVG and fill tokens. Returns HTML string for `#diagram-content`.
+ */
+export async function loadHatDiagramSvg(
+  calc: HatPatternCalc,
+  currentUnit: "inches" | "cm",
+  formatters: HatDiagramFormatters,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string> {
+  const templateName = resolveHatDiagramTemplateName(calc.crown);
+  try {
+    const response = await fetchImpl(`/diagrams/${templateName}.svg`);
+    const svgContent = await response.text();
+    const tokens = buildHatDiagramTokens(calc, currentUnit, formatters);
+    return applyHatDiagramTokens(svgContent, tokens);
+  } catch (error) {
+    console.error("Failed to load diagram template:", templateName, error);
+    return '<p style="text-align: center; color: #6b7280;">Diagram unavailable</p>';
+  }
+}

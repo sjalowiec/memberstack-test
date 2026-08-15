@@ -453,6 +453,8 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
   btn.setAttribute("aria-haspopup", "dialog");
   btn.setAttribute("aria-expanded", "false");
   btn.setAttribute("aria-controls", popupId);
+  const ariaLabel = placeholder.getAttribute("data-aria-label")?.trim();
+  if (ariaLabel) btn.setAttribute("aria-label", ariaLabel);
 
   const label = document.createElement("span");
   label.className = "glossary-tooltip-label";

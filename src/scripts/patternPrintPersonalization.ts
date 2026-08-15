@@ -1,8 +1,14 @@
 /**
  * Print personalization: sleeveless uses `kbm_current_pattern.patternProject`;
+ * hat pages use the hat print title (not sweater working-draft metadata);
  * other patterns may still use session keys + optional modal.
  */
 
+import {
+  isHatPatternPrintPage,
+  resolvePatternPrintPersonalizationFields,
+} from "../lib/patterns/patternPrintPersonalizationFields";
+import { syncPatternTipDismissBeforePrint } from "../lib/patterns/patternTipDismiss";
 import {
   getPatternProjectPrintFields,
   migrateLegacyPrintSessionToPatternProject,
@@ -10,12 +16,11 @@ import {
   resolvePatternPrintDocumentTitle,
   syncPatternProjectToPrintSession,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
-import { syncPatternTipDismissBeforePrint } from "../lib/patterns/patternTipDismiss";
 
 /** Ensures Ctrl+P / system print also suggest the user pattern name as the PDF filename. */
 function syncDocumentTitleForNativePrint(): void {
   if (!document.querySelector("[data-pattern-print-skip-modal]")) return;
-  const { title } = getPatternProjectPrintFields();
+  const { title } = readStoredPrintPersonalization();
   const resolved = resolvePatternPrintDocumentTitle(title, document.title);
   if (!resolved || resolved === document.title) return;
 
@@ -77,6 +82,12 @@ function updateProjectNotesCharCount(dialog: HTMLDialogElement): void {
 }
 
 function readStoredPrintPersonalization(): { title: string; notes: string } {
+  if (isHatPatternPrintPage(document)) {
+    return resolvePatternPrintPersonalizationFields({
+      isHatPatternPage: true,
+      sleevelessFields: { title: "", notes: "" },
+    });
+  }
   migrateLegacyPrintSessionToPatternProject();
   if (document.querySelector("[data-pattern-print-skip-modal]")) {
     const fromProject = getPatternProjectPrintFields();
@@ -84,7 +95,10 @@ function readStoredPrintPersonalization(): { title: string; notes: string } {
       title: fromProject.title,
       notes: fromProject.notes,
     });
-    return fromProject;
+    return resolvePatternPrintPersonalizationFields({
+      isHatPatternPage: false,
+      sleevelessFields: fromProject,
+    });
   }
   try {
     const t = sessionStorage.getItem(STORAGE_TITLE_KEY) ?? "";
