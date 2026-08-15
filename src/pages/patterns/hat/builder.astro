@@ -15,6 +15,12 @@ import {
   AVAILABLE_NEEDLES_LABEL,
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
 } from "../../../lib/patterns/hat/hatAvailableNeedles";
+import {
+  HAT_PATTERN_HERO_IMAGE_ALT,
+  HAT_PATTERN_HERO_IMAGE_HEIGHT,
+  HAT_PATTERN_HERO_IMAGE_SRC,
+  HAT_PATTERN_HERO_IMAGE_WIDTH,
+} from "../../../lib/patterns/hat/hatPatternHeroImage";
 
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -112,6 +118,17 @@ const expressNavSteps = [
           </div>
 
           <header class="pattern-header page-header">
+            <div class="hat-builder-hero-image">
+              <img
+                src={HAT_PATTERN_HERO_IMAGE_SRC}
+                alt={HAT_PATTERN_HERO_IMAGE_ALT}
+                width={HAT_PATTERN_HERO_IMAGE_WIDTH}
+                height={HAT_PATTERN_HERO_IMAGE_HEIGHT}
+                loading="lazy"
+                decoding="async"
+                class="sg-pattern-hero-image hat-pattern-hero-image"
+              />
+            </div>
             <div class="pattern-header__title-row">
               <h1 class="pattern-title">Hat Pattern</h1>
             </div>
@@ -787,6 +804,22 @@ const expressNavSteps = [
 
 <style>
   /* Narrow hat-only helpers — picker cards use shared Express .hat-length-picker__* rules. */
+  .hat-express-builder-page .hat-builder-hero-image {
+    width: 360px;
+    max-width: 100%;
+    margin: 0 auto 1rem;
+  }
+
+  .hat-express-builder-page .hat-pattern-hero-image {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+  }
+
   .hat-express-builder-page .hat-builder-step-intro {
     margin: 0 0 0.85rem;
     font-size: 0.95rem;

@@ -23,6 +23,12 @@ import {
   HAT_PATTERN_PERSIST_WARNING_LEAD,
 } from "../../../lib/patterns/hat/hatPatternPersistNotice";
 import { HAT_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../lib/patterns/hat/hatPatternNavigation";
+import {
+  HAT_PATTERN_HERO_IMAGE_ALT,
+  HAT_PATTERN_HERO_IMAGE_HEIGHT,
+  HAT_PATTERN_HERO_IMAGE_SRC,
+  HAT_PATTERN_HERO_IMAGE_WIDTH,
+} from "../../../lib/patterns/hat/hatPatternHeroImage";
 
 import "../../../styles/wizard.css";
 import "../../../styles/glossary-tooltip.css";
@@ -191,13 +197,13 @@ const hatZeroBodyRowsWarningMessage =
                 <div class="beta-pattern-video">
                   <div class="beta-pattern-video__wrap">
                     <img
-                      src="/images/patterns/basic-hat.webp"
-                      alt="Woman wearing a knitted hat"
-                      width="360"
-                      height="360"
+                      src={HAT_PATTERN_HERO_IMAGE_SRC}
+                      alt={HAT_PATTERN_HERO_IMAGE_ALT}
+                      width={HAT_PATTERN_HERO_IMAGE_WIDTH}
+                      height={HAT_PATTERN_HERO_IMAGE_HEIGHT}
                       loading="lazy"
                       decoding="async"
-                      class="sg-pattern-hero-image"
+                      class="sg-pattern-hero-image hat-pattern-hero-image"
                     />
                   </div>
                 </div>
@@ -399,7 +405,7 @@ const hatZeroBodyRowsWarningMessage =
     align-items: center;
     width: 100%;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     background: transparent;
   }
 
@@ -409,6 +415,7 @@ const hatZeroBodyRowsWarningMessage =
     max-height: 320px;
     height: auto;
     object-fit: contain;
+    object-position: center;
     border-radius: 8px;
   }
 
