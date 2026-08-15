@@ -54,6 +54,8 @@ export type RoundNecklineSkillBuilderExerciseMeta = {
   id: RoundNecklineSkillBuilderExerciseId;
   slug: RoundNecklineSkillBuilderExerciseId;
   title: string;
+  /** Exercise-page subtitle; omit to reuse the Skill Builder title. */
+  subtitle?: string;
   description: string;
   depthKind: RoundNecklineDepthKind;
 };
@@ -84,6 +86,7 @@ export const ROUND_NECKLINE_SKILL_BUILDERS: Record<
         id: "shallow-back",
         slug: "shallow-back",
         title: "Shallow Back Neckline: Straight Shoulders",
+        subtitle: "Shaping with Bind-Offs & Decreases",
         description:
           "Practice the basic round-neck sequence: center neck bind-off, neck-edge bind-offs and decreases, then straight shoulders.",
         depthKind: "shallow-back",

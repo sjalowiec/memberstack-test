@@ -88,6 +88,12 @@ describe("public round neckline Skill Builder pages", () => {
     expect(landingBody).toContain("skillBuilderExercisePath");
     expect(landingBody).toContain("prerequisiteNote");
     expect(exerciseComponent).toContain("Back to practices");
+    expect(exerciseComponent).toContain("exercise.subtitle ?? builder.title");
+    expect(exerciseComponent).toContain('sb-practice-hero__intro">{subtitle}</p>');
+    expect(exerciseComponent).not.toContain('sb-practice-hero__intro">{builder.title}</p>');
+    expect(exerciseComponent).not.toContain("Shaping with Bind-Offs & Decreases");
+    expect(landingComponent).not.toContain("Shaping with Bind-Offs & Decreases");
+    expect(landingBody).not.toContain("Shaping with Bind-Offs & Decreases");
   });
 
   it("renders the required exercise sections, gauge form, and print button", () => {
@@ -109,7 +115,10 @@ describe("public round neckline Skill Builder pages", () => {
     expect(exerciseBody).toContain('data-sb-diagram');
     expect(exerciseBody.match(/data-sb-diagram/g)?.length).toBe(1);
     expect(exerciseBody).toMatch(
-      /Full Practice-Piece Diagram[\s\S]*Before You Begin[\s\S]*Shape the Shoulders[\s\S]*data-sb-shoulder-checklist="right"[\s\S]*id="sb-finish-heading"/,
+      /Full Practice-Piece Diagram[\s\S]*Before You Begin[\s\S]*SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING[\s\S]*Shape the Shoulders[\s\S]*data-sb-shoulder-checklist="right"[\s\S]*id="sb-finish-heading"/,
+    );
+    expect(exerciseBody).toMatch(
+      /id="sb-begin-heading">Before You Begin[\s\S]*data-sb-before-begin[\s\S]*sb-video-helper[\s\S]*GatedVimeoEmbed[\s\S]*id="sb-shoulders-heading">\s*Shape the Shoulders/,
     );
     expect(exerciseBody).toContain('data-sb-shoulder-checklist="left"');
     expect(exerciseBody).toContain('data-sb-shoulder-checklist="right"');
@@ -144,6 +153,36 @@ describe("public round neckline Skill Builder pages", () => {
     expect(exerciseBody).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
     expect(landingBody).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
     expect(exerciseBody).toContain("skillBuilderVideoSlot");
+  });
+
+  it("embeds the unlisted catalog video as a quiet helper after Before You Begin instructions", () => {
+    expect(exerciseBody).toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING");
+    expect(exerciseBody).toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY");
+    expect(exerciseBody).toContain("GatedVimeoEmbed");
+    expect(exerciseBody).toContain("video.vimeoId");
+    expect(exerciseBody).toContain('privacyHash={video.privacyHash ?? ""}');
+    expect(exerciseBody).toContain("data-sb-video-content-id={String(video.contentId)}");
+    expect(exerciseBody).toContain('class="sb-video-helper no-print"');
+    expect(exerciseBody).toContain('id="sb-video-help-heading"');
+    expect(exerciseBody).toContain("sb-video-helper__embed");
+    expect(exerciseBody).toContain("max-width: 30rem");
+    expect(exerciseBody).not.toContain("sb-shaping-video-heading");
+    expect(exerciseBody).not.toContain("Watch the Shaping Sequence");
+    expect(exerciseBody).not.toContain("Watch the complete process before you begin");
+    expect(exerciseBody).not.toContain("b1bc386c3c");
+    expect(exerciseBody).not.toContain("1218264661");
+    expect(exerciseBody).not.toMatch(/href=["']https:\/\/vimeo\.com/);
+    expect(exerciseBody).not.toMatch(/player\.vimeo\.com/);
+    expect(exerciseBody).toMatch(
+      /data-sb-before-begin[\s\S]*<h3 id="sb-video-help-heading">[\s\S]*GatedVimeoEmbed[\s\S]*id="sb-shoulders-heading">\s*Shape the Shoulders/,
+    );
+    expect(exerciseBody).not.toMatch(
+      /What You're Practicing[\s\S]*GatedVimeoEmbed[\s\S]*data-sb-before-begin/,
+    );
+    expect(landingBody).not.toContain("Watch the Shaping Sequence");
+    expect(landingBody).not.toContain("Need a little help?");
+    expect(landingBody).not.toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING");
+    expect(landingBody).toContain('privacyHash={video.privacyHash ?? ""}');
   });
 
   it("lists the new public builders on the Skill Builders catalog", () => {

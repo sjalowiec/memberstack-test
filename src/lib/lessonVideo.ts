@@ -8,6 +8,8 @@ export type PublicVideoRow = {
   title?: string;
   vimeo_id?: number;
   vimeo_id_public?: number;
+  /** Unlisted privacy hash for player embeds (`h=`). Not a visitor-facing share URL. */
+  vimeo_hash?: string;
   access_level?: string;
   /** `draft`, `published`, or `archived`. Omitted = legacy published. */
   status?: string;
