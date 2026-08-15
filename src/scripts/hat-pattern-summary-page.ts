@@ -15,12 +15,13 @@ import {
   buildHatSizingBuilderRows,
   HAT_FIT_PRESET_LABEL_NAMES,
 } from "../lib/patterns/hat/hatBuilderSizingLabels";
+import { type ViewerAccessState } from "../lib/memberAccess";
 import {
   applyHatPatternNameToDraft,
+  buildDefaultHatPatternTitle,
   isEditingSavedHatProject,
   readHatActiveProjectId,
   resolveHatSavedPatternName,
-  writeHatActiveProjectId,
 } from "../lib/patterns/hat/hatSavedProject";
 import {
   createEmptyHatDraft,
@@ -31,7 +32,14 @@ import {
   type HatDraftUnit,
   type HatGaugeSlot,
 } from "../lib/patterns/hat/hatDraft";
-import { renameSavedCustomPatternProject } from "../lib/patterns/savedCustomPatternManageActions";
+import {
+  persistHatPatternProject,
+  resolveHatPatternPersistActionFromViewer,
+} from "../lib/patterns/hat/hatPatternProjectSave";
+import {
+  bindHatPatternWorkspaceAccessLifecycle,
+  hatPatternHasMemberSavedProjectPrivileges,
+} from "../lib/patterns/hat/hatPatternWorkspaceAccess";
 import {
   canonicalHatFitStyle,
   HAT_NAMED_FIT_STYLES,
@@ -63,8 +71,6 @@ import {
 import {
   hatSummaryCancelHref,
   hatSummaryCancelLabel,
-  hatSummaryHint,
-  hatSummaryPrimaryLabel,
   hatSummaryPrimarySuccessHref,
   resolveHatSummaryEntryPath,
   type HatSummaryEntryPath,
@@ -134,14 +140,27 @@ function applyEntryPathChrome(
   path: HatSummaryEntryPath,
   cancelBtns: HTMLElement[],
   updateBtn: HTMLButtonElement | null,
+  viewerAccessState: ViewerAccessState,
+  titleField?: HTMLElement | null,
+  titleInput?: HTMLInputElement | null,
 ): void {
   workspace.dataset.hatSummaryEntry = path;
+  const action = resolveHatPatternPersistActionFromViewer({
+    viewerAccessState,
+    activeProjectId: readHatActiveProjectId(),
+    entryPath: path,
+  });
   const hint = workspace.querySelector<HTMLElement>("[data-hat-summary-hint]");
-  if (hint) hint.textContent = hatSummaryHint(path);
-  const primaryLabel = hatSummaryPrimaryLabel(path);
+  if (hint) hint.textContent = action.hint;
   const cancelLabel = hatSummaryCancelLabel(path);
-  if (updateBtn) updateBtn.textContent = primaryLabel;
+  if (updateBtn) updateBtn.textContent = action.label;
   for (const btn of cancelBtns) btn.textContent = cancelLabel;
+  const saved =
+    isEditingSavedHatProject() && hatPatternHasMemberSavedProjectPrivileges(viewerAccessState);
+  if (titleField) titleField.hidden = !saved;
+  if (titleInput && saved && !titleInput.value.trim()) {
+    titleInput.value = resolveHatSavedPatternName();
+  }
 }
 
 export function initHatPatternSummaryPage(): void {
@@ -171,7 +190,6 @@ export function initHatPatternSummaryPage(): void {
   const cancelBtns = Array.from(
     workspace.querySelectorAll<HTMLElement>("[data-hat-edit-cancel]"),
   );
-  applyEntryPathChrome(workspace, entryPath, cancelBtns, updateBtn);
 
   const sizeSelect = workspace.querySelector<HTMLSelectElement>("[data-hat-edit-size]");
   const fitSelect = workspace.querySelector<HTMLSelectElement>("[data-hat-edit-fit]");
@@ -194,6 +212,20 @@ export function initHatPatternSummaryPage(): void {
   const gaugeHelp = workspace.querySelector<HTMLElement>("[data-hat-edit-gauge-help]");
   const titleField = workspace.querySelector<HTMLElement>("[data-hat-edit-title-field]");
   const titleInput = workspace.querySelector<HTMLInputElement>("[data-hat-edit-title]");
+
+  let lastViewerAccessState: ViewerAccessState = "loggedOut";
+
+  function applyPersistChrome(): void {
+    applyEntryPathChrome(
+      workspace,
+      entryPath,
+      cancelBtns,
+      updateBtn,
+      lastViewerAccessState,
+      titleField,
+      titleInput,
+    );
+  }
 
   let activeUnit: HatDraftUnit = "inches";
   let gaugeSlots: LocalGaugeSlots = {
@@ -404,9 +436,11 @@ export function initHatPatternSummaryPage(): void {
       cm: { ...draft.gaugeSlots.cm },
     };
     writeForm(hatDraftToEditFormValues(draft, rows));
-    const saved = isEditingSavedHatProject();
-    if (titleField) titleField.hidden = !saved;
+    applyPersistChrome();
     if (titleInput) {
+      const saved =
+        isEditingSavedHatProject() &&
+        hatPatternHasMemberSavedProjectPrivileges(lastViewerAccessState);
       titleInput.value = saved ? resolveHatSavedPatternName(draft) : "";
     }
     clearFieldErrors();
@@ -454,11 +488,17 @@ export function initHatPatternSummaryPage(): void {
     }
     const previous = readHatDraft() ?? baselineDraft ?? createEmptyHatDraft();
     let next = applyHatEditFormToDraft(previous, form, rows);
-    if (isEditingSavedHatProject()) {
-      const requestedName = titleInput?.value?.trim() || resolveHatSavedPatternName(previous);
-      if (requestedName) {
-        next = applyHatPatternNameToDraft(next, requestedName);
-      }
+    const action = resolveHatPatternPersistActionFromViewer({
+      viewerAccessState: lastViewerAccessState,
+      activeProjectId: readHatActiveProjectId(),
+      entryPath,
+    });
+    const requestedName =
+      titleInput?.value?.trim() ||
+      resolveHatSavedPatternName(previous) ||
+      buildDefaultHatPatternTitle();
+    if (action.persist !== "local-only" && requestedName) {
+      next = applyHatPatternNameToDraft(next, requestedName);
     }
     const preview = buildHatPatternCalcFromDraft(next, rows as HatSizingPatternRow[]);
     if (!preview.ok) {
@@ -469,16 +509,18 @@ export function initHatPatternSummaryPage(): void {
     writeHatDraft(next);
     if (updateBtn) updateBtn.disabled = true;
     try {
-      const activeId = readHatActiveProjectId();
-      const renamed = next.patternProject?.title?.trim();
-      if (activeId && renamed) {
-        const renameRes = await renameSavedCustomPatternProject(activeId, renamed, "sleeveless");
-        if (!renameRes.ok) {
-          showFieldErrors({ form: renameRes.error });
+      if (action.persist === "create" || action.persist === "update") {
+        const persistRes = await persistHatPatternProject({
+          draft: next,
+          name: requestedName,
+          mode: action.persist,
+        });
+        if (!persistRes.ok) {
+          showFieldErrors({ form: persistRes.error });
           setPrimaryEnabled(true);
           return;
         }
-        writeHatActiveProjectId(activeId, renamed);
+        applyPersistChrome();
       }
       navigateAfterPrimarySuccess();
     } finally {
@@ -491,6 +533,12 @@ export function initHatPatternSummaryPage(): void {
   }
 
   restoreFromDraft(draftCheck.draft);
+  bindHatPatternWorkspaceAccessLifecycle({
+    apply: (state) => {
+      lastViewerAccessState = state;
+      applyPersistChrome();
+    },
+  });
 
   cancelBtns.forEach((el) => el.addEventListener("click", cancelEdit));
   updateBtn?.addEventListener("click", () => {

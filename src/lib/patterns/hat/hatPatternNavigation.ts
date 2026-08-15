@@ -52,7 +52,10 @@ export type HatSummaryEntryPath = "from-builder" | "from-finished-pattern";
 /** Primary CTA after reviewing an initial build — opens the finished pattern (not My Patterns save). */
 export const HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL = "View My Pattern";
 
-/** Primary CTA when editing an existing finished pattern. */
+/** Primary CTA when a logged-in member first saves an unsaved Hat. */
+export const HAT_SUMMARY_PRIMARY_SAVE_LABEL = "Save Pattern";
+
+/** Primary CTA when editing an already-saved Hat (or applying local edits as a guest). */
 export const HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL = "Update Pattern";
 
 /** Cancel when reviewing an initial build — return to the builder; draft stays. */
@@ -63,6 +66,9 @@ export const HAT_SUMMARY_CANCEL_FROM_EDIT_LABEL = "Cancel";
 
 export const HAT_SUMMARY_HINT_FROM_BUILDER =
   "Review your choices, then click View My Pattern to open your finished pattern.";
+
+export const HAT_SUMMARY_HINT_SAVE =
+  "Review your choices, then click Save Pattern to save your hat to My Patterns.";
 
 export const HAT_SUMMARY_HINT_FROM_EDIT =
   "Make your changes, then click Update Pattern to update your pattern.";

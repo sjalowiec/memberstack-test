@@ -1075,7 +1075,8 @@ describe("hat Summary/Edit page wiring", () => {
     expect(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL).toBe("View My Pattern");
     expect(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL.toLowerCase()).not.toContain("save");
     expect(summaryScript).toContain("resolveHatSummaryEntryPath");
-    expect(summaryScript).toContain("hatSummaryPrimaryLabel");
+    expect(summaryScript).toContain("resolveHatPatternPersistActionFromViewer");
+    expect(summaryScript).toContain("persistHatPatternProject");
     expect(summaryScript).toContain("navigateAfterPrimarySuccess");
     expect(summaryScript).toContain("hatSummaryPrimarySuccessHref");
     expect(summaryScript).toContain("validateHatEditForm");

@@ -124,7 +124,7 @@ describe("saved hat workspace title field", () => {
     expect(summaryPage).toContain("Pattern title");
     expect(summaryPage).toContain("data-hat-edit-title-field hidden");
     expect(summaryScript).toContain("applyHatPatternNameToDraft");
-    expect(summaryScript).toContain("renameSavedCustomPatternProject");
+    expect(summaryScript).toContain("persistHatPatternProject");
     expect(summaryScript).toContain("isEditingSavedHatProject");
     expect(summaryScript).toContain("readHatActiveProjectId");
     expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
