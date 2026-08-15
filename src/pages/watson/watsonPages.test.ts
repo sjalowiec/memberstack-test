@@ -56,6 +56,11 @@ describe("Watson member search pages", () => {
     expect(shell).toContain('<a href="/watson/email-signups">Email Signups</a>');
     expect(shell).toContain('<a href="/watson/responses">Responses</a>');
     expect(shell).toContain('<a href="/watson/contact-messages">Contact Messages</a>');
+    expect(shell).toContain("watsonAdminNavHref");
+    expect(shell).toContain("<a href={adminHref}>Admin</a>");
+    expect(shell.match(/href=\{adminHref\}>Admin<\/a>/g)).toHaveLength(1);
+    expect(shell).not.toContain('<a href="/admin">Admin</a>');
+    expect(shell).not.toContain('<a href="/admin/">Admin</a>');
 
     expect(component).toContain("loadError");
     expect(component).toContain("watson__status--error");
