@@ -33,6 +33,12 @@ import {
 } from "../customPatternProjectClient";
 
 const summaryScript = readFileSync(resolve("src/scripts/hat-pattern-summary-page.ts"), "utf8");
+const summaryPage = readFileSync(resolve("src/pages/patterns/hat/summary/index.astro"), "utf8");
+const hatPatternPage = readFileSync(resolve("src/pages/patterns/hat/pattern.astro"), "utf8");
+const hatPatternPageScript = readFileSync(resolve("src/scripts/hat-pattern-page.ts"), "utf8");
+
+const SLEEVELESS_ONLY_PHASE_WARNING =
+  "Only sleeveless pattern projects are supported in this phase.";
 
 function hatDraft(partial?: Parameters<typeof createEmptyHatDraft>[0]) {
   return createEmptyHatDraft({
@@ -184,6 +190,9 @@ describe("Hat member save → update → same project lifecycle", () => {
     if (!created.ok) return;
 
     expect(createCustomPatternProject).toHaveBeenCalledTimes(1);
+    const createPayload = vi.mocked(createCustomPatternProject).mock.calls[0]?.[0];
+    expect(createPayload?.pattern.patternType).toBe("hat");
+    expect((createPayload?.pattern as { patternSystem?: string }).patternSystem).toBe("hat");
     expect(updateCustomPatternProject).not.toHaveBeenCalled();
     expect(readHatActiveProjectId()).toBe(created.project.id);
     expect(isEditingSavedHatProject()).toBe(true);
@@ -259,5 +268,27 @@ describe("Hat member save → update → same project lifecycle", () => {
     expect(summaryScript).toContain("bindHatPatternWorkspaceAccessLifecycle");
     expect(summaryScript).not.toContain("smartSaveCustomPatternProject");
     expect(summaryScript).not.toContain("writeActiveCustomPatternProjectId");
+  });
+});
+
+describe("Hat Pattern page does not render the sleeveless-only save warning", () => {
+  it("does not bake the leftover sleeveless-phase warning into Hat pages or save UI", () => {
+    for (const src of [hatPatternPage, hatPatternPageScript, summaryPage, summaryScript]) {
+      expect(src).not.toContain(SLEEVELESS_ONLY_PHASE_WARNING);
+      expect(src).not.toContain("Only sleeveless pattern projects are supported");
+    }
+  });
+
+  it("keeps the mobile Save Pattern error slot empty until a Hat-specific persist error", () => {
+    expect(summaryPage).toContain('class="sl-edit-error-note"');
+    expect(summaryPage).toContain("data-hat-edit-form-error");
+    expect(summaryPage).toMatch(
+      /class="sl-edit-error-note"[^>]*data-hat-edit-form-error[^>]*hidden/,
+    );
+    expect(summaryPage).not.toMatch(
+      /data-hat-edit-form-error[^>]*>[\s\S]*sleeveless pattern projects/,
+    );
+    expect(summaryScript).toContain("persistRes.error");
+    expect(summaryScript).toContain('showFieldErrors({ form: persistRes.error })');
   });
 });
