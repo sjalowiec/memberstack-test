@@ -128,6 +128,6 @@ describe("E-Wrap Cast On Basics Skill Builder pages", () => {
     expect(catalog).toContain("E-Wrap Cast On Basics");
     expect(catalog).toContain(E_WRAP_CAST_ON_CATALOG_SUBTITLE);
     expect(catalog).toContain("/learn/skill-builders/join-beautiful-shoulder-seams");
-    expect(catalog).toContain("Member Skill Builders");
+    expect(catalog).toContain("More Skill Builders");
   });
 });

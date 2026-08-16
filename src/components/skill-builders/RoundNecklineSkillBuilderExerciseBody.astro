@@ -28,53 +28,146 @@ const exercise = builder.exercises.find((item) => item.id === exerciseId);
 if (!exercise) {
   throw new Error(`Unknown Skill Builder exercise: ${builderId}/${exerciseId}`);
 }
-const video = skillBuilderVideoSlot(`${builderId}/${exerciseId}`);
-const gaugeId = `sb-${builderId}-${exerciseId}`;
+const practiceVideos = builder.exercises
+  .map((item) => ({
+    id: item.id,
+    title: item.title,
+    video: skillBuilderVideoSlot(`${builderId}/${item.id}`),
+  }))
+  .filter((item) => item.video);
+const gaugeId = `sb-${builderId}`;
 ---
 
-<section class="sb-worksheet__section" aria-labelledby="sb-practicing-heading">
-  <h2 id="sb-practicing-heading">What You're Practicing</h2>
-  <p>{exercise.description}</p>
-  <p>{builder.purpose}</p>
+<section class="sb-practice-panel no-print" data-sb-setup aria-labelledby="sb-gauge-heading">
+  <h2 id="sb-gauge-heading" class="sb-practice-panel__title">Your Gauge</h2>
+  <p class="sb-practice-panel__note">
+    Enter your gauge to create <strong>custom practice instructions</strong> for <strong>YOUR machine and yarn.</strong>
+  </p>
+  <SkillBuilderGaugeInput id={gaugeId} />
+  <button
+    type="button"
+    class="sb-create-practice"
+    data-sb-create-practice
+    hidden
+    disabled
+  >
+    GET KNITTING
+  </button>
+  <p
+    class="sb-lead-error"
+    hidden
+    data-sb-create-error
+    role="alert"
+  ></p>
 </section>
 
-<section class="sb-practice-panel no-print" aria-labelledby="sb-gauge-heading">
-  <h2 id="sb-gauge-heading" class="sb-practice-panel__title">Your Gauge</h2>
-  <SkillBuilderGaugeInput id={gaugeId} />
-</section>
+{
+  !memberOnly && (
+    <section
+      class="sb-lead-capture no-print"
+      data-sb-lead-capture
+      hidden
+      aria-labelledby="sb-lead-heading"
+    >
+      <h2 id="sb-lead-heading" class="sb-lead-capture__title">Ready to practice?</h2>
+      <p class="sb-lead-capture__copy">
+        Enter your email to create your personalized Round Neckline practice instructions.
+      </p>
+      <form class="sb-lead-capture__form" data-sb-lead-form novalidate>
+        <p class="sb-lead-capture__honeypot" aria-hidden="true">
+          <label for={`${gaugeId}-lead-bot`}>Company</label>
+          <input
+            type="text"
+            id={`${gaugeId}-lead-bot`}
+            name="bot-field"
+            data-sb-lead-bot
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </p>
+        <div class="sb-lead-capture__field">
+          <label class="sb-lead-capture__label" for={`${gaugeId}-lead-email`}>
+            Email address
+            <span class="sb-lead-capture__required" aria-hidden="true">*</span>
+            <span class="sb-lead-capture__sr-only">(required)</span>
+          </label>
+          <input
+            class="sb-lead-capture__input"
+            id={`${gaugeId}-lead-email`}
+            name="email"
+            type="email"
+            data-sb-lead-email
+            autocomplete="email"
+            maxlength="254"
+            required
+            aria-required="true"
+            inputmode="email"
+          />
+        </div>
+        <button
+          type="submit"
+          class="sb-create-practice"
+          data-sb-lead-submit
+        >
+          Create My Practice Instructions
+        </button>
+        <p class="sb-lead-capture__helper">Free. No membership required.</p>
+        <p class="sb-lead-capture__consent">
+          By signing up, you agree to receive emails from Knit It Now. You can unsubscribe at
+          any time. See our
+          <a href="/privacy">Privacy Policy</a>.
+        </p>
+        <p
+          class="sb-lead-error"
+          hidden
+          data-sb-lead-error
+          role="alert"
+        ></p>
+      </form>
+    </section>
+  )
+}
 
 <div id="sb-practice-results" class="sb-practice-results" data-sb-results hidden>
   <p class="sb-gauge-print" data-sb-gauge-print></p>
 
-  <section class="sb-worksheet__section" aria-labelledby="sb-diagram-heading">
-    <h2 id="sb-diagram-heading">Full Practice-Piece Diagram</h2>
-    <div class="sb-practice-diagram" data-sb-diagram aria-hidden="true"></div>
+  <section class="sb-get-started" aria-labelledby="sb-get-started-heading">
+    <div class="sb-get-started__grid">
+      <div class="sb-get-started__instructions">
+        <h2 id="sb-get-started-heading">Get Started</h2>
+        <ol class="sb-get-started__steps" data-sb-get-started></ol>
+      </div>
+      <div class="sb-get-started__diagram" aria-labelledby="sb-diagram-heading">
+        <h2 id="sb-diagram-heading">Your Practice Piece</h2>
+        <div class="sb-practice-diagram" data-sb-diagram aria-hidden="true"></div>
+      </div>
+    </div>
   </section>
 
-  <section class="sb-worksheet__section" aria-labelledby="sb-begin-heading">
-    <h2 id="sb-begin-heading">Before You Begin</h2>
-    <p data-sb-before-begin></p>
-    {
+  {
+    practiceVideos.map(({ id, title, video }) =>
       video && (
         <aside
           class="sb-video-helper no-print"
           aria-labelledby="sb-video-help-heading"
+          data-sb-video-exercise={id}
           data-sb-video-content-id={String(video.contentId)}
+          hidden={id !== exerciseId}
         >
           <h3 id="sb-video-help-heading">{SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING}</h3>
           <p class="sb-video-helper__note">{SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY}</p>
           <div class="sb-video-helper__embed">
             <GatedVimeoEmbed
               videoId={video.vimeoId}
-              title={video.title ?? exercise.title}
+              title={video.title ?? title}
               access_level={memberOnly ? "member" : "open"}
               privacyHash={video.privacyHash ?? ""}
             />
           </div>
         </aside>
-      )
-    }
-  </section>
+      ),
+    )
+  }
 
   <section class="sb-card sb-shoulders" aria-labelledby="sb-shoulders-heading">
     <h2 id="sb-shoulders-heading">Shape the Shoulders</h2>
@@ -159,7 +252,7 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   }
 
   .sb-practice-panel__title {
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.45rem;
     font-size: 1.2rem;
     font-weight: 700;
     color: #52682d;
@@ -167,8 +260,151 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     border-bottom: 2px solid #c7d8a4;
   }
 
+  .sb-practice-panel__note {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  .sb-practice-panel__note strong {
+    font-weight: 700;
+  }
+
   .sb-practice-panel :global(.gauge-input-wrapper) {
     margin-bottom: 0;
+  }
+
+  .sb-create-practice {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.7rem 1.2rem;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--kbm-accent, #C2614E);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .sb-create-practice:hover,
+  .sb-create-practice:focus-visible {
+    background: var(--kbm-accent-hover, #a94e3d);
+    outline: none;
+  }
+
+  .sb-create-practice[hidden] {
+    display: none !important;
+  }
+
+  .sb-lead-capture {
+    margin-bottom: 1.1rem;
+    padding: 1.15rem 1.25rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .sb-lead-capture[hidden] {
+    display: none !important;
+  }
+
+  .sb-lead-capture__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #52682d;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #c7d8a4;
+  }
+
+  .sb-lead-capture__copy {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  .sb-lead-capture__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .sb-lead-capture__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .sb-lead-capture__required {
+    color: var(--kbm-green, #52682d);
+    margin-left: 0.15rem;
+  }
+
+  .sb-lead-capture__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #c5cbb8;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 1rem;
+    color: #1f2937;
+    background: #fff;
+  }
+
+  .sb-lead-capture__input:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .sb-lead-capture__helper {
+    margin: 0.65rem 0 0;
+    font-size: 0.88rem;
+    color: #4d5a48;
+  }
+
+  .sb-lead-capture__consent {
+    margin: 0.55rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .sb-lead-capture__consent a {
+    color: #52682d;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .sb-lead-error {
+    margin: 0.75rem 0 0;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .sb-lead-capture__honeypot,
+  .sb-lead-capture__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .sb-practice-results {
@@ -186,14 +422,48 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     color: #243015;
   }
 
+  .sb-get-started {
+    margin-bottom: 1.25rem;
+  }
+
+  .sb-get-started__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 1.15rem 1.35rem;
+    align-items: start;
+  }
+
+  .sb-get-started__instructions,
+  .sb-get-started__diagram {
+    min-width: 0;
+  }
+
+  .sb-get-started__steps {
+    margin: 0;
+    padding-left: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .sb-get-started__steps li {
+    line-height: 1.5;
+    color: #243015;
+    font-size: 1rem;
+  }
+
+  .sb-get-started__steps strong {
+    font-weight: 700;
+  }
+
   .sb-practice-diagram {
     width: 100%;
-    max-width: 46rem;
-    margin: 0 auto 0.75rem;
+    max-width: 100%;
+    margin: 0;
   }
 
   .sb-practice-diagram :global(.shaping-map) {
-    margin: 0 0 0.5rem;
+    margin: 0;
   }
 
   .sb-practice-diagram :global(.shaping-map__scroll) {
@@ -206,7 +476,13 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     height: auto;
     display: block;
     max-width: 100%;
-    min-width: 28rem;
+    min-width: 0;
+  }
+
+  @media (max-width: 800px) {
+    .sb-get-started__grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .sb-worksheet__section {
@@ -217,6 +493,7 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     margin-bottom: 0;
   }
 
+  .sb-get-started h2,
   .sb-worksheet__section > h2,
   .sb-card > h2 {
     margin: 0 0 0.65rem;
@@ -240,7 +517,7 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   }
 
   .sb-video-helper {
-    margin: 0.85rem 0 0;
+    margin: 0 0 1.25rem;
   }
 
   .sb-video-helper > h3 {
@@ -335,6 +612,7 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   @media (max-width: 600px) {
     .sb-practice-results,
     .sb-practice-panel,
+    .sb-lead-capture,
     .sb-card {
       padding-inline: 0.85rem;
     }
@@ -355,6 +633,7 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
       display: block;
     }
 
+    .sb-get-started,
     .sb-practice-diagram,
     .sb-worksheet__section,
     .sb-card {

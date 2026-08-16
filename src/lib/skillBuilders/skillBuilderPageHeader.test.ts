@@ -62,7 +62,6 @@ describe("Skill Builder page title icon", () => {
       "JoiningShoulderSeamsSkillBuilder.astro",
       "EWrapCastOnSkillBuilder.astro",
       "RoundNecklineSkillBuilderLanding.astro",
-      "RoundNecklineSkillBuilderExercise.astro",
       "SkillBuilderLayout.astro",
     ];
     for (const name of shared) {

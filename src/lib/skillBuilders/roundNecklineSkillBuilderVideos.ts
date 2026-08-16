@@ -31,7 +31,7 @@ export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID = 2212;
 export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING = "Need a little help?";
 
 export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY =
-  "Watch the shaping sequence before you start.";
+  "Watch the shaping sequence before you begin.";
 
 export const ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS: Record<
   RoundNecklineSkillBuilderVideoKey,
