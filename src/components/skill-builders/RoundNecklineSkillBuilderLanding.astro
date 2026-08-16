@@ -4,20 +4,30 @@ import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
 import RoundNecklineSkillBuilderLandingBody from "./RoundNecklineSkillBuilderLandingBody.astro";
 import {
   ROUND_NECKLINE_SKILL_BUILDERS,
+  parseRoundNecklinePracticeId,
   roundNecklineSkillBuilderIsMemberOnly,
+  type RoundNecklineSkillBuilderExerciseId,
   type RoundNecklineSkillBuilderId,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilders";
 
 interface Props {
   builderId: RoundNecklineSkillBuilderId;
   memberOnly?: boolean;
+  initialExerciseId?: RoundNecklineSkillBuilderExerciseId;
 }
 
 const { builderId, memberOnly = roundNecklineSkillBuilderIsMemberOnly(builderId) } = Astro.props;
 const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
+const initialExerciseId =
+  parseRoundNecklinePracticeId(Astro.props.initialExerciseId) ?? builder.exercises[0]!.id;
 ---
 
-<div class="sb-landing">
+<div
+  class="sb-landing"
+  data-sb-round-neckline-exercise
+  data-sb-builder={builderId}
+  data-sb-exercise={initialExerciseId}
+>
   <a class="sb-landing__back" href="/learn/skill-builders">Skill Builders</a>
 
   <header class="sb-landing__hero">
@@ -27,19 +37,27 @@ const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
   {
     memberOnly ? (
       <SkillBuilderMemberGate>
-        <RoundNecklineSkillBuilderLandingBody builderId={builderId} memberOnly />
+        <RoundNecklineSkillBuilderLandingBody
+          builderId={builderId}
+          initialExerciseId={initialExerciseId}
+          memberOnly
+        />
       </SkillBuilderMemberGate>
     ) : (
-      <RoundNecklineSkillBuilderLandingBody builderId={builderId} />
+      <RoundNecklineSkillBuilderLandingBody
+        builderId={builderId}
+        initialExerciseId={initialExerciseId}
+      />
     )
   }
 </div>
 
 <style>
   .sb-landing {
-    max-width: 44rem;
+    max-width: 52rem;
     margin: 0 auto;
     padding: 0 20px 3.5rem;
+    overflow-x: hidden;
   }
 
   .sb-landing__back {
@@ -59,7 +77,7 @@ const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
   }
 
   .sb-landing__hero {
-    margin: 0.5rem 0 1.75rem;
+    margin: 0.5rem 0 1.25rem;
   }
 
   .sb-landing :global(h1) {
@@ -75,4 +93,33 @@ const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
       padding-inline: 16px;
     }
   }
+
+  @media print {
+    .sb-landing {
+      max-width: none;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .sb-landing__back {
+      display: none;
+    }
+  }
 </style>
+
+<script>
+  import { bindRoundNecklineSkillBuilderPage } from "../../lib/skillBuilders/roundNecklineSkillBuilderPage";
+  import { SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT } from "../../lib/skillBuilders/skillBuilderMemberGate";
+
+  function start(): void {
+    bindRoundNecklineSkillBuilderPage();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+
+  window.addEventListener(SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT, start);
+</script>

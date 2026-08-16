@@ -7,14 +7,19 @@ import {
 } from "./roundNecklineSkillBuilderDiagram";
 import {
   calculateRoundNecklineSkillBuilder,
+  parseRoundNecklinePracticeId,
+  ROUND_NECKLINE_PRACTICE_CHOICES,
   ROUND_NECKLINE_SKILL_BUILDERS,
   formatSkillBuilderRowCounter,
   PAUSE_AND_CHECK_TEXT,
   roundNecklineSkillBuilderIsMemberOnly,
+  roundNecklineSkillBuilderRequiresLeadCapture,
+  roundNecklineWorkspaceHref,
   SAVE_THIS_PRACTICE_PIECE_NOTE,
   SHAPING_ROW_COUNTER_START,
   SHOULDER_WORKFLOW_HEADING,
   SHOULDER_WORKFLOW_TEACHING_NOTE,
+  skillBuilderExercisePath,
 } from "./roundNecklineSkillBuilders";
 import {
   ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS,
@@ -46,10 +51,10 @@ describe("round neckline Skill Builder catalog", () => {
       "round-necklines-shaped-shoulders",
     ]);
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].title).toBe(
-      "Round Neckline Basics: Bind Off & Decrease",
+      "Round Neckline with Straight Shoulders",
     );
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].title).toBe(
-      "Round Necklines with Shaped Shoulders",
+      "Round Neckline with Shaped Shoulders",
     );
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].exercises).toHaveLength(2);
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].exercises).toHaveLength(2);
@@ -64,10 +69,62 @@ describe("round neckline Skill Builder catalog", () => {
       ),
     ).toEqual([undefined, undefined]);
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].prerequisiteNote).toMatch(
-      /Complete Round Neckline Basics first/,
+      /Complete Round Neckline with Straight Shoulders first/,
     );
     expect(roundNecklineSkillBuilderIsMemberOnly("round-neckline-basics")).toBe(false);
     expect(roundNecklineSkillBuilderIsMemberOnly("round-necklines-shaped-shoulders")).toBe(true);
+    expect(roundNecklineSkillBuilderRequiresLeadCapture("round-neckline-basics")).toBe(true);
+    expect(roundNecklineSkillBuilderRequiresLeadCapture("round-necklines-shaped-shoulders")).toBe(
+      false,
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-neckline-basics"]["shallow-back"].title).toBe(
+      "Shallow Back Neckline",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-neckline-basics"]["deep-front"].title).toBe(
+      "Deep Front Neckline",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-neckline-basics"]["shallow-back"].summary).toBe(
+      "Basic round-neck shaping with straight shoulders.",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-neckline-basics"]["deep-front"].summary).toBe(
+      "A deeper neckline with a longer neck-edge shaping sequence.",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-necklines-shaped-shoulders"]["shallow-back"].title).toBe(
+      "Shallow Back Neckline",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-necklines-shaped-shoulders"]["deep-front"].title).toBe(
+      "Deep Front Neckline",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-necklines-shaped-shoulders"]["shallow-back"].summary).toBe(
+      "Basic round-neck shaping with stepped shoulder shaping.",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-necklines-shaped-shoulders"]["deep-front"].summary).toBe(
+      "A deeper neckline with a longer shaping sequence and stepped shoulders.",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-neckline-basics"]["shallow-back"].image).toBe(
+      "/images/skill-builders/round-neckline-shallow-straight-shoulders.png",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-neckline-basics"]["deep-front"].image).toBe(
+      "/images/skill-builders/round-neckline-deep-straight-shoulders.png",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-necklines-shaped-shoulders"]["shallow-back"].image).toBe(
+      "/images/skill-builders/round-neckline-shallow-shaped-shoulders.png",
+    );
+    expect(ROUND_NECKLINE_PRACTICE_CHOICES["round-necklines-shaped-shoulders"]["deep-front"].image).toBe(
+      "/images/skill-builders/round-neckline-deep-shaped-shoulders.png",
+    );
+    expect(parseRoundNecklinePracticeId("shallow-back")).toBe("shallow-back");
+    expect(parseRoundNecklinePracticeId("deep-front")).toBe("deep-front");
+    expect(parseRoundNecklinePracticeId("other")).toBeNull();
+    expect(roundNecklineWorkspaceHref("round-neckline-basics")).toBe(
+      "/learn/skill-builders/round-neckline-basics",
+    );
+    expect(roundNecklineWorkspaceHref("round-neckline-basics", "deep-front")).toBe(
+      "/learn/skill-builders/round-neckline-basics?practice=deep-front",
+    );
+    expect(skillBuilderExercisePath("round-neckline-basics", "shallow-back")).toBe(
+      "/learn/skill-builders/round-neckline-basics/shallow-back",
+    );
   });
 
   it("adds the catalog video only to the shallow-back straight-shoulder practice", () => {

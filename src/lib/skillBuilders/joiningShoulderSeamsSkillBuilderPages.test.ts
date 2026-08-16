@@ -133,6 +133,6 @@ describe("Join Beautiful Shoulder Seams Skill Builder pages", () => {
     expect(catalog).toContain("Join Beautiful Shoulder Seams");
     expect(catalog).toContain(JOINING_SHOULDER_SEAMS_CATALOG_SUBTITLE);
     expect(catalog).toContain("/learn/skill-builders/round-neckline-basics");
-    expect(catalog).toContain("Member Skill Builders");
+    expect(catalog).toContain("More Skill Builders");
   });
 });

@@ -335,7 +335,10 @@ describe("Skill Builder membership gate wiring", () => {
     expect(readComponent("JoiningShoulderSeamsSkillBuilder")).toContain("SkillBuilderMemberGate");
     expect(readComponent("EWrapCastOnSkillBuilder")).toContain("SkillBuilderMemberGate");
     expect(readComponent("RoundNecklineSkillBuilderLanding")).toContain("SkillBuilderMemberGate");
-    expect(readComponent("RoundNecklineSkillBuilderExercise")).toContain("SkillBuilderMemberGate");
+    expect(readComponent("RoundNecklineSkillBuilderExercise")).toContain("memberOnly={memberOnly}");
+    expect(readComponent("RoundNecklineSkillBuilderExercise")).toContain(
+      "RoundNecklineSkillBuilderLanding",
+    );
     expect(GATED_ROUTES).toHaveLength(4);
   });
 });

@@ -186,10 +186,65 @@ export function buildRoundNecklineSkillBuilderRightChecklistRows(
   );
 }
 
-export function buildRoundNecklineSkillBuilderBeforeYouBegin(
+export type RoundNecklineGetStartedStep = {
+  prefix: string;
+  emphasis: string;
+  suffix: string;
+};
+
+export function buildRoundNecklineGetStartedSteps(
   result: RoundNecklineSkillBuilderResult,
-): string {
-  return `Follow the chart to cast on ${result.castOnStitches} sts and knit ${result.rowsBeforeNeckline} rows even. At the shaping row, break the yarn and scrap off the right shoulder stitches (${result.secondShoulderSectionStitches} sts). Join yarn at the center neck edge and bind off ${result.centerBindOffStitches} center stitches. Then knit and shape the left shoulder, followed by the right shoulder.`;
+): RoundNecklineGetStartedStep[] {
+  const rightStitches = result.firstShoulderSectionStitches;
+  const centerStitches = result.centerBindOffStitches;
+  const shaped = result.shoulderStyle === "shaped";
+  return [
+    {
+      prefix: "",
+      emphasis: `Cast on ${result.castOnStitches} stitches.`,
+      suffix: "",
+    },
+    {
+      prefix: "",
+      emphasis: `Knit ${result.rowsBeforeNeckline} rows even.`,
+      suffix: "",
+    },
+    {
+      prefix: "At the shaping row, ",
+      emphasis: `break the yarn and scrap off the ${rightStitches} right-shoulder stitches.`,
+      suffix: "",
+    },
+    {
+      prefix: "Join yarn at the center neck edge and ",
+      emphasis: `bind off ${centerStitches} center stitches.`,
+      suffix: "",
+    },
+    {
+      prefix: "",
+      emphasis: "Shape the left shoulder",
+      suffix: shaped
+        ? ", working neck-edge and outside-shoulder shaping during the same rows, using the row-by-row instructions below."
+        : " using the row-by-row instructions below.",
+    },
+    {
+      prefix: "Scrap off the completed left shoulder, rehang the right shoulder, and ",
+      emphasis: "shape the right shoulder as a mirror image",
+      suffix: shaped ? ", working both edges during the same rows." : ".",
+    },
+  ];
+}
+
+export function formatRoundNecklineGetStartedStep(step: RoundNecklineGetStartedStep): string {
+  return `${step.prefix}${step.emphasis}${step.suffix}`;
+}
+
+export function buildRoundNecklineGetStartedHtml(result: RoundNecklineSkillBuilderResult): string {
+  return buildRoundNecklineGetStartedSteps(result)
+    .map(
+      (step) =>
+        `<li>${step.prefix}<strong>${step.emphasis}</strong>${step.suffix}</li>`,
+    )
+    .join("");
 }
 
 /**

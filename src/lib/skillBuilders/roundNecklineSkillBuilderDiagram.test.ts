@@ -5,7 +5,9 @@ import {
   SHAPING_MAP_SYMMETRICAL_NECK_LABEL_ABOVE_LINE_PX,
 } from "../patterns/shapingMapSvg";
 import {
-  buildRoundNecklineSkillBuilderBeforeYouBegin,
+  buildRoundNecklineGetStartedHtml,
+  buildRoundNecklineGetStartedSteps,
+  formatRoundNecklineGetStartedStep,
   buildRoundNecklineSkillBuilderDiagramHtml,
   buildRoundNecklineSkillBuilderDiagramSvg,
   buildRoundNecklineSkillBuilderLeftChecklistRows,
@@ -443,16 +445,38 @@ function edgeLabelX(svg: string, label: "Outside Edge" | "Neck Edge"): number {
 }
 
 describe("round neckline Skill Builder working charts and checklists", () => {
-  it("keeps Before You Begin to one live-count paragraph at both gauges", () => {
+  it("builds numbered Get Started steps from calculated practice values", () => {
     for (const [builderId, exerciseId] of CASES) {
       for (const gauge of [GAUGE, { stitchesPerFourInches: 28, rowsPerFourInches: 40 }]) {
         const sample = calculateRoundNecklineSkillBuilder(gauge, builderId, exerciseId)!;
-        const text = buildRoundNecklineSkillBuilderBeforeYouBegin(sample);
-        expect(text).toBe(
-          `Follow the chart to cast on ${sample.castOnStitches} sts and knit ${sample.rowsBeforeNeckline} rows even. At the shaping row, break the yarn and scrap off the right shoulder stitches (${sample.secondShoulderSectionStitches} sts). Join yarn at the center neck edge and bind off ${sample.centerBindOffStitches} center stitches. Then knit and shape the left shoulder, followed by the right shoulder.`,
+        const steps = buildRoundNecklineGetStartedSteps(sample);
+        const text = steps.map(formatRoundNecklineGetStartedStep).join(" ");
+        const html = buildRoundNecklineGetStartedHtml(sample);
+        expect(steps).toHaveLength(6);
+        expect(steps[0]?.emphasis).toBe(`Cast on ${sample.castOnStitches} stitches.`);
+        expect(steps[1]?.emphasis).toBe(`Knit ${sample.rowsBeforeNeckline} rows even.`);
+        expect(steps[2]?.emphasis).toBe(
+          `break the yarn and scrap off the ${sample.firstShoulderSectionStitches} right-shoulder stitches.`,
         );
-        expect(text).not.toMatch(/\n/);
+        expect(steps[3]?.emphasis).toBe(
+          `bind off ${sample.centerBindOffStitches} center stitches.`,
+        );
+        expect(text).toContain(`Cast on ${sample.castOnStitches} stitches.`);
+        expect(text).toContain(`Knit ${sample.rowsBeforeNeckline} rows even.`);
+        expect(text).toContain(`${sample.firstShoulderSectionStitches} right-shoulder stitches`);
+        expect(text).toContain(`bind off ${sample.centerBindOffStitches} center stitches`);
+        expect(text).not.toMatch(/Follow the chart to cast on/);
         expect(text).not.toMatch(/Common Mistakes|Pause and Check|Worksheet Summary/i);
+        expect(html).toContain("<li>");
+        expect(html).toContain("<strong>");
+        expect(html.match(/<li>/g)?.length).toBe(6);
+        if (sample.shoulderStyle === "shaped") {
+          expect(text).toMatch(/neck-edge and outside-shoulder shaping during the same rows/);
+          expect(text).toMatch(/working both edges during the same rows/);
+        } else {
+          expect(text).not.toMatch(/outside-shoulder shaping/);
+          expect(text).toMatch(/using the row-by-row instructions below/);
+        }
       }
     }
   });
@@ -634,8 +658,8 @@ describe("round neckline Skill Builder working charts and checklists", () => {
       "deep-front",
     )!;
     expect(fine.castOnStitches).not.toBe(coarse.castOnStitches);
-    expect(buildRoundNecklineSkillBuilderBeforeYouBegin(fine)).not.toBe(
-      buildRoundNecklineSkillBuilderBeforeYouBegin(coarse),
+    expect(buildRoundNecklineGetStartedHtml(fine)).not.toBe(
+      buildRoundNecklineGetStartedHtml(coarse),
     );
 
     const coarseLeft = buildRoundNecklineSkillBuilderLeftChecklistRows(coarse);

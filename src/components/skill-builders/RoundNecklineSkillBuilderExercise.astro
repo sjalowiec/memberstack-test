@@ -1,9 +1,6 @@
 ---
-import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
-import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
-import RoundNecklineSkillBuilderExerciseBody from "./RoundNecklineSkillBuilderExerciseBody.astro";
+import RoundNecklineSkillBuilderLanding from "./RoundNecklineSkillBuilderLanding.astro";
 import {
-  ROUND_NECKLINE_SKILL_BUILDERS,
   roundNecklineSkillBuilderIsMemberOnly,
   type RoundNecklineSkillBuilderExerciseId,
   type RoundNecklineSkillBuilderId,
@@ -17,113 +14,10 @@ interface Props {
 
 const { builderId, exerciseId, memberOnly = roundNecklineSkillBuilderIsMemberOnly(builderId) } =
   Astro.props;
-const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
-const exercise = builder.exercises.find((item) => item.id === exerciseId);
-if (!exercise) {
-  throw new Error(`Unknown Skill Builder exercise: ${builderId}/${exerciseId}`);
-}
-const subtitle = exercise.subtitle ?? builder.title;
 ---
 
-<div
-  class="sb-practice-page"
-  data-sb-round-neckline-exercise
-  data-sb-builder={builderId}
-  data-sb-exercise={exerciseId}
->
-  <a class="sb-practice-eyebrow" href={builder.path}>Back to practices</a>
-
-  <header class="sb-practice-hero">
-    <SkillBuilderPageHeader title={exercise.title} />
-    <p class="sb-practice-hero__intro">{subtitle}</p>
-  </header>
-
-  {
-    memberOnly ? (
-      <SkillBuilderMemberGate>
-        <RoundNecklineSkillBuilderExerciseBody
-          builderId={builderId}
-          exerciseId={exerciseId}
-          memberOnly
-        />
-      </SkillBuilderMemberGate>
-    ) : (
-      <RoundNecklineSkillBuilderExerciseBody builderId={builderId} exerciseId={exerciseId} />
-    )
-  }
-</div>
-
-<style>
-  .sb-practice-page {
-    max-width: 52rem;
-    margin: 0 auto;
-    padding: 0 20px 3.5rem;
-    overflow-x: hidden;
-  }
-
-  .sb-practice-eyebrow {
-    display: inline-block;
-    margin: 0.25rem 0 0.75rem;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6b7280;
-    text-decoration: none;
-  }
-
-  .sb-practice-eyebrow:hover,
-  .sb-practice-eyebrow:focus {
-    color: #52682d;
-  }
-
-  .sb-practice-hero {
-    margin: 0.5rem 0 1.25rem;
-  }
-
-  .sb-practice-hero :global(h1) {
-    margin: 0;
-    font-size: clamp(1.45rem, 3vw, 1.9rem);
-    font-weight: 600;
-    color: #52682d;
-    line-height: 1.2;
-  }
-
-  .sb-practice-hero__intro {
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #4d5a48;
-  }
-
-  @media (max-width: 600px) {
-    .sb-practice-page {
-      padding-inline: 16px;
-    }
-  }
-
-  @media print {
-    .sb-practice-page {
-      max-width: none;
-      padding: 0;
-      overflow: visible;
-    }
-  }
-</style>
-
-<script>
-  import { bindRoundNecklineSkillBuilderPage } from "../../lib/skillBuilders/roundNecklineSkillBuilderPage";
-  import { SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT } from "../../lib/skillBuilders/skillBuilderMemberGate";
-
-  function start(): void {
-    bindRoundNecklineSkillBuilderPage();
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start);
-  } else {
-    start();
-  }
-
-  window.addEventListener(SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT, start);
-</script>
+<RoundNecklineSkillBuilderLanding
+  builderId={builderId}
+  initialExerciseId={exerciseId}
+  memberOnly={memberOnly}
+/>

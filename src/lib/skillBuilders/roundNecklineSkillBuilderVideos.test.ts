@@ -75,7 +75,7 @@ describe("Need a little help? video helper copy", () => {
   it("uses the quiet helper heading and short watch line without exposing a Vimeo URL or hash", () => {
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING).toBe("Need a little help?");
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY).toBe(
-      "Watch the shaping sequence before you start.",
+      "Watch the shaping sequence before you begin.",
     );
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING).not.toBe("Watch the Shaping Sequence");
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY).not.toContain(

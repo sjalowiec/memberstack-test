@@ -76,7 +76,7 @@ export const ROUND_NECKLINE_SKILL_BUILDERS: Record<
 > = {
   "round-neckline-basics": {
     id: "round-neckline-basics",
-    title: "Round Neckline Basics: Bind Off & Decrease",
+    title: "Round Neckline with Straight Shoulders",
     purpose:
       "Practice round neckline shaping for sweaters with straight shoulders, such as the Drop Shoulder pattern.",
     path: "/learn/skill-builders/round-neckline-basics",
@@ -103,13 +103,13 @@ export const ROUND_NECKLINE_SKILL_BUILDERS: Record<
   },
   "round-necklines-shaped-shoulders": {
     id: "round-necklines-shaped-shoulders",
-    title: "Round Necklines with Shaped Shoulders",
+    title: "Round Neckline with Shaped Shoulders",
     purpose:
       "Practice round neckline shaping when the sweater has shaped shoulders, such as the Sleeveless pattern.",
     path: "/learn/skill-builders/round-necklines-shaped-shoulders",
     shoulderStyle: "shaped",
     prerequisiteNote:
-      "Complete Round Neckline Basics first if you are new to neckline shaping.",
+      "Complete Round Neckline with Straight Shoulders first if you are new to neckline shaping.",
     exercises: [
       {
         id: "shallow-back",
@@ -267,11 +267,68 @@ export function skillBuilderExercisePath(
   return `${ROUND_NECKLINE_SKILL_BUILDERS[builderId].path}/${exerciseId}`;
 }
 
+export type RoundNecklinePracticeChoice = {
+  title: string;
+  summary: string;
+  image: string;
+};
+
+export const ROUND_NECKLINE_PRACTICE_CHOICES: Record<
+  RoundNecklineSkillBuilderId,
+  Record<RoundNecklineSkillBuilderExerciseId, RoundNecklinePracticeChoice>
+> = {
+  "round-neckline-basics": {
+    "shallow-back": {
+      title: "Shallow Back Neckline",
+      summary: "Basic round-neck shaping with straight shoulders.",
+      image: "/images/skill-builders/round-neckline-shallow-straight-shoulders.png",
+    },
+    "deep-front": {
+      title: "Deep Front Neckline",
+      summary: "A deeper neckline with a longer neck-edge shaping sequence.",
+      image: "/images/skill-builders/round-neckline-deep-straight-shoulders.png",
+    },
+  },
+  "round-necklines-shaped-shoulders": {
+    "shallow-back": {
+      title: "Shallow Back Neckline",
+      summary: "Basic round-neck shaping with stepped shoulder shaping.",
+      image: "/images/skill-builders/round-neckline-shallow-shaped-shoulders.png",
+    },
+    "deep-front": {
+      title: "Deep Front Neckline",
+      summary: "A deeper neckline with a longer shaping sequence and stepped shoulders.",
+      image: "/images/skill-builders/round-neckline-deep-shaped-shoulders.png",
+    },
+  },
+};
+
+export function parseRoundNecklinePracticeId(
+  raw: string | null | undefined,
+): RoundNecklineSkillBuilderExerciseId | null {
+  return raw === "shallow-back" || raw === "deep-front" ? raw : null;
+}
+
+export function roundNecklineWorkspaceHref(
+  builderId: RoundNecklineSkillBuilderId,
+  exerciseId?: RoundNecklineSkillBuilderExerciseId,
+): string {
+  const path = ROUND_NECKLINE_SKILL_BUILDERS[builderId].path;
+  return exerciseId ? `${path}?practice=${exerciseId}` : path;
+}
+
 /** Round Neckline Basics stays public; Shaped Shoulders is members only. */
 export function roundNecklineSkillBuilderIsMemberOnly(
   builderId: RoundNecklineSkillBuilderId,
 ): boolean {
   return builderId === "round-necklines-shaped-shoulders";
+}
+
+/** Email capture applies only to the free Round Neckline Basics builder. */
+export function roundNecklineSkillBuilderRequiresLeadCapture(
+  builderId: RoundNecklineSkillBuilderId,
+): boolean {
+  return !roundNecklineSkillBuilderIsMemberOnly(builderId);
 }
 
 function clamp(n: number, min: number, max: number): number {
