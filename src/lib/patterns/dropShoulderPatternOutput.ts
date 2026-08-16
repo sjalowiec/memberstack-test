@@ -70,6 +70,7 @@ import {
 } from "./roundNeckPlanPresentation";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindOffVideo";
+import { dropShoulderRoundNecklineVideoRow } from "./dropShoulderRoundNecklineVideoTip";
 import { roundBackNecklineShapingVideoRow } from "./roundBackNecklineShapingVideoTip";
 import {
   castOnMethodQuickTipInnerHtml,
@@ -837,6 +838,11 @@ function buildPulloverFrontRows(args: {
         necklineLocalTotalRows,
         DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
       );
+      // Catalog video 2212: pullover round front only (center + neck-edge, no
+      // shoulder shaping). Insert before the shaping block so knitters can watch
+      // first. V-neck and cardigan use a different process and must not get this tip.
+      const roundNeckHelp = dropShoulderRoundNecklineVideoRow();
+      if (roundNeckHelp) rows.push(roundNeckHelp);
       rows.push({
         kind: "block",
         rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),

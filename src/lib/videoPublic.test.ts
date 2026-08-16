@@ -127,7 +127,7 @@ describe("videos-public.json shallow neckline, no shoulder shaping", () => {
     );
     expect(row?.category).toBe("Shaping");
     expect(row?.subcategory).toBe("Garment Pieces");
-    expect(row?.access_level).toBe("member");
+    expect(row?.access_level).toBe("public");
     expect(row?.vimeo_id).toBe(1218264661);
     expect(String(row?.posterUrl ?? "").trim()).toBe(
       "https://i.vimeocdn.com/video/2190141682-b3f54012dfdda2c25db9167881d2bb022817f23e071ed9a986e11ce42e0b64e6-d_1280x720?r=pad",
