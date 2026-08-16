@@ -155,7 +155,7 @@ describe("public round neckline Skill Builder pages", () => {
     expect(exerciseBody).toContain('data-sb-diagram');
     expect(exerciseBody.match(/data-sb-diagram/g)?.length).toBe(1);
     expect(exerciseBody).toMatch(
-      /Get Started[\s\S]*Your Practice Piece[\s\S]*data-sb-diagram[\s\S]*SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING[\s\S]*Shape the Shoulders[\s\S]*data-sb-shoulder-checklist="right"[\s\S]*id="sb-finish-heading"/,
+      /Get Started[\s\S]*Your Practice Piece[\s\S]*data-sb-diagram[\s\S]*skillBuilderVideoHelperCopy[\s\S]*Shape the Shoulders[\s\S]*data-sb-shoulder-checklist="right"[\s\S]*id="sb-finish-heading"/,
     );
     expect(exerciseBody).toMatch(
       /id="sb-get-started-heading">Get Started[\s\S]*data-sb-get-started[\s\S]*id="sb-diagram-heading">Your Practice Piece[\s\S]*data-sb-diagram[\s\S]*sb-video-helper[\s\S]*GatedVimeoEmbed[\s\S]*id="sb-shoulders-heading">\s*Shape the Shoulders/,
@@ -200,14 +200,14 @@ describe("public round neckline Skill Builder pages", () => {
   });
 
   it("embeds the unlisted catalog video as a quiet helper after Get Started and the practice-piece diagram", () => {
-    expect(exerciseBody).toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING");
-    expect(exerciseBody).toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY");
+    expect(exerciseBody).toContain("skillBuilderVideoHelperCopy");
+    expect(exerciseBody).toContain("helper.heading");
     expect(exerciseBody).toContain("GatedVimeoEmbed");
     expect(exerciseBody).toContain("video.vimeoId");
     expect(exerciseBody).toContain('privacyHash={video.privacyHash ?? ""}');
     expect(exerciseBody).toContain("data-sb-video-content-id={String(video.contentId)}");
     expect(exerciseBody).toContain('class="sb-video-helper no-print"');
-    expect(exerciseBody).toContain('id="sb-video-help-heading"');
+    expect(exerciseBody).toContain("sb-video-help-heading");
     expect(exerciseBody).toContain("sb-video-helper__embed");
     expect(exerciseBody).toContain("max-width: 30rem");
     expect(exerciseBody).not.toContain("sb-shaping-video-heading");
@@ -218,7 +218,7 @@ describe("public round neckline Skill Builder pages", () => {
     expect(exerciseBody).not.toMatch(/href=["']https:\/\/vimeo\.com/);
     expect(exerciseBody).not.toMatch(/player\.vimeo\.com/);
     expect(exerciseBody).toMatch(
-      /data-sb-diagram[\s\S]*<h3 id="sb-video-help-heading">[\s\S]*GatedVimeoEmbed[\s\S]*id="sb-shoulders-heading">\s*Shape the Shoulders/,
+      /data-sb-diagram[\s\S]*sb-video-help-heading[\s\S]*GatedVimeoEmbed[\s\S]*id="sb-shoulders-heading">\s*Shape the Shoulders/,
     );
     expect(exerciseBody).not.toMatch(
       /What You're Practicing[\s\S]*GatedVimeoEmbed[\s\S]*data-sb-get-started/,
@@ -226,7 +226,10 @@ describe("public round neckline Skill Builder pages", () => {
     expect(exerciseBody).not.toContain("Before You Begin");
     expect(landingBody).not.toContain("Watch the Shaping Sequence");
     expect(landingBody).not.toContain("Need a little help?");
+    expect(landingBody).not.toContain("Need a refresher?");
+    expect(landingBody).not.toContain("The shaping process is the same as the shallow neckline exercise.");
     expect(landingBody).not.toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING");
+    expect(landingBody).not.toContain("skillBuilderVideoHelperCopy");
     expect(exerciseBody).toContain('privacyHash={video.privacyHash ?? ""}');
     expect(landingBody).toContain("RoundNecklineSkillBuilderExerciseBody");
   });

@@ -11,6 +11,7 @@ import {
   type ShapingMapData,
 } from "../patterns/shapingMapSvg";
 import {
+  formatSkillBuilderRcLabel,
   SHAPING_ROW_COUNTER_START,
   type FirstShoulderRowAction,
   type RoundNecklineSkillBuilderResult,
@@ -76,6 +77,12 @@ function checklistAction(row: FirstShoulderRowAction): string {
   if (/decrease/i.test(row.action)) return "Decrease 1 st";
   const amount = Number.parseInt(row.action.replace(/\D+/g, ""), 10) || 0;
   return amount > 0 ? `Bind off ${amount} sts` : row.action.replace(/\s+at the .+$/i, "").trim();
+}
+
+function checklistActionWithRc(row: FirstShoulderRowAction): string {
+  const action = checklistAction(row);
+  if (row.edge === "even") return action;
+  return `${formatSkillBuilderRcLabel(row.row)} ${action}`;
 }
 
 function checklistEdge(row: FirstShoulderRowAction): string {
@@ -159,7 +166,7 @@ export function buildRoundNecklineSkillBuilderLeftChecklistRows(
   const rows = result.firstShoulderRows.map((row) => ({
     rc: row.row,
     carriagePosition: row.row % 2 === 0 ? "Right" : "Left",
-    action: checklistAction(row),
+    action: checklistActionWithRc(row),
     edge: checklistEdge(row),
     stitchesRemaining: row.stitchesAfter,
   }));
@@ -187,10 +194,18 @@ export function buildRoundNecklineSkillBuilderRightChecklistRows(
 }
 
 export type RoundNecklineGetStartedStep = {
+  /** Calculated shaping RC, shown as RC:000 when present. */
+  rc?: number;
   prefix: string;
   emphasis: string;
   suffix: string;
 };
+
+function getStartedRcMarkup(rc: number | undefined, asHtml: boolean): string {
+  if (rc == null) return "";
+  const label = formatSkillBuilderRcLabel(rc);
+  return asHtml ? `<strong>${label}</strong> ` : `${label} `;
+}
 
 export function buildRoundNecklineGetStartedSteps(
   result: RoundNecklineSkillBuilderResult,
@@ -198,6 +213,7 @@ export function buildRoundNecklineGetStartedSteps(
   const rightStitches = result.firstShoulderSectionStitches;
   const centerStitches = result.centerBindOffStitches;
   const shaped = result.shoulderStyle === "shaped";
+  const shapingStartRc = SHAPING_ROW_COUNTER_START;
   return [
     {
       prefix: "",
@@ -206,15 +222,17 @@ export function buildRoundNecklineGetStartedSteps(
     },
     {
       prefix: "",
-      emphasis: `Knit ${result.rowsBeforeNeckline} rows even.`,
+      emphasis: `Knit ${result.rowsBeforeNeckline} rows even. Reset row counter to 000.`,
       suffix: "",
     },
     {
+      rc: shapingStartRc,
       prefix: "At the shaping row, ",
       emphasis: `break the yarn and scrap off the ${rightStitches} right-shoulder stitches.`,
       suffix: "",
     },
     {
+      rc: shapingStartRc,
       prefix: "Join yarn at the center neck edge and ",
       emphasis: `bind off ${centerStitches} center stitches.`,
       suffix: "",
@@ -228,21 +246,23 @@ export function buildRoundNecklineGetStartedSteps(
     },
     {
       prefix: "Scrap off the completed left shoulder, rehang the right shoulder, and ",
-      emphasis: "shape the right shoulder as a mirror image",
-      suffix: shaped ? ", working both edges during the same rows." : ".",
+      emphasis: "reset the row counter to 000",
+      suffix: shaped
+        ? ". Then shape the right shoulder as a mirror image, working both edges during the same rows."
+        : ". Then shape the right shoulder as a mirror image.",
     },
   ];
 }
 
 export function formatRoundNecklineGetStartedStep(step: RoundNecklineGetStartedStep): string {
-  return `${step.prefix}${step.emphasis}${step.suffix}`;
+  return `${getStartedRcMarkup(step.rc, false)}${step.prefix}${step.emphasis}${step.suffix}`;
 }
 
 export function buildRoundNecklineGetStartedHtml(result: RoundNecklineSkillBuilderResult): string {
   return buildRoundNecklineGetStartedSteps(result)
     .map(
       (step) =>
-        `<li>${step.prefix}<strong>${step.emphasis}</strong>${step.suffix}</li>`,
+        `<li>${getStartedRcMarkup(step.rc, true)}${step.prefix}<strong>${step.emphasis}</strong>${step.suffix}</li>`,
     )
     .join("");
 }

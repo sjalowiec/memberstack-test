@@ -33,17 +33,60 @@ export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING = "Need a little help?
 export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY =
   "Watch the shaping sequence before you begin.";
 
+export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD =
+  "The shaping process is the same as the shallow neckline exercise.";
+
+export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE =
+  "This time, knit more rows after the neckline shaping is complete before scrapping off the shoulder stitches.";
+
+export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER =
+  "Need a refresher? Watch the shallow neckline video.";
+
 export const ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS: Record<
   RoundNecklineSkillBuilderVideoKey,
   number | null
 > = {
   "round-neckline-basics": null,
   "round-neckline-basics/shallow-back": SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
-  "round-neckline-basics/deep-front": null,
+  "round-neckline-basics/deep-front": SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
   "round-necklines-shaped-shoulders": null,
   "round-necklines-shaped-shoulders/shallow-back": null,
   "round-necklines-shaped-shoulders/deep-front": null,
 };
+
+export type SkillBuilderVideoHelperNote = {
+  text: string;
+  lead?: string;
+};
+
+export type SkillBuilderVideoHelperCopy = {
+  heading: string;
+  notes: SkillBuilderVideoHelperNote[];
+};
+
+export function skillBuilderVideoHelperCopy(
+  key: RoundNecklineSkillBuilderVideoKey,
+): SkillBuilderVideoHelperCopy | null {
+  if (key === "round-neckline-basics/shallow-back") {
+    return {
+      heading: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
+      notes: [{ text: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY }],
+    };
+  }
+  if (key === "round-neckline-basics/deep-front") {
+    return {
+      heading: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
+      notes: [
+        {
+          lead: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD,
+          text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE,
+        },
+        { text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER },
+      ],
+    };
+  }
+  return null;
+}
 
 function privacyHashFromCatalogRow(row: PublicVideoRow): string | undefined {
   const hash = typeof row.vimeo_hash === "string" ? row.vimeo_hash.trim() : "";

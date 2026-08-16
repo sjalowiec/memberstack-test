@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   SAMPLE_SHAPING_MAP_DATA,
   SHAPING_MAP_KNIT_ROW_HEIGHT_RATIO,
+  SHAPING_MAP_ANNOTATION_FONT_PX,
   SHAPING_MAP_PAD_TOP_PX,
   SHAPING_MAP_ROW_NUMBER_FONT_PX,
   SHAPING_MAP_SHOULDER_LABEL_ABOVE_LINE_PX,
@@ -319,6 +320,8 @@ describe("renderShapingMapSvg (shared shaping-map renderer)", () => {
   });
 
   it("matches row-number font size to shaping-label font size", () => {
+    expect(SHAPING_MAP_ANNOTATION_FONT_PX).toBe(18);
+    expect(SHAPING_MAP_ANNOTATION_FONT_PX).toBeLessThan(SHAPING_MAP_STEP_LABEL_FONT_PX);
     expect(SHAPING_MAP_ROW_NUMBER_FONT_PX).toBeGreaterThanOrEqual(SHAPING_MAP_STEP_LABEL_FONT_PX);
     const svg = renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA);
     expect(svg).toContain('class="shaping-map-row-number"');

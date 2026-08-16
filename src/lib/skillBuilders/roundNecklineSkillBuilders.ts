@@ -182,6 +182,11 @@ export function formatSkillBuilderRowCounter(row: number): string {
   return String(Math.max(0, Math.round(row))).padStart(3, "0");
 }
 
+/** Machine-facing label for a calculated shaping row, e.g. RC:000. */
+export function formatSkillBuilderRcLabel(row: number): string {
+  return `RC:${formatSkillBuilderRowCounter(row)}`;
+}
+
 export type FirstShoulderRowAction = {
   /** Shaping row-counter value after reset to 000 (0 = RC 000). */
   row: number;

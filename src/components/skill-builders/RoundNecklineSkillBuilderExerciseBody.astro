@@ -11,8 +11,7 @@ import {
   type RoundNecklineSkillBuilderId,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilders";
 import {
-  SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY,
-  SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
+  skillBuilderVideoHelperCopy,
   skillBuilderVideoSlot,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilderVideos";
 
@@ -145,28 +144,44 @@ const gaugeId = `sb-${builderId}`;
   </section>
 
   {
-    practiceVideos.map(({ id, title, video }) =>
-      video && (
-        <aside
-          class="sb-video-helper no-print"
-          aria-labelledby="sb-video-help-heading"
-          data-sb-video-exercise={id}
-          data-sb-video-content-id={String(video.contentId)}
-          hidden={id !== exerciseId}
-        >
-          <h3 id="sb-video-help-heading">{SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING}</h3>
-          <p class="sb-video-helper__note">{SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY}</p>
-          <div class="sb-video-helper__embed">
-            <GatedVimeoEmbed
-              videoId={video.vimeoId}
-              title={video.title ?? title}
-              access_level={memberOnly ? "member" : "open"}
-              privacyHash={video.privacyHash ?? ""}
-            />
-          </div>
-        </aside>
-      ),
-    )
+    practiceVideos.map(({ id, title, video }) => {
+      const helper = skillBuilderVideoHelperCopy(`${builderId}/${id}`);
+      return (
+        video &&
+        helper && (
+          <aside
+            class="sb-video-helper no-print"
+            aria-labelledby={`sb-video-help-heading-${id}`}
+            data-sb-video-exercise={id}
+            data-sb-video-content-id={String(video.contentId)}
+            hidden={id !== exerciseId}
+          >
+            <h3 id={`sb-video-help-heading-${id}`}>{helper.heading}</h3>
+            {
+              helper.notes.map((note) => (
+                <p class="sb-video-helper__note">
+                  {note.lead ? (
+                    <>
+                      <strong>{note.lead}</strong> {note.text}
+                    </>
+                  ) : (
+                    note.text
+                  )}
+                </p>
+              ))
+            }
+            <div class="sb-video-helper__embed">
+              <GatedVimeoEmbed
+                videoId={video.vimeoId}
+                title={video.title ?? title}
+                access_level={memberOnly ? "member" : "open"}
+                privacyHash={video.privacyHash ?? ""}
+              />
+            </div>
+          </aside>
+        )
+      );
+    })
   }
 
   <section class="sb-card sb-shoulders" aria-labelledby="sb-shoulders-heading">
@@ -527,12 +542,17 @@ const gaugeId = `sb-${builderId}`;
     color: #4d5a48;
   }
 
-  .sb-worksheet__section .sb-video-helper__note {
+  .sb-video-helper__note {
     margin: 0 0 0.65rem;
     font-size: 0.95rem;
     line-height: 1.5;
     color: #666;
     font-style: italic;
+  }
+
+  .sb-video-helper__note strong {
+    font-weight: 700;
+    color: #243015;
   }
 
   .sb-video-helper__embed {
