@@ -453,6 +453,23 @@ export function parseJsonBody(body) {
 }
 
 /**
+ * Phase-supported saved-project types. Hats are identified the same way as
+ * {@link resolvePatternSystemFromProject} (`patternType` or `patternSystem`).
+ * Drop-shoulder stays allowed because those blobs keep `patternType: "sleeveless"`.
+ *
+ * @param {unknown} pattern
+ */
+export function isSupportedCustomPatternProjectType(pattern) {
+  if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) return false;
+  if (resolvePatternSystemFromProject({ pattern }) === "hat") return true;
+  return pattern.patternType === "sleeveless";
+}
+
+/** Rejected types only — never shown for sleeveless or hat saves. */
+export const UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR =
+  "Only sleeveless and hat pattern projects are supported in this phase.";
+
+/**
  * @param {Record<string, unknown>} data
  * @param {string} userId
  * @param {string} [existingId]
@@ -475,8 +492,8 @@ export function buildProjectRecord(data, userId, existingId) {
   if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) {
     return { ok: false, error: "pattern (kbm_current_pattern object) is required." };
   }
-  if (pattern.patternType !== "sleeveless" && pattern.patternType !== "hat") {
-    return { ok: false, error: "Only sleeveless and hat pattern projects are supported in this phase." };
+  if (!isSupportedCustomPatternProjectType(pattern)) {
+    return { ok: false, error: UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR };
   }
 
   const customOverrides =
