@@ -50,11 +50,6 @@ interface Props {
    * Avoids floating-label nowrap clipping of long combined labels on phones.
    */
   formFields?: boolean;
-  /**
-   * Keep stitch/row labels fixed. Skill Builders use combined 4″/10 cm copy that
-   * must not change when the rest of the page switches inches/centimeters.
-   */
-  lockUnitLabels?: boolean;
 }
 
 const {
@@ -71,7 +66,6 @@ const {
   rowLabelInches,
   rowLabelCm,
   formFields = false,
-  lockUnitLabels = false,
 } = Astro.props;
 
 const effectiveToggleId = toggleId || "kbm-unit-toggle";
@@ -108,7 +102,6 @@ const hasGaugePrefix =
   data-gauge-row-in={formFields ? rowHintIn : rowLabelInchesResolved}
   data-gauge-row-cm={formFields ? rowHintCm : rowLabelCmResolved}
   data-gauge-form-fields={formFields ? "true" : undefined}
-  data-gauge-lock-labels={lockUnitLabels ? "true" : undefined}
 >
   {showTitle && showToggle && (
     <div class="kbm-header-layout">
@@ -496,10 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.gauge-input-wrapper').forEach((wrapper) => {
 
-    const w = wrapper as HTMLElement;
-    if (w.dataset.gaugeLockLabels === "true") return;
-
-    const toggleId = w.dataset.toggleId;
+    const toggleId = (wrapper as HTMLElement).dataset.toggleId;
     const stitchInput = wrapper.querySelector('input[id$="-stitch-gauge"]');
 
     if (!stitchInput || !toggleId) return;
@@ -512,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stitchHint = wrapper.querySelector<HTMLElement>('[data-gauge-hint="stitch"]');
     const rowHint = wrapper.querySelector<HTMLElement>('[data-gauge-hint="row"]');
 
+    const w = wrapper as HTMLElement;
     function updateLabels(unit: string) {
       if (isFormFields) {
         if (stitchHint) {

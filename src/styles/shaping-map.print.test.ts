@@ -20,21 +20,6 @@ describe("shaping-map label typography", () => {
     expect(stepSize).toBeGreaterThan(0);
     expect(rowSize).toBeGreaterThanOrEqual(stepSize);
   });
-
-  it("softens practice-piece row numbers without changing sweater chart defaults", () => {
-    const defaultBlock = shapingMapCss.match(/\.shaping-map-row-number\s*\{[^}]*\}/)?.[0] ?? "";
-    const practiceBlock =
-      shapingMapCss.match(/\.shaping-map__svg--practice\s+\.shaping-map-row-number\s*\{[^}]*\}/)?.[0] ?? "";
-    const defaultSize = Number(defaultBlock.match(/font-size:\s*([\d.]+)px/)?.[1]);
-    const practiceSize = Number(practiceBlock.match(/font-size:\s*([\d.]+)px/)?.[1]);
-    const defaultWeight = Number(defaultBlock.match(/font-weight:\s*(\d+)/)?.[1]);
-    const practiceWeight = Number(practiceBlock.match(/font-weight:\s*(\d+)/)?.[1]);
-    expect(practiceSize).toBeGreaterThan(0);
-    expect(practiceSize).toBeLessThan(defaultSize);
-    expect(practiceWeight).toBeGreaterThan(0);
-    expect(practiceWeight).toBeLessThan(defaultWeight);
-    expect(practiceSize).toBeGreaterThanOrEqual(12);
-  });
 });
 
 describe("ns-visual-guides print layout regression", () => {

@@ -24,19 +24,6 @@
   color: #6b7280;
 }
 
-.shaping-map__key {
-  margin: 0.55rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.75rem;
-  line-height: 1.45;
-  color: #6b7280;
-}
-
-.shaping-map__key li {
-  margin: 0;
-}
-
 /* Horizontal scroll on narrow screens; the SVG keeps its aspect ratio via viewBox. */
 .shaping-map__scroll {
   overflow-x: auto;
@@ -113,13 +100,6 @@
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Practice-piece diagrams: row numbers are a quiet RC scale, not the focal point.
- * Sweater Visual Guides keep the larger/bolder default above. */
-.shaping-map__svg--practice .shaping-map-row-number {
-  font-size: 13px;
-  font-weight: 400;
-}
-
 /* "Bind off N center stitches" callout. text-anchor is set inline (mirror flips start/end);
  * do not pin text-anchor here — CSS would override the attribute and clip mirrored labels. */
 .shaping-map-center-label {
@@ -138,46 +118,6 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-
-.shaping-map-practice {
-  fill: rgba(183, 167, 224, 0.14);
-  stroke: #111111;
-  stroke-width: 2.5;
-}
-
-.shaping-map-annotation {
-  fill: #111111;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-
-.shaping-map-dimension line {
-  stroke: #111111;
-  stroke-width: 1.5;
-}
-
-.shaping-map-dimension-label {
-  fill: #111111;
-  font-size: 16px;
-  font-weight: 800;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-
-.shaping-map-rc-reset-label {
-  fill: #111111;
-  font-size: 16px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-
-.shaping-map-rc-reset-dash {
-  stroke: #111111;
-  stroke-width: 1.8;
-  stroke-dasharray: 3 2.5;
-  stroke-linecap: round;
 }
 
 /* ============================================================================
@@ -396,15 +336,10 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   /* Preserve the grid + path colors when printing. */
   .shaping-map-bg,
   .shaping-map-fabric,
-  .shaping-map-practice,
   .shaping-map-grid-minor line,
   .shaping-map-grid-major line,
   .shaping-map-path,
-  .shaping-map-edge-label,
-  .shaping-map-annotation,
-  .shaping-map-dimension-label,
-  .shaping-map-rc-reset-label,
-  .shaping-map-rc-reset-dash {
+  .shaping-map-edge-label {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

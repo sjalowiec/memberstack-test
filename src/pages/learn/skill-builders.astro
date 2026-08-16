@@ -1,54 +1,16 @@
 ﻿---
 import Layout from "../../layouts/Layout.astro";
-import SkillBuilderPageHeader from "../../components/skill-builders/SkillBuilderPageHeader.astro";
 
 const pageTitle = "Skill Builders | Knit it Now";
 const pageDescription =
-  "Practice one machine-knitting skill at a time. Short, focused exercises help you build confidence before you use the skill in a project.";
+  "Short, focused knitting exercises to practice one technique at a time. Enter your gauge and generate a practice worksheet.";
 
-type CatalogItem = {
-  title: string;
-  href: string;
-  subtitle?: string;
-  /** Optional catalog image path. */
-  image?: string;
-  /** Illustrations use contain so the full drawing stays visible. */
-  imageFit?: "contain" | "cover";
-};
-
-const freeSkillBuilder: CatalogItem = {
-  title: "Round Neckline with Straight Shoulders",
-  href: "/learn/skill-builders/round-neckline-basics",
-  subtitle: "Practice center bind-off, neckline decreases, and working each side separately.",
-  image: "/images/skill-builders/round-neckline-shallow-straight-shoulders.png",
-  imageFit: "contain",
-};
-
-const memberSkillBuilders: CatalogItem[] = [
+const availableItems = [
   {
-    title: "Round Neckline with Shaped Shoulders",
-    href: "/learn/skill-builders/round-necklines-shaped-shoulders",
-    subtitle: "Practice neckline shaping while working stepped shoulder shaping at the same time.",
-    image: "/images/skill-builders/round-neckline-shallow-shaped-shoulders.png",
-    imageFit: "contain",
-  },
-  {
-    title: "Join Beautiful Shoulder Seams",
-    href: "/learn/skill-builders/join-beautiful-shoulder-seams",
-    subtitle: "Rehang live front and back shoulder stitches and bind them off together.",
-    image: "/images/skill-builders/join-shoulder-seams.png",
-    imageFit: "contain",
-  },
-  {
-    title: "E-Wrap Cast On Basics",
-    href: "/learn/skill-builders/e-wrap-cast-on-basics",
-    subtitle: "Practice a quick, stretchy cast on that works on any knitting machine.",
-    image: "/images/skill-builders/e-wrap-cast-on.png",
-    imageFit: "contain",
+    title: "Round Neckline Practice",
+    href: "/learn/skill-builders/round-neckline-practice",
   },
 ];
-
-const allAvailableSkillBuilders: CatalogItem[] = [freeSkillBuilder, ...memberSkillBuilders];
 
 const comingSoonItems = [
   "Short Rows Practice",
@@ -56,168 +18,152 @@ const comingSoonItems = [
   "Ribber Practice",
   "Cut & Sew Practice",
 ];
+
+const howItWorksSteps = [
+  "Choose a skill.",
+  "Enter your stitch and row gauge.",
+  "Generate a short practice worksheet.",
+  "Knit the exercise.",
+  "Repeat until the skill feels comfortable.",
+];
 ---
 
 <Layout title={pageTitle} description={pageDescription} bodyClass="page--tight-header">
   <div class="skill-builders-page">
-    <header class="skill-builders-hero">
-      <SkillBuilderPageHeader title="Skill Builders" />
-      <p class="skill-builders-hero__subtitle">
-        Practice one machine-knitting skill at a time.
-      </p>
-      <p class="skill-builders-hero__copy">
-        Short, focused exercises help you build confidence before you use the skill in a project.
-      </p>
-      <p class="skill-builders-hero__signature">
-        Don’t practice until you get it right. Practice until you can’t get it wrong.
-      </p>
-    </header>
-
-    <div class="skill-builders-catalog" data-sb-catalog="guest">
-      <section class="sb-featured" aria-labelledby="skill-builders-free">
-        <a href={freeSkillBuilder.href} class="sb-featured__panel">
-          <div class="sb-featured__visual">
-            <img
-              src="/images/skill-builders/band.jpg"
-              alt="Finished machine-knit round neckline"
-            />
-          </div>
-          <div class="sb-featured__body">
-            <div class="sb-featured__top">
-              <h2 id="skill-builders-free" class="sb-featured__eyebrow">Try a Skill Builder Free</h2>
-              <span class="skill-builders-card__badge skill-builders-card__badge--available">Free</span>
-            </div>
-            <h3 class="sb-featured__title">Learn to Shape a Round Neckline</h3>
-            <p class="sb-featured__copy">
-              Practice the essential steps for shaping a round neckline before you use them in a sweater.
-            </p>
-            <ul class="sb-featured__benefits">
-              <li>
-                <strong>Video Tutorial</strong>
-                Watch the technique up close on the knitting machine.
-              </li>
-              <li>
-                <strong>Printable Worksheet</strong>
-                Step-by-step instructions to keep beside your machine.
-              </li>
-              <li>
-                <strong>Use Your Own Gauge</strong>
-                Practice using your machine, yarn, and gauge.
-              </li>
-            </ul>
-            <span class="sb-featured__cta">START FREE SKILL BUILDER</span>
-          </div>
-        </a>
-      </section>
-
-      <section class="skill-builders-section skill-builders-section--more" aria-labelledby="skill-builders-members">
-        <h2 id="skill-builders-members" class="skill-builders-section__title">More Skill Builders</h2>
-        <p class="skill-builders-section__note">
-          Continue building your skills with Knit it Now membership.
+    <div class="skill-builders-top">
+      <header class="skill-builders-hero">
+        <h1 class="skill-builders-hero__title">Skill Builders</h1>
+        <p class="skill-builders-hero__subtitle">
+          Practice a single technique without knitting an entire project.
         </p>
-        <ul class="skill-builders-card-list skill-builders-card-list--grid">
-          {
-            memberSkillBuilders.map((item) => (
-              <li class="skill-builders-card-list__item">
-                <a
-                  href="#"
-                  class="skill-builders-card skill-builders-card--link"
-                  data-sb-state="loggedOut"
-                  data-ms-modal="login"
-                  data-ms-redirect="current-url"
-                  hidden
-                >
-                  <span class="skill-builders-card__text">
-                    <span class="skill-builders-card__title">{item.title}</span>
-                    {item.subtitle && (
-                      <span class="skill-builders-card__subtitle">{item.subtitle}</span>
-                    )}
-                  </span>
-                  <span class="skill-builders-card__badge skill-builders-card__badge--members-only">Members only</span>
-                </a>
-                <button
-                  type="button"
-                  class="skill-builders-card skill-builders-card--link"
-                  data-sb-state="loggedInNoAccess"
-                  data-sb-membership-prompt
-                  hidden
-                >
-                  <span class="skill-builders-card__text">
-                    <span class="skill-builders-card__title">{item.title}</span>
-                    {item.subtitle && (
-                      <span class="skill-builders-card__subtitle">{item.subtitle}</span>
-                    )}
-                  </span>
-                  <span class="skill-builders-card__badge skill-builders-card__badge--members-only">Members only</span>
-                </button>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+      </header>
 
-      <p class="skill-builders-upcoming" id="skill-builders-upcoming">
-        <span class="skill-builders-upcoming__label">Coming Soon</span>
-        {comingSoonItems.join(" · ")}
-      </p>
+      <div class="skill-builders-body">
+        <img
+          class="skill-builders-body__image"
+          src="/images/skill-builders/skill-buider.png"
+          alt="Skill Builder practice worksheet for machine knitting"
+          width="320"
+          height="320"
+          loading="eager"
+          decoding="async"
+        />
+
+        <p class="skill-builders-hero__lead">
+          Reading about a skill and actually doing it are two different things.
+        </p>
+
+        <section class="skill-builders-intro" aria-label="About Skill Builders">
+        <p>
+          Skill Builders are short, focused knitting exercises designed to help you practice one
+          technique at a time. Each exercise is quick to knit and gives you the opportunity to build
+          confidence before using the skill in a larger project.
+        </p>
+        <p>
+          Unlike our courses, Skill Builders don't teach the techniques step by step. They provide the
+          instructions and the calculations, but they assume you're ready to practice.
+        </p>
+        <p>
+          Simply enter your stitch and row gauge, and we'll generate the shaping instructions for your
+          exercise. Then knit, practice, and repeat as many times as you'd like.
+        </p>
+        <p>
+          If you're new to a technique or would like a more detailed explanation, take the companion
+          course. Our courses explain the "why" behind the technique, demonstrate different methods,
+          and help you understand when to use each one.
+        </p>
+        <p class="skill-builders-intro__closing">
+          Practice builds confidence. That's exactly what Skill Builders are here to help you do.
+        </p>
+        </section>
+      </div>
     </div>
 
-    <div class="skill-builders-catalog" data-sb-catalog="member" hidden>
-      <section class="skill-builders-section" aria-labelledby="skill-builders-all">
-        <h2 id="skill-builders-all" class="skill-builders-section__title">Skill Builders</h2>
-        <ul class="skill-builders-card-list skill-builders-card-list--grid">
-          {
-            allAvailableSkillBuilders.map((item) => (
-              <li class="skill-builders-card-list__item">
-                <a
-                  href={item.href}
-                  class="skill-builders-card skill-builders-card--link skill-builders-card--visual"
-                >
-                  <span
-                    class:list={[
-                      "skill-builders-card__media",
-                      item.imageFit === "contain" && "skill-builders-card__media--contain",
-                    ]}
-                  >
-                    {item.image ? (
-                      <img src={item.image} alt="" />
-                    ) : (
-                      <span class="skill-builders-card__placeholder">Image coming</span>
-                    )}
-                  </span>
-                  <span class="skill-builders-card__text">
-                    <span class="skill-builders-card__title">{item.title}</span>
-                    {item.subtitle && (
-                      <span class="skill-builders-card__subtitle">{item.subtitle}</span>
-                    )}
-                  </span>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+    <hr class="skill-builders-divider" />
 
-      <hr class="skill-builders-divider" />
+    <section class="skill-builders-section" aria-labelledby="skill-builders-how-it-works">
+      <h2 id="skill-builders-how-it-works" class="skill-builders-section__title">
+        How Skill Builders Work
+      </h2>
+      <ol class="skill-builders-steps">
+        {
+          howItWorksSteps.map((step) => (
+            <li class="skill-builders-steps__item">{step}</li>
+          ))
+        }
+      </ol>
+    </section>
 
-      <section class="skill-builders-section" aria-labelledby="skill-builders-coming-soon">
-        <h2 id="skill-builders-coming-soon" class="skill-builders-section__title">Coming Soon</h2>
-        <ul class="skill-builders-card-list">
-          {
-            comingSoonItems.map((item) => (
-              <li class="skill-builders-card-list__item">
-                <div class="skill-builders-card skill-builders-card--planned" aria-disabled="true">
-                  <span class="skill-builders-card__text">
-                    <span class="skill-builders-card__title">{item}</span>
-                  </span>
-                  <span class="skill-builders-card__badge">Planned</span>
-                </div>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
-    </div>
+    <hr class="skill-builders-divider" />
+
+    <section class="skill-builders-section" aria-labelledby="skill-builders-available">
+      <h2 id="skill-builders-available" class="skill-builders-section__title">Available Skill Builders</h2>
+      <p class="skill-builders-section__note">Skill Builders are included with Knit it Now membership.</p>
+      <ul class="skill-builders-card-list">
+        {
+          availableItems.map((item) => (
+            <li class="skill-builders-card-list__item">
+              <a
+                href={item.href}
+                class="skill-builders-card skill-builders-card--link"
+                data-sb-state="memberAccess"
+                hidden
+              >
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--available">Available</span>
+              </a>
+              <a
+                href="#"
+                class="skill-builders-card skill-builders-card--link"
+                data-sb-state="loggedOut"
+                data-ms-modal="login"
+                data-ms-redirect="current-url"
+                hidden
+              >
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--sign-in">Sign in</span>
+              </a>
+              <button
+                type="button"
+                class="skill-builders-card skill-builders-card--link"
+                data-sb-state="loggedInNoAccess"
+                data-sb-membership-prompt
+                hidden
+              >
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--members-only">Members only</span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <hr class="skill-builders-divider" />
+
+    <section class="skill-builders-section" aria-labelledby="skill-builders-coming-soon">
+      <h2 id="skill-builders-coming-soon" class="skill-builders-section__title">Coming Soon</h2>
+      <ul class="skill-builders-card-list">
+        {
+          comingSoonItems.map((item) => (
+            <li class="skill-builders-card-list__item">
+              <div class="skill-builders-card skill-builders-card--planned" aria-disabled="true">
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item}</span>
+                </span>
+                <span class="skill-builders-card__badge">Planned</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
   </div>
 
   <dialog
@@ -247,249 +193,91 @@ const comingSoonItems = [
 
 <style>
   .skill-builders-page {
-    max-width: 56rem;
+    max-width: 48rem;
     margin: 0 auto;
     padding: 20px 20px 3.5rem;
   }
 
-  .skill-builders-hero {
-    margin-bottom: 1.85rem;
+  .skill-builders-top {
+    margin-bottom: 1.75rem;
   }
 
-  .skill-builders-hero :global(.sb-page-title) {
-    margin-bottom: 0.45rem;
+  .skill-builders-body::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  .skill-builders-body__image {
+    float: right;
+    width: min(280px, 42%);
+    height: auto;
+    margin: 0.25rem 0 1rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .skill-builders-hero {
+    margin-bottom: 1rem;
+  }
+
+  .skill-builders-hero__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.2;
   }
 
   .skill-builders-hero__subtitle {
-    margin: 0 0 0.45rem;
-    font-size: 1.08rem;
+    margin: 0;
+    font-size: 1.05rem;
     line-height: 1.5;
-    color: #243015;
-    font-weight: 600;
-  }
-
-  .skill-builders-hero__copy {
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.6;
     color: #4d5a48;
+    font-weight: 500;
   }
 
-  .skill-builders-hero__signature {
-    margin: 0.85rem 0 0;
-    font-family: "Kalam", cursive;
-    font-weight: 400;
-    font-size: clamp(1.28rem, 3.4vw, 1.5rem);
-    line-height: 1.4;
-    color: #A94F3D;
-    text-transform: none;
-    letter-spacing: 0;
-    white-space: normal;
-  }
-
-  @media (min-width: 64rem) {
-    .skill-builders-hero__signature {
-      white-space: nowrap;
-      font-size: 1.5rem;
-      line-height: 1.35;
-    }
-  }
-
-  .sb-featured {
-    margin-bottom: 2.15rem;
-  }
-
-  .sb-featured__panel {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
-    align-items: stretch;
-    width: 100%;
-    text-decoration: none;
-    color: inherit;
-    box-sizing: border-box;
-    padding: 1.45rem 1.5rem 1.5rem;
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
-    border: 1px solid #c7d8a4;
-    border-left: 6px solid var(--kbm-accent, #C2614E);
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(36, 48, 21, 0.07);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .sb-featured__panel:hover,
-  .sb-featured__panel:focus {
-    border-color: var(--kbm-green, #52682d);
-    border-left-color: var(--kbm-accent, #C2614E);
-    box-shadow: 0 4px 16px rgba(82, 104, 45, 0.12);
-    outline: none;
-  }
-
-  .sb-featured__visual {
-    position: relative;
-    min-height: 12.5rem;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .sb-featured__visual img {
-    display: block;
-    width: 100%;
-    height: 12.5rem;
-    object-fit: cover;
-    object-position: center 22%;
-  }
-
-  @media (min-width: 40rem) {
-    .sb-featured__panel:has(.sb-featured__visual) {
-      grid-template-columns: minmax(16rem, 1.15fr) minmax(0, 0.95fr);
-    }
-
-    .sb-featured__visual {
-      min-height: 18rem;
-      align-self: stretch;
-    }
-
-    .sb-featured__visual img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  .sb-featured__body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.7rem;
-    min-width: 0;
-  }
-
-  .sb-featured__top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    width: 100%;
-  }
-
-  .sb-featured__eyebrow {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--kbm-green, #52682d);
-  }
-
-  .sb-featured__title {
-    margin: 0;
-    font-size: clamp(1.28rem, 2.6vw, 1.5rem);
-    font-weight: 600;
-    line-height: 1.25;
-    color: var(--kbm-green, #52682d);
-  }
-
-  .sb-featured__copy {
-    margin: 0;
-    font-size: 1rem;
+  .skill-builders-hero__lead {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
     line-height: 1.55;
-    color: #243015;
-  }
-
-  .sb-featured__benefits {
-    list-style: none;
-    margin: 0.1rem 0 0.15rem;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-  }
-
-  .sb-featured__benefits li {
-    position: relative;
-    padding-left: 0.95rem;
-    font-size: 0.88rem;
-    line-height: 1.4;
     color: #4d5a48;
+    font-weight: 500;
   }
 
-  .sb-featured__benefits li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.55em;
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 50%;
-    background: var(--kbm-green, #52682d);
-  }
-
-  .sb-featured__benefits strong {
-    display: block;
-    font-size: 0.92rem;
-    font-weight: 600;
-    line-height: 1.35;
+  .skill-builders-intro p {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.65;
     color: #243015;
   }
 
-  .sb-featured__cta {
-    display: inline-block;
-    margin-top: 0.35rem;
-    padding: 0.7rem 1.2rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: #fff;
-    background: var(--kbm-accent, #C2614E);
-    border-radius: 8px;
+  .skill-builders-intro p:last-child {
+    margin-bottom: 0;
   }
 
-  .sb-featured__panel:hover .sb-featured__cta,
-  .sb-featured__panel:focus .sb-featured__cta {
-    background: var(--kbm-accent-hover, #a94e3d);
-  }
-
-  .skill-builders-section--more {
-    margin-top: 0;
-  }
-
-  .skill-builders-upcoming {
-    margin: 1.75rem 0 0;
-    padding-top: 0.95rem;
-    border-top: 1px solid #ececec;
-    font-size: 0.86rem;
-    line-height: 1.5;
-    color: #6b7280;
-  }
-
-  .skill-builders-upcoming__label {
-    display: block;
-    margin-bottom: 0.2rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #6b7280;
+  .skill-builders-intro__closing {
+    font-weight: 500;
+    color: #52682d;
   }
 
   .skill-builders-divider {
     border: 0;
     border-top: 1px solid #e6e6e6;
-    margin: 1.5rem 0;
+    margin: 2rem 0;
   }
 
   .skill-builders-section {
-    margin-bottom: 0;
+    margin-bottom: 0.5rem;
   }
 
   .skill-builders-section__title {
-    margin: 0 0 0.75rem;
-    font-size: 1.15rem;
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: #52682d;
-    padding-bottom: 0.4rem;
+    padding-bottom: 0.5rem;
     border-bottom: 2px solid #c7d8a4;
   }
 
@@ -509,25 +297,12 @@ const comingSoonItems = [
     gap: 0.65rem;
   }
 
-  .skill-builders-card-list--grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    align-items: stretch;
-  }
-
   .skill-builders-card-list__item {
     margin: 0;
   }
 
-  .skill-builders-card-list--grid .skill-builders-card-list__item {
-    display: flex;
-    min-width: 0;
-  }
-
   /* A class-level display value beats the UA [hidden] rule, so enforce hiding
-     for catalog groups and state-gated cards until the viewer state resolves. */
-  .skill-builders-catalog[hidden],
+     for state-gated cards until the viewer state resolves and reveals one. */
   .skill-builders-card[hidden] {
     display: none !important;
   }
@@ -543,7 +318,6 @@ const comingSoonItems = [
     border-radius: 10px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     box-sizing: border-box;
-    font-weight: 400;
   }
 
   .skill-builders-card--link {
@@ -551,47 +325,22 @@ const comingSoonItems = [
     text-decoration: none;
     color: inherit;
     cursor: pointer;
-    border-left: 5px solid var(--kbm-accent, #C2614E);
-    background: color-mix(in srgb, var(--kbm-accent, #C2614E) 7%, #ffffff);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   button.skill-builders-card--link {
     display: flex;
     font: inherit;
-    font-weight: 400;
     text-align: left;
-    background: color-mix(in srgb, var(--kbm-accent, #C2614E) 7%, #ffffff);
+    background: #fff;
     border: 1px solid #d6dbc9;
-    border-left: 5px solid var(--kbm-accent, #C2614E);
   }
 
   .skill-builders-card--link:hover,
   .skill-builders-card--link:focus {
     border-color: #52682d;
-    border-left-color: var(--kbm-accent, #C2614E);
     box-shadow: 0 2px 8px rgba(82, 104, 45, 0.1);
     outline: none;
-  }
-
-  .skill-builders-card-list--grid .skill-builders-card,
-  .skill-builders-card-list--grid button.skill-builders-card--link {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    width: 100%;
-    height: 100%;
-    padding: 1rem 1.05rem;
-  }
-
-  .skill-builders-card-list--grid .skill-builders-card__text {
-    flex: 1 1 auto;
-    gap: 0.35rem;
-  }
-
-  .skill-builders-card-list--grid .skill-builders-card__badge {
-    margin-top: auto;
   }
 
   .skill-builders-card--planned {
@@ -603,72 +352,6 @@ const comingSoonItems = [
     flex-direction: column;
     gap: 0.2rem;
     min-width: 0;
-  }
-
-  [data-sb-catalog="guest"] .skill-builders-card-list--grid .skill-builders-card--link,
-  [data-sb-catalog="guest"] .skill-builders-card-list--grid button.skill-builders-card--link {
-    background: #fff;
-    border-left-width: 3px;
-    box-shadow: none;
-  }
-
-  [data-sb-catalog="guest"] .skill-builders-card-list--grid .skill-builders-card--link .skill-builders-card__title {
-    color: #3f4d32;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card-list--grid .skill-builders-card--visual {
-    padding: 0;
-    gap: 0;
-    height: auto;
-    min-height: 100%;
-    overflow: visible;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card__media {
-    display: block;
-    flex: 0 0 auto;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 7%, #f3f4f0);
-    overflow: hidden;
-    border-radius: 9px 9px 0 0;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card__media img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card__media--contain {
-    background: #fff;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card__media--contain img {
-    object-fit: contain;
-    object-position: center;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card__placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #9aa194;
-  }
-
-  [data-sb-catalog="member"] .skill-builders-card--visual .skill-builders-card__text {
-    flex: 1 0 auto;
-    width: 100%;
-    padding: 0.9rem 1rem 1.05rem;
-    gap: 0.35rem;
-    overflow: visible;
   }
 
   .skill-builders-card__title {
@@ -684,9 +367,8 @@ const comingSoonItems = [
 
   .skill-builders-card__subtitle {
     font-size: 0.88rem;
-    font-weight: 400;
     line-height: 1.45;
-    color: #243015;
+    color: #4d5a48;
   }
 
   .skill-builders-card__badge {
@@ -799,10 +481,24 @@ const comingSoonItems = [
     background: #f7f8f5;
   }
 
-  @media (max-width: 1024px) {
-    .skill-builders-card-list--grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .skill-builders-steps {
+    margin: 0;
+    padding: 0 0 0 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .skill-builders-steps__item {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #243015;
+    padding-left: 0.25rem;
+  }
+
+  .skill-builders-steps__item::marker {
+    color: #52682d;
+    font-weight: 600;
   }
 
   @media (max-width: 600px) {
@@ -810,19 +506,17 @@ const comingSoonItems = [
       padding-inline: 16px;
     }
 
-    .skill-builders-card-list--grid {
-      grid-template-columns: 1fr;
+    .skill-builders-body__image {
+      float: none;
+      display: block;
+      width: min(280px, 100%);
+      margin: 0 auto 1.25rem;
     }
 
     .skill-builders-card {
       flex-direction: column;
       align-items: flex-start;
       gap: 0.4rem;
-    }
-
-    [data-sb-catalog="member"] .skill-builders-card-list--grid .skill-builders-card--visual {
-      align-items: stretch;
-      gap: 0;
     }
   }
 </style>
@@ -847,28 +541,23 @@ const comingSoonItems = [
     }
   }
 
-  async function syncSkillBuilderCatalog(): Promise<void> {
+  async function syncSkillBuilderCards(): Promise<void> {
+    const cards = document.querySelectorAll<HTMLElement>("[data-sb-state]");
+    if (cards.length === 0) return;
+
     const state = await resolveSkillBuilderViewerState();
-    const isMember = state === "memberAccess";
-
-    document.querySelectorAll<HTMLElement>("[data-sb-catalog]").forEach((el) => {
-      const show =
-        el.dataset.sbCatalog === "member" ? isMember : !isMember;
-      el.toggleAttribute("hidden", !show);
-    });
-
-    document.querySelectorAll<HTMLElement>("[data-sb-state]").forEach((card) => {
+    cards.forEach((card) => {
       card.toggleAttribute("hidden", card.dataset.sbState !== state);
     });
   }
 
   function bindSkillBuilderCardRefresh(): void {
-    void syncSkillBuilderCatalog();
-    window.addEventListener("auth:updated", () => void syncSkillBuilderCatalog());
+    void syncSkillBuilderCards();
+    window.addEventListener("auth:updated", () => void syncSkillBuilderCards());
     const ms = window.$memberstackDom;
     if (ms?.on) {
-      ms.on("member.login", () => void syncSkillBuilderCatalog());
-      ms.on("member.logout", () => void syncSkillBuilderCatalog());
+      ms.on("member.login", () => void syncSkillBuilderCards());
+      ms.on("member.logout", () => void syncSkillBuilderCards());
     }
   }
 

@@ -15,8 +15,6 @@ export type VideoPublicRecord = {
   category?: string;
   subcategory?: string;
   vimeo_id?: number;
-  /** Unlisted privacy hash for player embeds (`h=`). Not a visitor-facing share URL. */
-  vimeo_hash?: string;
   /** Optional catalog chapters (seconds + label) for jump controls on video detail, etc. */
   chapters?: Array<{ label: string; time: number }>;
   /** Same shape as `chapters`; used when the catalog stores markers as jumpLinks. */
@@ -124,7 +122,6 @@ export function normalizeVideoForSave(
   if (vimeo_id === null) {
     return { ok: false, error: `Video ${index + 1}: vimeo_id is required (number).` };
   }
-  const vimeo_hash = trimStr(base.vimeo_hash);
 
   const description = trimStr(base.description);
   const access_level = trimStr(base.access_level);
@@ -181,9 +178,6 @@ export function normalizeVideoForSave(
   out.slug = slug;
   out.title = title;
   out.vimeo_id = vimeo_id;
-
-  if (vimeo_hash) out.vimeo_hash = vimeo_hash;
-  else delete out.vimeo_hash;
 
   if (description) out.description = description;
   else delete out.description;

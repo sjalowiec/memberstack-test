@@ -7,7 +7,6 @@ export type VideoCatalogRecord = {
   title?: string;
   description?: string;
   summary?: string;
-  posterUrl?: string;
   status?: string;
   category?: string;
   subcategory?: string;

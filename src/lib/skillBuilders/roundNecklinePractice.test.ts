@@ -7,6 +7,7 @@ import {
   rowsPerInchFromGauge,
   stitchesPerInchFromGauge,
 } from "./roundNecklinePractice";
+import { buildRoundNecklinePracticeDiagramValues } from "./roundNecklinePracticeDiagram";
 
 describe("roundNecklinePractice gauge helpers", () => {
   it("converts stitches and rows per 4 inches to per inch", () => {
@@ -104,14 +105,16 @@ describe("calculateRoundNecklinePractice", () => {
 
   it("populates SVG placeholders from the same result object", () => {
     const result = practiceResult();
+    const diagram = buildRoundNecklinePracticeDiagramValues(result);
 
-    expect(result.svgPlaceholders.HEIGHT).toBe(result.rowsBeforeNeckline);
-    expect(result.svgPlaceholders.HEIGHT_TOTAL).toBe(result.totalRows);
-    expect(result.svgPlaceholders.DEPTH).toBe(result.neckDepthRows);
-    expect(result.svgPlaceholders["cast-on"]).toBe(result.castOnStitches);
-    expect(result.svgPlaceholders.NECK_STS).toBe(result.neckOpeningStitches);
-    expect(result.svgPlaceholders.SHOULDER_BINDOFF_STS).toBe(result.leftShoulderStitches);
-    expect(result.svgPlaceholders["JP-SHAPING"]).toBe(result.japaneseNotationLines.join("\n"));
-    expect(result.svgPlaceholders.JP_LINE1).toBe(result.japaneseNotationLines[0]);
+    expect(diagram).toEqual(result.svgPlaceholders);
+    expect(diagram.HEIGHT).toBe(result.rowsBeforeNeckline);
+    expect(diagram.HEIGHT_TOTAL).toBe(result.totalRows);
+    expect(diagram.DEPTH).toBe(result.neckDepthRows);
+    expect(diagram["cast-on"]).toBe(result.castOnStitches);
+    expect(diagram.NECK_STS).toBe(result.neckOpeningStitches);
+    expect(diagram.SHOULDER_BINDOFF_STS).toBe(result.leftShoulderStitches);
+    expect(diagram["JP-SHAPING"]).toBe(result.japaneseNotationLines.join("\n"));
+    expect(diagram.JP_LINE1).toBe(result.japaneseNotationLines[0]);
   });
 });

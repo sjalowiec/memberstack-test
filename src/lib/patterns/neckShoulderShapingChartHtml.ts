@@ -177,41 +177,6 @@ function renderNsChartProgressToolbarHtml(): string {
   </div>`;
 }
 
-/**
- * Standalone active-shoulder checklist (Done / RC / Action / Edge / Sts Remaining)
- * using the same markup, toolbar, and progress hooks as sweater pattern charts.
- */
-export function renderActiveSideChecklistHtml(
-  rows: readonly ActiveSideInstructionTableRow[],
-  chartProgressId: string,
-): string {
-  const id = String(chartProgressId ?? "").trim() || "ns-shaping-chart-primary";
-  const rowsHtml = renderActiveSideInstructionRowsTrHtml(rows, id);
-  return `<div class="ns-shaping-chart">
-  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(id)}">
-    ${renderNsChartProgressToolbarHtml()}
-    <div class="ns-shaping-chart__table-wrap">
-    <div class="ns-shaping-chart__table-scroll">
-    <table class="ns-shaping-chart__table ns-shaping-chart__table--checklist">
-      <thead>
-        <tr>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-complete" aria-label="Completion status">Done</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC <span class="ns-shaping-chart__row-counter-side">(carriage side)</span></th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rowsHtml}
-      </tbody>
-    </table>
-    </div>
-    </div>
-  </div>
-</div>`;
-}
-
 function rowClassFromHighlight(hi: ReturnType<typeof getNeckShoulderChartRowHighlightFromRow>): string {
   if (hi === "neckBothSides") return "ns-shaping-chart__tr ns-shaping-chart__tr--neck-both";
   if (hi === "shoulderAndNeck") return "ns-shaping-chart__tr ns-shaping-chart__tr--shoulder-neck";

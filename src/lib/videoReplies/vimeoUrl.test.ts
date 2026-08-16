@@ -26,15 +26,6 @@ describe("normalizeVimeoUrl", () => {
     );
   });
 
-  it("builds the unlisted catalog player URL for video 1218264661", () => {
-    const result = normalizeVimeoUrl("https://vimeo.com/1218264661/b1bc386c3c");
-    expect(result?.vimeoId).toBe("1218264661");
-    expect(result?.privacyHash).toBe("b1bc386c3c");
-    expect(result?.safeVimeoEmbedUrl).toBe(
-      "https://player.vimeo.com/video/1218264661?h=b1bc386c3c",
-    );
-  });
-
   it("preserves privacy hash from query string", () => {
     const result = normalizeVimeoUrl("https://player.vimeo.com/video/123456789?h=hashvalue");
     expect(result?.privacyHash).toBe("hashvalue");

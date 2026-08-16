@@ -9,7 +9,6 @@
  * This generates both visible FAQ HTML and JSON-LD schema for SEO/AEO.
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
 
 interface FAQItem {
   question: string;
@@ -62,7 +61,7 @@ const faqSchema = faqs.length > 0 ? JSON.stringify({
     
     <!-- A) HERO SECTION -->
     <section class="sb-hero">
-      <SkillBuilderPageHeader title={title} />
+      <h1>{title}</h1>
       <p class="sb-subtitle">{subtitle}</p>
       <div class="sb-meta">
         <span class="sb-badge sb-price">{price}</span>
@@ -166,14 +165,10 @@ const faqSchema = faqs.length > 0 ? JSON.stringify({
   border: 1px solid var(--ring, #e5e8e0);
 }
 
-.sb-hero :global(.sb-page-title) {
-  justify-content: center;
-}
-
-.sb-hero :global(h1) {
+.sb-hero h1 {
   font-size: var(--text-xxl, 2.25rem);
   color: var(--kbm-green, #52682d);
-  margin-bottom: 0;
+  margin-bottom: 0.5rem;
 }
 
 .sb-subtitle {

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="97" height="82" viewBox="27 45 97 82" fill="none">
-  <title>Skill Builder steps icon</title>
-  <path d="M31 123V101H60V80H89V59H120V123H31Z" fill="#E6E9E1"/>
-  <path d="M60 80H89V123H60V80Z" fill="#CAD4BF"/>
-  <path d="M89 59H120V123H89V59Z" fill="#A8B995"/>
-  <path d="M39 108H52C57 108 60 105 60 100V89C60 83 63 80 69 80H81C86 80 89 77 89 72" stroke="#2D3B4F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M89 72V59H111" stroke="#C2614E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M104 52L111 59L104 66" stroke="#C2614E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
