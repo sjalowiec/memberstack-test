@@ -35,6 +35,19 @@ describe("shaping-map label typography", () => {
     expect(practiceWeight).toBeLessThan(defaultWeight);
     expect(practiceSize).toBeGreaterThanOrEqual(12);
   });
+
+  it("makes practice stitch-count annotations larger than quiet RC numbers", () => {
+    const annotationBlock =
+      shapingMapCss.match(/\.shaping-map-annotation\s*\{[^}]*\}/)?.[0] ?? "";
+    const practiceBlock =
+      shapingMapCss.match(/\.shaping-map__svg--practice\s+\.shaping-map-row-number\s*\{[^}]*\}/)?.[0] ?? "";
+    const stepSize = Number(shapingMapCss.match(/\.shaping-map-step-label\s*\{[^}]*font-size:\s*([\d.]+)px/)?.[1]);
+    const annotationSize = Number(annotationBlock.match(/font-size:\s*([\d.]+)px/)?.[1]);
+    const practiceRowSize = Number(practiceBlock.match(/font-size:\s*([\d.]+)px/)?.[1]);
+    expect(annotationSize).toBe(18);
+    expect(annotationSize).toBeGreaterThan(practiceRowSize);
+    expect(annotationSize).toBeLessThan(stepSize);
+  });
 });
 
 describe("ns-visual-guides print layout regression", () => {

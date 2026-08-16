@@ -206,6 +206,8 @@ export const SHAPING_MAP_SYMMETRICAL_NECK_LABEL_ABOVE_LINE_PX = 12;
 export const SHAPING_MAP_ROW_NUMBER_FONT_PX = SHAPING_MAP_STEP_LABEL_FONT_PX;
 /** Keep in sync with `.shaping-map-center-label` in shaping-map.css */
 export const SHAPING_MAP_CENTER_LABEL_FONT_PX = 12;
+/** Keep in sync with `.shaping-map-annotation` in shaping-map.css */
+export const SHAPING_MAP_ANNOTATION_FONT_PX = 18;
 /** Extra left reserve beyond measured center-label width (scales with digit count). */
 const CENTER_LABEL_MARGIN_PAD_PX = 16;
 /** Vertical offset of the center bind-off label below its row line (smaller = closer to the outline). */

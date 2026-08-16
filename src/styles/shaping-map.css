@@ -146,9 +146,12 @@
   stroke-width: 2.5;
 }
 
+/* Instructional stitch counts on practice-piece charts (shoulder / center / cast-on).
+ * Shared by every Skill Builder diagram instance so both displayed sizes stay consistent.
+ * Keep in sync with SHAPING_MAP_ANNOTATION_FONT_PX. */
 .shaping-map-annotation {
   fill: #111111;
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 700;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }

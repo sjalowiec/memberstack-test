@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatCenterStitchesLabel,
+  SHAPING_MAP_ANNOTATION_FONT_PX,
   SHAPING_MAP_KNIT_ROW_HEIGHT_RATIO,
   SHAPING_MAP_SYMMETRICAL_NECK_LABEL_ABOVE_LINE_PX,
 } from "../patterns/shapingMapSvg";
@@ -17,7 +18,11 @@ import {
   buildRoundNecklineSkillBuilderShoulderMapData,
   buildRoundNecklineSkillBuilderShoulderWorkHtml,
 } from "./roundNecklineSkillBuilderDiagram";
-import { calculateRoundNecklineSkillBuilder } from "./roundNecklineSkillBuilders";
+import {
+  calculateRoundNecklineSkillBuilder,
+  formatSkillBuilderRcLabel,
+  SHAPING_ROW_COUNTER_START,
+} from "./roundNecklineSkillBuilders";
 
 const GAUGE = { stitchesPerFourInches: 16, rowsPerFourInches: 24 };
 
@@ -434,6 +439,59 @@ describe("round neckline Skill Builder shaping charts at 16 sts / 24 rows per 4 
     expect(buildRoundNecklineSkillBuilderDiagramHtml(sample)).not.toContain("BO = bind off");
     expect(buildRoundNecklineSkillBuilderDiagramHtml(sample)).not.toContain("Center: bind off");
   });
+
+  it("uses one shared annotation class for instructional stitch-count labels", () => {
+    const gauges = [GAUGE, { stitchesPerFourInches: 28, rowsPerFourInches: 40 }] as const;
+    for (const [builderId, exerciseId] of CASES) {
+      for (const gauge of gauges) {
+        const sample = calculateRoundNecklineSkillBuilder(gauge, builderId, exerciseId)!;
+        const svg = buildRoundNecklineSkillBuilderDiagramSvg(sample);
+        const annotations = [
+          ...svg.matchAll(/<text class="shaping-map-annotation"[^>]*>([^<]*)<\/text>/g),
+        ].map((m) => m[1]);
+        expect(annotations).toEqual([
+          `${sample.firstShoulderSectionStitches} sts`,
+          `${sample.firstShoulderSectionStitches} sts`,
+          `Cast on ${sample.castOnStitches} sts`,
+          `-${sample.centerBindOffStitches} center sts`,
+        ]);
+        expect(svg).not.toMatch(/class="shaping-map-annotation"[^>]*font-size=/);
+        expect(SHAPING_MAP_ANNOTATION_FONT_PX).toBe(18);
+
+        const viewBox = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+        expect(viewBox).toBeTruthy();
+        const svgHeight = Number(viewBox![2]);
+        const practice = svg.match(
+          /class="shaping-map-practice"[^>]*y="([\d.]+)"[^>]*height="([\d.]+)"/,
+        );
+        expect(practice).toBeTruthy();
+        const gridBottom = Number(practice![1]);
+        const practiceBottom = gridBottom + Number(practice![2]);
+        const sectionLabels = [
+          ...svg.matchAll(
+            /<text class="shaping-map-annotation" x="([\d.]+)" y="([\d.]+)"[^>]*>(\d+) sts<\/text>/g,
+          ),
+        ];
+        const centerAnn = svg.match(
+          /<text class="shaping-map-annotation" x="([\d.]+)" y="([\d.]+)"[^>]*>-[\d]+ center sts<\/text>/,
+        );
+        const castOn = svg.match(
+          /<text class="shaping-map-annotation" x="([\d.]+)" y="([\d.]+)"[^>]*>Cast on [\d]+ sts<\/text>/,
+        );
+        expect(sectionLabels).toHaveLength(2);
+        expect(centerAnn).toBeTruthy();
+        expect(castOn).toBeTruthy();
+        const shoulderY = Number(sectionLabels[0]![2]);
+        const centerY = Number(centerAnn![2]);
+        const castOnY = Number(castOn![2]);
+        expect(shoulderY - gridBottom).toBeCloseTo(SHAPING_MAP_ANNOTATION_FONT_PX, 1);
+        expect(centerY - shoulderY).toBeCloseTo(SHAPING_MAP_ANNOTATION_FONT_PX, 1);
+        expect(castOnY - practiceBottom).toBeCloseTo(SHAPING_MAP_ANNOTATION_FONT_PX, 1);
+        expect(castOnY).toBeLessThanOrEqual(svgHeight);
+        expect(centerY).toBeLessThan(practiceBottom);
+      }
+    }
+  });
 });
 
 function edgeLabelX(svg: string, label: "Outside Edge" | "Neck Edge"): number {
@@ -452,24 +510,36 @@ describe("round neckline Skill Builder working charts and checklists", () => {
         const steps = buildRoundNecklineGetStartedSteps(sample);
         const text = steps.map(formatRoundNecklineGetStartedStep).join(" ");
         const html = buildRoundNecklineGetStartedHtml(sample);
+        const shapingStart = formatSkillBuilderRcLabel(SHAPING_ROW_COUNTER_START);
         expect(steps).toHaveLength(6);
         expect(steps[0]?.emphasis).toBe(`Cast on ${sample.castOnStitches} stitches.`);
-        expect(steps[1]?.emphasis).toBe(`Knit ${sample.rowsBeforeNeckline} rows even.`);
+        expect(steps[1]?.emphasis).toBe(
+          `Knit ${sample.rowsBeforeNeckline} rows even. Reset row counter to 000.`,
+        );
+        expect(steps[2]?.rc).toBe(SHAPING_ROW_COUNTER_START);
         expect(steps[2]?.emphasis).toBe(
           `break the yarn and scrap off the ${sample.firstShoulderSectionStitches} right-shoulder stitches.`,
         );
+        expect(steps[3]?.rc).toBe(SHAPING_ROW_COUNTER_START);
         expect(steps[3]?.emphasis).toBe(
           `bind off ${sample.centerBindOffStitches} center stitches.`,
         );
+        expect(steps[5]?.emphasis).toBe("reset the row counter to 000");
         expect(text).toContain(`Cast on ${sample.castOnStitches} stitches.`);
-        expect(text).toContain(`Knit ${sample.rowsBeforeNeckline} rows even.`);
+        expect(text).toContain(`Knit ${sample.rowsBeforeNeckline} rows even. Reset row counter to 000.`);
+        expect(text).toContain(`${shapingStart} At the shaping row,`);
+        expect(text).toContain(`${shapingStart} Join yarn at the center neck edge`);
         expect(text).toContain(`${sample.firstShoulderSectionStitches} right-shoulder stitches`);
         expect(text).toContain(`bind off ${sample.centerBindOffStitches} center stitches`);
+        expect(text).toContain("reset the row counter to 000");
+        expect(text).toContain("shape the right shoulder as a mirror image");
         expect(text).not.toMatch(/Follow the chart to cast on/);
         expect(text).not.toMatch(/Common Mistakes|Pause and Check|Worksheet Summary/i);
         expect(html).toContain("<li>");
-        expect(html).toContain("<strong>");
+        expect(html).toContain(`<strong>${shapingStart}</strong>`);
+        expect(html).toContain("<strong>reset the row counter to 000</strong>");
         expect(html.match(/<li>/g)?.length).toBe(6);
+        expect(html.match(new RegExp(`<strong>${shapingStart}</strong>`, "g"))?.length).toBe(2);
         if (sample.shoulderStyle === "shaped") {
           expect(text).toMatch(/neck-edge and outside-shoulder shaping during the same rows/);
           expect(text).toMatch(/working both edges during the same rows/);
@@ -479,6 +549,24 @@ describe("round neckline Skill Builder working charts and checklists", () => {
         }
       }
     }
+  });
+
+  it("uses the 32-stitch / 12-row sample Get Started wording with RC:000 at the shaping start", () => {
+    const sample = calculateRoundNecklineSkillBuilder(GAUGE, "round-neckline-basics", "shallow-back")!;
+    expect(sample.castOnStitches).toBe(32);
+    expect(sample.rowsBeforeNeckline).toBe(12);
+    expect(sample.firstShoulderSectionStitches).toBe(13);
+    expect(sample.centerBindOffStitches).toBe(6);
+    const steps = buildRoundNecklineGetStartedSteps(sample).map(formatRoundNecklineGetStartedStep);
+    expect(steps[1]).toBe("Knit 12 rows even. Reset row counter to 000.");
+    expect(steps[2]).toBe(
+      "RC:000 At the shaping row, break the yarn and scrap off the 13 right-shoulder stitches.",
+    );
+    expect(steps[3]).toBe(
+      "RC:000 Join yarn at the center neck edge and bind off 6 center stitches.",
+    );
+    expect(steps[5]).toContain("reset the row counter to 000");
+    expect(steps[5]).toContain("shape the right shoulder as a mirror image");
   });
 
   it("builds a reversed right-shoulder checklist with separate progress ids", () => {
@@ -550,6 +638,22 @@ describe("round neckline Skill Builder working charts and checklists", () => {
         );
         expect(leftWork.checklistHtml).toContain("Knit even");
         expect(rightWork.checklistHtml).toContain("Knit even");
+
+        const shapingRows = sample.firstShoulderRows.filter((row) => row.edge !== "even");
+        expect(shapingRows.length).toBeGreaterThan(0);
+        for (const row of shapingRows) {
+          const label = formatSkillBuilderRcLabel(row.row);
+          const leftMatch = left.find((item) => item.rc === row.row);
+          const rightMatch = right.find((item) => item.rc === row.row);
+          expect(leftMatch?.action.startsWith(`${label} `)).toBe(true);
+          expect(rightMatch?.action).toBe(leftMatch?.action);
+          expect(leftWork.checklistHtml).toContain(label);
+          expect(rightWork.checklistHtml).toContain(label);
+        }
+        expect(left.filter((row) => row.action === "Knit even").length).toBeGreaterThan(0);
+        expect(left.some((row) => row.action.startsWith("RC:") && row.action.includes("Knit even"))).toBe(
+          false,
+        );
       }
     }
   });
@@ -584,6 +688,10 @@ describe("round neckline Skill Builder working charts and checklists", () => {
         true,
       );
       expect(left.some((row) => row.edge === "Shoulder" && /Bind off/.test(row.action))).toBe(true);
+      for (const row of sample.firstShoulderRows.filter((item) => item.edge !== "even")) {
+        const match = left.find((item) => item.rc === row.row);
+        expect(match?.action.startsWith(`${formatSkillBuilderRcLabel(row.row)} `)).toBe(true);
+      }
       const neckRows = new Set(left.filter((row) => row.edge === "Neck").map((row) => row.rc));
       const bindOffShoulderRows = left
         .filter((row) => row.edge === "Shoulder" && /Bind off/.test(row.action))

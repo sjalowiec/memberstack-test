@@ -10,6 +10,7 @@ import {
   parseRoundNecklinePracticeId,
   ROUND_NECKLINE_PRACTICE_CHOICES,
   ROUND_NECKLINE_SKILL_BUILDERS,
+  formatSkillBuilderRcLabel,
   formatSkillBuilderRowCounter,
   PAUSE_AND_CHECK_TEXT,
   roundNecklineSkillBuilderIsMemberOnly,
@@ -127,13 +128,19 @@ describe("round neckline Skill Builder catalog", () => {
     );
   });
 
-  it("adds the catalog video only to the shallow-back straight-shoulder practice", () => {
+  it("adds the catalog video to both straight-shoulder practices and not shaped-shoulder ones", () => {
     expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/shallow-back"]).toBe(
       2212,
     );
+    expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/deep-front"]).toBe(
+      2212,
+    );
     expect(skillBuilderVideoSlot("round-neckline-basics/shallow-back")?.vimeoId).toBe("1218264661");
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")?.vimeoId).toBe("1218264661");
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")).toEqual(
+      skillBuilderVideoSlot("round-neckline-basics/shallow-back"),
+    );
     expect(skillBuilderVideoSlot("round-neckline-basics")).toBeNull();
-    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")).toBeNull();
     expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders")).toBeNull();
     expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/shallow-back")).toBeNull();
     expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/deep-front")).toBeNull();
@@ -180,6 +187,14 @@ describe("calculateRoundNecklineSkillBuilder", () => {
     expect(decreases.every((row) => /Decrease 1 stitch/.test(row.action))).toBe(true);
     expect(sample.firstShoulderRows.at(-1)?.row).toBe(5);
     expect(formatSkillBuilderRowCounter(sample.firstShoulderRows.at(-1)!.row)).toBe("005");
+    expect(formatSkillBuilderRcLabel(0)).toBe("RC:000");
+    expect(formatSkillBuilderRcLabel(2)).toBe("RC:002");
+    expect(formatSkillBuilderRcLabel(4)).toBe("RC:004");
+    expect(
+      sample.firstShoulderRows
+        .filter((row) => row.edge !== "even")
+        .map((row) => formatSkillBuilderRcLabel(row.row)),
+    ).toEqual(["RC:000", "RC:002", "RC:004"]);
   });
 
   it("uses the same RC 000 neck-edge sequence on all four exercises at 16/24", () => {
