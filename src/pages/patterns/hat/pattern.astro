@@ -165,7 +165,9 @@ const hatZeroBodyRowsWarningMessage =
                 {HAT_PATTERN_PERSIST_NOTICE_TITLE}
               </p>
               <p class="hat-pattern-persist-notice__warning">
-                {HAT_PATTERN_PERSIST_WARNING_LEAD}{" "}
+                {HAT_PATTERN_PERSIST_WARNING_LEAD}
+              </p>
+              <p class="hat-pattern-persist-notice__warning">
                 <button
                   type="button"
                   class="hat-pattern-print-inline-link print-visible"
@@ -459,6 +461,10 @@ const hatZeroBodyRowsWarningMessage =
     font-size: 0.95rem;
     line-height: 1.5;
     color: #1f2937;
+  }
+
+  .hat-pattern-persist-notice__warning + .hat-pattern-persist-notice__warning {
+    margin-top: 0.45rem;
   }
 
   .hat-pattern-persist-notice__membership {
