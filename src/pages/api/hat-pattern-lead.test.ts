@@ -99,7 +99,7 @@ describe("Hat lead capture markup and wiring", () => {
       "Enter your email to view your custom knitting instructions instantly on-screen.",
     );
     expect(sharedSource).toContain(
-      "Tip: Be sure to print your pattern so you have a copy for later.",
+      "Tip: Be sure to print or download the PDF so you have a copy for later.",
     );
     expect(sharedSource).toContain("Free. No account or password needed.");
     expect(sharedSource).not.toContain("Free. No membership required.");

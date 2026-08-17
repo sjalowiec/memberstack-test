@@ -12,7 +12,7 @@ import { PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_HREF } from "../patternBuilderAcco
 export const HAT_PATTERN_PERSIST_NOTICE_TITLE = "SAVE YOUR PATTERN";
 
 export const HAT_PATTERN_PERSIST_WARNING_LEAD =
-  "This pattern is temporary and isn’t saved to your account.";
+  "This pattern is temporary and cannot be retrieved later.";
 
 /** Emphasized preserve instruction (also the inline print/PDF control label). */
 export const HAT_PATTERN_PERSIST_WARNING_EMPHASIS =

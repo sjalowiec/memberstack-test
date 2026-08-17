@@ -50,8 +50,12 @@ describe("resolveHatPatternPersistNotice", () => {
       expect(notice.showNotice).toBe(true);
       expect(notice.warningLead).toBe(HAT_PATTERN_PERSIST_WARNING_LEAD);
       expect(notice.warningEmphasis).toBe(HAT_PATTERN_PERSIST_WARNING_EMPHASIS);
+      expect(notice.warningLead).toBe(
+        "This pattern is temporary and cannot be retrieved later.",
+      );
       expect(notice.warningText).toContain("temporary");
-      expect(notice.warningText).toMatch(/isn.?t saved/i);
+      expect(notice.warningText).toContain("cannot be retrieved later");
+      expect(notice.warningText).not.toMatch(/isn.?t saved/i);
       expect(notice.warningText).toContain(HAT_PATTERN_PERSIST_WARNING_EMPHASIS);
     }
   });
@@ -138,7 +142,12 @@ describe("Hat Pattern persist notice page wiring", () => {
   });
 
   it("emphasizes the print/download sentence and excludes membership pitch/CTA from print", () => {
+    expect(patternPageSource).toContain("HAT_PATTERN_PERSIST_WARNING_LEAD");
     expect(patternPageSource).toContain("HAT_PATTERN_PERSIST_WARNING_EMPHASIS");
+    expect(patternPageSource).not.toMatch(/isn.?t saved to your account/i);
+    expect(patternPageSource).toMatch(
+      /hat-pattern-persist-notice__warning[\s\S]*?HAT_PATTERN_PERSIST_WARNING_LEAD[\s\S]*?hat-pattern-persist-notice__warning[\s\S]*?HAT_PATTERN_PERSIST_WARNING_EMPHASIS/,
+    );
     expect(patternPageSource).toContain("hat-pattern-print-inline-link");
     expect(patternPageSource).toContain("print-visible");
     expect(patternPageSource).toContain("data-hat-pattern-persist-membership");
