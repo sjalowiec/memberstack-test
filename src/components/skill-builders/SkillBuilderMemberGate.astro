@@ -1,0 +1,55 @@
+---
+import MemberLockOverlay from "../ui/MemberLockOverlay.astro";
+import {
+  SKILL_BUILDER_MEMBER_LOCK_CTA,
+  SKILL_BUILDER_MEMBER_LOCK_MESSAGE,
+  SKILL_BUILDER_MEMBER_LOCK_TITLE,
+} from "../../lib/skillBuilders/skillBuilderMemberGate";
+---
+
+<div class="sb-member-lock" data-sb-member-lock data-gated="locked">
+  <MemberLockOverlay
+    title={SKILL_BUILDER_MEMBER_LOCK_TITLE}
+    message={SKILL_BUILDER_MEMBER_LOCK_MESSAGE}
+    ctaText={SKILL_BUILDER_MEMBER_LOCK_CTA}
+  />
+</div>
+<template data-sb-member-body-template>
+  <slot />
+</template>
+<div data-sb-member-body-mount hidden></div>
+
+<script>
+  import { bindSkillBuilderMemberGate } from "../../lib/skillBuilders/skillBuilderMemberGate";
+
+  function start(): void {
+    bindSkillBuilderMemberGate();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+</script>
+
+<style>
+  .sb-member-lock {
+    position: relative;
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .sb-member-lock :global(.member-lock-overlay) {
+    position: relative;
+    inset: auto;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .sb-member-lock :global(.member-lock-overlay-inner) {
+    transform: none;
+    max-width: 28rem;
+  }
+</style>

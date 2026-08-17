@@ -25,6 +25,8 @@ const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdFor
 // JSON may store these as numbers, so coerce to a trimmed string before use.
 const rawVimeoId = (video as any)?.vimeo_id_public ?? (video as any)?.vimeo_id;
 const vimeoId = rawVimeoId ? String(rawVimeoId).trim() : "";
+const privacyHash =
+  typeof (video as any)?.vimeo_hash === "string" ? String((video as any).vimeo_hash).trim() : "";
 const title = (video as any)?.title ?? "Video";
 const description = (video as any)?.description ?? "";
 const downloadUrlRaw =
@@ -133,6 +135,7 @@ const enableVideoChapterControls = hasCatalogChapters;
               title={title}
               access_level={effectiveAccessLevel}
               enableVimeoPlayerApi={enableVideoChapterControls}
+              privacyHash={privacyHash}
             />
           </section>
 

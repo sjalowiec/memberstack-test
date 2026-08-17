@@ -1,0 +1,23 @@
+---
+import RoundNecklineSkillBuilderLanding from "./RoundNecklineSkillBuilderLanding.astro";
+import {
+  roundNecklineSkillBuilderIsMemberOnly,
+  type RoundNecklineSkillBuilderExerciseId,
+  type RoundNecklineSkillBuilderId,
+} from "../../lib/skillBuilders/roundNecklineSkillBuilders";
+
+interface Props {
+  builderId: RoundNecklineSkillBuilderId;
+  exerciseId: RoundNecklineSkillBuilderExerciseId;
+  memberOnly?: boolean;
+}
+
+const { builderId, exerciseId, memberOnly = roundNecklineSkillBuilderIsMemberOnly(builderId) } =
+  Astro.props;
+---
+
+<RoundNecklineSkillBuilderLanding
+  builderId={builderId}
+  initialExerciseId={exerciseId}
+  memberOnly={memberOnly}
+/>

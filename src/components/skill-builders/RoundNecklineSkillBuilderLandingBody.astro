@@ -1,0 +1,280 @@
+---
+import {
+  ROUND_NECKLINE_PRACTICE_CHOICES,
+  ROUND_NECKLINE_SKILL_BUILDERS,
+  type RoundNecklineSkillBuilderExerciseId,
+  type RoundNecklineSkillBuilderId,
+} from "../../lib/skillBuilders/roundNecklineSkillBuilders";
+import RoundNecklineSkillBuilderExerciseBody from "./RoundNecklineSkillBuilderExerciseBody.astro";
+
+interface Props {
+  builderId: RoundNecklineSkillBuilderId;
+  initialExerciseId: RoundNecklineSkillBuilderExerciseId;
+  memberOnly?: boolean;
+}
+
+const { builderId, initialExerciseId, memberOnly = false } = Astro.props;
+const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
+---
+
+<div class="sb-setup-summary" data-sb-setup-summary hidden>
+  <p class="sb-setup-summary__text" data-sb-setup-summary-text></p>
+  <button type="button" class="sb-setup-summary__edit" data-sb-edit-setup>
+    Change practice or gauge
+  </button>
+</div>
+
+<div class="sb-landing__intro" data-sb-setup>
+  <p class="sb-landing__purpose">{builder.purpose}</p>
+  {
+    builder.prerequisiteNote && (
+      <p class="sb-landing__note">{builder.prerequisiteNote}</p>
+    )
+  }
+</div>
+
+<section class="sb-practice-choice" data-sb-setup aria-labelledby="sb-choose-practice">
+  <div class="sb-practice-choice__heading">
+    <h2 id="sb-choose-practice">Choose Your Practice</h2>
+    <p class="sb-start-here">Start here</p>
+  </div>
+  <div class="sb-practice-choice__options" role="radiogroup" aria-labelledby="sb-choose-practice">
+    {
+      builder.exercises.map((exercise) => {
+        const choice = ROUND_NECKLINE_PRACTICE_CHOICES[builderId][exercise.id];
+        const selected = exercise.id === initialExerciseId;
+        return (
+          <button
+            type="button"
+            class:list={["sb-practice-choice__option", selected && "is-selected"]}
+            role="radio"
+            aria-checked={selected ? "true" : "false"}
+            data-sb-practice={exercise.id}
+            data-sb-practice-description={exercise.description}
+          >
+            <span class="sb-practice-choice__media">
+              <img src={choice.image} alt="" />
+            </span>
+            <span class="sb-practice-choice__text">
+              <span class="sb-practice-choice__title">{choice.title}</span>
+              <span class="sb-practice-choice__copy">{choice.summary}</span>
+            </span>
+          </button>
+        );
+      })
+    }
+  </div>
+</section>
+
+<RoundNecklineSkillBuilderExerciseBody
+  builderId={builderId}
+  exerciseId={initialExerciseId}
+  memberOnly={memberOnly}
+/>
+
+<style>
+  .sb-practice-choice__heading {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 0.85rem;
+    row-gap: 0.1rem;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 2px solid #c7d8a4;
+  }
+
+  .sb-practice-choice__heading h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.3;
+  }
+
+  .sb-start-here {
+    margin: 0;
+    font-family: "Kalam", cursive;
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: #A94F3D;
+  }
+
+  .sb-setup-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+    margin: 0 0 1.15rem;
+    padding: 0.7rem 0.85rem;
+    background: #f8faf6;
+    border: 1px solid #e8ece3;
+    border-radius: 8px;
+  }
+
+  .sb-setup-summary[hidden] {
+    display: none !important;
+  }
+
+  .sb-setup-summary__text {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #243015;
+  }
+
+  .sb-setup-summary__edit {
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: #52682d;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .sb-setup-summary__edit:hover,
+  .sb-setup-summary__edit:focus-visible {
+    color: #3f4d32;
+    outline: none;
+  }
+
+  .sb-landing__intro {
+    margin: 0 0 1.5rem;
+  }
+
+  .sb-landing__purpose {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #4d5a48;
+  }
+
+  .sb-landing__note {
+    margin: 1rem 0 0;
+    padding: 0.75rem 0.95rem;
+    background: #f8faf6;
+    border: 1px solid #e8ece3;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .sb-practice-choice {
+    margin: 0 0 1.25rem;
+  }
+
+  .sb-practice-choice__options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .sb-practice-choice__option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 0.7rem 0.5rem 0.5rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-left: 5px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: visible;
+  }
+
+  .sb-practice-choice__option.is-selected,
+  .sb-practice-choice__option[aria-checked="true"] {
+    border-color: #c7d8a4;
+    border-left-color: var(--kbm-accent, #C2614E);
+    background: color-mix(in srgb, var(--kbm-accent, #C2614E) 6%, #ffffff);
+  }
+
+  .sb-practice-choice__option:hover,
+  .sb-practice-choice__option:focus-visible {
+    border-color: #52682d;
+    outline: none;
+  }
+
+  .sb-practice-choice__media {
+    display: block;
+    flex: 0 0 38%;
+    width: 38%;
+    aspect-ratio: 4 / 3;
+    background: #fff;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  .sb-practice-choice__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .sb-practice-choice__text {
+    display: flex;
+    flex: 1 1 62%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.1rem 0;
+    overflow: visible;
+  }
+
+  .sb-practice-choice__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.35;
+  }
+
+  .sb-practice-choice__copy {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #4d5a48;
+  }
+
+  @media (max-width: 600px) {
+    .sb-practice-choice__options {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .sb-practice-choice__option {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .sb-practice-choice__media {
+      flex: 0 0 auto;
+      width: 100%;
+    }
+  }
+
+  @media print {
+    .sb-start-here,
+    .sb-setup-summary__edit,
+    [data-sb-setup] {
+      display: none !important;
+    }
+  }
+</style>

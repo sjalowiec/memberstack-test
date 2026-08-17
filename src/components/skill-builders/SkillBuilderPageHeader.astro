@@ -1,0 +1,51 @@
+---
+/**
+ * Shared Skill Builder page title: decorative steps icon + h1.
+ * 64px icon is cropped to the stair graphic and top-aligned with the first title line.
+ */
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<div class="sb-page-title">
+  <img
+    class="sb-page-title__icon"
+    src="/icons/tools/skill-builder-steps.svg"
+    alt=""
+    aria-hidden="true"
+    width="64"
+    height="64"
+  />
+  <h1>{title}</h1>
+</div>
+
+<style>
+  .sb-page-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 0 0.4rem;
+  }
+
+  .sb-page-title__icon {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    display: block;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .sb-page-title h1 {
+    margin: 0;
+    color: var(--kbm-green, #52682d);
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    font-weight: 600;
+    line-height: 1.2;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+</style>
