@@ -1,0 +1,116 @@
+/**
+ * Pattern Project Details — shared title + notes chrome (edit fields + online display).
+ * Visual model matches the production sweater Edit Pattern / finished-pattern notes.
+ */
+
+.sl-edit-title-input {
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding-block: 0.7rem;
+}
+
+.sl-edit-textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.sl-edit-notes-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.sl-edit-notes-toggle__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+}
+
+.sl-edit-notes-toggle__preview {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.sl-edit-notes-toggle__preview[hidden] {
+  display: none;
+}
+
+.sl-edit-notes-toggle__chevron {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  transition: transform 0.15s ease;
+}
+
+.sl-edit-notes-field[data-collapsed="false"] .sl-edit-notes-toggle__chevron {
+  transform: rotate(180deg);
+}
+
+.sl-edit-notes-toggle:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.sl-edit-notes-region {
+  margin-top: 0.5rem;
+}
+
+.sl-edit-notes-region[hidden] {
+  display: none;
+}
+
+.sleeveless-pattern-project-notes-wrap {
+  margin: 0;
+}
+
+.sleeveless-pattern-project-notes__head {
+  margin-bottom: 0.25rem;
+}
+
+.sleeveless-pattern-project-notes {
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fff);
+}
+
+.sleeveless-pattern-project-notes__label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+}
+
+.sleeveless-pattern-project-notes__text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #4b5563;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

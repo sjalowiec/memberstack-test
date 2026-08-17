@@ -20,7 +20,7 @@ import {
   HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
 } from "../../../../lib/patterns/hat/hatPatternNavigation";
 import { HAT_SUMMARY_MEASUREMENT_FIELDS } from "../../../../lib/patterns/hat/hatPatternEditTargets";
-import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
+import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
 import PatternSummaryDiagramStage from "../../../../components/patterns/PatternSummaryDiagramStage.astro";
 import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
@@ -74,21 +74,16 @@ import "../../../../styles/patterns/pattern-editable-pencil.css";
             actionsAttr="data-hat-edit-actions"
           >
             <Fragment slot="quick">
-              <div class="sl-edit-field" data-hat-edit-title-field hidden>
-                <label class="sl-edit-label" for="hat-edit-title">
-                  <span class="pattern-editable-heading">
-                    Pattern title
-                    <PatternEditablePencilIcon />
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  id="hat-edit-title"
-                  class="sl-edit-input"
-                  data-hat-edit-title
-                  data-testid="hat-edit-title"
-                  placeholder="Hat"
-                  autocomplete="off"
+              <div data-hat-edit-title-field hidden>
+                <PatternProjectDetails
+                  titleId="hat-edit-title"
+                  notesId="hat-edit-notes"
+                  notesRegionId="hat-edit-notes-region"
+                  titlePlaceholder="Hat"
+                  titleInputAttr="data-hat-edit-title"
+                  titleTestId="hat-edit-title"
+                  notesInputAttr="data-hat-edit-notes"
+                  notesTestId="hat-edit-notes"
                 />
               </div>
 

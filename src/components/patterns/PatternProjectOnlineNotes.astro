@@ -1,0 +1,47 @@
+---
+/**
+ * Shared online "Project notes" block for finished custom pattern pages.
+ * Hidden until the page script fills it from the saved project's notes.
+ */
+import "../../styles/patterns/pattern-project-details.css";
+
+interface Props {
+  wrapAttr?: string;
+  blockAttr?: string;
+  textAttr?: string;
+}
+
+const {
+  wrapAttr = "data-sleeveless-pattern-online-notes-wrap",
+  blockAttr = "data-sleeveless-pattern-online-notes",
+  textAttr = "data-sleeveless-pattern-online-notes-text",
+} = Astro.props;
+
+const wrapAttrs: Record<string, string> = { [wrapAttr]: "" };
+const blockAttrs: Record<string, string> = { [blockAttr]: "" };
+const textAttrs: Record<string, string> = { [textAttr]: "" };
+---
+
+<div
+  class="sleeveless-pattern-project-notes-wrap"
+  data-pattern-project-online-notes-wrap
+  {...wrapAttrs}
+  hidden
+>
+  <div class="sleeveless-pattern-project-notes__head">
+    <p class="sleeveless-pattern-project-notes__label">Project notes</p>
+  </div>
+  <div
+    class="sleeveless-pattern-project-notes"
+    data-pattern-project-online-notes
+    {...blockAttrs}
+    hidden
+  >
+    <div
+      class="sleeveless-pattern-project-notes__text"
+      data-pattern-project-online-notes-text
+      {...textAttrs}
+    >
+    </div>
+  </div>
+</div>

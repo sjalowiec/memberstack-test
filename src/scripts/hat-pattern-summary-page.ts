@@ -16,11 +16,14 @@ import {
   HAT_FIT_PRESET_LABEL_NAMES,
 } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import { type ViewerAccessState } from "../lib/memberAccess";
+import { bindPatternProjectNotesField } from "../lib/patterns/patternProjectNotesField";
+import { hashRequestsNotesEditing } from "../lib/patterns/sleevelessPatternNotesCollapse";
 import {
-  applyHatPatternNameToDraft,
+  applyHatPatternProjectDetailsToDraft,
   buildDefaultHatPatternTitle,
   isEditingSavedHatProject,
   readHatActiveProjectId,
+  resolveHatPatternProjectNotes,
   resolveHatSavedPatternName,
 } from "../lib/patterns/hat/hatSavedProject";
 import {
@@ -212,6 +215,7 @@ export function initHatPatternSummaryPage(): void {
   const gaugeHelp = workspace.querySelector<HTMLElement>("[data-hat-edit-gauge-help]");
   const titleField = workspace.querySelector<HTMLElement>("[data-hat-edit-title-field]");
   const titleInput = workspace.querySelector<HTMLInputElement>("[data-hat-edit-title]");
+  const notesFieldApi = bindPatternProjectNotesField(workspace);
 
   let lastViewerAccessState: ViewerAccessState = "loggedOut";
 
@@ -443,6 +447,10 @@ export function initHatPatternSummaryPage(): void {
         hatPatternHasMemberSavedProjectPrivileges(lastViewerAccessState);
       titleInput.value = saved ? resolveHatSavedPatternName(draft) : "";
     }
+    notesFieldApi.setNotes(resolveHatPatternProjectNotes(draft), {
+      deepLinkToNotes:
+        typeof window !== "undefined" && hashRequestsNotesEditing(window.location.hash),
+    });
     clearFieldErrors();
     setPrimaryEnabled(true);
     mountDiagramFromDraft(draft);
@@ -497,8 +505,17 @@ export function initHatPatternSummaryPage(): void {
       titleInput?.value?.trim() ||
       resolveHatSavedPatternName(previous) ||
       buildDefaultHatPatternTitle();
-    if (action.persist !== "local-only" && requestedName) {
-      next = applyHatPatternNameToDraft(next, requestedName);
+    const requestedNotes =
+      titleField && !titleField.hidden
+        ? notesFieldApi.getNotes()
+        : resolveHatPatternProjectNotes(previous);
+    if (action.persist !== "local-only") {
+      next = applyHatPatternProjectDetailsToDraft(next, {
+        title: requestedName,
+        notes: requestedNotes,
+      });
+    } else if (titleField && !titleField.hidden) {
+      next = applyHatPatternProjectDetailsToDraft(next, { notes: requestedNotes });
     }
     const preview = buildHatPatternCalcFromDraft(next, rows as HatSizingPatternRow[]);
     if (!preview.ok) {

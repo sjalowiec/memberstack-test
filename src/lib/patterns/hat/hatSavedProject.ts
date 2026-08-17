@@ -13,6 +13,7 @@ import {
 import type { CustomPatternProject } from "../customPatternProjectTypes";
 import { isHatCustomPatternProject } from "../patternSystemId";
 import { stripSavedPatternProjectIdFromLocation } from "../savedPatternViewUrl";
+import { PROJECT_NOTES_MAX_LENGTH } from "../sleevelessPatternProjectMeta";
 import {
   coerceHatDraft,
   createEmptyHatDraft,
@@ -143,15 +144,50 @@ export function resolveHatSavedPatternName(
   return readHatActiveProjectLinkedName().trim();
 }
 
-export function applyHatPatternNameToDraft(draft: HatDraft, name: string): HatDraft {
-  const trimmed = name.trim();
-  if (!trimmed) return draft;
+function truncateHatProjectNotes(notes: string): string {
+  return notes.length <= PROJECT_NOTES_MAX_LENGTH
+    ? notes
+    : notes.slice(0, PROJECT_NOTES_MAX_LENGTH);
+}
+
+/** Notes from a hat draft, or "" when missing (legacy saved hats without `notes`). */
+export function resolveHatPatternProjectNotes(
+  draft: HatDraft | null | undefined,
+): string {
+  return typeof draft?.patternProject?.notes === "string" ? draft.patternProject.notes : "";
+}
+
+/**
+ * Apply Pattern title and/or Notes onto a hat draft using the shared
+ * `patternProject` shape (same fields as sweater saved projects).
+ */
+export function applyHatPatternProjectDetailsToDraft(
+  draft: HatDraft,
+  details: { title?: string; notes?: string },
+): HatDraft {
+  if (details.title !== undefined && !details.title.trim() && details.notes === undefined) {
+    return draft;
+  }
+  const title =
+    details.title !== undefined
+      ? details.title.trim()
+      : (draft.patternProject?.title ?? "");
+  const notes = truncateHatProjectNotes(
+    details.notes !== undefined ? details.notes : resolveHatPatternProjectNotes(draft),
+  );
+  const titleCustomized =
+    (details.title !== undefined && Boolean(title)) ||
+    draft.patternProject?.titleCustomized === true;
   return {
     ...draft,
     patternProject: {
-      title: trimmed,
-      notes: draft.patternProject?.notes ?? "",
-      titleCustomized: true,
+      title,
+      notes,
+      ...(titleCustomized ? { titleCustomized: true } : {}),
     },
   };
+}
+
+export function applyHatPatternNameToDraft(draft: HatDraft, name: string): HatDraft {
+  return applyHatPatternProjectDetailsToDraft(draft, { title: name });
 }

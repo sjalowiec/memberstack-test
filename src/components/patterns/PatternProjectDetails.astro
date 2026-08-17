@@ -1,0 +1,106 @@
+---
+/**
+ * Shared Pattern Project Details Lego block — Pattern title + Notes.
+ *
+ * Used by Sleeveless, Drop Shoulder, Hat, and future custom pattern builders.
+ * Callers supply IDs / data attributes and project data; they do not own a
+ * separate title/notes implementation.
+ */
+import PatternEditablePencilIcon from "./PatternEditablePencilIcon.astro";
+import "../../styles/patterns/pattern-project-details.css";
+
+interface Props {
+  titleId?: string;
+  notesId?: string;
+  notesRegionId?: string;
+  titlePlaceholder?: string;
+  notesPlaceholder?: string;
+  /** When true, the whole block starts hidden (Hat: until the project is saved). */
+  titleFieldHidden?: boolean;
+  /** Extra attribute on the wrapper (e.g. `data-hat-edit-title-field`). */
+  titleFieldAttr?: string;
+  /** Extra attribute on the title input (e.g. `data-hat-edit-title`). */
+  titleInputAttr?: string;
+  titleTestId?: string;
+  notesInputAttr?: string;
+  notesTestId?: string;
+}
+
+const {
+  titleId = "sl-edit-title",
+  notesId = "sl-edit-notes",
+  notesRegionId = "sl-edit-notes-region",
+  titlePlaceholder = "Pattern title",
+  notesPlaceholder = "Add your own notes — yarn, needles, tweaks to remember…",
+  titleFieldHidden = false,
+  titleFieldAttr,
+  titleInputAttr,
+  titleTestId,
+  notesInputAttr,
+  notesTestId,
+} = Astro.props;
+
+const wrapAttrs: Record<string, string> = {};
+if (titleFieldAttr) wrapAttrs[titleFieldAttr] = "";
+
+const titleInputAttrs: Record<string, string> = {};
+if (titleInputAttr) titleInputAttrs[titleInputAttr] = "";
+if (titleTestId) titleInputAttrs["data-testid"] = titleTestId;
+
+const notesInputAttrs: Record<string, string> = {};
+if (notesInputAttr) notesInputAttrs[notesInputAttr] = "";
+if (notesTestId) notesInputAttrs["data-testid"] = notesTestId;
+---
+
+<div
+  class="pattern-project-details"
+  data-pattern-project-details
+  {...wrapAttrs}
+  hidden={titleFieldHidden || undefined}
+>
+  <div class="sl-edit-field">
+    <label class="sl-edit-label" for={titleId}>
+      <span class="pattern-editable-heading">
+        Pattern title
+        <PatternEditablePencilIcon />
+      </span>
+    </label>
+    <input
+      type="text"
+      id={titleId}
+      class="sl-edit-input sl-edit-title-input"
+      data-pattern-project-title
+      placeholder={titlePlaceholder}
+      autocomplete="off"
+      {...titleInputAttrs}
+    />
+  </div>
+
+  <div class="sl-edit-field sl-edit-notes-field" data-sl-notes-field data-collapsed="true">
+    <button
+      type="button"
+      class="sl-edit-notes-toggle"
+      data-sl-notes-toggle
+      aria-expanded="false"
+      aria-controls={notesRegionId}
+    >
+      <span class="sl-edit-notes-toggle__label pattern-editable-heading">
+        Notes
+        <PatternEditablePencilIcon />
+      </span>
+      <span class="sl-edit-notes-toggle__preview" data-sl-notes-preview hidden></span>
+      <i class="fa-solid fa-chevron-down sl-edit-notes-toggle__chevron" aria-hidden="true"></i>
+    </button>
+    <div class="sl-edit-notes-region" id={notesRegionId} data-sl-notes-region hidden>
+      <textarea
+        id={notesId}
+        class="sl-edit-input sl-edit-textarea"
+        rows="4"
+        aria-label="Notes"
+        data-pattern-project-notes
+        placeholder={notesPlaceholder}
+        {...notesInputAttrs}
+      ></textarea>
+    </div>
+  </div>
+</div>

@@ -121,17 +121,15 @@ describe("saved hat workspace title field", () => {
     const summaryPage = readFileSync(resolve("src/pages/patterns/hat/summary/index.astro"), "utf8");
     const summaryScript = readFileSync(resolve("src/scripts/hat-pattern-summary-page.ts"), "utf8");
     expect(summaryPage).toContain("data-hat-edit-title");
-    expect(summaryPage).toContain("Pattern title");
+    expect(summaryPage).toContain("PatternProjectDetails");
     expect(summaryPage).toContain("data-hat-edit-title-field hidden");
-    expect(summaryScript).toContain("applyHatPatternNameToDraft");
+    expect(summaryScript).toContain("applyHatPatternProjectDetailsToDraft");
     expect(summaryScript).toContain("persistHatPatternProject");
     expect(summaryScript).toContain("isEditingSavedHatProject");
     expect(summaryScript).toContain("readHatActiveProjectId");
     expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
     expect(summaryScript).toContain("titleField.hidden = !saved");
     expect(summaryPage).toContain("pattern-editable-pencil.css");
-    expect(summaryPage).toContain("pattern-editable-heading");
-    expect(summaryPage).toContain("PatternEditablePencilIcon");
   });
 });
 
