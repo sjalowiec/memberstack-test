@@ -302,6 +302,7 @@ describe("hat New Pattern clears draft", () => {
       ),
       [LEGACY_HAT_SIZE_STORAGE_KEY]: JSON.stringify({ sel: "adult_woman" }),
       [LEGACY_HAT_PATTERN_INPUTS_STORAGE_KEY]: JSON.stringify({ brimType: "single" }),
+      "kin:hat-pattern-lead-at": "1700000000000",
     });
 
     startFreshHatPattern(storage);
@@ -309,6 +310,7 @@ describe("hat New Pattern clears draft", () => {
     expect(storage.getItem(LEGACY_HAT_SIZE_STORAGE_KEY)).toBeNull();
     expect(storage.getItem(LEGACY_HAT_PATTERN_INPUTS_STORAGE_KEY)).toBeNull();
     expect(readHatDraft(storage)).toBeNull();
+    expect(storage.getItem("kin:hat-pattern-lead-at")).toBe("1700000000000");
   });
 
   it("builder Start Over uses startOverHatBuilderSession to drop saved-project identity", () => {

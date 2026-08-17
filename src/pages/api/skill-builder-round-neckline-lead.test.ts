@@ -9,6 +9,10 @@ const handlerSource = readFileSync(
   join(dir, "../../lib/skillBuilders/roundNecklineSkillBuilderLeadCapture.ts"),
   "utf8",
 );
+const sharedLeadSource = readFileSync(
+  join(dir, "../../lib/leads/taggedLeadCapture.ts"),
+  "utf8",
+);
 const clientSource = readFileSync(
   join(dir, "../../lib/skillBuilders/roundNecklineSkillBuilderLeadClient.ts"),
   "utf8",
@@ -48,10 +52,11 @@ describe("skill-builder-round-neckline-lead API route", () => {
 
 describe("ActiveCampaign calls stay server-side", () => {
   it("keeps the Admin API client on the server handler only", () => {
-    expect(handlerSource).toContain("createActiveCampaignClient");
-    expect(handlerSource).toContain("getActiveCampaignConfig");
-    expect(handlerSource).toContain("resolveTagId");
+    expect(handlerSource).toContain("handleTaggedLeadCaptureRequest");
     expect(handlerSource).toContain("ROUND_NECKLINE_SKILL_BUILDER_LEAD_TAG");
+    expect(sharedLeadSource).toContain("createActiveCampaignClient");
+    expect(sharedLeadSource).toContain("getActiveCampaignConfig");
+    expect(sharedLeadSource).toContain("resolveTagId");
     expect(sharedSource).toContain('lead: Skill Builder - Round Neckline');
     expect(clientSource).not.toContain("createActiveCampaignClient");
     expect(clientSource).not.toMatch(/ACTIVECAMPAIGN/);
@@ -68,7 +73,8 @@ describe("ActiveCampaign calls stay server-side", () => {
   });
 
   it("upserts contacts by email instead of creating a new contact per submission", () => {
-    expect(handlerSource).toContain("syncContact");
+    expect(handlerSource).toContain("handleTaggedLeadCaptureRequest");
+    expect(sharedLeadSource).toContain("syncContact");
     expect(acClientSource).toContain("/api/3/contact/sync");
   });
 });

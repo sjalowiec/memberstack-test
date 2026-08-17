@@ -1,6 +1,7 @@
 ---
 /**
  * Finished Hat Pattern page (free / ungated).
+ * Guest email capture is a lead-gen safety net only — not a membership gate.
  * Reads kbm_hat_draft → existing hat engine → reading layout.
  * Edit Pattern navigates to the dedicated Summary/Edit page (`/patterns/hat/summary/`).
  * Does not replace /patterns/hat. No catalog exposure.
@@ -24,6 +25,7 @@ import {
   HAT_PATTERN_PERSIST_WARNING_LEAD,
 } from "../../../lib/patterns/hat/hatPatternPersistNotice";
 import { HAT_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../lib/patterns/hat/hatPatternNavigation";
+import HatPatternLeadCapture from "../../../components/patterns/HatPatternLeadCapture.astro";
 import {
   HAT_PATTERN_HERO_IMAGE_ALT,
   HAT_PATTERN_HERO_IMAGE_HEIGHT,
@@ -147,6 +149,8 @@ const hatZeroBodyRowsWarningMessage =
             Go to Hat Builder
           </a>
         </div>
+
+        <HatPatternLeadCapture idPrefix="hat-pattern-lead" />
 
         <div id="sg-hat-results" class="sg-sleeveless-results" data-hat-pattern-results>
           <div id="hat-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">

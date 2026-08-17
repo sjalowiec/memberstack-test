@@ -7,6 +7,7 @@
  * - From Edit Pattern (`?edit=1` or bare): Update Pattern → finished pattern.
  *   Cancel returns to the finished pattern without writing.
  * Free / ungated — no membership required to complete builder → summary → pattern.
+ * Guest email capture (lead, not membership) runs on View My Pattern before the finished page.
  */
 import Layout from "../../../../layouts/Layout.astro";
 import {
@@ -24,6 +25,7 @@ import PatternProjectDetails from "../../../../components/patterns/PatternProjec
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
 import PatternSummaryDiagramStage from "../../../../components/patterns/PatternSummaryDiagramStage.astro";
 import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
+import HatPatternLeadCapture from "../../../../components/patterns/HatPatternLeadCapture.astro";
 
 import "../../../../styles/wizard.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
@@ -276,6 +278,7 @@ import "../../../../styles/patterns/pattern-editable-pencil.css";
               </PatternSummaryDiagramStage>
             </Fragment>
           </PatternSummaryEditWorkspace>
+          <HatPatternLeadCapture idPrefix="hat-summary-lead" />
         </div>
       </div>
     </div>
