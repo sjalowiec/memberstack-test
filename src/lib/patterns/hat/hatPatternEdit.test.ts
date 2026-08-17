@@ -1007,10 +1007,9 @@ describe("hat Summary/Edit page wiring", () => {
     expect(hatMeasureFields).toContain("HAT_EDIT_MEASUREMENT_TRANSFORMS");
     expect(summaryPage).toContain("data-hat-edit-title");
     expect(summaryPage).toContain("data-hat-edit-title-field hidden");
-    expect(summaryPage).toContain("Pattern title");
-    expect(summaryPage).toContain("PatternEditablePencilIcon");
+    expect(summaryPage).toContain("PatternProjectDetails");
+    expect(summaryPage).toContain("data-hat-edit-notes");
     expect(summaryPage).toContain("pattern-editable-pencil.css");
-    expect(summaryPage).toContain("pattern-editable-heading");
     expect(sleevelessPatternPage).toContain("pattern-editable-pencil.css");
     expect(sleevelessPatternPage).toContain("pattern-editable-heading");
     expect(summaryScript).toContain("isEditingSavedHatProject");
@@ -1089,7 +1088,7 @@ describe("hat Summary/Edit page wiring", () => {
       cancelStart > updateStart ? cancelStart : updateStart + 2500,
     );
     expect(updateFn).toContain("writeHatDraft");
-    expect(updateFn).toContain("applyHatPatternNameToDraft");
+    expect(updateFn).toContain("applyHatPatternProjectDetailsToDraft");
     expect(updateFn).toContain("navigateAfterPrimarySuccess");
   });
 

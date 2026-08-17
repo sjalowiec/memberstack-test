@@ -12,6 +12,7 @@ import { initChangePatternChoicesLinks } from "../lib/patterns/restoreSleeveless
 import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
 import { hasAuthoritativeUrlSavedPatternId } from "../lib/patterns/savedPatternViewUrl";
 
+import { applyPatternProjectOnlineNotes } from "../lib/patterns/patternProjectOnlineNotes";
 import {
 
   getPatternProjectMeta,
@@ -27,12 +28,6 @@ import {
 export function applySleevelessPatternOnlineProjectHeader(): void {
 
   const heading = document.querySelector("[data-sleeveless-pattern-online-heading]");
-
-  const notesWrap = document.querySelector("[data-sleeveless-pattern-online-notes-wrap]");
-
-  const notesBlock = document.querySelector("[data-sleeveless-pattern-online-notes]");
-
-  const notesText = document.querySelector("[data-sleeveless-pattern-online-notes-text]");
 
 
 
@@ -55,43 +50,7 @@ export function applySleevelessPatternOnlineProjectHeader(): void {
 
   // Project notes are library management, not a paid feature — show them whenever the user has
   // notes saved, regardless of system-access entitlement (free/downgraded users keep their notes).
-  const showCustomizeNotes = notes.trim().length > 0;
-
-
-
-  if (notesWrap instanceof HTMLElement) {
-
-    if (showCustomizeNotes) {
-
-      notesWrap.removeAttribute("hidden");
-
-    } else {
-
-      notesWrap.setAttribute("hidden", "");
-
-    }
-
-  }
-
-
-
-  if (notesBlock instanceof HTMLElement && notesText instanceof HTMLElement) {
-
-    if (notes) {
-
-      notesText.textContent = notes;
-
-      notesBlock.removeAttribute("hidden");
-
-    } else {
-
-      notesText.textContent = "";
-
-      notesBlock.setAttribute("hidden", "");
-
-    }
-
-  }
+  applyPatternProjectOnlineNotes(notes);
 
 }
 

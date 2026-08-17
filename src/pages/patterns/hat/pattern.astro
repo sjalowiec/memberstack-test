@@ -8,6 +8,7 @@
 import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
+import PatternProjectOnlineNotes from "../../../components/patterns/PatternProjectOnlineNotes.astro";
 import PatternTipsToggle from "../../../components/patterns/PatternTipsToggle.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import WarningBox from "../../../components/ui/WarningBox.astro";
@@ -226,6 +227,11 @@ const hatZeroBodyRowsWarningMessage =
                       Hat Pattern · Pattern instructions
                     </p>
                   </div>
+                  <PatternProjectOnlineNotes
+                    wrapAttr="data-hat-pattern-online-notes-wrap"
+                    blockAttr="data-hat-pattern-online-notes"
+                    textAttr="data-hat-pattern-online-notes-text"
+                  />
                 </div>
                 <PatternPrintPersonalization>
                   <div

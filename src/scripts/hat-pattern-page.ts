@@ -32,7 +32,12 @@ import {
 } from "../lib/patterns/hat/hatPatternWorkspaceAccess";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
-import { isEditingSavedHatProject } from "../lib/patterns/hat/hatSavedProject";
+import {
+  isEditingSavedHatProject,
+  resolveHatPatternProjectNotes,
+} from "../lib/patterns/hat/hatSavedProject";
+import { applyPatternProjectOnlineNotes, HAT_PATTERN_ONLINE_NOTES_SELECTORS } from "../lib/patterns/patternProjectOnlineNotes";
+import { getSleevelessPatternOnlineNotesText } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import {
   applyPatternPrintPersonalizationToDom,
@@ -298,6 +303,14 @@ export async function renderHatPattern() {
   if (heading instanceof HTMLElement) {
     heading.textContent = resolveHatPatternOnlineHeading(summary.sizeLabel, readyDraft);
   }
+
+  applyPatternProjectOnlineNotes(
+    getSleevelessPatternOnlineNotesText({
+      title: readyDraft.patternProject?.title ?? "",
+      notes: resolveHatPatternProjectNotes(readyDraft),
+    }),
+    { selectors: HAT_PATTERN_ONLINE_NOTES_SELECTORS },
+  );
 
   const hatPrint = resolveHatPatternPrintFields({ draft: readyDraft });
   applyPatternPrintPersonalizationToDom(hatPrint.title, hatPrint.notes);

@@ -5,6 +5,8 @@ import PatternPrintFooter from "../../../../components/common/PatternPrintFooter
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
 import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
+import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
+import PatternProjectOnlineNotes from "../../../../components/patterns/PatternProjectOnlineNotes.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import EditWorkspaceGaugeFields from "../../../../components/patterns/EditWorkspaceGaugeFields.astro";
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
@@ -135,25 +137,7 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
                       Drop shoulder sweater · Pattern instructions
                     </p>
                   </div>
-                  <div
-                    class="sleeveless-pattern-project-notes-wrap"
-                    data-sleeveless-pattern-online-notes-wrap
-                    hidden
-                  >
-                    <div class="sleeveless-pattern-project-notes__head">
-                      <p class="sleeveless-pattern-project-notes__label">Project notes</p>
-                    </div>
-                    <div
-                      class="sleeveless-pattern-project-notes"
-                      data-sleeveless-pattern-online-notes
-                      hidden
-                    >
-                      <div
-                        class="sleeveless-pattern-project-notes__text"
-                        data-sleeveless-pattern-online-notes-text
-                      ></div>
-                    </div>
-                  </div>
+                  <PatternProjectOnlineNotes />
                 </div>
                 <PatternPrintPersonalization>
                   <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
@@ -220,47 +204,7 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
           actionsAttr="data-sl-edit-actions"
         >
           <Fragment slot="quick">
-              <div class="sl-edit-field">
-                <label class="sl-edit-label" for="sl-edit-title">
-                  <span class="pattern-editable-heading">
-                    Pattern title
-                    <PatternEditablePencilIcon />
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  id="sl-edit-title"
-                  class="sl-edit-input"
-                  placeholder="Drop shoulder sweater"
-                  autocomplete="off"
-                />
-              </div>
-
-              <div class="sl-edit-field sl-edit-notes-field" data-sl-notes-field data-collapsed="true">
-                <button
-                  type="button"
-                  class="sl-edit-notes-toggle"
-                  data-sl-notes-toggle
-                  aria-expanded="false"
-                  aria-controls="sl-edit-notes-region"
-                >
-                  <span class="sl-edit-notes-toggle__label pattern-editable-heading">
-                    Notes
-                    <PatternEditablePencilIcon />
-                  </span>
-                  <span class="sl-edit-notes-toggle__preview" data-sl-notes-preview hidden></span>
-                  <i class="fa-solid fa-chevron-down sl-edit-notes-toggle__chevron" aria-hidden="true"></i>
-                </button>
-                <div class="sl-edit-notes-region" id="sl-edit-notes-region" data-sl-notes-region hidden>
-                  <textarea
-                    id="sl-edit-notes"
-                    class="sl-edit-input sl-edit-textarea"
-                    rows="4"
-                    aria-label="Notes"
-                    placeholder="Add your own notes — yarn, needles, tweaks to remember…"
-                  ></textarea>
-                </div>
-              </div>
+              <PatternProjectDetails titlePlaceholder="Drop shoulder sweater" />
 
               <section class="sl-edit-section sl-edit-units-section" aria-labelledby="sl-edit-units-heading">
                 <h3 class="sl-edit-section__title" id="sl-edit-units-heading">Units</h3>
