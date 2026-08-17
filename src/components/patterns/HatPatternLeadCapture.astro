@@ -7,6 +7,7 @@ import {
   HAT_PATTERN_LEAD_COPY,
   HAT_PATTERN_LEAD_HELPER,
   HAT_PATTERN_LEAD_SUBMIT_LABEL,
+  HAT_PATTERN_LEAD_TIP,
   HAT_PATTERN_LEAD_TITLE,
 } from "../../lib/patterns/hat/hatPatternLeadShared";
 
@@ -29,6 +30,7 @@ const emailId = `${idPrefix}-email`;
 >
   <h2 id={headingId} class="hat-lead-capture__title">{HAT_PATTERN_LEAD_TITLE}</h2>
   <p class="hat-lead-capture__copy">{HAT_PATTERN_LEAD_COPY}</p>
+  <p class="hat-lead-capture__tip">{HAT_PATTERN_LEAD_TIP}</p>
   <form class="hat-lead-capture__form" data-hat-lead-form novalidate>
     <p class="hat-lead-capture__honeypot" aria-hidden="true">
       <label for={botId}>Company</label>
@@ -103,10 +105,18 @@ const emailId = `${idPrefix}-email`;
   }
 
   .hat-lead-capture__copy {
-    margin: 0 0 0.85rem;
+    margin: 0 0 0.4rem;
     font-size: 0.95rem;
     line-height: 1.5;
     color: #4d5a48;
+  }
+
+  .hat-lead-capture__tip {
+    margin: 0 0 0.85rem;
+    font-size: 0.88rem;
+    font-style: italic;
+    line-height: 1.45;
+    color: #6b7280;
   }
 
   .hat-lead-capture__field {
@@ -178,8 +188,10 @@ const emailId = `${idPrefix}-email`;
 
   .hat-lead-capture__helper {
     margin: 0.65rem 0 0;
-    font-size: 0.88rem;
-    color: #4d5a48;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #374151;
   }
 
   .hat-lead-capture__consent {
