@@ -26,21 +26,28 @@ export type RoundNecklineSkillBuilderVideoKey =
   | "round-necklines-shaped-shoulders/shallow-back"
   | "round-necklines-shaped-shoulders/deep-front";
 
+/** Basics / Shallow Back — “Shallow Neckline, No Shoulder Shaping”. */
 export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID = 2212;
 
-export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING = "Need a little help?";
+/** Basics / Deeper Front — “Easy Round Neck Shaping”. */
+export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID = 535;
+
+/** Shaped Shoulders / Shallow Back — “Shallow Round Neckline with Shaped Shoulders”. */
+export const SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_CONTENT_ID = 2213;
+
+export const SKILL_BUILDER_VIDEO_HELPER_HEADING = "Need a little help?";
+
+/** @deprecated Prefer {@link SKILL_BUILDER_VIDEO_HELPER_HEADING}. */
+export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING = SKILL_BUILDER_VIDEO_HELPER_HEADING;
 
 export const SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY =
   "Watch the shaping sequence before you begin.";
 
-export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD =
-  "The shaping process is the same as the shallow neckline exercise.";
+export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_COPY =
+  "Watch this demonstration of the scrap-off, rehang, and bind-off-and-decrease method before you begin.";
 
-export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE =
-  "This time, knit more rows after the neckline shaping is complete before scrapping off the shoulder stitches.";
-
-export const DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER =
-  "Need a refresher? Watch the shallow neckline video.";
+export const SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_COPY =
+  "Watch this demonstration of a shallow round back neckline with short-row shoulder shaping before you begin.";
 
 export const ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS: Record<
   RoundNecklineSkillBuilderVideoKey,
@@ -48,9 +55,9 @@ export const ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS: Record<
 > = {
   "round-neckline-basics": null,
   "round-neckline-basics/shallow-back": SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
-  "round-neckline-basics/deep-front": SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
+  "round-neckline-basics/deep-front": DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
   "round-necklines-shaped-shoulders": null,
-  "round-necklines-shaped-shoulders/shallow-back": null,
+  "round-necklines-shaped-shoulders/shallow-back": SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_CONTENT_ID,
   "round-necklines-shaped-shoulders/deep-front": null,
 };
 
@@ -69,20 +76,20 @@ export function skillBuilderVideoHelperCopy(
 ): SkillBuilderVideoHelperCopy | null {
   if (key === "round-neckline-basics/shallow-back") {
     return {
-      heading: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
+      heading: SKILL_BUILDER_VIDEO_HELPER_HEADING,
       notes: [{ text: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY }],
     };
   }
   if (key === "round-neckline-basics/deep-front") {
     return {
-      heading: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
-      notes: [
-        {
-          lead: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD,
-          text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE,
-        },
-        { text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER },
-      ],
+      heading: SKILL_BUILDER_VIDEO_HELPER_HEADING,
+      notes: [{ text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_COPY }],
+    };
+  }
+  if (key === "round-necklines-shaped-shoulders/shallow-back") {
+    return {
+      heading: SKILL_BUILDER_VIDEO_HELPER_HEADING,
+      notes: [{ text: SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_COPY }],
     };
   }
   return null;

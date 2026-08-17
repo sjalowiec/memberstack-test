@@ -6,13 +6,14 @@ import type { PublicVideoRow } from "../lessonVideo";
 import { findPublicVideoByContentId } from "../patterns/sleevelessCatalogHelpVideo";
 import { calculateRoundNecklineSkillBuilder } from "./roundNecklineSkillBuilders";
 import {
-  DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE,
-  DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD,
-  DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER,
+  DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
+  DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_COPY,
   ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS,
+  SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_CONTENT_ID,
+  SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_COPY,
   SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
   SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY,
-  SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
+  SKILL_BUILDER_VIDEO_HELPER_HEADING,
   catalogVideoSlotForContentId,
   skillBuilderVideoHelperCopy,
   skillBuilderVideoSlot,
@@ -25,104 +26,152 @@ const videosSource = readFileSync(
   "utf8",
 );
 
-describe("Round Neckline Basics shallow-back catalog video", () => {
-  it("resolves content_id 2212 to Vimeo 1218264661 with unlisted privacy hash", () => {
+const EXERCISE_VIDEO_KEYS = [
+  "round-neckline-basics/shallow-back",
+  "round-neckline-basics/deep-front",
+  "round-necklines-shaped-shoulders/shallow-back",
+  "round-necklines-shaped-shoulders/deep-front",
+] as const;
+
+describe("Round Neckline Skill Builder confirmed video mapping", () => {
+  it("Basics / Shallow Back uses catalog 2212 (Shallow Neckline, No Shoulder Shaping)", () => {
     const row = findPublicVideoByContentId(catalog, 2212);
     expect(row).toBeDefined();
     expect(String(row?.content_id)).toBe("2212");
     expect(row?.title).toBe("Shallow Neckline, No Shoulder Shaping");
     expect(row?.vimeo_id).toBe(1218264661);
-    expect(row?.vimeo_hash).toBe("b1bc386c3c");
 
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID).toBe(2212);
+    expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/shallow-back"]).toBe(
+      2212,
+    );
     const slot = catalogVideoSlotForContentId(2212);
-    expect(slot).not.toBeNull();
     expect(slot?.contentId).toBe(2212);
     expect(slot?.vimeoId).toBe("1218264661");
     expect(slot?.privacyHash).toBe("b1bc386c3c");
-    expect(slot?.title).toBe("Shallow Neckline, No Shoulder Shaping");
     expect(skillBuilderVideoSlot("round-neckline-basics/shallow-back")).toEqual(slot);
-    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")).toEqual(slot);
+    expect(
+      calculateRoundNecklineSkillBuilder(SAMPLE_GAUGE, "round-neckline-basics", "shallow-back")?.video
+        ?.contentId,
+    ).toBe(2212);
   });
 
-  it("does not hard-code the Vimeo URL or privacy hash in the Skill Builder video module", () => {
-    expect(videosSource).not.toMatch(/player\.vimeo\.com/);
-    expect(videosSource).not.toMatch(/vimeo\.com\/1218264661/);
-    expect(videosSource).not.toContain("b1bc386c3c");
-    expect(videosSource).toContain("vimeo_hash");
-  });
+  it("Basics / Deeper Front uses catalog 535 (Easy Round Neck Shaping)", () => {
+    const row = findPublicVideoByContentId(catalog, 535);
+    expect(row).toBeDefined();
+    expect(String(row?.content_id)).toBe("535");
+    expect(row?.title).toBe("Easy Round Neck Shaping");
 
-  it("keeps the video off shaped-shoulder routes and the builder landing key", () => {
-    expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics"]).toBeNull();
+    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID).toBe(535);
     expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/deep-front"]).toBe(
-      SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_CONTENT_ID,
+      535,
     );
-    expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-necklines-shaped-shoulders"]).toBeNull();
+    const slot = catalogVideoSlotForContentId(535);
+    expect(slot).not.toBeNull();
+    expect(slot?.contentId).toBe(535);
+    expect(slot?.vimeoId).toBe(String(row!.vimeo_id));
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")).toEqual(slot);
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")?.contentId).not.toBe(2212);
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")?.contentId).not.toBe(2213);
+    expect(
+      calculateRoundNecklineSkillBuilder(SAMPLE_GAUGE, "round-neckline-basics", "deep-front")?.video
+        ?.contentId,
+    ).toBe(535);
+  });
+
+  it("Shaped Shoulders / Shallow Back uses catalog 2213 / Vimeo 1211185343", () => {
+    const row = findPublicVideoByContentId(catalog, 2213);
+    expect(row).toBeDefined();
+    expect(String(row?.content_id)).toBe("2213");
+    expect(row?.title).toBe("Shallow Round Neckline with Shaped Shoulders");
+    expect(row?.vimeo_id).toBe(1211185343);
+
+    expect(SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_CONTENT_ID).toBe(2213);
     expect(
       ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-necklines-shaped-shoulders/shallow-back"],
-    ).toBeNull();
+    ).toBe(2213);
+    const slot = catalogVideoSlotForContentId(2213);
+    expect(slot?.contentId).toBe(2213);
+    expect(slot?.vimeoId).toBe("1211185343");
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/shallow-back")).toEqual(slot);
+    expect(
+      calculateRoundNecklineSkillBuilder(
+        SAMPLE_GAUGE,
+        "round-necklines-shaped-shoulders",
+        "shallow-back",
+      )?.video?.vimeoId,
+    ).toBe("1211185343");
+  });
+
+  it("Shaped Shoulders / Deeper Front has no helper video", () => {
     expect(
       ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-necklines-shaped-shoulders/deep-front"],
     ).toBeNull();
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/deep-front")).toBeNull();
+    expect(skillBuilderVideoHelperCopy("round-necklines-shaped-shoulders/deep-front")).toBeNull();
+    expect(
+      calculateRoundNecklineSkillBuilder(
+        SAMPLE_GAUGE,
+        "round-necklines-shaped-shoulders",
+        "deep-front",
+      )?.video,
+    ).toBeNull();
+  });
 
-    expect(calculateRoundNecklineSkillBuilder(SAMPLE_GAUGE, "round-neckline-basics", "shallow-back")?.video?.vimeoId).toBe(
-      "1218264661",
+  it("does not assign catalog video 601 (Neckline Shaping Perfection) to any of the four exercises", () => {
+    const assigned = EXERCISE_VIDEO_KEYS.map(
+      (key) => ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS[key],
     );
-    expect(calculateRoundNecklineSkillBuilder(SAMPLE_GAUGE, "round-neckline-basics", "deep-front")?.video?.vimeoId).toBe(
-      "1218264661",
-    );
-    expect(
-      calculateRoundNecklineSkillBuilder(SAMPLE_GAUGE, "round-necklines-shaped-shoulders", "shallow-back")?.video,
-    ).toBeNull();
-    expect(
-      calculateRoundNecklineSkillBuilder(SAMPLE_GAUGE, "round-necklines-shaped-shoulders", "deep-front")?.video,
-    ).toBeNull();
+    expect(assigned).not.toContain(601);
+    for (const key of EXERCISE_VIDEO_KEYS) {
+      expect(skillBuilderVideoSlot(key)?.contentId).not.toBe(601);
+    }
+    const row601 = findPublicVideoByContentId(catalog, 601);
+    expect(row601?.title).toBe("Neckline Shaping Perfection");
+  });
+
+  it("does not hard-code Vimeo URLs or ids in the Skill Builder video module", () => {
+    expect(videosSource).not.toMatch(/player\.vimeo\.com/);
+    expect(videosSource).not.toContain("1218264661");
+    expect(videosSource).not.toContain("1211185343");
+    expect(videosSource).not.toContain("151858551");
+    expect(videosSource).not.toContain("b1bc386c3c");
+    expect(videosSource).toContain("vimeo_hash");
   });
 });
 
 describe("Need a little help? video helper copy", () => {
-  it("uses the quiet helper heading and short watch line without exposing a Vimeo URL or hash", () => {
-    expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING).toBe("Need a little help?");
+  it("uses the quiet helper heading and short watch line on Basics / Shallow Back", () => {
+    expect(SKILL_BUILDER_VIDEO_HELPER_HEADING).toBe("Need a little help?");
+    expect(skillBuilderVideoHelperCopy("round-neckline-basics/shallow-back")).toEqual({
+      heading: SKILL_BUILDER_VIDEO_HELPER_HEADING,
+      notes: [{ text: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY }],
+    });
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY).toBe(
       "Watch the shaping sequence before you begin.",
     );
-    expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING).not.toBe("Watch the Shaping Sequence");
-    expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY).not.toContain(
-      "Watch the complete process before you begin",
-    );
     expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY).not.toMatch(/vimeo\.com/i);
-    expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY).not.toContain("b1bc386c3c");
-    expect(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING).not.toContain("b1bc386c3c");
   });
 
-  it("reuses the same heading on deep-front straight shoulders with the deeper-front note", () => {
-    const helper = skillBuilderVideoHelperCopy("round-neckline-basics/deep-front");
-    expect(helper?.heading).toBe(SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING);
-    expect(helper?.heading).toBe("Need a little help?");
-    expect(helper?.notes).toEqual([
-      {
-        lead: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD,
-        text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE,
-      },
-      { text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER },
-    ]);
-    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD).toBe(
-      "The shaping process is the same as the shallow neckline exercise.",
-    );
-    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE).toBe(
-      "This time, knit more rows after the neckline shaping is complete before scrapping off the shoulder stitches.",
-    );
-    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER).toBe(
-      "Need a refresher? Watch the shallow neckline video.",
-    );
-    expect(skillBuilderVideoHelperCopy("round-neckline-basics/shallow-back")).toEqual({
-      heading: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING,
-      notes: [{ text: SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_COPY }],
+  it("describes the scrap-off / rehang method on Basics / Deeper Front", () => {
+    expect(skillBuilderVideoHelperCopy("round-neckline-basics/deep-front")).toEqual({
+      heading: SKILL_BUILDER_VIDEO_HELPER_HEADING,
+      notes: [{ text: DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_COPY }],
     });
-    expect(skillBuilderVideoHelperCopy("round-necklines-shaped-shoulders/shallow-back")).toBeNull();
-    expect(skillBuilderVideoHelperCopy("round-necklines-shaped-shoulders/deep-front")).toBeNull();
-    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE_LEAD).not.toMatch(/vimeo\.com/i);
-    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_NOTE).not.toContain("b1bc386c3c");
-    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_REFRESHER).not.toContain("1218264661");
+    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_COPY).toBe(
+      "Watch this demonstration of the scrap-off, rehang, and bind-off-and-decrease method before you begin.",
+    );
+    expect(DEEP_FRONT_STRAIGHT_SHOULDER_VIDEO_COPY).not.toMatch(/stitch|row count/i);
+  });
+
+  it("describes short-row shoulder shaping on Shaped Shoulders / Shallow Back", () => {
+    expect(skillBuilderVideoHelperCopy("round-necklines-shaped-shoulders/shallow-back")).toEqual({
+      heading: SKILL_BUILDER_VIDEO_HELPER_HEADING,
+      notes: [{ text: SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_COPY }],
+    });
+    expect(SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_COPY).toBe(
+      "Watch this demonstration of a shallow round back neckline with short-row shoulder shaping before you begin.",
+    );
+    expect(SHALLOW_BACK_SHAPED_SHOULDER_VIDEO_COPY).not.toMatch(/stitch|row count/i);
   });
 });

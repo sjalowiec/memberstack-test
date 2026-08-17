@@ -128,22 +128,34 @@ describe("round neckline Skill Builder catalog", () => {
     );
   });
 
-  it("adds the catalog video to both straight-shoulder practices and not shaped-shoulder ones", () => {
+  it("assigns the confirmed catalog videos to the four round-neckline exercises", () => {
     expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/shallow-back"]).toBe(
       2212,
     );
     expect(ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-neckline-basics/deep-front"]).toBe(
-      2212,
+      535,
     );
+    expect(
+      ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-necklines-shaped-shoulders/shallow-back"],
+    ).toBe(2213);
+    expect(
+      ROUND_NECKLINE_SKILL_BUILDER_VIDEO_CONTENT_IDS["round-necklines-shaped-shoulders/deep-front"],
+    ).toBeNull();
     expect(skillBuilderVideoSlot("round-neckline-basics/shallow-back")?.vimeoId).toBe("1218264661");
-    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")?.vimeoId).toBe("1218264661");
-    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")).toEqual(
-      skillBuilderVideoSlot("round-neckline-basics/shallow-back"),
+    expect(skillBuilderVideoSlot("round-neckline-basics/deep-front")?.contentId).toBe(535);
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/shallow-back")?.vimeoId).toBe(
+      "1211185343",
     );
+    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/deep-front")).toBeNull();
     expect(skillBuilderVideoSlot("round-neckline-basics")).toBeNull();
     expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders")).toBeNull();
-    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/shallow-back")).toBeNull();
-    expect(skillBuilderVideoSlot("round-necklines-shaped-shoulders/deep-front")).toBeNull();
+    const assignedIds = [
+      skillBuilderVideoSlot("round-neckline-basics/shallow-back")?.contentId,
+      skillBuilderVideoSlot("round-neckline-basics/deep-front")?.contentId,
+      skillBuilderVideoSlot("round-necklines-shaped-shoulders/shallow-back")?.contentId,
+      skillBuilderVideoSlot("round-necklines-shaped-shoulders/deep-front")?.contentId,
+    ];
+    expect(assignedIds).not.toContain(601);
   });
 });
 
