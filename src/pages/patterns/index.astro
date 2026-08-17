@@ -5,10 +5,10 @@ import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulder
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
 import {
   PATTERN_CATALOG_MEMBERSHIP_BODY,
+  PATTERN_CATALOG_MORE_HEADING,
   PATTERNS_LANDING_BECOME_MEMBER_HREF,
   PATTERNS_LANDING_BECOME_MEMBER_LABEL,
   PATTERNS_LANDING_LOGIN_LABEL,
-  PATTERNS_LANDING_MEMBERSHIP_HEADING,
 } from '../../lib/patterns/patternsLandingCta';
 
 // Marketing hero and feature grid live on {@link PATTERN_BUILDERS_HOME_HREF}.
@@ -30,24 +30,33 @@ const dropShoulderPattern = {
   button: 'Create drop shoulder sweater',
 };
 
+const hatPattern = {
+  title: 'Hat',
+  href: '/patterns/hat/builder',
+  image: '/images/patterns/Hat_builder.png',
+  copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
+  button: 'Create your hat',
+};
+
+const sleevelessPattern = {
+  title: 'Sleeveless Sweater',
+  // Force a brand-new draft from the catalog. `?new=1` makes the Express builder clear any
+  // persisted/active session on boot (see applySleevelessExpressNewSessionFromUrl) so this card
+  // never resumes a previous or another user's pattern. Use "My Patterns" to resume/open.
+  href: '/patterns/sleeveless/builder?new=1',
+  image: '/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp',
+  copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
+  button: 'Create sleeveless sweater',
+};
+
+const sweaterPatterns = [
+  sleevelessPattern,
+  ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
+];
+
 const availablePatterns = [
-  {
-    title: 'Sleeveless Sweater',
-    // Force a brand-new draft from the catalog. `?new=1` makes the Express builder clear any
-    // persisted/active session on boot (see applySleevelessExpressNewSessionFromUrl) so this card
-    // never resumes a previous or another user's pattern. Use "My Patterns" to resume/open.
-    href: '/patterns/sleeveless/builder?new=1',
-    image: '/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp',
-    copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
-    button: 'Create sleeveless sweater',
-  },
-  {
-    title: 'Hat',
-    href: '/patterns/hat/builder',
-    image: '/images/patterns/Hat_builder.png',
-    copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
-    button: 'Create your hat',
-  },
+  sleevelessPattern,
+  hatPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
   // route /patterns/diy-blanket is intact and reachable by direct URL for future development/testing.
@@ -78,37 +87,7 @@ const comingSoonPatterns = [
 
 <Layout title="Choose a Pattern">
 
-  <div class="patterns-page">
-
-    <nav
-      class="patterns-action-bar"
-      aria-label="Pattern builder actions"
-      data-patterns-landing-cta
-      data-cta-mode="prospect"
-    >
-      <div class="patterns-action-bar__prospect" data-patterns-landing-cta-prospect>
-        <div class="patterns-action-bar__membership-copy">
-          <h2 class="patterns-action-bar__heading">{PATTERNS_LANDING_MEMBERSHIP_HEADING}</h2>
-          <p class="patterns-action-bar__body">{PATTERN_CATALOG_MEMBERSHIP_BODY}</p>
-        </div>
-        <div class="patterns-action-bar__prospect-actions">
-          <a
-            href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
-            class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
-          >
-            {PATTERNS_LANDING_BECOME_MEMBER_LABEL}
-          </a>
-          <a
-            href="#"
-            class="patterns-action-bar__login kbm-btn kbm-btn-outline"
-            data-ms-modal="login"
-            data-ms-redirect="current-url"
-          >
-            {PATTERNS_LANDING_LOGIN_LABEL}
-          </a>
-        </div>
-      </div>
-    </nav>
+  <div class="patterns-page" data-patterns-page>
 
     <header class="patterns-hero">
       <div class="patterns-hero__text">
@@ -133,24 +112,99 @@ const comingSoonPatterns = [
       </div>
     </header>
 
-    <section class="patterns-catalog" aria-labelledby="patterns-available-heading">
-      <h2 id="patterns-available-heading" class="patterns-section-title">Available now</h2>
-      <div class="patterns-grid">
-        {availablePatterns.map((pattern) => (
-          <a href={pattern.href} class="catalog-card">
-            <div class="catalog-card__media">
-              <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
+    <div class="patterns-catalog-group" data-patterns-catalog="guest">
+      <section class="patterns-featured" aria-labelledby="patterns-featured-hat-heading">
+        <a
+          href={hatPattern.href}
+          class="patterns-featured__panel"
+          data-testid="patterns-featured-hat"
+        >
+          <div class="patterns-featured__visual">
+            <img src={hatPattern.image} alt={hatPattern.title} />
+          </div>
+          <div class="patterns-featured__body">
+            <div class="patterns-featured__top">
+              <h2 class="patterns-featured__eyebrow">Try a Pattern Builder Free</h2>
+              <span class="patterns-featured__badge">Free</span>
             </div>
-            <div class="catalog-card__body">
-              <span class="catalog-card__status catalog-card__status--available">Available now</span>
-              <h3 class="catalog-card__title">{pattern.title}</h3>
-              <p class="catalog-card__copy">{pattern.copy}</p>
-              <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
+            <h3 id="patterns-featured-hat-heading" class="patterns-featured__title">
+              Create Your Custom Hat Pattern
+            </h3>
+            <p class="patterns-featured__copy">
+              Enter your gauge, choose your size and style, and create custom knitting instructions for your machine and yarn.
+            </p>
+            <span class="patterns-featured__cta">CREATE MY FREE HAT PATTERN</span>
+            <p class="patterns-featured__reassurance">Free. No account or password needed.</p>
+          </div>
+        </a>
+      </section>
+
+      <section class="patterns-catalog patterns-catalog--more" aria-labelledby="patterns-more-heading">
+        <h2 id="patterns-more-heading" class="patterns-section-title">{PATTERN_CATALOG_MORE_HEADING}</h2>
+        <p class="patterns-section-note">{PATTERN_CATALOG_MEMBERSHIP_BODY}</p>
+        <div class="patterns-grid">
+          {sweaterPatterns.map((pattern) => (
+            <a href={pattern.href} class="catalog-card">
+              <div class="catalog-card__media">
+                <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
+              </div>
+              <div class="catalog-card__body">
+                <span class="catalog-card__status catalog-card__status--available">Available now</span>
+                <h3 class="catalog-card__title">{pattern.title}</h3>
+                <p class="catalog-card__copy">{pattern.copy}</p>
+                <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+        <nav
+          class="patterns-action-bar"
+          aria-label="Pattern builder actions"
+          data-patterns-landing-cta
+          data-cta-mode="prospect"
+        >
+          <div class="patterns-action-bar__prospect" data-patterns-landing-cta-prospect>
+            <div class="patterns-action-bar__prospect-actions">
+              <a
+                href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
+                class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
+              >
+                {PATTERNS_LANDING_BECOME_MEMBER_LABEL}
+              </a>
+              <a
+                href="#"
+                class="patterns-action-bar__login kbm-btn kbm-btn-outline"
+                data-ms-modal="login"
+                data-ms-redirect="current-url"
+              >
+                {PATTERNS_LANDING_LOGIN_LABEL}
+              </a>
             </div>
-          </a>
-        ))}
-      </div>
-    </section>
+          </div>
+        </nav>
+      </section>
+    </div>
+
+    <div class="patterns-catalog-group" data-patterns-catalog="member" hidden>
+      <section class="patterns-catalog" aria-labelledby="patterns-available-heading">
+        <h2 id="patterns-available-heading" class="patterns-section-title">Available now</h2>
+        <div class="patterns-grid">
+          {availablePatterns.map((pattern) => (
+            <a href={pattern.href} class="catalog-card">
+              <div class="catalog-card__media">
+                <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
+              </div>
+              <div class="catalog-card__body">
+                <span class="catalog-card__status catalog-card__status--available">Available now</span>
+                <h3 class="catalog-card__title">{pattern.title}</h3>
+                <p class="catalog-card__copy">{pattern.copy}</p>
+                <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
 
     <section class="patterns-catalog" aria-labelledby="patterns-coming-heading">
       <h2 id="patterns-coming-heading" class="patterns-section-title">Coming soon</h2>
@@ -199,13 +253,18 @@ const comingSoonPatterns = [
   padding: 20px;
 }
 
-/* Membership CTA — visible for logged-out / non-members; catalog cards stay public. */
+/* A class-level display value would beat the UA [hidden] rule. */
+.patterns-catalog-group[hidden] {
+  display: none !important;
+}
+
+/* Membership CTAs sit under More Pattern Builders for guests only. */
 .patterns-action-bar {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  margin: 0 0 20px;
+  margin: 20px 0 0;
 }
 
 .patterns-action-bar[data-cta-mode="member"] {
@@ -215,36 +274,16 @@ const comingSoonPatterns = [
 .patterns-action-bar__prospect {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
   width: 100%;
-  max-width: 40rem;
-  text-align: center;
-}
-
-.patterns-action-bar__membership-copy {
-  max-width: 36rem;
-}
-
-.patterns-action-bar__heading {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #2c3a57;
-}
-
-.patterns-action-bar__body {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.55;
-  color: #374151;
 }
 
 .patterns-action-bar__prospect-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
   width: 100%;
 }
@@ -323,6 +362,159 @@ const comingSoonPatterns = [
   font-size: 1.2rem;
   font-weight: 600;
   color: #52682d;
+}
+
+.patterns-catalog--more .patterns-section-title {
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #c7d8a4;
+}
+
+.patterns-section-note {
+  margin: -0.35rem 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #4d5a48;
+}
+
+.patterns-featured {
+  margin: 0 0 2.15rem;
+}
+
+.patterns-featured__panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
+  padding: 1.45rem 1.5rem 1.5rem;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
+  border: 1px solid #c7d8a4;
+  border-left: 6px solid var(--kbm-accent, #C2614E);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(36, 48, 21, 0.07);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.patterns-featured__panel:hover,
+.patterns-featured__panel:focus-visible {
+  border-color: var(--kbm-green, #52682d);
+  border-left-color: var(--kbm-accent, #C2614E);
+  box-shadow: 0 4px 16px rgba(82, 104, 45, 0.12);
+  outline: none;
+}
+
+.patterns-featured__visual {
+  position: relative;
+  min-height: 12.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9f9f6;
+}
+
+.patterns-featured__visual img {
+  display: block;
+  width: 100%;
+  height: 12.5rem;
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (min-width: 40rem) {
+  .patterns-featured__panel {
+    grid-template-columns: minmax(16rem, 1.15fr) minmax(0, 0.95fr);
+  }
+
+  .patterns-featured__visual {
+    min-height: 18rem;
+    align-self: stretch;
+  }
+
+  .patterns-featured__visual img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.patterns-featured__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.patterns-featured__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.patterns-featured__eyebrow {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--kbm-green, #52682d);
+}
+
+.patterns-featured__badge {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #52682d;
+  background: #f0f4eb;
+  border: 1px solid #c7d8a4;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+.patterns-featured__title {
+  margin: 0;
+  font-size: clamp(1.28rem, 2.6vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--kbm-green, #52682d);
+}
+
+.patterns-featured__copy {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #243015;
+}
+
+.patterns-featured__cta {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--kbm-accent, #C2614E);
+  border-radius: 8px;
+}
+
+.patterns-featured__panel:hover .patterns-featured__cta,
+.patterns-featured__panel:focus-visible .patterns-featured__cta {
+  background: var(--kbm-accent-hover, #a94e3d);
+}
+
+.patterns-featured__reassurance {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #4d5a48;
 }
 
 .patterns-grid {

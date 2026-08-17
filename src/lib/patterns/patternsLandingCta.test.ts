@@ -1,8 +1,12 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MEMBERSHIPS } from "../../config/memberships";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
 import {
+  applyPatternsCatalogPresentation,
   PATTERN_CATALOG_MEMBERSHIP_BODY,
+  PATTERN_CATALOG_MORE_HEADING,
   PATTERNS_LANDING_BECOME_MEMBER_LABEL,
   PATTERNS_LANDING_LOGIN_LABEL,
   PATTERNS_LANDING_MEMBERSHIP_BODY,
@@ -88,9 +92,53 @@ describe("patterns landing CTA", () => {
   });
 
   it("catalog membership copy does not imply every pattern requires membership", () => {
+    expect(PATTERN_CATALOG_MORE_HEADING).toBe("More Pattern Builders");
     expect(PATTERN_CATALOG_MEMBERSHIP_BODY).toBe(
-      "Sweater pattern builders are included with an active Knit It Now membership. Explore the available patterns below, including our free Hat Pattern.",
+      "Sweater pattern builders are included with an active Knit It Now membership.",
     );
     expect(PATTERN_CATALOG_MEMBERSHIP_BODY).not.toMatch(/Dynamic Patterns are included/i);
+    expect(PATTERN_CATALOG_MEMBERSHIP_BODY).not.toMatch(/Explore the available patterns below/i);
+  });
+
+  it("shows the featured guest catalog until paid membership is confirmed", () => {
+    function catalogNode(kind: "guest" | "member", hidden: boolean) {
+      const attrs = new Set(hidden ? ["hidden"] : []);
+      return {
+        dataset: { patternsCatalog: kind },
+        toggleAttribute(name: string, force?: boolean) {
+          if (name !== "hidden") return;
+          if (force) attrs.add("hidden");
+          else attrs.delete("hidden");
+        },
+        isHidden() {
+          return attrs.has("hidden");
+        },
+      };
+    }
+
+    const guest = catalogNode("guest", false);
+    const member = catalogNode("member", true);
+    const root = {
+      querySelectorAll: () => [guest, member],
+    } as unknown as ParentNode;
+
+    applyPatternsCatalogPresentation("prospect", root);
+    expect(guest.isHidden()).toBe(false);
+    expect(member.isHidden()).toBe(true);
+
+    applyPatternsCatalogPresentation("member", root);
+    expect(guest.isHidden()).toBe(true);
+    expect(member.isHidden()).toBe(false);
+
+    applyPatternsCatalogPresentation("prospect", root);
+    expect(guest.isHidden()).toBe(false);
+    expect(member.isHidden()).toBe(true);
+  });
+
+  it("refreshes catalog presentation from the same paid-membership check as the CTA", () => {
+    const src = readFileSync(resolve("src/lib/patterns/patternsLandingCta.ts"), "utf8");
+    expect(src).toContain("applyPatternsCatalogPresentation(mode, page)");
+    expect(src).toContain('root.closest("[data-patterns-page]")');
+    expect(src).toContain("hasMemberAccess(memberOrPayload)");
   });
 });
