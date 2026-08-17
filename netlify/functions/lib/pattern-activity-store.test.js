@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   activityEventKey,
   ACTIVITY_EVENT_PREFIX,
+  isActivityAdmin,
   normalizeActivityEvent,
 } from "./pattern-activity-store.js";
 
@@ -91,6 +92,74 @@ describe("normalizeActivityEvent", () => {
     );
     expect(dropped.ok).toBe(true);
     expect(dropped.event.metadata).toEqual({});
+  });
+});
+
+describe("isActivityAdmin", () => {
+  const ADMIN_ID = "mem_admin";
+  const ADMIN_EMAIL = "admin@knitbymachine.com";
+  const ENV_KEYS = [
+    "NODE_ENV",
+    "CONTEXT",
+    "ALLOW_DEV_PATTERN_USER",
+    "PATTERN_ACTIVITY_ADMIN_MEMBER_IDS",
+    "PATTERN_ACTIVITY_ADMIN_EMAILS",
+  ];
+  /** @type {Record<string, string | undefined>} */
+  let savedEnv = {};
+
+  function makeReq(emailHeader = "") {
+    const headers = {};
+    if (emailHeader) headers["x-kbm-member-email"] = emailHeader;
+    return new Request("https://site.test/.netlify/functions/pattern-activity-log", {
+      method: "GET",
+      headers,
+    });
+  }
+
+  beforeEach(() => {
+    savedEnv = {};
+    for (const key of ENV_KEYS) savedEnv[key] = process.env[key];
+    process.env.NODE_ENV = "production";
+    process.env.CONTEXT = "production";
+    delete process.env.ALLOW_DEV_PATTERN_USER;
+    delete process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS;
+    delete process.env.PATTERN_ACTIVITY_ADMIN_EMAILS;
+  });
+
+  afterEach(() => {
+    for (const key of ENV_KEYS) {
+      if (savedEnv[key] === undefined) delete process.env[key];
+      else process.env[key] = savedEnv[key];
+    }
+  });
+
+  it("allows an admin by verified member id", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS = ADMIN_ID;
+    expect(isActivityAdmin(makeReq(), ADMIN_ID, "someone@example.com")).toBe(true);
+  });
+
+  it("allows an admin by verified Memberstack email", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq(), "mem_someone", ADMIN_EMAIL)).toBe(true);
+  });
+
+  it("allows by verified email when the client omits X-KBM-Member-Email", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq(), "mem_someone", ADMIN_EMAIL)).toBe(true);
+  });
+
+  it("rejects a signed-in non-admin", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS = ADMIN_ID;
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq("someone@example.com"), "mem_regular", "someone@example.com")).toBe(
+      false,
+    );
+  });
+
+  it("does not grant access from a spoofed client email when verified identity is not allowlisted", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq(ADMIN_EMAIL), "mem_regular", "someone@example.com")).toBe(false);
   });
 });
 

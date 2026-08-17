@@ -23,12 +23,14 @@ vi.mock("@netlify/blobs", () => {
 });
 
 // Identity from Bearer JWT only (never X-KBM-Member-Id). Token value = member id in these tests.
+// Optional x-test-verified-email stands in for requireMember's Memberstack Admin email.
 vi.mock("./require-member-access.js", () => ({
   resolveVerifiedProjectUserId: async (req) => {
     const header = req.headers.get("authorization") || "";
     const match = header.match(/^Bearer\s+(.+)$/i);
     if (!match) return { error: "Sign in required.", status: 401 };
-    return { userId: match[1].trim(), mode: "member" };
+    const email = (req.headers.get("x-test-verified-email") || "").trim();
+    return { userId: match[1].trim(), mode: "member", email };
   },
 }));
 
@@ -49,11 +51,12 @@ const ENV_KEYS = [
 
 let savedEnv = {};
 
-function makeReq(method, { memberId, email, body, query } = {}) {
+function makeReq(method, { memberId, email, verifiedEmail, body, query } = {}) {
   const headers = {};
   if (memberId) headers.authorization = `Bearer ${memberId}`;
-  // Admin email allowlist only (not identity). Identity comes from the Bearer token above.
+  // Client hint only. Verified identity comes from the Bearer token + x-test-verified-email.
   if (email) headers["x-kbm-member-email"] = email;
+  if (verifiedEmail) headers["x-test-verified-email"] = verifiedEmail;
   if (body) headers["content-type"] = "application/json";
   const url = `https://site.test/.netlify/functions/pattern-activity-log${query ? `?${query}` : ""}`;
   return new Request(url, {
@@ -110,7 +113,43 @@ describe("pattern-activity-log GET (admin-only reporting)", () => {
     expect(body.events[0].eventType).toBe("pattern_saved");
   });
 
-  it("allows an admin via the email allowlist", async () => {
+  it("allows an admin via the verified Memberstack email allowlist", async () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    const res = await handler(
+      makeReq("GET", {
+        memberId: "mem_someone",
+        verifiedEmail: ADMIN_EMAIL,
+        email: "not-the-allowlisted@example.com",
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+  });
+
+  it("allows an admin by verified email when the client omits X-KBM-Member-Email", async () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    const res = await handler(
+      makeReq("GET", { memberId: "mem_someone", verifiedEmail: ADMIN_EMAIL }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+  });
+
+  it("denies a member whose verified email is not in the allowlist", async () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    const res = await handler(
+      makeReq("GET", {
+        memberId: MEMBER_ID,
+        verifiedEmail: "someone@example.com",
+        email: "someone@example.com",
+      }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("still allows the client email header when JWT auth did not return an email", async () => {
     process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
     const res = await handler(
       makeReq("GET", { memberId: "mem_someone", email: ADMIN_EMAIL }),
@@ -120,10 +159,14 @@ describe("pattern-activity-log GET (admin-only reporting)", () => {
     expect(body.ok).toBe(true);
   });
 
-  it("denies a member whose email is not in the allowlist", async () => {
+  it("does not grant access from a spoofed client email when verified identity is not allowlisted", async () => {
     process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
     const res = await handler(
-      makeReq("GET", { memberId: MEMBER_ID, email: "someone@example.com" }),
+      makeReq("GET", {
+        memberId: MEMBER_ID,
+        verifiedEmail: "someone@example.com",
+        email: ADMIN_EMAIL,
+      }),
     );
     expect(res.status).toBe(403);
   });

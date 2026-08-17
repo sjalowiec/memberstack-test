@@ -39,9 +39,10 @@ function makeRequest(token, extraHeaders = {}) {
   });
 }
 
-function memberRecord(planId, { status = "ACTIVE", active = true } = {}) {
+function memberRecord(planId, { status = "ACTIVE", active = true, email = "owner@example.com" } = {}) {
   return {
     id: MEMBER_ID,
+    auth: { email },
     planConnections: [{ planId, status, active }],
   };
 }
@@ -208,7 +209,24 @@ describe("resolveVerifiedProjectUserId (identity only)", () => {
     const result = await resolveVerifiedProjectUserId(
       makeRequest("good-token", { "X-KBM-Member-Id": OTHER_ID }),
     );
-    expect(result).toEqual({ userId: MEMBER_ID, mode: "member" });
+    expect(result).toEqual({
+      userId: MEMBER_ID,
+      mode: "member",
+      email: "owner@example.com",
+    });
+  });
+
+  it("returns the verified Memberstack email from getMember", async () => {
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => memberRecord(ACTIVE_PLAN, { email: "admin@knitbymachine.com" })),
+    });
+    const result = await resolveVerifiedProjectUserId(makeRequest("good-token"));
+    expect(result).toEqual({
+      userId: MEMBER_ID,
+      mode: "member",
+      email: "admin@knitbymachine.com",
+    });
   });
 
   it("rejects anonymous requests", async () => {
