@@ -21,6 +21,8 @@ export const HAT_PATTERN_LEAD_MESSAGES = {
 
 export const HAT_PATTERN_LEAD_TITLE = "Your free Hat Pattern is ready";
 export const HAT_PATTERN_LEAD_COPY =
-  "Enter your email to view your finished custom Hat Pattern.";
+  "Enter your email to view your custom knitting instructions instantly on-screen.";
+export const HAT_PATTERN_LEAD_TIP =
+  "Tip: Be sure to print your pattern so you have a copy for later.";
 export const HAT_PATTERN_LEAD_SUBMIT_LABEL = "VIEW MY PATTERN";
-export const HAT_PATTERN_LEAD_HELPER = "Free. No membership required.";
+export const HAT_PATTERN_LEAD_HELPER = "Free. No account or password needed.";

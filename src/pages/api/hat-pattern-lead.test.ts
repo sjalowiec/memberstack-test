@@ -90,10 +90,20 @@ describe("Hat lead capture markup and wiring", () => {
     expect(patternPage).not.toContain("PatternBuilderAccountGate");
     expect(formSource).toContain("HAT_PATTERN_LEAD_HELPER");
     expect(formSource).toContain("HAT_PATTERN_LEAD_TITLE");
+    expect(formSource).toContain("HAT_PATTERN_LEAD_COPY");
+    expect(formSource).toContain("HAT_PATTERN_LEAD_TIP");
     expect(formSource).toContain("HAT_PATTERN_LEAD_SUBMIT_LABEL");
     expect(formSource).toContain("/privacy");
-    expect(sharedSource).toContain("Free. No membership required.");
     expect(sharedSource).toContain("Your free Hat Pattern is ready");
+    expect(sharedSource).toContain(
+      "Enter your email to view your custom knitting instructions instantly on-screen.",
+    );
+    expect(sharedSource).toContain(
+      "Tip: Be sure to print your pattern so you have a copy for later.",
+    );
+    expect(sharedSource).toContain("Free. No account or password needed.");
+    expect(sharedSource).not.toContain("Free. No membership required.");
+    expect(sharedSource).not.toMatch(/bookmark|permanent link|email the pattern/i);
     expect(sharedSource).toContain("VIEW MY PATTERN");
   });
 
