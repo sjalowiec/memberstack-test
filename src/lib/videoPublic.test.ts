@@ -172,3 +172,28 @@ describe("videos-public.json shallow neckline, no shoulder shaping", () => {
     expect(embed).not.toMatch(/href=["']https:\/\/vimeo\.com\//);
   });
 });
+
+describe("videos-public.json shallow round neckline with shaped shoulders", () => {
+  it("is published/public in Shaping / Garment Pieces for Vimeo 1211185343", () => {
+    const raw = readFileSync(join(process.cwd(), "src", "data", "videos-public.json"), "utf-8");
+    const catalog = JSON.parse(raw) as Array<
+      VideoCatalogRecord & {
+        vimeo_id?: number;
+        access_level?: string;
+      }
+    >;
+    const row = catalog.find((v) => String(v.content_id) === "2213");
+    expect(row).toBeDefined();
+    expect(row?.slug).toBe("shallow-round-neckline-with-shaped-shoulders");
+    expect(row?.title).toBe("Shallow Round Neckline with Shaped Shoulders");
+    expect(row?.category).toBe("Shaping");
+    expect(row?.subcategory).toBe("Garment Pieces");
+    expect(row?.access_level).toBe("public");
+    expect(row?.vimeo_id).toBe(1211185343);
+    expect(catalogVideoIsPublic(row!)).toBe(true);
+    expect(findPublicCatalogVideoByContentId(catalog, 2213)).toEqual(row);
+
+    const byTitle = searchPublicCatalogVideos(catalog, "shaped shoulders");
+    expect(byTitle.some((v) => String(v.content_id) === "2213")).toBe(true);
+  });
+});

@@ -215,6 +215,8 @@ describe("public round neckline Skill Builder pages", () => {
     expect(exerciseBody).not.toContain("Watch the complete process before you begin");
     expect(exerciseBody).not.toContain("b1bc386c3c");
     expect(exerciseBody).not.toContain("1218264661");
+    expect(exerciseBody).not.toContain("1211185343");
+    expect(exerciseBody).not.toContain("151858551");
     expect(exerciseBody).not.toMatch(/href=["']https:\/\/vimeo\.com/);
     expect(exerciseBody).not.toMatch(/player\.vimeo\.com/);
     expect(exerciseBody).toMatch(
@@ -227,7 +229,7 @@ describe("public round neckline Skill Builder pages", () => {
     expect(landingBody).not.toContain("Watch the Shaping Sequence");
     expect(landingBody).not.toContain("Need a little help?");
     expect(landingBody).not.toContain("Need a refresher?");
-    expect(landingBody).not.toContain("The shaping process is the same as the shallow neckline exercise.");
+    expect(landingBody).not.toContain("scrap-off, rehang, and bind-off-and-decrease");
     expect(landingBody).not.toContain("SHALLOW_BACK_STRAIGHT_SHOULDER_VIDEO_HEADING");
     expect(landingBody).not.toContain("skillBuilderVideoHelperCopy");
     expect(exerciseBody).toContain('privacyHash={video.privacyHash ?? ""}');
