@@ -39,6 +39,14 @@ import {
 import { applyPatternProjectOnlineNotes, HAT_PATTERN_ONLINE_NOTES_SELECTORS } from "../lib/patterns/patternProjectOnlineNotes";
 import { getSleevelessPatternOnlineNotesText } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { isHatPatternLeadRecognized } from "../lib/patterns/hat/hatPatternLeadHint";
+import {
+  bindHatLeadForm,
+  revealHatLeadCapture,
+  resolveHatPatternLeadContinue,
+  setHatLeadCaptureVisible,
+} from "../lib/patterns/hat/hatPatternLeadUi";
+import { readHatPatternAccessSnapshot } from "../lib/patterns/hat/hatPatternWorkspaceAccess";
 import {
   applyPatternPrintPersonalizationToDom,
   triggerPatternPrint,
@@ -242,11 +250,16 @@ function setVisible(el: Element | null, visible: boolean) {
   el.hidden = !visible;
 }
 
+function isLoggedInViewer(state: ViewerAccessState): boolean {
+  return state === "memberAccess" || state === "loggedInNoAccess";
+}
+
 function showEmptyState(message: string) {
   const empty = document.querySelector("[data-hat-pattern-empty]");
   const results = document.querySelector("[data-hat-pattern-results]");
   const msg = document.querySelector("[data-hat-pattern-empty-message]");
   if (msg) msg.textContent = message;
+  setHatLeadCaptureVisible(document, false);
   setVisible(empty, true);
   setVisible(results, false);
   const printBtn = document.querySelector("#print-btn");
@@ -262,9 +275,26 @@ function showEmptyState(message: string) {
 function showResultsShell() {
   const empty = document.querySelector("[data-hat-pattern-empty]");
   const results = document.querySelector("[data-hat-pattern-results]");
+  setHatLeadCaptureVisible(document, false);
   setVisible(empty, false);
   setVisible(results, true);
   mountPrintAction();
+}
+
+function showHatPatternLeadGate() {
+  const empty = document.querySelector("[data-hat-pattern-empty]");
+  const results = document.querySelector("[data-hat-pattern-results]");
+  setVisible(empty, false);
+  setVisible(results, false);
+  const printBtn = document.querySelector("#print-btn");
+  if (printBtn instanceof HTMLElement) printBtn.style.display = "none";
+  const editBtn = document.querySelector("[data-hat-edit-open]");
+  if (editBtn instanceof HTMLElement) {
+    editBtn.hidden = true;
+    editBtn.style.display = "none";
+  }
+  hideYarnAction();
+  revealHatLeadCapture(document);
 }
 
 export async function renderHatPattern() {
@@ -389,17 +419,13 @@ export async function renderHatPattern() {
 
 export function initHatPatternPage() {
   const run = () => {
-    bindInlinePrintLink();
-    bindHatPatternMyPatternsDisabledGuard(document);
-    initHatPatternNewPattern(document);
-    initHatPatternYarnDrawer();
-    // Listeners first, then snapshot, then Memberstack — never miss kin:member-access
-    // and never re-fetch a plan-less payload that would downgrade memberAccess.
-    bindHatPatternWorkspaceAccessLifecycle({
-      apply: applyHatPatternMembershipChrome,
-    });
-    void (async () => {
-      await ensureUrlRequestedSavedPatternHydrated();
+    let hatPatternHasRendered = false;
+    let hatPatternReadyForLead = false;
+
+    async function renderHatPatternIfAllowed() {
+      if (hatPatternHasRendered) return;
+      hatPatternHasRendered = true;
+      setHatLeadCaptureVisible(document, false);
       try {
         await renderHatPattern();
       } catch (err) {
@@ -408,6 +434,62 @@ export function initHatPatternPage() {
           "We couldn't calculate this hat pattern from your saved choices. Return to the builder and try again.",
         );
       }
+    }
+
+    async function resolveLeadAndRender() {
+      ensureHatDraftMigrated();
+      const draftCheck = buildHatPatternCalcFromDraft(readHatDraft(), sizingRows());
+      if (!draftCheck.ok) {
+        showEmptyState(draftCheck.message);
+        return;
+      }
+      const snapshot = readHatPatternAccessSnapshot();
+      const snapshotLoggedIn = snapshot
+        ? isLoggedInViewer(snapshot.viewerAccessState)
+        : false;
+      const next = await resolveHatPatternLeadContinue({
+        alreadyCaptured: isHatPatternLeadRecognized(),
+        memberLoggedIn:
+          snapshotLoggedIn || isLoggedInViewer(lastHatPatternViewerAccessState),
+      });
+      if (next === "show-capture") {
+        showHatPatternLeadGate();
+        return;
+      }
+      await renderHatPatternIfAllowed();
+    }
+
+    bindInlinePrintLink();
+    bindHatPatternMyPatternsDisabledGuard(document);
+    initHatPatternNewPattern(document);
+    initHatPatternYarnDrawer();
+    bindHatLeadForm(document, () => renderHatPatternIfAllowed());
+    // Listeners first, then snapshot, then Memberstack — never miss kin:member-access
+    // and never re-fetch a plan-less payload that would downgrade memberAccess.
+    bindHatPatternWorkspaceAccessLifecycle({
+      apply: (state) => {
+        applyHatPatternMembershipChrome(state);
+        if (
+          hatPatternReadyForLead &&
+          isLoggedInViewer(state) &&
+          !hatPatternHasRendered
+        ) {
+          void renderHatPatternIfAllowed();
+        }
+      },
+    });
+    const snapshot = readHatPatternAccessSnapshot();
+    const mayNeedLeadGate =
+      !isHatPatternLeadRecognized() &&
+      !isLoggedInViewer(snapshot?.viewerAccessState ?? lastHatPatternViewerAccessState);
+    if (mayNeedLeadGate) {
+      const results = document.querySelector("[data-hat-pattern-results]");
+      setVisible(results, false);
+    }
+    void (async () => {
+      await ensureUrlRequestedSavedPatternHydrated();
+      hatPatternReadyForLead = true;
+      await resolveLeadAndRender();
     })();
   };
 

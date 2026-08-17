@@ -80,6 +80,12 @@ import {
   HAT_PATTERN_BUILDER_HREF,
   HAT_PATTERN_HREF,
 } from "../lib/patterns/hat/hatPatternNavigation";
+import { isHatPatternLeadRecognized } from "../lib/patterns/hat/hatPatternLeadHint";
+import {
+  bindHatLeadForm,
+  revealHatLeadCapture,
+  resolveHatPatternLeadContinue,
+} from "../lib/patterns/hat/hatPatternLeadUi";
 import {
   bindPatternSummaryOverlayPositioning,
   collectOverlayAnchors,
@@ -247,6 +253,22 @@ export function initHatPatternSummaryPage(): void {
 
   function navigateAfterPrimarySuccess() {
     window.location.assign(hatSummaryPrimarySuccessHref(entryPath));
+  }
+
+  function isLoggedInViewer(state: ViewerAccessState): boolean {
+    return state === "memberAccess" || state === "loggedInNoAccess";
+  }
+
+  async function continueAfterPersist(): Promise<void> {
+    const next = await resolveHatPatternLeadContinue({
+      alreadyCaptured: isHatPatternLeadRecognized(),
+      memberLoggedIn: isLoggedInViewer(lastViewerAccessState),
+    });
+    if (next === "show-capture") {
+      revealHatLeadCapture(root);
+      return;
+    }
+    navigateAfterPrimarySuccess();
   }
 
   function setPrimaryEnabled(enabled: boolean) {
@@ -485,14 +507,21 @@ export function initHatPatternSummaryPage(): void {
     refreshLivePreview();
   }
 
-  async function updatePattern() {
+  /**
+   * Validate the visible summary form and write kbm_hat_draft.
+   * Shared by View My Pattern / Save / Update and the guest email continuation
+   * so a later form edit is not lost. Does not cloud-persist.
+   */
+  function writeCurrentSummaryDraft():
+    | { ok: true; draft: HatDraft; persist: "create" | "update" | "local-only"; requestedName: string }
+    | { ok: false } {
     clearFieldErrors();
     const form = readForm();
     const check = validateHatEditForm(form, rows);
     if (!check.ok) {
       showFieldErrors(check.errors);
       setPrimaryEnabled(false);
-      return;
+      return { ok: false };
     }
     const previous = readHatDraft() ?? baselineDraft ?? createEmptyHatDraft();
     let next = applyHatEditFormToDraft(previous, form, rows);
@@ -521,16 +550,22 @@ export function initHatPatternSummaryPage(): void {
     if (!preview.ok) {
       showFieldErrors({ form: preview.message });
       setPrimaryEnabled(false);
-      return;
+      return { ok: false };
     }
     writeHatDraft(next);
+    return { ok: true, draft: next, persist: action.persist, requestedName };
+  }
+
+  async function updatePattern() {
+    const written = writeCurrentSummaryDraft();
+    if (!written.ok) return;
     if (updateBtn) updateBtn.disabled = true;
     try {
-      if (action.persist === "create" || action.persist === "update") {
+      if (written.persist === "create" || written.persist === "update") {
         const persistRes = await persistHatPatternProject({
-          draft: next,
-          name: requestedName,
-          mode: action.persist,
+          draft: written.draft,
+          name: written.requestedName,
+          mode: written.persist,
         });
         if (!persistRes.ok) {
           showFieldErrors({ form: persistRes.error });
@@ -539,7 +574,7 @@ export function initHatPatternSummaryPage(): void {
         }
         applyPersistChrome();
       }
-      navigateAfterPrimarySuccess();
+      await continueAfterPersist();
     } finally {
       if (updateBtn) updateBtn.disabled = false;
     }
@@ -560,6 +595,10 @@ export function initHatPatternSummaryPage(): void {
   cancelBtns.forEach((el) => el.addEventListener("click", cancelEdit));
   updateBtn?.addEventListener("click", () => {
     void updatePattern();
+  });
+  bindHatLeadForm(root, () => {
+    if (!writeCurrentSummaryDraft().ok) return;
+    navigateAfterPrimarySuccess();
   });
 
   unitButtons.forEach((btn) => {

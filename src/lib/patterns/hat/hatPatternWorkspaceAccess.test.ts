@@ -252,8 +252,13 @@ describe("sweater member behavior remains unchanged", () => {
     expect(sleevelessPatternPage).toContain("SleevelessPatternMemberGate");
     expect(dropShoulderPatternPage).toContain("SleevelessPatternMemberGate");
     expect(hatPatternPage).not.toContain("SleevelessPatternMemberGate");
+    expect(hatPatternPage).not.toContain("PatternBuilderAccountGate");
     expect(hatPatternPage).not.toContain("initPatternMembershipPageGate");
     expect(hatPatternPage).toMatch(/free\s*\/\s*ungated/i);
+    expect(hatSummaryPage).not.toContain("SleevelessPatternMemberGate");
+    expect(hatSummaryPage).not.toContain("PatternBuilderAccountGate");
+    expect(hatSummaryScript).not.toContain("SleevelessPatternMemberGate");
+    expect(hatSummaryScript).toContain("resolveHatPatternLeadContinue");
   });
 
   it("sweater membership gate still unlocks logged-in members", () => {

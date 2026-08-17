@@ -45,6 +45,7 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
     expect(hatBuilder).toMatch(/Free\s*\/\s*ungated/i);
     expect(hatBuilder).not.toContain("SleevelessPatternMemberGate");
+    expect(hatBuilder).not.toContain("PatternBuilderAccountGate");
   });
 
   it("leaves sweater builders membership-gated and Hat ungated", () => {

@@ -1,0 +1,220 @@
+---
+/**
+ * Guest email form for the free Hat Pattern lead gate.
+ * Hidden until the page script reveals it. Never a membership gate.
+ */
+import {
+  HAT_PATTERN_LEAD_COPY,
+  HAT_PATTERN_LEAD_HELPER,
+  HAT_PATTERN_LEAD_SUBMIT_LABEL,
+  HAT_PATTERN_LEAD_TITLE,
+} from "../../lib/patterns/hat/hatPatternLeadShared";
+
+interface Props {
+  idPrefix: string;
+}
+
+const { idPrefix } = Astro.props;
+const headingId = `${idPrefix}-heading`;
+const botId = `${idPrefix}-bot`;
+const emailId = `${idPrefix}-email`;
+---
+
+<section
+  class="hat-lead-capture no-print"
+  data-hat-lead-capture
+  data-testid="hat-lead-capture"
+  hidden
+  aria-labelledby={headingId}
+>
+  <h2 id={headingId} class="hat-lead-capture__title">{HAT_PATTERN_LEAD_TITLE}</h2>
+  <p class="hat-lead-capture__copy">{HAT_PATTERN_LEAD_COPY}</p>
+  <form class="hat-lead-capture__form" data-hat-lead-form novalidate>
+    <p class="hat-lead-capture__honeypot" aria-hidden="true">
+      <label for={botId}>Company</label>
+      <input
+        type="text"
+        id={botId}
+        name="bot-field"
+        data-hat-lead-bot
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </p>
+    <div class="hat-lead-capture__field">
+      <label class="hat-lead-capture__label" for={emailId}>
+        Email address
+        <span class="hat-lead-capture__required" aria-hidden="true">*</span>
+        <span class="hat-lead-capture__sr-only">(required)</span>
+      </label>
+      <input
+        class="hat-lead-capture__input"
+        id={emailId}
+        name="email"
+        type="email"
+        data-hat-lead-email
+        data-testid="hat-lead-email"
+        autocomplete="email"
+        maxlength="254"
+        required
+        aria-required="true"
+        inputmode="email"
+      />
+    </div>
+    <button
+      type="submit"
+      class="hat-lead-capture__submit"
+      data-hat-lead-submit
+      data-testid="hat-lead-submit"
+    >
+      {HAT_PATTERN_LEAD_SUBMIT_LABEL}
+    </button>
+    <p class="hat-lead-capture__helper">{HAT_PATTERN_LEAD_HELPER}</p>
+    <p class="hat-lead-capture__consent">
+      By signing up, you agree to receive emails from Knit It Now. You can unsubscribe at
+      any time. See our
+      <a href="/privacy">Privacy Policy</a>.
+    </p>
+    <p class="hat-lead-error" hidden data-hat-lead-error role="alert"></p>
+  </form>
+</section>
+
+<style>
+  .hat-lead-capture {
+    margin: 1.1rem 0 0;
+    padding: 1.15rem 1.25rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .hat-lead-capture[hidden] {
+    display: none !important;
+  }
+
+  .hat-lead-capture__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #52682d;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #c7d8a4;
+  }
+
+  .hat-lead-capture__copy {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  .hat-lead-capture__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .hat-lead-capture__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .hat-lead-capture__required {
+    color: var(--kbm-green, #52682d);
+    margin-left: 0.15rem;
+  }
+
+  .hat-lead-capture__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #c5cbb8;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 1rem;
+    color: #1f2937;
+    background: #fff;
+  }
+
+  .hat-lead-capture__input:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .hat-lead-capture__submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.65rem 1.25rem;
+    border: 0;
+    border-radius: 8px;
+    background: var(--kbm-accent, #c2614e);
+    color: #fff;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+  }
+
+  .hat-lead-capture__submit:hover,
+  .hat-lead-capture__submit:focus-visible {
+    background: var(--kbm-accent-hover, #a94e3d);
+  }
+
+  .hat-lead-capture__submit:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .hat-lead-capture__submit:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  .hat-lead-capture__helper {
+    margin: 0.65rem 0 0;
+    font-size: 0.88rem;
+    color: #4d5a48;
+  }
+
+  .hat-lead-capture__consent {
+    margin: 0.55rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .hat-lead-capture__consent a {
+    color: #52682d;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .hat-lead-error {
+    margin: 0.75rem 0 0;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .hat-lead-capture__honeypot,
+  .hat-lead-capture__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

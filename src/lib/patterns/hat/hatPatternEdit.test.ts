@@ -1077,19 +1077,69 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("resolveHatPatternPersistActionFromViewer");
     expect(summaryScript).toContain("persistHatPatternProject");
     expect(summaryScript).toContain("navigateAfterPrimarySuccess");
+    expect(summaryScript).toContain("continueAfterPersist");
     expect(summaryScript).toContain("hatSummaryPrimarySuccessHref");
     expect(summaryScript).toContain("validateHatEditForm");
     expect(summaryScript).toContain("writeHatDraft");
+    const writeStart = summaryScript.indexOf("function writeCurrentSummaryDraft");
+    expect(writeStart).toBeGreaterThan(-1);
     const updateStart = summaryScript.indexOf("async function updatePattern");
-    expect(updateStart).toBeGreaterThan(-1);
+    expect(updateStart).toBeGreaterThan(writeStart);
     const cancelStart = summaryScript.indexOf("function cancelEdit");
+    const writeFn = summaryScript.slice(
+      writeStart,
+      updateStart > writeStart ? updateStart : writeStart + 2500,
+    );
     const updateFn = summaryScript.slice(
       updateStart,
       cancelStart > updateStart ? cancelStart : updateStart + 2500,
     );
-    expect(updateFn).toContain("writeHatDraft");
-    expect(updateFn).toContain("applyHatPatternProjectDetailsToDraft");
-    expect(updateFn).toContain("navigateAfterPrimarySuccess");
+    expect(writeFn).toContain("validateHatEditForm");
+    expect(writeFn).toContain("applyHatEditFormToDraft");
+    expect(writeFn).toContain("writeHatDraft");
+    expect(writeFn).toContain("applyHatPatternProjectDetailsToDraft");
+    expect(writeFn).not.toContain("persistHatPatternProject");
+    expect(updateFn).toContain("writeCurrentSummaryDraft");
+    expect(updateFn).toContain("persistHatPatternProject");
+    expect(updateFn).toContain("continueAfterPersist");
+  });
+
+  it("guest email continuation rewrites the current summary values before navigating", () => {
+    const storage: Record<string, string> = {};
+    const mem = {
+      getItem: (k: string) => storage[k] ?? null,
+      setItem: (k: string, v: string) => {
+        storage[k] = v;
+      },
+    };
+    const previous = completeDraft({ brimLength: "2" });
+    writeHatDraft(previous, mem);
+    expect(readHatDraft(mem)?.brimLength).toBe("2");
+
+    const edited = formFromDraft(previous, { brimLength: "2.5", finishedHatLength: "9" });
+    edited.fit = "watchcap";
+    const check = validateHatEditForm(edited, sizingRows);
+    expect(check.ok).toBe(true);
+    if (!check.ok) return;
+    const next = applyHatEditFormToDraft(previous, edited, sizingRows);
+    writeHatDraft(next, mem);
+
+    const saved = readHatDraft(mem);
+    expect(saved?.brimLength).toBe("2.5");
+    expect(saved?.customHatLength).toBe("9");
+    const finished = buildHatPatternCalcFromDraft(saved, sizingRows);
+    expect(finished.ok).toBe(true);
+    if (!finished.ok) return;
+    expect(finished.calc.brimDepth).toBe(2.5);
+    expect(finished.calc.hatHeight).toBe(9);
+
+    const bindStart = summaryScript.indexOf("bindHatLeadForm(root");
+    expect(bindStart).toBeGreaterThan(-1);
+    const bindFn = summaryScript.slice(bindStart, bindStart + 220);
+    expect(bindFn).toContain("writeCurrentSummaryDraft");
+    expect(bindFn).toContain("navigateAfterPrimarySuccess");
+    expect(bindFn).not.toContain("persistHatPatternProject");
+    expect(bindFn).not.toContain("continueAfterPersist");
   });
 
   it("Cancel returns to the correct location based on the entry path", () => {
@@ -1115,6 +1165,9 @@ describe("hat Summary/Edit page wiring", () => {
     expect(builderScript).toContain("HAT_SUMMARY_FROM_BUILDER_HREF");
     // Primary label must not imply My Patterns save for free users.
     expect(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL).toBe("View My Pattern");
+    expect(summaryScript).toContain("resolveHatPatternLeadContinue");
+    expect(summaryScript).not.toContain("SleevelessPatternMemberGate");
+    expect(summaryScript).not.toContain("PatternBuilderAccountGate");
   });
 
   it("missing draft follows the same empty-state behavior as the finished pattern page", () => {
