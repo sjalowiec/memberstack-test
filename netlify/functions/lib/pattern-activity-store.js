@@ -41,25 +41,19 @@ function parseAdminAllowList(value) {
 /**
  * Admin-only gate for activity reporting (the GET endpoint).
  *
- * No site-wide admin-role helper exists in this codebase, and `/admin` is only edge/hidden-gated,
- * so reporting is restricted here via an explicit allowlist. The member id / email come from the
- * same client-sent `X-KBM-*` headers the saved-pattern functions already trust (JWT verification
- * is a separate, codebase-wide TODO).
+ * Production: JWT-verified member id must be in `PATTERN_ACTIVITY_ADMIN_MEMBER_IDS`, or
+ * JWT-verified Memberstack email in `PATTERN_ACTIVITY_ADMIN_EMAILS`.
+ * Local dev only (`ALLOW_DEV_PATTERN_USER`): always allowed. Never true in production.
  *
- * - Production: member id must be in `PATTERN_ACTIVITY_ADMIN_MEMBER_IDS`, or email in
- *   `PATTERN_ACTIVITY_ADMIN_EMAILS`.
- * - Local dev only (`ALLOW_DEV_PATTERN_USER`): always allowed so the admin page works locally.
- *   This can never be true in a production deploy.
+ * When a verified email is provided it is authoritative — a client `X-KBM-Member-Email`
+ * header cannot grant (or deny) access. The client header is a compatibility fallback
+ * only when JWT auth did not return an email.
  *
  * @param {Request} req
- * @returns {boolean}
+ * @param {string} [verifiedMemberId] JWT-verified member id from {@link resolveVerifiedProjectUserId}
+ * @param {string} [verifiedEmail] JWT-verified Memberstack email from the same helper
  */
-/**
- * @param {Request} req
- * @param {string} [verifiedMemberId] Prefer the JWT-verified member id when available
- *   so `X-KBM-Member-Id` cannot spoof admin access.
- */
-export function isActivityAdmin(req, verifiedMemberId = "") {
+export function isActivityAdmin(req, verifiedMemberId = "", verifiedEmail = "") {
   if (isAllowDevPatternUser()) return true;
 
   const memberId = String(verifiedMemberId || req.headers.get("x-kbm-member-id") || "")
@@ -69,7 +63,9 @@ export function isActivityAdmin(req, verifiedMemberId = "") {
     return true;
   }
 
-  const email = (req.headers.get("x-kbm-member-email") || "").trim().toLowerCase();
+  const serverEmail = String(verifiedEmail || "").trim().toLowerCase();
+  const clientEmail = (req.headers.get("x-kbm-member-email") || "").trim().toLowerCase();
+  const email = serverEmail || clientEmail;
   if (email && parseAdminAllowList(process.env.PATTERN_ACTIVITY_ADMIN_EMAILS).has(email)) {
     return true;
   }

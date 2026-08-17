@@ -87,12 +87,14 @@ export async function requirePatternProjectAccess(req) {
 }
 
 /**
- * Identity-only gate (verified JWT ? member id). Does not grant pattern access.
+ * Identity-only gate (verified JWT → member id + email). Does not grant pattern access.
  * Used by non-pattern endpoints that previously trusted X-KBM-Member-Id via resolveProjectUserId.
+ * `email` is the Memberstack Admin record address from {@link requireMember} (empty when lookup
+ * did not return one). Callers must not treat a client `X-KBM-Member-Email` header as equivalent.
  *
  * @param {Request} req
  * @returns {Promise<
- *   | { userId: string, mode: "member" | "dev" }
+ *   | { userId: string, mode: "member" | "dev", email: string }
  *   | { error: string, status: number }
  * >}
  */
@@ -100,7 +102,7 @@ export async function resolveVerifiedProjectUserId(req) {
   const token = bearerTokenFromRequest(req);
 
   if (!token && isAllowDevPatternUser()) {
-    return { userId: resolveDevPatternUserId(req), mode: "dev" };
+    return { userId: resolveDevPatternUserId(req), mode: "dev", email: "" };
   }
 
   const auth = await requireMember(req);
@@ -112,8 +114,10 @@ export async function resolveVerifiedProjectUserId(req) {
   }
 
   if (auth.mode === "dev") {
-    return { userId: resolveDevPatternUserId(req), mode: "dev" };
+    return { userId: resolveDevPatternUserId(req), mode: "dev", email: "" };
   }
 
-  return { userId: sanitizeKeySegment(auth.member.id), mode: "member" };
+  const email =
+    typeof auth.member.email === "string" ? auth.member.email.trim() : "";
+  return { userId: sanitizeKeySegment(auth.member.id), mode: "member", email };
 }

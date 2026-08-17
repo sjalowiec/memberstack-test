@@ -33,7 +33,7 @@ export default async (req) => {
 
   if (req.method === "GET") {
     // Reporting is admin-only — never expose other users' activity/emails to regular members.
-    if (!isActivityAdmin(req, user.userId)) {
+    if (!isActivityAdmin(req, user.userId, user.email)) {
       return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
     }
     const url = new URL(req.url);
