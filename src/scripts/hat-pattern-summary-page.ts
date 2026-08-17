@@ -81,6 +81,7 @@ import {
   HAT_PATTERN_HREF,
 } from "../lib/patterns/hat/hatPatternNavigation";
 import { isHatPatternLeadRecognized } from "../lib/patterns/hat/hatPatternLeadHint";
+import { logHatPatternGenerated } from "../lib/patterns/hat/hatPatternActivity";
 import {
   bindHatLeadForm,
   revealHatLeadCapture,
@@ -259,6 +260,15 @@ export function initHatPatternSummaryPage(): void {
     return state === "memberAccess" || state === "loggedInNoAccess";
   }
 
+  async function recordHatGenerationIfNeeded(guestEmail?: string): Promise<void> {
+    if (entryPath !== "from-builder") return;
+    await logHatPatternGenerated({
+      viewerAccessState: lastViewerAccessState,
+      guestEmail,
+      patternTitle: titleInput?.value?.trim() || undefined,
+    });
+  }
+
   async function continueAfterPersist(): Promise<void> {
     const next = await resolveHatPatternLeadContinue({
       alreadyCaptured: isHatPatternLeadRecognized(),
@@ -268,6 +278,7 @@ export function initHatPatternSummaryPage(): void {
       revealHatLeadCapture(root);
       return;
     }
+    await recordHatGenerationIfNeeded();
     navigateAfterPrimarySuccess();
   }
 
@@ -598,7 +609,10 @@ export function initHatPatternSummaryPage(): void {
   });
   bindHatLeadForm(root, () => {
     if (!writeCurrentSummaryDraft().ok) return;
-    navigateAfterPrimarySuccess();
+    const email = root.querySelector<HTMLInputElement>("[data-hat-lead-email]")?.value;
+    void recordHatGenerationIfNeeded(email).then(() => {
+      navigateAfterPrimarySuccess();
+    });
   });
 
   unitButtons.forEach((btn) => {

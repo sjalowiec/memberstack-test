@@ -8,7 +8,8 @@
 import { loadExpressSweaterCharts } from "./sleevelessExpressSizeChartClient";
 import { flushExpressWizardToCanonicalPattern } from "./flushExpressWizardToCanonicalPattern";
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
-import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
+import { logCurrentPatternActivity } from "./sleevelessPatternActivity";
+import type { PatternSystemId } from "./patternSystemId";
 
 /** Query flag: `/patterns/sleeveless/pattern/?generated=1` */
 export const PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY = "generated";
@@ -20,6 +21,20 @@ export const PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT =
 /** sessionStorage flag set by {@link markPatternWorkspaceBuilderHandoff}. */
 export const PATTERN_WORKSPACE_BUILDER_HANDOFF_SESSION_KEY =
   "kbm_pattern_workspace_builder_handoff";
+
+/** Pattern system for a generation event — from the workspace URL, not leftover draft state. */
+export function resolvePatternSystemFromHandoffHref(href?: string): PatternSystemId {
+  try {
+    const url = new URL(
+      href ?? (typeof window !== "undefined" ? window.location.href : "http://local/"),
+    );
+    if (/\/patterns\/drop-shoulder(?:\/|$)/.test(url.pathname)) return "drop-shoulder";
+    if (/\/patterns\/hat(?:\/|$)/.test(url.pathname)) return "hat";
+  } catch {
+    /* fall through */
+  }
+  return "sleeveless";
+}
 
 export function markPatternWorkspaceBuilderHandoff(): void {
   if (typeof sessionStorage === "undefined") return;
@@ -103,7 +118,9 @@ export async function runPatternWorkspaceBuilderGenerationHandoff(
 
   prepareCustomBuildPatternGeneration({ root: root ?? undefined });
   flushExpressWizardToCanonicalPattern();
-  logSleevelessPatternActivity("pattern_generated");
+  logCurrentPatternActivity("pattern_generated", {
+    patternSystem: resolvePatternSystemFromHandoffHref(options.href),
+  });
 
   clearHandoffSession();
   stripPatternWorkspaceBuilderHandoffFromUrl();

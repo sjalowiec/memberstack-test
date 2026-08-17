@@ -20,7 +20,8 @@ import { flushExpressWizardToCanonicalPattern } from "../lib/patterns/flushExpre
 import { loadExpressSweaterCharts } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCustomBuildPatternGeneration";
 import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
-import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity";
+import { logCurrentPatternActivity } from "../lib/patterns/sleevelessPatternActivity";
+import { resolvePatternSystemFromPage } from "../lib/patterns/patternSystemId";
 
 const DEFAULT_PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
 
@@ -62,7 +63,9 @@ function continueToPatternFromReview(): void {
     .then(async () => {
       prepareCustomBuildPatternGeneration({ root: document });
       flushExpressWizardToCanonicalPattern();
-      logSleevelessPatternActivity("pattern_generated");
+      logCurrentPatternActivity("pattern_generated", {
+        patternSystem: resolvePatternSystemFromPage(),
+      });
       if (canCustomizePattern()) {
         await navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
         return;

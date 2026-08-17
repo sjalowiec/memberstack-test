@@ -40,7 +40,7 @@ import {
 } from "./savedCustomPatternCopyAccess";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
-import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
+import { logCurrentPatternActivity } from "./sleevelessPatternActivity";
 import {
   buildDefaultPatternTitleForPattern,
   getPatternProjectMeta,
@@ -53,7 +53,10 @@ import {
   resolvePatternSystemAlreadyClaimedCopy,
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
-import { resolvePatternSystemForEntitlement } from "./patternSystemId";
+import {
+  resolvePatternSystemForEntitlement,
+  resolvePatternSystemFromProject,
+} from "./patternSystemId";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 
 export const CUSTOM_PATTERN_SAVED_PROJECTS_PANEL_TITLE = "Saved Pattern Projects";
@@ -415,9 +418,10 @@ export async function smartSaveCustomPatternProject(
     writeHydratedConstructionBaseline(res.project);
     captureSavedCustomPatternDirtyBaseline();
     notifySavedProjectLinkChanged(options.root ?? undefined);
-    logSleevelessPatternActivity("pattern_updated", {
+    logCurrentPatternActivity("pattern_updated", {
       patternId: activeId,
       patternTitle: res.project.name,
+      patternSystem: resolvePatternSystemFromProject(res.project),
     });
     return { ok: true, project: { ...res.project, id: activeId }, created: false };
   }
@@ -432,9 +436,10 @@ export async function smartSaveCustomPatternProject(
   writeHydratedConstructionBaseline(res.project);
   captureSavedCustomPatternDirtyBaseline();
   notifySavedProjectLinkChanged(options.root ?? undefined);
-  logSleevelessPatternActivity("pattern_saved", {
+  logCurrentPatternActivity("pattern_saved", {
     patternId: res.project.id,
     patternTitle: res.project.name,
+    patternSystem: resolvePatternSystemFromProject(res.project),
     ...(mode === "copy" ? { metadata: { copy: true } } : {}),
   });
   return { ok: true, project: res.project, created: true };
@@ -689,9 +694,10 @@ export function initCustomPatternSavedProjectsPanel(
       return;
     }
     hydrateSavedCustomPatternProjectSession(res.project);
-    logSleevelessPatternActivity("pattern_opened", {
+    logCurrentPatternActivity("pattern_opened", {
       patternId: res.project.id,
       patternTitle: res.project.name,
+      patternSystem: resolvePatternSystemFromProject(res.project),
     });
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle(

@@ -147,7 +147,7 @@ export function normalizeActivityEvent(raw, userId) {
     try {
       const serialized = JSON.stringify(raw.metadata);
       if (serialized && serialized.length <= 2000) {
-        event.metadata = JSON.parse(serialized);
+        event.metadata = sanitizeActivityMetadata(JSON.parse(serialized));
       }
     } catch {
       /* ignore non-serializable metadata */
@@ -155,6 +155,18 @@ export function normalizeActivityEvent(raw, userId) {
   }
 
   return { ok: true, event };
+}
+
+/** Only persist a known membership value; leave historical/unknown events without one. */
+export function sanitizeActivityMetadata(metadata) {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return metadata;
+  }
+  const next = { ...metadata };
+  if (next.membership !== "free" && next.membership !== "member") {
+    delete next.membership;
+  }
+  return next;
 }
 
 /**
@@ -175,30 +187,102 @@ export async function appendActivityEvent(store, event) {
   return { key, event };
 }
 
+export const ACTIVITY_LIST_MAX = 2000;
+
+function utcDay(value) {
+  const day = String(value || "").trim().slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : "";
+}
+
+function dayFromActivityKey(key) {
+  const match = String(key).match(/^events\/(\d{4}-\d{2}-\d{2})\//);
+  return match ? match[1] : "";
+}
+
+function eachUtcDay(fromDay, toDay) {
+  const days = [];
+  const start = new Date(`${fromDay}T00:00:00.000Z`);
+  const end = new Date(`${toDay}T00:00:00.000Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
+    return days;
+  }
+  for (let cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+    days.push(cursor.toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+async function listActivityKeys(store, fromDay, toDay) {
+  if (fromDay && toDay) {
+    const span = eachUtcDay(fromDay, toDay);
+    if (span.length > 0 && span.length <= 31) {
+      const keys = [];
+      for (const day of span) {
+        const { blobs } = await store.list({ prefix: `${ACTIVITY_EVENT_PREFIX}${day}/` });
+        for (const blob of blobs) {
+          if (typeof blob.key === "string" && blob.key.endsWith(".json")) {
+            keys.push(blob.key);
+          }
+        }
+      }
+      return keys;
+    }
+  }
+
+  const { blobs } = await store.list({ prefix: ACTIVITY_EVENT_PREFIX });
+  return blobs
+    .map((blob) => blob.key)
+    .filter((key) => {
+      if (typeof key !== "string" || !key.endsWith(".json")) return false;
+      if (!fromDay && !toDay) return true;
+      const day = dayFromActivityKey(key);
+      if (!day) return false;
+      if (fromDay && day < fromDay) return false;
+      if (toDay && day > toDay) return false;
+      return true;
+    });
+}
+
 /**
- * Reads stored events (most recent buckets first, bounded). Returns parsed event objects.
+ * Reads stored events (most recent buckets first, bounded).
+ * When `from`/`to` are set (ISO or YYYY-MM-DD), only those date buckets are scanned.
+ *
  * @param {import("@netlify/blobs").Store} store
- * @param {{ limit?: number }} [options]
+ * @param {{ limit?: number, offset?: number, from?: string, to?: string }} [options]
  */
 export async function listActivityEvents(store, options = {}) {
-  const limit = Number.isFinite(options.limit) ? Math.max(0, Math.floor(options.limit)) : 1000;
-  const { blobs } = await store.list({ prefix: ACTIVITY_EVENT_PREFIX });
-  const keys = blobs
-    .map((blob) => blob.key)
-    .filter((key) => typeof key === "string" && key.endsWith(".json"))
-    // Date bucket prefix means lexical desc ≈ newest day first.
-    .sort((a, b) => b.localeCompare(a))
-    .slice(0, limit);
+  const limit = Number.isFinite(options.limit)
+    ? Math.max(0, Math.min(ACTIVITY_LIST_MAX, Math.floor(options.limit)))
+    : 200;
+  const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
+  const fromDay = utcDay(options.from);
+  const toDay = utcDay(options.to);
+
+  const keys = (await listActivityKeys(store, fromDay, toDay)).sort((a, b) =>
+    b.localeCompare(a),
+  );
+  const total = keys.length;
+  const pageKeys = keys.slice(offset, offset + limit);
 
   const events = [];
-  for (const key of keys) {
+  for (const key of pageKeys) {
     const raw = await store.get(key, { type: "text" });
     if (!raw) continue;
     try {
-      events.push(JSON.parse(raw));
+      const parsed = JSON.parse(raw);
+      if (options.from && parsed?.createdAt && parsed.createdAt < options.from) continue;
+      if (options.to && parsed?.createdAt && parsed.createdAt > options.to) continue;
+      events.push(parsed);
     } catch {
       /* skip unparseable blob */
     }
   }
-  return events;
+  return {
+    events,
+    total,
+    offset,
+    limit,
+    hasMore: offset + pageKeys.length < total,
+    truncated: total > ACTIVITY_LIST_MAX && !fromDay && !toDay,
+  };
 }

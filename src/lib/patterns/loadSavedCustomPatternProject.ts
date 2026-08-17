@@ -3,7 +3,8 @@ import {
 } from "./customPatternProjectClient";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { claimPatternDraftForCurrentMember } from "./patternDraftOwnerGuard";
-import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
+import { logCurrentPatternActivity } from "./sleevelessPatternActivity";
+import { resolvePatternSystemFromProject } from "./patternSystemId";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
@@ -49,9 +50,10 @@ export async function loadSavedCustomPatternProject(
   // current member. Tag it so the draft-owner guard on the next page keeps (not clears) it.
   claimPatternDraftForCurrentMember();
 
-  logSleevelessPatternActivity("pattern_opened", {
+  logCurrentPatternActivity("pattern_opened", {
     patternId: res.project.id,
     patternTitle: res.project.name,
+    patternSystem: resolvePatternSystemFromProject(res.project),
     metadata: { action },
   });
 

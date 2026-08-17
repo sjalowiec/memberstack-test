@@ -5,6 +5,7 @@ import {
   PATTERN_WORKSPACE_BUILDER_HANDOFF_SESSION_KEY,
   markPatternWorkspaceBuilderHandoff,
   peekPatternWorkspaceBuilderHandoff,
+  resolvePatternSystemFromHandoffHref,
   runPatternWorkspaceBuilderGenerationHandoff,
   stripPatternWorkspaceBuilderHandoffFromUrl,
 } from "./patternWorkspaceBuilderGenerationHandoff";
@@ -27,6 +28,7 @@ vi.mock("./flushExpressWizardToCanonicalPattern", () => ({
 }));
 
 vi.mock("./sleevelessPatternActivity", () => ({
+  logCurrentPatternActivity: (...args: unknown[]) => logActivityMock(...args),
   logSleevelessPatternActivity: (...args: unknown[]) => logActivityMock(...args),
 }));
 
@@ -38,6 +40,22 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
     sessionStorage.clear();
     vi.clearAllMocks();
     loadChartsMock.mockResolvedValue(undefined);
+  });
+
+  it("resolves patternSystem from the workspace URL", () => {
+    expect(
+      resolvePatternSystemFromHandoffHref(
+        "https://example.test/patterns/drop-shoulder/pattern/?generated=1",
+      ),
+    ).toBe("drop-shoulder");
+    expect(
+      resolvePatternSystemFromHandoffHref(
+        "https://example.test/patterns/sleeveless/pattern/?generated=1",
+      ),
+    ).toBe("sleeveless");
+    expect(
+      resolvePatternSystemFromHandoffHref("https://example.test/patterns/hat/pattern/"),
+    ).toBe("hat");
   });
 
   it("peek reads sessionStorage flag", () => {
@@ -60,7 +78,10 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
     markPatternWorkspaceBuilderHandoff();
     const replaceState = vi.fn();
     vi.stubGlobal("window", {
-      location: { href: "https://example.test/patterns/sleeveless/pattern/" },
+      location: {
+        href: "https://example.test/patterns/sleeveless/pattern/",
+        pathname: "/patterns/sleeveless/pattern/",
+      },
       history: { replaceState, state: null },
     });
 
@@ -69,7 +90,10 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
     expect(loadChartsMock).toHaveBeenCalled();
     expect(prepareMock).toHaveBeenCalled();
     expect(flushMock).toHaveBeenCalled();
-    expect(logActivityMock).toHaveBeenCalledWith("pattern_generated");
+    expect(logActivityMock).toHaveBeenCalledWith(
+      "pattern_generated",
+      expect.objectContaining({ patternSystem: "sleeveless" }),
+    );
     expect(sessionStorage.getItem(PATTERN_WORKSPACE_BUILDER_HANDOFF_SESSION_KEY)).toBeNull();
   });
 
@@ -78,12 +102,17 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
     vi.stubGlobal("window", {
       location: {
         href: `https://example.test/patterns/drop-shoulder/pattern/?${PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY}=1&tab=pattern`,
+        pathname: "/patterns/drop-shoulder/pattern/",
       },
       history: { replaceState, state: null },
     });
 
     const ran = await runPatternWorkspaceBuilderGenerationHandoff();
     expect(ran).toBe(true);
+    expect(logActivityMock).toHaveBeenCalledWith(
+      "pattern_generated",
+      expect.objectContaining({ patternSystem: "drop-shoulder" }),
+    );
     stripPatternWorkspaceBuilderHandoffFromUrl();
     expect(replaceState).toHaveBeenCalled();
   });

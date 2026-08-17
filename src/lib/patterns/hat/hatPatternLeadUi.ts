@@ -9,6 +9,7 @@ import {
 } from "./hatPatternLeadClient";
 import { markHatPatternLeadRecognized } from "./hatPatternLeadHint";
 import { readKnownHatLeadMember } from "./hatPatternLeadMember";
+import { rememberHatActivityEmail } from "./hatPatternActivity";
 
 export function hatLeadCapturePanel(root: ParentNode | Document): HTMLElement | null {
   return root.querySelector<HTMLElement>("[data-hat-lead-capture]");
@@ -80,6 +81,7 @@ export async function submitHatLeadForm(
   }
 
   markHatPatternLeadRecognized();
+  rememberHatActivityEmail(built.email);
   return true;
 }
 
@@ -114,7 +116,10 @@ export async function resolveHatPatternLeadContinue(args: {
     });
     if (!("error" in built)) {
       const result = await submitHatPatternLeadRequest(built);
-      if (result.ok) markHatPatternLeadRecognized();
+      if (result.ok) {
+        markHatPatternLeadRecognized();
+        rememberHatActivityEmail(decision.email);
+      }
     }
     return "continue";
   }

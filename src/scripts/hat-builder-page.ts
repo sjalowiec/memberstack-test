@@ -51,6 +51,7 @@ import {
 import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 import { isValidExpressAvailableNeedles } from "../lib/patterns/sleevelessExpressAvailableNeedles";
 import { buildHatSummaryEditFromBuilderHref } from "../lib/patterns/hat/hatPatternNavigation";
+import { markHatGenerationActivityPending } from "../lib/patterns/hat/hatPatternActivity";
 
 const STEPS = HAT_BUILDER_STEPS;
 const LEGACY_HAT_UNIT_KEY = "hat-unit";
@@ -734,6 +735,7 @@ function initHatBuilderPage(): void {
       return;
     }
 
+    markHatGenerationActivityPending();
     window.location.assign(HAT_SUMMARY_FROM_BUILDER_HREF);
   });
 

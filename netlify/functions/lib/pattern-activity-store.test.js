@@ -68,6 +68,30 @@ describe("normalizeActivityEvent", () => {
     expect(result.ok).toBe(true);
     expect(result.event.patternSystem).toBe("unknown");
   });
+
+  it("keeps only free or member membership values", () => {
+    const kept = normalizeActivityEvent(
+      {
+        eventType: "pattern_generated",
+        patternSystem: "hat",
+        metadata: { membership: "member", extra: true },
+      },
+      "mem_1",
+    );
+    expect(kept.ok).toBe(true);
+    expect(kept.event.metadata).toEqual({ membership: "member", extra: true });
+
+    const dropped = normalizeActivityEvent(
+      {
+        eventType: "pattern_generated",
+        patternSystem: "hat",
+        metadata: { membership: "premium" },
+      },
+      "mem_1",
+    );
+    expect(dropped.ok).toBe(true);
+    expect(dropped.event.metadata).toEqual({});
+  });
 });
 
 describe("activityEventKey", () => {

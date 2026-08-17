@@ -227,8 +227,49 @@ describe("logPatternActivity", () => {
     expect(body.userId).toBe("mem_42");
     expect(body.eventType).toBe("pattern_saved");
     expect(body.patternId).toBe("proj_1");
+    expect(body.metadata.membership).toBe("free");
     expect(init.headers.Authorization).toBe("Bearer test-jwt");
     expect(init.headers["X-KBM-Member-Id"]).toBeUndefined();
+  });
+
+  it("records explicit member membership on the event", async () => {
+    resolveAuthMock.mockResolvedValue({
+      mode: "member",
+      memberId: "mem_42",
+      bearerToken: "test-jwt",
+    });
+    fetchMock.mockResolvedValue({ ok: true });
+
+    await logPatternActivity({
+      eventType: "pattern_generated",
+      patternSystem: "hat",
+      membership: "member",
+    });
+
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.metadata.membership).toBe("member");
+  });
+
+  it("posts a guest Hat event without a signed-in user", async () => {
+    resolveAuthMock.mockResolvedValue({ mode: "none" });
+    fetchMock.mockResolvedValue({ ok: true });
+
+    const sent = await logPatternActivity({
+      eventType: "pattern_generated",
+      patternSystem: "hat",
+      guestEmail: "guest@example.com",
+      membership: "free",
+    });
+
+    expect(sent).toBe(true);
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.userId).toMatch(/^guest_[a-f0-9]{16}$/);
+    expect(body.userId).not.toContain("guest@example.com");
+    expect(body.userEmail).toBe("guest@example.com");
+    expect(body.metadata.membership).toBe("free");
+    expect(init.headers.Authorization).toBeUndefined();
   });
 
   it("never throws when the request fails (save/update flow keeps working)", async () => {

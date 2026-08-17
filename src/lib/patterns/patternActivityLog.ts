@@ -1,21 +1,29 @@
 /**
  * Lightweight pattern activity tracking.
  *
- * Records small, non-blocking events (started / generated / saved / updated / opened / printed)
- * for logged-in users. Events are stored separately from saved pattern project JSON via the
+ * Records small, non-blocking events (started / generated / saved / updated / opened / printed).
+ * Events are stored separately from saved pattern project JSON via the
  * `pattern-activity-log` Netlify function + Blobs store.
  *
  * Design rules:
  * - Logging is **best-effort** and must never block or break the pattern workflow.
- * - Only logged-in Memberstack users (or the local dev pattern user) are tracked.
+ * - Signed-in Memberstack users (or the local dev pattern user) are tracked by member id.
+ * - Logged-out Hat guests may be tracked after email capture, using a hashed guest id.
  * - `createPatternActivityEvent` / `summarizePatternActivity` are pure + tested; the client
  *   `logPatternActivity` resolves identity and fires the request without throwing.
  */
+import { isValidEmailAddress } from "../email/validateEmailAddress";
 import {
   authHeadersForCustomPatternProjects,
   resolveCustomPatternProjectAuth,
 } from "./customPatternProjectAuth";
 import { memberEmailFromMemberstackPayload } from "./memberstackMember";
+import {
+  guestActivityUserIdFromEmail,
+  isPatternActivityMembership,
+  resolveActivityMembershipFromSnapshot,
+  type PatternActivityMembership,
+} from "./patternActivityIdentity";
 
 export const PATTERN_ACTIVITY_LOG_ENDPOINT = "/.netlify/functions/pattern-activity-log";
 
@@ -200,8 +208,13 @@ export function summarizePatternActivity(
 /** Details supplied by callers when logging — identity is resolved automatically. */
 export type LogPatternActivityInput = Omit<
   PatternActivityEventInput,
-  "userId" | "userEmail" | "id" | "createdAt"
->;
+  "userId" | "id" | "createdAt"
+> & {
+  /** Captured guest email when no Memberstack session is present. */
+  guestEmail?: string;
+  /** Membership at the time of the event. Defaults from the page snapshot. */
+  membership?: PatternActivityMembership;
+};
 
 function isDevEnv(): boolean {
   try {
@@ -228,38 +241,61 @@ async function resolveCurrentMemberEmail(): Promise<string | undefined> {
   }
 }
 
+function membershipForLog(input: LogPatternActivityInput): PatternActivityMembership {
+  if (isPatternActivityMembership(input.membership)) return input.membership;
+  const fromMeta = input.metadata?.membership;
+  if (isPatternActivityMembership(fromMeta)) return fromMeta;
+  return resolveActivityMembershipFromSnapshot();
+}
+
+function withMembershipMetadata(
+  metadata: Record<string, unknown> | undefined,
+  membership: PatternActivityMembership,
+): Record<string, unknown> {
+  return { ...metadata, membership };
+}
+
 /**
  * Best-effort client logging of a pattern activity event. Never throws and never blocks:
- * resolves the logged-in user, builds the event, and fires a request. Returns whether an event
- * was sent (`false` when skipped, e.g. no logged-in user). Failures are swallowed.
+ * resolves the logged-in user (or a captured guest email), builds the event, and fires a
+ * request. Returns whether an event was sent. Failures are swallowed.
  */
 export async function logPatternActivity(
   input: LogPatternActivityInput,
 ): Promise<boolean> {
   try {
     const auth = await resolveCustomPatternProjectAuth();
-    const userId =
+    const signedInUserId =
       auth.mode === "member" ? auth.memberId : auth.mode === "dev" ? auth.devUserId : undefined;
+    const guestEmail = trimmedOrUndefined(input.guestEmail) ?? trimmedOrUndefined(input.userEmail);
+    const canGuestLog = Boolean(guestEmail && isValidEmailAddress(guestEmail));
+
+    let userId = signedInUserId;
+    if (!userId && canGuestLog && guestEmail) {
+      userId = await guestActivityUserIdFromEmail(guestEmail);
+    }
     if (!userId) {
-      // Only logged-in (or local dev) users are tracked — silently skip otherwise.
       return false;
     }
 
-    const userEmail = auth.mode === "member" ? await resolveCurrentMemberEmail() : undefined;
+    const memberEmail = auth.mode === "member" ? await resolveCurrentMemberEmail() : undefined;
+    const userEmail = memberEmail ?? guestEmail;
     const sourcePage =
       input.sourcePage ??
       (typeof window !== "undefined" ? window.location?.pathname : undefined);
+    const membership = membershipForLog(input);
 
     const event = createPatternActivityEvent({
       ...input,
       userId,
       userEmail,
       sourcePage,
+      metadata: withMembershipMetadata(input.metadata, membership),
     });
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...authHeadersForCustomPatternProjects(auth),
+      ...(signedInUserId ? authHeadersForCustomPatternProjects(auth) : {}),
     };
 
     const res = await fetch(PATTERN_ACTIVITY_LOG_ENDPOINT, {

@@ -218,6 +218,51 @@ const sections: DashSection[] = [
         Pattern Activity
       </h2>
       <div class="admin-dash__activity">
+        <div class="admin-dash__activity-filters" data-activity-filters>
+          <label class="admin-dash__activity-filter">
+            <span>Date</span>
+            <select data-activity-date-preset>
+              <option value="today">Today</option>
+              <option value="week" selected>This Week</option>
+              <option value="month">This Month</option>
+              <option value="all">All</option>
+              <option value="custom">Custom range</option>
+            </select>
+          </label>
+          <label class="admin-dash__activity-filter" data-activity-custom-range hidden>
+            <span>From</span>
+            <input type="date" data-activity-date-from />
+          </label>
+          <label class="admin-dash__activity-filter" data-activity-custom-range hidden>
+            <span>To</span>
+            <input type="date" data-activity-date-to />
+          </label>
+          <label class="admin-dash__activity-filter">
+            <span>Pattern system</span>
+            <select data-activity-system>
+              <option value="">All</option>
+              <option value="hat">Hat</option>
+              <option value="sleeveless">Sleeveless</option>
+              <option value="drop-shoulder">Drop Shoulder</option>
+            </select>
+          </label>
+          <label class="admin-dash__activity-filter">
+            <span>Membership</span>
+            <select data-activity-membership>
+              <option value="all">All</option>
+              <option value="free">Free</option>
+              <option value="member">Member</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+          <label class="admin-dash__activity-filter">
+            <span>Event</span>
+            <select data-activity-event>
+              <option value="">All</option>
+            </select>
+          </label>
+        </div>
+
         <div class="admin-dash__stats">
           <div class="admin-dash__stat">
             <span class="admin-dash__stat-value" data-activity-total>—</span>
@@ -240,20 +285,43 @@ const sections: DashSection[] = [
         <p class="admin-dash__activity-status" data-activity-status>
           Loading recent activity…
         </p>
+        <p class="admin-dash__activity-note" data-activity-note hidden></p>
 
         <div class="admin-dash__table-wrap" data-activity-table-wrap hidden>
-          <table class="admin-dash__table">
+          <table class="admin-dash__table admin-dash__table--sortable">
             <thead>
               <tr>
-                <th scope="col">Created</th>
-                <th scope="col">User email</th>
-                <th scope="col">Event</th>
-                <th scope="col">System</th>
-                <th scope="col">Pattern title</th>
+                <th scope="col">
+                  <button type="button" data-activity-sort="createdAt">Created</button>
+                </th>
+                <th scope="col">
+                  <button type="button" data-activity-sort="userEmail">User email</button>
+                </th>
+                <th scope="col">
+                  <button type="button" data-activity-sort="membership">Membership</button>
+                </th>
+                <th scope="col">
+                  <button type="button" data-activity-sort="eventType">Event</button>
+                </th>
+                <th scope="col">
+                  <button type="button" data-activity-sort="patternSystem">Pattern system</button>
+                </th>
+                <th scope="col">
+                  <button type="button" data-activity-sort="patternTitle">Pattern title</button>
+                </th>
               </tr>
             </thead>
             <tbody data-activity-rows></tbody>
           </table>
+        </div>
+        <div class="admin-dash__activity-pager" data-activity-pager hidden>
+          <button type="button" class="admin-dash__activity-page-btn" data-activity-prev>
+            Previous
+          </button>
+          <span data-activity-page-label></span>
+          <button type="button" class="admin-dash__activity-page-btn" data-activity-next>
+            Next
+          </button>
         </div>
       </div>
     </section>
@@ -490,15 +558,30 @@ const sections: DashSection[] = [
       resolveCustomPatternProjectAuth,
     } from "../../lib/patterns/customPatternProjectAuth";
     import { memberEmailFromMemberstackPayload } from "../../lib/patterns/memberstackMember";
+    import {
+      activityMembershipDisplay,
+      dateRangeForPreset,
+      DEFAULT_PATTERN_ACTIVITY_FILTERS,
+      filterPatternActivityEvents,
+      patternActivityEventLabel,
+      patternActivityEventTypeOptions,
+      patternActivitySystemLabel,
+      patternActivitySystemFilterOptions,
+      sortPatternActivityEvents,
+      type PatternActivityDatePreset,
+      type PatternActivityReportFilters,
+      type PatternActivitySortDirection,
+      type PatternActivitySortKey,
+    } from "../../lib/patterns/patternActivityReport";
 
-    const EVENT_LABELS: Record<string, string> = {
-      pattern_started: "Started",
-      pattern_generated: "Generated",
-      pattern_saved: "Saved",
-      pattern_updated: "Updated",
-      pattern_opened: "Opened",
-      pattern_printed: "Printed",
-    };
+    const PAGE_SIZE = 50;
+    const FETCH_LIMIT = 2000;
+
+    let loadedEvents: PatternActivityEvent[] = [];
+    let truncated = false;
+    let sortKey: PatternActivitySortKey = "createdAt";
+    let sortDirection: PatternActivitySortDirection = "desc";
+    let page = 0;
 
     function setText(selector: string, value: string): void {
       const el = document.querySelector(selector);
@@ -513,10 +596,80 @@ const sections: DashSection[] = [
       }
     }
 
+    function setNote(message: string): void {
+      const el = document.querySelector("[data-activity-note]");
+      if (el instanceof HTMLElement) {
+        el.textContent = message;
+        el.hidden = !message;
+      }
+    }
+
     function formatDate(iso: string): string {
       const d = new Date(iso);
       if (Number.isNaN(d.getTime())) return iso;
       return d.toLocaleString();
+    }
+
+    function selectedValue(selector: string): string {
+      const el = document.querySelector(selector);
+      return el instanceof HTMLSelectElement || el instanceof HTMLInputElement
+        ? el.value
+        : "";
+    }
+
+    function readFilters(): PatternActivityReportFilters {
+      const datePreset = (selectedValue("[data-activity-date-preset]") ||
+        "week") as PatternActivityDatePreset;
+      return {
+        ...DEFAULT_PATTERN_ACTIVITY_FILTERS,
+        datePreset,
+        customFrom: selectedValue("[data-activity-date-from]"),
+        customTo: selectedValue("[data-activity-date-to]"),
+        patternSystem: selectedValue("[data-activity-system]"),
+        membership: (selectedValue("[data-activity-membership]") ||
+          "all") as PatternActivityReportFilters["membership"],
+        eventType: selectedValue("[data-activity-event]"),
+      };
+    }
+
+    function fillSelect(
+      selector: string,
+      options: { value: string; label: string }[],
+      keepValue: string,
+    ): void {
+      const el = document.querySelector(selector);
+      if (!(el instanceof HTMLSelectElement)) return;
+      const current = keepValue;
+      el.replaceChildren();
+      const all = document.createElement("option");
+      all.value = "";
+      all.textContent = "All";
+      el.appendChild(all);
+      for (const option of options) {
+        const node = document.createElement("option");
+        node.value = option.value;
+        node.textContent = option.label;
+        el.appendChild(node);
+      }
+      el.value = options.some((option) => option.value === current) ? current : "";
+    }
+
+    function syncCustomRangeVisibility(): void {
+      const preset = selectedValue("[data-activity-date-preset]");
+      document.querySelectorAll("[data-activity-custom-range]").forEach((el) => {
+        if (el instanceof HTMLElement) el.hidden = preset !== "custom";
+      });
+    }
+
+    function syncSortHeaders(): void {
+      document.querySelectorAll<HTMLButtonElement>("[data-activity-sort]").forEach((btn) => {
+        const key = btn.dataset.activitySort;
+        const active = key === sortKey;
+        btn.dataset.sortActive = active ? "true" : "false";
+        btn.dataset.sortDirection = active ? sortDirection : "";
+        const th = btn.closest("th");
+        if (th) th.setAttribute("aria-sort", active ? `${sortDirection}ending` : "none");
+      });
     }
 
     function renderRows(events: PatternActivityEvent[]): void {
@@ -529,8 +682,9 @@ const sections: DashSection[] = [
         const cells = [
           formatDate(event.createdAt),
           event.userEmail ?? "—",
-          EVENT_LABELS[event.eventType] ?? event.eventType,
-          event.patternSystem ?? "—",
+          activityMembershipDisplay(event),
+          patternActivityEventLabel(event.eventType),
+          patternActivitySystemLabel(event.patternSystem ?? ""),
           event.patternTitle ?? "—",
         ];
         for (const value of cells) {
@@ -541,6 +695,54 @@ const sections: DashSection[] = [
         tbody.appendChild(tr);
       }
       wrap.hidden = events.length === 0;
+    }
+
+    function renderPager(totalRows: number): void {
+      const pager = document.querySelector("[data-activity-pager]");
+      const label = document.querySelector("[data-activity-page-label]");
+      const prev = document.querySelector("[data-activity-prev]");
+      const next = document.querySelector("[data-activity-next]");
+      if (!(pager instanceof HTMLElement)) return;
+      const pageCount = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+      if (page > pageCount - 1) page = pageCount - 1;
+      pager.hidden = totalRows <= PAGE_SIZE;
+      if (label instanceof HTMLElement) {
+        label.textContent = `Page ${page + 1} of ${pageCount}`;
+      }
+      if (prev instanceof HTMLButtonElement) prev.disabled = page <= 0;
+      if (next instanceof HTMLButtonElement) next.disabled = page >= pageCount - 1;
+    }
+
+    function applyReport(): void {
+      const filters = readFilters();
+      const filtered = filterPatternActivityEvents(loadedEvents, {
+        ...filters,
+        datePreset: "all",
+      });
+      const sorted = sortPatternActivityEvents(filtered, sortKey, sortDirection);
+      const summary = summarizePatternActivity(sorted, { recentLimit: 0 });
+      setText("[data-activity-total]", String(summary.totalEvents));
+      setText("[data-activity-users]", String(summary.uniqueUsers));
+      setText("[data-activity-generated]", String(summary.generatedCount));
+      setText("[data-activity-saved]", String(summary.savedCount));
+
+      const start = page * PAGE_SIZE;
+      renderRows(sorted.slice(start, start + PAGE_SIZE));
+      renderPager(sorted.length);
+      syncSortHeaders();
+
+      if (sorted.length === 0) {
+        setStatus("No pattern activity matches these filters.");
+      } else {
+        setStatus("");
+      }
+      if (truncated) {
+        setNote(
+          `Showing the ${FETCH_LIMIT} most recent events in this range. Narrow the date range to see older activity.`,
+        );
+      } else {
+        setNote("");
+      }
     }
 
     async function resolveMemberEmailHeader(): Promise<Record<string, string>> {
@@ -556,14 +758,24 @@ const sections: DashSection[] = [
     }
 
     async function loadPatternActivity(): Promise<void> {
+      syncCustomRangeVisibility();
       try {
         const auth = await resolveCustomPatternProjectAuth();
         if (auth.mode === "none") {
           setStatus("Sign in to view pattern activity.");
           return;
         }
+        const filters = readFilters();
+        const range = dateRangeForPreset(filters.datePreset, new Date(), {
+          from: filters.customFrom,
+          to: filters.customTo,
+        });
+        const params = new URLSearchParams({ limit: String(FETCH_LIMIT) });
+        if (range.fromIso) params.set("from", range.fromIso);
+        if (range.toIso) params.set("to", range.toIso);
+
         const emailHeader = await resolveMemberEmailHeader();
-        const res = await fetch(`${PATTERN_ACTIVITY_LOG_ENDPOINT}?limit=500`, {
+        const res = await fetch(`${PATTERN_ACTIVITY_LOG_ENDPOINT}?${params}`, {
           method: "GET",
           headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
         });
@@ -574,6 +786,7 @@ const sections: DashSection[] = [
         const data = (await res.json()) as {
           ok?: boolean;
           events?: unknown[];
+          truncated?: boolean;
           error?: string;
         };
         if (!res.ok || !data.ok || !Array.isArray(data.events)) {
@@ -581,19 +794,72 @@ const sections: DashSection[] = [
           return;
         }
 
-        const summary = summarizePatternActivity(data.events, { recentLimit: 25 });
-        setText("[data-activity-total]", String(summary.totalEvents));
-        setText("[data-activity-users]", String(summary.uniqueUsers));
-        setText("[data-activity-generated]", String(summary.generatedCount));
-        setText("[data-activity-saved]", String(summary.savedCount));
-        renderRows(summary.recentEvents);
-        setStatus(
-          summary.totalEvents === 0 ? "No pattern activity recorded yet." : "",
+        loadedEvents = data.events.filter(
+          (row): row is PatternActivityEvent =>
+            Boolean(row && typeof row === "object" && typeof (row as PatternActivityEvent).createdAt === "string"),
         );
+        truncated = Boolean(data.truncated) || loadedEvents.length >= FETCH_LIMIT;
+        page = 0;
+
+        const systemKeep = selectedValue("[data-activity-system]");
+        fillSelect("[data-activity-system]", patternActivitySystemFilterOptions(loadedEvents), systemKeep);
+        fillSelect(
+          "[data-activity-event]",
+          patternActivityEventTypeOptions(),
+          selectedValue("[data-activity-event]"),
+        );
+        applyReport();
       } catch {
         setStatus("Unable to load pattern activity right now.");
       }
     }
+
+    document.querySelector("[data-activity-date-preset]")?.addEventListener("change", () => {
+      syncCustomRangeVisibility();
+      void loadPatternActivity();
+    });
+    document.querySelector("[data-activity-date-from]")?.addEventListener("change", () => {
+      void loadPatternActivity();
+    });
+    document.querySelector("[data-activity-date-to]")?.addEventListener("change", () => {
+      void loadPatternActivity();
+    });
+    document.querySelector("[data-activity-system]")?.addEventListener("change", () => {
+      page = 0;
+      applyReport();
+    });
+    document.querySelector("[data-activity-membership]")?.addEventListener("change", () => {
+      page = 0;
+      applyReport();
+    });
+    document.querySelector("[data-activity-event]")?.addEventListener("change", () => {
+      page = 0;
+      applyReport();
+    });
+    document.querySelectorAll<HTMLButtonElement>("[data-activity-sort]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.activitySort as PatternActivitySortKey | undefined;
+        if (!key) return;
+        if (sortKey === key) {
+          sortDirection = sortDirection === "desc" ? "asc" : "desc";
+        } else {
+          sortKey = key;
+          sortDirection = key === "createdAt" ? "desc" : "asc";
+        }
+        page = 0;
+        applyReport();
+      });
+    });
+    document.querySelector("[data-activity-prev]")?.addEventListener("click", () => {
+      if (page > 0) {
+        page -= 1;
+        applyReport();
+      }
+    });
+    document.querySelector("[data-activity-next]")?.addEventListener("click", () => {
+      page += 1;
+      applyReport();
+    });
 
     void loadPatternActivity();
   </script>
@@ -1168,6 +1434,95 @@ const sections: DashSection[] = [
 
     .admin-dash__activity-status:empty {
       display: none;
+    }
+
+    .admin-dash__activity-note {
+      margin: 0 0 0.85rem 0;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+
+    .admin-dash__activity-note:empty,
+    .admin-dash__activity-note[hidden] {
+      display: none;
+    }
+
+    .admin-dash__activity-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-dash__activity-filter {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
+    }
+
+    .admin-dash__activity-filter select,
+    .admin-dash__activity-filter input[type="date"] {
+      min-width: 9.5rem;
+      padding: 0.4rem 0.55rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+      color: #1e293b;
+      background: #fff;
+      border: 1px solid #d6c276;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+
+    .admin-dash__activity-pager {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.85rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .admin-dash__activity-page-btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .admin-dash__activity-page-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .admin-dash__table--sortable th button {
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .admin-dash__table--sortable th button[data-sort-active="true"]::after {
+      content: " ↓";
+    }
+
+    .admin-dash__table--sortable th button[data-sort-active="true"][data-sort-direction="asc"]::after {
+      content: " ↑";
     }
 
     .admin-dash__table-wrap {

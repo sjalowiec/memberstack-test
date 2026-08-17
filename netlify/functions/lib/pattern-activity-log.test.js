@@ -132,6 +132,44 @@ describe("pattern-activity-log GET (admin-only reporting)", () => {
     const res = await handler(makeReq("GET", {}));
     expect(res.status).toBe(401);
   });
+
+  it("retrieves events from date buckets without returning the full log", async () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS = ADMIN_ID;
+    await handler(
+      makeReq("POST", {
+        memberId: MEMBER_ID,
+        body: {
+          eventType: "pattern_generated",
+          patternSystem: "hat",
+          createdAt: "2026-08-17T12:00:00.000Z",
+        },
+      }),
+    );
+    await handler(
+      makeReq("POST", {
+        memberId: MEMBER_ID,
+        body: {
+          eventType: "pattern_saved",
+          patternSystem: "sleeveless",
+          createdAt: "2026-07-01T12:00:00.000Z",
+        },
+      }),
+    );
+
+    const res = await handler(
+      makeReq("GET", {
+        memberId: ADMIN_ID,
+        query: "from=2026-08-17T00:00:00.000Z&to=2026-08-17T23:59:59.999Z",
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.events).toHaveLength(1);
+    expect(body.events[0].patternSystem).toBe("hat");
+    expect(body.total).toBe(1);
+    expect(body.hasMore).toBe(false);
+  });
 });
 
 describe("pattern-activity-log POST (logging for any member)", () => {
@@ -170,5 +208,27 @@ describe("pattern-activity-log POST (logging for any member)", () => {
       }),
     );
     expect(res.status).toBe(401);
+  });
+
+  it("records a logged-out Hat generation with a hashed guest id", async () => {
+    const res = await handler(
+      makeReq("POST", {
+        body: {
+          eventType: "pattern_generated",
+          patternSystem: "hat",
+          userEmail: "guest@example.com",
+          userId: "guest@example.com",
+        },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.authMode).toBe("guest");
+    expect(body.event.userId).toMatch(/^guest_[a-f0-9]{16}$/);
+    expect(body.event.userId).not.toContain("guest@example.com");
+    expect(body.event.userEmail).toBe("guest@example.com");
+    expect(body.event.metadata.membership).toBe("free");
+    expect(body.event.patternSystem).toBe("hat");
   });
 });

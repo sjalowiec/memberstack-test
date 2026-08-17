@@ -1,8 +1,9 @@
 /**
- * Sleeveless-specific convenience for {@link logPatternActivity}.
+ * Current-pattern convenience for {@link logPatternActivity}.
  *
- * Derives `patternId` / `patternTitle` / `mode` from the working draft (and active saved-project
- * link) so call sites only pass the event type. Best-effort: never throws, never blocks the flow.
+ * Resolves `patternSystem` from the working session / page (sleeveless vs drop-shoulder)
+ * and derives `patternId` / `patternTitle` / `mode` from the working draft so call sites
+ * only pass the event type. Best-effort: never throws, never blocks the flow.
  */
 import {
   logPatternActivity,
@@ -12,12 +13,28 @@ import {
 import { getCurrentPattern } from "./patternStorage";
 import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import {
+  resolvePatternSystemFromPage,
+  resolvePatternSystemFromWorkingSession,
+  type PatternSystemId,
+} from "./patternSystemId";
+import { resolveActivityMembershipFromSnapshot } from "./patternActivityIdentity";
 
-const SLEEVELESS_SYSTEM = "sleeveless";
-
-type SleevelessActivityOverrides = Partial<
-  Omit<LogPatternActivityInput, "eventType" | "patternSystem">
+type PatternActivityOverrides = Partial<
+  Omit<LogPatternActivityInput, "eventType">
 >;
+
+export function resolveActivityPatternSystem(
+  override?: string,
+): PatternSystemId | string {
+  const explicit = override?.trim();
+  if (explicit) return explicit;
+  try {
+    return resolvePatternSystemFromWorkingSession();
+  } catch {
+    return resolvePatternSystemFromPage();
+  }
+}
 
 function readDraftContext(): {
   patternId?: string;
@@ -41,19 +58,30 @@ function readDraftContext(): {
   }
 }
 
-/** Fire-and-forget sleeveless activity event. Resolves draft context unless overridden. */
-export function logSleevelessPatternActivity(
+/** Fire-and-forget activity event for the current sweater pattern system. */
+export function logCurrentPatternActivity(
   eventType: PatternActivityEventType,
-  overrides: SleevelessActivityOverrides = {},
+  overrides: PatternActivityOverrides = {},
 ): void {
   const context = readDraftContext();
   void logPatternActivity({
     eventType,
-    patternSystem: SLEEVELESS_SYSTEM,
+    patternSystem: resolveActivityPatternSystem(overrides.patternSystem),
     patternId: overrides.patternId ?? context.patternId,
     patternTitle: overrides.patternTitle ?? context.patternTitle,
     mode: overrides.mode ?? context.mode,
     sourcePage: overrides.sourcePage,
+    userEmail: overrides.userEmail,
+    guestEmail: overrides.guestEmail,
+    membership: overrides.membership ?? resolveActivityMembershipFromSnapshot(),
     metadata: overrides.metadata,
   });
+}
+
+/** @deprecated Prefer {@link logCurrentPatternActivity}. Kept as a stable alias. */
+export function logSleevelessPatternActivity(
+  eventType: PatternActivityEventType,
+  overrides: PatternActivityOverrides = {},
+): void {
+  logCurrentPatternActivity(eventType, overrides);
 }

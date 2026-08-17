@@ -956,6 +956,7 @@ describe("hat Summary/Edit page wiring", () => {
     expect(builderPage).toContain("Review My Pattern");
     expect(builderScript).toContain("buildHatSummaryEditFromBuilderHref");
     expect(builderScript).toContain("HAT_SUMMARY_FROM_BUILDER_HREF");
+    expect(builderScript).toContain("markHatGenerationActivityPending");
     expect(builderScript).toMatch(/location\.assign\(HAT_SUMMARY_FROM_BUILDER_HREF\)/);
     expect(builderScript).not.toMatch(/location\.assign\([^)]*hat\/pattern/);
     expect(HAT_SUMMARY_EDIT_FROM_BUILDER_HREF).toBe("/patterns/hat/summary/?generated=1");
@@ -1077,6 +1078,8 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("persistHatPatternProject");
     expect(summaryScript).toContain("navigateAfterPrimarySuccess");
     expect(summaryScript).toContain("continueAfterPersist");
+    expect(summaryScript).toContain("logHatPatternGenerated");
+    expect(summaryScript).toContain("recordHatGenerationIfNeeded");
     expect(summaryScript).toContain("hatSummaryPrimarySuccessHref");
     expect(summaryScript).toContain("validateHatEditForm");
     expect(summaryScript).toContain("writeHatDraft");
@@ -1134,8 +1137,9 @@ describe("hat Summary/Edit page wiring", () => {
 
     const bindStart = summaryScript.indexOf("bindHatLeadForm(root");
     expect(bindStart).toBeGreaterThan(-1);
-    const bindFn = summaryScript.slice(bindStart, bindStart + 220);
+    const bindFn = summaryScript.slice(bindStart, bindStart + 420);
     expect(bindFn).toContain("writeCurrentSummaryDraft");
+    expect(bindFn).toContain("recordHatGenerationIfNeeded");
     expect(bindFn).toContain("navigateAfterPrimarySuccess");
     expect(bindFn).not.toContain("persistHatPatternProject");
     expect(bindFn).not.toContain("continueAfterPersist");
