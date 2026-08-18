@@ -4,7 +4,15 @@
  */
 import { startNewHatPatternFromFinishedPage } from "./hatFreshStart";
 
-export function initHatPatternNewPattern(doc: Document = document): void {
+export type InitHatPatternNewPatternOptions = {
+  /** Return false to cancel the immediate fresh-start navigation. */
+  shouldProceed?: () => boolean;
+};
+
+export function initHatPatternNewPattern(
+  doc: Document = document,
+  options: InitHatPatternNewPatternOptions = {},
+): void {
   const trigger = doc.querySelector("[data-hat-pattern-new-pattern-trigger]");
   if (!(trigger instanceof HTMLButtonElement)) return;
   if (trigger.dataset.hatNewPatternBound === "true") return;
@@ -13,6 +21,7 @@ export function initHatPatternNewPattern(doc: Document = document): void {
   let busy = false;
   trigger.addEventListener("click", () => {
     if (busy) return;
+    if (options.shouldProceed && options.shouldProceed() === false) return;
     busy = true;
     try {
       startNewHatPatternFromFinishedPage();

@@ -1,0 +1,170 @@
+---
+import {
+  HAT_PATTERN_LEAVE_WARNING_EMPHASIS,
+  HAT_PATTERN_LEAVE_WARNING_LEAD,
+  HAT_PATTERN_LEAVE_WARNING_LEAVE_LABEL,
+  HAT_PATTERN_LEAVE_WARNING_PRINT_LABEL,
+  HAT_PATTERN_LEAVE_WARNING_TITLE,
+} from "../../lib/patterns/hat/hatPatternLeaveWarning";
+---
+
+<dialog
+  class="hat-pattern-leave-warning"
+  data-hat-pattern-leave-warning
+  data-testid="hat-pattern-leave-warning"
+  aria-labelledby="hat-pattern-leave-warning-title"
+  aria-describedby="hat-pattern-leave-warning-lead hat-pattern-leave-warning-emphasis"
+>
+  <div class="hat-pattern-leave-warning__inner">
+    <button
+      type="button"
+      class="hat-pattern-leave-warning__close"
+      data-hat-pattern-leave-warning-close
+      data-testid="hat-pattern-leave-warning-close"
+      aria-label="Close"
+    >
+      <span aria-hidden="true">×</span>
+    </button>
+    <h2 id="hat-pattern-leave-warning-title" class="hat-pattern-leave-warning__title">
+      {HAT_PATTERN_LEAVE_WARNING_TITLE}
+    </h2>
+    <p id="hat-pattern-leave-warning-lead" class="hat-pattern-leave-warning__lead">
+      {HAT_PATTERN_LEAVE_WARNING_LEAD}
+    </p>
+    <p id="hat-pattern-leave-warning-emphasis" class="hat-pattern-leave-warning__emphasis">
+      {HAT_PATTERN_LEAVE_WARNING_EMPHASIS}
+    </p>
+    <div class="hat-pattern-leave-warning__actions">
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-primary hat-pattern-leave-warning__print"
+        data-hat-pattern-leave-warning-print
+        data-testid="hat-pattern-leave-warning-print"
+      >
+        {HAT_PATTERN_LEAVE_WARNING_PRINT_LABEL}
+      </button>
+      <button
+        type="button"
+        class="hat-pattern-leave-warning__leave"
+        data-hat-pattern-leave-warning-leave
+        data-testid="hat-pattern-leave-warning-leave"
+      >
+        {HAT_PATTERN_LEAVE_WARNING_LEAVE_LABEL}
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .hat-pattern-leave-warning {
+    max-width: min(92vw, 28rem);
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  }
+
+  .hat-pattern-leave-warning::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .hat-pattern-leave-warning__inner {
+    position: relative;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+    padding-top: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .hat-pattern-leave-warning__close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #4b5563;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .hat-pattern-leave-warning__close:hover {
+    background: #f3f4f6;
+    color: #111827;
+  }
+
+  .hat-pattern-leave-warning__close:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .hat-pattern-leave-warning__title {
+    margin: 0 0 0.75rem;
+    padding-right: 1.75rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2c3a57;
+    line-height: 1.25;
+  }
+
+  .hat-pattern-leave-warning__lead {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .hat-pattern-leave-warning__emphasis {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.55;
+    color: #1f2937;
+  }
+
+  .hat-pattern-leave-warning__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: flex-end;
+  }
+
+  .hat-pattern-leave-warning__print {
+    text-decoration: none;
+  }
+
+  .hat-pattern-leave-warning__leave {
+    appearance: none;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    color: #374151;
+    font: inherit;
+    font-weight: 600;
+    padding: 0.55rem 0.95rem;
+    cursor: pointer;
+  }
+
+  .hat-pattern-leave-warning__leave:hover {
+    background: #f9fafb;
+  }
+
+  .hat-pattern-leave-warning__leave:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  @media print {
+    .hat-pattern-leave-warning {
+      display: none !important;
+    }
+  }
+</style>
