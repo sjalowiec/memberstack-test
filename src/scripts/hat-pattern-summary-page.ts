@@ -255,14 +255,9 @@ export function initHatPatternSummaryPage(): void {
     window.location.assign(hatSummaryPrimarySuccessHref(entryPath));
   }
 
-  function isLoggedInViewer(state: ViewerAccessState): boolean {
-    return state === "memberAccess" || state === "loggedInNoAccess";
-  }
-
   async function continueAfterPersist(): Promise<void> {
     const next = await resolveHatPatternLeadContinue({
       alreadyCaptured: isHatPatternLeadRecognized(),
-      memberLoggedIn: isLoggedInViewer(lastViewerAccessState),
     });
     if (next === "show-capture") {
       revealHatLeadCapture(root);

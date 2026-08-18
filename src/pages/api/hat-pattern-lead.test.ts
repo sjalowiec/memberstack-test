@@ -116,6 +116,7 @@ describe("Hat lead capture markup and wiring", () => {
     expect(summaryScript).toContain("bindHatLeadForm");
     expect(summaryScript).not.toContain("SleevelessPatternMemberGate");
     expect(summaryScript).not.toContain("hasSystemAccess");
+    expect(summaryScript).not.toContain("memberLoggedIn");
   });
 
   it("blocks finished knitting instructions until lead capture is satisfied", () => {
@@ -130,5 +131,17 @@ describe("Hat lead capture markup and wiring", () => {
     expect(patternScript).toContain("bindHatLeadForm");
     expect(patternScript).not.toContain("SleevelessPatternMemberGate");
     expect(patternScript).not.toContain("PatternBuilderAccountGate");
+    expect(patternScript).not.toContain("memberLoggedIn");
+    expect(patternScript).not.toContain("isLoggedInViewer");
+    expect(patternScript).not.toMatch(
+      /hatPatternReadyForLead[\s\S]{0,120}renderHatPatternIfAllowed/,
+    );
+  });
+
+  it("keeps the empty-state path when the hat draft is missing or incomplete", () => {
+    expect(patternScript).toContain("if (!draftCheck.ok)");
+    expect(patternScript).toContain("showEmptyState(draftCheck.message)");
+    expect(patternPage).toContain("data-hat-pattern-empty");
+    expect(patternPage).toContain("Create a hat pattern first");
   });
 });

@@ -87,12 +87,11 @@ export type HatLeadContinueDecision = "continue" | "show-capture";
 
 /**
  * Resolve whether the visitor may continue to the finished pattern.
- * Known Memberstack email is silently tagged. Logged-in without email skips the form.
- * Guests without a recognition marker see the form.
+ * Skip the form only with a valid recognition marker or a known Memberstack email
+ * (silently tagged). Login / membership state alone never skips capture.
  */
 export async function resolveHatPatternLeadContinue(args: {
   alreadyCaptured: boolean;
-  memberLoggedIn?: boolean;
   readMember?: typeof readKnownHatLeadMember;
 }): Promise<HatLeadContinueDecision> {
   if (args.alreadyCaptured) return "continue";
@@ -102,7 +101,6 @@ export async function resolveHatPatternLeadContinue(args: {
     alreadyCaptured: args.alreadyCaptured,
     memberEmail: member?.email,
     memberFirstName: member?.firstName,
-    memberLoggedIn: args.memberLoggedIn || Boolean(member?.loggedIn),
   });
 
   if (decision.action === "continue") return "continue";

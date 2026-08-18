@@ -17,20 +17,30 @@ describe("resolveHatPatternLeadContinue", () => {
     await expect(
       resolveHatPatternLeadContinue({
         alreadyCaptured: false,
-        memberLoggedIn: false,
         readMember: async () => null,
       }),
     ).resolves.toBe("show-capture");
   });
 
-  it("continues for a logged-in visitor without showing the form", async () => {
+  it("shows capture for loggedInNoAccess without a known email or lead marker", async () => {
     await expect(
       resolveHatPatternLeadContinue({
         alreadyCaptured: false,
-        memberLoggedIn: true,
         readMember: async () => ({ email: "", loggedIn: true }),
       }),
-    ).resolves.toBe("continue");
+    ).resolves.toBe("show-capture");
+  });
+
+  it("shows capture for memberAccess without a known email or lead marker", async () => {
+    await expect(
+      resolveHatPatternLeadContinue({
+        alreadyCaptured: false,
+        readMember: async () => ({
+          email: "",
+          loggedIn: true,
+        }),
+      }),
+    ).resolves.toBe("show-capture");
   });
 
   it("silently submits a known email then continues", async () => {

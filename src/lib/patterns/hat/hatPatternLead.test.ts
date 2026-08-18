@@ -12,6 +12,24 @@ describe("decideHatPatternLeadCapture", () => {
     ).toEqual({ action: "show-capture" });
   });
 
+  it("asks a loggedInNoAccess visitor without a known email or lead marker", () => {
+    expect(
+      decideHatPatternLeadCapture({
+        alreadyCaptured: false,
+        memberEmail: null,
+      }),
+    ).toEqual({ action: "show-capture" });
+  });
+
+  it("asks a memberAccess visitor without a known email or lead marker", () => {
+    expect(
+      decideHatPatternLeadCapture({
+        alreadyCaptured: false,
+        memberEmail: "",
+      }),
+    ).toEqual({ action: "show-capture" });
+  });
+
   it("lets a recognized guest continue without the form", () => {
     expect(
       decideHatPatternLeadCapture({
@@ -35,29 +53,29 @@ describe("decideHatPatternLeadCapture", () => {
     });
   });
 
-  it("skips the form for a logged-in visitor even without a readable email", () => {
-    expect(
-      decideHatPatternLeadCapture({
-        alreadyCaptured: false,
-        memberEmail: null,
-        memberLoggedIn: true,
-      }),
-    ).toEqual({ action: "continue" });
+  it("does not skip capture based on login or membership state", () => {
+    const unrecognized = decideHatPatternLeadCapture({
+      alreadyCaptured: false,
+      memberEmail: null,
+    });
+    expect(unrecognized).toEqual({ action: "show-capture" });
+    expect(JSON.stringify(unrecognized)).not.toMatch(
+      /memberAccess|loggedInNoAccess|hasMemberSavedProjectPrivileges|plan/i,
+    );
   });
 
-  it("does not require membership or saved-project privileges", () => {
+  it("does not require membership or saved-project privileges to tag a known email", () => {
     const guest = decideHatPatternLeadCapture({
       alreadyCaptured: false,
       memberEmail: "ada@example.com",
     });
-    const loggedInNoAccess = decideHatPatternLeadCapture({
-      alreadyCaptured: false,
-      memberEmail: "ada@example.com",
-      memberLoggedIn: true,
+    expect(guest).toEqual({
+      action: "submit-known-email",
+      email: "ada@example.com",
     });
-    expect(guest).toEqual(loggedInNoAccess);
-    expect(guest.action).toBe("submit-known-email");
-    expect(JSON.stringify(guest)).not.toMatch(/memberAccess|hasMemberSavedProjectPrivileges|plan/i);
+    expect(JSON.stringify(guest)).not.toMatch(
+      /memberAccess|hasMemberSavedProjectPrivileges|plan/i,
+    );
   });
 });
 
