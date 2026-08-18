@@ -30,6 +30,7 @@ import {
   applyHatPatternWorkspaceChrome,
   bindHatPatternWorkspaceAccessLifecycle,
 } from "../lib/patterns/hat/hatPatternWorkspaceAccess";
+import { initHatPatternLeaveWarning, requestHatPatternLeave } from "../lib/patterns/hat/hatPatternLeaveWarning";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
 import {
@@ -461,7 +462,24 @@ export function initHatPatternPage() {
 
     bindInlinePrintLink();
     bindHatPatternMyPatternsDisabledGuard(document);
-    initHatPatternNewPattern(document);
+    initHatPatternLeaveWarning({
+      getViewerAccessState: () => lastHatPatternViewerAccessState,
+      isEditingSavedProject: () => isEditingSavedHatProject(),
+      onPrint: () => {
+        const printBtn = document.querySelector("#print-btn");
+        const printLink = document.querySelector("[data-hat-pattern-print-link]");
+        runHatPatternPrint(
+          printBtn instanceof HTMLElement
+            ? printBtn
+            : printLink instanceof HTMLElement
+              ? printLink
+              : null,
+        );
+      },
+    });
+    initHatPatternNewPattern(document, {
+      shouldProceed: () => !requestHatPatternLeave({ kind: "new-pattern" }),
+    });
     initHatPatternYarnDrawer();
     bindHatLeadForm(document, () => renderHatPatternIfAllowed());
     // Listeners first, then snapshot, then Memberstack — never miss kin:member-access

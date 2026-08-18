@@ -41,6 +41,12 @@ describe("applyHatPatternPersistNotice", () => {
     expect(noAccess.membership.hidden).toBe(false);
   });
 
+  it("hides the temporary-pattern notice when a leftover saved-project link is present", () => {
+    const { root, notice } = persistRoot(false);
+    applyHatPatternPersistNotice(root, "loggedOut", { isEditingSavedProject: true });
+    expect(notice.hidden).toBe(true);
+  });
+
   it("hides the entire temporary-pattern / Explore Membership notice for active members", () => {
     const { root, notice, membership } = persistRoot(false);
     applyHatPatternPersistNotice(root, "memberAccess");

@@ -26,6 +26,7 @@ import {
 } from "../../../lib/patterns/hat/hatPatternPersistNotice";
 import { HAT_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../lib/patterns/hat/hatPatternNavigation";
 import HatPatternLeadCapture from "../../../components/patterns/HatPatternLeadCapture.astro";
+import HatPatternLeaveWarning from "../../../components/patterns/HatPatternLeaveWarning.astro";
 import {
   HAT_PATTERN_HERO_IMAGE_ALT,
   HAT_PATTERN_HERO_IMAGE_HEIGHT,
@@ -356,6 +357,8 @@ const hatZeroBodyRowsWarningMessage =
       aria-hidden="true"
     ></div>
   </div>
+
+  <HatPatternLeaveWarning />
 </Layout>
 
 <style>
