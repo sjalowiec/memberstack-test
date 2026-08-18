@@ -16,7 +16,7 @@ import { shouldShowHatTemporaryPatternNotice } from "./hatPatternPersistNotice";
 export const HAT_PATTERN_LEAVE_WARNING_TITLE = "Before You Go...";
 
 export const HAT_PATTERN_LEAVE_WARNING_LEAD =
-  "Your pattern is temporary and cannot be retrieved later.";
+  "Because you're not a member, this pattern is temporary and won't be saved.";
 
 export const HAT_PATTERN_LEAVE_WARNING_EMPHASIS =
   "Print or download your pattern before leaving so you don't lose it.";
