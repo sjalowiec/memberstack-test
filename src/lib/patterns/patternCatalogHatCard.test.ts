@@ -113,6 +113,10 @@ describe("pattern catalog Hat card", () => {
     expect(guest).toContain("{hatPattern.href}");
     expect(guest).toContain("{hatPattern.image}");
     expect(guest).toContain("PATTERN_CATALOG_MORE_HEADING");
+    expect(guest).toContain('id="sweater-patterns"');
+    expect(guest).toMatch(
+      /id="sweater-patterns"[\s\S]*class="patterns-catalog patterns-catalog--more"[\s\S]*PATTERN_CATALOG_MORE_HEADING/,
+    );
     expect(guest).toContain("PATTERN_CATALOG_MEMBERSHIP_BODY");
     expect(guest).toContain("sweaterPatterns.map");
     expect(guest).toMatch(
