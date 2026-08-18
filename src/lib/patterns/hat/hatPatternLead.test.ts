@@ -63,6 +63,6 @@ describe("decideHatPatternLeadCapture", () => {
 
 describe("Hat Pattern lead tag", () => {
   it("uses the Hat-specific ActiveCampaign tag", () => {
-    expect(HAT_PATTERN_LEAD_TAG).toBe("lead: Hat Pattern");
+    expect(HAT_PATTERN_LEAD_TAG).toBe("Lead: Hat Pattern");
   });
 });

@@ -4,7 +4,7 @@
  */
 
 /** Human-readable ActiveCampaign tag; resolved to an ID server-side by name. */
-export const HAT_PATTERN_LEAD_TAG = "lead: Hat Pattern";
+export const HAT_PATTERN_LEAD_TAG = "Lead: Hat Pattern";
 
 export const HAT_PATTERN_LEAD_ENDPOINT = "/api/hat-pattern-lead";
 

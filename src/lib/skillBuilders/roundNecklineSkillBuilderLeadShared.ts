@@ -5,7 +5,7 @@
 
 /** Human-readable ActiveCampaign tag; resolved to an ID server-side by name. */
 export const ROUND_NECKLINE_SKILL_BUILDER_LEAD_TAG =
-  "lead: Skill Builder - Round Neckline";
+  "Lead: Skill Builder";
 
 export const ROUND_NECKLINE_SKILL_BUILDER_LEAD_ENDPOINT =
   "/api/skill-builder-round-neckline-lead";

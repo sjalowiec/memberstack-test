@@ -127,7 +127,7 @@ describe("handleHatPatternLeadRequest", () => {
     expect(ac.spies.resolveTagId).toHaveBeenCalledWith(HAT_PATTERN_LEAD_TAG, {
       create: true,
     });
-    expect(HAT_PATTERN_LEAD_TAG).toBe("lead: Hat Pattern");
+    expect(HAT_PATTERN_LEAD_TAG).toBe("Lead: Hat Pattern");
     expect(ac.spies.addTag).toHaveBeenCalledWith(
       expect.any(String),
       `tag_${HAT_PATTERN_LEAD_TAG}`,
