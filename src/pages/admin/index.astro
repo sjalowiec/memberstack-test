@@ -780,7 +780,36 @@ const sections: DashSection[] = [
           headers: { ...authHeadersForCustomPatternProjects(auth), ...emailHeader },
         });
         if (res.status === 403) {
-          setStatus("You don't have admin access to view pattern activity.");
+          let message = "You don't have admin access to view pattern activity.";
+          try {
+            const denied = (await res.json()) as {
+              allowlistDebug?: {
+                userId?: string;
+                email?: string;
+                userIdMatched?: boolean;
+                emailMatched?: boolean;
+                emailsConfigured?: boolean;
+                memberIdsConfigured?: boolean;
+                emailLookupSucceeded?: boolean;
+                emailLookupSkippedDueToEnvMismatch?: boolean;
+              };
+            };
+            const d = denied?.allowlistDebug;
+            if (d) {
+              message +=
+                ` [TEMP diagnostic] userId=${d.userId || "(empty)"}` +
+                ` email=${d.email || "(empty)"}` +
+                ` userIdMatched=${String(d.userIdMatched)}` +
+                ` emailMatched=${String(d.emailMatched)}` +
+                ` emailsConfigured=${String(d.emailsConfigured)}` +
+                ` memberIdsConfigured=${String(d.memberIdsConfigured)}` +
+                ` emailLookupSucceeded=${String(d.emailLookupSucceeded)}` +
+                ` emailLookupSkippedDueToEnvMismatch=${String(d.emailLookupSkippedDueToEnvMismatch)}`;
+            }
+          } catch {
+            /* keep the generic 403 copy */
+          }
+          setStatus(message);
           return;
         }
         const data = (await res.json()) as {

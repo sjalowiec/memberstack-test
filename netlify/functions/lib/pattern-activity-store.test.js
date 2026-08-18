@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   activityEventKey,
   ACTIVITY_EVENT_PREFIX,
+  describeActivityAdmin403,
   isActivityAdmin,
   normalizeActivityEvent,
 } from "./pattern-activity-store.js";
@@ -160,6 +161,23 @@ describe("isActivityAdmin", () => {
   it("does not grant access from a spoofed client email when verified identity is not allowlisted", () => {
     process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
     expect(isActivityAdmin(makeReq(ADMIN_EMAIL), "mem_regular", "someone@example.com")).toBe(false);
+  });
+
+  it("describes a 403 match without exposing allowlist contents", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS = "mem_secretadmin";
+    const diagnostic = describeActivityAdmin403("mem_regular", "someone@example.com");
+    expect(diagnostic).toEqual({
+      userId: "mem_regular",
+      email: "someone@example.com",
+      userIdMatched: false,
+      emailMatched: false,
+      emailsConfigured: true,
+      memberIdsConfigured: true,
+      emailLookupSucceeded: true,
+    });
+    expect(JSON.stringify(diagnostic)).not.toContain(ADMIN_EMAIL);
+    expect(JSON.stringify(diagnostic)).not.toContain("mem_secretadmin");
   });
 });
 

@@ -174,6 +174,25 @@ describe("pattern-activity-log GET (admin-only reporting)", () => {
   it("requires sign-in (401) when no member id is present", async () => {
     const res = await handler(makeReq("GET", {}));
     expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.allowlistDebug).toBeUndefined();
+  });
+
+  it("includes TEMP allowlistDebug on authenticated 403 without allowlist values", async () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    const res = await handler(
+      makeReq("GET", { memberId: MEMBER_ID, verifiedEmail: "someone@example.com" }),
+    );
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.allowlistDebug.userId).toBe(MEMBER_ID);
+    expect(body.allowlistDebug.email).toBe("someone@example.com");
+    expect(body.allowlistDebug.userIdMatched).toBe(false);
+    expect(body.allowlistDebug.emailMatched).toBe(false);
+    expect(body.allowlistDebug.emailsConfigured).toBe(true);
+    expect(body.allowlistDebug.memberIdsConfigured).toBe(false);
+    expect(body.allowlistDebug.emailLookupSucceeded).toBe(true);
+    expect(JSON.stringify(body)).not.toContain(ADMIN_EMAIL);
   });
 
   it("retrieves events from date buckets without returning the full log", async () => {

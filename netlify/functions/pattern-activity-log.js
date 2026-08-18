@@ -17,8 +17,13 @@ import {
 } from "./lib/custom-pattern-projects-store.js";
 import { resolveVerifiedProjectUserId } from "./lib/require-member-access.js";
 import {
+  getMemberstackSecretKey,
+  isMemberstackEnvironmentMismatch,
+} from "./lib/memberstack-admin.js";
+import {
   ACTIVITY_LIST_MAX,
   appendActivityEvent,
+  describeActivityAdmin403,
   getActivityStore,
   isActivityAdmin,
   listActivityEvents,
@@ -114,7 +119,15 @@ export default async (req) => {
 
   if (req.method === "GET") {
     if (!isActivityAdmin(req, user.userId, user.email)) {
-      return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
+      const allowlistDebug = {
+        ...describeActivityAdmin403(user.userId, user.email),
+        emailLookupSkippedDueToEnvMismatch: isMemberstackEnvironmentMismatch(
+          user.userId,
+          getMemberstackSecretKey(),
+        ),
+      };
+      console.info("[pattern-activity-log] TEMP allowlist diagnostic", allowlistDebug);
+      return withCors(jsonResponse({ ok: false, error: "Admin access required.", allowlistDebug }, 403));
     }
     const url = new URL(req.url);
     const limitParam = parseInt(url.searchParams.get("limit") ?? "", 10);

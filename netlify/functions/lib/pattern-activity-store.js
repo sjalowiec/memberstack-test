@@ -73,6 +73,29 @@ export function isActivityAdmin(req, verifiedMemberId = "", verifiedEmail = "") 
   return false;
 }
 
+/**
+ * TEMPORARY: identity/allowlist match flags for an authenticated 403.
+ * Never includes allowlist contents. Does not grant access.
+ *
+ * @param {string} [verifiedMemberId]
+ * @param {string} [verifiedEmail]
+ */
+export function describeActivityAdmin403(verifiedMemberId = "", verifiedEmail = "") {
+  const userId = String(verifiedMemberId || "").trim();
+  const email = String(verifiedEmail || "").trim();
+  const idList = parseAdminAllowList(process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS);
+  const emailList = parseAdminAllowList(process.env.PATTERN_ACTIVITY_ADMIN_EMAILS);
+  return {
+    userId,
+    email,
+    userIdMatched: Boolean(userId && idList.has(userId.toLowerCase())),
+    emailMatched: Boolean(email && emailList.has(email.toLowerCase())),
+    emailsConfigured: emailList.size > 0,
+    memberIdsConfigured: idList.size > 0,
+    emailLookupSucceeded: Boolean(email),
+  };
+}
+
 /** @param {unknown} value */
 function cleanString(value, max = 200) {
   if (typeof value !== "string") return "";
