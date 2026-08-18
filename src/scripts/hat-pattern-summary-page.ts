@@ -256,10 +256,6 @@ export function initHatPatternSummaryPage(): void {
     window.location.assign(hatSummaryPrimarySuccessHref(entryPath));
   }
 
-  function isLoggedInViewer(state: ViewerAccessState): boolean {
-    return state === "memberAccess" || state === "loggedInNoAccess";
-  }
-
   async function recordHatGenerationIfNeeded(guestEmail?: string): Promise<void> {
     if (entryPath !== "from-builder") return;
     await logHatPatternGenerated({
@@ -272,7 +268,6 @@ export function initHatPatternSummaryPage(): void {
   async function continueAfterPersist(): Promise<void> {
     const next = await resolveHatPatternLeadContinue({
       alreadyCaptured: isHatPatternLeadRecognized(),
-      memberLoggedIn: isLoggedInViewer(lastViewerAccessState),
     });
     if (next === "show-capture") {
       revealHatLeadCapture(root);

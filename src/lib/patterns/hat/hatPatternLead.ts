@@ -14,8 +14,6 @@ export function decideHatPatternLeadCapture(args: {
   alreadyCaptured: boolean;
   memberEmail?: string | null;
   memberFirstName?: string | null;
-  /** Logged in to Memberstack (any plan, including none). Never a membership check. */
-  memberLoggedIn?: boolean;
 }): HatPatternLeadCaptureDecision {
   if (args.alreadyCaptured) {
     return { action: "continue" };
@@ -28,10 +26,6 @@ export function decideHatPatternLeadCapture(args: {
     return firstName
       ? { action: "submit-known-email", email, firstName }
       : { action: "submit-known-email", email };
-  }
-
-  if (args.memberLoggedIn) {
-    return { action: "continue" };
   }
 
   return { action: "show-capture" };

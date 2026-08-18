@@ -47,7 +47,6 @@ import {
   resolveHatPatternLeadContinue,
   setHatLeadCaptureVisible,
 } from "../lib/patterns/hat/hatPatternLeadUi";
-import { readHatPatternAccessSnapshot } from "../lib/patterns/hat/hatPatternWorkspaceAccess";
 import {
   applyPatternPrintPersonalizationToDom,
   triggerPatternPrint,
@@ -251,10 +250,6 @@ function setVisible(el: Element | null, visible: boolean) {
   el.hidden = !visible;
 }
 
-function isLoggedInViewer(state: ViewerAccessState): boolean {
-  return state === "memberAccess" || state === "loggedInNoAccess";
-}
-
 function showEmptyState(message: string) {
   const empty = document.querySelector("[data-hat-pattern-empty]");
   const results = document.querySelector("[data-hat-pattern-results]");
@@ -421,7 +416,6 @@ export async function renderHatPattern() {
 export function initHatPatternPage() {
   const run = () => {
     let hatPatternHasRendered = false;
-    let hatPatternReadyForLead = false;
 
     async function renderHatPatternIfAllowed() {
       if (hatPatternHasRendered) return;
@@ -444,14 +438,8 @@ export function initHatPatternPage() {
         showEmptyState(draftCheck.message);
         return;
       }
-      const snapshot = readHatPatternAccessSnapshot();
-      const snapshotLoggedIn = snapshot
-        ? isLoggedInViewer(snapshot.viewerAccessState)
-        : false;
       const next = await resolveHatPatternLeadContinue({
         alreadyCaptured: isHatPatternLeadRecognized(),
-        memberLoggedIn:
-          snapshotLoggedIn || isLoggedInViewer(lastHatPatternViewerAccessState),
       });
       if (next === "show-capture") {
         showHatPatternLeadGate();
@@ -487,26 +475,14 @@ export function initHatPatternPage() {
     bindHatPatternWorkspaceAccessLifecycle({
       apply: (state) => {
         applyHatPatternMembershipChrome(state);
-        if (
-          hatPatternReadyForLead &&
-          isLoggedInViewer(state) &&
-          !hatPatternHasRendered
-        ) {
-          void renderHatPatternIfAllowed();
-        }
       },
     });
-    const snapshot = readHatPatternAccessSnapshot();
-    const mayNeedLeadGate =
-      !isHatPatternLeadRecognized() &&
-      !isLoggedInViewer(snapshot?.viewerAccessState ?? lastHatPatternViewerAccessState);
-    if (mayNeedLeadGate) {
+    if (!isHatPatternLeadRecognized()) {
       const results = document.querySelector("[data-hat-pattern-results]");
       setVisible(results, false);
     }
     void (async () => {
       await ensureUrlRequestedSavedPatternHydrated();
-      hatPatternReadyForLead = true;
       await resolveLeadAndRender();
     })();
   };
