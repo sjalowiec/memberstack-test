@@ -639,7 +639,7 @@ describe("Hat Pattern leave-warning page wiring", () => {
     expect(leaveWarningAstro).toContain("HAT_PATTERN_LEAVE_WARNING_LEAVE_LABEL");
     expect(HAT_PATTERN_LEAVE_WARNING_TITLE).toBe("Before You Go...");
     expect(HAT_PATTERN_LEAVE_WARNING_LEAD).toBe(
-      "Your pattern is temporary and cannot be retrieved later.",
+      "Because you're not a member, this pattern is temporary and won't be saved.",
     );
     expect(HAT_PATTERN_LEAVE_WARNING_EMPHASIS).toBe(
       "Print or download your pattern before leaving so you don't lose it.",
