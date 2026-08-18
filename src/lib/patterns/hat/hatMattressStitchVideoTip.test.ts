@@ -99,6 +99,7 @@ describe("hatMattressStitchVideoTip", () => {
     expect(html).toContain(`aria-label="${HAT_MATTRESS_STITCH_WATCH_LABEL}"`);
     expect(html).toContain("kbm-kin-catalog-video");
     expect(html).toContain("glossary-tooltip-trigger");
+    expect(html).toContain("print-visible");
     expect(html).toContain('class="glossary-tooltip-label"');
     expect(html).toContain('class="glossary-tooltip-icon" aria-hidden="true"');
     expect(html).toContain(HAT_MATTRESS_STITCH_VISIBLE_TEXT);
@@ -129,7 +130,7 @@ describe("hatMattressStitchVideoTip", () => {
       expect(countContentId(html, HAT_MATTRESS_STITCH_VIDEO_CONTENT_ID)).toBe(1);
       expect(html).toContain(leadIn);
       expect(html).toContain('data-testid="hat-mattress-stitch-video-watch"');
-      expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger");
+      expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger print-visible");
       expect(html).toContain('class="glossary-tooltip-label"');
       expect(html).toContain(HAT_MATTRESS_STITCH_VISIBLE_TEXT);
       expect(html).toContain(`aria-label="${HAT_MATTRESS_STITCH_WATCH_LABEL}"`);
@@ -156,6 +157,7 @@ describe("hatMattressStitchVideoTip", () => {
     );
     expect(tipModuleSource).toContain("HAT_MATTRESS_STITCH_VIDEO_CONTENT_ID = 2210");
     expect(tipModuleSource).toContain("glossary-tooltip-label");
+    expect(tipModuleSource).toContain("print-visible");
     expect(tipModuleSource).not.toContain("player.vimeo.com");
     expect(patternPageSource).not.toContain("hat-mattress-stitch-video__watch");
     expect(patternPageSource).not.toContain(".hat-mattress-stitch-video");
@@ -164,6 +166,9 @@ describe("hatMattressStitchVideoTip", () => {
   it("preserves finishing sentence structure around the inline link", () => {
     const gathered = patternHtml("gathered");
     expect(gathered).toContain("Pull the tail tight to gather the top of the hat.");
+    expect(gathered).toMatch(
+      /Use the tail to seam the body using[\s\S]*mattress stitch[\s\S]*or your preferred method/,
+    );
     expect(gathered).toContain("or your preferred method.");
 
     const spiral = patternHtml("spiral");
