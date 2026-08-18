@@ -21,7 +21,8 @@ export const HAT_GATHERED_TOP_VIDEO_TIP_ID = "hat-gathered-top-video";
 export const HAT_GATHERED_TOP_WATCH_LABEL = "Watch Gathered Top for Mittens and Hats";
 
 /** Visible phrase wrapped by the inline video control. */
-export const HAT_GATHERED_TOP_VISIBLE_TEXT = "gather the remaining stitches";
+export const HAT_GATHERED_TOP_VISIBLE_TEXT =
+  "Thread the tail through the remaining stitches";
 
 function escapeHtml(s: string): string {
   return String(s ?? "")
@@ -54,8 +55,9 @@ export function isHatGatheredTopVideoFree(
  */
 export function hatGatheredTopVisibleText(remainingStitches?: number): string {
   const n = remainingStitches != null ? Math.max(0, Math.round(remainingStitches)) : 0;
+  if (n === 1) return "Thread the tail through the remaining stitch";
   return n > 0
-    ? `gather the remaining ${n} stitches`
+    ? `Thread the tail through the remaining ${n} stitches`
     : HAT_GATHERED_TOP_VISIBLE_TEXT;
 }
 

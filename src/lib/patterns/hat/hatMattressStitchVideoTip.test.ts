@@ -165,22 +165,27 @@ describe("hatMattressStitchVideoTip", () => {
 
   it("preserves finishing sentence structure around the inline link", () => {
     const gathered = patternHtml("gathered");
-    expect(gathered).toContain("Pull the tail tight to gather the top of the hat.");
+    expect(gathered).toContain(
+      "Pull the tail firmly to gather the top of the hat and secure.",
+    );
     expect(gathered).toMatch(
       /Use the tail to seam the body using[\s\S]*mattress stitch[\s\S]*or your preferred method/,
     );
     expect(gathered).toContain("or your preferred method.");
+    expect(gathered).toContain("Block if desired.");
 
     const spiral = patternHtml("spiral");
     expect(spiral).toContain("Seam the body using");
     expect(spiral).toContain("or your preferred method.");
-    expect(spiral).toContain(">Block</span> if desired and weave in all ends.");
+    expect(spiral).toContain("Block if desired.");
+    expect(spiral).not.toContain(">Block</span> if desired and weave in all ends.");
 
     const wedge = patternHtml("wedge-4-decrease");
     expect(wedge).toContain(
       "Seam each crown wedge first, then seam the body using",
     );
     expect(wedge).toContain("or your preferred method.");
-    expect(wedge).toContain(">Block</span> if desired and weave in all ends.");
+    expect(wedge).toContain("Block if desired.");
+    expect(wedge).not.toContain(">Block</span> if desired and weave in all ends.");
   });
 });

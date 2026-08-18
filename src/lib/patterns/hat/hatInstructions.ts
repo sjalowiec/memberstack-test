@@ -69,10 +69,19 @@ export function wrapHatPatternSection(
 </section>`;
 }
 
+function hatThreadTailAndRemoveSentence(remainingStitches: number): string {
+  const n = Math.max(0, Math.round(Number(remainingStitches) || 0));
+  if (n === 1) {
+    return "Thread the tail through the remaining stitch and remove it from the machine.";
+  }
+  return `Thread the tail through the remaining ${n} stitches and remove the stitches from the machine.`;
+}
+
 export function buildSpiralCrownInstructions(
   startStitches: number,
   crownStartRowNumber: number,
   spiralPlan: HatSpiralPlan,
+  breakYarnTailPhrase = 'a 12" tail',
 ): string {
   const buildDecreaseRowWithTransfer = (
     rowNumber: number,
@@ -130,8 +139,9 @@ export function buildSpiralCrownInstructions(
     currentStitches = nextStitches;
   }
 
+  const remaining = Math.max(0, currentStitches);
   lines.push(
-    '<p data-instruction-type="swirl-gather-remaining">Gather the remaining stitches and secure.</p>',
+    `<p data-instruction-type="swirl-gather-remaining">Break the yarn, leaving ${breakYarnTailPhrase}. ${hatThreadTailAndRemoveSentence(remaining)}</p>`,
   );
   return lines.join("\n");
 }
@@ -230,7 +240,9 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       finalWedgeStitchCount,
       decreaseCount,
     } = buildFourWedgeDecreaseSchedule(wedgeStitchCount);
-    const wedgeFinishLine = `<p>When ${finalWedgeStitchCount} ${finalWedgeStitchCount === 1 ? "stitch remains" : "stitches remain"}, break yarn and secure.</p>`;
+    const remainVerb =
+      finalWedgeStitchCount === 1 ? "stitch remains" : "stitches remain";
+    const wedgeFinishLine = `<p>When ${finalWedgeStitchCount} ${remainVerb}, break the yarn, leaving a tail. ${hatThreadTailAndRemoveSentence(finalWedgeStitchCount)}</p>`;
     const wedgeShapingBlock =
       decreaseCount > 0
         ? `<p>Decrease 1 stitch two stitches in from each edge every row, ${decreaseCount} times.</p>
@@ -279,19 +291,23 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
         <img src="/images/hats/spiral_shaping.jpg" alt="Spiral crown shaping with 6 evenly spaced decrease points forming wedges" />
         <figcaption>Spiral crown shaping: 6 evenly spaced decrease points worked across the row.</figcaption>
       </figure>
-      ${buildSpiralCrownInstructions(patternCastOnSts, crownStartRow, spiralPlan)}`;
+      ${buildSpiralCrownInstructions(patternCastOnSts, crownStartRow, spiralPlan, breakYarnTailPhrase)}`;
   } else if (crown === "gathered") {
     const remainingStitches = gatheredCrownRemainingStitches(patternCastOnSts);
-    // Inline gather video once (gathered crown only) on the break-and-gather step.
+    // Inline gather video once (gathered crown only) on the thread-through step.
     const gatherRemainingStitchesVideoHtml = buildHatGatheredTopVideoHtml(
       undefined,
       remainingStitches,
     );
+    const removeLiveStitchesClause =
+      remainingStitches === 1
+        ? "and remove it from the machine."
+        : "and remove the stitches from the machine.";
     crownInstructions = `
       <p>Transfer every other stitch to its neighboring needle, leaving the emptied needles out of work. ${remainingStitches} stitches remain.</p>
       <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
       <p>Knit ${crownRowCount} rows. RC is now ${crownEndingRow}.</p>
-      <p>Break the yarn, leaving ${breakYarnTailPhrase}, and ${gatherRemainingStitchesVideoHtml}.</p>
+      <p>Break the yarn, leaving ${breakYarnTailPhrase}. ${gatherRemainingStitchesVideoHtml} ${removeLiveStitchesClause}</p>
     `;
   } else {
     crownInstructions = `
@@ -318,15 +334,19 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     brimType === "rolled" ? "" : buildHatPlanningRibbingBrimTipHtml();
 
   const finishingGathered = `
-        <p>Block the hat to set the shape.</p>
-      <p>Pull the tail tight to gather the top of the hat.</p>
+      <p>Pull the tail firmly to gather the top of the hat and secure.</p>
       <p>Use the tail to seam the body using ${mattressStitchVideoHtml} or your preferred method.</p>
-      <p>Work in yarn ends.</p>`;
+      <p>Work in yarn ends.</p>
+      <p>Block if desired.</p>`;
   const finishingSpiral = `
-      <p>Run the end of the yarn through the remaining stitches, tighten and tie off, leaving a tail to sew the seam. Finish with a pompom or tassel if you choose.</p>
-      <p>Seam the body using ${mattressStitchVideoHtml} or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
+      <p>Tighten and tie off, leaving a tail to sew the seam. Finish with a pompom or tassel if you choose.</p>
+      <p>Seam the body using ${mattressStitchVideoHtml} or your preferred method.</p>
+      <p>Work in yarn ends.</p>
+      <p>Block if desired.</p>`;
   const finishingWedgeSeamed = `
-      <p>Seam each crown wedge first, then seam the body using ${mattressStitchVideoHtml} or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
+      <p>Seam each crown wedge first, then seam the body using ${mattressStitchVideoHtml} or your preferred method.</p>
+      <p>Work in yarn ends.</p>
+      <p>Block if desired.</p>`;
   const finishingHtml =
     crown === "gathered"
       ? finishingGathered

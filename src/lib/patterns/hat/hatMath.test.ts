@@ -613,7 +613,9 @@ describe("hatInstructions + hatDiagram", () => {
       `Transfer every other stitch to its neighboring needle, leaving the emptied needles out of work. ${remaining} stitches remain.`,
     );
     expect(html).toContain(`Knit ${calc.crownRowCount} rows. RC is now ${ending}.`);
-    expect(html).toContain(`gather the remaining ${remaining} stitches`);
+    expect(html).toContain(
+      `Thread the tail through the remaining ${remaining} stitches`,
+    );
     expect(html).not.toContain("After knitting the full hat length");
     expect(html).toContain(`Begin crown shaping at RC ${crownStart}.`);
     expect(html).toContain(`Work ${calc.bodyRows} rows in pattern after the brim.`);
