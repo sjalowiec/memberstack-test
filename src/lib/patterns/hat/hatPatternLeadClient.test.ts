@@ -64,7 +64,7 @@ describe("submitHatPatternLeadRequest", () => {
     );
     const body = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
     expect(body).toEqual({ email: "ada@example.com", "bot-field": "" });
-    expect(JSON.stringify(body)).not.toContain("lead: Hat Pattern");
+    expect(JSON.stringify(body)).not.toContain("Lead: Hat Pattern");
   });
 
   it("still continues when the server reports an ActiveCampaign failure", async () => {

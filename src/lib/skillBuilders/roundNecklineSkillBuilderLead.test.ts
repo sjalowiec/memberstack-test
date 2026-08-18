@@ -104,7 +104,7 @@ describe("round neckline Skill Builder lead remember hint", () => {
 describe("lead tag name", () => {
   it("uses the existing human-readable ActiveCampaign tag", () => {
     expect(ROUND_NECKLINE_SKILL_BUILDER_LEAD_TAG).toBe(
-      "lead: Skill Builder - Round Neckline",
+      "Lead: Skill Builder",
     );
   });
 });

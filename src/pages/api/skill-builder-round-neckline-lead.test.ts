@@ -57,7 +57,7 @@ describe("ActiveCampaign calls stay server-side", () => {
     expect(sharedLeadSource).toContain("createActiveCampaignClient");
     expect(sharedLeadSource).toContain("getActiveCampaignConfig");
     expect(sharedLeadSource).toContain("resolveTagId");
-    expect(sharedSource).toContain('lead: Skill Builder - Round Neckline');
+    expect(sharedSource).toContain('Lead: Skill Builder');
     expect(clientSource).not.toContain("createActiveCampaignClient");
     expect(clientSource).not.toMatch(/ACTIVECAMPAIGN/);
     expect(clientSource).not.toMatch(/Api-Token/);

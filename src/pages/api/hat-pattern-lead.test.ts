@@ -60,7 +60,7 @@ describe("ActiveCampaign calls stay server-side", () => {
   it("keeps the Admin API client on the shared server handler only", () => {
     expect(handlerSource).toContain("handleTaggedLeadCaptureRequest");
     expect(handlerSource).toContain("HAT_PATTERN_LEAD_TAG");
-    expect(sharedSource).toContain("lead: Hat Pattern");
+    expect(sharedSource).toContain("Lead: Hat Pattern");
     expect(sharedLeadSource).toContain("createActiveCampaignClient");
     expect(sharedLeadSource).toContain("syncContact");
     expect(sharedLeadSource).toContain("resolveTagId");
@@ -75,8 +75,8 @@ describe("ActiveCampaign calls stay server-side", () => {
 
   it("does not let the browser choose an ActiveCampaign tag", () => {
     expect(routeSource).not.toMatch(/body\.tag|body\["tag"\]/);
-    expect(clientSource).not.toContain("lead: Hat Pattern");
-    expect(formSource).not.toContain("lead: Hat Pattern");
+    expect(clientSource).not.toContain("Lead: Hat Pattern");
+    expect(formSource).not.toContain("Lead: Hat Pattern");
   });
 });
 
