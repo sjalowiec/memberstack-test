@@ -395,8 +395,7 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       ${wrapHatPatternSection(
         "crown-timing",
         "<h4>Crown start</h4>",
-        `<p>Knit ${crownStartRow} rows.</p>
-      <p><strong>Begin crown shaping at RC ${crownStartRow}.</strong></p>`,
+        `<p><strong>Begin crown shaping at RC ${crownStartRow}.</strong></p>`,
       )}
       ${crownSectionsHtml}
       ${wrapHatPatternSection("finishing", "<h4>Finishing</h4>", finishingHtml)}

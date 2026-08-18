@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   convertLength,
@@ -54,15 +56,26 @@ function patternHtml(
   };
 }
 
+function crownStartSectionHtml(html: string): string {
+  const match = html.match(
+    /data-section-id="crown-timing"[\s\S]*?<\/section>/,
+  );
+  return match?.[0] ?? "";
+}
+
 describe("hat crown start uses continuous row-counter convention", () => {
   it.each(CROWNS)(
     "%s: begins crown shaping at calculated RC (brimRows + bodyRows)",
     (crown) => {
       const { calc, html } = patternHtml(crown);
       const crownStartRow = calc.brimRows + calc.bodyRows;
+      const startSection = crownStartSectionHtml(html);
       expect(crownStartRow).toBeGreaterThan(0);
-      expect(html).toContain(`Knit ${crownStartRow} rows.`);
-      expect(html).toContain(`Begin crown shaping at RC ${crownStartRow}.`);
+      expect(startSection).toContain(`Begin crown shaping at RC ${crownStartRow}.`);
+      expect(startSection).toContain(`RC ${crownStartRow}`);
+      // Cumulative RC is not an extra number of rows to knit in this section.
+      expect(startSection).not.toContain(`Knit ${crownStartRow} rows.`);
+      expect(startSection).not.toMatch(/Knit \d+ rows/);
       // Dynamic — not a hard-coded example value from the prompt.
       expect(html).not.toContain("Begin crown shaping at RC 90.");
       expect(html).not.toContain("Begin crown shaping at RC 72.");
@@ -117,8 +130,10 @@ describe("hat crown start uses continuous row-counter convention", () => {
         suggestedCrownDepthInches: 2.5,
       });
       const crownStartRow = calc.brimRows + calc.bodyRows;
-      expect(html).toContain(`Knit ${crownStartRow} rows.`);
-      expect(html).toContain(`Begin crown shaping at RC ${crownStartRow}.`);
+      const startSection = crownStartSectionHtml(html);
+      expect(startSection).toContain(`Begin crown shaping at RC ${crownStartRow}.`);
+      expect(startSection).not.toContain(`Knit ${crownStartRow} rows.`);
+      expect(startSection).not.toMatch(/Knit \d+ rows/);
       expect(html).not.toContain("when hat measures");
       expect(html).not.toContain("Calculated crown depth");
       expect(html).not.toContain("based on the sizing chart");
@@ -142,5 +157,35 @@ describe("hat crown start uses continuous row-counter convention", () => {
     expect(html).toContain(
       `Begin crown shaping at RC ${calc.brimRows + calc.bodyRows}.`,
     );
+  });
+
+  it("gathered customer case: crown start is RC 70, not Knit 70 rows", () => {
+    const { calc, html } = patternHtml("gathered", "inches", {
+      finishedHatCircInches: 22,
+      stitchGaugeDisplay: 16,
+      rowGaugeDisplay: 28,
+      brimType: "folded",
+      brimDepthInches: 3,
+      suggestedCrownDepthInches: 10 / 7,
+      totalHatLengthInches: 7 + 10 / 7,
+      fit: "custom",
+    });
+    const startSection = crownStartSectionHtml(html);
+    expect(calc.brimRows).toBe(42);
+    expect(calc.bodyRows).toBe(28);
+    expect(calc.crownRowCount).toBe(10);
+    expect(calc.castOnSts).toBe(88);
+    expect(html).toContain("Work 28 rows in pattern after the brim");
+    expect(startSection).toContain("Begin crown shaping at RC 70.");
+    expect(startSection).toContain("RC 70");
+    expect(startSection).not.toContain("Knit 70 rows");
+    expect(html).not.toContain("Knit 70 rows");
+    expect(html).toContain("Knit 10 rows. RC is now 80.");
+  });
+
+  it("does not render a cumulative RC as Knit N rows in the generator", () => {
+    const source = readFileSync(join(__dirname, "hatInstructions.ts"), "utf8");
+    expect(source).not.toMatch(/Knit \$\{crownStartRow\} rows/);
+    expect(source).toMatch(/Begin crown shaping at RC \$\{crownStartRow\}/);
   });
 });

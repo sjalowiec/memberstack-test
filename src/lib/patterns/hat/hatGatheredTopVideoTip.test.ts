@@ -104,6 +104,7 @@ describe("hatGatheredTopVideoTip", () => {
     expect(html).toContain(`aria-label="${HAT_GATHERED_TOP_WATCH_LABEL}"`);
     expect(html).toContain("kbm-kin-catalog-video");
     expect(html).toContain("glossary-tooltip-trigger");
+    expect(html).toContain("print-visible");
     expect(html).toContain('class="glossary-tooltip-label"');
     expect(html).toContain('class="glossary-tooltip-icon" aria-hidden="true"');
     expect(html).toContain(HAT_GATHERED_TOP_VISIBLE_TEXT);
@@ -133,7 +134,7 @@ describe("hatGatheredTopVideoTip", () => {
     expect(countContentId(html, HAT_GATHERED_TOP_VIDEO_CONTENT_ID)).toBe(1);
     expect(html).toContain('data-testid="hat-gathered-top-video-watch"');
     expect(html).toContain(`aria-label="${HAT_GATHERED_TOP_WATCH_LABEL}"`);
-    expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger");
+    expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger print-visible");
     expect(html).toContain(`gather the remaining ${remaining} stitches`);
 
     expect(html).toContain(
@@ -141,6 +142,9 @@ describe("hatGatheredTopVideoTip", () => {
     );
     expect(html).toContain(`Knit ${calc.crownRowCount} rows. RC is now ${ending}.`);
     expect(html).toContain(`Break the yarn, leaving a 12" tail, and `);
+    expect(html).toMatch(
+      /Break the yarn, leaving a 12" tail, and[\s\S]*gather the remaining \d+ stitches[\s\S]*\./,
+    );
     expect(html).not.toContain("After knitting the full hat length");
 
     const crownIdx = html.indexOf('data-section-id="crown"');
@@ -183,6 +187,7 @@ describe("hatGatheredTopVideoTip", () => {
     );
     expect(tipModuleSource).toContain("HAT_GATHERED_TOP_VIDEO_CONTENT_ID = 587");
     expect(tipModuleSource).toContain("glossary-tooltip-label");
+    expect(tipModuleSource).toContain("print-visible");
     expect(tipModuleSource).not.toContain("player.vimeo.com");
   });
 });

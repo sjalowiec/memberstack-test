@@ -66,7 +66,7 @@ export function buildHatMattressStitchVideoHtml(
       : "";
   return (
     `<button type="button"` +
-    ` class="kbm-kin-catalog-video glossary-tooltip-trigger"` +
+    ` class="kbm-kin-catalog-video glossary-tooltip-trigger print-visible"` +
     ` data-vimeo-id="${escapeHtml(video.id)}"` +
     ` data-video-title="${escapeHtml(video.title)}"` +
     ` data-testid="hat-mattress-stitch-video-watch"` +
