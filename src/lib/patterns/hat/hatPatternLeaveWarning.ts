@@ -19,7 +19,7 @@ export const HAT_PATTERN_LEAVE_WARNING_LEAD =
   "Your pattern is temporary and cannot be retrieved later.";
 
 export const HAT_PATTERN_LEAVE_WARNING_EMPHASIS =
-  "Be sure to print it or download the PDF before leaving this page.";
+  "Print or download your pattern before leaving so you don't lose it.";
 
 export const HAT_PATTERN_LEAVE_WARNING_PRINT_LABEL = "Print / Download Pattern";
 
@@ -40,7 +40,6 @@ const STAY_CONTROL_SELECTOR = [
   "#print-btn",
   "[data-hat-pattern-print-link]",
   "[data-hat-yarn-open]",
-  "[data-hat-edit-open]",
   "[data-hat-yarn-drawer]",
   "[data-pattern-tips-host]",
   ".pattern-tip",
@@ -48,12 +47,15 @@ const STAY_CONTROL_SELECTOR = [
   "[data-ms-modal]",
 ].join(",");
 
+const WORKFLOW_NAV_SELECTOR = "[data-hat-edit-open]";
+
 export type HatPatternLeavePending =
   | { kind: "href"; href: string }
   | { kind: "new-pattern" };
 
 export type HatPatternLeaveClickResult =
   | { action: "stay" }
+  | { action: "allow-workflow-nav" }
   | { action: "warn-new-pattern" }
   | { action: "warn-href"; href: string };
 
@@ -90,6 +92,22 @@ function hatSummaryPathname(): string {
   return normalizePathname(new URL(HAT_SUMMARY_EDIT_HREF, "https://knititnow.example").pathname);
 }
 
+/** Edit Pattern / Summary — still in the Hat workflow, not a leave. */
+export function isHatPatternWorkflowHref(href: string, currentUrl: string): boolean {
+  const trimmed = href.trim();
+  if (!trimmed || trimmed.startsWith("#")) return false;
+  try {
+    const current = new URL(currentUrl);
+    const next = new URL(trimmed, current);
+    return (
+      next.origin === current.origin &&
+      normalizePathname(next.pathname) === hatSummaryPathname()
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
  * True when following this href would leave the finished Hat Pattern page.
  * Same-page hashes, Edit Pattern / Summary, and non-navigation protocols stay.
@@ -98,6 +116,7 @@ export function isHatPatternLeaveHref(href: string, currentUrl: string): boolean
   const trimmed = href.trim();
   if (!trimmed || trimmed.startsWith("#")) return false;
   if (/^(mailto:|tel:|javascript:|sms:)/i.test(trimmed)) return false;
+  if (isHatPatternWorkflowHref(trimmed, currentUrl)) return false;
 
   try {
     const current = new URL(currentUrl);
@@ -105,7 +124,6 @@ export function isHatPatternLeaveHref(href: string, currentUrl: string): boolean
     if (next.origin === current.origin) {
       const nextPath = normalizePathname(next.pathname);
       if (nextPath === normalizePathname(current.pathname)) return false;
-      if (nextPath === hatSummaryPathname()) return false;
     }
     return true;
   } catch {
@@ -142,6 +160,7 @@ export function resolveHatPatternLeaveClick(
 ): HatPatternLeaveClickResult {
   if (!target || typeof target.closest !== "function") return { action: "stay" };
   if (target.closest(HAT_PATTERN_LEAVE_WARNING_SELECTOR)) return { action: "stay" };
+  if (target.closest(WORKFLOW_NAV_SELECTOR)) return { action: "allow-workflow-nav" };
   if (target.closest(STAY_CONTROL_SELECTOR)) return { action: "stay" };
   if (target.closest("[data-hat-pattern-new-pattern-trigger]")) {
     return { action: "warn-new-pattern" };
@@ -154,6 +173,7 @@ export function resolveHatPatternLeaveClick(
   if (targetAttr === "_blank") return { action: "stay" };
 
   const href = anchor.getAttribute?.("href") ?? "";
+  if (isHatPatternWorkflowHref(href, currentUrl)) return { action: "allow-workflow-nav" };
   if (!isHatPatternLeaveHref(href, currentUrl)) return { action: "stay" };
   return { action: "warn-href", href: resolveHatPatternLeaveHref(href, currentUrl) };
 }
@@ -184,7 +204,22 @@ export type HatPatternLeaveWarningSession = {
   cancel: () => void;
   isOpen: () => boolean;
   pending: () => HatPatternLeavePending | null;
+  /** True when the native beforeunload prompt is still armed. */
+  shouldWarn: () => boolean;
   dispose: () => void;
+};
+
+type EventListenTarget = {
+  addEventListener: (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions,
+  ) => void;
+  removeEventListener: (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions,
+  ) => void;
 };
 
 export type InitHatPatternLeaveWarningOptions = {
@@ -196,18 +231,9 @@ export type InitHatPatternLeaveWarningOptions = {
   onNewPattern?: () => void;
   assignLocation?: (href: string) => void;
   currentUrl?: () => string;
-  listenOn?: {
-    addEventListener: (
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions,
-    ) => void;
-    removeEventListener: (
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions,
-    ) => void;
-  };
+  listenOn?: EventListenTarget;
+  /** Defaults to `window`. Injected in tests so beforeunload can be asserted. */
+  beforeUnloadListenOn?: EventListenTarget;
 };
 
 type LeaveWarningRuntime = HatPatternLeaveWarningSession & {
@@ -316,11 +342,11 @@ export function initHatPatternLeaveWarning(
     cancel,
     isOpen: () => dialog.open === true,
     pending: () => pending,
+    shouldWarn,
     dispose: () => {
       disposed = true;
       if (runtime === session) runtime = null;
     },
-    shouldWarn,
   };
 
   if (dialog.getAttribute(BOUND_ATTR) !== "true") {
@@ -365,6 +391,10 @@ export function initHatPatternLeaveWarning(
       if (!target || typeof (target as ClosestNode).closest !== "function") return;
 
       const result = resolveHatPatternLeaveClick(target as ClosestNode, readCurrentUrl(options));
+      if (result.action === "allow-workflow-nav") {
+        bypass = true;
+        return;
+      }
       if (result.action === "stay") return;
       if (!shouldWarn()) return;
 
@@ -404,17 +434,18 @@ export function initHatPatternLeaveWarning(
     event.preventDefault();
     event.returnValue = "";
   };
-  if (typeof window !== "undefined") {
-    window.addEventListener("beforeunload", onBeforeUnload);
+  const beforeUnloadTarget =
+    options.beforeUnloadListenOn ??
+    (typeof window !== "undefined" ? window : null);
+  if (beforeUnloadTarget) {
+    beforeUnloadTarget.addEventListener("beforeunload", onBeforeUnload);
   }
 
   runtime = session;
   const originalDispose = session.dispose;
   session.dispose = () => {
     originalDispose();
-    if (typeof window !== "undefined") {
-      window.removeEventListener("beforeunload", onBeforeUnload);
-    }
+    beforeUnloadTarget?.removeEventListener("beforeunload", onBeforeUnload);
   };
   return session;
 }

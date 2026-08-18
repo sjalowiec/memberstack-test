@@ -17,6 +17,7 @@ import {
   initHatPatternLeaveWarning,
   isHatFinishedPatternVisible,
   isHatPatternLeaveHref,
+  isHatPatternWorkflowHref,
   requestHatPatternLeave,
   resolveHatPatternLeaveClick,
   shouldWarnOnHatPatternLeave,
@@ -174,6 +175,17 @@ describe("isHatPatternLeaveHref", () => {
   });
 });
 
+describe("isHatPatternWorkflowHref", () => {
+  it("recognizes Edit Pattern / Summary destinations as in-workflow navigation", () => {
+    expect(isHatPatternWorkflowHref("/patterns/hat/summary/?edit=1", CURRENT_URL)).toBe(
+      true,
+    );
+    expect(isHatPatternWorkflowHref("/patterns/hat/summary/", CURRENT_URL)).toBe(true);
+    expect(isHatPatternWorkflowHref("/tools", CURRENT_URL)).toBe(false);
+    expect(isHatPatternWorkflowHref("/patterns/hat/builder", CURRENT_URL)).toBe(false);
+  });
+});
+
 describe("resolveHatPatternLeaveClick", () => {
   it("warns for New Pattern and internal navigation, not Print/PDF or Edit Pattern", () => {
     expect(
@@ -215,7 +227,14 @@ describe("resolveHatPatternLeaveClick", () => {
         }),
         CURRENT_URL,
       ),
-    ).toEqual({ action: "stay" });
+    ).toEqual({ action: "allow-workflow-nav" });
+
+    expect(
+      resolveHatPatternLeaveClick(
+        fakeNode({ anchor: { href: "/patterns/hat/summary/?edit=1" } }),
+        CURRENT_URL,
+      ),
+    ).toEqual({ action: "allow-workflow-nav" });
 
     expect(
       resolveHatPatternLeaveClick(
@@ -331,6 +350,7 @@ function mountLeaveWarning(args?: {
 }) {
   const { dialog, print, leave, close, dialogListeners } = createFakeDialog();
   const listenOn = createListenOn();
+  const beforeUnloadListenOn = createListenOn();
   const onPrint = vi.fn();
   const onNewPattern = vi.fn();
   const assignLocation = vi.fn();
@@ -347,6 +367,7 @@ function mountLeaveWarning(args?: {
     assignLocation,
     currentUrl: () => CURRENT_URL,
     listenOn,
+    beforeUnloadListenOn,
   });
   return {
     session: session as HatPatternLeaveWarningSession,
@@ -356,9 +377,17 @@ function mountLeaveWarning(args?: {
     close,
     dialogListeners,
     listenOn,
+    beforeUnloadListenOn,
     onPrint,
     onNewPattern,
     assignLocation,
+  };
+}
+
+function beforeUnloadEvent() {
+  return {
+    preventDefault: vi.fn(),
+    returnValue: "",
   };
 }
 
@@ -469,6 +498,49 @@ describe("initHatPatternLeaveWarning", () => {
     expect(mounted.dialog.open).toBe(false);
   });
 
+  it("Edit Pattern does not trigger the custom leave warning or beforeunload", () => {
+    const mounted = mountLeaveWarning();
+    session = mounted.session;
+    const fireBeforeUnload = mounted.beforeUnloadListenOn.handlers.beforeunload?.[0];
+    expect(typeof fireBeforeUnload).toBe("function");
+
+    const armed = beforeUnloadEvent();
+    fireBeforeUnload?.(armed);
+    expect(armed.preventDefault).toHaveBeenCalled();
+    expect(mounted.session.shouldWarn()).toBe(true);
+
+    const click = mounted.listenOn.handlers.click?.[0];
+    const editEvent = clickEvent(
+      fakeNode({
+        stayMarkers: ["[data-hat-edit-open]"],
+        anchor: { href: "/patterns/hat/summary/?edit=1" },
+      }),
+    );
+    click?.(editEvent);
+
+    expect(editEvent.preventDefault).not.toHaveBeenCalled();
+    expect(mounted.dialog.open).toBe(false);
+    expect(mounted.session.pending()).toBeNull();
+    expect(mounted.session.shouldWarn()).toBe(false);
+
+    const afterEdit = beforeUnloadEvent();
+    fireBeforeUnload?.(afterEdit);
+    expect(afterEdit.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it("Print stays on the page without disarming beforeunload for true browser exits", () => {
+    const mounted = mountLeaveWarning();
+    session = mounted.session;
+    const click = mounted.listenOn.handlers.click?.[0];
+    click?.(clickEvent(fakeNode({ stayMarkers: ["#print-btn"] })));
+    expect(mounted.dialog.open).toBe(false);
+    expect(mounted.session.shouldWarn()).toBe(true);
+
+    const armed = beforeUnloadEvent();
+    mounted.beforeUnloadListenOn.handlers.beforeunload?.[0]?.(armed);
+    expect(armed.preventDefault).toHaveBeenCalled();
+  });
+
   it("Print / Download Pattern cancels navigation and reuses the existing print action", () => {
     const mounted = mountLeaveWarning();
     session = mounted.session;
@@ -570,7 +642,7 @@ describe("Hat Pattern leave-warning page wiring", () => {
       "Your pattern is temporary and cannot be retrieved later.",
     );
     expect(HAT_PATTERN_LEAVE_WARNING_EMPHASIS).toBe(
-      "Be sure to print it or download the PDF before leaving this page.",
+      "Print or download your pattern before leaving so you don't lose it.",
     );
     expect(HAT_PATTERN_LEAVE_WARNING_PRINT_LABEL).toBe("Print / Download Pattern");
     expect(HAT_PATTERN_LEAVE_WARNING_LEAVE_LABEL).toBe("Leave Anyway");
