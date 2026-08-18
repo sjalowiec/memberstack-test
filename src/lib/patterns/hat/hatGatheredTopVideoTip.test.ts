@@ -119,10 +119,15 @@ describe("hatGatheredTopVideoTip", () => {
     expect(kinModalSource).toContain("kbmKinCatalogVideoModal");
   });
 
-  it("returns plain gather phrase when video cannot be resolved", () => {
-    expect(buildHatGatheredTopVideoHtml(null)).toBe("gather the remaining stitches");
+  it("returns plain thread-through phrase when video cannot be resolved", () => {
+    expect(buildHatGatheredTopVideoHtml(null)).toBe(
+      "Thread the tail through the remaining stitches",
+    );
     expect(buildHatGatheredTopVideoHtml(null, 43)).toBe(
-      "gather the remaining 43 stitches",
+      "Thread the tail through the remaining 43 stitches",
+    );
+    expect(buildHatGatheredTopVideoHtml(null, 1)).toBe(
+      "Thread the tail through the remaining stitch",
     );
   });
 
@@ -135,17 +140,18 @@ describe("hatGatheredTopVideoTip", () => {
     expect(html).toContain('data-testid="hat-gathered-top-video-watch"');
     expect(html).toContain(`aria-label="${HAT_GATHERED_TOP_WATCH_LABEL}"`);
     expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger print-visible");
-    expect(html).toContain(`gather the remaining ${remaining} stitches`);
+    expect(html).toContain(`Thread the tail through the remaining ${remaining} stitches`);
 
     expect(html).toContain(
       `Transfer every other stitch to its neighboring needle, leaving the emptied needles out of work. ${remaining} stitches remain.`,
     );
     expect(html).toContain(`Knit ${calc.crownRowCount} rows. RC is now ${ending}.`);
-    expect(html).toContain(`Break the yarn, leaving a 12" tail, and `);
+    expect(html).toContain(`Break the yarn, leaving a 12" tail.`);
     expect(html).toMatch(
-      /Break the yarn, leaving a 12" tail, and[\s\S]*gather the remaining \d+ stitches[\s\S]*\./,
+      /Break the yarn, leaving a 12" tail\.[\s\S]*Thread the tail through the remaining \d+ stitches[\s\S]*remove the stitches from the machine\./,
     );
     expect(html).not.toContain("After knitting the full hat length");
+    expect(html).not.toContain("gather the remaining");
 
     const crownIdx = html.indexOf('data-section-id="crown"');
     const videoIdx = html.indexOf(
@@ -183,7 +189,7 @@ describe("hatGatheredTopVideoTip", () => {
       /crown === "gathered"[\s\S]*buildHatGatheredTopVideoHtml/,
     );
     expect(instructionsSource).toMatch(
-      /Break the yarn, leaving \$\{breakYarnTailPhrase\}, and \$\{gatherRemainingStitchesVideoHtml\}/,
+      /Break the yarn, leaving \$\{breakYarnTailPhrase\}\. \$\{gatherRemainingStitchesVideoHtml\}/,
     );
     expect(tipModuleSource).toContain("HAT_GATHERED_TOP_VIDEO_CONTENT_ID = 587");
     expect(tipModuleSource).toContain("glossary-tooltip-label");
