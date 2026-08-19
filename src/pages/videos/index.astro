@@ -230,6 +230,16 @@ const forceMemberView =
       syncVideoBackToSearchDesktopPosition,
       syncVideoBackToSearchFromIntersection,
     } from "../../lib/videos/videoBackToSearch";
+    import {
+      nextVideoCatalogAuthCategory,
+      readSitewideAccessPublication,
+      reconcileCatalogAccessFromOwnPoll,
+      shouldRefreshVideoCatalogAccessOnPageShow,
+      shouldShowVideoCatalogLock,
+      viewerFromSitewidePublication,
+      type VideoCatalogAccessState,
+      type VideoCatalogViewer,
+    } from "../../lib/videos/videoCatalogAccessState";
 
     (function () {
       const FREE_FILTER_VALUE = "__free__";
@@ -303,66 +313,49 @@ const forceMemberView =
       }
     }
 
-    let VIEWER = { isLoggedIn: false, hasVideoAccess: false, member: null };
-    let ACCESS_STATE = "checking";
+    let VIEWER: VideoCatalogViewer = { isLoggedIn: false, hasVideoAccess: false, member: null };
+    let ACCESS_STATE: VideoCatalogAccessState = "checking";
     /** True after an unresolved auth pass auto-selects Free Videos (so a later member snapshot can restore All). */
     let authDefaultFreeApplied = false;
     let pendingFavoritesFilterApplied = false;
 
-    function sitewideHasMemberAccess() {
-      const persisted = window.__KIN_MEMBER_ACCESS__;
-      if (persisted && persisted.hasMemberAccess === true) return true;
-      return document.body.classList.contains("ms-logged-in");
+    function sitewideAccessPublication() {
+      return readSitewideAccessPublication(
+        window.__KIN_MEMBER_ACCESS__,
+        document.body.classList.contains("ms-logged-in"),
+      );
     }
 
     function applySitewideMemberAccessSnapshot() {
-      if (!sitewideHasMemberAccess()) return false;
-      ACCESS_STATE = "has_access";
-      VIEWER = { isLoggedIn: true, hasVideoAccess: true, member: VIEWER.member };
+      const next = viewerFromSitewidePublication(
+        window.__KIN_MEMBER_ACCESS__,
+        document.body.classList.contains("ms-logged-in"),
+        VIEWER.member,
+      );
+      if (!next) return false;
+      ACCESS_STATE = next.accessState;
+      VIEWER = next.viewer;
       return true;
     }
 
     function applyKinMemberAccessDetail(detail: { hasMemberAccess?: boolean; viewerAccessState?: string } | null | undefined) {
-      if (!detail || typeof detail.hasMemberAccess !== "boolean") return false;
-      if (detail.hasMemberAccess) {
-        ACCESS_STATE = "has_access";
-        VIEWER = { isLoggedIn: true, hasVideoAccess: true, member: VIEWER.member };
-        return true;
-      }
-      if (detail.viewerAccessState === "loggedInNoAccess") {
-        ACCESS_STATE = "no_access";
-        VIEWER = { isLoggedIn: true, hasVideoAccess: false, member: VIEWER.member };
-        return true;
-      }
-      ACCESS_STATE = "logged_out";
-      VIEWER = { isLoggedIn: false, hasVideoAccess: false, member: null };
+      const next = viewerFromSitewidePublication(detail, false, VIEWER.member);
+      if (!next) return false;
+      ACCESS_STATE = next.accessState;
+      VIEWER = next.viewer;
       return true;
     }
 
     function applyResolvedViewerState(viewer: any) {
-      if (viewer && viewer.resolved) {
-        // Sitewide snapshot already granted access — do not downgrade a slow/incomplete poll to logged out.
-        if (!viewer.hasVideoAccess && sitewideHasMemberAccess()) {
-          ACCESS_STATE = "has_access";
-          VIEWER = { isLoggedIn: true, hasVideoAccess: true, member: viewer.member || VIEWER.member };
-          return;
-        }
-        VIEWER = {
-          isLoggedIn: viewer.isLoggedIn,
-          hasVideoAccess: viewer.hasVideoAccess,
-          member: viewer.member,
-        };
-        ACCESS_STATE = !viewer.isLoggedIn
-          ? "logged_out"
-          : viewer.hasVideoAccess
-            ? "has_access"
-            : "no_access";
-        return;
-      }
-      if (sitewideHasMemberAccess()) {
-        ACCESS_STATE = "has_access";
-        VIEWER = { isLoggedIn: true, hasVideoAccess: true, member: VIEWER.member };
-      }
+      const next = reconcileCatalogAccessFromOwnPoll({
+        catalogViewer: viewer,
+        sitewide: sitewideAccessPublication(),
+        currentMember: VIEWER.member,
+        snapshot: window.__KIN_MEMBER_ACCESS__,
+      });
+      if (!next) return;
+      ACCESS_STATE = next.accessState;
+      VIEWER = next.viewer;
     }
 
     async function waitForMemberstackReady(opts: any = {}) {
@@ -569,7 +562,11 @@ const forceMemberView =
           "<polygon points=\"28,22 28,46 48,34\"></polygon>" +
           "</svg></span>";
         const isMemberOnly = isMemberOnlyVideo(v);
-        const showLocked = isMemberOnly && ACCESS_STATE !== "checking" && !hasVideoAccess;
+        const showLocked = shouldShowVideoCatalogLock({
+          isMemberOnly,
+          accessState: ACCESS_STATE,
+          hasVideoAccess,
+        });
         const lockOverlay =
           showLocked
             ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
@@ -760,9 +757,8 @@ const forceMemberView =
     }
 
     function applyAuthCategoryDefaults() {
-      if (ACCESS_STATE === "checking") return;
-
       if (pendingFavoritesFilter) {
+        if (ACCESS_STATE === "checking") return;
         if (pendingFavoritesFilterApplied) return;
         pendingFavoritesFilterApplied = true;
         if (VIEWER.isLoggedIn) {
@@ -778,24 +774,28 @@ const forceMemberView =
         return;
       }
 
-      if (hasExplicitCategoryRequest || categoryTouchedByUser) return;
-
-      if (ACCESS_STATE === "has_access" || VIEWER.hasVideoAccess) {
-        if (authDefaultFreeApplied && currentCategory === FREE_FILTER_VALUE) {
-          currentCategory = "";
-          syncSelectedUI("");
-          updateUrl();
-          authDefaultFreeApplied = false;
-        }
+      const action = nextVideoCatalogAuthCategory({
+        accessState: ACCESS_STATE,
+        hasVideoAccess: VIEWER.hasVideoAccess,
+        hasExplicitCategoryRequest,
+        categoryTouchedByUser,
+        authDefaultFreeApplied,
+        currentCategory: String(currentCategory || ""),
+        freeFilterValue: FREE_FILTER_VALUE,
+      });
+      if (action === "restore-all") {
+        currentCategory = "";
+        syncSelectedUI("");
+        updateUrl();
+        authDefaultFreeApplied = false;
         return;
       }
-
-      // No member access (anonymous or logged-in non-member): Free Videos.
-      // Active members (hasMemberAccess) keep All Videos / URL selection.
-      currentCategory = FREE_FILTER_VALUE;
-      syncSelectedUI(currentCategory);
-      updateUrl();
-      authDefaultFreeApplied = true;
+      if (action === "apply-free") {
+        currentCategory = FREE_FILTER_VALUE;
+        syncSelectedUI(currentCategory);
+        updateUrl();
+        authDefaultFreeApplied = true;
+      }
     }
 
     let catalogAccessRefreshGen = 0;
@@ -835,6 +835,11 @@ const forceMemberView =
     }) as EventListener);
     window.addEventListener("auth:updated", () => {
       void refreshCatalogAccess();
+    });
+    window.addEventListener("pageshow", (event: PageTransitionEvent) => {
+      if (shouldRefreshVideoCatalogAccessOnPageShow(event)) {
+        void refreshCatalogAccess();
+      }
     });
 
     primaryFilterBtns.forEach((btn) => {
