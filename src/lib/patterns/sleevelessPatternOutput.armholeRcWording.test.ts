@@ -68,14 +68,20 @@ function armholeSectionParagraphs(rows: readonly SleevelessPatternDisplayRow[]):
   return out;
 }
 
-function firstArmholeBlock(rows: readonly SleevelessPatternDisplayRow[]) {
+function firstArmholeBindOffBlock(rows: readonly SleevelessPatternDisplayRow[]) {
   let inArmhole = false;
   for (const row of rows) {
     if (row.kind === "section") {
       inArmhole = row.title === "ARMHOLE";
       continue;
     }
-    if (inArmhole && row.kind === "block") return row;
+    if (
+      inArmhole &&
+      row.kind === "block" &&
+      row.paragraphs.some((p) => /Bind off OR hold/i.test(p))
+    ) {
+      return row;
+    }
   }
   return undefined;
 }
@@ -124,7 +130,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(armhole.some((p) => /bind off OR hold \d+ stitches at the remaining armhole edge/i.test(p))).toBe(
       true
     );
-    const first = firstArmholeBlock(r.displayRows);
+    const first = firstArmholeBindOffBlock(r.displayRows);
     expect(first?.tipPresentation).toBe("help-card");
     expect(first?.tipHtmlIsFull).toBe(true);
     expect(first?.tipHtml).toContain("pattern-help-card__details");
@@ -137,7 +143,7 @@ describe("sleeveless armhole RC wording", () => {
 
   it("front ARMHOLE section shares the same alternate-techniques tip with bind-off video", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
-    const first = firstArmholeBlock(r.frontDisplayRows);
+    const first = firstArmholeBindOffBlock(r.frontDisplayRows);
     expect(first?.tipPresentation).toBe("help-card");
     expect(first?.tipHtml).toContain(armholeAlternateTechniquesHelpCardBodyHtml());
     expect(first?.tipHtml).toContain(`data-sleeveless-help-video="${ARMHOLE_BIND_OFF_TRICK_VIDEO_KEY}"`);
