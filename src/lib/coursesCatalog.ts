@@ -34,6 +34,12 @@ type CatalogFileEntry = {
   category: string;
   catalogStatus: CourseCatalogStatus;
   description?: string;
+  /** Optional card title. When omitted, course JSON title (or the slug) is used. */
+  title?: string;
+  /** Optional destination override (absolute or site-relative). */
+  href?: string;
+  /** Optional CTA override. When omitted, status-based labels are used. */
+  buttonLabel?: string;
   /** Gating tier: "free" | "member" | "purchase". Untagged → member (locked). */
   access?: string;
   /** @deprecated Prefer `course.thumbnail` in the course JSON file. */
@@ -63,13 +69,24 @@ export function getCourseCatalogCategories(): string[] {
   return [...catalog.categories];
 }
 
+function readOptionalOverride(value?: string): string | undefined {
+  const text = value?.trim();
+  return text || undefined;
+}
+
 function legacyCourseForEntry(slug: string, catalogStatus: CourseCatalogStatus) {
   const includeDrafts = catalogStatus !== "available";
   return getLegacyCourseBySlug(slug, { includeDrafts });
 }
 
-function resolveTitle(slug: string, catalogStatus: CourseCatalogStatus): string {
-  return legacyCourseForEntry(slug, catalogStatus)?.course.title ?? slug;
+function resolveTitle(
+  slug: string,
+  catalogStatus: CourseCatalogStatus,
+  catalogTitle?: string,
+): string {
+  return readOptionalOverride(catalogTitle)
+    ?? legacyCourseForEntry(slug, catalogStatus)?.course.title
+    ?? slug;
 }
 
 function readCustomCatalogDescription(
@@ -164,10 +181,21 @@ export function resolveCourseThumbnail(
 function resolveHref(
   slug: string,
   catalogStatus: CourseCatalogStatus,
+  catalogHref?: string,
 ): string | undefined {
+  const override = readOptionalOverride(catalogHref);
+  if (override) return override;
+
   const legacy = legacyCourseForEntry(slug, catalogStatus);
   if (!legacy) return undefined;
   return courseLandingHref(slug);
+}
+
+function resolveButtonLabel(
+  status: CourseCatalogStatus,
+  catalogButtonLabel?: string,
+): string {
+  return readOptionalOverride(catalogButtonLabel) ?? STATUS_BUTTONS[status];
 }
 
 /**
@@ -199,6 +227,9 @@ export function resolveCatalogStatus(
 export function getCourseCatalogEntries(): CourseCatalogEntry[] {
   return catalog.entries
     .filter((entry) => {
+      // External / override destinations can appear without local course JSON.
+      if (readOptionalOverride(entry.href)) return true;
+
       const legacy = legacyCourseForEntry(entry.slug, entry.catalogStatus);
       if (!legacy) return entry.catalogStatus !== "available";
       return isLegacyCourseActive(legacy.course as LegacyCoursePublicationFields);
@@ -208,14 +239,14 @@ export function getCourseCatalogEntries(): CourseCatalogEntry[] {
       const thumbnail = resolveCourseThumbnail(entry.slug, entry.catalogStatus, entry.thumbnail);
       return {
         slug: entry.slug,
-        title: resolveTitle(entry.slug, entry.catalogStatus),
+        title: resolveTitle(entry.slug, entry.catalogStatus, entry.title),
         description: resolveDescription(entry.slug, entry.catalogStatus, entry.description),
         thumbnail,
         hasThumbnail: Boolean(thumbnail),
         category: entry.category,
         status,
-        href: resolveHref(entry.slug, entry.catalogStatus),
-        buttonLabel: STATUS_BUTTONS[status],
+        href: resolveHref(entry.slug, entry.catalogStatus, entry.href),
+        buttonLabel: resolveButtonLabel(status, entry.buttonLabel),
         access: getCourseAccessBySlug(entry.slug),
       };
     });
