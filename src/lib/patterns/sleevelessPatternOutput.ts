@@ -968,6 +968,12 @@ function clampFrontSharedRowsBeforeNeckStart(
       continue;
     }
 
+    // Reset is a required action with no knit paragraphs — do not drop it as an empty span.
+    if (row.rowCounterReset) {
+      out.push(row);
+      continue;
+    }
+
     if (row.trustedParagraphs && row.trustedParagraphs.length > 0) {
       out.push(row);
       continue;
@@ -1868,11 +1874,17 @@ export function buildSleevelessBackDisplayRows(args: {
       postArmholeInstructionRc = args.padStartRc;
     }
 
+    // Reset is its own instruction: no stitches are removed yet, so it must not
+    // carry the post-bind-off stitch count that belongs on the next row.
+    rows.push({
+      kind: "block",
+      rowCounterReset: true,
+      rowCounterResetGarmentRc: first,
+      paragraphs: [],
+    });
     rows.push({
       kind: "block",
       rc: formatArmholeLocalRc(first, first),
-      rowCounterReset: true,
-      rowCounterResetGarmentRc: first,
       paragraphs: [
         `Bind off OR hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],

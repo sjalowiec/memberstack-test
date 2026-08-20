@@ -44,6 +44,24 @@ function firstArmholeBlock(rows: readonly SleevelessPatternDisplayRow[]) {
   return undefined;
 }
 
+function firstArmholeBindOffBlock(rows: readonly SleevelessPatternDisplayRow[]) {
+  let inArmhole = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      inArmhole = row.title === "ARMHOLE";
+      continue;
+    }
+    if (
+      inArmhole &&
+      row.kind === "block" &&
+      row.paragraphs.some((p) => /Bind off OR hold/i.test(p))
+    ) {
+      return row;
+    }
+  }
+  return undefined;
+}
+
 describe("rowCounterResetBlockHtml", () => {
   it("renders the exact required wording", () => {
     expect(RESET_ROW_COUNTER_TEXT).toBe("RESET ROW COUNTER TO 000");
@@ -86,10 +104,15 @@ describe("sleeveless armhole row counter reset block", () => {
 
   it("drops the explanatory reset note and leads with the bind-off instruction", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
-    const block = firstArmholeBlock(r.displayRows);
-    if (block?.kind !== "block") throw new Error("expected armhole block");
-    expect(block.paragraphs.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
-    expect(block.paragraphs[0]).toMatch(
+    const reset = firstArmholeBlock(r.displayRows);
+    if (reset?.kind !== "block") throw new Error("expected armhole reset block");
+    expect(reset.rowCounterReset).toBe(true);
+    expect(reset.paragraphs).toEqual([]);
+
+    const bindOff = firstArmholeBindOffBlock(r.displayRows);
+    if (bindOff?.kind !== "block") throw new Error("expected armhole bind-off block");
+    expect(bindOff.paragraphs.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
+    expect(bindOff.paragraphs[0]).toMatch(
       /^Bind off OR hold \d+ stitches at the armhole edge \(carriage side\)\. Knit across\.$/,
     );
   });
