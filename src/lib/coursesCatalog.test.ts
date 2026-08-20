@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getCourseCatalogEntries,
+  getCourseCatalogEntriesByCategory,
   resolveCatalogStatus,
   resolveCourseCatalogDescription,
   resolveCourseThumbnail,
@@ -31,9 +32,23 @@ describe("resolveCourseThumbnail", () => {
 });
 
 describe("getCourseCatalogEntries href", () => {
+  it("uses a catalog href override for standalone destinations", () => {
+    const entry = getCourseCatalogEntries().find(
+      (course) => course.slug === "mastering-the-silver-reed-sk840",
+    );
+    expect(entry?.href).toBe("https://courses.knititnow.com/courses/111");
+    expect(entry?.buttonLabel).toBe("View Course");
+    expect(entry?.title).toBe("Mastering the Silver Reed SK840");
+    expect(entry?.access).toBe("member");
+    expect(entry?.category).toBe("Silver Reed");
+    expect(entry?.href).not.toContain("mastering-the-silver-reed-sk840-a-comprehensive-course");
+    expect(entry?.href).not.toMatch(/^\/courses\//);
+  });
+
   it("links available courses to the dynamic landing page", () => {
     const entry = getCourseCatalogEntries().find((course) => course.slug === "lk-150-quick-start");
     expect(entry?.href).toBe("/courses/lk-150-quick-start");
+    expect(entry?.buttonLabel).toBe("Start course");
   });
 
   it("links non-available catalog entries to the landing page when course JSON exists", () => {
@@ -99,5 +114,37 @@ describe("resolveCatalogStatus", () => {
 
   it("keeps static catalogStatus when no course JSON exists", () => {
     expect(resolveCatalogStatus("missing-course-slug", "coming-soon")).toBe("coming-soon");
+  });
+});
+
+describe("public course catalog cleanup", () => {
+  const workingMainSiteCourses = [
+    { slug: "lk-150-quick-start", href: "/courses/lk-150-quick-start" },
+    { slug: "lk-150-fun", href: "/courses/lk-150-fun" },
+    { slug: "beginner-workshop", href: "/courses/beginner-workshop" },
+    { slug: "ribber-basic-bootcamp", href: "/courses/ribber-basic-bootcamp" },
+    { slug: "not-enough-needles", href: "/courses/not-enough-needles" },
+    { slug: "yes-knits-that-fit", href: "/courses/yes-knits-that-fit" },
+  ] as const;
+
+  it("lists SK840 first in a Silver Reed section and hides neckline shaping", () => {
+    const sections = getCourseCatalogEntriesByCategory();
+    expect(sections[0]?.category).toBe("Silver Reed");
+    expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
+      "mastering-the-silver-reed-sk840",
+    ]);
+
+    const slugs = getCourseCatalogEntries().map((course) => course.slug);
+    expect(slugs).not.toContain("neckline-shaping-practice");
+    expect(slugs).not.toContain("mastering-the-silver-reed-sk840-a-comprehensive-course");
+  });
+
+  it("leaves the six working main-site courses on /courses/{slug}", () => {
+    const entries = getCourseCatalogEntries();
+    for (const expected of workingMainSiteCourses) {
+      const entry = entries.find((course) => course.slug === expected.slug);
+      expect(entry?.href).toBe(expected.href);
+      expect(entry?.buttonLabel).toBe("Start course");
+    }
   });
 });
