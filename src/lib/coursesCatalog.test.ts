@@ -44,6 +44,10 @@ describe("getCourseCatalogEntries href", () => {
     expect(entry?.category).toBe("Silver Reed");
     expect(entry?.href).not.toContain("mastering-the-silver-reed-sk840-a-comprehensive-course");
     expect(entry?.href).not.toMatch(/^\/courses\//);
+    expect(entry?.hasThumbnail).toBe(true);
+    expect(entry?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
+    expect(entry?.thumbnail).not.toContain("2022-course_thumbnail");
+    expect(entry?.thumbnail).not.toContain("courses.knititnow.com");
   });
 
   it("does not link to legacy lesson routes from the catalog", () => {
@@ -120,6 +124,8 @@ describe("public course catalog cleanup", () => {
     expect(entries[0]?.buttonLabel).toBe("View Course");
     expect(entries[0]?.href).toBe("https://courses.knititnow.com/courses/111");
     expect(entries[0]?.access).toBe("member");
+    expect(entries[0]?.hasThumbnail).toBe(true);
+    expect(entries[0]?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
 
     const slugs = entries.map((course) => course.slug);
     for (const slug of hiddenPublicCatalogSlugs) {

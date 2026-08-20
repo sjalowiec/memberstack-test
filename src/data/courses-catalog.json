@@ -11,7 +11,8 @@
       "access": "member",
       "description": "A step-by-step course for getting comfortable with your Silver Reed SK840, from setup and basic knitting through automatic patterning, tuck, slip, Fair Isle, lace, ribber techniques, and more.",
       "href": "https://courses.knititnow.com/courses/111",
-      "buttonLabel": "View Course"
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/mastering-silver-reed-sk840.png"
     },
     {
       "slug": "lk-150-quick-start",
