@@ -225,7 +225,9 @@ export function resolveCatalogStatus(
 
 /** Catalog rows for /courses, merged with legacy course metadata where available. */
 export function getCourseCatalogEntries(): CourseCatalogEntry[] {
+  const publicCategories = new Set(catalog.categories);
   return catalog.entries
+    .filter((entry) => publicCategories.has(entry.category))
     .filter((entry) => {
       // External / override destinations can appear without local course JSON.
       if (readOptionalOverride(entry.href)) return true;
