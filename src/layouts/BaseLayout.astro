@@ -222,7 +222,19 @@ const isProduction =
     - Therefore signup/login/account-access testing for launch MUST be verified on the PRODUCTION
       custom domain. A successful-looking signup + redirect on staging is expected but only creates
       a test member; it is NOT proof of a real live member or ActiveCampaign sync.
+
+  Shared session across www.knititnow.com, knititnow.com, and courses.knititnow.com:
+    Memberstack defaults to origin-scoped localStorage. useCookies + setCookieOnRootDomain
+    store `_ms_mid` / `_ms_cookie` on `.knititnow.com`. This assumes those hosts are listed
+    in the Memberstack Application Domains dashboard. memberstackConfig must be defined
+    before the CDN script (var, so it is also window.memberstackConfig).
 -->
+<script is:inline>
+  var memberstackConfig = {
+    useCookies: true,
+    setCookieOnRootDomain: true,
+  };
+</script>
 <script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
 
 
@@ -313,7 +325,9 @@ const isProduction =
     </script>
     <script is:inline>
   window.$memberstackDom?.onReady?.then(() => {
-    window.$memberstackDom?.init?.();
+    // Pass the same cookie options as memberstackConfig so a later init cannot
+    // fall back to origin-scoped localStorage.
+    window.$memberstackDom?.init?.(window.memberstackConfig);
   });
 </script>
     <script is:inline>
