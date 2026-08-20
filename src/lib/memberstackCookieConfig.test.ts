@@ -20,12 +20,17 @@ describe("Memberstack root-domain cookie session", () => {
     const configBlock = baseLayout.slice(configIdx, scriptIdx);
     expect(configBlock).toContain("useCookies: true");
     expect(configBlock).toContain("setCookieOnRootDomain: true");
+    expect(configBlock).toContain('"_ms-mid"');
+    expect(configBlock).toContain("Max-Age=0; Path=/");
+    expect(configBlock).toContain("localStorage");
+    expect(configBlock).not.toContain("Domain=.knititnow.com");
   });
 
   it("keeps the live Memberstack app id on the CDN script", () => {
     expect(baseLayout).toContain(
       `data-memberstack-app="${MEMBERSTACK_APP_ID}"`,
     );
+    expect(baseLayout).toContain("data-memberstack-use-cookies");
     expect(baseLayout).toContain(MEMBERSTACK_CDN);
   });
 

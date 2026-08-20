@@ -228,14 +228,37 @@ const isProduction =
     store `_ms_mid` / `_ms_cookie` on `.knititnow.com`. This assumes those hosts are listed
     in the Memberstack Application Domains dashboard. memberstackConfig must be defined
     before the CDN script (var, so it is also window.memberstackConfig).
+
+    Origin-scoped leftovers (localStorage / host-only cookies) still win after that
+    switch, so drop them on Knit It Now hosts before Memberstack boots. Keep the
+    `.knititnow.com` cookie; that is the shared session.
 -->
 <script is:inline>
   var memberstackConfig = {
     useCookies: true,
     setCookieOnRootDomain: true,
   };
+  (function () {
+    var host = (location.hostname || "").toLowerCase();
+    if (host !== "knititnow.com" && host.slice(-14) !== ".knititnow.com") return;
+    var names = ["_ms-mid", "_ms_mid", "_ms_cookie"];
+    for (var i = 0; i < names.length; i++) {
+      document.cookie = names[i] + "=; Max-Age=0; Path=/";
+    }
+    function clearMsStorage(storage) {
+      if (!storage) return;
+      var keys = [];
+      for (var j = 0; j < storage.length; j++) {
+        var key = storage.key(j);
+        if (key && /^(?:_?ms[-_]|memberstack)/i.test(key)) keys.push(key);
+      }
+      for (var k = 0; k < keys.length; k++) storage.removeItem(keys[k]);
+    }
+    try { clearMsStorage(localStorage); } catch (e) {}
+    try { clearMsStorage(sessionStorage); } catch (e2) {}
+  })();
 </script>
-<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
+<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" data-memberstack-use-cookies src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
 
 
   
