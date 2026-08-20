@@ -1,0 +1,43 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const baseLayout = readFileSync(resolve("src/layouts/BaseLayout.astro"), "utf8");
+const header = readFileSync(resolve("src/components/Header.astro"), "utf8");
+
+const MEMBERSTACK_APP_ID = "app_cmfh3d1n802vb0wy706205810";
+const MEMBERSTACK_CDN = "https://static.memberstack.com/scripts/v2/memberstack.js";
+
+describe("Memberstack root-domain cookie session", () => {
+  it("defines cookie config before the Memberstack CDN script", () => {
+    const configIdx = baseLayout.indexOf("var memberstackConfig");
+    const scriptIdx = baseLayout.indexOf(MEMBERSTACK_CDN);
+
+    expect(configIdx).toBeGreaterThan(-1);
+    expect(scriptIdx).toBeGreaterThan(-1);
+    expect(configIdx).toBeLessThan(scriptIdx);
+
+    const configBlock = baseLayout.slice(configIdx, scriptIdx);
+    expect(configBlock).toContain("useCookies: true");
+    expect(configBlock).toContain("setCookieOnRootDomain: true");
+  });
+
+  it("keeps the live Memberstack app id on the CDN script", () => {
+    expect(baseLayout).toContain(
+      `data-memberstack-app="${MEMBERSTACK_APP_ID}"`,
+    );
+    expect(baseLayout).toContain(MEMBERSTACK_CDN);
+  });
+
+  it("does not re-init Memberstack without the cookie options", () => {
+    expect(baseLayout).not.toMatch(/\$memberstackDom\?\.init\?\(\s*\)/);
+    expect(baseLayout).toContain(
+      "window.$memberstackDom?.init?.(window.memberstackConfig)",
+    );
+  });
+
+  it("still logs out through Memberstack logout", () => {
+    expect(header).toContain("await ms.logout()");
+    expect(header).toContain('data-ms-action="logout"');
+  });
+});

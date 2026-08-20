@@ -91,6 +91,14 @@ declare global {
         finalHasVideoAccess: boolean;
       },
     ) => void;
+    /**
+     * Memberstack Webflow/CDN cookie config. Must be set before the install
+     * script so login is stored on `.knititnow.com` instead of localStorage.
+     */
+    memberstackConfig?: {
+      useCookies?: boolean;
+      setCookieOnRootDomain?: boolean;
+    };
     /** Memberstack DOM API (injected by app script). */
     $memberstackDom?: {
       getAppAndMember?: () => Promise<unknown>;
@@ -117,7 +125,10 @@ declare global {
       }) => Promise<{ data?: { url?: string } }>;
       launchStripeCustomerPortal?: (opts?: { returnUrl?: string }) => Promise<{ data?: { url?: string } }>;
       hideModal?: () => void;
-      init?: () => void;
+      init?: (config?: {
+        useCookies?: boolean;
+        setCookieOnRootDomain?: boolean;
+      }) => void;
       onReady?: Promise<unknown>;
     };
     /** Opens Memberstack login modal with an explicit return path (dynamic CTAs). */
