@@ -12,6 +12,8 @@ import {
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   buildActiveSideInstructionTableRows,
+  buildHeldSideInstructionTableRows,
+  buildSecondShoulderInstructionTableRows,
   isCenterNecklineSetupChecklistRow,
 } from "./neckShoulderActiveSideChecklist";
 import {
@@ -89,6 +91,30 @@ function shallowVNeckPattern(): Record<string, unknown> {
       },
     },
     style: { recipientCategory: "misses", neckline: "v-neck" },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 4,
+      gaugeRowsPerInch: 7,
+      availableNeedles: 200,
+    },
+  };
+}
+
+/** Equal 10"/10" depths, 102-stitch Front — the `-1` must not create a before-armhole divide. */
+function equalDepthVNeckPattern(): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "mens",
+      selectedMeasurements: {
+        finished_bust_chest: 51,
+        back_neck_to_hem: 28,
+        armhole_depth: 10,
+        neck_opening: 6,
+        shoulder_width: 22,
+        front_neck_depth: 10,
+        back_neck_depth: 1,
+      },
+    },
+    style: { recipientCategory: "mens", neckline: "v-neck" },
     yarnGaugeMachine: {
       gaugeStitchesPerInch: 4,
       gaugeRowsPerInch: 7,
@@ -319,6 +345,7 @@ describe("sleeveless Front V-neck written presentation — Case 2 during armhole
 
   it("announces V-neck at the divide after armhole-only steps, without finished B", () => {
     expect(r.debug.frontVNeckShapingTimingCase).toBe("during-armhole");
+    expect(overlap.divideGarmentRc - armholeStart).toBe(7);
     expect(bodyKnitToTarget(r.frontDisplayRows)).toBe(armholeStart);
     const armhole = armholeBlocks(r.frontDisplayRows);
     expect(armhole.some((b) => b.rowCounterReset === true)).toBe(true);
@@ -390,6 +417,105 @@ describe("sleeveless Front V-neck written presentation — Case 3 both begin tog
   });
 });
 
+describe("sleeveless Front V-neck equal armhole and neckline depth (10\"/10\")", () => {
+  const r = generateSleevelessBackPattern(equalDepthVNeckPattern());
+  const armholeStart = r.debug.armholeStartRow!;
+  const overlap = r.debug.frontArmholeNecklineOverlap!;
+  const first = firstShoulderRows(r);
+
+  it("aligns the divide with the armhole start and classifies as with-armhole", () => {
+    expect(r.debug.bustBodyStitches ?? r.debug.backStitches).toBe(102);
+    expect(r.debug.armholeRows).toBe(70);
+    expect(r.debug.frontNeckDepthRows).toBe(70);
+    expect(r.debug.frontNecklineStartRC).toBe(armholeStart);
+    expect(overlap.divideGarmentRc).toBe(armholeStart);
+    expect(r.debug.frontVNeckShapingTimingCase).toBe("with-armhole");
+    expect(overlap.necklineBeginsBeforeArmhole).toBe(false);
+    const tl = [...(r.frontNeckShoulderTimeline ?? [])].sort((a, b) => a.row - b.row);
+    const last = tl[tl.length - 1]!;
+    const firstShoulder = tl.find(
+      (e) =>
+        e.row > armholeStart + 2 &&
+        e.events.some((ev) => ev.edge === "outer" && ev.kind === "bindOff" && ev.amount > 0),
+    );
+    // Shoulder line stays at armholeStart + A. The extra before-armhole setup
+    // row is gone; first shoulder stayed on the same RC (local 064) because
+    // bind-offs are placed from the unchanged last row, not from the divide.
+    expect(last.row).toBe(armholeStart + (r.debug.armholeRows ?? 0));
+    expect(firstShoulder?.row).toBe(armholeStart + 64);
+    expect(r.debug.stitchesAfterArmhole).toBe(88);
+  });
+
+  it("keeps BODY → ARMHOLE → shared RC 000 begin, not before-armhole routing", () => {
+    expect(sectionTitles(r.frontDisplayRows)).toEqual(
+      expect.arrayContaining(["BODY", "ARMHOLE", "FRONT NECKLINE & SHOULDERS"]),
+    );
+    expect(bodyKnitToTarget(r.frontDisplayRows)).toBe(armholeStart);
+    const armhole = armholeBlocks(r.frontDisplayRows);
+    expect(armhole.some((b) => b.rowCounterReset === true)).toBe(true);
+    expect(armhole.some((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE))).toBe(true);
+    const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE));
+    expect(beginBlock?.rc).toMatch(/RC:\s*000/);
+    expect(collectParagraphs(r.frontDisplayRows)).not.toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
+  });
+
+  it("checklists divide and Armhole BO at RC 000; first Neck decrease stays on RC 001", () => {
+    const setup = first.find(isCenterNecklineSetupChecklistRow);
+    expect(setup?.rc).toBe(0);
+    expect(setup?.action).toMatch(/51 stitches on each side/i);
+    const armholeBo = first.filter(
+      (row) => row.rc === 0 && row.edge === "Armhole" && /Bind off/i.test(row.action),
+    );
+    expect(armholeBo).toHaveLength(1);
+    const neckDecs = first.filter((row) => row.edge === "Neck" && /Decrease/i.test(row.action));
+    expect(neckDecs[0]?.rc).toBe(1);
+    expect(neckDecs[0]?.rc).not.toBe(0);
+    expect(r.debug.frontNecklineShapingBeginLocalRC).toBe(1);
+    expect(first.filter((row) => isCenterNecklineSetupChecklistRow(row))).toHaveLength(1);
+  });
+
+  it("keeps both shoulders and print on the same divide RC", () => {
+    const chart = r.frontNeckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, armholeStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const held = buildHeldSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const second = held.length
+      ? held
+      : buildSecondShoulderInstructionTableRows(first);
+    expect(held.length).toBeGreaterThan(0);
+    expect(second.find(isCenterNecklineSetupChecklistRow)?.rc).toBe(0);
+    expect(first.some((row) => row.edge === "Neck" && /Decrease/i.test(row.action))).toBe(true);
+    expect(second.some((row) => row.edge === "Neck" && /Decrease/i.test(row.action))).toBe(true);
+    const label = "RC:000";
+    const intro = renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: label,
+      chart,
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+      includeWorkflowSteps: true,
+    });
+    expect(intro).toContain("At RC 000, divide the piece at the center");
+    const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
+      chart,
+      "ns-print-equal-depth",
+      intro,
+      {
+        activeSideRcStart: rcStart,
+        includeCenterNecklineSetupRow: true,
+        showSecondShoulderChecklist: true,
+        sequentialShoulderHeadings: true,
+      },
+    );
+    expect(printHtml).toContain("At RC 000, divide the piece at the center");
+    expect(printHtml).toMatch(/FIRST SHOULDER|First Shoulder/i);
+    expect(printHtml).toMatch(/SECOND SHOULDER|Second Shoulder/i);
+    expect(isSleevelessPulloverVNeckFrontChart(chart)).toBe(true);
+  });
+});
+
 describe("sleeveless Front V-neck written presentation — Case 4 neckline before armhole", () => {
   const r = generateSleevelessBackPattern(vNeckBeforeArmholePattern());
   const armholeStart = r.debug.armholeStartRow!;
@@ -455,6 +581,7 @@ describe("sleeveless Front V-neck knit-to never skips the next shaping event", (
     ["Case 1 after armhole", shallowVNeckPattern()],
     ["Case 2 during armhole", amandaVNeckPattern()],
     ["Case 3 both begin", sameStartVNeckPattern()],
+    ["equal 10/10 with-armhole", equalDepthVNeckPattern()],
     ["Case 4 before armhole", vNeckBeforeArmholePattern()],
   ] as const)("%s", (_label, pattern) => {
     const r = generateSleevelessBackPattern(pattern);
@@ -483,6 +610,7 @@ describe("sleeveless Front V-neck written start and checklist divide share one e
     ["Case 1 after armhole", shallowVNeckPattern()],
     ["Case 2 during armhole", amandaVNeckPattern()],
     ["Case 3 both begin", sameStartVNeckPattern()],
+    ["equal 10/10 with-armhole", equalDepthVNeckPattern()],
     ["Case 4 before armhole", vNeckBeforeArmholePattern()],
   ] as const)("%s", (_label, pattern) => {
     const r = generateSleevelessBackPattern(pattern);
@@ -564,7 +692,12 @@ describe("sleeveless Front V-neck First Shoulder is immediately visible under ta
   });
 
   it("overlap Cases 2–4 keep First visible and Second mounted", () => {
-    for (const pattern of [amandaVNeckPattern(), sameStartVNeckPattern(), vNeckBeforeArmholePattern()]) {
+    for (const pattern of [
+      amandaVNeckPattern(),
+      sameStartVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+    ]) {
       const r = generateSleevelessBackPattern(pattern);
       const html = frontVNeckShoulderTabsHtml(r);
       expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
