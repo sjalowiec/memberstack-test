@@ -2638,7 +2638,7 @@ export function buildSleevelessFrontDisplayRows(args: {
       if (pulloverVNeckArmholeShapingRemainsAfterDivide(args.armholeNecklineOverlap)) {
         rows.push({
           kind: "block",
-          rc: formatRcColon(0),
+          rc: formatRcColon(args.armholeNecklineOverlap?.firstArmholeGarmentRc ?? 0),
           paragraphs: [
             FRONT_VNECK_HANDOFF_ARMHOLE_JOINS,
             ...sleevelessPulloverVNeckWrittenSummaryParagraphs({

@@ -16,6 +16,7 @@ import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
 import {
   displayRcFromGarmentRc,
   FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES,
+  resolveFrontVNeckRowCounterDisplayPolicy,
 } from "./frontArmholeNecklineComposition";
 
 type ActiveSideEdge = "Neck" | "Armhole" | "Shoulder";
@@ -532,6 +533,7 @@ function displayChecklistRc(
   rcBase: number,
   originGarmentRc: number | undefined,
   firstArmholeGarmentRc: number | undefined,
+  policy?: ReturnType<typeof resolveFrontVNeckRowCounterDisplayPolicy>,
 ): number {
   if (
     originGarmentRc !== undefined &&
@@ -539,7 +541,7 @@ function displayChecklistRc(
     Number.isFinite(originGarmentRc) &&
     Number.isFinite(firstArmholeGarmentRc)
   ) {
-    return displayRcFromGarmentRc(originGarmentRc + relative, firstArmholeGarmentRc);
+    return displayRcFromGarmentRc(originGarmentRc + relative, firstArmholeGarmentRc, policy);
   }
   return rcBase + relative;
 }
@@ -565,12 +567,16 @@ function buildSideInstructionTableRows(
       ? [...chart.timeline].sort((a, b) => a.row - b.row)[0]?.row
       : undefined;
   const firstArmholeGarmentRc = chart.frontVNeckArmholeComposition?.firstArmholeGarmentRc;
+  const rowCounterPolicy = resolveFrontVNeckRowCounterDisplayPolicy(
+    chart.frontVNeckArmholeComposition,
+  );
   const toDisplay = (rel: number) =>
-    displayChecklistRc(rel, rcBase, originGarmentRc, firstArmholeGarmentRc);
+    displayChecklistRc(rel, rcBase, originGarmentRc, firstArmholeGarmentRc, rowCounterPolicy);
   const invertCarriage = side === "left";
   const carriageFor = (rc: number) =>
     invertCarriage ? carriagePositionForSecondShoulderRc(rc) : carriagePositionForActiveSideRc(rc);
   const insertArmholeReset =
+    rowCounterPolicy !== "continuous-garment-rc" &&
     chart.frontVNeckArmholeComposition?.necklineBeginsBeforeArmhole === true &&
     originGarmentRc !== undefined &&
     firstArmholeGarmentRc !== undefined &&

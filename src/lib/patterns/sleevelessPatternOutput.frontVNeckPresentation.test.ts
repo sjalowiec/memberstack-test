@@ -6,6 +6,7 @@ import {
   FRONT_VNECK_HANDOFF_DURING_ARMHOLE,
   FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST,
   FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
+  resolveFrontVNeckRowCounterDisplayPolicy,
   sleevelessFrontVNeckWrittenPathPresentation,
   sleevelessPulloverVNeckBeginDisplayRc,
 } from "./frontArmholeNecklineComposition";
@@ -292,6 +293,9 @@ describe("sleeveless Front V-neck written presentation — Case 1 after armhole"
       checklistDefaultOpen: false,
       visualGuidesAfterChecklist: false,
     });
+    expect(resolveFrontVNeckRowCounterDisplayPolicy(r.debug.frontArmholeNecklineOverlap)).toBe(
+      "armhole-reset-first",
+    );
   });
 
   it("uses the same divide RC for knit-to, Begin V-neck, Divide the Neckline, and First Shoulder setup", () => {
@@ -388,6 +392,7 @@ describe("sleeveless Front V-neck written presentation — Case 2 during armhole
       true,
     );
     expect(sleevelessFrontVNeckWrittenPathPresentation(overlap).checklistDefaultOpen).toBe(true);
+    expect(resolveFrontVNeckRowCounterDisplayPolicy(overlap)).toBe("armhole-reset-first");
   });
 
   it("keeps required shaping actions on the written/checklist path", () => {
@@ -512,6 +517,7 @@ describe("sleeveless Front V-neck equal armhole and neckline depth (10\"/10\")",
     const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE));
     expect(beginBlock?.rc).toMatch(/RC:\s*000/);
     expect(collectParagraphs(r.frontDisplayRows)).not.toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
+    expect(resolveFrontVNeckRowCounterDisplayPolicy(overlap)).toBe("shared-reset");
   });
 
   it("text layer states both shaping systems after Begin V-neck and armhole shaping", () => {
@@ -615,28 +621,38 @@ describe("sleeveless Front V-neck written presentation — Case 4 neckline befor
     ).toBe(false);
   });
 
-  it("inserts the armhole reset in the checklist at the armhole garment RC", () => {
+  it("keeps one continuous garment RC and does not reset at the armhole", () => {
+    expect(resolveFrontVNeckRowCounterDisplayPolicy(overlap)).toBe("continuous-garment-rc");
     const first = firstShoulderRows(r);
     const setup = first.find(isCenterNecklineSetupChecklistRow)!;
     expect(setup.rc).toBe(overlap.divideGarmentRc);
     expect(setup.rc).not.toBe(0);
-    const resetIdx = first.findIndex((row) => row.rowCounterReset === true);
-    expect(resetIdx).toBeGreaterThan(0);
-    const reset = first[resetIdx]!;
-    expect(reset.rowCounterResetGarmentRc).toBe(armholeStart);
-    expect(reset.rc).toBe(0);
-    expect(reset.action).toBe(FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES);
-    const boIdx = first.findIndex(
-      (row) => row.rc === 0 && row.edge === "Armhole" && /Bind off/i.test(row.action),
+    expect(first.some((row) => row.rowCounterReset === true)).toBe(false);
+    expect(collectParagraphs(r.frontDisplayRows).join("\n")).not.toMatch(RESET_ROW_COUNTER_TEXT);
+    const armholeBo = first.find((row) => row.edge === "Armhole" && /Bind off/i.test(row.action));
+    expect(armholeBo?.rc).toBe(armholeStart);
+    expect(armholeBo?.rc).not.toBe(0);
+    const armholeDecs = first.filter(
+      (row) => row.edge === "Armhole" && /Decrease/i.test(row.action),
     );
-    expect(boIdx).toBeGreaterThan(resetIdx);
-    expect(first.slice(0, resetIdx).every((row) => row.rc !== 0 || isCenterNecklineSetupChecklistRow(row))).toBe(
-      true,
+    expect(armholeDecs.map((row) => row.rc)).toEqual(
+      overlap.remainingDecreaseLocalRcs.map((local) => armholeStart + local),
     );
-    expect(first.some((row) => row.rc === overlap.divideGarmentRc)).toBe(true);
+    const neckDecs = first.filter((row) => row.edge === "Neck" && /Decrease/i.test(row.action));
+    expect(neckDecs[0]?.rc).toBe(overlap.divideGarmentRc + 1);
+    expect(neckDecs.every((row) => row.rc !== 0)).toBe(true);
+    expect(first.filter((row) => row.rc === 0)).toHaveLength(0);
+    const rcsWithBoth = new Set(
+      first.filter((row) => row.edge === "Neck").map((row) => row.rc),
+    );
+    for (const row of first.filter((row) => row.edge === "Armhole")) {
+      if (rcsWithBoth.has(row.rc)) {
+        expect(first.filter((x) => x.rc === row.rc).length).toBeGreaterThan(1);
+      }
+    }
   });
 
-  it("keeps a continuous written path through the reset without Visual Guides", () => {
+  it("keeps a continuous written path without Visual Guides", () => {
     const text = writtenPathText(r);
     expect(text).toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
     expect(text).toContain(FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES);
@@ -662,11 +678,51 @@ describe("sleeveless Front V-neck written presentation — Case 4 neckline befor
     expect(startText).toMatch(/Divide the Front at center: 51 stitches each side/i);
     expect(startText).not.toMatch(/at the same time/);
     expect(startText).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
-    expect(joinBlock && joinBlock.kind === "block" ? joinBlock.rc : undefined).toMatch(/RC:\s*000/);
+    expect(joinBlock && joinBlock.kind === "block" ? joinBlock.rc : undefined).toMatch(
+      new RegExp(`RC:\\s*${String(armholeStart).padStart(3, "0")}`),
+    );
+    expect(joinBlock && joinBlock.kind === "block" ? joinBlock.rc : undefined).not.toMatch(/RC:\s*000/);
     expect(joinText).toContain(FRONT_VNECK_HANDOFF_ARMHOLE_JOINS);
     expect(joinText).toContain(FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT);
     expect(joinText).toMatch(/bind off or hold 4 stitches/i);
     expect(sectionTitles(r.frontDisplayRows)).not.toContain("ARMHOLE");
+  });
+
+  it("uses the same continuous garment RCs on Second Side and in print", () => {
+    const first = firstShoulderRows(r);
+    const chart = r.frontNeckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, armholeStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const second = buildHeldSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(second.some((row) => row.rowCounterReset === true)).toBe(false);
+    expect(second.filter((row) => row.rc === 0)).toHaveLength(0);
+    const firstArmhole = first.find((row) => row.edge === "Armhole" && /Bind off/i.test(row.action));
+    const secondArmhole = second.find((row) => row.edge === "Armhole" && /Bind off/i.test(row.action));
+    expect(firstArmhole?.rc).toBe(armholeStart);
+    expect(secondArmhole?.rc).toBe(armholeStart + 1);
+    const firstNeck = first.filter((row) => row.edge === "Neck" && /Decrease/i.test(row.action)).map((row) => row.rc);
+    const secondNeck = second.filter((row) => row.edge === "Neck" && /Decrease/i.test(row.action)).map((row) => row.rc);
+    expect(secondNeck).toEqual(firstNeck);
+    const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
+      chart,
+      "ns-print-case4",
+      "",
+      {
+        activeSideRcStart: rcStart,
+        includeCenterNecklineSetupRow: true,
+        showSecondShoulderChecklist: true,
+        sequentialShoulderHeadings: true,
+      },
+    );
+    expect(printHtml).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(printHtml).toContain(String(overlap.divideGarmentRc).padStart(3, "0"));
+    expect(printHtml).toContain(String(armholeStart).padStart(3, "0"));
+    for (const local of overlap.remainingDecreaseLocalRcs) {
+      expect(printHtml).toContain(String(armholeStart + local).padStart(3, "0"));
+    }
   });
 });
 
