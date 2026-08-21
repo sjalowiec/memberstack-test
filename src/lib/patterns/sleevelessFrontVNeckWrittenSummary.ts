@@ -21,15 +21,19 @@ export function pulloverVNeckArmholeShapingRemainsAfterDivide(
 }
 
 export const FRONT_VNECK_SIMULTANEOUS_TOGETHER =
-  "You will be shaping the V-neck and armhole at the same time. Work the V-neck shaping at the inside edge and the armhole shaping at the outside edge.";
+  "You will be shaping the V-neck and armhole at the same time.";
 
 export const FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT =
-  "From this point, you will be shaping the V-neck and armhole at the same time. Work the V-neck shaping at the inside edge and the armhole shaping at the outside edge.";
-
-export const FRONT_VNECK_SIMULTANEOUS_ARMHOLE_JOINS =
-  "From this point, you will be shaping the armhole and V-neck at the same time. Work the armhole shaping at the outside edge and the V-neck shaping at the inside edge.";
+  "From this point, you will be shaping the V-neck and armhole at the same time.";
 
 export const FRONT_VNECK_HANDOFF_ARMHOLE_JOINS = "Begin armhole shaping. Continue V-neck shaping.";
+
+const ACTION_BULLET = "• ";
+
+export function sleevelessPulloverVNeckActionBullet(text: string): string {
+  const t = text.trim();
+  return t.startsWith(ACTION_BULLET) ? t : `${ACTION_BULLET}${t}`;
+}
 
 function timesPhrase(n: number): string {
   return n === 1 ? "1 time" : `${n} times`;
@@ -56,39 +60,43 @@ export function sleevelessPulloverVNeckDivideSummaryParagraph(args: {
   leftAtDivide: number;
   rightAtDivide: number;
 }): string {
-  return `Divide the Front at center: ${divideSidesPhrase(args.leftAtDivide, args.rightAtDivide)}. Place one side on hold and work one shoulder at a time.`;
+  return sleevelessPulloverVNeckActionBullet(
+    `Divide the Front at center: ${divideSidesPhrase(args.leftAtDivide, args.rightAtDivide)}. Place one side on hold.`,
+  );
 }
 
-export function sleevelessPulloverVNeckCompactArmholeSummaryParagraph(args: {
+export function sleevelessPulloverVNeckCompactArmholeSummaryBullets(args: {
   bindOffSts: number;
   remainingDecreaseSts: number;
   remainingDecreaseLocalRcs: readonly number[];
   remainingOnly?: boolean;
-}): string | undefined {
+}): string[] {
   const bo = Math.max(0, Math.floor(args.bindOffSts));
   const dec = Math.max(0, Math.floor(args.remainingDecreaseSts));
   const rows = decreaseRowsPhrase(args.remainingDecreaseLocalRcs);
-  if (args.remainingOnly) {
-    if (dec <= 0) return undefined;
-    const more = dec === 1 ? "1 more time" : `${dec} more times`;
-    return rows
-      ? `Continue the armhole shaping by decreasing 1 stitch at the armhole edge every other row, ${more}, on rows ${rows}.`
-      : `Continue the armhole shaping by decreasing 1 stitch at the armhole edge every other row, ${more}.`;
-  }
-  if (bo > 0 && dec > 0) {
-    return rows
-      ? `At the armhole edge, bind off or hold ${bo} ${stitchNoun(bo)}, then decrease 1 stitch every other row, ${timesPhrase(dec)}, on rows ${rows}.`
-      : `At the armhole edge, bind off or hold ${bo} ${stitchNoun(bo)}, then decrease 1 stitch every other row, ${timesPhrase(dec)}.`;
-  }
-  if (bo > 0) {
-    return `At the armhole edge, bind off or hold ${bo} ${stitchNoun(bo)}.`;
+  const out: string[] = [];
+  if (!args.remainingOnly && bo > 0) {
+    out.push(
+      sleevelessPulloverVNeckActionBullet(
+        `At the armhole edge, bind off or hold ${bo} ${stitchNoun(bo)}.`,
+      ),
+    );
   }
   if (dec > 0) {
-    return rows
-      ? `Decrease 1 stitch every other row, ${timesPhrase(dec)}, on rows ${rows}.`
-      : `Decrease 1 stitch every other row, ${timesPhrase(dec)}.`;
+    const count = args.remainingOnly
+      ? dec === 1
+        ? "1 more time"
+        : `${dec} more times`
+      : timesPhrase(dec);
+    out.push(
+      sleevelessPulloverVNeckActionBullet(
+        rows
+          ? `Decrease 1 stitch at the armhole edge every other row, ${count}, on rows ${rows}.`
+          : `Decrease 1 stitch at the armhole edge every other row, ${count}.`,
+      ),
+    );
   }
-  return undefined;
+  return out;
 }
 
 export type PulloverVNeckWrittenSummaryInput = {
@@ -127,17 +135,18 @@ export function sleevelessPulloverVNeckWrittenSummaryParagraphs(
   const out: string[] = [];
 
   if (phase === "armhole-join") {
-    if (remains) out.push(FRONT_VNECK_SIMULTANEOUS_ARMHOLE_JOINS);
+    if (remains) out.push(FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT);
     const remaining = args.overlap
       ? args.overlap.remainingDecreaseSts
       : Math.max(0, Math.floor(args.decreaseSts ?? 0));
     const remainingRows = args.overlap ? args.overlap.remainingDecreaseLocalRcs : [];
-    const armhole = sleevelessPulloverVNeckCompactArmholeSummaryParagraph({
-      bindOffSts: bo,
-      remainingDecreaseSts: remaining,
-      remainingDecreaseLocalRcs: remainingRows,
-    });
-    if (armhole) out.push(armhole);
+    out.push(
+      ...sleevelessPulloverVNeckCompactArmholeSummaryBullets({
+        bindOffSts: bo,
+        remainingDecreaseSts: remaining,
+        remainingDecreaseLocalRcs: remainingRows,
+      }),
+    );
     return out.filter((p) => p.trim().length > 0);
   }
 
@@ -162,22 +171,24 @@ export function sleevelessPulloverVNeckWrittenSummaryParagraphs(
       ? args.overlap.remainingDecreaseSts
       : Math.max(0, Math.floor(args.decreaseSts ?? 0));
     const remainingRows = args.overlap ? args.overlap.remainingDecreaseLocalRcs : [];
-    const armhole = sleevelessPulloverVNeckCompactArmholeSummaryParagraph({
-      bindOffSts: bo,
-      remainingDecreaseSts: remaining,
-      remainingDecreaseLocalRcs: remainingRows,
-    });
-    if (armhole) out.push(armhole);
+    out.push(
+      ...sleevelessPulloverVNeckCompactArmholeSummaryBullets({
+        bindOffSts: bo,
+        remainingDecreaseSts: remaining,
+        remainingDecreaseLocalRcs: remainingRows,
+      }),
+    );
   } else if (args.timing === "during-armhole" && args.overlap && remains) {
-    const armhole = sleevelessPulloverVNeckCompactArmholeSummaryParagraph({
-      bindOffSts: 0,
-      remainingDecreaseSts: args.overlap.remainingDecreaseSts,
-      remainingDecreaseLocalRcs: args.overlap.remainingDecreaseLocalRcs,
-      remainingOnly: true,
-    });
-    if (armhole) out.push(armhole);
+    out.push(
+      ...sleevelessPulloverVNeckCompactArmholeSummaryBullets({
+        bindOffSts: 0,
+        remainingDecreaseSts: args.overlap.remainingDecreaseSts,
+        remainingDecreaseLocalRcs: args.overlap.remainingDecreaseLocalRcs,
+        remainingOnly: true,
+      }),
+    );
   }
 
-  out.push(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+  out.push(sleevelessPulloverVNeckActionBullet(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST));
   return out.filter((p) => p.trim().length > 0);
 }

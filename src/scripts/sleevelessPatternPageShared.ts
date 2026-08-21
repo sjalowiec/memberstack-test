@@ -4343,13 +4343,17 @@ table {
     // OPPOSITE orientation (unmirrored — the first-shoulder Visual Guides map is mirrored). Placed
     // inside the Second Shoulder Checklist disclosure so each shoulder shows the map matching its
     // checklist; no single shared map is silently swapped back and forth.
+    const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(
+      result.frontNeckShoulderShapingChart,
+    );
     const frontSecondShoulderMapData = frontShapingMapData;
+    const frontSecondSideLabel = frontUsesShoulderTabs ? "side" : "shoulder";
     const frontSecondShoulderMapHtml = frontSecondShoulderMapData
       ? `<div class="shaping-map shaping-map--second-shoulder">
-      <p class="shaping-map__note">Second shoulder: same shaping schedule, mirror-image orientation (worked in the opposite carriage direction).</p>
+      <p class="shaping-map__note">Second ${frontSecondSideLabel}: same shaping schedule, mirror-image orientation (worked in the opposite carriage direction).</p>
       <div class="shaping-map__scroll">${renderShapingMapSvg(frontSecondShoulderMapData, { mirror: false })}</div>
       <div class="ns-visual-guides__actions no-print">
-        <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge second shoulder shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
+        <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge second ${frontSecondSideLabel} shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
       </div>
     </div>`
       : "";
@@ -4361,9 +4365,6 @@ table {
       result?.frontNeckShoulderShapingChart,
       "front",
       false
-    );
-    const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(
-      result.frontNeckShoulderShapingChart,
     );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
@@ -4382,10 +4383,10 @@ table {
           // renderer can show scrap-off once on First and the held-shoulder reminder on Second
           // (same presentation as drop-shoulder front round-neck).
           hideCenterNecklineSetupRow: false,
-          tableHeading: "First Shoulder Checklist",
+          tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
           suppressCarriagePositionTip: frontIsRoundNeck,
-          // Pullover V-neck Front: First/Second Shoulder tabs, checklist immediately visible.
+          // Pullover V-neck Front: First/Second Side tabs, checklist immediately visible.
           // Other fronts keep the collapsible First Shoulder Checklist disclosure.
           ...(frontUsesShoulderTabs
             ? { shoulderTabs: true, collapsible: false }
@@ -4438,7 +4439,7 @@ table {
           activeSideRcStart: frontActiveSideRcStart,
           includeCenterNecklineSetupRow: true,
           hideCenterNecklineSetupRow: false,
-          tableHeading: "First Shoulder Checklist",
+          tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
           ...(frontUsesShoulderTabs ? { shoulderTabs: true, collapsible: false } : {}),
         },

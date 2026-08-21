@@ -968,16 +968,18 @@ export type NeckShoulderChartRenderOptions = {
    */
   suppressCarriagePositionTip?: boolean;
   /**
-   * When true, First/Second Shoulder render as peer tabs (both tables stay in the DOM).
-   * First Shoulder is selected and visible by default. No accordion and no
+   * When true, First/Second Side render as peer tabs (both tables stay in the DOM).
+   * First Side is selected and visible by default. No accordion and no
    * “Show second shoulder checklist” toggle. Enable only for sleeveless pullover V-neck Front.
    */
   shoulderTabs?: boolean;
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
-const FIRST_SHOULDER_TAB_LABEL = "First Shoulder";
-const SECOND_SHOULDER_TAB_LABEL = "Second Shoulder";
+const FIRST_SIDE_TAB_LABEL = "First Side";
+const SECOND_SIDE_TAB_LABEL = "Second Side";
+const FIRST_SIDE_PRINT_HEADING = "FIRST SIDE";
+const SECOND_SIDE_PRINT_HEADING = "SECOND SIDE";
 const FIRST_SHOULDER_PRINT_HEADING = "FIRST SHOULDER";
 const SECOND_SHOULDER_PRINT_HEADING = "SECOND SHOULDER";
 
@@ -1154,9 +1156,9 @@ function renderShoulderTabsHtml(args: {
   const secondPanelId = `${args.idPrefix}-panel-second`;
   return `<section class="${escapeHtml(`${args.sectionClass} ns-shaping-chart--shoulder-tabs`)}" ${NS_SHOULDER_TABS_ROOT_ATTR} aria-label="Front neckline and shoulders">
   <div class="ns-shaping-chart__tabs-toolbar">
-    <div class="ns-shaping-chart__tablist no-print" role="tablist" aria-label="Shoulder">
-      <button type="button" class="ns-shaping-chart__tab" role="tab" id="${escapeHtml(firstTabId)}" aria-controls="${escapeHtml(firstPanelId)}" aria-selected="true" tabindex="0">${FIRST_SHOULDER_TAB_LABEL}</button>
-      <button type="button" class="ns-shaping-chart__tab" role="tab" id="${escapeHtml(secondTabId)}" aria-controls="${escapeHtml(secondPanelId)}" aria-selected="false" tabindex="-1">${SECOND_SHOULDER_TAB_LABEL}</button>
+    <div class="ns-shaping-chart__tablist no-print" role="tablist" aria-label="Side">
+      <button type="button" class="ns-shaping-chart__tab" role="tab" id="${escapeHtml(firstTabId)}" aria-controls="${escapeHtml(firstPanelId)}" aria-selected="true" tabindex="0">${FIRST_SIDE_TAB_LABEL}</button>
+      <button type="button" class="ns-shaping-chart__tab" role="tab" id="${escapeHtml(secondTabId)}" aria-controls="${escapeHtml(secondPanelId)}" aria-selected="false" tabindex="-1">${SECOND_SIDE_TAB_LABEL}</button>
     </div>
     <span class="ns-shaping-chart__disclosure-actions no-print" data-chart-print-slot></span>
   </div>
@@ -1164,14 +1166,14 @@ function renderShoulderTabsHtml(args: {
   ${args.intro}
   <div class="ns-shaping-chart__tabpanel" role="tabpanel" id="${escapeHtml(firstPanelId)}" aria-labelledby="${escapeHtml(firstTabId)}" ${NS_SHOULDER_PANEL_ATTR}="first">
     ${wrapChecklistPrintLeadHtml(
-      FIRST_SHOULDER_PRINT_HEADING,
+      FIRST_SIDE_PRINT_HEADING,
       `${args.idPrefix}-first-heading`,
       `${args.primaryTableHtml}${args.firstBindoffHtml}`,
     )}
   </div>
   <div class="ns-shaping-chart__tabpanel" role="tabpanel" id="${escapeHtml(secondPanelId)}" aria-labelledby="${escapeHtml(secondTabId)}" hidden aria-hidden="true" ${NS_SHOULDER_PANEL_ATTR}="second">
     ${wrapChecklistPrintLeadHtml(
-      SECOND_SHOULDER_PRINT_HEADING,
+      SECOND_SIDE_PRINT_HEADING,
       `${args.idPrefix}-second-heading`,
       `${args.secondExtraHtml}${args.secondTableHtml}`,
     )}
@@ -1561,7 +1563,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   introHtml?: string,
   options?: {
     showSecondShoulderChecklist?: boolean;
-    /** When true with the second checklist, print FIRST SHOULDER then SECOND SHOULDER headings. */
+    /** When true with the second checklist, print sequential First/Second headings. */
     sequentialShoulderHeadings?: boolean;
     activeSideRcStart?: number;
     fullWidthChartOneRowPerRc?: boolean;
@@ -1590,11 +1592,17 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     !isCardiganFront && options?.showSecondShoulderChecklist === true;
   const sequentialShoulderHeadings =
     showSecondShoulderChecklist && options?.sequentialShoulderHeadings === true;
+  const useSideHeadings =
+    sequentialShoulderHeadings && isSleevelessPulloverVNeckFrontChart(chart);
   const firstPrintHeading = sequentialShoulderHeadings
-    ? FIRST_SHOULDER_PRINT_HEADING
+    ? useSideHeadings
+      ? FIRST_SIDE_PRINT_HEADING
+      : FIRST_SHOULDER_PRINT_HEADING
     : "Neckline / Shoulder Shaping";
   const secondPrintHeading = sequentialShoulderHeadings
-    ? SECOND_SHOULDER_PRINT_HEADING
+    ? useSideHeadings
+      ? SECOND_SIDE_PRINT_HEADING
+      : SECOND_SHOULDER_PRINT_HEADING
     : "Second Shoulder Checklist";
   const oppositePrintRowsRaw = chart.frontVNeckArmholeComposition
     ? buildHeldSideInstructionTableRows(
