@@ -4,6 +4,7 @@ import {
   composeFrontVNeckTimelineWithArmholeOverlap,
   liveFrontStitchesBeforeGarmentRc,
   resolveFrontVNeckShapingTimingCase,
+  sleevelessPulloverVNeckBeginDisplayRc,
 } from "./frontArmholeNecklineComposition";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 
@@ -314,5 +315,60 @@ describe("resolveFrontVNeckShapingTimingCase", () => {
         necklineBeginsBeforeArmhole: true,
       }),
     ).toBe("before-armhole");
+  });
+});
+
+describe("sleevelessPulloverVNeckBeginDisplayRc", () => {
+  const overlapFields = {
+    liveTotalAtDivide: 50,
+    leftAtDivide: 25,
+    rightAtDivide: 25,
+    heldAfterDivideRow: 25,
+    activeAfterDivideRow: 25,
+    completedDecreaseLocalRcs: [] as number[],
+    remainingDecreaseLocalRcs: [2],
+    completedDecreaseSts: 0,
+    remainingDecreaseSts: 1,
+    lastArmholeGarmentRc: 80,
+    stitchesAfterArmhole: 40,
+  };
+
+  it("uses the overlap divide, never the later first-decrease RC", () => {
+    expect(
+      sleevelessPulloverVNeckBeginDisplayRc({
+        overlap: {
+          ...overlapFields,
+          divideGarmentRc: 77,
+          firstArmholeGarmentRc: 70,
+          necklineBeginsBeforeArmhole: false,
+        },
+        frontNecklineStartLocalRC: 7,
+        frontNecklineCenterDivideLocalRC: 7,
+      }),
+    ).toBe(7);
+    expect(
+      sleevelessPulloverVNeckBeginDisplayRc({
+        overlap: {
+          ...overlapFields,
+          divideGarmentRc: 60,
+          firstArmholeGarmentRc: 70,
+          necklineBeginsBeforeArmhole: true,
+        },
+      }),
+    ).toBe(60);
+  });
+
+  it("shallow Case 1 uses start/divide local RC, not shaping-begin", () => {
+    expect(
+      sleevelessPulloverVNeckBeginDisplayRc({
+        frontNecklineStartLocalRC: 44,
+        frontNecklineCenterDivideLocalRC: 44,
+      }),
+    ).toBe(44);
+    expect(
+      sleevelessPulloverVNeckBeginDisplayRc({
+        frontNecklineStartLocalRC: 44,
+      }),
+    ).toBe(44);
   });
 });

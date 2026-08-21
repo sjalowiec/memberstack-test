@@ -16,7 +16,6 @@ import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
 import {
   displayRcFromGarmentRc,
   FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES,
-  timelineHasComposedArmholeOverlap,
 } from "./frontArmholeNecklineComposition";
 
 type ActiveSideEdge = "Neck" | "Armhole" | "Shoulder";
@@ -160,12 +159,12 @@ function vNeckDivideSetupInfo(
     };
   }
   const timeline = chart.timeline;
-  if (!timeline?.length || !timelineHasComposedArmholeOverlap(timeline)) return null;
+  if (!timeline?.length) return null;
   const first = [...timeline].sort((a, b) => a.row - b.row)[0];
   if (!first) return null;
   return {
-    left: Math.max(0, Math.floor(first.stitchesL - first.netChangeL)),
-    right: Math.max(0, Math.floor(first.stitchesR - first.netChangeR)),
+    left: Math.max(0, Math.floor(first.stitchesL)),
+    right: Math.max(0, Math.floor(first.stitchesR)),
   };
 }
 

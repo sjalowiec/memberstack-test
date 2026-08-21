@@ -28,7 +28,10 @@ import {
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
-import { resolveFrontVNeckShapingTimingCase } from "../lib/patterns/frontArmholeNecklineComposition.ts";
+import {
+  resolveFrontVNeckShapingTimingCase,
+  sleevelessPulloverVNeckBeginDisplayRc,
+} from "../lib/patterns/frontArmholeNecklineComposition.ts";
 import {
   loadSleevelessBackDiagramSvgMarkup,
   loadSleevelessFrontDiagramSvgMarkup,
@@ -210,9 +213,16 @@ async function initSleevelessPrintPage(): Promise<void> {
     : 0;
   const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
   const frontTiming = resolveFrontVNeckShapingTimingCase(frontOverlap);
+  const frontVNeckBeginRc = isSleevelessPulloverVNeckFrontChart(result.frontNeckShoulderShapingChart)
+    ? sleevelessPulloverVNeckBeginDisplayRc({
+        overlap: frontOverlap,
+        frontNecklineStartLocalRC: result?.debug?.frontNecklineStartLocalRC,
+        frontNecklineCenterDivideLocalRC: result?.debug?.frontNecklineCenterDivideLocalRC,
+      })
+    : undefined;
   const frontLocalStartRc =
-    frontTiming === "before-armhole" && frontOverlap
-      ? Math.floor(frontOverlap.divideGarmentRc)
+    frontVNeckBeginRc !== undefined
+      ? Math.max(0, frontVNeckBeginRc)
       : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
         ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC ?? 0))
         : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)

@@ -94,7 +94,10 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
-import { sleevelessFrontVNeckWrittenPathPresentation } from "../lib/patterns/frontArmholeNecklineComposition.ts";
+import {
+  sleevelessFrontVNeckWrittenPathPresentation,
+  sleevelessPulloverVNeckBeginDisplayRc,
+} from "../lib/patterns/frontArmholeNecklineComposition.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
@@ -4286,9 +4289,16 @@ table {
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
     const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
+    const frontVNeckBeginRc = isSleevelessPulloverVNeckFrontChart(result.frontNeckShoulderShapingChart)
+      ? sleevelessPulloverVNeckBeginDisplayRc({
+          overlap: frontOverlap,
+          frontNecklineStartLocalRC: result?.debug?.frontNecklineStartLocalRC,
+          frontNecklineCenterDivideLocalRC: result?.debug?.frontNecklineCenterDivideLocalRC,
+        })
+      : undefined;
     const frontArmholeLocalChartStartRc =
-      frontVNeckWrittenPath.timing === "before-armhole" && frontOverlap
-        ? Math.floor(frontOverlap.divideGarmentRc)
+      frontVNeckBeginRc !== undefined
+        ? Math.max(0, frontVNeckBeginRc)
         : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
           ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC))
           : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
