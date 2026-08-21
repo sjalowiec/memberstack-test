@@ -4098,7 +4098,9 @@ table {
                     patternData: diagramPatternData,
                     shapingMapData: frontShapingMapData,
                     frontRoundNeckLayout: frontIsRoundNeck,
-                    checklistBeforeVisualGuides: frontVNeckWrittenPath.visualGuidesAfterChecklist,
+                    checklistBeforeVisualGuides:
+                      result?.debug?.frontVNeckShapingTimingCase != null ||
+                      frontVNeckWrittenPath.visualGuidesAfterChecklist,
                   }
                 : undefined,
             }
