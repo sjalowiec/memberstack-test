@@ -163,7 +163,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(armhole.some((p) => /^Knit to RC \d+\.$/i.test(p.trim()))).toBe(false);
   });
 
-  it("V-neck front milestone explains Armhole RC after reset (pullover has no intro block)", () => {
+  it("V-neck front milestone explains Armhole RC after reset only when the neckline starts after armhole shaping", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
     const frontParas = collectParagraphs(r.frontDisplayRows);
     // Full-width (pullover) fronts intentionally omit the cardigan-only intro that carried the
@@ -171,20 +171,27 @@ describe("sleeveless armhole RC wording", () => {
     expect(
       frontParas.some((p) => p.includes("After the armhole reset, use Armhole RC"))
     ).toBe(false);
-    expect(
-      frontParas.some((p) =>
-        /row counter was reset at the beginning of armhole shaping/i.test(p)
-      )
-    ).toBe(true);
-    expect(
-      frontParas.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))
-    ).toBe(true);
-    const localNeck = r.debug.frontNecklineShapingBeginLocalRC;
-    expect(localNeck).toBeDefined();
-    const neckPadded = String(Math.max(0, Math.floor(localNeck!))).padStart(3, "0");
-    expect(
-      frontParas.some((p) => p.includes(`Armhole RC ${neckPadded}`) || p.includes(`Armhole RC ${localNeck}`))
-    ).toBe(true);
+    const afterArmhole = r.debug.frontVNeckShapingTimingCase === "after-armhole";
+    if (afterArmhole) {
+      expect(
+        frontParas.some((p) =>
+          /row counter was reset at the beginning of armhole shaping/i.test(p)
+        )
+      ).toBe(true);
+      expect(
+        frontParas.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))
+      ).toBe(true);
+      const localNeck = r.debug.frontNecklineShapingBeginLocalRC;
+      expect(localNeck).toBeDefined();
+      const neckPadded = String(Math.max(0, Math.floor(localNeck!))).padStart(3, "0");
+      expect(
+        frontParas.some((p) => p.includes(`Armhole RC ${neckPadded}`) || p.includes(`Armhole RC ${localNeck}`))
+      ).toBe(true);
+    } else {
+      expect(
+        frontParas.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))
+      ).toBe(false);
+    }
   });
 
   it("round-neck front omits the reset note and uses Armhole RC targets", () => {

@@ -92,6 +92,7 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
+import { sleevelessFrontVNeckWrittenPathPresentation } from "../lib/patterns/frontArmholeNecklineComposition.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
@@ -811,25 +812,34 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
-        // Visual Guides (Japanese Notation + optional Shaping Map) at the neckline chart mount,
-        // placed after written instructions and before the row-by-row checklist.
+        // Visual Guides at the neckline chart mount. Overlap V-neck Front keeps the written
+        // checklist first; other pieces keep Guides before the (often collapsed) checklist.
         if (visualGuides && (pieceSectionId === "front" || pieceSectionId === "back")) {
           const useFrontRoundNeckLayout =
             visualGuides.frontRoundNeckLayout === true && pieceSectionId === "front";
+          const checklistBeforeGuides = visualGuides.checklistBeforeVisualGuides === true;
           const writtenIntroMount = useFrontRoundNeckLayout
             ? `<div class="ns-written-intro" id="sg-front-ns-written-intro" data-front-ns-written-intro></div>`
             : "";
           const visualGuidesChunk = buildPatternVisualGuidesHtml(visualGuides);
           visualGuidesPlaced = true;
           const checklistDisclosure = chartChunk;
+          const orderedMount = checklistBeforeGuides
+            ? `${writtenIntroMount}${checklistDisclosure}${visualGuidesChunk}`
+            : `${writtenIntroMount}${visualGuidesChunk}${checklistDisclosure}`;
           if (openSectionSlugSource) {
             if (writtenIntroMount) openSectionParts.push(writtenIntroMount);
-            openSectionParts.push(visualGuidesChunk);
-            openSectionParts.push(checklistDisclosure);
+            if (checklistBeforeGuides) {
+              openSectionParts.push(checklistDisclosure);
+              openSectionParts.push(visualGuidesChunk);
+            } else {
+              openSectionParts.push(visualGuidesChunk);
+              openSectionParts.push(checklistDisclosure);
+            }
             continue;
           }
           postParts.push(
-            `<section class="sleeveless-piece-chart-fullwidth">${writtenIntroMount}${visualGuidesChunk}${checklistDisclosure}</section>`
+            `<section class="sleeveless-piece-chart-fullwidth">${orderedMount}</section>`
           );
           continue;
         }
@@ -4124,6 +4134,9 @@ table {
       { firstArmholeRc: result?.debug?.armholeStartRow },
     );
     const frontIsRoundNeck = !!frontShapingMapData;
+    const frontVNeckWrittenPath = sleevelessFrontVNeckWrittenPathPresentation(
+      result?.debug?.frontArmholeNecklineOverlap,
+    );
     const backShapingMapData = buildSleevelessRoundNeckBackShapingMapData(
       result?.backNeckShoulderTimeline,
       {
@@ -4177,6 +4190,7 @@ table {
                     patternData: diagramPatternData,
                     shapingMapData: frontShapingMapData,
                     frontRoundNeckLayout: frontIsRoundNeck,
+                    checklistBeforeVisualGuides: frontVNeckWrittenPath.visualGuidesAfterChecklist,
                   }
                 : undefined,
             }
@@ -4253,13 +4267,18 @@ table {
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
-    const frontArmholeLocalChartStartRc = Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC))
-      : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-        ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
-        : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-          ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC))
-          : 0;
+    const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
+    const frontArmholeLocalChartStartRc =
+      frontVNeckWrittenPath.timing === "before-armhole" && frontOverlap
+        ? Math.floor(frontOverlap.divideGarmentRc)
+        : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
+          ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC))
+          : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+            ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
+            : Number.isFinite(result?.debug?.frontNecklineStartLocalRC) &&
+                result.debug.frontNecklineStartLocalRC >= 0
+              ? Math.floor(result.debug.frontNecklineStartLocalRC)
+              : 0;
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
     const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
@@ -4340,7 +4359,7 @@ table {
           // "Show Row-by-Row Checklist" disclosure. Collapsed by default (matching the prior
           // wrapper); the shared print flow re-renders it expanded.
           collapsible: true,
-          collapsibleDefaultOpen: false,
+          collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
         }
       );
     }

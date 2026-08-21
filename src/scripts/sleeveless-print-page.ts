@@ -27,6 +27,7 @@ import {
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import { resolveFrontVNeckShapingTimingCase } from "../lib/patterns/frontArmholeNecklineComposition.ts";
 import {
   loadSleevelessBackDiagramSvgMarkup,
   loadSleevelessFrontDiagramSvgMarkup,
@@ -206,15 +207,24 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
     ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC ?? 0))
     : 0;
-  const frontLocalStartRc = Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
-    ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC ?? 0))
-    : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
-      : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-        ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC ?? 0))
-        : 0;
+  const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
+  const frontTiming = resolveFrontVNeckShapingTimingCase(frontOverlap);
+  const frontLocalStartRc =
+    frontTiming === "before-armhole" && frontOverlap
+      ? Math.floor(frontOverlap.divideGarmentRc)
+      : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
+        ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC ?? 0))
+        : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+          ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
+          : Number.isFinite(result?.debug?.frontNecklineStartLocalRC) &&
+              (result.debug.frontNecklineStartLocalRC ?? 0) >= 0
+            ? Math.floor(result.debug.frontNecklineStartLocalRC ?? 0)
+            : 0;
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
-  const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
+  const frontLocalStartLabel =
+    frontTiming === "before-armhole"
+      ? `RC ${frontLocalStartRc}`
+      : `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
   const armholeGarmentStart = result?.debug?.armholeStartRow;
   const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };

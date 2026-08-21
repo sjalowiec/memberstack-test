@@ -3,6 +3,7 @@ import {
   armholeDecreaseLocalRcs,
   composeFrontVNeckTimelineWithArmholeOverlap,
   liveFrontStitchesBeforeGarmentRc,
+  resolveFrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 
@@ -269,5 +270,49 @@ describe("composeFrontVNeckTimelineWithArmholeOverlap", () => {
     expect(bo2.events.some((e) => e.side === "left" && e.edge === "outer" && e.kind === "bindOff")).toBe(
       true,
     );
+  });
+});
+
+describe("resolveFrontVNeckShapingTimingCase", () => {
+  const base = {
+    liveTotalAtDivide: 50,
+    leftAtDivide: 25,
+    rightAtDivide: 25,
+    heldAfterDivideRow: 25,
+    activeAfterDivideRow: 25,
+    completedDecreaseLocalRcs: [] as number[],
+    remainingDecreaseLocalRcs: [2],
+    completedDecreaseSts: 0,
+    remainingDecreaseSts: 1,
+    lastArmholeGarmentRc: 80,
+    stitchesAfterArmhole: 40,
+  };
+
+  it("classifies the four presentation timing cases from overlap fields", () => {
+    expect(resolveFrontVNeckShapingTimingCase(null)).toBe("after-armhole");
+    expect(
+      resolveFrontVNeckShapingTimingCase({
+        ...base,
+        divideGarmentRc: 77,
+        firstArmholeGarmentRc: 70,
+        necklineBeginsBeforeArmhole: false,
+      }),
+    ).toBe("during-armhole");
+    expect(
+      resolveFrontVNeckShapingTimingCase({
+        ...base,
+        divideGarmentRc: 70,
+        firstArmholeGarmentRc: 70,
+        necklineBeginsBeforeArmhole: false,
+      }),
+    ).toBe("with-armhole");
+    expect(
+      resolveFrontVNeckShapingTimingCase({
+        ...base,
+        divideGarmentRc: 60,
+        firstArmholeGarmentRc: 70,
+        necklineBeginsBeforeArmhole: true,
+      }),
+    ).toBe("before-armhole");
   });
 });
