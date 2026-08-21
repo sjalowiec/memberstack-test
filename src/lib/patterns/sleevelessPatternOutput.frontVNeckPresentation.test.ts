@@ -234,6 +234,10 @@ function writtenPathText(r: ReturnType<typeof generateSleevelessBackPattern>): s
   return [...paras, ...actions].join("\n");
 }
 
+function textLayer(r: ReturnType<typeof generateSleevelessBackPattern>): string {
+  return collectParagraphs(r.frontDisplayRows).join("\n");
+}
+
 describe("sleeveless Front V-neck written presentation — Case 1 after armhole", () => {
   const r = generateSleevelessBackPattern(shallowVNeckPattern());
   const armholeStart = r.debug.armholeStartRow!;
@@ -268,6 +272,12 @@ describe("sleeveless Front V-neck written presentation — Case 1 after armhole"
     expect(paras.some((p) => /Armhole RC/i.test(p))).toBe(false);
     expect(paras).toContain(FRONT_VNECK_HANDOFF_AFTER_ARMHOLE);
     expect(paras).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    expect(paras.some((p) => /Divide the Front at the center/i.test(p))).toBe(true);
+    expect(paras.some((p) => /Work First Shoulder as the active side/i.test(p))).toBe(true);
+    expect(paras.some((p) => /Bind off OR hold/i.test(p))).toBe(true);
+    expect(paras.some((p) => /Decrease 1 stitch at each armhole edge every other row/i.test(p))).toBe(
+      true,
+    );
     const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_AFTER_ARMHOLE));
     expect(beginBlock?.rc).toMatch(new RegExp(`RC:\\s*${String(neckLocal).padStart(3, "0")}`));
     expect(paras.some((p) => p === FRONT_VNECK_HANDOFF_DURING_ARMHOLE)).toBe(false);
@@ -384,6 +394,17 @@ describe("sleeveless Front V-neck written presentation — Case 2 during armhole
     expect(text).toContain(FRONT_VNECK_HANDOFF_DURING_ARMHOLE);
     expect(text).not.toMatch(/ns-visual-guides/);
   });
+
+  it("keeps remaining armhole and V-neck setup in the text layer, not only the checklist", () => {
+    const text = textLayer(r);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_DURING_ARMHOLE);
+    expect(text).toMatch(/Decrease 1 stitch at each armhole edge every other row/i);
+    expect(text).toMatch(/Continue armhole shaping by decreasing 1 stitch at the armhole edge/i);
+    expect(text).toMatch(/Divide the Front at the center: 28 stitches on each side/i);
+    expect(text).toMatch(/Work First Shoulder as the active side/i);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    expect(text).not.toMatch(/^Begin V-neck shaping\. Continue the armhole shaping at the outside edge\.\s*$/);
+  });
 });
 
 describe("sleeveless Front V-neck written presentation — Case 3 both begin together", () => {
@@ -398,7 +419,14 @@ describe("sleeveless Front V-neck written presentation — Case 3 both begin tog
     expect(armhole.some((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE))).toBe(true);
     const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE));
     expect(beginBlock?.rc).toMatch(/RC:\s*000/);
-    expect(armhole.some((b) => b.paragraphs.some((p) => /Bind off OR hold/i.test(p)))).toBe(false);
+    expect(
+      armhole.some((b) =>
+        b.paragraphs.some((p) =>
+          /Bind off OR hold \d+ stitches at the armhole edge \(carriage side\)/i.test(p),
+        ),
+      ),
+    ).toBe(false);
+    expect(collectParagraphs(r.frontDisplayRows).some((p) => /bind off OR hold/i.test(p))).toBe(true);
     const paras = collectParagraphs(r.frontDisplayRows);
     expect(paras.some((p) => /begins at Armhole RC 001/i.test(p))).toBe(false);
     const first = firstShoulderRows(r);
@@ -414,6 +442,18 @@ describe("sleeveless Front V-neck written presentation — Case 3 both begin tog
     expect(text).toContain(FRONT_VNECK_HANDOFF_WITH_ARMHOLE);
     expect(text).toMatch(/Bind off OR hold|Bind off/i);
     expect(text).toMatch(/51 stitches on each side/i);
+  });
+
+  it("text layer summarizes both systems after the shared begin line", () => {
+    const text = textLayer(r);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_WITH_ARMHOLE);
+    expect(text).toMatch(/Divide the Front at the center: 51 stitches on each side/i);
+    expect(text).toMatch(/bind off OR hold 4 stitches/i);
+    expect(text).toMatch(/Continue armhole shaping by decreasing 1 stitch at the armhole edge/i);
+    expect(text).toMatch(/Decrease on rows:/i);
+    expect(text).toMatch(/Work First Shoulder as the active side/i);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    expect(text.trim()).not.toBe(FRONT_VNECK_HANDOFF_WITH_ARMHOLE);
   });
 });
 
@@ -457,6 +497,18 @@ describe("sleeveless Front V-neck equal armhole and neckline depth (10\"/10\")",
     const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE));
     expect(beginBlock?.rc).toMatch(/RC:\s*000/);
     expect(collectParagraphs(r.frontDisplayRows)).not.toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
+  });
+
+  it("text layer states both shaping systems after Begin V-neck and armhole shaping", () => {
+    const text = textLayer(r);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_WITH_ARMHOLE);
+    expect(text).toMatch(/Divide the Front at the center: 51 stitches on each side/i);
+    expect(text).toMatch(/bind off OR hold 4 stitches/i);
+    expect(text).toMatch(/Continue armhole shaping by decreasing 1 stitch at the armhole edge/i);
+    expect(text).toMatch(/Decrease on rows:/i);
+    expect(text).toMatch(/Work First Shoulder as the active side/i);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    expect(text.trim()).not.toBe(FRONT_VNECK_HANDOFF_WITH_ARMHOLE);
   });
 
   it("checklists divide and Armhole BO at RC 000; first Neck decrease stays on RC 001", () => {
@@ -540,7 +592,9 @@ describe("sleeveless Front V-neck written presentation — Case 4 neckline befor
       new RegExp(`RC:\\s*${String(overlap.divideGarmentRc).padStart(3, "0")}`),
     );
     expect(paras.some((p) => /begins at Armhole RC/i.test(p))).toBe(false);
-    expect(paras.some((p) => /Bind off OR hold/i.test(p))).toBe(false);
+    expect(
+      paras.some((p) => /Bind off OR hold \d+ stitches at the armhole edge \(carriage side\)/i.test(p)),
+    ).toBe(false);
   });
 
   it("inserts the armhole reset in the checklist at the armhole garment RC", () => {
@@ -574,6 +628,18 @@ describe("sleeveless Front V-neck written presentation — Case 4 neckline befor
     expect(text).not.toMatch(/begins at Armhole RC 001/i);
     expect(sleevelessFrontVNeckWrittenPathPresentation(overlap).visualGuidesAfterChecklist).toBe(true);
   });
+
+  it("text layer gives V-neck setup now and armhole summary for when the armhole is reached", () => {
+    const text = textLayer(r);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
+    expect(text).toMatch(/Divide the Front at the center: 51 stitches on each side/i);
+    expect(text).toMatch(/When the armhole is reached, reset the row counter to 000/i);
+    expect(text).toContain(FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES);
+    expect(text).toMatch(/bind off OR hold 4 stitches/i);
+    expect(text).toMatch(/Continue armhole shaping by decreasing 1 stitch at the armhole edge/i);
+    expect(sectionTitles(r.frontDisplayRows)).not.toContain("ARMHOLE");
+    expect(text).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+  });
 });
 
 describe("sleeveless Front V-neck knit-to never skips the next shaping event", () => {
@@ -602,6 +668,25 @@ describe("sleeveless Front V-neck knit-to never skips the next shaping event", (
     expect(paras.some((p) => /row counter was reset at the beginning of armhole shaping/i.test(p))).toBe(
       false,
     );
+  });
+});
+
+describe("sleeveless Front V-neck text layer is complete without the checklist", () => {
+  it.each([
+    ["Case 1 after armhole", shallowVNeckPattern(), FRONT_VNECK_HANDOFF_AFTER_ARMHOLE],
+    ["Case 2 during armhole", amandaVNeckPattern(), FRONT_VNECK_HANDOFF_DURING_ARMHOLE],
+    ["Case 3 both begin", sameStartVNeckPattern(), FRONT_VNECK_HANDOFF_WITH_ARMHOLE],
+    ["equal 10/10 with-armhole", equalDepthVNeckPattern(), FRONT_VNECK_HANDOFF_WITH_ARMHOLE],
+    ["Case 4 before armhole", vNeckBeforeArmholePattern(), FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE],
+  ] as const)("%s", (_label, pattern, beginLine) => {
+    const r = generateSleevelessBackPattern(pattern);
+    const text = textLayer(r);
+    expect(text).toContain(beginLine);
+    expect(text).toMatch(/Divide the Front at the center/i);
+    expect(text).toMatch(/neck \(inner\) edge/i);
+    expect(text).toMatch(/Work First Shoulder as the active side/i);
+    expect(text).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    expect(text).toMatch(/bind off OR hold|Decrease 1 stitch at each armhole edge|Continue armhole shaping/i);
   });
 });
 

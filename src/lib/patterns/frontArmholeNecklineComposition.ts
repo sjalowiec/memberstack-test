@@ -106,7 +106,8 @@ export function resolveFrontVNeckShapingTimingCase(
 
 export const FRONT_VNECK_HANDOFF_AFTER_ARMHOLE = "Begin V-neck shaping.";
 
-export const FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST = "Follow the row-by-row instructions below.";
+export const FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST =
+  "Follow the row-by-row instructions below for the exact sequence.";
 
 export const FRONT_VNECK_HANDOFF_DURING_ARMHOLE =
   "Begin V-neck shaping. Continue the armhole shaping at the outside edge.";
