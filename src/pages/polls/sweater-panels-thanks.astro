@@ -1,0 +1,90 @@
+---
+export const prerender = true;
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Thanks for voting!";
+const description =
+  "Thanks for sharing your preference. Your input helps as Knit It Now explores new ways to expand our pattern builders.";
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  {description}
+  bodyClass="page--tight-header"
+>
+  <article class="poll-thanks-page page-wrap" aria-labelledby="poll-thanks-heading">
+    <h1 id="poll-thanks-heading">{pageTitle}</h1>
+
+    <p>
+      Your input helps me as I explore new ways to expand the sizes available in our pattern builders.
+    </p>
+
+    <p>
+      I appreciate you taking a minute to share your preference.
+    </p>
+
+    <p class="poll-thanks-page__cta">
+      <a class="kbm-btn kbm-btn-primary" href="/">Explore Knit It Now</a>
+    </p>
+  </article>
+</Layout>
+
+<style>
+  .poll-thanks-page.page-wrap {
+    /* Layout main already clears the fixed header */
+    padding-top: 0.5rem;
+    max-width: 42rem;
+  }
+
+  .poll-thanks-page {
+    padding-bottom: 3rem;
+  }
+
+  .poll-thanks-page h1 {
+    margin: 0 0 1.25rem;
+    font-size: clamp(1.75rem, 4vw, 2.15rem);
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .poll-thanks-page p {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .poll-thanks-page__cta {
+    margin: 1.75rem 0 0;
+    text-align: center;
+  }
+
+  .poll-thanks-page__cta .kbm-btn {
+    min-width: min(100%, 280px);
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  @media (max-height: 500px) and (orientation: landscape) {
+    .poll-thanks-page.page-wrap {
+      padding-top: 0.25rem;
+    }
+
+    .poll-thanks-page h1 {
+      margin-bottom: 0.75rem;
+      font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+    }
+
+    .poll-thanks-page p {
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .poll-thanks-page.page-wrap {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>
