@@ -5,6 +5,13 @@ import {
   setAvailableNeedlesFieldErrorState,
   validateAvailableNeedlesFieldValue,
 } from "./availableNeedlesFieldValidation";
+import {
+  evaluateGaugeSanity,
+  gaugeSanityAcknowledgementKey,
+  gaugeSanityBlocksProceed,
+  type GaugeSanityResult,
+} from "./gaugeSanity";
+import { hideGaugeSanityWarning, renderGaugeSanityWarning } from "./gaugeSanityUi";
 
 export const EXPRESS_GAUGE_FORM_ID = "express-gauge-form";
 export const EXPRESS_GENERATE_BUTTON_ID = "express-generate";
@@ -15,12 +22,27 @@ export const EXPRESS_NEEDLE_BLOCK_SELECTOR = ".express-needle-block";
 
 export type ExpressReviewSubmitOutcome =
   | { proceed: true }
-  | { proceed: false; reason: "missing-gauge-inputs" | "invalid-stitch" | "invalid-row" | "invalid-needles" };
+  | {
+      proceed: false;
+      reason:
+        | "missing-gauge-inputs"
+        | "invalid-stitch"
+        | "invalid-row"
+        | "invalid-needles"
+        | "unusual-gauge";
+      sanity?: GaugeSanityResult;
+    };
 
 export type ExpressReviewSubmitHooks = {
   openGaugeStepForValidation: () => void;
   /** Called after the gauge accordion is opened; use to focus the field once visible. */
   afterGaugeStepOpened?: () => void;
+  /** Current Inches/cm toggle. Defaults to reading `[data-kbm-unit-value]` (inches when absent). */
+  readGaugeUnit?: () => "in" | "cm";
+  /** Previously confirmed unusual-gauge key; when it matches the current entry, submit may proceed. */
+  acknowledgedGaugeKey?: string | null;
+  onUnusualGauge?: (result: GaugeSanityResult) => void;
+  onClearUnusualGauge?: () => void;
 };
 
 /** True when the builder markup includes the available-needles field. */
@@ -82,6 +104,12 @@ function gaugeInput(
   return asTextInput(doc.getElementById(id));
 }
 
+export function readGaugeUnitFromDocument(doc: Document): "in" | "cm" {
+  const hidden = doc.querySelector?.("[data-kbm-unit-value]");
+  const value = hidden && "value" in hidden ? String((hidden as HTMLInputElement).value) : "";
+  return value === "cm" ? "cm" : "in";
+}
+
 /**
  * Validate gauge + needles on View/Review Pattern submit.
  * Opens the gauge accordion and surfaces the needles error when that is the blocker.
@@ -124,11 +152,21 @@ export function evaluateExpressGaugeFormSubmit(
       else rwEl.focus();
     }
 
+    hooks.onClearUnusualGauge?.();
     if (requiresNeedles && !needlesResult.valid) return { proceed: false, reason: "invalid-needles" };
     if (!stitchValid) return { proceed: false, reason: "invalid-stitch" };
     return { proceed: false, reason: "invalid-row" };
   }
 
+  const unit = hooks.readGaugeUnit?.() ?? readGaugeUnitFromDocument(doc);
+  const sanity = evaluateGaugeSanity(stEl.value, rwEl.value, unit);
+  if (gaugeSanityBlocksProceed(sanity, stEl.value, rwEl.value, unit, hooks.acknowledgedGaugeKey)) {
+    hooks.openGaugeStepForValidation();
+    hooks.onUnusualGauge?.(sanity);
+    return { proceed: false, reason: "unusual-gauge", sanity };
+  }
+
+  hooks.onClearUnusualGauge?.();
   return { proceed: true };
 }
 
@@ -145,6 +183,13 @@ export function wireExpressBuilderReviewSubmit(options: WireExpressBuilderReview
   const doc = options.documentRoot ?? document;
   const form = doc.getElementById(EXPRESS_GAUGE_FORM_ID);
   const button = doc.getElementById(EXPRESS_GENERATE_BUTTON_ID);
+  const stitchEl = gaugeInput(doc, EXPRESS_GAUGE_STITCH_INPUT_ID);
+  const rowEl = gaugeInput(doc, EXPRESS_GAUGE_ROW_INPUT_ID);
+  let acknowledgedGaugeKey: string | null = null;
+
+  const hideWarning = (): void => {
+    hideGaugeSanityWarning(doc);
+  };
 
   const hooks: ExpressReviewSubmitHooks = {
     openGaugeStepForValidation: options.openGaugeStepForValidation,
@@ -157,6 +202,26 @@ export function wireExpressBuilderReviewSubmit(options: WireExpressBuilderReview
         needlesInput.focus({ preventScroll: true });
       });
     },
+    readGaugeUnit: () => readGaugeUnitFromDocument(doc),
+    get acknowledgedGaugeKey() {
+      return acknowledgedGaugeKey;
+    },
+    onUnusualGauge: (result) => {
+      const unit = readGaugeUnitFromDocument(doc);
+      const key = gaugeSanityAcknowledgementKey(
+        stitchEl?.value ?? String(result.stitchRaw),
+        rowEl?.value ?? String(result.rowRaw),
+        unit,
+      );
+      renderGaugeSanityWarning(doc, result, {
+        onContinue: () => {
+          acknowledgedGaugeKey = key;
+          hideWarning();
+          options.onProceed();
+        },
+      });
+    },
+    onClearUnusualGauge: hideWarning,
   };
 
   const runValidation = (ev: Event): void => {
@@ -173,8 +238,12 @@ export function wireExpressBuilderReviewSubmit(options: WireExpressBuilderReview
     ev.preventDefault();
     evaluateExpressGaugeFormSubmit(doc, hooks);
   });
+  stitchEl?.addEventListener("input", hideWarning);
+  rowEl?.addEventListener("input", hideWarning);
 
   return () => {
     form?.removeEventListener("submit", runValidation);
+    stitchEl?.removeEventListener("input", hideWarning);
+    rowEl?.removeEventListener("input", hideWarning);
   };
 }
