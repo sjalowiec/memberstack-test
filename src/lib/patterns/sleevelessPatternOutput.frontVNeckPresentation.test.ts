@@ -13,6 +13,11 @@ import {
   buildActiveSideInstructionTableRows,
   isCenterNecklineSetupChecklistRow,
 } from "./neckShoulderActiveSideChecklist";
+import {
+  isSleevelessPulloverVNeckFrontChart,
+  NS_SHOULDER_TABS_ROOT_ATTR,
+  renderNeckShoulderShapingChartTableOnlyHtml,
+} from "./neckShoulderShapingChartHtml";
 import { buildPatternVisualGuidesHtml } from "./patternVisualGuides";
 import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import {
@@ -423,5 +428,60 @@ describe("sleeveless Front V-neck Visual Guides remain available", () => {
     expect(html).toContain("ns-visual-guides");
     expect(html).toContain("Shaping Notation");
     expect(RESET_ROW_COUNTER_TEXT).toMatch(/RESET ROW COUNTER/);
+  });
+});
+
+function frontVNeckShoulderTabsHtml(r: ReturnType<typeof generateSleevelessBackPattern>): string {
+  const chart = r.frontNeckShoulderShapingChart;
+  expect(isSleevelessPulloverVNeckFrontChart(chart)).toBe(true);
+  const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.debug.armholeStartRow, {
+    includeCenterNecklineSetupRow: true,
+  });
+  return renderNeckShoulderShapingChartTableOnlyHtml(chart, "ns-shaping-chart-front", undefined, {
+    activeSideOnly: true,
+    activeSideRcStart: rcStart,
+    includeCenterNecklineSetupRow: true,
+    hideCenterNecklineSetupRow: false,
+    shoulderTabs: true,
+    collapsible: false,
+  });
+}
+
+describe("sleeveless Front V-neck First Shoulder is immediately visible under tabs", () => {
+  it("Case 1: no accordion after Follow the row-by-row instructions below", () => {
+    const r = generateSleevelessBackPattern(shallowVNeckPattern());
+    const paras = collectParagraphs(r.frontDisplayRows);
+    expect(paras).toContain(FRONT_VNECK_HANDOFF_AFTER_ARMHOLE);
+    expect(paras).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    const html = frontVNeckShoulderTabsHtml(r);
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain(">First Shoulder<");
+    expect(html).toContain(">Second Shoulder<");
+    expect(html).not.toContain("ns-shaping-chart--collapsible");
+    expect(html).not.toContain("<details class=\"ns-shaping-chart");
+    expect(html).not.toMatch(/id="ns-shaping-chart-front-panel-first"[^>]*\shidden/);
+    expect(html).toMatch(/id="ns-shaping-chart-front-panel-second"[^>]*\shidden/);
+  });
+
+  it("overlap Cases 2–4 keep First visible and Second mounted", () => {
+    for (const pattern of [amandaVNeckPattern(), sameStartVNeckPattern(), vNeckBeforeArmholePattern()]) {
+      const r = generateSleevelessBackPattern(pattern);
+      const html = frontVNeckShoulderTabsHtml(r);
+      expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+      expect(html).not.toContain("ns-shaping-chart--collapsible");
+      expect(html).not.toMatch(/id="ns-shaping-chart-front-panel-first"[^>]*\shidden/);
+      expect(html).toContain('data-chart-id="ns-shaping-chart-front-secondary"');
+    }
+  });
+
+  it("keeps Visual Guides after the written checklist area", () => {
+    const guides = buildPatternVisualGuidesHtml({
+      piece: "front",
+      notationSupported: true,
+      construction: "sleeveless",
+    });
+    expect(guides).toContain("ns-visual-guides");
+    expect(guides).toContain("Shaping Notation");
+    expect(guides).not.toContain(NS_SHOULDER_TABS_ROOT_ATTR);
   });
 });

@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL, plainKnitSpanCarriageEdgeDisplay } from "./neckShoulderShapingChart";
 import {
+  applyNeckShoulderShoulderTabSelection,
   armholeLocalRcActiveShoulderChecklistStart,
   buildActiveSideInstructionTableRows,
   buildSecondShoulderInstructionTableRows,
   compactActiveSideInstructionRowsForPrint,
   formatActionCellHtml,
+  isSleevelessPulloverVNeckFrontChart,
   neckShoulderChartHasCarriagePositionColumn,
+  NS_SHOULDER_PANEL_ATTR,
+  NS_SHOULDER_TABS_ROOT_ATTR,
   renderActiveShoulderChartIntroHtml,
   renderCarriagePositionPatternTipHtml,
   renderNecklineInstructionsWithNotationPreviewHtml,
@@ -16,6 +20,7 @@ import {
   SLEEVELESS_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC,
   DROP_SHOULDER_JP_NOTATION_QUICK_REFERENCE_PREVIEW_SRC,
 } from "./neckShoulderShapingChartHtml";
+import { buildHeldSideInstructionTableRows } from "./neckShoulderActiveSideChecklist";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
@@ -771,5 +776,209 @@ describe("renderNecklineInstructionsWithNotationPreviewHtml (drop shoulder)", ()
     expect(html).toContain("jp-drop-body-front-preview.svg");
     expect(html).toContain('data-neckline-notation-preview-trigger="front"');
     expect(html).toContain("pattern-layout__sidebar");
+  });
+});
+
+describe("sleeveless pullover V-neck Front shoulder tabs", () => {
+  function shallowVNeckPattern(): Record<string, unknown> {
+    return {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 39,
+          back_neck_to_hem: 18,
+          armhole_depth: 8,
+          neck_opening: 6,
+          shoulder_width: 12,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { recipientCategory: "misses", neckline: "v-neck" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 4,
+        gaugeRowsPerInch: 7,
+        availableNeedles: 200,
+      },
+    };
+  }
+
+  function overlapVNeckPattern(): Record<string, unknown> {
+    return {
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 39,
+          back_neck_to_hem: 18,
+          armhole_depth: 8,
+          neck_opening: 6,
+          shoulder_width: 12,
+          front_neck_depth: 6.86,
+          back_neck_depth: 1,
+        },
+      },
+      style: { recipientCategory: "misses", neckline: "v-neck" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 4,
+        gaugeRowsPerInch: 7,
+        availableNeedles: 200,
+      },
+    };
+  }
+
+  function renderFrontTabs(pattern: Record<string, unknown>) {
+    const r = generateSleevelessBackPattern(pattern);
+    const chart = r.frontNeckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.debug.armholeStartRow, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      chart,
+      "ns-shaping-chart-front",
+      undefined,
+      {
+        activeSideOnly: true,
+        activeSideRcStart: rcStart,
+        includeCenterNecklineSetupRow: true,
+        hideCenterNecklineSetupRow: false,
+        tableHeading: "First Shoulder Checklist",
+        shoulderTabs: true,
+        collapsible: false,
+      },
+    );
+    return { r, chart, rcStart, html };
+  }
+
+  it("is scoped to sleeveless pullover V-neck Front charts only", () => {
+    const vNeck = generateSleevelessBackPattern(shallowVNeckPattern());
+    const round = generateSleevelessBackPattern(baseRoundNeckPattern());
+    expect(isSleevelessPulloverVNeckFrontChart(vNeck.frontNeckShoulderShapingChart)).toBe(true);
+    expect(isSleevelessPulloverVNeckFrontChart(vNeck.neckShoulderShapingChart)).toBe(false);
+    expect(isSleevelessPulloverVNeckFrontChart(round.frontNeckShoulderShapingChart)).toBe(false);
+  });
+
+  it("renders both tables as tabs: First selected, Second mounted but inactive", () => {
+    const { html } = renderFrontTabs(shallowVNeckPattern());
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain('role="tab"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('aria-selected="true"');
+    expect(html).toContain('aria-selected="false"');
+    expect(html).toContain('aria-controls="ns-shaping-chart-front-panel-first"');
+    expect(html).toContain('aria-controls="ns-shaping-chart-front-panel-second"');
+    expect(html).toContain('>First Shoulder<');
+    expect(html).toContain('>Second Shoulder<');
+    expect(html).toContain(`data-chart-id="ns-shaping-chart-front-primary"`);
+    expect(html).toContain(`data-chart-id="ns-shaping-chart-front-secondary"`);
+    expect(html).toMatch(new RegExp(`${NS_SHOULDER_PANEL_ATTR}="first"(?! hidden)`));
+    expect(html).toContain(`${NS_SHOULDER_PANEL_ATTR}="second"`);
+    expect(html).toMatch(new RegExp(`id="ns-shaping-chart-front-panel-second"[^>]*\\shidden`));
+    expect(html).not.toContain("ns-shaping-chart--collapsible");
+    expect(html).not.toContain("<details class=\"ns-shaping-chart");
+    expect(html).not.toContain("Show second shoulder checklist");
+    expect(html).not.toContain("Want less mental reversing");
+    expect(html).toContain("FIRST SHOULDER");
+    expect(html).toContain("SECOND SHOULDER");
+    expect(html.indexOf("FIRST SHOULDER")).toBeLessThan(html.indexOf("SECOND SHOULDER"));
+  });
+
+  it("does not convert Back or round Front to tabs unless shoulderTabs is set", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const back = renderNeckShoulderShapingChartTableOnlyHtml(
+      r.neckShoulderShapingChart,
+      "ns-shaping-chart-back",
+      undefined,
+      {
+        activeSideOnly: true,
+        tableHeading: "First Shoulder Checklist",
+        collapsible: true,
+      },
+    );
+    expect(back).not.toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(back).toContain("Show second shoulder checklist");
+    expect(back).toContain("<details");
+  });
+
+  it("switching tabs only changes visibility attributes and keeps progress ids", () => {
+    const { html } = renderFrontTabs(shallowVNeckPattern());
+    const firstId = "ns-shaping-chart-front-panel-first";
+    const secondId = "ns-shaping-chart-front-panel-second";
+    const attrs = (initial: Record<string, string>) => {
+      const map = new Map(Object.entries(initial));
+      return {
+        setAttribute(name: string, value: string) {
+          map.set(name, value);
+        },
+        getAttribute(name: string) {
+          return map.get(name) ?? null;
+        },
+        removeAttribute(name: string) {
+          map.delete(name);
+        },
+        tabIndex: initial.tabIndex !== undefined ? Number(initial.tabIndex) : 0,
+        get ariaSelected() {
+          return map.get("aria-selected");
+        },
+      };
+    };
+    const firstTab = Object.assign(attrs({ "aria-selected": "true", "aria-controls": firstId, tabIndex: "0" }), {
+      tabIndex: 0,
+    });
+    const secondTab = Object.assign(attrs({ "aria-selected": "false", "aria-controls": secondId, tabIndex: "-1" }), {
+      tabIndex: -1,
+    });
+    const firstPanel = {
+      id: firstId,
+      hidden: false,
+      setAttribute() {},
+      removeAttribute() {},
+    };
+    const secondPanel = {
+      id: secondId,
+      hidden: true,
+      setAttribute() {},
+      removeAttribute() {},
+    };
+    applyNeckShoulderShoulderTabSelection([firstTab, secondTab], [firstPanel, secondPanel], secondTab);
+    expect(firstTab.getAttribute("aria-selected")).toBe("false");
+    expect(secondTab.getAttribute("aria-selected")).toBe("true");
+    expect(firstPanel.hidden).toBe(true);
+    expect(secondPanel.hidden).toBe(false);
+    expect(html).toContain(`data-chart-id="ns-shaping-chart-front-primary"`);
+    expect(html).toContain(`data-chart-id="ns-shaping-chart-front-secondary"`);
+  });
+
+  it("print/PDF includes FIRST then SECOND SHOULDER even without selecting the second tab", () => {
+    const { chart, rcStart } = renderFrontTabs(shallowVNeckPattern());
+    const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(chart, "ns-print-front", "", {
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+      showSecondShoulderChecklist: true,
+      sequentialShoulderHeadings: true,
+    });
+    expect(printHtml).toContain("FIRST SHOULDER");
+    expect(printHtml).toContain("SECOND SHOULDER");
+    expect(printHtml.indexOf("FIRST SHOULDER")).toBeLessThan(printHtml.indexOf("SECOND SHOULDER"));
+    expect(printHtml).not.toContain("Want less mental reversing");
+    expect(printHtml).not.toContain('role="tablist"');
+    expect(printHtml.match(/<tbody>/g)?.length).toBe(2);
+  });
+
+  it("overlap Second Shoulder still uses the parked held-side count", () => {
+    const { r, chart, rcStart, html } = renderFrontTabs(overlapVNeckPattern());
+    expect(chart.frontVNeckArmholeComposition).toBeDefined();
+    const held = buildHeldSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const parked = held.find((row) => row.edge === "Center")?.stitchesRemaining;
+    expect(parked).toBeDefined();
+    expect(html).toContain(`Return to the held shoulder with ${parked} needles in work.`);
+    expect(held[0]?.stitchesRemaining).toBe(parked);
+    const first = buildActiveSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(first.find((row) => row.edge === "Center")?.stitchesRemaining).toBeDefined();
+    expect(r.debug.frontArmholeNecklineOverlap).toBeDefined();
   });
 });

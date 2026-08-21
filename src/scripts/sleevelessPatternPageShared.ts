@@ -77,6 +77,8 @@ import {
 import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
+  bindNeckShoulderShoulderTabs,
+  isSleevelessPulloverVNeckFrontChart,
   renderActiveShoulderChartIntroHtml,
   renderCarriagePositionPatternTipHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
@@ -2386,8 +2388,22 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       .ns-shaping-chart__preview {
         display: none !important;
       }
-      .ns-shaping-chart__second-shoulder-toggle {
+      .ns-shaping-chart__second-shoulder-toggle,
+      .ns-shaping-chart__tablist,
+      .ns-shaping-chart__tabs-toolbar .ns-shaping-chart__disclosure-actions {
         display: none !important;
+      }
+      .ns-shaping-chart__tabpanel,
+      .ns-shaping-chart__tabpanel[hidden] {
+        display: block !important;
+        visibility: visible !important;
+      }
+      .ns-shaping-chart__print-lead-heading {
+        display: block !important;
+        margin: 0 0 0.45rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #52682d;
       }
       [style*="position: sticky"] {
         position: static !important;
@@ -4244,6 +4260,9 @@ table {
       "front",
       false
     );
+    const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(
+      result.frontNeckShoulderShapingChart,
+    );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
@@ -4264,12 +4283,14 @@ table {
           tableHeading: "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
           suppressCarriagePositionTip: frontIsRoundNeck,
-          // Sleeveless front: the checklist collapses into a full-width header bar
-          // ("First Shoulder Checklist" + chevron + print button), replacing the former separate
-          // "Show Row-by-Row Checklist" disclosure. Collapsed by default (matching the prior
-          // wrapper); the shared print flow re-renders it expanded.
-          collapsible: true,
-          collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
+          // Pullover V-neck Front: First/Second Shoulder tabs, checklist immediately visible.
+          // Other fronts keep the collapsible First Shoulder Checklist disclosure.
+          ...(frontUsesShoulderTabs
+            ? { shoulderTabs: true, collapsible: false }
+            : {
+                collapsible: true,
+                collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
+              }),
         }
       );
     }
@@ -4317,6 +4338,7 @@ table {
           hideCenterNecklineSetupRow: false,
           tableHeading: "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
+          ...(frontUsesShoulderTabs ? { shoulderTabs: true, collapsible: false } : {}),
         },
       },
     };
@@ -4385,6 +4407,7 @@ table {
       "Front Neckline / Shoulder Shaping Chart"
     );
     bindSecondShoulderChecklistToggles(mount);
+    bindNeckShoulderShoulderTabs(mount);
 
     initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
 
