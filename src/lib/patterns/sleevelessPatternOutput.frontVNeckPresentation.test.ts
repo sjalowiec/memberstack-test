@@ -7,6 +7,7 @@ import {
   FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST,
   FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
   sleevelessFrontVNeckWrittenPathPresentation,
+  sleevelessPulloverVNeckBeginDisplayRc,
 } from "./frontArmholeNecklineComposition";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -16,7 +17,9 @@ import {
 import {
   isSleevelessPulloverVNeckFrontChart,
   NS_SHOULDER_TABS_ROOT_ATTR,
+  renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
+  renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "./neckShoulderShapingChartHtml";
 import { buildPatternVisualGuidesHtml } from "./patternVisualGuides";
 import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
@@ -250,6 +253,63 @@ describe("sleeveless Front V-neck written presentation — Case 1 after armhole"
       visualGuidesAfterChecklist: false,
     });
   });
+
+  it("uses the same divide RC for knit-to, Begin V-neck, Divide the Neckline, and First Shoulder setup", () => {
+    const divideRc = sleevelessPulloverVNeckBeginDisplayRc({
+      overlap: r.debug.frontArmholeNecklineOverlap,
+      frontNecklineStartLocalRC: r.debug.frontNecklineStartLocalRC,
+      frontNecklineCenterDivideLocalRC: r.debug.frontNecklineCenterDivideLocalRC,
+    });
+    expect(divideRc).toBe(r.debug.frontNecklineStartLocalRC);
+    expect(r.debug.frontNecklineCenterDivideLocalRC).toBe(divideRc);
+    expect(r.debug.frontNecklineShapingBeginLocalRC).toBeGreaterThan(divideRc!);
+    expect(Math.max(...knitToTargetsInSection(r.frontDisplayRows, "ARMHOLE"))).toBe(divideRc);
+    const beginBlock = armholeBlocks(r.frontDisplayRows).find((b) =>
+      b.paragraphs.includes(FRONT_VNECK_HANDOFF_AFTER_ARMHOLE),
+    );
+    expect(beginBlock?.rc).toMatch(new RegExp(`RC:\\s*${String(divideRc).padStart(3, "0")}`));
+    const first = firstShoulderRows(r);
+    const setup = first.find(isCenterNecklineSetupChecklistRow);
+    expect(setup?.rc).toBe(divideRc);
+    expect(setup?.action).toMatch(/Divide at center/i);
+    const firstNeckDec = first.find(
+      (row) => row.edge === "Neck" && /Decrease/i.test(row.action),
+    );
+    expect(firstNeckDec?.rc).toBe(r.debug.frontNecklineShapingBeginLocalRC);
+    expect(firstNeckDec?.rc).not.toBe(divideRc);
+    const label = `RC:${String(divideRc).padStart(3, "0")}`;
+    const intro = renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: label,
+      chart: r.frontNeckShoulderShapingChart,
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+      includeWorkflowSteps: true,
+    });
+    expect(intro).toContain("Divide the Neckline");
+    expect(intro).toContain(`At RC ${String(divideRc).padStart(3, "0")}, divide the piece at the center`);
+    expect(intro).not.toContain("Before Shaping");
+    expect(intro).not.toContain("Knit until Armhole RC");
+    expect(intro).not.toContain(
+      `At RC ${String(r.debug.frontNecklineShapingBeginLocalRC).padStart(3, "0")}, divide`,
+    );
+    const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
+      r.frontNeckShoulderShapingChart,
+      "ns-print-front",
+      intro,
+      {
+        activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(
+          r.frontNeckShoulderShapingChart,
+          r.debug.armholeStartRow,
+          { includeCenterNecklineSetupRow: true },
+        ),
+        includeCenterNecklineSetupRow: true,
+        showSecondShoulderChecklist: true,
+        sequentialShoulderHeadings: true,
+      },
+    );
+    expect(printHtml).toContain(`At RC ${String(divideRc).padStart(3, "0")}, divide the piece at the center`);
+    expect(printHtml).not.toContain("Before Shaping");
+  });
 });
 
 describe("sleeveless Front V-neck written presentation — Case 2 during armhole (Amanda)", () => {
@@ -415,6 +475,46 @@ describe("sleeveless Front V-neck knit-to never skips the next shaping event", (
     expect(paras.some((p) => /row counter was reset at the beginning of armhole shaping/i.test(p))).toBe(
       false,
     );
+  });
+});
+
+describe("sleeveless Front V-neck written start and checklist divide share one event", () => {
+  it.each([
+    ["Case 1 after armhole", shallowVNeckPattern()],
+    ["Case 2 during armhole", amandaVNeckPattern()],
+    ["Case 3 both begin", sameStartVNeckPattern()],
+    ["Case 4 before armhole", vNeckBeforeArmholePattern()],
+  ] as const)("%s", (_label, pattern) => {
+    const r = generateSleevelessBackPattern(pattern);
+    const divideRc = sleevelessPulloverVNeckBeginDisplayRc({
+      overlap: r.debug.frontArmholeNecklineOverlap,
+      frontNecklineStartLocalRC: r.debug.frontNecklineStartLocalRC,
+      frontNecklineCenterDivideLocalRC: r.debug.frontNecklineCenterDivideLocalRC,
+    });
+    expect(divideRc).toBeDefined();
+    const first = firstShoulderRows(r);
+    const setup = first.find(isCenterNecklineSetupChecklistRow);
+    expect(setup?.rc).toBe(divideRc);
+    const begin = r.frontDisplayRows.find(
+      (row) => row.kind === "block" && row.paragraphs.some((p) => /Begin V-neck/i.test(p)),
+    );
+    expect(begin && begin.kind === "block" ? begin.rc : undefined).toMatch(
+      new RegExp(`RC:\\s*${String(divideRc).padStart(3, "0")}`),
+    );
+    const firstNeckDec = first.find((row) => row.edge === "Neck" && /Decrease/i.test(row.action));
+    expect(firstNeckDec?.rc).toBe(r.debug.frontNecklineShapingBeginLocalRC);
+    expect(firstNeckDec?.rc).not.toBe(divideRc);
+    const label = `RC:${String(divideRc).padStart(3, "0")}`;
+    const intro = renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: label,
+      chart: r.frontNeckShoulderShapingChart,
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+      includeWorkflowSteps: true,
+    });
+    expect(intro).toContain(`At RC ${String(divideRc).padStart(3, "0")}, divide the piece at the center`);
+    expect(intro).not.toContain("Before Shaping");
+    expect(intro).not.toContain("Knit until Armhole RC");
   });
 });
 

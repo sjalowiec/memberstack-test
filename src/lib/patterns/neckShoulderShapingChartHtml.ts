@@ -608,7 +608,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const showCenterDivide = vNeckDivide || roundCenterDivide;
   // Online workflow steps anchor the divide milestone as “At RC NNN, …”; print/default keep
   // “When Armhole RC reaches NNN, …”. Only the prefix wording changes — the calculated RC is the same.
-  const useAtRcPrefix = options.includeWorkflowSteps === true;
+  const useAtRcPrefix = options.includeWorkflowSteps === true || vNeckDivide;
   const centerHtml = vNeckDivide
     ? formatActiveShoulderVNeckCenterNecklineHtml({
         localStartRcLabel: vNeckDivideLabel,
@@ -630,11 +630,12 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const innerParts: string[] = [];
   if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
     const divideRc = divideRcDisplayLabel(vNeckDivide ? vNeckDivideLabel : options.localStartRcLabel);
-    const knitUntilBullet = vNeckBeforeArmhole
-      ? ""
-      : divideRc
-        ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
-        : `Knit to the neckline shaping row.`;
+    const knitUntilBullet =
+      vNeckDivide || vNeckBeforeArmhole
+        ? ""
+        : divideRc
+          ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
+          : `Knit to the neckline shaping row.`;
     const afterDivideBullets = shallowHoldBackDivide
       ? `<li>Stage 1 — work the right shoulder and right neck edge (checklist below). Stage 2 — return held stitches and mirror for the left side.</li><li>Stage 3 — scrap off or bind off all held neckline stitches when both sides are complete.</li>`
       : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;

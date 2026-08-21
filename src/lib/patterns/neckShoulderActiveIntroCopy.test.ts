@@ -227,9 +227,9 @@ describe("renderActiveShoulderChartIntroHtml", () => {
       chart: front,
       includeWorkflowSteps: true,
     });
-    expect(html).toContain("Before Shaping");
+    expect(html).not.toContain("Before Shaping");
+    expect(html).not.toContain("Knit until Armhole RC reaches 100.");
     expect(html).not.toContain("before dividing the neckline.");
-    expect(html).toContain("Knit until Armhole RC reaches 100.");
     expect(html).toContain("Divide the Neckline");
     expect(html).toContain(
       "Place the remaining stitches on hold, or transfer them to scrap yarn if preferred.",

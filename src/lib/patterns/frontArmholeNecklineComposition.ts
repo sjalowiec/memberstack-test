@@ -137,6 +137,33 @@ export function sleevelessFrontVNeckWrittenPathPresentation(
   };
 }
 
+/**
+ * User-facing RC where the knitter begins the V-neck: the divide/setup event.
+ * Never the later first Neck decrease ({@link FrontArmholeNecklineOverlap} does not store that).
+ * Case 4 returns the garment divide RC; Cases 1–3 return the post-reset / local RC.
+ */
+export function sleevelessPulloverVNeckBeginDisplayRc(args: {
+  overlap?: FrontArmholeNecklineOverlap | null;
+  frontNecklineStartLocalRC?: number;
+  frontNecklineCenterDivideLocalRC?: number;
+}): number | undefined {
+  if (args.overlap) {
+    return displayRcFromGarmentRc(
+      args.overlap.divideGarmentRc,
+      args.overlap.firstArmholeGarmentRc,
+    );
+  }
+  const center = args.frontNecklineCenterDivideLocalRC;
+  if (center !== undefined && Number.isFinite(center)) {
+    return Math.floor(center);
+  }
+  const start = args.frontNecklineStartLocalRC;
+  if (start !== undefined && Number.isFinite(start) && start >= 0) {
+    return Math.floor(start);
+  }
+  return undefined;
+}
+
 export function pulloverArmholeEvents(args: {
   firstArmholeGarmentRc: number;
   bindOffSts: number;
