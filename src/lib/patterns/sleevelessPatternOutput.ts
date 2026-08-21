@@ -3084,22 +3084,49 @@ export function generateSleevelessBackPattern(
    */
   const effectiveFrontNeckDepthRows =
     frontNeckDepthRows > 0 ? frontNeckDepthRows : backNeckDepthRows;
-  const frontNecklineStartRC =
+  /**
+   * Conventional start includes the JP / round-neck `-1` so scoop charts match `rc-neckline-start`.
+   * Do not remove that `-1` globally — Amanda, near-equal Case 3, shallow, deep, and round-neck
+   * all depend on it.
+   */
+  const conventionalFrontNecklineStartRC =
     armholeStartRC !== undefined && armholeDepthRows > 0 && effectiveFrontNeckDepthRows > 0
       ? Math.max(0, armholeStartRC + armholeDepthRows - effectiveFrontNeckDepthRows - 1)
       : shoulderEndRC !== undefined && effectiveFrontNeckDepthRows > 0
         ? Math.max(0, shoulderEndRC - effectiveFrontNeckDepthRows - 1)
         : Math.max(0, rc - Math.max(0, frontNeckDepthRows) + 1);
   /**
+   * Pullover V-neck only: when requested neck and armhole row depths are equal, the `-1` would
+   * put the divide one garment row before the armhole and misclassify the piece as
+   * before-armhole. Align the divide/setup with the armhole start so timing is with-armhole.
+   * First Neck decrease stays on firstRow + 1 (V-neck timeline convention).
+   */
+  const equalDepthPulloverVNeckFront =
+    isFrontVNeck &&
+    !isCardiganHalfFrontBody &&
+    armholeStartRC !== undefined &&
+    armholeDepthRows > 0 &&
+    frontNeckDepthRows > 0 &&
+    frontNeckDepthRows === armholeDepthRows;
+  const frontNecklineStartRC =
+    equalDepthPulloverVNeckFront && armholeStartRC !== undefined
+      ? armholeStartRC
+      : conventionalFrontNecklineStartRC;
+  /**
    * Front scoop begins one armhole-local row earlier than the naive `shoulderEndRC − F` anchor
    * so the live timeline / text chart align with `rc-neckline-start` on the JP schematic
    * (e.g. rc014). Extend depth so the piece still ends at the same shoulder line.
+   *
+   * Equal-depth pullover V-neck: do not even-round the *extended* span. Requested F is already
+   * even-normalized; rounding `shoulderEnd − start` (often odd) would overshoot the shoulder line.
    */
-  const frontNeckTimelineDepthRows = normalizeRoundNecklineDepthRows(
+  const frontNeckTimelineDepthRaw =
     shoulderEndRC !== undefined
       ? Math.max(effectiveFrontNeckDepthRows, shoulderEndRC - frontNecklineStartRC)
-      : effectiveFrontNeckDepthRows,
-  );
+      : effectiveFrontNeckDepthRows;
+  const frontNeckTimelineDepthRows = equalDepthPulloverVNeckFront
+    ? frontNeckTimelineDepthRaw
+    : normalizeRoundNecklineDepthRows(frontNeckTimelineDepthRaw);
   const shoulderStartRC =
     shoulderEndRC !== undefined && shoulderBindoffRows > 0
       ? Math.max(0, shoulderEndRC - shoulderBindoffRows)
