@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   armholeDecreaseLocalRcs,
   composeFrontVNeckTimelineWithArmholeOverlap,
+  displayRcFromGarmentRc,
   liveFrontStitchesBeforeGarmentRc,
+  resolveFrontVNeckRowCounterDisplayPolicy,
   resolveFrontVNeckShapingTimingCase,
   sleevelessPulloverVNeckBeginDisplayRc,
 } from "./frontArmholeNecklineComposition";
@@ -315,6 +317,58 @@ describe("resolveFrontVNeckShapingTimingCase", () => {
         necklineBeginsBeforeArmhole: true,
       }),
     ).toBe("before-armhole");
+  });
+});
+
+describe("Front V-neck row-counter display policy", () => {
+  const policyBase = {
+    liveTotalAtDivide: 50,
+    leftAtDivide: 25,
+    rightAtDivide: 25,
+    heldAfterDivideRow: 25,
+    activeAfterDivideRow: 25,
+    completedDecreaseLocalRcs: [] as number[],
+    remainingDecreaseLocalRcs: [2],
+    completedDecreaseSts: 0,
+    remainingDecreaseSts: 1,
+    lastArmholeGarmentRc: 80,
+    stitchesAfterArmhole: 40,
+  };
+
+  it("maps timing cases to the knitter-facing counter policy", () => {
+    expect(resolveFrontVNeckRowCounterDisplayPolicy(null)).toBe("armhole-reset-first");
+    expect(
+      resolveFrontVNeckRowCounterDisplayPolicy({
+        ...policyBase,
+        divideGarmentRc: 77,
+        firstArmholeGarmentRc: 70,
+        necklineBeginsBeforeArmhole: false,
+      }),
+    ).toBe("armhole-reset-first");
+    expect(
+      resolveFrontVNeckRowCounterDisplayPolicy({
+        ...policyBase,
+        divideGarmentRc: 70,
+        firstArmholeGarmentRc: 70,
+        necklineBeginsBeforeArmhole: false,
+      }),
+    ).toBe("shared-reset");
+    expect(
+      resolveFrontVNeckRowCounterDisplayPolicy({
+        ...policyBase,
+        divideGarmentRc: 60,
+        firstArmholeGarmentRc: 70,
+        necklineBeginsBeforeArmhole: true,
+      }),
+    ).toBe("continuous-garment-rc");
+  });
+
+  it("keeps local display after the armhole unless Case 4 asks for garment RC", () => {
+    expect(displayRcFromGarmentRc(77, 70)).toBe(7);
+    expect(displayRcFromGarmentRc(70, 70, "shared-reset")).toBe(0);
+    expect(displayRcFromGarmentRc(60, 70, "continuous-garment-rc")).toBe(60);
+    expect(displayRcFromGarmentRc(72, 70, "continuous-garment-rc")).toBe(72);
+    expect(displayRcFromGarmentRc(72, 70, "armhole-reset-first")).toBe(2);
   });
 });
 

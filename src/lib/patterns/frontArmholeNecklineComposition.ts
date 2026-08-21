@@ -75,14 +75,37 @@ export function liveFrontStitchesBeforeGarmentRc(args: {
   return Math.max(0, sts);
 }
 
-/** Display RC: garment number before the armhole reset, Armhole-local after. */
+/**
+ * Knitter-facing row-counter policy for Sleeveless Pullover V-neck Front.
+ * Internal only — never shown to the knitter.
+ */
+export type FrontVNeckRowCounterDisplayPolicy =
+  | "armhole-reset-first"
+  | "shared-reset"
+  | "continuous-garment-rc";
+
+export function resolveFrontVNeckRowCounterDisplayPolicy(
+  overlap?: FrontArmholeNecklineOverlap | null,
+): FrontVNeckRowCounterDisplayPolicy {
+  const timing = resolveFrontVNeckShapingTimingCase(overlap);
+  if (timing === "before-armhole") return "continuous-garment-rc";
+  if (timing === "with-armhole") return "shared-reset";
+  return "armhole-reset-first";
+}
+
+/**
+ * Display RC: garment number before the armhole reset, Armhole-local after —
+ * unless {@link policy} is `continuous-garment-rc` (Case 4: V-neck already owns the counter).
+ */
 export function displayRcFromGarmentRc(
   garmentRc: number,
   firstArmholeGarmentRc: number,
+  policy?: FrontVNeckRowCounterDisplayPolicy,
 ): number {
   const g = Math.floor(garmentRc);
   const a = Math.floor(firstArmholeGarmentRc);
   if (!Number.isFinite(g) || !Number.isFinite(a)) return Math.max(0, g);
+  if (policy === "continuous-garment-rc") return Math.max(0, g);
   return g < a ? g : g - a;
 }
 
@@ -152,6 +175,7 @@ export function sleevelessPulloverVNeckBeginDisplayRc(args: {
     return displayRcFromGarmentRc(
       args.overlap.divideGarmentRc,
       args.overlap.firstArmholeGarmentRc,
+      resolveFrontVNeckRowCounterDisplayPolicy(args.overlap),
     );
   }
   const center = args.frontNecklineCenterDivideLocalRC;

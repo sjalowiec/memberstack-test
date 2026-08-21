@@ -139,7 +139,11 @@ export function sleevelessPulloverVNeckWrittenSummaryParagraphs(
     const remaining = args.overlap
       ? args.overlap.remainingDecreaseSts
       : Math.max(0, Math.floor(args.decreaseSts ?? 0));
-    const remainingRows = args.overlap ? args.overlap.remainingDecreaseLocalRcs : [];
+    const remainingRows = args.overlap
+      ? args.overlap.remainingDecreaseLocalRcs.map(
+          (local) => args.overlap!.firstArmholeGarmentRc + local,
+        )
+      : [];
     out.push(
       ...sleevelessPulloverVNeckCompactArmholeSummaryBullets({
         bindOffSts: bo,

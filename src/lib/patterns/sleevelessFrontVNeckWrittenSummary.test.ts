@@ -130,6 +130,7 @@ describe("sleevelessPulloverVNeckWrittenSummaryParagraphs", () => {
     });
     expect(join.join("\n")).toContain(FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT);
     expect(join.join("\n")).toMatch(/bind off or hold 4 stitches/);
+    expect(join.join("\n")).toMatch(/on rows 135, 137, 139/);
     expect(join.join("\n")).not.toMatch(/Divide the Front/);
   });
 });

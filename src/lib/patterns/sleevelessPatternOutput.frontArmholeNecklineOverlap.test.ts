@@ -503,23 +503,29 @@ describe("sleeveless Front V-neck before the armhole (Case A)", () => {
   it("when the armhole is reached, the active half gets its BO and later curve decreases", () => {
     const { first, held } = firstAndHeld(r);
     const bo = first.find(
-      (row) => row.rc === 0 && row.edge === "Armhole" && /Bind off/i.test(row.action),
+      (row) => row.rc === armholeStart && row.edge === "Armhole" && /Bind off/i.test(row.action),
     );
     expect(bo).toBeDefined();
     expect(bo!.action).not.toMatch(/Shoulder/i);
+    expect(first.some((row) => row.rowCounterReset === true)).toBe(false);
 
     for (const local of [2, 4, 6]) {
       expect(
-        first.find((row) => row.rc === local && row.edge === "Armhole" && /Decrease/i.test(row.action)),
+        first.find(
+          (row) =>
+            row.rc === armholeStart + local && row.edge === "Armhole" && /Decrease/i.test(row.action),
+        ),
       ).toBeDefined();
     }
 
     const heldSetup = held.find(isCenterNecklineSetupChecklistRow);
     expect(heldSetup!.stitchesRemaining).toBe(overlap!.heldAfterDivideRow);
     const heldBo = held.find(
-      (row) => row.rc === 1 && row.edge === "Armhole" && /Bind off/i.test(row.action),
+      (row) =>
+        row.rc === armholeStart + 1 && row.edge === "Armhole" && /Bind off/i.test(row.action),
     );
     expect(heldBo).toBeDefined();
+    expect(held.some((row) => row.rowCounterReset === true)).toBe(false);
   });
 
   it("does not show finished B in a Front ARMHOLE section and does not clamp neck rows to RC 000", () => {
@@ -543,6 +549,7 @@ describe("sleeveless Front V-neck before the armhole (Case A)", () => {
     const { first } = firstAndHeld(r);
     const setup = first.find(isCenterNecklineSetupChecklistRow)!;
     expect(setup.rc).toBe(overlap!.divideGarmentRc);
-    expect(first.filter((row) => row.rc === 0 && row.edge === "Armhole").length).toBeGreaterThan(0);
+    expect(first.filter((row) => row.rc === 0)).toHaveLength(0);
+    expect(first.filter((row) => row.edge === "Armhole" && row.rc === armholeStart).length).toBeGreaterThan(0);
   });
 });
