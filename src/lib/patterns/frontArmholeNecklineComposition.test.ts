@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   armholeDecreaseLocalRcs,
   composeFrontVNeckTimelineWithArmholeOverlap,
-  liveFrontStitchesAfterArmholeLocalRc,
+  liveFrontStitchesBeforeGarmentRc,
 } from "./frontArmholeNecklineComposition";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 
@@ -31,22 +31,24 @@ function amandaGeometryTimeline() {
   }).timeline;
 }
 
-describe("armhole live-stitch walk", () => {
+describe("armhole live-stitch walk (events strictly before garment RC)", () => {
   it("lists Amanda decrease RCs 2 through 14", () => {
     expect(armholeDecreaseLocalRcs(7)).toEqual([2, 4, 6, 8, 10, 12, 14]);
   });
 
-  it("reaches 56 after RC 006/007 and 54 after RC 008", () => {
+  it("reaches 56 before RC 007/008 and 54 before the next decrease after 008", () => {
     const args = {
       armholeStartSts: 78,
       bindOffSts: 8,
       decreaseSts: 7,
+      firstArmholeGarmentRc: 70,
     };
-    expect(liveFrontStitchesAfterArmholeLocalRc({ ...args, afterLocalRc: 1 })).toBe(62);
-    expect(liveFrontStitchesAfterArmholeLocalRc({ ...args, afterLocalRc: 6 })).toBe(56);
-    expect(liveFrontStitchesAfterArmholeLocalRc({ ...args, afterLocalRc: 7 })).toBe(56);
-    expect(liveFrontStitchesAfterArmholeLocalRc({ ...args, afterLocalRc: 8 })).toBe(54);
-    expect(liveFrontStitchesAfterArmholeLocalRc({ ...args, afterLocalRc: 14 })).toBe(48);
+    expect(liveFrontStitchesBeforeGarmentRc({ ...args, beforeGarmentRc: 71 })).toBe(70);
+    expect(liveFrontStitchesBeforeGarmentRc({ ...args, beforeGarmentRc: 72 })).toBe(62);
+    expect(liveFrontStitchesBeforeGarmentRc({ ...args, beforeGarmentRc: 76 })).toBe(58);
+    expect(liveFrontStitchesBeforeGarmentRc({ ...args, beforeGarmentRc: 77 })).toBe(56);
+    expect(liveFrontStitchesBeforeGarmentRc({ ...args, beforeGarmentRc: 78 })).toBe(56);
+    expect(liveFrontStitchesBeforeGarmentRc({ ...args, beforeGarmentRc: 133 })).toBe(48);
   });
 });
 
@@ -109,6 +111,7 @@ describe("composeFrontVNeckTimelineWithArmholeOverlap", () => {
       liveTotalAtDivide: 56,
       leftAtDivide: 28,
       rightAtDivide: 28,
+      divideGarmentRc: 77,
       stitchesAfterArmhole: 48,
     });
 
@@ -154,5 +157,117 @@ describe("composeFrontVNeckTimelineWithArmholeOverlap", () => {
         .map((e) => e.row),
     );
     expect(shoulderRowsAfter).toEqual(shoulderRows);
+  });
+
+  it("Case B 102-st: divides 51/51 on the BO #1 garment row, then active BO → 47/51", () => {
+    const firstArmhole = 133;
+    const geometry = buildVNeckFrontFullWidthTimeline({
+      firstShapingRow: firstArmhole,
+      shoulderStitchesPerSide: 32,
+      centerNeckBindOff: 24,
+      neckDepthRows: 62,
+      neckProfile: "front",
+      stitchesAfterArmhole: 88,
+      shoulderBindoffRows: 7,
+    }).timeline;
+    expect(geometry[0]!.row).toBe(firstArmhole);
+    expect(geometry[0]!.stitchesL + geometry[0]!.stitchesR).toBe(88);
+
+    const { timeline, overlap } = composeFrontVNeckTimelineWithArmholeOverlap(geometry, {
+      firstArmholeGarmentRc: firstArmhole,
+      armholeStartSts: 102,
+      bindOffSts: 4,
+      decreaseSts: 3,
+      stitchesAfterArmhole: 88,
+    });
+
+    expect(overlap).toMatchObject({
+      completedDecreaseLocalRcs: [],
+      remainingDecreaseLocalRcs: [2, 4, 6],
+      liveTotalAtDivide: 102,
+      leftAtDivide: 51,
+      rightAtDivide: 51,
+      heldAfterDivideRow: 51,
+      activeAfterDivideRow: 47,
+      divideGarmentRc: firstArmhole,
+      stitchesAfterArmhole: 88,
+    });
+    expect(overlap!.liveTotalAtDivide).not.toBe(94);
+    expect(overlap!.leftAtDivide).not.toBe(49);
+    expect(overlap!.leftAtDivide).not.toBe(47);
+
+    const byLocal = new Map(timeline.map((e) => [e.row - firstArmhole, e]));
+    const divide = byLocal.get(0)!;
+    expect(divide.events.filter((e) => e.side === "right" && e.edge === "outer" && e.kind === "bindOff")).toEqual([
+      expect.objectContaining({ amount: 4 }),
+    ]);
+    expect(divide.events.some((e) => e.side === "left" && e.kind === "bindOff")).toBe(false);
+    expect(divide.stitchesR).toBe(47);
+    expect(divide.stitchesL).toBe(51);
+
+    const next = byLocal.get(1)!;
+    expect(next.events.some((e) => e.edge === "inner" && e.kind === "decrease" && e.side === "right")).toBe(
+      true,
+    );
+    expect(next.events.filter((e) => e.side === "right" && e.edge === "outer" && e.kind === "bindOff")).toHaveLength(
+      0,
+    );
+    expect(next.events.some((e) => e.side === "left" && e.edge === "outer" && e.kind === "bindOff")).toBe(
+      true,
+    );
+
+    for (const local of [2, 4, 6]) {
+      const row = byLocal.get(local)!;
+      expect(row.events.filter((e) => e.edge === "outer" && e.kind === "decrease")).toHaveLength(2);
+      expect(row.events.some((e) => e.kind === "bindOff" && e.edge === "outer")).toBe(false);
+    }
+  });
+
+  it("Case A: V-neck before armhole divides from the full Front, then overlays later BOs", () => {
+    const firstArmhole = 133;
+    const divide = 125;
+    const geometry = buildVNeckFrontFullWidthTimeline({
+      firstShapingRow: divide,
+      shoulderStitchesPerSide: 32,
+      centerNeckBindOff: 24,
+      neckDepthRows: 70,
+      neckProfile: "front",
+      stitchesAfterArmhole: 88,
+      shoulderBindoffRows: 7,
+    }).timeline;
+
+    const { timeline, overlap } = composeFrontVNeckTimelineWithArmholeOverlap(geometry, {
+      firstArmholeGarmentRc: firstArmhole,
+      armholeStartSts: 102,
+      bindOffSts: 4,
+      decreaseSts: 3,
+      stitchesAfterArmhole: 88,
+    });
+
+    expect(overlap).toBeDefined();
+    expect(overlap!.necklineBeginsBeforeArmhole).toBe(true);
+    expect(overlap!.divideGarmentRc).toBe(divide);
+    expect(overlap!.liveTotalAtDivide).toBe(102);
+    expect(overlap!.leftAtDivide).toBe(51);
+    expect(overlap!.rightAtDivide).toBe(51);
+
+    const byRow = new Map(timeline.map((e) => [e.row, e]));
+    const divideRow = byRow.get(divide)!;
+    expect(divideRow.stitchesL).toBe(51);
+    expect(divideRow.stitchesR).toBe(51);
+    expect(divideRow.events.some((e) => e.edge === "outer")).toBe(false);
+
+    expect(byRow.get(firstArmhole - 1)!.events.some((e) => e.edge === "outer")).toBe(false);
+
+    const bo1 = byRow.get(firstArmhole)!;
+    expect(bo1.events.filter((e) => e.side === "right" && e.edge === "outer" && e.kind === "bindOff")).toEqual([
+      expect.objectContaining({ amount: 4 }),
+    ]);
+    expect(bo1.events.some((e) => e.side === "left" && e.kind === "bindOff")).toBe(false);
+
+    const bo2 = byRow.get(firstArmhole + 1)!;
+    expect(bo2.events.some((e) => e.side === "left" && e.edge === "outer" && e.kind === "bindOff")).toBe(
+      true,
+    );
   });
 });

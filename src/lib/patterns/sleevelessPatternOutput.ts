@@ -2168,12 +2168,12 @@ export function buildSleevelessBackDisplayRows(args: {
   return rows;
 }
 
-/** Front ARMHOLE prose: only list decreases completed before the neckline divide. */
+/** Front ARMHOLE prose: only list shaping completed before the neckline divide. */
 function applyFrontArmholeOverlapSummary(
   rows: readonly SleevelessPatternDisplayRow[],
   overlap: FrontArmholeNecklineOverlap | null | undefined,
 ): SleevelessPatternDisplayRow[] {
-  if (!overlap || overlap.remainingDecreaseLocalRcs.length === 0) {
+  if (!overlap) {
     return [...rows];
   }
 
@@ -2182,11 +2182,27 @@ function applyFrontArmholeOverlapSummary(
   const remainingRows = overlap.remainingDecreaseLocalRcs.join(", ");
   const live = overlap.liveTotalAtDivide;
   const removed = completed * 2;
+  const overlapsInitialBindOffs =
+    overlap.divideGarmentRc <= overlap.firstArmholeGarmentRc + 1;
+  const remainingArmholeNote =
+    remainingRows.length > 0
+      ? `Remaining armhole decreases continue in the Front neckline checklist (Armhole RC ${remainingRows}).`
+      : "Remaining armhole shaping continues in the Front neckline checklist.";
 
   const out: SleevelessPatternDisplayRow[] = [];
   let inArmhole = false;
+  let insertedPreArmholeNote = false;
   for (const row of rows) {
     if (row.kind === "section") {
+      if (row.title === "ARMHOLE" && overlap.necklineBeginsBeforeArmhole && !insertedPreArmholeNote) {
+        out.push({
+          kind: "block",
+          paragraphs: [
+            `The V-neck divide is at garment RC ${String(overlap.divideGarmentRc).padStart(3, "0")}, before the armhole reset. Begin the Front neckline checklist at that row. Armhole bind-offs and decreases that occur after the divide are in that checklist.`,
+          ],
+        });
+        insertedPreArmholeNote = true;
+      }
       inArmhole = row.title === "ARMHOLE";
       out.push(row);
       continue;
@@ -2197,8 +2213,24 @@ function applyFrontArmholeOverlapSummary(
     }
 
     const text = row.paragraphs.join("\n");
+    if (overlapsInitialBindOffs && /Bind off OR hold/i.test(text)) {
+      continue;
+    }
+    if (overlapsInitialBindOffs && /Knit across — center front edge/i.test(text)) {
+      continue;
+    }
+
     if (/Decrease 1 stitch at each armhole edge every other row/i.test(text)) {
-      if (completed <= 0) {
+      if (overlapsInitialBindOffs || completed <= 0) {
+        out.push({
+          ...row,
+          paragraphs: [
+            overlap.necklineBeginsBeforeArmhole
+              ? `Armhole bind-offs and decreases are worked with the Front neckline checklist after the V-neck divide (garment RC ${String(overlap.divideGarmentRc).padStart(3, "0")}). ${remainingArmholeNote}`
+              : remainingArmholeNote,
+          ],
+          stitchCount: live > 0 ? live : undefined,
+        });
         continue;
       }
       out.push({
@@ -2206,7 +2238,7 @@ function applyFrontArmholeOverlapSummary(
         paragraphs: [
           `Decrease 1 stitch at each armhole edge every other row, ${completed} time${completed === 1 ? "" : "s"} — ${removed} stitch${removed === 1 ? "" : "es"} removed total.`,
           `Decrease on rows: ${completedRows}`,
-          `Remaining armhole decreases continue in the Front neckline checklist (Armhole RC ${remainingRows}).`,
+          remainingArmholeNote,
         ],
         stitchCount: live > 0 ? live : undefined,
       });
@@ -3072,7 +3104,9 @@ export function generateSleevelessBackPattern(
       if (composed.overlap) {
         frontArmholeNecklineOverlap = composed.overlap;
         frontTimeline = composed.timeline;
-        frontLiveRows = neckShoulderChartRowsFromTimeline(frontTimeline);
+        frontLiveRows = neckShoulderChartRowsFromTimeline(frontTimeline, {
+          lastArmholeGarmentRc: composed.overlap.lastArmholeGarmentRc,
+        });
       }
     }
 
@@ -3114,14 +3148,19 @@ export function generateSleevelessBackPattern(
     /** Align back shoulder chunks to front-executed outer bind-offs (short back row budget overlaps inner neck). */
     let alignedShoulderTimelineOpts = shoulderTimelineOpts;
     if (shoulderSchedule !== null && shoulderReferenceFrontTimeline.length > 0) {
+      const lastArmholeGarmentRc = frontArmholeNecklineOverlap?.lastArmholeGarmentRc;
       const frontLeftChunks = collectOuterShoulderBindOffPoints(
         shoulderReferenceFrontTimeline,
         "left",
-      ).map((p) => p.amount);
+      )
+        .filter((p) => lastArmholeGarmentRc === undefined || p.row > lastArmholeGarmentRc)
+        .map((p) => p.amount);
       const frontRightChunks = collectOuterShoulderBindOffPoints(
         shoulderReferenceFrontTimeline,
         "right",
-      ).map((p) => p.amount);
+      )
+        .filter((p) => lastArmholeGarmentRc === undefined || p.row > lastArmholeGarmentRc)
+        .map((p) => p.amount);
       if (frontLeftChunks.length > 0 || frontRightChunks.length > 0) {
         const alignedSchedule: ShoulderBindoffSchedule = {
           leftChunks: frontLeftChunks.length > 0 ? frontLeftChunks : shoulderSchedule.leftChunks,
@@ -3181,6 +3220,9 @@ export function generateSleevelessBackPattern(
         timeline: frontTimeline,
         sleevelessFullWidthVNeckFront: isFrontVNeck,
         ...(isSleevelessCardiganGarmentStyle(patternData) ? { sleevelessCardiganFront: true } : {}),
+        ...(frontArmholeNecklineOverlap
+          ? { frontVNeckArmholeComposition: frontArmholeNecklineOverlap }
+          : {}),
       });
       frontNeckShoulderChartUsesLiveRows = true;
 
@@ -3361,7 +3403,9 @@ export function generateSleevelessBackPattern(
     armholeStartRC !== undefined ? Math.max(0, Math.floor(neckStartRC - armholeStartRC)) : undefined;
   const frontNecklineStartLocalRC =
     armholeStartRC !== undefined
-      ? Math.max(0, Math.floor(frontNecklineStartRC - armholeStartRC))
+      ? isFrontVNeck && !isCardiganHalfFrontBody
+        ? Math.floor(frontNecklineStartRC - armholeStartRC)
+        : Math.max(0, Math.floor(frontNecklineStartRC - armholeStartRC))
       : undefined;
   const frontNecklineShapingBeginLocalRC = frontNeckShoulderChartUsesLiveRows
     ? armholeLocalRcFirstActiveSideNecklineShapingAction(
