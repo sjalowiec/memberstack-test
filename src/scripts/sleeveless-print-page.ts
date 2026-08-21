@@ -24,6 +24,7 @@ import {
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
+  isSleevelessPulloverVNeckFrontChart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
@@ -255,6 +256,9 @@ async function initSleevelessPrintPage(): Promise<void> {
       includeCenterNecklineSetupRow: true,
     },
   );
+  const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(
+    result.frontNeckShoulderShapingChart,
+  );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.frontNeckShoulderShapingChart,
     "ns-shaping-chart-print-front",
@@ -268,6 +272,9 @@ async function initSleevelessPrintPage(): Promise<void> {
     {
       activeSideRcStart: frontChecklistArmholeStart,
       includeCenterNecklineSetupRow: true,
+      ...(frontUsesShoulderTabs
+        ? { showSecondShoulderChecklist: true, sequentialShoulderHeadings: true }
+        : {}),
     },
   );
 

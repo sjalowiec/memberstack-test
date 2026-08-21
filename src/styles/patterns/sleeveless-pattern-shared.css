@@ -2546,8 +2546,15 @@
     }
 
     #pattern-content .ns-shaping-chart__second-shoulder-toggle,
+    #pattern-content .ns-shaping-chart__tablist,
+    #pattern-content .ns-shaping-chart__tabs-toolbar .ns-shaping-chart__disclosure-actions,
     #pattern-content .sleeveless-back-diagram-mode {
       display: none !important;
+    }
+
+    #pattern-content .ns-shaping-chart__tabpanel,
+    #pattern-content .ns-shaping-chart__tabpanel[hidden] {
+      display: block !important;
     }
 
     #pattern-content .sleeveless-back-diagram-panel {

@@ -362,6 +362,61 @@
   color: var(--kbm-green, #52682d);
 }
 
+/* Sleeveless pullover V-neck Front: First / Second Shoulder tabs (both tables stay mounted). */
+.ns-shaping-chart--shoulder-tabs {
+  overflow: visible;
+}
+
+.ns-shaping-chart__tabs-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+}
+
+.ns-shaping-chart__tablist {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--kin-border, #ddd);
+}
+
+.ns-shaping-chart__tab {
+  appearance: none;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0 0 -1px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: #4d5a48;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ns-shaping-chart__tab[aria-selected="true"] {
+  background: #fff;
+  border-color: var(--kin-border, #ddd);
+  color: var(--kbm-green, #52682d);
+}
+
+.ns-shaping-chart__tab:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.ns-shaping-chart__tabpanel[hidden] {
+  display: none !important;
+}
+
 @media print {
   .ns-shaping-chart {
     font-size: 9pt;
@@ -392,6 +447,21 @@
 
   /* Second-shoulder checklist may be `hidden` on screen until toggled — always print it. */
   .ns-shaping-chart--second-shoulder[hidden] {
+    display: block !important;
+  }
+
+  /* Shoulder tabs are screen navigation only — print both panels in document order. */
+  .ns-shaping-chart__tablist,
+  .ns-shaping-chart__tabs-toolbar .ns-shaping-chart__disclosure-actions {
+    display: none !important;
+  }
+
+  .ns-shaping-chart__tabpanel {
+    display: block !important;
+    margin-top: 1rem;
+  }
+
+  .ns-shaping-chart__tabpanel[hidden] {
     display: block !important;
   }
 
