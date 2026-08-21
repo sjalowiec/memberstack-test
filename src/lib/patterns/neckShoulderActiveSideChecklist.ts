@@ -15,6 +15,7 @@ import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
 import {
   displayRcFromGarmentRc,
+  FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES,
   timelineHasComposedArmholeOverlap,
 } from "./frontArmholeNecklineComposition";
 
@@ -53,6 +54,9 @@ export type ActiveSideInstructionTableRow = {
    * `stitchesRemaining` still tracks the active-shoulder count so downstream rows and bind-off math are unaffected.
    */
   stitchesRemainingDisplay?: string;
+  /** Presentation-only: insert the armhole row-counter reset in a Case 4 (neckline-first) checklist. */
+  rowCounterReset?: boolean;
+  rowCounterResetGarmentRc?: number;
 };
 
 /** Back neckline checklist: prepend center divide/setup row at the timeline center-bind-off RC. */
@@ -567,6 +571,27 @@ function buildSideInstructionTableRows(
   const invertCarriage = side === "left";
   const carriageFor = (rc: number) =>
     invertCarriage ? carriagePositionForSecondShoulderRc(rc) : carriagePositionForActiveSideRc(rc);
+  const insertArmholeReset =
+    chart.frontVNeckArmholeComposition?.necklineBeginsBeforeArmhole === true &&
+    originGarmentRc !== undefined &&
+    firstArmholeGarmentRc !== undefined &&
+    originGarmentRc < firstArmholeGarmentRc;
+  let armholeResetInserted = false;
+  const pushArmholeResetIfNeeded = (rel: number, stitchesAtReset: number) => {
+    if (!insertArmholeReset || armholeResetInserted) return;
+    if (originGarmentRc === undefined || firstArmholeGarmentRc === undefined) return;
+    if (originGarmentRc + rel < firstArmholeGarmentRc) return;
+    out.push({
+      rc: 0,
+      carriagePosition: carriageFor(0),
+      action: FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES,
+      edge: "Armhole",
+      stitchesRemaining: stitchesAtReset,
+      rowCounterReset: true,
+      rowCounterResetGarmentRc: firstArmholeGarmentRc,
+    });
+    armholeResetInserted = true;
+  };
 
   const divideInfo =
     side === "right" && shouldIncludeCenterNecklineSetupRow(chart, options)
@@ -615,6 +640,7 @@ function buildSideInstructionTableRows(
         checklistIdx += 1;
         continue;
       }
+      pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
       addActiveSideKnitEvenRow(out, toDisplay(checklistIdx), stitchesRemaining, invertCarriage);
       checklistIdx += 1;
     }
@@ -623,11 +649,16 @@ function buildSideInstructionTableRows(
       displayRc = toDisplay(action.sourceRelativeRow);
     } else {
       while (displayRc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
+        pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
         addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining, invertCarriage);
         checklistIdx += 1;
         displayRc = toDisplay(checklistIdx);
       }
     }
+    pushArmholeResetIfNeeded(
+      source.alignDisplayRcToTimeline ? action.sourceRelativeRow : checklistIdx,
+      stitchesRemaining,
+    );
     stitchesRemaining = Math.max(0, stitchesRemaining - action.amount);
     out.push({
       rc: displayRc,
@@ -646,6 +677,7 @@ function buildSideInstructionTableRows(
       checklistIdx += 1;
       continue;
     }
+    pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
     addActiveSideKnitEvenRow(out, toDisplay(checklistIdx), stitchesRemaining, invertCarriage);
     checklistIdx += 1;
   }
@@ -656,10 +688,12 @@ function buildSideInstructionTableRows(
       ? "Shoulder"
       : "Armhole";
     while (displayRc % 2 !== requiredParityForActiveSideEdge(leftoverEdge)) {
+      pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
       addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining, invertCarriage);
       checklistIdx += 1;
       displayRc = toDisplay(checklistIdx);
     }
+    pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
     const amount = stitchesRemaining;
     const noun = amount === 1 ? "st" : "sts";
     stitchesRemaining = 0;

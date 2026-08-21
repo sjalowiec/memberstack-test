@@ -85,7 +85,12 @@ import {
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 import {
   composeFrontVNeckTimelineWithArmholeOverlap,
+  FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE,
+  FRONT_VNECK_HANDOFF_DURING_ARMHOLE,
+  FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
+  resolveFrontVNeckShapingTimingCase,
   type FrontArmholeNecklineOverlap,
+  type FrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
 import {
   collectOuterShoulderBindOffPoints,
@@ -519,6 +524,8 @@ export type SleevelessBackPatternDebug = {
    * Absent when the neckline starts after armhole shaping is complete.
    */
   frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap;
+  /** Pullover V-neck Front written-instruction timing (presentation only). */
+  frontVNeckShapingTimingCase?: FrontVNeckShapingTimingCase;
 };
 
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
@@ -622,6 +629,7 @@ function section(obj: unknown): Record<string, unknown> {
   return {};
 }
 
+/** Armhole-local RC label. Do not pass a pre-armhole garment RC — that would collapse to RC:000. */
 function formatArmholeLocalRc(garmentRc: number, firstArmholeRC: number): string {
   return formatRcColon(Math.max(0, Math.floor(garmentRc - firstArmholeRC)));
 }
@@ -934,7 +942,7 @@ function extractPlainSpanRowsAndEndRc(
 /** Inverse of {@link formatRcColon} for clamping front shared rows. */
 function parseRcColonLabel(rcLabel: string | undefined): number | undefined {
   if (!rcLabel) return undefined;
-  const m = String(rcLabel).trim().match(/^RC:(\d{1,4})$/);
+  const m = String(rcLabel).trim().match(/^RC:\s*(\d{1,4})$/);
   if (!m) return undefined;
   const n = parseInt(m[1], 10);
   return Number.isFinite(n) ? n : undefined;
@@ -946,15 +954,31 @@ function parseRcColonLabel(rcLabel: string | undefined): number | undefined {
  * RCs never rewind before the FRONT NECKLINE & SHOULDERS section.
  *
  * `frontNecklineStartLocalRC` is measured from **armhole start** (rows into the armhole depth).
- * Block headers before the armhole use **garment** RC (from cast-on). Comparing those two
- * coordinate systems incorrectly dropped or shortened the BODY section — never clamp when the
- * block begins before {@link garmentArmholeStartRC}.
+ * Block headers before the armhole use **garment** RC (from cast-on). When the V-neck divide is
+ * before the armhole, clamp BODY with {@link frontNecklineStartGarmentRC} instead of treating a
+ * negative local RC as “no clamp.”
  */
 function clampFrontSharedRowsBeforeNeckStart(
   rows: readonly SleevelessPatternDisplayRow[],
   frontNecklineStartLocalRC: number | undefined,
   garmentArmholeStartRC: number | undefined,
+  frontNecklineStartGarmentRC?: number,
 ): SleevelessPatternDisplayRow[] {
+  const neckGarment =
+    frontNecklineStartGarmentRC !== undefined && Number.isFinite(frontNecklineStartGarmentRC)
+      ? Math.floor(frontNecklineStartGarmentRC)
+      : undefined;
+  const armholeGarment =
+    garmentArmholeStartRC !== undefined && Number.isFinite(garmentArmholeStartRC)
+      ? Math.floor(garmentArmholeStartRC)
+      : undefined;
+  const neckBeforeArmhole =
+    neckGarment !== undefined && armholeGarment !== undefined && neckGarment < armholeGarment;
+
+  if (neckBeforeArmhole && neckGarment !== undefined) {
+    return clampFrontSharedRowsToGarmentRc(rows, neckGarment);
+  }
+
   if (
     frontNecklineStartLocalRC === undefined ||
     !Number.isFinite(frontNecklineStartLocalRC) ||
@@ -1014,32 +1038,7 @@ function clampFrontSharedRowsBeforeNeckStart(
           ? Math.max(0, neckFirst - startRc)
           : Number.POSITIVE_INFINITY;
 
-    const newParagraphs: string[] = [];
-    for (const p of row.paragraphs) {
-      const span = extractPlainSpanRowsAndEndRc(p, startRc);
-      if (span !== undefined && startRc !== undefined) {
-        const clamped =
-          maxPlainRows === Number.POSITIVE_INFINITY ? span.rows : Math.min(span.rows, maxPlainRows);
-        if (clamped <= 0) continue;
-        const knitInPatternToMerged = p.trim().match(KNIT_IN_PATTERN_TO_RC_RE);
-        if (knitInPatternToMerged) {
-          const lastPlainRc = startRc + clamped - 1;
-          const toRcLabel = inArmholeSection
-            ? `Armhole RC:${String(lastPlainRc).padStart(3, "0")}`
-            : `RC:${String(lastPlainRc).padStart(3, "0")}`;
-          newParagraphs.push(`Knit in pattern to ${toRcLabel}.`);
-          continue;
-        }
-        const spanLine = formatPlainKnitInPatternSpan(clamped, startRc, {
-          armholeLocal: inArmholeSection,
-        });
-        if (spanLine.trim()) newParagraphs.push(spanLine);
-        continue;
-      }
-
-      newParagraphs.push(p);
-    }
-
+    const newParagraphs = clampPlainKnitParagraphs(row.paragraphs, startRc, maxPlainRows, inArmholeSection);
     if (newParagraphs.length === 0) {
       if (row.tipHtml || row.trustedParagraphs?.length) {
         out.push({ ...row, paragraphs: [] });
@@ -1054,6 +1053,99 @@ function clampFrontSharedRowsBeforeNeckStart(
   }
 
   return out;
+}
+
+/** Stop ordinary Front knitting at a garment RC (deep V-neck before the armhole). */
+function clampFrontSharedRowsToGarmentRc(
+  rows: readonly SleevelessPatternDisplayRow[],
+  neckGarmentRc: number,
+): SleevelessPatternDisplayRow[] {
+  const neckFirst = Math.max(0, Math.floor(neckGarmentRc));
+  const out: SleevelessPatternDisplayRow[] = [];
+  let inArmholeSection = false;
+
+  for (const row of rows) {
+    if (row.kind === "section" && row.title === "ARMHOLE") {
+      inArmholeSection = true;
+    }
+    if (row.kind !== "block") {
+      out.push(row);
+      continue;
+    }
+    if (row.rowCounterReset) {
+      out.push(row);
+      continue;
+    }
+    if (row.trustedParagraphs && row.trustedParagraphs.length > 0) {
+      out.push(row);
+      continue;
+    }
+
+    const text = row.paragraphs.join("\n");
+    if (/^Begin armhole shaping\.?$/i.test(text.trim())) {
+      continue;
+    }
+
+    const startRc = parseRcColonLabel(row.rc);
+    if (startRc !== undefined && startRc >= neckFirst) {
+      continue;
+    }
+
+    const maxPlainRows =
+      startRc !== undefined ? Math.max(0, neckFirst - startRc) : Number.POSITIVE_INFINITY;
+    const newParagraphs = clampPlainKnitParagraphs(
+      row.paragraphs,
+      startRc,
+      maxPlainRows,
+      inArmholeSection,
+    );
+    if (newParagraphs.length === 0) {
+      if (row.tipHtml || row.trustedParagraphs?.length) {
+        out.push({ ...row, paragraphs: [] });
+      }
+      continue;
+    }
+
+    out.push({
+      ...row,
+      paragraphs: newParagraphs,
+    });
+  }
+
+  return out;
+}
+
+function clampPlainKnitParagraphs(
+  paragraphs: readonly string[],
+  startRc: number | undefined,
+  maxPlainRows: number,
+  inArmholeSection: boolean,
+): string[] {
+  const newParagraphs: string[] = [];
+  for (const p of paragraphs) {
+    const span = extractPlainSpanRowsAndEndRc(p, startRc);
+    if (span !== undefined && startRc !== undefined) {
+      const clamped =
+        maxPlainRows === Number.POSITIVE_INFINITY ? span.rows : Math.min(span.rows, maxPlainRows);
+      if (clamped <= 0) continue;
+      const knitInPatternToMerged = p.trim().match(KNIT_IN_PATTERN_TO_RC_RE);
+      if (knitInPatternToMerged) {
+        const lastPlainRc = startRc + clamped - 1;
+        const toRcLabel = inArmholeSection
+          ? `Armhole RC:${String(lastPlainRc).padStart(3, "0")}`
+          : `RC:${String(lastPlainRc).padStart(3, "0")}`;
+        newParagraphs.push(`Knit in pattern to ${toRcLabel}.`);
+        continue;
+      }
+      const spanLine = formatPlainKnitInPatternSpan(clamped, startRc, {
+        armholeLocal: inArmholeSection,
+      });
+      if (spanLine.trim()) newParagraphs.push(spanLine);
+      continue;
+    }
+    newParagraphs.push(p);
+  }
+  return newParagraphs;
 }
 
 /** FRONT-only: replace shared BACK armhole checkpoint with neckline / shoulder milestones (Armhole RC). */
@@ -2168,7 +2260,7 @@ export function buildSleevelessBackDisplayRows(args: {
   return rows;
 }
 
-/** Front ARMHOLE prose: only list shaping completed before the neckline divide. */
+/** Front ARMHOLE prose: follow the actual V-neck / armhole timing case. */
 function applyFrontArmholeOverlapSummary(
   rows: readonly SleevelessPatternDisplayRow[],
   overlap: FrontArmholeNecklineOverlap | null | undefined,
@@ -2177,31 +2269,34 @@ function applyFrontArmholeOverlapSummary(
     return [...rows];
   }
 
+  const timing = resolveFrontVNeckShapingTimingCase(overlap);
+  if (timing === "before-armhole") {
+    return dropFrontArmholeSection(rows);
+  }
+
   const completed = overlap.completedDecreaseSts;
   const completedRows = overlap.completedDecreaseLocalRcs.join(" - ");
-  const remainingRows = overlap.remainingDecreaseLocalRcs.join(", ");
   const live = overlap.liveTotalAtDivide;
   const removed = completed * 2;
-  const overlapsInitialBindOffs =
-    overlap.divideGarmentRc <= overlap.firstArmholeGarmentRc + 1;
-  const remainingArmholeNote =
-    remainingRows.length > 0
-      ? `Remaining armhole decreases continue in the Front neckline checklist (Armhole RC ${remainingRows}).`
-      : "Remaining armhole shaping continues in the Front neckline checklist.";
+  const bothBeginTogether = timing === "with-armhole";
+  const handoff = bothBeginTogether
+    ? FRONT_VNECK_HANDOFF_WITH_ARMHOLE
+    : FRONT_VNECK_HANDOFF_DURING_ARMHOLE;
 
   const out: SleevelessPatternDisplayRow[] = [];
   let inArmhole = false;
-  let insertedPreArmholeNote = false;
+  let insertedHandoff = false;
+
+  const pushHandoffIfNeeded = () => {
+    if (insertedHandoff) return;
+    out.push({ kind: "block", paragraphs: [handoff] });
+    insertedHandoff = true;
+  };
+
   for (const row of rows) {
     if (row.kind === "section") {
-      if (row.title === "ARMHOLE" && overlap.necklineBeginsBeforeArmhole && !insertedPreArmholeNote) {
-        out.push({
-          kind: "block",
-          paragraphs: [
-            `The V-neck divide is at garment RC ${String(overlap.divideGarmentRc).padStart(3, "0")}, before the armhole reset. Begin the Front neckline checklist at that row. Armhole bind-offs and decreases that occur after the divide are in that checklist.`,
-          ],
-        });
-        insertedPreArmholeNote = true;
+      if (inArmhole && row.title !== "ARMHOLE") {
+        pushHandoffIfNeeded();
       }
       inArmhole = row.title === "ARMHOLE";
       out.push(row);
@@ -2213,24 +2308,27 @@ function applyFrontArmholeOverlapSummary(
     }
 
     const text = row.paragraphs.join("\n");
-    if (overlapsInitialBindOffs && /Bind off OR hold/i.test(text)) {
+    if (
+      /Armhole depth checkpoint:/i.test(text) ||
+      /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(text) ||
+      /Front neckline shaping begins at Armhole RC/i.test(text)
+    ) {
+      if (!insertedHandoff) {
+        out.push({ ...row, paragraphs: [handoff], stitchCount: undefined });
+        insertedHandoff = true;
+      }
       continue;
     }
-    if (overlapsInitialBindOffs && /Knit across — center front edge/i.test(text)) {
+
+    if (bothBeginTogether && /Bind off OR hold/i.test(text)) {
+      continue;
+    }
+    if (bothBeginTogether && /Knit across — center front edge/i.test(text)) {
       continue;
     }
 
     if (/Decrease 1 stitch at each armhole edge every other row/i.test(text)) {
-      if (overlapsInitialBindOffs || completed <= 0) {
-        out.push({
-          ...row,
-          paragraphs: [
-            overlap.necklineBeginsBeforeArmhole
-              ? `Armhole bind-offs and decreases are worked with the Front neckline checklist after the V-neck divide (garment RC ${String(overlap.divideGarmentRc).padStart(3, "0")}). ${remainingArmholeNote}`
-              : remainingArmholeNote,
-          ],
-          stitchCount: live > 0 ? live : undefined,
-        });
+      if (bothBeginTogether || completed <= 0) {
         continue;
       }
       out.push({
@@ -2238,7 +2336,6 @@ function applyFrontArmholeOverlapSummary(
         paragraphs: [
           `Decrease 1 stitch at each armhole edge every other row, ${completed} time${completed === 1 ? "" : "s"} — ${removed} stitch${removed === 1 ? "" : "es"} removed total.`,
           `Decrease on rows: ${completedRows}`,
-          remainingArmholeNote,
         ],
         stitchCount: live > 0 ? live : undefined,
       });
@@ -2253,6 +2350,25 @@ function applyFrontArmholeOverlapSummary(
       continue;
     }
 
+    out.push(row);
+  }
+  if (inArmhole) {
+    pushHandoffIfNeeded();
+  }
+  return out;
+}
+
+function dropFrontArmholeSection(
+  rows: readonly SleevelessPatternDisplayRow[],
+): SleevelessPatternDisplayRow[] {
+  const out: SleevelessPatternDisplayRow[] = [];
+  let skipArmhole = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      skipArmhole = row.title === "ARMHOLE";
+      if (skipArmhole) continue;
+    }
+    if (skipArmhole) continue;
     out.push(row);
   }
   return out;
@@ -2318,19 +2434,29 @@ export function buildSleevelessFrontDisplayRows(args: {
     });
   }
 
+  const vNeckTiming = resolveFrontVNeckShapingTimingCase(args.armholeNecklineOverlap);
+  const overlapVNeck = args.isVNeck === true && vNeckTiming !== "after-armhole";
+  const bodyEndGarmentRc =
+    vNeckTiming === "before-armhole" && args.armholeNecklineOverlap
+      ? args.armholeNecklineOverlap.divideGarmentRc
+      : args.frontNecklineStartRC;
   const sharedRowsClamped = clampFrontSharedRowsBeforeNeckStart(
     sharedRows,
     args.frontNecklineStartLocalRC,
     args.garmentArmholeStartRC,
+    bodyEndGarmentRc,
   );
+  const sharedRowsWithCase1Milestone = overlapVNeck
+    ? sharedRowsClamped
+    : replaceFrontArmholeCheckpointParagraphs(
+        sharedRowsClamped,
+        args.frontNecklineShapingBeginLocalRC,
+        args.shoulderShapingBeginLocalRC,
+        args.isVNeck,
+        args.frontNecklineCenterDivideLocalRC
+      );
   const sharedRowsFrontMilestones = applyFrontArmholeOverlapSummary(
-    replaceFrontArmholeCheckpointParagraphs(
-      sharedRowsClamped,
-      args.frontNecklineShapingBeginLocalRC,
-      args.shoulderShapingBeginLocalRC,
-      args.isVNeck,
-      args.frontNecklineCenterDivideLocalRC
-    ),
+    sharedRowsWithCase1Milestone,
     args.armholeNecklineOverlap,
   );
 
@@ -2355,22 +2481,33 @@ export function buildSleevelessFrontDisplayRows(args: {
 
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
-    const summary = backNecklineShoulderSummaryParagraphs({
-      neckChartRows: args.neckChartRows,
-      necklineStitches: args.necklineStitches,
-      fullNecklineStitches: args.fullNecklineStitches,
-      shoulderStitches: args.shoulderStitches,
-      includeLifelineReminder: !args.introIsCardiganHalf,
-    });
-    if (summary) {
+    if (vNeckTiming === "before-armhole" && args.isVNeck) {
       rows.push({
         kind: "block",
-        ...backNeckSummaryInstructionFields(summary),
+        paragraphs: [FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE],
         tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
         tipHtmlIsFull: true,
         tipPresentation: "help-card",
         tipId: "sleeveless-neckline-orientation",
       });
+    } else if (!overlapVNeck) {
+      const summary = backNecklineShoulderSummaryParagraphs({
+        neckChartRows: args.neckChartRows,
+        necklineStitches: args.necklineStitches,
+        fullNecklineStitches: args.fullNecklineStitches,
+        shoulderStitches: args.shoulderStitches,
+        includeLifelineReminder: !args.introIsCardiganHalf,
+      });
+      if (summary) {
+        rows.push({
+          kind: "block",
+          ...backNeckSummaryInstructionFields(summary),
+          tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
+          tipHtmlIsFull: true,
+          tipPresentation: "help-card",
+          tipId: "sleeveless-neckline-orientation",
+        });
+      }
     }
   } else {
     rows.push({
@@ -3570,6 +3707,13 @@ export function generateSleevelessBackPattern(
         }
       : {}),
     ...(frontArmholeNecklineOverlap ? { frontArmholeNecklineOverlap } : {}),
+    ...(isFrontVNeck
+      ? {
+          frontVNeckShapingTimingCase: resolveFrontVNeckShapingTimingCase(
+            frontArmholeNecklineOverlap,
+          ),
+        }
+      : {}),
   };
 
   const rowAccountingInput = buildRowAccountingInputFromDebug(debug);

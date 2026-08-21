@@ -224,7 +224,8 @@ describe("sleeveless Front V-neck armhole/neckline overlap (Amanda Case C)", () 
     expect(decrease!.stitchCount).toBe(56);
     expect(decrease!.paragraphs.join("\n")).toMatch(/Decrease on rows: 2 - 4 - 6/);
     expect(decrease!.paragraphs.join("\n")).not.toMatch(/8 - 10 - 12 - 14/);
-    expect(decrease!.paragraphs.join("\n")).toMatch(/Remaining armhole decreases continue/);
+    expect(decrease!.paragraphs.join("\n")).not.toMatch(/Remaining armhole decreases continue/);
+    expect(blocks.some((b) => /Begin V-neck shaping/i.test(b.paragraphs.join("\n")))).toBe(true);
     expect(blocks.some((b) => b.stitchCount === 48)).toBe(false);
   });
 
@@ -521,7 +522,7 @@ describe("sleeveless Front V-neck before the armhole (Case A)", () => {
     expect(heldBo).toBeDefined();
   });
 
-  it("does not show finished B in the Front ARMHOLE section and does not clamp neck rows to RC 000", () => {
+  it("does not show finished B in a Front ARMHOLE section and does not clamp neck rows to RC 000", () => {
     const blocks = armholeBlocks(r.frontDisplayRows);
     expect(blocks.some((b) => b.stitchCount === 88)).toBe(false);
     expect(
@@ -529,6 +530,13 @@ describe("sleeveless Front V-neck before the armhole (Case A)", () => {
         (row) =>
           row.kind === "block" &&
           row.paragraphs.some((p) => /before the armhole reset/i.test(p)),
+      ),
+    ).toBe(false);
+    expect(
+      r.frontDisplayRows.some(
+        (row) =>
+          row.kind === "block" &&
+          row.paragraphs.some((p) => /^Begin V-neck shaping\.?$/i.test(p)),
       ),
     ).toBe(true);
 

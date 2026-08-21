@@ -86,6 +86,54 @@ export function displayRcFromGarmentRc(
   return g < a ? g : g - a;
 }
 
+/** Pullover V-neck Front written-instruction timing (presentation only). */
+export type FrontVNeckShapingTimingCase =
+  | "after-armhole"
+  | "during-armhole"
+  | "with-armhole"
+  | "before-armhole";
+
+export function resolveFrontVNeckShapingTimingCase(
+  overlap: FrontArmholeNecklineOverlap | null | undefined,
+): FrontVNeckShapingTimingCase {
+  if (!overlap) return "after-armhole";
+  const divide = Math.floor(overlap.divideGarmentRc);
+  const armhole = Math.floor(overlap.firstArmholeGarmentRc);
+  if (overlap.necklineBeginsBeforeArmhole || divide < armhole) return "before-armhole";
+  if (divide <= armhole) return "with-armhole";
+  return "during-armhole";
+}
+
+export const FRONT_VNECK_HANDOFF_DURING_ARMHOLE =
+  "Begin V-neck shaping. Armhole shaping is still in progress at the outside edge. Follow the row-by-row instructions below for both neckline and armhole shaping.";
+
+export const FRONT_VNECK_HANDOFF_WITH_ARMHOLE =
+  "Begin V-neck and armhole shaping together. Follow the row-by-row instructions below for shaping at both edges.";
+
+export const FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE = "Begin V-neck shaping.";
+
+export const FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES =
+  "Armhole shaping now begins at the outside edge. Continue the V-neck shaping already in progress.";
+
+/** Page/checklist flags derived from the existing overlap record. */
+export function sleevelessFrontVNeckWrittenPathPresentation(
+  overlap: FrontArmholeNecklineOverlap | null | undefined,
+): {
+  timing: FrontVNeckShapingTimingCase;
+  checklistPrimary: boolean;
+  checklistDefaultOpen: boolean;
+  visualGuidesAfterChecklist: boolean;
+} {
+  const timing = resolveFrontVNeckShapingTimingCase(overlap);
+  const overlapCase = timing !== "after-armhole";
+  return {
+    timing,
+    checklistPrimary: overlapCase,
+    checklistDefaultOpen: overlapCase,
+    visualGuidesAfterChecklist: overlapCase,
+  };
+}
+
 export function pulloverArmholeEvents(args: {
   firstArmholeGarmentRc: number;
   bindOffSts: number;

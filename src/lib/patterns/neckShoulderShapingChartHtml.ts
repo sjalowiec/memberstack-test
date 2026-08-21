@@ -44,7 +44,11 @@ import {
   isCenterNecklineSetupChecklistRow,
   type ActiveSideInstructionTableRow,
 } from "./neckShoulderActiveSideChecklist";
-import { timelineHasOverlappingArmholeDecreases } from "./frontArmholeNecklineComposition";
+import {
+  resolveFrontVNeckShapingTimingCase,
+  timelineHasOverlappingArmholeDecreases,
+} from "./frontArmholeNecklineComposition";
+import { rowCounterResetBlockHtml } from "./rowCounterReset";
 
 export {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -588,6 +592,14 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   }
 
   const vNeckDivide = activeShoulderIntroUsesVNeckDivideCopy(options.chart);
+  const vNeckTiming = resolveFrontVNeckShapingTimingCase(
+    options.chart?.frontVNeckArmholeComposition,
+  );
+  const vNeckBeforeArmhole = vNeckTiming === "before-armhole";
+  const vNeckDivideLabel =
+    vNeckBeforeArmhole && options.chart?.frontVNeckArmholeComposition
+      ? `RC ${options.chart.frontVNeckArmholeComposition.divideGarmentRc}`
+      : options.localStartRcLabel;
   const roundCenterDivide =
     !vNeckDivide &&
     activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart);
@@ -598,7 +610,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const useAtRcPrefix = options.includeWorkflowSteps === true;
   const centerHtml = vNeckDivide
     ? formatActiveShoulderVNeckCenterNecklineHtml({
-        localStartRcLabel: options.localStartRcLabel,
+        localStartRcLabel: vNeckDivideLabel,
         atRcPrefix: useAtRcPrefix,
       })
     : shallowHoldBackDivide
@@ -616,16 +628,22 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
         : "";
   const innerParts: string[] = [];
   if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
-    const divideRc = divideRcDisplayLabel(options.localStartRcLabel);
-    const knitUntilBullet = divideRc
-      ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
-      : `Knit to the neckline shaping row.`;
+    const divideRc = divideRcDisplayLabel(vNeckDivide ? vNeckDivideLabel : options.localStartRcLabel);
+    const knitUntilBullet = vNeckBeforeArmhole
+      ? ""
+      : divideRc
+        ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
+        : `Knit to the neckline shaping row.`;
     const afterDivideBullets = shallowHoldBackDivide
       ? `<li>Stage 1 — work the right shoulder and right neck edge (checklist below). Stage 2 — return held stitches and mirror for the left side.</li><li>Stage 3 — scrap off or bind off all held neckline stitches when both sides are complete.</li>`
       : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;
+    if (knitUntilBullet) {
+      innerParts.push(
+        `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
+        `<ul class="pattern-shaping-step-list"><li>${knitUntilBullet}</li></ul>`,
+      );
+    }
     innerParts.push(
-      `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
-      `<ul class="pattern-shaping-step-list"><li>${knitUntilBullet}</li></ul>`,
       `<p class="pattern-shaping-step-title"><strong>Divide the Neckline</strong></p>`,
       `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li>${afterDivideBullets}</ul>`,
     );
@@ -845,6 +863,11 @@ function renderActiveSideInstructionRowsTrHtml(
 ): string {
   return rows
     .map((r) => {
+      if (r.rowCounterReset) {
+        const rowId = buildActiveSideStableRowId(chartProgressId, r);
+        const rcAttr = chartProgressRcAttrFromActiveRow(r);
+        return `<tr class="ns-shaping-chart__tr ns-shaping-chart__tr--reset" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}"><td class="ns-shaping-chart__td-reset" colspan="5">${rowCounterResetBlockHtml(r.rowCounterResetGarmentRc ?? 0)}<p class="sleeveless-pattern-line">${escapeHtml(r.action)}</p></td></tr>`;
+      }
       const rcDisp = formatActiveSideRcDisplay(r);
       const rowId = buildActiveSideStableRowId(chartProgressId, r);
       const rcAttr = chartProgressRcAttrFromActiveRow(r);
