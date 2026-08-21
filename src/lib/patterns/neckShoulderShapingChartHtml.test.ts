@@ -841,7 +841,7 @@ describe("sleeveless pullover V-neck Front shoulder tabs", () => {
         activeSideRcStart: rcStart,
         includeCenterNecklineSetupRow: true,
         hideCenterNecklineSetupRow: false,
-        tableHeading: "First Shoulder Checklist",
+        tableHeading: "First Side Checklist",
         shoulderTabs: true,
         collapsible: false,
       },
@@ -867,8 +867,10 @@ describe("sleeveless pullover V-neck Front shoulder tabs", () => {
     expect(html).toContain('aria-selected="false"');
     expect(html).toContain('aria-controls="ns-shaping-chart-front-panel-first"');
     expect(html).toContain('aria-controls="ns-shaping-chart-front-panel-second"');
-    expect(html).toContain('>First Shoulder<');
-    expect(html).toContain('>Second Shoulder<');
+    expect(html).toContain('>First Side<');
+    expect(html).toContain('>Second Side<');
+    expect(html).not.toContain('>First Shoulder<');
+    expect(html).not.toContain('>Second Shoulder<');
     expect(html).toContain(`data-chart-id="ns-shaping-chart-front-primary"`);
     expect(html).toContain(`data-chart-id="ns-shaping-chart-front-secondary"`);
     expect(html).toMatch(new RegExp(`${NS_SHOULDER_PANEL_ATTR}="first"(?! hidden)`));
@@ -878,9 +880,11 @@ describe("sleeveless pullover V-neck Front shoulder tabs", () => {
     expect(html).not.toContain("<details class=\"ns-shaping-chart");
     expect(html).not.toContain("Show second shoulder checklist");
     expect(html).not.toContain("Want less mental reversing");
-    expect(html).toContain("FIRST SHOULDER");
-    expect(html).toContain("SECOND SHOULDER");
-    expect(html.indexOf("FIRST SHOULDER")).toBeLessThan(html.indexOf("SECOND SHOULDER"));
+    expect(html).toContain("FIRST SIDE");
+    expect(html).toContain("SECOND SIDE");
+    expect(html.indexOf("FIRST SIDE")).toBeLessThan(html.indexOf("SECOND SIDE"));
+    expect(html).not.toContain("FIRST SHOULDER");
+    expect(html).not.toContain("SECOND SHOULDER");
   });
 
   it("does not convert Back or round Front to tabs unless shoulderTabs is set", () => {
@@ -949,7 +953,7 @@ describe("sleeveless pullover V-neck Front shoulder tabs", () => {
     expect(html).toContain(`data-chart-id="ns-shaping-chart-front-secondary"`);
   });
 
-  it("print/PDF includes FIRST then SECOND SHOULDER even without selecting the second tab", () => {
+  it("print/PDF includes FIRST then SECOND SIDE even without selecting the second tab", () => {
     const { chart, rcStart } = renderFrontTabs(shallowVNeckPattern());
     const printHtml = renderNeckShoulderShapingPrintInstructionTableHtml(chart, "ns-print-front", "", {
       activeSideRcStart: rcStart,
@@ -957,9 +961,11 @@ describe("sleeveless pullover V-neck Front shoulder tabs", () => {
       showSecondShoulderChecklist: true,
       sequentialShoulderHeadings: true,
     });
-    expect(printHtml).toContain("FIRST SHOULDER");
-    expect(printHtml).toContain("SECOND SHOULDER");
-    expect(printHtml.indexOf("FIRST SHOULDER")).toBeLessThan(printHtml.indexOf("SECOND SHOULDER"));
+    expect(printHtml).toContain("FIRST SIDE");
+    expect(printHtml).toContain("SECOND SIDE");
+    expect(printHtml.indexOf("FIRST SIDE")).toBeLessThan(printHtml.indexOf("SECOND SIDE"));
+    expect(printHtml).not.toContain("FIRST SHOULDER");
+    expect(printHtml).not.toContain("SECOND SHOULDER");
     expect(printHtml).not.toContain("Want less mental reversing");
     expect(printHtml).not.toContain('role="tablist"');
     expect(printHtml.match(/<tbody>/g)?.length).toBe(2);

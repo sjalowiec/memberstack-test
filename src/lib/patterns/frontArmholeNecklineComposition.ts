@@ -107,17 +107,17 @@ export function resolveFrontVNeckShapingTimingCase(
 export const FRONT_VNECK_HANDOFF_AFTER_ARMHOLE = "Begin V-neck shaping.";
 
 export const FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST =
-  "Follow the First Shoulder and Second Shoulder checklists below for the exact row-by-row sequence.";
+  "Follow the First Side and Second Side instructions below for the exact row-by-row sequence.";
 
 export const FRONT_VNECK_HANDOFF_DURING_ARMHOLE =
-  "Begin V-neck shaping. Continue the armhole shaping at the outside edge.";
+  "Begin V-neck shaping. Continue the armhole shaping.";
 
 export const FRONT_VNECK_HANDOFF_WITH_ARMHOLE = "Begin V-neck and armhole shaping.";
 
 export const FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE = "Begin V-neck shaping.";
 
 export const FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES =
-  "Begin armhole shaping at the outside edge. Continue V-neck shaping.";
+  "Begin armhole shaping. Continue V-neck shaping.";
 
 /** Page/checklist flags derived from the existing overlap record. */
 export function sleevelessFrontVNeckWrittenPathPresentation(

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST } from "./frontArmholeNecklineComposition";
 import {
-  FRONT_VNECK_SIMULTANEOUS_ARMHOLE_JOINS,
   FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT,
   FRONT_VNECK_SIMULTANEOUS_TOGETHER,
   pulloverVNeckArmholeShapingRemainsAfterDivide,
+  sleevelessPulloverVNeckActionBullet,
   sleevelessPulloverVNeckWrittenSummaryParagraphs,
 } from "./sleevelessFrontVNeckWrittenSummary";
 
@@ -42,7 +42,7 @@ describe("pulloverVNeckArmholeShapingRemainsAfterDivide", () => {
 });
 
 describe("sleevelessPulloverVNeckWrittenSummaryParagraphs", () => {
-  it("with-armhole is concise: simultaneous, divide, compact armhole, checklist handoff", () => {
+  it("with-armhole is concise: simultaneous sentence plus action bullets", () => {
     const paras = sleevelessPulloverVNeckWrittenSummaryParagraphs({
       timing: "with-armhole",
       overlap: remainingOverlap,
@@ -51,13 +51,23 @@ describe("sleevelessPulloverVNeckWrittenSummaryParagraphs", () => {
     });
     const text = paras.join("\n");
     expect(paras[0]).toBe(FRONT_VNECK_SIMULTANEOUS_TOGETHER);
-    expect(text).toMatch(/Divide the Front at center: 51 stitches each side/);
-    expect(text).toMatch(/bind off or hold 4 stitches, then decrease 1 stitch every other row, 3 times, on rows 2, 4, 6/);
-    expect(text).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    expect(text).toContain(
+      sleevelessPulloverVNeckActionBullet(
+        "Divide the Front at center: 51 stitches each side. Place one side on hold.",
+      ),
+    );
+    expect(text).toContain(
+      sleevelessPulloverVNeckActionBullet("At the armhole edge, bind off or hold 4 stitches."),
+    );
+    expect(text).toContain(
+      sleevelessPulloverVNeckActionBullet(
+        "Decrease 1 stitch at the armhole edge every other row, 3 times, on rows 2, 4, 6.",
+      ),
+    );
+    expect(text).toContain(sleevelessPulloverVNeckActionBullet(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST));
+    expect(text).not.toMatch(/inside edge|outside edge/);
     expect(text).not.toMatch(/Each side decreases/);
-    expect(text).not.toMatch(/active side/);
-    expect(text).not.toMatch(/held side/);
-    expect(text).not.toMatch(/carriage side/);
+    expect(text).not.toMatch(/First Shoulder|Second Shoulder/);
   });
 
   it("after-armhole has no simultaneous-shaping sentence", () => {
@@ -91,6 +101,7 @@ describe("sleevelessPulloverVNeckWrittenSummaryParagraphs", () => {
     expect(text).toContain(FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT);
     expect(text).toMatch(/4 more times, on rows 8, 10, 12, 14/);
     expect(text).not.toMatch(/bind off or hold 8/);
+    expect(text).not.toMatch(/inside edge|outside edge/);
   });
 
   it("before-armhole start omits simultaneous copy; join phase includes it", () => {
@@ -117,7 +128,7 @@ describe("sleevelessPulloverVNeckWrittenSummaryParagraphs", () => {
       bindOffSts: 4,
       phase: "armhole-join",
     });
-    expect(join.join("\n")).toContain(FRONT_VNECK_SIMULTANEOUS_ARMHOLE_JOINS);
+    expect(join.join("\n")).toContain(FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT);
     expect(join.join("\n")).toMatch(/bind off or hold 4 stitches/);
     expect(join.join("\n")).not.toMatch(/Divide the Front/);
   });
