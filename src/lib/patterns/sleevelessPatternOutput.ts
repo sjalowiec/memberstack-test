@@ -88,13 +88,16 @@ import {
   displayRcFromGarmentRc,
   FRONT_VNECK_HANDOFF_AFTER_ARMHOLE,
   FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE,
-  FRONT_VNECK_HANDOFF_DURING_ARMHOLE,
   FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
   resolveFrontVNeckShapingTimingCase,
   type FrontArmholeNecklineOverlap,
   type FrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
-import { sleevelessPulloverVNeckWrittenSummaryParagraphs } from "./sleevelessFrontVNeckWrittenSummary";
+import {
+  FRONT_VNECK_HANDOFF_ARMHOLE_JOINS,
+  pulloverVNeckArmholeShapingRemainsAfterDivide,
+  sleevelessPulloverVNeckWrittenSummaryParagraphs,
+} from "./sleevelessFrontVNeckWrittenSummary";
 import {
   collectOuterShoulderBindOffPoints,
   shoulderShapingNotationLinesFromTimeline,
@@ -2348,7 +2351,6 @@ function applyFrontArmholeOverlapSummary(
   summary?: {
     bindOffSts?: number;
     decreaseSts?: number;
-    shoulderStitches?: number;
   },
 ): SleevelessPatternDisplayRow[] {
   if (!overlap) {
@@ -2367,7 +2369,7 @@ function applyFrontArmholeOverlapSummary(
   const bothBeginTogether = timing === "with-armhole";
   const handoff = bothBeginTogether
     ? FRONT_VNECK_HANDOFF_WITH_ARMHOLE
-    : FRONT_VNECK_HANDOFF_DURING_ARMHOLE;
+    : FRONT_VNECK_HANDOFF_AFTER_ARMHOLE;
   const handoffRc = formatRcColon(
     displayRcFromGarmentRc(overlap.divideGarmentRc, overlap.firstArmholeGarmentRc),
   );
@@ -2378,7 +2380,6 @@ function applyFrontArmholeOverlapSummary(
       overlap,
       bindOffSts: summary?.bindOffSts,
       decreaseSts: summary?.decreaseSts,
-      shoulderStitches: summary?.shoulderStitches,
     }),
   ];
 
@@ -2566,7 +2567,6 @@ export function buildSleevelessFrontDisplayRows(args: {
           decreaseSts: args.armholeDecreaseSts,
           liveStitchesAtDivide:
             args.armholeNecklineOverlap?.liveTotalAtDivide ?? args.stitchesAfterArmhole,
-          shoulderStitches: args.shoulderStitches,
         })
       : [];
   const bodyEndGarmentRc =
@@ -2600,7 +2600,6 @@ export function buildSleevelessFrontDisplayRows(args: {
     applyFrontArmholeOverlapSummary(sharedRowsWithCase1Milestone, args.armholeNecklineOverlap, {
       bindOffSts: args.armholeBindOffSts,
       decreaseSts: args.armholeDecreaseSts,
-      shoulderStitches: args.shoulderStitches,
     }),
     args.isVNeck === true && !args.introIsCardiganHalf,
   );
@@ -2636,6 +2635,22 @@ export function buildSleevelessFrontDisplayRows(args: {
         tipPresentation: "help-card",
         tipId: "sleeveless-neckline-orientation",
       });
+      if (pulloverVNeckArmholeShapingRemainsAfterDivide(args.armholeNecklineOverlap)) {
+        rows.push({
+          kind: "block",
+          rc: formatRcColon(0),
+          paragraphs: [
+            FRONT_VNECK_HANDOFF_ARMHOLE_JOINS,
+            ...sleevelessPulloverVNeckWrittenSummaryParagraphs({
+              timing: vNeckTiming,
+              overlap: args.armholeNecklineOverlap,
+              bindOffSts: args.armholeBindOffSts,
+              decreaseSts: args.armholeDecreaseSts,
+              phase: "armhole-join",
+            }),
+          ],
+        });
+      }
     } else if (args.isVNeck && !args.introIsCardiganHalf) {
       // Pullover V-neck handoff is the RC → action block already emitted above.
     } else if (!overlapVNeck) {
