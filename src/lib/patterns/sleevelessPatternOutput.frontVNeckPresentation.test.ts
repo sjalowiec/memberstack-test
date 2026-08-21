@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES,
+  FRONT_VNECK_HANDOFF_AFTER_ARMHOLE,
   FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE,
   FRONT_VNECK_HANDOFF_DURING_ARMHOLE,
+  FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST,
   FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
   sleevelessFrontVNeckWrittenPathPresentation,
 } from "./frontArmholeNecklineComposition";
@@ -157,6 +159,30 @@ function armholeBlocks(rows: readonly SleevelessPatternDisplayRow[]) {
   return out;
 }
 
+function knitToTargetsInSection(
+  rows: readonly SleevelessPatternDisplayRow[],
+  sectionTitle: string,
+): number[] {
+  const out: number[] = [];
+  let inSection = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      inSection = row.title === sectionTitle;
+      continue;
+    }
+    if (!inSection || row.kind !== "block") continue;
+    for (const p of row.paragraphs) {
+      const m = p
+        .trim()
+        .match(
+          /Knit (?:in pattern to |to )(?:Armhole )?RC:?\s*(\d{1,4})/i,
+        );
+      if (m) out.push(parseInt(m[1], 10));
+    }
+  }
+  return out;
+}
+
 function firstShoulderRows(r: ReturnType<typeof generateSleevelessBackPattern>) {
   const chart = r.frontNeckShoulderShapingChart;
   const armholeStart = r.debug.armholeStartRow!;
@@ -189,13 +215,29 @@ describe("sleeveless Front V-neck written presentation — Case 1 after armhole"
     expect(armhole.some((b) => b.rowCounterReset === true)).toBe(true);
     expect(armhole.some((b) => b.paragraphs.some((p) => /Bind off OR hold/i.test(p)))).toBe(true);
     expect(armhole.some((b) => b.stitchCount === r.debug.stitchesAfterArmhole)).toBe(true);
+    const neckLocal = r.debug.frontNecklineStartLocalRC!;
+    const shoulderLocal = r.debug.backNecklineStartLocalRC ?? r.debug.frontNecklineShapingBeginLocalRC;
+    expect(neckLocal).toBeGreaterThan(0);
+    expect(shoulderLocal).toBeGreaterThan(neckLocal);
+    const armholeKnitTo = knitToTargetsInSection(r.frontDisplayRows, "ARMHOLE");
+    expect(armholeKnitTo.length).toBeGreaterThan(0);
+    expect(Math.max(...armholeKnitTo)).toBe(neckLocal);
+    expect(armholeKnitTo.some((t) => t > neckLocal)).toBe(false);
+    expect(armholeKnitTo).not.toContain(shoulderLocal);
     const paras = collectParagraphs(r.frontDisplayRows);
-    expect(paras.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))).toBe(
-      true,
+    expect(paras.some((p) => /row counter was reset at the beginning of armhole shaping/i.test(p))).toBe(
+      false,
     );
+    expect(paras.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))).toBe(
+      false,
+    );
+    expect(paras.some((p) => /Armhole RC/i.test(p))).toBe(false);
+    expect(paras).toContain(FRONT_VNECK_HANDOFF_AFTER_ARMHOLE);
+    expect(paras).toContain(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST);
+    const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_AFTER_ARMHOLE));
+    expect(beginBlock?.rc).toMatch(new RegExp(`RC:\\s*${String(neckLocal).padStart(3, "0")}`));
     expect(paras.some((p) => p === FRONT_VNECK_HANDOFF_DURING_ARMHOLE)).toBe(false);
     expect(paras.some((p) => p === FRONT_VNECK_HANDOFF_WITH_ARMHOLE)).toBe(false);
-    expect(paras.some((p) => /still in progress/i.test(p))).toBe(false);
     expect(sleevelessFrontVNeckWrittenPathPresentation(r.debug.frontArmholeNecklineOverlap)).toEqual({
       timing: "after-armhole",
       checklistPrimary: false,
@@ -220,6 +262,12 @@ describe("sleeveless Front V-neck written presentation — Case 2 during armhole
       true,
     );
     expect(armhole.some((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_DURING_ARMHOLE))).toBe(true);
+    const divideLocal = overlap.divideGarmentRc - armholeStart;
+    const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_DURING_ARMHOLE));
+    expect(beginBlock?.rc).toMatch(new RegExp(`RC:\\s*${String(divideLocal).padStart(3, "0")}`));
+    expect(knitToTargetsInSection(r.frontDisplayRows, "ARMHOLE").every((t) => t <= divideLocal)).toBe(
+      true,
+    );
     expect(armhole.some((b) => b.stitchCount === r.debug.stitchesAfterArmhole)).toBe(false);
     const paras = collectParagraphs(r.frontDisplayRows);
     expect(paras.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))).toBe(
@@ -256,6 +304,8 @@ describe("sleeveless Front V-neck written presentation — Case 3 both begin tog
     const armhole = armholeBlocks(r.frontDisplayRows);
     expect(armhole.some((b) => b.rowCounterReset === true)).toBe(true);
     expect(armhole.some((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE))).toBe(true);
+    const beginBlock = armhole.find((b) => b.paragraphs.includes(FRONT_VNECK_HANDOFF_WITH_ARMHOLE));
+    expect(beginBlock?.rc).toMatch(/RC:\s*000/);
     expect(armhole.some((b) => b.paragraphs.some((p) => /Bind off OR hold/i.test(p)))).toBe(false);
     const paras = collectParagraphs(r.frontDisplayRows);
     expect(paras.some((p) => /begins at Armhole RC 001/i.test(p))).toBe(false);
@@ -291,6 +341,13 @@ describe("sleeveless Front V-neck written presentation — Case 4 neckline befor
     expect(sectionTitles(r.frontDisplayRows)).not.toContain("ARMHOLE");
     const paras = collectParagraphs(r.frontDisplayRows);
     expect(paras).toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
+    const beginBlock = r.frontDisplayRows.find(
+      (row) =>
+        row.kind === "block" && row.paragraphs.includes(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE),
+    );
+    expect(beginBlock && beginBlock.kind === "block" ? beginBlock.rc : undefined).toMatch(
+      new RegExp(`RC:\\s*${String(overlap.divideGarmentRc).padStart(3, "0")}`),
+    );
     expect(paras.some((p) => /begins at Armhole RC/i.test(p))).toBe(false);
     expect(paras.some((p) => /Bind off OR hold/i.test(p))).toBe(false);
   });
@@ -325,6 +382,34 @@ describe("sleeveless Front V-neck written presentation — Case 4 neckline befor
     expect(text).not.toMatch(/begins at Armhole RC 000/i);
     expect(text).not.toMatch(/begins at Armhole RC 001/i);
     expect(sleevelessFrontVNeckWrittenPathPresentation(overlap).visualGuidesAfterChecklist).toBe(true);
+  });
+});
+
+describe("sleeveless Front V-neck knit-to never skips the next shaping event", () => {
+  it.each([
+    ["Case 1 after armhole", shallowVNeckPattern()],
+    ["Case 2 during armhole", amandaVNeckPattern()],
+    ["Case 3 both begin", sameStartVNeckPattern()],
+    ["Case 4 before armhole", vNeckBeforeArmholePattern()],
+  ] as const)("%s", (_label, pattern) => {
+    const r = generateSleevelessBackPattern(pattern);
+    const armholeStart = r.debug.armholeStartRow!;
+    const neckStart = r.debug.frontNecklineStartRC;
+    const neckLocal = r.debug.frontNecklineStartLocalRC;
+    const bodyTargets = knitToTargetsInSection(r.frontDisplayRows, "BODY");
+    if (neckStart < armholeStart) {
+      expect(bodyTargets.every((t) => t <= neckStart)).toBe(true);
+    } else {
+      expect(bodyTargets.every((t) => t <= armholeStart)).toBe(true);
+    }
+    const armholeTargets = knitToTargetsInSection(r.frontDisplayRows, "ARMHOLE");
+    if (neckLocal !== undefined && neckLocal > 0) {
+      expect(armholeTargets.every((t) => t <= neckLocal)).toBe(true);
+    }
+    const paras = collectParagraphs(r.frontDisplayRows);
+    expect(paras.some((p) => /row counter was reset at the beginning of armhole shaping/i.test(p))).toBe(
+      false,
+    );
   });
 });
 

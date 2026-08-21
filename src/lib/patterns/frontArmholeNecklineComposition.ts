@@ -104,16 +104,19 @@ export function resolveFrontVNeckShapingTimingCase(
   return "during-armhole";
 }
 
-export const FRONT_VNECK_HANDOFF_DURING_ARMHOLE =
-  "Begin V-neck shaping. Armhole shaping is still in progress at the outside edge. Follow the row-by-row instructions below for both neckline and armhole shaping.";
+export const FRONT_VNECK_HANDOFF_AFTER_ARMHOLE = "Begin V-neck shaping.";
 
-export const FRONT_VNECK_HANDOFF_WITH_ARMHOLE =
-  "Begin V-neck and armhole shaping together. Follow the row-by-row instructions below for shaping at both edges.";
+export const FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST = "Follow the row-by-row instructions below.";
+
+export const FRONT_VNECK_HANDOFF_DURING_ARMHOLE =
+  "Begin V-neck shaping. Continue the armhole shaping at the outside edge.";
+
+export const FRONT_VNECK_HANDOFF_WITH_ARMHOLE = "Begin V-neck and armhole shaping.";
 
 export const FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE = "Begin V-neck shaping.";
 
 export const FRONT_VNECK_ARMHOLE_BEGINS_WHILE_VNECK_CONTINUES =
-  "Armhole shaping now begins at the outside edge. Continue the V-neck shaping already in progress.";
+  "Begin armhole shaping at the outside edge. Continue V-neck shaping.";
 
 /** Page/checklist flags derived from the existing overlap record. */
 export function sleevelessFrontVNeckWrittenPathPresentation(
