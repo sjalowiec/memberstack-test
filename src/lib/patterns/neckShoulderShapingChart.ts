@@ -5,7 +5,15 @@
 
 import type { RowEntry } from "./shapingTimeline";
 
-export type NeckShoulderChartAction = "Neck" | "Shoulder / Neck" | "Shoulder" | string;
+export type NeckShoulderChartAction =
+  | "Neck"
+  | "Shoulder / Neck"
+  | "Shoulder"
+  | "Armhole"
+  | "Armhole / Neck"
+  | "Armhole / Shoulder"
+  | "Armhole / Shoulder / Neck"
+  | string;
 
 /** One printed row of the shaping chart (machine row numbers are intentional here). */
 export type NeckShoulderShapingChartRow = {

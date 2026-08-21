@@ -27,17 +27,25 @@ function toChartAction(entry: RowEntry): string {
       e.amount > 0 &&
       (e.kind === "bindOff" || e.kind === "decrease" || e.kind === "hold"),
   );
+  const hasArmholeDecrease = entry.events.some(
+    (e) =>
+      e.side !== "center" &&
+      e.edge === "outer" &&
+      e.kind === "decrease" &&
+      e.amount > 0,
+  );
   const hasShoulder = entry.events.some(
     (e) =>
       e.side !== "center" &&
       e.edge === "outer" &&
-      e.amount > 0 &&
-      (e.kind === "bindOff" || e.kind === "decrease")
+      e.kind === "bindOff" &&
+      e.amount > 0,
   );
-  if (hasNeck && hasShoulder) return "Shoulder / Neck";
-  if (hasNeck) return "Neck";
-  if (hasShoulder) return "Shoulder";
-  return "";
+  const parts: string[] = [];
+  if (hasArmholeDecrease) parts.push("Armhole");
+  if (hasShoulder) parts.push("Shoulder");
+  if (hasNeck) parts.push("Neck");
+  return parts.join(" / ");
 }
 
 function sumEvents(entry: RowEntry, side: "left" | "right", edge: "outer" | "inner"): number {
@@ -134,7 +142,7 @@ function annotateSplitCarriageShoulderDisplay(
     let R = 0;
     for (const e of entry.events) {
       if (e.edge !== "outer" || e.amount <= 0) continue;
-      if (e.kind !== "bindOff" && e.kind !== "decrease") continue;
+      if (e.kind !== "bindOff") continue;
       if (e.side === "left") L += e.amount;
       if (e.side === "right") R += e.amount;
     }

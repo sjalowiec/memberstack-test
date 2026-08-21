@@ -13,6 +13,7 @@ import {
 } from "./neckShoulderShapingChart";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import { finalShoulderRemainderStitches } from "./shoulderShapingNotation";
+import { timelineHasOverlappingArmholeDecreases } from "./frontArmholeNecklineComposition";
 
 type ActiveSideEdge = "Neck" | "Armhole";
 
@@ -138,6 +139,37 @@ function shouldIncludeCenterNecklineSetupRow(
 ): boolean {
   if (isSleevelessCardiganFrontNeckShoulderChart(chart)) return false;
   return options?.includeCenterNecklineSetupRow === true && centerNecklineDivideInfo(chart) !== null;
+}
+
+function vNeckDivideSetupInfo(
+  chart: NeckShoulderShapingChart,
+): { left: number; right: number } | null {
+  if (!isFullWidthVNeckFrontStyleChart(chart)) return null;
+  const timeline = chart.timeline;
+  if (!timeline?.length || !timelineHasOverlappingArmholeDecreases(timeline)) return null;
+  const first = [...timeline].sort((a, b) => a.row - b.row)[0];
+  if (!first) return null;
+  return {
+    left: Math.max(0, Math.floor(first.stitchesL)),
+    right: Math.max(0, Math.floor(first.stitchesR)),
+  };
+}
+
+function shouldIncludeVNeckDivideSetupRow(
+  chart: NeckShoulderShapingChart,
+  options?: ActiveShoulderChecklistOptions,
+): boolean {
+  return options?.includeCenterNecklineSetupRow === true && vNeckDivideSetupInfo(chart) !== null;
+}
+
+export function formatVNeckDivideSetupChecklistAction(left: number, right: number): string {
+  const L = Math.max(0, Math.floor(left));
+  const R = Math.max(0, Math.floor(right));
+  const sides =
+    L === R
+      ? `${stitchCountPhrase(L)} on each side`
+      : `${stitchCountPhrase(L)} left, ${stitchCountPhrase(R)} right`;
+  return `Divide at center: ${sides}. ${ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE} ${stitchCountPhrase(R)} on the active side.`;
 }
 
 /** Checklist action text — shallow hold back vs round-neck scrap-off divide intro. */
@@ -475,9 +507,21 @@ export function buildActiveSideInstructionTableRows(
   const divideInfo = shouldIncludeCenterNecklineSetupRow(chart, options)
     ? centerNecklineDivideInfo(chart)
     : null;
-  let checklistIdx = divideInfo ? 1 : 0;
+  const vDivide = shouldIncludeVNeckDivideSetupRow(chart, options)
+    ? vNeckDivideSetupInfo(chart)
+    : null;
+  let checklistIdx = divideInfo || vDivide ? 1 : 0;
   if (divideInfo) {
     out.push(buildCenterNecklineSetupChecklistRow(rcBase, divideInfo, chart));
+  } else if (vDivide) {
+    out.push({
+      rc: rcBase,
+      carriagePosition: carriagePositionForActiveSideRc(rcBase),
+      action: formatVNeckDivideSetupChecklistAction(vDivide.left, vDivide.right),
+      edge: ACTIVE_SHOULDER_CENTER_NECKLINE_SETUP_EDGE,
+      stitchesRemaining: Math.max(0, Math.floor(vDivide.right)),
+      stitchesRemainingDisplay: `${Math.max(0, Math.floor(vDivide.right))} (active side)`,
+    });
   }
   let stitchesRemaining = source.initialStitches;
   const actions = [...source.actions].sort((a, b) => {

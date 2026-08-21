@@ -84,6 +84,10 @@ import {
 } from "./sleevelessPatternFinishing";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 import {
+  composeFrontVNeckTimelineWithArmholeOverlap,
+  type FrontArmholeNecklineOverlap,
+} from "./frontArmholeNecklineComposition";
+import {
   collectOuterShoulderBindOffPoints,
   shoulderShapingNotationLinesFromTimeline,
   totalStitchesFromShapingNotationLines,
@@ -510,6 +514,11 @@ export type SleevelessBackPatternDebug = {
   alineBodyShapingType?: "decrease-to-bust" | "increase-to-bust" | "straight";
   /** Body-block diagram overlay hints for A-line side guides on garment schematics. */
   diagramGuides?: SleevelessBodyDiagramGuides;
+  /**
+   * Pullover V-neck Front only: remaining armhole decreases overlap the neckline.
+   * Absent when the neckline starts after armhole shaping is complete.
+   */
+  frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap;
 };
 
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
@@ -2159,6 +2168,64 @@ export function buildSleevelessBackDisplayRows(args: {
   return rows;
 }
 
+/** Front ARMHOLE prose: only list decreases completed before the neckline divide. */
+function applyFrontArmholeOverlapSummary(
+  rows: readonly SleevelessPatternDisplayRow[],
+  overlap: FrontArmholeNecklineOverlap | null | undefined,
+): SleevelessPatternDisplayRow[] {
+  if (!overlap || overlap.remainingDecreaseLocalRcs.length === 0) {
+    return [...rows];
+  }
+
+  const completed = overlap.completedDecreaseSts;
+  const completedRows = overlap.completedDecreaseLocalRcs.join(" - ");
+  const remainingRows = overlap.remainingDecreaseLocalRcs.join(", ");
+  const live = overlap.liveTotalAtDivide;
+  const removed = completed * 2;
+
+  const out: SleevelessPatternDisplayRow[] = [];
+  let inArmhole = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      inArmhole = row.title === "ARMHOLE";
+      out.push(row);
+      continue;
+    }
+    if (!inArmhole || row.kind !== "block") {
+      out.push(row);
+      continue;
+    }
+
+    const text = row.paragraphs.join("\n");
+    if (/Decrease 1 stitch at each armhole edge every other row/i.test(text)) {
+      if (completed <= 0) {
+        continue;
+      }
+      out.push({
+        ...row,
+        paragraphs: [
+          `Decrease 1 stitch at each armhole edge every other row, ${completed} time${completed === 1 ? "" : "s"} — ${removed} stitch${removed === 1 ? "" : "es"} removed total.`,
+          `Decrease on rows: ${completedRows}`,
+          `Remaining armhole decreases continue in the Front neckline checklist (Armhole RC ${remainingRows}).`,
+        ],
+        stitchCount: live > 0 ? live : undefined,
+      });
+      continue;
+    }
+
+    if (
+      row.stitchCount !== undefined &&
+      row.stitchCount === overlap.stitchesAfterArmhole &&
+      row.stitchCount !== live
+    ) {
+      continue;
+    }
+
+    out.push(row);
+  }
+  return out;
+}
+
 export function buildSleevelessFrontDisplayRows(args: {
   frontNecklineStartRC: number;
   /** Armhole RC where front neckline shaping begins (post armhole reset). */
@@ -2184,6 +2251,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   garmentArmholeStartRC?: number;
   /** When true, armhole checkpoint copy names V-neck and the armhole reset explicitly. */
   isVNeck?: boolean;
+  /** Pullover V-neck: split the Front armhole decrease summary when neckline overlaps. */
+  armholeNecklineOverlap?: FrontArmholeNecklineOverlap | null;
 }): SleevelessPatternDisplayRow[] {
   const sharedRows: SleevelessPatternDisplayRow[] = [];
   let inBackNecklineSection = false;
@@ -2222,12 +2291,15 @@ export function buildSleevelessFrontDisplayRows(args: {
     args.frontNecklineStartLocalRC,
     args.garmentArmholeStartRC,
   );
-  const sharedRowsFrontMilestones = replaceFrontArmholeCheckpointParagraphs(
-    sharedRowsClamped,
-    args.frontNecklineShapingBeginLocalRC,
-    args.shoulderShapingBeginLocalRC,
-    args.isVNeck,
-    args.frontNecklineCenterDivideLocalRC
+  const sharedRowsFrontMilestones = applyFrontArmholeOverlapSummary(
+    replaceFrontArmholeCheckpointParagraphs(
+      sharedRowsClamped,
+      args.frontNecklineShapingBeginLocalRC,
+      args.shoulderShapingBeginLocalRC,
+      args.isVNeck,
+      args.frontNecklineCenterDivideLocalRC
+    ),
+    args.armholeNecklineOverlap,
   );
 
   const rows: SleevelessPatternDisplayRow[] = [];
@@ -2806,6 +2878,7 @@ export function generateSleevelessBackPattern(
 
   let backNeckShoulderTimeline: RowEntry[] | undefined;
   let frontNeckShoulderTimeline: RowEntry[] | undefined;
+  let frontArmholeNecklineOverlap: FrontArmholeNecklineOverlap | null = null;
 
   let backRoundNeckPlan:
     | ReturnType<typeof calculateBackRoundNecklinePlan>
@@ -2979,6 +3052,29 @@ export function generateSleevelessBackPattern(
         });
     frontTimeline = builtFront.timeline;
     frontLiveRows = builtFront.chartRows;
+
+    /** Pullover V-neck only: overlay leftover armhole decreases; keep B in geometry. */
+    if (
+      isFrontVNeck &&
+      !isCardiganHalfFrontBody &&
+      armholeMathResult !== null &&
+      firstArmholeRCNum !== null &&
+      stitchesAfterArmhole !== undefined &&
+      frontTimeline.length > 0
+    ) {
+      const composed = composeFrontVNeckTimelineWithArmholeOverlap(frontTimeline, {
+        firstArmholeGarmentRc: firstArmholeRCNum,
+        armholeStartSts: stitchesAtArmholeStart,
+        bindOffSts: armholeMathResult.bindOffSts,
+        decreaseSts: armholeMathResult.decreaseSts,
+        stitchesAfterArmhole,
+      });
+      if (composed.overlap) {
+        frontArmholeNecklineOverlap = composed.overlap;
+        frontTimeline = composed.timeline;
+        frontLiveRows = neckShoulderChartRowsFromTimeline(frontTimeline);
+      }
+    }
 
     const shoulderReferenceFrontTimeline =
       fullWidthFrontShoulderReference?.timeline ?? frontTimeline;
@@ -3429,6 +3525,7 @@ export function generateSleevelessBackPattern(
           }),
         }
       : {}),
+    ...(frontArmholeNecklineOverlap ? { frontArmholeNecklineOverlap } : {}),
   };
 
   const rowAccountingInput = buildRowAccountingInputFromDebug(debug);
@@ -3582,6 +3679,7 @@ export function generateSleevelessBackPattern(
       introIsCardiganHalf: isCardiganHalfFrontBody,
       garmentArmholeStartRC: armholeStartRC,
       isVNeck: isSleevelessVNeckChoice(patternData),
+      armholeNecklineOverlap: frontArmholeNecklineOverlap,
     })
   );
 
