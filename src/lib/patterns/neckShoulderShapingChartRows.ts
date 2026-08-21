@@ -19,7 +19,10 @@ function fmt(v: number): string {
   return v > 0 ? `-${v}` : "-";
 }
 
-function toChartAction(entry: RowEntry): string {
+function toChartAction(
+  entry: RowEntry,
+  lastArmholeGarmentRc?: number,
+): string {
   const hasNeck = entry.events.some(
     (e) =>
       e.side !== "center" &&
@@ -34,15 +37,21 @@ function toChartAction(entry: RowEntry): string {
       e.kind === "decrease" &&
       e.amount > 0,
   );
-  const hasShoulder = entry.events.some(
+  const hasOuterBindOff = entry.events.some(
     (e) =>
       e.side !== "center" &&
       e.edge === "outer" &&
       e.kind === "bindOff" &&
       e.amount > 0,
   );
+  const bindOffIsArmhole =
+    hasOuterBindOff &&
+    lastArmholeGarmentRc !== undefined &&
+    entry.row <= lastArmholeGarmentRc;
+  const hasArmhole = hasArmholeDecrease || bindOffIsArmhole;
+  const hasShoulder = hasOuterBindOff && !bindOffIsArmhole;
   const parts: string[] = [];
-  if (hasArmholeDecrease) parts.push("Armhole");
+  if (hasArmhole) parts.push("Armhole");
   if (hasShoulder) parts.push("Shoulder");
   if (hasNeck) parts.push("Neck");
   return parts.join(" / ");
@@ -67,11 +76,17 @@ function centerBindOff(entry: RowEntry): number {
 }
 
 /** Chart table rows from a pre-built timeline (e.g. merged front neck + shoulder). */
-export function neckShoulderChartRowsFromTimeline(timeline: RowEntry[]): NeckShoulderShapingChartRow[] {
-  return mapTimelineToChartRows(timeline);
+export function neckShoulderChartRowsFromTimeline(
+  timeline: RowEntry[],
+  options?: { lastArmholeGarmentRc?: number },
+): NeckShoulderShapingChartRow[] {
+  return mapTimelineToChartRows(timeline, options?.lastArmholeGarmentRc);
 }
 
-function mapTimelineToChartRows(timeline: RowEntry[]): NeckShoulderShapingChartRow[] {
+function mapTimelineToChartRows(
+  timeline: RowEntry[],
+  lastArmholeGarmentRc?: number,
+): NeckShoulderShapingChartRow[] {
   const rows = timeline.map((entry) => {
     const leftSide = sumEvents(entry, "left", "outer");
     const leftNeck = sumEvents(entry, "left", "inner");
@@ -81,7 +96,7 @@ function mapTimelineToChartRows(timeline: RowEntry[]): NeckShoulderShapingChartR
 
     return {
       row: entry.row,
-      action: toChartAction(entry),
+      action: toChartAction(entry, lastArmholeGarmentRc),
       leftSide: fmt(leftSide),
       leftNeck: fmt(leftNeck),
       centerNeck: fmt(centerNeck),
@@ -91,7 +106,7 @@ function mapTimelineToChartRows(timeline: RowEntry[]): NeckShoulderShapingChartR
       rightStitchCount: Number.isFinite(entry.stitchesR) ? entry.stitchesR : 0,
     };
   });
-  annotateSplitCarriageShoulderDisplay(timeline, rows);
+  annotateSplitCarriageShoulderDisplay(timeline, rows, lastArmholeGarmentRc);
   applyFinalShoulderBindOffToChartDisplay(timeline, rows);
   return rows;
 }
@@ -133,7 +148,8 @@ function applyFinalShoulderBindOffToChartDisplay(
  */
 function annotateSplitCarriageShoulderDisplay(
   timeline: RowEntry[],
-  rows: NeckShoulderShapingChartRow[]
+  rows: NeckShoulderShapingChartRow[],
+  lastArmholeGarmentRc?: number,
 ): void {
   if (timeline.length !== rows.length) return;
 
@@ -175,6 +191,7 @@ function annotateSplitCarriageShoulderDisplay(
     const nxt = timeline[i + 1]!;
     if (nxt.row !== cur.row + 1) continue;
 
+    if (lastArmholeGarmentRc !== undefined && cur.row <= lastArmholeGarmentRc) continue;
     const { L, R } = outerShoulderLR(cur);
     if (L <= 0 || L !== R) continue;
     if (innerNeckTotal(cur) > 0 || centerBindRow(cur) > 0) continue;

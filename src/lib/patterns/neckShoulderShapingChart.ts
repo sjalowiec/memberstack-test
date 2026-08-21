@@ -3,6 +3,7 @@
  * Replace demo rows with calculated values when wiring live pattern math.
  */
 
+import type { FrontArmholeNecklineOverlap } from "./frontArmholeNecklineComposition";
 import type { RowEntry } from "./shapingTimeline";
 
 export type NeckShoulderChartAction =
@@ -61,6 +62,8 @@ export type NeckShoulderShapingChart = {
   sleevelessFullWidthVNeckFront?: boolean;
   /** When true, front chart intro/completion copy uses cardigan (open-front) wording. */
   sleevelessCardiganFront?: boolean;
+  /** Pullover V-neck Front: garment-RC armhole/neckline composition metadata. */
+  frontVNeckArmholeComposition?: FrontArmholeNecklineOverlap;
 };
 
 export type NeckShoulderShapingChartDisplayRow = {
@@ -379,6 +382,7 @@ export function neckShoulderShapingChartFromRows(
     timeline?: RowEntry[];
     sleevelessFullWidthVNeckFront?: boolean;
     sleevelessCardiganFront?: boolean;
+    frontVNeckArmholeComposition?: FrontArmholeNecklineOverlap;
   },
 ): NeckShoulderShapingChart {
   return {
@@ -401,6 +405,9 @@ export function neckShoulderShapingChartFromRows(
         ? { sleevelessFullWidthVNeckFront: false }
         : {}),
     ...(options?.sleevelessCardiganFront === true ? { sleevelessCardiganFront: true } : {}),
+    ...(options?.frontVNeckArmholeComposition
+      ? { frontVNeckArmholeComposition: options.frontVNeckArmholeComposition }
+      : {}),
   };
 }
 

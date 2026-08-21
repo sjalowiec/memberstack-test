@@ -39,6 +39,7 @@ import {
   armholeLocalRcActiveShoulderChecklistStart,
   armholeLocalRcFirstActiveSideNecklineShapingAction,
   buildActiveSideInstructionTableRows,
+  buildHeldSideInstructionTableRows,
   buildSecondShoulderInstructionTableRows,
   isCenterNecklineSetupChecklistRow,
   type ActiveSideInstructionTableRow,
@@ -1130,16 +1131,37 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     options?.hideCenterNecklineSetupRow === true
       ? activeRowsBuilt.filter((r) => !isCenterNecklineSetupChecklistRow(r))
       : activeRowsBuilt;
-  const oppositeRowsPrep = buildSecondShoulderInstructionTableRows(activeRowsRaw);
+  const oppositeRowsPrepRaw = chart.frontVNeckArmholeComposition
+    ? buildHeldSideInstructionTableRows(
+        chart,
+        activeSideRcStart,
+        activeShoulderChecklistOptions(options),
+      )
+    : buildSecondShoulderInstructionTableRows(activeRowsRaw);
+  const oppositeRowsPrep =
+    options?.hideCenterNecklineSetupRow === true
+      ? oppositeRowsPrepRaw.filter((r) => !isCenterNecklineSetupChecklistRow(r))
+      : oppositeRowsPrepRaw;
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
         vNeckStyleOneRowPerRc
           ? oppositeRowsPrep
-          : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, { invertCarriageParity: true }),
+          : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, {
+              invertCarriageParity: !chart.frontVNeckArmholeComposition,
+            }),
         progressChartIdSecondary,
       )
     : "";
-  const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
+  const heldShoulderStitches = Math.max(
+    0,
+    Math.floor(
+      Number(
+        chart.frontVNeckArmholeComposition?.heldAfterDivideRow ??
+          chart.rows[0]?.leftStitchCount ??
+          0,
+      ),
+    ),
+  );
   const isCardiganFront = activeShoulderIntroIsCardiganFront({
     chart,
     isCardiganFront: options?.isCardiganFront,
@@ -1378,11 +1400,30 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     : compactActiveSideInstructionRowsForPrint(printRowsRaw);
   const showSecondShoulderChecklist =
     !isCardiganFront && options?.showSecondShoulderChecklist === true;
-  const oppositePrintRowsRaw = buildSecondShoulderInstructionTableRows(printRowsRaw);
+  const oppositePrintRowsRaw = chart.frontVNeckArmholeComposition
+    ? buildHeldSideInstructionTableRows(
+        chart,
+        activeSideRcStart,
+        options?.includeCenterNecklineSetupRow === true
+          ? { includeCenterNecklineSetupRow: true }
+          : undefined,
+      )
+    : buildSecondShoulderInstructionTableRows(printRowsRaw);
   const oppositePrintRows = vNeckStyleOneRowPerRc
     ? oppositePrintRowsRaw
-    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, { invertCarriageParity: true });
-  const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
+    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, {
+        invertCarriageParity: !chart.frontVNeckArmholeComposition,
+      });
+  const heldShoulderStitches = Math.max(
+    0,
+    Math.floor(
+      Number(
+        chart.frontVNeckArmholeComposition?.heldAfterDivideRow ??
+          chart.rows[0]?.leftStitchCount ??
+          0,
+      ),
+    ),
+  );
   const rowsHtml = printRows
     .map((r) => {
       const rcDisp = formatActiveSideRcDisplay(r);

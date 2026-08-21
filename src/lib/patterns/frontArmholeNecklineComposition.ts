@@ -1,31 +1,39 @@
 /**
- * Front-only composition: overlay unfinished armhole decreases onto an existing
- * V-neck neck/shoulder timeline without changing armhole or neckline geometry.
- *
- * Geometry still uses finished post-armhole width B. This walk uses live stitches
- * at each Armhole RC so the knitter sees the real count when the neckline starts
- * before the armhole decrease schedule is finished.
+ * Front pullover V-neck composition: merge independent armhole and neckline
+ * schedules on garment RC. Geometry still uses finished B. After the V divide,
+ * each half is tracked separately.
  */
 
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import { vNeckDivideSideStartsFromLiveStitches } from "./legoBlocks/vNeckline";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 
+export type FrontArmholeEvent = {
+  garmentRc: number;
+  kind: "bindOff" | "decrease";
+  /** Which half owns this outer-edge event. */
+  side: "left" | "right";
+  amount: number;
+};
+
 export type FrontArmholeNecklineOverlap = {
-  /** Armhole-local RCs already worked before the neckline divide (e.g. 2, 4, 6). */
-  completedDecreaseLocalRcs: number[];
-  /** Armhole-local RCs that still fall on/after the divide (e.g. 8, 10, 12, 14). */
-  remainingDecreaseLocalRcs: number[];
-  /** Live total after completed decreases (Amanda: 56), not finished B. */
+  divideGarmentRc: number;
+  firstArmholeGarmentRc: number;
+  necklineBeginsBeforeArmhole: boolean;
+  /** Full-Front live stitches at the divide, before same-row half events. */
   liveTotalAtDivide: number;
   leftAtDivide: number;
   rightAtDivide: number;
+  /** Left (held) count after same-row events on the divide garment RC. */
+  heldAfterDivideRow: number;
+  /** Right (active) count after same-row events on the divide garment RC. */
+  activeAfterDivideRow: number;
+  completedDecreaseLocalRcs: number[];
+  remainingDecreaseLocalRcs: number[];
   completedDecreaseSts: number;
   remainingDecreaseSts: number;
-  /**
-   * Finished post-armhole width B from geometry. Display must not show this
-   * as the live count until remaining armhole decreases are actually worked.
-   */
+  /** Last garment RC that still carries an Armhole (not Shoulder) outer event. */
+  lastArmholeGarmentRc: number;
   stitchesAfterArmhole: number;
 };
 
@@ -43,30 +51,58 @@ export function armholeDecreaseLocalRcs(decreaseSts: number): number[] {
 }
 
 /**
- * Live total-front stitches after working through `afterLocalRc` (inclusive)
- * of the pullover (two-edge) armhole schedule.
+ * Full-width Front live count after armhole events with garment RC **strictly before**
+ * `beforeGarmentRc`. Same-row events are not included (divide happens first on that row).
  */
-export function liveFrontStitchesAfterArmholeLocalRc(args: {
+export function liveFrontStitchesBeforeGarmentRc(args: {
   armholeStartSts: number;
   bindOffSts: number;
   decreaseSts: number;
-  afterLocalRc: number;
+  firstArmholeGarmentRc: number;
+  beforeGarmentRc: number;
 }): number {
-  const start = Math.max(0, Math.floor(args.armholeStartSts));
-  const bo = Math.max(0, Math.floor(args.bindOffSts));
-  const after = Math.floor(args.afterLocalRc);
-  if (!Number.isFinite(after) || after < 0) return start;
-
-  let sts = start;
-  sts -= bo;
-  if (after < 1) return Math.max(0, sts);
-  sts -= bo;
-
-  for (const rc of armholeDecreaseLocalRcs(args.decreaseSts)) {
-    if (rc > after) break;
-    sts -= 2;
+  const events = pulloverArmholeEvents({
+    firstArmholeGarmentRc: args.firstArmholeGarmentRc,
+    bindOffSts: args.bindOffSts,
+    decreaseSts: args.decreaseSts,
+  });
+  let sts = Math.max(0, Math.floor(args.armholeStartSts));
+  const before = Math.floor(args.beforeGarmentRc);
+  for (const ev of events) {
+    if (ev.garmentRc >= before) break;
+    sts -= ev.amount;
   }
   return Math.max(0, sts);
+}
+
+/** Display RC: garment number before the armhole reset, Armhole-local after. */
+export function displayRcFromGarmentRc(
+  garmentRc: number,
+  firstArmholeGarmentRc: number,
+): number {
+  const g = Math.floor(garmentRc);
+  const a = Math.floor(firstArmholeGarmentRc);
+  if (!Number.isFinite(g) || !Number.isFinite(a)) return Math.max(0, g);
+  return g < a ? g : g - a;
+}
+
+export function pulloverArmholeEvents(args: {
+  firstArmholeGarmentRc: number;
+  bindOffSts: number;
+  decreaseSts: number;
+}): FrontArmholeEvent[] {
+  const start = Math.floor(args.firstArmholeGarmentRc);
+  const bo = Math.max(0, Math.floor(args.bindOffSts));
+  const out: FrontArmholeEvent[] = [];
+  if (bo > 0) {
+    out.push({ garmentRc: start, kind: "bindOff", side: "right", amount: bo });
+    out.push({ garmentRc: start + 1, kind: "bindOff", side: "left", amount: bo });
+  }
+  for (const local of armholeDecreaseLocalRcs(args.decreaseSts)) {
+    out.push({ garmentRc: start + local, kind: "decrease", side: "right", amount: 1 });
+    out.push({ garmentRc: start + local, kind: "decrease", side: "left", amount: 1 });
+  }
+  return out;
 }
 
 export function timelineHasOverlappingArmholeDecreases(timeline: readonly RowEntry[]): boolean {
@@ -77,14 +113,26 @@ export function timelineHasOverlappingArmholeDecreases(timeline: readonly RowEnt
   );
 }
 
-function garmentRcToLocal(garmentRc: number, firstArmholeGarmentRc: number): number {
-  return Math.max(0, Math.floor(garmentRc) - Math.floor(firstArmholeGarmentRc));
+export function timelineHasComposedArmholeOverlap(timeline: readonly RowEntry[]): boolean {
+  if (timelineHasOverlappingArmholeDecreases(timeline)) return true;
+  const first = [...timeline].sort((a, b) => a.row - b.row)[0];
+  if (!first) return false;
+  return first.events.some(
+    (ev) => ev.edge === "outer" && ev.kind === "bindOff" && ev.amount > 0,
+  );
+}
+
+function eventsForGarmentRc(
+  events: readonly FrontArmholeEvent[],
+  garmentRc: number,
+): FrontArmholeEvent[] {
+  return events.filter((e) => e.garmentRc === garmentRc);
 }
 
 function rebuildCountsFromLiveDivide(
   timeline: readonly RowEntry[],
   liveTotalAtDivide: number,
-  remainingDecreaseGarmentRcs: ReadonlySet<number>,
+  remainingArmholeEvents: readonly FrontArmholeEvent[],
 ): RowEntry[] {
   const { left: leftStart, right: rightStart } =
     vNeckDivideSideStartsFromLiveStitches(liveTotalAtDivide);
@@ -102,9 +150,13 @@ function rebuildCountsFromLiveDivide(
       .filter((e) => !(e.edge === "outer" && e.kind === "decrease"))
       .map((e) => ({ ...e }));
 
-    if (remainingDecreaseGarmentRcs.has(entry.row)) {
-      events.push({ kind: "decrease", side: "left", edge: "outer", amount: 1 });
-      events.push({ kind: "decrease", side: "right", edge: "outer", amount: 1 });
+    for (const ev of eventsForGarmentRc(remainingArmholeEvents, entry.row)) {
+      events.push({
+        kind: ev.kind,
+        side: ev.side,
+        edge: "outer",
+        amount: ev.amount,
+      });
     }
 
     const startL = leftCount;
@@ -152,9 +204,9 @@ function rebuildCountsFromLiveDivide(
 }
 
 /**
- * If the Front V-neck divide falls before the last armhole decrease, overlay those
- * remaining outer decreases and recast per-side counts from the live total.
- * Returns the original timeline when there is no overlap (shallow neck).
+ * Merge leftover armhole events onto the V-neck timeline by garment RC.
+ * Returns the original timeline when every armhole event is already finished
+ * before the divide (shallow neck).
  */
 export function composeFrontVNeckTimelineWithArmholeOverlap(
   timeline: readonly RowEntry[],
@@ -170,37 +222,83 @@ export function composeFrontVNeckTimelineWithArmholeOverlap(
     return { timeline: [...timeline], overlap: null };
   }
 
-  const divideLocal = garmentRcToLocal(first.row, firstArmhole);
-  const allDec = armholeDecreaseLocalRcs(input.decreaseSts);
-  const completedDecreaseLocalRcs = allDec.filter((rc) => rc < divideLocal);
-  const remainingDecreaseLocalRcs = allDec.filter((rc) => rc >= divideLocal);
-
-  if (remainingDecreaseLocalRcs.length === 0) {
+  const divideGarmentRc = Math.floor(first.row);
+  const allArmhole = pulloverArmholeEvents({
+    firstArmholeGarmentRc: firstArmhole,
+    bindOffSts: input.bindOffSts,
+    decreaseSts: input.decreaseSts,
+  });
+  const remainingArmhole = allArmhole.filter((e) => e.garmentRc >= divideGarmentRc);
+  if (remainingArmhole.length === 0) {
     return { timeline: [...timeline], overlap: null };
   }
 
-  const liveTotalAtDivide = liveFrontStitchesAfterArmholeLocalRc({
+  const liveTotalAtDivide = liveFrontStitchesBeforeGarmentRc({
     armholeStartSts: input.armholeStartSts,
     bindOffSts: input.bindOffSts,
     decreaseSts: input.decreaseSts,
-    afterLocalRc: divideLocal,
+    firstArmholeGarmentRc: firstArmhole,
+    beforeGarmentRc: divideGarmentRc,
   });
   const sides = vNeckDivideSideStartsFromLiveStitches(liveTotalAtDivide);
-  const remainingGarment = new Set(
-    remainingDecreaseLocalRcs.map((local) => firstArmhole + local),
+  const timelineWithArmholeRows = insertMissingGarmentRows(
+    timeline,
+    remainingArmhole.map((e) => e.garmentRc),
   );
+  const composed = rebuildCountsFromLiveDivide(
+    timelineWithArmholeRows,
+    liveTotalAtDivide,
+    remainingArmhole,
+  );
+  const divideRow = composed.find((e) => e.row === divideGarmentRc) ?? composed[0]!;
+
+  const decLocals = armholeDecreaseLocalRcs(input.decreaseSts);
+  const completedDecreaseLocalRcs = decLocals.filter((rc) => firstArmhole + rc < divideGarmentRc);
+  const remainingDecreaseLocalRcs = decLocals.filter((rc) => firstArmhole + rc >= divideGarmentRc);
 
   return {
-    timeline: rebuildCountsFromLiveDivide(timeline, liveTotalAtDivide, remainingGarment),
+    timeline: composed,
     overlap: {
-      completedDecreaseLocalRcs,
-      remainingDecreaseLocalRcs,
+      divideGarmentRc,
+      firstArmholeGarmentRc: firstArmhole,
+      necklineBeginsBeforeArmhole: divideGarmentRc < firstArmhole,
       liveTotalAtDivide,
       leftAtDivide: sides.left,
       rightAtDivide: sides.right,
+      heldAfterDivideRow: Math.max(0, Math.floor(divideRow.stitchesL)),
+      activeAfterDivideRow: Math.max(0, Math.floor(divideRow.stitchesR)),
+      completedDecreaseLocalRcs,
+      remainingDecreaseLocalRcs,
       completedDecreaseSts: completedDecreaseLocalRcs.length,
       remainingDecreaseSts: remainingDecreaseLocalRcs.length,
+      lastArmholeGarmentRc: Math.max(...remainingArmhole.map((e) => e.garmentRc)),
       stitchesAfterArmhole: Math.round(input.stitchesAfterArmhole),
     },
   };
+}
+
+function insertMissingGarmentRows(
+  timeline: readonly RowEntry[],
+  garmentRcs: readonly number[],
+): RowEntry[] {
+  const sorted = [...timeline].sort((a, b) => a.row - b.row);
+  const have = new Set(sorted.map((e) => e.row));
+  const extra = [...new Set(garmentRcs)]
+    .filter((rc) => Number.isFinite(rc) && !have.has(rc))
+    .sort((a, b) => a - b);
+  if (extra.length === 0) return sorted;
+  const first = sorted[0];
+  if (!first) return sorted;
+  for (const rc of extra) {
+    const prev = [...sorted].reverse().find((e) => e.row < rc) ?? first;
+    sorted.push({
+      ...prev,
+      row: rc,
+      events: [],
+      netChangeL: 0,
+      netChangeR: 0,
+    });
+    sorted.sort((a, b) => a.row - b.row);
+  }
+  return sorted;
 }
