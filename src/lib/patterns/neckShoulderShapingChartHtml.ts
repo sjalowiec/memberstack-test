@@ -43,6 +43,7 @@ import {
   isCenterNecklineSetupChecklistRow,
   type ActiveSideInstructionTableRow,
 } from "./neckShoulderActiveSideChecklist";
+import { timelineHasOverlappingArmholeDecreases } from "./frontArmholeNecklineComposition";
 
 export {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -756,6 +757,17 @@ function formatActiveSideRc(rc: number): string {
   return String(Math.max(0, Math.floor(rc))).padStart(3, "0");
 }
 
+function activeSideStsRemainingHeader(chart?: NeckShoulderShapingChart): string {
+  if (
+    chart &&
+    isFullWidthVNeckFrontStyleChart(chart) &&
+    timelineHasOverlappingArmholeDecreases(chart.timeline ?? [])
+  ) {
+    return "Sts Remaining (active side)";
+  }
+  return "Sts Remaining";
+}
+
 /**
  * Sts Remaining cell text for a checklist row — uses the optional divide/transition display string
  * (e.g. `37 needles in work`) when present, otherwise the numeric active-shoulder count.
@@ -1180,7 +1192,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
               ? `${activeSideRcHeader}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>`
+          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>`
               : `<th scope="col" rowspan="2" class="ns-shaping-chart__th-row">Row</th>
           <th scope="col" rowspan="2" class="ns-shaping-chart__th-action">Action</th>
           <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Left</th>
@@ -1220,7 +1232,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
           ${activeSideRcHeader}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>
+          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>
         </tr>
       </thead>
       <tbody>${oppositeRowsHtml}</tbody>
@@ -1402,14 +1414,18 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
           <th scope="col">Carriage Position</th>
           <th scope="col">Action</th>
           <th scope="col">Edge</th>
-          <th scope="col">Sts Remaining</th>
+          <th scope="col">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>
         </tr>
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
   </div>
   ${renderActiveSideBindoffRemainingHtml(printRowsRaw, "ns-shaping-mini__bindoff-remaining")}
-  <p class="ns-shaping-mini__sts-note">Sts Remaining is for this side only.</p>
+  <p class="ns-shaping-mini__sts-note">${
+    activeSideStsRemainingHeader(chart) === "Sts Remaining (active side)"
+      ? "Sts Remaining is for the active side after the divide."
+      : "Sts Remaining is for this side only."
+  }</p>
   <p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, false, isCardiganFront)}</p>
   ${
     showSecondShoulderChecklist
@@ -1423,7 +1439,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
             <th scope="col">Carriage Position</th>
             <th scope="col">Action</th>
             <th scope="col">Edge</th>
-            <th scope="col">Sts Remaining</th>
+            <th scope="col">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>
           </tr>
         </thead>
         <tbody>${oppositeRowsHtml}</tbody>

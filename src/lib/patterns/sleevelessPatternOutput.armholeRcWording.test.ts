@@ -203,10 +203,10 @@ describe("sleeveless armhole RC wording", () => {
       if (row.kind === "section" && row.title !== "BODY") inBody = false;
       if (!inBody || row.kind !== "block") continue;
       const p = row.paragraphs[0]?.trim() ?? "";
-      if (/^Knit to /i.test(p)) bodyKnitTo = p;
+      if (/^Knit (?:to |\d+ rows?(?: even)? to )/i.test(p)) bodyKnitTo = p;
     }
     expect(bodyKnitTo).toBeDefined();
-    expect(bodyKnitTo).toMatch(/^Knit to RC \d+\.$/);
+    expect(bodyKnitTo).toMatch(/^Knit (?:to RC \d+|\d+ rows?(?: even)? to RC \d+)\.$/);
     expect(bodyKnitTo).not.toMatch(/Armhole/i);
   });
 

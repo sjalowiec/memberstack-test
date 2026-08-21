@@ -338,16 +338,18 @@ describe("center neckline divide/setup row moved out of the online checklist", (
     expect(remaining).toEqual(built.slice(1));
   });
 
-  it("V-neck front: no center divide/setup row exists, so the first table row is already real shaping", () => {
+  it("V-neck front overlap: divide/setup row is present; hiding it leaves real shaping first", () => {
     const r = generateSleevelessBackPattern(vNeckPattern());
     const chart = r.frontNeckShoulderShapingChart;
-    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.debug.armholeStartRow, {
       includeCenterNecklineSetupRow: true,
     });
     const builtRows = buildActiveSideInstructionTableRows(chart, rcStart, {
       includeCenterNecklineSetupRow: true,
     });
-    expect(builtRows.some((row) => row.edge === "Center")).toBe(false);
+    expect(r.debug.frontArmholeNecklineOverlap).toBeDefined();
+    expect(builtRows.some((row) => row.edge === "Center")).toBe(true);
+    expect(builtRows.find((row) => row.edge === "Center")?.action).toMatch(/Divide at center/i);
 
     const intro = buildIntro(chart, "RC:100");
     const tableHidden = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-hide-front", intro, {
