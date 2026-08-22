@@ -849,6 +849,172 @@
     min-width: 0;
   }
 
+  /*
+   * Sleeveless finished-pattern reading layout (Hat-style visual workspace).
+   * - < 1100px: stacked; visual workspace first (unlike Hat — Front is much longer)
+   * - ≥ 1100px: ~62% instructions / ~38% Garment Dimensions
+   * Must beat the shared 768px garment-columns grid and the app-shell 420px clamp.
+   */
+  #pattern-content .pattern-layout.pattern-layout--garment-columns.sleeveless-pattern-reading-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  #pattern-content .sleeveless-pattern-reading-layout__instructions,
+  #pattern-content .sleeveless-pattern-reading-layout__diagram {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #pattern-content .pattern-layout.sleeveless-pattern-reading-layout > .sleeveless-pattern-reading-layout__diagram {
+    order: -1;
+    position: static;
+    top: auto;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-panel {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-panel__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-panel__svg {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-panel__svg svg,
+  #pattern-content .sleeveless-pattern-diagram-tabs__panel svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-print-heading {
+    display: none;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-shaping-help {
+    margin: 0 0 0.75rem;
+    max-width: 100%;
+  }
+
+  #pattern-content .sleeveless-pattern-diagram-shaping-help__btn.kbm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: auto;
+    max-width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 1.125rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+  }
+
+  @media (max-width: 767px) {
+    #pattern-content .sleeveless-pattern-diagram-shaping-help__btn.kbm-btn {
+      width: 100%;
+    }
+
+    #pattern-content .pattern-layout.sleeveless-pattern-reading-layout > .sleeveless-pattern-reading-layout__diagram {
+      position: static;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1099.98px) {
+    .pattern-app-shell #pattern-content .pattern-layout.pattern-layout--garment-columns.sleeveless-pattern-reading-layout,
+    #pattern-content .pattern-layout.pattern-layout--garment-columns.sleeveless-pattern-reading-layout,
+    #pattern-content .sleeveless-piece-split.sleeveless-pattern-reading-layout {
+      display: flex;
+      flex-direction: column;
+      grid-template-columns: none;
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+
+    #pattern-content .pattern-layout.sleeveless-pattern-reading-layout > .sleeveless-pattern-reading-layout__diagram {
+      order: -1;
+      position: static;
+      top: auto;
+      justify-self: stretch;
+    }
+
+    #pattern-content .sleeveless-pattern-reading-layout .sleeveless-piece-split__diagram-inner,
+    #pattern-content .sleeveless-pattern-diagram-panel {
+      width: 100%;
+      max-width: min(100%, 36rem);
+      margin-inline: auto;
+    }
+
+    #pattern-content .sleeveless-pattern-diagram-panel__svg {
+      max-width: min(100%, 36rem);
+      margin-inline: auto;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .pattern-app-shell #pattern-content .pattern-layout.pattern-layout--garment-columns.sleeveless-pattern-reading-layout,
+    #pattern-content .pattern-layout.pattern-layout--garment-columns.sleeveless-pattern-reading-layout,
+    #pattern-content .sleeveless-piece-split.sleeveless-pattern-reading-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+      gap: clamp(1.25rem, 2.5vw, 2rem);
+      align-items: start;
+    }
+
+    #pattern-content .pattern-layout.sleeveless-pattern-reading-layout > .sleeveless-pattern-reading-layout__diagram {
+      order: 0;
+      position: sticky;
+      top: var(--fixed-header-offset, 90px);
+      align-self: start;
+      justify-self: stretch;
+      width: auto;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    #pattern-content .sleeveless-pattern-reading-layout .sleeveless-piece-split__diagram-inner,
+    #pattern-content .sleeveless-pattern-diagram-panel {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+    }
+
+    #pattern-content .sleeveless-pattern-diagram-panel__svg {
+      max-width: 100%;
+      margin-inline: auto;
+    }
+  }
+
   #pattern-content .sleeveless-piece-split__diagram-inner {
     margin: 0;
   }
@@ -2369,6 +2535,24 @@
       display: block !important;
       visibility: visible !important;
       overflow: visible !important;
+    }
+
+    #pattern-content .sleeveless-pattern-diagram-tabs__list,
+    #pattern-content .sleeveless-pattern-diagram-shaping-help {
+      display: none !important;
+    }
+
+    #pattern-content .sleeveless-pattern-diagram-print-heading {
+      display: block !important;
+    }
+
+    #pattern-content .sleeveless-pattern-diagram-tabs__panel,
+    #pattern-content .sleeveless-pattern-diagram-tabs__panel[hidden],
+    #pattern-content .sleeveless-pattern-reading-layout .pattern-diagram-tabs__panel,
+    #pattern-content .sleeveless-pattern-reading-layout .pattern-diagram-tabs__panel[hidden] {
+      display: block !important;
+      visibility: visible !important;
+      margin-top: 0.85rem;
     }
 
     #pattern-content .pattern-layout.pattern-layout--garment-columns,
