@@ -28,7 +28,7 @@ function catalogSlice(startMarker: string, endMarker: string): string {
 describe("pattern catalog Hat card", () => {
   it("lists Hat as an available card using the production builder photo and route", () => {
     expect(catalog).toContain("title: 'Hat'");
-    expect(catalog).toContain("href: '/patterns/hat/builder'");
+    expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
     expect(catalog).toContain("image: HAT_PATTERN_HERO_IMAGE_SRC");
     expect(catalog).not.toContain("/images/patterns/Hat_builder.png");
     expect(catalog).toContain(
@@ -66,8 +66,18 @@ describe("pattern catalog Hat card", () => {
     expect(sleevelessBuilder).toContain("SleevelessPatternMemberGate");
     expect(dropShoulderBuilder).toContain("SleevelessPatternMemberGate");
     expect(hatBuilder).not.toContain("SleevelessPatternMemberGate");
-    expect(catalog).toContain("href: '/patterns/hat/builder'");
+    expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
+    expect(catalog).not.toMatch(/href:\s*['"]\/patterns\/hat\/builder['"]/);
     expect(catalog).not.toMatch(/href:\s*['"]\/patterns\/hat['"]/);
+  });
+
+  it("Create your hat and the guest featured CTA start a new Hat session, not a draft resume", () => {
+    expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
+    expect(catalog).toContain("button: 'Create your hat'");
+    expect(catalog).toContain("{hatPattern.href}");
+    expect(catalog).toContain("CREATE MY FREE HAT PATTERN");
+    expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
   });
 
   it("swaps the hero action by login state: About for logged-out, My Patterns for logged-in", () => {
