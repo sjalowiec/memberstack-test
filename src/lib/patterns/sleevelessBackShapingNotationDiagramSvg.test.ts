@@ -328,6 +328,82 @@ function expectYsInViewBox(svg: string): void {
   }
 }
 
+/**
+ * SVG Y increases downward. Earlier knitting is a larger Y (lower on the garment).
+ * Armhole path points are side → BO → last decrease → even/shoulder.
+ */
+function expectArmholeBottomUpChronology(
+  svg: string,
+  result: ReturnType<typeof generateSleevelessBackPattern>,
+): void {
+  const startY = svgNum(svg, "data-armhole-start-y");
+  const lastDecY = svgNum(svg, "data-last-armhole-y");
+  const shoulderY = svgNum(svg, "data-shoulder-y");
+  const boLeft = svgNum(svg, "data-bo-left");
+  const afterLeft = svgNum(svg, "data-after-left");
+  const afterRight = svgNum(svg, "data-after-right");
+  const bustLeft = svgNum(svg, "data-bust-left");
+  const bustRight = svgNum(svg, "data-bust-right");
+  const bindOffSts = svgNum(svg, "data-bind-off-sts");
+  const decreaseSts = svgNum(svg, "data-decrease-sts");
+
+  expect(svgAttr(svg, "data-armhole-read-order")).toBe("bottom-up");
+  expect(startY).toBeGreaterThan(lastDecY);
+  expect(lastDecY).toBeGreaterThan(shoulderY);
+
+  const left = pathPoints(svg, "left-armhole-path");
+  const right = pathPoints(svg, "right-armhole-path");
+  expect(left).toHaveLength(4);
+  expect(right).toHaveLength(4);
+
+  expect(left[0]!.x).toBeCloseTo(bustLeft, 2);
+  expect(left[0]!.y).toBeCloseTo(startY, 2);
+  expect(left[1]!.x).toBeCloseTo(boLeft, 2);
+  expect(left[1]!.y).toBeCloseTo(startY, 2);
+  expect(left[2]!.x).toBeCloseTo(afterLeft, 2);
+  expect(left[2]!.y).toBeCloseTo(lastDecY, 2);
+  expect(left[3]!.x).toBeCloseTo(afterLeft, 2);
+  expect(left[3]!.y).toBeCloseTo(shoulderY, 2);
+  expect(left[1]!.x).toBeGreaterThan(left[0]!.x);
+  expect(left[2]!.y).toBeLessThan(left[1]!.y);
+
+  expect(right[0]!.x).toBeCloseTo(bustRight, 2);
+  expect(right[0]!.y).toBeCloseTo(startY, 2);
+  expect(right[1]!.y).toBeCloseTo(startY, 2);
+  expect(right[2]!.x).toBeCloseTo(afterRight, 2);
+  expect(right[2]!.y).toBeCloseTo(lastDecY, 2);
+  expect(right[3]!.x).toBeCloseTo(afterRight, 2);
+  expect(right[3]!.y).toBeCloseTo(shoulderY, 2);
+  expect(right[1]!.x).toBeLessThan(right[0]!.x);
+  expect(right[2]!.y).toBeLessThan(right[1]!.y);
+
+  expect(right[0]!.y).toBeCloseTo(left[0]!.y, 2);
+  expect(right[2]!.y).toBeCloseTo(left[2]!.y, 2);
+  expect(Math.abs(right[0]!.x - left[0]!.x)).toBeCloseTo(Math.abs(left[0]!.x - bustLeft) + (bustRight - bustLeft), 1);
+
+  if ((result.debug.shoulderStartRow ?? 0) > svgNum(svg, "data-last-armhole-garment-rc")) {
+    expect(left[2]!.x).toBeCloseTo(left[3]!.x, 2);
+    expect(left[3]!.y).toBeLessThan(left[2]!.y);
+    expect(right[2]!.x).toBeCloseTo(right[3]!.x, 2);
+    expect(right[3]!.y).toBeLessThan(right[2]!.y);
+  }
+
+  expect(left[0]!.x + right[0]!.x).toBeCloseTo(bustLeft + bustRight, 2);
+  expect(left[1]!.x + right[1]!.x).toBeCloseTo(bustLeft + bustRight, 2);
+  expect(left[2]!.x + right[2]!.x).toBeCloseTo(afterLeft + afterRight, 2);
+
+  const bo = allTextMeta(svg, "armhole-bo");
+  const shaping = allTextMeta(svg, "armhole-shaping");
+  if (bindOffSts > 0) {
+    expect(bo[0]?.text).toBe(svgAttr(svg, "data-armhole-bo"));
+    expect(Math.abs(bo[0]!.y - startY)).toBeLessThan(20);
+  }
+  if (bindOffSts > 0 && decreaseSts > 0) {
+    expect(shaping[0]?.text).toBe(svgAttr(svg, "data-armhole-shaping"));
+    expect(shaping[0]!.y).toBeLessThan(bo[0]!.y);
+  }
+}
+
 describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
   it("is deterministic for the same fixture", () => {
     const pattern = straightBodyPattern();
@@ -501,12 +577,44 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(svgAttr(svg, "data-neck-bo")).toBe("hold17");
     expect(svgAttr(svg, "data-armhole-bo")).toBe("bo4");
     expect(svgAttr(svg, "data-armhole-shaping")).toBe("1s-2r-3x");
+    expectArmholeBottomUpChronology(svg, result);
     expect(svgAttr(svg, "data-neck-shaping")).toContain("3s-2r-1x");
     expect(svgAttr(svg, "data-neck-shaping")).toContain("2s-2r-3x");
     expect(svgAttr(svg, "data-shoulder-shaping")).toContain("7s-2r-3x");
     expect(svgAttr(svg, "data-shoulder-shaping")).toContain("6s-2r-1x");
     expectParity(svg, result, pattern);
     expectValidSvg(svg);
+  });
+
+  it("reads Back armhole geometry and labels from bottom to top", () => {
+    const pattern = proofBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    expectArmholeBottomUpChronology(svg, result);
+    expect(svgAttr(svg, "data-armhole-bo")).toBe("bo4");
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe("1s-2r-3x");
+    const bo = firstTextPos(svg, "armhole-bo");
+    const shaping = firstTextPos(svg, "armhole-shaping");
+    expect(bo.y).toBeGreaterThan(shaping.y);
+    expect(Math.abs(bo.y - svgNum(svg, "data-armhole-start-y"))).toBeLessThan(20);
+    expect(firstTextPos(svg, "armhole-start-rc").y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 1);
+    const reset = firstTextPos(svg, "rc-reset");
+    expect(reset.y).toBeLessThan(svgNum(svg, "data-armhole-start-y"));
+    expect(svgNum(svg, "data-armhole-start-y") - reset.y).toBe(SLEEVELESS_BACK_RC_RESET_GAP);
+  });
+
+  it("keeps BO as the lowest Back armhole shaping action whenever BO precedes decreases", () => {
+    for (const pattern of [
+      proofBackPattern(),
+      straightBodyPattern(),
+      inwardBodyPattern(),
+      fineGaugeWidePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+      if (svgNum(svg, "data-bind-off-sts") <= 0 || svgNum(svg, "data-decrease-sts") <= 0) continue;
+      expectArmholeBottomUpChronology(svg, result);
+    }
   });
 
   it("uses canonical Back armhole bind-off and decrease geometry", () => {
@@ -770,8 +878,8 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
         expect(t.x).toBeLessThanOrEqual(cap);
         expect(t.anchor).toBe("start");
       }
-      expect(bo[0]!.y).toBeLessThan(shaping[0]!.y);
-      expect(shaping[0]!.y - bo[0]!.y).toBe(SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP);
+      expect(shaping[0]!.y).toBeLessThan(bo[0]!.y);
+      expect(bo[0]!.y - shaping[0]!.y).toBe(SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP);
     }
   });
 
