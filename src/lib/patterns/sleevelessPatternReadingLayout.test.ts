@@ -59,13 +59,14 @@ describe("sleeveless finished pattern reading layout (responsive)", () => {
     expect(appShellCss).toContain(":not(.sleeveless-pattern-reading-layout)");
   });
 
-  it("wires the shared Hat-style tab workspace without moving checklists or Visual Guides", () => {
+  it("wires the shared Hat-style tab workspace without moving checklists", () => {
     expect(pageScript).toContain("buildSleevelessPatternDiagramTabsShellHtml");
     expect(pageScript).toContain("initSleevelessPatternDiagramTabs");
     expect(pageScript).toContain("sleeveless-pattern-reading-layout");
     expect(pageScript).toContain("SLEEVELESS_DIAGRAM_PANEL_TITLE");
     expect(pageScript).toContain("buildPatternVisualGuidesHtml");
     expect(pageScript).toContain("visualGuides:");
+    expect(pageScript).toContain("notationSupported: false");
     expect(pageScript).toContain("First Side Checklist");
     expect(pageScript).toContain("sleeveless-piece-split__text");
     expect(pageScript).toContain("tableHeading: frontUsesShoulderTabs ? \"First Side Checklist\"");
