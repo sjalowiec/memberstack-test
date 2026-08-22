@@ -162,6 +162,24 @@ function cardiganPattern(neckline: string): Record<string, unknown> {
   };
 }
 
+function inwardBodyVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 46;
+  return pattern;
+}
+
+function outwardBodyVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function straightBodyVNeckPattern(): Record<string, unknown> {
+  return shallowVNeckPattern();
+}
+
 function fineGaugeWidePattern(): Record<string, unknown> {
   return {
     fit: {
@@ -233,6 +251,7 @@ function expectParity(
   expect(svgAttr(svg, "data-rc-neck-start")).toBe(repl["rc-neckline-start"]);
   expect(svgAttr(svg, "data-rc-armhole-bo")).toBe(repl["rc-armhole-bo"]);
   expect(svgAttr(svg, "data-rc-shoulder-start")).toBe(repl["rc-shoulder-start"]);
+  expect(svgAttr(svg, "data-body-shaping")).toBe(repl["jp-body-shaping"]);
   expect(svg).toContain(repl["jp-caston"]);
   if (repl["jp-armhole-shaping"]) expect(svg).toContain(repl["jp-armhole-shaping"].split("\n")[0]!);
   if (repl["jp-neckline-shaping"]) expect(svg).toContain(repl["jp-neckline-shaping"].split("\n")[0]!);
@@ -457,6 +476,8 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       equalDepthVNeckPattern(),
       vNeckBeforeArmholePattern(),
       fineGaugeWidePattern(),
+      inwardBodyVNeckPattern(),
+      outwardBodyVNeckPattern(),
     ]) {
       const result = generateSleevelessBackPattern(pattern);
       const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
@@ -638,12 +659,41 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       }
       const boY = bo[0]!.y;
       const shapingYs = shaping.map((t) => t.y).sort((a, b) => a - b);
+      expect(boY).toBeLessThan(shapingYs[0]!);
       expect(shapingYs[0]! - boY).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP);
       for (let i = 1; i < shapingYs.length; i++) {
         expect(shapingYs[i]! - shapingYs[i - 1]!).toBe(
           SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP,
         );
       }
+    }
+  });
+
+  it("draws armhole bind-off above decrease notation in knitting order", () => {
+    for (const pattern of [
+      shallowVNeckPattern(),
+      amandaVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+      fineGaugeWidePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      const bo = allTextMeta(svg, "armhole-bo");
+      const shaping = allTextMeta(svg, "armhole-shaping");
+      expect(svgAttr(svg, "data-armhole-bo")).toBe(repl["jp-armhole-bo"]);
+      expect(svgAttr(svg, "data-armhole-shaping")).toBe(repl["jp-armhole-shaping"]);
+      expect(bo[0]!.text).toBe(repl["jp-armhole-bo"]);
+      expect(shaping.map((t) => t.text).join("\n")).toBe(repl["jp-armhole-shaping"]);
+      expect(bo[0]!.anchor).toBe("start");
+      expect(shaping[0]!.anchor).toBe("start");
+      expect(bo[0]!.x).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X);
+      expect(shaping[0]!.x).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X);
+      expect(bo[0]!.y).toBeLessThan(shaping[0]!.y);
+      expect(shaping[0]!.y - bo[0]!.y).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP);
+      expect(bo[0]!.stackOrder).toBe(0);
+      expect(shaping[0]!.stackOrder).toBe(1);
     }
   });
 
@@ -669,6 +719,110 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       expect(pos.x).toBeLessThan(100);
     }
   });
+
+  it("slopes the body inward when cast-on is wider than bust", () => {
+    const pattern = inwardBodyVNeckPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+    const hemSts = result.debug.hemCastOnStitches ?? 0;
+    const bustSts = result.debug.bustBodyStitches ?? 0;
+    const rows = result.debug.alineBodyShapingRowNumbers ?? [];
+    expect(hemSts).toBeGreaterThan(bustSts);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(svgAttr(svg, "data-body-shaping-direction")).toBe("inward");
+    expect(svgNum(svg, "data-body-start-stitches")).toBe(hemSts);
+    expect(svgNum(svg, "data-body-end-stitches")).toBe(bustSts);
+    expect(svgNum(svg, "data-body-shaping-start-rc")).toBe(rows[0]!);
+    expect(svgNum(svg, "data-body-shaping-end-rc")).toBe(rows[rows.length - 1]!);
+    expect(svgAttr(svg, "data-body-shaping")).toBe(repl["jp-body-shaping"]);
+    expect(svgAttr(svg, "data-body-shaping").length).toBeGreaterThan(0);
+    expect(roles(svg, "body-shaping").length).toBeGreaterThan(0);
+    expect(roles(svg, "body-event")).toHaveLength(rows.length);
+    const left = pathPoints(svg, "left-body-path");
+    const right = pathPoints(svg, "right-body-path");
+    expect(left[0]!.x).toBeLessThan(left[left.length - 1]!.x);
+    expect(right[0]!.x).toBeGreaterThan(right[right.length - 1]!.x);
+    expect(svgNum(svg, "data-hem-left")).toBeLessThan(svgNum(svg, "data-bust-left"));
+    expect(svgNum(svg, "data-hem-right")).toBeGreaterThan(svgNum(svg, "data-bust-right"));
+    expect(svgNum(svg, "data-body-shaping-start-y")).toBeGreaterThan(
+      svgNum(svg, "data-body-shaping-end-y"),
+    );
+    expect(svg).not.toMatch(/\bNaN\b/);
+    expect(svg).not.toMatch(/\bInfinity\b/);
+    expect(svg).not.toMatch(/\bundefined\b/);
+    expectValidSvg(svg);
+    expectYsInViewBox(svg);
+    expectParity(svg, result, pattern);
+  });
+
+  it("slopes the body outward when cast-on is narrower than bust", () => {
+    const pattern = outwardBodyVNeckPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+    const hemSts = result.debug.hemCastOnStitches ?? 0;
+    const bustSts = result.debug.bustBodyStitches ?? 0;
+    const rows = result.debug.alineBodyShapingRowNumbers ?? [];
+    expect(hemSts).toBeLessThan(bustSts);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(svgAttr(svg, "data-body-shaping-direction")).toBe("outward");
+    expect(svgNum(svg, "data-body-start-stitches")).toBe(hemSts);
+    expect(svgNum(svg, "data-body-end-stitches")).toBe(bustSts);
+    expect(svgNum(svg, "data-body-shaping-start-rc")).toBe(rows[0]!);
+    expect(svgNum(svg, "data-body-shaping-end-rc")).toBe(rows[rows.length - 1]!);
+    expect(svgAttr(svg, "data-body-shaping")).toBe(repl["jp-body-shaping"]);
+    expect(svgAttr(svg, "data-body-shaping")).toMatch(/^\+/);
+    expect(roles(svg, "body-shaping").length).toBeGreaterThan(0);
+    const left = pathPoints(svg, "left-body-path");
+    const right = pathPoints(svg, "right-body-path");
+    expect(left[0]!.x).toBeGreaterThan(left[left.length - 1]!.x);
+    expect(right[0]!.x).toBeLessThan(right[right.length - 1]!.x);
+    expect(svgNum(svg, "data-hem-left")).toBeGreaterThan(svgNum(svg, "data-bust-left"));
+    expect(svgNum(svg, "data-hem-right")).toBeLessThan(svgNum(svg, "data-bust-right"));
+    expect(svg).not.toMatch(/\bNaN\b/);
+    expectValidSvg(svg);
+    expectParity(svg, result, pattern);
+  });
+
+  it("keeps straight body sides and omits body-shaping notation when widths match", () => {
+    const pattern = straightBodyVNeckPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+    const hemSts = result.debug.hemCastOnStitches ?? result.debug.backStitches ?? 0;
+    const bustSts = result.debug.bustBodyStitches ?? hemSts;
+    expect(hemSts).toBe(bustSts);
+    expect(svgAttr(svg, "data-body-shaping-direction")).toBe("straight");
+    expect(svgNum(svg, "data-body-start-stitches")).toBe(hemSts);
+    expect(svgNum(svg, "data-body-end-stitches")).toBe(bustSts);
+    expect(svgAttr(svg, "data-body-shaping")).toBe("");
+    expect(roles(svg, "body-shaping")).toHaveLength(0);
+    expect(roles(svg, "body-event")).toHaveLength(0);
+    const left = pathPoints(svg, "left-body-path");
+    const right = pathPoints(svg, "right-body-path");
+    expect(left).toHaveLength(2);
+    expect(right).toHaveLength(2);
+    expect(left[0]!.x).toBe(left[1]!.x);
+    expect(right[0]!.x).toBe(right[1]!.x);
+    expect(svgNum(svg, "data-hem-left")).toBe(svgNum(svg, "data-bust-left"));
+    expect(svgNum(svg, "data-hem-right")).toBe(svgNum(svg, "data-bust-right"));
+    expectValidSvg(svg);
+    expectParity(svg, result, pattern);
+  });
+
+  it("keeps existing V-neck fixtures on a straight body", () => {
+    for (const pattern of [
+      shallowVNeckPattern(),
+      amandaVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      expect(svgAttr(svg, "data-body-shaping-direction")).toBe("straight");
+      expect(roles(svg, "body-shaping")).toHaveLength(0);
+    }
+  });
 });
 
 function firstTextPos(svg: string, role: string): { x: number; y: number } {
@@ -682,20 +836,22 @@ function allTextPos(svg: string, role: string): { x: number; y: number }[] {
 function allTextMeta(
   svg: string,
   role: string,
-): { x: number; y: number; anchor: string }[] {
-  const re = new RegExp(`<text[^>]*data-role="${role}"[^>]*>`, "g");
+): { x: number; y: number; anchor: string; text: string; stackOrder: number }[] {
+  const re = new RegExp(`<text[^>]*data-role="${role}"[^>]*>([^<]*)`, "g");
   return [...svg.matchAll(re)].map((m) => {
     const tag = m[0];
     return {
       x: Number(/[\s]x="([^"]+)"/.exec(tag)?.[1] ?? NaN),
       y: Number(/[\s]y="([^"]+)"/.exec(tag)?.[1] ?? NaN),
       anchor: /text-anchor="([^"]+)"/.exec(tag)?.[1] ?? "",
+      text: m[1] ?? "",
+      stackOrder: Number(/data-stack-order="([^"]+)"/.exec(tag)?.[1] ?? NaN),
     };
   });
 }
 
 function pathPoints(svg: string, role: string): { x: number; y: number }[] {
-  const d = new RegExp(`data-role="${role}" d="([^"]+)"`).exec(svg)?.[1] ?? "";
+  const d = new RegExp(`data-role="${role}"[^>]*\\sd="([^"]+)"`).exec(svg)?.[1] ?? "";
   const nums = [...d.matchAll(/(-?\d+(?:\.\d+)?)/g)].map((m) => Number(m[1]));
   const pts: { x: number; y: number }[] = [];
   for (let i = 0; i + 1 < nums.length; i += 2) {

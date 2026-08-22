@@ -93,6 +93,8 @@ type YBand = {
   yTop: number;
 };
 
+type BodyShapingDirection = "inward" | "outward" | "straight";
+
 type NotationFrame = {
   cx: number;
   left: number;
@@ -103,6 +105,8 @@ type NotationFrame = {
   boRight: number;
   neckLeft: number;
   neckRight: number;
+  hemLeft: number;
+  hemRight: number;
   hemY: number;
   bottomY: number;
   neckStartY: number;
@@ -112,6 +116,14 @@ type NotationFrame = {
   shoulderTopY: number;
   neckCornerY: number;
   bodyWidth: number;
+  bodyStartStitches: number;
+  bodyEndStitches: number;
+  bodyDirection: BodyShapingDirection;
+  bodyShapeStartRc: number;
+  bodyShapeEndRc: number;
+  bodyShapeStartY: number;
+  bodyShapeEndY: number;
+  bodyShapeRows: readonly number[];
 };
 
 type Pt = { x: number; y: number };
@@ -122,6 +134,7 @@ type NotationLabels = {
   armholeShaping: string;
   neckShaping: string;
   shoulderShaping: string;
+  bodyShaping: string;
   rcCastOn: string;
   rcHem: string;
   rcArmholeBo: string;
@@ -129,6 +142,72 @@ type NotationLabels = {
   rcNeckStart: string;
   rcShoulderStart: string;
 };
+
+function resolveBodyShapingModel(result: SleevelessBackPatternResult): {
+  hemSts: number;
+  bustSts: number;
+  direction: BodyShapingDirection;
+  rows: number[];
+  startRc: number;
+  endRc: number;
+} {
+  const d = result.debug;
+  const hemSts = Math.max(
+    1,
+    Math.round(finiteOr(d.hemCastOnStitches, finiteOr(d.backStitches, 1))),
+  );
+  const bustSts = Math.max(
+    1,
+    Math.round(finiteOr(d.bustBodyStitches, hemSts)),
+  );
+  const rows = [...(d.alineBodyShapingRowNumbers ?? [])]
+    .filter((n): n is number => typeof n === "number" && Number.isFinite(n))
+    .map((n) => Math.floor(n))
+    .sort((a, b) => a - b);
+  const direction: BodyShapingDirection =
+    hemSts > bustSts ? "inward" : hemSts < bustSts ? "outward" : "straight";
+  if (direction === "straight") {
+    return { hemSts, bustSts, direction, rows: [], startRc: 0, endRc: 0 };
+  }
+  if (rows.length === 0) {
+    const armholeRc = Math.max(0, Math.floor(finiteOr(d.armholeStartRow, d.rowsFromCastOnToArmholeStart ?? 0)));
+    return { hemSts, bustSts, direction, rows, startRc: 0, endRc: armholeRc };
+  }
+  return {
+    hemSts,
+    bustSts,
+    direction,
+    rows,
+    startRc: rows[0]!,
+    endRc: rows[rows.length - 1]!,
+  };
+}
+
+function bodySidePoints(
+  hemX: number,
+  bustX: number,
+  bottomY: number,
+  startY: number,
+  endY: number,
+  armholeY: number,
+  direction: BodyShapingDirection,
+): Pt[] {
+  if (direction === "straight") {
+    return [
+      { x: bustX, y: bottomY },
+      { x: bustX, y: armholeY },
+    ];
+  }
+  const pts: Pt[] = [{ x: hemX, y: bottomY }];
+  if (startY < bottomY - 0.5) {
+    pts.push({ x: hemX, y: startY });
+  }
+  pts.push({ x: bustX, y: endY });
+  if (endY > armholeY + 0.5) {
+    pts.push({ x: bustX, y: armholeY });
+  }
+  return pts;
+}
 
 function yAtRc(rc: number, bands: readonly YBand[]): number {
   if (bands.length === 0) return BOTTOM;
@@ -221,6 +300,7 @@ function buildLabels(
     armholeShaping: repl["jp-armhole-shaping"] ?? "",
     neckShaping: repl["jp-neckline-shaping"] ?? "",
     shoulderShaping: pulloverVNeckFrontShoulderNotationLines(result).join("\n"),
+    bodyShaping: repl["jp-body-shaping"] ?? "",
     rcCastOn: repl["rc-caston"] ?? "",
     rcHem: repl["rc-hem"] ?? "",
     rcArmholeBo: repl["rc-armhole-bo"] ?? "",
@@ -349,10 +429,8 @@ function buildFrame(
     endRc,
   });
 
-  const bustSts = Math.max(
-    1,
-    Math.round(finiteOr(d.bustBodyStitches, finiteOr(d.hemCastOnStitches, d.backStitches))),
-  );
+  const bodyModel = resolveBodyShapingModel(result);
+  const bustSts = bodyModel.bustSts;
   const afterSts = Math.max(
     1,
     Math.round(finiteOr(d.stitchesAfterArmhole, bustSts)),
@@ -366,6 +444,8 @@ function buildFrame(
   const afterHalf = Math.max(18, half * (afterSts / bustSts));
   const boInset = Math.max(0, half * (bindOffSts / bustSts));
   const neckHalf = Math.max(10, Math.min(afterHalf - 8, half * (neckSts / 2 / bustSts)));
+  const maxHemHalf = Math.min(cx - 12, VB_W - 12 - cx);
+  const hemHalf = clamp(half * (bodyModel.hemSts / bustSts), 18, maxHemHalf);
 
   const bottomY = yAtRc(0, bands);
   const hemY = hemRc > 0 ? yAtRc(hemRc, bands) : bottomY;
@@ -373,6 +453,10 @@ function buildFrame(
   const armholeStartY = yAtRc(armholeStart, bands);
   const lastArmholeY = yAtRc(lastArmholeGarmentRc, bands);
   const shoulderY = yAtRc(shoulderRc, bands);
+  const bodyShapeStartY =
+    bodyModel.direction === "straight" ? bottomY : yAtRc(bodyModel.startRc, bands);
+  const bodyShapeEndY =
+    bodyModel.direction === "straight" ? armholeStartY : yAtRc(bodyModel.endRc, bands);
   const bandH = shoulderBandHeight(bands, shoulderY);
   const slopeEnds = buildShoulderSlopeEnds(shoulderPasses, bandH);
   const lastCorner = slopeEnds[slopeEnds.length - 1]!;
@@ -390,6 +474,8 @@ function buildFrame(
       boRight: cx + half - boInset,
       neckLeft: cx - neckHalf,
       neckRight: cx + neckHalf,
+      hemLeft: cx - hemHalf,
+      hemRight: cx + hemHalf,
       hemY,
       bottomY,
       neckStartY,
@@ -399,6 +485,14 @@ function buildFrame(
       shoulderTopY,
       neckCornerY,
       bodyWidth,
+      bodyStartStitches: bodyModel.hemSts,
+      bodyEndStitches: bodyModel.bustSts,
+      bodyDirection: bodyModel.direction,
+      bodyShapeStartRc: bodyModel.startRc,
+      bodyShapeEndRc: bodyModel.endRc,
+      bodyShapeStartY,
+      bodyShapeEndY,
+      bodyShapeRows: bodyModel.rows,
     },
     bands,
     neckStartGarmentRc,
@@ -436,11 +530,29 @@ function drawSilhouette(
   leftShoulder: readonly Pt[],
   rightShoulder: readonly Pt[],
 ): string {
+  const leftBody = bodySidePoints(
+    frame.hemLeft,
+    frame.left,
+    frame.bottomY,
+    frame.bodyShapeStartY,
+    frame.bodyShapeEndY,
+    frame.armholeStartY,
+    frame.bodyDirection,
+  );
+  const rightBody = bodySidePoints(
+    frame.hemRight,
+    frame.right,
+    frame.bottomY,
+    frame.bodyShapeStartY,
+    frame.bodyShapeEndY,
+    frame.armholeStartY,
+    frame.bodyDirection,
+  );
   const leftSteps = leftShoulder.slice(1);
   const rightDown = [...rightShoulder].reverse().slice(1);
+  const rightBodyDown = [...rightBody].reverse().slice(1);
   const path = [
-    `M ${fmtNum(frame.left)} ${fmtNum(frame.bottomY)}`,
-    `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeStartY)}`,
+    ...leftBody.map((p, i) => `${i === 0 ? "M" : "L"} ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     `L ${fmtNum(frame.boLeft)} ${fmtNum(frame.armholeStartY)}`,
     `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.lastArmholeY)}`,
     `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.shoulderY)}`,
@@ -452,12 +564,13 @@ function drawSilhouette(
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.shoulderY)}`,
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.lastArmholeY)}`,
     `L ${fmtNum(frame.boRight)} ${fmtNum(frame.armholeStartY)}`,
-    `L ${fmtNum(frame.right)} ${fmtNum(frame.armholeStartY)}`,
-    `L ${fmtNum(frame.right)} ${fmtNum(frame.bottomY)}`,
+    ...rightBodyDown.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     "Z",
   ].join(" ");
   return [
     `<path class="sleeveless-vneck-notation__body" d="${path}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    `<path data-role="left-body-path" data-body-shaping-direction="${frame.bodyDirection}" d="${polylineD(leftBody)}" fill="none" stroke="none"/>`,
+    `<path data-role="right-body-path" data-body-shaping-direction="${frame.bodyDirection}" d="${polylineD(rightBody)}" fill="none" stroke="none"/>`,
     `<path data-role="left-shoulder-path" d="${polylineD(leftShoulder)}" fill="none" stroke="none"/>`,
     `<path data-role="right-shoulder-path" d="${polylineD(rightShoulder)}" fill="none" stroke="none"/>`,
   ].join("");
@@ -560,7 +673,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
       displayRcFromGarmentRc(g, armholeStart, rcModel.policy),
     ),
   );
-  const gutterX = Math.max(8, frame.left - 10);
+  const gutterX = Math.max(8, Math.min(frame.left, frame.hemLeft) - 10);
   const resetY =
     rcModel.policy === "shared-reset"
       ? frame.armholeStartY
@@ -672,6 +785,11 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     parts.push(eventHook("neck-event", displayRc, pt.row, y, shared));
     if (shared) markRc(displayRc, y, true);
   }
+  for (const row of frame.bodyShapeRows) {
+    parts.push(
+      `<g data-role="body-event" data-rc="${escapeXml(formatRcNotation(row))}" data-garment-rc="${fmtNum(row)}" data-y="${fmtNum(yAtRc(row, bands))}"></g>`,
+    );
+  }
   if (rcModel.shoulderStartDisplayRc !== undefined) {
     parts.push(
       eventHook(
@@ -686,20 +804,25 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
 
   const armholeLabelX = ARMHOLE_LABEL_START_X;
   const armholeBoY = frame.armholeStartY - 14;
-  parts.push(
-    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" data-label-zone="armhole" x="${fmtNum(armholeLabelX)}" y="${fmtNum(armholeBoY)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
-  );
   const ahLines = labels.armholeShaping.split("\n").filter(Boolean);
-  parts.push(
-    drawNotationStack(
-      ahLines,
-      armholeLabelX,
-      armholeBoY + ahLines.length * ARMHOLE_NOTATION_GAP,
-      `data-role="armhole-shaping" data-label-zone="armhole" data-notation="${escapeXml(labels.armholeShaping)}"`,
-      "start",
-      ARMHOLE_NOTATION_GAP,
-    ),
-  );
+  const armholeStack = [
+    {
+      role: "armhole-bo",
+      notation: labels.armholeBo,
+      line: labels.armholeBo,
+    },
+    ...ahLines.map((line) => ({
+      role: "armhole-shaping",
+      notation: labels.armholeShaping,
+      line,
+    })),
+  ].filter((entry) => entry.line.length > 0);
+  for (const [i, entry] of armholeStack.entries()) {
+    const y = armholeBoY + i * ARMHOLE_NOTATION_GAP;
+    parts.push(
+      `<text data-role="${entry.role}" data-notation="${escapeXml(entry.notation)}" data-label-zone="armhole" data-stack-order="${i}" x="${fmtNum(armholeLabelX)}" y="${fmtNum(y)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(entry.line)}</text>`,
+    );
+  }
   const neckLines = labels.neckShaping.split("\n").filter(Boolean);
   const neckLabelX = Math.min(
     (frame.afterLeft + frame.neckLeft) / 2,
@@ -738,6 +861,26 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
       `data-role="shoulder-shaping" data-label-zone="shoulder" data-notation="${escapeXml(labels.shoulderShaping)}"`,
     ),
   );
+  const bodyLines =
+    frame.bodyDirection === "straight" ? [] : labels.bodyShaping.split("\n").filter(Boolean);
+  if (bodyLines.length > 0) {
+    const bodyLabelX = ARMHOLE_LABEL_START_X;
+    const bodyMidY = (frame.bodyShapeStartY + frame.bodyShapeEndY) / 2;
+    const bodyLastBaseline = clamp(
+      bodyMidY,
+      frame.armholeStartY + 40,
+      frame.bottomY - 28,
+    );
+    parts.push(
+      drawNotationStack(
+        bodyLines,
+        bodyLabelX,
+        bodyLastBaseline,
+        `data-role="body-shaping" data-label-zone="body" data-notation="${escapeXml(labels.bodyShaping)}"`,
+        "start",
+      ),
+    );
+  }
   parts.push(
     `<text data-role="cast-on" data-notation="${escapeXml(labels.castOn)}" x="${fmtNum(frame.cx)}" y="${fmtNum(Math.min(VB_H - 8, frame.bottomY + 16))}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.castOn)}</text>`,
   );
@@ -758,7 +901,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   const desc = `Sleeveless pullover V-neck Front shaping notation. ${labels.castOn}. Neck ${labels.rcNeckStart}. Armhole ${labels.rcArmholeBo}.`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-vneck-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-vneck-notation-title" data-sleeveless-vneck-generated-notation="true" data-supported="true" data-rc-policy="${escapeXml(rcModel.policy)}" data-reset="${labels.rcReset ? "true" : "false"}" data-neck-start-display-rc="${fmtNum(finiteOr(rcModel.necklineStartDisplayRc, -1))}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-last-armhole-garment-rc="${fmtNum(lastArmholeGarmentRc)}" data-shoulder-start-display-rc="${fmtNum(finiteOr(rcModel.shoulderStartDisplayRc, -1))}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-contour="slope" data-shoulder-pass-count="${shoulderPasses.length}" data-shoulder-shaping-stitches="${fmtNum(shoulderSts)}" data-body-width="${fmtNum(frame.bodyWidth)}" data-right-label-safe-max-x="${ARMHOLE_LABEL_SAFE_MAX_X}" data-neck-label-x="${fmtNum(neckLabelX)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-shared-display-rcs="${escapeXml([...sharedDisplayRcs].map((n) => formatRcNotation(n)).join(","))}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-vneck-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-vneck-notation-title" data-sleeveless-vneck-generated-notation="true" data-supported="true" data-rc-policy="${escapeXml(rcModel.policy)}" data-reset="${labels.rcReset ? "true" : "false"}" data-neck-start-display-rc="${fmtNum(finiteOr(rcModel.necklineStartDisplayRc, -1))}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-last-armhole-garment-rc="${fmtNum(lastArmholeGarmentRc)}" data-shoulder-start-display-rc="${fmtNum(finiteOr(rcModel.shoulderStartDisplayRc, -1))}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-contour="slope" data-shoulder-pass-count="${shoulderPasses.length}" data-shoulder-shaping-stitches="${fmtNum(shoulderSts)}" data-body-width="${fmtNum(frame.bodyWidth)}" data-body-start-stitches="${fmtNum(frame.bodyStartStitches)}" data-body-end-stitches="${fmtNum(frame.bodyEndStitches)}" data-body-shaping-direction="${frame.bodyDirection}" data-body-shaping-start-rc="${fmtNum(frame.bodyShapeStartRc)}" data-body-shaping-end-rc="${fmtNum(frame.bodyShapeEndRc)}" data-body-shaping-start-y="${fmtNum(frame.bodyShapeStartY)}" data-body-shaping-end-y="${fmtNum(frame.bodyShapeEndY)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-body-shaping="${escapeXml(frame.bodyDirection === "straight" ? "" : labels.bodyShaping)}" data-right-label-safe-max-x="${ARMHOLE_LABEL_SAFE_MAX_X}" data-neck-label-x="${fmtNum(neckLabelX)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-shared-display-rcs="${escapeXml([...sharedDisplayRcs].map((n) => formatRcNotation(n)).join(","))}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
     `<title id="sleeveless-vneck-notation-title">Sleeveless pullover V-neck Front shaping notation</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
