@@ -41,6 +41,8 @@ const dropShoulderPattern = {
   pillRest: DROP_SHOULDER_CATALOG_PILL_REST,
 };
 
+const featuredHatImageSrc = '/images/patterns/hat.webp';
+
 const hatPattern = {
   title: 'Hat',
   href: '/patterns/hat/builder',
@@ -135,7 +137,7 @@ const comingSoonPatterns = [
           data-testid="patterns-featured-hat"
         >
           <div class="patterns-featured__visual">
-            <img src={hatPattern.image} alt={hatPattern.title} />
+            <img src={featuredHatImageSrc} alt={hatPattern.title} />
           </div>
           <div class="patterns-featured__body">
             <div class="patterns-featured__top">
@@ -436,7 +438,11 @@ const comingSoonPatterns = [
   min-height: 12.5rem;
   border-radius: 8px;
   overflow: hidden;
-  background: #f9f9f6;
+  background-color: transparent;
+  background-image: url("/images/patterns/background.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .patterns-featured__visual img {
