@@ -69,6 +69,13 @@ import {
 } from "./sleevelessDiagramBodyShapeSrc";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import {
+  displayRcFromGarmentRc,
+  pulloverArmholeEvents,
+  resolveFrontVNeckRowCounterDisplayPolicy,
+  sleevelessPulloverVNeckBeginDisplayRc,
+  type FrontVNeckRowCounterDisplayPolicy,
+} from "./frontArmholeNecklineComposition";
+import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
   SLEEVELESS_PULLOVER_ROUND_FRONT_DIAGRAM_SRC,
@@ -273,6 +280,84 @@ export function isFrontJapaneseNotationSupported(
   return true;
 }
 
+/** Pullover V-neck Front only — cardigan / round-neck keep their existing RC tokens. */
+export function isSleevelessPulloverVNeckFrontNotation(
+  result: SleevelessBackPatternResult,
+  patternData?: unknown,
+): boolean {
+  const frontChart = result.frontNeckShoulderShapingChart;
+  if (frontChart.sleevelessFullWidthVNeckFront === true) return true;
+  return (
+    isSleevelessVNeckChoice(patternData) && !isSleevelessCardiganGarmentStyle(patternData ?? {})
+  );
+}
+
+export type FrontVNeckNotationRcModel = {
+  policy: FrontVNeckRowCounterDisplayPolicy;
+  resetToken: string;
+  necklineStartDisplayRc: number | undefined;
+  armholeBoGarmentRc: number | undefined;
+  armholeDecreasePoints: StitchDecreasePoint[];
+  shoulderStartDisplayRc: number | undefined;
+};
+
+/**
+ * Canonical written/checklist RC policy for Pullover V-neck Front notation tokens.
+ * Round/scoop and cardigan fronts do not use this path.
+ */
+export function resolveFrontVNeckNotationRcModel(
+  result: SleevelessBackPatternResult,
+): FrontVNeckNotationRcModel {
+  const d = result.debug;
+  const overlap = d.frontArmholeNecklineOverlap;
+  const policy = resolveFrontVNeckRowCounterDisplayPolicy(overlap);
+  const armholeBoGarmentRc = garmentRcAtArmholeStart(d);
+  const eachSide = d.armholeStitchesEachSide;
+  const { bindOffSts, decreaseSts } =
+    eachSide !== undefined
+      ? armholeBindOffDecreaseFromEachSide(eachSide)
+      : { bindOffSts: 0, decreaseSts: 0 };
+
+  const armholeDecreasePoints: StitchDecreasePoint[] =
+    decreaseSts > 0 && armholeBoGarmentRc !== undefined
+      ? pulloverArmholeEvents({
+          firstArmholeGarmentRc: armholeBoGarmentRc,
+          bindOffSts,
+          decreaseSts,
+        })
+          .filter((ev) => ev.kind === "decrease" && ev.side === "right")
+          .map((ev) => ({
+            row: displayRcFromGarmentRc(ev.garmentRc, armholeBoGarmentRc, policy),
+            amount: ev.amount,
+          }))
+      : decreaseSts > 0
+        ? Array.from({ length: decreaseSts }, (_, i) => ({ row: (i + 1) * 2, amount: 1 }))
+        : [];
+
+  const necklineStartDisplayRc = sleevelessPulloverVNeckBeginDisplayRc({
+    overlap,
+    frontNecklineStartLocalRC: d.frontNecklineStartLocalRC,
+    frontNecklineCenterDivideLocalRC: d.frontNecklineCenterDivideLocalRC,
+  });
+
+  const localShoulder = shoulderShapingBeginLocalRCForDiagram(d);
+  const shoulderStartDisplayRc =
+    policy === "continuous-garment-rc" &&
+    d.shoulderStartRow !== undefined &&
+    Number.isFinite(d.shoulderStartRow)
+      ? Math.max(0, Math.floor(d.shoulderStartRow))
+      : localShoulder;
+
+  return {
+    policy,
+    resetToken: policy === "continuous-garment-rc" ? "" : formatRcResetNotation(0),
+    necklineStartDisplayRc,
+    armholeBoGarmentRc,
+    armholeDecreasePoints,
+    shoulderStartDisplayRc,
+  };
+}
+
 /**
  * Front cast-on for Japanese notation — cardigan half-panel (same source as sts/rows diagram
  * {@link resolveCardiganHalfFrontWidths}), else full front/back hem for pullovers.
@@ -331,12 +416,16 @@ export function buildFrontJapaneseNotationReplacements(
   const { bindOffSts, decreaseSts } =
     eachSide !== undefined ? armholeBindOffDecreaseFromEachSide(eachSide) : { bindOffSts: 0, decreaseSts: 0 };
 
-  const armholeDecreasePoints: StitchDecreasePoint[] =
-    decreaseSts > 0
+  const frontChart = result.frontNeckShoulderShapingChart;
+  const isPulloverVNeckFront = isSleevelessPulloverVNeckFrontNotation(result, patternData);
+  const vNeckRc = isPulloverVNeckFront ? resolveFrontVNeckNotationRcModel(result) : null;
+
+  const armholeDecreasePoints: StitchDecreasePoint[] = vNeckRc
+    ? vNeckRc.armholeDecreasePoints
+    : decreaseSts > 0
       ? Array.from({ length: decreaseSts }, (_, i) => ({ row: i * 2, amount: 1 }))
       : [];
 
-  const frontChart = result.frontNeckShoulderShapingChart;
   const fullNecklineSts = d.necklineStitches ?? 0;
   const isVNeckFront =
     isSleevelessVNeckChoice(patternData) || frontChart.sleevelessFullWidthVNeckFront === true;
@@ -379,8 +468,15 @@ export function buildFrontJapaneseNotationReplacements(
 
   const hemRows = d.hemRows;
   const necklineLocalRc = d.frontNecklineStartLocalRC;
-  const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
-  const shoulderStartLocalRc = shoulderShapingBeginLocalRCForDiagram(d);
+  const armholeStartGarmentRc = vNeckRc?.armholeBoGarmentRc ?? garmentRcAtArmholeStart(d);
+  const shoulderStartLocalRc =
+    vNeckRc?.shoulderStartDisplayRc ?? shoulderShapingBeginLocalRCForDiagram(d);
+  const necklineStartRc = vNeckRc
+    ? vNeckRc.necklineStartDisplayRc
+    : necklineLocalRc !== undefined && Number.isFinite(necklineLocalRc)
+      ? necklineLocalRc
+      : undefined;
+  const rcReset = vNeckRc ? vNeckRc.resetToken : formatRcResetNotation(0);
 
   let alineBodyPlan = resolveAlineBodyShapingPlanForNotation(result, patternData ?? {});
   if (alineBodyPlan && isSleevelessCardiganGarmentStyle(patternData ?? {})) {
@@ -418,10 +514,10 @@ export function buildFrontJapaneseNotationReplacements(
     "rc-hem": formatRcNotation(hemRows),
     "rc-armhole-bo":
       armholeStartGarmentRc !== undefined ? formatRcNotation(armholeStartGarmentRc) : "",
-    rc_reset: formatRcResetNotation(0),
+    rc_reset: rcReset,
     "rc-neckline-start":
-      necklineLocalRc !== undefined && Number.isFinite(necklineLocalRc)
-        ? formatRcNotation(necklineLocalRc)
+      necklineStartRc !== undefined && Number.isFinite(necklineStartRc)
+        ? formatRcNotation(necklineStartRc)
         : "",
     "rc-shoulder-start":
       shoulderStartLocalRc !== undefined ? formatRcNotation(shoulderStartLocalRc) : "",

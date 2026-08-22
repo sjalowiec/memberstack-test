@@ -4142,9 +4142,8 @@ table {
     const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
     const backNotationSupported = isBackJapaneseNotationSupported(diagramPatternData, result);
     // Real round-neck front shaping map (null for V-neck / cardigan half front). Computed once and
-    // reused for: the Visual Guides map card, the Second Shoulder map, AND as the "round-neck front"
-    // signal that (a) inlines the Japanese notation into Visual Guides and (b) drops the piece
-    // diagram's Shaping Notation tab so the notation is not duplicated.
+    // reused for the Visual Guides map card and the Second Shoulder map. Shaping Notation now lives
+    // in the Hat-style tab workspace — Visual Guides no longer mounts a duplicate notation card.
     const frontShapingMapData = buildSleevelessRoundNeckShapingMapData(
       result?.frontNeckShoulderTimeline,
       { firstArmholeRc: result?.debug?.armholeStartRow },
@@ -4174,11 +4173,11 @@ table {
             result?.neckShoulderShapingChart?.rows?.[0]?.row,
             {
               omitPieceBanner: true,
-              visualGuides: backNotationSupported
+              visualGuides: backShapingMapData
                 ? {
                     enabled: true,
                     piece: "back",
-                    notationSupported: true,
+                    notationSupported: false,
                     construction: "sleeveless",
                     patternData: diagramPatternData,
                     shapingMapData: backShapingMapData,
@@ -4197,11 +4196,11 @@ table {
             result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
             {
               omitPieceBanner: true,
-              visualGuides: frontNotationSupported
+              visualGuides: frontShapingMapData
                 ? {
                     enabled: true,
                     piece: "front",
-                    notationSupported: true,
+                    notationSupported: false,
                     construction: "sleeveless",
                     patternData: diagramPatternData,
                     shapingMapData: frontShapingMapData,
