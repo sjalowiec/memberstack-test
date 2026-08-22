@@ -574,14 +574,13 @@ type BackNeckPath = {
   rightX: number;
   centerLeftX: number;
   centerRightX: number;
-  centerFlatWidth: number;
   controlLeftX: number;
   controlRightX: number;
 };
 
 /**
- * Flattened shallow Back scoop inside the canonical neck box.
- * Sides ease from the shoulder corners; the center-hold span stays near depth.
+ * One gentle finished Back neckline: two mirrored cubics across the full
+ * opening. Hold width is not a visible waypoint — it is only a knitting note.
  */
 function buildBackNeckPath(frame: NotationFrame): BackNeckPath {
   const leftX = frame.neckLeft;
@@ -591,8 +590,6 @@ function buildBackNeckPath(frame: NotationFrame): BackNeckPath {
   const cornerY = frame.neckCornerY;
   const depthY = Math.max(frame.neckStartY, cornerY);
   const neckW = Math.max(0, rightX - leftX);
-  const holdW = Math.max(0, centerRightX - centerLeftX);
-  const sideSpan = Math.max(0, centerLeftX - leftX);
   const drop = depthY - Math.min(frame.neckStartY, cornerY);
   if (!(drop > 0.75 && neckW > 1)) {
     return {
@@ -603,32 +600,21 @@ function buildBackNeckPath(frame: NotationFrame): BackNeckPath {
       rightX,
       centerLeftX,
       centerRightX,
-      centerFlatWidth: holdW,
       controlLeftX: leftX,
       controlRightX: rightX,
     };
   }
 
-  const leave = clamp(sideSpan * 0.48, Math.min(4, sideSpan * 0.7), Math.max(4, sideSpan * 0.72));
-  const approach = clamp(sideSpan * 0.18, 0, Math.max(0, sideSpan - leave * 0.35));
+  const leave = clamp(neckW * 0.3, 8, neckW * 0.36);
+  const arrive = clamp(neckW * 0.08, 3, neckW * 0.12);
   const leftC1x = leftX + leave;
-  const leftC2x = Math.max(leftX + leave * 0.35, centerLeftX - approach);
+  const leftC2x = frame.cx - arrive;
+  const rightC1x = frame.cx + arrive;
   const rightC2x = rightX - leave;
-  const rightC1x = Math.min(rightX - leave * 0.35, centerRightX + approach);
-  const holdInset = holdW > 2 ? holdW * 0.3 : 0;
-  const midC1x = centerLeftX + holdInset;
-  const midC2x = centerRightX - holdInset;
-  const curveCommands =
-    holdW > 2
-      ? [
-          `C ${fmtNum(leftC1x)} ${fmtNum(cornerY)} ${fmtNum(leftC2x)} ${fmtNum(depthY)} ${fmtNum(centerLeftX)} ${fmtNum(depthY)}`,
-          `C ${fmtNum(midC1x)} ${fmtNum(depthY)} ${fmtNum(midC2x)} ${fmtNum(depthY)} ${fmtNum(centerRightX)} ${fmtNum(depthY)}`,
-          `C ${fmtNum(rightC1x)} ${fmtNum(depthY)} ${fmtNum(rightC2x)} ${fmtNum(cornerY)} ${fmtNum(rightX)} ${fmtNum(cornerY)}`,
-        ].join(" ")
-      : [
-          `C ${fmtNum(leftC1x)} ${fmtNum(cornerY)} ${fmtNum(frame.cx - Math.max(2, neckW * 0.12))} ${fmtNum(depthY)} ${fmtNum(frame.cx)} ${fmtNum(depthY)}`,
-          `C ${fmtNum(frame.cx + Math.max(2, neckW * 0.12))} ${fmtNum(depthY)} ${fmtNum(rightC2x)} ${fmtNum(cornerY)} ${fmtNum(rightX)} ${fmtNum(cornerY)}`,
-        ].join(" ");
+  const curveCommands = [
+    `C ${fmtNum(leftC1x)} ${fmtNum(cornerY)} ${fmtNum(leftC2x)} ${fmtNum(depthY)} ${fmtNum(frame.cx)} ${fmtNum(depthY)}`,
+    `C ${fmtNum(rightC1x)} ${fmtNum(depthY)} ${fmtNum(rightC2x)} ${fmtNum(cornerY)} ${fmtNum(rightX)} ${fmtNum(cornerY)}`,
+  ].join(" ");
   return {
     d: `M ${fmtNum(leftX)} ${fmtNum(cornerY)} ${curveCommands}`,
     curveCommands,
@@ -637,7 +623,6 @@ function buildBackNeckPath(frame: NotationFrame): BackNeckPath {
     rightX,
     centerLeftX,
     centerRightX,
-    centerFlatWidth: holdW,
     controlLeftX: leftC1x,
     controlRightX: rightC2x,
   };
@@ -729,7 +714,7 @@ function drawSilhouette(
     `<path data-role="right-armhole-path" data-armhole-read-order="bottom-up" d="${polylineD(rightArmhole)}" fill="none" stroke="none"/>`,
     `<path data-role="left-shoulder-path" d="${polylineD(leftShoulder)}" fill="none" stroke="none"/>`,
     `<path data-role="right-shoulder-path" d="${polylineD(rightShoulder)}" fill="none" stroke="none"/>`,
-    `<path data-role="back-neck-path" data-neck-width-stitches="${fmtNum(frame.neckWidthStitches)}" data-center-neck-stitches="${fmtNum(frame.centerNeckStitches)}" data-neck-depth-rows="${fmtNum(frame.backNeckDepthRows)}" data-neck-depth-y="${fmtNum(neck.depthY)}" data-neck-left-x="${fmtNum(neck.leftX)}" data-neck-right-x="${fmtNum(neck.rightX)}" data-neck-center-left-x="${fmtNum(neck.centerLeftX)}" data-neck-center-right-x="${fmtNum(neck.centerRightX)}" data-neck-center-flat-width="${fmtNum(neck.centerFlatWidth)}" data-neck-control-left-x="${fmtNum(neck.controlLeftX)}" data-neck-control-right-x="${fmtNum(neck.controlRightX)}" d="${neck.d}" fill="none" stroke="none"/>`,
+    `<path data-role="back-neck-path" data-neck-width-stitches="${fmtNum(frame.neckWidthStitches)}" data-center-neck-stitches="${fmtNum(frame.centerNeckStitches)}" data-neck-depth-rows="${fmtNum(frame.backNeckDepthRows)}" data-neck-depth-y="${fmtNum(neck.depthY)}" data-neck-left-x="${fmtNum(neck.leftX)}" data-neck-right-x="${fmtNum(neck.rightX)}" data-neck-center-left-x="${fmtNum(neck.centerLeftX)}" data-neck-center-right-x="${fmtNum(neck.centerRightX)}" data-neck-control-left-x="${fmtNum(neck.controlLeftX)}" data-neck-control-right-x="${fmtNum(neck.controlRightX)}" d="${neck.d}" fill="none" stroke="none"/>`,
   ].join("");
 }
 
