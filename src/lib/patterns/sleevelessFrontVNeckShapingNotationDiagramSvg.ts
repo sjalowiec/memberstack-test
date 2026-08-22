@@ -44,6 +44,8 @@ const FS_RC = 12;
 const FS_NOTATION = 13;
 const NOTATION_GAP = 16;
 const NECK_NOTATION_GAP = 20;
+/** Baseline gap between armhole `boN` and decrease lines — one notation line height. */
+const ARMHOLE_NOTATION_GAP = Math.round(FS_NOTATION * 1.6);
 
 const LABEL_GUTTER = 88;
 const RIGHT_PAD = 92;
@@ -683,17 +685,19 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   }
 
   const armholeLabelX = ARMHOLE_LABEL_START_X;
+  const armholeBoY = frame.armholeStartY - 14;
   parts.push(
-    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" data-label-zone="armhole" x="${fmtNum(armholeLabelX)}" y="${fmtNum(frame.armholeStartY - 14)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
+    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" data-label-zone="armhole" x="${fmtNum(armholeLabelX)}" y="${fmtNum(armholeBoY)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
   );
   const ahLines = labels.armholeShaping.split("\n").filter(Boolean);
   parts.push(
     drawNotationStack(
       ahLines,
       armholeLabelX,
-      (frame.armholeStartY + frame.lastArmholeY) / 2,
+      armholeBoY + ahLines.length * ARMHOLE_NOTATION_GAP,
       `data-role="armhole-shaping" data-label-zone="armhole" data-notation="${escapeXml(labels.armholeShaping)}"`,
       "start",
+      ARMHOLE_NOTATION_GAP,
     ),
   );
   const neckLines = labels.neckShaping.split("\n").filter(Boolean);
@@ -769,6 +773,9 @@ export const SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX = { width: VB_W, height: VB
 
 /** Shared left X for Armhole labels (`text-anchor="start"`). */
 export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X = ARMHOLE_LABEL_START_X;
+
+/** Baseline gap between armhole BO and decrease lines. */
+export const SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP = ARMHOLE_NOTATION_GAP;
 
 /** Right-edge cap so the left-aligned Armhole stack stays inside the viewBox. */
 export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X = ARMHOLE_LABEL_SAFE_MAX_X;

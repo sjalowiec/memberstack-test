@@ -24,6 +24,7 @@ import {
   shouldUseGeneratedSleevelessFrontVNeckNotation,
   SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X,
   SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X,
+  SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP,
   SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX,
   tryBuildLiveSleevelessFrontVNeckNotationSvg,
 } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
@@ -607,6 +608,42 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
           .map((line) => line.length),
       );
       expect(xs[0]! + longest * 8).toBeLessThanOrEqual(vbW);
+    }
+  });
+
+  it("separates Armhole BO and decrease lines by one notation line height", () => {
+    const vbW = SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width;
+    expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP).toBe(Math.round(13 * 1.6));
+    expect(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X).toBe(320);
+    for (const pattern of [
+      shallowVNeckPattern(),
+      amandaVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+      fineGaugeWidePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      const bo = allTextMeta(svg, "armhole-bo");
+      const shaping = allTextMeta(svg, "armhole-shaping");
+      expect(bo.length).toBeGreaterThan(0);
+      expect(shaping.length).toBeGreaterThan(0);
+      const xs = [...bo, ...shaping].map((t) => t.x);
+      expect(new Set(xs).size).toBe(1);
+      expect(xs[0]).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X);
+      for (const t of [...bo, ...shaping]) {
+        expect(t.anchor).toBe("start");
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.x).toBeLessThan(vbW);
+      }
+      const boY = bo[0]!.y;
+      const shapingYs = shaping.map((t) => t.y).sort((a, b) => a - b);
+      expect(shapingYs[0]! - boY).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP);
+      for (let i = 1; i < shapingYs.length; i++) {
+        expect(shapingYs[i]! - shapingYs[i - 1]!).toBe(
+          SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP,
+        );
+      }
     }
   });
 
