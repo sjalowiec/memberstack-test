@@ -26,10 +26,11 @@ function catalogSlice(startMarker: string, endMarker: string): string {
 }
 
 describe("pattern catalog Hat card", () => {
-  it("lists Hat as an available card using the production builder photo and route", () => {
+  it("lists Hat as an available card using hat.webp and the production builder route", () => {
     expect(catalog).toContain("title: 'Hat'");
     expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
-    expect(catalog).toContain("image: HAT_PATTERN_HERO_IMAGE_SRC");
+    expect(catalog).toContain("image: '/images/patterns/hat.webp'");
+    expect(catalog).not.toContain("HAT_PATTERN_HERO_IMAGE_SRC");
     expect(catalog).not.toContain("/images/patterns/Hat_builder.png");
     expect(catalog).toContain(
       "copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.'",
@@ -122,6 +123,10 @@ describe("pattern catalog Hat card", () => {
     expect(guest).toContain("{hatPattern.href}");
     expect(guest).toContain("{featuredHatImageSrc}");
     expect(guest).not.toContain("{hatPattern.image}");
+    expect(catalog).toContain("const featuredHatImageSrc = '/images/patterns/hat.webp'");
+    expect(catalog).toContain("image: '/images/patterns/hat.webp'");
+    expect(member).toContain("{pattern.image}");
+    expect(catalog).not.toContain("HAT_PATTERN_HERO_IMAGE_SRC");
     expect(guest).toContain("PATTERN_CATALOG_MORE_HEADING");
     expect(guest).toContain('id="sweater-patterns"');
     expect(guest).toMatch(
