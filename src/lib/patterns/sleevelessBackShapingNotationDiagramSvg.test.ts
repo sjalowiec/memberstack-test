@@ -236,6 +236,50 @@ function cubicY(p0: number, c1: number, c2: number, p1: number, t: number): numb
   return u * u * u * p0 + 3 * u * u * t * c1 + 3 * u * t * t * c2 + t * t * t * p1;
 }
 
+function allNeckCubics(svg: string): {
+  x0: number;
+  y0: number;
+  c1x: number;
+  c1y: number;
+  c2x: number;
+  c2y: number;
+  x1: number;
+  y1: number;
+}[] {
+  const d = pathD(svg, "back-neck-path");
+  const start = /M\s+(-?[\d.]+)\s+(-?[\d.]+)/.exec(d);
+  if (!start) return [];
+  let x = Number(start[1]);
+  let y = Number(start[2]);
+  const cubs: {
+    x0: number;
+    y0: number;
+    c1x: number;
+    c1y: number;
+    c2x: number;
+    c2y: number;
+    x1: number;
+    y1: number;
+  }[] = [];
+  const re = /C\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)/g;
+  for (const m of d.matchAll(re)) {
+    const cub = {
+      x0: x,
+      y0: y,
+      c1x: Number(m[1]),
+      c1y: Number(m[2]),
+      c2x: Number(m[3]),
+      c2y: Number(m[4]),
+      x1: Number(m[5]),
+      y1: Number(m[6]),
+    };
+    cubs.push(cub);
+    x = cub.x1;
+    y = cub.y1;
+  }
+  return cubs;
+}
+
 function firstNeckCubic(svg: string): {
   x0: number;
   y0: number;
@@ -757,6 +801,73 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(svgNum(wideSvg, "data-neck-right-x") - svgNum(wideSvg, "data-neck-left-x")).toBeGreaterThan(
       svgNum(narrowSvg, "data-neck-right-x") - svgNum(narrowSvg, "data-neck-left-x"),
     );
+  });
+
+  it("draws a broad shallow Back neckline with a flatter center hold, not a pinched bowl", () => {
+    for (const pattern of [proofBackPattern(), straightBodyPattern(), widerBackNeckPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+      const cubs = allNeckCubics(svg);
+      const neckW = svgNum(svg, "data-neck-right") - svgNum(svg, "data-neck-left");
+      const holdW = svgNum(svg, "data-neck-center-right") - svgNum(svg, "data-neck-center-left");
+      const depth = svgNum(svg, "data-neck-start-y") - svgNum(svg, "data-neck-corner-y");
+      const armholeBand = svgNum(svg, "data-armhole-start-y") - svgNum(svg, "data-shoulder-y");
+      const px = svgNum(svg, "data-body-width") / (result.debug.bustBodyStitches ?? 1);
+
+      expectClosePx(neckW, (result.debug.necklineStitches ?? 0) * px);
+      expectClosePx(holdW, (result.debug.centerNeckBindOffStitches ?? 0) * px);
+      expect(svgNum(svg, "data-neck-depth-y")).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+      expect(svgNum(svg, "data-neck-depth-rows")).toBe(result.debug.backNeckDepthRows);
+      expect(depth / armholeBand).toBeLessThan(0.22);
+      expectClosePx(svgNum(svg, "data-neck-center-flat-width"), holdW, 0.05);
+      expect(svgNum(svg, "data-neck-center-flat-width")).toBeGreaterThan(neckW * 0.35);
+
+      expect(cubs.length).toBeGreaterThanOrEqual(2);
+      const first = cubs[0]!;
+      const last = cubs[cubs.length - 1]!;
+      expect(first.c1y).toBeCloseTo(first.y0, 1);
+      expect(last.c2y).toBeCloseTo(last.y1, 1);
+      expect(first.y1).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+      expect((first.x0 + last.x1) / 2).toBeCloseTo(
+        (svgNum(svg, "data-neck-left") + svgNum(svg, "data-neck-right")) / 2,
+        2,
+      );
+      expect(first.x0).toBeCloseTo(svgNum(svg, "data-neck-left"), 2);
+      expect(last.x1).toBeCloseTo(svgNum(svg, "data-neck-right"), 2);
+      expect(first.x0 + last.x1).toBeCloseTo(
+        svgNum(svg, "data-neck-center-left") + svgNum(svg, "data-neck-center-right"),
+        2,
+      );
+      expect(Math.abs(first.c1x - last.c2x)).toBeGreaterThan(8);
+      expect(first.c1x - first.x0).toBeCloseTo(last.x1 - last.c2x, 1);
+
+      const earlyX = cubicY(first.x0, first.c1x, first.c2x, first.x1, 0.15);
+      const earlyY = cubicY(first.y0, first.c1y, first.c2y, first.y1, 0.15);
+      expect(earlyX - first.x0).toBeGreaterThan(1.2);
+      expect(earlyY - first.y0).toBeLessThan(depth * 0.5);
+      expect(neckPathHasVerticalSlot(svg)).toBe(false);
+      expect(pathD(svg, "back-neck-path")).not.toMatch(/ L /);
+      expect(svgAttr(svg, "data-neck-contour")).toBe("scoop");
+
+      const holdLeftY = cubicY(first.y0, first.c1y, first.c2y, first.y1, 1);
+      expect(holdLeftY).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+      if (cubs.length >= 3) {
+        const mid = cubs[1]!;
+        expect(mid.x1 - mid.x0).toBeGreaterThan(holdW * 0.85);
+        expect(mid.y0).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+        expect(mid.y1).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+        expect(mid.c1y).toBeCloseTo(mid.y0, 1);
+        expect(mid.c2y).toBeCloseTo(mid.y1, 1);
+        const midY = cubicY(mid.y0, mid.c1y, mid.c2y, mid.y1, 0.5);
+        expect(midY).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+      }
+
+      expect(svgNum(svg, "data-last-armhole-garment-rc")).toBeGreaterThan(
+        svgNum(svg, "data-armhole-start-garment-rc"),
+      );
+      expect(svgNum(svg, "data-neck-left") - svgNum(svg, "data-after-left")).toBeGreaterThan(8);
+      expectParity(svg, result, pattern);
+    }
   });
 
   it("does not draw a V for the Back neckline", () => {
