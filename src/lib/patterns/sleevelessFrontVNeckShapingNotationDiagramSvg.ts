@@ -48,8 +48,9 @@ const NECK_NOTATION_GAP = 20;
 const LABEL_GUTTER = 88;
 const RIGHT_PAD = 92;
 const TOP = 52;
-/** Right-edge text-anchor for armhole labels — inset from the viewBox clip. */
-const RIGHT_LABEL_ANCHOR_X = VB_W - 16;
+/** Shared left X for the right-side armhole notation stack (`text-anchor="start"`). */
+const ARMHOLE_LABEL_START_X = LABEL_GUTTER + (VB_W - LABEL_GUTTER - RIGHT_PAD) + 12;
+/** Right-edge cap so the left-aligned stack stays inside the viewBox. */
 const ARMHOLE_LABEL_SAFE_MAX_X = VB_W - 16;
 const BOTTOM = 428;
 const MIN_HEM = 16;
@@ -681,9 +682,9 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     );
   }
 
-  const armholeLabelX = RIGHT_LABEL_ANCHOR_X;
+  const armholeLabelX = ARMHOLE_LABEL_START_X;
   parts.push(
-    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" data-label-zone="armhole" x="${fmtNum(armholeLabelX)}" y="${fmtNum(frame.armholeStartY - 14)}" text-anchor="end" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
+    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" data-label-zone="armhole" x="${fmtNum(armholeLabelX)}" y="${fmtNum(frame.armholeStartY - 14)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
   );
   const ahLines = labels.armholeShaping.split("\n").filter(Boolean);
   parts.push(
@@ -692,7 +693,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
       armholeLabelX,
       (frame.armholeStartY + frame.lastArmholeY) / 2,
       `data-role="armhole-shaping" data-label-zone="armhole" data-notation="${escapeXml(labels.armholeShaping)}"`,
-      "end",
+      "start",
     ),
   );
   const neckLines = labels.neckShaping.split("\n").filter(Boolean);
@@ -766,7 +767,10 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
 /** Exported for tests — stable viewBox dimensions. */
 export const SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX = { width: VB_W, height: VB_H } as const;
 
-/** Right-edge cap for Armhole label anchors (text-anchor=end). */
+/** Shared left X for Armhole labels (`text-anchor="start"`). */
+export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X = ARMHOLE_LABEL_START_X;
+
+/** Right-edge cap so the left-aligned Armhole stack stays inside the viewBox. */
 export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X = ARMHOLE_LABEL_SAFE_MAX_X;
 
 /**

@@ -23,6 +23,7 @@ import {
   pulloverVNeckFrontShoulderPoints,
   shouldUseGeneratedSleevelessFrontVNeckNotation,
   SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X,
+  SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X,
   SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX,
   tryBuildLiveSleevelessFrontVNeckNotationSvg,
 } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
@@ -576,6 +577,39 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     }
   });
 
+  it("left-aligns Armhole notation from one shared start X inside the viewBox", () => {
+    const vbW = SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width;
+    for (const pattern of [
+      shallowVNeckPattern(),
+      amandaVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+      fineGaugeWidePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      const bo = allTextMeta(svg, "armhole-bo");
+      const shaping = allTextMeta(svg, "armhole-shaping");
+      expect(bo.length).toBeGreaterThan(0);
+      expect(shaping.length).toBeGreaterThan(0);
+      const xs = [...bo, ...shaping].map((t) => t.x);
+      expect(new Set(xs).size).toBe(1);
+      expect(xs[0]).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X);
+      for (const t of [...bo, ...shaping]) {
+        expect(t.anchor).toBe("start");
+        expect(t.x).toBeGreaterThan(svgNum(svg, "data-body-width"));
+        expect(t.x).toBeLessThan(vbW);
+      }
+      const longest = Math.max(
+        (svgAttr(svg, "data-armhole-bo") ?? "").length,
+        ...(svgAttr(svg, "data-armhole-shaping") ?? "")
+          .split("\n")
+          .map((line) => line.length),
+      );
+      expect(xs[0]! + longest * 8).toBeLessThanOrEqual(vbW);
+    }
+  });
+
   it("keeps Neck labels left of center and RC labels in the left gutter", () => {
     const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
       generateSleevelessBackPattern(vNeckBeforeArmholePattern()),
@@ -605,12 +639,20 @@ function firstTextPos(svg: string, role: string): { x: number; y: number } {
 }
 
 function allTextPos(svg: string, role: string): { x: number; y: number }[] {
+  return allTextMeta(svg, role).map(({ x, y }) => ({ x, y }));
+}
+
+function allTextMeta(
+  svg: string,
+  role: string,
+): { x: number; y: number; anchor: string }[] {
   const re = new RegExp(`<text[^>]*data-role="${role}"[^>]*>`, "g");
   return [...svg.matchAll(re)].map((m) => {
     const tag = m[0];
     return {
       x: Number(/[\s]x="([^"]+)"/.exec(tag)?.[1] ?? NaN),
       y: Number(/[\s]y="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+      anchor: /text-anchor="([^"]+)"/.exec(tag)?.[1] ?? "",
     };
   });
 }
