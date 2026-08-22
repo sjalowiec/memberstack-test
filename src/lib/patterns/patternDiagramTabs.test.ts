@@ -362,6 +362,8 @@ describe("finished-pattern families use the shared diagram tabs", () => {
     const script = readFileSync(join(srcRoot, "scripts/sleevelessPatternPageShared.ts"), "utf8");
     expect(script).toContain("buildPatternDiagramTabsShellHtml");
     expect(script).toContain("initPatternDiagramTabs");
+    expect(script).toContain("buildSleevelessPatternDiagramTabsShellHtml");
+    expect(script).toContain("initSleevelessPatternDiagramTabs");
     expect(script).toContain("sharedPanel: true");
     expect(script).toContain("data-sleeveless-back-diagram-mode-btn");
     expect(script).toContain("data-sleeveless-front-diagram-mode-btn");

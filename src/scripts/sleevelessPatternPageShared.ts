@@ -39,6 +39,11 @@ import {
   initPatternDiagramTabs,
 } from "../lib/patterns/patternDiagramTabs.ts";
 import {
+  SLEEVELESS_DIAGRAM_PANEL_TITLE,
+  buildSleevelessPatternDiagramTabsShellHtml,
+  initSleevelessPatternDiagramTabs,
+} from "../lib/patterns/sleevelessPatternDiagramTabs.ts";
+import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
   patternTipWrapperHtml,
@@ -917,11 +922,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   }
 
   /**
-   * Two-column shell for Back/Front: prose + chart (left) and static SVG (right, sticky on desktop).
+   * Two-column shell for Back/Front: prose + chart (left) and Hat-style visual workspace (right).
    * @param {string} innerHtml
    * @param {string} diagramSrc
    * @param {string} diagramAlt
-   * @param {{ cardiganHalfSide?: "left" | "right"; backDiagramModeToggle?: boolean; frontDiagramModeToggle?: boolean; showModeToggle?: boolean }} [diagramOpts]
+   * @param {{ cardiganHalfSide?: "left" | "right"; backDiagramModeToggle?: boolean; frontDiagramModeToggle?: boolean; enableVisualWorkspace?: boolean; shapingSrc?: string; shapingAlt?: string }} [diagramOpts]
    */
   function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
@@ -934,13 +939,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
     const backModeToggle = diagramOpts?.backDiagramModeToggle === true;
     const frontModeToggle = diagramOpts?.frontDiagramModeToggle === true;
-    const garmentModeToggle = backModeToggle || frontModeToggle;
-    // The diagram still hydrates as the garment schematic (Stitches & Rows) via its data attrs, but
-    // the Stitches & Rows / Shaping Notation TAB UI is suppressed when showModeToggle === false.
-    // Used by the sleeveless round-neck FRONT, where the Japanese (shaping) notation now lives in the
-    // Visual Guides block, so the piece diagram stays focused on stitch/row info with no notation tab.
-    const showModeToggle = diagramOpts?.showModeToggle !== false;
-    const hasToggleUi = garmentModeToggle && showModeToggle;
+    const enableVisualWorkspace = diagramOpts?.enableVisualWorkspace === true;
+    const workspacePiece = backModeToggle ? "back" : "front";
     const backDiagramAttrs = backModeToggle
       ? ' data-sleeveless-back-diagram data-sleeveless-back-diagram-mode="sts-rows"'
       : "";
@@ -948,13 +948,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       ? ' data-sleeveless-front-diagram data-sleeveless-front-diagram-mode="sts-rows"'
       : "";
     const diagramModeAttrs = `${backDiagramAttrs}${frontDiagramAttrs}`;
-    const modeToggleGroupLabel = backModeToggle ? "Back diagram view" : "Front diagram view";
-    const modeBtnAttr = backModeToggle
-      ? "data-sleeveless-back-diagram-mode-btn"
-      : "data-sleeveless-front-diagram-mode-btn";
-    const diagramTabsIdPrefix = backModeToggle
-      ? "sleeveless-back-diagram"
-      : "sleeveless-front-diagram";
     const diagramTriggerHtml = `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
         <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}${diagramModeAttrs}>
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
@@ -963,29 +956,28 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const diagramEnlargeBtnHtml = `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">
         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
       </button>`;
-    const shapingNotationHelpHtml = hasToggleUi
-      ? buildShapingNotationChartHelpHtml(
-          escapeGlossaryPlaceholderAttr,
-          escapeGlossaryPlaceholderText,
-        )
-      : "";
     const diagramCardHtml = `<div class="sleeveless-piece-split__diagram-card">
         ${diagramEnlargeBtnHtml}
         ${diagramTriggerHtml}
       </div>`;
-    const diagramAsideInner = hasToggleUi
-      ? buildGarmentFinishedDiagramTabsHtml({
-          idPrefix: diagramTabsIdPrefix,
-          tablistLabel: modeToggleGroupLabel,
-          modeBtnAttr,
-          panelHtml: `${shapingNotationHelpHtml}${diagramCardHtml}`,
-        })
-      : diagramCardHtml;
+    const workspaceTitle = `<h3 class="sleeveless-pattern-diagram-panel__title no-print">${SLEEVELESS_DIAGRAM_PANEL_TITLE}</h3>`;
+    const diagramAsideInner = enableVisualWorkspace
+      ? `${workspaceTitle}${buildSleevelessPatternDiagramTabsShellHtml({
+          piece: workspacePiece,
+          stsRowsSrc: diagramSrc,
+          stsRowsAlt: diagramAlt,
+          shapingSrc: diagramOpts?.shapingSrc || "",
+          shapingAlt: diagramOpts?.shapingAlt || (workspacePiece === "back"
+            ? BACK_DIAGRAM_NOTATION_ALT
+            : FRONT_DIAGRAM_NOTATION_ALT),
+          cardiganHalfSide: half === "left" || half === "right" ? half : undefined,
+        })}`
+      : `${workspaceTitle}${diagramCardHtml}`;
     return `<div class="sleeveless-piece-layout">
-  <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
-  <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
-  <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
-    <div class="sleeveless-piece-split__diagram-inner${hasToggleUi ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
+  <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout" data-sleeveless-pattern-reading-layout>
+  <div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions">${innerHtml}</div>
+  <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram" aria-label="Garment dimensions">
+    <div class="sleeveless-piece-split__diagram-inner sleeveless-pattern-diagram-panel${enableVisualWorkspace ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
       ${diagramAsideInner}
     </div>
   </aside>
@@ -2018,11 +2010,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
     const pieceSection = root.querySelector(sectionId);
     if (!pieceSection) return;
-    const trigger = pieceSection.querySelector("[data-sleeveless-diagram-trigger]");
+    const shapingHost =
+      pieceSection.querySelector("[data-sleeveless-diagram-shaping-host]") ||
+      pieceSection.querySelector(`[${hostAttr}][data-sleeveless-${piece}-diagram-mode="shaping-notation"]`) ||
+      pieceSection.querySelector(`[${hostAttr}]`);
+    const host = shapingHost instanceof HTMLElement ? shapingHost : null;
+    if (!host) return;
+    const trigger =
+      host.closest("[data-sleeveless-diagram-trigger]") ||
+      pieceSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (!(trigger instanceof HTMLElement)) return;
-
-    const host = pieceSection.querySelector(`[${hostAttr}]`);
-    if (!(host instanceof HTMLElement)) return;
 
     const openWhenReady = () => {
       let attempts = 0;
@@ -4229,7 +4226,14 @@ table {
       resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData),
       BACK_DIAGRAM_STS_ROWS_ALT,
       backPost,
-      backNotationSupported ? { backDiagramModeToggle: true, showModeToggle: false } : undefined,
+      backNotationSupported
+        ? {
+            backDiagramModeToggle: true,
+            enableVisualWorkspace: true,
+            shapingSrc: resolveSleevelessBackDiagramSrc("shaping-notation", diagramPatternData),
+            shapingAlt: BACK_DIAGRAM_NOTATION_ALT,
+          }
+        : undefined,
     );
     const frontDiagramResolution = resolveSleevelessFrontDiagram(diagramPatternData, {
       devForceCardiganHalfLeft: false,
@@ -4265,8 +4269,13 @@ table {
       frontDiagramAlt,
       frontPost,
       frontNotationSupported
-        ? // Notation lives in Visual Guides — keep sts-rows hydration but hide the Shaping Notation tab.
-          { frontDiagramModeToggle: true, showModeToggle: false }
+        ? {
+            frontDiagramModeToggle: true,
+            enableVisualWorkspace: true,
+            shapingSrc: resolveSleevelessFrontDiagramSrc("shaping-notation", diagramPatternData),
+            shapingAlt: FRONT_DIAGRAM_NOTATION_ALT,
+            cardiganHalfSide: frontCardiganHalfSide,
+          }
         : frontCardiganHalfSide
           ? { cardiganHalfSide: frontCardiganHalfSide }
           : undefined,
@@ -4492,6 +4501,7 @@ table {
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
     bindSleevelessFrontDiagramMode(mount);
+    initSleevelessPatternDiagramTabs(mount);
     initPatternDiagramTabs(mount);
     bindNecklineNotationPreview(mount);
     bindShapingMapEnlarge(mount);

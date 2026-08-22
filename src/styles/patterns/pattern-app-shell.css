@@ -93,13 +93,13 @@ main.site-content:has(.pattern-app-shell) {
    * This is a measured foundation bump only — deeper SVG/diagram enlargement is
    * a follow-up (see report).
    */
-  .pattern-app-shell #pattern-content .pattern-layout.pattern-layout--garment-columns,
-  .pattern-app-shell #pattern-content .sleeveless-piece-split {
+  .pattern-app-shell #pattern-content .pattern-layout.pattern-layout--garment-columns:not(.sleeveless-pattern-reading-layout),
+  .pattern-app-shell #pattern-content .sleeveless-piece-split:not(.sleeveless-pattern-reading-layout) {
     grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 420px);
     gap: clamp(1.5rem, 3vw, 2.5rem);
   }
 
-  .pattern-app-shell #pattern-content .sleeveless-piece-split__diagram-inner {
+  .pattern-app-shell #pattern-content .sleeveless-piece-split:not(.sleeveless-pattern-reading-layout) .sleeveless-piece-split__diagram-inner {
     max-width: 420px;
   }
 
