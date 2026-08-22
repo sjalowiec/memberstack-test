@@ -534,28 +534,44 @@ function buildFrame(
   };
 }
 
-/** Segmented shallow-round back neck: center hold flat + sloped sides. Not a V. */
-function buildBackNeckPoints(frame: NotationFrame): Pt[] {
-  const yTop = Math.min(frame.neckStartY, frame.neckCornerY);
-  const yBottom = Math.max(frame.neckStartY, frame.neckCornerY);
-  const depth = yBottom - yTop;
-  const leftMid = {
-    x: frame.neckLeft + (frame.neckCenterLeft - frame.neckLeft) * 0.4,
-    y: yTop + depth * 0.72,
+type BackNeckPath = {
+  d: string;
+  curveCommands: string;
+  depthY: number;
+  leftX: number;
+  rightX: number;
+  centerLeftX: number;
+  centerRightX: number;
+};
+
+/**
+ * Smooth scoop from the canonical neck corners, center-hold width, and depth Y.
+ * Two cubics with horizontal end tangents — not a V and not a rectangular notch.
+ */
+function buildBackNeckPath(frame: NotationFrame): BackNeckPath {
+  const leftX = frame.neckLeft;
+  const rightX = frame.neckRight;
+  const centerLeftX = frame.neckCenterLeft;
+  const centerRightX = frame.neckCenterRight;
+  const cornerY = frame.neckCornerY;
+  const depthY = Math.max(frame.neckStartY, cornerY);
+  const neckW = Math.max(0, rightX - leftX);
+  const curveCommands =
+    depthY - Math.min(frame.neckStartY, cornerY) > 0.75 && neckW > 1
+      ? [
+          `C ${fmtNum(leftX + neckW * 0.22)} ${fmtNum(cornerY)} ${fmtNum(centerLeftX)} ${fmtNum(depthY)} ${fmtNum(frame.cx)} ${fmtNum(depthY)}`,
+          `C ${fmtNum(centerRightX)} ${fmtNum(depthY)} ${fmtNum(rightX - neckW * 0.22)} ${fmtNum(cornerY)} ${fmtNum(rightX)} ${fmtNum(cornerY)}`,
+        ].join(" ")
+      : `L ${fmtNum(rightX)} ${fmtNum(cornerY)}`;
+  return {
+    d: `M ${fmtNum(leftX)} ${fmtNum(cornerY)} ${curveCommands}`,
+    curveCommands,
+    depthY,
+    leftX,
+    rightX,
+    centerLeftX,
+    centerRightX,
   };
-  const rightMid = {
-    x: frame.neckRight - (frame.neckRight - frame.neckCenterRight) * 0.4,
-    y: leftMid.y,
-  };
-  const pts: Pt[] = [{ x: frame.neckLeft, y: frame.neckCornerY }];
-  if (depth > 1) pts.push(leftMid);
-  pts.push({ x: frame.neckCenterLeft, y: yBottom });
-  if (frame.neckCenterRight - frame.neckCenterLeft > 1) {
-    pts.push({ x: frame.neckCenterRight, y: yBottom });
-  }
-  if (depth > 1) pts.push(rightMid);
-  pts.push({ x: frame.neckRight, y: frame.neckCornerY });
-  return pts;
 }
 
 function drawNotationStack(
@@ -586,7 +602,7 @@ function drawSilhouette(
   frame: NotationFrame,
   leftShoulder: readonly Pt[],
   rightShoulder: readonly Pt[],
-  neckPoints: readonly Pt[],
+  neck: BackNeckPath,
 ): string {
   const leftBody = bodySidePoints(
     frame.hemLeft,
@@ -609,7 +625,6 @@ function drawSilhouette(
   const leftSteps = leftShoulder.slice(1);
   const rightDown = [...rightShoulder].reverse().slice(1);
   const rightBodyDown = [...rightBody].reverse().slice(1);
-  const neckRest = neckPoints.slice(1);
   const path = [
     ...leftBody.map((p, i) => `${i === 0 ? "M" : "L"} ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     `L ${fmtNum(frame.boLeft)} ${fmtNum(frame.armholeStartY)}`,
@@ -617,7 +632,7 @@ function drawSilhouette(
     `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.shoulderY)}`,
     ...leftSteps.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     `L ${fmtNum(frame.neckLeft)} ${fmtNum(frame.neckCornerY)}`,
-    ...neckRest.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
+    neck.curveCommands,
     ...rightDown.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.shoulderY)}`,
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.lastArmholeY)}`,
@@ -631,7 +646,7 @@ function drawSilhouette(
     `<path data-role="right-body-path" data-body-shaping-direction="${frame.bodyDirection}" d="${polylineD(rightBody)}" fill="none" stroke="none"/>`,
     `<path data-role="left-shoulder-path" d="${polylineD(leftShoulder)}" fill="none" stroke="none"/>`,
     `<path data-role="right-shoulder-path" d="${polylineD(rightShoulder)}" fill="none" stroke="none"/>`,
-    `<path data-role="back-neck-path" data-neck-width-stitches="${fmtNum(frame.neckWidthStitches)}" data-center-neck-stitches="${fmtNum(frame.centerNeckStitches)}" data-neck-depth-rows="${fmtNum(frame.backNeckDepthRows)}" d="${polylineD(neckPoints)}" fill="none" stroke="none"/>`,
+    `<path data-role="back-neck-path" data-neck-width-stitches="${fmtNum(frame.neckWidthStitches)}" data-center-neck-stitches="${fmtNum(frame.centerNeckStitches)}" data-neck-depth-rows="${fmtNum(frame.backNeckDepthRows)}" data-neck-depth-y="${fmtNum(neck.depthY)}" data-neck-left-x="${fmtNum(neck.leftX)}" data-neck-right-x="${fmtNum(neck.rightX)}" data-neck-center-left-x="${fmtNum(neck.centerLeftX)}" data-neck-center-right-x="${fmtNum(neck.centerRightX)}" d="${neck.d}" fill="none" stroke="none"/>`,
   ].join("");
 }
 
@@ -709,7 +724,7 @@ export function buildSleevelessBackShapingNotationDiagramSvg(
     frame.neckRight,
     frame.shoulderY,
   );
-  const neckPoints = buildBackNeckPoints(frame);
+  const neckPath = buildBackNeckPath(frame);
   const shoulderSts = shoulderPasses.reduce((sum, p) => sum + Math.max(0, p.amount), 0);
   const decreaseEvents = backArmholeDecreaseEvents(armholeStart, decreaseSts);
   const timeline = backTimeline(result);
@@ -723,7 +738,7 @@ export function buildSleevelessBackShapingNotationDiagramSvg(
   );
 
   const parts: string[] = [
-    drawSilhouette(frame, leftShoulder, rightShoulder, neckPoints),
+    drawSilhouette(frame, leftShoulder, rightShoulder, neckPath),
     dashedLine(
       gutterX + 6,
       frame.armholeStartY,
