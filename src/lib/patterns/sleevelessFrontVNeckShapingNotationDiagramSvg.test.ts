@@ -522,7 +522,7 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     expect(armholeBo.y).toBeLessThan(svgNum(svg, "data-armhole-start-y"));
   });
 
-  it("draws a stepped shoulder from filtered shoulder bind-off events on both sides", () => {
+  it("draws a single sloped shoulder on each side from filtered shoulder events", () => {
     for (const pattern of [
       shallowVNeckPattern(),
       amandaVNeckPattern(),
@@ -533,6 +533,7 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       const result = generateSleevelessBackPattern(pattern);
       const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
       const passes = pulloverVNeckFrontShoulderPoints(result);
+      expect(svgAttr(svg, "data-shoulder-contour")).toBe("slope");
       expect(svgNum(svg, "data-shoulder-pass-count")).toBe(passes.length);
       expect(svgNum(svg, "data-shoulder-shaping-stitches")).toBe(
         passes.reduce((sum, p) => sum + p.amount, 0),
@@ -541,13 +542,13 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       expect(roles(svg, "right-shoulder-path")).toHaveLength(1);
       const left = pathPoints(svg, "left-shoulder-path");
       const right = pathPoints(svg, "right-shoulder-path");
-      expect(left.length).toBe(right.length);
-      expect(left.length).toBeGreaterThan(1);
-      const leftYs = new Set(left.map((p) => p.y));
-      const rightYs = new Set(right.map((p) => p.y));
-      if (passes.length > 1) {
-        expect(leftYs.size).toBeGreaterThan(1);
-        expect(rightYs.size).toBeGreaterThan(1);
+      expect(left).toHaveLength(2);
+      expect(right).toHaveLength(2);
+      if (passes.length > 0) {
+        expect(left[1]!.y).toBeLessThan(left[0]!.y);
+        expect(right[1]!.y).toBeLessThan(right[0]!.y);
+        expect(left[0]!.x).toBeLessThan(left[1]!.x);
+        expect(right[0]!.x).toBeGreaterThan(right[1]!.x);
       }
       expect(left[0]!.x).toBeLessThan(right[0]!.x);
       expect(svg).not.toMatch(/<circle\b/);
@@ -582,8 +583,15 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     );
     const vbW = SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width;
     expect(roles(svg, "neck-label-zone")).toHaveLength(1);
+    const neckYs = allTextPos(svg, "neck-shaping").map((p) => p.y).sort((a, b) => a - b);
     for (const pos of allTextPos(svg, "neck-shaping")) {
       expect(pos.x).toBeLessThan(vbW / 2);
+    }
+    expect(firstTextPos(svg, "neck-shaping").y).toBeGreaterThan(
+      firstTextPos(svg, "shoulder-start-rc").y + 12,
+    );
+    if (neckYs.length > 1) {
+      expect(neckYs[1]! - neckYs[0]!).toBeGreaterThanOrEqual(18);
     }
     for (const role of ["rc-caston", "rc-hem", "armhole-start-rc", "neck-start-rc", "shoulder-start-rc"]) {
       const pos = firstTextPos(svg, role);
