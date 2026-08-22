@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
+import { HAT_PATTERN_HERO_IMAGE_SRC } from '../../lib/patterns/hat/hatPatternHeroImage';
 import {
   PATTERN_CATALOG_MEMBERSHIP_BODY,
   PATTERN_CATALOG_MORE_HEADING,
@@ -25,7 +26,7 @@ const dropShoulderPattern = {
   // `?new=1` clears any active draft on boot so this card always starts fresh
   // (mirrors the sleeveless builder). Drop shoulder reuses the same review/pattern flow.
   href: '/patterns/drop-shoulder/builder?new=1',
-  image: '/images/patterns/drop-shoulder/drop-man-pullover-round.webp',
+  image: '/images/patterns/drop_shoulder.png',
   copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
   button: 'Create drop shoulder sweater',
 };
@@ -33,7 +34,7 @@ const dropShoulderPattern = {
 const hatPattern = {
   title: 'Hat',
   href: '/patterns/hat/builder',
-  image: '/images/patterns/Hat_builder.png',
+  image: HAT_PATTERN_HERO_IMAGE_SRC,
   copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
   button: 'Create your hat',
 };
@@ -44,7 +45,7 @@ const sleevelessPattern = {
   // persisted/active session on boot (see applySleevelessExpressNewSessionFromUrl) so this card
   // never resumes a previous or another user's pattern. Use "My Patterns" to resume/open.
   href: '/patterns/sleeveless/builder?new=1',
-  image: '/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp',
+  image: '/images/patterns/sleeveless.png',
   copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
   button: 'Create sleeveless sweater',
 };
@@ -74,12 +75,12 @@ const availablePatterns = [
 const comingSoonPatterns = [
   {
     title: 'Raglan Sweater',
-    image: '/images/patterns/raglan/raglan-woman-cardigan-v-neck.webp',
+    image: '/images/patterns/raglan.png',
     copy: 'A flexible raglan sweater system with custom fit and clear shaping guidance.',
   },
   {
     title: 'Set-In Sleeve Sweater',
-    image: '/images/patterns/set-in-sleeve/set-in-kids-pullover-round-neck.webp',
+    image: '/images/patterns/set-in.png',
     copy: 'A classic sweater system designed for custom fit, sleeve shaping, and polished finishing.',
   },
 ];
@@ -422,7 +423,7 @@ const comingSoonPatterns = [
   display: block;
   width: 100%;
   height: 12.5rem;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -556,7 +557,11 @@ a.catalog-card:focus-visible {
 .catalog-card__media {
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #f9f9f6;
+  background-color: transparent;
+  background-image: url("/images/patterns/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-bottom: 1px solid #eef0e6;
 }
 
@@ -564,7 +569,7 @@ a.catalog-card:focus-visible {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .catalog-card__placeholder {

@@ -29,7 +29,8 @@ describe("pattern catalog Hat card", () => {
   it("lists Hat as an available card using the production builder photo and route", () => {
     expect(catalog).toContain("title: 'Hat'");
     expect(catalog).toContain("href: '/patterns/hat/builder'");
-    expect(catalog).toContain("image: '/images/patterns/Hat_builder.png'");
+    expect(catalog).toContain("image: HAT_PATTERN_HERO_IMAGE_SRC");
+    expect(catalog).not.toContain("/images/patterns/Hat_builder.png");
     expect(catalog).toContain(
       "copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.'",
     );
@@ -37,6 +38,8 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).not.toContain("title: 'Hat Pattern Builder'");
     expect(catalog).not.toContain("/images/patterns/basic-hat.webp");
     expect(catalog).not.toContain("Hat Pattern Builder — POSTPONED");
+    expect(catalog).toContain("object-fit: contain");
+    expect(catalog).not.toContain("object-fit: cover");
     expect(catalog).toContain("Choose a pattern to get started");
     expect(catalog).not.toContain("Pick a sweater builder");
     expect(catalog).not.toContain("Pattern Builders home");
@@ -84,16 +87,12 @@ describe("pattern catalog Hat card", () => {
   it("leaves existing sweater catalog cards unchanged", () => {
     expect(catalog).toContain("title: 'Sleeveless Sweater'");
     expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
-    expect(catalog).toContain(
-      "image: '/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp'",
-    );
+    expect(catalog).toContain("image: '/images/patterns/sleeveless.png'");
     expect(catalog).toContain("button: 'Create sleeveless sweater'");
 
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
     expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
-    expect(catalog).toContain(
-      "image: '/images/patterns/drop-shoulder/drop-man-pullover-round.webp'",
-    );
+    expect(catalog).toContain("image: '/images/patterns/drop_shoulder.png'");
     expect(catalog).toContain("button: 'Create drop shoulder sweater'");
   });
 

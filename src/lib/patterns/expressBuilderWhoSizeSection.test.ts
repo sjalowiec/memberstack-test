@@ -20,12 +20,20 @@ const whoSizeSection = readFileSync(
   resolve("src/components/patterns/ExpressBuilderWhoSizeSection.astro"),
   "utf8",
 );
+const whoPicker = readFileSync(
+  resolve("src/components/patterns/ExpressBuilderWhoPicker.astro"),
+  "utf8",
+);
 const sleevelessBuilderAstro = readFileSync(
   resolve("src/pages/patterns/sleeveless/builder.astro"),
   "utf8",
 );
 const dropShoulderBuilderAstro = readFileSync(
   resolve("src/pages/patterns/drop-shoulder/builder.astro"),
+  "utf8",
+);
+const customBuildDesignAstro = readFileSync(
+  resolve("src/pages/patterns/sleeveless/custom-build/design/index.astro"),
   "utf8",
 );
 
@@ -217,6 +225,42 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
     expect(dropShoulderBuilderAstro).toContain(
       'buildSweaterSizingChartHref("/patterns/drop-shoulder/builder")',
     );
+  });
+
+  it("shares text-only Size Range options with unchanged who values", () => {
+    expect(whoSizeSection).toContain("ExpressBuilderWhoPicker");
+    expect(whoPicker).toContain('data-field="who"');
+    expect(whoPicker).toContain('data-value={opt.value}');
+    expect(whoPicker).toContain('{ value: "women", label: "Women" }');
+    expect(whoPicker).toContain('{ value: "men", label: "Men" }');
+    expect(whoPicker).toContain('{ value: "kids", label: "Kids" }');
+    expect(whoPicker).toContain('{ value: "baby", label: "Baby" }');
+    expect(whoPicker).toContain("express-options--who-text");
+    expect(whoPicker).not.toContain("<img");
+    expect(sleevelessBuilderAstro).not.toContain('data-field="who"');
+    expect(dropShoulderBuilderAstro).not.toContain('data-field="who"');
+    expect(sleevelessBuilderAstro).not.toContain("sleeveless-woman-pullover-round-neck.webp");
+    expect(dropShoulderBuilderAstro).not.toContain("drop-woman-pullover-round.webp");
+  });
+
+  it("reuses the shared text who picker in Custom Build Design", () => {
+    expect(customBuildDesignAstro).toContain("ExpressBuilderWhoPicker");
+    expect(customBuildDesignAstro).not.toContain("<img");
+    expect(customBuildDesignAstro).not.toContain("sleeveless-woman-pullover-round-neck.webp");
+    expect(customBuildDesignAstro).toContain("Who are you knitting for?");
+  });
+
+  it("removes obsolete audience-card image refresh from builder clients", () => {
+    const expressPageSrc = readFileSync(resolve("src/scripts/sleeveless-express-page.ts"), "utf8");
+    const customBuildDesignPageSrc = readFileSync(
+      resolve("src/scripts/sleeveless-custom-build-design-page.ts"),
+      "utf8",
+    );
+    expect(expressPageSrc).not.toContain("refreshExpressWhoCardHeroImages");
+    expect(expressPageSrc).not.toContain("expressPatternDataForAudienceHeroImages");
+    expect(expressPageSrc).not.toContain("resolveSleevelessAudienceHeroImageSrc");
+    expect(customBuildDesignPageSrc).not.toContain("refreshCbDesignWhoCardImages");
+    expect(customBuildDesignPageSrc).not.toContain("resolveSleevelessAudienceHeroImageSrc");
   });
 });
 

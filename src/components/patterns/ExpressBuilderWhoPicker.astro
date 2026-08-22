@@ -1,0 +1,38 @@
+---
+/** Shared Women / Men / Kids / Baby text buttons for sweater Pattern Builders. */
+
+interface Props {
+  labelledBy: string;
+}
+
+const { labelledBy } = Astro.props;
+
+/** Presentation-only labels. Values stay `women` / `men` / `kids` / `baby` for sizing. */
+const whoOptions = [
+  { value: "women", label: "Women" },
+  { value: "men", label: "Men" },
+  { value: "kids", label: "Kids" },
+  { value: "baby", label: "Baby" },
+] as const;
+---
+
+<div
+  class="express-options--who express-options--who-text hat-length-picker__grid"
+  role="group"
+  aria-labelledby={labelledBy}
+>
+  {
+    whoOptions.map((opt) => (
+      <button
+        type="button"
+        class="hat-length-picker__option express-who-card"
+        data-choice
+        data-field="who"
+        data-value={opt.value}
+        aria-pressed="false"
+      >
+        <span class="hat-length-picker__option-label">{opt.label}</span>
+      </button>
+    ))
+  }
+</div>

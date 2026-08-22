@@ -135,7 +135,6 @@ import {
   resolveSleevelessFrontDiagram,
   isSleevelessVNeckChoice,
 } from "../lib/patterns/sleevelessFrontDiagramSrc.ts";
-import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage.ts";
 import {
   injectBodyShapeGuidesIntoGarmentSvg,
   scaleDiagramGuidesForCardiganHalf,
@@ -475,19 +474,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (key && AUDIENCE_LABELS[key]) return AUDIENCE_LABELS[key];
     if (raw) return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
     return "";
-  }
-
-  function updateSleevelessAudienceHero(patternMerged) {
-    const st = section(patternMerged.style);
-    const ft = section(patternMerged.fit);
-    const audience =
-      (typeof st.recipientCategory === "string" && st.recipientCategory.trim()) ||
-      (typeof ft.sizingChart === "string" && ft.sizingChart.trim()) ||
-      "";
-    const hero = document.querySelector("[data-sleeveless-audience-hero]");
-    if (hero instanceof HTMLImageElement) {
-      hero.src = resolveSleevelessAudienceHeroImageSrc(patternMerged, audience);
-    }
   }
 
   function garmentShapeLengthPhrase(st, patternData) {
@@ -4664,7 +4650,6 @@ table {
     const patternMerged = mergedPatternForDisplay(getCurrentPattern());
     const patternData = getPatternData();
     const validation = validatePatternBuilderRequired(patternData);
-    updateSleevelessAudienceHero(patternMerged);
 
     const resultsEl = document.getElementById("sg-sleeveless-results");
     const tabsRoot = patternTabsRoot();
@@ -4771,7 +4756,6 @@ table {
     const goldenPb = getSleevelessGoldenBetaPatternBuilderData();
     const patternMerged = mergedPatternForDisplayFromSources(canon, goldenPb);
     const patternData = goldenPb;
-    updateSleevelessAudienceHero(patternMerged);
 
     const introEl = document.querySelector("[data-sg-pattern-intro]");
     if (introEl instanceof HTMLElement) {

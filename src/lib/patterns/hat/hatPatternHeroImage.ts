@@ -1,9 +1,9 @@
 /**
- * Shared promotional hero photo for Hat Builder and finished Hat Pattern pages.
- * Square three-hat composition — callers must keep object-fit: contain so nothing is cropped.
+ * Shared representative fashion-flat for Hat Builder, finished Hat Pattern, and catalog cards.
+ * Callers must keep object-fit: contain so the white-background illustration is not cropped.
  */
-export const HAT_PATTERN_HERO_IMAGE_SRC = "/images/patterns/Hat_builder.png";
+export const HAT_PATTERN_HERO_IMAGE_SRC = "/images/patterns/hat.png";
 export const HAT_PATTERN_HERO_IMAGE_ALT =
-  "Three custom knit hats showing gathered, four-gore, and swirl-top crown styles";
+  "Fashion-flat illustration of a custom knit hat";
 export const HAT_PATTERN_HERO_IMAGE_WIDTH = 360;
 export const HAT_PATTERN_HERO_IMAGE_HEIGHT = 360;

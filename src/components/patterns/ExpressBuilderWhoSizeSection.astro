@@ -1,5 +1,6 @@
 ---
-/** Shared Who & Size nested UI for unified Express builders (Sleeveless + Drop Shoulder). */
+/** Shared Size Range + size-chart UI for unified Express builders (Sleeveless + Drop Shoulder). */
+import ExpressBuilderWhoPicker from "./ExpressBuilderWhoPicker.astro";
 import {
   EXPRESS_BUILDER_SIZE_HEADING,
   EXPRESS_BUILDER_SIZE_INSTRUCTION,
@@ -14,6 +15,7 @@ interface Props {
 const { sweaterSizingChartHref } = Astro.props;
 ---
 
+<ExpressBuilderWhoPicker labelledBy="express-step-1-title" />
 <div class="express-who-size-intro">
   <h3 class="express-size-heading">{EXPRESS_BUILDER_SIZE_HEADING}</h3>
   <p class="express-size-instruction" id="express-size-helper-text">
@@ -29,7 +31,7 @@ const { sweaterSizingChartHref } = Astro.props;
 </div>
 <div class="express-who-size-nested" data-express-nested-size hidden>
   <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
-    Loading size chartsù
+    Loading size charts?
   </p>
   <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
     <div class="express-size-table-wrap">

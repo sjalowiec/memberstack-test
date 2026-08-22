@@ -5,6 +5,7 @@ import {
   EXPRESS_BUILDER_INTRO_SUBTEXT,
   EXPRESS_BUILDER_SIZE_HEADING,
   EXPRESS_BUILDER_SIZE_INSTRUCTION,
+  EXPRESS_BUILDER_SIZE_RANGE_HEADING,
   EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN,
   EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
 } from "./expressBuilderCopy";
@@ -30,6 +31,7 @@ describe("expressBuilderCopy", () => {
   });
 
   it("defines the shared size section copy", () => {
+    expect(EXPRESS_BUILDER_SIZE_RANGE_HEADING).toBe("Size Range");
     expect(EXPRESS_BUILDER_SIZE_HEADING).toBe("Choose your starting size");
     expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toBe(
       "Select the body bust/chest measurement closest to your own. We'll use the Knit It Now standard sizing chart as the starting point for your sweater.",
@@ -64,5 +66,12 @@ describe("expressBuilderCopy wiring", () => {
     expect(whoSizeSection).toContain("{EXPRESS_BUILDER_SIZE_HEADING}");
     expect(whoSizeSection).toContain("{EXPRESS_BUILDER_SIZE_INSTRUCTION}");
     expect(whoSizeSection).toContain("{EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL}");
+  });
+
+  it("uses shared Size Range heading in both unified builders", () => {
+    expect(sleevelessBuilderAstro).toContain("EXPRESS_BUILDER_SIZE_RANGE_HEADING");
+    expect(dropShoulderBuilderAstro).toContain("EXPRESS_BUILDER_SIZE_RANGE_HEADING");
+    expect(sleevelessBuilderAstro).not.toContain(">Who & Size<");
+    expect(dropShoulderBuilderAstro).not.toContain(">Who & Size<");
   });
 });

@@ -14,7 +14,10 @@ import {
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
 } from "../../../lib/patterns/sleevelessExpressAvailableNeedles";
 import { formatFitEaseApproxLabel } from "../../../lib/patterns/fitEaseInches";
-import { EXPRESS_BUILDER_INTRO_SUBTEXT } from "../../../lib/patterns/expressBuilderCopy";
+import {
+  EXPRESS_BUILDER_INTRO_SUBTEXT,
+  EXPRESS_BUILDER_SIZE_RANGE_HEADING,
+} from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/drop-shoulder/builder");
@@ -31,7 +34,7 @@ import "../../../styles/custom-pattern-editing-banner.css";
  * branches on that flag (see dropShoulderPatternOutput.ts).
  */
 const expressNavSteps = [
-  { step: 1, label: "Who & Size" },
+  { step: 1, label: EXPRESS_BUILDER_SIZE_RANGE_HEADING },
   { step: 2, label: "Style" },
   { step: 3, label: "Fit" },
   { step: 4, label: "Sleeve Length" },
@@ -154,14 +157,14 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                 type="button"
                 class="express-acc__chevron"
                 data-express-chevron
-                aria-label="Toggle who and size choices"
+                aria-label="Toggle size range choices"
                 tabindex="-1"
               >
                 ▾
               </button>
               <div class="express-acc__header-main">
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                <h2 class="express-acc__title" id="express-step-1-title">Who & Size</h2>
+                <h2 class="express-acc__title" id="express-step-1-title">{EXPRESS_BUILDER_SIZE_RANGE_HEADING}</h2>
                 <span class="express-acc__value" data-express-summary="who"></span>
                 <span class="express-acc__value" data-express-summary="selectedSize"></span>
               </div>
@@ -172,88 +175,6 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
               role="region"
               aria-labelledby="express-step-1-title"
             >
-              <div
-                class="express-options--who hat-length-picker__grid"
-                role="group"
-                aria-labelledby="express-step-1-title"
-              >
-                <button
-                  type="button"
-                  class="hat-length-picker__option express-who-card"
-                  data-choice
-                  data-field="who"
-                  data-value="women"
-                  aria-pressed="false"
-                >
-                  <img
-                    src="/images/patterns/drop-shoulder/drop-woman-pullover-round.webp"
-                    alt=""
-                    class="hat-length-picker__img sg-picker-img express-who-card__img"
-                    width="168"
-                    height="210"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span class="hat-length-picker__option-label">Women</span>
-                </button>
-                <button
-                  type="button"
-                  class="hat-length-picker__option express-who-card"
-                  data-choice
-                  data-field="who"
-                  data-value="men"
-                  aria-pressed="false"
-                >
-                  <img
-                    src="/images/patterns/drop-shoulder/drop-man-pullover-round.webp"
-                    alt=""
-                    class="hat-length-picker__img sg-picker-img express-who-card__img"
-                    width="168"
-                    height="210"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span class="hat-length-picker__option-label">Men</span>
-                </button>
-                <button
-                  type="button"
-                  class="hat-length-picker__option express-who-card"
-                  data-choice
-                  data-field="who"
-                  data-value="kids"
-                  aria-pressed="false"
-                >
-                  <img
-                    src="/images/patterns/drop-shoulder/drop-kids-pullover-round.webp"
-                    alt=""
-                    class="hat-length-picker__img sg-picker-img express-who-card__img"
-                    width="168"
-                    height="210"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span class="hat-length-picker__option-label">Kids</span>
-                </button>
-                <button
-                  type="button"
-                  class="hat-length-picker__option express-who-card"
-                  data-choice
-                  data-field="who"
-                  data-value="baby"
-                  aria-pressed="false"
-                >
-                  <img
-                    src="/images/patterns/drop-shoulder/drop-baby-pullover-round.webp"
-                    alt=""
-                    class="hat-length-picker__img sg-picker-img express-who-card__img"
-                    width="168"
-                    height="210"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span class="hat-length-picker__option-label">Baby</span>
-                </button>
-              </div>
               <ExpressBuilderWhoSizeSection sweaterSizingChartHref={sweaterSizingChartHref} />
             </div>
           </section>

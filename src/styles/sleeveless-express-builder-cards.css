@@ -223,7 +223,7 @@
   gap: 12px;
 }
 
-/* Step 1 — Who: audience image cards (2×2 mobile, four-across desktop) */
+/* Step 1 — Who: equal-width audience cards (image or text). Text pickers add --who-text. */
 .express-page .express-options--who.hat-length-picker__grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
@@ -243,15 +243,6 @@
   padding: 10px 8px 12px;
 }
 
-.express-page .express-options--who .hat-length-picker__img.sg-picker-img.express-who-card__img {
-  width: 100%;
-  max-width: 168px;
-  height: auto;
-  max-height: clamp(118px, 34vw, 172px);
-  margin-bottom: 4px;
-  object-fit: contain;
-}
-
 .express-page .express-options--who .hat-length-picker__option-label {
   color: var(--kbm-green, #52682d);
   font-size: 0.9375rem;
@@ -264,6 +255,29 @@
 
 .express-page .express-options--who .hat-length-picker__option.is-selected .hat-length-picker__option-label {
   color: #1a1a1a;
+}
+
+/* Unified Express builders — compact Size Range text buttons (no images) */
+.express-page .express-options--who-text.hat-length-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (max-width: 479px) {
+  .express-page .express-options--who-text.hat-length-picker__grid {
+    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  }
+}
+
+.express-page .express-options--who-text .hat-length-picker__option {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.5rem;
+  justify-content: center;
+}
+
+.express-page .express-options--who-text .hat-length-picker__option-label {
+  margin-top: 0;
 }
 
 /* Shape row — matches SleevelessGarmentDesignStep .sg-shape-grid behavior */
@@ -700,6 +714,10 @@
     padding: 6px;
   }
 
+  .express-page .express-options--who-text .hat-length-picker__option:not(.sg-express-kin-locked) {
+    padding: 0.65rem 0.5rem;
+  }
+
   .express-page .sg-fit-preference-grid {
     grid-template-columns: 1fr;
   }
@@ -712,6 +730,10 @@
 
   .express-page .hat-length-picker__option:not(.sg-express-kin-locked) {
     padding: 4px;
+  }
+
+  .express-page .express-options--who-text .hat-length-picker__option:not(.sg-express-kin-locked) {
+    padding: 0.65rem 0.5rem;
   }
 }
 
