@@ -11,7 +11,7 @@ const patternPage = readFileSync(resolve("src/pages/patterns/hat/pattern.astro")
 
 describe("Hat Pattern promotional hero image", () => {
   it("uses one shared square photo on Builder and finished Pattern pages", () => {
-    expect(HAT_PATTERN_HERO_IMAGE_SRC).toBe("/images/patterns/hat.png");
+    expect(HAT_PATTERN_HERO_IMAGE_SRC).toBe("/images/patterns/hat.webp");
     expect(HAT_PATTERN_HERO_IMAGE_ALT).toBe(
       "Fashion-flat illustration of a custom knit hat",
     );

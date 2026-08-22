@@ -363,7 +363,7 @@ async function initSleevelessPrintPage(): Promise<void> {
         <figure class="print-hero-figure">
           <img
             class="print-hero-img"
-            src="/images/patterns/sleeveless.png"
+            src="/images/patterns/sleeveless.webp"
             width="640"
             height="640"
             alt=""

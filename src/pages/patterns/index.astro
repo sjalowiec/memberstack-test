@@ -11,6 +11,14 @@ import {
   PATTERNS_LANDING_BECOME_MEMBER_LABEL,
   PATTERNS_LANDING_LOGIN_LABEL,
 } from '../../lib/patterns/patternsLandingCta';
+import {
+  DROP_SHOULDER_CATALOG_PILL_REST,
+  DROP_SHOULDER_PATTERN_POSSIBILITIES,
+  HAT_CATALOG_PILL_REST,
+  HAT_PATTERN_POSSIBILITIES,
+  SLEEVELESS_CATALOG_PILL_REST,
+  SLEEVELESS_PATTERN_POSSIBILITIES,
+} from '../../lib/patterns/patternCatalogPossibilities';
 
 // Marketing hero and feature grid live on {@link PATTERN_BUILDERS_HOME_HREF}.
 // This page is the public pattern catalog — pick a builder to start.
@@ -26,9 +34,11 @@ const dropShoulderPattern = {
   // `?new=1` clears any active draft on boot so this card always starts fresh
   // (mirrors the sleeveless builder). Drop shoulder reuses the same review/pattern flow.
   href: '/patterns/drop-shoulder/builder?new=1',
-  image: '/images/patterns/drop_shoulder.png',
+  image: '/images/patterns/drop_shoulder.webp',
   copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
   button: 'Create drop shoulder sweater',
+  pillCount: DROP_SHOULDER_PATTERN_POSSIBILITIES,
+  pillRest: DROP_SHOULDER_CATALOG_PILL_REST,
 };
 
 const hatPattern = {
@@ -37,6 +47,8 @@ const hatPattern = {
   image: HAT_PATTERN_HERO_IMAGE_SRC,
   copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
   button: 'Create your hat',
+  pillCount: HAT_PATTERN_POSSIBILITIES,
+  pillRest: HAT_CATALOG_PILL_REST,
 };
 
 const sleevelessPattern = {
@@ -45,9 +57,11 @@ const sleevelessPattern = {
   // persisted/active session on boot (see applySleevelessExpressNewSessionFromUrl) so this card
   // never resumes a previous or another user's pattern. Use "My Patterns" to resume/open.
   href: '/patterns/sleeveless/builder?new=1',
-  image: '/images/patterns/sleeveless.png',
+  image: '/images/patterns/sleeveless.webp',
   copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
   button: 'Create sleeveless sweater',
+  pillCount: SLEEVELESS_PATTERN_POSSIBILITIES,
+  pillRest: SLEEVELESS_CATALOG_PILL_REST,
 };
 
 const sweaterPatterns = [
@@ -75,12 +89,12 @@ const availablePatterns = [
 const comingSoonPatterns = [
   {
     title: 'Raglan Sweater',
-    image: '/images/patterns/raglan.png',
+    image: '/images/patterns/raglan.webp',
     copy: 'A flexible raglan sweater system with custom fit and clear shaping guidance.',
   },
   {
     title: 'Set-In Sleeve Sweater',
-    image: '/images/patterns/set-in.png',
+    image: '/images/patterns/set-in.webp',
     copy: 'A classic sweater system designed for custom fit, sleeve shaping, and polished finishing.',
   },
 ];
@@ -154,7 +168,10 @@ const comingSoonPatterns = [
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
               </div>
               <div class="catalog-card__body">
-                <span class="catalog-card__status catalog-card__status--available">Available now</span>
+                <span class="catalog-card__status catalog-card__status--available">
+                  <span class="catalog-card__status-count">{pattern.pillCount}</span>
+                  <span class="catalog-card__status-rest">{pattern.pillRest}</span>
+                </span>
                 <h3 class="catalog-card__title">{pattern.title}</h3>
                 <p class="catalog-card__copy">{pattern.copy}</p>
                 <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
@@ -200,7 +217,10 @@ const comingSoonPatterns = [
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
               </div>
               <div class="catalog-card__body">
-                <span class="catalog-card__status catalog-card__status--available">Available now</span>
+                <span class="catalog-card__status catalog-card__status--available">
+                  <span class="catalog-card__status-count">{pattern.pillCount}</span>
+                  <span class="catalog-card__status-rest">{pattern.pillRest}</span>
+                </span>
                 <h3 class="catalog-card__title">{pattern.title}</h3>
                 <p class="catalog-card__copy">{pattern.copy}</p>
                 <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
@@ -558,7 +578,7 @@ a.catalog-card:focus-visible {
   width: 100%;
   aspect-ratio: 1 / 1;
   background-color: transparent;
-  background-image: url("/images/patterns/background.png");
+  background-image: url("/images/patterns/background.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -605,8 +625,25 @@ a.catalog-card:focus-visible {
 }
 
 .catalog-card__status--available {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  padding: 0.28em 0.7em 0.3em;
   color: #52682d;
   background: #eef2e3;
+}
+
+.catalog-card__status-count {
+  font-size: 1.6em;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.catalog-card__status-rest {
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .catalog-card__status--soon {

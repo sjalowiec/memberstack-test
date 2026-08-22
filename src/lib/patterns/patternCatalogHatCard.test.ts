@@ -87,12 +87,12 @@ describe("pattern catalog Hat card", () => {
   it("leaves existing sweater catalog cards unchanged", () => {
     expect(catalog).toContain("title: 'Sleeveless Sweater'");
     expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
-    expect(catalog).toContain("image: '/images/patterns/sleeveless.png'");
+    expect(catalog).toContain("image: '/images/patterns/sleeveless.webp'");
     expect(catalog).toContain("button: 'Create sleeveless sweater'");
 
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
     expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
-    expect(catalog).toContain("image: '/images/patterns/drop_shoulder.png'");
+    expect(catalog).toContain("image: '/images/patterns/drop_shoulder.webp'");
     expect(catalog).toContain("button: 'Create drop shoulder sweater'");
   });
 
@@ -125,7 +125,10 @@ describe("pattern catalog Hat card", () => {
     expect(guest).not.toContain("Create your hat");
 
     expect(member).toContain("availablePatterns.map");
+    expect(member).toContain('id="patterns-available-heading"');
     expect(member).toContain("Available now");
+    expect(member).toContain("pattern.pillCount");
+    expect(member).toContain("pattern.pillRest");
     expect(member).toContain("catalog-card");
     expect(member).not.toContain("patterns-featured");
     expect(member).not.toContain("Try a Pattern Builder Free");
