@@ -46,6 +46,12 @@ const NOTATION_GAP = 16;
 const NECK_NOTATION_GAP = 20;
 /** Baseline gap between armhole `boN` and decrease lines — one notation line height. */
 const ARMHOLE_NOTATION_GAP = Math.round(FS_NOTATION * 1.6);
+/** Baseline gap between stacked body-shaping notation lines. */
+const BODY_NOTATION_GAP = Math.round(FS_NOTATION * 1.6);
+/** Minimum inset from the right body outline to the body-shaping label. */
+const BODY_LABEL_OUTLINE_CLEARANCE = 18;
+/** Vertical gap between armhole-start garment RC and reset in the left gutter. */
+const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 
 const LABEL_GUTTER = 88;
 const RIGHT_PAD = 92;
@@ -181,6 +187,17 @@ function resolveBodyShapingModel(result: SleevelessBackPatternResult): {
     startRc: rows[0]!,
     endRc: rows[rows.length - 1]!,
   };
+}
+
+/** Right body outline X at a garment Y — hem width, slope, then bust width. */
+function rightBodyOutlineXAtY(frame: NotationFrame, y: number): number {
+  if (frame.bodyDirection === "straight") return frame.right;
+  if (y >= frame.bodyShapeStartY - 0.01) return frame.hemRight;
+  if (y <= frame.bodyShapeEndY + 0.01) return frame.right;
+  const span = frame.bodyShapeStartY - frame.bodyShapeEndY;
+  if (!(span > 0)) return frame.right;
+  const t = clamp((frame.bodyShapeStartY - y) / span, 0, 1);
+  return frame.hemRight + t * (frame.right - frame.hemRight);
 }
 
 function bodySidePoints(
@@ -674,10 +691,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     ),
   );
   const gutterX = Math.max(8, Math.min(frame.left, frame.hemLeft) - 10);
-  const resetY =
-    rcModel.policy === "shared-reset"
-      ? frame.armholeStartY
-      : frame.armholeStartY - 11;
+  const resetY = labels.rcReset ? frame.armholeStartY - RC_RESET_GAP : frame.armholeStartY;
 
   const parts: string[] = [
     drawSilhouette(frame, leftShoulder, rightShoulder),
@@ -740,7 +754,9 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     );
   }
   const neckStartOffset =
-    labels.rcReset && Math.abs(frame.neckStartY - frame.armholeStartY) < 1.5 ? 12 : 0;
+    labels.rcReset && Math.abs(frame.neckStartY - frame.armholeStartY) < 1.5
+      ? RC_RESET_GAP + Math.round(FS_RC * 1.25)
+      : 0;
   parts.push(
     rcText(
       gutterX,
@@ -863,13 +879,21 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   );
   const bodyLines =
     frame.bodyDirection === "straight" ? [] : labels.bodyShaping.split("\n").filter(Boolean);
+  let bodyLabelX = 0;
+  let bodyOutlineX = 0;
+  let bodyLastBaseline = 0;
   if (bodyLines.length > 0) {
-    const bodyLabelX = ARMHOLE_LABEL_START_X;
     const bodyMidY = (frame.bodyShapeStartY + frame.bodyShapeEndY) / 2;
-    const bodyLastBaseline = clamp(
-      bodyMidY,
-      frame.armholeStartY + 40,
+    const bodyStackH = Math.max(0, (bodyLines.length - 1) * BODY_NOTATION_GAP);
+    bodyLastBaseline = clamp(
+      bodyMidY + bodyStackH / 2,
+      frame.armholeStartY + 40 + bodyStackH,
       frame.bottomY - 28,
+    );
+    bodyOutlineX = rightBodyOutlineXAtY(frame, bodyLastBaseline);
+    bodyLabelX = bodyOutlineX - BODY_LABEL_OUTLINE_CLEARANCE;
+    parts.push(
+      `<g data-role="body-shaping-label-zone" data-body-label-x="${fmtNum(bodyLabelX)}" data-body-outline-x-at-label="${fmtNum(bodyOutlineX)}" data-body-label-y="${fmtNum(bodyLastBaseline)}" data-body-label-clearance="${BODY_LABEL_OUTLINE_CLEARANCE}"></g>`,
     );
     parts.push(
       drawNotationStack(
@@ -877,7 +901,8 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
         bodyLabelX,
         bodyLastBaseline,
         `data-role="body-shaping" data-label-zone="body" data-notation="${escapeXml(labels.bodyShaping)}"`,
-        "start",
+        "end",
+        BODY_NOTATION_GAP,
       ),
     );
   }
@@ -901,7 +926,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   const desc = `Sleeveless pullover V-neck Front shaping notation. ${labels.castOn}. Neck ${labels.rcNeckStart}. Armhole ${labels.rcArmholeBo}.`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-vneck-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-vneck-notation-title" data-sleeveless-vneck-generated-notation="true" data-supported="true" data-rc-policy="${escapeXml(rcModel.policy)}" data-reset="${labels.rcReset ? "true" : "false"}" data-neck-start-display-rc="${fmtNum(finiteOr(rcModel.necklineStartDisplayRc, -1))}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-last-armhole-garment-rc="${fmtNum(lastArmholeGarmentRc)}" data-shoulder-start-display-rc="${fmtNum(finiteOr(rcModel.shoulderStartDisplayRc, -1))}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-contour="slope" data-shoulder-pass-count="${shoulderPasses.length}" data-shoulder-shaping-stitches="${fmtNum(shoulderSts)}" data-body-width="${fmtNum(frame.bodyWidth)}" data-body-start-stitches="${fmtNum(frame.bodyStartStitches)}" data-body-end-stitches="${fmtNum(frame.bodyEndStitches)}" data-body-shaping-direction="${frame.bodyDirection}" data-body-shaping-start-rc="${fmtNum(frame.bodyShapeStartRc)}" data-body-shaping-end-rc="${fmtNum(frame.bodyShapeEndRc)}" data-body-shaping-start-y="${fmtNum(frame.bodyShapeStartY)}" data-body-shaping-end-y="${fmtNum(frame.bodyShapeEndY)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-body-shaping="${escapeXml(frame.bodyDirection === "straight" ? "" : labels.bodyShaping)}" data-right-label-safe-max-x="${ARMHOLE_LABEL_SAFE_MAX_X}" data-neck-label-x="${fmtNum(neckLabelX)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-shared-display-rcs="${escapeXml([...sharedDisplayRcs].map((n) => formatRcNotation(n)).join(","))}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-vneck-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-vneck-notation-title" data-sleeveless-vneck-generated-notation="true" data-supported="true" data-rc-policy="${escapeXml(rcModel.policy)}" data-reset="${labels.rcReset ? "true" : "false"}" data-neck-start-display-rc="${fmtNum(finiteOr(rcModel.necklineStartDisplayRc, -1))}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-last-armhole-garment-rc="${fmtNum(lastArmholeGarmentRc)}" data-shoulder-start-display-rc="${fmtNum(finiteOr(rcModel.shoulderStartDisplayRc, -1))}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-contour="slope" data-shoulder-pass-count="${shoulderPasses.length}" data-shoulder-shaping-stitches="${fmtNum(shoulderSts)}" data-body-width="${fmtNum(frame.bodyWidth)}" data-body-start-stitches="${fmtNum(frame.bodyStartStitches)}" data-body-end-stitches="${fmtNum(frame.bodyEndStitches)}" data-body-shaping-direction="${frame.bodyDirection}" data-body-shaping-start-rc="${fmtNum(frame.bodyShapeStartRc)}" data-body-shaping-end-rc="${fmtNum(frame.bodyShapeEndRc)}" data-body-shaping-start-y="${fmtNum(frame.bodyShapeStartY)}" data-body-shaping-end-y="${fmtNum(frame.bodyShapeEndY)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-body-shaping="${escapeXml(frame.bodyDirection === "straight" ? "" : labels.bodyShaping)}" data-body-label-x="${fmtNum(bodyLabelX)}" data-body-outline-x-at-label="${fmtNum(bodyOutlineX)}" data-body-label-clearance="${BODY_LABEL_OUTLINE_CLEARANCE}" data-right-label-safe-max-x="${ARMHOLE_LABEL_SAFE_MAX_X}" data-neck-label-x="${fmtNum(neckLabelX)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-shared-display-rcs="${escapeXml([...sharedDisplayRcs].map((n) => formatRcNotation(n)).join(","))}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
     `<title id="sleeveless-vneck-notation-title">Sleeveless pullover V-neck Front shaping notation</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
@@ -922,6 +947,12 @@ export const SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP = ARMHOLE_NOTATION_GAP;
 
 /** Right-edge cap so the left-aligned Armhole stack stays inside the viewBox. */
 export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X = ARMHOLE_LABEL_SAFE_MAX_X;
+
+/** Minimum inset from the right body outline to the body-shaping label. */
+export const SLEEVELESS_FRONT_VNECK_BODY_LABEL_OUTLINE_CLEARANCE = BODY_LABEL_OUTLINE_CLEARANCE;
+
+/** Vertical gap between armhole-start garment RC and reset. */
+export const SLEEVELESS_FRONT_VNECK_RC_RESET_GAP = RC_RESET_GAP;
 
 /**
  * Live cutover gate: Pullover V-neck Front only.
