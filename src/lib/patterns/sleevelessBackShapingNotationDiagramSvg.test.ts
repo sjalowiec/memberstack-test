@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { pulloverArmholeEvents } from "./frontArmholeNecklineComposition";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import {
@@ -86,11 +87,39 @@ function wideInwardBodyPattern(): Record<string, unknown> {
   };
 }
 
+/**
+ * Investigated builder-reachable proof: co102, bo4, 1s-2r-3x, hold17, N=34, 8-row back neck.
+ * Matches the written/JP Back for 40.8" bust / 17.6" shoulder / 7" neck at 5×7 gauge.
+ */
+function proofBackPattern(): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "misses",
+      selectedMeasurements: {
+        finished_bust_chest: 40.8,
+        back_neck_to_hem: 24,
+        armhole_depth: 8,
+        neck_opening: 7,
+        shoulder_width: 17.6,
+        front_neck_depth: 3,
+        back_neck_depth: 1,
+      },
+    },
+    style: { garmentStyle: "pullover", neckline: "round", frontStyle: "closed", recipientCategory: "misses" },
+    yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
+  };
+}
+
+/** Renderer-only: Back neck depth is not user-editable in the builder. */
 function deeperBackNeckPattern(): Record<string, unknown> {
   const pattern = baseBackPattern();
   const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
   fit.selectedMeasurements.back_neck_depth = 2.5;
   return pattern;
+}
+
+function expectClosePx(actual: number, expected: number, tol = 2.5): void {
+  expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tol);
 }
 
 function widerBackNeckPattern(): Record<string, unknown> {
@@ -404,6 +433,82 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expectParity(svg, result, pattern);
   });
 
+  it("maps proof-fixture armhole and neck geometry to canonical knitting math", () => {
+    const pattern = proofBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    const d = result.debug;
+    const armholeStart = garmentRcAtArmholeStart(d)!;
+    const { bindOffSts, decreaseSts } = armholeBindOffDecreaseFromEachSide(d.armholeStitchesEachSide!);
+    const lastDecreaseGarmentRc = pulloverArmholeEvents({
+      firstArmholeGarmentRc: armholeStart,
+      bindOffSts,
+      decreaseSts,
+    })
+      .filter((ev) => ev.kind === "decrease")
+      .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);
+    const afterSts = d.stitchesAfterArmhole!;
+    const neckSts = d.necklineStitches!;
+    const centerSts = d.centerNeckBindOffStitches!;
+    const shoulderSts = d.shoulderStitches!;
+    const bustSts = d.bustBodyStitches!;
+    const px = svgNum(svg, "data-body-width") / bustSts;
+
+    expect(d.hemCastOnStitches).toBe(102);
+    expect(afterSts).toBe(88);
+    expect(neckSts).toBe(34);
+    expect(centerSts).toBe(17);
+    expect(shoulderSts).toBe(27);
+    expect(bindOffSts).toBe(4);
+    expect(decreaseSts).toBe(3);
+    expect(d.backNeckDepthRows).toBe(8);
+    expect(d.armholeRows).toBe(56);
+    expect(lastDecreaseGarmentRc).toBe(armholeStart + 6);
+
+    expect(svgNum(svg, "data-last-armhole-garment-rc")).toBe(lastDecreaseGarmentRc);
+    expect(svgNum(svg, "data-last-armhole-garment-rc")).not.toBe(d.armholeEndRow);
+    expect(svgNum(svg, "data-armhole-start-garment-rc")).toBe(armholeStart);
+
+    expectClosePx(
+      svgNum(svg, "data-bo-left") - svgNum(svg, "data-bust-left"),
+      bindOffSts * (svgNum(svg, "data-body-width") / 2 / bustSts),
+    );
+    expectClosePx(
+      svgNum(svg, "data-after-right") - svgNum(svg, "data-after-left"),
+      afterSts * px,
+    );
+    expect(svgNum(svg, "data-last-armhole-y")).toBeGreaterThan(svgNum(svg, "data-shoulder-y") + 12);
+    expect(svgNum(svg, "data-last-armhole-y")).toBeLessThan(svgNum(svg, "data-armhole-start-y"));
+    expect(svgNum(svg, "data-armhole-start-y") - svgNum(svg, "data-last-armhole-y")).toBeLessThan(
+      svgNum(svg, "data-last-armhole-y") - svgNum(svg, "data-shoulder-y"),
+    );
+
+    expectClosePx(svgNum(svg, "data-neck-right") - svgNum(svg, "data-neck-left"), neckSts * px);
+    expectClosePx(
+      svgNum(svg, "data-neck-center-right") - svgNum(svg, "data-neck-center-left"),
+      centerSts * px,
+    );
+    expectClosePx(svgNum(svg, "data-neck-left") - svgNum(svg, "data-after-left"), shoulderSts * px);
+    expectClosePx(svgNum(svg, "data-after-right") - svgNum(svg, "data-neck-right"), shoulderSts * px);
+
+    const scoop = svgNum(svg, "data-neck-start-y") - svgNum(svg, "data-neck-corner-y");
+    const armholeBand = svgNum(svg, "data-armhole-start-y") - svgNum(svg, "data-shoulder-y");
+    const rowRatio = d.backNeckDepthRows / d.armholeRows;
+    expect(armholeBand).toBeGreaterThan(0);
+    expect(scoop / armholeBand).toBeLessThan(0.22);
+    expect(Math.abs(scoop / armholeBand - rowRatio)).toBeLessThan(0.08);
+
+    expect(svgAttr(svg, "data-neck-bo")).toBe("hold17");
+    expect(svgAttr(svg, "data-armhole-bo")).toBe("bo4");
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe("1s-2r-3x");
+    expect(svgAttr(svg, "data-neck-shaping")).toContain("3s-2r-1x");
+    expect(svgAttr(svg, "data-neck-shaping")).toContain("2s-2r-3x");
+    expect(svgAttr(svg, "data-shoulder-shaping")).toContain("7s-2r-3x");
+    expect(svgAttr(svg, "data-shoulder-shaping")).toContain("6s-2r-1x");
+    expectParity(svg, result, pattern);
+    expectValidSvg(svg);
+  });
+
   it("uses canonical Back armhole bind-off and decrease geometry", () => {
     const pattern = straightBodyPattern();
     const result = generateSleevelessBackPattern(pattern);
@@ -416,12 +521,25 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     if (decreaseSts > 0) {
       expect(svgAttr(svg, "data-armhole-shaping")).toBe(`1s-2r-${decreaseSts}x`);
     }
+    const armholeStart = garmentRcAtArmholeStart(result.debug)!;
     const expectedDecs = shapingActionRowNumbers(2, decreaseSts, 2).map((n) => formatRcNotation(n));
     const drawn = roleRcs(svg, "armhole-event");
     for (const rc of expectedDecs) {
       expect(drawn).toContain(rc);
     }
+    const lastDecreaseGarmentRc = pulloverArmholeEvents({
+      firstArmholeGarmentRc: armholeStart,
+      bindOffSts,
+      decreaseSts,
+    })
+      .filter((ev) => ev.kind === "decrease")
+      .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);
+    expect(svgNum(svg, "data-last-armhole-garment-rc")).toBe(lastDecreaseGarmentRc);
+    expect(svgNum(svg, "data-last-armhole-garment-rc")).not.toBe(result.debug.armholeEndRow);
     expect(svgNum(svg, "data-last-armhole-y")).toBeLessThan(svgNum(svg, "data-armhole-start-y"));
+    if ((result.debug.shoulderStartRow ?? 0) > lastDecreaseGarmentRc) {
+      expect(svgNum(svg, "data-last-armhole-y")).toBeGreaterThan(svgNum(svg, "data-shoulder-y"));
+    }
     expectParity(svg, result, pattern);
   });
 
@@ -433,7 +551,7 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     }
   });
 
-  it("responds to Back neckline depth and width", () => {
+  it("responds to Back neckline depth and width (2.5in depth is renderer-only, not builder-reachable)", () => {
     const shallow = straightBodyPattern();
     const deep = deeperBackNeckPattern();
     const wide = widerBackNeckPattern();
@@ -500,7 +618,7 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expectParity(svg, result, pattern);
   });
 
-  it("deepens the generated scoop when the canonical Back neck is deeper", () => {
+  it("deepens the generated scoop when a renderer-only deeper Back neck is supplied", () => {
     const shallow = straightBodyPattern();
     const deep = deeperBackNeckPattern();
     const shallowResult = generateSleevelessBackPattern(shallow);
