@@ -110,7 +110,8 @@ describe("pattern catalog Hat card", () => {
     expect(guest).toContain("CREATE MY FREE HAT PATTERN");
     expect(guest).toContain("Free. No account or password needed.");
     expect(guest).toContain("{hatPattern.href}");
-    expect(guest).toContain("{hatPattern.image}");
+    expect(guest).toContain("{featuredHatImageSrc}");
+    expect(guest).not.toContain("{hatPattern.image}");
     expect(guest).toContain("PATTERN_CATALOG_MORE_HEADING");
     expect(guest).toContain('id="sweater-patterns"');
     expect(guest).toMatch(
