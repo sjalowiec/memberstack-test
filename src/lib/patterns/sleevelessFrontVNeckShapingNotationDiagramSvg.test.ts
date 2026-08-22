@@ -19,6 +19,7 @@ import {
 import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
 import {
   buildSleevelessFrontVNeckShapingNotationDiagramSvg,
+  pulloverVNeckFrontShoulderNotationLines,
   shouldUseGeneratedSleevelessFrontVNeckNotation,
   SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX,
   tryBuildLiveSleevelessFrontVNeckNotationSvg,
@@ -221,7 +222,9 @@ function expectParity(
   expect(svgAttr(svg, "data-armhole-bo")).toBe(repl["jp-armhole-bo"]);
   expect(svgAttr(svg, "data-armhole-shaping")).toBe(repl["jp-armhole-shaping"]);
   expect(svgAttr(svg, "data-neck-shaping")).toBe(repl["jp-neckline-shaping"]);
-  expect(svgAttr(svg, "data-shoulder-shaping")).toBe(repl["jp-shoulder-shaping"]);
+  expect(svgAttr(svg, "data-shoulder-shaping")).toBe(
+    pulloverVNeckFrontShoulderNotationLines(result).join("\n"),
+  );
   expect(svgAttr(svg, "data-rc-reset")).toBe(repl.rc_reset);
   expect(svgAttr(svg, "data-rc-neck-start")).toBe(repl["rc-neckline-start"]);
   expect(svgAttr(svg, "data-rc-armhole-bo")).toBe(repl["rc-armhole-bo"]);
@@ -458,7 +461,73 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       expect(svg).not.toMatch(/\bundefined\b/);
     }
   });
+
+  it("Case 4 deep V: shoulder notation excludes the leaked armhole bind-off", () => {
+    const pattern = vNeckBeforeArmholePattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+    const shoulder = svgAttr(svg, "data-shoulder-shaping");
+
+    expect(svgAttr(svg, "data-armhole-bo")).toBe("bo4");
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe("1s-2r-3x");
+    expect(shoulder).toBe("8s-2r-4x");
+    expect(shoulder).not.toContain("4s-57r-1x");
+    expect(shoulder).not.toContain("4s-55r-1x");
+    expect(svg).toContain("bo4");
+    expect(svg).toContain("1s-2r-3x");
+    expect(svg).toContain("8s-2r-4x");
+    expect(svg).not.toContain("4s-57r-1x");
+  });
+
+  it("Case 1 shallow V: keeps the real shoulder run", () => {
+    const pattern = shallowVNeckPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+    expect(svgAttr(svg, "data-shoulder-shaping")).toBe("3s-2r-4x");
+    expect(svg).toContain("3s-2r-4x");
+    expect(svgAttr(svg, "data-armhole-bo")).toBe("bo8");
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe("1s-2r-7x");
+    expect(svgAttr(svg, "data-neck-shaping")).toBe("1s-2r-12x");
+  });
+
+  it("keeps semantic event hooks without customer-facing dots", () => {
+    const pattern = vNeckBeforeArmholePattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+
+    expect(roles(svg, "armhole-event").length).toBeGreaterThan(0);
+    expect(roles(svg, "neck-event").length).toBeGreaterThan(0);
+    expect(roleRcs(svg, "armhole-event").length).toBeGreaterThan(0);
+    expect(roleRcs(svg, "neck-event").length).toBeGreaterThan(0);
+    expect(svg).not.toMatch(/<circle\b/);
+    expect(svg).toMatch(/<g data-role="armhole-event"/);
+    expect(svg).toMatch(/<g data-role="neck-event"/);
+  });
+
+  it("places shaping labels in reserved zones away from the garment lines", () => {
+    const pattern = vNeckBeforeArmholePattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+    const vbW = SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width;
+    const neck = firstTextPos(svg, "neck-shaping");
+    const shoulder = firstTextPos(svg, "shoulder-shaping");
+    const armholeBo = firstTextPos(svg, "armhole-bo");
+
+    expect(neck.x).toBeLessThan(vbW / 2);
+    expect(shoulder.y).toBeLessThan(svgNum(svg, "data-shoulder-y") - 16);
+    expect(armholeBo.x).toBeGreaterThan(svgNum(svg, "data-body-width"));
+    expect(armholeBo.y).toBeLessThan(svgNum(svg, "data-armhole-start-y"));
+  });
 });
+
+function firstTextPos(svg: string, role: string): { x: number; y: number } {
+  const re = new RegExp(`<text[^>]*data-role="${role}"[^>]*>`);
+  const tag = re.exec(svg)?.[0] ?? "";
+  return {
+    x: Number(/[\s]x="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+    y: Number(/[\s]y="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+  };
+}
 
 describe("live Pullover V-neck Front notation cutover", () => {
   it("uses the generated renderer for pullover V-neck Front only", () => {
