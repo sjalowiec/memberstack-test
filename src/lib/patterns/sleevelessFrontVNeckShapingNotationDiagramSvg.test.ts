@@ -25,7 +25,9 @@ import {
   SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X,
   SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X,
   SLEEVELESS_FRONT_VNECK_ARMHOLE_NOTATION_GAP,
+  SLEEVELESS_FRONT_VNECK_BODY_LABEL_OUTLINE_CLEARANCE,
   SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX,
+  SLEEVELESS_FRONT_VNECK_RC_RESET_GAP,
   tryBuildLiveSleevelessFrontVNeckNotationSvg,
 } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
@@ -178,6 +180,13 @@ function outwardBodyVNeckPattern(): Record<string, unknown> {
 
 function straightBodyVNeckPattern(): Record<string, unknown> {
   return shallowVNeckPattern();
+}
+
+function wideInwardBodyVNeckPattern(): Record<string, unknown> {
+  const pattern = equalDepthVNeckPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 60;
+  return pattern;
 }
 
 function fineGaugeWidePattern(): Record<string, unknown> {
@@ -822,6 +831,91 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
       expect(svgAttr(svg, "data-body-shaping-direction")).toBe("straight");
       expect(roles(svg, "body-shaping")).toHaveLength(0);
     }
+  });
+
+  it("places body-shaping notation inside the garment with outline clearance", () => {
+    for (const pattern of [inwardBodyVNeckPattern(), outwardBodyVNeckPattern(), wideInwardBodyVNeckPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      const labels = allTextMeta(svg, "body-shaping");
+      expect(labels.length).toBeGreaterThan(0);
+      const labelX = svgNum(svg, "data-body-label-x");
+      const outlineX = svgNum(svg, "data-body-outline-x-at-label");
+      const clearance = svgNum(svg, "data-body-label-clearance");
+      expect(clearance).toBe(SLEEVELESS_FRONT_VNECK_BODY_LABEL_OUTLINE_CLEARANCE);
+      expect(roles(svg, "body-shaping-label-zone")).toHaveLength(1);
+      expect(labelX).toBeGreaterThan(svgNum(svg, "data-bust-left"));
+      expect(labelX).toBeGreaterThan(SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width / 2);
+      expect(outlineX).toBeGreaterThan(labelX);
+      expect(outlineX - labelX).toBeGreaterThanOrEqual(clearance);
+      expect(labelX).not.toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X);
+      const xs = labels.map((t) => t.x);
+      expect(new Set(xs).size).toBe(1);
+      expect(xs[0]).toBe(labelX);
+      for (const t of labels) {
+        expect(t.anchor).toBe("end");
+        expect(t.x).toBeLessThan(outlineX);
+      }
+      const ys = labels.map((t) => t.y).sort((a, b) => a - b);
+      if (ys.length > 1) {
+        for (let i = 1; i < ys.length; i++) {
+          expect(ys[i]! - ys[i - 1]!).toBe(Math.round(13 * 1.6));
+        }
+      }
+      expect(svgAttr(svg, "data-body-shaping")).toBe(
+        buildFrontJapaneseNotationReplacements(result, pattern)["jp-body-shaping"],
+      );
+    }
+  });
+
+  it("does not lock the body-shaping label to one X across different garment widths", () => {
+    const narrow = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(inwardBodyVNeckPattern()),
+      inwardBodyVNeckPattern(),
+    );
+    const wide = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(wideInwardBodyVNeckPattern()),
+      wideInwardBodyVNeckPattern(),
+    );
+    expect(svgAttr(narrow, "data-body-shaping-direction")).toBe("inward");
+    expect(svgAttr(wide, "data-body-shaping-direction")).toBe("inward");
+    expect(svgNum(narrow, "data-body-width")).not.toBe(svgNum(wide, "data-body-width"));
+    expect(svgNum(narrow, "data-body-label-x")).not.toBe(svgNum(wide, "data-body-label-x"));
+    expect(svgNum(narrow, "data-body-outline-x-at-label")).not.toBe(
+      svgNum(wide, "data-body-outline-x-at-label"),
+    );
+  });
+
+  it("separates armhole-start RC and reset in the left gutter", () => {
+    for (const pattern of [shallowVNeckPattern(), amandaVNeckPattern(), equalDepthVNeckPattern()]) {
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
+        generateSleevelessBackPattern(pattern),
+        pattern,
+      );
+      expect(svg).toContain("↺ rc000");
+      const armRc = firstTextPos(svg, "armhole-start-rc");
+      const reset = firstTextPos(svg, "rc-reset");
+      expect(Number.isFinite(armRc.y)).toBe(true);
+      expect(Number.isFinite(reset.y)).toBe(true);
+      expect(Math.abs(armRc.y - reset.y)).toBeGreaterThanOrEqual(
+        SLEEVELESS_FRONT_VNECK_RC_RESET_GAP,
+      );
+      expect(armRc.x).toBeLessThan(svgNum(svg, "data-hem-left"));
+      expect(armRc.x).toBeLessThan(svgNum(svg, "data-bust-left"));
+      expect(reset.x).toBe(armRc.x);
+    }
+  });
+
+  it("does not introduce reset notation on deep V continuous garment RC", () => {
+    const pattern = vNeckBeforeArmholePattern();
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(pattern),
+      pattern,
+    );
+    expect(svgAttr(svg, "data-rc-policy")).toBe("continuous-garment-rc");
+    expect(svgAttr(svg, "data-reset")).toBe("false");
+    expect(svg).not.toContain("↺");
+    expect(roles(svg, "rc-reset")).toHaveLength(0);
   });
 });
 
