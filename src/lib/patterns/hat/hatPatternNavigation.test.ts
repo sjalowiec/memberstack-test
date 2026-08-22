@@ -108,7 +108,7 @@ describe("legacy /patterns/hat entry redirect", () => {
   it("updates stale internal links away from the retired wizard URL", () => {
     expect(firstProjectPage).toContain('href="/patterns/hat/builder"');
     expect(firstProjectPage).not.toMatch(/href=["']\/patterns\/hat["']/);
-    expect(patternsIndexPage).toContain("href: '/patterns/hat/builder'");
+    expect(patternsIndexPage).toContain("href: '/patterns/hat/builder?new=1'");
     expect(patternsIndexPage).not.toMatch(/href:\s*['"]\/patterns\/hat['"]/);
   });
 });
@@ -382,6 +382,12 @@ describe("hat New Pattern clears draft", () => {
     expect(readHatDraft(storage)).toBeNull();
   });
 
+  it("catalog Create your hat uses the same ?new=1 href as New Pattern", () => {
+    const patternsIndexPage = readFileSync(resolve("src/pages/patterns/index.astro"), "utf8");
+    expect(buildHatBuilderNewPatternHref()).toBe("/patterns/hat/builder?new=1");
+    expect(patternsIndexPage).toContain(`href: '${buildHatBuilderNewPatternHref()}'`);
+  });
+
   it("applyHatNewSessionFromUrl clears draft and strips ?new=1", () => {
     writeHatDraft(createEmptyHatDraft({ sizeSel: "adult_woman", brimType: "rolled" }));
     expect(readHatDraft()?.sizeSel).toBe("adult_woman");
@@ -395,8 +401,10 @@ describe("hat New Pattern clears draft", () => {
       history: { replaceState },
     });
 
+    writeHatActiveProjectId("proj-stale", "Stale Local Hat");
     expect(applyHatNewSessionFromUrl("http://localhost/patterns/hat/builder?new=1")).toBe(true);
     expect(readHatDraft()).toBeNull();
+    expect(readHatActiveProjectId()).toBe("");
     expect(replaceState).toHaveBeenCalledWith({}, "", "/patterns/hat/builder");
   });
 
