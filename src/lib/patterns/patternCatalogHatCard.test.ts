@@ -29,7 +29,7 @@ describe("pattern catalog Hat card", () => {
   it("lists Hat as an available card using the production builder photo and route", () => {
     expect(catalog).toContain("title: 'Hat'");
     expect(catalog).toContain("href: '/patterns/hat/builder'");
-    expect(catalog).toContain("image: '/images/patterns/Hat_builder.png'");
+    expect(catalog).toContain("image: HAT_PATTERN_HERO_IMAGE_SRC");
     expect(catalog).toContain(
       "copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.'",
     );
@@ -84,16 +84,12 @@ describe("pattern catalog Hat card", () => {
   it("leaves existing sweater catalog cards unchanged", () => {
     expect(catalog).toContain("title: 'Sleeveless Sweater'");
     expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
-    expect(catalog).toContain(
-      "image: '/images/patterns/sleeveless/people/sleeveless-woman-pullover-round-neck.webp'",
-    );
+    expect(catalog).toContain("image: '/images/patterns/sleeveless.webp'");
     expect(catalog).toContain("button: 'Create sleeveless sweater'");
 
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
     expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
-    expect(catalog).toContain(
-      "image: '/images/patterns/drop-shoulder/drop-man-pullover-round.webp'",
-    );
+    expect(catalog).toContain("image: '/images/patterns/drop_shoulder.webp'");
     expect(catalog).toContain("button: 'Create drop shoulder sweater'");
   });
 
@@ -111,7 +107,10 @@ describe("pattern catalog Hat card", () => {
     expect(guest).toContain("CREATE MY FREE HAT PATTERN");
     expect(guest).toContain("Free. No account or password needed.");
     expect(guest).toContain("{hatPattern.href}");
-    expect(guest).toContain("{hatPattern.image}");
+    expect(guest).toContain("{featuredHatImageSrc}");
+    expect(guest).not.toContain("{hatPattern.image}");
+    expect(catalog).toContain("const featuredHatImageSrc = '/images/patterns/hat.webp'");
+    expect(catalog).toContain("image: HAT_PATTERN_HERO_IMAGE_SRC");
     expect(guest).toContain("PATTERN_CATALOG_MORE_HEADING");
     expect(guest).toContain('id="sweater-patterns"');
     expect(guest).toMatch(
