@@ -25,7 +25,10 @@ import {
   resolveFrontVNeckNotationRcModel,
 } from "./sleevelessFrontJapaneseNotation";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
-import { compressStitchDecreasePointsToNotationLines } from "./shapingNotationCompress";
+import {
+  compressStitchDecreasePointsToNotationLines,
+  type StitchDecreasePoint,
+} from "./shapingNotationCompress";
 import { collectCompleteShoulderShapingPoints } from "./shoulderShapingNotation";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
@@ -41,9 +44,12 @@ const FS_RC = 12;
 const FS_NOTATION = 13;
 const NOTATION_GAP = 16;
 
-const LABEL_GUTTER = 96;
-const RIGHT_PAD = 28;
+const LABEL_GUTTER = 88;
+const RIGHT_PAD = 92;
 const TOP = 52;
+/** Right-edge text-anchor for armhole labels — keeps `1s-2r-Nx` inside the viewBox. */
+const RIGHT_LABEL_ANCHOR_X = VB_W - 8;
+const ARMHOLE_LABEL_SAFE_MAX_X = VB_W - 8;
 const BOTTOM = 428;
 const MIN_HEM = 16;
 const MIN_BODY = 56;
@@ -99,8 +105,12 @@ type NotationFrame = {
   armholeStartY: number;
   lastArmholeY: number;
   shoulderY: number;
+  shoulderTopY: number;
+  neckCornerY: number;
   bodyWidth: number;
 };
+
+type Pt = { x: number; y: number };
 
 type NotationLabels = {
   castOn: string;
@@ -217,12 +227,12 @@ function buildLabels(
 }
 
 /**
- * Pullover V-neck Front shoulder summaries: outer bind-offs at/after shoulder start.
+ * Pullover V-neck Front shoulder bind-off points at/after shoulder start.
  * Excludes composed armhole bind-offs that share `edge: "outer"` on the front timeline.
  */
-export function pulloverVNeckFrontShoulderNotationLines(
+export function pulloverVNeckFrontShoulderPoints(
   result: SleevelessBackPatternResult,
-): string[] {
+): StitchDecreasePoint[] {
   const timeline =
     result.frontNeckShoulderTimeline ??
     result.frontNeckShoulderShapingChart.timeline ??
@@ -233,14 +243,62 @@ export function pulloverVNeckFrontShoulderNotationLines(
     shoulderStitchesBudget: budget,
   });
   const shoulderStart = result.debug.shoulderStartRow;
-  const filtered =
-    shoulderStart !== undefined && Number.isFinite(shoulderStart)
-      ? points.filter((p) => p.row >= Math.floor(shoulderStart))
-      : points;
-  return compressStitchDecreasePointsToNotationLines(filtered);
+  if (shoulderStart !== undefined && Number.isFinite(shoulderStart)) {
+    return points.filter((p) => p.row >= Math.floor(shoulderStart));
+  }
+  return points;
 }
 
-function buildFrame(result: SleevelessBackPatternResult): {
+/**
+ * Pullover V-neck Front shoulder summaries: outer bind-offs at/after shoulder start.
+ */
+export function pulloverVNeckFrontShoulderNotationLines(
+  result: SleevelessBackPatternResult,
+): string[] {
+  return compressStitchDecreasePointsToNotationLines(pulloverVNeckFrontShoulderPoints(result));
+}
+
+function shoulderBandHeight(bands: readonly YBand[], shoulderY: number): number {
+  const last = bands[bands.length - 1];
+  if (!last) return MIN_SHOULDER;
+  return Math.max(8, shoulderY - last.yTop);
+}
+
+function buildShoulderStepCorners(
+  passes: readonly StitchDecreasePoint[],
+  bandH: number,
+): { tX: number; tY: number }[] {
+  const corners = [{ tX: 0, tY: 0 }];
+  const total = passes.reduce((sum, p) => sum + Math.max(0, p.amount), 0);
+  if (passes.length === 0 || !(total > 0) || !(bandH > 0)) return corners;
+  const stepH = bandH / passes.length;
+  let acc = 0;
+  for (let i = 0; i < passes.length; i += 1) {
+    acc += Math.max(0, passes[i]!.amount);
+    const tX = acc / total;
+    corners.push({ tX, tY: i * stepH });
+    corners.push({ tX, tY: (i + 1) * stepH });
+  }
+  return corners;
+}
+
+function mapShoulderCorners(
+  corners: readonly { tX: number; tY: number }[],
+  outerX: number,
+  innerX: number,
+  shoulderY: number,
+): Pt[] {
+  const span = innerX - outerX;
+  return corners.map((c) => ({
+    x: outerX + c.tX * span,
+    y: shoulderY - c.tY,
+  }));
+}
+
+function buildFrame(
+  result: SleevelessBackPatternResult,
+  shoulderPasses: readonly StitchDecreasePoint[],
+): {
   frame: NotationFrame;
   bands: YBand[];
   neckStartGarmentRc: number;
@@ -318,6 +376,11 @@ function buildFrame(result: SleevelessBackPatternResult): {
   const armholeStartY = yAtRc(armholeStart, bands);
   const lastArmholeY = yAtRc(lastArmholeGarmentRc, bands);
   const shoulderY = yAtRc(shoulderRc, bands);
+  const bandH = shoulderBandHeight(bands, shoulderY);
+  const stepCorners = buildShoulderStepCorners(shoulderPasses, bandH);
+  const lastCorner = stepCorners[stepCorners.length - 1]!;
+  const shoulderTopY = shoulderY - lastCorner.tY;
+  const neckCornerY = shoulderPasses.length > 0 ? shoulderTopY : shoulderY;
 
   return {
     frame: {
@@ -336,6 +399,8 @@ function buildFrame(result: SleevelessBackPatternResult): {
       armholeStartY,
       lastArmholeY,
       shoulderY,
+      shoulderTopY,
+      neckCornerY,
       bodyWidth,
     },
     bands,
@@ -350,27 +415,42 @@ function drawNotationStack(
   x: number,
   lastBaselineY: number,
   attrs: string,
+  textAnchor: "middle" | "start" | "end" = "middle",
 ): string {
   const cleaned = lines.filter((line) => line.length > 0);
   if (cleaned.length === 0) return "";
   return cleaned
     .map((line, i) => {
       const y = lastBaselineY - i * NOTATION_GAP;
-      return `<text x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)} ${attrs}>${escapeXml(line)}</text>`;
+      return `<text x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="${textAnchor}" fill="${MUTED}" ${textFont(FS_NOTATION)} ${attrs}>${escapeXml(line)}</text>`;
     })
     .join("");
 }
 
-function drawSilhouette(frame: NotationFrame): string {
+function polylineD(points: readonly Pt[]): string {
+  return points
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${fmtNum(p.x)} ${fmtNum(p.y)}`)
+    .join(" ");
+}
+
+function drawSilhouette(
+  frame: NotationFrame,
+  leftShoulder: readonly Pt[],
+  rightShoulder: readonly Pt[],
+): string {
+  const leftSteps = leftShoulder.slice(1);
+  const rightDown = [...rightShoulder].reverse().slice(1);
   const path = [
     `M ${fmtNum(frame.left)} ${fmtNum(frame.bottomY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeStartY)}`,
     `L ${fmtNum(frame.boLeft)} ${fmtNum(frame.armholeStartY)}`,
     `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.lastArmholeY)}`,
     `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.shoulderY)}`,
-    `L ${fmtNum(frame.neckLeft)} ${fmtNum(frame.shoulderY)}`,
+    ...leftSteps.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
+    `L ${fmtNum(frame.neckLeft)} ${fmtNum(frame.neckCornerY)}`,
     `L ${fmtNum(frame.cx)} ${fmtNum(frame.neckStartY)}`,
-    `L ${fmtNum(frame.neckRight)} ${fmtNum(frame.shoulderY)}`,
+    `L ${fmtNum(frame.neckRight)} ${fmtNum(frame.neckCornerY)}`,
+    ...rightDown.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.shoulderY)}`,
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.lastArmholeY)}`,
     `L ${fmtNum(frame.boRight)} ${fmtNum(frame.armholeStartY)}`,
@@ -378,7 +458,11 @@ function drawSilhouette(frame: NotationFrame): string {
     `L ${fmtNum(frame.right)} ${fmtNum(frame.bottomY)}`,
     "Z",
   ].join(" ");
-  return `<path class="sleeveless-vneck-notation__body" d="${path}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  return [
+    `<path class="sleeveless-vneck-notation__body" d="${path}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    `<path data-role="left-shoulder-path" d="${polylineD(leftShoulder)}" fill="none" stroke="none"/>`,
+    `<path data-role="right-shoulder-path" d="${polylineD(rightShoulder)}" fill="none" stroke="none"/>`,
+  ].join("");
 }
 
 function dashedLine(
@@ -435,8 +519,24 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   const d = result.debug;
   const rcModel = resolveFrontVNeckNotationRcModel(result);
   const labels = buildLabels(result, patternData ?? { style: { neckline: "v-neck" } });
+  const shoulderPasses = pulloverVNeckFrontShoulderPoints(result);
   const { frame, bands, neckStartGarmentRc, lastArmholeGarmentRc, bindOffSts } =
-    buildFrame(result);
+    buildFrame(result, shoulderPasses);
+  const shoulderBandH = shoulderBandHeight(bands, frame.shoulderY);
+  const stepCorners = buildShoulderStepCorners(shoulderPasses, shoulderBandH);
+  const leftShoulder = mapShoulderCorners(
+    stepCorners,
+    frame.afterLeft,
+    frame.neckLeft,
+    frame.shoulderY,
+  );
+  const rightShoulder = mapShoulderCorners(
+    stepCorners,
+    frame.afterRight,
+    frame.neckRight,
+    frame.shoulderY,
+  );
+  const shoulderSts = shoulderPasses.reduce((sum, p) => sum + Math.max(0, p.amount), 0);
   const armholeStart = Math.max(0, Math.floor(finiteOr(rcModel.armholeBoGarmentRc, 0)));
   const eachSide = d.armholeStitchesEachSide;
   const { decreaseSts } =
@@ -469,7 +569,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
       : frame.armholeStartY - 11;
 
   const parts: string[] = [
-    drawSilhouette(frame),
+    drawSilhouette(frame, leftShoulder, rightShoulder),
     dashedLine(
       gutterX + 6,
       frame.armholeStartY,
@@ -586,9 +686,9 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     );
   }
 
-  const armholeLabelX = Math.min(VB_W - 10, frame.right + 12);
+  const armholeLabelX = RIGHT_LABEL_ANCHOR_X;
   parts.push(
-    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" x="${fmtNum(armholeLabelX)}" y="${fmtNum(frame.armholeStartY - 14)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
+    `<text data-role="armhole-bo" data-notation="${escapeXml(labels.armholeBo)}" data-label-zone="armhole" x="${fmtNum(armholeLabelX)}" y="${fmtNum(frame.armholeStartY - 14)}" text-anchor="end" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.armholeBo)}</text>`,
   );
   const ahLines = labels.armholeShaping.split("\n").filter(Boolean);
   parts.push(
@@ -596,27 +696,44 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
       ahLines,
       armholeLabelX,
       (frame.armholeStartY + frame.lastArmholeY) / 2,
-      `data-role="armhole-shaping" data-notation="${escapeXml(labels.armholeShaping)}"`,
+      `data-role="armhole-shaping" data-label-zone="armhole" data-notation="${escapeXml(labels.armholeShaping)}"`,
+      "end",
     ),
   );
   const neckLines = labels.neckShaping.split("\n").filter(Boolean);
-  const neckLabelX = (frame.afterLeft + frame.neckLeft) / 2;
-  const neckBandLowY = Math.max(frame.neckStartY, frame.shoulderY);
+  const neckLabelX = Math.min(
+    (frame.afterLeft + frame.neckLeft) / 2,
+    frame.neckLeft - 16,
+  );
+  const vBandTop = Math.min(frame.neckStartY, frame.neckCornerY);
+  const vBandBot = Math.max(frame.neckStartY, frame.neckCornerY);
+  const neckStackH = Math.max(0, (neckLines.length - 1) * NOTATION_GAP);
+  const neckBandMin = vBandTop + 30 + neckStackH;
+  const neckBandMax = vBandBot - 14;
+  const neckLastBaseline =
+    neckBandMin <= neckBandMax
+      ? clamp(vBandBot - 28, neckBandMin, neckBandMax)
+      : vBandBot - 16;
+  parts.push(
+    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckLastBaseline)}"></g>`,
+  );
   parts.push(
     drawNotationStack(
       neckLines,
       neckLabelX,
-      neckBandLowY - 20,
-      `data-role="neck-shaping" data-notation="${escapeXml(labels.neckShaping)}"`,
+      neckLastBaseline,
+      `data-role="neck-shaping" data-label-zone="neck" data-notation="${escapeXml(labels.neckShaping)}"`,
     ),
   );
   const shLines = labels.shoulderShaping.split("\n").filter(Boolean);
+  const shLabelX = (frame.afterRight + frame.neckRight) / 2;
+  const shLastBaseline = frame.shoulderTopY - 22;
   parts.push(
     drawNotationStack(
       shLines,
-      (frame.afterRight + frame.neckRight) / 2,
-      frame.shoulderY - 24,
-      `data-role="shoulder-shaping" data-notation="${escapeXml(labels.shoulderShaping)}"`,
+      shLabelX,
+      shLastBaseline,
+      `data-role="shoulder-shaping" data-label-zone="shoulder" data-notation="${escapeXml(labels.shoulderShaping)}"`,
     ),
   );
   parts.push(
@@ -639,7 +756,7 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   const desc = `Sleeveless pullover V-neck Front shaping notation. ${labels.castOn}. Neck ${labels.rcNeckStart}. Armhole ${labels.rcArmholeBo}.`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-vneck-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-vneck-notation-title" data-sleeveless-vneck-generated-notation="true" data-supported="true" data-rc-policy="${escapeXml(rcModel.policy)}" data-reset="${labels.rcReset ? "true" : "false"}" data-neck-start-display-rc="${fmtNum(finiteOr(rcModel.necklineStartDisplayRc, -1))}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-last-armhole-garment-rc="${fmtNum(lastArmholeGarmentRc)}" data-shoulder-start-display-rc="${fmtNum(finiteOr(rcModel.shoulderStartDisplayRc, -1))}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-body-width="${fmtNum(frame.bodyWidth)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-shared-display-rcs="${escapeXml([...sharedDisplayRcs].map((n) => formatRcNotation(n)).join(","))}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-vneck-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-vneck-notation-title" data-sleeveless-vneck-generated-notation="true" data-supported="true" data-rc-policy="${escapeXml(rcModel.policy)}" data-reset="${labels.rcReset ? "true" : "false"}" data-neck-start-display-rc="${fmtNum(finiteOr(rcModel.necklineStartDisplayRc, -1))}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-last-armhole-garment-rc="${fmtNum(lastArmholeGarmentRc)}" data-shoulder-start-display-rc="${fmtNum(finiteOr(rcModel.shoulderStartDisplayRc, -1))}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-pass-count="${shoulderPasses.length}" data-shoulder-shaping-stitches="${fmtNum(shoulderSts)}" data-body-width="${fmtNum(frame.bodyWidth)}" data-right-label-safe-max-x="${ARMHOLE_LABEL_SAFE_MAX_X}" data-neck-label-x="${fmtNum(neckLabelX)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-shared-display-rcs="${escapeXml([...sharedDisplayRcs].map((n) => formatRcNotation(n)).join(","))}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
     `<title id="sleeveless-vneck-notation-title">Sleeveless pullover V-neck Front shaping notation</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
@@ -651,6 +768,9 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
 
 /** Exported for tests — stable viewBox dimensions. */
 export const SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX = { width: VB_W, height: VB_H } as const;
+
+/** Right-edge cap for Armhole label anchors (text-anchor=end). */
+export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X = ARMHOLE_LABEL_SAFE_MAX_X;
 
 /**
  * Live cutover gate: Pullover V-neck Front only.

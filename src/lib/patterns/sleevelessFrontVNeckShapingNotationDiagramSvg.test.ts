@@ -20,7 +20,9 @@ import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
 import {
   buildSleevelessFrontVNeckShapingNotationDiagramSvg,
   pulloverVNeckFrontShoulderNotationLines,
+  pulloverVNeckFrontShoulderPoints,
   shouldUseGeneratedSleevelessFrontVNeckNotation,
+  SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X,
   SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX,
   tryBuildLiveSleevelessFrontVNeckNotationSvg,
 } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
@@ -514,19 +516,105 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     const armholeBo = firstTextPos(svg, "armhole-bo");
 
     expect(neck.x).toBeLessThan(vbW / 2);
-    expect(shoulder.y).toBeLessThan(svgNum(svg, "data-shoulder-y") - 16);
-    expect(armholeBo.x).toBeGreaterThan(svgNum(svg, "data-body-width"));
+    expect(neck.x).toBeLessThan(Number(svgAttr(svg, "data-neck-label-x")) + 0.01);
+    expect(shoulder.y).toBeLessThan(svgNum(svg, "data-shoulder-top-y") - 16);
+    expect(armholeBo.x).toBeLessThanOrEqual(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X);
     expect(armholeBo.y).toBeLessThan(svgNum(svg, "data-armhole-start-y"));
+  });
+
+  it("draws a stepped shoulder from filtered shoulder bind-off events on both sides", () => {
+    for (const pattern of [
+      shallowVNeckPattern(),
+      amandaVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+      fineGaugeWidePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      const passes = pulloverVNeckFrontShoulderPoints(result);
+      expect(svgNum(svg, "data-shoulder-pass-count")).toBe(passes.length);
+      expect(svgNum(svg, "data-shoulder-shaping-stitches")).toBe(
+        passes.reduce((sum, p) => sum + p.amount, 0),
+      );
+      expect(roles(svg, "left-shoulder-path")).toHaveLength(1);
+      expect(roles(svg, "right-shoulder-path")).toHaveLength(1);
+      const left = pathPoints(svg, "left-shoulder-path");
+      const right = pathPoints(svg, "right-shoulder-path");
+      expect(left.length).toBe(right.length);
+      expect(left.length).toBeGreaterThan(1);
+      const leftYs = new Set(left.map((p) => p.y));
+      const rightYs = new Set(right.map((p) => p.y));
+      if (passes.length > 1) {
+        expect(leftYs.size).toBeGreaterThan(1);
+        expect(rightYs.size).toBeGreaterThan(1);
+      }
+      expect(left[0]!.x).toBeLessThan(right[0]!.x);
+      expect(svg).not.toMatch(/<circle\b/);
+    }
+  });
+
+  it("keeps Armhole labels inside the right safe gutter", () => {
+    for (const pattern of [
+      shallowVNeckPattern(),
+      amandaVNeckPattern(),
+      equalDepthVNeckPattern(),
+      vNeckBeforeArmholePattern(),
+      fineGaugeWidePattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(result, pattern);
+      const cap = svgNum(svg, "data-right-label-safe-max-x");
+      expect(cap).toBe(SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_SAFE_MAX_X);
+      for (const role of ["armhole-bo", "armhole-shaping"]) {
+        for (const pos of allTextPos(svg, role)) {
+          expect(pos.x).toBeLessThanOrEqual(cap);
+          expect(pos.x).toBeGreaterThan(svgNum(svg, "data-body-width"));
+        }
+      }
+    }
+  });
+
+  it("keeps Neck labels left of center and RC labels in the left gutter", () => {
+    const svg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(vNeckBeforeArmholePattern()),
+      vNeckBeforeArmholePattern(),
+    );
+    const vbW = SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX.width;
+    expect(roles(svg, "neck-label-zone")).toHaveLength(1);
+    for (const pos of allTextPos(svg, "neck-shaping")) {
+      expect(pos.x).toBeLessThan(vbW / 2);
+    }
+    for (const role of ["rc-caston", "rc-hem", "armhole-start-rc", "neck-start-rc", "shoulder-start-rc"]) {
+      const pos = firstTextPos(svg, role);
+      expect(pos.x).toBeLessThan(100);
+    }
   });
 });
 
 function firstTextPos(svg: string, role: string): { x: number; y: number } {
-  const re = new RegExp(`<text[^>]*data-role="${role}"[^>]*>`);
-  const tag = re.exec(svg)?.[0] ?? "";
-  return {
-    x: Number(/[\s]x="([^"]+)"/.exec(tag)?.[1] ?? NaN),
-    y: Number(/[\s]y="([^"]+)"/.exec(tag)?.[1] ?? NaN),
-  };
+  return allTextPos(svg, role)[0] ?? { x: NaN, y: NaN };
+}
+
+function allTextPos(svg: string, role: string): { x: number; y: number }[] {
+  const re = new RegExp(`<text[^>]*data-role="${role}"[^>]*>`, "g");
+  return [...svg.matchAll(re)].map((m) => {
+    const tag = m[0];
+    return {
+      x: Number(/[\s]x="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+      y: Number(/[\s]y="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+    };
+  });
+}
+
+function pathPoints(svg: string, role: string): { x: number; y: number }[] {
+  const d = new RegExp(`data-role="${role}" d="([^"]+)"`).exec(svg)?.[1] ?? "";
+  const nums = [...d.matchAll(/(-?\d+(?:\.\d+)?)/g)].map((m) => Number(m[1]));
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    pts.push({ x: nums[i]!, y: nums[i + 1]! });
+  }
+  return pts;
 }
 
 describe("live Pullover V-neck Front notation cutover", () => {
