@@ -15,8 +15,12 @@ describe("Hat Pattern promotional hero image", () => {
     expect(HAT_PATTERN_HERO_IMAGE_ALT).toBe(
       "Three custom knit hats showing gathered, four-gore, and swirl-top crown styles",
     );
-    expect(builderPage).toContain("HAT_PATTERN_HERO_IMAGE_SRC");
-    expect(patternPage).toContain("HAT_PATTERN_HERO_IMAGE_SRC");
+    expect(builderPage).toContain('src="/images/patterns/hat.webp"');
+    expect(patternPage).toContain('src="/images/patterns/hat.webp"');
+    expect(builderPage).not.toContain("HAT_PATTERN_HERO_IMAGE_SRC");
+    expect(patternPage).not.toContain("HAT_PATTERN_HERO_IMAGE_SRC");
+    expect(builderPage).not.toContain("/images/patterns/Hat_builder.png");
+    expect(patternPage).not.toContain("/images/patterns/Hat_builder.png");
     expect(builderPage).not.toContain("/images/patterns/basic-hat.webp");
     expect(patternPage).not.toContain("/images/patterns/basic-hat.webp");
     expect(builderPage).toContain("object-fit: contain");
