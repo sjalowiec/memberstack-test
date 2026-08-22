@@ -102,8 +102,16 @@ export function resolveHatPatternPersistActionFromViewer(input: {
   });
 }
 
-function hatDraftAsSavePattern(draft: HatDraft): SleevelessPatternRecord {
-  return draft as unknown as SleevelessPatternRecord;
+/**
+ * Cloud save payload for a Hat draft. Always stamps Hat identity so My Patterns
+ * can classify the project — `family` stays `"sleeveless"` (shared blob store).
+ */
+export function hatDraftAsSavePattern(draft: HatDraft): SleevelessPatternRecord {
+  return {
+    ...draft,
+    patternType: "hat",
+    patternSystem: "hat",
+  } as unknown as SleevelessPatternRecord;
 }
 
 async function uniqueHatSaveName(requested: string): Promise<string> {

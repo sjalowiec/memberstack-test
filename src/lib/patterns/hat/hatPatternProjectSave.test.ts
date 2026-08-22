@@ -9,10 +9,20 @@ import {
   readHatActiveProjectId,
 } from "./hatSavedProject";
 import {
+  hatDraftAsSavePattern,
   persistHatPatternProject,
   resolveHatPatternPersistAction,
   resolveHatPatternPersistActionFromViewer,
 } from "./hatPatternProjectSave";
+import {
+  buildProjectRecord,
+  summaryFromProject,
+} from "../../../../netlify/functions/lib/custom-pattern-projects-store.js";
+import { resolvePatternSystemFromProject } from "../patternSystemId";
+import {
+  buildCustomPatternProjectDrawerLines,
+  formatCustomPatternProjectType,
+} from "../patternWorkspaceLibraryDrawer";
 import {
   HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL,
   HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
@@ -191,6 +201,7 @@ describe("Hat member save → update → same project lifecycle", () => {
 
     expect(createCustomPatternProject).toHaveBeenCalledTimes(1);
     const createPayload = vi.mocked(createCustomPatternProject).mock.calls[0]?.[0];
+    expect(createPayload?.family).toBe("sleeveless");
     expect(createPayload?.pattern.patternType).toBe("hat");
     expect((createPayload?.pattern as { patternSystem?: string }).patternSystem).toBe("hat");
     expect(updateCustomPatternProject).not.toHaveBeenCalled();
@@ -290,5 +301,178 @@ describe("Hat Pattern page does not render the sleeveless-only save warning", ()
     );
     expect(summaryScript).toContain("persistRes.error");
     expect(summaryScript).toContain('showFieldErrors({ form: persistRes.error })');
+  });
+});
+
+function hatDraftWithoutIdentity() {
+  const draft = hatDraft({
+    gaugeSlots: { inches: { stitch: "5", row: "7" }, cm: { stitch: "", row: "" } },
+  }) as HatDraftMissingIdentity;
+  delete draft.patternType;
+  delete draft.patternSystem;
+  return draft;
+}
+
+type HatDraftMissingIdentity = ReturnType<typeof hatDraft> & {
+  patternType?: string;
+  patternSystem?: string;
+};
+
+describe("Hat save payload always stamps Hat identity", () => {
+  const store = new Map<string, CustomPatternProject>();
+
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+    store.clear();
+    vi.clearAllMocks();
+
+    vi.mocked(createCustomPatternProject).mockImplementation(async (payload) => {
+      const project: CustomPatternProject = {
+        id: `proj-hat-${store.size + 1}`,
+        name: payload.name,
+        family: payload.family ?? "sleeveless",
+        source: payload.source ?? "express",
+        notes: payload.notes ?? "",
+        createdAt: "2026-08-22T00:00:00.000Z",
+        updatedAt: "2026-08-22T00:00:00.000Z",
+        version: 1,
+        customOverrides: payload.customOverrides ?? {},
+        pattern: payload.pattern,
+      };
+      store.set(project.id, project);
+      return { ok: true, project };
+    });
+
+    vi.mocked(loadCustomPatternProject).mockImplementation(async (id) => {
+      const project = store.get(id);
+      if (!project) return { ok: false, error: "not found" };
+      return { ok: true, project };
+    });
+
+    vi.mocked(updateCustomPatternProject).mockImplementation(async (payload) => {
+      const previous = store.get(payload.id);
+      if (!previous) return { ok: false, error: "not found" };
+      const project: CustomPatternProject = {
+        ...previous,
+        name: payload.name,
+        notes: payload.notes ?? previous.notes,
+        pattern: payload.pattern,
+        version: previous.version + 1,
+        updatedAt: "2026-08-22T01:00:00.000Z",
+      };
+      store.set(payload.id, project);
+      return { ok: true, project };
+    });
+  });
+
+  it("saves a new Hat draft missing identity with patternType/patternSystem hat and family sleeveless", async () => {
+    const created = await persistHatPatternProject({
+      draft: hatDraftWithoutIdentity(),
+      mode: "create",
+    });
+    expect(created.ok).toBe(true);
+
+    const payload = vi.mocked(createCustomPatternProject).mock.calls[0]?.[0];
+    expect(payload?.family).toBe("sleeveless");
+    expect(payload?.pattern.patternType).toBe("hat");
+    expect((payload?.pattern as { patternSystem?: string }).patternSystem).toBe("hat");
+  });
+
+  it("does not let an update strip Hat identity", async () => {
+    const created = await persistHatPatternProject({
+      draft: hatDraft(),
+      name: "Camp Hat",
+      mode: "create",
+    });
+    expect(created.ok).toBe(true);
+    vi.mocked(createCustomPatternProject).mockClear();
+
+    const updated = await persistHatPatternProject({
+      draft: hatDraftWithoutIdentity(),
+      name: "Camp Hat",
+      mode: "update",
+    });
+    expect(updated.ok).toBe(true);
+    expect(createCustomPatternProject).not.toHaveBeenCalled();
+
+    const payload = vi.mocked(updateCustomPatternProject).mock.calls[0]?.[0];
+    expect(payload?.family).toBe("sleeveless");
+    expect(payload?.pattern.patternType).toBe("hat");
+    expect((payload?.pattern as { patternSystem?: string }).patternSystem).toBe("hat");
+  });
+
+  it("still classifies a normal Sleeveless sweater payload as sleeveless", () => {
+    const sweater = {
+      id: "proj-sl",
+      name: "Hat",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      createdAt: "2026-08-22T00:00:00.000Z",
+      updatedAt: "2026-08-22T00:00:00.000Z",
+      version: 1,
+      pattern: { patternType: "sleeveless", style: {} },
+      customOverrides: {},
+    };
+    expect(resolvePatternSystemFromProject(sweater)).toBe("sleeveless");
+    expect(summaryFromProject(sweater).patternSystem).toBe("sleeveless");
+    expect(
+      formatCustomPatternProjectType({
+        ...sweater,
+        patternSystem: summaryFromProject(sweater).patternSystem,
+      }),
+    ).toBe("Sleeveless");
+  });
+
+  it("create → buildProjectRecord → index summary classifies as hat", () => {
+    const pattern = hatDraftAsSavePattern(hatDraftWithoutIdentity());
+    const built = buildProjectRecord(
+      {
+        name: "Camp Hat",
+        family: "sleeveless",
+        source: "express",
+        pattern,
+        customOverrides: {},
+      },
+      "user-1",
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    expect(built.project.family).toBe("sleeveless");
+    expect(built.project.pattern.patternType).toBe("hat");
+    expect(built.project.pattern.patternSystem).toBe("hat");
+
+    const summary = summaryFromProject(built.project);
+    expect(summary.patternSystem).toBe("hat");
+    expect(summary.family).toBe("sleeveless");
+  });
+
+  it("My Patterns shows Hat and the saved gauge, not Sleeveless", () => {
+    const pattern = hatDraftAsSavePattern(hatDraftWithoutIdentity());
+    const built = buildProjectRecord(
+      {
+        name: "Camp Hat",
+        family: "sleeveless",
+        source: "express",
+        pattern,
+        customOverrides: {},
+      },
+      "user-1",
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    const summary = summaryFromProject(built.project);
+    expect(formatCustomPatternProjectType(summary)).toBe("Hat");
+    expect(formatCustomPatternProjectType(summary)).not.toBe("Sleeveless");
+
+    const lines = buildCustomPatternProjectDrawerLines({
+      ...summary,
+      updatedAt: "2026-08-22T00:00:00.000Z",
+    });
+    expect(lines.contextLine).toContain("Hat");
+    expect(lines.contextLine).not.toContain("Sleeveless");
+    expect(lines.gaugeLine).toBe("5 sts / 7 rows");
   });
 });
