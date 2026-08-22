@@ -157,6 +157,7 @@ import {
   resolveSleevelessFrontDiagramSrc,
 } from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "../lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts";
+import { tryBuildLiveSleevelessBackNotationSvg } from "../lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
   buildSleevelessScreenBasicsSummaryDlHtml,
@@ -1154,6 +1155,27 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     updateShapingNotationHelpVisibility(frontSection, mode);
   }
 
+  function mountBackNotationSvgMarkup(hostEl, svgText, hydrateGen) {
+    const parser = new DOMParser();
+    let doc = parser.parseFromString(svgText, "image/svg+xml");
+    let svg = doc.documentElement;
+    if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+      doc = parser.parseFromString(svgText, "text/xml");
+      svg = doc.documentElement;
+    }
+    if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+      const pe = doc.querySelector("parsererror");
+      throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+    }
+
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", BACK_DIAGRAM_NOTATION_ALT);
+    svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+    hostEl.innerHTML = svg.outerHTML;
+  }
+
   async function inlineBackJapaneseNotationSvg(hostEl, result, patternData, hydrateGeneration) {
     if (!(hostEl instanceof HTMLElement)) return;
     const hydrateGen =
@@ -1161,6 +1183,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
+    const generatedSvg = tryBuildLiveSleevelessBackNotationSvg(result, patternData);
+    if (generatedSvg) {
+      mountBackNotationSvgMarkup(hostEl, generatedSvg, hydrateGen);
+      return;
+    }
+
     try {
       const notationSrc = resolveSleevelessBackDiagramSrc("shaping-notation", patternData);
       const res = await fetch(notationSrc, {
