@@ -3,7 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
-import { HAT_PATTERN_HERO_IMAGE_SRC } from '../../lib/patterns/hat/hatPatternHeroImage';
 import {
   PATTERN_CATALOG_MEMBERSHIP_BODY,
   PATTERN_CATALOG_MORE_HEADING,
@@ -48,7 +47,7 @@ const hatPattern = {
   // `?new=1` clears any leftover kbm_hat_draft / saved-project identity on boot so
   // catalog “Create your hat” always starts a new Hat (mirrors sleeveless / drop-shoulder).
   href: '/patterns/hat/builder?new=1',
-  image: HAT_PATTERN_HERO_IMAGE_SRC,
+  image: '/images/patterns/hat.webp',
   copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
   button: 'Create your hat',
   pillCount: HAT_PATTERN_POSSIBILITIES,
