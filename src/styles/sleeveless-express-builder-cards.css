@@ -266,6 +266,29 @@
   color: #1a1a1a;
 }
 
+/* Unified Express builders — compact Who text buttons (no images) */
+.express-page .express-options--who-text.hat-length-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (max-width: 479px) {
+  .express-page .express-options--who-text.hat-length-picker__grid {
+    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  }
+}
+
+.express-page .express-options--who-text .hat-length-picker__option {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.5rem;
+  justify-content: center;
+}
+
+.express-page .express-options--who-text .hat-length-picker__option-label {
+  margin-top: 0;
+}
+
 /* Shape row — matches SleevelessGarmentDesignStep .sg-shape-grid behavior */
 .express-page .sg-shape-grid {
   width: 100%;
@@ -700,6 +723,10 @@
     padding: 6px;
   }
 
+  .express-page .express-options--who-text .hat-length-picker__option:not(.sg-express-kin-locked) {
+    padding: 0.65rem 0.5rem;
+  }
+
   .express-page .sg-fit-preference-grid {
     grid-template-columns: 1fr;
   }
@@ -712,6 +739,10 @@
 
   .express-page .hat-length-picker__option:not(.sg-express-kin-locked) {
     padding: 4px;
+  }
+
+  .express-page .express-options--who-text .hat-length-picker__option:not(.sg-express-kin-locked) {
+    padding: 0.65rem 0.5rem;
   }
 }
 
