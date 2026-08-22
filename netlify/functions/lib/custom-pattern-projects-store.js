@@ -38,8 +38,8 @@ export function projectIndexKey(family, userId) {
   return `${userProjectsPrefix(family, userId)}index.json`;
 }
 
-// v4 adds patternSystem to summaries for per-system entitlement counts; bumping forces stale indexes to rebuild.
-export const PROJECT_SUMMARY_INDEX_VERSION = 4;
+// v5 derives Hat gauge from gaugeSlots (not sweater yarnGauge); bumping forces stale indexes to rebuild.
+export const PROJECT_SUMMARY_INDEX_VERSION = 5;
 
 /** @param {unknown} value */
 function gaugePositiveNumber(value) {
@@ -48,8 +48,8 @@ function gaugePositiveNumber(value) {
 }
 
 /**
- * Derives display gauge from a saved pattern's `yarnGauge` section.
- * Keeps original entered swatch counts for display when stored; per-inch values remain for internal use.
+ * Derives display gauge from a saved pattern.
+ * Hats use `gaugeSlots` (inches/cm swatch counts). Sweaters use `yarnGauge`.
  * Mirrors `savedPatternGaugeDisplay.ts`.
  * @param {Record<string, unknown>} project
  */
@@ -58,8 +58,23 @@ export function gaugeFromProject(project) {
     project && typeof project.pattern === "object" && project.pattern
       ? /** @type {Record<string, unknown>} */ (project.pattern)
       : null;
+  if (!pattern) return null;
+
+  const nestedHat =
+    pattern.hatDraft && typeof pattern.hatDraft === "object" && !Array.isArray(pattern.hatDraft)
+      ? /** @type {Record<string, unknown>} */ (pattern.hatDraft)
+      : null;
+  const isHat =
+    pattern.patternType === "hat" ||
+    pattern.patternSystem === "hat" ||
+    nestedHat?.patternType === "hat" ||
+    nestedHat?.patternSystem === "hat";
+  if (isHat) {
+    return gaugeFromHatPattern(nestedHat && !pattern.gaugeSlots ? nestedHat : pattern);
+  }
+
   const yarnGauge =
-    pattern && typeof pattern.yarnGauge === "object" && pattern.yarnGauge
+    typeof pattern.yarnGauge === "object" && pattern.yarnGauge
       ? /** @type {Record<string, unknown>} */ (pattern.yarnGauge)
       : null;
   if (!yarnGauge) return null;
@@ -86,6 +101,42 @@ export function gaugeFromProject(project) {
   }
 
   return null;
+}
+
+/**
+ * @param {Record<string, unknown>} pattern
+ */
+function gaugeFromHatPattern(pattern) {
+  const slots =
+    pattern.gaugeSlots && typeof pattern.gaugeSlots === "object" && !Array.isArray(pattern.gaugeSlots)
+      ? /** @type {Record<string, unknown>} */ (pattern.gaugeSlots)
+      : null;
+  if (!slots) return null;
+
+  const preferredUnit = pattern.unit === "cm" ? "cm" : "inches";
+  const fallbackUnit = preferredUnit === "cm" ? "inches" : "cm";
+  const readSlot = (unit) => {
+    const slot =
+      slots[unit] && typeof slots[unit] === "object" && !Array.isArray(slots[unit])
+        ? /** @type {Record<string, unknown>} */ (slots[unit])
+        : null;
+    if (!slot) return null;
+    const stitch = gaugePositiveNumber(slot.stitch);
+    const row = gaugePositiveNumber(slot.row);
+    if (stitch === null || row === null) return null;
+    return { stitch, row, unit };
+  };
+  const used = readSlot(preferredUnit) ?? readSlot(fallbackUnit);
+  if (!used) return null;
+
+  const swatchUnit = used.unit === "cm" ? "cm" : "in";
+  const perInch = (raw) => (swatchUnit === "cm" ? (raw / 10) * 2.54 : raw / 4);
+  return {
+    stitchesPerInch: perInch(used.stitch),
+    rowsPerInch: perInch(used.row),
+    displayStitches: used.stitch,
+    displayRows: used.row,
+  };
 }
 
 /** @param {Record<string, unknown>} project */

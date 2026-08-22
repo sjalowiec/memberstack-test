@@ -281,6 +281,24 @@ describe("patternWorkspaceLibraryDrawer display helpers", () => {
         source: "custom-build",
       }),
     ).not.toMatch(/Express|Custom Build/);
+    expect(
+      formatCustomPatternProjectType({
+        id: "p-hat",
+        name: "Camp Hat",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "hat",
+      }),
+    ).toBe("Hat");
+    expect(
+      formatCustomPatternProjectType({
+        id: "p-hat",
+        name: "Camp Hat",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "hat",
+      }),
+    ).not.toBe("Sleeveless");
     expect(formatCustomPatternProjectUpdatedAt("2026-01-15T12:00:00.000Z")).toMatch(/2026/);
   });
 
@@ -316,6 +334,27 @@ describe("patternWorkspaceLibraryDrawer display helpers", () => {
     expect(lines.contextLine).toContain("Sleeveless");
     expect(lines.contextLine).not.toContain("28 sts");
     expect(lines.gaugeLine).toBe("28 sts / 44 rows");
+  });
+
+  it("shows Hat — not Sleeveless — and does not say Gauge not set when hat gauge is present", () => {
+    const lines = buildCustomPatternProjectDrawerLines({
+      id: "p-hat",
+      name: "Camp Hat",
+      family: "sleeveless",
+      source: "express",
+      patternSystem: "hat",
+      updatedAt: "2026-05-31T12:00:00.000Z",
+      gauge: {
+        stitchesPerInch: 1.25,
+        rowsPerInch: 1.75,
+        displayStitches: 5,
+        displayRows: 7,
+      },
+    });
+    expect(lines.contextLine).toContain("Hat");
+    expect(lines.contextLine).not.toContain("Sleeveless");
+    expect(lines.gaugeLine).toBe("5 sts / 7 rows");
+    expect(lines.gaugeLine).not.toBe("Gauge not set");
   });
 
   it("formats a copy confirmation message focused on the next step", () => {

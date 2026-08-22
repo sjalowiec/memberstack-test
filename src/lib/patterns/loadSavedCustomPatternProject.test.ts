@@ -27,10 +27,11 @@ import {
   PATTERN_STORAGE_KEY,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
-import { HAT_DRAFT_STORAGE_KEY, readHatDraft } from "./hat/hatDraft";
+import { HAT_DRAFT_STORAGE_KEY, createEmptyHatDraft, readHatDraft, writeHatDraft } from "./hat/hatDraft";
 import {
   readHatActiveProjectId,
   readHatActiveProjectLinkedName,
+  writeHatActiveProjectId,
 } from "./hat/hatSavedProject";
 import * as restoreModule from "./restoreSleevelessExpressBuilderFromPattern";
 
@@ -260,7 +261,51 @@ describe("loadSavedCustomPatternProject", () => {
     });
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
-    expect(result).toEqual({ ok: true, redirectHref: HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF });
+    expect(result).toEqual({
+      ok: true,
+      redirectHref: `${HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF}&project=${PROJECT_ID}`,
+    });
+    if (result.ok) {
+      expect(result.redirectHref).toContain("edit=1");
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
+    }
+  });
+
+  it("opens a saved hat by replacing a leftover local Hat draft with the selected project", async () => {
+    writeHatDraft(
+      createEmptyHatDraft({
+        sizeSel: "preemie",
+        brimType: "rolled",
+        gaugeSlots: { inches: { stitch: "9", row: "12" }, cm: { stitch: "", row: "" } },
+        patternProject: { title: "Stale Local Hat", notes: "", titleCustomized: true },
+      }),
+    );
+    writeHatActiveProjectId("proj-stale", "Stale Local Hat");
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Camp Hat",
+        pattern: {
+          patternType: "hat",
+          patternSystem: "hat",
+          unit: "inches",
+          sizeSel: "adult_woman",
+          brimType: "single",
+          gaugeSlots: { inches: { stitch: "5", row: "7" }, cm: { stitch: "", row: "" } },
+          patternProject: { title: "Camp Hat", notes: "", titleCustomized: true },
+        } as unknown as CustomPatternProject["pattern"],
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
+    }
+    expect(readHatDraft()?.patternProject?.title).toBe("Camp Hat");
+    expect(readHatDraft()?.gaugeSlots.inches).toEqual({ stitch: "5", row: "7" });
+    expect(readHatActiveProjectId()).toBe(PROJECT_ID);
+    expect(readHatDraft()?.patternProject?.title).not.toBe("Stale Local Hat");
   });
 
   it("views a saved pattern by routing to the read-only pattern page, never the edit workspace", async () => {

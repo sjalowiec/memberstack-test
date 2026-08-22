@@ -10,6 +10,13 @@ import {
   PATTERN_STORAGE_KEY,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
+import {
+  HAT_DRAFT_STORAGE_KEY,
+  createEmptyHatDraft,
+  readHatDraft,
+  writeHatDraft,
+} from "./hat/hatDraft";
+import { readHatActiveProjectId, writeHatActiveProjectId } from "./hat/hatSavedProject";
 
 function sampleProject(
   id: string,
@@ -152,6 +159,69 @@ describe("ensureUrlRequestedSavedPatternHydrated", () => {
     // Existing working draft is untouched � normal reconciliation/self-heal still owns this case.
     expect(getCurrentPattern().patternProject?.title).toBe("Kids Pattern A");
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_A.id);
+  });
+
+  it("leaves an unsaved local Hat draft alone when the builder/summary has no project id", async () => {
+    writeHatDraft(
+      createEmptyHatDraft({
+        sizeSel: "adult_woman",
+        brimType: "single",
+        patternProject: { title: "In-progress Hat", notes: "", titleCustomized: true },
+      }),
+    );
+    writeHatActiveProjectId("", "");
+
+    const outcome = await ensureUrlRequestedSavedPatternHydrated({
+      readUrlProjectId: () => "",
+    });
+
+    expect(outcome).toBe("no-url-project");
+    expect(loadCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(readHatDraft()?.patternProject?.title).toBe("In-progress Hat");
+    expect(readHatDraft()?.sizeSel).toBe("adult_woman");
+  });
+
+  it("hydrates a Hat from the URL project and does not keep a stale local Hat draft", async () => {
+    writeHatDraft(
+      createEmptyHatDraft({
+        sizeSel: "preemie",
+        brimType: "rolled",
+        gaugeSlots: { inches: { stitch: "9", row: "12" }, cm: { stitch: "", row: "" } },
+        patternProject: { title: "Stale Local Hat", notes: "", titleCustomized: true },
+      }),
+    );
+    writeHatActiveProjectId("proj-stale", "Stale Local Hat");
+    const savedHat = sampleProject("proj-hat-b", "Saved Camp Hat", {}, {});
+    savedHat.pattern = {
+      version: 1,
+      patternType: "hat",
+      patternSystem: "hat",
+      unit: "inches",
+      sizeSel: "adult_woman",
+      customCircumference: "",
+      brimType: "single",
+      brimLength: "2",
+      crownShaping: "gathered",
+      fit: "watchcap",
+      customHatLength: "",
+      gaugeSlots: { inches: { stitch: "5", row: "7" }, cm: { stitch: "", row: "" } },
+      availableNeedles: "200",
+      showTips: false,
+      updatedAt: "2026-01-02T00:00:00.000Z",
+      patternProject: { title: "Saved Camp Hat", notes: "", titleCustomized: true },
+    } as unknown as CustomPatternProject["pattern"];
+    savedHat.name = "Saved Camp Hat";
+    loadCustomPatternProjectMock.mockResolvedValue({ ok: true, project: savedHat });
+
+    const outcome = await ensureUrlRequestedSavedPatternHydrated({
+      readUrlProjectId: () => "proj-hat-b",
+    });
+
+    expect(outcome).toBe("loaded");
+    expect(readHatDraft()?.patternProject?.title).toBe("Saved Camp Hat");
+    expect(readHatDraft()?.gaugeSlots.inches).toEqual({ stitch: "5", row: "7" });
+    expect(readHatActiveProjectId()).toBe("proj-hat-b");
+    expect(localStorage.getItem(HAT_DRAFT_STORAGE_KEY)).not.toContain("Stale Local Hat");
   });
 
   it("strips the project id and falls back when the requested project cannot be loaded", async () => {

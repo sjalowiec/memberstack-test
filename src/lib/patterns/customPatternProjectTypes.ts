@@ -38,7 +38,7 @@ export type CustomPatternProjectSummary = Pick<
   /** Entitlement / display slug (sleeveless, drop-shoulder, …). */
   patternSystem?: string;
   /**
-   * Display gauge derived from the saved pattern's `yarnGauge`.
+   * Display gauge derived from the saved pattern (`yarnGauge` for sweaters, `gaugeSlots` for Hats).
    * Includes original entered swatch counts when stored (`displayStitches` / `displayRows`).
    * Absent when unknown.
    */

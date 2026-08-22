@@ -116,6 +116,12 @@ describe("customPatternProjectNavigation", () => {
       HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
     );
     expect(getContinueEditingHref("express", project)).toBe(HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF);
+    expect(
+      getSavedCustomPatternOpenHref("express", { ...project, id: "proj-hat-1" }),
+    ).toBe(`${HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF}&project=proj-hat-1`);
+    expect(getContinueEditingHref("express", { ...project, id: "proj-hat-1" })).toBe(
+      `${HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF}&project=proj-hat-1`,
+    );
     expect(getOpenPatternHrefForProject(project)).not.toBe(OPEN_PATTERN_HREF);
   });
 

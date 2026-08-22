@@ -26,6 +26,7 @@ import {
   readHatActiveProjectId,
   readHatActiveProjectLinkedName,
   resolveHatSavedPatternName,
+  writeHatActiveProjectId,
 } from "./hatSavedProject";
 import { renameSavedCustomPatternProject } from "../savedCustomPatternManageActions";
 import { getCurrentPattern, saveCurrentPattern } from "../patternStorage";
@@ -42,7 +43,7 @@ import {
   updateCustomPatternProject,
 } from "../customPatternProjectClient";
 
-function hatProject(name: string): CustomPatternProject {
+function hatProject(name: string, draftOverrides: Parameters<typeof createEmptyHatDraft>[0] = {}): CustomPatternProject {
   const draft = createEmptyHatDraft({
     sizeSel: "adult_woman",
     brimType: "single",
@@ -50,6 +51,7 @@ function hatProject(name: string): CustomPatternProject {
     crownShaping: "gathered",
     fit: "watchcap",
     patternProject: { title: name, notes: "", titleCustomized: true },
+    ...draftOverrides,
   });
   return {
     id: "proj-hat-1",
@@ -101,6 +103,32 @@ describe("saved hat naming", () => {
     expect(readActiveCustomPatternProjectId()).toBe("proj-sweater-1");
     expect(readActiveCustomPatternProjectLinkedName()).toBe("Women's Sleeveless");
     expect(getCurrentPattern().patternProject?.title).toBe("Women's Sleeveless");
+  });
+
+  it("replaces an unrelated local Hat draft when hydrating the saved project", () => {
+    writeHatDraft(
+      createEmptyHatDraft({
+        sizeSel: "preemie",
+        brimType: "rolled",
+        gaugeSlots: { inches: { stitch: "9", row: "12" }, cm: { stitch: "", row: "" } },
+        patternProject: { title: "Stale Local Hat", notes: "", titleCustomized: true },
+      }),
+    );
+    writeHatActiveProjectId("proj-stale", "Stale Local Hat");
+
+    const opened = hydrateHatSavedProject(
+      hatProject("Camp Hat", {
+        sizeSel: "adult_woman",
+        brimType: "single",
+        gaugeSlots: { inches: { stitch: "5", row: "7" }, cm: { stitch: "", row: "" } },
+      }),
+    );
+
+    expect(opened.patternProject?.title).toBe("Camp Hat");
+    expect(readHatDraft()?.gaugeSlots.inches).toEqual({ stitch: "5", row: "7" });
+    expect(readHatDraft()?.sizeSel).toBe("adult_woman");
+    expect(readHatActiveProjectId()).toBe("proj-hat-1");
+    expect(readHatDraft()?.patternProject?.title).not.toBe("Stale Local Hat");
   });
 
   it("keeps the renamed name after a second hydrate (reopen later)", () => {

@@ -12,6 +12,7 @@ import {
   PATTERN_WORKSPACE_EDIT_QUERY,
   PATTERN_WORKSPACE_GENERATED_QUERY,
 } from "../customPatternProjectNavigation";
+import { withSavedPatternProjectId } from "../savedPatternViewUrl";
 
 export const HAT_PATTERN_HREF = "/patterns/hat/pattern/";
 export const HAT_PATTERN_BUILDER_HREF = "/patterns/hat/builder";
@@ -84,8 +85,14 @@ export function buildHatSummaryEditFromBuilderHref(): string {
   return HAT_SUMMARY_EDIT_FROM_BUILDER_HREF;
 }
 
-export function buildHatSummaryEditFromPatternHref(): string {
-  return HAT_SUMMARY_EDIT_FROM_PATTERN_HREF;
+export function buildHatSummaryEditFromPatternHref(projectId?: string | null): string {
+  return withHatSavedProjectQuery(HAT_SUMMARY_EDIT_FROM_PATTERN_HREF, projectId);
+}
+
+/** Append `project=<id>` when editing a saved Hat so the destination can hydrate authoritatively. */
+export function withHatSavedProjectQuery(href: string, projectId?: string | null): string {
+  const id = projectId?.trim() ?? "";
+  return id ? withSavedPatternProjectId(href, id) : href;
 }
 
 export function buildHatPatternHref(): string {
@@ -126,11 +133,19 @@ export function hatSummaryHint(path: HatSummaryEntryPath): string {
 }
 
 /** Where Cancel / Back navigates for the given entry path. Draft is never written on cancel. */
-export function hatSummaryCancelHref(path: HatSummaryEntryPath): string {
-  return path === "from-builder" ? HAT_PATTERN_BUILDER_HREF : HAT_PATTERN_HREF;
+export function hatSummaryCancelHref(
+  path: HatSummaryEntryPath,
+  projectId?: string | null,
+): string {
+  // Back to Builder keeps the in-progress local draft; do not re-fetch the cloud project.
+  if (path === "from-builder") return HAT_PATTERN_BUILDER_HREF;
+  return withHatSavedProjectQuery(HAT_PATTERN_HREF, projectId);
 }
 
 /** Where the primary action navigates after a successful validate + write. */
-export function hatSummaryPrimarySuccessHref(_path: HatSummaryEntryPath): string {
-  return HAT_PATTERN_HREF;
+export function hatSummaryPrimarySuccessHref(
+  _path: HatSummaryEntryPath,
+  projectId?: string | null,
+): string {
+  return withHatSavedProjectQuery(HAT_PATTERN_HREF, projectId);
 }

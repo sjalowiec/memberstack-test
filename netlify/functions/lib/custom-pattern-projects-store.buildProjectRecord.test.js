@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildProjectRecord,
+  gaugeFromProject,
   isSupportedCustomPatternProjectType,
   UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR,
 } from "./custom-pattern-projects-store.js";
@@ -75,5 +76,43 @@ describe("buildProjectRecord pattern-type gate", () => {
     expect(built.error).toBe(UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR);
     expect(built.error).not.toBe(SLEEVELESS_ONLY_WARNING);
     expect(built.error).not.toMatch(/^Only sleeveless pattern projects are supported/);
+  });
+});
+
+describe("gaugeFromProject", () => {
+  it("derives Hat gauge from gaugeSlots instead of yarnGauge", () => {
+    const gauge = gaugeFromProject({
+      pattern: {
+        patternType: "hat",
+        patternSystem: "hat",
+        unit: "inches",
+        gaugeSlots: { inches: { stitch: "5", row: "7" }, cm: { stitch: "", row: "" } },
+      },
+    });
+    expect(gauge).toEqual({
+      stitchesPerInch: 1.25,
+      rowsPerInch: 1.75,
+      displayStitches: 5,
+      displayRows: 7,
+    });
+  });
+
+  it("returns null for a Hat with empty gaugeSlots", () => {
+    expect(
+      gaugeFromProject({
+        pattern: {
+          patternType: "hat",
+          gaugeSlots: { inches: { stitch: "", row: "" }, cm: { stitch: "", row: "" } },
+        },
+      }),
+    ).toBeNull();
+  });
+
+  it("still reads sweater yarnGauge", () => {
+    expect(
+      gaugeFromProject({
+        pattern: { patternType: "sleeveless", yarnGauge: { stitchGauge: "7", rowGauge: "11" } },
+      }),
+    ).toEqual({ stitchesPerInch: 7, rowsPerInch: 11 });
   });
 });
