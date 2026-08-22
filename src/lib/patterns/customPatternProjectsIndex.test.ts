@@ -127,6 +127,27 @@ describe("custom pattern project summary index", () => {
     expect(summary).not.toHaveProperty("gauge");
   });
 
+  it("summaryFromProject derives Hat gauge from gaugeSlots", () => {
+    const summary = summaryFromProject(
+      sampleProject({
+        name: "Camp Hat",
+        pattern: {
+          patternType: "hat",
+          patternSystem: "hat",
+          unit: "inches",
+          gaugeSlots: { inches: { stitch: "5", row: "7" }, cm: { stitch: "", row: "" } },
+        },
+      }),
+    );
+    expect(summary.patternSystem).toBe("hat");
+    expect(summary.gauge).toEqual({
+      stitchesPerInch: 1.25,
+      rowsPerInch: 1.75,
+      displayStitches: 5,
+      displayRows: 7,
+    });
+  });
+
   it("sortProjectSummaries orders newest updatedAt first", () => {
     const sorted = sortProjectSummaries([
       summaryFromProject(sampleProject({ id: "a", updatedAt: "2025-01-01T00:00:00.000Z" })),

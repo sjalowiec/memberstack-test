@@ -73,15 +73,24 @@ export const EXPRESS_EDIT_WORKSPACE_HREF = `/patterns/sleeveless-express?${SAVED
 export const CUSTOM_BUILD_EDIT_WORKSPACE_HREF = `${CUSTOM_BUILD_FIRST_EDIT_HREF}?${SAVED_CUSTOM_PATTERN_EDIT_CHOICES_QUERY}`;
 
 /** Where to send the knitter after loading a saved project to continue editing. */
+function hatEditHrefForProject(
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
+): string {
+  const id = project.id?.trim() ?? "";
+  return id
+    ? withSavedPatternProjectId(HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
+    : HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+}
+
 export function getContinueEditingHref(
   source: CustomPatternProjectSource,
-  project?: Pick<CustomPatternProject, "pattern" | "customOverrides">,
+  project?: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
 ): string {
   // Drop Shoulder is an Express-only construction with no Custom Build route, so a Drop Shoulder
   // project always edits on the drop-shoulder workspace — never a /patterns/sleeveless/ builder
   // route, regardless of the stored source.
   if (project && isHatCustomPatternProject(project)) {
-    return HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+    return hatEditHrefForProject(project);
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_CONTINUE_EDITING_HREF;
@@ -125,13 +134,13 @@ export function getOpenPatternHrefForProject(
  */
 export function getSavedCustomPatternOpenHref(
   source: CustomPatternProjectSource,
-  project?: Pick<CustomPatternProject, "pattern" | "customOverrides">,
+  project?: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
 ): string {
   // Drop Shoulder is an Express-only construction with no Custom Build route, so every Drop Shoulder
   // project edits on the drop-shoulder pattern workspace — never a /patterns/sleeveless/ builder
   // route, regardless of the stored source.
   if (project && isHatCustomPatternProject(project)) {
-    return HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+    return hatEditHrefForProject(project);
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;

@@ -35,8 +35,11 @@ import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPatte
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
 import {
   isEditingSavedHatProject,
+  readHatActiveProjectId,
   resolveHatPatternProjectNotes,
 } from "../lib/patterns/hat/hatSavedProject";
+import { buildHatSummaryEditFromPatternHref } from "../lib/patterns/hat/hatPatternNavigation";
+import { readSavedPatternProjectIdFromUrl } from "../lib/patterns/savedPatternViewUrl";
 import { applyPatternProjectOnlineNotes, HAT_PATTERN_ONLINE_NOTES_SELECTORS } from "../lib/patterns/patternProjectOnlineNotes";
 import { getSleevelessPatternOnlineNotesText } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
@@ -121,6 +124,10 @@ function runHatPatternPrint(triggerEl: HTMLElement | null) {
 function mountEditAction() {
   const editBtn = document.querySelector("[data-hat-edit-open]");
   if (!(editBtn instanceof HTMLElement)) return;
+  const projectId = readSavedPatternProjectIdFromUrl() || readHatActiveProjectId();
+  if (editBtn instanceof HTMLAnchorElement) {
+    editBtn.href = buildHatSummaryEditFromPatternHref(projectId);
+  }
   editBtn.hidden = false;
   editBtn.style.display = "inline-flex";
 }

@@ -87,6 +87,7 @@ import {
   revealHatLeadCapture,
   resolveHatPatternLeadContinue,
 } from "../lib/patterns/hat/hatPatternLeadUi";
+import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import {
   bindPatternSummaryOverlayPositioning,
   collectOverlayAnchors,
@@ -178,6 +179,14 @@ export function initHatPatternSummaryPage(): void {
   if (!root || root.dataset.hatSummaryBound === "true") return;
   root.dataset.hatSummaryBound = "true";
 
+  void (async () => {
+    // When Edit carries `?project=`, the saved cloud Hat replaces any leftover local draft.
+    await ensureUrlRequestedSavedPatternHydrated();
+    initHatPatternSummaryWorkspace(root);
+  })();
+}
+
+function initHatPatternSummaryWorkspace(root: HTMLElement): void {
   const entryPath = resolveHatSummaryEntryPath(window.location.search);
 
   ensureHatDraftMigrated();
@@ -246,14 +255,18 @@ export function initHatPatternSummaryPage(): void {
   let overlayCleanup: (() => void) | null = null;
   let baselineDraft: HatDraft = structuredCloneSafe(draftCheck.draft);
 
+  function savedHatProjectId(): string {
+    return readHatActiveProjectId();
+  }
+
   function navigateAfterCancel() {
     // Discard: never write. Draft remains as last saved (builder write or prior update).
     void baselineDraft;
-    window.location.assign(hatSummaryCancelHref(entryPath));
+    window.location.assign(hatSummaryCancelHref(entryPath, savedHatProjectId()));
   }
 
   function navigateAfterPrimarySuccess() {
-    window.location.assign(hatSummaryPrimarySuccessHref(entryPath));
+    window.location.assign(hatSummaryPrimarySuccessHref(entryPath, savedHatProjectId()));
   }
 
   async function recordHatGenerationIfNeeded(guestEmail?: string): Promise<void> {

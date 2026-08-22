@@ -1,7 +1,7 @@
 /**
  * User-facing gauge display for saved Custom Pattern library surfaces (My Patterns list,
- * library drawer, manage rows). Derives stitches/rows per inch from the saved pattern's
- * `yarnGauge` section without changing how gauge is stored.
+ * library drawer, manage rows). Sweaters use `yarnGauge`; Hats use `gaugeSlots` on the
+ * saved Hat draft. Does not change how either system stores gauge.
  */
 
 /** Display gauge derived from a saved pattern's `yarnGauge`. */
@@ -59,6 +59,67 @@ export function extractSavedPatternGauge(yarnGauge: unknown): SavedPatternGauge 
   }
 
   return null;
+}
+
+function record(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  return raw as Record<string, unknown>;
+}
+
+function isHatPatternBlob(pattern: unknown): boolean {
+  const o = record(pattern);
+  return o?.patternType === "hat" || o?.patternSystem === "hat";
+}
+
+function readHatGaugeSlot(slots: unknown, unit: "inches" | "cm"): { stitch: number; row: number } | null {
+  const root = record(slots);
+  const slot = record(root?.[unit]);
+  if (!slot) return null;
+  const stitch = toPositiveNumber(slot.stitch);
+  const row = toPositiveNumber(slot.row);
+  if (stitch === null || row === null) return null;
+  return { stitch, row };
+}
+
+/**
+ * Extracts display gauge from a saved Hat draft's `gaugeSlots`.
+ * Uses the draft's current unit when that slot is populated; otherwise the other unit.
+ * Returns null when the saved Hat has no usable stitch/row values.
+ */
+export function extractSavedHatGauge(pattern: unknown): SavedPatternGauge | null {
+  const direct = record(pattern);
+  const nested = record(direct?.hatDraft);
+  const draft = isHatPatternBlob(direct) ? direct : isHatPatternBlob(nested) ? nested : direct;
+  if (!draft) return null;
+
+  const preferredUnit = draft.unit === "cm" ? "cm" : "inches";
+  const fallbackUnit = preferredUnit === "cm" ? "inches" : "cm";
+  const preferred = readHatGaugeSlot(draft.gaugeSlots, preferredUnit);
+  const used = preferred ?? readHatGaugeSlot(draft.gaugeSlots, fallbackUnit);
+  const usedUnit = preferred ? preferredUnit : fallbackUnit;
+  if (!used) return null;
+
+  const swatchUnit: "in" | "cm" = usedUnit === "cm" ? "cm" : "in";
+  return {
+    stitchesPerInch: rawSwatchToPerInch(used.stitch, swatchUnit),
+    rowsPerInch: rawSwatchToPerInch(used.row, swatchUnit),
+    displayStitches: used.stitch,
+    displayRows: used.row,
+  };
+}
+
+/**
+ * Gauge for a saved Custom Pattern project. Hats read `gaugeSlots`; sweaters read `yarnGauge`.
+ */
+export function extractSavedProjectGauge(project: {
+  pattern?: unknown;
+  patternSystem?: string | null;
+}): SavedPatternGauge | null {
+  if (project.patternSystem === "hat" || isHatPatternBlob(project.pattern)) {
+    return extractSavedHatGauge(project.pattern);
+  }
+  const pattern = record(project.pattern);
+  return extractSavedPatternGauge(pattern?.yarnGauge);
 }
 
 /** Formats a single gauge count: whole numbers stay clean, decimals trimmed to ≤2 places. */

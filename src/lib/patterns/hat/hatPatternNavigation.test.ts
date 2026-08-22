@@ -39,9 +39,12 @@ import {
   HAT_SUMMARY_EDIT_FROM_PATTERN_HREF,
   HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL,
   buildHatLegacyEntryRedirect,
+  buildHatSummaryEditFromPatternHref,
   hatSummaryCancelHref,
   hatSummaryPrimaryLabel,
+  hatSummaryPrimarySuccessHref,
   resolveHatSummaryEntryPath,
+  withHatSavedProjectQuery,
 } from "./hatPatternNavigation";
 
 const patternPage = readFileSync(resolve("src/pages/patterns/hat/pattern.astro"), "utf8");
@@ -149,6 +152,35 @@ describe("hat finished-pattern navigation markup", () => {
     expect(pageScript).not.toContain("initHatPatternEditDrawer");
   });
 
+  it("Edit Pattern href carries a saved project id when one is active", () => {
+    expect(buildHatSummaryEditFromPatternHref()).toBe(HAT_SUMMARY_EDIT_FROM_PATTERN_HREF);
+    expect(buildHatSummaryEditFromPatternHref("proj-hat-1")).toBe(
+      "/patterns/hat/summary/?edit=1&project=proj-hat-1",
+    );
+    expect(withHatSavedProjectQuery(HAT_SUMMARY_EDIT_FROM_PATTERN_HREF, "proj-hat-1")).toContain(
+      "project=proj-hat-1",
+    );
+    expect(hatSummaryPrimarySuccessHref("from-finished-pattern", "proj-hat-1")).toBe(
+      "/patterns/hat/pattern/?project=proj-hat-1",
+    );
+    expect(pageScript).toContain("buildHatSummaryEditFromPatternHref");
+    expect(pageScript).toContain("readHatActiveProjectId");
+  });
+
+  it("Summary/Edit and Builder hydrate from ?project= before reading the local draft", () => {
+    const summaryScript = readFileSync(resolve("src/scripts/hat-pattern-summary-page.ts"), "utf8");
+    expect(summaryScript).toContain("ensureUrlRequestedSavedPatternHydrated");
+    expect(summaryScript.indexOf("ensureUrlRequestedSavedPatternHydrated")).toBeLessThan(
+      summaryScript.indexOf("initHatPatternSummaryWorkspace"),
+    );
+    expect(builderScript).toContain("ensureUrlRequestedSavedPatternHydrated");
+    const builderBoot = builderScript.indexOf("applyHatNewSessionFromUrl();");
+    expect(builderBoot).toBeGreaterThan(-1);
+    expect(builderScript.indexOf("ensureUrlRequestedSavedPatternHydrated", builderBoot)).toBeLessThan(
+      builderScript.indexOf("ensureHatDraftMigrated();", builderBoot),
+    );
+  });
+
   it("builder Review My Pattern navigates to Summary/Edit with generated=1", () => {
     const builderPage = readFileSync(resolve("src/pages/patterns/hat/builder.astro"), "utf8");
     expect(builderPage).toContain("Review My Pattern");
@@ -165,6 +197,10 @@ describe("hat finished-pattern navigation markup", () => {
     expect(resolveHatSummaryEntryPath("")).toBe("from-finished-pattern");
     expect(hatSummaryCancelHref("from-builder")).toBe("/patterns/hat/builder");
     expect(hatSummaryCancelHref("from-finished-pattern")).toBe("/patterns/hat/pattern/");
+    expect(hatSummaryCancelHref("from-finished-pattern", "proj-hat-1")).toBe(
+      "/patterns/hat/pattern/?project=proj-hat-1",
+    );
+    expect(hatSummaryCancelHref("from-builder", "proj-hat-1")).toBe("/patterns/hat/builder");
     expect(hatSummaryPrimaryLabel("from-builder")).toBe(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL);
     expect(hatSummaryPrimaryLabel("from-finished-pattern")).toBe("Update Pattern");
   });

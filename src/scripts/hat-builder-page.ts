@@ -1,6 +1,6 @@
 /**
  * Hat Pattern Express builder client (`/patterns/hat/builder`).
- * Canonical draft: kbm_hat_draft. No sweater storage / membership / cloud save.
+ * Canonical draft: kbm_hat_draft. Opening with `?project=` hydrates that saved Hat first.
  */
 import {
   createEmptyHatDraft,
@@ -52,6 +52,7 @@ import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSecti
 import { isValidExpressAvailableNeedles } from "../lib/patterns/sleevelessExpressAvailableNeedles";
 import { buildHatSummaryEditFromBuilderHref } from "../lib/patterns/hat/hatPatternNavigation";
 import { markHatGenerationActivityPending } from "../lib/patterns/hat/hatPatternActivity";
+import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 
 const STEPS = HAT_BUILDER_STEPS;
 const LEGACY_HAT_UNIT_KEY = "hat-unit";
@@ -141,7 +142,7 @@ function syncUnitToggleUi(unit: HatDraftUnit): void {
   if (hiddenInput) hiddenInput.value = isInches ? "in" : "cm";
 }
 
-function initHatBuilderPage(): void {
+async function initHatBuilderPage(): Promise<void> {
   const root = document.querySelector<HTMLElement>("[data-hat-builder]");
   if (!root) return;
 
@@ -173,9 +174,11 @@ function initHatBuilderPage(): void {
   let suppressPersist = false;
   let unitsListenerReady = false;
   let isSubmitting = false;
+  let acknowledgedGaugeKey: string | null = null;
 
-  // --- Fresh start (`?new=1`) then draft migration + hydrate ---
+  // --- Fresh start (`?new=1`), then authoritative saved-project hydrate, then local draft ---
   applyHatNewSessionFromUrl();
+  await ensureUrlRequestedSavedPatternHydrated();
   ensureHatDraftMigrated();
   let draft: HatDraft = readHatDraft() ?? createEmptyHatDraft();
   if (!readHatDraft()) {
@@ -772,9 +775,9 @@ function initHatBuilderPage(): void {
 
 function boot(): void {
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => initHatBuilderPage(), { once: true });
+    document.addEventListener("DOMContentLoaded", () => void initHatBuilderPage(), { once: true });
   } else {
-    initHatBuilderPage();
+    void initHatBuilderPage();
   }
 }
 

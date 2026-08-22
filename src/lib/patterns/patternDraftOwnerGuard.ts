@@ -1,15 +1,17 @@
 /**
  * Binds the local pattern **working draft** to the authenticated Memberstack member.
  *
- * The working draft (`kbm_current_pattern`, `kbm_sleeveless_express_builder`, the active saved-project
- * link, etc.) lives in browser `localStorage`. It is NOT account storage and is not cleared on
- * logout. Without an owner check, a second member signing in on the same browser would inherit the
- * previous member's draft — a cross-user data leak (release blocker).
+ * The working draft (`kbm_current_pattern`, `kbm_sleeveless_express_builder`, `kbm_hat_draft`, the
+ * active saved-project links, etc.) lives in browser `localStorage`. It is NOT account storage and
+ * is not cleared on logout. Without an owner check, a second member signing in on the same browser
+ * would inherit the previous member's draft — a cross-user data leak (release blocker).
  *
  * This guard records which member owns the current local draft and clears the draft whenever the
  * authenticated member changes. Saved cloud projects are unaffected: those are always owner-scoped
  * server-side via `X-KBM-Member-Id` and are re-fetched explicitly by id.
  */
+import { clearHatDraftStorage } from "./hat/hatDraft";
+import { clearHatSavedProjectIdentity } from "./hat/hatSavedProject";
 import { clearSleevelessExpressSession } from "./patternStorage";
 import {
   getCachedSleevelessUserAccess,
@@ -73,6 +75,8 @@ export function enforcePatternDraftOwner(
 
   // owner is set and differs from the current member → never expose the prior member's draft.
   clearSleevelessExpressSession();
+  clearHatDraftStorage();
+  clearHatSavedProjectIdentity();
   writePatternDraftOwnerId(current);
   return "cleared";
 }

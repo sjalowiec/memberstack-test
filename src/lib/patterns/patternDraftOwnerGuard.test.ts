@@ -8,6 +8,8 @@ import {
 import { PATTERN_STORAGE_KEY, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 import { startFreshSleevelessExpressPattern } from "./sleevelessExpressFreshStart";
 import { CUSTOM_PATTERN_ACTIVE_PROJECT_ID_KEY } from "./customPatternProjectActiveId";
+import { HAT_DRAFT_STORAGE_KEY } from "./hat/hatDraft";
+import { HAT_ACTIVE_PROJECT_ID_KEY, HAT_ACTIVE_PROJECT_NAME_KEY } from "./hat/hatSavedProject";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 
 /** Seed a full local working draft as if a member had built/loaded a pattern. */
@@ -62,6 +64,23 @@ describe("enforcePatternDraftOwner", () => {
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(CUSTOM_PATTERN_ACTIVE_PROJECT_ID_KEY)).toBeNull();
+    expect(readPatternDraftOwnerId()).toBe("ms_userB");
+  });
+
+  it("clears Hat draft and Hat project identity when a different member signs in", () => {
+    seedWorkingDraft();
+    localStorage.setItem(
+      HAT_DRAFT_STORAGE_KEY,
+      JSON.stringify({ patternType: "hat", patternProject: { title: "Member A Hat" } }),
+    );
+    localStorage.setItem(HAT_ACTIVE_PROJECT_ID_KEY, "proj-hat-a");
+    localStorage.setItem(HAT_ACTIVE_PROJECT_NAME_KEY, "Member A Hat");
+    enforcePatternDraftOwner("ms_userA");
+
+    expect(enforcePatternDraftOwner("ms_userB")).toBe("cleared");
+    expect(localStorage.getItem(HAT_DRAFT_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(HAT_ACTIVE_PROJECT_ID_KEY)).toBeNull();
+    expect(localStorage.getItem(HAT_ACTIVE_PROJECT_NAME_KEY)).toBeNull();
     expect(readPatternDraftOwnerId()).toBe("ms_userB");
   });
 
