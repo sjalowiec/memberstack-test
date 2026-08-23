@@ -4,6 +4,10 @@ import {
   isDropShoulderDiagramReviewRoute,
 } from "./lib/dev/dropShoulderDiagramReviewAccess";
 import {
+  isSleevelessFrontStsRowsPreviewProductionBlocked,
+  isSleevelessFrontStsRowsPreviewRoute,
+} from "./lib/dev/sleevelessFrontStsRowsPreviewAccess";
+import {
   isCoursePreviewProductionBlocked,
   isCoursePreviewRoute,
 } from "./lib/legacy_kin/coursePreviewProductionAccess";
@@ -62,6 +66,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (
     isDropShoulderDiagramReviewRoute(u.pathname) &&
     isDropShoulderDiagramReviewProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    isSleevelessFrontStsRowsPreviewRoute(u.pathname) &&
+    isSleevelessFrontStsRowsPreviewProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return new Response("Not found", { status: 404 });
   }
