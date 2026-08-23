@@ -7,15 +7,16 @@
  * Login alone never unlocks member courses.
  *
  *   - "free"     — open to everyone (no login required).
- *   - "member"   — requires active member access (paid membership / legacy shells).
+ *   - "member"   — requires active member access (paid membership / legacy shells)
+ *                  or a mapped individual-course plan for this slug.
  *   - "purchase" — included with membership (same as member courses).
- *                  Non-members may unlock via individual purchase entitlement
- *                  when that system exists; until then they stay locked.
+ *                  Non-members may unlock via individual purchase entitlement.
  *
  * This helper reuses the global Memberstack payload parsing
  * (`getActivePlanIds`, `isMemberLoggedIn`) so course gating stays consistent
  * with every other gated section.
  */
+import { LEGACY_COURSE_PLAN_SLUGS } from "../config/legacyCourseEntitlements";
 import { COURSE_ACCESS_PLAN_IDS } from "../config/memberships";
 import { getActivePlanIds, isMemberLoggedIn } from "./memberAccess";
 
@@ -80,14 +81,20 @@ export function hasPremiumCourseAccess(memberOrPayload: unknown): boolean {
 
 /**
  * Individual course purchase entitlement for non-members.
- * No entitlement lookup exists yet — always false. Hook future purchase
- * records here so catalog locks and CourseAccessGate stay aligned.
+ * Unlocks only the course slugs mapped to the member's active plan IDs
+ * (`LEGACY_COURSE_PLAN_SLUGS`). Catalog locks and CourseAccessGate share this.
  */
 export function hasIndividualCoursePurchase(
-  _courseSlug: string | null | undefined,
-  _memberOrPayload: unknown,
+  courseSlug: string | null | undefined,
+  memberOrPayload: unknown,
 ): boolean {
-  return false;
+  const slug = typeof courseSlug === "string" ? courseSlug.trim() : "";
+  if (!slug) return false;
+
+  return getActivePlanIds(memberOrPayload).some((planId) => {
+    const slugs = LEGACY_COURSE_PLAN_SLUGS[planId];
+    return Boolean(slugs?.includes(slug));
+  });
 }
 
 /** Whether the given course access level unlocks content for this viewer. */
@@ -98,8 +105,6 @@ export function canAccessCourse(
 ): boolean {
   if (access === "free") return true;
   if (hasCourseMembershipAccess(memberOrPayload)) return true;
-  if (access === "member") return false;
-  // "purchase": membership already returned true above; otherwise require entitlement.
   return hasIndividualCoursePurchase(options?.courseSlug, memberOrPayload);
 }
 

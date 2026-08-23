@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  LEGACY_SK840_COURSE_PLAN_ID,
+  LEGACY_SK840_COURSE_SLUG,
+} from "../config/legacyCourseEntitlements";
+import {
+  COURSE_ACCESS_PLAN_IDS,
   LEGACY_MEMBERSHIPS,
+  MEMBER_PLAN_IDS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
 } from "../config/memberships";
@@ -8,6 +14,7 @@ import {
   canAccessCourse,
   getCourseViewerState,
   hasCourseMembershipAccess,
+  hasIndividualCoursePurchase,
   hasPremiumCourseAccess,
   isCourseAccessLevel,
   normalizeCourseAccessLevel,
@@ -119,6 +126,14 @@ describe("hasCourseMembershipAccess", () => {
     const payload = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasPremiumCourseAccess(payload)).toBe(hasCourseMembershipAccess(payload));
   });
+
+  it("does not treat the legacy SK840 course plan as membership access", () => {
+    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_SK840_COURSE_PLAN_ID);
+    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_SK840_COURSE_PLAN_ID);
+    expect(hasCourseMembershipAccess(payloadWithPlan(LEGACY_SK840_COURSE_PLAN_ID))).toBe(
+      false,
+    );
+  });
 });
 
 describe("canAccessCourse", () => {
@@ -171,6 +186,49 @@ describe("canAccessCourse", () => {
   it("purchase courses stay locked for logged-out and no-plan members", () => {
     expect(canAccessCourse("purchase", loggedOut)).toBe(false);
     expect(canAccessCourse("purchase", loggedInNoPlan)).toBe(false);
+  });
+
+  it("active KIN members still access member courses", () => {
+    const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
+    expect(canAccessCourse("member", member, { courseSlug: LEGACY_SK840_COURSE_SLUG })).toBe(
+      true,
+    );
+    expect(canAccessCourse("member", member, { courseSlug: "ribber-basic-bootcamp" })).toBe(
+      true,
+    );
+    expect(canAccessCourse("member", member, { courseSlug: "lk-150-fun" })).toBe(true);
+  });
+
+  it("legacy SK840 plan holders access only the SK840 course", () => {
+    const sk840Buyer = payloadWithPlan(LEGACY_SK840_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("member", sk840Buyer, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      hasIndividualCoursePurchase(LEGACY_SK840_COURSE_SLUG, sk840Buyer),
+    ).toBe(true);
+  });
+
+  it("legacy SK840 plan holders do not unlock unrelated member courses", () => {
+    const sk840Buyer = payloadWithPlan(LEGACY_SK840_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("member", sk840Buyer, { courseSlug: "ribber-basic-bootcamp" }),
+    ).toBe(false);
+    expect(canAccessCourse("member", sk840Buyer, { courseSlug: "lk-150-fun" })).toBe(false);
+    expect(canAccessCourse("member", sk840Buyer)).toBe(false);
+    expect(hasIndividualCoursePurchase("ribber-basic-bootcamp", sk840Buyer)).toBe(false);
+  });
+
+  it("does not unlock SK840 from a canceled legacy course plan", () => {
+    const canceled = {
+      data: {
+        id: "ms_member",
+        planConnections: [{ planId: LEGACY_SK840_COURSE_PLAN_ID, status: "CANCELED" }],
+      },
+    };
+    expect(
+      canAccessCourse("member", canceled, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(false);
   });
 });
 
