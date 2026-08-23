@@ -184,12 +184,15 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     const overlap = result.debug.frontArmholeNecklineOverlap;
 
     expect(model?.armhole.startGarmentRc).toBe(rcModel.armholeBoGarmentRc);
+    expect(model?.neckline.style).toBe("v-neck");
     expect(model?.neckline.startGarmentRc).toBe(
       overlap?.divideGarmentRc ?? result.debug.frontNecklineStartRC,
     );
-    expect(model?.neckline.divideGarmentRc).toBe(
-      overlap?.divideGarmentRc ?? model?.neckline.startGarmentRc,
-    );
+    if (model?.neckline.style === "v-neck") {
+      expect(model.neckline.divideGarmentRc).toBe(
+        overlap?.divideGarmentRc ?? model.neckline.startGarmentRc,
+      );
+    }
     expect(model?.shoulder.startGarmentRc).toBeGreaterThanOrEqual(model?.armhole.lastGarmentRc ?? 0);
     expect(model?.neckline.depthRows).toBe(Math.round(result.debug.frontNeckDepthRows));
   });
@@ -221,9 +224,12 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     const timeline =
       result.frontNeckShoulderTimeline ?? result.frontNeckShoulderShapingChart.timeline ?? [];
 
-    expect(model?.neckline.innerDecreasePoints).toEqual(
-      collectInnerNeckDecreasePointsFromTimeline(timeline, "right"),
-    );
+    expect(model?.neckline.style).toBe("v-neck");
+    if (model?.neckline.style === "v-neck") {
+      expect(model.neckline.innerDecreasePoints).toEqual(
+        collectInnerNeckDecreasePointsFromTimeline(timeline, "right"),
+      );
+    }
     expect(model?.shoulder.points).toEqual(pulloverVNeckFrontShoulderPoints(result));
     expect(model?.shoulder.stitchesPerSide).toBe(shoulderStitchesPerSideForDiagram(result.debug));
     expect((model?.shoulder.points.length ?? 0) > 0).toBe(true);
@@ -247,13 +253,38 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
 
     expect(model).not.toBeNull();
-    expect(model?.neckline.beginsBeforeArmhole).toBe(true);
+    expect(model?.neckline.style).toBe("v-neck");
+    if (model?.neckline.style === "v-neck") {
+      expect(model.neckline.beginsBeforeArmhole).toBe(true);
+    }
     expect(model?.neckline.startGarmentRc).toBeLessThan(model?.armhole.startGarmentRc ?? 0);
     expect(model?.armhole.overlapsNeckline).toBe(true);
   });
 
-  it("returns null for round-neck pullover, cardigan, and A-line bodies", () => {
-    const cases = [roundPulloverPattern(), cardiganVNeckPattern(), alineVNeckPattern()];
+  it("builds a pullover round-neck straight-body Front model without V divide fields", () => {
+    const pattern = roundPulloverPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+
+    expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(true);
+    expect(model).not.toBeNull();
+    expect(model?.neckline.style).toBe("round");
+    expect(model?.armhole.overlapsNeckline).toBe(false);
+    if (model?.neckline.style === "round") {
+      expect(model.neckline.centerBindOffStitches).toBeGreaterThan(0);
+      expect(model.neckline.strategy === "deep-round" || model.neckline.strategy === "shallow-round").toBe(
+        true,
+      );
+      expect("divideGarmentRc" in model.neckline).toBe(false);
+      expect("beginsBeforeArmhole" in model.neckline).toBe(false);
+    }
+    expect(model?.neckline.startGarmentRc).toBe(result.debug.frontNecklineStartRC);
+    expect(model?.neckline.depthRows).toBe(Math.round(result.debug.frontNeckDepthRows));
+    expect(model?.widths.necklineStitches).toBe(Math.round(result.debug.necklineStitches ?? 0));
+  });
+
+  it("returns null for cardigan and A-line bodies", () => {
+    const cases = [cardiganVNeckPattern(), alineVNeckPattern()];
     for (const pattern of cases) {
       const result = generateSleevelessBackPattern(pattern);
       expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(false);
