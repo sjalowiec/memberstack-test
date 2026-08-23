@@ -29,10 +29,13 @@ export function hasAuthoritativeDropShoulderConstruction(style, customOverrides)
 
 /**
  * @param {{ pattern?: unknown, customOverrides?: unknown }} project
- * @returns {"sleeveless" | "drop-shoulder"}
+ * @returns {"sleeveless" | "drop-shoulder" | "hat"}
  */
 export function resolvePatternSystemFromProject(project) {
   const pattern = asRecord(project?.pattern);
+  if (pattern.patternType === "hat" || pattern.patternSystem === "hat") {
+    return "hat";
+  }
   const style = asRecord(pattern.style);
   const customOverrides = asRecord(project?.customOverrides);
   if (hasAuthoritativeDropShoulderConstruction(style, customOverrides)) {
