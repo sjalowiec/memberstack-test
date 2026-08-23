@@ -147,6 +147,14 @@ const sueIntroParagraphs = [
   description={pageDescription}
   bodyClass="page--tight-header page--home-v2"
 >
+  <Fragment slot="head">
+    <link
+      rel="preload"
+      as="image"
+      href="/images/home/knitting-machine.webp"
+      fetchpriority="high"
+    />
+  </Fragment>
   <div class="home-v2">
     <!-- ========== HERO: wide image with card overlaid on the left (desktop) ========== -->
     <section class="home-v2-hero" aria-labelledby="home-hero-heading">
@@ -182,6 +190,8 @@ const sueIntroParagraphs = [
                   src={card.image}
                   alt={card.alt}
                   class="home-v2-audience-card__img"
+                  width="601"
+                  height="361"
                   loading="lazy"
                   decoding="async"
                 />
