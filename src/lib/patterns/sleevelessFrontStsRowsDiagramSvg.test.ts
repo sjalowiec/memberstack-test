@@ -1,12 +1,21 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
+import { SLEEVELESS_PULLOVER_V_FRONT_DIAGRAM_SRC } from "./sleevelessFrontDiagramSrc";
+import { resolveSleevelessFrontDiagramSrc } from "./sleevelessFrontJapaneseNotation";
 import { buildSleevelessFrontStsRowsDiagramModel } from "./sleevelessFrontStsRowsDiagramModel";
 import {
   buildSleevelessFrontStsRowsDiagramSvg,
   SLEEVELESS_FRONT_STS_ROWS_VIEWBOX,
   SLEEVELESS_FRONT_STS_ROWS_VISUAL,
+  tryBuildLiveSleevelessFrontStsRowsDiagramSvg,
   tryBuildSleevelessFrontStsRowsDiagramSvg,
 } from "./sleevelessFrontStsRowsDiagramSvg";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+
+const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function amandaVNeckPattern(): Record<string, unknown> {
   return {
@@ -775,5 +784,115 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
       const hemTop = Math.min(...hemTextYs) - 8;
       expect(hemTop).toBeGreaterThan(totalBottom);
     }
+  });
+});
+
+describe("live Pullover V-neck Front Stitches & Rows cutover", () => {
+  it("uses the generated SVG for supported pullover V-neck straight Front", () => {
+    const cases = [shallowVNeckPattern(), amandaVNeckPattern(), vNeckBeforeArmholePattern()];
+    for (const pattern of cases) {
+      const result = generateSleevelessBackPattern(pattern);
+      const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+      const live = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
+
+      expect(model).not.toBeNull();
+      expect(live).toBeTruthy();
+      expect(live).toContain('data-sleeveless-front-sts-rows-generated="true"');
+      expect(live).toContain('data-supported="true"');
+      expect(live).toBe(tryBuildSleevelessFrontStsRowsDiagramSvg(model));
+      expect(resolveSleevelessFrontDiagramSrc("sts-rows", pattern)).toBe(
+        SLEEVELESS_PULLOVER_V_FRONT_DIAGRAM_SRC,
+      );
+    }
+  });
+
+  it("returns null so unsupported Front cases keep the existing SVG fallback", () => {
+    const round = roundPulloverPattern();
+    const roundResult = generateSleevelessBackPattern(round);
+    expect(tryBuildLiveSleevelessFrontStsRowsDiagramSvg(roundResult, round)).toBeNull();
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", round)).toContain("diagram-front-round");
+
+    const aline = alineVNeckPattern();
+    const alineResult = generateSleevelessBackPattern(aline);
+    expect(tryBuildLiveSleevelessFrontStsRowsDiagramSvg(alineResult, aline)).toBeNull();
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", aline)).toContain("diagram-front-v-aline");
+
+    const cardigan = cardiganVNeckPattern();
+    const cardiganResult = generateSleevelessBackPattern(cardigan);
+    expect(tryBuildLiveSleevelessFrontStsRowsDiagramSvg(cardiganResult, cardigan)).toBeNull();
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", cardigan)).toContain("diagram-cardigan-v");
+  });
+
+  it("does not claim Back or Shaping Notation diagrams", () => {
+    const pattern = amandaVNeckPattern();
+    expect(resolveSleevelessBackDiagramSrc("sts-rows", pattern)).toContain("diagram-back");
+    expect(resolveSleevelessBackDiagramSrc("shaping-notation", pattern)).toContain("diagram-jp-back");
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toContain("diagram-jp-front-v");
+  });
+
+  it("keeps the old Front Illustrator assets in the repo for fallback", () => {
+    expect(
+      existsSync(join(srcRoot, "../public/images/patterns/sleeveless/diagrams/diagram-front-v.svg")),
+    ).toBe(true);
+    expect(
+      existsSync(
+        join(srcRoot, "../public/images/patterns/sleeveless/diagrams/diagram-front-v-aline.svg"),
+      ),
+    ).toBe(true);
+    expect(
+      existsSync(
+        join(srcRoot, "../public/images/patterns/sleeveless/diagrams/diagram-jp-front-v.svg"),
+      ),
+    ).toBe(true);
+  });
+
+  it("wires generated hydration before the Front Stitches & Rows template fetch", () => {
+    const script = readFileSync(join(srcRoot, "scripts/sleevelessPatternPageShared.ts"), "utf8");
+    expect(script).toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
+    expect(script).toContain("sleevelessFrontStsRowsDiagramSvg.ts");
+    expect(script).toContain("tryBuildLiveSleevelessFrontVNeckNotationSvg");
+
+    const fnStart = script.indexOf("async function hydrateSleevelessFrontDiagram");
+    expect(fnStart).toBeGreaterThan(-1);
+    const fnEnd = script.indexOf("async function hydrateSleevelessBackDiagram");
+    const fn = script.slice(fnStart, fnEnd > fnStart ? fnEnd : fnStart + 2800);
+    expect(fn).toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
+    expect(fn.indexOf('mode === "shaping-notation"')).toBeLessThan(
+      fn.indexOf("tryBuildLiveSleevelessFrontStsRowsDiagramSvg"),
+    );
+    expect(fn.indexOf("tryBuildLiveSleevelessFrontStsRowsDiagramSvg")).toBeLessThan(
+      fn.indexOf("resolveSleevelessFrontDiagramSrc"),
+    );
+    expect(fn.indexOf("if (generatedSvg)")).toBeLessThan(
+      fn.indexOf('resolveSleevelessFrontDiagramSrc("sts-rows"'),
+    );
+
+    const notationFnStart = script.indexOf("async function inlineFrontJapaneseNotationSvg");
+    const notationFnEnd = script.indexOf("async function hydrateSleevelessFrontDiagram");
+    const notationFn = script.slice(notationFnStart, notationFnEnd);
+    expect(notationFn).toContain("tryBuildLiveSleevelessFrontVNeckNotationSvg");
+    expect(notationFn).not.toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
+
+    const backFnStart = script.indexOf("async function hydrateSleevelessBackDiagram");
+    const backFnEnd = script.indexOf("function bindSleevelessBackDiagramMode");
+    const backFn = script.slice(backFnStart, backFnEnd > backFnStart ? backFnEnd : backFnStart + 1800);
+    expect(backFn).toContain("resolveSleevelessBackDiagramSrc");
+    expect(backFn).not.toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
+  });
+
+  it("wires print Front loading to the same generated SVG with static fallback", () => {
+    const print = readFileSync(join(srcRoot, "lib/patterns/sleevelessPrintDiagramSvg.ts"), "utf8");
+    expect(print).toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
+    const frontBranch = print.slice(print.indexOf('piece === "back"'));
+    expect(frontBranch.indexOf("tryBuildLiveSleevelessFrontStsRowsDiagramSvg")).toBeGreaterThan(
+      frontBranch.indexOf("} else {"),
+    );
+    expect(frontBranch.indexOf("tryBuildLiveSleevelessFrontStsRowsDiagramSvg")).toBeLessThan(
+      frontBranch.indexOf("fetchSvgWithReplacements"),
+    );
+
+    const printPage = readFileSync(join(srcRoot, "scripts/sleeveless-print-page.ts"), "utf8");
+    expect(printPage).toContain("loadSleevelessFrontDiagramSvgMarkup");
+    expect(printPage).toContain("loadSleevelessBackDiagramSvgMarkup");
   });
 });

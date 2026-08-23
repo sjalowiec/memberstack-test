@@ -5,7 +5,11 @@
  * no Japanese notation, no Illustrator geometry.
  */
 
-import type { SleevelessFrontStsRowsDiagramModel } from "./sleevelessFrontStsRowsDiagramModel";
+import {
+  buildSleevelessFrontStsRowsDiagramModel,
+  type SleevelessFrontStsRowsDiagramModel,
+} from "./sleevelessFrontStsRowsDiagramModel";
+import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const VB_W = 400;
 const VB_H = 480;
@@ -735,4 +739,18 @@ export function tryBuildSleevelessFrontStsRowsDiagramSvg(
   if (!svg.includes('data-sleeveless-front-sts-rows-generated="true"')) return null;
   if (!svg.includes('data-supported="true"')) return null;
   return svg;
+}
+
+/**
+ * Live Stitches & Rows cutover: pullover V-neck Front, straight body.
+ * Builds the existing model and attempts {@link tryBuildSleevelessFrontStsRowsDiagramSvg}.
+ * Returns `null` so screen/print hydration keep the Illustrator SVG.
+ */
+export function tryBuildLiveSleevelessFrontStsRowsDiagramSvg(
+  result: SleevelessBackPatternResult,
+  patternData?: unknown,
+): string | null {
+  return tryBuildSleevelessFrontStsRowsDiagramSvg(
+    buildSleevelessFrontStsRowsDiagramModel(result, patternData),
+  );
 }
