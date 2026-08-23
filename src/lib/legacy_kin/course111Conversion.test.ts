@@ -478,6 +478,7 @@ describe("Course 111 conversion invariants", () => {
       .find((entry) => entry.slug === "insert-point-cams");
     expect(block).toBeTruthy();
     expect(block!.title).toBe("Point Cams");
+    expect(block!.legacy?.editorLayout).toBe("textVideoStacked");
     expect(block!.components).toHaveLength(2);
 
     const video = (block!.components ?? []).find((component) => component.type === "video");

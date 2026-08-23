@@ -264,7 +264,8 @@
           "order": 12,
           "legacy": {
             "assignId": 6204,
-            "blockType": "HTML"
+            "blockType": "HTML",
+            "editorLayout": "textVideoStacked"
           }
         }
       ]
@@ -775,7 +776,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n<h3>As you are knitting in pattern, you may receive this message:</h3>\r\n\r\n\r\n<img class=\"img-thumbnail ctr\" src=\"/images/course-content/111/wrong_way1.jpg\">\r\n<br>\r\n<span class=\"yellow_highlight\">This indicates that the \r\n<span class=\"imagepopup\" data-imagetitle=\"840 carriage sensor (left AND right)\" data-image=\"/challenge/images/v2/111/sensor.jpg\"><b>SENSOR <i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></b></span>\r\ndidn't pass the magnet  on the needlebed.</span>\r\n<br>\r\n\r\n<h3>How to fix?</h3>\r\n<ol>\r\n<li>Note the current row number</li>\r\n<li>Note that the \"traffic light\" is STOPPED</li>\r\n<li>Rip any stitches that may have knit</li>\r\n<li><a data-GlossaryId=\"355\" class=\"glossaryhelp\">Free Pass <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> the carriage to the side indicated</li>\r\n<li>Adjust the row count (if necessary) with the up and down arrows <i class=\"fa fa-arrow-up\" aria-hidden=\"true\"></i><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i><?li>\r\n<li>RESTART  the traffic signal \r\n<img src=\"/images/course-content/111/restart.jpg\"><br> Ready to knit</li>\r\n</ol>\r\n\r\n\r\n<img src=\"/images/course-content/111/wrong_way2a.jpg\">",
+              "html": "<h3>As you are knitting in pattern, you may receive this message:</h3>\n\n\n<img class=\"img-thumbnail ctr\" src=\"/images/course-content/111/wrong_way1.jpg\">\n<br>\n<span class=\"yellow_highlight\">This indicates that the \n<span class=\"imagepopup\" data-imagetitle=\"840 carriage sensor (left AND right)\" data-image=\"/challenge/images/v2/111/sensor.jpg\"><b>SENSOR <i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></b></span>\ndidn't pass the magnet  on the needlebed.</span>\n<br>\n\n<h3>How to fix?</h3>\n<ol>\n<li>Note the current row number</li>\n<li>Note that the \"traffic light\" is STOPPED</li>\n<li>Rip any stitches that may have knit</li>\n<li><a data-GlossaryId=\"355\" class=\"glossaryhelp\">Free Pass <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> the carriage to the side indicated</li>\n<li>Adjust the row count (if necessary) with the up and down arrows <i class=\"fa fa-arrow-up\" aria-hidden=\"true\"></i><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i><?li>\n<li>RESTART  the traffic signal \n<img src=\"/images/course-content/111/restart.jpg\"><br> Ready to knit</li>\n</ol>\n\n\n<img src=\"/images/course-content/111/wrong_way2a.jpg\">",
               "legacyComponentId": 9431,
               "order": 1
             }
