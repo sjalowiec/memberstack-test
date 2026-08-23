@@ -2,6 +2,18 @@
 import Layout from "../layouts/Layout.astro";
 import HomeImagePlaceholder from "../components/home/HomeImagePlaceholder.astro";
 import HomeWelcomeModal from "../components/home/HomeWelcomeModal.astro";
+import {
+  HOME_CTA_GUEST_COPY,
+  HOME_CTA_GUEST_HEADING,
+  HOME_CTA_MEMBER_COPY,
+  HOME_CTA_MEMBER_HEADING,
+  HOME_HERO_GUEST_COPY,
+  HOME_HERO_GUEST_HEADING,
+  HOME_HERO_MEMBER_COPY,
+  HOME_HERO_MEMBER_HEADING,
+  HOME_HERO_MEMBER_SECONDARY_HREF,
+  HOME_HERO_MEMBER_SECONDARY_LABEL,
+} from "../lib/home/homeHeroPromo";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import "../styles/global.css";
 
@@ -157,21 +169,41 @@ const sueIntroParagraphs = [
   </Fragment>
   <div class="home-v2">
     <!-- ========== HERO: wide image with card overlaid on the left (desktop) ========== -->
-    <section class="home-v2-hero" aria-labelledby="home-hero-heading">
+    <section class="home-v2-hero" data-home-hero aria-labelledby="home-hero-heading">
       <div class="home-v2-hero__frame">
-        <div class="home-v2-hero__card">
-          <h1 id="home-hero-heading">Learn, build skills, and machine knit with confidence.</h1>
-          <p class="home-v2-hero__copy">
-            Whether you're a beginner or a seasoned pro, we provide the tools, patterns, and tutorials to help you spend less time guessing and more time knitting.
-          </p>
-          <div class="home-v2-hero__actions">
-            <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
-            <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
+        <div
+          class="home-v2-hero__card"
+          data-home-promo
+          data-home-promo-state="pending"
+          aria-busy="true"
+          aria-hidden="true"
+        >
+          <div data-home-promo-panel="guest" aria-hidden="true">
+            <h1 id="home-hero-heading">{HOME_HERO_GUEST_HEADING}</h1>
+            <p class="home-v2-hero__copy">
+              {HOME_HERO_GUEST_COPY}
+            </p>
+            <div class="home-v2-hero__actions">
+              <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
+              <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
+            </div>
+            <p class="home-v2-hero__login">
+              Already a member?
+              <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
+            </p>
           </div>
-          <p class="home-v2-hero__login">
-            Already a member?
-            <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
-          </p>
+          <div data-home-promo-panel="member" hidden aria-hidden="true">
+            <h1 id="home-hero-heading-member">{HOME_HERO_MEMBER_HEADING}</h1>
+            <p class="home-v2-hero__copy">
+              {HOME_HERO_MEMBER_COPY}
+            </p>
+            <div class="home-v2-hero__actions">
+              <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
+              <a href={HOME_HERO_MEMBER_SECONDARY_HREF} class="kbm-btn kbm-btn-outline">
+                {HOME_HERO_MEMBER_SECONDARY_LABEL}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -351,21 +383,57 @@ const sueIntroParagraphs = [
       </section>
 
       <!-- ========== SECTION 7: Ready to explore? ========== -->
-      <section class="home-v2-cta" aria-labelledby="home-cta-heading">
-        <h2 id="home-cta-heading">Ready to explore?</h2>
-        <p>
-          Take your time looking around. When you're ready for full access to builders, courses, and
-          member resources, we'd love to have you join.
-        </p>
-        <div class="home-v2-cta__actions">
-          <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
-          <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
+      <section
+        class="home-v2-cta"
+        data-home-cta
+        data-home-promo
+        data-home-promo-state="pending"
+        aria-busy="true"
+        aria-hidden="true"
+        aria-labelledby="home-cta-heading"
+      >
+        <div data-home-promo-panel="guest" aria-hidden="true">
+          <h2 id="home-cta-heading">{HOME_CTA_GUEST_HEADING}</h2>
+          <p>
+            {HOME_CTA_GUEST_COPY}
+          </p>
+          <div class="home-v2-cta__actions">
+            <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
+            <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
+          </div>
+        </div>
+        <div data-home-promo-panel="member" hidden aria-hidden="true">
+          <h2 id="home-cta-heading-member">{HOME_CTA_MEMBER_HEADING}</h2>
+          <p>
+            {HOME_CTA_MEMBER_COPY}
+          </p>
+          <div class="home-v2-cta__actions">
+            <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
+            <a href={HOME_HERO_MEMBER_SECONDARY_HREF} class="kbm-btn kbm-btn-outline">
+              {HOME_HERO_MEMBER_SECONDARY_LABEL}
+            </a>
+          </div>
         </div>
       </section>
     </div>
   </div>
 
   <HomeWelcomeModal />
+
+  <script>
+    import { initHomeHeroPromo } from "../lib/home/homeHeroPromo";
+
+    initHomeHeroPromo();
+  </script>
+  <noscript>
+    <style>
+      [data-home-promo][data-home-promo-state="pending"] {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+      }
+    </style>
+  </noscript>
 </Layout>
 
 <style is:global>
@@ -379,6 +447,17 @@ const sueIntroParagraphs = [
     max-width: none;
     padding-left: 0;
     padding-right: 0;
+  }
+
+  /*
+   * Auth still loading: suppress the entire promo card (white box, copy, and
+   * shadow) so members never see an empty card or Become a Member flash.
+   * Global so this cannot miss Astro scoped-attribute matching on first paint.
+   */
+  [data-home-promo][data-home-promo-state="pending"] {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
 </style>
 
