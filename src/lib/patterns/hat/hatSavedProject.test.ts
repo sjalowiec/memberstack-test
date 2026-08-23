@@ -145,7 +145,7 @@ describe("saved hat naming", () => {
 });
 
 describe("saved hat workspace title field", () => {
-  it("reuses the sweater Pattern title field on the hat Summary/Edit page when saved", () => {
+  it("reuses the sweater Pattern title field on the hat Summary/Edit page for members", () => {
     const summaryPage = readFileSync(resolve("src/pages/patterns/hat/summary/index.astro"), "utf8");
     const summaryScript = readFileSync(resolve("src/scripts/hat-pattern-summary-page.ts"), "utf8");
     expect(summaryPage).toContain("data-hat-edit-title");
@@ -153,10 +153,10 @@ describe("saved hat workspace title field", () => {
     expect(summaryPage).toContain("data-hat-edit-title-field hidden");
     expect(summaryScript).toContain("applyHatPatternProjectDetailsToDraft");
     expect(summaryScript).toContain("persistHatPatternProject");
-    expect(summaryScript).toContain("isEditingSavedHatProject");
+    expect(summaryScript).toContain("hatSummaryShouldShowProjectDetails");
     expect(summaryScript).toContain("readHatActiveProjectId");
     expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
-    expect(summaryScript).toContain("titleField.hidden = !saved");
+    expect(summaryScript).toContain("titleField.hidden = !showProjectDetails");
     expect(summaryPage).toContain("pattern-editable-pencil.css");
   });
 });

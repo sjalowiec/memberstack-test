@@ -103,6 +103,23 @@ export function resolveHatPatternPersistActionFromViewer(input: {
 }
 
 /**
+ * Name/Notes on Hat Summary/Edit is for members who can persist a Hat —
+ * including a new Hat that does not have a saved project id yet. Guests stay hidden.
+ */
+export function hatSummaryShouldShowProjectDetails(
+  hasMemberSavedProjectPrivileges: boolean,
+): boolean {
+  return hasMemberSavedProjectPrivileges;
+}
+
+/** After cloud create/update, stay on Summary/Edit and offer Keep Editing / View. Guests still continue. */
+export function resolveHatSummaryAfterPersistNext(
+  persist: HatPatternPersistAction["persist"],
+): "confirm" | "guest-continue" {
+  return persist === "local-only" ? "guest-continue" : "confirm";
+}
+
+/**
  * Cloud save payload for a Hat draft. Always stamps Hat identity so My Patterns
  * can classify the project — `family` stays `"sleeveless"` (shared blob store).
  */

@@ -1,6 +1,7 @@
 /**
  * Hat Summary/Edit page — full-page workspace (sweater layout equivalent).
- * Loads kbm_hat_draft, validates via hatPatternEdit, writes draft, returns to finished pattern.
+ * Loads kbm_hat_draft, validates via hatPatternEdit, writes draft, and persists
+ * member create/update in place. Guests View My Pattern to the finished pattern.
  * No drawer / overlay / focus trap.
  */
 
@@ -21,7 +22,6 @@ import { hashRequestsNotesEditing } from "../lib/patterns/sleevelessPatternNotes
 import {
   applyHatPatternProjectDetailsToDraft,
   buildDefaultHatPatternTitle,
-  isEditingSavedHatProject,
   readHatActiveProjectId,
   resolveHatPatternProjectNotes,
   resolveHatSavedPatternName,
@@ -36,9 +36,12 @@ import {
   type HatGaugeSlot,
 } from "../lib/patterns/hat/hatDraft";
 import {
+  hatSummaryShouldShowProjectDetails,
   persistHatPatternProject,
   resolveHatPatternPersistActionFromViewer,
+  resolveHatSummaryAfterPersistNext,
 } from "../lib/patterns/hat/hatPatternProjectSave";
+import { promptEditPatternSaveConfirmation } from "../lib/patterns/sleevelessPatternEditSaveConfirmation";
 import {
   bindHatPatternWorkspaceAccessLifecycle,
   hatPatternHasMemberSavedProjectPrivileges,
@@ -165,11 +168,12 @@ function applyEntryPathChrome(
   const cancelLabel = hatSummaryCancelLabel(path);
   if (updateBtn) updateBtn.textContent = action.label;
   for (const btn of cancelBtns) btn.textContent = cancelLabel;
-  const saved =
-    isEditingSavedHatProject() && hatPatternHasMemberSavedProjectPrivileges(viewerAccessState);
-  if (titleField) titleField.hidden = !saved;
-  if (titleInput && saved && !titleInput.value.trim()) {
-    titleInput.value = resolveHatSavedPatternName();
+  const showProjectDetails = hatSummaryShouldShowProjectDetails(
+    hatPatternHasMemberSavedProjectPrivileges(viewerAccessState),
+  );
+  if (titleField) titleField.hidden = !showProjectDetails;
+  if (titleInput && showProjectDetails && !titleInput.value.trim()) {
+    titleInput.value = resolveHatSavedPatternName() || buildDefaultHatPatternTitle();
   }
 }
 
@@ -472,10 +476,12 @@ function initHatPatternSummaryWorkspace(root: HTMLElement): void {
     writeForm(hatDraftToEditFormValues(draft, rows));
     applyPersistChrome();
     if (titleInput) {
-      const saved =
-        isEditingSavedHatProject() &&
-        hatPatternHasMemberSavedProjectPrivileges(lastViewerAccessState);
-      titleInput.value = saved ? resolveHatSavedPatternName(draft) : "";
+      const showProjectDetails = hatSummaryShouldShowProjectDetails(
+        hatPatternHasMemberSavedProjectPrivileges(lastViewerAccessState),
+      );
+      titleInput.value = showProjectDetails
+        ? resolveHatSavedPatternName(draft) || buildDefaultHatPatternTitle()
+        : "";
     }
     notesFieldApi.setNotes(resolveHatPatternProjectNotes(draft), {
       deepLinkToNotes:
@@ -581,6 +587,13 @@ function initHatPatternSummaryWorkspace(root: HTMLElement): void {
           return;
         }
         applyPersistChrome();
+        if (resolveHatSummaryAfterPersistNext(written.persist) === "confirm") {
+          const confirmationChoice = await promptEditPatternSaveConfirmation(root);
+          if (confirmationChoice === "view") {
+            navigateAfterPrimarySuccess();
+          }
+          return;
+        }
       }
       await continueAfterPersist();
     } finally {
