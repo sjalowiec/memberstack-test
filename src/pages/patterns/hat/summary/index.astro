@@ -2,10 +2,11 @@
 /**
  * Hat Summary/Edit page — shared PatternSummaryEditWorkspace Lego block.
  * Entry paths (sweater `generated=1` convention):
- * - From builder (`?generated=1`): review choices → View My Pattern → finished pattern.
+ * - From builder (`?generated=1`): guests View My Pattern → finished pattern.
+ *   Members Save / Update stay on Summary/Edit unless they choose View Updated Pattern.
  *   Back to Builder returns to the builder without writing summary edits.
- * - From Edit Pattern (`?edit=1` or bare): Update Pattern → finished pattern.
- *   Cancel returns to the finished pattern without writing.
+ * - From Edit Pattern (`?edit=1` or bare): Update Pattern stays on Summary/Edit unless
+ *   View Updated Pattern. Cancel returns to the finished pattern without writing.
  * Free / ungated — no membership required to complete builder → summary → pattern.
  * Guest email capture (lead, not membership) runs on View My Pattern before the finished page.
  */

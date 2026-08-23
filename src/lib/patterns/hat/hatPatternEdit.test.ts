@@ -1013,7 +1013,7 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryPage).toContain("pattern-editable-pencil.css");
     expect(sleevelessPatternPage).toContain("pattern-editable-pencil.css");
     expect(sleevelessPatternPage).toContain("pattern-editable-heading");
-    expect(summaryScript).toContain("isEditingSavedHatProject");
+    expect(summaryScript).toContain("hatSummaryShouldShowProjectDetails");
     expect(summaryScript).toContain("readHatActiveProjectId");
     expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
     expect(summaryWorkspace).toContain("sl-edit-workspace__measure-actions");
@@ -1069,7 +1069,7 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryWorkspaceCss).toContain("flex-direction: column");
   });
 
-  it("initial Summary/Edit action creates and opens the finished pattern", () => {
+  it("initial Summary/Edit action writes the draft; guests open the finished pattern", () => {
     expect(hatSummaryPrimaryLabel("from-builder")).toBe(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL);
     expect(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL).toBe("View My Pattern");
     expect(HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL.toLowerCase()).not.toContain("save");
@@ -1103,7 +1103,24 @@ describe("hat Summary/Edit page wiring", () => {
     expect(writeFn).not.toContain("persistHatPatternProject");
     expect(updateFn).toContain("writeCurrentSummaryDraft");
     expect(updateFn).toContain("persistHatPatternProject");
+    expect(updateFn).toContain("promptEditPatternSaveConfirmation");
     expect(updateFn).toContain("continueAfterPersist");
+  });
+
+  it("member Save / Update stays on Summary/Edit until View Updated Pattern", () => {
+    const updateStart = summaryScript.indexOf("async function updatePattern");
+    const cancelStart = summaryScript.indexOf("function cancelEdit");
+    const updateFn = summaryScript.slice(
+      updateStart,
+      cancelStart > updateStart ? cancelStart : updateStart + 2500,
+    );
+    expect(updateFn).toContain("promptEditPatternSaveConfirmation");
+    expect(updateFn).toContain('confirmationChoice === "view"');
+    expect(updateFn).toContain("navigateAfterPrimarySuccess");
+    expect(updateFn).toContain("resolveHatSummaryAfterPersistNext");
+    expect(updateFn).not.toMatch(
+      /applyPersistChrome\(\);\s*await continueAfterPersist\(\)/,
+    );
   });
 
   it("guest email continuation rewrites the current summary values before navigating", () => {

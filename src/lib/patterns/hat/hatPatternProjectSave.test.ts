@@ -10,9 +10,11 @@ import {
 } from "./hatSavedProject";
 import {
   hatDraftAsSavePattern,
+  hatSummaryShouldShowProjectDetails,
   persistHatPatternProject,
   resolveHatPatternPersistAction,
   resolveHatPatternPersistActionFromViewer,
+  resolveHatSummaryAfterPersistNext,
 } from "./hatPatternProjectSave";
 import {
   buildProjectRecord,
@@ -128,6 +130,56 @@ describe("Hat Save Pattern vs Update Pattern source of truth", () => {
         entryPath: "from-finished-pattern",
       }).persist,
     ).toBe("local-only");
+  });
+
+  it("shows Name/Notes for members before the first save, and hides them for guests", () => {
+    expect(hatSummaryShouldShowProjectDetails(true)).toBe(true);
+    expect(hatSummaryShouldShowProjectDetails(false)).toBe(false);
+    expect(summaryScript).toContain("hatSummaryShouldShowProjectDetails");
+    expect(summaryScript).toContain("titleField.hidden = !showProjectDetails");
+    expect(summaryScript).not.toMatch(
+      /titleField\.hidden = ![\s\S]{0,40}isEditingSavedHatProject/,
+    );
+  });
+
+  it("after member create/update stays on Summary/Edit unless View Updated Pattern", () => {
+    expect(resolveHatSummaryAfterPersistNext("create")).toBe("confirm");
+    expect(resolveHatSummaryAfterPersistNext("update")).toBe("confirm");
+    expect(resolveHatSummaryAfterPersistNext("local-only")).toBe("guest-continue");
+    expect(summaryScript).toContain("promptEditPatternSaveConfirmation");
+    expect(summaryScript).toContain("resolveHatSummaryAfterPersistNext");
+    const updateStart = summaryScript.indexOf("async function updatePattern");
+    const cancelStart = summaryScript.indexOf("function cancelEdit");
+    const updateFn = summaryScript.slice(
+      updateStart,
+      cancelStart > updateStart ? cancelStart : updateStart + 2500,
+    );
+    expect(updateFn).toContain("persistHatPatternProject");
+    expect(updateFn).toContain('confirmationChoice === "view"');
+    expect(updateFn).toContain("navigateAfterPrimarySuccess");
+    expect(updateFn).not.toMatch(
+      /applyPersistChrome\(\);\s*await continueAfterPersist\(\)/,
+    );
+  });
+
+  it("guest View My Pattern still continues through lead capture, not the member confirmation", () => {
+    const updateStart = summaryScript.indexOf("async function updatePattern");
+    const cancelStart = summaryScript.indexOf("function cancelEdit");
+    const updateFn = summaryScript.slice(
+      updateStart,
+      cancelStart > updateStart ? cancelStart : updateStart + 2500,
+    );
+    expect(updateFn).toContain("continueAfterPersist");
+    expect(updateFn).toContain('=== "confirm"');
+    expect(updateFn.indexOf("promptEditPatternSaveConfirmation")).toBeLessThan(
+      updateFn.indexOf("continueAfterPersist"),
+    );
+    const bindStart = summaryScript.indexOf("bindHatLeadForm(root");
+    const bindFn = summaryScript.slice(bindStart, bindStart + 220);
+    expect(bindFn).toContain("writeCurrentSummaryDraft");
+    expect(bindFn).toContain("navigateAfterPrimarySuccess");
+    expect(bindFn).not.toContain("persistHatPatternProject");
+    expect(bindFn).not.toContain("promptEditPatternSaveConfirmation");
   });
 });
 
@@ -279,6 +331,21 @@ describe("Hat member save → update → same project lifecycle", () => {
     expect(summaryScript).toContain("bindHatPatternWorkspaceAccessLifecycle");
     expect(summaryScript).not.toContain("smartSaveCustomPatternProject");
     expect(summaryScript).not.toContain("writeActiveCustomPatternProjectId");
+  });
+
+  it("first member save stamps the visible title and notes onto the draft before persist", () => {
+    const writeStart = summaryScript.indexOf("function writeCurrentSummaryDraft");
+    const updateStart = summaryScript.indexOf("async function updatePattern");
+    const writeFn = summaryScript.slice(
+      writeStart,
+      updateStart > writeStart ? updateStart : writeStart + 2500,
+    );
+    expect(writeFn).toContain("requestedName");
+    expect(writeFn).toContain("notesFieldApi.getNotes");
+    expect(writeFn).toContain("applyHatPatternProjectDetailsToDraft");
+    expect(writeFn).toContain("titleField && !titleField.hidden");
+    expect(writeFn).not.toContain("isEditingSavedHatProject");
+    expect(writeFn).not.toContain("persistHatPatternProject");
   });
 });
 

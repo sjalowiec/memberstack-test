@@ -159,8 +159,8 @@ describe("Hat finished-pattern workspace access (free view vs member save)", () 
   it("keeps Hat rename available for a saved Hat project (not gated by free-pattern view)", () => {
     expect(hatSummaryPage).toContain("data-hat-edit-title");
     expect(hatSummaryScript).toContain("persistHatPatternProject");
-    expect(hatSummaryScript).toContain("titleField.hidden = !saved");
-    expect(hatSummaryScript).toContain("isEditingSavedHatProject");
+    expect(hatSummaryScript).toContain("titleField.hidden = !showProjectDetails");
+    expect(hatSummaryScript).toContain("hatSummaryShouldShowProjectDetails");
     expect(hatSummaryScript).not.toContain("shouldShowHatTemporaryPatternNotice");
     expect(hatSummaryScript).not.toContain("resolveHatPatternPersistNotice");
   });
