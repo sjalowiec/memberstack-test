@@ -159,6 +159,7 @@ import {
   resolveSleevelessFrontDiagramSrc,
 } from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "../lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts";
+import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackNotationSvg } from "../lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
@@ -1250,6 +1251,27 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     }
   }
 
+  function mountFrontStsRowsSvgMarkup(hostEl, svgText, hydrateGen) {
+    const parser = new DOMParser();
+    let doc = parser.parseFromString(svgText, "image/svg+xml");
+    let svg = doc.documentElement;
+    if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+      doc = parser.parseFromString(svgText, "text/xml");
+      svg = doc.documentElement;
+    }
+    if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+      const pe = doc.querySelector("parsererror");
+      throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+    }
+
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", FRONT_DIAGRAM_STS_ROWS_ALT);
+    svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+    hostEl.innerHTML = svg.outerHTML;
+  }
+
   function mountFrontNotationSvgMarkup(hostEl, svgText, hydrateGen) {
     const parser = new DOMParser();
     let doc = parser.parseFromString(svgText, "image/svg+xml");
@@ -1314,6 +1336,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (!(el instanceof HTMLElement)) return;
     if (mode === "shaping-notation") {
       await inlineFrontJapaneseNotationSvg(el, result, patternData, hydrateGeneration);
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, patternData);
+    if (generatedSvg) {
+      mountFrontStsRowsSvgMarkup(el, generatedSvg, hydrateGen);
       return;
     }
     const replacements = buildSleevelessDiagramReplacements(result, unit, {

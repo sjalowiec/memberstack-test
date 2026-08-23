@@ -369,6 +369,7 @@ describe("finished-pattern families use the shared diagram tabs", () => {
     expect(script).toContain("data-sleeveless-front-diagram-mode-btn");
     expect(script).toContain("hydrateSleevelessBackDiagram");
     expect(script).toContain("tryBuildLiveSleevelessFrontVNeckNotationSvg");
+    expect(script).toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
     expect(script).toContain("resolveDropShoulderBackDiagramSvg");
     expect(script).not.toContain('role="group" aria-label="${modeToggleGroupLabel}"');
   });
