@@ -31,6 +31,29 @@ export const SAME_SIZE_V_NECK_COMPARISON_DEPTHS = {
   deepBeforeArmhole: 10,
 } as const;
 
+export const SAME_SIZE_ROUND_NECK_DEPTHS = {
+  typical: 3,
+  shallow: 2,
+} as const;
+
+export function sameSizeRoundNeckPattern(frontNeckDepth: number): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "misses",
+      selectedMeasurements: {
+        ...SAME_SIZE_V_NECK_COMPARISON_MEASUREMENTS,
+        front_neck_depth: frontNeckDepth,
+      },
+    },
+    style: { recipientCategory: "misses", neckline: "round", garmentStyle: "pullover" },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 4,
+      gaugeRowsPerInch: 7,
+      availableNeedles: 200,
+    },
+  };
+}
+
 export function sameSizeVNeckComparisonPattern(frontNeckDepth: number): Record<string, unknown> {
   return {
     fit: {
@@ -112,8 +135,14 @@ function buildCase(
       armholeDecreaseStsEachSide: model?.armhole.decreaseStsEachSide ?? "",
       neckStartRc: model?.neckline.startGarmentRc ?? "",
       shoulderStartRc: model?.shoulder.startGarmentRc ?? "",
-      beginsBeforeArmhole: model?.neckline.beginsBeforeArmhole ?? false,
+      necklineStyle: model?.neckline.style ?? "",
+      beginsBeforeArmhole:
+        model?.neckline.style === "v-neck" ? model.neckline.beginsBeforeArmhole : false,
       overlapsNeckline: model?.armhole.overlapsNeckline ?? false,
+      roundStrategy: model?.neckline.style === "round" ? model.neckline.strategy : "",
+      centerHeld: model?.neckline.style === "round" ? model.neckline.centerHeld : "",
+      centerBindOffStitches:
+        model?.neckline.style === "round" ? model.neckline.centerBindOffStitches : "",
     },
   };
 }
@@ -141,6 +170,42 @@ export function buildSleevelessFrontStsRowsSameSizeVNeckComparisonCases(): Sleev
       "Same size · Deep V",
       "Misses 39\" · 10\" front neck · V starts before armhole",
       sameSizeVNeckComparisonPattern(SAME_SIZE_V_NECK_COMPARISON_DEPTHS.deepBeforeArmhole),
+    ),
+  ];
+}
+
+/** Typical and shallow round on the same misses body. */
+export function buildSleevelessFrontStsRowsRoundNeckPreviewCases(): SleevelessFrontStsRowsPreviewCase[] {
+  return [
+    buildCase(
+      "typical-round",
+      "Typical round",
+      "Misses 39\" · 3\" front neck · pullover round",
+      sameSizeRoundNeckPattern(SAME_SIZE_ROUND_NECK_DEPTHS.typical),
+    ),
+    buildCase(
+      "shallow-round",
+      "Shallow round",
+      "Misses 39\" · 2\" front neck · same body, shallower scoop",
+      sameSizeRoundNeckPattern(SAME_SIZE_ROUND_NECK_DEPTHS.shallow),
+    ),
+  ];
+}
+
+/** Same misses body and measurements; only neckline style changes. */
+export function buildSleevelessFrontStsRowsSameBodyRoundVsVCases(): SleevelessFrontStsRowsPreviewCase[] {
+  return [
+    buildCase(
+      "same-body-round",
+      "Same body · Round",
+      "Misses 39\" · 3\" front neck · U scoop",
+      sameSizeRoundNeckPattern(SAME_SIZE_ROUND_NECK_DEPTHS.typical),
+    ),
+    buildCase(
+      "same-body-v",
+      "Same body · V",
+      "Misses 39\" · 3\" front neck · V point",
+      sameSizeVNeckComparisonPattern(SAME_SIZE_ROUND_NECK_DEPTHS.typical),
     ),
   ];
 }

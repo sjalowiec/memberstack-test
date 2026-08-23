@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildSleevelessFrontStsRowsPreviewCases,
+  buildSleevelessFrontStsRowsRoundNeckPreviewCases,
+  buildSleevelessFrontStsRowsSameBodyRoundVsVCases,
   buildSleevelessFrontStsRowsSameSizeVNeckComparisonCases,
 } from "./sleevelessFrontStsRowsPreviewFixtures";
 
@@ -95,15 +97,60 @@ describe("buildSleevelessFrontStsRowsSameSizeVNeckComparisonCases", () => {
   });
 });
 
+describe("buildSleevelessFrontStsRowsRoundNeckPreviewCases", () => {
+  it("keeps upper-body width identical across typical and shallow round depths", () => {
+    const cases = buildSleevelessFrontStsRowsRoundNeckPreviewCases();
+    expect(cases.map((c) => c.id)).toEqual(["typical-round", "shallow-round"]);
+    for (const item of cases) {
+      expect(item.svg).toBeTruthy();
+      expect(item.svg).toContain('data-neckline-style="round"');
+      expect(item.svg).not.toMatch(/\bNaN\b/);
+    }
+    expect(cases[0]?.values.bustStitches).toBe(cases[1]?.values.bustStitches);
+    expect(cases[0]?.values.stitchesAfterArmhole).toBe(cases[1]?.values.stitchesAfterArmhole);
+    expect(cases[0]?.values.shoulderStitchesPerSide).toBe(cases[1]?.values.shoulderStitchesPerSide);
+    expect(cases[0]?.values.necklineStitches).toBe(cases[1]?.values.necklineStitches);
+    expect(Number(cases[0]?.values.neckDepthRows)).toBeGreaterThan(Number(cases[1]?.values.neckDepthRows));
+    expect(svgNum(cases[0]!.svg!, "data-after-armhole-width")).toBeCloseTo(
+      svgNum(cases[1]!.svg!, "data-after-armhole-width"),
+      1,
+    );
+    expect(svgNum(cases[0]!.svg!, "data-neck-width")).toBeCloseTo(svgNum(cases[1]!.svg!, "data-neck-width"), 1);
+  });
+});
+
+describe("buildSleevelessFrontStsRowsSameBodyRoundVsVCases", () => {
+  it("compares round and V on the same body without changing upper width", () => {
+    const cases = buildSleevelessFrontStsRowsSameBodyRoundVsVCases();
+    expect(cases.map((c) => c.id)).toEqual(["same-body-round", "same-body-v"]);
+    expect(cases[0]?.values.necklineStyle).toBe("round");
+    expect(cases[1]?.values.necklineStyle).toBe("v-neck");
+    expect(cases[0]?.values.bustStitches).toBe(cases[1]?.values.bustStitches);
+    expect(cases[0]?.values.stitchesAfterArmhole).toBe(cases[1]?.values.stitchesAfterArmhole);
+    expect(cases[0]?.values.shoulderStitchesPerSide).toBe(cases[1]?.values.shoulderStitchesPerSide);
+    expect(cases[0]?.values.necklineStitches).toBe(cases[1]?.values.necklineStitches);
+    expect(cases[0]?.svg).toContain("C ");
+    expect(cases[1]?.svg).toContain('data-role="v-point"');
+    expect(svgNum(cases[0]!.svg!, "data-after-armhole-width")).toBeCloseTo(
+      svgNum(cases[1]!.svg!, "data-after-armhole-width"),
+      1,
+    );
+  });
+});
+
 describe("Sleeveless Front Stitches & Rows preview route wiring", () => {
   it("dev preview page uses the fixture builder and does not load site auth layouts", () => {
     const page = readFileSync(resolve("src/pages/dev/sleeveless-front-sts-rows-preview.astro"), "utf8");
     expect(page).toContain("buildSleevelessFrontStsRowsPreviewCases");
     expect(page).toContain("buildSleevelessFrontStsRowsSameSizeVNeckComparisonCases");
+    expect(page).toContain("buildSleevelessFrontStsRowsRoundNeckPreviewCases");
+    expect(page).toContain("buildSleevelessFrontStsRowsSameBodyRoundVsVCases");
     expect(page).toContain("isSleevelessFrontStsRowsPreviewProductionBlocked");
     expect(page).toContain("data-preview-fixture");
     expect(page).toContain("data-preview-section");
     expect(page).toContain("same-size-v-neck");
+    expect(page).toContain("same-size-round-neck");
+    expect(page).toContain("same-body-round-vs-v");
     expect(page).not.toMatch(/layouts\/Layout/);
     expect(page).not.toMatch(/layouts\/BaseLayout/);
     expect(page).not.toMatch(/memberstack\.(js|com)|data-memberstack/i);

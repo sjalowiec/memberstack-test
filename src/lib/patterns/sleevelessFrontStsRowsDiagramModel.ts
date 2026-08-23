@@ -1,15 +1,17 @@
 /**
- * Data model for a future Sleeveless Front Stitches & Rows diagram.
+ * Data model for the Sleeveless Front Stitches & Rows diagram.
  *
- * Scope (this release): pullover, V-neck, straight body.
- * Reads a finalized {@link SleevelessBackPatternResult} with the same helpers
- * the live V-neck notation generator uses. No pattern math, no SVG.
+ * Scope: pullover, V-neck or round neck, straight body.
+ * Reads a finalized {@link SleevelessBackPatternResult}. No pattern math, no SVG.
  */
 
 import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
 import { resolveSleevelessDiagramBodyShapeKind } from "./sleevelessDiagramBodyShapeSrc";
-import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
+import {
+  isSleevelessCardiganGarmentStyle,
+  isSleevelessVNeckChoice,
+} from "./sleevelessFrontDiagramSrc";
 import {
   isSleevelessPulloverVNeckFrontNotation,
   resolveFrontVNeckNotationRcModel,
@@ -17,6 +19,7 @@ import {
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { armholeBindOffDecreaseFromEachSide } from "./sleevelessBackJapaneseNotation";
+import { buildSleevelessRoundNeckShapingSchedule } from "./sleevelessRoundNeckShapingSchedule";
 import type { StitchDecreasePoint } from "./shapingNotationCompress";
 import { collectCompleteShoulderShapingPoints } from "./shoulderShapingNotation";
 
@@ -43,7 +46,7 @@ export type SleevelessFrontStsRowsDiagramRows = {
   rowsPerInch: number;
 };
 
-export type SleevelessFrontStsRowsDiagramNeckline = {
+export type SleevelessFrontStsRowsVNeckline = {
   style: "v-neck";
   startGarmentRc: number;
   divideGarmentRc: number;
@@ -53,6 +56,32 @@ export type SleevelessFrontStsRowsDiagramNeckline = {
   /** Right-neck inner decreases from the live front timeline (pullover is mirrored). */
   innerDecreasePoints: readonly StitchDecreasePoint[];
 };
+
+export type SleevelessFrontStsRowsRoundNeckline = {
+  style: "round";
+  startGarmentRc: number;
+  depthRows: number;
+  necklineStitches: number;
+  strategy: "deep-round" | "shallow-round";
+  centerBindOffStitches: number;
+  centerHeld: boolean;
+};
+
+export type SleevelessFrontStsRowsDiagramNeckline =
+  | SleevelessFrontStsRowsVNeckline
+  | SleevelessFrontStsRowsRoundNeckline;
+
+export function isSleevelessFrontStsRowsVNeckline(
+  neckline: SleevelessFrontStsRowsDiagramNeckline,
+): neckline is SleevelessFrontStsRowsVNeckline {
+  return neckline.style === "v-neck";
+}
+
+export function isSleevelessFrontStsRowsRoundNeckline(
+  neckline: SleevelessFrontStsRowsDiagramNeckline,
+): neckline is SleevelessFrontStsRowsRoundNeckline {
+  return neckline.style === "round";
+}
 
 export type SleevelessFrontStsRowsDiagramArmhole = {
   startGarmentRc: number;
@@ -169,20 +198,28 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessFron
   };
 }
 
-/** True when this result is in the first Stitches & Rows model scope. */
+function isPulloverRoundFront(patternData?: unknown): boolean {
+  return (
+    !isSleevelessCardiganGarmentStyle(patternData ?? {}) && !isSleevelessVNeckChoice(patternData ?? {})
+  );
+}
+
+/** True when this result is in the Stitches & Rows model scope (pullover V or round, straight). */
 export function shouldBuildSleevelessFrontStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): boolean {
   if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
-  if (!isSleevelessPulloverVNeckFrontNotation(result, patternData)) return false;
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
-  return resolveSleevelessDiagramBodyShapeKind(patternData) === "straight";
+  if (resolveSleevelessDiagramBodyShapeKind(patternData) !== "straight") return false;
+  return (
+    isSleevelessPulloverVNeckFrontNotation(result, patternData) || isPulloverRoundFront(patternData)
+  );
 }
 
 /**
- * Pullover V-neck Front, straight-body measurement model for a future
- * Stitches & Rows renderer. Returns `null` when the result is out of scope
+ * Pullover Front, straight-body measurement model for the Stitches & Rows renderer.
+ * V-neck and round neck only. Returns `null` when the result is out of scope
  * so hydration can keep the existing Illustrator SVG.
  */
 export function buildSleevelessFrontStsRowsDiagramModel(
@@ -192,8 +229,8 @@ export function buildSleevelessFrontStsRowsDiagramModel(
   if (!shouldBuildSleevelessFrontStsRowsDiagramModel(result, patternData)) return null;
 
   const d = result.debug;
-  const rcModel = resolveFrontVNeckNotationRcModel(result);
-  const overlap = d.frontArmholeNecklineOverlap;
+  const isVNeck = isSleevelessPulloverVNeckFrontNotation(result, patternData);
+  const overlap = isVNeck ? d.frontArmholeNecklineOverlap : undefined;
   const bodyShaping = resolveBodyShaping(result);
 
   const hemStitches = bodyShaping.hemStitches;
@@ -235,14 +272,19 @@ export function buildSleevelessFrontStsRowsDiagramModel(
     return null;
   }
 
+  const vRcModel = isVNeck ? resolveFrontVNeckNotationRcModel(result) : null;
   const armholeStart = Math.max(
     0,
-    Math.floor(finiteOr(rcModel.armholeBoGarmentRc, d.armholeStartRow ?? 0)),
+    Math.floor(
+      finiteOr(isVNeck ? vRcModel?.armholeBoGarmentRc : undefined, d.armholeStartRow ?? 0),
+    ),
   );
-  const neckStartGarmentRc = Math.max(
-    0,
-    Math.floor(finiteOr(overlap?.divideGarmentRc, finiteOr(d.frontNecklineStartRC, armholeStart))),
-  );
+  const neckStartGarmentRc = isVNeck
+    ? Math.max(
+        0,
+        Math.floor(finiteOr(overlap?.divideGarmentRc, finiteOr(d.frontNecklineStartRC, armholeStart))),
+      )
+    : Math.max(0, Math.floor(finiteOr(d.frontNecklineStartRC, armholeStart)));
   const eachSide = d.armholeStitchesEachSide;
   if (!isFiniteNumber(eachSide) || eachSide <= 0) return null;
   const stitchesEachSide = Math.round(eachSide);
@@ -255,19 +297,34 @@ export function buildSleevelessFrontStsRowsDiagramModel(
   const lastDecrease = events
     .filter((ev) => ev.kind === "decrease")
     .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);
-  const lastArmholeGarmentRc = Math.max(
-    armholeStart,
-    Math.floor(finiteOr(overlap?.lastArmholeGarmentRc, lastDecrease)),
-  );
+  const lastArmholeGarmentRc = isVNeck
+    ? Math.max(armholeStart, Math.floor(finiteOr(overlap?.lastArmholeGarmentRc, lastDecrease)))
+    : Math.max(armholeStart, lastDecrease);
   const shoulderStartGarmentRc = Math.max(
     lastArmholeGarmentRc,
     Math.floor(finiteOr(d.shoulderStartRow, lastArmholeGarmentRc)),
   );
 
   const timeline = frontTimeline(result);
-  const innerDecreasePoints = collectInnerNeckDecreasePointsFromTimeline(timeline, "right");
   const shoulderPoints = frontShoulderPoints(result);
-  const beginsBeforeArmhole = overlap?.necklineBeginsBeforeArmhole === true;
+  const neckline: SleevelessFrontStsRowsDiagramNeckline = isVNeck
+    ? {
+        style: "v-neck",
+        startGarmentRc: neckStartGarmentRc,
+        divideGarmentRc: Math.max(
+          0,
+          Math.floor(finiteOr(overlap?.divideGarmentRc, neckStartGarmentRc)),
+        ),
+        depthRows: frontNeckDepthRows,
+        necklineStitches,
+        beginsBeforeArmhole: overlap?.necklineBeginsBeforeArmhole === true,
+        innerDecreasePoints: collectInnerNeckDecreasePointsFromTimeline(timeline, "right"),
+      }
+    : roundNecklineFromResult(result, {
+        startGarmentRc: neckStartGarmentRc,
+        depthRows: frontNeckDepthRows,
+        necklineStitches,
+      });
 
   return {
     piece: "front",
@@ -291,18 +348,7 @@ export function buildSleevelessFrontStsRowsDiagramModel(
       frontFinalRow,
       rowsPerInch: d.rowsPerInch,
     },
-    neckline: {
-      style: "v-neck",
-      startGarmentRc: neckStartGarmentRc,
-      divideGarmentRc: Math.max(
-        0,
-        Math.floor(finiteOr(overlap?.divideGarmentRc, neckStartGarmentRc)),
-      ),
-      depthRows: frontNeckDepthRows,
-      necklineStitches,
-      beginsBeforeArmhole,
-      innerDecreasePoints,
-    },
+    neckline,
     armhole: {
       startGarmentRc: armholeStart,
       lastGarmentRc: lastArmholeGarmentRc,
@@ -310,7 +356,7 @@ export function buildSleevelessFrontStsRowsDiagramModel(
       bindOffStsEachSide: bindOffSts,
       decreaseStsEachSide: decreaseSts,
       events,
-      overlapsNeckline: overlap != null,
+      overlapsNeckline: isVNeck && overlap != null,
     },
     shoulder: {
       startGarmentRc: shoulderStartGarmentRc,
@@ -318,5 +364,30 @@ export function buildSleevelessFrontStsRowsDiagramModel(
       points: shoulderPoints,
     },
     bodyShaping,
+  };
+}
+
+function roundNecklineFromResult(
+  result: SleevelessBackPatternResult,
+  args: { startGarmentRc: number; depthRows: number; necklineStitches: number },
+): SleevelessFrontStsRowsRoundNeckline {
+  const d = result.debug;
+  const schedule = buildSleevelessRoundNeckShapingSchedule(frontTimeline(result));
+  const strategy: "deep-round" | "shallow-round" =
+    d.frontNeckRoundNecklineStrategy === "shallow-round" ||
+    (d.frontNeckRoundNecklineStrategy !== "deep-round" && schedule?.centerHeld === true)
+      ? "shallow-round"
+      : "deep-round";
+  return {
+    style: "round",
+    startGarmentRc: args.startGarmentRc,
+    depthRows: args.depthRows,
+    necklineStitches: args.necklineStitches,
+    strategy,
+    centerBindOffStitches: Math.max(
+      0,
+      Math.round(finiteOr(d.frontCenterNeckBindOffStitches, schedule?.centerStitches ?? 0)),
+    ),
+    centerHeld: schedule?.centerHeld === true || strategy === "shallow-round",
   };
 }

@@ -12,6 +12,8 @@ import {
 } from "../../lib/dev/sleevelessFrontStsRowsPreviewAccess";
 import {
   buildSleevelessFrontStsRowsPreviewCases,
+  buildSleevelessFrontStsRowsRoundNeckPreviewCases,
+  buildSleevelessFrontStsRowsSameBodyRoundVsVCases,
   buildSleevelessFrontStsRowsSameSizeVNeckComparisonCases,
 } from "../../lib/patterns/sleevelessFrontStsRowsPreviewFixtures";
 
@@ -27,6 +29,20 @@ if (
 }
 
 const sections = [
+  {
+    id: "same-size-round-neck",
+    title: "Same-garment-size round neck",
+    lede:
+      "Typical and shallow round on the same misses body. Neck depth should change the U scoop without changing bust, after-armhole, shoulder, or neckline widths.",
+    cases: buildSleevelessFrontStsRowsRoundNeckPreviewCases(),
+  },
+  {
+    id: "same-body-round-vs-v",
+    title: "Same body · round vs V",
+    lede:
+      "Identical garment measurements. Only the neckline style changes, so upper-body width should match and the opening should be a U versus a V.",
+    cases: buildSleevelessFrontStsRowsSameBodyRoundVsVCases(),
+  },
   {
     id: "same-size-v-neck",
     title: "Same-garment-size V-neck comparison",
@@ -171,9 +187,8 @@ const sections = [
     <p class="banner">Developer preview · not connected to the pattern tab</p>
     <h1>Sleeveless Front Stitches &amp; Rows</h1>
     <p class="lede">
-      Generated pullover V-neck Front diagrams from the canonical model. The first row holds garment
-      size constant so neckline depth can be judged without a width change. The second row keeps the
-      mixed-size renderer-test fixtures.
+      Generated pullover Front diagrams from the canonical model: same-size round depths, same-body
+      round vs V, same-size V depths, then the mixed-size renderer-test fixtures.
     </p>
     {
       sections.map((section) => (
