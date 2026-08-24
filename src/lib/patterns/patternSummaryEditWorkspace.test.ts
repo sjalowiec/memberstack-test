@@ -84,6 +84,30 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     );
   });
 
+  it("keeps one primary vertical scroll on the overlay workspace at two-column", () => {
+    expect(workspaceCss).toMatch(
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
+    );
+    const twoColStart = workspaceCss.indexOf("@container sl-edit-workspace (min-width: 1100px)");
+    const stackedStart = workspaceCss.indexOf("@container sl-edit-workspace (max-width: 1099.98px)");
+    expect(twoColStart).toBeGreaterThan(-1);
+    expect(stackedStart).toBeGreaterThan(twoColStart);
+    const twoColBlock = workspaceCss.slice(twoColStart, stackedStart);
+    expect(twoColBlock).toContain("flex-direction: row");
+    expect(twoColBlock).toMatch(
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
+    );
+    expect(twoColBlock).not.toMatch(
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow:\s*hidden/s,
+    );
+    expect(twoColBlock).not.toMatch(
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__measure\s*\{[^}]*overflow:\s*hidden/s,
+    );
+    expect(twoColBlock).toMatch(
+      /\.sl-edit-workspace__layout\s*\{[^}]*align-items:\s*flex-start/s,
+    );
+  });
+
   it("renders compact measurement chips and stacks them on a narrow stage", () => {
     expect(chipAstro).toContain(PATTERN_SUMMARY_MEASURE_CHIP_CLASS);
     expect(chipAstro).toContain("data-measurement-target");

@@ -7,6 +7,10 @@
  *
  * Two-column vs stacked uses a container query on `.sl-edit-workspace` at
  * EDIT_WORKSPACE_TWO_COLUMN_MIN_PX (1100px), matching the sweater edit contract.
+ *
+ * Overlay editors (`.sl-edit-drawer--workspace`) use `.sl-edit-workspace__layout`
+ * as the single vertical scrollport at every breakpoint. Do not switch that
+ * container to `overflow: hidden` at two-column — columns must stay in flow.
  */
 
 .sl-edit-workspace {
@@ -588,12 +592,18 @@
     padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
   }
 
+  /*
+   * Overlay editors (Sleeveless / Drop Shoulder) keep the same scroll contract as
+   * stacked mode and Hat: `.sl-edit-workspace__layout` is the one vertical
+   * scrollport. Columns stay in document flow (`flex-start`) so Quick edits and
+   * Measurements grow with their content instead of clipping at the viewport.
+   */
   .sl-edit-drawer--workspace .sl-edit-workspace__layout {
-    align-items: stretch;
+    align-items: flex-start;
     flex: 1 1 auto;
     min-height: 0;
-    max-height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .sl-edit-workspace__quick {
@@ -622,12 +632,6 @@
   .sl-edit-workspace__measure {
     flex: 1 1 0;
     min-width: 0;
-  }
-
-  .sl-edit-drawer--workspace .sl-edit-workspace__measure {
-    min-height: 0;
-    max-height: 100%;
-    overflow: hidden;
   }
 
   .ps-measure-stage {
