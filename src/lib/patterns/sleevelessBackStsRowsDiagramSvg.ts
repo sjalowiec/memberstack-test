@@ -77,6 +77,7 @@ type Frame = {
   hemY: number;
   armholeStartY: number;
   lastArmholeY: number;
+  lastDecreaseRc: number;
   neckStartY: number;
   shoulderY: number;
   neckCornerY: number;
@@ -237,6 +238,14 @@ function isSupportedModel(model: SleevelessBackStsRowsDiagramModel): boolean {
   );
 }
 
+/** Last decrease RC — same visual armhole corner the Front renderer uses. */
+function lastArmholeDecreaseRc(model: SleevelessBackStsRowsDiagramModel): number {
+  const start = model.armhole.startGarmentRc;
+  return model.armhole.events
+    .filter((ev) => ev.kind === "decrease")
+    .reduce((max, ev) => Math.max(max, ev.garmentRc), start);
+}
+
 function buildFrame(model: SleevelessBackStsRowsDiagramModel): { frame: Frame; bands: YBand[] } {
   const hemRc = Math.max(0, model.rows.hemRows);
   const armholeStart = Math.max(0, model.armhole.startGarmentRc);
@@ -285,9 +294,15 @@ function buildFrame(model: SleevelessBackStsRowsDiagramModel): { frame: Frame; b
   const bottomY = yAtRc(0, bands);
   const hemY = hemRc > 0 ? yAtRc(hemRc, bands) : bottomY;
   const armholeStartY = yAtRc(armholeStart, bands);
-  const lastArmholeY = yAtRc(model.armhole.lastGarmentRc, bands);
-  const rcMappedNeckStartY = yAtRc(neckStart, bands);
+  const lastDecreaseRc = lastArmholeDecreaseRc(model);
   const shoulderY = yAtRc(shoulderRc, bands);
+  /**
+   * Front reaches post-armhole width at the last decrease, then goes straight
+   * to the shoulder. Back model `lastGarmentRc` is armhole-end / shoulder, which
+   * stretched the bind-off step into a boxy hypotenuse. Presentation only.
+   */
+  const lastArmholeY = clamp(yAtRc(lastDecreaseRc, bands), shoulderY, armholeStartY);
+  const rcMappedNeckStartY = yAtRc(neckStart, bands);
   const lastBand = bands[bands.length - 1];
   const shoulderBandH = lastBand
     ? Math.max(8, shoulderY - lastBand.yTop)
@@ -324,6 +339,7 @@ function buildFrame(model: SleevelessBackStsRowsDiagramModel): { frame: Frame; b
       hemY,
       armholeStartY,
       lastArmholeY,
+      lastDecreaseRc,
       neckStartY,
       shoulderY,
       neckCornerY,
@@ -724,7 +740,7 @@ export function buildSleevelessBackStsRowsDiagramSvg(
   const desc = `${model.widths.hemStitches} sts cast on. ${model.rows.expectedGarmentRows} rows. Back neck ${model.widths.necklineStitches} sts, ${model.neckline.depthRows} rows deep.`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-back-sts-rows-svg" viewBox="0 0 ${VB_W} ${VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="sleeveless-back-sts-rows-title" data-sleeveless-back-sts-rows-generated="true" data-supported="true" data-piece="${escapeXml(model.piece)}" data-garment-style="${escapeXml(model.garmentStyle)}" data-body-shape="${escapeXml(model.bodyShape)}" data-neckline-style="${escapeXml(model.neckline.style)}" data-hem-sts="${fmtNum(model.widths.hemStitches)}" data-bust-sts="${fmtNum(model.widths.bustStitches)}" data-after-armhole-sts="${fmtNum(model.widths.stitchesAfterArmhole)}" data-neck-sts="${fmtNum(model.widths.necklineStitches)}" data-shoulder-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}" data-hem-width="${fmtNum(frame.hemWidth)}" data-bust-width="${fmtNum(frame.bodyWidth)}" data-after-armhole-width="${fmtNum(frame.afterWidth)}" data-true-after-width="${fmtNum(frame.trueAfterWidth)}" data-upper-scale="${fmtNum(frame.upperScale)}" data-neck-width="${fmtNum(frame.neckWidth)}" data-shoulder-side-width="${fmtNum(frame.shoulderSideWidth)}" data-px-per-stitch="${fmtNum(frame.pxPerStitch)}" data-cx="${fmtNum(frame.cx)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-after-left="${fmtNum(frame.afterLeft)}" data-after-right="${fmtNum(frame.afterRight)}" data-bo-left="${fmtNum(frame.boLeft)}" data-bo-right="${fmtNum(frame.boRight)}" data-neck-left="${fmtNum(frame.neckLeft)}" data-neck-right="${fmtNum(frame.neckRight)}" data-bottom-y="${fmtNum(frame.bottomY)}" data-hem-y="${fmtNum(frame.hemY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-first-decrease-y="${fmtNum(firstDecreaseY)}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-visual-hem-h="${fmtNum(frame.visualHemH)}" data-visual-body-h="${fmtNum(frame.visualBodyH)}" data-visual-armhole-h="${fmtNum(frame.visualArmholeH)}" data-visual-shoulder-h="${fmtNum(frame.visualShoulderH)}" data-visual-neck-h="${fmtNum(frame.visualNeckH)}" data-rc-mapped-neck-h="${fmtNum(frame.rcMappedNeckH)}" data-visual-garment-h="${fmtNum(frame.visualGarmentH)}" data-armhole-start-rc="${fmtNum(model.armhole.startGarmentRc)}" data-last-armhole-rc="${fmtNum(model.armhole.lastGarmentRc)}" data-neck-start-rc="${fmtNum(model.neckline.startGarmentRc)}" data-shoulder-start-rc="${fmtNum(model.shoulder.startGarmentRc)}" data-hem-rows="${fmtNum(model.rows.hemRows)}" data-body-length-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}" data-side-seam-rows="${fmtNum(model.rows.sideSeamRowsAboveHem)}" data-armhole-rows="${fmtNum(model.rows.armholeRows)}" data-neck-depth-rows="${fmtNum(model.neckline.depthRows)}" data-total-rows="${fmtNum(model.rows.expectedGarmentRows)}" data-bind-off-sts="${fmtNum(model.armhole.bindOffStsEachSide)}" data-decrease-sts="${fmtNum(model.armhole.decreaseStsEachSide)}" data-shoulder-contour="slope" data-shoulder-point-count="${model.shoulder.points.length}" data-round-strategy="${escapeXml(model.neckline.strategy)}" data-center-held="${model.neckline.centerHeld ? "true" : "false"}" data-center-bind-off-sts="${fmtNum(model.neckline.centerBindOffStitches)}" data-bind-off-rc="${fmtNum(bindOffEvent?.garmentRc ?? model.armhole.startGarmentRc)}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-back-sts-rows-svg" viewBox="0 0 ${VB_W} ${VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="sleeveless-back-sts-rows-title" data-sleeveless-back-sts-rows-generated="true" data-supported="true" data-piece="${escapeXml(model.piece)}" data-garment-style="${escapeXml(model.garmentStyle)}" data-body-shape="${escapeXml(model.bodyShape)}" data-neckline-style="${escapeXml(model.neckline.style)}" data-hem-sts="${fmtNum(model.widths.hemStitches)}" data-bust-sts="${fmtNum(model.widths.bustStitches)}" data-after-armhole-sts="${fmtNum(model.widths.stitchesAfterArmhole)}" data-neck-sts="${fmtNum(model.widths.necklineStitches)}" data-shoulder-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}" data-hem-width="${fmtNum(frame.hemWidth)}" data-bust-width="${fmtNum(frame.bodyWidth)}" data-after-armhole-width="${fmtNum(frame.afterWidth)}" data-true-after-width="${fmtNum(frame.trueAfterWidth)}" data-upper-scale="${fmtNum(frame.upperScale)}" data-neck-width="${fmtNum(frame.neckWidth)}" data-shoulder-side-width="${fmtNum(frame.shoulderSideWidth)}" data-px-per-stitch="${fmtNum(frame.pxPerStitch)}" data-cx="${fmtNum(frame.cx)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-after-left="${fmtNum(frame.afterLeft)}" data-after-right="${fmtNum(frame.afterRight)}" data-bo-left="${fmtNum(frame.boLeft)}" data-bo-right="${fmtNum(frame.boRight)}" data-neck-left="${fmtNum(frame.neckLeft)}" data-neck-right="${fmtNum(frame.neckRight)}" data-bottom-y="${fmtNum(frame.bottomY)}" data-hem-y="${fmtNum(frame.hemY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-last-decrease-rc="${fmtNum(frame.lastDecreaseRc)}" data-first-decrease-y="${fmtNum(firstDecreaseY)}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-visual-hem-h="${fmtNum(frame.visualHemH)}" data-visual-body-h="${fmtNum(frame.visualBodyH)}" data-visual-armhole-h="${fmtNum(frame.visualArmholeH)}" data-visual-shoulder-h="${fmtNum(frame.visualShoulderH)}" data-visual-neck-h="${fmtNum(frame.visualNeckH)}" data-rc-mapped-neck-h="${fmtNum(frame.rcMappedNeckH)}" data-visual-garment-h="${fmtNum(frame.visualGarmentH)}" data-armhole-start-rc="${fmtNum(model.armhole.startGarmentRc)}" data-last-armhole-rc="${fmtNum(model.armhole.lastGarmentRc)}" data-neck-start-rc="${fmtNum(model.neckline.startGarmentRc)}" data-shoulder-start-rc="${fmtNum(model.shoulder.startGarmentRc)}" data-hem-rows="${fmtNum(model.rows.hemRows)}" data-body-length-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}" data-side-seam-rows="${fmtNum(model.rows.sideSeamRowsAboveHem)}" data-armhole-rows="${fmtNum(model.rows.armholeRows)}" data-neck-depth-rows="${fmtNum(model.neckline.depthRows)}" data-total-rows="${fmtNum(model.rows.expectedGarmentRows)}" data-bind-off-sts="${fmtNum(model.armhole.bindOffStsEachSide)}" data-decrease-sts="${fmtNum(model.armhole.decreaseStsEachSide)}" data-shoulder-contour="slope" data-shoulder-point-count="${model.shoulder.points.length}" data-round-strategy="${escapeXml(model.neckline.strategy)}" data-center-held="${model.neckline.centerHeld ? "true" : "false"}" data-center-bind-off-sts="${fmtNum(model.neckline.centerBindOffStitches)}" data-bind-off-rc="${fmtNum(bindOffEvent?.garmentRc ?? model.armhole.startGarmentRc)}">`,
     `<title id="sleeveless-back-sts-rows-title">${title}</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
