@@ -656,15 +656,18 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
   const rightLabelX = Math.min(VB_W - 12, rightArrowX + 22);
   const cardigan = isCardiganFrontModel(model);
   const cardiganV = cardigan && model.neckline.style === "v-neck";
+  const cardiganRound = cardigan && model.neckline.style === "round";
   const neckDepthX = cardiganV
     ? Math.max(totalArrowX + 12, frame.left - 14)
-    : cardigan
-      ? Math.min(frame.neckRight - 8, frame.left + Math.max(18, frame.neckWidth * 0.35))
+    : cardiganRound
+      ? Math.max(totalArrowX + 10, frame.left - 16)
       : Math.min(frame.cx - 22, frame.neckLeft - 12);
-  const neckDepthLabelX = cardiganV ? leftGutterLabelX : neckDepthX - 20;
+  const neckDepthLabelX = cardiganV || cardiganRound ? leftGutterLabelX : neckDepthX - 20;
   const neckDepthLabelY = cardiganV
     ? Math.max(52, Math.min((frame.neckCornerY + frame.neckStartY) / 2, frame.shoulderTopY + 36))
-    : undefined;
+    : cardiganRound
+      ? (frame.neckCornerY + frame.neckStartY) / 2
+      : undefined;
   const parts: string[] = [];
 
   const totalLengthLines = [
@@ -801,10 +804,14 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
 
   const neckArrowY = cardiganV
     ? frame.shoulderTopY - 12
-    : Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
+    : cardiganRound
+      ? frame.shoulderTopY - 10
+      : Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
   const neckLabelY = cardiganV
     ? neckArrowY - 20
-    : Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
+    : cardiganRound
+      ? frame.shoulderTopY - 22
+      : Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
   parts.push(
     horizontalArrow(
       neckArrowY,
