@@ -19,6 +19,10 @@ import {
   pulloverRoundFrontShoulderNotationLines,
   pulloverRoundFrontShoulderPoints,
   shouldUseGeneratedSleevelessFrontRoundNotation,
+  SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_CLEARANCE,
+  SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_SAFE_MAX_X,
+  SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION,
+  SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC,
   SLEEVELESS_FRONT_ROUND_NOTATION_VIEWBOX,
   tryBuildLiveSleevelessFrontRoundNotationSvg,
 } from "./sleevelessFrontRoundShapingNotationDiagramSvg";
@@ -126,6 +130,20 @@ function expectValidSvg(svg: string): void {
   expect(svg).not.toMatch(/\bNaN\b/);
   expect(svg).not.toMatch(/\bInfinity\b/);
   expect(svg).not.toMatch(/\bundefined\b/);
+}
+
+type TextPos = { x: number; y: number; fs: number; text: string };
+
+function textPositions(svg: string, role: string): TextPos[] {
+  const tags = [
+    ...svg.matchAll(new RegExp(`<text(?=[^>]*data-role="${role}")([^>]*)>([^<]*)</text>`, "g")),
+  ];
+  return tags.map((m) => ({
+    x: Number(/ x="([^"]+)"/.exec(m[1])?.[1]),
+    y: Number(/ y="([^"]+)"/.exec(m[1])?.[1]),
+    fs: Number(/font-size="([^"]+)"/.exec(m[1])?.[1]),
+    text: m[2] ?? "",
+  }));
 }
 
 describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
@@ -273,6 +291,146 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
     expect(svg).toContain('data-role="front-neck-path"');
     expect(svg).toContain("C ");
   });
+
+  it("places neckline shaping inside the scoop above the center bind-off", () => {
+    const pattern = roundPulloverPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
+    const shaping = textPositions(svg, "neck-shaping");
+    const bo = textPositions(svg, "neck-bo");
+    expect(shaping.length).toBeGreaterThan(0);
+    expect(bo).toHaveLength(1);
+
+    const neckLeft = svgNum(svg, "data-neck-left");
+    const neckRight = svgNum(svg, "data-neck-right");
+    const neckCornerY = svgNum(svg, "data-neck-corner-y");
+    const neckStartY = svgNum(svg, "data-neck-start-y");
+    const armholeStartY = svgNum(svg, "data-armhole-start-y");
+    const lastShapingY = Math.max(...shaping.map((p) => p.y));
+    const firstShapingY = Math.min(...shaping.map((p) => p.y));
+
+    for (const pos of [...shaping, ...bo]) {
+      expect(pos.x).toBeGreaterThan(neckLeft);
+      expect(pos.x).toBeLessThan(neckRight);
+      expect(pos.x).toBeCloseTo(svgNum(svg, "data-cx"), 5);
+    }
+    expect(firstShapingY).toBeGreaterThanOrEqual(neckCornerY);
+    expect(lastShapingY).toBeLessThan(bo[0]!.y);
+    expect(bo[0]!.y).toBeCloseTo(neckStartY, 5);
+    expect(lastShapingY).toBeLessThan(armholeStartY);
+    expect(bo[0]!.y).toBeLessThan(armholeStartY);
+    expect(firstShapingY).toBeLessThan(161);
+    expect(lastShapingY).toBeLessThan(181);
+  });
+
+  it("places the armhole block next to the right armhole edge", () => {
+    const pattern = roundPulloverPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
+    const armhole = [...textPositions(svg, "armhole-bo"), ...textPositions(svg, "armhole-shaping")];
+    expect(armhole.length).toBeGreaterThan(0);
+    const afterRight = svgNum(svg, "data-after-right");
+    const previousCanvasSlotX = 320;
+    for (const pos of armhole) {
+      expect(pos.x).toBeGreaterThan(afterRight);
+      expect(pos.x).toBeLessThan(previousCanvasSlotX);
+      expect(pos.x).toBeLessThanOrEqual(SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_SAFE_MAX_X);
+      expect(pos.x - afterRight).toBeLessThan(previousCanvasSlotX - afterRight);
+      expect(pos.x - afterRight).toBeGreaterThanOrEqual(
+        SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_CLEARANCE - 0.01,
+      );
+    }
+  });
+
+  it("places shoulder notation next to the right shoulder slope", () => {
+    const pattern = roundPulloverPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
+    const shoulder = textPositions(svg, "shoulder-shaping");
+    expect(shoulder.length).toBeGreaterThan(0);
+    const neckRight = svgNum(svg, "data-neck-right");
+    const afterRight = svgNum(svg, "data-after-right");
+    const shoulderY = svgNum(svg, "data-shoulder-y");
+    const neckCornerY = svgNum(svg, "data-neck-corner-y");
+    const previousLastBaseline = svgNum(svg, "data-shoulder-top-y") - 26;
+    const lowest = Math.max(...shoulder.map((p) => p.y));
+    for (const pos of shoulder) {
+      expect(pos.x).toBeGreaterThan(neckRight);
+      expect(pos.x).toBeLessThan(afterRight + 8);
+      expect(pos.y).toBeLessThan(shoulderY);
+    }
+    expect(lowest).toBeGreaterThan(previousLastBaseline);
+    expect(lowest).toBeGreaterThan(neckCornerY - 24);
+    expect(lowest).toBeLessThan(shoulderY);
+  });
+
+  it("uses the Stitches & Rows measurement type scale", () => {
+    const pattern = roundPulloverPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
+    const sts = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
+    expect(sts).toBeTruthy();
+    expect(sts).toContain('font-size="17"');
+    expect(sts).toContain('font-size="14"');
+    expect(SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION).toBe(17);
+    expect(SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC).toBe(14);
+
+    const primary = [
+      ...textPositions(svg, "neck-shaping"),
+      ...textPositions(svg, "neck-bo"),
+      ...textPositions(svg, "armhole-bo"),
+      ...textPositions(svg, "armhole-shaping"),
+      ...textPositions(svg, "shoulder-shaping"),
+      ...textPositions(svg, "cast-on"),
+    ];
+    expect(primary.length).toBeGreaterThan(0);
+    for (const pos of primary) {
+      expect(pos.fs).toBe(17);
+    }
+    const rc = [
+      ...textPositions(svg, "rc-caston"),
+      ...textPositions(svg, "rc-hem"),
+      ...textPositions(svg, "armhole-start-rc"),
+      ...textPositions(svg, "neck-start-rc"),
+      ...textPositions(svg, "shoulder-start-rc"),
+    ];
+    expect(rc.length).toBeGreaterThan(0);
+    for (const pos of rc) {
+      expect(pos.fs).toBe(14);
+    }
+    expect(svg).not.toContain('font-size="13"');
+    expect(svg).not.toContain('font-size="12"');
+  });
+
+  it("keeps notation strings and garment geometry unchanged", () => {
+    const pattern = roundPulloverPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
+    expect(svgAttr(svg, "data-neck-bo")).toBe(pulloverRoundFrontCenterNeckNotation(result));
+    expect(svgAttr(svg, "data-neck-shaping")).toBe(
+      pulloverRoundFrontNeckNotationLines(result).join("\n"),
+    );
+    expect(svgAttr(svg, "data-shoulder-shaping")).toBe(
+      pulloverRoundFrontShoulderNotationLines(result).join("\n"),
+    );
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe(
+      compressStitchDecreasePointsToNotationLines(
+        pulloverRoundFrontArmholeDecreasePoints(result),
+      ).join("\n"),
+    );
+    expect(svgNum(svg, "data-cx")).toBe(198);
+    expect(svgNum(svg, "data-neck-left")).toBe(165);
+    expect(svgNum(svg, "data-neck-right")).toBe(231);
+    expect(svgNum(svg, "data-after-right")).toBe(264);
+    expect(svgNum(svg, "data-bust-right")).toBe(308);
+    expect(svgNum(svg, "data-neck-start-y")).toBeCloseTo(139.03, 2);
+    expect(svgNum(svg, "data-neck-corner-y")).toBeCloseTo(88.43, 2);
+    expect(svgNum(svg, "data-shoulder-y")).toBeCloseTo(108.43, 2);
+    expect(svgNum(svg, "data-armhole-start-y")).toBeCloseTo(198.43, 2);
+    expect(svg).toContain('data-role="body-outline"');
+    expect(svg).toContain('data-role="front-neck-path"');
+    expect(svg).toContain('data-neck-contour="scoop"');
+  });
 });
 
 describe("live Pullover Front Round notation cutover", () => {
@@ -294,17 +452,33 @@ describe("live Pullover Front Round notation cutover", () => {
     expect(shouldUseGeneratedSleevelessFrontRoundNotation(result, pattern)).toBe(false);
     expect(tryBuildLiveSleevelessFrontRoundNotationSvg(result, pattern)).toBeNull();
     expect(shouldUseGeneratedSleevelessFrontVNeckNotation(result, pattern)).toBe(true);
-    expect(tryBuildLiveSleevelessFrontVNeckNotationSvg(result, pattern)).toBeTruthy();
+    const vSvg = tryBuildLiveSleevelessFrontVNeckNotationSvg(result, pattern);
+    expect(vSvg).toBeTruthy();
+    expect(vSvg).toContain('font-size="13"');
+    expect(vSvg).toContain('font-size="12"');
+    const vSource = readFileSync(
+      join(srcRoot, "lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts"),
+      "utf8",
+    );
+    expect(vSource).toContain("const FS_RC = 12;");
+    expect(vSource).toContain("const FS_NOTATION = 13;");
   });
 
   it("leaves Back generated renderer unchanged", () => {
     const pattern = roundPulloverPattern();
     const result = generateSleevelessBackPattern(pattern);
     expect(shouldUseGeneratedSleevelessBackNotation(result, pattern)).toBe(true);
-    expect(tryBuildLiveSleevelessBackNotationSvg(result, pattern)).toBeTruthy();
-    expect(tryBuildLiveSleevelessBackNotationSvg(result, pattern)).toContain(
-      "data-sleeveless-back-generated-notation",
+    const backSvg = tryBuildLiveSleevelessBackNotationSvg(result, pattern);
+    expect(backSvg).toBeTruthy();
+    expect(backSvg).toContain("data-sleeveless-back-generated-notation");
+    expect(backSvg).toContain('font-size="13"');
+    expect(backSvg).toContain('font-size="12"');
+    const backSource = readFileSync(
+      join(srcRoot, "lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts"),
+      "utf8",
     );
+    expect(backSource).toContain("const FS_RC = 12;");
+    expect(backSource).toContain("const FS_NOTATION = 13;");
   });
 
   it("falls back for A-line Round", () => {

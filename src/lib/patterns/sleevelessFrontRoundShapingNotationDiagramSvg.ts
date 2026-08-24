@@ -56,20 +56,28 @@ const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 const GUIDE = "#bdbec0";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
-const FS_RC = 12;
-const FS_NOTATION = 13;
-const NOTATION_GAP = 16;
-const NECK_NOTATION_GAP = 20;
-const ARMHOLE_NOTATION_GAP = Math.round(FS_NOTATION * 1.6);
+/** Match generated Front Stitches & Rows measurement type (`FS_STITCH` / `FS_SECONDARY`). */
+const FS_NOTATION = 17;
+const FS_RC = 14;
+const NOTATION_GAP = 18;
+const NECK_NOTATION_GAP = 18;
+const ARMHOLE_NOTATION_GAP = 18;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
+const ARMHOLE_LABEL_CLEARANCE = 10;
+const SHOULDER_LABEL_GAP = 14;
+const SHOULDER_OUTLINE_CLEARANCE = 10;
 
 const LABEL_GUTTER = 88;
 const RIGHT_PAD = 92;
 const TOP = 52;
-const ARMHOLE_LABEL_START_X = LABEL_GUTTER + (VB_W - LABEL_GUTTER - RIGHT_PAD) + 12;
 const ARMHOLE_LABEL_SAFE_MAX_X = VB_W - 16;
 const BOTTOM = 428;
 const REF_BUST_STS = 80;
+
+export const SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION = FS_NOTATION;
+export const SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC = FS_RC;
+export const SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_CLEARANCE = ARMHOLE_LABEL_CLEARANCE;
+export const SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_SAFE_MAX_X = ARMHOLE_LABEL_SAFE_MAX_X;
 
 function escapeXml(text: string): string {
   return String(text ?? "")
@@ -562,6 +570,26 @@ function drawSilhouette(frame: NotationFrame): string {
   ].join("");
 }
 
+/** Right-armhole outline X at a canvas Y (BO ledge → decrease slope → vertical). */
+function rightArmholeOutlineXAtY(frame: NotationFrame, y: number): number {
+  if (y >= frame.armholeStartY) return frame.right;
+  if (y <= frame.lastArmholeY) return frame.afterRight;
+  const span = frame.armholeStartY - frame.lastArmholeY;
+  if (!(span > 0)) return Math.max(frame.right, frame.afterRight);
+  const t = clamp((frame.armholeStartY - y) / span, 0, 1);
+  return frame.boRight + t * (frame.afterRight - frame.boRight);
+}
+
+/** Right-shoulder slope X at a canvas Y (armhole end → neck corner). */
+function rightShoulderOutlineXAtY(frame: NotationFrame, y: number): number {
+  if (y >= frame.shoulderY) return frame.afterRight;
+  if (y <= frame.neckCornerY) return frame.neckRight;
+  const span = frame.shoulderY - frame.neckCornerY;
+  if (!(span > 0)) return Math.max(frame.afterRight, frame.neckRight);
+  const t = clamp((frame.shoulderY - y) / span, 0, 1);
+  return frame.afterRight + t * (frame.neckRight - frame.afterRight);
+}
+
 function drawNotationStack(
   lines: readonly string[],
   x: number,
@@ -765,8 +793,6 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
     );
   }
 
-  const armholeLabelX = ARMHOLE_LABEL_START_X;
-  const armholeBoY = frame.armholeStartY - 14;
   const ahLines = labels.armholeShaping.split("\n").filter(Boolean);
   const armholeStack = [
     { role: "armhole-bo", notation: labels.armholeBo, line: labels.armholeBo },
@@ -776,35 +802,75 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
       line,
     })),
   ].filter((entry) => entry.line.length > 0);
+  const armholeBoY = frame.armholeStartY - 14;
+  const armholeYs = armholeStack.map((_, i) => armholeBoY - i * ARMHOLE_NOTATION_GAP);
+  const armholeOutlineX = armholeYs.reduce(
+    (maxX, y) => Math.max(maxX, rightArmholeOutlineXAtY(frame, y)),
+    frame.afterRight,
+  );
+  const armholeLabelX = clamp(
+    armholeOutlineX + ARMHOLE_LABEL_CLEARANCE,
+    frame.afterRight + ARMHOLE_LABEL_CLEARANCE,
+    ARMHOLE_LABEL_SAFE_MAX_X,
+  );
+  parts.push(
+    `<g data-role="armhole-label-zone" data-x="${fmtNum(armholeLabelX)}" data-y="${fmtNum(armholeBoY)}" data-outline-x="${fmtNum(armholeOutlineX)}"></g>`,
+  );
   for (const [i, entry] of armholeStack.entries()) {
-    const y = armholeBoY - i * ARMHOLE_NOTATION_GAP;
+    const y = armholeYs[i]!;
     parts.push(
       `<text data-role="${entry.role}" data-notation="${escapeXml(entry.notation)}" data-label-zone="armhole" data-stack-order="${i}" x="${fmtNum(armholeLabelX)}" y="${fmtNum(y)}" text-anchor="start" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(entry.line)}</text>`,
     );
   }
 
-  const neckLines = [labels.neckBo, ...labels.neckShaping.split("\n")].filter(Boolean);
+  const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
   const neckLabelX = frame.cx;
-  const neckFirstBaseline = Math.min(VB_H - 24, frame.neckStartY + 22);
+  const neckBoY = frame.neckStartY;
+  const neckInsideTop = frame.neckCornerY + Math.max(4, Math.round(FS_NOTATION * 0.25));
+  const neckCount = neckShapingLines.length;
+  const preferredFirstY = neckBoY - neckCount * NECK_NOTATION_GAP;
+  const neckShapingStep =
+    neckCount > 0 && preferredFirstY < neckInsideTop
+      ? (neckBoY - neckInsideTop) / neckCount
+      : NECK_NOTATION_GAP;
+  const neckShapingFirstY = neckBoY - neckCount * neckShapingStep;
   parts.push(
-    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckFirstBaseline)}"></g>`,
+    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckShapingFirstY)}" data-bo-y="${fmtNum(neckBoY)}"></g>`,
   );
-  for (const [i, line] of neckLines.entries()) {
-    const y = neckFirstBaseline + i * NECK_NOTATION_GAP;
-    const role = i === 0 && labels.neckBo && line === labels.neckBo ? "neck-bo" : "neck-shaping";
-    const notation = role === "neck-bo" ? labels.neckBo : labels.neckShaping;
+  for (const [i, line] of neckShapingLines.entries()) {
+    const y = neckShapingFirstY + i * neckShapingStep;
     parts.push(
-      `<text data-role="${role}" data-label-zone="neck" data-notation="${escapeXml(notation)}" data-stack-order="${i}" x="${fmtNum(neckLabelX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`,
+      `<text data-role="neck-shaping" data-label-zone="neck" data-notation="${escapeXml(labels.neckShaping)}" data-stack-order="${i}" x="${fmtNum(neckLabelX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`,
+    );
+  }
+  if (labels.neckBo) {
+    parts.push(
+      `<text data-role="neck-bo" data-label-zone="neck" data-notation="${escapeXml(labels.neckBo)}" data-stack-order="${neckShapingLines.length}" x="${fmtNum(neckLabelX)}" y="${fmtNum(neckBoY)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.neckBo)}</text>`,
     );
   }
 
   const shLines = labels.shoulderShaping.split("\n").filter(Boolean);
-  const shLabelX = (frame.afterRight + frame.neckRight) / 2;
+  const shoulderMidX = (frame.afterRight + frame.neckRight) / 2;
+  const shoulderMidY = (frame.shoulderY + frame.neckCornerY) / 2;
+  const slopeDx = frame.neckRight - frame.afterRight;
+  const slopeDy = frame.neckCornerY - frame.shoulderY;
+  const slopeLen = Math.hypot(slopeDx, slopeDy) || 1;
+  const shAnchorX = shoulderMidX + (-slopeDy / slopeLen) * SHOULDER_LABEL_GAP;
+  const shAnchorY = shoulderMidY + (slopeDx / slopeLen) * SHOULDER_LABEL_GAP;
+  const shLastBaseline = shAnchorY;
+  const shLabelX = clamp(
+    Math.max(shAnchorX, rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE),
+    frame.neckRight + 4,
+    ARMHOLE_LABEL_SAFE_MAX_X,
+  );
+  parts.push(
+    `<g data-role="shoulder-label-zone" data-x="${fmtNum(shLabelX)}" data-y="${fmtNum(shLastBaseline)}"></g>`,
+  );
   parts.push(
     drawNotationStack(
       shLines,
       shLabelX,
-      frame.shoulderTopY - 26,
+      shLastBaseline,
       `data-role="shoulder-shaping" data-label-zone="shoulder" data-notation="${escapeXml(labels.shoulderShaping)}"`,
     ),
   );
