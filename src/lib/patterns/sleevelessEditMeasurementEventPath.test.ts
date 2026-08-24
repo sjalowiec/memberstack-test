@@ -7,9 +7,14 @@ import {
   replaceSleevelessMeasurementArtOnly,
 } from "./sleevelessEditMeasurementArtDom";
 import { SLEEVELESS_EDIT_MEASUREMENT_TARGET_IDS } from "./sleevelessEditMeasurementDiagramSvg";
+import { applySleevelessEditSizeChangeChipValues } from "./sleevelessEditSizeChangeMeasurements";
 
 const measurementsPageSrc = readFileSync(
   resolve("src/scripts/sleeveless-custom-build-measurements-page.ts"),
+  "utf8",
+);
+const editDrawerSrc = readFileSync(
+  resolve("src/scripts/sleevelessPatternEditDrawerPrototype.ts"),
   "utf8",
 );
 
@@ -365,6 +370,180 @@ describe("Sleeveless Edit Pattern — Front Style live art refresh", () => {
     );
     expect(measurementsPageSrc).toMatch(
       /wireSleevelessNecklineArtRefreshOnce\(\s*document\.querySelectorAll<HTMLInputElement>\('input\[name="sl-edit-neckline"\]'\),\s*refreshSleevelessMeasurementArt,/,
+    );
+  });
+});
+
+describe("Sleeveless Edit Pattern — Size-change event path", () => {
+  const SIZE_A: Record<string, string> = {
+    finishedNeckOpeningWidth: "6.5",
+    neckDepth: "4",
+    chestBust: "35",
+    hip: "35",
+    finishedLength: "22",
+    armholeDepth: "7",
+    hemDepth: "2",
+  };
+  const SIZE_B: Record<string, string> = {
+    finishedNeckOpeningWidth: "7.5",
+    neckDepth: "5",
+    chestBust: "45",
+    hip: "45",
+    finishedLength: "25",
+    armholeDepth: "9",
+    hemDepth: "2",
+  };
+
+  function runProductionSizeChange(options: {
+    chips: FakeChip[];
+    inner: FakeEl;
+    overlay: FakeEl;
+    nextValues: Record<string, string>;
+    neckline: "round" | "v-neck";
+    garment: "pullover" | "cardigan";
+    hydrateLog: string[];
+    retargetLog: string[];
+    disconnectLog: string[];
+    rebuildLog: string[];
+  }): void {
+    applySleevelessEditSizeChangeChipValues(options.chips, options.nextValues);
+    const next = makeArt(`${options.neckline}-${options.garment}-${options.nextValues.chestBust}`);
+    const swapped = replaceSleevelessMeasurementArtOnly(
+      options.inner as unknown as ParentNode,
+      next as unknown as Element,
+    );
+    expect(swapped?.overlay).toBe(options.overlay);
+    options.retargetLog.push(next.id);
+  }
+
+  it("documents the live Size-change production sequence (not art-only, not full hydrate)", () => {
+    expect(editDrawerSrc).toContain("handleSleevelessQuickEditSizeChanged");
+    expect(editDrawerSrc).toContain("refreshSleevelessWorkspaceMeasurementsFromQuickEditSize");
+    expect(editDrawerSrc).toMatch(
+      /sizeSelect\.addEventListener\("change", \(\) => \{[\s\S]*handleSleevelessQuickEditSizeChanged/,
+    );
+    expect(editDrawerSrc).toMatch(
+      /if \(isDropShoulderWorkspaceMeasurementSummaryPage\(\)\) \{[\s\S]*handleDropShoulderQuickEditSizeChanged/,
+    );
+
+    expect(measurementsPageSrc).toContain("export async function refreshSleevelessWorkspaceMeasurementsFromQuickEditSize");
+    expect(measurementsPageSrc).toContain("buildSleevelessEditSizeChangeMergedInches");
+    expect(measurementsPageSrc).toContain("applyDiagramUnitDisplay");
+    expect(measurementsPageSrc).toContain("writeOverrideSeedSizingIdentity");
+
+    const sizeRefreshFn = measurementsPageSrc.match(
+      /const runSleevelessWorkspaceSizeRefresh = async \([\s\S]*?\): Promise<boolean> => \{[\s\S]*?\n  \};/,
+    )?.[0];
+    expect(sizeRefreshFn).toBeTruthy();
+    expect(sizeRefreshFn).toContain("buildSleevelessEditSizeChangeMergedInches");
+    expect(sizeRefreshFn).toContain("applyDiagramUnitDisplay");
+    expect(sizeRefreshFn).toContain("refreshSleevelessMeasurementArt");
+    expect(sizeRefreshFn).toContain("writeOverrideSeedSizingIdentity");
+    expect(sizeRefreshFn).not.toContain("hydrateWorkspaceSummaryDiagram");
+    expect(sizeRefreshFn).not.toContain("renderSummaryDiagramFromMerged");
+    expect(sizeRefreshFn).not.toContain("renderDiagram(");
+    expect(sizeRefreshFn).not.toContain("replaceChildren");
+    expect(sizeRefreshFn).not.toContain("wireSleevelessNecklineArtRefreshOnce");
+    expect(sizeRefreshFn).not.toContain("wireSleevelessGarmentArtRefreshOnce");
+  });
+
+  it("Size A → Size B updates chip values then refreshes art, keeping the same overlay", () => {
+    const { inner, overlay, chips } = hydrate(SIZE_A);
+    const hydrateLog: string[] = [];
+    const retargetLog: string[] = [];
+    const disconnectLog: string[] = [];
+    const rebuildLog: string[] = [];
+    const garment: "pullover" = "pullover";
+
+    runProductionSizeChange({
+      chips,
+      inner,
+      overlay,
+      nextValues: SIZE_B,
+      neckline: "round",
+      garment,
+      hydrateLog,
+      retargetLog,
+      disconnectLog,
+      rebuildLog,
+    });
+
+    expect(chips.map((chip) => chip.value)).toEqual(Object.values(SIZE_B));
+    expect(overlay.chips).toBe(chips);
+    expect(hydrateLog).toEqual([]);
+    expect(rebuildLog).toEqual([]);
+    expect(disconnectLog).toEqual([]);
+    expect(retargetLog).toEqual(["art-round-pullover-45"]);
+    expect(inner.querySelectorAll("svg.express-mbp-art")).toHaveLength(1);
+    expect(inner.querySelectorAll(".express-mbp-overlay")).toHaveLength(1);
+  });
+
+  it("Size B → Size A and Round/V both keep chips visible without duplicate overlays", () => {
+    const { inner, overlay, chips } = hydrate(SIZE_A);
+    const hydrateLog: string[] = [];
+    const retargetLog: string[] = [];
+    const disconnectLog: string[] = [];
+    const rebuildLog: string[] = [];
+
+    const steps: Array<{ values: Record<string, string>; neckline: "round" | "v-neck" }> = [
+      { values: SIZE_B, neckline: "round" },
+      { values: SIZE_A, neckline: "round" },
+      { values: SIZE_B, neckline: "v-neck" },
+      { values: SIZE_A, neckline: "v-neck" },
+    ];
+    for (const step of steps) {
+      runProductionSizeChange({
+        chips,
+        inner,
+        overlay,
+        nextValues: step.values,
+        neckline: step.neckline,
+        garment: "pullover",
+        hydrateLog,
+        retargetLog,
+        disconnectLog,
+        rebuildLog,
+      });
+    }
+
+    expect(chips.map((chip) => chip.value)).toEqual(Object.values(SIZE_A));
+    expect(overlay.chips).toBe(chips);
+    expect(overlay.chips).toHaveLength(CHIP_KEYS.length);
+    expect(hydrateLog).toEqual([]);
+    expect(disconnectLog).toEqual([]);
+    expect(retargetLog).toHaveLength(steps.length);
+    expect(inner.querySelectorAll("svg.express-mbp-art")).toHaveLength(1);
+    expect(inner.querySelectorAll(".express-mbp-overlay")).toHaveLength(1);
+  });
+
+  it("does not change Cardigan/Pullover state and does not enter the Drop Shoulder rebuild path", () => {
+    const { inner, overlay, chips } = hydrate(SIZE_A);
+    const garment: "cardigan" = "cardigan";
+    runProductionSizeChange({
+      chips,
+      inner,
+      overlay,
+      nextValues: SIZE_B,
+      neckline: "round",
+      garment,
+      hydrateLog: [],
+      retargetLog: [],
+      disconnectLog: [],
+      rebuildLog: [],
+    });
+    expect(garment).toBe("cardigan");
+    expect(chips.find((chip) => chip.key === "chestBust")?.value).toBe("45");
+
+    const sizeRefreshFn = measurementsPageSrc.match(
+      /const runSleevelessWorkspaceSizeRefresh = async \([\s\S]*?\): Promise<boolean> => \{[\s\S]*?\n  \};/,
+    )?.[0];
+    expect(sizeRefreshFn).toContain("isDropShoulderConstruction()");
+    expect(sizeRefreshFn).toContain("isDropShoulderWorkspaceMeasurementSummaryPage()");
+    expect(sizeRefreshFn).not.toContain("forceRefreshDropShoulderSummaryMeasurements");
+    expect(sizeRefreshFn).not.toContain("runDropShoulderWorkspaceRehydrate");
+    expect(editDrawerSrc).toContain("rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit");
+    expect(editDrawerSrc).toMatch(
+      /if \(isDropShoulderWorkspaceMeasurementSummaryPage\(\)\) \{[\s\S]*void handleDropShoulderQuickEditSizeChanged/,
     );
   });
 });
