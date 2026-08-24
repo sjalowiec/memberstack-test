@@ -12,14 +12,33 @@ import {
   cardiganRoundNecklineCurveD,
 } from "./sleevelessFrontCardiganRoundNeckCurve";
 import {
+  buildSleevelessFrontGarmentFrame,
+  isSleevelessFrontCardiganModel,
+  SLEEVELESS_FRONT_GARMENT_VB_H,
+  SLEEVELESS_FRONT_GARMENT_VB_W,
+  sleevelessFrontBodySidePoints,
+  sleevelessFrontGarmentFmtNum,
+  sleevelessFrontPolylineD,
+  sleevelessFrontYAtRc,
+  usesSleevelessFrontAlineBodySilhouette,
+  type SleevelessFrontGarmentFrame,
+  type SleevelessFrontGarmentPt,
+  type SleevelessFrontGarmentYBand,
+} from "./sleevelessFrontGarmentGeometry";
+import {
   buildSleevelessFrontStsRowsDiagramModel,
   isSleevelessFrontStsRowsVNeckline,
   type SleevelessFrontStsRowsDiagramModel,
 } from "./sleevelessFrontStsRowsDiagramModel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
-const VB_W = 400;
-const VB_H = 480;
+const VB_W = SLEEVELESS_FRONT_GARMENT_VB_W;
+const VB_H = SLEEVELESS_FRONT_GARMENT_VB_H;
+
+export {
+  SLEEVELESS_FRONT_STS_ROWS_VIEWBOX,
+  SLEEVELESS_FRONT_STS_ROWS_VISUAL,
+} from "./sleevelessFrontGarmentGeometry";
 
 const STROKE = "#1a1a1a";
 const FILL = "#f4f6f1";
@@ -30,74 +49,9 @@ const FS_STITCH = 17;
 const FS_SECONDARY = 14;
 const LINE_GAP = 18;
 
-const LABEL_GUTTER = 96;
-const RIGHT_PAD = 86;
-const TOP = 76;
-const BOTTOM = 428;
-const REF_BUST_STS = 80;
-
-/** Visual band limits — presentation only. Labels keep true rows / inches. */
-export const SLEEVELESS_FRONT_STS_ROWS_VISUAL = {
-  minHem: 14,
-  maxHem: 34,
-  minBody: 90,
-  maxBody: 196,
-  minArmhole: 54,
-  maxArmhole: 90,
-  minShoulder: 20,
-  maxShoulder: 34,
-  fillTarget: 0.84,
-  maxArmholeFraction: 0.34,
-} as const;
-
-export const SLEEVELESS_FRONT_STS_ROWS_VIEWBOX = { width: VB_W, height: VB_H } as const;
-
-type YBand = {
-  rc0: number;
-  rc1: number;
-  yBottom: number;
-  yTop: number;
-};
-
-type Pt = { x: number; y: number };
-
-type Frame = {
-  cx: number;
-  left: number;
-  right: number;
-  afterLeft: number;
-  afterRight: number;
-  boLeft: number;
-  boRight: number;
-  neckLeft: number;
-  neckRight: number;
-  hemLeft: number;
-  hemRight: number;
-  bottomY: number;
-  hemY: number;
-  shapeStartY: number;
-  shapeEndY: number;
-  armholeStartY: number;
-  lastArmholeY: number;
-  neckStartY: number;
-  shoulderY: number;
-  neckCornerY: number;
-  shoulderTopY: number;
-  bodyWidth: number;
-  hemWidth: number;
-  afterWidth: number;
-  neckWidth: number;
-  shoulderSideWidth: number;
-  pxPerStitch: number;
-  visualHemH: number;
-  visualBodyH: number;
-  visualArmholeH: number;
-  visualShoulderH: number;
-  visualNeckH: number;
-  visualGarmentH: number;
-  trueAfterWidth: number;
-  upperScale: number;
-};
+type YBand = SleevelessFrontGarmentYBand;
+type Pt = SleevelessFrontGarmentPt;
+type Frame = SleevelessFrontGarmentFrame;
 
 function escapeXml(text: string): string {
   return String(text ?? "")
@@ -106,135 +60,14 @@ function escapeXml(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
-function fmtNum(n: number): string {
-  if (!Number.isFinite(n)) return "0";
-  return String(Math.round(n * 100) / 100);
-}
-
-function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, n));
-}
+const fmtNum = sleevelessFrontGarmentFmtNum;
+const polylineD = sleevelessFrontPolylineD;
+const yAtRc = sleevelessFrontYAtRc;
+const isCardiganFrontModel = isSleevelessFrontCardiganModel;
 
 function textFont(size: number, weight?: number): string {
   const w = weight != null ? ` font-weight="${weight}"` : "";
   return `font-family="${FONT}" font-size="${size}"${w}`;
-}
-
-function polylineD(points: readonly Pt[]): string {
-  return points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${fmtNum(p.x)} ${fmtNum(p.y)}`)
-    .join(" ");
-}
-
-function yAtRc(rc: number, bands: readonly YBand[]): number {
-  if (bands.length === 0) return BOTTOM;
-  if (rc <= bands[0]!.rc0) return bands[0]!.yBottom;
-  for (let i = 0; i < bands.length; i += 1) {
-    const band = bands[i]!;
-    const isLast = i === bands.length - 1;
-    if (rc <= band.rc1 || isLast) {
-      const span = band.rc1 - band.rc0;
-      if (!(span > 0)) return band.yBottom;
-      const t = clamp((rc - band.rc0) / span, 0, 1);
-      return band.yBottom + t * (band.yTop - band.yBottom);
-    }
-  }
-  return bands[bands.length - 1]!.yTop;
-}
-
-function sectionInches(rows: number, rowsPerInch: number, fallback: number): number {
-  if (rowsPerInch > 0 && rows > 0) return rows / rowsPerInch;
-  return fallback;
-}
-
-/**
- * Hat-style visual bands: inch-weighted, then clamped so no section becomes a
- * literal row graph. RC order is preserved; yAtRc only interpolates inside a band.
- */
-function allocateBands(args: {
-  hemRc: number;
-  armholeStartRc: number;
-  shoulderRc: number;
-  endRc: number;
-  hemRows: number;
-  bodyRows: number;
-  armholeRows: number;
-  rowsPerInch: number;
-}): { bands: YBand[]; hemH: number; bodyH: number; armholeH: number; shoulderH: number } {
-  const hemRc = Math.max(0, args.hemRc);
-  const armholeStartRc = Math.max(hemRc, args.armholeStartRc);
-  const shoulderRc = Math.max(armholeStartRc, args.shoulderRc);
-  const endRc = Math.max(shoulderRc, args.endRc);
-
-  const hemIn = args.hemRows > 0 ? sectionInches(args.hemRows, args.rowsPerInch, 0.4) : 0;
-  const bodyIn = sectionInches(args.bodyRows, args.rowsPerInch, 1);
-  const armholeIn = sectionInches(args.armholeRows, args.rowsPerInch, 1);
-  const shoulderIn = 0.4;
-  const raw = Math.max(0.01, hemIn + bodyIn + armholeIn + shoulderIn);
-  const usable = BOTTOM - TOP;
-
-  let hemH = hemIn > 0 ? (hemIn / raw) * usable : 0;
-  let bodyH = (bodyIn / raw) * usable;
-  let armholeH = (armholeIn / raw) * usable;
-  let shoulderH = (shoulderIn / raw) * usable;
-
-  if (hemH > 0) hemH = clamp(hemH, SLEEVELESS_FRONT_STS_ROWS_VISUAL.minHem, SLEEVELESS_FRONT_STS_ROWS_VISUAL.maxHem);
-  bodyH = clamp(bodyH, SLEEVELESS_FRONT_STS_ROWS_VISUAL.minBody, SLEEVELESS_FRONT_STS_ROWS_VISUAL.maxBody);
-  armholeH = clamp(
-    armholeH,
-    SLEEVELESS_FRONT_STS_ROWS_VISUAL.minArmhole,
-    SLEEVELESS_FRONT_STS_ROWS_VISUAL.maxArmhole,
-  );
-  shoulderH = clamp(
-    shoulderH,
-    SLEEVELESS_FRONT_STS_ROWS_VISUAL.minShoulder,
-    SLEEVELESS_FRONT_STS_ROWS_VISUAL.maxShoulder,
-  );
-
-  let sum = hemH + bodyH + armholeH + shoulderH;
-  if (sum > usable && sum > 0) {
-    const k = usable / sum;
-    hemH *= k;
-    bodyH *= k;
-    armholeH *= k;
-    shoulderH *= k;
-  } else {
-    const target = usable * SLEEVELESS_FRONT_STS_ROWS_VISUAL.fillTarget;
-    if (sum < target) bodyH += target - sum;
-  }
-
-  const hemY = BOTTOM - hemH;
-  const armholeStartY = hemY - bodyH;
-  const shoulderY = armholeStartY - armholeH;
-  const endY = shoulderY - shoulderH;
-
-  const bands: YBand[] = [];
-  if (hemH > 0 && hemRc > 0) {
-    bands.push({ rc0: 0, rc1: hemRc, yBottom: BOTTOM, yTop: hemY });
-  }
-  bands.push({
-    rc0: hemRc > 0 ? hemRc : 0,
-    rc1: armholeStartRc,
-    yBottom: hemH > 0 ? hemY : BOTTOM,
-    yTop: armholeStartY,
-  });
-  bands.push({
-    rc0: armholeStartRc,
-    rc1: shoulderRc,
-    yBottom: armholeStartY,
-    yTop: shoulderY,
-  });
-  bands.push({
-    rc0: shoulderRc,
-    rc1: endRc,
-    yBottom: shoulderY,
-    yTop: endY,
-  });
-  return { bands, hemH, bodyH, armholeH, shoulderH };
-}
-
-function isCardiganFrontModel(model: SleevelessFrontStsRowsDiagramModel): boolean {
-  return model.garmentStyle === "cardigan" && model.frontPiece === "leftFront";
 }
 
 function isSupportedModel(model: SleevelessFrontStsRowsDiagramModel): boolean {
@@ -249,134 +82,8 @@ function isSupportedModel(model: SleevelessFrontStsRowsDiagramModel): boolean {
   return model.bodyShape === "aline";
 }
 
-function usesAlineBodySilhouette(model: SleevelessFrontStsRowsDiagramModel): boolean {
-  return model.bodyShape === "aline" && model.widths.hemStitches !== model.widths.bustStitches;
-}
-
-function buildFrame(model: SleevelessFrontStsRowsDiagramModel): { frame: Frame; bands: YBand[] } {
-  const hemRc = Math.max(0, model.rows.hemRows);
-  const armholeStart = Math.max(0, model.armhole.startGarmentRc);
-  const neckStart = Math.max(0, model.neckline.startGarmentRc);
-  const shoulderRc = Math.max(armholeStart, model.shoulder.startGarmentRc);
-  const endRc = Math.max(shoulderRc, model.rows.frontFinalRow);
-  const bodyRows = Math.max(
-    0,
-    model.rows.sideSeamRowsAboveHem,
-    model.rows.rowsFromCastOnToArmholeStart - hemRc,
-  );
-  const allocated = allocateBands({
-    hemRc,
-    armholeStartRc: armholeStart,
-    shoulderRc,
-    endRc,
-    hemRows: model.rows.hemRows,
-    bodyRows,
-    armholeRows: model.rows.armholeRows,
-    rowsPerInch: model.rows.rowsPerInch,
-  });
-  const bands = allocated.bands;
-
-  const bustSts = Math.max(1, model.widths.bustStitches);
-  const hemSts = Math.max(1, model.widths.hemStitches);
-  const afterSts = Math.max(1, model.widths.stitchesAfterArmhole);
-  const shoulderSts = Math.max(0, model.widths.shoulderStitchesPerSide);
-  const bindOffSts = Math.max(0, model.armhole.bindOffStsEachSide);
-  const cardigan = isCardiganFrontModel(model);
-
-  const maxBodyW = VB_W - LABEL_GUTTER - RIGHT_PAD;
-  const widthScale = clamp(bustSts / REF_BUST_STS, 0.6, 1.25);
-  const bodyWidth = maxBodyW * (widthScale / 1.25);
-  const cx = LABEL_GUTTER + maxBodyW / 2;
-  const half = bodyWidth / 2;
-  const pxPerStitch = bodyWidth / bustSts;
-  // Post-armhole width is stitch-true. Pullover: shoulder + neck + shoulder.
-  // Cardigan left Front: neck + one shoulder (CF does not inset).
-  const trueAfterWidth = afterSts * pxPerStitch;
-  const afterWidth = trueAfterWidth;
-  const upperScale = 1;
-  const shoulderSideWidth = shoulderSts * pxPerStitch;
-  const neckWidth = Math.max(
-    0,
-    cardigan ? afterWidth - shoulderSideWidth : afterWidth - 2 * shoulderSideWidth,
-  );
-  const afterHalf = afterWidth / 2;
-  const neckHalf = neckWidth / 2;
-  const boInset = Math.max(0, bindOffSts * pxPerStitch);
-  const hemHalf = clamp(half * (hemSts / bustSts), 18, Math.min(cx - 12, VB_W - 12 - cx));
-  const left = cx - half;
-  const right = cx + half;
-  const cardiganHemWidth = clamp(hemSts * pxPerStitch, 18, Math.max(18, VB_W - 12 - left));
-  const hemLeft = cardigan ? left : cx - hemHalf;
-  const hemRight = cardigan ? left + cardiganHemWidth : cx + hemHalf;
-  const hemWidth = cardigan ? hemRight - hemLeft : hemHalf * 2;
-  const afterLeft = cardigan ? left : cx - afterHalf;
-  const afterRight = cardigan ? left + afterWidth : cx + afterHalf;
-  const neckLeft = cardigan ? left : cx - neckHalf;
-  const neckRight = cardigan ? left + neckWidth : cx + neckHalf;
-  const boLeft = cardigan ? left : cx - half + boInset;
-  const boRight = cx + half - boInset;
-
-  const bottomY = yAtRc(0, bands);
-  const hemY = hemRc > 0 ? yAtRc(hemRc, bands) : bottomY;
-  const armholeStartY = yAtRc(armholeStart, bands);
-  const shapeStartRc = clamp(model.bodyShaping.startRc, 0, armholeStart);
-  const shapeEndRc = clamp(model.bodyShaping.endRc, shapeStartRc, armholeStart);
-  const shapeStartY = yAtRc(shapeStartRc, bands);
-  const shapeEndY = yAtRc(shapeEndRc, bands);
-  const lastArmholeY = yAtRc(model.armhole.lastGarmentRc, bands);
-  const neckStartY = yAtRc(neckStart, bands);
-  const shoulderY = yAtRc(shoulderRc, bands);
-  const lastBand = bands[bands.length - 1];
-  const shoulderBandH = lastBand
-    ? Math.max(8, shoulderY - lastBand.yTop)
-    : SLEEVELESS_FRONT_STS_ROWS_VISUAL.minShoulder;
-  const hasShoulderSlope = model.shoulder.points.length > 0;
-  const shoulderTopY = hasShoulderSlope ? shoulderY - shoulderBandH : shoulderY;
-  const neckCornerY = hasShoulderSlope ? shoulderTopY : shoulderY;
-  const visualNeckH = Math.max(0, neckStartY - neckCornerY);
-  const visualGarmentH = Math.max(0, bottomY - shoulderTopY);
-
-  return {
-    frame: {
-      cx,
-      left,
-      right,
-      afterLeft,
-      afterRight,
-      boLeft,
-      boRight,
-      neckLeft,
-      neckRight,
-      hemLeft,
-      hemRight,
-      bottomY,
-      hemY,
-      shapeStartY,
-      shapeEndY,
-      armholeStartY,
-      lastArmholeY,
-      neckStartY,
-      shoulderY,
-      neckCornerY,
-      shoulderTopY,
-      bodyWidth,
-      hemWidth,
-      afterWidth,
-      neckWidth,
-      shoulderSideWidth,
-      pxPerStitch,
-      visualHemH: allocated.hemH,
-      visualBodyH: allocated.bodyH,
-      visualArmholeH: allocated.armholeH,
-      visualShoulderH: allocated.shoulderH,
-      visualNeckH,
-      visualGarmentH,
-      trueAfterWidth,
-      upperScale,
-    },
-    bands,
-  };
-}
+const usesAlineBodySilhouette = usesSleevelessFrontAlineBodySilhouette;
+const buildFrame = buildSleevelessFrontGarmentFrame;
 
 function formatDisplayNumber(n: number): string {
   if (!Number.isFinite(n)) return "";
@@ -497,29 +204,7 @@ function cardiganRoundCurveD(frame: Frame): string {
   return cardiganRoundNecklineCurveD(frame, fmtNum);
 }
 
-function bodySidePoints(frame: Frame, side: "left" | "right", tapered: boolean): Pt[] {
-  const bustX = side === "left" ? frame.left : frame.right;
-  const hemX = side === "left" ? frame.hemLeft : frame.hemRight;
-  if (!tapered) {
-    return [
-      { x: bustX, y: frame.bottomY },
-      { x: bustX, y: frame.armholeStartY },
-    ];
-  }
-  const pts: Pt[] = [{ x: hemX, y: frame.bottomY }];
-  if (frame.shapeStartY < frame.bottomY - 0.5) {
-    pts.push({ x: hemX, y: frame.shapeStartY });
-  }
-  if (frame.shapeEndY < frame.shapeStartY - 0.5) {
-    pts.push({ x: bustX, y: frame.shapeEndY });
-  } else if (Math.abs(hemX - bustX) > 0.5) {
-    pts.push({ x: bustX, y: frame.shapeStartY });
-  }
-  if (frame.armholeStartY < pts[pts.length - 1]!.y - 0.5) {
-    pts.push({ x: bustX, y: frame.armholeStartY });
-  }
-  return pts;
-}
+const bodySidePoints = sleevelessFrontBodySidePoints;
 
 function drawCardiganSilhouette(
   frame: Frame,

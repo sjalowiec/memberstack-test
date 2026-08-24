@@ -65,6 +65,30 @@ function cardiganRoundAlinePattern(): Record<string, unknown> {
   return pattern;
 }
 
+function cardiganRoundAlineOutwardPattern(): Record<string, unknown> {
+  const pattern = cardiganRoundStraightPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function cardiganRoundShapedPattern(): Record<string, unknown> {
+  const pattern = cardiganRoundStraightPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function cardiganRoundWaistPattern(): Record<string, unknown> {
+  const pattern = cardiganRoundStraightPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "waist";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function pulloverVPattern(): Record<string, unknown> {
   return {
     fit: {
@@ -445,14 +469,12 @@ describe("generated Cardigan Round Straight Front Shaping Notation", () => {
     expect(tryBuildLiveSleevelessBackNotationSvg(cardiganRoundResult, cardiganRound)).toBeTruthy();
   });
 
-  it("falls back for Cardigan Round A-line", () => {
-    const aline = cardiganRoundAlinePattern();
-    const alineResult = generateSleevelessBackPattern(aline);
-    expect(shouldUseGeneratedSleevelessFrontCardiganRoundNotation(alineResult, aline)).toBe(false);
-    expect(tryBuildLiveSleevelessFrontCardiganRoundNotationSvg(alineResult, aline)).toBeNull();
-    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", aline)).toContain(
-      "diagram-jp-cardigan-round-aline",
-    );
+  it("falls back for explicit shaped/waist Cardigan Round", () => {
+    for (const pattern of [cardiganRoundShapedPattern(), cardiganRoundWaistPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      expect(shouldUseGeneratedSleevelessFrontCardiganRoundNotation(result, pattern)).toBe(false);
+      expect(tryBuildLiveSleevelessFrontCardiganRoundNotationSvg(result, pattern)).toBeNull();
+    }
   });
 
   it("wires generated Cardigan Round hydration after Cardigan V and before static fetch", () => {
@@ -476,5 +498,107 @@ describe("generated Cardigan Round Straight Front Shaping Notation", () => {
     expect(
       existsSync(join(srcRoot, "../public/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-round.svg")),
     ).toBe(true);
+  });
+});
+
+describe("generated Cardigan Round A-line Shaping Notation", () => {
+  function expectUpperCardiganRoundUnchanged(straightSvg: string, alineSvg: string): void {
+    for (const attr of [
+      "data-armhole-bo",
+      "data-armhole-shaping",
+      "data-neck-bo",
+      "data-neck-shaping",
+      "data-shoulder-shaping",
+    ]) {
+      expect(svgAttr(alineSvg, attr)).toBe(svgAttr(straightSvg, attr));
+    }
+    for (const attr of [
+      "data-bust-left",
+      "data-bust-right",
+      "data-after-right",
+      "data-neck-left",
+      "data-neck-right",
+      "data-cf-x",
+      "data-armhole-start-y",
+      "data-last-armhole-y",
+      "data-neck-start-y",
+      "data-shoulder-y",
+    ]) {
+      expect(svgNum(alineSvg, attr)).toBeCloseTo(svgNum(straightSvg, attr), 2);
+    }
+    expect(pathD(alineSvg, "neckline-outline")).toBe(pathD(straightSvg, "neckline-outline"));
+    expect(pathD(alineSvg, "armhole-outline")).toBe(pathD(straightSvg, "armhole-outline"));
+    expect(pathD(alineSvg, "shoulder-outline")).toBe(pathD(straightSvg, "shoulder-outline"));
+  }
+
+  function expectGeneratedCardiganRoundAline(
+    pattern: Record<string, unknown>,
+    direction: "inward" | "outward",
+  ): void {
+    const result = generateSleevelessBackPattern(pattern);
+    const live = tryBuildLiveSleevelessFrontCardiganRoundNotationSvg(result, pattern);
+    expect(shouldUseGeneratedSleevelessFrontCardiganRoundNotation(result, pattern)).toBe(true);
+    expect(live).toBeTruthy();
+    const svg = live!;
+    expect(svg).toContain('data-sleeveless-cardigan-round-generated-notation="true"');
+    expect(svg).toContain('data-supported="true"');
+    expect(svg).toContain('data-body-shape="aline"');
+    expect(svg).toContain('data-front-piece="leftFront"');
+    expect(svg).toContain('data-front-band-included="false"');
+    expect(svgAttr(svg, "data-body-shaping-direction")).toBe(direction);
+
+    const cf = pathPoints(svg, "center-front-edge");
+    expect(cf.length).toBeGreaterThanOrEqual(2);
+    expect(cf.every((p) => Math.abs(p.x - cf[0]!.x) < 0.05)).toBe(true);
+    expect(cf[0]!.x).toBeCloseTo(svgNum(svg, "data-cf-x"), 2);
+    expect(cf[0]!.x).toBeCloseTo(svgNum(svg, "data-bust-left"), 2);
+
+    const left = pathPoints(svg, "left-body-path");
+    const right = pathPoints(svg, "right-body-path");
+    expect(left.every((p) => Math.abs(p.x - left[0]!.x) < 0.05)).toBe(true);
+    expect(roles(svg, "right-body-path")[0]).toContain('data-shaping-edge="side-seam"');
+    if (direction === "inward") {
+      expect(right[0]!.x).toBeGreaterThan(right[right.length - 1]!.x);
+      expect(svgNum(svg, "data-hem-right")).toBeGreaterThan(svgNum(svg, "data-bust-right"));
+    } else {
+      expect(right[0]!.x).toBeLessThan(right[right.length - 1]!.x);
+      expect(svgNum(svg, "data-hem-right")).toBeLessThan(svgNum(svg, "data-bust-right"));
+    }
+    expect(svgNum(svg, "data-hem-left")).toBeCloseTo(svgNum(svg, "data-bust-left"), 2);
+
+    const rows = result.debug.alineBodyShapingRowNumbers ?? [];
+    expect(rows.length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-body-shaping-start-rc")).toBe(rows[0]!);
+    expect(svgNum(svg, "data-body-shaping-end-rc")).toBe(rows[rows.length - 1]!);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+    expect(svgAttr(svg, "data-body-shaping")).toBe(repl["jp-body-shaping"]);
+    expect(svgAttr(svg, "data-body-shaping").length).toBeGreaterThan(0);
+    expect(roles(svg, "body-shaping").length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-body-label-x")).toBeGreaterThan(svgNum(svg, "data-body-outline-x-at-label"));
+    expect(svg).toContain('font-size="17"');
+    expect(svg).toContain('font-size="14"');
+
+    const sts = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
+    expect(sts).toBeTruthy();
+    expect(pathD(svg, "body-outline")).toBe(pathD(sts!, "body-outline"));
+    expect(pathD(svg, "center-front-edge")).toBe(pathD(sts!, "center-front-edge"));
+
+    const straight = cardiganRoundStraightPattern();
+    const straightSvg = buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(straight),
+      straight,
+    );
+    expectUpperCardiganRoundUnchanged(straightSvg, svg);
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toContain(
+      "diagram-jp-cardigan-round-aline",
+    );
+  }
+
+  it("tapers only the right side seam when hem is wider than bust", () => {
+    expectGeneratedCardiganRoundAline(cardiganRoundAlinePattern(), "inward");
+  });
+
+  it("tapers only the right side seam when hem is narrower than bust", () => {
+    expectGeneratedCardiganRoundAline(cardiganRoundAlineOutwardPattern(), "outward");
   });
 });

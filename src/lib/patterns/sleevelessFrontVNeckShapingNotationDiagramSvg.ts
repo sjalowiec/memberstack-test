@@ -18,6 +18,7 @@ import {
   armholeBindOffDecreaseFromEachSide,
   formatRcNotation,
 } from "./sleevelessBackJapaneseNotation";
+import { isSleevelessShapedBodyShape } from "./sleevelessAlineShaping";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import {
   buildFrontJapaneseNotationReplacements,
@@ -990,6 +991,15 @@ export function shouldUseGeneratedSleevelessFrontVNeckNotation(
   patternData?: unknown,
 ): boolean {
   if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
+  if (
+    isSleevelessShapedBodyShape(
+      patternData && typeof patternData === "object" && !Array.isArray(patternData)
+        ? (patternData as Record<string, unknown>)
+        : {},
+    )
+  ) {
+    return false;
+  }
   return isSleevelessPulloverVNeckFrontNotation(result, patternData);
 }
 
