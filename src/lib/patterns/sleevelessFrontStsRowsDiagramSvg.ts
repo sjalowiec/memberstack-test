@@ -16,6 +16,8 @@ import {
   isSleevelessFrontCardiganModel,
   SLEEVELESS_FRONT_GARMENT_VB_H,
   SLEEVELESS_FRONT_GARMENT_VB_W,
+  sleevelessFrontArmholePoints,
+  sleevelessFrontArmholeSilhouetteCommands,
   sleevelessFrontBodySidePoints,
   sleevelessFrontGarmentFmtNum,
   sleevelessFrontPolylineD,
@@ -216,12 +218,7 @@ function drawCardiganSilhouette(
     { x: frame.left, y: frame.neckStartY },
   ];
   const rightBody = bodySidePoints(frame, "right", tapered);
-  const rightArmhole: Pt[] = [
-    { x: frame.right, y: frame.armholeStartY },
-    { x: frame.boRight, y: frame.armholeStartY },
-    { x: frame.afterRight, y: frame.lastArmholeY },
-    { x: frame.afterRight, y: frame.shoulderY },
-  ];
+  const rightArmhole = sleevelessFrontArmholePoints(frame, "right");
   const rightShoulder: Pt[] = [
     { x: frame.afterRight, y: frame.shoulderY },
     { x: frame.neckRight, y: frame.neckCornerY },
@@ -246,9 +243,7 @@ function drawCardiganSilhouette(
     `M ${fmtNum(frame.left)} ${fmtNum(frame.bottomY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.neckStartY)}`,
     ...neckOpening,
-    `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.shoulderY)}`,
-    `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.lastArmholeY)}`,
-    `L ${fmtNum(frame.boRight)} ${fmtNum(frame.armholeStartY)}`,
+    ...sleevelessFrontArmholeSilhouetteCommands(frame, "right"),
     `L ${fmtNum(frame.right)} ${fmtNum(frame.armholeStartY)}`,
     ...rightClose.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     "Z",
@@ -276,18 +271,8 @@ function drawSilhouette(frame: Frame, neckStyle: "v-neck" | "round", tapered: bo
     { x: frame.afterRight, y: frame.shoulderY },
     { x: frame.neckRight, y: frame.neckCornerY },
   ];
-  const leftArmhole: Pt[] = [
-    { x: frame.left, y: frame.armholeStartY },
-    { x: frame.boLeft, y: frame.armholeStartY },
-    { x: frame.afterLeft, y: frame.lastArmholeY },
-    { x: frame.afterLeft, y: frame.shoulderY },
-  ];
-  const rightArmhole: Pt[] = [
-    { x: frame.right, y: frame.armholeStartY },
-    { x: frame.boRight, y: frame.armholeStartY },
-    { x: frame.afterRight, y: frame.lastArmholeY },
-    { x: frame.afterRight, y: frame.shoulderY },
-  ];
+  const leftArmhole = sleevelessFrontArmholePoints(frame, "left");
+  const rightArmhole = sleevelessFrontArmholePoints(frame, "right");
   const vNeckline: Pt[] = [
     { x: frame.neckLeft, y: frame.neckCornerY },
     { x: frame.cx, y: frame.neckStartY },
@@ -308,13 +293,9 @@ function drawSilhouette(frame: Frame, neckStyle: "v-neck" | "round", tapered: bo
         ];
 
   const upperBody = [
-    `L ${fmtNum(frame.boLeft)} ${fmtNum(frame.armholeStartY)}`,
-    `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.lastArmholeY)}`,
-    `L ${fmtNum(frame.afterLeft)} ${fmtNum(frame.shoulderY)}`,
+    ...sleevelessFrontArmholeSilhouetteCommands(frame, "left"),
     ...neckOpening,
-    `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.shoulderY)}`,
-    `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.lastArmholeY)}`,
-    `L ${fmtNum(frame.boRight)} ${fmtNum(frame.armholeStartY)}`,
+    ...sleevelessFrontArmholeSilhouetteCommands(frame, "right"),
   ];
   const silhouette = tapered
     ? [

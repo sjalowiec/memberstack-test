@@ -2,8 +2,9 @@
  * Shared Sleeveless Front garment geometry.
  *
  * One approved silhouette (from generated Front Stitches & Rows) used by
- * Stitches & Rows and by Cardigan / matching Front notation renderers.
- * Presentation only — no pattern math.
+ * Stitches & Rows, the Edit measurement diagram, and matching Front notation
+ * renderers. Presentation only — no pattern math.
+ * Armhole outline: {@link sleevelessFrontArmholePoints}.
  *
  * Pullover Round notation keeps its own approved canvas gutters so Straight
  * output does not move; it still reuses {@link sleevelessFrontBodySidePoints}.
@@ -96,6 +97,20 @@ export type SleevelessFrontBodySideFrame = {
   shapeEndY: number;
   armholeStartY: number;
 };
+
+/** Minimal fields needed to draw the approved Sleeveless Front armhole outline. */
+export type SleevelessFrontArmholeOutlineFrame = Pick<
+  SleevelessFrontGarmentFrame,
+  | "left"
+  | "right"
+  | "boLeft"
+  | "boRight"
+  | "afterLeft"
+  | "afterRight"
+  | "armholeStartY"
+  | "lastArmholeY"
+  | "shoulderY"
+>;
 
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
@@ -420,6 +435,48 @@ export function sleevelessFrontBodySidePoints(
   return pts;
 }
 
+/**
+ * Approved Sleeveless Front armhole outline: horizontal bind-off, then inward
+ * shaping to lastArmholeY, then up to the shoulder. Same four points as
+ * generated Front Stitches & Rows (and Back {@link sleevelessBackArmholePoints}).
+ */
+export function sleevelessFrontArmholePoints(
+  frame: SleevelessFrontArmholeOutlineFrame,
+  side: "left" | "right",
+): SleevelessFrontGarmentPt[] {
+  if (side === "left") {
+    return [
+      { x: frame.left, y: frame.armholeStartY },
+      { x: frame.boLeft, y: frame.armholeStartY },
+      { x: frame.afterLeft, y: frame.lastArmholeY },
+      { x: frame.afterLeft, y: frame.shoulderY },
+    ];
+  }
+  return [
+    { x: frame.right, y: frame.armholeStartY },
+    { x: frame.boRight, y: frame.armholeStartY },
+    { x: frame.afterRight, y: frame.lastArmholeY },
+    { x: frame.afterRight, y: frame.shoulderY },
+  ];
+}
+
+/**
+ * Silhouette L-commands from the bind-off through the shoulder, excluding the
+ * bust-edge start (already drawn by the body side). Left walks BO → last →
+ * shoulder; right walks the mirror after the neckline.
+ */
+export function sleevelessFrontArmholeSilhouetteCommands(
+  frame: SleevelessFrontArmholeOutlineFrame,
+  side: "left" | "right",
+): string[] {
+  const fromBindOff = sleevelessFrontArmholePoints(frame, side).slice(1);
+  const ordered = side === "left" ? fromBindOff : [...fromBindOff].reverse();
+  return ordered.map(
+    (p) =>
+      `L ${sleevelessFrontGarmentFmtNum(p.x)} ${sleevelessFrontGarmentFmtNum(p.y)}`,
+  );
+}
+
 /** Right body outline X at a garment Y — hem width, slope, then bust width. */
 export function sleevelessFrontRightBodyOutlineXAtY(
   frame: SleevelessFrontBodySideFrame,
@@ -541,7 +598,12 @@ export function buildSleevelessMeasurementGarmentFrame(
     neckCornerY + 14,
     armholeStartY - 8,
   );
-  const lastArmholeY = armholeStartY - allocated.armholeH * 0.55;
+  // Measurement adapter has no last-decrease RC. StsRows maps
+  // armhole.lastGarmentRc through sleevelessFrontYAtRc; that last shaping
+  // sits at/near the shoulder. Place lastArmholeY there so
+  // sleevelessFrontArmholePoints reads as BO + inward shaping, not a
+  // mid-armhole vertical notch. Armhole-depth inches are unchanged.
+  const lastArmholeY = shoulderY;
   const shapeStartY = hemY;
   const shapeEndY = armholeStartY;
 
