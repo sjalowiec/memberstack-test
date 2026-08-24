@@ -134,6 +134,32 @@ function cardiganVNeckPattern(): Record<string, unknown> {
   return cardiganStraightPattern("v-neck");
 }
 
+/** DEV-visible Cardigan V: 12 sts / 3 in neck and 24 rows / 4 in neck depth. */
+function cardiganVReadablePattern(): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "misses",
+      selectedMeasurements: {
+        finished_bust_chest: 40,
+        back_neck_to_hem: 22,
+        armhole_depth: 8,
+        neck_opening: 6,
+        shoulder_width: 12,
+        front_neck_depth: 4,
+        back_neck_depth: 1,
+      },
+    },
+    style: { garmentStyle: "cardigan", neckline: "v-neck", frontStyle: "open", recipientCategory: "misses" },
+    yarnGaugeMachine: { gaugeStitchesPerInch: 4, gaugeRowsPerInch: 6, availableNeedles: 200 },
+  };
+}
+
+function cardiganRoundReadablePattern(): Record<string, unknown> {
+  const pattern = cardiganVReadablePattern();
+  (pattern.style as { neckline: string }).neckline = "round";
+  return pattern;
+}
+
 function cardiganRoundPattern(): Record<string, unknown> {
   return cardiganStraightPattern("round");
 }
@@ -329,7 +355,28 @@ function lengthLabelRows(svg: string, measure: string): number {
 
 function measureLineX(svg: string, measure: string): number {
   const re = new RegExp(
-    `<g data-role="length-measurement" data-measure="${measure}"[\\s\\S]*?<line x1="([^"]+)"`,
+    `<g data-role="(?:length|width)-measurement" data-measure="${measure}"[\\s\\S]*?<line x1="([^"]+)"`,
+  );
+  return Number(re.exec(svg)?.[1] ?? NaN);
+}
+
+function measureLineY(svg: string, measure: string): number {
+  const re = new RegExp(
+    `<g data-role="(?:length|width)-measurement" data-measure="${measure}"[\\s\\S]*?<line [^>]*y1="([^"]+)"`,
+  );
+  return Number(re.exec(svg)?.[1] ?? NaN);
+}
+
+function measureLineX2(svg: string, measure: string): number {
+  const re = new RegExp(
+    `<g data-role="(?:length|width)-measurement" data-measure="${measure}"[\\s\\S]*?<line [^>]*x2="([^"]+)"`,
+  );
+  return Number(re.exec(svg)?.[1] ?? NaN);
+}
+
+function measureLineY2(svg: string, measure: string): number {
+  const re = new RegExp(
+    `<g data-role="(?:length|width)-measurement" data-measure="${measure}"[\\s\\S]*?<line [^>]*y2="([^"]+)"`,
   );
   return Number(re.exec(svg)?.[1] ?? NaN);
 }
@@ -522,6 +569,87 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const vPoint = /data-role="v-point" data-x="([^"]+)" data-y="([^"]+)"/.exec(v.svg);
     expect(vPoint?.[1]).toBe(svgAttr(v.svg, "data-cf-x"));
     expect(Number(vPoint?.[2])).toBeCloseTo(svgNum(v.svg, "data-neck-start-y"), 1);
+  });
+
+  it("keeps Cardigan V neck labels readable without changing geometry or values", () => {
+    const { svg, model } = svgFor(cardiganVReadablePattern());
+    expect(model.neckline.style).toBe("v-neck");
+    expect(model.widths.necklineStitches).toBe(12);
+    expect(model.neckline.depthRows).toBe(24);
+    expect(widthLabelSts(svg, "neck")).toBe(12);
+    expect(lengthLabelRows(svg, "neck-depth")).toBe(24);
+    expect(svg).toContain("12 sts");
+    expect(svg).toContain("3 in");
+    expect(svg).toContain("24 rows");
+    expect(svg).toContain("4 in");
+
+    expectCardiganFrontPieceMatchesStitchBudget(svg, model);
+    expect(svgNum(svg, "data-neck-left")).toBeCloseTo(svgNum(svg, "data-cf-x"), 1);
+    const vPoint = /data-role="v-point" data-x="([^"]+)" data-y="([^"]+)"/.exec(svg);
+    expect(Number(vPoint?.[1])).toBeCloseTo(svgNum(svg, "data-cf-x"), 1);
+    expect(Number(vPoint?.[2])).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+
+    const neckArrowY = measureLineY(svg, "neck");
+    const neckArrowX1 = measureLineX(svg, "neck");
+    const neckArrowX2 = measureLineX2(svg, "neck");
+    expect(neckArrowY).toBeLessThan(svgNum(svg, "data-shoulder-top-y"));
+    expect(neckArrowX1).toBeCloseTo(svgNum(svg, "data-neck-left"), 1);
+    expect(neckArrowX2).toBeCloseTo(svgNum(svg, "data-neck-right"), 1);
+
+    const neckTextXs = [
+      ...svg.matchAll(/<text data-role="width-measurement" data-measure="neck"[^>]* x="([^"]+)"/g),
+    ].map((m) => Number(m[1]));
+    const neckTextYs = [
+      ...svg.matchAll(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/g),
+    ].map((m) => Number(m[1]));
+    expect(Math.max(...neckTextXs)).toBeLessThan(svgNum(svg, "data-cf-x"));
+    expect(Math.max(...neckTextYs)).toBeLessThan(neckArrowY);
+    expect(Math.max(...neckTextYs)).toBeLessThan(svgNum(svg, "data-shoulder-top-y"));
+
+    const depthArrowX = measureLineX(svg, "neck-depth");
+    const depthArrowY1 = measureLineY(svg, "neck-depth");
+    const depthArrowY2 = measureLineY2(svg, "neck-depth");
+    expect(depthArrowX).toBeLessThan(svgNum(svg, "data-cf-x"));
+    expect(depthArrowY1).toBeCloseTo(svgNum(svg, "data-neck-corner-y"), 1);
+    expect(depthArrowY2).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+
+    const depthTextXs = measureTextXs(svg, "neck-depth");
+    const depthTextYs = measureTextYs(svg, "neck-depth");
+    expect(Math.max(...depthTextXs)).toBeLessThan(depthArrowX - 8);
+    expect(Math.max(...depthTextXs)).toBeLessThan(svgNum(svg, "data-cf-x"));
+    expect(Math.min(...depthTextYs)).toBeGreaterThan(Math.max(...neckTextYs) + 16);
+
+    const shoulderLabelY = Number(
+      /<text data-role="width-measurement" data-measure="shoulder"[^>]* y="([^"]+)"/.exec(svg)?.[1],
+    );
+    expect(shoulderLabelY).toBeGreaterThan(svgNum(svg, "data-shoulder-y"));
+    expect(Math.max(...neckTextYs)).toBeLessThan(svgNum(svg, "data-neck-corner-y"));
+
+    const round = svgFor(cardiganRoundReadablePattern());
+    expect(svgAttr(round.svg, "data-neckline-style")).toBe("round");
+    expect(measureLineY(round.svg, "neck")).toBeCloseTo(112, 1);
+    const roundNeckTextX = Number(
+      /<text data-role="width-measurement" data-measure="neck"[^>]* x="([^"]+)"/.exec(round.svg)?.[1],
+    );
+    expect(roundNeckTextX).toBeCloseTo(
+      (svgNum(round.svg, "data-neck-left") + svgNum(round.svg, "data-neck-right")) / 2,
+      1,
+    );
+    expect(measureLineX(round.svg, "neck-depth")).toBeGreaterThan(svgNum(round.svg, "data-cf-x"));
+    expect(measureTextXs(round.svg, "neck-depth")[0]).toBeGreaterThan(svgNum(round.svg, "data-cf-x") - 8);
+
+    const pullover = svgFor(amandaVNeckPattern());
+    expect(svgAttr(pullover.svg, "data-garment-style")).toBe("pullover");
+    const pulloverNeckLabelY = Number(
+      /<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(pullover.svg)?.[1],
+    );
+    const pulloverShoulderLabelY = Number(
+      /<text data-role="width-measurement" data-measure="shoulder"[^>]* y="([^"]+)"/.exec(pullover.svg)?.[1],
+    );
+    expect(pulloverNeckLabelY).toBeCloseTo(99.96, 1);
+    expect(pulloverShoulderLabelY).toBeGreaterThan(svgNum(pullover.svg, "data-shoulder-y"));
+    expect(measureLineY(pullover.svg, "neck")).toBeGreaterThan(svgNum(pullover.svg, "data-neck-corner-y"));
+    expect(measureLineY(pullover.svg, "neck")).toBeLessThan(svgNum(pullover.svg, "data-neck-start-y"));
   });
 
   it("generates a responsive SVG for pullover A-line V-neck and round Front", () => {
