@@ -89,9 +89,16 @@ export function legacyContextFromLink(options: {
     };
   }
 
+  // Authoritative paid-through: legacy_members.subscriptionexpiring (same field as
+  // expiry/reminders). Fall back to legacy_subscriptions.expirationdate only when
+  // that member-level date is missing, so older history-only records still work.
+  const subscriptionExpiringYmd = ymdFromDateOnlyValue(
+    linkState.legacyMember?.subscriptionexpiring ?? null,
+  );
   const timeline = buildMembershipTimelineEvents(options.memberships);
   const expirationEvent = timeline.find((event) => isLegacyMembershipExpirationEvent(event));
-  const legacyExpirationYmd = ymdFromDateOnlyValue(expirationEvent?.dateSort ?? null);
+  const historyExpirationYmd = ymdFromDateOnlyValue(expirationEvent?.dateSort ?? null);
+  const legacyExpirationYmd = subscriptionExpiringYmd ?? historyExpirationYmd;
   const legacyExpirationDate =
     (legacyExpirationYmd
       ? formatMembershipCalendarDateFromYmd(legacyExpirationYmd)
