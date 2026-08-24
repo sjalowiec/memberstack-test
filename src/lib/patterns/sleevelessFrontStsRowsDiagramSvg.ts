@@ -842,7 +842,7 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
   const neckLabelY = cardiganV
     ? neckArrowY - 20
     : cardiganRound
-      ? frame.shoulderTopY - 22
+      ? neckArrowY - 20
       : Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
   parts.push(
     horizontalArrow(
