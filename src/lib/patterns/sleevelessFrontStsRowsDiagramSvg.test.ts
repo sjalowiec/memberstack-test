@@ -138,6 +138,21 @@ function alineRoundPattern(): Record<string, unknown> {
   return pattern;
 }
 
+function alineOutwardVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function inferredOutwardVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function shapedVNeckPattern(): Record<string, unknown> {
   const pattern = shallowVNeckPattern();
   (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
@@ -444,6 +459,76 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
     expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
     expect(svg).toContain(expectedInches(model.rows.expectedGarmentRows, model.rows.rowsPerInch));
+  });
+
+  it("generates an outward A-line Front when hem stitches are narrower than bust", () => {
+    for (const pattern of [alineOutwardVNeckPattern(), inferredOutwardVNeckPattern()]) {
+      const { svg, model } = svgFor(pattern);
+      expect(svg).toContain('data-sleeveless-front-sts-rows-generated="true"');
+      expect(svgAttr(svg, "data-body-shape")).toBe("aline");
+      expect(svgAttr(svg, "data-body-shaping-direction")).toBe("outward");
+      expect(model.bodyShape).toBe("aline");
+      expect(model.bodyShaping.direction).toBe("outward");
+      expect(model.widths.hemStitches).toBeLessThan(model.widths.bustStitches);
+      expect(svgNum(svg, "data-hem-sts")).toBe(model.widths.hemStitches);
+      expect(svgNum(svg, "data-bust-sts")).toBe(model.widths.bustStitches);
+      expect(widthLabelSts(svg, "cast-on")).toBe(model.widths.hemStitches);
+      expect(widthLabelSts(svg, "bust")).toBe(model.widths.bustStitches);
+      expect(svgNum(svg, "data-hem-width")).toBeLessThan(svgNum(svg, "data-bust-width"));
+      expect(svgNum(svg, "data-hem-left")).toBeGreaterThan(svgNum(svg, "data-bust-left"));
+    }
+  });
+
+  it("slopes outward A-line Front through the actual shaping RC span", () => {
+    const { svg, model } = svgFor(alineOutwardVNeckPattern());
+    expect(model.bodyShaping.rowNumbers.length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-shape-start-rc")).toBe(model.bodyShaping.startRc);
+    expect(svgNum(svg, "data-shape-end-rc")).toBe(model.bodyShaping.endRc);
+    expect(svgNum(svg, "data-shape-start-y")).toBeLessThan(svgNum(svg, "data-bottom-y"));
+    expect(svgNum(svg, "data-shape-end-y")).toBeLessThan(svgNum(svg, "data-shape-start-y"));
+    expect(svgNum(svg, "data-armhole-start-y")).toBeLessThanOrEqual(svgNum(svg, "data-shape-end-y"));
+    expect(model.bodyShaping.endRc).toBeLessThanOrEqual(model.armhole.startGarmentRc);
+
+    const leftBody = pathPoints(rolePaths(svg, "left-body-path")[0] ?? "");
+    expect(leftBody.length).toBeGreaterThan(2);
+    expect(leftBody[0]!.x).toBeCloseTo(svgNum(svg, "data-hem-left"), 2);
+    expect(leftBody[leftBody.length - 1]!.x).toBeCloseTo(svgNum(svg, "data-bust-left"), 2);
+    expect(leftBody[0]!.x).toBeGreaterThan(leftBody[leftBody.length - 1]!.x);
+    expect(leftBody[leftBody.length - 1]!.y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 2);
+  });
+
+  it("keeps outward A-line Front upper-body geometry matching the equivalent Straight Front", () => {
+    const straight = svgFor(shallowVNeckPattern());
+    const aline = svgFor(alineOutwardVNeckPattern());
+    expect(aline.model.widths.bustStitches).toBe(straight.model.widths.bustStitches);
+    expect(aline.model.widths.stitchesAfterArmhole).toBe(straight.model.widths.stitchesAfterArmhole);
+    expect(aline.model.widths.necklineStitches).toBe(straight.model.widths.necklineStitches);
+    expect(aline.model.widths.shoulderStitchesPerSide).toBe(straight.model.widths.shoulderStitchesPerSide);
+    expectUpperSilhouetteMatchesStitchBudget(aline.svg, aline.model);
+    expect(svgNum(aline.svg, "data-after-armhole-width")).toBeCloseTo(
+      svgNum(straight.svg, "data-after-armhole-width"),
+      1,
+    );
+    expect(svgNum(aline.svg, "data-neck-width")).toBeCloseTo(svgNum(straight.svg, "data-neck-width"), 1);
+    expect(svgNum(aline.svg, "data-shoulder-side-width")).toBeCloseTo(
+      svgNum(straight.svg, "data-shoulder-side-width"),
+      1,
+    );
+    expect(svgNum(aline.svg, "data-upper-scale")).toBeCloseTo(1, 2);
+  });
+
+  it("keeps outward A-line Front stitch and row labels true", () => {
+    const { svg, model } = svgFor(alineOutwardVNeckPattern());
+    expect(widthLabelSts(svg, "cast-on")).toBe(model.widths.hemStitches);
+    expect(widthLabelSts(svg, "bust")).toBe(model.widths.bustStitches);
+    expect(widthLabelSts(svg, "neck")).toBe(model.widths.necklineStitches);
+    expect(widthLabelSts(svg, "shoulder")).toBe(model.widths.shoulderStitchesPerSide);
+    expect(lengthLabelRows(svg, "garment-length")).toBe(model.rows.expectedGarmentRows);
+    expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
+    expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
+    expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
+    expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
+    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
   });
 
   it("maps garment widths from model stitch counts", () => {
@@ -984,6 +1069,16 @@ describe("live Pullover V-neck Front Stitches & Rows cutover", () => {
     expect(resolveSleevelessFrontDiagramSrc("sts-rows", alineRoundPattern())).toContain(
       "diagram-front-round-aline",
     );
+  });
+
+  it("uses the generated SVG for both A-line Front directions", () => {
+    for (const pattern of [alineVNeckPattern(), alineOutwardVNeckPattern(), inferredOutwardVNeckPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const live = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
+      expect(live).toBeTruthy();
+      expect(live).toContain('data-body-shape="aline"');
+      expect(live).toContain("data-body-shaping-direction=");
+    }
   });
 
   it("returns null so unsupported Front cases keep the existing SVG fallback", () => {

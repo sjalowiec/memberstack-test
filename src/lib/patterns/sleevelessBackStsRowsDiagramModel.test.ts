@@ -58,6 +58,21 @@ function alineBackPattern(): Record<string, unknown> {
   return pattern;
 }
 
+function alineOutwardBackPattern(): Record<string, unknown> {
+  const pattern = straightBackPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function inferredOutwardBackPattern(): Record<string, unknown> {
+  const pattern = straightBackPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function shapedBackPattern(): Record<string, unknown> {
   const pattern = straightBackPattern();
   (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
@@ -150,6 +165,28 @@ describe("buildSleevelessBackStsRowsDiagramModel", () => {
     expect(model?.bodyShaping.endRc).toBeLessThanOrEqual(model?.armhole.startGarmentRc ?? 0);
     expect(model?.neckline.style).toBe("round");
     expect(model?.neckline.depthRows).toBe(Math.round(d.backNeckDepthRows));
+  });
+
+  it("builds an A-line Back model when hem stitches are narrower than bust", () => {
+    for (const pattern of [alineOutwardBackPattern(), inferredOutwardBackPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const model = buildSleevelessBackStsRowsDiagramModel(result, pattern);
+      const d = result.debug;
+
+      expect(d.alineBodyShapingType).toBe("increase-to-bust");
+      expect(shouldBuildSleevelessBackStsRowsDiagramModel(result, pattern)).toBe(true);
+      expect(model).not.toBeNull();
+      expect(model?.bodyShape).toBe("aline");
+      expect(model?.widths.hemStitches).toBe(Math.round(d.hemCastOnStitches ?? d.backStitches));
+      expect(model?.widths.bustStitches).toBe(Math.round(d.bustBodyStitches ?? d.backStitches));
+      expect(model?.widths.hemStitches).toBeLessThan(model?.widths.bustStitches ?? 0);
+      expect(model?.bodyShaping.direction).toBe("outward");
+      expect(model?.bodyShaping.startRc).toBe(Math.floor(d.alineBodyShapingRowNumbers![0]!));
+      expect(model?.bodyShaping.endRc).toBe(
+        Math.floor(d.alineBodyShapingRowNumbers![d.alineBodyShapingRowNumbers!.length - 1]!),
+      );
+      expect(model?.bodyShaping.endRc).toBeLessThanOrEqual(model?.armhole.startGarmentRc ?? 0);
+    }
   });
 
   it("returns null for shaped bodies", () => {

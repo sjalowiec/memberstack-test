@@ -84,6 +84,21 @@ function alineBackPattern(): Record<string, unknown> {
   return pattern;
 }
 
+function alineOutwardBackPattern(): Record<string, unknown> {
+  const pattern = straightBackPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function inferredOutwardBackPattern(): Record<string, unknown> {
+  const pattern = straightBackPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function shapedBackPattern(): Record<string, unknown> {
   const pattern = straightBackPattern();
   (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
@@ -407,6 +422,79 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
   });
 
+  it("generates an outward A-line Back when hem stitches are narrower than bust", () => {
+    for (const pattern of [alineOutwardBackPattern(), inferredOutwardBackPattern()]) {
+      const { svg, model } = svgFor(pattern);
+      expect(svg).toContain('data-sleeveless-back-sts-rows-generated="true"');
+      expect(svgAttr(svg, "data-body-shape")).toBe("aline");
+      expect(svgAttr(svg, "data-body-shaping-direction")).toBe("outward");
+      expect(model.bodyShape).toBe("aline");
+      expect(model.bodyShaping.direction).toBe("outward");
+      expect(model.widths.hemStitches).toBeLessThan(model.widths.bustStitches);
+      expect(svgNum(svg, "data-hem-sts")).toBe(model.widths.hemStitches);
+      expect(svgNum(svg, "data-bust-sts")).toBe(model.widths.bustStitches);
+      expect(widthLabelSts(svg, "cast-on")).toBe(model.widths.hemStitches);
+      expect(widthLabelSts(svg, "bust")).toBe(model.widths.bustStitches);
+      expect(svgNum(svg, "data-hem-width")).toBeLessThan(svgNum(svg, "data-bust-width"));
+      expect(svgNum(svg, "data-hem-left")).toBeGreaterThan(svgNum(svg, "data-bust-left"));
+    }
+  });
+
+  it("slopes outward A-line Back through the actual shaping RC span", () => {
+    const { svg, model } = svgFor(alineOutwardBackPattern());
+    expect(model.bodyShaping.rowNumbers.length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-shape-start-rc")).toBe(model.bodyShaping.startRc);
+    expect(svgNum(svg, "data-shape-end-rc")).toBe(model.bodyShaping.endRc);
+    expect(svgNum(svg, "data-shape-start-y")).toBeLessThan(svgNum(svg, "data-bottom-y"));
+    expect(svgNum(svg, "data-shape-end-y")).toBeLessThan(svgNum(svg, "data-shape-start-y"));
+    expect(svgNum(svg, "data-armhole-start-y")).toBeLessThanOrEqual(svgNum(svg, "data-shape-end-y"));
+    expect(model.bodyShaping.endRc).toBeLessThanOrEqual(model.armhole.startGarmentRc);
+
+    const leftBody = pathPoints(rolePaths(svg, "left-body-path")[0] ?? "");
+    expect(leftBody.length).toBeGreaterThan(2);
+    expect(leftBody[0]!.x).toBeCloseTo(svgNum(svg, "data-hem-left"), 2);
+    expect(leftBody[leftBody.length - 1]!.x).toBeCloseTo(svgNum(svg, "data-bust-left"), 2);
+    expect(leftBody[0]!.x).toBeGreaterThan(leftBody[leftBody.length - 1]!.x);
+    expect(leftBody[leftBody.length - 1]!.y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 2);
+    expect(svgNum(svg, "data-shape-end-y")).toBeGreaterThan(svgNum(svg, "data-armhole-start-y") - 0.51);
+  });
+
+  it("keeps outward A-line Back upper-body geometry matching the equivalent Straight Back", () => {
+    const straight = svgFor(straightBackPattern());
+    const aline = svgFor(alineOutwardBackPattern());
+    expect(aline.model.widths.bustStitches).toBe(straight.model.widths.bustStitches);
+    expect(aline.model.widths.stitchesAfterArmhole).toBe(straight.model.widths.stitchesAfterArmhole);
+    expect(aline.model.widths.necklineStitches).toBe(straight.model.widths.necklineStitches);
+    expect(aline.model.widths.shoulderStitchesPerSide).toBe(straight.model.widths.shoulderStitchesPerSide);
+    expectUpperSilhouetteMatchesStitchBudget(aline.svg, aline.model);
+    expect(svgNum(aline.svg, "data-after-armhole-width")).toBeCloseTo(
+      svgNum(straight.svg, "data-after-armhole-width"),
+      1,
+    );
+    expect(svgNum(aline.svg, "data-neck-width")).toBeCloseTo(svgNum(straight.svg, "data-neck-width"), 1);
+    expect(svgNum(aline.svg, "data-shoulder-side-width")).toBeCloseTo(
+      svgNum(straight.svg, "data-shoulder-side-width"),
+      1,
+    );
+    expect(svgNum(aline.svg, "data-upper-scale")).toBeCloseTo(1, 2);
+    expect(lengthLabelRows(aline.svg, "neck-depth")).toBe(aline.model.neckline.depthRows);
+    expect(widthLabelSts(aline.svg, "neck")).toBe(aline.model.widths.necklineStitches);
+  });
+
+  it("keeps outward A-line Back stitch and row labels true", () => {
+    const { svg, model } = svgFor(alineOutwardBackPattern());
+    expect(widthLabelSts(svg, "cast-on")).toBe(model.widths.hemStitches);
+    expect(widthLabelSts(svg, "bust")).toBe(model.widths.bustStitches);
+    expect(widthLabelSts(svg, "neck")).toBe(model.widths.necklineStitches);
+    expect(widthLabelSts(svg, "shoulder")).toBe(model.widths.shoulderStitchesPerSide);
+    expect(lengthLabelRows(svg, "garment-length")).toBe(model.rows.expectedGarmentRows);
+    expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
+    expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
+    expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
+    expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
+    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
+  });
+
   it("returns null so shaped Back keeps the static fallback", () => {
     const pattern = shapedBackPattern();
     const result = generateSleevelessBackPattern(pattern);
@@ -439,6 +527,16 @@ describe("live Sleeveless Back Stitches & Rows cutover", () => {
     expect(resolveSleevelessBackDiagramSrc("sts-rows", pattern)).toBe(
       "/images/patterns/sleeveless/diagrams/diagram-back-aline.svg",
     );
+  });
+
+  it("uses the generated SVG for both A-line Back directions", () => {
+    for (const pattern of [alineBackPattern(), alineOutwardBackPattern(), inferredOutwardBackPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const live = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, pattern);
+      expect(live).toBeTruthy();
+      expect(live).toContain('data-body-shape="aline"');
+      expect(live).toContain("data-body-shaping-direction=");
+    }
   });
 
   it("wires generated hydration before the Back Stitches & Rows template fetch", () => {

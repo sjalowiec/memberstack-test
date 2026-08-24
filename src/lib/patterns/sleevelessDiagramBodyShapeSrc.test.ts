@@ -4,6 +4,7 @@ import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
 import {
   applySleevelessDiagramBodyShapeSuffix,
   resolveSleevelessDiagramBodyShapeKind,
+  shouldGenerateSleevelessAlineStsRows,
   usesDedicatedSleevelessBodyShapeDiagramSvg,
 } from "./sleevelessDiagramBodyShapeSrc";
 import { resolveSleevelessFrontDiagramSrc } from "./sleevelessFrontJapaneseNotation";
@@ -67,6 +68,32 @@ describe("resolveSleevelessDiagramBodyShapeKind", () => {
 
   it("resolves straight when bust matches hip and style is straight", () => {
     expect(resolveSleevelessDiagramBodyShapeKind(straightFit)).toBe("straight");
+  });
+});
+
+describe("shouldGenerateSleevelessAlineStsRows", () => {
+  it("allows both A-line stitch directions and rejects explicit shaped", () => {
+    expect(shouldGenerateSleevelessAlineStsRows(alineFit, "decrease-to-bust")).toBe(true);
+    expect(
+      shouldGenerateSleevelessAlineStsRows(
+        {
+          style: { bodyShape: "aline", garmentStyle: "pullover" },
+          fit: { selectedMeasurements: { finished_bust_chest: 40, finished_hip: 32 } },
+        },
+        "increase-to-bust",
+      ),
+    ).toBe(true);
+    expect(
+      shouldGenerateSleevelessAlineStsRows(
+        {
+          style: { garmentStyle: "pullover" },
+          fit: { selectedMeasurements: { finished_bust_chest: 40, finished_hip: 32 } },
+        },
+        "increase-to-bust",
+      ),
+    ).toBe(true);
+    expect(shouldGenerateSleevelessAlineStsRows(shapedFit, "increase-to-bust")).toBe(false);
+    expect(shouldGenerateSleevelessAlineStsRows(straightFit, "straight")).toBe(false);
   });
 });
 

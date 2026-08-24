@@ -7,7 +7,10 @@
 
 import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
-import { resolveSleevelessDiagramBodyShapeKind } from "./sleevelessDiagramBodyShapeSrc";
+import {
+  resolveSleevelessDiagramBodyShapeKind,
+  shouldGenerateSleevelessAlineStsRows,
+} from "./sleevelessDiagramBodyShapeSrc";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -213,7 +216,11 @@ export function shouldBuildSleevelessFrontStsRowsDiagramModel(
   if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
   const bodyKind = resolveSleevelessDiagramBodyShapeKind(patternData);
-  if (bodyKind !== "straight" && bodyKind !== "aline") return false;
+  const generateAline = shouldGenerateSleevelessAlineStsRows(
+    patternData,
+    result.debug.alineBodyShapingType,
+  );
+  if (bodyKind !== "straight" && !generateAline) return false;
   return (
     isSleevelessPulloverVNeckFrontNotation(result, patternData) || isPulloverRoundFront(patternData)
   );
@@ -331,7 +338,9 @@ export function buildSleevelessFrontStsRowsDiagramModel(
   return {
     piece: "front",
     garmentStyle: "pullover",
-    bodyShape: resolveSleevelessDiagramBodyShapeKind(patternData) === "aline" ? "aline" : "straight",
+    bodyShape: shouldGenerateSleevelessAlineStsRows(patternData, d.alineBodyShapingType)
+      ? "aline"
+      : "straight",
     widths: {
       hemStitches,
       bustStitches,
