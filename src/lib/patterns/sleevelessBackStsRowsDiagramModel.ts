@@ -1,8 +1,8 @@
 /**
  * Data model for the Sleeveless Back Stitches & Rows diagram.
  *
- * Scope: straight body only (pullover or cardigan). Back neckline is always the
- * Back round/shallow opening — never Front V-neck depth.
+ * Scope: straight or A-line body (pullover or cardigan). Back neckline is always
+ * the Back round/shallow opening — never Front V-neck depth.
  * Reads a finalized {@link SleevelessBackPatternResult}. No pattern math, no SVG.
  */
 
@@ -74,7 +74,7 @@ export type SleevelessBackStsRowsDiagramBodyShaping = {
 export type SleevelessBackStsRowsDiagramModel = {
   piece: "back";
   garmentStyle: "pullover" | "cardigan";
-  bodyShape: "straight";
+  bodyShape: "straight" | "aline";
   widths: SleevelessBackStsRowsDiagramWidths;
   rows: SleevelessBackStsRowsDiagramRows;
   neckline: SleevelessBackStsRowsDiagramNeckline;
@@ -140,11 +140,12 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessBack
     return { direction, hemStitches, bustStitches, startRc: 0, endRc: 0, rowNumbers: [] };
   }
   if (rowNumbers.length === 0) {
+    const hemRc = Math.max(0, Math.round(finiteOr(d.hemRows, 0)));
     const armholeRc = Math.max(
-      0,
+      hemRc,
       Math.floor(finiteOr(d.armholeStartRow, d.rowsFromCastOnToArmholeStart ?? 0)),
     );
-    return { direction, hemStitches, bustStitches, startRc: 0, endRc: armholeRc, rowNumbers };
+    return { direction, hemStitches, bustStitches, startRc: hemRc, endRc: armholeRc, rowNumbers };
   }
   return {
     direction,
@@ -156,17 +157,18 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessBack
   };
 }
 
-/** True when this result is in the Back Stitches & Rows model scope (straight body). */
+/** True when this result is in the Back Stitches & Rows model scope (straight or A-line). */
 export function shouldBuildSleevelessBackStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): boolean {
   if (!result.neckShoulderChartUsesLiveRows) return false;
-  return resolveSleevelessDiagramBodyShapeKind(patternData) === "straight";
+  const bodyKind = resolveSleevelessDiagramBodyShapeKind(patternData);
+  return bodyKind === "straight" || bodyKind === "aline";
 }
 
 /**
- * Straight-body Back measurement model for the Stitches & Rows renderer.
+ * Back measurement model for the Stitches & Rows renderer (straight or A-line).
  * Returns `null` when the result is out of scope so hydration keeps the Illustrator SVG.
  */
 export function buildSleevelessBackStsRowsDiagramModel(
@@ -248,7 +250,7 @@ export function buildSleevelessBackStsRowsDiagramModel(
   return {
     piece: "back",
     garmentStyle: isSleevelessCardiganGarmentStyle(patternData ?? {}) ? "cardigan" : "pullover",
-    bodyShape: "straight",
+    bodyShape: resolveSleevelessDiagramBodyShapeKind(patternData) === "aline" ? "aline" : "straight",
     widths: {
       hemStitches,
       bustStitches,
