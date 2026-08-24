@@ -1125,6 +1125,12 @@ describe("live Pullover V-neck Front notation cutover", () => {
     const fn = script.slice(fnStart, fnStart + 2200);
     expect(fn).toContain("tryBuildLiveSleevelessFrontVNeckNotationSvg");
     expect(fn.indexOf("tryBuildLiveSleevelessFrontVNeckNotationSvg")).toBeLessThan(
+      fn.indexOf("tryBuildLiveSleevelessFrontRoundNotationSvg"),
+    );
+    expect(fn.indexOf("tryBuildLiveSleevelessFrontRoundNotationSvg")).toBeLessThan(
+      fn.indexOf("tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg"),
+    );
+    expect(fn.indexOf("tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg")).toBeLessThan(
       fn.indexOf("resolveSleevelessFrontDiagramSrc"),
     );
     expect(fn.indexOf("if (generatedSvg)")).toBeLessThan(fn.indexOf("await fetch(notationSrc"));
