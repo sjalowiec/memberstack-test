@@ -5,6 +5,7 @@ import {
   SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS,
   SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG,
   collectedMeasurementValuesArePersistable,
+  createSameTurnCommitGate,
   refreshSleevelessEditMeasurementArtLayer,
   replaceSleevelessMeasurementArtOnly,
   wireSleevelessNecklineArtRefreshOnce,
@@ -294,6 +295,17 @@ describe("Sleeveless edit measurement art refresh lifecycle", () => {
   });
 });
 
+describe("Sleeveless edit measurement art — same-turn change+blur gate", () => {
+  it("runs persist/refresh once for change then blur of the same value", async () => {
+    const shouldCommit = createSameTurnCommitGate();
+    expect(shouldCommit("chestBust", "38")).toBe(true);
+    expect(shouldCommit("chestBust", "38")).toBe(false);
+    await Promise.resolve();
+    expect(shouldCommit("chestBust", "38")).toBe(true);
+    expect(shouldCommit("hip", "44")).toBe(true);
+  });
+});
+
 describe("Sleeveless edit measurement art — listener wiring", () => {
   it("wires each neckline radio once", () => {
     const listeners: Array<() => void> = [];
@@ -316,9 +328,9 @@ describe("Sleeveless edit measurement art — page/DOM contract", () => {
     expect(measurementsPageSrc).toContain("SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS");
     expect(measurementsPageSrc).toContain("inner.append(artHost, overlay)");
     expect(measurementsPageSrc).not.toContain("inner.append(art, overlay)");
-    expect(measurementsPageSrc).toContain("refreshSleevelessEditMeasurementArtLayer");
+    expect(measurementsPageSrc).toContain("replaceSleevelessMeasurementArtOnly");
     expect(measurementsPageSrc).toContain("adoptGeneratedMeasurementSvg");
-    expect(measurementsPageSrc).toContain("collectOverlayAnchors(overlay)");
+    expect(measurementsPageSrc).toContain("diagramOverlayPositionCleanup.retarget");
     expect(measurementsPageSrc).not.toContain("oldArt.replaceWith(next)");
     const refreshFn = measurementsPageSrc.match(
       /const refreshSleevelessMeasurementArt = \(\): void => \{[\s\S]*?\n  \};/,
@@ -327,7 +339,9 @@ describe("Sleeveless edit measurement art — page/DOM contract", () => {
     expect(refreshFn).not.toContain("diagramHost.replaceChildren()");
     expect(refreshFn).not.toContain("overlay.innerHTML");
     expect(refreshFn).not.toContain("replaceChildren()");
-    expect(refreshFn).toContain("refreshSleevelessEditMeasurementArtLayer");
+    expect(refreshFn).toContain("retarget");
+    expect(refreshFn).not.toContain("cleanupPreviousBind");
+    expect(refreshFn).not.toMatch(/diagramOverlayPositionCleanup\?\.\(\)/);
   });
 
   it("does not persist an empty chip collection after a refresh", () => {

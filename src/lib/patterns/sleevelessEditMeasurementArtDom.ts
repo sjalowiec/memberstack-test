@@ -14,6 +14,30 @@
 export const SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS = "express-mbp-art-host";
 export const SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG = "slEditNecklineArtWired";
 
+/**
+ * `change` and capture `blur` both fire when leaving a text input.
+ * Keep persist + art refresh to one commit per field value in the same turn.
+ */
+export function createSameTurnCommitGate(): (key: string, value: string) => boolean {
+  let lastKey = "";
+  let lastValue = "";
+  let resetScheduled = false;
+  return (key: string, value: string): boolean => {
+    if (key === lastKey && value === lastValue) return false;
+    lastKey = key;
+    lastValue = value;
+    if (!resetScheduled) {
+      resetScheduled = true;
+      queueMicrotask(() => {
+        lastKey = "";
+        lastValue = "";
+        resetScheduled = false;
+      });
+    }
+    return true;
+  };
+}
+
 export function collectedMeasurementValuesArePersistable(
   collected: Record<string, string | undefined>,
 ): boolean {

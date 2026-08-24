@@ -60,7 +60,8 @@ import {
 import {
   adoptGeneratedMeasurementSvg,
   collectedMeasurementValuesArePersistable,
-  refreshSleevelessEditMeasurementArtLayer,
+  createSameTurnCommitGate,
+  replaceSleevelessMeasurementArtOnly,
   SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS,
   wireSleevelessNecklineArtRefreshOnce,
 } from "../lib/patterns/sleevelessEditMeasurementArtDom";
@@ -74,6 +75,7 @@ import {
   applyMeasurementBlueprintViewBoxAspect,
   bindPatternSummaryOverlayPositioning,
   collectOverlayAnchors,
+  type PatternSummaryOverlayCleanup,
   DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS,
   PATTERN_SUMMARY_MEASUREMENT_TARGETS,
 } from "../lib/patterns/patternSummaryMeasurementOverlay";
@@ -980,7 +982,7 @@ function createDiagramReadonlyFieldBox(
   return box;
 }
 
-let diagramOverlayPositionCleanup: (() => void) | null = null;
+let diagramOverlayPositionCleanup: PatternSummaryOverlayCleanup | null = null;
 let cachedBlueprintSvgTemplate: { url: string; template: SVGSVGElement } | null = null;
 let lastSummaryDiagramRenderKey = "";
 
@@ -1186,11 +1188,15 @@ let measureFieldPersistenceCleanup: (() => void) | null = null;
 function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthUnit | null): void {
   measureFieldPersistenceCleanup?.();
   measureFieldPersistenceCleanup = null;
+  const shouldCommitField = createSameTurnCommitGate();
 
   const saveFromInput = (el: HTMLInputElement): void => {
     resetCbMeasureWarningDismissal();
     const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
     if (!key) return;
+    // Leaving a text field fires bubbling `change` then capture `blur` on `root`.
+    // Both listeners call this function; persist + art refresh must run once.
+    if (!shouldCommitField(key, el.value)) return;
     const displayUnit = getDisplayUnit();
     const n =
       displayUnit == null
@@ -1608,25 +1614,21 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     const merged = collectValues(root, { displayUnit: displayUnit ?? undefined });
     const next = adoptSleevelessGeneratedMeasurementArt(merged);
     if (!next) return;
-    const swapped = refreshSleevelessEditMeasurementArtLayer({
-      stageInner: inner,
-      nextArt: next,
-      cleanupPreviousBind: () => {
-        diagramOverlayPositionCleanup?.();
-        diagramOverlayPositionCleanup = null;
-      },
-      bindOverlay: (art, overlay) => {
-        if (!(overlay instanceof HTMLElement) || !(art instanceof SVGSVGElement)) return;
-        applyMeasurementBlueprintViewBoxAspect(art, inner);
-        diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
-          inner,
-          art,
-          overlay,
-          collectOverlayAnchors(overlay),
-        );
-      },
-    });
-    if (!swapped) return;
+    const swapped = replaceSleevelessMeasurementArtOnly(inner, next);
+    if (!swapped || !(swapped.overlay instanceof HTMLElement)) return;
+    applyMeasurementBlueprintViewBoxAspect(next, inner);
+    // Keep the existing overlay binder and chip nodes. Teardown + rebind was
+    // clearing overlay-mode and writing offscreen left/top against 0×0 anchors.
+    if (diagramOverlayPositionCleanup?.retarget) {
+      diagramOverlayPositionCleanup.retarget(next);
+      return;
+    }
+    diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
+      inner,
+      next,
+      swapped.overlay,
+      collectOverlayAnchors(swapped.overlay),
+    );
   };
   sleevelessMeasurementArtRefreshImpl = refreshSleevelessMeasurementArt;
   wireSleevelessNecklineArtRefreshOnce(
