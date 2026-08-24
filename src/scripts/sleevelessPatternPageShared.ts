@@ -159,6 +159,7 @@ import {
   resolveSleevelessFrontDiagramSrc,
 } from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "../lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts";
+import { buildSleevelessFrontStsRowsDiagramModel } from "../lib/patterns/sleevelessFrontStsRowsDiagramModel.ts";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackNotationSvg } from "../lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts";
 import {
@@ -1343,8 +1344,25 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, patternData);
     const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, patternData);
+    // TEMP: identify generated vs static Front Stitches & Rows fallback. Do not change branches.
+    const isSupportedModel = Boolean(
+      model &&
+        model.piece === "front" &&
+        model.garmentStyle === "pullover" &&
+        model.bodyShape === "straight" &&
+        (model.neckline.style === "v-neck" || model.neckline.style === "round") &&
+        model.bodyShaping.direction === "straight",
+    );
     if (generatedSvg) {
+      console.log("[sleeveless] Front STS-rows fallback decision", {
+        "neckline.style": model?.neckline.style ?? null,
+        "bodyShaping.direction": model?.bodyShaping.direction ?? null,
+        isSupportedModel,
+        liveSvgMarkupExists: true,
+        rendered: "tryBuildLiveSleevelessFrontStsRowsDiagramSvg",
+      });
       mountFrontStsRowsSvgMarkup(el, generatedSvg, hydrateGen);
       return;
     }
@@ -1353,9 +1371,17 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       patternData,
       cardiganHalfSide: guideOpts?.cardiganHalfSide,
     });
+    const fallbackSrc = resolveSleevelessFrontDiagramSrc("sts-rows", patternData);
+    console.log("[sleeveless] Front STS-rows fallback decision", {
+      "neckline.style": model?.neckline.style ?? null,
+      "bodyShaping.direction": model?.bodyShaping.direction ?? null,
+      isSupportedModel,
+      liveSvgMarkupExists: false,
+      rendered: fallbackSrc,
+    });
     await inlineSvgWithReplacements(
       el,
-      resolveSleevelessFrontDiagramSrc("sts-rows", patternData),
+      fallbackSrc,
       FRONT_DIAGRAM_STS_ROWS_ALT,
       replacements,
       hydrateGeneration,
