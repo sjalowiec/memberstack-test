@@ -21,6 +21,7 @@ import {
   shouldUseGeneratedSleevelessFrontRoundNotation,
   SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_CLEARANCE,
   SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_SAFE_MAX_X,
+  SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE,
   SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION,
   SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC,
   SLEEVELESS_FRONT_ROUND_NOTATION_VIEWBOX,
@@ -293,34 +294,53 @@ describe("buildSleevelessFrontRoundShapingNotationDiagramSvg", () => {
   });
 
   it("places neckline shaping inside the scoop above the center bind-off", () => {
+    for (const pattern of [roundPulloverPattern(), shallowRoundPulloverPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
+      const shaping = textPositions(svg, "neck-shaping");
+      const bo = textPositions(svg, "neck-bo");
+      expect(bo).toHaveLength(1);
+      expect(bo[0]!.text).toMatch(/^(bo|hold)\d+$/);
+
+      const neckLeft = svgNum(svg, "data-neck-left");
+      const neckRight = svgNum(svg, "data-neck-right");
+      const neckCornerY = svgNum(svg, "data-neck-corner-y");
+      const neckStartY = svgNum(svg, "data-neck-start-y");
+
+      expect(bo[0]!.x).toBeCloseTo(svgNum(svg, "data-cx"), 5);
+      expect(bo[0]!.y).toBeGreaterThan(neckStartY);
+      expect(bo[0]!.y).toBeCloseTo(neckStartY + SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE, 5);
+
+      if (shaping.length > 0) {
+        const lastShapingY = Math.max(...shaping.map((p) => p.y));
+        const firstShapingY = Math.min(...shaping.map((p) => p.y));
+        for (const pos of shaping) {
+          expect(pos.x).toBeCloseTo(svgNum(svg, "data-cx"), 5);
+          expect(pos.x).toBeGreaterThan(neckLeft);
+          expect(pos.x).toBeLessThan(neckRight);
+        }
+        expect(firstShapingY).toBeGreaterThanOrEqual(neckCornerY);
+        expect(lastShapingY).toBeLessThan(neckStartY + 0.01);
+        expect(lastShapingY).toBeLessThan(bo[0]!.y);
+        expect(firstShapingY).toBeLessThan(161);
+        expect(lastShapingY).toBeLessThan(181);
+      }
+    }
+  });
+
+  it("does not move armhole or shoulder notation when the center neck label shifts", () => {
     const pattern = roundPulloverPattern();
     const result = generateSleevelessBackPattern(pattern);
     const svg = buildSleevelessFrontRoundShapingNotationDiagramSvg(result, pattern);
-    const shaping = textPositions(svg, "neck-shaping");
-    const bo = textPositions(svg, "neck-bo");
-    expect(shaping.length).toBeGreaterThan(0);
-    expect(bo).toHaveLength(1);
-
-    const neckLeft = svgNum(svg, "data-neck-left");
-    const neckRight = svgNum(svg, "data-neck-right");
-    const neckCornerY = svgNum(svg, "data-neck-corner-y");
-    const neckStartY = svgNum(svg, "data-neck-start-y");
-    const armholeStartY = svgNum(svg, "data-armhole-start-y");
-    const lastShapingY = Math.max(...shaping.map((p) => p.y));
-    const firstShapingY = Math.min(...shaping.map((p) => p.y));
-
-    for (const pos of [...shaping, ...bo]) {
-      expect(pos.x).toBeGreaterThan(neckLeft);
-      expect(pos.x).toBeLessThan(neckRight);
-      expect(pos.x).toBeCloseTo(svgNum(svg, "data-cx"), 5);
-    }
-    expect(firstShapingY).toBeGreaterThanOrEqual(neckCornerY);
-    expect(lastShapingY).toBeLessThan(bo[0]!.y);
-    expect(bo[0]!.y).toBeCloseTo(neckStartY, 5);
-    expect(lastShapingY).toBeLessThan(armholeStartY);
-    expect(bo[0]!.y).toBeLessThan(armholeStartY);
-    expect(firstShapingY).toBeLessThan(161);
-    expect(lastShapingY).toBeLessThan(181);
+    const armholeBo = textPositions(svg, "armhole-bo");
+    const armholeShaping = textPositions(svg, "armhole-shaping");
+    const shoulder = textPositions(svg, "shoulder-shaping");
+    expect(armholeBo[0]!.x).toBeCloseTo(287.44, 2);
+    expect(armholeBo[0]!.y).toBeCloseTo(184.43, 2);
+    expect(armholeShaping[0]!.x).toBeCloseTo(287.44, 2);
+    expect(armholeShaping[0]!.y).toBeCloseTo(166.43, 2);
+    expect(shoulder[0]!.x).toBeCloseTo(254.76, 2);
+    expect(Math.max(...shoulder.map((p) => p.y))).toBeCloseTo(86.46, 2);
   });
 
   it("places the armhole block next to the right armhole edge", () => {

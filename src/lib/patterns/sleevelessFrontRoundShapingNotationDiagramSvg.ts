@@ -61,6 +61,7 @@ const FS_NOTATION = 17;
 const FS_RC = 14;
 const NOTATION_GAP = 18;
 const NECK_NOTATION_GAP = 18;
+const NECK_BO_BELOW_GUIDE = NECK_NOTATION_GAP;
 const ARMHOLE_NOTATION_GAP = 18;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 const ARMHOLE_LABEL_CLEARANCE = 10;
@@ -76,6 +77,7 @@ const REF_BUST_STS = 80;
 
 export const SLEEVELESS_FRONT_ROUND_NOTATION_FS_NOTATION = FS_NOTATION;
 export const SLEEVELESS_FRONT_ROUND_NOTATION_FS_RC = FS_RC;
+export const SLEEVELESS_FRONT_ROUND_NECK_BO_BELOW_GUIDE = NECK_BO_BELOW_GUIDE;
 export const SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_CLEARANCE = ARMHOLE_LABEL_CLEARANCE;
 export const SLEEVELESS_FRONT_ROUND_ARMHOLE_LABEL_SAFE_MAX_X = ARMHOLE_LABEL_SAFE_MAX_X;
 
@@ -825,15 +827,16 @@ export function buildSleevelessFrontRoundShapingNotationDiagramSvg(
 
   const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
   const neckLabelX = frame.cx;
-  const neckBoY = frame.neckStartY;
+  const neckGuideY = frame.neckStartY;
+  const neckBoY = neckGuideY + NECK_BO_BELOW_GUIDE;
   const neckInsideTop = frame.neckCornerY + Math.max(4, Math.round(FS_NOTATION * 0.25));
   const neckCount = neckShapingLines.length;
-  const preferredFirstY = neckBoY - neckCount * NECK_NOTATION_GAP;
+  const preferredFirstY = neckGuideY - neckCount * NECK_NOTATION_GAP;
   const neckShapingStep =
     neckCount > 0 && preferredFirstY < neckInsideTop
-      ? (neckBoY - neckInsideTop) / neckCount
+      ? (neckGuideY - neckInsideTop) / neckCount
       : NECK_NOTATION_GAP;
-  const neckShapingFirstY = neckBoY - neckCount * neckShapingStep;
+  const neckShapingFirstY = neckGuideY - neckCount * neckShapingStep;
   parts.push(
     `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckShapingFirstY)}" data-bo-y="${fmtNum(neckBoY)}"></g>`,
   );
