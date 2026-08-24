@@ -7,6 +7,8 @@ import {
   EDIT_WORKSPACE_TWO_COLUMN_MIN_PX,
   applyMeasurementTargetToBox,
   clearMeasurementBoxPosition,
+  measurementOverlayTargetsAreLaidOut,
+  positionMeasurementBox,
   shouldUseDesktopMeasurementOverlay,
 } from "./patternSummaryMeasurementOverlay";
 
@@ -122,6 +124,38 @@ describe("patternSummaryMeasurementOverlay — stage-width overlay mode", () => 
   it("clears coords in stacked mode for the under-diagram Measurements panel", () => {
     expect(overlaySrc).toMatch(/if\s*\(\s*!desktop\s*\)\s*\{[\s\S]*clearMeasurementBoxPosition/);
     expect(overlaySrc).not.toContain("positionMeasurementBoxesMobile");
+  });
+
+  it("does not park chips offscreen when a replaced SVG target has no layout yet", () => {
+    const cssEscape = (globalThis as { CSS?: { escape: (value: string) => string } }).CSS;
+    if (!cssEscape) {
+      (globalThis as { CSS: { escape: (value: string) => string } }).CSS = {
+        escape: (value) => value,
+      };
+    }
+    const box = new FakeBox();
+    const overlay = {
+      getBoundingClientRect: () => ({ left: 120, top: 80, width: 640, height: 640 }),
+    };
+    const svg = {
+      querySelector: () => ({
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0 }),
+      }),
+    };
+    const placed = positionMeasurementBox(
+      box as unknown as HTMLElement,
+      svg as unknown as SVGElement,
+      overlay as unknown as HTMLElement,
+      "target_bust",
+    );
+    expect(placed).toBe(false);
+    expect(box.style.left).toBe("120px");
+    expect(box.style.top).toBe("80px");
+    expect(measurementOverlayTargetsAreLaidOut(svg as unknown as SVGElement, [{ targetId: "target_bust" }])).toBe(
+      false,
+    );
+    expect(overlaySrc).toContain("measurementOverlayTargetsAreLaidOut");
+    expect(overlaySrc).toContain("cleanup.retarget = retarget");
   });
 });
 

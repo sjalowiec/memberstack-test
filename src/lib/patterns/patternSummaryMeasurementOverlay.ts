@@ -140,8 +140,11 @@ export function resolvePatternSummaryTarget(
   if (!el && targetId === PATTERN_SUMMARY_MEASUREMENT_TARGETS.garmentLength) {
     el = svg.querySelector(`#${GARMENT_LENGTH_TARGET_TYPO_ID}`);
   }
-  if (el instanceof SVGGraphicsElement) return el;
-  if (el instanceof Element && typeof (el as SVGGraphicsElement).getBBox === "function") {
+  if (typeof SVGGraphicsElement !== "undefined" && el instanceof SVGGraphicsElement) return el;
+  if (typeof Element !== "undefined" && el instanceof Element && typeof (el as SVGGraphicsElement).getBBox === "function") {
+    return el as SVGGraphicsElement;
+  }
+  if (typeof (el as { getBoundingClientRect?: unknown }).getBoundingClientRect === "function") {
     return el as SVGGraphicsElement;
   }
   return null;
@@ -164,6 +167,9 @@ export function positionMeasurementBox(
   const targetRect = target.getBoundingClientRect();
   const overlayRect = overlayElement.getBoundingClientRect();
   if (overlayRect.width <= 0 || overlayRect.height <= 0) return false;
+  // A just-replaced SVG can report 0×0 anchors. Writing left/top from that parks
+  // chips at -overlayRect (offscreen). Leave the last visible position instead.
+  if (targetRect.width <= 0 && targetRect.height <= 0) return false;
 
   const x =
     targetRect.left + targetRect.width / 2 - overlayRect.left + (options?.offsetX ?? 0);
@@ -193,6 +199,20 @@ export function applyMeasurementTargetToBox(
   } else {
     delete box.dataset.measurementTransform;
   }
+}
+
+export function measurementTargetIsLaidOut(svg: SVGElement, targetId: string): boolean {
+  const target = resolvePatternSummaryTarget(svg, targetId);
+  if (!target) return false;
+  const rect = target.getBoundingClientRect();
+  return rect.width > 0 || rect.height > 0;
+}
+
+export function measurementOverlayTargetsAreLaidOut(
+  svg: SVGElement,
+  anchors: ReadonlyArray<Pick<MeasurementOverlayAnchor, "targetId">>,
+): boolean {
+  return anchors.length > 0 && anchors.every((anchor) => measurementTargetIsLaidOut(svg, anchor.targetId));
 }
 
 export function collectOverlayAnchors(overlay: HTMLElement): MeasurementOverlayAnchor[] {
@@ -239,14 +259,19 @@ function resolveOverlayScrollElement(stage: HTMLElement | null): HTMLElement | n
  * Starts in mobile/stacked mode to avoid a flash of overlapping absolute chips
  * before the first stage-width measurement.
  */
+export type PatternSummaryOverlayCleanup = (() => void) & {
+  retarget: (nextSvg: SVGElement) => void;
+};
+
 export function bindPatternSummaryOverlayPositioning(
   stageInner: HTMLElement,
   svg: SVGElement,
   overlay: HTMLElement,
   anchors: MeasurementOverlayAnchor[],
-): () => void {
+): PatternSummaryOverlayCleanup {
   const stage = resolveOverlayStageElement(stageInner);
   const scroll = resolveOverlayScrollElement(stage);
+  let liveSvg = svg;
   let repositionFrame: number | null = null;
   let lastStageWidth = -1;
   let lastStageHeight = -1;
@@ -275,8 +300,14 @@ export function bindPatternSummaryOverlayPositioning(
       return;
     }
 
+    if (!measurementOverlayTargetsAreLaidOut(liveSvg, anchors)) {
+      // New art is in the tree but not measurable yet. Keep the last visible
+      // placement instead of writing offscreen coordinates.
+      return;
+    }
+
     for (const anchor of anchors) {
-      const placed = positionMeasurementBox(anchor.box, svg, overlay, anchor.targetId, anchor);
+      const placed = positionMeasurementBox(anchor.box, liveSvg, overlay, anchor.targetId, anchor);
       if (!placed && import.meta.env.DEV) {
         console.warn(`[pattern-summary-overlay] Missing SVG target: #${anchor.targetId}`);
       }
@@ -333,7 +364,7 @@ export function bindPatternSummaryOverlayPositioning(
     if (stage) resizeObserver.observe(stage);
   }
 
-  return () => {
+  const disconnect = (): void => {
     if (repositionFrame !== null) {
       window.cancelAnimationFrame(repositionFrame);
       repositionFrame = null;
@@ -347,4 +378,18 @@ export function bindPatternSummaryOverlayPositioning(
     if (scroll) delete scroll.dataset.measurementOverlayMode;
     for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
   };
+
+  const retarget = (nextSvg: SVGElement): void => {
+    liveSvg = nextSvg;
+    lastStageWidth = -1;
+    lastStageHeight = -1;
+    lastDesktop = null;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => scheduleReposition(true));
+    });
+  };
+
+  const cleanup = disconnect as PatternSummaryOverlayCleanup;
+  cleanup.retarget = retarget;
+  return cleanup;
 }

@@ -187,7 +187,8 @@ describe("Sleeveless edit measurement diagram — overlay anchors", () => {
     expect(measurementsPageSrc).toContain("bindPatternSummaryOverlayPositioning");
     expect(measurementsPageSrc).toContain("buildSleevelessEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("collectOverlayAnchors");
-    expect(measurementsPageSrc).toContain("refreshSleevelessEditMeasurementArtLayer");
+    expect(measurementsPageSrc).toContain("replaceSleevelessMeasurementArtOnly");
+    expect(measurementsPageSrc).toContain("diagramOverlayPositionCleanup.retarget");
     expect(rendererSrc).not.toContain("data-measurement-target");
   });
 
