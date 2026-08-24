@@ -299,3 +299,72 @@ describe("Sleeveless Edit Pattern — real measurement input event path", () => 
     );
   });
 });
+
+describe("Sleeveless Edit Pattern — Front Style live art refresh", () => {
+  function refreshArtOnly(
+    inner: FakeEl,
+    overlay: FakeEl,
+    label: string,
+    disconnectLog: string[],
+    retargetLog: string[],
+  ): void {
+    const next = makeArt(label);
+    const swapped = replaceSleevelessMeasurementArtOnly(
+      inner as unknown as ParentNode,
+      next as unknown as Element,
+    );
+    expect(swapped?.overlay).toBe(overlay);
+    retargetLog.push(next.id);
+  }
+
+  it("Pullover → Cardigan and Cardigan → Pullover keep the same chips and values", () => {
+    const { inner, overlay, chips } = hydrate(INITIAL);
+    const disconnectLog: string[] = [];
+    const retargetLog: string[] = [];
+
+    refreshArtOnly(inner, overlay, "cardigan", disconnectLog, retargetLog);
+    expect(overlay.chips).toBe(chips);
+    expect(chips.map((chip) => chip.value)).toEqual(Object.values(INITIAL));
+
+    refreshArtOnly(inner, overlay, "pullover", disconnectLog, retargetLog);
+    expect(overlay.chips).toBe(chips);
+    expect(chips.map((chip) => chip.value)).toEqual(Object.values(INITIAL));
+    expect(disconnectLog).toEqual([]);
+    expect(retargetLog).toEqual(["art-cardigan", "art-pullover"]);
+    expect(inner.querySelectorAll("svg.express-mbp-art")).toHaveLength(1);
+    expect(inner.querySelectorAll(".express-mbp-overlay")).toHaveLength(1);
+  });
+
+  it("repeated Front Style changes do not duplicate overlays or disconnect the binder", () => {
+    const { inner, overlay, chips } = hydrate(INITIAL);
+    const disconnectLog: string[] = [];
+    const retargetLog: string[] = [];
+    for (let i = 0; i < 6; i += 1) {
+      refreshArtOnly(inner, overlay, i % 2 === 0 ? "cardigan" : "pullover", disconnectLog, retargetLog);
+    }
+    expect(overlay.chips).toHaveLength(CHIP_KEYS.length);
+    expect(overlay.chips).toBe(chips);
+    expect(disconnectLog).toEqual([]);
+    expect(retargetLog).toHaveLength(6);
+    expect(inner.querySelectorAll("svg.express-mbp-art")).toHaveLength(1);
+    expect(inner.querySelectorAll(".express-mbp-overlay")).toHaveLength(1);
+  });
+
+  it("wires Front Style to the same art-only refresh as Round/V", () => {
+    expect(measurementsPageSrc).toContain("wireSleevelessGarmentArtRefreshOnce");
+    expect(measurementsPageSrc).toContain('input[name="sl-edit-garment"]');
+    expect(measurementsPageSrc).toContain("readLiveSleevelessEditGarmentStyle");
+    expect(measurementsPageSrc).toContain("liveGarmentStyle");
+    const refreshFn = measurementsPageSrc.match(
+      /const refreshSleevelessMeasurementArt = \(\): void => \{[\s\S]*?\n  \};/,
+    )?.[0];
+    expect(refreshFn).toContain("replaceSleevelessMeasurementArtOnly");
+    expect(refreshFn).toContain("retarget");
+    expect(measurementsPageSrc).toMatch(
+      /wireSleevelessGarmentArtRefreshOnce\(\s*document\.querySelectorAll<HTMLInputElement>\('input\[name="sl-edit-garment"\]'\),\s*refreshSleevelessMeasurementArt,/,
+    );
+    expect(measurementsPageSrc).toMatch(
+      /wireSleevelessNecklineArtRefreshOnce\(\s*document\.querySelectorAll<HTMLInputElement>\('input\[name="sl-edit-neckline"\]'\),\s*refreshSleevelessMeasurementArt,/,
+    );
+  });
+});

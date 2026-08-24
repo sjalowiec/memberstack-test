@@ -2,12 +2,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  SLEEVELESS_EDIT_GARMENT_ART_WIRED_FLAG,
   SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS,
   SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG,
   collectedMeasurementValuesArePersistable,
   createSameTurnCommitGate,
   refreshSleevelessEditMeasurementArtLayer,
   replaceSleevelessMeasurementArtOnly,
+  wireSleevelessGarmentArtRefreshOnce,
   wireSleevelessNecklineArtRefreshOnce,
 } from "./sleevelessEditMeasurementArtDom";
 import {
@@ -321,6 +323,21 @@ describe("Sleeveless edit measurement art — listener wiring", () => {
       true,
     );
   });
+
+  it("wires each Front Style radio once to the same refresh callback", () => {
+    const listeners: Array<() => void> = [];
+    const radios = [
+      { dataset: {} as Record<string, string | undefined>, addEventListener: (_t: string, fn: () => void) => listeners.push(fn) },
+      { dataset: {} as Record<string, string | undefined>, addEventListener: (_t: string, fn: () => void) => listeners.push(fn) },
+    ];
+    const onChange = (): void => undefined;
+    expect(wireSleevelessGarmentArtRefreshOnce(radios, onChange)).toBe(2);
+    expect(wireSleevelessGarmentArtRefreshOnce(radios, onChange)).toBe(0);
+    expect(listeners).toHaveLength(2);
+    expect(radios.every((el) => el.dataset[SLEEVELESS_EDIT_GARMENT_ART_WIRED_FLAG] === "1")).toBe(
+      true,
+    );
+  });
 });
 
 describe("Sleeveless edit measurement art — page/DOM contract", () => {
@@ -331,6 +348,7 @@ describe("Sleeveless edit measurement art — page/DOM contract", () => {
     expect(measurementsPageSrc).toContain("replaceSleevelessMeasurementArtOnly");
     expect(measurementsPageSrc).toContain("adoptGeneratedMeasurementSvg");
     expect(measurementsPageSrc).toContain("diagramOverlayPositionCleanup.retarget");
+    expect(measurementsPageSrc).toContain("wireSleevelessGarmentArtRefreshOnce");
     expect(measurementsPageSrc).not.toContain("oldArt.replaceWith(next)");
     const refreshFn = measurementsPageSrc.match(
       /const refreshSleevelessMeasurementArt = \(\): void => \{[\s\S]*?\n  \};/,

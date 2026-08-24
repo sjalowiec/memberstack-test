@@ -13,6 +13,7 @@
 
 export const SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS = "express-mbp-art-host";
 export const SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG = "slEditNecklineArtWired";
+export const SLEEVELESS_EDIT_GARMENT_ART_WIRED_FLAG = "slEditGarmentArtWired";
 
 /**
  * `change` and capture `blur` both fire when leaving a text input.
@@ -103,22 +104,46 @@ export function refreshSleevelessEditMeasurementArtLayer(options: {
   return swapped;
 }
 
-type NecklineArtRefreshRadio = {
+type ChoiceArtRefreshRadio = {
   dataset: Record<string, string | undefined>;
   addEventListener: (type: string, listener: () => void) => void;
 };
 
-/** Wire neckline radios once so repeated inits do not stack change listeners. */
-export function wireSleevelessNecklineArtRefreshOnce(
-  radios: Iterable<NecklineArtRefreshRadio>,
+function wireSleevelessChoiceArtRefreshOnce(
+  radios: Iterable<ChoiceArtRefreshRadio>,
   onChange: () => void,
+  flag: string,
 ): number {
   let added = 0;
   for (const el of radios) {
-    if (el.dataset[SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG] === "1") continue;
-    el.dataset[SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG] = "1";
+    if (el.dataset[flag] === "1") continue;
+    el.dataset[flag] = "1";
     el.addEventListener("change", onChange);
     added += 1;
   }
   return added;
+}
+
+/** Wire neckline radios once so repeated inits do not stack change listeners. */
+export function wireSleevelessNecklineArtRefreshOnce(
+  radios: Iterable<ChoiceArtRefreshRadio>,
+  onChange: () => void,
+): number {
+  return wireSleevelessChoiceArtRefreshOnce(
+    radios,
+    onChange,
+    SLEEVELESS_EDIT_NECKLINE_ART_WIRED_FLAG,
+  );
+}
+
+/** Same art-refresh callback as neckline — Front Style radios, wired once. */
+export function wireSleevelessGarmentArtRefreshOnce(
+  radios: Iterable<ChoiceArtRefreshRadio>,
+  onChange: () => void,
+): number {
+  return wireSleevelessChoiceArtRefreshOnce(
+    radios,
+    onChange,
+    SLEEVELESS_EDIT_GARMENT_ART_WIRED_FLAG,
+  );
 }
