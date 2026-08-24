@@ -484,21 +484,21 @@ describe("live Pullover Front Round notation cutover", () => {
     expect(vSource).toContain("const FS_NOTATION = 17;");
   });
 
-  it("leaves Back generated renderer unchanged", () => {
+  it("keeps generated Back notation available with the shared 17 / 14 type", () => {
     const pattern = roundPulloverPattern();
     const result = generateSleevelessBackPattern(pattern);
     expect(shouldUseGeneratedSleevelessBackNotation(result, pattern)).toBe(true);
     const backSvg = tryBuildLiveSleevelessBackNotationSvg(result, pattern);
     expect(backSvg).toBeTruthy();
     expect(backSvg).toContain("data-sleeveless-back-generated-notation");
-    expect(backSvg).toContain('font-size="13"');
-    expect(backSvg).toContain('font-size="12"');
+    expect(backSvg).toContain('font-size="17"');
+    expect(backSvg).toContain('font-size="14"');
     const backSource = readFileSync(
       join(srcRoot, "lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts"),
       "utf8",
     );
-    expect(backSource).toContain("const FS_RC = 12;");
-    expect(backSource).toContain("const FS_NOTATION = 13;");
+    expect(backSource).toContain("const FS_RC = 14;");
+    expect(backSource).toContain("const FS_NOTATION = 17;");
   });
 
   it("falls back for A-line Round", () => {

@@ -13,6 +13,7 @@ import {
   isBackJapaneseNotationSupported,
 } from "./sleevelessBackJapaneseNotation";
 import { resolveSleevelessBackDiagramSrc } from "./sleevelessBackDiagramSrc";
+import { SLEEVELESS_BACK_STS_ROWS_VISUAL } from "./sleevelessBackGarmentGeometry";
 import {
   buildSleevelessBackShapingNotationDiagramSvg,
   shouldUseGeneratedSleevelessBackNotation,
@@ -20,12 +21,15 @@ import {
   SLEEVELESS_BACK_ARMHOLE_LABEL_START_X,
   SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP,
   SLEEVELESS_BACK_BODY_LABEL_OUTLINE_CLEARANCE,
+  SLEEVELESS_BACK_NOTATION_FS_NOTATION,
+  SLEEVELESS_BACK_NOTATION_FS_RC,
   SLEEVELESS_BACK_NOTATION_VIEWBOX,
   SLEEVELESS_BACK_RC_RESET_GAP,
   sleevelessBackShoulderNotationLines,
   sleevelessBackShoulderPoints,
   tryBuildLiveSleevelessBackNotationSvg,
 } from "./sleevelessBackShapingNotationDiagramSvg";
+import { tryBuildLiveSleevelessBackStsRowsDiagramSvg } from "./sleevelessBackStsRowsDiagramSvg";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -602,10 +606,7 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(svgNum(svg, "data-last-armhole-garment-rc")).not.toBe(d.armholeEndRow);
     expect(svgNum(svg, "data-armhole-start-garment-rc")).toBe(armholeStart);
 
-    expectClosePx(
-      svgNum(svg, "data-bo-left") - svgNum(svg, "data-bust-left"),
-      bindOffSts * (svgNum(svg, "data-body-width") / 2 / bustSts),
-    );
+    expectClosePx(svgNum(svg, "data-bo-left") - svgNum(svg, "data-bust-left"), bindOffSts * px);
     expectClosePx(
       svgNum(svg, "data-after-right") - svgNum(svg, "data-after-left"),
       afterSts * px,
@@ -626,10 +627,11 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
 
     const scoop = svgNum(svg, "data-neck-start-y") - svgNum(svg, "data-neck-corner-y");
     const armholeBand = svgNum(svg, "data-armhole-start-y") - svgNum(svg, "data-shoulder-y");
-    const rowRatio = d.backNeckDepthRows / d.armholeRows;
     expect(armholeBand).toBeGreaterThan(0);
-    expect(scoop / armholeBand).toBeLessThan(0.22);
-    expect(Math.abs(scoop / armholeBand - rowRatio)).toBeLessThan(0.08);
+    expect(scoop).toBeCloseTo(svgNum(svg, "data-visual-neck-h"), 2);
+    expect(scoop).toBeGreaterThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth);
+    expect(scoop).toBeLessThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth);
+    expect(svgNum(svg, "data-neck-depth-rows")).toBe(d.backNeckDepthRows);
 
     expect(svgAttr(svg, "data-neck-bo")).toBe("hold17");
     expect(svgAttr(svg, "data-armhole-bo")).toBe("bo4");
@@ -733,9 +735,12 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(svgNum(deepSvg, "data-neck-depth-rows")).toBeGreaterThan(
       svgNum(shallowSvg, "data-neck-depth-rows"),
     );
-    expect(svgNum(deepSvg, "data-neck-start-y") - svgNum(deepSvg, "data-neck-corner-y")).toBeGreaterThan(
-      svgNum(shallowSvg, "data-neck-start-y") - svgNum(shallowSvg, "data-neck-corner-y"),
-    );
+    const shallowVisual = svgNum(shallowSvg, "data-visual-neck-h");
+    const deepVisual = svgNum(deepSvg, "data-visual-neck-h");
+    expect(shallowVisual).toBeGreaterThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth);
+    expect(shallowVisual).toBeLessThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth);
+    expect(deepVisual).toBeGreaterThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth);
+    expect(deepVisual).toBeLessThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth);
 
     expect(wideResult.debug.necklineStitches ?? 0).toBeGreaterThan(shallowResult.debug.necklineStitches ?? 0);
     expect(svgNum(wideSvg, "data-neck-width-stitches")).toBeGreaterThan(
@@ -767,8 +772,9 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(neckPathHasVerticalSlot(svg)).toBe(false);
     const cub = firstNeckCubic(svg)!;
     expect(cub).toBeTruthy();
-    expect(cub.c1y).toBeCloseTo(cub.y0, 1);
-    expect(Math.abs(cub.c1x - cub.x0)).toBeGreaterThan(4);
+    expect(cub.y0).toBeCloseTo(svgNum(svg, "data-neck-corner-y"), 1);
+    expect(cub.c1x).toBeCloseTo(cub.x0, 1);
+    expect(cub.c1y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
     expect(cub.y1).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
     expect(svgNum(svg, "data-neck-depth-y")).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
     expect(svgNum(svg, "data-neck-left-x")).toBe(svgNum(svg, "data-neck-left"));
@@ -783,18 +789,22 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expectParity(svg, result, pattern);
   });
 
-  it("deepens the generated scoop when a renderer-only deeper Back neck is supplied", () => {
+  it("keeps true Back neck-depth rows in data while the visual scoop stays shallow", () => {
     const shallow = straightBodyPattern();
     const deep = deeperBackNeckPattern();
     const shallowResult = generateSleevelessBackPattern(shallow);
     const deepResult = generateSleevelessBackPattern(deep);
     const shallowSvg = buildSleevelessBackShapingNotationDiagramSvg(shallowResult, shallow);
     const deepSvg = buildSleevelessBackShapingNotationDiagramSvg(deepResult, deep);
-    const shallowCub = firstNeckCubic(shallowSvg)!;
-    const deepCub = firstNeckCubic(deepSvg)!;
-    const shallowMidY = cubicY(shallowCub.y0, shallowCub.c1y, shallowCub.c2y, shallowCub.y1, 0.5);
-    const deepMidY = cubicY(deepCub.y0, deepCub.c1y, deepCub.c2y, deepCub.y1, 0.5);
-    expect(deepMidY - deepCub.y0).toBeGreaterThan(shallowMidY - shallowCub.y0);
+    expect(svgNum(deepSvg, "data-neck-depth-rows")).toBeGreaterThan(
+      svgNum(shallowSvg, "data-neck-depth-rows"),
+    );
+    expect(svgNum(deepSvg, "data-visual-neck-h")).toBeGreaterThanOrEqual(
+      SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth,
+    );
+    expect(svgNum(deepSvg, "data-visual-neck-h")).toBeLessThanOrEqual(
+      SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth,
+    );
     expect(svgNum(deepSvg, "data-neck-width-stitches")).toBe(deepResult.debug.necklineStitches);
     expect(pathD(deepSvg, "back-neck-path")).toMatch(/C /);
     expect(neckPathHasVerticalSlot(deepSvg)).toBe(false);
@@ -832,14 +842,19 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
       expectClosePx(holdW, (result.debug.centerNeckBindOffStitches ?? 0) * px);
       expect(svgNum(svg, "data-neck-depth-y")).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
       expect(svgNum(svg, "data-neck-depth-rows")).toBe(result.debug.backNeckDepthRows);
-      expect(depth / armholeBand).toBeLessThan(0.22);
+      expect(depth).toBeCloseTo(svgNum(svg, "data-visual-neck-h"), 2);
+      expect(depth).toBeGreaterThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth);
+      expect(depth).toBeLessThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth);
       expect(depth / neckW).toBeLessThan(0.35);
+      expect(armholeBand).toBeGreaterThan(depth);
 
       expect(cubs).toHaveLength(2);
       const first = cubs[0]!;
       const last = cubs[1]!;
-      expect(first.c1y).toBeCloseTo(first.y0, 1);
-      expect(last.c2y).toBeCloseTo(last.y1, 1);
+      expect(first.c1x).toBeCloseTo(first.x0, 1);
+      expect(first.c1y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+      expect(last.c2x).toBeCloseTo(last.x1, 1);
+      expect(last.c2y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
       expect(first.y1).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
       expect(first.x1).toBeCloseTo(cx, 1);
       expect(Math.abs(first.x1 - svgNum(svg, "data-neck-center-left"))).toBeGreaterThan(holdW * 0.12);
@@ -850,15 +865,15 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
       expect(neckYAtWidthFraction(svg, 0.1)).toBeCloseTo(neckYAtWidthFraction(svg, 0.9), 1);
 
       const y0 = neckYAtWidthFraction(svg, 0);
-      const y20 = neckYAtWidthFraction(svg, 0.2);
-      const y35 = neckYAtWidthFraction(svg, 0.35);
+      const y25 = neckYAtWidthFraction(svg, 0.25);
       const y50 = neckYAtWidthFraction(svg, 0.5);
+      const y75 = neckYAtWidthFraction(svg, 0.75);
       expect(y50).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
-      expect(y20 - y0).toBeGreaterThan(0);
-      expect(y35 - y20).toBeGreaterThan(0);
-      expect(y50 - y35).toBeLessThan(y35 - y0);
-      expect(y20 - y0).toBeLessThan(depth * 0.55);
-      expect(y50 - y35).toBeLessThan(depth * 0.4);
+      expect(y50).toBeGreaterThan(y0);
+      expect(y25).toBeGreaterThan(y0);
+      expect(y50).toBeGreaterThanOrEqual(y25);
+      expect(y75).toBeCloseTo(y25, 1);
+      expect(y50 - y0).toBeCloseTo(depth, 1);
 
       expect(neckPathHasVerticalSlot(svg)).toBe(false);
       expect(pathD(svg, "back-neck-path")).not.toMatch(/ L /);
@@ -882,7 +897,8 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(pathD(svg, "back-neck-path")).toMatch(/C /);
     expect(svgNum(svg, "data-neck-center-right")).toBeGreaterThan(svgNum(svg, "data-neck-center-left"));
     const cub = firstNeckCubic(svg)!;
-    expect(cub.c1y).toBeCloseTo(cub.y0, 1);
+    expect(cub.c1x).toBeCloseTo(cub.x0, 1);
+    expect(cub.c1y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
     expect(cub.c2y).toBeCloseTo(cub.y1, 1);
   });
 
@@ -929,7 +945,10 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
       }
       expect(svgAttr(svg, "data-shoulder-shaping")).not.toMatch(/^bo/i);
       expect(svgAttr(svg, "data-shoulder-shaping")).not.toBe(svgAttr(svg, "data-armhole-bo"));
-      expect(firstTextPos(svg, "shoulder-shaping").y).toBeLessThan(svgNum(svg, "data-shoulder-top-y") - 16);
+      const shoulderLabel = firstTextPos(svg, "shoulder-shaping");
+      expect(shoulderLabel.y).toBeGreaterThan(svgNum(svg, "data-shoulder-top-y") - 8);
+      expect(shoulderLabel.y).toBeLessThan(svgNum(svg, "data-shoulder-y") + 8);
+      expect(shoulderLabel.x).toBeGreaterThan(svgNum(svg, "data-neck-right"));
     }
   });
 
@@ -1080,6 +1099,116 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(isBackJapaneseNotationSupported(cardigan, cResult)).toBe(true);
     expectValidSvg(cSvg);
     expectParity(cSvg, cResult, cardigan);
+  });
+
+  it("uses the current Front notation typography (17 / 14)", () => {
+    const pattern = proofBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    expect(SLEEVELESS_BACK_NOTATION_FS_NOTATION).toBe(17);
+    expect(SLEEVELESS_BACK_NOTATION_FS_RC).toBe(14);
+    expect(svg).toContain('font-size="17"');
+    expect(svg).toContain('font-size="14"');
+    expect(svg).not.toContain('font-size="13"');
+    expect(svg).not.toContain('font-size="12"');
+    expect(roles(svg, "armhole-bo")[0]).toContain('font-size="17"');
+    expect(roles(svg, "neck-bo")[0]).toContain('font-size="17"');
+    expect(roles(svg, "cast-on")[0]).toContain('font-size="17"');
+    expect(svg).toMatch(/<text[^>]*data-role="shoulder-shaping"[^>]*font-size="17"|<text[^>]*font-size="17"[^>]*data-role="shoulder-shaping"/);
+    expect(roles(svg, "armhole-start-rc")[0]).toContain('font-size="14"');
+    expect(roles(svg, "neck-start-rc")[0]).toContain('font-size="14"');
+    expect(SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP).toBe(18);
+    expect(SLEEVELESS_BACK_RC_RESET_GAP).toBe(Math.round(14 * 1.75));
+
+    const roundSource = readFileSync(
+      join(srcRoot, "lib/patterns/sleevelessFrontRoundShapingNotationDiagramSvg.ts"),
+      "utf8",
+    );
+    const vSource = readFileSync(
+      join(srcRoot, "lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts"),
+      "utf8",
+    );
+    expect(roundSource).toContain("const FS_NOTATION = 17;");
+    expect(roundSource).toContain("const FS_RC = 14;");
+    expect(roundSource).not.toContain("sleevelessBackGarmentGeometry");
+    expect(vSource).toContain("const FS_NOTATION = 17;");
+    expect(vSource).toContain("const FS_RC = 14;");
+    expect(vSource).not.toContain("sleevelessBackGarmentGeometry");
+  });
+});
+
+describe("Back Shaping Notation reuses Back Stitches & Rows geometry", () => {
+  function rolePaths(svg: string, role: string): string[] {
+    const re = new RegExp(`data-role="${role}"[^>]*\\sd="([^"]+)"`, "g");
+    return [...svg.matchAll(re)].map((m) => m[1] ?? "");
+  }
+
+  function expectSharedGeometry(pattern: Record<string, unknown>): void {
+    const result = generateSleevelessBackPattern(pattern);
+    const notation = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    const stsRows = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, pattern);
+    expect(stsRows).toBeTruthy();
+    const rows = stsRows!;
+    expectValidSvg(notation);
+    expectParity(notation, result, pattern);
+
+    expectClosePx(svgNum(notation, "data-body-width"), svgNum(rows, "data-bust-width"), 0.05);
+    expectClosePx(svgNum(notation, "data-hem-left"), svgNum(rows, "data-hem-left"), 0.05);
+    expectClosePx(svgNum(notation, "data-hem-right"), svgNum(rows, "data-hem-right"), 0.05);
+    expectClosePx(svgNum(notation, "data-bust-left"), svgNum(rows, "data-bust-left"), 0.05);
+    expectClosePx(svgNum(notation, "data-bust-right"), svgNum(rows, "data-bust-right"), 0.05);
+    expectClosePx(svgNum(notation, "data-armhole-start-y"), svgNum(rows, "data-armhole-start-y"), 0.05);
+    expectClosePx(svgNum(notation, "data-bo-left"), svgNum(rows, "data-bo-left"), 0.05);
+    expectClosePx(svgNum(notation, "data-bo-right"), svgNum(rows, "data-bo-right"), 0.05);
+    expectClosePx(svgNum(notation, "data-last-armhole-y"), svgNum(rows, "data-last-armhole-y"), 0.05);
+    expect(svgNum(notation, "data-last-decrease-rc")).toBe(svgNum(rows, "data-last-decrease-rc"));
+    expectClosePx(
+      svgNum(notation, "data-after-armhole-width"),
+      svgNum(rows, "data-after-armhole-width"),
+      0.05,
+    );
+    expectClosePx(svgNum(notation, "data-after-left"), svgNum(rows, "data-after-left"), 0.05);
+    expectClosePx(svgNum(notation, "data-after-right"), svgNum(rows, "data-after-right"), 0.05);
+    expectClosePx(svgNum(notation, "data-neck-width"), svgNum(rows, "data-neck-width"), 0.05);
+    expectClosePx(svgNum(notation, "data-neck-left"), svgNum(rows, "data-neck-left"), 0.05);
+    expectClosePx(svgNum(notation, "data-neck-right"), svgNum(rows, "data-neck-right"), 0.05);
+    expectClosePx(svgNum(notation, "data-shoulder-y"), svgNum(rows, "data-shoulder-y"), 0.05);
+    expectClosePx(svgNum(notation, "data-neck-corner-y"), svgNum(rows, "data-neck-corner-y"), 0.05);
+    expectClosePx(svgNum(notation, "data-shoulder-top-y"), svgNum(rows, "data-shoulder-top-y"), 0.05);
+    expectClosePx(svgNum(notation, "data-visual-neck-h"), svgNum(rows, "data-visual-neck-h"), 0.05);
+    expect(svgNum(notation, "data-visual-neck-h")).toBeGreaterThanOrEqual(
+      SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth,
+    );
+    expect(svgNum(notation, "data-visual-neck-h")).toBeLessThanOrEqual(
+      SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth,
+    );
+    expectClosePx(svgNum(notation, "data-neck-start-y"), svgNum(rows, "data-neck-start-y"), 0.05);
+
+    expect(pathD(notation, "body-outline")).toBe(pathD(rows, "body-outline"));
+    expect(pathD(notation, "back-neck-path")).toBe(rolePaths(rows, "neckline-outline")[0]);
+    expect(pathD(notation, "left-armhole-path")).toBe(rolePaths(rows, "armhole-outline")[0]);
+    expect(pathD(notation, "right-armhole-path")).toBe(rolePaths(rows, "armhole-outline")[1]);
+    expect(pathD(notation, "left-shoulder-path")).toBe(rolePaths(rows, "shoulder-outline")[0]);
+    expect(pathD(notation, "right-shoulder-path")).toBe(rolePaths(rows, "shoulder-outline")[1]);
+
+    const leftAh = pathPoints(notation, "left-armhole-path");
+    expect(leftAh).toHaveLength(4);
+    expect(leftAh[1]!.y).toBeCloseTo(leftAh[0]!.y, 2);
+    expect(leftAh[2]!.x).toBeCloseTo(leftAh[3]!.x, 2);
+    expect(leftAh[2]!.y).toBeCloseTo(svgNum(notation, "data-last-armhole-y"), 2);
+    expect(leftAh[3]!.y).toBeCloseTo(svgNum(notation, "data-shoulder-y"), 2);
+  }
+
+  it("matches approved Back Stitches & Rows geometry on the straight fixture", () => {
+    expectSharedGeometry(straightBodyPattern());
+  });
+
+  it("matches approved Back Stitches & Rows geometry on the proof fixture", () => {
+    expectSharedGeometry(proofBackPattern());
+  });
+
+  it("matches approved Back Stitches & Rows geometry on the A-line inward fixture", () => {
+    expectSharedGeometry(inwardBodyPattern());
   });
 });
 
