@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pulloverArmholeEvents } from "./frontArmholeNecklineComposition";
 import { armholeBindOffDecreaseFromEachSide } from "./sleevelessBackJapaneseNotation";
+import { resolveSleevelessDiagramBodyShapeKind } from "./sleevelessDiagramBodyShapeSrc";
 import {
   buildSleevelessBackStsRowsDiagramModel,
   shouldBuildSleevelessBackStsRowsDiagramModel,
@@ -127,12 +128,36 @@ describe("buildSleevelessBackStsRowsDiagramModel", () => {
     expect(model?.armhole.events).toEqual(events);
   });
 
-  it("returns null for A-line and shaped bodies", () => {
-    for (const pattern of [alineBackPattern(), shapedBackPattern()]) {
-      const result = generateSleevelessBackPattern(pattern);
-      expect(shouldBuildSleevelessBackStsRowsDiagramModel(result, pattern)).toBe(false);
-      expect(buildSleevelessBackStsRowsDiagramModel(result, pattern)).toBeNull();
-    }
+  it("builds an A-line Back model from the same body-shaping data as Front", () => {
+    const pattern = alineBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessBackStsRowsDiagramModel(result, pattern);
+    const d = result.debug;
+
+    expect(resolveSleevelessDiagramBodyShapeKind(pattern)).toBe("aline");
+    expect(shouldBuildSleevelessBackStsRowsDiagramModel(result, pattern)).toBe(true);
+    expect(model).not.toBeNull();
+    expect(model?.bodyShape).toBe("aline");
+    expect(model?.widths.hemStitches).toBe(Math.round(d.hemCastOnStitches ?? d.backStitches));
+    expect(model?.widths.bustStitches).toBe(Math.round(d.bustBodyStitches ?? d.backStitches));
+    expect(model?.widths.hemStitches).toBeGreaterThan(model?.widths.bustStitches ?? 0);
+    expect(model?.bodyShaping.direction).toBe("inward");
+    expect(model?.bodyShaping.rowNumbers.length).toBeGreaterThan(0);
+    expect(model?.bodyShaping.startRc).toBe(Math.floor(d.alineBodyShapingRowNumbers![0]!));
+    expect(model?.bodyShaping.endRc).toBe(
+      Math.floor(d.alineBodyShapingRowNumbers![d.alineBodyShapingRowNumbers!.length - 1]!),
+    );
+    expect(model?.bodyShaping.endRc).toBeLessThanOrEqual(model?.armhole.startGarmentRc ?? 0);
+    expect(model?.neckline.style).toBe("round");
+    expect(model?.neckline.depthRows).toBe(Math.round(d.backNeckDepthRows));
+  });
+
+  it("returns null for shaped bodies", () => {
+    const pattern = shapedBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    expect(shouldBuildSleevelessBackStsRowsDiagramModel(result, pattern)).toBe(false);
+    expect(buildSleevelessBackStsRowsDiagramModel(result, pattern)).toBeNull();
+    expect(resolveSleevelessDiagramBodyShapeKind(pattern)).toBe("shaped");
   });
 
   it("returns null when live back chart rows are missing", () => {
