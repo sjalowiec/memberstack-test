@@ -71,6 +71,30 @@ function outwardBodyPattern(): Record<string, unknown> {
   return pattern;
 }
 
+function alineOutwardExplicitBackPattern(): Record<string, unknown> {
+  const pattern = baseBackPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function shapedBackPattern(): Record<string, unknown> {
+  const pattern = baseBackPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function waistBackPattern(): Record<string, unknown> {
+  const pattern = baseBackPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "waist";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function wideInwardBodyPattern(): Record<string, unknown> {
   return {
     fit: {
@@ -1274,11 +1298,20 @@ describe("Back Shaping Notation reuses Back Stitches & Rows geometry", () => {
   it("matches approved Back Stitches & Rows geometry on the A-line inward fixture", () => {
     expectSharedGeometry(inwardBodyPattern());
   });
+
+  it("matches approved Back Stitches & Rows geometry on the A-line outward fixture", () => {
+    expectSharedGeometry(alineOutwardExplicitBackPattern());
+  });
 });
 
 describe("live Sleeveless Back notation cutover", () => {
   it("uses the generated renderer for supported Sleeveless Back", () => {
-    for (const pattern of [straightBodyPattern(), inwardBodyPattern(), vNeckPulloverPattern()]) {
+    for (const pattern of [
+      straightBodyPattern(),
+      inwardBodyPattern(),
+      alineOutwardExplicitBackPattern(),
+      vNeckPulloverPattern(),
+    ]) {
       const result = generateSleevelessBackPattern(pattern);
       const live = tryBuildLiveSleevelessBackNotationSvg(result, pattern);
       expect(shouldUseGeneratedSleevelessBackNotation(result, pattern)).toBe(true);
@@ -1286,6 +1319,49 @@ describe("live Sleeveless Back notation cutover", () => {
       expect(live).toContain('data-sleeveless-back-generated-notation="true"');
       expect(live).toContain('data-supported="true"');
       expect(live).toBe(buildSleevelessBackShapingNotationDiagramSvg(result, pattern));
+    }
+  });
+
+  it("falls back for explicit shaped/waist Back", () => {
+    for (const pattern of [shapedBackPattern(), waistBackPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      expect(shouldUseGeneratedSleevelessBackNotation(result, pattern)).toBe(false);
+      expect(tryBuildLiveSleevelessBackNotationSvg(result, pattern)).toBeNull();
+    }
+  });
+
+  it("keeps shallow Back neck and armhole notation unchanged above the armhole versus Straight", () => {
+    const straight = straightBodyPattern();
+    const straightSvg = buildSleevelessBackShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(straight),
+      straight,
+    );
+    for (const pattern of [inwardBodyPattern(), alineOutwardExplicitBackPattern()]) {
+      const svg = buildSleevelessBackShapingNotationDiagramSvg(
+        generateSleevelessBackPattern(pattern),
+        pattern,
+      );
+      for (const attr of [
+        "data-armhole-bo",
+        "data-armhole-shaping",
+        "data-neck-shaping",
+        "data-shoulder-shaping",
+      ]) {
+        expect(svgAttr(svg, attr)).toBe(svgAttr(straightSvg, attr));
+      }
+      for (const attr of [
+        "data-bust-left",
+        "data-bust-right",
+        "data-armhole-start-y",
+        "data-last-armhole-y",
+        "data-neck-start-y",
+        "data-shoulder-y",
+      ]) {
+        expect(svgNum(svg, attr)).toBeCloseTo(svgNum(straightSvg, attr), 2);
+      }
+      expect(pathD(svg, "back-neck-path")).toBe(pathD(straightSvg, "back-neck-path"));
+      expect(pathD(svg, "left-armhole-path")).toBe(pathD(straightSvg, "left-armhole-path"));
+      expect(pathD(svg, "right-armhole-path")).toBe(pathD(straightSvg, "right-armhole-path"));
     }
   });
 

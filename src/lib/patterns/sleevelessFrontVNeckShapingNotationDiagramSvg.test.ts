@@ -184,6 +184,30 @@ function straightBodyVNeckPattern(): Record<string, unknown> {
   return shallowVNeckPattern();
 }
 
+function alineOutwardExplicitVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function shapedVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function waistVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "waist";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function wideInwardBodyVNeckPattern(): Record<string, unknown> {
   const pattern = equalDepthVNeckPattern();
   const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
@@ -1144,5 +1168,54 @@ describe("live Pullover V-neck Front notation cutover", () => {
     expect(script).toContain('resolveSleevelessFrontDiagramSrc("sts-rows"');
     expect(script).toContain("buildSleevelessPatternDiagramTabsShellHtml");
     expect(script).not.toContain("buildHatShapingNotationDiagramSvg");
+  });
+
+  it("selects generated A-line V notation and keeps V upper notation unchanged", () => {
+    function expectUpperVUnchanged(straightSvg: string, alineSvg: string): void {
+      for (const attr of [
+        "data-armhole-bo",
+        "data-armhole-shaping",
+        "data-neck-shaping",
+        "data-shoulder-shaping",
+      ]) {
+        expect(svgAttr(alineSvg, attr)).toBe(svgAttr(straightSvg, attr));
+      }
+      for (const attr of [
+        "data-bust-left",
+        "data-bust-right",
+        "data-armhole-start-y",
+        "data-last-armhole-y",
+        "data-neck-start-y",
+        "data-shoulder-y",
+      ]) {
+        expect(svgNum(alineSvg, attr)).toBeCloseTo(svgNum(straightSvg, attr), 2);
+      }
+    }
+
+    const straight = straightBodyVNeckPattern();
+    const straightSvg = buildSleevelessFrontVNeckShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(straight),
+      straight,
+    );
+
+    for (const [pattern, direction] of [
+      [inwardBodyVNeckPattern(), "inward"],
+      [alineOutwardExplicitVNeckPattern(), "outward"],
+    ] as const) {
+      const result = generateSleevelessBackPattern(pattern);
+      expect(shouldUseGeneratedSleevelessFrontVNeckNotation(result, pattern)).toBe(true);
+      const live = tryBuildLiveSleevelessFrontVNeckNotationSvg(result, pattern);
+      expect(live).toBeTruthy();
+      expect(svgAttr(live!, "data-body-shaping-direction")).toBe(direction);
+      expectUpperVUnchanged(straightSvg, live!);
+    }
+  });
+
+  it("falls back for explicit shaped/waist Pullover V", () => {
+    for (const pattern of [shapedVNeckPattern(), waistVNeckPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      expect(shouldUseGeneratedSleevelessFrontVNeckNotation(result, pattern)).toBe(false);
+      expect(tryBuildLiveSleevelessFrontVNeckNotationSvg(result, pattern)).toBeNull();
+    }
   });
 });

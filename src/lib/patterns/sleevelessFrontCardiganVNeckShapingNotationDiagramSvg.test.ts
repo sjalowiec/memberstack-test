@@ -62,6 +62,30 @@ function cardiganVAlinePattern(): Record<string, unknown> {
   return pattern;
 }
 
+function cardiganVAlineOutwardPattern(): Record<string, unknown> {
+  const pattern = cardiganVStraightPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function cardiganVShapedPattern(): Record<string, unknown> {
+  const pattern = cardiganVStraightPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
+function cardiganVWaistPattern(): Record<string, unknown> {
+  const pattern = cardiganVStraightPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "waist";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function pulloverVPattern(): Record<string, unknown> {
   return {
     fit: {
@@ -395,7 +419,7 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
     expect(tryBuildLiveSleevelessBackNotationSvg(cardiganVResult, cardiganV)).toBeTruthy();
   });
 
-  it("falls back for Cardigan Round and Cardigan A-line", () => {
+  it("falls back for Cardigan Round and explicit shaped/waist Cardigan V", () => {
     const round = cardiganRoundPattern();
     const roundResult = generateSleevelessBackPattern(round);
     expect(shouldUseGeneratedSleevelessFrontCardiganVNeckNotation(roundResult, round)).toBe(false);
@@ -404,13 +428,11 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
       "diagram-jp-cardigan-round",
     );
 
-    const aline = cardiganVAlinePattern();
-    const alineResult = generateSleevelessBackPattern(aline);
-    expect(shouldUseGeneratedSleevelessFrontCardiganVNeckNotation(alineResult, aline)).toBe(false);
-    expect(tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg(alineResult, aline)).toBeNull();
-    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", aline)).toContain(
-      "diagram-jp-cardigan-v-aline",
-    );
+    for (const pattern of [cardiganVShapedPattern(), cardiganVWaistPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      expect(shouldUseGeneratedSleevelessFrontCardiganVNeckNotation(result, pattern)).toBe(false);
+      expect(tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg(result, pattern)).toBeNull();
+    }
   });
 
   it("wires generated Cardigan V hydration after Pullover V/Round and before static fetch", () => {
@@ -434,5 +456,107 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
     expect(existsSync(join(srcRoot, "../public/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-v.svg"))).toBe(
       true,
     );
+  });
+});
+
+describe("generated Cardigan V A-line Shaping Notation", () => {
+  function expectUpperCardiganVUnchanged(straightSvg: string, alineSvg: string): void {
+    for (const attr of [
+      "data-armhole-bo",
+      "data-armhole-shaping",
+      "data-neck-shaping",
+      "data-shoulder-shaping",
+      "data-neck-bo",
+    ]) {
+      expect(svgAttr(alineSvg, attr)).toBe(svgAttr(straightSvg, attr));
+    }
+    for (const attr of [
+      "data-bust-left",
+      "data-bust-right",
+      "data-after-right",
+      "data-neck-left",
+      "data-neck-right",
+      "data-cf-x",
+      "data-armhole-start-y",
+      "data-last-armhole-y",
+      "data-neck-start-y",
+      "data-shoulder-y",
+    ]) {
+      expect(svgNum(alineSvg, attr)).toBeCloseTo(svgNum(straightSvg, attr), 2);
+    }
+    expect(pathD(alineSvg, "neckline-outline")).toBe(pathD(straightSvg, "neckline-outline"));
+    expect(pathD(alineSvg, "armhole-outline")).toBe(pathD(straightSvg, "armhole-outline"));
+    expect(pathD(alineSvg, "shoulder-outline")).toBe(pathD(straightSvg, "shoulder-outline"));
+  }
+
+  function expectGeneratedCardiganVAline(
+    pattern: Record<string, unknown>,
+    direction: "inward" | "outward",
+  ): void {
+    const result = generateSleevelessBackPattern(pattern);
+    const live = tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg(result, pattern);
+    expect(shouldUseGeneratedSleevelessFrontCardiganVNeckNotation(result, pattern)).toBe(true);
+    expect(live).toBeTruthy();
+    const svg = live!;
+    expect(svg).toContain('data-sleeveless-cardigan-v-generated-notation="true"');
+    expect(svg).toContain('data-supported="true"');
+    expect(svg).toContain('data-body-shape="aline"');
+    expect(svg).toContain('data-front-piece="leftFront"');
+    expect(svg).toContain('data-front-band-included="false"');
+    expect(svgAttr(svg, "data-body-shaping-direction")).toBe(direction);
+
+    const cf = pathPoints(svg, "center-front-edge");
+    expect(cf.length).toBeGreaterThanOrEqual(2);
+    expect(cf.every((p) => Math.abs(p.x - cf[0]!.x) < 0.05)).toBe(true);
+    expect(cf[0]!.x).toBeCloseTo(svgNum(svg, "data-cf-x"), 2);
+    expect(cf[0]!.x).toBeCloseTo(svgNum(svg, "data-bust-left"), 2);
+
+    const left = pathPoints(svg, "left-body-path");
+    const right = pathPoints(svg, "right-body-path");
+    expect(left.every((p) => Math.abs(p.x - left[0]!.x) < 0.05)).toBe(true);
+    expect(roles(svg, "right-body-path")[0]).toContain('data-shaping-edge="side-seam"');
+    if (direction === "inward") {
+      expect(right[0]!.x).toBeGreaterThan(right[right.length - 1]!.x);
+      expect(svgNum(svg, "data-hem-right")).toBeGreaterThan(svgNum(svg, "data-bust-right"));
+    } else {
+      expect(right[0]!.x).toBeLessThan(right[right.length - 1]!.x);
+      expect(svgNum(svg, "data-hem-right")).toBeLessThan(svgNum(svg, "data-bust-right"));
+    }
+    expect(svgNum(svg, "data-hem-left")).toBeCloseTo(svgNum(svg, "data-bust-left"), 2);
+
+    const rows = result.debug.alineBodyShapingRowNumbers ?? [];
+    expect(rows.length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-body-shaping-start-rc")).toBe(rows[0]!);
+    expect(svgNum(svg, "data-body-shaping-end-rc")).toBe(rows[rows.length - 1]!);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+    expect(svgAttr(svg, "data-body-shaping")).toBe(repl["jp-body-shaping"]);
+    expect(svgAttr(svg, "data-body-shaping").length).toBeGreaterThan(0);
+    expect(roles(svg, "body-shaping").length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-body-label-x")).toBeGreaterThan(svgNum(svg, "data-body-outline-x-at-label"));
+    expect(svg).toContain('font-size="17"');
+    expect(svg).toContain('font-size="14"');
+
+    const sts = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
+    expect(sts).toBeTruthy();
+    expect(pathD(svg, "body-outline")).toBe(pathD(sts!, "body-outline"));
+    expect(pathD(svg, "center-front-edge")).toBe(pathD(sts!, "center-front-edge"));
+
+    const straight = cardiganVStraightPattern();
+    const straightSvg = buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(straight),
+      straight,
+    );
+    expectUpperCardiganVUnchanged(straightSvg, svg);
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toContain(
+      "diagram-jp-cardigan-v-aline",
+    );
+  }
+
+  it("tapers only the right side seam when hem is wider than bust", () => {
+    expectGeneratedCardiganVAline(cardiganVAlinePattern(), "inward");
+  });
+
+  it("tapers only the right side seam when hem is narrower than bust", () => {
+    expectGeneratedCardiganVAline(cardiganVAlineOutwardPattern(), "outward");
   });
 });

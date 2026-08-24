@@ -7,6 +7,7 @@
  */
 
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
+import { isSleevelessShapedBodyShape } from "./sleevelessAlineShaping";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import {
   armholeBindOffDecreaseFromEachSide,
@@ -653,6 +654,15 @@ export function shouldUseGeneratedSleevelessBackNotation(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): boolean {
+  if (
+    isSleevelessShapedBodyShape(
+      patternData && typeof patternData === "object" && !Array.isArray(patternData)
+        ? (patternData as Record<string, unknown>)
+        : {},
+    )
+  ) {
+    return false;
+  }
   return isBackJapaneseNotationSupported(patternData, result);
 }
 

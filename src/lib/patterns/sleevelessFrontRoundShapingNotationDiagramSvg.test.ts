@@ -9,7 +9,10 @@ import {
   formatBindOffNotation,
   formatHoldNotation,
 } from "./sleevelessBackJapaneseNotation";
-import { resolveSleevelessFrontDiagramSrc } from "./sleevelessFrontJapaneseNotation";
+import {
+  buildFrontJapaneseNotationReplacements,
+  resolveSleevelessFrontDiagramSrc,
+} from "./sleevelessFrontJapaneseNotation";
 import {
   buildSleevelessFrontRoundShapingNotationDiagramSvg,
   collectRoundFrontInnerNeckShapingPoints,
@@ -92,6 +95,22 @@ function shapedRoundPulloverPattern(): Record<string, unknown> {
   return pattern;
 }
 
+function alineRoundOutwardPulloverPattern(): Record<string, unknown> {
+  const pattern = roundPulloverPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  return pattern;
+}
+
+function waistRoundPulloverPattern(): Record<string, unknown> {
+  const pattern = roundPulloverPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  (pattern.style as { bodyShape?: string }).bodyShape = "waist";
+  return pattern;
+}
+
 function vNeckPulloverPattern(): Record<string, unknown> {
   const pattern = roundPulloverPattern();
   (pattern.style as { neckline: string }).neckline = "v-neck";
@@ -123,6 +142,23 @@ function svgAttr(svg: string, name: string): string {
 
 function svgNum(svg: string, name: string): number {
   return Number(svgAttr(svg, name));
+}
+
+function pathD(svg: string, role: string): string {
+  return new RegExp(`data-role="${role}"[^>]*\\sd="([^"]+)"`).exec(svg)?.[1] ?? "";
+}
+
+function pathPoints(svg: string, role: string): { x: number; y: number }[] {
+  const nums = [...pathD(svg, role).matchAll(/(-?\d+(?:\.\d+)?)/g)].map((m) => Number(m[1]));
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    pts.push({ x: nums[i]!, y: nums[i + 1]! });
+  }
+  return pts;
+}
+
+function roles(svg: string, role: string): string[] {
+  return svg.match(new RegExp(`data-role="${role}"[^>]*>`, "g")) ?? [];
 }
 
 function expectValidSvg(svg: string): void {
@@ -501,21 +537,12 @@ describe("live Pullover Front Round notation cutover", () => {
     expect(backSource).toContain("const FS_NOTATION = 17;");
   });
 
-  it("falls back for A-line Round", () => {
-    const pattern = alineRoundPulloverPattern();
-    const result = generateSleevelessBackPattern(pattern);
-    expect(shouldUseGeneratedSleevelessFrontRoundNotation(result, pattern)).toBe(false);
-    expect(tryBuildLiveSleevelessFrontRoundNotationSvg(result, pattern)).toBeNull();
-    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toContain(
-      "diagram-jp-front-round-aline",
-    );
-  });
-
   it("falls back for shaped/waist Round", () => {
-    const pattern = shapedRoundPulloverPattern();
-    const result = generateSleevelessBackPattern(pattern);
-    expect(shouldUseGeneratedSleevelessFrontRoundNotation(result, pattern)).toBe(false);
-    expect(tryBuildLiveSleevelessFrontRoundNotationSvg(result, pattern)).toBeNull();
+    for (const pattern of [shapedRoundPulloverPattern(), waistRoundPulloverPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      expect(shouldUseGeneratedSleevelessFrontRoundNotation(result, pattern)).toBe(false);
+      expect(tryBuildLiveSleevelessFrontRoundNotationSvg(result, pattern)).toBeNull();
+    }
   });
 
   it("falls back for Cardigan Round", () => {
@@ -559,5 +586,96 @@ describe("live Pullover Front Round notation cutover", () => {
     const backFnStart = script.indexOf("async function inlineBackJapaneseNotationSvg");
     const backFn = script.slice(backFnStart, backFnStart + 1800);
     expect(backFn).not.toContain("tryBuildLiveSleevelessFrontRoundNotationSvg");
+  });
+});
+
+describe("generated Pullover Round A-line Shaping Notation", () => {
+  function expectUpperRoundUnchanged(straightSvg: string, alineSvg: string): void {
+    for (const attr of [
+      "data-armhole-bo",
+      "data-armhole-shaping",
+      "data-neck-bo",
+      "data-neck-shaping",
+      "data-shoulder-shaping",
+      "data-center-held",
+    ]) {
+      expect(svgAttr(alineSvg, attr)).toBe(svgAttr(straightSvg, attr));
+    }
+    for (const attr of [
+      "data-bust-left",
+      "data-bust-right",
+      "data-after-left",
+      "data-after-right",
+      "data-neck-left",
+      "data-neck-right",
+      "data-armhole-start-y",
+      "data-last-armhole-y",
+      "data-neck-start-y",
+      "data-shoulder-y",
+    ]) {
+      expect(svgNum(alineSvg, attr)).toBeCloseTo(svgNum(straightSvg, attr), 2);
+    }
+  }
+
+  function expectGeneratedAlineRound(pattern: Record<string, unknown>, direction: "inward" | "outward"): void {
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = tryBuildLiveSleevelessFrontRoundNotationSvg(result, pattern);
+    expect(shouldUseGeneratedSleevelessFrontRoundNotation(result, pattern)).toBe(true);
+    expect(svg).toBeTruthy();
+    const live = svg!;
+    expectValidSvg(live);
+    expect(live).toContain('data-sleeveless-front-round-generated-notation="true"');
+    expect(live).toContain('data-supported="true"');
+    expect(live).toContain('data-body-shape="aline"');
+    expect(svgAttr(live, "data-body-shaping-direction")).toBe(direction);
+    const hemSts = result.debug.hemCastOnStitches ?? 0;
+    const bustSts = result.debug.bustBodyStitches ?? 0;
+    const rows = result.debug.alineBodyShapingRowNumbers ?? [];
+    expect(rows.length).toBeGreaterThan(0);
+    expect(svgNum(live, "data-body-start-stitches")).toBe(hemSts);
+    expect(svgNum(live, "data-body-end-stitches")).toBe(bustSts);
+    expect(svgNum(live, "data-body-shaping-start-rc")).toBe(rows[0]!);
+    expect(svgNum(live, "data-body-shaping-end-rc")).toBe(rows[rows.length - 1]!);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+    expect(svgAttr(live, "data-body-shaping")).toBe(repl["jp-body-shaping"]);
+    expect(svgAttr(live, "data-body-shaping").length).toBeGreaterThan(0);
+    expect(roles(live, "body-shaping").length).toBeGreaterThan(0);
+    expect(roles(live, "body-event")).toHaveLength(rows.length);
+    const left = pathPoints(live, "left-body-path");
+    const right = pathPoints(live, "right-body-path");
+    if (direction === "inward") {
+      expect(hemSts).toBeGreaterThan(bustSts);
+      expect(left[0]!.x).toBeLessThan(left[left.length - 1]!.x);
+      expect(right[0]!.x).toBeGreaterThan(right[right.length - 1]!.x);
+      expect(svgNum(live, "data-hem-left")).toBeLessThan(svgNum(live, "data-bust-left"));
+      expect(svgNum(live, "data-hem-right")).toBeGreaterThan(svgNum(live, "data-bust-right"));
+    } else {
+      expect(hemSts).toBeLessThan(bustSts);
+      expect(left[0]!.x).toBeGreaterThan(left[left.length - 1]!.x);
+      expect(right[0]!.x).toBeLessThan(right[right.length - 1]!.x);
+      expect(svgNum(live, "data-hem-left")).toBeGreaterThan(svgNum(live, "data-bust-left"));
+      expect(svgNum(live, "data-hem-right")).toBeLessThan(svgNum(live, "data-bust-right"));
+      expect(svgAttr(live, "data-body-shaping")).toMatch(/^\+/);
+    }
+    expect(svgNum(live, "data-body-shaping-start-y")).toBeGreaterThan(svgNum(live, "data-body-shaping-end-y"));
+    expect(live).toContain('font-size="17"');
+    expect(live).toContain('font-size="14"');
+    const straight = roundPulloverPattern();
+    const straightSvg = buildSleevelessFrontRoundShapingNotationDiagramSvg(
+      generateSleevelessBackPattern(straight),
+      straight,
+    );
+    expectUpperRoundUnchanged(straightSvg, live);
+    expect(resolveSleevelessFrontDiagramSrc("shaping-notation", pattern)).toContain(
+      "diagram-jp-front-round-aline",
+    );
+  }
+
+  it("draws hem wider than bust with inward taper and Round upper notation unchanged", () => {
+    expectGeneratedAlineRound(alineRoundPulloverPattern(), "inward");
+  });
+
+  it("draws hem narrower than bust with outward taper and Round upper notation unchanged", () => {
+    expectGeneratedAlineRound(alineRoundOutwardPulloverPattern(), "outward");
   });
 });
