@@ -923,6 +923,70 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     expect(firstTextPos(svg, "neck-start-rc").x).toBeLessThan(100);
   });
 
+  it("stacks Back neckline HOLD/BO lowest, then decreases upward in working order", () => {
+    const pattern = proofBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    const repl = buildBackJapaneseNotationReplacements(result, pattern);
+    const shapingLines = (repl["jp-neckline-shaping"] ?? "").split("\n").filter(Boolean);
+    expect(svgAttr(svg, "data-neck-bo")).toBe(repl["jp-neckline-bo"]);
+    expect(svgAttr(svg, "data-neck-shaping")).toBe(repl["jp-neckline-shaping"]);
+    expect(svgAttr(svg, "data-neck-working-order")).toBe("bottom-up");
+    expect(svgAttr(svg, "data-neck-bo")).toBe("hold17");
+    expect(shapingLines).toEqual(["3s-2r-1x", "2s-2r-3x"]);
+
+    const hold = allTextMeta(svg, "neck-bo");
+    const shaping = allTextMeta(svg, "neck-shaping");
+    expect(hold).toHaveLength(1);
+    expect(hold[0]!.text).toBe(repl["jp-neckline-bo"]);
+    expect(shaping.map((t) => t.text)).toEqual(shapingLines);
+    expect(hold[0]!.y).toBeGreaterThan(Math.max(...shaping.map((t) => t.y)));
+    for (let i = 1; i < shaping.length; i += 1) {
+      expect(shaping[i]!.y).toBeLessThan(shaping[i - 1]!.y);
+    }
+    expect(shaping[0]!.y).toBe(hold[0]!.y - SLEEVELESS_BACK_ARMHOLE_NOTATION_GAP);
+    expect(svgNum(svg, "data-neck-bo-y")).toBe(hold[0]!.y);
+    expectParity(svg, result, pattern);
+  });
+
+  it("does not emit two left-gutter RC labels for one top guide", () => {
+    const pattern = proofBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    const repl = buildBackJapaneseNotationReplacements(result, pattern);
+    const neck = allTextMeta(svg, "neck-start-rc");
+    const shoulder = allTextMeta(svg, "shoulder-start-rc");
+    expect(repl["rc-neckline-start"]).toBe("rc049");
+    expect(repl["rc-shoulder-start"]).toBe("rc050");
+    expect(svgAttr(svg, "data-rc-neck-start")).toBe(repl["rc-neckline-start"]);
+    expect(svgAttr(svg, "data-rc-shoulder-start")).toBe(repl["rc-shoulder-start"]);
+    expect(svgAttr(svg, "data-shared-top-rc-guide")).toBe("true");
+    expect(svgAttr(svg, "data-kept-top-rc")).toBe("neck-start");
+    expect(neck).toHaveLength(1);
+    expect(neck[0]!.text).toBe(repl["rc-neckline-start"]);
+    expect(shoulder).toHaveLength(0);
+    expect(result.debug.backNecklineStartLocalRC).toBe(49);
+    expect(result.debug.shoulderStartRow! - result.debug.armholeStartRow!).toBe(50);
+    expect(Math.abs(svgNum(svg, "data-neck-start-y") - svgNum(svg, "data-shoulder-y"))).toBeLessThan(14);
+  });
+
+  it("still renders distinct RC guides that are not the same top line", () => {
+    const pattern = proofBackPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessBackShapingNotationDiagramSvg(result, pattern);
+    const castOn = firstTextPos(svg, "rc-caston");
+    const hem = firstTextPos(svg, "rc-hem");
+    const armhole = firstTextPos(svg, "armhole-start-rc");
+    const neck = firstTextPos(svg, "neck-start-rc");
+    expect(castOn.y).toBeGreaterThan(hem.y + 8);
+    expect(hem.y).toBeGreaterThan(armhole.y + 8);
+    expect(armhole.y).toBeGreaterThan(neck.y + 8);
+    expect(roles(svg, "rc-caston")).toHaveLength(1);
+    expect(roles(svg, "rc-hem")).toHaveLength(1);
+    expect(roles(svg, "armhole-start-rc")).toHaveLength(1);
+    expect(roles(svg, "neck-start-rc")).toHaveLength(1);
+  });
+
   it("draws a single sloped shoulder from filtered Back shoulder events", () => {
     for (const pattern of [straightBodyPattern(), inwardBodyPattern(), fineGaugeWidePattern()]) {
       const result = generateSleevelessBackPattern(pattern);
