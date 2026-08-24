@@ -160,6 +160,7 @@ import {
 } from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "../lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts";
+import { tryBuildLiveSleevelessBackStsRowsDiagramSvg } from "../lib/patterns/sleevelessBackStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackNotationSvg } from "../lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts";
 import {
   buildSleevelessPrintBasicsSummaryDlHtml,
@@ -1202,6 +1203,27 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     hostEl.innerHTML = svg.outerHTML;
   }
 
+  function mountBackStsRowsSvgMarkup(hostEl, svgText, hydrateGen) {
+    const parser = new DOMParser();
+    let doc = parser.parseFromString(svgText, "image/svg+xml");
+    let svg = doc.documentElement;
+    if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+      doc = parser.parseFromString(svgText, "text/xml");
+      svg = doc.documentElement;
+    }
+    if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+      const pe = doc.querySelector("parsererror");
+      throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+    }
+
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", BACK_DIAGRAM_STS_ROWS_ALT);
+    svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
+    hostEl.innerHTML = svg.outerHTML;
+  }
+
   async function inlineBackJapaneseNotationSvg(hostEl, result, patternData, hydrateGeneration) {
     if (!(hostEl instanceof HTMLElement)) return;
     const hydrateGen =
@@ -1375,6 +1397,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     }
     if (mode === "shaping-notation") {
       await inlineBackJapaneseNotationSvg(el, result, patternData, hydrateGeneration);
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const generatedSvg = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, patternData);
+    if (generatedSvg) {
+      mountBackStsRowsSvgMarkup(el, generatedSvg, hydrateGen);
       return;
     }
     const replacements = buildSleevelessDiagramReplacements(result, unit, {
