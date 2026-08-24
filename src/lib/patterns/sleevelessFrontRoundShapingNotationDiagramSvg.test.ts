@@ -474,14 +474,14 @@ describe("live Pullover Front Round notation cutover", () => {
     expect(shouldUseGeneratedSleevelessFrontVNeckNotation(result, pattern)).toBe(true);
     const vSvg = tryBuildLiveSleevelessFrontVNeckNotationSvg(result, pattern);
     expect(vSvg).toBeTruthy();
-    expect(vSvg).toContain('font-size="13"');
-    expect(vSvg).toContain('font-size="12"');
+    expect(vSvg).toContain('font-size="17"');
+    expect(vSvg).toContain('font-size="14"');
     const vSource = readFileSync(
       join(srcRoot, "lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts"),
       "utf8",
     );
-    expect(vSource).toContain("const FS_RC = 12;");
-    expect(vSource).toContain("const FS_NOTATION = 13;");
+    expect(vSource).toContain("const FS_RC = 14;");
+    expect(vSource).toContain("const FS_NOTATION = 17;");
   });
 
   it("leaves Back generated renderer unchanged", () => {
