@@ -210,6 +210,9 @@ describe("Sleeveless edit measurement art refresh lifecycle", () => {
     expect(bust!.value).toBe("38");
     expect(hip!.value).toBe("44");
     expect(chips.find((chip) => chip.key === "finishedLength")?.value).toBe("22");
+    expect(chips.find((chip) => chip.key === "armholeDepth")?.value).toBe(
+      INITIAL_VALUES.armholeDepth,
+    );
     expect(inner.querySelector("svg.express-mbp-art")?.id).toBe("art-aline");
   });
 

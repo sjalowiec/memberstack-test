@@ -18,6 +18,7 @@ import {
   SLEEVELESS_FRONT_GARMENT_VB_H,
   SLEEVELESS_FRONT_GARMENT_VB_W,
   buildSleevelessMeasurementGarmentFrame,
+  sleevelessFrontArmholeSilhouetteCommands,
   sleevelessFrontBodySidePoints,
   sleevelessFrontGarmentFmtNum,
   sleevelessFrontPolylineD,
@@ -184,13 +185,9 @@ function drawSilhouette(model: SleevelessEditMeasurementDiagramModel): string {
     ? sleevelessFrontPolylineD(sleevelessFrontPulloverVNecklinePoints(frame))
     : sleevelessFrontPulloverRoundNecklineCurveD(frame);
   const upper = [
-    `L ${f(frame.boLeft)} ${f(frame.armholeStartY)}`,
-    `L ${f(frame.afterLeft)} ${f(frame.lastArmholeY)}`,
-    `L ${f(frame.afterLeft)} ${f(frame.shoulderY)}`,
+    ...sleevelessFrontArmholeSilhouetteCommands(frame, "left"),
     neckOpeningPath(frame, isVNeck),
-    `L ${f(frame.afterRight)} ${f(frame.shoulderY)}`,
-    `L ${f(frame.afterRight)} ${f(frame.lastArmholeY)}`,
-    `L ${f(frame.boRight)} ${f(frame.armholeStartY)}`,
+    ...sleevelessFrontArmholeSilhouetteCommands(frame, "right"),
   ];
   const silhouette = tapered
     ? [

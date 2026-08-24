@@ -17,6 +17,8 @@ import {
 } from "./sleevelessEditMeasurementDiagramSvg";
 import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import {
+  sleevelessFrontArmholePoints,
+  sleevelessFrontArmholeSilhouetteCommands,
   sleevelessFrontBodySidePoints,
   sleevelessFrontGarmentFmtNum,
   sleevelessFrontPulloverRoundNecklineCurveD,
@@ -33,6 +35,10 @@ const overlaySrc = readFileSync(
 );
 const rendererSrc = readFileSync(
   resolve("src/lib/patterns/sleevelessEditMeasurementDiagramSvg.ts"),
+  "utf8",
+);
+const geometrySrc = readFileSync(
+  resolve("src/lib/patterns/sleevelessFrontGarmentGeometry.ts"),
   "utf8",
 );
 
@@ -295,5 +301,109 @@ describe("Sleeveless edit measurement diagram — overlay anchors", () => {
       /if \(!isDropShoulderConstruction\(\) && merged\)/,
     );
     expect(measurementsPageSrc).toContain("resolveMeasurementBlueprintSvgUrl");
+  });
+});
+
+describe("Sleeveless edit measurement diagram — armhole silhouette", () => {
+  it("reuses the shared Front armhole helper instead of a local shaping formula", () => {
+    expect(geometrySrc).toContain("export function sleevelessFrontArmholePoints");
+    expect(geometrySrc).toContain("export function sleevelessFrontArmholeSilhouetteCommands");
+    expect(rendererSrc).toContain("sleevelessFrontArmholeSilhouetteCommands");
+    expect(
+      readFileSync(resolve("src/lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts"), "utf8"),
+    ).toContain("sleevelessFrontArmholePoints");
+    expect(rendererSrc).not.toMatch(
+      /L \$\{f\(frame\.afterLeft\)\} \$\{f\(frame\.lastArmholeY\)\}/,
+    );
+    expect(geometrySrc).not.toMatch(
+      /lastArmholeY = armholeStartY - allocated\.armholeH \* 0\.55/,
+    );
+  });
+
+  it("keeps the horizontal bind-off, then inward shaping, mirrored left and right", () => {
+    const model = modelFor({ bust: 40, hip: 40, neckline: "round" });
+    const { frame } = model;
+    const left = sleevelessFrontArmholePoints(frame, "left");
+    const right = sleevelessFrontArmholePoints(frame, "right");
+    expect(left).toHaveLength(4);
+    expect(right).toHaveLength(4);
+
+    expect(left[0]?.y).toBe(left[1]?.y);
+    expect(left[0]?.y).toBe(frame.armholeStartY);
+    expect(left[1]?.x).toBeGreaterThan(left[0]!.x);
+
+    expect(left[2]?.x).toBe(frame.afterLeft);
+    expect(left[2]?.x).toBeGreaterThan(left[1]!.x);
+    expect(left[2]?.y).toBeLessThan(left[1]!.y);
+    expect(left[3]?.x).toBe(left[2]?.x);
+    expect(left[3]?.y).toBe(frame.shoulderY);
+
+    const inwardDy = left[1]!.y - left[2]!.y;
+    const verticalDy = left[2]!.y - left[3]!.y;
+    expect(inwardDy).toBeGreaterThan(verticalDy);
+    expect(frame.lastArmholeY).toBe(frame.shoulderY);
+
+    expect(right[0]!.x - frame.cx).toBeCloseTo(frame.cx - left[0]!.x);
+    expect(right[1]!.x - frame.cx).toBeCloseTo(frame.cx - left[1]!.x);
+    expect(right[2]!.x - frame.cx).toBeCloseTo(frame.cx - left[2]!.x);
+    expect(right[3]!.x - frame.cx).toBeCloseTo(frame.cx - left[3]!.x);
+    expect(right[0]?.y).toBe(left[0]?.y);
+    expect(right[1]?.y).toBe(left[1]?.y);
+    expect(right[2]?.y).toBe(left[2]?.y);
+    expect(right[3]?.y).toBe(left[3]?.y);
+
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "round" });
+    for (const command of sleevelessFrontArmholeSilhouetteCommands(frame, "left")) {
+      expect(svg).toContain(command);
+    }
+    for (const command of sleevelessFrontArmholeSilhouetteCommands(frame, "right")) {
+      expect(svg).toContain(command);
+    }
+  });
+
+  it("keeps target_armhole_depth and the armhole-depth guide", () => {
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "round" });
+    expect(svg).toContain(`id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.armholeDepth}"`);
+    expect(svg).toContain('id="target_armhole_depth"');
+    expect(svg).toContain('data-role="line-armhole"');
+    const model = modelFor({ bust: 40, hip: 40, neckline: "round" });
+    const f = sleevelessFrontGarmentFmtNum;
+    const guideY1 = f(model.frame.shoulderTopY);
+    const guideY2 = f(model.frame.armholeStartY);
+    expect(svg).toContain(`data-role="line-armhole"`);
+    expect(svg).toMatch(
+      new RegExp(
+        `data-role="line-armhole"[^>]*y1="${guideY1}"[^>]*y2="${guideY2}"`,
+      ),
+    );
+  });
+
+  it("does not change Round/V, Pullover/Cardigan, or body-shape variants", () => {
+    expect(svgFor({ bust: 40, hip: 40, neckline: "round", garment: "pullover" })).toContain(
+      'data-sleeveless-edit-neckline="round"',
+    );
+    expect(svgFor({ bust: 40, hip: 40, neckline: "v-neck", garment: "pullover" })).toContain(
+      'data-sleeveless-edit-neckline="v-neck"',
+    );
+    expect(svgFor({ bust: 40, hip: 40, neckline: "round", garment: "cardigan" })).toContain(
+      'data-sleeveless-edit-garment="cardigan"',
+    );
+    expect(svgFor({ bust: 40, hip: 40, neckline: "v-neck", garment: "cardigan" })).toContain(
+      'data-role="center-front-opening"',
+    );
+    expect(svgFor({ bust: 40, hip: 40, neckline: "round" })).toContain(
+      'data-sleeveless-edit-body-shape="straight"',
+    );
+    expect(svgFor({ bust: 38, hip: 44, neckline: "round" })).toContain(
+      'data-sleeveless-edit-body-shape="aline"',
+    );
+    expect(svgFor({ bust: 44, hip: 38, neckline: "round" })).toContain(
+      'data-sleeveless-edit-body-shape="shaped"',
+    );
+    for (const id of SLEEVELESS_EDIT_MEASUREMENT_TARGET_IDS) {
+      expect(svgFor({ bust: 40, hip: 40, neckline: "v-neck", garment: "cardigan" })).toContain(
+        `id="${id}"`,
+      );
+    }
   });
 });
