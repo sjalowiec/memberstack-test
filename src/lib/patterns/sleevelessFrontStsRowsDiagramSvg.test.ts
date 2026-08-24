@@ -259,6 +259,20 @@ function pathPoints(d: string): { x: number; y: number }[] {
   return pts;
 }
 
+function cubicAt(
+  t: number,
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  p3: { x: number; y: number },
+): { x: number; y: number } {
+  const u = 1 - t;
+  return {
+    x: u ** 3 * p0.x + 3 * u ** 2 * t * p1.x + 3 * u * t ** 2 * p2.x + t ** 3 * p3.x,
+    y: u ** 3 * p0.y + 3 * u ** 2 * t * p1.y + 3 * u * t ** 2 * p2.y + t ** 3 * p3.y,
+  };
+}
+
 const UPPER_WIDTH_TOL = 0.51;
 
 function expectUpperSilhouetteMatchesStitchBudget(
@@ -784,6 +798,80 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(pulloverVNeckLabelY).toBeCloseTo(99.96, 1);
     expect(measureLineY(pulloverV.svg, "neck")).toBeGreaterThan(svgNum(pulloverV.svg, "data-neck-corner-y"));
     expect(measureLineY(pulloverV.svg, "neck")).toBeLessThan(svgNum(pulloverV.svg, "data-neck-start-y"));
+  });
+
+  it("draws a one-sided Cardigan Round scoop from CF to the shoulder neck point", () => {
+    const { svg, model } = svgFor(cardiganRoundReadablePattern());
+    expect(model.neckline.style).toBe("round");
+    expect(model.widths.necklineStitches).toBe(12);
+    expect(model.neckline.depthRows).toBe(24);
+    expect(model.widths.shoulderStitchesPerSide).toBe(12);
+    expect(widthLabelSts(svg, "neck")).toBe(12);
+    expect(lengthLabelRows(svg, "neck-depth")).toBe(24);
+    expect(widthLabelSts(svg, "shoulder")).toBe(12);
+
+    const neck = pathPoints(rolePaths(svg, "neckline-outline")[0] ?? "");
+    expect(svg).toContain('data-contour="one-sided-scoop"');
+    expect(neck).toHaveLength(4);
+    expect(neck[0]!.x).toBeCloseTo(svgNum(svg, "data-cf-x"), 1);
+    expect(neck[0]!.x).toBeCloseTo(svgNum(svg, "data-neck-left"), 1);
+    expect(neck[0]!.y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+    expect(neck[3]!.x).toBeCloseTo(svgNum(svg, "data-neck-right"), 1);
+    expect(neck[3]!.y).toBeCloseTo(svgNum(svg, "data-neck-corner-y"), 1);
+
+    const neckWidth = svgNum(svg, "data-neck-right") - svgNum(svg, "data-neck-left");
+    const neckDepth = svgNum(svg, "data-neck-start-y") - svgNum(svg, "data-neck-corner-y");
+    expect(neck[1]!.y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+    expect(neck[1]!.x - svgNum(svg, "data-neck-left")).toBeGreaterThan(0.4 * neckWidth);
+    expect(neck[2]!.x).toBeCloseTo(svgNum(svg, "data-neck-right"), 1);
+    expect(neck[2]!.y).toBeGreaterThan(svgNum(svg, "data-neck-corner-y"));
+    expect(neck[2]!.y).toBeLessThan(svgNum(svg, "data-neck-start-y"));
+
+    const mid = cubicAt(0.5, neck[0]!, neck[1]!, neck[2]!, neck[3]!);
+    const early = cubicAt(0.25, neck[0]!, neck[1]!, neck[2]!, neck[3]!);
+    expect(early.x - svgNum(svg, "data-neck-left")).toBeGreaterThan(0.3 * neckWidth);
+    expect(mid.x - svgNum(svg, "data-neck-left")).toBeGreaterThan(0.6 * neckWidth);
+    expect(mid.y).toBeGreaterThan(svgNum(svg, "data-neck-corner-y"));
+    expect(mid.y).toBeLessThan(svgNum(svg, "data-neck-start-y"));
+    expect(svgNum(svg, "data-neck-start-y") - mid.y).toBeGreaterThan(0.2 * neckDepth);
+    expect(svg).not.toContain(
+      `C ${svgAttr(svg, "data-neck-left")} ${svgAttr(svg, "data-neck-corner-y")}`,
+    );
+
+    const neckD = rolePaths(svg, "neckline-outline")[0] ?? "";
+    const cubicCmd = /C [^M]+/.exec(neckD)?.[0]?.trim();
+    expect(cubicCmd).toBeTruthy();
+    expect(rolePaths(svg, "body-outline")[0] ?? "").toContain(cubicCmd!);
+
+    expect(svgNum(svg, "data-after-right") - svgNum(svg, "data-neck-right")).toBeGreaterThan(8);
+    expect(measureLineX(svg, "armhole")).toBeCloseTo(279.32, 1);
+    expect(measureLineY(svg, "shoulder")).toBeCloseTo(134, 1);
+
+    const v = svgFor(cardiganVReadablePattern());
+    const vNeck = pathPoints(rolePaths(v.svg, "neckline-outline")[0] ?? "");
+    expect(v.svg).not.toContain('data-contour="one-sided-scoop"');
+    expect(vNeck).toHaveLength(2);
+    expect(vNeck[0]!.x).toBeCloseTo(svgNum(v.svg, "data-cf-x"), 1);
+    expect(vNeck[0]!.y).toBeCloseTo(svgNum(v.svg, "data-neck-start-y"), 1);
+    expect(vNeck[1]!.x).toBeCloseTo(svgNum(v.svg, "data-neck-right"), 1);
+    expect(vNeck[1]!.y).toBeCloseTo(svgNum(v.svg, "data-neck-corner-y"), 1);
+
+    const pulloverRound = svgFor(roundPulloverPattern());
+    const pulloverNeck = rolePaths(pulloverRound.svg, "neckline-outline")[0] ?? "";
+    expect(pulloverRound.svg).not.toContain('data-contour="one-sided-scoop"');
+    expect(pulloverNeck.startsWith(`M ${svgAttr(pulloverRound.svg, "data-neck-left")} ${svgAttr(pulloverRound.svg, "data-neck-corner-y")}`)).toBe(
+      true,
+    );
+    expect(pulloverNeck).toContain(
+      `C ${svgAttr(pulloverRound.svg, "data-neck-left")} ${svgAttr(pulloverRound.svg, "data-neck-start-y")}`,
+    );
+    expect(measureLineY(pulloverRound.svg, "neck")).toBeCloseTo(112, 1);
+
+    const pulloverV = svgFor(amandaVNeckPattern());
+    expect(rolePaths(pulloverV.svg, "neckline-outline")[0] ?? "").not.toContain(" C ");
+    expect(
+      Number(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(pulloverV.svg)?.[1]),
+    ).toBeCloseTo(99.96, 1);
   });
 
   it("generates a responsive SVG for pullover A-line V-neck and round Front", () => {
