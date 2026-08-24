@@ -34,6 +34,26 @@ function straightBackPattern(): Record<string, unknown> {
   };
 }
 
+/** 24 sts / 6 in Back neck, 6 rows / 1 in Back neck depth. */
+function shallowBackNeckPattern(): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "misses",
+      selectedMeasurements: {
+        finished_bust_chest: 39,
+        back_neck_to_hem: 18,
+        armhole_depth: 8,
+        neck_opening: 6,
+        shoulder_width: 12,
+        front_neck_depth: 3,
+        back_neck_depth: 1,
+      },
+    },
+    style: { garmentStyle: "pullover", neckline: "round", frontStyle: "closed", recipientCategory: "misses" },
+    yarnGaugeMachine: { gaugeStitchesPerInch: 4, gaugeRowsPerInch: 6, availableNeedles: 200 },
+  };
+}
+
 function vNeckFrontStraightBackPattern(): Record<string, unknown> {
   return {
     fit: {
@@ -185,6 +205,34 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(budgetSts).toBeLessThanOrEqual(model.widths.stitchesAfterArmhole);
     expect(svgNum(svg, "data-neck-depth-rows")).toBe(model.rows.backNeckDepthRows);
     expect(svgNum(svg, "data-neck-depth-rows")).not.toBe(model.rows.backNeckDepthRows + 20);
+  });
+
+  it("draws a shallow Back neck curve without changing labels or upper widths", () => {
+    const { svg, model } = svgFor(shallowBackNeckPattern());
+    expect(model.neckline.depthRows).toBe(6);
+    expect(model.widths.necklineStitches).toBe(24);
+    expect(lengthLabelRows(svg, "neck-depth")).toBe(6);
+    expect(svgNum(svg, "data-neck-depth-rows")).toBe(6);
+    expect(svg).toMatch(
+      /<g data-role="length-measurement" data-measure="neck-depth"[\s\S]*?>6 rows<\/text>[\s\S]*?>1 in<\/text>/,
+    );
+    expect(widthLabelSts(svg, "neck")).toBe(24);
+
+    const visualNeckH = svgNum(svg, "data-visual-neck-h");
+    const rcMappedNeckH = svgNum(svg, "data-rc-mapped-neck-h");
+    expect(visualNeckH).toBeGreaterThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.minBackNeckDepth);
+    expect(visualNeckH).toBeLessThanOrEqual(SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth);
+    expect(rcMappedNeckH).toBeGreaterThan(SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth);
+    expect(visualNeckH).toBeLessThan(rcMappedNeckH);
+    expect(visualNeckH).toBeLessThan(svgNum(svg, "data-visual-shoulder-h"));
+
+    expectUpperSilhouetteMatchesStitchBudget(svg, model);
+    expect(svgNum(svg, "data-after-armhole-width")).toBeCloseTo(svgNum(svg, "data-true-after-width"), 2);
+    expect(svgNum(svg, "data-neck-width")).toBeCloseTo(
+      svgNum(svg, "data-after-armhole-width") - 2 * svgNum(svg, "data-shoulder-side-width"),
+      2,
+    );
+    expect(svgNum(svg, "data-upper-scale")).toBeCloseTo(1, 2);
   });
 
   it("keeps measurement values true after visual vertical bands are clamped", () => {
