@@ -12,6 +12,7 @@ import {
   type SleevelessEffectiveBodyShapeKind,
 } from "./sleevelessAlineShaping";
 import { deriveSleevelessEditWorkspaceBodyShape } from "./sleevelessEditWorkspaceBodyShape";
+import { resolveSleevelessGarmentKind } from "./resolveSleevelessGarmentKind";
 import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import {
   SLEEVELESS_FRONT_GARMENT_VB_H,
@@ -76,6 +77,33 @@ export function resolveSleevelessEditMeasurementIsVNeck(
 }
 
 /**
+ * Pullover vs Cardigan from the Edit Pattern Front Style choice.
+ * Live radio / wizard token is passed as `wizardGarmentType` to
+ * {@link resolveSleevelessGarmentKind}; otherwise saved pattern style.
+ */
+export function resolveSleevelessEditMeasurementIsCardigan(
+  patternData: unknown,
+  liveGarmentStyle?: string,
+): boolean {
+  return resolveSleevelessGarmentKind({
+    wizardGarmentType: liveGarmentStyle?.trim() || undefined,
+    canonicalStyle: section(section(patternData).style),
+  }).isCardigan;
+}
+
+/** Center-front opening: neckline center (`neckStartY`) down to the hem edge. */
+export function sleevelessEditCardiganCenterFrontLine(
+  frame: Pick<SleevelessFrontGarmentFrame, "cx" | "neckStartY" | "bottomY">,
+): { x1: number; y1: number; x2: number; y2: number } {
+  return {
+    x1: frame.cx,
+    y1: frame.neckStartY,
+    x2: frame.cx,
+    y2: frame.bottomY,
+  };
+}
+
+/**
  * Body silhouette from current bust/hip inches, using edit-workspace reclassify
  * plus {@link resolveEffectiveSleevelessBodyShapeKind} (same thresholds as generation).
  */
@@ -100,10 +128,12 @@ export type SleevelessEditMeasurementDiagramInput = {
   measurements: SleevelessMeasurementGarmentInput;
   patternData?: unknown;
   liveNeckline?: string;
+  liveGarmentStyle?: string;
 };
 
 export type SleevelessEditMeasurementDiagramModel = {
   isVNeck: boolean;
+  isCardigan: boolean;
   bodyShapeKind: SleevelessEffectiveBodyShapeKind;
   tapered: boolean;
   frame: SleevelessFrontGarmentFrame;
@@ -114,6 +144,10 @@ export function buildSleevelessEditMeasurementDiagramModel(
 ): SleevelessEditMeasurementDiagramModel {
   const { measurements } = input;
   const isVNeck = resolveSleevelessEditMeasurementIsVNeck(input.patternData, input.liveNeckline);
+  const isCardigan = resolveSleevelessEditMeasurementIsCardigan(
+    input.patternData,
+    input.liveGarmentStyle,
+  );
   const bodyShapeKind = resolveSleevelessEditMeasurementBodyShapeKind(
     measurements.bustInches,
     measurements.hipInches,
@@ -122,6 +156,7 @@ export function buildSleevelessEditMeasurementDiagramModel(
   const tapered = bodyShapeKind !== "straight";
   return {
     isVNeck,
+    isCardigan,
     bodyShapeKind,
     tapered,
     frame: buildSleevelessMeasurementGarmentFrame(measurements),
@@ -176,7 +211,14 @@ function drawSilhouette(model: SleevelessEditMeasurementDiagramModel): string {
   return [
     `<path data-role="body-outline" d="${silhouette}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     `<path data-role="neckline-outline" data-neckline="${isVNeck ? "v-neck" : "round"}" d="${necklineD}" fill="none" stroke="none"/>`,
+    model.isCardigan ? drawCenterFrontOpening(frame) : "",
   ].join("");
+}
+
+function drawCenterFrontOpening(frame: SleevelessFrontGarmentFrame): string {
+  const f = sleevelessFrontGarmentFmtNum;
+  const line = sleevelessEditCardiganCenterFrontLine(frame);
+  return `<line data-role="center-front-opening" x1="${f(line.x1)}" y1="${f(line.y1)}" x2="${f(line.x2)}" y2="${f(line.y2)}" fill="none" stroke="${STROKE}" stroke-width="1.6"/>`;
 }
 
 function drawGuides(frame: SleevelessFrontGarmentFrame): string {
@@ -230,7 +272,7 @@ export function buildSleevelessEditMeasurementDiagramSvg(
   const model = buildSleevelessEditMeasurementDiagramModel(input);
   const { width, height } = SLEEVELESS_EDIT_MEASUREMENT_VIEWBOX;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Sleeveless sweater body measurement diagram" focusable="false" class="express-mbp-art" data-sleeveless-edit-diagram="true" data-sleeveless-edit-neckline="${model.isVNeck ? "v-neck" : "round"}" data-sleeveless-edit-body-shape="${model.bodyShapeKind}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Sleeveless sweater body measurement diagram" focusable="false" class="express-mbp-art" data-sleeveless-edit-diagram="true" data-sleeveless-edit-neckline="${model.isVNeck ? "v-neck" : "round"}" data-sleeveless-edit-garment="${model.isCardigan ? "cardigan" : "pullover"}" data-sleeveless-edit-body-shape="${model.bodyShapeKind}">`,
     drawSilhouette(model),
     drawGuides(model.frame),
     drawTargets(model.frame),

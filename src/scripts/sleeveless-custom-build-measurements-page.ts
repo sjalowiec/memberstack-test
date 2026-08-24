@@ -63,6 +63,7 @@ import {
   createSameTurnCommitGate,
   replaceSleevelessMeasurementArtOnly,
   SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS,
+  wireSleevelessGarmentArtRefreshOnce,
   wireSleevelessNecklineArtRefreshOnce,
 } from "../lib/patterns/sleevelessEditMeasurementArtDom";
 import {
@@ -669,6 +670,13 @@ function readLiveSleevelessEditNeckline(): string | undefined {
   return wizard || undefined;
 }
 
+function readLiveSleevelessEditGarmentStyle(): string | undefined {
+  const live = document.querySelector<HTMLInputElement>('input[name="sl-edit-garment"]:checked');
+  if (live?.value.trim()) return live.value.trim();
+  const wizard = readCustomBuildWizardGarmentType();
+  return wizard || undefined;
+}
+
 function sleevelessEditDiagramInput(
   merged: Record<DiagramFieldKey, string>,
 ): SleevelessEditMeasurementDiagramInput {
@@ -676,6 +684,7 @@ function sleevelessEditDiagramInput(
     measurements: sleevelessMeasurementInputFromMerged(merged),
     patternData: getCurrentPattern(),
     liveNeckline: readLiveSleevelessEditNeckline(),
+    liveGarmentStyle: readLiveSleevelessEditGarmentStyle(),
   };
 }
 
@@ -1565,7 +1574,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     diagramInches = displayMerged;
     if (!(diagramHost instanceof HTMLElement)) return;
 
-    const renderKey = `${JSON.stringify(displayMerged)}|${getDisplayUnit() ?? "in"}|${readOnly}|${readLiveSleevelessEditNeckline() ?? ""}`;
+    const renderKey = `${JSON.stringify(displayMerged)}|${getDisplayUnit() ?? "in"}|${readOnly}|${readLiveSleevelessEditNeckline() ?? ""}|${readLiveSleevelessEditGarmentStyle() ?? ""}`;
     const hasDiagram = !!diagramHost.querySelector(".express-mbp--diagram");
     if (renderKey === lastSummaryDiagramRenderKey && hasDiagram) {
       diagramUnitDisplayReady = true;
@@ -1633,6 +1642,10 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   sleevelessMeasurementArtRefreshImpl = refreshSleevelessMeasurementArt;
   wireSleevelessNecklineArtRefreshOnce(
     document.querySelectorAll<HTMLInputElement>('input[name="sl-edit-neckline"]'),
+    refreshSleevelessMeasurementArt,
+  );
+  wireSleevelessGarmentArtRefreshOnce(
+    document.querySelectorAll<HTMLInputElement>('input[name="sl-edit-garment"]'),
     refreshSleevelessMeasurementArt,
   );
 

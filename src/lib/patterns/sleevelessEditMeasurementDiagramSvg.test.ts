@@ -11,7 +11,9 @@ import {
   buildSleevelessEditMeasurementDiagramModel,
   buildSleevelessEditMeasurementDiagramSvg,
   resolveSleevelessEditMeasurementBodyShapeKind,
+  resolveSleevelessEditMeasurementIsCardigan,
   resolveSleevelessEditMeasurementIsVNeck,
+  sleevelessEditCardiganCenterFrontLine,
 } from "./sleevelessEditMeasurementDiagramSvg";
 import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import {
@@ -47,6 +49,7 @@ function svgFor(args: {
   bust: number;
   hip: number;
   neckline?: string;
+  garment?: string;
   patternData?: unknown;
 }): string {
   return buildSleevelessEditMeasurementDiagramSvg({
@@ -55,20 +58,27 @@ function svgFor(args: {
       bustInches: args.bust,
       hipInches: args.hip,
     },
-    patternData: args.patternData ?? { style: { neckline: args.neckline ?? "round" } },
+    patternData:
+      args.patternData ?? {
+        style: { neckline: args.neckline ?? "round", garmentStyle: args.garment ?? "pullover" },
+      },
     liveNeckline: args.neckline,
+    liveGarmentStyle: args.garment,
   });
 }
 
-function modelFor(args: { bust: number; hip: number; neckline?: string }) {
+function modelFor(args: { bust: number; hip: number; neckline?: string; garment?: string }) {
   return buildSleevelessEditMeasurementDiagramModel({
     measurements: {
       ...BASE,
       bustInches: args.bust,
       hipInches: args.hip,
     },
-    patternData: { style: { neckline: args.neckline ?? "round" } },
+    patternData: {
+      style: { neckline: args.neckline ?? "round", garmentStyle: args.garment ?? "pullover" },
+    },
     liveNeckline: args.neckline,
+    liveGarmentStyle: args.garment,
   });
 }
 
@@ -101,6 +111,22 @@ describe("Sleeveless edit measurement diagram — classification sources of trut
     expect(resolveSleevelessEditMeasurementIsVNeck(savedV, "round")).toBe(false);
     expect(modelFor({ bust: 40, hip: 40, neckline: "round" }).isVNeck).toBe(false);
     expect(modelFor({ bust: 40, hip: 40, neckline: "v-neck" }).isVNeck).toBe(true);
+  });
+
+  it("selects Pullover vs Cardigan with resolveSleevelessGarmentKind", () => {
+    expect(resolveSleevelessEditMeasurementIsCardigan({ style: { garmentStyle: "pullover" } })).toBe(
+      false,
+    );
+    expect(resolveSleevelessEditMeasurementIsCardigan({ style: { garmentStyle: "cardigan" } })).toBe(
+      true,
+    );
+    expect(
+      resolveSleevelessEditMeasurementIsCardigan({ style: { garmentStyle: "pullover" } }, "cardigan"),
+    ).toBe(true);
+    expect(
+      resolveSleevelessEditMeasurementIsCardigan({ style: { garmentStyle: "cardigan" } }, "pullover"),
+    ).toBe(false);
+    expect(rendererSrc).toContain("resolveSleevelessGarmentKind");
   });
 });
 
@@ -160,6 +186,77 @@ describe("Sleeveless edit measurement diagram — silhouette variants", () => {
     expect(model.frame.hemWidth).toBeLessThan(model.frame.bodyWidth);
     const svg = svgFor({ bust: 44, hip: 38, neckline: "round" });
     expect(svg).toContain('data-sleeveless-edit-body-shape="shaped"');
+  });
+});
+
+describe("Sleeveless edit measurement diagram — Pullover vs Cardigan", () => {
+  it("Pullover + Round has no center-front opening line", () => {
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "round", garment: "pullover" });
+    expect(svg).toContain('data-sleeveless-edit-garment="pullover"');
+    expect(svg).not.toContain('data-role="center-front-opening"');
+  });
+
+  it("Pullover + V has no center-front opening line", () => {
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "v-neck", garment: "pullover" });
+    expect(svg).toContain('data-sleeveless-edit-neckline="v-neck"');
+    expect(svg).toContain('data-sleeveless-edit-garment="pullover"');
+    expect(svg).not.toContain('data-role="center-front-opening"');
+  });
+
+  it("Cardigan + Round has a center-front opening line from neckline center to hem", () => {
+    const model = modelFor({ bust: 40, hip: 40, neckline: "round", garment: "cardigan" });
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "round", garment: "cardigan" });
+    const line = sleevelessEditCardiganCenterFrontLine(model.frame);
+    const f = sleevelessFrontGarmentFmtNum;
+    expect(model.isCardigan).toBe(true);
+    expect(svg).toContain('data-sleeveless-edit-garment="cardigan"');
+    expect(svg).toContain('data-role="center-front-opening"');
+    expect(line.x1).toBe(model.frame.cx);
+    expect(line.x2).toBe(model.frame.cx);
+    expect(line.y1).toBe(model.frame.neckStartY);
+    expect(line.y2).toBe(model.frame.bottomY);
+    expect(svg).toContain(
+      `x1="${f(line.x1)}" y1="${f(line.y1)}" x2="${f(line.x2)}" y2="${f(line.y2)}"`,
+    );
+  });
+
+  it("Cardigan + V has a center-front opening line from the V point to hem", () => {
+    const model = modelFor({ bust: 40, hip: 40, neckline: "v-neck", garment: "cardigan" });
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "v-neck", garment: "cardigan" });
+    const vPoints = sleevelessFrontPulloverVNecklinePoints(model.frame);
+    const line = sleevelessEditCardiganCenterFrontLine(model.frame);
+    expect(model.isVNeck).toBe(true);
+    expect(model.isCardigan).toBe(true);
+    expect(line.x1).toBe(vPoints[1]?.x);
+    expect(line.y1).toBe(vPoints[1]?.y);
+    expect(line.y2).toBe(model.frame.bottomY);
+    expect(svg).toContain('data-role="center-front-opening"');
+    expect(svg).toContain('data-sleeveless-edit-neckline="v-neck"');
+  });
+
+  it("Cardigan keeps every existing target_* anchor", () => {
+    const pullover = svgFor({ bust: 40, hip: 40, neckline: "round", garment: "pullover" });
+    const cardigan = svgFor({ bust: 40, hip: 40, neckline: "round", garment: "cardigan" });
+    for (const id of SLEEVELESS_EDIT_MEASUREMENT_TARGET_IDS) {
+      expect(pullover).toContain(`id="${id}"`);
+      expect(cardigan).toContain(`id="${id}"`);
+    }
+  });
+
+  it("Cardigan still uses the same full-front body for Straight / A-line / shaped", () => {
+    const aline = modelFor({ bust: 38, hip: 44, neckline: "v-neck", garment: "cardigan" });
+    const shaped = modelFor({ bust: 44, hip: 38, neckline: "round", garment: "cardigan" });
+    expect(aline.bodyShapeKind).toBe("aline");
+    expect(aline.isCardigan).toBe(true);
+    expect(aline.frame.hemWidth).toBeGreaterThan(aline.frame.bodyWidth);
+    expect(shaped.bodyShapeKind).toBe("shaped");
+    expect(shaped.isCardigan).toBe(true);
+    expect(svgFor({ bust: 38, hip: 44, neckline: "v-neck", garment: "cardigan" })).toContain(
+      'data-role="center-front-opening"',
+    );
+    expect(svgFor({ bust: 44, hip: 38, neckline: "round", garment: "cardigan" })).toContain(
+      'data-role="center-front-opening"',
+    );
   });
 });
 
