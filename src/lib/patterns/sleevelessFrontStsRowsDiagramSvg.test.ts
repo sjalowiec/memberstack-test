@@ -695,6 +695,9 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     expect(svgNum(svg, "data-shoulder-y")).toBeCloseTo(118, 1);
     expect(svgNum(svg, "data-neck-corner-y")).toBeCloseTo(98, 1);
     expect(svgNum(svg, "data-neck-start-y")).toBeCloseTo(160.95, 1);
+    expect(rolePaths(svg, "neckline-outline")[0]).toBe(
+      "M 152.68 160.95 C 170.02 160.95 184.07 126.19 184.07 98",
+    );
 
     const garmentTopY = svgNum(svg, "data-shoulder-top-y");
     const neckArrowY = measureLineY(svg, "neck");
@@ -716,10 +719,11 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     ].map((m) => Number(m[1]));
     const neckMidX = (svgNum(svg, "data-neck-left") + svgNum(svg, "data-neck-right")) / 2;
     expect(neckTextXs[0]).toBeCloseTo(neckMidX, 1);
-    expect(neckTextYs[0]).toBeCloseTo(67, 1);
-    expect(neckTextYs[1]).toBeCloseTo(85, 1);
+    expect(neckTextYs[0]).toBeCloseTo(59, 1);
+    expect(neckTextYs[1]).toBeCloseTo(77, 1);
     expect(Math.max(...neckTextYs)).toBeLessThan(neckArrowY);
-    expect(Math.min(...neckTextYs)).toBeGreaterThan(50);
+    expect(neckArrowY - Math.max(...neckTextYs)).toBeGreaterThanOrEqual(8);
+    expect(Math.min(...neckTextYs)).toBeGreaterThan(57);
     expect(Math.max(...neckTextYs)).toBeLessThan(garmentTopY);
 
     const depthArrowX = measureLineX(svg, "neck-depth");
