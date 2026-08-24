@@ -120,6 +120,20 @@ function lengthLabelRows(svg: string, measure: string): number {
   return Number(re.exec(svg)?.[1] ?? NaN);
 }
 
+function rolePaths(svg: string, role: string): string[] {
+  const re = new RegExp(`data-role="${role}"[^>]*\\sd="([^"]+)"`, "g");
+  return [...svg.matchAll(re)].map((m) => m[1] ?? "");
+}
+
+function pathPoints(d: string): { x: number; y: number }[] {
+  const nums = [...d.matchAll(/(-?\d+(?:\.\d+)?)/g)].map((m) => Number(m[1]));
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    pts.push({ x: nums[i]!, y: nums[i + 1]! });
+  }
+  return pts;
+}
+
 function expectedInches(count: number, perInch: number): string {
   if (!(perInch > 0) || !(count > 0)) return "";
   const n = count / perInch;
@@ -233,6 +247,58 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
       2,
     );
     expect(svgNum(svg, "data-upper-scale")).toBeCloseTo(1, 2);
+  });
+
+  it("draws the Front-style armhole scoop without changing stitch, row, or neck geometry", () => {
+    const { svg, model } = svgFor(straightBackPattern());
+    const px = svgNum(svg, "data-px-per-stitch");
+    const boInset = Math.abs(svgNum(svg, "data-bo-left") - svgNum(svg, "data-bust-left"));
+    expect(boInset).toBeGreaterThan(0);
+    expect(Math.abs(boInset - model.armhole.bindOffStsEachSide * px)).toBeLessThan(UPPER_WIDTH_TOL);
+    expect(svgNum(svg, "data-bind-off-sts")).toBe(model.armhole.bindOffStsEachSide);
+
+    expectUpperSilhouetteMatchesStitchBudget(svg, model);
+    expect(svgNum(svg, "data-after-armhole-sts")).toBe(model.widths.stitchesAfterArmhole);
+    expect(svgNum(svg, "data-after-armhole-width")).toBeCloseTo(svgNum(svg, "data-true-after-width"), 2);
+
+    expect(svgNum(svg, "data-armhole-rows")).toBe(model.rows.armholeRows);
+    expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
+    expect(svgNum(svg, "data-visual-armhole-h")).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-last-armhole-rc")).toBe(model.armhole.lastGarmentRc);
+
+    const lastDecrease = model.armhole.events
+      .filter((ev) => ev.kind === "decrease")
+      .reduce((max, ev) => Math.max(max, ev.garmentRc), model.armhole.startGarmentRc);
+    expect(lastDecrease).toBeLessThan(model.armhole.lastGarmentRc);
+    expect(svgNum(svg, "data-last-decrease-rc")).toBe(lastDecrease);
+
+    const right = pathPoints(rolePaths(svg, "armhole-outline")[1] ?? "");
+    expect(right).toHaveLength(4);
+    expect(right[0]!.x).toBeCloseTo(svgNum(svg, "data-bust-right"), 2);
+    expect(right[0]!.y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 2);
+    expect(right[1]!.x).toBeCloseTo(svgNum(svg, "data-bo-right"), 2);
+    expect(right[1]!.y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 2);
+    expect(right[2]!.x).toBeCloseTo(svgNum(svg, "data-after-right"), 2);
+    expect(right[2]!.y).toBeCloseTo(svgNum(svg, "data-last-armhole-y"), 2);
+    expect(right[3]!.x).toBeCloseTo(svgNum(svg, "data-after-right"), 2);
+    expect(right[3]!.y).toBeCloseTo(svgNum(svg, "data-shoulder-y"), 2);
+    expect(right[2]!.y).toBeLessThan(right[1]!.y);
+    expect(right[2]!.y).toBeGreaterThan(right[3]!.y);
+    expect(right[3]!.y).not.toBeCloseTo(right[2]!.y, 0);
+    expect(Math.abs(right[2]!.y - right[3]!.y)).toBeGreaterThan(
+      Math.abs(right[1]!.y - right[2]!.y) * 0.5,
+    );
+
+    expect(svgNum(svg, "data-visual-neck-h")).toBeLessThanOrEqual(
+      SLEEVELESS_BACK_STS_ROWS_VISUAL.maxBackNeckDepth,
+    );
+    expect(svgNum(svg, "data-neck-left")).toBeCloseTo(
+      svgNum(svg, "data-cx") - svgNum(svg, "data-neck-width") / 2,
+      2,
+    );
+    expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
+    expect(widthLabelSts(svg, "neck")).toBe(model.widths.necklineStitches);
+    expect(widthLabelSts(svg, "shoulder")).toBe(model.widths.shoulderStitchesPerSide);
   });
 
   it("keeps measurement values true after visual vertical bands are clamped", () => {
