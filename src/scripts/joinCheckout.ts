@@ -261,7 +261,7 @@ function applyActiveMembershipConfirmation(memberOrPayload: unknown): void {
 /**
  * Sync the hero sales CTA (scroll to pricing vs manage) — never opens auth.
  * No-op when the authenticated status overlay owns the hero (loading / wait /
- * contact_support / manage) so DOM active-member detection cannot contradict it.
+ * contact_support / renew_now / manage) so DOM active-member detection cannot contradict it.
  */
 export function applyMembershipSalesCtaState(memberOrPayload: unknown): void {
   if (membershipStatusModeOwnsHeroCta()) return;

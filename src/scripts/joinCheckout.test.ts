@@ -417,7 +417,7 @@ describe("startJoinCheckout (purchase / current)", () => {
 
   it("ineligible paid member still opens portal on already-have-plan (non-switch path)", async () => {
     // A free-path purchase that Memberstack rejects as already-have-plan should
-    // keep the existing portal fallback — only switchToAnnual opts out.
+    // keep the existing portal fallback  only switchToAnnual opts out.
     const purchasePlansWithCheckout = vi.fn().mockRejectedValue({
       code: "already-have-plan",
       message: "Already have plan",
@@ -728,7 +728,7 @@ describe("startJoinCheckout (purchase / current)", () => {
     expect(salesCtas[0].getAttribute("href")).toBe("/account#membership");
   });
 
-  it("does not let DOM Manage Membership overwrite loading / wait / contact_support hero", () => {
+  it("does not let DOM Manage Membership overwrite loading / wait / contact_support / renew_now hero", () => {
     const { salesCtas, buttons } = stubDom({
       buttons: [{ planKey: "monthly" }],
       salesCta: true,
@@ -737,7 +737,7 @@ describe("startJoinCheckout (purchase / current)", () => {
       { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
     ]);
 
-    for (const mode of ["loading", "wait", "contact_support"] as const) {
+    for (const mode of ["loading", "wait", "contact_support", "renew_now"] as const) {
       __resetMembershipStatusCtaForTests();
       applyMembershipStatusCtaMode(mode);
       applyJoinCheckoutButtonStates(paid);

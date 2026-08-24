@@ -64,6 +64,14 @@
           Manage Membership
         </a>
         <a
+          href="/join"
+          class="kbm-btn kbm-btn-accent"
+          data-membership-status-renew
+          hidden
+        >
+          Renew My Membership
+        </a>
+        <a
           href="#"
           class="kbm-btn kbm-btn-accent contact-modal-trigger"
           data-membership-status-contact
@@ -196,6 +204,7 @@
     color: #4d5a48;
     line-height: 1.55;
     font-size: 0.98rem;
+    white-space: pre-line;
   }
 
   .membership-status-panel__facts {
@@ -254,6 +263,8 @@
   }
 
   .membership-status-panel[data-membership-status-cta-mode="contact_support"]
+    .membership-status-panel__inner,
+  .membership-status-panel[data-membership-status-cta-mode="renew_now"]
     .membership-status-panel__inner,
   .membership-status-panel[data-membership-status-cta-mode="wait"]
     .membership-status-panel__inner {

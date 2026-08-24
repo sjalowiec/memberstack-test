@@ -165,7 +165,7 @@ function statusFactFromServer(summary: MembershipStatusSummary): string | null {
 
 /**
  * Purchase-eligible logged-in account (client confirms no paid plan).
- * Not a lookup failure ó monthly/annual checkout remains available.
+ * Not a lookup failure ù monthly/annual checkout remains available.
  */
 export function membershipStatusPageViewPurchaseEligible(
   message = MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
@@ -195,6 +195,7 @@ export function membershipStatusPageViewFromServerSummary(
 
   const hideFacts =
     summary.recommendedAction === "contact_support" ||
+    summary.recommendedAction === "renew_now" ||
     summary.recommendedAction === "wait" ||
     summary.currentStatus === "unknown";
 
@@ -236,7 +237,8 @@ export function membershipStatusPageViewClientUnavailable(
  * 2. Client active / canceling paid ? Account view wins (ignore server unknown)
  * 3. Client free ? consult server legacy context when available
  *    - purchase / not_found / expired legacy ? purchase-eligible
- *    - future legacy / ambiguous ? contact support
+ *    - future legacy paid-through ? renew via /join (immediate-start warning)
+ *    - ambiguous ? contact support
  *    - genuine server wait/unknown ? cannot confirm
  * 4. Client free + server missing/failed ? cannot confirm (do not invent purchase
  *    when legacy paid-through could not be checked)
@@ -260,7 +262,7 @@ export function resolveMembershipStatusPageView(options: {
     return fromClient;
   }
 
-  // Client loaded successfully with no paid plan ó that alone is not a lookup failure.
+  // Client loaded successfully with no paid plan ù that alone is not a lookup failure.
   if (options.serverSummary) {
     return membershipStatusPageViewFromServerSummary(options.serverSummary);
   }

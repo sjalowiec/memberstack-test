@@ -69,9 +69,9 @@ function serverFutureLegacy(): MembershipStatusSummary {
     legacyExpirationDate: "July 30, 2026",
     legacyLinkState: "linked",
     accountType: "non_paid_account",
-    recommendedAction: "contact_support",
+    recommendedAction: "renew_now",
     customerFacingMessage:
-      "Good news! It looks like your Premium annual membership still has paid time remaining through July 30, 2026. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.",
+      "Your Premium annual membership is paid through July 30, 2026.\n\nYou can renew now. Your new membership and billing period will begin today.",
   };
 }
 
@@ -207,15 +207,20 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(page.facts.renews).toBe(parity.renewsOrThrough);
   });
 
-  it("no active client membership uses future legacy server context (contact)", () => {
+  it("no active client membership uses future legacy server context (renew via /join)", () => {
     const view = resolveMembershipStatusPageView({
       clientLoaded: true,
       memberPayload: { data: { id: "mem_free", planConnections: [] } },
       serverSummary: serverFutureLegacy(),
     });
     expect(view.source).toBe("server_legacy");
-    expect(view.ctaMode).toBe("contact_support");
-    expect(view.message).toMatch(/paid time remaining/);
+    expect(view.ctaMode).toBe("renew_now");
+    expect(view.heading).toBe("You still have membership time remaining");
+    expect(view.message).toMatch(/paid through July 30, 2026/);
+    expect(view.message).toMatch(/billing period will begin today/);
+    expect(view.message).not.toMatch(/contact us/i);
+    expect(membershipStatusUiMode(view)).toBe("inline_blocking");
+    expect(Object.values(view.facts).every((value) => value == null)).toBe(true);
   });
 
   it("no active client membership uses expired legacy server context (purchase)", () => {

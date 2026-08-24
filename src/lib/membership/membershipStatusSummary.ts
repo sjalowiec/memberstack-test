@@ -46,6 +46,7 @@ export type MembershipAccountType =
 export type MembershipRecommendedAction =
   | "manage"
   | "purchase"
+  | "renew_now"
   | "contact_support"
   | "wait";
 
@@ -226,10 +227,10 @@ function futureLegacyPaidThroughMessage(
   planName: string | null,
   dateDisplay: string,
 ): string {
-  if (planName) {
-    return `Good news! It looks like your ${planName} annual membership still has paid time remaining through ${dateDisplay}. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.`;
-  }
-  return `Good news! It looks like you still have paid membership time remaining through ${dateDisplay}. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.`;
+  const paidThrough = planName
+    ? `Your ${planName} annual membership is paid through ${dateDisplay}.`
+    : `Your membership is paid through ${dateDisplay}.`;
+  return `${paidThrough}\n\nYou can renew now. Your new membership and billing period will begin today.`;
 }
 
 function pastLegacyEndedMessage(planName: string | null, dateDisplay: string): string {
@@ -465,6 +466,7 @@ export function buildMembershipStatusSummary(input: {
 
     if (legacyTiming === "legacy_paid_through_future") {
       // Do not call the plan "previous" while paid-through is still today/future.
+      // Renew via /join; warn that checkout starts immediately (no prepaid credit).
       return {
         identified,
         currentStatus,
@@ -474,7 +476,7 @@ export function buildMembershipStatusSummary(input: {
         legacyExpirationDate: legacyExpirationDisplay,
         legacyLinkState: "linked",
         accountType: "non_paid_account",
-        recommendedAction: "contact_support",
+        recommendedAction: "renew_now",
         customerFacingMessage: futureLegacyPaidThroughMessage(
           planForCopy,
           legacyExpirationDisplay,
@@ -568,7 +570,10 @@ export function membershipStatusPanelHeading(
   if (summary.legacyLinkState === "ambiguous") {
     return "We need to check your membership";
   }
-  // Future/today uniquely linked legacy paid-through ? warm, not alarming.
+  if (summary.recommendedAction === "renew_now") {
+    return "You still have membership time remaining";
+  }
+  // Linked date present but timing unknown — keep a calm contact heading.
   if (
     summary.recommendedAction === "contact_support" &&
     summary.legacyLinkState === "linked" &&
