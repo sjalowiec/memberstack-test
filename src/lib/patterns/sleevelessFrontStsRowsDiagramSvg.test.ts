@@ -592,9 +592,12 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const neckArrowY = measureLineY(svg, "neck");
     const neckArrowX1 = measureLineX(svg, "neck");
     const neckArrowX2 = measureLineX2(svg, "neck");
-    expect(neckArrowY).toBeLessThan(svgNum(svg, "data-shoulder-top-y"));
+    const garmentTopY = svgNum(svg, "data-shoulder-top-y");
     expect(neckArrowX1).toBeCloseTo(svgNum(svg, "data-neck-left"), 1);
     expect(neckArrowX2).toBeCloseTo(svgNum(svg, "data-neck-right"), 1);
+    expect(neckArrowY).toBeLessThan(garmentTopY);
+    expect(garmentTopY - neckArrowY).toBeLessThanOrEqual(16);
+    expect(garmentTopY - neckArrowY).toBeGreaterThanOrEqual(8);
 
     const neckTextXs = [
       ...svg.matchAll(/<text data-role="width-measurement" data-measure="neck"[^>]* x="([^"]+)"/g),
@@ -602,9 +605,11 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const neckTextYs = [
       ...svg.matchAll(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/g),
     ].map((m) => Number(m[1]));
-    expect(Math.max(...neckTextXs)).toBeLessThan(svgNum(svg, "data-cf-x"));
+    const neckMidX = (svgNum(svg, "data-neck-left") + svgNum(svg, "data-neck-right")) / 2;
+    expect(neckTextXs[0]).toBeCloseTo(neckMidX, 1);
     expect(Math.max(...neckTextYs)).toBeLessThan(neckArrowY);
-    expect(Math.max(...neckTextYs)).toBeLessThan(svgNum(svg, "data-shoulder-top-y"));
+    expect(neckArrowY - Math.max(...neckTextYs)).toBeLessThanOrEqual(16);
+    expect(Math.min(...neckTextYs)).toBeGreaterThan(50);
 
     const depthArrowX = measureLineX(svg, "neck-depth");
     const depthArrowY1 = measureLineY(svg, "neck-depth");
@@ -617,6 +622,8 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const depthTextYs = measureTextYs(svg, "neck-depth");
     expect(Math.max(...depthTextXs)).toBeLessThan(depthArrowX - 8);
     expect(Math.max(...depthTextXs)).toBeLessThan(svgNum(svg, "data-cf-x"));
+    expect(depthTextXs[0]).toBeCloseTo(34, 1);
+    expect(depthTextYs[0]).toBeCloseTo(120.48, 1);
     expect(Math.min(...depthTextYs)).toBeGreaterThan(Math.max(...neckTextYs) + 16);
 
     const shoulderLabelY = Number(
