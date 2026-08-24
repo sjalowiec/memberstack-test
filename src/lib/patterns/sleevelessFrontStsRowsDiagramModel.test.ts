@@ -11,6 +11,8 @@ import {
 import { pulloverVNeckFrontShoulderPoints } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import { cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
+import { sleevelessCardiganFrontEdgeFinishingMode } from "./sleevelessPatternFinishing";
 
 function amandaVNeckPattern(): Record<string, unknown> {
   return {
@@ -100,7 +102,7 @@ function roundPulloverPattern(): Record<string, unknown> {
   };
 }
 
-function cardiganVNeckPattern(): Record<string, unknown> {
+function cardiganStraightPattern(neckline: "round" | "v-neck"): Record<string, unknown> {
   return {
     fit: {
       sizingChart: "misses",
@@ -114,9 +116,32 @@ function cardiganVNeckPattern(): Record<string, unknown> {
         back_neck_depth: 1,
       },
     },
-    style: { garmentStyle: "cardigan", neckline: "v-neck", frontStyle: "open", recipientCategory: "misses" },
+    style: { garmentStyle: "cardigan", neckline, frontStyle: "open", recipientCategory: "misses" },
     yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
   };
+}
+
+function cardiganVNeckPattern(): Record<string, unknown> {
+  return cardiganStraightPattern("v-neck");
+}
+
+function cardiganRoundPattern(): Record<string, unknown> {
+  return cardiganStraightPattern("round");
+}
+
+function cardiganAlinePattern(): Record<string, unknown> {
+  const pattern = cardiganStraightPattern("v-neck");
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 48;
+  return pattern;
+}
+
+function cardiganShapedPattern(): Record<string, unknown> {
+  const pattern = cardiganStraightPattern("round");
+  (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
 }
 
 function alineVNeckPattern(): Record<string, unknown> {
@@ -159,8 +184,13 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     expect(model).not.toBeNull();
     expect(model?.piece).toBe("front");
     expect(model?.garmentStyle).toBe("pullover");
+    expect(model?.frontPiece).toBe("fullFront");
     expect(model?.bodyShape).toBe("straight");
     expect(model?.neckline.style).toBe("v-neck");
+    if (model?.neckline.style === "v-neck") {
+      expect(model.neckline.construction).toBe("full-front-divide");
+    }
+    expect(model?.frontBand).toBeUndefined();
     expect(resolveSleevelessDiagramBodyShapeKind(pattern)).toBe("straight");
   });
 
@@ -366,8 +396,68 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     }
   });
 
-  it("returns null for cardigan and shaped bodies", () => {
-    const cases = [cardiganVNeckPattern(), shapedVNeckPattern()];
+  it("builds a cardigan straight Round left-Front model from half-panel values", () => {
+    const pattern = cardiganRoundPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+    const d = result.debug;
+    const pieceNeck = cardiganFrontNeckOpeningStitches(d.necklineStitches ?? 0);
+    const postArmhole = d.cardiganFrontPostArmholeSts ?? d.cardiganHalfLeftStitchesAfterArmhole ?? 0;
+
+    expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(true);
+    expect(model).not.toBeNull();
+    expect(model?.garmentStyle).toBe("cardigan");
+    expect(model?.frontPiece).toBe("leftFront");
+    expect(model?.bodyShape).toBe("straight");
+    expect(model?.neckline.style).toBe("round");
+    expect(model?.widths.hemStitches).toBe(d.cardiganHalfLeftCastOnSts);
+    expect(model?.widths.bustStitches).toBe(d.cardiganHalfLeftBustBodySts);
+    expect(model?.widths.stitchesAfterArmhole).toBe(postArmhole);
+    expect(model?.widths.necklineStitches).toBe(pieceNeck);
+    expect(model?.widths.shoulderStitchesPerSide).toBe(postArmhole - pieceNeck);
+    expect(model?.widths.hemStitches).toBeLessThan(Math.round(d.hemCastOnStitches ?? d.backStitches ?? 0));
+    expect(model?.frontBand?.includedInPiece).toBe(false);
+    expect(model?.frontBand?.treatment).toBe(sleevelessCardiganFrontEdgeFinishingMode(pattern));
+    expect(model?.frontBand?.treatment).toBe("pickup");
+    if (model?.neckline.style === "round") {
+      expect(model.neckline.construction).toBe("half-front-cf");
+      expect(model.neckline.centerBindOffStitches).toBe(d.cardiganFrontInitialNeckBindOffStitches);
+      expect(model.neckline.startGarmentRc).toBe(d.frontNecklineStartRC);
+    }
+    expect(model?.armhole.events.every((ev) => ev.side === "right")).toBe(true);
+    expect(model?.armhole.events.some((ev) => ev.kind === "bindOff")).toBe(true);
+    expect(model?.armhole.overlapsNeckline).toBe(false);
+  });
+
+  it("builds a cardigan straight V left-Front model from Cardigan V data", () => {
+    const pattern = cardiganVNeckPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+    const d = result.debug;
+    const pieceNeck = cardiganFrontNeckOpeningStitches(d.necklineStitches ?? 0);
+
+    expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(true);
+    expect(model).not.toBeNull();
+    expect(model?.garmentStyle).toBe("cardigan");
+    expect(model?.frontPiece).toBe("leftFront");
+    expect(model?.neckline.style).toBe("v-neck");
+    expect(model?.widths.hemStitches).toBe(d.cardiganHalfLeftCastOnSts);
+    expect(model?.widths.bustStitches).toBe(d.cardiganHalfLeftBustBodySts);
+    expect(model?.widths.necklineStitches).toBe(pieceNeck);
+    expect(model?.neckline.startGarmentRc).toBe(d.frontNecklineStartRC);
+    expect(model?.neckline.depthRows).toBe(Math.round(d.frontNeckDepthRows));
+    if (model?.neckline.style === "v-neck") {
+      expect(model.neckline.construction).toBe("half-front-cf");
+      expect(model.neckline.divideGarmentRc).toBe(model.neckline.startGarmentRc);
+    }
+    expect(model?.frontBand?.includedInPiece).toBe(false);
+    expect(model?.frontBand?.treatment).toBe("verticalBand");
+    expect(model?.armhole.overlapsNeckline).toBe(false);
+    expect(d.frontArmholeNecklineOverlap).toBeUndefined();
+  });
+
+  it("returns null for cardigan A-line, shaped cardigan, and shaped pullover", () => {
+    const cases = [cardiganAlinePattern(), cardiganShapedPattern(), shapedVNeckPattern()];
     for (const pattern of cases) {
       const result = generateSleevelessBackPattern(pattern);
       expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(false);
@@ -375,6 +465,8 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     }
     expect(resolveSleevelessDiagramBodyShapeKind(alineVNeckPattern())).toBe("aline");
     expect(resolveSleevelessDiagramBodyShapeKind(shapedVNeckPattern())).toBe("shaped");
+    expect(resolveSleevelessDiagramBodyShapeKind(cardiganAlinePattern())).toBe("aline");
+    expect(resolveSleevelessDiagramBodyShapeKind(cardiganShapedPattern())).toBe("shaped");
   });
 
   it("returns null when live front chart rows are missing", () => {
