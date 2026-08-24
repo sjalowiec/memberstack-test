@@ -26,6 +26,8 @@ import {
   refreshDropShoulderWorkspaceMeasurementSummary,
   rehydratePatternWorkspaceMeasurementDiagram,
   rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit,
+  refreshSleevelessWorkspaceMeasurementsFromQuickEditSize,
+  readSleevelessEditWorkspaceQuickEditSizingFromDom,
 } from "./sleeveless-custom-build-measurements-page";
 import {
   readAvailableNeedlesFromAllSources,
@@ -927,16 +929,38 @@ function initSleevelessPatternEditDrawer(): void {
     if (refreshed) lastQuickEditSize = sizing.selectedSize;
   }
 
+  async function handleSleevelessQuickEditSizeChanged(oldSize: string): Promise<void> {
+    if (isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    if (!measureInitialized && measurePane) {
+      measureInitialized = true;
+      initCustomBuildMeasurementsPage({
+        resolveDisplayUnit: () => editDisplayUnit,
+        unitChangeToggleId: EDIT_WORKSPACE_UNIT_TOGGLE_ID,
+      });
+    }
+    const sizing = readSleevelessEditWorkspaceQuickEditSizingFromDom();
+    if (!sizing) return;
+    patchExpressValues({
+      selectedSize: sizing.selectedSize,
+      fit: sizing.fitPreference,
+    });
+    const refreshed = await refreshSleevelessWorkspaceMeasurementsFromQuickEditSize({
+      oldSize,
+    });
+    if (refreshed) lastQuickEditSize = sizing.selectedSize;
+  }
+
   function wireQuickEditSizeChangeHandler(): void {
     if (!sizeSelect || sizeSelect.dataset.slQuickEditSizeWired === "1") return;
     sizeSelect.dataset.slQuickEditSizeWired = "1";
     sizeSelect.addEventListener("change", () => {
-      if (!isDropShoulderWorkspaceMeasurementSummaryPage()) {
+      const oldSize = lastQuickEditSize;
+      if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+        ensureDropShoulderMeasurementEditorReady();
+        void handleDropShoulderQuickEditSizeChanged(oldSize);
         return;
       }
-      const oldSize = lastQuickEditSize;
-      ensureDropShoulderMeasurementEditorReady();
-      void handleDropShoulderQuickEditSizeChanged(oldSize);
+      void handleSleevelessQuickEditSizeChanged(oldSize);
     });
   }
 
