@@ -136,6 +136,21 @@ function cardiganAlinePattern(): Record<string, unknown> {
   return pattern;
 }
 
+function cardiganAlineRoundPattern(): Record<string, unknown> {
+  const pattern = cardiganStraightPattern("round");
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 48;
+  return pattern;
+}
+
+function cardiganAlineOutwardPattern(): Record<string, unknown> {
+  const pattern = cardiganStraightPattern("v-neck");
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function cardiganShapedPattern(): Record<string, unknown> {
   const pattern = cardiganStraightPattern("round");
   (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
@@ -456,8 +471,58 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     expect(d.frontArmholeNecklineOverlap).toBeUndefined();
   });
 
-  it("returns null for cardigan A-line, shaped cardigan, and shaped pullover", () => {
-    const cases = [cardiganAlinePattern(), cardiganShapedPattern(), shapedVNeckPattern()];
+  it("builds cardigan A-line Round and V left-Front models from half-panel values", () => {
+    for (const pattern of [cardiganAlineRoundPattern(), cardiganAlinePattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+      const d = result.debug;
+      const pieceNeck = cardiganFrontNeckOpeningStitches(d.necklineStitches ?? 0);
+      const postArmhole = d.cardiganFrontPostArmholeSts ?? d.cardiganHalfLeftStitchesAfterArmhole ?? 0;
+
+      expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(true);
+      expect(model).not.toBeNull();
+      expect(model?.garmentStyle).toBe("cardigan");
+      expect(model?.frontPiece).toBe("leftFront");
+      expect(model?.bodyShape).toBe("aline");
+      expect(model?.bodyShaping.edgeScope).toBe("sideSeamOnly");
+      expect(model?.bodyShaping.direction).toBe("inward");
+      expect(model?.widths.hemStitches).toBe(d.cardiganHalfLeftCastOnSts);
+      expect(model?.widths.bustStitches).toBe(d.cardiganHalfLeftBustBodySts);
+      expect(model?.widths.hemStitches).toBeGreaterThan(model?.widths.bustStitches ?? 0);
+      expect(model?.widths.hemStitches).toBeLessThan(
+        Math.round(d.hemCastOnStitches ?? d.backStitches ?? 0),
+      );
+      expect(model?.widths.stitchesAfterArmhole).toBe(postArmhole);
+      expect(model?.widths.necklineStitches).toBe(pieceNeck);
+      expect(model?.widths.shoulderStitchesPerSide).toBe(postArmhole - pieceNeck);
+      expect(model?.bodyShaping.startRc).toBe(Math.floor(d.alineBodyShapingRowNumbers![0]!));
+      expect(model?.bodyShaping.endRc).toBe(
+        Math.floor(d.alineBodyShapingRowNumbers![d.alineBodyShapingRowNumbers!.length - 1]!),
+      );
+      expect(model?.bodyShaping.endRc).toBeLessThanOrEqual(model?.armhole.startGarmentRc ?? 0);
+      expect(model?.frontBand?.includedInPiece).toBe(false);
+    }
+  });
+
+  it("builds an outward cardigan A-line left-Front when hem stitches are narrower than bust", () => {
+    const pattern = cardiganAlineOutwardPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+    const d = result.debug;
+
+    expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(true);
+    expect(model?.bodyShape).toBe("aline");
+    expect(model?.bodyShaping.direction).toBe("outward");
+    expect(model?.bodyShaping.edgeScope).toBe("sideSeamOnly");
+    expect(model?.widths.hemStitches).toBe(d.cardiganHalfLeftCastOnSts);
+    expect(model?.widths.bustStitches).toBe(d.cardiganHalfLeftBustBodySts);
+    expect(model?.widths.hemStitches).toBeLessThan(model?.widths.bustStitches ?? 0);
+    expect(model?.bodyShaping.startRc).toBe(Math.floor(d.alineBodyShapingRowNumbers![0]!));
+    expect(model?.bodyShaping.endRc).toBeLessThanOrEqual(model?.armhole.startGarmentRc ?? 0);
+  });
+
+  it("returns null for shaped cardigan and shaped pullover", () => {
+    const cases = [cardiganShapedPattern(), shapedVNeckPattern()];
     for (const pattern of cases) {
       const result = generateSleevelessBackPattern(pattern);
       expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(false);

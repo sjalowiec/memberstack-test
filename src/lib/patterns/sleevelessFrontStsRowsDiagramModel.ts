@@ -2,7 +2,7 @@
  * Data model for the Sleeveless Front Stitches & Rows diagram.
  *
  * Scope: pullover (V or round, straight or A-line) and cardigan (V or round,
- * straight body only). Reads a finalized {@link SleevelessBackPatternResult}.
+ * straight or A-line). Reads a finalized {@link SleevelessBackPatternResult}.
  * No pattern math, no SVG.
  */
 
@@ -33,6 +33,9 @@ import type { StitchDecreasePoint } from "./shapingNotationCompress";
 import { collectCompleteShoulderShapingPoints } from "./shoulderShapingNotation";
 
 export type SleevelessFrontStsRowsBodyShapingDirection = "straight" | "inward" | "outward";
+
+/** Pullover tapers both sides; cardigan A-line shapes the side seam only. */
+export type SleevelessFrontStsRowsBodyShapingEdge = "bothSides" | "sideSeamOnly";
 
 export type SleevelessFrontStsRowsDiagramWidths = {
   hemStitches: number;
@@ -120,6 +123,7 @@ export type SleevelessFrontStsRowsDiagramBodyShaping = {
   startRc: number;
   endRc: number;
   rowNumbers: readonly number[];
+  edgeScope: SleevelessFrontStsRowsBodyShapingEdge;
 };
 
 export type SleevelessFrontStsRowsFrontPiece = "fullFront" | "leftFront";
@@ -196,13 +200,22 @@ function sideSeamRowsAboveHem(d: SleevelessBackPatternResult["debug"]): number |
   return undefined;
 }
 
-function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessFrontStsRowsDiagramBodyShaping {
+function resolveBodyShaping(
+  result: SleevelessBackPatternResult,
+  stitchCounts?: { hemStitches: number; bustStitches: number },
+  edgeScope: SleevelessFrontStsRowsBodyShapingEdge = "bothSides",
+): SleevelessFrontStsRowsDiagramBodyShaping {
   const d = result.debug;
   const hemStitches = Math.max(
     1,
-    Math.round(finiteOr(d.hemCastOnStitches, finiteOr(d.backStitches, 1))),
+    Math.round(
+      stitchCounts?.hemStitches ?? finiteOr(d.hemCastOnStitches, finiteOr(d.backStitches, 1)),
+    ),
   );
-  const bustStitches = Math.max(1, Math.round(finiteOr(d.bustBodyStitches, hemStitches)));
+  const bustStitches = Math.max(
+    1,
+    Math.round(stitchCounts?.bustStitches ?? finiteOr(d.bustBodyStitches, hemStitches)),
+  );
   const rowNumbers = [...(d.alineBodyShapingRowNumbers ?? [])]
     .filter((n): n is number => typeof n === "number" && Number.isFinite(n))
     .map((n) => Math.floor(n))
@@ -210,7 +223,7 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessFron
   const direction: SleevelessFrontStsRowsBodyShapingDirection =
     hemStitches > bustStitches ? "inward" : hemStitches < bustStitches ? "outward" : "straight";
   if (direction === "straight") {
-    return { direction, hemStitches, bustStitches, startRc: 0, endRc: 0, rowNumbers: [] };
+    return { direction, hemStitches, bustStitches, startRc: 0, endRc: 0, rowNumbers: [], edgeScope };
   }
   if (rowNumbers.length === 0) {
     const hemRc = Math.max(0, Math.round(finiteOr(d.hemRows, 0)));
@@ -218,7 +231,15 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessFron
       hemRc,
       Math.floor(finiteOr(d.armholeStartRow, d.rowsFromCastOnToArmholeStart ?? 0)),
     );
-    return { direction, hemStitches, bustStitches, startRc: hemRc, endRc: armholeRc, rowNumbers };
+    return {
+      direction,
+      hemStitches,
+      bustStitches,
+      startRc: hemRc,
+      endRc: armholeRc,
+      rowNumbers,
+      edgeScope,
+    };
   }
   return {
     direction,
@@ -227,6 +248,7 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessFron
     startRc: rowNumbers[0]!,
     endRc: rowNumbers[rowNumbers.length - 1]!,
     rowNumbers,
+    edgeScope,
   };
 }
 
@@ -240,6 +262,16 @@ function isStraightCardiganFront(patternData?: unknown): boolean {
   return (
     isSleevelessCardiganGarmentStyle(patternData ?? {}) &&
     resolveSleevelessDiagramBodyShapeKind(patternData) === "straight"
+  );
+}
+
+function isCardiganAlineFront(
+  result: SleevelessBackPatternResult,
+  patternData?: unknown,
+): boolean {
+  return (
+    isSleevelessCardiganGarmentStyle(patternData ?? {}) &&
+    shouldGenerateSleevelessAlineStsRows(patternData, result.debug.alineBodyShapingType)
   );
 }
 
@@ -268,7 +300,6 @@ function cardiganLeftFrontWidths(
     !(hemStitches > 0) ||
     !(bustStitches > 0) ||
     !(stitchesAfterArmhole > 0) ||
-    hemStitches !== bustStitches ||
     !isFiniteNumber(d.stitchesPerInch) ||
     d.stitchesPerInch <= 0 ||
     !isFiniteNumber(d.rowsPerInch) ||
@@ -308,7 +339,15 @@ export function shouldBuildSleevelessFrontStsRowsDiagramModel(
   patternData?: unknown,
 ): boolean {
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
-  if (isStraightCardiganFront(patternData)) return cardiganLeftFrontWidths(result) != null;
+  const cardiganWidths = isSleevelessCardiganGarmentStyle(patternData ?? {})
+    ? cardiganLeftFrontWidths(result)
+    : null;
+  if (isStraightCardiganFront(patternData)) {
+    return cardiganWidths != null && cardiganWidths.hemStitches === cardiganWidths.bustStitches;
+  }
+  if (isCardiganAlineFront(result, patternData)) {
+    return cardiganWidths != null && cardiganWidths.hemStitches !== cardiganWidths.bustStitches;
+  }
   if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
   const bodyKind = resolveSleevelessDiagramBodyShapeKind(patternData);
   const generateAline = shouldGenerateSleevelessAlineStsRows(
@@ -323,7 +362,7 @@ export function shouldBuildSleevelessFrontStsRowsDiagramModel(
 
 /**
  * Front measurement model for the Stitches & Rows renderer.
- * Pullover: V or round, straight or A-line. Cardigan: V or round, straight only.
+ * Pullover: V or round, straight or A-line. Cardigan: V or round, straight or A-line.
  * Returns `null` when the result is out of scope so hydration can keep the
  * existing Illustrator SVG.
  */
@@ -332,8 +371,8 @@ export function buildSleevelessFrontStsRowsDiagramModel(
   patternData?: unknown,
 ): SleevelessFrontStsRowsDiagramModel | null {
   if (!shouldBuildSleevelessFrontStsRowsDiagramModel(result, patternData)) return null;
-  if (isStraightCardiganFront(patternData)) {
-    return buildCardiganStraightFrontStsRowsDiagramModel(result, patternData);
+  if (isStraightCardiganFront(patternData) || isCardiganAlineFront(result, patternData)) {
+    return buildCardiganFrontStsRowsDiagramModel(result, patternData);
   }
 
   const d = result.debug;
@@ -556,14 +595,25 @@ function sharedFrontRows(result: SleevelessBackPatternResult): SleevelessFrontSt
 /**
  * One LEFT FRONT panel. Widths come from cardiganHalfLeft* / post-armhole
  * debug — not full-back stitch counts. Front-band stitches are excluded.
+ * A-line uses the same half-front hem/bust and the live shaping RCs; CF is
+ * not a shaping edge (`sideSeamOnly`).
  */
-function buildCardiganStraightFrontStsRowsDiagramModel(
+function buildCardiganFrontStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): SleevelessFrontStsRowsDiagramModel | null {
   const widths = cardiganLeftFrontWidths(result);
   const rows = sharedFrontRows(result);
   if (!widths || !rows) return null;
+  const bodyShaping = resolveBodyShaping(
+    result,
+    { hemStitches: widths.hemStitches, bustStitches: widths.bustStitches },
+    "sideSeamOnly",
+  );
+  const bodyShape: "straight" | "aline" =
+    isCardiganAlineFront(result, patternData) && bodyShaping.direction !== "straight"
+      ? "aline"
+      : "straight";
 
   const d = result.debug;
   const isVNeck = isSleevelessVNeckChoice(patternData ?? {});
@@ -621,7 +671,7 @@ function buildCardiganStraightFrontStsRowsDiagramModel(
     piece: "front",
     garmentStyle: "cardigan",
     frontPiece: "leftFront",
-    bodyShape: "straight",
+    bodyShape,
     widths,
     rows,
     neckline,
@@ -639,14 +689,7 @@ function buildCardiganStraightFrontStsRowsDiagramModel(
       stitchesPerSide: widths.shoulderStitchesPerSide,
       points: frontShoulderPoints(result, widths.shoulderStitchesPerSide),
     },
-    bodyShaping: {
-      direction: "straight",
-      hemStitches: widths.hemStitches,
-      bustStitches: widths.bustStitches,
-      startRc: 0,
-      endRc: 0,
-      rowNumbers: [],
-    },
+    bodyShaping,
     frontBand: cardiganFrontBand(result, patternData),
   };
 }

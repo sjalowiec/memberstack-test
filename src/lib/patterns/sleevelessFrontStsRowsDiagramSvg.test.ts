@@ -171,6 +171,21 @@ function cardiganAlinePattern(): Record<string, unknown> {
   return pattern;
 }
 
+function cardiganAlineRoundPattern(): Record<string, unknown> {
+  const pattern = cardiganStraightPattern("round");
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 48;
+  return pattern;
+}
+
+function cardiganAlineOutwardPattern(): Record<string, unknown> {
+  const pattern = cardiganStraightPattern("v-neck");
+  (pattern.style as { bodyShape?: string }).bodyShape = "aline";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 function cardiganShapedPattern(): Record<string, unknown> {
   const pattern = cardiganStraightPattern("round");
   (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
@@ -485,7 +500,7 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
   });
 
   it("returns null for unsupported styles", () => {
-    for (const pattern of [cardiganAlinePattern(), cardiganShapedPattern(), shapedVNeckPattern()]) {
+    for (const pattern of [cardiganShapedPattern(), shapedVNeckPattern()]) {
       const result = generateSleevelessBackPattern(pattern);
       const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
       expect(tryBuildSleevelessFrontStsRowsDiagramSvg(model)).toBeNull();
@@ -583,6 +598,154 @@ describe("buildSleevelessFrontStsRowsDiagramSvg", () => {
     const vPoint = /data-role="v-point" data-x="([^"]+)" data-y="([^"]+)"/.exec(v.svg);
     expect(vPoint?.[1]).toBe(svgAttr(v.svg, "data-cf-x"));
     expect(Number(vPoint?.[2])).toBeCloseTo(svgNum(v.svg, "data-neck-start-y"), 1);
+  });
+
+  it("generates Cardigan A-line Round and V left-Front diagrams", () => {
+    for (const pattern of [cardiganAlineRoundPattern(), cardiganAlinePattern()]) {
+      const { svg, model } = svgFor(pattern);
+      expectValidSvg(svg);
+      expect(svgAttr(svg, "data-garment-style")).toBe("cardigan");
+      expect(svgAttr(svg, "data-front-piece")).toBe("leftFront");
+      expect(svgAttr(svg, "data-body-shape")).toBe("aline");
+      expect(svgAttr(svg, "data-body-shaping-direction")).toBe("inward");
+      expect(svgAttr(svg, "data-shaping-edge")).toBe("side-seam");
+      expect(model.bodyShape).toBe("aline");
+      expect(model.bodyShaping.direction).toBe("inward");
+      expect(model.bodyShaping.edgeScope).toBe("sideSeamOnly");
+      expect(model.widths.hemStitches).toBeGreaterThan(model.widths.bustStitches);
+      expect(widthLabelSts(svg, "cast-on")).toBe(model.widths.hemStitches);
+      expect(widthLabelSts(svg, "bust")).toBe(model.widths.bustStitches);
+      expect(widthLabelSts(svg, "neck")).toBe(model.widths.necklineStitches);
+      expect(widthLabelSts(svg, "shoulder")).toBe(model.widths.shoulderStitchesPerSide);
+      expect(lengthLabelRows(svg, "garment-length")).toBe(model.rows.expectedGarmentRows);
+      expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
+      expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
+      expectCardiganFrontPieceMatchesStitchBudget(svg, model);
+    }
+    const round = svgFor(cardiganAlineRoundPattern());
+    expect(svgAttr(round.svg, "data-neckline-style")).toBe("round");
+    expect(round.svg).toContain('data-contour="one-sided-scoop"');
+    const v = svgFor(cardiganAlinePattern());
+    expect(svgAttr(v.svg, "data-neckline-style")).toBe("v-neck");
+    expect(v.svg).toContain('data-role="v-point"');
+  });
+
+  it("sizes Cardigan A-line hem and bust from half-front stitch counts", () => {
+    const { svg, model } = svgFor(cardiganAlinePattern());
+    const result = generateSleevelessBackPattern(cardiganAlinePattern());
+    expect(model.widths.hemStitches).toBe(result.debug.cardiganHalfLeftCastOnSts);
+    expect(model.widths.bustStitches).toBe(result.debug.cardiganHalfLeftBustBodySts);
+    expect(model.widths.hemStitches).toBeLessThan(
+      Math.round(result.debug.hemCastOnStitches ?? result.debug.backStitches ?? 0),
+    );
+    expect(svgNum(svg, "data-hem-width")).toBeGreaterThan(svgNum(svg, "data-bust-width"));
+    const px = svgNum(svg, "data-px-per-stitch");
+    expect(Math.abs(svgNum(svg, "data-hem-width") - model.widths.hemStitches * px)).toBeLessThan(
+      UPPER_WIDTH_TOL,
+    );
+    expect(Math.abs(svgNum(svg, "data-bust-width") - model.widths.bustStitches * px)).toBeLessThan(
+      UPPER_WIDTH_TOL,
+    );
+    expect(svgNum(svg, "data-hem-left")).toBeCloseTo(svgNum(svg, "data-cf-x"), 1);
+    expect(svgNum(svg, "data-bust-left")).toBeCloseTo(svgNum(svg, "data-cf-x"), 1);
+    expect(svgNum(svg, "data-hem-right")).toBeGreaterThan(svgNum(svg, "data-bust-right"));
+  });
+
+  it("tapers only the Cardigan A-line side seam through the actual shaping RC span", () => {
+    const { svg, model } = svgFor(cardiganAlinePattern());
+    expect(model.bodyShaping.rowNumbers.length).toBeGreaterThan(0);
+    expect(svgNum(svg, "data-shape-start-rc")).toBe(model.bodyShaping.startRc);
+    expect(svgNum(svg, "data-shape-end-rc")).toBe(model.bodyShaping.endRc);
+    expect(svgNum(svg, "data-shape-start-y")).toBeLessThan(svgNum(svg, "data-bottom-y"));
+    expect(svgNum(svg, "data-shape-end-y")).toBeLessThan(svgNum(svg, "data-shape-start-y"));
+    expect(svgNum(svg, "data-armhole-start-y")).toBeLessThanOrEqual(svgNum(svg, "data-shape-end-y"));
+    expect(model.bodyShaping.endRc).toBeLessThanOrEqual(model.armhole.startGarmentRc);
+
+    const cf = pathPoints(rolePaths(svg, "center-front-edge")[0] ?? "");
+    expect(cf.length).toBeGreaterThanOrEqual(2);
+    expect(cf.every((p) => Math.abs(p.x - svgNum(svg, "data-cf-x")) < 0.05)).toBe(true);
+    expect(cf[0]!.y).toBeCloseTo(svgNum(svg, "data-bottom-y"), 1);
+    expect(cf[cf.length - 1]!.y).toBeCloseTo(svgNum(svg, "data-neck-start-y"), 1);
+
+    const leftBody = pathPoints(rolePaths(svg, "left-body-path")[0] ?? "");
+    expect(leftBody.every((p) => Math.abs(p.x - svgNum(svg, "data-cf-x")) < 0.05)).toBe(true);
+
+    const rightBody = pathPoints(rolePaths(svg, "right-body-path")[0] ?? "");
+    expect(rightBody.length).toBeGreaterThan(2);
+    expect(rightBody[0]!.x).toBeCloseTo(svgNum(svg, "data-hem-right"), 2);
+    expect(rightBody[rightBody.length - 1]!.x).toBeCloseTo(svgNum(svg, "data-bust-right"), 2);
+    expect(rightBody[0]!.x).toBeGreaterThan(rightBody[rightBody.length - 1]!.x);
+    expect(rightBody[rightBody.length - 1]!.y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 2);
+  });
+
+  it("keeps Cardigan A-line upper-body geometry matching the equivalent Straight Front", () => {
+    const straightRound = svgFor(cardiganRoundPattern());
+    const alineRound = svgFor(cardiganAlineRoundPattern());
+    expect(alineRound.model.widths.bustStitches).toBe(straightRound.model.widths.bustStitches);
+    expect(alineRound.model.widths.stitchesAfterArmhole).toBe(
+      straightRound.model.widths.stitchesAfterArmhole,
+    );
+    expect(alineRound.model.widths.necklineStitches).toBe(straightRound.model.widths.necklineStitches);
+    expect(alineRound.model.widths.shoulderStitchesPerSide).toBe(
+      straightRound.model.widths.shoulderStitchesPerSide,
+    );
+    expectCardiganFrontPieceMatchesStitchBudget(alineRound.svg, alineRound.model);
+    expect(svgNum(alineRound.svg, "data-after-armhole-width")).toBeCloseTo(
+      svgNum(straightRound.svg, "data-after-armhole-width"),
+      1,
+    );
+    expect(svgNum(alineRound.svg, "data-neck-width")).toBeCloseTo(
+      svgNum(straightRound.svg, "data-neck-width"),
+      1,
+    );
+    expect(svgNum(alineRound.svg, "data-shoulder-side-width")).toBeCloseTo(
+      svgNum(straightRound.svg, "data-shoulder-side-width"),
+      1,
+    );
+    expect(svgNum(alineRound.svg, "data-upper-scale")).toBeCloseTo(1, 2);
+
+    const straightNeck = pathPoints(rolePaths(straightRound.svg, "neckline-outline")[0] ?? "");
+    const alineNeck = pathPoints(rolePaths(alineRound.svg, "neckline-outline")[0] ?? "");
+    expect(straightRound.svg).toContain('data-contour="one-sided-scoop"');
+    expect(alineRound.svg).toContain('data-contour="one-sided-scoop"');
+    expect(straightNeck).toHaveLength(4);
+    expect(alineNeck).toHaveLength(4);
+    expect(alineNeck[0]!.x).toBeCloseTo(svgNum(alineRound.svg, "data-cf-x"), 1);
+    expect(alineNeck[0]!.y).toBeCloseTo(svgNum(alineRound.svg, "data-neck-start-y"), 1);
+    expect(alineNeck[3]!.x).toBeCloseTo(svgNum(alineRound.svg, "data-neck-right"), 1);
+    expect(alineNeck[3]!.y).toBeCloseTo(svgNum(alineRound.svg, "data-neck-corner-y"), 1);
+    expect(alineNeck[1]!.y).toBeCloseTo(svgNum(alineRound.svg, "data-neck-start-y"), 1);
+    expect(alineNeck[2]!.x).toBeCloseTo(svgNum(alineRound.svg, "data-neck-right"), 1);
+    expect(rolePaths(straightRound.svg, "neckline-outline")[0]).toBe(
+      "M 150.5 148.6 C 158.93 148.6 165.76 120.65 165.76 98",
+    );
+
+    const straightV = svgFor(cardiganVReadablePattern());
+    expect(measureLineY(straightV.svg, "neck")).toBeCloseTo(86, 1);
+    expect(
+      Number(/<text data-role="width-measurement" data-measure="neck"[^>]* y="([^"]+)"/.exec(straightV.svg)?.[1]),
+    ).toBeCloseTo(57, 1);
+    expect(measureLineX(straightV.svg, "neck-depth")).toBeCloseTo(140.68, 1);
+    expect(measureTextXs(straightV.svg, "neck-depth")[0]).toBeCloseTo(34, 1);
+  });
+
+  it("generates an outward Cardigan A-line Front when hem stitches are narrower than bust", () => {
+    const { svg, model } = svgFor(cardiganAlineOutwardPattern());
+    expect(svgAttr(svg, "data-body-shape")).toBe("aline");
+    expect(svgAttr(svg, "data-body-shaping-direction")).toBe("outward");
+    expect(svgAttr(svg, "data-shaping-edge")).toBe("side-seam");
+    expect(model.widths.hemStitches).toBeLessThan(model.widths.bustStitches);
+    expect(svgNum(svg, "data-hem-width")).toBeLessThan(svgNum(svg, "data-bust-width"));
+    expect(svgNum(svg, "data-hem-left")).toBeCloseTo(svgNum(svg, "data-cf-x"), 1);
+    expect(svgNum(svg, "data-hem-right")).toBeLessThan(svgNum(svg, "data-bust-right"));
+
+    const rightBody = pathPoints(rolePaths(svg, "right-body-path")[0] ?? "");
+    expect(rightBody.length).toBeGreaterThan(2);
+    expect(rightBody[0]!.x).toBeCloseTo(svgNum(svg, "data-hem-right"), 2);
+    expect(rightBody[rightBody.length - 1]!.x).toBeCloseTo(svgNum(svg, "data-bust-right"), 2);
+    expect(rightBody[0]!.x).toBeLessThan(rightBody[rightBody.length - 1]!.x);
+    const cf = pathPoints(rolePaths(svg, "center-front-edge")[0] ?? "");
+    expect(cf.every((p) => Math.abs(p.x - svgNum(svg, "data-cf-x")) < 0.05)).toBe(true);
   });
 
   it("keeps Cardigan V neck labels readable without changing geometry or values", () => {
@@ -1605,18 +1768,33 @@ describe("live Pullover V-neck Front Stitches & Rows cutover", () => {
     );
   });
 
+  it("uses the generated SVG for supported Cardigan A-line Front", () => {
+    for (const pattern of [
+      cardiganAlineRoundPattern(),
+      cardiganAlinePattern(),
+      cardiganAlineOutwardPattern(),
+    ]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const live = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern);
+      expect(live).toBeTruthy();
+      expect(live).toContain('data-garment-style="cardigan"');
+      expect(live).toContain('data-body-shape="aline"');
+      expect(live).toContain('data-front-piece="leftFront"');
+      expect(live).toContain('data-shaping-edge="side-seam"');
+    }
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", cardiganAlinePattern())).toContain(
+      "diagram-cardigan-v-aline",
+    );
+    expect(resolveSleevelessFrontDiagramSrc("sts-rows", cardiganAlineRoundPattern())).toContain(
+      "diagram-cardigan-round-aline",
+    );
+  });
+
   it("returns null so unsupported Front cases keep the existing SVG fallback", () => {
     const shaped = shapedVNeckPattern();
     const shapedResult = generateSleevelessBackPattern(shaped);
     expect(tryBuildLiveSleevelessFrontStsRowsDiagramSvg(shapedResult, shaped)).toBeNull();
     expect(resolveSleevelessFrontDiagramSrc("sts-rows", shaped)).toContain("diagram-front-v-shaped");
-
-    const cardiganAline = cardiganAlinePattern();
-    const cardiganAlineResult = generateSleevelessBackPattern(cardiganAline);
-    expect(tryBuildLiveSleevelessFrontStsRowsDiagramSvg(cardiganAlineResult, cardiganAline)).toBeNull();
-    expect(resolveSleevelessFrontDiagramSrc("sts-rows", cardiganAline)).toContain(
-      "diagram-cardigan-v-aline",
-    );
 
     const cardiganShaped = cardiganShapedPattern();
     const cardiganShapedResult = generateSleevelessBackPattern(cardiganShaped);
