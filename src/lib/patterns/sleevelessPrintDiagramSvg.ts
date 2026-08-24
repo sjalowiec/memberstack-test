@@ -18,6 +18,7 @@ import {
   resolveCardiganHalfSideForGarmentDiagram,
   resolveSleevelessFrontDiagram,
 } from "./sleevelessFrontDiagramSrc";
+import { tryBuildLiveSleevelessBackStsRowsDiagramSvg } from "./sleevelessBackStsRowsDiagramSvg";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "./sleevelessFrontStsRowsDiagramSvg";
 
 async function fetchSvgWithReplacements(src: string, replacements: Record<string, string>): Promise<string> {
@@ -76,6 +77,20 @@ async function loadSleevelessPieceDiagramSvgMarkup(
       patternData: diagramPatternData,
       measurementPiece: "back",
     });
+    const generatedSvg = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, diagramPatternData);
+    if (generatedSvg) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(generatedSvg, "image/svg+xml");
+      const svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        const pe = doc.querySelector("parsererror");
+        throw new Error(pe?.textContent || "SVG parse error");
+      }
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", "Back piece schematic with key measurements");
+      svg.classList.add("print-back-diagram-svg");
+      return svg.outerHTML;
+    }
     src = resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData);
     ariaLabel = "Back piece schematic with key measurements";
   } else {
