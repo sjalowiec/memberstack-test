@@ -70,6 +70,7 @@ describe("membershipStatusCta overlay", () => {
     expect(membershipStatusModeAllowsPurchase("hidden")).toBe(true);
     expect(membershipStatusModeAllowsPurchase("manage")).toBe(false);
     expect(membershipStatusModeAllowsPurchase("contact_support")).toBe(false);
+    expect(membershipStatusModeAllowsPurchase("renew_now")).toBe(false);
     expect(membershipStatusModeAllowsPurchase("wait")).toBe(false);
     expect(membershipStatusModeAllowsPurchase("loading")).toBe(false);
   });
@@ -80,10 +81,12 @@ describe("membershipStatusCta overlay", () => {
     manage.hidden = true;
     const contact = el(["[data-membership-status-contact]"]);
     contact.hidden = true;
+    const renew = el(["[data-membership-status-renew]"]);
+    renew.hidden = true;
     const retry = el(["[data-membership-status-retry]"]);
     retry.hidden = true;
     const salesCta = el(["[data-membership-sales-cta]"]);
-    const root = makeRoot([checkout, manage, contact, retry, salesCta]);
+    const root = makeRoot([checkout, manage, contact, renew, retry, salesCta]);
 
     applyMembershipStatusCtaMode("manage", root);
     expect(checkout.disabled).toBe(true);
@@ -98,6 +101,31 @@ describe("membershipStatusCta overlay", () => {
     applyMembershipStatusCtaMode("wait", root);
     expect(checkout.disabled).toBe(true);
     expect(retry.hidden).toBe(false);
+    expect(renew.hidden).toBe(true);
+  });
+
+  it("shows Renew My Membership to /join for future legacy paid-through", () => {
+    const checkout = el(["[data-join-checkout]"]);
+    const manage = el(["[data-membership-status-manage]"]);
+    manage.hidden = true;
+    const contact = el(["[data-membership-status-contact]"]);
+    contact.hidden = true;
+    const renew = el(["[data-membership-status-renew]"]);
+    renew.hidden = true;
+    const retry = el(["[data-membership-status-retry]"]);
+    retry.hidden = true;
+    const salesCta = el(["[data-membership-sales-cta]"]);
+    const root = makeRoot([checkout, manage, contact, renew, retry, salesCta]);
+
+    applyMembershipStatusCtaMode("renew_now", root);
+    expect(checkout.disabled).toBe(true);
+    expect(shouldBlockPurchaseForStatusMode()).toBe(true);
+    expect(renew.hidden).toBe(false);
+    expect(contact.hidden).toBe(true);
+    expect(manage.hidden).toBe(true);
+    expect(salesCta.textContent).toBe("Renew My Membership");
+    expect(salesCta.getAttribute("href")).toBe("/join");
+    expect(salesCta.getAttribute("data-membership-sales-cta-kind")).toBe("renew");
   });
 
   it("regression: active paid and ambiguous canceling (no monthly price) cannot start checkout", () => {
@@ -145,6 +173,7 @@ describe("membershipStatusCta overlay", () => {
     expect(membershipStatusModeOwnsHeroCta("loading")).toBe(true);
     expect(membershipStatusModeOwnsHeroCta("wait")).toBe(true);
     expect(membershipStatusModeOwnsHeroCta("contact_support")).toBe(true);
+    expect(membershipStatusModeOwnsHeroCta("renew_now")).toBe(true);
     expect(membershipStatusModeOwnsHeroCta("manage")).toBe(true);
     expect(membershipStatusModeOwnsHeroCta("purchase")).toBe(false);
     expect(membershipStatusModeOwnsHeroCta("hidden")).toBe(false);

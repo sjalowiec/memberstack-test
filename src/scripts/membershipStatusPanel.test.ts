@@ -162,6 +162,9 @@ function mountPanel() {
     el(['[data-membership-status-fact="previous"]'], { hidden: true }),
     el(['[data-membership-status-value="previous"]']),
     el(["[data-membership-status-manage]"], { hidden: true }),
+    Object.assign(el(["[data-membership-status-renew]"], { hidden: true }), {
+      textContent: "Renew My Membership",
+    }),
     Object.assign(el(["[data-membership-status-contact]"], { hidden: true }), {
       textContent: "Contact us",
     }),
@@ -566,7 +569,7 @@ describe("membership status panel page behavior", () => {
     ).toBe(false);
   });
 
-  it("future legacy remains inline and does not auto-open", async () => {
+  it("future legacy remains inline and offers Renew My Membership to /join", async () => {
     installMemberstack({ data: { id: "mem_free", planConnections: [] } });
     vi.mocked(fetchMembershipStatus).mockResolvedValue({
       ok: true,
@@ -578,9 +581,9 @@ describe("membership status panel page behavior", () => {
       legacyExpirationDate: "July 30, 2026",
       legacyLinkState: "linked",
       accountType: "non_paid_account",
-      recommendedAction: "contact_support",
+      recommendedAction: "renew_now",
       customerFacingMessage:
-        "Good news! It looks like your Premium annual membership still has paid time remaining through July 30, 2026. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.",
+        "Your Premium annual membership is paid through July 30, 2026.\n\nYou can renew now. Your new membership and billing period will begin today.",
     });
 
     await loadAndRenderMembershipStatusPanel(root);
@@ -600,13 +603,28 @@ describe("membership status panel page behavior", () => {
     expect((root.querySelector("[data-membership-status-open]") as unknown as StubEl).hidden).toBe(
       true,
     );
-    expect(getMembershipStatusCtaMode()).toBe("contact_support");
     expect(
-      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).textContent,
-    ).toBe("Contact us");
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).toBe("You still have membership time remaining");
+    expect(
+      (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
+    ).toMatch(/billing period will begin today/);
+    expect(getMembershipStatusCtaMode()).toBe("renew_now");
+    expect(
+      (root.querySelector("[data-membership-status-renew]") as unknown as StubEl).hidden,
+    ).toBe(false);
+    expect(
+      (root.querySelector("[data-membership-status-renew]") as unknown as StubEl).textContent,
+    ).toBe("Renew My Membership");
     expect(
       (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).textContent,
+    ).toBe("Renew My Membership");
+    expect(
+      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).getAttribute("href"),
+    ).toBe("/join");
     expect(shouldBlockPurchaseForStatusMode()).toBe(true);
   });
 

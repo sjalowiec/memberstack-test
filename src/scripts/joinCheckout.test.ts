@@ -277,6 +277,151 @@ describe("startJoinCheckout (purchase / current)", () => {
     expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
   });
 
+<<<<<<< HEAD
+=======
+  it("canceling monthly + switchToAnnual launches annual price checkout (not portal)", async () => {
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.test/annual-switch" },
+    });
+    const launchStripeCustomerPortal = vi.fn();
+    const getAppAndMember = vi.fn().mockResolvedValue(cancelingMonthlyMember());
+
+    installMemberstack({
+      getAppAndMember,
+      getCurrentMember: vi.fn().mockResolvedValue(cancelingMonthlyMember()),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("annual", { checkoutIntent: "switchToAnnual" });
+
+    expect(getAppAndMember).toHaveBeenCalled();
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        priceId: MEMBERSHIP_PRICE_IDS.annual,
+        successUrl: "https://example.com/signup/thank-you",
+        autoRedirect: false,
+      }),
+    );
+    expect(purchasePlansWithCheckout.mock.calls[0]?.[0]?.priceId).toBe(
+      "prc_knit-it-now-premium-annual-membership-1g1bg070r",
+    );
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+  });
+
+  it("canceling monthly + switchToAnnual does not open portal on already-have-plan", async () => {
+    const { status } = stubDom();
+    const purchasePlansWithCheckout = vi.fn().mockRejectedValue({
+      code: "already-have-plan",
+      message: "Already have plan",
+    });
+    const launchStripeCustomerPortal = vi.fn();
+
+    installMemberstack({
+      getAppAndMember: vi.fn().mockResolvedValue(cancelingMonthlyMember()),
+      getCurrentMember: vi.fn().mockResolvedValue(cancelingMonthlyMember()),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("annual", { checkoutIntent: "switchToAnnual" });
+
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ priceId: MEMBERSHIP_PRICE_IDS.annual }),
+    );
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+    expect(status.hidden).toBe(false);
+    expect(String(status.textContent)).toMatch(/Could not start annual checkout/i);
+  });
+
+  it("active monthly (not canceling) cannot use switchToAnnual to bypass paid guard", async () => {
+    const purchasePlansWithCheckout = vi.fn();
+    const launchStripeCustomerPortal = vi.fn();
+    const activeMonthly = memberPayload("mem_active_monthly", [
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+
+    installMemberstack({
+      getAppAndMember: vi.fn().mockResolvedValue(activeMonthly),
+      getCurrentMember: vi.fn().mockResolvedValue(activeMonthly),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("annual", { checkoutIntent: "switchToAnnual" });
+
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+  });
+
+  it("active annual cannot use switchToAnnual to bypass paid guard", async () => {
+    const purchasePlansWithCheckout = vi.fn();
+    const launchStripeCustomerPortal = vi.fn();
+    const activeAnnual = memberPayload("mem_active_annual", [
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+
+    installMemberstack({
+      getAppAndMember: vi.fn().mockResolvedValue(activeAnnual),
+      getCurrentMember: vi.fn().mockResolvedValue(activeAnnual),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("annual", { checkoutIntent: "switchToAnnual" });
+
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+  });
+
+  it("ineligible paid member still opens portal on already-have-plan (non-switch path)", async () => {
+    // A free-path purchase that Memberstack rejects as already-have-plan should
+    // keep the existing portal fallback  only switchToAnnual opts out.
+    const purchasePlansWithCheckout = vi.fn().mockRejectedValue({
+      code: "already-have-plan",
+      message: "Already have plan",
+    });
+    const launchStripeCustomerPortal = vi.fn().mockResolvedValue({
+      data: { url: "https://billing.stripe.test/portal" },
+    });
+
+    installMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue(memberPayload("mem_free_then_paid", [])),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("annual");
+
+    expect(purchasePlansWithCheckout).toHaveBeenCalled();
+    expect(launchStripeCustomerPortal).toHaveBeenCalled();
+  });
+
+>>>>>>> 5b51b4ff (Improve legacy membership renewal flow)
   it("logged-out monthly click opens SIGNUP (not LOGIN-only) and stores pending checkout", async () => {
     const openModal = vi.fn().mockImplementation(async () => {
       const raw = sessionStorage.getItem(PENDING_MEMBERSHIP_CHECKOUT_KEY);
@@ -565,7 +710,7 @@ describe("startJoinCheckout (purchase / current)", () => {
     expect(salesCtas[0].getAttribute("href")).toBe("/account#membership");
   });
 
-  it("does not let DOM Manage Membership overwrite loading / wait / contact_support hero", () => {
+  it("does not let DOM Manage Membership overwrite loading / wait / contact_support / renew_now hero", () => {
     const { salesCtas, buttons } = stubDom({
       buttons: [{ planKey: "monthly" }],
       salesCta: true,
@@ -574,7 +719,7 @@ describe("startJoinCheckout (purchase / current)", () => {
       { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
     ]);
 
-    for (const mode of ["loading", "wait", "contact_support"] as const) {
+    for (const mode of ["loading", "wait", "contact_support", "renew_now"] as const) {
       __resetMembershipStatusCtaForTests();
       applyMembershipStatusCtaMode(mode);
       applyJoinCheckoutButtonStates(paid);

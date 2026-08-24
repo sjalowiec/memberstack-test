@@ -10,10 +10,17 @@ import type { MembershipRecommendedAction } from "./membershipStatusSummary";
 export type MembershipStatusCtaMode =
   | "purchase"
   | "manage"
+  | "renew_now"
   | "contact_support"
   | "wait"
   | "loading"
   | "hidden";
+
+/** Panel / hero CTA for uniquely linked legacy paid-through that may renew now. */
+export const MEMBERSHIP_LEGACY_RENEW_CTA = {
+  label: "Renew My Membership",
+  href: "/join",
+} as const;
 
 let currentMode: MembershipStatusCtaMode = "hidden";
 
@@ -46,6 +53,7 @@ export function membershipStatusModeOwnsHeroCta(
     mode === "loading" ||
     mode === "wait" ||
     mode === "contact_support" ||
+    mode === "renew_now" ||
     mode === "manage"
   );
 }
@@ -54,7 +62,7 @@ export function membershipStatusModeOwnsHeroCta(
  * Apply purchase/manage/contact/wait overlay on the membership sales page.
  * Safe to call repeatedly as status loads.
  *
- * Ownership: for loading / wait / contact_support / manage this module owns the hero CTA.
+ * Ownership: for loading / wait / contact_support / renew_now / manage this module owns the hero CTA.
  * joinCheckout may only apply DOM purchase/manage presentation in purchase or hidden modes.
  */
 export function applyMembershipStatusCtaMode(
@@ -75,6 +83,9 @@ export function applyMembershipStatusCtaMode(
   });
   root.querySelectorAll<HTMLElement>("[data-membership-status-contact]").forEach((el) => {
     el.hidden = mode !== "contact_support" && mode !== "wait";
+  });
+  root.querySelectorAll<HTMLElement>("[data-membership-status-renew]").forEach((el) => {
+    el.hidden = mode !== "renew_now";
   });
   root.querySelectorAll<HTMLElement>("[data-membership-status-retry]").forEach((el) => {
     el.hidden = mode !== "wait";
@@ -107,7 +118,7 @@ export function applyMembershipStatusCtaMode(
     }
   });
 
-  // Hero CTA: every settled mode must replace "Checking membership..." ù never leave loading text.
+  // Hero CTA: every settled mode must replace "Checking membership..." ? never leave loading text.
   if (mode === "loading") {
     root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
       el.textContent = "Checking membership...";
@@ -122,6 +133,15 @@ export function applyMembershipStatusCtaMode(
       el.textContent = "Manage Membership";
       el.setAttribute("href", "/account#membership");
       el.setAttribute("data-membership-sales-cta-kind", "manage");
+      el.setAttribute("aria-disabled", "false");
+      el.classList.remove("contact-modal-trigger");
+      el.removeAttribute("data-contact-source");
+    });
+  } else if (mode === "renew_now") {
+    root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
+      el.textContent = MEMBERSHIP_LEGACY_RENEW_CTA.label;
+      el.setAttribute("href", MEMBERSHIP_LEGACY_RENEW_CTA.href);
+      el.setAttribute("data-membership-sales-cta-kind", "renew");
       el.setAttribute("aria-disabled", "false");
       el.classList.remove("contact-modal-trigger");
       el.removeAttribute("data-contact-source");
