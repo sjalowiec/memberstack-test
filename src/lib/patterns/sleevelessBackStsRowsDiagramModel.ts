@@ -7,7 +7,10 @@
  */
 
 import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
-import { resolveSleevelessDiagramBodyShapeKind } from "./sleevelessDiagramBodyShapeSrc";
+import {
+  resolveSleevelessDiagramBodyShapeKind,
+  shouldGenerateSleevelessAlineStsRows,
+} from "./sleevelessDiagramBodyShapeSrc";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
@@ -164,7 +167,10 @@ export function shouldBuildSleevelessBackStsRowsDiagramModel(
 ): boolean {
   if (!result.neckShoulderChartUsesLiveRows) return false;
   const bodyKind = resolveSleevelessDiagramBodyShapeKind(patternData);
-  return bodyKind === "straight" || bodyKind === "aline";
+  return (
+    bodyKind === "straight" ||
+    shouldGenerateSleevelessAlineStsRows(patternData, result.debug.alineBodyShapingType)
+  );
 }
 
 /**
@@ -250,7 +256,9 @@ export function buildSleevelessBackStsRowsDiagramModel(
   return {
     piece: "back",
     garmentStyle: isSleevelessCardiganGarmentStyle(patternData ?? {}) ? "cardigan" : "pullover",
-    bodyShape: resolveSleevelessDiagramBodyShapeKind(patternData) === "aline" ? "aline" : "straight",
+    bodyShape: shouldGenerateSleevelessAlineStsRows(patternData, d.alineBodyShapingType)
+      ? "aline"
+      : "straight",
     widths: {
       hemStitches,
       bustStitches,

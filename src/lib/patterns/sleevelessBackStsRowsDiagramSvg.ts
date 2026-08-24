@@ -238,7 +238,7 @@ function isSupportedModel(model: SleevelessBackStsRowsDiagramModel): boolean {
 }
 
 function usesAlineBodySilhouette(model: SleevelessBackStsRowsDiagramModel): boolean {
-  return model.bodyShape === "aline" && model.bodyShaping.direction !== "straight";
+  return model.bodyShape === "aline" && model.widths.hemStitches !== model.widths.bustStitches;
 }
 
 /** Last decrease RC — same visual armhole corner the Front renderer uses. */

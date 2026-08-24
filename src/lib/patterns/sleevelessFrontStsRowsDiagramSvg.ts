@@ -240,7 +240,7 @@ function isSupportedModel(model: SleevelessFrontStsRowsDiagramModel): boolean {
 }
 
 function usesAlineBodySilhouette(model: SleevelessFrontStsRowsDiagramModel): boolean {
-  return model.bodyShape === "aline" && model.bodyShaping.direction !== "straight";
+  return model.bodyShape === "aline" && model.widths.hemStitches !== model.widths.bustStitches;
 }
 
 function buildFrame(model: SleevelessFrontStsRowsDiagramModel): { frame: Frame; bands: YBand[] } {
