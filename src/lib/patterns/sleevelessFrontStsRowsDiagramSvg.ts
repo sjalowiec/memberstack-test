@@ -800,12 +800,11 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
   );
 
   const neckArrowY = cardiganV
-    ? Math.max(36, frame.shoulderTopY - 50)
+    ? frame.shoulderTopY - 12
     : Math.min(frame.neckCornerY + 14, frame.neckStartY - 24);
   const neckLabelY = cardiganV
-    ? Math.max(18, neckArrowY - 22)
+    ? neckArrowY - 20
     : Math.min(frame.shoulderTopY - 22, neckArrowY - 26);
-  const neckLabelX = cardiganV ? Math.max(70, frame.left - 56) : undefined;
   parts.push(
     horizontalArrow(
       neckArrowY,
@@ -818,7 +817,6 @@ function drawMeasurements(model: SleevelessFrontStsRowsDiagramModel, frame: Fram
         { text: `${model.widths.necklineStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.necklineStitches)}"` },
         { text: inchesFromStitches(model.widths.necklineStitches, spi) },
       ].filter((line) => line.text),
-      neckLabelX != null ? { labelX: neckLabelX, labelAnchor: "middle" } : undefined,
     ),
   );
 
