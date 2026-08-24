@@ -990,7 +990,7 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     expect(roles(svg, "right-shoulder-path")).toHaveLength(1);
   });
 
-  it("leaves Round Front and Back notation renderers unchanged", () => {
+  it("keeps Round Front notation source and shared 17 / 14 type", () => {
     const roundSource = readFileSync(
       join(srcRoot, "lib/patterns/sleevelessFrontRoundShapingNotationDiagramSvg.ts"),
       "utf8",
@@ -1001,8 +1001,8 @@ describe("buildSleevelessFrontVNeckShapingNotationDiagramSvg", () => {
     );
     expect(roundSource).toContain("const FS_NOTATION = 17;");
     expect(roundSource).toContain("const FS_RC = 14;");
-    expect(backSource).toContain("const FS_RC = 12;");
-    expect(backSource).toContain("const FS_NOTATION = 13;");
+    expect(backSource).toContain("const FS_RC = 14;");
+    expect(backSource).toContain("const FS_NOTATION = 17;");
   });
 });
 

@@ -180,8 +180,13 @@ export function shouldBuildSleevelessBackStsRowsDiagramModel(
 export function buildSleevelessBackStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
+  options?: { requireSupportedBodyShape?: boolean },
 ): SleevelessBackStsRowsDiagramModel | null {
-  if (!shouldBuildSleevelessBackStsRowsDiagramModel(result, patternData)) return null;
+  if (options?.requireSupportedBodyShape === false) {
+    if (!result.neckShoulderChartUsesLiveRows) return null;
+  } else if (!shouldBuildSleevelessBackStsRowsDiagramModel(result, patternData)) {
+    return null;
+  }
 
   const d = result.debug;
   const bodyShaping = resolveBodyShaping(result);
