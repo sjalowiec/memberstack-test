@@ -1,7 +1,7 @@
 /**
  * Data model for the Sleeveless Front Stitches & Rows diagram.
  *
- * Scope: pullover, V-neck or round neck, straight body.
+ * Scope: pullover, V-neck or round neck, straight or A-line body.
  * Reads a finalized {@link SleevelessBackPatternResult}. No pattern math, no SVG.
  */
 
@@ -112,7 +112,7 @@ export type SleevelessFrontStsRowsDiagramBodyShaping = {
 export type SleevelessFrontStsRowsDiagramModel = {
   piece: "front";
   garmentStyle: "pullover";
-  bodyShape: "straight";
+  bodyShape: "straight" | "aline";
   widths: SleevelessFrontStsRowsDiagramWidths;
   rows: SleevelessFrontStsRowsDiagramRows;
   neckline: SleevelessFrontStsRowsDiagramNeckline;
@@ -182,11 +182,12 @@ function resolveBodyShaping(result: SleevelessBackPatternResult): SleevelessFron
     return { direction, hemStitches, bustStitches, startRc: 0, endRc: 0, rowNumbers: [] };
   }
   if (rowNumbers.length === 0) {
+    const hemRc = Math.max(0, Math.round(finiteOr(d.hemRows, 0)));
     const armholeRc = Math.max(
-      0,
+      hemRc,
       Math.floor(finiteOr(d.armholeStartRow, d.rowsFromCastOnToArmholeStart ?? 0)),
     );
-    return { direction, hemStitches, bustStitches, startRc: 0, endRc: armholeRc, rowNumbers };
+    return { direction, hemStitches, bustStitches, startRc: hemRc, endRc: armholeRc, rowNumbers };
   }
   return {
     direction,
@@ -204,23 +205,24 @@ function isPulloverRoundFront(patternData?: unknown): boolean {
   );
 }
 
-/** True when this result is in the Stitches & Rows model scope (pullover V or round, straight). */
+/** True when this result is in the Stitches & Rows model scope (pullover V or round, straight or A-line). */
 export function shouldBuildSleevelessFrontStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): boolean {
   if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
-  if (resolveSleevelessDiagramBodyShapeKind(patternData) !== "straight") return false;
+  const bodyKind = resolveSleevelessDiagramBodyShapeKind(patternData);
+  if (bodyKind !== "straight" && bodyKind !== "aline") return false;
   return (
     isSleevelessPulloverVNeckFrontNotation(result, patternData) || isPulloverRoundFront(patternData)
   );
 }
 
 /**
- * Pullover Front, straight-body measurement model for the Stitches & Rows renderer.
- * V-neck and round neck only. Returns `null` when the result is out of scope
- * so hydration can keep the existing Illustrator SVG.
+ * Pullover Front measurement model for the Stitches & Rows renderer.
+ * V-neck and round neck; straight or A-line body. Returns `null` when the
+ * result is out of scope so hydration can keep the existing Illustrator SVG.
  */
 export function buildSleevelessFrontStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
@@ -329,7 +331,7 @@ export function buildSleevelessFrontStsRowsDiagramModel(
   return {
     piece: "front",
     garmentStyle: "pullover",
-    bodyShape: "straight",
+    bodyShape: resolveSleevelessDiagramBodyShapeKind(patternData) === "aline" ? "aline" : "straight",
     widths: {
       hemStitches,
       bustStitches,
