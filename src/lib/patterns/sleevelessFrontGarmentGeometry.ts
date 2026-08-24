@@ -34,6 +34,22 @@ export const SLEEVELESS_FRONT_STS_ROWS_VISUAL = {
   maxArmholeFraction: 0.34,
 } as const;
 
+/**
+ * Measurement-adapter last-shaping height as a fraction of the visual armhole.
+ * Matches typical Front Stitches & Rows `lastGarmentRc` placement (last decrease
+ * in the lower portion of the armhole), so the inward run is a readable diagonal
+ * and the remaining rise is vertical at after-armhole width.
+ */
+export const SLEEVELESS_FRONT_MEASUREMENT_LAST_ARMHOLE_FRACTION = 0.4;
+
+export function sleevelessFrontMeasurementLastArmholeY(
+  armholeStartY: number,
+  shoulderY: number,
+): number {
+  const span = Math.max(0, armholeStartY - shoulderY);
+  return armholeStartY - span * SLEEVELESS_FRONT_MEASUREMENT_LAST_ARMHOLE_FRACTION;
+}
+
 export const SLEEVELESS_FRONT_STS_ROWS_VIEWBOX = {
   width: SLEEVELESS_FRONT_GARMENT_VB_W,
   height: SLEEVELESS_FRONT_GARMENT_VB_H,
@@ -568,12 +584,20 @@ export function buildSleevelessMeasurementGarmentFrame(
     18,
     bodyWidth * 0.55,
   );
+  // StsRows / pattern math: stitchesAfterArmhole = shoulderWidthInches * spi.
+  // Chart `shoulder_width` is the full remaining width after armhole (B), not
+  // one shoulder. Neck + 2×shoulderWidth made after-width ≈ bust and hid the
+  // armhole inset.
+  const afterWidth = clamp(
+    input.shoulderWidthInches * pxPerInch,
+    neckWidth + 20,
+    bodyWidth * 0.92,
+  );
   const shoulderSideWidth = clamp(
-    Math.max(10, input.shoulderWidthInches * pxPerInch),
-    12,
+    (afterWidth - neckWidth) / 2,
+    10,
     (bodyWidth - neckWidth) / 2,
   );
-  const afterWidth = clamp(neckWidth + 2 * shoulderSideWidth, neckWidth + 20, bodyWidth * 0.92);
   const afterHalf = afterWidth / 2;
   const neckHalf = neckWidth / 2;
   const boInset = clamp((bodyWidth - afterWidth) / 4, 6, 16);
@@ -598,12 +622,7 @@ export function buildSleevelessMeasurementGarmentFrame(
     neckCornerY + 14,
     armholeStartY - 8,
   );
-  // Measurement adapter has no last-decrease RC. StsRows maps
-  // armhole.lastGarmentRc through sleevelessFrontYAtRc; that last shaping
-  // sits at/near the shoulder. Place lastArmholeY there so
-  // sleevelessFrontArmholePoints reads as BO + inward shaping, not a
-  // mid-armhole vertical notch. Armhole-depth inches are unchanged.
-  const lastArmholeY = shoulderY;
+  const lastArmholeY = sleevelessFrontMeasurementLastArmholeY(armholeStartY, shoulderY);
   const shapeStartY = hemY;
   const shapeEndY = armholeStartY;
 

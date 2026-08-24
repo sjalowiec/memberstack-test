@@ -17,6 +17,7 @@ import {
 } from "./sleevelessEditMeasurementDiagramSvg";
 import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import {
+  SLEEVELESS_FRONT_MEASUREMENT_LAST_ARMHOLE_FRACTION,
   sleevelessFrontArmholePoints,
   sleevelessFrontArmholeSilhouetteCommands,
   sleevelessFrontBodySidePoints,
@@ -47,7 +48,7 @@ const BASE = {
   armholeDepthInches: 8,
   neckOpeningInches: 7,
   neckDepthInches: 3.25,
-  shoulderWidthInches: 4.5,
+  shoulderWidthInches: 12,
   hemDepthInches: 2,
 };
 
@@ -340,8 +341,12 @@ describe("Sleeveless edit measurement diagram — armhole silhouette", () => {
 
     const inwardDy = left[1]!.y - left[2]!.y;
     const verticalDy = left[2]!.y - left[3]!.y;
-    expect(inwardDy).toBeGreaterThan(verticalDy);
-    expect(frame.lastArmholeY).toBe(frame.shoulderY);
+    expect(inwardDy).toBeGreaterThan(0);
+    expect(frame.lastArmholeY).toBe(
+      frame.armholeStartY -
+        (frame.armholeStartY - frame.shoulderY) * SLEEVELESS_FRONT_MEASUREMENT_LAST_ARMHOLE_FRACTION,
+    );
+    expect(inwardDy).toBeGreaterThan(verticalDy * 0.35);
 
     expect(right[0]!.x - frame.cx).toBeCloseTo(frame.cx - left[0]!.x);
     expect(right[1]!.x - frame.cx).toBeCloseTo(frame.cx - left[1]!.x);
@@ -358,6 +363,33 @@ describe("Sleeveless edit measurement diagram — armhole silhouette", () => {
     }
     for (const command of sleevelessFrontArmholeSilhouetteCommands(frame, "right")) {
       expect(svg).toContain(command);
+    }
+  });
+
+  it("has a material inward diagonal, not a near-vertical wall", () => {
+    const typical = modelFor({ bust: 40, hip: 40, neckline: "round" });
+    const misses = buildSleevelessEditMeasurementDiagramModel({
+      measurements: {
+        ...BASE,
+        bustInches: 41.5,
+        hipInches: 41.5,
+        neckOpeningInches: 8,
+        shoulderWidthInches: 13.25,
+      },
+      patternData: { style: { neckline: "round", garmentStyle: "pullover" } },
+    });
+
+    for (const model of [typical, misses]) {
+      const left = sleevelessFrontArmholePoints(model.frame, "left");
+      const bindOffDx = left[1]!.x - left[0]!.x;
+      const shapeDx = left[2]!.x - left[1]!.x;
+      const shapeDy = left[1]!.y - left[2]!.y;
+      const armholeH = left[0]!.y - left[3]!.y;
+      expect(bindOffDx).toBeGreaterThan(10);
+      expect(shapeDx).toBeGreaterThan(10);
+      expect(shapeDy).toBeGreaterThan(20);
+      expect(shapeDy / armholeH).toBeGreaterThan(0.25);
+      expect(Math.abs(shapeDx / shapeDy)).toBeGreaterThan(0.25);
     }
   });
 
