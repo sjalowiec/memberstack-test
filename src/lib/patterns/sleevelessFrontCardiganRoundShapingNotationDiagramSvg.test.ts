@@ -3,10 +3,15 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
+import { buildBackJapaneseNotationReplacements } from "./sleevelessBackJapaneseNotation";
+import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 import {
   buildFrontJapaneseNotationReplacements,
   resolveSleevelessFrontDiagramSrc,
 } from "./sleevelessFrontJapaneseNotation";
+import { buildSleevelessFrontStsRowsDiagramModel } from "./sleevelessFrontStsRowsDiagramModel";
+import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
+import type { RowEntry } from "./shapingTimeline";
 import {
   buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg,
   shouldUseGeneratedSleevelessFrontCardiganRoundNotation,
@@ -211,7 +216,6 @@ describe("generated Cardigan Round Straight Front Shaping Notation", () => {
     expect(svgNum(svg, "data-cf-neck-bo-sts")).toBe(cfBo);
     expect(svgAttr(svg, "data-neck-bo")).toBe(repl["jp-neckline-bo"]);
     expect(svgAttr(svg, "data-neck-shaping")).toBe(repl["jp-neckline-shaping"]);
-    expect(svgAttr(svg, "data-shoulder-shaping")).toBe(repl["jp-shoulder-shaping"]);
     expect(svgAttr(svg, "data-armhole-bo")).toBe(repl["jp-armhole-bo"]);
     expect(svgAttr(svg, "data-armhole-shaping")).toBe(repl["jp-armhole-shaping"]);
     expect(svg).not.toMatch(/>hold\d+</);
@@ -226,6 +230,95 @@ describe("generated Cardigan Round Straight Front Shaping Notation", () => {
     expect(result.debug.cardiganHalfLeftCastOnSts).toBeGreaterThan(0);
     expect(svgNum(svg, "data-hem-sts")).toBe(result.debug.cardiganHalfLeftCastOnSts);
     expect(svgNum(svg, "data-hem-sts")).toBeLessThan(result.debug.hemCastOnStitches ?? 999);
+  });
+
+  it("uses Front timeline + LEFT FRONT shoulder budget for visible shoulder notation", () => {
+    const pattern = cardiganRoundStraightPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+    expect(model).toBeTruthy();
+    const svg = buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(result, pattern);
+    const frontLines = shoulderShapingNotationLinesFromTimeline(
+      result.frontNeckShoulderTimeline ?? [],
+      "right",
+      undefined,
+      { shoulderStitchesBudget: model!.shoulder.stitchesPerSide },
+    );
+    const backLines = shoulderShapingNotationLinesFromTimeline(
+      result.backNeckShoulderTimeline ?? result.neckShoulderShapingChart.timeline ?? [],
+      "right",
+      undefined,
+      { shoulderStitchesBudget: result.debug.shoulderStitches },
+    );
+    const jp = buildFrontJapaneseNotationReplacements(result, pattern)["jp-shoulder-shaping"];
+    const backJp = buildBackJapaneseNotationReplacements(result, pattern)["jp-shoulder-shaping"];
+
+    expect(svgAttr(svg, "data-shoulder-shaping-source")).toBe("frontNeckShoulderTimeline-right");
+    expect(svgNum(svg, "data-shoulder-budget")).toBe(model!.shoulder.stitchesPerSide);
+    expect(svgNum(svg, "data-shoulder-sts")).toBe(model!.widths.shoulderStitchesPerSide);
+    expect(svgAttr(svg, "data-shoulder-shaping")).toBe(frontLines.join("\n"));
+    expect(svgAttr(svg, "data-shoulder-shaping").length).toBeGreaterThan(0);
+    expect(textXY(svg, "shoulder-shaping").map((t) => t.t).join("\n")).toBe(frontLines.join("\n"));
+    expect(jp).toBe(backJp);
+    expect(backLines.join("\n")).toBe(jp);
+  });
+
+  it("does not follow a poisoned Back timeline when Front and Back differ", () => {
+    const pattern = cardiganRoundStraightPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+    expect(model).toBeTruthy();
+    const frontLines = shoulderShapingNotationLinesFromTimeline(
+      result.frontNeckShoulderTimeline ?? [],
+      "right",
+      undefined,
+      { shoulderStitchesBudget: model!.shoulder.stitchesPerSide },
+    ).join("\n");
+
+    const fakeBack: RowEntry[] = [
+      {
+        row: 900,
+        events: [{ kind: "bindOff", side: "right", edge: "outer", amount: 7 }],
+        stitchesL: 0,
+        stitchesR: 0,
+        netChangeL: 0,
+        netChangeR: -7,
+        isSplit: false,
+        centerWidth: 0,
+        leftOuterEdge: 0,
+        leftInnerEdge: 0,
+        rightInnerEdge: 0,
+        rightOuterEdge: 0,
+      },
+    ];
+    const poisoned: SleevelessBackPatternResult = {
+      ...result,
+      backNeckShoulderTimeline: fakeBack,
+      neckShoulderShapingChart: {
+        ...result.neckShoulderShapingChart,
+        timeline: fakeBack,
+      },
+    };
+    const poisonedJp = buildFrontJapaneseNotationReplacements(poisoned, pattern)["jp-shoulder-shaping"];
+    expect(poisonedJp).not.toBe(frontLines);
+    expect(poisonedJp.length).toBeGreaterThan(0);
+
+    const svg = buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(poisoned, pattern);
+    expect(svgAttr(svg, "data-supported")).toBe("true");
+    expect(svgAttr(svg, "data-shoulder-shaping")).toBe(frontLines);
+    expect(svgAttr(svg, "data-shoulder-shaping")).not.toBe(poisonedJp);
+    expect(svgAttr(svg, "data-neck-bo")).toBe(
+      buildFrontJapaneseNotationReplacements(result, pattern)["jp-neckline-bo"],
+    );
+    expect(svgAttr(svg, "data-neck-shaping")).toBe(
+      buildFrontJapaneseNotationReplacements(result, pattern)["jp-neckline-shaping"],
+    );
+    expect(svgAttr(svg, "data-armhole-bo")).toBe(
+      buildFrontJapaneseNotationReplacements(result, pattern)["jp-armhole-bo"],
+    );
+    expect(pathD(svg, "body-outline")).toBe(
+      pathD(buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(result, pattern), "body-outline"),
+    );
   });
 
   it("stacks CF neck BO lowest and later neckline shaping above it", () => {

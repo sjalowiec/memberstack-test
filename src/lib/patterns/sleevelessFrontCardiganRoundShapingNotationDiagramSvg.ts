@@ -10,6 +10,7 @@
 
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
+import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 import { resolveSleevelessDiagramBodyShapeKind } from "./sleevelessDiagramBodyShapeSrc";
 import {
   isSleevelessCardiganGarmentStyle,
@@ -442,6 +443,7 @@ function stackYs(lastBaselineY: number, count: number, gap: number, direction: "
 function buildLabels(
   result: SleevelessBackPatternResult,
   patternData: unknown,
+  shoulderShaping: string,
 ): NotationLabels {
   const repl = buildFrontJapaneseNotationReplacements(result, patternData);
   return {
@@ -450,7 +452,7 @@ function buildLabels(
     armholeShaping: repl["jp-armhole-shaping"] ?? "",
     neckBo: repl["jp-neckline-bo"] ?? "",
     neckShaping: repl["jp-neckline-shaping"] ?? "",
-    shoulderShaping: repl["jp-shoulder-shaping"] ?? "",
+    shoulderShaping,
     rcCastOn: repl["rc-caston"] ?? "",
     rcHem: repl["rc-hem"] ?? "",
     rcArmholeBo: repl["rc-armhole-bo"] ?? "",
@@ -458,6 +460,18 @@ function buildLabels(
     rcNeckStart: repl["rc-neckline-start"] ?? "",
     rcShoulderStart: repl["rc-shoulder-start"] ?? "",
   };
+}
+
+/** LEFT FRONT shoulder strings — front timeline + cardigan one-shoulder budget. */
+function cardiganRoundFrontShoulderNotationLines(
+  result: SleevelessBackPatternResult,
+  model: SleevelessFrontStsRowsDiagramModel,
+): string[] {
+  const timeline = frontTimeline(result);
+  if (timeline.length === 0) return [];
+  return shoulderShapingNotationLinesFromTimeline(timeline, "right", undefined, {
+    shoulderStitchesBudget: model.shoulder.stitchesPerSide,
+  });
 }
 
 function displayRcAfterArmholeReset(garmentRc: number, armholeStart: number): number {
@@ -535,7 +549,8 @@ export function buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(
   }
 
   const { frame, bands } = buildCardiganRoundFrame(model);
-  const labels = buildLabels(result, patternData ?? {});
+  const frontShoulderLines = cardiganRoundFrontShoulderNotationLines(result, model);
+  const labels = buildLabels(result, patternData ?? {}, frontShoulderLines.join("\n"));
   const armholeStart = model.armhole.startGarmentRc;
   const neckStartGarmentRc = model.neckline.startGarmentRc;
   const timeline = frontTimeline(result);
@@ -769,7 +784,7 @@ export function buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(
   const desc = `Sleeveless Cardigan left Front Round-neck shaping notation. ${labels.castOn}. Neck ${labels.rcNeckStart}. Armhole ${labels.rcArmholeBo}.`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-cardigan-round-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-cardigan-round-notation-title" data-sleeveless-cardigan-round-generated-notation="true" data-supported="true" data-piece="front" data-garment-style="cardigan" data-front-piece="leftFront" data-neckline-style="round" data-neckline-construction="half-front-cf" data-body-shape="straight" data-front-band-included="false" data-cf-x="${fmtNum(frame.left)}" data-rc-gutter-x="${fmtNum(gutterX)}" data-rc-gutter-min-clearance="${fmtNum(RC_GUTTER_MIN_CLEARANCE)}" data-scoop-edge-gap="${fmtNum(SCOOP_EDGE_GAP)}" data-neck-contour="one-sided-scoop" data-shoulder-contour="slope" data-reset="${labels.rcReset ? "true" : "false"}" data-hem-sts="${fmtNum(model.widths.hemStitches)}" data-bust-sts="${fmtNum(model.widths.bustStitches)}" data-after-armhole-sts="${fmtNum(model.widths.stitchesAfterArmhole)}" data-neck-sts="${fmtNum(model.widths.necklineStitches)}" data-shoulder-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}" data-hem-width="${fmtNum(frame.hemWidth)}" data-bust-width="${fmtNum(frame.bodyWidth)}" data-after-armhole-width="${fmtNum(frame.afterWidth)}" data-neck-width="${fmtNum(frame.neckWidth)}" data-px-per-stitch="${fmtNum(frame.pxPerStitch)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-after-left="${fmtNum(frame.afterLeft)}" data-after-right="${fmtNum(frame.afterRight)}" data-bo-right="${fmtNum(frame.boRight)}" data-neck-left="${fmtNum(frame.neckLeft)}" data-neck-right="${fmtNum(frame.neckRight)}" data-bottom-y="${fmtNum(frame.bottomY)}" data-hem-y="${fmtNum(frame.hemY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-last-armhole-garment-rc="${fmtNum(model.armhole.lastGarmentRc)}" data-bind-off-sts="${fmtNum(model.armhole.bindOffStsEachSide)}" data-decrease-sts="${fmtNum(model.armhole.decreaseStsEachSide)}" data-cf-neck-bo-sts="${fmtNum(cfNeckBoSts)}" data-center-held="false" data-neck-decrease-count="${fmtNum(neckPoints.length)}" data-shoulder-point-count="${fmtNum(model.shoulder.points.length)}" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-bo="${escapeXml(labels.neckBo)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-cf-neck-bo-source="cardiganFrontInitialNeckBindOffStitches" data-neck-shaping-source="frontNeckShoulderTimeline-inner-right" data-timeline-source="frontNeckShoulderTimeline-cardigan-round-right-edge" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="sleeveless-cardigan-round-notation-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="sleeveless-cardigan-round-notation-title" data-sleeveless-cardigan-round-generated-notation="true" data-supported="true" data-piece="front" data-garment-style="cardigan" data-front-piece="leftFront" data-neckline-style="round" data-neckline-construction="half-front-cf" data-body-shape="straight" data-front-band-included="false" data-cf-x="${fmtNum(frame.left)}" data-rc-gutter-x="${fmtNum(gutterX)}" data-rc-gutter-min-clearance="${fmtNum(RC_GUTTER_MIN_CLEARANCE)}" data-scoop-edge-gap="${fmtNum(SCOOP_EDGE_GAP)}" data-neck-contour="one-sided-scoop" data-shoulder-contour="slope" data-reset="${labels.rcReset ? "true" : "false"}" data-hem-sts="${fmtNum(model.widths.hemStitches)}" data-bust-sts="${fmtNum(model.widths.bustStitches)}" data-after-armhole-sts="${fmtNum(model.widths.stitchesAfterArmhole)}" data-neck-sts="${fmtNum(model.widths.necklineStitches)}" data-shoulder-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}" data-hem-width="${fmtNum(frame.hemWidth)}" data-bust-width="${fmtNum(frame.bodyWidth)}" data-after-armhole-width="${fmtNum(frame.afterWidth)}" data-neck-width="${fmtNum(frame.neckWidth)}" data-px-per-stitch="${fmtNum(frame.pxPerStitch)}" data-hem-left="${fmtNum(frame.hemLeft)}" data-hem-right="${fmtNum(frame.hemRight)}" data-bust-left="${fmtNum(frame.left)}" data-bust-right="${fmtNum(frame.right)}" data-after-left="${fmtNum(frame.afterLeft)}" data-after-right="${fmtNum(frame.afterRight)}" data-bo-right="${fmtNum(frame.boRight)}" data-neck-left="${fmtNum(frame.neckLeft)}" data-neck-right="${fmtNum(frame.neckRight)}" data-bottom-y="${fmtNum(frame.bottomY)}" data-hem-y="${fmtNum(frame.hemY)}" data-armhole-start-y="${fmtNum(frame.armholeStartY)}" data-last-armhole-y="${fmtNum(frame.lastArmholeY)}" data-neck-start-y="${fmtNum(frame.neckStartY)}" data-shoulder-y="${fmtNum(frame.shoulderY)}" data-neck-corner-y="${fmtNum(frame.neckCornerY)}" data-shoulder-top-y="${fmtNum(frame.shoulderTopY)}" data-armhole-start-garment-rc="${fmtNum(armholeStart)}" data-neck-start-garment-rc="${fmtNum(neckStartGarmentRc)}" data-last-armhole-garment-rc="${fmtNum(model.armhole.lastGarmentRc)}" data-bind-off-sts="${fmtNum(model.armhole.bindOffStsEachSide)}" data-decrease-sts="${fmtNum(model.armhole.decreaseStsEachSide)}" data-cf-neck-bo-sts="${fmtNum(cfNeckBoSts)}" data-center-held="false" data-neck-decrease-count="${fmtNum(neckPoints.length)}" data-shoulder-point-count="${fmtNum(model.shoulder.points.length)}" data-shoulder-budget="${fmtNum(model.shoulder.stitchesPerSide)}" data-shoulder-shaping-source="frontNeckShoulderTimeline-right" data-cast-on="${escapeXml(labels.castOn)}" data-armhole-bo="${escapeXml(labels.armholeBo)}" data-armhole-shaping="${escapeXml(labels.armholeShaping)}" data-neck-bo="${escapeXml(labels.neckBo)}" data-neck-shaping="${escapeXml(labels.neckShaping)}" data-shoulder-shaping="${escapeXml(labels.shoulderShaping)}" data-rc-neck-start="${escapeXml(labels.rcNeckStart)}" data-rc-armhole-bo="${escapeXml(labels.rcArmholeBo)}" data-rc-reset="${escapeXml(labels.rcReset)}" data-rc-shoulder-start="${escapeXml(labels.rcShoulderStart)}" data-cf-neck-bo-source="cardiganFrontInitialNeckBindOffStitches" data-neck-shaping-source="frontNeckShoulderTimeline-inner-right" data-timeline-source="frontNeckShoulderTimeline-cardigan-round-right-edge" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
     `<title id="sleeveless-cardigan-round-notation-title">Sleeveless Cardigan left Front Round-neck shaping notation</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
