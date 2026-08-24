@@ -311,7 +311,8 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
     const dec = textXY(svg, "armhole-shaping")[0];
     expect(bo).toBeTruthy();
     expect(dec).toBeTruthy();
-    expect(dec!.y).toBeGreaterThan(bo!.y);
+    expect(dec!.y).toBeLessThan(bo!.y);
+    expect(bo!.y).toBeCloseTo(armholeStartY, 2);
 
     const gutterX = svgNum(svg, "data-rc-gutter-x");
     const neckX = zoneAttr(svg, "neck-label-zone", "data-x");
@@ -345,6 +346,30 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
     expect(svg).toContain('font-size="14"');
     expect(svg).not.toContain('font-size="13"');
     expect(svg).not.toContain('font-size="12"');
+  });
+
+  it("stacks armhole BO lowest and later decrease lines above it", () => {
+    const pattern = cardiganVStraightPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(result, pattern);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+    const bo = textXY(svg, "armhole-bo")[0];
+    const decs = textXY(svg, "armhole-shaping");
+    expect(svgAttr(svg, "data-armhole-bo")).toBe(repl["jp-armhole-bo"]);
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe(repl["jp-armhole-shaping"]);
+    expect(bo).toBeTruthy();
+    expect(bo!.y).toBeCloseTo(svgNum(svg, "data-armhole-start-y"), 2);
+    expect(decs.length).toBeGreaterThan(0);
+    expect(decs[0]!.y).toBeLessThan(bo!.y);
+    for (let i = 1; i < decs.length; i += 1) {
+      expect(decs[i]!.y).toBeLessThan(decs[i - 1]!.y);
+    }
+    const ahX = zoneAttr(svg, "armhole-label-zone", "data-x");
+    const ahOutline = zoneAttr(svg, "armhole-label-zone", "data-outline-x");
+    expect(ahX).toBeGreaterThan(ahOutline);
+    expect(pathD(svg, "armhole-outline")).toBe(
+      pathD(tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern) ?? "", "armhole-outline"),
+    );
   });
 
   it("keeps Pullover V, Pullover Round, and Back notation gates unchanged", () => {
