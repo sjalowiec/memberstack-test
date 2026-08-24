@@ -1,6 +1,6 @@
 /**
  * Generated Stitches & Rows SVG for Sleeveless Front.
- * Pullover: straight or A-line. Cardigan: straight left Front only.
+ * Pullover: straight or A-line. Cardigan: straight or A-line left Front.
  *
  * Consumes {@link SleevelessFrontStsRowsDiagramModel} only — no pattern math,
  * no Japanese notation, no Illustrator geometry.
@@ -236,7 +236,8 @@ function isSupportedModel(model: SleevelessFrontStsRowsDiagramModel): boolean {
   if (model.piece !== "front") return false;
   if (model.neckline.style !== "v-neck" && model.neckline.style !== "round") return false;
   if (isCardiganFrontModel(model)) {
-    return model.bodyShape === "straight" && model.bodyShaping.direction === "straight";
+    if (model.bodyShape === "straight") return model.bodyShaping.direction === "straight";
+    return model.bodyShape === "aline";
   }
   if (model.garmentStyle !== "pullover") return false;
   if (model.bodyShape === "straight") return model.bodyShaping.direction === "straight";
@@ -299,6 +300,10 @@ function buildFrame(model: SleevelessFrontStsRowsDiagramModel): { frame: Frame; 
   const hemHalf = clamp(half * (hemSts / bustSts), 18, Math.min(cx - 12, VB_W - 12 - cx));
   const left = cx - half;
   const right = cx + half;
+  const cardiganHemWidth = clamp(hemSts * pxPerStitch, 18, Math.max(18, VB_W - 12 - left));
+  const hemLeft = cardigan ? left : cx - hemHalf;
+  const hemRight = cardigan ? left + cardiganHemWidth : cx + hemHalf;
+  const hemWidth = cardigan ? hemRight - hemLeft : hemHalf * 2;
   const afterLeft = cardigan ? left : cx - afterHalf;
   const afterRight = cardigan ? left + afterWidth : cx + afterHalf;
   const neckLeft = cardigan ? left : cx - neckHalf;
@@ -337,8 +342,8 @@ function buildFrame(model: SleevelessFrontStsRowsDiagramModel): { frame: Frame; 
       boRight,
       neckLeft,
       neckRight,
-      hemLeft: cx - hemHalf,
-      hemRight: cx + hemHalf,
+      hemLeft,
+      hemRight,
       bottomY,
       hemY,
       shapeStartY,
@@ -350,7 +355,7 @@ function buildFrame(model: SleevelessFrontStsRowsDiagramModel): { frame: Frame; 
       neckCornerY,
       shoulderTopY,
       bodyWidth,
-      hemWidth: hemHalf * 2,
+      hemWidth,
       afterWidth,
       neckWidth,
       shoulderSideWidth,
@@ -545,15 +550,16 @@ function bodySidePoints(frame: Frame, side: "left" | "right", tapered: boolean):
   return pts;
 }
 
-function drawCardiganSilhouette(frame: Frame, neckStyle: "v-neck" | "round"): string {
+function drawCardiganSilhouette(
+  frame: Frame,
+  neckStyle: "v-neck" | "round",
+  tapered: boolean,
+): string {
   const leftBody: Pt[] = [
     { x: frame.left, y: frame.bottomY },
     { x: frame.left, y: frame.neckStartY },
   ];
-  const rightBody: Pt[] = [
-    { x: frame.right, y: frame.bottomY },
-    { x: frame.right, y: frame.armholeStartY },
-  ];
+  const rightBody = bodySidePoints(frame, "right", tapered);
   const rightArmhole: Pt[] = [
     { x: frame.right, y: frame.armholeStartY },
     { x: frame.boRight, y: frame.armholeStartY },
@@ -573,6 +579,13 @@ function drawCardiganSilhouette(frame: Frame, neckStyle: "v-neck" | "round"): st
   const neckOpening = roundCubic
     ? [cardiganRoundNecklineCubicD(roundCubic)]
     : [`L ${fmtNum(frame.neckRight)} ${fmtNum(frame.neckCornerY)}`];
+  const rightDown = [...rightBody].reverse();
+  const rightClose =
+    rightDown[0] &&
+    Math.abs(rightDown[0].x - frame.right) < 0.05 &&
+    Math.abs(rightDown[0].y - frame.armholeStartY) < 0.05
+      ? rightDown.slice(1)
+      : rightDown;
   const silhouette = [
     `M ${fmtNum(frame.left)} ${fmtNum(frame.bottomY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.neckStartY)}`,
@@ -581,7 +594,7 @@ function drawCardiganSilhouette(frame: Frame, neckStyle: "v-neck" | "round"): st
     `L ${fmtNum(frame.afterRight)} ${fmtNum(frame.lastArmholeY)}`,
     `L ${fmtNum(frame.boRight)} ${fmtNum(frame.armholeStartY)}`,
     `L ${fmtNum(frame.right)} ${fmtNum(frame.armholeStartY)}`,
-    `L ${fmtNum(frame.right)} ${fmtNum(frame.bottomY)}`,
+    ...rightClose.map((p) => `L ${fmtNum(p.x)} ${fmtNum(p.y)}`),
     "Z",
   ].join(" ");
 
@@ -903,7 +916,7 @@ export function buildSleevelessFrontStsRowsDiagramSvg(
   const cardigan = isCardiganFrontModel(model);
   const parts = [
     cardigan
-      ? drawCardiganSilhouette(frame, model.neckline.style)
+      ? drawCardiganSilhouette(frame, model.neckline.style, usesAlineBodySilhouette(model))
       : drawSilhouette(frame, model.neckline.style, usesAlineBodySilhouette(model)),
     drawMeasurements(model, frame),
   ];
@@ -939,7 +952,7 @@ export function buildSleevelessFrontStsRowsDiagramSvg(
       : "Sleeveless pullover V-neck Front stitches and rows";
   const desc = `${model.widths.hemStitches} sts cast on. ${model.rows.expectedGarmentRows} rows. Neck ${model.widths.necklineStitches} sts, ${model.neckline.depthRows} rows deep.`;
   const cardiganAttrs = cardigan
-    ? ` data-front-piece="leftFront" data-front-band-included="false" data-front-band-treatment="${escapeXml(model.frontBand?.treatment ?? "")}" data-cf-x="${fmtNum(frame.left)}" data-neckline-construction="${escapeXml(model.neckline.construction)}"`
+    ? ` data-front-piece="leftFront" data-front-band-included="false" data-front-band-treatment="${escapeXml(model.frontBand?.treatment ?? "")}" data-cf-x="${fmtNum(frame.left)}" data-neckline-construction="${escapeXml(model.neckline.construction)}" data-shaping-edge="${model.bodyShaping.edgeScope === "sideSeamOnly" ? "side-seam" : "both-sides"}"`
     : ` data-front-piece="fullFront" data-neckline-construction="${escapeXml(model.neckline.construction)}"`;
 
   return [
@@ -966,7 +979,7 @@ export function tryBuildSleevelessFrontStsRowsDiagramSvg(
 
 /**
  * Live Stitches & Rows cutover: pullover (straight or A-line) and cardigan
- * straight Front. Builds the model and attempts
+ * (straight or A-line) Front. Builds the model and attempts
  * {@link tryBuildSleevelessFrontStsRowsDiagramSvg}. Returns `null` so
  * screen/print hydration keep the Illustrator SVG.
  */
