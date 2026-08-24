@@ -1,12 +1,17 @@
 /**
  * Data model for the Sleeveless Front Stitches & Rows diagram.
  *
- * Scope: pullover, V-neck or round neck, straight or A-line body.
- * Reads a finalized {@link SleevelessBackPatternResult}. No pattern math, no SVG.
+ * Scope: pullover (V or round, straight or A-line) and cardigan (V or round,
+ * straight body only). Reads a finalized {@link SleevelessBackPatternResult}.
+ * No pattern math, no SVG.
  */
 
 import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
+import {
+  cardiganFrontInitialNeckBindOffStitches,
+  cardiganFrontNeckOpeningStitches,
+} from "./roundNeckNotation";
 import {
   resolveSleevelessDiagramBodyShapeKind,
   shouldGenerateSleevelessAlineStsRows,
@@ -19,6 +24,7 @@ import {
   isSleevelessPulloverVNeckFrontNotation,
   resolveFrontVNeckNotationRcModel,
 } from "./sleevelessFrontJapaneseNotation";
+import { sleevelessCardiganFrontEdgeFinishingMode } from "./sleevelessPatternFinishing";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { armholeBindOffDecreaseFromEachSide } from "./sleevelessBackJapaneseNotation";
@@ -58,6 +64,8 @@ export type SleevelessFrontStsRowsVNeckline = {
   beginsBeforeArmhole: boolean;
   /** Right-neck inner decreases from the live front timeline (pullover is mirrored). */
   innerDecreasePoints: readonly StitchDecreasePoint[];
+  /** Pullover divides the full front; cardigan works one CF edge. */
+  construction: "full-front-divide" | "half-front-cf";
 };
 
 export type SleevelessFrontStsRowsRoundNeckline = {
@@ -68,6 +76,8 @@ export type SleevelessFrontStsRowsRoundNeckline = {
   strategy: "deep-round" | "shallow-round";
   centerBindOffStitches: number;
   centerHeld: boolean;
+  /** Pullover binds off the center; cardigan binds off the CF edge of one front. */
+  construction: "full-front-center" | "half-front-cf";
 };
 
 export type SleevelessFrontStsRowsDiagramNeckline =
@@ -112,9 +122,23 @@ export type SleevelessFrontStsRowsDiagramBodyShaping = {
   rowNumbers: readonly number[];
 };
 
+export type SleevelessFrontStsRowsFrontPiece = "fullFront" | "leftFront";
+
+/**
+ * Front-band finishing is never part of the knitted Front piece.
+ * Pickup (round) or vertical bands (V) are attached later.
+ */
+export type SleevelessFrontStsRowsFrontBand = {
+  includedInPiece: false;
+  treatment: "pickup" | "verticalBand";
+  edgeRows?: number;
+  pickupStitches?: number;
+};
+
 export type SleevelessFrontStsRowsDiagramModel = {
   piece: "front";
-  garmentStyle: "pullover";
+  garmentStyle: "pullover" | "cardigan";
+  frontPiece: SleevelessFrontStsRowsFrontPiece;
   bodyShape: "straight" | "aline";
   widths: SleevelessFrontStsRowsDiagramWidths;
   rows: SleevelessFrontStsRowsDiagramRows;
@@ -122,6 +146,7 @@ export type SleevelessFrontStsRowsDiagramModel = {
   armhole: SleevelessFrontStsRowsDiagramArmhole;
   shoulder: SleevelessFrontStsRowsDiagramShoulder;
   bodyShaping: SleevelessFrontStsRowsDiagramBodyShaping;
+  frontBand?: SleevelessFrontStsRowsFrontBand;
 };
 
 function isFiniteNumber(n: unknown): n is number {
@@ -140,10 +165,13 @@ function frontTimeline(result: SleevelessBackPatternResult) {
  * Same shoulder-point collection as the live V-neck notation generator
  * (`pulloverVNeckFrontShoulderPoints`) — no extra math.
  */
-function frontShoulderPoints(result: SleevelessBackPatternResult): StitchDecreasePoint[] {
+function frontShoulderPoints(
+  result: SleevelessBackPatternResult,
+  shoulderBudget?: number,
+): StitchDecreasePoint[] {
   const timeline = frontTimeline(result);
   if (timeline.length === 0) return [];
-  const budget = shoulderStitchesPerSideForDiagram(result.debug);
+  const budget = shoulderBudget ?? shoulderStitchesPerSideForDiagram(result.debug);
   const points = collectCompleteShoulderShapingPoints(timeline, "right", undefined, {
     shoulderStitchesBudget: budget,
   });
@@ -208,13 +236,80 @@ function isPulloverRoundFront(patternData?: unknown): boolean {
   );
 }
 
-/** True when this result is in the Stitches & Rows model scope (pullover V or round, straight or A-line). */
+function isStraightCardiganFront(patternData?: unknown): boolean {
+  return (
+    isSleevelessCardiganGarmentStyle(patternData ?? {}) &&
+    resolveSleevelessDiagramBodyShapeKind(patternData) === "straight"
+  );
+}
+
+/** Armhole-edge events only — cardigan CF has no bind-off (band is added later). */
+function cardiganLeftFrontArmholeEvents(args: {
+  firstArmholeGarmentRc: number;
+  bindOffSts: number;
+  decreaseSts: number;
+}): FrontArmholeEvent[] {
+  return pulloverArmholeEvents(args).filter((ev) => ev.side === "right");
+}
+
+function cardiganLeftFrontWidths(
+  result: SleevelessBackPatternResult,
+): SleevelessFrontStsRowsDiagramWidths | null {
+  const d = result.debug;
+  const hemStitches = Math.round(finiteOr(d.cardiganHalfLeftCastOnSts, 0));
+  const bustStitches = Math.round(finiteOr(d.cardiganHalfLeftBustBodySts, hemStitches));
+  const stitchesAfterArmhole = Math.round(
+    finiteOr(d.cardiganFrontPostArmholeSts, finiteOr(d.cardiganHalfLeftStitchesAfterArmhole, 0)),
+  );
+  const fullNeck = Math.max(0, Math.round(finiteOr(d.necklineStitches, 0)));
+  const necklineStitches = cardiganFrontNeckOpeningStitches(fullNeck);
+  const shoulderStitchesPerSide = Math.max(1, stitchesAfterArmhole - necklineStitches);
+  if (
+    !(hemStitches > 0) ||
+    !(bustStitches > 0) ||
+    !(stitchesAfterArmhole > 0) ||
+    hemStitches !== bustStitches ||
+    !isFiniteNumber(d.stitchesPerInch) ||
+    d.stitchesPerInch <= 0 ||
+    !isFiniteNumber(d.rowsPerInch) ||
+    d.rowsPerInch <= 0
+  ) {
+    return null;
+  }
+  return {
+    hemStitches,
+    bustStitches,
+    stitchesAfterArmhole,
+    necklineStitches,
+    shoulderStitchesPerSide,
+    stitchesPerInch: d.stitchesPerInch,
+  };
+}
+
+function cardiganFrontBand(result: SleevelessBackPatternResult, patternData?: unknown) {
+  const treatment = sleevelessCardiganFrontEdgeFinishingMode(patternData);
+  if (treatment !== "pickup" && treatment !== "verticalBand") return undefined;
+  const d = result.debug;
+  return {
+    includedInPiece: false as const,
+    treatment,
+    edgeRows: isFiniteNumber(d.cardiganFrontEdgeRows)
+      ? Math.round(d.cardiganFrontEdgeRows)
+      : undefined,
+    pickupStitches: isFiniteNumber(d.cardiganFrontEdgePickupSts)
+      ? Math.round(d.cardiganFrontEdgePickupSts)
+      : undefined,
+  };
+}
+
+/** True when this result is in the Stitches & Rows model scope. */
 export function shouldBuildSleevelessFrontStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): boolean {
-  if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
   if (!result.frontNeckShoulderChartUsesLiveRows) return false;
+  if (isStraightCardiganFront(patternData)) return cardiganLeftFrontWidths(result) != null;
+  if (isSleevelessCardiganGarmentStyle(patternData ?? {})) return false;
   const bodyKind = resolveSleevelessDiagramBodyShapeKind(patternData);
   const generateAline = shouldGenerateSleevelessAlineStsRows(
     patternData,
@@ -227,15 +322,19 @@ export function shouldBuildSleevelessFrontStsRowsDiagramModel(
 }
 
 /**
- * Pullover Front measurement model for the Stitches & Rows renderer.
- * V-neck and round neck; straight or A-line body. Returns `null` when the
- * result is out of scope so hydration can keep the existing Illustrator SVG.
+ * Front measurement model for the Stitches & Rows renderer.
+ * Pullover: V or round, straight or A-line. Cardigan: V or round, straight only.
+ * Returns `null` when the result is out of scope so hydration can keep the
+ * existing Illustrator SVG.
  */
 export function buildSleevelessFrontStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): SleevelessFrontStsRowsDiagramModel | null {
   if (!shouldBuildSleevelessFrontStsRowsDiagramModel(result, patternData)) return null;
+  if (isStraightCardiganFront(patternData)) {
+    return buildCardiganStraightFrontStsRowsDiagramModel(result, patternData);
+  }
 
   const d = result.debug;
   const isVNeck = isSleevelessPulloverVNeckFrontNotation(result, patternData);
@@ -328,16 +427,19 @@ export function buildSleevelessFrontStsRowsDiagramModel(
         necklineStitches,
         beginsBeforeArmhole: overlap?.necklineBeginsBeforeArmhole === true,
         innerDecreasePoints: collectInnerNeckDecreasePointsFromTimeline(timeline, "right"),
+        construction: "full-front-divide",
       }
     : roundNecklineFromResult(result, {
         startGarmentRc: neckStartGarmentRc,
         depthRows: frontNeckDepthRows,
         necklineStitches,
+        construction: "full-front-center",
       });
 
   return {
     piece: "front",
     garmentStyle: "pullover",
+    frontPiece: "fullFront",
     bodyShape: shouldGenerateSleevelessAlineStsRows(patternData, d.alineBodyShapingType)
       ? "aline"
       : "straight",
@@ -380,7 +482,13 @@ export function buildSleevelessFrontStsRowsDiagramModel(
 
 function roundNecklineFromResult(
   result: SleevelessBackPatternResult,
-  args: { startGarmentRc: number; depthRows: number; necklineStitches: number },
+  args: {
+    startGarmentRc: number;
+    depthRows: number;
+    necklineStitches: number;
+    construction: SleevelessFrontStsRowsRoundNeckline["construction"];
+    centerBindOffStitches?: number;
+  },
 ): SleevelessFrontStsRowsRoundNeckline {
   const d = result.debug;
   const schedule = buildSleevelessRoundNeckShapingSchedule(frontTimeline(result));
@@ -397,8 +505,148 @@ function roundNecklineFromResult(
     strategy,
     centerBindOffStitches: Math.max(
       0,
-      Math.round(finiteOr(d.frontCenterNeckBindOffStitches, schedule?.centerStitches ?? 0)),
+      Math.round(
+        finiteOr(
+          args.centerBindOffStitches,
+          finiteOr(d.frontCenterNeckBindOffStitches, schedule?.centerStitches ?? 0),
+        ),
+      ),
     ),
     centerHeld: schedule?.centerHeld === true || strategy === "shallow-round",
+    construction: args.construction,
+  };
+}
+
+function sharedFrontRows(result: SleevelessBackPatternResult): SleevelessFrontStsRowsDiagramRows | null {
+  const d = result.debug;
+  const hemRows = Math.max(0, Math.round(finiteOr(d.hemRows, 0)));
+  const rowsFromCastOnToArmholeStart = Math.max(
+    0,
+    Math.round(finiteOr(d.rowsFromCastOnToArmholeStart, hemRows + finiteOr(d.bodyRows, 0))),
+  );
+  const sideSeam = sideSeamRowsAboveHem(d);
+  const armholeRows = isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
+  const frontNeckDepthRows = isFiniteNumber(d.frontNeckDepthRows)
+    ? Math.round(d.frontNeckDepthRows)
+    : undefined;
+  const expectedGarmentRows = isFiniteNumber(d.expectedGarmentRows)
+    ? Math.round(d.expectedGarmentRows)
+    : undefined;
+  const frontFinalRow = Math.round(finiteOr(d.frontFinalRow, finiteOr(d.expectedGarmentRows, 0)));
+  if (
+    sideSeam === undefined ||
+    armholeRows === undefined ||
+    frontNeckDepthRows === undefined ||
+    expectedGarmentRows === undefined
+  ) {
+    return null;
+  }
+  return {
+    hemRows,
+    sideSeamRowsAboveHem: sideSeam,
+    rowsFromCastOnToArmholeStart,
+    armholeRows,
+    frontNeckDepthRows,
+    expectedGarmentRows,
+    frontFinalRow,
+    rowsPerInch: d.rowsPerInch,
+  };
+}
+
+/**
+ * One LEFT FRONT panel. Widths come from cardiganHalfLeft* / post-armhole
+ * debug — not full-back stitch counts. Front-band stitches are excluded.
+ */
+function buildCardiganStraightFrontStsRowsDiagramModel(
+  result: SleevelessBackPatternResult,
+  patternData?: unknown,
+): SleevelessFrontStsRowsDiagramModel | null {
+  const widths = cardiganLeftFrontWidths(result);
+  const rows = sharedFrontRows(result);
+  if (!widths || !rows) return null;
+
+  const d = result.debug;
+  const isVNeck = isSleevelessVNeckChoice(patternData ?? {});
+  const eachSide = d.armholeStitchesEachSide;
+  if (!isFiniteNumber(eachSide) || eachSide <= 0) return null;
+  const stitchesEachSide = Math.round(eachSide);
+  const { bindOffSts, decreaseSts } = armholeBindOffDecreaseFromEachSide(stitchesEachSide);
+  const armholeStart = Math.max(0, Math.floor(finiteOr(d.armholeStartRow, 0)));
+  const neckStartGarmentRc = Math.max(
+    0,
+    Math.floor(finiteOr(d.frontNecklineStartRC, armholeStart)),
+  );
+  const events = cardiganLeftFrontArmholeEvents({
+    firstArmholeGarmentRc: armholeStart,
+    bindOffSts,
+    decreaseSts,
+  });
+  const lastDecrease = events
+    .filter((ev) => ev.kind === "decrease")
+    .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);
+  const lastArmholeGarmentRc = Math.max(armholeStart, lastDecrease);
+  const shoulderStartGarmentRc = Math.max(
+    lastArmholeGarmentRc,
+    Math.floor(finiteOr(d.shoulderStartRow, lastArmholeGarmentRc)),
+  );
+  const timeline = frontTimeline(result);
+  const neckline: SleevelessFrontStsRowsDiagramNeckline = isVNeck
+    ? {
+        style: "v-neck",
+        startGarmentRc: neckStartGarmentRc,
+        divideGarmentRc: neckStartGarmentRc,
+        depthRows: rows.frontNeckDepthRows,
+        necklineStitches: widths.necklineStitches,
+        beginsBeforeArmhole: neckStartGarmentRc < armholeStart,
+        innerDecreasePoints: collectInnerNeckDecreasePointsFromTimeline(timeline, "right"),
+        construction: "half-front-cf",
+      }
+    : roundNecklineFromResult(result, {
+        startGarmentRc: neckStartGarmentRc,
+        depthRows: rows.frontNeckDepthRows,
+        necklineStitches: widths.necklineStitches,
+        construction: "half-front-cf",
+        centerBindOffStitches: Math.round(
+          finiteOr(
+            d.cardiganFrontInitialNeckBindOffStitches,
+            cardiganFrontInitialNeckBindOffStitches(
+              finiteOr(d.necklineStitches, 0),
+              rows.frontNeckDepthRows,
+            ),
+          ),
+        ),
+      });
+
+  return {
+    piece: "front",
+    garmentStyle: "cardigan",
+    frontPiece: "leftFront",
+    bodyShape: "straight",
+    widths,
+    rows,
+    neckline,
+    armhole: {
+      startGarmentRc: armholeStart,
+      lastGarmentRc: lastArmholeGarmentRc,
+      stitchesEachSide,
+      bindOffStsEachSide: bindOffSts,
+      decreaseStsEachSide: decreaseSts,
+      events,
+      overlapsNeckline: false,
+    },
+    shoulder: {
+      startGarmentRc: shoulderStartGarmentRc,
+      stitchesPerSide: widths.shoulderStitchesPerSide,
+      points: frontShoulderPoints(result, widths.shoulderStitchesPerSide),
+    },
+    bodyShaping: {
+      direction: "straight",
+      hemStitches: widths.hemStitches,
+      bustStitches: widths.bustStitches,
+      startRc: 0,
+      endRc: 0,
+      rowNumbers: [],
+    },
+    frontBand: cardiganFrontBand(result, patternData),
   };
 }
