@@ -10,9 +10,13 @@ import {
 import {
   buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg,
   shouldUseGeneratedSleevelessFrontCardiganVNeckNotation,
+  SLEEVELESS_FRONT_CARDIGAN_VNECK_ARMHOLE_LABEL_CLEARANCE,
   SLEEVELESS_FRONT_CARDIGAN_VNECK_NOTATION_FS_NOTATION,
   SLEEVELESS_FRONT_CARDIGAN_VNECK_NOTATION_FS_RC,
   SLEEVELESS_FRONT_CARDIGAN_VNECK_NOTATION_VIEWBOX,
+  SLEEVELESS_FRONT_CARDIGAN_VNECK_RC_GUTTER_MIN_CLEARANCE,
+  SLEEVELESS_FRONT_CARDIGAN_VNECK_SHOULDER_OUTLINE_CLEARANCE,
+  SLEEVELESS_FRONT_CARDIGAN_VNECK_V_EDGE_GAP,
   tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg,
 } from "./sleevelessFrontCardiganVNeckShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "./sleevelessFrontRoundShapingNotationDiagramSvg";
@@ -109,6 +113,50 @@ function roles(svg: string, role: string): string[] {
   return svg.match(new RegExp(`data-role="${role}"[^>]*>`, "g")) ?? [];
 }
 
+function zoneAttr(svg: string, role: string, name: string): number {
+  const tag = roles(svg, role)[0] ?? "";
+  return Number(new RegExp(`${name}="([^"]+)"`).exec(tag)?.[1] ?? NaN);
+}
+
+function textXY(svg: string, role: string): { x: number; y: number; anchor: string }[] {
+  return (svg.match(new RegExp(`<text[^>]*data-role="${role}"[^>]*>`, "g")) ?? []).map((tag) => ({
+    x: Number(/[\s]x="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+    y: Number(/[\s]y="([^"]+)"/.exec(tag)?.[1] ?? NaN),
+    anchor: /text-anchor="([^"]+)"/.exec(tag)?.[1] ?? "",
+  }));
+}
+
+function shoulderOutlineXAtY(
+  afterRight: number,
+  neckRight: number,
+  shoulderY: number,
+  neckCornerY: number,
+  y: number,
+): number {
+  if (y >= shoulderY) return afterRight;
+  if (y <= neckCornerY) return neckRight;
+  const span = shoulderY - neckCornerY;
+  if (!(span > 0)) return Math.max(afterRight, neckRight);
+  const t = Math.min(1, Math.max(0, (shoulderY - y) / span));
+  return afterRight + t * (neckRight - afterRight);
+}
+
+function armholeOutlineXAtY(
+  right: number,
+  afterRight: number,
+  boRight: number,
+  armholeStartY: number,
+  lastArmholeY: number,
+  y: number,
+): number {
+  if (y >= armholeStartY) return right;
+  if (y <= lastArmholeY) return afterRight;
+  const span = armholeStartY - lastArmholeY;
+  if (!(span > 0)) return Math.max(right, afterRight);
+  const t = Math.min(1, Math.max(0, (armholeStartY - y) / span));
+  return boRight + t * (afterRight - boRight);
+}
+
 describe("generated Cardigan V Straight Front Shaping Notation", () => {
   it("generates one LEFT FRONT piece with CF left and armhole right", () => {
     const pattern = cardiganVStraightPattern();
@@ -203,6 +251,86 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
     expect(result.debug.cardiganHalfLeftCastOnSts).toBeGreaterThan(0);
     expect(svgNum(svg, "data-hem-sts")).toBe(result.debug.cardiganHalfLeftCastOnSts);
     expect(svgNum(svg, "data-hem-sts")).toBeLessThan(result.debug.hemCastOnStitches ?? 999);
+  });
+
+  it("anchors Cardigan V notation blocks to garment geometry, not canvas slots", () => {
+    const pattern = cardiganVStraightPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const svg = buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(result, pattern);
+    const repl = buildFrontJapaneseNotationReplacements(result, pattern);
+
+    expect(svgAttr(svg, "data-shoulder-shaping")).toBe(repl["jp-shoulder-shaping"]);
+    expect(svgAttr(svg, "data-armhole-bo")).toBe(repl["jp-armhole-bo"]);
+    expect(svgAttr(svg, "data-armhole-shaping")).toBe(repl["jp-armhole-shaping"]);
+    expect(svgAttr(svg, "data-neck-shaping")).toBe(repl["jp-neckline-shaping"]);
+    expect(SLEEVELESS_FRONT_CARDIGAN_VNECK_NOTATION_FS_NOTATION).toBe(17);
+    expect(SLEEVELESS_FRONT_CARDIGAN_VNECK_NOTATION_FS_RC).toBe(14);
+    expect(svg).toContain('font-size="17"');
+    expect(svg).toContain('font-size="14"');
+
+    const afterRight = svgNum(svg, "data-after-right");
+    const neckRight = svgNum(svg, "data-neck-right");
+    const shoulderY = svgNum(svg, "data-shoulder-y");
+    const neckCornerY = svgNum(svg, "data-neck-corner-y");
+    const slopeMidX = (afterRight + neckRight) / 2;
+    const shX = zoneAttr(svg, "shoulder-label-zone", "data-x");
+    const shY = zoneAttr(svg, "shoulder-label-zone", "data-y");
+    const slopeX = shoulderOutlineXAtY(afterRight, neckRight, shoulderY, neckCornerY, shY);
+    expect(shX).toBeGreaterThan(slopeX);
+    expect(shX).toBeGreaterThan(slopeMidX);
+    expect(shX - slopeX).toBeGreaterThanOrEqual(
+      SLEEVELESS_FRONT_CARDIGAN_VNECK_SHOULDER_OUTLINE_CLEARANCE - 0.05,
+    );
+    expect(shX - slopeX).toBeLessThan(40);
+    expect(shY).toBeGreaterThan(neckCornerY - 4);
+    expect(shY).toBeLessThan(shoulderY + 4);
+    expect(textXY(svg, "shoulder-shaping").every((t) => t.anchor === "start")).toBe(true);
+
+    const bustRight = svgNum(svg, "data-bust-right");
+    const boRight = svgNum(svg, "data-bo-right");
+    const armholeStartY = svgNum(svg, "data-armhole-start-y");
+    const lastArmholeY = svgNum(svg, "data-last-armhole-y");
+    const ahX = zoneAttr(svg, "armhole-label-zone", "data-x");
+    const ahY = zoneAttr(svg, "armhole-label-zone", "data-y");
+    const ahOutline = armholeOutlineXAtY(
+      bustRight,
+      afterRight,
+      boRight,
+      armholeStartY,
+      lastArmholeY,
+      ahY,
+    );
+    expect(ahY).toBeCloseTo(armholeStartY, 2);
+    expect(ahX).toBeGreaterThan(afterRight);
+    expect(ahX).toBeGreaterThanOrEqual(ahOutline + SLEEVELESS_FRONT_CARDIGAN_VNECK_ARMHOLE_LABEL_CLEARANCE - 0.05);
+    expect(ahX - ahOutline).toBeLessThan(36);
+    const ahTexts = [...textXY(svg, "armhole-bo"), ...textXY(svg, "armhole-shaping")];
+    expect(ahTexts.length).toBeGreaterThan(0);
+    expect(ahTexts.every((t) => t.x === ahX && t.x > ahOutline)).toBe(true);
+    const bo = textXY(svg, "armhole-bo")[0];
+    const dec = textXY(svg, "armhole-shaping")[0];
+    expect(bo).toBeTruthy();
+    expect(dec).toBeTruthy();
+    expect(dec!.y).toBeGreaterThan(bo!.y);
+
+    const gutterX = svgNum(svg, "data-rc-gutter-x");
+    const neckX = zoneAttr(svg, "neck-label-zone", "data-x");
+    const neckY = zoneAttr(svg, "neck-label-zone", "data-y");
+    const vEdgeX = zoneAttr(svg, "neck-label-zone", "data-v-edge-x");
+    const rcSafeX = zoneAttr(svg, "neck-label-zone", "data-rc-safe-x");
+    expect(svgNum(svg, "data-rc-gutter-min-clearance")).toBe(
+      SLEEVELESS_FRONT_CARDIGAN_VNECK_RC_GUTTER_MIN_CLEARANCE,
+    );
+    expect(rcSafeX).toBeCloseTo(gutterX + SLEEVELESS_FRONT_CARDIGAN_VNECK_RC_GUTTER_MIN_CLEARANCE, 2);
+    expect(neckX).toBeGreaterThanOrEqual(rcSafeX - 0.05);
+    expect(neckX).toBeGreaterThanOrEqual(vEdgeX + SLEEVELESS_FRONT_CARDIGAN_VNECK_V_EDGE_GAP - 0.05);
+    expect(neckX).toBeLessThan(neckRight + 24);
+    expect(roles(svg, "neck-label-zone")[0]).toContain('data-placement="cardigan-v"');
+    expect(neckY).toBeGreaterThan(neckCornerY);
+    expect(neckY).toBeLessThanOrEqual(svgNum(svg, "data-neck-start-y") + 0.05);
+    expect(textXY(svg, "neck-shaping").every((t) => t.anchor === "start" && t.x >= rcSafeX)).toBe(true);
+    expect(textXY(svg, "rc-reset")[0]?.x).toBeCloseTo(gutterX, 2);
+    expect(textXY(svg, "neck-start-rc")[0]?.x).toBeCloseTo(gutterX, 2);
   });
 
   it("uses 17 / 14 typography", () => {
