@@ -8,6 +8,7 @@
  */
 
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
+import { cardiganArmholeNotationYs } from "./sleevelessFrontCardiganArmholeNotationLayout";
 import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
 import {
   resolveSleevelessDiagramBodyShapeKind,
@@ -42,7 +43,6 @@ const FS_NOTATION = 17;
 const FS_RC = 14;
 const NOTATION_GAP = 18;
 const NECK_NOTATION_GAP = 18;
-const ARMHOLE_NOTATION_GAP = 18;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 /** 0 = outer/armhole end of the slope, 1 = neck corner. */
 const SHOULDER_SLOPE_T = 0.3;
@@ -667,7 +667,7 @@ export function buildSleevelessFrontCardiganVNeckShapingNotationDiagramSvg(
     })),
   ].filter((entry) => entry.line.length > 0);
   const armholeBoY = frame.armholeStartY;
-  const armholeYs = stackYs(armholeBoY, armholeStack.length, ARMHOLE_NOTATION_GAP, "down");
+  const armholeYs = cardiganArmholeNotationYs(armholeBoY, armholeStack.length);
   const armholeOutlineX = armholeYs.reduce(
     (maxX, y) => Math.max(maxX, rightArmholeOutlineXAtY(frame, y)),
     frame.afterRight,

@@ -9,6 +9,7 @@
  */
 
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
+import { cardiganArmholeNotationYs } from "./sleevelessFrontCardiganArmholeNotationLayout";
 import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
 import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 import { resolveSleevelessDiagramBodyShapeKind } from "./sleevelessDiagramBodyShapeSrc";
@@ -49,7 +50,6 @@ const FS_NOTATION = 17;
 const FS_RC = 14;
 const NOTATION_GAP = 18;
 const NECK_NOTATION_GAP = 18;
-const ARMHOLE_NOTATION_GAP = 18;
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
 const SHOULDER_SLOPE_T = 0.3;
 const SHOULDER_OUT_RIGHT = 14;
@@ -698,7 +698,7 @@ export function buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(
     })),
   ].filter((entry) => entry.line.length > 0);
   const armholeBoY = frame.armholeStartY;
-  const armholeYs = stackYs(armholeBoY, armholeStack.length, ARMHOLE_NOTATION_GAP, "down");
+  const armholeYs = cardiganArmholeNotationYs(armholeBoY, armholeStack.length);
   const armholeOutlineX = armholeYs.reduce(
     (maxX, y) => Math.max(maxX, rightArmholeOutlineXAtY(frame, y)),
     frame.afterRight,
