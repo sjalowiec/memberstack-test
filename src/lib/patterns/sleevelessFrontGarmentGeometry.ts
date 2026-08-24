@@ -444,3 +444,177 @@ export function sleevelessFrontCardiganCenterFrontPoints(
     { x: frame.left, y: frame.neckStartY },
   ];
 }
+
+/** Inches needed to place a live measurement-editor silhouette on the shared Front frame. */
+export type SleevelessMeasurementGarmentInput = {
+  bustInches: number;
+  hipInches: number;
+  garmentLengthInches: number;
+  armholeDepthInches: number;
+  neckOpeningInches: number;
+  neckDepthInches: number;
+  shoulderWidthInches: number;
+  hemDepthInches: number;
+};
+
+const REF_BUST_INCHES = 40;
+
+/**
+ * Measurement-editor adapter: same Front canvas and band allocator as
+ * {@link buildSleevelessFrontGarmentFrame}, driven by finished inches instead of a
+ * generated Stitches & Rows model.
+ */
+export function buildSleevelessMeasurementGarmentFrame(
+  input: SleevelessMeasurementGarmentInput,
+): SleevelessFrontGarmentFrame {
+  const bust = Math.max(1, input.bustInches);
+  const hip = Math.max(1, input.hipInches);
+  const length = Math.max(6, input.garmentLengthInches);
+  const hem = clamp(input.hemDepthInches, 0, length * 0.32);
+  const armhole = clamp(input.armholeDepthInches, 1, length * 0.42);
+  const body = Math.max(1.5, length - hem - armhole);
+
+  const allocated = allocateSleevelessFrontGarmentBands({
+    hemRc: hem,
+    armholeStartRc: hem + body,
+    shoulderRc: hem + body + armhole,
+    endRc: hem + body + armhole + 0.4,
+    hemRows: hem,
+    bodyRows: body,
+    armholeRows: armhole,
+    rowsPerInch: 1,
+  });
+  const bands = allocated.bands;
+
+  const maxBodyW =
+    SLEEVELESS_FRONT_GARMENT_VB_W -
+    SLEEVELESS_FRONT_GARMENT_LABEL_GUTTER -
+    SLEEVELESS_FRONT_GARMENT_RIGHT_PAD;
+  const widthScale = clamp(bust / REF_BUST_INCHES, 0.6, 1.25);
+  const bodyWidth = maxBodyW * (widthScale / 1.25);
+  const cx = SLEEVELESS_FRONT_GARMENT_LABEL_GUTTER + maxBodyW / 2;
+  const half = bodyWidth / 2;
+  const frontWidthInches = bust / 2;
+  const pxPerInch = bodyWidth / frontWidthInches;
+  const hemHalf = clamp(
+    half * (hip / bust),
+    18,
+    Math.min(cx - 12, SLEEVELESS_FRONT_GARMENT_VB_W - 12 - cx),
+  );
+  const left = cx - half;
+  const right = cx + half;
+  const hemLeft = cx - hemHalf;
+  const hemRight = cx + hemHalf;
+
+  const neckWidth = clamp(
+    Math.max(12, input.neckOpeningInches * pxPerInch),
+    18,
+    bodyWidth * 0.55,
+  );
+  const shoulderSideWidth = clamp(
+    Math.max(10, input.shoulderWidthInches * pxPerInch),
+    12,
+    (bodyWidth - neckWidth) / 2,
+  );
+  const afterWidth = clamp(neckWidth + 2 * shoulderSideWidth, neckWidth + 20, bodyWidth * 0.92);
+  const afterHalf = afterWidth / 2;
+  const neckHalf = neckWidth / 2;
+  const boInset = clamp((bodyWidth - afterWidth) / 4, 6, 16);
+
+  const bottomY = sleevelessFrontYAtRc(0, bands);
+  const hemY = hem > 0 ? sleevelessFrontYAtRc(hem, bands) : bottomY;
+  const armholeStartY = sleevelessFrontYAtRc(hem + body, bands);
+  const shoulderY = sleevelessFrontYAtRc(hem + body + armhole, bands);
+  const lastBand = bands[bands.length - 1];
+  const shoulderBandH = lastBand
+    ? Math.max(8, shoulderY - lastBand.yTop)
+    : SLEEVELESS_FRONT_STS_ROWS_VISUAL.minShoulder;
+  const shoulderTopY = shoulderY - shoulderBandH;
+  const neckCornerY = shoulderTopY;
+  const neckDepthPx = clamp(
+    input.neckDepthInches * (allocated.bodyH / Math.max(body, 1)),
+    18,
+    allocated.armholeH + allocated.shoulderH * 0.75,
+  );
+  const neckStartY = clamp(
+    neckCornerY + neckDepthPx,
+    neckCornerY + 14,
+    armholeStartY - 8,
+  );
+  const lastArmholeY = armholeStartY - allocated.armholeH * 0.55;
+  const shapeStartY = hemY;
+  const shapeEndY = armholeStartY;
+
+  return {
+    cx,
+    left,
+    right,
+    afterLeft: cx - afterHalf,
+    afterRight: cx + afterHalf,
+    boLeft: cx - half + boInset,
+    boRight: cx + half - boInset,
+    neckLeft: cx - neckHalf,
+    neckRight: cx + neckHalf,
+    hemLeft,
+    hemRight,
+    bottomY,
+    hemY,
+    shapeStartY,
+    shapeEndY,
+    armholeStartY,
+    lastArmholeY,
+    neckStartY,
+    shoulderY,
+    neckCornerY,
+    shoulderTopY,
+    bodyWidth,
+    hemWidth: hemHalf * 2,
+    afterWidth,
+    neckWidth,
+    shoulderSideWidth,
+    pxPerStitch: pxPerInch,
+    visualHemH: allocated.hemH,
+    visualBodyH: allocated.bodyH,
+    visualArmholeH: allocated.armholeH,
+    visualShoulderH: allocated.shoulderH,
+    visualNeckH: Math.max(0, neckStartY - neckCornerY),
+    visualGarmentH: Math.max(0, bottomY - shoulderTopY),
+    trueAfterWidth: afterWidth,
+    upperScale: 1,
+  };
+}
+
+export type SleevelessFrontNecklineCurveFrame = Pick<
+  SleevelessFrontGarmentFrame,
+  "cx" | "neckLeft" | "neckRight" | "neckStartY" | "neckCornerY"
+>;
+
+/** Approved pullover Round scoop cubics (path continuation after arriving at the left neck point). */
+export function sleevelessFrontPulloverRoundNecklineCubicD(
+  frame: SleevelessFrontNecklineCurveFrame,
+): string {
+  const f = sleevelessFrontGarmentFmtNum;
+  return [
+    `C ${f(frame.neckLeft)} ${f(frame.neckStartY)} ${f(frame.cx)} ${f(frame.neckStartY)} ${f(frame.cx)} ${f(frame.neckStartY)}`,
+    `C ${f(frame.cx)} ${f(frame.neckStartY)} ${f(frame.neckRight)} ${f(frame.neckStartY)} ${f(frame.neckRight)} ${f(frame.neckCornerY)}`,
+  ].join(" ");
+}
+
+/** Approved pullover Round scoop — same cubic the Front generated diagrams use. */
+export function sleevelessFrontPulloverRoundNecklineCurveD(
+  frame: SleevelessFrontNecklineCurveFrame,
+): string {
+  const f = sleevelessFrontGarmentFmtNum;
+  return `M ${f(frame.neckLeft)} ${f(frame.neckCornerY)} ${sleevelessFrontPulloverRoundNecklineCubicD(frame)}`;
+}
+
+/** Approved pullover V: shoulder neck points to center front at neck depth. */
+export function sleevelessFrontPulloverVNecklinePoints(
+  frame: SleevelessFrontNecklineCurveFrame,
+): SleevelessFrontGarmentPt[] {
+  return [
+    { x: frame.neckLeft, y: frame.neckCornerY },
+    { x: frame.cx, y: frame.neckStartY },
+    { x: frame.neckRight, y: frame.neckCornerY },
+  ];
+}

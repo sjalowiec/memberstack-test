@@ -11,8 +11,10 @@
  * - Vertical scrolling of the workspace/page is preferred over separating inputs
  *   from their diagram targets at tablet/laptop sizes.
  * - Enlarged chips apply only when data-measurement-overlay-mode="desktop".
- * - Tall constructions (data-express-construction="drop-shoulder") keep an inner
- *   scrollport; near-square constructions rely on the measure pane / page scroll.
+ * - Edit Pattern workspaces use one primary vertical scroll
+ *   (`.sl-edit-workspace__layout`). Tall Drop Shoulder diagrams participate in
+ *   that same flow. Non-workspace confirm pages may still use an inner
+ *   scrollport for tall constructions (construction stamp, not pattern-name).
  */
 
 .sl-measure-workspace__body {
@@ -57,8 +59,8 @@
 }
 
 /*
- * Near-square constructions: let the diagram grow with content width; the measure
- * pane / workspace scrolls vertically when taller than the viewport.
+ * Near-square constructions: let the diagram grow with content width; the
+ * workspace layout scrolls vertically when taller than the viewport.
  */
 .sl-measure-workspace__body.express-measurements-confirm-page .express-mbp-scroll {
   overflow-x: hidden;
@@ -67,8 +69,9 @@
 }
 
 /*
- * Tall Drop Shoulder summary: scroll inside `.express-mbp-scroll` so chips stay
- * aligned to targets while the art moves (construction stamp, not pattern-name).
+ * Tall Drop Shoulder confirm pages (not the Edit Pattern overlay): scroll inside
+ * `.express-mbp-scroll` so chips stay aligned to targets while the art moves.
+ * The edit workspace overrides this so the shared layout remains the one scroller.
  */
 .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
   .express-mbp-scroll {
@@ -116,4 +119,37 @@
   max-width: 6.5rem;
   padding: 0.32rem 0.5rem;
   font-size: 1.15rem;
+}
+
+.sl-edit-workspace__measure .sl-measure-workspace__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+}
+
+.sl-measure-workspace__editor {
+  width: 100%;
+  min-height: 0;
+}
+
+/*
+ * Edit workspace: one primary vertical scroll on `.sl-edit-workspace__layout`.
+ * Do not give the Measurements column (or a tall Drop Shoulder diagram) its own
+ * scrollport — chips stay aligned because art and overlay share document flow.
+ */
+.sl-edit-workspace__measure
+  .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+  .express-mbp-scroll {
+  flex: none;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+@container sl-edit-workspace (min-width: 1100px) {
+  .sl-edit-workspace__measure .sl-measure-workspace__body {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
 }
