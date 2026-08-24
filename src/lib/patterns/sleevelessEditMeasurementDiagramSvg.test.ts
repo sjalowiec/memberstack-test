@@ -187,6 +187,8 @@ describe("Sleeveless edit measurement diagram — overlay anchors", () => {
     expect(measurementsPageSrc).toContain("bindPatternSummaryOverlayPositioning");
     expect(measurementsPageSrc).toContain("buildSleevelessEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("collectOverlayAnchors");
+    expect(measurementsPageSrc).toContain("refreshSleevelessEditMeasurementArtLayer");
+    expect(rendererSrc).not.toContain("data-measurement-target");
   });
 
   it("does not generate Drop Shoulder artwork from this renderer", () => {

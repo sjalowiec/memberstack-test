@@ -200,7 +200,7 @@ function drawGuides(frame: SleevelessFrontGarmentFrame): string {
 
 function targetCircle(id: string, x: number, y: number): string {
   const f = sleevelessFrontGarmentFmtNum;
-  return `<circle id="${id}" data-measurement-target="${id}" cx="${f(x)}" cy="${f(y)}" r="2.5" fill="none"/>`;
+  return `<circle id="${id}" cx="${f(x)}" cy="${f(y)}" r="2.5" fill="none"/>`;
 }
 
 function drawTargets(frame: SleevelessFrontGarmentFrame): string {

@@ -620,6 +620,11 @@
     clamp(0.2rem, 1.5%, 0.5rem);
 }
 
+.express-measurements-confirm-page .express-mbp-art-host {
+  display: block;
+  width: 100%;
+}
+
 .express-measurements-confirm-page .express-mbp-art {
   position: relative;
   width: 100%;
