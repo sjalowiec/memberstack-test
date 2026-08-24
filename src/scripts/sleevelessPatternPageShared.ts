@@ -159,6 +159,7 @@ import {
   resolveSleevelessFrontDiagramSrc,
 } from "../lib/patterns/sleevelessFrontJapaneseNotation.ts";
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "../lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts";
+import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "../lib/patterns/sleevelessFrontRoundShapingNotationDiagramSvg.ts";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackStsRowsDiagramSvg } from "../lib/patterns/sleevelessBackStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackNotationSvg } from "../lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts";
@@ -1323,7 +1324,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
 
-    const generatedSvg = tryBuildLiveSleevelessFrontVNeckNotationSvg(result, patternData);
+    const generatedSvg =
+      tryBuildLiveSleevelessFrontVNeckNotationSvg(result, patternData) ||
+      tryBuildLiveSleevelessFrontRoundNotationSvg(result, patternData);
     if (generatedSvg) {
       mountFrontNotationSvgMarkup(hostEl, generatedSvg, hydrateGen);
       return;
