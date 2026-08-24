@@ -159,6 +159,7 @@ import {
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "../lib/patterns/sleevelessFrontVNeckShapingNotationDiagramSvg.ts";
 import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "../lib/patterns/sleevelessFrontRoundShapingNotationDiagramSvg.ts";
 import { tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg } from "../lib/patterns/sleevelessFrontCardiganVNeckShapingNotationDiagramSvg.ts";
+import { tryBuildLiveSleevelessFrontCardiganRoundNotationSvg } from "../lib/patterns/sleevelessFrontCardiganRoundShapingNotationDiagramSvg.ts";
 import { tryBuildLiveSleevelessFrontStsRowsDiagramSvg } from "../lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackStsRowsDiagramSvg } from "../lib/patterns/sleevelessBackStsRowsDiagramSvg.ts";
 import { tryBuildLiveSleevelessBackNotationSvg } from "../lib/patterns/sleevelessBackShapingNotationDiagramSvg.ts";
@@ -1303,7 +1304,8 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const generatedSvg =
       tryBuildLiveSleevelessFrontVNeckNotationSvg(result, patternData) ||
       tryBuildLiveSleevelessFrontRoundNotationSvg(result, patternData) ||
-      tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg(result, patternData);
+      tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg(result, patternData) ||
+      tryBuildLiveSleevelessFrontCardiganRoundNotationSvg(result, patternData);
     if (generatedSvg) {
       mountFrontNotationSvgMarkup(hostEl, generatedSvg, hydrateGen);
       return;

@@ -7,6 +7,11 @@
  */
 
 import {
+  cardiganRoundNecklineCubic,
+  cardiganRoundNecklineCubicD,
+  cardiganRoundNecklineCurveD,
+} from "./sleevelessFrontCardiganRoundNeckCurve";
+import {
   buildSleevelessFrontStsRowsDiagramModel,
   isSleevelessFrontStsRowsVNeckline,
   type SleevelessFrontStsRowsDiagramModel,
@@ -484,46 +489,12 @@ function roundNecklineCurveD(frame: Frame): string {
   ].join(" ");
 }
 
-/**
- * One-sided Cardigan Round scoop: CF at neck start → shoulder neck point.
- * Quarter-ellipse handles (κ ≈ 0.552) leave CF horizontally and arrive
- * vertically at the shoulder — half of a crew neck, not a clipped pullover U.
- */
-const CARDIGAN_ROUND_SCOOP_KAPPA = 0.55228475;
-
-function cardiganRoundNecklineCubic(frame: Frame): {
-  startX: number;
-  startY: number;
-  cp1x: number;
-  cp1y: number;
-  cp2x: number;
-  cp2y: number;
-  endX: number;
-  endY: number;
-} {
-  const width = Math.max(0, frame.neckRight - frame.neckLeft);
-  const depth = Math.max(0, frame.neckStartY - frame.neckCornerY);
-  return {
-    startX: frame.neckLeft,
-    startY: frame.neckStartY,
-    cp1x: frame.neckLeft + CARDIGAN_ROUND_SCOOP_KAPPA * width,
-    cp1y: frame.neckStartY,
-    cp2x: frame.neckRight,
-    cp2y: frame.neckStartY - CARDIGAN_ROUND_SCOOP_KAPPA * depth,
-    endX: frame.neckRight,
-    endY: frame.neckCornerY,
-  };
+function cardiganRoundCubicD(frame: Frame): string {
+  return cardiganRoundNecklineCubicD(cardiganRoundNecklineCubic(frame), fmtNum);
 }
 
-function cardiganRoundNecklineCubicD(
-  cubic: ReturnType<typeof cardiganRoundNecklineCubic>,
-): string {
-  return `C ${fmtNum(cubic.cp1x)} ${fmtNum(cubic.cp1y)} ${fmtNum(cubic.cp2x)} ${fmtNum(cubic.cp2y)} ${fmtNum(cubic.endX)} ${fmtNum(cubic.endY)}`;
-}
-
-function cardiganRoundNecklineCurveD(frame: Frame): string {
-  const cubic = cardiganRoundNecklineCubic(frame);
-  return `M ${fmtNum(cubic.startX)} ${fmtNum(cubic.startY)} ${cardiganRoundNecklineCubicD(cubic)}`;
+function cardiganRoundCurveD(frame: Frame): string {
+  return cardiganRoundNecklineCurveD(frame, fmtNum);
 }
 
 function bodySidePoints(frame: Frame, side: "left" | "right", tapered: boolean): Pt[] {
@@ -574,11 +545,11 @@ function drawCardiganSilhouette(
     { x: frame.neckLeft, y: frame.neckStartY },
     { x: frame.neckRight, y: frame.neckCornerY },
   ];
-  const necklineD = neckStyle === "round" ? cardiganRoundNecklineCurveD(frame) : polylineD(vNeckline);
-  const roundCubic = neckStyle === "round" ? cardiganRoundNecklineCubic(frame) : null;
-  const neckOpening = roundCubic
-    ? [cardiganRoundNecklineCubicD(roundCubic)]
-    : [`L ${fmtNum(frame.neckRight)} ${fmtNum(frame.neckCornerY)}`];
+  const necklineD = neckStyle === "round" ? cardiganRoundCurveD(frame) : polylineD(vNeckline);
+  const neckOpening =
+    neckStyle === "round"
+      ? [cardiganRoundCubicD(frame)]
+      : [`L ${fmtNum(frame.neckRight)} ${fmtNum(frame.neckCornerY)}`];
   const rightDown = [...rightBody].reverse();
   const rightClose =
     rightDown[0] &&

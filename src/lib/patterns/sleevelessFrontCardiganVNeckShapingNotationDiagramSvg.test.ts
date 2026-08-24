@@ -401,6 +401,9 @@ describe("generated Cardigan V Straight Front Shaping Notation", () => {
       fn.indexOf("tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg"),
     );
     expect(fn.indexOf("tryBuildLiveSleevelessFrontCardiganVNeckNotationSvg")).toBeLessThan(
+      fn.indexOf("tryBuildLiveSleevelessFrontCardiganRoundNotationSvg"),
+    );
+    expect(fn.indexOf("tryBuildLiveSleevelessFrontCardiganRoundNotationSvg")).toBeLessThan(
       fn.indexOf("resolveSleevelessFrontDiagramSrc"),
     );
     expect(existsSync(join(srcRoot, "../public/images/patterns/sleeveless/diagrams/diagram-jp-cardigan-v.svg"))).toBe(
