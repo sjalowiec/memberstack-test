@@ -126,6 +126,21 @@ function alineVNeckPattern(): Record<string, unknown> {
   return pattern;
 }
 
+function alineRoundPattern(): Record<string, unknown> {
+  const pattern = roundPulloverPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 48;
+  return pattern;
+}
+
+function shapedVNeckPattern(): Record<string, unknown> {
+  const pattern = shallowVNeckPattern();
+  (pattern.style as { bodyShape?: string }).bodyShape = "shaped";
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.finished_hip = 32;
+  return pattern;
+}
+
 describe("buildSleevelessFrontStsRowsDiagramModel", () => {
   it("builds a pullover V-neck straight-body Front model from the live result", () => {
     const pattern = amandaVNeckPattern();
@@ -283,14 +298,45 @@ describe("buildSleevelessFrontStsRowsDiagramModel", () => {
     expect(model?.widths.necklineStitches).toBe(Math.round(result.debug.necklineStitches ?? 0));
   });
 
-  it("returns null for cardigan and A-line bodies", () => {
-    const cases = [cardiganVNeckPattern(), alineVNeckPattern()];
+  it("builds pullover A-line Front models from the live A-line stitch and row data", () => {
+    for (const pattern of [alineVNeckPattern(), alineRoundPattern()]) {
+      const result = generateSleevelessBackPattern(pattern);
+      const model = buildSleevelessFrontStsRowsDiagramModel(result, pattern);
+      const d = result.debug;
+
+      expect(resolveSleevelessDiagramBodyShapeKind(pattern)).toBe("aline");
+      expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(true);
+      expect(model).not.toBeNull();
+      expect(model?.bodyShape).toBe("aline");
+      expect(model?.widths.hemStitches).toBe(Math.round(d.hemCastOnStitches ?? d.backStitches));
+      expect(model?.widths.bustStitches).toBe(Math.round(d.bustBodyStitches ?? d.backStitches));
+      expect(model?.widths.hemStitches).toBeGreaterThan(model?.widths.bustStitches ?? 0);
+      expect(model?.bodyShaping.direction).toBe("inward");
+      expect(model?.bodyShaping.startRc).toBe(
+        d.alineBodyShapingRowNumbers && d.alineBodyShapingRowNumbers.length > 0
+          ? Math.floor(d.alineBodyShapingRowNumbers[0]!)
+          : model?.bodyShaping.startRc,
+      );
+      expect(model?.bodyShaping.endRc).toBe(
+        d.alineBodyShapingRowNumbers && d.alineBodyShapingRowNumbers.length > 0
+          ? Math.floor(d.alineBodyShapingRowNumbers[d.alineBodyShapingRowNumbers.length - 1]!)
+          : model?.bodyShaping.endRc,
+      );
+      expect(model?.bodyShaping.startRc).toBeGreaterThanOrEqual(0);
+      expect(model?.bodyShaping.endRc).toBeGreaterThan(model?.bodyShaping.startRc ?? 0);
+      expect(model?.bodyShaping.endRc).toBeLessThanOrEqual(model?.armhole.startGarmentRc ?? 0);
+    }
+  });
+
+  it("returns null for cardigan and shaped bodies", () => {
+    const cases = [cardiganVNeckPattern(), shapedVNeckPattern()];
     for (const pattern of cases) {
       const result = generateSleevelessBackPattern(pattern);
       expect(shouldBuildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBe(false);
       expect(buildSleevelessFrontStsRowsDiagramModel(result, pattern)).toBeNull();
     }
-    expect(resolveSleevelessDiagramBodyShapeKind(alineVNeckPattern())).not.toBe("straight");
+    expect(resolveSleevelessDiagramBodyShapeKind(alineVNeckPattern())).toBe("aline");
+    expect(resolveSleevelessDiagramBodyShapeKind(shapedVNeckPattern())).toBe("shaped");
   });
 
   it("returns null when live front chart rows are missing", () => {
