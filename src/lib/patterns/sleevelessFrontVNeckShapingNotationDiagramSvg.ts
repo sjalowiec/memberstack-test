@@ -40,18 +40,17 @@ const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 const GUIDE = "#bdbec0";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
-const FS_RC = 12;
-const FS_NOTATION = 13;
-const NOTATION_GAP = 16;
-const NECK_NOTATION_GAP = 20;
-/** Baseline gap between armhole `boN` and decrease lines — one notation line height. */
-const ARMHOLE_NOTATION_GAP = Math.round(FS_NOTATION * 1.6);
-/** Baseline gap between stacked body-shaping notation lines. */
-const BODY_NOTATION_GAP = Math.round(FS_NOTATION * 1.6);
-/** Minimum inset from the right body outline to the body-shaping label. */
+/** Match generated Front Stitches & Rows / Round Shaping Notation type. */
+const FS_NOTATION = 17;
+const FS_RC = 14;
+const NOTATION_GAP = 18;
+const NECK_NOTATION_GAP = 18;
+const ARMHOLE_NOTATION_GAP = 18;
+const BODY_NOTATION_GAP = 18;
 const BODY_LABEL_OUTLINE_CLEARANCE = 18;
-/** Vertical gap between armhole-start garment RC and reset in the left gutter. */
 const RC_RESET_GAP = Math.round(FS_RC * 1.75);
+const SHOULDER_LABEL_GAP = 14;
+const SHOULDER_OUTLINE_CLEARANCE = 10;
 
 const LABEL_GUTTER = 88;
 const RIGHT_PAD = 92;
@@ -518,6 +517,16 @@ function buildFrame(
   };
 }
 
+/** Right-shoulder slope X at a canvas Y (armhole end → neck corner). */
+function rightShoulderOutlineXAtY(frame: NotationFrame, y: number): number {
+  if (y >= frame.shoulderY) return frame.afterRight;
+  if (y <= frame.neckCornerY) return frame.neckRight;
+  const span = frame.shoulderY - frame.neckCornerY;
+  if (!(span > 0)) return Math.max(frame.afterRight, frame.neckRight);
+  const t = clamp((frame.shoulderY - y) / span, 0, 1);
+  return frame.afterRight + t * (frame.neckRight - frame.afterRight);
+}
+
 function drawNotationStack(
   lines: readonly string[],
   x: number,
@@ -867,8 +876,22 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
     ),
   );
   const shLines = labels.shoulderShaping.split("\n").filter(Boolean);
-  const shLabelX = (frame.afterRight + frame.neckRight) / 2;
-  const shLastBaseline = frame.shoulderTopY - 26;
+  const shoulderMidX = (frame.afterRight + frame.neckRight) / 2;
+  const shoulderMidY = (frame.shoulderY + frame.neckCornerY) / 2;
+  const slopeDx = frame.neckRight - frame.afterRight;
+  const slopeDy = frame.neckCornerY - frame.shoulderY;
+  const slopeLen = Math.hypot(slopeDx, slopeDy) || 1;
+  const shAnchorX = shoulderMidX + (-slopeDy / slopeLen) * SHOULDER_LABEL_GAP;
+  const shAnchorY = shoulderMidY + (slopeDx / slopeLen) * SHOULDER_LABEL_GAP;
+  const shLastBaseline = shAnchorY;
+  const shLabelX = clamp(
+    Math.max(shAnchorX, rightShoulderOutlineXAtY(frame, shLastBaseline) + SHOULDER_OUTLINE_CLEARANCE),
+    frame.neckRight + 4,
+    ARMHOLE_LABEL_SAFE_MAX_X,
+  );
+  parts.push(
+    `<g data-role="shoulder-label-zone" data-x="${fmtNum(shLabelX)}" data-y="${fmtNum(shLastBaseline)}"></g>`,
+  );
   parts.push(
     drawNotationStack(
       shLines,
@@ -938,6 +961,9 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
 
 /** Exported for tests — stable viewBox dimensions. */
 export const SLEEVELESS_FRONT_VNECK_NOTATION_VIEWBOX = { width: VB_W, height: VB_H } as const;
+
+export const SLEEVELESS_FRONT_VNECK_NOTATION_FS_NOTATION = FS_NOTATION;
+export const SLEEVELESS_FRONT_VNECK_NOTATION_FS_RC = FS_RC;
 
 /** Shared left X for Armhole labels (`text-anchor="start"`). */
 export const SLEEVELESS_FRONT_VNECK_ARMHOLE_LABEL_START_X = ARMHOLE_LABEL_START_X;
