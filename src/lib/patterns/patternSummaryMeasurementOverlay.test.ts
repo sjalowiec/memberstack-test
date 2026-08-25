@@ -7,6 +7,8 @@ import {
   EDIT_WORKSPACE_TWO_COLUMN_MIN_PX,
   applyMeasurementTargetToBox,
   clearMeasurementBoxPosition,
+  measurementOverlayTargetsAreLaidOut,
+  positionMeasurementBox,
   shouldUseDesktopMeasurementOverlay,
 } from "./patternSummaryMeasurementOverlay";
 
@@ -123,6 +125,38 @@ describe("patternSummaryMeasurementOverlay — stage-width overlay mode", () => 
     expect(overlaySrc).toMatch(/if\s*\(\s*!desktop\s*\)\s*\{[\s\S]*clearMeasurementBoxPosition/);
     expect(overlaySrc).not.toContain("positionMeasurementBoxesMobile");
   });
+
+  it("does not park chips offscreen when a replaced SVG target has no layout yet", () => {
+    const cssEscape = (globalThis as { CSS?: { escape: (value: string) => string } }).CSS;
+    if (!cssEscape) {
+      (globalThis as { CSS: { escape: (value: string) => string } }).CSS = {
+        escape: (value) => value,
+      };
+    }
+    const box = new FakeBox();
+    const overlay = {
+      getBoundingClientRect: () => ({ left: 120, top: 80, width: 640, height: 640 }),
+    };
+    const svg = {
+      querySelector: () => ({
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0 }),
+      }),
+    };
+    const placed = positionMeasurementBox(
+      box as unknown as HTMLElement,
+      svg as unknown as SVGElement,
+      overlay as unknown as HTMLElement,
+      "target_bust",
+    );
+    expect(placed).toBe(false);
+    expect(box.style.left).toBe("120px");
+    expect(box.style.top).toBe("80px");
+    expect(measurementOverlayTargetsAreLaidOut(svg as unknown as SVGElement, [{ targetId: "target_bust" }])).toBe(
+      false,
+    );
+    expect(overlaySrc).toContain("measurementOverlayTargetsAreLaidOut");
+    expect(overlaySrc).toContain("cleanup.retarget = retarget");
+  });
 });
 
 describe("shared stacked measurement panel CSS contract", () => {
@@ -197,6 +231,21 @@ describe("shared sweater edit measurement diagram sizing contract", () => {
       /data-express-construction="drop-shoulder"[\s\S]*\.express-mbp-scroll[\s\S]*overflow-y:\s*auto/,
     );
     expect(editDiagramCss).not.toMatch(/drop-shoulder\/pattern|sleeveless\/pattern/);
+  });
+
+  it("does not give the Measurements column a second two-column scrollport", () => {
+    const twoColStart = editDiagramCss.indexOf("@container sl-edit-workspace (min-width: 1100px)");
+    expect(twoColStart).toBeGreaterThan(-1);
+    const twoColBlock = editDiagramCss.slice(twoColStart);
+    expect(twoColBlock).toMatch(
+      /\.sl-edit-workspace__measure \.sl-measure-workspace__body\s*\{[^}]*overflow-y:\s*visible/s,
+    );
+    expect(twoColBlock).not.toMatch(
+      /\.sl-edit-workspace__measure \.sl-measure-workspace__body\s*\{[^}]*overflow-y:\s*auto/s,
+    );
+    expect(editDiagramCss).toMatch(
+      /\.sl-edit-workspace__measure[\s\S]*data-express-construction="drop-shoulder"[\s\S]*\.express-mbp-scroll[\s\S]*overflow-y:\s*visible/,
+    );
   });
 
   it("leaves only aspect-ratio tokens on the pattern pages", () => {

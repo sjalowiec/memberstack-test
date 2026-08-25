@@ -32,11 +32,14 @@ function shoulderChecklistAmounts(
     piece === "back"
       ? (result.debug.backNecklineStartLocalRC ?? 0)
       : (result.debug.frontNecklineStartLocalRC ?? 0);
-  return buildActiveSideInstructionTableRows(chart, rcStart, {
+  const rows = buildActiveSideInstructionTableRows(chart, rcStart, {
     includeCenterNecklineSetupRow: true,
-  })
-    .filter((r) => /bind off/i.test(r.action) && r.edge === "Armhole")
-    .map((r) => parseInt(r.action.match(/(\d+)/)?.[1] ?? "0", 10));
+  });
+  const shoulder = rows.filter((r) => /bind off/i.test(r.action) && r.edge === "Shoulder");
+  const armhole = rows.filter((r) => /bind off/i.test(r.action) && r.edge === "Armhole");
+  return (shoulder.length > 0 ? shoulder : armhole).map((r) =>
+    parseInt(r.action.match(/(\d+)/)?.[1] ?? "0", 10),
+  );
 }
 
 /** Golden beta express pattern — band 26, per-side budget 13 (shoulder mismatch repro case). */

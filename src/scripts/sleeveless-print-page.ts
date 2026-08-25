@@ -24,9 +24,14 @@ import {
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
+  isSleevelessPulloverVNeckFrontChart,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import {
+  resolveFrontVNeckShapingTimingCase,
+  sleevelessPulloverVNeckBeginDisplayRc,
+} from "../lib/patterns/frontArmholeNecklineComposition.ts";
 import {
   loadSleevelessBackDiagramSvgMarkup,
   loadSleevelessFrontDiagramSvgMarkup,
@@ -206,15 +211,31 @@ async function initSleevelessPrintPage(): Promise<void> {
   const backLocalStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
     ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC ?? 0))
     : 0;
-  const frontLocalStartRc = Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
-    ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC ?? 0))
-    : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-      ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
-      : Number.isFinite(result?.debug?.frontNecklineStartLocalRC)
-        ? Math.max(0, Math.floor(result.debug.frontNecklineStartLocalRC ?? 0))
-        : 0;
+  const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
+  const frontTiming = resolveFrontVNeckShapingTimingCase(frontOverlap);
+  const frontVNeckBeginRc = isSleevelessPulloverVNeckFrontChart(result.frontNeckShoulderShapingChart)
+    ? sleevelessPulloverVNeckBeginDisplayRc({
+        overlap: frontOverlap,
+        frontNecklineStartLocalRC: result?.debug?.frontNecklineStartLocalRC,
+        frontNecklineCenterDivideLocalRC: result?.debug?.frontNecklineCenterDivideLocalRC,
+      })
+    : undefined;
+  const frontLocalStartRc =
+    frontVNeckBeginRc !== undefined
+      ? Math.max(0, frontVNeckBeginRc)
+      : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
+        ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC ?? 0))
+        : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
+          ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC ?? 0))
+          : Number.isFinite(result?.debug?.frontNecklineStartLocalRC) &&
+              (result.debug.frontNecklineStartLocalRC ?? 0) >= 0
+            ? Math.floor(result.debug.frontNecklineStartLocalRC ?? 0)
+            : 0;
   const backLocalStartLabel = `RC:${String(backLocalStartRc).padStart(3, "0")}`;
-  const frontLocalStartLabel = `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
+  const frontLocalStartLabel =
+    frontTiming === "before-armhole"
+      ? `RC ${frontLocalStartRc}`
+      : `RC:${String(frontLocalStartRc).padStart(3, "0")}`;
 
   const armholeGarmentStart = result?.debug?.armholeStartRow;
   const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
@@ -245,6 +266,9 @@ async function initSleevelessPrintPage(): Promise<void> {
       includeCenterNecklineSetupRow: true,
     },
   );
+  const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(
+    result.frontNeckShoulderShapingChart,
+  );
   const frontChartHtml = renderNeckShoulderShapingPrintInstructionTableHtml(
     result.frontNeckShoulderShapingChart,
     "ns-shaping-chart-print-front",
@@ -258,6 +282,9 @@ async function initSleevelessPrintPage(): Promise<void> {
     {
       activeSideRcStart: frontChecklistArmholeStart,
       includeCenterNecklineSetupRow: true,
+      ...(frontUsesShoulderTabs
+        ? { showSecondShoulderChecklist: true, sequentialShoulderHeadings: true }
+        : {}),
     },
   );
 

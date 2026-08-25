@@ -163,11 +163,9 @@ describe("sleeveless armhole RC wording", () => {
     expect(armhole.some((p) => /^Knit to RC \d+\.$/i.test(p.trim()))).toBe(false);
   });
 
-  it("V-neck front milestone explains Armhole RC after reset (pullover has no intro block)", () => {
+  it("V-neck front uses RC → action after reset, not an Armhole-RC milestone paragraph", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
     const frontParas = collectParagraphs(r.frontDisplayRows);
-    // Full-width (pullover) fronts intentionally omit the cardigan-only intro that carried the
-    // "After the armhole reset…" sentence; Armhole RC targets + milestones convey the same rule.
     expect(
       frontParas.some((p) => p.includes("After the armhole reset, use Armhole RC"))
     ).toBe(false);
@@ -175,23 +173,18 @@ describe("sleeveless armhole RC wording", () => {
       frontParas.some((p) =>
         /row counter was reset at the beginning of armhole shaping/i.test(p)
       )
-    ).toBe(true);
+    ).toBe(false);
     expect(
       frontParas.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p))
-    ).toBe(true);
-    const localNeck = r.debug.frontNecklineShapingBeginLocalRC;
-    expect(localNeck).toBeDefined();
-    const neckPadded = String(Math.max(0, Math.floor(localNeck!))).padStart(3, "0");
-    expect(
-      frontParas.some((p) => p.includes(`Armhole RC ${neckPadded}`) || p.includes(`Armhole RC ${localNeck}`))
-    ).toBe(true);
+    ).toBe(false);
+    expect(frontParas.some((p) => /^Begin V-neck/i.test(p))).toBe(true);
   });
 
   it("round-neck front omits the reset note and uses Armhole RC targets", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const armhole = armholeSectionParagraphs(r.frontDisplayRows);
     expect(armhole.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
-    expect(armhole.some((p) => /Armhole RC:\d{3}/i.test(p))).toBe(true);
+    expect(armhole.some((p) => /Armhole RC/i.test(p))).toBe(true);
   });
 
   it("body section still uses garment RC knit-to (not Armhole RC)", () => {
@@ -203,10 +196,10 @@ describe("sleeveless armhole RC wording", () => {
       if (row.kind === "section" && row.title !== "BODY") inBody = false;
       if (!inBody || row.kind !== "block") continue;
       const p = row.paragraphs[0]?.trim() ?? "";
-      if (/^Knit to /i.test(p)) bodyKnitTo = p;
+      if (/^Knit (?:to |\d+ rows?(?: even)? to )/i.test(p)) bodyKnitTo = p;
     }
     expect(bodyKnitTo).toBeDefined();
-    expect(bodyKnitTo).toMatch(/^Knit to RC \d+\.$/);
+    expect(bodyKnitTo).toMatch(/^Knit (?:to RC \d+|\d+ rows?(?: even)? to RC \d+)\.$/);
     expect(bodyKnitTo).not.toMatch(/Armhole/i);
   });
 

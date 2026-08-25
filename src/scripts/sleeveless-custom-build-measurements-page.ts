@@ -36,6 +36,7 @@ import {
   getExpressChartRowsForAudience,
   getExpressUiUnit,
   loadExpressSweaterCharts,
+  normalizeChartRowSize,
   resolveExpressChartFit,
   SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
@@ -53,12 +54,30 @@ import {
 } from "../lib/patterns/sleevelessMeasureReviewSummaryUi";
 import { SLEEVELESS_REVIEW_CONTEXT_READY_EVENT } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessGarmentKind";
-import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
+import {
+  readCustomBuildWizardGarmentType,
+  readCustomBuildWizardNeckline,
+} from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
+import {
+  adoptGeneratedMeasurementSvg,
+  collectedMeasurementValuesArePersistable,
+  createSameTurnCommitGate,
+  replaceSleevelessMeasurementArtOnly,
+  SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS,
+  wireSleevelessGarmentArtRefreshOnce,
+  wireSleevelessNecklineArtRefreshOnce,
+} from "../lib/patterns/sleevelessEditMeasurementArtDom";
+import {
+  buildSleevelessEditMeasurementDiagramSvg,
+  type SleevelessEditMeasurementDiagramInput,
+} from "../lib/patterns/sleevelessEditMeasurementDiagramSvg";
+import type { SleevelessMeasurementGarmentInput } from "../lib/patterns/sleevelessFrontGarmentGeometry";
 import {
   applyMeasurementTargetToBox,
   applyMeasurementBlueprintViewBoxAspect,
   bindPatternSummaryOverlayPositioning,
   collectOverlayAnchors,
+  type PatternSummaryOverlayCleanup,
   DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS,
   PATTERN_SUMMARY_MEASUREMENT_TARGETS,
 } from "../lib/patterns/patternSummaryMeasurementOverlay";
@@ -96,6 +115,12 @@ import {
   resolveDropShoulderSleeveOverrideStrings,
   scaleDropShoulderSleeveLengthInches,
 } from "../lib/patterns/dropShoulderSleeveMeasurementOverrides";
+import {
+  writeOverrideSeedSizingIdentity,
+} from "../lib/patterns/customBuildMeasurementOverrideReconcile";
+import {
+  buildSleevelessEditSizeChangeMergedInches,
+} from "../lib/patterns/sleevelessEditSizeChangeMeasurements";
 
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
@@ -106,6 +131,10 @@ export type DropShoulderWorkspaceRehydrateMeta = {
   oldSize?: string;
 };
 
+export type SleevelessWorkspaceSizeRefreshMeta = {
+  oldSize?: string;
+};
+
 let dropShoulderWorkspaceRehydrateImpl:
   | ((sizing: DropShoulderQuickEditSizing, meta?: DropShoulderWorkspaceRehydrateMeta) => Promise<boolean>)
   | null = null;
@@ -113,6 +142,12 @@ let dropShoulderWorkspaceRehydrateImpl:
 let dropShoulderWorkspaceSummaryRefreshImpl: (() => Promise<void>) | null = null;
 
 let patternWorkspaceMeasurementDiagramRehydrateImpl: (() => Promise<void>) | null = null;
+
+let sleevelessMeasurementArtRefreshImpl: (() => void) | null = null;
+
+let sleevelessWorkspaceSizeRefreshImpl:
+  | ((meta?: SleevelessWorkspaceSizeRefreshMeta) => Promise<boolean>)
+  | null = null;
 
 /**
  * Re-render the Edit Pattern measurement diagram from the current saved working draft, in the
@@ -134,6 +169,18 @@ export async function rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickE
     return false;
   }
   return dropShoulderWorkspaceRehydrateImpl(sizing, meta);
+}
+
+/**
+ * Sleeveless Edit Pattern Size change: recompute chip values from the new size-chart row,
+ * write them into the existing overlay inputs, then refresh generated art.
+ * Does not rebuild chips or tear down the overlay binder.
+ */
+export async function refreshSleevelessWorkspaceMeasurementsFromQuickEditSize(
+  meta?: SleevelessWorkspaceSizeRefreshMeta,
+): Promise<boolean> {
+  if (!sleevelessWorkspaceSizeRefreshImpl) return false;
+  return sleevelessWorkspaceSizeRefreshImpl(meta);
 }
 
 /**
@@ -194,9 +241,8 @@ function readDropShoulderWorkspaceQuickEditSummaryFromDom(
   };
 }
 
-export function readDropShoulderWorkspaceQuickEditSizingFromDom(): DropShoulderQuickEditSizing | null {
+function readEditWorkspaceQuickEditSizingFromDom(): DropShoulderQuickEditSizing | null {
   if (typeof document === "undefined") return null;
-  if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return null;
   const sizeSelect = document.querySelector<HTMLSelectElement>("[data-sl-edit-size]");
   const selectedSize = sizeSelect?.value.trim() ?? "";
   const pattern = getCurrentPattern();
@@ -210,6 +256,16 @@ export function readDropShoulderWorkspaceQuickEditSizingFromDom(): DropShoulderQ
     expressWhoToChartAudience(expressValues.who) ||
     "misses";
   return { audience, selectedSize, fitPreference };
+}
+
+export function readDropShoulderWorkspaceQuickEditSizingFromDom(): DropShoulderQuickEditSizing | null {
+  if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return null;
+  return readEditWorkspaceQuickEditSizingFromDom();
+}
+
+export function readSleevelessEditWorkspaceQuickEditSizingFromDom(): DropShoulderQuickEditSizing | null {
+  if (isDropShoulderWorkspaceMeasurementSummaryPage()) return null;
+  return readEditWorkspaceQuickEditSizingFromDom();
 }
 
 export type CustomBuildMeasurementsInitOptions = {
@@ -623,7 +679,77 @@ function applyExpressMeasurementBlueprintSvgDisplay(svg: SVGElement): void {
   }
 }
 
-async function createMeasurementBlueprintArt(): Promise<SVGElement | HTMLImageElement> {
+function parseMergedInches(value: string | undefined, fallback: number): number {
+  const n = parseInchesInput(value ?? "");
+  return n ?? fallback;
+}
+
+function sleevelessMeasurementInputFromMerged(
+  merged: Record<DiagramFieldKey, string>,
+): SleevelessMeasurementGarmentInput {
+  return {
+    bustInches: parseMergedInches(merged.chestBust, 40),
+    hipInches: parseMergedInches(merged.hip, 40),
+    garmentLengthInches: parseMergedInches(merged.finishedLength, 22),
+    armholeDepthInches: parseMergedInches(merged.armholeDepth, 8),
+    neckOpeningInches: parseMergedInches(merged.finishedNeckOpeningWidth, 7),
+    neckDepthInches: parseMergedInches(merged.neckDepth, 3),
+    shoulderWidthInches: parseMergedInches(merged.shoulderWidth, 4.5),
+    hemDepthInches: parseMergedInches(merged.hemDepth, 2),
+  };
+}
+
+function readLiveSleevelessEditNeckline(): string | undefined {
+  const live = document.querySelector<HTMLInputElement>('input[name="sl-edit-neckline"]:checked');
+  if (live?.value.trim()) return live.value.trim();
+  const wizard = readCustomBuildWizardNeckline();
+  return wizard || undefined;
+}
+
+function readLiveSleevelessEditGarmentStyle(): string | undefined {
+  const live = document.querySelector<HTMLInputElement>('input[name="sl-edit-garment"]:checked');
+  if (live?.value.trim()) return live.value.trim();
+  const wizard = readCustomBuildWizardGarmentType();
+  return wizard || undefined;
+}
+
+function sleevelessEditDiagramInput(
+  merged: Record<DiagramFieldKey, string>,
+): SleevelessEditMeasurementDiagramInput {
+  return {
+    measurements: sleevelessMeasurementInputFromMerged(merged),
+    patternData: getCurrentPattern(),
+    liveNeckline: readLiveSleevelessEditNeckline(),
+    liveGarmentStyle: readLiveSleevelessEditGarmentStyle(),
+  };
+}
+
+function parseGeneratedSleevelessMeasurementSvg(merged: Record<DiagramFieldKey, string>): SVGSVGElement | null {
+  const svgText = buildSleevelessEditMeasurementDiagramSvg(sleevelessEditDiagramInput(merged));
+  const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  const root = parsed.documentElement;
+  return root instanceof SVGSVGElement ? root : null;
+}
+
+function adoptSleevelessGeneratedMeasurementArt(
+  merged: Record<DiagramFieldKey, string>,
+): SVGSVGElement | null {
+  const generated = parseGeneratedSleevelessMeasurementSvg(merged);
+  if (!generated) return null;
+  const adopted = adoptGeneratedMeasurementSvg(generated, document);
+  adopted.setAttribute("role", "img");
+  adopted.setAttribute("aria-label", "Sleeveless sweater body measurement diagram");
+  adopted.setAttribute("focusable", "false");
+  return adopted;
+}
+
+async function createMeasurementBlueprintArt(
+  merged?: Record<DiagramFieldKey, string>,
+): Promise<SVGElement | HTMLImageElement> {
+  if (!isDropShoulderConstruction() && merged) {
+    const generated = adoptSleevelessGeneratedMeasurementArt(merged);
+    if (generated) return generated;
+  }
   const svgUrl = resolveMeasurementBlueprintSvgUrl();
   const ariaLabel = isDropShoulderConstruction()
     ? "Drop shoulder sweater measurement diagram"
@@ -901,7 +1027,7 @@ function createDiagramReadonlyFieldBox(
   return box;
 }
 
-let diagramOverlayPositionCleanup: (() => void) | null = null;
+let diagramOverlayPositionCleanup: PatternSummaryOverlayCleanup | null = null;
 let cachedBlueprintSvgTemplate: { url: string; template: SVGSVGElement } | null = null;
 let lastSummaryDiagramRenderKey = "";
 
@@ -997,6 +1123,9 @@ function validateFields(root: HTMLElement, displayUnit: UiLengthUnit | null): bo
 
 function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): void {
   const values = collectValues(root, { displayUnit });
+  // After a failed art refresh the chip inputs can be detached. Do not persist that
+  // empty collection — it would write {} over live overrides and survive a reload.
+  if (!collectedMeasurementValuesArePersistable(values)) return;
   const toStore: Record<string, string> = { ...loadMeasurementOverrides() };
   for (const key of activeFieldKeys()) {
     // `values` are already canonical inches from collectValues; preserve cm precision here so the
@@ -1104,11 +1233,15 @@ let measureFieldPersistenceCleanup: (() => void) | null = null;
 function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthUnit | null): void {
   measureFieldPersistenceCleanup?.();
   measureFieldPersistenceCleanup = null;
+  const shouldCommitField = createSameTurnCommitGate();
 
   const saveFromInput = (el: HTMLInputElement): void => {
     resetCbMeasureWarningDismissal();
     const key = el.getAttribute("data-cb-measure-input") as DiagramFieldKey | null;
     if (!key) return;
+    // Leaving a text field fires bubbling `change` then capture `blur` on `root`.
+    // Both listeners call this function; persist + art refresh must run once.
+    if (!shouldCommitField(key, el.value)) return;
     const displayUnit = getDisplayUnit();
     const n =
       displayUnit == null
@@ -1132,6 +1265,9 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     }
     persistFromRoot(root, displayUnit);
     refreshPatternValidationUi(root, displayUnit);
+    if (!isDropShoulderConstruction()) {
+      sleevelessMeasurementArtRefreshImpl?.();
+    }
     if (key === "upperArm") {
       refreshDropShoulderArmholeDisplay(root, collectValues(root, { displayUnit }), displayUnit ?? "in");
     }
@@ -1305,7 +1441,10 @@ async function renderDiagram(
   const inner = document.createElement("div");
   inner.className = "express-mbp-stage__inner";
 
-  const art = await createMeasurementBlueprintArt();
+  const art = await createMeasurementBlueprintArt(merged);
+  const artHost = document.createElement("div");
+  artHost.className = SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS;
+  artHost.append(art);
   const overlay = document.createElement("div");
   overlay.className = "express-mbp-overlay";
   // Stacked until the overlay binder measures stage width (avoids overlapping chip flash).
@@ -1341,7 +1480,7 @@ async function renderDiagram(
     );
   }
 
-  inner.append(art, overlay);
+  inner.append(artHost, overlay);
   stage.appendChild(inner);
   scroll.appendChild(stage);
   rootMbp.appendChild(scroll);
@@ -1471,7 +1610,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     diagramInches = displayMerged;
     if (!(diagramHost instanceof HTMLElement)) return;
 
-    const renderKey = `${JSON.stringify(displayMerged)}|${getDisplayUnit() ?? "in"}|${readOnly}`;
+    const renderKey = `${JSON.stringify(displayMerged)}|${getDisplayUnit() ?? "in"}|${readOnly}|${readLiveSleevelessEditNeckline() ?? ""}|${readLiveSleevelessEditGarmentStyle() ?? ""}`;
     const hasDiagram = !!diagramHost.querySelector(".express-mbp--diagram");
     if (renderKey === lastSummaryDiagramRenderKey && hasDiagram) {
       diagramUnitDisplayReady = true;
@@ -1510,6 +1649,105 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     }
     if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
   };
+
+  const refreshSleevelessMeasurementArt = (): void => {
+    if (isDropShoulderConstruction()) return;
+    if (!(diagramHost instanceof HTMLElement)) return;
+    const inner = diagramHost.querySelector<HTMLElement>(".express-mbp-stage__inner");
+    if (!(inner instanceof HTMLElement)) return;
+    const displayUnit = getDisplayUnit();
+    const merged = collectValues(root, { displayUnit: displayUnit ?? undefined });
+    const next = adoptSleevelessGeneratedMeasurementArt(merged);
+    if (!next) return;
+    const swapped = replaceSleevelessMeasurementArtOnly(inner, next);
+    if (!swapped || !(swapped.overlay instanceof HTMLElement)) return;
+    applyMeasurementBlueprintViewBoxAspect(next, inner);
+    // Keep the existing overlay binder and chip nodes. Teardown + rebind was
+    // clearing overlay-mode and writing offscreen left/top against 0×0 anchors.
+    if (diagramOverlayPositionCleanup?.retarget) {
+      diagramOverlayPositionCleanup.retarget(next);
+      return;
+    }
+    diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
+      inner,
+      next,
+      swapped.overlay,
+      collectOverlayAnchors(swapped.overlay),
+    );
+  };
+  sleevelessMeasurementArtRefreshImpl = refreshSleevelessMeasurementArt;
+  wireSleevelessNecklineArtRefreshOnce(
+    document.querySelectorAll<HTMLInputElement>('input[name="sl-edit-neckline"]'),
+    refreshSleevelessMeasurementArt,
+  );
+  wireSleevelessGarmentArtRefreshOnce(
+    document.querySelectorAll<HTMLInputElement>('input[name="sl-edit-garment"]'),
+    refreshSleevelessMeasurementArt,
+  );
+
+  const runSleevelessWorkspaceSizeRefresh = async (
+    meta?: SleevelessWorkspaceSizeRefreshMeta,
+  ): Promise<boolean> => {
+    if (isDropShoulderConstruction() || isDropShoulderWorkspaceMeasurementSummaryPage()) {
+      return false;
+    }
+    if (!(diagramHost instanceof HTMLElement)) return false;
+    const sizing = readSleevelessEditWorkspaceQuickEditSizingFromDom();
+    if (!sizing) return false;
+    await loadExpressSweaterCharts();
+    const row = findExpressChartRow(sizing.audience, sizing.selectedSize);
+    if (!row) return false;
+
+    const pattern = getCurrentPattern();
+    const bodyShape = String(pattern.style?.bodyShape ?? "straight").trim() || "straight";
+    const { merged } = buildSleevelessEditSizeChangeMergedInches({
+      row,
+      selectedSize: sizing.selectedSize,
+      fitPreference: sizing.fitPreference,
+      audience: sizing.audience,
+      bodyShape,
+      oldSize: meta?.oldSize,
+      overrides: loadMeasurementOverrides(),
+      persist: true,
+    });
+
+    const normalizedSize = normalizeChartRowSize(row) || sizing.selectedSize;
+    writeOverrideSeedSizingIdentity({
+      chartAudience: sizing.audience,
+      selectedSize: normalizedSize,
+    });
+
+    diagramInches = merged as Record<DiagramFieldKey, string>;
+    lastDisplayUnit = getDisplayUnit() ?? "in";
+    applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, lastDisplayUnit);
+    lastSummaryDiagramRenderKey = `${JSON.stringify(diagramInches)}|${getDisplayUnit() ?? "in"}|${readOnly}|${readLiveSleevelessEditNeckline() ?? ""}|${readLiveSleevelessEditGarmentStyle() ?? ""}`;
+
+    if (summaryEl instanceof HTMLElement) {
+      const expressValues = readExpressValues();
+      let neckline = expressValues.neckline?.trim() ?? "";
+      if (!neckline) {
+        const live = readLiveSleevelessEditNeckline();
+        neckline = live === "v-neck" ? "v-neck" : "round";
+      }
+      renderBuildSummary(
+        summaryEl,
+        {
+          who: expressValues.who ?? "",
+          size: sizing.selectedSize,
+          garment: garmentStyleLabel(expressValues, pattern),
+          neckline: necklineLabel(neckline),
+          fit: sizing.fitPreference,
+          gauge: gaugeSummary(pattern),
+        },
+        { preserveUnitsHost: options?.preserveUnitsHost === true },
+      );
+    }
+
+    if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
+    refreshSleevelessMeasurementArt();
+    return true;
+  };
+  sleevelessWorkspaceSizeRefreshImpl = runSleevelessWorkspaceSizeRefresh;
 
   const runDropShoulderWorkspaceRehydrate = async (
     _quickEditSizing: DropShoulderQuickEditSizing,
@@ -1717,6 +1955,11 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
         commitDropShoulderReviewDiagramHydration(
           buildDropShoulderReviewDisplayIdentity(audience, size, fitPref),
         );
+      } else if (!dropShoulderWorkspaceSummary && row && audience && size) {
+        writeOverrideSeedSizingIdentity({
+          chartAudience: audience,
+          selectedSize: normalizeChartRowSize(row) || size,
+        });
       }
 
       if (readOnly && options?.onContinue) {

@@ -6,6 +6,7 @@
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import {
+  isSleevelessShapedBodyShape,
   resolveEffectiveSleevelessBodyShapeKind,
   type SleevelessEffectiveBodyShapeKind,
 } from "./sleevelessAlineShaping";
@@ -16,6 +17,20 @@ function patternDataRecord(patternData: unknown): Record<string, unknown> {
   return patternData && typeof patternData === "object" && !Array.isArray(patternData)
     ? (patternData as Record<string, unknown>)
     : {};
+}
+
+/**
+ * Generated Stitches & Rows A-line: either routed as A-line, or the body block
+ * produced hem→bust shaping and the user did not explicitly choose shaped/waist.
+ * Direction (inward vs outward) comes from hem vs bust stitch counts, not this flag.
+ */
+export function shouldGenerateSleevelessAlineStsRows(
+  patternData: unknown,
+  alineBodyShapingType?: "decrease-to-bust" | "increase-to-bust" | "straight",
+): boolean {
+  if (isSleevelessShapedBodyShape(patternDataRecord(patternData))) return false;
+  if (resolveSleevelessDiagramBodyShapeKind(patternData) === "aline") return true;
+  return alineBodyShapingType === "decrease-to-bust" || alineBodyShapingType === "increase-to-bust";
 }
 
 /** Body shape for diagram routing (same bust/hip resolution as pattern generation). */

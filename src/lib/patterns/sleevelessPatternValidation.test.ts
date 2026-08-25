@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   validateSleevelessPatternInputs,
@@ -37,6 +39,14 @@ describe("validateSleevelessPatternInputs", () => {
   it("never throws on empty or partial input", () => {
     expect(() => validateSleevelessPatternInputs({})).not.toThrow();
     expect(() => validateSleevelessPatternInputs({ armholeDepth: "bad" })).not.toThrow();
+  });
+
+  it("holds the round-neck vs armhole-depth constraint in measurement validation, not the renderer", () => {
+    const ids = messageIds(validMeasurements({ neckDepth: 9, armholeDepth: 8 }));
+    expect(ids).toContain("neck-depth-exceeds-armhole-depth");
+    const svgRenderer = readFileSync(resolve("src/lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts"), "utf8");
+    expect(svgRenderer).not.toMatch(/neck-depth-exceeds-armhole-depth/);
+    expect(svgRenderer).not.toMatch(/neckStartY > armholeStartY/);
   });
 
   it("flags neck depth deeper than armhole depth", () => {

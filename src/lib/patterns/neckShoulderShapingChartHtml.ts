@@ -13,6 +13,7 @@ import {
   collapsePlainKnitChartRowsForDisplay,
   getNeckShoulderChartRowHighlightFromRow,
   isFullWidthVNeckFrontStyleChart,
+  isSleevelessCardiganFrontNeckShoulderChart,
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
@@ -39,10 +40,16 @@ import {
   armholeLocalRcActiveShoulderChecklistStart,
   armholeLocalRcFirstActiveSideNecklineShapingAction,
   buildActiveSideInstructionTableRows,
+  buildHeldSideInstructionTableRows,
   buildSecondShoulderInstructionTableRows,
   isCenterNecklineSetupChecklistRow,
   type ActiveSideInstructionTableRow,
 } from "./neckShoulderActiveSideChecklist";
+import {
+  resolveFrontVNeckShapingTimingCase,
+  timelineHasOverlappingArmholeDecreases,
+} from "./frontArmholeNecklineComposition";
+import { rowCounterResetBlockHtml } from "./rowCounterReset";
 
 export {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -586,6 +593,14 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   }
 
   const vNeckDivide = activeShoulderIntroUsesVNeckDivideCopy(options.chart);
+  const vNeckTiming = resolveFrontVNeckShapingTimingCase(
+    options.chart?.frontVNeckArmholeComposition,
+  );
+  const vNeckBeforeArmhole = vNeckTiming === "before-armhole";
+  const vNeckDivideLabel =
+    vNeckBeforeArmhole && options.chart?.frontVNeckArmholeComposition
+      ? `RC ${options.chart.frontVNeckArmholeComposition.divideGarmentRc}`
+      : options.localStartRcLabel;
   const roundCenterDivide =
     !vNeckDivide &&
     activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart);
@@ -593,10 +608,10 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const showCenterDivide = vNeckDivide || roundCenterDivide;
   // Online workflow steps anchor the divide milestone as “At RC NNN, …”; print/default keep
   // “When Armhole RC reaches NNN, …”. Only the prefix wording changes — the calculated RC is the same.
-  const useAtRcPrefix = options.includeWorkflowSteps === true;
+  const useAtRcPrefix = options.includeWorkflowSteps === true || vNeckDivide;
   const centerHtml = vNeckDivide
     ? formatActiveShoulderVNeckCenterNecklineHtml({
-        localStartRcLabel: options.localStartRcLabel,
+        localStartRcLabel: vNeckDivideLabel,
         atRcPrefix: useAtRcPrefix,
       })
     : shallowHoldBackDivide
@@ -614,16 +629,23 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
         : "";
   const innerParts: string[] = [];
   if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
-    const divideRc = divideRcDisplayLabel(options.localStartRcLabel);
-    const knitUntilBullet = divideRc
-      ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
-      : `Knit to the neckline shaping row.`;
+    const divideRc = divideRcDisplayLabel(vNeckDivide ? vNeckDivideLabel : options.localStartRcLabel);
+    const knitUntilBullet =
+      vNeckDivide || vNeckBeforeArmhole
+        ? ""
+        : divideRc
+          ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.`
+          : `Knit to the neckline shaping row.`;
     const afterDivideBullets = shallowHoldBackDivide
       ? `<li>Stage 1 — work the right shoulder and right neck edge (checklist below). Stage 2 — return held stitches and mirror for the left side.</li><li>Stage 3 — scrap off or bind off all held neckline stitches when both sides are complete.</li>`
       : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;
+    if (knitUntilBullet) {
+      innerParts.push(
+        `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
+        `<ul class="pattern-shaping-step-list"><li>${knitUntilBullet}</li></ul>`,
+      );
+    }
     innerParts.push(
-      `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
-      `<ul class="pattern-shaping-step-list"><li>${knitUntilBullet}</li></ul>`,
       `<p class="pattern-shaping-step-title"><strong>Divide the Neckline</strong></p>`,
       `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li>${afterDivideBullets}</ul>`,
     );
@@ -756,6 +778,17 @@ function formatActiveSideRc(rc: number): string {
   return String(Math.max(0, Math.floor(rc))).padStart(3, "0");
 }
 
+function activeSideStsRemainingHeader(chart?: NeckShoulderShapingChart): string {
+  if (
+    chart &&
+    isFullWidthVNeckFrontStyleChart(chart) &&
+    timelineHasOverlappingArmholeDecreases(chart.timeline ?? [])
+  ) {
+    return "Sts Remaining (active side)";
+  }
+  return "Sts Remaining";
+}
+
 /**
  * Sts Remaining cell text for a checklist row — uses the optional divide/transition display string
  * (e.g. `37 needles in work`) when present, otherwise the numeric active-shoulder count.
@@ -832,6 +865,11 @@ function renderActiveSideInstructionRowsTrHtml(
 ): string {
   return rows
     .map((r) => {
+      if (r.rowCounterReset) {
+        const rowId = buildActiveSideStableRowId(chartProgressId, r);
+        const rcAttr = chartProgressRcAttrFromActiveRow(r);
+        return `<tr class="ns-shaping-chart__tr ns-shaping-chart__tr--reset" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}"><td class="ns-shaping-chart__td-reset" colspan="5">${rowCounterResetBlockHtml(r.rowCounterResetGarmentRc ?? 0)}<p class="sleeveless-pattern-line">${escapeHtml(r.action)}</p></td></tr>`;
+      }
       const rcDisp = formatActiveSideRcDisplay(r);
       const rowId = buildActiveSideStableRowId(chartProgressId, r);
       const rcAttr = chartProgressRcAttrFromActiveRow(r);
@@ -929,9 +967,33 @@ export type NeckShoulderChartRenderOptions = {
    * just outside this table). Never affects the chart rows or shaping math.
    */
   suppressCarriagePositionTip?: boolean;
+  /**
+   * When true, First/Second Side render as peer tabs (both tables stay in the DOM).
+   * First Side is selected and visible by default. No accordion and no
+   * “Show second shoulder checklist” toggle. Enable only for sleeveless pullover V-neck Front.
+   */
+  shoulderTabs?: boolean;
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
+const FIRST_SIDE_TAB_LABEL = "First Side";
+const SECOND_SIDE_TAB_LABEL = "Second Side";
+const FIRST_SIDE_PRINT_HEADING = "FIRST SIDE";
+const SECOND_SIDE_PRINT_HEADING = "SECOND SIDE";
+const FIRST_SHOULDER_PRINT_HEADING = "FIRST SHOULDER";
+const SECOND_SHOULDER_PRINT_HEADING = "SECOND SHOULDER";
+
+export const NS_SHOULDER_TABS_ROOT_ATTR = "data-ns-shoulder-tabs";
+export const NS_SHOULDER_PANEL_ATTR = "data-ns-shoulder-panel";
+
+/** Sleeveless pullover V-neck Front chart — the only path that uses shoulder tabs. */
+export function isSleevelessPulloverVNeckFrontChart(chart?: NeckShoulderShapingChart): boolean {
+  return (
+    chart !== undefined &&
+    isFullWidthVNeckFrontStyleChart(chart) &&
+    !isSleevelessCardiganFrontNeckShoulderChart(chart)
+  );
+}
 
 function isShoulderChecklistHeading(heading: string): boolean {
   return /shoulder checklist/i.test(heading.trim());
@@ -995,6 +1057,129 @@ function collapsibleChecklistShellHtml(
 </div>
 </details>`,
   };
+}
+
+type NeckShoulderTabLike = {
+  setAttribute(name: string, value: string): void;
+  getAttribute(name: string): string | null;
+  tabIndex: number;
+};
+
+type NeckShoulderTabPanelLike = {
+  id: string;
+  hidden: boolean;
+  setAttribute(name: string, value: string): void;
+  removeAttribute(name: string): void;
+};
+
+/** Show/hide already-mounted First/Second Shoulder panels. Does not rebuild table HTML. */
+export function applyNeckShoulderShoulderTabSelection(
+  tabs: readonly NeckShoulderTabLike[],
+  panels: readonly NeckShoulderTabPanelLike[],
+  next: NeckShoulderTabLike,
+): void {
+  const controls = next.getAttribute("aria-controls");
+  for (const tab of tabs) {
+    const selected = tab === next;
+    tab.setAttribute("aria-selected", selected ? "true" : "false");
+    tab.tabIndex = selected ? 0 : -1;
+  }
+  for (const panel of panels) {
+    const show = Boolean(controls) && panel.id === controls;
+    panel.hidden = !show;
+    if (show) panel.removeAttribute("aria-hidden");
+    else panel.setAttribute("aria-hidden", "true");
+  }
+}
+
+/** Wire First/Second Shoulder tablists under `root`. Safe to call after each pattern remount. */
+export function bindNeckShoulderShoulderTabs(root: ParentNode): void {
+  root.querySelectorAll<HTMLElement>(`[${NS_SHOULDER_TABS_ROOT_ATTR}]`).forEach((scope) => {
+    if (scope.dataset.nsShoulderTabsBound === "true") return;
+    const tablist = scope.querySelector<HTMLElement>('[role="tablist"]');
+    if (!tablist) return;
+    scope.dataset.nsShoulderTabsBound = "true";
+    const tabs = [...tablist.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = tabs
+      .map((tab) => {
+        const id = tab.getAttribute("aria-controls");
+        return id ? scope.querySelector<HTMLElement>(`#${id}`) : null;
+      })
+      .filter((panel): panel is HTMLElement => panel instanceof HTMLElement);
+
+    const select = (next: HTMLButtonElement) => {
+      applyNeckShoulderShoulderTabSelection(tabs, panels, next);
+    };
+    const initial = tabs.find((tab) => tab.getAttribute("aria-selected") === "true") ?? tabs[0];
+    if (initial) select(initial);
+
+    tablist.addEventListener("click", (event) => {
+      const tab = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('[role="tab"]');
+      if (!tab || !tabs.includes(tab)) return;
+      select(tab);
+    });
+    tablist.addEventListener("keydown", (event) => {
+      const current = document.activeElement;
+      if (!(current instanceof HTMLButtonElement) || !tabs.includes(current)) return;
+      const index = tabs.indexOf(current);
+      let nextIndex = -1;
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        const delta = event.key === "ArrowRight" ? 1 : -1;
+        nextIndex = (index + delta + tabs.length) % tabs.length;
+      } else if (event.key === "Home") {
+        nextIndex = 0;
+      } else if (event.key === "End") {
+        nextIndex = tabs.length - 1;
+      }
+      if (nextIndex < 0) return;
+      const next = tabs[nextIndex];
+      if (!next) return;
+      event.preventDefault();
+      next.focus();
+      select(next);
+    });
+  });
+}
+
+function renderShoulderTabsHtml(args: {
+  sectionClass: string;
+  idPrefix: string;
+  intro: string;
+  primaryTableHtml: string;
+  firstBindoffHtml: string;
+  secondExtraHtml: string;
+  secondTableHtml: string;
+}): string {
+  const firstTabId = `${args.idPrefix}-tab-first`;
+  const secondTabId = `${args.idPrefix}-tab-second`;
+  const firstPanelId = `${args.idPrefix}-panel-first`;
+  const secondPanelId = `${args.idPrefix}-panel-second`;
+  return `<section class="${escapeHtml(`${args.sectionClass} ns-shaping-chart--shoulder-tabs`)}" ${NS_SHOULDER_TABS_ROOT_ATTR} aria-label="Front neckline and shoulders">
+  <div class="ns-shaping-chart__tabs-toolbar">
+    <div class="ns-shaping-chart__tablist no-print" role="tablist" aria-label="Side">
+      <button type="button" class="ns-shaping-chart__tab" role="tab" id="${escapeHtml(firstTabId)}" aria-controls="${escapeHtml(firstPanelId)}" aria-selected="true" tabindex="0">${FIRST_SIDE_TAB_LABEL}</button>
+      <button type="button" class="ns-shaping-chart__tab" role="tab" id="${escapeHtml(secondTabId)}" aria-controls="${escapeHtml(secondPanelId)}" aria-selected="false" tabindex="-1">${SECOND_SIDE_TAB_LABEL}</button>
+    </div>
+    <span class="ns-shaping-chart__disclosure-actions no-print" data-chart-print-slot></span>
+  </div>
+  ${checklistInnerOpenHtml()}
+  ${args.intro}
+  <div class="ns-shaping-chart__tabpanel" role="tabpanel" id="${escapeHtml(firstPanelId)}" aria-labelledby="${escapeHtml(firstTabId)}" ${NS_SHOULDER_PANEL_ATTR}="first">
+    ${wrapChecklistPrintLeadHtml(
+      FIRST_SIDE_PRINT_HEADING,
+      `${args.idPrefix}-first-heading`,
+      `${args.primaryTableHtml}${args.firstBindoffHtml}`,
+    )}
+  </div>
+  <div class="ns-shaping-chart__tabpanel" role="tabpanel" id="${escapeHtml(secondPanelId)}" aria-labelledby="${escapeHtml(secondTabId)}" hidden aria-hidden="true" ${NS_SHOULDER_PANEL_ATTR}="second">
+    ${wrapChecklistPrintLeadHtml(
+      SECOND_SIDE_PRINT_HEADING,
+      `${args.idPrefix}-second-heading`,
+      `${args.secondExtraHtml}${args.secondTableHtml}`,
+    )}
+  </div>
+  ${checklistInnerCloseHtml()}
+</section>`;
 }
 
 function activeShoulderChecklistOptions(
@@ -1118,16 +1303,37 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     options?.hideCenterNecklineSetupRow === true
       ? activeRowsBuilt.filter((r) => !isCenterNecklineSetupChecklistRow(r))
       : activeRowsBuilt;
-  const oppositeRowsPrep = buildSecondShoulderInstructionTableRows(activeRowsRaw);
+  const oppositeRowsPrepRaw = chart.frontVNeckArmholeComposition
+    ? buildHeldSideInstructionTableRows(
+        chart,
+        activeSideRcStart,
+        activeShoulderChecklistOptions(options),
+      )
+    : buildSecondShoulderInstructionTableRows(activeRowsRaw);
+  const oppositeRowsPrep =
+    options?.hideCenterNecklineSetupRow === true
+      ? oppositeRowsPrepRaw.filter((r) => !isCenterNecklineSetupChecklistRow(r))
+      : oppositeRowsPrepRaw;
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
         vNeckStyleOneRowPerRc
           ? oppositeRowsPrep
-          : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, { invertCarriageParity: true }),
+          : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, {
+              invertCarriageParity: !chart.frontVNeckArmholeComposition,
+            }),
         progressChartIdSecondary,
       )
     : "";
-  const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
+  const heldShoulderStitches = Math.max(
+    0,
+    Math.floor(
+      Number(
+        chart.frontVNeckArmholeComposition?.heldAfterDivideRow ??
+          chart.rows[0]?.leftStitchCount ??
+          0,
+      ),
+    ),
+  );
   const isCardiganFront = activeShoulderIntroIsCardiganFront({
     chart,
     isCardiganFront: options?.isCardiganFront,
@@ -1162,9 +1368,11 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       ? options.tableHeading.trim()
       : "Neckline / Shoulder Shaping Chart";
   const shoulderChecklist = activeSideOnly && isShoulderChecklistHeading(tableHeading);
+  const useShoulderTabs = options?.shoulderTabs === true && activeSideOnly && !isCardiganFront;
   const collapsible =
-    options?.collapsible === true ||
-    (options?.collapsible !== false && shoulderChecklist);
+    !useShoulderTabs &&
+    (options?.collapsible === true ||
+      (options?.collapsible !== false && shoulderChecklist));
   const collapsibleOpen = options?.collapsibleDefaultOpen === true;
 
   const primaryTableHtml = `<div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
@@ -1180,7 +1388,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
               ? `${activeSideRcHeader}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>`
+          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>`
               : `<th scope="col" rowspan="2" class="ns-shaping-chart__th-row">Row</th>
           <th scope="col" rowspan="2" class="ns-shaping-chart__th-action">Action</th>
           <th scope="colgroup" colspan="2" class="ns-shaping-chart__th-group">Left</th>
@@ -1220,7 +1428,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
           ${activeSideRcHeader}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>
+          <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>
         </tr>
       </thead>
       <tbody>${oppositeRowsHtml}</tbody>
@@ -1299,13 +1507,27 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
           )}</p>`
         : "";
 
+  const firstBindoffHtml = activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : "";
+
+  if (useShoulderTabs) {
+    return renderShoulderTabsHtml({
+      sectionClass,
+      idPrefix,
+      intro,
+      primaryTableHtml,
+      firstBindoffHtml,
+      secondExtraHtml: secondShoulderExtra,
+      secondTableHtml: secondShoulderTableHtml,
+    });
+  }
+
   const primaryTableForBody = collapsible
     ? wrapChecklistPrintLeadHtml(tableHeading, headingId, primaryTableHtml)
     : primaryTableHtml;
 
   const checklistBodyHtml = `${intro}
   ${primaryTableForBody}
-  ${activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : ""}
+  ${firstBindoffHtml}
   ${activeSideTailHtml}`;
 
   if (collapsible) {
@@ -1341,6 +1563,8 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   introHtml?: string,
   options?: {
     showSecondShoulderChecklist?: boolean;
+    /** When true with the second checklist, print sequential First/Second headings. */
+    sequentialShoulderHeadings?: boolean;
     activeSideRcStart?: number;
     fullWidthChartOneRowPerRc?: boolean;
     isCardiganFront?: boolean;
@@ -1366,11 +1590,44 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     : compactActiveSideInstructionRowsForPrint(printRowsRaw);
   const showSecondShoulderChecklist =
     !isCardiganFront && options?.showSecondShoulderChecklist === true;
-  const oppositePrintRowsRaw = buildSecondShoulderInstructionTableRows(printRowsRaw);
+  const sequentialShoulderHeadings =
+    showSecondShoulderChecklist && options?.sequentialShoulderHeadings === true;
+  const useSideHeadings =
+    sequentialShoulderHeadings && isSleevelessPulloverVNeckFrontChart(chart);
+  const firstPrintHeading = sequentialShoulderHeadings
+    ? useSideHeadings
+      ? FIRST_SIDE_PRINT_HEADING
+      : FIRST_SHOULDER_PRINT_HEADING
+    : "Neckline / Shoulder Shaping";
+  const secondPrintHeading = sequentialShoulderHeadings
+    ? useSideHeadings
+      ? SECOND_SIDE_PRINT_HEADING
+      : SECOND_SHOULDER_PRINT_HEADING
+    : "Second Shoulder Checklist";
+  const oppositePrintRowsRaw = chart.frontVNeckArmholeComposition
+    ? buildHeldSideInstructionTableRows(
+        chart,
+        activeSideRcStart,
+        options?.includeCenterNecklineSetupRow === true
+          ? { includeCenterNecklineSetupRow: true }
+          : undefined,
+      )
+    : buildSecondShoulderInstructionTableRows(printRowsRaw);
   const oppositePrintRows = vNeckStyleOneRowPerRc
     ? oppositePrintRowsRaw
-    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, { invertCarriageParity: true });
-  const heldShoulderStitches = Math.max(0, Math.floor(Number(chart.rows[0]?.leftStitchCount ?? 0)));
+    : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, {
+        invertCarriageParity: !chart.frontVNeckArmholeComposition,
+      });
+  const heldShoulderStitches = Math.max(
+    0,
+    Math.floor(
+      Number(
+        chart.frontVNeckArmholeComposition?.heldAfterDivideRow ??
+          chart.rows[0]?.leftStitchCount ??
+          0,
+      ),
+    ),
+  );
   const rowsHtml = printRows
     .map((r) => {
       const rcDisp = formatActiveSideRcDisplay(r);
@@ -1392,7 +1649,7 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
     })
     .join("");
   return `<section class="ns-shaping-mini" aria-labelledby="${escapeHtml(headingId)}">
-  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-mini__title">Neckline / Shoulder Shaping</h2>
+  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-mini__title">${escapeHtml(firstPrintHeading)}</h2>
   ${intro}
   <div class="ns-shaping-mini__wrap">
     <table class="ns-shaping-mini__table">
@@ -1402,19 +1659,27 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
           <th scope="col">Carriage Position</th>
           <th scope="col">Action</th>
           <th scope="col">Edge</th>
-          <th scope="col">Sts Remaining</th>
+          <th scope="col">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>
         </tr>
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
   </div>
   ${renderActiveSideBindoffRemainingHtml(printRowsRaw, "ns-shaping-mini__bindoff-remaining")}
-  <p class="ns-shaping-mini__sts-note">Sts Remaining is for this side only.</p>
-  <p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, false, isCardiganFront)}</p>
+  <p class="ns-shaping-mini__sts-note">${
+    activeSideStsRemainingHeader(chart) === "Sts Remaining (active side)"
+      ? "Sts Remaining is for the active side after the divide."
+      : "Sts Remaining is for this side only."
+  }</p>
+  ${
+    sequentialShoulderHeadings
+      ? ""
+      : `<p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, false, isCardiganFront)}</p>`
+  }
   ${
     showSecondShoulderChecklist
       ? `<section class="ns-shaping-mini__second-shoulder">
-    <h3 class="ns-shaping-mini__title">Second Shoulder Checklist</h3>
+    <h3 class="ns-shaping-mini__title">${escapeHtml(secondPrintHeading)}</h3>
     <div class="ns-shaping-mini__wrap">
       <table class="ns-shaping-mini__table">
         <thead>
@@ -1423,13 +1688,17 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
             <th scope="col">Carriage Position</th>
             <th scope="col">Action</th>
             <th scope="col">Edge</th>
-            <th scope="col">Sts Remaining</th>
+            <th scope="col">${escapeHtml(activeSideStsRemainingHeader(chart))}</th>
           </tr>
         </thead>
         <tbody>${oppositeRowsHtml}</tbody>
       </table>
     </div>
-    <p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, true, isCardiganFront)}</p>
+    ${
+      sequentialShoulderHeadings
+        ? ""
+        : `<p class="ns-shaping-mini__sts-note">${instructionWithHeldStitchesHtml(heldShoulderStitches, true, isCardiganFront)}</p>`
+    }
   </section>`
       : ""
   }

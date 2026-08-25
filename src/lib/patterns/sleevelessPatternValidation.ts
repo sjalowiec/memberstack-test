@@ -113,6 +113,10 @@ function validateStructuralErrors(
   const neckOpeningWidth = positiveMeasurementInches(input.finishedNeckOpeningWidth);
   const finishedBustWidth = finishedBustWidthInches(input);
 
+  // Round-neck depth constraint lives here (custom-build measurement validation),
+  // not in the Stitches & Rows renderer. A round scoop should stay inside the
+  // armhole-depth budget so it does not start in the armhole shaping zone.
+  // V-neck may still be generated deeper via Express fixtures that bypass this layer.
   if (neckDepth !== undefined && armholeDepth !== undefined && neckDepth > armholeDepth) {
     pushError(
       messages,
