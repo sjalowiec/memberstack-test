@@ -68,6 +68,53 @@ function forceEven(n: number): number {
 }
 
 /**
+ * Local RC of the front shoulder bind-off after the neckline row-counter reset.
+ * This is the garment remaining from {@link neckGarmentStartRc} to {@link totalGarmentRows}
+ * — the same shoulder line the back uses (`totalRows`).
+ */
+export function dropShoulderFrontShoulderCompletionLocalRc(
+  neckGarmentStartRc: number,
+  totalGarmentRows: number,
+): number {
+  return Math.max(0, Math.floor(totalGarmentRows) - Math.floor(neckGarmentStartRc));
+}
+
+/**
+ * Neckline working row budget for written V-neck schedules and the front chart timeline.
+ * Caps the designed front neck depth so shaping cannot run past the garment shoulder.
+ */
+export function dropShoulderFrontNecklineWorkingRows(
+  neckGarmentStartRc: number,
+  totalGarmentRows: number,
+  designedNeckDepthRows: number,
+): number {
+  const available = dropShoulderFrontShoulderCompletionLocalRc(
+    neckGarmentStartRc,
+    totalGarmentRows,
+  );
+  const designed = Math.max(0, Math.floor(designedNeckDepthRows));
+  if (available <= 0) return designed;
+  if (designed <= 0) return available;
+  return Math.min(designed, available);
+}
+
+/** Local RC of the last outer shoulder bind-off on a drop-shoulder front timeline. */
+export function dropShoulderFrontTimelineShoulderBindOffLocalRc(
+  timeline: readonly RowEntry[] | undefined,
+  necklineOriginRc: number,
+): number | undefined {
+  if (!timeline || timeline.length === 0) return undefined;
+  const origin = Math.floor(necklineOriginRc);
+  const bindOff = [...timeline]
+    .reverse()
+    .find((row) =>
+      row.events.some((e) => e.kind === "bindOff" && e.edge === "outer" && e.amount > 0),
+    );
+  if (!bindOff) return undefined;
+  return Math.max(0, Math.floor(bindOff.row) - origin);
+}
+
+/**
  * Drop-shoulder V-neck front timeline using the same {@link evenShapingSchedule} as written
  * instructions (`buildCardiganFrontRows` / pullover V path). Local RC origin is the neckline
  * reset (`firstShapingRow`); decrease RCs match {@link evenShapingGarmentRowNumbers}(0, sched).
@@ -153,13 +200,16 @@ function appendDropShoulderStraightShoulderFinish(
 ): RowEntry[] {
   if (timeline.length === 0 || totalRows <= 0) return timeline;
 
-  const out = [...timeline];
+  const lastKnitRc = Math.max(0, Math.floor(totalRows) - 1);
+  const out = timeline.filter((row) => row.row <= lastKnitRc);
+  if (out.length === 0) return timeline;
+
   const last = out[out.length - 1]!;
   let rc = last.row;
   let leftCount = last.stitchesL;
   let rightCount = last.stitchesR;
 
-  while (rc < totalRows - 1) {
+  while (rc < lastKnitRc) {
     rc += 1;
     out.push({
       row: rc,
@@ -196,7 +246,8 @@ function appendDropShoulderStraightShoulderFinish(
 
   if (events.length === 0) return out;
 
-  const bindOffRc = Math.max(totalRows, rc + 1);
+  // Always bind off on the garment shoulder RC — never past `totalRows`.
+  const bindOffRc = Math.floor(totalRows);
   out.push({
     row: bindOffRc,
     events,
@@ -310,6 +361,11 @@ export function buildDropShoulderFrontNeckShapingChart(
   const isCardiganHalfFront = isCardigan;
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
   const timelineOpts = { straightShoulders: true as const };
+  const frontNeckWorkingRows = dropShoulderFrontNecklineWorkingRows(
+    frontNecklineStartRC,
+    totalRows,
+    frontNeckDepthRows,
+  );
 
   const necklineOpeningStsForFrontPiece = isCardiganHalfFront
     ? Math.max(1, Math.round(neckSts / 2))
@@ -349,7 +405,7 @@ export function buildDropShoulderFrontNeckShapingChart(
       isCardigan,
       neckSts,
       shoulderStsEach: isCardigan ? shoulderStsForFrontPiece : shoulderStsEach,
-      frontNeckDepthRows,
+      frontNeckDepthRows: frontNeckWorkingRows,
       firstShapingRow: frontNecklineStartRC,
       bustBodySts,
     });

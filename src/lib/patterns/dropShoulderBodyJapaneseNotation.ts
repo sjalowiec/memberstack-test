@@ -160,7 +160,15 @@ function resolveDropShoulderFrontNeckDepthRows(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
 ): number {
-  const d = result.debug;
+  const d = result.debug as { frontNecklineWorkingRows?: number; frontNeckDepthRows?: number; rowsPerInch?: number };
+  const isVNeck = isDropShoulderVNeck(patternData);
+  if (
+    isVNeck &&
+    isFiniteNumber(d.frontNecklineWorkingRows) &&
+    d.frontNecklineWorkingRows > 0
+  ) {
+    return Math.floor(d.frontNecklineWorkingRows);
+  }
   if (isFiniteNumber(d.frontNeckDepthRows) && d.frontNeckDepthRows > 0) {
     return Math.floor(d.frontNeckDepthRows);
   }

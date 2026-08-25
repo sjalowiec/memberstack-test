@@ -90,6 +90,8 @@ import {
   buildDropShoulderBackNeckShapingTimeline,
   buildDropShoulderFrontNeckShapingChart,
   dropShoulderFrontNeckShapingChartInputsReady,
+  dropShoulderFrontNecklineWorkingRows,
+  dropShoulderFrontShoulderCompletionLocalRc,
 } from "./dropShoulderFrontNeckShapingChart";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import {
@@ -458,7 +460,7 @@ function dropShoulderNecklineLocalRowsFromGarment(
   neckGarmentStartRc: number,
   totalGarmentRows: number,
 ): number {
-  return Math.max(0, Math.floor(totalGarmentRows) - Math.floor(neckGarmentStartRc));
+  return dropShoulderFrontShoulderCompletionLocalRc(neckGarmentStartRc, totalGarmentRows);
 }
 
 function dropShoulderNecklineFirstBlockRc(
@@ -792,9 +794,14 @@ function buildPulloverFrontRows(args: {
       args.totalRows,
     );
     const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(true, neckStartRc);
+    const vNeckRowBudget = dropShoulderFrontNecklineWorkingRows(
+      neckStartRc,
+      args.totalRows,
+      args.frontNeckDepthRows,
+    );
     if (args.isVNeck) {
       const perSide = neckDecreaseStitchesPerSideFromOpening(args.neckSts);
-      const sched = evenShapingSchedule(perSide, args.frontNeckDepthRows);
+      const sched = evenShapingSchedule(perSide, vNeckRowBudget);
       const introTrusted = insertLifelineReminderAfterOpening([
         "Divide for the V-neck at the center.",
         ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
@@ -942,8 +949,13 @@ function buildCardiganFrontRows(args: {
     );
     const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(useLocalNecklineRc, neckStartRc);
     const shoulderFinishRc = useLocalNecklineRc ? necklineLocalTotalRows : args.totalRows;
+    const vNeckRowBudget = dropShoulderFrontNecklineWorkingRows(
+      neckStartRc,
+      args.totalRows,
+      args.frontNeckDepthRows,
+    );
     if (args.isVNeck) {
-      const sched = evenShapingSchedule(args.neckPerFront, args.frontNeckDepthRows);
+      const sched = evenShapingSchedule(args.neckPerFront, vNeckRowBudget);
       const introTrusted = [
         "Begin the V-neck shaping at the center-front edge.",
         sched.count > 0
@@ -1402,6 +1414,11 @@ export function generateDropShoulderPattern(
       : totalRows;
 
   const frontNecklineStartRC = Math.max(armholeMarkerRc, totalRows - frontNeckDepthRows);
+  const frontNecklineWorkingRows = dropShoulderFrontNecklineWorkingRows(
+    frontNecklineStartRC,
+    totalRows,
+    frontNeckDepthRows,
+  );
 
   // ---- Build display rows ----
   const displayRows = buildBackRows({
@@ -1572,6 +1589,7 @@ export function generateDropShoulderPattern(
     frontNeckRoundNecklineStrategy: frontRoundNeckPlan?.strategy,
     frontNeckDepth: frontNeckDepthIn,
     frontNeckDepthRows,
+    frontNecklineWorkingRows,
     backNeckDepthRows,
     backNecklineStartRC: backNecklineStartRC,
     frontNecklineStartRC,
