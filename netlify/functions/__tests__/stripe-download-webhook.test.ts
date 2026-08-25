@@ -16,7 +16,12 @@ vi.mock("@netlify/blobs", () => ({
 }));
 
 import handler from "../stripe-download-webhook";
-import { CHARTING_RULERS_PAID_DOWNLOAD } from "../../../src/lib/downloads/paidDownloadCatalog";
+import {
+  CHARTING_RULERS_PAID_DOWNLOAD,
+  CUT_N_SEW_PAID_DOWNLOAD,
+  NEEDLE_SELECTION_PAID_DOWNLOAD,
+  TECHNIQUE_CARDS_PAID_DOWNLOAD,
+} from "../../../src/lib/downloads/paidDownloadCatalog";
 import { listPaidDownloadCustomerEntitlementsForEmail } from "../../../src/lib/downloads/paidDownloadEntitlements";
 import { signStripeWebhookPayload } from "../../../src/lib/downloads/stripeWebhookSignature";
 
@@ -170,5 +175,72 @@ describe("stripe-download-webhook", () => {
         downloadUrl: "/downloads/shop/gauge-rulers.pdf",
       },
     ]);
+  });
+
+  it("grants each remaining printable from its Stripe product, price, or payment link ID", async () => {
+    const cases = [
+      {
+        entry: TECHNIQUE_CARDS_PAID_DOWNLOAD,
+        session: { payment_link: TECHNIQUE_CARDS_PAID_DOWNLOAD.stripePaymentLinkId },
+      },
+      {
+        entry: CUT_N_SEW_PAID_DOWNLOAD,
+        session: {
+          payment_link: null,
+          line_items: {
+            data: [
+              {
+                price: {
+                  id: CUT_N_SEW_PAID_DOWNLOAD.stripePriceId,
+                  product: "prod_other",
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        entry: NEEDLE_SELECTION_PAID_DOWNLOAD,
+        session: {
+          payment_link: null,
+          line_items: {
+            data: [
+              {
+                price: {
+                  id: "price_other",
+                  product: NEEDLE_SELECTION_PAID_DOWNLOAD.stripeProductId,
+                },
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    for (const row of cases) {
+      storeData.clear();
+      const rawBody = checkoutEvent({
+        id: `cs_${row.entry.slug}`,
+        customer_details: { email: `${row.entry.slug}@example.com` },
+        ...row.session,
+      });
+      const res = await handler(signedRequest(rawBody));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({
+        ok: true,
+        granted: true,
+        created: true,
+        slug: row.entry.slug,
+      });
+      expect(
+        await listPaidDownloadCustomerEntitlementsForEmail(`${row.entry.slug}@example.com`),
+      ).toEqual([
+        {
+          itemId: `printable:${row.entry.slug}`,
+          title: row.entry.title,
+          downloadUrl: row.entry.downloadUrl,
+        },
+      ]);
+    }
   });
 });

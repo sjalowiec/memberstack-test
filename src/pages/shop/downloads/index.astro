@@ -50,6 +50,12 @@ const isMember =
     <div class="downloads-grid">
       {downloads.map((item) => {
         const detailsUrl = item.detailsPage || `/downloads/${item.slug}`;
+        const membershipLabel =
+          item.memberFree === true
+            ? item.stripeLink?.trim()
+              ? "Included with Membership"
+              : "Members Only"
+            : null;
         return (
         <article
           class="download-card kbm-card kbm-card--download"
@@ -86,11 +92,14 @@ const isMember =
               <h2 class="kbm-card__title">
                 <span class="download-card__title-link">{item.title}</span>
               </h2>
+              {membershipLabel ? (
+                <p class="download-card-access">{membershipLabel}</p>
+              ) : null}
               <p class="kbm-card__desc">{item.shortDescription}</p>
             </div>
 
             <div class="download-card-actions">
-              <span class="download-card-cta">Learn More</span>
+              <span class="download-card-cta">View Download</span>
             </div>
           </a>
         </article>
@@ -220,6 +229,20 @@ const isMember =
     font-size: 1.35rem;
     font-weight: 600;
     margin: 0.5rem 0 0.75rem 0;
+  }
+
+  .download-card-access {
+    display: inline-block;
+    margin: -0.45rem 0 0.75rem;
+    padding: 0.18rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+    background: #eef3e6;
+    border: 1px solid #d7e2c8;
+    border-radius: 999px;
   }
 
   .download-card__title-link {

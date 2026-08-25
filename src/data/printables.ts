@@ -71,7 +71,7 @@ export const printables = [
           salesFocus:
             "Make it easier to draw consistent neckline shapes and cut cleaner, more confident curves.",
           stripeLink: "https://buy.stripe.com/00w4gybGeeKTglU6Ce0oM0R",
-          file: "/downloads/cut-n-sew-neckline-templates.pdf",
+          file: "/downloads/shop/cut-n-sew-neckline-templates.pdf",
           price: 14.99,
           memberFree: true,
           image: "/images/shop/downloads/cut-n-sew-neckline-template.jpg",
@@ -102,7 +102,7 @@ export const printables = [
           salesFocus:
             "Place the worksheet behind your needle bed to visualize and manually select needles while knitting.",
           stripeLink: "https://buy.stripe.com/bJe6oG5hQ0U37Po4u60oM0P",
-          file: "/downloads/shop/placeholder-needle-selection-worksheet.pdf",
+          file: "/downloads/shop/cheat-sheet-hand-hand-manipulated-stitches.pdf",
           price: 14.99,
           memberFree: true,
           image: "/images/shop/downloads/cheat-sheets-for-hand-manipulated-stitches.jpg",

@@ -5,6 +5,7 @@ import {
 } from "../lib/memberAccess";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { memberDownloadCtaSpec } from "../lib/printables/memberDownloadCta";
+import { hidePrintableBuyNow } from "../lib/printables/printableProductBuyNow";
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
   for (let i = 0; i < attempts; i++) {
@@ -96,6 +97,28 @@ export function clearPrintableDownloadCards(): void {
   });
 }
 
+function previewOverride(): ViewerAccessState | null {
+  const root = document.querySelector<HTMLElement>("[data-printable-product-actions]");
+  const mode = root?.dataset.previewMode?.trim() ?? "";
+  if (mode === "memberAccess" || mode === "loggedOut" || mode === "loggedInNoAccess") {
+    return mode;
+  }
+
+  const previewMember = new URLSearchParams(window.location.search).get("previewMember");
+  if (previewMember === "member") return "memberAccess";
+  if (previewMember === "nonmember") return "loggedOut";
+  return null;
+}
+
+function syncProductBuyNow(state: ViewerAccessState | null): void {
+  document.querySelectorAll<HTMLElement>("[data-printable-product-actions]").forEach((root) => {
+    const memberFree = root.dataset.memberFree === "true";
+    const buy = root.querySelector<HTMLElement>("[data-buy-now]");
+    if (!buy) return;
+    buy.hidden = hidePrintableBuyNow(memberFree, state);
+  });
+}
+
 let authListenersBound = false;
 
 function bindPrintableDownloadRefresh(onRefresh: () => void): void {
@@ -114,12 +137,14 @@ function bindPrintableDownloadRefresh(onRefresh: () => void): void {
 
 export function runPrintableDownloadGate(): void {
   clearPrintableDownloadCards();
+  syncProductBuyNow(null);
 
   async function refresh(): Promise<void> {
-    const state = await resolvePrintableDownloadViewerState(
-      "downloads/shop/[slug].printableDownload",
-    );
+    const state =
+      previewOverride() ??
+      (await resolvePrintableDownloadViewerState("downloads/shop/[slug].printableDownload"));
     syncPrintableDownloadCards(state);
+    syncProductBuyNow(state);
   }
 
   void refresh();

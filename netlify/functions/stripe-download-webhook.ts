@@ -1,5 +1,5 @@
 /**
- * Stripe webhook for paid-download entitlements (Charting Rulers in phase 1).
+ * Stripe webhook for paid-download entitlements (printables in PAID_DOWNLOAD_CATALOG).
  *
  * POST /.netlify/functions/stripe-download-webhook
  *

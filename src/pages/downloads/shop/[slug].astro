@@ -23,13 +23,21 @@ if (!resource) {
   return Astro.redirect("/");
 }
 
+const previewMember = Astro.url.searchParams.get("previewMember");
+const previewMode =
+  previewMember === "member"
+    ? "memberAccess"
+    : previewMember === "nonmember"
+      ? "loggedOut"
+      : null;
+
 const title = `${resource.title} | Knit it Now`;
 const description = resource.subtitle;
 ---
 
 <Layout {title} {description}>
   <div class="page-wrap printable-resource-page-wrap">
-    <PrintableResourceLayout {resource} />
+    <PrintableResourceLayout {resource} {previewMode} />
   </div>
 </Layout>
 

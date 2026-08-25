@@ -1,0 +1,105 @@
+---
+import type { PaidDownloadThankYouCopy } from "../../lib/downloads/paidDownloadThankYou";
+
+interface Props {
+  copy: PaidDownloadThankYouCopy;
+}
+
+const { copy } = Astro.props;
+---
+
+<section class="thank-you-page">
+  <div class="thank-you-card">
+    <p class="thank-you-lead">Thank you for purchasing {copy.purchaseName}.</p>
+
+    <p>
+      Your payment was successful. Download the printable now and save it to your
+      device so you can use it whenever you knit.
+    </p>
+
+    <p>
+      <a href={copy.downloadHref} download class="thank-you-download">
+        {copy.downloadLabel}
+      </a>
+    </p>
+
+    <p>
+      <strong>Already have a Knit It Now account?</strong> If you used the same
+      email address at checkout, you'll also find your {copy.purchaseName} under
+      <a href="/account#my-downloads">My Downloads</a>.
+    </p>
+
+    <p>No Knit It Now account is required for this purchase.</p>
+
+    <p>You will also receive a confirmation email from Stripe for your records.</p>
+
+    <p>
+      If you have any trouble accessing your download, feel free to
+      <a href="/contact">contact us</a> and we will be happy to help.
+    </p>
+
+    <p>
+      <a href="/shop/downloads">← Back to Printable Tools</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .thank-you-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .thank-you-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+  }
+
+  .thank-you-page :global(h1) {
+    margin-bottom: 1.25rem;
+  }
+
+  .thank-you-lead {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 1rem 0;
+  }
+
+  .thank-you-page p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: #5a6b47;
+  }
+
+  .thank-you-page p:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .thank-you-page a:not(.thank-you-download) {
+    color: var(--kbm-green);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .thank-you-page a:not(.thank-you-download):hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .thank-you-download {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #52682d;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 6px;
+  }
+
+  .thank-you-download:hover {
+    background: #445626;
+  }
+</style>

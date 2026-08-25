@@ -1,12 +1,17 @@
 ---
 import type { PrintableResource } from "../../data/printableResources";
+import { printables } from "../../data/printables";
 import PrintableDownloadCard from "./PrintableDownloadCard.astro";
 
 interface Props {
   resource: PrintableResource;
+  previewMode?: "memberAccess" | "loggedOut" | "loggedInNoAccess" | null;
 }
 
-const { resource } = Astro.props;
+const { resource, previewMode = null } = Astro.props;
+const product = printables.find((item) => item.slug === resource.slug);
+const stripeLink = product?.stripeLink?.trim() ?? "";
+const memberFree = product?.memberFree === true;
 ---
 
 <div class="printable-resource-page">
@@ -53,10 +58,32 @@ const { resource } = Astro.props;
         </ul>
       </section>
 
-      <PrintableDownloadCard
-        downloadLabel={resource.downloadLabel}
-        pdfFile={resource.pdfFile}
-      />
+      <div
+        class="printable-resource-page__actions"
+        data-printable-product-actions
+        data-member-free={memberFree ? "true" : "false"}
+        data-preview-mode={previewMode ?? ""}
+        data-download-href={resource.pdfFile}
+        data-download-label={resource.downloadLabel}
+        data-stripe-link={stripeLink}
+      >
+        <PrintableDownloadCard
+          downloadLabel={resource.downloadLabel}
+          pdfFile={resource.pdfFile}
+        />
+
+        {stripeLink ? (
+          <a
+            href={stripeLink}
+            class="kbm-btn kbm-btn-accent printable-resource-page__buy"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-buy-now
+          >
+            Buy Now
+          </a>
+        ) : null}
+      </div>
     </div>
 
     {resource.image ? (
@@ -178,6 +205,24 @@ const { resource } = Astro.props;
 
   .printable-resource-page__includes li {
     margin-bottom: 0.35rem;
+  }
+
+  .printable-resource-page__actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .printable-resource-page__actions :global(.printable-download-card) {
+    margin-top: 0;
+  }
+
+  .printable-resource-page__buy {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
   }
 
   .printable-resource-page__media {

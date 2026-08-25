@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CHARTING_RULERS_PAID_DOWNLOAD,
+  TECHNIQUE_CARDS_PAID_DOWNLOAD,
 } from "./paidDownloadCatalog";
 import {
   grantPaidDownloadEntitlement,
@@ -85,5 +86,39 @@ describe("paid download entitlements store", () => {
     expect(
       await listPaidDownloadCustomerEntitlementsForEmail("other@example.com", store),
     ).toEqual([]);
+  });
+
+  it("stores Technique Cards alongside Charting Rulers for the same email", async () => {
+    const store = memoryStore();
+    await grantPaidDownloadEntitlement(
+      {
+        email: "owner@example.com",
+        entry: CHARTING_RULERS_PAID_DOWNLOAD,
+        stripeSessionId: "cs_rulers",
+      },
+      store,
+    );
+    await grantPaidDownloadEntitlement(
+      {
+        email: "owner@example.com",
+        entry: TECHNIQUE_CARDS_PAID_DOWNLOAD,
+        stripeSessionId: "cs_cards",
+        stripePaymentLinkId: TECHNIQUE_CARDS_PAID_DOWNLOAD.stripePaymentLinkId,
+      },
+      store,
+    );
+
+    expect(await listPaidDownloadCustomerEntitlementsForEmail("owner@example.com", store)).toEqual([
+      {
+        itemId: "printable:machine-technique-reference-cards",
+        title: "Machine Technique Reference Cards",
+        downloadUrl: "/downloads/shop/machine-technique-reference-cards.pdf",
+      },
+      {
+        itemId: "printable:charting-rulers",
+        title: "Printable Gauge Rulers",
+        downloadUrl: "/downloads/shop/gauge-rulers.pdf",
+      },
+    ]);
   });
 });

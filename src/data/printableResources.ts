@@ -60,7 +60,7 @@ export const printableResources: PrintableResource[] = [
       "Multiple copies may be printed for personal use",
     ],
     downloadLabel: "Needle Selection Worksheet (PDF)",
-    pdfFile: "/downloads/shop/placeholder-needle-selection-worksheet.pdf",
+    pdfFile: "/downloads/shop/cheat-sheet-hand-hand-manipulated-stitches.pdf",
     image: "/images/shop/downloads/cheat_sheet.jpg",
     imageAlt: "Needle Selection Worksheet preview",
   },

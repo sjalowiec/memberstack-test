@@ -17,7 +17,6 @@ const { downloadLabel, pdfFile } = Astro.props;
   <h2 id="printable-download-heading" class="printable-download-card__heading">Download</h2>
 
   <p class="printable-download-card__label">{downloadLabel}</p>
-  <p class="printable-download-card__member-note">(member only)</p>
 
   <div
     class="printable-download-card__cta-mount"
@@ -48,16 +47,9 @@ const { downloadLabel, pdfFile } = Astro.props;
   }
 
   .printable-download-card__label {
-    margin: 0;
+    margin: 0 0 1.25rem;
     font-weight: 600;
     color: #333;
-  }
-
-  .printable-download-card__member-note {
-    margin: 0.25rem 0 1.25rem;
-    font-size: 0.95rem;
-    color: #738c52;
-    font-weight: 600;
   }
 
   .printable-download-card__cta-mount {
