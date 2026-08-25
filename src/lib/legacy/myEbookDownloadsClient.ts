@@ -1,5 +1,5 @@
 /**
- * Browser client for legacy ebook My Downloads.
+ * Browser client for account My Downloads (legacy ebooks + paid printables).
  * Sends a verified Memberstack session JWT; never sends an email for ownership lookup.
  */
 
@@ -72,6 +72,7 @@ export async function isMyEbookDownloadsMemberLoggedIn(): Promise<boolean> {
 
 type ListResponse = {
   ok?: boolean;
+  downloads?: MyEbookDownloadItem[];
   ebooks?: MyEbookDownloadItem[];
   error?: string;
 };
@@ -81,7 +82,7 @@ function isSafePublicDownloadUrl(value: string): boolean {
 }
 
 /**
- * Load approved legacy ebook entitlements for the current Memberstack session.
+ * Load My Downloads entitlements for the current Memberstack session.
  * Ownership is resolved server-side from the verified token email only.
  */
 export async function listMyEbookDownloads(): Promise<MyEbookDownloadItem[]> {
@@ -108,14 +109,18 @@ export async function listMyEbookDownloads(): Promise<MyEbookDownloadItem[]> {
   }
   if (!res.ok || !body?.ok) {
     throw new MyEbookDownloadsApiError(
-      body?.error || "Failed to load ebook downloads.",
+      body?.error || "Failed to load downloads.",
       res.status,
     );
   }
 
-  if (!Array.isArray(body.ebooks)) return [];
+  const rows = Array.isArray(body.downloads)
+    ? body.downloads
+    : Array.isArray(body.ebooks)
+      ? body.ebooks
+      : [];
 
-  return body.ebooks
+  return rows
     .filter(
       (row) =>
         row &&

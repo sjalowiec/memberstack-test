@@ -60,7 +60,7 @@ async function hydrate(root: HTMLElement): Promise<void> {
     renderList(root, ebooks);
   } catch (err) {
     if (err instanceof MyEbookDownloadsAuthError) {
-      setStatus(root, "Sign in to see your ebook downloads.");
+      setStatus(root, "Sign in to see your downloads.");
       setEmptyVisible(root, false);
       return;
     }
