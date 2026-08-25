@@ -96,16 +96,16 @@ const kinModalSource = readFileSync(
 );
 
 describe("hatPlanningRibbingVideoTip", () => {
-  it("resolves content_id 2211 from the catalog with Vimeo id 216689688", () => {
+  it("resolves content_id 2211 from the catalog with Vimeo id 1216689688", () => {
     const video = resolveHatPlanningRibbingVideo();
     expect(video).not.toBeNull();
-    expect(video!.id).toBe("216689688");
+    expect(video!.id).toBe("1216689688");
     expect(HAT_PLANNING_RIBBING_VIDEO_CONTENT_ID).toBe(2211);
     const row = (videosPublic as PublicVideoRow[]).find(
       (v) => String(v.content_id) === "2211",
     );
     expect(row).toBeTruthy();
-    expect(String((row as { vimeo_id?: number | string }).vimeo_id)).toBe("216689688");
+    expect(String((row as { vimeo_id?: number | string }).vimeo_id)).toBe("1216689688");
     expect(String((row as { title?: string }).title)).toBe(
       "Planning Ribbing for a Neat Seam",
     );
