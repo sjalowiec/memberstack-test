@@ -8,8 +8,13 @@ vi.mock("../../../src/lib/legacy/legacyEbookOwnership", () => ({
   resolveLegacyEbookEntitlementsForEmail: vi.fn(),
 }));
 
+vi.mock("../../../src/lib/downloads/paidDownloadEntitlements", () => ({
+  listPaidDownloadCustomerEntitlementsForEmail: vi.fn(),
+}));
+
 import handler from "../my-ebook-downloads";
 import { requireMember } from "../lib/member-auth.js";
+import { listPaidDownloadCustomerEntitlementsForEmail } from "../../../src/lib/downloads/paidDownloadEntitlements";
 import { resolveLegacyEbookEntitlementsForEmail } from "../../../src/lib/legacy/legacyEbookOwnership";
 
 const VERIFIED_ID = "mem_from_jwt";
@@ -35,6 +40,7 @@ beforeEach(() => {
       downloadUrl: "/downloads/shop/cheet_sheet_book2.pdf",
     },
   ]);
+  vi.mocked(listPaidDownloadCustomerEntitlementsForEmail).mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -52,6 +58,7 @@ describe("my-ebook-downloads Netlify function", () => {
     const res = await handler(makeRequest());
     expect(res.status).toBe(401);
     expect(resolveLegacyEbookEntitlementsForEmail).not.toHaveBeenCalled();
+    expect(listPaidDownloadCustomerEntitlementsForEmail).not.toHaveBeenCalled();
   });
 
   it("lets a logged-in non-member retrieve download URLs (login only)", async () => {
@@ -70,7 +77,76 @@ describe("my-ebook-downloads Netlify function", () => {
         downloadUrl: "/downloads/shop/cheet_sheet_book2.pdf",
       },
     ]);
+    expect(body.downloads).toEqual(body.ebooks);
     expect(resolveLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
+      VERIFIED_EMAIL,
+    );
+  });
+
+  it("still returns legacy ebooks when the account has no paid-download entitlement", async () => {
+    const res = await handler(makeRequest());
+    const body = await res.json();
+    expect(body.ebooks).toEqual([
+      {
+        itemId: "416",
+        title: "Cheat Sheets for Hand Manipulated Stitch Patterns",
+        downloadUrl: "/downloads/shop/cheet_sheet_book2.pdf",
+      },
+    ]);
+    expect(listPaidDownloadCustomerEntitlementsForEmail).toHaveBeenCalledWith(
+      VERIFIED_EMAIL,
+    );
+  });
+
+  it("unions Charting Rulers with legacy ebooks for a matching entitlement email", async () => {
+    vi.mocked(listPaidDownloadCustomerEntitlementsForEmail).mockResolvedValue([
+      {
+        itemId: "printable:charting-rulers",
+        title: "Printable Gauge Rulers",
+        downloadUrl: "/downloads/shop/gauge-rulers.pdf",
+      },
+    ]);
+
+    const res = await handler(makeRequest());
+    const body = await res.json();
+    expect(body.ebooks).toEqual([
+      {
+        itemId: "416",
+        title: "Cheat Sheets for Hand Manipulated Stitch Patterns",
+        downloadUrl: "/downloads/shop/cheet_sheet_book2.pdf",
+      },
+      {
+        itemId: "printable:charting-rulers",
+        title: "Printable Gauge Rulers",
+        downloadUrl: "/downloads/shop/gauge-rulers.pdf",
+      },
+    ]);
+  });
+
+  it("does not add Charting Rulers when paid-download lookup is for a different email", async () => {
+    vi.mocked(listPaidDownloadCustomerEntitlementsForEmail).mockImplementation(
+      async (email) => {
+        if (email === VERIFIED_EMAIL) return [];
+        return [
+          {
+            itemId: "printable:charting-rulers",
+            title: "Printable Gauge Rulers",
+            downloadUrl: "/downloads/shop/gauge-rulers.pdf",
+          },
+        ];
+      },
+    );
+
+    const res = await handler(makeRequest());
+    const body = await res.json();
+    expect(body.ebooks).toEqual([
+      {
+        itemId: "416",
+        title: "Cheat Sheets for Hand Manipulated Stitch Patterns",
+        downloadUrl: "/downloads/shop/cheet_sheet_book2.pdf",
+      },
+    ]);
+    expect(listPaidDownloadCustomerEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
     );
   });
@@ -89,6 +165,9 @@ describe("my-ebook-downloads Netlify function", () => {
     expect(resolveLegacyEbookEntitlementsForEmail).not.toHaveBeenCalledWith(
       "spoof@example.com",
     );
+    expect(listPaidDownloadCustomerEntitlementsForEmail).toHaveBeenCalledWith(
+      VERIFIED_EMAIL,
+    );
   });
 
   it("returns an empty list when the verified email has no purchases", async () => {
@@ -97,6 +176,26 @@ describe("my-ebook-downloads Netlify function", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ebooks).toEqual([]);
+    expect(body.downloads).toEqual([]);
+  });
+
+  it("still returns legacy ebooks if paid-download storage fails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(listPaidDownloadCustomerEntitlementsForEmail).mockRejectedValue(
+      new Error("blobs unavailable"),
+    );
+
+    const res = await handler(makeRequest());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ebooks).toEqual([
+      {
+        itemId: "416",
+        title: "Cheat Sheets for Hand Manipulated Stitch Patterns",
+        downloadUrl: "/downloads/shop/cheet_sheet_book2.pdf",
+      },
+    ]);
+    errorSpy.mockRestore();
   });
 
   it("customer response contains no PII, price, transaction ID, or local path", async () => {

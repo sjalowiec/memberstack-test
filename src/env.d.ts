@@ -25,6 +25,12 @@ interface ImportMetaEnv {
    * to the browser.
    */
   readonly STRIPE_SECRET_KEY?: string;
+  /**
+   * Server-only: Stripe webhook endpoint secret (`whsec_...`) used to verify
+   * `Stripe-Signature` on paid-download Checkout Session events. NEVER expose
+   * to the browser.
+   */
+  readonly STRIPE_WEBHOOK_SECRET?: string;
   /** Server-only: optional Stripe API base override (tests/mocks). */
   readonly STRIPE_API_BASE?: string;
   /** Server-only: comma/space-separated Stripe price ids billed as MONTHLY membership. */
