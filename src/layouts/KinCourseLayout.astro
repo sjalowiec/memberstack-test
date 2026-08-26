@@ -572,6 +572,8 @@ const previewUnlock = preview === true;
 </style>
 
 <script>
+  import { parseLegacyGlossaryHref } from "../lib/kinCourse/legacyGlossaryHrefs";
+
   function hrefExtension(href: string): string {
     try {
       const pathname = new URL(href, window.location.origin).pathname;
@@ -691,7 +693,9 @@ const previewUnlock = preview === true;
     if (Number.isFinite(attrId) && attrId > 0) return attrId;
     const href = link.getAttribute('href') || '';
     const hashId = Number(/#glossary-(\d+)/i.exec(href)?.[1] || '');
-    return Number.isFinite(hashId) ? hashId : 0;
+    if (Number.isFinite(hashId) && hashId > 0) return hashId;
+    const parsed = parseLegacyGlossaryHref(href);
+    return parsed?.id && Number.isFinite(parsed.id) ? parsed.id : 0;
   }
 
   function openLegacyGlossary(id: number, returnFocus: HTMLElement | null) {
@@ -740,7 +744,7 @@ const previewUnlock = preview === true;
       return;
     }
 
-    const glossaryLink = target.closest<HTMLAnchorElement>('a.glossaryhelp');
+    const glossaryLink = target.closest<HTMLAnchorElement>('a');
     if (glossaryLink && glossaryLink.closest('.legacy-content')) {
       const glossaryId = glossaryIdFromLink(glossaryLink);
       if (glossaryId && glossaryCatalog.some((item) => item.glossaryId === glossaryId)) {

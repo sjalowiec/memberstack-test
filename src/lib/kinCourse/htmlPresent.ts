@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { resolveLegacyGlossaryHref } from "./legacyGlossaryHrefs";
 import type { KinCoursePresentation } from "./types";
 
 export type KinCourseGlossaryEntry = {
@@ -39,6 +40,40 @@ function withNewWindowAttrs(attrs: string): string {
     next += ' rel="noopener"';
   }
   return next;
+}
+
+function setAnchorHref(attrs: string, href: string): string {
+  if (/href=/i.test(attrs)) return attrs.replace(/href=["'][^"']*["']/i, `href="${href}"`);
+  return `${attrs} href="${href}"`;
+}
+
+function withGlossaryHelpAttrs(attrs: string, glossaryId: number): string {
+  let next = attrs;
+  if (!/data-GlossaryId=/i.test(next)) next += ` data-GlossaryId="${glossaryId}"`;
+  if (!/glossaryhelp/i.test(next)) {
+    if (/class=/i.test(next)) next = next.replace(/class=["']([^"']*)["']/i, 'class="$1 glossaryhelp"');
+    else next += ' class="glossaryhelp"';
+  }
+  next = next.replace(/\s*target=["'][^"']*["']/gi, "");
+  return next;
+}
+
+/**
+ * Rewrite production `/glossary/{id}/{slug}/term` hrefs onto DEV targets.
+ * Catalog matches open the in-player modal; unknown ids fall back to `/glossary/{slug}/`.
+ */
+export function applyLegacyGlossaryHrefRewrites(
+  html: string,
+  glossary: KinCourseGlossaryEntry[] = [],
+): string {
+  return html.replace(/<a\b([^>]*)>/gi, (full, attrs: string) => {
+    const href = /href=["']([^"']+)["']/i.exec(attrs)?.[1] || "";
+    const resolved = resolveLegacyGlossaryHref(href, glossary);
+    if (!resolved) return full;
+    let next = setAnchorHref(attrs, resolved.href);
+    if (resolved.modal) next = withGlossaryHelpAttrs(next, resolved.glossaryId);
+    return `<a${next}>`;
+  });
 }
 
 export function applyKinCourseSrcRewrites(
@@ -173,6 +208,7 @@ export function presentKinCourseHtml(
       return `<a${next}>`;
     });
   }
+  out = applyLegacyGlossaryHrefRewrites(out, glossary);
   out = restoreLegacyBootstrapThumbnailGrid(out);
   return ensurePdfOpensInNewWindow(out);
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   applyKinCourseSrcRewrites,
+  applyLegacyGlossaryHrefRewrites,
   presentKinCourseHtml,
+  readKinCourseGlossary,
   restoreLegacyBootstrapThumbnailGrid,
 } from "./htmlPresent";
 import { buildKinCourseLanding, readKinCoursePresentation } from "./presentation";
@@ -75,5 +77,62 @@ describe("restoreLegacyBootstrapThumbnailGrid", () => {
     const html = presentKinCourseHtml(manualsHtml, 6085);
     expect(html).toContain('class="row"');
     expect(html).toContain("col-sm-2");
+  });
+});
+
+describe("legacy glossary href adapter", () => {
+  const glossary = readKinCourseGlossary(111);
+  const presentation = readKinCoursePresentation(111);
+
+  it("rewrites production /glossary/{id}/{slug}/term hrefs onto the in-player modal", () => {
+    const html = presentKinCourseHtml(
+      '<a href="/glossary/283/cast-on-comb/term">Cast on comb</a>',
+      6088,
+      presentation,
+      glossary,
+    );
+    expect(html).toContain('href="#glossary-283"');
+    expect(html).toContain('data-GlossaryId="283"');
+    expect(html).toContain("glossaryhelp");
+    expect(html).not.toContain("/glossary/283/cast-on-comb/term");
+  });
+
+  it("rewrites absolute knititnow.com glossary term URLs the same way", () => {
+    const html = presentKinCourseHtml(
+      '<a href="https://www.knititnow.com/glossary/249/ravel-cord/term">Ravel Cord</a>',
+      6088,
+      presentation,
+      glossary,
+    );
+    expect(html).toContain('href="#glossary-249"');
+    expect(html).not.toContain("https://www.knititnow.com/glossary/249/ravel-cord/term");
+  });
+
+  it("falls back to /glossary/{slug}/ when the legacy id is not in the course catalog", () => {
+    const html = applyLegacyGlossaryHrefRewrites(
+      '<a href="/glossary/999/some-term/term">Unknown</a>',
+      glossary,
+    );
+    expect(html).toContain('href="/glossary/some-term/"');
+    expect(html).not.toContain("/glossary/999/some-term/term");
+  });
+
+  it("leaves current-site glossary slug hrefs and glossaryhelp data-GlossaryId links alone", () => {
+    const current = presentKinCourseHtml(
+      '<a href="/glossary/gauge/">Gauge</a>',
+      6098,
+      presentation,
+      glossary,
+    );
+    expect(current).toContain('href="/glossary/gauge/"');
+
+    const help = presentKinCourseHtml(
+      '<a data-GlossaryId="662" class="glossaryhelp">Gauge Ruler</a>',
+      6097,
+      presentation,
+      glossary,
+    );
+    expect(help).toContain('href="#glossary-662"');
+    expect(help).toContain('data-GlossaryId="662"');
   });
 });
