@@ -1,0 +1,32 @@
+---
+import KinCourseHomeView from "../../../components/kinCourse/KinCourseHomeView.astro";
+import CourseNamedLanding from "../../../components/courses/CourseNamedLanding.astro";
+import { parseKinCourseId } from "../../../lib/kinCourse/hrefs";
+import { loadKinCourseBundle } from "../../../lib/kinCourse/load";
+import { kinCourseLoadOptions } from "../../../lib/kinCourse/request";
+import { getCourseLandingBySlug } from "../../../lib/legacy_kin/courseLanding";
+
+export const prerender = false;
+
+const courseId = parseKinCourseId(Astro.params.courseSlug);
+const loadOptions = kinCourseLoadOptions(Astro.url);
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const bundle = courseId ? await loadKinCourseBundle(courseId, loadOptions) : null;
+if (courseId && !bundle) {
+  return new Response("Course not found", { status: 404 });
+}
+
+const landing = courseId ? null : getCourseLandingBySlug(Astro.params.courseSlug ?? "");
+if (!courseId && !landing) {
+  return new Response("Course not found", { status: 404 });
+}
+---
+
+{
+  bundle ? (
+    <KinCourseHomeView bundle={bundle} preview={loadOptions.preview} />
+  ) : landing ? (
+    <CourseNamedLanding landing={landing} />
+  ) : null
+}

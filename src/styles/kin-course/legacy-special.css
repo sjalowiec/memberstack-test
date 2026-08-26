@@ -1,0 +1,293 @@
+/* Yellow Course 111 components. Do not restyle extracted lesson HTML except inside these wrappers. */
+
+.legacy-error {
+  margin: 24px 0;
+  padding: 12px 14px;
+  border: 1px dashed #b00020;
+  background: #fff4f4;
+  color: #6b0010;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.legacy-hotspot {
+  width: 100%;
+  margin: 24px auto 8px;
+}
+
+.legacy-hotspot-stage {
+  position: relative;
+  width: 100%;
+}
+
+.legacy-hotspot-stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.legacy-hotspot-spot {
+  position: absolute;
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  border: 3px solid #cc0000;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+}
+
+.legacy-hotspot-spot::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+
+.legacy-hotspot-spot:focus-visible {
+  outline: 3px solid #52682d;
+  outline-offset: 2px;
+}
+
+.legacy-hotspot-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 3;
+  min-width: 120px;
+  max-width: min(280px, 70vw);
+  padding: 8px 10px;
+  border: 3px solid #cc0000;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: center;
+  white-space: normal;
+  pointer-events: auto;
+}
+
+.legacy-hotspot-spot:not(:hover):not(:focus-visible):not(.is-open) .legacy-hotspot-label {
+  display: none;
+}
+
+.legacy-flipbook {
+  width: 100%;
+  margin: 24px 0 8px;
+}
+
+.legacy-flipbook-stage {
+  margin: 0;
+}
+
+.legacy-flipbook-item {
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.legacy-flipbook-item img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.legacy-flipbook-item figcaption {
+  margin: 14px 0 0;
+  font-size: 18px;
+  line-height: 1.55;
+  color: #222;
+}
+
+.legacy-flipbook-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto 16px;
+}
+
+.legacy-flipbook-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 2px solid #52682d;
+  border-radius: 4px;
+  background: #fff;
+  color: #52682d;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.legacy-flipbook-btn:hover:not(:disabled),
+.legacy-flipbook-btn:focus-visible:not(:disabled) {
+  background: #f4f6ee;
+  color: #3f5123;
+}
+
+.legacy-flipbook-btn:focus-visible {
+  outline: 3px solid #52682d;
+  outline-offset: 2px;
+}
+
+.legacy-flipbook-btn:disabled {
+  border-color: #c5c5c5;
+  color: #8a8a8a;
+  background: #f3f3f3;
+  cursor: default;
+}
+
+.legacy-flipbook-status {
+  margin: 0;
+  min-width: 4.5em;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #52682d;
+}
+
+.legacy-exercise {
+  margin: 24px 0;
+}
+
+.legacy-exercise-item {
+  margin: 0 0 10px;
+  border: 1px solid #d7d7d7;
+  background: #fff;
+}
+
+.legacy-exercise-item summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.legacy-exercise-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.legacy-exercise-item summary:focus-visible {
+  outline: 3px solid #52682d;
+  outline-offset: -3px;
+}
+
+.legacy-exercise-icon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: auto;
+}
+
+.legacy-exercise-heading {
+  min-width: 0;
+}
+
+.legacy-exercise-heading h3 {
+  display: inline;
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.legacy-exercise-body {
+  padding: 4px 16px 18px;
+  border-top: 1px solid #ececec;
+}
+
+.legacy-jumplinks {
+  margin: 20px 0 8px;
+}
+
+.legacy-jumplinks h3 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.legacy-jumplink {
+  display: block;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  border: 1px solid #d7d7d7;
+  background: #f9f9f9;
+  color: #1a1a1a;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.legacy-jumplink:hover,
+.legacy-jumplink:focus-visible {
+  background: #f4f6ee;
+  border-color: #52682d;
+}
+
+.legacy-jumplink:focus-visible {
+  outline: 3px solid #52682d;
+  outline-offset: 2px;
+}
+
+.legacy-ap {
+  width: 100%;
+  height: min(80vh, 720px);
+  min-height: 500px;
+  margin: 24px 0;
+  background: #111;
+}
+
+.legacy-ap-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (max-width: 767px) {
+  .legacy-ap {
+    height: 70vh;
+    min-height: 420px;
+  }
+
+  .legacy-hotspot-label {
+    font-size: 14px;
+  }
+
+  .legacy-flipbook-item figcaption {
+    font-size: 16px;
+  }
+
+  .legacy-flipbook-controls {
+    gap: 8px;
+  }
+
+  .legacy-flipbook-btn {
+    min-width: 0;
+    flex: 1 1 0;
+    min-height: 48px;
+    padding: 10px 12px;
+  }
+
+  .legacy-flipbook-status {
+    flex: 0 0 auto;
+    font-size: 15px;
+  }
+}

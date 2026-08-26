@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { course111LessonPreviewHref } from "./course111AdminModel";
+import { course111LessonPreviewHref, loadCourse111, listCourse111OriginalLessons } from "./course111Admin";
 import {
   isProductionKnitItNowCourseUrl,
   legacyLessonItemNavHref,
@@ -27,7 +27,7 @@ const SK840_CATALOG_SLUG = "mastering-the-silver-reed-sk840";
 const SK840_COURSE_SLUG =
   "mastering-the-silver-reed-sk840-a-comprehensive-course";
 const SK840_PRODUCTION_HREF = "https://courses.knititnow.com/courses/111";
-const SK840_DEV_HREF = `/courses/legacy/${SK840_COURSE_SLUG}?preview=true`;
+const SK840_DEV_HREF = `/courses/111?preview=true`;
 
 function assertSameOriginCourseHref(href: string) {
   expect(href.startsWith("/courses/")).toBe(true);
@@ -60,7 +60,7 @@ describe("isProductionKnitItNowCourseUrl", () => {
   });
 
   it("ignores local paths and unrelated hosts", () => {
-    expect(isProductionKnitItNowCourseUrl(SK840_DEV_HREF)).toBe(false);
+    expect(isProductionKnitItNowCourseUrl("/courses/legacy/lk-150-quick-start")).toBe(false);
     expect(isProductionKnitItNowCourseUrl("https://example.com/courses/111")).toBe(
       false,
     );
@@ -107,7 +107,7 @@ describe("resolveCatalogCourseHref", () => {
   it("maps catalog slug + production href to the cleaned Course 111 JSON slug", () => {
     expect(
       localLegacyCourseHrefForCatalog(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF),
-    ).toBe(SK840_DEV_HREF);
+    ).toBe(`/courses/legacy/${SK840_COURSE_SLUG}?preview=true`);
   });
 });
 
@@ -166,11 +166,10 @@ describe("Course 111 lesson navigation stays on the current origin", () => {
   });
 
   it("keeps Watson preview lesson URLs on the current origin", () => {
-    expect(course).toBeTruthy();
-    const href = course111LessonPreviewHref(course!, "learn-about-the-machine");
-    expect(href).toBe(
-      `/courses/legacy/${SK840_COURSE_SLUG}/learn-about-the-machine?preview=true`,
-    );
+    const data = loadCourse111();
+    const first = listCourse111OriginalLessons(data)[0]!;
+    const href = course111LessonPreviewHref(data, first.assignId);
+    expect(href).toBe(`/courses/111/lesson/${first.assignId}?preview=true`);
     assertSameOriginCourseHref(href!);
   });
 

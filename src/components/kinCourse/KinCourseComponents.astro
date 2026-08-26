@@ -1,0 +1,235 @@
+---
+import LegacyActivePresenter from "./LegacyActivePresenter.astro";
+import LegacyExercise from "./LegacyExercise.astro";
+import LegacyFlipbook from "./LegacyFlipbook.astro";
+import LegacyHotspot from "./LegacyHotspot.astro";
+import LegacyVimeoJumpLinks from "./LegacyVimeoJumpLinks.astro";
+import { presentKinCourseHtml, type KinCourseGlossaryEntry } from "../../lib/kinCourse/htmlPresent";
+import { flattenLessons } from "../../lib/kinCourse/player";
+import { kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
+import type { KinCourseDocument, KinCoursePresentation } from "../../lib/kinCourse/types";
+
+interface VideoItem {
+  vimeoId?: string;
+  label?: string;
+}
+
+interface SlideItem {
+  src?: string;
+  caption?: string;
+}
+
+interface SpotItem {
+  index: number;
+  text?: string;
+  style?: string;
+  location?: string;
+  actionId?: string | null;
+  action?: string | null;
+}
+
+interface ExerciseItem {
+  order: number;
+  heading?: string;
+  detailsHtml?: string;
+  image?: string;
+}
+
+interface JumpItem {
+  time?: string;
+  title?: string;
+}
+
+interface Component {
+  type: string;
+  order: number;
+  componentId?: number | null;
+  html?: string;
+  vimeoId?: string;
+  label?: string;
+  videos?: VideoItem[];
+  slides?: SlideItem[];
+  image?: string;
+  imageWidth?: number | null;
+  imageHeight?: number | null;
+  wrapperStyle?: string;
+  stageStyle?: string;
+  spots?: SpotItem[];
+  items?: ExerciseItem[];
+  jumps?: JumpItem[];
+  package?: string;
+  playMode?: string;
+  src?: string;
+  pending?: boolean;
+  unsupported?: boolean;
+  legacyType?: string;
+}
+
+interface Props {
+  components: Component[];
+  fallbackTitle: string;
+  lessonId: number;
+  course: KinCourseDocument;
+  presentation?: KinCoursePresentation;
+  glossary?: KinCourseGlossaryEntry[];
+}
+
+const {
+  components,
+  fallbackTitle,
+  lessonId,
+  course,
+  presentation = {},
+  glossary = [],
+} = Astro.props;
+
+function presentHtml(html: string): string {
+  return presentKinCourseHtml(html, lessonId, presentation, glossary);
+}
+
+const knownAssignIds = flattenLessons(course).map((lesson) => lesson.id);
+const knownLessons = new Set(knownAssignIds);
+
+function rewriteExerciseDetails(html: string): string {
+  return html.replace(
+    /<a\b([^>]*?)data-popupcontentid=["'](\d+)["']([^>]*)>/gi,
+    (full, before, id, after) => {
+      const lesson = Number(id);
+      if (!knownLessons.has(lesson)) return full;
+      const leftover = `${before} ${after}`
+        .replace(/\sclass=["'][^"']*["']/i, "")
+        .replace(/\sdata-popupcontentid=["'][^"']*["']/i, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      return `<a href="${kinCourseLessonHref(course.id, lesson)}"${leftover ? ` ${leftover}` : ""}>`;
+    },
+  );
+}
+---
+
+{
+  components.map((component) => {
+    if (component.type === 'html') {
+      return <div class="legacy-html" set:html={presentHtml(component.html || "")} />;
+    }
+
+    if (component.type === 'vimeo' || component.type === 'video') {
+      const labelText = (component.label || '').replace(/<[^>]+>/g, '').trim();
+      return (
+        <div class="legacy-vimeo-block">
+          {component.label ? <p class="legacy-media-label" set:html={component.label} /> : null}
+          <div class="legacy-vimeo">
+            <iframe
+              src={`https://player.vimeo.com/video/${component.vimeoId}`}
+              title={labelText || fallbackTitle}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (component.type === 'vimeoMultiple') {
+      return (
+        <div class="legacy-vimeo-multiple">
+          {(component.videos || []).map((video) => {
+            const labelText = (video.label || '').replace(/<[^>]+>/g, '').trim();
+            return (
+              <div class="legacy-vimeo-block">
+                {video.label ? <p class="legacy-media-label" set:html={video.label} /> : null}
+                <div class="legacy-vimeo">
+                  <iframe
+                    src={`https://player.vimeo.com/video/${video.vimeoId}`}
+                    title={labelText || fallbackTitle}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (component.type === 'imageslideshow') {
+      return (
+        <LegacyFlipbook
+          lessonId={lessonId}
+          slides={(component.slides || []).map((slide) => ({
+            src: slide.src,
+            caption: slide.caption ? presentHtml(slide.caption) : slide.caption,
+          }))}
+        />
+      );
+    }
+
+    if (component.type === 'hotspot') {
+      return (
+        <LegacyHotspot
+          lessonId={lessonId}
+          image={component.image}
+          imageWidth={component.imageWidth}
+          imageHeight={component.imageHeight}
+          wrapperStyle={component.wrapperStyle}
+          stageStyle={component.stageStyle}
+          spots={component.spots}
+        />
+      );
+    }
+
+    if (component.type === 'exercise') {
+      return (
+        <LegacyExercise
+          lessonId={lessonId}
+          courseId={course.id}
+          knownAssignIds={knownAssignIds}
+          items={(component.items || []).map((item) => ({
+            ...item,
+            detailsHtml: presentHtml(rewriteExerciseDetails(item.detailsHtml || "")),
+          }))}
+        />
+      );
+    }
+
+    if (component.type === 'vimeoJumpLinks') {
+      return (
+        <LegacyVimeoJumpLinks lessonId={lessonId} vimeoId={component.vimeoId} jumps={component.jumps} />
+      );
+    }
+
+    if (component.type === 'activepresenter') {
+      return (
+        <LegacyActivePresenter
+          lessonId={lessonId}
+          packageName={component.package}
+          playMode={component.playMode}
+          src={component.src}
+        />
+      );
+    }
+
+    if (component.unsupported) {
+      return (
+        <div class="legacy-placeholder" role="note">
+          Unsupported legacy component: {component.legacyType || component.type}
+        </div>
+      );
+    }
+
+    if (component.pending) {
+      return (
+        <div class="legacy-placeholder" role="note">
+          Legacy component: {component.legacyType || component.type} — renderer pending
+        </div>
+      );
+    }
+
+    return (
+      <div class="legacy-error" role="alert">
+        Cannot render {component.type} in lesson {lessonId}: unknown component type.
+      </div>
+    );
+  })
+}

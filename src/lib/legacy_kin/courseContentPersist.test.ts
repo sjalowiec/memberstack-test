@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   applyLessonUpdate,
   isCourseContentAdminAllowed,
+  loadCourseContentDocument,
   readCourseContentFile,
   writeCourseContentFile,
 } from "./courseContentAdmin";
@@ -22,13 +23,13 @@ describe("course content persist mode", () => {
     ).toBe("filesystem");
   });
 
-  it("uses the GitHub writer for deployed kin-dev", () => {
+  it("uses the live blob overlay for deployed kin-dev", () => {
     expect(
       resolveCourseContentPersistMode({
         hostname: "kin-dev.netlify.app",
         env: { isViteDev: false },
       }),
-    ).toBe("github");
+    ).toBe("blob");
   });
 
   it("blocks production writes", () => {
@@ -61,7 +62,8 @@ describe("course content persist mode", () => {
 });
 
 describe("writeCourseContentFile adapter", () => {
-  it("does not write the filesystem when persisting through GitHub", async () => {
+  it("does not write the filesystem when persisting through the live overlay", async () => {
+    const writeCourseContentOverlay = vi.fn(async () => {});
     const commitCourseContentFile = vi.fn(async () => ({
       commitSha: "abc123",
       branch: "dev",
@@ -72,12 +74,32 @@ describe("writeCourseContentFile adapter", () => {
     const result = await writeCourseContentFile(50, data, {
       hostname: "kin-dev.netlify.app",
       env: { isViteDev: false },
+      writeCourseContentOverlay,
+      commitCourseContentFile,
+    });
+    expect(writeCourseContentOverlay).toHaveBeenCalledTimes(1);
+    expect(commitCourseContentFile).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      persistedVia: "blob",
+      backupPath: "",
+    });
+  });
+
+  it("uses GitHub only when explicitly requested", async () => {
+    const commitCourseContentFile = vi.fn(async () => ({
+      commitSha: "abc123",
+      branch: "dev",
+      path: "src/data/legacy_kin/cleaned/course_50_lk150_quick.poc.json",
+      fileSha: "file-sha",
+    }));
+    const data = readCourseContentFile(50);
+    const result = await writeCourseContentFile(50, data, {
+      persist: "github",
+      hostname: "kin-dev.netlify.app",
+      env: { isViteDev: false },
       commitCourseContentFile,
     });
     expect(commitCourseContentFile).toHaveBeenCalledTimes(1);
-    expect(commitCourseContentFile.mock.calls[0]?.[0]?.filename).toBe(
-      "course_50_lk150_quick.poc.json",
-    );
     expect(result).toMatchObject({
       persistedVia: "github",
       branch: "dev",
@@ -90,6 +112,7 @@ describe("writeCourseContentFile adapter", () => {
     const data = readCourseContentFile(50);
     await expect(
       writeCourseContentFile(50, data, {
+        persist: "github",
         hostname: "kin-dev.netlify.app",
         env: { isViteDev: false },
       }),
@@ -112,5 +135,18 @@ describe("Course 111 lesson replacement", () => {
     expect(result.data.lessons[0]?.title).toBe(`${target.title} (admin test title)`);
     expect(result.data.lessons.slice(1)).toEqual(original.lessons.slice(1));
     expect(original.lessons[0]?.title).toBe(target.title);
+  });
+});
+
+describe("loadCourseContentDocument overlay", () => {
+  it("prefers the live overlay over the bundled POC file", async () => {
+    const overlay = structuredClone(readCourseContentFile(COURSE_111_ID));
+    overlay.lessons[0]!.title = "Overlay lesson title";
+    const data = await loadCourseContentDocument(COURSE_111_ID, {
+      hostname: "kin-dev.netlify.app",
+      env: { isViteDev: false },
+      readCourseContentOverlay: async () => overlay,
+    });
+    expect(data.lessons[0]?.title).toBe("Overlay lesson title");
   });
 });

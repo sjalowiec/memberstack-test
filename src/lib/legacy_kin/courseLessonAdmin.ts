@@ -1,5 +1,6 @@
 import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import {
+  loadCourseContentDocument,
   readCourseContentFile,
   validateLessonInput,
   writeCourseContentFile,
@@ -8,7 +9,7 @@ import {
 
 export type LessonStructureResult = {
   backupPath: string;
-  persistedVia: "filesystem" | "github";
+  persistedVia: "filesystem" | "blob" | "github";
   branch?: string;
   commitSha?: string;
   course: CoursePreviewData;
@@ -145,7 +146,7 @@ export async function addLessonToCourse(
   courseId: number,
   writeOptions: CourseContentWriteOptions = {},
 ): Promise<LessonStructureResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   const sorted = sortedCourseLessons(data);
   const lesson = createNewLesson(sorted);
   const { persist, course } = await writeValidatedLessons(
@@ -171,7 +172,7 @@ export async function deleteLessonFromCourse(
   lessonSlug: string,
   writeOptions: CourseContentWriteOptions = {},
 ): Promise<LessonStructureResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   if (data.lessons.length <= 1) {
     throw new Error("Cannot delete the last remaining lesson in a course.");
   }
@@ -202,7 +203,7 @@ export async function reorderLessonsInCourse(
   lessonSlugs: string[],
   writeOptions: CourseContentWriteOptions = {},
 ): Promise<LessonStructureResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   const sorted = sortedCourseLessons(data);
   const bySlug = new Map(sorted.map((lesson) => [lesson.slug, lesson]));
 
@@ -238,7 +239,7 @@ export async function moveLessonInCourse(
   toIndex: number,
   writeOptions: CourseContentWriteOptions = {},
 ): Promise<LessonStructureResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   const sorted = sortedCourseLessons(data);
   if (fromIndex < 0 || toIndex < 0 || fromIndex >= sorted.length || toIndex >= sorted.length) {
     throw new Error("Invalid lesson move.");
@@ -268,7 +269,7 @@ export async function duplicateLessonInCourse(
   sourceLesson?: unknown,
   writeOptions: CourseContentWriteOptions = {},
 ): Promise<LessonStructureResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   const sorted = sortedCourseLessons(data);
   const index = sorted.findIndex((lesson) => lesson.slug === lessonSlug);
   if (index === -1) throw new Error(`Lesson not found: ${lessonSlug}`);

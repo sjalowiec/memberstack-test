@@ -5,7 +5,7 @@ import {
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { CourseContentGithubCommitInput, CourseContentGithubCommitResult } from "./courseContentGithub";
 
-export type CourseContentPersistMode = "filesystem" | "github";
+export type CourseContentPersistMode = "filesystem" | "blob" | "github";
 
 export type CourseContentPersistResult = {
   backupPath: string;
@@ -21,6 +21,13 @@ export type CourseContentWriteOptions = {
   commitCourseContentFile?: (
     input: CourseContentGithubCommitInput,
   ) => Promise<CourseContentGithubCommitResult>;
+  writeCourseContentOverlay?: (
+    courseId: number,
+    data: import("./coursePreviewPoc").CoursePreviewData,
+  ) => Promise<void>;
+  readCourseContentOverlay?: (
+    courseId: number,
+  ) => Promise<import("./coursePreviewPoc").CoursePreviewData | null>;
 };
 
 function defaultPersistEnv(
@@ -42,8 +49,10 @@ export function isCourseContentProductionWriteBlocked(
 }
 
 /**
- * GitHub persistence is used only for deployed non-production hosts (kin-dev).
- * Missing hostname keeps the localhost/CLI filesystem path.
+ * Live editorial persistence:
+ * - localhost / missing hostname → filesystem (immediate)
+ * - deployed DEV (kin-dev) → Netlify Blobs (immediate Save → Preview)
+ * GitHub remains an explicit opt-in, never the default preview path.
  */
 export function resolveCourseContentPersistMode(
   options: CourseContentWriteOptions = {},
@@ -52,11 +61,15 @@ export function resolveCourseContentPersistMode(
   if (isCourseContentProductionWriteBlocked(options.hostname, env)) {
     throw new Error("Course content writes are blocked in production.");
   }
-  if (options.persist === "filesystem" || options.persist === "github") {
+  if (
+    options.persist === "filesystem" ||
+    options.persist === "blob" ||
+    options.persist === "github"
+  ) {
     return options.persist;
   }
   const site = detectSiteEnvironment(options.hostname ?? null, env);
-  if (site === "dev" && options.hostname) return "github";
+  if (site === "dev" && options.hostname) return "blob";
   return "filesystem";
 }
 

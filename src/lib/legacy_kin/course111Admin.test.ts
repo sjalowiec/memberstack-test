@@ -123,39 +123,39 @@ describe("course111Admin load", () => {
     expect(listCourse111LessonSummaries(data).length).toBeGreaterThan(0);
   });
 
-  it("builds draft preview URLs for the selected lesson with preview=true", () => {
+  it("builds draft preview URLs for the selected original lesson assignId", () => {
     const data = loadCourse111();
-    const lessons = listCourse111LessonSummaries(data);
-    const first = lessons[0]!;
-    const second = lessons[1] ?? first;
+    const originals = listCourse111OriginalLessons(data);
+    const first = originals[0]!;
+    const second = originals[1] ?? first;
 
-    const firstHref = course111LessonPreviewHref(data, first.slug);
-    expect(firstHref).toBe(
-      `/courses/legacy/${data.course.slug}/${first.slug}?preview=true`,
-    );
-    expect(firstHref).toContain("?preview=true");
-    expect(firstHref).toContain(`/${first.slug}?`);
+    const firstHref = course111LessonPreviewHref(data, first.assignId);
+    expect(firstHref).toBe(`/courses/111/lesson/${first.assignId}?preview=true`);
     expect(firstHref).not.toContain("courses.knititnow.com");
-    expect(firstHref).not.toContain("knititnow.com");
+    expect(firstHref).not.toContain("/courses/legacy/");
 
-    const resolved = resolveCourse111SelectedLessonPreview(data, second.slug);
-    expect(resolved).toEqual({
-      lessonSlug: second.slug,
-      previewHref: `/courses/legacy/${data.course.slug}/${second.slug}?preview=true`,
-    });
-    expect(resolved?.previewHref).not.toBe(
-      `/courses/legacy/${data.course.slug}?preview=true`,
+    const resolved = resolveCourse111SelectedLessonPreview(
+      data,
+      second.parentSlug,
+      second.blockSlug,
     );
+    expect(resolved).toEqual({
+      lessonSlug: second.parentSlug,
+      blockSlug: second.blockSlug,
+      assignId: second.assignId,
+      previewHref: `/courses/111/lesson/${second.assignId}?preview=true`,
+    });
   });
 
-  it("Save & Preview saves the selected lesson before opening its preview URL", async () => {
+  it("Save & Preview saves the selected lesson before opening its assignId preview URL", async () => {
     const data = loadCourse111();
-    const selected = listCourse111LessonSummaries(data)[2] ?? listCourse111LessonSummaries(data)[0]!;
+    const selected = listCourse111OriginalLessons(data)[2] ?? listCourse111OriginalLessons(data)[0]!;
     const calls: string[] = [];
 
     const result = await runCourse111SaveAndPreview({
       data,
-      selectedLessonSlug: selected.slug,
+      selectedLessonSlug: selected.parentSlug,
+      selectedBlockSlug: selected.blockSlug,
       saveLesson: async (lessonSlug) => {
         calls.push(`save:${lessonSlug}`);
       },
@@ -164,25 +164,53 @@ describe("course111Admin load", () => {
       },
     });
 
-    expect(result.lessonSlug).toBe(selected.slug);
+    expect(result.lessonSlug).toBe(selected.parentSlug);
+    expect(result.assignId).toBe(selected.assignId);
     expect(result.previewHref).toBe(
-      `/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
+      `/courses/111/lesson/${selected.assignId}?preview=true`,
     );
     expect(calls).toEqual([
-      `save:${selected.slug}`,
-      `open:/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
+      `save:${selected.parentSlug}`,
+      `open:/courses/111/lesson/${selected.assignId}?preview=true`,
     ]);
     expect(result.previewOpened).toBe(true);
   });
 
-  it("does not open preview after a GitHub persist on kin-dev", async () => {
+  it("opens preview immediately after a live blob persist", async () => {
     const data = loadCourse111();
-    const selected = listCourse111LessonSummaries(data)[0]!;
+    const selected = listCourse111OriginalLessons(data)[0]!;
     const calls: string[] = [];
 
     const result = await runCourse111SaveAndPreview({
       data,
-      selectedLessonSlug: selected.slug,
+      selectedLessonSlug: selected.parentSlug,
+      selectedBlockSlug: selected.blockSlug,
+      saveLesson: async (lessonSlug) => {
+        calls.push(`save:${lessonSlug}`);
+        return { persistedVia: "blob" };
+      },
+      openPreview: (href) => {
+        calls.push(`open:${href}`);
+      },
+    });
+
+    expect(result.previewOpened).toBe(true);
+    expect(result.persistedVia).toBe("blob");
+    expect(calls).toEqual([
+      `save:${selected.parentSlug}`,
+      `open:/courses/111/lesson/${selected.assignId}?preview=true`,
+    ]);
+  });
+
+  it("does not open preview after a GitHub persist on kin-dev", async () => {
+    const data = loadCourse111();
+    const selected = listCourse111OriginalLessons(data)[0]!;
+    const calls: string[] = [];
+
+    const result = await runCourse111SaveAndPreview({
+      data,
+      selectedLessonSlug: selected.parentSlug,
+      selectedBlockSlug: selected.blockSlug,
       saveLesson: async (lessonSlug) => {
         calls.push(`save:${lessonSlug}`);
         return { persistedVia: "github" };
@@ -194,18 +222,25 @@ describe("course111Admin load", () => {
 
     expect(result.previewOpened).toBe(false);
     expect(result.persistedVia).toBe("github");
-    expect(calls).toEqual([`save:${selected.slug}`]);
+    expect(calls).toEqual([`save:${selected.parentSlug}`]);
   });
 
-  it("explains that deployed saves wait for the dev site to deploy", () => {
+  it("explains live overlay saves versus GitHub deploy delay", () => {
+    expect(
+      course111SaveStatusMessage({
+        persistedVia: "blob",
+        lessonTitle: "Your manuals",
+        previewOpened: true,
+      }),
+    ).toBe(
+      "Saved “Your manuals” to live DEV preview. Course remains draft/unpublished.",
+    );
     expect(
       course111SaveStatusMessage({
         persistedVia: "github",
         lessonTitle: "Learn About the Machine",
       }),
-    ).toBe(
-      "Saved to dev. The updated lesson will appear after the dev site finishes deploying.",
-    );
+    ).toMatch(/after the site finishes deploying/);
     expect(
       course111SaveStatusMessage({
         persistedVia: "github",

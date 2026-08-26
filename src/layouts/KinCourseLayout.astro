@@ -1,0 +1,801 @@
+---
+import KinCourseFooter from "../components/kinCourse/KinCourseFooter.astro";
+import KinCourseHeader from "../components/kinCourse/KinCourseHeader.astro";
+import "../styles/kin-course/course-shell.css";
+import "../styles/kin-course/legacy-special.css";
+import "../styles/kin-course/site-chrome.css";
+import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
+
+interface Props {
+  title: string;
+  pageClass?: string;
+  courseTitle?: string;
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
+  courseSlug?: string;
+  preview?: boolean;
+  glossary?: KinCourseGlossaryEntry[];
+}
+
+const {
+  title,
+  pageClass = "",
+  courseTitle = "Member course",
+  thumbnailSrc,
+  thumbnailAlt,
+  courseSlug = "",
+  preview = false,
+  glossary = [],
+} = Astro.props;
+const lockedTitle = courseTitle;
+const accessLabel = "Member Course";
+const membershipHref = "/membership";
+const previewUnlock = preview === true;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+    />
+    <!--
+      Shared session with www.knititnow.com / knititnow.com. Memberstack defaults
+      to origin-scoped localStorage; this stores `_ms_mid` / `_ms_cookie` on
+      `.knititnow.com`. Assumes those hosts are in Application Domains.
+      var so this is also window.memberstackConfig.
+    -->
+    <script is:inline>
+      var memberstackConfig = {
+        useCookies: true,
+        setCookieOnRootDomain: true,
+      };
+    </script>
+    <script
+      data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
+      data-memberstack-use-cookies
+      src="https://static.memberstack.com/scripts/v2/memberstack.js"
+      type="text/javascript"
+    ></script>
+  </head>
+  <body class={pageClass}>
+    <KinCourseHeader />
+    <div
+      class="course-111-gate"
+      data-kin-course-gate
+      data-course-gate
+      data-course-access="member"
+      data-course-slug={courseSlug}
+      data-gate-pending={!previewUnlock}
+      aria-busy={!previewUnlock}
+    >
+      <p class="course-111-gate__pending" data-gated="pending" role="status" hidden={previewUnlock}>
+        Checking access…
+      </p>
+      <div class="course-111-gate__locked" data-gated="locked" hidden>
+        <main class="legacy-page">
+          <div class="legacy-page-inner">
+            <div class="course-111-gate__card">
+              {
+                thumbnailSrc ? (
+                  <img
+                    class="course-111-gate__thumb"
+                    src={thumbnailSrc}
+                    alt={thumbnailAlt || lockedTitle}
+                    width="600"
+                    height="338"
+                  />
+                ) : null
+              }
+              <h1 class="course-111-gate__title">{lockedTitle}</h1>
+              <div data-gate-copy="loggedOut">
+                <p class="course-111-gate__label">{accessLabel}</p>
+                <p class="course-111-gate__msg">
+                  This course is included with Knit It Now membership. Log in to
+                  continue, or join to unlock access.
+                </p>
+                <div class="course-111-gate__actions">
+                  <button type="button" class="course-111-gate__login" data-course-111-login>
+                    Log in
+                  </button>
+                  <a class="course-111-gate__join" href={membershipHref}>
+                    Join Knit It Now
+                  </a>
+                </div>
+              </div>
+              <div data-gate-copy="loggedInNoAccess" hidden>
+                <p class="course-111-gate__label">Membership required</p>
+                <p class="course-111-gate__msg">
+                  You are signed in, but this course needs an active Knit It Now
+                  membership or the SK840 course plan.
+                </p>
+                <div class="course-111-gate__actions">
+                  <a class="course-111-gate__join" href={membershipHref}>
+                    Become a member
+                  </a>
+                  <button type="button" class="course-111-gate__logout" data-course-111-logout>
+                    Log out / switch account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+      <div class="course-111-gate__content" data-gated="content" hidden={!previewUnlock}>
+        <slot name="chrome" />
+        <main class="legacy-page">
+          <div class="legacy-page-inner">
+            <slot />
+          </div>
+        </main>
+        <slot name="overlay" />
+    <div id="legacy-vimeo-lightbox" class="legacy-lightbox" hidden>
+      <div class="legacy-lightbox-backdrop" data-lightbox-close></div>
+      <div class="legacy-lightbox-dialog" role="dialog" aria-modal="true" aria-labelledby="legacy-vimeo-lightbox-title">
+        <div class="legacy-lightbox-header">
+          <h3 id="legacy-vimeo-lightbox-title">Video</h3>
+          <button type="button" class="legacy-lightbox-close" data-lightbox-close>Close</button>
+        </div>
+        <div class="legacy-vimeo" id="legacy-vimeo-lightbox-player"></div>
+      </div>
+    </div>
+    <div id="legacy-image-lightbox" class="legacy-lightbox" hidden>
+      <div class="legacy-lightbox-backdrop" data-lightbox-close></div>
+      <div class="legacy-lightbox-dialog" role="dialog" aria-modal="true" aria-labelledby="legacy-image-lightbox-title">
+        <div class="legacy-lightbox-header">
+          <h3 id="legacy-image-lightbox-title">Image</h3>
+          <button type="button" class="legacy-lightbox-close" data-lightbox-close>Close</button>
+        </div>
+        <div class="legacy-lightbox-image" id="legacy-image-lightbox-frame"></div>
+      </div>
+    </div>
+    <div id="legacy-glossary-modal" class="legacy-lightbox legacy-glossary-modal" hidden>
+      <div class="legacy-lightbox-backdrop" data-glossary-close></div>
+      <div
+        class="legacy-lightbox-dialog legacy-glossary-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="legacy-glossary-title"
+        aria-describedby="legacy-glossary-body"
+      >
+        <div class="legacy-lightbox-header">
+          <h3 id="legacy-glossary-title">Glossary</h3>
+          <button type="button" class="legacy-lightbox-close" data-glossary-close>Close</button>
+        </div>
+        <div id="legacy-glossary-body" class="legacy-glossary-body"></div>
+      </div>
+    </div>
+      </div>
+    </div>
+    <KinCourseFooter />
+    <a
+      id="kin-ms-login-proxy"
+      href="#"
+      data-ms-modal="login"
+      data-ms-redirect="current-url"
+      hidden
+      aria-hidden="true"
+      tabindex="-1"
+    ></a>
+    <script is:inline id="course-111-glossary-data" type="application/json" set:html={JSON.stringify(glossary)}></script>
+    <script>
+      import { runKinCourseAccessGateBoot } from "../scripts/kinCourseAccessGate";
+      runKinCourseAccessGateBoot();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #f7f7f7;
+    color: #222;
+  }
+
+  .course-111-gate {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .course-111-gate__content {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .course-111-gate [data-gated][hidden] {
+    display: none !important;
+  }
+
+  .course-111-gate__pending {
+    margin: 2.5rem auto;
+    max-width: 40rem;
+    min-height: 4rem;
+    padding: 0 1rem;
+    text-align: center;
+    color: #8a9380;
+    font-size: 0.9rem;
+  }
+
+  .course-111-gate__card {
+    max-width: 40rem;
+    margin: 2rem auto;
+    padding: 1.5rem 1.5rem 1.75rem;
+    text-align: center;
+    border: 1px solid #d6dbc9;
+    border-radius: 14px;
+    background: #f8faf3;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .course-111-gate__thumb {
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    height: auto;
+    margin: 0 auto 1rem;
+    border-radius: 10px;
+  }
+
+  .course-111-gate__title {
+    margin: 0 0 0.5rem;
+    font-family: var(--kin-chrome-font);
+    font-size: 1.5rem;
+    color: var(--kin-green);
+  }
+
+  .course-111-gate__label {
+    margin: 0 0 0.75rem;
+    font-family: var(--kin-chrome-font);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kin-green);
+  }
+
+  .course-111-gate__msg {
+    margin: 0 0 1.25rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .course-111-gate__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .course-111-gate__login,
+  .course-111-gate__join,
+  .course-111-gate__logout {
+    display: inline-block;
+    min-width: 12rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    font-family: var(--kin-chrome-font);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .course-111-gate__login {
+    border: 1px solid var(--kin-green);
+    background: var(--kin-green);
+    color: #fff;
+  }
+
+  .course-111-gate__login:hover,
+  .course-111-gate__login:focus {
+    background: var(--kin-green-hover);
+    border-color: var(--kin-green-hover);
+    color: #fff;
+  }
+
+  .course-111-gate__join,
+  .course-111-gate__logout {
+    border: 1px solid var(--kin-green);
+    background: #fff;
+    color: var(--kin-green);
+  }
+
+  .course-111-gate__join:hover,
+  .course-111-gate__join:focus,
+  .course-111-gate__logout:hover,
+  .course-111-gate__logout:focus {
+    background: #f3f6ec;
+    color: var(--kin-green-hover);
+    text-decoration: none;
+  }
+
+  .legacy-page {
+    flex: 1 0 auto;
+    padding: 32px 16px 64px;
+  }
+
+  body.course-lesson-page .legacy-page {
+    padding-top: 20px;
+  }
+
+  .legacy-page-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .legacy-page h1 {
+    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  .legacy-page h2 {
+    font-size: 28px;
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
+  .legacy-content {
+    background: #fff;
+    padding: 24px;
+    border: 1px solid #e3e3e3;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+
+  .legacy-content p {
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .legacy-content .videopopup,
+  .legacy-content .subvideopopup,
+  .legacy-content .imagepopup {
+    cursor: pointer;
+  }
+
+  .legacy-content a.glossaryhelp[href] {
+    cursor: pointer;
+    color: #52682d;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .legacy-content a.glossaryhelp[href]:hover,
+  .legacy-content a.glossaryhelp[href]:focus-visible {
+    color: #3e4f22;
+  }
+
+  .legacy-content img[src="/challenge/images/v2/111/cast_on_checklist.jpg"] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    cursor: zoom-in;
+  }
+
+  .legacy-vimeo {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    margin-top: 24px;
+  }
+
+  .legacy-vimeo iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .legacy-vimeo-block {
+    margin-top: 24px;
+  }
+
+  .legacy-media-label {
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .legacy-vimeo-multiple .legacy-vimeo-block + .legacy-vimeo-block {
+    margin-top: 32px;
+  }
+
+  .legacy-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .legacy-gallery-item {
+    margin: 0;
+  }
+
+  .legacy-gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .legacy-gallery-item figcaption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .legacy-placeholder {
+    margin: 24px 0;
+    padding: 12px 14px;
+    border: 1px dashed #b38b00;
+    background: #fff8e1;
+    color: #5c4400;
+    font-size: 14px;
+  }
+
+  .legacy-placeholder-id {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #7a5d00;
+  }
+
+  .legacy-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .legacy-nav-disabled {
+    color: #999;
+  }
+
+  .legacy-outline-section {
+    margin-top: 28px;
+  }
+
+  .legacy-outline-section h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .legacy-outline-lessons {
+    padding-left: 20px;
+  }
+
+  .legacy-outline-lessons li {
+    margin: 6px 0;
+  }
+
+  .legacy-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .legacy-lightbox[hidden] {
+    display: none;
+  }
+
+  .legacy-lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+  }
+
+  .legacy-lightbox-dialog {
+    position: relative;
+    width: min(900px, 100%);
+    background: #fff;
+    padding: 16px 16px 20px;
+  }
+
+  .legacy-lightbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .legacy-lightbox-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .legacy-lightbox-close {
+    border: 1px solid #ccc;
+    background: #f7f7f7;
+    padding: 4px 10px;
+  }
+
+  .legacy-lightbox-image {
+    overflow: auto;
+    max-height: calc(100vh - 140px);
+  }
+
+  .legacy-lightbox-image img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .legacy-glossary-dialog {
+    width: min(640px, 100%);
+    border-top: 4px solid #52682d;
+  }
+
+  .legacy-glossary-dialog .legacy-lightbox-header h3 {
+    color: #52682d;
+  }
+
+  .legacy-glossary-body {
+    max-height: calc(100vh - 160px);
+    overflow: auto;
+  }
+
+  .legacy-glossary-example,
+  .legacy-glossary-helpinfo {
+    margin: 0 0 12px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: #333;
+  }
+
+  .legacy-glossary-example:last-child,
+  .legacy-glossary-helpinfo:last-child {
+    margin-bottom: 0;
+  }
+</style>
+
+<script>
+  function hrefExtension(href: string): string {
+    try {
+      const pathname = new URL(href, window.location.origin).pathname;
+      const match = pathname.match(/\.([a-z0-9]+)$/i);
+      return match ? match[1].toLowerCase() : '';
+    } catch {
+      return '';
+    }
+  }
+
+  function prepareLegacyDocumentLinks(root: ParentNode) {
+    for (const link of root.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+      const ext = hrefExtension(link.getAttribute('href') || '');
+      if (ext === 'pdf') {
+        link.target = '_blank';
+        link.rel = 'noopener';
+      } else if (ext === 'stp') {
+        link.removeAttribute('target');
+        if (!link.hasAttribute('download')) {
+          const name = (link.getAttribute('href') || '').split(/[?#]/)[0].split('/').pop();
+          if (name) link.setAttribute('download', name);
+          else link.setAttribute('download', '');
+        }
+      }
+    }
+  }
+
+  type GlossaryEntry = {
+    glossaryId: number;
+    slug: string;
+    term: string;
+    example: string;
+    helpinfo: string;
+  };
+
+  const glossaryCatalog: GlossaryEntry[] = (() => {
+    const node = document.getElementById('course-111-glossary-data');
+    if (!node?.textContent) return [];
+    try {
+      return JSON.parse(node.textContent) as GlossaryEntry[];
+    } catch {
+      return [];
+    }
+  })();
+
+  const lightbox = document.getElementById('legacy-vimeo-lightbox');
+  const player = document.getElementById('legacy-vimeo-lightbox-player');
+  const titleEl = document.getElementById('legacy-vimeo-lightbox-title');
+  const imageLightbox = document.getElementById('legacy-image-lightbox');
+  const imageFrame = document.getElementById('legacy-image-lightbox-frame');
+  const imageTitleEl = document.getElementById('legacy-image-lightbox-title');
+  const glossaryModal = document.getElementById('legacy-glossary-modal');
+  const glossaryTitleEl = document.getElementById('legacy-glossary-title');
+  const glossaryBodyEl = document.getElementById('legacy-glossary-body');
+  const glossaryCloseBtn = glossaryModal?.querySelector<HTMLButtonElement>('[data-glossary-close].legacy-lightbox-close');
+  let glossaryReturnFocus: HTMLElement | null = null;
+
+  function closeLegacyVideo() {
+    if (!lightbox || !player) return;
+    player.replaceChildren();
+    lightbox.hidden = true;
+  }
+
+  function closeLegacyImage() {
+    if (!imageLightbox || !imageFrame) return;
+    imageFrame.replaceChildren();
+    imageLightbox.hidden = true;
+  }
+
+  function closeLegacyGlossary() {
+    if (!glossaryModal || !glossaryBodyEl) return;
+    const wasOpen = !glossaryModal.hidden;
+    glossaryBodyEl.replaceChildren();
+    glossaryModal.hidden = true;
+    if (wasOpen && glossaryReturnFocus) {
+      glossaryReturnFocus.focus();
+    }
+    glossaryReturnFocus = null;
+  }
+
+  function closeLegacyLightboxes() {
+    closeLegacyVideo();
+    closeLegacyImage();
+    closeLegacyGlossary();
+  }
+
+  function openLegacyVideo(vimeoId: string, title: string) {
+    if (!lightbox || !player || !titleEl || !vimeoId) return;
+    closeLegacyImage();
+    closeLegacyGlossary();
+    titleEl.textContent = title || 'Video';
+    player.replaceChildren();
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1`;
+    iframe.title = title || 'Video';
+    iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+    iframe.allowFullscreen = true;
+    player.appendChild(iframe);
+    lightbox.hidden = false;
+  }
+
+  function openLegacyImage(src: string, title: string) {
+    if (!imageLightbox || !imageFrame || !imageTitleEl || !src) return;
+    closeLegacyVideo();
+    closeLegacyGlossary();
+    imageTitleEl.textContent = title || 'Image';
+    imageFrame.replaceChildren();
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = title || '';
+    imageFrame.appendChild(img);
+    imageLightbox.hidden = false;
+  }
+
+  function glossaryIdFromLink(link: HTMLAnchorElement): number {
+    const attrId = Number(link.getAttribute('data-GlossaryId') || '');
+    if (Number.isFinite(attrId) && attrId > 0) return attrId;
+    const href = link.getAttribute('href') || '';
+    const hashId = Number(/#glossary-(\d+)/i.exec(href)?.[1] || '');
+    return Number.isFinite(hashId) ? hashId : 0;
+  }
+
+  function openLegacyGlossary(id: number, returnFocus: HTMLElement | null) {
+    if (!glossaryModal || !glossaryTitleEl || !glossaryBodyEl) return;
+    const entry = glossaryCatalog.find((item) => item.glossaryId === id);
+    if (!entry) return;
+
+    closeLegacyVideo();
+    closeLegacyImage();
+    glossaryReturnFocus = returnFocus;
+    glossaryTitleEl.textContent = entry.term;
+    glossaryBodyEl.replaceChildren();
+
+    const example = (entry.example || '').trim();
+    const helpinfo = (entry.helpinfo || '').trim();
+    if (example) {
+      const p = document.createElement('p');
+      p.className = 'legacy-glossary-example';
+      p.textContent = example;
+      glossaryBodyEl.appendChild(p);
+    }
+    if (helpinfo) {
+      const p = document.createElement('p');
+      p.className = 'legacy-glossary-helpinfo';
+      p.textContent = helpinfo;
+      glossaryBodyEl.appendChild(p);
+    }
+    if (!example && !helpinfo) {
+      const p = document.createElement('p');
+      p.className = 'legacy-glossary-helpinfo';
+      p.textContent = 'No definition is available for this term.';
+      glossaryBodyEl.appendChild(p);
+    }
+
+    glossaryModal.hidden = false;
+    glossaryCloseBtn?.focus();
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    if (target.closest('[data-lightbox-close], [data-glossary-close]')) {
+      event.preventDefault();
+      closeLegacyLightboxes();
+      return;
+    }
+
+    const glossaryLink = target.closest<HTMLAnchorElement>('a.glossaryhelp');
+    if (glossaryLink && glossaryLink.closest('.legacy-content')) {
+      const glossaryId = glossaryIdFromLink(glossaryLink);
+      if (glossaryId && glossaryCatalog.some((item) => item.glossaryId === glossaryId)) {
+        event.preventDefault();
+        event.stopPropagation();
+        openLegacyGlossary(glossaryId, glossaryLink);
+        return;
+      }
+    }
+
+    const imageTrigger = target.closest<HTMLElement>('.imagepopup');
+    if (imageTrigger && imageTrigger.closest('.legacy-content')) {
+      const imageSrc = (imageTrigger.getAttribute('data-image') || '').trim();
+      if (imageSrc) {
+        event.preventDefault();
+        event.stopPropagation();
+        const imageTitle = (imageTrigger.getAttribute('data-imagetitle') || '').trim() || 'Image';
+        openLegacyImage(imageSrc, imageTitle);
+        return;
+      }
+    }
+
+    const checklist = target.closest<HTMLImageElement>(
+      '.legacy-content img[src="/challenge/images/v2/111/cast_on_checklist.jpg"]',
+    );
+    if (checklist) {
+      event.preventDefault();
+      window.open(checklist.getAttribute('src') || checklist.src, '_blank', 'noopener');
+      return;
+    }
+
+    const trigger = target.closest<HTMLElement>('.videopopup, .subvideopopup');
+    if (!trigger || !trigger.closest('.legacy-content')) return;
+
+    const vimeoId = (trigger.getAttribute('data-vimeoid') || '').trim();
+    if (!vimeoId) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const title =
+      trigger.getAttribute('data-videotitle') ||
+      trigger.getAttribute('title') ||
+      'Video';
+    openLegacyVideo(vimeoId, title);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const videoOpen = Boolean(lightbox && !lightbox.hidden);
+    const imageOpen = Boolean(imageLightbox && !imageLightbox.hidden);
+    const glossaryOpen = Boolean(glossaryModal && !glossaryModal.hidden);
+    if (videoOpen || imageOpen || glossaryOpen) {
+      closeLegacyLightboxes();
+    }
+  });
+
+  prepareLegacyDocumentLinks(document);
+</script>

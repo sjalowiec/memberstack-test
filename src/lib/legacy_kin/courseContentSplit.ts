@@ -5,7 +5,7 @@ import {
 } from "./courseContentEditorSchema";
 import {
   getCourseContentPath,
-  readCourseContentFile,
+  loadCourseContentDocument,
   writeCourseContentFile,
   type CourseContentWriteOptions,
 } from "./courseContentAdmin";
@@ -53,7 +53,7 @@ export type CourseSplitReport = {
   courseTitle: string;
   dryRun: boolean;
   backupPath?: string;
-  persistedVia?: "filesystem" | "github";
+  persistedVia?: "filesystem" | "blob" | "github";
   commitSha?: string;
   writtenCourse?: CoursePreviewData;
   lessons: LessonSplitReport[];
@@ -68,7 +68,7 @@ export type CourseSplitReport = {
   };
 };
 
-function assertCourseAllowed(options: CourseSplitOptions): CoursePreviewData {
+async function assertCourseAllowed(options: CourseSplitOptions): Promise<CoursePreviewData> {
   if (
     !options.allowHandCleaned &&
     HAND_CLEANED_COURSE_IDS.has(options.courseId) &&
@@ -79,7 +79,7 @@ function assertCourseAllowed(options: CourseSplitOptions): CoursePreviewData {
     );
   }
 
-  return readCourseContentFile(options.courseId);
+  return loadCourseContentDocument(options.courseId, options.write);
 }
 
 function filterBlocksInLesson(lesson: CourseLesson, blockSlug?: string): CourseLesson {
@@ -163,7 +163,7 @@ function buildLessonReport(
 }
 
 export async function runCourseContentSplit(options: CourseSplitOptions): Promise<CourseSplitReport> {
-  const data = assertCourseAllowed(options);
+  const data = await assertCourseAllowed(options);
   const lessonsToProcess = targetLessons(data, options.lessonSlug);
   const dryRun = options.dryRun !== false;
 

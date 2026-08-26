@@ -1,0 +1,16 @@
+---
+const homeHref = "/";
+const year = new Date().getFullYear();
+---
+
+<footer class="kin-site-footer" aria-label="Site footer" data-pagefind-ignore>
+  <div class="kin-site-footer-inner">
+    <a class="kin-site-footer-brand" href={homeHref}>
+      <img class="kin-site-footer-logo" src="/images/KINlogo.svg" alt="" width="28" height="28" />
+      <span>Knit it Now</span>
+    </a>
+    <p class="kin-site-footer-id">Machine knitting courses from Knit it Now</p>
+    <p class="kin-site-footer-copy">&copy; 2010 – {year} Knit it Now, LLC</p>
+    <a class="kin-site-footer-home" href={homeHref}>www.knititnow.com</a>
+  </div>
+</footer>

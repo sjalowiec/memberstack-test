@@ -1,0 +1,37 @@
+---
+interface ExerciseItem {
+  order: number;
+  heading?: string;
+  detailsHtml?: string;
+  image?: string;
+}
+
+interface Props {
+  lessonId: number;
+  courseId?: number;
+  knownAssignIds?: number[];
+  items?: ExerciseItem[];
+}
+
+const { lessonId, items = [] } = Astro.props;
+---
+
+{
+  items.length === 0 ? (
+    <div class="legacy-error" role="alert">
+      Cannot render Exercise in lesson {lessonId}: no populated exercise tasks were extracted.
+    </div>
+  ) : (
+    <div class="legacy-exercise">
+      {items.map((item) => (
+        <details class="legacy-exercise-item">
+          <summary>
+            {item.image ? <img class="legacy-exercise-icon" src={item.image} alt="" /> : null}
+            <span class="legacy-exercise-heading" set:html={item.heading || ''} />
+          </summary>
+          <div class="legacy-exercise-body" set:html={item.detailsHtml || ""} />
+        </details>
+      ))}
+    </div>
+  )
+}

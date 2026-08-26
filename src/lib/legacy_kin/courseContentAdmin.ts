@@ -9,6 +9,10 @@ import {
   type CourseContentWriteOptions,
 } from "./courseContentPersist";
 import {
+  readCourseContentOverlay,
+  writeCourseContentOverlay,
+} from "./courseContentLiveStore";
+import {
   isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
@@ -230,6 +234,32 @@ export function readCourseContentFile(courseId: number): CoursePreviewData {
   const raw = readFileSync(path, "utf-8");
   const data = JSON.parse(raw) as CoursePreviewData;
   return data;
+}
+
+/**
+ * Editorial + player source of truth: live overlay when DEV uses blobs,
+ * otherwise the bundled/cleaned POC file on disk.
+ */
+export async function loadCourseContentDocument(
+  courseId: number,
+  options: CourseContentWriteOptions = {},
+): Promise<CoursePreviewData> {
+  if (options.readCourseContentOverlay) {
+    const overlay = await options.readCourseContentOverlay(courseId);
+    if (overlay) return overlay;
+    return readCourseContentFile(courseId);
+  }
+
+  try {
+    if (resolveCourseContentPersistMode(options) === "blob") {
+      const overlay = await readCourseContentOverlay(courseId);
+      if (overlay) return overlay;
+    }
+  } catch {
+    // Production writes are blocked; blob store may be unavailable locally.
+  }
+
+  return readCourseContentFile(courseId);
 }
 
 function backupTimestamp(): string {
@@ -461,7 +491,7 @@ export async function saveLessonUpdate(
   lessonInput: unknown,
   options: { removeEmptyBlocks?: boolean } & CourseContentWriteOptions = {},
 ): Promise<SaveLessonResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, options);
   const applied = applyLessonUpdate(data, lessonSlug, lessonInput, {
     removeEmptyBlocks: options.removeEmptyBlocks,
   });
@@ -486,6 +516,18 @@ export async function writeCourseContentFile(
   const mode = resolveCourseContentPersistMode(options);
   const filename = getDiscoveredCourseFile(courseId).filename;
   const serialized = serializeCourseContentFile(data);
+
+  if (mode === "blob") {
+    const writer = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
+    if (!writer) {
+      throw new Error("Live course-content overlay writer was not provided.");
+    }
+    await writer(courseId, data);
+    return {
+      backupPath: "",
+      persistedVia: "blob",
+    };
+  }
 
   if (mode === "github") {
     if (!options.commitCourseContentFile) {
@@ -592,7 +634,7 @@ export async function saveCourseMetadata(
     throw new Error("No course metadata fields to save.");
   }
 
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   let thumbnail = readCourseThumbnailFromData(data);
   let description = readCourseDescriptionFromData(data);
 
@@ -667,7 +709,7 @@ export async function saveRichTextUpdates(
   updates: RichTextUpdate[],
   writeOptions: CourseContentWriteOptions = {},
 ): Promise<SaveRichTextResult> {
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   const { applied, missing } = applyRichTextUpdates(data, updates);
 
   if (applied === 0) {
@@ -694,7 +736,7 @@ export async function saveCourseContentUpdates(
     throw new Error("No updates to save.");
   }
 
-  const data = readCourseContentFile(courseId);
+  const data = await loadCourseContentDocument(courseId, writeOptions);
   const richTextResult = applyRichTextUpdates(data, richTextUpdates);
   const removalResult = applyComponentRemovals(data, removals);
   const appliedRichText = richTextResult.applied;

@@ -3,7 +3,7 @@ import {
   isAllowedCourseId,
   isCourseContentAdminAllowed,
   listAdminCourseSummaries,
-  readCourseContentFile,
+  loadCourseContentDocument,
   saveCourseMetadata,
   saveLessonUpdate,
 } from "../../../lib/legacy_kin/courseContentAdmin";
@@ -19,6 +19,7 @@ import {
 } from "../../../lib/legacy_kin/courseContentSplit";
 import { courseContentWriteRequiresWatsonSession } from "../../../lib/legacy_kin/courseContentPersist";
 import { commitCourseContentFile } from "../../../lib/legacy_kin/courseContentGithub";
+import { writeCourseContentOverlay } from "../../../lib/legacy_kin/courseContentLiveStore";
 import { requireWatsonSessionJson } from "../../../lib/watson/watsonApiAuth";
 
 export const prerender = false;
@@ -71,7 +72,10 @@ export const GET: APIRoute = async ({ url, request }) => {
       return jsonResponse({ ok: true, courses });
     }
 
-    const course = readCourseContentFile(courseId);
+    const course = await loadCourseContentDocument(courseId, {
+      hostname: new URL(request.url).hostname,
+      env: adminEnv,
+    });
     return jsonResponse({ ok: true, courses, courseId, course });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not read course content.";
@@ -116,6 +120,7 @@ export const POST: APIRoute = async (context) => {
     hostname,
     env: adminEnv,
     commitCourseContentFile,
+    writeCourseContentOverlay,
   };
 
   try {
@@ -266,7 +271,9 @@ export const POST: APIRoute = async (context) => {
         allowHandCleaned,
         write: writeOptions,
       });
-      const course = report.writtenCourse ?? readCourseContentFile(courseId);
+      const course =
+        report.writtenCourse ??
+        (await loadCourseContentDocument(courseId, writeOptions));
       return jsonResponse({
         ok: true,
         action,

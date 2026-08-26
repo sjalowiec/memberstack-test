@@ -1,6 +1,4 @@
-/**
- * Browser-safe Course 111 admin model (no Node fs / server I/O).
- */
+import { kinCourseLessonHref } from "../kinCourse/hrefs";
 import {
   appendStandaloneComponentBlock,
   createRichTextComponent,
@@ -260,52 +258,69 @@ export function findCourse111OriginalLessonByAssignId(
   );
 }
 
-/** Learner-facing draft preview URL (no server imports). */
+/** Learner-facing draft preview URL for a KIN assignId lesson. */
 export function course111LessonPreviewHref(
   data: CoursePreviewData,
-  lessonSlug: string,
+  assignId: number,
 ): string | null {
-  const courseSlug = data.course.slug?.trim();
-  const normalizedLessonSlug = lessonSlug.trim();
-  if (!courseSlug || !normalizedLessonSlug) return null;
-  return `/courses/legacy/${encodeURIComponent(courseSlug)}/${encodeURIComponent(normalizedLessonSlug)}?preview=true`;
+  const courseId = Number(data.course.legacyChallengeId);
+  const id = Number(assignId);
+  if (!Number.isFinite(courseId) || courseId <= 0 || !Number.isFinite(id) || id <= 0) {
+    return null;
+  }
+  return kinCourseLessonHref(courseId, id, true);
 }
 
 /**
- * Resolve the learner preview URL for a specific selected lesson.
+ * Resolve the learner preview URL for a specific original KIN lesson (block).
  * Returns null when the lesson is missing from the course.
  */
 export function resolveCourse111SelectedLessonPreview(
   data: CoursePreviewData,
-  selectedLessonSlug: string,
-): { lessonSlug: string; previewHref: string } | null {
-  const lesson = findCourse111Lesson(data, selectedLessonSlug);
-  if (!lesson) return null;
-  const previewHref = course111LessonPreviewHref(data, lesson.slug);
+  selectedParentSlug: string,
+  selectedBlockSlug: string,
+): { lessonSlug: string; blockSlug: string; assignId: number; previewHref: string } | null {
+  const original = findCourse111OriginalLesson(
+    data,
+    selectedParentSlug,
+    selectedBlockSlug,
+  );
+  if (!original) return null;
+  const assignId = Number(original.block.legacy?.assignId) || 0;
+  const previewHref = course111LessonPreviewHref(data, assignId);
   if (!previewHref) return null;
-  return { lessonSlug: lesson.slug, previewHref };
+  return {
+    lessonSlug: original.parent.slug,
+    blockSlug: original.block.slug,
+    assignId,
+    previewHref,
+  };
 }
 
 /**
- * Save & Preview plan: always save the selected lesson first, then open its
- * real learner-facing preview URL. Testable without DOM.
+ * Save & Preview plan: always save the selected parent lesson first, then open
+ * the assignId player URL. Testable without DOM.
  */
 export async function runCourse111SaveAndPreview(options: {
   data: CoursePreviewData;
   selectedLessonSlug: string;
+  selectedBlockSlug: string;
   saveLesson: (
     lessonSlug: string,
-  ) => Promise<{ persistedVia?: "filesystem" | "github" } | void>;
+  ) => Promise<{ persistedVia?: "filesystem" | "blob" | "github" } | void>;
   openPreview: (href: string) => void;
 }): Promise<{
   lessonSlug: string;
+  blockSlug: string;
+  assignId: number;
   previewHref: string;
   previewOpened: boolean;
-  persistedVia?: "filesystem" | "github";
+  persistedVia?: "filesystem" | "blob" | "github";
 }> {
   const resolved = resolveCourse111SelectedLessonPreview(
     options.data,
     options.selectedLessonSlug,
+    options.selectedBlockSlug,
   );
   if (!resolved) {
     throw new Error("Select a lesson before Save & Preview.");
@@ -319,15 +334,18 @@ export async function runCourse111SaveAndPreview(options: {
 }
 
 export function course111SaveStatusMessage(options: {
-  persistedVia?: "filesystem" | "github";
+  persistedVia?: "filesystem" | "blob" | "github";
   lessonTitle: string;
   previewOpened?: boolean;
 }): string {
   if (options.persistedVia === "github") {
     if (options.previewOpened === false) {
-      return "Saved to dev. Preview still shows the last deployed lesson until the dev site finishes deploying.";
+      return "Saved to GitHub. Preview still shows the last deployed lesson until the site finishes deploying.";
     }
-    return "Saved to dev. The updated lesson will appear after the dev site finishes deploying.";
+    return "Saved to GitHub. The updated lesson will appear after the site finishes deploying.";
+  }
+  if (options.persistedVia === "blob") {
+    return `Saved “${options.lessonTitle}” to live DEV preview. Course remains draft/unpublished.`;
   }
   if (options.previewOpened) {
     return `Saved “${options.lessonTitle}” and opened learner preview. Course remains draft/unpublished.`;

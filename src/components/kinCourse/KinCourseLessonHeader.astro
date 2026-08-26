@@ -1,0 +1,23 @@
+---
+import { courseHeading } from "../../lib/kinCourse/player";
+import type { KinCourseDocument, KinCourseLesson, KinCourseSection } from "../../lib/kinCourse/types";
+
+interface Props {
+  course: KinCourseDocument;
+  lesson: KinCourseLesson;
+  section: KinCourseSection;
+  lessonNumber: number;
+  lessonCount: number;
+}
+
+const { course, lesson, section, lessonNumber, lessonCount } = Astro.props;
+const { title: courseTitle } = courseHeading(course);
+---
+
+<header class="course-lesson-header">
+  <p class="course-lesson-kicker">{courseTitle}</p>
+  <h1 set:html={lesson.title} />
+  <p class="course-lesson-meta">
+    {section.title} · Lesson {lessonNumber} of {lessonCount}
+  </p>
+</header>

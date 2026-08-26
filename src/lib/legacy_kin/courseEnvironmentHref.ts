@@ -1,10 +1,4 @@
-/**
- * Environment-aware course destinations.
- *
- * Production catalog cards may still point at the live KIN course host
- * (`courses.knititnow.com`). DEV/localhost must never inherit that absolute
- * URL — they resolve to same-origin `/courses/legacy/...` routes instead.
- */
+import { kinCourseHomeHref } from "../kinCourse/hrefs";
 import {
   detectSiteEnvironment,
   type DetectSiteEnvironmentOptions,
@@ -94,7 +88,7 @@ export function localLegacyCourseHrefForCatalog(
 /**
  * Catalog card destination for the current environment.
  * Production keeps an explicit KIN-host override; DEV/localhost rewrite those
- * overrides onto the local legacy course player.
+ * overrides onto the same-origin numeric KIN player (`/courses/{id}`).
  */
 export function resolveCatalogCourseHref(
   catalogSlug: string,
@@ -112,6 +106,12 @@ export function resolveCatalogCourseHref(
     (siteEnv === "production" || !isProductionKnitItNowCourseUrl(override))
   ) {
     return override;
+  }
+
+  const challengeId = parseLegacyChallengeIdFromHref(override);
+  if (challengeId != null) {
+    const course = findLegacyCourseForCatalog(catalogSlug, override);
+    return kinCourseHomeHref(challengeId, course?.isDraft !== false);
   }
 
   const local = localLegacyCourseHrefForCatalog(catalogSlug, override);

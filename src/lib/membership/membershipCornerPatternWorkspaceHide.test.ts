@@ -46,7 +46,7 @@ const sleevelessBetaPrint = readFileSync(
 );
 const coursesIndexAstro = readFileSync(resolve("src/pages/courses/index.astro"), "utf8");
 const courseLandingAstro = readFileSync(
-  resolve("src/pages/courses/[courseSlug].astro"),
+  resolve("src/components/courses/CourseNamedLanding.astro"),
   "utf8",
 );
 const legacyCourseOverviewAstro = readFileSync(

@@ -1,0 +1,114 @@
+---
+import { kinCourseHomeHref, kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
+import { courseHeading, paddedSectionNumber, visibleSections } from "../../lib/kinCourse/player";
+import type { KinCourseDocument } from "../../lib/kinCourse/types";
+
+interface Props {
+  course: KinCourseDocument;
+  currentLessonId: number;
+  preview?: boolean;
+}
+
+const { course, currentLessonId, preview = false } = Astro.props;
+const { title } = courseHeading(course);
+const sections = visibleSections(course);
+---
+
+<div class="course-contents" id="course-contents" hidden>
+  <div class="course-contents-backdrop" data-course-contents-close></div>
+  <aside
+    class="course-contents-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="course-contents-title"
+    tabindex="-1"
+  >
+    <div class="course-contents-header">
+      <div>
+        <h2 id="course-contents-title">Course Contents</h2>
+        <p class="course-contents-course">{title}</p>
+        <a class="course-contents-home" href={kinCourseHomeHref(course.id, preview)}>Course Home</a>
+      </div>
+      <button type="button" class="course-contents-close" data-course-contents-close>
+        Close
+      </button>
+    </div>
+    <nav class="course-contents-nav" aria-label="Course contents">
+      {
+        sections.map((section) => (
+          <section class="course-contents-section">
+            <div class="course-contents-section-head">
+              <span class="course-contents-section-num">{paddedSectionNumber(section.order)}</span>
+              <span class="course-contents-section-title">{section.title}</span>
+            </div>
+            {section.lessons.map((lesson) => (
+              <a
+                class:list={[
+                  "course-contents-lesson",
+                  lesson.id === currentLessonId && "is-current",
+                ]}
+                href={kinCourseLessonHref(course.id, lesson.id, preview)}
+                aria-current={lesson.id === currentLessonId ? "page" : undefined}
+                set:html={lesson.title}
+              />
+            ))}
+          </section>
+        ))
+      }
+    </nav>
+  </aside>
+</div>
+
+<script>
+  const panel = document.getElementById("course-contents");
+  const dialog = panel?.querySelector<HTMLElement>(".course-contents-panel");
+  let lastOpener: HTMLElement | null = null;
+
+  function isOpen() {
+    return Boolean(panel && !panel.hidden);
+  }
+
+  function openContents(opener?: HTMLElement) {
+    if (!panel || !dialog) return;
+    lastOpener = opener ?? null;
+    panel.hidden = false;
+    document.body.classList.add("course-contents-open");
+    const current = panel.querySelector<HTMLElement>(".course-contents-lesson.is-current");
+    current?.scrollIntoView({ block: "nearest" });
+    const closeBtn = panel.querySelector<HTMLElement>(".course-contents-close");
+    (closeBtn ?? dialog).focus();
+  }
+
+  function closeContents() {
+    if (!panel || !isOpen()) return;
+    panel.hidden = true;
+    document.body.classList.remove("course-contents-open");
+    lastOpener?.focus();
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const opener = target.closest<HTMLElement>("[data-course-contents-open]");
+    if (opener) {
+      event.preventDefault();
+      if (isOpen()) closeContents();
+      else openContents(opener);
+      return;
+    }
+
+    if (target.closest("[data-course-contents-close]")) {
+      event.preventDefault();
+      closeContents();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !isOpen()) return;
+    const openLightbox = document.querySelector(".legacy-lightbox:not([hidden])");
+    if (openLightbox) return;
+    event.preventDefault();
+    closeContents();
+  });
+</script>

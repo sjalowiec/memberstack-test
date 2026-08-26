@@ -1,0 +1,78 @@
+---
+import KinCourseLayout from "../../../layouts/KinCourseLayout.astro";
+import {
+  kinCourseHomeHref,
+  kinCourseLessonHref,
+  parseKinCourseId,
+} from "../../../lib/kinCourse/hrefs";
+import { loadKinCourseBundle } from "../../../lib/kinCourse/load";
+import { courseHeading, paddedSectionNumber, visibleSections } from "../../../lib/kinCourse/player";
+import { kinCourseLoadOptions } from "../../../lib/kinCourse/request";
+
+export const prerender = false;
+
+const courseId = parseKinCourseId(Astro.params.courseSlug);
+if (!courseId) {
+  return new Response("Course not found", { status: 404 });
+}
+
+const loadOptions = kinCourseLoadOptions(Astro.url);
+Astro.response.headers.set("Cache-Control", "no-store");
+const bundle = await loadKinCourseBundle(courseId, loadOptions);
+if (!bundle) {
+  return new Response("Course not found", { status: 404 });
+}
+
+const sections = visibleSections(bundle.course);
+const { title } = courseHeading(bundle.course);
+const preview = loadOptions.preview;
+
+function lessonCountLabel(count: number): string {
+  return count === 1 ? "1 lesson" : `${count} lessons`;
+}
+---
+
+<KinCourseLayout
+  title={`Course Contents | ${bundle.course.title}`}
+  courseTitle={bundle.landing.fullTitle}
+  thumbnailSrc={bundle.landing.image.src}
+  thumbnailAlt={bundle.landing.image.alt}
+  courseSlug={bundle.landing.catalogSlug || bundle.course.slug}
+  preview={preview}
+  glossary={bundle.glossary}
+>
+  <header class="course-outline-header">
+    <p class="course-outline-home">
+      <a href={kinCourseHomeHref(bundle.course.id, preview)}>Course Home</a>
+    </p>
+    <h1>{title}</h1>
+    <p class="course-outline-subtitle">Choose a section to view the lessons</p>
+  </header>
+
+  <nav class="course-outline-accordion" aria-label="Course contents">
+    {
+      sections.map((section) => (
+        <details class="course-outline-item">
+          <summary class="course-outline-summary">
+            <span class="course-outline-section-num">{paddedSectionNumber(section.order)}</span>
+            <h2 class="course-outline-section-title">{section.title}</h2>
+            <span class="course-outline-count">{lessonCountLabel(section.lessons.length)}</span>
+            <span class="course-outline-chevron" aria-hidden="true"></span>
+          </summary>
+          <ul class="course-outline-lessons">
+            {section.lessons.map((lesson) => (
+              <li>
+                <a class="course-outline-lesson" href={kinCourseLessonHref(bundle.course.id, lesson.id, preview)}>
+                  <span class="course-outline-lesson-title" set:html={lesson.title} />
+                  <span class="course-outline-lesson-go" aria-hidden="true">
+                    →
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))
+    }
+  </nav>
+</KinCourseLayout>

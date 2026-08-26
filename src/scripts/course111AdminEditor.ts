@@ -123,7 +123,9 @@ function updatePreviewLink() {
     return;
   }
 
-  const resolved = resolveCourse111SelectedLessonPreview(course, selectedParentSlug);
+  const resolved = selectedParentSlug && selectedBlockSlug
+    ? resolveCourse111SelectedLessonPreview(course, selectedParentSlug, selectedBlockSlug)
+    : null;
   dom.preview.href = resolved?.previewHref ?? "#";
   dom.preview.toggleAttribute("aria-disabled", !resolved);
   if (dom.savePreview) dom.savePreview.disabled = !resolved;
@@ -380,7 +382,7 @@ async function reloadFromDisk() {
 type SavePayload = {
   ok?: boolean;
   error?: string;
-  persistedVia?: "filesystem" | "github";
+  persistedVia?: "filesystem" | "blob" | "github";
   branch?: string;
   commitSha?: string;
 };
@@ -418,13 +420,14 @@ async function saveCurrentLesson(lessonSlug = selectedParentSlug): Promise<SaveP
 }
 
 async function saveAndPreviewLesson() {
-  if (!course || !selectedParentSlug) {
+  if (!course || !selectedParentSlug || !selectedBlockSlug) {
     throw new Error("Select a lesson before Save & Preview.");
   }
 
   const result = await runCourse111SaveAndPreview({
     data: course,
     selectedLessonSlug: selectedParentSlug,
+    selectedBlockSlug: selectedBlockSlug,
     saveLesson: async (lessonSlug) => {
       const payload = await saveCurrentLesson(lessonSlug);
       return { persistedVia: payload?.persistedVia };

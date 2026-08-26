@@ -1,0 +1,87 @@
+---
+import KinCourseLayout from "../../layouts/KinCourseLayout.astro";
+import {
+  kinCourseContentsHref,
+  kinCourseLessonHref,
+} from "../../lib/kinCourse/hrefs";
+import { firstLesson } from "../../lib/kinCourse/player";
+import type { KinCourseBundle } from "../../lib/kinCourse/load";
+
+interface Props {
+  bundle: KinCourseBundle;
+  preview: boolean;
+}
+
+const { bundle, preview } = Astro.props;
+const startLesson = firstLesson(bundle.course);
+const startHref = startLesson
+  ? kinCourseLessonHref(bundle.course.id, startLesson.id, preview)
+  : kinCourseContentsHref(bundle.course.id, preview);
+const kinLanding = bundle.landing;
+---
+
+<KinCourseLayout
+  title={kinLanding.fullTitle}
+  pageClass="course-home-page"
+  courseTitle={kinLanding.fullTitle}
+  thumbnailSrc={kinLanding.image.src}
+  thumbnailAlt={kinLanding.image.alt}
+  courseSlug={kinLanding.catalogSlug || bundle.course.slug}
+  preview={preview}
+  glossary={bundle.glossary}
+>
+  <article class="course-home">
+    <header class="course-home-identity">
+      <div class="course-home-copy">
+        <h1>{kinLanding.title}</h1>
+        {kinLanding.subtitle ? <p class="course-home-subtitle">{kinLanding.subtitle}</p> : null}
+        {
+          kinLanding.descriptionHtml ? (
+            <div class="course-home-intro" set:html={kinLanding.descriptionHtml} />
+          ) : null
+        }
+        <div class="course-home-actions">
+          <a class="course-home-start" href={startHref}>Start Course</a>
+          <a class="course-home-contents" href={kinCourseContentsHref(bundle.course.id, preview)}>
+            View Course Contents
+          </a>
+        </div>
+      </div>
+      <figure class="course-home-figure">
+        <img
+          class="course-home-image"
+          src={kinLanding.image.src}
+          alt={kinLanding.image.alt}
+          width="600"
+          height="338"
+        />
+      </figure>
+    </header>
+
+    {
+      kinLanding.topics.length ? (
+        <section class="course-home-section" aria-labelledby="course-learn-heading">
+          <h2 id="course-learn-heading">What You'll Learn</h2>
+          <ul class="course-home-topics">
+            {kinLanding.topics.map((topic) => (
+              <li>{topic}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null
+    }
+
+    {
+      kinLanding.included.length ? (
+        <section class="course-home-section" aria-labelledby="course-included-heading">
+          <h2 id="course-included-heading">What's Included</h2>
+          <ul class="course-home-included">
+            {kinLanding.included.map((item) => (
+              <li>{item.label}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null
+    }
+  </article>
+</KinCourseLayout>
