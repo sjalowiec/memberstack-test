@@ -1,5 +1,6 @@
 import {
   addCourse111ComponentToBlock,
+  adjacentCourseOriginalLesson,
   cloneCourse111Data,
   COURSE_111_ID,
   deleteCourse111Block,
@@ -10,6 +11,7 @@ import {
   findCourse111OriginalLesson,
   listCourse111LessonComponents,
   listCourse111OriginalLessons,
+  parseWatsonCourseAdminCourseId,
   patchCourse111Component,
   readCourse111Publication,
   resolveCourse111SelectedLessonPreview,
@@ -21,6 +23,7 @@ import {
   type Course111OriginalLessonSummary,
   type Course111PublicationSnapshot,
 } from "../lib/legacy_kin/course111AdminModel";
+import { mountLegacyHtmlVisualEditor } from "./legacyHtmlVisualEditor";
 import type {
   CourseBlock,
   CourseComponent,
@@ -31,12 +34,19 @@ import { sortedComponents } from "../lib/legacy_kin/coursePreviewPoc";
 
 const API_URL = "/api/admin/course-content";
 
+type CatalogCourse = {
+  id: number;
+  title: string;
+};
+
 type Dom = {
   app: HTMLElement | null;
   loading: HTMLElement | null;
   status: HTMLElement | null;
   dirty: HTMLElement | null;
+  heading: HTMLElement | null;
   courseTitle: HTMLElement | null;
+  courseSelect: HTMLSelectElement | null;
   search: HTMLInputElement | null;
   lessons: HTMLElement | null;
   main: HTMLElement | null;
@@ -52,7 +62,9 @@ const dom: Dom = {
   loading: null,
   status: null,
   dirty: null,
+  heading: null,
   courseTitle: null,
+  courseSelect: null,
   search: null,
   lessons: null,
   main: null,
@@ -63,6 +75,8 @@ const dom: Dom = {
   reload: null,
 };
 
+let currentCourseId = COURSE_111_ID;
+let catalog: CatalogCourse[] = [];
 let course: CoursePreviewData | null = null;
 let publication: Course111PublicationSnapshot | null = null;
 let selectedParentSlug: string | null = null;
@@ -131,20 +145,52 @@ function updatePreviewLink() {
   if (dom.savePreview) dom.savePreview.disabled = !resolved;
 }
 
+function populateCourseSelect() {
+  if (!dom.courseSelect) return;
+  if (catalog.length === 0) {
+    dom.courseSelect.innerHTML = `<option value="${currentCourseId}">Course ${currentCourseId}</option>`;
+    dom.courseSelect.value = String(currentCourseId);
+    return;
+  }
+  dom.courseSelect.innerHTML = catalog
+    .map(
+      (entry) =>
+        `<option value="${entry.id}"${entry.id === currentCourseId ? " selected" : ""}>${escapeHtml(`${entry.id} · ${entry.title}`)}</option>`,
+    )
+    .join("");
+  dom.courseSelect.value = String(currentCourseId);
+}
+
 async function loadCourse() {
-  setStatus("Loading Course 111…");
-  const response = await fetch(`${API_URL}?courseId=${COURSE_111_ID}`, {
+  setStatus(`Loading Course ${currentCourseId}…`);
+  const response = await fetch(`${API_URL}?courseId=${currentCourseId}`, {
     headers: { Accept: "application/json" },
   });
   const payload = (await response.json()) as {
     ok?: boolean;
     error?: string;
     course?: CoursePreviewData;
+    courses?: CatalogCourse[];
   };
   if (!response.ok || !payload.ok || !payload.course) {
-    throw new Error(payload.error || "Could not load Course 111.");
+    throw new Error(payload.error || `Could not load Course ${currentCourseId}.`);
   }
   course = cloneCourse111Data(payload.course);
+  catalog = Array.isArray(payload.courses)
+    ? payload.courses.map((entry) => ({
+        id: Number(entry.id),
+        title: String(entry.title ?? `Course ${entry.id}`),
+      }))
+    : catalog;
+  if (!catalog.some((entry) => entry.id === currentCourseId)) {
+    catalog = [
+      ...catalog,
+      {
+        id: currentCourseId,
+        title: String(course.course.title || `Course ${currentCourseId}`),
+      },
+    ];
+  }
   publication = readCourse111Publication(course.course);
   const originals = listCourse111OriginalLessons(course);
   const stillSelected = originals.some(
@@ -161,7 +207,9 @@ async function loadCourse() {
     publication?.status === "draft" || publication?.published === false
       ? "draft / unpublished"
       : "publication flags loaded";
-  setStatus(`Course 111 loaded (${draftLabel}). Edits stay local until you save.`);
+  setStatus(
+    `Course ${currentCourseId} loaded (${draftLabel}). Edits stay local until you save.`,
+  );
 }
 
 function renderLessons() {
@@ -206,15 +254,10 @@ function componentHeadHtml(
   index: number,
 ): string {
   const view = describeCourse111Component(component);
-  const imageList = view.imageSrcs
-    .map((src) => `<li><code>${escapeHtml(src)}</code></li>`)
-    .join("");
   return `<header class="course111-admin__component-head">
       <div>
         <div class="course111-admin__component-type">${escapeHtml(view.typeLabel)}</div>
         <p class="course111-admin__identity">${escapeHtml(view.identity)}</p>
-        <p class="course111-admin__hint">component ${view.legacyComponentId} · order ${view.order}</p>
-        ${imageList ? `<ul class="course111-admin__srcs">${imageList}</ul>` : ""}
       </div>
       <button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-component" data-block-slug="${escapeHtml(block.slug)}" data-component-index="${index}">Delete component</button>
     </header>`;
@@ -233,9 +276,10 @@ function componentEditorHtml(
   if (type === "richText") {
     return `<div ${wrap}>
       ${head}
-      <label class="course111-admin__label">HTML
-        <textarea class="course111-admin__textarea" data-field="html">${escapeHtml(component.html ?? "")}</textarea>
-      </label>
+      <div class="course111-admin__field">
+        <span class="course111-admin__label">Text</span>
+        <div data-html-visual></div>
+      </div>
     </div>`;
   }
 
@@ -279,13 +323,99 @@ function componentEditorHtml(
     </div>`;
   }
 
+  if (type === "exerciseAccordion") {
+    const sections = Array.isArray(component.sections) ? component.sections : [];
+    const rows = sections
+      .map(
+        (section, sectionIndex) => `
+      <div class="course111-admin__acc-section">
+        <label class="course111-admin__label">Section title
+          <input class="course111-admin__input" data-acc-title data-acc-section="${sectionIndex}" type="text" value="${escapeHtml(String(section.title ?? ""))}">
+        </label>
+        <div class="course111-admin__field">
+          <span class="course111-admin__label">Section text</span>
+          <div data-html-visual data-acc-section="${sectionIndex}"></div>
+        </div>
+      </div>`,
+      )
+      .join("");
+    return `<div ${wrap}>
+      ${head}
+      ${rows || `<p class="course111-admin__hint">No accordion sections.</p>`}
+    </div>`;
+  }
+
   const preview = escapeHtml(JSON.stringify(component, null, 2));
   return `<div ${wrap}>
     ${head}
-    <p class="course111-admin__preserved">Current settings are shown below. Dedicated field editors exist for text, video, image, and download; other imported types can still be removed.
+    <p class="course111-admin__preserved">Current settings are shown below. Dedicated field editors exist for text, video, image, download, and accordion; other imported types can still be removed.
       <br><code>${preview}</code>
     </p>
   </div>`;
+}
+
+function patchAccordionSection(
+  blockSlug: string,
+  componentId: number,
+  sectionIndex: number,
+  patch: { title?: string; bodyHtml?: string },
+): boolean {
+  const current = currentOriginalLesson();
+  if (!current || current.block.slug !== blockSlug) return false;
+  const component = sortedComponents(current.block).find(
+    (entry) => entry.legacyComponentId === componentId,
+  );
+  if (!component || component.type !== "exerciseAccordion") return false;
+  const section = component.sections[sectionIndex];
+  if (!section) return false;
+  if (patch.title != null) section.title = patch.title;
+  if (patch.bodyHtml != null) section.bodyHtml = patch.bodyHtml;
+  return true;
+}
+
+function mountVisualEditors() {
+  if (!dom.main) return;
+  const current = currentOriginalLesson();
+  if (!current) return;
+  const { parent, block } = current;
+
+  dom.main.querySelectorAll("[data-html-visual]").forEach((node) => {
+    const el = node as HTMLElement;
+    const wrap = el.closest(".course111-admin__component") as HTMLElement | null;
+    if (!wrap) return;
+    const componentId = Number(wrap.getAttribute("data-component-id"));
+    if (!Number.isFinite(componentId)) return;
+    const component = sortedComponents(block).find(
+      (entry) => entry.legacyComponentId === componentId,
+    );
+    if (!component) return;
+
+    const sectionAttr = el.getAttribute("data-acc-section");
+    if (sectionAttr != null && component.type === "exerciseAccordion") {
+      const sectionIndex = Number(sectionAttr);
+      const html = String(component.sections[sectionIndex]?.bodyHtml ?? "");
+      mountLegacyHtmlVisualEditor(el, {
+        html,
+        onChange: (bodyHtml) => {
+          if (patchAccordionSection(block.slug, componentId, sectionIndex, { bodyHtml })) {
+            setDirty(true);
+          }
+        },
+      });
+      return;
+    }
+
+    if (component.type === "richText") {
+      mountLegacyHtmlVisualEditor(el, {
+        html: component.html ?? "",
+        onChange: (html) => {
+          if (patchCourse111Component(parent, block.slug, componentId, { html })) {
+            setDirty(true);
+          }
+        },
+      });
+    }
+  });
 }
 
 function renderMain() {
@@ -308,6 +438,19 @@ function renderMain() {
   const deleteLesson = blockSummary.canDelete
     ? `<button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-block" data-block-slug="${escapeHtml(block.slug)}">Delete lesson</button>`
     : `<button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-block" data-block-slug="${escapeHtml(block.slug)}" disabled title="This lesson includes a type without a dedicated block delete yet. Remove individual components instead.">Delete lesson</button>`;
+  const originals = listCourse111OriginalLessons(course);
+  const prev = adjacentCourseOriginalLesson(
+    originals,
+    summary.parentSlug,
+    summary.blockSlug,
+    -1,
+  );
+  const next = adjacentCourseOriginalLesson(
+    originals,
+    summary.parentSlug,
+    summary.blockSlug,
+    1,
+  );
 
   dom.main.innerHTML = `
     <div class="course111-admin__lesson-header">
@@ -316,15 +459,17 @@ function renderMain() {
       </label>
       <p class="course111-admin__hint">
         Lesson ${summary.assignId || "—"} in ${escapeHtml(parent.title)}.
-        Slug <code>${escapeHtml(block.slug)}</code> is preserved.
-        Published flag: <strong>${parent.published === false ? "unpublished" : "visible"}</strong> (not changed by this editor).
       </p>
+      <div class="course111-admin__lesson-nav">
+        <button type="button" class="course111-admin__btn" data-action="prev-lesson" ${prev ? "" : "disabled"}>← Previous lesson</button>
+        <button type="button" class="course111-admin__btn" data-action="next-lesson" ${next ? "" : "disabled"}>Next lesson →</button>
+      </div>
       <div class="course111-admin__block-actions">${deleteLesson}</div>
     </div>
     <div class="course111-admin__add-row">
       <label class="course111-admin__label">Add component
         <select id="course111-add-type" class="course111-admin__select">
-          <option value="richText">Rich text / HTML</option>
+          <option value="richText">Text</option>
           <option value="video">Video (Vimeo)</option>
           <option value="image">Image</option>
           <option value="download">Download / file</option>
@@ -336,20 +481,30 @@ function renderMain() {
       <article class="course111-admin__block" data-block-slug="${escapeHtml(block.slug)}">
         <header class="course111-admin__block-head">
           <div class="course111-admin__block-meta">
-            <h3 class="course111-admin__block-title">Components in display order</h3>
-            <div class="course111-admin__block-types">${escapeHtml(blockSummary.types.join(" + ") || "empty")} · ${listCourse111LessonComponents(block).length} total</div>
+            <h3 class="course111-admin__block-title">Lesson content</h3>
+            <div class="course111-admin__block-types">${escapeHtml(blockSummary.types.join(" + ") || "empty")}</div>
           </div>
         </header>
         <div class="course111-admin__block-body">${components || `<p class="course111-admin__hint">No components in this lesson.</p>`}</div>
       </article>
     </div>
+    <div class="course111-admin__lesson-nav course111-admin__lesson-nav--footer">
+      <button type="button" class="course111-admin__btn" data-action="prev-lesson" ${prev ? "" : "disabled"}>← Previous lesson</button>
+      <button type="button" class="course111-admin__btn course111-admin__btn--primary" data-action="save-preview">Save &amp; Preview</button>
+      <button type="button" class="course111-admin__btn" data-action="next-lesson" ${next ? "" : "disabled"}>Next lesson →</button>
+    </div>
   `;
+  mountVisualEditors();
 }
 
 function renderAll() {
+  if (dom.heading) {
+    dom.heading.textContent = `Course editor · ${currentCourseId}`;
+  }
   if (dom.courseTitle && course) {
     dom.courseTitle.textContent = course.course.title;
   }
+  populateCourseSelect();
   renderLessons();
   renderMain();
   updatePreviewLink();
@@ -397,7 +552,7 @@ async function saveCurrentLesson(lessonSlug = selectedParentSlug): Promise<SaveP
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
-      courseId: COURSE_111_ID,
+      courseId: currentCourseId,
       action: "saveLesson",
       lessonSlug,
       lesson,
@@ -450,10 +605,25 @@ async function saveAndPreviewLesson() {
 
 async function saveWholeCourse() {
   await saveCurrentLesson();
-  setStatus("Saved Course 111 file. Draft/unpublished state preserved.");
+  setStatus(`Saved Course ${currentCourseId}. Draft/unpublished state preserved.`);
 }
 
 function bindEvents() {
+  dom.courseSelect?.addEventListener("change", () => {
+    const nextId = Number.parseInt(dom.courseSelect?.value ?? "", 10);
+    if (!Number.isFinite(nextId) || nextId === currentCourseId) return;
+    if (dirty) {
+      const ok = window.confirm(
+        "You have unsaved changes. Switch courses and discard them?",
+      );
+      if (!ok) {
+        if (dom.courseSelect) dom.courseSelect.value = String(currentCourseId);
+        return;
+      }
+    }
+    window.location.href = `/watson/course-admin/${nextId}`;
+  });
+
   dom.search?.addEventListener("input", () => {
     searchQuery = dom.search?.value ?? "";
     renderLessons();
@@ -474,11 +644,34 @@ function bindEvents() {
       "[data-action]",
     ) as HTMLButtonElement | null;
     if (!target) return;
+
+    const action = target.getAttribute("data-action");
+
+    if (action === "save-preview") {
+      void saveAndPreviewLesson().catch((error: unknown) => {
+        setStatus(
+          error instanceof Error ? error.message : "Save & Preview failed.",
+          true,
+        );
+      });
+      return;
+    }
+
+    if (action === "prev-lesson" || action === "next-lesson") {
+      if (!course || !selectedParentSlug || !selectedBlockSlug) return;
+      const next = adjacentCourseOriginalLesson(
+        listCourse111OriginalLessons(course),
+        selectedParentSlug,
+        selectedBlockSlug,
+        action === "prev-lesson" ? -1 : 1,
+      );
+      if (next) selectOriginalLesson(next.parentSlug, next.blockSlug);
+      return;
+    }
+
     const current = currentOriginalLesson();
     if (!current || !course) return;
     const { parent, block } = current;
-
-    const action = target.getAttribute("data-action");
 
     if (action === "delete-component") {
       const slug = target.getAttribute("data-block-slug") || block.slug;
@@ -560,13 +753,27 @@ function bindEvents() {
       return;
     }
 
-    const field = target.getAttribute("data-field");
     const wrap = target.closest(".course111-admin__component") as HTMLElement | null;
-    if (!field || !wrap) return;
-
+    if (!wrap) return;
     const blockSlug = wrap.getAttribute("data-block-slug");
     const componentId = Number(wrap.getAttribute("data-component-id"));
     if (!blockSlug || !Number.isFinite(componentId)) return;
+
+    if (target.hasAttribute("data-acc-title") && target instanceof HTMLInputElement) {
+      const sectionIndex = Number(target.getAttribute("data-acc-section"));
+      if (
+        Number.isFinite(sectionIndex) &&
+        patchAccordionSection(blockSlug, componentId, sectionIndex, {
+          title: target.value,
+        })
+      ) {
+        setDirty(true);
+      }
+      return;
+    }
+
+    const field = target.getAttribute("data-field");
+    if (!field) return;
 
     const value =
       target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
@@ -618,11 +825,18 @@ function bindEvents() {
 }
 
 export async function initCourse111AdminEditor() {
+  currentCourseId =
+    parseWatsonCourseAdminCourseId(window.location.pathname) ?? COURSE_111_ID;
+
   dom.app = document.getElementById("course111-admin-app");
   dom.loading = document.getElementById("course111-admin-loading");
   dom.status = document.getElementById("course111-admin-status");
   dom.dirty = document.getElementById("course111-admin-dirty");
+  dom.heading = document.getElementById("course111-admin-heading");
   dom.courseTitle = document.getElementById("course111-admin-course-title");
+  dom.courseSelect = document.getElementById(
+    "course111-admin-course-select",
+  ) as HTMLSelectElement | null;
   dom.search = document.getElementById(
     "course111-admin-search",
   ) as HTMLInputElement | null;
@@ -655,10 +869,10 @@ export async function initCourse111AdminEditor() {
   } catch (error) {
     if (dom.loading) {
       dom.loading.textContent =
-        error instanceof Error ? error.message : "Failed to load Course 111.";
+        error instanceof Error ? error.message : `Failed to load Course ${currentCourseId}.`;
     }
     setStatus(
-      error instanceof Error ? error.message : "Failed to load Course 111.",
+      error instanceof Error ? error.message : `Failed to load Course ${currentCourseId}.`,
       true,
     );
   }

@@ -1,4 +1,4 @@
-import { kinCourseLessonHref } from "../kinCourse/hrefs";
+import { kinCourseLessonHref, parseKinCourseId } from "../kinCourse/hrefs";
 import {
   appendStandaloneComponentBlock,
   createRichTextComponent,
@@ -80,7 +80,7 @@ export type Course111ComponentView = {
 };
 
 export const COURSE_111_COMPONENT_TYPE_LABELS: Record<string, string> = {
-  richText: "Rich text / HTML",
+  richText: "Text",
   video: "Video (Vimeo)",
   image: "Image",
   download: "Download / file",
@@ -206,6 +206,27 @@ export function listCourse111OriginalLessons(
     }
   }
   return out;
+}
+
+export function parseWatsonCourseAdminCourseId(
+  pathname: string,
+): number | null {
+  const match = /\/watson\/course-admin\/(\d+)\/?$/.exec(pathname);
+  return match ? parseKinCourseId(match[1]) : null;
+}
+
+export function adjacentCourseOriginalLesson(
+  lessons: Course111OriginalLessonSummary[],
+  parentSlug: string,
+  blockSlug: string,
+  delta: -1 | 1,
+): Course111OriginalLessonSummary | null {
+  const index = lessons.findIndex(
+    (lesson) =>
+      lesson.parentSlug === parentSlug && lesson.blockSlug === blockSlug,
+  );
+  if (index === -1) return null;
+  return lessons[index + delta] ?? null;
 }
 
 export function filterCourse111OriginalLessons(

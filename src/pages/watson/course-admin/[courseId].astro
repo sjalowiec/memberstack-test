@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { isCourseContentAdminAllowed } from "../../../lib/legacy_kin/courseContentAdmin";
-import { COURSE_111_ID } from "../../../lib/legacy_kin/course111AdminModel";
+import { parseKinCourseId } from "../../../lib/kinCourse/hrefs";
 import "../../../styles/course111-admin.css";
 
 export const prerender = false;
@@ -14,22 +14,27 @@ if (
 ) {
   return Astro.redirect("/watson/");
 }
+
+const courseId = parseKinCourseId(Astro.params.courseId);
+if (courseId == null) {
+  return Astro.redirect("/watson/course-admin/111");
+}
 ---
 
 <BaseLayout
-  title="Course 111 Admin | Watson"
-  description="Editor for Legacy KIN Course 111 conversion"
+  title={`Course ${courseId} Editor | Watson`}
+  description="Visual editor for converted legacy KIN courses"
   bodyClass="course111-admin-body watson-body"
 >
   <p id="course111-admin-loading" class="course111-admin__loading">
-    Loading Course {COURSE_111_ID}…
+    Loading Course {courseId}…
   </p>
 
   <div id="course111-admin-app" class="course111-admin" hidden>
     <header class="course111-admin__top">
       <div class="course111-admin__brand">
-        <h1>Course Admin · 111</h1>
-        <p class="course111-admin__meta">Course content editor · draft only</p>
+        <h1 id="course111-admin-heading">Course editor · {courseId}</h1>
+        <p class="course111-admin__meta">Visual lesson editor · Save &amp; Preview</p>
         <span id="course111-admin-dirty" class="course111-admin__dirty">Saved</span>
       </div>
       <div class="course111-admin__toolbar">
@@ -83,15 +88,25 @@ if (
       <aside class="course111-admin__sidebar">
         <div class="course111-admin__sidebar-head">
           <h2 id="course111-admin-course-title" class="course111-admin__course-title">
-            Course 111
+            Course {courseId}
           </h2>
+          <label class="course111-admin__label" for="course111-admin-course-select">
+            Course
+            <select
+              id="course111-admin-course-select"
+              class="course111-admin__select"
+              aria-label="Select course"
+            >
+              <option value={courseId}>Course {courseId}</option>
+            </select>
+          </label>
           <label class="course111-admin__label" for="course111-admin-search">
             Search lessons
             <input
               id="course111-admin-search"
               class="course111-admin__search"
               type="search"
-              placeholder="Filter by number, 6104, title, type…"
+              placeholder="Filter by number, title, type…"
               autocomplete="off"
             />
           </label>
@@ -110,7 +125,7 @@ if (
   initCourse111AdminEditor().catch((error) => {
     const loading = document.getElementById("course111-admin-loading");
     const message =
-      error instanceof Error ? error.message : "Course 111 admin failed to start.";
+      error instanceof Error ? error.message : "Course editor failed to start.";
     if (loading) {
       loading.hidden = false;
       loading.textContent = message;

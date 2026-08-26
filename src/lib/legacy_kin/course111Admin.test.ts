@@ -1,7 +1,9 @@
 import { basename } from "node:path";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   addCourse111Block,
+  adjacentCourseOriginalLesson,
   cloneCourse111Data,
   COURSE_111_ID,
   COURSE_111_POC_FILENAME,
@@ -23,6 +25,7 @@ import {
   listCourse111OriginalLessons,
   loadCourse111,
   moveCourse111Block,
+  parseWatsonCourseAdminCourseId,
   patchCourse111Component,
   preserveCourse111Publication,
   readCourse111Publication,
@@ -31,6 +34,7 @@ import {
   summarizeCourse111Block,
   updateCourse111LessonTitle,
 } from "./course111Admin";
+import { readCourseContentFile } from "./courseContentAdmin";
 import type { CourseComponent, CoursePreviewData } from "./coursePreviewPoc";
 
 function sampleWithUnknownFields(): CoursePreviewData {
@@ -225,6 +229,41 @@ describe("course111Admin load", () => {
     expect(calls).toEqual([`save:${selected.parentSlug}`]);
   });
 
+  it("uses the same Save & Preview URL shape for Course 64", () => {
+    const data = readCourseContentFile(64);
+    const first = listCourse111OriginalLessons(data)[0]!;
+    expect(data.course.legacyChallengeId).toBe(64);
+    expect(first.assignId).toBeGreaterThan(0);
+    expect(course111LessonPreviewHref(data, first.assignId)).toBe(
+      `/courses/64/lesson/${first.assignId}?preview=true`,
+    );
+    const resolved = resolveCourse111SelectedLessonPreview(
+      data,
+      first.parentSlug,
+      first.blockSlug,
+    );
+    expect(resolved?.previewHref).toBe(
+      `/courses/64/lesson/${first.assignId}?preview=true`,
+    );
+  });
+
+  it("parses Watson course-admin URLs and adjacent lessons", () => {
+    expect(parseWatsonCourseAdminCourseId("/watson/course-admin/64")).toBe(64);
+    expect(parseWatsonCourseAdminCourseId("/watson/course-admin/111")).toBe(111);
+    expect(parseWatsonCourseAdminCourseId("/watson/course-admin")).toBeNull();
+
+    const data = readCourseContentFile(64);
+    const lessons = listCourse111OriginalLessons(data);
+    const first = lessons[0]!;
+    const second = lessons[1]!;
+    expect(
+      adjacentCourseOriginalLesson(lessons, first.parentSlug, first.blockSlug, 1),
+    ).toEqual(second);
+    expect(
+      adjacentCourseOriginalLesson(lessons, first.parentSlug, first.blockSlug, -1),
+    ).toBeNull();
+  });
+
   it("explains live overlay saves versus GitHub deploy delay", () => {
     expect(
       course111SaveStatusMessage({
@@ -396,7 +435,7 @@ describe("course111Admin original lesson components", () => {
     expect(items.map((item) => item.type)).toEqual(["richText", "richText"]);
     expect(items[1]?.identity).toMatch(/LearnDesignaKnit/i);
     expect(items[1]?.imageSrcs).toContain(
-      "https://learndesignaknit.com/img/Learn_DesignAKnit.jpg",
+      "/challenge/images/v2/111/learn_dak_logos.png",
     );
   });
 
@@ -430,7 +469,7 @@ describe("course111Admin original lesson components", () => {
     const promo = found.block.components.find(
       (component) => component.legacyComponentId === 9348,
     ) as { html?: string };
-    expect(promo.html).toContain("https://learndesignaknit.com/img/Learn_DesignAKnit.jpg");
+    expect(promo.html).toContain("/challenge/images/v2/111/learn_dak_logos.png");
   });
 
   it("deletes a component and leaves the rest of the lesson intact", () => {
@@ -461,7 +500,7 @@ describe("course111Admin original lesson components", () => {
       listCourse111LessonComponents(block),
     );
     expect(views.map((item) => item.typeLabel)).toEqual([
-      "Rich text / HTML",
+      "Text",
       "Pending / unmapped",
       "Video (Vimeo)",
     ]);
@@ -484,5 +523,20 @@ describe("course111Admin original lesson components", () => {
     expect(filterCourse111OriginalLessons(listCourse111OriginalLessons(live), "6104")).toEqual(
       [findCourse111OriginalLessonByAssignId(live, 6104)],
     );
+  });
+});
+
+describe("Watson course editor surface", () => {
+  it("uses a visual HTML editor and a generic course-admin route", () => {
+    const editor = readFileSync("src/scripts/course111AdminEditor.ts", "utf8");
+    const page = readFileSync("src/pages/watson/course-admin/[courseId].astro", "utf8");
+    expect(editor).toContain("mountLegacyHtmlVisualEditor");
+    expect(editor).toContain("currentCourseId");
+    expect(editor).not.toContain(
+      '<label class="course111-admin__label">HTML\n        <textarea',
+    );
+    expect(page).toContain("parseKinCourseId");
+    expect(page).toContain("course111-admin-course-select");
+    expect(page).toContain("Save &amp; Preview Lesson");
   });
 });

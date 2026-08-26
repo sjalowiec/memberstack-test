@@ -2636,7 +2636,7 @@ function mountRichTextEditor(
   const render = () => {
     const tabButtons = allowedTabs
       .map((id) => {
-        const label = id === "visual" ? "Write" : id === "html" ? "HTML" : "Preview";
+        const label = id === "visual" ? "Visual" : id === "html" ? "HTML / Advanced" : "Preview";
         return `<button type="button" class="course-editor__rt-tab ${tab === id ? "is-active" : ""}" data-rt-tab="${id}">${label}</button>`;
       })
       .join("");
@@ -3021,7 +3021,7 @@ function openContentEdit(ref: ComponentRef) {
           introHtml: richTextHasVisibleContent(html) ? html : null,
           title: null,
         }),
-      { tabs: ["html", "preview"], prosePreview: false },
+      { prosePreview: false },
     );
 
     const wrap = document.createElement("div");
@@ -3235,7 +3235,7 @@ function openAccordionLayoutEdit(ref: ComponentRef) {
     introWrap,
     String(parts.introText?.html ?? ""),
     (html) => applyAccordionPatch({ introHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   const sectionsWrap = dom.editFields.querySelector("#ce-acc-sections-editor") as HTMLElement;
@@ -3357,7 +3357,7 @@ function openEmbeddedToolLayoutEdit(ref: ComponentRef) {
     introWrap,
     String(parts.introText?.html ?? ""),
     (html) => applyEmbeddedToolPatch({ introHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   const toolKeyEl = dom.editFields.querySelector("#ce-et-tool-key") as HTMLSelectElement;
@@ -3429,7 +3429,7 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
     leftWrap,
     String(parts.leftText?.html ?? ""),
     (html) => applyTextVideoPatch({ leftHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   const bottomWrap = dom.editFields.querySelector("#ce-tv-bottom-editor") as HTMLElement;
@@ -3437,7 +3437,7 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
     bottomWrap,
     String(parts.bottomText?.html ?? ""),
     (html) => applyTextVideoPatch({ bottomHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   const titleEl = dom.editFields.querySelector("#ce-tv-video-title") as HTMLInputElement;
@@ -3534,7 +3534,7 @@ function openTextImageLayoutEdit(ref: ComponentRef) {
     textWrap,
     String(parts.text.html ?? ""),
     (html) => applyTextImagePatch({ textHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   const headerEl = dom.editFields.querySelector("#ce-ti-header") as HTMLInputElement;
@@ -3646,7 +3646,7 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
     introWrap,
     String(parts.intro?.html ?? ""),
     (html) => applyThreeVideosPatch({ introHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   const outroWrap = dom.editFields.querySelector("#ce-3v-outro-editor") as HTMLElement;
@@ -3654,7 +3654,7 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
     outroWrap,
     String(parts.outro?.html ?? ""),
     (html) => applyThreeVideosPatch({ outroHtml: html }),
-    { tabs: ["html", "preview"] },
+    { tabs: ["visual", "html"] },
   );
 
   for (const slot of [1, 2, 3] as const) {
@@ -3664,7 +3664,7 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
       captionWrap,
       String(slotParts.caption?.html ?? ""),
       (html) => applyThreeVideosPatch({ slot, captionHtml: html }),
-      { tabs: ["html", "preview"] },
+      { tabs: ["visual", "html"] },
     );
 
     const titleEl = dom.editFields.querySelector(`#ce-3v-title-${slot}`) as HTMLInputElement;

@@ -432,3 +432,178 @@ body.course111-admin-body {
   text-align: center;
   color: #64748b;
 }
+
+.course111-admin__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.course111-admin__lesson-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.course111-admin__lesson-nav--footer {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--c111-border);
+}
+
+.course111-admin__acc-section {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--c111-border);
+}
+
+.course111-admin__rte-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  background: #eef1e7;
+  width: fit-content;
+}
+
+.course111-admin__rte-tab {
+  padding: 0.35rem 0.7rem;
+  border: none;
+  border-radius: 0.35rem;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.course111-admin__rte-tab.is-active {
+  background: #fff;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.course111-admin__rte-visual-wrap {
+  border: 1px solid var(--c111-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.course111-admin__rte-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  padding: 0.35rem 0.45rem;
+  border-bottom: 1px solid var(--c111-border);
+  background: #f8fafc;
+}
+
+.course111-admin__rte-btn {
+  min-width: 1.85rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.3rem;
+  background: transparent;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.course111-admin__rte-btn:hover {
+  background: #eef1e7;
+  border-color: var(--c111-border);
+}
+
+.course111-admin__rte-visual {
+  min-height: 14rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  outline: none;
+  overflow-y: auto;
+  color: #1e293b;
+}
+
+.course111-admin__rte-html {
+  min-height: 14rem;
+}
+
+.course111-admin__rte-visual p {
+  margin: 0.45rem 0;
+}
+
+.course111-admin__rte-visual h2,
+.course111-admin__rte-visual h3,
+.course111-admin__rte-visual h4 {
+  margin: 0.65rem 0 0.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.course111-admin__rte-visual h2 {
+  font-size: 1.2rem;
+}
+
+.course111-admin__rte-visual h3 {
+  font-size: 1.05rem;
+}
+
+.course111-admin__rte-visual ul,
+.course111-admin__rte-visual ol {
+  margin: 0.45rem 0;
+  padding-left: 1.4rem;
+}
+
+.course111-admin__rte-visual a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.course111-admin__rte-visual img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.course111-admin__rte-visual figure {
+  margin: 0.65rem 0;
+}
+
+.course111-admin__rte-visual figcaption {
+  font-size: 0.82rem;
+  color: #475569;
+  margin-top: 0.25rem;
+}
+
+.course111-admin__rte-visual [align="center"],
+.course111-admin__rte-visual .text-center {
+  text-align: center;
+}
+
+.course111-admin__rte-visual .text-center img,
+.course111-admin__rte-visual [align="center"] img {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.course111-admin__rte-visual .flex-container,
+.course111-admin__rte-visual .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.course111-admin__rte-visual .img-thumbnail {
+  max-width: 12rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.2rem;
+  background: #fff;
+}
+
+.course111-admin__sidebar-head .course111-admin__label {
+  margin-bottom: 0.55rem;
+}
