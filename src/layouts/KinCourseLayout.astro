@@ -382,7 +382,7 @@ const previewUnlock = preview === true;
     color: #3e4f22;
   }
 
-  .legacy-content img[src="/challenge/images/v2/111/cast_on_checklist.jpg"] {
+  .legacy-content img[src$="cast_on_checklist.jpg"] {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -764,7 +764,7 @@ const previewUnlock = preview === true;
     }
 
     const checklist = target.closest<HTMLImageElement>(
-      '.legacy-content img[src="/challenge/images/v2/111/cast_on_checklist.jpg"]',
+      '.legacy-content img[src$="cast_on_checklist.jpg"]',
     );
     if (checklist) {
       event.preventDefault();

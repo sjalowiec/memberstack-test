@@ -41,6 +41,17 @@ function withNewWindowAttrs(attrs: string): string {
   return next;
 }
 
+export function applyKinCourseSrcRewrites(
+  value: string,
+  presentation: KinCoursePresentation = {},
+): string {
+  let out = value;
+  for (const rule of presentation.rewriteSrc ?? []) {
+    out = out.split(rule.from).join(rule.to);
+  }
+  return out;
+}
+
 export function ensurePdfOpensInNewWindow(html: string): string {
   return html.replace(/<a\b([^>]*)>/gi, (full, attrs: string) => {
     const href = /href=["']([^"']+)["']/i.exec(attrs)?.[1] || "";
@@ -66,9 +77,7 @@ export function presentKinCourseHtml(
       "",
     );
   }
-  for (const rule of presentation.rewriteSrc ?? []) {
-    out = out.split(rule.from).join(rule.to);
-  }
+  out = applyKinCourseSrcRewrites(out, presentation);
   const hrefRules = presentation.rewriteHref ?? [];
   if (hrefRules.length) {
     out = out.replace(/<a\b([^>]*)>/gi, (full, attrs: string) => {

@@ -4,7 +4,11 @@ import LegacyExercise from "./LegacyExercise.astro";
 import LegacyFlipbook from "./LegacyFlipbook.astro";
 import LegacyHotspot from "./LegacyHotspot.astro";
 import LegacyVimeoJumpLinks from "./LegacyVimeoJumpLinks.astro";
-import { presentKinCourseHtml, type KinCourseGlossaryEntry } from "../../lib/kinCourse/htmlPresent";
+import {
+  applyKinCourseSrcRewrites,
+  presentKinCourseHtml,
+  type KinCourseGlossaryEntry,
+} from "../../lib/kinCourse/htmlPresent";
 import { flattenLessons } from "../../lib/kinCourse/player";
 import { kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
 import type { KinCourseDocument, KinCoursePresentation } from "../../lib/kinCourse/types";
@@ -87,6 +91,10 @@ function presentHtml(html: string): string {
   return presentKinCourseHtml(html, lessonId, presentation, glossary);
 }
 
+function presentSrc(src: string | undefined): string {
+  return applyKinCourseSrcRewrites(src || "", presentation);
+}
+
 const knownAssignIds = flattenLessons(course).map((lesson) => lesson.id);
 const knownLessons = new Set(knownAssignIds);
 
@@ -158,7 +166,7 @@ function rewriteExerciseDetails(html: string): string {
         <LegacyFlipbook
           lessonId={lessonId}
           slides={(component.slides || []).map((slide) => ({
-            src: slide.src,
+            src: presentSrc(slide.src),
             caption: slide.caption ? presentHtml(slide.caption) : slide.caption,
           }))}
         />
@@ -169,7 +177,7 @@ function rewriteExerciseDetails(html: string): string {
       return (
         <LegacyHotspot
           lessonId={lessonId}
-          image={component.image}
+          image={presentSrc(component.image)}
           imageWidth={component.imageWidth}
           imageHeight={component.imageHeight}
           wrapperStyle={component.wrapperStyle}
@@ -187,6 +195,7 @@ function rewriteExerciseDetails(html: string): string {
           knownAssignIds={knownAssignIds}
           items={(component.items || []).map((item) => ({
             ...item,
+            image: presentSrc(item.image),
             detailsHtml: presentHtml(rewriteExerciseDetails(item.detailsHtml || "")),
           }))}
         />
