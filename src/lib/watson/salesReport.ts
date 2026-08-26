@@ -2,17 +2,17 @@
  * Watson Sales Report - actual revenue collected from Shopify and Stripe.
  *
  * Read-only. Reports money that was actually collected during a range of
- * America/Los_Angeles calendar days: Shopify order revenue (from the synced
- * `watson_shopify_orders` table) and live Stripe Charges (succeeded, paid,
- * live-mode USD). Stripe totals are collected revenue, not membership-only:
- * Checkout, payment links, subscriptions, and paid invoices (including
- * manually created invoices with no Knit It Now product) all count when they
+ * America/Los_Angeles calendar days. Shopify is retrieved live from the Admin
+ * API for the selected range, with the synced `watson_shopify_orders` table as
+ * fallback. Stripe is live Charges (succeeded, paid, live-mode USD), plus a
+ * best-effort paid-invoice backfill so invoice Charges are not missed.
+ * Checkout, payment links, subscriptions, and paid invoices count when they
  * produce a succeeded Charge. Shopify-gateway Charges are excluded so the
  * same payment is not counted in both sources. It does NOT use projected
  * subscription value / MRR.
  *
  * The compute layer (`computeSalesReport`) is pure and fully unit-testable; the
- * `loadSalesReport` loader performs the Postgres + Stripe I/O.
+ * `loadSalesReport` loader performs the Shopify + Postgres + Stripe I/O.
  */
 
 import { queryWatson } from "./db";
@@ -24,11 +24,15 @@ import {
   SHOPIFY_STALE_HOURS,
   type DayRange,
 } from "./salesReportDates";
+import { fetchShopifyOrdersProcessedInRange } from "./shopifyAdminClient";
+import { getShopifyAdminConfig } from "./shopifyEnv";
+import { mapShopifyRestOrder, type MappedShopifyOrder } from "./shopifyOrderMap";
 import { getShopifySyncStatus } from "./shopifyOrdersSync";
 import {
   fetchStripeChargesInRange,
   readStripeReportingConfig,
   type NormalizedStripeCharge,
+  type StripePaymentChannel,
 } from "./stripeReportingClient";
 import {
   classifyStripeCharge,
@@ -105,24 +109,34 @@ export interface SalesReportSummary {
   combinedPartial: boolean;
 }
 
-export interface StripeChargeDiagnosticRow {
+export type TransactionSource = "shopify" | "stripe";
+export type TransactionChannel = "shopify" | StripePaymentChannel;
+
+export interface SalesTransactionRow {
   id: string;
+  source: TransactionSource;
+  channel: TransactionChannel;
   createdIso: string;
   createdLa: string;
-  amount: number;
-  amountRequested: number;
-  amountRefunded: number;
   description: string;
-  invoiceId: string | null;
-  paymentIntentId: string | null;
-  paymentMethodType: string | null;
-  lineSummary: string;
-  status: string;
-  paid: boolean;
-  livemode: boolean;
-  currency: string;
+  grossCollected: number;
+  refunds: number;
+  netCollected: number;
   counted: boolean;
   exclusionReason: string | null;
+  invoiceId: string | null;
+  paymentIntentId: string | null;
+}
+
+/** @deprecated Use SalesTransactionRow. Kept so existing diagnostics call sites type-check during the swap. */
+export type StripeChargeDiagnosticRow = SalesTransactionRow;
+
+export interface SalesReconciliation {
+  grossCollected: number;
+  refunds: number;
+  netCollected: number;
+  transactionCount: number;
+  matchesSummary: boolean;
 }
 
 export interface SalesReport {
@@ -134,15 +148,22 @@ export interface SalesReport {
   sources: { shopify: SourceStatus; stripe: SourceStatus };
   /** Aggregated visible warnings (stale/unavailable sources, config gaps). */
   warnings: string[];
-  /** Localhost-only Charge-by-Charge decision log. Null in production. */
-  stripeDiagnostics: StripeChargeDiagnosticRow[] | null;
+  /** Counted and excluded transactions that make up (or were omitted from) the totals. */
+  transactions: SalesTransactionRow[];
+  reconciliation: SalesReconciliation;
+  /** Alias of transactions for the previous localhost diagnostics table. */
+  stripeDiagnostics: SalesTransactionRow[] | null;
 }
 
 /** A Shopify order normalized for the report (money already in USD). */
 export interface NormalizedShopifyOrder {
+  id?: string;
+  orderName?: string;
   processedAtIso: string;
   grossCollected: number;
   refunds: number;
+  financialStatus?: string | null;
+  cancelledAt?: string | null;
 }
 
 function emptyTotals(): RevenueTotals {
@@ -237,39 +258,89 @@ export function explainStripeChargeDecision(
   return { counted: true, exclusionReason: null };
 }
 
+export function explainShopifyOrderDecision(
+  order: NormalizedShopifyOrder,
+  options: { inRangeDays?: Set<string> } = {},
+): { counted: boolean; exclusionReason: string | null } {
+  if (order.cancelledAt) {
+    return { counted: false, exclusionReason: "order is cancelled" };
+  }
+  const status = (order.financialStatus ?? "").trim().toLowerCase();
+  if (status && !SHOPIFY_FINANCIAL_STATUSES_COLLECTED.includes(status)) {
+    return {
+      counted: false,
+      exclusionReason: `financial_status is "${order.financialStatus}"`,
+    };
+  }
+  if (options.inRangeDays) {
+    const key = civilDayKey(new Date(order.processedAtIso));
+    if (!options.inRangeDays.has(key)) {
+      return {
+        counted: false,
+        exclusionReason: `processed ${key} is outside the requested LA range`,
+      };
+    }
+  }
+  return { counted: true, exclusionReason: null };
+}
+
+function stripeTransactionRow(
+  charge: NormalizedStripeCharge,
+  decision: { counted: boolean; exclusionReason: string | null },
+): SalesTransactionRow {
+  const gross = charge.amount;
+  const refunds = charge.amountRefunded;
+  return {
+    id: charge.id,
+    source: "stripe",
+    channel: charge.channel ?? "other",
+    createdIso: charge.createdIso,
+    createdLa: formatLaTimestamp(charge.createdIso),
+    description: charge.description || charge.invoiceId || charge.id,
+    grossCollected: gross,
+    refunds,
+    netCollected: roundCents(gross - refunds),
+    counted: decision.counted,
+    exclusionReason: decision.exclusionReason,
+    invoiceId: charge.invoiceId ?? null,
+    paymentIntentId: charge.paymentIntentId ?? null,
+  };
+}
+
+function shopifyTransactionRow(
+  order: NormalizedShopifyOrder,
+  decision: { counted: boolean; exclusionReason: string | null },
+): SalesTransactionRow {
+  const gross = Number.isFinite(order.grossCollected) ? order.grossCollected : 0;
+  const refunds = Number.isFinite(order.refunds) ? order.refunds : 0;
+  const id = order.id || order.orderName || order.processedAtIso;
+  return {
+    id,
+    source: "shopify",
+    channel: "shopify",
+    createdIso: order.processedAtIso,
+    createdLa: formatLaTimestamp(order.processedAtIso),
+    description: order.orderName || id,
+    grossCollected: gross,
+    refunds,
+    netCollected: roundCents(gross - refunds),
+    counted: decision.counted,
+    exclusionReason: decision.exclusionReason,
+    invoiceId: null,
+    paymentIntentId: null,
+  };
+}
+
 export function buildStripeChargeDiagnostics(
   charges: NormalizedStripeCharge[],
   range: DayRange,
-): StripeChargeDiagnosticRow[] {
+): SalesTransactionRow[] {
   const inRangeDays = new Set(eachCivilDay(range.fromCivil, range.toCivil));
   const seenChargeIds = new Set<string>();
   return charges.map((charge) => {
     const decision = explainStripeChargeDecision(charge, { inRangeDays, seenChargeIds });
     if (decision.counted) seenChargeIds.add(charge.id);
-    return {
-      id: charge.id,
-      createdIso: charge.createdIso,
-      createdLa: formatLaTimestamp(charge.createdIso),
-      amount: charge.amount,
-      amountRequested: charge.amountRequested ?? charge.amount,
-      amountRefunded: charge.amountRefunded,
-      description: charge.description ?? "",
-      invoiceId: charge.invoiceId ?? null,
-      paymentIntentId: charge.paymentIntentId ?? null,
-      paymentMethodType: charge.paymentMethodType ?? null,
-      lineSummary:
-        charge.lines.length > 0
-          ? charge.lines
-              .map((line) => line.priceId || line.productId || "no-id")
-              .join(", ")
-          : "no invoice lines",
-      status: charge.status,
-      paid: charge.paid,
-      livemode: charge.livemode,
-      currency: charge.currency,
-      counted: decision.counted,
-      exclusionReason: decision.exclusionReason,
-    };
+    return stripeTransactionRow(charge, decision);
   });
 }
 
@@ -296,11 +367,14 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
     annual: emptyTotals(),
     other: emptyTotals(),
   };
+  const transactions: SalesTransactionRow[] = [];
 
   if (input.shopifySource.available) {
     for (const order of shopifyOrders) {
       const key = civilDayKey(new Date(order.processedAtIso));
-      if (!inRangeDays.has(key)) continue;
+      const decision = explainShopifyOrderDecision(order, { inRangeDays });
+      transactions.push(shopifyTransactionRow(order, decision));
+      if (!decision.counted) continue;
       const bucket = dayShopify.get(key);
       const gross = Number.isFinite(order.grossCollected) ? order.grossCollected : 0;
       const refunds = Number.isFinite(order.refunds) ? order.refunds : 0;
@@ -312,13 +386,12 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
   if (input.stripeSource.available) {
     const seenChargeIds = new Set<string>();
     for (const charge of stripeCharges) {
-      if (!isCountableStripeCharge(charge)) continue;
-      if (seenChargeIds.has(charge.id)) continue;
+      const decision = explainStripeChargeDecision(charge, { inRangeDays, seenChargeIds });
+      transactions.push(stripeTransactionRow(charge, decision));
+      if (!decision.counted) continue;
       seenChargeIds.add(charge.id);
 
       const key = civilDayKey(new Date(charge.createdIso));
-      if (!inRangeDays.has(key)) continue;
-
       const gross = charge.amount;
       const refunds = charge.amountRefunded;
       const stripeBucket = dayStripe.get(key);
@@ -333,6 +406,8 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
       addToTotals(breakdown[category], gross, refunds);
     }
   }
+
+  transactions.sort((a, b) => a.createdIso.localeCompare(b.createdIso) || a.id.localeCompare(b.id));
 
   const daily: DailyRow[] = dayKeys.map((date) => {
     const shopify = finalizeTotals(dayShopify.get(date) ?? emptyTotals());
@@ -373,6 +448,21 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
       (input.stripeSource.available ? stripeFinal.transactionCount : 0),
   };
 
+  const countedTx = transactions.filter((row) => row.counted);
+  const reconciliationTotals = emptyTotals();
+  for (const row of countedTx) {
+    addToTotals(reconciliationTotals, row.grossCollected, row.refunds);
+  }
+  const reconciliationFinal = finalizeTotals(reconciliationTotals);
+  const reconciliation: SalesReconciliation = {
+    ...reconciliationFinal,
+    matchesSummary:
+      reconciliationFinal.grossCollected === combined.grossCollected &&
+      reconciliationFinal.refunds === combined.refunds &&
+      reconciliationFinal.netCollected === combined.netCollected &&
+      reconciliationFinal.transactionCount === combined.transactionCount,
+  };
+
   const warnings: string[] = [];
   if (!input.shopifySource.available) {
     warnings.push(`Shopify data unavailable: ${input.shopifySource.error ?? "unknown error"}`);
@@ -408,9 +498,11 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
     daily,
     sources: { shopify: input.shopifySource, stripe: input.stripeSource },
     warnings,
+    transactions,
+    reconciliation,
     stripeDiagnostics: input.includeStripeDiagnostics
-      ? buildStripeChargeDiagnostics(stripeCharges, range)
-      : null,
+      ? transactions.filter((row) => row.source === "stripe")
+      : transactions,
   };
 }
 
@@ -420,23 +512,42 @@ function toNumber(value: string | number | null | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Load in-range collected Shopify orders from Watson Postgres. */
+export function mappedShopifyOrderToNormalized(
+  order: MappedShopifyOrder,
+): NormalizedShopifyOrder | null {
+  const processedAt = order.processedAt ?? order.createdAtShopify;
+  if (!processedAt) return null;
+  return {
+    id: order.shopifyOrderId,
+    orderName: order.orderName ?? `#${order.orderNumber}`,
+    processedAtIso: new Date(processedAt).toISOString(),
+    grossCollected: order.totalPrice,
+    refunds: order.totalRefunded,
+    financialStatus: order.financialStatus,
+    cancelledAt: order.cancelledAt,
+  };
+}
+
+/** Load in-range Shopify orders from Watson Postgres (fallback when live Admin API fails). */
 export async function loadShopifyOrdersForRange(
   range: DayRange,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<NormalizedShopifyOrder[]> {
-  const statuses = SHOPIFY_FINANCIAL_STATUSES_COLLECTED.map((s) => `'${s}'`).join(", ");
   const rows = await queryFn<{
+    shopify_order_id: string;
+    order_name: string | null;
+    order_number: string | null;
     processed_at: Date | string | null;
     total_price: string | number;
     total_refunded: string | number;
+    financial_status: string | null;
+    cancelled_at: Date | string | null;
   }>(
     `
-    SELECT processed_at, total_price, total_refunded
+    SELECT shopify_order_id, order_name, order_number, processed_at,
+           total_price, total_refunded, financial_status, cancelled_at
     FROM watson_shopify_orders
     WHERE source = 'shopify'
-      AND cancelled_at IS NULL
-      AND lower(coalesce(financial_status, '')) IN (${statuses})
       AND processed_at >= $1::timestamptz
       AND processed_at < $2::timestamptz
     `,
@@ -446,10 +557,40 @@ export async function loadShopifyOrdersForRange(
   return rows
     .filter((row) => row.processed_at != null)
     .map((row) => ({
+      id: row.shopify_order_id,
+      orderName: row.order_name ?? (row.order_number ? `#${row.order_number}` : row.shopify_order_id),
       processedAtIso: new Date(row.processed_at as Date | string).toISOString(),
       grossCollected: toNumber(row.total_price),
       refunds: toNumber(row.total_refunded),
+      financialStatus: row.financial_status,
+      cancelledAt: row.cancelled_at
+        ? new Date(row.cancelled_at as Date | string).toISOString()
+        : null,
     }));
+}
+
+async function loadLiveShopifyOrdersForRange(
+  range: DayRange,
+  options: { fetchImpl?: typeof fetch; env?: NodeJS.ProcessEnv },
+): Promise<NormalizedShopifyOrder[]> {
+  const config = getShopifyAdminConfig(options.env);
+  if ("error" in config) {
+    throw new Error(config.error);
+  }
+  const raw = await fetchShopifyOrdersProcessedInRange({
+    processedAtMin: range.startUtc.toISOString(),
+    processedAtMax: range.endUtc.toISOString(),
+    config,
+    fetchImpl: options.fetchImpl,
+  });
+  const orders: NormalizedShopifyOrder[] = [];
+  for (const rawOrder of raw) {
+    const mapped = mapShopifyRestOrder(rawOrder);
+    if (!mapped) continue;
+    const normalized = mappedShopifyOrderToNormalized(mapped);
+    if (normalized) orders.push(normalized);
+  }
+  return orders;
 }
 
 function buildStripeDetail(configEmpty: boolean): string {
@@ -475,42 +616,68 @@ export async function loadSalesReport(
   const queryFn = options.queryFn ?? queryWatson;
   const env = options.env ?? process.env;
 
-  // ---- Shopify (from synced Postgres) ----
+  // ---- Shopify (live Admin API, Postgres sync as fallback) ----
   let shopifyOrders: NormalizedShopifyOrder[] = [];
-  let shopifySource: SourceStatus;
+  let shopifySource: SourceStatus | undefined;
+  let liveShopifyError: string | null = null;
   try {
-    const [orders, syncStatus] = await Promise.all([
-      loadShopifyOrdersForRange(options.range, queryFn),
-      getShopifySyncStatus().catch(() => null),
-    ]);
-    shopifyOrders = orders;
-    const lastAt = syncStatus?.lastSuccessfulSyncAt ?? null;
-    const ageHours = lastAt
-      ? (now.getTime() - new Date(lastAt).getTime()) / (60 * 60 * 1000)
-      : Number.POSITIVE_INFINITY;
-    const stale = ageHours > SHOPIFY_STALE_HOURS;
+    shopifyOrders = await loadLiveShopifyOrdersForRange(options.range, {
+      fetchImpl: options.fetchImpl,
+      env,
+    });
     shopifySource = {
       source: "shopify",
       available: true,
-      stale,
-      lastAt,
-      detail: lastAt
-        ? `Last successful Shopify sync ${new Date(lastAt).toISOString()} (${ageHours.toFixed(1)}h ago).`
-        : "Shopify has never completed a successful sync.",
+      stale: false,
+      lastAt: now.toISOString(),
+      detail: `Retrieved live from Shopify (${shopifyOrders.length} orders in range).`,
       error: null,
     };
   } catch (error) {
-    shopifySource = {
-      source: "shopify",
-      available: false,
-      stale: true,
-      lastAt: null,
-      detail: "Shopify order data could not be read from Watson Postgres.",
-      error:
-        error instanceof Error
-          ? error.message
-          : "Unable to read Shopify orders. Check WATSON_DATABASE_URL.",
-    };
+    liveShopifyError =
+      error instanceof Error ? error.message : "Live Shopify Admin API request failed.";
+  }
+
+  if (!shopifySource) {
+    try {
+      const [orders, syncStatus] = await Promise.all([
+        loadShopifyOrdersForRange(options.range, queryFn),
+        getShopifySyncStatus().catch(() => null),
+      ]);
+      shopifyOrders = orders;
+      const lastAt = syncStatus?.lastSuccessfulSyncAt ?? null;
+      const ageHours = lastAt
+        ? (now.getTime() - new Date(lastAt).getTime()) / (60 * 60 * 1000)
+        : Number.POSITIVE_INFINITY;
+      const stale = ageHours > SHOPIFY_STALE_HOURS;
+      const syncDetail = lastAt
+        ? `Last successful Shopify sync ${new Date(lastAt).toISOString()} (${ageHours.toFixed(1)}h ago).`
+        : "Shopify has never completed a successful sync.";
+      shopifySource = {
+        source: "shopify",
+        available: true,
+        stale,
+        lastAt,
+        detail: liveShopifyError
+          ? `Live Shopify unavailable (${liveShopifyError}). Using synced orders. ${syncDetail}`
+          : syncDetail,
+        error: null,
+      };
+    } catch (error) {
+      shopifySource = {
+        source: "shopify",
+        available: false,
+        stale: true,
+        lastAt: null,
+        detail: liveShopifyError
+          ? `Live Shopify unavailable (${liveShopifyError}). Synced order data could not be read from Watson Postgres.`
+          : "Shopify order data could not be read from Watson Postgres.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to read Shopify orders. Check WATSON_DATABASE_URL.",
+      };
+    }
   }
 
   // ---- Stripe (live collected Charges) ----
@@ -571,11 +738,11 @@ export async function loadSalesReport(
     classifyConfig,
     shopifySource,
     stripeSource,
-    includeStripeDiagnostics: options.includeStripeDiagnostics === true,
+    includeStripeDiagnostics: true,
   });
   if (options.includeStripeDiagnostics) {
     console.info(
-      `[watson-sales] Stripe diagnostics: returned ${stripeCharges.length}, counted ${report.summary.stripe.transactionCount}, net ${report.summary.stripe.netCollected}, membership ${report.summary.membership.transactionCount}/${report.summary.membership.netCollected}`,
+      `[watson-sales] diagnostics: shopify ${report.summary.shopify.transactionCount}/${report.summary.shopify.netCollected}, stripe returned ${stripeCharges.length} counted ${report.summary.stripe.transactionCount} net ${report.summary.stripe.netCollected}, combined ${report.summary.combined.netCollected}, recon ${report.reconciliation.matchesSummary}`,
     );
   }
   return report;

@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 
 import {
+  classifyStripePaymentChannel,
   describeStripeConnectionError,
   describeStripeHttpError,
+  detectShopifyMarker,
   fetchStripeChargesInRange,
   isStripeTlsInsecureFlagEnabled,
   normalizeStripeCharge,
@@ -62,9 +64,11 @@ describe("normalizeStripeCharge", () => {
     expect(normalized.lines).toEqual([{ priceId: "price_a", productId: "prod_mem" }]);
     expect(normalized.hasShopifyMarker).toBe(false);
     expect(normalized.invoiceId).toBe("in_1");
+    expect(normalized.billingReason).toBeNull();
+    expect(normalized.channel).toBe("invoice");
   });
 
-  it("flags Shopify-origin charges via description/metadata", () => {
+  it("flags Shopify-origin charges via description and Shopify Payments metadata", () => {
     const fromDescription = normalizeStripeCharge({
       id: "ch_2",
       description: "Shopify order #1234",
@@ -76,7 +80,45 @@ describe("normalizeStripeCharge", () => {
       metadata: { shopify_order_id: "555" },
     });
     expect(fromMetadata.hasShopifyMarker).toBe(true);
-    expect(fromMetadata.shopifyMarkerReason).toContain("order_id");
+    expect(fromMetadata.shopifyMarkerReason?.toLowerCase()).toContain("shopify");
+    const fromPayments = detectShopifyMarker({
+      metadata: { order_id: "1001", shop_id: "shop_1" },
+    });
+    expect(fromPayments.hasShopifyMarker).toBe(true);
+  });
+
+  it("does not treat generic order_id metadata as Shopify-origin", () => {
+    expect(detectShopifyMarker({ metadata: { order_id: "INV-9" } }).hasShopifyMarker).toBe(false);
+    expect(
+      detectShopifyMarker({
+        description: "Payment for Invoice",
+        metadata: { order_id: "custom-123" },
+      }).hasShopifyMarker,
+    ).toBe(false);
+  });
+
+  it("classifies subscription, invoice, checkout, and payment-link channels", () => {
+    expect(
+      classifyStripePaymentChannel({
+        invoiceId: "in_sub",
+        billingReason: "subscription_cycle",
+        description: "Subscription update",
+      }),
+    ).toBe("subscription");
+    expect(
+      classifyStripePaymentChannel({
+        invoiceId: "in_manual",
+        billingReason: "manual",
+        description: "Payment for Invoice",
+      }),
+    ).toBe("invoice");
+    expect(classifyStripePaymentChannel({ description: "Checkout payment" })).toBe("checkout");
+    expect(classifyStripePaymentChannel({ description: "", invoiceId: null })).toBe("payment_link");
+    expect(
+      classifyStripePaymentChannel({
+        metadata: { payment_link: "plink_1" },
+      }),
+    ).toBe("payment_link");
   });
 
   it("returns no line refs for a charge without an expanded invoice", () => {
@@ -112,6 +154,9 @@ describe("fetchStripeChargesInRange pagination", () => {
     const calls: string[] = [];
     const fetchImpl = (async (url: string) => {
       calls.push(url);
+      if (String(url).includes("/invoices")) {
+        return new Response(JSON.stringify({ data: [], has_more: false }), { status: 200 });
+      }
       const parsed = new URL(url);
       const after = parsed.searchParams.get("starting_after");
       const page = after ? pages[after] : pages.first;
@@ -126,11 +171,75 @@ describe("fetchStripeChargesInRange pagination", () => {
     });
 
     expect(charges.map((c) => c.id)).toEqual(["ch_a", "ch_b", "ch_c"]);
-    expect(calls.length).toBe(2);
+    expect(calls.filter((url) => url.includes("/charges")).length).toBe(2);
+    expect(calls.some((url) => url.includes("/invoices"))).toBe(true);
     const firstParams = new URL(calls[0]!).searchParams;
     expect(firstParams.get("created[gte]")).toBe("1785567600");
     expect(firstParams.get("created[lt]")).toBe("1785654000");
     expect(firstParams.getAll("expand[]")).toContain("data.invoice");
+  });
+
+  it("backfills a paid-invoice Charge missing from the charges list, once", async () => {
+    const fetchImpl = (async (url: string) => {
+      const href = String(url);
+      if (href.includes("/invoices")) {
+        return new Response(
+          JSON.stringify({
+            data: [
+              {
+                id: "in_manual",
+                status: "paid",
+                paid: true,
+                paid_out_of_band: false,
+                charge: "ch_invoice",
+              },
+              {
+                id: "in_oob",
+                status: "paid",
+                paid: true,
+                paid_out_of_band: true,
+                charge: null,
+              },
+            ],
+            has_more: false,
+          }),
+          { status: 200 },
+        );
+      }
+      if (href.includes("/charges/ch_invoice")) {
+        return new Response(
+          JSON.stringify({
+            id: "ch_invoice",
+            amount: 12000,
+            amount_captured: 12000,
+            amount_refunded: 0,
+            status: "succeeded",
+            paid: true,
+            livemode: true,
+            currency: "usd",
+            created: 1_785_568_000,
+            description: "Payment for Invoice",
+            invoice: { id: "in_manual", billing_reason: "manual" },
+          }),
+          { status: 200 },
+        );
+      }
+      if (href.includes("/charges?")) {
+        return new Response(JSON.stringify({ data: [], has_more: false }), { status: 200 });
+      }
+      return new Response("not found", { status: 404 });
+    }) as unknown as typeof fetch;
+
+    const charges = await fetchStripeChargesInRange({
+      startUtc: new Date("2026-08-01T07:00:00Z"),
+      endUtc: new Date("2026-08-02T07:00:00Z"),
+      config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+      fetchImpl,
+    });
+    expect(charges.map((charge) => charge.id)).toEqual(["ch_invoice"]);
+    expect(charges[0]?.amount).toBe(120);
+    expect(charges[0]?.channel).toBe("invoice");
+    expect(charges[0]?.hasShopifyMarker).toBe(false);
   });
 
   it("throws a Stripe authentication error on HTTP 401", async () => {

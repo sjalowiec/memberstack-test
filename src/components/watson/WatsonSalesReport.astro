@@ -1,5 +1,5 @@
 ---
-import { formatReportUsd, type SalesReport, type SourceStatus } from "../../lib/watson/salesReport";
+import { formatReportUsd, type SalesReport, type SourceStatus, type TransactionChannel } from "../../lib/watson/salesReport";
 import { formatCivilLabel, formatLaTimestamp } from "../../lib/watson/salesReportDates";
 
 interface Props {
@@ -47,6 +47,35 @@ function money(value: number, available: boolean): string {
 }
 
 const shopify = report?.summary.shopify ?? null;
+const shopifyLive = Boolean(report?.sources.shopify.detail?.includes("Retrieved live from Shopify"));
+
+function channelLabel(channel: TransactionChannel): string {
+  switch (channel) {
+    case "shopify":
+      return "Shopify order";
+    case "subscription":
+      return "Subscription";
+    case "invoice":
+      return "Invoice";
+    case "checkout":
+      return "Checkout";
+    case "payment_link":
+      return "Payment link";
+    default:
+      return "Other Stripe";
+  }
+}
+
+function currentHref(): string {
+  const params = new URLSearchParams();
+  if (activePreset) params.set("preset", activePreset);
+  if (activePreset === "custom") {
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+  }
+  const query = params.toString();
+  return query ? `/watson/sales/report?${query}` : "/watson/sales/report";
+}
 const stripe = report?.summary.stripe ?? null;
 const combined = report?.summary.combined ?? null;
 const shopifyOk = report?.sources.shopify.available ?? false;
@@ -124,15 +153,26 @@ const breakdownRows = breakdown
       <section class="watson__panel" aria-labelledby="watson-salesreport-freshness-heading">
         <div class="watson-salesreport__freshness-head">
           <h2 id="watson-salesreport-freshness-heading" class="watson__panel-title">Data freshness</h2>
-          <a class="watson-salesreport__orders-link" href="/watson/sales">View Shopify orders</a>
+          <div class="watson-salesreport__freshness-actions">
+            <a class="watson-report__button watson-report__button--secondary" href={currentHref()}>Refresh report</a>
+            <button type="button" class="watson-report__button watson-report__button--secondary" id="watson-salesreport-sync-btn">
+              Sync Shopify cache
+            </button>
+            <a class="watson-salesreport__orders-link" href="/watson/sales">View Shopify orders</a>
+          </div>
         </div>
+        <p class="watson-sales__sync-status" id="watson-salesreport-sync-status" aria-live="polite"></p>
         <ul class="watson-salesreport__freshness">
           {(["shopify", "stripe"] as const).map((key) => {
             const status = report.sources[key];
             const badge = sourceBadge(status);
-            const name = key === "shopify" ? "Shopify (synced)" : "Stripe (live)";
-            const stamp =
-              key === "shopify" ? "Last synchronized" : "Last retrieved";
+            const name =
+              key === "shopify"
+                ? shopifyLive
+                  ? "Shopify (live)"
+                  : "Shopify (synced fallback)"
+                : "Stripe (live)";
+            const stamp = key === "shopify" && !shopifyLive ? "Last synchronized" : "Last retrieved";
             return (
               <li class="watson-salesreport__freshness-row">
                 <span class={`watson-salesreport__badge watson-salesreport__badge--${badge.kind}`}>
@@ -157,7 +197,9 @@ const breakdownRows = breakdown
           Net collected equals gross collected minus refunds. Refunds are attributed to the
           original transaction date. Stripe counts succeeded live USD Charges (amount
           actually collected), including Checkout, payment links, subscriptions, and paid
-          invoices. Shopify-gateway Charges are excluded to avoid double-counting. Read-only.
+          invoices. Shopify-gateway Charges are excluded to avoid double-counting. Shopify
+          is retrieved live for the selected range when the Admin API is available.
+          Read-only. The Transactions table below must add up to Combined revenue.
         </p>
         <div class="watson-report__cards">
           <article class="watson-report__card">
@@ -289,54 +331,53 @@ const breakdownRows = breakdown
         </p>
       </section>
 
-      {
-        report.stripeDiagnostics ? (
-          <section class="watson__panel" aria-labelledby="watson-salesreport-diag-heading">
-            <h2 id="watson-salesreport-diag-heading" class="watson__panel-title">
-              Localhost Stripe Charge diagnostics
-            </h2>
-            <p class="watson-report__note">
-              Every Charge Stripe returned for this LA range. Not shown in production.
-              Returned {report.stripeDiagnostics.length}, counted{" "}
-              {report.stripeDiagnostics.filter((row) => row.counted).length}, excluded{" "}
-              {report.stripeDiagnostics.filter((row) => !row.counted).length}. Stripe net{" "}
-              {formatReportUsd(report.summary.stripe.netCollected)} ({report.summary.stripe.transactionCount}{" "}
-              payments). Membership subset {formatReportUsd(report.summary.membership.netCollected)}{" "}
-              ({report.summary.membership.transactionCount} payments).
-            </p>
-            <div class="watson__table-wrap">
-              <table class="watson__table">
-                <thead>
-                  <tr>
-                    <th>Charge ID</th>
-                    <th>Created (LA)</th>
-                    <th>Amount</th>
-                    <th>Description</th>
-                    <th>Invoice</th>
-                    <th>Lines</th>
-                    <th>Counted</th>
-                    <th>Exclusion reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {report.stripeDiagnostics.map((row) => (
-                    <tr>
-                      <td>{row.id}</td>
-                      <td>{row.createdLa}</td>
-                      <td>{formatReportUsd(row.amount)}</td>
-                      <td>{row.description || "—"}</td>
-                      <td>{row.invoiceId || "—"}</td>
-                      <td>{row.lineSummary}</td>
-                      <td>{row.counted ? "yes" : "no"}</td>
-                      <td>{row.exclusionReason || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ) : null
-      }
+      <section class="watson__panel" aria-labelledby="watson-salesreport-tx-heading">
+        <h2 id="watson-salesreport-tx-heading" class="watson__panel-title">Transactions</h2>
+        <p class="watson-report__note">
+          Every Shopify order and Stripe Charge retrieved for this LA range, including
+          exclusions. Counted rows: {report.transactions.filter((row) => row.counted).length}.
+          Excluded: {report.transactions.filter((row) => !row.counted).length}. Counted net{" "}
+          {formatReportUsd(report.reconciliation.netCollected)}
+          {report.reconciliation.matchesSummary
+            ? " matches Combined revenue."
+            : " does not match Combined revenue — do not trust this total until investigated."}
+        </p>
+        <div class="watson__table-wrap">
+          <table class="watson__table" data-sortable>
+            <thead>
+              <tr>
+                <th data-sort="date">When (LA)</th>
+                <th data-sort="text">Source</th>
+                <th data-sort="text">Channel</th>
+                <th data-sort="text">Description</th>
+                <th data-sort="number">Gross</th>
+                <th data-sort="number">Refund</th>
+                <th data-sort="number">Net</th>
+                <th data-sort="text">Counted</th>
+                <th data-sort="text">Exclusion reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.transactions.map((row) => (
+                <tr class:list={[{ "watson-salesreport__row--excluded": !row.counted }]}>
+                  <td data-sort-value={row.createdIso}>{row.createdLa}</td>
+                  <td>{row.source === "shopify" ? "Shopify" : "Stripe"}</td>
+                  <td>{channelLabel(row.channel)}</td>
+                  <td>
+                    {row.description || "—"}
+                    {row.invoiceId ? ` (${row.invoiceId})` : ""}
+                  </td>
+                  <td data-sort-value={row.grossCollected}>{formatReportUsd(row.grossCollected)}</td>
+                  <td data-sort-value={row.refunds}>{formatReportUsd(row.refunds)}</td>
+                  <td data-sort-value={row.netCollected}>{formatReportUsd(row.netCollected)}</td>
+                  <td>{row.counted ? "yes" : "no"}</td>
+                  <td>{row.exclusionReason || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </>
   ) : null
 }
@@ -423,12 +464,23 @@ const breakdownRows = breakdown
     font-weight: 600;
   }
 
+  .watson-salesreport__row--excluded td {
+    color: #94a3b8;
+  }
+
   .watson-salesreport__freshness-head {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
     gap: 0.5rem 1rem;
+  }
+
+  .watson-salesreport__freshness-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
   }
 
   .watson-salesreport__orders-link {
@@ -472,4 +524,45 @@ const breakdownRows = breakdown
   .watson__table tbody tr:last-child td {
     border-bottom: none;
   }
+
+  .watson__table tbody tr.watson-salesreport__row--excluded td {
+    color: #94a3b8;
+  }
 </style>
+
+<script>
+  const button = document.getElementById("watson-salesreport-sync-btn");
+  const statusEl = document.getElementById("watson-salesreport-sync-status");
+
+  button?.addEventListener("click", async () => {
+    if (!(button instanceof HTMLButtonElement) || !statusEl) return;
+    button.disabled = true;
+    statusEl.textContent = "Syncing Shopify cache (last 90 days)…";
+    try {
+      const response = await fetch("/api/watson/shopify/sync", { method: "POST" });
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        result?: {
+          ordersAdded?: number;
+          ordersUpdated?: number;
+          ordersFetched?: number;
+          errorMessage?: string | null;
+        };
+      };
+      if (!response.ok || !payload.ok) {
+        statusEl.textContent =
+          payload.error ||
+          payload.result?.errorMessage ||
+          "Sync failed. Check Shopify credentials and Watson database.";
+        return;
+      }
+      statusEl.textContent = `Sync complete: fetched ${payload.result?.ordersFetched ?? 0}, added ${payload.result?.ordersAdded ?? 0}, updated ${payload.result?.ordersUpdated ?? 0}. Reloading…`;
+      window.location.reload();
+    } catch {
+      statusEl.textContent = "Sync failed. Network or server error.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>

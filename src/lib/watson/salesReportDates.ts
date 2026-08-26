@@ -9,8 +9,11 @@ export const SALES_REPORT_TZ = "America/Los_Angeles";
 /** Calendar day span before which custom ranges are rejected (protects queries). */
 export const MAX_CUSTOM_RANGE_DAYS = 366;
 
-/** Shopify sync considered stale if the last successful sync is older than this. */
-export const SHOPIFY_STALE_HOURS = 12;
+/**
+ * Fallback synced Shopify data is stale if the last successful sync is older
+ * than one scheduled interval (cron is every 6 hours).
+ */
+export const SHOPIFY_STALE_HOURS = 6;
 
 export type SalesRangePreset =
   | "today"
