@@ -40,6 +40,13 @@ const hostname =
     ? Astro.url.hostname.toLowerCase()
     : "";
 
+const pathname =
+  typeof Astro.url !== "undefined" && Astro.url.pathname
+    ? Astro.url.pathname
+    : "";
+
+const isWatsonPage = pathname === "/watson" || pathname.startsWith("/watson/");
+
 const isProduction =
   (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
 ---
@@ -67,8 +74,14 @@ const isProduction =
     <RobotsMeta />
 
     <!-- Favicons -->
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    {isWatsonPage ? (
+      <link rel="icon" type="image/svg+xml" href="/watson-favicon.svg" />
+    ) : (
+      <>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      </>
+    )}
 
   
     <!-- Google Analytics -->
