@@ -52,6 +52,65 @@ export function applyKinCourseSrcRewrites(
   return out;
 }
 
+const BOOTSTRAP_COL_CLASS_RE = /\bcol-(?:xs|sm|md|lg)-\d+\b/;
+const THUMBNAIL_CARD_RE =
+  /<div\s+class="([^"]*)"\s*>((?:\s|<a\b)(?:(?!<\/div>)[\s\S])*?<img\b[^>]*\bimg-thumbnail\b[\s\S]*?<\/a>\s*)<\/div>/gi;
+
+function isRestorableThumbnailCardClass(className: string): boolean {
+  return /\btext-center\b/.test(className) && !BOOTSTRAP_COL_CLASS_RE.test(className);
+}
+
+/**
+ * Production KIN HTML used Bootstrap 3 `.row > .col-sm-2.col-xs-12.text-center`
+ * around `img.img-thumbnail` download cards. Cleaned POC HTML unwraps those
+ * layout divs, which leaves full-width stacked images. Restore the grid at
+ * present time so stored course data is unchanged.
+ */
+export function restoreLegacyBootstrapThumbnailGrid(html: string): string {
+  type Hit = { start: number; end: number; className: string; inner: string };
+  const hits: Hit[] = [];
+  const re = new RegExp(THUMBNAIL_CARD_RE.source, "gi");
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html))) {
+    const className = match[1] || "";
+    if (!isRestorableThumbnailCardClass(className)) continue;
+    hits.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      className,
+      inner: match[2] || "",
+    });
+  }
+  if (!hits.length) return html;
+
+  const groups: Hit[][] = [];
+  let current: Hit[] = [hits[0]!];
+  for (let i = 1; i < hits.length; i++) {
+    const prev = hits[i - 1]!;
+    const next = hits[i]!;
+    const between = html.slice(prev.end, next.start);
+    if (/^[\s]*$/.test(between)) current.push(next);
+    else {
+      groups.push(current);
+      current = [next];
+    }
+  }
+  groups.push(current);
+
+  let out = html;
+  for (let i = groups.length - 1; i >= 0; i--) {
+    const group = groups[i]!;
+    const start = group[0]!.start;
+    const end = group[group.length - 1]!.end;
+    const cells = group.map((hit) => {
+      const className = `${hit.className} col-sm-2 col-xs-12`.replace(/\s+/g, " ").trim();
+      return `<div class="${className}">${hit.inner}</div>`;
+    });
+    out = `${out.slice(0, start)}<div class="row">${cells.join("")}</div>${out.slice(end)}`;
+  }
+  return out;
+}
+
 export function ensurePdfOpensInNewWindow(html: string): string {
   return html.replace(/<a\b([^>]*)>/gi, (full, attrs: string) => {
     const href = /href=["']([^"']+)["']/i.exec(attrs)?.[1] || "";
@@ -114,5 +173,6 @@ export function presentKinCourseHtml(
       return `<a${next}>`;
     });
   }
+  out = restoreLegacyBootstrapThumbnailGrid(out);
   return ensurePdfOpensInNewWindow(out);
 }
