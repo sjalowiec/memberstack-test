@@ -135,16 +135,29 @@
 
     <section
       class="account-membership-panel__cancel-help"
+      data-kbm-account-membership-cancel-help
       aria-labelledby="cancel-membership-heading"
+      hidden
     >
       <h3 id="cancel-membership-heading" class="account-membership-panel__cancel-help-heading">
         How do I cancel my membership?
       </h3>
       <p>To cancel your membership:</p>
       <ol>
-        <li>Open your billing portal from the Manage Your Account page.</li>
-        <li>Under Active plan, click Monthly Subscription to Knititnow.</li>
-        <li>On the next screen, click Cancel plan.</li>
+        <li>
+          Click
+          <button
+            type="button"
+            class="account-membership-panel__cancel-help-billing"
+            data-ms-action="customer-portal"
+            data-kbm-account-membership-cancel-help-billing
+          >
+            Manage Billing
+          </button>
+          to open your billing portal.
+        </li>
+        <li>Under <strong>Active plan</strong>, click your Knit It Now membership.</li>
+        <li>On the next screen, click <strong>Cancel plan</strong>.</li>
         <li>Follow the prompts to confirm your cancellation.</li>
       </ol>
       <p>Your membership remains active through the end of your current paid period.</p>
@@ -347,6 +360,32 @@
 
   .account-membership-panel__cancel-help p:last-child {
     margin-bottom: 0;
+  }
+
+  .account-membership-panel__cancel-help-billing {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: #2c3a57;
+    text-decoration: underline;
+    text-decoration-color: rgba(44, 58, 87, 0.35);
+    text-underline-offset: 0.15em;
+    cursor: pointer;
+  }
+
+  .account-membership-panel__cancel-help-billing:hover {
+    color: var(--kbm-green, #52682d);
+    text-decoration-color: rgba(82, 104, 45, 0.45);
+  }
+
+  .account-membership-panel__cancel-help-billing:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   .account-membership-panel__history {

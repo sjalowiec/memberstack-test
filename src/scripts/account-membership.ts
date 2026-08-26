@@ -98,6 +98,9 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
     setVisible(el, visible.has(action));
   }
 
+  const cancelHelpEl = root.querySelector("[data-kbm-account-membership-cancel-help]");
+  setVisible(cancelHelpEl, visible.has("manageBilling"));
+
   if (view.annualSwitchWarning && annualSwitchWarningEl instanceof HTMLElement) {
     annualSwitchWarningEl.textContent = view.annualSwitchWarning;
     setVisible(annualSwitchWarningEl, true);
