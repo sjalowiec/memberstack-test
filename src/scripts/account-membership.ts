@@ -161,11 +161,27 @@ async function populateAccountMembership(): Promise<void> {
  * launch). Switch to Annual / Renew / Become Monthly reuse startJoinCheckout.
  */
 function bindMembershipActionButtons(root: Element): void {
+  bindCancelHelpAccordion(root);
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-switch-annual]", "annual", {
     checkoutIntent: "switchToAnnual",
   });
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-renew-annual]", "annual");
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-become-monthly]", "monthly");
+}
+
+/** Same disclosure pattern as Membership History: real button + aria-expanded. */
+function bindCancelHelpAccordion(root: Element): void {
+  const toggle = root.querySelector("[data-kbm-account-membership-cancel-help-toggle]");
+  const panel = root.querySelector("[data-kbm-account-membership-cancel-help-panel]");
+  if (!(toggle instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
+  if (toggle.dataset.kbmBound === "1") return;
+  toggle.dataset.kbmBound = "1";
+
+  toggle.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    panel.hidden = isOpen;
+  });
 }
 
 function bindLegacyCheckoutButton(
