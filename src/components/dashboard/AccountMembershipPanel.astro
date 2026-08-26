@@ -134,6 +134,23 @@
     ></p>
 
     <section
+      class="account-membership-panel__cancel-help"
+      aria-labelledby="cancel-membership-heading"
+    >
+      <h3 id="cancel-membership-heading" class="account-membership-panel__cancel-help-heading">
+        How do I cancel my membership?
+      </h3>
+      <p>To cancel your membership:</p>
+      <ol>
+        <li>Open your billing portal from the Manage Your Account page.</li>
+        <li>Under Active plan, click Monthly Subscription to Knititnow.</li>
+        <li>On the next screen, click Cancel plan.</li>
+        <li>Follow the prompts to confirm your cancellation.</li>
+      </ol>
+      <p>Your membership remains active through the end of your current paid period.</p>
+    </section>
+
+    <section
       class="account-membership-panel__history"
       data-kbm-account-membership-history
       hidden
@@ -294,6 +311,42 @@
       width: 100%;
       min-width: 0;
     }
+  }
+
+  .account-membership-panel__cancel-help {
+    margin-top: 1.5rem;
+    padding-top: 1.35rem;
+    border-top: 1px solid #eef0f2;
+  }
+
+  .account-membership-panel__cancel-help-heading {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .account-membership-panel__cancel-help p {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .account-membership-panel__cancel-help ol {
+    margin: 0 0 0.85rem;
+    padding-left: 1.35rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .account-membership-panel__cancel-help li + li {
+    margin-top: 0.35rem;
+  }
+
+  .account-membership-panel__cancel-help p:last-child {
+    margin-bottom: 0;
   }
 
   .account-membership-panel__history {
