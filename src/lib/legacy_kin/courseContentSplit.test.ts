@@ -53,8 +53,8 @@ describe("courseContentSplit", () => {
     ).toBe(true);
   });
 
-  it("does not split blocklisted decorative-seams lesson", () => {
-    const report = runCourseContentSplit({
+  it("does not split blocklisted decorative-seams lesson", async () => {
+    const report = await runCourseContentSplit({
       courseId: 2,
       lessonSlug: "decorative-seams",
       dryRun: true,
@@ -95,14 +95,14 @@ describe("courseContentSplit", () => {
     );
   });
 
-  it("skips hand-cleaned courses by default", () => {
+  it("skips hand-cleaned courses by default", async () => {
     for (const courseId of HAND_CLEANED_COURSE_IDS) {
-      expect(() =>
+      await expect(
         runCourseContentSplit({
           courseId,
           dryRun: true,
         }),
-      ).toThrow(/hand-cleaned/i);
+      ).rejects.toThrow(/hand-cleaned/i);
     }
   });
 });

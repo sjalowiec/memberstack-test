@@ -7,6 +7,7 @@ import {
   COURSE_111_POC_FILENAME,
   course111IsDraft,
   course111LessonPreviewHref,
+  course111SaveStatusMessage,
   deleteCourse111Block,
   deleteCourse111Component,
   describeCourse111Component,
@@ -169,6 +170,47 @@ describe("course111Admin load", () => {
       `save:${selected.slug}`,
       `open:/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
     ]);
+    expect(result.previewOpened).toBe(true);
+  });
+
+  it("does not open preview after a GitHub persist on kin-dev", async () => {
+    const data = loadCourse111();
+    const selected = listCourse111LessonSummaries(data)[0]!;
+    const calls: string[] = [];
+
+    const result = await runCourse111SaveAndPreview({
+      data,
+      selectedLessonSlug: selected.slug,
+      saveLesson: async (lessonSlug) => {
+        calls.push(`save:${lessonSlug}`);
+        return { persistedVia: "github" };
+      },
+      openPreview: (href) => {
+        calls.push(`open:${href}`);
+      },
+    });
+
+    expect(result.previewOpened).toBe(false);
+    expect(result.persistedVia).toBe("github");
+    expect(calls).toEqual([`save:${selected.slug}`]);
+  });
+
+  it("explains that deployed saves wait for the dev site to deploy", () => {
+    expect(
+      course111SaveStatusMessage({
+        persistedVia: "github",
+        lessonTitle: "Learn About the Machine",
+      }),
+    ).toBe(
+      "Saved to dev. The updated lesson will appear after the dev site finishes deploying.",
+    );
+    expect(
+      course111SaveStatusMessage({
+        persistedVia: "github",
+        lessonTitle: "Learn About the Machine",
+        previewOpened: false,
+      }),
+    ).toMatch(/last deployed lesson/);
   });
 });
 

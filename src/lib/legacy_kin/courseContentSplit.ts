@@ -7,6 +7,7 @@ import {
   getCourseContentPath,
   readCourseContentFile,
   writeCourseContentFile,
+  type CourseContentWriteOptions,
 } from "./courseContentAdmin";
 import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import {
@@ -30,6 +31,7 @@ export type CourseSplitOptions = {
   dryRun?: boolean;
   force?: boolean;
   allowHandCleaned?: boolean;
+  write?: CourseContentWriteOptions;
 };
 
 export type LessonSplitReport = {
@@ -51,6 +53,9 @@ export type CourseSplitReport = {
   courseTitle: string;
   dryRun: boolean;
   backupPath?: string;
+  persistedVia?: "filesystem" | "github";
+  commitSha?: string;
+  writtenCourse?: CoursePreviewData;
   lessons: LessonSplitReport[];
   validationPassed: boolean;
   validationErrorCount: number;
@@ -157,7 +162,7 @@ function buildLessonReport(
   };
 }
 
-export function runCourseContentSplit(options: CourseSplitOptions): CourseSplitReport {
+export async function runCourseContentSplit(options: CourseSplitOptions): Promise<CourseSplitReport> {
   const data = assertCourseAllowed(options);
   const lessonsToProcess = targetLessons(data, options.lessonSlug);
   const dryRun = options.dryRun !== false;
@@ -241,12 +246,19 @@ export function runCourseContentSplit(options: CourseSplitOptions): CourseSplitR
   }
 
   let backupPath: string | undefined;
+  let persistedVia: CourseSplitReport["persistedVia"];
+  let commitSha: string | undefined;
+  let writtenCourse: CoursePreviewData | undefined;
   if (!dryRun && totals.lessonsChanged > 0) {
     const nextData: CoursePreviewData = {
       ...data,
       lessons: data.lessons.map((lesson) => updatedLessons.get(lesson.slug) ?? lesson),
     };
-    backupPath = writeCourseContentFile(options.courseId, nextData);
+    const persist = await writeCourseContentFile(options.courseId, nextData, options.write);
+    backupPath = persist.backupPath || undefined;
+    persistedVia = persist.persistedVia;
+    commitSha = persist.commitSha;
+    writtenCourse = nextData;
   }
 
   return {
@@ -255,6 +267,9 @@ export function runCourseContentSplit(options: CourseSplitOptions): CourseSplitR
     courseTitle: data.course.title,
     dryRun,
     backupPath,
+    persistedVia,
+    commitSha,
+    writtenCourse,
     lessons: lessonReports,
     validationPassed: changedValidations.length === 0 || validationStats.passed,
     validationErrorCount: validationStats.errorCount,

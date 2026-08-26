@@ -3,10 +3,14 @@ import {
   readCourseContentFile,
   validateLessonInput,
   writeCourseContentFile,
+  type CourseContentWriteOptions,
 } from "./courseContentAdmin";
 
 export type LessonStructureResult = {
   backupPath: string;
+  persistedVia: "filesystem" | "github";
+  branch?: string;
+  commitSha?: string;
   course: CoursePreviewData;
   lesson?: CourseLesson;
   lessonSlug?: string;
@@ -124,31 +128,49 @@ function reassignCloneIds(lesson: CourseLesson, lessons: CourseLesson[]): Course
   return { ...lesson, blocks };
 }
 
-function writeValidatedLessons(
+async function writeValidatedLessons(
   courseId: number,
   data: CoursePreviewData,
   lessons: CourseLesson[],
-): string {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<{ persist: Awaited<ReturnType<typeof writeCourseContentFile>>; course: CoursePreviewData }> {
   const error = validateLessonList(lessons);
   if (error) throw new Error(error);
   const nextData = { ...data, lessons: renumberLessonOrders(lessons) };
-  return writeCourseContentFile(courseId, nextData);
+  const persist = await writeCourseContentFile(courseId, nextData, writeOptions);
+  return { persist, course: nextData };
 }
 
-export function addLessonToCourse(courseId: number): LessonStructureResult {
+export async function addLessonToCourse(
+  courseId: number,
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<LessonStructureResult> {
   const data = readCourseContentFile(courseId);
   const sorted = sortedCourseLessons(data);
   const lesson = createNewLesson(sorted);
-  const backupPath = writeValidatedLessons(courseId, data, [...sorted, lesson]);
-  const course = readCourseContentFile(courseId);
+  const { persist, course } = await writeValidatedLessons(
+    courseId,
+    data,
+    [...sorted, lesson],
+    writeOptions,
+  );
   const saved = sortedCourseLessons(course).find((item) => item.slug === lesson.slug)!;
-  return { backupPath, course, lesson: saved, lessonSlug: saved.slug };
+  return {
+    backupPath: persist.backupPath,
+    persistedVia: persist.persistedVia,
+    branch: persist.branch,
+    commitSha: persist.commitSha,
+    course,
+    lesson: saved,
+    lessonSlug: saved.slug,
+  };
 }
 
-export function deleteLessonFromCourse(
+export async function deleteLessonFromCourse(
   courseId: number,
   lessonSlug: string,
-): LessonStructureResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<LessonStructureResult> {
   const data = readCourseContentFile(courseId);
   if (data.lessons.length <= 1) {
     throw new Error("Cannot delete the last remaining lesson in a course.");
@@ -160,14 +182,26 @@ export function deleteLessonFromCourse(
     throw new Error(`Lesson not found: ${lessonSlug}`);
   }
 
-  const backupPath = writeValidatedLessons(courseId, data, nextLessons);
-  return { backupPath, course: readCourseContentFile(courseId) };
+  const { persist, course } = await writeValidatedLessons(
+    courseId,
+    data,
+    nextLessons,
+    writeOptions,
+  );
+  return {
+    backupPath: persist.backupPath,
+    persistedVia: persist.persistedVia,
+    branch: persist.branch,
+    commitSha: persist.commitSha,
+    course,
+  };
 }
 
-export function reorderLessonsInCourse(
+export async function reorderLessonsInCourse(
   courseId: number,
   lessonSlugs: string[],
-): LessonStructureResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<LessonStructureResult> {
   const data = readCourseContentFile(courseId);
   const sorted = sortedCourseLessons(data);
   const bySlug = new Map(sorted.map((lesson) => [lesson.slug, lesson]));
@@ -183,15 +217,27 @@ export function reorderLessonsInCourse(
     reordered.push(lesson);
   }
 
-  const backupPath = writeValidatedLessons(courseId, data, reordered);
-  return { backupPath, course: readCourseContentFile(courseId) };
+  const { persist, course } = await writeValidatedLessons(
+    courseId,
+    data,
+    reordered,
+    writeOptions,
+  );
+  return {
+    backupPath: persist.backupPath,
+    persistedVia: persist.persistedVia,
+    branch: persist.branch,
+    commitSha: persist.commitSha,
+    course,
+  };
 }
 
-export function moveLessonInCourse(
+export async function moveLessonInCourse(
   courseId: number,
   fromIndex: number,
   toIndex: number,
-): LessonStructureResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<LessonStructureResult> {
   const data = readCourseContentFile(courseId);
   const sorted = sortedCourseLessons(data);
   if (fromIndex < 0 || toIndex < 0 || fromIndex >= sorted.length || toIndex >= sorted.length) {
@@ -201,15 +247,27 @@ export function moveLessonInCourse(
   const next = [...sorted];
   const [moved] = next.splice(fromIndex, 1);
   next.splice(toIndex, 0, moved!);
-  const backupPath = writeValidatedLessons(courseId, data, next);
-  return { backupPath, course: readCourseContentFile(courseId) };
+  const { persist, course } = await writeValidatedLessons(
+    courseId,
+    data,
+    next,
+    writeOptions,
+  );
+  return {
+    backupPath: persist.backupPath,
+    persistedVia: persist.persistedVia,
+    branch: persist.branch,
+    commitSha: persist.commitSha,
+    course,
+  };
 }
 
-export function duplicateLessonInCourse(
+export async function duplicateLessonInCourse(
   courseId: number,
   lessonSlug: string,
   sourceLesson?: unknown,
-): LessonStructureResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<LessonStructureResult> {
   const data = readCourseContentFile(courseId);
   const sorted = sortedCourseLessons(data);
   const index = sorted.findIndex((lesson) => lesson.slug === lessonSlug);
@@ -239,8 +297,20 @@ export function duplicateLessonInCourse(
   );
 
   const nextLessons = [...sorted.slice(0, index + 1), clone, ...sorted.slice(index + 1)];
-  const backupPath = writeValidatedLessons(courseId, data, nextLessons);
-  const course = readCourseContentFile(courseId);
+  const { persist, course } = await writeValidatedLessons(
+    courseId,
+    data,
+    nextLessons,
+    writeOptions,
+  );
   const saved = sortedCourseLessons(course).find((lesson) => lesson.slug === clone.slug)!;
-  return { backupPath, course, lesson: saved, lessonSlug: saved.slug };
+  return {
+    backupPath: persist.backupPath,
+    persistedVia: persist.persistedVia,
+    branch: persist.branch,
+    commitSha: persist.commitSha,
+    course,
+    lesson: saved,
+    lessonSlug: saved.slug,
+  };
 }

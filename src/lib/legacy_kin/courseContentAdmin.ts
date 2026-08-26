@@ -4,12 +4,19 @@ import type { CoursePreviewData, CourseLesson, CourseContentStatus } from "./cou
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 import {
+  resolveCourseContentPersistMode,
+  type CourseContentPersistResult,
+  type CourseContentWriteOptions,
+} from "./courseContentPersist";
+import {
   isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
   readLegacyCoursePublished,
   type LegacyCoursePublicationFields,
 } from "./legacyCoursePublication";
+
+export type { CourseContentPersistResult, CourseContentWriteOptions } from "./courseContentPersist";
 
 export const COURSE_CONTENT_DIR = join(
   process.cwd(),
@@ -160,22 +167,19 @@ export type CourseContentSavePayload = {
   removals?: ComponentRemoval[];
 };
 
-export type SaveRichTextResult = {
-  backupPath: string;
+export type SaveRichTextResult = CourseContentPersistResult & {
   applied: number;
   missing: string[];
 };
 
-export type SaveCourseContentResult = {
-  backupPath: string;
+export type SaveCourseContentResult = CourseContentPersistResult & {
   appliedRichText: number;
   appliedRemovals: number;
   missingRichText: string[];
   missingRemovals: string[];
 };
 
-export type SaveLessonResult = {
-  backupPath: string;
+export type SaveLessonResult = CourseContentPersistResult & {
   lessonSlug: string;
   removedEmptyBlocks: string[];
 };
@@ -189,13 +193,13 @@ export type CourseMetadataUpdate = {
   contentStatus?: CourseContentStatus;
 };
 
-export type SaveCourseMetadataResult = {
-  backupPath: string;
+export type SaveCourseMetadataResult = CourseContentPersistResult & {
   thumbnail: string | null;
   description: string | null;
   active: boolean;
   published: boolean;
   contentStatus: CourseContentStatus;
+  course: CoursePreviewData;
 };
 
 export function isCourseContentAdminAllowed(
@@ -422,18 +426,17 @@ export function removeEmptyBlocksFromLesson(lesson: CourseLesson): {
   };
 }
 
-export function saveLessonUpdate(
-  courseId: number,
+export function applyLessonUpdate(
+  data: CoursePreviewData,
   lessonSlug: string,
   lessonInput: unknown,
   options: { removeEmptyBlocks?: boolean } = {},
-): SaveLessonResult {
+): { data: CoursePreviewData; lessonSlug: string; removedEmptyBlocks: string[] } {
   const validated = validateLessonInput(lessonInput);
   if ("error" in validated) {
     throw new Error(validated.error);
   }
 
-  const data = readCourseContentFile(courseId);
   const lessonIndex = data.lessons.findIndex((item) => item.slug === lessonSlug);
   if (lessonIndex === -1) {
     throw new Error(`Lesson not found: ${lessonSlug}`);
@@ -449,23 +452,64 @@ export function saveLessonUpdate(
   }
 
   data.lessons[lessonIndex] = lesson;
-  const backupPath = writeCourseContentFile(courseId, data);
+  return { data, lessonSlug, removedEmptyBlocks };
+}
+
+export async function saveLessonUpdate(
+  courseId: number,
+  lessonSlug: string,
+  lessonInput: unknown,
+  options: { removeEmptyBlocks?: boolean } & CourseContentWriteOptions = {},
+): Promise<SaveLessonResult> {
+  const data = readCourseContentFile(courseId);
+  const applied = applyLessonUpdate(data, lessonSlug, lessonInput, {
+    removeEmptyBlocks: options.removeEmptyBlocks,
+  });
+  const persist = await writeCourseContentFile(courseId, applied.data, options);
 
   return {
-    backupPath,
-    lessonSlug,
-    removedEmptyBlocks,
+    ...persist,
+    lessonSlug: applied.lessonSlug,
+    removedEmptyBlocks: applied.removedEmptyBlocks,
   };
 }
 
-export function writeCourseContentFile(
+function serializeCourseContentFile(data: CoursePreviewData): string {
+  return `${JSON.stringify(data, null, 2)}\n`;
+}
+
+export async function writeCourseContentFile(
   courseId: number,
   data: CoursePreviewData,
-): string {
+  options: CourseContentWriteOptions = {},
+): Promise<CourseContentPersistResult> {
+  const mode = resolveCourseContentPersistMode(options);
+  const filename = getDiscoveredCourseFile(courseId).filename;
+  const serialized = serializeCourseContentFile(data);
+
+  if (mode === "github") {
+    if (!options.commitCourseContentFile) {
+      throw new Error("GitHub course-content writer was not provided.");
+    }
+    const commit = await options.commitCourseContentFile({
+      filename,
+      contents: serialized,
+      courseId,
+    });
+    return {
+      backupPath: "",
+      persistedVia: "github",
+      branch: commit.branch,
+      commitSha: commit.commitSha,
+    };
+  }
+
   const backupPath = backupCourseContentFile(courseId);
-  const targetPath = getCourseContentPath(courseId);
-  writeFileSync(targetPath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
-  return backupPath;
+  writeFileSync(getCourseContentPath(courseId), serialized, "utf-8");
+  return {
+    backupPath,
+    persistedVia: "filesystem",
+  };
 }
 
 function normalizeCourseThumbnail(value: unknown): string | null {
@@ -533,10 +577,11 @@ function readCourseDescriptionFromData(data: CoursePreviewData): string | null {
   return value || null;
 }
 
-export function saveCourseMetadata(
+export async function saveCourseMetadata(
   courseId: number,
   update: CourseMetadataUpdate,
-): SaveCourseMetadataResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<SaveCourseMetadataResult> {
   if (
     !("thumbnail" in update) &&
     !("description" in update) &&
@@ -597,8 +642,16 @@ export function saveCourseMetadata(
     data.course.contentStatus = contentStatus;
   }
 
-  const backupPath = writeCourseContentFile(courseId, data);
-  return { backupPath, thumbnail, description, active, published, contentStatus };
+  const persist = await writeCourseContentFile(courseId, data, writeOptions);
+  return {
+    ...persist,
+    thumbnail,
+    description,
+    active,
+    published,
+    contentStatus,
+    course: data,
+  };
 }
 
 function readCourseThumbnailFromData(data: CoursePreviewData): string | null {
@@ -609,10 +662,11 @@ function readCourseThumbnailFromData(data: CoursePreviewData): string | null {
   return value || null;
 }
 
-export function saveRichTextUpdates(
+export async function saveRichTextUpdates(
   courseId: number,
   updates: RichTextUpdate[],
-): SaveRichTextResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<SaveRichTextResult> {
   const data = readCourseContentFile(courseId);
   const { applied, missing } = applyRichTextUpdates(data, updates);
 
@@ -624,14 +678,15 @@ export function saveRichTextUpdates(
     );
   }
 
-  const backupPath = writeCourseContentFile(courseId, data);
-  return { backupPath, applied, missing };
+  const persist = await writeCourseContentFile(courseId, data, writeOptions);
+  return { ...persist, applied, missing };
 }
 
-export function saveCourseContentUpdates(
+export async function saveCourseContentUpdates(
   courseId: number,
   payload: CourseContentSavePayload,
-): SaveCourseContentResult {
+  writeOptions: CourseContentWriteOptions = {},
+): Promise<SaveCourseContentResult> {
   const richTextUpdates = payload.richTextUpdates ?? [];
   const removals = payload.removals ?? [];
 
@@ -657,9 +712,9 @@ export function saveCourseContentUpdates(
     );
   }
 
-  const backupPath = writeCourseContentFile(courseId, data);
+  const persist = await writeCourseContentFile(courseId, data, writeOptions);
   return {
-    backupPath,
+    ...persist,
     appliedRichText,
     appliedRemovals,
     missingRichText: richTextResult.missing,

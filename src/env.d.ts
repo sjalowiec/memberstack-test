@@ -52,6 +52,15 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY?: string;
   /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
   readonly CONTACT_FROM_EMAIL?: string;
+  /**
+   * Server-only: GitHub token for Watson course-content saves on kin-dev.
+   * Contents:write on this repository. Never expose to the browser.
+   */
+  readonly GITHUB_TOKEN?: string;
+  /** Server-only: GitHub repository in `owner/name` form for course-content commits. */
+  readonly GITHUB_REPO?: string;
+  /** Server-only: branch that receives course-content commits. Must be `dev`. */
+  readonly COURSE_CONTENT_GITHUB_BRANCH?: string;
 }
 
 declare global {

@@ -293,9 +293,16 @@ export function resolveCourse111SelectedLessonPreview(
 export async function runCourse111SaveAndPreview(options: {
   data: CoursePreviewData;
   selectedLessonSlug: string;
-  saveLesson: (lessonSlug: string) => Promise<void>;
+  saveLesson: (
+    lessonSlug: string,
+  ) => Promise<{ persistedVia?: "filesystem" | "github" } | void>;
   openPreview: (href: string) => void;
-}): Promise<{ lessonSlug: string; previewHref: string }> {
+}): Promise<{
+  lessonSlug: string;
+  previewHref: string;
+  previewOpened: boolean;
+  persistedVia?: "filesystem" | "github";
+}> {
   const resolved = resolveCourse111SelectedLessonPreview(
     options.data,
     options.selectedLessonSlug,
@@ -304,9 +311,28 @@ export async function runCourse111SaveAndPreview(options: {
     throw new Error("Select a lesson before Save & Preview.");
   }
 
-  await options.saveLesson(resolved.lessonSlug);
-  options.openPreview(resolved.previewHref);
-  return resolved;
+  const saveResult = (await options.saveLesson(resolved.lessonSlug)) ?? {};
+  const persistedVia = saveResult.persistedVia;
+  const previewOpened = persistedVia !== "github";
+  if (previewOpened) options.openPreview(resolved.previewHref);
+  return { ...resolved, previewOpened, persistedVia };
+}
+
+export function course111SaveStatusMessage(options: {
+  persistedVia?: "filesystem" | "github";
+  lessonTitle: string;
+  previewOpened?: boolean;
+}): string {
+  if (options.persistedVia === "github") {
+    if (options.previewOpened === false) {
+      return "Saved to dev. Preview still shows the last deployed lesson until the dev site finishes deploying.";
+    }
+    return "Saved to dev. The updated lesson will appear after the dev site finishes deploying.";
+  }
+  if (options.previewOpened) {
+    return `Saved “${options.lessonTitle}” and opened learner preview. Course remains draft/unpublished.`;
+  }
+  return `Saved lesson “${options.lessonTitle}”. Course remains draft/unpublished.`;
 }
 
 export function course111IsDraft(data: CoursePreviewData): boolean {

@@ -14,6 +14,7 @@ import {
   readCourse111Publication,
   resolveCourse111SelectedLessonPreview,
   runCourse111SaveAndPreview,
+  course111SaveStatusMessage,
   summarizeCourse111Block,
   updateCourse111BlockTitle,
   type Course111EditableType,
@@ -376,8 +377,16 @@ async function reloadFromDisk() {
   renderAll();
 }
 
-async function saveCurrentLesson(lessonSlug = selectedParentSlug) {
-  if (!course || !lessonSlug) return;
+type SavePayload = {
+  ok?: boolean;
+  error?: string;
+  persistedVia?: "filesystem" | "github";
+  branch?: string;
+  commitSha?: string;
+};
+
+async function saveCurrentLesson(lessonSlug = selectedParentSlug): Promise<SavePayload | null> {
+  if (!course || !lessonSlug) return null;
   const lesson = findCourse111Lesson(course, lessonSlug);
   if (!lesson) throw new Error(`Lesson not found: ${lessonSlug}`);
 
@@ -393,15 +402,19 @@ async function saveCurrentLesson(lessonSlug = selectedParentSlug) {
       removeEmptyBlocks: false,
     }),
   });
-  const payload = (await response.json()) as { ok?: boolean; error?: string };
+  const payload = (await response.json()) as SavePayload;
   if (!response.ok || !payload.ok) {
     throw new Error(payload.error || "Save lesson failed.");
   }
   setDirty(false);
   const current = currentOriginalLesson();
   setStatus(
-    `Saved lesson “${current?.block.title || lesson.title}”. Course remains draft/unpublished.`,
+    course111SaveStatusMessage({
+      persistedVia: payload.persistedVia,
+      lessonTitle: current?.block.title || lesson.title,
+    }),
   );
+  return payload;
 }
 
 async function saveAndPreviewLesson() {
@@ -412,15 +425,23 @@ async function saveAndPreviewLesson() {
   const result = await runCourse111SaveAndPreview({
     data: course,
     selectedLessonSlug: selectedParentSlug,
-    saveLesson: (lessonSlug) => saveCurrentLesson(lessonSlug),
+    saveLesson: async (lessonSlug) => {
+      const payload = await saveCurrentLesson(lessonSlug);
+      return { persistedVia: payload?.persistedVia };
+    },
     openPreview: (href) => {
       window.open(href, "_blank", "noopener,noreferrer");
     },
   });
 
   updatePreviewLink();
+  const current = currentOriginalLesson();
   setStatus(
-    `Saved “${result.lessonSlug}” and opened learner preview. Course remains draft/unpublished.`,
+    course111SaveStatusMessage({
+      persistedVia: result.persistedVia,
+      lessonTitle: current?.block.title || result.lessonSlug,
+      previewOpened: result.previewOpened,
+    }),
   );
 }
 

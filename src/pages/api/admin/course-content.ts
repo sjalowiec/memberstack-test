@@ -17,6 +17,9 @@ import {
   formatCourseSplitReport,
   runCourseContentSplit,
 } from "../../../lib/legacy_kin/courseContentSplit";
+import { courseContentWriteRequiresWatsonSession } from "../../../lib/legacy_kin/courseContentPersist";
+import { commitCourseContentFile } from "../../../lib/legacy_kin/courseContentGithub";
+import { requireWatsonSessionJson } from "../../../lib/watson/watsonApiAuth";
 
 export const prerender = false;
 
@@ -28,7 +31,10 @@ const adminEnv = {
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
   });
 }
 
@@ -73,12 +79,18 @@ export const GET: APIRoute = async ({ url, request }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  if (
-    !isCourseContentAdminAllowed(new URL(request.url).hostname, adminEnv)
-  ) {
+export const POST: APIRoute = async (context) => {
+  const hostname = new URL(context.request.url).hostname;
+  if (!isCourseContentAdminAllowed(hostname, adminEnv)) {
     return adminBlockedResponse();
   }
+
+  if (courseContentWriteRequiresWatsonSession(hostname, adminEnv)) {
+    const auth = await requireWatsonSessionJson(context);
+    if (auth instanceof Response) return auth;
+  }
+
+  const { request } = context;
 
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
@@ -100,10 +112,15 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const action = typeof body.action === "string" ? body.action.trim() : "saveLesson";
+  const writeOptions = {
+    hostname,
+    env: adminEnv,
+    commitCourseContentFile,
+  };
 
   try {
     if (action === "addLesson") {
-      const result = addLessonToCourse(courseId);
+      const result = await addLessonToCourse(courseId, writeOptions);
       return jsonResponse({
         ok: true,
         action,
@@ -112,6 +129,9 @@ export const POST: APIRoute = async ({ request }) => {
         lesson: result.lesson,
         lessonSlug: result.lessonSlug,
         backupPath: result.backupPath,
+        persistedVia: result.persistedVia,
+        branch: result.branch,
+        commitSha: result.commitSha,
         savedAt: new Date().toISOString(),
       });
     }
@@ -121,7 +141,7 @@ export const POST: APIRoute = async ({ request }) => {
       if (!lessonSlug) {
         return jsonResponse({ ok: false, error: "lessonSlug is required." }, 400);
       }
-      const result = deleteLessonFromCourse(courseId, lessonSlug);
+      const result = await deleteLessonFromCourse(courseId, lessonSlug, writeOptions);
       return jsonResponse({
         ok: true,
         action,
@@ -129,6 +149,9 @@ export const POST: APIRoute = async ({ request }) => {
         course: result.course,
         lessonSlug,
         backupPath: result.backupPath,
+        persistedVia: result.persistedVia,
+        branch: result.branch,
+        commitSha: result.commitSha,
         savedAt: new Date().toISOString(),
       });
     }
@@ -139,13 +162,16 @@ export const POST: APIRoute = async ({ request }) => {
       if (!Number.isFinite(fromIndex) || !Number.isFinite(toIndex)) {
         return jsonResponse({ ok: false, error: "fromIndex and toIndex are required." }, 400);
       }
-      const result = moveLessonInCourse(courseId, fromIndex, toIndex);
+      const result = await moveLessonInCourse(courseId, fromIndex, toIndex, writeOptions);
       return jsonResponse({
         ok: true,
         action,
         courseId,
         course: result.course,
         backupPath: result.backupPath,
+        persistedVia: result.persistedVia,
+        branch: result.branch,
+        commitSha: result.commitSha,
         savedAt: new Date().toISOString(),
       });
     }
@@ -155,10 +181,11 @@ export const POST: APIRoute = async ({ request }) => {
       if (!lessonSlug) {
         return jsonResponse({ ok: false, error: "lessonSlug is required." }, 400);
       }
-      const result = duplicateLessonInCourse(
+      const result = await duplicateLessonInCourse(
         courseId,
         lessonSlug,
         body.lesson,
+        writeOptions,
       );
       return jsonResponse({
         ok: true,
@@ -168,6 +195,9 @@ export const POST: APIRoute = async ({ request }) => {
         lesson: result.lesson,
         lessonSlug: result.lessonSlug,
         backupPath: result.backupPath,
+        persistedVia: result.persistedVia,
+        branch: result.branch,
+        commitSha: result.commitSha,
         savedAt: new Date().toISOString(),
       });
     }
@@ -200,19 +230,21 @@ export const POST: APIRoute = async ({ request }) => {
       if ("active" in body) update.active = body.active;
       if ("published" in body) update.published = body.published;
       if ("contentStatus" in body) update.contentStatus = body.contentStatus;
-      const result = saveCourseMetadata(courseId, update);
-      const course = readCourseContentFile(courseId);
+      const result = await saveCourseMetadata(courseId, update, writeOptions);
       return jsonResponse({
         ok: true,
         action,
         courseId,
-        course,
+        course: result.course,
         thumbnail: result.thumbnail,
         description: result.description,
         active: result.active,
         published: result.published,
         contentStatus: result.contentStatus,
         backupPath: result.backupPath,
+        persistedVia: result.persistedVia,
+        branch: result.branch,
+        commitSha: result.commitSha,
         savedAt: new Date().toISOString(),
       });
     }
@@ -225,15 +257,16 @@ export const POST: APIRoute = async ({ request }) => {
       const dryRun = body.apply !== true;
       const force = body.force === true;
       const allowHandCleaned = body.allowHandCleaned === true;
-      const report = runCourseContentSplit({
+      const report = await runCourseContentSplit({
         courseId,
         lessonSlug,
         blockSlug,
         dryRun,
         force,
         allowHandCleaned,
+        write: writeOptions,
       });
-      const course = readCourseContentFile(courseId);
+      const course = report.writtenCourse ?? readCourseContentFile(courseId);
       return jsonResponse({
         ok: true,
         action,
@@ -241,6 +274,8 @@ export const POST: APIRoute = async ({ request }) => {
         course,
         report,
         reportText: formatCourseSplitReport(report),
+        persistedVia: report.persistedVia,
+        commitSha: report.commitSha,
         savedAt: new Date().toISOString(),
       });
     }
@@ -256,8 +291,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     const removeEmptyBlocks = body.removeEmptyBlocks !== false;
 
-    const result = saveLessonUpdate(courseId, lessonSlug, body.lesson, {
+    const result = await saveLessonUpdate(courseId, lessonSlug, body.lesson, {
       removeEmptyBlocks,
+      ...writeOptions,
     });
     return jsonResponse({
       ok: true,
@@ -266,6 +302,9 @@ export const POST: APIRoute = async ({ request }) => {
       lessonSlug: result.lessonSlug,
       removedEmptyBlocks: result.removedEmptyBlocks,
       backupPath: result.backupPath,
+      persistedVia: result.persistedVia,
+      branch: result.branch,
+      commitSha: result.commitSha,
       savedAt: new Date().toISOString(),
     });
   } catch (e) {
