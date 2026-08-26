@@ -5,7 +5,7 @@ import {
   getLegacyCourseBySlug,
   getSortedLessonsForCourse,
   legacyCourseLoadOptionsFromPreviewRequest,
-  legacyLessonHref,
+  legacyCoursePreviewHref,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
 
 const courseSlug = Astro.params.courseSlug ?? "";
@@ -28,10 +28,20 @@ const description =
     : undefined;
 const pageTitle = `${course.course.title} | Knit it Now`;
 const firstLesson = lessons[0];
+const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
+const firstLessonHref = firstLesson
+  ? legacyCoursePreviewHref(courseSlug, firstLesson.slug, {
+      includeDraftPreview: loaderOptions.includeDrafts,
+    })
+  : null;
 ---
 
 <Layout title={pageTitle} {description}>
-  <LegacyCourseShell courseSlug={courseSlug} includeDrafts={loaderOptions.includeDrafts}>
+  <LegacyCourseShell
+    courseSlug={courseSlug}
+    includeDrafts={loaderOptions.includeDrafts}
+    previewQuery={previewQuery}
+  >
     <article class="course-preview__content legacy-course__overview">
       <header class="course-preview__section-header">
         <h1 class="course-preview__content-title">{course.course.title}</h1>
@@ -46,9 +56,9 @@ const firstLesson = lessons[0];
       </header>
 
       {
-        firstLesson ? (
+        firstLesson && firstLessonHref ? (
           <p class="legacy-course__start-link">
-            <a class="kbm-btn kbm-btn-accent" href={legacyLessonHref(courseSlug, firstLesson.slug)}>
+            <a class="kbm-btn kbm-btn-accent" href={firstLessonHref}>
               Start with lesson 1
             </a>
           </p>
@@ -61,7 +71,11 @@ const firstLesson = lessons[0];
           {
             lessons.map((lesson) => (
               <li>
-                <a href={legacyLessonHref(courseSlug, lesson.slug)}>
+                <a
+                  href={legacyCoursePreviewHref(courseSlug, lesson.slug, {
+                    includeDraftPreview: loaderOptions.includeDrafts,
+                  })}
+                >
                   <span class="legacy-course__lesson-order">{lesson.displayOrder}.</span>
                   {lesson.title}
                 </a>

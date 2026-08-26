@@ -3,6 +3,7 @@ import type { CourseAccessLevel } from "./courseAccess";
 import { getCourseAccessBySlug } from "./coursesCatalogAccess";
 import { getCatalogOverlayDescription } from "./coursesCatalogOverlay";
 import { readCourseContentStatus } from "./legacy_kin/courseContentAdmin";
+import { resolveCatalogCourseHref, type CourseHrefResolveOptions } from "./legacy_kin/courseEnvironmentHref";
 import { courseLandingHref } from "./legacy_kin/courseLanding";
 import { getLegacyCourseBySlug } from "./legacy_kin/legacyCourseLoader";
 import { legacyAssetUrl } from "./legacy_kin/legacyCourseAssetUrls";
@@ -182,9 +183,12 @@ function resolveHref(
   slug: string,
   catalogStatus: CourseCatalogStatus,
   catalogHref?: string,
+  env: CourseHrefResolveOptions = {},
 ): string | undefined {
   const override = readOptionalOverride(catalogHref);
-  if (override) return override;
+  if (override) {
+    return resolveCatalogCourseHref(slug, override, env);
+  }
 
   const legacy = legacyCourseForEntry(slug, catalogStatus);
   if (!legacy) return undefined;
@@ -224,7 +228,9 @@ export function resolveCatalogStatus(
 }
 
 /** Catalog rows for /courses, merged with legacy course metadata where available. */
-export function getCourseCatalogEntries(): CourseCatalogEntry[] {
+export function getCourseCatalogEntries(
+  env: CourseHrefResolveOptions = {},
+): CourseCatalogEntry[] {
   const publicCategories = new Set(catalog.categories);
   return catalog.entries
     .filter((entry) => publicCategories.has(entry.category))
@@ -247,18 +253,20 @@ export function getCourseCatalogEntries(): CourseCatalogEntry[] {
         hasThumbnail: Boolean(thumbnail),
         category: entry.category,
         status,
-        href: resolveHref(entry.slug, entry.catalogStatus, entry.href),
+        href: resolveHref(entry.slug, entry.catalogStatus, entry.href, env),
         buttonLabel: resolveButtonLabel(status, entry.buttonLabel),
         access: getCourseAccessBySlug(entry.slug),
       };
     });
 }
 
-export function getCourseCatalogEntriesByCategory(): {
+export function getCourseCatalogEntriesByCategory(
+  env: CourseHrefResolveOptions = {},
+): {
   category: string;
   courses: CourseCatalogEntry[];
 }[] {
-  const entries = getCourseCatalogEntries();
+  const entries = getCourseCatalogEntries(env);
   const grouped = new Map<string, CourseCatalogEntry[]>();
 
   for (const entry of entries) {

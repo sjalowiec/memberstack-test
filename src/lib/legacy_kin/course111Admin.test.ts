@@ -135,6 +135,8 @@ describe("course111Admin load", () => {
     );
     expect(firstHref).toContain("?preview=true");
     expect(firstHref).toContain(`/${first.slug}?`);
+    expect(firstHref).not.toContain("courses.knititnow.com");
+    expect(firstHref).not.toContain("knititnow.com");
 
     const resolved = resolveCourse111SelectedLessonPreview(data, second.slug);
     expect(resolved).toEqual({

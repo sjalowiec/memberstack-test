@@ -33,11 +33,15 @@ describe("resolveCourseThumbnail", () => {
 });
 
 describe("getCourseCatalogEntries href", () => {
-  it("uses a catalog href override for standalone destinations", () => {
-    const entry = getCourseCatalogEntries().find(
+  const sk840ProductionHref = "https://courses.knititnow.com/courses/111";
+  const sk840DevHref =
+    "/courses/legacy/mastering-the-silver-reed-sk840-a-comprehensive-course?preview=true";
+
+  it("keeps the production KIN URL on production hosts", () => {
+    const entry = getCourseCatalogEntries({ hostname: "www.knititnow.com" }).find(
       (course) => course.slug === "mastering-the-silver-reed-sk840",
     );
-    expect(entry?.href).toBe("https://courses.knititnow.com/courses/111");
+    expect(entry?.href).toBe(sk840ProductionHref);
     expect(entry?.buttonLabel).toBe("View Course");
     expect(entry?.title).toBe("Mastering the Silver Reed SK840");
     expect(entry?.access).toBe("member");
@@ -50,8 +54,37 @@ describe("getCourseCatalogEntries href", () => {
     expect(entry?.thumbnail).not.toContain("courses.knititnow.com");
   });
 
-  it("does not link to legacy lesson routes from the catalog", () => {
-    for (const entry of getCourseCatalogEntries()) {
+  it("stays on DEV for the SK840 catalog card", () => {
+    const entry = getCourseCatalogEntries({ hostname: "kin-dev.netlify.app" }).find(
+      (course) => course.slug === "mastering-the-silver-reed-sk840",
+    );
+    expect(entry?.href).toBe(sk840DevHref);
+    expect(entry?.href).toMatch(/^\/courses\/legacy\//);
+    expect(entry?.href).not.toContain("courses.knititnow.com");
+    expect(entry?.href).not.toMatch(/^https?:\/\//);
+    expect(entry?.buttonLabel).toBe("View Course");
+  });
+
+  it("stays on localhost for the SK840 catalog card", () => {
+    const entry = getCourseCatalogEntries({
+      hostname: "localhost",
+      isViteDev: true,
+    }).find((course) => course.slug === "mastering-the-silver-reed-sk840");
+    expect(entry?.href).toBe(sk840DevHref);
+    expect(entry?.href).not.toContain("courses.knititnow.com");
+  });
+
+  it("does not use the production KIN host from the catalog on DEV", () => {
+    for (const entry of getCourseCatalogEntries({ hostname: "kin-dev.netlify.app" })) {
+      if (entry.href) {
+        expect(entry.href).not.toContain("courses.knititnow.com");
+        expect(entry.href).not.toMatch(/^https?:\/\/(?:www\.)?knititnow\.com\//);
+      }
+    }
+  });
+
+  it("does not link to legacy routes from the production catalog", () => {
+    for (const entry of getCourseCatalogEntries({ hostname: "www.knititnow.com" })) {
       if (entry.href) {
         expect(entry.href).not.toMatch(/^\/courses\/legacy\//);
       }
@@ -122,7 +155,13 @@ describe("public course catalog cleanup", () => {
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
-    expect(entries[0]?.href).toBe("https://courses.knititnow.com/courses/111");
+    expect(entries[0]?.href).toBe(
+      "/courses/legacy/mastering-the-silver-reed-sk840-a-comprehensive-course?preview=true",
+    );
+    expect(entries[0]?.href).not.toContain("courses.knititnow.com");
+
+    const productionEntries = getCourseCatalogEntries({ hostname: "knititnow.com" });
+    expect(productionEntries[0]?.href).toBe("https://courses.knititnow.com/courses/111");
     expect(entries[0]?.access).toBe("member");
     expect(entries[0]?.hasThumbnail).toBe(true);
     expect(entries[0]?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
