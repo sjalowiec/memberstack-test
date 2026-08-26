@@ -140,27 +140,48 @@
       hidden
     >
       <h3 id="cancel-membership-heading" class="account-membership-panel__cancel-help-heading">
-        How do I cancel my membership?
+        <button
+          type="button"
+          class="account-membership-panel__cancel-help-toggle"
+          data-kbm-account-membership-cancel-help-toggle
+          aria-expanded="false"
+          aria-controls="cancel-membership-panel"
+        >
+          <span class="account-membership-panel__cancel-help-title">
+            How do I cancel my membership?
+          </span>
+          <span
+            class="account-membership-panel__cancel-help-chevron"
+            aria-hidden="true"
+          ></span>
+        </button>
       </h3>
-      <p>To cancel your membership:</p>
-      <ol>
-        <li>
-          Click
-          <button
-            type="button"
-            class="account-membership-panel__cancel-help-billing"
-            data-ms-action="customer-portal"
-            data-kbm-account-membership-cancel-help-billing
-          >
-            Manage Billing
-          </button>
-          to open your billing portal.
-        </li>
-        <li>Under <strong>Active plan</strong>, click your Knit It Now membership.</li>
-        <li>On the next screen, click <strong>Cancel plan</strong>.</li>
-        <li>Follow the prompts to confirm your cancellation.</li>
-      </ol>
-      <p>Your membership remains active through the end of your current paid period.</p>
+      <div
+        id="cancel-membership-panel"
+        class="account-membership-panel__cancel-help-panel"
+        data-kbm-account-membership-cancel-help-panel
+        hidden
+      >
+        <p>To cancel your membership:</p>
+        <ol>
+          <li>
+            Click
+            <button
+              type="button"
+              class="account-membership-panel__cancel-help-billing"
+              data-ms-action="customer-portal"
+              data-kbm-account-membership-cancel-help-billing
+            >
+              Manage Billing
+            </button>
+            to open your billing portal.
+          </li>
+          <li>Under <strong>Active plan</strong>, click your Knit It Now membership.</li>
+          <li>On the next screen, click <strong>Cancel plan</strong>.</li>
+          <li>Follow the prompts to confirm your cancellation.</li>
+        </ol>
+        <p>Your membership remains active through the end of your current paid period.</p>
+      </div>
     </section>
 
     <section
@@ -333,10 +354,64 @@
   }
 
   .account-membership-panel__cancel-help-heading {
-    margin: 0 0 0.75rem;
+    margin: 0;
     font-size: 1rem;
     font-weight: 600;
+  }
+
+  .account-membership-panel__cancel-help-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.35rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
     color: #374151;
+    text-align: left;
+  }
+
+  .account-membership-panel__cancel-help-toggle:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .account-membership-panel__cancel-help-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .account-membership-panel__cancel-help-chevron {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1;
+  }
+
+  .account-membership-panel__cancel-help-chevron::after {
+    content: "+";
+  }
+
+  .account-membership-panel__cancel-help-toggle[aria-expanded="true"]
+    .account-membership-panel__cancel-help-chevron::after {
+    content: "-";
+  }
+
+  .account-membership-panel__cancel-help-panel {
+    margin-top: 0.9rem;
   }
 
   .account-membership-panel__cancel-help p {
