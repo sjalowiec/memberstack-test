@@ -55,6 +55,44 @@ export type Course111LessonSummary = {
   statusLabel: string;
 };
 
+/** One original KIN lesson (assign / block), not a course section. */
+export type Course111OriginalLessonSummary = {
+  index: number;
+  parentSlug: string;
+  parentTitle: string;
+  blockSlug: string;
+  assignId: number;
+  title: string;
+  componentCount: number;
+  componentTypes: string[];
+  published: boolean;
+  statusLabel: string;
+};
+
+export type Course111ComponentView = {
+  index: number;
+  type: string;
+  typeLabel: string;
+  legacyComponentId: number;
+  order: number;
+  identity: string;
+  imageSrcs: string[];
+  editable: boolean;
+  canDelete: boolean;
+};
+
+export const COURSE_111_COMPONENT_TYPE_LABELS: Record<string, string> = {
+  richText: "Rich text / HTML",
+  video: "Video (Vimeo)",
+  image: "Image",
+  download: "Download / file",
+  imageCarousel: "Image carousel",
+  imageGallery: "Image gallery",
+  exerciseAccordion: "Exercise / accordion",
+  embeddedTool: "Embedded tool",
+  migrationPending: "Pending / unmapped",
+};
+
 export type Course111ComponentPatch = {
   html?: string;
   vimeoId?: string;
@@ -146,11 +184,80 @@ export function filterCourse111Lessons(
   });
 }
 
+export function listCourse111OriginalLessons(
+  data: CoursePreviewData,
+): Course111OriginalLessonSummary[] {
+  const parents = [...data.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
+  const out: Course111OriginalLessonSummary[] = [];
+  for (const parent of parents) {
+    const published = parent.published !== false;
+    for (const block of sortedBlocks(parent)) {
+      const types = sortedComponents(block).map((component) => component.type);
+      out.push({
+        index: out.length,
+        parentSlug: parent.slug,
+        parentTitle: parent.title,
+        blockSlug: block.slug,
+        assignId: Number(block.legacy?.assignId) || 0,
+        title: block.title?.trim() || block.slug,
+        componentCount: types.length,
+        componentTypes: types,
+        published,
+        statusLabel: published ? "Visible" : "Unpublished",
+      });
+    }
+  }
+  return out;
+}
+
+export function filterCourse111OriginalLessons(
+  lessons: Course111OriginalLessonSummary[],
+  query: string,
+): Course111OriginalLessonSummary[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return lessons;
+  return lessons.filter((lesson) => {
+    const haystack = [
+      lesson.assignId,
+      lesson.index + 1,
+      lesson.title,
+      lesson.blockSlug,
+      lesson.parentTitle,
+      lesson.parentSlug,
+      lesson.statusLabel,
+      lesson.componentTypes.join(" "),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
+  });
+}
+
 export function findCourse111Lesson(
   data: CoursePreviewData,
   lessonSlug: string,
 ): CourseLesson | undefined {
   return data.lessons.find((lesson) => lesson.slug === lessonSlug);
+}
+
+export function findCourse111OriginalLesson(
+  data: CoursePreviewData,
+  parentSlug: string,
+  blockSlug: string,
+): { parent: CourseLesson; block: CourseBlock } | undefined {
+  const parent = findCourse111Lesson(data, parentSlug);
+  const block = parent?.blocks.find((entry) => entry.slug === blockSlug);
+  if (!parent || !block) return undefined;
+  return { parent, block };
+}
+
+export function findCourse111OriginalLessonByAssignId(
+  data: CoursePreviewData,
+  assignId: number,
+): Course111OriginalLessonSummary | undefined {
+  return listCourse111OriginalLessons(data).find(
+    (lesson) => lesson.assignId === Number(assignId),
+  );
 }
 
 /** Learner-facing draft preview URL (no server imports). */
@@ -312,6 +419,150 @@ export function updateCourse111LessonTitle(
   title: string,
 ): void {
   lesson.title = title.trim() || lesson.title;
+}
+
+export function updateCourse111BlockTitle(block: CourseBlock, title: string): void {
+  block.title = title.trim() || block.title;
+}
+
+export function addCourse111ComponentToBlock(
+  lesson: CourseLesson,
+  blockSlug: string,
+  type: Course111EditableType,
+  allLessons: CourseLesson[],
+): CourseComponent | null {
+  const block = lesson.blocks.find((entry) => entry.slug === blockSlug);
+  if (!block) return null;
+  const component = createCourse111Component(type, allLessons);
+  const maxOrder = block.components.reduce(
+    (max, entry) => Math.max(max, Number(entry.order) || 0),
+    0,
+  );
+  component.order = maxOrder + 1;
+  block.components.push(component);
+  return component;
+}
+
+export function deleteCourse111Component(
+  lesson: CourseLesson,
+  blockSlug: string,
+  componentIndex: number,
+): boolean {
+  const block = lesson.blocks.find((entry) => entry.slug === blockSlug);
+  if (!block) return false;
+  const ordered = sortedComponents(block);
+  const target = ordered[componentIndex];
+  if (!target) return false;
+  const actualIndex = block.components.indexOf(target);
+  if (actualIndex === -1) return false;
+  block.components.splice(actualIndex, 1);
+  sortedComponents(block).forEach((entry, orderIndex) => {
+    entry.order = orderIndex + 1;
+  });
+  return true;
+}
+
+function stripMarkup(value: string): string {
+  return value
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function extractCourse111ImageSrcs(value: string): string[] {
+  const srcs: string[] = [];
+  const re = /<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(value))) {
+    const src = match[1]?.trim();
+    if (src) srcs.push(src);
+  }
+  return srcs;
+}
+
+export function describeCourse111Component(
+  component: CourseComponent,
+): Omit<Course111ComponentView, "index"> {
+  const type = String(component.type || "");
+  const typeLabel = COURSE_111_COMPONENT_TYPE_LABELS[type] || type || "Unknown";
+  const imageSrcs: string[] = [];
+  let identity = "";
+
+  if (component.type === "richText") {
+    identity = stripMarkup(component.html || "") || "(empty HTML)";
+    imageSrcs.push(...extractCourse111ImageSrcs(component.html || ""));
+  } else if (component.type === "video") {
+    identity = [component.vimeoId && `Vimeo ${component.vimeoId}`, component.title]
+      .filter(Boolean)
+      .join(" · ") || "(no Vimeo ID)";
+  } else if (component.type === "image") {
+    identity = [component.src, component.alt, component.caption]
+      .filter(Boolean)
+      .join(" · ") || "(no image source)";
+    if (component.src) imageSrcs.push(component.src);
+  } else if (component.type === "download") {
+    identity = [component.label, component.filename].filter(Boolean).join(" · ") ||
+      "(no file)";
+  } else if (component.type === "imageCarousel" || component.type === "imageGallery") {
+    const slides = Array.isArray(component.slides) ? component.slides : [];
+    identity = `${slides.length} slide${slides.length === 1 ? "" : "s"}`;
+    for (const slide of slides) {
+      if (slide?.src) imageSrcs.push(slide.src);
+    }
+  } else if (component.type === "exerciseAccordion") {
+    const sections = Array.isArray(component.sections) ? component.sections : [];
+    identity =
+      sections
+        .map((section) => stripMarkup(section.title || ""))
+        .filter(Boolean)
+        .join(" · ") || `${sections.length} section(s)`;
+  } else if (component.type === "embeddedTool") {
+    identity = component.toolKey || "(no tool key)";
+  } else if (component.type === "migrationPending") {
+    identity = [component.legacyType, ...(component.notes || [])]
+      .filter(Boolean)
+      .join(" · ") || "Pending migration";
+  } else {
+    identity = `Unsupported type ${type}`;
+  }
+
+  if (identity.length > 220) identity = `${identity.slice(0, 217)}…`;
+
+  return {
+    type,
+    typeLabel,
+    legacyComponentId: Number(component.legacyComponentId) || 0,
+    order: Number(component.order) || 0,
+    identity,
+    imageSrcs,
+    editable: isCourse111EditableType(type),
+    canDelete: true,
+  };
+}
+
+export function listCourse111LessonComponents(
+  block: CourseBlock,
+): Course111ComponentView[] {
+  return sortedComponents(block).map((component, index) => ({
+    index,
+    ...describeCourse111Component(component),
+  }));
+}
+
+export function listCourse111EditorItemsForAssign(
+  data: CoursePreviewData,
+  assignId: number,
+): Course111ComponentView[] {
+  const summary = findCourse111OriginalLessonByAssignId(data, assignId);
+  if (!summary) return [];
+  const found = findCourse111OriginalLesson(
+    data,
+    summary.parentSlug,
+    summary.blockSlug,
+  );
+  if (!found) return [];
+  return listCourse111LessonComponents(found.block);
 }
 
 /**

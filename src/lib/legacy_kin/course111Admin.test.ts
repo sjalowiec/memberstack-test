@@ -8,10 +8,18 @@ import {
   course111IsDraft,
   course111LessonPreviewHref,
   deleteCourse111Block,
+  deleteCourse111Component,
+  describeCourse111Component,
   filterCourse111Lessons,
+  filterCourse111OriginalLessons,
   findCourse111Lesson,
+  findCourse111OriginalLesson,
+  findCourse111OriginalLessonByAssignId,
   getCourse111ContentPath,
+  listCourse111EditorItemsForAssign,
+  listCourse111LessonComponents,
   listCourse111LessonSummaries,
+  listCourse111OriginalLessons,
   loadCourse111,
   moveCourse111Block,
   patchCourse111Component,
@@ -289,5 +297,113 @@ describe("course111Admin edit / order / preserve", () => {
     expect(lesson.blocks.some((block) => block.slug === "pending-block")).toBe(true);
     expect(moveCourse111Block(lesson, 1, -1)).toBe(true);
     expect(lesson.blocks.map((block) => block.slug)[0]).toBe("pending-block");
+  });
+});
+
+describe("course111Admin original lesson components", () => {
+  it("loads all components for lesson 6104 in display order", () => {
+    const data = loadCourse111();
+    const summary = findCourse111OriginalLessonByAssignId(data, 6104);
+    expect(summary).toMatchObject({
+      assignId: 6104,
+      blockSlug: "about-automatic-patterning-on-this-machine",
+      parentSlug: "automatic-stitch-patterning",
+    });
+
+    const items = listCourse111EditorItemsForAssign(data, 6104);
+    expect(items).toHaveLength(2);
+    expect(items.map((item) => item.legacyComponentId)).toEqual([9332, 9348]);
+    expect(items.map((item) => item.order)).toEqual([1, 2]);
+    expect(items.map((item) => item.type)).toEqual(["richText", "richText"]);
+    expect(items[1]?.identity).toMatch(/LearnDesignaKnit/i);
+    expect(items[1]?.imageSrcs).toContain(
+      "https://learndesignaknit.com/img/Learn_DesignAKnit.jpg",
+    );
+  });
+
+  it("preserves component order when listing Watson editor items", () => {
+    const data = loadCourse111();
+    const items = listCourse111EditorItemsForAssign(data, 6124);
+    expect(items.map((item) => item.type)).toEqual(["richText", "video"]);
+    expect(items.map((item) => item.legacyComponentId)).toEqual([9373, 9372]);
+    expect(items[0]?.order).toBeLessThan(items[1]?.order ?? 0);
+  });
+
+  it("edits an existing component without touching siblings", () => {
+    const data = cloneCourse111Data(loadCourse111());
+    const summary = findCourse111OriginalLessonByAssignId(data, 6104)!;
+    const found = findCourse111OriginalLesson(
+      data,
+      summary.parentSlug,
+      summary.blockSlug,
+    )!;
+
+    expect(
+      patchCourse111Component(found.parent, found.block.slug, 9332, {
+        html: "<p>Updated lesson copy</p>",
+      }),
+    ).toBe(true);
+
+    const components = listCourse111LessonComponents(found.block);
+    expect(components[0]?.identity).toBe("Updated lesson copy");
+    expect(components[1]?.legacyComponentId).toBe(9348);
+    expect(components[1]?.identity).toMatch(/LearnDesignaKnit/i);
+    const promo = found.block.components.find(
+      (component) => component.legacyComponentId === 9348,
+    ) as { html?: string };
+    expect(promo.html).toContain("https://learndesignaknit.com/img/Learn_DesignAKnit.jpg");
+  });
+
+  it("deletes a component and leaves the rest of the lesson intact", () => {
+    const data = cloneCourse111Data(loadCourse111());
+    const summary = findCourse111OriginalLessonByAssignId(data, 6104)!;
+    const found = findCourse111OriginalLesson(
+      data,
+      summary.parentSlug,
+      summary.blockSlug,
+    )!;
+
+    expect(deleteCourse111Component(found.parent, found.block.slug, 1)).toBe(true);
+    const remaining = listCourse111LessonComponents(found.block);
+    expect(remaining.map((item) => item.legacyComponentId)).toEqual([9332]);
+    expect(remaining[0]?.order).toBe(1);
+    expect(found.block.components).toHaveLength(1);
+  });
+
+  it("represents every component type in a mixed lesson for Watson", () => {
+    const data = cloneCourse111Data(sampleWithUnknownFields());
+    const lesson = findCourse111Lesson(data, "lesson-a")!;
+    const types = listCourse111OriginalLessons(data).flatMap((entry) =>
+      entry.componentTypes,
+    );
+    expect(types).toEqual(["richText", "migrationPending", "video"]);
+
+    const views = lesson.blocks.flatMap((block) =>
+      listCourse111LessonComponents(block),
+    );
+    expect(views.map((item) => item.typeLabel)).toEqual([
+      "Rich text / HTML",
+      "Pending / unmapped",
+      "Video (Vimeo)",
+    ]);
+    expect(views.every((item) => item.canDelete)).toBe(true);
+    expect(describeCourse111Component(lesson.blocks[1]!.components[0]!).identity).toMatch(
+      /Flash/,
+    );
+
+    const live = loadCourse111();
+    const represented = new Set(
+      listCourse111OriginalLessons(live).flatMap((entry) => entry.componentTypes),
+    );
+    expect(represented.has("richText")).toBe(true);
+    expect(represented.has("video")).toBe(true);
+    expect(represented.has("imageCarousel")).toBe(true);
+    expect(represented.has("exerciseAccordion")).toBe(true);
+    expect(represented.has("imageGallery")).toBe(true);
+    expect(represented.has("migrationPending")).toBe(true);
+
+    expect(filterCourse111OriginalLessons(listCourse111OriginalLessons(live), "6104")).toEqual(
+      [findCourse111OriginalLessonByAssignId(live, 6104)],
+    );
   });
 });

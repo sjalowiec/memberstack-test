@@ -1,19 +1,23 @@
 import {
-  addCourse111Block,
+  addCourse111ComponentToBlock,
   cloneCourse111Data,
   COURSE_111_ID,
   deleteCourse111Block,
-  filterCourse111Lessons,
+  deleteCourse111Component,
+  describeCourse111Component,
+  filterCourse111OriginalLessons,
   findCourse111Lesson,
-  listCourse111LessonSummaries,
-  moveCourse111Block,
+  findCourse111OriginalLesson,
+  listCourse111LessonComponents,
+  listCourse111OriginalLessons,
   patchCourse111Component,
   readCourse111Publication,
   resolveCourse111SelectedLessonPreview,
   runCourse111SaveAndPreview,
   summarizeCourse111Block,
-  updateCourse111LessonTitle,
+  updateCourse111BlockTitle,
   type Course111EditableType,
+  type Course111OriginalLessonSummary,
   type Course111PublicationSnapshot,
 } from "../lib/legacy_kin/course111AdminModel";
 import type {
@@ -22,7 +26,7 @@ import type {
   CourseLesson,
   CoursePreviewData,
 } from "../lib/legacy_kin/coursePreviewPoc";
-import { sortedBlocks, sortedComponents } from "../lib/legacy_kin/coursePreviewPoc";
+import { sortedComponents } from "../lib/legacy_kin/coursePreviewPoc";
 
 const API_URL = "/api/admin/course-content";
 
@@ -60,10 +64,10 @@ const dom: Dom = {
 
 let course: CoursePreviewData | null = null;
 let publication: Course111PublicationSnapshot | null = null;
-let selectedLessonSlug: string | null = null;
+let selectedParentSlug: string | null = null;
+let selectedBlockSlug: string | null = null;
 let dirty = false;
 let searchQuery = "";
-let expandedBlockSlug: string | null = null;
 
 function escapeHtml(value: string): string {
   return value
@@ -89,13 +93,27 @@ function setDirty(next: boolean) {
   if (dom.saveCourse) dom.saveCourse.disabled = !dirty;
 }
 
-function currentLesson(): CourseLesson | null {
-  if (!course || !selectedLessonSlug) return null;
-  return findCourse111Lesson(course, selectedLessonSlug) ?? null;
+function currentOriginalLesson(): { parent: CourseLesson; block: CourseBlock } | null {
+  if (!course || !selectedParentSlug || !selectedBlockSlug) return null;
+  return (
+    findCourse111OriginalLesson(course, selectedParentSlug, selectedBlockSlug) ??
+    null
+  );
+}
+
+function selectedOriginalSummary(): Course111OriginalLessonSummary | null {
+  if (!course || !selectedParentSlug || !selectedBlockSlug) return null;
+  return (
+    listCourse111OriginalLessons(course).find(
+      (lesson) =>
+        lesson.parentSlug === selectedParentSlug &&
+        lesson.blockSlug === selectedBlockSlug,
+    ) ?? null
+  );
 }
 
 function updatePreviewLink() {
-  if (!dom.preview || !course || !selectedLessonSlug) {
+  if (!dom.preview || !course || !selectedParentSlug) {
     if (dom.preview) {
       dom.preview.href = "#";
       dom.preview.setAttribute("aria-disabled", "true");
@@ -104,7 +122,7 @@ function updatePreviewLink() {
     return;
   }
 
-  const resolved = resolveCourse111SelectedLessonPreview(course, selectedLessonSlug);
+  const resolved = resolveCourse111SelectedLessonPreview(course, selectedParentSlug);
   dom.preview.href = resolved?.previewHref ?? "#";
   dom.preview.toggleAttribute("aria-disabled", !resolved);
   if (dom.savePreview) dom.savePreview.disabled = !resolved;
@@ -125,8 +143,15 @@ async function loadCourse() {
   }
   course = cloneCourse111Data(payload.course);
   publication = readCourse111Publication(course.course);
-  if (!selectedLessonSlug || !findCourse111Lesson(course, selectedLessonSlug)) {
-    selectedLessonSlug = listCourse111LessonSummaries(course)[0]?.slug ?? null;
+  const originals = listCourse111OriginalLessons(course);
+  const stillSelected = originals.some(
+    (lesson) =>
+      lesson.parentSlug === selectedParentSlug &&
+      lesson.blockSlug === selectedBlockSlug,
+  );
+  if (!stillSelected) {
+    selectedParentSlug = originals[0]?.parentSlug ?? null;
+    selectedBlockSlug = originals[0]?.blockSlug ?? null;
   }
   setDirty(false);
   const draftLabel =
@@ -138,8 +163,8 @@ async function loadCourse() {
 
 function renderLessons() {
   if (!dom.lessons || !course) return;
-  const lessons = filterCourse111Lessons(
-    listCourse111LessonSummaries(course),
+  const lessons = filterCourse111OriginalLessons(
+    listCourse111OriginalLessons(course),
     searchQuery,
   );
   if (lessons.length === 0) {
@@ -147,26 +172,64 @@ function renderLessons() {
     return;
   }
 
-  dom.lessons.innerHTML = lessons
-    .map((lesson) => {
-      const selected = lesson.slug === selectedLessonSlug ? " is-selected" : "";
-      const unpublished = lesson.published ? "" : " is-unpublished";
-      return `<button type="button" class="course111-admin__lesson${selected}" data-lesson-slug="${escapeHtml(lesson.slug)}">
-        <span class="course111-admin__lesson-num">Lesson ${lesson.index + 1}</span>
+  let lastParent = "";
+  const parts: string[] = [];
+  for (const lesson of lessons) {
+    if (lesson.parentSlug !== lastParent) {
+      parts.push(
+        `<p class="course111-admin__group">${escapeHtml(lesson.parentTitle)}</p>`,
+      );
+      lastParent = lesson.parentSlug;
+    }
+    const selected =
+      lesson.parentSlug === selectedParentSlug &&
+      lesson.blockSlug === selectedBlockSlug
+        ? " is-selected"
+        : "";
+    const unpublished = lesson.published ? "" : " is-unpublished";
+    const typeLabel = lesson.componentTypes.join(" + ") || "empty";
+    parts.push(`<button type="button" class="course111-admin__lesson${selected}" data-parent-slug="${escapeHtml(lesson.parentSlug)}" data-block-slug="${escapeHtml(lesson.blockSlug)}">
+        <span class="course111-admin__lesson-num">Lesson ${lesson.assignId || lesson.index + 1}</span>
         <span class="course111-admin__lesson-title">${escapeHtml(lesson.title)}</span>
-        <span class="course111-admin__lesson-status${unpublished}">${escapeHtml(lesson.statusLabel)} · ${lesson.blockCount} blocks</span>
-      </button>`;
-    })
-    .join("");
+        <span class="course111-admin__lesson-status${unpublished}">${escapeHtml(lesson.statusLabel)} · ${lesson.componentCount} components · ${escapeHtml(typeLabel)}</span>
+      </button>`);
+  }
+  dom.lessons.innerHTML = parts.join("");
 }
 
-function componentEditorHtml(block: CourseBlock, component: CourseComponent): string {
+function componentHeadHtml(
+  block: CourseBlock,
+  component: CourseComponent,
+  index: number,
+): string {
+  const view = describeCourse111Component(component);
+  const imageList = view.imageSrcs
+    .map((src) => `<li><code>${escapeHtml(src)}</code></li>`)
+    .join("");
+  return `<header class="course111-admin__component-head">
+      <div>
+        <div class="course111-admin__component-type">${escapeHtml(view.typeLabel)}</div>
+        <p class="course111-admin__identity">${escapeHtml(view.identity)}</p>
+        <p class="course111-admin__hint">component ${view.legacyComponentId} · order ${view.order}</p>
+        ${imageList ? `<ul class="course111-admin__srcs">${imageList}</ul>` : ""}
+      </div>
+      <button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-component" data-block-slug="${escapeHtml(block.slug)}" data-component-index="${index}">Delete component</button>
+    </header>`;
+}
+
+function componentEditorHtml(
+  block: CourseBlock,
+  component: CourseComponent,
+  index: number,
+): string {
   const id = component.legacyComponentId;
   const type = component.type;
+  const head = componentHeadHtml(block, component, index);
+  const wrap = `class="course111-admin__component" data-block-slug="${escapeHtml(block.slug)}" data-component-id="${id}" data-component-index="${index}" data-component-type="${escapeHtml(type)}"`;
 
   if (type === "richText") {
-    return `<div class="course111-admin__component" data-block-slug="${escapeHtml(block.slug)}" data-component-id="${id}" data-component-type="richText">
-      <div class="course111-admin__component-type">Rich text / HTML</div>
+    return `<div ${wrap}>
+      ${head}
       <label class="course111-admin__label">HTML
         <textarea class="course111-admin__textarea" data-field="html">${escapeHtml(component.html ?? "")}</textarea>
       </label>
@@ -174,8 +237,8 @@ function componentEditorHtml(block: CourseBlock, component: CourseComponent): st
   }
 
   if (type === "video") {
-    return `<div class="course111-admin__component" data-block-slug="${escapeHtml(block.slug)}" data-component-id="${id}" data-component-type="video">
-      <div class="course111-admin__component-type">Video (Vimeo)</div>
+    return `<div ${wrap}>
+      ${head}
       <label class="course111-admin__label">Vimeo ID
         <input class="course111-admin__input" data-field="vimeoId" type="text" value="${escapeHtml(component.vimeoId ?? "")}">
       </label>
@@ -186,8 +249,8 @@ function componentEditorHtml(block: CourseBlock, component: CourseComponent): st
   }
 
   if (type === "image") {
-    return `<div class="course111-admin__component" data-block-slug="${escapeHtml(block.slug)}" data-component-id="${id}" data-component-type="image">
-      <div class="course111-admin__component-type">Image</div>
+    return `<div ${wrap}>
+      ${head}
       <label class="course111-admin__label">Source
         <input class="course111-admin__input" data-field="src" type="text" value="${escapeHtml(component.src ?? "")}">
       </label>
@@ -201,8 +264,8 @@ function componentEditorHtml(block: CourseBlock, component: CourseComponent): st
   }
 
   if (type === "download") {
-    return `<div class="course111-admin__component" data-block-slug="${escapeHtml(block.slug)}" data-component-id="${id}" data-component-type="download">
-      <div class="course111-admin__component-type">Download / link</div>
+    return `<div ${wrap}>
+      ${head}
       <label class="course111-admin__label">Label
         <input class="course111-admin__input" data-field="label" type="text" value="${escapeHtml(component.label ?? "")}">
       </label>
@@ -214,9 +277,9 @@ function componentEditorHtml(block: CourseBlock, component: CourseComponent): st
   }
 
   const preview = escapeHtml(JSON.stringify(component, null, 2));
-  return `<div class="course111-admin__component" data-block-slug="${escapeHtml(block.slug)}" data-component-id="${id}" data-component-type="${escapeHtml(type)}">
-    <div class="course111-admin__component-type">Preserved · ${escapeHtml(type)}</div>
-    <p class="course111-admin__preserved">Protected until this type has a dedicated editor. You can Move Up / Move Down the whole block; Delete is disabled so the saved data stays intact.
+  return `<div ${wrap}>
+    ${head}
+    <p class="course111-admin__preserved">Current settings are shown below. Dedicated field editors exist for text, video, image, and download; other imported types can still be removed.
       <br><code>${preview}</code>
     </p>
   </div>`;
@@ -224,60 +287,59 @@ function componentEditorHtml(block: CourseBlock, component: CourseComponent): st
 
 function renderMain() {
   if (!dom.main || !course) return;
-  const lesson = currentLesson();
-  if (!lesson) {
+  const current = currentOriginalLesson();
+  const summary = selectedOriginalSummary();
+  if (!current || !summary) {
     dom.main.innerHTML = `<p class="course111-admin__empty">Select a lesson to edit.</p>`;
     return;
   }
 
-  const blocks = sortedBlocks(lesson);
-  const blockCards = blocks
-    .map((block, index) => {
-      const summary = summarizeCourse111Block(block);
-      const open = expandedBlockSlug === block.slug;
-      const components = sortedComponents(block)
-        .map((component) => componentEditorHtml(block, component))
-        .join("");
-      const deleteControl = summary.canDelete
-        ? `<button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-block" data-block-slug="${escapeHtml(block.slug)}">Delete</button>`
-        : `<button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-block" data-block-slug="${escapeHtml(block.slug)}" disabled title="Protected until this type has a dedicated editor">Delete</button>`;
-      return `<article class="course111-admin__block" data-block-slug="${escapeHtml(block.slug)}">
-        <header class="course111-admin__block-head">
-          <div class="course111-admin__block-meta">
-            <h3 class="course111-admin__block-title">${escapeHtml(summary.title)}</h3>
-            <div class="course111-admin__block-types">${escapeHtml(summary.types.join(" + ") || "empty")} · ${escapeHtml(block.slug)}${summary.canDelete ? "" : " · protected"}</div>
-          </div>
-          <div class="course111-admin__block-actions">
-            <button type="button" class="course111-admin__btn" data-action="toggle-edit" data-block-slug="${escapeHtml(block.slug)}">${open ? "Close" : "Edit"}</button>
-            <button type="button" class="course111-admin__btn" data-action="move-up" data-block-index="${index}" ${index === 0 ? "disabled" : ""}>Move Up</button>
-            <button type="button" class="course111-admin__btn" data-action="move-down" data-block-index="${index}" ${index === blocks.length - 1 ? "disabled" : ""}>Move Down</button>
-            ${deleteControl}
-          </div>
-        </header>
-        ${open ? `<div class="course111-admin__block-body">${components || `<p class="course111-admin__hint">No components in this block.</p>`}${summary.canDelete ? "" : `<p class="course111-admin__hint">Protected block: Move Up / Move Down are available. Delete stays off until these components have a dedicated editor.</p>`}</div>` : ""}
-      </article>`;
+  const { parent, block } = current;
+  const blockSummary = summarizeCourse111Block(block);
+  const components = listCourse111LessonComponents(block)
+    .map((view) => {
+      const component = sortedComponents(block)[view.index];
+      return component ? componentEditorHtml(block, component, view.index) : "";
     })
     .join("");
+  const deleteLesson = blockSummary.canDelete
+    ? `<button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-block" data-block-slug="${escapeHtml(block.slug)}">Delete lesson</button>`
+    : `<button type="button" class="course111-admin__btn course111-admin__btn--danger" data-action="delete-block" data-block-slug="${escapeHtml(block.slug)}" disabled title="This lesson includes a type without a dedicated block delete yet. Remove individual components instead.">Delete lesson</button>`;
 
   dom.main.innerHTML = `
     <div class="course111-admin__lesson-header">
       <label class="course111-admin__label">Lesson title
-        <input id="course111-lesson-title" class="course111-admin__input" type="text" value="${escapeHtml(lesson.title)}">
+        <input id="course111-lesson-title" class="course111-admin__input" type="text" value="${escapeHtml(block.title)}">
       </label>
-      <p class="course111-admin__hint">Slug <code>${escapeHtml(lesson.slug)}</code> is preserved. Lesson published flag: <strong>${lesson.published === false ? "unpublished" : "visible"}</strong> (not changed by this editor).</p>
+      <p class="course111-admin__hint">
+        Lesson ${summary.assignId || "—"} in ${escapeHtml(parent.title)}.
+        Slug <code>${escapeHtml(block.slug)}</code> is preserved.
+        Published flag: <strong>${parent.published === false ? "unpublished" : "visible"}</strong> (not changed by this editor).
+      </p>
+      <div class="course111-admin__block-actions">${deleteLesson}</div>
     </div>
     <div class="course111-admin__add-row">
-      <label class="course111-admin__label">Add block
+      <label class="course111-admin__label">Add component
         <select id="course111-add-type" class="course111-admin__select">
           <option value="richText">Rich text / HTML</option>
           <option value="video">Video (Vimeo)</option>
           <option value="image">Image</option>
-          <option value="download">Download / link</option>
+          <option value="download">Download / file</option>
         </select>
       </label>
-      <button type="button" class="course111-admin__btn course111-admin__btn--primary" data-action="add-block">Add block</button>
+      <button type="button" class="course111-admin__btn course111-admin__btn--primary" data-action="add-component">Add component</button>
     </div>
-    <div class="course111-admin__blocks">${blockCards || `<p class="course111-admin__empty">No blocks yet — add one above.</p>`}</div>
+    <div class="course111-admin__blocks">
+      <article class="course111-admin__block" data-block-slug="${escapeHtml(block.slug)}">
+        <header class="course111-admin__block-head">
+          <div class="course111-admin__block-meta">
+            <h3 class="course111-admin__block-title">Components in display order</h3>
+            <div class="course111-admin__block-types">${escapeHtml(blockSummary.types.join(" + ") || "empty")} · ${listCourse111LessonComponents(block).length} total</div>
+          </div>
+        </header>
+        <div class="course111-admin__block-body">${components || `<p class="course111-admin__hint">No components in this lesson.</p>`}</div>
+      </article>
+    </div>
   `;
 }
 
@@ -290,21 +352,22 @@ function renderAll() {
   updatePreviewLink();
 }
 
-function selectLesson(slug: string) {
-  if (dirty && slug !== selectedLessonSlug) {
+function selectOriginalLesson(parentSlug: string, blockSlug: string) {
+  const sameParent = parentSlug === selectedParentSlug;
+  if (dirty && !sameParent) {
     const ok = window.confirm(
       "You have unsaved changes. Switch lessons and discard them?",
     );
     if (!ok) return;
     void reloadFromDisk().then(() => {
-      selectedLessonSlug = slug;
-      expandedBlockSlug = null;
+      selectedParentSlug = parentSlug;
+      selectedBlockSlug = blockSlug;
       renderAll();
     });
     return;
   }
-  selectedLessonSlug = slug;
-  expandedBlockSlug = null;
+  selectedParentSlug = parentSlug;
+  selectedBlockSlug = blockSlug;
   renderAll();
 }
 
@@ -313,7 +376,7 @@ async function reloadFromDisk() {
   renderAll();
 }
 
-async function saveCurrentLesson(lessonSlug = selectedLessonSlug) {
+async function saveCurrentLesson(lessonSlug = selectedParentSlug) {
   if (!course || !lessonSlug) return;
   const lesson = findCourse111Lesson(course, lessonSlug);
   if (!lesson) throw new Error(`Lesson not found: ${lessonSlug}`);
@@ -335,17 +398,20 @@ async function saveCurrentLesson(lessonSlug = selectedLessonSlug) {
     throw new Error(payload.error || "Save lesson failed.");
   }
   setDirty(false);
-  setStatus(`Saved lesson “${lesson.title}”. Course remains draft/unpublished.`);
+  const current = currentOriginalLesson();
+  setStatus(
+    `Saved lesson “${current?.block.title || lesson.title}”. Course remains draft/unpublished.`,
+  );
 }
 
 async function saveAndPreviewLesson() {
-  if (!course || !selectedLessonSlug) {
+  if (!course || !selectedParentSlug) {
     throw new Error("Select a lesson before Save & Preview.");
   }
 
   const result = await runCourse111SaveAndPreview({
     data: course,
-    selectedLessonSlug,
+    selectedLessonSlug: selectedParentSlug,
     saveLesson: (lessonSlug) => saveCurrentLesson(lessonSlug),
     openPreview: (href) => {
       window.open(href, "_blank", "noopener,noreferrer");
@@ -359,7 +425,6 @@ async function saveAndPreviewLesson() {
 }
 
 async function saveWholeCourse() {
-  // Persist the currently edited lesson (only dirty surface in this MVP).
   await saveCurrentLesson();
   setStatus("Saved Course 111 file. Draft/unpublished state preserved.");
 }
@@ -372,11 +437,12 @@ function bindEvents() {
 
   dom.lessons?.addEventListener("click", (event) => {
     const button = (event.target as HTMLElement).closest(
-      "[data-lesson-slug]",
+      "[data-parent-slug][data-block-slug]",
     ) as HTMLButtonElement | null;
     if (!button) return;
-    const slug = button.getAttribute("data-lesson-slug");
-    if (slug) selectLesson(slug);
+    const parentSlug = button.getAttribute("data-parent-slug");
+    const blockSlug = button.getAttribute("data-block-slug");
+    if (parentSlug && blockSlug) selectOriginalLesson(parentSlug, blockSlug);
   });
 
   dom.main?.addEventListener("click", (event) => {
@@ -384,26 +450,23 @@ function bindEvents() {
       "[data-action]",
     ) as HTMLButtonElement | null;
     if (!target) return;
-    const lesson = currentLesson();
-    if (!lesson || !course) return;
+    const current = currentOriginalLesson();
+    if (!current || !course) return;
+    const { parent, block } = current;
 
     const action = target.getAttribute("data-action");
-    if (action === "toggle-edit") {
-      const slug = target.getAttribute("data-block-slug");
-      expandedBlockSlug = expandedBlockSlug === slug ? null : slug;
-      renderMain();
-      return;
-    }
 
-    if (action === "move-up" || action === "move-down") {
-      const index = Number(target.getAttribute("data-block-index"));
+    if (action === "delete-component") {
+      const slug = target.getAttribute("data-block-slug") || block.slug;
+      const index = Number(target.getAttribute("data-component-index"));
       if (!Number.isFinite(index)) return;
-      const moved = moveCourse111Block(
-        lesson,
-        index,
-        action === "move-up" ? -1 : 1,
+      const views = listCourse111LessonComponents(block);
+      const view = views[index];
+      const confirmed = window.confirm(
+        `Delete this ${view?.typeLabel || "component"} (id ${view?.legacyComponentId ?? index})? This is not written until you Save.`,
       );
-      if (moved) {
+      if (!confirmed) return;
+      if (deleteCourse111Component(parent, slug, index)) {
         setDirty(true);
         renderAll();
       }
@@ -412,47 +475,62 @@ function bindEvents() {
 
     if (action === "delete-block") {
       if (target.disabled) return;
-      const slug = target.getAttribute("data-block-slug");
-      if (!slug) return;
-      const block = lesson.blocks.find((entry) => entry.slug === slug);
-      if (block && !summarizeCourse111Block(block).canDelete) {
+      const slug = target.getAttribute("data-block-slug") || block.slug;
+      if (!summarizeCourse111Block(block).canDelete) {
         setStatus(
-          "Protected block — Delete is disabled until these components have a dedicated editor.",
+          "Use Delete component on each item instead. Whole-lesson delete stays off for unmapped types.",
           true,
         );
         return;
       }
       const confirmed = window.confirm(
-        `Delete block “${slug}” and all of its components? This is not written until you Save.`,
+        `Delete lesson “${block.title}” and all of its components? This is not written until you Save.`,
       );
       if (!confirmed) return;
-      if (deleteCourse111Block(lesson, slug)) {
-        if (expandedBlockSlug === slug) expandedBlockSlug = null;
+      const originals = listCourse111OriginalLessons(course).filter(
+        (lesson) =>
+          !(
+            lesson.parentSlug === selectedParentSlug &&
+            lesson.blockSlug === slug
+          ),
+      );
+      if (deleteCourse111Block(parent, slug)) {
+        selectedBlockSlug = originals[0]?.blockSlug ?? null;
+        if (originals[0] && originals[0].parentSlug !== selectedParentSlug) {
+          selectedParentSlug = originals[0].parentSlug;
+        }
         setDirty(true);
         renderAll();
       }
       return;
     }
 
-    if (action === "add-block") {
+    if (action === "add-component") {
       const select = document.getElementById(
         "course111-add-type",
       ) as HTMLSelectElement | null;
       const type = (select?.value || "richText") as Course111EditableType;
-      const block = addCourse111Block(lesson, type, course.lessons);
-      expandedBlockSlug = block.slug;
-      setDirty(true);
-      renderAll();
+      const added = addCourse111ComponentToBlock(
+        parent,
+        block.slug,
+        type,
+        course.lessons,
+      );
+      if (added) {
+        setDirty(true);
+        renderAll();
+      }
     }
   });
 
   dom.main?.addEventListener("input", (event) => {
-    const lesson = currentLesson();
-    if (!lesson) return;
+    const current = currentOriginalLesson();
+    if (!current) return;
+    const { parent, block } = current;
     const target = event.target as HTMLElement;
 
     if (target.id === "course111-lesson-title" && target instanceof HTMLInputElement) {
-      updateCourse111LessonTitle(lesson, target.value);
+      updateCourse111BlockTitle(block, target.value);
       setDirty(true);
       renderLessons();
       return;
@@ -471,7 +549,7 @@ function bindEvents() {
         ? target.value
         : "";
 
-    const patched = patchCourse111Component(lesson, blockSlug, componentId, {
+    const patched = patchCourse111Component(parent, blockSlug, componentId, {
       [field]: value,
     });
     if (patched) setDirty(true);
