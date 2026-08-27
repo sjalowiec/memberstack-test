@@ -41,8 +41,29 @@ describe("Memberstack root-domain cookie session", () => {
     expectRootCookieSession(baseLayout, "BaseLayout");
   });
 
-  it("uses the same cookie boot on the KIN course player layout", () => {
-    expectRootCookieSession(kinCourseLayout, "KinCourseLayout");
+  it("uses the same cookie boot on the KIN course player layout without origin cleanup", () => {
+    const configIdx = kinCourseLayout.indexOf("var memberstackConfig");
+    const scriptIdx = kinCourseLayout.indexOf(MEMBERSTACK_CDN);
+
+    expect(configIdx, "KinCourseLayout defines memberstackConfig").toBeGreaterThan(-1);
+    expect(scriptIdx, "KinCourseLayout loads the Memberstack CDN").toBeGreaterThan(-1);
+    expect(configIdx).toBeLessThan(scriptIdx);
+
+    const configBlock = kinCourseLayout.slice(configIdx, scriptIdx);
+    expect(configBlock).toContain("useCookies: true");
+    expect(configBlock).toContain("setCookieOnRootDomain: true");
+    expect(configBlock).not.toContain("Max-Age=0; Path=/");
+    expect(configBlock).not.toContain("clearMsStorage");
+    expect(configBlock).not.toContain("Domain=.knititnow.com");
+
+    expect(kinCourseLayout).toContain(`data-memberstack-app="${MEMBERSTACK_APP_ID}"`);
+    expect(kinCourseLayout).toContain("data-memberstack-use-cookies");
+    expect(kinCourseLayout).not.toMatch(/\$memberstackDom\?\.init\?\(\s*\)/);
+    expect(kinCourseLayout).toContain(
+      "window.$memberstackDom?.init?.(window.memberstackConfig)",
+    );
+    expect(kinCourseLayout).not.toContain("clearMsStorage");
+    expect(kinCourseLayout).not.toContain("Max-Age=0; Path=/");
   });
 
   it("keeps the live Memberstack app id on the CDN script", () => {

@@ -83,4 +83,9 @@ describe("KIN course layout shared login wiring", () => {
     expect(layoutSource).toContain('id="kbm-ms-login-proxy"');
     expect(layoutSource).not.toContain("kin-ms-login-proxy");
   });
+
+  it("does not clear the same-origin Memberstack session before boot", () => {
+    expect(layoutSource).not.toContain("clearMsStorage");
+    expect(layoutSource).not.toContain("Max-Age=0; Path=/");
+  });
 });

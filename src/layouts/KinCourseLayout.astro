@@ -54,39 +54,16 @@ const previewUnlock = preview === true;
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
     />
     <!--
-      Shared session with www.knititnow.com / knititnow.com. Same boot as
-      BaseLayout: Memberstack defaults to origin-scoped localStorage; this
-      stores `_ms_mid` / `_ms_cookie` on `.knititnow.com`. Assumes those hosts
-      are in Application Domains. var so this is also window.memberstackConfig.
-
-      Origin-scoped leftovers (localStorage / host-only cookies) still win after
-      that switch, so drop them on Knit It Now hosts before Memberstack boots.
-      Keep the `.knititnow.com` cookie; that is the shared session.
+      Same Memberstack boot as BaseLayout: memberstackConfig before the CDN
+      script (var, so it is also window.memberstackConfig). Course 111 is
+      same-origin on knititnow.com, so do not clear origin localStorage or
+      host-only cookies here — that deletes the active site session.
     -->
     <script is:inline>
       var memberstackConfig = {
         useCookies: true,
         setCookieOnRootDomain: true,
       };
-      (function () {
-        var host = (location.hostname || "").toLowerCase();
-        if (host !== "knititnow.com" && host.slice(-14) !== ".knititnow.com") return;
-        var names = ["_ms-mid", "_ms_mid", "_ms_cookie"];
-        for (var i = 0; i < names.length; i++) {
-          document.cookie = names[i] + "=; Max-Age=0; Path=/";
-        }
-        function clearMsStorage(storage) {
-          if (!storage) return;
-          var keys = [];
-          for (var j = 0; j < storage.length; j++) {
-            var key = storage.key(j);
-            if (key && /^(?:_?ms[-_]|memberstack)/i.test(key)) keys.push(key);
-          }
-          for (var k = 0; k < keys.length; k++) storage.removeItem(keys[k]);
-        }
-        try { clearMsStorage(localStorage); } catch (e) {}
-        try { clearMsStorage(sessionStorage); } catch (e2) {}
-      })();
     </script>
     <script
       data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
