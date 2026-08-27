@@ -30,6 +30,7 @@ import {
   activeShoulderIntroIsCardiganFront,
   activeShoulderIntroUsesVNeckDivideCopy,
   CARDIGAN_FRONT_NECKLINE_START_TAIL,
+  CARDIGAN_FRONT_VNECK_START_TAIL,
   CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE,
   CARDIGAN_FRONT_NECKLINE_ONLY_SENTENCE,
   CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE,
@@ -46,6 +47,7 @@ import {
   type ActiveSideInstructionTableRow,
 } from "./neckShoulderActiveSideChecklist";
 import {
+  resolveFrontVNeckRowCounterDisplayPolicy,
   resolveFrontVNeckShapingTimingCase,
   timelineHasOverlappingArmholeDecreases,
 } from "./frontArmholeNecklineComposition";
@@ -549,12 +551,19 @@ function formatActiveShoulderVNeckCenterNecklineHtml(args: {
 /** HTML cardigan front neckline start line (center-front edge — no scrap-off / divide language). */
 function formatActiveShoulderCardiganFrontNecklineHtml(args: {
   localStartRcLabel?: string | undefined;
+  atRcPrefix?: boolean | undefined;
+  vNeckStart?: boolean | undefined;
 }): string {
   const localStartLabel = String(args.localStartRcLabel ?? "").trim();
-  const tail = escapeHtml(CARDIGAN_FRONT_NECKLINE_START_TAIL);
-  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  const tail = escapeHtml(
+    args.vNeckStart === true ? CARDIGAN_FRONT_VNECK_START_TAIL : CARDIGAN_FRONT_NECKLINE_START_TAIL,
+  );
+  const rcColon = localStartLabel.match(/^RC:\s*(\d{1,4})$/i);
   if (rcColon) {
     const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    if (args.atRcPrefix) {
+      return `At RC ${escapeHtml(n)}, ${tail}.`;
+    }
     return `When Armhole RC reaches ${escapeHtml(n)}, ${tail}.`;
   }
   if (localStartLabel) {
@@ -573,11 +582,16 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const isCardiganFront = activeShoulderIntroIsCardiganFront(options);
 
   if (isCardiganFront) {
+    const continuousGarmentRc =
+      resolveFrontVNeckRowCounterDisplayPolicy(options.chart?.frontVNeckArmholeComposition) ===
+      "continuous-garment-rc";
     const innerParts: string[] = [];
     if (activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart)) {
       innerParts.push(
         `<p><strong>Center-front edge:</strong><br>${formatActiveShoulderCardiganFrontNecklineHtml({
           localStartRcLabel: options.localStartRcLabel,
+          atRcPrefix: continuousGarmentRc,
+          vNeckStart: continuousGarmentRc,
         })}</p>`,
       );
     }

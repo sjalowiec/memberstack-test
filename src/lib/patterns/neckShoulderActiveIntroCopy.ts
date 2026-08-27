@@ -4,6 +4,9 @@
  * {@link sleevelessPatternOutput} (cycle: chart HTML already imports pattern output for bind-off formatting).
  */
 
+import {
+  resolveFrontVNeckRowCounterDisplayPolicy,
+} from "./frontArmholeNecklineComposition";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
   isFullWidthVNeckFrontStyleChart,
@@ -70,6 +73,9 @@ export const ACTIVE_VNECK_CENTER_DIVIDE_TAIL =
 
 export const CARDIGAN_FRONT_NECKLINE_START_TAIL = "begin neckline shaping at the center-front edge";
 
+/** Cardigan V-neck that already owns the garment row counter (Case 4 / before-armhole). */
+export const CARDIGAN_FRONT_VNECK_START_TAIL = "begin V-neck shaping at the center-front edge";
+
 export const CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE =
   "Work the neckline shaping and shoulder shaping together following the chart below.";
 
@@ -107,14 +113,25 @@ export function activeShoulderCenterDivideIntroApplies(
   return Number.isFinite(n) && n > 0;
 }
 
+function cardiganFrontUsesContinuousGarmentRc(chart?: NeckShoulderShapingChart): boolean {
+  return (
+    resolveFrontVNeckRowCounterDisplayPolicy(chart?.frontVNeckArmholeComposition) ===
+    "continuous-garment-rc"
+  );
+}
+
 function formatArmholeRcAnchoredSentence(
   localStartRcLabel: string | undefined,
   tail: string,
+  options?: { atRcPrefix?: boolean },
 ): string {
   const localStartLabel = String(localStartRcLabel ?? "").trim();
-  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  const rcColon = localStartLabel.match(/^RC:\s*(\d{1,4})$/i);
   if (rcColon) {
     const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
+    if (options?.atRcPrefix) {
+      return `At RC ${n}, ${tail}.`;
+    }
     return `When Armhole RC reaches ${n}, ${tail}.`;
   }
   if (localStartLabel) {
@@ -143,8 +160,14 @@ export function formatActiveShoulderCenterNecklinePlainSentence(args: {
 /** Cardigan front: neckline begins at the open center-front edge (no pullover divide language). */
 export function formatActiveShoulderCardiganFrontNecklinePlainSentence(args: {
   localStartRcLabel?: string | undefined;
+  chart?: NeckShoulderShapingChart | undefined;
 }): string {
-  return formatArmholeRcAnchoredSentence(args.localStartRcLabel, CARDIGAN_FRONT_NECKLINE_START_TAIL);
+  const continuous = cardiganFrontUsesContinuousGarmentRc(args.chart);
+  return formatArmholeRcAnchoredSentence(
+    args.localStartRcLabel,
+    continuous ? CARDIGAN_FRONT_VNECK_START_TAIL : CARDIGAN_FRONT_NECKLINE_START_TAIL,
+    { atRcPrefix: continuous },
+  );
 }
 
 /** V-neck front: divide at center and neck-edge decreases — no center bind-off. */

@@ -3,6 +3,7 @@ import {
   activeShoulderCenterDivideIntroApplies,
   activeShoulderIntroPlainParagraphs,
   activeShoulderIntroUsesVNeckDivideCopy,
+  formatActiveShoulderCardiganFrontNecklinePlainSentence,
   formatActiveShoulderCenterNecklinePlainSentence,
   formatActiveShoulderVNeckCenterPlainSentence,
   BIND_OFF_GLOSSARY_ID,
@@ -67,6 +68,60 @@ function vNeckPattern() {
       availableNeedles: 200,
     },
   });
+}
+
+function asCardigan(pattern: Record<string, unknown>): Record<string, unknown> {
+  const style = (pattern.style ?? {}) as Record<string, unknown>;
+  return {
+    ...pattern,
+    style: { ...style, garmentStyle: "cardigan", frontStyle: "open" },
+  };
+}
+
+function vNeckBeforeArmholePattern(): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "mens",
+      selectedMeasurements: {
+        finished_bust_chest: 51,
+        back_neck_to_hem: 28,
+        armhole_depth: 9,
+        neck_opening: 6,
+        shoulder_width: 22,
+        front_neck_depth: 11,
+        back_neck_depth: 1,
+      },
+    },
+    style: { recipientCategory: "mens", neckline: "v-neck" },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 4,
+      gaugeRowsPerInch: 7,
+      availableNeedles: 200,
+    },
+  };
+}
+
+function shallowVNeckPattern(): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "misses",
+      selectedMeasurements: {
+        finished_bust_chest: 39,
+        back_neck_to_hem: 18,
+        armhole_depth: 8,
+        neck_opening: 6,
+        shoulder_width: 12,
+        front_neck_depth: 3,
+        back_neck_depth: 1,
+      },
+    },
+    style: { recipientCategory: "misses", neckline: "v-neck" },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 4,
+      gaugeRowsPerInch: 7,
+      availableNeedles: 200,
+    },
+  };
 }
 
 describe("neckShoulderActiveIntroCopy", () => {
@@ -351,5 +406,84 @@ describe("cardigan front neckline / shoulder chart copy", () => {
     expect(text).toMatch(/center-front edge/i);
     expect(text).toMatch(/following the chart below/i);
     expect(text).not.toMatch(/center neckline|divide the neckline|opposite shoulder|second side/i);
+  });
+
+  it("keeps Armhole RC wording when a cardigan neckline starts after the armhole reset", () => {
+    const r = cardiganRoundFrontPattern();
+    const sentence = formatActiveShoulderCardiganFrontNecklinePlainSentence({
+      localStartRcLabel: "RC:050",
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    expect(sentence).toBe(
+      "When Armhole RC reaches 050, begin neckline shaping at the center-front edge.",
+    );
+
+    const introHtml = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: "RC:050",
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart),
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    expect(introHtml).toContain(
+      "When Armhole RC reaches 050, begin neckline shaping at the center-front edge.",
+    );
+    expect(introHtml).not.toMatch(/At RC 050, begin V-neck shaping/i);
+  });
+
+  it("does not call the pre-armhole cardigan V start Armhole RC", () => {
+    const r = generateSleevelessBackPattern(asCardigan(vNeckBeforeArmholePattern()));
+    const divideRc = r.debug.frontArmholeNecklineOverlap!.divideGarmentRc;
+    const padded = String(divideRc).padStart(3, "0");
+    const label = `RC:${padded}`;
+    const expected = `At RC ${padded}, begin V-neck shaping at the center-front edge.`;
+
+    const sentence = formatActiveShoulderCardiganFrontNecklinePlainSentence({
+      localStartRcLabel: label,
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    expect(sentence).toBe(expected);
+    expect(sentence).not.toMatch(/When Armhole RC reaches/i);
+
+    const paras = activeShoulderIntroPlainParagraphs({
+      localStartRcLabel: label,
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart),
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    expect(paras[0]).toBe(expected);
+    expect(paras.join("\n")).not.toMatch(/When Armhole RC reaches/i);
+
+    const introHtml = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: label,
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart),
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    expect(introHtml).toContain(expected);
+    expect(introHtml).not.toMatch(/When Armhole RC reaches/i);
+    expect(introHtml).not.toMatch(/begin neckline shaping at the center-front edge/i);
+  });
+
+  it("keeps Armhole RC wording for a cardigan V that starts after the armhole", () => {
+    const r = generateSleevelessBackPattern(asCardigan(shallowVNeckPattern()));
+    const localRc = r.debug.frontNecklineStartLocalRC!;
+    const padded = String(localRc).padStart(3, "0");
+    const label = `RC:${padded}`;
+    const expected = `When Armhole RC reaches ${padded}, begin neckline shaping at the center-front edge.`;
+
+    expect(
+      formatActiveShoulderCardiganFrontNecklinePlainSentence({
+        localStartRcLabel: label,
+        chart: r.frontNeckShoulderShapingChart,
+      }),
+    ).toBe(expected);
+
+    const introHtml = renderActiveShoulderChartIntroHtml({
+      ...baseOpts,
+      localStartRcLabel: label,
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(r.frontNeckShoulderShapingChart),
+      chart: r.frontNeckShoulderShapingChart,
+    });
+    expect(introHtml).toContain(expected);
+    expect(introHtml).not.toMatch(/At RC \d+, begin V-neck shaping/i);
   });
 });
