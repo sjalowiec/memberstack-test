@@ -1,0 +1,42 @@
+---
+import type { KinCourseNavLink } from "../../lib/kinCourse/hrefs";
+
+interface Props {
+  previous: KinCourseNavLink | null;
+  next: KinCourseNavLink | null;
+}
+
+const { previous, next } = Astro.props;
+---
+
+<div class="course-sticky-wrap">
+  <nav
+    class:list={[
+      "course-lesson-nav",
+      "course-sticky-nav",
+      !previous && "course-lesson-nav--no-prev",
+      !next && "course-lesson-nav--no-next",
+    ]}
+    aria-label="Lesson"
+  >
+    {
+      previous ? (
+        <a class="course-nav-lesson course-nav-lesson--prev" href={previous.href}>
+          {previous.label}
+        </a>
+      ) : null
+    }
+
+    <button type="button" class="course-nav-contents" data-course-contents-open>
+      Course Contents
+    </button>
+
+    {
+      next ? (
+        <a class="course-nav-lesson course-nav-lesson--next" href={next.href}>
+          {next.label}
+        </a>
+      ) : null
+    }
+  </nav>
+</div>

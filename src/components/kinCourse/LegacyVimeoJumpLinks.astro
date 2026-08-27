@@ -1,0 +1,90 @@
+---
+interface Jump {
+  time?: string;
+  title?: string;
+}
+
+interface Props {
+  lessonId: number;
+  vimeoId?: string;
+  jumps?: Jump[];
+}
+
+const { lessonId, vimeoId, jumps = [] } = Astro.props;
+
+function jumpSeconds(time: string): number | null {
+  const parts = time.split(':').map((part) => Number(part));
+  if (parts.some((part) => Number.isNaN(part))) return null;
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 1) return parts[0];
+  return null;
+}
+
+const usable = jumps
+  .map((jump) => ({
+    time: jump.time || '',
+    title: jump.title || '',
+    seconds: jumpSeconds(jump.time || ''),
+  }))
+  .filter((jump) => jump.seconds != null);
+---
+
+{
+  !vimeoId || usable.length === 0 ? (
+    <div class="legacy-error" role="alert">
+      Cannot render VimeoJumpLinks in lesson {lessonId}:{' '}
+      {!vimeoId ? 'no sibling Vimeo ID was found' : 'no jump-link timestamps were extracted'}.
+    </div>
+  ) : (
+    <nav class="legacy-jumplinks" data-vimeo-id={vimeoId} aria-label="In this video">
+      <h3>In this video:</h3>
+      {usable.map((jump) => (
+        <button type="button" class="legacy-jumplink" data-jump-seconds={String(jump.seconds)}>
+          {jump.title || jump.time}
+        </button>
+      ))}
+    </nav>
+  )
+}
+
+<script>
+  function loadVimeoPlayer(): Promise<any> {
+    const existing = (window as any).Vimeo?.Player;
+    if (existing) return Promise.resolve(existing);
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://player.vimeo.com/api/player.js';
+      script.onload = () => {
+        const Player = (window as any).Vimeo?.Player;
+        if (Player) resolve(Player);
+        else reject(new Error('Vimeo Player API did not load'));
+      };
+      script.onerror = () => reject(new Error('Vimeo Player API failed to load'));
+      document.head.appendChild(script);
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('.legacy-jumplinks').forEach((nav) => {
+    const vimeoId = nav.getAttribute('data-vimeo-id') || '';
+    const content = nav.closest('.legacy-content');
+    const iframe =
+      content?.querySelector<HTMLIFrameElement>(`.legacy-vimeo iframe[src*="${vimeoId}"]`) ||
+      content?.querySelector<HTMLIFrameElement>('.legacy-vimeo iframe');
+
+    nav.addEventListener('click', async (event) => {
+      const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('.legacy-jumplink');
+      if (!button) return;
+      const seconds = Number(button.getAttribute('data-jump-seconds'));
+      if (!iframe || Number.isNaN(seconds)) return;
+      try {
+        const Player = await loadVimeoPlayer();
+        const player = new Player(iframe);
+        await player.setCurrentTime(seconds);
+        await player.play();
+      } catch (error) {
+        console.error('Vimeo jump failed', error);
+      }
+    });
+  });
+</script>

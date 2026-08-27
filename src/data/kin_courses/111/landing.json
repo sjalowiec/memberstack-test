@@ -1,0 +1,63 @@
+{
+  "courseId": 111,
+  "catalogSlug": "mastering-the-silver-reed-sk840",
+  "title": "Mastering the Silver Reed SK840",
+  "subtitle": "A Comprehensive Course",
+  "fullTitle": "Mastering the Silver Reed SK840: A Comprehensive Course",
+  "image": {
+    "src": "/images/courses/mastering-silver-reed-sk840.png",
+    "alt": "Silver Reed SK840 knitting machine",
+    "legacyPath": "courses/challenge/images/v2/111/2022-course_thumbnail.png",
+    "selection": "The production KIN landing used /challenge/images/v2/111/2022-course_thumbnail.png, which is not in this app's public folder. DEV already serves the SK840 catalog card at /images/courses/mastering-silver-reed-sk840.png; the numeric player must use that same file."
+  },
+  "descriptionHtml": null,
+  "relatedMachinesNote": null,
+  "designaknitNote": null,
+  "testimonial": null,
+  "firstLessonId": 6085,
+  "firstLessonTitle": "Your manuals",
+  "topics": [
+    "Learn About the Machine",
+    "Get Knitting",
+    "Your Turn: Get Started",
+    "Automatic Stitch Patterning",
+    "DesignaKnit Stitch Patterns",
+    "Short Row / Partial Knitting",
+    "Tuck Stitch",
+    "Slip Stitch",
+    "I-Cord",
+    "Knit Weave",
+    "Fairisle",
+    "Thread (Punch) Lace",
+    "Plaiting",
+    "Lace (optional Lace Carriage)",
+    "Your Ribber",
+    "Accessories"
+  ],
+  "topicsSource": "Visible Challenge_V2_Items section titles from course-111.json. Empty sections and leftover internal sections (ActivePresenter all-over, temp to delete later) are omitted.",
+  "included": [
+    {
+      "label": "25+ video tutorials",
+      "source": "36 unique Vimeo IDs in the recovered Course 111 lesson content"
+    },
+    {
+      "label": "Cheatsheets and printable reference material",
+      "source": "Course lessons include Printable Reference Cards, a machine-setup cheat sheet, and printable checklists"
+    },
+    {
+      "label": "Exercises",
+      "source": "3 Exercise components plus Challenge lessons in the recovered course structure"
+    }
+  ],
+  "unrecovered": [
+    "Challenges_V2.Description_1 introductory copy",
+    "Challenges_V2.Description_2",
+    "Challenges_V2.SalesText",
+    "Challenges_V2.salespage HTML",
+    "Confirmed Challenges_V2.ImageFile value",
+    "SK840 vs Silver Reed 280/860 positioning copy",
+    "DesignaKnit landing-page blurb",
+    "Theo testimonial wording",
+    "Buy Course versus Membership sales copy"
+  ]
+}

@@ -1,0 +1,39 @@
+---
+interface Props {
+  completion: {
+    courseTitle: string;
+    heading: string;
+    lead: string;
+    paragraphs: string[];
+    contentsHref: string;
+    returnHref: string;
+  };
+}
+
+const { completion } = Astro.props;
+---
+
+<article class="course-complete">
+  <header class="course-complete-header">
+    <p class="course-lesson-kicker">{completion.courseTitle}</p>
+    <h1>{completion.heading}</h1>
+    <p class="course-complete-lead">
+      <strong>{completion.lead}</strong>
+    </p>
+  </header>
+
+  {
+    completion.paragraphs.length ? (
+      <div class="course-complete-body">
+        {completion.paragraphs.map((paragraph) => (
+          <p set:html={paragraph} />
+        ))}
+      </div>
+    ) : null
+  }
+
+  <div class="course-complete-actions">
+    <a class="course-home-contents" href={completion.contentsHref}>Back to Course Contents</a>
+    <a class="course-home-start" href={completion.returnHref}>Return to Knit It Now</a>
+  </div>
+</article>

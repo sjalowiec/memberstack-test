@@ -6,6 +6,17 @@ export type LegacyCoursePublicationFields = {
   active?: boolean;
 };
 
+export type LegacyLessonPublicationFields = {
+  published?: boolean;
+};
+
+/** True unless a lesson is explicitly unpublished. Omitted published = visible. */
+export function isLegacyLessonPublished(
+  lesson: LegacyLessonPublicationFields,
+): boolean {
+  return lesson.published !== false;
+}
+
 /** True when a course is enabled for public listing (catalog + routes when also published). */
 export function isLegacyCourseActive(
   course: LegacyCoursePublicationFields,

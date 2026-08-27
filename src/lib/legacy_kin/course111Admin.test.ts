@@ -105,11 +105,11 @@ function sampleWithUnknownFields(): CoursePreviewData {
 }
 
 describe("course111Admin load", () => {
-  it("loads Course 111 cleaned poc and stays draft", () => {
+  it("loads Course 111 cleaned poc as published", () => {
     const data = loadCourse111();
     expect(data.course.legacyChallengeId).toBe(COURSE_111_ID);
     expect(data.course.title).toContain("Silver Reed SK840");
-    expect(course111IsDraft(data)).toBe(true);
+    expect(course111IsDraft(data)).toBe(false);
     expect(basename(getCourse111ContentPath())).toBe(COURSE_111_POC_FILENAME);
     expect(listCourse111LessonSummaries(data).length).toBeGreaterThan(0);
   });

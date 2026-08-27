@@ -1,0 +1,211 @@
+/* Knit It Now site chrome. Do not restyle extracted lesson HTML. */
+
+:root {
+  --kin-green: #52682d;
+  --kin-green-hover: #445626;
+  --kin-green-2: #6a8141;
+  --kin-footer-bg: #e8ece3;
+  --kin-footer-text: #3b4b2f;
+  --kin-footer-muted: #4a5a35;
+  --kin-chrome-font: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  --kin-site-header-height: 56px;
+}
+
+.kin-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  min-height: var(--kin-site-header-height);
+  background: var(--kin-green);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.kin-site-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--kin-site-header-height);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
+
+.kin-site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--kin-chrome-font);
+}
+
+.kin-site-brand:hover,
+.kin-site-brand:focus-visible {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.kin-site-brand:focus-visible,
+.kin-site-back:focus-visible,
+.kin-site-footer-brand:focus-visible,
+.kin-site-footer-home:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.kin-site-footer-brand:focus-visible,
+.kin-site-footer-home:focus-visible {
+  outline-color: var(--kin-green);
+}
+
+.kin-site-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.kin-site-wordmark {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.kin-site-back {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  color: #fff;
+  font-family: var(--kin-chrome-font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.kin-site-back:hover,
+.kin-site-back:focus-visible {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.kin-site-back-short {
+  display: none;
+}
+
+.kin-site-footer {
+  background: var(--kin-footer-bg);
+  color: var(--kin-footer-text);
+  border-top: 3px solid var(--kin-green-2);
+  font-family: var(--kin-chrome-font);
+  text-align: center;
+}
+
+.kin-site-footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 16px 20px;
+}
+
+.kin-site-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--kin-footer-text);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.kin-site-footer-brand:hover,
+.kin-site-footer-brand:focus-visible {
+  color: var(--kin-green-2);
+}
+
+.kin-site-footer-logo {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.kin-site-footer-id,
+.kin-site-footer-copy {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--kin-footer-muted);
+}
+
+.kin-site-footer-home {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  color: var(--kin-footer-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.kin-site-footer-home:hover,
+.kin-site-footer-home:focus-visible {
+  color: var(--kin-green-2);
+  text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --kin-site-header-height: 52px;
+  }
+
+  .kin-site-header-inner {
+    padding: 6px 12px;
+  }
+
+  .kin-site-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .kin-site-wordmark {
+    font-size: 1.15rem;
+  }
+
+  .kin-site-back {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+
+  .kin-site-footer-inner {
+    padding: 20px 16px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .kin-site-back-full {
+    display: none;
+  }
+
+  .kin-site-back-short {
+    display: inline;
+  }
+}
+
+@media print {
+  .kin-site-header,
+  .kin-site-footer {
+    display: none !important;
+  }
+}

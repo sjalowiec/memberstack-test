@@ -1,0 +1,77 @@
+---
+import KinCourseBottomNav from "../../../../components/kinCourse/KinCourseBottomNav.astro";
+import KinCourseContentsPanel from "../../../../components/kinCourse/KinCourseContentsPanel.astro";
+import KinCourseLessonHeader from "../../../../components/kinCourse/KinCourseLessonHeader.astro";
+import KinCourseStickyNav from "../../../../components/kinCourse/KinCourseStickyNav.astro";
+import KinCourseComponents from "../../../../components/kinCourse/KinCourseComponents.astro";
+import KinCourseLayout from "../../../../layouts/KinCourseLayout.astro";
+import { lessonPlainTitle, parseAssignId } from "../../../../lib/kinCourse/hrefs";
+import { loadKinCourseBundle } from "../../../../lib/kinCourse/load";
+import { getLessonContext, visibleLessonComponents } from "../../../../lib/kinCourse/player";
+import { kinCourseHomeHref } from "../../../../lib/kinCourse/hrefs";
+import { kinCourseLoadOptions } from "../../../../lib/kinCourse/request";
+
+export const prerender = false;
+
+const COURSE_ID = 111;
+const assignId = parseAssignId(Astro.params.assignId);
+if (!assignId) {
+  return new Response("Lesson not found", { status: 404 });
+}
+
+const loadOptions = kinCourseLoadOptions(Astro.url);
+Astro.response.headers.set("Cache-Control", "no-store");
+const bundle = await loadKinCourseBundle(COURSE_ID, loadOptions);
+if (!bundle) {
+  return new Response("Course not found", { status: 404 });
+}
+
+const context = getLessonContext(bundle.course, assignId, loadOptions.preview);
+if (!context) {
+  return Astro.redirect(kinCourseHomeHref(COURSE_ID, loadOptions.preview));
+}
+
+const { lesson, section, lessonNumber, lessonCount, previousNav, nextNav } = context;
+const pageTitle = `${lessonPlainTitle(lesson)} | ${bundle.course.title}`;
+---
+
+<KinCourseLayout
+  title={pageTitle}
+  pageClass="course-lesson-page"
+  courseTitle={bundle.landing.fullTitle}
+  thumbnailSrc={bundle.landing.image.src}
+  thumbnailAlt={bundle.landing.image.alt}
+  courseSlug={bundle.landing.catalogSlug || bundle.course.slug}
+  preview={loadOptions.preview}
+  glossary={bundle.glossary}
+>
+  <KinCourseStickyNav slot="chrome" previous={previousNav} next={nextNav} />
+
+  <KinCourseLessonHeader
+    course={bundle.course}
+    lesson={lesson}
+    section={section}
+    lessonNumber={lessonNumber}
+    lessonCount={lessonCount}
+  />
+
+  <div class="legacy-content">
+    <KinCourseComponents
+      components={visibleLessonComponents(lesson, bundle.presentation.hideComponents)}
+      fallbackTitle={lesson.title}
+      lessonId={lesson.id}
+      course={bundle.course}
+      presentation={bundle.presentation}
+      glossary={bundle.glossary}
+    />
+  </div>
+
+  <KinCourseBottomNav previous={previousNav} next={nextNav} />
+
+  <KinCourseContentsPanel
+    slot="overlay"
+    course={bundle.course}
+    currentLessonId={lesson.id}
+    preview={loadOptions.preview}
+  />
+</KinCourseLayout>

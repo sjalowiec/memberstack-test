@@ -1,0 +1,72 @@
+[
+  {
+    "glossaryId": 728,
+    "slug": "n-1-cam-needle-1",
+    "term": "N-1 Cam (Needle 1)",
+    "example": "Silver Reed 840 / 860 specific accessory for the EC-1 Pattern Controller",
+    "helpinfo": "Included with the Silver 840 / 860 machines is an N-1 cam. This is used with The EC -1 Pattern Controller to control the position of stitch patterns. NOTE N-1 Cams are NOT used with DesignaKnit. Position stitch patterns with Stitch Designer."
+  },
+  {
+    "glossaryId": 662,
+    "slug": "gauge-ruler",
+    "term": "Gauge Ruler",
+    "example": "Specialty rulers (scale) designed for measuring gauge based on a specific number of stitches and rows.",
+    "helpinfo": ""
+  },
+  {
+    "glossaryId": 355,
+    "slug": "free-pass",
+    "term": "Free Pass",
+    "example": "Pass the carriage without knitting or dropping stitches",
+    "helpinfo": "You just ripped out a row of knitting, or put some knitting back on the bed from waste yarn or the garter bar. Perhaps you did a bit of shaping and now your carriage is on the opposite side of the working yarn. Positioning the carriage is an essential skill for machine knitters."
+  },
+  {
+    "glossaryId": 565,
+    "slug": "russel-lever",
+    "term": "Russel Lever",
+    "example": "Studio/Silver/Silver machines Carriage (Cam) lever",
+    "helpinfo": "Russel levers are used for \"hold\" position. When the Russel levers are engaged, needles in hold position (D or E) will not knit. Hold has MANY uses. Understanding \"hold\" is critical for all machine knitters: Short row shaping, Bridging, Intarsia, Free pass, Manual stitch patterning."
+  },
+  {
+    "glossaryId": 269,
+    "slug": "floats",
+    "term": "Floats",
+    "example": "Strands of yarn carried across the purl side of the knitting.",
+    "helpinfo": "Floats can be decorative as well, for example, slip stitch."
+  },
+  {
+    "glossaryId": 339,
+    "slug": "cast-on-rag",
+    "term": "Cast on Rag",
+    "example": "Aids in casting on by temporarily providing knitting to hang weights | Reusable",
+    "helpinfo": "Instead of using scrap yarn, a re-usable cast on rag comes in handy. Both scrap and a rag provide knitting to hang weights to make casting on easier. Especially useful when casting on a small number of stitches. Creating a Cast on Rag: Hang the strands of the rag on the needles in work. Knit a row of ravel cord (manually or with the carriage). E-wrap cast on or continue knitting for open stitches. Slip ravel cord out to remove the rag."
+  },
+  {
+    "glossaryId": 249,
+    "slug": "ravel-cord",
+    "term": "Ravel Cord",
+    "example": "A smooth, strong cord for use in many techniques | Rip Cord | Cast on Cord",
+    "helpinfo": ""
+  },
+  {
+    "glossaryId": 283,
+    "slug": "cast-on-comb",
+    "term": "Cast on Comb",
+    "example": "An accessory, often with a series of wire hooks that holds the initial cast on stitches for a smooth cast on. A cast on comb (along with claw weights) provides even weight across the knitting for better stitch formation.",
+    "helpinfo": "Is a cast-on comb required? There is often debate among machine knitters on this subject. If you have a cast on comb, try using it. If not, try using a Scrap and Ravel Cast On. The scrap will allow you to hang weights. This is one of the many \"rules\" of machine knitting that can be broken based on your experience and preference."
+  },
+  {
+    "glossaryId": 730,
+    "slug": "ec1-pattern-controller",
+    "term": "EC1 Pattern Controller",
+    "example": "Electronic patterning device for Silver Reed SK 830/840/860",
+    "helpinfo": "The EC1 Pattern controller is used to knit stitch patterns on the Silver Reed SK 830/840/860/890 machines (tuck, slip, fairisle, etc). Unlike Brother machines, this series of Silver Reed machines do not have built-in electronics and rely on external devices for patterning. The EC1 uses Mylar Sheets for stitch patterns. To make using the EC1 easier, it is often paired with the PE1 Pattern Controller, which offers a small screen to view the stitch pattern as you knit. These devices are no longer made. They were replaced with the SilverKNIT device and the SilverLINK device with DesignaKnit."
+  },
+  {
+    "glossaryId": 731,
+    "slug": "pe1-pattern-controller",
+    "term": "PE1 Pattern Controller",
+    "example": "Electronic patterning device for Silver Reed SK 830/840/860/890. Used in conjunction with the EC1 Pattern Controller",
+    "helpinfo": "The PE1 pattern controller is an accessory for the EC1 Pattern Controller. The PE1 has a small screen to make it easier to follow the pattern and memory cards. The PE1 must be used with the EC1. It has no pattern functionality of its own."
+  }
+]

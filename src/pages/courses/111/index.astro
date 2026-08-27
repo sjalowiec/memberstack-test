@@ -1,0 +1,18 @@
+---
+import KinCourseHomeView from "../../../components/kinCourse/KinCourseHomeView.astro";
+import { loadKinCourseBundle } from "../../../lib/kinCourse/load";
+import { kinCourseLoadOptions } from "../../../lib/kinCourse/request";
+
+export const prerender = false;
+
+const COURSE_ID = 111;
+const loadOptions = kinCourseLoadOptions(Astro.url);
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const bundle = await loadKinCourseBundle(COURSE_ID, loadOptions);
+if (!bundle) {
+  return new Response("Course not found", { status: 404 });
+}
+---
+
+<KinCourseHomeView bundle={bundle} preview={loadOptions.preview} />

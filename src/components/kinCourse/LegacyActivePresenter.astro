@@ -1,0 +1,30 @@
+---
+interface Props {
+  lessonId: number;
+  packageName?: string;
+  playMode?: string;
+  src?: string;
+}
+
+const { lessonId, packageName, playMode, src } = Astro.props;
+const title = [packageName, playMode].filter(Boolean).join(' / ') || 'ActivePresenter tutorial';
+---
+
+{
+  !src ? (
+    <div class="legacy-error" role="alert">
+      Cannot render ActivePresenter in lesson {lessonId}: missing package
+      {packageName ? ` ${packageName}` : ''}
+      {playMode ? ` / ${playMode}.html` : ''}.
+    </div>
+  ) : (
+    <div class="legacy-ap">
+      <iframe
+        class="legacy-ap-frame"
+        src={src}
+        title={title}
+        allow="autoplay; fullscreen"
+      />
+    </div>
+  )
+}

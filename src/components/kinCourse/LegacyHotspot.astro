@@ -1,0 +1,85 @@
+---
+interface Spot {
+  index: number;
+  text?: string;
+  style?: string;
+  location?: string;
+  actionId?: string | null;
+  action?: string | null;
+}
+
+interface Props {
+  lessonId: number;
+  image?: string;
+  imageWidth?: number | null;
+  imageHeight?: number | null;
+  wrapperStyle?: string;
+  stageStyle?: string;
+  spots?: Spot[];
+}
+
+const { lessonId, image, imageWidth, imageHeight, wrapperStyle, stageStyle, spots = [] } = Astro.props;
+
+function linkifyHotspotText(text: string): string {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped
+    .replace(/\r\n|\n|\r/g, '<br>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+
+const usableSpots = spots.filter((spot) => spot.style || spot.text);
+---
+
+{
+  !image || usableSpots.length === 0 ? (
+    <div class="legacy-error" role="alert">
+      Cannot render Hotspot in lesson {lessonId}:{' '}
+      {!image ? 'missing hotspot image' : 'no hotspot coordinates or labels were extracted'}.
+    </div>
+  ) : (
+    <div class="legacy-hotspot" style={wrapperStyle || undefined}>
+      <div class="legacy-hotspot-stage">
+        <img
+          src={image}
+          alt=""
+          width={imageWidth || undefined}
+          height={imageHeight || undefined}
+        />
+        {usableSpots.map((spot) => (
+          <button
+            type="button"
+            class="legacy-hotspot-spot"
+            style={spot.style || undefined}
+            aria-expanded="false"
+            aria-label={spot.text ? spot.text.replace(/\s+/g, ' ').trim() : `Hotspot ${spot.index}`}
+          >
+            <span class="legacy-hotspot-label" set:html={linkifyHotspotText(spot.text || '')} />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<script>
+  document.querySelectorAll('.legacy-hotspot').forEach((root) => {
+    const spots = root.querySelectorAll<HTMLButtonElement>('.legacy-hotspot-spot');
+    spots.forEach((spot) => {
+      spot.addEventListener('click', (event) => {
+        if ((event.target as HTMLElement | null)?.closest('a')) return;
+        const open = spot.classList.contains('is-open');
+        spots.forEach((other) => {
+          other.classList.remove('is-open');
+          other.setAttribute('aria-expanded', 'false');
+        });
+        if (!open) {
+          spot.classList.add('is-open');
+          spot.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  });
+</script>
