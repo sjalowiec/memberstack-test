@@ -57,13 +57,30 @@ describe("kinCourseGateViewer", () => {
 });
 
 describe("KIN course gate live session refresh", () => {
-  it("re-checks after Memberstack login and auth:updated", () => {
+  it("re-checks after Memberstack onAuthChange and auth:updated", () => {
     expect(gateSource).toContain("isMemberLoggedIn");
-    expect(gateSource).toContain('ms.on("member.login"');
-    expect(gateSource).toContain('ms.on("member.logout"');
+    expect(gateSource).toContain("openMemberstackLoginModal");
+    expect(gateSource).toContain("onAuthChange");
     expect(gateSource).toContain("auth:updated");
+    expect(gateSource).not.toContain('ms.on("member.login"');
+    expect(gateSource).not.toContain('ms.on("member.logout"');
+    expect(gateSource).not.toContain("kin-ms-login-proxy");
     expect(gateSource).not.toMatch(
       /unlocked \? "open" : res \? "loggedInNoAccess" : "loggedOut"/,
     );
+  });
+});
+
+const layoutSource = readFileSync(
+  resolve("src/layouts/KinCourseLayout.astro"),
+  "utf8",
+);
+
+describe("KIN course layout shared login wiring", () => {
+  it("loads the site-wide post-login handlers and shared login proxy", () => {
+    expect(layoutSource).toContain("initMemberstackPostLoginHandlers");
+    expect(layoutSource).toContain('from "../lib/memberstackPostLogin"');
+    expect(layoutSource).toContain('id="kbm-ms-login-proxy"');
+    expect(layoutSource).not.toContain("kin-ms-login-proxy");
   });
 });

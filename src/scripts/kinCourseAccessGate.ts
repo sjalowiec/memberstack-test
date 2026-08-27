@@ -6,13 +6,15 @@
  * gates the same routes on production and when preview is off.
  *
  * Viewer copy uses `isMemberLoggedIn` (not a truthy Memberstack payload).
- * Login / logout / `auth:updated` re-run the gate so a restored or newly
- * completed session unlocks without a second full reload.
+ * `onAuthChange` / `auth:updated` re-run the gate so a restored or newly
+ * completed session unlocks without a second full reload. Login uses the
+ * shared Memberstack modal helper (same completion path as BaseLayout).
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
 import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
 import { videoDevBypass } from "../lib/devBypass";
 import { detectSiteEnvironment } from "../lib/env/siteEnvironment";
+import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
 export type KinCourseGateViewer = "open" | "loggedInNoAccess" | "loggedOut";
 
@@ -98,10 +100,9 @@ const boundGates = new WeakSet<HTMLElement>();
 function bindAuthRefresh(gate: HTMLElement): void {
   if (boundGates.has(gate)) return;
   const ms = window.$memberstackDom;
-  if (!ms || typeof ms.on !== "function") return;
+  if (typeof ms?.onAuthChange !== "function") return;
   boundGates.add(gate);
-  ms.on("member.login", () => void resolveGate(gate));
-  ms.on("member.logout", () => void resolveGate(gate));
+  ms.onAuthChange(() => void resolveGate(gate));
 }
 
 let loginButtonsBound = false;
@@ -114,22 +115,14 @@ function bindLoginButtons(): void {
     if (!(target instanceof Element)) return;
     if (target.closest("[data-course-111-login]")) {
       event.preventDefault();
-      const ms = window.$memberstackDom;
-      if (ms && typeof ms.openModal === "function") {
-        void Promise.resolve(ms.openModal("LOGIN"))
-          .then(() => {
-            window.dispatchEvent(new Event("auth:updated"));
-          })
-          .catch(() => {
-            document.getElementById("kin-ms-login-proxy")?.click();
-          });
-        return;
-      }
-      document.getElementById("kin-ms-login-proxy")?.click();
+      openMemberstackLoginModal();
+      return;
     }
     if (target.closest("[data-course-111-logout]")) {
       event.preventDefault();
-      void window.$memberstackDom?.logout();
+      void Promise.resolve(window.$memberstackDom?.logout?.()).finally(() => {
+        window.dispatchEvent(new Event("auth:updated"));
+      });
     }
   });
 }
@@ -139,8 +132,15 @@ function initKinCourseAccessGates(root: ParentNode = document): void {
   root.querySelectorAll<HTMLElement>("[data-kin-course-gate]").forEach((gate) => {
     void resolveGate(gate);
     bindAuthRefresh(gate);
-    void window.$memberstackDom?.onReady?.then(() => bindAuthRefresh(gate));
     window.addEventListener("auth:updated", () => void resolveGate(gate));
+    let attempts = 0;
+    const poll = window.setInterval(() => {
+      attempts += 1;
+      bindAuthRefresh(gate);
+      if (boundGates.has(gate) || attempts >= 50) {
+        window.clearInterval(poll);
+      }
+    }, 200);
   });
 }
 

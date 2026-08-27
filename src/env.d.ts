@@ -122,6 +122,9 @@ declare global {
       }) => Promise<unknown>;
       /** Auth lifecycle events (`member.login`, `member.logout`, …). */
       on?: (event: string, handler: (...args: unknown[]) => void) => void;
+      /** Live Memberstack DOM SDK auth listener (login and logout). */
+      onAuthChange?: (handler: (...args: unknown[]) => void) => unknown;
+      logout?: () => unknown;
       openModal?: (type: string, opts?: Record<string, unknown>) => Promise<unknown>;
       purchasePlansWithCheckout?: (opts: {
         priceId: string;
