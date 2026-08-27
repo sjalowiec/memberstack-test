@@ -214,7 +214,7 @@ const previewUnlock = preview === true;
     </div>
     <KinCourseFooter />
     <a
-      id="kin-ms-login-proxy"
+      id="kbm-ms-login-proxy"
       href="#"
       data-ms-modal="login"
       data-ms-redirect="current-url"
@@ -223,6 +223,11 @@ const previewUnlock = preview === true;
       tabindex="-1"
     ></a>
     <script is:inline id="course-111-glossary-data" type="application/json" set:html={JSON.stringify(glossary)}></script>
+    <script>
+      import { initMemberstackPostLoginHandlers } from "../lib/memberstackPostLogin";
+
+      initMemberstackPostLoginHandlers();
+    </script>
     <script>
       import { runKinCourseAccessGateBoot } from "../scripts/kinCourseAccessGate";
       runKinCourseAccessGateBoot();
