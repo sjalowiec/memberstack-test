@@ -37,13 +37,14 @@ describe("getCourseCatalogEntries href", () => {
     const entry = getCourseCatalogEntries().find(
       (course) => course.slug === "mastering-the-silver-reed-sk840",
     );
-    expect(entry?.href).toBe("https://courses.knititnow.com/courses/111");
+    expect(entry?.href).toBe("/courses/111");
     expect(entry?.buttonLabel).toBe("View Course");
     expect(entry?.title).toBe("Mastering the Silver Reed SK840");
     expect(entry?.access).toBe("member");
     expect(entry?.category).toBe("Silver Reed");
     expect(entry?.href).not.toContain("mastering-the-silver-reed-sk840-a-comprehensive-course");
-    expect(entry?.href).not.toMatch(/^\/courses\//);
+    expect(entry?.href).toMatch(/^\/courses\/111$/);
+    expect(entry?.href).not.toContain("courses.knititnow.com");
     expect(entry?.hasThumbnail).toBe(true);
     expect(entry?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
     expect(entry?.thumbnail).not.toContain("2022-course_thumbnail");
@@ -122,7 +123,8 @@ describe("public course catalog cleanup", () => {
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
-    expect(entries[0]?.href).toBe("https://courses.knititnow.com/courses/111");
+    expect(entries[0]?.href).toBe("/courses/111");
+    expect(entries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("member");
     expect(entries[0]?.hasThumbnail).toBe(true);
     expect(entries[0]?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
