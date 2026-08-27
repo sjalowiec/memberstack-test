@@ -5,6 +5,7 @@ import {
   validateSleevelessPatternInputs,
   type SleevelessCustomBuildMeasurements,
 } from "./sleevelessPatternValidation";
+import { splitPatternValidationMessages } from "./sleevelessPatternValidationUi";
 
 /** Representative misses-size custom-build measurements (all rules pass). */
 function validMeasurements(
@@ -42,22 +43,53 @@ describe("validateSleevelessPatternInputs", () => {
   });
 
   it("holds the round-neck vs armhole-depth constraint in measurement validation, not the renderer", () => {
-    const ids = messageIds(validMeasurements({ neckDepth: 9, armholeDepth: 8 }));
+    const ids = messageIds(validMeasurements({ neckline: "round", neckDepth: 9, armholeDepth: 8 }));
     expect(ids).toContain("neck-depth-exceeds-armhole-depth");
     const svgRenderer = readFileSync(resolve("src/lib/patterns/sleevelessFrontStsRowsDiagramSvg.ts"), "utf8");
     expect(svgRenderer).not.toMatch(/neck-depth-exceeds-armhole-depth/);
     expect(svgRenderer).not.toMatch(/neckStartY > armholeStartY/);
   });
 
-  it("flags neck depth deeper than armhole depth", () => {
-    const ids = messageIds(validMeasurements({ neckDepth: 9, armholeDepth: 8 }));
+  it("flags neck depth deeper than armhole depth for round neck", () => {
+    const input = validMeasurements({ neckline: "round", neckDepth: 9, armholeDepth: 8 });
+    const ids = messageIds(input);
     expect(ids).toContain("neck-depth-exceeds-armhole-depth");
-    const [msg] = messagesById(
-      validMeasurements({ neckDepth: 9, armholeDepth: 8 }),
-      "neck-depth-exceeds-armhole-depth",
-    );
+    const [msg] = messagesById(input, "neck-depth-exceeds-armhole-depth");
     expect(msg.severity).toBe("error");
     expect(msg.field).toBe("neckDepth");
+  });
+
+  it("accepts a V-neck deeper than the armhole (7.25\" armhole, 10\" neck)", () => {
+    const input = validMeasurements({
+      neckline: "v-neck",
+      armholeDepth: 7.25,
+      neckDepth: 10,
+    });
+    const messages = validateSleevelessPatternInputs(input);
+    expect(messages.map((m) => m.id)).not.toContain("neck-depth-exceeds-armhole-depth");
+    const { errors } = splitPatternValidationMessages(messages);
+    expect(errors).toEqual([]);
+  });
+
+  it("accepts the same deep V-neck when neckline is stored as v", () => {
+    const ids = messageIds(
+      validMeasurements({ neckline: "v", armholeDepth: 7.25, neckDepth: 10 }),
+    );
+    expect(ids).not.toContain("neck-depth-exceeds-armhole-depth");
+  });
+
+  it("still flags 7.25\" armhole with 10\" neck for round neck", () => {
+    const messages = validateSleevelessPatternInputs(
+      validMeasurements({ neckline: "round", armholeDepth: 7.25, neckDepth: 10 }),
+    );
+    expect(messages.map((m) => m.id)).toContain("neck-depth-exceeds-armhole-depth");
+    expect(splitPatternValidationMessages(messages).errors.length).toBeGreaterThan(0);
+  });
+
+  it("still flags neck depth deeper than armhole depth when neckline is omitted", () => {
+    expect(messageIds(validMeasurements({ neckDepth: 9, armholeDepth: 8 }))).toContain(
+      "neck-depth-exceeds-armhole-depth",
+    );
   });
 
   it("flags finished length too short for armhole and hem", () => {

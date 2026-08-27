@@ -1,6 +1,7 @@
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import { isDropShoulderPatternRecord } from "./patternConstructionIdentity";
 import { readCustomBuildBodyFinishedMeasurements } from "./sleevelessCustomBuildBodyMeasurements";
+import { readCustomBuildWizardNeckline } from "./sleevelessCustomBuildWizardNeckline";
 import type { SleevelessCustomBuildMeasurements } from "./sleevelessPatternValidation";
 import { getCurrentPattern, getSleevelessChartAudience } from "./patternStorage";
 import { loadMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
@@ -30,6 +31,20 @@ function resolveCustomBuildAudience(): string {
   );
 }
 
+function resolveCustomBuildNeckline(
+  overrides: Partial<Record<string, string | number | undefined>>,
+  pattern: ReturnType<typeof getCurrentPattern>,
+): string {
+  const fromArg = overrides.neckline;
+  if (fromArg !== undefined && fromArg !== null && String(fromArg).trim() !== "") {
+    return String(fromArg).trim();
+  }
+  const wizard = readCustomBuildWizardNeckline();
+  if (wizard) return wizard;
+  const stored = pattern.style?.neckline;
+  return typeof stored === "string" ? stored.trim() : "";
+}
+
 /**
  * Builds the measurement payload used by {@link validateSleevelessPatternInputs},
  * matching custom-build override keys and chart audience for pattern generation.
@@ -40,9 +55,11 @@ export function buildSleevelessCustomBuildValidationInput(
   const saved = loadMeasurementOverrides();
   const pattern = getCurrentPattern();
   const body = readCustomBuildBodyFinishedMeasurements(pattern);
+  const neckline = resolveCustomBuildNeckline(overrides, pattern);
   const input: SleevelessCustomBuildMeasurements = {
     audience: resolveCustomBuildAudience(),
     ...body,
+    ...(neckline ? { neckline } : {}),
   };
 
   for (const key of MEASUREMENT_OVERRIDE_KEYS) {

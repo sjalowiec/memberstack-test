@@ -206,6 +206,7 @@ describe("Sleeveless Edit Pattern — real measurement input event path", () => 
     )?.[0];
     expect(refreshFn).toContain("replaceSleevelessMeasurementArtOnly");
     expect(refreshFn).toContain("retarget");
+    expect(refreshFn).toContain("refreshPatternValidationUi");
     expect(refreshFn).not.toContain("hydrateWorkspaceSummaryDiagram");
     expect(refreshFn).not.toContain("renderDiagram(");
   });
@@ -365,6 +366,7 @@ describe("Sleeveless Edit Pattern — Front Style live art refresh", () => {
     )?.[0];
     expect(refreshFn).toContain("replaceSleevelessMeasurementArtOnly");
     expect(refreshFn).toContain("retarget");
+    expect(refreshFn).toContain("refreshPatternValidationUi");
     expect(measurementsPageSrc).toMatch(
       /wireSleevelessGarmentArtRefreshOnce\(\s*document\.querySelectorAll<HTMLInputElement>\('input\[name="sl-edit-garment"\]'\),\s*refreshSleevelessMeasurementArt,/,
     );
