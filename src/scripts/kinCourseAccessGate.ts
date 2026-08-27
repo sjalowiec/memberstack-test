@@ -11,6 +11,7 @@
  * shared Memberstack modal helper (same completion path as BaseLayout).
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
+import { clearKinCourseCachePaint } from "../lib/kinCourseCacheAccess";
 import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
 import { videoDevBypass } from "../lib/devBypass";
 import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
@@ -42,6 +43,7 @@ async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
 }
 
 function setGateAccess(gate: HTMLElement, unlocked: boolean): void {
+  clearKinCourseCachePaint();
   gate.removeAttribute("data-gate-pending");
   gate.removeAttribute("aria-busy");
   gate.querySelectorAll('[data-gated="pending"]').forEach((el) => {
