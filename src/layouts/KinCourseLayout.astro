@@ -5,6 +5,10 @@ import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/site-chrome.css";
 import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
+import {
+  KIN_COURSE_CACHE_PAINT_CSS,
+  kinCourseCacheAccessInlineScript,
+} from "../lib/kinCourseCacheAccess";
 
 interface Props {
   title: string;
@@ -53,6 +57,14 @@ const previewUnlock = preview === true;
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
     />
+    {
+      !previewUnlock ? (
+        <>
+          <style is:inline set:html={KIN_COURSE_CACHE_PAINT_CSS}></style>
+          <script is:inline set:html={kinCourseCacheAccessInlineScript(courseSlug)}></script>
+        </>
+      ) : null
+    }
     <!--
       Same Memberstack boot as BaseLayout: memberstackConfig before the CDN
       script (var, so it is also window.memberstackConfig). Course 111 is

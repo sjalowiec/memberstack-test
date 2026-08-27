@@ -88,4 +88,11 @@ describe("KIN course layout shared login wiring", () => {
     expect(layoutSource).not.toContain("clearMsStorage");
     expect(layoutSource).not.toContain("Max-Age=0; Path=/");
   });
+
+  it("lets the live getAppAndMember result override the cache-first paint", () => {
+    expect(gateSource).toContain("getAppAndMember");
+    expect(gateSource).toMatch(
+      /function setGateAccess\([\s\S]*?clearKinCourseCachePaint\(\)/,
+    );
+  });
 });
