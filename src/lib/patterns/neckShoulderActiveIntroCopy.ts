@@ -6,6 +6,7 @@
 
 import {
   resolveFrontVNeckRowCounterDisplayPolicy,
+  type FrontArmholeNecklineOverlap,
 } from "./frontArmholeNecklineComposition";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
@@ -113,10 +114,14 @@ export function activeShoulderCenterDivideIntroApplies(
   return Number.isFinite(n) && n > 0;
 }
 
-function cardiganFrontUsesContinuousGarmentRc(chart?: NeckShoulderShapingChart): boolean {
+function cardiganFrontUsesContinuousGarmentRc(
+  chart?: NeckShoulderShapingChart,
+  overlapFallback?: FrontArmholeNecklineOverlap | null,
+): boolean {
   return (
-    resolveFrontVNeckRowCounterDisplayPolicy(chart?.frontVNeckArmholeComposition) ===
-    "continuous-garment-rc"
+    resolveFrontVNeckRowCounterDisplayPolicy(
+      chart?.frontVNeckArmholeComposition ?? overlapFallback ?? undefined,
+    ) === "continuous-garment-rc"
   );
 }
 
@@ -161,8 +166,12 @@ export function formatActiveShoulderCenterNecklinePlainSentence(args: {
 export function formatActiveShoulderCardiganFrontNecklinePlainSentence(args: {
   localStartRcLabel?: string | undefined;
   chart?: NeckShoulderShapingChart | undefined;
+  frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap | null;
 }): string {
-  const continuous = cardiganFrontUsesContinuousGarmentRc(args.chart);
+  const continuous = cardiganFrontUsesContinuousGarmentRc(
+    args.chart,
+    args.frontArmholeNecklineOverlap,
+  );
   return formatArmholeRcAnchoredSentence(
     args.localStartRcLabel,
     continuous ? CARDIGAN_FRONT_VNECK_START_TAIL : CARDIGAN_FRONT_NECKLINE_START_TAIL,
