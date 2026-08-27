@@ -26,8 +26,8 @@ import {
 const SK840_CATALOG_SLUG = "mastering-the-silver-reed-sk840";
 const SK840_COURSE_SLUG =
   "mastering-the-silver-reed-sk840-a-comprehensive-course";
-const SK840_PRODUCTION_HREF = "https://courses.knititnow.com/courses/111";
-const SK840_DEV_HREF = `/courses/111`;
+const SK840_LEGACY_HOST_HREF = "https://courses.knititnow.com/courses/111";
+const SK840_SAME_ORIGIN_HREF = `/courses/111`;
 
 function assertSameOriginCourseHref(href: string) {
   expect(href.startsWith("/courses/")).toBe(true);
@@ -38,11 +38,13 @@ function assertSameOriginCourseHref(href: string) {
 }
 
 describe("parseLegacyChallengeIdFromHref", () => {
-  it("reads the numeric course id from the production KIN URL", () => {
-    expect(parseLegacyChallengeIdFromHref(SK840_PRODUCTION_HREF)).toBe(111);
+  it("reads the numeric course id from KIN course URLs", () => {
+    expect(parseLegacyChallengeIdFromHref(SK840_LEGACY_HOST_HREF)).toBe(111);
     expect(parseLegacyChallengeIdFromHref("https://courses.knititnow.com/courses/111/")).toBe(
       111,
     );
+    expect(parseLegacyChallengeIdFromHref(SK840_SAME_ORIGIN_HREF)).toBe(111);
+    expect(parseLegacyChallengeIdFromHref("https://knititnow.com/courses/111")).toBe(111);
   });
 
   it("returns undefined for unrelated hrefs", () => {
@@ -53,7 +55,7 @@ describe("parseLegacyChallengeIdFromHref", () => {
 
 describe("isProductionKnitItNowCourseUrl", () => {
   it("detects absolute KIN course host URLs", () => {
-    expect(isProductionKnitItNowCourseUrl(SK840_PRODUCTION_HREF)).toBe(true);
+    expect(isProductionKnitItNowCourseUrl(SK840_LEGACY_HOST_HREF)).toBe(true);
     expect(
       isProductionKnitItNowCourseUrl("https://www.knititnow.com/courses/111"),
     ).toBe(true);
@@ -68,45 +70,58 @@ describe("isProductionKnitItNowCourseUrl", () => {
 });
 
 describe("resolveCatalogCourseHref", () => {
-  it("keeps the production KIN URL on production hosts", () => {
+  it("uses the same-origin Course 111 player on production hosts", () => {
     expect(
-      resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF, {
+      resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_SAME_ORIGIN_HREF, {
         hostname: "www.knititnow.com",
       }),
-    ).toBe(SK840_PRODUCTION_HREF);
+    ).toBe(SK840_SAME_ORIGIN_HREF);
     expect(
-      resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF, {
+      resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_SAME_ORIGIN_HREF, {
         hostname: "knititnow.com",
       }),
-    ).toBe(SK840_PRODUCTION_HREF);
+    ).toBe(SK840_SAME_ORIGIN_HREF);
   });
 
-  it("rewrites the production KIN URL to the local Course 111 player on DEV", () => {
-    const href = resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF, {
+  it("rewrites leftover courses.knititnow.com Course 111 URLs onto the same origin", () => {
+    expect(
+      resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_LEGACY_HOST_HREF, {
+        hostname: "www.knititnow.com",
+      }),
+    ).toBe(SK840_SAME_ORIGIN_HREF);
+    expect(
+      resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_LEGACY_HOST_HREF, {
+        hostname: "knititnow.com",
+      }),
+    ).toBe(SK840_SAME_ORIGIN_HREF);
+  });
+
+  it("rewrites the old KIN host URL to the local Course 111 player on DEV", () => {
+    const href = resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_LEGACY_HOST_HREF, {
       hostname: "kin-dev.netlify.app",
     });
-    expect(href).toBe(SK840_DEV_HREF);
+    expect(href).toBe(SK840_SAME_ORIGIN_HREF);
     assertSameOriginCourseHref(href!);
   });
 
-  it("rewrites the production KIN URL on localhost", () => {
-    const href = resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF, {
+  it("rewrites the old KIN host URL on localhost", () => {
+    const href = resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_LEGACY_HOST_HREF, {
       hostname: "localhost",
       isViteDev: true,
     });
-    expect(href).toBe(SK840_DEV_HREF);
+    expect(href).toBe(SK840_SAME_ORIGIN_HREF);
     assertSameOriginCourseHref(href!);
   });
 
   it("defaults unknown hosts to the local Course 111 player", () => {
-    const href = resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF);
-    expect(href).toBe(SK840_DEV_HREF);
+    const href = resolveCatalogCourseHref(SK840_CATALOG_SLUG, SK840_LEGACY_HOST_HREF);
+    expect(href).toBe(SK840_SAME_ORIGIN_HREF);
     assertSameOriginCourseHref(href!);
   });
 
   it("maps catalog slug + production href to the cleaned Course 111 JSON slug", () => {
     expect(
-      localLegacyCourseHrefForCatalog(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF),
+      localLegacyCourseHrefForCatalog(SK840_CATALOG_SLUG, SK840_LEGACY_HOST_HREF),
     ).toBe(`/courses/legacy/${SK840_COURSE_SLUG}`);
   });
 });

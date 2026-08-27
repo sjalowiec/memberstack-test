@@ -33,20 +33,20 @@ describe("resolveCourseThumbnail", () => {
 });
 
 describe("getCourseCatalogEntries href", () => {
-  const sk840ProductionHref = "https://courses.knititnow.com/courses/111";
-  const sk840DevHref = "/courses/111";
+  const sk840Href = "/courses/111";
 
-  it("keeps the production KIN URL on production hosts", () => {
+  it("keeps the same-origin Course 111 player on production hosts", () => {
     const entry = getCourseCatalogEntries({ hostname: "www.knititnow.com" }).find(
       (course) => course.slug === "mastering-the-silver-reed-sk840",
     );
-    expect(entry?.href).toBe(sk840ProductionHref);
+    expect(entry?.href).toBe(sk840Href);
     expect(entry?.buttonLabel).toBe("View Course");
     expect(entry?.title).toBe("Mastering the Silver Reed SK840");
     expect(entry?.access).toBe("member");
     expect(entry?.category).toBe("Silver Reed");
     expect(entry?.href).not.toContain("mastering-the-silver-reed-sk840-a-comprehensive-course");
-    expect(entry?.href).not.toMatch(/^\/courses\//);
+    expect(entry?.href).toMatch(/^\/courses\/111$/);
+    expect(entry?.href).not.toContain("courses.knititnow.com");
     expect(entry?.hasThumbnail).toBe(true);
     expect(entry?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
     expect(entry?.thumbnail).not.toContain("2022-course_thumbnail");
@@ -57,7 +57,7 @@ describe("getCourseCatalogEntries href", () => {
     const entry = getCourseCatalogEntries({ hostname: "kin-dev.netlify.app" }).find(
       (course) => course.slug === "mastering-the-silver-reed-sk840",
     );
-    expect(entry?.href).toBe(sk840DevHref);
+    expect(entry?.href).toBe(sk840Href);
     expect(entry?.href).toMatch(/^\/courses\/111$/);
     expect(entry?.href).not.toContain("courses.knititnow.com");
     expect(entry?.href).not.toMatch(/^https?:\/\//);
@@ -69,7 +69,7 @@ describe("getCourseCatalogEntries href", () => {
       hostname: "localhost",
       isViteDev: true,
     }).find((course) => course.slug === "mastering-the-silver-reed-sk840");
-    expect(entry?.href).toBe(sk840DevHref);
+    expect(entry?.href).toBe(sk840Href);
     expect(entry?.href).not.toContain("courses.knititnow.com");
   });
 
@@ -158,7 +158,8 @@ describe("public course catalog cleanup", () => {
     expect(entries[0]?.href).not.toContain("courses.knititnow.com");
 
     const productionEntries = getCourseCatalogEntries({ hostname: "knititnow.com" });
-    expect(productionEntries[0]?.href).toBe("https://courses.knititnow.com/courses/111");
+    expect(productionEntries[0]?.href).toBe("/courses/111");
+    expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("member");
     expect(entries[0]?.hasThumbnail).toBe(true);
     expect(entries[0]?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");

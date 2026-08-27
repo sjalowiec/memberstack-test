@@ -87,8 +87,9 @@ export function localLegacyCourseHrefForCatalog(
 
 /**
  * Catalog card destination for the current environment.
- * Production keeps an explicit KIN-host override; DEV/localhost rewrite those
- * overrides onto the same-origin numeric KIN player (`/courses/{id}`).
+ * Same-origin `/courses/{id}` overrides are used as-is. Absolute Knit It Now
+ * course URLs (including the old `courses.knititnow.com` player) rewrite onto
+ * `/courses/{id}`. DEV may add `?preview=true` for unpublished courses.
  */
 export function resolveCatalogCourseHref(
   catalogSlug: string,
@@ -101,22 +102,17 @@ export function resolveCatalogCourseHref(
     publicSiteEnv: options.publicSiteEnv,
   });
 
-  if (
-    override &&
-    (siteEnv === "production" || !isProductionKnitItNowCourseUrl(override))
-  ) {
-    return override;
+  const challengeId = parseLegacyChallengeIdFromHref(override);
+  if (override && isProductionKnitItNowCourseUrl(override) && challengeId != null) {
+    const course = findLegacyCourseForCatalog(catalogSlug, override);
+    const preview = siteEnv !== "production" && course?.isDraft !== false;
+    return kinCourseHomeHref(challengeId, preview);
   }
 
-  const challengeId = parseLegacyChallengeIdFromHref(override);
-  if (challengeId != null) {
-    const course = findLegacyCourseForCatalog(catalogSlug, override);
-    return kinCourseHomeHref(challengeId, course?.isDraft !== false);
-  }
+  if (override) return override;
 
   const local = localLegacyCourseHrefForCatalog(catalogSlug, override);
   if (local) return local;
-  if (override) return override;
   return courseLandingHref(catalogSlug);
 }
 
