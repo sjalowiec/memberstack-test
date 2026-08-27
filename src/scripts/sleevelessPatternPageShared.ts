@@ -102,7 +102,10 @@ import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuide
 import {
   sleevelessFrontVNeckWrittenPathPresentation,
 } from "../lib/patterns/frontArmholeNecklineComposition.ts";
-import { sleevelessFrontChartIntroLocalStartLabel } from "../lib/patterns/sleevelessFrontChartIntroHtml.ts";
+import {
+  renderSleevelessFrontChartIntroHtml,
+  sleevelessFrontChartIntroLocalStartLabel,
+} from "../lib/patterns/sleevelessFrontChartIntroHtml.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
@@ -605,23 +608,28 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {boolean} [shouldersShaped=true] When false (drop shoulder: straight shoulders), the
    *   reverse-shaping intro copy mentions only the neckline shaping.
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview, shouldersShaped = true, frontOverlap) {
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview, shouldersShaped = true, frontResult) {
     const notationPreviewPiece =
       showNotationPreview === true && (_piece === "front" || _piece === "back")
         ? _piece
         : undefined;
-    const intro = renderActiveShoulderChartIntroHtml({
-      localStartRcLabel: String(startRowLabel ?? "").trim(),
-      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
-      chart,
-      frontArmholeNecklineOverlap: _piece === "front" ? frontOverlap : undefined,
-      shouldersShaped,
-      wrapperClass: "pattern-shaping-intro",
-      layout: "labeled",
-      includeWorkflowSteps: true,
-      notationPreview: notationPreviewPiece,
-      notationPreviewConstruction: "sleeveless",
-    });
+    // Front window.print / pattern-tab intro must use the shared helper with the full generator
+    // result. A 6th-arg overlap fallback is not enough: the live PDF path still emitted
+    // "When Armhole RC reaches" when that argument was omitted or the chart flag was missing.
+    const intro =
+      _piece === "front" && frontResult
+        ? renderSleevelessFrontChartIntroHtml(frontResult, "page")
+        : renderActiveShoulderChartIntroHtml({
+            localStartRcLabel: String(startRowLabel ?? "").trim(),
+            centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
+            chart,
+            shouldersShaped,
+            wrapperClass: "pattern-shaping-intro",
+            layout: "labeled",
+            includeWorkflowSteps: true,
+            notationPreview: notationPreviewPiece,
+            notationPreviewConstruction: "sleeveless",
+          });
     const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
   <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Short row shoulder shaping</button>
@@ -4394,7 +4402,6 @@ table {
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
-    const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
     const frontIntroStartLabel = sleevelessFrontChartIntroLocalStartLabel(result);
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
@@ -4455,7 +4462,7 @@ table {
       "front",
       false,
       true,
-      frontOverlap,
+      result,
     );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
@@ -4526,7 +4533,7 @@ table {
           "front",
           false,
           true,
-          frontOverlap,
+          result,
         ),
         options: {
           activeSideOnly: true,
