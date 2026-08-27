@@ -967,6 +967,22 @@ describe("sleeveless cardigan Front V-neck row-counter timing", () => {
       expect(paras.some((p) => /Divide the Front at center/i.test(p))).toBe(false);
     });
 
+    it("does not call the pre-armhole V start Armhole RC", () => {
+      const divideRc = overlap.divideGarmentRc;
+      const padded = String(divideRc).padStart(3, "0");
+      const expected = `At RC ${padded}, begin V-neck shaping at the center-front edge.`;
+      const intro = renderActiveShoulderChartIntroHtml({
+        localStartRcLabel: `RC:${padded}`,
+        chart: r.frontNeckShoulderShapingChart,
+        wrapperClass: "pattern-shaping-intro",
+        layout: "labeled",
+        includeWorkflowSteps: true,
+      });
+      expect(intro).toContain(expected);
+      expect(intro).not.toMatch(/When Armhole RC reaches/i);
+      expect(intro).not.toContain(`When Armhole RC reaches ${padded}`);
+    });
+
     it("keeps one continuous garment RC through V-neck, armhole, and shoulder shaping", () => {
       expect(resolveFrontVNeckRowCounterDisplayPolicy(overlap)).toBe("continuous-garment-rc");
       const first = firstShoulderRows(r);
@@ -1015,6 +1031,18 @@ describe("sleeveless cardigan Front V-neck row-counter timing", () => {
       const neck = first.find((row) => row.edge === "Neck" && /Decrease|Bind off/i.test(row.action));
       expect(neck).toBeDefined();
       expect(neck!.rc).toBeLessThan(armholeStart);
+      const localRc = r.debug.frontNecklineStartLocalRC!;
+      const padded = String(localRc).padStart(3, "0");
+      const intro = renderActiveShoulderChartIntroHtml({
+        localStartRcLabel: `RC:${padded}`,
+        chart: r.frontNeckShoulderShapingChart,
+        wrapperClass: "pattern-shaping-intro",
+        layout: "labeled",
+        includeWorkflowSteps: true,
+      });
+      expect(intro).toContain(
+        `When Armhole RC reaches ${padded}, begin neckline shaping at the center-front edge.`,
+      );
     });
   });
 
