@@ -98,8 +98,8 @@ import {
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
 import {
   sleevelessFrontVNeckWrittenPathPresentation,
-  sleevelessPulloverVNeckBeginDisplayRc,
 } from "../lib/patterns/frontArmholeNecklineComposition.ts";
+import { sleevelessFrontChartIntroLocalStartLabel } from "../lib/patterns/sleevelessFrontChartIntroHtml.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
@@ -616,7 +616,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {boolean} [shouldersShaped=true] When false (drop shoulder: straight shoulders), the
    *   reverse-shaping intro copy mentions only the neckline shaping.
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview, shouldersShaped = true) {
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview, shouldersShaped = true, frontOverlap) {
     const notationPreviewPiece =
       showNotationPreview === true && (_piece === "front" || _piece === "back")
         ? _piece
@@ -625,6 +625,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       localStartRcLabel: String(startRowLabel ?? "").trim(),
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
       chart,
+      frontArmholeNecklineOverlap: _piece === "front" ? frontOverlap : undefined,
       shouldersShaped,
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
@@ -4319,24 +4320,7 @@ table {
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
     const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
-    const frontVNeckBeginRc = isSleevelessPulloverVNeckFrontChart(result.frontNeckShoulderShapingChart)
-      ? sleevelessPulloverVNeckBeginDisplayRc({
-          overlap: frontOverlap,
-          frontNecklineStartLocalRC: result?.debug?.frontNecklineStartLocalRC,
-          frontNecklineCenterDivideLocalRC: result?.debug?.frontNecklineCenterDivideLocalRC,
-        })
-      : undefined;
-    const frontArmholeLocalChartStartRc =
-      frontVNeckBeginRc !== undefined
-        ? Math.max(0, frontVNeckBeginRc)
-        : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
-          ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC))
-          : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-            ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
-            : Number.isFinite(result?.debug?.frontNecklineStartLocalRC) &&
-                result.debug.frontNecklineStartLocalRC >= 0
-              ? Math.floor(result.debug.frontNecklineStartLocalRC)
-              : 0;
+    const frontIntroStartLabel = sleevelessFrontChartIntroLocalStartLabel(result);
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
     const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
@@ -4391,10 +4375,12 @@ table {
     // Japanese Notation quick reference is suppressed here (passing false) because the notation now
     // lives once in the Visual Guides block.
     const frontWrittenIntroHtml = neckShoulderChartHelpRowHtml(
-      `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+      frontIntroStartLabel,
       result?.frontNeckShoulderShapingChart,
       "front",
-      false
+      false,
+      true,
+      frontOverlap,
     );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
@@ -4460,9 +4446,12 @@ table {
         chart: result.frontNeckShoulderShapingChart,
         idPrefix: "ns-shaping-chart-front",
         introHtml: neckShoulderChartHelpRowHtml(
-          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+          frontIntroStartLabel,
           result?.frontNeckShoulderShapingChart,
-          "front"
+          "front",
+          false,
+          true,
+          frontOverlap,
         ),
         options: {
           activeSideOnly: true,

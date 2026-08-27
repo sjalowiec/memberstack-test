@@ -50,6 +50,7 @@ import {
   resolveFrontVNeckRowCounterDisplayPolicy,
   resolveFrontVNeckShapingTimingCase,
   timelineHasOverlappingArmholeDecreases,
+  type FrontArmholeNecklineOverlap,
 } from "./frontArmholeNecklineComposition";
 import { rowCounterResetBlockHtml } from "./rowCounterReset";
 
@@ -288,6 +289,11 @@ export type ActiveShoulderChartIntroOptions = {
   centerBindOffStitches?: number | undefined;
   /** When set, V-neck front charts use divide-at-center copy instead of round-neck center scrap-off. */
   chart?: NeckShoulderShapingChart | undefined;
+  /**
+   * Debug overlap from {@link generateSleevelessBackPattern}. Used when the chart object is missing
+   * `frontVNeckArmholeComposition` so the live page/print intro still sees Case 4 continuous RC.
+   */
+  frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap | null;
   /** When true (or chart flag), intro uses cardigan front wording instead of pullover divide language. */
   isCardiganFront?: boolean | undefined;
   /**
@@ -583,8 +589,9 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
 
   if (isCardiganFront) {
     const continuousGarmentRc =
-      resolveFrontVNeckRowCounterDisplayPolicy(options.chart?.frontVNeckArmholeComposition) ===
-      "continuous-garment-rc";
+      resolveFrontVNeckRowCounterDisplayPolicy(
+        options.chart?.frontVNeckArmholeComposition ?? options.frontArmholeNecklineOverlap,
+      ) === "continuous-garment-rc";
     const innerParts: string[] = [];
     if (activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart)) {
       innerParts.push(
