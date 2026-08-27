@@ -476,7 +476,7 @@ export function demoNeckShoulderExecution(): NeckShoulderExecutionOutput {
       {
         startRC: 171,
         endRC: 174,
-        text: "At armhole edge, short-row or bind off shoulder stitches as specified.",
+        text: "At the shoulder (outer) edge, short-row or bind off shoulder stitches as specified.",
       },
     ],
   });

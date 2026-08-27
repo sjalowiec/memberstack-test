@@ -151,6 +151,14 @@ function vNeckBeforeArmholePattern(): Record<string, unknown> {
   };
 }
 
+function asCardigan(pattern: Record<string, unknown>): Record<string, unknown> {
+  const style = (pattern.style ?? {}) as Record<string, unknown>;
+  return {
+    ...pattern,
+    style: { ...style, garmentStyle: "cardigan", frontStyle: "open" },
+  };
+}
+
 function collectParagraphs(rows: readonly SleevelessPatternDisplayRow[]): string[] {
   const out: string[] = [];
   for (const row of rows) {
@@ -930,5 +938,154 @@ describe("sleeveless Pullover V-neck Front user-facing copy avoids retired label
     expect(combined).not.toMatch(/outside edge/i);
     expect(tabs).toContain(">First Side<");
     expect(tabs).toContain(">Second Side<");
+  });
+});
+
+describe("sleeveless cardigan Front V-neck row-counter timing", () => {
+  describe("before-armhole uses continuous garment RC like pullover Case 4", () => {
+    const r = generateSleevelessBackPattern(asCardigan(vNeckBeforeArmholePattern()));
+    const armholeStart = r.debug.armholeStartRow!;
+    const overlap = r.debug.frontArmholeNecklineOverlap!;
+
+    it("starts V-neck on garment RC, then joins the armhole later without a Front reset", () => {
+      expect(r.debug.frontVNeckShapingTimingCase).toBe("before-armhole");
+      expect(overlap.divideGarmentRc).toBeLessThan(armholeStart);
+      expect(bodyKnitToTarget(r.frontDisplayRows)).toBe(overlap.divideGarmentRc);
+      expect(sectionTitles(r.frontDisplayRows)).toEqual(
+        expect.arrayContaining(["BODY", "FRONT NECKLINE & SHOULDERS"]),
+      );
+      expect(sectionTitles(r.frontDisplayRows)).not.toContain("ARMHOLE");
+      const paras = collectParagraphs(r.frontDisplayRows);
+      expect(paras).toContain(FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE);
+      expect(paras).toContain(FRONT_VNECK_HANDOFF_ARMHOLE_JOINS);
+      expect(paras.some((p) => /After the armhole reset, use Armhole RC/i.test(p))).toBe(false);
+      expect(paras.some((p) => /begins at Armhole RC/i.test(p))).toBe(false);
+      expect(paras.some((p) => /row counter was reset at the beginning of armhole shaping/i.test(p))).toBe(
+        false,
+      );
+      expect(paras.join("\n")).not.toMatch(RESET_ROW_COUNTER_TEXT);
+      expect(paras.some((p) => /Divide the Front at center/i.test(p))).toBe(false);
+    });
+
+    it("does not call the pre-armhole V start Armhole RC", () => {
+      const divideRc = overlap.divideGarmentRc;
+      const padded = String(divideRc).padStart(3, "0");
+      const expected = `At RC ${padded}, begin V-neck shaping at the center-front edge.`;
+      const intro = renderActiveShoulderChartIntroHtml({
+        localStartRcLabel: `RC:${padded}`,
+        chart: r.frontNeckShoulderShapingChart,
+        wrapperClass: "pattern-shaping-intro",
+        layout: "labeled",
+        includeWorkflowSteps: true,
+      });
+      expect(intro).toContain(expected);
+      expect(intro).not.toMatch(/When Armhole RC reaches/i);
+      expect(intro).not.toContain(`When Armhole RC reaches ${padded}`);
+    });
+
+    it("keeps one continuous garment RC through V-neck, armhole, and shoulder shaping", () => {
+      expect(resolveFrontVNeckRowCounterDisplayPolicy(overlap)).toBe("continuous-garment-rc");
+      const first = firstShoulderRows(r);
+      expect(first.some((row) => row.rowCounterReset === true)).toBe(false);
+      expect(first.filter((row) => row.rc === 0)).toHaveLength(0);
+      const setup = first.find((row) => /Divide at center/i.test(row.action));
+      expect(setup?.rc).toBe(overlap.divideGarmentRc);
+      const firstNeck = first.find((row) => row.edge === "Neck" && /Decrease/i.test(row.action));
+      expect(firstNeck?.rc).toBeGreaterThanOrEqual(overlap.divideGarmentRc);
+      expect(firstNeck?.rc).toBeLessThan(armholeStart);
+      const armholeBo = first.find((row) => row.edge === "Armhole" && /Bind off/i.test(row.action));
+      expect(armholeBo?.rc).toBe(armholeStart);
+      const armholeDecs = first.filter(
+        (row) => row.edge === "Armhole" && /Decrease/i.test(row.action),
+      );
+      expect(armholeDecs.length).toBeGreaterThan(0);
+      expect(armholeDecs.every((row) => row.rc >= armholeStart)).toBe(true);
+      const shoulder = first.filter(
+        (row) => row.edge === "Shoulder" && /Bind off/i.test(row.action),
+      );
+      expect(shoulder.length).toBeGreaterThan(0);
+      expect(shoulder.every((row) => row.rc > armholeStart)).toBe(true);
+      expect(shoulder.every((row) => row.rc !== 0)).toBe(true);
+    });
+  });
+
+  describe("after-armhole still resets and uses Armhole RC", () => {
+    const r = generateSleevelessBackPattern(asCardigan(shallowVNeckPattern()));
+    const armholeStart = r.debug.armholeStartRow!;
+
+    it("keeps BODY → ARMHOLE reset → neckline on Armhole RC", () => {
+      expect(r.debug.frontVNeckShapingTimingCase).toBe("after-armhole");
+      expect(r.debug.frontArmholeNecklineOverlap).toBeUndefined();
+      expect(sectionTitles(r.frontDisplayRows)).toEqual(
+        expect.arrayContaining(["BODY", "ARMHOLE", "FRONT NECKLINE & SHOULDERS"]),
+      );
+      expect(bodyKnitToTarget(r.frontDisplayRows)).toBe(armholeStart);
+      const armhole = armholeBlocks(r.frontDisplayRows);
+      expect(armhole.some((b) => b.rowCounterReset === true)).toBe(true);
+      const paras = collectParagraphs(r.frontDisplayRows);
+      expect(paras.some((p) => /After the armhole reset, use Armhole RC/i.test(p))).toBe(true);
+      expect(
+        paras.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p)),
+      ).toBe(true);
+      const first = firstShoulderRows(r);
+      const neck = first.find((row) => row.edge === "Neck" && /Decrease|Bind off/i.test(row.action));
+      expect(neck).toBeDefined();
+      expect(neck!.rc).toBeLessThan(armholeStart);
+      const localRc = r.debug.frontNecklineStartLocalRC!;
+      const padded = String(localRc).padStart(3, "0");
+      const intro = renderActiveShoulderChartIntroHtml({
+        localStartRcLabel: `RC:${padded}`,
+        chart: r.frontNeckShoulderShapingChart,
+        wrapperClass: "pattern-shaping-intro",
+        layout: "labeled",
+        includeWorkflowSteps: true,
+      });
+      expect(intro).toContain(
+        `When Armhole RC reaches ${padded}, begin neckline shaping at the center-front edge.`,
+      );
+    });
+  });
+
+  describe("with-armhole and during-armhole keep the existing Front reset", () => {
+    it.each([
+      ["with-armhole", equalDepthVNeckPattern()],
+      ["during-armhole", amandaVNeckPattern()],
+    ] as const)("%s cardigan still resets at the armhole", (_label, pattern) => {
+      const r = generateSleevelessBackPattern(asCardigan(pattern));
+      expect(r.debug.frontVNeckShapingTimingCase).not.toBe("before-armhole");
+      expect(sectionTitles(r.frontDisplayRows)).toContain("ARMHOLE");
+      expect(armholeBlocks(r.frontDisplayRows).some((b) => b.rowCounterReset === true)).toBe(true);
+      const paras = collectParagraphs(r.frontDisplayRows);
+      expect(paras.some((p) => /After the armhole reset, use Armhole RC/i.test(p))).toBe(true);
+    });
+  });
+});
+
+describe("sleeveless checklist Edge column distinguishes Armhole vs Shoulder", () => {
+  it("labels shoulder slope bind-offs Shoulder on a shallow V that has no overlap object", () => {
+    const r = generateSleevelessBackPattern(shallowVNeckPattern());
+    const first = firstShoulderRows(r);
+    const shoulder = first.filter((row) => /Bind off/i.test(row.action) && row.edge === "Shoulder");
+    const armholeBo = first.filter((row) => /Bind off/i.test(row.action) && row.edge === "Armhole");
+    expect(shoulder.length).toBeGreaterThan(0);
+    expect(armholeBo).toHaveLength(0);
+    expect(first.some((row) => row.edge === "Neck" && /Decrease/i.test(row.action))).toBe(true);
+  });
+
+  it("keeps actual armhole decreases labeled Armhole on pullover Case 4", () => {
+    const r = generateSleevelessBackPattern(vNeckBeforeArmholePattern());
+    const first = firstShoulderRows(r);
+    expect(first.some((row) => row.edge === "Armhole" && /Decrease/i.test(row.action))).toBe(true);
+    expect(first.some((row) => row.edge === "Shoulder" && /Bind off/i.test(row.action))).toBe(true);
+    expect(
+      first.some((row) => row.edge === "Armhole" && /Decrease/i.test(row.action)),
+    ).toBe(true);
+    const lastArmhole = Math.max(
+      ...first.filter((row) => row.edge === "Armhole").map((row) => row.rc),
+    );
+    const firstShoulder = Math.min(
+      ...first.filter((row) => row.edge === "Shoulder").map((row) => row.rc),
+    );
+    expect(firstShoulder).toBeGreaterThan(lastArmhole);
   });
 });

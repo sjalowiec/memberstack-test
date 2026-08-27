@@ -98,8 +98,12 @@ import {
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
 import {
   sleevelessFrontVNeckWrittenPathPresentation,
-  sleevelessPulloverVNeckBeginDisplayRc,
 } from "../lib/patterns/frontArmholeNecklineComposition.ts";
+import {
+  renderSleevelessPatternTabFrontChartTableHtml,
+  renderSleevelessPatternTabFrontWrittenIntroHtml,
+  sleevelessPatternTabFrontChartTableOptions,
+} from "../lib/patterns/sleevelessFrontChartIntroHtml.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
@@ -605,8 +609,33 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       .replace(/>/g, "&gt;");
   }
 
+  function necklineChartMachineHelpCardHtml() {
+    const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
+  <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
+  <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Short row shoulder shaping</button>
+</div>`;
+    const necklineTipLead = `<p>Many knitters prefer to use ${glossaryTooltip(250, "Short Rows")} to shape shoulders because they create a smoother edge and help prevent ${glossaryTooltip(902, "stair steps")} caused by bind-offs.</p>`;
+    const necklineMachineHelpBody =
+      `${necklineTipLead}` +
+      `<p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>` +
+      necklineTipVideoButtons;
+    return patternTipWrapperHtml({
+      tipHtml: buildPatternHelpCardInnerHtml({
+        title: "New to shaping necklines on the machine?",
+        bodyHtml: necklineMachineHelpBody,
+        icon: false,
+      }),
+      tipHtmlIsFull: true,
+      tipPresentation: "help-card",
+      tipId: "sleeveless-neckline-machine-help",
+      tipWrapperClass: "no-print",
+    });
+  }
+
   /**
-   * Intro + collapsible help beneath the chart heading (same HTML intro as print/PDF via `renderActiveShoulderChartIntroHtml`).
+   * Intro + collapsible help beneath the chart heading.
+   * Back uses {@link renderActiveShoulderChartIntroHtml}. Front must not use this — the live
+   * pattern-tab / window.print path is {@link renderSleevelessPatternTabFrontChartTableHtml}.
    * @param {string | undefined} startRowLabel Armhole RC at center bind-off (chart row 0), e.g. `RC:117`.
    * @param {import("../lib/patterns/neckShoulderShapingChart").NeckShoulderShapingChart | undefined} chart
    * @param {'back' | 'front'} _piece Reserved for callers (back vs front); shared tip markup for both.
@@ -632,27 +661,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       notationPreview: notationPreviewPiece,
       notationPreviewConstruction: "sleeveless",
     });
-    const necklineTipVideoButtons = `<div class="pattern-finishing-video-help__links sleeveless-neckline-tip__video-links">
-  <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="roundNeckShaping" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Round neck shaping</button>
-  <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="shallowBackNeck" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Short row shoulder shaping</button>
-</div>`;
-    const necklineTipLead = `<p>Many knitters prefer to use ${glossaryTooltip(250, "Short Rows")} to shape shoulders because they create a smoother edge and help prevent ${glossaryTooltip(902, "stair steps")} caused by bind-offs.</p>`;
-    const necklineMachineHelpBody =
-      `${necklineTipLead}` +
-      `<p class="sleeveless-neckline-tip__short-rows-prompt">New to ${glossaryTooltip(250, "Short Rows")}?</p>` +
-      necklineTipVideoButtons;
-    const necklineMachineHelpCard = patternTipWrapperHtml({
-      tipHtml: buildPatternHelpCardInnerHtml({
-        title: "New to shaping necklines on the machine?",
-        bodyHtml: necklineMachineHelpBody,
-        icon: false,
-      }),
-      tipHtmlIsFull: true,
-      tipPresentation: "help-card",
-      tipId: "sleeveless-neckline-machine-help",
-      tipWrapperClass: "no-print",
-    });
-    return `${intro}\n${necklineMachineHelpCard}`;
+    return `${intro}\n${necklineChartMachineHelpCardHtml()}`;
   }
 
   /**
@@ -4318,25 +4327,6 @@ table {
     const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
       ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
       : 0;
-    const frontOverlap = result?.debug?.frontArmholeNecklineOverlap;
-    const frontVNeckBeginRc = isSleevelessPulloverVNeckFrontChart(result.frontNeckShoulderShapingChart)
-      ? sleevelessPulloverVNeckBeginDisplayRc({
-          overlap: frontOverlap,
-          frontNecklineStartLocalRC: result?.debug?.frontNecklineStartLocalRC,
-          frontNecklineCenterDivideLocalRC: result?.debug?.frontNecklineCenterDivideLocalRC,
-        })
-      : undefined;
-    const frontArmholeLocalChartStartRc =
-      frontVNeckBeginRc !== undefined
-        ? Math.max(0, frontVNeckBeginRc)
-        : Number.isFinite(result?.debug?.frontNecklineCenterDivideLocalRC)
-          ? Math.max(0, Math.floor(result.debug.frontNecklineCenterDivideLocalRC))
-          : Number.isFinite(result?.debug?.frontNecklineShapingBeginLocalRC)
-            ? Math.max(0, Math.floor(result.debug.frontNecklineShapingBeginLocalRC))
-            : Number.isFinite(result?.debug?.frontNecklineStartLocalRC) &&
-                result.debug.frontNecklineStartLocalRC >= 0
-              ? Math.floor(result.debug.frontNecklineStartLocalRC)
-              : 0;
 
     const armholeGarmentStartRc = result?.debug?.armholeStartRow;
     const backChecklistOptions = { includeCenterNecklineSetupRow: true as const };
@@ -4344,12 +4334,6 @@ table {
       result.neckShoulderShapingChart,
       armholeGarmentStartRc,
       backChecklistOptions,
-    );
-    const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
-    const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
-      result.frontNeckShoulderShapingChart,
-      armholeGarmentStartRc,
-      frontChecklistOptions,
     );
 
     // Active-shoulder checklist (RC / Side / Instruction / Section / Stitches). Plain-knit compaction: neckShoulderShapingChartHtml `chartBodyRowsHtml`.
@@ -4387,45 +4371,19 @@ table {
       </div>
     </div>`
       : "";
-    // Front written intro + tips (divide-neckline copy, workflow steps, machine-help card). The
-    // Japanese Notation quick reference is suppressed here (passing false) because the notation now
-    // lives once in the Visual Guides block.
-    const frontWrittenIntroHtml = neckShoulderChartHelpRowHtml(
-      `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-      result?.frontNeckShoulderShapingChart,
-      "front",
-      false
+    // Front written intro + checklist. window.print() prints this injected HTML as-is.
+    const frontHelpCardHtml = necklineChartMachineHelpCardHtml();
+    const frontWrittenIntroHtml = renderSleevelessPatternTabFrontWrittenIntroHtml(
+      result,
+      frontHelpCardHtml,
     );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
-      frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
-        result.frontNeckShoulderShapingChart,
-        "ns-shaping-chart-front",
-        // Round-neck front: the written intro + carriage-position tip are relocated ABOVE Visual
-        // Guides (into #sg-front-ns-written-intro below), so the row-by-row checklist table carries
-        // no intro. Other fronts keep the intro inline with their checklist.
-        frontIsRoundNeck ? "" : frontWrittenIntroHtml,
-        {
-          activeSideOnly: true,
-          activeSideRcStart: frontActiveSideRcStart,
-          includeCenterNecklineSetupRow: true,
-          // Keep the center divide/setup row in the First/Second Shoulder checklists so the shared
-          // renderer can show scrap-off once on First and the held-shoulder reminder on Second
-          // (same presentation as drop-shoulder front round-neck).
-          hideCenterNecklineSetupRow: false,
-          tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist",
-          secondShoulderExtraHtml: frontSecondShoulderMapHtml,
-          suppressCarriagePositionTip: frontIsRoundNeck,
-          // Pullover V-neck Front: First/Second Side tabs, checklist immediately visible.
-          // Other fronts keep the collapsible First Shoulder Checklist disclosure.
-          ...(frontUsesShoulderTabs
-            ? { shoulderTabs: true, collapsible: false }
-            : {
-                collapsible: true,
-                collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
-              }),
-        }
-      );
+      frontChartTableHost.innerHTML = renderSleevelessPatternTabFrontChartTableHtml(result, {
+        relocateIntro: frontIsRoundNeck,
+        introSuffix: frontHelpCardHtml,
+        secondShoulderExtraHtml: frontSecondShoulderMapHtml,
+      });
     }
     // Round-neck front: render all written instructions/tips together ABOVE the Visual Guides block.
     if (frontIsRoundNeck) {
@@ -4459,20 +4417,11 @@ table {
       front: {
         chart: result.frontNeckShoulderShapingChart,
         idPrefix: "ns-shaping-chart-front",
-        introHtml: neckShoulderChartHelpRowHtml(
-          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.frontNeckShoulderShapingChart,
-          "front"
-        ),
-        options: {
-          activeSideOnly: true,
-          activeSideRcStart: frontActiveSideRcStart,
-          includeCenterNecklineSetupRow: true,
-          hideCenterNecklineSetupRow: false,
-          tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist",
+        introHtml: frontWrittenIntroHtml,
+        options: sleevelessPatternTabFrontChartTableOptions(result, {
+          relocateIntro: frontIsRoundNeck,
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
-          ...(frontUsesShoulderTabs ? { shoulderTabs: true, collapsible: false } : {}),
-        },
+        }),
       },
     };
     // Finishing HTML + chart table HTML (incl. glossary placeholders) are injected above.

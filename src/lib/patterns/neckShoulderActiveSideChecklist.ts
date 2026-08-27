@@ -353,6 +353,36 @@ function addActiveSideKnitEvenRow(
   });
 }
 
+function lastArmholeGarmentRcForChecklist(
+  chart?: NeckShoulderShapingChart,
+  timeline?: readonly RowEntry[],
+): number | undefined {
+  const fromComposition = chart?.frontVNeckArmholeComposition?.lastArmholeGarmentRc;
+  if (fromComposition !== undefined && Number.isFinite(fromComposition)) {
+    return Math.floor(fromComposition);
+  }
+  const rows = timeline ?? chart?.timeline;
+  if (!rows?.length) return undefined;
+  let lastDecrease: number | undefined;
+  for (const entry of rows) {
+    if (
+      entry.events.some(
+        (ev) => ev.edge === "outer" && ev.kind === "decrease" && ev.amount > 0,
+      )
+    ) {
+      lastDecrease = entry.row;
+    }
+  }
+  if (lastDecrease !== undefined) return lastDecrease;
+  // Neck/shoulder-only timeline: armhole shaping is already finished. Every outer
+  // bind-off/hold on this chart is shoulder slope, not armhole.
+  return Number.NEGATIVE_INFINITY;
+}
+
+function outerEdgeLabelForChartAction(actionLabel: string): ActiveSideEdge {
+  return /armhole/i.test(actionLabel) ? "Armhole" : "Shoulder";
+}
+
 function activeSideActionFromTimelineEvent(
   entry: RowEntry,
   event: ShapingEvent,
@@ -376,7 +406,7 @@ function activeSideActionFromTimelineEvent(
   } else if (lastArmholeGarmentRc !== undefined) {
     edge = entry.row <= lastArmholeGarmentRc ? "Armhole" : "Shoulder";
   } else {
-    edge = "Armhole";
+    edge = "Shoulder";
   }
   return {
     sourceRelativeRow: rel,
@@ -430,7 +460,7 @@ function buildActiveSideActionsFromTimeline(
         relativeOriginRow,
         alignDisplayRcToTimeline,
         side,
-        chart?.frontVNeckArmholeComposition?.lastArmholeGarmentRc,
+        lastArmholeGarmentRcForChecklist(chart, timeline),
       );
       if (action) actions.push(action);
     }
@@ -439,7 +469,7 @@ function buildActiveSideActionsFromTimeline(
   if (remainder > 0) {
     actions.push({
       sourceRelativeRow: finalSourceRelativeRow + 1,
-      edge: chart?.frontVNeckArmholeComposition ? "Shoulder" : "Armhole",
+      edge: "Shoulder",
       amount: remainder,
       kind: "bindOff",
     });
@@ -510,7 +540,12 @@ function buildActiveSideActionsFromChartRows(
       actions.push({ sourceRelativeRow: rel, edge: "Neck", amount: neck, kind: "decrease" });
     }
     if (armhole > 0) {
-      actions.push({ sourceRelativeRow: rel, edge: "Armhole", amount: armhole, kind: "bindOff" });
+      actions.push({
+        sourceRelativeRow: rel,
+        edge: outerEdgeLabelForChartAction(row.action),
+        amount: armhole,
+        kind: "bindOff",
+      });
     }
   }
   const lastSource = sourceRows[sourceRows.length - 1];
@@ -519,7 +554,7 @@ function buildActiveSideActionsFromChartRows(
   if (remainder > 0 && lastArmhole < remainder) {
     actions.push({
       sourceRelativeRow: finalSourceRelativeRow + 1,
-      edge: "Armhole",
+      edge: "Shoulder",
       amount: remainder,
       kind: "bindOff",
     });
@@ -689,9 +724,7 @@ function buildSideInstructionTableRows(
 
   if (stitchesRemaining > 0) {
     let displayRc = toDisplay(checklistIdx);
-    const leftoverEdge: ActiveSideEdge = chart.frontVNeckArmholeComposition
-      ? "Shoulder"
-      : "Armhole";
+    const leftoverEdge: ActiveSideEdge = "Shoulder";
     while (displayRc % 2 !== requiredParityForActiveSideEdge(leftoverEdge)) {
       pushArmholeResetIfNeeded(checklistIdx, stitchesRemaining);
       addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining, invertCarriage);

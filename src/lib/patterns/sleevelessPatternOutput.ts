@@ -2558,17 +2558,22 @@ export function buildSleevelessFrontDisplayRows(args: {
 
   const vNeckTiming = resolveFrontVNeckShapingTimingCase(args.armholeNecklineOverlap);
   const overlapVNeck = args.isVNeck === true && vNeckTiming !== "after-armhole";
-  const vNeckWrittenSummary =
-    args.isVNeck === true && !args.introIsCardiganHalf
-      ? sleevelessPulloverVNeckWrittenSummaryParagraphs({
-          timing: vNeckTiming,
-          overlap: args.armholeNecklineOverlap,
-          bindOffSts: args.armholeBindOffSts,
-          decreaseSts: args.armholeDecreaseSts,
-          liveStitchesAtDivide:
-            args.armholeNecklineOverlap?.liveTotalAtDivide ?? args.stitchesAfterArmhole,
-        })
-      : [];
+  const cardiganBeforeArmhole =
+    args.introIsCardiganHalf === true && args.isVNeck === true && vNeckTiming === "before-armhole";
+  const usePulloverVNeckWrittenSummary =
+    args.isVNeck === true && (!args.introIsCardiganHalf || cardiganBeforeArmhole);
+  const knitterFacingVNeckRc = usePulloverVNeckWrittenSummary;
+  const vNeckWrittenSummary = usePulloverVNeckWrittenSummary
+    ? sleevelessPulloverVNeckWrittenSummaryParagraphs({
+        timing: vNeckTiming,
+        overlap: args.armholeNecklineOverlap,
+        bindOffSts: args.armholeBindOffSts,
+        decreaseSts: args.armholeDecreaseSts,
+        liveStitchesAtDivide:
+          args.armholeNecklineOverlap?.liveTotalAtDivide ?? args.stitchesAfterArmhole,
+        omitCenterDivide: args.introIsCardiganHalf === true,
+      })
+    : [];
   const bodyEndGarmentRc =
     vNeckTiming === "before-armhole" && args.armholeNecklineOverlap
       ? args.armholeNecklineOverlap.divideGarmentRc
@@ -2578,7 +2583,7 @@ export function buildSleevelessFrontDisplayRows(args: {
     args.frontNecklineStartLocalRC,
     args.garmentArmholeStartRC,
     bodyEndGarmentRc,
-    args.isVNeck === true && !args.introIsCardiganHalf,
+    knitterFacingVNeckRc,
   );
   const sharedRowsWithCase1Milestone =
     args.isVNeck === true && !overlapVNeck && !args.introIsCardiganHalf
@@ -2601,7 +2606,7 @@ export function buildSleevelessFrontDisplayRows(args: {
       bindOffSts: args.armholeBindOffSts,
       decreaseSts: args.armholeDecreaseSts,
     }),
-    args.isVNeck === true && !args.introIsCardiganHalf,
+    knitterFacingVNeckRc,
   );
 
   const rows: SleevelessPatternDisplayRow[] = [];
@@ -2613,12 +2618,15 @@ export function buildSleevelessFrontDisplayRows(args: {
   // The full-width (pullover) front has no introductory paragraph: the headings, row-counter labels,
   // and shaping checklist already provide the needed context, so instructions begin directly.
   if (args.introIsCardiganHalf) {
+    const introParagraphs = [
+      "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
+    ];
+    if (!cardiganBeforeArmhole) {
+      introParagraphs.push("After the armhole reset, use Armhole RC — not the body row counter.");
+    }
     rows.push({
       kind: "block",
-      paragraphs: [
-        "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
-        "After the armhole reset, use Armhole RC — not the body row counter.",
-      ],
+      paragraphs: introParagraphs,
     });
   }
   rows.push(...sharedRowsFrontMilestones);
@@ -2714,7 +2722,7 @@ function makePlaceholderNeckShoulderExecution(startRC: number) {
   const shoulderActions: ShapingAction[] = [
     {
       startRC: startRC + 1,
-      text: "TODO: At armhole / shoulder edge, work shoulder shaping per chart (short-rows or bind-offs TBD).",
+      text: "TODO: At the shoulder (outer) edge, work shoulder shaping per chart (short-rows or bind-offs TBD).",
     },
   ];
   return generateNeckShoulderExecution({
@@ -3155,7 +3163,6 @@ export function generateSleevelessBackPattern(
    */
   const equalDepthPulloverVNeckFront =
     isFrontVNeck &&
-    !isCardiganHalfFrontBody &&
     armholeStartRC !== undefined &&
     armholeDepthRows > 0 &&
     frontNeckDepthRows > 0 &&
@@ -3412,14 +3419,18 @@ export function generateSleevelessBackPattern(
     frontTimeline = builtFront.timeline;
     frontLiveRows = builtFront.chartRows;
 
-    /** Pullover V-neck only: overlay leftover armhole decreases; keep B in geometry. */
+    /**
+     * Overlay leftover armhole events onto the full-width V timeline.
+     * Pullover: every timing case. Cardigan V: only when the V begins before the armhole
+     * (Case 4 continuous garment RC). Other cardigan V timings keep the existing reset path.
+     */
     if (
       isFrontVNeck &&
-      !isCardiganHalfFrontBody &&
       armholeMathResult !== null &&
       firstArmholeRCNum !== null &&
       stitchesAfterArmhole !== undefined &&
-      frontTimeline.length > 0
+      frontTimeline.length > 0 &&
+      (!isCardiganHalfFrontBody || frontNecklineStartRC < firstArmholeRCNum)
     ) {
       const composed = composeFrontVNeckTimelineWithArmholeOverlap(frontTimeline, {
         firstArmholeGarmentRc: firstArmholeRCNum,
@@ -3616,7 +3627,7 @@ export function generateSleevelessBackPattern(
         {
           startRC: neckStartRC,
           endRC: neckStartRC + backNeckDepthRows - 1,
-          text: "At armhole edge, work shoulder slope (short-rows or bind-offs per chart).",
+          text: "At the shoulder (outer) edge, work shoulder shaping (short-rows or bind-offs per chart).",
         },
       ];
 
@@ -3658,7 +3669,7 @@ export function generateSleevelessBackPattern(
           {
             startRC: frontNecklineStartRC,
             endRC: frontNecklineStartRC + frontNeckSectionRows - 1,
-            text: "At armhole edge, work shoulder slope (short-rows or bind-offs per chart).",
+            text: "At the shoulder (outer) edge, work shoulder shaping (short-rows or bind-offs per chart).",
           },
         ],
       });
@@ -3730,7 +3741,7 @@ export function generateSleevelessBackPattern(
     armholeStartRC !== undefined ? Math.max(0, Math.floor(neckStartRC - armholeStartRC)) : undefined;
   const frontNecklineStartLocalRC =
     armholeStartRC !== undefined
-      ? isFrontVNeck && !isCardiganHalfFrontBody
+      ? isFrontVNeck
         ? Math.floor(frontNecklineStartRC - armholeStartRC)
         : Math.max(0, Math.floor(frontNecklineStartRC - armholeStartRC))
       : undefined;

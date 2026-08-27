@@ -107,6 +107,8 @@ export type PulloverVNeckWrittenSummaryInput = {
   liveStitchesAtDivide?: number;
   /** `vneck-start` is the Begin V-neck block; `armhole-join` is Case 4 when the armhole begins. */
   phase?: "vneck-start" | "armhole-join";
+  /** Skip pullover “divide at center / place one side on hold” — cardigan is already split. */
+  omitCenterDivide?: boolean;
 };
 
 function divideSidesFromInput(args: PulloverVNeckWrittenSummaryInput): {
@@ -160,7 +162,7 @@ export function sleevelessPulloverVNeckWrittenSummaryParagraphs(
     out.push(FRONT_VNECK_SIMULTANEOUS_FROM_THIS_POINT);
   }
 
-  const sides = divideSidesFromInput(args);
+  const sides = args.omitCenterDivide ? null : divideSidesFromInput(args);
   if (sides) {
     out.push(
       sleevelessPulloverVNeckDivideSummaryParagraph({

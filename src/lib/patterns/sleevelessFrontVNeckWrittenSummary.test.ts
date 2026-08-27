@@ -133,4 +133,22 @@ describe("sleevelessPulloverVNeckWrittenSummaryParagraphs", () => {
     expect(join.join("\n")).toMatch(/on rows 135, 137, 139/);
     expect(join.join("\n")).not.toMatch(/Divide the Front/);
   });
+
+  it("cardigan before-armhole omits the center divide sentence", () => {
+    const start = sleevelessPulloverVNeckWrittenSummaryParagraphs({
+      timing: "before-armhole",
+      overlap: {
+        ...remainingOverlap,
+        divideGarmentRc: 117,
+        firstArmholeGarmentRc: 133,
+        necklineBeginsBeforeArmhole: true,
+      },
+      bindOffSts: 4,
+      omitCenterDivide: true,
+    });
+    const text = start.join("\n");
+    expect(text).not.toMatch(/Divide the Front at center/);
+    expect(text).not.toMatch(/Place one side on hold/);
+    expect(text).toContain(sleevelessPulloverVNeckActionBullet(FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST));
+  });
 });

@@ -220,7 +220,7 @@ describe("back active-shoulder checklist center neckline setup row", () => {
     }
   });
 
-  it("armhole bind-off actions use explicit 'Bind off OR hold' wording (no slash notation)", () => {
+  it("shoulder bind-off actions use explicit 'Bind off OR hold' wording (no slash notation)", () => {
     const r = generateSleevelessBackPattern(cardiganPattern());
     const rcStart = armholeLocalRcActiveShoulderChecklistStart(
       r.neckShoulderShapingChart,
@@ -233,10 +233,10 @@ describe("back active-shoulder checklist center neckline setup row", () => {
       BACK_CHECKLIST_OPTIONS,
     );
     expect(rows.some((row) => /bind off \/ hold/i.test(row.action))).toBe(false);
-    const armholeBindOff = rows.filter(
-      (row) => row.edge === "Armhole" && /^Bind off OR hold /.test(row.action),
+    const shoulderBindOff = rows.filter(
+      (row) => row.edge === "Shoulder" && /^Bind off OR hold /.test(row.action),
     );
-    expect(armholeBindOff.length).toBeGreaterThan(0);
+    expect(shoulderBindOff.length).toBeGreaterThan(0);
   });
 });
 
