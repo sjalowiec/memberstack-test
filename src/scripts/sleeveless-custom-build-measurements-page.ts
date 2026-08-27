@@ -1151,6 +1151,8 @@ function buildValidationInputFromRoot(
   for (const key of activeFieldKeys()) {
     if (values[key]) overrides[key] = values[key];
   }
+  const liveNeckline = readLiveSleevelessEditNeckline();
+  if (liveNeckline) overrides.neckline = liveNeckline;
   return buildSleevelessCustomBuildValidationInput(overrides);
 }
 
@@ -1652,6 +1654,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
 
   const refreshSleevelessMeasurementArt = (): void => {
     if (isDropShoulderConstruction()) return;
+    if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
     if (!(diagramHost instanceof HTMLElement)) return;
     const inner = diagramHost.querySelector<HTMLElement>(".express-mbp-stage__inner");
     if (!(inner instanceof HTMLElement)) return;

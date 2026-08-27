@@ -18,6 +18,8 @@ export type SleevelessPatternValidationMessage = {
 /** Garment measurement overrides used by the custom-build pattern builder. */
 export type SleevelessCustomBuildGarmentMeasurements = Partial<{
   audience: string;
+  /** Wizard `v-neck` / stored `v` / `round` — used only to scope neck-vs-armhole rules. */
+  neckline: string;
   armholeDepth: number | string;
   finishedLength: number | string;
   hemDepth: number | string;
@@ -83,6 +85,15 @@ function armholeDepthRangeForAudience(audience: unknown): ArmholeDepthRange | un
   return ARMHOLE_DEPTH_RANGE_BY_AUDIENCE[key];
 }
 
+/** Wizard `v-neck` or stored `v`. Round / missing / other necklines stay on the armhole-depth rule. */
+function isVNeckStyle(neckline: unknown): boolean {
+  const n = String(neckline ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  return n === "v" || n === "vneck";
+}
+
 function pushError(
   messages: SleevelessPatternValidationMessage[],
   id: string,
@@ -116,8 +127,13 @@ function validateStructuralErrors(
   // Round-neck depth constraint lives here (custom-build measurement validation),
   // not in the Stitches & Rows renderer. A round scoop should stay inside the
   // armhole-depth budget so it does not start in the armhole shaping zone.
-  // V-neck may still be generated deeper via Express fixtures that bypass this layer.
-  if (neckDepth !== undefined && armholeDepth !== undefined && neckDepth > armholeDepth) {
+  // V-neck may begin below the armhole; pattern generation already supports that.
+  if (
+    neckDepth !== undefined &&
+    armholeDepth !== undefined &&
+    neckDepth > armholeDepth &&
+    !isVNeckStyle(input.neckline)
+  ) {
     pushError(
       messages,
       "neck-depth-exceeds-armhole-depth",
