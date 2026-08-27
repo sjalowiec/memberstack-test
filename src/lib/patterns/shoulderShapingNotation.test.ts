@@ -152,7 +152,7 @@ describe("shoulderShapingNotation", () => {
     const checklist = buildActiveSideInstructionTableRows(chart, rcStart, {
       includeCenterNecklineSetupRow: true,
     });
-    const shoulderBo = checklist.filter((x) => /bind off/i.test(x.action) && x.edge === "Armhole");
+    const shoulderBo = checklist.filter((x) => /bind off/i.test(x.action) && x.edge === "Shoulder");
 
     expect(shoulderBo.map((x) => x.action)).toEqual([
       "Bind off OR hold 5 sts",

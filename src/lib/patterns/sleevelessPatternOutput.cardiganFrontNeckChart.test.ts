@@ -95,7 +95,7 @@ describe("round cardigan front neckline / shoulder chart stitch counts", () => {
     expect(neckRows.length).toBeGreaterThan(0);
 
     const firstShoulderIdx = activeRows.findIndex(
-      (r) => r.edge === "Armhole" && /bind off/i.test(r.action),
+      (r) => r.edge === "Shoulder" && /bind off/i.test(r.action),
     );
     expect(firstShoulderIdx).toBeGreaterThan(0);
     const stitchesBeforeShoulder =
@@ -115,7 +115,7 @@ describe("round cardigan front neckline / shoulder chart stitch counts", () => {
     let shoulderBound = 0;
     for (let i = 0; i < activeRows.length; i++) {
       const row = activeRows[i]!;
-      if (row.edge !== "Armhole" || !/bind off/i.test(row.action)) continue;
+      if (row.edge !== "Shoulder" || !/bind off/i.test(row.action)) continue;
       const prev = i > 0 ? activeRows[i - 1]!.stitchesRemaining : postArmhole;
       shoulderBound += Math.max(0, prev - row.stitchesRemaining);
     }
