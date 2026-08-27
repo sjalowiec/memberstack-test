@@ -3,27 +3,46 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const baseLayout = readFileSync(resolve("src/layouts/BaseLayout.astro"), "utf8");
+const kinCourseLayout = readFileSync(
+  resolve("src/layouts/KinCourseLayout.astro"),
+  "utf8",
+);
 const header = readFileSync(resolve("src/components/Header.astro"), "utf8");
 
 const MEMBERSTACK_APP_ID = "app_cmfh3d1n802vb0wy706205810";
 const MEMBERSTACK_CDN = "https://static.memberstack.com/scripts/v2/memberstack.js";
 
+function expectRootCookieSession(layout: string, label: string): void {
+  const configIdx = layout.indexOf("var memberstackConfig");
+  const scriptIdx = layout.indexOf(MEMBERSTACK_CDN);
+
+  expect(configIdx, `${label} defines memberstackConfig`).toBeGreaterThan(-1);
+  expect(scriptIdx, `${label} loads the Memberstack CDN`).toBeGreaterThan(-1);
+  expect(configIdx).toBeLessThan(scriptIdx);
+
+  const configBlock = layout.slice(configIdx, scriptIdx);
+  expect(configBlock).toContain("useCookies: true");
+  expect(configBlock).toContain("setCookieOnRootDomain: true");
+  expect(configBlock).toContain('"_ms-mid"');
+  expect(configBlock).toContain("Max-Age=0; Path=/");
+  expect(configBlock).toContain("localStorage");
+  expect(configBlock).not.toContain("Domain=.knititnow.com");
+
+  expect(layout).toContain(`data-memberstack-app="${MEMBERSTACK_APP_ID}"`);
+  expect(layout).toContain("data-memberstack-use-cookies");
+  expect(layout).not.toMatch(/\$memberstackDom\?\.init\?\(\s*\)/);
+  expect(layout).toContain(
+    "window.$memberstackDom?.init?.(window.memberstackConfig)",
+  );
+}
+
 describe("Memberstack root-domain cookie session", () => {
   it("defines cookie config before the Memberstack CDN script", () => {
-    const configIdx = baseLayout.indexOf("var memberstackConfig");
-    const scriptIdx = baseLayout.indexOf(MEMBERSTACK_CDN);
+    expectRootCookieSession(baseLayout, "BaseLayout");
+  });
 
-    expect(configIdx).toBeGreaterThan(-1);
-    expect(scriptIdx).toBeGreaterThan(-1);
-    expect(configIdx).toBeLessThan(scriptIdx);
-
-    const configBlock = baseLayout.slice(configIdx, scriptIdx);
-    expect(configBlock).toContain("useCookies: true");
-    expect(configBlock).toContain("setCookieOnRootDomain: true");
-    expect(configBlock).toContain('"_ms-mid"');
-    expect(configBlock).toContain("Max-Age=0; Path=/");
-    expect(configBlock).toContain("localStorage");
-    expect(configBlock).not.toContain("Domain=.knititnow.com");
+  it("uses the same cookie boot on the KIN course player layout", () => {
+    expectRootCookieSession(kinCourseLayout, "KinCourseLayout");
   });
 
   it("keeps the live Memberstack app id on the CDN script", () => {

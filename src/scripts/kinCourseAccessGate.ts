@@ -4,12 +4,27 @@
  * `?preview=true` unlocks content on non-production hosts so Watson
  * Save → Preview works without a membership session. Membership still
  * gates the same routes on production and when preview is off.
+ *
+ * Viewer copy uses `isMemberLoggedIn` (not a truthy Memberstack payload).
+ * Login / logout / `auth:updated` re-run the gate so a restored or newly
+ * completed session unlocks without a second full reload.
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
-import { logMemberAccessDebug } from "../lib/memberAccess";
+import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
 import { videoDevBypass } from "../lib/devBypass";
 import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
 import { detectSiteEnvironment } from "../lib/env/siteEnvironment";
+
+export type KinCourseGateViewer = "open" | "loggedInNoAccess" | "loggedOut";
+
+/** Locked-card copy: logged-out vs signed-in-without-access. */
+export function kinCourseGateViewer(
+  unlocked: boolean,
+  memberOrPayload: unknown,
+): KinCourseGateViewer {
+  if (unlocked) return "open";
+  return isMemberLoggedIn(memberOrPayload) ? "loggedInNoAccess" : "loggedOut";
+}
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
   for (let i = 0; i < attempts; i++) {
@@ -68,7 +83,7 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
 
   const res = await waitForMemberstackReady();
   const unlocked = canAccessCourse(access, res, { courseSlug });
-  gate.dataset.viewer = unlocked ? "open" : res ? "loggedInNoAccess" : "loggedOut";
+  gate.dataset.viewer = kinCourseGateViewer(unlocked, res);
 
   logMemberAccessDebug("kinCourse.gate", res, {
     courseAccess: access,
@@ -79,12 +94,38 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   setGateAccess(gate, unlocked);
 }
 
+const boundGates = new WeakSet<HTMLElement>();
+
+function bindAuthRefresh(gate: HTMLElement): void {
+  if (boundGates.has(gate)) return;
+  const ms = window.$memberstackDom;
+  if (!ms || typeof ms.on !== "function") return;
+  boundGates.add(gate);
+  ms.on("member.login", () => void resolveGate(gate));
+  ms.on("member.logout", () => void resolveGate(gate));
+}
+
+let loginButtonsBound = false;
+
 function bindLoginButtons(): void {
+  if (loginButtonsBound) return;
+  loginButtonsBound = true;
   document.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
     if (target.closest("[data-course-111-login]")) {
       event.preventDefault();
+      const ms = window.$memberstackDom;
+      if (ms && typeof ms.openModal === "function") {
+        void Promise.resolve(ms.openModal("LOGIN"))
+          .then(() => {
+            window.dispatchEvent(new Event("auth:updated"));
+          })
+          .catch(() => {
+            document.getElementById("kin-ms-login-proxy")?.click();
+          });
+        return;
+      }
       document.getElementById("kin-ms-login-proxy")?.click();
     }
     if (target.closest("[data-course-111-logout]")) {
@@ -94,16 +135,20 @@ function bindLoginButtons(): void {
   });
 }
 
+function initKinCourseAccessGates(root: ParentNode = document): void {
+  bindLoginButtons();
+  root.querySelectorAll<HTMLElement>("[data-kin-course-gate]").forEach((gate) => {
+    void resolveGate(gate);
+    bindAuthRefresh(gate);
+    void window.$memberstackDom?.onReady?.then(() => bindAuthRefresh(gate));
+    window.addEventListener("auth:updated", () => void resolveGate(gate));
+  });
+}
+
 export function runKinCourseAccessGateBoot(): void {
-  const boot = () => {
-    bindLoginButtons();
-    document.querySelectorAll<HTMLElement>("[data-kin-course-gate]").forEach((gate) => {
-      void resolveGate(gate);
-    });
-  };
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
+    document.addEventListener("DOMContentLoaded", () => initKinCourseAccessGates());
   } else {
-    boot();
+    initKinCourseAccessGates();
   }
 }
