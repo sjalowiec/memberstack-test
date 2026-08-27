@@ -51,6 +51,7 @@ import {
   resolveFrontVNeckShapingTimingCase,
   timelineHasOverlappingArmholeDecreases,
   type FrontArmholeNecklineOverlap,
+  type FrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
 import { rowCounterResetBlockHtml } from "./rowCounterReset";
 
@@ -294,6 +295,11 @@ export type ActiveShoulderChartIntroOptions = {
    * `frontVNeckArmholeComposition` so the live page/print intro still sees Case 4 continuous RC.
    */
   frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap | null;
+  /**
+   * Generator timing from debug `frontVNeckShapingTimingCase`. Case 4 (`before-armhole`) uses
+   * garment RC wording even if the overlap object was omitted.
+   */
+  frontVNeckShapingTimingCase?: FrontVNeckShapingTimingCase;
   /** When true (or chart flag), intro uses cardigan front wording instead of pullover divide language. */
   isCardiganFront?: boolean | undefined;
   /**
@@ -589,6 +595,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
 
   if (isCardiganFront) {
     const continuousGarmentRc =
+      options.frontVNeckShapingTimingCase === "before-armhole" ||
       resolveFrontVNeckRowCounterDisplayPolicy(
         options.chart?.frontVNeckArmholeComposition ?? options.frontArmholeNecklineOverlap,
       ) === "continuous-garment-rc";

@@ -6,13 +6,16 @@
 import type { FrontArmholeNecklineOverlap } from "./frontArmholeNecklineComposition";
 import {
   resolveFrontVNeckShapingTimingCase,
+  sleevelessFrontVNeckWrittenPathPresentation,
   sleevelessPulloverVNeckBeginDisplayRc,
 } from "./frontArmholeNecklineComposition";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   isSleevelessPulloverVNeckFrontChart,
   renderActiveShoulderChartIntroHtml,
+  renderNeckShoulderShapingChartTableOnlyHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
+  type NeckShoulderChartRenderOptions,
 } from "./neckShoulderShapingChartHtml";
 import { centerBindOffStitchesFromNeckShoulderChart } from "./sleevelessPatternOutput";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
@@ -76,10 +79,102 @@ export function renderSleevelessFrontChartIntroHtml(
     centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
     chart,
     frontArmholeNecklineOverlap: overlap,
+    frontVNeckShapingTimingCase: result.debug.frontVNeckShapingTimingCase,
     wrapperClass: variant === "print" ? "print-chart-intro" : "pattern-shaping-intro",
     layout: variant === "print" ? "compact" : "labeled",
     includeWorkflowSteps: variant === "page",
   });
+}
+
+type SleevelessPatternTabFrontResult = Pick<
+  SleevelessBackPatternResult,
+  "debug" | "frontNeckShoulderShapingChart"
+>;
+
+export type SleevelessPatternTabFrontChartRenderOptions = {
+  /**
+   * Round-neck Front: written intro is relocated above Visual Guides, so the checklist table
+   * receives an empty intro. V-neck / cardigan keep the intro inline (the window.print path).
+   */
+  relocateIntro?: boolean;
+  /** Optional machine-help card (no-print) appended after the intro. */
+  introSuffix?: string;
+  secondShoulderExtraHtml?: string;
+};
+
+/**
+ * Pattern-tab / `window.print` Front intro. The live page must use this — do not call
+ * {@link renderActiveShoulderChartIntroHtml} for Sleeveless Front.
+ */
+export function renderSleevelessPatternTabFrontIntroHtml(
+  result: SleevelessPatternTabFrontResult,
+): string {
+  return renderSleevelessFrontChartIntroHtml(result, "page");
+}
+
+export function renderSleevelessPatternTabFrontWrittenIntroHtml(
+  result: SleevelessPatternTabFrontResult,
+  introSuffix?: string,
+): string {
+  const intro = renderSleevelessPatternTabFrontIntroHtml(result);
+  const suffix = typeof introSuffix === "string" && introSuffix.trim() ? introSuffix : "";
+  return suffix ? `${intro}\n${suffix}` : intro;
+}
+
+export function sleevelessPatternTabFrontChartTableOptions(
+  result: SleevelessPatternTabFrontResult,
+  options?: Pick<
+    SleevelessPatternTabFrontChartRenderOptions,
+    "secondShoulderExtraHtml" | "relocateIntro"
+  >,
+): NeckShoulderChartRenderOptions {
+  const chart = result.frontNeckShoulderShapingChart;
+  const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(chart);
+  const frontVNeckWrittenPath = sleevelessFrontVNeckWrittenPathPresentation(
+    result.debug.frontArmholeNecklineOverlap,
+  );
+  const relocateIntro = options?.relocateIntro === true;
+  return {
+    activeSideOnly: true,
+    activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(
+      chart,
+      result.debug.armholeStartRow,
+      { includeCenterNecklineSetupRow: true },
+    ),
+    includeCenterNecklineSetupRow: true,
+    hideCenterNecklineSetupRow: false,
+    tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist",
+    ...(options?.secondShoulderExtraHtml
+      ? { secondShoulderExtraHtml: options.secondShoulderExtraHtml }
+      : {}),
+    suppressCarriagePositionTip: relocateIntro,
+    ...(frontUsesShoulderTabs
+      ? { shoulderTabs: true, collapsible: false }
+      : {
+          collapsible: true,
+          collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
+        }),
+  };
+}
+
+/**
+ * HTML injected into `#sg-neck-shoulder-chart-table-front` on the pattern tab.
+ * `window.print()` prints this DOM as-is (no rewrite in `beforeprint`).
+ */
+export function renderSleevelessPatternTabFrontChartTableHtml(
+  result: SleevelessPatternTabFrontResult,
+  options?: SleevelessPatternTabFrontChartRenderOptions,
+): string {
+  const relocateIntro = options?.relocateIntro === true;
+  const introHtml = relocateIntro
+    ? ""
+    : renderSleevelessPatternTabFrontWrittenIntroHtml(result, options?.introSuffix);
+  return renderNeckShoulderShapingChartTableOnlyHtml(
+    result.frontNeckShoulderShapingChart,
+    "ns-shaping-chart-front",
+    introHtml,
+    sleevelessPatternTabFrontChartTableOptions(result, options),
+  );
 }
 
 /** Front print chart block: intro + compact instruction table (dedicated print route). */

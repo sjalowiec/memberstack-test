@@ -1,16 +1,15 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { renderActiveShoulderChartIntroHtml } from "./neckShoulderShapingChartHtml";
 import {
   renderSleevelessFrontChartIntroHtml,
   renderSleevelessFrontPrintChartHtml,
+  renderSleevelessPatternTabFrontChartTableHtml,
   sleevelessFrontChartIntroLocalStartLabel,
 } from "./sleevelessFrontChartIntroHtml";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import {
-  centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
   type SleevelessBackPatternResult,
 } from "./sleevelessPatternOutput";
@@ -33,7 +32,7 @@ const MISSES_8_CHART_ROW: ChartRow = {
 };
 
 /**
- * Women's Sleeveless 3.pdf: size 8, close fit, straight, cardigan, V-neck,
+ * Women's Sleeveless 4.pdf: size 8, close fit, straight, cardigan, V-neck,
  * 16 sts / 24 rows over 4 in (4 spi / 6 rpi), V at garment RC 077, armhole at 102.
  * Chart front neck is 5"; this case is the 12" deep V that actually starts at 077.
  */
@@ -69,21 +68,6 @@ function womenSize8CloseCardiganDeepV16x24Pattern(): Record<string, unknown> {
 const EXPECTED = "At RC 077, begin V-neck shaping at the center-front edge.";
 const PDF_OLD = "When Armhole RC reaches 077, begin neckline shaping at the center-front edge.";
 
-/** The window.print intro the live PDF actually ran: chart object only, no debug overlap. */
-function patternTabIntroWithoutHelper(
-  result: Pick<SleevelessBackPatternResult, "debug" | "frontNeckShoulderShapingChart">,
-): string {
-  const chart = result.frontNeckShoulderShapingChart;
-  return renderActiveShoulderChartIntroHtml({
-    localStartRcLabel: sleevelessFrontChartIntroLocalStartLabel(result),
-    centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
-    chart,
-    wrapperClass: "pattern-shaping-intro",
-    layout: "labeled",
-    includeWorkflowSteps: true,
-  });
-}
-
 function stripChartComposition(
   result: SleevelessBackPatternResult,
 ): SleevelessBackPatternResult {
@@ -91,7 +75,15 @@ function stripChartComposition(
   return { ...result, frontNeckShoulderShapingChart: chart };
 }
 
-describe("sleeveless Front chart intro — Women's Sleeveless 3.pdf path", () => {
+function assertFrontIntroDoesNotLabel077AsArmholeRc(html: string): void {
+  expect(html).toContain(EXPECTED);
+  expect(html).not.toContain(PDF_OLD);
+  expect(html).not.toMatch(/When Armhole RC reaches 077/i);
+  expect(html).not.toMatch(/Armhole RC reaches 077/i);
+  expect(html).not.toMatch(/Armhole RC:?\s*077/i);
+}
+
+describe("sleeveless Front chart intro — Women's Sleeveless 4.pdf pattern-tab path", () => {
   const r = generateSleevelessBackPattern(womenSize8CloseCardiganDeepV16x24Pattern());
 
   it("matches the printed pattern math (V 077, armhole 102, continuous Front RC)", () => {
@@ -102,31 +94,35 @@ describe("sleeveless Front chart intro — Women's Sleeveless 3.pdf path", () =>
     expect(r.frontNeckShoulderShapingChart.sleevelessCardiganFront).toBe(true);
   });
 
-  it("the live PDF path (pattern-tab renderer, chart flag omitted, overlap not passed) still emits the old sentence", () => {
-    const stripped = stripChartComposition(r);
-    const html = patternTabIntroWithoutHelper(stripped);
-    expect(html).toContain(PDF_OLD);
-    expect(html).not.toContain(EXPECTED);
+  it("the live pattern-tab window.print HTML uses At RC 077, not Armhole RC 077", () => {
+    const html = renderSleevelessPatternTabFrontChartTableHtml(r);
+    expect(html).toContain("ns-shaping-chart-front");
+    expect(html).toContain("Center-front edge");
+    assertFrontIntroDoesNotLabel077AsArmholeRc(html);
   });
 
-  it("the shared helper the pattern tab now calls emits At RC 077 even when the chart flag is omitted", () => {
+  it("still uses At RC 077 when the chart composition flag is omitted (debug timing remains)", () => {
     const stripped = stripChartComposition(r);
     expect(sleevelessFrontChartIntroLocalStartLabel(stripped)).toBe("RC:077");
-    const html = renderSleevelessFrontChartIntroHtml(stripped, "page");
-    expect(html).toContain(EXPECTED);
-    expect(html).not.toMatch(/When Armhole RC reaches/i);
-    expect(html).not.toMatch(/begin neckline shaping at the center-front edge/i);
+    assertFrontIntroDoesNotLabel077AsArmholeRc(
+      renderSleevelessPatternTabFrontChartTableHtml(stripped),
+    );
+    assertFrontIntroDoesNotLabel077AsArmholeRc(
+      renderSleevelessFrontChartIntroHtml(stripped, "page"),
+    );
   });
 
   it("print helper uses the same sentence", () => {
     const html = renderSleevelessFrontPrintChartHtml(r);
-    expect(html).toContain(EXPECTED);
-    expect(html).not.toMatch(/When Armhole RC reaches/i);
+    assertFrontIntroDoesNotLabel077AsArmholeRc(html);
   });
 
-  it("pattern-tab script calls renderSleevelessFrontChartIntroHtml with the generator result", () => {
+  it("pattern-tab script injects Front chart HTML from the shared table renderer", () => {
     const page = readFileSync(resolve("src/scripts/sleevelessPatternPageShared.ts"), "utf8");
-    expect(page).toMatch(/renderSleevelessFrontChartIntroHtml\(\s*frontResult,\s*"page"\s*\)/);
-    expect(page).toMatch(/neckShoulderChartHelpRowHtml\([\s\S]*?true,\s*result,/);
+    expect(page).toMatch(
+      /frontChartTableHost\.innerHTML = renderSleevelessPatternTabFrontChartTableHtml\(\s*result,/,
+    );
+    expect(page).not.toMatch(/renderSleevelessFrontChartIntroHtml\(\s*frontResult/);
+    expect(page).not.toMatch(/neckShoulderChartHelpRowHtml\(\s*frontIntroStartLabel/);
   });
 });
