@@ -34,10 +34,25 @@ describe("Course 111 DEV asset presentation", () => {
     expect(html).not.toContain("/challenge/images/v2/111/");
   });
 
+  it("rewrites capital-I /challenge/Images/v2/111/ download hrefs onto local copies", () => {
+    expect(
+      applyKinCourseSrcRewrites("/challenge/Images/v2/111/kin443.stp", presentation),
+    ).toBe("/images/course-content/111/kin443.stp");
+  });
+
   it("does not require ?preview=true to select those rewrites", () => {
     expect(
       applyKinCourseSrcRewrites("/challenge/images/v2/111/cast_on_checklist.jpg", presentation),
     ).toBe("/images/course-content/111/cast_on_checklist.jpg");
+  });
+
+  it("rewrites the remote Fairisle thumbnail onto the local course-content file", () => {
+    expect(
+      applyKinCourseSrcRewrites(
+        "https://www.knititnow.com/contentlibrary/previewimages/thumb_693.jpg",
+        presentation,
+      ),
+    ).toBe("/images/course-content/111/thumb_693.jpg");
   });
 });
 

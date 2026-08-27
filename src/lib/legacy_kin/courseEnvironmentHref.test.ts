@@ -27,7 +27,7 @@ const SK840_CATALOG_SLUG = "mastering-the-silver-reed-sk840";
 const SK840_COURSE_SLUG =
   "mastering-the-silver-reed-sk840-a-comprehensive-course";
 const SK840_PRODUCTION_HREF = "https://courses.knititnow.com/courses/111";
-const SK840_DEV_HREF = `/courses/111?preview=true`;
+const SK840_DEV_HREF = `/courses/111`;
 
 function assertSameOriginCourseHref(href: string) {
   expect(href.startsWith("/courses/")).toBe(true);
@@ -107,7 +107,7 @@ describe("resolveCatalogCourseHref", () => {
   it("maps catalog slug + production href to the cleaned Course 111 JSON slug", () => {
     expect(
       localLegacyCourseHrefForCatalog(SK840_CATALOG_SLUG, SK840_PRODUCTION_HREF),
-    ).toBe(`/courses/legacy/${SK840_COURSE_SLUG}?preview=true`);
+    ).toBe(`/courses/legacy/${SK840_COURSE_SLUG}`);
   });
 });
 

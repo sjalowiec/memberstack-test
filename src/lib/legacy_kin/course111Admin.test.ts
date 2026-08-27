@@ -118,11 +118,11 @@ function sampleWithUnknownFields(): CoursePreviewData {
 }
 
 describe("course111Admin load", () => {
-  it("loads Course 111 cleaned poc and stays draft", () => {
+  it("loads Course 111 cleaned poc as published", () => {
     const data = loadCourse111();
     expect(data.course.legacyChallengeId).toBe(COURSE_111_ID);
     expect(data.course.title).toContain("Silver Reed SK840");
-    expect(course111IsDraft(data)).toBe(true);
+    expect(course111IsDraft(data)).toBe(false);
     expect(basename(getCourse111ContentPath())).toBe(COURSE_111_POC_FILENAME);
     expect(listCourse111LessonSummaries(data).length).toBeGreaterThan(0);
   });
@@ -435,7 +435,7 @@ describe("course111Admin original lesson components", () => {
     expect(items.map((item) => item.type)).toEqual(["richText", "richText"]);
     expect(items[1]?.identity).toMatch(/LearnDesignaKnit/i);
     expect(items[1]?.imageSrcs).toContain(
-      "/challenge/images/v2/111/learn_dak_logos.png",
+      "/images/course-content/111/learn_dak_logos.png",
     );
   });
 
@@ -469,7 +469,7 @@ describe("course111Admin original lesson components", () => {
     const promo = found.block.components.find(
       (component) => component.legacyComponentId === 9348,
     ) as { html?: string };
-    expect(promo.html).toContain("/challenge/images/v2/111/learn_dak_logos.png");
+    expect(promo.html).toContain("/images/course-content/111/learn_dak_logos.png");
   });
 
   it("deletes a component and leaves the rest of the lesson intact", () => {

@@ -117,10 +117,9 @@ describe("lesson published visibility", () => {
 describe("Course 111 conversion invariants", () => {
   const data = course111 as CoursePreviewData;
 
-  it("remains draft / in_progress / unpublished", () => {
-    expect(data.course.status).toBe("draft");
-    expect(data.course.published).toBe(false);
-    expect(data.course.contentStatus).toBe("in_progress");
+  it("is published for the same-origin numeric player", () => {
+    expect(data.course.status).toBe("published");
+    expect(data.course.published).toBe(true);
   });
 
   it("has no migrationPending blocks in published lessons", () => {
