@@ -7,6 +7,7 @@
 import {
   resolveFrontVNeckRowCounterDisplayPolicy,
   type FrontArmholeNecklineOverlap,
+  type FrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
@@ -117,7 +118,9 @@ export function activeShoulderCenterDivideIntroApplies(
 function cardiganFrontUsesContinuousGarmentRc(
   chart?: NeckShoulderShapingChart,
   overlapFallback?: FrontArmholeNecklineOverlap | null,
+  timingCase?: FrontVNeckShapingTimingCase,
 ): boolean {
+  if (timingCase === "before-armhole") return true;
   return (
     resolveFrontVNeckRowCounterDisplayPolicy(
       chart?.frontVNeckArmholeComposition ?? overlapFallback ?? undefined,
@@ -167,10 +170,12 @@ export function formatActiveShoulderCardiganFrontNecklinePlainSentence(args: {
   localStartRcLabel?: string | undefined;
   chart?: NeckShoulderShapingChart | undefined;
   frontArmholeNecklineOverlap?: FrontArmholeNecklineOverlap | null;
+  frontVNeckShapingTimingCase?: FrontVNeckShapingTimingCase;
 }): string {
   const continuous = cardiganFrontUsesContinuousGarmentRc(
     args.chart,
     args.frontArmholeNecklineOverlap,
+    args.frontVNeckShapingTimingCase,
   );
   return formatArmholeRcAnchoredSentence(
     args.localStartRcLabel,
