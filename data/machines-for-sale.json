@@ -86,5 +86,21 @@
     "shortHtml": "Take a second needlebed, turn it 180° and you'll have both knit and purl stitches.\n\nThis ribber fits the Taitexma TH260 bulky punchcard machine\n\nUS Warranty: 90 Days labor on defects in materials and workmanship.\nNon-US Warranty: 30 days parts and labor",
     "imageSrc": "/images/machines/taitexma-tr260-ribber.jpg",
     "sortOrder": 50
+  },
+  {
+    "id": "taitexma-th160",
+    "name": "Taitexma TH160 Mid-Gauge Machine",
+    "brand": "Taitexma",
+    "model": "TH160",
+    "price": 999,
+    "priceLabel": "$999",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th160",
+    "status": "available",
+    "specs": [
+      "Mid-Gauge"
+    ],
+    "shortHtml": "Machine only\nAt 6mm this Taitexma (tie-tex-ma) machine is the perfect gauge for the use of a wide range of yarns.\n\nBeing a metal bed, this machine will provide years of service.\nGet all of the basic knitting machine functionality with minimal fuss.\nThis machine does not have a punchcard mechanism\n\nLK-150 Knitter?\nUpgrade to this metal machine and you will be amazed at the expanded capabilities of this machine,\n\nNew to machine knitting?\nThe learning curve is very straightforward. Take it step by step and you’ll be using all the features of the machine in no time.\n\nExperienced machine knitter?\nYou’ll appreciate the quality of the machine, the in-between gauge and the control you’ll have over your knitting with a minimum of fuss.",
+    "imageSrc": "/images/machines/taitexma-th160-machine.jpg",
+    "sortOrder": 60
   }
 ]
