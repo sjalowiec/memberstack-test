@@ -1,7 +1,7 @@
 /**
  * Collect and publish the current Machines for Sale listings to production (main).
- * DEV saves commit data files to the GitHub `dev` branch. Publish is a separate
- * GitHub commit of allowlisted files onto `main`.
+ * DEV saves commit data files to the GitHub `dev` branch. Publish promotes the
+ * listings JSON and referenced machine images onto `main`.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -16,7 +16,6 @@ import {
   gitBlobSha,
   listingImageSrcToRepoPath,
   MACHINE_SALES_JSON_REPO_PATH,
-  MACHINE_SALES_STOREFRONT_REPO_PATHS,
   resolveMachineSalesGithubConfig,
   type MachineSalesGithubConfig,
   type MachineSalesGithubFile,
@@ -90,7 +89,7 @@ export function summarizeMachineSalesListings(
 export function collectMachineSalesPublishCandidatePaths(
   listings: MachineSalesListing[],
 ): string[] {
-  const paths = [MACHINE_SALES_JSON_REPO_PATH, ...MACHINE_SALES_STOREFRONT_REPO_PATHS];
+  const paths = [MACHINE_SALES_JSON_REPO_PATH];
   for (const src of shopListingImageSrcs(listings)) {
     const repoPath = listingImageSrcToRepoPath(src);
     if (!repoPath) {

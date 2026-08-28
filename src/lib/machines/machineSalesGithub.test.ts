@@ -156,12 +156,12 @@ describe("machine sales publish plan", () => {
     expect(isMachineSalesPublishAllowed("localhost", { isViteDev: true })).toBe(true);
   });
 
-  it("collects the listings JSON, storefront reader, and referenced images only", () => {
+  it("collects the listings JSON and referenced images only", () => {
     const listings = readMachineSalesListings();
     const paths = collectMachineSalesPublishCandidatePaths(listings);
     expect(paths[0]).toBe(MACHINE_SALES_JSON_REPO_PATH);
-    expect(paths).toContain("src/pages/shop/machines.astro");
-    expect(paths).toContain("src/lib/machines/machineSalesListings.ts");
+    expect(paths).not.toContain("src/pages/shop/machines.astro");
+    expect(paths).not.toContain("src/lib/machines/machineSalesListings.ts");
     expect(paths).toContain("public/images/machines/taxema-bulky1.jpg");
     expect(paths).toContain("public/images/machines/8601.jpg");
     expect(paths).not.toContain("data/machines.json");
