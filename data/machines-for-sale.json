@@ -1,0 +1,73 @@
+[
+  {
+    "id": "taitexma-th860",
+    "name": "Taitexma TH860 Punchcard Knitting Machine",
+    "brand": "Taitexma",
+    "model": "TH860",
+    "price": 1449,
+    "priceLabel": "$1,449",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-th860-punchcard-knitting-machine",
+    "status": "available",
+    "specs": [
+      "Standard Gauge",
+      "Punchcard",
+      "200 needles"
+    ],
+    "shortHtml": "At 4.5mm this Taitexma <em>(tie-tex-ma)</em> machine is the perfect gauge for finer yarns and lighter weight knits.",
+    "imageSrc": "/images/machines/8601.jpg",
+    "sortOrder": 10
+  },
+  {
+    "id": "taitexma-tr-850",
+    "name": "Taitexma TR-850 Standard Ribber",
+    "brand": "Taitexma",
+    "model": "TR-850",
+    "price": 1399,
+    "priceLabel": "$1,399",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/tr-850-taitexma-standard-ribber",
+    "status": "available",
+    "specs": [
+      "4.5 Standard Gauge",
+      "200 needles"
+    ],
+    "shortHtml": "Expand your knitting machine's capabilities by making it easy to knit professional ribbing, cuffs, waistbands, collars, and a wide variety of textured stitch patterns.",
+    "imageSrc": "/images/machines/tr-850-ribber.jpg",
+    "sortOrder": 20
+  },
+  {
+    "id": "taitexma-th-tr-160-bundle",
+    "name": "Taitexma Mid-Gauge TH/TR 160 Bundle",
+    "brand": "Taitexma",
+    "model": "TH/TR 160 Bundle",
+    "price": 2099,
+    "priceLabel": "$2,099",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th-tr-160-bundle",
+    "status": "available",
+    "specs": [
+      "Mid-Gauge 6mm",
+      "164 needles",
+      "Ribber included"
+    ],
+    "shortHtml": "Machine and ribber bundle. At 6mm this Taitexma <em>(tie-tex-ma)</em> machine is the perfect gauge for a wide range of yarns.",
+    "imageSrc": "/images/machines/taitexma-th-tr-160-bundle.jpg",
+    "sortOrder": 30
+  },
+  {
+    "id": "taitexma-th260",
+    "name": "Taitexma TH260 Bulky",
+    "brand": "Taitexma",
+    "model": "TH260",
+    "price": 1999,
+    "priceLabel": "$1,999",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-th260",
+    "status": "available",
+    "specs": [
+      "Bulky/Chunky",
+      "Punchcard",
+      "114 Needles"
+    ],
+    "shortHtml": "At 9mm this Taitexma (tie-tex-ma) machine is the perfect gauge for popular hand knitting and hand-spun yarns.\n\nMetal bed, this machine will provide years of service.\nGet all of the domestic knitting machine functionality with minimal fuss.\nThe punchcard feature offers automatic needle selection for amazing texture and color stitch patterns.",
+    "imageSrc": "/images/machines/taxema-bulky1.jpg",
+    "sortOrder": 40
+  }
+]
