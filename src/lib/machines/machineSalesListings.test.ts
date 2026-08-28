@@ -3,10 +3,13 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { MACHINE_SALES_HOLD } from "./machineSalesHold";
 import {
+  applyListingDelete,
   applyListingSave,
   getStorefrontHoldListings,
   listingIdFromBrandModel,
+  listingTypeFromUnknown,
   normalizeMachineSalesListing,
+  parseMachineSalesListingsFile,
   readMachineSalesListings,
   shopListingImageSrcs,
 } from "./machineSalesListings";
@@ -47,9 +50,9 @@ describe("machine sales hold listings", () => {
     expect(MACHINE_SALES_HOLD).toBe(true);
   });
 
-  it("keeps the original three storefront cards and includes the approved TH260 listing", () => {
+  it("keeps the original three storefront cards and includes the later approved listings", () => {
     const listings = getStorefrontHoldListings();
-    expect(listings).toHaveLength(4);
+    expect(listings).toHaveLength(6);
     expect(
       listings.slice(0, 3).map((row) => ({
         name: row.name,
@@ -66,10 +69,12 @@ describe("machine sales hold listings", () => {
       price: 1999,
       priceLabel: "$1,999",
       status: "available",
+      listingType: "machine",
       shopifyUrl: "https://vjzu11-86.myshopify.com/products/taitexma-th260",
       imageSrc: "/images/machines/taxema-bulky1.jpg",
     });
     expect(listings.every((row) => row.status === "available")).toBe(true);
+    expect(listings.every((row) => row.listingType === "machine")).toBe(true);
   });
 
   it("hides hidden listings from the storefront and keeps sold listings", () => {
@@ -77,13 +82,13 @@ describe("machine sales hold listings", () => {
     const hidden = getStorefrontHoldListings(
       seeded.map((row, i) => (i === 0 ? { ...row, status: "hidden" as const } : row))
     );
-    expect(hidden).toHaveLength(3);
+    expect(hidden).toHaveLength(5);
     expect(hidden.some((row) => row.id === "taitexma-th860")).toBe(false);
 
     const sold = getStorefrontHoldListings(
       seeded.map((row, i) => (i === 1 ? { ...row, status: "sold" as const } : row))
     );
-    expect(sold).toHaveLength(4);
+    expect(sold).toHaveLength(6);
     expect(sold.find((row) => row.id === "taitexma-tr-850")?.status).toBe("sold");
   });
 
@@ -94,6 +99,8 @@ describe("machine sales hold listings", () => {
       "/images/machines/tr-850-ribber.jpg",
       "/images/machines/taitexma-th-tr-160-bundle.jpg",
       "/images/machines/taxema-bulky1.jpg",
+      "/images/machines/taitexma-tr260-ribber.jpg",
+      "/images/machines/taitexma-th160-machine.jpg",
     ]);
     expect(images).not.toContain("/images/machines/taxema_bulky1.jpg");
   });
@@ -116,6 +123,10 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("getStorefrontHoldListings");
     expect(page).not.toContain("TEMP_SHOPIFY_PRODUCTS");
     expect(page).toContain("MACHINE_SALES_HOLD");
+    expect(page).toContain('listingType === "machine"');
+    expect(page).toContain('listingType === "accessory"');
+    expect(page).not.toContain('includes("ribber")');
+    expect(page).not.toContain('includes("Ribber")');
   });
 
   it("does not offer catalog prefill on the shop-machines admin", () => {
@@ -127,6 +138,9 @@ describe("machine sales hold listings", () => {
     expect(page).not.toContain("Start from catalog");
     expect(page).not.toContain("catalogMachineId");
     expect(page).toContain("Add Machine");
+    expect(page).toContain("ms-field-listingType");
+    expect(page).toContain("data-delete");
+    expect(page).toContain("window.confirm");
   });
 });
 
@@ -171,7 +185,7 @@ describe("listing save helpers", () => {
     });
     expect(applied.ok).toBe(true);
     if (!applied.ok) return;
-    expect(applied.listings).toHaveLength(5);
+    expect(applied.listings).toHaveLength(7);
     expect(applied.listings.find((row) => row.id === "taitexma-th860")?.shopifyUrl).toContain(
       "taitexma-th860-punchcard-knitting-machine"
     );
@@ -179,6 +193,59 @@ describe("listing save helpers", () => {
 
   it("builds a slug id from brand and model", () => {
     expect(listingIdFromBrandModel("Taitexma", "TH260")).toBe("taitexma-th260");
+  });
+
+  it("defaults a missing listing type to machine so existing rows stay visible", () => {
+    expect(listingTypeFromUnknown(undefined)).toBe("machine");
+    expect(listingTypeFromUnknown("")).toBe("machine");
+    expect(listingTypeFromUnknown("accessory")).toBe("accessory");
+    expect(listingTypeFromUnknown("ribber")).toBe(null);
+    const parsed = parseMachineSalesListingsFile(
+      JSON.stringify([
+        {
+          id: "legacy-no-type",
+          name: "Taitexma TR-850 Standard Ribber",
+          brand: "Taitexma",
+          model: "TR-850",
+          status: "available",
+          shopifyUrl: "https://example.com/products/tr-850",
+          imageSrc: "/images/machines/tr-850-ribber.jpg",
+          specs: [],
+          shortHtml: "",
+          price: 1,
+          sortOrder: 20,
+        },
+      ]),
+    );
+    expect(parsed[0]?.listingType).toBe("machine");
+  });
+
+  it("lets an existing listing change from Machine to Accessory", () => {
+    const current = readMachineSalesListings();
+    const ribber = current.find((row) => row.id === "taitexma-tr-850");
+    if (!ribber) throw new Error("expected seeded TR-850 listing");
+    const applied = applyListingSave(current, {
+      mode: "edit",
+      listing: { ...ribber, listingType: "accessory" },
+    });
+    expect(applied.ok).toBe(true);
+    if (!applied.ok) return;
+    expect(applied.listings.find((row) => row.id === "taitexma-tr-850")?.listingType).toBe(
+      "accessory",
+    );
+    expect(applied.listings).toHaveLength(current.length);
+  });
+
+  it("deletes a listing from JSON without touching image paths", () => {
+    const current = readMachineSalesListings();
+    const deleted = current.find((row) => row.id === "taitexma-th160");
+    expect(deleted?.imageSrc).toBe("/images/machines/taitexma-th160-machine.jpg");
+    const applied = applyListingDelete(current, "taitexma-th160");
+    expect(applied.ok).toBe(true);
+    if (!applied.ok) return;
+    expect(applied.listings.find((row) => row.id === "taitexma-th160")).toBeUndefined();
+    expect(applied.listings).toHaveLength(current.length - 1);
+    expect(shopListingImageSrcs(current)).toContain("/images/machines/taitexma-th160-machine.jpg");
   });
 });
 

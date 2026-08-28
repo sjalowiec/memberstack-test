@@ -8,6 +8,7 @@
     "priceLabel": "$1,449",
     "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-th860-punchcard-knitting-machine",
     "status": "available",
+    "listingType": "machine",
     "specs": [
       "Standard Gauge",
       "Punchcard",
@@ -26,6 +27,7 @@
     "priceLabel": "$1,399",
     "shopifyUrl": "https://vjzu11-86.myshopify.com/products/tr-850-taitexma-standard-ribber",
     "status": "available",
+    "listingType": "machine",
     "specs": [
       "4.5 Standard Gauge",
       "200 needles"
@@ -43,6 +45,7 @@
     "priceLabel": "$2,099",
     "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th-tr-160-bundle",
     "status": "available",
+    "listingType": "machine",
     "specs": [
       "Mid-Gauge 6mm",
       "164 needles",
@@ -61,6 +64,7 @@
     "priceLabel": "$1,999",
     "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-th260",
     "status": "available",
+    "listingType": "machine",
     "specs": [
       "Bulky/Chunky",
       "Punchcard",
@@ -79,6 +83,7 @@
     "priceLabel": "$1,149",
     "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-tr260-ribber-attachment",
     "status": "available",
+    "listingType": "machine",
     "specs": [
       "Bulky/Chunky",
       "114 needles"
@@ -96,6 +101,7 @@
     "priceLabel": "$999",
     "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th160",
     "status": "available",
+    "listingType": "machine",
     "specs": [
       "Mid-Gauge"
     ],

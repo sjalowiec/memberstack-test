@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import {
+  applyListingDelete,
   applyListingSave,
   readMachineSalesListings,
   shopListingImageSrcs,
@@ -71,12 +72,30 @@ export const POST: APIRoute = async ({ request }) => {
 
   const payload = body as Record<string, unknown>;
   const mode = payload.mode;
-  if (mode !== "new" && mode !== "edit") {
-    return jsonResponse({ ok: false, error: 'Body must include mode: "new" | "edit".' }, 400);
-  }
 
   try {
     const current = readMachineSalesListings();
+
+    if (mode === "delete") {
+      const applied = applyListingDelete(current, payload.id);
+      if (!applied.ok) return jsonResponse({ ok: false, error: applied.error }, 400);
+      const persisted = await persistMachineSalesListings(applied.listings, {
+        hostname,
+        env: adminEnv,
+      });
+      return jsonResponse({
+        ok: true,
+        listings: persisted.listings,
+        listingImages: shopListingImageSrcs(persisted.listings),
+        persistedVia: persisted.persistedVia,
+        branch: persisted.branch ?? null,
+        commitSha: persisted.commitSha ?? null,
+      });
+    }
+
+    if (mode !== "new" && mode !== "edit") {
+      return jsonResponse({ ok: false, error: 'Body must include mode: "new" | "edit" | "delete".' }, 400);
+    }
     const applied = applyListingSave(current, {
       listing: payload.listing,
       mode: mode as ListingSaveMode,

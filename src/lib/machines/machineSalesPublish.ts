@@ -46,6 +46,7 @@ export type MachineSalesPublishListingSummary = {
   price: number | null;
   priceLabel: string | null;
   status: MachineSalesListing["status"];
+  listingType: MachineSalesListing["listingType"];
   shopifyUrl: string;
   imageSrc: string;
 };
@@ -86,6 +87,7 @@ export function summarizeMachineSalesListings(
     price: row.price,
     priceLabel: row.priceLabel,
     status: row.status,
+    listingType: row.listingType,
     shopifyUrl: row.shopifyUrl,
     imageSrc: row.imageSrc,
   }));

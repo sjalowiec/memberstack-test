@@ -24,6 +24,9 @@ export const MACHINE_SALES_IMAGE_DISK_DIR = path.join(
 export const MACHINE_SALES_STATUSES = ["available", "sold", "hidden"] as const;
 export type MachineSalesStatus = (typeof MACHINE_SALES_STATUSES)[number];
 
+export const MACHINE_SALES_LISTING_TYPES = ["machine", "accessory"] as const;
+export type MachineSalesListingType = (typeof MACHINE_SALES_LISTING_TYPES)[number];
+
 export type MachineSalesListing = {
   id: string;
   name: string;
@@ -33,6 +36,7 @@ export type MachineSalesListing = {
   priceLabel: string | null;
   shopifyUrl: string;
   status: MachineSalesStatus;
+  listingType: MachineSalesListingType;
   specs: string[];
   shortHtml: string;
   imageSrc: string;
@@ -53,6 +57,22 @@ export function isMachineSalesStatus(value: unknown): value is MachineSalesStatu
     typeof value === "string" &&
     (MACHINE_SALES_STATUSES as readonly string[]).includes(value)
   );
+}
+
+export function isMachineSalesListingType(value: unknown): value is MachineSalesListingType {
+  return (
+    typeof value === "string" &&
+    (MACHINE_SALES_LISTING_TYPES as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * Existing listings were saved without a type. Missing/blank values default to
+ * machine so they stay on the shop. Do not infer type from the product name.
+ */
+export function listingTypeFromUnknown(value: unknown): MachineSalesListingType | null {
+  if (value == null || value === "") return "machine";
+  return isMachineSalesListingType(value) ? value : null;
 }
 
 function clean(value: unknown): string {
@@ -129,6 +149,9 @@ export function normalizeMachineSalesListing(
   const status = isMachineSalesStatus(rec.status) ? rec.status : null;
   if (!status) return { ok: false, error: "Status must be available, sold, or hidden." };
 
+  const listingType = listingTypeFromUnknown(rec.listingType);
+  if (!listingType) return { ok: false, error: "Type must be Machine or Accessory." };
+
   const shopifyUrl = clean(rec.shopifyUrl);
   if (status === "available") {
     if (!shopifyUrl) {
@@ -167,6 +190,7 @@ export function normalizeMachineSalesListing(
       priceLabel,
       shopifyUrl,
       status,
+      listingType,
       specs,
       shortHtml: typeof rec.shortHtml === "string" ? rec.shortHtml : clean(rec.shortHtml),
       imageSrc,
@@ -246,5 +270,20 @@ export function applyListingSave(
   }
   const copy = listings.slice();
   copy[idx] = nextListing;
+  return { ok: true, listings: sortMachineSalesListings(copy) };
+}
+
+export function applyListingDelete(
+  listings: MachineSalesListing[],
+  id: unknown
+): { ok: true; listings: MachineSalesListing[] } | { ok: false; error: string } {
+  const listingId = clean(id);
+  if (!listingId) return { ok: false, error: "Listing id is required." };
+  const idx = listings.findIndex((row) => row.id === listingId);
+  if (idx < 0) {
+    return { ok: false, error: `No listing with id "${listingId}" exists.` };
+  }
+  const copy = listings.slice();
+  copy.splice(idx, 1);
   return { ok: true, listings: sortMachineSalesListings(copy) };
 }

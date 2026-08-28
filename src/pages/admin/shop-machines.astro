@@ -78,6 +78,7 @@ import "../../styles/admin-machines.css";
             <tr>
               <th scope="col">Machine</th>
               <th scope="col">Price</th>
+              <th scope="col">Type</th>
               <th scope="col">Status</th>
               <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
@@ -140,6 +141,13 @@ import "../../styles/admin-machines.css";
               <option value="available">Available</option>
               <option value="sold">Sold</option>
               <option value="hidden">Hidden</option>
+            </select>
+          </label>
+          <label>
+            <span>Type</span>
+            <select name="listingType" id="ms-field-listingType">
+              <option value="machine">Machine</option>
+              <option value="accessory">Accessory</option>
             </select>
           </label>
           <label class="am__full">
@@ -243,6 +251,7 @@ import "../../styles/admin-machines.css";
     let pendingUpload: { filename: string; mimeType: string; dataBase64: string } | null = null;
     let previewObjectUrl: string | null = null;
     let saving = false;
+    let deleting = false;
     let publishing = false;
 
     function field(id: string): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null {
@@ -284,6 +293,7 @@ import "../../styles/admin-machines.css";
         price: number | null;
         priceLabel: string | null;
         status: string;
+        listingType?: string;
         shopifyUrl: string;
         imageSrc: string;
       }>;
@@ -306,6 +316,7 @@ import "../../styles/admin-machines.css";
           return `<tr>
             <td>${escapeHtml(row.name)}</td>
             <td>${escapeHtml(row.priceLabel || "")}</td>
+            <td>${escapeHtml(row.listingType === "accessory" ? "Accessory" : "Machine")}</td>
             <td>${escapeHtml(row.status)}</td>
             <td><code>${escapeHtml(row.shopifyUrl || "(none)")}</code></td>
             <td><code>${escapeHtml(row.imageSrc || "(none)")}</code></td>
@@ -323,6 +334,7 @@ import "../../styles/admin-machines.css";
               <tr>
                 <th scope="col">Name</th>
                 <th scope="col">Price</th>
+                <th scope="col">Type</th>
                 <th scope="col">Status</th>
                 <th scope="col">Shopify URL</th>
                 <th scope="col">Image</th>
@@ -473,6 +485,7 @@ import "../../styles/admin-machines.css";
         priceLabel: null,
         shopifyUrl: val("ms-field-shopifyUrl"),
         status: (val("ms-field-status") || "available") as MachineSalesListing["status"],
+        listingType: (val("ms-field-listingType") || "machine") as MachineSalesListing["listingType"],
         specs,
         shortHtml: field("ms-field-shortHtml")?.value ?? "",
         imageSrc: val("ms-field-imageSrc"),
@@ -493,6 +506,7 @@ import "../../styles/admin-machines.css";
       setVal("ms-field-model", listing.model);
       setVal("ms-field-price", listing.price);
       setVal("ms-field-status", listing.status);
+      setVal("ms-field-listingType", listing.listingType || "machine");
       setVal("ms-field-shopifyUrl", listing.shopifyUrl);
       setVal("ms-field-spec1", listing.specs[0] ?? "");
       setVal("ms-field-spec2", listing.specs[1] ?? "");
@@ -537,9 +551,11 @@ import "../../styles/admin-machines.css";
             <span class="am__hint">${escapeHtml(row.brand)} ${escapeHtml(row.model)}</span>
           </td>
           <td>${escapeHtml(row.priceLabel || "")}</td>
+          <td>${escapeHtml(row.listingType === "accessory" ? "Accessory" : "Machine")}</td>
           <td>${escapeHtml(row.status)}</td>
           <td class="am__row-action">
             <button type="button" class="am__btn am__btn--small am__btn--outline" data-edit="${escapeHtml(row.id)}">Edit</button>
+            <button type="button" class="am__btn am__btn--small am__btn--outline" data-delete="${escapeHtml(row.id)}">Delete</button>
           </td>
         `;
         rowsEl.appendChild(tr);
@@ -629,6 +645,47 @@ import "../../styles/admin-machines.css";
       }
     }
 
+    async function deleteListing(id: string): Promise<void> {
+      if (deleting) return;
+      const listing = listings.find((row) => row.id === id);
+      if (!listing) return;
+      const confirmed = window.confirm(
+        `Delete "${listing.name}"?\n\nThis removes the listing from the shop. The photo file is not deleted.`,
+      );
+      if (!confirmed) return;
+      deleting = true;
+      setStatus(`Deleting ${listing.name}…`, "neutral");
+      try {
+        const res = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "delete", id }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          listings?: MachineSalesListing[];
+          listingImages?: string[];
+          error?: string;
+        };
+        if (!res.ok || !data.ok || !Array.isArray(data.listings)) {
+          throw new Error(data.error || "Delete failed.");
+        }
+        listings = data.listings;
+        listingImages = data.listingImages ?? listingImages;
+        renderTable();
+        if (mode !== "none" && val("ms-field-id") === id) {
+          mode = "none";
+          if (formPanel) formPanel.hidden = true;
+        }
+        setStatus(`Deleted ${listing.name}.`, "ok");
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : "";
+        setStatus(detail || "The listing could not be deleted.", "err");
+      } finally {
+        deleting = false;
+      }
+    }
+
     function blankListing(): MachineSalesListing {
       return {
         id: `listing-${Date.now()}`,
@@ -639,6 +696,7 @@ import "../../styles/admin-machines.css";
         priceLabel: null,
         shopifyUrl: "",
         status: "available",
+        listingType: "machine",
         specs: [],
         shortHtml: "",
         imageSrc: "",
@@ -703,6 +761,12 @@ import "../../styles/admin-machines.css";
     rowsEl?.addEventListener("click", (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+      const deleteBtn = target.closest("[data-delete]");
+      if (deleteBtn instanceof HTMLElement) {
+        const id = deleteBtn.getAttribute("data-delete");
+        if (id) void deleteListing(id);
+        return;
+      }
       const btn = target.closest("[data-edit]");
       if (!(btn instanceof HTMLElement)) return;
       const id = btn.getAttribute("data-edit");

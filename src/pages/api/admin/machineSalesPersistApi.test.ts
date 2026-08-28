@@ -26,5 +26,9 @@ describe("POST /api/admin/machine-sales", () => {
     expect(source).toContain("isMachineSalesDevWriteAllowed");
     expect(source).toContain("new URL(request.url).hostname");
     expect(source).toContain("productionBlockedResponse");
+    expect(source).toContain("applyListingDelete");
+    expect(source).toContain('mode === "delete"');
+    expect(source).not.toContain("unlink");
+    expect(source).not.toContain("rmSync");
   });
 });
