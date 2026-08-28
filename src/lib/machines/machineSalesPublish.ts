@@ -1,7 +1,8 @@
 /**
  * Collect and publish the current Machines for Sale listings to production (main).
- * DEV saves commit data files to the GitHub `dev` branch. Publish promotes the
- * listings JSON and referenced machine images onto `main`.
+ * DEV saves commit data files to the GitHub `dev` branch. Hosted DEV publish reads
+ * those GitHub `dev` files and promotes the listings JSON and referenced images
+ * onto `main`. Localhost still publishes from the working tree disk.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -13,18 +14,22 @@ import {
   assertAllowedMachineSalesPublishPath,
   commitMachineSalesFiles,
   getGithubFileBlobSha,
+  getGithubFileContent,
   gitBlobSha,
   listingImageSrcToRepoPath,
   MACHINE_SALES_JSON_REPO_PATH,
+  resolveMachineSalesDevGithubConfig,
   resolveMachineSalesGithubConfig,
   type MachineSalesGithubConfig,
   type MachineSalesGithubFile,
 } from "./machineSalesGithub";
 import {
+  parseMachineSalesListingsFile,
   readMachineSalesListings,
   shopListingImageSrcs,
   type MachineSalesListing,
 } from "./machineSalesListings";
+import { resolveMachineSalesPersistMode } from "./machineSalesPersist";
 
 export const MACHINE_SALES_PUBLISH_CONFIRM = "PUBLISH";
 
@@ -116,15 +121,77 @@ export function readMachineSalesPublishFile(repoPath: string): Buffer {
   return readFileSync(diskPath);
 }
 
+async function loadPublishListings(options: {
+  listings?: MachineSalesListing[];
+  sourceConfig?: MachineSalesGithubConfig;
+  fetcher?: typeof fetch;
+}): Promise<MachineSalesListing[]> {
+  if (options.listings) return options.listings;
+  if (options.sourceConfig) {
+    const content = await getGithubFileContent(
+      options.sourceConfig,
+      MACHINE_SALES_JSON_REPO_PATH,
+      options.fetcher,
+    );
+    if (!content) {
+      throw new Error("Could not read data/machines-for-sale.json from the GitHub dev branch.");
+    }
+    return parseMachineSalesListingsFile(content.toString("utf8"));
+  }
+  return readMachineSalesListings();
+}
+
+async function readPublishSourceFile(
+  repoPath: string,
+  options: {
+    sourceConfig?: MachineSalesGithubConfig;
+    fetcher?: typeof fetch;
+  },
+): Promise<Buffer> {
+  if (options.sourceConfig) {
+    const content = await getGithubFileContent(options.sourceConfig, repoPath, options.fetcher);
+    if (!content) {
+      throw new Error(`Cannot publish missing file: ${repoPath}`);
+    }
+    return content;
+  }
+  return readMachineSalesPublishFile(repoPath);
+}
+
+function resolvePublishSourceConfig(options: {
+  hostname?: string | null;
+  env?: DetectSiteEnvironmentOptions;
+  sourceConfig?: MachineSalesGithubConfig;
+}): MachineSalesGithubConfig | undefined {
+  if (options.sourceConfig) return options.sourceConfig;
+  if (!options.hostname) return undefined;
+  try {
+    if (resolveMachineSalesPersistMode(options.hostname, options.env) !== "github") {
+      return undefined;
+    }
+  } catch {
+    return undefined;
+  }
+  return resolveMachineSalesDevGithubConfig();
+}
+
 export async function planMachineSalesPublish(options: {
   listings?: MachineSalesListing[];
+  hostname?: string | null;
+  env?: DetectSiteEnvironmentOptions;
   config?: MachineSalesGithubConfig;
+  sourceConfig?: MachineSalesGithubConfig;
   fetcher?: typeof fetch;
 } = {}): Promise<{
   plan: MachineSalesPublishPlan;
   files: MachineSalesGithubFile[];
 }> {
-  const listings = options.listings ?? readMachineSalesListings();
+  const sourceConfig = resolvePublishSourceConfig(options);
+  const listings = await loadPublishListings({
+    listings: options.listings,
+    sourceConfig,
+    fetcher: options.fetcher,
+  });
   const config = options.config ?? resolveMachineSalesGithubConfig();
   const fetcher = options.fetcher ?? fetch;
   const candidates = collectMachineSalesPublishCandidatePaths(listings);
@@ -132,7 +199,7 @@ export async function planMachineSalesPublish(options: {
   const planFiles: MachineSalesPublishFilePlan[] = [];
 
   for (const repoPath of candidates) {
-    const content = readMachineSalesPublishFile(repoPath);
+    const content = await readPublishSourceFile(repoPath, { sourceConfig, fetcher });
     const remoteSha = await getGithubFileBlobSha(config, repoPath, fetcher);
     const localSha = gitBlobSha(content);
     if (remoteSha === localSha) continue;
@@ -155,7 +222,10 @@ export async function planMachineSalesPublish(options: {
 
 export async function publishMachineSalesToProduction(options: {
   listings?: MachineSalesListing[];
+  hostname?: string | null;
+  env?: DetectSiteEnvironmentOptions;
   config?: MachineSalesGithubConfig;
+  sourceConfig?: MachineSalesGithubConfig;
   fetcher?: typeof fetch;
   dryRun?: boolean;
   message?: string;

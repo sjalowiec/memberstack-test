@@ -51,7 +51,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   if (blocked) return blocked;
 
   try {
-    const { plan } = await planMachineSalesPublish();
+    const hostname = new URL(request.url).hostname;
+    const { plan } = await planMachineSalesPublish({ hostname, env: adminEnv });
     return jsonResponse({ ok: true, ...plan });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not prepare the publish plan.";
@@ -89,7 +90,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   try {
-    const result = await publishMachineSalesToProduction();
+    const hostname = new URL(request.url).hostname;
+    const result = await publishMachineSalesToProduction({ hostname, env: adminEnv });
     return jsonResponse({
       ok: true,
       ...result,

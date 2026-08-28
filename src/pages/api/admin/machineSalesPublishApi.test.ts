@@ -14,6 +14,8 @@ describe("POST /api/admin/machine-sales-publish", () => {
     expect(source).toContain("requireVerifiedMemberForRequest");
     expect(source).not.toContain("requireAdminForRequest");
     expect(source).toContain('MACHINE_SALES_PUBLISH_CONFIRM');
+    expect(source).toContain("planMachineSalesPublish");
+    expect(source).toContain("hostname, env: adminEnv");
     expect(source).toContain("publishMachineSalesToProduction");
   });
 

@@ -203,6 +203,43 @@ export async function getGithubFileBlobSha(
   return typeof body.sha === "string" && body.sha.trim() ? body.sha.trim() : null;
 }
 
+export async function getGithubFileContent(
+  config: MachineSalesGithubConfig,
+  repoPath: string,
+  fetcher: typeof fetch = fetch,
+): Promise<Buffer | null> {
+  assertAllowedMachineSalesPublishPath(repoPath);
+  const api = `https://api.github.com/repos/${config.owner}/${config.repo}`;
+  const url = `${api}/contents/${repoPath}?ref=${encodeURIComponent(config.branch)}`;
+  const response = await fetcher(url, { headers: githubHeaders(config.token) });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Could not read ${repoPath} from GitHub (${response.status}).`);
+  }
+  const body = (await response.json()) as {
+    type?: unknown;
+    sha?: unknown;
+    content?: unknown;
+    encoding?: unknown;
+  };
+  if (body.type && body.type !== "file") {
+    throw new Error(`GitHub path is not a file: ${repoPath}`);
+  }
+  if (typeof body.content === "string") {
+    return Buffer.from(body.content.replace(/\n/g, ""), "base64");
+  }
+  const sha = typeof body.sha === "string" ? body.sha.trim() : "";
+  if (!sha) return null;
+  const blob = await githubJson<{ content?: unknown; encoding?: unknown }>(
+    fetcher,
+    `${api}/git/blobs/${sha}`,
+    { headers: githubHeaders(config.token) },
+    `Could not read blob for ${repoPath}`,
+  );
+  if (typeof blob.content !== "string") return null;
+  return Buffer.from(blob.content.replace(/\n/g, ""), "base64");
+}
+
 async function githubJson<T>(
   fetcher: typeof fetch,
   url: string,

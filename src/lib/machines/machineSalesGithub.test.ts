@@ -214,6 +214,79 @@ describe("machine sales publish plan", () => {
     const fromDisk = readMachineSalesListings();
     expect(plan.listings.map((row) => row.id)).toEqual(fromDisk.map((row) => row.id));
   });
+
+  it("reads listings and images from GitHub dev when publishing from hosted DEV", async () => {
+    const listingsJson =
+      JSON.stringify(
+        [
+          {
+            id: "taitexma-th160",
+            name: "Taitexma TH160 Mid-Gauge Machine",
+            brand: "Taitexma",
+            model: "TH160",
+            price: 999,
+            priceLabel: "$999",
+            shopifyUrl: "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th160",
+            status: "available",
+            specs: ["Mid-Gauge"],
+            shortHtml: "Machine only",
+            imageSrc: "/images/machines/taitexma-th160-machine.jpg",
+            sortOrder: 60,
+          },
+        ],
+        null,
+        2,
+      ) + "\n";
+    const jsonBuf = Buffer.from(listingsJson, "utf8");
+    const imageBuf = Buffer.from("th160-jpeg");
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("ref=dev") && url.includes("data/machines-for-sale.json")) {
+        return new Response(
+          JSON.stringify({
+            sha: gitBlobSha(jsonBuf),
+            encoding: "base64",
+            content: jsonBuf.toString("base64"),
+            type: "file",
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.includes("ref=dev") && url.includes("taitexma-th160-machine.jpg")) {
+        return new Response(
+          JSON.stringify({
+            sha: gitBlobSha(imageBuf),
+            encoding: "base64",
+            content: imageBuf.toString("base64"),
+            type: "file",
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.includes("ref=main")) {
+        return new Response("Not Found", { status: 404 });
+      }
+      throw new Error(`unexpected fetch ${url}`);
+    });
+
+    const { plan, files } = await planMachineSalesPublish({
+      hostname: "kin-dev.netlify.app",
+      env: { isViteDev: false },
+      config: validConfig,
+      sourceConfig: { ...validConfig, branch: "dev" },
+      fetcher: fetcher as unknown as typeof fetch,
+    });
+    expect(plan.listings.map((row) => row.id)).toEqual(["taitexma-th160"]);
+    expect(files.map((file) => file.path)).toEqual([
+      "data/machines-for-sale.json",
+      "public/images/machines/taitexma-th160-machine.jpg",
+    ]);
+    expect(plan.files.map((file) => file.action)).toEqual(["add", "add"]);
+    expect(String(fetcher.mock.calls[0]?.[0])).toContain("ref=dev");
+    expect(files.some((file) => file.path === "src/lib/machines/machineSalesListings.ts")).toBe(
+      false,
+    );
+  });
 });
 
 describe("commitMachineSalesFiles", () => {
