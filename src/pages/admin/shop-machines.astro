@@ -236,10 +236,6 @@ import "../../styles/admin-machines.css";
     const publishStatusEl = document.getElementById("ms-publish-status");
     const publishPreviewEl = document.getElementById("ms-publish-preview");
     const publishConfirmBtn = document.getElementById("ms-publish-confirm");
-    const publishPanel = document.getElementById("ms-publish-panel");
-    const publishStatusEl = document.getElementById("ms-publish-status");
-    const publishPreviewEl = document.getElementById("ms-publish-preview");
-    const publishConfirmBtn = document.getElementById("ms-publish-confirm");
 
     let listings: MachineSalesListing[] = [];
     let listingImages: string[] = [];
@@ -548,14 +544,6 @@ import "../../styles/admin-machines.css";
         `;
         rowsEl.appendChild(tr);
       }
-    }
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
     }
 
     async function fileToPayload(file: File): Promise<{ filename: string; mimeType: string; dataBase64: string }> {
