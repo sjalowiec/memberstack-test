@@ -52,6 +52,8 @@ import Layout from "../../layouts/Layout.astro";
 
   <script>
     // @ts-nocheck
+    import { glossaryPublicUrlFromEnglish } from "../../lib/glossary/glossaryPickerCatalog";
+
     /** @typedef {{ glossaryId: number, english: string, example: string, helpinfo: string, image: string, image_alt: string, image_description: string, metaTitle: string, metaDescription: string, active: boolean, vimeoIds: string[] }} GlossaryEntry */
 
     const entriesEl = document.getElementById("ga-entries");
@@ -197,6 +199,26 @@ import Layout from "../../layouts/Layout.astro";
       englishIn.value = String(entry.english ?? "");
       appendBoundField(mainFields, index, "english", "English", englishIn, { bindType: "string" });
 
+      const publicUrl = glossaryPublicUrlFromEnglish(String(entry.english ?? ""));
+      const publicLink = el("div", "ga-public-link");
+      publicLink.appendChild(el("span", "ga-public-link-label", "Public link"));
+      const publicUrlEl = /** @type {HTMLAnchorElement} */ (document.createElement("a"));
+      publicUrlEl.className = "ga-public-link-url";
+      publicUrlEl.href = publicUrl;
+      publicUrlEl.target = "_blank";
+      publicUrlEl.rel = "noopener noreferrer";
+      publicUrlEl.textContent = publicUrl;
+      publicLink.appendChild(publicUrlEl);
+      const copyBtn = el("button", "ga-btn ga-btn--copy", "Copy link");
+      copyBtn.type = "button";
+      copyBtn.setAttribute("aria-label", "Copy public glossary link");
+      publicLink.appendChild(copyBtn);
+      const copiedEl = el("span", "ga-public-link-copied", "Copied!");
+      copiedEl.hidden = true;
+      copiedEl.setAttribute("aria-live", "polite");
+      publicLink.appendChild(copiedEl);
+      mainFields.appendChild(publicLink);
+
       const exTa = document.createElement("textarea");
       exTa.className = "ga-textarea ga-textarea--example";
       exTa.rows = 3;
@@ -288,6 +310,15 @@ import Layout from "../../layouts/Layout.astro";
         const v = target.value;
         row[field] = v;
       }
+      if (field === "english") {
+        const card = target.closest(".ga-card");
+        const urlEl = card?.querySelector(".ga-public-link-url");
+        if (urlEl instanceof HTMLAnchorElement) {
+          const url = glossaryPublicUrlFromEnglish(String(row.english ?? ""));
+          urlEl.href = url;
+          urlEl.textContent = url;
+        }
+      }
       updateDirtyState();
     }
 
@@ -321,6 +352,54 @@ import Layout from "../../layouts/Layout.astro";
 
     entriesEl?.addEventListener("input", onDelegatedInput);
     entriesEl?.addEventListener("change", onDelegatedInput);
+
+    entriesEl?.addEventListener("click", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      const copyBtn = t.closest(".ga-btn--copy");
+      if (!copyBtn) return;
+      const row = copyBtn.closest(".ga-public-link");
+      const urlEl = row?.querySelector(".ga-public-link-url");
+      const copiedEl = row?.querySelector(".ga-public-link-copied");
+      if (!(urlEl instanceof HTMLAnchorElement) || !(copiedEl instanceof HTMLElement)) return;
+      const url = (urlEl.textContent || "").trim() || urlEl.href;
+      const showCopied = () => {
+        copiedEl.hidden = false;
+        window.clearTimeout(Number(copiedEl.dataset.hideTimer || 0));
+        copiedEl.dataset.hideTimer = String(
+          window.setTimeout(() => {
+            copiedEl.hidden = true;
+          }, 1600),
+        );
+      };
+      const copyWithFallback = () => {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        showCopied();
+      };
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        navigator.clipboard.writeText(url).then(showCopied).catch(() => {
+          try {
+            copyWithFallback();
+          } catch {
+            /* ignore */
+          }
+        });
+        return;
+      }
+      try {
+        copyWithFallback();
+      } catch {
+        /* ignore */
+      }
+    });
 
     entriesEl?.addEventListener("focusin", (e) => {
       const t = e.target;
@@ -734,6 +813,48 @@ import Layout from "../../layouts/Layout.astro";
       margin-bottom: 8px;
       font-weight: 600;
       font-size: 15px;
+    }
+
+    .ga-public-link {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      margin: -8px 0 20px;
+      font-size: 0.85rem;
+      color: #57534e;
+    }
+
+    .ga-public-link-label {
+      font-weight: 600;
+      color: #44403c;
+    }
+
+    .ga-public-link-label::after {
+      content: ":";
+    }
+
+    .ga-public-link-url {
+      flex: 1 1 220px;
+      min-width: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      color: #365314;
+      overflow-wrap: anywhere;
+    }
+
+    .ga-btn--copy {
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      min-height: 0;
+    }
+
+    .ga-public-link-copied {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #15803d;
     }
 
     .ga-field-checkbox input {

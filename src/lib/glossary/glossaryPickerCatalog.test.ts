@@ -3,6 +3,7 @@ import {
   buildGlossaryLinkHtml,
   buildGlossaryPickerCatalog,
   filterGlossaryPickerRows,
+  glossaryPublicUrlFromEnglish,
   glossarySlugFromEnglish,
 } from "./glossaryPickerCatalog";
 
@@ -10,6 +11,22 @@ describe("glossaryPickerCatalog", () => {
   it("builds slugs the same way as glossary pages", () => {
     expect(glossarySlugFromEnglish("Back Bed")).toBe("back-bed");
     expect(glossarySlugFromEnglish("<strong>Alternate</strong>")).toBe("alternate");
+    expect(glossarySlugFromEnglish("#1 Card")).toBe("1-card");
+    expect(glossarySlugFromEnglish("Automatic Patterning")).toBe("automatic-patterning");
+  });
+
+  it("builds the production public URL from the English term", () => {
+    expect(glossaryPublicUrlFromEnglish("Automatic Patterning")).toBe(
+      "https://knititnow.com/glossary/automatic-patterning/",
+    );
+    expect(glossaryPublicUrlFromEnglish("Automatic Pattern Selection")).toBe(
+      "https://knititnow.com/glossary/automatic-pattern-selection/",
+    );
+    expect(glossaryPublicUrlFromEnglish("#1 Card")).toBe("https://knititnow.com/glossary/1-card/");
+    expect(glossaryPublicUrlFromEnglish("<strong>Alternate</strong>")).toBe(
+      "https://knititnow.com/glossary/alternate/",
+    );
+    expect(glossaryPublicUrlFromEnglish("")).toBe("https://knititnow.com/glossary/");
   });
 
   it("builds picker rows from glossary entries", () => {
