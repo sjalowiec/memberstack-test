@@ -117,3 +117,39 @@ export async function requireAdmin(req) {
 
   return { ok: true, member: { id: verified.id, email }, mode: "verified" };
 }
+
+/**
+ * Verifies a Memberstack session without the reporting admin allowlist.
+ * Used by DEV-only tools (e.g. Machines for Sale publish) that already block
+ * production hosts and should accept any signed-in member.
+ */
+export async function requireVerifiedMember(req) {
+  const token = bearerTokenFromRequest(req);
+
+  if (!token) {
+    if (isAllowDevPatternUser()) {
+      return { ok: true, member: DEV_ADMIN_MEMBER, mode: "dev" };
+    }
+    return { ok: false, status: 401, error: "Sign in required." };
+  }
+
+  const client = getMemberstackAdminClient();
+  if (!client) {
+    console.error("admin-auth: MEMBERSTACK_SECRET_KEY is not configured.");
+    return { ok: false, status: 500, error: "Admin auth is not configured." };
+  }
+
+  const verified = await client.verifyMemberToken(token);
+  if (!verified?.id) {
+    return { ok: false, status: 401, error: "Invalid or expired session." };
+  }
+
+  let email = null;
+  try {
+    const record = await client.getMember(verified.id);
+    email = typeof record?.auth?.email === "string" ? record.auth.email : null;
+  } catch {
+    /* verified token is enough; email is cosmetic */
+  }
+  return { ok: true, member: { id: verified.id, email }, mode: "verified" };
+}

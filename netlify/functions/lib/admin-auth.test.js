@@ -4,7 +4,7 @@ vi.mock("./memberstack-admin.js", () => ({
   getMemberstackAdminClient: vi.fn(),
 }));
 
-import { requireAdmin } from "./admin-auth.js";
+import { requireAdmin, requireVerifiedMember } from "./admin-auth.js";
 import { getMemberstackAdminClient } from "./memberstack-admin.js";
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
 
@@ -102,6 +102,26 @@ describe("requireAdmin", () => {
     if (!result.ok) {
       expect(result.status).toBe(403);
       expect(result.error).toMatch(/admin access required/i);
+    }
+  });
+});
+
+describe("requireVerifiedMember", () => {
+  it("denies logged-out access with 401", async () => {
+    const result = await requireVerifiedMember(makeRequest());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(401);
+      expect(result.error).toMatch(/sign in required/i);
+    }
+  });
+
+  it("allows a signed-in member who is not on the reporting admin allowlist", async () => {
+    const result = await requireVerifiedMember(makeRequest("member-token"));
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.member.id).toBe(NON_ADMIN_ID);
+      expect(result.mode).toBe("verified");
     }
   });
 });

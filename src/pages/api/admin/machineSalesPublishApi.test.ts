@@ -8,10 +8,11 @@ describe("POST /api/admin/machine-sales-publish", () => {
     "utf8",
   );
 
-  it("blocks production hosts and requires admin before writing", () => {
+  it("blocks production hosts and requires a signed-in member before writing", () => {
     expect(source).toContain("isMachineSalesPublishAllowed");
     expect(source).toContain("productionBlockedResponse");
-    expect(source).toContain("requireAdminForRequest");
+    expect(source).toContain("requireVerifiedMemberForRequest");
+    expect(source).not.toContain("requireAdminForRequest");
     expect(source).toContain('MACHINE_SALES_PUBLISH_CONFIRM');
     expect(source).toContain("publishMachineSalesToProduction");
   });

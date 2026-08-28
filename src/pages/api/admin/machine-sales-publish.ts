@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { requireAdminForRequest } from "../../../lib/admin/requireAdminRequest";
+import { requireVerifiedMemberForRequest } from "../../../lib/admin/requireAdminRequest";
 import {
   isMachineSalesPublishAllowed,
   MACHINE_SALES_PUBLISH_CONFIRM,
@@ -33,13 +33,13 @@ function productionBlockedResponse() {
 
 async function requirePublisher(
   request: Request,
-  cookies: Parameters<typeof requireAdminForRequest>[1],
+  cookies: Parameters<typeof requireVerifiedMemberForRequest>[1],
 ) {
   const hostname = new URL(request.url).hostname;
   if (!isMachineSalesPublishAllowed(hostname, adminEnv)) {
     return productionBlockedResponse();
   }
-  const auth = await requireAdminForRequest(request, cookies);
+  const auth = await requireVerifiedMemberForRequest(request, cookies);
   if (!auth.ok) {
     return jsonResponse({ ok: false, error: auth.error }, auth.status);
   }

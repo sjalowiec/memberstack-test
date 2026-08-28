@@ -49,3 +49,13 @@ export async function requireAdminForRequest(
   const { requireAdmin } = await import("../../../netlify/functions/lib/admin-auth.js");
   return requireAdmin(authRequest) as Promise<RequireAdminResult>;
 }
+
+export async function requireVerifiedMemberForRequest(
+  request: Request,
+  cookies?: CookieStore,
+): Promise<RequireAdminResult> {
+  const token = memberstackTokenFromRequest(request, cookies);
+  const authRequest = requestWithBearerToken(request, token);
+  const { requireVerifiedMember } = await import("../../../netlify/functions/lib/admin-auth.js");
+  return requireVerifiedMember(authRequest) as Promise<RequireAdminResult>;
+}
