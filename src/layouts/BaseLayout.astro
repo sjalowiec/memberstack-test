@@ -46,6 +46,8 @@ const pathname =
     : "";
 
 const isWatsonPage = pathname === "/watson" || pathname.startsWith("/watson/");
+const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
+const useWatsonFavicon = isWatsonPage || isAdminPage;
 
 const isProduction =
   (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
@@ -74,7 +76,7 @@ const isProduction =
     <RobotsMeta />
 
     <!-- Favicons -->
-    {isWatsonPage ? (
+    {useWatsonFavicon ? (
       <link rel="icon" type="image/svg+xml" href="/watson-favicon.svg" />
     ) : (
       <>

@@ -10,44 +10,20 @@ import {
 } from "../../lib/machines/referenceCatalog";
 import { availabilityLabel } from "../../lib/machines/machineAdminFields";
 import { MACHINE_SALES_HOLD } from "../../lib/machines/machineSalesHold";
+import {
+  displayPriceLabel,
+  getStorefrontHoldListings,
+} from "../../lib/machines/machineSalesListings";
 
 // TEMPORARY: launch hold while shipping/ordering is finalized.
 // Flip MACHINE_SALES_HOLD to false in machineSalesHold.ts to restore the catalog below.
 const salesHold = MACHINE_SALES_HOLD;
 
 /**
- * Temporary Shopify-only offers while the full catalog remains on hold.
- * Hardcoded here on purpose — does not read or modify the machine reference database.
+ * Shopify hold listings, managed from /admin/shop-machines
+ * (data/machines-for-sale.json). Does not read or modify data/machines.json.
  */
-const TEMP_SHOPIFY_PRODUCTS = [
-  {
-    name: "Taitexma TH860 Punchcard Knitting Machine",
-    href: "https://vjzu11-86.myshopify.com/products/taitexma-th860-punchcard-knitting-machine",
-    imageSrc: "/images/machines/8601.jpg",
-    priceLabel: "$1,449",
-    specs: ["Standard Gauge", "Punchcard", "200 needles"],
-    shortHtml:
-      "At 4.5mm this Taitexma <em>(tie-tex-ma)</em> machine is the perfect gauge for finer yarns and lighter weight knits.",
-  },
-  {
-    name: "Taitexma TR-850 Standard Ribber",
-    href: "https://vjzu11-86.myshopify.com/products/tr-850-taitexma-standard-ribber",
-    imageSrc: "/images/machines/tr-850-ribber.jpg",
-    priceLabel: "$1,399",
-    specs: ["4.5 Standard Gauge", "200 needles"],
-    shortHtml:
-      "Expand your knitting machine's capabilities by making it easy to knit professional ribbing, cuffs, waistbands, collars, and a wide variety of textured stitch patterns.",
-  },
-  {
-    name: "Taitexma Mid-Gauge TH/TR 160 Bundle",
-    href: "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th-tr-160-bundle",
-    imageSrc: "/images/machines/taitexma-th-tr-160-bundle.jpg",
-    priceLabel: "$2,099",
-    specs: ["Mid-Gauge 6mm", "164 needles", "Ribber included"],
-    shortHtml:
-      "Machine and ribber bundle. At 6mm this Taitexma <em>(tie-tex-ma)</em> machine is the perfect gauge for a wide range of yarns.",
-  },
-] as const;
+const holdListings = salesHold ? getStorefrontHoldListings() : [];
 
 const title = "Knitting Machines for Sale | Knit it Now";
 const description = salesHold
@@ -85,20 +61,36 @@ function formatPrice(value: number | null): string | null {
           </p>
         </header>
 
+        {holdListings.length === 0 ? (
+          <p class="machines-empty">
+            No machines are listed for sale right now. Please check back soon.
+          </p>
+        ) : (
         <div class="machines-grid machines-grid--temp">
           {
-            TEMP_SHOPIFY_PRODUCTS.map((product) => (
+            holdListings.map((product) => {
+              const priceLabel = displayPriceLabel(product);
+              return (
               <article class="machine-card">
                 <div class="machine-card-image-wrap">
-                  <img
-                    src={product.imageSrc}
-                    alt={product.name}
-                    class="machine-card-image"
-                    width="280"
-                    height="180"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  {product.imageSrc ? (
+                    <img
+                      src={product.imageSrc}
+                      alt={product.name}
+                      class="machine-card-image"
+                      width="280"
+                      height="180"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <div class="machine-card-image-placeholder" aria-hidden="true">
+                      Image coming soon
+                    </div>
+                  )}
+                  {product.status === "sold" && (
+                    <span class="machine-status machine-status--sold-out">Sold</span>
+                  )}
                 </div>
                 <div class="machine-card-body">
                   <h2 class="machine-name">{product.name}</h2>
@@ -107,23 +99,29 @@ function formatPrice(value: number | null): string | null {
                       <li>{spec}</li>
                     ))}
                   </ul>
-                  <div class="machine-short" set:html={product.shortHtml} />
-                  <p class="machine-price">{product.priceLabel}</p>
+                  {product.shortHtml && <div class="machine-short" set:html={product.shortHtml} />}
+                  {priceLabel && <p class="machine-price">{priceLabel}</p>}
                   <div class="machine-actions">
-                    <a
-                      href={product.href}
-                      class="machine-buy"
-                      rel="noopener"
-                      target="_blank"
-                    >
-                      Buy Now
-                    </a>
+                    {product.status === "available" ? (
+                      <a
+                        href={product.shopifyUrl}
+                        class="machine-buy"
+                        rel="noopener"
+                        target="_blank"
+                      >
+                        Buy Now
+                      </a>
+                    ) : (
+                      <span class="machine-status-note">Sold</span>
+                    )}
                   </div>
                 </div>
               </article>
-            ))
+              );
+            })
           }
         </div>
+        )}
       </>
     ) : (
       <>

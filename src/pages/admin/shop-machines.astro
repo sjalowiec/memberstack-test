@@ -1,0 +1,625 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/admin-machines.css";
+---
+
+<BaseLayout
+  title="Machines for Sale | Knit it Now"
+  description="Admin: manage the knitting machines currently shown on /shop/machines."
+  bodyClass="admin-machines-body"
+>
+  <main class="am">
+    <header class="am__head am__head--row">
+      <div>
+        <h1 class="am__title">Machines for Sale</h1>
+        <p class="am__sub">
+          These listings appear on <code>/shop/machines</code>. Add, edit, hide,
+          or mark machines sold here. This is separate from the historical
+          Machine Database.
+        </p>
+      </div>
+      <div class="am__head-actions">
+        <a href="/shop/machines" class="am__btn am__btn--accent" target="_blank" rel="noopener">
+          View shop page
+        </a>
+      </div>
+    </header>
+
+    <p id="ms-status" class="am__status" role="status" aria-live="polite"></p>
+
+    <div class="am__actionbar">
+      <button type="button" id="ms-add" class="am__btn">+ Add Machine</button>
+    </div>
+
+    <section class="am__panel" aria-labelledby="ms-list-heading">
+      <div class="am__toolbar">
+        <h2 id="ms-list-heading" class="am__panel-title">Shop listings</h2>
+        <label class="am__search-label">
+          <span class="sr-only">Filter by status</span>
+          <select id="ms-status-filter" aria-label="Filter by status">
+            <option value="all">All statuses</option>
+            <option value="available">Available</option>
+            <option value="sold">Sold</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </label>
+      </div>
+      <p id="ms-count" class="am__count"></p>
+      <div class="am__table-wrap">
+        <table class="am__table">
+          <thead>
+            <tr>
+              <th scope="col">Machine</th>
+              <th scope="col">Price</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="ms-rows"></tbody>
+        </table>
+      </div>
+      <p id="ms-empty" class="am__empty" hidden>No listings match this filter.</p>
+    </section>
+
+    <section
+      class="am__panel am__form-panel"
+      id="ms-form-panel"
+      aria-labelledby="ms-form-heading"
+      hidden
+    >
+      <div class="am__form-topbar">
+        <h2 id="ms-form-heading" class="am__panel-title">Edit listing</h2>
+        <div class="am__form-topbar-actions">
+          <span id="ms-form-status" class="am__form-status" role="status" aria-live="polite"></span>
+          <button type="button" id="ms-save" class="am__btn">Save</button>
+          <button type="button" id="ms-cancel" class="am__btn am__btn--outline">Cancel</button>
+          <a
+            id="ms-view-shop"
+            class="am__btn am__btn--accent"
+            href="/shop/machines"
+            target="_blank"
+            rel="noopener"
+          >
+            View shop page
+          </a>
+        </div>
+      </div>
+      <p id="ms-mode" class="am__mode"></p>
+
+      <form id="ms-form" class="am__form" autocomplete="off">
+        <input type="hidden" name="id" id="ms-field-id" />
+        <input type="hidden" name="sortOrder" id="ms-field-sortOrder" />
+
+        <div class="am__grid">
+          <label class="am__full">
+            <span>Machine name <em class="req">*</em></span>
+            <input type="text" name="name" id="ms-field-name" required />
+          </label>
+          <label>
+            <span>Manufacturer / brand</span>
+            <input type="text" name="brand" id="ms-field-brand" />
+          </label>
+          <label>
+            <span>Model</span>
+            <input type="text" name="model" id="ms-field-model" />
+          </label>
+          <label>
+            <span>Price (USD)</span>
+            <input type="number" name="price" id="ms-field-price" step="0.01" min="0" />
+          </label>
+          <label>
+            <span>Status</span>
+            <select name="status" id="ms-field-status">
+              <option value="available">Available</option>
+              <option value="sold">Sold</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </label>
+          <label class="am__full">
+            <span>Shopify product URL</span>
+            <input
+              type="url"
+              name="shopifyUrl"
+              id="ms-field-shopifyUrl"
+              placeholder="https://vjzu11-86.myshopify.com/products/…"
+            />
+            <span class="am__hint">Required when Status is Available. Buy Now uses this URL.</span>
+          </label>
+          <label>
+            <span>Spec 1</span>
+            <input type="text" name="spec1" id="ms-field-spec1" placeholder="e.g. Bulky/Chunky" />
+          </label>
+          <label>
+            <span>Spec 2</span>
+            <input type="text" name="spec2" id="ms-field-spec2" placeholder="e.g. Punchcard" />
+          </label>
+          <label>
+            <span>Spec 3</span>
+            <input type="text" name="spec3" id="ms-field-spec3" placeholder="e.g. 114 needles" />
+          </label>
+          <label class="am__full">
+            <span>Short description</span>
+            <textarea name="shortHtml" id="ms-field-shortHtml" rows="4"></textarea>
+            <span class="am__hint">Shown on the shop card. Basic HTML such as &lt;em&gt; is allowed.</span>
+          </label>
+        </div>
+
+        <fieldset class="am__sales">
+          <legend class="am__sales-legend">Machine image</legend>
+          <p id="ms-image-intro" class="am__sales-intro">
+            Upload a photo from your computer. You do not need to type a filename.
+          </p>
+          <div class="ms-image-preview-wrap">
+            <img id="ms-image-preview" class="ms-image-preview" alt="Listing image preview" hidden />
+            <p id="ms-image-empty" class="am__hint">No image selected yet.</p>
+            <input type="hidden" name="imageSrc" id="ms-field-imageSrc" />
+          </div>
+          <div id="ms-listing-images-wrap" hidden>
+            <p class="am__hint">Or use a photo already on a current shop listing:</p>
+            <div id="ms-listing-images" class="ms-thumb-grid"></div>
+          </div>
+          <label>
+            <span>Upload a new or replacement image</span>
+            <input
+              type="file"
+              id="ms-image-file"
+              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+            />
+            <span class="am__hint">JPG, PNG, or WebP.</span>
+          </label>
+        </fieldset>
+
+        <div class="am__form-actions">
+          <button type="button" id="ms-save-bottom" class="am__btn">Save</button>
+          <button type="button" id="ms-mark-sold" class="am__btn am__btn--outline">Mark Sold</button>
+          <button type="button" id="ms-mark-hidden" class="am__btn am__btn--outline">Hide</button>
+          <button type="button" id="ms-mark-available" class="am__btn am__btn--outline">
+            Restore to Available
+          </button>
+          <button type="button" id="ms-cancel-bottom" class="am__btn am__btn--outline">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    import type { MachineSalesListing } from "../../lib/machines/machineSalesListings";
+
+    const API = "/api/admin/machine-sales";
+    const IMAGE_API = "/api/admin/machine-sales-image";
+
+    const statusEl = document.getElementById("ms-status");
+    const formStatusEl = document.getElementById("ms-form-status");
+    const rowsEl = document.getElementById("ms-rows");
+    const emptyEl = document.getElementById("ms-empty");
+    const countEl = document.getElementById("ms-count");
+    const formPanel = document.getElementById("ms-form-panel");
+    const form = document.getElementById("ms-form");
+    const modeEl = document.getElementById("ms-mode");
+    const listingImagesWrap = document.getElementById("ms-listing-images-wrap");
+    const listingImagesEl = document.getElementById("ms-listing-images");
+    const imageIntroEl = document.getElementById("ms-image-intro");
+    const previewEl = document.getElementById("ms-image-preview");
+    const previewEmptyEl = document.getElementById("ms-image-empty");
+    const fileInput = document.getElementById("ms-image-file");
+    const statusFilterEl = document.getElementById("ms-status-filter");
+
+    let listings: MachineSalesListing[] = [];
+    let listingImages: string[] = [];
+    let mode: "none" | "new" | "edit" = "none";
+    let pendingUpload: { filename: string; mimeType: string; dataBase64: string } | null = null;
+    let previewObjectUrl: string | null = null;
+    let saving = false;
+
+    function field(id: string): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null {
+      const el = document.getElementById(id);
+      return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement
+        ? el
+        : null;
+    }
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral"): void {
+      if (!(statusEl instanceof HTMLElement)) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-ok", kind === "ok");
+      statusEl.classList.toggle("is-error", kind === "err");
+    }
+
+    function setFormStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral"): void {
+      if (!(formStatusEl instanceof HTMLElement)) return;
+      formStatusEl.textContent = message;
+      formStatusEl.classList.toggle("is-ok", kind === "ok");
+      formStatusEl.classList.toggle("is-error", kind === "err");
+    }
+
+    function val(id: string): string {
+      return field(id)?.value.trim() ?? "";
+    }
+
+    function setVal(id: string, value: string | number | null | undefined): void {
+      const el = field(id);
+      if (el) el.value = value == null ? "" : String(value);
+    }
+
+    function revokePreviewUrl(): void {
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
+    }
+
+    function showPreview(src: string | null): void {
+      if (!(previewEl instanceof HTMLImageElement)) return;
+      if (!src) {
+        previewEl.hidden = true;
+        previewEl.removeAttribute("src");
+        if (previewEmptyEl) previewEmptyEl.hidden = false;
+        return;
+      }
+      previewEl.src = src;
+      previewEl.hidden = false;
+      if (previewEmptyEl) previewEmptyEl.hidden = true;
+    }
+
+    function renderListingImageThumbs(currentSrc: string): void {
+      if (!(listingImagesEl instanceof HTMLElement) || !(listingImagesWrap instanceof HTMLElement)) {
+        return;
+      }
+      listingImagesEl.replaceChildren();
+      if (mode !== "edit") {
+        listingImagesWrap.hidden = true;
+        return;
+      }
+      const others = listingImages.filter((src) => src && src !== currentSrc);
+      if (others.length === 0) {
+        listingImagesWrap.hidden = true;
+        return;
+      }
+      listingImagesWrap.hidden = false;
+      for (const src of others) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ms-thumb";
+        btn.dataset.imageSrc = src;
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "Current shop listing photo";
+        btn.appendChild(img);
+        listingImagesEl.appendChild(btn);
+      }
+    }
+
+    function listingFromForm(): MachineSalesListing {
+      const specs = [val("ms-field-spec1"), val("ms-field-spec2"), val("ms-field-spec3")].filter(Boolean);
+      const priceRaw = val("ms-field-price");
+      return {
+        id: val("ms-field-id"),
+        name: val("ms-field-name"),
+        brand: val("ms-field-brand"),
+        model: val("ms-field-model"),
+        price: priceRaw ? Number(priceRaw) : null,
+        priceLabel: null,
+        shopifyUrl: val("ms-field-shopifyUrl"),
+        status: (val("ms-field-status") || "available") as MachineSalesListing["status"],
+        specs,
+        shortHtml: field("ms-field-shortHtml")?.value ?? "",
+        imageSrc: val("ms-field-imageSrc"),
+        sortOrder: Number(val("ms-field-sortOrder") || "0"),
+      };
+    }
+
+    function loadListing(listing: MachineSalesListing, nextMode: "new" | "edit"): void {
+      mode = nextMode;
+      pendingUpload = null;
+      revokePreviewUrl();
+      if (fileInput instanceof HTMLInputElement) fileInput.value = "";
+      if (form instanceof HTMLFormElement) form.reset();
+      setVal("ms-field-id", listing.id);
+      setVal("ms-field-sortOrder", listing.sortOrder);
+      setVal("ms-field-name", listing.name);
+      setVal("ms-field-brand", listing.brand);
+      setVal("ms-field-model", listing.model);
+      setVal("ms-field-price", listing.price);
+      setVal("ms-field-status", listing.status);
+      setVal("ms-field-shopifyUrl", listing.shopifyUrl);
+      setVal("ms-field-spec1", listing.specs[0] ?? "");
+      setVal("ms-field-spec2", listing.specs[1] ?? "");
+      setVal("ms-field-spec3", listing.specs[2] ?? "");
+      setVal("ms-field-shortHtml", listing.shortHtml);
+      setVal("ms-field-imageSrc", listing.imageSrc);
+      showPreview(listing.imageSrc || null);
+      if (imageIntroEl) {
+        imageIntroEl.textContent =
+          nextMode === "new"
+            ? "Upload a photo from your computer. You do not need to type a filename."
+            : "Upload a replacement photo, or use a photo already on a current shop listing.";
+      }
+      renderListingImageThumbs(listing.imageSrc);
+      if (formPanel) formPanel.hidden = false;
+      if (modeEl instanceof HTMLElement) {
+        modeEl.textContent =
+          nextMode === "new"
+            ? "New machine — Save writes this listing to the shop page."
+            : `Editing ${listing.name}`;
+        modeEl.classList.toggle("is-new", nextMode === "new");
+      }
+      const heading = document.getElementById("ms-form-heading");
+      if (heading) heading.textContent = nextMode === "new" ? "Add Machine" : "Edit listing";
+      setFormStatus("", "neutral");
+      formPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function renderTable(): void {
+      if (!(rowsEl instanceof HTMLElement)) return;
+      const filter =
+        statusFilterEl instanceof HTMLSelectElement ? statusFilterEl.value : "all";
+      const rows = listings.filter((row) => filter === "all" || row.status === filter);
+      rowsEl.replaceChildren();
+      if (countEl) countEl.textContent = `${rows.length} listing(s)`;
+      if (emptyEl) emptyEl.hidden = rows.length > 0;
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <strong>${escapeHtml(row.name)}</strong><br />
+            <span class="am__hint">${escapeHtml(row.brand)} ${escapeHtml(row.model)}</span>
+          </td>
+          <td>${escapeHtml(row.priceLabel || "")}</td>
+          <td>${escapeHtml(row.status)}</td>
+          <td class="am__row-action">
+            <button type="button" class="am__btn am__btn--small am__btn--outline" data-edit="${escapeHtml(row.id)}">Edit</button>
+          </td>
+        `;
+        rowsEl.appendChild(tr);
+      }
+    }
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function fileToPayload(file: File): Promise<{ filename: string; mimeType: string; dataBase64: string }> {
+      const dataBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Could not read that image."));
+        reader.readAsDataURL(file);
+      });
+      return { filename: file.name, mimeType: file.type || "image/jpeg", dataBase64 };
+    }
+
+    async function uploadPendingImage(): Promise<string | null> {
+      if (!pendingUpload) return val("ms-field-imageSrc") || null;
+      const res = await fetch(IMAGE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pendingUpload),
+      });
+      const data = (await res.json()) as { ok?: boolean; imageSrc?: string; error?: string };
+      if (!res.ok || !data.ok || !data.imageSrc) {
+        throw new Error(data.error || "Image upload failed.");
+      }
+      pendingUpload = null;
+      listingImages = Array.from(new Set([...listingImages, data.imageSrc]));
+      return data.imageSrc;
+    }
+
+    function slugFromBrandModel(brand: string, model: string): string {
+      return `${brand}-${model}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    async function save(): Promise<void> {
+      if (saving || mode === "none") return;
+      saving = true;
+      setFormStatus("Saving…", "neutral");
+      try {
+        const imageSrc = await uploadPendingImage();
+        if (imageSrc) setVal("ms-field-imageSrc", imageSrc);
+        const listing = listingFromForm();
+        if (imageSrc) listing.imageSrc = imageSrc;
+        if (mode === "new") {
+          const fromName = slugFromBrandModel(listing.brand, listing.model);
+          if (fromName) listing.id = fromName;
+          const used = new Set(listings.map((row) => row.id));
+          if (used.has(listing.id)) {
+            let n = 2;
+            while (used.has(`${listing.id}-${n}`)) n += 1;
+            listing.id = `${listing.id}-${n}`;
+          }
+          setVal("ms-field-id", listing.id);
+        }
+        const res = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode, listing }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          listings?: MachineSalesListing[];
+          listingImages?: string[];
+          error?: string;
+        };
+        if (!res.ok || !data.ok || !Array.isArray(data.listings)) {
+          throw new Error(data.error || "Save failed.");
+        }
+        listings = data.listings;
+        listingImages = data.listingImages ?? listingImages;
+        mode = "edit";
+        renderTable();
+        const saved = listings.find((row) => row.id === listing.id);
+        if (saved) loadListing(saved, "edit");
+        setFormStatus("Listing saved. Open the shop page to review it.", "ok");
+        setStatus("Listing saved.", "ok");
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : "";
+        setFormStatus(detail || "The listing could not be saved.", "err");
+      } finally {
+        saving = false;
+      }
+    }
+
+    function blankListing(): MachineSalesListing {
+      return {
+        id: `listing-${Date.now()}`,
+        name: "",
+        brand: "",
+        model: "",
+        price: null,
+        priceLabel: null,
+        shopifyUrl: "",
+        status: "available",
+        specs: [],
+        shortHtml: "",
+        imageSrc: "",
+        sortOrder: listings.reduce((max, row) => Math.max(max, row.sortOrder), 0) + 10,
+      };
+    }
+
+    async function init(): Promise<void> {
+      setStatus("Loading shop listings…");
+      try {
+        const res = await fetch(API);
+        const data = (await res.json()) as {
+          ok?: boolean;
+          listings?: MachineSalesListing[];
+          listingImages?: string[];
+          error?: string;
+        };
+        if (!res.ok || !data.ok) {
+          setStatus(data.error || "Could not load listings.", "err");
+          return;
+        }
+        listings = data.listings ?? [];
+        listingImages = data.listingImages ?? [];
+        renderTable();
+        setStatus(`${listings.length} shop listing(s) loaded.`, "ok");
+      } catch {
+        setStatus("Network error loading listings.", "err");
+      }
+    }
+
+    document.getElementById("ms-add")?.addEventListener("click", () => {
+      loadListing(blankListing(), "new");
+    });
+    document.getElementById("ms-save")?.addEventListener("click", () => void save());
+    document.getElementById("ms-save-bottom")?.addEventListener("click", () => void save());
+    document.getElementById("ms-cancel")?.addEventListener("click", () => {
+      mode = "none";
+      if (formPanel) formPanel.hidden = true;
+    });
+    document.getElementById("ms-cancel-bottom")?.addEventListener("click", () => {
+      mode = "none";
+      if (formPanel) formPanel.hidden = true;
+    });
+    document.getElementById("ms-mark-sold")?.addEventListener("click", () => {
+      setVal("ms-field-status", "sold");
+      void save();
+    });
+    document.getElementById("ms-mark-hidden")?.addEventListener("click", () => {
+      setVal("ms-field-status", "hidden");
+      void save();
+    });
+    document.getElementById("ms-mark-available")?.addEventListener("click", () => {
+      setVal("ms-field-status", "available");
+      void save();
+    });
+    statusFilterEl?.addEventListener("change", renderTable);
+    rowsEl?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const btn = target.closest("[data-edit]");
+      if (!(btn instanceof HTMLElement)) return;
+      const id = btn.getAttribute("data-edit");
+      const listing = listings.find((row) => row.id === id);
+      if (listing) loadListing(listing, "edit");
+    });
+    listingImagesEl?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const btn = target.closest("[data-image-src]");
+      if (!(btn instanceof HTMLElement)) return;
+      const src = btn.getAttribute("data-image-src");
+      if (!src) return;
+      pendingUpload = null;
+      revokePreviewUrl();
+      if (fileInput instanceof HTMLInputElement) fileInput.value = "";
+      setVal("ms-field-imageSrc", src);
+      showPreview(src);
+    });
+    fileInput?.addEventListener("change", () => {
+      if (!(fileInput instanceof HTMLInputElement) || !fileInput.files?.[0]) return;
+      const file = fileInput.files[0];
+      revokePreviewUrl();
+      previewObjectUrl = URL.createObjectURL(file);
+      showPreview(previewObjectUrl);
+      void fileToPayload(file)
+        .then((payload) => {
+          pendingUpload = payload;
+        })
+        .catch((err) => {
+          setFormStatus(err instanceof Error ? err.message : "Could not read that image.", "err");
+        });
+    });
+
+    void init();
+  </script>
+
+  <style>
+    .am__form select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.5rem 0.65rem;
+      font: inherit;
+      color: #111827;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .ms-image-preview-wrap {
+      margin: 0 0 0.85rem;
+    }
+    .ms-image-preview {
+      display: block;
+      width: 280px;
+      max-width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #eef3e6;
+      border: 1px solid #dbe6c5;
+    }
+    .ms-thumb-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0 0 0.85rem;
+    }
+    .ms-thumb {
+      padding: 0;
+      border: 2px solid #dbe6c5;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+      width: 96px;
+      height: 64px;
+    }
+    .ms-thumb:hover,
+    .ms-thumb:focus-visible {
+      border-color: #3f6212;
+    }
+    .ms-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</BaseLayout>
