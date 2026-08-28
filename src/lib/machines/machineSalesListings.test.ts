@@ -47,11 +47,11 @@ describe("machine sales hold listings", () => {
     expect(MACHINE_SALES_HOLD).toBe(true);
   });
 
-  it("seeds the three current storefront cards exactly", () => {
+  it("keeps the original three storefront cards and includes the approved TH260 listing", () => {
     const listings = getStorefrontHoldListings();
-    expect(listings).toHaveLength(3);
+    expect(listings).toHaveLength(4);
     expect(
-      listings.map((row) => ({
+      listings.slice(0, 3).map((row) => ({
         name: row.name,
         href: row.shopifyUrl,
         imageSrc: row.imageSrc,
@@ -60,14 +60,16 @@ describe("machine sales hold listings", () => {
         shortHtml: row.shortHtml,
       }))
     ).toEqual(ORIGINAL_HOLD_CARDS.map((card) => ({ ...card })));
+    const th260 = listings.find((row) => row.id === "taitexma-th260");
+    expect(th260).toMatchObject({
+      name: "Taitexma TH260 Bulky",
+      price: 1999,
+      priceLabel: "$1,999",
+      status: "available",
+      shopifyUrl: "https://vjzu11-86.myshopify.com/products/taitexma-th260",
+      imageSrc: "/images/machines/taxema-bulky1.jpg",
+    });
     expect(listings.every((row) => row.status === "available")).toBe(true);
-  });
-
-  it("does not put TH260 on the storefront until a listing is added", () => {
-    const listings = getStorefrontHoldListings();
-    expect(listings.some((row) => /th260/i.test(row.name) || row.model === "TH260")).toBe(
-      false
-    );
   });
 
   it("hides hidden listings from the storefront and keeps sold listings", () => {
@@ -75,13 +77,13 @@ describe("machine sales hold listings", () => {
     const hidden = getStorefrontHoldListings(
       seeded.map((row, i) => (i === 0 ? { ...row, status: "hidden" as const } : row))
     );
-    expect(hidden).toHaveLength(2);
+    expect(hidden).toHaveLength(3);
     expect(hidden.some((row) => row.id === "taitexma-th860")).toBe(false);
 
     const sold = getStorefrontHoldListings(
       seeded.map((row, i) => (i === 1 ? { ...row, status: "sold" as const } : row))
     );
-    expect(sold).toHaveLength(3);
+    expect(sold).toHaveLength(4);
     expect(sold.find((row) => row.id === "taitexma-tr-850")?.status).toBe("sold");
   });
 
@@ -91,6 +93,7 @@ describe("machine sales hold listings", () => {
       "/images/machines/8601.jpg",
       "/images/machines/tr-850-ribber.jpg",
       "/images/machines/taitexma-th-tr-160-bundle.jpg",
+      "/images/machines/taxema-bulky1.jpg",
     ]);
     expect(images).not.toContain("/images/machines/taxema_bulky1.jpg");
   });
@@ -152,7 +155,7 @@ describe("listing save helpers", () => {
     const applied = applyListingSave(current, {
       mode: "new",
       listing: {
-        id: "taitexma-th260",
+        id: "taitexma-th260-test",
         name: "Taitexma TH260 Bulky Punchcard Knitting Machine",
         brand: "Taitexma",
         model: "TH260",
@@ -168,7 +171,7 @@ describe("listing save helpers", () => {
     });
     expect(applied.ok).toBe(true);
     if (!applied.ok) return;
-    expect(applied.listings).toHaveLength(4);
+    expect(applied.listings).toHaveLength(5);
     expect(applied.listings.find((row) => row.id === "taitexma-th860")?.shopifyUrl).toContain(
       "taitexma-th860-punchcard-knitting-machine"
     );

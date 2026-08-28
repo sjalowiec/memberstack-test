@@ -19,13 +19,40 @@ import "../../styles/admin-machines.css";
         </p>
       </div>
       <div class="am__head-actions">
-        <a href="/shop/machines" class="am__btn am__btn--accent" target="_blank" rel="noopener">
+        <button type="button" id="ms-publish" class="am__btn am__btn--accent">
+          Publish to Production
+        </button>
+        <a href="/shop/machines" class="am__btn am__btn--outline" target="_blank" rel="noopener">
           View shop page
         </a>
       </div>
     </header>
 
     <p id="ms-status" class="am__status" role="status" aria-live="polite"></p>
+
+    <section
+      class="ms-publish"
+      id="ms-publish-panel"
+      hidden
+      aria-labelledby="ms-publish-heading"
+    >
+      <h2 id="ms-publish-heading" class="am__panel-title">Publish to Production</h2>
+      <p class="am__hint">
+        Save stays on DEV. This publishes the current Machines for Sale listings
+        to <code>knititnow.com/shop/machines</code>. It does not change the
+        historical Machine Database or turn the sales hold off.
+      </p>
+      <p id="ms-publish-status" class="am__form-status" role="status" aria-live="polite"></p>
+      <div id="ms-publish-preview" class="ms-publish__preview"></div>
+      <div class="am__form-actions">
+        <button type="button" id="ms-publish-confirm" class="am__btn am__btn--accent" hidden>
+          Confirm publish to production
+        </button>
+        <button type="button" id="ms-publish-cancel" class="am__btn am__btn--outline">
+          Cancel
+        </button>
+      </div>
+    </section>
 
     <div class="am__actionbar">
       <button type="button" id="ms-add" class="am__btn">+ Add Machine</button>
@@ -184,9 +211,11 @@ import "../../styles/admin-machines.css";
 
   <script>
     import type { MachineSalesListing } from "../../lib/machines/machineSalesListings";
+    import { getAdminAuthHeaders } from "../../lib/admin/adminAuthClient";
 
     const API = "/api/admin/machine-sales";
     const IMAGE_API = "/api/admin/machine-sales-image";
+    const PUBLISH_API = "/api/admin/machine-sales-publish";
 
     const statusEl = document.getElementById("ms-status");
     const formStatusEl = document.getElementById("ms-form-status");
@@ -203,6 +232,14 @@ import "../../styles/admin-machines.css";
     const previewEmptyEl = document.getElementById("ms-image-empty");
     const fileInput = document.getElementById("ms-image-file");
     const statusFilterEl = document.getElementById("ms-status-filter");
+    const publishPanel = document.getElementById("ms-publish-panel");
+    const publishStatusEl = document.getElementById("ms-publish-status");
+    const publishPreviewEl = document.getElementById("ms-publish-preview");
+    const publishConfirmBtn = document.getElementById("ms-publish-confirm");
+    const publishPanel = document.getElementById("ms-publish-panel");
+    const publishStatusEl = document.getElementById("ms-publish-status");
+    const publishPreviewEl = document.getElementById("ms-publish-preview");
+    const publishConfirmBtn = document.getElementById("ms-publish-confirm");
 
     let listings: MachineSalesListing[] = [];
     let listingImages: string[] = [];
@@ -210,6 +247,7 @@ import "../../styles/admin-machines.css";
     let pendingUpload: { filename: string; mimeType: string; dataBase64: string } | null = null;
     let previewObjectUrl: string | null = null;
     let saving = false;
+    let publishing = false;
 
     function field(id: string): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null {
       const el = document.getElementById(id);
@@ -230,6 +268,144 @@ import "../../styles/admin-machines.css";
       formStatusEl.textContent = message;
       formStatusEl.classList.toggle("is-ok", kind === "ok");
       formStatusEl.classList.toggle("is-error", kind === "err");
+    }
+
+    function setPublishStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral"): void {
+      if (!(publishStatusEl instanceof HTMLElement)) return;
+      publishStatusEl.textContent = message;
+      publishStatusEl.classList.toggle("is-ok", kind === "ok");
+      publishStatusEl.classList.toggle("is-error", kind === "err");
+    }
+
+    type PublishPlan = {
+      ok?: boolean;
+      error?: string;
+      branch?: string;
+      files?: Array<{ path: string; action: "add" | "update" }>;
+      listings?: Array<{
+        id: string;
+        name: string;
+        price: number | null;
+        priceLabel: string | null;
+        status: string;
+        shopifyUrl: string;
+        imageSrc: string;
+      }>;
+      commitSha?: string | null;
+      published?: boolean;
+    };
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderPublishPreview(plan: PublishPlan): void {
+      if (!(publishPreviewEl instanceof HTMLElement)) return;
+      const listingsHtml = (plan.listings ?? [])
+        .map((row) => {
+          return `<tr>
+            <td>${escapeHtml(row.name)}</td>
+            <td>${escapeHtml(row.priceLabel || "")}</td>
+            <td>${escapeHtml(row.status)}</td>
+            <td><code>${escapeHtml(row.shopifyUrl || "(none)")}</code></td>
+            <td><code>${escapeHtml(row.imageSrc || "(none)")}</code></td>
+          </tr>`;
+        })
+        .join("");
+      const filesHtml = (plan.files ?? [])
+        .map((file) => `<li><code>${escapeHtml(file.path)}</code> (${escapeHtml(file.action)})</li>`)
+        .join("");
+      publishPreviewEl.innerHTML = `
+        <h3 class="ms-publish__subhead">Listings that will go to production</h3>
+        <div class="am__table-wrap">
+          <table class="am__table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Price</th>
+                <th scope="col">Status</th>
+                <th scope="col">Shopify URL</th>
+                <th scope="col">Image</th>
+              </tr>
+            </thead>
+            <tbody>${listingsHtml}</tbody>
+          </table>
+        </div>
+        <h3 class="ms-publish__subhead">Files in this publish</h3>
+        ${
+          filesHtml
+            ? `<ul class="ms-publish__files">${filesHtml}</ul>`
+            : "<p class=\"am__hint\">Production already matches these listings. Nothing to publish.</p>"
+        }
+      `;
+      if (publishConfirmBtn instanceof HTMLButtonElement) {
+        publishConfirmBtn.hidden = !plan.files?.length;
+      }
+    }
+
+    async function openPublishPreview(): Promise<void> {
+      if (publishPanel) publishPanel.hidden = false;
+      if (publishConfirmBtn instanceof HTMLButtonElement) publishConfirmBtn.hidden = true;
+      if (publishPreviewEl instanceof HTMLElement) publishPreviewEl.innerHTML = "";
+      setPublishStatus("Preparing publish preview…");
+      try {
+        const headers = await getAdminAuthHeaders();
+        const res = await fetch(PUBLISH_API, { headers });
+        const data = (await res.json()) as PublishPlan;
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Could not prepare the publish preview.");
+        }
+        renderPublishPreview(data);
+        setPublishStatus(
+          data.files?.length
+            ? `Ready to publish ${data.files.length} file(s) to ${data.branch || "main"}.`
+            : "Production already matches DEV.",
+          data.files?.length ? "neutral" : "ok",
+        );
+      } catch (err) {
+        setPublishStatus(err instanceof Error ? err.message : "Could not prepare publish.", "err");
+      }
+    }
+
+    async function confirmPublish(): Promise<void> {
+      if (publishing) return;
+      publishing = true;
+      if (publishConfirmBtn instanceof HTMLButtonElement) publishConfirmBtn.disabled = true;
+      setPublishStatus("Publishing to production…");
+      try {
+        const headers = {
+          ...(await getAdminAuthHeaders()),
+          "Content-Type": "application/json",
+        };
+        const res = await fetch(PUBLISH_API, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ confirm: "PUBLISH" }),
+        });
+        const data = (await res.json()) as PublishPlan;
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Publish to Production failed.");
+        }
+        renderPublishPreview(data);
+        if (data.published && data.commitSha) {
+          setPublishStatus(
+            `Published to production (${data.commitSha.slice(0, 8)}). Netlify will deploy knititnow.com shortly.`,
+            "ok",
+          );
+          setStatus("Machines for Sale published to production.", "ok");
+        } else {
+          setPublishStatus("Production already matches DEV. Nothing was published.", "ok");
+        }
+      } catch (err) {
+        setPublishStatus(err instanceof Error ? err.message : "Publish to Production failed.", "err");
+      } finally {
+        publishing = false;
+        if (publishConfirmBtn instanceof HTMLButtonElement) publishConfirmBtn.disabled = false;
+      }
     }
 
     function val(id: string): string {
@@ -508,6 +684,11 @@ import "../../styles/admin-machines.css";
     document.getElementById("ms-add")?.addEventListener("click", () => {
       loadListing(blankListing(), "new");
     });
+    document.getElementById("ms-publish")?.addEventListener("click", () => void openPublishPreview());
+    document.getElementById("ms-publish-cancel")?.addEventListener("click", () => {
+      if (publishPanel) publishPanel.hidden = true;
+    });
+    document.getElementById("ms-publish-confirm")?.addEventListener("click", () => void confirmPublish());
     document.getElementById("ms-save")?.addEventListener("click", () => void save());
     document.getElementById("ms-save-bottom")?.addEventListener("click", () => void save());
     document.getElementById("ms-cancel")?.addEventListener("click", () => {
@@ -620,6 +801,27 @@ import "../../styles/admin-machines.css";
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    .ms-publish {
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 0 0 1rem;
+    }
+    .ms-publish__preview {
+      margin: 0.75rem 0;
+    }
+    .ms-publish__subhead {
+      margin: 0.85rem 0 0.4rem;
+      font-size: 0.95rem;
+    }
+    .ms-publish__files {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+    .ms-publish code {
+      word-break: break-all;
     }
   </style>
 </BaseLayout>
