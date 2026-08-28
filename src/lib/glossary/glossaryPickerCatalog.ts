@@ -1,4 +1,8 @@
+import { currentGlossaryPath } from "../kinCourse/legacyGlossaryHrefs";
 import { slugify } from "../slugify";
+
+/** Customer-facing origin for glossary term links (admin copy convenience). */
+export const GLOSSARY_PUBLIC_ORIGIN = "https://knititnow.com";
 
 export type GlossaryPickerRow = {
   glossaryId: number;
@@ -19,6 +23,11 @@ export function stripGlossaryTermHtml(value: string): string {
 
 export function glossarySlugFromEnglish(english: string): string {
   return slugify(stripGlossaryTermHtml(english));
+}
+
+/** Production glossary URL derived from the English term (same slug as public pages). */
+export function glossaryPublicUrlFromEnglish(english: string): string {
+  return `${GLOSSARY_PUBLIC_ORIGIN}${currentGlossaryPath(glossarySlugFromEnglish(english))}`;
 }
 
 export function escapeGlossaryLinkText(value: string): string {
