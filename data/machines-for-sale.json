@@ -69,5 +69,22 @@
     "shortHtml": "At 9mm this Taitexma (tie-tex-ma) machine is the perfect gauge for popular hand knitting and hand-spun yarns.\n\nMetal bed, this machine will provide years of service.\nGet all of the domestic knitting machine functionality with minimal fuss.\nThe punchcard feature offers automatic needle selection for amazing texture and color stitch patterns.",
     "imageSrc": "/images/machines/taxema-bulky1.jpg",
     "sortOrder": 40
+  },
+  {
+    "id": "taitexma-tr260",
+    "name": "Taitexma TR260 Ribber",
+    "brand": "Taitexma",
+    "model": "TR260",
+    "price": 1149,
+    "priceLabel": "$1,149",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/taitexma-tr260-ribber-attachment",
+    "status": "available",
+    "specs": [
+      "Bulky/Chunky",
+      "114 needles"
+    ],
+    "shortHtml": "Take a second needlebed, turn it 180° and you'll have both knit and purl stitches.\n\nThis ribber fits the Taitexma TH260 bulky punchcard machine\n\nUS Warranty: 90 Days labor on defects in materials and workmanship.\nNon-US Warranty: 30 days parts and labor",
+    "imageSrc": "/images/machines/taitexma-tr260-ribber.jpg",
+    "sortOrder": 50
   }
 ]
