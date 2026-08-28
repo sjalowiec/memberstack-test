@@ -193,6 +193,27 @@ describe("machine sales publish plan", () => {
     expect(plan.files).toHaveLength(0);
     expect(plan.branch).toBe("main");
   });
+
+  it("reads the disk listings array when publish is called without an options object", async () => {
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/contents/")) {
+        const repoPath = decodeURIComponent(
+          url.replace(/^.*\/contents\//, "").replace(/\?ref=.*$/, ""),
+        );
+        const content = readFileSync(path.join(process.cwd(), repoPath));
+        return new Response(JSON.stringify({ sha: gitBlobSha(content) }), { status: 200 });
+      }
+      throw new Error(`unexpected fetch ${url}`);
+    });
+
+    const { plan } = await planMachineSalesPublish({
+      config: validConfig,
+      fetcher: fetcher as unknown as typeof fetch,
+    });
+    const fromDisk = readMachineSalesListings();
+    expect(plan.listings.map((row) => row.id)).toEqual(fromDisk.map((row) => row.id));
+  });
 });
 
 describe("commitMachineSalesFiles", () => {

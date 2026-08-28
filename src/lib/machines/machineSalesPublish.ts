@@ -121,7 +121,7 @@ export async function planMachineSalesPublish(options: {
   listings?: MachineSalesListing[];
   config?: MachineSalesGithubConfig;
   fetcher?: typeof fetch;
-}): Promise<{
+} = {}): Promise<{
   plan: MachineSalesPublishPlan;
   files: MachineSalesGithubFile[];
 }> {
@@ -160,7 +160,7 @@ export async function publishMachineSalesToProduction(options: {
   fetcher?: typeof fetch;
   dryRun?: boolean;
   message?: string;
-}): Promise<MachineSalesPublishResult> {
+} = {}): Promise<MachineSalesPublishResult> {
   const { plan, files } = await planMachineSalesPublish(options);
   if (files.length === 0 || options.dryRun) {
     return {
