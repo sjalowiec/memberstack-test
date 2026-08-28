@@ -208,12 +208,12 @@ export function readMachineSalesListings(): MachineSalesListing[] {
   return parseMachineSalesListingsFile(raw);
 }
 
+export function serializeMachineSalesListings(listings: MachineSalesListing[]): string {
+  return JSON.stringify(sortMachineSalesListings(listings), null, 2) + "\n";
+}
+
 export function writeMachineSalesListings(listings: MachineSalesListing[]): void {
-  writeFileSync(
-    MACHINE_SALES_LISTINGS_PATH,
-    JSON.stringify(sortMachineSalesListings(listings), null, 2) + "\n",
-    "utf-8"
-  );
+  writeFileSync(MACHINE_SALES_LISTINGS_PATH, serializeMachineSalesListings(listings), "utf-8");
 }
 
 /** Available and sold listings for the hold-period storefront. Hidden are omitted. */

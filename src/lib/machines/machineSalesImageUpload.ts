@@ -50,12 +50,29 @@ export function decodeImageDataBase64(dataBase64: string): Buffer {
   return buffer;
 }
 
-export function uniqueMachineSalesImageFilename(filename: string): string {
-  const diskPath = path.join(MACHINE_SALES_IMAGE_DISK_DIR, filename);
-  if (!existsSync(diskPath)) return filename;
+export function uniqueMachineSalesImageFilename(
+  filename: string,
+  exists: (name: string) => boolean = (name) =>
+    existsSync(path.join(MACHINE_SALES_IMAGE_DISK_DIR, name)),
+): string {
+  if (!exists(filename)) return filename;
   const ext = path.extname(filename);
   const stem = path.basename(filename, ext);
   return `${stem}-${Date.now()}${ext}`;
+}
+
+export async function uniqueMachineSalesImageFilenameAsync(
+  filename: string,
+  exists: (name: string) => Promise<boolean>,
+): Promise<string> {
+  if (!(await exists(filename))) return filename;
+  const ext = path.extname(filename);
+  const stem = path.basename(filename, ext);
+  let candidate = `${stem}-${Date.now()}${ext}`;
+  while (await exists(candidate)) {
+    candidate = `${stem}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}${ext}`;
+  }
+  return candidate;
 }
 
 export function writeMachineSalesImage(input: ImageUploadInput): { filename: string; imageSrc: string } {

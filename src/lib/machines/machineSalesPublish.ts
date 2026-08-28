@@ -1,7 +1,7 @@
 /**
  * Collect and publish the current Machines for Sale listings to production (main).
- * Save remains a local/DEV filesystem write. Publish is an explicit GitHub commit
- * of allowlisted files only.
+ * DEV saves commit data files to the GitHub `dev` branch. Publish is a separate
+ * GitHub commit of allowlisted files onto `main`.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";

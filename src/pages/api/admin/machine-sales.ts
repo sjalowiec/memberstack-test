@@ -3,17 +3,35 @@ import {
   applyListingSave,
   readMachineSalesListings,
   shopListingImageSrcs,
-  writeMachineSalesListings,
   type ListingSaveMode,
 } from "../../../lib/machines/machineSalesListings";
+import {
+  isMachineSalesDevWriteAllowed,
+  persistMachineSalesListings,
+} from "../../../lib/machines/machineSalesPersist";
 
 export const prerender = false;
+
+const adminEnv = {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+};
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
+}
+
+function productionBlockedResponse() {
+  return jsonResponse(
+    {
+      ok: false,
+      error: "Machines for Sale can only be saved from DEV, not from production.",
+    },
+    403,
+  );
 }
 
 export const GET: APIRoute = async () => {
@@ -31,6 +49,11 @@ export const GET: APIRoute = async () => {
 };
 
 export const POST: APIRoute = async ({ request }) => {
+  const hostname = new URL(request.url).hostname;
+  if (!isMachineSalesDevWriteAllowed(hostname, adminEnv)) {
+    return productionBlockedResponse();
+  }
+
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
   }
@@ -59,14 +82,21 @@ export const POST: APIRoute = async ({ request }) => {
       mode: mode as ListingSaveMode,
     });
     if (!applied.ok) return jsonResponse({ ok: false, error: applied.error }, 400);
-    writeMachineSalesListings(applied.listings);
+    const persisted = await persistMachineSalesListings(applied.listings, {
+      hostname,
+      env: adminEnv,
+    });
     return jsonResponse({
       ok: true,
-      listings: applied.listings,
-      listingImages: shopListingImageSrcs(applied.listings),
+      listings: persisted.listings,
+      listingImages: shopListingImageSrcs(persisted.listings),
+      persistedVia: persisted.persistedVia,
+      branch: persisted.branch ?? null,
+      commitSha: persisted.commitSha ?? null,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not write machine sale listings.";
-    return jsonResponse({ ok: false, error: message }, 500);
+    const status = /only be saved from DEV|production/i.test(message) ? 403 : 500;
+    return jsonResponse({ ok: false, error: message }, status);
   }
 };

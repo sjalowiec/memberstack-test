@@ -1,7 +1,15 @@
 import type { APIRoute } from "astro";
-import { writeMachineSalesImage } from "../../../lib/machines/machineSalesImageUpload";
+import {
+  isMachineSalesDevWriteAllowed,
+  persistMachineSalesImage,
+} from "../../../lib/machines/machineSalesPersist";
 
 export const prerender = false;
+
+const adminEnv = {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+};
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -10,7 +18,22 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+function productionBlockedResponse() {
+  return jsonResponse(
+    {
+      ok: false,
+      error: "Machines for Sale images can only be uploaded from DEV, not from production.",
+    },
+    403,
+  );
+}
+
 export const POST: APIRoute = async ({ request }) => {
+  const hostname = new URL(request.url).hostname;
+  if (!isMachineSalesDevWriteAllowed(hostname, adminEnv)) {
+    return productionBlockedResponse();
+  }
+
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
   }
@@ -33,15 +56,29 @@ export const POST: APIRoute = async ({ request }) => {
   if (!filename || !mimeType || !dataBase64) {
     return jsonResponse(
       { ok: false, error: "filename, mimeType, and dataBase64 are required." },
-      400
+      400,
     );
   }
 
   try {
-    const saved = writeMachineSalesImage({ filename, mimeType, dataBase64 });
-    return jsonResponse({ ok: true, ...saved });
+    const saved = await persistMachineSalesImage(
+      { filename, mimeType, dataBase64 },
+      { hostname, env: adminEnv },
+    );
+    return jsonResponse({
+      ok: true,
+      filename: saved.filename,
+      imageSrc: saved.imageSrc,
+      persistedVia: saved.persistedVia,
+      branch: saved.branch ?? null,
+      commitSha: saved.commitSha ?? null,
+    });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not save the image.";
-    return jsonResponse({ ok: false, error: message }, 400);
+    if (/only be saved from DEV|production/i.test(message)) {
+      return jsonResponse({ ok: false, error: message }, 403);
+    }
+    const status = /GITHUB_|GitHub/i.test(message) ? 500 : 400;
+    return jsonResponse({ ok: false, error: message }, status);
   }
 };

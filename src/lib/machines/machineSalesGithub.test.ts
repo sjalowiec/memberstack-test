@@ -3,11 +3,14 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  assertAllowedMachineSalesDevSavePath,
   assertAllowedMachineSalesPublishPath,
   commitMachineSalesFiles,
   gitBlobSha,
   listingImageSrcToRepoPath,
   MACHINE_SALES_JSON_REPO_PATH,
+  resolveMachineSalesDevGithubBranch,
+  resolveMachineSalesDevGithubConfig,
   resolveMachineSalesGithubBranch,
   resolveMachineSalesGithubConfig,
 } from "./machineSalesGithub";
@@ -89,6 +92,56 @@ describe("machine sales GitHub publish constraints", () => {
         { readAstroEnv: false },
       ),
     ).toThrow(/main branch/);
+  });
+});
+
+describe("machine sales GitHub DEV save constraints", () => {
+  it("restricts DEV writes to the dev branch", () => {
+    expect(resolveMachineSalesDevGithubBranch("dev")).toBe("dev");
+    expect(resolveMachineSalesDevGithubBranch("")).toBe("dev");
+    expect(() => resolveMachineSalesDevGithubBranch("main")).toThrow(/dev branch/);
+    expect(() => resolveMachineSalesDevGithubBranch("master")).toThrow(/dev branch/);
+  });
+
+  it("allows only the listings JSON and machine images on DEV saves", () => {
+    expect(() =>
+      assertAllowedMachineSalesDevSavePath("data/machines-for-sale.json"),
+    ).not.toThrow();
+    expect(() =>
+      assertAllowedMachineSalesDevSavePath("public/images/machines/taitexma-tr260-ribber.jpg"),
+    ).not.toThrow();
+    expect(() =>
+      assertAllowedMachineSalesDevSavePath("src/pages/shop/machines.astro"),
+    ).toThrow(/not a Machines for Sale data file/);
+    expect(() =>
+      assertAllowedMachineSalesDevSavePath("src/lib/machines/machineSalesListings.ts"),
+    ).toThrow(/not a Machines for Sale data file/);
+    expect(() => assertAllowedMachineSalesDevSavePath("data/machines.json")).toThrow(
+      /not a Machines for Sale data file/,
+    );
+  });
+
+  it("uses the course-content branch env and ignores the production publish branch", () => {
+    expect(
+      resolveMachineSalesDevGithubConfig(
+        {
+          GITHUB_TOKEN: "token",
+          GITHUB_REPO: "sjalowiec/memberstack-test",
+          MACHINE_SALES_GITHUB_BRANCH: "main",
+        },
+        { readAstroEnv: false },
+      ),
+    ).toMatchObject({ branch: "dev" });
+    expect(() =>
+      resolveMachineSalesDevGithubConfig(
+        {
+          GITHUB_TOKEN: "token",
+          GITHUB_REPO: "sjalowiec/memberstack-test",
+          COURSE_CONTENT_GITHUB_BRANCH: "main",
+        },
+        { readAstroEnv: false },
+      ),
+    ).toThrow(/dev branch/);
   });
 });
 
@@ -194,6 +247,62 @@ describe("commitMachineSalesFiles", () => {
       paths: ["data/machines-for-sale.json"],
     });
     expect(calls.some((call) => call.includes("data/machines.json"))).toBe(false);
+  });
+
+  it("commits DEV saves onto the dev branch and refuses storefront files", async () => {
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || "GET";
+      if (url.endsWith("/git/ref/heads/dev") && method === "GET") {
+        return new Response(JSON.stringify({ object: { sha: "dev-head" } }), { status: 200 });
+      }
+      if (url.endsWith("/git/commits/dev-head") && method === "GET") {
+        return new Response(JSON.stringify({ tree: { sha: "dev-tree" } }), { status: 200 });
+      }
+      if (url.endsWith("/git/blobs") && method === "POST") {
+        return new Response(JSON.stringify({ sha: "dev-blob" }), { status: 200 });
+      }
+      if (url.endsWith("/git/trees") && method === "POST") {
+        return new Response(JSON.stringify({ sha: "dev-new-tree" }), { status: 200 });
+      }
+      if (url.endsWith("/git/commits") && method === "POST") {
+        return new Response(JSON.stringify({ sha: "dev-commit" }), { status: 200 });
+      }
+      if (url.endsWith("/git/refs/heads/dev") && method === "PATCH") {
+        return new Response(JSON.stringify({ object: { sha: "dev-commit" } }), { status: 200 });
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+
+    const result = await commitMachineSalesFiles({
+      files: [
+        {
+          path: "public/images/machines/taitexma-tr260-ribber.jpg",
+          content: Buffer.from("jpeg"),
+        },
+      ],
+      message: "Save Machines for Sale image on DEV.",
+      config: { ...validConfig, branch: "dev" },
+      fetcher: fetcher as unknown as typeof fetch,
+      pathGuard: "dev-save",
+    });
+    expect(result).toEqual({
+      commitSha: "dev-commit",
+      branch: "dev",
+      paths: ["public/images/machines/taitexma-tr260-ribber.jpg"],
+    });
+    expect(String(fetcher.mock.calls[0]?.[0])).toContain("/git/ref/heads/dev");
+    expect(String(fetcher.mock.calls[0]?.[0])).not.toContain("/git/ref/heads/main");
+
+    await expect(
+      commitMachineSalesFiles({
+        files: [{ path: "src/pages/shop/machines.astro", content: Buffer.from("nope") }],
+        message: "nope",
+        config: { ...validConfig, branch: "dev" },
+        fetcher: vi.fn() as unknown as typeof fetch,
+        pathGuard: "dev-save",
+      }),
+    ).rejects.toThrow(/not a Machines for Sale data file/);
   });
 
   it("refuses to commit a non-allowlisted path", async () => {

@@ -188,5 +188,8 @@ describe("image upload filename", () => {
       "my-photo-1.jpg"
     );
     expect(sanitizeMachineSalesUploadFilename("ribber.png", "image/png")).toBe("ribber.png");
+    expect(
+      sanitizeMachineSalesUploadFilename("taitexma-tr260-ribber.jpg", "image/jpeg"),
+    ).toBe("taitexma-tr260-ribber.jpg");
   });
 });
