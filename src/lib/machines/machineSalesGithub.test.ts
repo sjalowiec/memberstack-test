@@ -1,25 +1,13 @@
 import { readFileSync } from "node:fs";
-import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  assertAllowedMachineSalesDevSavePath,
-  assertAllowedMachineSalesPublishPath,
+  assertAllowedMachineSalesSavePath,
   commitMachineSalesFiles,
-  gitBlobSha,
   listingImageSrcToRepoPath,
-  MACHINE_SALES_JSON_REPO_PATH,
-  resolveMachineSalesDevGithubBranch,
-  resolveMachineSalesDevGithubConfig,
   resolveMachineSalesGithubBranch,
   resolveMachineSalesGithubConfig,
 } from "./machineSalesGithub";
-import {
-  collectMachineSalesPublishCandidatePaths,
-  isMachineSalesPublishAllowed,
-  planMachineSalesPublish,
-} from "./machineSalesPublish";
-import { readMachineSalesListings } from "./machineSalesListings";
 
 const validConfig = {
   token: "ghp_test_token",
@@ -28,7 +16,7 @@ const validConfig = {
   branch: "main",
 };
 
-describe("machine sales GitHub publish constraints", () => {
+describe("machine sales GitHub save constraints", () => {
   it("restricts writes to the main branch", () => {
     expect(resolveMachineSalesGithubBranch("main")).toBe("main");
     expect(resolveMachineSalesGithubBranch("")).toBe("main");
@@ -36,34 +24,28 @@ describe("machine sales GitHub publish constraints", () => {
     expect(() => resolveMachineSalesGithubBranch("master")).toThrow(/main branch/);
   });
 
-  it("allows only the listings JSON, storefront reader, and referenced machine images", () => {
-    expect(() => assertAllowedMachineSalesPublishPath("data/machines-for-sale.json")).not.toThrow();
+  it("allows only the listings JSON and machine images", () => {
+    expect(() => assertAllowedMachineSalesSavePath("data/machines-for-sale.json")).not.toThrow();
     expect(() =>
-      assertAllowedMachineSalesPublishPath("src/pages/shop/machines.astro"),
+      assertAllowedMachineSalesSavePath("public/images/machines/taxema-bulky1.jpg"),
     ).not.toThrow();
-    expect(() =>
-      assertAllowedMachineSalesPublishPath("src/lib/machines/machineSalesListings.ts"),
-    ).not.toThrow();
-    expect(() =>
-      assertAllowedMachineSalesPublishPath("public/images/machines/taxema-bulky1.jpg"),
-    ).not.toThrow();
-    expect(() => assertAllowedMachineSalesPublishPath("data/machines.json")).toThrow(
-      /not a Machines for Sale file/,
+    expect(() => assertAllowedMachineSalesSavePath("src/pages/shop/machines.astro")).toThrow(
+      /not a Machines for Sale data file/,
     );
     expect(() =>
-      assertAllowedMachineSalesPublishPath("public/images/machines/../secrets.txt"),
-    ).toThrow();
+      assertAllowedMachineSalesSavePath("src/lib/machines/machineSalesListings.ts"),
+    ).toThrow(/not a Machines for Sale data file/);
+    expect(() => assertAllowedMachineSalesSavePath("data/machines.json")).toThrow(
+      /not a Machines for Sale data file/,
+    );
     expect(() =>
-      assertAllowedMachineSalesPublishPath("src/layouts/BaseLayout.astro"),
-    ).toThrow(/not a Machines for Sale file/);
+      assertAllowedMachineSalesSavePath("public/images/machines/../secrets.txt"),
+    ).toThrow();
   });
 
   it("maps listing image URLs to the machines image folder and rejects other paths", () => {
     expect(listingImageSrcToRepoPath("/images/machines/taxema-bulky1.jpg")).toBe(
       "public/images/machines/taxema-bulky1.jpg",
-    );
-    expect(listingImageSrcToRepoPath("/images/machines/taxema_bulky1.jpg")).toBe(
-      "public/images/machines/taxema_bulky1.jpg",
     );
     expect(listingImageSrcToRepoPath("/images/machines/../x.jpg")).toBeNull();
     expect(listingImageSrcToRepoPath("/images/accessories/foo.jpg")).toBeNull();
@@ -92,200 +74,6 @@ describe("machine sales GitHub publish constraints", () => {
         { readAstroEnv: false },
       ),
     ).toThrow(/main branch/);
-  });
-});
-
-describe("machine sales GitHub DEV save constraints", () => {
-  it("restricts DEV writes to the dev branch", () => {
-    expect(resolveMachineSalesDevGithubBranch("dev")).toBe("dev");
-    expect(resolveMachineSalesDevGithubBranch("")).toBe("dev");
-    expect(() => resolveMachineSalesDevGithubBranch("main")).toThrow(/dev branch/);
-    expect(() => resolveMachineSalesDevGithubBranch("master")).toThrow(/dev branch/);
-  });
-
-  it("allows only the listings JSON and machine images on DEV saves", () => {
-    expect(() =>
-      assertAllowedMachineSalesDevSavePath("data/machines-for-sale.json"),
-    ).not.toThrow();
-    expect(() =>
-      assertAllowedMachineSalesDevSavePath("public/images/machines/taitexma-tr260-ribber.jpg"),
-    ).not.toThrow();
-    expect(() =>
-      assertAllowedMachineSalesDevSavePath("src/pages/shop/machines.astro"),
-    ).toThrow(/not a Machines for Sale data file/);
-    expect(() =>
-      assertAllowedMachineSalesDevSavePath("src/lib/machines/machineSalesListings.ts"),
-    ).toThrow(/not a Machines for Sale data file/);
-    expect(() => assertAllowedMachineSalesDevSavePath("data/machines.json")).toThrow(
-      /not a Machines for Sale data file/,
-    );
-  });
-
-  it("uses the course-content branch env and ignores the production publish branch", () => {
-    expect(
-      resolveMachineSalesDevGithubConfig(
-        {
-          GITHUB_TOKEN: "token",
-          GITHUB_REPO: "sjalowiec/memberstack-test",
-          MACHINE_SALES_GITHUB_BRANCH: "main",
-        },
-        { readAstroEnv: false },
-      ),
-    ).toMatchObject({ branch: "dev" });
-    expect(() =>
-      resolveMachineSalesDevGithubConfig(
-        {
-          GITHUB_TOKEN: "token",
-          GITHUB_REPO: "sjalowiec/memberstack-test",
-          COURSE_CONTENT_GITHUB_BRANCH: "main",
-        },
-        { readAstroEnv: false },
-      ),
-    ).toThrow(/dev branch/);
-  });
-});
-
-describe("machine sales publish plan", () => {
-  it("blocks production hosts from publishing", () => {
-    expect(
-      isMachineSalesPublishAllowed("knititnow.com", { isViteDev: false }),
-    ).toBe(false);
-    expect(
-      isMachineSalesPublishAllowed("kin-dev.netlify.app", { isViteDev: false }),
-    ).toBe(true);
-    expect(isMachineSalesPublishAllowed("localhost", { isViteDev: true })).toBe(true);
-  });
-
-  it("collects the listings JSON and referenced images only", () => {
-    const listings = readMachineSalesListings();
-    const paths = collectMachineSalesPublishCandidatePaths(listings);
-    expect(paths[0]).toBe(MACHINE_SALES_JSON_REPO_PATH);
-    expect(paths).not.toContain("src/pages/shop/machines.astro");
-    expect(paths).not.toContain("src/lib/machines/machineSalesListings.ts");
-    expect(paths).toContain("public/images/machines/taxema-bulky1.jpg");
-    expect(paths).toContain("public/images/machines/8601.jpg");
-    expect(paths).not.toContain("data/machines.json");
-    expect(paths).not.toContain("public/images/machines/taxema_bulky1.jpg");
-  });
-
-  it("skips files whose GitHub blob SHA already matches", async () => {
-    const listings = readMachineSalesListings();
-    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      expect(url).toContain("ref=main");
-      expect(url).not.toContain("data/machines.json");
-      if (url.includes("/contents/")) {
-        const repoPath = decodeURIComponent(
-          url.replace(/^.*\/contents\//, "").replace(/\?ref=.*$/, ""),
-        );
-        const content = readFileSync(path.join(process.cwd(), repoPath));
-        return new Response(JSON.stringify({ sha: gitBlobSha(content) }), { status: 200 });
-      }
-      throw new Error(`unexpected fetch ${url}`);
-    });
-
-    const { plan, files } = await planMachineSalesPublish({
-      listings,
-      config: validConfig,
-      fetcher: fetcher as unknown as typeof fetch,
-    });
-    expect(files).toHaveLength(0);
-    expect(plan.files).toHaveLength(0);
-    expect(plan.branch).toBe("main");
-  });
-
-  it("reads the disk listings array when publish is called without an options object", async () => {
-    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes("/contents/")) {
-        const repoPath = decodeURIComponent(
-          url.replace(/^.*\/contents\//, "").replace(/\?ref=.*$/, ""),
-        );
-        const content = readFileSync(path.join(process.cwd(), repoPath));
-        return new Response(JSON.stringify({ sha: gitBlobSha(content) }), { status: 200 });
-      }
-      throw new Error(`unexpected fetch ${url}`);
-    });
-
-    const { plan } = await planMachineSalesPublish({
-      config: validConfig,
-      fetcher: fetcher as unknown as typeof fetch,
-    });
-    const fromDisk = readMachineSalesListings();
-    expect(plan.listings.map((row) => row.id)).toEqual(fromDisk.map((row) => row.id));
-  });
-
-  it("reads listings and images from GitHub dev when publishing from hosted DEV", async () => {
-    const listingsJson =
-      JSON.stringify(
-        [
-          {
-            id: "taitexma-th160",
-            name: "Taitexma TH160 Mid-Gauge Machine",
-            brand: "Taitexma",
-            model: "TH160",
-            price: 999,
-            priceLabel: "$999",
-            shopifyUrl: "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th160",
-            status: "available",
-            specs: ["Mid-Gauge"],
-            shortHtml: "Machine only",
-            imageSrc: "/images/machines/taitexma-th160-machine.jpg",
-            sortOrder: 60,
-          },
-        ],
-        null,
-        2,
-      ) + "\n";
-    const jsonBuf = Buffer.from(listingsJson, "utf8");
-    const imageBuf = Buffer.from("th160-jpeg");
-    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes("ref=dev") && url.includes("data/machines-for-sale.json")) {
-        return new Response(
-          JSON.stringify({
-            sha: gitBlobSha(jsonBuf),
-            encoding: "base64",
-            content: jsonBuf.toString("base64"),
-            type: "file",
-          }),
-          { status: 200 },
-        );
-      }
-      if (url.includes("ref=dev") && url.includes("taitexma-th160-machine.jpg")) {
-        return new Response(
-          JSON.stringify({
-            sha: gitBlobSha(imageBuf),
-            encoding: "base64",
-            content: imageBuf.toString("base64"),
-            type: "file",
-          }),
-          { status: 200 },
-        );
-      }
-      if (url.includes("ref=main")) {
-        return new Response("Not Found", { status: 404 });
-      }
-      throw new Error(`unexpected fetch ${url}`);
-    });
-
-    const { plan, files } = await planMachineSalesPublish({
-      hostname: "kin-dev.netlify.app",
-      env: { isViteDev: false },
-      config: validConfig,
-      sourceConfig: { ...validConfig, branch: "dev" },
-      fetcher: fetcher as unknown as typeof fetch,
-    });
-    expect(plan.listings.map((row) => row.id)).toEqual(["taitexma-th160"]);
-    expect(files.map((file) => file.path)).toEqual([
-      "data/machines-for-sale.json",
-      "public/images/machines/taitexma-th160-machine.jpg",
-    ]);
-    expect(plan.files.map((file) => file.action)).toEqual(["add", "add"]);
-    expect(String(fetcher.mock.calls[0]?.[0])).toContain("ref=dev");
-    expect(files.some((file) => file.path === "src/lib/machines/machineSalesListings.ts")).toBe(
-      false,
-    );
   });
 });
 
@@ -330,7 +118,7 @@ describe("commitMachineSalesFiles", () => {
 
     const result = await commitMachineSalesFiles({
       files: [{ path: "data/machines-for-sale.json", content: Buffer.from("[]\n") }],
-      message: "Publish Machines for Sale listings to production.",
+      message: "Save Machines for Sale listings.",
       config: validConfig,
       fetcher: fetcher as unknown as typeof fetch,
     });
@@ -341,62 +129,7 @@ describe("commitMachineSalesFiles", () => {
       paths: ["data/machines-for-sale.json"],
     });
     expect(calls.some((call) => call.includes("data/machines.json"))).toBe(false);
-  });
-
-  it("commits DEV saves onto the dev branch and refuses storefront files", async () => {
-    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      const method = init?.method || "GET";
-      if (url.endsWith("/git/ref/heads/dev") && method === "GET") {
-        return new Response(JSON.stringify({ object: { sha: "dev-head" } }), { status: 200 });
-      }
-      if (url.endsWith("/git/commits/dev-head") && method === "GET") {
-        return new Response(JSON.stringify({ tree: { sha: "dev-tree" } }), { status: 200 });
-      }
-      if (url.endsWith("/git/blobs") && method === "POST") {
-        return new Response(JSON.stringify({ sha: "dev-blob" }), { status: 200 });
-      }
-      if (url.endsWith("/git/trees") && method === "POST") {
-        return new Response(JSON.stringify({ sha: "dev-new-tree" }), { status: 200 });
-      }
-      if (url.endsWith("/git/commits") && method === "POST") {
-        return new Response(JSON.stringify({ sha: "dev-commit" }), { status: 200 });
-      }
-      if (url.endsWith("/git/refs/heads/dev") && method === "PATCH") {
-        return new Response(JSON.stringify({ object: { sha: "dev-commit" } }), { status: 200 });
-      }
-      throw new Error(`unexpected ${method} ${url}`);
-    });
-
-    const result = await commitMachineSalesFiles({
-      files: [
-        {
-          path: "public/images/machines/taitexma-tr260-ribber.jpg",
-          content: Buffer.from("jpeg"),
-        },
-      ],
-      message: "Save Machines for Sale image on DEV.",
-      config: { ...validConfig, branch: "dev" },
-      fetcher: fetcher as unknown as typeof fetch,
-      pathGuard: "dev-save",
-    });
-    expect(result).toEqual({
-      commitSha: "dev-commit",
-      branch: "dev",
-      paths: ["public/images/machines/taitexma-tr260-ribber.jpg"],
-    });
-    expect(String(fetcher.mock.calls[0]?.[0])).toContain("/git/ref/heads/dev");
-    expect(String(fetcher.mock.calls[0]?.[0])).not.toContain("/git/ref/heads/main");
-
-    await expect(
-      commitMachineSalesFiles({
-        files: [{ path: "src/pages/shop/machines.astro", content: Buffer.from("nope") }],
-        message: "nope",
-        config: { ...validConfig, branch: "dev" },
-        fetcher: vi.fn() as unknown as typeof fetch,
-        pathGuard: "dev-save",
-      }),
-    ).rejects.toThrow(/not a Machines for Sale data file/);
+    expect(calls.some((call) => call.includes("/git/ref/heads/dev"))).toBe(false);
   });
 
   it("refuses to commit a non-allowlisted path", async () => {
@@ -407,6 +140,18 @@ describe("commitMachineSalesFiles", () => {
         config: validConfig,
         fetcher: vi.fn() as unknown as typeof fetch,
       }),
-    ).rejects.toThrow(/not a Machines for Sale file/);
+    ).rejects.toThrow(/not a Machines for Sale data file/);
+  });
+});
+
+describe("machine sales GitHub writer is not a course-content writer", () => {
+  it("does not import course persist helpers", () => {
+    const source = readFileSync(
+      new URL("./machineSalesGithub.ts", import.meta.url),
+      "utf8",
+    );
+    expect(source).toContain("parseGithubRepo");
+    expect(source).not.toContain("commitCourseContentFile");
+    expect(source).not.toContain("COURSE_CONTENT_GITHUB_BRANCH");
   });
 });

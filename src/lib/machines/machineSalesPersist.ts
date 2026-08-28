@@ -1,10 +1,9 @@
 /**
  * Environment-aware persistence for Machines for Sale listings and images.
- * Localhost writes the filesystem. Hosted DEV commits only allowlisted data
- * files to the GitHub `dev` branch. Production publishing stays on `main`.
+ * Localhost writes the filesystem. Hosted environments (including production)
+ * commit only allowlisted data files to GitHub `main`. Never writes the
+ * Netlify function disk.
  */
-import { existsSync } from "node:fs";
-import path from "node:path";
 import {
   detectSiteEnvironment,
   type DetectSiteEnvironmentOptions,
@@ -14,7 +13,7 @@ import {
   getGithubFileBlobSha,
   MACHINE_SALES_IMAGE_REPO_DIR,
   MACHINE_SALES_JSON_REPO_PATH,
-  resolveMachineSalesDevGithubConfig,
+  resolveMachineSalesGithubConfig,
   type MachineSalesGithubConfig,
 } from "./machineSalesGithub";
 import {
@@ -26,7 +25,6 @@ import {
 } from "./machineSalesImageUpload";
 import {
   MACHINE_SALES_IMAGE_DIR,
-  MACHINE_SALES_IMAGE_DISK_DIR,
   serializeMachineSalesListings,
   writeMachineSalesListings,
   type MachineSalesListing,
@@ -58,31 +56,21 @@ function defaultEnv(options?: DetectSiteEnvironmentOptions): DetectSiteEnvironme
   };
 }
 
-export function isMachineSalesDevWriteAllowed(
-  hostname: string | null | undefined,
-  env?: DetectSiteEnvironmentOptions,
-): boolean {
-  return detectSiteEnvironment(hostname, defaultEnv(env)) !== "production";
-}
-
 export function resolveMachineSalesPersistMode(
   hostname: string | null | undefined,
   env?: DetectSiteEnvironmentOptions,
 ): MachineSalesPersistMode {
   const site = detectSiteEnvironment(hostname, defaultEnv(env));
-  if (site === "production") {
-    throw new Error("Machines for Sale can only be saved from DEV, not from production.");
-  }
   if (site === "localhost") return "filesystem";
   return "github";
 }
 
+/** Hosted uniqueness is GitHub `main` only — never the function disk. */
 async function githubImageNameTaken(
   config: MachineSalesGithubConfig,
   filename: string,
   fetcher: typeof fetch,
 ): Promise<boolean> {
-  if (existsSync(path.join(MACHINE_SALES_IMAGE_DISK_DIR, filename))) return true;
   const sha = await getGithubFileBlobSha(
     config,
     `${MACHINE_SALES_IMAGE_REPO_DIR}/${filename}`,
@@ -109,7 +97,7 @@ export async function persistMachineSalesImage(
   const mime = input.mimeType.trim().toLowerCase();
   const safeName = sanitizeMachineSalesUploadFilename(input.filename, mime);
   const buffer = decodeImageDataBase64(input.dataBase64);
-  const config = options.config ?? resolveMachineSalesDevGithubConfig();
+  const config = options.config ?? resolveMachineSalesGithubConfig();
   const fetcher = options.fetcher ?? fetch;
   const filename = await uniqueMachineSalesImageFilenameAsync(safeName, (name) =>
     githubImageNameTaken(config, name, fetcher),
@@ -117,10 +105,9 @@ export async function persistMachineSalesImage(
   const repoPath = `${MACHINE_SALES_IMAGE_REPO_DIR}/${filename}`;
   const result = await commitMachineSalesFiles({
     files: [{ path: repoPath, content: buffer }],
-    message: `Save Machines for Sale image ${filename} on DEV.`,
+    message: `Save Machines for Sale image ${filename}.`,
     config,
     fetcher,
-    pathGuard: "dev-save",
   });
   return {
     filename,
@@ -146,7 +133,7 @@ export async function persistMachineSalesListings(
     return { listings, persistedVia: "filesystem" };
   }
 
-  const config = options.config ?? resolveMachineSalesDevGithubConfig();
+  const config = options.config ?? resolveMachineSalesGithubConfig();
   const result = await commitMachineSalesFiles({
     files: [
       {
@@ -154,10 +141,9 @@ export async function persistMachineSalesListings(
         content: Buffer.from(serializeMachineSalesListings(listings), "utf8"),
       },
     ],
-    message: "Save Machines for Sale listings on DEV.",
+    message: "Save Machines for Sale listings.",
     config,
     fetcher: options.fetcher,
-    pathGuard: "dev-save",
   });
   return {
     listings,

@@ -62,7 +62,7 @@ interface ImportMetaEnv {
   /** Server-only: branch that receives course-content commits. Must be `dev`. */
   readonly COURSE_CONTENT_GITHUB_BRANCH?: string;
   /**
-   * Server-only: branch that receives Machines for Sale production publishes.
+   * Server-only: branch that receives Machines for Sale hosted saves.
    * Must be `main`. Defaults to `main`.
    */
   readonly MACHINE_SALES_GITHUB_BRANCH?: string;

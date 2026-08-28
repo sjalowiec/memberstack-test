@@ -1,8 +1,6 @@
 import type { APIRoute } from "astro";
-import {
-  isMachineSalesDevWriteAllowed,
-  persistMachineSalesImage,
-} from "../../../lib/machines/machineSalesPersist";
+import { requireAdminForRequest } from "../../../lib/admin/requireAdminRequest";
+import { persistMachineSalesImage } from "../../../lib/machines/machineSalesPersist";
 
 export const prerender = false;
 
@@ -18,20 +16,10 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
-function productionBlockedResponse() {
-  return jsonResponse(
-    {
-      ok: false,
-      error: "Machines for Sale images can only be uploaded from DEV, not from production.",
-    },
-    403,
-  );
-}
-
-export const POST: APIRoute = async ({ request }) => {
-  const hostname = new URL(request.url).hostname;
-  if (!isMachineSalesDevWriteAllowed(hostname, adminEnv)) {
-    return productionBlockedResponse();
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) {
+    return jsonResponse({ ok: false, error: auth.error }, auth.status);
   }
 
   if (!request.headers.get("content-type")?.includes("application/json")) {
@@ -61,6 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    const hostname = new URL(request.url).hostname;
     const saved = await persistMachineSalesImage(
       { filename, mimeType, dataBase64 },
       { hostname, env: adminEnv },
@@ -75,9 +64,6 @@ export const POST: APIRoute = async ({ request }) => {
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not save the image.";
-    if (/only be saved from DEV|production/i.test(message)) {
-      return jsonResponse({ ok: false, error: message }, 403);
-    }
     const status = /GITHUB_|GitHub/i.test(message) ? 500 : 400;
     return jsonResponse({ ok: false, error: message }, status);
   }

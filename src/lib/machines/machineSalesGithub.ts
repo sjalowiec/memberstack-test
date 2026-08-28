@@ -1,23 +1,16 @@
 /**
  * Constrained GitHub writer for Machines for Sale.
  * Reuses the same GITHUB_TOKEN / GITHUB_REPO Git Data API pattern as
- * course-content saves. DEV saves write allowlisted data files to `dev`;
- * production publishes write allowlisted files to `main`.
+ * course-content saves. Hosted Saves write allowlisted data files to `main`.
  */
 import { createHash } from "node:crypto";
 import { parseGithubRepo } from "../legacy_kin/courseContentGithub";
 
 export const MACHINE_SALES_GITHUB_BRANCH_DEFAULT = "main";
 export const MACHINE_SALES_GITHUB_ALLOWED_BRANCHES = ["main"] as const;
-export const MACHINE_SALES_DEV_GITHUB_BRANCH_DEFAULT = "dev";
-export const MACHINE_SALES_DEV_GITHUB_ALLOWED_BRANCHES = ["dev"] as const;
 
 export const MACHINE_SALES_JSON_REPO_PATH = "data/machines-for-sale.json";
 export const MACHINE_SALES_IMAGE_REPO_DIR = "public/images/machines";
-export const MACHINE_SALES_STOREFRONT_REPO_PATHS = [
-  "src/pages/shop/machines.astro",
-  "src/lib/machines/machineSalesListings.ts",
-] as const;
 
 const GITHUB_API_VERSION = "2022-11-28";
 const IMAGE_FILE_RE = /^[a-z0-9][a-z0-9._-]*$/i;
@@ -41,34 +34,23 @@ export type MachineSalesGithubCommitResult = {
 };
 
 function readAstroGithubValue(
-  name: "GITHUB_TOKEN" | "GITHUB_REPO" | "MACHINE_SALES_GITHUB_BRANCH" | "COURSE_CONTENT_GITHUB_BRANCH",
+  name: "GITHUB_TOKEN" | "GITHUB_REPO" | "MACHINE_SALES_GITHUB_BRANCH",
 ): string {
   if (typeof import.meta === "undefined" || !import.meta.env) return "";
   if (name === "GITHUB_TOKEN") return String(import.meta.env.GITHUB_TOKEN ?? "").trim();
   if (name === "GITHUB_REPO") return String(import.meta.env.GITHUB_REPO ?? "").trim();
-  if (name === "MACHINE_SALES_GITHUB_BRANCH") {
-    return String(import.meta.env.MACHINE_SALES_GITHUB_BRANCH ?? "").trim();
-  }
-  return String(import.meta.env.COURSE_CONTENT_GITHUB_BRANCH ?? "").trim();
+  return String(import.meta.env.MACHINE_SALES_GITHUB_BRANCH ?? "").trim();
 }
 
 export function resolveMachineSalesGithubBranch(raw?: string | null): string {
   const branch = (raw ?? "").trim() || MACHINE_SALES_GITHUB_BRANCH_DEFAULT;
   if (!(MACHINE_SALES_GITHUB_ALLOWED_BRANCHES as readonly string[]).includes(branch)) {
-    throw new Error("Machines for Sale GitHub publishes are limited to the main branch.");
+    throw new Error("Machines for Sale GitHub saves are limited to the main branch.");
   }
   return branch;
 }
 
-export function resolveMachineSalesDevGithubBranch(raw?: string | null): string {
-  const branch = (raw ?? "").trim() || MACHINE_SALES_DEV_GITHUB_BRANCH_DEFAULT;
-  if (!(MACHINE_SALES_DEV_GITHUB_ALLOWED_BRANCHES as readonly string[]).includes(branch)) {
-    throw new Error("Machines for Sale DEV GitHub writes are limited to the dev branch.");
-  }
-  return branch;
-}
-
-export function assertAllowedMachineSalesDevSavePath(repoPath: string): void {
+export function assertAllowedMachineSalesSavePath(repoPath: string): void {
   const path = repoPath.trim().replace(/\\/g, "/");
   if (!path || path.includes("..") || path.startsWith("/") || path.includes("\\")) {
     throw new Error(`Refusing GitHub write: invalid path "${repoPath}".`);
@@ -78,7 +60,7 @@ export function assertAllowedMachineSalesDevSavePath(repoPath: string): void {
     const filename = path.slice(MACHINE_SALES_IMAGE_REPO_DIR.length + 1);
     if (IMAGE_FILE_RE.test(filename) && !filename.includes("/")) return;
   }
-  throw new Error(`Refusing GitHub DEV save: path is not a Machines for Sale data file (${path}).`);
+  throw new Error(`Refusing GitHub save: path is not a Machines for Sale data file (${path}).`);
 }
 
 export function listingImageSrcToRepoPath(imageSrc: string): string | null {
@@ -97,19 +79,6 @@ export function listingImageSrcToRepoPath(imageSrc: string): string | null {
   return `${MACHINE_SALES_IMAGE_REPO_DIR}/${filename}`;
 }
 
-export function assertAllowedMachineSalesPublishPath(repoPath: string): void {
-  const path = repoPath.trim().replace(/\\/g, "/");
-  if (!path || path.includes("..") || path.startsWith("/") || path.includes("\\")) {
-    throw new Error(`Refusing GitHub write: invalid path "${repoPath}".`);
-  }
-  if (path === MACHINE_SALES_JSON_REPO_PATH) return;
-  if ((MACHINE_SALES_STOREFRONT_REPO_PATHS as readonly string[]).includes(path)) return;
-  if (path.startsWith(`${MACHINE_SALES_IMAGE_REPO_DIR}/`)) {
-    const filename = path.slice(MACHINE_SALES_IMAGE_REPO_DIR.length + 1);
-    if (IMAGE_FILE_RE.test(filename) && !filename.includes("/")) return;
-  }
-  throw new Error(`Refusing GitHub write: path is not a Machines for Sale file (${path}).`);
-}
 
 export function gitBlobSha(content: Buffer): string {
   const header = Buffer.from(`blob ${content.length}\0`);
@@ -132,10 +101,10 @@ export function resolveMachineSalesGithubConfig(
     String(env.MACHINE_SALES_GITHUB_BRANCH ?? "").trim();
 
   if (!token) {
-    throw new Error("GITHUB_TOKEN is not configured for Machines for Sale publish.");
+    throw new Error("GITHUB_TOKEN is not configured for Machines for Sale saves.");
   }
   if (!repoRaw) {
-    throw new Error("GITHUB_REPO is not configured for Machines for Sale publish.");
+    throw new Error("GITHUB_REPO is not configured for Machines for Sale saves.");
   }
 
   const { owner, repo } = parseGithubRepo(repoRaw);
@@ -144,37 +113,6 @@ export function resolveMachineSalesGithubConfig(
     owner,
     repo,
     branch: resolveMachineSalesGithubBranch(branchRaw),
-  };
-}
-
-export function resolveMachineSalesDevGithubConfig(
-  env: NodeJS.ProcessEnv = process.env,
-  options: { readAstroEnv?: boolean } = {},
-): MachineSalesGithubConfig {
-  const readAstro = options.readAstroEnv !== false;
-  const token =
-    (readAstro ? readAstroGithubValue("GITHUB_TOKEN") : "") ||
-    String(env.GITHUB_TOKEN ?? "").trim();
-  const repoRaw =
-    (readAstro ? readAstroGithubValue("GITHUB_REPO") : "") ||
-    String(env.GITHUB_REPO ?? "").trim();
-  const branchRaw =
-    (readAstro ? readAstroGithubValue("COURSE_CONTENT_GITHUB_BRANCH") : "") ||
-    String(env.COURSE_CONTENT_GITHUB_BRANCH ?? "").trim();
-
-  if (!token) {
-    throw new Error("GITHUB_TOKEN is not configured for Machines for Sale DEV saves.");
-  }
-  if (!repoRaw) {
-    throw new Error("GITHUB_REPO is not configured for Machines for Sale DEV saves.");
-  }
-
-  const { owner, repo } = parseGithubRepo(repoRaw);
-  return {
-    token,
-    owner,
-    repo,
-    branch: resolveMachineSalesDevGithubBranch(branchRaw),
   };
 }
 
@@ -192,7 +130,7 @@ export async function getGithubFileBlobSha(
   repoPath: string,
   fetcher: typeof fetch = fetch,
 ): Promise<string | null> {
-  assertAllowedMachineSalesPublishPath(repoPath);
+  assertAllowedMachineSalesSavePath(repoPath);
   const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${repoPath}?ref=${encodeURIComponent(config.branch)}`;
   const response = await fetcher(url, { headers: githubHeaders(config.token) });
   if (response.status === 404) return null;
@@ -201,43 +139,6 @@ export async function getGithubFileBlobSha(
   }
   const body = (await response.json()) as { sha?: unknown };
   return typeof body.sha === "string" && body.sha.trim() ? body.sha.trim() : null;
-}
-
-export async function getGithubFileContent(
-  config: MachineSalesGithubConfig,
-  repoPath: string,
-  fetcher: typeof fetch = fetch,
-): Promise<Buffer | null> {
-  assertAllowedMachineSalesPublishPath(repoPath);
-  const api = `https://api.github.com/repos/${config.owner}/${config.repo}`;
-  const url = `${api}/contents/${repoPath}?ref=${encodeURIComponent(config.branch)}`;
-  const response = await fetcher(url, { headers: githubHeaders(config.token) });
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    throw new Error(`Could not read ${repoPath} from GitHub (${response.status}).`);
-  }
-  const body = (await response.json()) as {
-    type?: unknown;
-    sha?: unknown;
-    content?: unknown;
-    encoding?: unknown;
-  };
-  if (body.type && body.type !== "file") {
-    throw new Error(`GitHub path is not a file: ${repoPath}`);
-  }
-  if (typeof body.content === "string") {
-    return Buffer.from(body.content.replace(/\n/g, ""), "base64");
-  }
-  const sha = typeof body.sha === "string" ? body.sha.trim() : "";
-  if (!sha) return null;
-  const blob = await githubJson<{ content?: unknown; encoding?: unknown }>(
-    fetcher,
-    `${api}/git/blobs/${sha}`,
-    { headers: githubHeaders(config.token) },
-    `Could not read blob for ${repoPath}`,
-  );
-  if (typeof blob.content !== "string") return null;
-  return Buffer.from(blob.content.replace(/\n/g, ""), "base64");
 }
 
 async function githubJson<T>(
@@ -257,7 +158,7 @@ async function githubJson<T>(
 }
 
 /**
- * Create one commit on the production branch containing only the given files.
+ * Create one commit on GitHub `main` containing only the given allowlisted files.
  * Does not read git status or the rest of the working tree.
  */
 export async function commitMachineSalesFiles(options: {
@@ -265,7 +166,6 @@ export async function commitMachineSalesFiles(options: {
   message: string;
   config?: MachineSalesGithubConfig;
   fetcher?: typeof fetch;
-  pathGuard?: "publish" | "dev-save";
 }): Promise<MachineSalesGithubCommitResult> {
   if (options.files.length === 0) {
     throw new Error("No Machines for Sale files to commit.");
@@ -275,13 +175,10 @@ export async function commitMachineSalesFiles(options: {
   const fetcher = options.fetcher ?? fetch;
   const headers = githubHeaders(config.token);
   const api = `https://api.github.com/repos/${config.owner}/${config.repo}`;
-  const guard = options.pathGuard ?? "publish";
-  const assertPath =
-    guard === "dev-save" ? assertAllowedMachineSalesDevSavePath : assertAllowedMachineSalesPublishPath;
 
   const paths: string[] = [];
   for (const file of options.files) {
-    assertPath(file.path);
+    assertAllowedMachineSalesSavePath(file.path);
     paths.push(file.path);
   }
 
@@ -345,7 +242,7 @@ export async function commitMachineSalesFiles(options: {
   );
   const treeSha = typeof tree.sha === "string" ? tree.sha.trim() : "";
   if (!treeSha) {
-    throw new Error("GitHub did not return a tree SHA for the publish commit.");
+    throw new Error("GitHub did not return a tree SHA for the save commit.");
   }
 
   const commit = await githubJson<{ sha?: unknown }>(

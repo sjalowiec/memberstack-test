@@ -141,6 +141,8 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("ms-field-listingType");
     expect(page).toContain("data-delete");
     expect(page).toContain("window.confirm");
+    expect(page).not.toContain("Publish to Production");
+    expect(page).not.toContain("/api/admin/machine-sales-publish");
   });
 });
 
