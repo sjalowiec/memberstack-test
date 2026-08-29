@@ -140,23 +140,54 @@ export function drawDropShoulderNeckNotation(
   frame: DropShoulderDiagramFrame,
   labels: DropShoulderNotationLabels,
   anchor: "center" | "cf",
+  options?: {
+    /** When set, stack labels inside the neck opening instead of below the scoop. */
+    insideOpening?: boolean;
+    deepestY?: number;
+    labelX?: number;
+    labelY?: number;
+  },
 ): string {
   const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
-  const neckLabelX =
-    anchor === "cf"
-      ? (frame.neckLeftX + frame.neckRightX) / 2
-      : frame.midX;
-  const neckHighestY = Math.min(DS_VB_H - 24, frame.top + 20);
+  const deepestY = options?.deepestY ?? frame.neckBottomY;
   const neckHoldOffset = labels.neckBo ? 1 : 0;
-  const neckBoY = Math.min(
-    DS_VB_H - 16,
-    Math.max(
-      frame.neckBottomY + 8,
-      neckHighestY + Math.max(0, neckShapingLines.length + neckHoldOffset - 1) * DS_NECK_NOTATION_GAP,
-    ),
-  );
+  const stackCount = neckShapingLines.length + neckHoldOffset;
+  const stackH = Math.max(0, (stackCount - 1) * DS_NECK_NOTATION_GAP);
+
+  let neckLabelX: number;
+  let neckBoY: number;
+  let neckHighestY: number;
+  let placement: "legacy-below-scoop" | "inside-opening";
+
+  if (options?.insideOpening) {
+    placement = "inside-opening";
+    neckLabelX = options.labelX ?? (anchor === "cf"
+      ? (frame.neckLeftX + frame.neckRightX) / 2
+      : frame.midX);
+    const span = Math.max(12, deepestY - frame.top);
+    const clusterY = options.labelY ?? frame.top + span * 0.42;
+    const maxLast = deepestY - 8;
+    const minLast = frame.top + 16 + stackH;
+    neckBoY = clamp(clusterY + stackH / 2, Math.min(minLast, maxLast), maxLast);
+    neckHighestY = neckBoY - stackH;
+  } else {
+    placement = "legacy-below-scoop";
+    neckLabelX =
+      anchor === "cf"
+        ? (frame.neckLeftX + frame.neckRightX) / 2
+        : frame.midX;
+    neckHighestY = Math.min(DS_VB_H - 24, frame.top + 20);
+    neckBoY = Math.min(
+      DS_VB_H - 16,
+      Math.max(
+        frame.neckBottomY + 8,
+        neckHighestY + Math.max(0, stackCount - 1) * DS_NECK_NOTATION_GAP,
+      ),
+    );
+  }
+
   const parts: string[] = [
-    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckHighestY)}" data-bo-y="${fmtNum(neckBoY)}" data-neck-working-order="bottom-up" data-neck-anchor="${anchor}"></g>`,
+    `<g data-role="neck-label-zone" data-x="${fmtNum(neckLabelX)}" data-y="${fmtNum(neckHighestY)}" data-bo-y="${fmtNum(neckBoY)}" data-neck-working-order="bottom-up" data-neck-anchor="${anchor}" data-neck-notation-placement="${placement}" data-neck-notation-deepest-y="${fmtNum(deepestY)}"></g>`,
   ];
   for (const [i, line] of neckShapingLines.entries()) {
     const y = neckBoY - (i + neckHoldOffset) * DS_NECK_NOTATION_GAP;

@@ -10,6 +10,7 @@ import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontSha
 import {
   buildDropShoulderFrontFullWidthFrame,
   buildFullWidthFrame,
+  dropShoulderFrontPulloverRoundBodyPath,
   dropShoulderPulloverRoundBodyPath,
   fmtNum,
 } from "./dropShoulderPatternDiagramSvgShared";
@@ -155,7 +156,7 @@ describe("Drop Shoulder geometry and Front timing remain unchanged", () => {
     const backFrame = buildFullWidthFrame(backModel);
     const frontFrame = buildDropShoulderFrontFullWidthFrame(frontModel);
     const backPath = dropShoulderPulloverRoundBodyPath(backFrame);
-    const frontPath = dropShoulderPulloverRoundBodyPath(frontFrame);
+    const frontPath = dropShoulderFrontPulloverRoundBodyPath(frontFrame);
     const backSvg = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(result, pattern, "in")!;
     const frontSvg = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(result, pattern, "in")!;
     expect(backSvg).toContain(backPath);

@@ -6,6 +6,7 @@
  * and the same round/V neckline helpers used by written instructions.
  */
 
+import { dropShoulderFrontUsesLocalNecklineRc } from "./dropShoulderFrontNeckShapingChart";
 import { evenShapingSchedule } from "./evenShapingSchedule";
 import {
   resolveEffectiveBackNeckDepthInches,
@@ -270,7 +271,21 @@ function armholeMarkerGarmentRc(d: SleevelessBackPatternResult["debug"]): number
   if (isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)) {
     return Math.max(0, Math.floor(d.hemRows) + Math.floor(d.bodyRows));
   }
+  if (isFiniteNumber(d.armholeStartRow)) {
+    return Math.max(0, Math.floor(d.armholeStartRow));
+  }
   return undefined;
+}
+
+/**
+ * Front Shaping Notation resets the row counter at neckline start only when
+ * the neckline begins at or after the armhole marker (established after/at
+ * behavior). A neckline that begins before the marker keeps continuous garment RC.
+ */
+export function dropShoulderFrontNotationResetsAtNeckline(
+  d: SleevelessBackPatternResult["debug"],
+): boolean {
+  return dropShoulderFrontUsesLocalNecklineRc(d.frontNecklineStartRC, armholeMarkerGarmentRc(d));
 }
 
 export function isDropShoulderBodyJapaneseNotationSupported(
@@ -390,9 +405,7 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
   const isCardigan = isDropShoulderCardigan(mergedPatternData);
   const isVNeck = isDropShoulderVNeck(mergedPatternData);
   const armholeMarkerRc = armholeMarkerGarmentRc(d);
-  // Garment frontNecklineStartRC is where the written instructions reset; after reset,
-  // notation labels use local RC:000 (same origin as the front shaping map).
-  const hasFrontNecklineReset = isFiniteNumber(d.frontNecklineStartRC);
+  const hasFrontNecklineReset = dropShoulderFrontNotationResetsAtNeckline(d);
   const frontNeckDepthRows = resolveDropShoulderFrontNeckDepthRows(result, mergedPatternData);
 
   let centerNeckBindOff = 0;
@@ -446,8 +459,11 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(d.hemRows),
     "rc-armhole-bo": armholeMarkerRc !== undefined ? formatRcNotation(armholeMarkerRc) : "",
-    // Symbol only — `rc-neckline-start` already carries rc000 (avoid "↺ rc000" + "rc000").
     rc_reset: hasFrontNecklineReset ? formatRcResetSymbol() : "",
-    "rc-neckline-start": hasFrontNecklineReset ? formatRcNotation(0) : "",
+    "rc-neckline-start": hasFrontNecklineReset
+      ? formatRcNotation(0)
+      : isFiniteNumber(d.frontNecklineStartRC)
+        ? formatRcNotation(d.frontNecklineStartRC)
+        : "",
   };
 }

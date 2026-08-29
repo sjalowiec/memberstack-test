@@ -263,6 +263,33 @@ describe("drop-shoulder back round-neck shaping map", () => {
     expect(frontHtml).toContain("Shaping Map");
     expect(frontHtml).toContain("shaping-map__svg");
   });
+
+  it("uses garment RC on the Front map when the neckline begins before the armhole marker", () => {
+    const pattern = {
+      ...DROP_SHOULDER_ROUND,
+      fit: {
+        ...DROP_SHOULDER_ROUND.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_ROUND.fit.selectedMeasurements,
+          front_neck_depth: 12,
+          upper_arm: 13.4,
+        },
+      },
+      yarnGaugeMachine: {
+        ...DROP_SHOULDER_ROUND.yarnGaugeMachine,
+        gaugeRowsPerInch: 6,
+      },
+    };
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBeLessThan(result.debug.armholeStartRow!);
+    const start = result.debug.frontNecklineStartRC!;
+    const map = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
+      firstArmholeRc: 0,
+    })!;
+    expect(map.rowMin).toBe(start);
+    expect(map.rowMin).not.toBe(0);
+    expect(result.frontNeckShoulderTimeline![0]!.row).toBe(start);
+  });
 });
 
 describe("sleeveless map rendering remains intact", () => {

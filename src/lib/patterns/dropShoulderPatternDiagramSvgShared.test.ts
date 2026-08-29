@@ -12,6 +12,7 @@ import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontSha
 import {
   buildDropShoulderFrontFullWidthFrame,
   buildFullWidthFrame,
+  dropShoulderFrontPulloverRoundBodyPath,
   dropShoulderPulloverRoundBodyPath,
   endCap,
   type DropShoulderDiagramSectionCounts,
@@ -177,7 +178,7 @@ describe("Drop Shoulder generated diagrams share the corrected path", () => {
     const backFrame = buildFullWidthFrame(backModel);
     const frontFrame = buildDropShoulderFrontFullWidthFrame(frontModel);
     const backExpected = dropShoulderPulloverRoundBodyPath(backFrame);
-    const frontExpected = dropShoulderPulloverRoundBodyPath(frontFrame);
+    const frontExpected = dropShoulderFrontPulloverRoundBodyPath(frontFrame);
 
     const back = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(result, pattern, "in")!;
     const front = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(result, pattern, "in")!;

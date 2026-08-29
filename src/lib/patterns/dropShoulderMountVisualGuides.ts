@@ -10,6 +10,7 @@
 import { buildPatternVisualGuidesHtml } from "./patternVisualGuides";
 import { buildSleevelessRoundNeckBackShapingMapData } from "./sleevelessRoundNeckBackShapingSchedule";
 import { buildSleevelessRoundNeckShapingMapData } from "./sleevelessRoundNeckShapingSchedule";
+import { dropShoulderFrontNecklineDisplayRcOffset } from "./dropShoulderFrontNeckShapingChart";
 import type { ShapingMapData } from "./shapingMapSvg";
 import type { RowEntry } from "./shapingTimeline";
 
@@ -26,7 +27,9 @@ type DropShoulderMountPatternResult = {
     armholeStartRow?: number;
     /** Garment RC where the back neckline counter resets to 000. */
     backNecklineStartRC?: number;
-    /** Garment RC where the front neckline counter resets to 000. */
+    /** Garment RC of the armhole marker. */
+    armholeStartRow?: number;
+    /** Garment RC of Front neckline start (reset origin only when at/after the marker). */
     frontNecklineStartRC?: number;
   };
 };
@@ -53,12 +56,17 @@ export function buildDropShoulderMountShapingMapData(
   const neckline = String(sectionStyle(generatorPatternData).neckline || "");
   const isRoundNeckPullover = neckline !== "v-neck" && !isCardigan;
 
-  // Front neckline map uses the post-reset neckline counter (origin = frontNecklineStartRC → RC:000).
-  // Do NOT use armholeStartRow — that yields armhole-local RC (e.g. 12 = 129 − 117).
+  // Front map RC origin matches written instructions / Shaping Notation:
+  // at/after marker → post-reset local 000; before marker → continuous garment RC.
+  // Do NOT use armholeStartRow as the offset — that yields armhole-local RC after a reset.
+  const frontMapOffset = dropShoulderFrontNecklineDisplayRcOffset(
+    result.debug?.frontNecklineStartRC,
+    result.debug?.armholeStartRow,
+  );
   const frontShapingMapData =
     isRoundNeckPullover && result?.frontNeckShoulderChartUsesLiveRows
       ? buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-          firstArmholeRc: result.debug?.frontNecklineStartRC,
+          firstArmholeRc: frontMapOffset,
           title: "Front neckline shaping map",
         })
       : null;

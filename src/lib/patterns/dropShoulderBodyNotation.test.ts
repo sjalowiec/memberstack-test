@@ -464,6 +464,31 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     );
   });
 
+  it("does not reset Front notation RC when the neckline begins before the armhole marker", () => {
+    const pattern = {
+      ...DROP_SHOULDER_PATTERN,
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          front_neck_depth: 12,
+        },
+      },
+      yarnGaugeMachine: {
+        ...DROP_SHOULDER_PATTERN.yarnGaugeMachine,
+        gaugeRowsPerInch: 6,
+      },
+    };
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBeLessThan(result.debug.armholeStartRow!);
+    const repl = buildDropShoulderFrontJapaneseNotationReplacements(result, pattern);
+    const garmentRc = `rc${String(result.debug.frontNecklineStartRC).padStart(3, "0")}`;
+    expect(repl.rc_reset).toBe("");
+    expect(repl["rc-neckline-start"]).toBe(garmentRc);
+    expect(repl["rc-neckline-start"]).not.toBe("rc000");
+    expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
+  });
+
   it("cardigan front jp-neckline-bo matches written CF bind-off (not legacy n/3 shortcut)", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_CARDIGAN_PATTERN);
     const repl = buildDropShoulderFrontJapaneseNotationReplacements(

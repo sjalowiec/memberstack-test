@@ -397,22 +397,57 @@ export function buildDropShoulderFrontNeckShapingChart(
   return { chart, timeline, usesLiveRows: true };
 }
 
+/** True when Front neckline starts at or after the armhole marker (local RC 000 after reset). */
+export function dropShoulderFrontUsesLocalNecklineRc(
+  frontNecklineStartRC: number | null | undefined,
+  armholeStartRow: number | null | undefined,
+): boolean {
+  if (typeof frontNecklineStartRC !== "number" || !Number.isFinite(frontNecklineStartRC)) {
+    return false;
+  }
+  if (typeof armholeStartRow !== "number" || !Number.isFinite(armholeStartRow)) {
+    return true;
+  }
+  return frontNecklineStartRC >= armholeStartRow;
+}
+
 /**
- * Checklist RC origin for the drop-shoulder front chart: neckline reset
- * (`frontNecklineStartRC` → local RC:000), not armhole-local garment offset.
+ * Subtract this from garment timeline RCs for Front chart/map labels.
+ * Before-armhole: 0 (continuous garment RC). At/after: frontNecklineStartRC (local 000).
+ */
+export function dropShoulderFrontNecklineDisplayRcOffset(
+  frontNecklineStartRC: number | null | undefined,
+  armholeStartRow: number | null | undefined,
+): number {
+  if (!dropShoulderFrontUsesLocalNecklineRc(frontNecklineStartRC, armholeStartRow)) {
+    return 0;
+  }
+  return Math.max(0, Math.floor(frontNecklineStartRC as number));
+}
+
+/**
+ * Checklist RC origin for the drop-shoulder front chart.
+ * At/after the armhole marker: neckline reset (`frontNecklineStartRC` → local RC:000).
+ * Before the marker: continuous garment RC (same origin as written instructions).
  */
 export function dropShoulderFrontChartActiveSideRcStart(
   chart: NeckShoulderShapingChart,
   frontNecklineStartRC: number | null | undefined,
+  armholeStartRow?: number | null,
 ): number {
-  return armholeLocalRcActiveShoulderChecklistStart(chart, frontNecklineStartRC, {
+  const offset = dropShoulderFrontNecklineDisplayRcOffset(
+    frontNecklineStartRC,
+    armholeStartRow,
+  );
+  return armholeLocalRcActiveShoulderChecklistStart(chart, offset, {
     includeCenterNecklineSetupRow: true,
   });
 }
 
 /**
  * Online/print table options for the drop-shoulder front neckline chart.
- * No workflow preamble — center bind-off is the first table row at RC:000.
+ * No workflow preamble — center bind-off is the first table row (local 000 after reset,
+ * or garment RC when the neckline begins before the armhole marker).
  */
 export function dropShoulderFrontNeckChartTableOptions(
   activeSideRcStart: number,

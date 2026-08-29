@@ -25,12 +25,12 @@ import {
   drawArmholeDepth,
   drawArmholeMarker,
   drawBodyLength,
-  drawBodyWidth,
   drawHemDepth,
   drawHemWidth,
   drawNecklineDepthDim,
   drawNecklineWidthDim,
   dropShoulderFrontBodyPath,
+  dropShoulderFrontNecklineDeepestY,
   escapeXml,
   fmtNum,
   textFont,
@@ -86,10 +86,14 @@ function drawFrontNecklineDims(
     model.garment === "cardigan"
       ? (frame.neckLeftX + frame.neckRightX) / 2
       : frame.neckLeftX + 10;
+  const deepestY = dropShoulderFrontNecklineDeepestY(frame, model.garment, model.neckline);
   return [
     `<g class="ds-front-diagram__neckline-dims">`,
     drawNecklineWidthDim(frame, model.necklineWidthLabel),
-    drawNecklineDepthDim(frame, model.necklineDepthLabel, depthX),
+    drawNecklineDepthDim(frame, model.necklineDepthLabel, depthX, {
+      deepestY,
+      labelPlacement: "along-line",
+    }),
     `</g>`,
   ].join("");
 }
@@ -114,9 +118,10 @@ export function buildDropShoulderFrontStitchesRowsSvg(
     drawArmholeDepth(frame, model.armholeDepthLabel, armholeSide),
     drawBodyLength(frame, model.bodyLengthLabel, model.garment === "cardigan" ? "right" : "left"),
     drawHemDepth(frame, model.hemDepthLabel),
-    drawBodyWidth(frame, model.bodyWidthLabel),
     drawFrontNecklineDims(frame, model),
-    drawHemWidth(frame, model.hemStitchesLabel, model.hemStitches, model.bodyWidthStitches),
+    drawHemWidth(frame, model.hemStitchesLabel, model.hemStitches, model.bodyWidthStitches, {
+      evenWhenEqual: true,
+    }),
   ].join("");
 
   return wrapGeneratedDiagramSvg({
