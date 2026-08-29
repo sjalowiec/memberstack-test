@@ -306,9 +306,49 @@ export function buildDropShoulderFrontCardiganLeftFrame(
   };
 }
 
-/** Pullover round / Back silhouette — same path as generated Stitches & Rows. */
-export function dropShoulderPulloverRoundBodyPath(frame: DropShoulderDiagramFrame): string {
-  const neckCtrlY = frame.top + (frame.neckBottomY - frame.top) * 1.15;
+/** Control Y for the Back pullover round-neck quadratic (legacy 1.15 scoop). */
+export function dropShoulderPulloverRoundNeckControlY(frame: DropShoulderDiagramFrame): number {
+  return frame.top + (frame.neckBottomY - frame.top) * 1.15;
+}
+
+/**
+ * Front pullover round Q control so the curve's deepest point (t = 0.5)
+ * is exactly the row-scaled {@link DropShoulderDiagramFrame.neckBottomY}.
+ */
+export function dropShoulderFrontPulloverRoundNeckControlY(frame: DropShoulderDiagramFrame): number {
+  return 2 * frame.neckBottomY - frame.top;
+}
+
+/** Deepest Y of a pullover round Q-curve (t = 0.5). */
+export function dropShoulderPulloverRoundNeckDeepestY(
+  frame: DropShoulderDiagramFrame,
+  controlY: number = dropShoulderPulloverRoundNeckControlY(frame),
+): number {
+  return (frame.top + controlY) / 2;
+}
+
+/**
+ * Deepest Y of the Front body path neckline — same source the SVG path uses.
+ * Pullover round: Q-curve midpoint (equals neckBottomY). V and cardigan CF: neckBottomY.
+ */
+export function dropShoulderFrontNecklineDeepestY(
+  frame: DropShoulderDiagramFrame,
+  garment: "pullover" | "cardigan",
+  neckline: "round" | "v",
+): number {
+  if (garment === "pullover" && neckline === "round") {
+    return dropShoulderPulloverRoundNeckDeepestY(
+      frame,
+      dropShoulderFrontPulloverRoundNeckControlY(frame),
+    );
+  }
+  return frame.neckBottomY;
+}
+
+function pulloverRoundBodyPathWithControlY(
+  frame: DropShoulderDiagramFrame,
+  neckCtrlY: number,
+): string {
   return [
     `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeMarkerY)}`,
@@ -320,6 +360,19 @@ export function dropShoulderPulloverRoundBodyPath(frame: DropShoulderDiagramFram
     `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
     "Z",
   ].join(" ");
+}
+
+/** Pullover round Back silhouette — legacy scoop; do not use for Front. */
+export function dropShoulderPulloverRoundBodyPath(frame: DropShoulderDiagramFrame): string {
+  return pulloverRoundBodyPathWithControlY(frame, dropShoulderPulloverRoundNeckControlY(frame));
+}
+
+/** Pullover round Front silhouette — scoop reaches row-scaled neckBottomY. */
+export function dropShoulderFrontPulloverRoundBodyPath(frame: DropShoulderDiagramFrame): string {
+  return pulloverRoundBodyPathWithControlY(
+    frame,
+    dropShoulderFrontPulloverRoundNeckControlY(frame),
+  );
 }
 
 export function dropShoulderPulloverVBodyPath(frame: DropShoulderDiagramFrame): string {
@@ -381,7 +434,77 @@ export function dropShoulderFrontBodyPath(
   if (garment === "cardigan") {
     return neckline === "v" ? dropShoulderCardiganVBodyPath(frame) : dropShoulderCardiganRoundBodyPath(frame);
   }
-  return neckline === "v" ? dropShoulderPulloverVBodyPath(frame) : dropShoulderPulloverRoundBodyPath(frame);
+  return neckline === "v" ? dropShoulderPulloverVBodyPath(frame) : dropShoulderFrontPulloverRoundBodyPath(frame);
+}
+
+function quadraticPoint(
+  p0x: number,
+  p0y: number,
+  p1x: number,
+  p1y: number,
+  p2x: number,
+  p2y: number,
+  t: number,
+): { x: number; y: number } {
+  const u = 1 - t;
+  return {
+    x: u * u * p0x + 2 * u * t * p1x + t * t * p2x,
+    y: u * u * p0y + 2 * u * t * p1y + t * t * p2y,
+  };
+}
+
+/**
+ * Front Shaping Notation label anchor on the drawn neckline (not mid-body).
+ */
+export function dropShoulderFrontNeckNotationAnchor(
+  frame: DropShoulderDiagramFrame,
+  garment: "pullover" | "cardigan",
+  neckline: "round" | "v",
+): { x: number; y: number } {
+  const deepestY = dropShoulderFrontNecklineDeepestY(frame, garment, neckline);
+  if (garment === "cardigan") {
+    if (neckline === "v") {
+      const t = 0.4;
+      return {
+        x: frame.neckLeftX + (frame.right - frame.neckLeftX) * t * 0.82,
+        y: frame.top + (deepestY - frame.top) * t,
+      };
+    }
+    const t = 0.42;
+    const ctrlX = frame.neckLeftX + (frame.neckRightX - frame.neckLeftX) * 0.55;
+    const ctrlY = frame.top + (frame.neckBottomY - frame.top) * 1.05;
+    const p = quadraticPoint(
+      frame.neckLeftX,
+      frame.top,
+      ctrlX,
+      ctrlY,
+      frame.right,
+      frame.neckBottomY,
+      t,
+    );
+    return { x: p.x - 14, y: p.y };
+  }
+  if (neckline === "v") {
+    const t = 0.38;
+    return {
+      x: frame.neckRightX + (frame.midX - frame.neckRightX) * t,
+      y: frame.top + (deepestY - frame.top) * t,
+    };
+  }
+  const t = 0.88;
+  const p = quadraticPoint(
+    frame.neckLeftX,
+    frame.top,
+    frame.midX,
+    dropShoulderFrontPulloverRoundNeckControlY(frame),
+    frame.neckRightX,
+    frame.top,
+    t,
+  );
+  return {
+    x: p.x + (frame.midX - p.x) * 0.18,
+    y: p.y,
+  };
 }
 
 export function bodyWidthXAt(
@@ -490,16 +613,17 @@ export function drawHemWidth(
   hemStitchesLabel: string,
   hemStitches: number,
   bodyWidthStitches: number,
+  options?: { evenWhenEqual?: boolean },
 ): string {
   if (!hemStitchesLabel) return "";
-  if (hemStitches === bodyWidthStitches) return "";
+  if (!options?.evenWhenEqual && hemStitches === bodyWidthStitches) return "";
   const y = frame.bottom + 22;
   return [
-    `<g class="ds-diagram__hem-width">`,
+    `<g class="ds-diagram__hem-width" data-cast-on-width="true" data-cast-on-y="${fmtNum(y)}">`,
     `<line x1="${fmtNum(frame.hemLeft)}" y1="${fmtNum(y)}" x2="${fmtNum(frame.hemRight)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(frame.hemLeft, y, false),
     endCap(frame.hemRight, y, false),
-    `<text x="${fmtNum((frame.hemLeft + frame.hemRight) / 2)}" y="${fmtNum(y + 16)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(hemStitchesLabel)}</text>`,
+    `<text data-cast-on-width-label="true" x="${fmtNum((frame.hemLeft + frame.hemRight) / 2)}" y="${fmtNum(y + 16)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(hemStitchesLabel)}</text>`,
     `</g>`,
   ].join("");
 }
@@ -526,16 +650,27 @@ export function drawNecklineDepthDim(
   frame: DropShoulderDiagramFrame,
   necklineDepthLabel: string,
   x = frame.neckLeftX + 10,
+  options?: {
+    deepestY?: number;
+    labelPlacement?: "below-center" | "along-line";
+  },
 ): string {
   if (!necklineDepthLabel) return "";
   const y1 = frame.top;
-  const y2 = frame.neckBottomY;
+  const y2 = options?.deepestY ?? frame.neckBottomY;
+  const placement = options?.labelPlacement ?? "below-center";
+  const midY = (y1 + y2) / 2;
+  const towardCenter = frame.midX >= x ? 1 : -1;
+  const label =
+    placement === "along-line"
+      ? `<text data-neckline-depth-label="true" transform="translate(${fmtNum(x + 12 * towardCenter)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineDepthLabel)}</text>`
+      : `<text data-neckline-depth-label="true" x="${fmtNum((frame.neckLeftX + frame.neckRightX) / 2)}" y="${fmtNum(y2 + 14)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineDepthLabel)}</text>`;
   return [
-    `<g data-neckline-depth-dim="true">`,
+    `<g data-neckline-depth-dim="true" data-neck-depth-top-y="${fmtNum(y1)}" data-neck-depth-bottom-y="${fmtNum(y2)}">`,
     `<line x1="${fmtNum(x)}" y1="${fmtNum(y1)}" x2="${fmtNum(x)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1.3" fill="none"/>`,
     endCap(x, y1, true),
     endCap(x, y2, true),
-    `<text x="${fmtNum((frame.neckLeftX + frame.neckRightX) / 2)}" y="${fmtNum(y2 + 14)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineDepthLabel)}</text>`,
+    label,
     `</g>`,
   ].join("");
 }

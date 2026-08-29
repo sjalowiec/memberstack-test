@@ -4179,11 +4179,11 @@ table {
     );
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
-    // Front chart uses neckline-reset origin (frontNecklineStartRC → RC:000), matching the map.
-    // No "Before Shaping" / "Divide the Neckline" preamble — written instructions already cover that.
+    // Front chart RC origin matches written instructions / Shaping Notation / map.
     const frontActiveSideRcStart = dropShoulderFrontChartActiveSideRcStart(
       result.frontNeckShoulderShapingChart,
       result?.debug?.frontNecklineStartRC,
+      result?.debug?.armholeStartRow,
     );
     const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(frontActiveSideRcStart);
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");

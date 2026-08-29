@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
+import { buildDropShoulderMountShapingMapData } from "./dropShoulderMountVisualGuides";
+import { formatRcColon } from "./sleevelessPatternOutput";
+import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
 import {
   dropShoulderFrontChartActiveSideRcStart,
@@ -342,5 +347,199 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(repl["jp-neckline-bo"]).toBe(formatBindOffNotation(cfBindOff));
     expect(frontNeckParagraphs(result)).toMatch(new RegExp(`bind off ${cfBindOff} stitches`, "i"));
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
+  });
+});
+
+function rcTimingPattern(
+  frontNeckDepth: number,
+  extras: { neckline?: string; frontStyle?: string; garmentStyle?: string } = {},
+): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "women",
+      selectedMeasurements: {
+        finished_bust_chest: 40,
+        back_neck_to_hem: 24,
+        upper_arm: 13.4,
+        wrist: 8,
+        sleeve_length: 12,
+        shoulder_width: 16,
+        neck_opening: 7,
+        back_neck_depth: 1,
+        front_neck_depth: frontNeckDepth,
+      },
+    },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 5,
+      gaugeRowsPerInch: 6,
+      availableNeedles: 200,
+    },
+    style: {
+      construction: "drop-shoulder",
+      frontStyle: extras.frontStyle ?? "closed",
+      garmentStyle: extras.garmentStyle ?? "pullover",
+      neckline: extras.neckline ?? "round",
+    },
+  };
+}
+
+function firstWrittenFrontNeckRc(
+  result: ReturnType<typeof generateDropShoulderPattern>,
+): string | undefined {
+  const rows = result.frontDisplayRows ?? [];
+  const sectionIdx = rows.findIndex(
+    (row) => row.kind === "section" && row.title === "FRONT NECKLINE & SHOULDERS",
+  );
+  if (sectionIdx < 0) return undefined;
+  for (let i = sectionIdx + 1; i < rows.length; i++) {
+    const row = rows[i]!;
+    if (row.kind === "section" || row.kind === "piece") break;
+    if (row.kind === "block" && row.rowCounterReset !== true && row.rc) return row.rc;
+  }
+  return undefined;
+}
+
+describe("Drop Shoulder Front chart/map RC origin matches written and notation", () => {
+  const COMBOS: Array<{
+    name: string;
+    extras: { neckline?: string; frontStyle?: string; garmentStyle?: string };
+    expectFrontMap: boolean;
+  }> = [
+    { name: "Pullover Round", extras: {}, expectFrontMap: true },
+    { name: "Pullover V-neck", extras: { neckline: "v-neck" }, expectFrontMap: false },
+    {
+      name: "Cardigan Round",
+      extras: { frontStyle: "open", garmentStyle: "cardigan" },
+      expectFrontMap: false,
+    },
+    {
+      name: "Cardigan V-neck",
+      extras: { neckline: "v-neck", frontStyle: "open", garmentStyle: "cardigan" },
+      expectFrontMap: false,
+    },
+  ];
+
+  it.each(COMBOS)(
+    "$name before-armhole: written, notation, chart, and map use garment RC",
+    ({ extras, expectFrontMap }) => {
+      const pattern = rcTimingPattern(12, extras);
+      const result = generateDropShoulderPattern(pattern);
+      const start = result.debug.frontNecklineStartRC!;
+      const marker = result.debug.armholeStartRow!;
+      expect(start).toBe(72);
+      expect(start).toBeLessThan(marker);
+
+      expect(firstWrittenFrontNeckRc(result)).toBe(formatRcColon(start));
+
+      const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+      expect(live).toContain(`data-rc-neck-start="${formatRcNotation(start)}"`);
+      expect(live).toContain(`data-rc-armhole-marker="${formatRcNotation(marker)}"`);
+      expect(live).not.toContain('data-rc-neck-start="rc000"');
+
+      const chartStart = dropShoulderFrontChartActiveSideRcStart(
+        result.frontNeckShoulderShapingChart,
+        start,
+        marker,
+      );
+      expect(chartStart).toBe(start);
+      const checklist = buildActiveSideInstructionTableRows(
+        result.frontNeckShoulderShapingChart,
+        chartStart,
+        { includeCenterNecklineSetupRow: true },
+      );
+      expect(checklist[0]!.rc).toBe(start);
+      const html = renderNeckShoulderShapingChartTableOnlyHtml(
+        result.frontNeckShoulderShapingChart,
+        "before-armhole-chart",
+        undefined,
+        dropShoulderFrontNeckChartTableOptions(chartStart),
+      );
+      expect(html).toContain(`data-rc="${start}"`);
+      expect(html).not.toContain(
+        '<span class="ns-shaping-chart__row-counter-number">000</span>',
+      );
+
+      const { frontShapingMapData, backShapingMapData } = buildDropShoulderMountShapingMapData(
+        result,
+        pattern,
+        { isCardigan: extras.garmentStyle === "cardigan" },
+      );
+      if (expectFrontMap) {
+        expect(frontShapingMapData).not.toBeNull();
+        expect(frontShapingMapData!.rowMin).toBe(start);
+        expect(frontShapingMapData!.rowMin).not.toBe(0);
+      } else {
+        expect(frontShapingMapData).toBeNull();
+      }
+      if (backShapingMapData) {
+        expect(backShapingMapData.rowMin).toBe(0);
+      }
+    },
+  );
+
+  it("at-marker Front chart and map keep local RC 000", () => {
+    const pattern = rcTimingPattern(6.7);
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBe(result.debug.armholeStartRow);
+    expect(firstWrittenFrontNeckRc(result)).toBe("RC: 000");
+    const chartStart = dropShoulderFrontChartActiveSideRcStart(
+      result.frontNeckShoulderShapingChart,
+      result.debug.frontNecklineStartRC,
+      result.debug.armholeStartRow,
+    );
+    expect(chartStart).toBe(0);
+    const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
+    expect(frontShapingMapData?.rowMin).toBe(0);
+    const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(live).toContain('data-rc-neck-start="rc000"');
+  });
+
+  it("after-marker Front chart and map keep local RC 000", () => {
+    const pattern = rcTimingPattern(3);
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
+    expect(firstWrittenFrontNeckRc(result)).toBe("RC: 000");
+    const chartStart = dropShoulderFrontChartActiveSideRcStart(
+      result.frontNeckShoulderShapingChart,
+      result.debug.frontNecklineStartRC,
+      result.debug.armholeStartRow,
+    );
+    expect(chartStart).toBe(0);
+    const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
+    expect(frontShapingMapData?.rowMin).toBe(0);
+    const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(live).toContain('data-rc-neck-start="rc000"');
+  });
+
+  it("does not change Back map origin or Sleeveless Front reset", () => {
+    const deep = generateDropShoulderPattern(rcTimingPattern(12));
+    const { backShapingMapData } = buildDropShoulderMountShapingMapData(deep, rcTimingPattern(12));
+    expect(backShapingMapData?.rowMin).toBe(0);
+
+    const sleeveless = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { recipientCategory: "misses", neckline: "round" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 5,
+        gaugeRowsPerInch: 7,
+        availableNeedles: 200,
+      },
+    });
+    expect(
+      sleeveless.frontDisplayRows.some(
+        (row) => row.kind === "block" && row.rowCounterReset === true,
+      ),
+    ).toBe(true);
   });
 });

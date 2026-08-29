@@ -473,6 +473,7 @@ export function dropShoulderFrontNecklineStartRc(
 type DropShoulderFrontNeckTiming = {
   neckStartRc: number;
   neckStartsBeforeMarker: boolean;
+  armholeMarkerRc: number;
   rowsAfterHemToBodyEnd: number;
   straightAboveMarkerRows: number;
   localArmholeMarkerRc: number;
@@ -490,6 +491,7 @@ function dropShoulderFrontNeckTiming(args: {
   return {
     neckStartRc,
     neckStartsBeforeMarker,
+    armholeMarkerRc: args.armholeMarkerRc,
     rowsAfterHemToBodyEnd: neckStartsBeforeMarker
       ? Math.max(0, neckStartRc - args.hemRows)
       : args.bodyToArmholeRows,
@@ -500,17 +502,28 @@ function dropShoulderFrontNeckTiming(args: {
   };
 }
 
+/** Written Front RC: reset to local 000 only when the neckline starts at or after the marker. */
+function dropShoulderFrontWrittenUsesLocalNecklineRc(
+  timing: DropShoulderFrontNeckTiming,
+  extraGate = true,
+): boolean {
+  return extraGate && !timing.neckStartsBeforeMarker;
+}
+
 function appendDropShoulderFrontArmholeMarkerDuringNeckline(
   rows: SleevelessPatternDisplayRow[],
   timing: DropShoulderFrontNeckTiming,
   markerLine: string,
   stitchCount: number,
+  useLocalNecklineRc: boolean,
 ): void {
   if (!timing.neckStartsBeforeMarker) return;
   const block = armholeMarkerBlockParagraphs(markerLine, []);
   rows.push({
     kind: "block",
-    rc: formatRcColon(timing.localArmholeMarkerRc),
+    rc: formatRcColon(
+      useLocalNecklineRc ? timing.localArmholeMarkerRc : timing.armholeMarkerRc,
+    ),
     paragraphs: block.paragraphs,
     trustedParagraphs: block.trustedParagraphs,
     stitchCount: stitchCount > 0 ? stitchCount : undefined,
@@ -855,7 +868,8 @@ function buildPulloverFrontRows(args: {
   }
 
   const hasPulloverFrontNeckShaping = args.neckSts > 0 && args.shoulderStsEach > 0;
-  if (hasPulloverFrontNeckShaping) {
+  const useLocalNecklineRc = dropShoulderFrontWrittenUsesLocalNecklineRc(timing);
+  if (hasPulloverFrontNeckShaping && useLocalNecklineRc) {
     rows.push(dropShoulderNecklineRowCounterResetBlock(neckStartRc));
   }
 
@@ -865,7 +879,11 @@ function buildPulloverFrontRows(args: {
       neckStartRc,
       args.totalRows,
     );
-    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(true, neckStartRc);
+    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(
+      useLocalNecklineRc,
+      neckStartRc,
+    );
+    const shoulderFinishRc = useLocalNecklineRc ? necklineLocalTotalRows : args.totalRows;
     const vNeckRowBudget = dropShoulderFrontNecklineWorkingRows(
       neckStartRc,
       args.totalRows,
@@ -888,12 +906,12 @@ function buildPulloverFrontRows(args: {
       ]);
       const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
         args.shoulderStsEach,
-        necklineLocalTotalRows,
+        shoulderFinishRc,
         DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE,
       );
       rows.push({
         kind: "block",
-        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
         trustedParagraphs: introTrusted,
         paragraphs: [],
       });
@@ -902,6 +920,7 @@ function buildPulloverFrontRows(args: {
         timing,
         pulloverMarkerLine,
         A,
+        useLocalNecklineRc,
       );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
@@ -919,12 +938,12 @@ function buildPulloverFrontRows(args: {
       ]);
       const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
         args.shoulderStsEach,
-        necklineLocalTotalRows,
+        shoulderFinishRc,
         DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
       );
       rows.push({
         kind: "block",
-        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
         trustedParagraphs: introTrusted,
         paragraphs: [],
       });
@@ -933,6 +952,7 @@ function buildPulloverFrontRows(args: {
         timing,
         pulloverMarkerLine,
         A,
+        useLocalNecklineRc,
       );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     }
@@ -1024,13 +1044,16 @@ function buildCardiganFrontRows(args: {
     totalRows: args.totalRows,
     bustBodySts: args.frontSts * 2,
   });
-  if (cardiganNeckChartAtRc000) {
+  const useLocalNecklineRc = dropShoulderFrontWrittenUsesLocalNecklineRc(
+    timing,
+    cardiganNeckChartAtRc000,
+  );
+  if (useLocalNecklineRc) {
     rows.push(dropShoulderNecklineRowCounterResetBlock(neckStartRc));
   }
 
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.neckPerFront > 0 && args.shoulderStsEach > 0) {
-    const useLocalNecklineRc = cardiganNeckChartAtRc000;
     const necklineLocalTotalRows = dropShoulderNecklineLocalRowsFromGarment(
       neckStartRc,
       args.totalRows,
@@ -1070,6 +1093,7 @@ function buildCardiganFrontRows(args: {
         timing,
         cardiganMarkerLine,
         A,
+        useLocalNecklineRc,
       );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
@@ -1098,6 +1122,7 @@ function buildCardiganFrontRows(args: {
         timing,
         cardiganMarkerLine,
         A,
+        useLocalNecklineRc,
       );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     }

@@ -26,6 +26,8 @@ import {
   buildDropShoulderFrontFullWidthFrame,
   drawArmholeMarker,
   dropShoulderFrontBodyPath,
+  dropShoulderFrontNeckNotationAnchor,
+  dropShoulderFrontNecklineDeepestY,
   fmtNum,
   textFont,
   wrapGeneratedDiagramSvg,
@@ -104,6 +106,8 @@ export function buildDropShoulderFrontShapingNotationSvgFromModel(
   const markerSides = model.garment === "cardigan" ? "left" : "both";
   const bodyShapingSide = model.garment === "cardigan" ? "left" : "right";
   const neckAnchor = model.garment === "cardigan" ? "cf" : "center";
+  const deepestY = dropShoulderFrontNecklineDeepestY(frame, model.garment, model.neckline);
+  const notationPt = dropShoulderFrontNeckNotationAnchor(frame, model.garment, model.neckline);
 
   const body = [
     dropShoulderNotationFontFace(),
@@ -111,7 +115,12 @@ export function buildDropShoulderFrontShapingNotationSvgFromModel(
     drawArmholeMarker(frame, markerSides),
     drawFrontPieceLabel(frame, model),
     drawDropShoulderNotationRcGutter(frame, labels, model.hemRows),
-    drawDropShoulderNeckNotation(frame, labels, neckAnchor),
+    drawDropShoulderNeckNotation(frame, labels, neckAnchor, {
+      insideOpening: true,
+      deepestY,
+      labelX: notationPt.x,
+      labelY: notationPt.y,
+    }),
     drawDropShoulderBodyShapingNotation(frame, labels, bodyShapingSide),
     drawDropShoulderBodyRowsNotation(frame, labels),
     drawDropShoulderCastOnNotation(frame, labels),
@@ -151,6 +160,11 @@ export function buildDropShoulderFrontShapingNotationSvgFromModel(
       "data-neck-working-order": "bottom-up",
       "data-neck-anchor": neckAnchor,
       "data-center-front": model.garment === "cardigan" ? "true" : "false",
+      "data-neck-notation-placement": "inside-opening",
+      "data-neck-notation-x": fmtNum(notationPt.x),
+      "data-neck-notation-y": fmtNum(notationPt.y),
+      "data-neck-notation-deepest-y": fmtNum(deepestY),
+      "data-neck-rc-continuous": hasReset ? "false" : "true",
     },
     title: "Drop Shoulder Front - Shaping Notation",
     body,
