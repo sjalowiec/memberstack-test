@@ -362,7 +362,7 @@
   color: var(--kbm-green, #52682d);
 }
 
-/* Sleeveless pullover V-neck Front: First / Second Shoulder tabs (both tables stay mounted). */
+/* Shared two-side neckline-shaping tabs (Sleeveless, Drop Shoulder, future Set-In). Both tables stay mounted. */
 .ns-shaping-chart--shoulder-tabs {
   overflow: visible;
 }

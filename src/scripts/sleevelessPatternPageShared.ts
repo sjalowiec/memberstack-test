@@ -4205,7 +4205,10 @@ table {
       result?.debug?.frontNecklineStartRC,
       result?.debug?.armholeStartRow,
     );
-    const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(frontActiveSideRcStart);
+    const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(
+      frontActiveSideRcStart,
+      result.frontNeckShoulderShapingChart,
+    );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost && result.frontNeckShoulderChartUsesLiveRows) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
@@ -4266,6 +4269,7 @@ table {
       "front-neckline-shoulder-chart-print-area",
       "Front Neckline Shaping Chart",
     );
+    bindNeckShoulderShoulderTabs(mount);
     initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);

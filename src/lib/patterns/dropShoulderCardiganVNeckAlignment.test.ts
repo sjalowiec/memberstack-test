@@ -142,7 +142,10 @@ describe("Drop Shoulder cardigan V-neck alignment (Kids 10 yr · close)", () => 
       result.frontNeckShoulderShapingChart,
       "kids-10-cardigan-v",
       undefined,
-      dropShoulderFrontNeckChartTableOptions(activeSideRcStart),
+      dropShoulderFrontNeckChartTableOptions(
+        activeSideRcStart,
+        result.frontNeckShoulderShapingChart,
+      ),
     );
     expect(html).not.toMatch(/return the \d+ held stitches for the second shoulder/i);
     expect(html).toContain(CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE);

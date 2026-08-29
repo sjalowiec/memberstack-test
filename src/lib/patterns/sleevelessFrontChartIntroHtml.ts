@@ -12,6 +12,7 @@ import {
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   isSleevelessPulloverVNeckFrontChart,
+  necklineShapingTwoSideTabPresentation,
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
   renderNeckShoulderShapingPrintInstructionTableHtml,
@@ -143,14 +144,14 @@ export function sleevelessPatternTabFrontChartTableOptions(
     ),
     includeCenterNecklineSetupRow: true,
     hideCenterNecklineSetupRow: false,
-    tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist",
     ...(options?.secondShoulderExtraHtml
       ? { secondShoulderExtraHtml: options.secondShoulderExtraHtml }
       : {}),
     suppressCarriagePositionTip: relocateIntro,
     ...(frontUsesShoulderTabs
-      ? { shoulderTabs: true, collapsible: false }
+      ? necklineShapingTwoSideTabPresentation()
       : {
+          tableHeading: "First Shoulder Checklist",
           collapsible: true,
           collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
         }),
