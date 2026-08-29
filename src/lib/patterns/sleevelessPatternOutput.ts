@@ -46,6 +46,7 @@ import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFini
 import {
   resolveEffectiveBackNeckDepthInches,
   resolveEffectiveFrontNeckDepthInches,
+  SWEATER_BACK_NECK_DEPTH_MAX_INCHES,
 } from "./customBuildEffectiveNeckDepth";
 import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
@@ -3098,7 +3099,12 @@ export function generateSleevelessBackPattern(
   /** Back neckline vertical depth in rows (single budget for unified neck + shoulder timeline). */
   const backNeckDepthRows =
     rowGauge > 0
-      ? normalizeRoundNecklineDepthRows(Math.max(1, Math.round((backNeckDepthIn ?? 2.5) * rowGauge)))
+      ? normalizeRoundNecklineDepthRows(
+          Math.max(
+            1,
+            Math.round((backNeckDepthIn ?? SWEATER_BACK_NECK_DEPTH_MAX_INCHES) * rowGauge),
+          ),
+        )
       : 0;
   const shoulderBindoffRows =
     rowGauge > 0 ? Math.max(1, Math.round(rowGauge * 1)) : 1;
