@@ -74,9 +74,14 @@ export function endCap(x: number, y: number, vertical: boolean): string {
   return `<rect x="${fmtNum(x - 0.7)}" y="${fmtNum(y - 3.5)}" width="1.4" height="7" fill="${DS_ARROW}"/>`;
 }
 
-export function markerTriangle(x: number, y: number, side: "left" | "right"): string {
-  const inward = side === "left" ? 7 : -7;
-  return `<polygon points="${fmtNum(x)},${fmtNum(y)} ${fmtNum(x + inward)},${fmtNum(y - 5)} ${fmtNum(x + inward)},${fmtNum(y + 5)}" fill="${DS_ARROW}"/>`;
+/** Short hash across the side seam — not a dimension arrow. */
+function armholeSideTick(x: number, y: number, side: "left" | "right"): string {
+  const outward = side === "left" ? -6 : 6;
+  const inward = side === "left" ? 5 : -5;
+  return (
+    `<line data-armhole-marker-tick="${side}" x1="${fmtNum(x + outward)}" y1="${fmtNum(y)}"` +
+    ` x2="${fmtNum(x + inward)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="2.2" fill="none"/>`
+  );
 }
 
 /** Hem / body-to-marker / armhole vertical bands. Neck height is applied by the piece frame. */
@@ -168,11 +173,12 @@ export function buildFullWidthFrame(
     model.crossShoulderStitches,
     1,
   );
-  const topW = (model.crossShoulderStitches / maxSts) * DS_BODY_MAX_W;
+  /** Marker and shoulder share bust/body width — Drop Shoulder does not narrow above the marker. */
+  const bodyW = (Math.max(1, model.bodyWidthStitches) / maxSts) * DS_BODY_MAX_W;
   const hemW = (model.hemStitches / maxSts) * DS_BODY_MAX_W;
   const midX = DS_PAD_LEFT + DS_BODY_MAX_W / 2;
-  const left = midX - topW / 2;
-  const right = midX + topW / 2;
+  const left = midX - bodyW / 2;
+  const right = midX + bodyW / 2;
   const hemLeft = midX - hemW / 2;
   const hemRight = midX + hemW / 2;
   const top = DS_PAD_TOP;
@@ -218,11 +224,11 @@ export function buildCardiganLeftFrame(
     model.crossShoulderStitches,
     1,
   );
-  const topW = (model.crossShoulderStitches / maxSts) * DS_BODY_MAX_W;
+  const bodyW = (Math.max(1, model.bodyWidthStitches) / maxSts) * DS_BODY_MAX_W;
   const hemW = (model.hemStitches / maxSts) * DS_BODY_MAX_W;
   const midX = DS_PAD_LEFT + DS_BODY_MAX_W / 2;
-  const left = midX - topW / 2;
-  const right = midX + topW / 2;
+  const left = midX - bodyW / 2;
+  const right = midX + bodyW / 2;
   const hemLeft = midX - hemW / 2;
   const hemRight = midX + hemW / 2;
   const top = DS_PAD_TOP;
@@ -305,10 +311,12 @@ export function dropShoulderPulloverRoundBodyPath(frame: DropShoulderDiagramFram
   const neckCtrlY = frame.top + (frame.neckBottomY - frame.top) * 1.15;
   return [
     `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
+    `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeMarkerY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
     `Q ${fmtNum(frame.midX)} ${fmtNum(neckCtrlY)} ${fmtNum(frame.neckRightX)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.right)} ${fmtNum(frame.top)}`,
+    `L ${fmtNum(frame.right)} ${fmtNum(frame.armholeMarkerY)}`,
     `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
     "Z",
   ].join(" ");
@@ -317,11 +325,13 @@ export function dropShoulderPulloverRoundBodyPath(frame: DropShoulderDiagramFram
 export function dropShoulderPulloverVBodyPath(frame: DropShoulderDiagramFrame): string {
   return [
     `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
+    `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeMarkerY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.midX)} ${fmtNum(frame.neckBottomY)}`,
     `L ${fmtNum(frame.neckRightX)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.right)} ${fmtNum(frame.top)}`,
+    `L ${fmtNum(frame.right)} ${fmtNum(frame.armholeMarkerY)}`,
     `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
     "Z",
   ].join(" ");
@@ -330,22 +340,34 @@ export function dropShoulderPulloverVBodyPath(frame: DropShoulderDiagramFrame): 
 export function dropShoulderCardiganRoundBodyPath(frame: DropShoulderDiagramFrame): string {
   const neckCtrlX = frame.neckLeftX + (frame.neckRightX - frame.neckLeftX) * 0.55;
   const neckCtrlY = frame.top + (frame.neckBottomY - frame.top) * 1.05;
+  const afterNeck =
+    frame.neckBottomY < frame.armholeMarkerY - 0.5
+      ? [`L ${fmtNum(frame.right)} ${fmtNum(frame.armholeMarkerY)}`]
+      : [];
   return [
     `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
+    `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeMarkerY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
     `Q ${fmtNum(neckCtrlX)} ${fmtNum(neckCtrlY)} ${fmtNum(frame.right)} ${fmtNum(frame.neckBottomY)}`,
+    ...afterNeck,
     `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
     "Z",
   ].join(" ");
 }
 
 export function dropShoulderCardiganVBodyPath(frame: DropShoulderDiagramFrame): string {
+  const afterNeck =
+    frame.neckBottomY < frame.armholeMarkerY - 0.5
+      ? [`L ${fmtNum(frame.right)} ${fmtNum(frame.armholeMarkerY)}`]
+      : [];
   return [
     `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
+    `L ${fmtNum(frame.left)} ${fmtNum(frame.armholeMarkerY)}`,
     `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
     `L ${fmtNum(frame.right)} ${fmtNum(frame.neckBottomY)}`,
+    ...afterNeck,
     `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
     "Z",
   ].join(" ");
@@ -366,8 +388,15 @@ export function bodyWidthXAt(
   frame: DropShoulderDiagramFrame,
   y: number,
 ): { left: number; right: number } {
-  const t =
-    frame.bottom === frame.top ? 0 : (y - frame.top) / (frame.bottom - frame.top);
+  // Above the marker (toward the shoulder): full body width, vertical sides.
+  if (y <= frame.armholeMarkerY) {
+    return { left: frame.left, right: frame.right };
+  }
+  if (y >= frame.bottom) {
+    return { left: frame.hemLeft, right: frame.hemRight };
+  }
+  const span = frame.bottom - frame.armholeMarkerY;
+  const t = span > 0 ? (y - frame.armholeMarkerY) / span : 1;
   const clamped = Math.max(0, Math.min(1, t));
   return {
     left: frame.left + (frame.hemLeft - frame.left) * clamped,
@@ -517,11 +546,10 @@ export function drawArmholeMarker(
 ): string {
   const y = frame.armholeMarkerY;
   const ticks: string[] = [];
-  if (sides === "both" || sides === "left") ticks.push(markerTriangle(frame.left, y, "left"));
-  if (sides === "both" || sides === "right") ticks.push(markerTriangle(frame.right, y, "right"));
+  if (sides === "both" || sides === "left") ticks.push(armholeSideTick(frame.left, y, "left"));
+  if (sides === "both" || sides === "right") ticks.push(armholeSideTick(frame.right, y, "right"));
   return [
     `<g class="ds-diagram__armhole-marker" data-armhole-marker="true">`,
-    `<line x1="${fmtNum(frame.left)}" y1="${fmtNum(y)}" x2="${fmtNum(frame.right)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.15" stroke-dasharray="5 4" opacity="0.55" fill="none"/>`,
     ...ticks,
     `</g>`,
     `<line x1="${fmtNum(frame.hemLeft)}" y1="${fmtNum(frame.hemTopY)}" x2="${fmtNum(frame.hemRight)}" y2="${fmtNum(frame.hemTopY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
