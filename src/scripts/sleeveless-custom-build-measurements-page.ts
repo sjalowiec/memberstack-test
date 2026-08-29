@@ -76,6 +76,15 @@ import {
   type DropShoulderEditMeasurementDiagramInput,
   type DropShoulderEditMeasurementInput,
 } from "../lib/patterns/dropShoulderEditMeasurementDiagramSvg";
+import {
+  DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
+  applyDropShoulderEditPreviewChipVisibility,
+  applyDropShoulderEditPreviewTabSelection,
+  createDropShoulderEditPreviewTablist,
+  dropShoulderEditPreviewTabForField,
+  isDropShoulderEditPreviewTab,
+  type DropShoulderEditPreviewTab,
+} from "../lib/patterns/dropShoulderEditMeasurementPreview";
 import type { SleevelessMeasurementGarmentInput } from "../lib/patterns/sleevelessFrontGarmentGeometry";
 import {
   applyMeasurementTargetToBox,
@@ -149,6 +158,8 @@ let dropShoulderWorkspaceSummaryRefreshImpl: (() => Promise<void>) | null = null
 let patternWorkspaceMeasurementDiagramRehydrateImpl: (() => Promise<void>) | null = null;
 
 let sleevelessMeasurementArtRefreshImpl: (() => void) | null = null;
+
+let dropShoulderEditPreviewTab: DropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB;
 
 let sleevelessWorkspaceSizeRefreshImpl:
   | ((meta?: SleevelessWorkspaceSizeRefreshMeta) => Promise<boolean>)
@@ -782,16 +793,23 @@ function adoptSleevelessGeneratedMeasurementArt(
 function adoptDropShoulderGeneratedMeasurementArt(
   merged: Record<DiagramFieldKey, string>,
   displayUnit: MeasurementDisplayUnit = "in",
+  piece: DropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
 ): SVGSVGElement | null {
   const svgText = buildDropShoulderEditMeasurementDiagramSvg(
     dropShoulderEditDiagramInput(merged, displayUnit),
+    piece,
   );
   const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
   const root = parsed.documentElement;
   if (!(root instanceof SVGSVGElement)) return null;
   const adopted = adoptGeneratedMeasurementSvg(root, document);
   adopted.setAttribute("role", "img");
-  adopted.setAttribute("aria-label", "Drop shoulder sweater measurement diagram");
+  adopted.setAttribute(
+    "aria-label",
+    piece === "sleeve"
+      ? "Drop shoulder sleeve measurement diagram"
+      : "Drop shoulder body measurement diagram",
+  );
   adopted.setAttribute("focusable", "false");
   return adopted;
 }
@@ -803,7 +821,11 @@ async function createMeasurementBlueprintArt(
   const unit: MeasurementDisplayUnit = displayUnit === "cm" ? "cm" : "in";
   if (merged) {
     if (isDropShoulderConstruction()) {
-      const generated = adoptDropShoulderGeneratedMeasurementArt(merged, unit);
+      const generated = adoptDropShoulderGeneratedMeasurementArt(
+        merged,
+        unit,
+        dropShoulderEditPreviewTab,
+      );
       if (generated) return generated;
     } else {
       const generated = adoptSleevelessGeneratedMeasurementArt(merged);
@@ -935,6 +957,17 @@ function renderBuildSummary(
   });
 }
 
+function stampDropShoulderPreviewTab(box: HTMLElement, field: DiagramFieldDef): void {
+  if (!isDropShoulderConstruction()) return;
+  box.dataset.dsPreviewTab = dropShoulderEditPreviewTabForField(field.key);
+}
+
+function visibleOverlayAnchorsForCurrentPreview(overlay: HTMLElement) {
+  const anchors = collectOverlayAnchors(overlay);
+  if (!isDropShoulderConstruction()) return anchors;
+  return anchors.filter((anchor) => !anchor.box.hidden);
+}
+
 type BlueprintBoxOpts = {
   axis?: "horizontal" | "vertical";
   labelLines?: string[];
@@ -1024,6 +1057,7 @@ function createDiagramFieldBox(
   applyMeasurementTargetToBox(box, resolveDiagramFieldTargetId(field), {
     transform: field.anchorTransform,
   });
+  stampDropShoulderPreviewTab(box, field);
   return box;
 }
 
@@ -1084,6 +1118,7 @@ function createDiagramReadonlyFieldBox(
   applyMeasurementTargetToBox(box, resolveDiagramFieldTargetId(field), {
     transform: field.anchorTransform,
   });
+  stampDropShoulderPreviewTab(box, field);
   return box;
 }
 
@@ -1549,16 +1584,30 @@ async function renderDiagram(
   } else {
     wrap.append(validationOverlay, rootMbp);
   }
+  if (dropShoulder) {
+    applyDropShoulderEditPreviewChipVisibility(overlay, dropShoulderEditPreviewTab);
+    const tablist = createDropShoulderEditPreviewTablist(document);
+    applyDropShoulderEditPreviewTabSelection(tablist, dropShoulderEditPreviewTab);
+    tablist.addEventListener("click", (ev: Event) => {
+      const btn = ev.target instanceof Element ? ev.target.closest("[data-ds-edit-preview-tab]") : null;
+      const nextTab = btn?.getAttribute("data-ds-edit-preview-tab");
+      if (!isDropShoulderEditPreviewTab(nextTab) || nextTab === dropShoulderEditPreviewTab) return;
+      dropShoulderEditPreviewTab = nextTab;
+      applyDropShoulderEditPreviewTabSelection(tablist, nextTab);
+      applyDropShoulderEditPreviewChipVisibility(overlay, nextTab);
+      sleevelessMeasurementArtRefreshImpl?.();
+    });
+    wrap.prepend(tablist);
+  }
   diagramHost.appendChild(wrap);
 
   if (art instanceof SVGSVGElement) {
     applyMeasurementBlueprintViewBoxAspect(art, inner);
-    const anchors = collectOverlayAnchors(overlay);
     diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
       inner,
       art,
       overlay,
-      anchors,
+      visibleOverlayAnchorsForCurrentPreview(overlay),
     );
   }
 }
@@ -1568,6 +1617,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   if (!(root instanceof HTMLElement)) return;
   if (root.dataset.cbMeasurePageInit === "true") return;
   root.dataset.cbMeasurePageInit = "true";
+  dropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB;
   stampDropShoulderMeasurementPageShell(root);
 
   const readOnly = options?.readOnly === true;
@@ -1713,25 +1763,52 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
   };
 
+  const refreshDropShoulderEditPreviewArt = (): void => {
+    if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
+    if (!(diagramHost instanceof HTMLElement)) return;
+    const inner = diagramHost.querySelector<HTMLElement>(".express-mbp-stage__inner");
+    if (!(inner instanceof HTMLElement)) return;
+    const overlay = inner.querySelector<HTMLElement>(".express-mbp-overlay");
+    if (!(overlay instanceof HTMLElement)) return;
+    const displayUnit = getDisplayUnit();
+    const collected = collectValues(root, { displayUnit: displayUnit ?? undefined });
+    const unit: MeasurementDisplayUnit = displayUnit === "cm" ? "cm" : "in";
+    const next = adoptDropShoulderGeneratedMeasurementArt(
+      dropShoulderEditWorkspaceMergedForDiagram({
+        ...diagramInches,
+        ...Object.fromEntries(
+          Object.entries(collected).filter(([, value]) => String(value).trim() !== ""),
+        ),
+      }),
+      unit,
+      dropShoulderEditPreviewTab,
+    );
+    if (!next) return;
+    const swapped = replaceSleevelessMeasurementArtOnly(inner, next);
+    if (!swapped || !(swapped.overlay instanceof HTMLElement)) return;
+    applyMeasurementBlueprintViewBoxAspect(next, inner);
+    applyDropShoulderEditPreviewChipVisibility(swapped.overlay, dropShoulderEditPreviewTab);
+    diagramOverlayPositionCleanup?.();
+    diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
+      inner,
+      next,
+      swapped.overlay,
+      visibleOverlayAnchorsForCurrentPreview(swapped.overlay),
+    );
+  };
+
   const refreshSleevelessMeasurementArt = (): void => {
+    if (isDropShoulderConstruction()) {
+      refreshDropShoulderEditPreviewArt();
+      return;
+    }
     if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
     if (!(diagramHost instanceof HTMLElement)) return;
     const inner = diagramHost.querySelector<HTMLElement>(".express-mbp-stage__inner");
     if (!(inner instanceof HTMLElement)) return;
     const displayUnit = getDisplayUnit();
     const collected = collectValues(root, { displayUnit: displayUnit ?? undefined });
-    const unit: MeasurementDisplayUnit = displayUnit === "cm" ? "cm" : "in";
-    const next = isDropShoulderConstruction()
-      ? adoptDropShoulderGeneratedMeasurementArt(
-          dropShoulderEditWorkspaceMergedForDiagram({
-            ...diagramInches,
-            ...Object.fromEntries(
-              Object.entries(collected).filter(([, value]) => String(value).trim() !== ""),
-            ),
-          }),
-          unit,
-        )
-      : adoptSleevelessGeneratedMeasurementArt(collected);
+    const next = adoptSleevelessGeneratedMeasurementArt(collected);
     if (!next) return;
     const swapped = replaceSleevelessMeasurementArtOnly(inner, next);
     if (!swapped || !(swapped.overlay instanceof HTMLElement)) return;

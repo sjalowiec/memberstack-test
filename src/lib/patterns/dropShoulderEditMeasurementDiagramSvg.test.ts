@@ -10,13 +10,12 @@ import {
   measurementsImplySleevelessShapedBody,
 } from "./sleevelessAlineShaping";
 import {
-  DROP_SHOULDER_EDIT_MEASUREMENT_TARGET_IDS,
-  DROP_SHOULDER_EDIT_SLEEVE_HANG_DEG,
+  DROP_SHOULDER_EDIT_BODY_MEASUREMENT_TARGET_IDS,
+  DROP_SHOULDER_EDIT_SLEEVE_MEASUREMENT_TARGET_IDS,
   buildDropShoulderEditMeasurementDiagramModel,
   buildDropShoulderEditMeasurementDiagramSvg,
+  buildDropShoulderEditSleeveFrameFromMeasurements,
   dropShoulderEditBodyWidthXAt,
-  dropShoulderEditSleeveRotateDeg,
-  dropShoulderEditSleeveWorldPoint,
 } from "./dropShoulderEditMeasurementDiagramSvg";
 import {
   bodyWidthXAt,
@@ -27,10 +26,7 @@ import {
   endCap,
   fmtNum,
 } from "./dropShoulderPatternDiagramSvgShared";
-import {
-  buildDropShoulderMeasurementSleeveFrame,
-  dropShoulderSleeveBodyPath,
-} from "./dropShoulderSleeveDiagramSvgShared";
+import { dropShoulderSleeveBodyPath } from "./dropShoulderSleeveDiagramSvgShared";
 
 const measurementsPageSrc = readFileSync(
   resolve("src/scripts/sleeveless-custom-build-measurements-page.ts"),
@@ -46,6 +42,10 @@ const sleevelessRendererSrc = readFileSync(
 );
 const workspaceCss = readFileSync(
   resolve("src/styles/patterns/pattern-summary-edit-workspace.css"),
+  "utf8",
+);
+const measurementsCss = readFileSync(
+  resolve("src/styles/sleeveless-custom-build-measurements.css"),
   "utf8",
 );
 const dropShoulderPatternPage = readFileSync(
@@ -80,22 +80,26 @@ function svgFor(
     neckline?: string;
     garment?: string;
     unit?: "in" | "cm";
+    piece?: "body" | "sleeve";
   } = {},
 ): string {
-  const { neckline, garment, unit, ...meas } = overrides;
-  return buildDropShoulderEditMeasurementDiagramSvg({
-    measurements: { ...BASE, ...meas },
-    patternData: {
-      style: {
-        neckline: neckline ?? "round",
-        garmentStyle: garment ?? "pullover",
-        construction: "drop-shoulder",
+  const { neckline, garment, unit, piece, ...meas } = overrides;
+  return buildDropShoulderEditMeasurementDiagramSvg(
+    {
+      measurements: { ...BASE, ...meas },
+      patternData: {
+        style: {
+          neckline: neckline ?? "round",
+          garmentStyle: garment ?? "pullover",
+          construction: "drop-shoulder",
+        },
       },
+      liveNeckline: neckline,
+      liveGarmentStyle: garment,
+      displayUnit: unit,
     },
-    liveNeckline: neckline,
-    liveGarmentStyle: garment,
-    displayUnit: unit,
-  });
+    piece,
+  );
 }
 
 function modelFor(
@@ -121,62 +125,34 @@ function svgRootCount(svg: string): number {
   return (svg.match(/<svg\b/g) ?? []).length;
 }
 
-function sleeveGroups(svg: string): string[] {
-  return svg.match(/<g data-role="sleeve"[^>]*>/g) ?? [];
-}
-
-function sleeveOutlinePaths(svg: string): string[] {
-  const re = /data-role="sleeve-outline"[^>]*\sd="([^"]+)"/g;
-  const out: string[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(svg))) out.push(match[1] ?? "");
-  return out;
-}
-
 function bodyOutlineD(svg: string): string {
   return /data-role="body-outline"[^>]*\sd="([^"]+)"/.exec(svg)?.[1] ?? "";
 }
 
-describe("Drop Shoulder edit measurement diagram — one integrated SVG", () => {
-  it("renders ONE SVG, not separate body/sleeve SVGs", () => {
+function sleeveOutlineD(svg: string): string {
+  return /data-role="sleeve-outline"[^>]*\sd="([^"]+)"/.exec(svg)?.[1] ?? "";
+}
+
+function sleeveBandFraction(frame: { top: number; bottom: number; cuffJoinY: number }): number {
+  return Math.abs(frame.bottom - frame.cuffJoinY) / Math.max(1, frame.bottom - frame.top);
+}
+
+describe("Drop Shoulder edit measurement diagram — Body tab SVG", () => {
+  it("renders one body-only SVG with no attached sleeves", () => {
     const svg = svgFor();
     expect(svgRootCount(svg)).toBe(1);
     expect(svg).toContain('data-drop-shoulder-edit-diagram="true"');
-    expect(svg).toContain('data-integrated-garment="true"');
-    expect(svg).toContain('data-sleeve-count="2"');
+    expect(svg).toContain('data-drop-shoulder-edit-piece="body"');
+    expect(svg).not.toContain('data-integrated-garment="true"');
+    expect(svg).not.toContain('data-sleeve-count="2"');
+    expect(svg).not.toContain('data-role="sleeve"');
+    expect(svg).not.toContain('data-role="sleeve-outline"');
+    expect(svg).not.toContain('data-sleeve-side="left"');
+    expect(svg).not.toContain('data-sleeve-side="right"');
     expect(summarySvg).toContain('id="body"');
     expect(summarySvg).toContain('id="sleeve"');
     expect(rendererSrc).not.toContain("drop_shoulder_summary.svg");
-  });
-
-  it("includes both sleeves in the same SVG, attached at the armhole opening", () => {
-    const model = modelFor();
-    const svg = svgFor();
-    const groups = sleeveGroups(svg);
-    expect(groups).toHaveLength(2);
-    expect(svg).toContain('data-sleeve-side="left"');
-    expect(svg).toContain('data-sleeve-side="right"');
-    expect(model.leftSleeve.origin.x).toBe(model.frame.left);
-    expect(model.rightSleeve.origin.x).toBe(model.frame.right);
-    expect(model.leftSleeve.origin.y).toBeGreaterThanOrEqual(model.frame.top);
-    expect(model.leftSleeve.origin.y).toBeLessThanOrEqual(model.frame.armholeMarkerY);
-    expect(model.rightSleeve.origin.y).toBeGreaterThanOrEqual(model.frame.top);
-    expect(model.rightSleeve.origin.y).toBeLessThanOrEqual(model.frame.armholeMarkerY);
-    expect(svg).toContain(`translate(${fmtNum(model.rightSleeve.origin.x)} ${fmtNum(model.rightSleeve.origin.y)})`);
-    expect(svg).toContain(`translate(${fmtNum(model.leftSleeve.origin.x)} ${fmtNum(model.leftSleeve.origin.y)})`);
-    expect(svg).toContain('data-role="armhole-opening" data-side="left"');
-    expect(svg).toContain('data-role="armhole-opening" data-side="right"');
-  });
-
-  it("does not draw a sleeve cap", () => {
-    const svg = svgFor();
-    for (const d of sleeveOutlinePaths(svg)) {
-      expect(d).not.toMatch(/[QCCq]/);
-      expect(d).toMatch(/^M /);
-    }
-    expect(svg).toContain('data-sleeve-cap="false"');
-    expect(rendererSrc).toContain("dropShoulderSleeveBodyPath");
-    expect(rendererSrc).not.toContain("sleeve cap");
+    expect(rendererSrc).not.toContain("DROP_SHOULDER_EDIT_SLEEVE_HANG");
   });
 
   it("does not draw a shaped armhole; body stays vertical above the marker", () => {
@@ -196,6 +172,45 @@ describe("Drop Shoulder edit measurement diagram — one integrated SVG", () => 
     expect(d).toContain(`L ${fmtNum(model.frame.left)} ${fmtNum(model.frame.top)}`);
     expect(d).toContain(`L ${fmtNum(model.frame.right)} ${fmtNum(model.frame.top)}`);
     expect(d).toContain(`L ${fmtNum(model.frame.right)} ${fmtNum(model.frame.armholeMarkerY)}`);
+  });
+
+  it("includes body overlay targets only", () => {
+    const svg = svgFor({ piece: "body" });
+    for (const id of DROP_SHOULDER_EDIT_BODY_MEASUREMENT_TARGET_IDS) {
+      expect(svg).toContain(`id="${id}"`);
+    }
+    for (const id of DROP_SHOULDER_EDIT_SLEEVE_MEASUREMENT_TARGET_IDS) {
+      expect(svg).not.toContain(`id="${id}"`);
+    }
+  });
+});
+
+describe("Drop Shoulder edit measurement diagram — Sleeve tab SVG", () => {
+  it("renders one standalone sleeve SVG using existing trapezoid geometry", () => {
+    const svg = svgFor({ piece: "sleeve" });
+    const frame = buildDropShoulderEditSleeveFrameFromMeasurements(BASE);
+    expect(svgRootCount(svg)).toBe(1);
+    expect(svg).toContain('data-drop-shoulder-edit-piece="sleeve"');
+    expect(svg).toContain('data-sleeve-cap="false"');
+    expect(svg).not.toContain('data-drop-shoulder-edit-piece="body"');
+    expect(svg).not.toContain('data-role="body-outline"');
+    expect(svg).not.toContain('data-integrated-garment="true"');
+    expect(svg).not.toContain('data-sleeve-side="left"');
+    expect(svg).not.toContain('data-sleeve-side="right"');
+    expect(sleeveOutlineD(svg)).toBe(dropShoulderSleeveBodyPath(frame));
+    expect(sleeveOutlineD(svg)).not.toMatch(/[QCCq]/);
+    expect(rendererSrc).toContain("buildDropShoulderSleeveFrame");
+    expect(rendererSrc).toContain("dropShoulderSleeveBodyPath");
+  });
+
+  it("includes sleeve overlay targets only", () => {
+    const svg = svgFor({ piece: "sleeve" });
+    for (const id of DROP_SHOULDER_EDIT_SLEEVE_MEASUREMENT_TARGET_IDS) {
+      expect(svg).toContain(`id="${id}"`);
+    }
+    for (const id of DROP_SHOULDER_EDIT_BODY_MEASUREMENT_TARGET_IDS) {
+      expect(svg).not.toContain(`id="${id}"`);
+    }
   });
 });
 
@@ -275,61 +290,66 @@ describe("Drop Shoulder edit measurement diagram — neckline and cardigan", () 
     expect((roundSvg.match(/data-role="center-front-opening"/g) ?? []).length).toBe(1);
     expect(bodyOutlineD(roundSvg)).toBe(dropShoulderFrontBodyPath(round.frame, "pullover", "round"));
     expect(bodyOutlineD(vSvg)).toBe(dropShoulderFrontBodyPath(v.frame, "pullover", "v"));
-    expect(sleeveGroups(roundSvg)).toHaveLength(2);
+    expect(roundSvg).not.toContain('data-role="sleeve-outline"');
     expect(round.frame.left).toBeLessThan(round.frame.midX);
     expect(round.frame.right).toBeGreaterThan(round.frame.midX);
   });
 });
 
-describe("Drop Shoulder edit measurement diagram — sleeve and body measurements", () => {
-  it("upper-arm measurement affects sleeve top width", () => {
-    const slim = modelFor({ upperArmInches: 12 });
-    const wide = modelFor({ upperArmInches: 18 });
-    const slimTop = slim.rightSleeve.frame.upperRight - slim.rightSleeve.frame.upperLeft;
-    const wideTop = wide.rightSleeve.frame.upperRight - wide.rightSleeve.frame.upperLeft;
-    expect(wideTop).toBeGreaterThan(slimTop);
-    expect(svgFor({ upperArmInches: 18 })).toContain('data-role="dim-upper-arm"');
+describe("Drop Shoulder edit measurement diagram — live measurements", () => {
+  it("upper-arm measurement affects standalone sleeve top width", () => {
+    const slim = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      upperArmInches: 10,
+      cuffCircumferenceInches: 16,
+    });
+    const wide = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      upperArmInches: 16,
+      cuffCircumferenceInches: 16,
+    });
+    expect(wide.upperRight - wide.upperLeft).toBeGreaterThan(slim.upperRight - slim.upperLeft);
+    expect(svgFor({ piece: "sleeve", upperArmInches: 18 })).toContain("18 in");
+    expect(bodyOutlineD(svgFor({ piece: "body", upperArmInches: 12 }))).toBe(
+      bodyOutlineD(svgFor({ piece: "body", upperArmInches: 18 })),
+    );
   });
 
-  it("cuff measurement affects sleeve bottom width", () => {
-    const slim = modelFor({ cuffCircumferenceInches: 6 });
-    const wide = modelFor({ cuffCircumferenceInches: 12 });
-    const slimCuff = slim.rightSleeve.frame.wristRight - slim.rightSleeve.frame.wristLeft;
-    const wideCuff = wide.rightSleeve.frame.wristRight - wide.rightSleeve.frame.wristLeft;
-    expect(wideCuff).toBeGreaterThan(slimCuff);
+  it("cuff measurement affects standalone sleeve bottom width", () => {
+    const slim = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      cuffCircumferenceInches: 6,
+    });
+    const wide = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      cuffCircumferenceInches: 12,
+    });
+    expect(wide.wristRight - wide.wristLeft).toBeGreaterThan(slim.wristRight - slim.wristLeft);
   });
 
-  it("sleeve length affects sleeve length", () => {
-    const short = modelFor({ sleeveLengthInches: 12 });
-    const long = modelFor({ sleeveLengthInches: 22 });
-    expect(long.rightSleeve.frame.bottom - long.rightSleeve.frame.top).toBeGreaterThan(
-      short.rightSleeve.frame.bottom - short.rightSleeve.frame.top,
-    );
-    const shortReach = dropShoulderEditSleeveWorldPoint(
-      { x: 0, y: short.rightSleeve.frame.bottom },
-      short.rightSleeve.origin,
-      short.rightSleeve.rotateDeg,
-    );
-    const longReach = dropShoulderEditSleeveWorldPoint(
-      { x: 0, y: long.rightSleeve.frame.bottom },
-      long.rightSleeve.origin,
-      long.rightSleeve.rotateDeg,
-    );
-    expect(Math.abs(longReach.x - long.frame.right)).toBeGreaterThan(
-      Math.abs(shortReach.x - short.frame.right),
-    );
+  it("sleeve length changes the cuff-to-body band ratio in the standalone sleeve", () => {
+    const short = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      sleeveLengthInches: 12,
+    });
+    const long = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      sleeveLengthInches: 22,
+    });
+    expect(sleeveBandFraction(long)).toBeLessThan(sleeveBandFraction(short));
   });
 
   it("cuff depth affects the cuff band", () => {
-    const shallow = modelFor({ cuffDepthInches: 1 });
-    const deep = modelFor({ cuffDepthInches: 3 });
-    const shallowBand = shallow.rightSleeve.frame.bottom - shallow.rightSleeve.frame.cuffJoinY;
-    const deepBand = deep.rightSleeve.frame.bottom - deep.rightSleeve.frame.cuffJoinY;
-    expect(deepBand).toBeGreaterThan(shallowBand);
-    expect(svgFor()).toContain("data-sleeve-cuff-join");
+    const shallow = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      cuffDepthInches: 1,
+    });
+    const deep = buildDropShoulderEditSleeveFrameFromMeasurements({ ...BASE, cuffDepthInches: 3 });
+    expect(sleeveBandFraction(deep)).toBeGreaterThan(sleeveBandFraction(shallow));
+    expect(svgFor({ piece: "sleeve" })).toContain("data-sleeve-cuff-join");
   });
 
-  it("body measurements affect body geometry", () => {
+  it("body measurements affect body geometry and leave the sleeve outline unchanged", () => {
     const short = modelFor({ garmentLengthInches: 20, bustInches: 36, hipInches: 36 });
     const tall = modelFor({ garmentLengthInches: 28, bustInches: 48, hipInches: 48 });
     const shortH = short.frame.bottom - short.frame.top;
@@ -348,33 +368,37 @@ describe("Drop Shoulder edit measurement diagram — sleeve and body measurement
     expect(deepHem.frame.bottom - deepHem.frame.hemTopY).toBeGreaterThan(
       shallowHem.frame.bottom - shallowHem.frame.hemTopY,
     );
+    expect(sleeveOutlineD(svgFor({ piece: "sleeve", bustInches: 36 }))).toBe(
+      sleeveOutlineD(svgFor({ piece: "sleeve", bustInches: 48 })),
+    );
   });
 
-  it("unit switching updates labels correctly", () => {
-    const inches = svgFor({ unit: "in" });
-    const cm = svgFor({ unit: "cm" });
-    expect(inches).toContain('data-display-unit="in"');
-    expect(cm).toContain('data-display-unit="cm"');
-    expect(inches).toMatch(/\d+(\.\d+)? in/);
-    expect(cm).toMatch(/\d+(\.\d+)? cm/);
-    expect(inches).not.toContain(" cm</text>");
-    expect(cm).not.toContain(" in</text>");
+  it("unit switching updates labels correctly on both tabs", () => {
+    for (const piece of ["body", "sleeve"] as const) {
+      const inches = svgFor({ unit: "in", piece });
+      const cm = svgFor({ unit: "cm", piece });
+      expect(inches).toContain('data-display-unit="in"');
+      expect(cm).toContain('data-display-unit="cm"');
+      expect(inches).toMatch(/\d+(\.\d+)? in/);
+      expect(cm).toMatch(/\d+(\.\d+)? cm/);
+      expect(inches).not.toContain(" cm</text>");
+      expect(cm).not.toContain(" in</text>");
+    }
   });
 
   it("uses Drop Shoulder end-cap dimension lines and existing overlay targets", () => {
-    const svg = svgFor();
+    const body = svgFor({ piece: "body" });
+    const sleeve = svgFor({ piece: "sleeve" });
     expect(rendererSrc).toContain("endCap(");
-    expect(svg).toContain('data-end-cap="true"');
+    expect(body).toContain('data-end-cap="true"');
     expect(endCap(10, 20, true)).toContain("<rect");
-    for (const id of DROP_SHOULDER_EDIT_MEASUREMENT_TARGET_IDS) {
-      expect(svg).toContain(`id="${id}"`);
-    }
-    expect(svg).toContain(`id="${DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
-    expect(svg).toContain(`id="${DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.cuffDepth}"`);
-    expect(svg).toContain('width="100%"');
-    expect(svg).toContain('height="auto"');
-    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
-    expect(svg).toMatch(/viewBox="0 0 /);
+    expect(body).toContain(`id="${DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.bust}"`);
+    expect(sleeve).toContain(`id="${DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
+    expect(sleeve).toContain(`id="${DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.cuffDepth}"`);
+    expect(body).toContain('width="100%"');
+    expect(sleeve).toContain('height="auto"');
+    expect(body).toContain('preserveAspectRatio="xMidYMid meet"');
+    expect(body).toMatch(/viewBox="0 0 /);
   });
 });
 
@@ -387,11 +411,17 @@ describe("Drop Shoulder edit measurement diagram — layout reuse", () => {
     expect(workspaceCss).toContain("flex-direction: row");
     expect(workspaceCss).toContain("flex: 0 0 clamp(320px, 26vw, 380px)");
     expect(workspaceCss).toContain("flex: 1 1 0");
+    expect(workspaceCss).not.toContain("ds-edit-preview-tabs");
   });
 
   it("responsive layout stacks below the shared 1100px container query", () => {
     expect(workspaceCss).toContain("@container sl-edit-workspace (max-width: 1099.98px)");
     expect(workspaceCss).toMatch(/\.sl-edit-workspace__layout \{[\s\S]*flex-direction: column/);
+  });
+
+  it("scopes Body/Sleeve preview tabs to Drop Shoulder measurement CSS", () => {
+    expect(measurementsCss).toContain(".ds-edit-preview-tabs");
+    expect(measurementsCss).toContain('[data-express-construction="drop-shoulder"]');
   });
 
   it("Sleeveless edit-page regression remains unchanged", () => {
@@ -402,28 +432,20 @@ describe("Drop Shoulder edit measurement diagram — layout reuse", () => {
     expect(measurementsPageSrc).toContain("buildSleevelessEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("buildDropShoulderEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("adoptDropShoulderGeneratedMeasurementArt");
-    expect(measurementsPageSrc).toMatch(
-      /sleevelessMeasurementArtRefreshImpl\?\.\(\);\s*$/m,
-    );
+    expect(measurementsPageSrc).toMatch(/sleevelessMeasurementArtRefreshImpl\?\.\(\);\s*$/m);
   });
 });
 
 describe("Drop Shoulder edit measurement diagram — helpers reused", () => {
-  it("reuses measurement body frame, sleeve trapezoid, and hang angle", () => {
+  it("reuses measurement body frame and standalone sleeve trapezoid", () => {
     const frame = buildDropShoulderMeasurementBodyFrame(BASE);
     expect(frame.left).toBeLessThan(frame.right);
     expect(frame.top).toBeLessThan(frame.armholeMarkerY);
-    const sleeve = buildDropShoulderMeasurementSleeveFrame({
-      upperArmWidthPx: 40,
-      cuffWidthPx: 20,
-      sleeveLengthPx: 80,
-      cuffDepthPx: 10,
-    });
+    const sleeve = buildDropShoulderEditSleeveFrameFromMeasurements(BASE);
     expect(dropShoulderSleeveBodyPath(sleeve)).not.toMatch(/[QC]/);
-    expect(dropShoulderEditSleeveRotateDeg("right")).toBe(-90 + DROP_SHOULDER_EDIT_SLEEVE_HANG_DEG);
-    expect(dropShoulderEditSleeveRotateDeg("left")).toBe(90 - DROP_SHOULDER_EDIT_SLEEVE_HANG_DEG);
     expect(rendererSrc).toContain("buildDropShoulderMeasurementBodyFrame");
-    expect(rendererSrc).toContain("buildDropShoulderMeasurementSleeveFrame");
+    expect(rendererSrc).toContain("buildDropShoulderSleeveFrame");
     expect(rendererSrc).toContain("dropShoulderFrontBodyPath");
+    expect(rendererSrc).not.toContain("buildDropShoulderMeasurementSleeveFrame");
   });
 });
