@@ -2,8 +2,8 @@
  * Generated Drop Shoulder Front — Stitches & Rows schematic.
  *
  * Geometry is scaled from the adapter model (existing stitch/row counts).
- * Front neck depth is drawn inside the armhole span. Neckline/garment layout
- * comes from existing generator style flags, not new pattern math.
+ * Front neck depth is drawn from garment rows and may extend below the armhole marker.
+ * Neckline/garment layout comes from existing generator style flags, not new pattern math.
  */
 
 import {
@@ -20,8 +20,8 @@ import {
   DS_FW_TITLE,
   DS_MUTED,
   DS_STROKE,
-  buildCardiganLeftFrame,
-  buildFullWidthFrame,
+  buildDropShoulderFrontCardiganLeftFrame,
+  buildDropShoulderFrontFullWidthFrame,
   drawArmholeDepth,
   drawArmholeMarker,
   drawBodyLength,
@@ -30,72 +30,13 @@ import {
   drawHemWidth,
   drawNecklineDepthDim,
   drawNecklineWidthDim,
+  dropShoulderFrontBodyPath,
   escapeXml,
   fmtNum,
   textFont,
   wrapGeneratedDiagramSvg,
   type DropShoulderDiagramFrame,
 } from "./dropShoulderPatternDiagramSvgShared";
-
-function pulloverRoundPath(frame: DropShoulderDiagramFrame): string {
-  const neckCtrlY = frame.top + (frame.neckBottomY - frame.top) * 1.15;
-  return [
-    `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
-    `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
-    `Q ${fmtNum(frame.midX)} ${fmtNum(neckCtrlY)} ${fmtNum(frame.neckRightX)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.right)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
-    "Z",
-  ].join(" ");
-}
-
-function pulloverVPath(frame: DropShoulderDiagramFrame): string {
-  return [
-    `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
-    `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.midX)} ${fmtNum(frame.neckBottomY)}`,
-    `L ${fmtNum(frame.neckRightX)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.right)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
-    "Z",
-  ].join(" ");
-}
-
-function cardiganRoundPath(frame: DropShoulderDiagramFrame): string {
-  const neckCtrlX = frame.neckLeftX + (frame.neckRightX - frame.neckLeftX) * 0.55;
-  const neckCtrlY = frame.top + (frame.neckBottomY - frame.top) * 1.05;
-  return [
-    `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
-    `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
-    `Q ${fmtNum(neckCtrlX)} ${fmtNum(neckCtrlY)} ${fmtNum(frame.right)} ${fmtNum(frame.neckBottomY)}`,
-    `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
-    "Z",
-  ].join(" ");
-}
-
-function cardiganVPath(frame: DropShoulderDiagramFrame): string {
-  return [
-    `M ${fmtNum(frame.hemLeft)} ${fmtNum(frame.bottom)}`,
-    `L ${fmtNum(frame.left)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.neckLeftX)} ${fmtNum(frame.top)}`,
-    `L ${fmtNum(frame.right)} ${fmtNum(frame.neckBottomY)}`,
-    `L ${fmtNum(frame.hemRight)} ${fmtNum(frame.bottom)}`,
-    "Z",
-  ].join(" ");
-}
-
-function frontBodyPath(
-  frame: DropShoulderDiagramFrame,
-  model: DropShoulderFrontStitchesRowsModel,
-): string {
-  if (model.garment === "cardigan") {
-    return model.neckline === "v" ? cardiganVPath(frame) : cardiganRoundPath(frame);
-  }
-  return model.neckline === "v" ? pulloverVPath(frame) : pulloverRoundPath(frame);
-}
 
 function drawShoulderStitches(
   frame: DropShoulderDiagramFrame,
@@ -123,7 +64,8 @@ function drawShoulderStitches(
 }
 
 function drawPieceLabel(frame: DropShoulderDiagramFrame, model: DropShoulderFrontStitchesRowsModel): string {
-  const y = frame.armholeMarkerY + (frame.hemTopY - frame.armholeMarkerY) * 0.62;
+  const labelBandTop = Math.max(frame.armholeMarkerY, frame.neckBottomY);
+  const y = labelBandTop + (frame.hemTopY - labelBandTop) * 0.5;
   const label = model.garment === "cardigan" ? "LEFT FRONT" : "FRONT";
   const parts = [
     `<text x="${fmtNum(frame.midX)}" y="${fmtNum(y)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>${label}</text>`,
@@ -158,15 +100,14 @@ function drawFrontNecklineDims(
 export function buildDropShoulderFrontStitchesRowsSvg(
   model: DropShoulderFrontStitchesRowsModel,
 ): string {
-  const maxNeckRatio = model.neckline === "v" ? 0.92 : 0.85;
   const frame =
     model.garment === "cardigan"
-      ? buildCardiganLeftFrame(model, model.shoulderStitchesEach, maxNeckRatio)
-      : buildFullWidthFrame(model, maxNeckRatio);
+      ? buildDropShoulderFrontCardiganLeftFrame(model, model.shoulderStitchesEach)
+      : buildDropShoulderFrontFullWidthFrame(model);
   const armholeSide = model.garment === "cardigan" ? "left" : "right";
   const markerSides = model.garment === "cardigan" ? "left" : "both";
   const body = [
-    `<path class="ds-front-diagram__body" d="${frontBodyPath(frame, model)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75"/>`,
+    `<path class="ds-front-diagram__body" d="${dropShoulderFrontBodyPath(frame, model.garment, model.neckline)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75"/>`,
     drawArmholeMarker(frame, markerSides),
     drawPieceLabel(frame, model),
     drawShoulderStitches(frame, model),
@@ -192,6 +133,9 @@ export function buildDropShoulderFrontStitchesRowsSvg(
       "data-neckline-rows-inside-armhole": model.necklineRowsInsideArmhole,
       "data-armhole-even-rows": model.armholeEvenRows,
       "data-front-neck-depth-rows": model.frontNeckDepthRows,
+      "data-neck-begins-before-armhole": model.frontNeckDepthRows > model.armholeRows ? "true" : "false",
+      "data-neck-bottom-y": fmtNum(frame.neckBottomY),
+      "data-armhole-marker-y": fmtNum(frame.armholeMarkerY),
       "data-hem-stitches": model.hemStitches,
       "data-body-width-stitches": model.bodyWidthStitches,
       "data-neckline-stitches": model.necklineStitches,
