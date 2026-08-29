@@ -74,7 +74,10 @@ describe("sleeveless finished pattern reading layout (responsive)", () => {
       "utf8",
     );
     expect(frontChartIntro).toContain(
-      'tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist"',
+      "necklineShapingTwoSideTabPresentation()",
+    );
+    expect(frontChartIntro).toContain(
+      'tableHeading: "First Shoulder Checklist"',
     );
   });
 
@@ -87,6 +90,8 @@ describe("sleeveless finished pattern reading layout (responsive)", () => {
     );
     expect(mount).toContain("wrapSleevelessPieceSplit");
     expect(mount).toContain("enableVisualWorkspace: true");
+    expect(mount).toContain("bindNeckShoulderShoulderTabs(mount)");
+    expect(mount).toContain("dropShoulderFrontNeckChartTableOptions(");
     expect(pageScript).toContain("sleeveless-pattern-reading-layout");
     expect(sharedCss).toMatch(
       /@media \(min-width:\s*1100px\)\s*\{[\s\S]*?sleeveless-pattern-reading-layout[\s\S]*?grid-template-columns:\s*minmax\(0,\s*62fr\)\s+minmax\(0,\s*38fr\)/,

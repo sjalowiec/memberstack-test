@@ -7,6 +7,7 @@
  */
 
 import {
+  isSleevelessCardiganFrontNeckShoulderChart,
   neckShoulderShapingChartFromRows,
   type NeckShoulderShapingChart,
 } from "./neckShoulderShapingChart";
@@ -16,7 +17,10 @@ import {
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
 import { armholeLocalRcActiveShoulderChecklistStart } from "./neckShoulderActiveSideChecklist";
-import type { NeckShoulderChartRenderOptions } from "./neckShoulderShapingChartHtml";
+import {
+  necklineShapingTwoSideTabPresentation,
+  type NeckShoulderChartRenderOptions,
+} from "./neckShoulderShapingChartHtml";
 import { cardiganFrontInitialNeckBindOffStitches, cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import {
@@ -448,16 +452,21 @@ export function dropShoulderFrontChartActiveSideRcStart(
  * Online/print table options for the drop-shoulder front neckline chart.
  * No workflow preamble — center bind-off is the first table row (local 000 after reset,
  * or garment RC when the neckline begins before the armhole marker).
+ * Pullover Front uses the shared two-side tab Lego; cardigan half-fronts stay single-side.
  */
 export function dropShoulderFrontNeckChartTableOptions(
   activeSideRcStart: number,
+  chart?: NeckShoulderShapingChart,
 ): NeckShoulderChartRenderOptions {
+  const isCardiganFront = isSleevelessCardiganFrontNeckShoulderChart(chart);
   return {
     activeSideOnly: true,
     activeSideRcStart,
     includeCenterNecklineSetupRow: true,
     hideCenterNecklineSetupRow: false,
-    tableHeading: "Front Neckline Shaping Chart",
     shouldersShaped: false,
+    ...(isCardiganFront
+      ? { tableHeading: "Front Neckline Shaping Chart", isCardiganFront: true }
+      : necklineShapingTwoSideTabPresentation()),
   };
 }
