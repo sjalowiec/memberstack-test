@@ -22,6 +22,10 @@ const dropShoulderBuilderAstro = readFileSync(
   resolve("src/pages/patterns/drop-shoulder/builder.astro"),
   "utf8",
 );
+const measurementStorageScript = readFileSync(
+  resolve("src/lib/patterns/sleevelessCustomMeasurementStorage.ts"),
+  "utf8",
+);
 
 describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
   it("contains Save Changes, Quick edits Size, and measurement diagram markers", () => {
@@ -34,10 +38,19 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(dropShoulderPatternWorkspaceAstro).not.toContain("Refresh measurements");
   });
 
-  it("does not render sleeve-length preset choices on the edit workspace", () => {
-    expect(dropShoulderPatternWorkspaceAstro).not.toContain("data-sl-edit-sleeve-length");
-    expect(dropShoulderPatternWorkspaceAstro).not.toContain('name="sl-edit-sleeve-length"');
-    expect(editDrawerScript).not.toContain("persistDropShoulderSleeveLength");
+  it("renders Choose your sleeve length in Quick edits after Neckline", () => {
+    expect(dropShoulderPatternWorkspaceAstro).toContain("Choose your sleeve length");
+    expect(dropShoulderPatternWorkspaceAstro).toContain('name="sl-edit-sleeve-length"');
+    expect(dropShoulderPatternWorkspaceAstro).toContain('value="long"');
+    expect(dropShoulderPatternWorkspaceAstro).toContain('value="three-quarter"');
+    expect(dropShoulderPatternWorkspaceAstro).toContain('value="elbow"');
+    expect(dropShoulderPatternWorkspaceAstro).toContain('value="short"');
+    const neckIdx = dropShoulderPatternWorkspaceAstro.indexOf('name="sl-edit-neckline"');
+    const sleeveIdx = dropShoulderPatternWorkspaceAstro.indexOf('name="sl-edit-sleeve-length"');
+    const gaugeIdx = dropShoulderPatternWorkspaceAstro.indexOf("sl-edit-gauge-heading");
+    expect(neckIdx).toBeGreaterThan(-1);
+    expect(sleeveIdx).toBeGreaterThan(neckIdx);
+    expect(gaugeIdx).toBeGreaterThan(sleeveIdx);
   });
 
   it("does not render interactive Fit choices on the edit workspace", () => {
@@ -61,9 +74,42 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(editDrawerScript).toContain("readStoredFitPreference");
   });
 
-  it("marks numeric sleeve length user-edited on save from the diagram field", () => {
+  it("hydrates and persists sleeve-length picker from style.sleeveLength without duplicating math", () => {
+    expect(editDrawerScript).toContain("persistDropShoulderEditSleeveLengthChoice");
+    expect(editDrawerScript).toContain("readDropShoulderSleeveLengthChoice");
+    expect(editDrawerScript).toContain("normalizeDropShoulderSleeveLengthChoice");
+    expect(editDrawerScript).toContain("withDropShoulderConstructionAuthored");
+    expect(editDrawerScript).toContain("handleDropShoulderQuickEditSleeveLengthChanged");
+    expect(editDrawerScript).toContain("refreshDropShoulderWorkspaceMeasurementSummary");
+    expect(editDrawerScript).toContain('input[name="sl-edit-sleeve-length"]');
+    expect(editDrawerScript).toContain("setRadio(");
+    expect(editDrawerScript).toContain('"sl-edit-sleeve-length"');
+  });
+
+  it("clears user-edited sleeve length and cuff flags when the picker changes", () => {
+    expect(editDrawerScript).toContain("sleeveLength: false");
+    expect(editDrawerScript).toContain("cuffCircumference: false");
+    expect(editDrawerScript).toContain("reconcileDropShoulderSleeveOverridesForSizeChange");
+    expect(editDrawerScript).not.toContain("persistDropShoulderSleeveLength");
+  });
+
+  it("does not mark picker-derived sleeve chips user-edited on Save Changes", () => {
+    expect(editDrawerScript).toContain("dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker");
+    expect(measurementStorageScript).toContain(
+      "mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues",
+    );
+    expect(measurementsPageScript).toContain(
+      "mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues",
+    );
+    expect(editDrawerScript).not.toMatch(
+      /if \(sleeveInput\?\.value\.trim\(\)\) \{\s*markDropShoulderSleeveFieldUserEdited\("sleeveLength"\)/,
+    );
+  });
+
+  it("marks numeric sleeve length user-edited only when the chip differs from the picker default", () => {
     expect(editDrawerScript).toContain('markDropShoulderSleeveFieldUserEdited("sleeveLength")');
     expect(editDrawerScript).toContain('[data-cb-measure-input="sleeveLength"]');
+    expect(editDrawerScript).toContain('markDropShoulderSleeveFieldUserEdited("cuffCircumference")');
   });
 
   it("still supports measurement edit and save via the existing apply pipeline", () => {
@@ -71,6 +117,11 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(editDrawerScript).toContain("flushCustomBuildMeasurementOverridesToCanonical");
     expect(editDrawerScript).toContain("syncCustomBuildToPatternStorage");
     expect(editDrawerScript).toContain("loadMeasurementOverrides");
+  });
+
+  it("keeps the Body / Sleeve tabbed preview wiring", () => {
+    expect(measurementsPageScript).toContain("createDropShoulderEditPreviewTablist");
+    expect(measurementsPageScript).toContain("applyDropShoulderEditPreviewChipVisibility");
   });
 });
 
@@ -98,6 +149,11 @@ describe("Sleeveless Edit Pattern workspace", () => {
     expect(sleevelessPatternWorkspaceAstro).toContain("Save Changes");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("data-drop-shoulder-workspace-measure-summary");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("drop-shoulder-refresh-measurements");
+  });
+
+  it("does not render Drop Shoulder sleeve-length picker on Sleeveless edit", () => {
+    expect(sleevelessPatternWorkspaceAstro).not.toContain('name="sl-edit-sleeve-length"');
+    expect(sleevelessPatternWorkspaceAstro).not.toContain("Choose your sleeve length");
   });
 
   it("does not render interactive Fit choices on the edit workspace", () => {

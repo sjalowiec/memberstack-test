@@ -103,6 +103,79 @@ function overrideInchesEqual(a: string, b: string): boolean {
   return aIn === bIn;
 }
 
+/**
+ * Edit-page persist/flush guard: chips show picker-scaled sleeve length and cuff circ, but
+ * stored overrides must stay the full (long) chart values unless the user actually typed a
+ * different number. If the incoming (displayed) value matches the picker-derived default,
+ * keep the previous full override and do not treat it as a numeric fine-tune.
+ */
+export function mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues(args: {
+  incoming: Record<string, string>;
+  stored: Record<string, string>;
+  sleeveLengthChoice: unknown;
+  userEdited: DropShoulderUserEditedSleeveFields;
+}): Record<string, string> {
+  const next = { ...args.incoming };
+  if (args.userEdited.sleeveLength !== true && next.sleeveLength && args.stored.sleeveLength?.trim()) {
+    const derived = dropShoulderEditWorkspaceSleeveLengthDisplayInches({
+      overrideInches: args.stored.sleeveLength,
+      sleeveLengthChoice: args.sleeveLengthChoice,
+      userEditedSleeveLength: false,
+    });
+    if (derived && overrideInchesEqual(next.sleeveLength, derived)) {
+      next.sleeveLength = args.stored.sleeveLength;
+    }
+  }
+  if (
+    args.userEdited.cuffCircumference !== true &&
+    next.wrist &&
+    args.stored.wrist?.trim()
+  ) {
+    const derived = dropShoulderEditWorkspaceCuffCircumferenceDisplayInches({
+      overrideInches: args.stored.wrist,
+      upperArmInches: args.stored.upperArm || next.upperArm || "",
+      sleeveLengthChoice: args.sleeveLengthChoice,
+      userEditedCuffCircumference: false,
+    });
+    if (derived && overrideInchesEqual(next.wrist, derived)) {
+      next.wrist = args.stored.wrist;
+    }
+  }
+  return next;
+}
+
+/** True when a displayed chip value differs from the picker-scaled default for that field. */
+export function dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker(args: {
+  displayedSleeveLengthInches: string;
+  displayedWristInches: string;
+  storedOverrides: Record<string, string>;
+  sleeveLengthChoice: unknown;
+}): { sleeveLength: boolean; cuffCircumference: boolean } {
+  const sleeveDerived = dropShoulderEditWorkspaceSleeveLengthDisplayInches({
+    overrideInches: args.storedOverrides.sleeveLength ?? "",
+    sleeveLengthChoice: args.sleeveLengthChoice,
+    userEditedSleeveLength: false,
+  });
+  const wristDerived = dropShoulderEditWorkspaceCuffCircumferenceDisplayInches({
+    overrideInches: args.storedOverrides.wrist ?? "",
+    upperArmInches: args.storedOverrides.upperArm ?? "",
+    sleeveLengthChoice: args.sleeveLengthChoice,
+    userEditedCuffCircumference: false,
+  });
+  return {
+    sleeveLength: Boolean(
+      args.displayedSleeveLengthInches.trim() &&
+        sleeveDerived &&
+        !overrideInchesEqual(args.displayedSleeveLengthInches, sleeveDerived),
+    ),
+    cuffCircumference: Boolean(
+      args.displayedWristInches.trim() &&
+        wristDerived &&
+        !overrideInchesEqual(args.displayedWristInches, wristDerived),
+    ),
+  };
+}
+
 /** True when pattern data represents an authored drop-shoulder construction. */
 export function isDropShoulderPatternData(patternData: Record<string, unknown>): boolean {
   return hasAuthoritativeDropShoulderConstruction(section(patternData.style));
