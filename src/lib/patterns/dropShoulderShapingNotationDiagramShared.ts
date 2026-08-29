@@ -126,23 +126,13 @@ export function drawDropShoulderNotationRcGutter(
 
   const resetY = labels.rcReset ? frame.neckBottomY - DS_RC_RESET_GAP : frame.neckBottomY;
   if (labels.rcReset) {
-    parts.push(
-      rcText(gutterX, resetY, labels.rcReset, "rc-reset", ` data-rc="${escapeXml(labels.rcReset)}"`),
-    );
+    parts.push(rcText(gutterX, resetY, labels.rcReset, "rc-reset"));
   }
   const neckRcY =
     labels.rcReset && Math.abs(frame.neckBottomY - resetY) < 1.5
       ? resetY + DS_RC_RESET_GAP
       : frame.neckBottomY;
-  parts.push(
-    rcText(
-      gutterX,
-      neckRcY,
-      labels.rcNeckStart,
-      "neck-start-rc",
-      ` data-rc="${escapeXml(labels.rcNeckStart)}"`,
-    ),
-  );
+  parts.push(rcText(gutterX, neckRcY, labels.rcNeckStart, "neck-start-rc"));
   return parts.join("");
 }
 
