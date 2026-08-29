@@ -374,12 +374,17 @@ describe("Sleeveless edit measurement art — page/DOM contract", () => {
     expect(storageSrc).toMatch(/if \(Object\.keys\(fromDom\)\.length > 0\)/);
   });
 
-  it("keeps Drop Shoulder on the static blueprint fetch path", () => {
-    expect(measurementsPageSrc).toMatch(/if \(isDropShoulderConstruction\(\)\) return;/);
+  it("keeps Drop Shoulder on its own generated integrated-garment path", () => {
+    expect(measurementsPageSrc).toContain("buildDropShoulderEditMeasurementDiagramSvg");
+    expect(measurementsPageSrc).toContain("adoptDropShoulderGeneratedMeasurementArt");
     expect(measurementsPageSrc).toContain("resolveMeasurementBlueprintSvgUrl");
-    expect(measurementsPageSrc).toMatch(
-      /if \(!isDropShoulderConstruction\(\) && merged\)/,
-    );
+    const refreshFn = measurementsPageSrc.match(
+      /const refreshSleevelessMeasurementArt = \(\): void => \{[\s\S]*?\n  \};/,
+    )?.[0];
+    expect(refreshFn).toBeTruthy();
+    expect(refreshFn).not.toMatch(/if \(isDropShoulderConstruction\(\)\) return;/);
+    expect(refreshFn).toContain("adoptDropShoulderGeneratedMeasurementArt");
+    expect(refreshFn).toContain("adoptSleevelessGeneratedMeasurementArt");
     expect(rendererSrc).not.toContain("drop_shoulder_summary");
   });
 

@@ -71,6 +71,11 @@ import {
   buildSleevelessEditMeasurementDiagramSvg,
   type SleevelessEditMeasurementDiagramInput,
 } from "../lib/patterns/sleevelessEditMeasurementDiagramSvg";
+import {
+  buildDropShoulderEditMeasurementDiagramSvg,
+  type DropShoulderEditMeasurementDiagramInput,
+  type DropShoulderEditMeasurementInput,
+} from "../lib/patterns/dropShoulderEditMeasurementDiagramSvg";
 import type { SleevelessMeasurementGarmentInput } from "../lib/patterns/sleevelessFrontGarmentGeometry";
 import {
   applyMeasurementTargetToBox,
@@ -724,6 +729,37 @@ function sleevelessEditDiagramInput(
   };
 }
 
+function dropShoulderMeasurementInputFromMerged(
+  merged: Record<DiagramFieldKey, string>,
+): DropShoulderEditMeasurementInput {
+  return {
+    bustInches: parseMergedInches(merged.chestBust, 40),
+    hipInches: parseMergedInches(merged.hip, 40),
+    garmentLengthInches: parseMergedInches(merged.finishedLength, 22),
+    armholeDepthInches: parseMergedInches(merged.armholeDepth, 8),
+    neckOpeningInches: parseMergedInches(merged.finishedNeckOpeningWidth, 7),
+    neckDepthInches: parseMergedInches(merged.neckDepth, 3),
+    hemDepthInches: parseMergedInches(merged.hemDepth, 2),
+    upperArmInches: parseMergedInches(merged.upperArm, 12),
+    cuffCircumferenceInches: parseMergedInches(merged.wrist, 8),
+    sleeveLengthInches: parseMergedInches(merged.sleeveLength, 18),
+    cuffDepthInches: parseMergedInches(merged.cuffDepth, 2),
+  };
+}
+
+function dropShoulderEditDiagramInput(
+  merged: Record<DiagramFieldKey, string>,
+  displayUnit: MeasurementDisplayUnit = "in",
+): DropShoulderEditMeasurementDiagramInput {
+  return {
+    measurements: dropShoulderMeasurementInputFromMerged(merged),
+    patternData: getCurrentPattern(),
+    liveNeckline: readLiveSleevelessEditNeckline(),
+    liveGarmentStyle: readLiveSleevelessEditGarmentStyle(),
+    displayUnit,
+  };
+}
+
 function parseGeneratedSleevelessMeasurementSvg(merged: Record<DiagramFieldKey, string>): SVGSVGElement | null {
   const svgText = buildSleevelessEditMeasurementDiagramSvg(sleevelessEditDiagramInput(merged));
   const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
@@ -743,12 +779,36 @@ function adoptSleevelessGeneratedMeasurementArt(
   return adopted;
 }
 
+function adoptDropShoulderGeneratedMeasurementArt(
+  merged: Record<DiagramFieldKey, string>,
+  displayUnit: MeasurementDisplayUnit = "in",
+): SVGSVGElement | null {
+  const svgText = buildDropShoulderEditMeasurementDiagramSvg(
+    dropShoulderEditDiagramInput(merged, displayUnit),
+  );
+  const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  const root = parsed.documentElement;
+  if (!(root instanceof SVGSVGElement)) return null;
+  const adopted = adoptGeneratedMeasurementSvg(root, document);
+  adopted.setAttribute("role", "img");
+  adopted.setAttribute("aria-label", "Drop shoulder sweater measurement diagram");
+  adopted.setAttribute("focusable", "false");
+  return adopted;
+}
+
 async function createMeasurementBlueprintArt(
   merged?: Record<DiagramFieldKey, string>,
+  displayUnit?: UiLengthUnit | null,
 ): Promise<SVGElement | HTMLImageElement> {
-  if (!isDropShoulderConstruction() && merged) {
-    const generated = adoptSleevelessGeneratedMeasurementArt(merged);
-    if (generated) return generated;
+  const unit: MeasurementDisplayUnit = displayUnit === "cm" ? "cm" : "in";
+  if (merged) {
+    if (isDropShoulderConstruction()) {
+      const generated = adoptDropShoulderGeneratedMeasurementArt(merged, unit);
+      if (generated) return generated;
+    } else {
+      const generated = adoptSleevelessGeneratedMeasurementArt(merged);
+      if (generated) return generated;
+    }
   }
   const svgUrl = resolveMeasurementBlueprintSvgUrl();
   const ariaLabel = isDropShoulderConstruction()
@@ -1267,12 +1327,10 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     }
     persistFromRoot(root, displayUnit);
     refreshPatternValidationUi(root, displayUnit);
-    if (!isDropShoulderConstruction()) {
-      sleevelessMeasurementArtRefreshImpl?.();
-    }
     if (key === "upperArm") {
       refreshDropShoulderArmholeDisplay(root, collectValues(root, { displayUnit }), displayUnit ?? "in");
     }
+    sleevelessMeasurementArtRefreshImpl?.();
   };
 
   const onChange = (ev: Event): void => {
@@ -1443,7 +1501,7 @@ async function renderDiagram(
   const inner = document.createElement("div");
   inner.className = "express-mbp-stage__inner";
 
-  const art = await createMeasurementBlueprintArt(merged);
+  const art = await createMeasurementBlueprintArt(merged, displayUnit);
   const artHost = document.createElement("div");
   artHost.className = SLEEVELESS_EDIT_MEASUREMENT_ART_HOST_CLASS;
   artHost.append(art);
@@ -1574,6 +1632,9 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
         overlayFound: !!findReviewDiagramOverlay(diagramHost),
       });
       if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
+      if (isDropShoulderConstruction()) {
+        sleevelessMeasurementArtRefreshImpl?.();
+      }
     };
 
     window.addEventListener("kbm:units-change", onReviewUnitsChange);
@@ -1653,14 +1714,24 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   };
 
   const refreshSleevelessMeasurementArt = (): void => {
-    if (isDropShoulderConstruction()) return;
     if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
     if (!(diagramHost instanceof HTMLElement)) return;
     const inner = diagramHost.querySelector<HTMLElement>(".express-mbp-stage__inner");
     if (!(inner instanceof HTMLElement)) return;
     const displayUnit = getDisplayUnit();
-    const merged = collectValues(root, { displayUnit: displayUnit ?? undefined });
-    const next = adoptSleevelessGeneratedMeasurementArt(merged);
+    const collected = collectValues(root, { displayUnit: displayUnit ?? undefined });
+    const unit: MeasurementDisplayUnit = displayUnit === "cm" ? "cm" : "in";
+    const next = isDropShoulderConstruction()
+      ? adoptDropShoulderGeneratedMeasurementArt(
+          dropShoulderEditWorkspaceMergedForDiagram({
+            ...diagramInches,
+            ...Object.fromEntries(
+              Object.entries(collected).filter(([, value]) => String(value).trim() !== ""),
+            ),
+          }),
+          unit,
+        )
+      : adoptSleevelessGeneratedMeasurementArt(collected);
     if (!next) return;
     const swapped = replaceSleevelessMeasurementArtOnly(inner, next);
     if (!swapped || !(swapped.overlay instanceof HTMLElement)) return;

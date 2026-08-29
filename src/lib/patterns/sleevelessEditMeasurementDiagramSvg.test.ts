@@ -298,10 +298,9 @@ describe("Sleeveless edit measurement diagram — overlay anchors", () => {
 
   it("does not generate Drop Shoulder artwork from this renderer", () => {
     expect(rendererSrc).not.toContain("drop_shoulder_summary");
-    expect(measurementsPageSrc).toMatch(
-      /if \(!isDropShoulderConstruction\(\) && merged\)/,
-    );
-    expect(measurementsPageSrc).toContain("resolveMeasurementBlueprintSvgUrl");
+    expect(rendererSrc).not.toContain("buildDropShoulderEditMeasurementDiagramSvg");
+    expect(measurementsPageSrc).toContain("buildSleevelessEditMeasurementDiagramSvg");
+    expect(measurementsPageSrc).toContain("adoptSleevelessGeneratedMeasurementArt");
   });
 });
 
