@@ -23,6 +23,8 @@ import {
   dropShoulderFrontBodyPath,
   dropShoulderFrontPulloverRoundBodyPath,
   dropShoulderPulloverVBodyPath,
+  DS_VB_H,
+  DS_VB_W,
   endCap,
   fmtNum,
 } from "./dropShoulderPatternDiagramSvgShared";
@@ -137,6 +139,57 @@ function sleeveBandFraction(frame: { top: number; bottom: number; cuffJoinY: num
   return Math.abs(frame.bottom - frame.cuffJoinY) / Math.max(1, frame.bottom - frame.top);
 }
 
+function parseViewBox(svg: string): { w: number; h: number } {
+  const m = /viewBox="0 0 ([^" ]+) ([^"]+)"/.exec(svg);
+  return { w: Number(m?.[1]), h: Number(m?.[2]) };
+}
+
+function sleeveGraphicCoords(svg: string): Array<{ x: number; y: number }> {
+  const pts: Array<{ x: number; y: number }> = [];
+  const d = sleeveOutlineD(svg);
+  const pathRe = /[ML]\s*([-\d.]+)\s+([-\d.]+)/g;
+  let pm: RegExpExecArray | null;
+  while ((pm = pathRe.exec(d))) pts.push({ x: Number(pm[1]), y: Number(pm[2]) });
+  const lineRe = /<line\b[^>]*>/g;
+  let lm: RegExpExecArray | null;
+  while ((lm = lineRe.exec(svg))) {
+    const tag = lm[0];
+    const num = (attr: string) => Number(new RegExp(`${attr}="([^"]+)"`).exec(tag)?.[1]);
+    pts.push({ x: num("x1"), y: num("y1") }, { x: num("x2"), y: num("y2") });
+  }
+  const circleRe = /<circle\b[^>]*>/g;
+  let cm: RegExpExecArray | null;
+  while ((cm = circleRe.exec(svg))) {
+    const tag = cm[0];
+    pts.push({
+      x: Number(/cx="([^"]+)"/.exec(tag)?.[1]),
+      y: Number(/cy="([^"]+)"/.exec(tag)?.[1]),
+    });
+  }
+  const rectRe = /<rect\b[^>]*>/g;
+  let rm: RegExpExecArray | null;
+  while ((rm = rectRe.exec(svg))) {
+    const tag = rm[0];
+    const x = Number(/x="([^"]+)"/.exec(tag)?.[1]);
+    const y = Number(/y="([^"]+)"/.exec(tag)?.[1]);
+    const w = Number(/width="([^"]+)"/.exec(tag)?.[1]);
+    const h = Number(/height="([^"]+)"/.exec(tag)?.[1]);
+    pts.push({ x, y }, { x: x + w, y: y + h });
+  }
+  return pts.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y));
+}
+
+const SLEEVE_PRESENTATION_CASES = [
+  { name: "very short", sleeveLengthInches: 4, upperArmInches: 12, cuffCircumferenceInches: 8, cuffDepthInches: 1 },
+  { name: "typical short", sleeveLengthInches: 8, upperArmInches: 13, cuffCircumferenceInches: 8, cuffDepthInches: 1.5 },
+  { name: "elbow", sleeveLengthInches: 14, upperArmInches: 14, cuffCircumferenceInches: 9, cuffDepthInches: 2 },
+  { name: "long", sleeveLengthInches: 22, upperArmInches: 14, cuffCircumferenceInches: 8, cuffDepthInches: 2 },
+  { name: "straight", sleeveLengthInches: 18, upperArmInches: 12, cuffCircumferenceInches: 12, cuffDepthInches: 2 },
+  { name: "tapered", sleeveLengthInches: 18, upperArmInches: 18, cuffCircumferenceInches: 6, cuffDepthInches: 2 },
+  { name: "large", sleeveLengthInches: 20, upperArmInches: 22, cuffCircumferenceInches: 10, cuffDepthInches: 2.5 },
+  { name: "small", sleeveLengthInches: 16, upperArmInches: 10, cuffCircumferenceInches: 6, cuffDepthInches: 1.5 },
+] as const;
+
 describe("Drop Shoulder edit measurement diagram — Body tab SVG", () => {
   it("renders one body-only SVG with no attached sleeves", () => {
     const svg = svgFor();
@@ -199,7 +252,9 @@ describe("Drop Shoulder edit measurement diagram — Sleeve tab SVG", () => {
     expect(svg).not.toContain('data-sleeve-side="right"');
     expect(sleeveOutlineD(svg)).toBe(dropShoulderSleeveBodyPath(frame));
     expect(sleeveOutlineD(svg)).not.toMatch(/[QCCq]/);
-    expect(rendererSrc).toContain("buildDropShoulderSleeveFrame");
+    expect(svg).toContain('data-drop-shoulder-edit-sleeve-layout="compact"');
+    expect(rendererSrc).toContain("buildDropShoulderMeasurementSleeveFrame");
+    expect(rendererSrc).not.toContain("buildDropShoulderSleeveFrame");
     expect(rendererSrc).toContain("dropShoulderSleeveBodyPath");
   });
 
@@ -474,8 +529,121 @@ describe("Drop Shoulder edit measurement diagram — helpers reused", () => {
     const sleeve = buildDropShoulderEditSleeveFrameFromMeasurements(BASE);
     expect(dropShoulderSleeveBodyPath(sleeve)).not.toMatch(/[QC]/);
     expect(rendererSrc).toContain("buildDropShoulderMeasurementBodyFrame");
-    expect(rendererSrc).toContain("buildDropShoulderSleeveFrame");
+    expect(rendererSrc).toContain("buildDropShoulderMeasurementSleeveFrame");
+    expect(rendererSrc).not.toContain("buildDropShoulderSleeveFrame");
     expect(rendererSrc).toContain("dropShoulderFrontBodyPath");
-    expect(rendererSrc).not.toContain("buildDropShoulderMeasurementSleeveFrame");
+  });
+});
+
+describe("Drop Shoulder edit measurement diagram — Sleeve tab framing", () => {
+  it("keeps the silhouette inside a compact centered frame with gutter measurements", () => {
+    for (const c of SLEEVE_PRESENTATION_CASES) {
+      const meas = { ...BASE, ...c };
+      const frame = buildDropShoulderEditSleeveFrameFromMeasurements(meas);
+      const svg = svgFor({ piece: "sleeve", ...c });
+      const vb = parseViewBox(svg);
+      expect(vb.w).toBe(DS_VB_W);
+      expect(vb.h).toBe(DS_VB_H);
+      expect(frame.midX).toBeCloseTo(DS_VB_W / 2, 5);
+      const silH = frame.bottom - frame.top;
+      const silW = Math.max(
+        frame.upperRight - frame.upperLeft,
+        frame.wristRight - frame.wristLeft,
+      );
+      expect(silH / DS_VB_H).toBeLessThan(0.72);
+      expect(silW / DS_VB_W).toBeLessThan(0.55);
+      expect(frame.top).toBeGreaterThan(40);
+      expect(DS_VB_H - frame.bottom).toBeGreaterThan(40);
+      const lengthX = Math.min(frame.wristLeft, frame.upperLeft);
+      const dimLeft = lengthX - 32;
+      const dimRight = frame.wristRight + 22;
+      const dimTop = frame.upperArmY - 20;
+      const dimBottom = frame.wristY + 24;
+      expect(dimTop).toBeLessThan(frame.top);
+      expect(dimBottom).toBeGreaterThan(frame.bottom);
+      expect(dimLeft).toBeLessThan(lengthX);
+      expect(dimRight).toBeGreaterThan(frame.wristRight);
+      expect(dimLeft).toBeGreaterThan(4);
+      expect(dimRight).toBeLessThan(DS_VB_W - 4);
+      expect(dimTop).toBeGreaterThan(4);
+      expect(dimBottom).toBeLessThan(DS_VB_H - 4);
+      for (const p of sleeveGraphicCoords(svg)) {
+        expect(p.x).toBeGreaterThanOrEqual(-0.05);
+        expect(p.y).toBeGreaterThanOrEqual(-0.05);
+        expect(p.x).toBeLessThanOrEqual(DS_VB_W + 0.05);
+        expect(p.y).toBeLessThanOrEqual(DS_VB_H + 0.05);
+      }
+      expect(svg).not.toContain('data-role="body-outline"');
+      expect(svg).not.toContain('data-role="dim-neck-opening"');
+      expect(svg).not.toContain('data-role="dim-armhole-depth"');
+      for (const id of DROP_SHOULDER_EDIT_BODY_MEASUREMENT_TARGET_IDS) {
+        expect(svg).not.toContain(`id="${id}"`);
+      }
+    }
+  });
+
+  it("preserves relative length so short sleeves stay shorter than long sleeves", () => {
+    const veryShort = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      sleeveLengthInches: 4,
+    });
+    const typicalShort = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      sleeveLengthInches: 8,
+    });
+    const elbow = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      sleeveLengthInches: 14,
+    });
+    const long = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      sleeveLengthInches: 22,
+    });
+    const h = (f: { top: number; bottom: number }) => f.bottom - f.top;
+    expect(h(veryShort)).toBeLessThan(h(typicalShort));
+    expect(h(typicalShort)).toBeLessThan(h(elbow));
+    expect(h(elbow)).toBeLessThan(h(long));
+    expect(h(veryShort) / h(long)).toBeCloseTo(4 / 22, 2);
+  });
+
+  it("keeps taper vs straight geometry and does not fill the canvas for either", () => {
+    const straight = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      upperArmInches: 12,
+      cuffCircumferenceInches: 12,
+    });
+    const tapered = buildDropShoulderEditSleeveFrameFromMeasurements({
+      ...BASE,
+      upperArmInches: 18,
+      cuffCircumferenceInches: 6,
+    });
+    expect(straight.upperRight - straight.upperLeft).toBeCloseTo(
+      straight.wristRight - straight.wristLeft,
+      5,
+    );
+    expect(tapered.upperRight - tapered.upperLeft).toBeGreaterThan(
+      tapered.wristRight - tapered.wristLeft,
+    );
+    expect((straight.bottom - straight.top) / DS_VB_H).toBeLessThan(0.72);
+    expect((tapered.bottom - tapered.top) / DS_VB_H).toBeLessThan(0.72);
+  });
+
+  it("inches and centimeters share sleeve geometry; only the display-unit stamp changes", () => {
+    const inches = svgFor({ piece: "sleeve", unit: "in" });
+    const cm = svgFor({ piece: "sleeve", unit: "cm" });
+    expect(sleeveOutlineD(inches)).toBe(sleeveOutlineD(cm));
+    expect(inches).toContain('data-display-unit="in"');
+    expect(cm).toContain('data-display-unit="cm"');
+    expect(inches).not.toMatch(/<text\b/);
+    expect(cm).not.toMatch(/<text\b/);
+  });
+
+  it("hides Body-tab overlay chips so they cannot leak at the Sleeve origin", () => {
+    expect(measurementsCss).toContain(
+      '.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box[hidden]',
+    );
+    expect(measurementsCss).toContain("display: none !important");
+    expect(rendererSrc).not.toContain("overflow: hidden");
+    expect(rendererSrc).not.toContain("clip-path");
   });
 });

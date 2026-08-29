@@ -130,6 +130,28 @@ export function buildDropShoulderMeasurementSleeveFrame(input: {
   };
 }
 
+export function offsetDropShoulderSleeveDiagramFrame(
+  frame: DropShoulderSleeveDiagramFrame,
+  dx: number,
+  dy: number,
+): DropShoulderSleeveDiagramFrame {
+  return {
+    ...frame,
+    midX: frame.midX + dx,
+    top: frame.top + dy,
+    bottom: frame.bottom + dy,
+    cuffJoinY: frame.cuffJoinY + dy,
+    wristY: frame.wristY + dy,
+    upperArmY: frame.upperArmY + dy,
+    wristLeft: frame.wristLeft + dx,
+    wristRight: frame.wristRight + dx,
+    upperLeft: frame.upperLeft + dx,
+    upperRight: frame.upperRight + dx,
+    cuffJoinLeft: frame.cuffJoinLeft + dx,
+    cuffJoinRight: frame.cuffJoinRight + dx,
+  };
+}
+
 /** Trapezoid (or rectangle) with a rectangular cuff at the wrist end. No sleeve cap. */
 export function dropShoulderSleeveBodyPath(frame: DropShoulderSleeveDiagramFrame): string {
   if (frame.direction === "top-down") {

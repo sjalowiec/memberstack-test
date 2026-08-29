@@ -82,4 +82,18 @@ describe("Drop Shoulder edit preview tabs", () => {
       '.cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs',
     );
   });
+
+  it("makes [hidden] override overlay display:flex so Body chips cannot leak on Sleeve", () => {
+    expect(measurementsCss).toContain(
+      '.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box[hidden]',
+    );
+    expect(measurementsCss).toContain("display: none !important");
+    const previewSrc = readFileSync(
+      resolve("src/lib/patterns/dropShoulderEditMeasurementPreview.ts"),
+      "utf8",
+    );
+    expect(previewSrc).toContain("node.hidden = !visible");
+    expect(previewSrc).toContain('node.style.left = ""');
+    expect(previewSrc).toContain('node.style.top = ""');
+  });
 });

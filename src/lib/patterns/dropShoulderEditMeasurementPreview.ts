@@ -44,7 +44,13 @@ export function applyDropShoulderEditPreviewChipVisibility(
 ): void {
   overlay.querySelectorAll("[data-ds-preview-tab]").forEach((node) => {
     if (!(node instanceof HTMLElement)) return;
-    node.hidden = node.dataset.dsPreviewTab !== tab;
+    const visible = node.dataset.dsPreviewTab === tab;
+    node.hidden = !visible;
+    if (!visible) {
+      node.style.left = "";
+      node.style.top = "";
+      node.style.transform = "";
+    }
   });
 }
 

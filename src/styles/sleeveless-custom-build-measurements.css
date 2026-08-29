@@ -59,6 +59,16 @@
   outline-offset: 2px;
 }
 
+/*
+ * Overlay chips set display:flex (author stylesheet). That wins over the UA
+ * [hidden] rule, so Body chips stayed painted on the Sleeve tab after their
+ * SVG targets were gone — clipped at the overlay origin / leftover Body coords.
+ * Make [hidden] actually hide the inactive tab's measurement chips.
+ */
+.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box[hidden] {
+  display: none !important;
+}
+
 .cb-measure-page .express-mbp {
   margin: 0;
 }
