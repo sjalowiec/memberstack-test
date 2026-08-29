@@ -67,9 +67,30 @@ describe("sleeveless finished pattern reading layout (responsive)", () => {
     expect(pageScript).toContain("buildPatternVisualGuidesHtml");
     expect(pageScript).toContain("visualGuides:");
     expect(pageScript).toContain("notationSupported: false");
-    expect(pageScript).toContain("First Side Checklist");
     expect(pageScript).toContain("sleeveless-piece-split__text");
-    expect(pageScript).toContain("tableHeading: frontUsesShoulderTabs ? \"First Side Checklist\"");
+    expect(pageScript).toContain('tableHeading: "First Shoulder Checklist"');
+    const frontChartIntro = readFileSync(
+      resolve("src/lib/patterns/sleevelessFrontChartIntroHtml.ts"),
+      "utf8",
+    );
+    expect(frontChartIntro).toContain(
+      'tableHeading: frontUsesShoulderTabs ? "First Side Checklist" : "First Shoulder Checklist"',
+    );
+  });
+
+  it("Drop Shoulder Back and Front reuse wrapSleevelessPieceSplit (62/38 reading layout)", () => {
+    const mountStart = pageScript.indexOf("async function renderDropShoulderMount");
+    const mountEnd = pageScript.indexOf("async function renderMount(");
+    const mount = pageScript.slice(
+      mountStart,
+      mountEnd > mountStart ? mountEnd : mountStart + 9000,
+    );
+    expect(mount).toContain("wrapSleevelessPieceSplit");
+    expect(mount).toContain("enableVisualWorkspace: true");
+    expect(pageScript).toContain("sleeveless-pattern-reading-layout");
+    expect(sharedCss).toMatch(
+      /@media \(min-width:\s*1100px\)\s*\{[\s\S]*?sleeveless-pattern-reading-layout[\s\S]*?grid-template-columns:\s*minmax\(0,\s*62fr\)\s+minmax\(0,\s*38fr\)/,
+    );
   });
 
   it("does not change Hat reading-layout behavior", () => {
