@@ -8,6 +8,8 @@ import { tryBuildLiveDropShoulderBackStsRowsDiagramSvg } from "./dropShoulderBac
 import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "./dropShoulderFrontPatternDiagramSvg";
 import { tryBuildLiveDropShoulderBackNotationSvg } from "./dropShoulderBackShapingNotationDiagramSvg";
 import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
+import { tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg } from "./dropShoulderSleevePatternDiagramSvg";
+import { tryBuildLiveDropShoulderSleeveNotationSvg } from "./dropShoulderSleeveShapingNotationDiagramSvg";
 import {
   buildDropShoulderFrontFullWidthFrame,
   buildFullWidthFrame,
@@ -104,6 +106,22 @@ describe("generated Drop Shoulder SVG is well-formed XML", () => {
     );
     assertWellFormedGeneratedSvg(
       tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(result, PULLOVER_ROUND, "in"),
+    );
+  });
+
+  it("Sleeve Stitches & Rows and Shaping Notation SVGs are well-formed for both constructions", () => {
+    const result = generateDropShoulderPattern(PULLOVER_ROUND);
+    assertWellFormedGeneratedSvg(
+      tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg(result, "cuff-up", "in"),
+    );
+    assertWellFormedGeneratedSvg(
+      tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg(result, "top-down", "in"),
+    );
+    assertWellFormedGeneratedSvg(
+      tryBuildLiveDropShoulderSleeveNotationSvg(result, "cuff-up", "in"),
+    );
+    assertWellFormedGeneratedSvg(
+      tryBuildLiveDropShoulderSleeveNotationSvg(result, "top-down", "in"),
     );
   });
 });

@@ -248,7 +248,7 @@ describe("Drop Shoulder pattern page wiring (presentation)", () => {
     expect(frontFn).toContain("inlineDropShoulderFrontNotationSvg");
   });
 
-  it("uses the Sleeveless visual workspace and 62/38 reading layout for Back and Front only", () => {
+  it("uses the Sleeveless visual workspace and 62/38 reading layout for Back, Front, and Sleeve", () => {
     const pageScript = readFileSync(
       resolve("src/scripts/sleevelessPatternPageShared.ts"),
       "utf8",
@@ -269,9 +269,9 @@ describe("Drop Shoulder pattern page wiring (presentation)", () => {
     expect(mount).toContain("DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT");
 
     const sleeveWrap = mount.slice(mount.lastIndexOf("sg-sleeve"));
-    expect(sleeveWrap).toContain("wrapDropShoulderPieceSplit");
-    expect(sleeveWrap).not.toContain("wrapSleevelessPieceSplit");
-    expect(sleeveWrap).not.toContain("enableVisualWorkspace");
+    expect(sleeveWrap).toContain("wrapSleevelessPieceSplit");
+    expect(sleeveWrap).toContain("sleeveWorkspaceOpts");
+    expect(sleeveWrap).not.toContain("wrapDropShoulderPieceSplit");
   });
 
   it("keeps Shaping Map in Back/Front Visual Guides and does not duplicate notation there", () => {
@@ -286,7 +286,8 @@ describe("Drop Shoulder pattern page wiring (presentation)", () => {
       optsEnd > optsStart ? optsEnd : optsStart + 1600,
     );
     expect(opts).toContain('if (piece === "sleeve")');
-    expect(opts).toMatch(/piece === "sleeve"[\s\S]*notationSupported:\s*true/);
+    expect(opts).toMatch(/piece === "sleeve"[\s\S]*return undefined/);
+    expect(opts).not.toMatch(/piece === "sleeve"[\s\S]*notationSupported:\s*true/);
     const sleeveBranchEnd = opts.indexOf("if (!bodyNotationSupported)");
     const bodyBranch = opts.slice(sleeveBranchEnd);
     expect(bodyBranch).toContain("notationSupported: false");

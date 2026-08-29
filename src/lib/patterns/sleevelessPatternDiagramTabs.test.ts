@@ -17,7 +17,7 @@ import {
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
-function sampleTabsHtml(piece: "back" | "front" = "front") {
+function sampleTabsHtml(piece: "back" | "front" | "sleeve" = "front") {
   return buildSleevelessPatternDiagramTabsShellHtml({
     piece,
     stsRowsSrc: "/images/patterns/sleeveless/diagrams/diagram-front-v.svg",
@@ -203,6 +203,15 @@ describe("sleeveless pattern diagram tabs", () => {
     expect(backHtml).toContain("data-sleeveless-back-diagram");
     expect(backHtml).toContain('id="sleeveless-back-diagram-tab-sts-rows"');
     expect(backHtml).not.toContain('id="sleeveless-front-diagram-tab-sts-rows"');
+
+    const sleeveHtml = sampleTabsHtml("sleeve");
+    expect(sleeveHtml).toContain("data-sleeveless-sleeve-diagram");
+    expect(sleeveHtml).toContain('data-sleeveless-sleeve-diagram-mode="sts-rows"');
+    expect(sleeveHtml).toContain('data-sleeveless-sleeve-diagram-mode="shaping-notation"');
+    expect(sleeveHtml).toContain('id="sleeveless-sleeve-diagram-tab-sts-rows"');
+    expect(sleeveHtml).toContain("Sleeve diagram view");
+    expect(sleeveHtml).not.toContain("data-sleeveless-front-diagram");
+    expect(sleeveHtml).not.toContain("data-sleeveless-back-diagram");
   });
 
   it("only shows the selected tab panel on screen", () => {

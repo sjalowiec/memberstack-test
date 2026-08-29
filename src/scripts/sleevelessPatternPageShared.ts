@@ -61,6 +61,8 @@ import { tryBuildLiveDropShoulderBackStsRowsDiagramSvg } from "../lib/patterns/d
 import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "../lib/patterns/dropShoulderFrontPatternDiagramSvg.ts";
 import { tryBuildLiveDropShoulderBackNotationSvg } from "../lib/patterns/dropShoulderBackShapingNotationDiagramSvg.ts";
 import { tryBuildLiveDropShoulderFrontNotationSvg } from "../lib/patterns/dropShoulderFrontShapingNotationDiagramSvg.ts";
+import { tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg } from "../lib/patterns/dropShoulderSleevePatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderSleeveNotationSvg } from "../lib/patterns/dropShoulderSleeveShapingNotationDiagramSvg.ts";
 import {
   DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC,
   resolveDropShoulderSleeveMeasurementSvgSrc,
@@ -942,8 +944,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
     const backModeToggle = diagramOpts?.backDiagramModeToggle === true;
     const frontModeToggle = diagramOpts?.frontDiagramModeToggle === true;
+    const sleeveModeToggle = diagramOpts?.sleeveDiagramModeToggle === true;
     const enableVisualWorkspace = diagramOpts?.enableVisualWorkspace === true;
-    const workspacePiece = backModeToggle ? "back" : "front";
+    const workspacePiece = backModeToggle ? "back" : sleeveModeToggle ? "sleeve" : "front";
     const backDiagramAttrs = backModeToggle
       ? ' data-sleeveless-back-diagram data-sleeveless-back-diagram-mode="sts-rows"'
       : "";
@@ -972,7 +975,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           shapingSrc: diagramOpts?.shapingSrc || "",
           shapingAlt: diagramOpts?.shapingAlt || (workspacePiece === "back"
             ? BACK_DIAGRAM_NOTATION_ALT
-            : FRONT_DIAGRAM_NOTATION_ALT),
+            : workspacePiece === "sleeve"
+              ? "Drop shoulder sleeve shaping notation diagram"
+              : FRONT_DIAGRAM_NOTATION_ALT),
           cardiganHalfSide: half === "left" || half === "right" ? half : undefined,
         })}`
       : `${workspaceTitle}${diagramCardHtml}`;
@@ -2338,6 +2343,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
               ctx.result,
               ctx.hydrateGeneration,
               ctx.sleeveDirection ?? "cuff-up",
+              ctx.unit ?? "in",
             ),
           );
         } else if (piece === "back") {
@@ -3804,13 +3810,32 @@ table {
     });
   }
 
-  async function inlineDropShoulderSleeveNotationSvg(hostEl, result, hydrateGeneration, sleeveDirection) {
+  async function inlineDropShoulderSleeveNotationSvg(hostEl, result, hydrateGeneration, sleeveDirection, unit) {
     if (!(hostEl instanceof HTMLElement)) return;
     const hydrateGen =
       hydrateGeneration === undefined || hydrateGeneration === null
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderSleeveNotationSvg(
+      result,
+      sleeveDirection,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        hostEl,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT,
+      )
+    ) {
+      return;
+    }
+
     try {
       const notationSrc = resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection);
       const res = await fetch(notationSrc, {
@@ -3869,7 +3894,29 @@ table {
         ? resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection)
         : measurementSrc;
     if (mode === "shaping-notation") {
-      await inlineDropShoulderSleeveNotationSvg(el, result, hydrateGeneration, sleeveDirection);
+      await inlineDropShoulderSleeveNotationSvg(el, result, hydrateGeneration, sleeveDirection, unit);
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg(
+      result,
+      sleeveDirection,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        el,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT,
+      )
+    ) {
       return;
     }
     const replacements = buildDropShoulderSleeveDiagramReplacements(result, unit, sleeveDirection);
@@ -4067,15 +4114,7 @@ table {
 
     /** @param {"back" | "front" | "sleeve"} piece */
     const dropShoulderVisualGuidesOpts = (piece, extras = {}) => {
-      if (piece === "sleeve") {
-        return {
-          enabled: true,
-          piece: "sleeve",
-          notationSupported: true,
-          construction: "drop-shoulder",
-          patternData: dropShoulderDiagramPatternData,
-        };
-      }
+      if (piece === "sleeve") return undefined;
       if (!bodyNotationSupported) return undefined;
       return {
         enabled: true,
@@ -4174,6 +4213,12 @@ table {
           }
         : {}),
     };
+    const sleeveWorkspaceOpts = {
+      sleeveDiagramModeToggle: true,
+      enableVisualWorkspace: true,
+      shapingSrc: resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection),
+      shapingAlt: DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT,
+    };
 
     mount.innerHTML =
       wrapPatternSection(
@@ -4203,12 +4248,12 @@ table {
       wrapPatternSection(
         "sg-sleeve",
         "SLEEVE",
-        wrapDropShoulderPieceSplit(
+        wrapSleevelessPieceSplit(
           sleeveInner,
           resolveDropShoulderSleeveMeasurementSvgSrc(sleeveDirection),
-          "Drop shoulder sleeve schematic",
+          DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT,
           sleeve.postSplit,
-          { diagramPiece: "sleeve", sleeveDiagramModeToggle: true, showModeToggle: false },
+          sleeveWorkspaceOpts,
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
