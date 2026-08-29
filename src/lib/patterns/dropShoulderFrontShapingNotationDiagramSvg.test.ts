@@ -5,11 +5,20 @@ import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "./dropShoulderFrontPatternDiagramSvg";
 import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
+import { tryBuildLiveDropShoulderBackNotationSvg } from "./dropShoulderBackShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "./sleevelessFrontRoundShapingNotationDiagramSvg";
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
 import { kids10YrRelaxedArmhole36Pattern } from "./dropShoulderDiagramReviewFixtures";
 import { formatRcNotation, formatRcResetNotation } from "./sleevelessBackJapaneseNotation";
+import { buildDropShoulderFrontStitchesRowsModel } from "./dropShoulderPatternDiagramModel";
+import {
+  DS_FRONT_NECK_NOTATION_CLEARANCE,
+  buildDropShoulderFrontCardiganLeftFrame,
+  buildDropShoulderFrontFullWidthFrame,
+  dropShoulderFrontNeckNotationAnchor,
+  dropShoulderFrontNecklineStrokePoint,
+} from "./dropShoulderPatternDiagramSvgShared";
 
 function withStyle(
   base: Record<string, unknown>,
@@ -198,10 +207,12 @@ describe("tryBuildLiveDropShoulderFrontNotationSvg", () => {
         expect(live).toContain(">CF<");
         expect(live).toContain('data-center-front="true"');
         expect(live).toContain('data-neck-anchor="cf"');
+        expect(live).toMatch(/data-role="neck-shaping"[^>]*text-anchor="start"/);
       } else {
         expect(live).toContain(">FRONT<");
         expect(live).not.toContain("LEFT FRONT");
         expect(live).toContain('data-center-front="false"');
+        expect(live).toMatch(/data-role="neck-shaping"[^>]*text-anchor="end"/);
       }
 
       if (neckline === "v") {
@@ -368,6 +379,122 @@ describe("Front Shaping Notation neck placement and RC timing", () => {
     expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
     expect(live).not.toContain('data-rc-neck-start="rc000"');
     expect(live).not.toContain('data-role="body-rows"');
+  });
+});
+
+const FRONT_NECK_PLACEMENT_VARIANTS: Array<{
+  name: string;
+  garment: "pullover" | "cardigan";
+  neckline: "round" | "v";
+  extras: { neckline?: string; frontStyle?: string; garmentStyle?: string };
+}> = [
+  { name: "Pullover Round", garment: "pullover", neckline: "round", extras: {} },
+  { name: "Pullover V-neck", garment: "pullover", neckline: "v", extras: { neckline: "v-neck" } },
+  {
+    name: "Cardigan Round",
+    garment: "cardigan",
+    neckline: "round",
+    extras: { frontStyle: "open", garmentStyle: "cardigan" },
+  },
+  {
+    name: "Cardigan V-neck",
+    garment: "cardigan",
+    neckline: "v",
+    extras: { neckline: "v-neck", frontStyle: "open", garmentStyle: "cardigan" },
+  },
+];
+
+function frontNotationFrame(
+  result: ReturnType<typeof generateDropShoulderPattern>,
+  pattern: Record<string, unknown>,
+) {
+  const model = buildDropShoulderFrontStitchesRowsModel(result, pattern, "in");
+  if (!model) throw new Error("expected Front Stitches & Rows model");
+  const frame =
+    model.garment === "cardigan"
+      ? buildDropShoulderFrontCardiganLeftFrame(model, model.shoulderStitchesEach)
+      : buildDropShoulderFrontFullWidthFrame(model);
+  return { model, frame };
+}
+
+function assertFrontNeckNotationClearance(
+  live: string,
+  result: ReturnType<typeof generateDropShoulderPattern>,
+  pattern: Record<string, unknown>,
+  garment: "pullover" | "cardigan",
+  neckline: "round" | "v",
+) {
+  const { frame } = frontNotationFrame(result, pattern);
+  const stroke = dropShoulderFrontNecklineStrokePoint(frame, garment, neckline);
+  const expected = dropShoulderFrontNeckNotationAnchor(frame, garment, neckline);
+  const labelX = Number(svgAttr(live, "data-neck-notation-x"));
+  const labelY = Number(svgAttr(live, "data-neck-notation-y"));
+  const deepest = Number(svgAttr(live, "data-neck-notation-deepest-y"));
+  const hemY = Number(svgAttr(live, "data-neck-bottom-y"));
+  const xs = [...textXs(live, "neck-shaping"), ...textXs(live, "neck-bo")];
+  const ys = [...textYs(live, "neck-shaping"), ...textYs(live, "neck-bo")];
+
+  expect(svgAttr(live, "data-neck-notation-placement")).toBe("inside-opening");
+  expect(labelX).toBeCloseTo(expected.x, 2);
+  expect(labelY).toBeCloseTo(expected.y, 2);
+  expect(xs.length).toBeGreaterThan(0);
+  expect(xs.every((x) => Math.abs(x - labelX) < 1)).toBe(true);
+
+  const dx = Math.abs(expected.x - stroke.x);
+  const available = Math.abs(
+    (garment === "cardigan" ? frame.right : frame.midX) - stroke.x,
+  );
+  expect(dx).toBeGreaterThanOrEqual(Math.min(DS_FRONT_NECK_NOTATION_CLEARANCE, available) - 0.51);
+  expect(dx).toBeLessThanOrEqual(DS_FRONT_NECK_NOTATION_CLEARANCE + 0.51);
+
+  if (garment === "cardigan") {
+    expect(expected.x).toBeGreaterThan(stroke.x);
+    expect(expected.x).toBeGreaterThan(frame.midX);
+    expect(live).toMatch(/data-role="neck-shaping"[^>]*text-anchor="start"/);
+  } else {
+    expect(Math.abs(expected.x - frame.midX)).toBeLessThan(Math.abs(stroke.x - frame.midX));
+    expect(expected.x).toBeGreaterThan(frame.neckLeftX);
+    expect(expected.x).toBeLessThan(frame.neckRightX);
+    expect(live).toMatch(/data-role="neck-shaping"[^>]*text-anchor="end"/);
+  }
+
+  for (const y of ys) {
+    expect(y).toBeGreaterThan(frame.top);
+    expect(y).toBeLessThanOrEqual(deepest + 1);
+    expect(y).toBeLessThan((frame.hemTopY + frame.armholeMarkerY) / 2);
+  }
+  expect(hemY).toBeLessThan(frame.hemTopY);
+}
+
+describe("Front Shaping Notation clearance from the neckline stroke", () => {
+  it.each(FRONT_NECK_PLACEMENT_VARIANTS)(
+    "$name shallow/normal neckline stays off the stroke and in the opening",
+    ({ garment, neckline, extras }) => {
+      const pattern = notationTimingPattern(4, extras);
+      const result = generateDropShoulderPattern(pattern);
+      const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+      assertFrontNeckNotationClearance(live, result, pattern, garment, neckline);
+    },
+  );
+
+  it.each(FRONT_NECK_PLACEMENT_VARIANTS)(
+    "$name deep 12-inch neckline stays off the stroke and not mid-garment",
+    ({ garment, neckline, extras }) => {
+      const pattern = notationTimingPattern(12, extras);
+      const result = generateDropShoulderPattern(pattern);
+      const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+      assertFrontNeckNotationClearance(live, result, pattern, garment, neckline);
+    },
+  );
+
+  it("does not change Back neckline notation placement or text-anchor", () => {
+    const pattern = notationTimingPattern(4);
+    const result = generateDropShoulderPattern(pattern);
+    const back = tryBuildLiveDropShoulderBackNotationSvg(result, pattern) ?? "";
+    const front = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(back).toMatch(/data-role="neck-shaping"[^>]*text-anchor="middle"/);
+    expect(front).toMatch(/data-role="neck-shaping"[^>]*text-anchor="end"/);
+    expect(back).not.toContain('data-neck-rc-continuous');
   });
 });
 
