@@ -179,7 +179,7 @@ export type DropShoulderFrontStitchesRowsModel = DropShoulderBackStitchesRowsMod
   garment: DropShoulderGarment;
   neckline: DropShoulderNeckline;
   bodyShape: DropShoulderBodyShape;
-  /** Front neck depth rows — a subset of armholeRows, never stacked on top. */
+  /** Front neck depth rows from the generator — may exceed {@link DropShoulderBackStitchesRowsModel.armholeRows}. */
   frontNeckDepthRows: number;
   /** Neck opening stitches on this piece (full N on pullover; half N on cardigan). */
   frontNecklineStitches: number;
@@ -205,8 +205,7 @@ export function buildDropShoulderFrontStitchesRowsModel(
   const isCardigan = garment === "cardigan";
 
   const frontNeckDepthRows = positiveInt(d.frontNeckDepthRows);
-  const necklineRowsInsideArmhole = Math.min(frontNeckDepthRows, base.armholeRows);
-  const armholeEvenRows = Math.max(0, base.armholeRows - necklineRowsInsideArmhole);
+  const armholeEvenRows = Math.max(0, base.armholeRows - frontNeckDepthRows);
 
   const fullNeck = base.necklineStitches;
   const frontNecklineStitches = isCardigan
@@ -237,12 +236,12 @@ export function buildDropShoulderFrontStitchesRowsModel(
     bodyWidthStitches: panelBody,
     crossShoulderStitches: panelTop,
     necklineStitches: frontNecklineStitches,
-    necklineRowsInsideArmhole,
+    necklineRowsInsideArmhole: frontNeckDepthRows,
     armholeEvenRows,
     hemStitchesLabel: formatStitchWidthLabel(panelHem, spi, unit),
     bodyWidthLabel: formatStitchWidthLabel(panelBody, spi, unit),
     crossShoulderLabel: formatStitchWidthLabel(panelTop, spi, unit),
     necklineWidthLabel: formatStitchWidthLabel(frontNecklineStitches, spi, unit),
-    necklineDepthLabel: formatRowsLengthLabel(necklineRowsInsideArmhole, rpi, unit),
+    necklineDepthLabel: formatRowsLengthLabel(frontNeckDepthRows, rpi, unit),
   };
 }

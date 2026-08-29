@@ -97,7 +97,9 @@ export function buildDropShoulderVNeckEvenScheduleTimeline(inputs: {
   const sched = evenShapingSchedule(decreaseCount, depth);
   if (sched.count <= 0) return [];
 
-  const decreaseLocalRcs = new Set(evenShapingGarmentRowNumbers(0, sched));
+  const decreaseLocalRcs = new Set(
+    evenShapingGarmentRowNumbers(0, sched).filter((n) => n >= 0 && n <= depth),
+  );
   const frontWidth = inputs.isCardigan ? forceEven(bust / 2) : bust;
   const startStitches = inputs.isCardigan
     ? Math.max(S + decreaseCount, frontWidth)
@@ -110,7 +112,8 @@ export function buildDropShoulderVNeckEvenScheduleTimeline(inputs: {
   const centerWidth = inputs.isCardigan ? 0 : startStitches % 2;
 
   const rows: RowEntry[] = [];
-  for (let local = 0; local < depth; local++) {
+  // Include local === depth so a last decrease on the shoulder RC is not dropped.
+  for (let local = 0; local <= depth; local++) {
     const rc = firstRow + local;
     const events: ShapingEvent[] = [];
     let netR = 0;
@@ -196,7 +199,24 @@ function appendDropShoulderStraightShoulderFinish(
 
   if (events.length === 0) return out;
 
-  const bindOffRc = Math.max(totalRows, rc + 1);
+  const bindOffRc = totalRows;
+  if (rc === bindOffRc) {
+    const cur = out[out.length - 1]!;
+    out[out.length - 1] = {
+      ...cur,
+      events: [...cur.events, ...events],
+      stitchesL: leftCount,
+      stitchesR: rightCount,
+      netChangeL:
+        (cur.netChangeL ?? 0) +
+        (profile === "cardiganHalfFront"
+          ? 0
+          : -(events.find((e) => e.side === "left")?.amount ?? 0)),
+      netChangeR: (cur.netChangeR ?? 0) + -(events.find((e) => e.side === "right")?.amount ?? 0),
+    };
+    return out;
+  }
+
   out.push({
     row: bindOffRc,
     events,

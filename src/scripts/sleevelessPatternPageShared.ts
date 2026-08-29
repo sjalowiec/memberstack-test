@@ -59,6 +59,7 @@ import {
 } from "../lib/patterns/dropShoulderSleeveConstruction.ts";
 import { tryBuildLiveDropShoulderBackStsRowsDiagramSvg } from "../lib/patterns/dropShoulderBackPatternDiagramSvg.ts";
 import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "../lib/patterns/dropShoulderFrontPatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderFrontNotationSvg } from "../lib/patterns/dropShoulderFrontShapingNotationDiagramSvg.ts";
 import {
   DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC,
   resolveDropShoulderSleeveMeasurementSvgSrc,
@@ -3346,6 +3347,7 @@ table {
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
     try {
       const backDiagram = resolveDropShoulderBackDiagramSvg("shaping-notation", patternData);
       reportDropShoulderDiagramFallback(backDiagram, "back shaping notation");
@@ -3409,6 +3411,24 @@ table {
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderFrontNotationSvg(
+      result,
+      patternData,
+      generatorPatternData,
+      diagramUnit,
+    );
+    if (generatedSvg) {
+      mountDropShoulderStsRowsSvgMarkup(
+        hostEl,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT,
+      );
+      return;
+    }
+
     try {
       const frontDiagram = resolveDropShoulderFrontDiagramSvg("shaping-notation", patternData);
       reportDropShoulderDiagramFallback(frontDiagram, "front shaping notation");

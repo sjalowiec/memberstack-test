@@ -18,13 +18,14 @@ function withStyle(
 }
 
 describe("buildDropShoulderFrontStitchesRowsModel", () => {
-  it("keeps front neck rows inside the armhole span", () => {
+  it("labels the actual Front neck rows (shallow necks still sit inside the armhole span)", () => {
     const pattern = kids10YrRelaxedArmhole36Pattern();
     const result = generateDropShoulderPattern(pattern);
     const model = buildDropShoulderFrontStitchesRowsModel(result, pattern, "in")!;
-    expect(model.necklineRowsInsideArmhole + model.armholeEvenRows).toBe(model.armholeRows);
+    expect(model.necklineRowsInsideArmhole).toBe(model.frontNeckDepthRows);
     expect(model.frontNeckDepthRows).toBe(result.debug.frontNeckDepthRows);
-    expect(model.necklineRowsInsideArmhole).toBeLessThanOrEqual(model.armholeRows);
+    expect(model.armholeEvenRows).toBe(Math.max(0, model.armholeRows - model.frontNeckDepthRows));
+    expect(model.frontNeckDepthRows).toBeLessThanOrEqual(model.armholeRows);
   });
 
   it("uses half-panel stitch counts from debug for cardigan", () => {
