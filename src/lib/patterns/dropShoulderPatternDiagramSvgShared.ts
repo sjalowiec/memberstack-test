@@ -454,9 +454,28 @@ function quadraticPoint(
 }
 
 /**
- * Front Shaping Notation label anchor on the drawn neckline (not mid-body).
+ * Gap from the Front neckline stroke to the notation cluster, into the opening.
+ * Keeps labels associated with the neck edge without sitting on the path.
  */
-export function dropShoulderFrontNeckNotationAnchor(
+export const DS_FRONT_NECK_NOTATION_CLEARANCE = 16;
+
+function offsetHorizontallyToward(
+  from: { x: number; y: number },
+  towardX: number,
+  distance: number,
+): { x: number; y: number } {
+  const dx = towardX - from.x;
+  const len = Math.abs(dx);
+  if (len < 0.5) return { x: from.x, y: from.y };
+  const step = Math.min(distance, len);
+  return { x: from.x + Math.sign(dx) * step, y: from.y };
+}
+
+/**
+ * Point on the drawn Front neckline used as the notation path anchor
+ * (before opening clearance).
+ */
+export function dropShoulderFrontNecklineStrokePoint(
   frame: DropShoulderDiagramFrame,
   garment: "pullover" | "cardigan",
   neckline: "round" | "v",
@@ -466,14 +485,14 @@ export function dropShoulderFrontNeckNotationAnchor(
     if (neckline === "v") {
       const t = 0.4;
       return {
-        x: frame.neckLeftX + (frame.right - frame.neckLeftX) * t * 0.82,
+        x: frame.neckLeftX + (frame.right - frame.neckLeftX) * t,
         y: frame.top + (deepestY - frame.top) * t,
       };
     }
     const t = 0.42;
     const ctrlX = frame.neckLeftX + (frame.neckRightX - frame.neckLeftX) * 0.55;
     const ctrlY = frame.top + (frame.neckBottomY - frame.top) * 1.05;
-    const p = quadraticPoint(
+    return quadraticPoint(
       frame.neckLeftX,
       frame.top,
       ctrlX,
@@ -482,7 +501,6 @@ export function dropShoulderFrontNeckNotationAnchor(
       frame.neckBottomY,
       t,
     );
-    return { x: p.x - 14, y: p.y };
   }
   if (neckline === "v") {
     const t = 0.38;
@@ -492,7 +510,7 @@ export function dropShoulderFrontNeckNotationAnchor(
     };
   }
   const t = 0.88;
-  const p = quadraticPoint(
+  return quadraticPoint(
     frame.neckLeftX,
     frame.top,
     frame.midX,
@@ -501,10 +519,20 @@ export function dropShoulderFrontNeckNotationAnchor(
     frame.top,
     t,
   );
-  return {
-    x: p.x + (frame.midX - p.x) * 0.18,
-    y: p.y,
-  };
+}
+
+/**
+ * Front Shaping Notation label anchor: on the neckline geometry, then a small
+ * consistent offset into the opening (not mid-body, not on the stroke).
+ */
+export function dropShoulderFrontNeckNotationAnchor(
+  frame: DropShoulderDiagramFrame,
+  garment: "pullover" | "cardigan",
+  neckline: "round" | "v",
+): { x: number; y: number } {
+  const path = dropShoulderFrontNecklineStrokePoint(frame, garment, neckline);
+  const towardX = garment === "cardigan" ? frame.right : frame.midX;
+  return offsetHorizontallyToward(path, towardX, DS_FRONT_NECK_NOTATION_CLEARANCE);
 }
 
 /** Deepest Y of the Back pullover-round path (legacy 1.15 scoop or row-scaled neck). */

@@ -147,6 +147,8 @@ export function drawDropShoulderNeckNotation(
     deepestY?: number;
     labelX?: number;
     labelY?: number;
+    /** Front grows text away from the neck stroke; Back stays middle. */
+    textAnchor?: "middle" | "start" | "end";
   },
 ): string {
   const neckShapingLines = labels.neckShaping.split("\n").filter(Boolean);
@@ -154,6 +156,7 @@ export function drawDropShoulderNeckNotation(
   const neckHoldOffset = labels.neckBo ? 1 : 0;
   const stackCount = neckShapingLines.length + neckHoldOffset;
   const stackH = Math.max(0, (stackCount - 1) * DS_NECK_NOTATION_GAP);
+  const textAnchor = options?.textAnchor ?? "middle";
 
   let neckLabelX: number;
   let neckBoY: number;
@@ -193,12 +196,12 @@ export function drawDropShoulderNeckNotation(
   for (const [i, line] of neckShapingLines.entries()) {
     const y = neckBoY - (i + neckHoldOffset) * DS_NECK_NOTATION_GAP;
     parts.push(
-      `<text data-role="neck-shaping" data-label-zone="neck" data-notation="${escapeXml(labels.neckShaping)}" data-stack-order="${i}" x="${fmtNum(neckLabelX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}>${escapeXml(line)}</text>`,
+      `<text data-role="neck-shaping" data-label-zone="neck" data-notation="${escapeXml(labels.neckShaping)}" data-stack-order="${i}" x="${fmtNum(neckLabelX)}" y="${fmtNum(y)}" text-anchor="${textAnchor}" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}>${escapeXml(line)}</text>`,
     );
   }
   if (labels.neckBo) {
     parts.push(
-      `<text data-role="neck-bo" data-label-zone="neck" data-notation="${escapeXml(labels.neckBo)}" data-stack-order="${neckShapingLines.length}" x="${fmtNum(neckLabelX)}" y="${fmtNum(neckBoY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}>${escapeXml(labels.neckBo)}</text>`,
+      `<text data-role="neck-bo" data-label-zone="neck" data-notation="${escapeXml(labels.neckBo)}" data-stack-order="${neckShapingLines.length}" x="${fmtNum(neckLabelX)}" y="${fmtNum(neckBoY)}" text-anchor="${textAnchor}" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}>${escapeXml(labels.neckBo)}</text>`,
     );
   }
   return parts.join("");

@@ -119,6 +119,8 @@ export function buildDropShoulderFrontShapingNotationSvgFromModel(
       deepestY,
       labelX: notationPt.x,
       labelY: notationPt.y,
+      // Grow text into the opening so glyphs clear the neck stroke.
+      textAnchor: model.garment === "cardigan" ? "start" : "end",
     }),
     drawDropShoulderBodyShapingNotation(frame, labels, bodyShapingSide),
     drawDropShoulderCastOnNotation(frame, labels),

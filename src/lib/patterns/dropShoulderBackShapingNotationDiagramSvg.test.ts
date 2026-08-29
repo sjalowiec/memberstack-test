@@ -394,6 +394,7 @@ describe("Back Shaping Notation neck placement and RC (Back rules only)", () => 
     const neckBottomY = Number(svgAttr(live, "data-neck-bottom-y"));
     expect(svgAttr(live, "data-neck-notation-placement")).toBe("inside-opening");
     expect(svgAttr(live, "data-neck-anchor")).toBe("center");
+    expect(live).toMatch(/data-role="neck-shaping"[^>]*text-anchor="middle"/);
     expect(deepest).toBeGreaterThan(0);
     expect(neckBottomY).toBeLessThan(armholeY);
     const ys = [...textYs(live, "neck-shaping"), ...textYs(live, "neck-bo")];
