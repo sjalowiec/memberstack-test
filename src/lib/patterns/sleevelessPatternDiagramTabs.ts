@@ -18,7 +18,7 @@ export const SLEEVELESS_DIAGRAM_TAB_STS_ROWS = PATTERN_DIAGRAM_TAB_STS_ROWS;
 export const SLEEVELESS_DIAGRAM_TAB_SHAPING = PATTERN_DIAGRAM_TAB_SHAPING;
 
 export type SleevelessDiagramTabId = PatternDiagramTabId;
-export type SleevelessDiagramTabsPiece = "back" | "front";
+export type SleevelessDiagramTabsPiece = "back" | "front" | "sleeve";
 
 export const SLEEVELESS_DIAGRAM_TAB_IDS: readonly SleevelessDiagramTabId[] = [
   SLEEVELESS_DIAGRAM_TAB_STS_ROWS,
@@ -91,7 +91,9 @@ export function buildSleevelessPatternDiagramHostHtml(
   const pieceModeAttr =
     options.piece === "back"
       ? ` data-sleeveless-back-diagram data-sleeveless-back-diagram-mode="${options.mode}"`
-      : ` data-sleeveless-front-diagram data-sleeveless-front-diagram-mode="${options.mode}"`;
+      : options.piece === "sleeve"
+        ? ` data-sleeveless-sleeve-diagram data-sleeveless-sleeve-diagram-mode="${options.mode}"`
+        : ` data-sleeveless-front-diagram data-sleeveless-front-diagram-mode="${options.mode}"`;
   const half = options.cardiganHalfSide;
   const halfAttr =
     half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
@@ -128,7 +130,11 @@ export function buildSleevelessPatternDiagramTabsShellHtml(
 ): string {
   const idPrefix = `sleeveless-${options.piece}-diagram`;
   const tablistLabel =
-    options.piece === "back" ? "Back diagram view" : "Front diagram view";
+    options.piece === "back"
+      ? "Back diagram view"
+      : options.piece === "sleeve"
+        ? "Sleeve diagram view"
+        : "Front diagram view";
   const helpHtml = buildSleevelessShapingNotationHelpHtml();
 
   return buildPatternDiagramTabsShellHtml({
