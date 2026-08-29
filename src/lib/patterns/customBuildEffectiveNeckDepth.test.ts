@@ -21,6 +21,8 @@ function patternData(
     patternMode?: string;
     neckDepthOverride?: string;
     chartFrontNeckDepth?: number;
+    chartBackNeckDepth?: number;
+    omitBackNeckDepth?: boolean;
     neckline?: string;
     neckOpeningWidthOverride?: string;
     armholeDepthOverride?: string;
@@ -34,6 +36,11 @@ function patternData(
     ...baseMeasurements,
     front_neck_depth: chartFront,
   };
+  if (overrides.omitBackNeckDepth) {
+    delete sm.back_neck_depth;
+  } else if (overrides.chartBackNeckDepth !== undefined) {
+    sm.back_neck_depth = overrides.chartBackNeckDepth;
+  }
   const fit: Record<string, unknown> = { selectedMeasurements: sm };
   const cb: Record<string, string> = {};
   if (overrides.neckDepthOverride !== undefined) cb.neckDepth = overrides.neckDepthOverride;
@@ -92,6 +99,36 @@ describe("resolveEffectiveBackNeckDepthInches", () => {
         patternData({ patternMode: "custom-build", neckDepthOverride: "6" }),
       ),
     ).toBe(1);
+  });
+
+  it("leaves missing chart back_neck_depth undefined", () => {
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ omitBackNeckDepth: true }))).toBeUndefined();
+  });
+
+  it("preserves chart values at or below 1 inch and caps values above 1 inch", () => {
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 0.5 }))).toBe(0.5);
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 0.75 }))).toBe(0.75);
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 1 }))).toBe(1);
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 1.5 }))).toBe(1);
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 1.75 }))).toBe(1);
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 2 }))).toBe(1);
+    expect(resolveEffectiveBackNeckDepthInches(patternData({ chartBackNeckDepth: 2.5 }))).toBe(1);
+  });
+
+  it("does not change front neck depth when back chart is above 1 inch", () => {
+    const pd = patternData({ chartBackNeckDepth: 1.75, chartFrontNeckDepth: 6 });
+    expect(resolveEffectiveBackNeckDepthInches(pd)).toBe(1);
+    expect(resolveEffectiveFrontNeckDepthInches(pd)).toBe(6);
+  });
+
+  it("front neckDepth override still does not alter back neck depth", () => {
+    const pd = patternData({
+      patternMode: "custom-build",
+      neckDepthOverride: "6",
+      chartBackNeckDepth: 1.75,
+    });
+    expect(resolveEffectiveFrontNeckDepthInches(pd)).toBe(6);
+    expect(resolveEffectiveBackNeckDepthInches(pd)).toBe(1);
   });
 });
 

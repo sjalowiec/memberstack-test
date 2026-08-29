@@ -138,11 +138,19 @@ function proofBackPattern(): Record<string, unknown> {
   };
 }
 
-/** Renderer-only: Back neck depth is not user-editable in the builder. */
+/** Valid shallow Back neck (below the 1″ sweater maximum) for renderer depth contrast. */
+function shallowerBackNeckPattern(): Record<string, unknown> {
+  const pattern = baseBackPattern();
+  const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
+  fit.selectedMeasurements.back_neck_depth = 0.5;
+  return pattern;
+}
+
+/** Valid deeper Back neck at the 1″ sweater maximum. */
 function deeperBackNeckPattern(): Record<string, unknown> {
   const pattern = baseBackPattern();
   const fit = pattern.fit as { selectedMeasurements: Record<string, number> };
-  fit.selectedMeasurements.back_neck_depth = 2.5;
+  fit.selectedMeasurements.back_neck_depth = 1;
   return pattern;
 }
 
@@ -742,8 +750,8 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
     }
   });
 
-  it("responds to Back neckline depth and width (2.5in depth is renderer-only, not builder-reachable)", () => {
-    const shallow = straightBodyPattern();
+  it("responds to Back neckline depth and width (0.5in vs 1in — both within the sweater maximum)", () => {
+    const shallow = shallowerBackNeckPattern();
     const deep = deeperBackNeckPattern();
     const wide = widerBackNeckPattern();
     const shallowResult = generateSleevelessBackPattern(shallow);
@@ -814,7 +822,7 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
   });
 
   it("keeps true Back neck-depth rows in data while the visual scoop stays shallow", () => {
-    const shallow = straightBodyPattern();
+    const shallow = shallowerBackNeckPattern();
     const deep = deeperBackNeckPattern();
     const shallowResult = generateSleevelessBackPattern(shallow);
     const deepResult = generateSleevelessBackPattern(deep);
@@ -1158,6 +1166,7 @@ describe("buildSleevelessBackShapingNotationDiagramSvg", () => {
       straightBodyPattern(),
       inwardBodyPattern(),
       outwardBodyPattern(),
+      shallowerBackNeckPattern(),
       deeperBackNeckPattern(),
       widerBackNeckPattern(),
       fineGaugeWidePattern(),

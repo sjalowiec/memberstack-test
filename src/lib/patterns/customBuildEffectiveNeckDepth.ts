@@ -1,17 +1,23 @@
 /**
- * Custom Build — effective neck depth for sleeveless pattern generation.
+ * Custom Build — effective neck depth for sweater pattern generation.
  *
  * Chart fallback: `fit.selectedMeasurements.front_neck_depth` (front scoop) and
  * `back_neck_depth` (back neckline row budget).
  * Override: `fit.cbMeasurementOverrides.neckDepth` replaces front neck depth only when
  * `style.patternMode` is `custom-build` (matches the Measurements step diagram field).
  * Express and non–custom-build modes always use chart values.
+ *
+ * Sweater-wide back neck rule: chart values below 1″ are kept; values above 1″ are
+ * capped at 1″. Front neck depth is not capped here.
  */
 
 import {
   isCustomBuildPatternMode,
   positiveMeasurementInches,
 } from "./customBuildEffectiveArmholeDepth";
+
+/** Maximum back neck depth (inches) for all sweater constructions. */
+export const SWEATER_BACK_NECK_DEPTH_MAX_INCHES = 1;
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -54,9 +60,13 @@ export function resolveEffectiveFrontNeckDepthInches(
 
 /**
  * Resolves back neck depth (inches) from chart measurements only (no Custom Build override field).
+ * Caps at {@link SWEATER_BACK_NECK_DEPTH_MAX_INCHES}; values below the max are unchanged.
+ * Missing/invalid chart values stay undefined.
  */
 export function resolveEffectiveBackNeckDepthInches(
   patternData: Record<string, unknown>,
 ): number | undefined {
-  return chartBackNeckDepthInches(patternData);
+  const chartInches = chartBackNeckDepthInches(patternData);
+  if (chartInches === undefined) return undefined;
+  return Math.min(chartInches, SWEATER_BACK_NECK_DEPTH_MAX_INCHES);
 }
