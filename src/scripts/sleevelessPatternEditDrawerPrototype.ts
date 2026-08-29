@@ -257,6 +257,15 @@ function readStoredFitPreference(): string {
   return "standard";
 }
 
+function writeLocalStorageString(key: string, value: string): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* quota */
+  }
+}
+
 function persistDropShoulderEditSleeveLengthChoice(sleeveLength: string): void {
   const length = normalizeDropShoulderSleeveLengthChoice(sleeveLength);
   const canonicalStyle = section(getCurrentPattern().style);
