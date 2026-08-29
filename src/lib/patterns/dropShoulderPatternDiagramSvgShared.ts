@@ -208,6 +208,84 @@ export function buildFullWidthFrame(
   };
 }
 
+function clampPositive(n: number, fallback: number): number {
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+/**
+ * Edit-preview adapter: the same {@link buildFullWidthFrame} band/width rules,
+ * driven by finished inches instead of generated stitch/row counts.
+ * Presentation only — does not compute pattern math.
+ */
+export type DropShoulderMeasurementBodyInput = {
+  bustInches: number;
+  hipInches: number;
+  garmentLengthInches: number;
+  armholeDepthInches: number;
+  neckOpeningInches: number;
+  neckDepthInches: number;
+  hemDepthInches: number;
+};
+
+export function buildDropShoulderMeasurementBodyFrame(
+  input: DropShoulderMeasurementBodyInput,
+): DropShoulderDiagramFrame {
+  const length = Math.max(6, clampPositive(input.garmentLengthInches, 22));
+  const hem = Math.min(Math.max(0, clampPositive(input.hemDepthInches, 2)), length * 0.32);
+  const armhole = Math.min(Math.max(1, clampPositive(input.armholeDepthInches, 8)), length * 0.5);
+  const body = Math.max(1.5, length - hem - armhole);
+  const neck = Math.min(Math.max(0.25, clampPositive(input.neckDepthInches, 3)), armhole * 0.95);
+  const bust = clampPositive(input.bustInches, 40);
+  const hip = clampPositive(input.hipInches, bust);
+  const neckOpening = Math.min(clampPositive(input.neckOpeningInches, 7), bust);
+  const frame = buildFullWidthFrame({
+    hemRows: hem,
+    bodyRowsToArmhole: body,
+    armholeRows: armhole,
+    necklineRowsInsideArmhole: neck,
+    hemStitches: hip,
+    bodyWidthStitches: bust,
+    crossShoulderStitches: bust,
+    necklineStitches: neckOpening,
+  });
+  const refFrontInches = 20;
+  const pxPerInch = (DS_BODY_MAX_W * 0.88) / refFrontInches;
+  const bodyW = Math.max(28, (bust / 2) * pxPerInch);
+  const hemW = Math.max(22, (hip / 2) * pxPerInch);
+  const neckW = Math.min(bodyW - 24, Math.max(16, neckOpening * pxPerInch));
+  const midX = frame.midX;
+  return {
+    ...frame,
+    left: midX - bodyW / 2,
+    right: midX + bodyW / 2,
+    hemLeft: midX - hemW / 2,
+    hemRight: midX + hemW / 2,
+    neckLeftX: midX - neckW / 2,
+    neckRightX: midX + neckW / 2,
+  };
+}
+
+export function offsetDropShoulderDiagramFrame(
+  frame: DropShoulderDiagramFrame,
+  dx: number,
+  dy: number,
+): DropShoulderDiagramFrame {
+  return {
+    left: frame.left + dx,
+    right: frame.right + dx,
+    hemLeft: frame.hemLeft + dx,
+    hemRight: frame.hemRight + dx,
+    midX: frame.midX + dx,
+    top: frame.top + dy,
+    neckBottomY: frame.neckBottomY + dy,
+    neckLeftX: frame.neckLeftX + dx,
+    neckRightX: frame.neckRightX + dx,
+    armholeMarkerY: frame.armholeMarkerY + dy,
+    hemTopY: frame.hemTopY + dy,
+    bottom: frame.bottom + dy,
+  };
+}
+
 /**
  * Left-front cardigan panel: side/armhole on the left, center-front on the right.
  * Neck opening sits on the CF edge (not centered).

@@ -96,6 +96,40 @@ export function buildDropShoulderSleeveFrame(
   };
 }
 
+/**
+ * Edit-preview sleeve frame in local coordinates: upper-arm edge on y = 0,
+ * cuff at +length. Same trapezoid as {@link dropShoulderSleeveBodyPath}.
+ * Pixel sizes come from the measurement model — no stitch math.
+ */
+export function buildDropShoulderMeasurementSleeveFrame(input: {
+  upperArmWidthPx: number;
+  cuffWidthPx: number;
+  sleeveLengthPx: number;
+  cuffDepthPx: number;
+}): DropShoulderSleeveDiagramFrame {
+  const topW = Math.max(8, input.upperArmWidthPx);
+  const cuffW = Math.max(6, input.cuffWidthPx);
+  const length = Math.max(12, input.sleeveLengthPx);
+  const cuffH = Math.min(Math.max(0, input.cuffDepthPx), length * 0.45);
+  const halfTop = topW / 2;
+  const halfCuff = cuffW / 2;
+  return {
+    direction: "cuff-up",
+    midX: 0,
+    top: 0,
+    bottom: length,
+    cuffJoinY: length - cuffH,
+    wristY: length,
+    upperArmY: 0,
+    wristLeft: -halfCuff,
+    wristRight: halfCuff,
+    upperLeft: -halfTop,
+    upperRight: halfTop,
+    cuffJoinLeft: -halfCuff,
+    cuffJoinRight: halfCuff,
+  };
+}
+
 /** Trapezoid (or rectangle) with a rectangular cuff at the wrist end. No sleeve cap. */
 export function dropShoulderSleeveBodyPath(frame: DropShoulderSleeveDiagramFrame): string {
   if (frame.direction === "top-down") {
