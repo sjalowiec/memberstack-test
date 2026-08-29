@@ -117,6 +117,21 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(editDrawerScript).toContain("flushCustomBuildMeasurementOverridesToCanonical");
     expect(editDrawerScript).toContain("syncCustomBuildToPatternStorage");
     expect(editDrawerScript).toContain("loadMeasurementOverrides");
+    expect(editDrawerScript).toContain("runSaveCustomPatternFromWorkspace");
+  });
+
+  it("keeps writeLocalStorageString so Save Changes does not throw before the request", () => {
+    expect(editDrawerScript).toContain("function writeLocalStorageString");
+    expect(editDrawerScript).toContain(
+      "writeLocalStorageString(CUSTOM_BUILD_NECKLINE_STYLE_KEY, neckline)",
+    );
+    expect(editDrawerScript).toContain('writeLocalStorageString("bodyShape", bodyShape)');
+    const helperIdx = editDrawerScript.indexOf("function writeLocalStorageString");
+    const persistIdx = editDrawerScript.indexOf("function persistDropShoulderEditSleeveLengthChoice");
+    const applyIdx = editDrawerScript.indexOf("async function applyChanges");
+    expect(helperIdx).toBeGreaterThan(-1);
+    expect(persistIdx).toBeGreaterThan(helperIdx);
+    expect(applyIdx).toBeGreaterThan(persistIdx);
   });
 
   it("keeps the Body / Sleeve tabbed preview wiring", () => {
