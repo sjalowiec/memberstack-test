@@ -6,6 +6,7 @@ import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { kids10YrRelaxedArmhole36Pattern } from "./dropShoulderDiagramReviewFixtures";
 import { tryBuildLiveDropShoulderBackStsRowsDiagramSvg } from "./dropShoulderBackPatternDiagramSvg";
 import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "./dropShoulderFrontPatternDiagramSvg";
+import { tryBuildLiveDropShoulderBackNotationSvg } from "./dropShoulderBackShapingNotationDiagramSvg";
 import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
 import {
   buildDropShoulderFrontFullWidthFrame,
@@ -85,6 +86,17 @@ describe("generated Drop Shoulder SVG is well-formed XML", () => {
     }
   });
 
+  it("Back Shaping Notation SVG is well-formed when RC labels are present", () => {
+    const result = generateDropShoulderPattern(PULLOVER_ROUND);
+    const svg = tryBuildLiveDropShoulderBackNotationSvg(result, PULLOVER_ROUND);
+    assertWellFormedGeneratedSvg(svg);
+    expect(svg).toContain('data-role="rc-reset"');
+    expect(svg).toContain('data-role="neck-start-rc"');
+    expect(svg).toMatch(/data-role="rc-reset"[^>]*data-rc="/);
+    expect(svg).not.toMatch(/data-role="rc-reset"[^>]*data-rc="[^"]*"[^>]*data-rc="/);
+    expect(svg).not.toMatch(/data-role="neck-start-rc"[^>]*data-rc="[^"]*"[^>]*data-rc="/);
+  });
+
   it("Back and Front Stitches & Rows SVGs remain well-formed", () => {
     const result = generateDropShoulderPattern(PULLOVER_ROUND);
     assertWellFormedGeneratedSvg(
@@ -119,6 +131,20 @@ describe("Drop Shoulder generated-SVG parse failure does not take down the patte
       fn.indexOf("applyJapaneseNotationSvgReplacements"),
     );
     expect(fn).toContain("resolveDropShoulderFrontDiagramSvg(\"shaping-notation\"");
+    expect(fn).not.toContain("We could not render your pattern");
+  });
+
+  it("Back Shaping Notation falls through to Illustrator when generated parse fails", () => {
+    const start = pageScript.indexOf("async function inlineDropShoulderBackNotationSvg");
+    const end = pageScript.indexOf("async function inlineDropShoulderFrontNotationSvg");
+    const fn = pageScript.slice(start, end > start ? end : start + 3500);
+    expect(fn).toContain("tryBuildLiveDropShoulderBackNotationSvg");
+    expect(fn).toContain("generatedSvg &&");
+    expect(fn).toContain("mountDropShoulderStsRowsSvgMarkup");
+    expect(fn.indexOf("mountDropShoulderStsRowsSvgMarkup")).toBeLessThan(
+      fn.indexOf("applyJapaneseNotationSvgReplacements"),
+    );
+    expect(fn).toContain("resolveDropShoulderBackDiagramSvg(\"shaping-notation\"");
     expect(fn).not.toContain("We could not render your pattern");
   });
 
@@ -159,8 +185,10 @@ describe("Drop Shoulder geometry and Front timing remain unchanged", () => {
     const frontPath = dropShoulderFrontPulloverRoundBodyPath(frontFrame);
     const backSvg = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(result, pattern, "in")!;
     const frontSvg = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(result, pattern, "in")!;
+    const backNotation = tryBuildLiveDropShoulderBackNotationSvg(result, pattern)!;
     expect(backSvg).toContain(backPath);
     expect(frontSvg).toContain(frontPath);
+    expect(backNotation).toContain(backPath);
     expect(backPath).toContain(`L ${fmtNum(backFrame.left)} ${fmtNum(backFrame.armholeMarkerY)}`);
     expect(backPath).toContain(`L ${fmtNum(backFrame.left)} ${fmtNum(backFrame.top)}`);
   });
