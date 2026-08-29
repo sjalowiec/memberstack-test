@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildDropShoulderFrontStitchesRowsSvg } from "./dropShoulderFrontPatternDiagramSvg";
+import {
+  buildDropShoulderFrontStitchesRowsSvg,
+  tryBuildLiveDropShoulderFrontStsRowsDiagramSvg,
+} from "./dropShoulderFrontPatternDiagramSvg";
 import {
   kids10YrRelaxedArmhole36Pattern,
 } from "./dropShoulderDiagramReviewFixtures";
@@ -45,10 +48,15 @@ describe("buildDropShoulderFrontStitchesRowsSvg", () => {
     const model = buildDropShoulderFrontStitchesRowsModel(result, pattern, "in")!;
     const svg = buildDropShoulderFrontStitchesRowsSvg(model);
     expect(svg).toContain('data-ds-front-diagram="sts-rows"');
+    expect(svg).toContain('data-ds-front-sts-rows-generated="true"');
     expect(svg).toContain('data-neckline="round"');
     expect(svg).toContain('data-garment="pullover"');
     expect(svg).toContain("Armhole depth");
     expect(svg).toContain("FRONT");
+    expect(svg).toContain('width="100%"');
+    expect(svg).toContain('height="auto"');
+    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
+    expect(svg).not.toContain("generated preview");
     expect(svg).not.toMatch(/\bNaN\b/);
   });
 
@@ -86,5 +94,87 @@ describe("buildDropShoulderFrontStitchesRowsSvg", () => {
     const b = generateDropShoulderPattern(pattern);
     expect(b.debug).toEqual(a.debug);
     expect(b.lines).toEqual(a.lines);
+  });
+});
+
+describe("tryBuildLiveDropShoulderFrontStsRowsDiagramSvg", () => {
+  it("returns live generated SVG for pullover round, V-neck, and cardigan", () => {
+    const round = kids10YrRelaxedArmhole36Pattern();
+    expect(
+      tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(
+        generateDropShoulderPattern(round),
+        round,
+        "in",
+      ),
+    ).toContain('data-neckline="round"');
+
+    const vneck = withStyle(round, { neckline: "v-neck" });
+    expect(
+      tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(
+        generateDropShoulderPattern(vneck),
+        vneck,
+        "in",
+      ),
+    ).toContain('data-neckline="v"');
+
+    const cardigan = withStyle(round, { frontStyle: "open", garmentStyle: "cardigan" });
+    const cardiganSvg = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(
+      generateDropShoulderPattern(cardigan),
+      cardigan,
+      "in",
+    );
+    expect(cardiganSvg).toContain('data-garment="cardigan"');
+    expect(cardiganSvg).toContain("LEFT FRONT");
+  });
+
+  it("returns live generated SVG for A-line body", () => {
+    const aline = withStyle(kids10YrRelaxedArmhole36Pattern(), { bodyShape: "aline" });
+    const withHip = {
+      ...aline,
+      fit: {
+        ...(aline.fit as Record<string, unknown>),
+        selectedMeasurements: {
+          ...((aline.fit as { selectedMeasurements?: Record<string, number> }).selectedMeasurements ??
+            {}),
+          finished_hip: 32,
+          finished_bust_chest: 28,
+        },
+      },
+    };
+    const live = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(
+      generateDropShoulderPattern(withHip),
+      withHip,
+      "in",
+    );
+    expect(live).toBeTruthy();
+    expect(live).toContain('data-body-shape="aline"');
+    const hem = Number(/data-hem-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    const body = Number(/data-body-width-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    expect(hem).toBeGreaterThan(body);
+  });
+
+  it("returns live generated SVG for shaped body (hem narrower than bust)", () => {
+    const shaped = withStyle(kids10YrRelaxedArmhole36Pattern(), { bodyShape: "shaped" });
+    const withHip = {
+      ...shaped,
+      fit: {
+        ...(shaped.fit as Record<string, unknown>),
+        selectedMeasurements: {
+          ...((shaped.fit as { selectedMeasurements?: Record<string, number> }).selectedMeasurements ??
+            {}),
+          finished_hip: 24,
+          finished_bust_chest: 28,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(withHip);
+    const live = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(result, withHip, "in");
+    expect(live).toBeTruthy();
+    expect(live).toContain('data-ds-front-sts-rows-generated="true"');
+    expect(live).toContain('data-body-shape="shaped"');
+    const hem = Number(/data-hem-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    const body = Number(/data-body-width-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    expect(hem).toBeGreaterThan(0);
+    expect(hem).toBeLessThan(body);
   });
 });

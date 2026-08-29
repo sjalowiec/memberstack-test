@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildDropShoulderBackStitchesRowsSvg } from "./dropShoulderBackPatternDiagramSvg";
+import {
+  buildDropShoulderBackStitchesRowsSvg,
+  tryBuildLiveDropShoulderBackStsRowsDiagramSvg,
+} from "./dropShoulderBackPatternDiagramSvg";
 import {
   kids10YrRelaxedArmhole36Pattern,
   kids10YrRelaxedDropShoulderPattern,
@@ -111,6 +114,13 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(svg).toContain(model.bodyWidthLabel);
     expect(svg).toContain(model.necklineWidthLabel);
     expect(svg).toContain(model.necklineDepthLabel);
+    expect(svg).toContain('width="100%"');
+    expect(svg).toContain('height="auto"');
+    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
+    expect(svg).toContain('viewBox="0 0 430 520"');
+    expect(svg).toContain('data-ds-back-sts-rows-generated="true"');
+    expect(svg).toContain('data-supported="true"');
+    expect(svg).not.toContain("generated preview");
   });
 
   it("does not change Drop Shoulder calculation output", () => {
@@ -126,18 +136,170 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
   });
 });
 
-describe("Drop Shoulder pattern page wiring (Stage 1)", () => {
-  it("mounts the generated Back Stitches & Rows SVG beside the legacy diagram", () => {
+describe("tryBuildLiveDropShoulderBackStsRowsDiagramSvg", () => {
+  it("returns live generated SVG for straight body", () => {
+    const result = generateDropShoulderPattern(WOMEN_STRAIGHT);
+    const live = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(result, WOMEN_STRAIGHT, "in");
+    expect(live).toBeTruthy();
+    expect(live).toContain('data-ds-back-sts-rows-generated="true"');
+    expect(live).toContain('preserveAspectRatio="xMidYMid meet"');
+  });
+
+  it("returns live generated SVG for A-line body", () => {
+    const pattern = kids10YrRelaxedArmhole36Pattern();
+    const aline = {
+      ...pattern,
+      style: { ...(pattern.style as Record<string, unknown>), bodyShape: "aline" },
+      fit: {
+        ...(pattern.fit as Record<string, unknown>),
+        selectedMeasurements: {
+          ...((pattern.fit as { selectedMeasurements?: Record<string, number> }).selectedMeasurements ??
+            {}),
+          finished_hip: 32,
+          finished_bust_chest: 28,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(aline);
+    const live = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(result, aline, "in");
+    expect(live).toBeTruthy();
+    expect(live).toContain('data-supported="true"');
+    const hem = Number(/data-hem-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    const body = Number(/data-body-width-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    expect(hem).toBeGreaterThan(body);
+  });
+
+  it("returns live generated SVG for shaped body (hem narrower than bust)", () => {
+    const shaped = {
+      ...WOMEN_STRAIGHT,
+      style: { ...WOMEN_STRAIGHT.style, bodyShape: "shaped" },
+      fit: {
+        ...WOMEN_STRAIGHT.fit,
+        selectedMeasurements: {
+          ...WOMEN_STRAIGHT.fit.selectedMeasurements,
+          finished_hip: 36,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(shaped);
+    expect(result.debug.hemCastOnStitches).toBeLessThan(result.debug.bustBodyStitches!);
+    const live = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(result, shaped, "in");
+    expect(live).toBeTruthy();
+    expect(live).toContain('data-ds-back-sts-rows-generated="true"');
+    const hem = Number(/data-hem-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    const body = Number(/data-body-width-stitches="(\d+)"/.exec(live ?? "")?.[1]);
+    expect(hem).toBeGreaterThan(0);
+    expect(body).toBeGreaterThan(0);
+    expect(hem).toBeLessThan(body);
+  });
+
+  it("returns null when required debug fields are missing", () => {
+    expect(
+      tryBuildLiveDropShoulderBackStsRowsDiagramSvg({ debug: {} as never }, WOMEN_STRAIGHT),
+    ).toBeNull();
+  });
+});
+
+describe("Drop Shoulder pattern page wiring (presentation)", () => {
+  it("hydrates generated Back Stitches & Rows before the Illustrator fallback", () => {
     const pageScript = readFileSync(
       resolve("src/scripts/sleevelessPatternPageShared.ts"),
       "utf8",
     );
-    expect(pageScript).toContain("buildDropShoulderBackStitchesRowsModel");
-    expect(pageScript).toContain("buildDropShoulderBackStitchesRowsSvg");
-    expect(pageScript).toContain("buildDropShoulderFrontStitchesRowsModel");
-    expect(pageScript).toContain("buildDropShoulderFrontStitchesRowsSvg");
-    expect(pageScript).toContain("appendGeneratedDropShoulderFrontStsRowsCompare");
-    expect(pageScript).toContain("data-ds-generated-front-compare");
-    expect(pageScript).toContain("no-print");
+    expect(pageScript).toContain("tryBuildLiveDropShoulderBackStsRowsDiagramSvg");
+    expect(pageScript).toContain("tryBuildLiveDropShoulderFrontStsRowsDiagramSvg");
+    expect(pageScript).not.toContain("appendGeneratedDropShoulderBackStsRowsCompare");
+    expect(pageScript).not.toContain("appendGeneratedDropShoulderFrontStsRowsCompare");
+    expect(pageScript).not.toContain("data-ds-generated-back-compare");
+    expect(pageScript).not.toContain("Generated (preview)");
+
+    const fnStart = pageScript.indexOf("async function hydrateDropShoulderBackDiagram");
+    expect(fnStart).toBeGreaterThan(-1);
+    const fnEnd = pageScript.indexOf("async function hydrateDropShoulderFrontDiagram");
+    const fn = pageScript.slice(fnStart, fnEnd > fnStart ? fnEnd : fnStart + 2800);
+    expect(fn.indexOf('mode === "shaping-notation"')).toBeLessThan(
+      fn.indexOf("tryBuildLiveDropShoulderBackStsRowsDiagramSvg"),
+    );
+    expect(fn.indexOf("tryBuildLiveDropShoulderBackStsRowsDiagramSvg")).toBeLessThan(
+      fn.indexOf("inlineSvgWithReplacements"),
+    );
+    expect(fn).toContain("inlineDropShoulderBackNotationSvg");
+    expect(fn).not.toContain("tryBuildLiveSleevelessBackStsRowsDiagramSvg");
+
+    const frontStart = pageScript.indexOf("async function hydrateDropShoulderFrontDiagram");
+    const frontEnd = pageScript.indexOf("function bindDropShoulderBodyDiagramMode");
+    const frontFn = pageScript.slice(
+      frontStart,
+      frontEnd > frontStart ? frontEnd : frontStart + 2800,
+    );
+    expect(frontFn.indexOf("tryBuildLiveDropShoulderFrontStsRowsDiagramSvg")).toBeLessThan(
+      frontFn.indexOf("inlineSvgWithReplacements"),
+    );
+    expect(frontFn).toContain("inlineDropShoulderFrontNotationSvg");
+  });
+
+  it("uses the Sleeveless visual workspace and 62/38 reading layout for Back and Front only", () => {
+    const pageScript = readFileSync(
+      resolve("src/scripts/sleevelessPatternPageShared.ts"),
+      "utf8",
+    );
+    const mountStart = pageScript.indexOf("async function renderDropShoulderMount");
+    const mountEnd = pageScript.indexOf("async function renderMount(");
+    const mount = pageScript.slice(
+      mountStart,
+      mountEnd > mountStart ? mountEnd : mountStart + 9000,
+    );
+
+    expect(mount).toContain("wrapSleevelessPieceSplit");
+    expect(mount).toContain("enableVisualWorkspace: true");
+    expect(mount).toMatch(/resolveDropShoulderBackDiagramSrc\(\s*"shaping-notation"/);
+    expect(mount).toMatch(/resolveDropShoulderFrontDiagramSrc\(\s*"shaping-notation"/);
+    expect(mount).toContain("initSleevelessPatternDiagramTabs(mount)");
+    expect(mount).toContain("DROP_SHOULDER_BACK_DIAGRAM_NOTATION_ALT");
+    expect(mount).toContain("DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT");
+
+    const sleeveWrap = mount.slice(mount.lastIndexOf("sg-sleeve"));
+    expect(sleeveWrap).toContain("wrapDropShoulderPieceSplit");
+    expect(sleeveWrap).not.toContain("wrapSleevelessPieceSplit");
+    expect(sleeveWrap).not.toContain("enableVisualWorkspace");
+  });
+
+  it("keeps Shaping Map in Back/Front Visual Guides and does not duplicate notation there", () => {
+    const pageScript = readFileSync(
+      resolve("src/scripts/sleevelessPatternPageShared.ts"),
+      "utf8",
+    );
+    const optsStart = pageScript.indexOf("const dropShoulderVisualGuidesOpts = (piece, extras = {}) => {");
+    const optsEnd = pageScript.indexOf("const renderPiece = (rows, pieceId, chartTableMountId, neckChartStartRow, pieceDisplayOpts)");
+    const opts = pageScript.slice(
+      optsStart,
+      optsEnd > optsStart ? optsEnd : optsStart + 1600,
+    );
+    expect(opts).toContain('if (piece === "sleeve")');
+    expect(opts).toMatch(/piece === "sleeve"[\s\S]*notationSupported:\s*true/);
+    const sleeveBranchEnd = opts.indexOf("if (!bodyNotationSupported)");
+    const bodyBranch = opts.slice(sleeveBranchEnd);
+    expect(bodyBranch).toContain("notationSupported: false");
+    expect(bodyBranch).toContain("shapingMapData:");
+  });
+
+  it("does not change Sleeveless generated-first hydration", () => {
+    const pageScript = readFileSync(
+      resolve("src/scripts/sleevelessPatternPageShared.ts"),
+      "utf8",
+    );
+    const fnStart = pageScript.indexOf("async function hydrateSleevelessBackDiagram");
+    const fnEnd = pageScript.indexOf("function bindSleevelessBackDiagramMode");
+    const fn = pageScript.slice(fnStart, fnEnd > fnStart ? fnEnd : fnStart + 2800);
+    expect(fn).toContain("tryBuildLiveSleevelessBackStsRowsDiagramSvg");
+    expect(fn).not.toContain("tryBuildLiveDropShoulderBackStsRowsDiagramSvg");
+
+    const sleevelessMountStart = pageScript.indexOf("const backWrapped = wrapSleevelessPieceSplit");
+    expect(sleevelessMountStart).toBeGreaterThan(-1);
+    const sleevelessHydrate = pageScript.slice(
+      pageScript.indexOf("async function hydrateSleevelessBackDiagram"),
+      pageScript.indexOf("function bindSleevelessBackDiagramMode"),
+    );
+    expect(sleevelessHydrate).toContain("tryBuildLiveSleevelessBackStsRowsDiagramSvg");
   });
 });

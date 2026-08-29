@@ -5,7 +5,12 @@
  * Neckline depth is drawn inside the armhole span; it is never stacked on top.
  */
 
-import type { DropShoulderBackStitchesRowsModel } from "./dropShoulderPatternDiagramModel";
+import {
+  buildDropShoulderBackStitchesRowsModel,
+  type DropShoulderBackStitchesRowsModel,
+  type DropShoulderDiagramUnit,
+} from "./dropShoulderPatternDiagramModel";
+import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
   DS_FILL,
   DS_FS_MEASURE,
@@ -94,6 +99,8 @@ export function buildDropShoulderBackStitchesRowsSvg(
     className: "sleeveless-piece-split__diagram-inline ds-back-diagram ds-back-diagram--generated",
     dataAttrs: {
       "data-ds-back-diagram": "sts-rows",
+      "data-ds-back-sts-rows-generated": "true",
+      "data-supported": "true",
       "data-armhole-rows": model.armholeRows,
       "data-neckline-rows-inside-armhole": model.necklineRowsInsideArmhole,
       "data-armhole-even-rows": model.armholeEvenRows,
@@ -104,7 +111,32 @@ export function buildDropShoulderBackStitchesRowsSvg(
       "data-hem-rows": model.hemRows,
       "data-body-rows": model.bodyRowsToArmhole,
     },
-    title: "Drop Shoulder Back - Stitches & Rows (generated preview)",
+    title: "Drop Shoulder Back - Stitches & Rows",
     body,
   });
+}
+
+/** Supported live markup, or `null` so hydration keeps the Illustrator SVG. */
+export function tryBuildDropShoulderBackStitchesRowsSvg(
+  model: DropShoulderBackStitchesRowsModel | null | undefined,
+): string | null {
+  if (!model) return null;
+  const svg = buildDropShoulderBackStitchesRowsSvg(model);
+  if (!svg.includes('data-ds-back-sts-rows-generated="true"')) return null;
+  if (!svg.includes('data-supported="true"')) return null;
+  return svg;
+}
+
+/**
+ * Live Back Stitches & Rows: straight, A-line, or shaped (narrower hem).
+ * Missing models return `null` so hydration keeps the Illustrator SVG.
+ */
+export function tryBuildLiveDropShoulderBackStsRowsDiagramSvg(
+  result: Pick<SleevelessBackPatternResult, "debug"> | null | undefined,
+  _patternData?: unknown,
+  unit: DropShoulderDiagramUnit = "in",
+): string | null {
+  return tryBuildDropShoulderBackStitchesRowsSvg(
+    buildDropShoulderBackStitchesRowsModel(result, unit),
+  );
 }

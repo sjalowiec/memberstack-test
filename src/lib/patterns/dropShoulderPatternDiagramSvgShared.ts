@@ -385,12 +385,14 @@ export function wrapGeneratedDiagramSvg(attrs: {
     .join("");
   const safeBody = attrs.body.replace(/\bNaN\b/g, "0").replace(/\bInfinity\b/g, "0");
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}" width="100%" role="img"` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}"` +
+    ` width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img"` +
     ` aria-label="${escapeXml(attrs.ariaLabel)}"` +
     ` class="${escapeXml(attrs.className)}"` +
     data +
     `>` +
     `<title>${escapeXml(attrs.title)}</title>` +
+    `<rect x="0" y="0" width="${DS_VB_W}" height="${DS_VB_H}" fill="#fff"/>` +
     safeBody +
     `</svg>`
   );

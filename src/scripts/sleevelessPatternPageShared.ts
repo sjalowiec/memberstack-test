@@ -57,9 +57,8 @@ import {
   writeDropShoulderSleeveConstruction,
   type DropShoulderSleeveDirection,
 } from "../lib/patterns/dropShoulderSleeveConstruction.ts";
-import { buildDropShoulderBackStitchesRowsModel, buildDropShoulderFrontStitchesRowsModel } from "../lib/patterns/dropShoulderPatternDiagramModel.ts";
-import { buildDropShoulderBackStitchesRowsSvg } from "../lib/patterns/dropShoulderBackPatternDiagramSvg.ts";
-import { buildDropShoulderFrontStitchesRowsSvg } from "../lib/patterns/dropShoulderFrontPatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderBackStsRowsDiagramSvg } from "../lib/patterns/dropShoulderBackPatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "../lib/patterns/dropShoulderFrontPatternDiagramSvg.ts";
 import {
   DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC,
   resolveDropShoulderSleeveMeasurementSvgSrc,
@@ -3467,44 +3466,25 @@ table {
     }
   }
 
-  function appendGeneratedDropShoulderBackStsRowsCompare(hostEl, result, unit, hydrateGeneration) {
-    if (!(hostEl instanceof HTMLElement)) return;
-    const hydrateGen =
-      hydrateGeneration === undefined || hydrateGeneration === null
-        ? null
-        : String(hydrateGeneration);
-    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
-    const diagramUnit = unit === "cm" ? "cm" : "in";
-    const model = buildDropShoulderBackStitchesRowsModel(result, diagramUnit);
-    if (!model) return;
-    const generated = buildDropShoulderBackStitchesRowsSvg(model);
-    const wrap = document.createElement("div");
-    wrap.className = "ds-generated-back-compare no-print";
-    wrap.setAttribute("data-ds-generated-back-compare", "");
-    wrap.innerHTML =
-      `<p class="ds-generated-back-compare__label">Generated (preview)</p>` +
-      `<div class="ds-generated-back-compare__svg" data-ds-generated-back-host>${generated}</div>`;
-    hostEl.appendChild(wrap);
-  }
+  function mountDropShoulderStsRowsSvgMarkup(hostEl, svgText, hydrateGen, ariaLabel) {
+    const parser = new DOMParser();
+    let doc = parser.parseFromString(svgText, "image/svg+xml");
+    let svg = doc.documentElement;
+    if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+      doc = parser.parseFromString(svgText, "text/xml");
+      svg = doc.documentElement;
+    }
+    if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+      const pe = doc.querySelector("parsererror");
+      throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
+    }
 
-  function appendGeneratedDropShoulderFrontStsRowsCompare(hostEl, result, unit, patternData, hydrateGeneration) {
-    if (!(hostEl instanceof HTMLElement)) return;
-    const hydrateGen =
-      hydrateGeneration === undefined || hydrateGeneration === null
-        ? null
-        : String(hydrateGeneration);
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", ariaLabel);
+    svg.classList.add("sleeveless-piece-split__diagram-inline");
+
     if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
-    const diagramUnit = unit === "cm" ? "cm" : "in";
-    const model = buildDropShoulderFrontStitchesRowsModel(result, patternData, diagramUnit);
-    if (!model) return;
-    const generated = buildDropShoulderFrontStitchesRowsSvg(model);
-    const wrap = document.createElement("div");
-    wrap.className = "ds-generated-front-compare no-print";
-    wrap.setAttribute("data-ds-generated-front-compare", "");
-    wrap.innerHTML =
-      `<p class="ds-generated-front-compare__label">Generated (preview)</p>` +
-      `<div class="ds-generated-front-compare__svg" data-ds-generated-front-host>${generated}</div>`;
-    hostEl.appendChild(wrap);
+    hostEl.innerHTML = svg.outerHTML;
   }
 
   async function hydrateDropShoulderBackDiagram(
@@ -3531,6 +3511,26 @@ table {
       );
       return;
     }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(
+      result,
+      patternData,
+      diagramUnit,
+    );
+    if (generatedSvg) {
+      mountDropShoulderStsRowsSvgMarkup(
+        el,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
+      );
+      return;
+    }
     const replacements = buildDropShoulderBodyDiagramReplacements(result, unit, {
       patternData,
       measurementPiece: "back",
@@ -3543,7 +3543,6 @@ table {
       hydrateGeneration,
       undefined,
     );
-    appendGeneratedDropShoulderBackStsRowsCompare(el, result, unit, hydrateGeneration);
   }
 
   async function hydrateDropShoulderFrontDiagram(
@@ -3571,6 +3570,26 @@ table {
       );
       return;
     }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(
+      result,
+      patternData,
+      diagramUnit,
+    );
+    if (generatedSvg) {
+      mountDropShoulderStsRowsSvgMarkup(
+        el,
+        generatedSvg,
+        hydrateGen,
+        dropShoulderFrontDiagramAltForMode("sts-rows", isCardigan),
+      );
+      return;
+    }
     const dsHalf = el.dataset.sleevelessCardiganHalf || "";
     const cardiganHalfSide =
       dsHalf === "left" || dsHalf === "right"
@@ -3591,7 +3610,6 @@ table {
       hydrateGeneration,
       undefined,
     );
-    appendGeneratedDropShoulderFrontStsRowsCompare(el, result, unit, patternData, hydrateGeneration);
   }
 
   function bindDropShoulderBodyDiagramMode(root) {
@@ -4007,7 +4025,7 @@ table {
       return {
         enabled: true,
         piece,
-        notationSupported: true,
+        notationSupported: false,
         construction: "drop-shoulder",
         patternData: dropShoulderDiagramPatternData,
         shapingMapData: extras.shapingMapData ?? null,
@@ -4050,22 +4068,8 @@ table {
 
     const frontLabel = "FRONT";
     const frontAlt = isCardigan
-      ? "Drop shoulder cardigan front schematic"
-      : "Drop shoulder front schematic";
-    const frontDiagramOpts = isCardigan
-      ? {
-          diagramPiece: "front",
-          cardiganHalfSide: "left",
-          ...(bodyNotationSupported
-            ? { frontDiagramModeToggle: true, showModeToggle: false }
-            : {}),
-        }
-      : {
-          diagramPiece: "front",
-          ...(bodyNotationSupported
-            ? { frontDiagramModeToggle: true, showModeToggle: false }
-            : {}),
-        };
+      ? DROP_SHOULDER_CARDIGAN_FRONT_DIAGRAM_STS_ROWS_ALT
+      : DROP_SHOULDER_FRONT_DIAGRAM_STS_ROWS_ALT;
 
     const sleeveInner =
       renderDropShoulderSleeveConstructionToggleHtml(sleeveDirection) + sleeve.splitInner;
@@ -4088,34 +4092,56 @@ table {
       "sts-rows",
       dropShoulderDiagramPatternData,
     );
+    const backWorkspaceOpts = {
+      backDiagramModeToggle: true,
+      ...(bodyNotationSupported
+        ? {
+            enableVisualWorkspace: true,
+            shapingSrc: resolveDropShoulderBackDiagramSrc(
+              "shaping-notation",
+              dropShoulderDiagramPatternData,
+            ),
+            shapingAlt: DROP_SHOULDER_BACK_DIAGRAM_NOTATION_ALT,
+          }
+        : {}),
+    };
+    const frontWorkspaceOpts = {
+      frontDiagramModeToggle: true,
+      ...(isCardigan ? { cardiganHalfSide: "left" } : {}),
+      ...(bodyNotationSupported
+        ? {
+            enableVisualWorkspace: true,
+            shapingSrc: resolveDropShoulderFrontDiagramSrc(
+              "shaping-notation",
+              dropShoulderDiagramPatternData,
+            ),
+            shapingAlt: DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT,
+          }
+        : {}),
+    };
 
     mount.innerHTML =
       wrapPatternSection(
         "sg-back",
         "BACK",
-        wrapDropShoulderPieceSplit(
+        wrapSleevelessPieceSplit(
           back.splitInner,
           backDiagramSrc,
           DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
           back.postSplit,
-          {
-            diagramPiece: "back",
-            ...(bodyNotationSupported
-              ? { backDiagramModeToggle: true, showModeToggle: false }
-              : {}),
-          },
+          backWorkspaceOpts,
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
       wrapPatternSection(
         "sg-front",
         frontLabel,
-        wrapDropShoulderPieceSplit(
+        wrapSleevelessPieceSplit(
           front.splitInner,
           frontDiagramSrc,
           frontAlt,
           front.postSplit,
-          frontDiagramOpts,
+          frontWorkspaceOpts,
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
@@ -4195,6 +4221,7 @@ table {
     bindSleevelessDiagramZoom(mount);
     bindDropShoulderSleeveDiagramMode(mount);
     bindDropShoulderBodyDiagramMode(mount);
+    initSleevelessPatternDiagramTabs(mount);
     initPatternDiagramTabs(mount);
     bindDropShoulderSleeveConstructionToggle(mount);
     bindNecklineNotationPreview(mount);
