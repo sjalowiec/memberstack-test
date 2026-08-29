@@ -26,36 +26,13 @@ import {
   drawHemWidth,
   drawNecklineDepthDim,
   drawNecklineWidthDim,
+  dropShoulderPulloverRoundBodyPath,
   escapeXml,
   fmtNum,
   textFont,
   wrapGeneratedDiagramSvg,
   type DropShoulderDiagramFrame,
 } from "./dropShoulderPatternDiagramSvgShared";
-
-function bodyPath(frame: DropShoulderDiagramFrame): string {
-  const {
-    left,
-    right,
-    hemLeft,
-    hemRight,
-    top,
-    neckLeftX,
-    neckRightX,
-    neckBottomY,
-    bottom,
-  } = frame;
-  const neckCtrlY = top + (neckBottomY - top) * 1.15;
-  return [
-    `M ${fmtNum(hemLeft)} ${fmtNum(bottom)}`,
-    `L ${fmtNum(left)} ${fmtNum(top)}`,
-    `L ${fmtNum(neckLeftX)} ${fmtNum(top)}`,
-    `Q ${fmtNum(frame.midX)} ${fmtNum(neckCtrlY)} ${fmtNum(neckRightX)} ${fmtNum(top)}`,
-    `L ${fmtNum(right)} ${fmtNum(top)}`,
-    `L ${fmtNum(hemRight)} ${fmtNum(bottom)}`,
-    "Z",
-  ].join(" ");
-}
 
 function drawShoulderStitches(frame: DropShoulderDiagramFrame, model: DropShoulderBackStitchesRowsModel): string {
   if (!model.shoulderStitchesLabel) return "";
@@ -79,7 +56,7 @@ export function buildDropShoulderBackStitchesRowsSvg(
 ): string {
   const frame = buildFullWidthFrame(model);
   const body = [
-    `<path class="ds-back-diagram__body" d="${bodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75"/>`,
+    `<path class="ds-back-diagram__body" d="${dropShoulderPulloverRoundBodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75"/>`,
     drawArmholeMarker(frame, "both"),
     `<text x="${fmtNum(frame.midX)}" y="${fmtNum(frame.armholeMarkerY + (frame.hemTopY - frame.armholeMarkerY) * 0.62)}" text-anchor="middle" dominant-baseline="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>BACK</text>`,
     drawShoulderStitches(frame, model),
