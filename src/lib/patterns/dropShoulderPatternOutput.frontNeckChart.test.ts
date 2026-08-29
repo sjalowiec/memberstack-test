@@ -4,7 +4,7 @@ import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
 import { buildDropShoulderMountShapingMapData } from "./dropShoulderMountVisualGuides";
 import { formatRcColon } from "./sleevelessPatternOutput";
-import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
+import { formatRcNotation, formatRcResetNotation } from "./sleevelessBackJapaneseNotation";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
 import {
   dropShoulderFrontChartActiveSideRcStart,
@@ -491,7 +491,10 @@ describe("Drop Shoulder Front chart/map RC origin matches written and notation",
     const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
     expect(frontShapingMapData?.rowMin).toBe(0);
     const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
-    expect(live).toContain('data-rc-neck-start="rc000"');
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.frontNecklineStartRC!)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
   });
 
   it("after-marker Front chart and map keep local RC 000", () => {
@@ -508,7 +511,10 @@ describe("Drop Shoulder Front chart/map RC origin matches written and notation",
     const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
     expect(frontShapingMapData?.rowMin).toBe(0);
     const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
-    expect(live).toContain('data-rc-neck-start="rc000"');
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.frontNecklineStartRC!)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
   });
 
   it("does not change Back map origin or Sleeveless Front reset", () => {

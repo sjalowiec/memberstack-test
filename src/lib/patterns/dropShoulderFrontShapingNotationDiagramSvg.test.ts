@@ -9,6 +9,7 @@ import { tryBuildLiveSleevelessFrontRoundNotationSvg } from "./sleevelessFrontRo
 import { tryBuildLiveSleevelessFrontVNeckNotationSvg } from "./sleevelessFrontVNeckShapingNotationDiagramSvg";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
 import { kids10YrRelaxedArmhole36Pattern } from "./dropShoulderDiagramReviewFixtures";
+import { formatRcNotation, formatRcResetNotation } from "./sleevelessBackJapaneseNotation";
 
 function withStyle(
   base: Record<string, unknown>,
@@ -189,6 +190,7 @@ describe("tryBuildLiveDropShoulderFrontNotationSvg", () => {
       expect(live).not.toContain('data-role="armhole-bo"');
       expect(live).not.toContain('data-role="shoulder-shaping"');
       expect(live).not.toContain("data-ds-front-sts-rows-generated");
+      expect(live).not.toContain('data-role="body-rows"');
       expect(live).not.toMatch(/\bNaN\b/);
 
       if (garment === "cardigan") {
@@ -215,15 +217,15 @@ describe("tryBuildLiveDropShoulderFrontNotationSvg", () => {
     },
   );
 
-  it("keeps post-reset front neck RC at rc000", () => {
+  it("shows pre-reset garment RC and ↺ rc000 when Front resets at the neckline", () => {
     const result = generateDropShoulderPattern(BASE);
     const live = tryBuildLiveDropShoulderFrontNotationSvg(result, BASE) ?? "";
+    const garmentRc = formatRcNotation(result.debug.frontNecklineStartRC!);
     expect(live).toContain('data-reset="true"');
-    expect(live).toContain('data-rc-neck-start="rc000"');
-    expect(live).toContain('data-rc-reset="↺"');
-    expect(live).not.toContain(
-      `data-rc-neck-start="rc${String(result.debug.frontNecklineStartRC).padStart(3, "0")}"`,
-    );
+    expect(live).toContain(`data-rc-neck-start="${garmentRc}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
   });
 
   it("returns null for incomplete data and does not steal Sleeveless front notation", () => {
@@ -317,14 +319,17 @@ describe("Front Shaping Notation neck placement and RC timing", () => {
     expect(live).toContain(buildDropShoulderFrontJapaneseNotationReplacements(result, pattern)["jp-neckline-shaping"].split("\n")[0]!);
   });
 
-  it("keeps post-reset front neck RC at rc000 when the neckline starts after the armhole marker", () => {
+  it("shows pre-reset garment RC and ↺ rc000 when the neckline starts after the armhole marker", () => {
     const result = generateDropShoulderPattern(BASE);
     expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
     const live = tryBuildLiveDropShoulderFrontNotationSvg(result, BASE) ?? "";
+    const garmentRc = formatRcNotation(result.debug.frontNecklineStartRC!);
     expect(live).toContain('data-reset="true"');
-    expect(live).toContain('data-rc-neck-start="rc000"');
-    expect(live).toContain('data-rc-reset="↺"');
+    expect(live).toContain(`data-rc-neck-start="${garmentRc}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
     expect(live).toContain('data-neck-rc-continuous="false"');
+    expect(live).not.toContain('data-role="body-rows"');
   });
 
   it("uses continuous garment RC with no neckline reset when the neckline begins before the armhole", () => {
@@ -348,17 +353,21 @@ describe("Front Shaping Notation neck placement and RC timing", () => {
       expect(live).toContain(`data-rc-armhole-marker="${markerRc}"`);
       expect(live).toContain('data-neck-rc-continuous="true"');
       expect(live).toContain('data-neck-notation-placement="inside-opening"');
+      expect(live).not.toContain('data-role="body-rows"');
     }
   });
 
-  it("retains reset / local RC when the neckline starts at the armhole marker", () => {
+  it("shows pre-reset garment RC and ↺ rc000 when the neckline starts at the armhole marker", () => {
     const pattern = notationTimingPattern(6.7);
     const result = generateDropShoulderPattern(pattern);
     expect(result.debug.frontNecklineStartRC).toBe(result.debug.armholeStartRow);
     const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    const garmentRc = formatRcNotation(result.debug.frontNecklineStartRC!);
     expect(live).toContain('data-reset="true"');
-    expect(live).toContain('data-rc-neck-start="rc000"');
-    expect(live).toContain('data-rc-reset="↺"');
+    expect(live).toContain(`data-rc-neck-start="${garmentRc}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
   });
 });
 

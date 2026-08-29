@@ -34,7 +34,6 @@ import {
   type DropShoulderDiagramFrame,
 } from "./dropShoulderPatternDiagramSvgShared";
 import {
-  drawDropShoulderBodyRowsNotation,
   drawDropShoulderBodyShapingNotation,
   drawDropShoulderCastOnNotation,
   drawDropShoulderNeckNotation,
@@ -122,7 +121,6 @@ export function buildDropShoulderFrontShapingNotationSvgFromModel(
       labelY: notationPt.y,
     }),
     drawDropShoulderBodyShapingNotation(frame, labels, bodyShapingSide),
-    drawDropShoulderBodyRowsNotation(frame, labels),
     drawDropShoulderCastOnNotation(frame, labels),
   ].join("");
 

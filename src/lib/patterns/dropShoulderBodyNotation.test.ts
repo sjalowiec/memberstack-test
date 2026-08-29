@@ -394,7 +394,7 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     const repl = buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN);
     const fullNeck = result.debug.necklineStitches ?? 0;
     expect(repl["jp-caston"]).toMatch(/^co\d+/);
-    expect(repl["jp-body-rows"]).toMatch(/\d+r/);
+    expect(repl["jp-body-rows"]).toBe("");
     expect(repl["jp-armhole-bo"]).toBe("");
     expect(repl["jp-armhole-shaping"]).toBe("");
     expect(repl["jp-shoulder-shaping"]).toBe("");
@@ -405,14 +405,13 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     }
     expect(repl["rc-caston"]).toBe("rc000");
     expect(repl["rc-hem"]).toMatch(/^rc\d+/);
-    // Post-reset neckline origin: rc000 once at neckline-start; reset is symbol-only.
-    expect(repl["rc-neckline-start"]).toBe("rc000");
-    expect(repl.rc_reset).toBe("↺");
-    expect(repl.rc_reset).not.toContain("rc000");
+    // Knit to garment RC, then ↺ rc000; neckline work is local 000.
     expect(result.debug.backNecklineStartRC).toBeGreaterThan(0);
-    expect(repl["rc-neckline-start"]).not.toBe(
+    expect(repl["rc-neckline-start"]).toBe(
       `rc${String(result.debug.backNecklineStartRC).padStart(3, "0")}`,
     );
+    expect(repl.rc_reset).toBe("↺ rc000");
+    expect(repl["rc-neckline-start"]).not.toBe("rc000");
   });
 
   it("places back neckline shaping at the neck callout, not the armhole callout", () => {
@@ -451,14 +450,13 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(repl["jp-shoulder-shaping"]).toBe("");
     expect(repl["jp-neckline-bo"]).toMatch(/^bo\d+/);
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
-    // Post-reset neckline origin: rc000 once at neckline-start; reset is symbol-only.
+    // Knit to garment RC, then ↺ rc000; neckline work is local 000.
     expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
-    expect(repl["rc-neckline-start"]).toBe("rc000");
-    expect(repl.rc_reset).toBe("↺");
-    expect(repl.rc_reset).not.toContain("rc000");
-    expect(repl["rc-neckline-start"]).not.toBe(
+    expect(repl["rc-neckline-start"]).toBe(
       `rc${String(result.debug.frontNecklineStartRC).padStart(3, "0")}`,
     );
+    expect(repl.rc_reset).toBe("↺ rc000");
+    expect(repl["rc-neckline-start"]).not.toBe("rc000");
     expect(repl["rc-armhole-bo"]).toBe(
       `rc${String(result.debug.armholeStartRow ?? result.debug.rowsFromCastOnToArmholeStart).padStart(3, "0")}`,
     );

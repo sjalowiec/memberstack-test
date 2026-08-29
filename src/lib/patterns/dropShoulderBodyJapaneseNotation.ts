@@ -31,10 +31,9 @@ import {
 import {
   formatBindOffNotation,
   formatHoldNotation,
-  formatBodyRowsNotation,
   formatCastOnNotation,
   formatRcNotation,
-  formatRcResetSymbol,
+  formatRcResetNotation,
   formatShapingSegment,
   bodyShapingJapaneseNotationFromAlinePlan,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
@@ -204,36 +203,11 @@ function emptyReplacements(): Record<JpBackNotationSvgTokenKey, string> {
   >;
 }
 
-/** Straight body rows from hem through the armhole-marker section (no armhole bind-off/shaping). */
-function dropShoulderStraightBodyRows(d: SleevelessBackPatternResult["debug"]): number {
-  const body = isFiniteNumber(d.bodyRows) ? Math.max(0, Math.floor(d.bodyRows)) : 0;
-  const aboveMarker = isFiniteNumber(d.armholeRows) ? Math.max(0, Math.floor(d.armholeRows)) : 0;
-  return body + aboveMarker;
-}
-
 function dropShoulderAlineBodyShapingPlan(
   result: SleevelessBackPatternResult,
   patternData: unknown,
 ): SleevelessAlineBodyShapingPlan | null {
   return resolveAlineBodyShapingPlanForNotation(result, patternData);
-}
-
-/** JP body-row count beside the diagram — straight rows after A-line side shaping when applicable. */
-function dropShoulderJpBodyRowsNotation(
-  d: SleevelessBackPatternResult["debug"],
-  alinePlan: SleevelessAlineBodyShapingPlan | null,
-): string {
-  if (alinePlan && alinePlan.shapingType !== "straight") {
-    if (alinePlan.straightRowsBeforeArmhole > 0) {
-      return formatBodyRowsNotation(alinePlan.straightRowsBeforeArmhole);
-    }
-    const armholeRc = armholeMarkerGarmentRc(d);
-    const shapingEnd = alinePlan.shapingEndRow;
-    if (armholeRc !== undefined && shapingEnd > 0) {
-      return formatBodyRowsNotation(Math.max(0, Math.floor(armholeRc) - Math.floor(shapingEnd)));
-    }
-  }
-  return formatBodyRowsNotation(dropShoulderStraightBodyRows(d));
 }
 
 function dropShoulderFrontAlineBodyShapingPlan(
@@ -320,13 +294,13 @@ export function buildDropShoulderBackJapaneseNotationReplacements(
       ? roundNeckPlanOneSideBackNeckEdgeJpLines(backRoundNeckPlan, "right")
       : [];
   const armholeMarkerRc = armholeMarkerGarmentRc(d);
-  // After the written-instruction neckline reset, shaping starts at local RC:000.
-  // Show the reset marker and post-reset origin — not the pre-reset garment RC.
+  // Written instructions: knit to garment RC NNN, reset to 000, then shape from local RC:000.
+  // Show both the pre-reset garment RC and ↺ rc000 — not rc000 alone.
   const hasBackNecklineReset = isFiniteNumber(d.backNecklineStartRC);
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
-    "jp-body-rows": dropShoulderJpBodyRowsNotation(d, alineBodyPlan),
+    "jp-body-rows": "",
     "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
     "jp-armhole-bo": "",
     "jp-armhole-shaping": "",
@@ -339,9 +313,11 @@ export function buildDropShoulderBackJapaneseNotationReplacements(
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(d.hemRows),
     "rc-armhole-bo": armholeMarkerRc !== undefined ? formatRcNotation(armholeMarkerRc) : "",
-    // Symbol only — `rc-neckline-start` already carries rc000 (avoid "↺ rc000" + "rc000").
-    rc_reset: hasBackNecklineReset ? formatRcResetSymbol() : "",
-    "rc-neckline-start": hasBackNecklineReset ? formatRcNotation(0) : "",
+    rc_reset: hasBackNecklineReset ? formatRcResetNotation(0) : "",
+    "rc-neckline-start":
+      hasBackNecklineReset && isFiniteNumber(d.backNecklineStartRC)
+        ? formatRcNotation(d.backNecklineStartRC)
+        : "",
   };
 }
 
@@ -445,7 +421,7 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
-    "jp-body-rows": dropShoulderJpBodyRowsNotation(d, alineBodyPlan),
+    "jp-body-rows": "",
     "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
     "jp-armhole-bo": "",
     "jp-armhole-shaping": "",
@@ -459,11 +435,9 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(d.hemRows),
     "rc-armhole-bo": armholeMarkerRc !== undefined ? formatRcNotation(armholeMarkerRc) : "",
-    rc_reset: hasFrontNecklineReset ? formatRcResetSymbol() : "",
-    "rc-neckline-start": hasFrontNecklineReset
-      ? formatRcNotation(0)
-      : isFiniteNumber(d.frontNecklineStartRC)
-        ? formatRcNotation(d.frontNecklineStartRC)
-        : "",
+    rc_reset: hasFrontNecklineReset ? formatRcResetNotation(0) : "",
+    "rc-neckline-start": isFiniteNumber(d.frontNecklineStartRC)
+      ? formatRcNotation(d.frontNecklineStartRC)
+      : "",
   };
 }
