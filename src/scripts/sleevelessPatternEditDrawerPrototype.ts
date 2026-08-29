@@ -39,7 +39,21 @@ import { hashRequestsNotesEditing } from "../lib/patterns/sleevelessPatternNotes
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
-import { markDropShoulderSleeveFieldUserEdited } from "../lib/patterns/dropShoulderUserEditedSleeveFields";
+import {
+  markDropShoulderSleeveFieldUserEdited,
+  readEffectiveDropShoulderUserEditedSleeveFields,
+  writeDropShoulderUserEditedSleeveFields,
+  DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY,
+} from "../lib/patterns/dropShoulderUserEditedSleeveFields";
+import {
+  dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker,
+  reconcileDropShoulderSleeveOverridesForSizeChange,
+} from "../lib/patterns/dropShoulderSleeveMeasurementOverrides";
+import {
+  normalizeDropShoulderSleeveLengthChoice,
+  readDropShoulderSleeveLengthChoice,
+  withDropShoulderConstructionAuthored,
+} from "../lib/patterns/patternConstructionIdentity";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import {
   PATTERN_BUILDER_DATA_KEY,
@@ -55,10 +69,11 @@ import {
   LEGACY_STANDALONE_MEASUREMENTS_KEY,
   flushCustomBuildMeasurementOverridesToCanonical,
   loadMeasurementOverrides,
+  persistMeasurementOverrides,
   resolveCustomBuildSaveMeasureFlushRoot,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
 import { deriveSleevelessEditWorkspaceBodyShape } from "../lib/patterns/sleevelessEditWorkspaceBodyShape";
-import { resolveSavedPatternMeasurementDisplayUnit } from "../lib/patterns/patternMeasurementDisplayUnit";
+import { parseMeasurementInputToInches, resolveSavedPatternMeasurementDisplayUnit } from "../lib/patterns/patternMeasurementDisplayUnit";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
   isPositiveNumericMeasurement,
@@ -71,6 +86,7 @@ import {
 } from "../lib/patterns/availableNeedlesFieldValidation";
 import { writeExpressPersistedSnapshot } from "../lib/patterns/sleevelessExpressResume";
 import {
+  findExpressChartRow,
   getExpressChartRowsForAudience,
   isValidExpressSizeForAudience,
   loadExpressSweaterCharts,
@@ -238,13 +254,27 @@ function readStoredFitPreference(): string {
   return "standard";
 }
 
-function writeLocalStorageString(key: string, value: string): void {
-  if (typeof localStorage === "undefined") return;
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* quota */
-  }
+function persistDropShoulderEditSleeveLengthChoice(sleeveLength: string): void {
+  const length = normalizeDropShoulderSleeveLengthChoice(sleeveLength);
+  const canonicalStyle = section(getCurrentPattern().style);
+  const pbStyle = section(getPatternData().style);
+  const style = withDropShoulderConstructionAuthored({ ...canonicalStyle, ...pbStyle }, length);
+  saveCurrentPattern({ style });
+  savePatternData("style", style);
+}
+
+function writeDropShoulderEditUserEditedSleeveFlagsToFit(
+  flags: ReturnType<typeof readEffectiveDropShoulderUserEditedSleeveFields>,
+): void {
+  const prevFit = section(getCurrentPattern().fit);
+  // Always write the object (including false). `saveCurrentPattern` / `savePatternData` merge
+  // sections, so deleting the key would leave a previous `true` in place.
+  const nextFit = {
+    ...prevFit,
+    [DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]: flags,
+  };
+  saveCurrentPattern({ fit: nextFit });
+  savePatternData("fit", nextFit);
 }
 
 function readCurrentBodyShape(): "straight" | "aline" {
@@ -499,6 +529,13 @@ function initSleevelessPatternEditDrawer(): void {
     const neckline =
       readCustomBuildWizardNeckline() || (st.neckline === "v" ? "v-neck" : "round");
     setRadio("sl-edit-neckline", neckline === "v" ? "v-neck" : neckline);
+
+    if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+      setRadio(
+        "sl-edit-sleeve-length",
+        normalizeDropShoulderSleeveLengthChoice(readDropShoulderSleeveLengthChoice()),
+      );
+    }
 
     // Open in the project's saved display unit (inches for legacy projects). This drives both the
     // gauge basis and — via `resolveDisplayUnit` on the reused measurement editor — the body
@@ -777,20 +814,43 @@ function initSleevelessPatternEditDrawer(): void {
       const measureFlushRoot = resolveCustomBuildSaveMeasureFlushRoot(
         measureBody ?? measurePane ?? drawer ?? undefined,
       );
+      if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+        persistDropShoulderEditSleeveLengthChoice(radioValue("sl-edit-sleeve-length"));
+      }
       // Pass the workspace's active unit explicitly so cm entries convert to canonical inches once
       // (no quarter-inch snap) regardless of whether a DOM unit chip is present on the flush root.
+      const storedBeforeFlush = loadMeasurementOverrides();
+      const sleeveInput = (measureFlushRoot ?? measurePane ?? drawer)?.querySelector<HTMLInputElement>(
+        '[data-cb-measure-input="sleeveLength"]',
+      );
+      const wristInput = (measureFlushRoot ?? measurePane ?? drawer)?.querySelector<HTMLInputElement>(
+        '[data-cb-measure-input="wrist"]',
+      );
+      const displayedSleeve =
+        sleeveInput && isDropShoulderWorkspaceMeasurementSummaryPage()
+          ? parseMeasurementInputToInches(sleeveInput.value, editDisplayUnit)
+          : undefined;
+      const displayedWrist =
+        wristInput && isDropShoulderWorkspaceMeasurementSummaryPage()
+          ? parseMeasurementInputToInches(wristInput.value, editDisplayUnit)
+          : undefined;
+      const sleeveDiffers =
+        isDropShoulderWorkspaceMeasurementSummaryPage()
+          ? dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker({
+              displayedSleeveLengthInches:
+                displayedSleeve !== undefined ? String(displayedSleeve) : "",
+              displayedWristInches: displayedWrist !== undefined ? String(displayedWrist) : "",
+              storedOverrides: storedBeforeFlush,
+              sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+            })
+          : { sleeveLength: false, cuffCircumference: false };
       flushCustomBuildMeasurementOverridesToCanonical({
         root: measureFlushRoot ?? undefined,
         displayUnit: editDisplayUnit,
       });
       if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
-        // Numeric sleeve length on the diagram is the source of truth after save on the Edit page.
-        const sleeveInput = (measureFlushRoot ?? measurePane ?? drawer)?.querySelector<HTMLInputElement>(
-          '[data-cb-measure-input="sleeveLength"]',
-        );
-        if (sleeveInput?.value.trim()) {
-          markDropShoulderSleeveFieldUserEdited("sleeveLength");
-        }
+        if (sleeveDiffers.sleeveLength) markDropShoulderSleeveFieldUserEdited("sleeveLength");
+        if (sleeveDiffers.cuffCircumference) markDropShoulderSleeveFieldUserEdited("cuffCircumference");
       }
       syncCustomBuildToPatternStorage({ awaitCharts: false });
 
@@ -929,6 +989,38 @@ function initSleevelessPatternEditDrawer(): void {
     if (refreshed) lastQuickEditSize = sizing.selectedSize;
   }
 
+  async function handleDropShoulderQuickEditSleeveLengthChanged(): Promise<void> {
+    if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    ensureDropShoulderMeasurementEditorReady();
+    const choice = normalizeDropShoulderSleeveLengthChoice(radioValue("sl-edit-sleeve-length"));
+    persistDropShoulderEditSleeveLengthChoice(choice);
+    const nextFlags = {
+      ...readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
+      sleeveLength: false,
+      cuffCircumference: false,
+    };
+    writeDropShoulderUserEditedSleeveFields(nextFlags);
+    writeDropShoulderEditUserEditedSleeveFlagsToFit(nextFlags);
+
+    const sizing = readDropShoulderWorkspaceQuickEditSizingFromDom();
+    if (sizing) {
+      await loadExpressSweaterCharts();
+      const row = findExpressChartRow(sizing.audience, sizing.selectedSize);
+      if (row) {
+        const bodyShape = String(section(getCurrentPattern().style).bodyShape ?? "straight");
+        const nextOverrides = reconcileDropShoulderSleeveOverridesForSizeChange(
+          loadMeasurementOverrides(),
+          row,
+          sizing.fitPreference,
+          nextFlags,
+          { bodyShape, chartAudience: sizing.audience },
+        );
+        persistMeasurementOverrides(nextOverrides);
+      }
+    }
+    await refreshDropShoulderWorkspaceMeasurementSummary();
+  }
+
   async function handleSleevelessQuickEditSizeChanged(oldSize: string): Promise<void> {
     if (isDropShoulderWorkspaceMeasurementSummaryPage()) return;
     if (!measureInitialized && measurePane) {
@@ -948,6 +1040,21 @@ function initSleevelessPatternEditDrawer(): void {
       oldSize,
     });
     if (refreshed) lastQuickEditSize = sizing.selectedSize;
+  }
+
+  function wireQuickEditSleeveLengthChangeHandler(): void {
+    if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    const radios = drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-sleeve-length"]');
+    if (radios.length === 0) return;
+    radios.forEach((radio) => {
+      if (radio.dataset.slQuickEditSleeveLengthWired === "1") return;
+      radio.dataset.slQuickEditSleeveLengthWired = "1";
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        ensureDropShoulderMeasurementEditorReady();
+        void handleDropShoulderQuickEditSleeveLengthChanged();
+      });
+    });
   }
 
   function wireQuickEditSizeChangeHandler(): void {
@@ -1078,6 +1185,7 @@ function initSleevelessPatternEditDrawer(): void {
 
   void maybeAutoOpenFromQuery();
   wireQuickEditSizeChangeHandler();
+  wireQuickEditSleeveLengthChangeHandler();
 }
 
 if (typeof document !== "undefined") {

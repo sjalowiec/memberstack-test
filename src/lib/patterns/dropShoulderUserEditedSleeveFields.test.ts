@@ -7,6 +7,7 @@ import {
   resolveDropShoulderSleeveOverrideStrings,
 } from "./dropShoulderSleeveMeasurementOverrides";
 import {
+  clearDropShoulderSleeveFieldsUserEdited,
   clearDropShoulderUserEditedSleeveFields,
   markDropShoulderSleeveFieldUserEdited,
   readDropShoulderUserEditedSleeveFields,
@@ -106,6 +107,24 @@ describe("dropShoulderUserEditedSleeveFields + sleeve reconcile", () => {
     clearDropShoulderUserEditedSleeveFields();
     expect(readDropShoulderUserEditedSleeveFields()).toEqual({
       upperArm: false,
+      sleeveLength: false,
+      cuffCircumference: false,
+    });
+  });
+
+  it("picker change clears sleeve length and cuff flags without dropping a user-edited upper arm", () => {
+    markDropShoulderSleeveFieldUserEdited("upperArm");
+    markDropShoulderSleeveFieldUserEdited("sleeveLength");
+    markDropShoulderSleeveFieldUserEdited("cuffCircumference");
+    expect(
+      clearDropShoulderSleeveFieldsUserEdited(["sleeveLength", "cuffCircumference"]),
+    ).toEqual({
+      upperArm: true,
+      sleeveLength: false,
+      cuffCircumference: false,
+    });
+    expect(readDropShoulderUserEditedSleeveFields()).toEqual({
+      upperArm: true,
       sleeveLength: false,
       cuffCircumference: false,
     });

@@ -126,9 +126,11 @@ import {
 import {
   dropShoulderEditWorkspaceCuffCircumferenceDisplayInches,
   dropShoulderEditWorkspaceSleeveLengthDisplayInches,
+  mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues,
   resolveDropShoulderSleeveOverrideStrings,
   scaleDropShoulderSleeveLengthInches,
 } from "../lib/patterns/dropShoulderSleeveMeasurementOverrides";
+import { readDropShoulderSleeveLengthChoice } from "../lib/patterns/patternConstructionIdentity";
 import {
   writeOverrideSeedSizingIdentity,
 } from "../lib/patterns/customBuildMeasurementOverrideReconcile";
@@ -549,13 +551,6 @@ function dropShoulderArmholeDepthInchesFromMerged(
   const upperArm = parseInchesInput(merged.upperArm ?? "");
   const depth = computeDropShoulderArmholeDepthInches(upperArm);
   return depth !== undefined ? formatInchesInput(depth) : "";
-}
-
-/** Sleeve-length picker choice from the working draft style (canonical wins over builder mirror). */
-function readDropShoulderSleeveLengthChoice(): unknown {
-  const canonical = (getCurrentPattern().style ?? {}) as Record<string, unknown>;
-  const pb = (getPatternData().style ?? {}) as Record<string, unknown>;
-  return canonical.sleeveLength ?? pb.sleeveLength;
 }
 
 /**
@@ -1221,7 +1216,8 @@ function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): v
   // After a failed art refresh the chip inputs can be detached. Do not persist that
   // empty collection — it would write {} over live overrides and survive a reload.
   if (!collectedMeasurementValuesArePersistable(values)) return;
-  const toStore: Record<string, string> = { ...loadMeasurementOverrides() };
+  const stored = loadMeasurementOverrides();
+  const toStore: Record<string, string> = { ...stored };
   for (const key of activeFieldKeys()) {
     // `values` are already canonical inches from collectValues; preserve cm precision here so the
     // quarter-inch snap in parseInchesInput/formatInchesInput does not re-shrink a cm entry.
@@ -1233,6 +1229,15 @@ function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): v
   }
   if (isDropShoulderConstruction()) {
     delete toStore.shoulderWidth;
+    Object.assign(
+      toStore,
+      mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues({
+        incoming: toStore,
+        stored,
+        sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+        userEdited: readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
+      }),
+    );
   }
   persistMeasurementOverrides(toStore);
 }

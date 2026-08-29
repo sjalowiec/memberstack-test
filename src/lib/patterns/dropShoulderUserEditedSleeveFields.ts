@@ -160,6 +160,17 @@ export function markDropShoulderSleeveFieldUserEdited(
   writeDropShoulderUserEditedSleeveFields({ ...flags, [field]: true });
 }
 
+/** Clear specific user-edited flags (picker change resets sleeve length / cuff to scaled defaults). */
+export function clearDropShoulderSleeveFieldsUserEdited(
+  fields: readonly DropShoulderUserEditedSleeveFieldKey[],
+): DropShoulderUserEditedSleeveFields {
+  const flags = readDropShoulderUserEditedSleeveFields();
+  const next = { ...flags };
+  for (const field of fields) next[field] = false;
+  writeDropShoulderUserEditedSleeveFields(next);
+  return next;
+}
+
 export function isDropShoulderSleeveFieldUserEdited(
   field: DropShoulderUserEditedSleeveFieldKey,
 ): boolean {

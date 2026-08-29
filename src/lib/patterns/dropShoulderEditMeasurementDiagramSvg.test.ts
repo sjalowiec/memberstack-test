@@ -309,7 +309,7 @@ describe("Drop Shoulder edit measurement diagram — live measurements", () => {
       cuffCircumferenceInches: 16,
     });
     expect(wide.upperRight - wide.upperLeft).toBeGreaterThan(slim.upperRight - slim.upperLeft);
-    expect(svgFor({ piece: "sleeve", upperArmInches: 18 })).toContain("18 in");
+    expect(svgFor({ piece: "sleeve", upperArmInches: 18 })).toContain('data-role="dim-upper-arm"');
     expect(bodyOutlineD(svgFor({ piece: "body", upperArmInches: 12 }))).toBe(
       bodyOutlineD(svgFor({ piece: "body", upperArmInches: 18 })),
     );
@@ -373,14 +373,44 @@ describe("Drop Shoulder edit measurement diagram — live measurements", () => {
     );
   });
 
-  it("unit switching updates labels correctly on both tabs", () => {
+  it("keeps dimension lines but does not draw SVG numeric or unit values under overlay chips", () => {
     for (const piece of ["body", "sleeve"] as const) {
       const inches = svgFor({ unit: "in", piece });
       const cm = svgFor({ unit: "cm", piece });
       expect(inches).toContain('data-display-unit="in"');
       expect(cm).toContain('data-display-unit="cm"');
-      expect(inches).toMatch(/\d+(\.\d+)? in/);
-      expect(cm).toMatch(/\d+(\.\d+)? cm/);
+      expect(inches).not.toMatch(/<text\b/);
+      expect(cm).not.toMatch(/<text\b/);
+      expect(inches).not.toMatch(/\d+(\.\d+)? in/);
+      expect(cm).not.toMatch(/\d+(\.\d+)? cm/);
+    }
+    const body = svgFor({ piece: "body" });
+    for (const role of [
+      "dim-neck-opening",
+      "dim-neck-depth",
+      "dim-armhole-depth",
+      "dim-bust",
+      "dim-garment-length",
+      "dim-hip",
+      "dim-hem-depth",
+    ]) {
+      expect(body).toContain(`data-role="${role}"`);
+    }
+    const sleeve = svgFor({ piece: "sleeve" });
+    for (const role of ["dim-upper-arm", "dim-sleeve-length", "dim-cuff-circ", "dim-cuff-depth"]) {
+      expect(sleeve).toContain(`data-role="${role}"`);
+    }
+    expect(measurementsPageSrc).toContain('label: "Neck opening"');
+    expect(measurementsPageSrc).toContain('label: "Upper arm circ"');
+    expect(measurementsPageSrc).toContain('label: "Sleeve length"');
+  });
+
+  it("unit switching still stamps display-unit on the SVG without baking values into the art", () => {
+    for (const piece of ["body", "sleeve"] as const) {
+      const inches = svgFor({ unit: "in", piece });
+      const cm = svgFor({ unit: "cm", piece });
+      expect(inches).toContain('data-display-unit="in"');
+      expect(cm).toContain('data-display-unit="cm"');
       expect(inches).not.toContain(" cm</text>");
       expect(cm).not.toContain(" in</text>");
     }

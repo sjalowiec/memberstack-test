@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDepth";
 import {
+  dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker,
   dropShoulderSleeveDefaultsFromChartRow,
+  mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues,
   reconcileDropShoulderSleeveOverridesAfterChartSync,
   reconcileDropShoulderSleeveOverridesForSizeChange,
 } from "./dropShoulderSleeveMeasurementOverrides";
@@ -118,5 +120,52 @@ describe("reconcileDropShoulderSleeveOverridesAfterChartSync (legacy)", () => {
     expect(next.upperArm).toBe("14");
     expect(next.sleeveLength).toBe("17");
     expect(next.wrist).toBe("6.75");
+  });
+});
+
+describe("Drop Shoulder edit-page picker persist guards", () => {
+  it("keeps stored full sleeve/wrist values when the incoming chip matches the picker default", () => {
+    const stored = { upperArm: "12", wrist: "6", sleeveLength: "17" };
+    const next = mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues({
+      incoming: { upperArm: "12", wrist: "12", sleeveLength: "5.5" },
+      stored,
+      sleeveLengthChoice: "short",
+      userEdited: { upperArm: false, sleeveLength: false, cuffCircumference: false },
+    });
+    expect(next.sleeveLength).toBe("17");
+    expect(next.wrist).toBe("6");
+    expect(next.upperArm).toBe("12");
+  });
+
+  it("keeps a typed sleeve/wrist fine-tune that differs from the picker default", () => {
+    const stored = { upperArm: "12", wrist: "6", sleeveLength: "17" };
+    const next = mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues({
+      incoming: { upperArm: "12", wrist: "8", sleeveLength: "8" },
+      stored,
+      sleeveLengthChoice: "short",
+      userEdited: { upperArm: false, sleeveLength: false, cuffCircumference: false },
+    });
+    expect(next.sleeveLength).toBe("8");
+    expect(next.wrist).toBe("8");
+  });
+
+  it("marks sleeve/cuff as differing only when the displayed chip is not the picker default", () => {
+    const stored = { upperArm: "12", wrist: "6", sleeveLength: "17" };
+    expect(
+      dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker({
+        displayedSleeveLengthInches: "5.5",
+        displayedWristInches: "12",
+        storedOverrides: stored,
+        sleeveLengthChoice: "short",
+      }),
+    ).toEqual({ sleeveLength: false, cuffCircumference: false });
+    expect(
+      dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker({
+        displayedSleeveLengthInches: "8",
+        displayedWristInches: "8",
+        storedOverrides: stored,
+        sleeveLengthChoice: "short",
+      }),
+    ).toEqual({ sleeveLength: true, cuffCircumference: true });
   });
 });

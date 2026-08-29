@@ -13,16 +13,11 @@ import {
   resolveSleevelessEditMeasurementIsVNeck,
 } from "./sleevelessEditMeasurementDiagramSvg";
 import type { SleevelessEffectiveBodyShapeKind } from "./sleevelessAlineShaping";
-import {
-  formatMeasurementDisplayFromInches,
-  type MeasurementDisplayUnit,
-} from "./patternMeasurementDisplayUnit";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
   DS_ARROW,
   DS_FILL,
-  DS_MUTED,
   DS_STROKE,
-  DS_FS_SMALL,
   DS_VB_H,
   DS_VB_W,
   bodyWidthXAt,
@@ -33,17 +28,12 @@ import {
   endCap,
   fmtNum,
   offsetDropShoulderDiagramFrame,
-  textFont,
   type DropShoulderDiagramFrame,
 } from "./dropShoulderPatternDiagramSvgShared";
 import {
   buildDropShoulderSleeveFrame,
   dropShoulderSleeveBodyPath,
-  drawSleeveCuffDepth,
   drawSleeveCuffJoin,
-  drawSleeveTotalLength,
-  drawSleeveUpperArmWidth,
-  drawSleeveWristWidth,
   type DropShoulderSleeveDiagramFrame,
 } from "./dropShoulderSleeveDiagramSvgShared";
 import type { DropShoulderEditPreviewTab } from "./dropShoulderEditMeasurementPreview";
@@ -104,12 +94,6 @@ export type DropShoulderEditMeasurementDiagramModel = {
   measurements: DropShoulderEditMeasurementInput;
 };
 
-function unitLabel(inches: number, unit: MeasurementDisplayUnit): string {
-  const value = formatMeasurementDisplayFromInches(inches, unit);
-  if (!value) return "";
-  return `${value} ${unit}`;
-}
-
 function computeBodyViewBox(frame: DropShoulderDiagramFrame): {
   x: number;
   y: number;
@@ -160,42 +144,27 @@ export function buildDropShoulderEditMeasurementDiagramModel(
   };
 }
 
-function hDim(x1: number, x2: number, y: number, role: string, label: string): string {
+/** Dimension line + end caps only. Overlay chips own the numeric/unit value. */
+function hDim(x1: number, x2: number, y: number, role: string): string {
   const left = Math.min(x1, x2);
   const right = Math.max(x1, x2);
-  const mid = (left + right) / 2;
   return [
     `<g class="ds-edit-dim" data-role="${role}" data-end-cap="true">`,
     `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(left, y, false),
     endCap(right, y, false),
-    label
-      ? `<text x="${fmtNum(mid)}" y="${fmtNum(y - 6)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${label}</text>`
-      : "",
     `</g>`,
   ].join("");
 }
 
-function vDim(
-  x: number,
-  y1: number,
-  y2: number,
-  role: string,
-  label: string,
-  labelSide: "left" | "right",
-): string {
+function vDim(x: number, y1: number, y2: number, role: string): string {
   const top = Math.min(y1, y2);
   const bot = Math.max(y1, y2);
-  const mid = (top + bot) / 2;
-  const labelX = labelSide === "left" ? x - 12 : x + 12;
   return [
     `<g class="ds-edit-dim" data-role="${role}" data-end-cap="true">`,
     `<line x1="${fmtNum(x)}" y1="${fmtNum(top)}" x2="${fmtNum(x)}" y2="${fmtNum(bot)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x, top, true),
     endCap(x, bot, true),
-    label
-      ? `<text transform="translate(${fmtNum(labelX)} ${fmtNum(mid)}) rotate(-90)" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${label}</text>`
-      : "",
     `</g>`,
   ].join("");
 }
@@ -218,20 +187,19 @@ function drawBody(model: DropShoulderEditMeasurementDiagramModel): string {
 }
 
 function drawBodyDimensions(model: DropShoulderEditMeasurementDiagramModel): string {
-  const { frame, measurements, displayUnit } = model;
-  const u = (n: number) => unitLabel(n, displayUnit);
+  const { frame } = model;
   const bustY = frame.armholeMarkerY + (frame.hemTopY - frame.armholeMarkerY) * 0.32;
   const hipY = frame.hemTopY + (frame.bottom - frame.hemTopY) * 0.45;
   const bustX = bodyWidthXAt(frame, bustY);
   const hipX = bodyWidthXAt(frame, hipY);
   return [
-    hDim(frame.neckLeftX, frame.neckRightX, frame.top - 18, "dim-neck-opening", u(measurements.neckOpeningInches)),
-    vDim(frame.neckLeftX - 16, frame.top, frame.neckBottomY, "dim-neck-depth", u(measurements.neckDepthInches), "left"),
-    hDim(bustX.left, bustX.right, bustY, "dim-bust", u(measurements.bustInches)),
-    hDim(hipX.left, hipX.right, hipY, "dim-hip", u(measurements.hipInches)),
-    vDim(frame.right + 28, frame.top, frame.bottom, "dim-garment-length", u(measurements.garmentLengthInches), "right"),
-    vDim(frame.hemRight + 18, frame.hemTopY, frame.bottom, "dim-hem-depth", u(measurements.hemDepthInches), "right"),
-    vDim(frame.left - 22, frame.top, frame.armholeMarkerY, "dim-armhole-depth", u(measurements.armholeDepthInches), "left"),
+    hDim(frame.neckLeftX, frame.neckRightX, frame.top - 18, "dim-neck-opening"),
+    vDim(frame.neckLeftX - 16, frame.top, frame.neckBottomY, "dim-neck-depth"),
+    hDim(bustX.left, bustX.right, bustY, "dim-bust"),
+    hDim(hipX.left, hipX.right, hipY, "dim-hip"),
+    vDim(frame.right + 28, frame.top, frame.bottom, "dim-garment-length"),
+    vDim(frame.hemRight + 18, frame.hemTopY, frame.bottom, "dim-hem-depth"),
+    vDim(frame.left - 22, frame.top, frame.armholeMarkerY, "dim-armhole-depth"),
   ].join("");
 }
 
@@ -314,20 +282,30 @@ function drawSleeveTargets(frame: DropShoulderSleeveDiagramFrame): string {
   ].join("");
 }
 
+function drawSleeveEditDimensions(frame: DropShoulderSleeveDiagramFrame): string {
+  const upperY = frame.direction === "top-down" ? frame.upperArmY + 22 : frame.upperArmY - 16;
+  const wristY = frame.direction === "top-down" ? frame.wristY - 16 : frame.wristY + 22;
+  const cuffY1 = Math.min(frame.wristY, frame.cuffJoinY);
+  const cuffY2 = Math.max(frame.wristY, frame.cuffJoinY);
+  const bodyLeft = Math.min(frame.wristLeft, frame.upperLeft);
+  return [
+    hDim(frame.upperLeft, frame.upperRight, upperY, "dim-upper-arm"),
+    hDim(frame.wristLeft, frame.wristRight, wristY, "dim-cuff-circ"),
+    vDim(frame.wristRight + 18, cuffY1, cuffY2, "dim-cuff-depth"),
+    vDim(bodyLeft - 40, frame.top, frame.bottom, "dim-sleeve-length"),
+  ].join("");
+}
+
 export function buildDropShoulderEditSleeveMeasurementDiagramSvg(
   input: DropShoulderEditMeasurementDiagramInput,
 ): string {
   const unit = input.displayUnit === "cm" ? "cm" : "in";
   const frame = buildStandaloneSleeveFrame(input.measurements);
-  const u = (n: number) => unitLabel(n, unit);
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drop shoulder sleeve measurement diagram" focusable="false" class="express-mbp-art" data-drop-shoulder-edit-diagram="true" data-drop-shoulder-edit-piece="sleeve" data-display-unit="${unit}" data-sleeve-cap="false">`,
     `<path data-role="sleeve-outline" data-sleeve-cap="false" d="${dropShoulderSleeveBodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     drawSleeveCuffJoin(frame),
-    drawSleeveUpperArmWidth(frame, u(input.measurements.upperArmInches)),
-    drawSleeveWristWidth(frame, u(input.measurements.cuffCircumferenceInches)),
-    drawSleeveCuffDepth(frame, u(input.measurements.cuffDepthInches)),
-    drawSleeveTotalLength(frame, u(input.measurements.sleeveLengthInches)),
+    drawSleeveEditDimensions(frame),
     drawSleeveTargets(frame),
     `</svg>`,
   ].join("");

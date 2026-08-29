@@ -60,6 +60,17 @@ export function normalizeDropShoulderSleeveLengthChoice(
     : "long";
 }
 
+/** Sleeve-length picker choice from the working draft style (canonical wins over builder mirror). */
+export function readDropShoulderSleeveLengthChoice(): unknown {
+  try {
+    const canonical = section(getCurrentPattern().style);
+    const pb = section(getPatternData().style);
+    return canonical.sleeveLength ?? pb.sleeveLength;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Proportion of the full sleeve length for a (possibly unknown) picker choice. */
 export function dropShoulderSleeveLengthProportion(value: unknown): number {
   return DROP_SHOULDER_SLEEVE_LENGTH_PROPORTIONS[normalizeDropShoulderSleeveLengthChoice(value)];
