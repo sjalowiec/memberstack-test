@@ -507,6 +507,29 @@ export function dropShoulderFrontNeckNotationAnchor(
   };
 }
 
+/** Deepest Y of the Back pullover-round path (legacy 1.15 scoop or row-scaled neck). */
+export function dropShoulderBackNecklineDeepestY(frame: DropShoulderDiagramFrame): number {
+  return Math.max(
+    dropShoulderPulloverRoundNeckDeepestY(frame),
+    frame.neckBottomY,
+  );
+}
+
+/**
+ * Back Shaping Notation label anchor at the neckline (not mid-body).
+ * Uses Back geometry only — not Front's deep-scoop / CF / V-neck anchors.
+ */
+export function dropShoulderBackNeckNotationAnchor(
+  frame: DropShoulderDiagramFrame,
+): { x: number; y: number } {
+  const deepestY = dropShoulderBackNecklineDeepestY(frame);
+  const span = Math.max(12, deepestY - frame.top);
+  return {
+    x: frame.midX,
+    y: frame.top + span * 0.48,
+  };
+}
+
 export function bodyWidthXAt(
   frame: DropShoulderDiagramFrame,
   y: number,

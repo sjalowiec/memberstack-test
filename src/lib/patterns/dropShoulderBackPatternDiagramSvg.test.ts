@@ -226,6 +226,16 @@ describe("Drop Shoulder pattern page wiring (presentation)", () => {
     expect(fn).toContain("inlineDropShoulderBackNotationSvg");
     expect(fn).not.toContain("tryBuildLiveSleevelessBackStsRowsDiagramSvg");
 
+    const notationStart = pageScript.indexOf("async function inlineDropShoulderBackNotationSvg");
+    const notationEnd = pageScript.indexOf("async function inlineDropShoulderFrontNotationSvg");
+    const notationFn = pageScript.slice(
+      notationStart,
+      notationEnd > notationStart ? notationEnd : notationStart + 2500,
+    );
+    expect(notationFn.indexOf("tryBuildLiveDropShoulderBackNotationSvg")).toBeLessThan(
+      notationFn.indexOf("applyJapaneseNotationSvgReplacements"),
+    );
+
     const frontStart = pageScript.indexOf("async function hydrateDropShoulderFrontDiagram");
     const frontEnd = pageScript.indexOf("function bindDropShoulderBodyDiagramMode");
     const frontFn = pageScript.slice(
