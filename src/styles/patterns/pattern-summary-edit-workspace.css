@@ -11,13 +11,19 @@
  * Overlay editors (`.sl-edit-drawer--workspace`) use `.sl-edit-workspace__layout`
  * as the single vertical scrollport at every breakpoint. Do not switch that
  * container to `overflow: hidden` at two-column — columns must stay in flow.
+ *
+ * Nested `overflow-x: hidden` (with `overflow-y: visible`) computes to
+ * `overflow-y: auto` and becomes a second scrollport. Wheel/trackpad then
+ * targets that inner box — which often has nothing to scroll — so the visible
+ * layout scrollbar does nothing until it is clicked. Use `overflow-x: clip`
+ * (or `overflow: visible`) on nested layers so wheel reaches the layout.
  */
 
 .sl-edit-workspace {
   display: block;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   box-sizing: border-box;
   background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, #fdfcf7);
   border-radius: 12px;
@@ -49,7 +55,9 @@
 .sl-edit-drawer--workspace .sl-edit-workspace__layout {
   flex: 1 1 auto;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -66,6 +74,10 @@
   gap: 0.85rem;
   padding: 0;
   min-width: 0;
+  /* Page CSS gives the original side-drawer body its own overflow-y: auto.
+     In the shared workspace that would trap wheel over Quick edits. */
+  overflow: visible;
+  flex: none;
 }
 
 .sl-edit-workspace__measure {
@@ -73,7 +85,7 @@
   flex-direction: column;
   min-width: 0;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .sl-edit-workspace__measure-head {
@@ -353,7 +365,7 @@
 .ps-measure {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .ps-measure-stage {
@@ -604,6 +616,7 @@
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .sl-edit-workspace__quick {

@@ -71,6 +71,7 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     expect(workspaceCss).toContain("flex-direction: row");
     expect(workspaceCss).toContain("flex: 1 1 0");
     expect(workspaceCss).toContain("overflow-x: hidden");
+    expect(workspaceCss).toContain("overflow-x: clip");
     expect(workspaceCss).not.toMatch(
       /@media \(min-width:\s*1000px\)\s*\{[\s\S]*\.sl-edit-workspace__layout/,
     );
@@ -98,6 +99,26 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     expect(twoColBlock).toMatch(
       /\.sl-edit-workspace__layout\s*\{[^}]*align-items:\s*flex-start/s,
     );
+  });
+
+  it("does not require focus/click before wheel can reach the overlay scrollport", () => {
+    expect(workspaceAstro).not.toMatch(/sl-edit-workspace__layout[^>]*tabindex/);
+    expect(workspaceCss).toMatch(
+      /\.sl-edit-workspace \.sl-edit-drawer__body\s*\{[^}]*overflow:\s*visible/s,
+    );
+    expect(workspaceCss).toMatch(
+      /\.sl-edit-workspace__measure\s*\{[^}]*overflow-x:\s*clip/s,
+    );
+    expect(workspaceCss).toMatch(
+      /\.sl-edit-workspace\s*\{[^}]*overflow-x:\s*clip/s,
+    );
+    expect(workspaceCss).not.toMatch(
+      /\.sl-edit-workspace__measure\s*\{[^}]*overflow-x:\s*hidden/s,
+    );
+    expect(sleevelessPattern).toContain("PatternSummaryEditWorkspace");
+    expect(dropShoulderPattern).toContain("PatternSummaryEditWorkspace");
+    expect(sleevelessPattern).toContain("sl-edit-drawer--workspace");
+    expect(dropShoulderPattern).toContain("sl-edit-drawer--workspace");
   });
 
   it("renders compact measurement chips and stacks them on a narrow stage", () => {
