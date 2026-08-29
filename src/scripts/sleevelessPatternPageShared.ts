@@ -3419,13 +3419,15 @@ table {
       generatorPatternData,
       diagramUnit,
     );
-    if (generatedSvg) {
+    if (
+      generatedSvg &&
       mountDropShoulderStsRowsSvgMarkup(
         hostEl,
         generatedSvg,
         hydrateGen,
         DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT,
-      );
+      )
+    ) {
       return;
     }
 
@@ -3486,25 +3488,34 @@ table {
     }
   }
 
+  /**
+   * Mount generated Drop Shoulder SVG. Returns false on parse failure so the caller
+   * can keep the Illustrator fallback — never throw out of pattern render.
+   */
   function mountDropShoulderStsRowsSvgMarkup(hostEl, svgText, hydrateGen, ariaLabel) {
-    const parser = new DOMParser();
-    let doc = parser.parseFromString(svgText, "image/svg+xml");
-    let svg = doc.documentElement;
-    if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
-      doc = parser.parseFromString(svgText, "text/xml");
-      svg = doc.documentElement;
-    }
-    if (!svg || svg.nodeName.toLowerCase() !== "svg") {
-      const pe = doc.querySelector("parsererror");
-      throw new Error(pe ? pe.textContent || "SVG parse error" : "SVG parse error");
-    }
+    try {
+      const parser = new DOMParser();
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        return false;
+      }
 
-    svg.setAttribute("role", "img");
-    svg.setAttribute("aria-label", ariaLabel);
-    svg.classList.add("sleeveless-piece-split__diagram-inline");
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", ariaLabel);
+      svg.classList.add("sleeveless-piece-split__diagram-inline");
 
-    if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return;
-    hostEl.innerHTML = svg.outerHTML;
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return true;
+      hostEl.innerHTML = svg.outerHTML;
+      return true;
+    } catch (err) {
+      console.warn("[sleeveless] Drop shoulder generated diagram parse failed:", err);
+      return false;
+    }
   }
 
   async function hydrateDropShoulderBackDiagram(
@@ -3542,13 +3553,15 @@ table {
       patternData,
       diagramUnit,
     );
-    if (generatedSvg) {
+    if (
+      generatedSvg &&
       mountDropShoulderStsRowsSvgMarkup(
         el,
         generatedSvg,
         hydrateGen,
         DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
-      );
+      )
+    ) {
       return;
     }
     const replacements = buildDropShoulderBodyDiagramReplacements(result, unit, {
@@ -3601,13 +3614,15 @@ table {
       patternData,
       diagramUnit,
     );
-    if (generatedSvg) {
+    if (
+      generatedSvg &&
       mountDropShoulderStsRowsSvgMarkup(
         el,
         generatedSvg,
         hydrateGen,
         dropShoulderFrontDiagramAltForMode("sts-rows", isCardigan),
-      );
+      )
+    ) {
       return;
     }
     const dsHalf = el.dataset.sleevelessCardiganHalf || "";
