@@ -23,7 +23,7 @@ export const DS_NOTATION_GAP = 18;
 export const DS_NECK_NOTATION_GAP = 18;
 export const DS_BODY_NOTATION_GAP = 18;
 export const DS_BODY_LABEL_OUTLINE_CLEARANCE = 18;
-export const DS_RC_GUTTER_X = 42;
+export const DS_RC_GUTTER_X = 70;
 export const DS_RC_RESET_GAP = Math.round(DS_FS_RC * 1.75);
 
 const GUIDE = "#bdbec0";
@@ -126,6 +126,7 @@ export function drawDropShoulderNotationRcGutter(
 
   const resetY = labels.rcReset ? frame.neckBottomY - DS_RC_RESET_GAP : frame.neckBottomY;
   if (labels.rcReset) {
+    // Reset action sits just above the neckline-start garment RC (knit to NNN → ↺ rc000).
     parts.push(rcText(gutterX, resetY, labels.rcReset, "rc-reset"));
   }
   const neckRcY =

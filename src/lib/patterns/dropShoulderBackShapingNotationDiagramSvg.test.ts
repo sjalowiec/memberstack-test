@@ -12,6 +12,7 @@ import { buildDropShoulderBackJapaneseNotationReplacements } from "./dropShoulde
 import { kids10YrRelaxedArmhole36Pattern } from "./dropShoulderDiagramReviewFixtures";
 import { normalizeRoundNecklineDepthRows } from "./legoBlocks/roundNeckline";
 import { buildDropShoulderBackStitchesRowsModel } from "./dropShoulderPatternDiagramModel";
+import { formatRcNotation, formatRcResetNotation } from "./sleevelessBackJapaneseNotation";
 import {
   buildFullWidthFrame,
   dropShoulderPulloverRoundBodyPath,
@@ -212,6 +213,7 @@ describe("tryBuildLiveDropShoulderBackNotationSvg", () => {
       expect(live).toContain('data-armhole-marker-tick="left"');
       expect(live).toContain('data-armhole-marker-tick="right"');
       expect(live).toContain(">BACK<");
+      expect(live).not.toContain('data-role="body-rows"');
       expect(live).not.toMatch(/\bNaN\b/);
       expect(pathD(live ?? "", "ds-back-diagram__body")).toBe(
         pathD(sts ?? "", "ds-back-diagram__body"),
@@ -244,24 +246,34 @@ describe("tryBuildLiveDropShoulderBackNotationSvg", () => {
     expect(expected).toContain(`L ${fmtNum(frame.right)} ${fmtNum(frame.armholeMarkerY)}`);
   });
 
-  it("uses the capped back-neck row budget and post-reset RC:000", () => {
+  it("shows pre-reset garment RC, then ↺ rc000, and omits the Nr body-row label", () => {
     const result = generateDropShoulderPattern(WOMEN_STRAIGHT);
     const live = tryBuildLiveDropShoulderBackNotationSvg(result, WOMEN_STRAIGHT) ?? "";
     const expectedRows = normalizeRoundNecklineDepthRows(
       Math.round(1 * result.debug.rowsPerInch),
     );
+    const garmentRc = formatRcNotation(result.debug.backNecklineStartRC);
+    const reset = formatRcResetNotation(0);
     expect(result.debug.backNeckDepthRows).toBe(expectedRows);
     expect(live).toContain(`data-neck-depth-rows="${result.debug.backNeckDepthRows}"`);
     expect(live).toContain('data-reset="true"');
-    expect(live).toContain('data-rc-neck-start="rc000"');
-    expect(live).toContain('data-rc-reset="↺"');
+    expect(live).toContain(`data-rc-neck-start="${garmentRc}"`);
+    expect(live).toContain(`data-rc-reset="${reset}"`);
     expect(live).toContain('data-role="rc-reset"');
+    expect(live).toContain('data-role="neck-start-rc"');
     expect(live).toContain('data-role="armhole-marker-rc"');
-    const armholeRc = `rc${String(result.debug.armholeStartRow ?? result.debug.rowsFromCastOnToArmholeStart).padStart(3, "0")}`;
-    expect(live).toContain(`data-rc-armhole-marker="${armholeRc}"`);
-    expect(live).not.toContain(
-      `data-rc-neck-start="rc${String(result.debug.backNecklineStartRC).padStart(3, "0")}"`,
+    expect(live).toContain(reset);
+    expect(live).not.toContain('data-role="body-rows"');
+    const armholeRc = formatRcNotation(
+      result.debug.armholeStartRow ?? result.debug.rowsFromCastOnToArmholeStart ?? 0,
     );
+    expect(live).toContain(`data-rc-armhole-marker="${armholeRc}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    const resetY = textYs(live, "rc-reset")[0];
+    const neckStartY = textYs(live, "neck-start-rc")[0];
+    expect(resetY).toBeDefined();
+    expect(neckStartY).toBeDefined();
+    expect(resetY!).toBeLessThan(neckStartY!);
   });
 
   it("caps Men's 5X back neck at 1 inch / 6 rows at 6 rpi", () => {
@@ -415,10 +427,12 @@ describe("Back Shaping Notation neck placement and RC (Back rules only)", () => 
         yarnGaugeMachine: { ...pattern.yarnGaugeMachine, gaugeRowsPerInch: 6 },
       }) ?? "";
     expect(live).toContain('data-reset="true"');
-    expect(live).toContain('data-rc-neck-start="rc000"');
-    expect(live).toContain('data-rc-reset="↺"');
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.backNecklineStartRC)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
     expect(live).not.toContain('data-neck-begins-before-armhole');
     expect(live).not.toContain('data-neck-rc-continuous');
+    expect(live).not.toContain('data-role="body-rows"');
   });
 });
 
