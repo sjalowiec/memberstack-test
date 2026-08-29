@@ -28,6 +28,15 @@ export function getActivityStore() {
   });
 }
 
+/** Hosted DEV Netlify site (`https://kin-dev.netlify.app`). Not production. */
+export const KIN_DEV_SITE_NAME = "kin-dev";
+export const KIN_DEV_SITE_ID = "3196ab5e-c5a1-4cd4-a13a-980523087e9a";
+export const KIN_DEV_HOST = "kin-dev.netlify.app";
+
+/** LIVE Memberstack owner allowed to read Pattern Activity on kin-dev only. */
+export const KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID = "mem_cms4tl24v00eb0sqx143i4a9r";
+export const KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL = "sue@knititnow.com";
+
 /** @param {string | undefined} value Comma/space/semicolon separated allowlist. */
 function parseAdminAllowList(value) {
   return new Set(
@@ -38,12 +47,52 @@ function parseAdminAllowList(value) {
   );
 }
 
+function hostnameFromNetlifyUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).hostname.trim().toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * True only on the hosted kin-dev Netlify site. Uses Netlify-provided site env
+ * (`SITE_NAME` / `SITE_ID` / `URL`), never the request Host header — so production
+ * cannot be flipped by a spoofed host.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function isKinDevNetlifySite(env = process.env) {
+  const siteName = String(env.SITE_NAME || "").trim().toLowerCase();
+  if (siteName === KIN_DEV_SITE_NAME) return true;
+  const siteId = String(env.SITE_ID || "").trim().toLowerCase();
+  if (siteId === KIN_DEV_SITE_ID) return true;
+  return hostnameFromNetlifyUrl(env.URL || env.DEPLOY_PRIME_URL) === KIN_DEV_HOST;
+}
+
+/**
+ * JWT-verified kin-dev owner check. Client headers are ignored.
+ * @param {string} [verifiedMemberId]
+ * @param {string} [verifiedEmail]
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function isKinDevPatternActivityOwner(verifiedMemberId = "", verifiedEmail = "", env = process.env) {
+  if (!isKinDevNetlifySite(env)) return false;
+  const memberId = String(verifiedMemberId || "").trim().toLowerCase();
+  if (memberId && memberId === KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID) return true;
+  const email = String(verifiedEmail || "").trim().toLowerCase();
+  return Boolean(email && email === KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL);
+}
+
 /**
  * Admin-only gate for activity reporting (the GET endpoint).
  *
  * Production: JWT-verified member id must be in `PATTERN_ACTIVITY_ADMIN_MEMBER_IDS`, or
  * JWT-verified Memberstack email in `PATTERN_ACTIVITY_ADMIN_EMAILS`.
  * Local dev only (`ALLOW_DEV_PATTERN_USER`): always allowed. Never true in production.
+ * Hosted kin-dev only: the LIVE owner identity in {@link isKinDevPatternActivityOwner}
+ * is allowed even when those env allowlists are missing from the function runtime.
  *
  * When a verified email is provided it is authoritative — a client `X-KBM-Member-Email`
  * header cannot grant (or deny) access. The client header is a compatibility fallback
@@ -55,6 +104,7 @@ function parseAdminAllowList(value) {
  */
 export function isActivityAdmin(req, verifiedMemberId = "", verifiedEmail = "") {
   if (isAllowDevPatternUser()) return true;
+  if (isKinDevPatternActivityOwner(verifiedMemberId, verifiedEmail)) return true;
 
   const memberId = String(verifiedMemberId || req.headers.get("x-kbm-member-id") || "")
     .trim()

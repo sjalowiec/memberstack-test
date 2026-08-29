@@ -37,6 +37,11 @@ vi.mock("./require-member-access.js", () => ({
 import handler from "../pattern-activity-log.js";
 import * as blobs from "@netlify/blobs";
 
+import {
+  KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
+  KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
+} from "./pattern-activity-store.js";
+
 const ADMIN_ID = "mem_admin";
 const ADMIN_EMAIL = "admin@knitbymachine.com";
 const MEMBER_ID = "mem_regular";
@@ -47,6 +52,10 @@ const ENV_KEYS = [
   "ALLOW_DEV_PATTERN_USER",
   "PATTERN_ACTIVITY_ADMIN_MEMBER_IDS",
   "PATTERN_ACTIVITY_ADMIN_EMAILS",
+  "SITE_NAME",
+  "SITE_ID",
+  "URL",
+  "DEPLOY_PRIME_URL",
 ];
 
 let savedEnv = {};
@@ -76,6 +85,10 @@ beforeEach(() => {
   delete process.env.ALLOW_DEV_PATTERN_USER;
   delete process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS;
   delete process.env.PATTERN_ACTIVITY_ADMIN_EMAILS;
+  delete process.env.SITE_NAME;
+  delete process.env.SITE_ID;
+  delete process.env.URL;
+  delete process.env.DEPLOY_PRIME_URL;
 });
 
 afterEach(() => {
@@ -174,6 +187,48 @@ describe("pattern-activity-log GET (admin-only reporting)", () => {
   it("requires sign-in (401) when no member id is present", async () => {
     const res = await handler(makeReq("GET", {}));
     expect(res.status).toBe(401);
+  });
+
+  it("allows the kin-dev LIVE owner without env allowlists", async () => {
+    process.env.SITE_NAME = "kin-dev";
+    const res = await handler(
+      makeReq("GET", {
+        memberId: KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
+        verifiedEmail: KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(Array.isArray(body.events)).toBe(true);
+  });
+
+  it("allows the kin-dev LIVE owner by verified member id when email lookup is empty", async () => {
+    process.env.SITE_NAME = "kin-dev";
+    const res = await handler(
+      makeReq("GET", { memberId: KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("still 403s the kin-dev owner identity on production", async () => {
+    process.env.SITE_NAME = "knititnow";
+    process.env.URL = "https://knititnow.com";
+    const res = await handler(
+      makeReq("GET", {
+        memberId: KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
+        verifiedEmail: KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
+      }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("still 403s other members on kin-dev", async () => {
+    process.env.SITE_NAME = "kin-dev";
+    const res = await handler(
+      makeReq("GET", { memberId: MEMBER_ID, verifiedEmail: "other@example.com" }),
+    );
+    expect(res.status).toBe(403);
   });
 });
 
