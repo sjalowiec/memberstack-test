@@ -628,7 +628,7 @@ describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
     const repl = buildDropShoulderSleeveJapaneseNotationReplacements(result);
 
     expect(repl["jp-caston"]).toBe("co40 sts");
-    expect(repl["jp-cuff"]).toBe("20r rows");
+    expect(repl["jp-cuff"]).toBe("20r");
     expect(repl["jp-sleeve-shaping"]).toBe("1s-4r-20x");
     expect(repl["jp-sleeve"]).toBe("1s-4r-20x");
     expect(repl["jp-sleeve_cap_sts"]).toBe("80 sts");
@@ -689,7 +689,8 @@ describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
     expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
     const out = applyJapaneseNotationSvgReplacements(svgText, repl);
     expect(out).toContain("co40 sts");
-    expect(out).toContain("20r rows");
+    expect(out).toContain("20r");
+    expect(out).not.toContain("20r rows");
     expect(out).toContain("80 sts");
     expect(out).not.toMatch(/\{\{\s*jp-/i);
   });
@@ -730,7 +731,8 @@ describe("buildDropShoulderSleeveJapaneseNotationReplacements", () => {
     expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
     const out = applyJapaneseNotationSvgReplacements(svgText, repl);
     expect(out).toContain("co80 sts");
-    expect(out).toContain("20r rows");
+    expect(out).toContain("20r");
+    expect(out).not.toContain("20r rows");
     expect(out).toContain("40 sts");
     expect(out).not.toMatch(/\{\{\s*jp-/i);
   });

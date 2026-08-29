@@ -639,9 +639,7 @@ export function buildDropShoulderSleeveJapaneseNotationReplacements(
     "jp-caston":
       isFiniteNumber(castOnSts) && castOnSts > 0 ? `${formatCastOnNotation(castOnSts)} sts` : "",
     "jp-cuff":
-      isFiniteNumber(cuffRows) && cuffRows > 0
-        ? `${formatBodyRowsNotation(cuffRows)} rows`
-        : "",
+      isFiniteNumber(cuffRows) && cuffRows > 0 ? formatBodyRowsNotation(cuffRows) : "",
     "jp-sleeve-shaping": sleeveShapingNotation,
     "jp-sleeve_cap_sts":
       isFiniteNumber(jpSleeveCapEdgeSts) && jpSleeveCapEdgeSts > 0 ? `${jpSleeveCapEdgeSts} sts` : "",

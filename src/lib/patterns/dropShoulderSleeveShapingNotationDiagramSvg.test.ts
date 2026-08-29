@@ -13,6 +13,8 @@ import {
   dropShoulderSleeveShapingVerb,
   formatDropShoulderSleeveShapingNotation,
 } from "./dropShoulderSleeveShaping";
+import { formatBodyRowsNotation, formatCastOnNotation } from "./sleevelessBackJapaneseNotation";
+import { formatShapingSegment } from "./shapingNotationCompress";
 
 const TAPERED = {
   fit: {
@@ -70,6 +72,16 @@ describe("generated Drop Shoulder sleeve Shaping Notation", () => {
     expect(live).toContain(repl["jp-sleeve"]!);
     expect(live).toContain(repl["jp-sleeve_cap_sts"]!);
     expect(repl["jp-sleeve"]).toBe(formatDropShoulderSleeveShapingNotation(plan.steps));
+    expect(repl["jp-sleeve"]).toBe(
+      formatShapingSegment(plan.steps[0]!.sts, plan.steps[0]!.rows, plan.steps[0]!.times),
+    );
+    expect(repl["jp-caston"]).toBe(
+      `${formatCastOnNotation(result.debug.dropShoulderSleeveWristStitches!)} sts`,
+    );
+    expect(repl["jp-cuff"]).toBe(formatBodyRowsNotation(result.debug.dropShoulderSleeveCuffRows!));
+    expect(repl["jp-cuff"]).toMatch(/^\d+r$/);
+    expect(repl["jp-cuff"]).not.toMatch(/r rows/);
+    expect(live).not.toContain("r rows");
     expect(dropShoulderSleeveShapingVerb("cuff-up", result.debug.dropShoulderSleeveTopStitches!, result.debug.dropShoulderSleeveWristStitches!)).toBe(
       "increase",
     );
@@ -96,6 +108,12 @@ describe("generated Drop Shoulder sleeve Shaping Notation", () => {
     expect(live).toContain(repl["jp-sleeve_cap_sts"]!);
     expect(dropShoulderSleeveShapingVerb("top-down", topSts, wristSts)).toBe("decrease");
     expect(live).toContain('data-sleeve-shaping-direction="decrease"');
+    expect(repl["jp-caston"]).toBe(`${formatCastOnNotation(topSts)} sts`);
+    expect(repl["jp-cuff"]).toBe(formatBodyRowsNotation(result.debug.dropShoulderSleeveCuffRows!));
+    expect(repl["jp-cuff"]).toMatch(/^\d+r$/);
+    expect(repl["jp-cuff"]).not.toMatch(/r rows/);
+    expect(live).not.toContain("r rows");
+    expect(repl["jp-sleeve"]).toMatch(/^\d+s-\d+r-\d+x$/);
   });
 
   it("returns null for Sleeveless and missing debug so Illustrator can hydrate", () => {
@@ -111,6 +129,28 @@ describe("generated Drop Shoulder sleeve Shaping Notation", () => {
         "cuff-up",
       ),
     ).toBeNull();
+  });
+
+  it("places cuff-up cast-on at the wrist and top-down cast-on at the upper arm", () => {
+    const result = generateDropShoulderPattern(TAPERED);
+    const cuffUp = tryBuildLiveDropShoulderSleeveNotationSvg(result, "cuff-up", "in")!;
+    const topDown = tryBuildLiveDropShoulderSleeveNotationSvg(result, "top-down", "in")!;
+
+    const cuffUpCastOnY = Number(/data-role="cast-on"[^>]* y="([^"]+)"/.exec(cuffUp)?.[1]);
+    const cuffUpCuffY = Number(/data-role="cuff"[^>]* y="([^"]+)"/.exec(cuffUp)?.[1]);
+    const cuffUpCapY = Number(/data-role="sleeve-cap-sts"[^>]* y="([^"]+)"/.exec(cuffUp)?.[1]);
+    const cuffUpShapingX = Number(/data-role="sleeve-shaping"[^>]* x="([^"]+)"/.exec(cuffUp)?.[1]);
+    expect(cuffUpCapY).toBeLessThan(cuffUpCuffY);
+    expect(cuffUpCuffY).toBeLessThan(cuffUpCastOnY);
+    expect(cuffUpCuffY - cuffUpCapY).toBeGreaterThan(cuffUpCastOnY - cuffUpCuffY);
+    expect(cuffUpShapingX).toBeGreaterThan(215);
+
+    const topDownCastOnY = Number(/data-role="cast-on"[^>]* y="([^"]+)"/.exec(topDown)?.[1]);
+    const topDownCuffY = Number(/data-role="cuff"[^>]* y="([^"]+)"/.exec(topDown)?.[1]);
+    const topDownCapY = Number(/data-role="sleeve-cap-sts"[^>]* y="([^"]+)"/.exec(topDown)?.[1]);
+    expect(topDownCapY).toBeLessThan(topDownCuffY);
+    expect(topDownCuffY).toBeLessThan(topDownCastOnY);
+    expect(topDownCastOnY - topDownCuffY).toBeGreaterThan(topDownCuffY - topDownCapY);
   });
 
   it("does not change Front or Back Shaping Notation", () => {
