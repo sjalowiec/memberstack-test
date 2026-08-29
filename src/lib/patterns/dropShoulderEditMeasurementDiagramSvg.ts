@@ -31,9 +31,10 @@ import {
   type DropShoulderDiagramFrame,
 } from "./dropShoulderPatternDiagramSvgShared";
 import {
-  buildDropShoulderSleeveFrame,
+  buildDropShoulderMeasurementSleeveFrame,
   dropShoulderSleeveBodyPath,
   drawSleeveCuffJoin,
+  offsetDropShoulderSleeveDiagramFrame,
   type DropShoulderSleeveDiagramFrame,
 } from "./dropShoulderSleeveDiagramSvgShared";
 import type { DropShoulderEditPreviewTab } from "./dropShoulderEditMeasurementPreview";
@@ -241,28 +242,70 @@ export function buildDropShoulderEditBodyMeasurementDiagramSvg(
   ].join("");
 }
 
+/**
+ * Dedicated Sleeve-tab drawing frame. Same 430×520 viewBox as other Drop Shoulder
+ * schematics, but the silhouette is scaled into the inner content rect instead of
+ * stretching to fill DS_BODY_MAX_H (pattern-page Stitches & Rows behavior).
+ */
+const DS_SLEEVE_PAD_TOP = 64;
+const DS_SLEEVE_PAD_BOTTOM = 68;
+const DS_SLEEVE_PAD_LEFT = 84;
+const DS_SLEEVE_PAD_RIGHT = 78;
+/** Typical long-sleeve envelope so short sleeves stay proportionally short. */
+const DS_SLEEVE_REF_LENGTH_IN = 22;
+/** ~18" upper-arm circumference laid flat. */
+const DS_SLEEVE_REF_FLAT_WIDTH_IN = 9;
+const DS_SLEEVE_CONTENT_FILL = 0.78;
+const DS_SLEEVE_DIM = {
+  upperArm: 20,
+  cuffCirc: 24,
+  sleeveLength: 32,
+  cuffDepth: 22,
+} as const;
+
 function buildStandaloneSleeveFrame(
   measurements: DropShoulderEditMeasurementInput,
 ): DropShoulderSleeveDiagramFrame {
-  const cuff = Math.max(0.25, measurements.cuffDepthInches);
-  const total = Math.max(cuff + 1, measurements.sleeveLengthInches);
-  const body = Math.max(1, total - cuff);
-  return buildDropShoulderSleeveFrame({
-    unit: "in",
-    direction: "cuff-up",
-    stitchesPerInch: 1,
-    rowsPerInch: 1,
-    wristStitches: Math.max(1, measurements.cuffCircumferenceInches),
-    topStitches: Math.max(1, measurements.upperArmInches),
-    cuffRows: cuff,
-    sleeveBodyRows: body,
-    sleeveTotalRows: total,
-    wristWidthLabel: "",
-    topWidthLabel: "",
-    cuffDepthLabel: "",
-    sleeveBodyLengthLabel: "",
-    sleeveTotalLengthLabel: "",
+  const lengthIn = Math.max(1, measurements.sleeveLengthInches);
+  const cuffDepthIn = Math.max(0, Math.min(measurements.cuffDepthInches, lengthIn * 0.95));
+  const upperFlatIn = Math.max(0.5, measurements.upperArmInches / 2);
+  const cuffFlatIn = Math.max(0.4, measurements.cuffCircumferenceInches / 2);
+  const contentW = DS_VB_W - DS_SLEEVE_PAD_LEFT - DS_SLEEVE_PAD_RIGHT;
+  const contentH = DS_VB_H - DS_SLEEVE_PAD_TOP - DS_SLEEVE_PAD_BOTTOM;
+  const envelopeW = Math.max(upperFlatIn, cuffFlatIn, DS_SLEEVE_REF_FLAT_WIDTH_IN);
+  const envelopeH = Math.max(lengthIn, DS_SLEEVE_REF_LENGTH_IN);
+  const pxPerInch =
+    Math.min(contentW / envelopeW, contentH / envelopeH) * DS_SLEEVE_CONTENT_FILL;
+  const local = buildDropShoulderMeasurementSleeveFrame({
+    upperArmWidthPx: upperFlatIn * pxPerInch,
+    cuffWidthPx: cuffFlatIn * pxPerInch,
+    sleeveLengthPx: lengthIn * pxPerInch,
+    cuffDepthPx: cuffDepthIn * pxPerInch,
   });
+  const sleeveH = local.bottom - local.top;
+  const midX = DS_VB_W / 2;
+  const desiredTop = (DS_VB_H - sleeveH) / 2;
+  const top = Math.min(
+    DS_VB_H - DS_SLEEVE_PAD_BOTTOM - sleeveH,
+    Math.max(DS_SLEEVE_PAD_TOP, desiredTop),
+  );
+  return offsetDropShoulderSleeveDiagramFrame(local, midX, top);
+}
+
+function sleeveLengthDimX(frame: DropShoulderSleeveDiagramFrame): number {
+  return Math.min(frame.wristLeft, frame.upperLeft) - DS_SLEEVE_DIM.sleeveLength;
+}
+
+function sleeveUpperArmDimY(frame: DropShoulderSleeveDiagramFrame): number {
+  return frame.upperArmY - DS_SLEEVE_DIM.upperArm;
+}
+
+function sleeveCuffCircDimY(frame: DropShoulderSleeveDiagramFrame): number {
+  return frame.wristY + DS_SLEEVE_DIM.cuffCirc;
+}
+
+function sleeveCuffDepthDimX(frame: DropShoulderSleeveDiagramFrame): number {
+  return frame.wristRight + DS_SLEEVE_DIM.cuffDepth;
 }
 
 function drawSleeveTargets(frame: DropShoulderSleeveDiagramFrame): string {
@@ -270,29 +313,22 @@ function drawSleeveTargets(frame: DropShoulderSleeveDiagramFrame): string {
   const cuffMidY = (Math.min(frame.wristY, frame.cuffJoinY) + Math.max(frame.wristY, frame.cuffJoinY)) / 2;
   return [
     `<g data-role="measurement-targets">`,
-    targetCircle(t.upperArm, frame.midX, frame.upperArmY - 16),
-    targetCircle(
-      t.armLength,
-      Math.min(frame.wristLeft, frame.upperLeft) - 40,
-      (frame.top + frame.bottom) / 2,
-    ),
-    targetCircle(t.cuffCircumference, frame.midX, frame.wristY + 22),
-    targetCircle(t.cuffDepth, frame.wristRight + 18, cuffMidY),
+    targetCircle(t.upperArm, frame.midX, sleeveUpperArmDimY(frame)),
+    targetCircle(t.armLength, sleeveLengthDimX(frame), (frame.top + frame.bottom) / 2),
+    targetCircle(t.cuffCircumference, frame.midX, sleeveCuffCircDimY(frame)),
+    targetCircle(t.cuffDepth, sleeveCuffDepthDimX(frame), cuffMidY),
     `</g>`,
   ].join("");
 }
 
 function drawSleeveEditDimensions(frame: DropShoulderSleeveDiagramFrame): string {
-  const upperY = frame.direction === "top-down" ? frame.upperArmY + 22 : frame.upperArmY - 16;
-  const wristY = frame.direction === "top-down" ? frame.wristY - 16 : frame.wristY + 22;
   const cuffY1 = Math.min(frame.wristY, frame.cuffJoinY);
   const cuffY2 = Math.max(frame.wristY, frame.cuffJoinY);
-  const bodyLeft = Math.min(frame.wristLeft, frame.upperLeft);
   return [
-    hDim(frame.upperLeft, frame.upperRight, upperY, "dim-upper-arm"),
-    hDim(frame.wristLeft, frame.wristRight, wristY, "dim-cuff-circ"),
-    vDim(frame.wristRight + 18, cuffY1, cuffY2, "dim-cuff-depth"),
-    vDim(bodyLeft - 40, frame.top, frame.bottom, "dim-sleeve-length"),
+    hDim(frame.upperLeft, frame.upperRight, sleeveUpperArmDimY(frame), "dim-upper-arm"),
+    hDim(frame.wristLeft, frame.wristRight, sleeveCuffCircDimY(frame), "dim-cuff-circ"),
+    vDim(sleeveCuffDepthDimX(frame), cuffY1, cuffY2, "dim-cuff-depth"),
+    vDim(sleeveLengthDimX(frame), frame.top, frame.bottom, "dim-sleeve-length"),
   ].join("");
 }
 
@@ -302,7 +338,7 @@ export function buildDropShoulderEditSleeveMeasurementDiagramSvg(
   const unit = input.displayUnit === "cm" ? "cm" : "in";
   const frame = buildStandaloneSleeveFrame(input.measurements);
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drop shoulder sleeve measurement diagram" focusable="false" class="express-mbp-art" data-drop-shoulder-edit-diagram="true" data-drop-shoulder-edit-piece="sleeve" data-display-unit="${unit}" data-sleeve-cap="false">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Drop shoulder sleeve measurement diagram" focusable="false" class="express-mbp-art" data-drop-shoulder-edit-diagram="true" data-drop-shoulder-edit-piece="sleeve" data-drop-shoulder-edit-sleeve-layout="compact" data-display-unit="${unit}" data-sleeve-cap="false">`,
     `<path data-role="sleeve-outline" data-sleeve-cap="false" d="${dropShoulderSleeveBodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     drawSleeveCuffJoin(frame),
     drawSleeveEditDimensions(frame),
