@@ -207,8 +207,8 @@ function appendDropShoulderStraightShoulderFinish(
 ): RowEntry[] {
   if (timeline.length === 0 || totalRows <= 0) return timeline;
 
-  const lastKnitRc = Math.max(0, Math.floor(totalRows) - 1);
-  const out = timeline.filter((row) => row.row <= lastKnitRc);
+  const bindOffRc = Math.floor(totalRows);
+  const out = timeline.filter((row) => row.row <= bindOffRc);
   if (out.length === 0) return timeline;
 
   const last = out[out.length - 1]!;
@@ -216,6 +216,7 @@ function appendDropShoulderStraightShoulderFinish(
   let leftCount = last.stitchesL;
   let rightCount = last.stitchesR;
 
+  const lastKnitRc = Math.max(0, bindOffRc - 1);
   while (rc < lastKnitRc) {
     rc += 1;
     out.push({
@@ -253,8 +254,7 @@ function appendDropShoulderStraightShoulderFinish(
 
   if (events.length === 0) return out;
 
-  // Always bind off on the garment shoulder RC — never past `totalRows`.
-  const bindOffRc = Math.floor(totalRows);
+  // Shoulder RC only — never past `totalRows`. A decrease that lands on bindOffRc stays.
   if (rc === bindOffRc) {
     const cur = out[out.length - 1]!;
     out[out.length - 1] = {
@@ -385,11 +385,6 @@ export function buildDropShoulderFrontNeckShapingChart(
   const isCardiganHalfFront = isCardigan;
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
   const timelineOpts = { straightShoulders: true as const };
-  const frontNeckWorkingRows = dropShoulderFrontNecklineWorkingRows(
-    frontNecklineStartRC,
-    totalRows,
-    frontNeckDepthRows,
-  );
 
   const necklineOpeningStsForFrontPiece = isCardiganHalfFront
     ? Math.max(1, Math.round(neckSts / 2))
@@ -429,7 +424,7 @@ export function buildDropShoulderFrontNeckShapingChart(
       isCardigan,
       neckSts,
       shoulderStsEach: isCardigan ? shoulderStsForFrontPiece : shoulderStsEach,
-      frontNeckDepthRows: frontNeckWorkingRows,
+      frontNeckDepthRows,
       firstShapingRow: frontNecklineStartRC,
       bustBodySts,
     });

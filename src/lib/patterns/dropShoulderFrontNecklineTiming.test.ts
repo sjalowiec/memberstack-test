@@ -185,6 +185,15 @@ describe("Drop Shoulder Front neckline timing vs armhole marker", () => {
       );
       expect(bindOffRows.length).toBeGreaterThan(0);
       expect(bindOffRows.every((row) => row.row === result.debug.totalCalculatedRows)).toBe(true);
+      expect(bindOffRows.every((row) => row.row <= result.debug.totalCalculatedRows!)).toBe(true);
+      if (depth === 3) {
+        expect(neckRows).toBe(18);
+        expect(locals).toContain(18);
+        expect(Math.max(...locals)).toBe(18);
+        expect(bindOffRows).toHaveLength(1);
+        expect(bindOffRows[0]!.row).toBe(result.debug.totalCalculatedRows);
+        expect(bindOffRows[0]!.events.some((event) => event.kind === "decrease")).toBe(true);
+      }
 
       const perSide = neckDecreaseStitchesPerSideFromOpening(result.debug.necklineStitches!);
       const sched = evenShapingSchedule(perSide, neckRows);

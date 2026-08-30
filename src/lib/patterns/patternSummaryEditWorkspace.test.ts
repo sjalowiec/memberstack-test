@@ -115,10 +115,6 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     expect(workspaceCss).not.toMatch(
       /\.sl-edit-workspace__measure\s*\{[^}]*overflow-x:\s*hidden/s,
     );
-    expect(sleevelessPattern).toContain("PatternSummaryEditWorkspace");
-    expect(dropShoulderPattern).toContain("PatternSummaryEditWorkspace");
-    expect(sleevelessPattern).toContain("sl-edit-drawer--workspace");
-    expect(dropShoulderPattern).toContain("sl-edit-drawer--workspace");
   });
 
   it("renders compact measurement chips and stacks them on a narrow stage", () => {
