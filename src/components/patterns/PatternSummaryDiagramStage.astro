@@ -28,7 +28,9 @@ if (stageInnerAttr) innerAttrs[stageInnerAttr] = "";
 <div class="ps-measure" data-testid={stageTestId}>
   <div class:list={[PATTERN_SUMMARY_MEASURE_STAGE_CLASS, "express-mbp-stage"]}>
     <div class="ps-measure-stage__inner express-mbp-stage__inner" {...innerAttrs}>
-      <div class="ps-measure-art express-mbp-art" {...diagramAttrs}></div>
+      <div class="ps-measure-art express-mbp-art" {...diagramAttrs}>
+        <slot name="art" />
+      </div>
       <div class="ps-measure-overlay express-mbp-overlay" {...overlayAttrs}>
         <slot />
       </div>

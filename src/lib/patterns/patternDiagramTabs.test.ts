@@ -354,6 +354,12 @@ describe("finished-pattern families use the shared diagram tabs", () => {
     expect(hatPage).toContain("pattern-diagram-tabs.css");
     expect(sleevelessPage).toContain("pattern-diagram-tabs.css");
     expect(dropShoulderPage).toContain("pattern-diagram-tabs.css");
+    const socksPage = readFileSync(
+      join(srcRoot, "pages/patterns/socks/pattern.astro"),
+      "utf8",
+    );
+    expect(socksPage).toContain("pattern-diagram-tabs.css");
+    expect(socksPage).toContain("data-sock-diagram-tabs-mount");
     expect(hatPage).toContain("Hat Dimensions");
     expect(hatPage).toContain("data-hat-diagram-tabs-mount");
   });

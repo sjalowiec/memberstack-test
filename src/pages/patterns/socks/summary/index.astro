@@ -1,21 +1,28 @@
 ---
 /**
- * Socks Summary — checkpoint between Builder inputs and eventual knitting instructions.
- * Free / ungated. Draft: kbm_socks_draft. Finished Pattern / diagrams / instructions
- * are not part of this pass.
+ * Socks Summary — checkpoint between Builder inputs and finished knitting instructions.
+ * Free / ungated. Draft: kbm_socks_draft. View My Pattern opens the finished Pattern page.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Layout from "../../../../layouts/Layout.astro";
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
+import PatternSummaryDiagramStage from "../../../../components/patterns/PatternSummaryDiagramStage.astro";
+import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
+import {
+  SOCK_SUMMARY_ART_SRC,
+  SOCK_SUMMARY_CHIP_TARGET_POINTS,
+  SOCK_SUMMARY_MEASUREMENT_FIELDS,
+  SOCK_EDIT_MEASUREMENT_TARGETS,
+} from "../../../../lib/patterns/sock/sockPatternEditTargets";
 import {
   AVAILABLE_NEEDLES_LABEL,
 } from "../../../../lib/patterns/sock/sockAvailableNeedles";
 import {
   SOCK_PATTERN_BUILDER_HREF,
+  SOCK_PATTERN_HREF,
   SOCK_SUMMARY_CANCEL_LABEL,
   SOCK_SUMMARY_HINT,
-  SOCK_SUMMARY_PATTERN_NOT_READY_MESSAGE,
   SOCK_SUMMARY_PRIMARY_LABEL,
 } from "../../../../lib/patterns/sock/sockPatternNavigation";
 import { SOCK_PATTERN_MISSING_DRAFT_MESSAGE } from "../../../../lib/patterns/sock/sockPatternFromDraft";
@@ -74,6 +81,33 @@ const sockSizingJson = JSON.parse(
             <Fragment slot="heading">Calculated geometry</Fragment>
 
             <Fragment slot="quick">
+              <section class="sl-edit-section sl-edit-units-section" aria-labelledby="socks-summary-units-heading">
+                <h3 class="sl-edit-section__title" id="socks-summary-units-heading">Units</h3>
+                <div
+                  class="sl-edit-units-toggle"
+                  role="group"
+                  aria-labelledby="socks-summary-units-heading"
+                  data-socks-edit-units
+                >
+                  <button
+                    type="button"
+                    class="sl-edit-unit-btn is-active"
+                    data-socks-edit-unit="inches"
+                    aria-pressed="true"
+                  >
+                    Inches
+                  </button>
+                  <button
+                    type="button"
+                    class="sl-edit-unit-btn"
+                    data-socks-edit-unit="cm"
+                    aria-pressed="false"
+                  >
+                    Centimeters
+                  </button>
+                </div>
+              </section>
+
               <section class="sl-edit-section" aria-labelledby="socks-summary-basic-heading">
                 <h3 class="sl-edit-section__title" id="socks-summary-basic-heading">
                   Basic information
@@ -90,10 +124,6 @@ const sockSizingJson = JSON.parse(
                   <div class="socks-summary-dl__row">
                     <dt>Construction</dt>
                     <dd data-socks-summary="constructionLabel"></dd>
-                  </div>
-                  <div class="socks-summary-dl__row">
-                    <dt>Units</dt>
-                    <dd data-socks-summary="unitsLabel"></dd>
                   </div>
                 </dl>
               </section>
@@ -180,17 +210,14 @@ const sockSizingJson = JSON.parse(
               >
                 {SOCK_SUMMARY_CANCEL_LABEL}
               </a>
-              <button
-                type="button"
+              <a
+                href={SOCK_PATTERN_HREF}
                 class="sl-edit-btn sl-edit-btn--primary"
                 data-socks-summary-view-pattern
                 data-testid="button-socks-summary-view-pattern"
-                disabled
-                aria-disabled="true"
-                title={SOCK_SUMMARY_PATTERN_NOT_READY_MESSAGE}
               >
                 {SOCK_SUMMARY_PRIMARY_LABEL}
-              </button>
+              </a>
             </Fragment>
 
             <span slot="hint" data-socks-summary-hint>
@@ -198,6 +225,64 @@ const sockSizingJson = JSON.parse(
             </span>
 
             <Fragment slot="diagram">
+              <PatternSummaryDiagramStage
+                stageTestId="socks-summary-diagram-area"
+                diagramAttr="data-socks-summary-diagram"
+                overlayAttr="data-socks-summary-overlay"
+                stageInnerAttr="data-socks-summary-stage"
+              >
+                <Fragment slot="art">
+                  <img
+                    class="socks-summary-art"
+                    src={SOCK_SUMMARY_ART_SRC}
+                    alt="Finished Basic Socks"
+                    width="640"
+                    height="800"
+                    decoding="async"
+                    data-socks-summary-art
+                  />
+                  <svg
+                    class="socks-summary-chip-targets"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="xMidYMid meet"
+                    aria-hidden="true"
+                    focusable="false"
+                    data-socks-summary-chip-targets
+                  >
+                    <circle
+                      id={SOCK_EDIT_MEASUREMENT_TARGETS.legLength}
+                      cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.legLength.x}
+                      cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.legLength.y}
+                      r="2"
+                      fill="none"
+                    />
+                    <circle
+                      id={SOCK_EDIT_MEASUREMENT_TARGETS.legCircumference}
+                      cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.legCircumference.x}
+                      cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.legCircumference.y}
+                      r="2"
+                      fill="none"
+                    />
+                    <circle
+                      id={SOCK_EDIT_MEASUREMENT_TARGETS.footLength}
+                      cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.footLength.x}
+                      cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.footLength.y}
+                      r="2"
+                      fill="none"
+                    />
+                    <circle
+                      id={SOCK_EDIT_MEASUREMENT_TARGETS.footCircumference}
+                      cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.footCircumference.x}
+                      cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.footCircumference.y}
+                      r="2"
+                      fill="none"
+                    />
+                  </svg>
+                </Fragment>
+                {SOCK_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
+                  <PatternSummaryMeasurementChip field={field} />
+                ))}
+              </PatternSummaryDiagramStage>
               <div
                 class="socks-summary-geometry"
                 data-socks-summary-geometry
@@ -388,19 +473,44 @@ const sockSizingJson = JSON.parse(
     display: none;
   }
 
-  .socks-summary-page :global(.sl-edit-btn--ghost) {
+  .socks-summary-page :global(.sl-edit-btn--ghost),
+  .socks-summary-page :global(.sl-edit-btn--primary) {
     text-decoration: none;
     box-sizing: border-box;
   }
 
-  .socks-summary-page :global(.sl-edit-btn--primary:disabled),
-  .socks-summary-page :global(.sl-edit-btn--primary[aria-disabled="true"]) {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
   .socks-summary-geometry {
     padding: 0.35rem 0.85rem 1.15rem;
+  }
+
+  .socks-summary-page :global(.ps-measure) {
+    margin: 0 0 0.75rem;
+  }
+
+  .socks-summary-page :global(.ps-measure-art) {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .socks-summary-page :global(.socks-summary-art) {
+    display: block;
+    width: 100%;
+    max-width: 18rem;
+    height: auto;
+  }
+
+  .socks-summary-page :global(.socks-summary-chip-targets) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .socks-summary-page :global(.ps-measure-stage__inner[data-measurement-overlay-mode="desktop"]) {
+    padding: 2.75rem 6.5rem 3.25rem 6.75rem;
   }
 
   .socks-summary-dl {

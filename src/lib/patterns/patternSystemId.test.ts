@@ -87,6 +87,7 @@ describe("resolvePatternSystemFromPage", () => {
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/builder"))).toBe("socks");
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/pattern/"))).toBe("socks");
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/summary/"))).toBe("socks");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/edit/"))).toBe("socks");
   });
 
   it("uses data-express-construction on drop-shoulder builder pages", () => {
