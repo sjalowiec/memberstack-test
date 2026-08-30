@@ -1,0 +1,733 @@
+---
+/**
+ * Basic Socks Builder (Hat-style Express shell).
+ * Free / ungated. Draft: kbm_socks_draft. Summary / Pattern pages are not part of this pass.
+ */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import Layout from "../../../layouts/Layout.astro";
+import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import GaugeInput from "../../../components/wizards/GaugeInput.astro";
+import UnitToggle from "../../../components/wizards/UnitToggle.astro";
+import FloatingInput from "../../../components/lego/FloatingInput.astro";
+import {
+  createSockSizingAdapter,
+  listSockSizingOptions,
+} from "../../../lib/patterns/sock/sockSizing";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../../lib/patterns/sock/sockAvailableNeedles";
+import {
+  BASIC_SOCK_PATTERN_NAME,
+  SOCK_PATTERN_SYSTEM_DISPLAY_NAME,
+} from "../../../lib/patterns/sock/sockDraft";
+
+import "../../../styles/sleeveless-express-builder-cards.css";
+import "../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../styles/wizard.css";
+
+const sockSizingJson = JSON.parse(
+  readFileSync(resolve("public/data/sizing_socks.json"), "utf8"),
+) as unknown;
+const sockSizingAdapter = createSockSizingAdapter(sockSizingJson);
+const sockSizingBuilderRows = listSockSizingOptions(sockSizingAdapter, "inches");
+
+const expressNavSteps = [
+  { step: 1, label: "Size" },
+  { step: 2, label: "Fit" },
+  { step: 3, label: "Knit" },
+  { step: 4, label: "Gauge" },
+] as const;
+---
+
+<Layout
+  title="Socks Builder | Knit it Now"
+  description="Create a custom machine-knit Basic Socks pattern with your gauge, size, and finished measurements."
+  patternWorkspace={true}
+>
+  <main
+    class="express-page wizard-page sleeveless-express-page hat-express-builder-page socks-express-builder-page"
+    data-express-page="socks-builder"
+    data-socks-builder
+  >
+    <div id="socks-builder-form-top" class="wizard-container express-wizard scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternPhoneWorkspaceNotice />
+        <div class="sg-tab-build">
+          <div class="sg-builder-nav-row express-builder-nav-row no-print">
+            <nav class="express-step-nav sg-builder-nav" aria-label="Socks pattern steps">
+              <ol class="express-step-nav__list sg-builder-nav__list" role="list">
+                {
+                  expressNavSteps.map((s, i) => (
+                    <li
+                      class:list={[
+                        "express-step-nav__item",
+                        "sg-builder-nav__item",
+                        { active: s.step === 1 },
+                      ]}
+                    >
+                      <button
+                        type="button"
+                        class:list={[
+                          "express-step-nav__btn",
+                          "sg-builder-nav__link",
+                          {
+                            "is-current": s.step === 1,
+                            "is-upcoming": s.step > 1,
+                          },
+                        ]}
+                        data-pill-step={s.step}
+                        data-pill-label={s.label}
+                        aria-current={s.step === 1 ? "page" : undefined}
+                        aria-disabled={s.step > 1 ? "true" : undefined}
+                        title={s.step > 1 ? "Finish the previous step to continue." : undefined}
+                      >
+                        <span class="express-step-nav__track">
+                          <span
+                            class:list={[
+                              "express-step-nav__seg",
+                              "express-step-nav__seg--before",
+                              { "express-step-nav__seg--empty": i === 0 },
+                            ]}
+                            aria-hidden="true"
+                          />
+                          <span class="express-step-nav__circle">
+                            <span class="express-step-nav__num">{s.step}</span>
+                            <span class="express-pill__check" aria-hidden="true">✓</span>
+                          </span>
+                          <span
+                            class:list={[
+                              "express-step-nav__seg",
+                              "express-step-nav__seg--after",
+                              {
+                                "express-step-nav__seg--empty":
+                                  i === expressNavSteps.length - 1,
+                              },
+                            ]}
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span class="express-step-nav__label">{s.label}</span>
+                      </button>
+                    </li>
+                  ))
+                }
+              </ol>
+            </nav>
+          </div>
+
+          <header class="pattern-header page-header">
+            <div class="pattern-header__title-row">
+              <h1 class="pattern-title">{BASIC_SOCK_PATTERN_NAME}</h1>
+            </div>
+            <p class="pattern-subtext">
+              Choose a size, confirm finished measurements, pick cuff-to-toe or toe-up, then enter
+              your gauge to create {SOCK_PATTERN_SYSTEM_DISPLAY_NAME.toLowerCase()} for your machine.
+            </p>
+          </header>
+
+          <div class="express-panel">
+            <div class="express-builder-root" data-express-builder data-socks-builder-root>
+              <div class="express-builder-toolbar no-print">
+                <button
+                  type="button"
+                  id="socks-builder-start-over"
+                  class="btn btn-outline-secondary btn-sm"
+                  data-testid="socks-builder-start-over"
+                >
+                  Start over
+                </button>
+              </div>
+              <div class="express-builder-units no-print">
+                <UnitToggle id="socks" />
+              </div>
+
+              <div class="express-accordions" id="express-accordions">
+                <section
+                  class="express-acc express-acc--open"
+                  data-express-step="1"
+                  data-express-field="size"
+                >
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="0"
+                    aria-expanded="true"
+                    aria-controls="express-acc-panel-1"
+                    id="express-acc-label-1"
+                  >
+                    <button
+                      type="button"
+                      class="express-acc__chevron"
+                      data-express-chevron
+                      aria-label="Toggle size choices"
+                      tabindex="-1"
+                    >
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-1-title">Sock size</h2>
+                      <span class="express-acc__value" data-express-summary="size"></span>
+                    </div>
+                  </div>
+                  <div
+                    class="express-acc__body"
+                    id="express-acc-panel-1"
+                    role="region"
+                    aria-labelledby="express-step-1-title"
+                  >
+                    <p class="hat-builder-step-intro">
+                      Size is based on finished foot circumference. No ease is added.
+                    </p>
+                    <div class="input-group">
+                      <div class="hat-select-wrap">
+                        <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                        <select
+                          id="socks-size"
+                          data-testid="select-socks-size"
+                          aria-label="Choose a finished sock size (inches)"
+                          autocomplete="off"
+                        >
+                          <option value="" disabled selected hidden
+                            >Choose a finished sock size (inches)...</option
+                          >
+                          {
+                            sockSizingBuilderRows.map((row) => (
+                              <option value={row.size}>
+                                {row.optionLabel}
+                              </option>
+                            ))
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section
+                  class="express-acc express-acc--locked"
+                  data-express-step="2"
+                  data-express-field="measurements"
+                >
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="-1"
+                    aria-expanded="false"
+                    aria-controls="express-acc-panel-2"
+                    id="express-acc-label-2"
+                  >
+                    <button
+                      type="button"
+                      class="express-acc__chevron"
+                      data-express-chevron
+                      aria-hidden="true"
+                      tabindex="-1"
+                    >
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-2-title"
+                        >Perfect Fit measurements</h2
+                      >
+                      <span class="express-acc__value" data-express-summary="measurements"></span>
+                    </div>
+                  </div>
+                  <p
+                    class="express-acc__locked-feedback"
+                    data-express-locked-feedback
+                    hidden
+                    role="status"
+                  >
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div
+                    class="express-acc__body"
+                    id="express-acc-panel-2"
+                    role="region"
+                    aria-labelledby="express-step-2-title"
+                    hidden
+                  >
+                    <p class="hat-builder-step-intro">
+                      These are finished measurements. Keep the chart defaults or customize them.
+                      Heel and toe depth are calculated from your gauge — they are not entered here.
+                    </p>
+                    <div class="socks-builder-measure-grid">
+                      <div class="input-group">
+                        <FloatingInput
+                          id="socks-foot-circumference"
+                          type="number"
+                          step={0.25}
+                          label="Foot Circumference (inches)"
+                          placeholder=" "
+                          testId="input-socks-foot-circumference"
+                          autocomplete="off"
+                        />
+                      </div>
+                      <div class="input-group">
+                        <FloatingInput
+                          id="socks-foot-length"
+                          type="number"
+                          step={0.25}
+                          label="Foot Length (inches)"
+                          placeholder=" "
+                          testId="input-socks-foot-length"
+                          autocomplete="off"
+                        />
+                      </div>
+                      <div class="input-group">
+                        <FloatingInput
+                          id="socks-leg-circumference"
+                          type="number"
+                          step={0.25}
+                          label="Leg Circumference (inches)"
+                          placeholder=" "
+                          testId="input-socks-leg-circumference"
+                          autocomplete="off"
+                        />
+                      </div>
+                      <div class="input-group">
+                        <FloatingInput
+                          id="socks-leg-length"
+                          type="number"
+                          step={0.25}
+                          label="Leg Length (inches)"
+                          placeholder=" "
+                          testId="input-socks-leg-length"
+                          autocomplete="off"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section
+                  class="express-acc express-acc--locked"
+                  data-express-step="3"
+                  data-express-field="construction"
+                >
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="-1"
+                    aria-expanded="false"
+                    aria-controls="express-acc-panel-3"
+                    id="express-acc-label-3"
+                  >
+                    <button
+                      type="button"
+                      class="express-acc__chevron"
+                      data-express-chevron
+                      aria-hidden="true"
+                      tabindex="-1"
+                    >
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-3-title"
+                        >Construction direction</h2
+                      >
+                      <span class="express-acc__value" data-express-summary="construction"></span>
+                    </div>
+                  </div>
+                  <p
+                    class="express-acc__locked-feedback"
+                    data-express-locked-feedback
+                    hidden
+                    role="status"
+                  >
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div
+                    class="express-acc__body"
+                    id="express-acc-panel-3"
+                    role="region"
+                    aria-labelledby="express-step-3-title"
+                    hidden
+                  >
+                    <p class="hat-builder-step-intro">
+                      This sets the knitting order. Both directions use the same sock geometry.
+                    </p>
+                    <select
+                      id="socks-construction"
+                      class="sr-only"
+                      data-testid="select-socks-construction"
+                      autocomplete="off"
+                    >
+                      <option value="" disabled selected hidden>Choose construction direction</option>
+                      <option value="cuff-to-toe">Cuff to Toe</option>
+                      <option value="toe-up">Toe Up</option>
+                    </select>
+                    <div
+                      class="hat-length-picker__grid socks-construction-picker__grid"
+                      role="group"
+                      aria-label="Construction direction"
+                    >
+                      <button
+                        type="button"
+                        class="hat-length-picker__option"
+                        data-choice
+                        data-field="constructionDirection"
+                        data-value="cuff-to-toe"
+                        aria-pressed="false"
+                        data-testid="choice-cuff-to-toe"
+                      >
+                        <span class="hat-length-picker__option-label">Cuff to Toe</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="hat-length-picker__option"
+                        data-choice
+                        data-field="constructionDirection"
+                        data-value="toe-up"
+                        aria-pressed="false"
+                        data-testid="choice-toe-up"
+                      >
+                        <span class="hat-length-picker__option-label">Toe Up</span>
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                <section
+                  class="express-acc express-acc--locked"
+                  data-express-step="4"
+                  data-express-field="gauge"
+                >
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="-1"
+                    aria-expanded="false"
+                    aria-controls="express-acc-panel-4"
+                    id="express-acc-label-4"
+                  >
+                    <button
+                      type="button"
+                      class="express-acc__chevron"
+                      data-express-chevron
+                      aria-hidden="true"
+                      tabindex="-1"
+                    >
+                      ▾
+                    </button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-4-title">Enter your gauge</h2>
+                      <span class="express-acc__value" data-express-summary="gauge"></span>
+                    </div>
+                  </div>
+                  <p
+                    class="express-acc__locked-feedback"
+                    data-express-locked-feedback
+                    hidden
+                    role="status"
+                  >
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div
+                    class="express-acc__body"
+                    id="express-acc-panel-4"
+                    role="region"
+                    aria-labelledby="express-step-4-title"
+                    hidden
+                  >
+                    <p class="express-gauge-intro">
+                      Enter the gauge from your swatch over 4 inches / 10 cm.
+                    </p>
+                    <div class="express-gauge-block">
+                      <GaugeInput
+                        id="socks"
+                        showTitle={false}
+                        showGaugeSubLabel={false}
+                        showToggle={false}
+                        toggleId="socks"
+                        formFields={true}
+                      />
+                    </div>
+                    <div
+                      id="gauge-sanity-warning"
+                      class="gauge-sanity-warning"
+                      hidden
+                      data-testid="gauge-sanity-warning"
+                    ></div>
+                    <div class="express-needle-block" hidden>
+                      <FloatingInput
+                        id="express-available-needles"
+                        name="availableNeedles"
+                        label={AVAILABLE_NEEDLES_LABEL}
+                        type="number"
+                        inputMode="numeric"
+                        min="1"
+                        step="1"
+                        required
+                        errorId="express-available-needles-error"
+                        errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+                      />
+                      <p class="express-needle-help" id="express-available-needles-help">
+                        {AVAILABLE_NEEDLES_HELPER_TEXT}
+                      </p>
+                      <p
+                        class="express-needle-capacity-error"
+                        id="socks-needle-capacity-error"
+                        data-testid="socks-needle-capacity-error"
+                        role="alert"
+                        hidden
+                      ></p>
+                    </div>
+                  </div>
+                  <div
+                    class="express-generate-wrap express-generate-wrap--footer"
+                    id="build-pattern-cta"
+                  >
+                    <button
+                      type="button"
+                      class="express-generate button-disabled"
+                      id="create-pattern-btn"
+                      data-testid="create-pattern-btn"
+                      aria-disabled="true"
+                    >
+                      Review My Pattern
+                    </button>
+                    <p
+                      id="create-pattern-feedback"
+                      class="create-pattern-feedback"
+                      role="status"
+                      aria-live="polite"
+                      hidden
+                    >
+                    </p>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script
+    type="application/json"
+    id="socks-sizing-chart"
+    set:html={JSON.stringify(sockSizingJson)}
+  />
+</Layout>
+
+<script>
+  import "/src/scripts/socks-builder-page.ts";
+</script>
+
+<style>
+  .socks-express-builder-page .hat-builder-step-intro,
+  .socks-express-builder-page .express-gauge-intro {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--express-muted, #6b7280);
+  }
+
+  .socks-express-builder-page .socks-builder-measure-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+  }
+
+  .socks-express-builder-page .socks-construction-picker__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .socks-express-builder-page .express-gauge-block {
+    margin-bottom: 0.25rem;
+  }
+
+  .socks-express-builder-page .express-needle-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-width: 16rem;
+    width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  .socks-express-builder-page .express-needle-block[hidden] {
+    display: none !important;
+  }
+
+  .socks-express-builder-page .express-needle-help {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #6b7280;
+  }
+
+  .socks-express-builder-page .express-needle-capacity-error {
+    margin: 0.15rem 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #b42318;
+  }
+
+  .socks-express-builder-page #create-pattern-btn.button-disabled,
+  .socks-express-builder-page #create-pattern-btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .socks-express-builder-page .create-pattern-feedback {
+    margin: 0.75rem 0 0;
+    min-height: 1.25em;
+    font-size: 0.9375rem;
+    color: #6b7280;
+    text-align: center;
+  }
+
+  .socks-express-builder-page .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .socks-express-builder-page,
+  .socks-express-builder-page .wizard-container,
+  .socks-express-builder-page .calculator-card,
+  .socks-express-builder-page .express-builder-root,
+  .socks-express-builder-page .express-accordions,
+  .socks-express-builder-page .express-acc,
+  .socks-express-builder-page .express-acc__body,
+  .socks-express-builder-page .input-group,
+  .socks-express-builder-page .express-gauge-block {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .socks-express-builder-page :global(.gauge-input-wrapper),
+  .socks-express-builder-page :global(.floating-input) {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .socks-express-builder-page .hat-select-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .socks-express-builder-page .hat-select-wrap__check {
+    position: absolute;
+    left: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 0;
+    z-index: 1;
+  }
+
+  .socks-express-builder-page .hat-select-wrap select {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .socks-express-builder-page .hat-select-wrap.is-complete select {
+    padding-left: 2.65rem;
+  }
+
+  .socks-express-builder-page .hat-length-picker__option {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 3.25rem;
+    justify-content: center;
+  }
+
+  .socks-express-builder-page .input-group select,
+  .socks-express-builder-page :global(.floating-input input) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .socks-express-builder-page :global(.floating-input .floating-label) {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    max-width: calc(100% - 1.5rem) !important;
+    width: auto !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    line-height: 1.25 !important;
+  }
+
+  .socks-express-builder-page .express-builder-nav-row,
+  .socks-express-builder-page .express-step-nav,
+  .socks-express-builder-page .express-step-nav__list {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 640px) {
+    :global(main.site-content):has(.socks-express-builder-page) {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .socks-express-builder-page.wizard-page,
+    .socks-express-builder-page.express-page {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .socks-express-builder-page .wizard-container {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .socks-express-builder-page .calculator-card.hat-builder-inputs {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+    .socks-express-builder-page .express-acc {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+    .socks-express-builder-page .socks-builder-measure-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .socks-express-builder-page .express-needle-block {
+      max-width: 100%;
+    }
+  }
+</style>
