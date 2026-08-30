@@ -15,6 +15,7 @@ const layoutAstro = readFileSync(resolve("src/layouts/Layout.astro"), "utf8");
 const patternsIndexAstro = readFileSync(resolve("src/pages/patterns/index.astro"), "utf8");
 const patternsAboutAstro = readFileSync(resolve("src/pages/patterns/about.astro"), "utf8");
 const hatBuilder = readFileSync(resolve("src/pages/patterns/hat/builder.astro"), "utf8");
+const socksBuilder = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
 const hatPattern = readFileSync(resolve("src/pages/patterns/hat/pattern.astro"), "utf8");
 const sleevelessBuilder = readFileSync(
   resolve("src/pages/patterns/sleeveless/builder.astro"),
@@ -105,6 +106,7 @@ describe("membership corner CTA — pattern workspace hide", () => {
   it("opts Builder / Edit / Custom Build / finished pattern workspaces into patternWorkspace", () => {
     for (const src of [
       hatBuilder,
+      socksBuilder,
       hatPattern,
       sleevelessBuilder,
       sleevelessPattern,
