@@ -10,11 +10,15 @@ import {
 } from "./sockFreshStart";
 import {
   SOCK_PATTERN_BUILDER_HREF,
+  SOCK_PATTERN_HREF,
   SOCK_SUMMARY_FROM_BUILDER_HREF,
   SOCK_SUMMARY_HREF,
+  SOCK_SUMMARY_PRIMARY_LABEL,
   buildSockBuilderHref,
+  buildSockPatternHref,
   buildSockSummaryFromBuilderHref,
 } from "./sockPatternNavigation";
+import { SOCK_SUMMARY_ART_SRC } from "./sockPatternEditTargets";
 import {
   SOCK_PATTERN_INCOMPLETE_DRAFT_MESSAGE,
   SOCK_PATTERN_MISSING_DRAFT_MESSAGE,
@@ -71,14 +75,24 @@ describe("Socks Builder Review → Summary navigation", () => {
     expect(summaryPage).toContain("SOCK_PATTERN_BUILDER_HREF");
     expect(summaryPage).toContain("SOCK_SUMMARY_CANCEL_LABEL");
     expect(summaryPage).toContain("SOCK_SUMMARY_PRIMARY_LABEL");
-    expect(summaryPage).toContain("SOCK_SUMMARY_PATTERN_NOT_READY_MESSAGE");
-    expect(summaryPage).toContain("disabled");
-    expect(summaryPage).not.toContain("PatternSummaryDiagramStage");
+    expect(summaryPage).toContain("SOCK_PATTERN_HREF");
+    expect(summaryPage).toContain('data-testid="button-socks-summary-view-pattern"');
+    expect(summaryPage).not.toContain("disabled");
+    expect(summaryPage).toContain("PatternSummaryDiagramStage");
+    expect(summaryPage).toContain("data-socks-summary-diagram");
+    expect(summaryPage).toContain("PatternSummaryMeasurementChip");
+    expect(summaryPage).toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
+    expect(SOCK_SUMMARY_ART_SRC).toContain("socks-pattern-summary-transparent.webp");
+    expect(summaryPage).toContain("SOCK_SUMMARY_ART_SRC");
+    expect(summaryScript).not.toContain("buildSockFinishedProfileSvg");
+    expect(summaryScript).not.toContain("buildSockPatternDiagramSvg");
     expect(summaryPage).not.toContain("SleevelessPatternMemberGate");
     expect(summaryScript).toContain("buildSockSummaryFromDraft");
     expect(summaryScript).toContain("reconcilePatternDraftOwner");
     expect(summaryScript).not.toContain("location.assign");
-    expect(summaryScript).not.toContain("/patterns/socks/pattern");
+    expect(SOCK_PATTERN_HREF).toBe("/patterns/socks/pattern/");
+    expect(buildSockPatternHref()).toBe("/patterns/socks/pattern/");
+    expect(SOCK_SUMMARY_PRIMARY_LABEL).toBe("View My Pattern");
   });
 });
 
@@ -406,6 +420,6 @@ describe("Socks Summary page content", () => {
     expect(summaryPage).toContain("Leg shaping");
     expect(summaryPage).not.toContain("ankle circumference");
     expect(summaryPage).not.toContain("Fancy Socks");
-    expect(summaryPage).not.toContain("/patterns/socks/pattern");
+    expect(summaryPage).toContain("SOCK_PATTERN_HREF");
   });
 });

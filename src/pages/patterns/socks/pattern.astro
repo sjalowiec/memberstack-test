@@ -1,0 +1,366 @@
+---
+/**
+ * Finished Basic Socks Pattern page (free / ungated).
+ * Reads kbm_socks_draft → approved Socks calc → approved instruction generator → renderer.
+ * Edit Pattern opens the dedicated Socks Edit workspace without clearing the draft.
+ * Videos, dedicated print/PDF, and catalog wiring are not part of this pass.
+ */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import Layout from "../../../layouts/Layout.astro";
+import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
+import {
+  SOCK_EDIT_HREF,
+  SOCK_PATTERN_BUILDER_HREF,
+} from "../../../lib/patterns/sock/sockPatternNavigation";
+import { SOCK_FINISHED_PATTERN_MISSING_DRAFT_MESSAGE } from "../../../lib/patterns/sock/sockPatternPage";
+import { BASIC_SOCK_PATTERN_NAME } from "../../../lib/patterns/sock/sockDraft";
+
+import "../../../styles/wizard.css";
+import "../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../styles/patterns/pattern-app-shell.css";
+import "../../../styles/patterns/pattern-diagram-tabs.css";
+
+const sockSizingJson = JSON.parse(
+  readFileSync(resolve("public/data/sizing_socks.json"), "utf8"),
+) as unknown;
+---
+
+<Layout
+  title="Basic Socks Pattern | Knit it Now"
+  description="Your custom machine-knit Basic Socks pattern instructions from the Socks Builder."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/socks" />
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell socks-pattern-page"
+    data-pattern-print-skip-modal
+    data-socks-pattern-page
+    data-testid="socks-pattern-page"
+  >
+    <div id="socks-pattern-top" class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <div class="pattern-action-bar no-print" data-pattern-action-bar>
+          <div class="pattern-action-bar__group pattern-action-bar__group--start"></div>
+          <div
+            class="pattern-action-bar__group pattern-action-bar__group--end"
+            data-socks-pattern-actions
+            data-sleeveless-pattern-actions
+          >
+            <a
+              href={SOCK_EDIT_HREF}
+              class="sleeveless-pattern-edit-action no-print"
+              data-socks-edit-open
+              data-testid="button-edit-pattern"
+              hidden
+            >
+              <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+            </a>
+            <!-- Print button (#print-btn) is injected when a valid pattern renders. -->
+          </div>
+        </div>
+
+        <div class="hat-pattern-empty" data-socks-pattern-empty role="status" hidden>
+          <h1 class="hat-pattern-empty__title">{BASIC_SOCK_PATTERN_NAME}</h1>
+          <p class="hat-pattern-empty__message" data-socks-pattern-empty-message>
+            {SOCK_FINISHED_PATTERN_MISSING_DRAFT_MESSAGE}
+          </p>
+          <a
+            href={SOCK_PATTERN_BUILDER_HREF}
+            class="kbm-btn kbm-btn-accent"
+            data-testid="socks-pattern-empty-cta"
+          >
+            Go to Socks Builder
+          </a>
+        </div>
+
+        <div id="sg-socks-results" class="sg-sleeveless-results" data-socks-pattern-results>
+          <section class="sleeveless-pattern-intro">
+            <div class="sleeveless-pattern-intro__content">
+              <div class="sleeveless-pattern-online-project-header no-print">
+                <div class="sleeveless-pattern-online-heading-row">
+                  <p
+                    class="sleeveless-pattern-online-heading"
+                    data-socks-pattern-online-heading
+                  >
+                    Basic Socks · Pattern instructions
+                  </p>
+                </div>
+              </div>
+              <div
+                class="sg-pattern-intro-metadata pattern-generated-description"
+                data-sg-pattern-intro
+                data-pattern-generated-description
+                aria-label="Pattern summary"
+              ></div>
+            </div>
+          </section>
+
+          <SleevelessPatternPrintNotice />
+
+          <div id="pattern-content" data-pattern-content>
+            <div
+              class="pattern-layout pattern-layout--garment-columns socks-pattern-reading-layout"
+              data-socks-pattern-reading-layout
+            >
+              <div
+                class="pattern-layout__content socks-pattern-reading-layout__instructions"
+                data-socks-pattern-mount
+              >
+                <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>
+              </div>
+              <aside
+                class="pattern-layout__sidebar socks-pattern-reading-layout__diagram"
+                aria-label="Socks diagram"
+              >
+                <div class="sock-pattern-diagram-panel pattern-print-keep-together">
+                  <h3 class="sock-pattern-diagram-panel__title no-print">Sock Dimensions</h3>
+                  <div
+                    class="sock-pattern-diagram-panel__tabs-mount"
+                    id="diagram-content"
+                    data-sock-diagram-tabs-mount
+                  ></div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+
+        <noscript>
+          <div class="pattern-section">
+            <h2 class="pattern-noscript-heading">Pattern</h2>
+            <p>Turn on JavaScript to view this pattern.</p>
+          </div>
+        </noscript>
+      </div>
+    </div>
+  </main>
+
+  <script
+    type="application/json"
+    id="socks-sizing-chart"
+    set:html={JSON.stringify(sockSizingJson)}
+  />
+</Layout>
+
+<script>
+  import "/src/scripts/socks-pattern-page.ts";
+</script>
+
+<style>
+  .pattern-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .pattern-action-bar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .pattern-action-bar__group--end {
+    justify-content: flex-end;
+  }
+
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .sleeveless-pattern-online-project-header {
+    margin: 0 0 0.75rem;
+  }
+
+  .sleeveless-pattern-online-heading {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #374151;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .socks-pattern-reading-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .socks-pattern-reading-layout__diagram {
+    order: 0;
+    min-width: 0;
+  }
+
+  .socks-pattern-reading-layout__instructions {
+    order: 1;
+    min-width: 0;
+  }
+
+  .sock-pattern-diagram-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sock-pattern-diagram-panel__title {
+    margin: 0 0 0.55rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .sock-pattern-diagram-panel__svg,
+  :global(.sock-pattern-diagram-panel__svg) {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    overflow-x: visible;
+    box-sizing: border-box;
+  }
+
+  .sock-pattern-diagram-panel__svg :global(svg),
+  :global(.sock-pattern-diagram-panel__svg svg) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (min-width: 1100px) {
+    #pattern-content .pattern-layout.socks-pattern-reading-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+      gap: clamp(1.25rem, 2.5vw, 2rem);
+      align-items: start;
+    }
+
+    .socks-pattern-reading-layout__instructions {
+      order: 0;
+    }
+
+    .socks-pattern-reading-layout__diagram {
+      order: 0;
+    }
+  }
+
+  :global(#pattern-content .sock-instructions) {
+    margin: 0 0 1.75rem;
+  }
+
+  :global(#pattern-content .sock-instructions__label) {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(#pattern-content .sock-pattern-section) {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    background: #fff;
+  }
+
+  :global(#pattern-content .sock-pattern-section__header) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(82, 104, 45, 0.07);
+  }
+
+  :global(#pattern-content .sock-pattern-section__heading h4) {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  :global(#pattern-content .sock-pattern-section__content) {
+    padding: 0.5rem 0.85rem 1rem;
+  }
+
+  :global(#pattern-content .sock-pattern-tip) {
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid var(--kbm-accent, #c2614e);
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 8%, #fff);
+  }
+
+  :global(.socks-pair-print-heading),
+  :global(.sock-pattern-diagram-print-heading) {
+    display: none;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  @media print {
+    :global(#pattern-content .sock-pattern-section) {
+      break-inside: avoid;
+    }
+
+    :global(.socks-pair-tabs__list),
+    :global(.pattern-diagram-tabs__list) {
+      display: none !important;
+    }
+
+    :global(.socks-pair-print-heading),
+    :global(.sock-pattern-diagram-print-heading) {
+      display: block !important;
+    }
+
+    :global(.socks-pair-tabs__panel),
+    :global(.socks-pair-tabs__panel[hidden]),
+    :global(.sock-pattern-diagram-tabs__panel),
+    :global(.sock-pattern-diagram-tabs__panel[hidden]),
+    :global(.pattern-diagram-tabs__panel),
+    :global(.pattern-diagram-tabs__panel[hidden]) {
+      display: block !important;
+      visibility: visible !important;
+      margin-top: 0.85rem;
+    }
+
+    #pattern-content .pattern-layout.socks-pattern-reading-layout {
+      display: block !important;
+    }
+
+    .socks-pattern-reading-layout__diagram {
+      max-width: 4.2in;
+      margin: 0 auto 1rem;
+    }
+
+    .sock-pattern-diagram-panel__svg,
+    :global(.sock-pattern-diagram-panel__svg) {
+      overflow: visible;
+    }
+  }
+</style>

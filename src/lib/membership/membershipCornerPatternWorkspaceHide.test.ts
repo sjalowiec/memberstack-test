@@ -20,6 +20,14 @@ const socksSummary = readFileSync(
   resolve("src/pages/patterns/socks/summary/index.astro"),
   "utf8",
 );
+const socksPattern = readFileSync(
+  resolve("src/pages/patterns/socks/pattern.astro"),
+  "utf8",
+);
+const socksEdit = readFileSync(
+  resolve("src/pages/patterns/socks/edit/index.astro"),
+  "utf8",
+);
 const hatPattern = readFileSync(resolve("src/pages/patterns/hat/pattern.astro"), "utf8");
 const sleevelessBuilder = readFileSync(
   resolve("src/pages/patterns/sleeveless/builder.astro"),
@@ -112,6 +120,8 @@ describe("membership corner CTA — pattern workspace hide", () => {
       hatBuilder,
       socksBuilder,
       socksSummary,
+      socksPattern,
+      socksEdit,
       hatPattern,
       sleevelessBuilder,
       sleevelessPattern,
