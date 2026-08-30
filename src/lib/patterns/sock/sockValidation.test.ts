@@ -66,4 +66,26 @@ describe("basic sock calc invariants", () => {
     };
     expect(basicSockCalcInvariantErrors(broken).join(" ")).toMatch(/heel and toe|symmetrical/);
   });
+
+  it("flags a wider-leg schedule that does not land on the target", () => {
+    const result = calculateBasicSockPattern({
+      ...valid,
+      legCircumferenceInches: 10,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const broken = {
+      ...result.calc,
+      legShapingSchedule: {
+        ...result.calc.legShapingSchedule,
+        knitOrder: {
+          ...result.calc.legShapingSchedule.knitOrder,
+          events: result.calc.legShapingSchedule.knitOrder.events.map((event, index, all) =>
+            index === all.length - 1 ? { ...event, stitchesAfter: event.stitchesAfter - 2 } : event,
+          ),
+        },
+      },
+    };
+    expect(basicSockCalcInvariantErrors(broken).join(" ")).toMatch(/target stitch count/);
+  });
 });

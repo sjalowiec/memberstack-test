@@ -23,3 +23,14 @@ export {
   type ShapingDirection,
   type StructuredShapingStep,
 } from './autoShaping';
+
+export {
+  computeMagicFormulaPairedShaping,
+  type MagicFormulaPairedDirection,
+  type MagicFormulaPairedEvent,
+  type MagicFormulaPairedFailure,
+  type MagicFormulaPairedFailureReason,
+  type MagicFormulaPairedInput,
+  type MagicFormulaPairedResult,
+  type MagicFormulaPairedSuccess,
+} from './magicFormulaPaired';

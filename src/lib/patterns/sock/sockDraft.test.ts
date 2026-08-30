@@ -50,6 +50,9 @@ describe("sockDraft contract", () => {
     expect(draft).not.toHaveProperty("who");
     expect(draft).not.toHaveProperty("heelDepth");
     expect(draft).not.toHaveProperty("toeDepth");
+    expect(draft).not.toHaveProperty("ankleLength");
+    expect(draft).not.toHaveProperty("ankleStraightLength");
+    expect(draft).not.toHaveProperty("ankleStraightRows");
     expect(draft).not.toHaveProperty("fancy");
     expect(draft).not.toHaveProperty("swan");
   });

@@ -24,7 +24,6 @@ import {
 import {
   SOCK_BUILDER_INCOMPLETE_MESSAGE,
   SOCK_BUILDER_STEPS,
-  SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE,
   evaluateSockBuilderCalc,
   evaluateSockBuilderGaugeSanityGate,
   evaluateSockBuilderNeedleCapacity,
@@ -45,6 +44,7 @@ import {
 import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 import { isValidExpressAvailableNeedles } from "../lib/patterns/sleevelessExpressAvailableNeedles";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
+import { buildSockSummaryFromBuilderHref } from "../lib/patterns/sock/sockPatternNavigation";
 import {
   buildSockSizeOptionLabel,
   createSockSizingAdapter,
@@ -573,13 +573,13 @@ async function initSocksBuilderPage(): Promise<void> {
 
     syncCanonicalDraft();
     const saved = readSockDraft();
-    isSubmitting = false;
-    updateCtaUi();
     if (!saved) {
+      isSubmitting = false;
+      updateCtaUi();
       showFeedback(SOCK_BUILDER_INCOMPLETE_MESSAGE);
       return;
     }
-    showFeedback(SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE);
+    window.location.assign(buildSockSummaryFromBuilderHref());
   }
 
   createPatternBtn?.addEventListener("click", () => {
