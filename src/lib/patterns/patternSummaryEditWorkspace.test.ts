@@ -85,9 +85,9 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     );
   });
 
-  it("keeps one primary vertical scroll on the overlay workspace at two-column", () => {
+  it("keeps one primary vertical scroll on the overlay drawer panel at two-column", () => {
     expect(workspaceCss).toMatch(
-      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*visible/s,
     );
     const twoColStart = workspaceCss.indexOf("@container sl-edit-workspace (min-width: 1100px)");
     const stackedStart = workspaceCss.indexOf("@container sl-edit-workspace (max-width: 1099.98px)");
@@ -96,10 +96,13 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     const twoColBlock = workspaceCss.slice(twoColStart, stackedStart);
     expect(twoColBlock).toContain("flex-direction: row");
     expect(twoColBlock).toMatch(
-      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*visible/s,
     );
     expect(twoColBlock).not.toMatch(
       /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow:\s*hidden/s,
+    );
+    expect(twoColBlock).not.toMatch(
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
     );
     expect(twoColBlock).not.toMatch(
       /\.sl-edit-drawer--workspace \.sl-edit-workspace__measure\s*\{[^}]*overflow:\s*hidden/s,
@@ -107,6 +110,14 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     expect(twoColBlock).toMatch(
       /\.sl-edit-workspace__layout\s*\{[^}]*align-items:\s*flex-start/s,
     );
+    for (const src of [sleevelessPattern, dropShoulderPattern]) {
+      expect(src).toMatch(
+        /\.sl-edit-drawer--workspace \.sl-edit-drawer__panel\s*\{[\s\S]*?overflow-y:\s*auto/,
+      );
+      expect(src).not.toMatch(
+        /\.sl-edit-drawer--workspace \.sl-edit-drawer__panel\s*\{[\s\S]*?overflow:\s*hidden/,
+      );
+    }
   });
 
   it("does not require focus/click before wheel can reach the overlay scrollport", () => {

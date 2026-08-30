@@ -8,9 +8,9 @@
  * Two-column vs stacked uses a container query on `.sl-edit-workspace` at
  * EDIT_WORKSPACE_TWO_COLUMN_MIN_PX (1100px), matching the sweater edit contract.
  *
- * Overlay editors (`.sl-edit-drawer--workspace`) use `.sl-edit-workspace__layout`
- * as the single vertical scrollport at every breakpoint. Do not switch that
- * container to `overflow: hidden` at two-column — columns must stay in flow.
+ * Overlay editors (`.sl-edit-drawer--workspace`) use the drawer panel as the
+ * single vertical scrollport. Do not give `.sl-edit-workspace__layout`, the
+ * form body, or the diagram column their own overflow-y — columns stay in flow.
  *
  * Nested `overflow-x: hidden` (with `overflow-y: visible`) computes to
  * `overflow-y: auto` and becomes a second scrollport. Wheel/trackpad then
@@ -33,7 +33,6 @@
 
 .sl-edit-drawer--workspace .sl-edit-workspace {
   flex: 1 1 auto;
-  min-height: 0;
   display: flex;
   flex-direction: column;
   border-radius: 0;
@@ -54,11 +53,8 @@
 
 .sl-edit-drawer--workspace .sl-edit-workspace__layout {
   flex: 1 1 auto;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .sl-edit-workspace__quick {
@@ -605,18 +601,15 @@
   }
 
   /*
-   * Overlay editors (Sleeveless / Drop Shoulder) keep the same scroll contract as
-   * stacked mode and Hat: `.sl-edit-workspace__layout` is the one vertical
-   * scrollport. Columns stay in document flow (`flex-start`) so Quick edits and
-   * Measurements grow with their content instead of clipping at the viewport.
+   * Overlay editors (Sleeveless / Drop Shoulder): the drawer panel is the one
+   * vertical scrollport. Columns stay in document flow (`flex-start`) so Quick
+   * edits and Measurements grow with their content instead of clipping.
    */
   .sl-edit-drawer--workspace .sl-edit-workspace__layout {
     align-items: flex-start;
     flex: 1 1 auto;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .sl-edit-workspace__quick {
