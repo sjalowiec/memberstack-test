@@ -9,6 +9,7 @@ import { PATTERN_STORAGE_KEY, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./p
 import { startFreshSleevelessExpressPattern } from "./sleevelessExpressFreshStart";
 import { CUSTOM_PATTERN_ACTIVE_PROJECT_ID_KEY } from "./customPatternProjectActiveId";
 import { HAT_DRAFT_STORAGE_KEY } from "./hat/hatDraft";
+import { SOCK_DRAFT_STORAGE_KEY } from "./sock/sockDraft";
 import { HAT_ACTIVE_PROJECT_ID_KEY, HAT_ACTIVE_PROJECT_NAME_KEY } from "./hat/hatSavedProject";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 
@@ -81,6 +82,19 @@ describe("enforcePatternDraftOwner", () => {
     expect(localStorage.getItem(HAT_DRAFT_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(HAT_ACTIVE_PROJECT_ID_KEY)).toBeNull();
     expect(localStorage.getItem(HAT_ACTIVE_PROJECT_NAME_KEY)).toBeNull();
+    expect(readPatternDraftOwnerId()).toBe("ms_userB");
+  });
+
+  it("clears Sock draft when a different member signs in", () => {
+    seedWorkingDraft();
+    localStorage.setItem(
+      SOCK_DRAFT_STORAGE_KEY,
+      JSON.stringify({ patternType: "socks", patternSystem: "socks", sizeSel: "woman_med" }),
+    );
+    enforcePatternDraftOwner("ms_userA");
+
+    expect(enforcePatternDraftOwner("ms_userB")).toBe("cleared");
+    expect(localStorage.getItem(SOCK_DRAFT_STORAGE_KEY)).toBeNull();
     expect(readPatternDraftOwnerId()).toBe("ms_userB");
   });
 
