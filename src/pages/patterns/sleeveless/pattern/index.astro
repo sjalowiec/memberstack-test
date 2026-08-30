@@ -1094,7 +1094,12 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
     display: flex;
     flex-direction: column;
     min-height: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    container-type: inline-size;
+    container-name: sl-edit-workspace;
     width: 100%;
     max-width: none;
     box-shadow: none;
@@ -1109,13 +1114,12 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
 
   /*
    * Two-column body region; the shell-width inner keeps it from going edge-to-edge.
-   * Mobile-first: a single scrolling column (quick edits, then the measurement SVG).
-   * Wide drawer body (>=1100px container) switches to side-by-side with independently
-   * scrolling columns. (Was viewport 1000px — too early at high Windows scaling.)
+   * Mobile-first: a single column (quick edits, then the measurement SVG).
+   * Wide drawer panel (>=1100px container) switches to side-by-side.
+   * The drawer panel is the one vertical scroller — not this layout, not the diagram.
    */
   .sl-edit-workspace__layout {
     flex: 1 1 auto;
-    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -1124,11 +1128,9 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
     margin: 0 auto;
     padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 4vw, 2.5rem);
     box-sizing: border-box;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
-  /* Quick edits column — stacks on mobile (full width), scrolls on desktop. */
+  /* Quick edits column — stacks on mobile (full width). */
   .sl-edit-workspace__quick {
     display: flex;
     flex-direction: column;
@@ -1137,12 +1139,7 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
   .sl-edit-drawer--workspace .sl-edit-drawer__body {
     flex: 1 1 auto;
     padding: 0;
-    /*
-     * Container queries drive two-column vs stacked workspace from the drawer body's
-     * usable width (not viewport alone). Matches EDIT_WORKSPACE_TWO_COLUMN_MIN_PX.
-     */
-    container-type: inline-size;
-    container-name: sl-edit-workspace;
+    overflow: visible;
   }
 
   /* Measurement SVG column. */
@@ -1218,31 +1215,23 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
     min-height: 0;
   }
 
-  /* Wide workspace container: side-by-side. Quick panel narrow; SVG gets the remaining width. */
+  /* Wide workspace panel: side-by-side. Quick panel narrow; SVG gets the remaining width. */
   @container sl-edit-workspace (min-width: 1100px) {
     .sl-edit-workspace__layout {
       flex-direction: row;
-      align-items: stretch;
+      align-items: flex-start;
       gap: clamp(1.5rem, 2.5vw, 2.5rem);
       flex: 1 1 auto;
-      min-height: 0;
-      max-height: 100%;
-      overflow: hidden;
       padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
     }
 
-    /*
-     * Quick edits column fits naturally on desktop — no internal scrollbar.
-     * The measurement SVG (right) keeps its own scroll, so the quick panel never
-     * needs to scroll; the spacing tweaks below keep all six controls in view.
-     */
     .sl-edit-workspace__quick {
       flex: 0 0 clamp(320px, 26vw, 380px);
       max-width: 380px;
       overflow: visible;
     }
 
-    /* Tighten quick-edit spacing (desktop only) so the panel fits without scrolling. */
+    /* Tighten quick-edit spacing (desktop only). */
     .sl-edit-drawer--workspace .sl-edit-drawer__body {
       gap: 0.85rem;
     }
@@ -1277,96 +1266,6 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
       flex-direction: column;
       flex: 1 1 0;
       min-width: 0;
-      min-height: 0;
-      max-height: 100%;
-      overflow: hidden;
-    }
-
-    /* Near-square sleeveless diagram: measure pane scrolls when art exceeds viewport height. */
-    .sl-edit-workspace__measure .sl-measure-workspace__body {
-      min-height: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /*
-     * Drop-shoulder summary SVG is ~2× taller than sleeveless. Flex chain + scroll on
-     * `.express-mbp-scroll` (stage + overlay) so chips stay aligned while scrolling.
-     * `data-express-construction` is stamped when the editor initializes.
-     */
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-review-body) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-review-body > .sleeveless-measure-project-summary),
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-review-body > .cb-measure-missing) {
-      flex-shrink: 0;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-diagram-host) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.cb-measure-diagram-wrap) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.express-mbp) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
     }
   }
 
