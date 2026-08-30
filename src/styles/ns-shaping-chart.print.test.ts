@@ -73,6 +73,12 @@ describe("ns-shaping-chart print layout regression", () => {
     expect(sharedPrintCss).toMatch(/\.ns-shaping-chart__print-lead-heading[\s\S]*break-after:\s*avoid\s*!important/);
   });
 
+  it("prints both First/Second Side tab panels even when the second tab is hidden on screen", () => {
+    const printCss = printBlock(nsShapingChartCss);
+    expect(printCss).toMatch(/\.ns-shaping-chart__tablist[\s\S]*display:\s*none\s*!important/);
+    expect(printCss).toMatch(/\.ns-shaping-chart__tabpanel\[hidden\][\s\S]*display:\s*block\s*!important/);
+  });
+
   it("keeps screen accordion disclosure headers visible outside print", () => {
     const screenCss = nsShapingChartCss.replace(printBlock(nsShapingChartCss), "");
     expect(screenCss).toMatch(/\.ns-shaping-chart__disclosure-header[\s\S]*cursor:\s*pointer/);

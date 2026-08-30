@@ -22,6 +22,53 @@
   overflow: visible;
 }
 
+.cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0 0 0.55rem;
+  padding: 0;
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs [role="tab"] {
+  appearance: none;
+  flex: 1 1 0;
+  margin: 0;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, #d8d8d8);
+  border-radius: 999px;
+  background: #fff;
+  color: #4d5a48;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs [role="tab"].is-active,
+.cb-measure-page[data-express-construction="drop-shoulder"]
+  .ds-edit-preview-tabs
+  [role="tab"][aria-selected="true"] {
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 12%, #fff);
+  border-color: var(--kbm-green, #52682d);
+  color: var(--kbm-green, #52682d);
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs [role="tab"]:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+/*
+ * Overlay chips set display:flex (author stylesheet). That wins over the UA
+ * [hidden] rule, so Body chips stayed painted on the Sleeve tab after their
+ * SVG targets were gone — clipped at the overlay origin / leftover Body coords.
+ * Make [hidden] actually hide the inactive tab's measurement chips.
+ */
+.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box[hidden] {
+  display: none !important;
+}
+
 .cb-measure-page .express-mbp {
   margin: 0;
 }

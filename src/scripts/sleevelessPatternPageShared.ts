@@ -57,6 +57,12 @@ import {
   writeDropShoulderSleeveConstruction,
   type DropShoulderSleeveDirection,
 } from "../lib/patterns/dropShoulderSleeveConstruction.ts";
+import { tryBuildLiveDropShoulderBackStsRowsDiagramSvg } from "../lib/patterns/dropShoulderBackPatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderFrontStsRowsDiagramSvg } from "../lib/patterns/dropShoulderFrontPatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderBackNotationSvg } from "../lib/patterns/dropShoulderBackShapingNotationDiagramSvg.ts";
+import { tryBuildLiveDropShoulderFrontNotationSvg } from "../lib/patterns/dropShoulderFrontShapingNotationDiagramSvg.ts";
+import { tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg } from "../lib/patterns/dropShoulderSleevePatternDiagramSvg.ts";
+import { tryBuildLiveDropShoulderSleeveNotationSvg } from "../lib/patterns/dropShoulderSleeveShapingNotationDiagramSvg.ts";
 import {
   DROP_SHOULDER_SLEEVE_NOTATION_TOP_DOWN_SRC,
   resolveDropShoulderSleeveMeasurementSvgSrc,
@@ -922,8 +928,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
     const backModeToggle = diagramOpts?.backDiagramModeToggle === true;
     const frontModeToggle = diagramOpts?.frontDiagramModeToggle === true;
+    const sleeveModeToggle = diagramOpts?.sleeveDiagramModeToggle === true;
     const enableVisualWorkspace = diagramOpts?.enableVisualWorkspace === true;
-    const workspacePiece = backModeToggle ? "back" : "front";
+    const workspacePiece = backModeToggle ? "back" : sleeveModeToggle ? "sleeve" : "front";
     const backDiagramAttrs = backModeToggle
       ? ' data-sleeveless-back-diagram data-sleeveless-back-diagram-mode="sts-rows"'
       : "";
@@ -952,7 +959,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           shapingSrc: diagramOpts?.shapingSrc || "",
           shapingAlt: diagramOpts?.shapingAlt || (workspacePiece === "back"
             ? BACK_DIAGRAM_NOTATION_ALT
-            : FRONT_DIAGRAM_NOTATION_ALT),
+            : workspacePiece === "sleeve"
+              ? "Drop shoulder sleeve shaping notation diagram"
+              : FRONT_DIAGRAM_NOTATION_ALT),
           cardiganHalfSide: half === "left" || half === "right" ? half : undefined,
         })}`
       : `${workspaceTitle}${diagramCardHtml}`;
@@ -2312,6 +2321,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
               ctx.result,
               ctx.hydrateGeneration,
               ctx.sleeveDirection ?? "cuff-up",
+              ctx.unit ?? "in",
             ),
           );
         } else if (piece === "back") {
@@ -3318,6 +3328,26 @@ table {
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderBackNotationSvg(
+      result,
+      patternData,
+      generatorPatternData,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        hostEl,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_BACK_DIAGRAM_NOTATION_ALT,
+      )
+    ) {
+      return;
+    }
+
     try {
       const backDiagram = resolveDropShoulderBackDiagramSvg("shaping-notation", patternData);
       reportDropShoulderDiagramFallback(backDiagram, "back shaping notation");
@@ -3381,6 +3411,26 @@ table {
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderFrontNotationSvg(
+      result,
+      patternData,
+      generatorPatternData,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        hostEl,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT,
+      )
+    ) {
+      return;
+    }
+
     try {
       const frontDiagram = resolveDropShoulderFrontDiagramSvg("shaping-notation", patternData);
       reportDropShoulderDiagramFallback(frontDiagram, "front shaping notation");
@@ -3438,6 +3488,37 @@ table {
     }
   }
 
+  /**
+   * Mount generated Drop Shoulder SVG. Returns false on parse failure so the caller
+   * can keep the Illustrator fallback — never throw out of pattern render.
+   */
+  function mountDropShoulderStsRowsSvgMarkup(hostEl, svgText, hydrateGen, ariaLabel) {
+    try {
+      const parser = new DOMParser();
+      let doc = parser.parseFromString(svgText, "image/svg+xml");
+      let svg = doc.documentElement;
+      if (!svg || svg.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) {
+        doc = parser.parseFromString(svgText, "text/xml");
+        svg = doc.documentElement;
+      }
+      if (!svg || svg.nodeName.toLowerCase() !== "svg") {
+        return false;
+      }
+
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", ariaLabel);
+      svg.classList.add("sleeveless-piece-split__diagram-inline");
+
+      if (hydrateGen && hostEl.dataset.sleevelessHydrateGen !== hydrateGen) return true;
+      hostEl.innerHTML = svg.outerHTML;
+      return true;
+    } catch (err) {
+      console.warn("[sleeveless] Drop shoulder generated diagram parse failed:", err);
+      return false;
+    }
+  }
+
+
   async function hydrateDropShoulderBackDiagram(
     el,
     mode,
@@ -3460,6 +3541,28 @@ table {
         hydrateGeneration,
         generatorPatternData,
       );
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderBackStsRowsDiagramSvg(
+      result,
+      patternData,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        el,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
+      )
+    ) {
       return;
     }
     const replacements = buildDropShoulderBodyDiagramReplacements(result, unit, {
@@ -3499,6 +3602,28 @@ table {
         hydrateGeneration,
         generatorPatternData,
       );
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderFrontStsRowsDiagramSvg(
+      result,
+      patternData,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        el,
+        generatedSvg,
+        hydrateGen,
+        dropShoulderFrontDiagramAltForMode("sts-rows", isCardigan),
+      )
+    ) {
       return;
     }
     const dsHalf = el.dataset.sleevelessCardiganHalf || "";
@@ -3657,13 +3782,32 @@ table {
     });
   }
 
-  async function inlineDropShoulderSleeveNotationSvg(hostEl, result, hydrateGeneration, sleeveDirection) {
+  async function inlineDropShoulderSleeveNotationSvg(hostEl, result, hydrateGeneration, sleeveDirection, unit) {
     if (!(hostEl instanceof HTMLElement)) return;
     const hydrateGen =
       hydrateGeneration === undefined || hydrateGeneration === null
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) hostEl.dataset.sleevelessHydrateGen = hydrateGen;
+
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderSleeveNotationSvg(
+      result,
+      sleeveDirection,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        hostEl,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT,
+      )
+    ) {
+      return;
+    }
+
     try {
       const notationSrc = resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection);
       const res = await fetch(notationSrc, {
@@ -3722,7 +3866,29 @@ table {
         ? resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection)
         : measurementSrc;
     if (mode === "shaping-notation") {
-      await inlineDropShoulderSleeveNotationSvg(el, result, hydrateGeneration, sleeveDirection);
+      await inlineDropShoulderSleeveNotationSvg(el, result, hydrateGeneration, sleeveDirection, unit);
+      return;
+    }
+    const hydrateGen =
+      hydrateGeneration === undefined || hydrateGeneration === null
+        ? null
+        : String(hydrateGeneration);
+    if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
+    const diagramUnit = unit === "cm" ? "cm" : "in";
+    const generatedSvg = tryBuildLiveDropShoulderSleeveStsRowsDiagramSvg(
+      result,
+      sleeveDirection,
+      diagramUnit,
+    );
+    if (
+      generatedSvg &&
+      mountDropShoulderStsRowsSvgMarkup(
+        el,
+        generatedSvg,
+        hydrateGen,
+        DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT,
+      )
+    ) {
       return;
     }
     const replacements = buildDropShoulderSleeveDiagramReplacements(result, unit, sleeveDirection);
@@ -3920,20 +4086,12 @@ table {
 
     /** @param {"back" | "front" | "sleeve"} piece */
     const dropShoulderVisualGuidesOpts = (piece, extras = {}) => {
-      if (piece === "sleeve") {
-        return {
-          enabled: true,
-          piece: "sleeve",
-          notationSupported: true,
-          construction: "drop-shoulder",
-          patternData: dropShoulderDiagramPatternData,
-        };
-      }
+      if (piece === "sleeve") return undefined;
       if (!bodyNotationSupported) return undefined;
       return {
         enabled: true,
         piece,
-        notationSupported: true,
+        notationSupported: false,
         construction: "drop-shoulder",
         patternData: dropShoulderDiagramPatternData,
         shapingMapData: extras.shapingMapData ?? null,
@@ -3976,22 +4134,8 @@ table {
 
     const frontLabel = "FRONT";
     const frontAlt = isCardigan
-      ? "Drop shoulder cardigan front schematic"
-      : "Drop shoulder front schematic";
-    const frontDiagramOpts = isCardigan
-      ? {
-          diagramPiece: "front",
-          cardiganHalfSide: "left",
-          ...(bodyNotationSupported
-            ? { frontDiagramModeToggle: true, showModeToggle: false }
-            : {}),
-        }
-      : {
-          diagramPiece: "front",
-          ...(bodyNotationSupported
-            ? { frontDiagramModeToggle: true, showModeToggle: false }
-            : {}),
-        };
+      ? DROP_SHOULDER_CARDIGAN_FRONT_DIAGRAM_STS_ROWS_ALT
+      : DROP_SHOULDER_FRONT_DIAGRAM_STS_ROWS_ALT;
 
     const sleeveInner =
       renderDropShoulderSleeveConstructionToggleHtml(sleeveDirection) + sleeve.splitInner;
@@ -4014,46 +4158,74 @@ table {
       "sts-rows",
       dropShoulderDiagramPatternData,
     );
+    const backWorkspaceOpts = {
+      backDiagramModeToggle: true,
+      ...(bodyNotationSupported
+        ? {
+            enableVisualWorkspace: true,
+            shapingSrc: resolveDropShoulderBackDiagramSrc(
+              "shaping-notation",
+              dropShoulderDiagramPatternData,
+            ),
+            shapingAlt: DROP_SHOULDER_BACK_DIAGRAM_NOTATION_ALT,
+          }
+        : {}),
+    };
+    const frontWorkspaceOpts = {
+      frontDiagramModeToggle: true,
+      ...(isCardigan ? { cardiganHalfSide: "left" } : {}),
+      ...(bodyNotationSupported
+        ? {
+            enableVisualWorkspace: true,
+            shapingSrc: resolveDropShoulderFrontDiagramSrc(
+              "shaping-notation",
+              dropShoulderDiagramPatternData,
+            ),
+            shapingAlt: DROP_SHOULDER_FRONT_DIAGRAM_NOTATION_ALT,
+          }
+        : {}),
+    };
+    const sleeveWorkspaceOpts = {
+      sleeveDiagramModeToggle: true,
+      enableVisualWorkspace: true,
+      shapingSrc: resolveDropShoulderSleeveNotationSvgSrc(sleeveDirection),
+      shapingAlt: DROP_SHOULDER_SLEEVE_DIAGRAM_NOTATION_ALT,
+    };
 
     mount.innerHTML =
       wrapPatternSection(
         "sg-back",
         "BACK",
-        wrapDropShoulderPieceSplit(
+        wrapSleevelessPieceSplit(
           back.splitInner,
           backDiagramSrc,
           DROP_SHOULDER_BACK_DIAGRAM_STS_ROWS_ALT,
           back.postSplit,
-          {
-            diagramPiece: "back",
-            ...(bodyNotationSupported
-              ? { backDiagramModeToggle: true, showModeToggle: false }
-              : {}),
-          },
+          backWorkspaceOpts,
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
       wrapPatternSection(
         "sg-front",
         frontLabel,
-        wrapDropShoulderPieceSplit(
+        wrapSleevelessPieceSplit(
           front.splitInner,
           frontDiagramSrc,
           frontAlt,
           front.postSplit,
-          frontDiagramOpts,
+          frontWorkspaceOpts,
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
       wrapPatternSection(
         "sg-sleeve",
         "SLEEVE",
-        wrapDropShoulderPieceSplit(
+        wrapSleevelessPieceSplit(
           sleeveInner,
           resolveDropShoulderSleeveMeasurementSvgSrc(sleeveDirection),
-          "Drop shoulder sleeve schematic",
+          DROP_SHOULDER_SLEEVE_DIAGRAM_STS_ROWS_ALT,
           sleeve.postSplit,
-          { diagramPiece: "sleeve", sleeveDiagramModeToggle: true, showModeToggle: false },
+          sleeveWorkspaceOpts,
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
@@ -4072,13 +4244,16 @@ table {
     );
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
-    // Front chart uses neckline-reset origin (frontNecklineStartRC → RC:000), matching the map.
-    // No "Before Shaping" / "Divide the Neckline" preamble — written instructions already cover that.
+    // Front chart RC origin matches written instructions / Shaping Notation / map.
     const frontActiveSideRcStart = dropShoulderFrontChartActiveSideRcStart(
       result.frontNeckShoulderShapingChart,
       result?.debug?.frontNecklineStartRC,
+      result?.debug?.armholeStartRow,
     );
-    const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(frontActiveSideRcStart);
+    const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(
+      frontActiveSideRcStart,
+      result.frontNeckShoulderShapingChart,
+    );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost && result.frontNeckShoulderChartUsesLiveRows) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
@@ -4121,6 +4296,8 @@ table {
     bindSleevelessDiagramZoom(mount);
     bindDropShoulderSleeveDiagramMode(mount);
     bindDropShoulderBodyDiagramMode(mount);
+    initSleevelessPatternDiagramTabs(mount);
+    initPatternDiagramTabs(mount);
     bindDropShoulderSleeveConstructionToggle(mount);
     bindNecklineNotationPreview(mount);
     bindShapingMapEnlarge(mount);
@@ -4137,6 +4314,7 @@ table {
       "front-neckline-shoulder-chart-print-area",
       "Front Neckline Shaping Chart",
     );
+    bindNeckShoulderShoulderTabs(mount);
     initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
     applyPatternSectionCollapseState(mount);
     bindPatternSectionCollapsePersistence(mount);

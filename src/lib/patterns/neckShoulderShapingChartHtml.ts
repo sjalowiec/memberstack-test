@@ -996,9 +996,10 @@ export type NeckShoulderChartRenderOptions = {
    */
   suppressCarriagePositionTip?: boolean;
   /**
-   * When true, First/Second Side render as peer tabs (both tables stay in the DOM).
+   * Pattern Lego: First/Second Side peer tabs (both tables stay in the DOM).
    * First Side is selected and visible by default. No accordion and no
-   * “Show second shoulder checklist” toggle. Enable only for sleeveless pullover V-neck Front.
+   * “Show second shoulder checklist” toggle. Cardigan half-fronts never tab
+   * even when this is set — they knit one neck edge per piece.
    */
   shoulderTabs?: boolean;
 };
@@ -1014,7 +1015,24 @@ const SECOND_SHOULDER_PRINT_HEADING = "SECOND SHOULDER";
 export const NS_SHOULDER_TABS_ROOT_ATTR = "data-ns-shoulder-tabs";
 export const NS_SHOULDER_PANEL_ATTR = "data-ns-shoulder-panel";
 
-/** Sleeveless pullover V-neck Front chart — the only path that uses shoulder tabs. */
+/**
+ * Pattern Lego: present separate left/right neckline shaping in one tabbed container.
+ * Presentation only — callers supply chart rows, RC, carriage, actions, and stitch counts.
+ * Use for any sweater construction that works two neckline sides (Sleeveless, Drop Shoulder,
+ * future Set-In / Raglan). Do not enable for cardigan half-fronts.
+ */
+export function necklineShapingTwoSideTabPresentation(): Pick<
+  NeckShoulderChartRenderOptions,
+  "shoulderTabs" | "collapsible" | "tableHeading"
+> {
+  return {
+    shoulderTabs: true,
+    collapsible: false,
+    tableHeading: "First Side Checklist",
+  };
+}
+
+/** Sleeveless pullover V-neck Front — adapter that enables the shared two-side tab Lego. */
 export function isSleevelessPulloverVNeckFrontChart(chart?: NeckShoulderShapingChart): boolean {
   return (
     chart !== undefined &&

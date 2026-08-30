@@ -26,6 +26,12 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
 import { overrideRecordsEqual } from "./patternSectionPatch";
+import {
+  isActiveDropShoulderConstruction,
+  readDropShoulderSleeveLengthChoice,
+} from "./patternConstructionIdentity";
+import { mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues } from "./dropShoulderSleeveMeasurementOverrides";
+import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) return obj as Record<string, unknown>;
@@ -294,6 +300,14 @@ export function flushCustomBuildMeasurementOverridesToCanonical(
     const fromDom = collectCustomBuildMeasurementOverridesFromDom(root, displayUnit);
     if (Object.keys(fromDom).length > 0) {
       overrides = { ...overrides, ...fromDom };
+      if (isActiveDropShoulderConstruction()) {
+        overrides = mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues({
+          incoming: overrides,
+          stored: loadMeasurementOverrides(),
+          sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+          userEdited: readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
+        });
+      }
     }
   }
   if (Object.keys(overrides).length === 0) return;

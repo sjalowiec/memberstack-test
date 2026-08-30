@@ -7,6 +7,7 @@
  */
 
 import {
+  isSleevelessCardiganFrontNeckShoulderChart,
   neckShoulderShapingChartFromRows,
   type NeckShoulderShapingChart,
 } from "./neckShoulderShapingChart";
@@ -16,7 +17,10 @@ import {
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
 import { armholeLocalRcActiveShoulderChecklistStart } from "./neckShoulderActiveSideChecklist";
-import type { NeckShoulderChartRenderOptions } from "./neckShoulderShapingChartHtml";
+import {
+  necklineShapingTwoSideTabPresentation,
+  type NeckShoulderChartRenderOptions,
+} from "./neckShoulderShapingChartHtml";
 import { cardiganFrontInitialNeckBindOffStitches, cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import {
@@ -144,7 +148,9 @@ export function buildDropShoulderVNeckEvenScheduleTimeline(inputs: {
   const sched = evenShapingSchedule(decreaseCount, depth);
   if (sched.count <= 0) return [];
 
-  const decreaseLocalRcs = new Set(evenShapingGarmentRowNumbers(0, sched));
+  const decreaseLocalRcs = new Set(
+    evenShapingGarmentRowNumbers(0, sched).filter((n) => n >= 0 && n <= depth),
+  );
   const frontWidth = inputs.isCardigan ? forceEven(bust / 2) : bust;
   const startStitches = inputs.isCardigan
     ? Math.max(S + decreaseCount, frontWidth)
@@ -157,7 +163,8 @@ export function buildDropShoulderVNeckEvenScheduleTimeline(inputs: {
   const centerWidth = inputs.isCardigan ? 0 : startStitches % 2;
 
   const rows: RowEntry[] = [];
-  for (let local = 0; local < depth; local++) {
+  // Include local === depth so a last decrease on the shoulder RC is not dropped.
+  for (let local = 0; local <= depth; local++) {
     const rc = firstRow + local;
     const events: ShapingEvent[] = [];
     let netR = 0;
@@ -200,8 +207,8 @@ function appendDropShoulderStraightShoulderFinish(
 ): RowEntry[] {
   if (timeline.length === 0 || totalRows <= 0) return timeline;
 
-  const lastKnitRc = Math.max(0, Math.floor(totalRows) - 1);
-  const out = timeline.filter((row) => row.row <= lastKnitRc);
+  const bindOffRc = Math.floor(totalRows);
+  const out = timeline.filter((row) => row.row <= bindOffRc);
   if (out.length === 0) return timeline;
 
   const last = out[out.length - 1]!;
@@ -209,6 +216,7 @@ function appendDropShoulderStraightShoulderFinish(
   let leftCount = last.stitchesL;
   let rightCount = last.stitchesR;
 
+  const lastKnitRc = Math.max(0, bindOffRc - 1);
   while (rc < lastKnitRc) {
     rc += 1;
     out.push({
@@ -246,8 +254,24 @@ function appendDropShoulderStraightShoulderFinish(
 
   if (events.length === 0) return out;
 
-  // Always bind off on the garment shoulder RC — never past `totalRows`.
-  const bindOffRc = Math.floor(totalRows);
+  // Shoulder RC only — never past `totalRows`. A decrease that lands on bindOffRc stays.
+  if (rc === bindOffRc) {
+    const cur = out[out.length - 1]!;
+    out[out.length - 1] = {
+      ...cur,
+      events: [...cur.events, ...events],
+      stitchesL: leftCount,
+      stitchesR: rightCount,
+      netChangeL:
+        (cur.netChangeL ?? 0) +
+        (profile === "cardiganHalfFront"
+          ? 0
+          : -(events.find((e) => e.side === "left")?.amount ?? 0)),
+      netChangeR: (cur.netChangeR ?? 0) + -(events.find((e) => e.side === "right")?.amount ?? 0),
+    };
+    return out;
+  }
+
   out.push({
     row: bindOffRc,
     events,
@@ -361,11 +385,6 @@ export function buildDropShoulderFrontNeckShapingChart(
   const isCardiganHalfFront = isCardigan;
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
   const timelineOpts = { straightShoulders: true as const };
-  const frontNeckWorkingRows = dropShoulderFrontNecklineWorkingRows(
-    frontNecklineStartRC,
-    totalRows,
-    frontNeckDepthRows,
-  );
 
   const necklineOpeningStsForFrontPiece = isCardiganHalfFront
     ? Math.max(1, Math.round(neckSts / 2))
@@ -405,7 +424,7 @@ export function buildDropShoulderFrontNeckShapingChart(
       isCardigan,
       neckSts,
       shoulderStsEach: isCardigan ? shoulderStsForFrontPiece : shoulderStsEach,
-      frontNeckDepthRows: frontNeckWorkingRows,
+      frontNeckDepthRows,
       firstShapingRow: frontNecklineStartRC,
       bustBodySts,
     });
@@ -433,32 +452,72 @@ export function buildDropShoulderFrontNeckShapingChart(
   return { chart, timeline, usesLiveRows: true };
 }
 
+/** True when Front neckline starts at or after the armhole marker (local RC 000 after reset). */
+export function dropShoulderFrontUsesLocalNecklineRc(
+  frontNecklineStartRC: number | null | undefined,
+  armholeStartRow: number | null | undefined,
+): boolean {
+  if (typeof frontNecklineStartRC !== "number" || !Number.isFinite(frontNecklineStartRC)) {
+    return false;
+  }
+  if (typeof armholeStartRow !== "number" || !Number.isFinite(armholeStartRow)) {
+    return true;
+  }
+  return frontNecklineStartRC >= armholeStartRow;
+}
+
 /**
- * Checklist RC origin for the drop-shoulder front chart: neckline reset
- * (`frontNecklineStartRC` → local RC:000), not armhole-local garment offset.
+ * Subtract this from garment timeline RCs for Front chart/map labels.
+ * Before-armhole: 0 (continuous garment RC). At/after: frontNecklineStartRC (local 000).
+ */
+export function dropShoulderFrontNecklineDisplayRcOffset(
+  frontNecklineStartRC: number | null | undefined,
+  armholeStartRow: number | null | undefined,
+): number {
+  if (!dropShoulderFrontUsesLocalNecklineRc(frontNecklineStartRC, armholeStartRow)) {
+    return 0;
+  }
+  return Math.max(0, Math.floor(frontNecklineStartRC as number));
+}
+
+/**
+ * Checklist RC origin for the drop-shoulder front chart.
+ * At/after the armhole marker: neckline reset (`frontNecklineStartRC` → local RC:000).
+ * Before the marker: continuous garment RC (same origin as written instructions).
  */
 export function dropShoulderFrontChartActiveSideRcStart(
   chart: NeckShoulderShapingChart,
   frontNecklineStartRC: number | null | undefined,
+  armholeStartRow?: number | null,
 ): number {
-  return armholeLocalRcActiveShoulderChecklistStart(chart, frontNecklineStartRC, {
+  const offset = dropShoulderFrontNecklineDisplayRcOffset(
+    frontNecklineStartRC,
+    armholeStartRow,
+  );
+  return armholeLocalRcActiveShoulderChecklistStart(chart, offset, {
     includeCenterNecklineSetupRow: true,
   });
 }
 
 /**
  * Online/print table options for the drop-shoulder front neckline chart.
- * No workflow preamble — center bind-off is the first table row at RC:000.
+ * No workflow preamble — center bind-off is the first table row (local 000 after reset,
+ * or garment RC when the neckline begins before the armhole marker).
+ * Pullover Front uses the shared two-side tab Lego; cardigan half-fronts stay single-side.
  */
 export function dropShoulderFrontNeckChartTableOptions(
   activeSideRcStart: number,
+  chart?: NeckShoulderShapingChart,
 ): NeckShoulderChartRenderOptions {
+  const isCardiganFront = isSleevelessCardiganFrontNeckShoulderChart(chart);
   return {
     activeSideOnly: true,
     activeSideRcStart,
     includeCenterNecklineSetupRow: true,
     hideCenterNecklineSetupRow: false,
-    tableHeading: "Front Neckline Shaping Chart",
     shouldersShaped: false,
+    ...(isCardiganFront
+      ? { tableHeading: "Front Neckline Shaping Chart", isCardiganFront: true }
+      : necklineShapingTwoSideTabPresentation()),
   };
 }

@@ -8,6 +8,7 @@ import {
   compactActiveSideInstructionRowsForPrint,
   formatActionCellHtml,
   isSleevelessPulloverVNeckFrontChart,
+  necklineShapingTwoSideTabPresentation,
   neckShoulderChartHasCarriagePositionColumn,
   NS_SHOULDER_PANEL_ATTR,
   NS_SHOULDER_TABS_ROOT_ATTR,
@@ -855,6 +856,17 @@ describe("sleeveless pullover V-neck Front shoulder tabs", () => {
     expect(isSleevelessPulloverVNeckFrontChart(vNeck.frontNeckShoulderShapingChart)).toBe(true);
     expect(isSleevelessPulloverVNeckFrontChart(vNeck.neckShoulderShapingChart)).toBe(false);
     expect(isSleevelessPulloverVNeckFrontChart(round.frontNeckShoulderShapingChart)).toBe(false);
+  });
+
+  it("uses the shared two-side tab Lego for Sleeveless pullover V-neck Front", () => {
+    const { html } = renderFrontTabs(shallowVNeckPattern());
+    const lego = necklineShapingTwoSideTabPresentation();
+    expect(lego.shoulderTabs).toBe(true);
+    expect(lego.collapsible).toBe(false);
+    expect(lego.tableHeading).toBe("First Side Checklist");
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain("Show Completed Rows");
+    expect(html).toContain("Reset Checklist");
   });
 
   it("renders both tables as tabs: First selected, Second mounted but inactive", () => {

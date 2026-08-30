@@ -298,7 +298,7 @@ describe("Sleeveless Edit Pattern — real measurement input event path", () => 
 
   it("does not treat a measurement edit as a workspace rehydrate", () => {
     expect(measurementsPageSrc).toMatch(
-      /persistFromRoot\(root, displayUnit\);\s*refreshPatternValidationUi\(root, displayUnit\);\s*if \(!isDropShoulderConstruction\(\)\) \{\s*sleevelessMeasurementArtRefreshImpl\?\.\(\);/,
+      /persistFromRoot\(root, displayUnit\);\s*refreshPatternValidationUi\(root, displayUnit\);[\s\S]{0,400}sleevelessMeasurementArtRefreshImpl\?\.\(\);/,
     );
     expect(measurementsPageSrc).not.toMatch(
       /sleevelessMeasurementArtRefreshImpl\?\.\(\);[\s\S]{0,200}hydrateWorkspaceSummaryDiagram/,

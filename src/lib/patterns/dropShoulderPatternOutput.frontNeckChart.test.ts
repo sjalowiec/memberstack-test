@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
+import { buildDropShoulderMountShapingMapData } from "./dropShoulderMountVisualGuides";
+import { formatRcColon } from "./sleevelessPatternOutput";
+import { formatRcNotation, formatRcResetNotation } from "./sleevelessBackJapaneseNotation";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
 import {
   dropShoulderFrontChartActiveSideRcStart,
@@ -14,6 +19,8 @@ import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import {
   renderActiveShoulderChartIntroHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
+  NS_SHOULDER_PANEL_ATTR,
+  NS_SHOULDER_TABS_ROOT_ATTR,
 } from "./neckShoulderShapingChartHtml";
 import { DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE } from "./neckShoulderActiveIntroCopy";
 import {
@@ -79,10 +86,18 @@ describe("drop-shoulder front neckline shaping chart", () => {
       result.frontNeckShoulderShapingChart,
       "test-drop-front-round",
       undefined,
-      dropShoulderFrontNeckChartTableOptions(activeSideRcStart),
+      dropShoulderFrontNeckChartTableOptions(
+        activeSideRcStart,
+        result.frontNeckShoulderShapingChart,
+      ),
     );
-    expect(html).toContain("Front Neckline Shaping Chart");
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain(">First Side<");
+    expect(html).toContain(">Second Side<");
     expect(html).not.toContain("First Shoulder Checklist");
+    expect(html).not.toContain("Front Neckline Shaping Chart");
+    expect(html).not.toContain("Show second shoulder checklist");
+    expect(html).not.toContain("Second Shoulder Checklist");
   });
 
   it("matches written front neck-edge RCs: center at 000, first edge BO at 002, then every 2 rows", () => {
@@ -160,7 +175,10 @@ describe("drop-shoulder front neckline shaping chart", () => {
       chart,
       result.debug.frontNecklineStartRC,
     );
-    const options = dropShoulderFrontNeckChartTableOptions(activeSideRcStart);
+    const options = dropShoulderFrontNeckChartTableOptions(
+      activeSideRcStart,
+      chart,
+    );
 
     // Origin is neckline reset — not armhole-local (e.g. 013 = neckStart − armholeStart).
     expect(activeSideRcStart).toBe(0);
@@ -193,14 +211,24 @@ describe("drop-shoulder front neckline shaping chart", () => {
       '<span class="ns-shaping-chart__row-counter-number">000</span>',
     );
     expect(html).toMatch(/Scrap off center \d+ neckline/);
-    expect(html).toContain("Front Neckline Shaping Chart");
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain(">First Side<");
+    expect(html).toContain(">Second Side<");
+    expect(html).not.toContain("Front Neckline Shaping Chart");
+    expect(html).not.toContain("Show second shoulder checklist");
+    expect(html).not.toContain("Second Shoulder Checklist");
 
-    // Center divide is only the first-shoulder setup action; second shoulder keeps the same RC /
+    // Center divide is only the first-side setup action; second side keeps the same RC /
     // stitch-count row but rewrites the action to a held-side reminder (action text also appears in
     // data-row-id, so assert on the second checklist tbody cells rather than global match counts).
     const firstTbody = html.match(/<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
     const secondTbody =
-      html.match(/Second Shoulder Checklist[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
+      html.match(
+        new RegExp(
+          `${NS_SHOULDER_PANEL_ATTR}="second"[\\s\\S]*?<tbody>([\\s\\S]*?)<\\/tbody>`,
+          "i",
+        ),
+      )?.[1] ?? "";
     const y = checklist[0]!.stitchesRemaining;
     expect(firstTbody).toMatch(/Scrap off center \d+ neckline/);
     expect(firstTbody).toContain(`${y} needles in work`);
@@ -223,13 +251,16 @@ describe("drop-shoulder front neckline shaping chart", () => {
           result.frontNeckShoulderShapingChart,
           result.debug.frontNecklineStartRC,
         ),
+        result.frontNeckShoulderShapingChart,
       ),
     );
 
     expect(html).not.toMatch(/shoulder shaping/i);
-    expect(html).toContain("cut the yarn");
-    expect(html).toContain("reversing the neckline shaping");
-    expect(html).toContain("so it remains on the neck edge");
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain(">Second Side<");
+    expect(html).not.toContain("Show second shoulder checklist");
+    expect(html).not.toContain("Want less mental reversing");
+    expect(html).toMatch(/Return to the held shoulder with \d+ needles in work/);
   });
 
   it("omits the no-shoulder-shaping note from the front chart intro (stated once in back instructions)", () => {
@@ -281,6 +312,22 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
     expect(result.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(true);
     expect(result.frontNeckShoulderShapingChart.rows.length).toBeGreaterThan(0);
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      result.frontNeckShoulderShapingChart,
+      "test-drop-front-v",
+      undefined,
+      dropShoulderFrontNeckChartTableOptions(
+        dropShoulderFrontChartActiveSideRcStart(
+          result.frontNeckShoulderShapingChart,
+          result.debug.frontNecklineStartRC,
+        ),
+        result.frontNeckShoulderShapingChart,
+      ),
+    );
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain(">First Side<");
+    expect(html).toContain(">Second Side<");
+    expect(html).not.toContain("Show second shoulder checklist");
   });
 
   it("includes chart for cardigan round neck with half-front CF bind-off", () => {
@@ -305,6 +352,22 @@ describe("drop-shoulder front neckline shaping chart", () => {
     });
     expect(chartInitial).toBe(cfBindOff);
     expect(frontNeckParagraphs(result)).toMatch(new RegExp(`bind off ${cfBindOff} stitches`, "i"));
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      result.frontNeckShoulderShapingChart,
+      "test-drop-cardigan-round",
+      undefined,
+      dropShoulderFrontNeckChartTableOptions(
+        dropShoulderFrontChartActiveSideRcStart(
+          result.frontNeckShoulderShapingChart,
+          result.debug.frontNecklineStartRC,
+        ),
+        result.frontNeckShoulderShapingChart,
+      ),
+    );
+    expect(html).not.toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain("Front Neckline Shaping Chart");
+    expect(html).not.toContain(">First Side<");
+    expect(html).not.toContain(">Second Side<");
   });
 
   it("includes chart for cardigan V-neck", () => {
@@ -321,6 +384,20 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(result.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(true);
     expect(result.frontNeckShoulderShapingChart.sleevelessCardiganFront).toBe(true);
     expect(result.frontNeckShoulderShapingChart.rows.length).toBeGreaterThan(0);
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      result.frontNeckShoulderShapingChart,
+      "test-drop-cardigan-v",
+      undefined,
+      dropShoulderFrontNeckChartTableOptions(
+        dropShoulderFrontChartActiveSideRcStart(
+          result.frontNeckShoulderShapingChart,
+          result.debug.frontNecklineStartRC,
+        ),
+        result.frontNeckShoulderShapingChart,
+      ),
+    );
+    expect(html).not.toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).not.toContain(">First Side<");
   });
 
   it("does not change written instructions or JP notation when chart is present", () => {
@@ -342,5 +419,263 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(repl["jp-neckline-bo"]).toBe(formatBindOffNotation(cfBindOff));
     expect(frontNeckParagraphs(result)).toMatch(new RegExp(`bind off ${cfBindOff} stitches`, "i"));
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
+  });
+});
+
+function rcTimingPattern(
+  frontNeckDepth: number,
+  extras: { neckline?: string; frontStyle?: string; garmentStyle?: string } = {},
+): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "women",
+      selectedMeasurements: {
+        finished_bust_chest: 40,
+        back_neck_to_hem: 24,
+        upper_arm: 13.4,
+        wrist: 8,
+        sleeve_length: 12,
+        shoulder_width: 16,
+        neck_opening: 7,
+        back_neck_depth: 1,
+        front_neck_depth: frontNeckDepth,
+      },
+    },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 5,
+      gaugeRowsPerInch: 6,
+      availableNeedles: 200,
+    },
+    style: {
+      construction: "drop-shoulder",
+      frontStyle: extras.frontStyle ?? "closed",
+      garmentStyle: extras.garmentStyle ?? "pullover",
+      neckline: extras.neckline ?? "round",
+    },
+  };
+}
+
+function firstWrittenFrontNeckRc(
+  result: ReturnType<typeof generateDropShoulderPattern>,
+): string | undefined {
+  const rows = result.frontDisplayRows ?? [];
+  const sectionIdx = rows.findIndex(
+    (row) => row.kind === "section" && row.title === "FRONT NECKLINE & SHOULDERS",
+  );
+  if (sectionIdx < 0) return undefined;
+  for (let i = sectionIdx + 1; i < rows.length; i++) {
+    const row = rows[i]!;
+    if (row.kind === "section" || row.kind === "piece") break;
+    if (row.kind === "block" && row.rowCounterReset !== true && row.rc) return row.rc;
+  }
+  return undefined;
+}
+
+describe("Drop Shoulder Front chart/map RC origin matches written and notation", () => {
+  const COMBOS: Array<{
+    name: string;
+    extras: { neckline?: string; frontStyle?: string; garmentStyle?: string };
+    expectFrontMap: boolean;
+  }> = [
+    { name: "Pullover Round", extras: {}, expectFrontMap: true },
+    { name: "Pullover V-neck", extras: { neckline: "v-neck" }, expectFrontMap: false },
+    {
+      name: "Cardigan Round",
+      extras: { frontStyle: "open", garmentStyle: "cardigan" },
+      expectFrontMap: false,
+    },
+    {
+      name: "Cardigan V-neck",
+      extras: { neckline: "v-neck", frontStyle: "open", garmentStyle: "cardigan" },
+      expectFrontMap: false,
+    },
+  ];
+
+  it.each(COMBOS)(
+    "$name before-armhole: written, notation, chart, and map use garment RC",
+    ({ extras, expectFrontMap }) => {
+      const pattern = rcTimingPattern(12, extras);
+      const result = generateDropShoulderPattern(pattern);
+      const start = result.debug.frontNecklineStartRC!;
+      const marker = result.debug.armholeStartRow!;
+      expect(start).toBe(72);
+      expect(start).toBeLessThan(marker);
+
+      expect(firstWrittenFrontNeckRc(result)).toBe(formatRcColon(start));
+
+      const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+      expect(live).toContain(`data-rc-neck-start="${formatRcNotation(start)}"`);
+      expect(live).toContain(`data-rc-armhole-marker="${formatRcNotation(marker)}"`);
+      expect(live).not.toContain('data-rc-neck-start="rc000"');
+
+      const chartStart = dropShoulderFrontChartActiveSideRcStart(
+        result.frontNeckShoulderShapingChart,
+        start,
+        marker,
+      );
+      expect(chartStart).toBe(start);
+      const checklist = buildActiveSideInstructionTableRows(
+        result.frontNeckShoulderShapingChart,
+        chartStart,
+        { includeCenterNecklineSetupRow: true },
+      );
+      expect(checklist[0]!.rc).toBe(start);
+      const html = renderNeckShoulderShapingChartTableOnlyHtml(
+        result.frontNeckShoulderShapingChart,
+        "before-armhole-chart",
+        undefined,
+        dropShoulderFrontNeckChartTableOptions(
+          chartStart,
+          result.frontNeckShoulderShapingChart,
+        ),
+      );
+      expect(html).toContain(`data-rc="${start}"`);
+      expect(html).not.toContain(
+        '<span class="ns-shaping-chart__row-counter-number">000</span>',
+      );
+
+      const { frontShapingMapData, backShapingMapData } = buildDropShoulderMountShapingMapData(
+        result,
+        pattern,
+        { isCardigan: extras.garmentStyle === "cardigan" },
+      );
+      if (expectFrontMap) {
+        expect(frontShapingMapData).not.toBeNull();
+        expect(frontShapingMapData!.rowMin).toBe(start);
+        expect(frontShapingMapData!.rowMin).not.toBe(0);
+      } else {
+        expect(frontShapingMapData).toBeNull();
+      }
+      if (backShapingMapData) {
+        expect(backShapingMapData.rowMin).toBe(0);
+      }
+    },
+  );
+
+  it("at-marker Front chart and map keep local RC 000", () => {
+    const pattern = rcTimingPattern(6.7);
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBe(result.debug.armholeStartRow);
+    expect(firstWrittenFrontNeckRc(result)).toBe("RC: 000");
+    const chartStart = dropShoulderFrontChartActiveSideRcStart(
+      result.frontNeckShoulderShapingChart,
+      result.debug.frontNecklineStartRC,
+      result.debug.armholeStartRow,
+    );
+    expect(chartStart).toBe(0);
+    const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
+    expect(frontShapingMapData?.rowMin).toBe(0);
+    const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.frontNecklineStartRC!)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
+  });
+
+  it("after-marker Front chart and map keep local RC 000", () => {
+    const pattern = rcTimingPattern(3);
+    const result = generateDropShoulderPattern(pattern);
+    expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
+    expect(firstWrittenFrontNeckRc(result)).toBe("RC: 000");
+    const chartStart = dropShoulderFrontChartActiveSideRcStart(
+      result.frontNeckShoulderShapingChart,
+      result.debug.frontNecklineStartRC,
+      result.debug.armholeStartRow,
+    );
+    expect(chartStart).toBe(0);
+    const { frontShapingMapData } = buildDropShoulderMountShapingMapData(result, pattern);
+    expect(frontShapingMapData?.rowMin).toBe(0);
+    const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.frontNecklineStartRC!)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
+  });
+
+  it("does not change Back map origin or Sleeveless Front reset", () => {
+    const deep = generateDropShoulderPattern(rcTimingPattern(12));
+    const { backShapingMapData } = buildDropShoulderMountShapingMapData(deep, rcTimingPattern(12));
+    expect(backShapingMapData?.rowMin).toBe(0);
+
+    const sleeveless = generateSleevelessBackPattern({
+      fit: {
+        sizingChart: "misses",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 22,
+          armhole_depth: 8,
+          neck_opening: 3,
+          shoulder_width: 4.25,
+          front_neck_depth: 3,
+          back_neck_depth: 1,
+        },
+      },
+      style: { recipientCategory: "misses", neckline: "round" },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 5,
+        gaugeRowsPerInch: 7,
+        availableNeedles: 200,
+      },
+    });
+    expect(
+      sleeveless.frontDisplayRows.some(
+        (row) => row.kind === "block" && row.rowCounterReset === true,
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("Drop Shoulder Front uses the shared two-side neckline tab Lego", () => {
+  function renderPulloverFront(styleOverrides: Record<string, unknown> = {}) {
+    const pattern = {
+      ...DROP_SHOULDER_BASE,
+      style: { ...DROP_SHOULDER_BASE.style, ...styleOverrides },
+    };
+    const result = generateDropShoulderPattern(pattern);
+    const options = dropShoulderFrontNeckChartTableOptions(
+      dropShoulderFrontChartActiveSideRcStart(
+        result.frontNeckShoulderShapingChart,
+        result.debug.frontNecklineStartRC,
+        result.debug.armholeStartRow,
+      ),
+      result.frontNeckShoulderShapingChart,
+    );
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      result.frontNeckShoulderShapingChart,
+      "ds-front-tabs",
+      undefined,
+      options,
+    );
+    return { result, options, html };
+  }
+
+  it("keeps First and Second Side as peer tabs with independent checklists", () => {
+    const { html, options } = renderPulloverFront();
+    expect(options.shoulderTabs).toBe(true);
+    expect(html).toContain(NS_SHOULDER_TABS_ROOT_ATTR);
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain('aria-label="Side"');
+    expect(html).toMatch(new RegExp(`${NS_SHOULDER_PANEL_ATTR}="first"`));
+    expect(html).toMatch(new RegExp(`id="ds-front-tabs-panel-second"[^>]*\\shidden`));
+    expect(html).toContain("Show Completed Rows");
+    expect(html).toContain("Reset Checklist");
+    expect(html).toContain('data-chart-progress-show-completed');
+    expect(html).toContain('data-chart-progress-reset');
+    expect(html).toContain('data-chart-id="ds-front-tabs-primary"');
+    expect(html).toContain('data-chart-id="ds-front-tabs-secondary"');
+    expect(html).toContain("FIRST SIDE");
+    expect(html).toContain("SECOND SIDE");
+    expect(html).toContain('data-chart-print-slot');
+    expect(html).not.toContain("ns-shaping-chart__second-shoulder-block");
+    expect(html).not.toContain("Show second shoulder checklist");
+  });
+
+  it("does not invent two-side tabs for cardigan Front", () => {
+    const { html, options } = renderPulloverFront({
+      frontStyle: "open",
+      garmentStyle: "cardigan",
+    });
+    expect(options.shoulderTabs).toBeUndefined();
+    expect(html).not.toContain(NS_SHOULDER_TABS_ROOT_ATTR);
   });
 });

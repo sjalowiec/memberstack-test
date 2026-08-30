@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import {
+  generateDropShoulderPattern,
+  dropShoulderFrontNecklineStartRc,
+} from "./dropShoulderPatternOutput";
+import { tryBuildLiveDropShoulderFrontNotationSvg } from "./dropShoulderFrontShapingNotationDiagramSvg";
+import { formatRcNotation, formatRcResetNotation } from "./sleevelessBackJapaneseNotation";
 import { dropShoulderFrontNeckShapingChartInputsReady } from "./dropShoulderFrontNeckShapingChart";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { RESET_ROW_COUNTER_TEXT, formatRowCounterResetGarmentRcLabel } from "./rowCounterReset";
@@ -407,5 +412,156 @@ describe("drop-shoulder neckline row counter reset", () => {
     );
     expect(frontResetIdx).toBeGreaterThanOrEqual(0);
     expect(frontNeckIdx).toBeGreaterThan(frontResetIdx);
+  });
+});
+
+function writtenTimingPattern(
+  frontNeckDepth: number,
+  extras: { neckline?: string; frontStyle?: string; garmentStyle?: string } = {},
+): Record<string, unknown> {
+  return {
+    fit: {
+      sizingChart: "women",
+      selectedMeasurements: {
+        finished_bust_chest: 40,
+        back_neck_to_hem: 24,
+        upper_arm: 13.4,
+        wrist: 8,
+        sleeve_length: 12,
+        shoulder_width: 16,
+        neck_opening: 7,
+        back_neck_depth: 1,
+        front_neck_depth: frontNeckDepth,
+      },
+    },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 5,
+      gaugeRowsPerInch: 6,
+      availableNeedles: 200,
+    },
+    style: {
+      construction: "drop-shoulder",
+      frontStyle: extras.frontStyle ?? "closed",
+      garmentStyle: extras.garmentStyle ?? "pullover",
+      neckline: extras.neckline ?? "round",
+    },
+  };
+}
+
+function firstRcAfterFrontNecklineSection(
+  rows: readonly SleevelessPatternDisplayRow[],
+): string | undefined {
+  const sectionIdx = indexOfSection(rows, "FRONT NECKLINE & SHOULDERS");
+  if (sectionIdx < 0) return undefined;
+  for (let i = sectionIdx + 1; i < rows.length; i++) {
+    const row = rows[i]!;
+    if (row.kind === "section" || row.kind === "piece") break;
+    if (row.kind === "block" && row.rowCounterReset !== true && row.rc) {
+      return row.rc;
+    }
+  }
+  return undefined;
+}
+
+function frontMarkerBlock(
+  rows: readonly SleevelessPatternDisplayRow[],
+): Extract<SleevelessPatternDisplayRow, { kind: "block" }> | undefined {
+  return rows.find(
+    (row): row is Extract<SleevelessPatternDisplayRow, { kind: "block" }> =>
+      row.kind === "block" && /Place a marker/i.test(blockText(row)),
+  );
+}
+
+describe("Drop Shoulder Front written RC when neckline begins before the armhole marker", () => {
+  const COMBOS: Array<{
+    name: string;
+    extras: { neckline?: string; frontStyle?: string; garmentStyle?: string };
+  }> = [
+    { name: "Pullover Round", extras: {} },
+    { name: "Pullover V-neck", extras: { neckline: "v-neck" } },
+    { name: "Cardigan Round", extras: { frontStyle: "open", garmentStyle: "cardigan" } },
+    {
+      name: "Cardigan V-neck",
+      extras: { neckline: "v-neck", frontStyle: "open", garmentStyle: "cardigan" },
+    },
+  ];
+
+  it.each(COMBOS)(
+    "$name: no neckline reset to RC 000; marker later on continuous garment RC",
+    ({ extras }) => {
+      const pattern = writtenTimingPattern(12, extras);
+      const result = generateDropShoulderPattern(pattern);
+      const rows = result.frontDisplayRows ?? [];
+      const start = result.debug.frontNecklineStartRC!;
+      const marker = result.debug.armholeStartRow!;
+      const total = result.debug.totalCalculatedRows!;
+
+      expect(start).toBe(dropShoulderFrontNecklineStartRc(total, result.debug.frontNeckDepthRows!));
+      expect(start).toBe(72);
+      expect(start).toBeLessThan(marker);
+      expect(result.debug.frontNeckDepthRows).toBe(72);
+
+      expect(necklineResetCount(rows)).toBe(0);
+      expect(indexOfNecklineReset(rows)).toBe(-1);
+      expect(firstRcAfterFrontNecklineSection(rows)).toBe(formatRcColon(start));
+      expect(firstRcAfterFrontNecklineSection(rows)).not.toBe("RC: 000");
+
+      const markerBlock = frontMarkerBlock(rows);
+      expect(markerBlock?.rc).toBe(formatRcColon(marker));
+      expect(marker).toBeGreaterThan(start);
+
+      const printHtml = renderSleevelessPrintPieceHtml(rows, "");
+      expect(printHtml).not.toContain(RESET_ROW_COUNTER_TEXT);
+
+      const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+      expect(live).toContain('data-reset="false"');
+      expect(live).toContain(`data-rc-neck-start="${formatRcNotation(start)}"`);
+      expect(live).toContain(`data-rc-armhole-marker="${formatRcNotation(marker)}"`);
+      expect(live).not.toContain('data-rc-neck-start="rc000"');
+      expect(live).not.toContain('data-role="body-rows"');
+    },
+  );
+
+  it("retains reset / local RC when the Front neckline starts at the armhole marker", () => {
+    const pattern = writtenTimingPattern(6.7);
+    const result = generateDropShoulderPattern(pattern);
+    const rows = result.frontDisplayRows ?? [];
+    expect(result.debug.frontNecklineStartRC).toBe(result.debug.armholeStartRow);
+    expect(necklineResetCount(rows)).toBe(1);
+    expect(firstRcAfterFrontNecklineSection(rows)).toBe("RC: 000");
+    expect(frontMarkerBlock(rows)?.rc).toBe(formatRcColon(result.debug.armholeStartRow!));
+    const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(live).toContain('data-reset="true"');
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.frontNecklineStartRC!)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
+  });
+
+  it("retains reset / local RC when the Front neckline starts after the armhole marker", () => {
+    const pattern = writtenTimingPattern(3);
+    const result = generateDropShoulderPattern(pattern);
+    const rows = result.frontDisplayRows ?? [];
+    expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
+    expect(necklineResetCount(rows)).toBe(1);
+    expect(firstRcAfterFrontNecklineSection(rows)).toBe("RC: 000");
+    expect(frontMarkerBlock(rows)?.rc).toBe(formatRcColon(result.debug.armholeStartRow!));
+    const live = tryBuildLiveDropShoulderFrontNotationSvg(result, pattern) ?? "";
+    expect(live).toContain('data-reset="true"');
+    expect(live).toContain(`data-rc-neck-start="${formatRcNotation(result.debug.frontNecklineStartRC!)}"`);
+    expect(live).toContain(`data-rc-reset="${formatRcResetNotation(0)}"`);
+    expect(live).not.toContain('data-rc-neck-start="rc000"');
+    expect(live).not.toContain('data-role="body-rows"');
+  });
+
+  it("does not change Back reset or Sleeveless Front reset", () => {
+    const deep = generateDropShoulderPattern(writtenTimingPattern(12));
+    expect(necklineResetCount(deep.displayRows)).toBe(1);
+    expect(firstNecklineInstructionBlock(deep.displayRows)?.rc).toBe("RC: 000");
+    expect(deep.debug.backNecklineStartRC).toBeGreaterThanOrEqual(deep.debug.armholeStartRow!);
+
+    const sleeveless = generateSleevelessBackPattern(sleevelessPulloverPattern());
+    expect(necklineResetCount(sleeveless.displayRows)).toBe(1);
+    expect(necklineResetCount(sleeveless.frontDisplayRows ?? [])).toBe(1);
   });
 });

@@ -456,6 +456,80 @@ function splitTrustedParagraphsAtShoulderCompletion(
 /** Local neckline RC after the row-counter reset (matches chart/map/checklist RC 000). */
 const DROP_SHOULDER_NECKLINE_LOCAL_RC_START = 0;
 
+/**
+ * Front neckline start from garment length and requested Front neck depth.
+ * May fall after, at, or before the armhole marker — not clamped to the marker.
+ */
+export function dropShoulderFrontNecklineStartRc(
+  totalRows: number,
+  frontNeckDepthRows: number,
+): number {
+  if (!(totalRows > 0) || !(frontNeckDepthRows > 0)) {
+    return Math.max(0, Math.floor(totalRows) || 0);
+  }
+  return Math.max(0, Math.floor(totalRows) - Math.floor(frontNeckDepthRows));
+}
+
+type DropShoulderFrontNeckTiming = {
+  neckStartRc: number;
+  neckStartsBeforeMarker: boolean;
+  armholeMarkerRc: number;
+  rowsAfterHemToBodyEnd: number;
+  straightAboveMarkerRows: number;
+  localArmholeMarkerRc: number;
+};
+
+function dropShoulderFrontNeckTiming(args: {
+  hemRows: number;
+  bodyToArmholeRows: number;
+  armholeMarkerRc: number;
+  totalRows: number;
+  frontNeckDepthRows: number;
+}): DropShoulderFrontNeckTiming {
+  const neckStartRc = dropShoulderFrontNecklineStartRc(args.totalRows, args.frontNeckDepthRows);
+  const neckStartsBeforeMarker = neckStartRc < args.armholeMarkerRc;
+  return {
+    neckStartRc,
+    neckStartsBeforeMarker,
+    armholeMarkerRc: args.armholeMarkerRc,
+    rowsAfterHemToBodyEnd: neckStartsBeforeMarker
+      ? Math.max(0, neckStartRc - args.hemRows)
+      : args.bodyToArmholeRows,
+    straightAboveMarkerRows: neckStartsBeforeMarker
+      ? 0
+      : Math.max(0, neckStartRc - args.armholeMarkerRc),
+    localArmholeMarkerRc: Math.max(0, args.armholeMarkerRc - neckStartRc),
+  };
+}
+
+/** Written Front RC: reset to local 000 only when the neckline starts at or after the marker. */
+function dropShoulderFrontWrittenUsesLocalNecklineRc(
+  timing: DropShoulderFrontNeckTiming,
+  extraGate = true,
+): boolean {
+  return extraGate && !timing.neckStartsBeforeMarker;
+}
+
+function appendDropShoulderFrontArmholeMarkerDuringNeckline(
+  rows: SleevelessPatternDisplayRow[],
+  timing: DropShoulderFrontNeckTiming,
+  markerLine: string,
+  stitchCount: number,
+  useLocalNecklineRc: boolean,
+): void {
+  if (!timing.neckStartsBeforeMarker) return;
+  const block = armholeMarkerBlockParagraphs(markerLine, []);
+  rows.push({
+    kind: "block",
+    rc: formatRcColon(
+      useLocalNecklineRc ? timing.localArmholeMarkerRc : timing.armholeMarkerRc,
+    ),
+    paragraphs: block.paragraphs,
+    trustedParagraphs: block.trustedParagraphs,
+    stitchCount: stitchCount > 0 ? stitchCount : undefined,
+  });
+}
+
 function dropShoulderNecklineLocalRowsFromGarment(
   neckGarmentStartRc: number,
   totalGarmentRows: number,
@@ -513,6 +587,8 @@ function appendDropShoulderAlineBodyRows(
     bodyToArmholeRows: number;
     castOnSts: number;
     alineEdgeScope?: SleevelessAlineShapingEdgeScope;
+    /** When set, knit-straight after A-line stops here instead of at the armhole. */
+    bodyEndRc?: number;
   },
 ): void {
   const { aline, castOnSts } = args;
@@ -579,11 +655,16 @@ function appendDropShoulderAlineBodyRows(
   }
 
   const straightRows = aline.straightRowsBeforeArmhole;
-  if (straightRows > 0) {
+  const straightBeginRc = aline.straightBeforeArmholeBeginRc;
+  let knitStraightRows = straightRows;
+  if (args.bodyEndRc !== undefined && Number.isFinite(args.bodyEndRc)) {
+    knitStraightRows = Math.max(0, Math.floor(args.bodyEndRc) - Math.floor(straightBeginRc));
+  }
+  if (knitStraightRows > 0) {
     rows.push({
       kind: "block",
       rc: formatRcColon(aline.straightBeforeArmholeBeginRc),
-      paragraphs: [`Knit ${straightRows} row${straightRows === 1 ? "" : "s"} straight.`],
+      paragraphs: [`Knit ${knitStraightRows} row${knitStraightRows === 1 ? "" : "s"} straight.`],
       stitchCount: bustSts,
     });
   }
@@ -735,12 +816,12 @@ function buildPulloverFrontRows(args: {
   alineShapingEdgeScope?: SleevelessAlineShapingEdgeScope;
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
+  const timing = dropShoulderFrontNeckTiming(args);
+  const neckStartRc = timing.neckStartRc;
   const A = args.bodyWidthSts;
   const castOnSts = args.castOnSts;
   const aline = args.alineBodyShaping ?? null;
   const useAlineBody = aline !== null && aline.shapingType !== "straight";
-  const neckStartRc = Math.max(args.armholeMarkerRc, args.totalRows - args.frontNeckDepthRows);
-  const straightAboveMarkerRows = Math.max(0, neckStartRc - args.armholeMarkerRc);
 
   rows.push({ kind: "piece", title: "FRONT" });
   rows.push(pieceMarkersSeamingTipDisplayRow("front"));
@@ -755,13 +836,14 @@ function buildPulloverFrontRows(args: {
       bodyToArmholeRows: args.bodyToArmholeRows,
       castOnSts,
       alineEdgeScope: args.alineShapingEdgeScope,
+      bodyEndRc: timing.neckStartsBeforeMarker ? timing.neckStartRc : undefined,
     });
   } else {
     rows.push({
       kind: "block",
       rc: formatRcColon(args.hemRows),
       paragraphs: args.bodyRowsValid
-        ? [knitEvenLine(args.bodyToArmholeRows)]
+        ? [knitEvenLine(timing.rowsAfterHemToBodyEnd)]
         : [
             "Body length to the armhole could not be calculated. Confirm back neck to hem, upper arm, and row gauge, then try again.",
           ],
@@ -769,21 +851,25 @@ function buildPulloverFrontRows(args: {
     });
   }
 
-  rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
-  const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(
-    "Place a marker at each end of this row to mark the base of the armhole.",
-    [knitEvenLine(straightAboveMarkerRows)],
-  );
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(args.armholeMarkerRc),
-    paragraphs: pulloverFrontAboveMarker.paragraphs,
-    trustedParagraphs: pulloverFrontAboveMarker.trustedParagraphs,
-    stitchCount: A > 0 ? A : undefined,
-  });
+  const pulloverMarkerLine = "Place a marker at each end of this row to mark the base of the armhole.";
+  if (!timing.neckStartsBeforeMarker) {
+    rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
+    const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(
+      pulloverMarkerLine,
+      [knitEvenLine(timing.straightAboveMarkerRows)].filter((line) => line.length > 0),
+    );
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(args.armholeMarkerRc),
+      paragraphs: pulloverFrontAboveMarker.paragraphs,
+      trustedParagraphs: pulloverFrontAboveMarker.trustedParagraphs,
+      stitchCount: A > 0 ? A : undefined,
+    });
+  }
 
   const hasPulloverFrontNeckShaping = args.neckSts > 0 && args.shoulderStsEach > 0;
-  if (hasPulloverFrontNeckShaping) {
+  const useLocalNecklineRc = dropShoulderFrontWrittenUsesLocalNecklineRc(timing);
+  if (hasPulloverFrontNeckShaping && useLocalNecklineRc) {
     rows.push(dropShoulderNecklineRowCounterResetBlock(neckStartRc));
   }
 
@@ -793,7 +879,11 @@ function buildPulloverFrontRows(args: {
       neckStartRc,
       args.totalRows,
     );
-    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(true, neckStartRc);
+    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(
+      useLocalNecklineRc,
+      neckStartRc,
+    );
+    const shoulderFinishRc = useLocalNecklineRc ? necklineLocalTotalRows : args.totalRows;
     const vNeckRowBudget = dropShoulderFrontNecklineWorkingRows(
       neckStartRc,
       args.totalRows,
@@ -816,15 +906,22 @@ function buildPulloverFrontRows(args: {
       ]);
       const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
         args.shoulderStsEach,
-        necklineLocalTotalRows,
+        shoulderFinishRc,
         DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE,
       );
       rows.push({
         kind: "block",
-        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
         trustedParagraphs: introTrusted,
         paragraphs: [],
       });
+      appendDropShoulderFrontArmholeMarkerDuringNeckline(
+        rows,
+        timing,
+        pulloverMarkerLine,
+        A,
+        useLocalNecklineRc,
+      );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
       const { lines, plan } = roundNeckEdgeLines(
@@ -841,15 +938,22 @@ function buildPulloverFrontRows(args: {
       ]);
       const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
         args.shoulderStsEach,
-        necklineLocalTotalRows,
+        shoulderFinishRc,
         DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
       );
       rows.push({
         kind: "block",
-        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
         trustedParagraphs: introTrusted,
         paragraphs: [],
       });
+      appendDropShoulderFrontArmholeMarkerDuringNeckline(
+        rows,
+        timing,
+        pulloverMarkerLine,
+        A,
+        useLocalNecklineRc,
+      );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     }
   } else {
@@ -882,12 +986,12 @@ function buildCardiganFrontRows(args: {
   alineShapingEdgeScope?: SleevelessAlineShapingEdgeScope;
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
+  const timing = dropShoulderFrontNeckTiming(args);
+  const neckStartRc = timing.neckStartRc;
   const A = args.frontSts;
   const castOnSts = args.frontCastOnSts;
   const aline = args.alineBodyShaping ?? null;
   const useAlineBody = aline !== null && aline.shapingType !== "straight";
-  const neckStartRc = Math.max(args.armholeMarkerRc, args.totalRows - args.frontNeckDepthRows);
-  const straightAboveMarkerRows = Math.max(0, neckStartRc - args.armholeMarkerRc);
 
   rows.push({ kind: "piece", title: "LEFT FRONT" });
   rows.push(pieceMarkersSeamingTipDisplayRow("front"));
@@ -902,13 +1006,14 @@ function buildCardiganFrontRows(args: {
       bodyToArmholeRows: args.bodyToArmholeRows,
       castOnSts,
       alineEdgeScope: args.alineShapingEdgeScope ?? "armholeEdgeOnly",
+      bodyEndRc: timing.neckStartsBeforeMarker ? timing.neckStartRc : undefined,
     });
   } else {
     rows.push({
       kind: "block",
       rc: formatRcColon(args.hemRows),
       paragraphs: args.bodyRowsValid
-        ? [knitEvenLine(args.bodyToArmholeRows)]
+        ? [knitEvenLine(timing.rowsAfterHemToBodyEnd)]
         : [
             "Body length to the armhole could not be calculated. Confirm back neck to hem, upper arm, and row gauge, then try again.",
           ],
@@ -916,18 +1021,21 @@ function buildCardiganFrontRows(args: {
     });
   }
 
-  rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
-  const cardiganFrontAboveMarker = armholeMarkerBlockParagraphs(
-    "Place a marker at the side edge to mark the base of the armhole.",
-    [knitEvenLine(straightAboveMarkerRows)],
-  );
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(args.armholeMarkerRc),
-    paragraphs: cardiganFrontAboveMarker.paragraphs,
-    trustedParagraphs: cardiganFrontAboveMarker.trustedParagraphs,
-    stitchCount: A > 0 ? A : undefined,
-  });
+  const cardiganMarkerLine = "Place a marker at the side edge to mark the base of the armhole.";
+  if (!timing.neckStartsBeforeMarker) {
+    rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
+    const cardiganFrontAboveMarker = armholeMarkerBlockParagraphs(
+      cardiganMarkerLine,
+      [knitEvenLine(timing.straightAboveMarkerRows)].filter((line) => line.length > 0),
+    );
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(args.armholeMarkerRc),
+      paragraphs: cardiganFrontAboveMarker.paragraphs,
+      trustedParagraphs: cardiganFrontAboveMarker.trustedParagraphs,
+      stitchCount: A > 0 ? A : undefined,
+    });
+  }
 
   const cardiganNeckChartAtRc000 = dropShoulderFrontNeckShapingChartInputsReady({
     neckSts: args.neckPerFront * 2,
@@ -936,13 +1044,16 @@ function buildCardiganFrontRows(args: {
     totalRows: args.totalRows,
     bustBodySts: args.frontSts * 2,
   });
-  if (cardiganNeckChartAtRc000) {
+  const useLocalNecklineRc = dropShoulderFrontWrittenUsesLocalNecklineRc(
+    timing,
+    cardiganNeckChartAtRc000,
+  );
+  if (useLocalNecklineRc) {
     rows.push(dropShoulderNecklineRowCounterResetBlock(neckStartRc));
   }
 
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.neckPerFront > 0 && args.shoulderStsEach > 0) {
-    const useLocalNecklineRc = cardiganNeckChartAtRc000;
     const necklineLocalTotalRows = dropShoulderNecklineLocalRowsFromGarment(
       neckStartRc,
       args.totalRows,
@@ -977,6 +1088,13 @@ function buildCardiganFrontRows(args: {
         trustedParagraphs: introTrusted,
         paragraphs: [],
       });
+      appendDropShoulderFrontArmholeMarkerDuringNeckline(
+        rows,
+        timing,
+        cardiganMarkerLine,
+        A,
+        useLocalNecklineRc,
+      );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
       const fullNeck = args.neckPerFront * 2;
@@ -999,6 +1117,13 @@ function buildCardiganFrontRows(args: {
         trustedParagraphs: introTrusted,
         paragraphs: [],
       });
+      appendDropShoulderFrontArmholeMarkerDuringNeckline(
+        rows,
+        timing,
+        cardiganMarkerLine,
+        A,
+        useLocalNecklineRc,
+      );
       rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     }
     rows.push({
@@ -1413,7 +1538,7 @@ export function generateDropShoulderPattern(
       ? Math.max(armholeMarkerRc, totalRows - backNeckDepthRows)
       : totalRows;
 
-  const frontNecklineStartRC = Math.max(armholeMarkerRc, totalRows - frontNeckDepthRows);
+  const frontNecklineStartRC = dropShoulderFrontNecklineStartRc(totalRows, frontNeckDepthRows);
   const frontNecklineWorkingRows = dropShoulderFrontNecklineWorkingRows(
     frontNecklineStartRC,
     totalRows,

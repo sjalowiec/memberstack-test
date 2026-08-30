@@ -238,13 +238,19 @@ describe("shared sweater edit measurement diagram sizing contract", () => {
     expect(twoColStart).toBeGreaterThan(-1);
     const twoColBlock = editDiagramCss.slice(twoColStart);
     expect(twoColBlock).toMatch(
-      /\.sl-edit-workspace__measure \.sl-measure-workspace__body\s*\{[^}]*overflow-y:\s*visible/s,
+      /\.sl-edit-workspace__measure \.sl-measure-workspace__body\s*\{[^}]*overflow:\s*visible/s,
     );
     expect(twoColBlock).not.toMatch(
       /\.sl-edit-workspace__measure \.sl-measure-workspace__body\s*\{[^}]*overflow-y:\s*auto/s,
     );
     expect(editDiagramCss).toMatch(
-      /\.sl-edit-workspace__measure[\s\S]*data-express-construction="drop-shoulder"[\s\S]*\.express-mbp-scroll[\s\S]*overflow-y:\s*visible/,
+      /\.sl-edit-workspace__measure[\s\S]*data-express-construction="drop-shoulder"[\s\S]*\.express-mbp-scroll[\s\S]*overflow:\s*visible/,
+    );
+    expect(editDiagramCss).toMatch(
+      /\.sl-edit-workspace__measure \.express-mbp-scroll\s*\{[^}]*overflow:\s*visible/s,
+    );
+    expect(editDiagramCss).not.toMatch(
+      /\.sl-edit-workspace__measure[\s\S]*\.express-mbp-scroll[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*visible/,
     );
   });
 
