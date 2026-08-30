@@ -34,11 +34,27 @@
  *    then `roundToEvenPreferUp` for rows. A non-positive straight foot is a
  *    calculation error (not clamped).
  *
- * 7. **Leg shaping schedule** is intentionally unresolved. This pass only reports
- *    whether shaping is needed and the stitch/row totals available for a later schedule.
+ * 7. **Straight ankle section** is derived, not entered:
+ *    `min(1", footCircumferenceInches / 10)`. Baby is short (~0.4"); adult sizes land
+ *    around 0.75–1"; custom large circumferences cap at 1". Rows use
+ *    {@link roundToEvenPreferUp}. Remaining leg rows receive Magic Formula shaping
+ *    (or are knitted straight). Cuff-to-toe works upper leg then ankle-before-heel;
+ *    toe-up works ankle after heel then upper leg toward the cuff.
+ *
+ * 8. **Leg shaping** uses the shared Magic Formula paired helper
+ *    (`computeMagicFormulaPairedShaping` → `magicFormulaIntervals`) over
+ *    `legShapingRowsAvailable` only. Wider top = paired increases (+2 per event);
+ *    narrower top = paired decreases (−2). Cuff-to-toe and toe-up share the same
+ *    finished geometry and interval schedule; knitting-order start/target reverse.
  */
 
 import type { SockConstructionDirection, SockDraft, SockDraftUnit } from "./sockDraft";
+import {
+  computeMagicFormulaPairedShaping,
+  type MagicFormulaPairedEvent,
+  type MagicFormulaPairedSuccess,
+} from "../legoBlocks/magicFormulaShaping";
+import type { ShapingStep } from "../../shaping/generateRowByRow";
 import {
   findSockChartSize,
   type SockSizingAdapter,
@@ -78,6 +94,25 @@ export function sockGaugeToPerInch(gauge: number, displayUnit: SockDraftUnit): n
   return displayUnit === "inches" ? gauge / 4 : gauge / (10 / 2.54);
 }
 
+/**
+ * Derived straight-ankle length (inches). Scales with finished foot circumference
+ * and caps at {@link SOCK_ANKLE_SECTION_MAX_INCHES} so large/custom socks do not
+ * grow an ever-longer ankle.
+ *
+ * Chart examples at this rule: Baby 0.4", Child 0.65", Woman Medium 0.85",
+ * Man Large 1".
+ */
+export const SOCK_ANKLE_SECTION_MAX_INCHES = 1;
+export const SOCK_ANKLE_SECTION_FOOT_CIRC_DIVISOR = 10;
+
+export function deriveSockAnkleStraightLengthInches(footCircumferenceInches: number): number {
+  if (!(footCircumferenceInches > 0) || !Number.isFinite(footCircumferenceInches)) return 0;
+  return Math.min(
+    SOCK_ANKLE_SECTION_MAX_INCHES,
+    footCircumferenceInches / SOCK_ANKLE_SECTION_FOOT_CIRC_DIVISOR,
+  );
+}
+
 export type ShortRowShaping = {
   /** Heel/toe stitches in work (approximately half of the tube). */
   workingStitches: number;
@@ -103,9 +138,58 @@ export type ShortRowShaping = {
   shortRowKnittingRows: number;
 };
 
-export const SOCK_MATH_UNRESOLVED = ["leg-shaping-schedule"] as const;
+/** No remaining math gaps for Basic Socks geometry + Magic Formula leg shaping. */
+export const SOCK_MATH_UNRESOLVED = [] as const;
 
 export type SockMathUnresolved = (typeof SOCK_MATH_UNRESOLVED)[number];
+
+export type SockLegShapingDirection = "none" | "increase" | "decrease";
+
+export type SockLegMagicFormulaIntervals = {
+  shortInterval: number;
+  longInterval: number;
+  shortCount: number;
+  longCount: number;
+};
+
+export type SockLegSectionKind = "straight-ankle" | "straight-leg" | "leg-shaping";
+
+/** One knitting-order segment. No instruction prose. */
+export type SockLegSection = {
+  kind: SockLegSectionKind;
+  rows: number;
+  startStitches: number;
+  endStitches: number;
+};
+
+export type SockLegKnitOrder = {
+  constructionDirection: SockConstructionDirection;
+  startStitches: number;
+  targetStitches: number;
+  direction: SockLegShapingDirection;
+  events: MagicFormulaPairedEvent[];
+  /** Construction-order segments (cuff-to-toe vs toe-up). */
+  sections: SockLegSection[];
+};
+
+/**
+ * Reusable leg-shaping construction result for Summary and future instructions.
+ * Geometry (`direction` / start / target) is finished ankle → top of leg.
+ * {@link knitOrder} is the same schedule applied in knitting order.
+ */
+export type SockLegShapingSchedule = {
+  method: "magic";
+  direction: SockLegShapingDirection;
+  startStitches: number;
+  targetStitches: number;
+  totalStitchChange: number;
+  pairedEventCount: number;
+  rowsAvailable: number;
+  intervals: SockLegMagicFormulaIntervals;
+  steps: ShapingStep[];
+  shapingMode: "both";
+  knitOrder: SockLegKnitOrder;
+};
 
 export type BasicSockCalc = {
   constructionDirection: SockConstructionDirection;
@@ -121,13 +205,25 @@ export type BasicSockCalc = {
   /** Same as the foot tube until a separate ankle input exists. */
   ankleStitches: number;
   legStitches: number;
-  /** Even-upped rows for finished leg length. Not a shaping schedule. */
+  /** Even-upped rows for finished leg length. */
   legRows: number;
+  /**
+   * Derived straight section immediately above the heel.
+   * Not a user-entered measurement.
+   */
+  ankleStraightLengthInches: number;
+  /** Even-upped rows for {@link ankleStraightLengthInches}. */
+  ankleStraightRows: number;
+  /**
+   * Remaining finished-leg rows after the straight ankle.
+   * Magic Formula uses only these rows. `ankleStraightRows + this === legRows`.
+   */
+  legShapingRowsAvailable: number;
   legShapingNeeded: boolean;
   /** `legStitches - footStitches` (positive = wider leg). */
   legStitchChange: number;
-  /** Intentionally null — do not invent Magic Formula / slope spacing yet. */
-  legShapingSchedule: null;
+  /** Magic Formula paired schedule. Always present on a successful calc. */
+  legShapingSchedule: SockLegShapingSchedule;
   heel: ShortRowShaping;
   toe: ShortRowShaping;
   /** Physical heel depth: one-way short-row rows ÷ row gauge. */
@@ -204,6 +300,117 @@ export function remainingStitchesAtOneThird(workingStitches: number): number | n
   return remaining;
 }
 
+function sockLegGeometryDirection(
+  ankleStitches: number,
+  topLegStitches: number,
+): SockLegShapingDirection {
+  if (topLegStitches > ankleStitches) return "increase";
+  if (topLegStitches < ankleStitches) return "decrease";
+  return "none";
+}
+
+function sockLegShapingScheduleFromPaired(
+  ankleStitches: number,
+  topLegStitches: number,
+  constructionDirection: SockConstructionDirection,
+  paired: MagicFormulaPairedSuccess,
+  sections: SockLegSection[],
+): SockLegShapingSchedule {
+  return {
+    method: "magic",
+    direction: sockLegGeometryDirection(ankleStitches, topLegStitches),
+    startStitches: ankleStitches,
+    targetStitches: topLegStitches,
+    totalStitchChange: topLegStitches - ankleStitches,
+    pairedEventCount: paired.pairedEventCount,
+    rowsAvailable: paired.rows,
+    intervals: {
+      shortInterval: paired.shortInterval,
+      longInterval: paired.longInterval,
+      shortCount: paired.shortCount,
+      longCount: paired.longCount,
+    },
+    steps: paired.steps,
+    shapingMode: "both",
+    knitOrder: {
+      constructionDirection,
+      startStitches: paired.startSts,
+      targetStitches: paired.endSts,
+      direction: paired.direction,
+      events: paired.events,
+      sections,
+    },
+  };
+}
+
+function buildSockLegConstructionSections(args: {
+  constructionDirection: SockConstructionDirection;
+  ankleStitches: number;
+  topLegStitches: number;
+  ankleStraightRows: number;
+  remainingRows: number;
+  shapingNeeded: boolean;
+}): SockLegSection[] {
+  const {
+    constructionDirection,
+    ankleStitches,
+    topLegStitches,
+    ankleStraightRows,
+    remainingRows,
+    shapingNeeded,
+  } = args;
+  const sections: SockLegSection[] = [];
+  if (ankleStraightRows > 0) {
+    sections.push({
+      kind: "straight-ankle",
+      rows: ankleStraightRows,
+      startStitches: ankleStitches,
+      endStitches: ankleStitches,
+    });
+  }
+  if (remainingRows > 0) {
+    const knitStart =
+      constructionDirection === "cuff-to-toe" ? topLegStitches : ankleStitches;
+    const knitEnd =
+      constructionDirection === "cuff-to-toe" ? ankleStitches : topLegStitches;
+    sections.push({
+      kind: shapingNeeded ? "leg-shaping" : "straight-leg",
+      rows: remainingRows,
+      startStitches: knitStart,
+      endStitches: knitEnd,
+    });
+  }
+  if (constructionDirection === "cuff-to-toe") {
+    return sections.slice().reverse();
+  }
+  return sections;
+}
+
+function emptyStraightPaired(
+  startSts: number,
+  endSts: number,
+  rows: number,
+): MagicFormulaPairedSuccess {
+  return {
+    ok: true,
+    method: "magic",
+    noShaping: true,
+    direction: "none",
+    startSts,
+    endSts,
+    stitchChange: 0,
+    pairedEventCount: 0,
+    rows,
+    shortInterval: 0,
+    longInterval: 0,
+    shortCount: 0,
+    longCount: 0,
+    steps: [],
+    shapingMode: "both",
+    events: [],
+  };
+}
+
 /**
  * Reusable short-row primitive (heel and toe). One stitch at a time until
  * ~1/3 of the working stitches remain, then reverse until all are back in work.
@@ -240,6 +447,17 @@ export function sockFootTooShortMessage(args: {
     return String(rounded);
   };
   return `Heel and toe short-row depth (${fmt(combined)} inches combined) is longer than the requested finished foot length (${fmt(args.footLengthInches)} inches). Choose a longer foot, a tighter row gauge, or a smaller circumference.`;
+}
+
+export function sockLegTooShortForAnkleMessage(args: {
+  legLengthInches: number;
+  ankleStraightLengthInches: number;
+}): string {
+  const fmt = (n: number) => {
+    const rounded = Math.round(n * 1000) / 1000;
+    return String(rounded);
+  };
+  return `The finished leg length (${fmt(args.legLengthInches)} inches) is too short to include the derived straight ankle section (${fmt(args.ankleStraightLengthInches)} inches) and the required leg shaping. Lengthen the leg or reduce the circumference difference.`;
 }
 
 export function calculateBasicSockPattern(input: BasicSockCalcInput): BasicSockCalcResult {
@@ -336,6 +554,70 @@ export function calculateBasicSockPattern(input: BasicSockCalcInput): BasicSockC
     };
   }
 
+  const knitStartStitches =
+    input.constructionDirection === "cuff-to-toe" ? legStitches : totalSockStitches;
+  const knitTargetStitches =
+    input.constructionDirection === "cuff-to-toe" ? totalSockStitches : legStitches;
+  const shapingNeeded = legStitches !== totalSockStitches;
+
+  const derivedAnkleLengthInches = deriveSockAnkleStraightLengthInches(
+    input.footCircumferenceInches,
+  );
+  let ankleStraightLengthInches = derivedAnkleLengthInches;
+  let ankleStraightRows = roundToEvenPreferUp(derivedAnkleLengthInches * rowGaugePerInch);
+  if (ankleStraightRows > legRows) {
+    if (shapingNeeded) {
+      return {
+        ok: false,
+        errors: [
+          sockLegTooShortForAnkleMessage({
+            legLengthInches: input.legLengthInches,
+            ankleStraightLengthInches: derivedAnkleLengthInches,
+          }),
+        ],
+      };
+    }
+    // Very short/Baby-scale fallback: the entire finished leg is the straight ankle.
+    ankleStraightRows = legRows;
+    ankleStraightLengthInches = Math.min(derivedAnkleLengthInches, input.legLengthInches);
+  }
+  const legShapingRowsAvailable = legRows - ankleStraightRows;
+
+  let paired: MagicFormulaPairedSuccess;
+  if (legShapingRowsAvailable < 1) {
+    if (shapingNeeded) {
+      return {
+        ok: false,
+        errors: [
+          sockLegTooShortForAnkleMessage({
+            legLengthInches: input.legLengthInches,
+            ankleStraightLengthInches: derivedAnkleLengthInches,
+          }),
+        ],
+      };
+    }
+    paired = emptyStraightPaired(knitStartStitches, knitTargetStitches, 0);
+  } else {
+    const computed = computeMagicFormulaPairedShaping({
+      startSts: knitStartStitches,
+      endSts: knitTargetStitches,
+      rows: legShapingRowsAvailable,
+    });
+    if (!computed.ok) {
+      return { ok: false, errors: [computed.message] };
+    }
+    paired = computed;
+  }
+
+  const sections = buildSockLegConstructionSections({
+    constructionDirection: input.constructionDirection,
+    ankleStitches: totalSockStitches,
+    topLegStitches: legStitches,
+    ankleStraightRows,
+    remainingRows: legShapingRowsAvailable,
+    shapingNeeded,
+  });
+
   const calc: BasicSockCalc = {
     constructionDirection: input.constructionDirection,
     stGaugePerInch,
@@ -349,9 +631,18 @@ export function calculateBasicSockPattern(input: BasicSockCalcInput): BasicSockC
     ankleStitches: totalSockStitches,
     legStitches,
     legRows,
-    legShapingNeeded: legStitches !== totalSockStitches,
+    ankleStraightLengthInches,
+    ankleStraightRows,
+    legShapingRowsAvailable,
+    legShapingNeeded: shapingNeeded,
     legStitchChange: legStitches - totalSockStitches,
-    legShapingSchedule: null,
+    legShapingSchedule: sockLegShapingScheduleFromPaired(
+      totalSockStitches,
+      legStitches,
+      input.constructionDirection,
+      paired,
+      sections,
+    ),
     heel,
     toe,
     heelDepthInches,

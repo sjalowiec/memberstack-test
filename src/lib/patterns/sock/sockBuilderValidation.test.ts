@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 import {
   SOCK_BUILDER_INCOMPLETE_MESSAGE,
   SOCK_BUILDER_STEPS,
-  SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE,
   evaluateSockBuilderCalc,
   evaluateSockBuilderGaugeSanityGate,
   evaluateSockBuilderNeedleCapacity,
@@ -287,9 +286,16 @@ describe("sock builder cuff-to-toe and toe-up retain identical geometry", () => 
     });
     expect(cuffCalc.ok && toeCalc.ok).toBe(true);
     if (!cuffCalc.ok || !toeCalc.ok) return;
-    const { constructionDirection: _c, ...cuffRest } = cuffCalc.calc;
-    const { constructionDirection: _t, ...toeRest } = toeCalc.calc;
+    const { constructionDirection: _c, legShapingSchedule: cuffSchedule, ...cuffRest } =
+      cuffCalc.calc;
+    const { constructionDirection: _t, legShapingSchedule: toeSchedule, ...toeRest } =
+      toeCalc.calc;
+    const { knitOrder: cuffKnit, ...cuffGeometry } = cuffSchedule;
+    const { knitOrder: toeKnit, ...toeGeometry } = toeSchedule;
     expect(cuffRest).toEqual(toeRest);
+    expect(cuffGeometry).toEqual(toeGeometry);
+    expect(cuffKnit.constructionDirection).toBe("cuff-to-toe");
+    expect(toeKnit.constructionDirection).toBe("toe-up");
   });
 });
 
@@ -423,8 +429,9 @@ describe("sock builder page wiring", () => {
     expect(builderScript).toContain("applyChartDefaultsForSelectedSize");
     expect(builderScript).toContain("syncSockDraft");
     expect(builderScript).toContain("readSockDraft");
-    expect(builderScript).not.toContain("location.assign");
-    expect(builderScript).toContain("SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE");
-    expect(SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE).toMatch(/summary is not available yet/i);
+    expect(builderScript).toContain("buildSockSummaryFromBuilderHref");
+    expect(builderScript).toMatch(/location\.assign\(buildSockSummaryFromBuilderHref\(\)\)/);
+    expect(builderScript).not.toContain("SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE");
+    expect(builderScript).not.toContain("Pattern summary is not available yet");
   });
 });

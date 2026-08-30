@@ -1,14 +1,17 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { magicFormulaIntervals } from "../../shaping/autoShaping";
 import { createEmptySockDraft } from "./sockDraft";
 import {
   basicSockCalcInputFromDraft,
   calculateBasicSockPattern,
   calculateShortRowShaping,
+  deriveSockAnkleStraightLengthInches,
   remainingStitchesAtOneThird,
   roundToEvenPreferUp,
   sockGaugeToPerInch,
+  SOCK_ANKLE_SECTION_MAX_INCHES,
   splitSockStitchesIntoHalves,
   type BasicSockCalcInput,
 } from "./sockMath";
@@ -140,7 +143,9 @@ describe("calculateBasicSockPattern", () => {
     expect(result.calc.toeDepthInches).toBe(2);
     expect(result.calc.straightFootLengthInches).toBe(5);
     expect(result.calc.straightFootRows).toBe(50);
-    expect(result.calc.unresolved).toEqual(["leg-shaping-schedule"]);
+    expect(result.calc.unresolved).toEqual([]);
+    expect(result.calc.legShapingSchedule.direction).toBe("none");
+    expect(result.calc.legShapingSchedule.pairedEventCount).toBe(0);
   });
 
   it("does not count return/increase short rows in finished heel or toe depth", () => {
@@ -158,29 +163,28 @@ describe("calculateBasicSockPattern", () => {
     );
   });
 
-  it("does not invent a leg shaping schedule when circumferences differ", () => {
-    const result = calculateBasicSockPattern({
-      ...typicalMachine,
-      legCircumferenceInches: 10,
-    });
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.calc.legStitches).toBe(roundToEvenPreferUp(10 * 7));
-    expect(result.calc.legShapingNeeded).toBe(true);
-    expect(result.calc.legStitchChange).toBe(result.calc.legStitches - 60);
-    expect(result.calc.legShapingSchedule).toBeNull();
-    expect(result.calc.legRows).toBe(roundToEvenPreferUp(4.5 * 10));
-  });
-
   it("does not require leg shaping when leg and foot circumferences match", () => {
     const result = calculateBasicSockPattern(typicalMachine);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.calc.legShapingNeeded).toBe(false);
     expect(result.calc.legStitchChange).toBe(0);
+    expect(result.calc.legShapingSchedule.direction).toBe("none");
+    expect(result.calc.legShapingSchedule.pairedEventCount).toBe(0);
+    expect(result.calc.legShapingSchedule.steps).toEqual([]);
+    expect(result.calc.legShapingSchedule.knitOrder.events).toEqual([]);
+    expect(result.calc.ankleStraightLengthInches).toBe(0.85);
+    expect(result.calc.ankleStraightRows).toBe(10);
+    expect(result.calc.legShapingRowsAvailable).toBe(36);
+    expect(result.calc.ankleStraightRows + result.calc.legShapingRowsAvailable).toBe(
+      result.calc.legRows,
+    );
+    expect(result.calc.legShapingSchedule.knitOrder.sections.map((section) => section.kind)).toEqual(
+      ["straight-leg", "straight-ankle"],
+    );
   });
 
-  it("keeps cuff-to-toe and toe-up geometry identical", () => {
+  it("keeps cuff-to-toe and toe-up finished geometry identical", () => {
     const cuff = calculateBasicSockPattern(typicalMachine);
     const toeUp = calculateBasicSockPattern({
       ...typicalMachine,
@@ -188,11 +192,16 @@ describe("calculateBasicSockPattern", () => {
     });
     expect(cuff.ok && toeUp.ok).toBe(true);
     if (!cuff.ok || !toeUp.ok) return;
-    const { constructionDirection: _c, ...cuffRest } = cuff.calc;
-    const { constructionDirection: _t, ...toeRest } = toeUp.calc;
+    const { constructionDirection: _c, legShapingSchedule: cuffSchedule, ...cuffRest } = cuff.calc;
+    const { constructionDirection: _t, legShapingSchedule: toeSchedule, ...toeRest } = toeUp.calc;
+    const { knitOrder: cuffKnit, ...cuffGeometry } = cuffSchedule;
+    const { knitOrder: toeKnit, ...toeGeometry } = toeSchedule;
     expect(cuffRest).toEqual(toeRest);
+    expect(cuffGeometry).toEqual(toeGeometry);
     expect(_c).toBe("cuff-to-toe");
     expect(_t).toBe("toe-up");
+    expect(cuffKnit.constructionDirection).toBe("cuff-to-toe");
+    expect(toeKnit.constructionDirection).toBe("toe-up");
   });
 
   it("normalizes a 10 cm swatch to the same stitches as the matching 4-inch swatch", () => {
@@ -288,6 +297,263 @@ describe("calculateBasicSockPattern", () => {
       expect(result.calc.straightFootLengthInches).toBeGreaterThan(0);
       expect(result.calc.straightFootRows).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("leg shaping Magic Formula", () => {
+  const mathSource = readFileSync(resolve("src/lib/patterns/sock/sockMath.ts"), "utf8");
+
+  it("reuses the Magic Formula paired wrapper and does not call auto-shaping", () => {
+    expect(mathSource).toContain("computeMagicFormulaPairedShaping");
+    expect(mathSource).not.toContain("computeAutoShaping");
+  });
+  const widerLeg = {
+    ...typicalMachine,
+    legCircumferenceInches: 10,
+  };
+  const narrowerLeg = {
+    ...typicalMachine,
+    legCircumferenceInches: 7,
+  };
+
+  it("schedules paired increases for a wider top of leg and lands on the even stitch target", () => {
+    const result = calculateBasicSockPattern(widerLeg);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(basicSockCalcInvariantErrors(result.calc)).toEqual([]);
+
+    const schedule = result.calc.legShapingSchedule;
+    const remainingRows = result.calc.legShapingRowsAvailable;
+    const expected = magicFormulaIntervals(remainingRows, 5);
+    expect(result.calc.ankleStitches).toBe(60);
+    expect(result.calc.legStitches).toBe(70);
+    expect(result.calc.legStitches % 2).toBe(0);
+    expect(result.calc.legStitchChange).toBe(10);
+    expect(result.calc.ankleStraightLengthInches).toBe(0.85);
+    expect(result.calc.ankleStraightRows).toBe(10);
+    expect(result.calc.legRows).toBe(46);
+    expect(remainingRows).toBe(36);
+    expect(result.calc.ankleStraightRows + remainingRows).toBe(result.calc.legRows);
+    expect(schedule.direction).toBe("increase");
+    expect(schedule.method).toBe("magic");
+    expect(schedule.shapingMode).toBe("both");
+    expect(schedule.startStitches).toBe(60);
+    expect(schedule.targetStitches).toBe(70);
+    expect(schedule.totalStitchChange).toBe(10);
+    expect(schedule.pairedEventCount).toBe(5);
+    expect(schedule.rowsAvailable).toBe(remainingRows);
+    expect(schedule.rowsAvailable).not.toBe(result.calc.legRows);
+    expect(schedule.steps).toEqual(expected.steps);
+    expect(
+      schedule.intervals.shortCount * schedule.intervals.shortInterval +
+        schedule.intervals.longCount * schedule.intervals.longInterval,
+    ).toBe(schedule.rowsAvailable);
+    expect(schedule.knitOrder.events).toHaveLength(5);
+    expect(schedule.knitOrder.events.every((event) => event.stitchChange === -2)).toBe(true);
+    expect(schedule.knitOrder.events.at(-1)).toMatchObject({
+      rowNumber: schedule.rowsAvailable,
+      stitchesAfter: 60,
+    });
+  });
+
+  it("schedules paired decreases for a narrower top of leg", () => {
+    const result = calculateBasicSockPattern(narrowerLeg);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(basicSockCalcInvariantErrors(result.calc)).toEqual([]);
+
+    const schedule = result.calc.legShapingSchedule;
+    expect(result.calc.ankleStitches).toBe(60);
+    expect(result.calc.legStitches).toBe(50);
+    expect(result.calc.legStitchChange).toBe(-10);
+    expect(schedule.direction).toBe("decrease");
+    expect(schedule.pairedEventCount).toBe(5);
+    expect(schedule.method).toBe("magic");
+    expect(schedule.knitOrder.direction).toBe("increase");
+    expect(schedule.knitOrder.startStitches).toBe(50);
+    expect(schedule.knitOrder.targetStitches).toBe(60);
+    expect(schedule.knitOrder.events.at(-1)?.stitchesAfter).toBe(60);
+  });
+
+  it("uses the same Magic Formula intervals for cuff-to-toe and toe-up with reversed knitting order", () => {
+    const cuff = calculateBasicSockPattern(widerLeg);
+    const toeUp = calculateBasicSockPattern({
+      ...widerLeg,
+      constructionDirection: "toe-up",
+    });
+    expect(cuff.ok && toeUp.ok).toBe(true);
+    if (!cuff.ok || !toeUp.ok) return;
+
+    const cuffSchedule = cuff.calc.legShapingSchedule;
+    const toeSchedule = toeUp.calc.legShapingSchedule;
+    expect(cuff.calc.ankleStitches).toBe(toeUp.calc.ankleStitches);
+    expect(cuff.calc.legStitches).toBe(toeUp.calc.legStitches);
+    expect(cuff.calc.legRows).toBe(toeUp.calc.legRows);
+    expect(cuffSchedule.direction).toBe("increase");
+    expect(toeSchedule.direction).toBe("increase");
+    expect(cuffSchedule.steps).toEqual(toeSchedule.steps);
+    expect(cuffSchedule.intervals).toEqual(toeSchedule.intervals);
+    expect(cuffSchedule.pairedEventCount).toBe(toeSchedule.pairedEventCount);
+
+    expect(cuffSchedule.knitOrder.constructionDirection).toBe("cuff-to-toe");
+    expect(cuffSchedule.knitOrder.startStitches).toBe(70);
+    expect(cuffSchedule.knitOrder.targetStitches).toBe(60);
+    expect(cuffSchedule.knitOrder.direction).toBe("decrease");
+
+    expect(toeSchedule.knitOrder.constructionDirection).toBe("toe-up");
+    expect(toeSchedule.knitOrder.startStitches).toBe(60);
+    expect(toeSchedule.knitOrder.targetStitches).toBe(70);
+    expect(toeSchedule.knitOrder.direction).toBe("increase");
+
+    expect(cuffSchedule.knitOrder.startStitches).toBe(toeSchedule.knitOrder.targetStitches);
+    expect(cuffSchedule.knitOrder.targetStitches).toBe(toeSchedule.knitOrder.startStitches);
+    expect(cuffSchedule.knitOrder.events.map((event) => event.rowNumber)).toEqual(
+      toeSchedule.knitOrder.events.map((event) => event.rowNumber),
+    );
+    expect(cuff.calc.ankleStraightRows).toBe(toeUp.calc.ankleStraightRows);
+    expect(cuff.calc.legShapingRowsAvailable).toBe(toeUp.calc.legShapingRowsAvailable);
+    expect(cuffSchedule.knitOrder.sections.map((section) => section.kind)).toEqual([
+      "leg-shaping",
+      "straight-ankle",
+    ]);
+    expect(toeSchedule.knitOrder.sections.map((section) => section.kind)).toEqual([
+      "straight-ankle",
+      "leg-shaping",
+    ]);
+  });
+
+  it("returns a calculation error when Magic Formula cannot fit the paired events in the remaining rows", () => {
+    const result = calculateBasicSockPattern({
+      ...typicalMachine,
+      legCircumferenceInches: 20,
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors.join(" ")).toMatch(/paired shaping events/i);
+    expect(result.errors.join(" ")).not.toMatch(/clamp/i);
+  });
+
+  it("returns a calculation error when the finished leg cannot hold the ankle and required shaping", () => {
+    const result = calculateBasicSockPattern({
+      ...typicalMachine,
+      legCircumferenceInches: 20,
+      legLengthInches: 1,
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors.join(" ")).toMatch(/straight ankle/i);
+    expect(result.errors.join(" ")).not.toMatch(/clamp/i);
+  });
+});
+
+describe("derived straight ankle section", () => {
+  const representativeRowGaugePerInch = 10;
+
+  function expectedAnkle(footCircumferenceInches: number) {
+    const inches = deriveSockAnkleStraightLengthInches(footCircumferenceInches);
+    return {
+      inches,
+      rows: roundToEvenPreferUp(inches * representativeRowGaugePerInch),
+    };
+  }
+
+  it("derives a short Baby ankle, adult 0.75–1 inch range, and caps large custom sizes", () => {
+    expect(deriveSockAnkleStraightLengthInches(4)).toBe(0.4);
+    expect(deriveSockAnkleStraightLengthInches(6.5)).toBe(0.65);
+    expect(deriveSockAnkleStraightLengthInches(8.5)).toBe(0.85);
+    expect(deriveSockAnkleStraightLengthInches(10)).toBe(1);
+    expect(deriveSockAnkleStraightLengthInches(16)).toBe(SOCK_ANKLE_SECTION_MAX_INCHES);
+    expect(deriveSockAnkleStraightLengthInches(2)).toBe(0.2);
+  });
+
+  it("matches every Socks chart size at 28×40 over 4 inches", () => {
+    const chartExpected: Record<string, { circ: number; inches: number; rows: number }> = {
+      baby: { circ: 4, inches: 0.4, rows: 4 },
+      child: { circ: 6.5, inches: 0.65, rows: 8 },
+      woman_sm: { circ: 8, inches: 0.8, rows: 8 },
+      woman_med: { circ: 8.5, inches: 0.85, rows: 10 },
+      woman_lg: { circ: 9, inches: 0.9, rows: 10 },
+      man_sm: { circ: 9, inches: 0.9, rows: 10 },
+      man_med: { circ: 9.5, inches: 0.95, rows: 10 },
+      man_lg: { circ: 10, inches: 1, rows: 10 },
+    };
+    expect(adapter.measurements.map((row) => row.size)).toEqual(Object.keys(chartExpected));
+    for (const row of adapter.measurements) {
+      const expected = chartExpected[row.size];
+      expect(row.footCircumferenceInches).toBe(expected.circ);
+      expect(expectedAnkle(row.footCircumferenceInches)).toEqual({
+        inches: expected.inches,
+        rows: expected.rows,
+      });
+      const result = calculateBasicSockPattern({
+        footCircumferenceInches: row.footCircumferenceInches,
+        footLengthInches: row.footLengthInches,
+        legCircumferenceInches: row.defaultLegCircumferenceInches,
+        legLengthInches: row.legLengthInches,
+        stitchGaugeDisplay: 28,
+        rowGaugeDisplay: 40,
+        displayUnit: "inches",
+        constructionDirection: "cuff-to-toe",
+      });
+      expect(result.ok, row.size).toBe(true);
+      if (!result.ok) continue;
+      expect(basicSockCalcInvariantErrors(result.calc)).toEqual([]);
+      expect(result.calc.ankleStraightLengthInches).toBe(expected.inches);
+      expect(result.calc.ankleStraightRows).toBe(expected.rows);
+      expect(result.calc.legShapingRowsAvailable).toBe(
+        result.calc.legRows - result.calc.ankleStraightRows,
+      );
+    }
+  });
+
+  it("keeps a custom very small circumference short and caps a custom large circumference", () => {
+    const tiny = calculateBasicSockPattern({
+      ...typicalMachine,
+      footCircumferenceInches: 2,
+      footLengthInches: 3.5,
+      legCircumferenceInches: 2,
+      legLengthInches: 2.5,
+    });
+    expect(tiny.ok).toBe(true);
+    if (!tiny.ok) return;
+    expect(tiny.calc.ankleStraightLengthInches).toBe(0.2);
+    expect(tiny.calc.ankleStraightRows).toBe(2);
+    expect(tiny.calc.legShapingRowsAvailable).toBe(tiny.calc.legRows - 2);
+
+    const huge = calculateBasicSockPattern({
+      ...typicalMachine,
+      footCircumferenceInches: 16,
+      footLengthInches: 12,
+      legCircumferenceInches: 16,
+      legLengthInches: 6,
+    });
+    expect(huge.ok).toBe(true);
+    if (!huge.ok) return;
+    expect(huge.calc.ankleStraightLengthInches).toBe(1);
+    expect(huge.calc.ankleStraightRows).toBe(10);
+    expect(huge.calc.ankleStraightLengthInches).toBe(
+      deriveSockAnkleStraightLengthInches(10),
+    );
+  });
+
+  it("falls back to knitting the whole short leg as the ankle when no shaping is required", () => {
+    const result = calculateBasicSockPattern({
+      ...typicalMachine,
+      legLengthInches: 0.5,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.calc.legShapingNeeded).toBe(false);
+    expect(result.calc.ankleStraightRows).toBe(result.calc.legRows);
+    expect(result.calc.legShapingRowsAvailable).toBe(0);
+    expect(result.calc.legShapingSchedule.knitOrder.sections).toEqual([
+      {
+        kind: "straight-ankle",
+        rows: result.calc.legRows,
+        startStitches: 60,
+        endStitches: 60,
+      },
+    ]);
   });
 });
 

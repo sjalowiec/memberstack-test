@@ -30,9 +30,6 @@ export const SOCK_BUILDER_STEPS = 4 as const;
 export const SOCK_BUILDER_INCOMPLETE_MESSAGE =
   "Finish the required sections to continue.";
 
-export const SOCK_BUILDER_SUMMARY_NOT_READY_MESSAGE =
-  "Your Socks Builder choices are saved. Pattern summary is not available yet.";
-
 export type SockBuilderFieldSnapshot = {
   sizeSel: string;
   constructionDirection: string;
