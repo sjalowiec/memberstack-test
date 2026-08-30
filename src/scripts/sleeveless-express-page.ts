@@ -57,7 +57,6 @@ import {
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { scrollToSectionWithHeaderOffset } from "../lib/patterns/scrollToSectionWithHeaderOffset";
 import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
-import { resolveSleevelessAudienceHeroImageSrc } from "../lib/patterns/sleevelessAudienceHeroImage";
 import {
   getExpressEditingProjectLabel,
   hasExpressResumeProgress,
@@ -95,10 +94,7 @@ import {
   resolveExpressGaugeFieldsForPersist,
   syncExpressWizardToPatternStorage,
 } from "../lib/patterns/syncExpressWizardToPatternStorage";
-import {
-  DROP_SHOULDER_CONSTRUCTION,
-  withDropShoulderConstructionAuthored,
-} from "../lib/patterns/patternConstructionIdentity";
+import { DROP_SHOULDER_CONSTRUCTION } from "../lib/patterns/patternConstructionIdentity";
 import {
   buildDropShoulderReviewDisplayIdentity,
   markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged,
@@ -126,7 +122,7 @@ function getExpressGaugeUnit(): "cm" | "in" {
   return getExpressUiUnit();
 }
 
-/** Page construction flag (`drop-shoulder`) so hero images stay in the right pattern family. */
+/** Page construction flag (`drop-shoulder`) for Express review/diagram identity. */
 function expressPageConstruction(): string {
   return (
     document
@@ -134,39 +130,6 @@ function expressPageConstruction(): string {
       ?.getAttribute("data-express-construction")
       ?.trim() || ""
   );
-}
-
-/** Minimal merged-style shape for {@link resolveSleevelessAudienceHeroImageSrc} from live Express wizard values. */
-function expressPatternDataForAudienceHeroImages(values: Record<string, string>): Record<string, unknown> {
-  const sm = mapExpressStyle(values.style ?? "");
-  const neckRaw = String(values.neckline ?? "").trim();
-  const neckline = neckRaw ? (mapExpressNeckline(neckRaw) === "v" ? "v" : "round") : "round";
-  const construction = expressPageConstruction();
-  let style: Record<string, unknown> = {
-    garmentStyle: sm.frontStyle === "open" ? "cardigan" : "pullover",
-    frontStyle: sm.frontStyle,
-    neckline,
-  };
-  if (construction === DROP_SHOULDER_CONSTRUCTION) {
-    style = withDropShoulderConstructionAuthored(style, "long");
-  } else if (construction) {
-    style.construction = construction;
-  }
-  return { style };
-}
-
-function refreshExpressWhoCardHeroImages(values: Record<string, string>): void {
-  const patternData = expressPatternDataForAudienceHeroImages(values);
-  const scope = document.querySelector("[data-express-builder]");
-  if (!scope) return;
-  scope.querySelectorAll('[data-choice][data-field="who"]').forEach((btn) => {
-    if (!(btn instanceof HTMLElement)) return;
-    const whoPick = btn.getAttribute("data-value");
-    const img = btn.querySelector("img");
-    if (!(img instanceof HTMLImageElement) || !whoPick) return;
-    const aud = expressWhoToChartAudience(whoPick);
-    img.src = resolveSleevelessAudienceHeroImageSrc(patternData, aud);
-  });
 }
 
 function mapExpressStyle(styleKey: string) {
@@ -629,7 +592,6 @@ function initExpressPage() {
     updateGeneratePatternAvailability();
     applySelectionUI();
     syncExpressChartAudienceLockUi();
-    refreshExpressWhoCardHeroImages(values);
   }
 
   function openGaugeStepForValidation(): void {
