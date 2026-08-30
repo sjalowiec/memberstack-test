@@ -10,6 +10,7 @@ import {
   resolvePatternSystemFromPage,
   resolvePatternSystemFromProject,
   resolvePatternSystemFromWorkingSession,
+  patternSystemDisplayName,
 } from "./patternSystemId";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
@@ -80,6 +81,12 @@ describe("resolvePatternSystemFromPage", () => {
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/builder"))).toBe("hat");
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/pattern/"))).toBe("hat");
     expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/summary/"))).toBe("hat");
+  });
+
+  it("uses socks pathname for future sock builder and pattern pages", () => {
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/builder"))).toBe("socks");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/pattern/"))).toBe("socks");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/socks/summary/"))).toBe("socks");
   });
 
   it("uses data-express-construction on drop-shoulder builder pages", () => {
@@ -217,9 +224,18 @@ describe("resolvePatternSystemFromProject", () => {
       } as CustomPatternProject["pattern"],
       customOverrides: {},
     };
+    const sock: Pick<CustomPatternProject, "pattern" | "customOverrides"> = {
+      pattern: {
+        patternType: "socks",
+        patternSystem: "socks",
+      } as CustomPatternProject["pattern"],
+      customOverrides: {},
+    };
 
     expect(resolvePatternSystemFromProject(dropShoulder)).toBe("drop-shoulder");
     expect(resolvePatternSystemFromProject(sleeveless)).toBe("sleeveless");
     expect(resolvePatternSystemFromProject(hat)).toBe("hat");
+    expect(resolvePatternSystemFromProject(sock)).toBe("socks");
+    expect(patternSystemDisplayName("socks")).toBe("Socks");
   });
 });
