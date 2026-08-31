@@ -76,7 +76,16 @@ export const KITCHENER_STITCH_GLOSSARY_ID = 521;
 export const KITCHENER_STITCH_GLOSSARY_TERM = "Kitchener Stitch";
 
 export const SOCK_SECOND_SOCK_INTRO =
-  "The second sock is worked in reverse so the seams fall on the inside of each leg and foot, creating a right and left sock.";
+  "The second sock mirrors the heel and toe placement so the seams fall on the inside of each leg and foot, creating a left and right pair.";
+
+export function sockEnsureCarriageInstruction(
+  part: "heel" | "toe",
+  side: "left" | "right",
+): string {
+  const partLabel = part === "heel" ? "heel" : "toe";
+  const sideLabel = side === "right" ? "RIGHT" : "LEFT";
+  return `Before beginning the ${partLabel}, make sure the carriage is on the ${sideLabel}. If necessary, knit 1 additional row. Do not count this setup row on the row counter.`;
+}
 
 export const SOCK_FINISH_THE_TOE_HEADING = "Finish the Toe";
 export const SOCK_CHOOSE_TOE_FINISHING_HEADING = "Choose a finishing method:";
@@ -103,6 +112,10 @@ function escapeHtml(value: string): string {
 
 function halfLabel(half: SockNeedleHalf): string {
   return half === "left" ? "LEFT" : "RIGHT";
+}
+
+function knitEvenRowPhrase(rows: number): string {
+  return rows === 1 ? "1 row" : `${rows} rows`;
 }
 
 function magicIntervalPhrase(rows: number): string {
@@ -317,7 +330,7 @@ function renderStep(step: SockInstructionStep): string {
       return `<p>Cast on <strong>${step.stitches} stitches</strong> with the method of your choice.</p>`;
     }
     case "knit-even":
-      return `<p>Knit ${step.rows} rows even. (${step.stitches} stitches)</p>`;
+      return `<p>Knit ${knitEvenRowPhrase(step.rows)} even. (${step.stitches} stitches)</p>`;
     case "magic-formula": {
       const verb = step.direction === "decrease" ? "Decrease" : "Increase";
       const lines = step.steps.map((block) => {
@@ -334,6 +347,8 @@ function renderStep(step: SockInstructionStep): string {
     }
     case "place-hold":
       return `<p>Begin with the carriage on the ${halfLabel(step.orientation.carriageStartSide)}. Put the ${halfLabel(step.orientation.holdHalf)} half of the needles (${step.holdStitches} stitches), opposite the carriage, into hold. The ${halfLabel(step.orientation.workHalf)} half (${step.workStitches} stitches) remains in work. Set the carriage to HOLD.</p>`;
+    case "ensure-carriage":
+      return `<p>${escapeHtml(sockEnsureCarriageInstruction(step.part, step.side))}</p>`;
     case "short-row-in":
       return `<p>On the carriage side, put 1 needle into hold and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})</p>`;
     case "short-row-wrap-warning":
@@ -439,7 +454,7 @@ function outlineStep(step: SockInstructionStep): string {
         ? `Scrap on ${step.stitches} stitches.`
         : `Cast on ${step.stitches} stitches with the method of your choice.`;
     case "knit-even":
-      return `Knit ${step.rows} rows even (${step.stitches} stitches).`;
+      return `Knit ${knitEvenRowPhrase(step.rows)} even (${step.stitches} stitches).`;
     case "magic-formula": {
       const verb = step.direction === "decrease" ? "Decrease" : "Increase";
       const schedule = step.steps
@@ -454,6 +469,8 @@ function outlineStep(step: SockInstructionStep): string {
     }
     case "place-hold":
       return `Carriage ${halfLabel(step.orientation.carriageStartSide)}; hold ${halfLabel(step.orientation.holdHalf)} (${step.holdStitches} sts), opposite the carriage; work ${halfLabel(step.orientation.workHalf)} (${step.workStitches} sts). Set carriage to HOLD.`;
+    case "ensure-carriage":
+      return sockEnsureCarriageInstruction(step.part, step.side);
     case "short-row-in":
       return `On the carriage side, put 1 needle into hold and knit across, every row, until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})`;
     case "short-row-wrap-warning":

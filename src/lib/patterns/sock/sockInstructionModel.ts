@@ -109,6 +109,11 @@ export type SockInstructionStep =
       workStitches: number;
     }
   | {
+      type: "ensure-carriage";
+      part: SockShortRowPart;
+      side: SockNeedleHalf;
+    }
+  | {
       type: "short-row-in";
       rows: number;
       startWorkingStitches: number;

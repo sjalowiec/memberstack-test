@@ -299,9 +299,23 @@ describe("short-row rendering and header measurements", () => {
     const result = mustPattern(completeDraft());
     const heel = result.sock1.sections.find((s) => s.id === "heel");
     const toe = result.sock1.sections.find((s) => s.id === "toe");
-    expect(heel?.steps.map((s) => s.type)[0]).toBe("stop-rc");
-    expect(toe?.steps.map((s) => s.type)[0]).toBe("reset-rc");
-    expect(heel?.steps.map((s) => s.type).slice(1)).toEqual(toe?.steps.map((s) => s.type).slice(1));
+    expect(heel?.steps.map((s) => s.type)).toEqual([
+      "stop-rc",
+      "ensure-carriage",
+      "place-hold",
+      "short-row-in",
+      "short-row-wrap-warning",
+      "short-row-out",
+      "cancel-hold-return",
+    ]);
+    expect(toe?.steps.map((s) => s.type)).toEqual([
+      "reset-rc",
+      "place-hold",
+      "short-row-in",
+      "short-row-wrap-warning",
+      "short-row-out",
+      "cancel-hold-return",
+    ]);
     expect(heel?.steps.map((s) => s.type)).toContain("short-row-in");
     expect(heel?.steps.map((s) => s.type)).toContain("short-row-out");
     expect(heel?.steps.map((s) => s.type)).toContain("short-row-wrap-warning");

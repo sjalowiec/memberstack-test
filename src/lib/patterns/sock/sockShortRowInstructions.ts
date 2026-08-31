@@ -10,9 +10,20 @@ import type { ShortRowShaping, SockConstructionDirection } from "./sockMath";
 import type {
   SockHoldOrientation,
   SockInstructionSection,
+  SockInstructionStep,
   SockOfPair,
   SockShortRowPart,
 } from "./sockInstructionModel";
+
+function isFirstShortRowSection(
+  part: SockShortRowPart,
+  constructionDirection: SockConstructionDirection,
+): boolean {
+  return (
+    (part === "heel" && constructionDirection === "cuff-to-toe") ||
+    (part === "toe" && constructionDirection === "toe-up")
+  );
+}
 
 export function buildSockShortRowInstructionSection(args: {
   part: SockShortRowPart;
@@ -24,6 +35,51 @@ export function buildSockShortRowInstructionSection(args: {
 }): SockInstructionSection {
   const { part, shaping, orientation, tubeStitches, constructionDirection, sock } = args;
   const knittingRows = shaping.shortRowKnittingRows;
+  const rcStep: SockInstructionStep = {
+    type: part === "heel" ? "stop-rc" : "reset-rc",
+  };
+  const ensureCarriage: SockInstructionStep = {
+    type: "ensure-carriage",
+    part,
+    side: orientation.carriageStartSide,
+  };
+  const rest: SockInstructionStep[] = [
+    {
+      type: "place-hold",
+      orientation,
+      holdStitches: shaping.heldStitches,
+      workStitches: shaping.workingStitches,
+    },
+    {
+      type: "short-row-in",
+      rows: shaping.shortRowInSteps,
+      startWorkingStitches: shaping.workingStitches,
+      remainingStitches: shaping.remainingStitches,
+      needleRelative: "carriage-side",
+      everyRow: true,
+    },
+    { type: "short-row-wrap-warning" },
+    {
+      type: "short-row-out",
+      rows: shaping.shortRowOutSteps,
+      remainingStitches: shaping.remainingStitches,
+      endWorkingStitches: shaping.workingStitches,
+      needleRelative: "opposite-carriage",
+      everyRow: true,
+    },
+    {
+      type: "cancel-hold-return",
+      heldStitches: shaping.heldStitches,
+      tubeStitches,
+    },
+  ];
+  const firstShortRow = isFirstShortRowSection(part, constructionDirection);
+  const steps: SockInstructionStep[] =
+    firstShortRow && part === "heel"
+      ? [rcStep, ensureCarriage, ...rest]
+      : firstShortRow && part === "toe"
+        ? [ensureCarriage, rcStep, ...rest]
+        : [rcStep, ...rest];
   return {
     id: part,
     title: part === "heel" ? "Heel" : "Toe",
@@ -36,37 +92,7 @@ export function buildSockShortRowInstructionSection(args: {
     physicalDepthRows: shaping.shortRowDepthRows,
     shortRowKnittingRows: knittingRows,
     orientation,
-    steps: [
-      { type: part === "heel" ? "stop-rc" : "reset-rc" },
-      {
-        type: "place-hold",
-        orientation,
-        holdStitches: shaping.heldStitches,
-        workStitches: shaping.workingStitches,
-      },
-      {
-        type: "short-row-in",
-        rows: shaping.shortRowInSteps,
-        startWorkingStitches: shaping.workingStitches,
-        remainingStitches: shaping.remainingStitches,
-        needleRelative: "carriage-side",
-        everyRow: true,
-      },
-      { type: "short-row-wrap-warning" },
-      {
-        type: "short-row-out",
-        rows: shaping.shortRowOutSteps,
-        remainingStitches: shaping.remainingStitches,
-        endWorkingStitches: shaping.workingStitches,
-        needleRelative: "opposite-carriage",
-        everyRow: true,
-      },
-      {
-        type: "cancel-hold-return",
-        heldStitches: shaping.heldStitches,
-        tubeStitches,
-      },
-    ],
+    steps,
     notes: [],
   };
 }
