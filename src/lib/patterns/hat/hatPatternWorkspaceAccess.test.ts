@@ -34,6 +34,13 @@ const dropShoulderPatternPage = readFileSync(
 );
 const hatSummaryPage = readFileSync(resolve("src/pages/patterns/hat/summary/index.astro"), "utf8");
 const hatSummaryScript = readFileSync(resolve("src/scripts/hat-pattern-summary-page.ts"), "utf8");
+const socksBuilderPage = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
+const socksSummaryPage = readFileSync(
+  resolve("src/pages/patterns/socks/summary/index.astro"),
+  "utf8",
+);
+const socksEditPage = readFileSync(resolve("src/pages/patterns/socks/edit/index.astro"), "utf8");
+const socksPatternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
 
 function memberPayload(planId: string) {
   return {
@@ -248,9 +255,13 @@ describe("Hat member resolution does not use getCurrentMember plan-less snapshot
 });
 
 describe("sweater member behavior remains unchanged", () => {
-  it("Sleeveless and Drop Shoulder finished pages stay membership-gated", () => {
+  it("Sleeveless, Drop Shoulder, and Socks finished pages stay membership-gated", () => {
     expect(sleevelessPatternPage).toContain("SleevelessPatternMemberGate");
     expect(dropShoulderPatternPage).toContain("SleevelessPatternMemberGate");
+    expect(socksBuilderPage).toContain("SleevelessPatternMemberGate");
+    expect(socksSummaryPage).toContain("SleevelessPatternMemberGate");
+    expect(socksEditPage).toContain("SleevelessPatternMemberGate");
+    expect(socksPatternPage).toContain("SleevelessPatternMemberGate");
     expect(hatPatternPage).not.toContain("SleevelessPatternMemberGate");
     expect(hatPatternPage).not.toContain("PatternBuilderAccountGate");
     expect(hatPatternPage).not.toContain("initPatternMembershipPageGate");

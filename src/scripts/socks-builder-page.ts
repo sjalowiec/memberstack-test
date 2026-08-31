@@ -121,10 +121,6 @@ async function initSocksBuilderPage(): Promise<void> {
   if (!root) return;
 
   const socksSizeSelect = el<HTMLSelectElement>("socks-size");
-  const footCircInput = el<HTMLInputElement>("socks-foot-circumference");
-  const footLengthInput = el<HTMLInputElement>("socks-foot-length");
-  const legCircInput = el<HTMLInputElement>("socks-leg-circumference");
-  const legLengthInput = el<HTMLInputElement>("socks-leg-length");
   const constructionSelect = el<HTMLSelectElement>("socks-construction");
   const stitchGaugeInput = el<HTMLInputElement>("socks-stitch-gauge");
   const rowGaugeInput = el<HTMLInputElement>("socks-row-gauge");
@@ -134,6 +130,12 @@ async function initSocksBuilderPage(): Promise<void> {
   const feedbackEl = el<HTMLElement>("create-pattern-feedback");
 
   const adapter = loadSizingAdapterFromPage();
+  let measurementFields = {
+    footCircumference: "",
+    footLength: "",
+    legCircumference: "",
+    legLength: "",
+  };
   let gaugeSlots: SockGaugeSlots = {
     inches: { stitch: "", row: "" },
     cm: { stitch: "", row: "" },
@@ -164,10 +166,10 @@ async function initSocksBuilderPage(): Promise<void> {
     return {
       sizeSel: readSelectValue(socksSizeSelect),
       constructionDirection: readSelectValue(constructionSelect),
-      footCircumference: footCircInput?.value ?? "",
-      footLength: footLengthInput?.value ?? "",
-      legCircumference: legCircInput?.value ?? "",
-      legLength: legLengthInput?.value ?? "",
+      footCircumference: measurementFields.footCircumference,
+      footLength: measurementFields.footLength,
+      legCircumference: measurementFields.legCircumference,
+      legLength: measurementFields.legLength,
       stitchGauge: stitchGaugeInput?.value ?? "",
       rowGauge: rowGaugeInput?.value ?? "",
       availableNeedles: availableNeedlesInput?.value ?? "",
@@ -237,24 +239,11 @@ async function initSocksBuilderPage(): Promise<void> {
   function applyChartDefaultsForSelectedSize(): void {
     const defaults = measurementsFromSockSize(readSelectValue(socksSizeSelect), adapter, activeUnit);
     if (!defaults) return;
-    if (footCircInput) footCircInput.value = defaults.footCircumference;
-    if (footLengthInput) footLengthInput.value = defaults.footLength;
-    if (legCircInput) legCircInput.value = defaults.legCircumference;
-    if (legLengthInput) legLengthInput.value = defaults.legLength;
+    measurementFields = { ...defaults };
   }
 
-  function updateFloatingLabels(unit: SockDraftUnit): void {
+  function updateSizeSelectLabels(unit: SockDraftUnit): void {
     const unitWord = unit === "cm" ? "cm" : "inches";
-    const labels: Array<[string, string]> = [
-      ["socks-foot-circumference", `Foot Circumference (${unitWord})`],
-      ["socks-foot-length", `Foot Length (${unitWord})`],
-      ["socks-leg-circumference", `Leg Circumference (${unitWord})`],
-      ["socks-leg-length", `Leg Length (${unitWord})`],
-    ];
-    for (const [id, text] of labels) {
-      const lab = document.querySelector(`label[for="${id}"]`);
-      if (lab) lab.textContent = text;
-    }
     if (socksSizeSelect) {
       socksSizeSelect.setAttribute("aria-label", `Choose a finished sock size (${unitWord})`);
       const firstOpt = socksSizeSelect.options[0];
@@ -284,17 +273,28 @@ async function initSocksBuilderPage(): Promise<void> {
     };
 
     setSelectValue(socksSizeSelect, d.sizeSel);
-    if (footCircInput) footCircInput.value = d.footCircumference;
-    if (footLengthInput) footLengthInput.value = d.footLength;
-    if (legCircInput) legCircInput.value = d.legCircumference;
-    if (legLengthInput) legLengthInput.value = d.legLength;
+    measurementFields = {
+      footCircumference: d.footCircumference,
+      footLength: d.footLength,
+      legCircumference: d.legCircumference,
+      legLength: d.legLength,
+    };
+    if (
+      d.sizeSel &&
+      (!measurementFields.footCircumference.trim() ||
+        !measurementFields.footLength.trim() ||
+        !measurementFields.legCircumference.trim() ||
+        !measurementFields.legLength.trim())
+    ) {
+      applyChartDefaultsForSelectedSize();
+    }
     setSelectValue(constructionSelect, d.constructionDirection);
     applyGaugeInputsFromActiveSlot();
     if (availableNeedlesInput) availableNeedlesInput.value = d.availableNeedles ?? "";
 
     applyConstructionChoiceUi();
     syncSizeSelectCompletion();
-    updateFloatingLabels(activeUnit);
+    updateSizeSelectLabels(activeUnit);
     refreshSockSizeDropdownLabels(activeUnit);
     suppressPersist = false;
   }
@@ -307,15 +307,10 @@ async function initSocksBuilderPage(): Promise<void> {
         return row ? sockSizeDisplayName(row) : fields.sizeSel;
       }
       case 2: {
-        if (!fields.footCircumference.trim() || !fields.footLength.trim()) return "";
-        const unitMark = activeUnit === "cm" ? " cm" : '"';
-        return `${fields.footCircumference.trim()}${unitMark} foot · ${fields.footLength.trim()}${unitMark} long`;
-      }
-      case 3: {
         const dir = normalizeConstructionDirection(fields.constructionDirection);
         return dir ? CONSTRUCTION_LABELS[dir] : "";
       }
-      case 4: {
+      case 3: {
         const st = fields.stitchGauge.trim();
         const rg = fields.rowGauge.trim();
         const needles = fields.availableNeedles.trim();
@@ -348,7 +343,7 @@ async function initSocksBuilderPage(): Promise<void> {
     syncNeedleBlockVisibility(fields);
     syncNeedleCapacityFeedback(fields);
 
-    const summaryKeys = ["size", "measurements", "construction", "gauge"] as const;
+    const summaryKeys = ["size", "construction", "gauge"] as const;
 
     for (let step = 1; step <= STEPS; step += 1) {
       const sectionEl = stepSection(step);
@@ -459,14 +454,6 @@ async function initSocksBuilderPage(): Promise<void> {
     applyChartDefaultsForSelectedSize();
     onFieldChanged({ advance: true });
   });
-  footCircInput?.addEventListener("input", () => onFieldChanged());
-  footCircInput?.addEventListener("change", () => onFieldChanged({ advance: true }));
-  footLengthInput?.addEventListener("input", () => onFieldChanged());
-  footLengthInput?.addEventListener("change", () => onFieldChanged({ advance: true }));
-  legCircInput?.addEventListener("input", () => onFieldChanged());
-  legCircInput?.addEventListener("change", () => onFieldChanged({ advance: true }));
-  legLengthInput?.addEventListener("input", () => onFieldChanged());
-  legLengthInput?.addEventListener("change", () => onFieldChanged({ advance: true }));
   stitchGaugeInput?.addEventListener("input", () => {
     hideGaugeSanityWarning(document);
     onFieldChanged();
@@ -529,7 +516,7 @@ async function initSocksBuilderPage(): Promise<void> {
     const nextU = draftUnitFromToggleDetail(detail.unit);
     const prevU = activeUnit;
     if (nextU === prevU) {
-      updateFloatingLabels(nextU);
+      updateSizeSelectLabels(nextU);
       refreshSockSizeDropdownLabels(nextU);
       return;
     }
@@ -540,21 +527,23 @@ async function initSocksBuilderPage(): Promise<void> {
       };
     }
     gaugeSlots = maybeFillSockGaugeSlotFromOtherUnit(gaugeSlots, prevU, nextU);
-    if (footCircInput) {
-      footCircInput.value = convertSockMeasurementDisplay(footCircInput.value, prevU, nextU);
-    }
-    if (footLengthInput) {
-      footLengthInput.value = convertSockMeasurementDisplay(footLengthInput.value, prevU, nextU);
-    }
-    if (legCircInput) {
-      legCircInput.value = convertSockMeasurementDisplay(legCircInput.value, prevU, nextU);
-    }
-    if (legLengthInput) {
-      legLengthInput.value = convertSockMeasurementDisplay(legLengthInput.value, prevU, nextU);
-    }
+    measurementFields = {
+      footCircumference: convertSockMeasurementDisplay(
+        measurementFields.footCircumference,
+        prevU,
+        nextU,
+      ),
+      footLength: convertSockMeasurementDisplay(measurementFields.footLength, prevU, nextU),
+      legCircumference: convertSockMeasurementDisplay(
+        measurementFields.legCircumference,
+        prevU,
+        nextU,
+      ),
+      legLength: convertSockMeasurementDisplay(measurementFields.legLength, prevU, nextU),
+    };
     activeUnit = nextU;
     applyGaugeInputsFromActiveSlot();
-    updateFloatingLabels(nextU);
+    updateSizeSelectLabels(nextU);
     refreshSockSizeDropdownLabels(nextU);
     hideGaugeSanityWarning(document);
     onFieldChanged();

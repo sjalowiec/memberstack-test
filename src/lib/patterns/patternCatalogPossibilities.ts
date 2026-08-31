@@ -12,6 +12,7 @@
 import { DROP_SHOULDER_SLEEVE_LENGTH_CHOICES } from "./patternConstructionIdentity";
 import { HAT_BUILDER_ALLOWED_CROWNS } from "./hat/hatBuilderValidation";
 import { HAT_BRIM_TYPES, HAT_NAMED_FIT_STYLES } from "./hat/hatMath";
+import { SOCK_CONSTRUCTION_DIRECTIONS } from "./sock/sockDraft";
 
 /** Sweater who-picker categories (Women / Men / Kids / Baby). */
 export const SWEATER_CATALOG_AUDIENCES = ["women", "men", "kids", "baby"] as const;
@@ -90,3 +91,19 @@ export const DROP_SHOULDER_PATTERN_POSSIBILITIES =
 
 /** Displays as `64 PATTERNS FOR ANYONE`. */
 export const DROP_SHOULDER_CATALOG_PILL_REST = "Patterns for Anyone";
+
+/**
+ * Socks: 2 construction directions = 2.
+ *
+ *   Cuff to Toe or Toe Up (`SOCK_CONSTRUCTION_DIRECTIONS`).
+ *
+ * Not counted: individual sizes, gauge, custom Perfect Fit measurements.
+ */
+export const SOCKS_PATTERN_POSSIBILITIES = SOCK_CONSTRUCTION_DIRECTIONS.length;
+
+/** Displays as `2 SOCKS IN 1 BUILDER`. */
+export const SOCKS_CATALOG_PILL_REST = "Socks in 1 Builder";
+
+/** Pattern Catalog card copy for Socks. */
+export const SOCKS_CATALOG_COPY =
+  "Knit socks that actually fit with cuff-to-toe or toe-up construction, short-row heel and toe, custom sizing, and machine-friendly instructions.";

@@ -13,7 +13,7 @@ import {
   SOCK_PATTERN_HREF,
   SOCK_SUMMARY_FROM_BUILDER_HREF,
   SOCK_SUMMARY_HREF,
-  SOCK_SUMMARY_PRIMARY_LABEL,
+  SOCK_EDIT_PRIMARY_LABEL,
   buildSockBuilderHref,
   buildSockPatternHref,
   buildSockSummaryFromBuilderHref,
@@ -54,11 +54,18 @@ function completeDraft(overrides: Partial<SockDraft> = {}): SockDraft {
 
 describe("Socks Builder Review → Summary navigation", () => {
   const builderScript = readFileSync(resolve("src/scripts/socks-builder-page.ts"), "utf8");
-  const summaryPage = readFileSync(
-    resolve("src/pages/patterns/socks/summary/index.astro"),
+  const editWorkspace = readFileSync(
+    resolve("src/components/patterns/SocksPatternEditWorkspace.astro"),
     "utf8",
   );
-  const summaryScript = readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8");
+  const summaryPage =
+    readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+    "\n" +
+    editWorkspace;
+  const summaryScript =
+    readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8") +
+    "\n" +
+    readFileSync(resolve("src/scripts/socks-edit-page.ts"), "utf8");
 
   it("sends a valid Builder review to /patterns/socks/summary/?generated=1", () => {
     expect(SOCK_SUMMARY_HREF).toBe("/patterns/socks/summary/");
@@ -71,28 +78,29 @@ describe("Socks Builder Review → Summary navigation", () => {
     expect(builderScript).toMatch(/location\.assign\(buildSockSummaryFromBuilderHref\(\)\)/);
     expect(builderScript).not.toContain("Pattern summary is not available yet");
     expect(summaryPage).toContain("patternWorkspace={true}");
+    expect(summaryPage).toContain("SocksPatternEditWorkspace");
     expect(summaryPage).toContain("PatternSummaryEditWorkspace");
     expect(summaryPage).toContain("SOCK_PATTERN_BUILDER_HREF");
-    expect(summaryPage).toContain("SOCK_SUMMARY_CANCEL_LABEL");
-    expect(summaryPage).toContain("SOCK_SUMMARY_PRIMARY_LABEL");
+    expect(summaryPage).toContain("SOCK_EDIT_CANCEL_LABEL");
+    expect(summaryPage).toContain("SOCK_EDIT_PRIMARY_LABEL");
     expect(summaryPage).toContain("SOCK_PATTERN_HREF");
-    expect(summaryPage).toContain('data-testid="button-socks-summary-view-pattern"');
+    expect(summaryPage).toContain('data-testid="button-edit-update"');
     expect(summaryPage).not.toContain("disabled");
     expect(summaryPage).toContain("PatternSummaryDiagramStage");
-    expect(summaryPage).toContain("data-socks-summary-diagram");
+    expect(summaryPage).toContain("data-socks-edit-diagram");
     expect(summaryPage).toContain("PatternSummaryMeasurementChip");
     expect(summaryPage).toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
     expect(SOCK_SUMMARY_ART_SRC).toContain("socks-pattern-summary-transparent.webp");
     expect(summaryPage).toContain("SOCK_SUMMARY_ART_SRC");
     expect(summaryScript).not.toContain("buildSockFinishedProfileSvg");
     expect(summaryScript).not.toContain("buildSockPatternDiagramSvg");
-    expect(summaryPage).not.toContain("SleevelessPatternMemberGate");
-    expect(summaryScript).toContain("buildSockSummaryFromDraft");
+    expect(summaryPage).toContain("SleevelessPatternMemberGate");
+    expect(summaryScript).toContain("validateSockEditForm");
     expect(summaryScript).toContain("reconcilePatternDraftOwner");
-    expect(summaryScript).not.toContain("location.assign");
+    expect(summaryScript).toContain("window.location.assign(SOCK_PATTERN_HREF)");
     expect(SOCK_PATTERN_HREF).toBe("/patterns/socks/pattern/");
     expect(buildSockPatternHref()).toBe("/patterns/socks/pattern/");
-    expect(SOCK_SUMMARY_PRIMARY_LABEL).toBe("View My Pattern");
+    expect(SOCK_EDIT_PRIMARY_LABEL).toBe("Update Pattern");
   });
 });
 
@@ -300,24 +308,29 @@ describe("leg shaping status", () => {
     expect(result.calc.legShapingSchedule.direction).toBe("decrease");
   });
 
-  it("keeps Summary markup ready to display the schedule without a Pattern page", () => {
-    const summaryPage = readFileSync(
-      resolve("src/pages/patterns/socks/summary/index.astro"),
+  it("keeps Summary on the shared Edit workspace instead of a calculation report", () => {
+    const editWorkspace = readFileSync(
+      resolve("src/components/patterns/SocksPatternEditWorkspace.astro"),
       "utf8",
     );
-    const summaryScript = readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8");
-    expect(summaryPage).toContain("Ankle stitches");
-    expect(summaryPage).toContain("Top leg stitches");
-    expect(summaryPage).toContain("Magic Formula");
-    expect(summaryPage).toContain("Straight ankle");
-    expect(summaryPage).toContain("Straight ankle rows");
-    expect(summaryPage).toContain("Shaping rows");
-    expect(summaryPage).toContain("data-socks-summary-leg-details");
+    const summaryPage =
+      readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+      "\n" +
+      editWorkspace;
+    const summaryScript =
+      readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8") +
+      "\n" +
+      readFileSync(resolve("src/scripts/socks-edit-page.ts"), "utf8");
+    expect(summaryPage).toContain("Pattern choices");
+    expect(summaryPage).toContain("Gauge / machine");
+    expect(summaryPage).toContain("SOCK_EDIT_PRIMARY_LABEL");
+    expect(summaryPage).not.toContain("Ankle stitches");
+    expect(summaryPage).not.toContain("Magic Formula");
+    expect(summaryPage).not.toContain("data-socks-summary-leg-details");
     expect(summaryPage).not.toContain("Leg shaping instructions are not generated yet.");
-    expect(summaryScript).toContain("magicFormulaSchedule");
-    expect(summaryScript).toContain("ankleStraightLength");
-    expect(summaryScript).toContain("legShapingRowsAvailable");
-    expect(summaryScript).toContain("legDetails.hidden = !view.legShapingNeeded");
+    expect(summaryScript).toContain("validateSockEditForm");
+    expect(summaryScript).toContain("applySockEditFormToDraft");
+    expect(summaryScript).toContain("writeSockDraft(check.draft)");
   });
 });
 
@@ -402,22 +415,19 @@ describe("cuff-to-toe and toe-up show identical geometry", () => {
 });
 
 describe("Socks Summary page content", () => {
-  const summaryPage = readFileSync(
-    resolve("src/pages/patterns/socks/summary/index.astro"),
-    "utf8",
-  );
+  const summaryPage =
+    readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+    "\n" +
+    readFileSync(resolve("src/components/patterns/SocksPatternEditWorkspace.astro"), "utf8");
 
-  it("lists the checkpoint fields and does not ask for heel/toe/ankle as inputs", () => {
-    expect(summaryPage).toContain("Basic information");
-    expect(summaryPage).toContain("Finished measurements");
-    expect(summaryPage).toContain("Foot Circumference");
-    expect(summaryPage).toContain("Total sock stitches");
-    expect(summaryPage).toContain("Heel &amp; Toe Shaping");
-    expect(summaryPage).toContain("Short-row shaping (one direction)");
-    expect(summaryPage).toContain("Return to work");
-    expect(summaryPage).toContain("Straight foot length");
-    expect(summaryPage).toContain("Straight ankle");
-    expect(summaryPage).toContain("Leg shaping");
+  it("reuses the Edit workspace and does not ask for heel/toe/ankle as inputs", () => {
+    expect(summaryPage).toContain("SocksPatternEditWorkspace");
+    expect(summaryPage).toContain("Pattern choices");
+    expect(summaryPage).toContain("Gauge / machine");
+    expect(summaryPage).toContain("SOCK_EDIT_PRIMARY_LABEL");
+    expect(summaryPage).not.toContain("Basic information");
+    expect(summaryPage).not.toContain("Finished measurements");
+    expect(summaryPage).not.toContain("Heel &amp; Toe Shaping");
     expect(summaryPage).not.toContain("ankle circumference");
     expect(summaryPage).not.toContain("Fancy Socks");
     expect(summaryPage).toContain("SOCK_PATTERN_HREF");

@@ -12,10 +12,14 @@ import {
   SLEEVELESS_CATALOG_BODY_SHAPES,
   SLEEVELESS_CATALOG_PILL_REST,
   SLEEVELESS_PATTERN_POSSIBILITIES,
+  SOCKS_CATALOG_COPY,
+  SOCKS_CATALOG_PILL_REST,
+  SOCKS_PATTERN_POSSIBILITIES,
   SWEATER_CATALOG_AUDIENCES,
   SWEATER_CATALOG_FRONT_STYLES,
   SWEATER_CATALOG_NECKLINES,
 } from "./patternCatalogPossibilities";
+import { SOCK_CONSTRUCTION_DIRECTIONS } from "./sock/sockDraft";
 
 const catalog = readFileSync(resolve("src/pages/patterns/index.astro"), "utf8");
 const whoPicker = readFileSync(
@@ -106,6 +110,16 @@ describe("pattern catalog possibility counts", () => {
     expect(dropShoulderBuilder).not.toContain("data-cb-style-group=\"bodyShape\"");
   });
 
+  it("counts socks as 2 construction directions, without sizes or gauge", () => {
+    expect(SOCK_CONSTRUCTION_DIRECTIONS).toEqual(["cuff-to-toe", "toe-up"]);
+    expect(SOCKS_PATTERN_POSSIBILITIES).toBe(2);
+    expect(SOCKS_PATTERN_POSSIBILITIES).toBe(SOCK_CONSTRUCTION_DIRECTIONS.length);
+    expect(SOCKS_CATALOG_PILL_REST).toBe("Socks in 1 Builder");
+    expect(SOCKS_CATALOG_COPY).toBe(
+      "Knit socks that actually fit with cuff-to-toe or toe-up construction, short-row heel and toe, custom sizing, and machine-friendly instructions.",
+    );
+  });
+
   it("shows compact count pills on available cards and leaves Coming soon unchanged", () => {
     expect(catalog).toContain("pattern.pillCount");
     expect(catalog).toContain("pattern.pillRest");
@@ -130,11 +144,14 @@ describe("pattern catalog possibility counts", () => {
     expect(SLEEVELESS_PATTERN_POSSIBILITIES).toBe(32);
     expect(HAT_PATTERN_POSSIBILITIES).toBe(27);
     expect(DROP_SHOULDER_PATTERN_POSSIBILITIES).toBe(64);
+    expect(SOCKS_PATTERN_POSSIBILITIES).toBe(2);
     expect(SLEEVELESS_CATALOG_PILL_REST).toBe("Styles in 1 Builder");
     expect(HAT_CATALOG_PILL_REST).toBe("Hats in 1 Builder");
     expect(DROP_SHOULDER_CATALOG_PILL_REST).toBe("Patterns for Anyone");
+    expect(SOCKS_CATALOG_PILL_REST).toBe("Socks in 1 Builder");
     expect(SLEEVELESS_CATALOG_PILL_REST).not.toMatch(/×/);
     expect(HAT_CATALOG_PILL_REST).not.toMatch(/×/);
     expect(DROP_SHOULDER_CATALOG_PILL_REST).not.toMatch(/×/);
+    expect(SOCKS_CATALOG_PILL_REST).not.toMatch(/×/);
   });
 });

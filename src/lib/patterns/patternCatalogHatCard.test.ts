@@ -16,6 +16,7 @@ const dropShoulderBuilder = readFileSync(
   resolve("src/pages/patterns/drop-shoulder/builder.astro"),
   "utf8",
 );
+const socksBuilder = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
 
 function catalogSlice(startMarker: string, endMarker: string): string {
   const start = catalog.indexOf(startMarker);
@@ -58,14 +59,16 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("title: 'Hat'");
     expect(catalog).toContain("title: 'Sleeveless Sweater'");
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
+    expect(catalog).toContain("title: 'Socks'");
     expect(hatBuilder).toMatch(/Free\s*\/\s*ungated/i);
     expect(hatBuilder).not.toContain("SleevelessPatternMemberGate");
     expect(hatBuilder).not.toContain("PatternBuilderAccountGate");
   });
 
-  it("leaves sweater builders membership-gated and Hat ungated", () => {
+  it("leaves sweater builders and Socks membership-gated and Hat ungated", () => {
     expect(sleevelessBuilder).toContain("SleevelessPatternMemberGate");
     expect(dropShoulderBuilder).toContain("SleevelessPatternMemberGate");
+    expect(socksBuilder).toContain("SleevelessPatternMemberGate");
     expect(hatBuilder).not.toContain("SleevelessPatternMemberGate");
     expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
     expect(catalog).not.toMatch(/href:\s*['"]\/patterns\/hat\/builder['"]/);
@@ -105,6 +108,15 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
     expect(catalog).toContain("image: '/images/patterns/drop_shoulder.webp'");
     expect(catalog).toContain("button: 'Create drop shoulder sweater'");
+  });
+
+  it("lists Socks as an available card using socks-pattern-catalog.webp", () => {
+    expect(catalog).toContain("title: 'Socks'");
+    expect(catalog).toContain("href: '/patterns/socks/builder?new=1'");
+    expect(catalog).toContain("image: '/images/patterns/socks-pattern-catalog.webp'");
+    expect(catalog).toContain("button: 'Create your socks'");
+    expect(catalog).toContain("copy: SOCKS_CATALOG_COPY");
+    expect(catalog).toContain("socksPattern");
   });
 
   it("features the free Hat for guests and keeps the standard card catalog for members", () => {

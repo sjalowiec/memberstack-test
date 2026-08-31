@@ -12,9 +12,14 @@ import {
 } from "./sockPatternPage";
 import {
   SOCK_PATTERN_HREF,
-  SOCK_SUMMARY_PRIMARY_LABEL,
+  SOCK_EDIT_PRIMARY_LABEL,
 } from "./sockPatternNavigation";
-import { SOCK_SHORT_ROW_WRAP_WARNING } from "./sockInstructions";
+import {
+  SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+  SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
+  SOCK_SHORT_ROW_WRAP_WARNING,
+  SOCK_TOE_UP_OPENING_SECTION_TITLE,
+} from "./sockInstructions";
 import { SOCK_PATTERN_INCOMPLETE_DRAFT_MESSAGE } from "./sockPatternFromDraft";
 
 const adapter = createSockSizingAdapter(
@@ -55,23 +60,25 @@ function assertStitchContinuity(doc: {
   }
 }
 
-describe("Summary View My Pattern → Pattern route", () => {
-  const summaryPage = readFileSync(
-    resolve("src/pages/patterns/socks/summary/index.astro"),
-    "utf8",
-  );
+describe("Summary Update Pattern → Pattern route", () => {
+  const summaryPage =
+    readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+    "\n" +
+    readFileSync(resolve("src/components/patterns/SocksPatternEditWorkspace.astro"), "utf8");
   const patternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
   const patternScript = readFileSync(resolve("src/scripts/socks-pattern-page.ts"), "utf8");
 
-  it("wires View My Pattern to the finished Pattern page", () => {
+  it("wires Update Pattern to the finished Pattern page", () => {
     expect(SOCK_PATTERN_HREF).toBe("/patterns/socks/pattern/");
-    expect(SOCK_SUMMARY_PRIMARY_LABEL).toBe("View My Pattern");
+    expect(SOCK_EDIT_PRIMARY_LABEL).toBe("Update Pattern");
     expect(summaryPage).toContain("SOCK_PATTERN_HREF");
-    expect(summaryPage).toContain('data-testid="button-socks-summary-view-pattern"');
+    expect(summaryPage).toContain('data-testid="button-edit-update"');
     expect(summaryPage).not.toContain("disabled");
     expect(summaryPage).not.toContain("SOCK_SUMMARY_PATTERN_NOT_READY_MESSAGE");
     expect(patternPage).toContain('data-testid="socks-pattern-page"');
     expect(patternPage).toContain("patternWorkspace={true}");
+    expect(patternPage).toContain("SleevelessPatternMemberGate");
+    expect(summaryPage).toContain("SleevelessPatternMemberGate");
     expect(patternPage).toContain("SOCK_PATTERN_BUILDER_HREF");
     expect(patternPage).toContain("SOCK_EDIT_HREF");
     expect(patternPage).toContain('data-testid="button-edit-pattern"');
@@ -149,6 +156,12 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain("Bind off");
     expect(html).toContain("at the cuff");
     expect(html).not.toContain("waste yarn");
+    expect(html).toContain(`<h4>${SOCK_TOE_UP_OPENING_SECTION_TITLE}</h4>`);
+    expect(html).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
+    expect(html).toContain(`data-aria-label="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
+    expect(html).toContain('data-term="Scrap on"');
+    expect(html).not.toContain("(full foot / tube)");
+    expect(html).not.toContain("Use the cast-on method of your choice.");
     expect(result.sock1.sections.map((s) => s.id)).toEqual([
       "cast-on",
       "toe",
@@ -276,11 +289,11 @@ describe("Pattern page does not recalculate geometry", () => {
     expect(joined).toContain("buildSockPatternFromDraft");
   });
 
-  it("does not embed videos, catalog wiring, or Kitchener as a Builder choice", () => {
+  it("does not embed videos or Kitchener as a Builder choice", () => {
     const patternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
     expect(patternPage).not.toContain("vimeo");
     expect(patternPage).not.toContain("hat-pattern-diagram");
-    expect(patternPage).not.toContain("socks-pattern-catalog.webp");
+    expect(patternPage).toContain('src="/images/patterns/socks-pattern-catalog.webp"');
     expect(patternPage).not.toContain("/images/sock.svg");
     expect(patternPage).not.toContain("kitchener-under");
     expect(patternPage).not.toContain("Fancy Socks");

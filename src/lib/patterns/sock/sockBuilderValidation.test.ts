@@ -346,10 +346,10 @@ describe("sock builder required-field validation", () => {
     ).toBe(false);
     expect(sockBuilderStepComplete(1, completeFields, adapter)).toBe(true);
     expect(
-      sockBuilderStepComplete(4, { ...completeFields, stitchGauge: "" }, adapter, "inches"),
+      sockBuilderStepComplete(3, { ...completeFields, stitchGauge: "" }, adapter, "inches"),
     ).toBe(false);
     expect(SOCK_BUILDER_INCOMPLETE_MESSAGE).toMatch(/Finish the required sections/i);
-    expect(SOCK_BUILDER_STEPS).toBe(4);
+    expect(SOCK_BUILDER_STEPS).toBe(3);
 
     const afterSize = nextSockBuilderOpenStepAfterFieldChange({
       advance: true,
@@ -403,17 +403,18 @@ describe("sock builder page wiring", () => {
   const builderPage = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
   const builderScript = readFileSync(resolve("src/scripts/socks-builder-page.ts"), "utf8");
 
-  it("opens a Hat-style ungated Socks Builder that persists to kbm_socks_draft", () => {
+  it("opens a Hat-style membership-gated Socks Builder that persists to kbm_socks_draft", () => {
     expect(builderPage).toContain("patternWorkspace={true}");
-    expect(builderPage).toMatch(/Free\s*\/\s*ungated/i);
-    expect(builderPage).not.toContain("SleevelessPatternMemberGate");
+    expect(builderPage).toContain("SleevelessPatternMemberGate");
+    expect(builderPage).not.toMatch(/Free\s*\/\s*ungated/i);
     expect(builderPage).toContain("GaugeInput");
     expect(builderPage).toContain('id="gauge-sanity-warning"');
     expect(builderPage).toContain('id="express-available-needles"');
     expect(builderPage).toContain('id="socks-size"');
-    expect(builderPage).toContain("Perfect Fit measurements");
-    expect(builderPage).toContain("Foot Circumference");
-    expect(builderPage).toContain("Leg Length");
+    expect(builderPage).not.toContain("Perfect Fit measurements");
+    expect(builderPage).not.toContain("Foot Circumference");
+    expect(builderPage).not.toContain("Leg Length");
+    expect(builderPage).not.toContain("socks-foot-circumference");
     expect(builderPage).toContain("Cuff to Toe");
     expect(builderPage).toContain("Toe Up");
     expect(builderPage).toContain('data-value="cuff-to-toe"');

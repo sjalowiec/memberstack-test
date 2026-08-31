@@ -3,6 +3,7 @@
  * Does not recalculate garment geometry.
  */
 
+import { buildGlossaryTooltipPlaceholderHtml } from "../../glossary/glossaryTooltipPrint";
 import {
   RESET_ROW_COUNTER_TEXT,
   rowCounterResetBlockHtml,
@@ -15,6 +16,13 @@ import {
   type SockInstructionStep,
   type SockNeedleHalf,
 } from "./sockInstructionModel";
+
+/**
+ * Existing KIN glossary entry “Scrap and Ravel Cast On”
+ * (`src/data/glossary.json`). Do not invent a replacement “Scrap On” entry.
+ */
+export const SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID = 265;
+export const SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM = "Scrap and Ravel Cast On";
 
 function escapeHtml(value: string): string {
   return String(value)
@@ -57,9 +65,17 @@ function renderStep(step: SockInstructionStep): string {
     case "reset-rc":
       return rowCounterResetBlockHtml(0);
     case "cast-on": {
-      const where =
-        step.role === "top-leg" ? " (top of leg)" : " (full foot / tube)";
-      return `<p>Cast on <strong>${step.stitches} stitches</strong>${where}. Use the cast-on method of your choice.</p>`;
+      if (step.role === "foot-tube") {
+        const scrapOnHelp = buildGlossaryTooltipPlaceholderHtml(
+          SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+          "Scrap on",
+          escapeHtml,
+          escapeHtml,
+          { ariaLabel: SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM },
+        );
+        return `<p>${scrapOnHelp} <strong>${step.stitches} stitches</strong>.</p>`;
+      }
+      return `<p>Cast on <strong>${step.stitches} stitches</strong> (top of leg). Use the cast-on method of your choice.</p>`;
     }
     case "knit-even":
       return `<p>Knit ${step.rows} rows even. (${step.stitches} stitches)</p>`;
@@ -137,7 +153,9 @@ function outlineStep(step: SockInstructionStep): string {
     case "reset-rc":
       return RESET_ROW_COUNTER_TEXT;
     case "cast-on":
-      return `Cast on ${step.stitches} stitches (${step.role}).`;
+      return step.role === "foot-tube"
+        ? `Scrap on ${step.stitches} stitches.`
+        : `Cast on ${step.stitches} stitches (${step.role}).`;
     case "knit-even":
       return `Knit ${step.rows} rows even (${step.stitches} stitches).`;
     case "magic-formula": {

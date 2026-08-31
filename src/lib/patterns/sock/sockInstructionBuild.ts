@@ -16,6 +16,9 @@ import {
 } from "./sockInstructionModel";
 import { buildSockShortRowInstructionSection } from "./sockShortRowInstructions";
 
+/** Concise Toe-Up opening heading; help links to Scrap and Ravel Cast On. */
+export const SOCK_TOE_UP_OPENING_SECTION_TITLE = "Scrap On";
+
 function knittingRc(rows: number): SockSectionRc {
   return { resetAtStart: true, startRc: 0, endRc: rows };
 }
@@ -32,7 +35,7 @@ function buildCastOnSection(
   const stitches = toeUp ? calc.totalSockStitches : calc.legStitches;
   return {
     id: "cast-on",
-    title: "Cast-On",
+    title: toeUp ? SOCK_TOE_UP_OPENING_SECTION_TITLE : "Cast-On",
     constructionDirection: calc.constructionDirection,
     sock,
     startStitches: 0,

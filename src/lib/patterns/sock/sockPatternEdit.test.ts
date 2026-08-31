@@ -66,13 +66,23 @@ function memoryStorage(seed: Record<string, string> = {}) {
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const editHelper = readFileSync(resolve(dir, "sockPatternEdit.ts"), "utf8");
-const editPage = readFileSync(resolve("src/pages/patterns/socks/edit/index.astro"), "utf8");
+const editWorkspace = readFileSync(
+  resolve("src/components/patterns/SocksPatternEditWorkspace.astro"),
+  "utf8",
+);
+const editPage =
+  readFileSync(resolve("src/pages/patterns/socks/edit/index.astro"), "utf8") +
+  "\n" +
+  editWorkspace;
 const editScript = readFileSync(resolve("src/scripts/socks-edit-page.ts"), "utf8");
 const patternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
 const patternScript = readFileSync(resolve("src/scripts/socks-pattern-page.ts"), "utf8");
 const builderPage = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
 const builderScript = readFileSync(resolve("src/scripts/socks-builder-page.ts"), "utf8");
-const summaryPage = readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8");
+const summaryPage =
+  readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+  "\n" +
+  editWorkspace;
 
 describe("Pattern Edit Pattern → Socks edit route", () => {
   it("opens /patterns/socks/edit/ from Edit Pattern, not the Builder", () => {
@@ -90,6 +100,9 @@ describe("Pattern Edit Pattern → Socks edit route", () => {
     expect(patternScript).not.toContain("SOCK_PATTERN_BUILDER_HREF");
     expect(editPage).toContain('data-testid="socks-edit-page"');
     expect(editPage).toContain("patternWorkspace={true}");
+    expect(editPage).toContain("SleevelessPatternMemberGate");
+    expect(patternPage).toContain("SleevelessPatternMemberGate");
+    expect(builderPage).toContain("SleevelessPatternMemberGate");
     expect(editPage).not.toContain("new=1");
     expect(editPage).not.toContain("express-step-nav");
     expect(editPage).not.toContain("express-acc");
@@ -272,7 +285,9 @@ describe("Builder remains unchanged for new patterns", () => {
     expect(builderScript).not.toContain("SOCK_EDIT_HREF");
     expect(builderPage).not.toContain("SOCK_EDIT_HREF");
     expect(summaryPage).toContain("SOCK_PATTERN_HREF");
-    expect(summaryPage).toContain("Magic Formula");
+    expect(summaryPage).toContain("SocksPatternEditWorkspace");
+    expect(summaryPage).toContain("SOCK_EDIT_PRIMARY_LABEL");
+    expect(summaryPage).not.toContain("Magic Formula");
   });
 });
 

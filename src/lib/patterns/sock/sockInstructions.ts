@@ -21,6 +21,7 @@ export {
 } from "./sockInstructionModel";
 
 export {
+  SOCK_TOE_UP_OPENING_SECTION_TITLE,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
   type BuildBasicSockInstructionsOptions,
@@ -29,6 +30,8 @@ export {
 export { buildSockShortRowInstructionSection } from "./sockShortRowInstructions";
 
 export {
+  SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+  SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
   formatSockInstructionOutline,
   renderBasicSockInstructionsHtml,
   wrapSockPatternSection,

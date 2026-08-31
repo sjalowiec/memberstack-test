@@ -10,6 +10,9 @@ import {
 import {
   SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_FINISHING_DEFAULT,
+  SOCK_TOE_UP_OPENING_SECTION_TITLE,
+  SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+  SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
   formatSockInstructionOutline,
@@ -21,6 +24,8 @@ import {
   type SockInstructionSectionId,
   type SockInstructionStep,
 } from "./sockInstructions";
+import glossary from "../../../data/glossary.json";
+import { glossarySlugForId } from "../../glossary/glossaryTooltipHydrate";
 
 const typicalMachine: BasicSockCalcInput = {
   footCircumferenceInches: 8.5,
@@ -317,6 +322,7 @@ describe("C. Same wider geometry, Toe Up, Magic Formula increases", () => {
       "finishing",
     ]);
     expect(section(sock1, "cast-on").endStitches).toBe(calc.totalSockStitches);
+    expect(section(sock1, "cast-on").title).toBe(SOCK_TOE_UP_OPENING_SECTION_TITLE);
     expect(section(sock1, "toe").orientation).toMatchObject({
       holdHalf: "left",
       workHalf: "right",
@@ -461,6 +467,13 @@ describe("pair helper, renderer, and architecture", () => {
     expect(toeUp).toContain("Bind off");
     expect(toeUp).toContain("at the cuff");
     expect(toeUp).not.toContain("waste yarn");
+    expect(toeUp).toContain(`<h4>${SOCK_TOE_UP_OPENING_SECTION_TITLE}</h4>`);
+    expect(toeUp).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
+    expect(toeUp).toContain(`data-term="Scrap on"`);
+    expect(toeUp).toContain(`data-aria-label="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
+    expect(toeUp).toMatch(/Scrap on[\s\S]*<strong>\d+ stitches<\/strong>\./);
+    expect(toeUp).not.toContain("(full foot / tube)");
+    expect(toeUp).not.toContain("Use the cast-on method of your choice.");
   });
 
   it("produces a compact outline for review", () => {
@@ -495,6 +508,52 @@ describe("pair helper, renderer, and architecture", () => {
     expect(joined).not.toMatch(/computeMagicFormulaPairedShaping/);
     expect(joined).not.toMatch(/calculateShortRowShaping/);
     expect(joined).not.toMatch(/computeAutoShaping/);
+  });
+});
+
+describe("Toe-Up opening uses existing Scrap and Ravel Cast On glossary", () => {
+  type GlossaryRow = { glossaryId?: number; english?: string; active?: boolean };
+  const entries = glossary as GlossaryRow[];
+  const entry = entries.find((row) => row.glossaryId === SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID);
+  const byEnglish = entries.find((row) => row.english === SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM);
+
+  it("locates the existing glossary entry by id and English term", () => {
+    expect(entry).toBeDefined();
+    expect(entry?.active).toBe(true);
+    expect(entry?.english).toBe(SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM);
+    expect(byEnglish?.glossaryId).toBe(SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID);
+    expect(glossarySlugForId(SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID)).toBe(
+      "scrap-and-ravel-cast-on",
+    );
+    expect(entries.some((row) => row.english === "Scrap On")).toBe(false);
+  });
+
+  it("renders Scrap on N stitches with that glossary help, not a new Scrap On entry", () => {
+    const calc = mustCalc({ ...typicalMachine, constructionDirection: "toe-up" });
+    const doc = buildBasicSockInstructions(calc, 1);
+    expect(section(doc, "cast-on").title).toBe(SOCK_TOE_UP_OPENING_SECTION_TITLE);
+    const html = renderBasicSockInstructionsHtml(doc);
+    expect(html).toContain(`<h4>${SOCK_TOE_UP_OPENING_SECTION_TITLE}</h4>`);
+    expect(html).toContain(`data-term="Scrap on"`);
+    expect(html).toContain(`<strong>${calc.totalSockStitches} stitches</strong>.`);
+    expect(html).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
+    expect(html).toContain(`data-aria-label="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
+    expect(html).not.toContain("(full foot / tube)");
+    expect(html).not.toContain("Use the cast-on method of your choice.");
+    const outline = formatSockInstructionOutline(doc);
+    expect(outline).toContain(`Scrap on ${calc.totalSockStitches} stitches.`);
+    expect(outline).toContain(`${SOCK_TOE_UP_OPENING_SECTION_TITLE}:`);
+  });
+
+  it("does not attach Scrap and Ravel Cast On to cuff-to-toe cast-on", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    expect(html).toContain("<h4>Cast-On</h4>");
+    expect(html).toContain("Cast on");
+    expect(html).toContain("Use the cast-on method of your choice.");
+    expect(html).not.toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
+    expect(html).not.toContain("(full foot / tube)");
   });
 });
 
