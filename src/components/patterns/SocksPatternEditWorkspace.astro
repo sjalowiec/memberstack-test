@@ -11,6 +11,7 @@ import PatternSummaryEditWorkspace from "./PatternSummaryEditWorkspace.astro";
 import PatternSummaryDiagramStage from "./PatternSummaryDiagramStage.astro";
 import PatternSummaryMeasurementChip from "./PatternSummaryMeasurementChip.astro";
 import PatternProjectDetails from "./PatternProjectDetails.astro";
+import GlossaryTermModal from "../glossary/GlossaryTermModal.astro";
 import {
   SOCK_SUMMARY_ART_SRC,
   SOCK_SUMMARY_CHIP_TARGET_POINTS,
@@ -221,6 +222,10 @@ const sockSizingRows = listSockSizingOptions(createSockSizingAdapter(sockSizingJ
       </section>
     </Fragment>
 
+    <Fragment slot="hint">
+      Fit note: Socks are usually worn with <a href="/glossary/negative-ease" class="glossary-link">negative ease</a> for a snug fit.
+    </Fragment>
+
     <Fragment slot="notes">
       <p class="sl-edit-error-note" data-socks-edit-form-error hidden role="alert"></p>
     </Fragment>
@@ -313,6 +318,8 @@ const sockSizingRows = listSockSizingOptions(createSockSizingAdapter(sockSizingJ
   set:html={JSON.stringify(sockSizingJson)}
 />
 
+<GlossaryTermModal />
+
 <style>
   .hat-pattern-empty {
     max-width: 36rem;
@@ -346,7 +353,7 @@ const sockSizingRows = listSockSizingOptions(createSockSizingAdapter(sockSizingJ
   }
 
   :global(.socks-edit-page .sl-edit-workspace__measure-hint) {
-    display: none;
+    max-width: 28rem;
   }
 
   :global(.socks-edit-page .sl-edit-workspace__quick) {

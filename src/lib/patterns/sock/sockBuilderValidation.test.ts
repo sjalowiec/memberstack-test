@@ -421,6 +421,11 @@ describe("sock builder page wiring", () => {
     expect(builderPage).toContain('data-value="toe-up"');
     expect(builderPage).not.toContain("ankle circumference");
     expect(builderPage).not.toContain("Fancy Socks");
+    expect(builderPage).toContain('href="/glossary/negative-ease"');
+    expect(builderPage).toContain('class="glossary-link">negative ease</a>');
+    expect(builderPage).toContain("Socks are usually worn with");
+    expect(builderPage).toContain("GlossaryTermModal");
+    expect(builderPage).not.toContain("No ease is added");
     expect(builderScript).toContain("kbm_socks_draft");
     expect(builderScript).toContain("reconcilePatternDraftOwner");
     expect(builderScript).toContain("applySockNewSessionFromUrl");

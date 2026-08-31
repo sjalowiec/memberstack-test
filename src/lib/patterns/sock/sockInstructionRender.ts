@@ -6,6 +6,7 @@
 import { buildGlossaryTooltipPlaceholderHtml } from "../../glossary/glossaryTooltipPrint";
 import {
   RESET_ROW_COUNTER_TEXT,
+  formatRowCounterResetGarmentRcLabel,
   rowCounterResetBlockHtml,
 } from "../rowCounterReset";
 import {
@@ -23,6 +24,16 @@ import {
  */
 export const SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID = 265;
 export const SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM = "Scrap and Ravel Cast On";
+
+/** Cuff-to-Toe Cast-On help video. Toe-Up uses Scrap On instead and must not show this. */
+export const SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID = "1222662401";
+export const SOCK_CUFF_CAST_ON_VIDEO_TITLE = "Sock Cuff Cast-On";
+export const SOCK_CUFF_CAST_ON_VIDEO_WATCH_LABEL = "Watch sock cuff cast-on";
+
+/** Ankle section help video (both construction directions). */
+export const SOCK_ANKLE_VIDEO_VIMEO_ID = "1222664135";
+export const SOCK_ANKLE_VIDEO_TITLE = "Sock Ankle";
+export const SOCK_ANKLE_VIDEO_WATCH_LABEL = "Watch ankle";
 
 function escapeHtml(value: string): string {
   return String(value)
@@ -50,14 +61,69 @@ export function wrapSockPatternSection(
   sectionId: string,
   titleHtml: string,
   contentHtml: string,
+  headerExtraHtml = "",
 ): string {
   const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
+  const extra = headerExtraHtml.trim();
   return `<section class="sock-pattern-section" data-section-id="${sid}">
   <div class="sock-pattern-section__header">
     <div class="sock-pattern-section__heading">${titleHtml}</div>
+    ${extra}
   </div>
   <div class="sock-pattern-section__content">${contentHtml}</div>
 </section>`;
+}
+
+function scrapAndRavelCastOnGlossaryHtml(visibleText: string): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+    visibleText,
+    escapeHtml,
+    escapeHtml,
+    { ariaLabel: SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM },
+  );
+}
+
+function buildSockPatternVideoControlHtml(options: {
+  vimeoId: string;
+  title: string;
+  testId: string;
+  ariaLabel: string;
+}): string {
+  return (
+    `<button type="button"` +
+    ` class="kbm-kin-catalog-video glossary-tooltip-trigger sock-pattern-section__video no-print"` +
+    ` data-vimeo-id="${escapeHtml(options.vimeoId)}"` +
+    ` data-video-title="${escapeHtml(options.title)}"` +
+    ` data-testid="${escapeHtml(options.testId)}"` +
+    ` aria-haspopup="dialog"` +
+    ` aria-label="${escapeHtml(options.ariaLabel)}">` +
+    `<span class="glossary-tooltip-label">` +
+    `Watch` +
+    `<sup class="glossary-tooltip-icon" aria-hidden="true">?</sup>` +
+    `</span>` +
+    `</button>`
+  );
+}
+
+function sectionVideoControlHtml(section: SockInstructionSection): string {
+  if (section.id === "cast-on" && section.constructionDirection === "cuff-to-toe") {
+    return buildSockPatternVideoControlHtml({
+      vimeoId: SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+      title: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
+      testId: "socks-cuff-cast-on-video",
+      ariaLabel: SOCK_CUFF_CAST_ON_VIDEO_WATCH_LABEL,
+    });
+  }
+  if (section.id === "ankle") {
+    return buildSockPatternVideoControlHtml({
+      vimeoId: SOCK_ANKLE_VIDEO_VIMEO_ID,
+      title: SOCK_ANKLE_VIDEO_TITLE,
+      testId: "socks-ankle-video",
+      ariaLabel: SOCK_ANKLE_VIDEO_WATCH_LABEL,
+    });
+  }
+  return "";
 }
 
 function renderStep(step: SockInstructionStep): string {
@@ -66,16 +132,13 @@ function renderStep(step: SockInstructionStep): string {
       return rowCounterResetBlockHtml(0);
     case "cast-on": {
       if (step.role === "foot-tube") {
-        const scrapOnHelp = buildGlossaryTooltipPlaceholderHtml(
-          SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
-          "Scrap on",
-          escapeHtml,
-          escapeHtml,
-          { ariaLabel: SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM },
-        );
+        const scrapOnHelp = scrapAndRavelCastOnGlossaryHtml("Scrap on");
         return `<p>${scrapOnHelp} <strong>${step.stitches} stitches</strong>.</p>`;
       }
-      return `<p>Cast on <strong>${step.stitches} stitches</strong> (top of leg). Use the cast-on method of your choice.</p>`;
+      const scrapAndRavelHelp = scrapAndRavelCastOnGlossaryHtml(
+        SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
+      );
+      return `<p>Cast on <strong>${step.stitches} stitches</strong> using ${scrapAndRavelHelp}.</p>`;
     }
     case "knit-even":
       return `<p>Knit ${step.rows} rows even. (${step.stitches} stitches)</p>`;
@@ -133,9 +196,23 @@ function renderStep(step: SockInstructionStep): string {
 }
 
 function renderSection(section: SockInstructionSection): string {
-  const body = section.steps.map(renderStep).join("");
+  let body = section.steps.map(renderStep).join("");
+  if (
+    section.id === "leg" &&
+    section.constructionDirection === "cuff-to-toe" &&
+    !section.steps.some((step) => step.type === "reset-rc")
+  ) {
+    body =
+      `<p class="row-counter-reset__garment-rc">${formatRowCounterResetGarmentRcLabel(section.rc.startRc)}</p>` +
+      body;
+  }
   const notes = section.notes.map((note) => `<p>${escapeHtml(note)}</p>`).join("");
-  return wrapSockPatternSection(section.id, `<h4>${escapeHtml(section.title)}</h4>`, body + notes);
+  return wrapSockPatternSection(
+    section.id,
+    `<h4>${escapeHtml(section.title)}</h4>`,
+    body + notes,
+    sectionVideoControlHtml(section),
+  );
 }
 
 export function renderBasicSockInstructionsHtml(doc: SockInstructionDocument): string {
@@ -155,7 +232,7 @@ function outlineStep(step: SockInstructionStep): string {
     case "cast-on":
       return step.role === "foot-tube"
         ? `Scrap on ${step.stitches} stitches.`
-        : `Cast on ${step.stitches} stitches (${step.role}).`;
+        : `Cast on ${step.stitches} stitches using ${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}.`;
     case "knit-even":
       return `Knit ${step.rows} rows even (${step.stitches} stitches).`;
     case "magic-formula": {

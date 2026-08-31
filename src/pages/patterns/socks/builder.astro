@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Layout from "../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
+import GlossaryTermModal from "../../../components/glossary/GlossaryTermModal.astro";
 import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
@@ -183,7 +184,7 @@ const expressNavSteps = [
                     aria-labelledby="express-step-1-title"
                   >
                     <p class="hat-builder-step-intro">
-                      Size is based on finished foot circumference. No ease is added.
+                      Size is based on finished foot circumference. Socks are usually worn with <a href="/glossary/negative-ease" class="glossary-link">negative ease</a> for a snug fit.
                     </p>
                     <div class="input-group">
                       <div class="hat-select-wrap">
@@ -427,6 +428,7 @@ const expressNavSteps = [
     set:html={JSON.stringify(sockSizingJson)}
   />
   </SleevelessPatternMemberGate>
+  <GlossaryTermModal />
 </Layout>
 
 <script>

@@ -147,6 +147,11 @@ describe("edit loads existing kbm_socks_draft", () => {
     expect(editPage).toContain("Gauge / machine");
     expect(editPage).toContain("AVAILABLE_NEEDLES_LABEL");
     expect(editPage).toContain("socks-edit-units-heading");
+    expect(editPage).toContain('href="/glossary/negative-ease"');
+    expect(editPage).toContain('class="glossary-link">negative ease</a>');
+    expect(editPage).toContain("Fit note: Socks are usually worn with");
+    expect(editPage).toContain("GlossaryTermModal");
+    expect(editPage).not.toContain("No ease is added");
   });
 });
 
