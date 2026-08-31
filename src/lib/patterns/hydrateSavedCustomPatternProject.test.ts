@@ -14,9 +14,13 @@ import { loadProjectIntoWorkingDraft } from "./customPatternProjectClient";
 import {
   PATTERN_STORAGE_KEY,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+  getCurrentPattern,
+  saveCurrentPattern,
 } from "./patternStorage";
 import * as restoreModule from "./restoreSleevelessExpressBuilderFromPattern";
 import { stubLocalStorage } from "./test/stubLocalStorage";
+import { readSockDraft } from "./sock/sockDraft";
+import { readSockActiveProjectId } from "./sock/sockSavedProject";
 
 function mensProject(): CustomPatternProject {
   return {
@@ -102,6 +106,35 @@ describe("hydrateSavedCustomPatternProjectSession", () => {
     expect(raw).not.toContain('"who":"kids"');
     expect(hasUnsavedSavedCustomPatternChanges()).toBe(false);
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("Men's pullover");
+  });
+
+  it("reopens a saved Socks project into the socks draft without touching the sweater working draft", () => {
+    saveCurrentPattern({ patternProject: { title: "Women's Sleeveless", notes: "" } });
+    writeActiveCustomPatternProjectId("proj-sweater", "Women's Sleeveless");
+
+    const socksProject: CustomPatternProject = {
+      id: "proj-sock-reopen",
+      name: "Aubrie's Hiking Socks",
+      family: "sleeveless",
+      source: "express",
+      notes: "",
+      customOverrides: {},
+      createdAt: "t1",
+      updatedAt: "t2",
+      version: 1,
+      pattern: {
+        patternType: "socks",
+        patternSystem: "socks",
+        sizeSel: "woman_med",
+        patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+      } as CustomPatternProject["pattern"],
+    };
+
+    hydrateSavedCustomPatternProjectSession(socksProject);
+
+    expect(readSockDraft()?.patternProject?.title).toBe("Aubrie's Hiking Socks");
+    expect(readSockActiveProjectId()).toBe("proj-sock-reopen");
+    expect(getCurrentPattern().patternProject?.title).toBe("Women's Sleeveless");
   });
 });
 

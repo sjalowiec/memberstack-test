@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildProjectRecord,
   listProjectSummaries,
   listProjectSummariesFromBlobScan,
   projectBlobKey,
@@ -145,6 +146,67 @@ describe("custom pattern project summary index", () => {
       rowsPerInch: 1.75,
       displayStitches: 5,
       displayRows: 7,
+    });
+  });
+
+  it("does not classify a sweater named Hat as hat", () => {
+    const summary = summaryFromProject(
+      sampleProject({
+        name: "Hat",
+        family: "sleeveless",
+        pattern: { patternType: "sleeveless", style: {} },
+      }),
+    );
+    expect(summary.patternSystem).toBe("sleeveless");
+  });
+
+  it("create → buildProjectRecord → index summary keeps family sleeveless and patternSystem socks", async () => {
+    const built = buildProjectRecord(
+      {
+        name: "Aubrie's Hiking Socks",
+        family: "sleeveless",
+        source: "express",
+        pattern: { patternType: "socks", patternSystem: "socks" },
+        customOverrides: {},
+      },
+      USER_ID,
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    const store = createMockStore();
+    await upsertProjectSummaryInIndex(store, built.project.family as string, USER_ID, built.project);
+    const indexed = await listProjectSummaries(store, FAMILY, USER_ID);
+    expect(indexed).toHaveLength(1);
+    expect(indexed[0]).toMatchObject({
+      name: "Aubrie's Hiking Socks",
+      family: "sleeveless",
+      patternSystem: "socks",
+    });
+  });
+
+  it("create → buildProjectRecord → index summary keeps family sleeveless and patternSystem hat", async () => {
+    const built = buildProjectRecord(
+      {
+        name: "Camp Hat",
+        family: "sleeveless",
+        source: "express",
+        pattern: { patternType: "hat", patternSystem: "hat" },
+        customOverrides: {},
+      },
+      USER_ID,
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    const store = createMockStore();
+    await upsertProjectSummaryInIndex(store, built.project.family as string, USER_ID, built.project);
+    const indexed = await listProjectSummaries(store, FAMILY, USER_ID);
+    expect(indexed).toHaveLength(1);
+    expect(indexed[0]).toMatchObject({
+      name: "Camp Hat",
+      family: "sleeveless",
+      patternSystem: "hat",
     });
   });
 

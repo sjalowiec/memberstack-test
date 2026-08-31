@@ -20,10 +20,18 @@ function projectInput(pattern, extra = {}) {
 }
 
 describe("isSupportedCustomPatternProjectType", () => {
-  it("accepts sleeveless and hat identities, including hat via patternSystem", () => {
+  it("accepts sleeveless, hat, and socks identities, including via patternSystem", () => {
     expect(isSupportedCustomPatternProjectType({ patternType: "sleeveless" })).toBe(true);
     expect(isSupportedCustomPatternProjectType({ patternType: "hat" })).toBe(true);
     expect(isSupportedCustomPatternProjectType({ patternSystem: "hat" })).toBe(true);
+    expect(isSupportedCustomPatternProjectType({ patternType: "socks" })).toBe(true);
+    expect(isSupportedCustomPatternProjectType({ patternType: "socks", patternSystem: "socks" })).toBe(
+      true,
+    );
+    expect(isSupportedCustomPatternProjectType({ patternSystem: "socks" })).toBe(true);
+    expect(isSupportedCustomPatternProjectType({ patternType: "sock", patternSystem: "socks" })).toBe(
+      true,
+    );
     expect(
       isSupportedCustomPatternProjectType({
         patternType: "sleeveless",
@@ -67,6 +75,62 @@ describe("buildProjectRecord pattern-type gate", () => {
         "user-1",
       ).ok,
     ).toBe(true);
+  });
+
+  it("saves a Socks project and keeps a customized title", () => {
+    const built = buildProjectRecord(
+      projectInput(
+        {
+          patternType: "socks",
+          patternSystem: "socks",
+          sizeSel: "woman_med",
+          patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+        },
+        { name: "Aubrie's Hiking Socks" },
+      ),
+      "user-1",
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+    expect(built.project.pattern.patternType).toBe("socks");
+    expect(built.project.pattern.patternSystem).toBe("socks");
+    expect(built.project.name).toBe("Aubrie's Hiking Socks");
+    expect(built.project.pattern.patternProject?.title).toBe("Aubrie's Hiking Socks");
+    expect(built.error).toBeUndefined();
+  });
+
+  it("saves a Socks project identified only by patternSystem", () => {
+    const built = buildProjectRecord(projectInput({ patternSystem: "socks" }), "user-1");
+    expect(built.ok).toBe(true);
+  });
+
+  it("updates an existing Socks project in place instead of minting a new id", () => {
+    const created = buildProjectRecord(
+      projectInput({ patternType: "socks", patternSystem: "socks" }, { name: "Camp Socks" }),
+      "user-1",
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const updated = buildProjectRecord(
+      projectInput(
+        {
+          patternType: "socks",
+          patternSystem: "socks",
+          footLength: "10.5",
+          patternProject: { title: "Camp Socks", notes: "", titleCustomized: true },
+        },
+        { name: "Camp Socks", createdAt: created.project.createdAt, version: created.project.version },
+      ),
+      "user-1",
+      created.project.id,
+    );
+    expect(updated.ok).toBe(true);
+    if (!updated.ok) return;
+    expect(updated.project.id).toBe(created.project.id);
+    expect(updated.project.name).toBe("Camp Socks");
+    expect(updated.project.pattern.footLength).toBe("10.5");
+    expect(updated.project.version).toBe(created.project.version + 1);
   });
 
   it("rejects unsupported types without the leftover sleeveless-only warning", () => {
@@ -114,5 +178,23 @@ describe("gaugeFromProject", () => {
         pattern: { patternType: "sleeveless", yarnGauge: { stitchGauge: "7", rowGauge: "11" } },
       }),
     ).toEqual({ stitchesPerInch: 7, rowsPerInch: 11 });
+  });
+
+  it("derives Socks gauge from gaugeSlots instead of yarnGauge", () => {
+    expect(
+      gaugeFromProject({
+        pattern: {
+          patternType: "socks",
+          patternSystem: "socks",
+          unit: "inches",
+          gaugeSlots: { inches: { stitch: "28", row: "40" }, cm: { stitch: "", row: "" } },
+        },
+      }),
+    ).toEqual({
+      stitchesPerInch: 7,
+      rowsPerInch: 10,
+      displayStitches: 28,
+      displayRows: 40,
+    });
   });
 });
