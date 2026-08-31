@@ -67,10 +67,52 @@ describe("resolvePatternSystemFromProject (server index classifier)", () => {
     ).toBe("sleeveless");
   });
 
+  it("classifies Socks stored under family sleeveless by patternType/patternSystem", () => {
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternType: "socks", patternSystem: "socks" },
+        customOverrides: {},
+      }),
+    ).toBe("socks");
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternType: "socks" },
+        customOverrides: {},
+      }),
+    ).toBe("socks");
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternSystem: "socks" },
+        customOverrides: {},
+      }),
+    ).toBe("socks");
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternType: "sock", patternSystem: "socks" },
+        customOverrides: {},
+      }),
+    ).toBe("socks");
+  });
+
   it("does not classify a project named Hat without Hat identity fields", () => {
     expect(
       resolvePatternSystemFromProject({
         name: "Hat",
+        family: "sleeveless",
+        pattern: { patternType: "sleeveless", style: {} },
+        customOverrides: {},
+      }),
+    ).toBe("sleeveless");
+  });
+
+  it("does not classify a sweater named Socks as socks", () => {
+    expect(
+      resolvePatternSystemFromProject({
+        name: "Socks",
         family: "sleeveless",
         pattern: { patternType: "sleeveless", style: {} },
         customOverrides: {},
@@ -154,5 +196,41 @@ describe("summaryFromProject index patternSystem", () => {
     const indexed = await listProjectSummaries(store, "sleeveless", "user-1");
     expect(indexed).toEqual([expect.objectContaining({ id: built.project.id, patternSystem: "hat" })]);
     expect(store.data.has(projectIndexKey("sleeveless", "user-1"))).toBe(true);
+  });
+
+  it("create → buildProjectRecord → summary/index writes patternSystem socks", async () => {
+    const built = buildProjectRecord(
+      {
+        name: "Aubrie's Hiking Socks",
+        family: "sleeveless",
+        source: "express",
+        pattern: {
+          patternType: "socks",
+          patternSystem: "socks",
+          patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+        },
+        customOverrides: {},
+      },
+      "user-1",
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    expect(built.project.family).toBe("sleeveless");
+    expect(built.project.pattern.patternType).toBe("socks");
+    expect(built.project.pattern.patternSystem).toBe("socks");
+    expect(built.project.pattern.patternProject?.title).toBe("Aubrie's Hiking Socks");
+    expect(built.project.name).toBe("Aubrie's Hiking Socks");
+
+    const summary = summaryFromProject(built.project);
+    expect(summary.family).toBe("sleeveless");
+    expect(summary.patternSystem).toBe("socks");
+
+    const store = createMockStore();
+    await upsertProjectSummaryInIndex(store, built.project.family, "user-1", built.project);
+    const indexed = await listProjectSummaries(store, "sleeveless", "user-1");
+    expect(indexed).toEqual([
+      expect.objectContaining({ id: built.project.id, patternSystem: "socks" }),
+    ]);
   });
 });

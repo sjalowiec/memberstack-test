@@ -160,6 +160,31 @@ describe("custom pattern project summary index", () => {
     expect(summary.patternSystem).toBe("sleeveless");
   });
 
+  it("create → buildProjectRecord → index summary keeps family sleeveless and patternSystem socks", async () => {
+    const built = buildProjectRecord(
+      {
+        name: "Aubrie's Hiking Socks",
+        family: "sleeveless",
+        source: "express",
+        pattern: { patternType: "socks", patternSystem: "socks" },
+        customOverrides: {},
+      },
+      USER_ID,
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+
+    const store = createMockStore();
+    await upsertProjectSummaryInIndex(store, built.project.family as string, USER_ID, built.project);
+    const indexed = await listProjectSummaries(store, FAMILY, USER_ID);
+    expect(indexed).toHaveLength(1);
+    expect(indexed[0]).toMatchObject({
+      name: "Aubrie's Hiking Socks",
+      family: "sleeveless",
+      patternSystem: "socks",
+    });
+  });
+
   it("create → buildProjectRecord → index summary keeps family sleeveless and patternSystem hat", async () => {
     const built = buildProjectRecord(
       {

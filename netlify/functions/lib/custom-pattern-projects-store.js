@@ -49,7 +49,7 @@ function gaugePositiveNumber(value) {
 
 /**
  * Derives display gauge from a saved pattern.
- * Hats use `gaugeSlots` (inches/cm swatch counts). Sweaters use `yarnGauge`.
+ * Hats and Socks use `gaugeSlots` (inches/cm swatch counts). Sweaters use `yarnGauge`.
  * Mirrors `savedPatternGaugeDisplay.ts`.
  * @param {Record<string, unknown>} project
  */
@@ -69,8 +69,15 @@ export function gaugeFromProject(project) {
     pattern.patternSystem === "hat" ||
     nestedHat?.patternType === "hat" ||
     nestedHat?.patternSystem === "hat";
+  const isSocks =
+    pattern.patternType === "socks" ||
+    pattern.patternType === "sock" ||
+    pattern.patternSystem === "socks";
   if (isHat) {
     return gaugeFromHatPattern(nestedHat && !pattern.gaugeSlots ? nestedHat : pattern);
+  }
+  if (isSocks) {
+    return gaugeFromHatPattern(pattern);
   }
 
   const yarnGauge =
@@ -504,7 +511,7 @@ export function parseJsonBody(body) {
 }
 
 /**
- * Phase-supported saved-project types. Hats are identified the same way as
+ * Phase-supported saved-project types. Hats and Socks are identified the same way as
  * {@link resolvePatternSystemFromProject} (`patternType` or `patternSystem`).
  * Drop-shoulder stays allowed because those blobs keep `patternType: "sleeveless"`.
  *
@@ -512,13 +519,14 @@ export function parseJsonBody(body) {
  */
 export function isSupportedCustomPatternProjectType(pattern) {
   if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) return false;
-  if (resolvePatternSystemFromProject({ pattern }) === "hat") return true;
+  const system = resolvePatternSystemFromProject({ pattern });
+  if (system === "hat" || system === "socks") return true;
   return pattern.patternType === "sleeveless";
 }
 
-/** Rejected types only — never shown for sleeveless or hat saves. */
+/** Rejected types only — never shown for sleeveless, hat, or socks saves. */
 export const UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR =
-  "Only sleeveless and hat pattern projects are supported in this phase.";
+  "Only sleeveless, hat, and socks pattern projects are supported in this phase.";
 
 /**
  * @param {Record<string, unknown>} data

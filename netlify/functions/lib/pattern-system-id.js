@@ -28,13 +28,32 @@ export function hasAuthoritativeDropShoulderConstruction(style, customOverrides)
 }
 
 /**
+ * @param {unknown} pattern
+ */
+function isHatPatternBlob(pattern) {
+  const o = asRecord(pattern);
+  return o.patternType === "hat" || o.patternSystem === "hat";
+}
+
+/**
+ * @param {unknown} pattern
+ */
+function isSockPatternBlob(pattern) {
+  const o = asRecord(pattern);
+  return o.patternType === "socks" || o.patternType === "sock" || o.patternSystem === "socks";
+}
+
+/**
  * @param {{ pattern?: unknown, customOverrides?: unknown }} project
- * @returns {"sleeveless" | "drop-shoulder" | "hat"}
+ * @returns {"sleeveless" | "drop-shoulder" | "hat" | "socks"}
  */
 export function resolvePatternSystemFromProject(project) {
   const pattern = asRecord(project?.pattern);
-  if (pattern.patternType === "hat" || pattern.patternSystem === "hat") {
+  if (isHatPatternBlob(pattern)) {
     return "hat";
+  }
+  if (isSockPatternBlob(pattern)) {
+    return "socks";
   }
   const style = asRecord(pattern.style);
   const customOverrides = asRecord(project?.customOverrides);
@@ -51,6 +70,7 @@ export const PATTERN_SYSTEM_DISPLAY_NAMES = {
   blanket: "Blanket",
   hat: "Hat",
   raglan: "Raglan",
+  socks: "Socks",
 };
 
 /** @param {string} systemId */

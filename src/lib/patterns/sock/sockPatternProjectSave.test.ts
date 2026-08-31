@@ -8,6 +8,10 @@ import { isEditingSavedSockProject, readSockActiveProjectId } from "./sockSavedP
 import { persistSockPatternProject, sockDraftAsSavePattern } from "./sockPatternProjectSave";
 import { resolvePatternSystemFromProject } from "../patternSystemId";
 import { formatCustomPatternProjectType } from "../patternWorkspaceLibraryDrawer";
+import {
+  buildProjectRecord,
+  summaryFromProject,
+} from "../../../../netlify/functions/lib/custom-pattern-projects-store.js";
 
 vi.mock("../customPatternProjectClient", () => ({
   createCustomPatternProject: vi.fn(),
@@ -187,5 +191,122 @@ describe("Socks Update Pattern cloud persist", () => {
     expect(updateFn).toContain("persistSockPatternProject");
     expect(updateFn).toContain("writeSockDraft(next)");
     expect(updateFn).toContain("SOCK_PATTERN_HREF");
+  });
+
+  it("does not special-case the old sleeveless/hat save restriction in the Socks workspace", () => {
+    expect(editScript).not.toContain("Only sleeveless and hat pattern projects are supported");
+    expect(editScript).not.toContain("isSupportedCustomPatternProjectType");
+    expect(editScript).not.toContain("patternType === \"sleeveless\"");
+  });
+});
+
+describe("Socks save payload is accepted by the shared Custom Pattern store", () => {
+  it("new Socks Update Pattern create payload is accepted by buildProjectRecord", () => {
+    const pattern = sockDraftAsSavePattern(
+      sockDraft({
+        patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+      }),
+    );
+    const built = buildProjectRecord(
+      {
+        name: "Aubrie's Hiking Socks",
+        family: "sleeveless",
+        source: "express",
+        pattern,
+        customOverrides: {},
+      },
+      "user-1",
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+    expect(built.project.family).toBe("sleeveless");
+    expect(built.project.pattern.patternType).toBe("socks");
+    expect(built.project.pattern.patternSystem).toBe("socks");
+    expect(built.project.name).toBe("Aubrie's Hiking Socks");
+    expect(built.project.pattern.patternProject?.title).toBe("Aubrie's Hiking Socks");
+    expect(summaryFromProject(built.project).patternSystem).toBe("socks");
+  });
+
+  it("existing Socks Update Pattern keeps the same project id", () => {
+    const created = buildProjectRecord(
+      {
+        name: "Camp Socks",
+        family: "sleeveless",
+        source: "express",
+        pattern: sockDraftAsSavePattern(
+          sockDraft({ patternProject: { title: "Camp Socks", notes: "", titleCustomized: true } }),
+        ),
+        customOverrides: {},
+      },
+      "user-1",
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const updated = buildProjectRecord(
+      {
+        name: "Camp Socks",
+        family: "sleeveless",
+        source: "express",
+        createdAt: created.project.createdAt,
+        version: created.project.version,
+        pattern: sockDraftAsSavePattern(
+          sockDraft({
+            footLength: "10.5",
+            patternProject: { title: "Camp Socks", notes: "", titleCustomized: true },
+          }),
+        ),
+        customOverrides: {},
+      },
+      "user-1",
+      created.project.id,
+    );
+    expect(updated.ok).toBe(true);
+    if (!updated.ok) return;
+    expect(updated.project.id).toBe(created.project.id);
+    expect(updated.project.name).toBe("Camp Socks");
+    expect(updated.project.pattern.footLength).toBe("10.5");
+  });
+
+  it("still accepts Hat, Sleeveless, and Drop Shoulder save payloads", () => {
+    expect(
+      buildProjectRecord(
+        {
+          name: "Camp Hat",
+          family: "sleeveless",
+          source: "express",
+          pattern: { patternType: "hat", patternSystem: "hat" },
+          customOverrides: {},
+        },
+        "user-1",
+      ).ok,
+    ).toBe(true);
+    expect(
+      buildProjectRecord(
+        {
+          name: "Summer Vest",
+          family: "sleeveless",
+          source: "express",
+          pattern: { patternType: "sleeveless", style: { patternMode: "express" } },
+          customOverrides: {},
+        },
+        "user-1",
+      ).ok,
+    ).toBe(true);
+    expect(
+      buildProjectRecord(
+        {
+          name: "Drop Shoulder Pullover",
+          family: "sleeveless",
+          source: "express",
+          pattern: {
+            patternType: "sleeveless",
+            style: { construction: "drop-shoulder", constructionAuthored: "drop-shoulder" },
+          },
+          customOverrides: {},
+        },
+        "user-1",
+      ).ok,
+    ).toBe(true);
   });
 });
