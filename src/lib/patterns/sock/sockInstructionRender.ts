@@ -78,8 +78,20 @@ export const KITCHENER_STITCH_GLOSSARY_TERM = "Kitchener Stitch";
 export const SOCK_SECOND_SOCK_INTRO =
   "The second sock is worked in reverse so the seams fall on the inside of each leg and foot, creating a right and left sock.";
 
+export const SOCK_FINISH_THE_TOE_HEADING = "Finish the Toe";
+export const SOCK_CHOOSE_TOE_FINISHING_HEADING = "Choose a finishing method:";
+export const SOCK_REHANG_AND_JOIN_LABEL = "Rehang and join";
+export const SOCK_GRAFT_OR_SEAM_LABEL = "Graft or seam";
+export const SOCK_FOLD_RIGHT_SIDES_INSTRUCTION =
+  "Fold the sock in half with right/public sides together.";
 export const SOCK_REHANG_TOE_INSTRUCTION =
-  "Rehang the toe stitches, placing 2 stitches on each needle.";
+  "Rehang the toe stitches with 2 stitches on each needle and complete the join on the machine.";
+export const SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX =
+  "Leave the stitches on the waste yarn and finish the toe using";
+export const SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX =
+  ", according to the existing technique instructions.";
+
+const DEFAULT_TOE_FINISHING_GROUP_LENGTH = 5;
 
 function escapeHtml(value: string): string {
   return String(value)
@@ -170,6 +182,77 @@ function scrapAndRavelCastOnGlossaryHtml(visibleText: string): string {
     escapeHtml,
     { ariaLabel: SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM },
   );
+}
+
+function bickfordSeamGlossaryHtml(): string {
+  return glossaryPlaceholderHtml(
+    BICKFORD_SEAM_GLOSSARY_ID,
+    BICKFORD_SEAM_GLOSSARY_TERM,
+    BICKFORD_SEAM_GLOSSARY_TERM,
+  );
+}
+
+function kitchenerStitchGlossaryHtml(): string {
+  return glossaryPlaceholderHtml(
+    KITCHENER_STITCH_GLOSSARY_ID,
+    KITCHENER_STITCH_GLOSSARY_TERM,
+    KITCHENER_STITCH_GLOSSARY_TERM,
+  );
+}
+
+function contrastingWasteYarnScrapHtml(stitches: number): string {
+  return `Scrap all ${stitches} stitches off the machine with contrasting waste yarn and remove the work from the machine.`;
+}
+
+/**
+ * Default Cuff-to-Toe toe close is one shared scrap-off step, then two
+ * finishing choices. Bickford Seam is an off-machine seaming technique
+ * (glossary + long-seam copy), not a machine-rehung join.
+ */
+function defaultToeFinishingGroup(
+  steps: SockInstructionStep[],
+  index: number,
+): { stitches: number } | null {
+  const waste = steps[index];
+  const drop = steps[index + 1];
+  const fold = steps[index + 2];
+  const rehang = steps[index + 3];
+  const bindOff = steps[index + 4];
+  if (
+    waste?.type === "waste-yarn" &&
+    waste.contrasting &&
+    drop?.type === "drop-from-machine" &&
+    fold?.type === "fold-right-sides-together" &&
+    rehang?.type === "rehang-toe" &&
+    bindOff?.type === "bind-off-toe-seam"
+  ) {
+    return { stitches: waste.stitches };
+  }
+  return null;
+}
+
+function renderDefaultToeFinishingChoiceHtml(stitches: number): string {
+  const kitchener = kitchenerStitchGlossaryHtml();
+  const bickford = bickfordSeamGlossaryHtml();
+  return (
+    `<p><strong>${escapeHtml(SOCK_FINISH_THE_TOE_HEADING)}</strong></p>` +
+    `<p>${escapeHtml(contrastingWasteYarnScrapHtml(stitches))}</p>` +
+    `<p><strong>${escapeHtml(SOCK_CHOOSE_TOE_FINISHING_HEADING)}</strong></p>` +
+    `<ul>` +
+    `<li><strong>${escapeHtml(SOCK_REHANG_AND_JOIN_LABEL)}:</strong> ${escapeHtml(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION)} ${escapeHtml(SOCK_REHANG_TOE_INSTRUCTION)}</li>` +
+    `<li><strong>${escapeHtml(SOCK_GRAFT_OR_SEAM_LABEL)}:</strong> ${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX)} ${kitchener} (Grafting) or ${bickford}${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX)}</li>` +
+    `</ul>`
+  );
+}
+
+function outlineDefaultToeFinishingChoice(stitches: number): string[] {
+  return [
+    SOCK_FINISH_THE_TOE_HEADING,
+    contrastingWasteYarnScrapHtml(stitches),
+    SOCK_CHOOSE_TOE_FINISHING_HEADING,
+    `${SOCK_REHANG_AND_JOIN_LABEL}: ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${SOCK_REHANG_TOE_INSTRUCTION}`,
+    `${SOCK_GRAFT_OR_SEAM_LABEL}: ${SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX} ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting) or ${BICKFORD_SEAM_GLOSSARY_TERM}${SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX}`,
+  ];
 }
 
 function buildSockPatternVideoTipHtml(options: {
@@ -266,21 +349,13 @@ function renderStep(step: SockInstructionStep): string {
     case "drop-from-machine":
       return `<p>Drop the work from the machine.</p>`;
     case "fold-right-sides-together":
-      return `<p>Fold the sock in half with right/public sides together.</p>`;
+      return `<p>${escapeHtml(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION)}</p>`;
     case "rehang-toe":
-      return `<p>${SOCK_REHANG_TOE_INSTRUCTION}</p>`;
+      return `<p>${escapeHtml(SOCK_REHANG_TOE_INSTRUCTION)}</p>`;
     case "bind-off-toe-seam": {
-      const bickford = glossaryPlaceholderHtml(
-        BICKFORD_SEAM_GLOSSARY_ID,
-        BICKFORD_SEAM_GLOSSARY_TERM,
-        BICKFORD_SEAM_GLOSSARY_TERM,
-      );
-      const kitchener = glossaryPlaceholderHtml(
-        KITCHENER_STITCH_GLOSSARY_ID,
-        KITCHENER_STITCH_GLOSSARY_TERM,
-        KITCHENER_STITCH_GLOSSARY_TERM,
-      );
-      return `<p>Finish the toe using ${bickford} or ${kitchener} (Grafting).</p>`;
+      const kitchener = kitchenerStitchGlossaryHtml();
+      const bickford = bickfordSeamGlossaryHtml();
+      return `<p>${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX)} ${kitchener} (Grafting) or ${bickford}${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX)}</p>`;
     }
     case "bind-off":
       return `<p>Bind off ${step.stitches} stitches at the cuff.</p>`;
@@ -314,14 +389,20 @@ function shouldShowRcLabelWithoutResetControl(section: SockInstructionSection): 
 }
 
 function renderSection(section: SockInstructionSection): string {
-  let body = section.steps
-    .map((step) => {
-      const summary = shortRowShapingSummaryAfterOut(step, section);
-      return (
-        renderStep(step) + (summary ? `<p>${escapeHtml(summary)}</p>` : "")
-      );
-    })
-    .join("");
+  let body = "";
+  const steps = section.steps;
+  for (let i = 0; i < steps.length; ) {
+    const grouped = defaultToeFinishingGroup(steps, i);
+    if (grouped) {
+      body += renderDefaultToeFinishingChoiceHtml(grouped.stitches);
+      i += DEFAULT_TOE_FINISHING_GROUP_LENGTH;
+      continue;
+    }
+    const step = steps[i]!;
+    const summary = shortRowShapingSummaryAfterOut(step, section);
+    body += renderStep(step) + (summary ? `<p>${escapeHtml(summary)}</p>` : "");
+    i += 1;
+  }
   if (shouldShowRcLabelWithoutResetControl(section)) {
     body =
       `<p class="row-counter-reset__garment-rc">${formatRowCounterResetGarmentRcLabel(section.rc.startRc)}</p>` +
@@ -388,11 +469,11 @@ function outlineStep(step: SockInstructionStep): string {
     case "drop-from-machine":
       return "Drop the work from the machine.";
     case "fold-right-sides-together":
-      return "Fold the sock in half with right/public sides together.";
+      return SOCK_FOLD_RIGHT_SIDES_INSTRUCTION;
     case "rehang-toe":
       return SOCK_REHANG_TOE_INSTRUCTION;
     case "bind-off-toe-seam":
-      return `Finish the toe using ${BICKFORD_SEAM_GLOSSARY_TERM} or ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting).`;
+      return `${SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX} ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting) or ${BICKFORD_SEAM_GLOSSARY_TERM}${SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX}`;
     case "bind-off":
       return `Bind off ${step.stitches} stitches at the cuff.`;
     case "kitchener":
@@ -427,10 +508,21 @@ export function formatSockInstructionOutline(doc: SockInstructionDocument): stri
     lines.push(
       `${section.title}: ${section.startStitches}→${section.endStitches} sts, ${section.rowsToKnit} knit rows, RC ${String(section.rc.startRc).padStart(3, "0")}–${String(section.rc.endRc).padStart(3, "0")}${hold}${depth}`,
     );
-    for (const step of section.steps) {
+    const steps = section.steps;
+    for (let i = 0; i < steps.length; ) {
+      const grouped = defaultToeFinishingGroup(steps, i);
+      if (grouped) {
+        for (const line of outlineDefaultToeFinishingChoice(grouped.stitches)) {
+          lines.push(`  ${line}`);
+        }
+        i += DEFAULT_TOE_FINISHING_GROUP_LENGTH;
+        continue;
+      }
+      const step = steps[i]!;
       lines.push(`  ${outlineStep(step)}`);
       const summary = shortRowShapingSummaryAfterOut(step, section);
       if (summary) lines.push(`  ${summary}`);
+      i += 1;
     }
   }
   return lines.join("\n");
