@@ -155,7 +155,11 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain("Ankle");
     expect(html).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
     expect(html).toContain("contrasting waste yarn");
-    expect(html).toContain("Finish the toe using");
+    expect(html).toContain("and remove the work from the machine.");
+    expect(html).toContain("Finish the Toe");
+    expect(html).toContain("Choose a finishing method:");
+    expect(html).toContain("Rehang and join");
+    expect(html).toContain("Graft or seam");
     expect(html).toContain(BICKFORD_SEAM_GLOSSARY_TERM);
     expect(html).toContain(KITCHENER_STITCH_GLOSSARY_TERM);
     expect(html).toContain(`data-glossary-id="${BICKFORD_SEAM_GLOSSARY_ID}"`);
@@ -215,6 +219,7 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).not.toContain(`data-tip-id="${SOCK_TOE_FINISHING_VIDEO_TIP_ID}"`);
     expect(html).not.toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
     expect(html).not.toContain("Finish the toe using");
+    expect(html).not.toContain("Choose a finishing method:");
     expect(result.sock1.sections.map((s) => s.id)).toEqual([
       "cast-on",
       "toe",

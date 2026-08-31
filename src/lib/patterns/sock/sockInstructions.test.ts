@@ -41,7 +41,14 @@ import {
   SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
   SOCK_WHY_STOP_ROW_COUNTER_TITLE,
   SOCK_SECOND_SOCK_INTRO,
+  SOCK_FINISH_THE_TOE_HEADING,
+  SOCK_CHOOSE_TOE_FINISHING_HEADING,
+  SOCK_REHANG_AND_JOIN_LABEL,
+  SOCK_GRAFT_OR_SEAM_LABEL,
+  SOCK_FOLD_RIGHT_SIDES_INSTRUCTION,
   SOCK_REHANG_TOE_INSTRUCTION,
+  SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX,
+  SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
   buildSockShortRowInstructionSection,
@@ -509,10 +516,15 @@ describe("pair helper, renderer, and architecture", () => {
     expect(html).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
     expect(html).toContain("at each side");
     expect(html).toContain("contrasting waste yarn");
-    expect(html).toContain("Finish the toe using");
+    expect(html).toContain("and remove the work from the machine.");
+    expect(html).toContain(SOCK_FINISH_THE_TOE_HEADING);
+    expect(html).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
+    expect(html).toContain(SOCK_REHANG_AND_JOIN_LABEL);
+    expect(html).toContain(SOCK_GRAFT_OR_SEAM_LABEL);
+    expect(html).toContain(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX);
     expect(html).toContain(BICKFORD_SEAM_GLOSSARY_TERM);
     expect(html).toContain(KITCHENER_STITCH_GLOSSARY_TERM);
-    expect(html).toContain("(Grafting).");
+    expect(html).toContain("(Grafting)");
     expect(html).not.toContain("top of the toes");
     expect(html).not.toContain("Bind off the toe seam");
     expect(html).not.toContain('type="kitchener"');
@@ -561,9 +573,15 @@ describe("pair helper, renderer, and architecture", () => {
     expect(outline).toContain("Heel:");
     expect(outline).toContain("Toe:");
     expect(outline).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
+    expect(outline).toContain(SOCK_FINISH_THE_TOE_HEADING);
+    expect(outline).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
     expect(outline).toContain(
-      `Finish the toe using ${BICKFORD_SEAM_GLOSSARY_TERM} or ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting).`,
+      `${SOCK_REHANG_AND_JOIN_LABEL}: ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${SOCK_REHANG_TOE_INSTRUCTION}`,
     );
+    expect(outline).toContain(
+      `${SOCK_GRAFT_OR_SEAM_LABEL}: ${SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX} ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting) or ${BICKFORD_SEAM_GLOSSARY_TERM}${SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX}`,
+    );
+    expect(outline).not.toContain("Drop the work from the machine.");
     expect(outline).not.toContain("top of the toes");
     expect(outline).not.toContain("Bind off the toe seam");
     const heelLine = outline.split("\n").find((line) => line.startsWith("Heel:"));
@@ -838,9 +856,11 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
     const sock1Html = renderBasicSockInstructionsHtml(pair.sock1);
     const sock2Html = renderBasicSockInstructionsHtml(pair.sock2);
     const finishing = sectionHtml(sock1Html, "finishing");
-    expect(finishing).toContain("Fold the sock in half with right/public sides together.");
+    expect(finishing).toContain(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION);
     expect(finishing).toContain(SOCK_REHANG_TOE_INSTRUCTION);
+    expect(finishing).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
     expect(finishing).not.toContain(">Rehang the toe stitches.<");
+    expect(finishing).not.toContain("Drop the work from the machine.");
     expect(finishing).toContain(SOCK_SECOND_SOCK_INTRO);
     expect(finishing).not.toContain(OLD_SECOND_SOCK_INTRO_FRAGMENT);
     expect(finishing).not.toContain("carriage on the LEFT");
@@ -914,13 +934,48 @@ describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
     expect(finishing).toContain(`data-term="${BICKFORD_SEAM_GLOSSARY_TERM}"`);
     expect(finishing).toContain(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`);
     expect(finishing).toContain(`data-term="${KITCHENER_STITCH_GLOSSARY_TERM}"`);
-    expect(finishing).toContain("Finish the toe using");
-    expect(finishing).toContain("(Grafting).");
+    expect(finishing).toContain(SOCK_FINISH_THE_TOE_HEADING);
+    expect(finishing).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
+    expect(finishing).toContain(SOCK_REHANG_AND_JOIN_LABEL);
+    expect(finishing).toContain(SOCK_GRAFT_OR_SEAM_LABEL);
+    expect(finishing).toContain(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX);
+    expect(finishing).toContain("(Grafting)");
     expect(finishing).not.toContain("Bind off the toe seam");
     expect(finishing).not.toContain("top of the toes");
     expect(finishing).not.toContain("under the toes");
+    expect(finishing).not.toContain("Drop the work from the machine.");
+    expect(finishing).not.toContain("Finish the toe using");
     expect(glossarySlugForId(BICKFORD_SEAM_GLOSSARY_ID)).toBe("bickford-seam");
     expect(glossarySlugForId(KITCHENER_STITCH_GLOSSARY_ID)).toBe("kitchener-stitch");
+  });
+
+  it("presents the same scrap-off then finishing-method choices on Sock 1 and Sock 2", () => {
+    const pair = buildBasicSockInstructionPair(mustCalc(typicalMachine));
+    const rendered = [
+      renderBasicSockInstructionsHtml(pair.sock1),
+      renderBasicSockInstructionsHtml(pair.sock2),
+    ];
+    for (const html of rendered) {
+      const finishing = sectionHtml(html, "finishing");
+      const scrapIdx = finishing.indexOf("and remove the work from the machine.");
+      const chooseIdx = finishing.indexOf(SOCK_CHOOSE_TOE_FINISHING_HEADING);
+      const rehangIdx = finishing.indexOf(`<li><strong>${SOCK_REHANG_AND_JOIN_LABEL}:</strong>`);
+      const graftIdx = finishing.indexOf(`<li><strong>${SOCK_GRAFT_OR_SEAM_LABEL}:</strong>`);
+      expect(scrapIdx).toBeGreaterThan(-1);
+      expect(chooseIdx).toBeGreaterThan(scrapIdx);
+      expect(rehangIdx).toBeGreaterThan(chooseIdx);
+      expect(graftIdx).toBeGreaterThan(rehangIdx);
+      expect(finishing).toContain(
+        `<li><strong>${SOCK_REHANG_AND_JOIN_LABEL}:</strong> ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${SOCK_REHANG_TOE_INSTRUCTION}</li>`,
+      );
+      expect(finishing.indexOf(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION)).toBeGreaterThan(chooseIdx);
+      expect(finishing.indexOf(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`)).toBeGreaterThan(
+        graftIdx,
+      );
+      expect(finishing.indexOf(`data-glossary-id="${BICKFORD_SEAM_GLOSSARY_ID}"`)).toBeGreaterThan(
+        graftIdx,
+      );
+    }
   });
 
   it("does not add the Cuff-to-Toe heel/toe/finishing videos or why-stop tip to Toe-Up", () => {
@@ -939,6 +994,8 @@ describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
     expect(sectionHtml(html, "finishing")).toContain("Bind off");
     expect(sectionHtml(html, "finishing")).toContain("at the cuff");
     expect(sectionHtml(html, "finishing")).not.toContain("Finish the toe using");
+    expect(sectionHtml(html, "finishing")).not.toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
+    expect(sectionHtml(html, "finishing")).not.toContain(SOCK_FINISH_THE_TOE_HEADING);
   });
 });
 
