@@ -112,10 +112,7 @@ function buildAnkleSection(
     endStitches: part.endStitches,
     rowsToKnit: part.rows,
     rc: knittingRc(part.rows),
-    steps: [
-      { type: "reset-rc" },
-      { type: "knit-even", rows: part.rows, stitches: part.startStitches },
-    ],
+    steps: [{ type: "knit-even", rows: part.rows, stitches: part.startStitches }],
     notes: [],
   };
 }
