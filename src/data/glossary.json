@@ -4207,7 +4207,7 @@
     "glossaryId": 715,
     "english": "Negative Ease",
     "example": "Having the knitted piece smaller than the body size for a snug fit",
-    "helpinfo": "Ease is the difference between the actual body measurement and the finished garment measurement. Negative ease means the finished piece is smaller than the body measurement.\n\nNegative ease is commonly used for socks, hats, ribbed garments, and other items intended to fit snugly.\n\nKnit It Now patterns calculate from the finished measurements you enter. We do not automatically add or subtract ease. For example, if you enter a 40\" finished bust measurement, the pattern will be calculated for a 40\" finished bust.",
+    "helpinfo": "Ease is the difference between the actual body measurement and the finished garment measurement. Negative ease means the finished piece is smaller than the body measurement.<br><br>Negative ease is commonly used for <strong>socks</strong>, hats, ribbed garments, and other items intended to fit snugly.<br><br>Knit It Now patterns calculate from the finished measurements you enter. We do not automatically add or subtract ease. For example, if you enter a 40\" finished bust measurement, the pattern will be calculated for a 40\" finished bust.",
     "image": "",
     "image_alt": "NULL",
     "image_description": "NULL",
