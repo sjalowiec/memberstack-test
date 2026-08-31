@@ -8,14 +8,15 @@ import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
 import { buildPatternExplainerVideoBodyHtml } from "../patternExplainerVideoTip";
 import {
   RESET_ROW_COUNTER_TEXT,
+  RESTART_ROW_COUNTER_TEXT,
   STOP_ROW_COUNTER_TEXT,
   formatRowCounterResetGarmentRcLabel,
   rowCounterResetBlockHtml,
+  rowCounterRestartBlockHtml,
   rowCounterStopBlockHtml,
 } from "../rowCounterReset";
 import {
   SOCK_SHORT_ROW_WRAP_WARNING,
-  type SockHoldOrientation,
   type SockInstructionDocument,
   type SockInstructionSection,
   type SockInstructionStep,
@@ -44,6 +45,42 @@ export const SOCK_ANKLE_VIDEO_PRIVACY_HASH = "f045188fd1";
 export const SOCK_ANKLE_VIDEO_TITLE = "Knitting the Ankle";
 export const SOCK_ANKLE_VIDEO_TIP_ID = "socks-ankle-video";
 
+/** Cuff-to-Toe Heel only — not repeated on Toe or Toe-Up. */
+export const SOCK_WHY_STOP_ROW_COUNTER_TIP_ID = "socks-why-stop-row-counter";
+export const SOCK_WHY_STOP_ROW_COUNTER_TITLE = "Why stop the row counter?";
+export const SOCK_WHY_STOP_ROW_COUNTER_BODY =
+  "During short-row shaping, you’ll follow the shaping steps rather than the row counter. Stop the counter before shaping, then restart it at RC 000 when straight knitting resumes.";
+
+/** Cuff-to-Toe Heel help video. Vimeo title is only “heel”; no catalog title exists. */
+export const SOCK_HEEL_VIDEO_VIMEO_ID = "1222667612";
+export const SOCK_HEEL_VIDEO_PRIVACY_HASH = "92aac333c8";
+export const SOCK_HEEL_VIDEO_TITLE = "Knitting the Heel";
+export const SOCK_HEEL_VIDEO_TIP_ID = "socks-heel-video";
+
+/** Cuff-to-Toe Toe help video. Vimeo title is only “toe”; no catalog title exists. */
+export const SOCK_TOE_VIDEO_VIMEO_ID = "1222668781";
+export const SOCK_TOE_VIDEO_PRIVACY_HASH = "498874f65f";
+export const SOCK_TOE_VIDEO_TITLE = "Knitting the Toe";
+export const SOCK_TOE_VIDEO_TIP_ID = "socks-toe-video";
+
+/** Cuff-to-Toe Finishing help video. Vimeo title is “finish toe”; no catalog title exists. */
+export const SOCK_TOE_FINISHING_VIDEO_VIMEO_ID = "1222676437";
+export const SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH = "e46438a3c0";
+export const SOCK_TOE_FINISHING_VIDEO_TITLE = "Finishing the Toe";
+export const SOCK_TOE_FINISHING_VIDEO_TIP_ID = "socks-toe-finishing-video";
+
+/** Existing KIN glossary entries used in Cuff-to-Toe toe finishing. */
+export const BICKFORD_SEAM_GLOSSARY_ID = 717;
+export const BICKFORD_SEAM_GLOSSARY_TERM = "Bickford Seam";
+export const KITCHENER_STITCH_GLOSSARY_ID = 521;
+export const KITCHENER_STITCH_GLOSSARY_TERM = "Kitchener Stitch";
+
+export const SOCK_SECOND_SOCK_INTRO =
+  "The second sock is worked in reverse so the seams fall on the inside of each leg and foot, creating a right and left sock.";
+
+export const SOCK_REHANG_TOE_INSTRUCTION =
+  "Rehang the toe stitches, placing 2 stitches on each needle.";
+
 function escapeHtml(value: string): string {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -54,10 +91,6 @@ function escapeHtml(value: string): string {
 
 function halfLabel(half: SockNeedleHalf): string {
   return half === "left" ? "LEFT" : "RIGHT";
-}
-
-function orientationPhrase(orientation: SockHoldOrientation): string {
-  return `work the ${halfLabel(orientation.workHalf)} side of the needle bed (carriage on the ${halfLabel(orientation.carriageStartSide)}; ${halfLabel(orientation.holdHalf)} half in hold)`;
 }
 
 function magicIntervalPhrase(rows: number): string {
@@ -78,6 +111,20 @@ export function wrapSockPatternSection(
   </div>
   <div class="sock-pattern-section__content">${contentHtml}</div>
 </section>`;
+}
+
+function glossaryPlaceholderHtml(
+  glossaryId: number,
+  visibleText: string,
+  ariaLabel: string,
+): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    glossaryId,
+    visibleText,
+    escapeHtml,
+    escapeHtml,
+    { ariaLabel },
+  );
 }
 
 function scrapAndRavelCastOnGlossaryHtml(visibleText: string): string {
@@ -142,6 +189,8 @@ function renderStep(step: SockInstructionStep): string {
       return rowCounterResetBlockHtml(0);
     case "stop-rc":
       return rowCounterStopBlockHtml(0);
+    case "restart-rc":
+      return rowCounterRestartBlockHtml(0);
     case "cast-on": {
       if (step.role === "foot-tube") {
         const scrapOnHelp = scrapAndRavelCastOnGlossaryHtml("Scrap on");
@@ -184,9 +233,20 @@ function renderStep(step: SockInstructionStep): string {
     case "fold-right-sides-together":
       return `<p>Fold the sock in half with right/public sides together.</p>`;
     case "rehang-toe":
-      return `<p>Rehang the toe stitches.</p>`;
-    case "bind-off-toe-seam":
-      return `<p>Bind off the toe seam. This places the bind-off seam on the top of the toes.</p>`;
+      return `<p>${SOCK_REHANG_TOE_INSTRUCTION}</p>`;
+    case "bind-off-toe-seam": {
+      const bickford = glossaryPlaceholderHtml(
+        BICKFORD_SEAM_GLOSSARY_ID,
+        BICKFORD_SEAM_GLOSSARY_TERM,
+        BICKFORD_SEAM_GLOSSARY_TERM,
+      );
+      const kitchener = glossaryPlaceholderHtml(
+        KITCHENER_STITCH_GLOSSARY_ID,
+        KITCHENER_STITCH_GLOSSARY_TERM,
+        KITCHENER_STITCH_GLOSSARY_TERM,
+      );
+      return `<p>Finish the toe using ${bickford} or ${kitchener} (Grafting).</p>`;
+    }
     case "bind-off":
       return `<p>Bind off ${step.stitches} stitches at the cuff.</p>`;
     case "kitchener":
@@ -198,17 +258,23 @@ function renderStep(step: SockInstructionStep): string {
     case "block":
       return `<p>Block if desired.</p>`;
     case "mirror-second-sock":
-      return `<p>Knit the second sock the same way, reversing the setup so heel and toe are worked on the ${halfLabel(step.heel.workHalf)} side of the needle bed. Start with the carriage on the ${halfLabel(step.heel.carriageStartSide)} and reverse the instructions. This creates a left and a right sock and puts the seam on the inside of each foot and leg. Second sock: heel — ${orientationPhrase(step.heel)}. Toe — ${orientationPhrase(step.toe)}.</p>`;
+      return `<p>${SOCK_SECOND_SOCK_INTRO}</p>`;
     default:
       return "";
   }
 }
 
 function shouldShowRcLabelWithoutResetControl(section: SockInstructionSection): boolean {
-  if (section.steps.some((step) => step.type === "reset-rc" || step.type === "stop-rc")) {
+  if (
+    section.steps.some(
+      (step) => step.type === "reset-rc" || step.type === "stop-rc" || step.type === "restart-rc",
+    )
+  ) {
     return false;
   }
-  if (section.id === "ankle") return true;
+  if (section.id === "ankle") {
+    return section.constructionDirection !== "cuff-to-toe";
+  }
   return section.id === "leg" && section.constructionDirection === "cuff-to-toe";
 }
 
@@ -243,6 +309,8 @@ function outlineStep(step: SockInstructionStep): string {
       return RESET_ROW_COUNTER_TEXT;
     case "stop-rc":
       return STOP_ROW_COUNTER_TEXT;
+    case "restart-rc":
+      return RESTART_ROW_COUNTER_TEXT;
     case "cast-on":
       return step.role === "foot-tube"
         ? `Scrap on ${step.stitches} stitches.`
@@ -280,9 +348,9 @@ function outlineStep(step: SockInstructionStep): string {
     case "fold-right-sides-together":
       return "Fold the sock in half with right/public sides together.";
     case "rehang-toe":
-      return "Rehang the toe stitches.";
+      return SOCK_REHANG_TOE_INSTRUCTION;
     case "bind-off-toe-seam":
-      return "Bind off the toe seam (top of the toes).";
+      return `Finish the toe using ${BICKFORD_SEAM_GLOSSARY_TERM} or ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting).`;
     case "bind-off":
       return `Bind off ${step.stitches} stitches at the cuff.`;
     case "kitchener":
@@ -294,7 +362,7 @@ function outlineStep(step: SockInstructionStep): string {
     case "block":
       return "Block if desired.";
     case "mirror-second-sock":
-      return `Knit Sock 2 with heel and toe on the ${halfLabel(step.heel.workHalf)} side. Start with the carriage on the ${halfLabel(step.heel.carriageStartSide)} and reverse the instructions. Heel: ${orientationPhrase(step.heel)}. Toe: ${orientationPhrase(step.toe)}.`;
+      return SOCK_SECOND_SOCK_INTRO;
     default:
       return "";
   }
@@ -324,4 +392,4 @@ export function formatSockInstructionOutline(doc: SockInstructionDocument): stri
   return lines.join("\n");
 }
 
-export { RESET_ROW_COUNTER_TEXT, STOP_ROW_COUNTER_TEXT };
+export { RESET_ROW_COUNTER_TEXT, RESTART_ROW_COUNTER_TEXT, STOP_ROW_COUNTER_TEXT };

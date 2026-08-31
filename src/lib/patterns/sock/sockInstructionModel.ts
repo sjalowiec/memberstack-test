@@ -88,6 +88,7 @@ export type SockSectionRc = {
 export type SockInstructionStep =
   | { type: "reset-rc" }
   | { type: "stop-rc" }
+  | { type: "restart-rc" }
   | { type: "cast-on"; stitches: number; role: "top-leg" | "foot-tube" }
   | { type: "knit-even"; rows: number; stitches: number }
   | {
@@ -140,11 +141,7 @@ export type SockInstructionStep =
   | { type: "kitchener"; placement: "under-toes" }
   | { type: "seam"; suggestBickford: boolean }
   | { type: "block" }
-  | {
-      type: "mirror-second-sock";
-      heel: SockHoldOrientation;
-      toe: SockHoldOrientation;
-    };
+  | { type: "mirror-second-sock" };
 
 export type SockInstructionSection = {
   id: SockInstructionSectionId;

@@ -6,9 +6,11 @@ import {
 } from "./sleevelessPatternOutput";
 import {
   RESET_ROW_COUNTER_TEXT,
+  RESTART_ROW_COUNTER_TEXT,
   STOP_ROW_COUNTER_TEXT,
   formatRowCounterResetGarmentRcLabel,
   rowCounterResetBlockHtml,
+  rowCounterRestartBlockHtml,
   rowCounterStopBlockHtml,
 } from "./rowCounterReset";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
@@ -103,6 +105,20 @@ describe("rowCounterStopBlockHtml", () => {
     expect(html).toContain("RC: 000");
     expect(html).toContain(STOP_ROW_COUNTER_TEXT);
     expect(html).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(html).toContain('class="row-counter-reset"');
+    expect(html).toContain("row-counter-reset__icon");
+    expect(html).not.toContain("pattern-tip");
+  });
+});
+
+describe("rowCounterRestartBlockHtml", () => {
+  it("reuses the existing row-counter-reset control with RESTART ROW COUNTER AT 000 wording", () => {
+    expect(RESTART_ROW_COUNTER_TEXT).toBe("RESTART ROW COUNTER AT 000");
+    const html = rowCounterRestartBlockHtml(0);
+    expect(html).toContain("RC: 000");
+    expect(html).toContain(RESTART_ROW_COUNTER_TEXT);
+    expect(html).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(html).not.toContain(STOP_ROW_COUNTER_TEXT);
     expect(html).toContain('class="row-counter-reset"');
     expect(html).toContain("row-counter-reset__icon");
     expect(html).not.toContain("pattern-tip");
