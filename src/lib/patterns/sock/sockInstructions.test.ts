@@ -13,7 +13,11 @@ import {
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
+  SOCK_ANKLE_VIDEO_TIP_ID,
+  SOCK_ANKLE_VIDEO_TITLE,
   SOCK_ANKLE_VIDEO_VIMEO_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_TITLE,
   SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
@@ -473,10 +477,13 @@ describe("pair helper, renderer, and architecture", () => {
     expect(html).toContain("contrasting waste yarn");
     expect(html).toContain("top of the toes");
     expect(html).not.toContain("Kitchener");
-    expect(html).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
-    expect(html).toContain(`data-term="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
-    expect(html).toContain(`data-vimeo-id="${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}"`);
-    expect(html).toContain(`data-vimeo-id="${SOCK_ANKLE_VIDEO_VIMEO_ID}"`);
+    expect(html).toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_CUFF_CAST_ON_VIDEO_TITLE);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_ANKLE_VIDEO_TITLE);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(html).toContain("with the method of your choice.");
     expect(html).not.toContain("(top of leg)");
     expect(html).not.toContain("Use the cast-on method of your choice.");
     const toeUp = renderBasicSockInstructionsHtml(
@@ -492,8 +499,10 @@ describe("pair helper, renderer, and architecture", () => {
     expect(toeUp).toMatch(/Scrap on[\s\S]*<strong>\d+ stitches<\/strong>\./);
     expect(toeUp).not.toContain("(full foot / tube)");
     expect(toeUp).not.toContain("Use the cast-on method of your choice.");
-    expect(toeUp).not.toContain(`data-vimeo-id="${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}"`);
-    expect(toeUp).toContain(`data-vimeo-id="${SOCK_ANKLE_VIDEO_VIMEO_ID}"`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
+    expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(toeUp).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
   });
 
   it("produces a compact outline for review", () => {
@@ -565,23 +574,31 @@ describe("Toe-Up opening uses existing Scrap and Ravel Cast On glossary", () => 
     expect(outline).toContain(`${SOCK_TOE_UP_OPENING_SECTION_TITLE}:`);
   });
 
-  it("uses Scrap and Ravel Cast On for cuff-to-toe cast-on, without top-of-leg copy", () => {
+  it("uses method-of-your-choice copy for cuff-to-toe cast-on, without Scrap and Ravel", () => {
     const calc = mustCalc(typicalMachine);
     const html = renderBasicSockInstructionsHtml(buildBasicSockInstructions(calc, 1));
     const castOn = sectionHtml(html, "cast-on");
     expect(castOn).toContain("<h4>Cast-On</h4>");
-    expect(castOn).toContain(`Cast on <strong>${calc.legStitches} stitches</strong> using`);
-    expect(castOn).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
-    expect(castOn).toContain(`data-term="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
-    expect(castOn).toContain(`data-vimeo-id="${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}"`);
+    expect(castOn).toContain(
+      `Cast on <strong>${calc.legStitches} stitches</strong> with the method of your choice.`,
+    );
+    expect(castOn).not.toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
+    expect(castOn).not.toContain(`data-term="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
+    expect(castOn).not.toContain("Scrap and Ravel");
+    expect(castOn).toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
+    expect(castOn).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(castOn).toContain(SOCK_CUFF_CAST_ON_VIDEO_TITLE);
+    expect(castOn).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+    expect(castOn).not.toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
     expect(castOn).not.toContain("(top of leg)");
     expect(castOn).not.toContain("Use the cast-on method of your choice.");
     expect(castOn).not.toContain("(full foot / tube)");
     const outline = formatSockInstructionOutline(buildBasicSockInstructions(calc, 1));
     expect(outline).toContain(
-      `Cast on ${calc.legStitches} stitches using ${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}.`,
+      `Cast on ${calc.legStitches} stitches with the method of your choice.`,
     );
     expect(outline).not.toContain("(top of leg)");
+    expect(outline).not.toContain("Scrap and Ravel");
   });
 });
 
@@ -603,9 +620,13 @@ describe("Cuff-to-Toe Leg omits the redundant row-counter reset control", () => 
     );
     expect(sectionHtml(html, "leg")).toContain(RESET_ROW_COUNTER_TEXT);
     expect(sectionHtml(html, "cast-on")).not.toContain(
-      `data-vimeo-id="${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}"`,
+      `player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`,
     );
-    expect(sectionHtml(html, "ankle")).toContain(`data-vimeo-id="${SOCK_ANKLE_VIDEO_VIMEO_ID}"`);
+    const ankle = sectionHtml(html, "ankle");
+    expect(ankle).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(ankle).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
+    expect(ankle).toContain(SOCK_ANKLE_VIDEO_TITLE);
+    expect(ankle).not.toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
   });
 });
 

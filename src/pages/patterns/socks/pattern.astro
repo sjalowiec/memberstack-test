@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import PatternTipsToggle from "../../../components/patterns/PatternTipsToggle.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import {
@@ -22,6 +23,8 @@ import "../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../styles/patterns/pattern-app-shell.css";
 import "../../../styles/patterns/pattern-diagram-tabs.css";
 import "../../../styles/glossary-tooltip.css";
+import "../../../styles/pattern-tips.css";
+import "../../../styles/pattern-quick-tip.css";
 
 const sockSizingJson = JSON.parse(
   readFileSync(resolve("public/data/sizing_socks.json"), "utf8"),
@@ -79,6 +82,7 @@ const sockSizingJson = JSON.parse(
         </div>
 
         <div id="sg-socks-results" class="sg-sleeveless-results" data-socks-pattern-results>
+          <div id="socks-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
           <section class="sleeveless-pattern-intro">
             <div class="sleeveless-pattern-intro__image">
               <div class="beta-pattern-video">
@@ -118,6 +122,10 @@ const sockSizingJson = JSON.parse(
                 data-pattern-generated-description
                 aria-label="Pattern summary"
               ></div>
+              <PatternTipsToggle
+                storageKey="socks-show-tips"
+                scopeSelector="#socks-pattern-tips-scope"
+              />
             </div>
           </section>
 
@@ -148,6 +156,7 @@ const sockSizingJson = JSON.parse(
                 </div>
               </aside>
             </div>
+          </div>
           </div>
         </div>
 
@@ -366,23 +375,10 @@ const sockSizingJson = JSON.parse(
     background: rgba(82, 104, 45, 0.07);
   }
 
-  :global(#pattern-content .sock-pattern-section__heading) {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
   :global(#pattern-content .sock-pattern-section__heading h4) {
     margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
-  }
-
-  :global(#pattern-content .sock-pattern-section__video) {
-    flex: 0 0 auto;
-    margin-left: auto;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--kbm-green, #52682d);
   }
 
   :global(#pattern-content .sock-pattern-section__content) {
@@ -407,10 +403,6 @@ const sockSizingJson = JSON.parse(
   @media print {
     :global(#pattern-content .sock-pattern-section) {
       break-inside: avoid;
-    }
-
-    :global(#pattern-content .sock-pattern-section__video) {
-      display: none !important;
     }
 
     :global(.socks-pair-tabs__list),
