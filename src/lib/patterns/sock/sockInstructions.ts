@@ -32,7 +32,11 @@ export { buildSockShortRowInstructionSection } from "./sockShortRowInstructions"
 export {
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
+  SOCK_ANKLE_VIDEO_TIP_ID,
+  SOCK_ANKLE_VIDEO_TITLE,
   SOCK_ANKLE_VIDEO_VIMEO_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_TITLE,
   SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
   formatSockInstructionOutline,
   renderBasicSockInstructionsHtml,
