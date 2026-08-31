@@ -41,6 +41,7 @@ import {
   SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
   SOCK_WHY_STOP_ROW_COUNTER_TITLE,
   SOCK_SECOND_SOCK_INTRO,
+  sockEnsureCarriageInstruction,
   SOCK_FINISH_THE_TOE_HEADING,
   SOCK_CHOOSE_TOE_FINISHING_HEADING,
   SOCK_REHANG_AND_JOIN_LABEL,
@@ -314,6 +315,7 @@ describe("A. Woman Medium straight leg, Cuff to Toe", () => {
     assertShortRowUsesApprovedCounts(calc, sock1);
     expect(stepTypes(section(sock1, "heel"))).toEqual([
       "stop-rc",
+      "ensure-carriage",
       "place-hold",
       "short-row-in",
       "short-row-wrap-warning",
@@ -329,6 +331,175 @@ describe("A. Woman Medium straight leg, Cuff to Toe", () => {
       "cancel-hold-return",
     ]);
     expect(calc.heel).toEqual(calc.toe);
+  });
+});
+
+describe("carriage position is checked immediately before the first short-row section", () => {
+  const emptyPassLanguage = [
+    "remove the yarn from the feeder",
+    "without knitting",
+    "empty pass",
+    "free pass",
+  ];
+  const firstKnitRowWording = "Begin the first knitted row with the carriage";
+
+  function assertNoCastOnCarriageSide(html: string): void {
+    const castOn = sectionHtml(html, "cast-on");
+    expect(castOn).not.toContain(firstKnitRowWording);
+    expect(castOn).not.toContain("carriage on the RIGHT");
+    expect(castOn).not.toContain("carriage on the LEFT");
+    expect(castOn).not.toContain("If necessary, knit 1 additional row");
+  }
+
+  function assertCalculatedRowsMatchPair(
+    calc: BasicSockCalc,
+    pair: ReturnType<typeof buildBasicSockInstructionPair>,
+  ): void {
+    for (const doc of [pair.sock1, pair.sock2]) {
+      expect(section(doc, "cast-on").rowsToKnit).toBe(0);
+      expect(section(doc, "cast-on").steps.some((step) => step.type === "knit-even")).toBe(false);
+      expect(section(doc, "leg").rowsToKnit).toBe(calc.legShapingRowsAvailable);
+      expect(section(doc, "ankle").rowsToKnit).toBe(calc.ankleStraightRows);
+      expect(section(doc, "ankle").notes).toEqual([]);
+      expect(section(doc, "foot").rowsToKnit).toBe(calc.straightFootRows);
+      expect(section(doc, "heel").rowsToKnit).toBe(calc.heel.shortRowKnittingRows);
+      expect(section(doc, "toe").rowsToKnit).toBe(calc.toe.shortRowKnittingRows);
+      expect(section(doc, "heel").rc.endRc).toBe(calc.heel.shortRowKnittingRows);
+      expect(section(doc, "toe").rc.endRc).toBe(calc.toe.shortRowKnittingRows);
+    }
+    expect(section(pair.sock2, "ankle").rowsToKnit).toBe(section(pair.sock1, "ankle").rowsToKnit);
+    expect(section(pair.sock2, "leg").rowsToKnit).toBe(section(pair.sock1, "leg").rowsToKnit);
+    expect(section(pair.sock2, "foot").rowsToKnit).toBe(section(pair.sock1, "foot").rowsToKnit);
+    expect(section(pair.sock2, "heel").rowsToKnit).toBe(section(pair.sock1, "heel").rowsToKnit);
+    expect(section(pair.sock2, "toe").rowsToKnit).toBe(section(pair.sock1, "toe").rowsToKnit);
+  }
+
+  it("does not assume a cast-on carriage side for either sock", () => {
+    expect(sockEnsureCarriageInstruction("heel", "right")).toBe(
+      "Before beginning the heel, make sure the carriage is on the RIGHT. If necessary, knit 1 additional row. Do not count this setup row on the row counter.",
+    );
+    expect(sockEnsureCarriageInstruction("heel", "left")).toBe(
+      "Before beginning the heel, make sure the carriage is on the LEFT. If necessary, knit 1 additional row. Do not count this setup row on the row counter.",
+    );
+    expect(sockEnsureCarriageInstruction("toe", "right")).toBe(
+      "Before beginning the toe, make sure the carriage is on the RIGHT. If necessary, knit 1 additional row. Do not count this setup row on the row counter.",
+    );
+    expect(sockEnsureCarriageInstruction("toe", "left")).toBe(
+      "Before beginning the toe, make sure the carriage is on the LEFT. If necessary, knit 1 additional row. Do not count this setup row on the row counter.",
+    );
+    for (const constructionDirection of ["cuff-to-toe", "toe-up"] as const) {
+      const pair = buildBasicSockInstructionPair(
+        mustCalc({ ...typicalMachine, constructionDirection }),
+      );
+      for (const doc of [pair.sock1, pair.sock2]) {
+        const html = renderBasicSockInstructionsHtml(doc);
+        assertNoCastOnCarriageSide(html);
+        expect(html).not.toContain(firstKnitRowWording);
+        expect(html).toContain("If necessary, knit 1 additional row");
+        expect(html).toContain("Do not count this setup row on the row counter");
+        for (const phrase of emptyPassLanguage) {
+          expect(html.toLowerCase()).not.toContain(phrase);
+        }
+      }
+    }
+  });
+
+  it("checks cuff-to-toe carriage position immediately before the heel, not by adding a Sock 2 row", () => {
+    const calc = mustCalc(typicalMachine);
+    const pair = buildBasicSockInstructionPair(calc);
+    const sock1Html = renderBasicSockInstructionsHtml(pair.sock1);
+    const sock2Html = renderBasicSockInstructionsHtml(pair.sock2);
+
+    assertCalculatedRowsMatchPair(calc, pair);
+    expect(stepTypes(section(pair.sock1, "heel"))).toEqual([
+      "stop-rc",
+      "ensure-carriage",
+      "place-hold",
+      "short-row-in",
+      "short-row-wrap-warning",
+      "short-row-out",
+      "cancel-hold-return",
+    ]);
+    expect(stepTypes(section(pair.sock2, "heel"))).toEqual(stepTypes(section(pair.sock1, "heel")));
+    expect(stepTypes(section(pair.sock1, "toe"))).not.toContain("ensure-carriage");
+    expect(stepTypes(section(pair.sock2, "toe"))).not.toContain("ensure-carriage");
+
+    const sock1Check = sockEnsureCarriageInstruction("heel", "right");
+    const sock2Check = sockEnsureCarriageInstruction("heel", "left");
+    expect(sectionHtml(sock1Html, "heel")).toContain(sock1Check);
+    expect(sectionHtml(sock2Html, "heel")).toContain(sock2Check);
+    expect(sectionHtml(sock1Html, "toe")).not.toContain("Before beginning the toe");
+    expect(sectionHtml(sock2Html, "toe")).not.toContain("Before beginning the toe");
+    expect(sectionHtml(sock1Html, "cast-on")).not.toContain(sock1Check);
+    expect(sectionHtml(sock2Html, "cast-on")).not.toContain(sock2Check);
+
+    const sock1Heel = sectionHtml(sock1Html, "heel");
+    expect(sock1Heel.indexOf(STOP_ROW_COUNTER_TEXT)).toBeGreaterThanOrEqual(0);
+    expect(sock1Heel.indexOf(sock1Check)).toBeGreaterThan(sock1Heel.indexOf(STOP_ROW_COUNTER_TEXT));
+    expect(sock1Heel.indexOf("Put the LEFT half of the needles")).toBeGreaterThan(
+      sock1Heel.indexOf(sock1Check),
+    );
+
+    expect(section(pair.sock1, "heel").orientation?.carriageStartSide).toBe("right");
+    expect(section(pair.sock2, "heel").orientation?.carriageStartSide).toBe("left");
+    assertPositiveKnitRows(pair.sock1);
+    assertPositiveKnitRows(pair.sock2);
+    assertStitchContinuity(pair.sock1);
+    assertStitchContinuity(pair.sock2);
+  });
+
+  it("checks toe-up carriage position immediately before the first short-row toe, without changing scrap-on rows", () => {
+    const calc = mustCalc({ ...typicalMachine, constructionDirection: "toe-up" });
+    const pair = buildBasicSockInstructionPair(calc);
+    const sock1Html = renderBasicSockInstructionsHtml(pair.sock1);
+    const sock2Html = renderBasicSockInstructionsHtml(pair.sock2);
+
+    assertCalculatedRowsMatchPair(calc, pair);
+    expect(stepTypes(section(pair.sock1, "toe"))).toEqual([
+      "ensure-carriage",
+      "reset-rc",
+      "place-hold",
+      "short-row-in",
+      "short-row-wrap-warning",
+      "short-row-out",
+      "cancel-hold-return",
+    ]);
+    expect(stepTypes(section(pair.sock2, "toe"))).toEqual(stepTypes(section(pair.sock1, "toe")));
+    expect(stepTypes(section(pair.sock1, "heel"))).not.toContain("ensure-carriage");
+    expect(stepTypes(section(pair.sock2, "heel"))).not.toContain("ensure-carriage");
+
+    const sock1Check = sockEnsureCarriageInstruction("toe", "right");
+    const sock2Check = sockEnsureCarriageInstruction("toe", "left");
+    expect(sectionHtml(sock1Html, "toe")).toContain(sock1Check);
+    expect(sectionHtml(sock2Html, "toe")).toContain(sock2Check);
+    expect(sectionHtml(sock1Html, "heel")).not.toContain("Before beginning the heel");
+    expect(sectionHtml(sock2Html, "heel")).not.toContain("Before beginning the heel");
+
+    const sock1Toe = sectionHtml(sock1Html, "toe");
+    expect(sock1Toe.indexOf(sock1Check)).toBeGreaterThanOrEqual(0);
+    expect(sock1Toe.indexOf(RESET_ROW_COUNTER_TEXT)).toBeGreaterThan(sock1Toe.indexOf(sock1Check));
+
+    expect(section(pair.sock1, "toe").orientation?.carriageStartSide).toBe("right");
+    expect(section(pair.sock2, "toe").orientation?.carriageStartSide).toBe("left");
+    expect(sockInstructionSectionIds(pair.sock1)).toEqual(sockInstructionSectionIds(pair.sock2));
+    assertPositiveKnitRows(pair.sock1);
+    assertPositiveKnitRows(pair.sock2);
+    assertStitchContinuity(pair.sock1);
+    assertStitchContinuity(pair.sock2);
+  });
+
+  it("leaves Magic Formula and ankle row counts identical for Sock 1 and Sock 2", () => {
+    const calc = mustCalc(widerLeg);
+    const pair = buildBasicSockInstructionPair(calc);
+    const mf1 = section(pair.sock1, "leg").steps.find((step) => step.type === "magic-formula");
+    const mf2 = section(pair.sock2, "leg").steps.find((step) => step.type === "magic-formula");
+    expect(mf1?.type === "magic-formula" && mf2?.type === "magic-formula").toBe(true);
+    if (mf1?.type !== "magic-formula" || mf2?.type !== "magic-formula") return;
+    expect(mf2.rows).toBe(mf1.rows);
+    expect(mf2.rows).toBe(calc.legShapingRowsAvailable);
+    expect(mf2.events).toEqual(mf1.events);
+    expect(section(pair.sock2, "ankle").rowsToKnit).toBe(section(pair.sock1, "ankle").rowsToKnit);
+    expect(section(pair.sock2, "ankle").rowsToKnit).toBe(calc.ankleStraightRows);
   });
 });
 
@@ -747,9 +918,11 @@ describe("Ankle video hash, Ankle RC label, and Heel stop-counter", () => {
     expect(ankle).not.toContain("RC: 000");
     const heel = sectionHtml(html, "heel");
     const stopIdx = heel.indexOf(STOP_ROW_COUNTER_TEXT);
+    const carriageIdx = heel.indexOf(sockEnsureCarriageInstruction("heel", "right"));
     const holdIdx = heel.indexOf("Put the LEFT half of the needles");
     expect(stopIdx).toBeGreaterThanOrEqual(0);
-    expect(holdIdx).toBeGreaterThan(stopIdx);
+    expect(carriageIdx).toBeGreaterThan(stopIdx);
+    expect(holdIdx).toBeGreaterThan(carriageIdx);
     expect(formatSockInstructionOutline(doc)).toContain(STOP_ROW_COUNTER_TEXT);
   });
 });
