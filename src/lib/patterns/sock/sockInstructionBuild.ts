@@ -194,7 +194,7 @@ function cuffToToeClosingSteps(
   return [
     ...scrap,
     { type: "fold-right-sides-together" },
-    { type: "rehang-toe" },
+    { type: "rehang-toe", stitches: tubeStitches },
     { type: "bind-off-toe-seam", placement: "top-of-toes" },
     { type: "seam", suggestBickford: true },
     { type: "block" },
