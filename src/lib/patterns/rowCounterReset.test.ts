@@ -4,7 +4,13 @@ import {
   generateSleevelessBackPattern,
   type SleevelessPatternDisplayRow,
 } from "./sleevelessPatternOutput";
-import { RESET_ROW_COUNTER_TEXT, formatRowCounterResetGarmentRcLabel, rowCounterResetBlockHtml } from "./rowCounterReset";
+import {
+  RESET_ROW_COUNTER_TEXT,
+  STOP_ROW_COUNTER_TEXT,
+  formatRowCounterResetGarmentRcLabel,
+  rowCounterResetBlockHtml,
+  rowCounterStopBlockHtml,
+} from "./rowCounterReset";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 
 const OLD_RESET_WORDING = "Reset Armhole RC to RC:000.";
@@ -87,6 +93,19 @@ describe("rowCounterResetBlockHtml", () => {
     expect(html).not.toContain("pattern-tip");
     expect(html).not.toContain("pattern-tip-dismiss");
     expect(html).not.toContain("<details");
+  });
+});
+
+describe("rowCounterStopBlockHtml", () => {
+  it("reuses the existing row-counter-reset control with STOP ROW COUNTER wording", () => {
+    expect(STOP_ROW_COUNTER_TEXT).toBe("STOP ROW COUNTER");
+    const html = rowCounterStopBlockHtml(0);
+    expect(html).toContain("RC: 000");
+    expect(html).toContain(STOP_ROW_COUNTER_TEXT);
+    expect(html).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(html).toContain('class="row-counter-reset"');
+    expect(html).toContain("row-counter-reset__icon");
+    expect(html).not.toContain("pattern-tip");
   });
 });
 

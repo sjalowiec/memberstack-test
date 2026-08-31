@@ -87,6 +87,7 @@ export type SockSectionRc = {
 
 export type SockInstructionStep =
   | { type: "reset-rc" }
+  | { type: "stop-rc" }
   | { type: "cast-on"; stitches: number; role: "top-leg" | "foot-tube" }
   | { type: "knit-even"; rows: number; stitches: number }
   | {

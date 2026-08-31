@@ -13,6 +13,7 @@ import {
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
+  SOCK_ANKLE_VIDEO_PRIVACY_HASH,
   SOCK_ANKLE_VIDEO_TIP_ID,
   SOCK_ANKLE_VIDEO_TITLE,
   SOCK_ANKLE_VIDEO_VIMEO_ID,
@@ -30,7 +31,7 @@ import {
   type SockInstructionSectionId,
   type SockInstructionStep,
 } from "./sockInstructions";
-import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
+import { RESET_ROW_COUNTER_TEXT, STOP_ROW_COUNTER_TEXT } from "../rowCounterReset";
 import glossary from "../../../data/glossary.json";
 import { glossarySlugForId } from "../../glossary/glossaryTooltipHydrate";
 
@@ -280,6 +281,14 @@ describe("A. Woman Medium straight leg, Cuff to Toe", () => {
   it("uses the shared short-row primitive without treating in+out as foot length", () => {
     assertShortRowUsesApprovedCounts(calc, sock1);
     expect(stepTypes(section(sock1, "heel"))).toEqual([
+      "stop-rc",
+      "place-hold",
+      "short-row-in",
+      "short-row-wrap-warning",
+      "short-row-out",
+      "cancel-hold-return",
+    ]);
+    expect(stepTypes(section(sock1, "toe"))).toEqual([
       "reset-rc",
       "place-hold",
       "short-row-in",
@@ -287,7 +296,6 @@ describe("A. Woman Medium straight leg, Cuff to Toe", () => {
       "short-row-out",
       "cancel-hold-return",
     ]);
-    expect(stepTypes(section(sock1, "toe"))).toEqual(stepTypes(section(sock1, "heel")));
     expect(calc.heel).toEqual(calc.toe);
   });
 });
@@ -465,7 +473,8 @@ describe("pair helper, renderer, and architecture", () => {
     const calc = mustCalc(widerLeg);
     const html = renderBasicSockInstructionsHtml(buildBasicSockInstructions(calc, 1));
     expect(html).toContain('data-section-id="heel"');
-    expect(html).toContain("RESET ROW COUNTER TO 000");
+    expect(html).toContain(STOP_ROW_COUNTER_TEXT);
+    expect(html).toContain(RESET_ROW_COUNTER_TEXT);
     expect(html).toContain("carriage on the RIGHT");
     expect(html).toContain("LEFT half of the needles");
     expect(html).toContain("opposite the carriage");
@@ -483,6 +492,7 @@ describe("pair helper, renderer, and architecture", () => {
     expect(html).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
     expect(html).toContain(SOCK_ANKLE_VIDEO_TITLE);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(`h=${SOCK_ANKLE_VIDEO_PRIVACY_HASH}`);
     expect(html).toContain("with the method of your choice.");
     expect(html).not.toContain("(top of leg)");
     expect(html).not.toContain("Use the cast-on method of your choice.");
@@ -610,8 +620,15 @@ describe("Cuff-to-Toe Leg omits the redundant row-counter reset control", () => 
     const leg = sectionHtml(html, "leg");
     expect(leg).toContain("RC: 000");
     expect(leg).not.toContain(RESET_ROW_COUNTER_TEXT);
-    expect(sectionHtml(html, "ankle")).toContain(RESET_ROW_COUNTER_TEXT);
-    expect(sectionHtml(html, "heel")).toContain(RESET_ROW_COUNTER_TEXT);
+    const ankle = sectionHtml(html, "ankle");
+    expect(ankle).toContain("RC: 000");
+    expect(ankle).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(ankle).not.toContain(STOP_ROW_COUNTER_TEXT);
+    const heel = sectionHtml(html, "heel");
+    expect(heel).toContain(STOP_ROW_COUNTER_TEXT);
+    expect(heel).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "toe")).toContain(RESET_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "foot")).toContain(RESET_ROW_COUNTER_TEXT);
   });
 
   it("still resets the row counter on Toe-Up Leg", () => {
@@ -627,6 +644,51 @@ describe("Cuff-to-Toe Leg omits the redundant row-counter reset control", () => 
     expect(ankle).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
     expect(ankle).toContain(SOCK_ANKLE_VIDEO_TITLE);
     expect(ankle).not.toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+    expect(ankle).toContain("RC: 000");
+    expect(ankle).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(ankle).toContain(`h=${SOCK_ANKLE_VIDEO_PRIVACY_HASH}`);
+  });
+});
+
+describe("Ankle video hash, Ankle RC label, and Heel stop-counter", () => {
+  it("embeds the ankle Vimeo ID with the official privacy hash in the same Quick Tip iframe as the cuff video", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const cuff = sectionHtml(html, "cast-on");
+    const ankle = sectionHtml(html, "ankle");
+    const iframeSrc = (block: string) =>
+      (block.match(/<iframe src="([^"]+)"/)?.[1] ?? "").replaceAll("&amp;", "&");
+    const cuffSrc = iframeSrc(cuff);
+    const ankleSrc = iframeSrc(ankle);
+    expect(cuffSrc).toBe(
+      `https://player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}?byline=0&portrait=0`,
+    );
+    expect(ankleSrc).toBe(
+      `https://player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}?byline=0&portrait=0&h=${SOCK_ANKLE_VIDEO_PRIVACY_HASH}`,
+    );
+    expect(ankleSrc).toContain(`/${SOCK_ANKLE_VIDEO_VIMEO_ID}?`);
+    expect(ankleSrc).not.toContain("1222662401");
+    expect(cuff).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(ankle).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(cuff).toContain('data-explainer-video=');
+    expect(ankle).toContain('data-explainer-video=');
+  });
+
+  it("keeps Ankle knit-even values and Heel knitting steps after STOP ROW COUNTER", () => {
+    const calc = mustCalc(typicalMachine);
+    const doc = buildBasicSockInstructions(calc, 1);
+    const html = renderBasicSockInstructionsHtml(doc);
+    const ankle = sectionHtml(html, "ankle");
+    expect(ankle).toContain(
+      `Knit ${calc.ankleStraightRows} rows even. (${calc.totalSockStitches} stitches)`,
+    );
+    const heel = sectionHtml(html, "heel");
+    const stopIdx = heel.indexOf(STOP_ROW_COUNTER_TEXT);
+    const holdIdx = heel.indexOf("Put the LEFT half of the needles");
+    expect(stopIdx).toBeGreaterThanOrEqual(0);
+    expect(holdIdx).toBeGreaterThan(stopIdx);
+    expect(formatSockInstructionOutline(doc)).toContain(STOP_ROW_COUNTER_TEXT);
   });
 });
 

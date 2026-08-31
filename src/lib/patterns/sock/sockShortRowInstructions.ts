@@ -37,7 +37,7 @@ export function buildSockShortRowInstructionSection(args: {
     shortRowKnittingRows: knittingRows,
     orientation,
     steps: [
-      { type: "reset-rc" },
+      { type: part === "heel" ? "stop-rc" : "reset-rc" },
       {
         type: "place-hold",
         orientation,

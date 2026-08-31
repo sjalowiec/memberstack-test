@@ -8,8 +8,10 @@ import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
 import { buildPatternExplainerVideoBodyHtml } from "../patternExplainerVideoTip";
 import {
   RESET_ROW_COUNTER_TEXT,
+  STOP_ROW_COUNTER_TEXT,
   formatRowCounterResetGarmentRcLabel,
   rowCounterResetBlockHtml,
+  rowCounterStopBlockHtml,
 } from "../rowCounterReset";
 import {
   SOCK_SHORT_ROW_WRAP_WARNING,
@@ -34,6 +36,11 @@ export const SOCK_CUFF_CAST_ON_VIDEO_TIP_ID = "socks-cuff-cast-on-video";
 
 /** Ankle section help video (both construction directions). */
 export const SOCK_ANKLE_VIDEO_VIMEO_ID = "1222664135";
+/**
+ * Vimeo privacy hash from the official embed (`h=`). Required for this Hide-from-Vimeo
+ * clip; the working cuff video uses the same explainer iframe without needing `h=`.
+ */
+export const SOCK_ANKLE_VIDEO_PRIVACY_HASH = "f045188fd1";
 export const SOCK_ANKLE_VIDEO_TITLE = "Knitting the Ankle";
 export const SOCK_ANKLE_VIDEO_TIP_ID = "socks-ankle-video";
 
@@ -88,11 +95,16 @@ function buildSockPatternVideoTipHtml(options: {
   title: string;
   vimeoId: string;
   explainerKey: string;
+  privacyHash?: string;
 }): string {
   const inner = buildPatternQuickTipInnerHtml({
     summaryLabel: options.title,
     bodyHtml: buildPatternExplainerVideoBodyHtml({
-      video: { vimeoId: options.vimeoId, title: options.title },
+      video: {
+        vimeoId: options.vimeoId,
+        title: options.title,
+        ...(options.privacyHash ? { privacyHash: options.privacyHash } : {}),
+      },
       explainerKey: options.explainerKey,
     }),
   });
@@ -118,6 +130,7 @@ function sectionVideoTipHtml(section: SockInstructionSection): string {
       title: SOCK_ANKLE_VIDEO_TITLE,
       vimeoId: SOCK_ANKLE_VIDEO_VIMEO_ID,
       explainerKey: SOCK_ANKLE_VIDEO_TIP_ID,
+      privacyHash: SOCK_ANKLE_VIDEO_PRIVACY_HASH,
     });
   }
   return "";
@@ -127,6 +140,8 @@ function renderStep(step: SockInstructionStep): string {
   switch (step.type) {
     case "reset-rc":
       return rowCounterResetBlockHtml(0);
+    case "stop-rc":
+      return rowCounterStopBlockHtml(0);
     case "cast-on": {
       if (step.role === "foot-tube") {
         const scrapOnHelp = scrapAndRavelCastOnGlossaryHtml("Scrap on");
@@ -189,13 +204,17 @@ function renderStep(step: SockInstructionStep): string {
   }
 }
 
+function shouldShowRcLabelWithoutResetControl(section: SockInstructionSection): boolean {
+  if (section.steps.some((step) => step.type === "reset-rc" || step.type === "stop-rc")) {
+    return false;
+  }
+  if (section.id === "ankle") return true;
+  return section.id === "leg" && section.constructionDirection === "cuff-to-toe";
+}
+
 function renderSection(section: SockInstructionSection): string {
   let body = section.steps.map(renderStep).join("");
-  if (
-    section.id === "leg" &&
-    section.constructionDirection === "cuff-to-toe" &&
-    !section.steps.some((step) => step.type === "reset-rc")
-  ) {
+  if (shouldShowRcLabelWithoutResetControl(section)) {
     body =
       `<p class="row-counter-reset__garment-rc">${formatRowCounterResetGarmentRcLabel(section.rc.startRc)}</p>` +
       body;
@@ -222,6 +241,8 @@ function outlineStep(step: SockInstructionStep): string {
   switch (step.type) {
     case "reset-rc":
       return RESET_ROW_COUNTER_TEXT;
+    case "stop-rc":
+      return STOP_ROW_COUNTER_TEXT;
     case "cast-on":
       return step.role === "foot-tube"
         ? `Scrap on ${step.stitches} stitches.`
@@ -303,4 +324,4 @@ export function formatSockInstructionOutline(doc: SockInstructionDocument): stri
   return lines.join("\n");
 }
 
-export { RESET_ROW_COUNTER_TEXT };
+export { RESET_ROW_COUNTER_TEXT, STOP_ROW_COUNTER_TEXT };
