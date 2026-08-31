@@ -11,6 +11,10 @@ import {
   SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_FINISHING_DEFAULT,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
+  BICKFORD_SEAM_GLOSSARY_ID,
+  BICKFORD_SEAM_GLOSSARY_TERM,
+  KITCHENER_STITCH_GLOSSARY_ID,
+  KITCHENER_STITCH_GLOSSARY_TERM,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
   SOCK_ANKLE_VIDEO_PRIVACY_HASH,
@@ -20,6 +24,21 @@ import {
   SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
   SOCK_CUFF_CAST_ON_VIDEO_TITLE,
   SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+  SOCK_HEEL_VIDEO_PRIVACY_HASH,
+  SOCK_HEEL_VIDEO_TIP_ID,
+  SOCK_HEEL_VIDEO_TITLE,
+  SOCK_HEEL_VIDEO_VIMEO_ID,
+  SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH,
+  SOCK_TOE_FINISHING_VIDEO_TIP_ID,
+  SOCK_TOE_FINISHING_VIDEO_TITLE,
+  SOCK_TOE_FINISHING_VIDEO_VIMEO_ID,
+  SOCK_TOE_VIDEO_PRIVACY_HASH,
+  SOCK_TOE_VIDEO_TIP_ID,
+  SOCK_TOE_VIDEO_TITLE,
+  SOCK_TOE_VIDEO_VIMEO_ID,
+  SOCK_WHY_STOP_ROW_COUNTER_BODY,
+  SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
+  SOCK_WHY_STOP_ROW_COUNTER_TITLE,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
   formatSockInstructionOutline,
@@ -484,8 +503,13 @@ describe("pair helper, renderer, and architecture", () => {
     expect(html).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
     expect(html).toContain("at each side");
     expect(html).toContain("contrasting waste yarn");
-    expect(html).toContain("top of the toes");
-    expect(html).not.toContain("Kitchener");
+    expect(html).toContain("Finish the toe using");
+    expect(html).toContain(BICKFORD_SEAM_GLOSSARY_TERM);
+    expect(html).toContain(KITCHENER_STITCH_GLOSSARY_TERM);
+    expect(html).toContain("(Grafting).");
+    expect(html).not.toContain("top of the toes");
+    expect(html).not.toContain("Bind off the toe seam");
+    expect(html).not.toContain('type="kitchener"');
     expect(html).toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
     expect(html).toContain(SOCK_CUFF_CAST_ON_VIDEO_TITLE);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
@@ -513,6 +537,13 @@ describe("pair helper, renderer, and architecture", () => {
     expect(toeUp).not.toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
     expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
     expect(toeUp).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_HEEL_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_TOE_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_TOE_FINISHING_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
   });
 
   it("produces a compact outline for review", () => {
@@ -524,7 +555,11 @@ describe("pair helper, renderer, and architecture", () => {
     expect(outline).toContain("Heel:");
     expect(outline).toContain("Toe:");
     expect(outline).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
-    expect(outline).toContain("Bind off the toe seam (top of the toes).");
+    expect(outline).toContain(
+      `Finish the toe using ${BICKFORD_SEAM_GLOSSARY_TERM} or ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting).`,
+    );
+    expect(outline).not.toContain("top of the toes");
+    expect(outline).not.toContain("Bind off the toe seam");
     const heelLine = outline.split("\n").find((line) => line.startsWith("Heel:"));
     const toeLine = outline.split("\n").find((line) => line.startsWith("Toe:"));
     expect(heelLine).toContain("hold LEFT, work RIGHT, carriage RIGHT");
@@ -689,6 +724,77 @@ describe("Ankle video hash, Ankle RC label, and Heel stop-counter", () => {
     expect(stopIdx).toBeGreaterThanOrEqual(0);
     expect(holdIdx).toBeGreaterThan(stopIdx);
     expect(formatSockInstructionOutline(doc)).toContain(STOP_ROW_COUNTER_TEXT);
+  });
+});
+
+describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
+  const iframeSrc = (block: string) =>
+    (block.match(/<iframe src="([^"]+)"/)?.[1] ?? "").replaceAll("&amp;", "&");
+
+  it("adds the why-stop Quick Tip and heel video on Cuff-to-Toe Heel only, not on Toe", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const heel = sectionHtml(html, "heel");
+    const toe = sectionHtml(html, "toe");
+    expect(heel).toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
+    expect(heel).toContain(SOCK_WHY_STOP_ROW_COUNTER_TITLE);
+    expect(heel).toContain(SOCK_WHY_STOP_ROW_COUNTER_BODY);
+    expect(heel).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(heel).toContain(`data-tip-id="${SOCK_HEEL_VIDEO_TIP_ID}"`);
+    expect(heel).toContain(SOCK_HEEL_VIDEO_TITLE);
+    expect(iframeSrc(heel)).toBe(
+      `https://player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}?byline=0&portrait=0&h=${SOCK_HEEL_VIDEO_PRIVACY_HASH}`,
+    );
+    expect(toe).not.toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
+    expect(toe).not.toContain(SOCK_WHY_STOP_ROW_COUNTER_TITLE);
+    expect(toe).toContain(`data-tip-id="${SOCK_TOE_VIDEO_TIP_ID}"`);
+    expect(toe).toContain(SOCK_TOE_VIDEO_TITLE);
+    expect(iframeSrc(toe)).toBe(
+      `https://player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}?byline=0&portrait=0&h=${SOCK_TOE_VIDEO_PRIVACY_HASH}`,
+    );
+    expect(html.split(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`).length - 1).toBe(1);
+  });
+
+  it("adds the finishing video and glossary-linked finishing copy on Cuff-to-Toe only", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const finishing = sectionHtml(html, "finishing");
+    expect(finishing).toContain(`data-tip-id="${SOCK_TOE_FINISHING_VIDEO_TIP_ID}"`);
+    expect(finishing).toContain(SOCK_TOE_FINISHING_VIDEO_TITLE);
+    expect(iframeSrc(finishing)).toBe(
+      `https://player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}?byline=0&portrait=0&h=${SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH}`,
+    );
+    expect(finishing).toContain(`data-glossary-id="${BICKFORD_SEAM_GLOSSARY_ID}"`);
+    expect(finishing).toContain(`data-term="${BICKFORD_SEAM_GLOSSARY_TERM}"`);
+    expect(finishing).toContain(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`);
+    expect(finishing).toContain(`data-term="${KITCHENER_STITCH_GLOSSARY_TERM}"`);
+    expect(finishing).toContain("Finish the toe using");
+    expect(finishing).toContain("(Grafting).");
+    expect(finishing).not.toContain("Bind off the toe seam");
+    expect(finishing).not.toContain("top of the toes");
+    expect(finishing).not.toContain("under the toes");
+    expect(glossarySlugForId(BICKFORD_SEAM_GLOSSARY_ID)).toBe("bickford-seam");
+    expect(glossarySlugForId(KITCHENER_STITCH_GLOSSARY_ID)).toBe("kitchener-stitch");
+  });
+
+  it("does not add the Cuff-to-Toe heel/toe/finishing videos or why-stop tip to Toe-Up", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 1),
+    );
+    expect(sectionHtml(html, "heel")).not.toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
+    expect(sectionHtml(html, "heel")).not.toContain(`data-tip-id="${SOCK_HEEL_VIDEO_TIP_ID}"`);
+    expect(sectionHtml(html, "toe")).not.toContain(`data-tip-id="${SOCK_TOE_VIDEO_TIP_ID}"`);
+    expect(sectionHtml(html, "finishing")).not.toContain(
+      `data-tip-id="${SOCK_TOE_FINISHING_VIDEO_TIP_ID}"`,
+    );
+    expect(html).not.toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+    expect(html).not.toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
+    expect(html).not.toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
+    expect(sectionHtml(html, "finishing")).toContain("Bind off");
+    expect(sectionHtml(html, "finishing")).toContain("at the cuff");
+    expect(sectionHtml(html, "finishing")).not.toContain("Finish the toe using");
   });
 });
 

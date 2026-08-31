@@ -44,6 +44,36 @@ export const SOCK_ANKLE_VIDEO_PRIVACY_HASH = "f045188fd1";
 export const SOCK_ANKLE_VIDEO_TITLE = "Knitting the Ankle";
 export const SOCK_ANKLE_VIDEO_TIP_ID = "socks-ankle-video";
 
+/** Cuff-to-Toe Heel only — not repeated on Toe or Toe-Up. */
+export const SOCK_WHY_STOP_ROW_COUNTER_TIP_ID = "socks-why-stop-row-counter";
+export const SOCK_WHY_STOP_ROW_COUNTER_TITLE = "Why stop the row counter?";
+export const SOCK_WHY_STOP_ROW_COUNTER_BODY =
+  "During short-row shaping, you’ll follow the shaping steps rather than the row counter. Stop the counter before shaping, then restart it at RC 000 when straight knitting resumes.";
+
+/** Cuff-to-Toe Heel help video. Vimeo title is only “heel”; no catalog title exists. */
+export const SOCK_HEEL_VIDEO_VIMEO_ID = "1222667612";
+export const SOCK_HEEL_VIDEO_PRIVACY_HASH = "92aac333c8";
+export const SOCK_HEEL_VIDEO_TITLE = "Knitting the Heel";
+export const SOCK_HEEL_VIDEO_TIP_ID = "socks-heel-video";
+
+/** Cuff-to-Toe Toe help video. Vimeo title is only “toe”; no catalog title exists. */
+export const SOCK_TOE_VIDEO_VIMEO_ID = "1222668781";
+export const SOCK_TOE_VIDEO_PRIVACY_HASH = "498874f65f";
+export const SOCK_TOE_VIDEO_TITLE = "Knitting the Toe";
+export const SOCK_TOE_VIDEO_TIP_ID = "socks-toe-video";
+
+/** Cuff-to-Toe Finishing help video. Vimeo title is “finish toe”; no catalog title exists. */
+export const SOCK_TOE_FINISHING_VIDEO_VIMEO_ID = "1222676437";
+export const SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH = "e46438a3c0";
+export const SOCK_TOE_FINISHING_VIDEO_TITLE = "Finishing the Toe";
+export const SOCK_TOE_FINISHING_VIDEO_TIP_ID = "socks-toe-finishing-video";
+
+/** Existing KIN glossary entries used in Cuff-to-Toe toe finishing. */
+export const BICKFORD_SEAM_GLOSSARY_ID = 717;
+export const BICKFORD_SEAM_GLOSSARY_TERM = "Bickford Seam";
+export const KITCHENER_STITCH_GLOSSARY_ID = 521;
+export const KITCHENER_STITCH_GLOSSARY_TERM = "Kitchener Stitch";
+
 function escapeHtml(value: string): string {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -80,13 +110,25 @@ export function wrapSockPatternSection(
 </section>`;
 }
 
-function scrapAndRavelCastOnGlossaryHtml(visibleText: string): string {
+function glossaryPlaceholderHtml(
+  glossaryId: number,
+  visibleText: string,
+  ariaLabel: string,
+): string {
   return buildGlossaryTooltipPlaceholderHtml(
-    SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+    glossaryId,
     visibleText,
     escapeHtml,
     escapeHtml,
-    { ariaLabel: SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM },
+    { ariaLabel },
+  );
+}
+
+function scrapAndRavelCastOnGlossaryHtml(visibleText: string): string {
+  return glossaryPlaceholderHtml(
+    SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
+    visibleText,
+    SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
   );
 }
 
@@ -115,25 +157,87 @@ function buildSockPatternVideoTipHtml(options: {
   );
 }
 
-function sectionVideoTipHtml(section: SockInstructionSection): string {
-  if (section.id === "cast-on" && section.constructionDirection === "cuff-to-toe") {
-    return buildSockPatternVideoTipHtml({
-      tipId: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
-      title: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
-      vimeoId: SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
-      explainerKey: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
-    });
+function buildSockPatternTextTipHtml(options: {
+  tipId: string;
+  title: string;
+  bodyText: string;
+}): string {
+  const inner = buildPatternQuickTipInnerHtml({
+    summaryLabel: options.title,
+    bodyHtml: `<p>${escapeHtml(options.bodyText)}</p>`,
+  });
+  return (
+    `<div class="pattern-tip pattern-quick-tip" data-tip data-tip-id="${escapeHtml(options.tipId)}">` +
+    inner +
+    `</div>`
+  );
+}
+
+function sectionTipsHtml(section: SockInstructionSection): string {
+  const cuffToToe = section.constructionDirection === "cuff-to-toe";
+  const tips: string[] = [];
+  if (section.id === "cast-on" && cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+        title: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
+        vimeoId: SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+      }),
+    );
   }
   if (section.id === "ankle") {
-    return buildSockPatternVideoTipHtml({
-      tipId: SOCK_ANKLE_VIDEO_TIP_ID,
-      title: SOCK_ANKLE_VIDEO_TITLE,
-      vimeoId: SOCK_ANKLE_VIDEO_VIMEO_ID,
-      explainerKey: SOCK_ANKLE_VIDEO_TIP_ID,
-      privacyHash: SOCK_ANKLE_VIDEO_PRIVACY_HASH,
-    });
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_ANKLE_VIDEO_TIP_ID,
+        title: SOCK_ANKLE_VIDEO_TITLE,
+        vimeoId: SOCK_ANKLE_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_ANKLE_VIDEO_TIP_ID,
+        privacyHash: SOCK_ANKLE_VIDEO_PRIVACY_HASH,
+      }),
+    );
   }
-  return "";
+  if (section.id === "heel" && cuffToToe) {
+    tips.push(
+      buildSockPatternTextTipHtml({
+        tipId: SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
+        title: SOCK_WHY_STOP_ROW_COUNTER_TITLE,
+        bodyText: SOCK_WHY_STOP_ROW_COUNTER_BODY,
+      }),
+    );
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_HEEL_VIDEO_TIP_ID,
+        title: SOCK_HEEL_VIDEO_TITLE,
+        vimeoId: SOCK_HEEL_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_HEEL_VIDEO_TIP_ID,
+        privacyHash: SOCK_HEEL_VIDEO_PRIVACY_HASH,
+      }),
+    );
+  }
+  if (section.id === "toe" && cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_TOE_VIDEO_TIP_ID,
+        title: SOCK_TOE_VIDEO_TITLE,
+        vimeoId: SOCK_TOE_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_TOE_VIDEO_TIP_ID,
+        privacyHash: SOCK_TOE_VIDEO_PRIVACY_HASH,
+      }),
+    );
+  }
+  if (section.id === "finishing" && cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_TOE_FINISHING_VIDEO_TIP_ID,
+        title: SOCK_TOE_FINISHING_VIDEO_TITLE,
+        vimeoId: SOCK_TOE_FINISHING_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_TOE_FINISHING_VIDEO_TIP_ID,
+        privacyHash: SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH,
+      }),
+    );
+  }
+  return tips.join("");
 }
 
 function renderStep(step: SockInstructionStep): string {
@@ -185,8 +289,19 @@ function renderStep(step: SockInstructionStep): string {
       return `<p>Fold the sock in half with right/public sides together.</p>`;
     case "rehang-toe":
       return `<p>Rehang the toe stitches.</p>`;
-    case "bind-off-toe-seam":
-      return `<p>Bind off the toe seam. This places the bind-off seam on the top of the toes.</p>`;
+    case "bind-off-toe-seam": {
+      const bickford = glossaryPlaceholderHtml(
+        BICKFORD_SEAM_GLOSSARY_ID,
+        BICKFORD_SEAM_GLOSSARY_TERM,
+        BICKFORD_SEAM_GLOSSARY_TERM,
+      );
+      const kitchener = glossaryPlaceholderHtml(
+        KITCHENER_STITCH_GLOSSARY_ID,
+        KITCHENER_STITCH_GLOSSARY_TERM,
+        KITCHENER_STITCH_GLOSSARY_TERM,
+      );
+      return `<p>Finish the toe using ${bickford} or ${kitchener} (Grafting).</p>`;
+    }
     case "bind-off":
       return `<p>Bind off ${step.stitches} stitches at the cuff.</p>`;
     case "kitchener":
@@ -223,7 +338,7 @@ function renderSection(section: SockInstructionSection): string {
   return wrapSockPatternSection(
     section.id,
     `<h4>${escapeHtml(section.title)}</h4>`,
-    sectionVideoTipHtml(section) + body + notes,
+    sectionTipsHtml(section) + body + notes,
   );
 }
 
@@ -282,7 +397,7 @@ function outlineStep(step: SockInstructionStep): string {
     case "rehang-toe":
       return "Rehang the toe stitches.";
     case "bind-off-toe-seam":
-      return "Bind off the toe seam (top of the toes).";
+      return `Finish the toe using ${BICKFORD_SEAM_GLOSSARY_TERM} or ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting).`;
     case "bind-off":
       return `Bind off ${step.stitches} stitches at the cuff.`;
     case "kitchener":
