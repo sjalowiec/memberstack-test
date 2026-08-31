@@ -99,6 +99,41 @@ function magicIntervalPhrase(rows: number): string {
   return `every ${rows} rows`;
 }
 
+function formatSockShortRowPassCount(passes: number): string {
+  return `${passes} short-row passes`;
+}
+
+function formatSockShortRowShapingSummary(
+  decreasePasses: number,
+  increasePasses: number,
+): string {
+  const total = decreasePasses + increasePasses;
+  return `Short-row shaping: ${total} passes total — ${decreasePasses} decreasing and ${increasePasses} increasing.`;
+}
+
+function shortRowShapingPassCounts(
+  section: SockInstructionSection,
+): { decrease: number; increase: number } | null {
+  let decrease: number | undefined;
+  let increase: number | undefined;
+  for (const step of section.steps) {
+    if (step.type === "short-row-in") decrease = step.rows;
+    if (step.type === "short-row-out") increase = step.rows;
+  }
+  if (decrease == null || increase == null) return null;
+  return { decrease, increase };
+}
+
+function shortRowShapingSummaryAfterOut(
+  step: SockInstructionStep,
+  section: SockInstructionSection,
+): string {
+  if (step.type !== "short-row-out") return "";
+  const counts = shortRowShapingPassCounts(section);
+  if (!counts) return "";
+  return formatSockShortRowShapingSummary(counts.decrease, counts.increase);
+}
+
 export function wrapSockPatternSection(
   sectionId: string,
   titleHtml: string,
@@ -217,11 +252,11 @@ function renderStep(step: SockInstructionStep): string {
     case "place-hold":
       return `<p>Begin with the carriage on the ${halfLabel(step.orientation.carriageStartSide)}. Put the ${halfLabel(step.orientation.holdHalf)} half of the needles (${step.holdStitches} stitches), opposite the carriage, into hold. The ${halfLabel(step.orientation.workHalf)} half (${step.workStitches} stitches) remains in work. Set the carriage to HOLD.</p>`;
     case "short-row-in":
-      return `<p>On the carriage side, put 1 needle into hold and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${step.rows} rows)</p>`;
+      return `<p>On the carriage side, put 1 needle into hold and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})</p>`;
     case "short-row-wrap-warning":
       return `<p class="sock-pattern-tip">${escapeHtml(SOCK_SHORT_ROW_WRAP_WARNING)}</p>`;
     case "short-row-out":
-      return `<p>Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all ${step.endWorkingStitches} working stitches are back in work. (${step.rows} rows)</p>`;
+      return `<p>Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all ${step.endWorkingStitches} working stitches are back in work. (${formatSockShortRowPassCount(step.rows)})</p>`;
     case "cancel-hold-return":
       return `<p>Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. (${step.tubeStitches} stitches)</p>`;
     case "waste-yarn":
@@ -279,7 +314,14 @@ function shouldShowRcLabelWithoutResetControl(section: SockInstructionSection): 
 }
 
 function renderSection(section: SockInstructionSection): string {
-  let body = section.steps.map(renderStep).join("");
+  let body = section.steps
+    .map((step) => {
+      const summary = shortRowShapingSummaryAfterOut(step, section);
+      return (
+        renderStep(step) + (summary ? `<p>${escapeHtml(summary)}</p>` : "")
+      );
+    })
+    .join("");
   if (shouldShowRcLabelWithoutResetControl(section)) {
     body =
       `<p class="row-counter-reset__garment-rc">${formatRowCounterResetGarmentRcLabel(section.rc.startRc)}</p>` +
@@ -332,11 +374,11 @@ function outlineStep(step: SockInstructionStep): string {
     case "place-hold":
       return `Carriage ${halfLabel(step.orientation.carriageStartSide)}; hold ${halfLabel(step.orientation.holdHalf)} (${step.holdStitches} sts), opposite the carriage; work ${halfLabel(step.orientation.workHalf)} (${step.workStitches} sts). Set carriage to HOLD.`;
     case "short-row-in":
-      return `On the carriage side, put 1 needle into hold and knit across, every row, until ${step.remainingStitches} center stitches remain. (${step.rows} rows)`;
+      return `On the carriage side, put 1 needle into hold and knit across, every row, until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})`;
     case "short-row-wrap-warning":
       return SOCK_SHORT_ROW_WRAP_WARNING;
     case "short-row-out":
-      return `Opposite the carriage, return 1 needle to work and knit across, every row, until ${step.endWorkingStitches} working stitches are back. (${step.rows} rows)`;
+      return `Opposite the carriage, return 1 needle to work and knit across, every row, until ${step.endWorkingStitches} working stitches are back. (${formatSockShortRowPassCount(step.rows)})`;
     case "cancel-hold-return":
       return `Cancel HOLD; return previously held half (${step.heldStitches} sts; ${step.tubeStitches} tube stitches).`;
     case "waste-yarn":
@@ -387,6 +429,8 @@ export function formatSockInstructionOutline(doc: SockInstructionDocument): stri
     );
     for (const step of section.steps) {
       lines.push(`  ${outlineStep(step)}`);
+      const summary = shortRowShapingSummaryAfterOut(step, section);
+      if (summary) lines.push(`  ${summary}`);
     }
   }
   return lines.join("\n");

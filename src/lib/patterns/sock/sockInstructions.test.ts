@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   calculateBasicSockPattern,
+  calculateShortRowShaping,
   type BasicSockCalc,
   type BasicSockCalcInput,
 } from "./sockMath";
@@ -39,6 +40,7 @@ import {
   SOCK_REHANG_TOE_INSTRUCTION,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
+  buildSockShortRowInstructionSection,
   formatSockInstructionOutline,
   renderBasicSockInstructionsHtml,
   sockHoldOrientation,
@@ -749,6 +751,72 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
     const html = renderBasicSockInstructionsHtml(doc);
     expect(html).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
     expect(formatSockInstructionOutline(doc)).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
+  });
+
+  it("labels heel/toe short-row halves as passes and summarizes the complete sequence", () => {
+    const shaping = calculateShortRowShaping(26);
+    expect(shaping).toMatchObject({
+      workingStitches: 13,
+      remainingStitches: 5,
+      shortRowInSteps: 8,
+      shortRowOutSteps: 8,
+      shortRowDepthRows: 8,
+      shortRowKnittingRows: 16,
+    });
+    const heel = buildSockShortRowInstructionSection({
+      part: "heel",
+      shaping: shaping!,
+      orientation: sockHoldOrientation(1, "heel"),
+      tubeStitches: 26,
+      constructionDirection: "cuff-to-toe",
+      sock: 1,
+    });
+    const html = renderBasicSockInstructionsHtml({
+      constructionDirection: "cuff-to-toe",
+      sock: 1,
+      ribbing: null,
+      toeFinishingVariation: SOCK_TOE_FINISHING_DEFAULT,
+      sections: [heel],
+    });
+    expect(html).toContain(
+      "On the carriage side, put 1 needle into hold and knit across. Repeat every row until 5 center stitches remain. (8 short-row passes)",
+    );
+    expect(html).toContain(
+      "Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all 13 working stitches are back in work. (8 short-row passes)",
+    );
+    expect(html).toContain(
+      "Short-row shaping: 16 passes total — 8 decreasing and 8 increasing.",
+    );
+    expect(html).not.toContain("(8 rows)");
+    expect(html).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
+
+    for (const constructionDirection of ["cuff-to-toe", "toe-up"] as const) {
+      const pair = buildBasicSockInstructionPair(
+        mustCalc({ ...typicalMachine, constructionDirection }),
+      );
+      for (const doc of [pair.sock1, pair.sock2]) {
+        const rendered = renderBasicSockInstructionsHtml(doc);
+        const outline = formatSockInstructionOutline(doc);
+        for (const id of ["heel", "toe"] as const) {
+          const part = section(doc, id);
+          const decrease = shortRowIn(part).rows;
+          const increase = shortRowOut(part).rows;
+          const total = decrease + increase;
+          const halfLabel = `${decrease} short-row passes`;
+          const increaseLabel = `${increase} short-row passes`;
+          const summary = `Short-row shaping: ${total} passes total — ${decrease} decreasing and ${increase} increasing.`;
+          const partHtml = sectionHtml(rendered, id);
+          expect(partHtml).toContain(`(${halfLabel})`);
+          expect(partHtml).toContain(`(${increaseLabel})`);
+          expect(partHtml).toContain(summary);
+          expect(partHtml).not.toContain(`(${decrease} rows)`);
+          expect(partHtml).not.toContain(`(${increase} rows)`);
+          expect(outline).toContain(summary);
+          expect(decrease).toBe(part.physicalDepthRows);
+          expect(total).toBe(part.shortRowKnittingRows);
+        }
+      }
+    }
   });
 
   it("uses the updated toe rehanging and Sock 2 introduction wording", () => {
