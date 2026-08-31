@@ -10,6 +10,7 @@ import {
   type SockDraft,
   type SockDraftUnit,
 } from "./sockDraft";
+import { clearSockSavedProjectIdentity } from "./sockSavedProject";
 
 export const SOCK_BUILDER_PATH = "/patterns/socks/builder";
 
@@ -25,10 +26,12 @@ export function startFreshSockPattern(
     ? localStorage
     : { removeItem: () => undefined },
 ): void {
+  clearSockSavedProjectIdentity();
   clearSockDraftStorage(storage);
 }
 
 export function startOverSockBuilderSession(args: { unit: SockDraftUnit }): SockDraft {
+  clearSockSavedProjectIdentity();
   const draft = createEmptySockDraft({ unit: args.unit });
   writeSockDraft(draft);
   return draft;

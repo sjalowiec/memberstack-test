@@ -36,6 +36,7 @@ export const PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR =
 export function formatCustomPatternProjectType(project: CustomPatternProjectSummary): string {
   const system = project.patternSystem?.trim();
   if (system === "hat") return "Hat";
+  if (system === "socks") return "Socks";
   if (system === "drop-shoulder") return "Drop Shoulder";
   if (system === "sleeveless") return "Sleeveless";
   const familyLabels: Record<string, string> = {

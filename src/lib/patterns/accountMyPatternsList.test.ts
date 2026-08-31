@@ -387,6 +387,7 @@ describe("accountMyPatternsList", () => {
     });
 
     expect(shouldOfferSavedPatternRename("hat")).toBe(true);
+    expect(shouldOfferSavedPatternRename("socks")).toBe(true);
     expect(shouldOfferSavedPatternRename("sleeveless")).toBe(false);
     expect(shouldOfferSavedPatternRename("drop-shoulder")).toBe(false);
 

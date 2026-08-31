@@ -23,6 +23,7 @@ import { buildSockPatternDiagramSvg } from "../lib/patterns/sock/sockPatternDiag
 import { buildSockShapingNotationDiagramSvg } from "../lib/patterns/sock/sockShapingNotationDiagramSvg";
 import type { BasicSockCalc } from "../lib/patterns/sock/sockMath";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
+import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 
@@ -159,6 +160,7 @@ async function initSocksPatternPage(): Promise<void> {
   root.dataset.socksPatternBound = "true";
 
   await reconcilePatternDraftOwner();
+  await ensureUrlRequestedSavedPatternHydrated();
   await renderSocksPattern();
 }
 

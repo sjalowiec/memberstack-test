@@ -33,6 +33,11 @@ const sweaterDrawerScript = readFileSync(
   resolve("src/scripts/sleevelessPatternEditDrawerPrototype.ts"),
   "utf8",
 );
+const socksWorkspace = readFileSync(
+  resolve("src/components/patterns/SocksPatternEditWorkspace.astro"),
+  "utf8",
+);
+const socksEditScript = readFileSync(resolve("src/scripts/socks-edit-page.ts"), "utf8");
 
 describe("shared Pattern Project Details Lego block", () => {
   it("owns the Pattern title + Notes markup once", () => {
@@ -47,10 +52,11 @@ describe("shared Pattern Project Details Lego block", () => {
     expect(onlineNotesComponent).toContain("sleeveless-pattern-project-notes");
   });
 
-  it("is used by Sleeveless, Drop Shoulder, and Hat instead of duplicate implementations", () => {
+  it("is used by Sleeveless, Drop Shoulder, Hat, and Socks instead of duplicate implementations", () => {
     expect(sleevelessPage).toContain("PatternProjectDetails");
     expect(dropShoulderPage).toContain("PatternProjectDetails");
     expect(hatSummaryPage).toContain("PatternProjectDetails");
+    expect(socksWorkspace).toContain("PatternProjectDetails");
     expect(sleevelessPage).toContain("PatternProjectOnlineNotes");
     expect(dropShoulderPage).toContain("PatternProjectOnlineNotes");
     expect(hatPatternPage).toContain("PatternProjectOnlineNotes");
@@ -60,6 +66,7 @@ describe("shared Pattern Project Details Lego block", () => {
     expect(sleevelessPage).not.toContain('id="sl-edit-notes"');
     expect(dropShoulderPage).not.toContain('id="sl-edit-notes"');
     expect(hatSummaryPage).not.toContain("<textarea");
+    expect(socksWorkspace).not.toContain("<textarea");
     expect(hatPatternPage).not.toContain("sleeveless-pattern-project-notes__text");
   });
 
@@ -79,5 +86,15 @@ describe("shared Pattern Project Details Lego block", () => {
     expect(hatPatternScript).toContain("applyPatternProjectOnlineNotes");
     expect(hatPatternScript).toContain("HAT_PATTERN_ONLINE_NOTES_SELECTORS");
     expect(hatPatternPage).toContain("data-hat-pattern-online-notes-wrap");
+  });
+
+  it("wires Socks name through the same helpers rather than a Socks-only naming system", () => {
+    expect(socksWorkspace).toContain('titleId="socks-edit-title"');
+    expect(socksWorkspace).toContain('notesId="socks-edit-notes"');
+    expect(socksWorkspace).toContain('titlePlaceholder="Socks"');
+    expect(socksWorkspace).toContain("data-socks-edit-title");
+    expect(socksEditScript).toContain("bindPatternProjectNotesField");
+    expect(socksEditScript).toContain("applySockPatternProjectDetailsToDraft");
+    expect(socksEditScript).toContain("persistSockPatternProject");
   });
 });

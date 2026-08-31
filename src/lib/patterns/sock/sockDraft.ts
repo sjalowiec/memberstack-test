@@ -5,11 +5,15 @@
  * modeling those constructions now — this version only knows Basic Sock fields.
  */
 
+import type { SleevelessPatternProjectMeta } from "../sleevelessPatternProjectMeta";
+
 export const SOCK_DRAFT_STORAGE_KEY = "kbm_socks_draft";
 export const SOCK_DRAFT_VERSION = 1 as const;
 
 /** User-facing Pattern System name. */
 export const SOCK_PATTERN_SYSTEM_DISPLAY_NAME = "Socks";
+/** Family-only default saved name (same convention as "Hat" / "Sleeveless" when audience is unknown). */
+export const SOCK_PATTERN_FAMILY_NAME = SOCK_PATTERN_SYSTEM_DISPLAY_NAME;
 /** User-facing name of the first Socks construction. */
 export const BASIC_SOCK_PATTERN_NAME = "Basic Socks";
 
@@ -48,6 +52,12 @@ export type SockDraft = {
    * Empty string when never entered.
    */
   availableNeedles: string;
+  /**
+   * Saved/custom pattern name + notes — same `patternProject` shape as sweater
+   * and Hat saved projects (`project.name` / `pattern.patternProject.title`).
+   * New drafts stamp the family default ("Socks") so a name is always present.
+   */
+  patternProject?: SleevelessPatternProjectMeta;
   updatedAt: string;
 };
 
@@ -58,7 +68,31 @@ export function emptySockGaugeSlots(): SockDraft["gaugeSlots"] {
   };
 }
 
+function normalizeSockPatternProject(raw: unknown): SleevelessPatternProjectMeta | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const o = raw as Record<string, unknown>;
+  const title = typeof o.title === "string" ? o.title : "";
+  const notes = typeof o.notes === "string" ? o.notes : "";
+  const titleCustomized = o.titleCustomized === true;
+  if (!title && !notes && !titleCustomized) return undefined;
+  return { title, notes, ...(titleCustomized ? { titleCustomized: true } : {}) };
+}
+
+function withDefaultSockPatternName(
+  meta: SleevelessPatternProjectMeta | undefined,
+): SleevelessPatternProjectMeta {
+  const title = meta?.title?.trim() ?? "";
+  return {
+    title: title || SOCK_PATTERN_FAMILY_NAME,
+    notes: meta?.notes ?? "",
+    ...(meta?.titleCustomized ? { titleCustomized: true } : {}),
+  };
+}
+
 export function createEmptySockDraft(partial?: Partial<SockDraft>): SockDraft {
+  const patternProject = withDefaultSockPatternName(
+    normalizeSockPatternProject(partial?.patternProject),
+  );
   return {
     version: SOCK_DRAFT_VERSION,
     patternType: "socks",
@@ -74,6 +108,7 @@ export function createEmptySockDraft(partial?: Partial<SockDraft>): SockDraft {
     availableNeedles: "",
     updatedAt: new Date().toISOString(),
     ...partial,
+    patternProject,
   };
 }
 
@@ -123,6 +158,8 @@ export function coerceSockDraft(raw: unknown): SockDraft | null {
   if (o.patternType != null && o.patternType !== "socks" && o.patternType !== "sock") return null;
   if (o.patternSystem != null && o.patternSystem !== "socks") return null;
 
+  const patternProject = normalizeSockPatternProject(o.patternProject);
+
   return createEmptySockDraft({
     unit: normalizeUnit(o.unit),
     sizeSel: normalizeString(o.sizeSel),
@@ -133,6 +170,7 @@ export function coerceSockDraft(raw: unknown): SockDraft | null {
     legLength: normalizeString(o.legLength),
     gaugeSlots: normalizeGaugeSlots(o.gaugeSlots),
     availableNeedles: normalizeString(o.availableNeedles),
+    ...(patternProject ? { patternProject } : {}),
     updatedAt:
       typeof o.updatedAt === "string" && o.updatedAt
         ? o.updatedAt

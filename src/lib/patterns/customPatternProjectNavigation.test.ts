@@ -8,6 +8,8 @@ import {
   DROP_SHOULDER_OPEN_PATTERN_HREF,
   HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   HAT_OPEN_PATTERN_HREF,
+  SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  SOCK_OPEN_PATTERN_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
   EXPRESS_EDIT_WORKSPACE_HREF,
   getContinueEditingHref,
@@ -125,6 +127,26 @@ describe("customPatternProjectNavigation", () => {
     expect(getOpenPatternHrefForProject(project)).not.toBe(OPEN_PATTERN_HREF);
   });
 
+  it("opens saved socks projects on the socks pattern and edit routes", () => {
+    const project = {
+      pattern: { patternType: "socks", patternSystem: "socks" },
+      customOverrides: {},
+    };
+    expect(getOpenPatternHrefForProject(project)).toBe(SOCK_OPEN_PATTERN_HREF);
+    expect(getSavedCustomPatternOpenHref("express", project)).toBe(
+      SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+    );
+    expect(getContinueEditingHref("express", project)).toBe(SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF);
+    expect(
+      getSavedCustomPatternOpenHref("express", { ...project, id: "proj-sock-1" }),
+    ).toBe(`${SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF}&project=proj-sock-1`);
+    expect(getContinueEditingHref("express", { ...project, id: "proj-sock-1" })).toBe(
+      `${SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF}&project=proj-sock-1`,
+    );
+    expect(getOpenPatternHrefForProject(project)).not.toBe(OPEN_PATTERN_HREF);
+    expect(getOpenPatternHrefForProject(project)).not.toBe(HAT_OPEN_PATTERN_HREF);
+  });
+
   describe("final Edit Pattern destinations across pattern type and construction", () => {
     const dropShoulderProject = {
       pattern: {
@@ -180,6 +202,12 @@ describe("customPatternProjectNavigation", () => {
           customOverrides: {},
         }),
       ).toBe(HAT_OPEN_PATTERN_HREF);
+      expect(
+        getOpenPatternHrefForProject({
+          pattern: { patternType: "socks", patternSystem: "socks" },
+          customOverrides: {},
+        }),
+      ).toBe(SOCK_OPEN_PATTERN_HREF);
     });
   });
 

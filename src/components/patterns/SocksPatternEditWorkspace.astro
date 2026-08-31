@@ -10,6 +10,7 @@ import { resolve } from "node:path";
 import PatternSummaryEditWorkspace from "./PatternSummaryEditWorkspace.astro";
 import PatternSummaryDiagramStage from "./PatternSummaryDiagramStage.astro";
 import PatternSummaryMeasurementChip from "./PatternSummaryMeasurementChip.astro";
+import PatternProjectDetails from "./PatternProjectDetails.astro";
 import {
   SOCK_SUMMARY_ART_SRC,
   SOCK_SUMMARY_CHIP_TARGET_POINTS,
@@ -67,6 +68,18 @@ const sockSizingRows = listSockSizingOptions(createSockSizingAdapter(sockSizingJ
     actionsAttr="data-socks-edit-actions"
   >
     <Fragment slot="quick">
+      <PatternProjectDetails
+        titleId="socks-edit-title"
+        notesId="socks-edit-notes"
+        notesRegionId="socks-edit-notes-region"
+        titlePlaceholder="Socks"
+        titleFieldAttr="data-socks-edit-title-field"
+        titleInputAttr="data-socks-edit-title"
+        titleTestId="socks-edit-title"
+        notesInputAttr="data-socks-edit-notes"
+        notesTestId="socks-edit-notes"
+      />
+
       <section class="sl-edit-section sl-edit-units-section" aria-labelledby="socks-edit-units-heading">
         <h3 class="sl-edit-section__title" id="socks-edit-units-heading">Units</h3>
         <div

@@ -4,11 +4,8 @@
  */
 
 import { formatSwatchCountForGaugeInput } from "../gaugeDisplayFormat";
-import {
-  BASIC_SOCK_PATTERN_NAME,
-  type SockDraft,
-  type SockDraftUnit,
-} from "./sockDraft";
+import { type SockDraft, type SockDraftUnit } from "./sockDraft";
+import { resolveSockPatternDisplayName } from "./sockSavedProject";
 import { formatSockMeasurementDisplay } from "./sockBuilderUnits";
 import {
   evaluateSockBuilderNeedleCapacity,
@@ -220,7 +217,7 @@ export function buildSockSummaryView(
   const stitchGauge = fields.stitchGauge.trim();
   const rowGauge = fields.rowGauge.trim();
   return {
-    patternName: BASIC_SOCK_PATTERN_NAME,
+    patternName: resolveSockPatternDisplayName(draft),
     sizeLabel: sizeDisplayLabel(draft, adapter),
     constructionLabel: sockConstructionDisplayLabel(draft.constructionDirection),
     unitsLabel: unit === "cm" ? "Centimeters" : "Inches",

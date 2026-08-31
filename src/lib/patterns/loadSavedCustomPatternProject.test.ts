@@ -15,6 +15,8 @@ import {
   EXPRESS_EDIT_WORKSPACE_HREF,
   HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   HAT_OPEN_PATTERN_HREF,
+  SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  SOCK_OPEN_PATTERN_HREF,
   OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
@@ -33,6 +35,17 @@ import {
   readHatActiveProjectLinkedName,
   writeHatActiveProjectId,
 } from "./hat/hatSavedProject";
+import {
+  SOCK_DRAFT_STORAGE_KEY,
+  createEmptySockDraft,
+  readSockDraft,
+  writeSockDraft,
+} from "./sock/sockDraft";
+import {
+  readSockActiveProjectId,
+  readSockActiveProjectLinkedName,
+  writeSockActiveProjectId,
+} from "./sock/sockSavedProject";
 import * as restoreModule from "./restoreSleevelessExpressBuilderFromPattern";
 
 const PROJECT_ID = "proj-aubrie";
@@ -306,6 +319,104 @@ describe("loadSavedCustomPatternProject", () => {
     expect(readHatDraft()?.gaugeSlots.inches).toEqual({ stitch: "5", row: "7" });
     expect(readHatActiveProjectId()).toBe(PROJECT_ID);
     expect(readHatDraft()?.patternProject?.title).not.toBe("Stale Local Hat");
+  });
+
+  it("views a saved socks pattern on the socks pattern page and hydrates kbm_socks_draft with the saved name", async () => {
+    const sockDraft = {
+      version: 1,
+      patternType: "socks" as const,
+      patternSystem: "socks" as const,
+      unit: "inches" as const,
+      sizeSel: "woman_med",
+      constructionDirection: "cuff-to-toe" as const,
+      footCircumference: "8.5",
+      footLength: "9",
+      legCircumference: "8.5",
+      legLength: "4.5",
+      gaugeSlots: { inches: { stitch: "28", row: "40" }, cm: { stitch: "", row: "" } },
+      availableNeedles: "200",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+    };
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Aubrie's Hiking Socks",
+        pattern: sockDraft as unknown as CustomPatternProject["pattern"],
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({
+      ok: true,
+      redirectHref: `${SOCK_OPEN_PATTERN_HREF}?project=${PROJECT_ID}`,
+    });
+    expect(readSockDraft()?.patternProject?.title).toBe("Aubrie's Hiking Socks");
+    expect(readSockActiveProjectId()).toBe(PROJECT_ID);
+    expect(readSockActiveProjectLinkedName()).toBe("Aubrie's Hiking Socks");
+    expect(readActiveCustomPatternProjectLinkedName()).not.toBe("Aubrie's Hiking Socks");
+    expect(localStorage.getItem(SOCK_DRAFT_STORAGE_KEY)).toContain("Aubrie's Hiking Socks");
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY) ?? "").not.toContain("Aubrie's Hiking Socks");
+  });
+
+  it("opens a saved socks pattern on the socks Edit workspace", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Aubrie's Hiking Socks",
+        pattern: {
+          patternType: "socks",
+          patternSystem: "socks",
+        } as unknown as CustomPatternProject["pattern"],
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
+    expect(result).toEqual({
+      ok: true,
+      redirectHref: `${SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF}&project=${PROJECT_ID}`,
+    });
+    if (result.ok) {
+      expect(result.redirectHref).toContain("edit=1");
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
+    }
+  });
+
+  it("opens a saved socks pattern by replacing a leftover local Socks draft with the selected project", async () => {
+    writeSockDraft(
+      createEmptySockDraft({
+        sizeSel: "child",
+        constructionDirection: "toe-up",
+        patternProject: { title: "Stale Local Socks", notes: "", titleCustomized: true },
+      }),
+    );
+    writeSockActiveProjectId("proj-stale", "Stale Local Socks");
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Camp Socks",
+        pattern: {
+          patternType: "socks",
+          patternSystem: "socks",
+          unit: "inches",
+          sizeSel: "woman_med",
+          constructionDirection: "cuff-to-toe",
+          gaugeSlots: { inches: { stitch: "28", row: "40" }, cm: { stitch: "", row: "" } },
+          patternProject: { title: "Camp Socks", notes: "", titleCustomized: true },
+        } as unknown as CustomPatternProject["pattern"],
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
+    }
+    expect(readSockDraft()?.patternProject?.title).toBe("Camp Socks");
+    expect(readSockDraft()?.sizeSel).toBe("woman_med");
+    expect(readSockActiveProjectId()).toBe(PROJECT_ID);
+    expect(readSockDraft()?.patternProject?.title).not.toBe("Stale Local Socks");
   });
 
   it("views a saved pattern by routing to the read-only pattern page, never the edit workspace", async () => {

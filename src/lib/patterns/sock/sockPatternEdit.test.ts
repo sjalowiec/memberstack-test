@@ -170,6 +170,12 @@ describe("Edit measurements are chips only", () => {
     expect(editPage).toContain('data-testid="socks-edit-stitch-gauge"');
     expect(editPage).toContain('data-testid="socks-edit-row-gauge"');
     expect(editPage).toContain('data-testid="socks-edit-available-needles"');
+    expect(editPage).toContain("PatternProjectDetails");
+    expect(editPage).toContain("data-socks-edit-title");
+    expect(editPage).toContain('titleTestId="socks-edit-title"');
+    expect(editPage).toContain("pattern-editable-pencil.css");
+    expect(editScript).toContain("bindPatternProjectNotesField");
+    expect(editScript).toContain("ensureUrlRequestedSavedPatternHydrated");
   });
 
   it("keeps all four shared measurement chips on the approved static image", () => {
@@ -261,8 +267,11 @@ describe("Update Pattern persists and returns to Pattern", () => {
     expect(editPage).toContain("SOCK_PATTERN_HREF");
     expect(editPage).toContain('data-testid="button-edit-cancel"');
     expect(SOCK_EDIT_CANCEL_LABEL).toBe("Cancel");
-    expect(editScript).toContain("writeSockDraft(check.draft)");
-    expect(editScript).toContain("window.location.assign(SOCK_PATTERN_HREF)");
+    expect(editScript).toContain("writeSockDraft(next)");
+    expect(editScript).toContain("persistSockPatternProject");
+    expect(editScript).toContain("applySockPatternProjectDetailsToDraft");
+    expect(editScript).toContain("SOCK_PATTERN_HREF");
+    expect(editScript).toContain("withSavedPatternProjectId");
     expect(editScript).not.toContain("clearSockDraftStorage");
   });
 });
@@ -386,5 +395,18 @@ describe("validation still blocks impossible updates", () => {
     expect(editScript).toContain("writeChipMeasures(defaults)");
     expect(editScript).toContain("measurementsFromSockSize");
     expect(editScript).toContain("applySizeChartDefaults");
+  });
+
+  it("keeps the saved pattern name when applying edit form values", () => {
+    const draft = completeDraft({
+      patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+    });
+    const next = applySockEditFormToDraft(draft, {
+      ...sockDraftToEditFormValues(draft),
+      constructionDirection: "toe-up",
+    });
+    expect(next.patternProject?.title).toBe("Aubrie's Hiking Socks");
+    expect(next.patternProject?.titleCustomized).toBe(true);
+    expect(next.constructionDirection).toBe("toe-up");
   });
 });

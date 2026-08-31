@@ -299,6 +299,15 @@ describe("patternWorkspaceLibraryDrawer display helpers", () => {
         patternSystem: "hat",
       }),
     ).not.toBe("Sleeveless");
+    expect(
+      formatCustomPatternProjectType({
+        id: "p-sock",
+        name: "Camp Socks",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "socks",
+      }),
+    ).toBe("Socks");
     expect(formatCustomPatternProjectUpdatedAt("2026-01-15T12:00:00.000Z")).toMatch(/2026/);
   });
 

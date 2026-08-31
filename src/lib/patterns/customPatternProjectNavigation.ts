@@ -1,7 +1,7 @@
 import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
-import { isHatCustomPatternProject } from "./patternSystemId";
+import { isHatCustomPatternProject, isSockCustomPatternProject } from "./patternSystemId";
 import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
 import { withSavedPatternProjectId } from "./savedPatternViewUrl";
 
@@ -17,6 +17,8 @@ export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 export const DROP_SHOULDER_OPEN_PATTERN_HREF = "/patterns/drop-shoulder/pattern/";
 export const HAT_OPEN_PATTERN_HREF = "/patterns/hat/pattern/";
 export const HAT_SUMMARY_EDIT_HREF = "/patterns/hat/summary/";
+export const SOCK_OPEN_PATTERN_HREF = "/patterns/socks/pattern/";
+export const SOCK_SUMMARY_EDIT_HREF = "/patterns/socks/edit/";
 
 /**
  * Query flag appended to {@link OPEN_PATTERN_HREF} when the knitter chose Edit (not View).
@@ -35,6 +37,10 @@ export const DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
 /** Saved hat Summary/Edit workspace (hat uses a dedicated summary page, not an overlay drawer). */
 export const HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${HAT_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
+/** Saved socks Edit workspace (socks uses a dedicated Summary/Edit page, not an overlay drawer). */
+export const SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
+  `${SOCK_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
 /** Query flag for first arrival on the workspace after builder completion (see handoff module). */
 export const PATTERN_WORKSPACE_GENERATED_QUERY = `${PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY}=1`;
@@ -82,6 +88,15 @@ function hatEditHrefForProject(
     : HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 }
 
+function sockEditHrefForProject(
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
+): string {
+  const id = project.id?.trim() ?? "";
+  return id
+    ? withSavedPatternProjectId(SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
+    : SOCK_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+}
+
 export function getContinueEditingHref(
   source: CustomPatternProjectSource,
   project?: Pick<CustomPatternProject, "pattern" | "customOverrides"> & { id?: string },
@@ -91,6 +106,9 @@ export function getContinueEditingHref(
   // route, regardless of the stored source.
   if (project && isHatCustomPatternProject(project)) {
     return hatEditHrefForProject(project);
+  }
+  if (project && isSockCustomPatternProject(project)) {
+    return sockEditHrefForProject(project);
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_CONTINUE_EDITING_HREF;
@@ -113,6 +131,7 @@ export function getOpenPatternHrefForProject(
   project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
 ): string {
   if (isHatCustomPatternProject(project)) return HAT_OPEN_PATTERN_HREF;
+  if (isSockCustomPatternProject(project)) return SOCK_OPEN_PATTERN_HREF;
   return isDropShoulderCustomPatternProject(project)
     ? DROP_SHOULDER_OPEN_PATTERN_HREF
     : OPEN_PATTERN_HREF;
@@ -141,6 +160,9 @@ export function getSavedCustomPatternOpenHref(
   // route, regardless of the stored source.
   if (project && isHatCustomPatternProject(project)) {
     return hatEditHrefForProject(project);
+  }
+  if (project && isSockCustomPatternProject(project)) {
+    return sockEditHrefForProject(project);
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
