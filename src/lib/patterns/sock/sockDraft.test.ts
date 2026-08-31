@@ -7,6 +7,7 @@ import {
   readSockDraft,
   SOCK_DRAFT_STORAGE_KEY,
   SOCK_DRAFT_VERSION,
+  SOCK_PATTERN_FAMILY_NAME,
   SOCK_PATTERN_SYSTEM_DISPLAY_NAME,
   syncSockDraft,
   writeSockDraft,
@@ -34,6 +35,7 @@ describe("sockDraft contract", () => {
     expect(draft.patternSystem).toBe("socks");
     expect(SOCK_PATTERN_SYSTEM_DISPLAY_NAME).toBe("Socks");
     expect(BASIC_SOCK_PATTERN_NAME).toBe("Basic Socks");
+    expect(draft.patternProject?.title).toBe("Socks");
     expect(draft.unit).toBe("inches");
     expect(draft.sizeSel).toBe("");
     expect(draft.constructionDirection).toBe("");
@@ -110,6 +112,7 @@ describe("sockDraft contract", () => {
     expect(read?.constructionDirection).toBe("toe-up");
     expect(read?.gaugeSlots.inches).toEqual({ stitch: "28", row: "40" });
     expect(read?.availableNeedles).toBe("150");
+    expect(read?.patternProject?.title).toBe(SOCK_PATTERN_FAMILY_NAME);
 
     clearSockDraftStorage(storage);
     expect(readSockDraft(storage)).toBeNull();
@@ -129,5 +132,24 @@ describe("sockDraft contract", () => {
     expect(parsed.patternSystem).toBe("socks");
     expect(parsed.version).toBe(1);
     expect(parsed.availableNeedles).toBe("");
+    expect(parsed.patternProject?.title).toBe("Socks");
+  });
+
+  it("round-trips a customized pattern name through kbm_socks_draft", () => {
+    const storage = memoryStorage();
+    writeSockDraft(
+      createEmptySockDraft({
+        sizeSel: "woman_med",
+        constructionDirection: "cuff-to-toe",
+        patternProject: { title: "Aubrie's Hiking Socks", notes: "Merino", titleCustomized: true },
+      }),
+      storage,
+    );
+    const read = readSockDraft(storage);
+    expect(read?.patternProject).toEqual({
+      title: "Aubrie's Hiking Socks",
+      notes: "Merino",
+      titleCustomized: true,
+    });
   });
 });

@@ -34,7 +34,17 @@ import {
 } from "../lib/patterns/sock/sockPatternEdit";
 import { SOCK_PATTERN_MISSING_DRAFT_MESSAGE } from "../lib/patterns/sock/sockPatternFromDraft";
 import { SOCK_PATTERN_HREF } from "../lib/patterns/sock/sockPatternNavigation";
+import { persistSockPatternProject } from "../lib/patterns/sock/sockPatternProjectSave";
+import {
+  applySockPatternProjectDetailsToDraft,
+  buildDefaultSockPatternTitle,
+  resolveSockPatternDisplayName,
+  resolveSockPatternProjectNotes,
+} from "../lib/patterns/sock/sockSavedProject";
+import { bindPatternProjectNotesField } from "../lib/patterns/patternProjectNotesField";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
+import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { withSavedPatternProjectId } from "../lib/patterns/savedPatternViewUrl";
 import { PATTERN_SUMMARY_MEASURE_CHIP_INVALID_CLASS } from "../lib/patterns/patternSummaryMeasurementField";
 import {
   bindPatternSummaryOverlayPositioning,
@@ -83,6 +93,7 @@ async function initSocksEditPage(): Promise<void> {
   root.dataset.socksEditBound = "true";
 
   await reconcilePatternDraftOwner();
+  await ensureUrlRequestedSavedPatternHydrated();
 
   const adapter = loadSizingAdapterFromPage();
   const stored = readSockDraft();
@@ -119,6 +130,8 @@ async function initSocksEditPage(): Promise<void> {
     workspace.querySelectorAll<HTMLElement>("[data-socks-edit-unit-suffix]"),
   );
   const gaugeHelp = workspace.querySelector<HTMLElement>("[data-socks-edit-gauge-help]");
+  const titleInput = workspace.querySelector<HTMLInputElement>("[data-socks-edit-title]");
+  const notesFieldApi = bindPatternProjectNotesField(workspace);
 
   let activeUnit: SockDraftUnit = stored.unit === "cm" ? "cm" : "inches";
   let lastDraft: SockDraft = stored;
@@ -269,6 +282,10 @@ async function initSocksEditPage(): Promise<void> {
   }
 
   function updatePattern(): void {
+    void persistAndNavigate();
+  }
+
+  async function persistAndNavigate(): Promise<void> {
     clearFieldErrors();
     const form = readForm();
     const check = validateSockEditForm(lastDraft, form, adapter);
@@ -276,11 +293,37 @@ async function initSocksEditPage(): Promise<void> {
       showFieldErrors(check.errors);
       return;
     }
-    writeSockDraft(check.draft);
-    window.location.assign(SOCK_PATTERN_HREF);
+    const requestedName =
+      titleInput?.value?.trim() ||
+      resolveSockPatternDisplayName(check.draft) ||
+      buildDefaultSockPatternTitle();
+    const next = applySockPatternProjectDetailsToDraft(check.draft, {
+      title: requestedName,
+      notes: notesFieldApi.getNotes(),
+    });
+    writeSockDraft(next);
+    lastDraft = next;
+    if (updateBtn) updateBtn.disabled = true;
+    try {
+      const persistRes = await persistSockPatternProject({
+        draft: next,
+        name: requestedName,
+      });
+      if (!persistRes.ok) {
+        showFieldErrors({ form: persistRes.error });
+        return;
+      }
+      window.location.assign(withSavedPatternProjectId(SOCK_PATTERN_HREF, persistRes.project.id));
+    } finally {
+      if (updateBtn) updateBtn.disabled = false;
+    }
   }
 
   writeForm(sockDraftToEditFormValues(stored));
+  if (titleInput) {
+    titleInput.value = resolveSockPatternDisplayName(stored) || buildDefaultSockPatternTitle();
+  }
+  notesFieldApi.setNotes(resolveSockPatternProjectNotes(stored));
   showWorkspace();
   rebindMeasurementOverlay();
   const art = diagramHost?.querySelector("img[data-socks-edit-art]");

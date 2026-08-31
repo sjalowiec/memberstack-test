@@ -91,7 +91,7 @@ describe("Summary Update Pattern → Pattern route", () => {
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");
     expect(patternPage).toContain("data-sock-diagram-tabs-mount");
     expect(patternPage).toContain("pattern-diagram-tabs.css");
-    expect(patternScript).toContain("reconcilePatternDraftOwner");
+    expect(patternScript).toContain("ensureUrlRequestedSavedPatternHydrated");
     expect(patternScript).toContain("SOCK_EDIT_HREF");
     expect(patternScript).not.toContain("SOCK_PATTERN_BUILDER_HREF");
   });
@@ -100,7 +100,7 @@ describe("Summary Update Pattern → Pattern route", () => {
 describe("valid and incomplete drafts", () => {
   it("builds a Pattern document from a valid draft", () => {
     const result = mustPattern(completeDraft());
-    expect(result.view.patternName).toBe("Basic Socks");
+    expect(result.view.patternName).toBe("Socks");
     expect(result.view.constructionLabel).toBe("Cuff to Toe");
     expect(result.sock1.sock).toBe(1);
     expect(result.sock2.sock).toBe(2);
@@ -252,7 +252,7 @@ describe("short-row rendering and header measurements", () => {
   it("lists finished measurements and gauge without derived ankle/heel depth", () => {
     const result = mustPattern(completeDraft());
     const dl = buildSockPatternSummaryDlHtml(result.view, { inline: true });
-    expect(dl).toContain("Basic Socks");
+    expect(dl).toContain("Socks");
     expect(dl).toContain("Foot Circumference");
     expect(dl).toContain("Foot Length");
     expect(dl).toContain("Leg Circumference");

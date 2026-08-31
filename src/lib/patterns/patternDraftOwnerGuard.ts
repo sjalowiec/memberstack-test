@@ -15,6 +15,7 @@ import { clearHatDraftStorage } from "./hat/hatDraft";
 import { clearHatSavedProjectIdentity } from "./hat/hatSavedProject";
 import { clearSleevelessExpressSession } from "./patternStorage";
 import { clearSockDraftStorage } from "./sock/sockDraft";
+import { clearSockSavedProjectIdentity } from "./sock/sockSavedProject";
 import {
   getCachedSleevelessUserAccess,
   resolveSleevelessUserAccess,
@@ -80,6 +81,7 @@ export function enforcePatternDraftOwner(
   clearHatDraftStorage();
   clearHatSavedProjectIdentity();
   clearSockDraftStorage();
+  clearSockSavedProjectIdentity();
   writePatternDraftOwnerId(current);
   return "cleared";
 }

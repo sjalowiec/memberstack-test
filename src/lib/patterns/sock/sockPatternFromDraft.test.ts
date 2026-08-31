@@ -97,7 +97,10 @@ describe("Socks Builder Review → Summary navigation", () => {
     expect(summaryPage).toContain("SleevelessPatternMemberGate");
     expect(summaryScript).toContain("validateSockEditForm");
     expect(summaryScript).toContain("reconcilePatternDraftOwner");
-    expect(summaryScript).toContain("window.location.assign(SOCK_PATTERN_HREF)");
+    expect(summaryScript).toContain("persistSockPatternProject");
+    expect(summaryScript).toContain("applySockPatternProjectDetailsToDraft");
+    expect(summaryScript).toContain("SOCK_PATTERN_HREF");
+    expect(summaryScript).toContain("withSavedPatternProjectId");
     expect(SOCK_PATTERN_HREF).toBe("/patterns/socks/pattern/");
     expect(buildSockPatternHref()).toBe("/patterns/socks/pattern/");
     expect(SOCK_EDIT_PRIMARY_LABEL).toBe("Update Pattern");
@@ -123,8 +126,18 @@ describe("draft → Summary calculations", () => {
     expect(direct.ok).toBe(true);
     if (!direct.ok) return;
     expect(result.calc).toEqual(direct.calc);
-    expect(result.view.patternName).toBe("Basic Socks");
+    expect(result.view.patternName).toBe("Socks");
     expect(result.calc.legShapingSchedule.direction).toBe("none");
+  });
+
+  it("uses the saved patternProject title instead of the construction name", () => {
+    const result = buildSockSummaryFromDraft(
+      completeDraft({
+        patternProject: { title: "Aubrie's Hiking Socks", notes: "", titleCustomized: true },
+      }),
+      adapter,
+    );
+    expect(result.ok && result.view.patternName).toBe("Aubrie's Hiking Socks");
   });
 });
 
@@ -330,7 +343,7 @@ describe("leg shaping status", () => {
     expect(summaryPage).not.toContain("Leg shaping instructions are not generated yet.");
     expect(summaryScript).toContain("validateSockEditForm");
     expect(summaryScript).toContain("applySockEditFormToDraft");
-    expect(summaryScript).toContain("writeSockDraft(check.draft)");
+    expect(summaryScript).toContain("writeSockDraft(next)");
   });
 });
 

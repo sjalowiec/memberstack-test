@@ -3,6 +3,7 @@
  * Call after loading a project from Blob storage so stale Express keys cannot overwrite another pattern.
  */
 import { hydrateHatSavedProject, isHatCustomPatternProject } from "./hat/hatSavedProject";
+import { hydrateSockSavedProject, isSockCustomPatternProject } from "./sock/sockSavedProject";
 import {
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "./availableNeedlesMirrors";
@@ -116,6 +117,10 @@ export function hydrateSavedCustomPatternProjectSession(
 ): void {
   if (isHatCustomPatternProject(project)) {
     hydrateHatSavedProject(project);
+    return;
+  }
+  if (isSockCustomPatternProject(project)) {
+    hydrateSockSavedProject(project);
     return;
   }
   loadProjectIntoWorkingDraft(project);

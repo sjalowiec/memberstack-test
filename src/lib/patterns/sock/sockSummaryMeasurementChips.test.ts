@@ -187,7 +187,7 @@ describe("Socks Summary/Edit measurement chips", () => {
     if (!baseline.ok) return;
     expect(preview.calc.straightFootRows).toBeGreaterThan(baseline.calc.straightFootRows);
     expect(summaryScript).toContain("applySockEditFormToDraft(lastDraft, readForm())");
-    expect(summaryScript).toContain("writeSockDraft(check.draft)");
+    expect(summaryScript).toContain("writeSockDraft(next)");
     expect(summaryScript).toContain('addEventListener("input"');
     expect(summaryScript).toContain("PATTERN_SUMMARY_MEASURE_CHIP_INVALID_CLASS");
     expect(summaryScript).toContain("validateSockEditForm(lastDraft, form, adapter)");

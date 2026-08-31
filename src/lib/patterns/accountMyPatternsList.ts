@@ -43,7 +43,7 @@ const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
   "Pattern editing is included with membership. You can still view, print, and knit from this pattern.";
 export { DELETE_SAVED_PATTERN_CONFIRM_MESSAGE };
-/** Prompt shown by the My Patterns Rename action (hats; same helper as sweater rename). */
+/** Prompt shown by the My Patterns Rename action (hats and socks; same helper as sweater rename). */
 export const RENAME_SAVED_PATTERN_PROMPT_MESSAGE = "Rename this saved pattern:";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
@@ -259,9 +259,9 @@ function syncMyPatternsCopyAccess(root: HTMLElement): void {
   });
 }
 
-/** Hats expose the shared Rename action; sweater rows stay without a Rename button. */
+/** Hats and Socks expose the shared Rename action; sweater rows stay without a Rename button. */
 export function shouldOfferSavedPatternRename(patternSystem: PatternSystemId): boolean {
-  return patternSystem === "hat";
+  return patternSystem === "hat" || patternSystem === "socks";
 }
 
 function syncMyPatternsRenameAccess(root: HTMLElement): void {
