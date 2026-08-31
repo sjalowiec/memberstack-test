@@ -155,6 +155,120 @@ import Layout from "../../layouts/Layout.astro";
       parent.appendChild(wrap);
     }
 
+    function helpinfoFmtBtn(cmd, label, title) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ga-helpfmt-btn";
+      btn.dataset.cmd = cmd;
+      btn.title = title;
+      btn.textContent = label;
+      return btn;
+    }
+
+    /** Toolbar + hint above the Helpinfo textarea. Buttons insert/wrap HTML; the field stays raw HTML. */
+    function insertHelpinfoToolbar(textarea) {
+      const field = textarea.closest(".ga-field");
+      if (!field || textarea.parentNode !== field) return;
+
+      const bar = el("div", "ga-helpfmt");
+      bar.setAttribute("role", "toolbar");
+      bar.setAttribute("aria-label", "Helpinfo HTML formatting");
+      bar.appendChild(helpinfoFmtBtn("bold", "Bold", "Wrap selection in <strong>"));
+      bar.appendChild(helpinfoFmtBtn("italic", "Italic", "Wrap selection in <em>"));
+      bar.appendChild(helpinfoFmtBtn("underline", "Underline", "Wrap selection in <u>"));
+      bar.appendChild(helpinfoFmtBtn("ul", "Bulleted list", "Turn selected lines into a bulleted list"));
+      bar.appendChild(helpinfoFmtBtn("ol", "Numbered list", "Turn selected lines into a numbered list"));
+      bar.appendChild(helpinfoFmtBtn("br", "Line break", "Insert a paragraph break (<br><br>)"));
+      bar.appendChild(helpinfoFmtBtn("link", "Link", "Wrap selection in a link"));
+
+      const hint = el("p", "ga-helpfmt-hint", "Formatting is saved as HTML.");
+
+      field.insertBefore(bar, textarea);
+      field.insertBefore(hint, textarea);
+    }
+
+    /**
+     * @param {HTMLTextAreaElement} ta
+     * @param {string} inserted
+     * @param {number} caretStart relative to inserted text
+     * @param {number} caretEnd relative to inserted text
+     */
+    function replaceHelpinfoRange(ta, inserted, caretStart, caretEnd) {
+      const start = ta.selectionStart ?? 0;
+      const end = ta.selectionEnd ?? start;
+      ta.value = ta.value.slice(0, start) + inserted + ta.value.slice(end);
+      ta.focus();
+      ta.setSelectionRange(start + caretStart, start + caretEnd);
+      ta.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    /** @param {HTMLTextAreaElement} ta @param {string} open @param {string} close */
+    function wrapHelpinfoSelection(ta, open, close) {
+      const sel = ta.value.slice(ta.selectionStart ?? 0, ta.selectionEnd ?? 0);
+      const text = open + sel + close;
+      if (sel) replaceHelpinfoRange(ta, text, open.length, open.length + sel.length);
+      else replaceHelpinfoRange(ta, text, open.length, open.length);
+    }
+
+    /** @param {HTMLTextAreaElement} ta @param {"ul" | "ol"} tag */
+    function wrapHelpinfoLinesAsList(ta, tag) {
+      const sel = ta.value.slice(ta.selectionStart ?? 0, ta.selectionEnd ?? 0);
+      const lines = sel.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.length > 0);
+      const inner = lines.length ? lines.join("</li>\n  <li>") : "";
+      const lead = `<${tag}>\n  <li>`;
+      const text = `${lead}${inner}</li>\n</${tag}>`;
+      const caret = lead.length + inner.length;
+      replaceHelpinfoRange(ta, text, caret, caret);
+    }
+
+    /** @param {HTMLTextAreaElement} ta @param {string} cmd */
+    function applyHelpinfoFormat(ta, cmd) {
+      if (cmd === "bold") {
+        wrapHelpinfoSelection(ta, "<strong>", "</strong>");
+        return;
+      }
+      if (cmd === "italic") {
+        wrapHelpinfoSelection(ta, "<em>", "</em>");
+        return;
+      }
+      if (cmd === "underline") {
+        wrapHelpinfoSelection(ta, "<u>", "</u>");
+        return;
+      }
+      if (cmd === "ul" || cmd === "ol") {
+        wrapHelpinfoLinesAsList(ta, cmd);
+        return;
+      }
+      if (cmd === "br") {
+        const text = "<br><br>";
+        replaceHelpinfoRange(ta, text, text.length, text.length);
+        return;
+      }
+      if (cmd === "link") {
+        const start = ta.selectionStart ?? 0;
+        const end = ta.selectionEnd ?? start;
+        const sel = ta.value.slice(start, end);
+        const raw = window.prompt("Link URL", "https://");
+        if (raw == null) {
+          ta.focus();
+          ta.setSelectionRange(start, end);
+          return;
+        }
+        const href = raw.trim().replace(/"/g, "&quot;");
+        if (!href) {
+          ta.focus();
+          ta.setSelectionRange(start, end);
+          return;
+        }
+        const open = `<a href="${href}">`;
+        const text = `${open}${sel}</a>`;
+        ta.focus();
+        ta.setSelectionRange(start, end);
+        if (sel) replaceHelpinfoRange(ta, text, open.length, open.length + sel.length);
+        else replaceHelpinfoRange(ta, text, open.length, open.length);
+      }
+    }
+
     function scrollToCardByGlossaryId(/** @type {string} */ glossaryIdStr) {
       if (!entriesEl || !glossaryIdStr) return;
       const safeId =
@@ -230,6 +344,7 @@ import Layout from "../../layouts/Layout.astro";
       helpTa.rows = 10;
       helpTa.value = String(entry.helpinfo ?? "");
       appendBoundField(mainFields, index, "helpinfo", "Helpinfo", helpTa, { bindType: "string" });
+      insertHelpinfoToolbar(helpTa);
 
       const actCb = document.createElement("input");
       actCb.type = "checkbox";
@@ -353,9 +468,24 @@ import Layout from "../../layouts/Layout.astro";
     entriesEl?.addEventListener("input", onDelegatedInput);
     entriesEl?.addEventListener("change", onDelegatedInput);
 
+    entriesEl?.addEventListener("mousedown", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      if (t.closest(".ga-helpfmt-btn")) e.preventDefault();
+    });
+
     entriesEl?.addEventListener("click", (e) => {
       const t = e.target;
       if (!(t instanceof HTMLElement)) return;
+      const fmtBtn = t.closest(".ga-helpfmt-btn");
+      if (fmtBtn instanceof HTMLElement) {
+        e.preventDefault();
+        const cmd = fmtBtn.getAttribute("data-cmd") || "";
+        const field = fmtBtn.closest(".ga-field");
+        const ta = field?.querySelector("textarea.ga-textarea--helpinfo");
+        if (ta instanceof HTMLTextAreaElement && cmd) applyHelpinfoFormat(ta, cmd);
+        return;
+      }
       const copyBtn = t.closest(".ga-btn--copy");
       if (!copyBtn) return;
       const row = copyBtn.closest(".ga-public-link");
@@ -733,6 +863,43 @@ import Layout from "../../layouts/Layout.astro";
       min-height: 110px;
       padding: 12px 14px;
       line-height: 1.5;
+    }
+
+    .ga-helpfmt {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 6px;
+    }
+
+    .ga-helpfmt-btn {
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1.3;
+      padding: 4px 9px;
+      border-radius: 6px;
+      border: 1px solid #d6d3d1;
+      background: #fff;
+      color: #44403c;
+      cursor: pointer;
+    }
+
+    .ga-helpfmt-btn:hover {
+      background: #f5f5f4;
+      border-color: #a8a29e;
+    }
+
+    .ga-helpfmt-btn:focus-visible {
+      outline: 2px solid #365314;
+      outline-offset: 1px;
+    }
+
+    .ga-helpfmt-hint {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      color: #78716c;
+      line-height: 1.35;
     }
 
     .ga-textarea--helpinfo {
