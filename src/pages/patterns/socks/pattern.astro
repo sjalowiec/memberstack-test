@@ -3,7 +3,6 @@
  * Finished Basic Socks Pattern page (membership-gated).
  * Reads kbm_socks_draft → approved Socks calc → approved instruction generator → renderer.
  * Edit Pattern opens the dedicated Socks Edit workspace without clearing the draft.
- * Videos, dedicated print/PDF, and catalog wiring are not part of this pass.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -22,6 +21,7 @@ import "../../../styles/wizard.css";
 import "../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../styles/patterns/pattern-app-shell.css";
 import "../../../styles/patterns/pattern-diagram-tabs.css";
+import "../../../styles/glossary-tooltip.css";
 
 const sockSizingJson = JSON.parse(
   readFileSync(resolve("public/data/sizing_socks.json"), "utf8"),
@@ -366,10 +366,23 @@ const sockSizingJson = JSON.parse(
     background: rgba(82, 104, 45, 0.07);
   }
 
+  :global(#pattern-content .sock-pattern-section__heading) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   :global(#pattern-content .sock-pattern-section__heading h4) {
     margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
+  }
+
+  :global(#pattern-content .sock-pattern-section__video) {
+    flex: 0 0 auto;
+    margin-left: auto;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--kbm-green, #52682d);
   }
 
   :global(#pattern-content .sock-pattern-section__content) {
@@ -394,6 +407,10 @@ const sockSizingJson = JSON.parse(
   @media print {
     :global(#pattern-content .sock-pattern-section) {
       break-inside: avoid;
+    }
+
+    :global(#pattern-content .sock-pattern-section__video) {
+      display: none !important;
     }
 
     :global(.socks-pair-tabs__list),

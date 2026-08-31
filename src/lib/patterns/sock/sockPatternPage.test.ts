@@ -17,6 +17,8 @@ import {
 import {
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
+  SOCK_ANKLE_VIDEO_VIMEO_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
   SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
 } from "./sockInstructions";
@@ -140,6 +142,12 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain("contrasting waste yarn");
     expect(html).toContain("top of the toes");
     expect(html).not.toContain("Kitchener");
+    expect(html).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
+    expect(html).toContain(`data-term="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
+    expect(html).toContain(`data-vimeo-id="${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}"`);
+    expect(html).toContain(`data-vimeo-id="${SOCK_ANKLE_VIDEO_VIMEO_ID}"`);
+    expect(html).not.toContain("(top of leg)");
+    expect(html).not.toContain("Use the cast-on method of your choice.");
     expect(html.match(/data-section-id="ankle"/g)?.length).toBe(2);
     expect(html.match(/data-section-id="foot"/g)?.length).toBe(2);
     expect(result.sock1.sections.filter((s) => s.id === "ankle")).toHaveLength(1);
@@ -162,6 +170,8 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain('data-term="Scrap on"');
     expect(html).not.toContain("(full foot / tube)");
     expect(html).not.toContain("Use the cast-on method of your choice.");
+    expect(html).not.toContain(`data-vimeo-id="${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}"`);
+    expect(html).toContain(`data-vimeo-id="${SOCK_ANKLE_VIDEO_VIMEO_ID}"`);
     expect(result.sock1.sections.map((s) => s.id)).toEqual([
       "cast-on",
       "toe",

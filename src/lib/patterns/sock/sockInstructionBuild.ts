@@ -61,7 +61,10 @@ function buildLegSection(
   if (part.rows < 1) return null;
   const knit = calc.legShapingSchedule.knitOrder;
   const shaped = part.kind === "leg-shaping" && knit.direction !== "none";
-  const steps: SockInstructionStep[] = [{ type: "reset-rc" }];
+  const steps: SockInstructionStep[] = [];
+  if (calc.constructionDirection !== "cuff-to-toe") {
+    steps.push({ type: "reset-rc" });
+  }
   if (shaped && knit.direction !== "none") {
     steps.push({
       type: "magic-formula",
