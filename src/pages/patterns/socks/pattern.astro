@@ -1,6 +1,6 @@
 ---
 /**
- * Finished Basic Socks Pattern page (free / ungated).
+ * Finished Basic Socks Pattern page (membership-gated).
  * Reads kbm_socks_draft → approved Socks calc → approved instruction generator → renderer.
  * Edit Pattern opens the dedicated Socks Edit workspace without clearing the draft.
  * Videos, dedicated print/PDF, and catalog wiring are not part of this pass.
@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import {
   SOCK_EDIT_HREF,
@@ -34,6 +35,7 @@ const sockSizingJson = JSON.parse(
   patternWorkspace={true}
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/socks" />
+  <SleevelessPatternMemberGate>
   <main
     class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell socks-pattern-page"
     data-pattern-print-skip-modal
@@ -78,6 +80,27 @@ const sockSizingJson = JSON.parse(
 
         <div id="sg-socks-results" class="sg-sleeveless-results" data-socks-pattern-results>
           <section class="sleeveless-pattern-intro">
+            <div class="sleeveless-pattern-intro__image">
+              <div class="beta-pattern-video">
+                <div class="beta-pattern-video__wrap">
+                  <img
+                    src="/images/patterns/socks-pattern-catalog.webp"
+                    alt="Socks pattern preview"
+                    width="360"
+                    height="360"
+                    loading="lazy"
+                    decoding="async"
+                    class="sg-pattern-hero-image"
+                  />
+                </div>
+              </div>
+              <div class="pattern-print-origin" aria-hidden="true">
+                <div class="pattern-print-origin__label">
+                  Created with the Knit It Now Socks Pattern Builder
+                </div>
+                <div class="pattern-print-origin__url">KnitItNow.com/patterns/socks</div>
+              </div>
+            </div>
             <div class="sleeveless-pattern-intro__content">
               <div class="sleeveless-pattern-online-project-header no-print">
                 <div class="sleeveless-pattern-online-heading-row">
@@ -143,6 +166,7 @@ const sockSizingJson = JSON.parse(
     id="socks-sizing-chart"
     set:html={JSON.stringify(sockSizingJson)}
   />
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <script>
@@ -206,6 +230,50 @@ const sockSizingJson = JSON.parse(
     color: #374151;
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+
+  .sleeveless-pattern-intro__image {
+    width: 100%;
+    min-width: 280px;
+    justify-self: end;
+  }
+
+  .beta-pattern-video {
+    display: block;
+    width: 360px;
+    max-width: 100%;
+  }
+
+  .beta-pattern-video__wrap {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    border-radius: 8px;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .sg-pattern-hero-image {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 560px) {
+    .sleeveless-pattern-intro__image {
+      min-width: 0;
+      justify-self: stretch;
+    }
+
+    .beta-pattern-video {
+      width: 100%;
+    }
   }
 
   .socks-pattern-reading-layout {

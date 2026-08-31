@@ -1,11 +1,13 @@
 ---
 /**
  * Basic Socks Builder (Hat-style Express shell).
- * Free / ungated. Draft: kbm_socks_draft.
+ * Membership-gated (same SleevelessPatternMemberGate as Sleeveless / Drop Shoulder).
+ * Draft: kbm_socks_draft.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
@@ -36,9 +38,8 @@ const sockSizingBuilderRows = listSockSizingOptions(sockSizingAdapter, "inches")
 
 const expressNavSteps = [
   { step: 1, label: "Size" },
-  { step: 2, label: "Fit" },
-  { step: 3, label: "Knit" },
-  { step: 4, label: "Gauge" },
+  { step: 2, label: "Knit" },
+  { step: 3, label: "Gauge" },
 ] as const;
 ---
 
@@ -47,6 +48,7 @@ const expressNavSteps = [
   description="Create a custom machine-knit Basic Socks pattern with your gauge, size, and finished measurements."
   patternWorkspace={true}
 >
+  <SleevelessPatternMemberGate>
   <main
     class="express-page wizard-page sleeveless-express-page hat-express-builder-page socks-express-builder-page"
     data-express-page="socks-builder"
@@ -123,8 +125,8 @@ const expressNavSteps = [
               <h1 class="pattern-title">{BASIC_SOCK_PATTERN_NAME}</h1>
             </div>
             <p class="pattern-subtext">
-              Choose a size, confirm finished measurements, pick cuff-to-toe or toe-up, then enter
-              your gauge to create {SOCK_PATTERN_SYSTEM_DISPLAY_NAME.toLowerCase()} for your machine.
+              Choose a size, pick cuff-to-toe or toe-up, then enter your gauge to create
+              {SOCK_PATTERN_SYSTEM_DISPLAY_NAME.toLowerCase()} for your machine.
             </p>
           </header>
 
@@ -211,7 +213,7 @@ const expressNavSteps = [
                 <section
                   class="express-acc express-acc--locked"
                   data-express-step="2"
-                  data-express-field="measurements"
+                  data-express-field="construction"
                 >
                   <div
                     class="express-acc__header"
@@ -234,106 +236,6 @@ const expressNavSteps = [
                     <div class="express-acc__header-main">
                       <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
                       <h2 class="express-acc__title" id="express-step-2-title"
-                        >Perfect Fit measurements</h2
-                      >
-                      <span class="express-acc__value" data-express-summary="measurements"></span>
-                    </div>
-                  </div>
-                  <p
-                    class="express-acc__locked-feedback"
-                    data-express-locked-feedback
-                    hidden
-                    role="status"
-                  >
-                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
-                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
-                  </p>
-                  <div
-                    class="express-acc__body"
-                    id="express-acc-panel-2"
-                    role="region"
-                    aria-labelledby="express-step-2-title"
-                    hidden
-                  >
-                    <p class="hat-builder-step-intro">
-                      These are finished measurements. Keep the chart defaults or customize them.
-                      Heel and toe depth are calculated from your gauge — they are not entered here.
-                    </p>
-                    <div class="socks-builder-measure-grid">
-                      <div class="input-group">
-                        <FloatingInput
-                          id="socks-foot-circumference"
-                          type="number"
-                          step={0.25}
-                          label="Foot Circumference (inches)"
-                          placeholder=" "
-                          testId="input-socks-foot-circumference"
-                          autocomplete="off"
-                        />
-                      </div>
-                      <div class="input-group">
-                        <FloatingInput
-                          id="socks-foot-length"
-                          type="number"
-                          step={0.25}
-                          label="Foot Length (inches)"
-                          placeholder=" "
-                          testId="input-socks-foot-length"
-                          autocomplete="off"
-                        />
-                      </div>
-                      <div class="input-group">
-                        <FloatingInput
-                          id="socks-leg-circumference"
-                          type="number"
-                          step={0.25}
-                          label="Leg Circumference (inches)"
-                          placeholder=" "
-                          testId="input-socks-leg-circumference"
-                          autocomplete="off"
-                        />
-                      </div>
-                      <div class="input-group">
-                        <FloatingInput
-                          id="socks-leg-length"
-                          type="number"
-                          step={0.25}
-                          label="Leg Length (inches)"
-                          placeholder=" "
-                          testId="input-socks-leg-length"
-                          autocomplete="off"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section
-                  class="express-acc express-acc--locked"
-                  data-express-step="3"
-                  data-express-field="construction"
-                >
-                  <div
-                    class="express-acc__header"
-                    data-express-header
-                    role="button"
-                    tabindex="-1"
-                    aria-expanded="false"
-                    aria-controls="express-acc-panel-3"
-                    id="express-acc-label-3"
-                  >
-                    <button
-                      type="button"
-                      class="express-acc__chevron"
-                      data-express-chevron
-                      aria-hidden="true"
-                      tabindex="-1"
-                    >
-                      ▾
-                    </button>
-                    <div class="express-acc__header-main">
-                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-3-title"
                         >Construction direction</h2
                       >
                       <span class="express-acc__value" data-express-summary="construction"></span>
@@ -350,9 +252,9 @@ const expressNavSteps = [
                   </p>
                   <div
                     class="express-acc__body"
-                    id="express-acc-panel-3"
+                    id="express-acc-panel-2"
                     role="region"
-                    aria-labelledby="express-step-3-title"
+                    aria-labelledby="express-step-2-title"
                     hidden
                   >
                     <p class="hat-builder-step-intro">
@@ -401,7 +303,7 @@ const expressNavSteps = [
 
                 <section
                   class="express-acc express-acc--locked"
-                  data-express-step="4"
+                  data-express-step="3"
                   data-express-field="gauge"
                 >
                   <div
@@ -410,8 +312,8 @@ const expressNavSteps = [
                     role="button"
                     tabindex="-1"
                     aria-expanded="false"
-                    aria-controls="express-acc-panel-4"
-                    id="express-acc-label-4"
+                    aria-controls="express-acc-panel-3"
+                    id="express-acc-label-3"
                   >
                     <button
                       type="button"
@@ -424,7 +326,7 @@ const expressNavSteps = [
                     </button>
                     <div class="express-acc__header-main">
                       <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-4-title">Enter your gauge</h2>
+                      <h2 class="express-acc__title" id="express-step-3-title">Enter your gauge</h2>
                       <span class="express-acc__value" data-express-summary="gauge"></span>
                     </div>
                   </div>
@@ -439,9 +341,9 @@ const expressNavSteps = [
                   </p>
                   <div
                     class="express-acc__body"
-                    id="express-acc-panel-4"
+                    id="express-acc-panel-3"
                     role="region"
-                    aria-labelledby="express-step-4-title"
+                    aria-labelledby="express-step-3-title"
                     hidden
                   >
                     <p class="express-gauge-intro">
@@ -524,6 +426,7 @@ const expressNavSteps = [
     id="socks-sizing-chart"
     set:html={JSON.stringify(sockSizingJson)}
   />
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <script>
@@ -537,12 +440,6 @@ const expressNavSteps = [
     font-size: 0.95rem;
     line-height: 1.55;
     color: var(--express-muted, #6b7280);
-  }
-
-  .socks-express-builder-page .socks-builder-measure-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem 1rem;
   }
 
   .socks-express-builder-page .socks-construction-picker__grid {
@@ -720,10 +617,6 @@ const expressNavSteps = [
     .socks-express-builder-page .express-acc {
       padding-left: 0.75rem;
       padding-right: 0.75rem;
-    }
-
-    .socks-express-builder-page .socks-builder-measure-grid {
-      grid-template-columns: 1fr;
     }
 
     .socks-express-builder-page .express-needle-block {

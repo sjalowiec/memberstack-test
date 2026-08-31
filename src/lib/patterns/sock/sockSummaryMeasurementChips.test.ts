@@ -39,8 +39,14 @@ function completeDraft(overrides: Partial<SockDraft> = {}): SockDraft {
   });
 }
 
-const summaryPage = readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8");
-const summaryScript = readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8");
+const summaryPage =
+  readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+  "\n" +
+  readFileSync(resolve("src/components/patterns/SocksPatternEditWorkspace.astro"), "utf8");
+const summaryScript =
+  readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8") +
+  "\n" +
+  readFileSync(resolve("src/scripts/socks-edit-page.ts"), "utf8");
 const patternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
 const patternScript = readFileSync(resolve("src/scripts/socks-pattern-page.ts"), "utf8");
 const hatSummaryPage = readFileSync(resolve("src/pages/patterns/hat/summary/index.astro"), "utf8");
@@ -59,8 +65,8 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(existsSync(resolve("public/images/patterns/socks-pattern-summary-transparent.webp"))).toBe(true);
     expect(existsSync(resolve("public/images/patterns/socks-pattern-summary.webp"))).toBe(true);
     expect(summaryPage).toContain("SOCK_SUMMARY_ART_SRC");
-    expect(summaryPage).toContain('data-socks-summary-art');
-    expect(summaryPage).toContain("data-socks-summary-chip-targets");
+    expect(summaryPage).toContain('data-socks-edit-art');
+    expect(summaryPage).toContain("data-socks-edit-chip-targets");
     expect(summaryPage).not.toContain("socks-pattern-catalog.webp");
     expect(summaryScript).not.toContain("buildSockFinishedProfileSvg");
     expect(summaryScript).not.toContain("diagramHost.innerHTML");
@@ -96,8 +102,8 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(SOCK_SUMMARY_MEASUREMENT_FIELDS.map((field) => field.errorKey)).not.toContain("ankle");
     expect(summaryPage).toContain("PatternSummaryMeasurementChip");
     expect(summaryPage).toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
-    expect(summaryPage).toContain("data-socks-summary-overlay");
-    expect(summaryPage).toContain("data-socks-summary-stage");
+    expect(summaryPage).toContain("data-socks-edit-overlay");
+    expect(summaryPage).toContain("data-socks-edit-stage");
     expect(summaryPage).toContain(`id={SOCK_EDIT_MEASUREMENT_TARGETS.legLength}`);
     const diagramStart = summaryPage.indexOf('slot="diagram"');
     const diagramEnd = summaryPage.indexOf("</PatternSummaryDiagramStage>", diagramStart);
@@ -180,17 +186,13 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(baseline.ok).toBe(true);
     if (!baseline.ok) return;
     expect(preview.calc.straightFootRows).toBeGreaterThan(baseline.calc.straightFootRows);
-    expect(summaryScript).toContain("refreshFromChips");
-    expect(summaryScript).toContain("writeSockDraft");
+    expect(summaryScript).toContain("applySockEditFormToDraft(lastDraft, readForm())");
+    expect(summaryScript).toContain("writeSockDraft(check.draft)");
     expect(summaryScript).toContain('addEventListener("input"');
     expect(summaryScript).toContain("PATTERN_SUMMARY_MEASURE_CHIP_INVALID_CLASS");
-    const refreshStart = summaryScript.indexOf("function refreshFromChips");
-    const refreshFn = summaryScript.slice(refreshStart, refreshStart + 900);
-    expect(refreshFn).toContain("buildSockSummaryEditPreview");
-    expect(refreshFn).toContain("writeSockDraft");
-    expect(refreshFn).toContain("applyReady");
-    expect(refreshFn).not.toContain("innerHTML");
-    expect(refreshFn).not.toContain("buildSockFinishedProfileSvg");
+    expect(summaryScript).toContain("validateSockEditForm(lastDraft, form, adapter)");
+    expect(summaryScript).not.toContain("innerHTML");
+    expect(summaryScript).not.toContain("buildSockFinishedProfileSvg");
   });
 
   it("keeps the static sock image and overlay chips when measurements refresh", () => {
@@ -198,11 +200,8 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(summaryScript).toContain("rebindMeasurementOverlay");
     expect(summaryPage).toContain("PatternSummaryMeasurementChip");
     expect(summaryPage).toContain("SOCK_SUMMARY_ART_SRC");
-    const applyStart = summaryScript.indexOf("function applyReady");
-    const applyFn = summaryScript.slice(applyStart, applyStart + 400);
-    expect(applyFn).toContain("renderSockSummaryView");
-    expect(applyFn).not.toContain("innerHTML");
-    expect(applyFn).not.toContain("buildSockFinishedProfileSvg");
+    expect(summaryScript).not.toContain("renderSockSummaryView");
+    expect(summaryScript).not.toContain("buildSockFinishedProfileSvg");
   });
 
   it("keeps Pattern Stitches & Rows and Shaping Notation dynamic", () => {
@@ -210,7 +209,7 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");
     expect(patternScript).toContain('mode: "pattern"');
     expect(patternPage).not.toContain("socks-pattern-summary.webp");
-    expect(patternPage).not.toContain("socks-pattern-catalog.webp");
+    expect(patternPage).toContain('src="/images/patterns/socks-pattern-catalog.webp"');
   });
 
   it("does not alter Sweater or Hat chip wiring", () => {

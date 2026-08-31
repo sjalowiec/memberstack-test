@@ -17,6 +17,9 @@ import {
   HAT_PATTERN_POSSIBILITIES,
   SLEEVELESS_CATALOG_PILL_REST,
   SLEEVELESS_PATTERN_POSSIBILITIES,
+  SOCKS_CATALOG_COPY,
+  SOCKS_CATALOG_PILL_REST,
+  SOCKS_PATTERN_POSSIBILITIES,
 } from '../../lib/patterns/patternCatalogPossibilities';
 
 // Marketing hero and feature grid live on {@link PATTERN_BUILDERS_HOME_HREF}.
@@ -67,14 +70,28 @@ const sleevelessPattern = {
   pillRest: SLEEVELESS_CATALOG_PILL_REST,
 };
 
+const socksPattern = {
+  title: 'Socks',
+  // `?new=1` clears any leftover kbm_socks_draft on boot so catalog “Create your socks”
+  // always starts a new Socks pattern (mirrors hat / sleeveless / drop-shoulder).
+  href: '/patterns/socks/builder?new=1',
+  image: '/images/patterns/socks-pattern-catalog.webp',
+  copy: SOCKS_CATALOG_COPY,
+  button: 'Create your socks',
+  pillCount: SOCKS_PATTERN_POSSIBILITIES,
+  pillRest: SOCKS_CATALOG_PILL_REST,
+};
+
 const sweaterPatterns = [
   sleevelessPattern,
+  socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
 ];
 
 const availablePatterns = [
   sleevelessPattern,
   hatPattern,
+  socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
   // route /patterns/diy-blanket is intact and reachable by direct URL for future development/testing.

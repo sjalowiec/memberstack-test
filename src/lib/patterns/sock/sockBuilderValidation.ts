@@ -25,7 +25,7 @@ import {
   type SockGaugeSanityGate,
 } from "./sockValidation";
 
-export const SOCK_BUILDER_STEPS = 4 as const;
+export const SOCK_BUILDER_STEPS = 3 as const;
 
 export const SOCK_BUILDER_INCOMPLETE_MESSAGE =
   "Finish the required sections to continue.";
@@ -257,10 +257,8 @@ export function sockBuilderStepComplete(
     case 1:
       return isSockBuilderSizeComplete(fields, adapter);
     case 2:
-      return isSockBuilderMeasurementsComplete(fields);
-    case 3:
       return isSockBuilderConstructionComplete(fields);
-    case 4:
+    case 3:
       return isSockBuilderGaugeStepReady(fields, unit);
     default:
       return false;

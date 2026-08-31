@@ -28,12 +28,28 @@ describe("protected pattern markup (no flash / fail closed)", () => {
     expect(about).not.toMatch(/noindex/i);
   });
 
+  it("gates Socks builder, summary, edit, and pattern behind the shared membership wrap", () => {
+    const socksPages = [
+      "src/pages/patterns/socks/builder.astro",
+      "src/pages/patterns/socks/summary/index.astro",
+      "src/pages/patterns/socks/edit/index.astro",
+      "src/pages/patterns/socks/pattern.astro",
+    ].map((rel) => readFileSync(resolve(root, rel), "utf8"));
+    for (const src of socksPages) {
+      expect(src).toMatch(/SleevelessPatternMemberGate/);
+      expect(src).not.toMatch(/Free\s*\/\s*ungated/i);
+    }
+    const hatBuilder = readFileSync(resolve(root, "src/pages/patterns/hat/builder.astro"), "utf8");
+    expect(hatBuilder).not.toMatch(/SleevelessPatternMemberGate/);
+  });
+
   it("keeps the pattern catalog public so the free Hat card is visible without membership", () => {
     const catalog = readFileSync(resolve(root, "src/pages/patterns/index.astro"), "utf8");
     expect(catalog).not.toMatch(/SleevelessPatternMemberGate/);
     expect(catalog).toMatch(/title: 'Hat'/);
     expect(catalog).toMatch(/title: 'Sleeveless Sweater'/);
     expect(catalog).toMatch(/title: 'Drop Shoulder Sweater'/);
+    expect(catalog).toMatch(/title: 'Socks'/);
     expect(catalog).toMatch(/data-patterns-landing-cta/);
     expect(catalog).toMatch(/PATTERN_CATALOG_MEMBERSHIP_BODY/);
     expect(catalog).toMatch(/PATTERNS_LANDING_BECOME_MEMBER_LABEL/);

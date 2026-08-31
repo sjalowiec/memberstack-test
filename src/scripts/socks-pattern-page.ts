@@ -1,6 +1,6 @@
 /**
  * Finished Basic Socks Pattern page — draft → approved calc → instruction generator → renderer.
- * Free / ungated. Edit Pattern opens the dedicated Socks Edit workspace without clearing the draft.
+ * Membership-gated. Edit Pattern opens the dedicated Socks Edit workspace without clearing the draft.
  */
 
 import { createSockSizingAdapter } from "../lib/patterns/sock/sockSizing";
@@ -23,6 +23,7 @@ import { buildSockPatternDiagramSvg } from "../lib/patterns/sock/sockPatternDiag
 import { buildSockShapingNotationDiagramSvg } from "../lib/patterns/sock/sockShapingNotationDiagramSvg";
 import type { BasicSockCalc } from "../lib/patterns/sock/sockMath";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
+import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 
 function loadSizingAdapterFromPage() {
@@ -132,6 +133,7 @@ export async function renderSocksPattern(): Promise<void> {
     return;
   }
   mount.innerHTML = renderSockPatternPairHtml(result.sock1, result.sock2);
+  hydrateGlossaryTooltipPlaceholders(mount);
   initSockPairInstructionTabs(mount);
 
   const diagramHost = document.querySelector("[data-sock-diagram-tabs-mount]");

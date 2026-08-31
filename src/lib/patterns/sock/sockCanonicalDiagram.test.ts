@@ -149,11 +149,14 @@ describe("canonical diagram module does not recreate Socks math or old schematic
 
 describe("Summary/Edit stays on the static WebP", () => {
   it("does not load the canonical construction SVG", () => {
-    const summaryPage = readFileSync(
-      resolve("src/pages/patterns/socks/summary/index.astro"),
-      "utf8",
-    );
-    const summaryScript = readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8");
+    const summaryPage =
+      readFileSync(resolve("src/pages/patterns/socks/summary/index.astro"), "utf8") +
+      "\n" +
+      readFileSync(resolve("src/components/patterns/SocksPatternEditWorkspace.astro"), "utf8");
+    const summaryScript =
+      readFileSync(resolve("src/scripts/socks-summary-page.ts"), "utf8") +
+      "\n" +
+      readFileSync(resolve("src/scripts/socks-edit-page.ts"), "utf8");
     expect(summaryPage).not.toContain("socks-summary.svg");
     expect(summaryPage).not.toContain("sockCanonicalGeometryMarkup");
     expect(summaryScript).not.toContain("socks-summary.svg");
