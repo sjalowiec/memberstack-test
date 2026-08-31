@@ -14,6 +14,9 @@ export const RESET_ROW_COUNTER_TEXT = "RESET ROW COUNTER TO 000";
 /** Exact required wording for the stop-counter marker (same visual as reset). */
 export const STOP_ROW_COUNTER_TEXT = "STOP ROW COUNTER";
 
+/** Exact required wording after the counter was stopped (same visual as reset). */
+export const RESTART_ROW_COUNTER_TEXT = "RESTART ROW COUNTER AT 000";
+
 /** Garment RC label shown above the reset marker (`RC: 000`). */
 export function formatRowCounterResetGarmentRcLabel(garmentRc: number): string {
   const n = Math.max(0, Math.floor(garmentRc));
@@ -66,6 +69,24 @@ export function rowCounterStopBlockHtml(garmentRc: number): string {
     `<div class="row-counter-reset" role="note" aria-label="${rcLabel}. Required action: ${STOP_ROW_COUNTER_TEXT}">` +
     `<span class="row-counter-reset__icon" aria-hidden="true">${ROW_COUNTER_STOP_ICON_SVG}</span>` +
     `<span class="row-counter-reset__text">${STOP_ROW_COUNTER_TEXT}</span>` +
+    `</div></div>`
+  );
+}
+
+/**
+ * Trusted HTML for restarting the row counter after it was stopped.
+ *
+ * Reuses the existing `.row-counter-reset` control (not a new component).
+ * The garment RC label is rendered immediately above the restart button.
+ */
+export function rowCounterRestartBlockHtml(garmentRc: number): string {
+  const rcLabel = formatRowCounterResetGarmentRcLabel(garmentRc);
+  return (
+    `<div class="row-counter-reset-wrap">` +
+    `<p class="row-counter-reset__garment-rc">${rcLabel}</p>` +
+    `<div class="row-counter-reset" role="note" aria-label="${rcLabel}. Required action: ${RESTART_ROW_COUNTER_TEXT}">` +
+    `<span class="row-counter-reset__icon" aria-hidden="true">${ROW_COUNTER_RESET_ICON_SVG}</span>` +
+    `<span class="row-counter-reset__text">${RESTART_ROW_COUNTER_TEXT}</span>` +
     `</div></div>`
   );
 }

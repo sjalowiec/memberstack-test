@@ -23,6 +23,10 @@ function knittingRc(rows: number): SockSectionRc {
   return { resetAtStart: true, startRc: 0, endRc: rows };
 }
 
+function continueRc(rows: number): SockSectionRc {
+  return { resetAtStart: false, startRc: 0, endRc: rows };
+}
+
 function setupRc(): SockSectionRc {
   return { resetAtStart: false, startRc: 0, endRc: 0 };
 }
@@ -111,7 +115,10 @@ function buildAnkleSection(
     startStitches: part.startStitches,
     endStitches: part.endStitches,
     rowsToKnit: part.rows,
-    rc: knittingRc(part.rows),
+    rc:
+      calc.constructionDirection === "cuff-to-toe"
+        ? continueRc(part.rows)
+        : knittingRc(part.rows),
     steps: [{ type: "knit-even", rows: part.rows, stitches: part.startStitches }],
     notes: [],
   };
@@ -128,7 +135,9 @@ function buildFootSection(calc: BasicSockCalc, sock: SockOfPair): SockInstructio
     rowsToKnit: calc.straightFootRows,
     rc: knittingRc(calc.straightFootRows),
     steps: [
-      { type: "reset-rc" },
+      {
+        type: calc.constructionDirection === "cuff-to-toe" ? "restart-rc" : "reset-rc",
+      },
       {
         type: "knit-even",
         rows: calc.straightFootRows,
@@ -214,11 +223,7 @@ function buildFinishingSection(
       ]
     : cuffToToeClosingSteps(toeFinishingVariation, calc.totalSockStitches);
   if (sock === 1) {
-    steps.push({
-      type: "mirror-second-sock",
-      heel: sockHoldOrientation(2, "heel"),
-      toe: sockHoldOrientation(2, "toe"),
-    });
+    steps.push({ type: "mirror-second-sock" });
   }
   return {
     id: "finishing",

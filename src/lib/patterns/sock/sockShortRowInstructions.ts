@@ -67,8 +67,6 @@ export function buildSockShortRowInstructionSection(args: {
         tubeStitches,
       },
     ],
-    notes: [
-      "Short-row return rows are knitting rows only. They do not add to finished heel or toe depth.",
-    ],
+    notes: [],
   };
 }

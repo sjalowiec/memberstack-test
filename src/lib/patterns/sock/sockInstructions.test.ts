@@ -39,6 +39,8 @@ import {
   SOCK_WHY_STOP_ROW_COUNTER_BODY,
   SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
   SOCK_WHY_STOP_ROW_COUNTER_TITLE,
+  SOCK_SECOND_SOCK_INTRO,
+  SOCK_REHANG_TOE_INSTRUCTION,
   buildBasicSockInstructionPair,
   buildBasicSockInstructions,
   formatSockInstructionOutline,
@@ -50,7 +52,7 @@ import {
   type SockInstructionSectionId,
   type SockInstructionStep,
 } from "./sockInstructions";
-import { RESET_ROW_COUNTER_TEXT, STOP_ROW_COUNTER_TEXT } from "../rowCounterReset";
+import { RESET_ROW_COUNTER_TEXT, RESTART_ROW_COUNTER_TEXT, STOP_ROW_COUNTER_TEXT } from "../rowCounterReset";
 import glossary from "../../../data/glossary.json";
 import { glossarySlugForId } from "../../glossary/glossaryTooltipHydrate";
 
@@ -139,7 +141,9 @@ function assertPositiveKnitRows(doc: SockInstructionDocument): void {
     expect(entry.rowsToKnit, entry.id).toBeGreaterThan(0);
     expect(entry.rc.endRc).toBe(entry.rowsToKnit);
     expect(entry.rc.startRc).toBe(0);
-    expect(entry.rc.resetAtStart).toBe(true);
+    const continuesFromPriorCount =
+      entry.id === "ankle" && entry.constructionDirection === "cuff-to-toe";
+    expect(entry.rc.resetAtStart).toBe(!continuesFromPriorCount);
   }
 }
 
@@ -656,14 +660,16 @@ describe("Cuff-to-Toe Leg omits the redundant row-counter reset control", () => 
     expect(leg).toContain("RC: 000");
     expect(leg).not.toContain(RESET_ROW_COUNTER_TEXT);
     const ankle = sectionHtml(html, "ankle");
-    expect(ankle).toContain("RC: 000");
+    expect(ankle).not.toContain("RC: 000");
     expect(ankle).not.toContain(RESET_ROW_COUNTER_TEXT);
+    expect(ankle).not.toContain(RESTART_ROW_COUNTER_TEXT);
     expect(ankle).not.toContain(STOP_ROW_COUNTER_TEXT);
     const heel = sectionHtml(html, "heel");
     expect(heel).toContain(STOP_ROW_COUNTER_TEXT);
     expect(heel).not.toContain(RESET_ROW_COUNTER_TEXT);
     expect(sectionHtml(html, "toe")).toContain(RESET_ROW_COUNTER_TEXT);
-    expect(sectionHtml(html, "foot")).toContain(RESET_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "foot")).toContain(RESTART_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "foot")).not.toContain(RESET_ROW_COUNTER_TEXT);
   });
 
   it("still resets the row counter on Toe-Up Leg", () => {
@@ -718,12 +724,82 @@ describe("Ankle video hash, Ankle RC label, and Heel stop-counter", () => {
     expect(ankle).toContain(
       `Knit ${calc.ankleStraightRows} rows even. (${calc.totalSockStitches} stitches)`,
     );
+    expect(ankle).not.toContain("RC: 000");
     const heel = sectionHtml(html, "heel");
     const stopIdx = heel.indexOf(STOP_ROW_COUNTER_TEXT);
     const holdIdx = heel.indexOf("Put the LEFT half of the needles");
     expect(stopIdx).toBeGreaterThanOrEqual(0);
     expect(holdIdx).toBeGreaterThan(stopIdx);
     expect(formatSockInstructionOutline(doc)).toContain(STOP_ROW_COUNTER_TEXT);
+  });
+});
+
+describe("Cuff-to-Toe instruction copy corrections", () => {
+  const SHORT_ROW_RETURN_DEPTH_SENTENCE =
+    "Short-row return rows are knitting rows only. They do not add to finished heel or toe depth.";
+  const OLD_SECOND_SOCK_INTRO_FRAGMENT =
+    "Knit the second sock the same way, reversing the setup";
+
+  it("continues the Leg row counter through Ankle, stops at Heel, and restarts on Foot", () => {
+    const calc = mustCalc(typicalMachine);
+    const doc = buildBasicSockInstructions(calc, 1);
+    const html = renderBasicSockInstructionsHtml(doc);
+    const ankle = section(doc, "ankle");
+    expect(ankle.rowsToKnit).toBe(calc.ankleStraightRows);
+    expect(section(doc, "leg").rowsToKnit).toBe(calc.legShapingRowsAvailable);
+    expect(ankle.rc.resetAtStart).toBe(false);
+    expect(sectionHtml(html, "leg")).toContain("RC: 000");
+    expect(sectionHtml(html, "ankle")).not.toContain("RC: 000");
+    expect(sectionHtml(html, "heel")).toContain(STOP_ROW_COUNTER_TEXT);
+    expect(stepTypes(section(doc, "foot"))[0]).toBe("restart-rc");
+    expect(sectionHtml(html, "foot")).toContain(RESTART_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "foot")).not.toContain(RESET_ROW_COUNTER_TEXT);
+  });
+
+  it("removes the short-row return-row depth sentence", () => {
+    const doc = buildBasicSockInstructions(mustCalc(typicalMachine), 1);
+    expect(section(doc, "heel").notes).toEqual([]);
+    expect(section(doc, "toe").notes).toEqual([]);
+    const html = renderBasicSockInstructionsHtml(doc);
+    expect(html).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
+    expect(formatSockInstructionOutline(doc)).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
+  });
+
+  it("uses the updated toe rehanging and Sock 2 introduction wording", () => {
+    const pair = buildBasicSockInstructionPair(mustCalc(typicalMachine));
+    const sock1Html = renderBasicSockInstructionsHtml(pair.sock1);
+    const sock2Html = renderBasicSockInstructionsHtml(pair.sock2);
+    const finishing = sectionHtml(sock1Html, "finishing");
+    expect(finishing).toContain("Fold the sock in half with right/public sides together.");
+    expect(finishing).toContain(SOCK_REHANG_TOE_INSTRUCTION);
+    expect(finishing).not.toContain(">Rehang the toe stitches.<");
+    expect(finishing).toContain(SOCK_SECOND_SOCK_INTRO);
+    expect(finishing).not.toContain(OLD_SECOND_SOCK_INTRO_FRAGMENT);
+    expect(finishing).not.toContain("carriage on the LEFT");
+    expect(sock2Html).not.toContain(SOCK_SECOND_SOCK_INTRO);
+    expect(sock2Html).toContain("carriage on the LEFT");
+    expect(sock2Html).toContain("RIGHT half of the needles");
+    expect(section(pair.sock2, "heel").orientation).toMatchObject({
+      workHalf: "left",
+      holdHalf: "right",
+      carriageStartSide: "left",
+    });
+    expect(section(pair.sock2, "toe").orientation).toMatchObject({
+      workHalf: "left",
+      holdHalf: "right",
+      carriageStartSide: "left",
+    });
+  });
+
+  it("does not restart the Toe-Up Foot counter or drop Toe-Up Ankle RC: 000", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 1),
+    );
+    expect(sectionHtml(html, "foot")).toContain(RESET_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "foot")).not.toContain(RESTART_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "ankle")).toContain("RC: 000");
+    expect(sectionHtml(html, "ankle")).not.toContain(RESTART_ROW_COUNTER_TEXT);
+    expect(sectionHtml(html, "leg")).toContain(RESET_ROW_COUNTER_TEXT);
   });
 });
 

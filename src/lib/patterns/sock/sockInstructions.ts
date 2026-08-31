@@ -58,6 +58,8 @@ export {
   SOCK_WHY_STOP_ROW_COUNTER_BODY,
   SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
   SOCK_WHY_STOP_ROW_COUNTER_TITLE,
+  SOCK_SECOND_SOCK_INTRO,
+  SOCK_REHANG_TOE_INSTRUCTION,
   formatSockInstructionOutline,
   renderBasicSockInstructionsHtml,
   wrapSockPatternSection,
