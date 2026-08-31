@@ -47,7 +47,7 @@ import {
   SOCK_REHANG_AND_JOIN_LABEL,
   SOCK_GRAFT_OR_SEAM_LABEL,
   SOCK_FOLD_RIGHT_SIDES_INSTRUCTION,
-  SOCK_REHANG_TOE_INSTRUCTION,
+  sockRehangToeInstruction,
   SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX,
   SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX,
   buildBasicSockInstructionPair,
@@ -747,7 +747,7 @@ describe("pair helper, renderer, and architecture", () => {
     expect(outline).toContain(SOCK_FINISH_THE_TOE_HEADING);
     expect(outline).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
     expect(outline).toContain(
-      `${SOCK_REHANG_AND_JOIN_LABEL}: ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${SOCK_REHANG_TOE_INSTRUCTION}`,
+      `${SOCK_REHANG_AND_JOIN_LABEL}: ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${sockRehangToeInstruction(calc.totalSockStitches)}`,
     );
     expect(outline).toContain(
       `${SOCK_GRAFT_OR_SEAM_LABEL}: ${SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX} ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting) or ${BICKFORD_SEAM_GLOSSARY_TERM}${SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX}`,
@@ -1025,14 +1025,16 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
   });
 
   it("uses the updated toe rehanging and Sock 2 introduction wording", () => {
-    const pair = buildBasicSockInstructionPair(mustCalc(typicalMachine));
+    const calc = mustCalc(typicalMachine);
+    const pair = buildBasicSockInstructionPair(calc);
     const sock1Html = renderBasicSockInstructionsHtml(pair.sock1);
     const sock2Html = renderBasicSockInstructionsHtml(pair.sock2);
     const finishing = sectionHtml(sock1Html, "finishing");
     expect(finishing).toContain(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION);
-    expect(finishing).toContain(SOCK_REHANG_TOE_INSTRUCTION);
+    expect(finishing).toContain(sockRehangToeInstruction(calc.totalSockStitches));
     expect(finishing).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
     expect(finishing).not.toContain(">Rehang the toe stitches.<");
+    expect(finishing).not.toContain("Rehang the toe stitches with 2 stitches on each needle");
     expect(finishing).not.toContain("Drop the work from the machine.");
     expect(finishing).toContain(SOCK_SECOND_SOCK_INTRO);
     expect(finishing).not.toContain(OLD_SECOND_SOCK_INTRO_FRAGMENT);
@@ -1123,7 +1125,8 @@ describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
   });
 
   it("presents the same scrap-off then finishing-method choices on Sock 1 and Sock 2", () => {
-    const pair = buildBasicSockInstructionPair(mustCalc(typicalMachine));
+    const calc = mustCalc(typicalMachine);
+    const pair = buildBasicSockInstructionPair(calc);
     const rendered = [
       renderBasicSockInstructionsHtml(pair.sock1),
       renderBasicSockInstructionsHtml(pair.sock2),
@@ -1139,7 +1142,7 @@ describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
       expect(rehangIdx).toBeGreaterThan(chooseIdx);
       expect(graftIdx).toBeGreaterThan(rehangIdx);
       expect(finishing).toContain(
-        `<li><strong>${SOCK_REHANG_AND_JOIN_LABEL}:</strong> ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${SOCK_REHANG_TOE_INSTRUCTION}</li>`,
+        `<li><strong>${SOCK_REHANG_AND_JOIN_LABEL}:</strong> ${SOCK_FOLD_RIGHT_SIDES_INSTRUCTION} ${sockRehangToeInstruction(calc.totalSockStitches)}</li>`,
       );
       expect(finishing.indexOf(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION)).toBeGreaterThan(chooseIdx);
       expect(finishing.indexOf(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`)).toBeGreaterThan(
@@ -1148,6 +1151,38 @@ describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
       expect(finishing.indexOf(`data-glossary-id="${BICKFORD_SEAM_GLOSSARY_ID}"`)).toBeGreaterThan(
         graftIdx,
       );
+    }
+  });
+
+  it("names rehung stitch and needle counts from the even toe/tube stitch count", () => {
+    expect(sockRehangToeInstruction(26)).toBe(
+      "Rehang the 26 toe stitches onto 13 needles, placing 2 stitches on each needle, and complete the join on the machine.",
+    );
+    const woman = mustCalc(typicalMachine);
+    const infant = mustCalc(baby);
+    expect(woman.totalSockStitches % 2).toBe(0);
+    expect(infant.totalSockStitches % 2).toBe(0);
+    expect(woman.totalSockStitches).not.toBe(infant.totalSockStitches);
+    const womanCopy = sockRehangToeInstruction(woman.totalSockStitches);
+    const infantCopy = sockRehangToeInstruction(infant.totalSockStitches);
+    expect(womanCopy).toBe(
+      `Rehang the ${woman.totalSockStitches} toe stitches onto ${woman.totalSockStitches / 2} needles, placing 2 stitches on each needle, and complete the join on the machine.`,
+    );
+    expect(infantCopy).toBe(
+      `Rehang the ${infant.totalSockStitches} toe stitches onto ${infant.totalSockStitches / 2} needles, placing 2 stitches on each needle, and complete the join on the machine.`,
+    );
+    expect(womanCopy).not.toBe(infantCopy);
+    expect(womanCopy).not.toContain("26 toe stitches");
+    for (const calc of [woman, infant]) {
+      const expected = sockRehangToeInstruction(calc.totalSockStitches);
+      const pair = buildBasicSockInstructionPair(calc);
+      for (const doc of [pair.sock1, pair.sock2]) {
+        const html = sectionHtml(renderBasicSockInstructionsHtml(doc), "finishing");
+        const outline = formatSockInstructionOutline(doc);
+        expect(html).toContain(expected);
+        expect(outline).toContain(expected);
+        expect(html).not.toContain("Rehang the toe stitches with 2 stitches on each needle");
+      }
     }
   });
 

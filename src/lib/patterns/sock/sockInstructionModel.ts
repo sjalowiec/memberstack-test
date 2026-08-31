@@ -140,7 +140,7 @@ export type SockInstructionStep =
   | { type: "waste-yarn"; stitches: number; contrasting: true }
   | { type: "drop-from-machine" }
   | { type: "fold-right-sides-together" }
-  | { type: "rehang-toe" }
+  | { type: "rehang-toe"; stitches: number }
   | { type: "bind-off-toe-seam"; placement: "top-of-toes" }
   | { type: "bind-off"; stitches: number }
   | { type: "kitchener"; placement: "under-toes" }
