@@ -7,7 +7,6 @@ import {
   SOCK_CANONICAL_ANCHORS,
   SOCK_CANONICAL_POLYGON_POINTS,
   SOCK_CANONICAL_SVG_HREF,
-  SOCK_CANONICAL_VB_H,
   SOCK_CANONICAL_VIEWBOX,
   SOCK_STS_ROWS_PAD_RIGHT,
   escapeSockSvgText,
@@ -293,10 +292,9 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
       calc.heelDepthInches + calc.straightFootLengthInches + calc.toeDepthInches,
       5,
     );
-    expect(labelText(jp, "measureHeel")).toBe(`${calc.heel.shortRowInSteps}r`);
-    expect(labelText(jp, "measureToe")).toBe(`${calc.toe.shortRowInSteps}r`);
-    expect(labelText(jp, "measureHeel")).not.toBe(`${calc.heel.shortRowKnittingRows}r`);
-    expect(labelText(jp, "measureToe")).not.toBe(`${calc.toe.shortRowKnittingRows}r`);
+    expect(labelsGroup(jp)).not.toContain('data-sock-label="measureHeel"');
+    expect(labelsGroup(jp)).not.toContain('data-sock-label="measureToe"');
+    expect(labelsGroup(jp)).not.toMatch(/>\d+r</);
   });
 
   it("widens the Stitches & Rows viewBox so right-side RC labels are not clipped", () => {
@@ -330,14 +328,12 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     for (const id of ["sectionLeg", "sectionAnkle", "sectionHeel", "sectionFoot", "sectionToe"] as const) {
       expect(labelXY(sts, id)).toEqual(labelXY(jp, id));
     }
-    expect(labelXY(sts, "measureLeg").x).not.toBe(labelXY(jp, "measureLeg").x);
-    expect(labelXY(jp, "heel-rc")).toEqual({
-      x: String(SOCK_CANONICAL_ANCHORS.heelWork.x),
-      y: String(SOCK_CANONICAL_VB_H - SOCK_CANONICAL_ANCHORS.heelWork.y),
-    });
+    expect(labelXY(sts, "measureLeg").x).not.toBe(labelXY(jp, "rc-start").x);
+    expect(labelsGroup(jp)).not.toContain('data-sock-label="heel-rc"');
+    expect(labelsGroup(jp)).not.toContain('data-sock-label="toe-rc"');
     expect(Number(labelXY(sts, "heel-center").x)).toBe(SOCK_CANONICAL_ANCHORS.heelCenter.x);
     const sock2 = buildSockPatternDiagramSvg(calc, { mode: "pattern", mirror: true });
-    expect(Number(labelXY(jp, "measureLeg").x)).toBe(SOCK_CANONICAL_ANCHORS.measureLeg.x);
+    expect(Number(labelXY(jp, "rc-start").x)).toBe(SOCK_CANONICAL_ANCHORS.measureLeg.x);
     expect(Number(labelXY(sock2, "measureLeg").x)).toBe(Number(labelXY(sts, "measureLeg").x));
     expect(Number(labelXY(sock2, "sectionHeel").x)).toBe(
       284 - SOCK_CANONICAL_ANCHORS.sectionHeel.x,
