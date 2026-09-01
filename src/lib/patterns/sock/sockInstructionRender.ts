@@ -35,6 +35,11 @@ export const SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID = "1222662401";
 export const SOCK_CUFF_CAST_ON_VIDEO_TITLE = "Cuff Cast On Options";
 export const SOCK_CUFF_CAST_ON_VIDEO_TIP_ID = "socks-cuff-cast-on-video";
 
+/** Toe-Up overview / technique video (Scrap On — start of knitting from the toe). */
+export const SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID = "1222865852";
+export const SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE = "Knitting Toe-Up Socks";
+export const SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID = "socks-toe-up-overview-video";
+
 /** Ankle section help video (both construction directions). */
 export const SOCK_ANKLE_VIDEO_VIMEO_ID = "1222664135";
 /**
@@ -77,6 +82,26 @@ export const KITCHENER_STITCH_GLOSSARY_TERM = "Kitchener Stitch";
 
 export const SOCK_SECOND_SOCK_INTRO =
   "The second sock mirrors the heel and toe placement so the seams fall on the inside of each leg and foot, creating a left and right pair.";
+
+export const SOCK_TOE_UP_KNIT_SETUP_ROW =
+  "Knit 1 row. Do not count this row on the row counter.";
+
+export const SOCK_TOE_UP_FINISH_CUFF =
+  "Finish the cuff using the method of your choice — ribbing, hand-manipulated ribbing, a ribber, hand-knit ribbing, a rolled edge, or another stretchy finish.";
+
+export function sockScrapOffHeelInstruction(
+  stitches: number,
+  holdHalf: SockNeedleHalf,
+): string {
+  return `Scrap off the first ${stitches} heel stitches (${halfLabel(holdHalf)} half).`;
+}
+
+export function sockRehangScrappedHeelInstruction(
+  stitches: number,
+  tubeStitches: number,
+): string {
+  return `Rehang the scrapped-off ${stitches} stitches. Confirm ${tubeStitches} stitches are in work.`;
+}
 
 export function sockEnsureCarriageInstruction(
   part: "heel" | "toe",
@@ -305,6 +330,16 @@ function sectionVideoTipHtml(section: SockInstructionSection): string {
       explainerKey: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
     });
   }
+  if (section.id === "cast-on" && !cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
+        title: SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
+        vimeoId: SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
+      }),
+    );
+  }
   if (section.id === "ankle") {
     return buildSockPatternVideoTipHtml({
       tipId: SOCK_ANKLE_VIDEO_TIP_ID,
@@ -326,14 +361,20 @@ function renderStep(step: SockInstructionStep): string {
     case "restart-rc":
       return rowCounterRestartBlockHtml(0);
     case "cast-on": {
-      if (step.role === "foot-tube") {
+      if (step.role === "toe") {
         const scrapOnHelp = scrapAndRavelCastOnGlossaryHtml("Scrap on");
-        return `<p>${scrapOnHelp} <strong>${step.stitches} stitches</strong>.</p>`;
+        return `<p>${scrapOnHelp} <strong>${step.stitches} toe stitches</strong>, leaving open stitches for grafting.</p>`;
+      }
+      if (step.role === "remaining-foot") {
+        const scrapOnHelp = scrapAndRavelCastOnGlossaryHtml("Scrap on");
+        return `<p>${scrapOnHelp} the remaining <strong>${step.stitches} stitches</strong> for the full foot width (${step.totalStitches} stitches).</p>`;
       }
       return `<p>Cast on <strong>${step.stitches} stitches</strong> with the method of your choice.</p>`;
     }
     case "knit-even":
       return `<p>Knit ${knitEvenRowPhrase(step.rows)} even. (${step.stitches} stitches)</p>`;
+    case "knit-setup-row":
+      return `<p>${escapeHtml(SOCK_TOE_UP_KNIT_SETUP_ROW)}</p>`;
     case "magic-formula": {
       const verb = step.direction === "decrease" ? "Decrease" : "Increase";
       const lines = step.steps.map((block) => {
@@ -360,6 +401,10 @@ function renderStep(step: SockInstructionStep): string {
       return `<p>Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all ${step.endWorkingStitches} working stitches are back in work. (${formatSockShortRowPassCount(step.rows)})</p>`;
     case "cancel-hold-return":
       return `<p>Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. (${step.tubeStitches} stitches)</p>`;
+    case "scrap-off-heel":
+      return `<p>${escapeHtml(sockScrapOffHeelInstruction(step.stitches, step.orientation.holdHalf))}</p>`;
+    case "rehang-scrapped-heel":
+      return `<p>${escapeHtml(sockRehangScrappedHeelInstruction(step.stitches, step.tubeStitches))}</p>`;
     case "waste-yarn":
       return step.contrasting
         ? `<p>Scrap all ${step.stitches} stitches off the machine with contrasting waste yarn.</p>`
@@ -377,9 +422,21 @@ function renderStep(step: SockInstructionStep): string {
     }
     case "bind-off":
       return `<p>Bind off ${step.stitches} stitches at the cuff.</p>`;
-    case "kitchener":
+    case "finish-cuff":
+      return `<p>${escapeHtml(SOCK_TOE_UP_FINISH_CUFF)} (${step.stitches} stitches)</p>`;
+    case "kitchener": {
+      if (step.placement === "top-of-toes") {
+        const kitchener = kitchenerStitchGlossaryHtml();
+        return `<p>Graft or join the open toe stitches using ${kitchener} to complete the toe. Place this join on top of the toes for comfort.</p>`;
+      }
       return `<p>Join / graft the toe opening using Kitchener stitch. This places the seam under the toes.</p>`;
+    }
     case "seam":
+      if (step.insideLeg) {
+        return step.suggestBickford
+          ? `<p>Join the side seams, keeping the long seam toward the inside of the leg. A Bickford seam may be used for a flat finish.</p>`
+          : `<p>Join the side seams, keeping the long seam toward the inside of the leg.</p>`;
+      }
       return step.suggestBickford
         ? `<p>Sew the long seam. A Bickford seam may be used for a flat finish.</p>`
         : `<p>Sew the long seam.</p>`;
@@ -453,11 +510,17 @@ function outlineStep(step: SockInstructionStep): string {
     case "restart-rc":
       return RESTART_ROW_COUNTER_TEXT;
     case "cast-on":
-      return step.role === "foot-tube"
-        ? `Scrap on ${step.stitches} stitches.`
-        : `Cast on ${step.stitches} stitches with the method of your choice.`;
+      if (step.role === "toe") {
+        return `Scrap on ${step.stitches} toe stitches, leaving open stitches for grafting.`;
+      }
+      if (step.role === "remaining-foot") {
+        return `Scrap on the remaining ${step.stitches} stitches for the full foot width (${step.totalStitches} stitches).`;
+      }
+      return `Cast on ${step.stitches} stitches with the method of your choice.`;
     case "knit-even":
       return `Knit ${knitEvenRowPhrase(step.rows)} even (${step.stitches} stitches).`;
+    case "knit-setup-row":
+      return SOCK_TOE_UP_KNIT_SETUP_ROW;
     case "magic-formula": {
       const verb = step.direction === "decrease" ? "Decrease" : "Increase";
       const schedule = step.steps
@@ -482,6 +545,10 @@ function outlineStep(step: SockInstructionStep): string {
       return `Opposite the carriage, return 1 needle to work and knit across, every row, until ${step.endWorkingStitches} working stitches are back. (${formatSockShortRowPassCount(step.rows)})`;
     case "cancel-hold-return":
       return `Cancel HOLD; return previously held half (${step.heldStitches} sts; ${step.tubeStitches} tube stitches).`;
+    case "scrap-off-heel":
+      return sockScrapOffHeelInstruction(step.stitches, step.orientation.holdHalf);
+    case "rehang-scrapped-heel":
+      return sockRehangScrappedHeelInstruction(step.stitches, step.tubeStitches);
     case "waste-yarn":
       return step.contrasting
         ? `Scrap all ${step.stitches} stitches with contrasting waste yarn.`
@@ -496,9 +563,18 @@ function outlineStep(step: SockInstructionStep): string {
       return `${SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX} ${KITCHENER_STITCH_GLOSSARY_TERM} (Grafting) or ${BICKFORD_SEAM_GLOSSARY_TERM}${SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX}`;
     case "bind-off":
       return `Bind off ${step.stitches} stitches at the cuff.`;
+    case "finish-cuff":
+      return `${SOCK_TOE_UP_FINISH_CUFF} (${step.stitches} stitches)`;
     case "kitchener":
-      return "Graft the toe opening (Kitchener, under the toes).";
+      return step.placement === "top-of-toes"
+        ? `Graft or join the open toe stitches using ${KITCHENER_STITCH_GLOSSARY_TERM} to complete the toe. Place this join on top of the toes for comfort.`
+        : "Graft the toe opening (Kitchener, under the toes).";
     case "seam":
+      if (step.insideLeg) {
+        return step.suggestBickford
+          ? "Join the side seams, keeping the long seam toward the inside of the leg (Bickford suggested)."
+          : "Join the side seams, keeping the long seam toward the inside of the leg.";
+      }
       return step.suggestBickford
         ? "Sew the long seam (Bickford suggested)."
         : "Sew the long seam.";

@@ -30,6 +30,10 @@ import {
   SOCK_TOE_VIDEO_TIP_ID,
   SOCK_TOE_VIDEO_VIMEO_ID,
   SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
+  SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
+  SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
+  SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_FINISH_CUFF,
   SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
 } from "./sockInstructions";
@@ -200,9 +204,10 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     const html = renderSockPatternPairHtml(result.sock1, result.sock2);
     expect(html).toContain("Sock 1 — Toe Up");
     expect(html).toContain("Sock 2 — Toe Up");
-    expect(html).toContain("Bind off");
-    expect(html).toContain("at the cuff");
-    expect(html).not.toContain("waste yarn");
+    expect(html).not.toContain("Bind off");
+    expect(html).not.toContain("at the cuff");
+    expect(html).toContain(SOCK_TOE_UP_FINISH_CUFF);
+    expect(html).toContain("Place this join on top of the toes for comfort");
     expect(html).toContain(`<h4>${SOCK_TOE_UP_OPENING_SECTION_TITLE}</h4>`);
     expect(html).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
     expect(html).toContain(`data-aria-label="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);
@@ -211,6 +216,9 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).not.toContain("Use the cast-on method of your choice.");
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
     expect(html).not.toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
+    expect(html).toContain(`data-tip-id="${SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);

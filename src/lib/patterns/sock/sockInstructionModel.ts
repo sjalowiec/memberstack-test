@@ -89,8 +89,11 @@ export type SockInstructionStep =
   | { type: "reset-rc" }
   | { type: "stop-rc"; garmentRc?: number }
   | { type: "restart-rc" }
-  | { type: "cast-on"; stitches: number; role: "top-leg" | "foot-tube" }
+  | { type: "cast-on"; stitches: number; role: "top-leg" }
+  | { type: "cast-on"; stitches: number; role: "toe" }
+  | { type: "cast-on"; stitches: number; role: "remaining-foot"; totalStitches: number }
   | { type: "knit-even"; rows: number; stitches: number }
+  | { type: "knit-setup-row" }
   | {
       type: "magic-formula";
       direction: Exclude<SockLegShapingDirection, "none">;
@@ -137,14 +140,25 @@ export type SockInstructionStep =
       heldStitches: number;
       tubeStitches: number;
     }
+  | {
+      type: "scrap-off-heel";
+      orientation: SockHoldOrientation;
+      stitches: number;
+    }
+  | {
+      type: "rehang-scrapped-heel";
+      stitches: number;
+      tubeStitches: number;
+    }
   | { type: "waste-yarn"; stitches: number; contrasting: true }
   | { type: "drop-from-machine" }
   | { type: "fold-right-sides-together" }
   | { type: "rehang-toe"; stitches: number }
   | { type: "bind-off-toe-seam"; placement: "top-of-toes" }
   | { type: "bind-off"; stitches: number }
-  | { type: "kitchener"; placement: "under-toes" }
-  | { type: "seam"; suggestBickford: boolean }
+  | { type: "finish-cuff"; stitches: number }
+  | { type: "kitchener"; placement: "under-toes" | "top-of-toes" }
+  | { type: "seam"; suggestBickford: boolean; insideLeg?: true }
   | { type: "block" }
   | { type: "mirror-second-sock" };
 
@@ -176,7 +190,7 @@ export type SockInstructionDocument = {
   ribbing: null;
   /**
    * Cuff-to-Toe toe closing. v1 is always {@link SOCK_TOE_FINISHING_DEFAULT}.
-   * Toe Up ignores this and binds off at the cuff.
+   * Toe Up ignores this and finishes the cuff with the knitter’s chosen method.
    */
   toeFinishingVariation: SockToeFinishingVariation;
   sections: SockInstructionSection[];
