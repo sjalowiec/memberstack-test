@@ -20,7 +20,9 @@ import {
   type SockInstructionSection,
   type SockInstructionStep,
   type SockNeedleHalf,
+  type SockOfPair,
 } from "./sockInstructionModel";
+import { sockPatternSectionAnchorId } from "./sockPatternInpageNav";
 
 /**
  * Existing KIN glossary entry “Scrap and Ravel Cast On”
@@ -77,6 +79,16 @@ export const SOCK_TOE_VIDEO_VIMEO_ID = "1222668781";
 export const SOCK_TOE_VIDEO_PRIVACY_HASH = "498874f65f";
 export const SOCK_TOE_VIDEO_TITLE = "Knitting the Toe";
 export const SOCK_TOE_VIDEO_TIP_ID = "socks-toe-video";
+
+/**
+ * Visual short-row refresher. Direct Vimeo embed at the first short-row section
+ * of each construction only. Not Learning Library content 811.
+ */
+export const SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID = "251895484";
+export const SOCK_SHORT_ROW_REFRESHER_VIDEO_TITLE = "Short Row Refresher";
+export const SOCK_SHORT_ROW_REFRESHER_VIDEO_TIP_ID = "socks-short-row-refresher-video";
+export const SOCK_SHORT_ROW_REFRESHER_VIDEO_COPY =
+  "Watch the technique in action before you begin your short-row shaping.";
 
 /** Cuff-to-Toe Finishing help video. Vimeo title is “finish toe”; no catalog title exists. */
 export const SOCK_TOE_FINISHING_VIDEO_VIMEO_ID = "1222676437";
@@ -218,9 +230,11 @@ export function wrapSockPatternSection(
   sectionId: string,
   titleHtml: string,
   contentHtml: string,
+  sock: SockOfPair,
 ): string {
   const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
-  return `<section class="sock-pattern-section" data-section-id="${sid}">
+  const htmlId = sockPatternSectionAnchorId(sock, sid);
+  return `<section id="${htmlId}" class="sock-pattern-section" data-section-id="${sid}">
   <div class="sock-pattern-section__header">
     <div class="sock-pattern-section__heading">${titleHtml}</div>
   </div>
@@ -398,7 +412,30 @@ function buildSockPatternTextTipHtml(options: {
   );
 }
 
-function sectionTipsHtml(section: SockInstructionSection): string {
+function shortRowRefresherTipHtml(): string {
+  return buildSockPatternVideoTipHtml({
+    tipId: SOCK_SHORT_ROW_REFRESHER_VIDEO_TIP_ID,
+    title: SOCK_SHORT_ROW_REFRESHER_VIDEO_TITLE,
+    vimeoId: SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID,
+    explainerKey: SOCK_SHORT_ROW_REFRESHER_VIDEO_TIP_ID,
+    introHtml: `<p>${escapeHtml(SOCK_SHORT_ROW_REFRESHER_VIDEO_COPY)}</p>`,
+  });
+}
+
+function firstShortRowSectionId(
+  doc: SockInstructionDocument,
+): SockInstructionSection["id"] | null {
+  return (
+    doc.sections.find((section) =>
+      section.steps.some((step) => step.type === "short-row-in"),
+    )?.id ?? null
+  );
+}
+
+function sectionTipsHtml(
+  section: SockInstructionSection,
+  firstShortRowId: SockInstructionSection["id"] | null,
+): string {
   const cuffToToe = section.constructionDirection === "cuff-to-toe";
   const tips: string[] = [];
   if (section.id === "cast-on" && cuffToToe) {
@@ -471,6 +508,9 @@ function sectionTipsHtml(section: SockInstructionSection): string {
         privacyHash: SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH,
       }),
     );
+  }
+  if (section.id === firstShortRowId) {
+    tips.push(shortRowRefresherTipHtml());
   }
   return tips.join("");
 }
@@ -589,7 +629,10 @@ function shouldShowRcLabelWithoutResetControl(section: SockInstructionSection): 
   return section.id === "leg" && section.constructionDirection === "cuff-to-toe";
 }
 
-function renderSection(section: SockInstructionSection): string {
+function renderSection(
+  section: SockInstructionSection,
+  firstShortRowId: SockInstructionSection["id"] | null,
+): string {
   let body = "";
   const steps = section.steps;
   for (let i = 0; i < steps.length; ) {
@@ -613,7 +656,8 @@ function renderSection(section: SockInstructionSection): string {
   return wrapSockPatternSection(
     section.id,
     `<h4>${escapeHtml(section.title)}</h4>`,
-    sectionTipsHtml(section) + body + notes,
+    sectionTipsHtml(section, firstShortRowId) + body + notes,
+    section.sock,
   );
 }
 
@@ -623,10 +667,11 @@ export function renderBasicSockInstructionsHtml(doc: SockInstructionDocument): s
     doc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up";
   const intro =
     doc.constructionDirection === "toe-up" ? toeUpCompleteVideoCalloutHtml() : "";
+  const firstShortRowId = firstShortRowSectionId(doc);
   return `<div class="sock-instructions" data-sock="${doc.sock}" data-construction="${doc.constructionDirection}">
   <p class="sock-instructions__label">${escapeHtml(sockLabel)} — ${escapeHtml(direction)}</p>
   ${intro}
-  ${doc.sections.map(renderSection).join("\n")}
+  ${doc.sections.map((section) => renderSection(section, firstShortRowId)).join("\n")}
 </div>`;
 }
 

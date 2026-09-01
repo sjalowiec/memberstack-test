@@ -730,7 +730,8 @@
   }
 
   #pattern-content .pattern-section,
-  #pattern-content .pattern-subsection {
+  #pattern-content .pattern-subsection,
+  #pattern-content .sock-pattern-section {
     scroll-margin-top: calc(
       var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + var(--pattern-inpage-nav-height, 3.35rem)
     );

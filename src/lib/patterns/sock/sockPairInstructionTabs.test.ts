@@ -61,6 +61,12 @@ describe("Sock 1 / Sock 2 selector", () => {
     expect(html).not.toContain("reverse shaping");
     expect(html.match(/data-section-id="heel"/g)?.length).toBe(2);
     expect(html.match(/data-section-id="toe"/g)?.length).toBe(2);
+    const sectionIds = [...html.matchAll(/<section id="([^"]+)"/g)].map(
+      (match) => match[1]!,
+    );
+    expect(sectionIds).toContain("sock-1-heel");
+    expect(sectionIds).toContain("sock-2-heel");
+    expect(new Set(sectionIds).size).toBe(sectionIds.length);
   });
 
   it("does not recalculate when switching presentation — both documents are already rendered", () => {
