@@ -19,6 +19,7 @@ import {
   sockCanonicalFlipVertical,
   sockCanonicalGeometryMarkup,
   sockCanonicalLabelPoint,
+  sockCanonicalReadingDirectionArrowMarkup,
   sockCanonicalStacked,
   sockCanonicalText,
 } from "./sockCanonicalDiagram";
@@ -233,6 +234,7 @@ export function buildSockShapingNotationDiagramSvg(
     `data-sock-of-pair="${mirror ? "2" : "1"}" ` +
     `data-sock-knit-order="${calc.constructionDirection}" ` +
     `data-sock-flip-vertical="${flipVertical ? "true" : "false"}" ` +
+    `data-sock-reading-direction="bottom-to-top" ` +
     `data-sock-notation-order="${calc.constructionDirection}" ` +
     `data-sock-notation-leg-direction="${calc.legShapingSchedule.knitOrder.direction}" ` +
     `data-sock-cast-on="${escapeSockSvgText(notation.castOn)}" ` +
@@ -243,6 +245,7 @@ export function buildSockShapingNotationDiagramSvg(
     `data-sock-notation-toe="${escapeSockSvgText(notation.toe.join("|"))}" ` +
     `width="100%" height="auto">` +
     sockCanonicalGeometryMarkup({ mirror, flipVertical }) +
+    sockCanonicalReadingDirectionArrowMarkup() +
     `<g data-sock-diagram-labels data-sock-text-unmirrored="true">` +
     labels.join("") +
     `</g>` +

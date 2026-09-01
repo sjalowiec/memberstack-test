@@ -12,6 +12,8 @@ import {
   SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_FINISHING_DEFAULT,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
+  AUTOMATIC_WRAP_GLOSSARY_ID,
+  AUTOMATIC_WRAP_GLOSSARY_TERM,
   BICKFORD_SEAM_GLOSSARY_ID,
   BICKFORD_SEAM_GLOSSARY_TERM,
   KITCHENER_STITCH_GLOSSARY_ID,
@@ -159,8 +161,12 @@ function assertPositiveKnitRows(doc: SockInstructionDocument): void {
     expect(entry.rc.endRc).toBe(entry.rowsToKnit);
     const continuesFromPriorCount =
       (entry.id === "ankle" && entry.constructionDirection === "cuff-to-toe") ||
-      (entry.id === "toe" && entry.constructionDirection === "cuff-to-toe");
-    if (entry.id === "toe" && entry.constructionDirection === "cuff-to-toe") {
+      (entry.id === "toe" && entry.constructionDirection === "cuff-to-toe") ||
+      (entry.id === "heel" && entry.constructionDirection === "toe-up");
+    if (
+      (entry.id === "toe" && entry.constructionDirection === "cuff-to-toe") ||
+      (entry.id === "heel" && entry.constructionDirection === "toe-up")
+    ) {
       expect(entry.rc.startRc).toBe(section(doc, "foot").rc.endRc);
     } else {
       expect(entry.rc.startRc).toBe(0);
@@ -870,6 +876,21 @@ describe("Toe-Up opening uses existing Scrap and Ravel Cast On glossary", () => 
   });
 });
 
+describe("short-row decrease uses existing Automatic Wrap glossary", () => {
+  type GlossaryRow = { glossaryId?: number; english?: string; active?: boolean };
+  const entries = glossary as GlossaryRow[];
+  const entry = entries.find((row) => row.glossaryId === AUTOMATIC_WRAP_GLOSSARY_ID);
+  const byEnglish = entries.find((row) => row.english === AUTOMATIC_WRAP_GLOSSARY_TERM);
+
+  it("locates the existing glossary entry by id and English term", () => {
+    expect(entry).toBeDefined();
+    expect(entry?.active).toBe(true);
+    expect(entry?.english).toBe(AUTOMATIC_WRAP_GLOSSARY_TERM);
+    expect(byEnglish?.glossaryId).toBe(AUTOMATIC_WRAP_GLOSSARY_ID);
+    expect(glossarySlugForId(AUTOMATIC_WRAP_GLOSSARY_ID)).toBe("automatic-wrap");
+  });
+});
+
 describe("Cuff-to-Toe Leg omits the redundant row-counter reset control", () => {
   it("keeps RC: 000 on Cuff-to-Toe Leg without RESET ROW COUNTER TO 000", () => {
     const html = renderBasicSockInstructionsHtml(
@@ -1024,6 +1045,7 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
       shortRowDepthRows: 8,
       shortRowKnittingRows: 16,
     });
+    expect(sockScrapOffHeelInstruction(13)).toBe("Scrap off 13 stitches.");
     const heel = buildSockShortRowInstructionSection({
       part: "heel",
       shaping: shaping!,
@@ -1040,7 +1062,7 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
       sections: [heel],
     });
     expect(html).toContain(
-      "On the carriage side, put 1 needle into hold and knit across. Repeat every row until 5 center stitches remain. (8 short-row passes)",
+      `On the carriage side, put 1 needle into hold, <span class="glossary-tooltip-placeholder" data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}" data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}" data-aria-label="${AUTOMATIC_WRAP_GLOSSARY_TERM}">${AUTOMATIC_WRAP_GLOSSARY_TERM}</span>, and knit across. Repeat every row until 5 center stitches remain. (8 short-row passes)`,
     );
     expect(html).toContain(
       "Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all 13 working stitches are back in work. (8 short-row passes)",
@@ -1119,6 +1141,33 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
     expect(sectionHtml(html, "ankle")).toContain("RC: 000");
     expect(sectionHtml(html, "ankle")).not.toContain(RESTART_ROW_COUNTER_TEXT);
     expect(sectionHtml(html, "leg")).toContain(RESET_ROW_COUNTER_TEXT);
+  });
+
+  it("starts Toe-Up Heel at the Foot ending RC without resetting the counter", () => {
+    for (const input of [typicalMachine, baby]) {
+      const calc = mustCalc({ ...input, constructionDirection: "toe-up" });
+      const pair = buildBasicSockInstructionPair(calc);
+      const footRc = formatRowCounterResetGarmentRcLabel(calc.straightFootRows);
+      expect(calc.straightFootRows).toBeGreaterThan(0);
+      expect(footRc).not.toBe("RC: 000");
+      for (const doc of [pair.sock1, pair.sock2]) {
+        const heel = section(doc, "heel");
+        const foot = section(doc, "foot");
+        expect(foot.rc.endRc).toBe(calc.straightFootRows);
+        expect(heel.steps[0]).toEqual({
+          type: "stop-rc",
+          garmentRc: calc.straightFootRows,
+        });
+        expect(heel.rc.startRc).toBe(foot.rc.endRc);
+        expect(heel.rc.resetAtStart).toBe(false);
+        expect(stepTypes(heel)).not.toContain("reset-rc");
+        const html = sectionHtml(renderBasicSockInstructionsHtml(doc), "heel");
+        expect(html).toContain(STOP_ROW_COUNTER_TEXT);
+        expect(html).toContain(footRc);
+        expect(html).not.toContain(RESET_ROW_COUNTER_TEXT);
+        expect(html).not.toContain("RC: 000");
+      }
+    }
   });
 });
 
@@ -1308,7 +1357,7 @@ describe("Toe-Up follows the demonstrated scrap-on / short-row / graft sequence"
     expect(shortRowIn(section(doc, "toe")).remainingStitches).toBe(calc.toe.remainingStitches);
   });
 
-  it("scraps off the first heel stitches, short-rows, then rehangs the same counts", () => {
+  it("scraps off idle stitches, short-rows, then rehangs the same counts", () => {
     const heel = section(doc, "heel");
     expect(stepTypes(heel)).toEqual([
       "stop-rc",
@@ -1319,8 +1368,12 @@ describe("Toe-Up follows the demonstrated scrap-on / short-row / graft sequence"
       "rehang-scrapped-heel",
     ]);
     expect(sectionHtml(html, "heel")).toContain(
-      sockScrapOffHeelInstruction(calc.heel.heldStitches, "left"),
+      sockScrapOffHeelInstruction(calc.heel.heldStitches),
     );
+    expect(sectionHtml(html, "heel")).not.toContain("Scrap off the first");
+    expect(sectionHtml(html, "heel")).not.toContain("heel stitches");
+    expect(sectionHtml(html, "heel")).not.toContain("LEFT half");
+    expect(sectionHtml(html, "heel")).not.toContain("RIGHT half");
     expect(sectionHtml(html, "heel")).toContain(
       sockRehangScrappedHeelInstruction(calc.heel.heldStitches, calc.totalSockStitches),
     );
@@ -1381,7 +1434,10 @@ describe("KIN automatic-wrap short-row primitive", () => {
     expect(increase.rows).toBe(calc.heel.shortRowOutSteps);
     expect(increase.endWorkingStitches).toBe(calc.heel.workingStitches);
     const html = renderBasicSockInstructionsHtml(sock1);
-    expect(html).toContain("On the carriage side, put 1 needle into hold and knit across");
+    expect(html).toContain("On the carriage side, put 1 needle into hold,");
+    expect(html).toContain(`data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}"`);
+    expect(html).toContain(`data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}"`);
+    expect(html).toContain("</span>, and knit across");
     expect(html).toContain("Opposite the carriage, return 1 needle to work and knit across");
     expect(html).toContain("Repeat every row until");
     expect(html).not.toMatch(/RC 001:.*left needle/i);

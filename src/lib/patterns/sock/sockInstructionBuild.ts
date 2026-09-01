@@ -179,6 +179,8 @@ function buildHeelSection(calc: BasicSockCalc, sock: SockOfPair): SockInstructio
     tubeStitches: calc.totalSockStitches,
     constructionDirection: calc.constructionDirection,
     sock,
+    arriveRc:
+      calc.constructionDirection === "toe-up" ? calc.straightFootRows : undefined,
   });
 }
 

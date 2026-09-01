@@ -80,6 +80,10 @@ export const BICKFORD_SEAM_GLOSSARY_TERM = "Bickford Seam";
 export const KITCHENER_STITCH_GLOSSARY_ID = 521;
 export const KITCHENER_STITCH_GLOSSARY_TERM = "Kitchener Stitch";
 
+/** Existing KIN glossary entry “Automatic Wrap” (`src/data/glossary.json`). */
+export const AUTOMATIC_WRAP_GLOSSARY_ID = 346;
+export const AUTOMATIC_WRAP_GLOSSARY_TERM = "Automatic Wrap";
+
 export const SOCK_SECOND_SOCK_INTRO =
   "The second sock mirrors the heel and toe placement so the seams fall on the inside of each leg and foot, creating a left and right pair.";
 
@@ -89,11 +93,8 @@ export const SOCK_TOE_UP_KNIT_SETUP_ROW =
 export const SOCK_TOE_UP_FINISH_CUFF =
   "Finish the cuff using the method of your choice — ribbing, hand-manipulated ribbing, a ribber, hand-knit ribbing, a rolled edge, or another stretchy finish.";
 
-export function sockScrapOffHeelInstruction(
-  stitches: number,
-  holdHalf: SockNeedleHalf,
-): string {
-  return `Scrap off the first ${stitches} heel stitches (${halfLabel(holdHalf)} half).`;
+export function sockScrapOffHeelInstruction(stitches: number): string {
+  return `Scrap off ${stitches} stitches.`;
 }
 
 export function sockRehangScrappedHeelInstruction(
@@ -236,6 +237,14 @@ function kitchenerStitchGlossaryHtml(): string {
     KITCHENER_STITCH_GLOSSARY_ID,
     KITCHENER_STITCH_GLOSSARY_TERM,
     KITCHENER_STITCH_GLOSSARY_TERM,
+  );
+}
+
+function automaticWrapGlossaryHtml(): string {
+  return glossaryPlaceholderHtml(
+    AUTOMATIC_WRAP_GLOSSARY_ID,
+    AUTOMATIC_WRAP_GLOSSARY_TERM,
+    AUTOMATIC_WRAP_GLOSSARY_TERM,
   );
 }
 
@@ -454,7 +463,7 @@ function renderStep(step: SockInstructionStep): string {
     case "ensure-carriage":
       return `<p>${escapeHtml(sockEnsureCarriageInstruction(step.part, step.side))}</p>`;
     case "short-row-in":
-      return `<p>On the carriage side, put 1 needle into hold and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})</p>`;
+      return `<p>On the carriage side, put 1 needle into hold, ${automaticWrapGlossaryHtml()}, and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})</p>`;
     case "short-row-wrap-warning":
       return `<p class="sock-pattern-tip">${escapeHtml(SOCK_SHORT_ROW_WRAP_WARNING)}</p>`;
     case "short-row-out":
@@ -462,7 +471,7 @@ function renderStep(step: SockInstructionStep): string {
     case "cancel-hold-return":
       return `<p>Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. (${step.tubeStitches} stitches)</p>`;
     case "scrap-off-heel":
-      return `<p>${escapeHtml(sockScrapOffHeelInstruction(step.stitches, step.orientation.holdHalf))}</p>`;
+      return `<p>${escapeHtml(sockScrapOffHeelInstruction(step.stitches))}</p>`;
     case "rehang-scrapped-heel":
       return `<p>${escapeHtml(sockRehangScrappedHeelInstruction(step.stitches, step.tubeStitches))}</p>`;
     case "waste-yarn":
@@ -598,7 +607,7 @@ function outlineStep(step: SockInstructionStep): string {
     case "ensure-carriage":
       return sockEnsureCarriageInstruction(step.part, step.side);
     case "short-row-in":
-      return `On the carriage side, put 1 needle into hold and knit across, every row, until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})`;
+      return `On the carriage side, put 1 needle into hold, ${AUTOMATIC_WRAP_GLOSSARY_TERM}, and knit across, every row, until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})`;
     case "short-row-wrap-warning":
       return SOCK_SHORT_ROW_WRAP_WARNING;
     case "short-row-out":
@@ -606,7 +615,7 @@ function outlineStep(step: SockInstructionStep): string {
     case "cancel-hold-return":
       return `Cancel HOLD; return previously held half (${step.heldStitches} sts; ${step.tubeStitches} tube stitches).`;
     case "scrap-off-heel":
-      return sockScrapOffHeelInstruction(step.stitches, step.orientation.holdHalf);
+      return sockScrapOffHeelInstruction(step.stitches);
     case "rehang-scrapped-heel":
       return sockRehangScrappedHeelInstruction(step.stitches, step.tubeStitches);
     case "waste-yarn":

@@ -46,16 +46,19 @@ export function buildSockShortRowInstructionSection(args: {
   tubeStitches: number;
   constructionDirection: SockConstructionDirection;
   sock: SockOfPair;
-  /** Cuff-to-Toe toe: Foot ending RC shown when the counter is stopped. */
+  /**
+   * Prior-section RC shown when the counter is stopped without resetting.
+   * Cuff-to-Toe toe and Toe-Up heel inherit the Foot ending RC.
+   */
   arriveRc?: number;
 }): SockInstructionSection {
   const { part, shaping, orientation, tubeStitches, constructionDirection, sock } = args;
   const knittingRows = shaping.shortRowKnittingRows;
-  const stopAfterFoot = part === "toe" && constructionDirection === "cuff-to-toe";
   const handling = heldHalfHandling(part, constructionDirection);
   const onBedStitches = handling === "none" ? shaping.workingStitches : tubeStitches;
+  const inheritPriorRc = args.arriveRc != null;
   const arriveRc = args.arriveRc ?? 0;
-  const rcStep: SockInstructionStep = stopAfterFoot
+  const rcStep: SockInstructionStep = inheritPriorRc
     ? { type: "stop-rc", garmentRc: arriveRc }
     : part === "heel"
       ? { type: "stop-rc" }
@@ -140,7 +143,7 @@ export function buildSockShortRowInstructionSection(args: {
     startStitches: onBedStitches,
     endStitches: onBedStitches,
     rowsToKnit: knittingRows,
-    rc: stopAfterFoot
+    rc: inheritPriorRc
       ? { resetAtStart: false, startRc: arriveRc, endRc: knittingRows }
       : { resetAtStart: true, startRc: 0, endRc: knittingRows },
     physicalDepthRows: shaping.shortRowDepthRows,

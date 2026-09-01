@@ -17,6 +17,7 @@ import {
   sockCanonicalGeometryMarkup,
   sockCanonicalLabelPoint,
   sockCanonicalMapY,
+  sockCanonicalReadingDirectionArrowMarkup,
   sockCanonicalStacked,
   sockCanonicalText,
 } from "./sockCanonicalDiagram";
@@ -50,6 +51,47 @@ const DIM_LABEL_GAP = 10;
 const DIM_ABOVE = 8;
 const CUFF_DIM_Y = OUTLINE.top - 14;
 const V_DIM_X = OUTLINE.right + DIM_GAP;
+const WORK_STS_INSET = 28;
+
+export type SockDiagramRcMilestoneId =
+  | "rc-start"
+  | "rc-after-first"
+  | "rc-after-second"
+  | "rc-finish";
+
+export type SockDiagramRcMilestone = {
+  id: SockDiagramRcMilestoneId;
+  rc: number;
+  canonicalY: number;
+};
+
+function formatSockDiagramRc(rc: number): string {
+  const n = Math.max(0, Math.floor(rc));
+  return `RC: ${String(n).padStart(3, "0")}`;
+}
+
+/**
+ * Stitches & Rows RC labels at construction milestones (not per-section row counts).
+ * Values are the pattern's local row-counter at that boundary.
+ */
+export function sockDiagramRcMilestones(calc: BasicSockCalc): SockDiagramRcMilestone[] {
+  if (calc.constructionDirection === "toe-up") {
+    const finishRc =
+      calc.legShapingRowsAvailable > 0 ? calc.legShapingRowsAvailable : calc.ankleStraightRows;
+    return [
+      { id: "rc-start", rc: 0, canonicalY: OUTLINE.toeBottom },
+      { id: "rc-after-first", rc: 0, canonicalY: OUTLINE.toeTop },
+      { id: "rc-after-second", rc: calc.straightFootRows, canonicalY: OUTLINE.heelBottom },
+      { id: "rc-finish", rc: finishRc, canonicalY: OUTLINE.top },
+    ];
+  }
+  return [
+    { id: "rc-start", rc: 0, canonicalY: OUTLINE.top },
+    { id: "rc-after-first", rc: calc.legRows, canonicalY: OUTLINE.heelTop },
+    { id: "rc-after-second", rc: 0, canonicalY: OUTLINE.heelBottom },
+    { id: "rc-finish", rc: calc.straightFootRows, canonicalY: OUTLINE.toeBottom },
+  ];
+}
 
 function point(
   id: Parameters<typeof sockCanonicalLabelPoint>[0],
@@ -198,33 +240,46 @@ export function buildSockPatternDiagramSvg(
     labels.push(sockCanonicalText({ id, x: at.x, y: at.y, text: name, size: 12 }));
   }
 
-  const heelWork = point("heelWork", mirror, flipVertical);
   const heelCenter = point("heelCenter", mirror, flipVertical);
-  const toeWork = point("toeWork", mirror, flipVertical);
   const toeCenter = point("toeCenter", mirror, flipVertical);
+  const workStsX = outlineX(OUTLINE.right - WORK_STS_INSET, mirror);
   labels.push(
     sockCanonicalText({
       id: "heel-center",
-      x: heelWork.x,
-      y: heelWork.y,
+      x: heelCenter.x,
+      y: heelCenter.y,
       text: fields.heelCenterLabel,
       size: 11,
     }),
   );
   labels.push(
-    sockCanonicalText({ id: "heel-work", x: heelCenter.x, y: heelCenter.y, text: fields.heelWorkLabel, size: 11 }),
+    sockCanonicalText({
+      id: "heel-work",
+      x: workStsX,
+      y: yAt(OUTLINE.heelMid - DIM_ABOVE),
+      text: fields.heelWorkLabel,
+      size: 11,
+      fill: DIM_MUTED,
+    }),
   );
   labels.push(
     sockCanonicalText({
       id: "toe-center",
-      x: toeWork.x,
-      y: toeWork.y,
+      x: toeCenter.x,
+      y: toeCenter.y,
       text: fields.toeCenterLabel,
       size: 11,
     }),
   );
   labels.push(
-    sockCanonicalText({ id: "toe-work", x: toeCenter.x, y: toeCenter.y, text: fields.toeWorkLabel, size: 11 }),
+    sockCanonicalText({
+      id: "toe-work",
+      x: workStsX,
+      y: yAt(OUTLINE.toeMid - DIM_ABOVE),
+      text: fields.toeWorkLabel,
+      size: 11,
+      fill: DIM_MUTED,
+    }),
   );
 
   labels.push(
@@ -269,6 +324,21 @@ export function buildSockPatternDiagramSvg(
     );
   }
 
+  const rcMilestones = sockDiagramRcMilestones(calc);
+  for (const milestone of rcMilestones) {
+    labels.push(
+      sockCanonicalText({
+        id: milestone.id,
+        x: measureX,
+        y: yAt(milestone.canonicalY),
+        text: formatSockDiagramRc(milestone.rc),
+        size: 11,
+        anchor: "start",
+        fill: DIM_MUTED,
+      }),
+    );
+  }
+
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${frame.viewBox}" ` +
     `role="img" aria-label="Basic Socks stitches and rows" ` +
@@ -279,6 +349,11 @@ export function buildSockPatternDiagramSvg(
     `data-sock-of-pair="${mirror ? "2" : "1"}" ` +
     `data-sock-knit-order="${calc.constructionDirection}" ` +
     `data-sock-flip-vertical="${flipVertical ? "true" : "false"}" ` +
+    `data-sock-reading-direction="bottom-to-top" ` +
+    `data-sock-rc-start="${rcMilestones[0]!.rc}" ` +
+    `data-sock-rc-after-first="${rcMilestones[1]!.rc}" ` +
+    `data-sock-rc-after-second="${rcMilestones[2]!.rc}" ` +
+    `data-sock-rc-finish="${rcMilestones[3]!.rc}" ` +
     `data-sock-cuff-sts="${fields.cuffStitches}" data-sock-tube-sts="${fields.tubeStitches}" ` +
     `data-sock-leg-rows="${fields.upperLegRows}" data-sock-ankle-rows="${fields.ankleRows}" ` +
     `data-sock-foot-rows="${fields.footRows}" data-sock-heel-short-row="${fields.heelShortRow}" ` +
@@ -294,6 +369,7 @@ export function buildSockPatternDiagramSvg(
     `data-sock-toe-in="${fields.toeInches}" ` +
     `width="100%" height="auto">` +
     sockCanonicalGeometryMarkup({ mirror, flipVertical }) +
+    sockCanonicalReadingDirectionArrowMarkup() +
     `<g data-sock-diagram-dims>` +
     dims.join("") +
     `</g>` +
