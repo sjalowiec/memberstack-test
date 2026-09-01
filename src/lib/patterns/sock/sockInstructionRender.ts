@@ -39,6 +39,17 @@ export const SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID = "1222865852";
 export const SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE = "Knitting Toe-Up Socks";
 export const SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID = "socks-toe-up-overview-video";
 
+/**
+ * Complete Toe-Up walkthrough. Direct Vimeo embed on the Toe-Up pattern only.
+ * Not Learning Library content 2088 — no catalog lookup or extra entitlement gate.
+ */
+export const SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID = "755126615";
+export const SOCK_TOE_UP_COMPLETE_VIDEO_TITLE = "Complete Toe-Up Sock";
+export const SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID = "socks-toe-up-complete-video";
+export const SOCK_TOE_UP_COMPLETE_VIDEO_HEADING = "New to toe-up socks?";
+export const SOCK_TOE_UP_COMPLETE_VIDEO_COPY =
+  "Watch the complete Toe-Up Sock video before you begin. It walks you through the entire process from start to finish.";
+
 /** Ankle section help video (both construction directions). */
 export const SOCK_ANKLE_VIDEO_VIMEO_ID = "1222664135";
 /**
@@ -310,16 +321,19 @@ function buildSockPatternVideoTipHtml(options: {
   vimeoId: string;
   explainerKey: string;
   privacyHash?: string;
+  videoTitle?: string;
+  introHtml?: string;
 }): string {
   const inner = buildPatternQuickTipInnerHtml({
     summaryLabel: options.title,
     bodyHtml: buildPatternExplainerVideoBodyHtml({
       video: {
         vimeoId: options.vimeoId,
-        title: options.title,
+        title: options.videoTitle ?? options.title,
         ...(options.privacyHash ? { privacyHash: options.privacyHash } : {}),
       },
       explainerKey: options.explainerKey,
+      ...(options.introHtml ? { introHtml: options.introHtml } : {}),
     }),
   });
   return (
@@ -329,14 +343,49 @@ function buildSockPatternVideoTipHtml(options: {
   );
 }
 
-function sectionVideoTipHtml(section: SockInstructionSection): string {
-  if (section.id === "cast-on" && section.constructionDirection === "cuff-to-toe") {
-    return buildSockPatternVideoTipHtml({
-      tipId: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
-      title: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
-      vimeoId: SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
-      explainerKey: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
-    });
+function toeUpCompleteVideoCalloutHtml(): string {
+  return (
+    `<div data-socks-toe-up-complete-video>` +
+    buildSockPatternVideoTipHtml({
+      tipId: SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID,
+      title: SOCK_TOE_UP_COMPLETE_VIDEO_HEADING,
+      videoTitle: SOCK_TOE_UP_COMPLETE_VIDEO_TITLE,
+      vimeoId: SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID,
+      explainerKey: SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID,
+      introHtml: `<p>${escapeHtml(SOCK_TOE_UP_COMPLETE_VIDEO_COPY)}</p>`,
+    }) +
+    `</div>`
+  );
+}
+
+function buildSockPatternTextTipHtml(options: {
+  tipId: string;
+  title: string;
+  bodyText: string;
+}): string {
+  const inner = buildPatternQuickTipInnerHtml({
+    summaryLabel: options.title,
+    bodyHtml: `<p>${escapeHtml(options.bodyText)}</p>`,
+  });
+  return (
+    `<div class="pattern-tip pattern-quick-tip" data-tip data-tip-id="${escapeHtml(options.tipId)}">` +
+    inner +
+    `</div>`
+  );
+}
+
+function sectionTipsHtml(section: SockInstructionSection): string {
+  const cuffToToe = section.constructionDirection === "cuff-to-toe";
+  const tips: string[] = [];
+  if (section.id === "cast-on" && cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+        title: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
+        vimeoId: SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+      }),
+    );
   }
   if (section.id === "cast-on" && !cuffToToe) {
     tips.push(
@@ -349,15 +398,57 @@ function sectionVideoTipHtml(section: SockInstructionSection): string {
     );
   }
   if (section.id === "ankle") {
-    return buildSockPatternVideoTipHtml({
-      tipId: SOCK_ANKLE_VIDEO_TIP_ID,
-      title: SOCK_ANKLE_VIDEO_TITLE,
-      vimeoId: SOCK_ANKLE_VIDEO_VIMEO_ID,
-      explainerKey: SOCK_ANKLE_VIDEO_TIP_ID,
-      privacyHash: SOCK_ANKLE_VIDEO_PRIVACY_HASH,
-    });
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_ANKLE_VIDEO_TIP_ID,
+        title: SOCK_ANKLE_VIDEO_TITLE,
+        vimeoId: SOCK_ANKLE_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_ANKLE_VIDEO_TIP_ID,
+        privacyHash: SOCK_ANKLE_VIDEO_PRIVACY_HASH,
+      }),
+    );
   }
-  return "";
+  if (section.id === "heel" && cuffToToe) {
+    tips.push(
+      buildSockPatternTextTipHtml({
+        tipId: SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
+        title: SOCK_WHY_STOP_ROW_COUNTER_TITLE,
+        bodyText: SOCK_WHY_STOP_ROW_COUNTER_BODY,
+      }),
+    );
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_HEEL_VIDEO_TIP_ID,
+        title: SOCK_HEEL_VIDEO_TITLE,
+        vimeoId: SOCK_HEEL_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_HEEL_VIDEO_TIP_ID,
+        privacyHash: SOCK_HEEL_VIDEO_PRIVACY_HASH,
+      }),
+    );
+  }
+  if (section.id === "toe" && cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_TOE_VIDEO_TIP_ID,
+        title: SOCK_TOE_VIDEO_TITLE,
+        vimeoId: SOCK_TOE_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_TOE_VIDEO_TIP_ID,
+        privacyHash: SOCK_TOE_VIDEO_PRIVACY_HASH,
+      }),
+    );
+  }
+  if (section.id === "finishing" && cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_TOE_FINISHING_VIDEO_TIP_ID,
+        title: SOCK_TOE_FINISHING_VIDEO_TITLE,
+        vimeoId: SOCK_TOE_FINISHING_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_TOE_FINISHING_VIDEO_TIP_ID,
+        privacyHash: SOCK_TOE_FINISHING_VIDEO_PRIVACY_HASH,
+      }),
+    );
+  }
+  return tips.join("");
 }
 
 function renderStep(step: SockInstructionStep): string {
@@ -493,7 +584,7 @@ function renderSection(section: SockInstructionSection): string {
   return wrapSockPatternSection(
     section.id,
     `<h4>${escapeHtml(section.title)}</h4>`,
-    sectionVideoTipHtml(section) + body + notes,
+    sectionTipsHtml(section) + body + notes,
   );
 }
 
@@ -501,8 +592,11 @@ export function renderBasicSockInstructionsHtml(doc: SockInstructionDocument): s
   const sockLabel = doc.sock === 1 ? "Sock 1" : "Sock 2";
   const direction =
     doc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up";
+  const intro =
+    doc.constructionDirection === "toe-up" ? toeUpCompleteVideoCalloutHtml() : "";
   return `<div class="sock-instructions" data-sock="${doc.sock}" data-construction="${doc.constructionDirection}">
   <p class="sock-instructions__label">${escapeHtml(sockLabel)} — ${escapeHtml(direction)}</p>
+  ${intro}
   ${doc.sections.map(renderSection).join("\n")}
 </div>`;
 }

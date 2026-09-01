@@ -39,6 +39,10 @@ import {
   SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
   SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
   SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
+  SOCK_TOE_UP_COMPLETE_VIDEO_HEADING,
+  SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID,
+  SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID,
   SOCK_TOE_UP_FINISH_CUFF,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
 } from "./sockInstructions";
@@ -168,6 +172,8 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain("data-section-id=\"ankle\"");
     expect(html).toContain("Ankle");
     expect(html).not.toContain(SHORT_ROW_WRAP_WARNING);
+    expect(html).not.toContain(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING);
+    expect(html).not.toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
     expect(html).toContain("contrasting waste yarn");
     expect(html).toContain("and remove the work from the machine.");
     expect(html).toContain("Finish the Toe");
@@ -228,6 +234,15 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain(`data-tip-id="${SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID}"`);
     expect(html).toContain(SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING);
+    expect(html).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_COPY);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(`data-tip-id="${SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID}"`);
+    expect(html.indexOf(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING)).toBeLessThan(
+      html.indexOf('data-section-id="toe"'),
+    );
+    expect(html).not.toContain("/videos/2088");
+    expect(html).not.toContain("data-content-id");
     expect(html).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
