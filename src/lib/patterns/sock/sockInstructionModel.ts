@@ -142,6 +142,11 @@ export type SockInstructionStep =
       stitches: number;
     }
   | {
+      type: "working-on-remaining";
+      /** Working-half stitch count after the idle stitches are scrapped off. */
+      stitches: number;
+    }
+  | {
       type: "rehang-scrapped-heel";
       stitches: number;
       tubeStitches: number;
