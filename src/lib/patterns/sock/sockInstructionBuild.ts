@@ -36,7 +36,7 @@ function buildCastOnSection(
   sock: SockOfPair,
 ): SockInstructionSection {
   const toeUp = calc.constructionDirection === "toe-up";
-  const stitches = toeUp ? calc.totalSockStitches : calc.legStitches;
+  const stitches = toeUp ? calc.toe.workingStitches : calc.legStitches;
   return {
     id: "cast-on",
     title: toeUp ? SOCK_TOE_UP_OPENING_SECTION_TITLE : "Cast-On",
@@ -46,13 +46,21 @@ function buildCastOnSection(
     endStitches: stitches,
     rowsToKnit: 0,
     rc: setupRc(),
-    steps: [
-      {
-        type: "cast-on",
-        stitches,
-        role: toeUp ? "foot-tube" : "top-leg",
-      },
-    ],
+    steps: toeUp
+      ? [
+          {
+            type: "cast-on",
+            stitches,
+            role: "toe",
+          },
+        ]
+      : [
+          {
+            type: "cast-on",
+            stitches,
+            role: "top-leg",
+          },
+        ],
     notes: [],
   };
 }
@@ -125,25 +133,40 @@ function buildAnkleSection(
 }
 
 function buildFootSection(calc: BasicSockCalc, sock: SockOfPair): SockInstructionSection {
+  const toeUp = calc.constructionDirection === "toe-up";
+  const steps: SockInstructionStep[] = toeUp
+    ? [
+        {
+          type: "cast-on",
+          stitches: calc.toe.heldStitches,
+          role: "remaining-foot",
+          totalStitches: calc.totalSockStitches,
+        },
+        { type: "reset-rc" },
+        {
+          type: "knit-even",
+          rows: calc.straightFootRows,
+          stitches: calc.totalSockStitches,
+        },
+      ]
+    : [
+        { type: "restart-rc" },
+        {
+          type: "knit-even",
+          rows: calc.straightFootRows,
+          stitches: calc.totalSockStitches,
+        },
+      ];
   return {
     id: "foot",
     title: "Foot",
     constructionDirection: calc.constructionDirection,
     sock,
-    startStitches: calc.totalSockStitches,
+    startStitches: toeUp ? calc.toe.workingStitches : calc.totalSockStitches,
     endStitches: calc.totalSockStitches,
     rowsToKnit: calc.straightFootRows,
     rc: knittingRc(calc.straightFootRows),
-    steps: [
-      {
-        type: calc.constructionDirection === "cuff-to-toe" ? "restart-rc" : "reset-rc",
-      },
-      {
-        type: "knit-even",
-        rows: calc.straightFootRows,
-        stitches: calc.totalSockStitches,
-      },
-    ],
+    steps,
     notes: [],
   };
 }
@@ -219,8 +242,9 @@ function buildFinishingSection(
   const toeUp = calc.constructionDirection === "toe-up";
   const steps: SockInstructionStep[] = toeUp
     ? [
-        { type: "bind-off", stitches: calc.legStitches },
-        { type: "seam", suggestBickford: true },
+        { type: "finish-cuff", stitches: calc.legStitches },
+        { type: "kitchener", placement: "top-of-toes" },
+        { type: "seam", suggestBickford: true, insideLeg: true },
         { type: "block" },
       ]
     : cuffToToeClosingSteps(toeFinishingVariation, calc.totalSockStitches);

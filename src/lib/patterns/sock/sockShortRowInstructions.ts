@@ -4,6 +4,10 @@
  * Consumes approved {@link ShortRowShaping} counts. Does not apply the 1/3 rule.
  * Decrease/increase rows are carriage-relative (KIN automatic wrap), not
  * hard-coded left/right needle diaries.
+ *
+ * Cuff-to-Toe puts the idle half in HOLD. Toe-Up starts the toe with only the
+ * working stitches on the bed, and scraps the idle heel stitches off then
+ * rehangs them — same stitch counts, different stitch management.
  */
 
 import type { ShortRowShaping, SockConstructionDirection } from "./sockMath";
@@ -25,6 +29,16 @@ function isFirstShortRowSection(
   );
 }
 
+type HeldHalfHandling = "hold" | "scrap-off-rehang" | "none";
+
+function heldHalfHandling(
+  part: SockShortRowPart,
+  constructionDirection: SockConstructionDirection,
+): HeldHalfHandling {
+  if (constructionDirection !== "toe-up") return "hold";
+  return part === "toe" ? "none" : "scrap-off-rehang";
+}
+
 export function buildSockShortRowInstructionSection(args: {
   part: SockShortRowPart;
   shaping: ShortRowShaping;
@@ -38,6 +52,8 @@ export function buildSockShortRowInstructionSection(args: {
   const { part, shaping, orientation, tubeStitches, constructionDirection, sock } = args;
   const knittingRows = shaping.shortRowKnittingRows;
   const stopAfterFoot = part === "toe" && constructionDirection === "cuff-to-toe";
+  const handling = heldHalfHandling(part, constructionDirection);
+  const onBedStitches = handling === "none" ? shaping.workingStitches : tubeStitches;
   const arriveRc = args.arriveRc ?? 0;
   const rcStep: SockInstructionStep = stopAfterFoot
     ? { type: "stop-rc", garmentRc: arriveRc }
@@ -49,13 +65,45 @@ export function buildSockShortRowInstructionSection(args: {
     part,
     side: orientation.carriageStartSide,
   };
+  const setupHeld: SockInstructionStep[] =
+    handling === "hold"
+      ? [
+          {
+            type: "place-hold",
+            orientation,
+            holdStitches: shaping.heldStitches,
+            workStitches: shaping.workingStitches,
+          },
+        ]
+      : handling === "scrap-off-rehang"
+        ? [
+            {
+              type: "scrap-off-heel",
+              orientation,
+              stitches: shaping.heldStitches,
+            },
+          ]
+        : [];
+  const restoreHeld: SockInstructionStep[] =
+    handling === "hold"
+      ? [
+          {
+            type: "cancel-hold-return",
+            heldStitches: shaping.heldStitches,
+            tubeStitches,
+          },
+        ]
+      : handling === "scrap-off-rehang"
+        ? [
+            {
+              type: "rehang-scrapped-heel",
+              stitches: shaping.heldStitches,
+              tubeStitches,
+            },
+          ]
+        : [];
   const rest: SockInstructionStep[] = [
-    {
-      type: "place-hold",
-      orientation,
-      holdStitches: shaping.heldStitches,
-      workStitches: shaping.workingStitches,
-    },
+    ...setupHeld,
     {
       type: "short-row-in",
       rows: shaping.shortRowInSteps,
@@ -73,26 +121,24 @@ export function buildSockShortRowInstructionSection(args: {
       needleRelative: "opposite-carriage",
       everyRow: true,
     },
-    {
-      type: "cancel-hold-return",
-      heldStitches: shaping.heldStitches,
-      tubeStitches,
-    },
+    ...restoreHeld,
   ];
   const firstShortRow = isFirstShortRowSection(part, constructionDirection);
+  const knitSetup: SockInstructionStep[] =
+    firstShortRow && part === "toe" ? [{ type: "knit-setup-row" }] : [];
   const steps: SockInstructionStep[] =
     firstShortRow && part === "heel"
       ? [rcStep, ensureCarriage, ...rest]
       : firstShortRow && part === "toe"
-        ? [ensureCarriage, rcStep, ...rest]
+        ? [ensureCarriage, ...knitSetup, rcStep, ...rest]
         : [rcStep, ...rest];
   return {
     id: part,
     title: part === "heel" ? "Heel" : "Toe",
     constructionDirection,
     sock,
-    startStitches: tubeStitches,
-    endStitches: tubeStitches,
+    startStitches: onBedStitches,
+    endStitches: onBedStitches,
     rowsToKnit: knittingRows,
     rc: stopAfterFoot
       ? { resetAtStart: false, startRc: arriveRc, endRc: knittingRows }
