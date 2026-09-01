@@ -126,6 +126,41 @@
   color: #111;
 }
 
+.pattern-diagram-shaping-help,
+#pattern-content .pattern-diagram-shaping-help {
+  margin: 0 0 0.75rem;
+  max-width: 100%;
+}
+
+.pattern-diagram-shaping-help__btn.kbm-btn,
+#pattern-content .pattern-diagram-shaping-help__btn.kbm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: auto;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 1.125rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+}
+
+.pattern-diagram-shaping-help__btn.kbm-btn:focus-visible,
+#pattern-content .pattern-diagram-shaping-help__btn.kbm-btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.pattern-diagram-shaping-help__btn .fa-circle-info,
+#pattern-content .pattern-diagram-shaping-help__btn .fa-circle-info {
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 @media (max-width: 767px) {
   .pattern-diagram-tabs__list,
   #pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__list,
@@ -152,10 +187,16 @@
     width: 100%;
     max-width: 100%;
   }
+
+  .pattern-diagram-shaping-help__btn.kbm-btn,
+  #pattern-content .pattern-diagram-shaping-help__btn.kbm-btn {
+    width: 100%;
+  }
 }
 
 @media print {
-  .pattern-diagram-tabs__list {
+  .pattern-diagram-tabs__list,
+  .pattern-diagram-shaping-help {
     display: none !important;
   }
 }

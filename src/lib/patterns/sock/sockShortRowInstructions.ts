@@ -32,12 +32,18 @@ export function buildSockShortRowInstructionSection(args: {
   tubeStitches: number;
   constructionDirection: SockConstructionDirection;
   sock: SockOfPair;
+  /** Cuff-to-Toe toe: Foot ending RC shown when the counter is stopped. */
+  arriveRc?: number;
 }): SockInstructionSection {
   const { part, shaping, orientation, tubeStitches, constructionDirection, sock } = args;
   const knittingRows = shaping.shortRowKnittingRows;
-  const rcStep: SockInstructionStep = {
-    type: part === "heel" ? "stop-rc" : "reset-rc",
-  };
+  const stopAfterFoot = part === "toe" && constructionDirection === "cuff-to-toe";
+  const arriveRc = args.arriveRc ?? 0;
+  const rcStep: SockInstructionStep = stopAfterFoot
+    ? { type: "stop-rc", garmentRc: arriveRc }
+    : part === "heel"
+      ? { type: "stop-rc" }
+      : { type: "reset-rc" };
   const ensureCarriage: SockInstructionStep = {
     type: "ensure-carriage",
     part,
@@ -88,7 +94,9 @@ export function buildSockShortRowInstructionSection(args: {
     startStitches: tubeStitches,
     endStitches: tubeStitches,
     rowsToKnit: knittingRows,
-    rc: { resetAtStart: true, startRc: 0, endRc: knittingRows },
+    rc: stopAfterFoot
+      ? { resetAtStart: false, startRc: arriveRc, endRc: knittingRows }
+      : { resetAtStart: true, startRc: 0, endRc: knittingRows },
     physicalDepthRows: shaping.shortRowDepthRows,
     shortRowKnittingRows: knittingRows,
     orientation,

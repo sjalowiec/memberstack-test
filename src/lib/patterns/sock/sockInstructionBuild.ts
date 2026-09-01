@@ -167,6 +167,8 @@ function buildToeSection(calc: BasicSockCalc, sock: SockOfPair): SockInstruction
     tubeStitches: calc.totalSockStitches,
     constructionDirection: calc.constructionDirection,
     sock,
+    arriveRc:
+      calc.constructionDirection === "cuff-to-toe" ? calc.straightFootRows : undefined,
   });
 }
 

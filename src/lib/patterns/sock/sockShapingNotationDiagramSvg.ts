@@ -1,14 +1,14 @@
 /**
  * Basic Socks Shaping Notation SVG.
  * Same canonical socks-summary.svg geometry and overlay anchors as Stitches & Rows.
- * Existing KIN tokens only: coN, boN, Nr, holdN, Ns-Mr-Kx.
+ * KIN tokens: coN, boN, Nr, rcNNN, ±Ns-Mr-Kx, and remaining-stitch labels.
  */
 
 import {
   formatBodyRowsNotation,
   formatBindOffNotation,
   formatCastOnNotation,
-  formatHoldNotation,
+  formatRcNotation,
 } from "../sleevelessBackJapaneseNotation";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import type { BasicSockCalc } from "./sockMath";
@@ -31,11 +31,39 @@ function magicFormulaLines(calc: BasicSockCalc): string[] {
   );
 }
 
-function shortRowToken(calc: BasicSockCalc, part: "heel" | "toe"): string {
+function remainingStitchLabel(stitches: number): string {
+  const n = Math.max(0, Math.round(stitches));
+  return n === 1 ? "1 st" : `${n} sts`;
+}
+
+/** Local RC where heel/toe short-row shaping begins. */
+function shortRowStartRc(
+  calc: BasicSockCalc,
+  part: "heel" | "toe",
+): number {
+  if (part === "toe") {
+    return calc.constructionDirection === "cuff-to-toe" ? calc.straightFootRows : 0;
+  }
+  return calc.constructionDirection === "cuff-to-toe"
+    ? calc.legRows
+    : calc.straightFootRows;
+}
+
+/**
+ * One heel/toe callout: start RC, then increase / remaining / decrease.
+ * Does not include hold-half notation.
+ */
+function shortRowNotationLines(
+  calc: BasicSockCalc,
+  part: "heel" | "toe",
+): string[] {
   const shaping = calc[part];
-  const inTok = formatShapingSegment(1, 1, shaping.shortRowInSteps);
-  const outTok = formatShapingSegment(1, 1, shaping.shortRowOutSteps);
-  return inTok === outTok ? inTok : `${inTok} ${outTok}`;
+  return [
+    formatRcNotation(shortRowStartRc(calc, part)),
+    `+${formatShapingSegment(1, 1, shaping.shortRowOutSteps)}`,
+    remainingStitchLabel(shaping.remainingStitches),
+    `-${formatShapingSegment(1, 1, shaping.shortRowInSteps)}`,
+  ];
 }
 
 function point(
@@ -65,17 +93,9 @@ export function buildSockShapingNotationLines(calc: BasicSockCalc): {
     castOn: formatCastOnNotation(knitStart),
     leg: leg.filter(Boolean),
     ankle: formatBodyRowsNotation(calc.ankleStraightRows),
-    heel: [
-      formatHoldNotation(calc.heel.heldStitches),
-      formatShapingSegment(1, 1, calc.heel.shortRowInSteps),
-      formatShapingSegment(1, 1, calc.heel.shortRowOutSteps),
-    ].filter(Boolean),
+    heel: shortRowNotationLines(calc, "heel"),
     foot: formatBodyRowsNotation(calc.straightFootRows),
-    toe: [
-      formatHoldNotation(calc.toe.heldStitches),
-      formatShapingSegment(1, 1, calc.toe.shortRowInSteps),
-      formatShapingSegment(1, 1, calc.toe.shortRowOutSteps),
-    ].filter(Boolean),
+    toe: shortRowNotationLines(calc, "toe"),
     order: calc.constructionDirection,
   };
 }
@@ -141,43 +161,43 @@ export function buildSockShapingNotationDiagramSvg(
     labels.push(sockCanonicalText({ id, x: at.x, y: at.y, text: name, size: 12 }));
   }
 
-  const heelHold = point("heelWork", mirror, flipVertical);
+  const heelAngle = point("heelWork", mirror, flipVertical);
   const heelShape = point("heelCenter", mirror, flipVertical);
-  const toeHold = point("toeWork", mirror, flipVertical);
+  const toeAngle = point("toeWork", mirror, flipVertical);
   const toeShape = point("toeCenter", mirror, flipVertical);
   labels.push(
     sockCanonicalText({
-      id: "heel-hold",
-      x: heelHold.x,
-      y: heelHold.y,
-      text: formatHoldNotation(calc.heel.heldStitches),
+      id: "heel-rc",
+      x: heelAngle.x,
+      y: heelAngle.y,
+      text: notation.heel[0] ?? "",
       size: 10,
     }),
   );
   labels.push(
-    sockCanonicalText({
+    sockCanonicalStacked({
       id: "heel-shape",
       x: heelShape.x,
       y: heelShape.y,
-      text: shortRowToken(calc, "heel"),
+      lines: notation.heel.slice(1),
       size: 10,
     }),
   );
   labels.push(
     sockCanonicalText({
-      id: "toe-hold",
-      x: toeHold.x,
-      y: toeHold.y,
-      text: formatHoldNotation(calc.toe.heldStitches),
+      id: "toe-rc",
+      x: toeAngle.x,
+      y: toeAngle.y,
+      text: notation.toe[0] ?? "",
       size: 10,
     }),
   );
   labels.push(
-    sockCanonicalText({
+    sockCanonicalStacked({
       id: "toe-shape",
       x: toeShape.x,
       y: toeShape.y,
-      text: shortRowToken(calc, "toe"),
+      lines: notation.toe.slice(1),
       size: 10,
     }),
   );

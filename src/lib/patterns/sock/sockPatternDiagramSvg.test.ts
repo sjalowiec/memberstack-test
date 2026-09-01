@@ -330,8 +330,8 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
       expect(labelXY(sts, id)).toEqual(labelXY(jp, id));
     }
     expect(labelXY(sts, "measureLeg-0").x).not.toBe(labelXY(jp, "measureLeg").x);
-    expect(labelXY(sts, "heel-center")).toEqual(labelXY(jp, "heel-hold"));
-    expect(labelXY(sts, "toe-work")).toEqual(labelXY(jp, "toe-shape"));
+    expect(labelXY(sts, "heel-center")).toEqual(labelXY(jp, "heel-rc"));
+    expect(labelXY(sts, "toe-work")).toEqual(labelXY(jp, "toe-shape-1"));
     const sock2 = buildSockPatternDiagramSvg(calc, { mode: "pattern", mirror: true });
     expect(Number(labelXY(jp, "measureLeg").x)).toBe(SOCK_CANONICAL_ANCHORS.measureLeg.x);
     expect(Number(labelXY(sock2, "measureLeg-0").x)).toBe(Number(labelXY(sts, "measureLeg-0").x));

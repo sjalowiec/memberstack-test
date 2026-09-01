@@ -322,7 +322,7 @@ function renderStep(step: SockInstructionStep): string {
     case "reset-rc":
       return rowCounterResetBlockHtml(0);
     case "stop-rc":
-      return rowCounterStopBlockHtml(0);
+      return rowCounterStopBlockHtml(step.garmentRc ?? 0);
     case "restart-rc":
       return rowCounterRestartBlockHtml(0);
     case "cast-on": {

@@ -303,15 +303,17 @@ const sockSizingJson = JSON.parse(
   }
 
   .sock-pattern-diagram-panel {
+    margin: 0;
     width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
   }
 
   .sock-pattern-diagram-panel__title {
-    margin: 0 0 0.55rem;
+    margin: 0 0 0.5rem;
     font-size: 1.05rem;
-    font-weight: 700;
-    color: #1f2937;
+    font-weight: 600;
+    color: #374151;
   }
 
   .sock-pattern-diagram-panel__svg,
@@ -406,7 +408,8 @@ const sockSizingJson = JSON.parse(
     }
 
     :global(.socks-pair-tabs__list),
-    :global(.pattern-diagram-tabs__list) {
+    :global(.pattern-diagram-tabs__list),
+    :global(.pattern-diagram-shaping-help) {
       display: none !important;
     }
 

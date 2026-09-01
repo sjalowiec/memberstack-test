@@ -346,6 +346,7 @@ describe("finished Hat pattern uses the shared diagram tabs", () => {
     expect(hatPage).toContain("pattern-diagram-tabs.css");
     expect(hatPage).toContain("Hat Dimensions");
     expect(hatPage).toContain("data-hat-diagram-tabs-mount");
+    expect(sharedCss).toContain(".pattern-diagram-shaping-help__btn.kbm-btn");
   });
 
   it("does not change Hat diagram generators or pattern math entry points", () => {
@@ -355,5 +356,17 @@ describe("finished Hat pattern uses the shared diagram tabs", () => {
     expect(pageScript).toContain("buildHatPatternDiagramSvg");
     expect(pageScript).toContain("buildHatShapingNotationDiagramSvg");
     expect(pageScript).not.toContain("buildHatJapaneseNotationDiagramSvg");
+  });
+});
+
+describe("finished Socks pattern uses the shared diagram tabs", () => {
+  it("Socks finished pattern imports the shared tab container CSS", () => {
+    const socksPage = readFileSync(
+      join(srcRoot, "pages/patterns/socks/pattern.astro"),
+      "utf8",
+    );
+    expect(socksPage).toContain("pattern-diagram-tabs.css");
+    expect(socksPage).toContain("data-sock-diagram-tabs-mount");
+    expect(socksPage).toContain(".pattern-diagram-shaping-help");
   });
 });
