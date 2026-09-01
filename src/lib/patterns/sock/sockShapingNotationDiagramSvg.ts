@@ -2,6 +2,7 @@
  * Basic Socks Shaping Notation SVG.
  * Same canonical socks-summary.svg geometry and overlay anchors as Stitches & Rows.
  * KIN tokens: coN, boN, Nr, rcNNN, ±Ns-Mr-Kx, and remaining-stitch labels.
+ * Right-side labels are the four construction RC milestones only (no section Nr).
  */
 
 import {
@@ -13,18 +14,26 @@ import {
 import { formatShapingSegment } from "../shapingNotationCompress";
 import type { BasicSockCalc } from "./sockMath";
 import {
+  SOCK_CANONICAL_ANCHORS,
   SOCK_CANONICAL_SVG_HREF,
   escapeSockSvgText,
   sockCanonicalDiagramFrame,
   sockCanonicalFlipVertical,
   sockCanonicalGeometryMarkup,
   sockCanonicalLabelPoint,
+  sockCanonicalMapY,
   sockCanonicalReadingDirectionArrowMarkup,
   sockCanonicalStacked,
   sockCanonicalText,
 } from "./sockCanonicalDiagram";
+import {
+  sockDiagramRcMilestones,
+  type SockDiagramRcMilestone,
+} from "./sockPatternDiagramSvg";
 
 const MUTED = "#4b5563";
+const RC_X = SOCK_CANONICAL_ANCHORS.measureLeg.x;
+const LEG_SHAPE_OFFSET = 18;
 
 function magicFormulaLines(calc: BasicSockCalc): string[] {
   return calc.legShapingSchedule.steps.map((step) =>
@@ -37,22 +46,9 @@ function remainingStitchLabel(stitches: number): string {
   return n === 1 ? "1 st" : `${n} sts`;
 }
 
-/** Local RC where heel/toe short-row shaping begins. */
-function shortRowStartRc(
-  calc: BasicSockCalc,
-  part: "heel" | "toe",
-): number {
-  if (part === "toe") {
-    return calc.constructionDirection === "cuff-to-toe" ? calc.straightFootRows : 0;
-  }
-  return calc.constructionDirection === "cuff-to-toe"
-    ? calc.legRows
-    : calc.straightFootRows;
-}
-
 /**
- * One heel/toe callout: start RC, then increase / remaining / decrease.
- * Does not include hold-half notation.
+ * Heel/toe callout: increase / remaining / decrease only.
+ * RC milestones live on the right, not inside the shaping stacks.
  */
 function shortRowNotationLines(
   calc: BasicSockCalc,
@@ -60,11 +56,31 @@ function shortRowNotationLines(
 ): string[] {
   const shaping = calc[part];
   return [
-    formatRcNotation(shortRowStartRc(calc, part)),
     `+${formatShapingSegment(1, 1, shaping.shortRowOutSteps)}`,
     remainingStitchLabel(shaping.remainingStitches),
     `-${formatShapingSegment(1, 1, shaping.shortRowInSteps)}`,
   ];
+}
+
+/**
+ * Same four construction RC values as Stitches & Rows.
+ * Toe-Up places the post-toe RC 0 at the ankle / heel transition instead of
+ * the toe top, matching the four Japanese-diagram milestones.
+ */
+export function sockShapingNotationRcMilestones(
+  calc: BasicSockCalc,
+): SockDiagramRcMilestone[] {
+  const milestones = sockDiagramRcMilestones(calc);
+  if (calc.constructionDirection !== "toe-up") return milestones;
+  const ankleHeelY = sockDiagramRcMilestones({
+    ...calc,
+    constructionDirection: "cuff-to-toe",
+  }).find((milestone) => milestone.id === "rc-after-first")!.canonicalY;
+  return milestones.map((milestone) =>
+    milestone.id === "rc-after-first"
+      ? { ...milestone, canonicalY: ankleHeelY }
+      : milestone,
+  );
 }
 
 function point(
@@ -162,34 +178,14 @@ export function buildSockShapingNotationDiagramSvg(
     labels.push(sockCanonicalText({ id, x: at.x, y: at.y, text: name, size: 12 }));
   }
 
-  const heelAngle = point("heelWork", mirror, flipVertical);
   const heelShape = point("heelCenter", mirror, flipVertical);
-  const toeAngle = point("toeWork", mirror, flipVertical);
   const toeShape = point("toeCenter", mirror, flipVertical);
-  labels.push(
-    sockCanonicalText({
-      id: "heel-rc",
-      x: heelAngle.x,
-      y: heelAngle.y,
-      text: notation.heel[0] ?? "",
-      size: 10,
-    }),
-  );
   labels.push(
     sockCanonicalStacked({
       id: "heel-shape",
       x: heelShape.x,
       y: heelShape.y,
-      lines: notation.heel.slice(1),
-      size: 10,
-    }),
-  );
-  labels.push(
-    sockCanonicalText({
-      id: "toe-rc",
-      x: toeAngle.x,
-      y: toeAngle.y,
-      text: notation.toe[0] ?? "",
+      lines: notation.heel,
       size: 10,
     }),
   );
@@ -198,30 +194,37 @@ export function buildSockShapingNotationDiagramSvg(
       id: "toe-shape",
       x: toeShape.x,
       y: toeShape.y,
-      lines: notation.toe.slice(1),
+      lines: notation.toe,
       size: 10,
     }),
   );
 
-  const measureLeg = point("measureLeg", mirror, flipVertical);
-  labels.push(
-    sockCanonicalStacked({
-      id: "measureLeg",
-      x: measureLeg.x,
-      y: measureLeg.y,
-      lines: notation.leg,
-      size: 11,
-      anchor: "start",
-    }),
-  );
-  for (const [id, line] of [
-    ["measureAnkle", notation.ankle],
-    ["measureHeel", formatBodyRowsNotation(calc.heel.shortRowInSteps)],
-    ["measureFoot", notation.foot],
-    ["measureToe", formatBodyRowsNotation(calc.toe.shortRowInSteps)],
-  ] as const) {
-    const at = point(id, mirror, flipVertical);
-    labels.push(sockCanonicalText({ id, x: at.x, y: at.y, text: line, size: 11, anchor: "start" }));
+  if (calc.legShapingSchedule.knitOrder.direction !== "none") {
+    const legAt = point("sectionLeg", mirror, flipVertical);
+    labels.push(
+      sockCanonicalStacked({
+        id: "leg-shape",
+        x: legAt.x,
+        y: legAt.y + LEG_SHAPE_OFFSET,
+        lines: notation.leg,
+        size: 10,
+      }),
+    );
+  }
+
+  const rcMilestones = sockShapingNotationRcMilestones(calc);
+  for (const milestone of rcMilestones) {
+    labels.push(
+      sockCanonicalText({
+        id: milestone.id,
+        x: RC_X,
+        y: sockCanonicalMapY(milestone.canonicalY, flipVertical),
+        text: formatRcNotation(milestone.rc),
+        size: 11,
+        anchor: "start",
+        fill: MUTED,
+      }),
+    );
   }
 
   return (
@@ -243,6 +246,10 @@ export function buildSockShapingNotationDiagramSvg(
     `data-sock-notation-heel="${escapeSockSvgText(notation.heel.join("|"))}" ` +
     `data-sock-notation-foot="${escapeSockSvgText(notation.foot)}" ` +
     `data-sock-notation-toe="${escapeSockSvgText(notation.toe.join("|"))}" ` +
+    `data-sock-rc-start="${rcMilestones[0]!.rc}" ` +
+    `data-sock-rc-after-first="${rcMilestones[1]!.rc}" ` +
+    `data-sock-rc-after-second="${rcMilestones[2]!.rc}" ` +
+    `data-sock-rc-finish="${rcMilestones[3]!.rc}" ` +
     `width="100%" height="auto">` +
     sockCanonicalGeometryMarkup({ mirror, flipVertical }) +
     sockCanonicalReadingDirectionArrowMarkup() +
