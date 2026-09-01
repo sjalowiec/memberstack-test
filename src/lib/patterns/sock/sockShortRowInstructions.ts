@@ -115,7 +115,6 @@ export function buildSockShortRowInstructionSection(args: {
       needleRelative: "carriage-side",
       everyRow: true,
     },
-    { type: "short-row-wrap-warning" },
     {
       type: "short-row-out",
       rows: shaping.shortRowOutSteps,

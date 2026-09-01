@@ -40,10 +40,12 @@ import {
   SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
   SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
   SOCK_TOE_UP_FINISH_CUFF,
-  SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
 } from "./sockInstructions";
 import { SOCK_PATTERN_INCOMPLETE_DRAFT_MESSAGE } from "./sockPatternFromDraft";
+
+const SHORT_ROW_WRAP_WARNING =
+  "Be sure to wrap the last short-row needle to prevent a hole.";
 
 const adapter = createSockSizingAdapter(
   JSON.parse(readFileSync(resolve("public/data/sizing_socks.json"), "utf8")),
@@ -112,6 +114,12 @@ describe("Summary Update Pattern → Pattern route", () => {
     expect(patternScript).toContain("buildSockPatternDiagramTabsShellHtml");
     expect(patternScript).toContain("buildSockPatternDiagramSvg");
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");
+    expect(patternScript).toContain("bindSleevelessDiagramZoom");
+    expect(patternScript).toContain("ensureSleevelessDiagramModal");
+    expect(patternScript).toContain("closeSleevelessDiagramModal");
+    expect(patternScript).toContain("SLEEVELESS_DIAGRAM_INLINE_CLASS");
+    expect(patternScript).toContain("fillSockDiagrams(result.calc");
+    expect(patternScript).toContain("bindSleevelessDiagramZoom(diagramHost)");
     expect(patternPage).toContain("data-sock-diagram-tabs-mount");
     expect(patternPage).toContain("pattern-diagram-tabs.css");
     expect(patternScript).toContain("ensureUrlRequestedSavedPatternHydrated");
@@ -147,7 +155,7 @@ describe("valid and incomplete drafts", () => {
 });
 
 describe("Cuff-to-Toe and Toe-Up rendering", () => {
-  it("renders Cuff-to-Toe Sock 1/2 with approved finishing and wrap warning", () => {
+  it("renders Cuff-to-Toe Sock 1/2 with approved finishing", () => {
     const result = mustPattern(completeDraft());
     const html = renderSockPatternPairHtml(result.sock1, result.sock2);
     expect(html).toContain("Sock 1 — Cuff to Toe");
@@ -159,7 +167,7 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).not.toMatch(/data-socks-pair-panel="sock-1"[^>]*\shidden/);
     expect(html).toContain("data-section-id=\"ankle\"");
     expect(html).toContain("Ankle");
-    expect(html).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
+    expect(html).not.toContain(SHORT_ROW_WRAP_WARNING);
     expect(html).toContain("contrasting waste yarn");
     expect(html).toContain("and remove the work from the machine.");
     expect(html).toContain("Finish the Toe");
@@ -204,6 +212,7 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     const html = renderSockPatternPairHtml(result.sock1, result.sock2);
     expect(html).toContain("Sock 1 — Toe Up");
     expect(html).toContain("Sock 2 — Toe Up");
+    expect(html).not.toContain(SHORT_ROW_WRAP_WARNING);
     expect(html).not.toContain("Bind off");
     expect(html).not.toContain("at the cuff");
     expect(html).toContain(SOCK_TOE_UP_FINISH_CUFF);
@@ -312,7 +321,6 @@ describe("short-row rendering and header measurements", () => {
       "ensure-carriage",
       "place-hold",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "cancel-hold-return",
     ]);
@@ -320,14 +328,14 @@ describe("short-row rendering and header measurements", () => {
       "stop-rc",
       "place-hold",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "cancel-hold-return",
     ]);
     expect(heel?.steps.map((s) => s.type)).toContain("short-row-in");
     expect(heel?.steps.map((s) => s.type)).toContain("short-row-out");
-    expect(heel?.steps.map((s) => s.type)).toContain("short-row-wrap-warning");
+    expect(heel?.steps.map((s) => s.type)).not.toContain("short-row-wrap-warning");
     const html = renderSockPatternPairHtml(result.sock1, result.sock2);
+    expect(html).not.toContain(SHORT_ROW_WRAP_WARNING);
     expect(html).toContain("On the carriage side, put 1 needle into hold");
     expect(html).toContain(`data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}"`);
     expect(html).toContain(AUTOMATIC_WRAP_GLOSSARY_TERM);

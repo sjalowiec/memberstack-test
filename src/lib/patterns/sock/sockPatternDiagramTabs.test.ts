@@ -35,6 +35,44 @@ describe("Socks diagram tabs", () => {
     expect(html).toMatch(/data-sock-diagram-panel="shaping-notation"[^>]*\shidden/);
   });
 
+  it("wraps both diagram hosts in the shared sweater enlarge card", () => {
+    const html = buildSockPatternDiagramTabsShellHtml();
+    const shapingStart = html.indexOf('data-sock-diagram-panel="shaping-notation"');
+    const stsStart = html.indexOf('data-sock-diagram-panel="sts-rows"');
+    expect(shapingStart).toBeGreaterThan(-1);
+    expect(stsStart).toBeGreaterThan(-1);
+    const stsChunk = html.slice(stsStart, shapingStart);
+    const shapingChunk = html.slice(shapingStart);
+
+    expect(stsChunk).toContain("data-sleeveless-diagram-enlarge");
+    expect(stsChunk).toContain("sleeveless-piece-split__diagram-enlarge-btn");
+    expect(stsChunk).toContain("fa-magnifying-glass");
+    expect(stsChunk).toContain('aria-label="Enlarge diagram"');
+    expect(stsChunk).toContain("data-sleeveless-diagram-trigger");
+    expect(stsChunk).toContain("Open larger diagram: Basic Socks stitches and rows");
+    expect(stsChunk).toContain("data-sock-diagram-sts-rows-host");
+    expect(stsChunk).toContain("sleeveless-piece-split__diagram-card");
+
+    expect(shapingChunk).toContain("data-sleeveless-diagram-enlarge");
+    expect(shapingChunk).toContain("sleeveless-piece-split__diagram-enlarge-btn");
+    expect(shapingChunk).toContain("fa-magnifying-glass");
+    expect(shapingChunk).toContain("data-sleeveless-diagram-trigger");
+    expect(shapingChunk).toContain("Open larger diagram: Basic Socks shaping notation");
+    expect(shapingChunk).toContain("data-sock-diagram-shaping-host");
+
+    expect(html.split("data-sleeveless-diagram-enlarge").length - 1).toBe(2);
+  });
+
+  it("keeps enlarge chrome construction-agnostic so Cuff to Toe and Toe Up share the same hosts", () => {
+    const html = buildSockPatternDiagramTabsShellHtml();
+    expect(html).not.toContain("cuff-to-toe");
+    expect(html).not.toContain("toe-up");
+    expect(html).toContain("data-sock-diagram-sts-rows-host");
+    expect(html).toContain("data-sock-diagram-shaping-host");
+    const tabsSource = readFileSync(resolve("src/lib/patterns/sock/sockPatternDiagramTabs.ts"), "utf8");
+    expect(tabsSource).toContain("buildSleevelessPatternDiagramEnlargeHostHtml");
+  });
+
   it("places the shared shaping-notation help only in the Shaping Notation panel", () => {
     const html = buildSockPatternDiagramTabsShellHtml();
     const shapingStart = html.indexOf('data-sock-diagram-panel="shaping-notation"');

@@ -9,7 +9,6 @@ import {
   type BasicSockCalcInput,
 } from "./sockMath";
 import {
-  SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_FINISHING_DEFAULT,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
   AUTOMATIC_WRAP_GLOSSARY_ID,
@@ -100,6 +99,9 @@ const narrowerLeg: BasicSockCalcInput = {
   ...typicalMachine,
   legCircumferenceInches: 7,
 };
+
+const SHORT_ROW_WRAP_WARNING =
+  "Be sure to wrap the last short-row needle to prevent a hole.";
 
 const baby: BasicSockCalcInput = {
   footCircumferenceInches: 4,
@@ -341,7 +343,6 @@ describe("A. Woman Medium straight leg, Cuff to Toe", () => {
       "ensure-carriage",
       "place-hold",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "cancel-hold-return",
     ]);
@@ -349,7 +350,6 @@ describe("A. Woman Medium straight leg, Cuff to Toe", () => {
       "stop-rc",
       "place-hold",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "cancel-hold-return",
     ]);
@@ -439,7 +439,6 @@ describe("carriage position is checked immediately before the first short-row se
       "ensure-carriage",
       "place-hold",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "cancel-hold-return",
     ]);
@@ -483,7 +482,6 @@ describe("carriage position is checked immediately before the first short-row se
       "knit-setup-row",
       "reset-rc",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
     ]);
     expect(stepTypes(section(pair.sock2, "toe"))).toEqual(stepTypes(section(pair.sock1, "toe")));
@@ -491,7 +489,6 @@ describe("carriage position is checked immediately before the first short-row se
       "stop-rc",
       "scrap-off-heel",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "rehang-scrapped-heel",
     ]);
@@ -718,7 +715,7 @@ describe("pair helper, renderer, and architecture", () => {
     expect(html).toContain("On the carriage side, put 1 needle into hold");
     expect(html).toContain("Opposite the carriage, return 1 needle to work");
     expect(html).toContain("Repeat every row");
-    expect(html).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
+    expect(html).not.toContain(SHORT_ROW_WRAP_WARNING);
     expect(html).toContain("at each side");
     expect(html).toContain("contrasting waste yarn");
     expect(html).toContain("and remove the work from the machine.");
@@ -775,7 +772,7 @@ describe("pair helper, renderer, and architecture", () => {
     expect(outline).toContain("hold LEFT, work RIGHT, carriage RIGHT");
     expect(outline).toContain("Heel:");
     expect(outline).toContain("Toe:");
-    expect(outline).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
+    expect(outline).not.toContain(SHORT_ROW_WRAP_WARNING);
     expect(outline).toContain(SOCK_FINISH_THE_TOE_HEADING);
     expect(outline).toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
     expect(outline).toContain(
@@ -1346,7 +1343,6 @@ describe("Toe-Up follows the demonstrated scrap-on / short-row / graft sequence"
       "knit-setup-row",
       "reset-rc",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
     ]);
     expect(sectionHtml(html, "toe")).toContain(SOCK_TOE_UP_KNIT_SETUP_ROW);
@@ -1361,7 +1357,6 @@ describe("Toe-Up follows the demonstrated scrap-on / short-row / graft sequence"
       "stop-rc",
       "scrap-off-heel",
       "short-row-in",
-      "short-row-wrap-warning",
       "short-row-out",
       "rehang-scrapped-heel",
     ]);
@@ -1441,10 +1436,15 @@ describe("KIN automatic-wrap short-row primitive", () => {
     expect(html).not.toMatch(/RC 001:.*left needle/i);
   });
 
-  it("warns to wrap the last short-row needle", () => {
-    expect(section(sock1, "heel").steps).toContainEqual({ type: "short-row-wrap-warning" });
-    expect(section(sock1, "toe").steps).toContainEqual({ type: "short-row-wrap-warning" });
-    expect(renderBasicSockInstructionsHtml(sock1)).toContain(SOCK_SHORT_ROW_WRAP_WARNING);
+  it("does not insert a wrap-the-last-needle warning between short-row halves", () => {
+    for (const constructionDirection of ["cuff-to-toe", "toe-up"] as const) {
+      const calcForDirection = mustCalc({ ...typicalMachine, constructionDirection });
+      const sock = buildBasicSockInstructions(calcForDirection, 1);
+      const html = renderBasicSockInstructionsHtml(sock);
+      expect(stepTypes(section(sock, "heel"))).not.toContain("short-row-wrap-warning");
+      expect(stepTypes(section(sock, "toe"))).not.toContain("short-row-wrap-warning");
+      expect(html).not.toContain(SHORT_ROW_WRAP_WARNING);
+    }
   });
 });
 

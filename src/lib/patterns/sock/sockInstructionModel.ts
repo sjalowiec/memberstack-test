@@ -24,9 +24,6 @@ export type SockShortRowPart = "heel" | "toe";
 export type SockToeFinishingVariation = "bind-off-top" | "kitchener-under";
 export const SOCK_TOE_FINISHING_DEFAULT: SockToeFinishingVariation = "bind-off-top";
 
-export const SOCK_SHORT_ROW_WRAP_WARNING =
-  "Be sure to wrap the last short-row needle to prevent a hole.";
-
 export type SockHoldOrientation = {
   sock: SockOfPair;
   part: SockShortRowPart;
@@ -134,7 +131,6 @@ export type SockInstructionStep =
       needleRelative: "opposite-carriage";
       everyRow: true;
     }
-  | { type: "short-row-wrap-warning" }
   | {
       type: "cancel-hold-return";
       heldStitches: number;
