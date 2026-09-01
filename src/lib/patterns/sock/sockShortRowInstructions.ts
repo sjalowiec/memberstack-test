@@ -85,6 +85,10 @@ export function buildSockShortRowInstructionSection(args: {
               orientation,
               stitches: shaping.heldStitches,
             },
+            {
+              type: "working-on-remaining",
+              stitches: shaping.workingStitches,
+            },
           ]
         : [];
   const restoreHeld: SockInstructionStep[] =

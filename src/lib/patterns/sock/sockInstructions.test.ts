@@ -35,8 +35,14 @@ import {
   SOCK_TOE_UP_COMPLETE_VIDEO_TITLE,
   SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID,
   SOCK_TOE_UP_KNIT_SETUP_ROW,
+  SOCK_TOE_UP_STRETCHY_BIND_OFF,
   SOCK_TOE_UP_FINISH_CUFF,
+  SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY,
+  SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID,
+  SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE,
+  SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID,
   sockScrapOffHeelInstruction,
+  sockWorkingOnRemainingInstruction,
   sockRehangScrappedHeelInstruction,
   SOCK_HEEL_VIDEO_PRIVACY_HASH,
   SOCK_HEEL_VIDEO_TIP_ID,
@@ -493,6 +499,7 @@ describe("carriage position is checked immediately before the first short-row se
     expect(stepTypes(section(pair.sock1, "heel"))).toEqual([
       "stop-rc",
       "scrap-off-heel",
+      "working-on-remaining",
       "short-row-in",
       "short-row-out",
       "rehang-scrapped-heel",
@@ -739,6 +746,10 @@ describe("pair helper, renderer, and architecture", () => {
     expect(html).not.toContain(SOCK_TOE_UP_COMPLETE_VIDEO_COPY);
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
     expect(html).not.toContain(`data-tip-id="${SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID}"`);
+    expect(html).not.toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE);
+    expect(html).not.toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY);
+    expect(html).not.toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
+    expect(html).not.toContain(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
     expect(html).toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
     expect(html).toContain(SOCK_CUFF_CAST_ON_VIDEO_TITLE);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
@@ -752,9 +763,14 @@ describe("pair helper, renderer, and architecture", () => {
     const toeUp = renderBasicSockInstructionsHtml(
       buildBasicSockInstructions(mustCalc({ ...widerLeg, constructionDirection: "toe-up" }), 1),
     );
-    expect(toeUp).not.toContain("Bind off");
+    expect(toeUp).not.toContain("Bind off the toe seam");
     expect(toeUp).not.toContain("at the cuff");
     expect(toeUp).toContain(SOCK_TOE_UP_FINISH_CUFF);
+    expect(toeUp).toContain(SOCK_TOE_UP_STRETCHY_BIND_OFF);
+    expect(toeUp).toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE);
+    expect(toeUp).toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY);
+    expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
+    expect(toeUp).toContain(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
     expect(toeUp).toContain("Place this join on top of the toes for comfort");
     expect(toeUp).toContain("keeping the long seam toward the inside of the leg");
     expect(toeUp).toContain(`<h4>${SOCK_TOE_UP_OPENING_SECTION_TITLE}</h4>`);
@@ -1082,6 +1098,9 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
     );
     expect(html).not.toContain("(8 rows)");
     expect(html).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
+    expect(html).not.toContain("Working on the remaining");
+    expect(stepTypes(heel)).not.toContain("working-on-remaining");
+    expect(stepTypes(heel)).not.toContain("scrap-off-heel");
 
     for (const constructionDirection of ["cuff-to-toe", "toe-up"] as const) {
       const pair = buildBasicSockInstructionPair(
@@ -1314,9 +1333,18 @@ describe("Cuff-to-Toe heel/toe/finishing Quick Tips and finishing copy", () => {
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
-    expect(sectionHtml(html, "finishing")).not.toContain("Bind off");
+    expect(sectionHtml(html, "finishing")).not.toContain("Bind off the toe seam");
     expect(sectionHtml(html, "finishing")).not.toContain("at the cuff");
     expect(sectionHtml(html, "finishing")).toContain(SOCK_TOE_UP_FINISH_CUFF);
+    expect(sectionHtml(html, "finishing")).toContain(SOCK_TOE_UP_STRETCHY_BIND_OFF);
+    expect(sectionHtml(html, "finishing")).toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE);
+    expect(sectionHtml(html, "finishing")).toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY);
+    expect(sectionHtml(html, "finishing")).toContain(
+      `player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`,
+    );
+    expect(sectionHtml(html, "finishing")).toContain(
+      `data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`,
+    );
     expect(sectionHtml(html, "finishing")).toContain("Place this join on top of the toes for comfort");
     expect(sectionHtml(html, "finishing")).not.toContain("Finish the toe using");
     expect(sectionHtml(html, "finishing")).not.toContain(SOCK_CHOOSE_TOE_FINISHING_HEADING);
@@ -1362,6 +1390,56 @@ describe("Toe-Up complete walkthrough callout", () => {
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
     expect(cuffToToe).toContain(`data-tip-id="${SOCK_HEEL_VIDEO_TIP_ID}"`);
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+  });
+});
+
+describe("Toe-Up Figure 8 Bind Off finishing Quick Tip", () => {
+  it("embeds Vimeo 258782290 with the stretchy cuff bind-off instruction, not on Cuff-to-Toe", () => {
+    const calc = mustCalc({ ...typicalMachine, constructionDirection: "toe-up" });
+    const toeUp = renderBasicSockInstructionsHtml(buildBasicSockInstructions(calc, 1));
+    const cuffToToe = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const finishing = sectionHtml(toeUp, "finishing");
+
+    expect(SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID).toBe("258782290");
+    expect(finishing).toContain(SOCK_TOE_UP_STRETCHY_BIND_OFF);
+    expect(finishing).toContain(SOCK_TOE_UP_FINISH_CUFF);
+    expect(finishing).toContain(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
+    expect(finishing).toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE);
+    expect(finishing).toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY);
+    expect(finishing).toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
+    expect(finishing).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(finishing).toContain("data-explainer-video=");
+    expect(finishing).not.toContain("/videos/828");
+    expect(finishing).not.toContain("content_id");
+    expect(finishing).not.toContain("data-content-id");
+    expect(finishing).not.toContain("videos-public");
+
+    const bindOffAt = finishing.indexOf(SOCK_TOE_UP_STRETCHY_BIND_OFF);
+    const tipAt = finishing.indexOf(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
+    const graftAt = finishing.indexOf("Graft or join the open toe stitches");
+    expect(bindOffAt).toBeGreaterThan(-1);
+    expect(tipAt).toBeGreaterThan(bindOffAt);
+    expect(graftAt).toBeGreaterThan(tipAt);
+
+    expect(sectionHtml(toeUp, "cast-on")).not.toContain(
+      `player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`,
+    );
+    expect(sectionHtml(toeUp, "toe")).not.toContain(
+      `player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`,
+    );
+
+    expect(cuffToToe).not.toContain(SOCK_TOE_UP_STRETCHY_BIND_OFF);
+    expect(cuffToToe).not.toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE);
+    expect(cuffToToe).not.toContain(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY);
+    expect(cuffToToe).not.toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
+    expect(cuffToToe).not.toContain(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
+    expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+    expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+    expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
+    expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
+    expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
   });
 });
 
@@ -1412,6 +1490,7 @@ describe("Toe-Up follows the demonstrated scrap-on / short-row / graft sequence"
     expect(stepTypes(heel)).toEqual([
       "stop-rc",
       "scrap-off-heel",
+      "working-on-remaining",
       "short-row-in",
       "short-row-out",
       "rehang-scrapped-heel",
@@ -1431,14 +1510,182 @@ describe("Toe-Up follows the demonstrated scrap-on / short-row / graft sequence"
     expect(section(doc, "ankle").rowsToKnit).toBe(calc.ankleStraightRows);
   });
 
+  it("orients the knitter on the remaining working stitches immediately after scrap-off", () => {
+    const heel = section(doc, "heel");
+    const heelHtml = sectionHtml(html, "heel");
+    const toeHtml = sectionHtml(html, "toe");
+    const scrap = sockScrapOffHeelInstruction(calc.heel.heldStitches);
+    const remaining = sockWorkingOnRemainingInstruction(calc.heel.workingStitches);
+    const remainingStep = heel.steps.find((step) => step.type === "working-on-remaining");
+    expect(remainingStep).toMatchObject({
+      type: "working-on-remaining",
+      stitches: calc.heel.workingStitches,
+    });
+    expect(remainingStep?.stitches).toBe(shortRowIn(heel).startWorkingStitches);
+    expect(heelHtml).toContain(scrap);
+    expect(heelHtml).toContain(remaining);
+    expect(heelHtml.indexOf(remaining)).toBeGreaterThan(heelHtml.indexOf(scrap));
+    expect(heelHtml.indexOf("On the carriage side")).toBeGreaterThan(heelHtml.indexOf(remaining));
+    expect(outline).toContain(remaining);
+    expect(outline.indexOf(remaining)).toBeGreaterThan(outline.indexOf(scrap));
+    expect(toeHtml).not.toContain("Working on the remaining");
+    expect(stepTypes(section(doc, "toe"))).not.toContain("working-on-remaining");
+    expect(stepTypes(section(doc, "toe"))).not.toContain("scrap-off-heel");
+  });
+
   it("does not use Cuff-to-Toe HOLD management or cuff bind-off on Toe-Up", () => {
     expect(stepTypes(section(doc, "toe"))).not.toContain("place-hold");
     expect(stepTypes(section(doc, "heel"))).not.toContain("place-hold");
     expect(stepTypes(section(doc, "toe"))).not.toContain("cancel-hold-return");
     expect(stepTypes(section(doc, "heel"))).not.toContain("cancel-hold-return");
-    expect(html).not.toContain("Bind off");
+    expect(html).not.toContain("Bind off the toe seam");
     expect(html).not.toContain("at the cuff");
     expect(html).not.toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+  });
+});
+
+describe("scrap-off short-row remaining-stitch orientation", () => {
+  function renderShortRowSection(
+    totalStitches: number,
+    constructionDirection: "cuff-to-toe" | "toe-up",
+    part: "heel" | "toe",
+  ) {
+    const shaping = calculateShortRowShaping(totalStitches);
+    expect(shaping).toBeTruthy();
+    const sectionDoc = buildSockShortRowInstructionSection({
+      part,
+      shaping: shaping!,
+      orientation: sockHoldOrientation(1, part),
+      tubeStitches: totalStitches,
+      constructionDirection,
+      sock: 1,
+    });
+    const html = renderBasicSockInstructionsHtml({
+      constructionDirection,
+      sock: 1,
+      ribbing: null,
+      toeFinishingVariation: SOCK_TOE_FINISHING_DEFAULT,
+      sections: [sectionDoc],
+    });
+    const outline = formatSockInstructionOutline({
+      constructionDirection,
+      sock: 1,
+      ribbing: null,
+      toeFinishingVariation: SOCK_TOE_FINISHING_DEFAULT,
+      sections: [sectionDoc],
+    });
+    return { shaping: shaping!, section: sectionDoc, html, outline };
+  }
+
+  it("inserts a dynamic orientation line between scrap-off and the first short-row decrease", () => {
+    const { shaping, section: heel, html, outline } = renderShortRowSection(36, "toe-up", "heel");
+    expect(shaping).toMatchObject({
+      workingStitches: 18,
+      heldStitches: 18,
+      remainingStitches: 6,
+      shortRowInSteps: 12,
+    });
+    expect(sockScrapOffHeelInstruction(shaping.heldStitches)).toBe("Scrap off 18 stitches.");
+    expect(sockWorkingOnRemainingInstruction(shaping.workingStitches)).toBe(
+      "Working on the remaining 18 stitches:",
+    );
+    expect(stepTypes(heel)).toEqual([
+      "stop-rc",
+      "scrap-off-heel",
+      "working-on-remaining",
+      "short-row-in",
+      "short-row-out",
+      "rehang-scrapped-heel",
+    ]);
+    expect(html).toContain("<p>Scrap off 18 stitches.</p>");
+    expect(html).toContain("<p>Working on the remaining 18 stitches:</p>");
+    expect(html).toContain(
+      `On the carriage side, put 1 needle into hold, <span class="glossary-tooltip-placeholder" data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}" data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}" data-aria-label="${AUTOMATIC_WRAP_GLOSSARY_TERM}">${AUTOMATIC_WRAP_GLOSSARY_TERM}</span>, and knit across. Repeat every row until 6 center stitches remain. (12 short-row passes)`,
+    );
+    const scrapAt = html.indexOf("Scrap off 18 stitches.");
+    const remainingAt = html.indexOf("Working on the remaining 18 stitches:");
+    const decreaseAt = html.indexOf("On the carriage side, put 1 needle into hold");
+    expect(scrapAt).toBeGreaterThan(-1);
+    expect(remainingAt).toBeGreaterThan(scrapAt);
+    expect(decreaseAt).toBeGreaterThan(remainingAt);
+    expect(outline).toContain("Scrap off 18 stitches.");
+    expect(outline).toContain("Working on the remaining 18 stitches:");
+    expect(outline.indexOf("Working on the remaining 18 stitches:")).toBeGreaterThan(
+      outline.indexOf("Scrap off 18 stitches."),
+    );
+    expect(html).not.toContain("pattern-warning");
+    expect(html).not.toContain("alert");
+    expect(html).not.toContain("Working on the remaining</span>");
+  });
+
+  it("uses the working-half stitch count, not a hard-coded remaining value", () => {
+    const thirtySix = renderShortRowSection(36, "toe-up", "heel");
+    const twentySix = renderShortRowSection(26, "toe-up", "heel");
+    expect(thirtySix.shaping.workingStitches).toBe(18);
+    expect(twentySix.shaping.workingStitches).toBe(13);
+    expect(thirtySix.html).toContain("Working on the remaining 18 stitches:");
+    expect(twentySix.html).toContain("Working on the remaining 13 stitches:");
+    expect(twentySix.html).not.toContain("Working on the remaining 18 stitches:");
+    expect(thirtySix.html).not.toContain("Working on the remaining 13 stitches:");
+    expect(twentySix.section.steps.find((step) => step.type === "working-on-remaining")).toMatchObject({
+      stitches: twentySix.shaping.workingStitches,
+    });
+    expect(shortRowIn(twentySix.section).startWorkingStitches).toBe(13);
+    expect(shortRowIn(twentySix.section).remainingStitches).toBe(5);
+    expect(shortRowIn(twentySix.section).rows).toBe(8);
+  });
+
+  it("appears only on the scrap-off then short-row sequence, not HOLD or toe-up toe", () => {
+    const cuffHeel = renderShortRowSection(36, "cuff-to-toe", "heel");
+    const cuffToe = renderShortRowSection(36, "cuff-to-toe", "toe");
+    const toeUpToe = renderShortRowSection(36, "toe-up", "toe");
+    const toeUpHeel = renderShortRowSection(36, "toe-up", "heel");
+    for (const example of [cuffHeel, cuffToe, toeUpToe]) {
+      expect(stepTypes(example.section)).not.toContain("scrap-off-heel");
+      expect(stepTypes(example.section)).not.toContain("working-on-remaining");
+      expect(example.html).not.toContain("Working on the remaining");
+      expect(example.outline).not.toContain("Working on the remaining");
+    }
+    expect(stepTypes(cuffHeel.section)).toContain("place-hold");
+    expect(stepTypes(cuffToe.section)).toContain("place-hold");
+    expect(stepTypes(toeUpToe.section)).toEqual([
+      "ensure-carriage",
+      "knit-setup-row",
+      "reset-rc",
+      "short-row-in",
+      "short-row-out",
+    ]);
+    expect(stepTypes(toeUpHeel.section)).toContain("scrap-off-heel");
+    expect(stepTypes(toeUpHeel.section)).toContain("working-on-remaining");
+    expect(toeUpHeel.html).toContain("Working on the remaining 18 stitches:");
+  });
+
+  it("does not change short-row math or decrease/increase wording", () => {
+    const cuff = mustCalc(typicalMachine);
+    const toeUp = mustCalc({ ...typicalMachine, constructionDirection: "toe-up" });
+    expect(toeUp.heel).toEqual(cuff.heel);
+    expect(toeUp.toe).toEqual(cuff.toe);
+    const cuffHtml = renderBasicSockInstructionsHtml(buildBasicSockInstructions(cuff, 1));
+    const toeUpHtml = renderBasicSockInstructionsHtml(buildBasicSockInstructions(toeUp, 1));
+    const decrease = `Repeat every row until ${cuff.heel.remainingStitches} center stitches remain. (${cuff.heel.shortRowInSteps} short-row passes)`;
+    const increase = `Repeat every row until all ${cuff.heel.workingStitches} working stitches are back in work. (${cuff.heel.shortRowOutSteps} short-row passes)`;
+    for (const html of [cuffHtml, toeUpHtml]) {
+      expect(html).toContain(decrease);
+      expect(html).toContain(increase);
+      expect(html).toContain(`data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}"`);
+    }
+    expect(sectionHtml(cuffHtml, "heel")).not.toContain("Working on the remaining");
+    expect(sectionHtml(cuffHtml, "toe")).not.toContain("Working on the remaining");
+    expect(sectionHtml(toeUpHtml, "toe")).not.toContain("Working on the remaining");
+    expect(sectionHtml(toeUpHtml, "heel")).toContain(
+      sockWorkingOnRemainingInstruction(toeUp.heel.workingStitches),
+    );
+    expect(sectionHtml(toeUpHtml, "heel")).toContain(
+      sockScrapOffHeelInstruction(toeUp.heel.heldStitches),
+    );
+    expect(sectionHtml(toeUpHtml, "heel")).toContain(
+      sockRehangScrappedHeelInstruction(toeUp.heel.heldStitches, toeUp.totalSockStitches),
+    );
   });
 });
 

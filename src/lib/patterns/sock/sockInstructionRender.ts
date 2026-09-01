@@ -100,11 +100,27 @@ export const SOCK_SECOND_SOCK_INTRO =
 export const SOCK_TOE_UP_KNIT_SETUP_ROW =
   "Knit 1 row. Do not count this row on the row counter.";
 
+export const SOCK_TOE_UP_STRETCHY_BIND_OFF =
+  "Bind off loosely using a stretchy bind off so the cuff can comfortably stretch over the heel.";
+
 export const SOCK_TOE_UP_FINISH_CUFF =
-  "Finish the cuff using the method of your choice — ribbing, hand-manipulated ribbing, a ribber, hand-knit ribbing, a rolled edge, or another stretchy finish.";
+  "Finish the cuff using the method of your choice — ribbing, hand-manipulated ribbing, a ribber, hand-knit ribbing, a rolled edge, or another stretchy finish. " +
+  SOCK_TOE_UP_STRETCHY_BIND_OFF;
+
+/** Toe-Up finishing only — stretchy cuff bind-off option. Direct Vimeo embed. */
+export const SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID = "258782290";
+export const SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE = "Figure 8 Bind Off";
+export const SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID = "socks-figure-8-bind-off-video";
+export const SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY =
+  "The Figure 8 Bind Off is a stretchy option that works well for sock cuffs.";
 
 export function sockScrapOffHeelInstruction(stitches: number): string {
   return `Scrap off ${stitches} stitches.`;
+}
+
+/** Orientation after scrap-off, before the first short-row decrease. */
+export function sockWorkingOnRemainingInstruction(stitches: number): string {
+  return `Working on the remaining ${stitches} stitches:`;
 }
 
 export function sockRehangScrappedHeelInstruction(
@@ -343,6 +359,16 @@ function buildSockPatternVideoTipHtml(options: {
   );
 }
 
+function figure8BindOffTipHtml(): string {
+  return buildSockPatternVideoTipHtml({
+    tipId: SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID,
+    title: SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE,
+    vimeoId: SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID,
+    explainerKey: SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID,
+    introHtml: `<p>${escapeHtml(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY)}</p>`,
+  });
+}
+
 function toeUpCompleteVideoCalloutHtml(): string {
   return (
     `<div data-socks-toe-up-complete-video>` +
@@ -500,6 +526,8 @@ function renderStep(step: SockInstructionStep): string {
       return `<p>Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. (${step.tubeStitches} stitches)</p>`;
     case "scrap-off-heel":
       return `<p>${escapeHtml(sockScrapOffHeelInstruction(step.stitches))}</p>`;
+    case "working-on-remaining":
+      return `<p>${escapeHtml(sockWorkingOnRemainingInstruction(step.stitches))}</p>`;
     case "rehang-scrapped-heel":
       return `<p>${escapeHtml(sockRehangScrappedHeelInstruction(step.stitches, step.tubeStitches))}</p>`;
     case "waste-yarn":
@@ -520,7 +548,10 @@ function renderStep(step: SockInstructionStep): string {
     case "bind-off":
       return `<p>Bind off ${step.stitches} stitches at the cuff.</p>`;
     case "finish-cuff":
-      return `<p>${escapeHtml(SOCK_TOE_UP_FINISH_CUFF)} (${step.stitches} stitches)</p>`;
+      return (
+        `<p>${escapeHtml(SOCK_TOE_UP_FINISH_CUFF)} (${step.stitches} stitches)</p>` +
+        figure8BindOffTipHtml()
+      );
     case "kitchener": {
       if (step.placement === "top-of-toes") {
         const kitchener = kitchenerStitchGlossaryHtml();
@@ -645,6 +676,8 @@ function outlineStep(step: SockInstructionStep): string {
       return `Cancel HOLD; return previously held half (${step.heldStitches} sts; ${step.tubeStitches} tube stitches).`;
     case "scrap-off-heel":
       return sockScrapOffHeelInstruction(step.stitches);
+    case "working-on-remaining":
+      return sockWorkingOnRemainingInstruction(step.stitches);
     case "rehang-scrapped-heel":
       return sockRehangScrappedHeelInstruction(step.stitches, step.tubeStitches);
     case "waste-yarn":
