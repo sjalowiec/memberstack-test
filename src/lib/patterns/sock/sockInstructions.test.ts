@@ -41,6 +41,14 @@ import {
   SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID,
   SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE,
   SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID,
+  SOCK_KITCHENER_STITCH_VIDEO_COPY,
+  SOCK_KITCHENER_STITCH_VIDEO_TIP_ID,
+  SOCK_KITCHENER_STITCH_VIDEO_TITLE,
+  SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID,
+  SOCK_BICKFORD_SEAM_VIDEO_COPY,
+  SOCK_BICKFORD_SEAM_VIDEO_TIP_ID,
+  SOCK_BICKFORD_SEAM_VIDEO_TITLE,
+  SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID,
   sockScrapOffHeelInstruction,
   sockWorkingOnRemainingInstruction,
   sockRehangScrappedHeelInstruction,
@@ -1445,6 +1453,164 @@ describe("Toe-Up Figure 8 Bind Off finishing Quick Tip", () => {
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+  });
+});
+
+describe("Kitchener Stitch and Bickford Seam finishing Quick Tips", () => {
+  function tipCount(html: string, tipId: string): number {
+    return html.split(`data-tip-id="${tipId}"`).length - 1;
+  }
+
+  it("embeds Vimeo 339846501 after the Cuff-to-Toe graft/Kitchener instruction and keeps the glossary link", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const finishing = sectionHtml(html, "finishing");
+    expect(SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID).toBe("339846501");
+    expect(finishing).toContain(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`);
+    expect(finishing).toContain(`data-term="${KITCHENER_STITCH_GLOSSARY_TERM}"`);
+    expect(finishing).toContain(SOCK_GRAFT_OR_SEAM_LABEL);
+    expect(finishing).toContain(`data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`);
+    expect(finishing).toContain(SOCK_KITCHENER_STITCH_VIDEO_TITLE);
+    expect(finishing).toContain(SOCK_KITCHENER_STITCH_VIDEO_COPY);
+    expect(finishing).toContain(`player.vimeo.com/video/${SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID}`);
+    expect(finishing).toContain('class="pattern-tip pattern-quick-tip"');
+    expect(finishing).toContain("data-explainer-video=");
+    expect(finishing).toContain('<details class="pattern-quick-tip__details">');
+    expect(finishing).not.toContain("/videos/");
+    expect(finishing).not.toContain("data-content-id");
+    const graftAt = finishing.indexOf(`<li><strong>${SOCK_GRAFT_OR_SEAM_LABEL}:</strong>`);
+    const kitchenerGlossaryAt = finishing.indexOf(
+      `data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`,
+    );
+    const kitchenerTipAt = finishing.indexOf(
+      `data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`,
+    );
+    const seamAt = finishing.indexOf("Sew the long seam.");
+    expect(graftAt).toBeGreaterThan(-1);
+    expect(kitchenerGlossaryAt).toBeGreaterThan(graftAt);
+    expect(kitchenerTipAt).toBeGreaterThan(kitchenerGlossaryAt);
+    expect(seamAt).toBeGreaterThan(kitchenerTipAt);
+    expect(tipCount(finishing, SOCK_KITCHENER_STITCH_VIDEO_TIP_ID)).toBe(1);
+    expect(tipCount(html, SOCK_KITCHENER_STITCH_VIDEO_TIP_ID)).toBe(1);
+  });
+
+  it("embeds Vimeo 339846501 after the Toe-Up Kitchener/graft instruction and keeps the glossary link", () => {
+    const html = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 1),
+    );
+    const finishing = sectionHtml(html, "finishing");
+    expect(finishing).toContain("Graft or join the open toe stitches using");
+    expect(finishing).toContain(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`);
+    expect(finishing).toContain(`data-term="${KITCHENER_STITCH_GLOSSARY_TERM}"`);
+    expect(finishing).toContain(`data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`);
+    expect(finishing).toContain(SOCK_KITCHENER_STITCH_VIDEO_TITLE);
+    expect(finishing).toContain(SOCK_KITCHENER_STITCH_VIDEO_COPY);
+    expect(finishing).toContain(`player.vimeo.com/video/${SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID}`);
+    expect(finishing).not.toContain("data-content-id");
+    const graftAt = finishing.indexOf("Graft or join the open toe stitches using");
+    const kitchenerGlossaryAt = finishing.indexOf(
+      `data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`,
+    );
+    const kitchenerTipAt = finishing.indexOf(
+      `data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`,
+    );
+    const figure8At = finishing.indexOf(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
+    const seamAt = finishing.indexOf("Join the side seams");
+    expect(figure8At).toBeGreaterThan(-1);
+    expect(graftAt).toBeGreaterThan(figure8At);
+    expect(kitchenerGlossaryAt).toBeGreaterThan(graftAt);
+    expect(kitchenerTipAt).toBeGreaterThan(kitchenerGlossaryAt);
+    expect(seamAt).toBeGreaterThan(kitchenerTipAt);
+    expect(tipCount(finishing, SOCK_KITCHENER_STITCH_VIDEO_TIP_ID)).toBe(1);
+  });
+
+  it("embeds Vimeo 151857516 after the Bickford side-seam instruction in both constructions", () => {
+    const cuffHtml = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const toeUpHtml = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 1),
+    );
+    expect(SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID).toBe("151857516");
+
+    const cuffFinishing = sectionHtml(cuffHtml, "finishing");
+    expect(cuffFinishing).toContain(`data-glossary-id="${BICKFORD_SEAM_GLOSSARY_ID}"`);
+    expect(cuffFinishing).toContain(`data-term="${BICKFORD_SEAM_GLOSSARY_TERM}"`);
+    expect(cuffFinishing).toContain("Sew the long seam.");
+    expect(cuffFinishing).toContain("A Bickford seam may be used for a flat finish.");
+    expect(cuffFinishing).toContain(`data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`);
+    expect(cuffFinishing).toContain(SOCK_BICKFORD_SEAM_VIDEO_TITLE);
+    expect(cuffFinishing).toContain(SOCK_BICKFORD_SEAM_VIDEO_COPY);
+    expect(cuffFinishing).toContain(`player.vimeo.com/video/${SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID}`);
+    const cuffSeamAt = cuffFinishing.indexOf("Sew the long seam.");
+    const cuffBickfordTipAt = cuffFinishing.indexOf(
+      `data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`,
+    );
+    const cuffKitchenerTipAt = cuffFinishing.indexOf(
+      `data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`,
+    );
+    expect(cuffSeamAt).toBeGreaterThan(cuffKitchenerTipAt);
+    expect(cuffBickfordTipAt).toBeGreaterThan(cuffSeamAt);
+    expect(tipCount(cuffFinishing, SOCK_BICKFORD_SEAM_VIDEO_TIP_ID)).toBe(1);
+
+    const toeUpFinishing = sectionHtml(toeUpHtml, "finishing");
+    expect(toeUpFinishing).toContain("Join the side seams, keeping the long seam toward the inside of the leg.");
+    expect(toeUpFinishing).toContain("A Bickford seam may be used for a flat finish.");
+    expect(toeUpFinishing).toContain(`data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`);
+    expect(toeUpFinishing).toContain(SOCK_BICKFORD_SEAM_VIDEO_TITLE);
+    expect(toeUpFinishing).toContain(SOCK_BICKFORD_SEAM_VIDEO_COPY);
+    expect(toeUpFinishing).toContain(`player.vimeo.com/video/${SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID}`);
+    expect(toeUpFinishing).not.toContain("data-content-id");
+    const toeUpSeamAt = toeUpFinishing.indexOf("Join the side seams");
+    const toeUpBickfordTipAt = toeUpFinishing.indexOf(
+      `data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`,
+    );
+    const toeUpKitchenerTipAt = toeUpFinishing.indexOf(
+      `data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`,
+    );
+    expect(toeUpSeamAt).toBeGreaterThan(toeUpKitchenerTipAt);
+    expect(toeUpBickfordTipAt).toBeGreaterThan(toeUpSeamAt);
+    expect(tipCount(toeUpFinishing, SOCK_BICKFORD_SEAM_VIDEO_TIP_ID)).toBe(1);
+  });
+
+  it("does not duplicate the tips or add them outside finishing, and leaves existing videos unchanged", () => {
+    const cuffHtml = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc(typicalMachine), 1),
+    );
+    const toeUpHtml = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 1),
+    );
+
+    expect(sectionHtml(cuffHtml, "heel")).not.toContain(
+      `data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`,
+    );
+    expect(sectionHtml(cuffHtml, "toe")).not.toContain(
+      `data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`,
+    );
+    expect(sectionHtml(toeUpHtml, "cast-on")).not.toContain(
+      `player.vimeo.com/video/${SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID}`,
+    );
+    expect(sectionHtml(toeUpHtml, "cast-on")).not.toContain(
+      `player.vimeo.com/video/${SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID}`,
+    );
+
+    expect(cuffHtml).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).toContain(`player.vimeo.com/video/${SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).not.toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
+    expect(cuffHtml).not.toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
+
+    expect(toeUpHtml).toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
+    expect(toeUpHtml).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
+    expect(toeUpHtml).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID}`);
+    expect(toeUpHtml).toContain(`player.vimeo.com/video/${SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID}`);
+    expect(toeUpHtml).not.toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
+    expect(tipCount(toeUpHtml, SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID)).toBe(1);
+    expect(tipCount(cuffHtml, SOCK_TOE_FINISHING_VIDEO_TIP_ID)).toBe(1);
   });
 });
 

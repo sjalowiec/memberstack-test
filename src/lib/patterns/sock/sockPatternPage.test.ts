@@ -53,6 +53,14 @@ import {
   SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID,
   SOCK_FIGURE_8_BIND_OFF_VIDEO_TITLE,
   SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID,
+  SOCK_KITCHENER_STITCH_VIDEO_COPY,
+  SOCK_KITCHENER_STITCH_VIDEO_TIP_ID,
+  SOCK_KITCHENER_STITCH_VIDEO_TITLE,
+  SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID,
+  SOCK_BICKFORD_SEAM_VIDEO_COPY,
+  SOCK_BICKFORD_SEAM_VIDEO_TIP_ID,
+  SOCK_BICKFORD_SEAM_VIDEO_TITLE,
+  SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
 } from "./sockInstructions";
 import { SOCK_PATTERN_INCOMPLETE_DRAFT_MESSAGE } from "./sockPatternFromDraft";
@@ -200,6 +208,14 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain(KITCHENER_STITCH_GLOSSARY_TERM);
     expect(html).toContain(`data-glossary-id="${BICKFORD_SEAM_GLOSSARY_ID}"`);
     expect(html).toContain(`data-glossary-id="${KITCHENER_STITCH_GLOSSARY_ID}"`);
+    expect(html).toContain(`data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_KITCHENER_STITCH_VIDEO_TITLE);
+    expect(html).toContain(SOCK_KITCHENER_STITCH_VIDEO_COPY);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(`data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_BICKFORD_SEAM_VIDEO_TITLE);
+    expect(html).toContain(SOCK_BICKFORD_SEAM_VIDEO_COPY);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID}`);
     expect(html).not.toContain("top of the toes");
     expect(html).not.toContain("Bind off the toe seam");
     expect(html).toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
@@ -248,6 +264,12 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain(`player.vimeo.com/video/${SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID}"`);
     expect(html).toContain("Place this join on top of the toes for comfort");
+    expect(html).toContain(`data-tip-id="${SOCK_KITCHENER_STITCH_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_KITCHENER_STITCH_VIDEO_COPY);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(`data-tip-id="${SOCK_BICKFORD_SEAM_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_BICKFORD_SEAM_VIDEO_COPY);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`<h4>${SOCK_TOE_UP_OPENING_SECTION_TITLE}</h4>`);
     expect(html).toContain(`data-glossary-id="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID}"`);
     expect(html).toContain(`data-aria-label="${SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM}"`);

@@ -55,6 +55,8 @@ const QUICK_TIP_AND_VIDEO_LABELS = [
   "Complete Toe-Up Sock",
   "Short Row Refresher",
   "Figure 8 Bind Off",
+  "Kitchener Stitch",
+  "Bickford Seam",
   "Automatic Wrap",
   "Cuff Cast On Options",
   "Knitting Toe-Up Socks",
