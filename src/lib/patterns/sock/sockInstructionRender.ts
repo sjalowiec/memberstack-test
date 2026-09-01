@@ -16,7 +16,6 @@ import {
   rowCounterStopBlockHtml,
 } from "../rowCounterReset";
 import {
-  SOCK_SHORT_ROW_WRAP_WARNING,
   type SockInstructionDocument,
   type SockInstructionSection,
   type SockInstructionStep,
@@ -464,8 +463,6 @@ function renderStep(step: SockInstructionStep): string {
       return `<p>${escapeHtml(sockEnsureCarriageInstruction(step.part, step.side))}</p>`;
     case "short-row-in":
       return `<p>On the carriage side, put 1 needle into hold, ${automaticWrapGlossaryHtml()}, and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})</p>`;
-    case "short-row-wrap-warning":
-      return `<p class="sock-pattern-tip">${escapeHtml(SOCK_SHORT_ROW_WRAP_WARNING)}</p>`;
     case "short-row-out":
       return `<p>Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all ${step.endWorkingStitches} working stitches are back in work. (${formatSockShortRowPassCount(step.rows)})</p>`;
     case "cancel-hold-return":
@@ -608,8 +605,6 @@ function outlineStep(step: SockInstructionStep): string {
       return sockEnsureCarriageInstruction(step.part, step.side);
     case "short-row-in":
       return `On the carriage side, put 1 needle into hold, ${AUTOMATIC_WRAP_GLOSSARY_TERM}, and knit across, every row, until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})`;
-    case "short-row-wrap-warning":
-      return SOCK_SHORT_ROW_WRAP_WARNING;
     case "short-row-out":
       return `Opposite the carriage, return 1 needle to work and knit across, every row, until ${step.endWorkingStitches} working stitches are back. (${formatSockShortRowPassCount(step.rows)})`;
     case "cancel-hold-return":

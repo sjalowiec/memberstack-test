@@ -198,6 +198,10 @@ describe("sleeveless pattern diagram tabs", () => {
     expect(html).toContain('data-sleeveless-front-diagram-mode="shaping-notation"');
     expect(html).toContain("diagram-front-v.svg");
     expect(html).toContain("diagram-jp-front-v.svg");
+    expect(html).toContain("data-sleeveless-diagram-enlarge");
+    expect(html).toContain("sleeveless-piece-split__diagram-card");
+    expect(html).toContain("fa-magnifying-glass");
+    expect(html).toContain('aria-label="Enlarge diagram"');
 
     const backHtml = sampleTabsHtml("back");
     expect(backHtml).toContain("data-sleeveless-back-diagram");

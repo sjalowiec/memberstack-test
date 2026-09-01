@@ -1,11 +1,18 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  SLEEVELESS_DIAGRAM_INLINE_CLASS,
+  bindSleevelessDiagramZoom,
   buildShapingNotationDiagramPrintDocument,
+  closeSleevelessDiagramModal,
+  ensureSleevelessDiagramModal,
   getDiagramModeFromHost,
   getDiagramModeFromPanel,
   getDiagramHostFromTrigger,
   isDisplayedShapingNotationSvg,
   isShapingNotationDiagramHost,
+  openSleevelessDiagramModal,
   resolveDiagramViewMode,
   shouldShowShapingNotationDiagramPrint,
 } from "./sleevelessDiagramModal";
@@ -168,5 +175,24 @@ describe("sleevelessDiagramModal", () => {
     expect(html).toContain("<svg");
     expect(html).toContain("print-diagram-root");
     expect(html).toContain("<title>Back shaping notation</title>");
+  });
+
+  it("exports the shared enlarge modal API used by sweater and Socks diagrams", () => {
+    expect(SLEEVELESS_DIAGRAM_INLINE_CLASS).toBe("sleeveless-piece-split__diagram-inline");
+    expect(typeof bindSleevelessDiagramZoom).toBe("function");
+    expect(typeof closeSleevelessDiagramModal).toBe("function");
+    expect(typeof ensureSleevelessDiagramModal).toBe("function");
+    expect(typeof openSleevelessDiagramModal).toBe("function");
+  });
+
+  it("sweater pattern page imports the extracted enlarge binding instead of defining a second copy", () => {
+    const script = readFileSync(resolve("src/scripts/sleevelessPatternPageShared.ts"), "utf8");
+    expect(script).toContain('from "../lib/patterns/sleevelessDiagramModal.ts"');
+    expect(script).toContain("bindSleevelessDiagramZoom");
+    expect(script).toContain("openSleevelessDiagramModal");
+    expect(script).toContain("ensureSleevelessDiagramModal");
+    expect(script).not.toContain("function bindSleevelessDiagramZoom");
+    expect(script).not.toContain("function openSleevelessDiagramModal");
+    expect(script).not.toContain("function ensureSleevelessDiagramModal");
   });
 });

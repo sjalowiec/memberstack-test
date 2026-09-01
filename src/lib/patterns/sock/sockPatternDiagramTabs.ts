@@ -1,6 +1,7 @@
 /**
  * Basic Socks finished-pattern diagram tabs (Stitches & Rows / Shaping Notation).
  * Thin wrapper around the shared Pattern Diagram tab container and shaping-notation help.
+ * Diagram hosts use the shared sweater enlarge card (magnifying-glass + lightbox).
  */
 
 import { buildPatternDiagramShapingNotationHelpHtml } from "../patternDiagramShapingNotationHelp";
@@ -12,11 +13,15 @@ import {
   initPatternDiagramTabs,
   type PatternDiagramTabId,
 } from "../patternDiagramTabs";
+import { buildSleevelessPatternDiagramEnlargeHostHtml } from "../sleevelessPatternDiagramTabs";
 
 export const SOCK_DIAGRAM_TAB_STS_ROWS = PATTERN_DIAGRAM_TAB_STS_ROWS;
 export const SOCK_DIAGRAM_TAB_SHAPING = PATTERN_DIAGRAM_TAB_SHAPING;
 
 export type SockDiagramTabId = PatternDiagramTabId;
+
+export const SOCK_DIAGRAM_STS_ROWS_ALT = "Basic Socks stitches and rows";
+export const SOCK_DIAGRAM_SHAPING_ALT = "Basic Socks shaping notation";
 
 const SOCK_TAB_BIND_OPTIONS = {
   tabAttr: "data-sock-diagram-tab",
@@ -24,6 +29,17 @@ const SOCK_TAB_BIND_OPTIONS = {
   rootAttr: "data-sock-diagram-tabs",
   initAttr: "data-sock-diagram-tabs-init",
 } as const;
+
+function buildSockDiagramHostHtml(mode: SockDiagramTabId): string {
+  const isShaping = mode === SOCK_DIAGRAM_TAB_SHAPING;
+  const hostAttr = isShaping ? "data-sock-diagram-shaping-host" : "data-sock-diagram-sts-rows-host";
+  const alt = isShaping ? SOCK_DIAGRAM_SHAPING_ALT : SOCK_DIAGRAM_STS_ROWS_ALT;
+  return buildSleevelessPatternDiagramEnlargeHostHtml({
+    alt,
+    innerHostHtml:
+      `<div class="sock-pattern-diagram-panel__svg sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" ${hostAttr}></div>`,
+  });
+}
 
 export function buildSockPatternDiagramTabsShellHtml(): string {
   return buildPatternDiagramTabsShellHtml({
@@ -44,15 +60,12 @@ export function buildSockPatternDiagramTabsShellHtml(): string {
       {
         id: SOCK_DIAGRAM_TAB_STS_ROWS,
         printHeading: true,
-        panelHtml:
-          `<div class="sock-pattern-diagram-panel__svg" data-sock-diagram-sts-rows-host></div>`,
+        panelHtml: buildSockDiagramHostHtml(SOCK_DIAGRAM_TAB_STS_ROWS),
       },
       {
         id: SOCK_DIAGRAM_TAB_SHAPING,
         printHeading: true,
-        panelHtml:
-          buildPatternDiagramShapingNotationHelpHtml() +
-          `<div class="sock-pattern-diagram-panel__svg" data-sock-diagram-shaping-host></div>`,
+        panelHtml: buildPatternDiagramShapingNotationHelpHtml() + buildSockDiagramHostHtml(SOCK_DIAGRAM_TAB_SHAPING),
       },
     ],
   });

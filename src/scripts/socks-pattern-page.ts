@@ -21,6 +21,12 @@ import {
 } from "../lib/patterns/sock/sockPatternDiagramTabs";
 import { buildSockPatternDiagramSvg } from "../lib/patterns/sock/sockPatternDiagramSvg";
 import { buildSockShapingNotationDiagramSvg } from "../lib/patterns/sock/sockShapingNotationDiagramSvg";
+import {
+  SLEEVELESS_DIAGRAM_INLINE_CLASS,
+  bindSleevelessDiagramZoom,
+  closeSleevelessDiagramModal,
+  ensureSleevelessDiagramModal,
+} from "../lib/patterns/sleevelessDiagramModal";
 import type { BasicSockCalc } from "../lib/patterns/sock/sockMath";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
@@ -97,14 +103,22 @@ function showResultsShell(): void {
   mountPrintAction();
 }
 
+function markSockDiagramForEnlarge(host: HTMLElement): void {
+  const svg = host.querySelector("svg");
+  if (svg) svg.classList.add(SLEEVELESS_DIAGRAM_INLINE_CLASS);
+}
+
 function fillSockDiagrams(calc: BasicSockCalc, mirror: boolean): void {
+  closeSleevelessDiagramModal();
   const stsHost = document.querySelector("[data-sock-diagram-sts-rows-host]");
   if (stsHost instanceof HTMLElement) {
     stsHost.innerHTML = buildSockPatternDiagramSvg(calc, { mode: "pattern", mirror });
+    markSockDiagramForEnlarge(stsHost);
   }
   const shapingHost = document.querySelector("[data-sock-diagram-shaping-host]");
   if (shapingHost instanceof HTMLElement) {
     shapingHost.innerHTML = buildSockShapingNotationDiagramSvg(calc, { mirror });
+    markSockDiagramForEnlarge(shapingHost);
   }
 }
 
@@ -141,6 +155,8 @@ export async function renderSocksPattern(): Promise<void> {
   if (diagramHost instanceof HTMLElement) {
     diagramHost.innerHTML = buildSockPatternDiagramTabsShellHtml();
     initSockPatternDiagramTabs(diagramHost);
+    ensureSleevelessDiagramModal();
+    bindSleevelessDiagramZoom(diagramHost);
     fillSockDiagrams(result.calc, false);
     const pairRoot = mount.querySelector("[data-socks-pair-tabs]");
     if (pairRoot instanceof HTMLElement && pairRoot.dataset.sockDiagramMirrorBound !== "true") {

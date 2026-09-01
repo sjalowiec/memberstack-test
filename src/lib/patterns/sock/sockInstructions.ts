@@ -4,7 +4,6 @@
  */
 
 export {
-  SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_FINISHING_DEFAULT,
   sockHoldOrientation,
   sockInstructionSectionIds,

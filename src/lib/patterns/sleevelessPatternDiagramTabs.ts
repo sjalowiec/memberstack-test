@@ -76,6 +76,27 @@ export type BuildSleevelessDiagramHostOptions = {
 };
 
 /**
+ * Shared enlarge chrome (magnifying-glass + click-to-enlarge trigger).
+ * Sweater diagram tabs and other families wrap their SVG host with this card.
+ */
+export function buildSleevelessPatternDiagramEnlargeHostHtml(options: {
+  alt: string;
+  innerHostHtml: string;
+}): string {
+  const alt = escapeHtml(options.alt);
+  return (
+    `<div class="sleeveless-piece-split__diagram-card">` +
+    `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">` +
+    `<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>` +
+    `</button>` +
+    `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">` +
+    options.innerHostHtml +
+    `</button>` +
+    `</div>`
+  );
+}
+
+/**
  * Existing enlarge + SVG host card. Hydration still uses `data-sleeveless-diagram`
  * plus the back/front mode attrs — only the tab shell is new.
  */
@@ -98,18 +119,13 @@ export function buildSleevelessPatternDiagramHostHtml(
   const halfAttr =
     half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
 
-  return (
-    `<div class="sleeveless-piece-split__diagram-card">` +
-    `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">` +
-    `<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>` +
-    `</button>` +
-    `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">` +
-    `<div class="sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" data-sleeveless-diagram ${hostAttr} data-src="${src}" data-alt="${alt}"${pieceModeAttr}${halfAttr}>` +
-    `<p class="sleeveless-pattern-boot-msg">Loading diagram…</p>` +
-    `</div>` +
-    `</button>` +
-    `</div>`
-  );
+  return buildSleevelessPatternDiagramEnlargeHostHtml({
+    alt: options.alt,
+    innerHostHtml:
+      `<div class="sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" data-sleeveless-diagram ${hostAttr} data-src="${src}" data-alt="${alt}"${pieceModeAttr}${halfAttr}>` +
+      `<p class="sleeveless-pattern-boot-msg">Loading diagram…</p>` +
+      `</div>`,
+  });
 }
 
 export type BuildSleevelessPatternDiagramTabsOptions = {
