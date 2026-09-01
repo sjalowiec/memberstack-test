@@ -126,6 +126,20 @@ export const SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID = "socks-figure-8-bind-off-vide
 export const SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY =
   "The Figure 8 Bind Off is a stretchy option that works well for sock cuffs.";
 
+/** Point-of-use Kitchener / grafting help. Direct Vimeo embed — not Learning Library content. */
+export const SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID = "339846501";
+export const SOCK_KITCHENER_STITCH_VIDEO_TITLE = "Kitchener Stitch";
+export const SOCK_KITCHENER_STITCH_VIDEO_TIP_ID = "socks-kitchener-stitch-video";
+export const SOCK_KITCHENER_STITCH_VIDEO_COPY =
+  "Watch how to graft the open stitches together for a smooth, nearly invisible join.";
+
+/** Point-of-use Bickford side-seam help. Direct Vimeo embed — not Learning Library content. */
+export const SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID = "151857516";
+export const SOCK_BICKFORD_SEAM_VIDEO_TITLE = "Bickford Seam";
+export const SOCK_BICKFORD_SEAM_VIDEO_TIP_ID = "socks-bickford-seam-video";
+export const SOCK_BICKFORD_SEAM_VIDEO_COPY =
+  "Watch how to work a flat Bickford seam for the sock's side seam.";
+
 export function sockScrapOffHeelInstruction(stitches: number): string {
   return `Scrap off ${stitches} stitches.`;
 }
@@ -329,7 +343,8 @@ function renderDefaultToeFinishingChoiceHtml(stitches: number): string {
     `<ul>` +
     `<li><strong>${escapeHtml(SOCK_REHANG_AND_JOIN_LABEL)}:</strong> ${escapeHtml(SOCK_FOLD_RIGHT_SIDES_INSTRUCTION)} ${escapeHtml(sockRehangToeInstruction(stitches))}</li>` +
     `<li><strong>${escapeHtml(SOCK_GRAFT_OR_SEAM_LABEL)}:</strong> ${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX)} ${kitchener} (Grafting) or ${bickford}${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX)}</li>` +
-    `</ul>`
+    `</ul>` +
+    kitchenerStitchTipHtml()
   );
 }
 
@@ -378,6 +393,26 @@ function figure8BindOffTipHtml(): string {
     vimeoId: SOCK_FIGURE_8_BIND_OFF_VIDEO_VIMEO_ID,
     explainerKey: SOCK_FIGURE_8_BIND_OFF_VIDEO_TIP_ID,
     introHtml: `<p>${escapeHtml(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY)}</p>`,
+  });
+}
+
+function kitchenerStitchTipHtml(): string {
+  return buildSockPatternVideoTipHtml({
+    tipId: SOCK_KITCHENER_STITCH_VIDEO_TIP_ID,
+    title: SOCK_KITCHENER_STITCH_VIDEO_TITLE,
+    vimeoId: SOCK_KITCHENER_STITCH_VIDEO_VIMEO_ID,
+    explainerKey: SOCK_KITCHENER_STITCH_VIDEO_TIP_ID,
+    introHtml: `<p>${escapeHtml(SOCK_KITCHENER_STITCH_VIDEO_COPY)}</p>`,
+  });
+}
+
+function bickfordSeamTipHtml(): string {
+  return buildSockPatternVideoTipHtml({
+    tipId: SOCK_BICKFORD_SEAM_VIDEO_TIP_ID,
+    title: SOCK_BICKFORD_SEAM_VIDEO_TITLE,
+    vimeoId: SOCK_BICKFORD_SEAM_VIDEO_VIMEO_ID,
+    explainerKey: SOCK_BICKFORD_SEAM_VIDEO_TIP_ID,
+    introHtml: `<p>${escapeHtml(SOCK_BICKFORD_SEAM_VIDEO_COPY)}</p>`,
   });
 }
 
@@ -581,7 +616,10 @@ function renderStep(step: SockInstructionStep): string {
     case "bind-off-toe-seam": {
       const kitchener = kitchenerStitchGlossaryHtml();
       const bickford = bickfordSeamGlossaryHtml();
-      return `<p>${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX)} ${kitchener} (Grafting) or ${bickford}${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX)}</p>`;
+      return (
+        `<p>${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_PREFIX)} ${kitchener} (Grafting) or ${bickford}${escapeHtml(SOCK_GRAFT_OR_SEAM_INSTRUCTION_SUFFIX)}</p>` +
+        kitchenerStitchTipHtml()
+      );
     }
     case "bind-off":
       return `<p>Bind off ${step.stitches} stitches at the cuff.</p>`;
@@ -591,21 +629,24 @@ function renderStep(step: SockInstructionStep): string {
         figure8BindOffTipHtml()
       );
     case "kitchener": {
+      const tip = kitchenerStitchTipHtml();
       if (step.placement === "top-of-toes") {
         const kitchener = kitchenerStitchGlossaryHtml();
-        return `<p>Graft or join the open toe stitches using ${kitchener} to complete the toe. Place this join on top of the toes for comfort.</p>`;
+        return `<p>Graft or join the open toe stitches using ${kitchener} to complete the toe. Place this join on top of the toes for comfort.</p>${tip}`;
       }
-      return `<p>Join / graft the toe opening using Kitchener stitch. This places the seam under the toes.</p>`;
+      return `<p>Join / graft the toe opening using Kitchener stitch. This places the seam under the toes.</p>${tip}`;
     }
-    case "seam":
+    case "seam": {
+      const tip = step.suggestBickford ? bickfordSeamTipHtml() : "";
       if (step.insideLeg) {
         return step.suggestBickford
-          ? `<p>Join the side seams, keeping the long seam toward the inside of the leg. A Bickford seam may be used for a flat finish.</p>`
+          ? `<p>Join the side seams, keeping the long seam toward the inside of the leg. A Bickford seam may be used for a flat finish.</p>${tip}`
           : `<p>Join the side seams, keeping the long seam toward the inside of the leg.</p>`;
       }
       return step.suggestBickford
-        ? `<p>Sew the long seam. A Bickford seam may be used for a flat finish.</p>`
+        ? `<p>Sew the long seam. A Bickford seam may be used for a flat finish.</p>${tip}`
         : `<p>Sew the long seam.</p>`;
+    }
     case "block":
       return `<p>Block if desired.</p>`;
     case "mirror-second-sock":
