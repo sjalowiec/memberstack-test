@@ -15,6 +15,12 @@ import {
   SOCK_EDIT_PRIMARY_LABEL,
 } from "./sockPatternNavigation";
 import {
+  BICKFORD_SEAM_GLOSSARY_ID,
+  BICKFORD_SEAM_GLOSSARY_TERM,
+  KITCHENER_STITCH_GLOSSARY_ID,
+  KITCHENER_STITCH_GLOSSARY_TERM,
+  AUTOMATIC_WRAP_GLOSSARY_ID,
+  AUTOMATIC_WRAP_GLOSSARY_TERM,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_ID,
   SCRAP_AND_RAVEL_CAST_ON_GLOSSARY_TERM,
   SOCK_ANKLE_VIDEO_TIP_ID,
@@ -37,12 +43,6 @@ import {
   SOCK_SHORT_ROW_WRAP_WARNING,
   SOCK_TOE_UP_OPENING_SECTION_TITLE,
 } from "./sockInstructions";
-import {
-  BICKFORD_SEAM_GLOSSARY_ID,
-  BICKFORD_SEAM_GLOSSARY_TERM,
-  KITCHENER_STITCH_GLOSSARY_ID,
-  KITCHENER_STITCH_GLOSSARY_TERM,
-} from "./sockInstructionRender";
 import { SOCK_PATTERN_INCOMPLETE_DRAFT_MESSAGE } from "./sockPatternFromDraft";
 
 const adapter = createSockSizingAdapter(
@@ -329,6 +329,8 @@ describe("short-row rendering and header measurements", () => {
     expect(heel?.steps.map((s) => s.type)).toContain("short-row-wrap-warning");
     const html = renderSockPatternPairHtml(result.sock1, result.sock2);
     expect(html).toContain("On the carriage side, put 1 needle into hold");
+    expect(html).toContain(`data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}"`);
+    expect(html).toContain(AUTOMATIC_WRAP_GLOSSARY_TERM);
     expect(html).toContain("Opposite the carriage, return 1 needle to work");
     expect(html).toContain("Repeat every row");
   });

@@ -226,6 +226,20 @@ describe("Socks Shaping Notation from approved calc", () => {
       attr(infantSvg, "data-sock-notation-heel"),
     );
   });
+
+  it("keeps section Nr tokens and heel/toe shaping stacks, with a shared bottom-to-top arrow", () => {
+    const calc = mustCalc();
+    const svg = buildSockShapingNotationDiagramSvg(calc);
+    expect(svg).toContain(formatBodyRowsNotation(calc.legShapingRowsAvailable));
+    expect(svg).toContain(formatBodyRowsNotation(calc.ankleStraightRows));
+    expect(svg).toContain(formatBodyRowsNotation(calc.straightFootRows));
+    expect(svg).toContain(`${calc.heel.shortRowInSteps}r`);
+    expect(svg).toContain(`+${formatShapingSegment(1, 1, calc.heel.shortRowOutSteps)}`);
+    expect(svg).toContain(`-${formatShapingSegment(1, 1, calc.heel.shortRowInSteps)}`);
+    expect(svg).toContain(remainingStitchLabel(calc.heel.remainingStitches));
+    expect(svg).toContain('data-sock-reading-direction="bottom-to-top"');
+    expect(svg).not.toContain("Direction of Knitting");
+  });
 });
 
 describe("notation does not recreate Socks geometry", () => {
@@ -247,6 +261,7 @@ describe("notation does not recreate Socks geometry", () => {
     expect(src).toContain("formatShapingSegment");
     expect(src).toContain("formatBindOffNotation");
     expect(src).toContain("sockCanonicalGeometryMarkup");
+    expect(src).toContain("sockCanonicalReadingDirectionArrowMarkup");
     expect(src).not.toContain("sockDiagramSchematicMarkup");
     expect(src).not.toContain("buildSockDiagramLayout");
     expect(src).toContain('data-sock-layout="canonical"');

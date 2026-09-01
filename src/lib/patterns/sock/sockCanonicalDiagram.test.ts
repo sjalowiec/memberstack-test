@@ -143,6 +143,7 @@ describe("canonical diagram module does not recreate Socks math or old schematic
     expect(src).not.toContain("sockDiagramHourglassPath");
     expect(src).not.toContain("sockDiagramSchematicMarkup");
     expect(src).toContain("socks-summary.svg");
+    expect(src).toContain("sockCanonicalReadingDirectionArrowMarkup");
     expect(src).toContain("BasicSockCalc");
   });
 });

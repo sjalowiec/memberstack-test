@@ -18,13 +18,19 @@ export const SOCK_CANONICAL_POLYGON_POINTS =
 
 export const SOCK_CANONICAL_VB_W = 284;
 export const SOCK_CANONICAL_VB_H = 480;
-const PAD_LEFT = 6;
+const PAD_LEFT = 18;
 const PAD_RIGHT = 72;
 const PAD_TOP = 22;
 const PAD_BOTTOM = 18;
 
-/** Extra right gutter so Stitches & Rows "N / N rows" labels are not clipped. */
+/** Extra right gutter so Stitches & Rows RC milestone labels are not clipped. */
 export const SOCK_STS_ROWS_PAD_RIGHT = 136;
+
+/** Screen-left X for the shared bottom→top reading arrow (viewBox space, not mirrored). */
+const READING_ARROW_X = -8;
+const READING_ARROW_INSET = 16;
+const READING_ARROW_HEAD = 5;
+const READING_ARROW_STROKE = "#6b7280";
 
 export function sockCanonicalViewBox(padRight?: number): string {
   const right = padRight ?? PAD_RIGHT;
@@ -32,6 +38,24 @@ export function sockCanonicalViewBox(padRight?: number): string {
 }
 
 export const SOCK_CANONICAL_VIEWBOX = sockCanonicalViewBox();
+
+/**
+ * Bottom→top reading arrow in viewBox space.
+ * Same direction for Cuff-to-Toe and Toe-Up; not flipped with sock geometry.
+ */
+export function sockCanonicalReadingDirectionArrowMarkup(): string {
+  const x = READING_ARROW_X;
+  const top = READING_ARROW_INSET;
+  const bot = SOCK_CANONICAL_VB_H - READING_ARROW_INSET;
+  const s = READING_ARROW_HEAD;
+  return (
+    `<g data-sock-reading-direction="bottom-to-top">` +
+    `<line x1="${fmtSockSvg(x)}" y1="${fmtSockSvg(bot)}" x2="${fmtSockSvg(x)}" y2="${fmtSockSvg(top)}" ` +
+    `stroke="${READING_ARROW_STROKE}" stroke-width="1.2" fill="none"/>` +
+    `<polygon points="${fmtSockSvg(x)},${fmtSockSvg(top)} ${fmtSockSvg(x - s)},${fmtSockSvg(top + s * 1.6)} ${fmtSockSvg(x + s)},${fmtSockSvg(top + s * 1.6)}" fill="${READING_ARROW_STROKE}"/>` +
+    `</g>`
+  );
+}
 
 /**
  * Overlay anchors in canonical viewBox units (see #sock-canonical-anchors).
@@ -216,17 +240,6 @@ function stitchLabel(n: number): string {
   return sts === 1 ? "1 st" : `${sts} sts`;
 }
 
-function rowLabel(n: number): string {
-  const rows = Math.max(0, Math.round(n));
-  return rows === 1 ? "1 row" : `${rows} rows`;
-}
-
-function shortRowPhaseLabel(inSteps: number, outSteps: number): string {
-  const inn = Math.max(0, Math.round(inSteps));
-  const out = Math.max(0, Math.round(outSteps));
-  return `${inn} / ${out} rows`;
-}
-
 function inchLabel(inches: number): string {
   const n = formatSockMeasurementDisplay(inches, "inches");
   return n ? `${n}"` : "";
@@ -295,11 +308,11 @@ export function sockCanonicalCalcLabelFields(calc: BasicSockCalc): {
     heelCenterLabel: stitchLabel(calc.heel.remainingStitches),
     toeWorkLabel: stitchLabel(calc.toe.workingStitches),
     toeCenterLabel: stitchLabel(calc.toe.remainingStitches),
-    measureLeg: [inchLabel(upperLegInches), rowLabel(upperLegRows)],
-    measureAnkle: [inchLabel(calc.ankleStraightLengthInches), rowLabel(ankleRows)],
-    measureHeel: [inchLabel(calc.heelDepthInches), shortRowPhaseLabel(calc.heel.shortRowInSteps, calc.heel.shortRowOutSteps)],
-    measureFoot: [inchLabel(calc.straightFootLengthInches), rowLabel(footRows)],
-    measureToe: [inchLabel(calc.toeDepthInches), shortRowPhaseLabel(calc.toe.shortRowInSteps, calc.toe.shortRowOutSteps)],
+    measureLeg: [inchLabel(upperLegInches)],
+    measureAnkle: [inchLabel(calc.ankleStraightLengthInches)],
+    measureHeel: [inchLabel(calc.heelDepthInches)],
+    measureFoot: [inchLabel(calc.straightFootLengthInches)],
+    measureToe: [inchLabel(calc.toeDepthInches)],
   };
 }
 
