@@ -307,7 +307,7 @@ describe("short-row rendering and header measurements", () => {
       "cancel-hold-return",
     ]);
     expect(toe?.steps.map((s) => s.type)).toEqual([
-      "reset-rc",
+      "stop-rc",
       "place-hold",
       "short-row-in",
       "short-row-wrap-warning",

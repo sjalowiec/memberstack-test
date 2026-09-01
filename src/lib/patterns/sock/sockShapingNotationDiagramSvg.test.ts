@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatBodyRowsNotation,
   formatCastOnNotation,
-  formatHoldNotation,
+  formatRcNotation,
 } from "../sleevelessBackJapaneseNotation";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import { calculateBasicSockPattern, type BasicSockCalc, type BasicSockCalcInput } from "./sockMath";
@@ -62,12 +62,25 @@ function textCount(svg: string, text: string): number {
   return svg.split(`>${text}<`).length - 1;
 }
 
+function remainingStitchLabel(stitches: number): string {
+  return stitches === 1 ? "1 st" : `${stitches} sts`;
+}
+
 function expectedShortRow(calc: BasicSockCalc, part: "heel" | "toe"): string {
   const shaping = calc[part];
+  const startRc =
+    part === "toe"
+      ? calc.constructionDirection === "cuff-to-toe"
+        ? calc.straightFootRows
+        : 0
+      : calc.constructionDirection === "cuff-to-toe"
+        ? calc.legRows
+        : calc.straightFootRows;
   return [
-    formatHoldNotation(shaping.heldStitches),
-    formatShapingSegment(1, 1, shaping.shortRowInSteps),
-    formatShapingSegment(1, 1, shaping.shortRowOutSteps),
+    formatRcNotation(startRc),
+    `+${formatShapingSegment(1, 1, shaping.shortRowOutSteps)}`,
+    remainingStitchLabel(shaping.remainingStitches),
+    `-${formatShapingSegment(1, 1, shaping.shortRowInSteps)}`,
   ].join("|");
 }
 
@@ -89,8 +102,14 @@ describe("Socks Shaping Notation from approved calc", () => {
     expect(attr(svg, "data-sock-notation-leg-direction")).toBe("none");
     expect(attr(svg, "data-sock-notation-leg")).toBe(lines.leg.join("|"));
     expect(attr(svg, "data-sock-notation-heel")).toBe(expectedShortRow(calc, "heel"));
-    expect(svg).toContain(formatHoldNotation(calc.heel.heldStitches));
-    expect(svg).toContain(formatShapingSegment(1, 1, calc.heel.shortRowInSteps));
+    expect(attr(svg, "data-sock-notation-toe")).toBe(expectedShortRow(calc, "toe"));
+    expect(svg).toContain(`+${formatShapingSegment(1, 1, calc.heel.shortRowOutSteps)}`);
+    expect(svg).toContain(`-${formatShapingSegment(1, 1, calc.heel.shortRowInSteps)}`);
+    expect(svg).toContain(remainingStitchLabel(calc.heel.remainingStitches));
+    expect(svg).toContain(formatRcNotation(calc.legRows));
+    expect(svg).toContain(formatRcNotation(calc.straightFootRows));
+    expect(svg).not.toMatch(/hold\d/);
+    expect(svg).not.toContain("hold ");
     expect(svg).not.toContain('data-sock-shape="heel-hourglass"');
     expect(svg).toContain('width="100%"');
     expect(svg).toContain('height="auto"');
@@ -167,6 +186,45 @@ describe("Socks Shaping Notation from approved calc", () => {
     expect(textCount(labelsGroup(sock1), "Toe")).toBe(1);
     expect(sock1).not.toMatch(/holdL|SR|wrap-in/);
     expect(sock2).not.toMatch(/holdL|SR|wrap-in/);
+    expect(sock1).not.toMatch(/hold\d/);
+    expect(sock2).not.toMatch(/hold\d/);
+  });
+
+  it("shows signed decrease / remaining / increase once per heel and toe, with a start RC", () => {
+    const woman = mustCalc();
+    const infant = mustCalc({
+      footCircumferenceInches: 4,
+      footLengthInches: 3.5,
+      legCircumferenceInches: 4,
+      legLengthInches: 2.5,
+    });
+    expect(woman.heel.shortRowInSteps).not.toBe(infant.heel.shortRowInSteps);
+    expect(woman.heel.remainingStitches).not.toBe(infant.heel.remainingStitches);
+    for (const calc of [woman, infant]) {
+      const lines = buildSockShapingNotationLines(calc);
+      const svg = buildSockShapingNotationDiagramSvg(calc);
+      for (const part of ["heel", "toe"] as const) {
+        const expected = expectedShortRow(calc, part).split("|");
+        expect(lines[part]).toEqual(expected);
+        expect(expected).toHaveLength(4);
+        expect(expected[1]).toBe(`+${formatShapingSegment(1, 1, calc[part].shortRowOutSteps)}`);
+        expect(expected[2]).toBe(remainingStitchLabel(calc[part].remainingStitches));
+        expect(expected[3]).toBe(`-${formatShapingSegment(1, 1, calc[part].shortRowInSteps)}`);
+        expect(svg).toContain(expected[0]!);
+        expect(svg).toContain(expected[1]!);
+        expect(svg).toContain(expected[2]!);
+        expect(svg).toContain(expected[3]!);
+      }
+      expect(lines.heel.slice(1)).toEqual(lines.toe.slice(1));
+      expect(svg).not.toMatch(/hold\d/);
+      expect(attr(svg, "data-sock-notation-heel")).not.toContain("hold");
+      expect(attr(svg, "data-sock-notation-toe")).not.toContain("hold");
+    }
+    const womanSvg = buildSockShapingNotationDiagramSvg(woman);
+    const infantSvg = buildSockShapingNotationDiagramSvg(infant);
+    expect(attr(womanSvg, "data-sock-notation-heel")).not.toBe(
+      attr(infantSvg, "data-sock-notation-heel"),
+    );
   });
 });
 
@@ -184,7 +242,8 @@ describe("notation does not recreate Socks geometry", () => {
     expect(src).not.toMatch(/calculateBasicSockPattern/);
     expect(src).toContain("formatCastOnNotation");
     expect(src).toContain("formatBodyRowsNotation");
-    expect(src).toContain("formatHoldNotation");
+    expect(src).toContain("formatRcNotation");
+    expect(src).not.toContain("formatHoldNotation");
     expect(src).toContain("formatShapingSegment");
     expect(src).toContain("formatBindOffNotation");
     expect(src).toContain("sockCanonicalGeometryMarkup");

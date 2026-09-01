@@ -360,8 +360,10 @@ describe("finished-pattern families use the shared diagram tabs", () => {
     );
     expect(socksPage).toContain("pattern-diagram-tabs.css");
     expect(socksPage).toContain("data-sock-diagram-tabs-mount");
+    expect(socksPage).toContain(".pattern-diagram-shaping-help");
     expect(hatPage).toContain("Hat Dimensions");
     expect(hatPage).toContain("data-hat-diagram-tabs-mount");
+    expect(sharedCss).toContain(".pattern-diagram-shaping-help__btn.kbm-btn");
   });
 
   it("Sleeveless and Drop Shoulder build accessible tabs and keep diagram swapping in the family script", () => {

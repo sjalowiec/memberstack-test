@@ -1,8 +1,9 @@
 /**
  * Basic Socks finished-pattern diagram tabs (Stitches & Rows / Shaping Notation).
- * Thin wrapper around the shared Pattern Diagram tab container.
+ * Thin wrapper around the shared Pattern Diagram tab container and shaping-notation help.
  */
 
+import { buildPatternDiagramShapingNotationHelpHtml } from "../patternDiagramShapingNotationHelp";
 import {
   PATTERN_DIAGRAM_TAB_SHAPING,
   PATTERN_DIAGRAM_TAB_STS_ROWS,
@@ -50,6 +51,7 @@ export function buildSockPatternDiagramTabsShellHtml(): string {
         id: SOCK_DIAGRAM_TAB_SHAPING,
         printHeading: true,
         panelHtml:
+          buildPatternDiagramShapingNotationHelpHtml() +
           `<div class="sock-pattern-diagram-panel__svg" data-sock-diagram-shaping-host></div>`,
       },
     ],
