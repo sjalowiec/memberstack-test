@@ -35,6 +35,10 @@ import {
   SOCK_TOE_FINISHING_VIDEO_VIMEO_ID,
   SOCK_TOE_VIDEO_TIP_ID,
   SOCK_TOE_VIDEO_VIMEO_ID,
+  SOCK_SHORT_ROW_REFRESHER_VIDEO_COPY,
+  SOCK_SHORT_ROW_REFRESHER_VIDEO_TIP_ID,
+  SOCK_SHORT_ROW_REFRESHER_VIDEO_TITLE,
+  SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID,
   SOCK_WHY_STOP_ROW_COUNTER_TIP_ID,
   SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
   SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
@@ -120,6 +124,10 @@ describe("Summary Update Pattern → Pattern route", () => {
     expect(patternScript).toContain("buildSockPatternFromDraft");
     expect(patternScript).toContain("renderSockPatternPairHtml");
     expect(patternScript).toContain("initSockPairInstructionTabs");
+    expect(patternScript).toContain("syncPatternInpageNav");
+    expect(patternScript).toContain("sockPatternInpageNavItems");
+    expect(patternPage).toContain("data-sleeveless-pattern-inpage-nav");
+    expect(patternPage).toContain('aria-label="Jump to pattern section"');
     expect(patternScript).toContain("buildSockPatternDiagramTabsShellHtml");
     expect(patternScript).toContain("buildSockPatternDiagramSvg");
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");
@@ -199,6 +207,10 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_TOE_VIDEO_TIP_ID}"`);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
+    expect(html).toContain(`data-tip-id="${SOCK_SHORT_ROW_REFRESHER_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_SHORT_ROW_REFRESHER_VIDEO_TITLE);
+    expect(html).toContain(SOCK_SHORT_ROW_REFRESHER_VIDEO_COPY);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_TOE_FINISHING_VIDEO_TIP_ID}"`);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}"`);
@@ -251,6 +263,9 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
     expect(html).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_COPY);
     expect(html).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
     expect(html).toContain(`data-tip-id="${SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID}"`);
+    expect(html).toContain(`data-tip-id="${SOCK_SHORT_ROW_REFRESHER_VIDEO_TIP_ID}"`);
+    expect(html).toContain(SOCK_SHORT_ROW_REFRESHER_VIDEO_TITLE);
+    expect(html).toContain(`player.vimeo.com/video/${SOCK_SHORT_ROW_REFRESHER_VIDEO_VIMEO_ID}`);
     expect(html.indexOf(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING)).toBeLessThan(
       html.indexOf('data-section-id="toe"'),
     );
@@ -398,6 +413,7 @@ describe("Pattern page does not recalculate geometry", () => {
       resolve(dir, "sockShapingNotationDiagramSvg.ts"),
       resolve(dir, "sockPatternDiagramTabs.ts"),
       resolve(dir, "sockPairInstructionTabs.ts"),
+      resolve(dir, "sockPatternInpageNav.ts"),
       resolve("src/scripts/socks-pattern-page.ts"),
       resolve("src/pages/patterns/socks/pattern.astro"),
     ].map((path) => readFileSync(path, "utf8"));

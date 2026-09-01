@@ -201,6 +201,7 @@ import { resolveEffectiveFinishedBustInches } from "../lib/patterns/customBuildE
 import { resolveDiagramFinishedHipInches } from "../lib/patterns/customBuildEffectiveFinishedHip.ts";
 import { resolveEffectiveSleevelessBodyShapeKind, resolveEffectiveSleevelessBodyShapePhrase } from "../lib/patterns/sleevelessAlineShaping.ts";
 import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx.ts";
+import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav.ts";
 
 // DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
 
@@ -331,65 +332,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   const isSleevelessWorkspacePatternPage = () =>
     Boolean(document.querySelector(".sleeveless-pattern-page.sleeveless-workspace-subpage"));
-
-  let sleevelessInpageNavScrollSpyBound = false;
-
-  function sleevelessInpageNavScrollOffsetPx() {
-    const headerOffset =
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--site-header-offset")
-      ) || 112;
-    const nav = document.querySelector("[data-sleeveless-pattern-inpage-nav]");
-    const navHeight = nav instanceof HTMLElement ? nav.offsetHeight : 40;
-    return headerOffset + navHeight + 6;
-  }
-
-  function updateSleevelessInpageNavActivePill() {
-    const nav = document.querySelector("[data-sleeveless-pattern-inpage-nav]");
-    if (!(nav instanceof HTMLElement) || nav.hidden) return;
-    const pills = nav.querySelectorAll(
-      "a.sleeveless-pattern-inpage-nav__pill[data-nav-section-id]"
-    );
-    if (!pills.length) return;
-
-    const offset = sleevelessInpageNavScrollOffsetPx();
-    let activeId = pills[0].getAttribute("data-nav-section-id");
-    for (const pill of pills) {
-      if (!(pill instanceof HTMLAnchorElement)) continue;
-      const id = pill.getAttribute("data-nav-section-id");
-      if (!id) continue;
-      const section = document.getElementById(id);
-      if (!(section instanceof HTMLElement)) continue;
-      if (section.getBoundingClientRect().top <= offset) {
-        activeId = id;
-      }
-    }
-
-    pills.forEach((pill) => {
-      if (!(pill instanceof HTMLAnchorElement)) return;
-      const id = pill.getAttribute("data-nav-section-id");
-      const isActive = Boolean(id && id === activeId);
-      pill.classList.toggle("is-active", isActive);
-      if (isActive) pill.setAttribute("aria-current", "location");
-      else pill.removeAttribute("aria-current");
-    });
-  }
-
-  function bindSleevelessInpageNavScrollSpy() {
-    if (sleevelessInpageNavScrollSpyBound) return;
-    sleevelessInpageNavScrollSpyBound = true;
-    let ticking = false;
-    const schedule = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        updateSleevelessInpageNavActivePill();
-      });
-    };
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("hashchange", schedule);
-  }
 
   function mountSleevelessPrintAction() {
     if (!isSleevelessWorkspacePatternPage()) return;
@@ -2610,36 +2552,6 @@ table {
     headerRow.appendChild(btn);
   }
 
-  /**
-   * Section slugs in {@link renderSleevelessDisplayHtml} `flushOpenSection` are derived from
-   * `escapeHtml(row.title)`, so titles containing `&` (e.g. `NECKLINE & SHOULDERS`) produce ids
-   * with `amp` in the slug (`…-neckline-amp-shoulders`), not a bare `…-neckline-shoulders`.
-   */
-  function findNavTargetInScope(scope, ids, discoverNecklinePiece) {
-    if (!scope) return null;
-    for (const id of ids) {
-      let el = scope.querySelector(`#${CSS.escape(id)}`);
-      if (!(el instanceof HTMLElement)) {
-        el = scope.querySelector(`[data-section-id="${id}"]`);
-      }
-      if (el instanceof HTMLElement) return { el, id };
-    }
-    if (discoverNecklinePiece === "back" || discoverNecklinePiece === "front") {
-      const prefix = discoverNecklinePiece === "front" ? "sg-front-" : "sg-back-";
-      const sections = scope.querySelectorAll(`section[data-section-id^="${prefix}"]`);
-      for (const sec of sections) {
-        if (!(sec instanceof HTMLElement)) continue;
-        const sid = sec.getAttribute("data-section-id");
-        if (!sid) continue;
-        const lower = sid.toLowerCase();
-        if (lower.includes("neckline") && lower.includes("shoulder")) {
-          return { el: sec, id: sid };
-        }
-      }
-    }
-    return null;
-  }
-
   const SLEEVELESS_PATTERN_INPAGE_NAV_ITEMS = [
     { label: "Back", ids: ["sg-back"] },
     { label: "Back Armhole", ids: ["sg-back-armhole"] },
@@ -2660,32 +2572,10 @@ table {
   ];
 
   function syncSleevelessPatternInpageNav() {
-    const nav = document.querySelector("[data-sleeveless-pattern-inpage-nav]");
-    if (!(nav instanceof HTMLElement)) return;
-    const scope = document.getElementById("pattern-content");
-    const track = document.createElement("div");
-    track.className = "sleeveless-pattern-inpage-nav__track";
-    let count = 0;
-    for (const item of SLEEVELESS_PATTERN_INPAGE_NAV_ITEMS) {
-      const found = findNavTargetInScope(scope, item.ids, item.discoverNecklinePiece);
-      if (!found) continue;
-      const a = document.createElement("a");
-      a.href = `#${found.id}`;
-      a.className = "sleeveless-pattern-inpage-nav__pill";
-      a.dataset.navSectionId = found.id;
-      a.textContent = item.label;
-      track.appendChild(a);
-      count += 1;
-    }
-    if (count > 0) {
-      mountSleevelessPrintAction();
-    }
-    nav.replaceChildren(track);
-    nav.hidden = count === 0;
-    if (count > 0) {
-      bindSleevelessInpageNavScrollSpy();
-      updateSleevelessInpageNavActivePill();
-    }
+    syncPatternInpageNav({
+      items: SLEEVELESS_PATTERN_INPAGE_NAV_ITEMS,
+      onHasItems: mountSleevelessPrintAction,
+    });
   }
 
   function wrapPatternSection(sectionId, title, innerHtml, opts) {

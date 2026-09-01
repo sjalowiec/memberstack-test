@@ -15,6 +15,9 @@ import {
   initSockPairInstructionTabs,
   selectedSockPairTab,
 } from "../lib/patterns/sock/sockPairInstructionTabs";
+import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
+import { sockPatternInpageNavItems } from "../lib/patterns/sock/sockPatternInpageNav";
+import type { SockInstructionDocument } from "../lib/patterns/sock/sockInstructions";
 import {
   buildSockPatternDiagramTabsShellHtml,
   initSockPatternDiagramTabs,
@@ -151,6 +154,24 @@ export async function renderSocksPattern(): Promise<void> {
   hydrateGlossaryTooltipPlaceholders(mount);
   initSockPairInstructionTabs(mount);
 
+  const pairRoot = mount.querySelector("[data-socks-pair-tabs]");
+  const selectedSockDoc = (): SockInstructionDocument =>
+    pairRoot instanceof HTMLElement && selectedSockPairTab(pairRoot) === "sock-2"
+      ? result.sock2
+      : result.sock1;
+  const syncSocksPatternInpageNav = (): void => {
+    syncPatternInpageNav({ items: sockPatternInpageNavItems(selectedSockDoc()) });
+  };
+  syncSocksPatternInpageNav();
+  if (pairRoot instanceof HTMLElement && pairRoot.dataset.sockPatternNavBound !== "true") {
+    pairRoot.dataset.sockPatternNavBound = "true";
+    pairRoot.addEventListener("click", (event) => {
+      const from = event.target instanceof Element ? event.target : null;
+      if (!from?.closest("[data-socks-pair-tab]")) return;
+      syncSocksPatternInpageNav();
+    });
+  }
+
   const diagramHost = document.querySelector("[data-sock-diagram-tabs-mount]");
   if (diagramHost instanceof HTMLElement) {
     diagramHost.innerHTML = buildSockPatternDiagramTabsShellHtml();
@@ -158,7 +179,6 @@ export async function renderSocksPattern(): Promise<void> {
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(diagramHost);
     fillSockDiagrams(result.calc, false);
-    const pairRoot = mount.querySelector("[data-socks-pair-tabs]");
     if (pairRoot instanceof HTMLElement && pairRoot.dataset.sockDiagramMirrorBound !== "true") {
       pairRoot.dataset.sockDiagramMirrorBound = "true";
       pairRoot.addEventListener("click", (event) => {
