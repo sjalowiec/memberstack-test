@@ -1,11 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
   DROP_SHOULDER_EDIT_PREVIEW_TABS,
   DROP_SHOULDER_EDIT_SLEEVE_FIELD_KEYS,
+  DROP_SHOULDER_UPPER_ARM_INPUT_SELECTOR,
   dropShoulderEditPreviewTabForField,
+  focusDropShoulderUpperArmMeasurement,
   isDropShoulderEditPreviewTab,
 } from "./dropShoulderEditMeasurementPreview";
 
@@ -51,13 +53,19 @@ describe("Drop Shoulder edit preview tabs", () => {
     expect(measurementsPageSrc).toContain("createDropShoulderEditPreviewTablist");
     expect(measurementsPageSrc).toContain("stampDropShoulderPreviewTab");
     expect(measurementsPageSrc).toContain("applyDropShoulderEditPreviewChipVisibility");
+    expect(measurementsPageSrc).toContain("setDropShoulderEditPreviewTab");
+    const helper = measurementsPageSrc.match(
+      /function setDropShoulderEditPreviewTab\([\s\S]*?\n\}/,
+    )?.[0];
+    expect(helper).toBeTruthy();
+    expect(helper).toContain("sleevelessMeasurementArtRefreshImpl?.()");
+    expect(helper).not.toContain("persistFromRoot");
     const tabClick = measurementsPageSrc.match(
       /tablist\.addEventListener\("click", \(ev: Event\) => \{[\s\S]*?\}\);/,
     )?.[0];
     expect(tabClick).toBeTruthy();
+    expect(tabClick).toContain("setDropShoulderEditPreviewTab(tablist, overlay, nextTab)");
     expect(tabClick).not.toContain("persistFromRoot");
-    expect(tabClick).toContain("sleevelessMeasurementArtRefreshImpl?.()");
-    expect(tabClick).toContain("dropShoulderEditPreviewTab = nextTab");
   });
 
   it("refreshes both tabs from the same live edit-page measurement state", () => {
@@ -81,6 +89,37 @@ describe("Drop Shoulder edit preview tabs", () => {
     expect(measurementsCss).toContain(
       '.cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs',
     );
+  });
+
+  it("scrolls nearest and focuses Upper Arm without a forced page jump", () => {
+    const scrollIntoView = vi.fn();
+    const focus = vi.fn();
+    const input = {
+      focus,
+      closest: () => ({ scrollIntoView }),
+    };
+    const root = {
+      querySelector: (sel: string) => (sel === DROP_SHOULDER_UPPER_ARM_INPUT_SELECTOR ? input : null),
+    };
+    expect(focusDropShoulderUpperArmMeasurement(root as unknown as ParentNode)).toBe(true);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest", inline: "nearest" });
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+  });
+
+  it("returns false when the Upper Arm input is missing", () => {
+    const root = { querySelector: () => null };
+    expect(focusDropShoulderUpperArmMeasurement(root as unknown as ParentNode)).toBe(false);
+  });
+
+  it("wires Drop Shoulder armhole-depth help to the shared measurements diagram", () => {
+    expect(measurementsPageSrc).toContain("data-ds-armhole-depth-help-trigger");
+    expect(measurementsPageSrc).toContain("promptDropShoulderArmholeDepthHelp");
+    expect(measurementsPageSrc).toContain("focusDropShoulderUpperArmMeasurement");
+    expect(measurementsPageSrc).toContain("goToDropShoulderUpperArmMeasurement");
+    expect(measurementsPageSrc).toContain('interactiveHelp: !readOnly && field.key === "armholeDepth"');
+    expect(measurementsPageSrc).toContain("if (!readOnly) wireDropShoulderArmholeDepthHelp(wrap)");
+    expect(measurementsPageSrc).not.toMatch(/data-cb-measure-input="armholeDepth"/);
+    expect(measurementsCss).toContain("express-mbp-box--armhole-help");
   });
 
   it("makes [hidden] override overlay display:flex so Body chips cannot leak on Sleeve", () => {

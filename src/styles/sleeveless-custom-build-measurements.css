@@ -60,6 +60,41 @@
 }
 
 /*
+ * Armhole depth is derived (Upper Arm ÷ 2). The chip is a button that explains
+ * how to change it — not a numeric editor.
+ */
+.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box--armhole-help {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box--armhole-help:focus {
+  outline: none;
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box--armhole-help:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .cb-measure-page[data-express-construction="drop-shoulder"]
+    .express-mbp-box--armhole-help:hover
+    .express-mbp-box__value {
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 40%, #b5bab3);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 9%, #fff);
+  }
+}
+
+/*
  * Overlay chips set display:flex (author stylesheet). That wins over the UA
  * [hidden] rule, so Body chips stayed painted on the Sleeve tab after their
  * SVG targets were gone — clipped at the overlay origin / leftover Body coords.
