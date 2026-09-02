@@ -70,3 +70,27 @@ export function createDropShoulderEditPreviewTablist(doc: Document): HTMLElement
   applyDropShoulderEditPreviewTabSelection(tablist, DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB);
   return tablist;
 }
+
+export const DROP_SHOULDER_UPPER_ARM_INPUT_SELECTOR = '[data-cb-measure-input="upperArm"]';
+
+/**
+ * Reveal-and-focus the Upper Arm field after the Sleeve tab is shown.
+ * Uses `block: "nearest"` and `focus({ preventScroll: true })` so an already-visible
+ * chip is not yanked around. Returns false when the input is not in `root`.
+ */
+export function focusDropShoulderUpperArmMeasurement(root: ParentNode): boolean {
+  const input = root.querySelector<HTMLInputElement>(DROP_SHOULDER_UPPER_ARM_INPUT_SELECTOR);
+  if (!input) return false;
+  const target = input.closest(".express-mbp-box") ?? input;
+  if (typeof target.scrollIntoView === "function") {
+    target.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+  if (typeof input.focus === "function") {
+    try {
+      input.focus({ preventScroll: true });
+    } catch {
+      input.focus();
+    }
+  }
+  return true;
+}

@@ -82,9 +82,11 @@ import {
   applyDropShoulderEditPreviewTabSelection,
   createDropShoulderEditPreviewTablist,
   dropShoulderEditPreviewTabForField,
+  focusDropShoulderUpperArmMeasurement,
   isDropShoulderEditPreviewTab,
   type DropShoulderEditPreviewTab,
 } from "../lib/patterns/dropShoulderEditMeasurementPreview";
+import { promptDropShoulderArmholeDepthHelp } from "../lib/patterns/dropShoulderArmholeDepthHelpDialog";
 import type { SleevelessMeasurementGarmentInput } from "../lib/patterns/sleevelessFrontGarmentGeometry";
 import {
   applyMeasurementTargetToBox,
@@ -966,6 +968,8 @@ function visibleOverlayAnchorsForCurrentPreview(overlay: HTMLElement) {
 type BlueprintBoxOpts = {
   axis?: "horizontal" | "vertical";
   labelLines?: string[];
+  /** Drop Shoulder armhole depth: open the Upper Arm explanation (not a numeric editor). */
+  interactiveHelp?: boolean;
 };
 
 function createDiagramFieldBox(
@@ -1062,8 +1066,15 @@ function createDiagramReadonlyFieldBox(
   unit: UiLengthUnit,
   opts?: BlueprintBoxOpts,
 ): HTMLElement {
-  const box = document.createElement("div");
+  const interactiveHelp = opts?.interactiveHelp === true;
+  const box = document.createElement(interactiveHelp ? "button" : "div");
+  if (interactiveHelp && box instanceof HTMLButtonElement) {
+    box.type = "button";
+    box.setAttribute("aria-haspopup", "dialog");
+    box.setAttribute("data-ds-armhole-depth-help-trigger", "");
+  }
   box.className = `express-mbp-box express-mbp-box--${field.positionMod}`;
+  if (interactiveHelp) box.classList.add("express-mbp-box--armhole-help");
 
   const lab = document.createElement("span");
   lab.className = "express-mbp-box__lab";
@@ -1407,6 +1418,51 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
   };
 }
 
+function setDropShoulderEditPreviewTab(
+  tablist: ParentNode,
+  overlay: HTMLElement,
+  tab: DropShoulderEditPreviewTab,
+): void {
+  const changed = tab !== dropShoulderEditPreviewTab;
+  dropShoulderEditPreviewTab = tab;
+  applyDropShoulderEditPreviewTabSelection(tablist, tab);
+  applyDropShoulderEditPreviewChipVisibility(overlay, tab);
+  if (changed) sleevelessMeasurementArtRefreshImpl?.();
+}
+
+function goToDropShoulderUpperArmMeasurement(wrap: HTMLElement): void {
+  const tablist = wrap.querySelector(".ds-edit-preview-tabs");
+  const overlay = wrap.querySelector(".express-mbp-overlay");
+  if (tablist instanceof HTMLElement && overlay instanceof HTMLElement) {
+    setDropShoulderEditPreviewTab(tablist, overlay, "sleeve");
+  }
+  const focusField = (): void => {
+    focusDropShoulderUpperArmMeasurement(wrap);
+  };
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(focusField);
+    });
+  } else {
+    focusField();
+  }
+}
+
+function wireDropShoulderArmholeDepthHelp(wrap: HTMLElement): void {
+  const box = wrap.querySelector("[data-ds-armhole-depth-help-trigger]");
+  if (!(box instanceof HTMLElement)) return;
+  box.addEventListener("click", (ev: Event) => {
+    ev.preventDefault();
+    void promptDropShoulderArmholeDepthHelp().then((choice) => {
+      if (choice !== "edit-upper-arm") {
+        if (typeof box.focus === "function") box.focus();
+        return;
+      }
+      goToDropShoulderUpperArmMeasurement(wrap);
+    });
+  });
+}
+
 function findReviewDiagramOverlay(diagramHost: HTMLElement): HTMLElement | null {
   const overlay = diagramHost.querySelector(".express-mbp-overlay");
   return overlay instanceof HTMLElement ? overlay : null;
@@ -1564,7 +1620,11 @@ async function renderDiagram(
           field,
           dropShoulderDisplayOnlyFieldInches(field.key, merged),
           unitForBoxes,
-          { axis: field.axis, labelLines: field.labelLines },
+          {
+            axis: field.axis,
+            labelLines: field.labelLines,
+            interactiveHelp: !readOnly && field.key === "armholeDepth",
+          },
         ),
       );
       continue;
@@ -1597,12 +1657,10 @@ async function renderDiagram(
       const btn = ev.target instanceof Element ? ev.target.closest("[data-ds-edit-preview-tab]") : null;
       const nextTab = btn?.getAttribute("data-ds-edit-preview-tab");
       if (!isDropShoulderEditPreviewTab(nextTab) || nextTab === dropShoulderEditPreviewTab) return;
-      dropShoulderEditPreviewTab = nextTab;
-      applyDropShoulderEditPreviewTabSelection(tablist, nextTab);
-      applyDropShoulderEditPreviewChipVisibility(overlay, nextTab);
-      sleevelessMeasurementArtRefreshImpl?.();
+      setDropShoulderEditPreviewTab(tablist, overlay, nextTab);
     });
     wrap.prepend(tablist);
+    if (!readOnly) wireDropShoulderArmholeDepthHelp(wrap);
   }
   diagramHost.appendChild(wrap);
 
