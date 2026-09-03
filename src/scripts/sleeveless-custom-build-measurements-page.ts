@@ -82,6 +82,7 @@ import {
   applyDropShoulderEditPreviewTabSelection,
   createDropShoulderEditPreviewTablist,
   dropShoulderEditPreviewTabForField,
+  dropShoulderUpperArmArmholeHintForField,
   focusDropShoulderUpperArmMeasurement,
   isDropShoulderEditPreviewTab,
   type DropShoulderEditPreviewTab,
@@ -1044,7 +1045,20 @@ function createDiagramFieldBox(
   unitEl.setAttribute("aria-hidden", "true");
   unitEl.textContent = unit;
 
-  chip.append(input, unitEl);
+  const hintText = dropShoulderUpperArmArmholeHintForField(field.key, isDropShoulderConstruction());
+  if (hintText) {
+    const valueRow = document.createElement("span");
+    valueRow.className = "measurement-chip__value";
+    valueRow.append(input, unitEl);
+    const hint = document.createElement("span");
+    hint.className = "express-mbp-box__hint";
+    hint.setAttribute("data-ds-upper-arm-armhole-hint", "");
+    hint.textContent = hintText;
+    chip.classList.add("measurement-chip--with-hint");
+    chip.append(valueRow, hint);
+  } else {
+    chip.append(input, unitEl);
+  }
   fieldRow.append(chip);
 
   const err = document.createElement("span");
