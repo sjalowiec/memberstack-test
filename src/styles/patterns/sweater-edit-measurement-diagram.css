@@ -104,6 +104,13 @@
 
 .sl-measure-workspace__body.express-measurements-confirm-page
   .express-mbp-stage[data-measurement-overlay-mode="desktop"]
+  .measurement-chip--with-hint {
+  min-height: 0;
+  padding-bottom: 0.3rem;
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .express-mbp-stage[data-measurement-overlay-mode="desktop"]
   .measurement-input {
   font-size: 1.15rem;
   min-width: 2rem;

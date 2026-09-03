@@ -73,6 +73,17 @@ export function createDropShoulderEditPreviewTablist(doc: Document): HTMLElement
 
 export const DROP_SHOULDER_UPPER_ARM_INPUT_SELECTOR = '[data-cb-measure-input="upperArm"]';
 
+/** Short in-chip hint on the editable Drop Shoulder Upper Arm control. */
+export const DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT = "Sets armhole depth";
+
+export function dropShoulderUpperArmArmholeHintForField(
+  key: string,
+  isDropShoulder: boolean,
+): string | null {
+  if (!isDropShoulder || key !== "upperArm") return null;
+  return DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT;
+}
+
 /**
  * Reveal-and-focus the Upper Arm field after the Sleeve tab is shown.
  * Uses `block: "nearest"` and `focus({ preventScroll: true })` so an already-visible

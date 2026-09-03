@@ -158,6 +158,64 @@
     0 0 0 2px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
 }
 
+.cb-measure-page[data-express-construction="drop-shoulder"] .measurement-chip--with-hint {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 3.35rem;
+  padding-bottom: 0.28rem;
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .measurement-chip--with-hint .measurement-chip__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box__hint {
+  display: block;
+  margin: 0;
+  max-width: 100%;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-transform: none;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 44%, #666);
+  pointer-events: none;
+  user-select: none;
+}
+
+.cb-measure-page.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measurement-chip--with-hint {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 0;
+  gap: 0.12rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+.cb-measure-page.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measurement-chip--with-hint
+  .measurement-chip__value {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.cb-measure-page.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__hint {
+  text-align: left;
+  font-size: 0.72rem;
+}
+
 .cb-measure-page .measurement-input {
   box-sizing: border-box;
   flex: 1 1 auto;

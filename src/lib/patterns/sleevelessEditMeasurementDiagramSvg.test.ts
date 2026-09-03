@@ -299,6 +299,8 @@ describe("Sleeveless edit measurement diagram — overlay anchors", () => {
   it("does not generate Drop Shoulder artwork from this renderer", () => {
     expect(rendererSrc).not.toContain("drop_shoulder_summary");
     expect(rendererSrc).not.toContain("buildDropShoulderEditMeasurementDiagramSvg");
+    expect(rendererSrc).not.toContain("Sets armhole depth");
+    expect(rendererSrc).not.toContain("data-ds-upper-arm-armhole-hint");
     expect(measurementsPageSrc).toContain("buildSleevelessEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("adoptSleevelessGeneratedMeasurementArt");
   });

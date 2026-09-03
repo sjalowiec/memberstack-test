@@ -5,8 +5,10 @@ import {
   DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
   DROP_SHOULDER_EDIT_PREVIEW_TABS,
   DROP_SHOULDER_EDIT_SLEEVE_FIELD_KEYS,
+  DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT,
   DROP_SHOULDER_UPPER_ARM_INPUT_SELECTOR,
   dropShoulderEditPreviewTabForField,
+  dropShoulderUpperArmArmholeHintForField,
   focusDropShoulderUpperArmMeasurement,
   isDropShoulderEditPreviewTab,
 } from "./dropShoulderEditMeasurementPreview";
@@ -134,5 +136,61 @@ describe("Drop Shoulder edit preview tabs", () => {
     expect(previewSrc).toContain("node.hidden = !visible");
     expect(previewSrc).toContain('node.style.left = ""');
     expect(previewSrc).toContain('node.style.top = ""');
+  });
+});
+
+describe("Drop Shoulder Upper Arm armhole-depth hint", () => {
+  it("places Sets armhole depth inside the editable Upper Arm Circ chip", () => {
+    expect(DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT).toBe("Sets armhole depth");
+    expect(dropShoulderUpperArmArmholeHintForField("upperArm", true)).toBe(
+      DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT,
+    );
+    expect(measurementsPageSrc).toContain("dropShoulderUpperArmArmholeHintForField(field.key");
+    expect(measurementsPageSrc).toContain("data-ds-upper-arm-armhole-hint");
+    expect(measurementsPageSrc).toContain("measurement-chip--with-hint");
+    expect(measurementsPageSrc).toContain("measurement-chip__value");
+    expect(measurementsCss).toContain("measurement-chip--with-hint");
+    expect(measurementsCss).toContain("express-mbp-box__hint");
+    expect(measurementsCss).toContain("flex-direction: column");
+  });
+
+  it("does not attach the hint to Sleeveless or other Drop Shoulder fields", () => {
+    expect(dropShoulderUpperArmArmholeHintForField("upperArm", false)).toBeNull();
+    expect(dropShoulderUpperArmArmholeHintForField("chestBust", true)).toBeNull();
+    expect(dropShoulderUpperArmArmholeHintForField("wrist", true)).toBeNull();
+    expect(dropShoulderUpperArmArmholeHintForField("armholeDepth", true)).toBeNull();
+    const sleevelessRenderer = readFileSync(
+      resolve("src/lib/patterns/sleevelessEditMeasurementDiagramSvg.ts"),
+      "utf8",
+    );
+    expect(sleevelessRenderer).not.toContain(DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT);
+    expect(sleevelessRenderer).not.toContain("data-ds-upper-arm-armhole-hint");
+    expect(sleevelessRenderer).not.toContain("dropShoulderUpperArmArmholeHintForField");
+  });
+
+  it("keeps Upper Arm Circ an editable input with the existing label and aria-label", () => {
+    expect(measurementsPageSrc).toContain('key: "upperArm"');
+    expect(measurementsPageSrc).toContain('label: "Upper arm circ"');
+    expect(measurementsPageSrc).toContain('data-cb-measure-input", field.key');
+    expect(measurementsPageSrc).toContain("centimeters");
+    expect(measurementsPageSrc).toContain('input.setAttribute("data-cb-measure-input", field.key)');
+    expect(measurementsPageSrc).toContain("dropShoulderUpperArmArmholeHintForField");
+    const upperArmField = measurementsPageSrc.match(
+      /key: "upperArm",[\s\S]*?dropShoulderOnly: true,/,
+    )?.[0];
+    expect(upperArmField).toBeTruthy();
+    expect(upperArmField).toContain('label: "Upper arm circ"');
+    expect(measurementsPageSrc).toContain("function createDiagramFieldBox(");
+    expect(measurementsPageSrc).not.toMatch(
+      /data-cb-measure-input", field\.key[\s\S]{0,200}readOnly/,
+    );
+  });
+
+  it("does not change armhole-depth calculation", () => {
+    const armholeSrc = readFileSync(resolve("src/lib/patterns/dropShoulderArmholeDepth.ts"), "utf8");
+    expect(armholeSrc).toContain("return upperArmInches / 2;");
+    expect(armholeSrc).not.toContain(DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT);
+    expect(measurementsPageSrc).toContain("computeDropShoulderArmholeDepthInches");
+    expect(measurementsPageSrc).toContain("dropShoulderArmholeDepthInchesFromMerged");
   });
 });
