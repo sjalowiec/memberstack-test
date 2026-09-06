@@ -385,9 +385,29 @@ function moveRelatedRow(container: HTMLElement, row: HTMLElement, direction: -1 
   }
 }
 
+/** Prefer the actual input. `namedItem` can return a RadioNodeList whose `.value` is blank. */
+function namedField(
+  form: HTMLFormElement,
+  name: string,
+): HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null {
+  const fromDom = form.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+    `input[name="${name}"], textarea[name="${name}"], select[name="${name}"]`,
+  );
+  if (fromDom) return fromDom;
+  const named = form.elements.namedItem(name);
+  if (
+    named instanceof HTMLInputElement ||
+    named instanceof HTMLTextAreaElement ||
+    named instanceof HTMLSelectElement
+  ) {
+    return named;
+  }
+  return null;
+}
+
 function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
   const set = (name: string, value: string) => {
-    const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+    const field = namedField(form, name);
     if (field) field.value = value;
   };
 
@@ -435,9 +455,10 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
 }
 
 function formPayload(form: HTMLFormElement): Record<string, unknown> {
+  const data = new FormData(form);
   const get = (name: string) => {
-    const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
-    return field?.value ?? "";
+    if (data.has(name)) return String(data.get(name) ?? "");
+    return namedField(form, name)?.value ?? "";
   };
   return {
     tipId: get("tipId"),

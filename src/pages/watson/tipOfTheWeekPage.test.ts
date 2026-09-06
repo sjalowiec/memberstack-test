@@ -170,9 +170,12 @@ describe("Watson Tip of the Week page", () => {
     expect(relatedIdx).toBeGreaterThan(ctaIdx);
     expect(page).toContain('name="ctaText"');
     expect(page).toContain('name="ctaUrl"');
+    expect(page).toContain("JSON.stringify(tip)");
     expect(script).toContain('set("ctaText"');
     expect(script).toContain('set("ctaUrl"');
     expect(script).toContain("ctaText: get(");
     expect(script).toContain("ctaUrl: get(");
+    expect(script).toContain("namedField");
+    expect(script).toContain("new FormData(form)");
   });
 });
