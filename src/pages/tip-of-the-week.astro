@@ -17,6 +17,7 @@ import {
 import { isWatsonSessionAuthenticated } from "../lib/watson/watsonAuth";
 import {
   billboardMessageHasText,
+  billboardMessagePlainText,
   sanitizeBillboardHtml,
 } from "../lib/whatsNew/sanitizeBillboardHtml";
 
@@ -41,11 +42,24 @@ const availableThroughDisplay = featured?.availableThroughDisplay ?? "";
 const availabilityFooter = featured?.availabilityFooter ?? "";
 const tryCopyHtml = tip ? sanitizeBillboardHtml(tip.tryCopy) : "";
 const hasTryCopy = billboardMessageHasText(tryCopyHtml);
+const sueTipHtml = tip ? sanitizeBillboardHtml(tip.sueTipCopy) : "";
+const hasSueTipCopy = billboardMessageHasText(sueTipHtml);
+const sueTipPlain = billboardMessagePlainText(sueTipHtml);
+const introHtml = tip ? sanitizeBillboardHtml(tip.intro) : "";
+const introPlain = billboardMessagePlainText(introHtml);
+const totwCopyHasRichMarkup = (html: string) =>
+  /<(?:strong|em|ul|ol|li|a|br)\b/i.test(html) ||
+  (html.match(/<p\b/gi) || []).length > 1;
+const introHasRichMarkup = totwCopyHasRichMarkup(introHtml);
+const sueHasRichMarkup = totwCopyHasRichMarkup(sueTipHtml);
 const pageTitle = tip?.title ?? "Tip of the Week";
 const pageDescription =
-  tip?.intro ??
+  introPlain ||
   "A free weekly knitting lesson from the Knit It Now Learning Library.";
-const introParts = tip ? tipOfTheWeekIntroParts(tip.intro, tip.introGlossarySlug) : [];
+const introParts =
+  tip && !introHasRichMarkup
+    ? tipOfTheWeekIntroParts(introPlain || tip.intro, tip.introGlossarySlug)
+    : [];
 ---
 
 <Layout
@@ -94,17 +108,21 @@ const introParts = tip ? tipOfTheWeekIntroParts(tip.intro, tip.introGlossarySlug
                 </span>
               </p>
               <h1 class="totw-title">{tip.title}</h1>
-              <p class="totw-lede">
-                {
-                  introParts.map((part) =>
-                    part.type === "glossary" ? (
-                      <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
-                    ) : (
-                      part.text
+              {introHasRichMarkup ? (
+                <div class="totw-lede" set:html={introHtml} />
+              ) : (
+                <p class="totw-lede">
+                  {
+                    introParts.map((part) =>
+                      part.type === "glossary" ? (
+                        <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+                      ) : (
+                        part.text
+                      )
                     )
-                  )
-                }
-              </p>
+                  }
+                </p>
+              )}
               <WeeklyTipSignup variant="inline" />
             </div>
           </div>
@@ -186,12 +204,16 @@ const introParts = tip ? tipOfTheWeekIntroParts(tip.intro, tip.introGlossarySlug
           </section>
         ) : null}
 
-        {tip.sueTipCopy ? (
+        {hasSueTipCopy ? (
           <section class="totw-sue" aria-labelledby="totw-sue-heading">
             <h2 id="totw-sue-heading" class="totw-sue__title">
               Sue’s Tip
             </h2>
-            <p class="totw-sue__copy">{tip.sueTipCopy}</p>
+            {sueHasRichMarkup ? (
+              <div class="totw-sue__copy" set:html={sueTipHtml} />
+            ) : (
+              <p class="totw-sue__copy">{sueTipPlain}</p>
+            )}
           </section>
         ) : null}
 
@@ -363,6 +385,26 @@ const introParts = tip ? tipOfTheWeekIntroParts(tip.intro, tip.introGlossarySlug
     line-height: 1.55;
     color: #374151;
     max-width: 42rem;
+  }
+
+  .totw-lede p {
+    margin: 0;
+  }
+
+  .totw-lede p:not(:last-child) {
+    margin-bottom: 0.65rem;
+  }
+
+  .totw-lede ul,
+  .totw-lede ol {
+    margin: 0.35rem 0 0.65rem;
+    padding-left: 1.35rem;
+  }
+
+  .totw-lede a {
+    color: #1f5f7a;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .totw-video {
@@ -579,6 +621,26 @@ const introParts = tip ? tipOfTheWeekIntroParts(tip.intro, tip.introGlossarySlug
     font-size: 0.98rem;
     line-height: 1.55;
     color: #374151;
+  }
+
+  .totw-sue__copy p {
+    margin: 0;
+  }
+
+  .totw-sue__copy p:not(:last-child) {
+    margin-bottom: 0.65rem;
+  }
+
+  .totw-sue__copy ul,
+  .totw-sue__copy ol {
+    margin: 0.35rem 0 0.65rem;
+    padding-left: 1.35rem;
+  }
+
+  .totw-sue__copy a {
+    color: #1f5f7a;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .totw-related {

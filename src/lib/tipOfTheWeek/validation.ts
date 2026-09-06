@@ -60,6 +60,38 @@ function requireTrimmed(
   return { ok: true, value: trimmed };
 }
 
+function parseSanitizedHtml(
+  raw: unknown,
+  label: string,
+  max: number,
+  required: boolean,
+): TipValidationResult<string> {
+  if (raw == null || raw === "") {
+    if (required) return { ok: false, error: `${label} is required.` };
+    return { ok: true, value: "" };
+  }
+  if (typeof raw !== "string") {
+    return { ok: false, error: `${label} must be a string.` };
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    if (required) return { ok: false, error: `${label} is required.` };
+    return { ok: true, value: "" };
+  }
+  const html = sanitizeBillboardHtml(trimmed);
+  if (!html) {
+    if (required) return { ok: false, error: `${label} is required.` };
+    return { ok: true, value: "" };
+  }
+  if (html.length > max) {
+    return {
+      ok: false,
+      error: `${label} must be ${max} characters or fewer.`,
+    };
+  }
+  return { ok: true, value: html };
+}
+
 function optionalTrimmed(
   value: unknown,
   label: string,
@@ -368,7 +400,7 @@ export function validateTipOfTheWeekInput(
   const title = requireTrimmed(input.title, "Title", TIP_TITLE_MAX);
   if (!title.ok) return title;
 
-  const intro = requireTrimmed(input.intro, "Introduction", TIP_INTRO_MAX);
+  const intro = parseSanitizedHtml(input.intro, "Introduction", TIP_INTRO_MAX, true);
   if (!intro.ok) return intro;
 
   const introGlossarySlug = optionalTrimmed(
@@ -431,29 +463,19 @@ export function validateTipOfTheWeekInput(
     };
   }
 
-  const tryCopyRaw = input.tryCopy ?? input.try_copy;
-  let tryCopy = "";
-  if (tryCopyRaw != null && tryCopyRaw !== "") {
-    if (typeof tryCopyRaw !== "string") {
-      return { ok: false, error: "Try It text must be a string." };
-    }
-    const trimmed = tryCopyRaw.trim();
-    if (trimmed) {
-      tryCopy = sanitizeBillboardHtml(trimmed);
-      if (tryCopy.length > TIP_COPY_MAX) {
-        return {
-          ok: false,
-          error: `Try It text must be ${TIP_COPY_MAX} characters or fewer.`,
-        };
-      }
-    }
-  }
+  const tryCopy = parseSanitizedHtml(
+    input.tryCopy ?? input.try_copy,
+    "Try It text",
+    TIP_COPY_MAX,
+    false,
+  );
+  if (!tryCopy.ok) return tryCopy;
 
-  const sueTipCopy = optionalTrimmed(
+  const sueTipCopy = parseSanitizedHtml(
     input.sueTipCopy ?? input.sue_tip_copy,
     "Sue’s Tip text",
     TIP_COPY_MAX,
-    "",
+    false,
   );
   if (!sueTipCopy.ok) return sueTipCopy;
 
@@ -511,7 +533,7 @@ export function validateTipOfTheWeekInput(
     status,
     availabilityNotice: availabilityNotice.value,
     availabilityFooterTemplate: availabilityFooterTemplate.value,
-    tryCopy,
+    tryCopy: tryCopy.value,
     sueTipCopy: sueTipCopy.value,
     learnPoints: learnPoints.value,
     relatedLinks: relatedLinks.value,

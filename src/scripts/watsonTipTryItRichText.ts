@@ -14,15 +14,17 @@ function promptLinkUrl(): string | null {
 }
 
 /**
- * Compact contenteditable Try It editor for Watson Tip of the Week.
+ * Compact contenteditable editors for Watson Tip of the Week.
  * Same allowlist and toolbar as the What's New billboard message.
+ * Try It, Intro, and Sue’s Tip each use a `[data-totw-rte]` wrapper.
  */
 export function initWatsonTipTryItRichText(root: ParentNode = document): void {
-  const wrap = root.querySelector<HTMLElement>("[data-totw-try-rte]");
-  if (!wrap) return;
-  initCompactRichText(wrap, {
-    sanitize: sanitizeBillboardHtml,
-    enableLink: true,
-    promptLink: promptLinkUrl,
+  const wraps = root.querySelectorAll<HTMLElement>("[data-totw-rte], [data-totw-try-rte]");
+  wraps.forEach((wrap) => {
+    initCompactRichText(wrap, {
+      sanitize: sanitizeBillboardHtml,
+      enableLink: true,
+      promptLink: promptLinkUrl,
+    });
   });
 }

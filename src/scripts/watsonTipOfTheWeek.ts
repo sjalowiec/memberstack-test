@@ -87,11 +87,14 @@ function emptyRelatedResource(): RelatedResource {
   return { type: "video", videoId: "", title: "", note: "" };
 }
 
-function tryCopyParts(form: HTMLFormElement): {
+function rteParts(
+  form: HTMLFormElement,
+  wrapSelector: string,
+): {
   editor: HTMLElement;
   hidden: HTMLTextAreaElement;
 } | null {
-  const wrap = form.querySelector<HTMLElement>("[data-totw-try-rte]");
+  const wrap = form.querySelector<HTMLElement>(wrapSelector);
   if (!wrap) return null;
   const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
   const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
@@ -99,20 +102,36 @@ function tryCopyParts(form: HTMLFormElement): {
   return { editor, hidden };
 }
 
-/** Seed the Try It editor (and its hidden input) from stored plain text or HTML. */
-function setTryCopy(form: HTMLFormElement, value: string): void {
-  const parts = tryCopyParts(form);
+/** Seed a rich-text editor (and its hidden input) from stored plain text or HTML. */
+function setRteCopy(form: HTMLFormElement, wrapSelector: string, value: string): void {
+  const parts = rteParts(form, wrapSelector);
   if (!parts) return;
   const clean = sanitizeBillboardHtml(value || "");
   parts.editor.innerHTML = clean || "<p><br></p>";
   parts.hidden.value = clean;
 }
 
-/** Push the current editor HTML into the hidden field before reading the form. */
-function syncTryCopy(form: HTMLFormElement): void {
-  const parts = tryCopyParts(form);
+/** Seed the Try It editor (and its hidden input) from stored plain text or HTML. */
+function setTryCopy(form: HTMLFormElement, value: string): void {
+  setRteCopy(form, "[data-totw-try-rte]", value);
+}
+
+function syncRteCopy(form: HTMLFormElement, wrapSelector: string): void {
+  const parts = rteParts(form, wrapSelector);
   if (!parts) return;
   parts.hidden.value = sanitizeBillboardHtml(parts.editor.innerHTML);
+}
+
+/** Push the current editor HTML into the hidden field before reading the form. */
+function syncTryCopy(form: HTMLFormElement): void {
+  syncRteCopy(form, "[data-totw-try-rte]");
+}
+
+/** Sync Intro, Try It, and Sue’s Tip editors into their hidden fields. */
+function syncAllRteCopy(form: HTMLFormElement): void {
+  syncRteCopy(form, "[data-totw-intro-rte]");
+  syncTryCopy(form);
+  syncRteCopy(form, "[data-totw-sue-rte]");
 }
 
 function normalizeIncomingRelated(raw: unknown): RelatedResource {
@@ -373,7 +392,7 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
   set("id", tip?.id || "");
   set("tipId", tip?.tipId || "");
   set("title", tip?.title || "");
-  set("intro", tip?.intro || "");
+  setRteCopy(form, "[data-totw-intro-rte]", tip?.intro || "");
   set("introGlossarySlug", tip?.introGlossarySlug || "");
   set("videoContentId", tip?.videoContentId || "");
   set("availableFrom", tip?.availableFrom || "");
@@ -386,7 +405,7 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
       "This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library.",
   );
   setTryCopy(form, tip?.tryCopy || "");
-  set("sueTipCopy", tip?.sueTipCopy || "");
+  setRteCopy(form, "[data-totw-sue-rte]", tip?.sueTipCopy || "");
   set("eyebrow", tip?.eyebrow || "TIP OF THE WEEK");
 
   const learnBox = el<HTMLElement>("[data-learn-points]", form);
@@ -507,8 +526,8 @@ async function refreshReactions(tipId: string) {
 }
 
 async function saveTip(form: HTMLFormElement, statusOverride?: TipStatus) {
-  // Ensure the rich-text editor has synced into the hidden tryCopy field.
-  syncTryCopy(form);
+  // Ensure rich-text editors have synced into their hidden fields.
+  syncAllRteCopy(form);
   const id = (form.elements.namedItem("id") as HTMLInputElement | null)?.value.trim();
   const payload = formPayload(form);
   if (statusOverride) payload.status = statusOverride;
