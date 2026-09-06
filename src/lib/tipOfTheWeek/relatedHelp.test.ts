@@ -273,5 +273,43 @@ describe("Related Help public filtering", () => {
         external: true,
       },
     ]);
+    expect(publicLinks[0]?.type).toBe("video");
+    expect(publicLinks[1]?.type).toBe("link");
+  });
+
+  it("exposes the stored Type on public Related Help rows without inferring from the URL", () => {
+    const publicLinks = filterPublicRelatedLinks([
+      {
+        type: "video",
+        videoId: "456",
+        title: "Wet Blocking",
+      },
+      {
+        type: "link",
+        title: "A document",
+        url: "/downloads/curl-tips.pdf",
+      },
+      {
+        type: "link",
+        title: "Looks like a video path",
+        url: "/videos/456",
+      },
+    ]);
+    expect(publicLinks.map((link) => link.type)).toEqual(["video", "link", "link"]);
+    expect(publicLinks[0]).toMatchObject({
+      type: "video",
+      href: "/videos/456",
+    });
+    expect(publicLinks[0]?.label).toMatch(/\S/);
+    expect(publicLinks[1]).toMatchObject({
+      type: "link",
+      label: "A document",
+      href: "/downloads/curl-tips.pdf",
+    });
+    expect(publicLinks[2]).toMatchObject({
+      type: "link",
+      label: "Looks like a video path",
+      href: "/videos/456",
+    });
   });
 });
