@@ -362,6 +362,8 @@ WHERE status = 'published' AND archived = FALSE`,
     'This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library.',
   try_copy TEXT NOT NULL DEFAULT '',
   sue_tip_copy TEXT NOT NULL DEFAULT '',
+  cta_text TEXT NOT NULL DEFAULT '',
+  cta_url TEXT NOT NULL DEFAULT '',
   learn_points_json TEXT NOT NULL DEFAULT '[]',
   related_links_json TEXT NOT NULL DEFAULT '[]',
   eyebrow TEXT NOT NULL DEFAULT 'TIP OF THE WEEK',
@@ -386,6 +388,12 @@ ON watson_tip_of_the_week (status, available_from DESC, updated_at DESC)`,
       label: "alter watson_tip_of_the_week intro glossary slug",
       sql: `ALTER TABLE watson_tip_of_the_week
   ADD COLUMN IF NOT EXISTS intro_glossary_slug TEXT NOT NULL DEFAULT ''`,
+    },
+    {
+      label: "alter watson_tip_of_the_week cta columns",
+      sql: `ALTER TABLE watson_tip_of_the_week
+  ADD COLUMN IF NOT EXISTS cta_text TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS cta_url TEXT NOT NULL DEFAULT ''`,
     },
     {
       label: "table watson_email_signups",

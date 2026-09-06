@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS watson_tip_of_the_week (
     'This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library.',
   try_copy TEXT NOT NULL DEFAULT '',
   sue_tip_copy TEXT NOT NULL DEFAULT '',
+  cta_text TEXT NOT NULL DEFAULT '',
+  cta_url TEXT NOT NULL DEFAULT '',
   learn_points_json TEXT NOT NULL DEFAULT '[]',
   related_links_json TEXT NOT NULL DEFAULT '[]',
   eyebrow TEXT NOT NULL DEFAULT 'TIP OF THE WEEK',
@@ -42,3 +44,7 @@ ON watson_tip_of_the_week (status, available_from DESC, updated_at DESC);
 
 ALTER TABLE watson_tip_of_the_week
   ADD COLUMN IF NOT EXISTS intro_glossary_slug TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE watson_tip_of_the_week
+  ADD COLUMN IF NOT EXISTS cta_text TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS cta_url TEXT NOT NULL DEFAULT '';

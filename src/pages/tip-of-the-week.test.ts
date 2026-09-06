@@ -54,6 +54,23 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain("totw-footer");
   });
 
+  it("renders an optional CTA after Sue’s Tip and before Related Help", () => {
+    const sueIdx = pageSource.indexOf('id="totw-sue-heading"');
+    const ctaIdx = pageSource.indexOf("data-totw-cta");
+    const relatedIdx = pageSource.indexOf('id="totw-related-heading"');
+    expect(sueIdx).toBeGreaterThan(-1);
+    expect(ctaIdx).toBeGreaterThan(sueIdx);
+    expect(relatedIdx).toBeGreaterThan(ctaIdx);
+
+    expect(pageSource).toContain("tipPublicCta");
+    expect(pageSource).toContain("{cta ?");
+    expect(pageSource).toContain("kbm-btn kbm-btn-primary");
+    expect(pageSource).toContain("href={cta.href}");
+    expect(pageSource).toContain("{cta.text}");
+    expect(pageSource).not.toContain("Build Your Sock Pattern");
+    expect(pageSource).not.toContain("/patterns/socks/builder?new=1");
+  });
+
   it("renders sanitized Try It, Intro, and Sue’s Tip HTML safely", () => {
     expect(pageSource).toContain("sanitizeBillboardHtml");
     expect(pageSource).toContain("billboardMessageHasText");

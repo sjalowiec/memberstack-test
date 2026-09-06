@@ -79,6 +79,8 @@ describe("loadPublicTipOfTheWeekPage", () => {
         "This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library.",
       tryCopy: "Try it",
       sueTipCopy: "Sue tip",
+      ctaText: "",
+      ctaUrl: "",
       learnPoints: ["A"],
       relatedLinks: [
         {

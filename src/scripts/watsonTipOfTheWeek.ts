@@ -31,6 +31,8 @@ type TipRecord = {
   availabilityFooterTemplate: string;
   tryCopy: string;
   sueTipCopy: string;
+  ctaText: string;
+  ctaUrl: string;
   learnPoints: string[];
   relatedLinks: RelatedResource[];
   eyebrow: string;
@@ -406,6 +408,8 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
   );
   setTryCopy(form, tip?.tryCopy || "");
   setRteCopy(form, "[data-totw-sue-rte]", tip?.sueTipCopy || "");
+  set("ctaText", tip?.ctaText || "");
+  set("ctaUrl", tip?.ctaUrl || "");
   set("eyebrow", tip?.eyebrow || "TIP OF THE WEEK");
 
   const learnBox = el<HTMLElement>("[data-learn-points]", form);
@@ -448,6 +452,8 @@ function formPayload(form: HTMLFormElement): Record<string, unknown> {
     availabilityFooterTemplate: get("availabilityFooterTemplate"),
     tryCopy: get("tryCopy"),
     sueTipCopy: get("sueTipCopy"),
+    ctaText: get("ctaText"),
+    ctaUrl: get("ctaUrl"),
     eyebrow: get("eyebrow"),
     learnPoints: readLearnPoints(form),
     relatedLinks: readRelatedLinks(form),

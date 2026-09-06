@@ -502,6 +502,24 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
       </div>
 
       <fieldset class="watson-totw__fieldset">
+        <legend>Call to Action (optional)</legend>
+        <p class="watson-totw__muted">
+          Shown on the public page after Sue’s Tip. Leave both blank to hide the button.
+        </p>
+        <label>
+          CTA Text
+          <input name="ctaText" maxlength="80" placeholder="Build Your Sock Pattern" />
+        </label>
+        <label>
+          CTA URL
+          <span class="watson-totw__hint">
+            Site path like /patterns/socks/builder?new=1, or https://…
+          </span>
+          <input name="ctaUrl" maxlength="500" placeholder="/patterns/socks/builder?new=1" />
+        </label>
+      </fieldset>
+
+      <fieldset class="watson-totw__fieldset">
         <legend>Related Help</legend>
         <p class="watson-totw__muted">
           Add Learning Library videos by content ID, or links/documents with a title and URL.

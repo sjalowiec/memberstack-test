@@ -27,6 +27,8 @@ const TIP_SELECT = `
   availability_footer_template,
   try_copy,
   sue_tip_copy,
+  cta_text,
+  cta_url,
   learn_points_json,
   related_links_json,
   eyebrow,
@@ -119,13 +121,15 @@ async function insertTip(
         availability_footer_template,
         try_copy,
         sue_tip_copy,
+        cta_text,
+        cta_url,
         learn_points_json,
         related_links_json,
         eyebrow,
         updated_at
       )
       VALUES (
-        $1, $2, $3, $4, $5, $6::date, $7::date, $8, $9, $10, $11, $12, $13, $14, $15, NOW()
+        $1, $2, $3, $4, $5, $6::date, $7::date, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW()
       )
       RETURNING ${TIP_SELECT}
     `,
@@ -142,6 +146,8 @@ async function insertTip(
       value.availabilityFooterTemplate,
       value.tryCopy,
       value.sueTipCopy,
+      value.ctaText,
+      value.ctaUrl,
       JSON.stringify(value.learnPoints),
       JSON.stringify(value.relatedLinks),
       value.eyebrow,
@@ -211,6 +217,8 @@ export async function updateTipOfTheWeek(
       existing.availabilityFooterTemplate,
     tryCopy: input.tryCopy ?? input.try_copy ?? existing.tryCopy,
     sueTipCopy: input.sueTipCopy ?? input.sue_tip_copy ?? existing.sueTipCopy,
+    ctaText: input.ctaText ?? input.cta_text ?? existing.ctaText,
+    ctaUrl: input.ctaUrl ?? input.cta_url ?? existing.ctaUrl,
     learnPoints: input.learnPoints ?? input.learn_points ?? existing.learnPoints,
     relatedLinks:
       input.relatedLinks ?? input.related_links ?? existing.relatedLinks,
@@ -239,9 +247,11 @@ export async function updateTipOfTheWeek(
           availability_footer_template = $11,
           try_copy = $12,
           sue_tip_copy = $13,
-          learn_points_json = $14,
-          related_links_json = $15,
-          eyebrow = $16,
+          cta_text = $14,
+          cta_url = $15,
+          learn_points_json = $16,
+          related_links_json = $17,
+          eyebrow = $18,
           updated_at = NOW()
         WHERE id = $1
         RETURNING ${TIP_SELECT}
@@ -260,6 +270,8 @@ export async function updateTipOfTheWeek(
         validated.value.availabilityFooterTemplate,
         validated.value.tryCopy,
         validated.value.sueTipCopy,
+        validated.value.ctaText,
+        validated.value.ctaUrl,
         JSON.stringify(validated.value.learnPoints),
         JSON.stringify(validated.value.relatedLinks),
         validated.value.eyebrow,

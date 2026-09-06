@@ -10,6 +10,7 @@ import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
 import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
 import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
 import { tipOfTheWeekIntroParts } from "../lib/tipOfTheWeek/introGlossary";
+import { tipPublicCta } from "../lib/tipOfTheWeek/map";
 import {
   loadPublicTipOfTheWeekPage,
   loadTipOfTheWeekPreview,
@@ -60,6 +61,7 @@ const introParts =
   tip && !introHasRichMarkup
     ? tipOfTheWeekIntroParts(introPlain || tip.intro, tip.introGlossarySlug)
     : [];
+const cta = tipPublicCta(tip);
 ---
 
 <Layout
@@ -214,6 +216,20 @@ const introParts =
             ) : (
               <p class="totw-sue__copy">{sueTipPlain}</p>
             )}
+          </section>
+        ) : null}
+
+        {cta ? (
+          <section class="totw-cta" aria-label="Call to action" data-totw-cta>
+            <a
+              class="kbm-btn kbm-btn-primary totw-cta__btn"
+              href={cta.href}
+              {...(cta.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+            >
+              {cta.text}
+            </a>
           </section>
         ) : null}
 
@@ -653,6 +669,11 @@ const introParts =
     color: #1f5f7a;
     text-decoration: underline;
     text-underline-offset: 2px;
+  }
+
+  .totw-cta {
+    margin-top: 1.75rem;
+    max-width: 42rem;
   }
 
   .totw-related {

@@ -7,6 +7,7 @@ import { normalizeRelatedResource, resolveVideoForTip } from "./map";
 import { isIsoDateOnly, tipDateRangesOverlap } from "./schedule";
 import {
   TIP_COPY_MAX,
+  TIP_CTA_TEXT_MAX,
   TIP_DEFAULT_AVAILABILITY_NOTICE,
   TIP_DEFAULT_EYEBROW,
   TIP_DEFAULT_FOOTER_TEMPLATE,
@@ -39,6 +40,8 @@ export type ValidatedTipInput = {
   availabilityFooterTemplate: string;
   tryCopy: string;
   sueTipCopy: string;
+  ctaText: string;
+  ctaUrl: string;
   learnPoints: string[];
   relatedLinks: TipRelatedResource[];
   eyebrow: string;
@@ -110,6 +113,32 @@ function optionalTrimmed(
     return { ok: false, error: `${label} must be ${max} characters or fewer.` };
   }
   return { ok: true, value: trimmed };
+}
+
+function parseOptionalCta(
+  textRaw: unknown,
+  urlRaw: unknown,
+): TipValidationResult<{ ctaText: string; ctaUrl: string }> {
+  const textResult = optionalTrimmed(textRaw, "CTA text", TIP_CTA_TEXT_MAX, "");
+  if (!textResult.ok) return textResult;
+
+  const urlResult = normalizeWhatsNewDestinationUrl(urlRaw);
+  if (!urlResult.ok) {
+    return {
+      ok: false,
+      error: urlResult.error.replace(/^Destination URL/, "CTA URL"),
+    };
+  }
+
+  const ctaText = textResult.value;
+  const ctaUrl = urlResult.value || "";
+  if (ctaText && !ctaUrl) {
+    return { ok: false, error: "CTA URL is required when CTA text is set." };
+  }
+  if (!ctaText && ctaUrl) {
+    return { ok: false, error: "CTA text is required when CTA URL is set." };
+  }
+  return { ok: true, value: { ctaText, ctaUrl } };
 }
 
 function parseLearnPoints(raw: unknown): TipValidationResult<string[]> {
@@ -479,6 +508,12 @@ export function validateTipOfTheWeekInput(
   );
   if (!sueTipCopy.ok) return sueTipCopy;
 
+  const cta = parseOptionalCta(
+    input.ctaText ?? input.cta_text,
+    input.ctaUrl ?? input.cta_url,
+  );
+  if (!cta.ok) return cta;
+
   const eyebrow = optionalTrimmed(
     input.eyebrow,
     "Eyebrow",
@@ -535,6 +570,8 @@ export function validateTipOfTheWeekInput(
     availabilityFooterTemplate: availabilityFooterTemplate.value,
     tryCopy: tryCopy.value,
     sueTipCopy: sueTipCopy.value,
+    ctaText: cta.value.ctaText,
+    ctaUrl: cta.value.ctaUrl,
     learnPoints: learnPoints.value,
     relatedLinks: relatedLinks.value,
     eyebrow: eyebrow.value,

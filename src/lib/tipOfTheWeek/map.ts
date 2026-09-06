@@ -197,6 +197,21 @@ export function isExternalRelatedHref(href: string): boolean {
   return /^https:\/\//i.test(String(href || "").trim());
 }
 
+/** Public CTA when both text and URL are present; otherwise hidden. */
+export function tipPublicCta(
+  tip: Pick<TipOfTheWeekRecord, "ctaText" | "ctaUrl"> | null | undefined,
+): { text: string; href: string; external: boolean } | null {
+  if (!tip) return null;
+  const text = String(tip.ctaText || "").trim();
+  const href = String(tip.ctaUrl || "").trim();
+  if (!text || !href) return null;
+  return {
+    text,
+    href,
+    external: isExternalRelatedHref(href),
+  };
+}
+
 export function toPublicRelatedLink(
   resource: TipRelatedResource,
 ): TipRelatedPublicLink | null {
@@ -242,6 +257,8 @@ export function buildTipOfTheWeekRecord(
       TIP_DEFAULT_FOOTER_TEMPLATE,
     tryCopy: String(row.try_copy || "").trim(),
     sueTipCopy: String(row.sue_tip_copy || "").trim(),
+    ctaText: String(row.cta_text || "").trim(),
+    ctaUrl: String(row.cta_url || "").trim(),
     learnPoints: parseLearnPointsJson(row.learn_points_json),
     relatedLinks: parseRelatedLinksJson(row.related_links_json),
     eyebrow: String(row.eyebrow || "").trim() || TIP_DEFAULT_EYEBROW,

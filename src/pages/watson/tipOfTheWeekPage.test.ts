@@ -160,4 +160,19 @@ describe("Watson Tip of the Week page", () => {
     expect(script).toContain("syncAllRteCopy");
     expect(script).toContain("sanitizeBillboardHtml");
   });
+
+  it("lets Watson set an optional CTA text and URL", () => {
+    const sueIdx = page.indexOf("Sue’s Tip");
+    const ctaIdx = page.indexOf("Call to Action (optional)");
+    const relatedIdx = page.indexOf("Related Help");
+    expect(sueIdx).toBeGreaterThan(-1);
+    expect(ctaIdx).toBeGreaterThan(sueIdx);
+    expect(relatedIdx).toBeGreaterThan(ctaIdx);
+    expect(page).toContain('name="ctaText"');
+    expect(page).toContain('name="ctaUrl"');
+    expect(script).toContain('set("ctaText"');
+    expect(script).toContain('set("ctaUrl"');
+    expect(script).toContain("ctaText: get(");
+    expect(script).toContain("ctaUrl: get(");
+  });
 });
