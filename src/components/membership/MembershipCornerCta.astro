@@ -73,6 +73,10 @@ const { label = "Become a Member" } = Astro.props;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
   }
 
+  .membership-corner-cta[hidden] {
+    display: none !important;
+  }
+
   .membership-corner-cta:disabled {
     cursor: wait;
     opacity: 0.75;

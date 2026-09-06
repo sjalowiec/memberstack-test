@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
@@ -88,50 +89,46 @@ describe("memberHasCanceledPaidMembership", () => {
 });
 
 describe("resolveMembershipCornerCta", () => {
-  it("logged out → Become a Member → /membership", () => {
+  it("logged-out visitor: button shown (Become a Member)", () => {
     expect(resolveMembershipCornerCta({ data: null })).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
-  it("logged in with no plans → Become a Member", () => {
+  it("logged-in non-member: button shown (Become a Member)", () => {
     expect(resolveMembershipCornerCta(memberWithPlans([]))).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
-  it("beta-only → Become a Member", () => {
+  it("active member: button hidden (paid membership)", () => {
     expect(
       resolveMembershipCornerCta(
-        memberWithPlans([{ planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }]),
+        memberWithPlans([{ planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" }]),
       ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
+    ).toBeNull();
   });
 
-  it("active removed annual Basic → Become a Member", () => {
+  it("active member: button hidden (complimentary legacy membership)", () => {
     expect(
       resolveMembershipCornerCta(
-        memberWithPlans([{ planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID, status: "ACTIVE" }]),
+        memberWithPlans([
+          {
+            planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+            status: "ACTIVE",
+          },
+        ]),
       ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
+    ).toBeNull();
   });
 
-  it("active remaining legacy monthly Basic → Manage Membership", () => {
+  it("active remaining legacy monthly Basic: button hidden", () => {
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([
           { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, status: "ACTIVE" },
         ]),
       ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
+    ).toBeNull();
   });
 
-  it("active membership → Manage Membership (portal via corner control)", () => {
-    expect(
-      resolveMembershipCornerCta(
-        memberWithPlans([{ planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" }]),
-      ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
-    expect(MEMBERSHIP_CORNER_CTA.manage.label).toBe("Manage Membership");
-  });
-
-  it("legacy Monthly Subscription plan shell → Manage Membership", () => {
+  it("legacy Monthly Subscription plan shell: button hidden", () => {
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([
@@ -141,7 +138,23 @@ describe("resolveMembershipCornerCta", () => {
           },
         ]),
       ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
+    ).toBeNull();
+  });
+
+  it("beta-only does not grant access → Become a Member", () => {
+    expect(
+      resolveMembershipCornerCta(
+        memberWithPlans([{ planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }]),
+      ),
+    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
+  });
+
+  it("active removed annual Basic does not grant access → Become a Member", () => {
+    expect(
+      resolveMembershipCornerCta(
+        memberWithPlans([{ planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID, status: "ACTIVE" }]),
+      ),
+    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
   it("canceled paid history does not Restart while restart is disabled", () => {
