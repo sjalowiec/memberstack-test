@@ -14,6 +14,8 @@ export type PatternExplainerVideo = {
   title: string;
   /** Optional duration shown after the title in the caption (e.g. `"1:20"`). */
   duration?: string;
+  /** Optional Vimeo privacy hash (`h=`) for Hide-from-Vimeo clips. */
+  privacyHash?: string;
 };
 
 function escapeAttr(value: string): string {
@@ -47,9 +49,14 @@ export function buildPatternExplainerVideoBodyHtml(
 ): string {
   const video = options.video;
   const prefix = options.classPrefix?.trim() || "pattern-explainer-video";
+  const privacyHash = String(video.privacyHash ?? "").trim();
+  const hashQuery =
+    privacyHash && /^[a-zA-Z0-9]+$/.test(privacyHash)
+      ? `&h=${encodeURIComponent(privacyHash)}`
+      : "";
   const src = `https://player.vimeo.com/video/${encodeURIComponent(
     video.vimeoId,
-  )}?byline=0&portrait=0`;
+  )}?byline=0&portrait=0${hashQuery}`;
   const title = escapeAttr(video.title);
   const duration = String(video.duration ?? "").trim();
   const intro = String(options.introHtml ?? "").trim();
@@ -67,7 +74,7 @@ export function buildPatternExplainerVideoBodyHtml(
   );
   if (duration) {
     parts.push(
-      ` <span aria-hidden="true">·</span> <span>${escapeText(duration)}</span>`,
+      ` <span aria-hidden="true">?</span> <span>${escapeText(duration)}</span>`,
     );
   }
   parts.push(`</p>`, `</div>`);
