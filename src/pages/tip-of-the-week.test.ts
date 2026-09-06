@@ -54,16 +54,18 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain("totw-footer");
   });
 
-  it("renders sanitized Try It HTML safely without changing Sue’s Tip", () => {
+  it("renders sanitized Try It, Intro, and Sue’s Tip HTML safely", () => {
     expect(pageSource).toContain("sanitizeBillboardHtml");
     expect(pageSource).toContain("billboardMessageHasText");
     expect(pageSource).toContain("set:html={tryCopyHtml}");
+    expect(pageSource).toContain("set:html={introHtml}");
+    expect(pageSource).toContain("set:html={sueTipHtml}");
     expect(pageSource).toContain('class="totw-section__copy"');
-    expect(pageSource).toMatch(
-      /<p class="totw-sue__copy">\{tip\.sueTipCopy\}<\/p>/,
-    );
+    expect(pageSource).toContain('class="totw-sue__copy"');
+    expect(pageSource).toContain('class="totw-lede"');
     expect(pageSource).not.toContain("set:html={tip.sueTipCopy}");
     expect(pageSource).not.toContain("set:html={tip.tryCopy}");
+    expect(pageSource).not.toContain("set:html={tip.intro}");
   });
 
   it("places What You’ll Learn above the featured video", () => {
