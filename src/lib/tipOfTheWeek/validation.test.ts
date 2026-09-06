@@ -43,6 +43,8 @@ describe("validateTipOfTheWeekInput", () => {
     expect(result.value.intro).toBe("<p>Stockinette naturally curls at the edges.</p>");
     expect(result.value.tryCopy).toBe("<p>Knit a swatch.</p>");
     expect(result.value.sueTipCopy).toBe("<p>Don’t judge on the machine.</p>");
+    expect(result.value.ctaText).toBe("");
+    expect(result.value.ctaUrl).toBe("");
   });
 
   it("converts plain Try It, Intro, and Sue’s Tip text to safe HTML and strips unsafe markup", () => {
@@ -112,5 +114,51 @@ describe("validateTipOfTheWeekInput", () => {
       availabilityFooterTemplate: "Free this week only.",
     });
     expect(result.ok).toBe(false);
+  });
+
+  it("saves an optional CTA only when both text and URL are present", () => {
+    const empty = validateTipOfTheWeekInput(base);
+    expect(empty.ok).toBe(true);
+    if (!empty.ok) return;
+    expect(empty.value.ctaText).toBe("");
+    expect(empty.value.ctaUrl).toBe("");
+
+    const both = validateTipOfTheWeekInput({
+      ...base,
+      ctaText: "Build Your Sock Pattern",
+      ctaUrl: "/patterns/socks/builder?new=1",
+    });
+    expect(both.ok).toBe(true);
+    if (!both.ok) return;
+    expect(both.value.ctaText).toBe("Build Your Sock Pattern");
+    expect(both.value.ctaUrl).toBe("/patterns/socks/builder?new=1");
+
+    const httpsUrl = validateTipOfTheWeekInput({
+      ...base,
+      ctaText: "Visit Knit It Now",
+      ctaUrl: "https://knititnow.com/membership",
+    });
+    expect(httpsUrl.ok).toBe(true);
+    if (!httpsUrl.ok) return;
+    expect(httpsUrl.value.ctaUrl).toMatch(/^https:\/\/knititnow\.com\//);
+
+    const textOnly = validateTipOfTheWeekInput({
+      ...base,
+      ctaText: "Build Your Sock Pattern",
+    });
+    expect(textOnly.ok).toBe(false);
+
+    const urlOnly = validateTipOfTheWeekInput({
+      ...base,
+      ctaUrl: "/patterns/socks/builder?new=1",
+    });
+    expect(urlOnly.ok).toBe(false);
+
+    const unsafe = validateTipOfTheWeekInput({
+      ...base,
+      ctaText: "Nope",
+      ctaUrl: "javascript:alert(1)",
+    });
+    expect(unsafe.ok).toBe(false);
   });
 });

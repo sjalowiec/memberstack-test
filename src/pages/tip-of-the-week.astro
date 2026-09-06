@@ -8,6 +8,7 @@ import Layout from "../layouts/Layout.astro";
 import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
 import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
 import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
+import { tipPublicCta } from "../lib/tipOfTheWeek/map";
 import {
   loadPublicTipOfTheWeekPage,
   loadTipOfTheWeekPreview,
@@ -54,6 +55,7 @@ const pageTitle = tip?.title ?? "Tip of the Week";
 const pageDescription =
   introPlain ||
   "A free weekly knitting lesson from the Knit It Now Learning Library.";
+const cta = tipPublicCta(tip);
 ---
 
 <Layout
@@ -198,6 +200,20 @@ const pageDescription =
             ) : (
               <p class="totw-sue__copy">{sueTipPlain}</p>
             )}
+          </section>
+        ) : null}
+
+        {cta ? (
+          <section class="totw-cta" aria-label="Call to action" data-totw-cta>
+            <a
+              class="kbm-btn kbm-btn-primary totw-cta__btn"
+              href={cta.href}
+              {...(cta.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+            >
+              {cta.text}
+            </a>
           </section>
         ) : null}
 
@@ -637,6 +653,11 @@ const pageDescription =
     color: #1f5f7a;
     text-decoration: underline;
     text-underline-offset: 2px;
+  }
+
+  .totw-cta {
+    margin-top: 1.75rem;
+    max-width: 42rem;
   }
 
   .totw-related {

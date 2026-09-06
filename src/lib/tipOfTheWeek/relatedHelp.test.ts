@@ -5,6 +5,7 @@ import {
   normalizeRelatedResources,
   parseRelatedLinksJson,
   relatedResourceHref,
+  tipPublicCta,
   tipRelatedVideoHref,
 } from "./map";
 import { validateTipOfTheWeekInput } from "./validation";
@@ -310,6 +311,38 @@ describe("Related Help public filtering", () => {
       type: "link",
       label: "Looks like a video path",
       href: "/videos/456",
+    });
+  });
+});
+
+describe("Tip of the Week public CTA", () => {
+  it("returns a CTA only when both text and URL are set", () => {
+    expect(tipPublicCta({ ctaText: "", ctaUrl: "" })).toBeNull();
+    expect(
+      tipPublicCta({ ctaText: "Build Your Sock Pattern", ctaUrl: "" }),
+    ).toBeNull();
+    expect(
+      tipPublicCta({ ctaText: "", ctaUrl: "/patterns/socks/builder?new=1" }),
+    ).toBeNull();
+    expect(
+      tipPublicCta({
+        ctaText: "Build Your Sock Pattern",
+        ctaUrl: "/patterns/socks/builder?new=1",
+      }),
+    ).toEqual({
+      text: "Build Your Sock Pattern",
+      href: "/patterns/socks/builder?new=1",
+      external: false,
+    });
+    expect(
+      tipPublicCta({
+        ctaText: "Visit Knit It Now",
+        ctaUrl: "https://knititnow.com/membership",
+      }),
+    ).toEqual({
+      text: "Visit Knit It Now",
+      href: "https://knititnow.com/membership",
+      external: true,
     });
   });
 });

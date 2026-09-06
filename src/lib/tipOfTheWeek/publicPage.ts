@@ -49,6 +49,8 @@ function tipConfigToRecord(config: TipOfTheWeekConfig): TipOfTheWeekRecord {
     availabilityFooterTemplate: config.availabilityFooterTemplate,
     tryCopy: config.tryCopy,
     sueTipCopy: config.sueTipCopy,
+    ctaText: String(config.ctaText || "").trim(),
+    ctaUrl: String(config.ctaUrl || "").trim(),
     learnPoints: [...config.learnPoints],
     relatedLinks: normalizeRelatedResources(config.relatedLinks),
     eyebrow: config.eyebrow,

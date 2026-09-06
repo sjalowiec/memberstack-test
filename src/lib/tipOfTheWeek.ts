@@ -31,6 +31,10 @@ export type TipOfTheWeekConfig = {
   tryCopy: string;
   sueTipHeading: string;
   sueTipCopy: string;
+  /** Optional public CTA button label. */
+  ctaText?: string;
+  /** Optional public CTA destination (site path or https:// URL). */
+  ctaUrl?: string;
   relatedHeading: string;
   relatedLinks: TipRelatedResource[];
   availabilityFooterTemplate: string;

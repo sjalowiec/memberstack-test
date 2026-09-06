@@ -27,6 +27,7 @@ export const TIP_LEARN_POINTS_MAX = 12;
 export const TIP_RELATED_LINKS_MAX = 8;
 export const TIP_RELATED_LABEL_MAX = 120;
 export const TIP_RELATED_NOTE_MAX = 240;
+export const TIP_CTA_TEXT_MAX = 80;
 
 export const TIP_RELATED_RESOURCE_TYPES = ["video", "link"] as const;
 export type TipRelatedResourceType = (typeof TIP_RELATED_RESOURCE_TYPES)[number];
@@ -79,6 +80,8 @@ export type TipOfTheWeekRecord = {
   availabilityFooterTemplate: string;
   tryCopy: string;
   sueTipCopy: string;
+  ctaText: string;
+  ctaUrl: string;
   learnPoints: string[];
   relatedLinks: TipRelatedResource[];
   eyebrow: string;
@@ -99,6 +102,8 @@ export type TipOfTheWeekRow = {
   availability_footer_template: string;
   try_copy: string;
   sue_tip_copy: string;
+  cta_text?: string | null;
+  cta_url?: string | null;
   learn_points_json: string;
   related_links_json: string;
   eyebrow: string;
