@@ -47,6 +47,10 @@ import {
   type WatsonMembershipSource,
 } from "./watsonCustomerCurrentMembership";
 import {
+  loadCleanedLegacyHistoryForProfile,
+  type WatsonCleanedLegacyHistoryView,
+} from "./legacyHistoryStore";
+import {
   getCustomerWatsonNoteCount,
   getCustomerWatsonNotes,
   type WatsonNoteDisplay,
@@ -136,6 +140,8 @@ export interface CustomerProfileData {
   legacyNoteCount: number;
   watsonNoteCount: number;
   timeline: CustomerTimelineEvent[];
+  /** Cleaned watson_legacy_* history. Null when nothing visible or not safely linked. */
+  cleanedLegacyHistory: WatsonCleanedLegacyHistoryView | null;
 }
 
 export type CustomerProfileLoadResult =
@@ -860,9 +866,16 @@ export async function loadLegacyCustomerProfile(
       member.memberid,
       Boolean(linkedMemberstackId),
     );
-    const [watsonNotes, watsonNoteCount] = await Promise.all([
+    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory] = await Promise.all([
       getCustomerWatsonNotes(notesRead.memberstackId, notesRead.legacyMemberId),
       getCustomerWatsonNoteCount(notesRead.memberstackId, notesRead.legacyMemberId),
+      loadCleanedLegacyHistoryForProfile({
+        profileType: "legacy",
+        routeLegacyMemberid: member.memberid,
+        dumpLinkAmbiguous: false,
+        dumpLegacyMemberid: member.memberid,
+        queryFn: deps.queryFn,
+      }),
     ]);
 
     const timeline = buildCustomerTimeline({
@@ -926,6 +939,7 @@ export async function loadLegacyCustomerProfile(
       legacyNoteCount: legacyData.legacyNoteCount,
       watsonNoteCount,
       timeline,
+      cleanedLegacyHistory,
     };
 
     return { ok: true, profile };
@@ -1005,9 +1019,16 @@ export async function loadMemberstackCustomerProfile(
       legacyMemberid,
       hasLegacyHistory,
     );
-    const [watsonNotes, watsonNoteCount] = await Promise.all([
+    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory] = await Promise.all([
       getCustomerWatsonNotes(notesRead.memberstackId, notesRead.legacyMemberId),
       getCustomerWatsonNoteCount(notesRead.memberstackId, notesRead.legacyMemberId),
+      loadCleanedLegacyHistoryForProfile({
+        profileType: "memberstack",
+        memberstackEmail: memberstackResult.member.auth?.email,
+        dumpLinkAmbiguous: linkState.legacyLinkAmbiguous,
+        dumpLegacyMemberid: legacyMemberid,
+        queryFn: deps.queryFn,
+      }),
     ]);
 
     const timeline = buildCustomerTimeline({
@@ -1075,6 +1096,7 @@ export async function loadMemberstackCustomerProfile(
       legacyNoteCount: legacyData.legacyNoteCount,
       watsonNoteCount,
       timeline,
+      cleanedLegacyHistory,
     };
 
     return { ok: true, profile };

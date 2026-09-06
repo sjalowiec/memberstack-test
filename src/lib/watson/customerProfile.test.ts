@@ -3,6 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
 import { MEMBER_BY_EMAIL_SQL, resolveLegacyLinkByMemberstackEmail } from "./customerIdentifier";
 import {
+  WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL,
+  WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL,
+  WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL,
+} from "./legacyHistoryStore";
+import {
   buildProfileLegacyLinkState,
   buildCustomerHeaderFields,
   buildCustomerProfileActions,
@@ -537,6 +542,67 @@ describe("customerProfile", () => {
     expect(result.profile.headerView.legacyMemberid).toBe("M1");
     expect(result.profile.snapshot.length).toBeGreaterThan(0);
     expect(result.profile.pdfPurchaseCount).toBe(0);
+    expect(result.profile.cleanedLegacyHistory).toBeNull();
+  });
+
+  it("loads cleaned legacy history by LegacyMemberID on the legacy profile", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql.includes("FROM legacy_members") && sql.includes("memberid = $1")) {
+        return [legacyMember];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [{ legacy_memberid: "M1", email: "sue@example.com", customer_notes: "" }];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [
+          {
+            category: "Membership",
+            transaction_date: "2019-03-01",
+            description: "Annual membership",
+            amount: 0,
+            expiration_date: "2020-03-01",
+            processor: "Authorize.Net",
+          },
+          {
+            category: "Course Purchase",
+            transaction_date: "2018-06-15",
+            description: "Machine Knitting 101",
+            amount: "49.00",
+            expiration_date: null,
+            processor: null,
+          },
+          {
+            category: "LK150 Bundle",
+            transaction_date: "2017-11-02",
+            description: "LK150 Bundle",
+            amount: "199.00",
+            expiration_date: null,
+            processor: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await loadLegacyCustomerProfile("M1", {
+      queryFn,
+      getClient: async () => ({
+        getMember: async () => null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.profile.cleanedLegacyHistory?.legacyMemberid).toBe("M1");
+    expect(result.profile.cleanedLegacyHistory?.memberships).toHaveLength(1);
+    expect(result.profile.cleanedLegacyHistory?.memberships[0]?.amount).toBe("$0.00");
+    expect(result.profile.cleanedLegacyHistory?.coursePurchases).toHaveLength(1);
+    expect(result.profile.cleanedLegacyHistory?.lk150Bundles).toHaveLength(1);
+    expect(result.profile.cleanedLegacyHistory?.patternPurchases).toHaveLength(0);
   });
 
   it("marks legacy Memberstack lookup as load_error when the Admin API throws", async () => {
@@ -706,6 +772,7 @@ describe("customerProfile", () => {
 
     expect(result.profile.profileType).toBe("memberstack");
     expect(result.profile.hasLegacyHistory).toBe(false);
+    expect(result.profile.cleanedLegacyHistory).toBeNull();
     expect(result.profile.notesWriteId).toBe("mem_only");
     expect(result.profile.headerView.memberstackId).toBe("mem_only");
     expect(result.profile.snapshot.some((metric) => metric.unavailable)).toBe(true);
@@ -881,5 +948,96 @@ describe("customerProfile", () => {
     expect(link.status).toBe("ambiguous");
     expect(state.hasLegacyHistory).toBe(false);
     expect(state.legacyMemberid).not.toBe("M-newer");
+  });
+
+  it("attaches cleaned legacy history on a unique Memberstack email link", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_BY_EMAIL_SQL || sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {
+        return sql === MEMBER_BY_EMAIL_SQL
+          ? [legacyMember]
+          : [{ legacy_memberid: "M1", email: "sue@example.com", customer_notes: "Admin only" }];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [{ legacy_memberid: "M1", email: "sue@example.com", customer_notes: "Admin only" }];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [
+          {
+            category: "Course Purchase",
+            transaction_date: "2018-06-15",
+            description: "Machine Knitting 101",
+            amount: "49.00",
+            expiration_date: null,
+            processor: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await loadMemberstackCustomerProfile("mem_linked", {
+      secretKey: "sk_live_test_key",
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "mem_linked"
+            ? {
+                id: "mem_linked",
+                auth: { email: "sue@example.com" },
+                planConnections: [],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+      queryFn,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.profile.cleanedLegacyHistory?.legacyMemberid).toBe("M1");
+    expect(result.profile.cleanedLegacyHistory?.customerNotes?.text).toBe("Admin only");
+    expect(result.profile.cleanedLegacyHistory?.coursePurchases).toHaveLength(1);
+  });
+
+  it("does not attach cleaned legacy history when the Memberstack email is ambiguous", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_BY_EMAIL_SQL) {
+        return [
+          { ...legacyMember, memberid: "M1" },
+          { ...legacyMember, memberid: "M2", lastname: "Two" },
+        ];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {
+        throw new Error("Cleaned email lookup must not run when dump email is ambiguous");
+      }
+      return [];
+    });
+
+    const result = await loadMemberstackCustomerProfile("mem_shared", {
+      secretKey: "sk_live_test_key",
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "mem_shared"
+            ? {
+                id: "mem_shared",
+                auth: { email: "sue@example.com" },
+                planConnections: [],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+      queryFn,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.profile.legacyLinkAmbiguous).toBe(true);
+    expect(result.profile.hasLegacyHistory).toBe(false);
+    expect(result.profile.cleanedLegacyHistory).toBeNull();
   });
 });

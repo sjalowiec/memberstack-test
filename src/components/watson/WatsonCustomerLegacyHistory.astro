@@ -1,0 +1,254 @@
+---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
+import {
+  cleanedLegacyHistoryAccordionCount,
+  hasVisibleCleanedLegacyHistory,
+  membershipHistoryShowsProcessor,
+  type WatsonCleanedLegacyHistoryView,
+} from "../../lib/watson/legacyHistoryStore";
+
+interface Props {
+  history: WatsonCleanedLegacyHistoryView | null;
+}
+
+const { history } = Astro.props;
+const visible = hasVisibleCleanedLegacyHistory(history);
+const showProcessor = history ? membershipHistoryShowsProcessor(history.memberships) : false;
+---
+
+{
+  visible && history ? (
+    <WatsonCustomerAccordionSection
+      id="customer-legacy-history"
+      title="Legacy History"
+      count={cleanedLegacyHistoryAccordionCount(history)}
+      class="watson-customer__legacy-history"
+    >
+      <p class="watson__section-note">
+        Cleaned historical records from Watson-native legacy history. This is not current
+        Memberstack billing or live membership status. Amounts are shown as recorded.
+      </p>
+
+      {
+        history.customerNotes ? (
+          <div
+            class="watson-customer__membership-section"
+            data-legacy-customer-notes-admin-only
+          >
+            <h3 class="watson-customer__subsection-title">Legacy Customer Notes</h3>
+            <p class="watson__section-note">
+              Private legacy admin notes. These notes are Watson-only and are not customer-facing.
+            </p>
+            <p class="watson-customer__legacy-admin-notes-text">{history.customerNotes.text}</p>
+          </div>
+        ) : null
+      }
+
+      {
+        history.memberships.length > 0 ? (
+          <div class="watson-customer__membership-section">
+            <h3 class="watson-customer__subsection-title">Membership History</h3>
+            <div class="watson__table-wrap">
+              <table class="watson-table" data-sortable-table data-cleaned-legacy-membership-table>
+                <thead>
+                  <tr>
+                    <th
+                      scope="col"
+                      data-sort-key="transactiondate"
+                      data-sort-type="date"
+                      data-sort-default="true"
+                      data-sort-default-direction="desc"
+                      tabindex="0"
+                    >
+                      Transaction date
+                    </th>
+                    <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
+                      Amount
+                    </th>
+                    <th scope="col" data-sort-key="expirationdate" data-sort-type="date" tabindex="0">
+                      Expiration date
+                    </th>
+                    {
+                      showProcessor ? (
+                        <th scope="col" data-sort-key="processor" data-sort-type="string" tabindex="0">
+                          Processor
+                        </th>
+                      ) : null
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    history.memberships.map((record) => (
+                      <tr>
+                        <td data-sort-value={record.transactionDateSort}>
+                          {record.transactionDate ?? ""}
+                        </td>
+                        <td data-sort-value={record.amountSort}>{record.amount ?? ""}</td>
+                        <td data-sort-value={record.expirationDateSort}>
+                          {record.expirationDate ?? ""}
+                        </td>
+                        {
+                          showProcessor ? (
+                            <td data-sort-value={record.processor ?? ""}>
+                              {record.processor ?? ""}
+                            </td>
+                          ) : null
+                        }
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null
+      }
+
+      {
+        history.coursePurchases.length > 0 ? (
+          <div class="watson-customer__membership-section">
+            <h3 class="watson-customer__subsection-title">Purchased Courses</h3>
+            <div class="watson__table-wrap">
+              <table class="watson-table" data-sortable-table data-cleaned-legacy-course-table>
+                <thead>
+                  <tr>
+                    <th scope="col" data-sort-key="description" data-sort-type="string" tabindex="0">
+                      Description
+                    </th>
+                    <th
+                      scope="col"
+                      data-sort-key="purchasedate"
+                      data-sort-type="date"
+                      data-sort-default="true"
+                      data-sort-default-direction="desc"
+                      tabindex="0"
+                    >
+                      Purchase date
+                    </th>
+                    <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    history.coursePurchases.map((record) => (
+                      <tr>
+                        <td data-sort-value={record.description}>{record.description}</td>
+                        <td data-sort-value={record.transactionDateSort}>
+                          {record.transactionDate ?? ""}
+                        </td>
+                        <td data-sort-value={record.amountSort}>{record.amount ?? ""}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null
+      }
+
+      {
+        history.patternPurchases.length > 0 ? (
+          <div class="watson-customer__membership-section">
+            <h3 class="watson-customer__subsection-title">Purchased Patterns</h3>
+            <div class="watson__table-wrap">
+              <table class="watson-table" data-sortable-table data-cleaned-legacy-pattern-table>
+                <thead>
+                  <tr>
+                    <th scope="col" data-sort-key="description" data-sort-type="string" tabindex="0">
+                      Description
+                    </th>
+                    <th
+                      scope="col"
+                      data-sort-key="purchasedate"
+                      data-sort-type="date"
+                      data-sort-default="true"
+                      data-sort-default-direction="desc"
+                      tabindex="0"
+                    >
+                      Purchase date
+                    </th>
+                    <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    history.patternPurchases.map((record) => (
+                      <tr>
+                        <td data-sort-value={record.description}>{record.description}</td>
+                        <td data-sort-value={record.transactionDateSort}>
+                          {record.transactionDate ?? ""}
+                        </td>
+                        <td data-sort-value={record.amountSort}>{record.amount ?? ""}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null
+      }
+
+      {
+        history.lk150Bundles.length > 0 ? (
+          <div class="watson-customer__membership-section">
+            <h3 class="watson-customer__subsection-title">LK150 Bundle</h3>
+            <div class="watson__table-wrap">
+              <table class="watson-table" data-sortable-table data-cleaned-legacy-lk150-table>
+                <thead>
+                  <tr>
+                    <th scope="col" data-sort-key="description" data-sort-type="string" tabindex="0">
+                      Description
+                    </th>
+                    <th
+                      scope="col"
+                      data-sort-key="purchasedate"
+                      data-sort-type="date"
+                      data-sort-default="true"
+                      data-sort-default-direction="desc"
+                      tabindex="0"
+                    >
+                      Purchase date
+                    </th>
+                    <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    history.lk150Bundles.map((record) => (
+                      <tr>
+                        <td data-sort-value={record.description}>{record.description}</td>
+                        <td data-sort-value={record.transactionDateSort}>
+                          {record.transactionDate ?? ""}
+                        </td>
+                        <td data-sort-value={record.amountSort}>{record.amount ?? ""}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null
+      }
+    </WatsonCustomerAccordionSection>
+  ) : null
+}
+
+<style>
+  .watson-customer__legacy-admin-notes-text {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #334155;
+    line-height: 1.6;
+  }
+</style>

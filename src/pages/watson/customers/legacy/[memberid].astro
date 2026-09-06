@@ -1,6 +1,7 @@
 ---
 import WatsonCustomerAccordionInit from "../../../../components/watson/WatsonCustomerAccordionInit.astro";
 import WatsonCustomerInternalInfo from "../../../../components/watson/WatsonCustomerInternalInfo.astro";
+import WatsonCustomerLegacyHistory from "../../../../components/watson/WatsonCustomerLegacyHistory.astro";
 import WatsonCustomerMembership from "../../../../components/watson/WatsonCustomerMembership.astro";
 import WatsonCustomerNotes from "../../../../components/watson/WatsonCustomerNotes.astro";
 import WatsonCustomerProfileHeader from "../../../../components/watson/WatsonCustomerProfileHeader.astro";
@@ -82,6 +83,7 @@ if (!result.ok && result.reason === "not_found") {
           hasLegacyHistory={result.profile.hasLegacyHistory}
           memberstackLinkStatus={result.profile.memberstackLinkStatus}
         />
+        <WatsonCustomerLegacyHistory history={result.profile.cleanedLegacyHistory} />
         <WatsonCustomerPurchases
           courses={result.profile.courses}
           orders={result.profile.orders}

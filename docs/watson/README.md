@@ -24,7 +24,7 @@ When the legacy ColdFusion site is retired, customer support still needs access 
 | [legacy-renewal-reminders.md](./legacy-renewal-reminders.md) | ActiveCampaign 30/7/1-day annual renewal reminder job |
 | [ui-plan.md](./ui-plan.md) | First-version interface and workflows |
 | [import-plan.md](./import-plan.md) | CSV export and Postgres import process |
-| [importer.md](./importer.md) | Importer CLI, env vars, validation, reruns |
+| [importer.md](./importer.md) | Importer CLI, env vars, validation, reruns, cleaned history dry-run and apply |
 | [store-fulfillment.md](./store-fulfillment.md) | Machine/drop-ship shipping-cost records and apply SQL |
 | [shopify-sales.md](./shopify-sales.md) | Live Shopify order sync, Recent Sales UI, DesignaKnit licenses |
 | [todo.md](./todo.md) | Phased implementation checklist |

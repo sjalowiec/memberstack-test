@@ -18,6 +18,8 @@
     "generate:legacy-ebook-shopify-import": "vite-node scripts/generate-legacy-ebook-shopify-import.ts",
     "split:course-content": "vite-node scripts/split-course-content.ts",
     "watson:import": "vite-node scripts/watson-import.ts",
+    "watson:import-legacy-history": "vite-node scripts/watson-import-legacy-history.ts",
+    "watson:import-legacy-garments": "vite-node scripts/watson-import-legacy-garments.ts",
     "watson:validate": "vite-node scripts/watson-validate-import.ts",
     "watson:analyze-csv": "node scripts/watson-analyze-csv.mjs",
     "watson:generate-schema": "vite-node scripts/watson-generate-schema.ts"

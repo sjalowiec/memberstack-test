@@ -1,6 +1,7 @@
 import { formatMemberDisplayName, formatMemberJoinedDateDisplay, type WatsonQueryFn } from "./memberSearch";
 import { formatLegacyMoney } from "./memberOrders";
 import { queryWatson } from "./db";
+import { buildSavedPatternName, WATSON_LEGACY_GARMENTS_TABLE } from "./memberSavedPatterns";
 
 export const DASHBOARD_RECENT_ACTIVITY_LIMIT = 5;
 
@@ -84,9 +85,11 @@ export const DASHBOARD_RECENT_SAVED_PATTERNS_SQL = `
     p.builddate,
     p.customname,
     p.challengepatternname,
+    g.garment_title,
     m.fristname,
     m.lastname
   FROM legacy_member_pattern_details p
+  LEFT JOIN ${WATSON_LEGACY_GARMENTS_TABLE} g ON g.garment_id = p.garmentid_fk
   LEFT JOIN legacy_members m ON m.memberid = p.member_fk
   WHERE p.builddate IS NOT NULL
   ORDER BY p.builddate DESC NULLS LAST, p.detailid DESC
@@ -195,24 +198,16 @@ export function buildWatsonMemberDetailHref(memberid: string): string {
   return `/watson/members/${encodeURIComponent(memberid)}`;
 }
 
-function trimLegacyText(value: string | null | undefined): string | null {
-  if (value == null) {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
 function buildPatternActivityLabel(
   customname: string | null,
   challengepatternname: string | null,
-  detailId: string | number,
+  garmentTitle: string | null,
 ): string {
-  return (
-    trimLegacyText(customname) ??
-    trimLegacyText(challengepatternname) ??
-    `Saved pattern ${detailId}`
-  );
+  return buildSavedPatternName({
+    customname,
+    challengepatternname,
+    garment_title: garmentTitle,
+  });
 }
 
 async function loadDashboardMetric<T>(loader: () => Promise<T>): Promise<DashboardMetric<T>> {
@@ -301,6 +296,7 @@ export async function loadWatsonDashboardRecentActivity(
       builddate: Date | string;
       customname: string | null;
       challengepatternname: string | null;
+      garment_title: string | null;
       fristname: string | null;
       lastname: string | null;
     }>(DASHBOARD_RECENT_SAVED_PATTERNS_SQL),
@@ -336,7 +332,7 @@ export async function loadWatsonDashboardRecentActivity(
       const patternLabel = buildPatternActivityLabel(
         row.customname,
         row.challengepatternname,
-        row.detailid,
+        row.garment_title,
       );
       return {
         detailId: String(row.detailid),

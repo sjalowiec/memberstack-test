@@ -1,4 +1,4 @@
-# Watson ù Data Model
+# Watson ? Data Model
 
 This document defines the **approved export tables** from legacy SQL Server and the **business rules** support staff and implementers must respect. Watson imports these tables into Postgres as read-only legacy data.
 
@@ -62,9 +62,9 @@ These rules reflect legacy ColdFusion behavior and data quality quirks. Implemen
 - **Legacy ?current members? report rule** (Matthew / ColdFusion list screens): `betaactive = 0` and `subscriptionexpiring::date >= CURRENT_DATE` on `legacy_members`. See [membership-reports.md](./membership-reports.md). Do not use `legacy_subscriptions` alone to decide current status.
 - **`Single Payment` is not synonymous with annual membership.** It mixes monthly ($19.99) and one-time/annual purchases.
 
-### Members ù dates and notes
+### Members ? dates and notes
 
-- **`BirthDayInfo` uses year 1900 and stores only month/day.** The year is a placeholder, not the memberùs birth year. Display and search should treat it as month/day only (e.g. ùMarch 15ù), not a full date of birth.
+- **`BirthDayInfo` uses year 1900 and stores only month/day.** The year is a placeholder, not the member?s birth year. Display and search should treat it as month/day only (e.g. ?March 15?), not a full date of birth.
 - **`Members.Notes` are private admin notes and must be preserved.** These are legacy staff notes from ColdFusion admin. They must be imported and shown in Watson (read-only). They are not the same as new Watson support notes (editable, Postgres-native).
 
 ### Addresses
@@ -78,6 +78,8 @@ The following are **not** legacy exports; they are created in Watson and stored 
 | Concept | Description |
 |---|---|
 | **Support notes** | New notes added by support staff in Watson; editable, with audit metadata |
+| **Cleaned legacy customers/history** | Watson-native `watson_legacy_customers` / `watson_legacy_history` from verified CSVs. Upserted only by `npm run watson:import-legacy-history -- --apply`. **Not** part of the `legacy_*` dump truncate/import. `customer_notes` is admin-only. See [importer.md](./importer.md). |
+| **Cleaned legacy garments** | Watson-native `watson_legacy_garments` slim GarmentID / GarmentTitle / GarmentDescription lookup. Upserted only by `npm run watson:import-legacy-garments -- --apply`. Descriptions are cleaned to plain text. Used by Saved Patterns as Pattern name and compact Description. See [importer.md](./importer.md). |
 | **Store fulfillments** | Internal shipping-cost / supplier-invoice records for drop-shipped machines and related products (`watson_store_fulfillments`). See [store-fulfillment.md](./store-fulfillment.md). |
 | **(Future) Timeline entries** | May combine imported legacy events with support notes for a unified member chronology |
 

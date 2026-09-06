@@ -1,14 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  buildSavedAsName,
   buildSavedPatternDisplay,
   buildSavedPatternName,
+  buildGarmentDescription,
+  formatGarmentDescriptionPreview,
+  FALLBACK_SAVED_PATTERN_NAME,
   getMemberSavedPatternCount,
   getMemberSavedPatterns,
   getVisibleSavedPatternColumns,
   MEMBER_SAVED_PATTERN_COUNT_SQL,
   MEMBER_SAVED_PATTERNS_SQL,
   MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS,
+  WATSON_LEGACY_GARMENTS_TABLE,
 } from "./memberSavedPatterns";
 
 describe("memberSavedPatterns", () => {
@@ -37,6 +42,8 @@ describe("memberSavedPatterns", () => {
     datatoggles: null,
     patternidlist: null,
     fixed: 1,
+    garment_title: null,
+    garment_description: null,
   };
 
   const secondRow = {
@@ -62,21 +69,27 @@ describe("memberSavedPatterns", () => {
     datatoggles: "toggle-a",
     patternidlist: "1,2,3",
     fixed: 1,
+    garment_title: null,
+    garment_description: null,
   };
 
-  it("filters saved patterns by member_fk", async () => {
+  it("filters saved patterns by member_fk and joins garment titles", async () => {
     const queryFn = vi.fn().mockResolvedValueOnce([]);
 
     await getMemberSavedPatterns(memberId, queryFn);
 
     expect(queryFn).toHaveBeenCalledWith(MEMBER_SAVED_PATTERNS_SQL, [memberId]);
     expect(MEMBER_SAVED_PATTERNS_SQL).toContain("legacy_member_pattern_details");
-    expect(MEMBER_SAVED_PATTERNS_SQL).toContain("WHERE member_fk = $1");
+    expect(MEMBER_SAVED_PATTERNS_SQL).toContain(WATSON_LEGACY_GARMENTS_TABLE);
+    expect(MEMBER_SAVED_PATTERNS_SQL).toContain("g.garment_id = d.garmentid_fk");
+    expect(MEMBER_SAVED_PATTERNS_SQL).toContain("g.garment_title");
+    expect(MEMBER_SAVED_PATTERNS_SQL).toContain("g.garment_description");
+    expect(MEMBER_SAVED_PATTERNS_SQL).toContain("WHERE d.member_fk = $1");
   });
 
   it("defaults to newest builddate first in SQL", () => {
     expect(MEMBER_SAVED_PATTERNS_SQL).toContain(
-      "ORDER BY builddate DESC NULLS LAST, detailid DESC",
+      "ORDER BY d.builddate DESC NULLS LAST, d.detailid DESC",
     );
   });
 
@@ -90,9 +103,15 @@ describe("memberSavedPatterns", () => {
   });
 
   it("exposes sortable saved pattern columns for the UI", () => {
-    expect(MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS).toContain("detailId");
-    expect(MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS).toContain("savedDate");
-    expect(MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS).toContain("buildNotes");
+    expect(MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS).toEqual([
+      "patternName",
+      "savedAs",
+      "savedDate",
+      "size",
+      "buildNotes",
+    ]);
+    expect(MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS).not.toContain("detailId");
+    expect(MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS).not.toContain("patternType");
   });
 
   it("preserves multiple historical saved pattern records", async () => {
@@ -104,9 +123,129 @@ describe("memberSavedPatterns", () => {
     expect(records.map((record) => record.detailId)).toEqual(["6", "3"]);
   });
 
-  it("prefers custom name over challenge pattern name without merging records", () => {
-    expect(buildSavedPatternName(secondRow)).toBe("My Custom Vest");
-    expect(buildSavedPatternDisplay(secondRow).challengePatternName).toBe("Drop Shoulder");
+  it("uses garment title as pattern name and CustomName as saved as", () => {
+    const row = {
+      ...secondRow,
+      detailid: 89604,
+      garmentid_fk: "2196",
+      customname: "Gauge 6 standard",
+      challengepatternname: "Challenge Should Not Win",
+      garment_title: "Carnation",
+      garment_description:
+        "Basic DROP SHOULDER Pullover or Cardigan sweater.\nYour choice:\nRound or V-neck",
+    };
+
+    expect(buildSavedPatternName(row)).toBe("Carnation");
+    expect(buildSavedAsName(row)).toBe("Gauge 6 standard");
+    expect(buildSavedPatternDisplay(row).patternName).toBe("Carnation");
+    expect(buildSavedPatternDisplay(row).savedAs).toBe("Gauge 6 standard");
+    expect(buildSavedPatternDisplay(row).challengePatternName).toBe("Challenge Should Not Win");
+  });
+
+  it("displays garment title, a short description preview, and Saved as together", () => {
+    const display = buildSavedPatternDisplay({
+      ...secondRow,
+      detailid: 89604,
+      garmentid_fk: "2196",
+      customname: "Gauge 6 standard",
+      garment_title: "Carnation",
+      garment_description:
+        "Basic DROP SHOULDER Pullover or Cardigan sweater. Your choice: Round or V-neck; Straight or shaped shoulders; Optional bust darts. Use this basic shape as a jumping-off point for your own designs.",
+    });
+
+    expect(display.patternName).toBe("Carnation");
+    expect(display.garmentDescription).toContain("Optional bust darts");
+    expect(display.garmentDescriptionPreview).toContain("DROP SHOULDER");
+    expect(display.garmentDescriptionPreview).toMatch(/\.\.\.$/);
+    expect(display.garmentDescriptionPreview?.length).toBeLessThan(display.garmentDescription?.length ?? 0);
+    expect(display.garmentDescriptionPreview?.length).toBeLessThanOrEqual(63);
+    expect(display.garmentDescriptionPreview).not.toContain("jumping-off point");
+    expect(display.savedAs).toBe("Gauge 6 standard");
+  });
+
+  it("truncates garment description previews to about 60 characters with an ellipsis", () => {
+    const long =
+      '"Keep it Simple" cardigan with modified drop shoulder and extra shaping notes that should not all appear.';
+    const preview = formatGarmentDescriptionPreview(long);
+    expect(preview).toBe('"Keep it Simple" cardigan with modified drop shoulder and...');
+    expect(preview?.endsWith("...")).toBe(true);
+    expect(preview?.length).toBeLessThanOrEqual(63);
+
+    expect(formatGarmentDescriptionPreview("Short note")).toBe("Short note");
+    expect(formatGarmentDescriptionPreview("   ")).toBeNull();
+    expect(formatGarmentDescriptionPreview(null)).toBeNull();
+  });
+
+  it("omits description when it is blank or there is no garment match", () => {
+    expect(
+      buildGarmentDescription({
+        garment_title: "Carnation",
+        garment_description: "   ",
+      }),
+    ).toBeNull();
+    expect(
+      buildSavedPatternDisplay({
+        ...firstRow,
+        garment_title: "Rose",
+        garment_description: null,
+      }).garmentDescription,
+    ).toBeNull();
+    expect(
+      buildSavedPatternDisplay({
+        ...firstRow,
+        customname: "Gauge 6 standard",
+        garment_title: null,
+        garment_description: "Should not show without a garment match",
+      }).garmentDescription,
+    ).toBeNull();
+  });
+
+  it("shows garment title only when CustomName is blank", () => {
+    const known = [
+      { detailid: 89397, garmentid_fk: "2194", garment_title: "Rose" },
+      { detailid: 88833, garmentid_fk: "2196", garment_title: "Carnation" },
+      { detailid: 62805, garmentid_fk: "769", garment_title: "Mauve Pullover" },
+      {
+        detailid: 62785,
+        garmentid_fk: "194",
+        garment_title: "Women's Elongated Stitches Cardigan",
+      },
+    ];
+
+    for (const record of known) {
+      const display = buildSavedPatternDisplay({
+        ...firstRow,
+        ...record,
+        customname: "   ",
+        challengepatternname: "Should Not Be Primary",
+      });
+      expect(display.patternName).toBe(record.garment_title);
+      expect(display.savedAs).toBeNull();
+    }
+  });
+
+  it("falls back when garment lookup is missing", () => {
+    expect(
+      buildSavedPatternName({
+        garment_title: null,
+        customname: "Gauge 6 standard",
+        challengepatternname: "Drop Shoulder",
+      }),
+    ).toBe("Gauge 6 standard");
+    expect(
+      buildSavedPatternName({
+        garment_title: null,
+        customname: "  ",
+        challengepatternname: "Drop Shoulder",
+      }),
+    ).toBe("Drop Shoulder");
+    expect(
+      buildSavedPatternName({
+        garment_title: null,
+        customname: null,
+        challengepatternname: null,
+      }),
+    ).toBe(FALLBACK_SAVED_PATTERN_NAME);
   });
 
   it("handles incomplete legacy data safely", () => {
@@ -121,19 +260,40 @@ describe("memberSavedPatterns", () => {
     expect(display.savedDateSort).toBe("");
     expect(display.buildNotes).toBeNull();
     expect(display.patternType).toBeNull();
-    expect(display.patternName).toBeNull();
+    expect(display.patternName).toBe(FALLBACK_SAVED_PATTERN_NAME);
+    expect(display.savedAs).toBeNull();
   });
 
-  it("hides optional columns when a member has no useful values", () => {
+  it("shows only support-facing columns and keeps Saved as when CustomName is present", () => {
     const visible = getVisibleSavedPatternColumns([
       buildSavedPatternDisplay(firstRow),
       buildSavedPatternDisplay(secondRow),
     ]);
 
-    expect(visible.showGarmentStyle).toBe(true);
-    expect(visible.showPatternName).toBe(false);
-    expect(visible.showCustomName).toBe(true);
-    expect(visible.showChallengePatternName).toBe(true);
-    expect(visible.showBuildNotes).toBe(true);
+    expect(visible).toEqual({
+      showPatternName: true,
+      showSavedAs: true,
+      showSavedDate: true,
+      showSize: true,
+      showBuildNotes: true,
+    });
+  });
+
+  it("hides saved as, size, and build notes when those values are blank", () => {
+    const visible = getVisibleSavedPatternColumns([
+      buildSavedPatternDisplay({
+        ...firstRow,
+        garment_title: "Rose",
+        customname: null,
+        size: null,
+        buildnotes: "   ",
+        builddate: "not-a-date",
+      }),
+    ]);
+
+    expect(visible.showPatternName).toBe(true);
+    expect(visible.showSavedAs).toBe(false);
+    expect(visible.showSize).toBe(false);
+    expect(visible.showBuildNotes).toBe(false);
   });
 });

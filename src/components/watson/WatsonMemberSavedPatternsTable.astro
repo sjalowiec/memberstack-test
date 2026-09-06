@@ -20,20 +20,23 @@ const visibleColumns = getVisibleSavedPatternColumns(records);
       <table class="watson-table" data-sortable-table data-saved-patterns-table>
         <thead>
           <tr>
-            <th
-              scope="col"
-              data-sort-key="detailid"
-              data-sort-type="string"
-              data-sort-default={visibleColumns.showSavedDate ? undefined : "true"}
-              data-sort-default-direction={visibleColumns.showSavedDate ? undefined : "desc"}
-              tabindex="0"
-            >
-              Pattern record ID
-            </th>
             {
               visibleColumns.showPatternName ? (
-                <th scope="col" data-sort-key="patternname" data-sort-type="string" tabindex="0">
+                <th
+                  scope="col"
+                  data-sort-key="patternname"
+                  data-sort-type="string"
+                  data-sort-default={visibleColumns.showSavedDate ? undefined : "true"}
+                  tabindex="0"
+                >
                   Pattern name
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showSavedAs ? (
+                <th scope="col" data-sort-key="savedas" data-sort-type="string" tabindex="0">
+                  Saved as
                 </th>
               ) : null
             }
@@ -47,28 +50,7 @@ const visibleColumns = getVisibleSavedPatternColumns(records);
                   data-sort-default-direction="desc"
                   tabindex="0"
                 >
-                  Saved date (Builddate)
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showPatternType ? (
-                <th scope="col" data-sort-key="patterntype" data-sort-type="string" tabindex="0">
-                  Pattern type
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showGarmentStyle ? (
-                <th scope="col" data-sort-key="garmentstyle" data-sort-type="string" tabindex="0">
-                  Garment style
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showGaugeSizing ? (
-                <th scope="col" data-sort-key="gaugesizing" data-sort-type="string" tabindex="0">
-                  Gauge sizing
+                  Saved date
                 </th>
               ) : null
             }
@@ -80,107 +62,9 @@ const visibleColumns = getVisibleSavedPatternColumns(records);
               ) : null
             }
             {
-              visibleColumns.showNeckShape ? (
-                <th scope="col" data-sort-key="neckshape" data-sort-type="string" tabindex="0">
-                  Neck shape
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showLibraryId ? (
-                <th scope="col" data-sort-key="libraryid" data-sort-type="string" tabindex="0">
-                  Library ID
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showGarmentId ? (
-                <th scope="col" data-sort-key="garmentid" data-sort-type="string" tabindex="0">
-                  Garment ID
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showBuildId ? (
-                <th scope="col" data-sort-key="buildid" data-sort-type="string" tabindex="0">
-                  Build ID
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showChallengeId ? (
-                <th scope="col" data-sort-key="challengeid" data-sort-type="string" tabindex="0">
-                  Challenge ID
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showCustomName ? (
-                <th scope="col" data-sort-key="customname" data-sort-type="string" tabindex="0">
-                  Custom name
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showChallengePatternName ? (
-                <th scope="col" data-sort-key="challengepatternname" data-sort-type="string" tabindex="0">
-                  Challenge pattern name
-                </th>
-              ) : null
-            }
-            {
               visibleColumns.showBuildNotes ? (
                 <th scope="col" data-sort-key="buildnotes" data-sort-type="string" tabindex="0">
                   Build notes
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showSizingSizeId ? (
-                <th scope="col" data-sort-key="sizingsizeid" data-sort-type="string" tabindex="0">
-                  Sizing size ID
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showCustomFitFlag ? (
-                <th scope="col" data-sort-key="customfitflag" data-sort-type="string" tabindex="0">
-                  Custom fit flag
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showIssueWithPatternFlag ? (
-                <th scope="col" data-sort-key="issueflag" data-sort-type="string" tabindex="0">
-                  Issue with pattern flag
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showIssueWithPatternMarkerFlag ? (
-                <th scope="col" data-sort-key="issuemarkerflag" data-sort-type="string" tabindex="0">
-                  Issue marker flag
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showPatternIdList ? (
-                <th scope="col" data-sort-key="patternidlist" data-sort-type="string" tabindex="0">
-                  Pattern ID list
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showFixedFlag ? (
-                <th scope="col" data-sort-key="fixedflag" data-sort-type="string" tabindex="0">
-                  Fixed flag
-                </th>
-              ) : null
-            }
-            {
-              visibleColumns.showDataToggles ? (
-                <th scope="col" data-sort-key="datatoggles" data-sort-type="string" tabindex="0">
-                  Data toggles
                 </th>
               ) : null
             }
@@ -190,10 +74,23 @@ const visibleColumns = getVisibleSavedPatternColumns(records);
           {
             records.map((record) => (
               <tr>
-                <td data-sort-value={record.detailId}>{record.detailId}</td>
                 {
                   visibleColumns.showPatternName ? (
-                    <td data-sort-value={record.patternName ?? ""}>{record.patternName ?? ""}</td>
+                    <td data-sort-value={record.patternName}>
+                      <div class="watson-saved-patterns__name">{record.patternName}</div>
+                      {
+                        record.garmentDescriptionPreview ? (
+                          <p class="watson-saved-patterns__description">
+                            {record.garmentDescriptionPreview}
+                          </p>
+                        ) : null
+                      }
+                    </td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showSavedAs ? (
+                    <td data-sort-value={record.savedAs ?? ""}>{record.savedAs ?? ""}</td>
                   ) : null
                 }
                 {
@@ -202,104 +99,13 @@ const visibleColumns = getVisibleSavedPatternColumns(records);
                   ) : null
                 }
                 {
-                  visibleColumns.showPatternType ? (
-                    <td data-sort-value={record.patternType ?? ""}>{record.patternType ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showGarmentStyle ? (
-                    <td data-sort-value={record.garmentStyle ?? ""}>{record.garmentStyle ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showGaugeSizing ? (
-                    <td data-sort-value={record.gaugeSizing ?? ""}>{record.gaugeSizing ?? ""}</td>
-                  ) : null
-                }
-                {
                   visibleColumns.showSize ? (
                     <td data-sort-value={record.size ?? ""}>{record.size ?? ""}</td>
                   ) : null
                 }
                 {
-                  visibleColumns.showNeckShape ? (
-                    <td data-sort-value={record.neckShape ?? ""}>{record.neckShape ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showLibraryId ? (
-                    <td data-sort-value={record.libraryId ?? ""}>{record.libraryId ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showGarmentId ? (
-                    <td data-sort-value={record.garmentId ?? ""}>{record.garmentId ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showBuildId ? (
-                    <td data-sort-value={record.buildId ?? ""}>{record.buildId ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showChallengeId ? (
-                    <td data-sort-value={record.challengeId ?? ""}>{record.challengeId ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showCustomName ? (
-                    <td data-sort-value={record.customName ?? ""}>{record.customName ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showChallengePatternName ? (
-                    <td data-sort-value={record.challengePatternName ?? ""}>
-                      {record.challengePatternName ?? ""}
-                    </td>
-                  ) : null
-                }
-                {
                   visibleColumns.showBuildNotes ? (
                     <td data-sort-value={record.buildNotes ?? ""}>{record.buildNotes ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showSizingSizeId ? (
-                    <td data-sort-value={record.sizingSizeId ?? ""}>{record.sizingSizeId ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showCustomFitFlag ? (
-                    <td data-sort-value={record.customFitFlag ?? ""}>{record.customFitFlag ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showIssueWithPatternFlag ? (
-                    <td data-sort-value={record.issueWithPatternFlag ?? ""}>
-                      {record.issueWithPatternFlag ?? ""}
-                    </td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showIssueWithPatternMarkerFlag ? (
-                    <td data-sort-value={record.issueWithPatternMarkerFlag ?? ""}>
-                      {record.issueWithPatternMarkerFlag ?? ""}
-                    </td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showPatternIdList ? (
-                    <td data-sort-value={record.patternIdList ?? ""}>{record.patternIdList ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showFixedFlag ? (
-                    <td data-sort-value={record.fixedFlag ?? ""}>{record.fixedFlag ?? ""}</td>
-                  ) : null
-                }
-                {
-                  visibleColumns.showDataToggles ? (
-                    <td data-sort-value={record.dataToggles ?? ""}>{record.dataToggles ?? ""}</td>
                   ) : null
                 }
               </tr>
@@ -320,5 +126,22 @@ const visibleColumns = getVisibleSavedPatternColumns(records);
   .watson-table td {
     max-width: 18rem;
     word-break: break-word;
+  }
+
+  .watson-saved-patterns__name {
+    font-weight: 600;
+  }
+
+  .watson-saved-patterns__description {
+    margin: 0.2rem 0 0;
+    max-width: 22rem;
+    overflow: hidden;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 </style>
