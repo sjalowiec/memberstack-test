@@ -46,6 +46,14 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain("data-watson-customer-accordion-group");
     expect(legacyProfilePage).toContain("WatsonCustomerAccordionInit");
     expect(legacyProfilePage).toContain("WatsonCustomerProfileHeader");
+    expect(legacyProfilePage).toContain("WatsonCustomerLegacyHistory");
+    expect(legacyProfilePage).toContain("cleanedLegacyHistory");
+    expect(legacyProfilePage.indexOf("<WatsonCustomerMembership")).toBeLessThan(
+      legacyProfilePage.indexOf("<WatsonCustomerLegacyHistory"),
+    );
+    expect(legacyProfilePage.indexOf("<WatsonCustomerLegacyHistory")).toBeLessThan(
+      legacyProfilePage.indexOf("<WatsonCustomerPurchases"),
+    );
 
     expect(memberstackProfilePage).toContain('export const prerender = false');
     expect(memberstackProfilePage).toContain("loadMemberstackCustomerProfile");
@@ -61,6 +69,14 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).toContain("data-watson-customer-accordion-group");
     expect(memberstackProfilePage).toContain("WatsonCustomerAccordionInit");
     expect(memberstackProfilePage).toContain("WatsonCustomerProfileHeader");
+    expect(memberstackProfilePage).toContain("WatsonCustomerLegacyHistory");
+    expect(memberstackProfilePage).toContain("cleanedLegacyHistory");
+    expect(memberstackProfilePage.indexOf("<WatsonCustomerMembership")).toBeLessThan(
+      memberstackProfilePage.indexOf("<WatsonCustomerLegacyHistory"),
+    );
+    expect(memberstackProfilePage.indexOf("<WatsonCustomerLegacyHistory")).toBeLessThan(
+      memberstackProfilePage.indexOf("<WatsonCustomerPurchases"),
+    );
 
     expect(middleware).toContain("isWatsonRoute");
     expect(middleware).toContain("isWatsonSessionAuthenticated");
@@ -185,6 +201,29 @@ describe("Watson customer profile pages", () => {
     expect(snapshot).toContain('title="Customer Snapshot"');
     expect(membership).toContain("WatsonCustomerAccordionSection");
     expect(membership).toContain('title="Membership"');
+
+    const legacyHistory = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerLegacyHistory.astro"),
+      "utf8",
+    );
+    expect(legacyHistory).toContain("WatsonCustomerAccordionSection");
+    expect(legacyHistory).toContain('title="Legacy History"');
+    expect(legacyHistory).toContain('id="customer-legacy-history"');
+    expect(legacyHistory).toContain("hasVisibleCleanedLegacyHistory");
+    expect(legacyHistory).toContain("Legacy Customer Notes");
+    expect(legacyHistory).toContain("data-legacy-customer-notes-admin-only");
+    expect(legacyHistory).toContain("Private legacy admin notes");
+    expect(legacyHistory).toContain("Membership History");
+    expect(legacyHistory).toContain("Purchased Courses");
+    expect(legacyHistory).toContain("Purchased Patterns");
+    expect(legacyHistory).toContain("LK150 Bundle");
+    expect(legacyHistory).not.toContain("SourceRecordID");
+    expect(legacyHistory).not.toContain("ItemID");
+    expect(legacyHistory).not.toContain("TransactionID");
+    expect(legacyHistory).not.toContain("identity_key");
+    expect(legacyHistory).not.toContain("<form");
+    expect(legacyHistory).not.toContain("contenteditable");
+
     expect(purchases).toContain('title="Store Purchases"');
     expect(purchases).toContain("WatsonCustomerStoreFulfillment");
     expect(purchases).toContain("notesWriteId");

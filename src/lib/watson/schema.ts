@@ -291,6 +291,76 @@ WHERE outcome = 'tagged' AND dry_run = FALSE`,
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_legacy_renewal_reminders_memberid ON watson_legacy_renewal_reminders (legacy_memberid)",
     },
     {
+      label: "table watson_legacy_customers",
+      sql: `CREATE TABLE IF NOT EXISTS watson_legacy_customers (
+  legacy_memberid TEXT PRIMARY KEY,
+  first_name TEXT NOT NULL DEFAULT '',
+  last_name TEXT NOT NULL DEFAULT '',
+  email TEXT,
+  date_joined DATE,
+  customer_notes TEXT NOT NULL DEFAULT '',
+  linked_memberstack_id TEXT,
+  link_status TEXT NOT NULL DEFAULT 'unmatched'
+    CHECK (link_status IN ('unmatched', 'unique_email', 'ambiguous_email', 'manual')),
+  link_checked_at TIMESTAMPTZ,
+  source_file TEXT,
+  batch_id TEXT,
+  imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "index idx_watson_legacy_customers_email",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_legacy_customers_email ON watson_legacy_customers (LOWER(email))",
+    },
+    {
+      label: "index idx_watson_legacy_customers_name",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_legacy_customers_name ON watson_legacy_customers (last_name, first_name)",
+    },
+    {
+      label: "table watson_legacy_history",
+      sql: `CREATE TABLE IF NOT EXISTS watson_legacy_history (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  identity_key TEXT NOT NULL UNIQUE,
+  legacy_memberid TEXT NOT NULL REFERENCES watson_legacy_customers (legacy_memberid),
+  category TEXT NOT NULL
+    CHECK (category IN ('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle')),
+  transaction_date DATE,
+  description TEXT NOT NULL DEFAULT '',
+  amount NUMERIC(12, 4),
+  expiration_date DATE,
+  processor TEXT,
+  source_record_id TEXT,
+  item_id TEXT,
+  transaction_id TEXT,
+  source_file TEXT,
+  batch_id TEXT,
+  imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "index idx_watson_legacy_history_member_date",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_legacy_history_member_date ON watson_legacy_history (legacy_memberid, transaction_date DESC)",
+    },
+    {
+      label: "index idx_watson_legacy_history_category",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_legacy_history_category ON watson_legacy_history (category)",
+    },
+    {
+      label: "table watson_legacy_garments",
+      sql: `CREATE TABLE IF NOT EXISTS watson_legacy_garments (
+  garment_id TEXT PRIMARY KEY,
+  garment_title TEXT NOT NULL DEFAULT '',
+  garment_description TEXT,
+  source_file TEXT,
+  batch_id TEXT,
+  imported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "alter watson_legacy_garments garment_description",
+      sql: "ALTER TABLE watson_legacy_garments ADD COLUMN IF NOT EXISTS garment_description TEXT",
+    },
+    {
       label: "table watson_whats_new_cards",
       sql: `CREATE TABLE IF NOT EXISTS watson_whats_new_cards (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -619,11 +689,44 @@ export async function applyLegacyIndexes(
   options.onProgress?.("Index creation completed.");
 }
 
+export function getWatsonLegacyHistorySchemaStatements(): SchemaStatement[] {
+  return getWatsonNativeSchemaStatements().filter(
+    (statement) =>
+      statement.label === "table watson_legacy_customers" ||
+      statement.label.startsWith("index idx_watson_legacy_customers") ||
+      statement.label === "table watson_legacy_history" ||
+      statement.label.startsWith("index idx_watson_legacy_history"),
+  );
+}
+
+export function getWatsonLegacyGarmentsSchemaStatements(): SchemaStatement[] {
+  return getWatsonNativeSchemaStatements().filter(
+    (statement) =>
+      statement.label === "table watson_legacy_garments" ||
+      statement.label.startsWith("index idx_watson_legacy_garments") ||
+      statement.label.startsWith("alter watson_legacy_garments"),
+  );
+}
+
 export async function applyWatsonNativeSchema(
   client: { query: (sql: string) => Promise<unknown> },
   options: { onProgress?: (message: string) => void } = {},
 ): Promise<void> {
   await applySchemaStatements(client, getWatsonNativeSchemaStatements(), options.onProgress);
+}
+
+export async function applyWatsonLegacyHistorySchema(
+  client: { query: (sql: string) => Promise<unknown> },
+  options: { onProgress?: (message: string) => void } = {},
+): Promise<void> {
+  await applySchemaStatements(client, getWatsonLegacyHistorySchemaStatements(), options.onProgress);
+}
+
+export async function applyWatsonLegacyGarmentsSchema(
+  client: { query: (sql: string) => Promise<unknown> },
+  options: { onProgress?: (message: string) => void } = {},
+): Promise<void> {
+  await applySchemaStatements(client, getWatsonLegacyGarmentsSchemaStatements(), options.onProgress);
 }
 
 export async function truncateLegacyTables(

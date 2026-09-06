@@ -51,6 +51,8 @@ src/data/*.csv
 
 !/scripts/generate-public-manifests.mjs
 !/scripts/watson-import.ts
+!/scripts/watson-import-legacy-history.ts
+!/scripts/watson-import-legacy-garments.ts
 !/scripts/watson-validate-import.ts
 !/scripts/watson-generate-schema.ts
 !/scripts/watson-analyze-csv.mjs
@@ -76,6 +78,11 @@ public/challenge/
 # Legacy SQL exports (contains customer data)
 legacy-data/exports/
 legacy-data/import-errors/
+legacy-data/cleaned/
+legacy_customers_*.csv
+legacy_history*.csv
+legacy_garments*.csv
+legacy-garments.csv
 docs/launch/*.csv
 
 legacy-expiry-*.json

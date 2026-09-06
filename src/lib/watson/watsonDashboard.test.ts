@@ -117,6 +117,7 @@ describe("watsonDashboard", () => {
           builddate: "2009-08-24T01:36:27.193Z",
           customname: "My Vest",
           challengepatternname: null,
+          garment_title: null,
           fristname: "Mary",
           lastname: "Scott",
         },
@@ -132,6 +133,7 @@ describe("watsonDashboard", () => {
     expect(DASHBOARD_RECENT_SAVED_PATTERNS_SQL).toContain(
       `LIMIT ${DASHBOARD_RECENT_ACTIVITY_LIMIT}`,
     );
+    expect(DASHBOARD_RECENT_SAVED_PATTERNS_SQL).toContain("watson_legacy_garments");
     expect(activity.storeOrders).toHaveLength(1);
     expect(activity.storeOrders[0]?.memberHref).toBe(buildWatsonMemberDetailHref("MEM-1"));
     expect(activity.storeOrders[0]?.memberLabel).toBe("Sue Hall");

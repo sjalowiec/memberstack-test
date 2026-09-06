@@ -7,6 +7,9 @@ import {
 import { type WatsonQueryFn } from "./memberSearch";
 import { queryWatson } from "./db";
 
+export const FALLBACK_SAVED_PATTERN_NAME = "Legacy saved pattern";
+export const WATSON_LEGACY_GARMENTS_TABLE = "watson_legacy_garments";
+
 export interface LegacyMemberPatternDetailsRow {
   detailid: string | number;
   member_fk: string;
@@ -30,11 +33,16 @@ export interface LegacyMemberPatternDetailsRow {
   datatoggles: string | null;
   patternidlist: string | null;
   fixed: number | null;
+  garment_title?: string | null;
+  garment_description?: string | null;
 }
 
 export interface MemberSavedPatternDisplay {
   detailId: string;
-  patternName: string | null;
+  patternName: string;
+  garmentDescription: string | null;
+  garmentDescriptionPreview: string | null;
+  savedAs: string | null;
   savedDate: string | null;
   savedDateSort: string;
   patternType: string | null;
@@ -62,31 +70,35 @@ export const MEMBER_SAVED_PATTERNS_TABLE = "legacy_member_pattern_details";
 
 export const MEMBER_SAVED_PATTERNS_SQL = `
   SELECT
-    detailid,
-    member_fk,
-    garmentid_fk,
-    builddate,
-    libraryid_fk,
-    buildnotes,
-    buildid,
-    size,
-    patterntype,
-    gaugesizing,
-    challengeid_fk,
-    challengepatternname,
-    customfit,
-    customname,
-    sizingsizeid,
-    issuewithpattern,
-    issuewithpatternmarker,
-    neckshape,
-    garmentstyle,
-    datatoggles,
-    patternidlist,
-    fixed
-  FROM ${MEMBER_SAVED_PATTERNS_TABLE}
-  WHERE member_fk = $1
-  ORDER BY builddate DESC NULLS LAST, detailid DESC
+    d.detailid,
+    d.member_fk,
+    d.garmentid_fk,
+    d.builddate,
+    d.libraryid_fk,
+    d.buildnotes,
+    d.buildid,
+    d.size,
+    d.patterntype,
+    d.gaugesizing,
+    d.challengeid_fk,
+    d.challengepatternname,
+    d.customfit,
+    d.customname,
+    d.sizingsizeid,
+    d.issuewithpattern,
+    d.issuewithpatternmarker,
+    d.neckshape,
+    d.garmentstyle,
+    d.datatoggles,
+    d.patternidlist,
+    d.fixed,
+    g.garment_title,
+    g.garment_description
+  FROM ${MEMBER_SAVED_PATTERNS_TABLE} d
+  LEFT JOIN ${WATSON_LEGACY_GARMENTS_TABLE} g
+    ON g.garment_id = d.garmentid_fk
+  WHERE d.member_fk = $1
+  ORDER BY d.builddate DESC NULLS LAST, d.detailid DESC
 `;
 
 export const MEMBER_SAVED_PATTERN_COUNT_SQL = `
@@ -96,28 +108,11 @@ export const MEMBER_SAVED_PATTERN_COUNT_SQL = `
 `;
 
 export const MEMBER_SAVED_PATTERN_SORTABLE_COLUMNS = [
-  "detailId",
   "patternName",
+  "savedAs",
   "savedDate",
-  "patternType",
-  "garmentStyle",
-  "gaugeSizing",
   "size",
-  "neckShape",
-  "libraryId",
-  "garmentId",
-  "buildId",
-  "challengeId",
-  "customName",
-  "challengePatternName",
   "buildNotes",
-  "sizingSizeId",
-  "customFitFlag",
-  "issueWithPatternFlag",
-  "issueWithPatternMarkerFlag",
-  "patternIdList",
-  "fixedFlag",
-  "dataToggles",
 ] as const;
 
 function trimLegacyText(value: string | null | undefined): string | null {
@@ -128,19 +123,67 @@ function trimLegacyText(value: string | null | undefined): string | null {
 }
 
 export function buildSavedPatternName(
-  row: Pick<LegacyMemberPatternDetailsRow, "customname" | "challengepatternname">,
-): string | null {
+  row: Pick<
+    LegacyMemberPatternDetailsRow,
+    "customname" | "challengepatternname" | "garment_title"
+  >,
+): string {
+  const garmentTitle = trimLegacyText(row.garment_title);
+  if (garmentTitle) {
+    return garmentTitle;
+  }
   const customName = trimLegacyText(row.customname);
   if (customName) {
     return customName;
   }
-  return trimLegacyText(row.challengepatternname);
+  const challengePatternName = trimLegacyText(row.challengepatternname);
+  if (challengePatternName) {
+    return challengePatternName;
+  }
+  return FALLBACK_SAVED_PATTERN_NAME;
+}
+
+export function buildSavedAsName(
+  row: Pick<LegacyMemberPatternDetailsRow, "customname">,
+): string | null {
+  return trimLegacyText(row.customname);
+}
+
+export const GARMENT_DESCRIPTION_PREVIEW_LIMIT = 60;
+
+export function buildGarmentDescription(
+  row: Pick<LegacyMemberPatternDetailsRow, "garment_title" | "garment_description">,
+): string | null {
+  if (!trimLegacyText(row.garment_title)) {
+    return null;
+  }
+  return trimLegacyText(row.garment_description);
+}
+
+/** Compact Saved Patterns preview. Does not change stored garment_description. */
+export function formatGarmentDescriptionPreview(description: string | null | undefined): string | null {
+  const compact = trimLegacyText(description)?.replace(/\s+/g, " ") ?? null;
+  if (!compact) {
+    return null;
+  }
+  if (compact.length <= GARMENT_DESCRIPTION_PREVIEW_LIMIT) {
+    return compact;
+  }
+
+  const slice = compact.slice(0, GARMENT_DESCRIPTION_PREVIEW_LIMIT);
+  const lastSpace = slice.lastIndexOf(" ");
+  const clipped = (lastSpace >= 40 ? slice.slice(0, lastSpace) : slice).replace(/[.,;:]+$/, "");
+  return `${clipped}...`;
 }
 
 export function buildSavedPatternDisplay(row: LegacyMemberPatternDetailsRow): MemberSavedPatternDisplay {
+  const garmentDescription = buildGarmentDescription(row);
   return {
     detailId: String(row.detailid),
     patternName: buildSavedPatternName(row),
+    garmentDescription,
+    garmentDescriptionPreview: formatGarmentDescriptionPreview(garmentDescription),
+    savedAs: buildSavedAsName(row),
     savedDate: formatLegacyTimestampDisplay(row.builddate),
     savedDateSort: formatLegacyTimestampSort(row.builddate),
     patternType: trimLegacyText(row.patterntype),
@@ -167,58 +210,20 @@ export function buildSavedPatternDisplay(row: LegacyMemberPatternDetailsRow): Me
 
 export function getVisibleSavedPatternColumns(records: MemberSavedPatternDisplay[]): {
   showPatternName: boolean;
+  showSavedAs: boolean;
   showSavedDate: boolean;
-  showPatternType: boolean;
-  showGarmentStyle: boolean;
-  showGaugeSizing: boolean;
   showSize: boolean;
-  showNeckShape: boolean;
-  showLibraryId: boolean;
-  showGarmentId: boolean;
-  showBuildId: boolean;
-  showChallengeId: boolean;
-  showCustomName: boolean;
-  showChallengePatternName: boolean;
   showBuildNotes: boolean;
-  showSizingSizeId: boolean;
-  showCustomFitFlag: boolean;
-  showIssueWithPatternFlag: boolean;
-  showIssueWithPatternMarkerFlag: boolean;
-  showPatternIdList: boolean;
-  showFixedFlag: boolean;
-  showDataToggles: boolean;
 } {
   const hasValue = (getter: (record: MemberSavedPatternDisplay) => string | null) =>
     records.some((record) => getter(record) != null);
 
-  const showCustomName = hasValue((record) => record.customName);
-  const showChallengePatternName = hasValue((record) => record.challengePatternName);
-  const showPatternName =
-    hasValue((record) => record.patternName) &&
-    !(showCustomName && showChallengePatternName);
-
   return {
-    showPatternName,
+    showPatternName: records.length > 0,
+    showSavedAs: hasValue((record) => record.savedAs),
     showSavedDate: hasValue((record) => record.savedDate),
-    showPatternType: hasValue((record) => record.patternType),
-    showGarmentStyle: hasValue((record) => record.garmentStyle),
-    showGaugeSizing: hasValue((record) => record.gaugeSizing),
     showSize: hasValue((record) => record.size),
-    showNeckShape: hasValue((record) => record.neckShape),
-    showLibraryId: hasValue((record) => record.libraryId),
-    showGarmentId: hasValue((record) => record.garmentId),
-    showBuildId: hasValue((record) => record.buildId),
-    showChallengeId: hasValue((record) => record.challengeId),
-    showCustomName,
-    showChallengePatternName,
     showBuildNotes: hasValue((record) => record.buildNotes),
-    showSizingSizeId: hasValue((record) => record.sizingSizeId),
-    showCustomFitFlag: hasValue((record) => record.customFitFlag),
-    showIssueWithPatternFlag: hasValue((record) => record.issueWithPatternFlag),
-    showIssueWithPatternMarkerFlag: hasValue((record) => record.issueWithPatternMarkerFlag),
-    showPatternIdList: hasValue((record) => record.patternIdList),
-    showFixedFlag: hasValue((record) => record.fixedFlag),
-    showDataToggles: hasValue((record) => record.dataToggles),
   };
 }
 

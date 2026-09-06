@@ -1069,7 +1069,8 @@
 /* Customer notes expand with the page — no nested scroll containers */
 .watson-customer__notes .watson-member-notes__legacy-list,
 .watson-customer__watson-notes .watson-watson-notes,
-.watson-customer__watson-notes .watson-watson-notes__list {
+.watson-customer__watson-notes .watson-watson-notes__list,
+.watson-customer__legacy-history .watson-customer__legacy-admin-notes-text {
   max-height: none;
   overflow: visible;
   overflow-y: visible;
