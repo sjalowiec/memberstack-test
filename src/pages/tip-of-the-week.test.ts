@@ -139,6 +139,34 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain("link.external");
   });
 
+  it("shows a play indicator on Related Help videos only, using the stored Type", () => {
+    const relatedStart = pageSource.indexOf('id="totw-related-heading"');
+    const relatedEnd = pageSource.indexOf('WeeklyTipSignup variant="secondary"');
+    expect(relatedStart).toBeGreaterThan(-1);
+    expect(relatedEnd).toBeGreaterThan(relatedStart);
+    const relatedBlock = pageSource.slice(relatedStart, relatedEnd);
+
+    expect(relatedBlock).toContain('data-related-type={link.type}');
+    expect(relatedBlock).toContain('link.type === "video"');
+    expect(relatedBlock).toContain("totw-related__play");
+    expect(relatedBlock).toContain('class="totw-related__play"');
+    expect(relatedBlock).toContain('aria-hidden="true"');
+    expect(relatedBlock).toContain("{link.label}");
+    expect(relatedBlock).toContain("href={link.href}");
+    expect(relatedBlock).toContain('class="totw-related__link"');
+
+    const linkOpen = relatedBlock.indexOf('class="totw-related__link"');
+    const playIdx = relatedBlock.indexOf("totw-related__play");
+    const labelIdx = relatedBlock.indexOf("{link.label}");
+    expect(playIdx).toBeGreaterThan(linkOpen);
+    expect(labelIdx).toBeGreaterThan(playIdx);
+
+    expect(relatedBlock).not.toMatch(/href\.includes\(["']\/videos/);
+    expect(relatedBlock).not.toMatch(/href\.startsWith\(["']\/videos/);
+    expect(relatedBlock).not.toContain("link.href.includes");
+    expect(relatedBlock).not.toContain('link.type === "link"');
+  });
+
   it("only keeps real related-resource paths in seed/dev JSON", () => {
     for (const link of tipOfTheWeek.relatedLinks) {
       if (link.type === "video") {
