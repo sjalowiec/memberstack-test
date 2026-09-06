@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { MEMBERSHIP_CORNER_CTA, resolveMembershipCornerCta } from "./membershipCornerCta";
 import {
@@ -94,6 +96,33 @@ describe("resolveMembershipCornerCta (corner control contract)", () => {
   });
 });
 
+describe("unresolved / loading state", () => {
+  it("SSR markup starts hidden with no Become a Member default", () => {
+    const cornerCtaAstro = readFileSync(
+      resolve("src/components/membership/MembershipCornerCta.astro"),
+      "utf8",
+    );
+    expect(cornerCtaAstro).toMatch(
+      /<button[\s\S]*?data-membership-corner-cta[\s\S]*?\bhidden\b/,
+    );
+    expect(cornerCtaAstro).not.toMatch(
+      /<button[\s\S]*?>[\s\S]*Become a Member[\s\S]*<\/button>/,
+    );
+  });
+
+  it("init keeps the CTA hidden until the membership check resolves", () => {
+    const source = readFileSync(
+      resolve("src/lib/membership/membershipCornerControl.ts"),
+      "utf8",
+    );
+    expect(source).toContain("applyMembershipCornerCta(cta, null)");
+    expect(source).toContain("void refreshCornerCta(cta)");
+    expect(source.indexOf("applyMembershipCornerCta(cta, null)")).toBeLessThan(
+      source.indexOf("void refreshCornerCta(cta)"),
+    );
+  });
+});
+
 describe("applyMembershipCornerCta", () => {
   function fakeCta(): HTMLButtonElement {
     return {
@@ -105,6 +134,14 @@ describe("applyMembershipCornerCta", () => {
       },
     } as unknown as HTMLButtonElement;
   }
+
+  it("hides the button while membership status is unresolved", () => {
+    const cta = fakeCta();
+    applyMembershipCornerCta(cta, null);
+    expect(cta.hidden).toBe(true);
+    expect(cta.textContent).toBe("");
+    expect(cta.dataset.membershipCornerKind).toBeUndefined();
+  });
 
   it("hides the button when the viewer has member access", () => {
     const cta = fakeCta();

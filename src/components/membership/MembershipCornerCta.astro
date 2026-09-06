@@ -5,21 +5,21 @@
  * Desktop / tablet (min-width: 768px): rounded floating pill, lower-right.
  * Phone (max-width: 767.98px): hidden — sticky/full-width bar covers content/controls.
  *
- * Visual-only: pass `label`; click/navigation wired in membershipCornerControl.ts.
+ * Starts hidden until Memberstack + hasMemberAccess resolve. Click/navigation
+ * wired in membershipCornerControl.ts.
  */
 interface Props {
   label?: string;
 }
 
-const { label = "Become a Member" } = Astro.props;
+const { label = "" } = Astro.props;
 ---
 
 <button
   type="button"
   class="membership-corner-cta"
   data-membership-corner-cta
-  data-membership-corner-kind="become"
-  data-membership-corner-href="/membership"
+  hidden
 >
   {label}
 </button>

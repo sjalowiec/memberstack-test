@@ -12,9 +12,6 @@ import {
   type MembershipCornerCta,
 } from "./membershipCornerCta";
 
-/** Default label before Memberstack resolves (SSR / first paint). */
-export const MEMBERSHIP_CORNER_CTA_LABEL = MEMBERSHIP_CORNER_CTA.become.label;
-
 async function waitForMemberstackPayload(
   attempts = 30,
   delayMs = 200,
@@ -84,13 +81,13 @@ export async function performMembershipCornerAction(
 }
 
 /**
- * Bind the corner CTA: resolve smart label from Memberstack; navigate to href.
+ * Bind the corner CTA: stay hidden until Memberstack + hasMemberAccess resolve.
  */
 export function initMembershipCornerControl(): void {
   const cta = document.querySelector<HTMLButtonElement>("[data-membership-corner-cta]");
   if (!cta) return;
 
-  applyMembershipCornerCta(cta, MEMBERSHIP_CORNER_CTA.become);
+  applyMembershipCornerCta(cta, null);
 
   cta.addEventListener("click", () => {
     if (cta.disabled || cta.hidden) return;

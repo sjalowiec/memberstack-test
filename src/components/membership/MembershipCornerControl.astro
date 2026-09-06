@@ -3,13 +3,12 @@
  * Site-wide floating membership corner control.
  *
  * Presentational pill + client wiring that resolves from Memberstack.
- * Hidden when the viewer already has canonical member access.
+ * Hidden until membership access resolves; stays hidden for active members.
  */
 import MembershipCornerCta from "./MembershipCornerCta.astro";
-import { MEMBERSHIP_CORNER_CTA_LABEL } from "../../lib/membership/membershipCornerControl";
 ---
 
-<MembershipCornerCta label={MEMBERSHIP_CORNER_CTA_LABEL} />
+<MembershipCornerCta />
 
 <script>
   import { initMembershipCornerControl } from "../../lib/membership/membershipCornerControl";
