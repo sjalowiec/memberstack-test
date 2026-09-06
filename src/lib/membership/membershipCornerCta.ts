@@ -6,14 +6,12 @@
  */
 
 import {
+  hasMemberAccess,
   isActiveMemberstackPlanConnection,
   isMemberLoggedIn,
 } from "../memberAccess";
 import { memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
-import {
-  PAID_MEMBERSHIP_PLAN_IDS,
-  memberHasActivePaidMembership,
-} from "./membershipCheckoutDecision";
+import { PAID_MEMBERSHIP_PLAN_IDS } from "./membershipCheckoutDecision";
 import { isCanceledConnectionStatus } from "./membershipSummary";
 
 export type MembershipCornerCtaKind = "become" | "restart" | "manage";
@@ -89,14 +87,24 @@ export function memberHasCanceledPaidMembership(memberOrPayload: unknown): boole
   return false;
 }
 
-export function resolveMembershipCornerCta(memberOrPayload: unknown): MembershipCornerCta {
-  if (isMemberLoggedIn(memberOrPayload)) {
-    if (memberHasActivePaidMembership(memberOrPayload)) {
-      return { ...MEMBERSHIP_CORNER_CTA.manage };
-    }
-    if (MEMBERSHIP_CORNER_RESTART_ENABLED && memberHasCanceledPaidMembership(memberOrPayload)) {
-      return { ...MEMBERSHIP_CORNER_CTA.restart };
-    }
+/**
+ * Resolve the floating corner CTA from canonical member access.
+ * Returns null when the viewer already has member access — do not render the
+ * button (account navigation lives in the header).
+ */
+export function resolveMembershipCornerCta(
+  memberOrPayload: unknown,
+): MembershipCornerCta | null {
+  if (hasMemberAccess(memberOrPayload)) {
+    return null;
+  }
+
+  if (
+    MEMBERSHIP_CORNER_RESTART_ENABLED &&
+    isMemberLoggedIn(memberOrPayload) &&
+    memberHasCanceledPaidMembership(memberOrPayload)
+  ) {
+    return { ...MEMBERSHIP_CORNER_CTA.restart };
   }
 
   return { ...MEMBERSHIP_CORNER_CTA.become };

@@ -2,9 +2,8 @@
  * Behavior wiring for the floating membership corner CTA.
  *
  * Resolves label + destination from Memberstack state, then navigates to the
- * resolved href. "manage" points at /account#membership (the single membership
- * hub); the Stripe Customer Portal is launched only by the account panel's
- * Manage Billing button. Visual pill lives in MembershipCornerCta.astro.
+ * resolved href. Active members (canonical hasMemberAccess) hide the button.
+ * Visual pill lives in MembershipCornerCta.astro.
  */
 
 import {
@@ -36,7 +35,19 @@ async function waitForMemberstackPayload(
   return null;
 }
 
-function applyCornerCta(ctaEl: HTMLButtonElement, resolved: MembershipCornerCta): void {
+export function applyMembershipCornerCta(
+  ctaEl: HTMLButtonElement,
+  resolved: MembershipCornerCta | null,
+): void {
+  if (!resolved) {
+    ctaEl.hidden = true;
+    ctaEl.textContent = "";
+    delete ctaEl.dataset.membershipCornerKind;
+    delete ctaEl.dataset.membershipCornerHref;
+    return;
+  }
+
+  ctaEl.hidden = false;
   ctaEl.textContent = resolved.label;
   ctaEl.dataset.membershipCornerKind = resolved.kind;
   ctaEl.dataset.membershipCornerHref = resolved.href;
@@ -44,7 +55,7 @@ function applyCornerCta(ctaEl: HTMLButtonElement, resolved: MembershipCornerCta)
 
 async function refreshCornerCta(ctaEl: HTMLButtonElement): Promise<void> {
   const payload = await waitForMemberstackPayload();
-  applyCornerCta(ctaEl, resolveMembershipCornerCta(payload));
+  applyMembershipCornerCta(ctaEl, resolveMembershipCornerCta(payload));
 }
 
 export type MembershipCornerClickDeps = {
@@ -79,10 +90,10 @@ export function initMembershipCornerControl(): void {
   const cta = document.querySelector<HTMLButtonElement>("[data-membership-corner-cta]");
   if (!cta) return;
 
-  applyCornerCta(cta, MEMBERSHIP_CORNER_CTA.become);
+  applyMembershipCornerCta(cta, MEMBERSHIP_CORNER_CTA.become);
 
   cta.addEventListener("click", () => {
-    if (cta.disabled) return;
+    if (cta.disabled || cta.hidden) return;
 
     const kind = cta.dataset.membershipCornerKind;
     const href = cta.dataset.membershipCornerHref || MEMBERSHIP_CORNER_CTA.become.href;
@@ -97,7 +108,7 @@ export function initMembershipCornerControl(): void {
       void refreshCornerCta(cta);
     });
     ms.on("member.logout", () => {
-      applyCornerCta(cta, MEMBERSHIP_CORNER_CTA.become);
+      applyMembershipCornerCta(cta, MEMBERSHIP_CORNER_CTA.become);
     });
   }
 }
