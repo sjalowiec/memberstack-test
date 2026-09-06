@@ -214,10 +214,13 @@ describe("Socks Summary/Edit measurement chips", () => {
 
   it("does not alter Sweater or Hat chip wiring", () => {
     expect(hatSummaryPage).toContain("HAT_SUMMARY_MEASUREMENT_FIELDS");
+    expect(hatSummaryPage).toContain("PatternSummaryEditWorkspace");
     expect(hatSummaryPage).not.toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
     expect(sleevelessPattern).not.toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
     expect(dropShoulderPattern).not.toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
-    expect(sleevelessPattern).toContain("PatternSummaryEditWorkspace");
-    expect(dropShoulderPattern).toContain("PatternSummaryEditWorkspace");
+    expect(sleevelessPattern).not.toContain("PatternSummaryEditWorkspace");
+    expect(dropShoulderPattern).not.toContain("PatternSummaryEditWorkspace");
+    expect(sleevelessPattern).toContain("sl-edit-drawer--workspace");
+    expect(dropShoulderPattern).toContain("sl-edit-drawer--workspace");
   });
 });
