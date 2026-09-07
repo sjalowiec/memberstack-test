@@ -5,7 +5,6 @@ import {
   type BustDartPatternDisplayRow,
 } from "./bustDart";
 import {
-  OPTIONAL_BUST_DART_TIP_ID,
   renderBustDartCustomizationPrintHtml,
   renderBustDartCustomizationScreenHtml,
 } from "../bustDartFrontSlotHtml";
@@ -133,6 +132,71 @@ describe("insertBustDartIntoFrontBodyDisplayRows", () => {
     });
     const out = insertBustDartIntoFrontBodyDisplayRows(rows, men, helpers);
     expect(out).toEqual(rows);
+    expect(out.some((r) => r.kind === "bustDartCustomization")).toBe(false);
+  });
+
+  it("still offers the dart slot when BODY knits to a V-neck divide instead of the armhole", () => {
+    const inactive = calculateBustDart({
+      enabled: false,
+      sizeGroup: "misses",
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      frontConstruction: "pullover",
+      frontStitchCount: 100,
+      armholeOpeningGarmentRc: 140,
+      hemRows: 22,
+      bodyToArmholeRows: 118,
+    });
+    const rows: BustDartPatternDisplayRow[] = [
+      { kind: "section", title: "BODY" },
+      { kind: "block", paragraphs: ["Knit to RC 100."] },
+      { kind: "section", title: "FRONT NECKLINE & SHOULDERS" },
+    ];
+    const out = insertBustDartIntoFrontBodyDisplayRows(rows, inactive, helpers);
+    const slot = out.find((r) => r.kind === "bustDartCustomization");
+    expect(slot?.kind).toBe("bustDartCustomization");
+    if (slot?.kind === "bustDartCustomization") {
+      expect(slot.active).toBe(false);
+    }
+    const titles = out.filter((r) => r.kind === "section").map((r) => (r.kind === "section" ? r.title : ""));
+    expect(titles).toEqual(["BODY", "FRONT NECKLINE & SHOULDERS"]);
+    const slotIdx = out.findIndex((r) => r.kind === "bustDartCustomization");
+    const neckIdx = out.findIndex((r) => r.kind === "section" && r.title === "FRONT NECKLINE & SHOULDERS");
+    expect(slotIdx).toBeGreaterThan(0);
+    expect(slotIdx).toBeLessThan(neckIdx);
+  });
+
+  it("keeps a saved too-narrow cardigan dart visible with the existing warning", () => {
+    const tooNarrow = calculateBustDart({
+      enabled: true,
+      cupSize: "C",
+      sizeGroup: "misses",
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      frontConstruction: "cardigan",
+      frontStitchCount: 8,
+      armholeOpeningGarmentRc: 140,
+      hemRows: 22,
+      bodyToArmholeRows: 118,
+    });
+    expect(tooNarrow.active).toBe(false);
+    expect(tooNarrow.config.enabled).toBe(true);
+    expect(tooNarrow.errors.join(" ")).toMatch(/too narrow/i);
+
+    const rows: BustDartPatternDisplayRow[] = [
+      { kind: "section", title: "BODY" },
+      { kind: "block", paragraphs: ["Knit to RC 140."] },
+      { kind: "section", title: "ARMHOLE" },
+    ];
+    const out = insertBustDartIntoFrontBodyDisplayRows(rows, tooNarrow, helpers);
+    const slot = out.find((r) => r.kind === "bustDartCustomization");
+    expect(slot?.kind).toBe("bustDartCustomization");
+    if (slot?.kind === "bustDartCustomization") {
+      expect(slot.active).toBe(true);
+      expect(slot.cupSize).toBe("C");
+      expect(slot.instructionParagraphs).toEqual([]);
+      expect(slot.errors.join(" ")).toMatch(/too narrow/i);
+    }
   });
 });
 
@@ -156,8 +220,8 @@ describe("bustDartFrontSlotHtml print/screen", () => {
     expect(html).toMatch(/Add Bust Dart/);
     expect(html).toMatch(/data-bust-dart-pattern-open/);
     expect(html).toMatch(/no-print/);
-    expect(html).toMatch(new RegExp(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`));
-    expect(html).toMatch(/pattern-tip/);
+    expect(html).not.toMatch(/data-tip-id=/);
+    expect(html).not.toMatch(/class="[^"]*pattern-tip/);
     expect(html).toMatch(/pattern-print-personalization-never-print/);
   });
 

@@ -151,6 +151,9 @@ function shouldIncludeCenterNecklineSetupRow(
 function vNeckDivideSetupInfo(
   chart: NeckShoulderShapingChart,
 ): { left: number; right: number } | null {
+  // Cardigan fronts are already one piece. The full-width V timeline is reused for
+  // shaping math, but must not produce pullover "divide into two sides" copy.
+  if (isSleevelessCardiganFrontNeckShoulderChart(chart)) return null;
   if (!isFullWidthVNeckFrontStyleChart(chart)) return null;
   const composition = chart.frontVNeckArmholeComposition;
   if (composition) {
@@ -173,6 +176,7 @@ function shouldIncludeVNeckDivideSetupRow(
   chart: NeckShoulderShapingChart,
   options?: ActiveShoulderChecklistOptions,
 ): boolean {
+  if (isSleevelessCardiganFrontNeckShoulderChart(chart)) return false;
   return options?.includeCenterNecklineSetupRow === true && vNeckDivideSetupInfo(chart) !== null;
 }
 

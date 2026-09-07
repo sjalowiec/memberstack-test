@@ -2,9 +2,9 @@
  * Screen + print HTML for the Front Optional Bust Dart customization slot.
  * Does not own dart math — only presents generator output and controls.
  *
- * Inactive prompt participates in {@link refreshPatternTipDismiss}; Show Tips OFF→ON
- * restores individually dismissed tips via a stable `data-tip-id`. Active dart
- * instructions are never tip-dismissable.
+ * The Add/Update/Remove choice is pattern customization, not a Pattern Tip: it stays
+ * visible when Show Tips is off and is not individually dismissable. Active dart
+ * instructions are never tip-dismissable. Inactive help remains on-screen only (`no-print`).
  */
 
 import { formatBustDartPlacementDistanceLabel } from "./legoBlocks/bustDart";
@@ -19,7 +19,11 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Stable tip id for the inactive Optional Bust Dart Front prompt (Sleeveless + Drop Shoulder). */
+/**
+ * Historical Pattern Tip id for the inactive Optional Bust Dart prompt.
+ * The control is no longer a dismissable tip; keep the constant so leftover
+ * `sleeveless-show-tips-dismissed` entries do not collide with other tips.
+ */
 export const OPTIONAL_BUST_DART_TIP_ID = "optional-bust-dart-front";
 
 /** Stable scroll / focus target for the Front bust-dart slot (active or optional). */
@@ -110,10 +114,9 @@ export function renderBustDartCustomizationScreenHtml(
         <button type="button" class="sleeveless-pattern-edit-action" data-bust-dart-pattern-open data-testid="button-optional-bust-dart" aria-haspopup="dialog" aria-label="Add bust dart">Add Bust Dart</button>
       </div>`;
 
-  // Inactive prompt: standard `.pattern-tip[data-tip-id]` so Hide and Show Tips OFF→ON restore apply
-  // (help note + Watch live inside the same tip wrapper).
+  // Customer choice — not a Pattern Tip. Show Tips OFF / leftover dismissed-tip ids must not hide it.
   // `pattern-print-personalization-never-print` keeps it out of browser print; print-route HTML already omits inactive slots.
-  return `<div id="${BUST_DART_FRONT_SLOT_ID}" class="pattern-tip bust-dart-front-slot bust-dart-front-slot--optional pattern-print-personalization-never-print no-print sleeveless-pattern-row sleeveless-pattern-row--full" data-tip data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}" data-bust-dart-front-slot data-bust-dart-active="false" data-bust-dart-scroll-target="optional">
+  return `<div id="${BUST_DART_FRONT_SLOT_ID}" class="bust-dart-front-slot bust-dart-front-slot--optional pattern-print-personalization-never-print no-print sleeveless-pattern-row sleeveless-pattern-row--full" data-bust-dart-front-slot data-bust-dart-active="false" data-bust-dart-scroll-target="optional">
   <div class="sleeveless-pattern-left">
     <h4 class="bust-dart-front-slot__title">Optional Bust Dart</h4>
     ${hint}

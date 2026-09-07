@@ -317,4 +317,55 @@ describe("syncCustomBuildToPatternStorage", () => {
     expect(getPatternData().style?.patternMode).toBe("express");
     expect(getPatternData().yarnGaugeMachine?.availableNeedles).toBe("100");
   });
+
+  it("does not demote saved cardigan or drop bust darts when leftover wizard garmentType is pullover", () => {
+    const bustDart = {
+      enabled: true,
+      cupSize: "C",
+      dartWidthInches: 2.5,
+      dartDepthInches: 1.5,
+    };
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: {
+          who: "women",
+          selectedSize: "M",
+          fit: "standard",
+          neckline: "v-neck",
+          front: "closed",
+          style: "straight-pullover",
+        },
+      }),
+    );
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.bodyShape, "straight");
+    localStorage.setItem(CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType, "pullover");
+    saveCurrentPattern({
+      style: {
+        patternMode: "custom-build",
+        garmentStyle: "cardigan",
+        frontStyle: "open",
+        neckline: "v",
+        recipientCategory: "misses",
+        bustDart,
+      },
+    });
+    savePatternData("style", {
+      patternMode: "custom-build",
+      garmentStyle: "cardigan",
+      frontStyle: "open",
+      neckline: "v",
+      recipientCategory: "misses",
+      bustDart,
+    });
+
+    syncCustomBuildToPatternStorage({ awaitCharts: false });
+
+    expect(getCurrentPattern().style?.garmentStyle).toBe("cardigan");
+    expect(getCurrentPattern().style?.frontStyle).toBe("open");
+    expect(getCurrentPattern().style?.bustDart).toEqual(bustDart);
+    expect(getPatternData().style?.garmentStyle).toBe("cardigan");
+    expect(getPatternData().style?.frontStyle).toBe("open");
+    expect(getPatternData().style?.bustDart).toEqual(bustDart);
+  });
 });

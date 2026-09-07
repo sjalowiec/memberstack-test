@@ -100,6 +100,8 @@ import {
   readCustomBuildWizardNeckline,
   CUSTOM_BUILD_NECKLINE_STYLE_KEY,
 } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
+import { resolveSleevelessGarmentStyleForHandoff } from "../lib/patterns/sleevelessGarmentStyleHandoff";
+import { readExpressBuilderValues } from "../lib/patterns/sleevelessGeneratorBodyShape";
 import {
   writeSleevelessGarmentTypeLocalStorage,
   type SleevelessGarmentType,
@@ -554,13 +556,22 @@ function initSleevelessPatternEditDrawer(): void {
     populateSizeOptions(audience, typeof ft.selectedSize === "string" ? ft.selectedSize : "");
     lastQuickEditSize = sizeSelect?.value.trim() ?? "";
 
-    const garment =
-      readCustomBuildWizardGarmentType() ||
-      (st.garmentStyle === "cardigan" || st.frontStyle === "open" ? "cardigan" : "pullover");
+    // Saved/canonical cardigan wins over leftover wizard `garmentType=pullover`.
+    const garment = resolveSleevelessGarmentStyleForHandoff(
+      st,
+      section(getPatternData().style),
+      readExpressBuilderValues(),
+      readCustomBuildWizardGarmentType(),
+    ).garmentStyle;
     setRadio("sl-edit-garment", garment);
 
-    const neckline =
-      readCustomBuildWizardNeckline() || (st.neckline === "v" ? "v-neck" : "round");
+    const savedNeckline =
+      st.neckline === "v" || st.neckline === "v-neck"
+        ? "v-neck"
+        : st.neckline === "round"
+          ? "round"
+          : "";
+    const neckline = savedNeckline || readCustomBuildWizardNeckline() || "round";
     setRadio("sl-edit-neckline", neckline === "v" ? "v-neck" : neckline);
 
     if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
@@ -826,6 +837,12 @@ function initSleevelessPatternEditDrawer(): void {
       writeSleevelessGarmentTypeLocalStorage(garment);
       writeLocalStorageString(CUSTOM_BUILD_NECKLINE_STYLE_KEY, neckline);
       writeLocalStorageString("bodyShape", bodyShape);
+      // Persist the form garment before sync so leftover canonical cardigan cannot
+      // override an explicit Pullover (or vice versa) the knitter just chose.
+      const garmentStyle = garment === "cardigan" ? "cardigan" : "pullover";
+      const frontStyle = garment === "cardigan" ? "open" : "closed";
+      saveCurrentPattern({ style: { garmentStyle, frontStyle } });
+      savePatternData("style", { garmentStyle, frontStyle });
 
       // Title + notes (online project header) — reuses patternProject meta. Notes come from the
       // editable Notes textarea; fall back to any previously saved notes if the field is absent.

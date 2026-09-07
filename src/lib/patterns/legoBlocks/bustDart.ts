@@ -690,10 +690,11 @@ function pickAudienceFromPatternData(patternData: Record<string, unknown>): stri
     patternData.style && typeof patternData.style === "object" && !Array.isArray(patternData.style)
       ? (patternData.style as Record<string, unknown>)
       : {};
+  // Design `recipientCategory` wins over leftover `fit.sizingChart` (same as getSleevelessChartAudience).
   return (
+    normalizeSleevelessAudience(style.recipientCategory) ||
     normalizeSleevelessAudience(fit.sizingChart) ||
     normalizeSleevelessAudience(fit.knitFor) ||
-    normalizeSleevelessAudience(style.recipientCategory) ||
     ""
   );
 }
@@ -755,39 +756,90 @@ function canSplitFrontBodyForBustDart(result: BustDartResult): result is BustDar
 }
 
 function buildBustDartCustomizationRow(
-  result: BustDartResult & {
-    dartStartGarmentRc: number;
-    rowsFromHemToDartStart: number;
-    rowsFromDartToArmhole: number;
-  },
+  result: BustDartResult,
 ): Extract<BustDartPatternDisplayRow, { kind: "bustDartCustomization" }> {
-  const armholeOpeningGarmentRc = result.dartStartGarmentRc + result.rowsFromDartToArmhole;
+  const dartStart = result.dartStartGarmentRc ?? 0;
+  const afterDart = result.rowsFromDartToArmhole ?? 0;
+  const knittingActive = result.active === true;
+  const selected = result.config.enabled === true;
   return {
     kind: "bustDartCustomization",
-    active: result.active === true,
+    // Keep a saved/enabled dart visible when math cannot knit it (too-narrow cardigan, etc.).
+    active: knittingActive || selected,
     cupSize: result.config.cupSize,
     customized: result.shaping?.customized === true,
     dartWidthInches: result.shaping?.dartWidthInches ?? result.config.dartWidthInches,
     dartDepthInches: result.shaping?.dartDepthInches ?? result.config.dartDepthInches,
-    dartStartGarmentRc: result.dartStartGarmentRc,
-    armholeOpeningGarmentRc,
+    dartStartGarmentRc: dartStart,
+    armholeOpeningGarmentRc: dartStart + afterDart,
     placementOffsetRows: result.placementOffsetRows,
-    rowsFromHemToDartStart: result.rowsFromHemToDartStart,
-    rowsFromDartToArmhole: result.rowsFromDartToArmhole,
-    instructionParagraphs: result.active ? [...result.instructionParagraphs] : [],
+    rowsFromHemToDartStart: result.rowsFromHemToDartStart ?? 0,
+    rowsFromDartToArmhole: afterDart,
+    instructionParagraphs: knittingActive ? [...result.instructionParagraphs] : [],
     measurementDisplayUnit: result.measurementDisplayUnit,
     placementDistanceLabel: result.placementDistanceLabel,
-    errors: result.active ? [] : [...(result.errors ?? [])],
+    errors: [...(result.errors ?? [])],
   };
+}
+
+const BODY_EXIT_SECTION_TITLES = new Set([
+  "ARMHOLE",
+  "ABOVE ARMHOLE MARKERS",
+  "FRONT NECKLINE & SHOULDERS",
+  "BACK NECKLINE & SHOULDERS",
+]);
+
+/**
+ * Insert the Optional / saved dart slot at the end of BODY when knit-to-armhole
+ * copy is absent (V-neck before the armhole) or placement math cannot split rows.
+ */
+function insertBustDartSlotBeforeBodyExit<T extends BustDartPatternDisplayRow>(
+  rows: readonly T[],
+  slot: Extract<BustDartPatternDisplayRow, { kind: "bustDartCustomization" }>,
+): T[] {
+  if (rows.some((r) => r.kind === "bustDartCustomization")) {
+    return rows.map((r) => r);
+  }
+  const out: BustDartPatternDisplayRow[] = [];
+  let inBody = false;
+  let inserted = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      if (row.title === "BODY") {
+        inBody = true;
+        out.push(row);
+        continue;
+      }
+      if (inBody && !inserted) {
+        out.push(slot);
+        inserted = true;
+        inBody = false;
+      } else {
+        inBody = false;
+      }
+    }
+    out.push(row);
+  }
+  if (!inserted && inBody) {
+    out.push(slot);
+    inserted = true;
+  }
+  if (!inserted) {
+    const pieceIdx = out.findIndex((r) => r.kind === "piece");
+    if (pieceIdx >= 0) out.splice(pieceIdx + 1, 0, slot);
+    else out.unshift(slot);
+  }
+  return out as T[];
 }
 
 /**
  * Insert bust-dart instruction / optional-slot into the FRONT piece BODY section only.
  * Back / sleeve rows must not be passed through this helper.
  *
- * Eligible women’s patterns always split at the dart RC (even when no dart is selected) so the
- * Optional Bust Dart control sits at the knitting point. When placement is invalid, returns a
- * shallow copy of the input rows unchanged.
+ * Eligible women’s patterns always expose the Optional / saved dart control.
+ * When placement is valid, BODY knit-to-armhole is split at the dart RC. When V-neck
+ * starts before the armhole (BODY knits to the divide, not the armhole) or math cannot
+ * split, the slot is still inserted so the customer choice is not silently removed.
  */
 export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPatternDisplayRow>(
   rows: readonly T[],
@@ -799,15 +851,19 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
     knitRowsEvenToRcLine?: (rows: number, targetRc: number) => string;
   },
 ): T[] {
-  if (!canSplitFrontBodyForBustDart(result)) {
+  if (result.eligible !== true) {
     return rows.map((r) => r);
+  }
+
+  const dartSlot = buildBustDartCustomizationRow(result);
+  if (!canSplitFrontBodyForBustDart(result)) {
+    return insertBustDartSlotBeforeBodyExit(rows, dartSlot);
   }
 
   const dartStart = result.dartStartGarmentRc;
   const afterDart = result.rowsFromDartToArmhole;
   const toDart = result.rowsFromHemToDartStart;
   const armholeRc = dartStart + afterDart;
-  const dartSlot = buildBustDartCustomizationRow(result);
 
   const knitToDartLine =
     helpers.knitRowsToRcLine && toDart > 0
@@ -826,12 +882,7 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
     if (row.kind === "section") {
       if (row.title === "BODY") {
         inBody = true;
-      } else if (
-        row.title === "ARMHOLE" ||
-        row.title === "ABOVE ARMHOLE MARKERS" ||
-        row.title === "FRONT NECKLINE & SHOULDERS" ||
-        row.title === "BACK NECKLINE & SHOULDERS"
-      ) {
+      } else if (BODY_EXIT_SECTION_TITLES.has(row.title)) {
         inBody = false;
       }
       out.push(row);
@@ -943,9 +994,13 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
     out.push(row);
   }
 
+  const rowsWithSlot = dartInserted
+    ? out
+    : insertBustDartSlotBeforeBodyExit(out, dartSlot);
+
   if (result.active && result.cardiganRightMirrorParagraph) {
     const mirror = result.cardiganRightMirrorParagraph;
-    const already = out.some(
+    const already = rowsWithSlot.some(
       (r) =>
         r.kind === "block" &&
         Array.isArray(r.paragraphs) &&
@@ -953,13 +1008,13 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
     );
     if (!already) {
       let augmented = false;
-      for (let i = 0; i < out.length; i++) {
-        const r = out[i];
+      for (let i = 0; i < rowsWithSlot.length; i++) {
+        const r = rowsWithSlot[i];
         if (
           r.kind === "block" &&
           r.paragraphs.some((p) => /Work the RIGHT FRONT to match/i.test(p))
         ) {
-          out[i] = {
+          rowsWithSlot[i] = {
             ...r,
             paragraphs: [...r.paragraphs, mirror],
           };
@@ -968,10 +1023,10 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
         }
       }
       if (!augmented) {
-        out.push({ kind: "block", paragraphs: [mirror] });
+        rowsWithSlot.push({ kind: "block", paragraphs: [mirror] });
       }
     }
   }
 
-  return out as T[];
+  return rowsWithSlot as T[];
 }

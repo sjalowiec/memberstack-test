@@ -287,3 +287,52 @@ describe("second shoulder checklist center neckline setup row", () => {
     }
   });
 });
+
+describe("sleeveless V-neck cardigan front checklist", () => {
+  function cardiganVNeckBeforeArmholePattern(): Record<string, unknown> {
+    return {
+      fit: {
+        sizingChart: "mens",
+        selectedMeasurements: {
+          finished_bust_chest: 51,
+          back_neck_to_hem: 28,
+          armhole_depth: 9,
+          neck_opening: 6,
+          shoulder_width: 22,
+          front_neck_depth: 11,
+          back_neck_depth: 1,
+        },
+      },
+      style: {
+        recipientCategory: "mens",
+        neckline: "v-neck",
+        garmentStyle: "cardigan",
+        frontStyle: "open",
+      },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 4,
+        gaugeRowsPerInch: 7,
+        availableNeedles: 200,
+      },
+    };
+  }
+
+  it("does not insert pullover divide-at-center copy; neck decreases still remain", () => {
+    const r = generateSleevelessBackPattern(cardiganVNeckBeforeArmholePattern());
+    expect(r.frontNeckShoulderShapingChart.sleevelessCardiganFront).toBe(true);
+    const rows = buildActiveSideInstructionTableRows(
+      r.frontNeckShoulderShapingChart,
+      armholeLocalRcActiveShoulderChecklistStart(
+        r.frontNeckShoulderShapingChart,
+        r.debug.armholeStartRow,
+        BACK_CHECKLIST_OPTIONS,
+      ),
+      BACK_CHECKLIST_OPTIONS,
+    );
+    expect(rows.some(isCenterNecklineSetupChecklistRow)).toBe(false);
+    expect(rows.some((row) => /Divide at center/i.test(row.action))).toBe(false);
+    expect(
+      rows.some((row) => row.edge === "Neck" && /Decrease/i.test(row.action)),
+    ).toBe(true);
+  });
+});

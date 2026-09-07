@@ -105,7 +105,6 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
     const video = resolveBustDartHelpVideo();
     expect(video).not.toBeNull();
     const html = renderBustDartCustomizationScreenHtml(inactiveBase);
-    expect(html).toContain(OPTIONAL_BUST_DART_TIP_ID);
     expect(html).toContain(BUST_DART_INACTIVE_HELP_NOTE);
     expect(html).toContain(BUST_DART_HELP_WATCH_LABEL);
     expect(html).toContain("kbm-kin-catalog-video");
@@ -121,17 +120,16 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
     expect(kinModalSource).toContain("lastFocus.focus");
   });
 
-  it("Watch control does not add a dart; help is inside the hideable tip wrapper", () => {
+  it("Watch control does not add a dart; help stays with the Optional Bust Dart control", () => {
     const html = renderBustDartCustomizationScreenHtml(inactiveBase);
-    const tipOpen = html.indexOf(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
     const helpIdx = html.indexOf("data-bust-dart-front-help");
-    const tipCloseApprox = html.indexOf("data-bust-dart-active=\"false\"");
-    expect(tipOpen).toBeGreaterThan(-1);
-    expect(helpIdx).toBeGreaterThan(tipOpen);
-    expect(html).toContain("pattern-tip");
+    const slotOpen = html.indexOf("data-bust-dart-active=\"false\"");
+    expect(slotOpen).toBeGreaterThan(-1);
+    expect(helpIdx).toBeGreaterThan(slotOpen);
+    expect(html).not.toContain("pattern-tip");
+    expect(html).not.toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
     expect(html).toContain("pattern-print-personalization-never-print");
     expect(html).toContain("no-print");
-    void tipCloseApprox;
     // Watching uses catalog trigger only — no dart persist attributes on Watch.
     expect(html).not.toMatch(/button-bust-dart-front-help-video[^>]*(data-bust-dart-pattern-open|data-bust-dart-pattern-remove)/);
   });
@@ -217,9 +215,9 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
       expect(slot?.kind === "bustDartCustomization" && !slot.active).toBe(true);
       if (slot?.kind !== "bustDartCustomization") continue;
       const html = renderBustDartCustomizationScreenHtml(slot);
-      expect(html).toContain(OPTIONAL_BUST_DART_TIP_ID);
-      expect(html).toContain(BUST_DART_INACTIVE_HELP_NOTE);
       expect(html).toContain("Add Bust Dart");
+      expect(html).not.toContain(OPTIONAL_BUST_DART_TIP_ID);
+      expect(html).toContain(BUST_DART_INACTIVE_HELP_NOTE);
     }
   });
 
