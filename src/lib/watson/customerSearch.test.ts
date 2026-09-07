@@ -220,4 +220,54 @@ describe("customerSearch", () => {
     );
     expect(result.rows.filter((row) => row.linkStatus === "ambiguous_email")).toHaveLength(2);
   });
+
+  it("links a gmail.com search to a googlemail.com dump customer without rewriting the dump email", async () => {
+    const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
+      if (sql === MEMBER_BY_EMAIL_SQL && params?.[0] === "beckyc.callow8@googlemail.com") {
+        return [
+          {
+            memberid: "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+            fristname: "Rebecca",
+            lastname: "Callow",
+            email: "beckyc.callow8@googlemail.com",
+            address: null,
+            address2: null,
+            city: null,
+            state: null,
+            postalcode: null,
+            country: null,
+            birthdayinfo: null,
+            datejoined: "2026-01-17T00:00:00.000Z",
+            active: 0,
+            betaactive: null,
+            currentsubscriber: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await searchCustomers("beckyc.callow8@gmail.com", {
+      queryFn,
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "beckyc.callow8@gmail.com"
+            ? {
+                id: "mem_becky",
+                auth: { email: "beckyc.callow8@gmail.com" },
+                planConnections: [],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.linkStatus).toBe("linked");
+    expect(result.rows[0]?.legacyMemberid).toBe("F1A91EE9-F002-5DD0-39F2-51AE099F4FB2");
+    expect(result.rows[0]?.email).toBe("beckyc.callow8@gmail.com");
+    expect(result.rows[0]?.legacyProfileHref).toContain(
+      "/watson/customers/legacy/F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+    );
+  });
 });

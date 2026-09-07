@@ -540,5 +540,68 @@ describe("legacy history apply importer", () => {
     expect(db.customers.get("DAK-ONLY")?.first_name).toBe("KeepStub");
     expect(db.history.size).toBe(6);
   });
+
+  it("preserves historical googlemail.com purchase emails and does not duplicate on rerun", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "watson-legacy-dak-gmail-"));
+    const { customersPath, historyPath } = writeCleanApplyCsvs(dir);
+    const dakPath = writeCsv(
+      dir,
+      "legacy_dak_course_purchases_2026-08-26.csv",
+      [
+        "LegacyTransactionID,LegacyMemberID,FirstName,Lastname,Email,DatePurchased,AmountPaid,CourseID,CourseTitle",
+        "13711,F1A91EE9-F002-5DD0-39F2-51AE099F4FB2,Rebecca,Callow,beckyc.callow8@googlemail.com,2026-01-17 04:54:46.517,49.99,1,Original Pattern Drafting 101",
+        "13798,F1A91EE9-F002-5DD0-39F2-51AE099F4FB2,Rebecca,Callow,beckyc.callow8@googlemail.com,2026-03-17 05:39:35.710,49.99,2,Stitch Designer 101",
+        "5569,00217EEB-E604-4382-AB14-ED84EFF99E0A,Meg,Johnson,meggleshineart@gmail.com,2022-10-01 15:24:18.697,39.99,19,DesignaKnit and Lace ",
+        "6795,WORKSHOP,Pat,Knit,pat@example.com,2023-03-23 18:09:07.267,1.00,22,Kickstart Graphics Studio",
+        "7001,WORKSHOP,Pat,Knit,pat@example.com,2023-04-01 10:00:00.000,29.00,28,Quick Copy Punchcards",
+      ].join("\n"),
+    );
+    const db = createFakeLegacyHistoryDb();
+
+    const first = await applyWatsonLegacyHistory({
+      customersPath,
+      historyPath,
+      dakPurchasesPath: dakPath,
+      databaseUrl: "postgresql://watson@localhost:5432/watson",
+      batchId: "test-dak-gmail-1",
+      queryFn: db.query,
+    });
+    expect(first.status).toBe("completed");
+    expect(first.dryRun.dakWorkshopExcludedCount).toBe(2);
+    expect(first.dryRun.dakPermanentRowCount).toBe(3);
+    expect(db.customers.get("F1A91EE9-F002-5DD0-39F2-51AE099F4FB2")?.email).toBe(
+      "beckyc.callow8@googlemail.com",
+    );
+    expect(db.customers.get("00217EEB-E604-4382-AB14-ED84EFF99E0A")?.email).toBe(
+      "meggleshineart@gmail.com",
+    );
+    const dakRows = [...db.history.values()].filter(
+      (row) => row.category === "LearnDesignKnit Course Purchase",
+    );
+    expect(dakRows).toHaveLength(3);
+    expect(dakRows.map((row) => row.description).sort()).toEqual([
+      "DesignaKnit and Lace",
+      "Original Pattern Drafting 101",
+      "Stitch Designer 101",
+    ]);
+    expect(dakRows.some((row) => row.item_id === "22" || row.item_id === "28")).toBe(false);
+
+    const second = await applyWatsonLegacyHistory({
+      customersPath,
+      historyPath,
+      dakPurchasesPath: dakPath,
+      databaseUrl: "postgresql://watson@localhost:5432/watson",
+      batchId: "test-dak-gmail-2",
+      queryFn: db.query,
+    });
+    expect(second.status).toBe("completed");
+    expect(second.history.inserted).toBe(0);
+    expect(
+      [...db.history.values()].filter((row) => row.category === "LearnDesignKnit Course Purchase"),
+    ).toHaveLength(3);
+    expect(db.customers.get("F1A91EE9-F002-5DD0-39F2-51AE099F4FB2")?.email).toBe(
+      "beckyc.callow8@googlemail.com",
+    );
+  });
 });
 

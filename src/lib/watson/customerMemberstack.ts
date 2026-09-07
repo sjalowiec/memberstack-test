@@ -17,7 +17,7 @@ import {
 } from "../membership/membershipSummary";
 import { formatMemberDisplayName } from "./memberSearch";
 import { type LegacyMemberDetailRow } from "./memberDetail";
-import { normalizeCustomerEmail } from "./customerIdentifier";
+import { customerEmailLookupKeys } from "./customerIdentifier";
 
 export type MemberstackGetMemberClient = MemberstackListMembersClient & {
   getMember: (idOrEmail: string) => Promise<Record<string, unknown> | null>;
@@ -525,8 +525,8 @@ export async function resolveMemberstackMemberByExactEmail(
     getClient?: (secretKey: string | null) => Promise<MemberstackGetMemberClient | null>;
   },
 ): Promise<CustomerMemberstackLoadResult> {
-  const normalized = normalizeCustomerEmail(email);
-  if (!normalized) {
+  const keys = customerEmailLookupKeys(email);
+  if (keys.length === 0) {
     return {
       ok: false,
       status: "not_found",
@@ -535,26 +535,42 @@ export async function resolveMemberstackMemberByExactEmail(
     };
   }
 
-  const result = await loadCustomerMemberstackMember({
-    lookupValue: normalized,
-    secretKey: options?.secretKey,
-    getClient: options?.getClient,
-  });
+  let found: CustomerMemberstackLoadResult | null = null;
+  for (const key of keys) {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: key,
+      secretKey: options?.secretKey,
+      getClient: options?.getClient,
+    });
 
-  if (result.ok) {
-    return result;
+    if (result.ok) {
+      if (found?.ok && found.member.id !== result.member.id) {
+        return {
+          ok: false,
+          status: "not_found",
+          failureReason: "member_not_found",
+          error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+        };
+      }
+      found = result;
+      continue;
+    }
+
+    if (result.status !== "not_found") {
+      return result;
+    }
   }
 
-  if (result.status === "not_found") {
-    return {
-      ok: false,
-      status: "not_found",
-      failureReason: "member_not_found",
-      error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
-    };
+  if (found?.ok) {
+    return found;
   }
 
-  return result;
+  return {
+    ok: false,
+    status: "not_found",
+    failureReason: "member_not_found",
+    error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+  };
 }
 
 export function memberstackMemberMatchesQuery(

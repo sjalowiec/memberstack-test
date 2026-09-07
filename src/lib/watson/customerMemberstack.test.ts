@@ -496,4 +496,31 @@ describe("customerMemberstack", () => {
       error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
     });
   });
+
+  it("finds a gmail.com Memberstack member from a googlemail.com lookup", async () => {
+    const lookups: string[] = [];
+    const result = await resolveMemberstackMemberByExactEmail("beckyc.callow8@googlemail.com", {
+      getClient: async () => ({
+        getMember: async (lookup) => {
+          lookups.push(lookup);
+          return lookup === "beckyc.callow8@gmail.com"
+            ? {
+                id: "mem_becky",
+                auth: { email: "beckyc.callow8@gmail.com" },
+                planConnections: [],
+              }
+            : null;
+        },
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(lookups).toEqual(["beckyc.callow8@googlemail.com", "beckyc.callow8@gmail.com"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.member.id).toBe("mem_becky");
+    expect(result.member.auth?.email).toBe("beckyc.callow8@gmail.com");
+  });
 });

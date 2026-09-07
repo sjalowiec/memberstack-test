@@ -4,7 +4,7 @@
  * Admin-only. Never write. Never expose customer_notes outside /watson.
  */
 import { formatMembershipCalendarDateFromYmd, ymdFromDateOnlyValue } from "../membership/membershipStatusSummary";
-import { normalizeCustomerEmail } from "./customerIdentifier";
+import { customerEmailLookupKeys } from "./customerIdentifier";
 import { queryWatson } from "./db";
 import {
   isPurchasedCourseHistoryCategory,
@@ -287,15 +287,25 @@ export async function resolveCleanedLegacyLinkByEmail(
   email: string | null | undefined,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<CleanedLegacyEmailLinkResult> {
-  const normalized = normalizeCustomerEmail(email);
-  if (!normalized) {
+  const keys = customerEmailLookupKeys(email);
+  if (keys.length === 0) {
     return { status: "none" };
   }
 
-  const rows = await queryFn<WatsonCleanedLegacyCustomerRow>(
-    WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL,
-    [normalized],
-  );
+  const byMemberid = new Map<string, WatsonCleanedLegacyCustomerRow>();
+  for (const key of keys) {
+    const rows = await queryFn<WatsonCleanedLegacyCustomerRow>(
+      WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL,
+      [key],
+    );
+    for (const row of rows) {
+      if (!byMemberid.has(row.legacy_memberid)) {
+        byMemberid.set(row.legacy_memberid, row);
+      }
+    }
+  }
+
+  const rows = [...byMemberid.values()];
   if (rows.length === 0) {
     return { status: "none" };
   }
