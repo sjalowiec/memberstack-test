@@ -1,7 +1,7 @@
-/**
- * Inactive Optional Bust Dart prompt reuses patternTipDismiss (Hide ×;
- * Show Tips OFF→ON restores all dismissed tips).
- * Active dart instructions must never participate.
+﻿/**
+ * Optional Bust Dart is pattern customization, not a dismissable Pattern Tip.
+ * Show Tips OFF and leftover dismissed-tip ids must not hide Add Bust Dart.
+ * Active dart instructions are never tip-dismissable.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -15,13 +15,9 @@ import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import {
   DISMISSABLE_TIP_SELECTOR,
   TIP_WITH_ID_SELECTOR,
-  dismissedTipsStorageKey,
   dismissTipId,
-  isTipHiddenForPrint,
-  loadDismissedTipIds,
   patternTipsControlBoxHtml,
   refreshPatternTipDismiss,
-  restoreAllDismissedPatternTips,
 } from "./patternTipDismiss";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { stubLocalStorage } from "./test/stubLocalStorage";
@@ -50,7 +46,7 @@ const activeRow: BustDartCustomizationDisplayRow = {
   active: true,
   cupSize: "C",
   instructionParagraphs: [
-    "Stop the row counter at RC 133, 1″ below the armhole opening.",
+    "Stop the row counter at RC 133, 1â€³ below the armhole opening.",
     "On each side of the Front center, place 4 needles in hold.",
   ],
 };
@@ -174,7 +170,7 @@ function womenPattern(extraStyle: Record<string, unknown> = {}): Record<string, 
   };
 }
 
-describe("optional bust dart hideable tip (patternTipDismiss)", () => {
+describe("optional bust dart is not a Pattern Tip", () => {
   let prevHTMLElement: unknown;
   let prevDocument: unknown;
 
@@ -196,79 +192,16 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     vi.restoreAllMocks();
   });
 
-  it("inactive prompt is dismissable; Hide persists via dismissed tips storage", () => {
-    const html = renderBustDartCustomizationScreenHtml(inactiveRow);
-    expect(html).toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
-    expect(html).toContain("Add Bust Dart");
-
-    const tip = new FakeElement({
-      classes: [
-        "pattern-tip",
-        "bust-dart-front-slot",
-        "pattern-print-personalization-never-print",
-        "no-print",
-      ],
-    });
-    tip.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
-    tip.setAttribute("data-bust-dart-active", "false");
-
-    const scope = new FakeElement();
-    scope.appendChild(tip);
-
-    refreshPatternTipDismiss(scope as unknown as Element, KEY);
-    expect(tip.children.some((c) => c.className === "pattern-tip-dismiss")).toBe(true);
-    expect(tip.children.find((c) => c.className === "pattern-tip-dismiss")?.getAttribute("aria-label")).toBe(
-      "Hide this tip",
-    );
-
-    dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
-    refreshPatternTipDismiss(scope as unknown as Element, KEY);
-    expect(tip.getAttribute("data-tip-dismissed")).toBe("true");
-    expect([...loadDismissedTipIds(KEY)]).toEqual([OPTIONAL_BUST_DART_TIP_ID]);
-    expect(JSON.parse(localStorage.getItem(dismissedTipsStorageKey(KEY))!)).toEqual([
-      OPTIONAL_BUST_DART_TIP_ID,
-    ]);
-  });
-
-  it("Show Tips OFF→ON (restoreAllDismissedPatternTips) clears hide and re-shows the inactive prompt", () => {
-    dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
-    const tip = new FakeElement({
-      classes: ["pattern-tip", "bust-dart-front-slot", "pattern-print-personalization-never-print"],
-    });
-    tip.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
-    tip.setAttribute("data-tip-dismissed", "true");
-    const scope = new FakeElement();
-    scope.appendChild(tip);
-
-    // Simulate Show Tips OFF → ON.
+  it("inactive Add Bust Dart control is not dismissable and stays visible when Show Tips is off", () => {
     localStorage.setItem(KEY, "false");
-    localStorage.setItem(KEY, "true");
-    restoreAllDismissedPatternTips(scope as unknown as Element, KEY);
-    expect(tip.hasAttribute("data-tip-dismissed")).toBe(false);
-    expect(loadDismissedTipIds(KEY).size).toBe(0);
-  });
-
-  it("complete Optional Bust Dart prompt returns after Show Tips OFF→ON restore", () => {
+    dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
     const html = renderBustDartCustomizationScreenHtml(inactiveRow);
     expect(html).toContain("Add Bust Dart");
+    expect(html).toContain('data-testid="button-optional-bust-dart"');
+    expect(html).not.toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
+    expect(html).not.toMatch(/class="[^"]*pattern-tip/);
     expect(html).toContain(BUST_DART_INACTIVE_HELP_NOTE);
     expect(html).toContain(BUST_DART_HELP_WATCH_LABEL);
-    expect(html).toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
-    expect(html).toContain('data-testid="button-optional-bust-dart"');
-
-    dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
-    const tip = new FakeElement({
-      classes: ["pattern-tip", "bust-dart-front-slot", "pattern-print-personalization-never-print"],
-    });
-    tip.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
-    tip.setAttribute("data-tip-dismissed", "true");
-    const scope = new FakeElement();
-    scope.appendChild(tip);
-    restoreAllDismissedPatternTips(scope as unknown as Element, KEY);
-
-    // Tip DOM restored; interactive hide control is re-injected on the same wrapper.
-    expect(tip.hasAttribute("data-tip-dismissed")).toBe(false);
-    expect(tip.children.some((c) => c.className === "pattern-tip-dismiss")).toBe(true);
   });
 
   it("Show Tips control box no longer includes Restore hidden tips", () => {
@@ -295,12 +228,13 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     expect(style).toEqual(before);
   });
 
-  it("hiding the inactive prompt does not change style.bustDart", () => {
+  it("hiding leftover optional-bust-dart-front tip storage does not change style.bustDart", () => {
     const style = { [BUST_DART_STYLE_KEY]: { enabled: false, cupSize: null as string | null } };
     const before = structuredClone(style);
     dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
     expect(style).toEqual(before);
     expect(style[BUST_DART_STYLE_KEY]).toEqual({ enabled: false, cupSize: null });
+    expect(renderBustDartCustomizationScreenHtml(inactiveRow)).toContain("Add Bust Dart");
   });
 
   it("active dart instructions cannot be hidden via tip dismiss", () => {
@@ -326,15 +260,9 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     expect(printActive).toMatch(/Cup C/);
     expect(printActive).toMatch(/Stop the row counter at RC 133/);
     expect(printActive).not.toMatch(/Work the short-row bust darts/);
-
-    const tip = new FakeElement({
-      classes: ["pattern-tip", "pattern-print-personalization-never-print"],
-    });
-    tip.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
-    expect(isTipHiddenForPrint(tip as unknown as HTMLElement, true)).toBe(true);
   });
 
-  it("Sleeveless and Drop Shoulder emit the same hideable inactive tip id", () => {
+  it("Sleeveless and Drop Shoulder offer the same Add Bust Dart control", () => {
     const sleeveless = generateSleevelessBackPattern(womenPattern());
     const drop = generateDropShoulderPattern({
       ...womenPattern({
@@ -352,35 +280,27 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
       sleevelessSlot as BustDartCustomizationDisplayRow,
     );
     const dropHtml = renderBustDartCustomizationScreenHtml(dropSlot as BustDartCustomizationDisplayRow);
-    expect(sleevelessHtml).toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
-    expect(dropHtml).toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
     expect(sleevelessHtml).toContain("Add Bust Dart");
     expect(dropHtml).toContain("Add Bust Dart");
+    expect(sleevelessHtml).not.toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
+    expect(dropHtml).not.toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
   });
 
-  it("saved dismissed tip id persists across refresh like other hidden tips", () => {
+  it("leftover dismissed optional-bust-dart-front id does not hide the regenerated Add control", () => {
     dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
-    const tip = new FakeElement({
-      classes: ["pattern-tip", "bust-dart-front-slot", "pattern-print-personalization-never-print"],
+    const html = renderBustDartCustomizationScreenHtml(inactiveRow);
+    expect(html).toContain("Add Bust Dart");
+    expect(html).not.toContain("data-tip-id");
+
+    const slot = new FakeElement({
+      classes: ["bust-dart-front-slot", "bust-dart-front-slot--optional"],
     });
-    tip.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
+    slot.setAttribute("data-bust-dart-active", "false");
     const scope = new FakeElement();
-    scope.appendChild(tip);
-
-    // Simulate reopened pattern: new DOM, same localStorage dismissed list
+    scope.appendChild(slot);
     refreshPatternTipDismiss(scope as unknown as Element, KEY);
-    expect(tip.getAttribute("data-tip-dismissed")).toBe("true");
-
-    // Removing an active dart regenerates inactive HTML; prior hide preference still applies
-    const regenerated = new FakeElement({
-      classes: ["pattern-tip", "bust-dart-front-slot", "pattern-print-personalization-never-print"],
-    });
-    regenerated.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
-    regenerated.setAttribute("data-bust-dart-active", "false");
-    const scope2 = new FakeElement();
-    scope2.appendChild(regenerated);
-    refreshPatternTipDismiss(scope2 as unknown as Element, KEY);
-    expect(regenerated.getAttribute("data-tip-dismissed")).toBe("true");
+    expect(slot.hasAttribute("data-tip-dismissed")).toBe(false);
+    expect(slot.children.some((c) => c.className === "pattern-tip-dismiss")).toBe(false);
   });
 
   it("active dart HTML retains Update and Remove after hide preference exists", () => {

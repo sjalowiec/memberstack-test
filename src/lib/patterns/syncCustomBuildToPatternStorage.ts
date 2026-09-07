@@ -64,6 +64,7 @@ import {
   overrideRecordsEqual,
   sectionPatchWouldChange,
 } from "./patternSectionPatch";
+import { resolveSleevelessGarmentStyleForHandoff } from "./sleevelessGarmentStyleHandoff";
 
 export { CUSTOM_BUILD_STYLE_STORAGE_KEYS };
 
@@ -103,16 +104,6 @@ function readStyleStepValue(key: string, allowed: Set<string>, fallback: string)
     /* ignore */
   }
   return fallback;
-}
-
-function resolveGarmentFromType(garmentType: string): {
-  frontStyle: "open" | "closed";
-  garmentStyle: "pullover" | "cardigan";
-} {
-  if (garmentType === "cardigan") {
-    return { frontStyle: "open", garmentStyle: "cardigan" };
-  }
-  return { frontStyle: "closed", garmentStyle: "pullover" };
 }
 
 function resolveBodyShape(raw: string): string {
@@ -201,20 +192,18 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     const bodyShapeRaw = ev.style?.trim()
       ? resolveBodyShape(mapExpressStyleKey(ev.style.trim()).bodyShape)
       : resolveBodyShape(bodyShapeFromStyleStep);
-    let garmentType = readStyleStepValue(
+    const wizardGarmentType = readStyleStepValue(
       CUSTOM_BUILD_STYLE_STORAGE_KEYS.garmentType,
       new Set(["pullover", "cardigan"]),
-      "pullover",
+      "",
     );
-    const expressStyleKey = ev.style?.trim().toLowerCase() ?? "";
-    const expressFront = ev.front?.trim().toLowerCase() ?? "";
-    if (
-      garmentType === "pullover" &&
-      (expressFront === "open" || expressStyleKey.includes("cardigan"))
-    ) {
-      garmentType = "cardigan";
-    }
-    const garment = resolveGarmentFromType(garmentType);
+    // Canonical/saved cardigan wins over leftover wizard `garmentType=pullover`.
+    const garment = resolveSleevelessGarmentStyleForHandoff(
+      section(getCurrentPattern().style),
+      section(getPatternData().style),
+      ev,
+      wizardGarmentType,
+    );
     const fit = ev.fit === "close" || ev.fit === "standard" || ev.fit === "relaxed" ? ev.fit : "standard";
     const aud = ev.who ? expressWhoToChartAudience(ev.who) : "";
     const size = nonEmptyTrimmed(ev.selectedSize) ? ev.selectedSize!.trim() : "";
@@ -297,6 +286,8 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
 
     const bodyShape = resolveBodyShape(bodyShapeRaw);
     const neckCanon = neckline ? mapExpressNecklineToStorage(neckline) : undefined;
+    const canonStyle = section(getCurrentPattern().style);
+    const pbStyle = section(getPatternData().style);
     const stylePatch: Record<string, unknown> = {
       bodyShape,
       length: "top",
@@ -307,9 +298,8 @@ export function syncCustomBuildToPatternStorage(options: SyncCustomBuildOptions 
     };
     if (neckCanon) stylePatch.neckline = neckCanon;
     if (aud) stylePatch.recipientCategory = aud;
-
-    const canonStyle = section(getCurrentPattern().style);
-    const pbStyle = section(getPatternData().style);
+    const existingBustDart = canonStyle.bustDart ?? pbStyle.bustDart;
+    if (existingBustDart !== undefined) stylePatch.bustDart = existingBustDart;
     if (sectionPatchWouldChange(canonStyle, stylePatch)) {
       saveCurrentPattern({ style: stylePatch });
     }

@@ -122,7 +122,13 @@ function section(obj: unknown): Record<string, unknown> {
 function pickAudience(patternData: Record<string, unknown>): string {
   const fit = section(patternData.fit);
   const style = section(patternData.style);
-  return String(fit.sizingChart ?? fit.knitFor ?? style.recipientCategory ?? "").trim();
+  // Same order as {@link getSleevelessChartAudience}: design choice wins over stale sizingChart.
+  return (
+    normalizeSleevelessAudience(style.recipientCategory) ||
+    normalizeSleevelessAudience(fit.sizingChart) ||
+    normalizeSleevelessAudience(fit.knitFor) ||
+    ""
+  );
 }
 
 function isCardiganStyle(style: Record<string, unknown>): boolean {

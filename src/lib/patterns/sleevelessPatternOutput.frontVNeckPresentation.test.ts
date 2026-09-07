@@ -988,8 +988,8 @@ describe("sleeveless cardigan Front V-neck row-counter timing", () => {
       const first = firstShoulderRows(r);
       expect(first.some((row) => row.rowCounterReset === true)).toBe(false);
       expect(first.filter((row) => row.rc === 0)).toHaveLength(0);
-      const setup = first.find((row) => /Divide at center/i.test(row.action));
-      expect(setup?.rc).toBe(overlap.divideGarmentRc);
+      expect(first.some((row) => /Divide at center/i.test(row.action))).toBe(false);
+      expect(first.some(isCenterNecklineSetupChecklistRow)).toBe(false);
       const firstNeck = first.find((row) => row.edge === "Neck" && /Decrease/i.test(row.action));
       expect(firstNeck?.rc).toBeGreaterThanOrEqual(overlap.divideGarmentRc);
       expect(firstNeck?.rc).toBeLessThan(armholeStart);
@@ -1028,6 +1028,7 @@ describe("sleeveless cardigan Front V-neck row-counter timing", () => {
         paras.some((p) => /Front neckline \(V-neck\) shaping begins at Armhole RC/i.test(p)),
       ).toBe(true);
       const first = firstShoulderRows(r);
+      expect(first.some((row) => /Divide at center/i.test(row.action))).toBe(false);
       const neck = first.find((row) => row.edge === "Neck" && /Decrease|Bind off/i.test(row.action));
       expect(neck).toBeDefined();
       expect(neck!.rc).toBeLessThan(armholeStart);

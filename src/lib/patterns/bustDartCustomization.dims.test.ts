@@ -469,7 +469,8 @@ describe("bust dart custom width/depth", () => {
       instructionParagraphs: [],
       customized: false,
     });
-    expect(inactive).toContain(OPTIONAL_BUST_DART_TIP_ID);
+    expect(inactive).toContain("Add Bust Dart");
+    expect(inactive).not.toContain(OPTIONAL_BUST_DART_TIP_ID);
     expect(renderBustDartCustomizationPrintHtml({ ...slot, active: false, instructionParagraphs: [] })).toBe(
       "",
     );
@@ -480,7 +481,7 @@ describe("bust dart custom width/depth", () => {
     expect(continueToArmhole.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("inactive hideable tip id remains unchanged", () => {
+  it("inactive Optional Bust Dart control is not a Pattern Tip", () => {
     expect(OPTIONAL_BUST_DART_TIP_ID).toBe("optional-bust-dart-front");
     const html = renderBustDartCustomizationScreenHtml({
       kind: "bustDartCustomization",
@@ -494,7 +495,7 @@ describe("bust dart custom width/depth", () => {
       instructionParagraphs: [],
       errors: [],
     });
-    expect(html).toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
+    expect(html).not.toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
     expect(html).toContain("Add Bust Dart");
   });
 });
