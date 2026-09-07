@@ -7,6 +7,7 @@ import { formatMembershipCalendarDateFromYmd, ymdFromDateOnlyValue } from "../me
 import { normalizeCustomerEmail } from "./customerIdentifier";
 import { queryWatson } from "./db";
 import {
+  isPurchasedCourseHistoryCategory,
   isWatsonLegacyHistoryCategory,
   type WatsonLegacyHistoryCategory,
 } from "./legacyHistoryTypes";
@@ -175,7 +176,7 @@ export function groupCleanedLegacyHistoryRecords(
 > {
   return {
     memberships: records.filter((record) => record.category === "Membership"),
-    coursePurchases: records.filter((record) => record.category === "Course Purchase"),
+    coursePurchases: records.filter((record) => isPurchasedCourseHistoryCategory(record.category)),
     patternPurchases: records.filter((record) => record.category === "Pattern Purchase"),
     lk150Bundles: records.filter((record) => record.category === "LK150 Bundle"),
   };

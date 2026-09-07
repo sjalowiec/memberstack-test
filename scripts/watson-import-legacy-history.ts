@@ -44,15 +44,20 @@ async function main(): Promise<number> {
   const historyPath = path.resolve(
     readArg("history") ?? path.join(cleanedDir, "legacy_history_final_V3_2026-08-26.csv"),
   );
+  const dakPurchasesPath = path.resolve(
+    readArg("dak") ?? path.join(cleanedDir, "legacy_dak_course_purchases_2026-08-26.csv"),
+  );
 
   if (!hasFlag("apply")) {
     console.log("[watson:import-legacy-history] DRY RUN — no database connection, no writes.");
     console.log(`[watson:import-legacy-history] Customers: ${customersPath}`);
     console.log(`[watson:import-legacy-history] History: ${historyPath}`);
+    console.log(`[watson:import-legacy-history] DAK purchases: ${dakPurchasesPath}`);
 
     const report = dryRunWatsonLegacyHistory({
       customersPath,
       historyPath,
+      dakPurchasesPath,
     });
     console.log(formatWatsonLegacyHistoryDryRunReport(report));
     return report.rejectedRowCount > 0 ? 1 : 0;
@@ -67,10 +72,12 @@ async function main(): Promise<number> {
   console.log("[watson:import-legacy-history] Does not truncate or write legacy_* dump tables.");
   console.log(`[watson:import-legacy-history] Customers: ${customersPath}`);
   console.log(`[watson:import-legacy-history] History: ${historyPath}`);
+  console.log(`[watson:import-legacy-history] DAK purchases: ${dakPurchasesPath}`);
 
   const report = await applyWatsonLegacyHistory({
     customersPath,
     historyPath,
+    dakPurchasesPath,
     databaseUrl,
     onProgress: (message) => {
       console.log(`[watson:import-legacy-history] ${message}`);

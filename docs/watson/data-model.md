@@ -78,7 +78,7 @@ The following are **not** legacy exports; they are created in Watson and stored 
 | Concept | Description |
 |---|---|
 | **Support notes** | New notes added by support staff in Watson; editable, with audit metadata |
-| **Cleaned legacy customers/history** | Watson-native `watson_legacy_customers` / `watson_legacy_history` from verified CSVs. Upserted only by `npm run watson:import-legacy-history -- --apply`. **Not** part of the `legacy_*` dump truncate/import. `customer_notes` is admin-only. See [importer.md](./importer.md). |
+| **Cleaned legacy customers/history** | Watson-native `watson_legacy_customers` / `watson_legacy_history` from verified CSVs. Upserted only by `npm run watson:import-legacy-history -- --apply`. LearnDesignKnit permanent course purchases use category `LearnDesignKnit Course Purchase` (workshops excluded). **Not** part of the `legacy_*` dump truncate/import. `customer_notes` is admin-only. See [importer.md](./importer.md). |
 | **Cleaned legacy garments** | Watson-native `watson_legacy_garments` slim GarmentID / GarmentTitle / GarmentDescription lookup. Upserted only by `npm run watson:import-legacy-garments -- --apply`. Descriptions are cleaned to plain text. Used by Saved Patterns as Pattern name and compact Description. See [importer.md](./importer.md). |
 | **Store fulfillments** | Internal shipping-cost / supplier-invoice records for drop-shipped machines and related products (`watson_store_fulfillments`). See [store-fulfillment.md](./store-fulfillment.md). |
 | **(Future) Timeline entries** | May combine imported legacy events with support notes for a unified member chronology |

@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { WATSON_DB_STATEMENT_TIMEOUT_MS } from "./env";
+import { watsonLegacyHistoryCategoryCheckSql } from "./legacyHistoryTypes";
 import { LEGACY_TABLE_DEFINITIONS } from "./tableDefinitions";
 import type { LegacyTableDef, PgColumnType } from "./types";
 
@@ -323,7 +324,7 @@ WHERE outcome = 'tagged' AND dry_run = FALSE`,
   identity_key TEXT NOT NULL UNIQUE,
   legacy_memberid TEXT NOT NULL REFERENCES watson_legacy_customers (legacy_memberid),
   category TEXT NOT NULL
-    CHECK (category IN ('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle')),
+    ${watsonLegacyHistoryCategoryCheckSql()},
   transaction_date DATE,
   description TEXT NOT NULL DEFAULT '',
   amount NUMERIC(12, 4),
@@ -344,6 +345,13 @@ WHERE outcome = 'tagged' AND dry_run = FALSE`,
     {
       label: "index idx_watson_legacy_history_category",
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_legacy_history_category ON watson_legacy_history (category)",
+    },
+    {
+      label: "alter watson_legacy_history category check",
+      sql: `ALTER TABLE watson_legacy_history
+  DROP CONSTRAINT IF EXISTS watson_legacy_history_category_check,
+  ADD CONSTRAINT watson_legacy_history_category_check
+    ${watsonLegacyHistoryCategoryCheckSql()}`,
     },
     {
       label: "table watson_legacy_garments",
@@ -695,7 +703,8 @@ export function getWatsonLegacyHistorySchemaStatements(): SchemaStatement[] {
       statement.label === "table watson_legacy_customers" ||
       statement.label.startsWith("index idx_watson_legacy_customers") ||
       statement.label === "table watson_legacy_history" ||
-      statement.label.startsWith("index idx_watson_legacy_history"),
+      statement.label.startsWith("index idx_watson_legacy_history") ||
+      statement.label.startsWith("alter watson_legacy_history"),
   );
 }
 

@@ -95,6 +95,38 @@ describe("cleaned legacy history store", () => {
     expect(hasVisibleCleanedLegacyHistory(view)).toBe(true);
   });
 
+  it("shows LearnDesignKnit purchases under Purchased Courses without exposing internal ids", () => {
+    const view = buildCleanedLegacyHistoryView({
+      legacyMemberid: "M-dak",
+      rows: [
+        {
+          category: "Course Purchase",
+          transaction_date: "2018-06-15",
+          description: "Machine Knitting 101",
+          amount: "49.00",
+          expiration_date: null,
+          processor: null,
+        },
+        {
+          category: "LearnDesignKnit Course Purchase",
+          transaction_date: "2021-12-06",
+          description: "Original Pattern Drafting 101",
+          amount: "49.99",
+          expiration_date: null,
+          processor: null,
+        },
+      ],
+    });
+
+    expect(view.coursePurchases).toHaveLength(2);
+    expect(view.coursePurchases.map((row) => row.description)).toEqual([
+      "Machine Knitting 101",
+      "Original Pattern Drafting 101",
+    ]);
+    expect(view.memberships).toHaveLength(0);
+    expect(JSON.stringify(view.coursePurchases)).not.toMatch(/identity_key|source_record_id|item_id|transaction_id|pln_/);
+  });
+
   it("shows memberships only when that is the only category", () => {
     const view = buildCleanedLegacyHistoryView({
       legacyMemberid: "M-memberships",

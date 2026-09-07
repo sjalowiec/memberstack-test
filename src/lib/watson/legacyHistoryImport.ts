@@ -3,6 +3,7 @@
  * Default mode is dry-run (no Postgres writes). Writes require explicit --apply.
  * Never truncates or writes legacy_* dump tables.
  */
+import fs from "node:fs";
 import path from "node:path";
 
 import { readCsvFile } from "./csvReader";
@@ -14,6 +15,9 @@ import {
   HISTORY_IDENTITY_CANDIDATES,
   HISTORY_IDENTITY_FALLBACK,
   HISTORY_IDENTITY_APPLY,
+  DAK_HISTORY_SOURCE_PREFIX,
+  DAK_WORKSHOP_COURSE_IDS,
+  LEARN_DESIGNAKNIT_COURSE_PURCHASE_CATEGORY,
   isWatsonLegacyHistoryCategory,
   type HistoryIdentityCandidateReport,
   type WatsonLegacyHistoryApplyReport,
@@ -97,6 +101,7 @@ type PreparedHistoryRow = {
 type PreparedLegacyHistoryImport = {
   dryRun: WatsonLegacyHistoryDryRunReport;
   customers: PreparedCustomerRow[];
+  dakCustomers: PreparedCustomerRow[];
   history: PreparedHistoryRow[];
   skippedCustomers: number;
   skippedHistory: number;
@@ -121,6 +126,19 @@ export function cell(row: Record<string, string>, header: string): string {
 
 export function trimmed(row: Record<string, string>, header: string): string {
   return cell(row, header).trim();
+}
+
+export function displayCell(row: Record<string, string>, header: string): string {
+  const value = cell(row, header);
+  return isNullLiteral(value) ? "" : value;
+}
+
+export function isDakWorkshopCourseId(courseId: string): boolean {
+  return (DAK_WORKSHOP_COURSE_IDS as readonly string[]).includes(courseId.trim());
+}
+
+export function dakHistorySourceRecordId(transactionId: string): string {
+  return `${DAK_HISTORY_SOURCE_PREFIX}:${transactionId}`;
 }
 
 export function parseOptionalDate(
@@ -245,6 +263,7 @@ function applyAbortReason(report: WatsonLegacyHistoryDryRunReport): string | nul
 export function prepareWatsonLegacyHistoryImport(options: {
   customersPath: string;
   historyPath: string;
+  dakPurchasesPath?: string;
 }): PreparedLegacyHistoryImport {
   const customersCsv = readCsvFile(options.customersPath);
   const historyCsv = readCsvFile(options.historyPath);
@@ -342,6 +361,7 @@ export function prepareWatsonLegacyHistoryImport(options: {
   const orphans: Array<{ lineNumber: number; legacyMemberId: string }> = [];
   const seenHistoryKeys = new Set<string>();
   const history: PreparedHistoryRow[] = [];
+  const dakCustomers: PreparedCustomerRow[] = [];
   let skippedHistory = 0;
 
   historyCsv.rows.forEach((row, index) => {
@@ -452,6 +472,168 @@ export function prepareWatsonLegacyHistoryImport(options: {
     }
   });
 
+  let dakPurchasesFile: string | null = null;
+  let dakSourceRowCount = 0;
+  let dakWorkshopExcludedCount = 0;
+  let dakPermanentRowCount = 0;
+  let dakStubCustomerCount = 0;
+
+  if (options.dakPurchasesPath) {
+    const dakPath = path.resolve(options.dakPurchasesPath);
+    if (!fs.existsSync(dakPath)) {
+      throw new Error(`DAK purchases CSV not found: ${dakPath}`);
+    }
+    dakPurchasesFile = dakPath;
+    const dakCsv = readCsvFile(dakPath);
+    const dakSourceFile = path.basename(dakPath);
+    dakSourceRowCount = dakCsv.rows.length;
+    for (const row of dakCsv.rejectedRows) {
+      rejectedRows.push({
+        file: "history",
+        lineNumber: row.lineNumber,
+        reason: `DAK CSV parse: ${row.reason}`,
+        raw: row.raw,
+      });
+    }
+
+    const dakTransactionIds = new Map<string, number>();
+
+    dakCsv.rows.forEach((row, index) => {
+      const lineNumber = index + 2;
+      const courseId = trimmed(row, "CourseID");
+      if (isDakWorkshopCourseId(courseId)) {
+        dakWorkshopExcludedCount += 1;
+        return;
+      }
+
+      const legacyMemberId = trimmed(row, "LegacyMemberID");
+      const transactionId = trimmed(row, "LegacyTransactionID");
+      const title = displayCell(row, "CourseTitle");
+      let rowOk = true;
+
+      if (!legacyMemberId) {
+        rowOk = false;
+        rejectedRows.push({
+          file: "history",
+          lineNumber,
+          reason: "DAK LegacyMemberID is required",
+          raw: JSON.stringify(row),
+        });
+      }
+      if (!transactionId) {
+        rowOk = false;
+        rejectedRows.push({
+          file: "history",
+          lineNumber,
+          reason: "DAK LegacyTransactionID is required",
+          raw: JSON.stringify(row),
+        });
+      }
+      if (!courseId) {
+        rowOk = false;
+        rejectedRows.push({
+          file: "history",
+          lineNumber,
+          reason: "DAK CourseID is required",
+          raw: JSON.stringify(row),
+        });
+      }
+
+      if (transactionId) {
+        dakTransactionIds.set(transactionId, (dakTransactionIds.get(transactionId) ?? 0) + 1);
+      }
+
+      const purchased = parseOptionalDate(cell(row, "DatePurchased"), "DatePurchased");
+      if (!purchased.ok) {
+        rowOk = false;
+        malformedDateCount += 1;
+        rejectedRows.push({
+          file: "history",
+          lineNumber,
+          reason: `DAK ${purchased.reason}`,
+          raw: JSON.stringify(row),
+        });
+      }
+
+      const amount = parseOptionalAmount(cell(row, "AmountPaid"));
+      if (!amount.ok) {
+        rowOk = false;
+        malformedAmountCount += 1;
+        rejectedRows.push({
+          file: "history",
+          lineNumber,
+          reason: `DAK ${amount.reason}`,
+          raw: JSON.stringify(row),
+        });
+      }
+
+      if (!rowOk || !legacyMemberId || !transactionId || !courseId || !purchased.ok || !amount.ok) {
+        return;
+      }
+
+      dakPermanentRowCount += 1;
+      categoryValues.push(LEARN_DESIGNAKNIT_COURSE_PURCHASE_CATEGORY);
+
+      if (!seenCustomerIds.has(legacyMemberId)) {
+        seenCustomerIds.add(legacyMemberId);
+        validCustomerIds.add(legacyMemberId);
+        customerIds.set(legacyMemberId, (customerIds.get(legacyMemberId) ?? 0) + 1);
+        dakStubCustomerCount += 1;
+        dakCustomers.push({
+          legacy_memberid: legacyMemberId,
+          first_name: displayCell(row, "FirstName"),
+          last_name: displayCell(row, "Lastname"),
+          email: displayCell(row, "Email"),
+          date_joined: null,
+          customer_notes: "",
+          source_file: dakSourceFile,
+          lineNumber,
+        });
+      }
+
+      const sourceRecordId = dakHistorySourceRecordId(transactionId);
+      const applyKey = identityKeyForRow(
+        {
+          LegacyMemberID: legacyMemberId,
+          SourceRecordID: sourceRecordId,
+          TransactionID: transactionId,
+        },
+        HISTORY_IDENTITY_APPLY.fields,
+      );
+      if (seenHistoryKeys.has(applyKey)) {
+        skippedHistory += 1;
+        return;
+      }
+      seenHistoryKeys.add(applyKey);
+      history.push({
+        identity_key: applyKey,
+        legacy_memberid: legacyMemberId,
+        category: LEARN_DESIGNAKNIT_COURSE_PURCHASE_CATEGORY,
+        transaction_date: purchased.value,
+        description: title,
+        amount: amount.value,
+        expiration_date: null,
+        processor: "",
+        source_record_id: sourceRecordId,
+        item_id: courseId,
+        transaction_id: transactionId,
+        source_file: dakSourceFile,
+        lineNumber,
+      });
+    });
+
+    for (const [transactionId, count] of dakTransactionIds.entries()) {
+      if (count > 1) {
+        rejectedRows.push({
+          file: "history",
+          lineNumber: 0,
+          reason: `Duplicate DAK LegacyTransactionID ${transactionId} (${count})`,
+          raw: transactionId,
+        });
+      }
+    }
+  }
+
   const duplicateCustomerLegacyMemberIds = [...customerIds.entries()]
     .filter(([, count]) => count > 1)
     .map(([legacyMemberId, count]) => ({ legacyMemberId, count }))
@@ -477,9 +659,14 @@ export function prepareWatsonLegacyHistoryImport(options: {
       mode: "dry-run",
       customersFile,
       historyFile,
+      dakPurchasesFile,
       customerRowCount: customersCsv.rows.length,
       uniqueLegacyMemberIdCount: customerIds.size,
       historyRowCount: historyCsv.rows.length,
+      dakSourceRowCount,
+      dakWorkshopExcludedCount,
+      dakPermanentRowCount,
+      dakStubCustomerCount,
       countsByCategory: countBy(categoryValues),
       orphanHistoryCount: orphans.length,
       orphanHistorySample: orphans.slice(0, SAMPLE_LIMIT),
@@ -503,6 +690,7 @@ export function prepareWatsonLegacyHistoryImport(options: {
       parseRejectedHistoryCount: historyCsv.rejectedRows.length,
     },
     customers,
+    dakCustomers,
     history,
     skippedCustomers,
     skippedHistory,
@@ -512,6 +700,7 @@ export function prepareWatsonLegacyHistoryImport(options: {
 export function dryRunWatsonLegacyHistory(options: {
   customersPath: string;
   historyPath: string;
+  dakPurchasesPath?: string;
 }): WatsonLegacyHistoryDryRunReport {
   return prepareWatsonLegacyHistoryImport(options).dryRun;
 }
@@ -523,14 +712,19 @@ export function formatWatsonLegacyHistoryDryRunReport(
     "Watson cleaned legacy history import — DRY RUN (no database writes)",
     `Customers file: ${report.customersFile}`,
     `History file: ${report.historyFile}`,
+    `DAK purchases file: ${report.dakPurchasesFile ?? "(none)"}`,
     "",
     `Customer rows: ${report.customerRowCount}`,
     `Unique LegacyMemberID count: ${report.uniqueLegacyMemberIdCount}`,
+    `DAK-only customer stubs (insert if missing; never overwrite existing customers): ${report.dakStubCustomerCount}`,
     `Duplicate customer LegacyMemberIDs: ${report.duplicateCustomerLegacyMemberIds.length}`,
     `Blank customer emails: ${report.blankCustomerEmailCount}`,
     `Duplicate customer emails: ${report.duplicateCustomerEmails.length}`,
     "",
     `History rows: ${report.historyRowCount}`,
+    `DAK source rows: ${report.dakSourceRowCount}`,
+    `DAK workshop rows excluded (CourseID 22 and 28): ${report.dakWorkshopExcludedCount}`,
+    `DAK permanent course rows: ${report.dakPermanentRowCount}`,
     "Counts by Category:",
     ...Object.entries(report.countsByCategory)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -619,6 +813,7 @@ export function formatWatsonLegacyHistoryApplyReport(
     `Batch: ${report.batchId}`,
     `Customers file: ${report.customersFile}`,
     `History file: ${report.historyFile}`,
+    `DAK purchases file: ${report.dakPurchasesFile ?? "(none)"}`,
     `Apply identity key: ${HISTORY_IDENTITY_APPLY.name}`,
     "",
     ...formatWriteCounts("Customers (watson_legacy_customers)", report.customers),
@@ -675,6 +870,37 @@ function countUpsertResult(rows: Array<Record<string, unknown>>): {
     }
   }
   return { inserted, updated };
+}
+
+function buildInsertIgnoreSql(
+  table: string,
+  insertColumns: readonly string[],
+  conflictColumn: string,
+  rowCount: number,
+): string {
+  const insert = buildMultiRowInsertSql(table, [...insertColumns], rowCount);
+  return `${insert} ON CONFLICT (${quoteIdent(conflictColumn)}) DO NOTHING RETURNING true AS inserted`;
+}
+
+async function insertIgnoreBatches(
+  query: LegacyHistoryQueryFn,
+  table: string,
+  insertColumns: readonly string[],
+  conflictColumn: string,
+  rows: Array<Record<string, unknown>>,
+  onProgress?: (message: string) => void,
+): Promise<{ inserted: number; skipped: number }> {
+  let inserted = 0;
+  for (let index = 0; index < rows.length; index += UPSERT_BATCH_SIZE) {
+    const batch = rows.slice(index, index + UPSERT_BATCH_SIZE);
+    const sql = buildInsertIgnoreSql(table, insertColumns, conflictColumn, batch.length);
+    const result = await query(sql, flattenRowParams(batch, insertColumns));
+    inserted += result.rows.length;
+    onProgress?.(
+      `${table}: inserted missing ${Math.min(index + batch.length, rows.length)} / ${rows.length}`,
+    );
+  }
+  return { inserted, skipped: rows.length - inserted };
 }
 
 async function upsertBatches(
@@ -754,6 +980,7 @@ async function withLegacyHistoryClient<T>(
 export async function applyWatsonLegacyHistory(options: {
   customersPath: string;
   historyPath: string;
+  dakPurchasesPath?: string;
   databaseUrl: string;
   batchId?: string;
   queryFn?: LegacyHistoryQueryFn;
@@ -762,6 +989,7 @@ export async function applyWatsonLegacyHistory(options: {
   const prepared = prepareWatsonLegacyHistoryImport({
     customersPath: options.customersPath,
     historyPath: options.historyPath,
+    dakPurchasesPath: options.dakPurchasesPath,
   });
   const batchId = options.batchId ?? defaultBatchId(options.customersPath);
   const databaseTarget = formatDatabaseTarget(options.databaseUrl);
@@ -772,6 +1000,7 @@ export async function applyWatsonLegacyHistory(options: {
     databaseTarget,
     customersFile: prepared.dryRun.customersFile,
     historyFile: prepared.dryRun.historyFile,
+    dakPurchasesFile: prepared.dryRun.dakPurchasesFile,
     batchId,
     dryRun: prepared.dryRun,
   };
@@ -787,6 +1016,10 @@ export async function applyWatsonLegacyHistory(options: {
   }
 
   const customerValues = prepared.customers.map((row) => ({
+    ...row,
+    batch_id: batchId,
+  }));
+  const dakCustomerValues = prepared.dakCustomers.map((row) => ({
     ...row,
     batch_id: batchId,
   }));
@@ -812,6 +1045,17 @@ export async function applyWatsonLegacyHistory(options: {
           customerValues,
           options.onProgress,
         );
+        const dakCustomerWrites =
+          dakCustomerValues.length > 0
+            ? await insertIgnoreBatches(
+                query,
+                "watson_legacy_customers",
+                CUSTOMER_INSERT_COLUMNS,
+                "legacy_memberid",
+                dakCustomerValues,
+                options.onProgress,
+              )
+            : { inserted: 0, skipped: 0 };
         const historyWrites = await upsertBatches(
           query,
           "watson_legacy_history",
@@ -827,13 +1071,14 @@ export async function applyWatsonLegacyHistory(options: {
           status: "completed" as const,
           customers: {
             csvRowCount: prepared.dryRun.customerRowCount,
-            inserted: customerWrites.inserted,
+            inserted: customerWrites.inserted + dakCustomerWrites.inserted,
             updated: customerWrites.updated,
-            upserted: customerWrites.inserted + customerWrites.updated,
-            skipped: prepared.skippedCustomers,
+            upserted:
+              customerWrites.inserted + customerWrites.updated + dakCustomerWrites.inserted,
+            skipped: prepared.skippedCustomers + dakCustomerWrites.skipped,
           },
           history: {
-            csvRowCount: prepared.dryRun.historyRowCount,
+            csvRowCount: prepared.dryRun.historyRowCount + prepared.dryRun.dakPermanentRowCount,
             inserted: historyWrites.inserted,
             updated: historyWrites.updated,
             upserted: historyWrites.inserted + historyWrites.updated,

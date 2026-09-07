@@ -215,6 +215,7 @@ describe("Watson customer profile pages", () => {
     expect(legacyHistory).toContain("Private legacy admin notes");
     expect(legacyHistory).toContain("Membership History");
     expect(legacyHistory).toContain("Purchased Courses");
+    expect(legacyHistory).not.toContain("LearnDesignKnit Course Purchase");
     expect(legacyHistory).toContain("Purchased Patterns");
     expect(legacyHistory).toContain("LK150 Bundle");
     expect(legacyHistory).not.toContain("SourceRecordID");

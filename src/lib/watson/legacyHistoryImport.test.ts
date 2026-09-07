@@ -39,7 +39,9 @@ describe("legacy history dry-run importer", () => {
     expect(nativeSql).toContain("CREATE TABLE IF NOT EXISTS watson_legacy_customers");
     expect(nativeSql).toContain("CREATE TABLE IF NOT EXISTS watson_legacy_history");
     expect(nativeSql).toContain("customer_notes");
-    expect(nativeSql).toMatch(/CHECK \(category IN \('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle'\)\)/);
+    expect(nativeSql).toMatch(
+      /CHECK \(category IN \('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle', 'LearnDesignKnit Course Purchase'\)\)/,
+    );
   });
 
   it("parses ISO and US dates and currency amounts", () => {
@@ -116,6 +118,10 @@ describe("legacy history dry-run importer", () => {
 
     const report = dryRunWatsonLegacyHistory({ customersPath, historyPath });
     expect(report.mode).toBe("dry-run");
+    expect(report.dakPurchasesFile).toBeNull();
+    expect(report.dakSourceRowCount).toBe(0);
+    expect(report.dakWorkshopExcludedCount).toBe(0);
+    expect(report.dakPermanentRowCount).toBe(0);
     expect(report.customerRowCount).toBe(6);
     expect(report.uniqueLegacyMemberIdCount).toBe(4);
     expect(report.duplicateCustomerLegacyMemberIds).toEqual([
@@ -199,8 +205,22 @@ function createFakeLegacyHistoryDb() {
     if (normalized === "BEGIN" || normalized === "COMMIT" || normalized === "ROLLBACK") {
       return { rows: [] };
     }
-    if (/^CREATE\b/i.test(normalized) || /^COMMENT\b/i.test(normalized)) {
+    if (/^CREATE\b/i.test(normalized) || /^COMMENT\b/i.test(normalized) || /^ALTER\b/i.test(normalized)) {
       return { rows: [] };
+    }
+    if (sql.includes("ON CONFLICT") && sql.includes("DO NOTHING") && sql.includes("watson_legacy_customers")) {
+      const rows: Array<{ inserted: boolean }> = [];
+      for (let index = 0; index < (params?.length ?? 0); index += CUSTOMER_COLUMNS.length) {
+        const record: Record<string, unknown> = {};
+        CUSTOMER_COLUMNS.forEach((column, columnIndex) => {
+          record[column] = params?.[index + columnIndex];
+        });
+        const key = String(record.legacy_memberid);
+        if (customers.has(key)) continue;
+        customers.set(key, record);
+        rows.push({ inserted: true });
+      }
+      return { rows };
     }
     if (sql.includes("ON CONFLICT") && sql.includes("watson_legacy_customers")) {
       return upsert(customers, "legacy_memberid", CUSTOMER_COLUMNS, params);
@@ -457,6 +477,68 @@ describe("legacy history apply importer", () => {
     expect(sql).toContain("watson_legacy_history");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS watson_legacy_customers");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS watson_legacy_history");
+    expect(sql).toMatch(/ALTER TABLE watson_legacy_history/);
+    expect(sql).toContain("LearnDesignKnit Course Purchase");
+  });
+
+  it("imports permanent DAK purchases, excludes workshops, and does not overwrite existing customers", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "watson-legacy-dak-"));
+    const { customersPath, historyPath } = writeCleanApplyCsvs(dir);
+    const dakPath = writeCsv(
+      dir,
+      "legacy_dak_course_purchases_2026-08-26.csv",
+      [
+        "LegacyTransactionID,LegacyMemberID,FirstName,Lastname,Email,DatePurchased,AmountPaid,CourseID,CourseTitle",
+        "5569,100,Jane,Doe,jane@example.com,2022-10-01 15:24:18.697,39.992,2,Stitch Designer 101",
+        "6795,DAK-ONLY,Pat,Knit,pat@example.com,2023-03-23 18:09:07.267,1.00,22,Kickstart Graphics Studio",
+        "7001,DAK-ONLY,Pat,Knit,pat@example.com,2023-04-01 10:00:00.000,29.00,28,Quick Copy Punchcards",
+        '8811,DAK-ONLY,Pat,Knit,pat@example.com,2021-12-06 03:52:33.920,49.99,1,"Original Pattern Drafting 101"',
+      ].join("\n"),
+    );
+    const db = createFakeLegacyHistoryDb();
+
+    const dryRun = dryRunWatsonLegacyHistory({
+      customersPath,
+      historyPath,
+      dakPurchasesPath: dakPath,
+    });
+    expect(dryRun.dakSourceRowCount).toBe(4);
+    expect(dryRun.dakWorkshopExcludedCount).toBe(2);
+    expect(dryRun.dakPermanentRowCount).toBe(2);
+    expect(dryRun.dakStubCustomerCount).toBe(1);
+    expect(dryRun.countsByCategory["LearnDesignKnit Course Purchase"]).toBe(2);
+    expect(dryRun.countsByCategory["Course Purchase"]).toBe(1);
+    expect(dryRun.rejectedRowCount).toBe(0);
+
+    const first = await applyWatsonLegacyHistory({
+      customersPath,
+      historyPath,
+      dakPurchasesPath: dakPath,
+      databaseUrl: "postgresql://watson@localhost:5432/watson",
+      batchId: "test-dak-1",
+      queryFn: db.query,
+    });
+    expect(first.status).toBe("completed");
+    expect(first.history.inserted).toBe(6);
+    expect(db.customers.get("100")?.first_name).toBe("Jane");
+    expect(db.customers.get("DAK-ONLY")?.first_name).toBe("Pat");
+    const dakKeys = [...db.history.keys()].filter((key) => key.includes("learndesignknit"));
+    expect(dakKeys).toHaveLength(2);
+
+    db.customers.get("DAK-ONLY")!.first_name = "KeepStub";
+    const second = await applyWatsonLegacyHistory({
+      customersPath,
+      historyPath,
+      dakPurchasesPath: dakPath,
+      databaseUrl: "postgresql://watson@localhost:5432/watson",
+      batchId: "test-dak-2",
+      queryFn: db.query,
+    });
+    expect(second.status).toBe("completed");
+    expect(second.history.inserted).toBe(0);
+    expect(second.history.updated).toBe(6);
+    expect(db.customers.get("DAK-ONLY")?.first_name).toBe("KeepStub");
+    expect(db.history.size).toBe(6);
   });
 });
 

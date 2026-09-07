@@ -427,7 +427,7 @@ CREATE TABLE IF NOT EXISTS watson_legacy_history (
   identity_key TEXT NOT NULL UNIQUE,
   legacy_memberid TEXT NOT NULL REFERENCES watson_legacy_customers (legacy_memberid),
   category TEXT NOT NULL
-    CHECK (category IN ('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle')),
+    CHECK (category IN ('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle', 'LearnDesignKnit Course Purchase')),
   transaction_date DATE,
   description TEXT NOT NULL DEFAULT '',
   amount NUMERIC(12, 4),
@@ -444,6 +444,11 @@ CREATE TABLE IF NOT EXISTS watson_legacy_history (
 CREATE INDEX IF NOT EXISTS idx_watson_legacy_history_member_date ON watson_legacy_history (legacy_memberid, transaction_date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_watson_legacy_history_category ON watson_legacy_history (category);
+
+ALTER TABLE watson_legacy_history
+  DROP CONSTRAINT IF EXISTS watson_legacy_history_category_check,
+  ADD CONSTRAINT watson_legacy_history_category_check
+    CHECK (category IN ('Membership', 'Course Purchase', 'Pattern Purchase', 'LK150 Bundle', 'LearnDesignKnit Course Purchase'));
 
 CREATE TABLE IF NOT EXISTS watson_legacy_garments (
   garment_id TEXT PRIMARY KEY,
