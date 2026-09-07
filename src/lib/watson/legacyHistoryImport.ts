@@ -508,7 +508,7 @@ export function prepareWatsonLegacyHistoryImport(options: {
 
       const legacyMemberId = trimmed(row, "LegacyMemberID");
       const transactionId = trimmed(row, "LegacyTransactionID");
-      const title = displayCell(row, "CourseTitle");
+      const title = trimmed(row, "CourseTitle") || displayCell(row, "CourseTitle");
       let rowOk = true;
 
       if (!legacyMemberId) {

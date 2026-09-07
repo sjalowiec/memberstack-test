@@ -1040,4 +1040,131 @@ describe("customerProfile", () => {
     expect(result.profile.hasLegacyHistory).toBe(false);
     expect(result.profile.cleanedLegacyHistory).toBeNull();
   });
+
+  it("shows DAK SQL purchases on a legacy profile with no Memberstack connection", async () => {
+    const dakMember = {
+      ...legacyMember,
+      memberid: "DAK-ONLY",
+      email: "pat@example.com",
+      fristname: "Pat",
+      lastname: "Knit",
+    };
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql.includes("FROM legacy_members") && sql.includes("memberid = $1")) {
+        return [dakMember];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [{ legacy_memberid: "DAK-ONLY", email: "pat@example.com", customer_notes: "" }];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [
+          {
+            category: "LearnDesignKnit Course Purchase",
+            transaction_date: "2021-12-06",
+            description: "Original Pattern Drafting 101",
+            amount: "49.99",
+            expiration_date: null,
+            processor: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await loadLegacyCustomerProfile("DAK-ONLY", {
+      queryFn,
+      getClient: async () => ({
+        getMember: async () => null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.profile.memberstackLinkStatus).toBe("not_found");
+    expect(result.profile.cleanedLegacyHistory?.coursePurchases).toEqual([
+      expect.objectContaining({
+        description: "Original Pattern Drafting 101",
+        category: "LearnDesignKnit Course Purchase",
+      }),
+    ]);
+  });
+
+  it("attaches googlemail DAK history to a gmail.com Memberstack profile without rewriting the purchase email", async () => {
+    const beckyDump = {
+      ...legacyMember,
+      memberid: "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+      fristname: "Rebecca",
+      lastname: "Callow",
+      email: "beckyc.callow8@googlemail.com",
+    };
+    const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
+      if (sql === MEMBER_BY_EMAIL_SQL) {
+        return params?.[0] === "beckyc.callow8@googlemail.com" ? [beckyDump] : [];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {
+        return params?.[0] === "beckyc.callow8@googlemail.com"
+          ? [
+              {
+                legacy_memberid: "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+                email: "beckyc.callow8@googlemail.com",
+                customer_notes: "",
+              },
+            ]
+          : [];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [
+          {
+            legacy_memberid: "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+            email: "beckyc.callow8@googlemail.com",
+            customer_notes: "",
+          },
+        ];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [
+          {
+            category: "LearnDesignKnit Course Purchase",
+            transaction_date: "2026-01-17",
+            description: "Original Pattern Drafting 101",
+            amount: "49.99",
+            expiration_date: null,
+            processor: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await loadMemberstackCustomerProfile("mem_becky", {
+      secretKey: "sk_live_test_key",
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "mem_becky"
+            ? {
+                id: "mem_becky",
+                auth: { email: "beckyc.callow8@gmail.com" },
+                planConnections: [{ planId: "pln_legacy-stitch-designer-101-qdc0jyz", status: "ACTIVE" }],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+      queryFn,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.profile.hasLegacyHistory).toBe(true);
+    expect(result.profile.legacyMemberid).toBe("F1A91EE9-F002-5DD0-39F2-51AE099F4FB2");
+    expect(result.profile.member?.email).toBe("beckyc.callow8@googlemail.com");
+    expect(result.profile.cleanedLegacyHistory?.coursePurchases[0]?.description).toBe(
+      "Original Pattern Drafting 101",
+    );
+    expect(JSON.stringify(result.profile.cleanedLegacyHistory)).not.toMatch(/pln_/);
+  });
 });

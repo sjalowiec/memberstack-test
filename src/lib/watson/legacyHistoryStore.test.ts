@@ -266,6 +266,174 @@ describe("cleaned legacy history store", () => {
     expect(view?.memberships).toHaveLength(1);
   });
 
+  it("displays a DAK SQL purchase for a customer who is not linked to Memberstack", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [
+          {
+            legacy_memberid: "DAK-ONLY",
+            email: "pat@example.com",
+            customer_notes: "",
+          },
+        ];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [
+          {
+            category: "LearnDesignKnit Course Purchase",
+            transaction_date: "2021-12-06",
+            description: "Original Pattern Drafting 101",
+            amount: "49.99",
+            expiration_date: null,
+            processor: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const view = await loadCleanedLegacyHistoryForProfile({
+      profileType: "legacy",
+      routeLegacyMemberid: "DAK-ONLY",
+      dumpLinkAmbiguous: false,
+      dumpLegacyMemberid: "DAK-ONLY",
+      queryFn,
+    });
+
+    expect(queryFn).not.toHaveBeenCalledWith(
+      WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL,
+      expect.anything(),
+    );
+    expect(view?.coursePurchases).toHaveLength(1);
+    expect(view?.coursePurchases[0]?.description).toBe("Original Pattern Drafting 101");
+    expect(JSON.stringify(view?.coursePurchases)).not.toMatch(/pln_/);
+  });
+
+  it("matches a gmail.com cleaned customer by exact email", async () => {
+    const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
+      if (sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {
+        if (params?.[0] === "meggleshineart@gmail.com") {
+          return [
+            {
+              legacy_memberid: "MEG",
+              email: "meggleshineart@gmail.com",
+              customer_notes: "",
+            },
+          ];
+        }
+        return [];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [
+          {
+            legacy_memberid: "MEG",
+            email: "meggleshineart@gmail.com",
+            customer_notes: "",
+          },
+        ];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [];
+      }
+      return [];
+    });
+
+    const link = await resolveCleanedLegacyLinkByEmail("meggleshineart@gmail.com", queryFn);
+    expect(link.status).toBe("unique");
+    if (link.status === "unique") {
+      expect(link.legacyMemberid).toBe("MEG");
+    }
+    expect(queryFn).toHaveBeenCalledWith(WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL, [
+      "meggleshineart@gmail.com",
+    ]);
+  });
+
+  it("associates googlemail history from a gmail.com Memberstack email without rewriting it", async () => {
+    const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
+      if (sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {
+        if (params?.[0] === "beckyc.callow8@googlemail.com") {
+          return [
+            {
+              legacy_memberid: "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+              email: "beckyc.callow8@googlemail.com",
+              customer_notes: "",
+            },
+          ];
+        }
+        return [];
+      }
+      if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
+        return [
+          {
+            legacy_memberid: "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+            email: "beckyc.callow8@googlemail.com",
+            customer_notes: "",
+          },
+        ];
+      }
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+        return [
+          {
+            category: "LearnDesignKnit Course Purchase",
+            transaction_date: "2026-01-17",
+            description: "Original Pattern Drafting 101",
+            amount: "49.99",
+            expiration_date: null,
+            processor: null,
+          },
+        ];
+      }
+      return [];
+    });
+
+    const view = await loadCleanedLegacyHistoryForProfile({
+      profileType: "memberstack",
+      memberstackEmail: "beckyc.callow8@gmail.com",
+      dumpLinkAmbiguous: false,
+      dumpLegacyMemberid: null,
+      queryFn,
+    });
+
+    expect(view?.legacyMemberid).toBe("F1A91EE9-F002-5DD0-39F2-51AE099F4FB2");
+    expect(view?.coursePurchases[0]?.description).toBe("Original Pattern Drafting 101");
+    const customer = await queryFn(WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL, [
+      "F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
+    ]);
+    expect(customer[0]?.email).toBe("beckyc.callow8@googlemail.com");
+  });
+
+  it("does not silently assign gmail and googlemail rows that belong to different customers", async () => {
+    const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
+      if (sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {
+        if (params?.[0] === "same.person@gmail.com") {
+          return [{ legacy_memberid: "M-gmail", email: "same.person@gmail.com", customer_notes: "" }];
+        }
+        if (params?.[0] === "same.person@googlemail.com") {
+          return [
+            {
+              legacy_memberid: "M-googlemail",
+              email: "same.person@googlemail.com",
+              customer_notes: "",
+            },
+          ];
+        }
+      }
+      throw new Error(`Unexpected SQL: ${sql}`);
+    });
+
+    const link = await resolveCleanedLegacyLinkByEmail("same.person@gmail.com", queryFn);
+    expect(link.status).toBe("ambiguous");
+
+    const view = await loadCleanedLegacyHistoryForProfile({
+      profileType: "memberstack",
+      memberstackEmail: "same.person@gmail.com",
+      dumpLinkAmbiguous: false,
+      dumpLegacyMemberid: null,
+      queryFn,
+    });
+    expect(view).toBeNull();
+  });
+
   it("associates a unique cleaned email with a Memberstack profile even without a dump match", async () => {
     const queryFn = vi.fn(async (sql: string) => {
       if (sql === WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL) {

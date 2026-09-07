@@ -55,13 +55,40 @@ export function normalizeCustomerEmail(raw: string | null | undefined): string |
   return normalized || null;
 }
 
+/**
+ * Lookup keys for associating customer records.
+ * Gmail and Googlemail are the same mailbox; include both for matching only.
+ * Never rewrite stored historical emails to these aliases.
+ */
+export function customerEmailLookupKeys(raw: string | null | undefined): string[] {
+  const normalized = normalizeCustomerEmail(raw);
+  if (!normalized) {
+    return [];
+  }
+
+  const separator = normalized.lastIndexOf("@");
+  if (separator <= 0 || separator === normalized.length - 1) {
+    return [normalized];
+  }
+
+  const local = normalized.slice(0, separator);
+  const domain = normalized.slice(separator + 1);
+  if (domain === "gmail.com") {
+    return [normalized, `${local}@googlemail.com`];
+  }
+  if (domain === "googlemail.com") {
+    return [normalized, `${local}@gmail.com`];
+  }
+  return [normalized];
+}
+
 export function emailsMatchForLegacyLink(
   legacyEmail: string | null | undefined,
   memberstackEmail: string | null | undefined,
 ): boolean {
-  const left = normalizeCustomerEmail(legacyEmail);
-  const right = normalizeCustomerEmail(memberstackEmail);
-  return Boolean(left && right && left === right);
+  const leftKeys = customerEmailLookupKeys(legacyEmail);
+  const rightKeys = new Set(customerEmailLookupKeys(memberstackEmail));
+  return leftKeys.some((key) => rightKeys.has(key));
 }
 
 export function isEmailLikeIdentifier(value: string): boolean {
@@ -91,24 +118,33 @@ export async function getLegacyMembersByEmail(
   email: string,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<LegacyMemberDetailRow[]> {
-  const normalized = normalizeCustomerEmail(email);
-  if (!normalized) {
+  const keys = customerEmailLookupKeys(email);
+  if (keys.length === 0) {
     return [];
   }
 
-  return queryFn<LegacyMemberDetailRow>(MEMBER_BY_EMAIL_SQL, [normalized]);
+  const byMemberid = new Map<string, LegacyMemberDetailRow>();
+  for (const key of keys) {
+    const rows = await queryFn<LegacyMemberDetailRow>(MEMBER_BY_EMAIL_SQL, [key]);
+    for (const row of rows) {
+      if (!byMemberid.has(row.memberid)) {
+        byMemberid.set(row.memberid, row);
+      }
+    }
+  }
+  return [...byMemberid.values()];
 }
 
 export async function resolveLegacyLinkByMemberstackEmail(
   email: string | null | undefined,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<LegacyEmailLinkResult> {
-  const normalized = normalizeCustomerEmail(email);
-  if (!normalized) {
+  const keys = customerEmailLookupKeys(email);
+  if (keys.length === 0) {
     return { status: "none" };
   }
 
-  const members = await getLegacyMembersByEmail(normalized, queryFn);
+  const members = await getLegacyMembersByEmail(keys[0], queryFn);
   if (members.length === 0) {
     return { status: "none" };
   }
