@@ -1,5 +1,5 @@
 import { readCsvFile } from "./csvReader";
-import { getWatsonDatabaseUrl } from "./env";
+import { getWatsonAdminDatabaseUrl } from "./env";
 import {
   inferBatchIdFromExportDir,
   resolveExportFiles,
@@ -55,7 +55,7 @@ export async function validateLegacyImport(
     csvCounts.set(entry.pgTable, readCsvFile(entry.filePath).rows.length);
   }
 
-  const databaseUrl = options.databaseUrl ?? getWatsonDatabaseUrl();
+  const databaseUrl = options.databaseUrl ?? getWatsonAdminDatabaseUrl();
   const pool = await loadPgPool(databaseUrl);
 
   try {

@@ -42,6 +42,32 @@ export function getWatsonDatabaseUrl(): string {
   return url;
 }
 
+/**
+ * Session-mode URL for CLI migrations and imports.
+ * Prefers WATSON_DATABASE_ADMIN_URL when set so serverless can use transaction
+ * mode (port 6543) without changing administrative session-mode connections.
+ */
+export function getWatsonAdminDatabaseUrl(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const adminUrl = env.WATSON_DATABASE_ADMIN_URL?.trim();
+  if (adminUrl) {
+    return adminUrl;
+  }
+  return getWatsonDatabaseUrl();
+}
+
+/** Netlify CONTEXT when present (production, branch-deploy, deploy-preview); otherwise local. */
+export function getWatsonApplicationName(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const raw = (env.CONTEXT ?? "").trim().toLowerCase() || "local";
+  const safe =
+    raw.replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24) ||
+    "local";
+  return `watson-${safe}`;
+}
+
 /** Host and database name only - safe to print in CLI logs. */
 export function formatDatabaseTarget(databaseUrl: string): string {
   try {
