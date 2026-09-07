@@ -130,7 +130,7 @@ Schema SQL (tables only, no data): `scripts/sql/watson-legacy-history.sql`
 The CLI default is dry-run. Writes require an explicit `--apply` flag.
 
 ```bash
-npm run watson:import-legacy-history -- --customers="legacy-data/cleaned/legacy_customers_2026-08-26.csv" --history="legacy-data/cleaned/legacy_history_final_V3_2026-08-26.csv"
+npm run watson:import-legacy-history -- --customers="legacy-data/cleaned/legacy_customers_2026-08-26.csv" --history="legacy-data/cleaned/legacy_history_final_V3_2026-08-26.csv" --dak="legacy-data/cleaned/legacy_dak_course_purchases_2026-08-26.csv"
 ```
 
 The report includes: customer row count, unique `LegacyMemberID` count, history row count, counts by Category, orphan history records, duplicate customer IDs, duplicate/blank emails, history identity uniqueness candidates, duplicate identity keys, invalid categories, malformed dates/amounts, and rejected rows.
@@ -144,7 +144,7 @@ History identity: the dry-run **inspects** uniqueness of `TransactionID`, `Sourc
 Dry-run remains the default. Writes require `--apply`. This command upserts **only** `watson_legacy_customers` and `watson_legacy_history`. It does **not** truncate or write `legacy_*` dump tables, and it does **not** modify Memberstack, Stripe, ActiveCampaign, or current membership data.
 
 ```bash
-npm run watson:import-legacy-history -- --apply --customers="legacy-data/cleaned/legacy_customers_2026-08-26.csv" --history="legacy-data/cleaned/legacy_history_final_V3_2026-08-26.csv"
+npm run watson:import-legacy-history -- --apply --customers="legacy-data/cleaned/legacy_customers_2026-08-26.csv" --history="legacy-data/cleaned/legacy_history_final_V3_2026-08-26.csv" --dak="legacy-data/cleaned/legacy_dak_course_purchases_2026-08-26.csv"
 ```
 
 `--import` is rejected. The CLI prints the `WATSON_DATABASE_URL` host/user/database (never the password) before writing.
@@ -153,6 +153,8 @@ Behavior:
 
 - Customers: idempotent upsert on `legacy_memberid` (`LegacyMemberID`)
 - History: idempotent upsert on `identity_key` (`LegacyMemberID + SourceRecordID + TransactionID`)
+- LearnDesignKnit individual course purchases load from `legacy_dak_course_purchases_2026-08-26.csv` into the same history table with category `LearnDesignKnit Course Purchase`. Workshop CourseIDs **22** (Kickstart Graphics Studio) and **28** (Quick Copy Punchcards) are excluded and are never imported. DAK identity keys are namespaced (`learndesignknit:{LegacyTransactionID}`) so they cannot overwrite Membership / Course Purchase / Pattern Purchase / LK150 Bundle rows. Watson shows them under **Purchased Courses** without internal IDs.
+- DAK-only customers are inserted if missing (`ON CONFLICT DO NOTHING`) and never overwrite existing `watson_legacy_customers` rows
 - Duplicate emails stay separate customers (no auto-merge)
 - Blank/malformed emails and `CustomerNotes` are stored exactly
 - Schema uses `CREATE ... IF NOT EXISTS` only

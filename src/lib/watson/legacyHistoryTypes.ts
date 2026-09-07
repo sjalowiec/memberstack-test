@@ -8,10 +8,28 @@ export const WATSON_LEGACY_HISTORY_CATEGORIES = [
   "Course Purchase",
   "Pattern Purchase",
   "LK150 Bundle",
+  "LearnDesignKnit Course Purchase",
 ] as const;
 
 export type WatsonLegacyHistoryCategory =
   (typeof WATSON_LEGACY_HISTORY_CATEGORIES)[number];
+
+export const LEARN_DESIGNAKNIT_COURSE_PURCHASE_CATEGORY =
+  "LearnDesignKnit Course Purchase" satisfies WatsonLegacyHistoryCategory;
+
+/** Workshops, not permanent course entitlements. Never import into Watson history. */
+export const DAK_WORKSHOP_COURSE_IDS = ["22", "28"] as const;
+
+export const DAK_HISTORY_SOURCE_PREFIX = "learndesignknit" as const;
+
+export function watsonLegacyHistoryCategoryCheckSql(): string {
+  const list = WATSON_LEGACY_HISTORY_CATEGORIES.map((category) => `'${category}'`).join(", ");
+  return `CHECK (category IN (${list}))`;
+}
+
+export function isPurchasedCourseHistoryCategory(value: string): boolean {
+  return value === "Course Purchase" || value === LEARN_DESIGNAKNIT_COURSE_PURCHASE_CATEGORY;
+}
 
 export const WATSON_LEGACY_LINK_STATUSES = [
   "unmatched",
@@ -91,9 +109,14 @@ export type WatsonLegacyHistoryDryRunReport = {
   mode: "dry-run";
   customersFile: string;
   historyFile: string;
+  dakPurchasesFile: string | null;
   customerRowCount: number;
   uniqueLegacyMemberIdCount: number;
   historyRowCount: number;
+  dakSourceRowCount: number;
+  dakWorkshopExcludedCount: number;
+  dakPermanentRowCount: number;
+  dakStubCustomerCount: number;
   countsByCategory: Record<string, number>;
   orphanHistoryCount: number;
   orphanHistorySample: Array<{ lineNumber: number; legacyMemberId: string }>;
@@ -128,6 +151,7 @@ export type WatsonLegacyHistoryApplyReport = {
   databaseTarget: string;
   customersFile: string;
   historyFile: string;
+  dakPurchasesFile: string | null;
   batchId: string;
   dryRun: WatsonLegacyHistoryDryRunReport;
   customers: WatsonLegacyTableWriteCounts;

@@ -48,6 +48,7 @@ describe("schema", () => {
       expect.arrayContaining([
         "table watson_legacy_customers",
         "table watson_legacy_history",
+        "alter watson_legacy_history category check",
       ]),
     );
     expect(historySchema.some((statement) => statement.label.includes("renewal_reminders"))).toBe(
