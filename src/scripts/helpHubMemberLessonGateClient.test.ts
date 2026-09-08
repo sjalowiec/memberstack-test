@@ -348,10 +348,16 @@ describe("hasMemberAccess plan allow list (membership / legacy; beta retired)", 
     ).toBe(true);
   });
 
-  it("recognizes the active free legacy membership plan", () => {
+  it("recognizes the active free legacy membership plan only with a valid paid-through date", () => {
     const res = memberPayload(FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId);
-    expect(hasMemberAccess(res)).toBe(true);
-    expect(getViewerAccessState(res)).toBe("memberAccess");
+    expect(hasMemberAccess(res)).toBe(false);
+    expect(
+      hasMemberAccess(res, { legacyPaidThroughYmd: "2099-01-01", todayYmd: "2026-07-22" }),
+    ).toBe(true);
+    expect(getViewerAccessState(res)).toBe("loggedInNoAccess");
+    expect(
+      getViewerAccessState(res, { legacyPaidThroughYmd: "2099-01-01", todayYmd: "2026-07-22" }),
+    ).toBe("memberAccess");
   });
 
   it("denies the removed annual Basic plan", () => {

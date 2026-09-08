@@ -74,7 +74,7 @@ declare global {
       hasMemberAccess: boolean;
       viewerAccessState: "loggedOut" | "loggedInNoAccess" | "memberAccess";
     } | null;
-    /** Global member gate: true when logged in with an active allowed plan (beta/membership/legacy). */
+    /** Global member gate: true when logged in with a currently valid membership. */
     kbmHasMemberAccess?: (memberOrPayload: unknown) => boolean;
     /** Global viewer state: "loggedOut" | "loggedInNoAccess" | "memberAccess". */
     kbmGetViewerAccessState?: (

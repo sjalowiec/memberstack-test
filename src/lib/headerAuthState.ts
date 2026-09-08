@@ -1,10 +1,11 @@
 /**
- * Canonical Header auth state ù same membership definition as BaseLayout / content gates.
+ * Canonical Header auth state ? same membership definition as BaseLayout / content gates.
  *
- * Uses {@link hasMemberAccess} (ACTIVE/TRIALING ? MEMBER_PLAN_IDS). Never treats a raw
- * plan connection as membership without the active-status filter.
+ * Uses {@link hasMemberAccess} (paid ACTIVE/TRIALING plans, or free legacy plan
+ * with a valid paid-through date). Never treats a raw plan connection as
+ * membership without the active-status filter.
  */
-import { hasMemberAccess, isMemberLoggedIn } from "./memberAccess";
+import { hasMemberAccess, isMemberLoggedIn, type MemberAccessOptions } from "./memberAccess";
 import {
   memberIdFromMemberstackPayload,
   memberRecordFromMemberstackPayload,
@@ -22,9 +23,12 @@ export type HeaderAuthState = {
  * Resolve Header / `window.__KBM_AUTH` fields from a Memberstack getCurrentMember payload
  * (or bare member record). Matches BaseLayout's membership decision.
  */
-export function resolveHeaderAuthState(memberOrPayload: unknown): HeaderAuthState {
+export function resolveHeaderAuthState(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): HeaderAuthState {
   const loggedIn = isMemberLoggedIn(memberOrPayload);
-  const isMember = hasMemberAccess(memberOrPayload);
+  const isMember = hasMemberAccess(memberOrPayload, options);
   const member = memberRecordFromMemberstackPayload(memberOrPayload) ?? null;
   const nestedId =
     member && typeof member.id === "string" && member.id.trim() ? member.id.trim() : null;

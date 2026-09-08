@@ -5,6 +5,7 @@ import {
 } from "../config/legacyCourseEntitlements";
 import {
   COURSE_ACCESS_PLAN_IDS,
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBER_PLAN_IDS,
   MEMBERSHIPS,
@@ -113,6 +114,23 @@ describe("hasCourseMembershipAccess", () => {
             { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "CANCELED" },
           ],
         },
+      }),
+    ).toBe(false);
+  });
+
+  it("requires a valid paid-through date for the free legacy membership plan", () => {
+    const legacy = payloadWithPlan(FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId);
+    expect(hasCourseMembershipAccess(legacy)).toBe(false);
+    expect(
+      hasCourseMembershipAccess(legacy, {
+        legacyPaidThroughYmd: "2026-12-01",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(true);
+    expect(
+      hasCourseMembershipAccess(legacy, {
+        legacyPaidThroughYmd: "2026-07-01",
+        todayYmd: "2026-07-22",
       }),
     ).toBe(false);
   });

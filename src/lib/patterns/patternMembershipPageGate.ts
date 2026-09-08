@@ -6,6 +6,7 @@
  * Content stays hidden until access is confirmed.
  */
 import { getViewerAccessState, type ViewerAccessState } from "../memberAccess";
+import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { enforcePatternDraftOwner } from "./patternDraftOwnerGuard";
 import {
@@ -67,6 +68,7 @@ export async function resolvePatternMembershipGateDecision(): Promise<PatternMem
     try {
       await waitForMemberstackReady(ms);
       const res = await ms.getCurrentMember();
+      await ensureLegacyPaidThroughContext(res);
       viewer = getViewerAccessState(res);
       // Keep draft ownership in sync even when the gate stays locked.
       enforcePatternDraftOwner(memberIdFromMemberstackPayload(res));

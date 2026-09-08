@@ -13,6 +13,7 @@ import {
 vi.mock("../lib/membership/membershipStatusClient", () => ({
   fetchMembershipStatus: vi.fn(),
   isMembershipStatusMemberLoggedIn: vi.fn(),
+  getMembershipStatusAuthHeaders: vi.fn(async () => ({})),
   MembershipStatusAuthError: class MembershipStatusAuthError extends Error {
     constructor(message: string) {
       super(message);
@@ -569,7 +570,7 @@ describe("membership status panel page behavior", () => {
     ).toBe(false);
   });
 
-  it("future legacy remains inline and offers Renew My Membership to /join", async () => {
+  it("future subscriptionexpiring without a connected plan is a sync issue, not remaining access", async () => {
     installMemberstack({ data: { id: "mem_free", planConnections: [] } });
     vi.mocked(fetchMembershipStatus).mockResolvedValue({
       ok: true,
@@ -578,12 +579,12 @@ describe("membership status panel page behavior", () => {
       currentPlanName: null,
       previousPlanName: "Premium",
       activeThroughDate: null,
-      legacyExpirationDate: "July 30, 2026",
+      legacyExpirationDate: null,
       legacyLinkState: "linked",
       accountType: "non_paid_account",
-      recommendedAction: "renew_now",
+      recommendedAction: "contact_support",
       customerFacingMessage:
-        "Your Premium annual membership is paid through July 30, 2026.\n\nYou can renew now. Your new membership and billing period will begin today.",
+        "We found previous membership information on your account, but we do not currently see an active membership connection. Please contact us so we can check your account before you purchase another membership.",
     });
 
     await loadAndRenderMembershipStatusPanel(root);
@@ -594,37 +595,22 @@ describe("membership status panel page behavior", () => {
     expect((root.querySelector("[data-membership-status-modal]") as unknown as StubEl).open).toBe(
       false,
     );
-    expect((root.querySelector("[data-membership-thank-you]") as unknown as StubEl).hidden).toBe(
-      true,
-    );
-    expect(
-      (root.querySelector("[data-membership-sales-content]") as unknown as StubEl).hidden,
-    ).toBe(false);
-    expect((root.querySelector("[data-membership-status-open]") as unknown as StubEl).hidden).toBe(
-      true,
-    );
     expect(
       (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
-    ).toBe("You still have membership time remaining");
+    ).toBe("We need to check your membership");
     expect(
       (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
-    ).toMatch(/billing period will begin today/);
-    expect(getMembershipStatusCtaMode()).toBe("renew_now");
+    ).toMatch(/do not currently see an active membership connection/i);
+    expect(
+      (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
+    ).not.toMatch(/time remaining|paid through/i);
+    expect(getMembershipStatusCtaMode()).toBe("contact_support");
     expect(
       (root.querySelector("[data-membership-status-renew]") as unknown as StubEl).hidden,
-    ).toBe(false);
-    expect(
-      (root.querySelector("[data-membership-status-renew]") as unknown as StubEl).textContent,
-    ).toBe("Renew My Membership");
-    expect(
-      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
     ).toBe(true);
     expect(
-      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).textContent,
-    ).toBe("Renew My Membership");
-    expect(
-      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).getAttribute("href"),
-    ).toBe("/join");
+      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
+    ).toBe(false);
     expect(shouldBlockPurchaseForStatusMode()).toBe(true);
   });
 
@@ -724,7 +710,7 @@ describe("membership status panel page behavior", () => {
     expect(
       (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
     ).toBe(
-      "You have a Knit it Now account, but it does not currently include an active Knit it Now membership.",
+      "You have a Knit it Now account, but we do not currently see an active membership. Your previous annual membership ended on June 30, 2026.",
     );
     expect(getMembershipStatusCtaMode()).toBe("purchase");
     expect(shouldBlockPurchaseForStatusMode()).toBe(false);

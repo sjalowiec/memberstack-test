@@ -12,6 +12,7 @@ import {
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../../memberAccess";
+import { ensureLegacyPaidThroughContext } from "../../memberAccessClient";
 import { applyHatPatternPersistNotice } from "./hatPatternPersistNotice";
 import {
   applyHatPatternMyPatternsAccess,
@@ -245,6 +246,7 @@ export async function resolveHatPatternViewerAccessState(): Promise<ViewerAccess
   if (typeof window === "undefined") return "loggedOut";
 
   const payload = await waitForHatPatternMemberstackPayload();
+  if (payload) await ensureLegacyPaidThroughContext(payload);
   const persisted = readPersistedSnapshot();
   const state = decideHatPatternViewerAccessState({
     memberPayload: payload ?? undefined,

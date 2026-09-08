@@ -97,6 +97,8 @@ describe("resolveAccountMembershipDetailView", () => {
     );
     expect(view.membershipDateLabel).toBe("Legacy Access Through");
     expect(view.membershipDateValue).toBe("September 15, 2026");
+    expect(view.planOverride).toBe("Legacy Membership");
+    expect(view.statusOverride).toBe("Legacy Access");
   });
 
   it("keeps Legacy Access Through for an expired legacy member (no empty row)", () => {
@@ -110,6 +112,23 @@ describe("resolveAccountMembershipDetailView", () => {
     );
     expect(view.membershipDateLabel).toBe("Legacy Access Through");
     expect(view.membershipDateValue).toBe("April 6, 2026");
+    expect(view.planOverride).toBe("Legacy Membership");
+    expect(view.statusOverride).toBe("Expired");
+  });
+
+  it("overlays Expired when a connected free plan name is still present after paid-through ended", () => {
+    const view = resolveAccountMembershipDetailView(
+      detail({
+        membershipName: "Legacy Membership",
+        statusLabel: "Legacy Access",
+        legacyPaidThroughDate: "April 6, 2026",
+        legacyAccessActive: false,
+        memberSince: "October 27, 2023",
+      }),
+    );
+    expect(view.planOverride).toBe("Legacy Membership");
+    expect(view.statusOverride).toBe("Expired");
+    expect(view.legacyAccessValue).toBe("Ended April 6, 2026");
   });
 
   it("keeps Member Since for a paid member and never shows Legacy Access Through", () => {
@@ -153,12 +172,13 @@ describe("resolveAccountMembershipDetailView", () => {
     expect(view.membershipDateValue).toBeNull();
   });
 
-  it("keeps everything neutral when the detail is unidentified", () => {
+  it("overlays could-not-confirm when the detail is unidentified", () => {
     const view = resolveAccountMembershipDetailView(
       detail({ identified: false, history: [event("Joined")] }),
     );
-    expect(view.planOverride).toBeNull();
-    expect(view.statusOverride).toBeNull();
+    expect(view.planOverride).toBe("Membership status unavailable");
+    expect(view.statusOverride).toBe("Could not confirm");
+    expect(view.visibleActions).toEqual([]);
     expect(view.history.visible).toBe(false);
   });
 });

@@ -4,17 +4,19 @@
  * Legacy annual members were imported into Memberstack with the free
  * "legacy membership" access plan (`pln_legacy-membership-t012x0xw0`) but have no
  * Stripe subscription. Their paid-through date lives only in Watson
- * (`legacy_members.subscriptionexpiring`). Because Memberstack plan connections
- * are authoritative for site access (`hasMemberAccess`), an expired annual member
- * keeps full access forever until the free plan connection is removed.
+ * (`legacy_members.subscriptionexpiring`). Site access now also consults that
+ * date at request time (`hasMemberAccess`). This job still removes the free
+ * plan from Memberstack when the paid-through date has passed so expired
+ * members do not keep a misleading plan connection.
  *
  * This module reconciles that gap: it finds legacy members whose Watson
  * paid-through date has passed (America/Los_Angeles calendar day) and removes the
  * free legacy plan from their Memberstack record - but only when the member does
  * not also hold another active paid membership (a renewed member keeps access).
  *
- * Access enforcement stays in Memberstack: this process only removes plan
- * connections. It never changes `hasMemberAccess` and never grants access.
+ * Access enforcement is in `hasMemberAccess` (paid plans, or free legacy plus a
+ * valid paid-through date). This process only removes plan connections. It never
+ * grants access.
  *
  * The calendar rule matches the membership status API
  * (`membershipStatusSummary.ts`): the paid-through date itself still has access;

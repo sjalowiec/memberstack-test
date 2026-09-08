@@ -480,6 +480,7 @@ const isProduction =
         hasMemberAccess,
         logMemberAccessDebug,
       } from "../lib/memberAccess";
+      import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 
       // Wait for the Memberstack SDK to be ready instead of bailing on the first
       // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
@@ -505,10 +506,11 @@ const isProduction =
         return null;
       }
 
-      function applyMsLoggedIn(res: any) {
+      async function applyMsLoggedIn(res: any) {
         const data = res?.data;
         const member = (data?.member ?? data) || null;
         const rawKinAccess = member?.customFields?.["kin-access"];
+        await ensureLegacyPaidThroughContext(res);
         const memberHasAccess = hasMemberAccess(res);
 
         // Detailed log first (always runs, even when access is false) so we can
@@ -587,7 +589,7 @@ const isProduction =
 
       async function initMsLoggedIn() {
         const res = await waitForMemberstackReady(30, 200);
-        applyMsLoggedIn(res);
+        await applyMsLoggedIn(res);
         bindAuthEvents();
       }
 

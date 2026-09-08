@@ -9,6 +9,7 @@ import {
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { helpHubMemberLessonCtaSpec } from "../lib/helpHubMemberLessonCta";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { initGatedVimeoEmbeds } from "./gatedVimeoEmbedClient";
@@ -72,6 +73,7 @@ export async function resolveHelpHubMemberLessonViewerState(
   gate: string,
 ): Promise<ViewerAccessState> {
   const res = await waitForMemberstackAppAndMember();
+  await ensureLegacyPaidThroughContext(res);
   logMemberAccessDebug(gate, res, {
     templateChildCount: getLessonBodyTemplate()?.content.childElementCount ?? null,
     mountChildCount: getLessonBodyMount()?.childElementCount ?? null,

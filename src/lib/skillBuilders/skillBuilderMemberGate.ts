@@ -6,6 +6,7 @@
  * checklists, generated instructions, and printable content are not in the live DOM.
  */
 import { hasMemberAccess, logMemberAccessDebug } from "../memberAccess";
+import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { initGatedVimeoEmbeds } from "../../scripts/gatedVimeoEmbedClient";
 
 export const SKILL_BUILDER_MEMBER_LOCK_ATTR = "data-sb-member-lock";
@@ -132,6 +133,7 @@ export async function resolveSkillBuilderMemberAccess(): Promise<boolean> {
 
   try {
     const res = await ms.getCurrentMember();
+    await ensureLegacyPaidThroughContext(res);
     logMemberAccessDebug("skill-builders.memberGate", res);
     return hasMemberAccess(res);
   } catch {

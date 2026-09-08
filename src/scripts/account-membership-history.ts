@@ -17,6 +17,15 @@ import {
 import { resolveAccountMembershipDetailView } from "../lib/membership/accountMembershipDetailView";
 import type { MembershipHistoryEvent } from "../lib/membership/membershipHistory";
 import { buildMembershipHistoryRow } from "../lib/membership/membershipHistoryRow";
+import type { AccountMembershipPanelAction } from "../lib/membership/accountMembershipPanel";
+
+const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = [
+  "join",
+  "manageBilling",
+  "switchToAnnual",
+  "renewAnnual",
+  "becomeMonthly",
+];
 
 function setText(root: Element, selector: string, value: string): void {
   const el = root.querySelector(selector);
@@ -83,25 +92,31 @@ function renderHistory(
   section.hidden = false;
 }
 
-function applyDetail(root: Element, detail: AccountMembershipDetailResponse): void {
-  if (!detail.identified) {
-    return;
-  }
+function setVisible(el: Element | null, visible: boolean): void {
+  if (!(el instanceof HTMLElement)) return;
+  el.hidden = !visible;
+}
 
+function applyActions(root: Element, actions: AccountMembershipPanelAction[] | null): void {
+  if (!actions) return;
+  const visible = new Set(actions);
+  for (const action of ALL_PANEL_ACTIONS) {
+    const el = root.querySelector(`[data-kbm-account-membership-action="${action}"]`);
+    setVisible(el, visible.has(action));
+  }
+}
+
+function applyDetail(root: Element, detail: AccountMembershipDetailResponse): void {
   const view = resolveAccountMembershipDetailView(detail);
 
-  // Reconcile Plan + Status so legacy-only members tell one consistent story.
-  // account-membership.ts only sees Memberstack plans (shows "No active
-  // membership"); the server detail knows about legacy access.
   if (view.planOverride) {
     setText(root, "[data-kbm-account-membership-plan]", view.planOverride);
   }
   if (view.statusOverride) {
     setText(root, "[data-kbm-account-membership-status]", view.statusOverride);
   }
+  applyActions(root, view.visibleActions);
 
-  // One primary date row: "Legacy Access Through {date}" for legacy members,
-  // otherwise "Member Since {date}". Paid members keep Next Renewal separately.
   setDateRow(root, view.membershipDateLabel, view.membershipDateValue);
 
   renderHistory(
@@ -134,9 +149,22 @@ async function populateAccountMembershipHistory(): Promise<void> {
     const detail = await fetchAccountMembershipDetail();
     applyDetail(root, detail);
   } catch (error) {
-    // Auth or network failure: leave the server-fed fields hidden. The live
-    // summary rendered by account-membership.ts remains intact.
     console.warn("[account membership history] Unable to load membership detail", error);
+    if (root.getAttribute("data-kbm-account-membership-kind") !== "member") {
+      applyDetail(root, {
+        ok: false,
+        identified: false,
+        membershipName: null,
+        statusLabel: null,
+        billingLabel: null,
+        nextRenewalDate: null,
+        activeThroughDate: null,
+        legacyPaidThroughDate: null,
+        legacyAccessActive: null,
+        memberSince: null,
+        history: [],
+      });
+    }
   }
 }
 

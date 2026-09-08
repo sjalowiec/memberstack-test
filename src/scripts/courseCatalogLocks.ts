@@ -15,6 +15,7 @@ import {
   preferCourseCatalogFreeFirst,
 } from "../lib/coursesCatalogFreeFirst";
 import { logMemberAccessDebug } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
@@ -82,6 +83,7 @@ async function resolveLocks(): Promise<void> {
   applyLocks(null);
 
   const res = await waitForMemberstackReady();
+  await ensureLegacyPaidThroughContext(res);
   logMemberAccessDebug("courses.catalogLocks", res, {
     preferFreeFirst: preferCourseCatalogFreeFirst(res),
   });

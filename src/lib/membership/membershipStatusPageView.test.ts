@@ -15,8 +15,29 @@ import {
   resolveMembershipStatusPageView,
 } from "./membershipStatusPageView";
 import type { MembershipStatusSummary } from "./membershipStatusSummary";
+import type { MemberAccessOptions } from "../memberAccess";
 
 const NEXT_BILLING = Math.floor(Date.UTC(2026, 7, 22, 12, 0, 0) / 1000);
+const TODAY = "2026-07-22";
+
+function freeLegacyPayload() {
+  return {
+    data: {
+      id: "mem_free_legacy",
+      planConnections: [
+        {
+          planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+          status: "ACTIVE",
+          active: true,
+        },
+      ],
+    },
+  };
+}
+
+function accessOptions(ymd: string | null): MemberAccessOptions {
+  return { legacyPaidThroughYmd: ymd, todayYmd: TODAY };
+}
 
 function memberWithPaid(options?: {
   cancelAtDate?: number | null;
@@ -66,12 +87,12 @@ function serverFutureLegacy(): MembershipStatusSummary {
     currentPlanName: null,
     previousPlanName: "Premium",
     activeThroughDate: null,
-    legacyExpirationDate: "July 30, 2026",
+    legacyExpirationDate: null,
     legacyLinkState: "linked",
     accountType: "non_paid_account",
-    recommendedAction: "renew_now",
+    recommendedAction: "contact_support",
     customerFacingMessage:
-      "Your Premium annual membership is paid through July 30, 2026.\n\nYou can renew now. Your new membership and billing period will begin today.",
+      "We found previous membership information on your account, but we do not currently see an active membership connection. Please contact us so we can check your account before you purchase another membership.",
   };
 }
 
@@ -143,35 +164,76 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(view.message).toBe("Your Knit it Now Membership is active.");
   });
 
-  it("recognizes an active free legacy membership from the client (no purchase CTA)", () => {
-    const payload = {
-      data: {
-        id: "mem_free_legacy",
-        planConnections: [
-          {
-            planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
-            status: "ACTIVE",
-            active: true,
-          },
-        ],
-      },
-    };
-    const account = resolveAccountMembershipPanelView(payload);
+  it("recognizes an active free legacy membership when paid-through is still valid", () => {
+    const payload = freeLegacyPayload();
+    const account = resolveAccountMembershipPanelView(
+      payload,
+      accessOptions("2026-07-30"),
+    );
     expect(account.kind).toBe("member");
     expect(account.planLabel).toBe("Legacy Membership");
+    expect(account.statusLabel).toBe("Legacy Access");
     expect(account.visibleActions).not.toContain("join");
 
     const view = resolveMembershipStatusPageView({
       clientLoaded: true,
       memberPayload: payload,
       serverSummary: serverUnknown(),
+      accessOptions: accessOptions("2026-07-30"),
     });
     expect(view.source).toBe("client_active");
     expect(view.ctaMode).toBe("manage");
     expect(view.facts.plan).toBe("Legacy Membership");
-    expect(view.facts.status).toBe("Active");
+    expect(view.facts.status).toBe("Legacy Access");
     expect(view.facts.billing).toBeNull();
     expect(view.facts.renews).toBeNull();
+  });
+
+  it("does not show a connected free legacy plan as active after paid-through has passed", () => {
+    const payload = freeLegacyPayload();
+    const account = resolveAccountMembershipPanelView(
+      payload,
+      accessOptions("2026-06-30"),
+    );
+    expect(account.kind).toBe("free");
+    expect(account.statusLabel).not.toBe("Active");
+    expect(account.statusLabel).not.toBe("Legacy Access");
+
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: payload,
+      serverSummary: serverExpiredLegacy(),
+      accessOptions: accessOptions("2026-06-30"),
+    });
+    expect(view.source).toBe("server_legacy");
+    expect(view.ctaMode).toBe("purchase");
+    expect(view.source).not.toBe("client_active");
+    expect(view.facts.status).not.toBe("Active");
+    expect(view.message).toMatch(/ended on June 30, 2026/);
+  });
+
+  it("does not show a connected free legacy plan as active when Watson lookup fails", () => {
+    const payload = freeLegacyPayload();
+    const account = resolveAccountMembershipPanelView(
+      payload,
+      accessOptions(null),
+    );
+    expect(account.kind).toBe("free");
+    expect(account.statusLabel).toBe("Could not confirm");
+    expect(account.statusLabel).not.toBe("No Active Membership");
+    expect(account.statusLabel).not.toBe("Expired");
+    expect(account.visibleActions).toEqual([]);
+
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: payload,
+      serverSummary: serverUnknown(),
+      accessOptions: accessOptions(null),
+    });
+    expect(view.source).not.toBe("client_active");
+    expect(view.ctaMode).toBe("wait");
+    expect(view.heading).toMatch(/could not confirm/i);
+    expect(view.facts.status).not.toBe("Active");
   });
 
   it("canceling client membership overrides server unknown/wait", () => {
@@ -207,18 +269,19 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(page.facts.renews).toBe(parity.renewsOrThrough);
   });
 
-  it("no active client membership uses future legacy server context (renew via /join)", () => {
+  it("future subscriptionexpiring without a connected plan is a sync issue, not remaining access", () => {
     const view = resolveMembershipStatusPageView({
       clientLoaded: true,
       memberPayload: { data: { id: "mem_free", planConnections: [] } },
       serverSummary: serverFutureLegacy(),
     });
     expect(view.source).toBe("server_legacy");
-    expect(view.ctaMode).toBe("renew_now");
-    expect(view.heading).toBe("You still have membership time remaining");
-    expect(view.message).toMatch(/paid through July 30, 2026/);
-    expect(view.message).toMatch(/billing period will begin today/);
-    expect(view.message).not.toMatch(/contact us/i);
+    expect(view.ctaMode).toBe("contact_support");
+    expect(view.heading).toBe("We need to check your membership");
+    expect(view.message).toMatch(/do not currently see an active membership connection/i);
+    expect(view.message).not.toMatch(/time remaining/i);
+    expect(view.message).not.toMatch(/paid through/i);
+    expect(view.message).not.toMatch(/remains active/i);
     expect(membershipStatusUiMode(view)).toBe("inline_blocking");
     expect(Object.values(view.facts).every((value) => value == null)).toBe(true);
   });
@@ -232,7 +295,8 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(view.source).toBe("server_legacy");
     expect(view.ctaMode).toBe("purchase");
     expect(view.heading).toBe("Your Knit it Now membership status");
-    expect(view.message).toBe(MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE);
+    expect(view.message).toBe(serverExpiredLegacy().customerFacingMessage);
+    expect(view.message).toMatch(/ended on/i);
     expect(view.facts.plan).toBeNull();
     expect(view.facts.status).toBeNull();
     expect(view.facts.previous).toBeNull();

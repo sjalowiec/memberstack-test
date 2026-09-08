@@ -44,12 +44,8 @@ import { legacyContextFromLink } from "./membershipStatusService";
 import type { MemberstackMember } from "./membershipSummary";
 import {
   buildMembershipStatusSummary,
-  calendarYmdForNow,
   formatMembershipCalendarDateFromYmd,
-  resolveLegacyExpirationTiming,
   ymdFromDateOnlyValue,
-  MEMBERSHIP_STATUS_CALENDAR_TIMEZONE,
-  type LegacyExpirationTiming,
   type MembershipStatusLegacyContext,
   type MembershipStatusSummary,
 } from "./membershipStatusSummary";
@@ -101,14 +97,17 @@ function unidentifiedDetail(): AccountMembershipDetail {
 }
 
 /**
- * One consistent customer-facing status. Active paid state (from Memberstack)
- * always wins; otherwise a current/future legacy paid-through reads as
- * "Legacy Access" and a lapsed one as "Expired".
+ * One consistent customer-facing status, derived from the same summary that
+ * uses hasMemberAccess. Never label Legacy Access from a date alone.
  */
-function resolveStatusLabel(
-  summary: MembershipStatusSummary,
-  legacyTiming: LegacyExpirationTiming | null,
-): string | null {
+function resolveStatusLabel(summary: MembershipStatusSummary): string | null {
+  if (
+    summary.currentStatus === "unknown" ||
+    summary.recommendedAction === "wait" ||
+    summary.recommendedAction === "contact_support"
+  ) {
+    return "Could not confirm";
+  }
   switch (summary.currentStatus) {
     case "canceling":
       return "Canceling";
@@ -116,13 +115,9 @@ function resolveStatusLabel(
       return summary.accountType === "free_membership" ? "Legacy Access" : "Active";
   }
 
-  // Not an active/canceling paid (or active free) membership: legacy access,
-  // when present, tells the story.
-  if (legacyTiming === "legacy_paid_through_future") return "Legacy Access";
-  if (legacyTiming === "legacy_expired") return "Expired";
-
-  // A former paid Memberstack membership with no legacy paid-through still reads
-  // as expired; a bare account with neither stays "no active membership" (null).
+  if (summary.recommendedAction === "purchase" && summary.legacyExpirationDate) {
+    return "Expired";
+  }
   if (summary.currentStatus === "inactive") return "Expired";
   return null;
 }
@@ -170,44 +165,41 @@ export function buildAccountMembershipDetail(input: {
   }
 
   const legacyMemberships = input.legacyMemberships ?? [];
+
+  // Current-status date is Watson subscriptionexpiring (or the same value already
+  // placed on the legacy context). History expirations are not used here.
+  const accessYmd =
+    input.legacySubscriptionExpiringYmd ??
+    (input.legacy.linkState === "linked" ? input.legacy.legacyExpirationYmd : null);
+  const accessDate = accessYmd ? formatMembershipCalendarDateFromYmd(accessYmd) : null;
+  const summaryLegacy: MembershipStatusLegacyContext = {
+    ...input.legacy,
+    legacyExpirationYmd: accessYmd,
+    legacyExpirationDate: accessDate,
+  };
+
   const summary = buildMembershipStatusSummary({
     memberstackMember: input.memberstackMember,
     memberstackSummary: input.memberstackSummary,
     memberstackLookupOk: input.memberstackLookupOk,
-    legacy: input.legacy,
+    legacy: summaryLegacy,
     now: input.now,
   });
 
   const payload = { data: input.memberstackMember };
   const billingInterval = billingIntervalFromActivePaidConnection(payload);
   const isPaidMember = summary.accountType === "paid_membership";
+  const hasValidLegacyAccess =
+    summary.accountType === "free_membership" && summary.currentStatus === "active";
+  const expiredConfirmed =
+    summary.recommendedAction === "purchase" && Boolean(summary.legacyExpirationDate);
 
-  const todayYmd = calendarYmdForNow(
-    input.now ?? new Date(),
-    MEMBERSHIP_STATUS_CALENDAR_TIMEZONE,
-  );
-
-  // Prefer the authoritative Watson paid-through field; fall back to the
-  // history-derived expiration only when it is null/missing. This is a
-  // display-only choice for the account detail DTO and never touches the shared
-  // expiration/access logic in buildMembershipStatusSummary.
-  const authoritativeLegacyYmd = input.legacySubscriptionExpiringYmd ?? null;
-  const authoritativeLegacyDate = authoritativeLegacyYmd
-    ? formatMembershipCalendarDateFromYmd(authoritativeLegacyYmd)
-    : null;
-  const legacyDisplayYmd = authoritativeLegacyYmd ?? input.legacy.legacyExpirationYmd;
-  const legacyDisplayDate = authoritativeLegacyDate ?? summary.legacyExpirationDate;
-
-  const legacyTiming =
-    input.legacy.linkState === "linked"
-      ? resolveLegacyExpirationTiming(legacyDisplayYmd, todayYmd)
+  const legacyPaidThroughDate = isPaidMember
+    ? null
+    : hasValidLegacyAccess || expiredConfirmed
+      ? (accessDate ?? summary.legacyExpirationDate)
       : null;
 
-  // Legacy paid-through is historical context; hide it for active paying members.
-  const legacyPaidThroughDate = isPaidMember ? null : legacyDisplayDate;
-
-  // Display order (newest-first) is decided here in shared logic so the client
-  // renders the received order as-is (no CSS/DOM reversing).
   const history = sortMembershipHistoryForDisplay(
     buildMembershipHistory({
       legacyJoinedDate: input.legacyJoinedDate ?? null,
@@ -221,13 +213,13 @@ export function buildAccountMembershipDetail(input: {
   return {
     identified: true,
     membershipName: summary.currentPlanName,
-    statusLabel: resolveStatusLabel(summary, legacyTiming),
+    statusLabel: resolveStatusLabel(summary),
     billingLabel: billingInterval ? BILLING_LABEL[billingInterval] : null,
     nextRenewalDate: renewsLabelFromActivePaidConnection(payload),
     activeThroughDate: summary.activeThroughDate,
     legacyPaidThroughDate,
     legacyAccessActive:
-      legacyPaidThroughDate == null ? null : legacyTiming !== "legacy_expired",
+      legacyPaidThroughDate == null ? null : hasValidLegacyAccess,
     memberSince: resolveMemberSince(
       input.legacyJoinedDate ?? null,
       legacyMemberships,

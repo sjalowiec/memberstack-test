@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
@@ -6,7 +6,7 @@ import {
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
   RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
 } from "../../config/memberships";
-import { hasMemberAccess } from "../memberAccess";
+import { clearRememberedLegacyPaidThroughForAccess, hasMemberAccess } from "../memberAccess";
 import {
   accountMembershipPanelActions,
   billingIntervalFromActivePaidConnection,
@@ -96,6 +96,10 @@ describe("formatMemberstackUnixDate", () => {
 });
 
 describe("resolveAccountMembershipPanelView", () => {
+  afterEach(() => {
+    clearRememberedLegacyPaidThroughForAccess();
+  });
+
   it("shows no active membership when there are no paid plan connections", () => {
     expect(resolveAccountMembershipPanelView(memberWithPlans([]))).toEqual({
       kind: "free",
@@ -623,7 +627,7 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member).kind).toBe("free");
   });
 
-  it("shows an active Legacy Membership (free plan) with renew/monthly checkout actions", () => {
+  it("shows Legacy Access for a free legacy plan with a currently valid paid-through date", () => {
     const member = memberWithPlans([
       {
         planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
@@ -631,11 +635,16 @@ describe("resolveAccountMembershipPanelView", () => {
         active: true,
       },
     ]);
-    expect(resolveAccountMembershipPanelView(member)).toEqual({
+    expect(
+      resolveAccountMembershipPanelView(member, {
+        legacyPaidThroughYmd: "2026-07-30",
+        todayYmd: "2026-07-22",
+      }),
+    ).toEqual({
       kind: "member",
       planLabel: "Legacy Membership",
       planDisplayLabel: "Legacy Membership",
-      statusLabel: "Active",
+      statusLabel: "Legacy Access",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,
@@ -646,11 +655,60 @@ describe("resolveAccountMembershipPanelView", () => {
       annualSwitchWarning: null,
       visibleActions: ["renewAnnual", "becomeMonthly"],
     });
-    // Legacy members are not active Stripe subscribers: no Manage Billing, no join.
-    const actions = resolveAccountMembershipPanelView(member).visibleActions;
+    const actions = resolveAccountMembershipPanelView(member, {
+      legacyPaidThroughYmd: "2026-07-30",
+      todayYmd: "2026-07-22",
+    }).visibleActions;
     expect(actions).not.toContain("join");
     expect(actions).not.toContain("manageBilling");
     expect(actions).not.toContain("switchToAnnual");
+  });
+
+  it("does not show a connected free legacy plan as active after paid-through has passed", () => {
+    const member = memberWithPlans([
+      {
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member, {
+      legacyPaidThroughYmd: "2026-06-30",
+      todayYmd: "2026-07-22",
+    });
+    expect(view.kind).toBe("free");
+    expect(view.statusLabel).toBe("Expired");
+    expect(view.planLabel).toBe("Legacy Membership");
+    expect(view.visibleActions).toEqual(["join"]);
+    expect(hasMemberAccess(member, {
+      legacyPaidThroughYmd: "2026-06-30",
+      todayYmd: "2026-07-22",
+    })).toBe(false);
+  });
+
+  it("does not show a connected free legacy plan as active when Watson lookup fails", () => {
+    const member = memberWithPlans([
+      {
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member, {
+      legacyPaidThroughYmd: null,
+      todayYmd: "2026-07-22",
+    });
+    expect(view.kind).toBe("free");
+    expect(view.statusLabel).toBe("Could not confirm");
+    expect(view.statusLabel).not.toBe("Active");
+    expect(view.statusLabel).not.toBe("Legacy Access");
+    expect(view.statusLabel).not.toBe("Expired");
+    expect(view.statusLabel).not.toBe("No Active Membership");
+    expect(view.visibleActions).toEqual([]);
+    expect(hasMemberAccess(member, {
+      legacyPaidThroughYmd: null,
+      todayYmd: "2026-07-22",
+    })).toBe(false);
   });
 
   it("does not show Switch to Annual for no-plan members", () => {

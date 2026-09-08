@@ -1,10 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
 } from "../../config/memberships";
+import {
+  clearRememberedLegacyPaidThroughForAccess,
+  rememberLegacyPaidThroughForAccess,
+} from "../memberAccess";
 import {
   MEMBERSHIP_CORNER_CTA,
   MEMBERSHIP_CORNER_RESTART_ENABLED,
@@ -22,6 +26,10 @@ function memberWithPlans(
     },
   };
 }
+
+afterEach(() => {
+  clearRememberedLegacyPaidThroughForAccess();
+});
 
 describe("memberHasCanceledPaidMembership", () => {
   it("is false when logged out", () => {
@@ -105,7 +113,21 @@ describe("resolveMembershipCornerCta", () => {
     ).toBeNull();
   });
 
-  it("active member: button hidden (complimentary legacy membership)", () => {
+  it("free legacy plan without a paid-through date: button shown", () => {
+    expect(
+      resolveMembershipCornerCta(
+        memberWithPlans([
+          {
+            planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+            status: "ACTIVE",
+          },
+        ]),
+      ),
+    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
+  });
+
+  it("active complimentary legacy membership with a valid paid-through date: button hidden", () => {
+    rememberLegacyPaidThroughForAccess("mem_test", "2099-01-01");
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([

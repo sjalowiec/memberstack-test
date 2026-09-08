@@ -19,9 +19,18 @@ vi.mock("./custom-pattern-projects-store.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../../../src/lib/memberAccessServer.ts", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    loadLegacyPaidThroughYmdForEmail: vi.fn(async () => "2099-12-31"),
+  };
+});
+
 import { requirePatternProjectAccess, resolveVerifiedProjectUserId } from "./require-member-access.js";
 import { getMemberstackAdminClient } from "./memberstack-admin.js";
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
+import { loadLegacyPaidThroughYmdForEmail } from "../../../src/lib/memberAccessServer.ts";
 
 const MEMBER_ID = "mem_pattern_owner";
 const OTHER_ID = "mem_other_owner";
@@ -157,13 +166,64 @@ describe("requirePatternProjectAccess", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("allows the active free legacy membership plan in MEMBER_PLAN_IDS", async () => {
+  it("allows the free legacy membership plan only when paid-through is still valid", async () => {
+    vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue("2099-12-31");
     vi.mocked(getMemberstackAdminClient).mockReturnValue({
       verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
       getMember: vi.fn(async () => memberRecord(LEGACY_FREE_PLAN)),
     });
     const result = await requirePatternProjectAccess(makeRequest("good-token"));
     expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
+    expect(loadLegacyPaidThroughYmdForEmail).toHaveBeenCalled();
+  });
+
+  it("rejects an expired free legacy membership with 403", async () => {
+    vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue("2020-01-01");
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => memberRecord(LEGACY_FREE_PLAN)),
+    });
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(403);
+      expect(result.error).toMatch(/membership/i);
+    }
+  });
+
+  it("allows a free legacy membership that expires today", async () => {
+    const todayParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(new Date());
+    const todayYmd = `${todayParts.find((p) => p.type === "year")?.value}-${todayParts.find((p) => p.type === "month")?.value}-${todayParts.find((p) => p.type === "day")?.value}`;
+    vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue(todayYmd);
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => memberRecord(LEGACY_FREE_PLAN)),
+    });
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects a free legacy plan when Watson has no paid-through date", async () => {
+    vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue(null);
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => memberRecord(LEGACY_FREE_PLAN)),
+    });
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(403);
+  });
+
+  it("does not look up Watson for an active paid member", async () => {
+    vi.mocked(loadLegacyPaidThroughYmdForEmail).mockClear();
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result.ok).toBe(true);
+    expect(loadLegacyPaidThroughYmdForEmail).not.toHaveBeenCalled();
   });
 
   it("fails closed with 503 when Memberstack client is unavailable", async () => {

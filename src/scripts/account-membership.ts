@@ -7,6 +7,7 @@
  */
 
 import { isMemberLoggedIn } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import {
   resolveAccountMembershipPanelView,
   type AccountMembershipPanelAction,
@@ -151,6 +152,7 @@ async function populateAccountMembership(): Promise<void> {
     return;
   }
 
+  await ensureLegacyPaidThroughContext(payload);
   applyView(root, resolveAccountMembershipPanelView(payload));
   setVisible(loadingEl, false);
   setVisible(contentEl, true);

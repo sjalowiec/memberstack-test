@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MEMBERSHIPS, LEGACY_MEMBERSHIPS } from "../config/memberships";
+import { MEMBERSHIPS, LEGACY_MEMBERSHIPS, FREE_ACCESS_MEMBERSHIPS } from "../config/memberships";
 import { hasMemberAccess, getViewerAccessState } from "./memberAccess";
 import { headerAuthWindowState, resolveHeaderAuthState } from "./headerAuthState";
 
@@ -88,10 +88,27 @@ describe("resolveHeaderAuthState", () => {
     expect(hasMemberAccess(res)).toBe(false);
   });
 
-  it("approved legacy membership shell ? isMember true", () => {
+  it("approved legacy paid shell ? isMember true", () => {
     const res = payload([{ planId: LEGACY, status: "ACTIVE" }]);
     expect(resolveHeaderAuthState(res).isMember).toBe(true);
     expect(hasMemberAccess(res)).toBe(true);
+  });
+
+  it("free legacy plan without paid-through date ? isMember false", () => {
+    const res = payload([
+      { planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId, status: "ACTIVE" },
+    ]);
+    expect(resolveHeaderAuthState(res).isMember).toBe(false);
+    expect(hasMemberAccess(res)).toBe(false);
+  });
+
+  it("free legacy plan with valid paid-through date ? isMember true", () => {
+    const res = payload([
+      { planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId, status: "ACTIVE" },
+    ]);
+    const options = { legacyPaidThroughYmd: "2099-01-01", todayYmd: "2026-07-22" };
+    expect(resolveHeaderAuthState(res, options).isMember).toBe(true);
+    expect(hasMemberAccess(res, options)).toBe(true);
   });
 
   it("Header member flag never disagrees with hasMemberAccess", () => {
