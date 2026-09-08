@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { memberstackTokenFromRequest, requestWithBearerToken } from "./requireAdminRequest";
+import {
+  adminAuthErrorBody,
+  memberstackTokenFromRequest,
+  requestWithBearerToken,
+} from "./requireAdminRequest";
 
 describe("requireAdminRequest", () => {
   it("reads a bearer token from the Authorization header", () => {
@@ -37,4 +41,35 @@ describe("requireAdminRequest", () => {
     const authRequest = requestWithBearerToken(request, token);
     expect(authRequest.headers.get("Authorization")).toBe("Bearer aaa.bbb.ccc-cookie-token-value");
   });
+
+  it("forwards safe diagnostics on a 403 without identity values", () => {
+    const body = adminAuthErrorBody({
+      ok: false,
+      status: 403,
+      error: "Admin access required.",
+      diagnostics: {
+        env: {
+          ADMIN_MEMBER_IDS: true,
+          ADMIN_MEMBER_EMAILS: true,
+          MEMBERSTACK_SECRET_KEY: true,
+          MEMBERSTACK_SANDBOX_SECRET_KEY: true,
+        },
+        claimKeys: ["id", "sub", "type"],
+        subjectExists: true,
+        emailExists: false,
+        allowlist: { idMatched: false, emailMatched: false },
+      },
+    });
+    expect(body.ok).toBe(false);
+    expect(body.diagnostics).toEqual(
+      expect.objectContaining({
+        subjectExists: true,
+        emailExists: false,
+        claimKeys: ["id", "sub", "type"],
+      }),
+    );
+    expect(JSON.stringify(body)).not.toMatch(/mem_/);
+    expect(JSON.stringify(body)).not.toMatch(/@/);
+  });
 });
+

@@ -12,27 +12,42 @@
  * allowlist check.
  */
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
-import { getMemberstackAdminClient } from "./memberstack-admin.js";
+import {
+  emailFromMemberstackMemberRecord,
+  emailFromVerifiedTokenPayload,
+  getMemberstackAdminClient,
+  getMemberstackAdminClientForMemberId,
+  isMemberstackProductionRuntime,
+  memberIdFromVerifiedTokenPayload,
+  resolveMemberstackAdminSecret,
+} from "./memberstack-admin.js";
 
 /** Stable identity used only when ALLOW_DEV_PATTERN_USER=true (never true in production). */
 export const DEV_ADMIN_MEMBER = { id: "dev_local_admin", email: "dev-admin@local" };
 
 /** @param {string | undefined} value Comma/space/semicolon separated allowlist. */
-function parseAllowList(value) {
+export function parseAllowList(value) {
   return new Set(
     String(value || "")
       .split(/[\s,;]+/)
-      .map((entry) => entry.trim().toLowerCase())
+      .map((entry) =>
+        entry
+          .trim()
+          .replace(/^['"]+/, "")
+          .replace(/['"]+$/, "")
+          .trim()
+          .toLowerCase(),
+      )
       .filter(Boolean),
   );
 }
 
-function adminMemberIdAllowList() {
-  return parseAllowList(process.env.ADMIN_MEMBER_IDS);
+function adminMemberIdAllowList(env = process.env) {
+  return parseAllowList(env.ADMIN_MEMBER_IDS);
 }
 
-function adminMemberEmailAllowList() {
-  return parseAllowList(process.env.ADMIN_MEMBER_EMAILS);
+function adminMemberEmailAllowList(env = process.env) {
+  return parseAllowList(env.ADMIN_MEMBER_EMAILS);
 }
 
 /**
@@ -41,12 +56,51 @@ function adminMemberEmailAllowList() {
  * can reuse the allowlist check without re-verifying the token.
  * @param {{ id?: string | null, email?: string | null }} member
  */
-export function isAdminMember(member) {
+export function isAdminMember(member, env = process.env) {
   const id = (member?.id || "").trim().toLowerCase();
-  if (id && adminMemberIdAllowList().has(id)) return true;
+  if (id && adminMemberIdAllowList(env).has(id)) return true;
   const email = (member?.email || "").trim().toLowerCase();
-  if (email && adminMemberEmailAllowList().has(email)) return true;
+  if (email && adminMemberEmailAllowList(env).has(email)) return true;
   return false;
+}
+
+function envFlag(env, name) {
+  return Boolean(String(env?.[name] || "").trim());
+}
+
+function claimKeysFromPayload(payload) {
+  if (!payload || typeof payload !== "object") return [];
+  return Object.keys(payload).filter((key) => payload[key] != null && payload[key] !== "");
+}
+
+/**
+ * Dev-only authorization trace. Never includes JWTs, secrets, ids, emails, or env values.
+ * @param {{
+ *   env: NodeJS.ProcessEnv,
+ *   verified: unknown,
+ *   memberId: string | null,
+ *   email: string | null,
+ *   idMatched: boolean,
+ *   emailMatched: boolean,
+ * }} args
+ */
+export function safeAdminAuthDiagnostics(args) {
+  const { env, verified, memberId, email, idMatched, emailMatched } = args;
+  return {
+    env: {
+      ADMIN_MEMBER_IDS: envFlag(env, "ADMIN_MEMBER_IDS"),
+      ADMIN_MEMBER_EMAILS: envFlag(env, "ADMIN_MEMBER_EMAILS"),
+      MEMBERSTACK_SECRET_KEY: envFlag(env, "MEMBERSTACK_SECRET_KEY"),
+      MEMBERSTACK_SANDBOX_SECRET_KEY: envFlag(env, "MEMBERSTACK_SANDBOX_SECRET_KEY"),
+    },
+    claimKeys: claimKeysFromPayload(verified),
+    subjectExists: Boolean(memberId),
+    emailExists: Boolean(email),
+    allowlist: {
+      idMatched: Boolean(idMatched),
+      emailMatched: Boolean(emailMatched),
+    },
+  };
 }
 
 function bearerTokenFromRequest(req) {
@@ -62,12 +116,13 @@ function bearerTokenFromRequest(req) {
  * granted admin access so reports are testable without a real Memberstack login.
  *
  * @param {Request} req
+ * @param {NodeJS.ProcessEnv} [env]
  * @returns {Promise<
  *   | { ok: true, member: { id: string, email: string | null }, mode: "verified" | "dev" }
- *   | { ok: false, status: number, error: string }
+ *   | { ok: false, status: number, error: string, diagnostics?: ReturnType<typeof safeAdminAuthDiagnostics> }
  * >}
  */
-export async function requireAdmin(req) {
+export async function requireAdmin(req, env = process.env) {
   const token = bearerTokenFromRequest(req);
 
   if (!token) {
@@ -77,7 +132,9 @@ export async function requireAdmin(req) {
     return { ok: false, status: 401, error: "Sign in required." };
   }
 
-  const client = getMemberstackAdminClient();
+  const client = getMemberstackAdminClient({
+    secretKey: resolveMemberstackAdminSecret(env).secretKey,
+  });
   if (!client) {
     // MEMBERSTACK_SECRET_KEY unset — fail closed rather than leak why.
     console.error("admin-auth: MEMBERSTACK_SECRET_KEY is not configured.");
@@ -85,37 +142,48 @@ export async function requireAdmin(req) {
   }
 
   const verified = await client.verifyMemberToken(token);
-  if (!verified?.id) {
+  const memberId = memberIdFromVerifiedTokenPayload(verified);
+  if (!memberId) {
     return { ok: false, status: 401, error: "Invalid or expired session." };
   }
 
-  // Allowlist by id first (no extra network call); only fetch the member record for an email
-  // check when id alone doesn't already clear the caller.
-  if (adminMemberIdAllowList().has(verified.id.toLowerCase())) {
-    let email = null;
-    try {
-      const record = await client.getMember(verified.id);
-      email = typeof record?.auth?.email === "string" ? record.auth.email : null;
-    } catch {
-      /* id-based allowlist already granted access; email is cosmetic here */
-    }
-    return { ok: true, member: { id: verified.id, email }, mode: "verified" };
-  }
+  const tokenEmail = emailFromVerifiedTokenPayload(verified);
+  const idMatched = adminMemberIdAllowList(env).has(memberId.toLowerCase());
 
-  let record;
+  let record = null;
+  const lookupClient = getMemberstackAdminClientForMemberId(memberId, env) || client;
   try {
-    record = await client.getMember(verified.id);
+    record = await lookupClient.getMember(memberId);
   } catch (err) {
-    console.error("admin-auth: getMember lookup failed:", err);
-    return { ok: false, status: 500, error: "Could not verify admin access." };
+    if (!idMatched) {
+      console.error("admin-auth: getMember lookup failed:", err);
+      return { ok: false, status: 500, error: "Could not verify admin access." };
+    }
   }
 
-  const email = typeof record?.auth?.email === "string" ? record.auth.email : null;
-  if (!isAdminMember({ id: verified.id, email })) {
-    return { ok: false, status: 403, error: "Admin access required." };
+  const email = emailFromMemberstackMemberRecord(record) || tokenEmail;
+  const emailMatched = Boolean(email && adminMemberEmailAllowList(env).has(email.trim().toLowerCase()));
+
+  if (!idMatched && !emailMatched) {
+    const denied = {
+      ok: false,
+      status: 403,
+      error: "Admin access required.",
+    };
+    if (!isMemberstackProductionRuntime(env)) {
+      denied.diagnostics = safeAdminAuthDiagnostics({
+        env,
+        verified,
+        memberId,
+        email,
+        idMatched,
+        emailMatched,
+      });
+    }
+    return denied;
   }
 
-  return { ok: true, member: { id: verified.id, email }, mode: "verified" };
+  return { ok: true, member: { id: memberId, email }, mode: "verified" };
 }
 
 /**
@@ -123,7 +191,7 @@ export async function requireAdmin(req) {
  * Used by DEV-only tools (e.g. Machines for Sale publish) that already block
  * production hosts and should accept any signed-in member.
  */
-export async function requireVerifiedMember(req) {
+export async function requireVerifiedMember(req, env = process.env) {
   const token = bearerTokenFromRequest(req);
 
   if (!token) {
@@ -133,23 +201,27 @@ export async function requireVerifiedMember(req) {
     return { ok: false, status: 401, error: "Sign in required." };
   }
 
-  const client = getMemberstackAdminClient();
+  const client = getMemberstackAdminClient({
+    secretKey: resolveMemberstackAdminSecret(env).secretKey,
+  });
   if (!client) {
     console.error("admin-auth: MEMBERSTACK_SECRET_KEY is not configured.");
     return { ok: false, status: 500, error: "Admin auth is not configured." };
   }
 
   const verified = await client.verifyMemberToken(token);
-  if (!verified?.id) {
+  const memberId = memberIdFromVerifiedTokenPayload(verified);
+  if (!memberId) {
     return { ok: false, status: 401, error: "Invalid or expired session." };
   }
 
-  let email = null;
+  let email = emailFromVerifiedTokenPayload(verified);
+  const lookupClient = getMemberstackAdminClientForMemberId(memberId, env) || client;
   try {
-    const record = await client.getMember(verified.id);
-    email = typeof record?.auth?.email === "string" ? record.auth.email : null;
+    const record = await lookupClient.getMember(memberId);
+    email = emailFromMemberstackMemberRecord(record) || email;
   } catch {
     /* verified token is enough; email is cosmetic */
   }
-  return { ok: true, member: { id: verified.id, email }, mode: "verified" };
+  return { ok: true, member: { id: memberId, email }, mode: "verified" };
 }

@@ -6,9 +6,13 @@ const saveExistingHelpHubTip = vi.hoisted(() => vi.fn());
 const removeHelpHubTip = vi.hoisted(() => vi.fn());
 const loadHelpHubTipById = vi.hoisted(() => vi.fn());
 
-vi.mock("../../../../lib/admin/requireAdminRequest", () => ({
-  requireAdminForRequest,
-}));
+vi.mock("../../../../lib/admin/requireAdminRequest", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../../lib/admin/requireAdminRequest")>();
+  return {
+    ...actual,
+    requireAdminForRequest,
+  };
+});
 
 vi.mock("../../../../lib/helpHub/loadTips", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../../../lib/helpHub/loadTips")>();

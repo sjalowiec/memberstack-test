@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
+import { requireAdminForRequest, adminAuthErrorBody } from "../../../../lib/admin/requireAdminRequest";
 import {
   getTipId,
   mergeHelpHubPutUpdate,
@@ -53,7 +53,7 @@ function parseUrlId(raw: string | undefined): number | null {
 export const PUT: APIRoute = async ({ params, request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) {
-    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+    return jsonResponse(adminAuthErrorBody(auth), auth.status);
   }
 
   const urlId = parseUrlId(params.id);
@@ -138,7 +138,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
 export const DELETE: APIRoute = async ({ params, request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) {
-    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+    return jsonResponse(adminAuthErrorBody(auth), auth.status);
   }
 
   const urlId = parseUrlId(params.id);

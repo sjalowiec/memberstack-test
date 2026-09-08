@@ -82,9 +82,21 @@ describe("labels + visibility", () => {
 });
 
 describe("detectMemberstackMode", () => {
-  it("returns unknown when Memberstack is absent", () => {
+  it("returns unknown when Memberstack is absent and no hostname is given", () => {
     expect(detectMemberstackMode(undefined)).toBe("unknown");
     expect(detectMemberstackMode({})).toBe("unknown");
+  });
+
+  it("falls back to TEST on kin-dev when DOM internals do not expose a mode", () => {
+    expect(
+      detectMemberstackMode({ $memberstackDom: { getCurrentMember: () => null } }, "kin-dev.netlify.app"),
+    ).toBe("test");
+  });
+
+  it("falls back to LIVE on the production custom domain", () => {
+    expect(
+      detectMemberstackMode({ $memberstackDom: { getCurrentMember: () => null } }, "knititnow.com"),
+    ).toBe("live");
   });
 
   it("reads a string mode field", () => {

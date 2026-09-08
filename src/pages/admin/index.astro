@@ -455,7 +455,7 @@ const sections: DashSection[] = [
     function applyMemberstackMode(): void {
       const modeEl = document.querySelector("[data-env-ms-mode]");
       if (modeEl instanceof HTMLElement) {
-        const mode = detectMemberstackMode(window);
+        const mode = detectMemberstackMode(window, window.location.hostname);
         modeEl.textContent = memberstackModeLabel(mode);
         modeEl.dataset.modeState = mode;
       }

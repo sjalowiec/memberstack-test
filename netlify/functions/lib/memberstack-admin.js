@@ -25,12 +25,45 @@ export const MEMBERSTACK_ADMIN_BASE_URL = "https://admin.memberstack.com";
 let insecureTlsFetchSingleton = null;
 let insecureTlsWarned = false;
 
+/** Hosted DEV Netlify site. Browser Memberstack is TEST here even when CONTEXT=production. */
+const KIN_DEV_SITE_NAME = "kin-dev";
+const KIN_DEV_SITE_ID = "3196ab5e-c5a1-4cd4-a13a-980523087e9a";
+const KIN_DEV_HOST = "kin-dev.netlify.app";
+
+function hostnameFromNetlifyUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).hostname.trim().toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * True only on the hosted kin-dev Netlify site. Uses Netlify-provided site env
+ * (`SITE_NAME` / `SITE_ID` / `URL`), never a request Host header.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function isKinDevMemberstackRuntime(env = process.env) {
+  const siteName = String(env.SITE_NAME || "").trim().toLowerCase();
+  if (siteName === KIN_DEV_SITE_NAME) return true;
+  const siteId = String(env.SITE_ID || "").trim().toLowerCase();
+  if (siteId === KIN_DEV_SITE_ID) return true;
+  return hostnameFromNetlifyUrl(env.URL || env.DEPLOY_PRIME_URL) === KIN_DEV_HOST;
+}
+
 /**
  * True when this runtime is treated as production for Memberstack Admin safety rules.
  * Uses Netlify `CONTEXT=production` and/or `NODE_ENV=production`.
+ *
+ * kin-dev's production deploys also set `CONTEXT=production`, but the browser on
+ * `*.netlify.app` is Memberstack TEST. Treat kin-dev as non-production so Admin
+ * uses the sandbox secret and can look up `mem_sb_…` members.
  * @param {NodeJS.ProcessEnv} [env]
  */
 export function isMemberstackProductionRuntime(env = process.env) {
+  if (isKinDevMemberstackRuntime(env)) return false;
   const context = String(env.CONTEXT || "")
     .trim()
     .toLowerCase();
@@ -397,6 +430,94 @@ export function resolveMemberstackAdminSecret(env = process.env) {
  */
 export function getMemberstackSecretKey() {
   return resolveMemberstackAdminSecret().secretKey;
+}
+
+/**
+ * Prefer a member-id-shaped claim (`mem_…` / `mem_sb_…`) from `id` or `sub`.
+ * Memberstack's verify-token docs show `{ id, type, iat, exp, aud, iss }` with no email.
+ * The browser JWT (`getMemberCookie`) is a standard JWT whose subject is `sub`; some
+ * verified payloads also set `id` to the token type `"member"` rather than the member id.
+ * @param {unknown} payload
+ * @returns {string | null}
+ */
+export function memberIdFromVerifiedTokenPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  const root = /** @type {Record<string, unknown>} */ (payload);
+  const data =
+    root.data && typeof root.data === "object" && !Array.isArray(root.data)
+      ? /** @type {Record<string, unknown>} */ (root.data)
+      : root;
+  const candidates = [data.id, data.sub, data.memberId, data.member_id];
+  for (const value of candidates) {
+    if (typeof value === "string" && /^mem_/i.test(value.trim())) return value.trim();
+  }
+  for (const value of candidates) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+/**
+ * Verified Memberstack JWTs do not include email. Kept for claim-shape detection only.
+ * @param {unknown} payload
+ * @returns {string | null}
+ */
+export function emailFromVerifiedTokenPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  const root = /** @type {Record<string, unknown>} */ (payload);
+  const data =
+    root.data && typeof root.data === "object" && !Array.isArray(root.data)
+      ? /** @type {Record<string, unknown>} */ (root.data)
+      : root;
+  if (typeof data.email === "string" && data.email.trim()) return data.email.trim();
+  const auth = data.auth;
+  if (auth && typeof auth === "object" && !Array.isArray(auth)) {
+    const email = /** @type {Record<string, unknown>} */ (auth).email;
+    if (typeof email === "string" && email.trim()) return email.trim();
+  }
+  return null;
+}
+
+/**
+ * Email from an Admin REST member record (`auth.email`, then `email`).
+ * @param {unknown} record
+ * @returns {string | null}
+ */
+export function emailFromMemberstackMemberRecord(record) {
+  if (!record || typeof record !== "object") return null;
+  const root = /** @type {Record<string, unknown>} */ (record);
+  const objects = [root];
+  if (root.data && typeof root.data === "object" && !Array.isArray(root.data)) {
+    objects.push(/** @type {Record<string, unknown>} */ (root.data));
+  }
+  for (const obj of objects) {
+    const auth = obj.auth;
+    if (auth && typeof auth === "object" && !Array.isArray(auth)) {
+      const email = /** @type {Record<string, unknown>} */ (auth).email;
+      if (typeof email === "string" && email.trim()) return email.trim();
+    }
+    if (typeof obj.email === "string" && obj.email.trim()) return obj.email.trim();
+  }
+  return null;
+}
+
+/**
+ * Admin client whose secret matches the member id's TEST/LIVE mode when possible.
+ * @param {string} memberId
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function getMemberstackAdminClientForMemberId(memberId, env = process.env) {
+  const memberMode = classifyMemberstackMemberIdMode(memberId);
+  if (!isMemberstackProductionRuntime(env) && memberMode === "sandbox") {
+    const sandboxFromProcess = String(env[MEMBERSTACK_SANDBOX_SECRET_ENV] || "").trim();
+    const sandbox = sandboxFromProcess || (readDotEnvValue(MEMBERSTACK_SANDBOX_SECRET_ENV) || "").trim();
+    if (sandbox) return getMemberstackAdminClient({ secretKey: sandbox });
+  }
+  if (memberMode === "live") {
+    const live = String(env[MEMBERSTACK_LIVE_SECRET_ENV] || "").trim();
+    if (live) return getMemberstackAdminClient({ secretKey: live });
+  }
+  return getMemberstackAdminClient();
 }
 
 /**
@@ -875,10 +996,12 @@ export function createMemberstackAdminClient({
     } catch {
       return null;
     }
-    const data = body && typeof body === "object" && "data" in body ? body.data : null;
-    if (!data || typeof data !== "object" || typeof data.id !== "string") return null;
-    return /** @type {{ id: string, type?: string, iat?: number, exp?: number, aud?: string, iss?: string }} */ (
-      data
+    const data = body && typeof body === "object" && "data" in body ? body.data : body;
+    const id = memberIdFromVerifiedTokenPayload(data);
+    if (!id) return null;
+    const payload = data && typeof data === "object" ? data : {};
+    return /** @type {{ id: string, type?: string, iat?: number, exp?: number, aud?: string, iss?: string, sub?: string }} */ (
+      { ...payload, id }
     );
   }
 

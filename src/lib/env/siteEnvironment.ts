@@ -99,56 +99,67 @@ export function shouldShowEnvironmentBanner(env: SiteEnvironment): boolean {
 
 /**
  * Best-effort attempt to read whether Memberstack is running in TEST or LIVE
- * mode from the loaded `$memberstackDom` instance.
+ * mode from the loaded `$memberstackDom` instance, then from the page hostname.
  *
  * Memberstack v2's DOM package does not expose a documented public API for the
- * current mode, so this probes the most likely internal fields and the public
- * key shape. When nothing conclusive is found it returns `"unknown"` (which the
- * UI is expected to surface as "UNKNOWN").
+ * current mode (the app is installed with `data-memberstack-app`, not pk_test /
+ * pk_live). Internal field probes often return `"unknown"` — which is why the
+ * admin dashboard showed MEMBERSTACK MODE: UNKNOWN. Hostname fallback matches
+ * BaseLayout: production custom domains are LIVE; localhost and `*.netlify.app`
+ * (including kin-dev) are TEST.
  */
-export function detectMemberstackMode(win: unknown): MemberstackMode {
+export function detectMemberstackMode(
+  win: unknown,
+  hostname?: string | null,
+): MemberstackMode {
   try {
     const w = win as Record<string, any> | undefined | null;
     const ms = w?.$memberstackDom ?? w?.$memberstack ?? null;
-    if (!ms) return "unknown";
+    if (ms) {
+      const stringCandidates: unknown[] = [
+        ms?._app?.mode,
+        ms?.app?.mode,
+        ms?._config?.mode,
+        ms?.config?.mode,
+        ms?.mode,
+      ];
+      for (const candidate of stringCandidates) {
+        const mode = classifyModeString(candidate);
+        if (mode !== "unknown") return mode;
+      }
 
-    const stringCandidates: unknown[] = [
-      ms?._app?.mode,
-      ms?.app?.mode,
-      ms?._config?.mode,
-      ms?.config?.mode,
-      ms?.mode,
-    ];
-    for (const candidate of stringCandidates) {
-      const mode = classifyModeString(candidate);
-      if (mode !== "unknown") return mode;
+      const boolCandidates: unknown[] = [
+        ms?._app?.testMode,
+        ms?._app?.test,
+        ms?.testMode,
+        ms?.test,
+      ];
+      for (const candidate of boolCandidates) {
+        if (typeof candidate === "boolean") return candidate ? "test" : "live";
+      }
+
+      const keyCandidates: unknown[] = [
+        ms?._app?.publicKey,
+        ms?.publicKey,
+        ms?._config?.publicKey,
+        ms?.config?.publicKey,
+      ];
+      for (const candidate of keyCandidates) {
+        const mode = classifyModeString(candidate);
+        if (mode !== "unknown") return mode;
+      }
     }
-
-    const boolCandidates: unknown[] = [
-      ms?._app?.testMode,
-      ms?._app?.test,
-      ms?.testMode,
-      ms?.test,
-    ];
-    for (const candidate of boolCandidates) {
-      if (typeof candidate === "boolean") return candidate ? "test" : "live";
-    }
-
-    const keyCandidates: unknown[] = [
-      ms?._app?.publicKey,
-      ms?.publicKey,
-      ms?._config?.publicKey,
-      ms?.config?.publicKey,
-    ];
-    for (const candidate of keyCandidates) {
-      const mode = classifyModeString(candidate);
-      if (mode !== "unknown") return mode;
-    }
-
-    return "unknown";
   } catch {
-    return "unknown";
+    /* fall through to hostname */
   }
+
+  // Memberstack v2 is installed with `data-memberstack-app` (no pk_test/pk_live).
+  // TEST vs LIVE is domain-based: production custom domains are LIVE; localhost
+  // and *.netlify.app (including kin-dev) are TEST.
+  if (hostname) {
+    return detectSiteEnvironment(hostname) === "production" ? "live" : "test";
+  }
+  return "unknown";
 }
 
 function classifyModeString(value: unknown): MemberstackMode {

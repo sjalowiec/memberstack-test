@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
+import { requireAdminForRequest, adminAuthErrorBody } from "../../../../lib/admin/requireAdminRequest";
 import {
   getTipId,
   normalizeRelatedLessons,
@@ -45,7 +45,7 @@ function slugTaken(
 export const GET: APIRoute = async ({ request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) {
-    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+    return jsonResponse(adminAuthErrorBody(auth), auth.status);
   }
 
   try {
@@ -60,7 +60,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 export const POST: APIRoute = async ({ request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) {
-    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+    return jsonResponse(adminAuthErrorBody(auth), auth.status);
   }
 
   if (!request.headers.get("content-type")?.includes("application/json")) {

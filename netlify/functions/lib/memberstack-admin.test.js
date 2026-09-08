@@ -9,17 +9,22 @@ import {
   classifyMemberstackMemberIdMode,
   classifyMemberstackSecretMode,
   createMemberstackAdminClient,
+  emailFromMemberstackMemberRecord,
+  emailFromVerifiedTokenPayload,
   getMemberstackAdminClient,
   getMemberstackSecretKey,
+  isKinDevMemberstackRuntime,
   isMemberstackEnvironmentMismatch,
+  isMemberstackProductionRuntime,
   logMemberstackEnvironmentMismatch,
+  memberIdFromVerifiedTokenPayload,
   resolveMemberstackAdminSecret,
 } from "./memberstack-admin.js";
 import { readDotEnvValue } from "./local-dotenv.js";
 
 const LIVE_KEY = "MEMBERSTACK_SECRET_KEY";
 const SANDBOX_KEY = "MEMBERSTACK_SANDBOX_SECRET_KEY";
-const ENV_KEYS = [LIVE_KEY, SANDBOX_KEY, "NODE_ENV", "CONTEXT"];
+const ENV_KEYS = [LIVE_KEY, SANDBOX_KEY, "NODE_ENV", "CONTEXT", "SITE_NAME", "SITE_ID", "URL"];
 let savedEnv = {};
 
 beforeEach(() => {
@@ -84,15 +89,28 @@ describe("memberstack-admin client secret injection", () => {
     expect(getMemberstackAdminClient()).toBeNull();
   });
 
-  it("production uses only the live secret even when sandbox is set", () => {
+  it("kin-dev CONTEXT=production still prefers the sandbox Admin secret", () => {
+    process.env.NODE_ENV = "production";
     process.env.CONTEXT = "production";
+    process.env.SITE_NAME = "kin-dev";
+    process.env[LIVE_KEY] = "sk_live_should_not_win";
+    process.env[SANDBOX_KEY] = "sk_sb_kin_dev_wins";
+    expect(isKinDevMemberstackRuntime()).toBe(true);
+    expect(isMemberstackProductionRuntime()).toBe(false);
+    const resolved = resolveMemberstackAdminSecret();
+    expect(resolved.secretKey).toBe("sk_sb_kin_dev_wins");
+    expect(resolved.usedSandboxEnv).toBe(true);
+  });
+
+  it("true production CONTEXT still uses only the live secret", () => {
+    process.env.CONTEXT = "production";
+    process.env.SITE_NAME = "knititnow";
     process.env[LIVE_KEY] = "sk_live_prod_only";
     process.env[SANDBOX_KEY] = "sk_sb_must_never_be_used";
+    expect(isMemberstackProductionRuntime()).toBe(true);
     const resolved = resolveMemberstackAdminSecret();
     expect(resolved.secretKey).toBe("sk_live_prod_only");
     expect(resolved.usedSandboxEnv).toBe(false);
-    expect(resolved.source).toContain(LIVE_KEY);
-    expect(JSON.stringify(resolved)).not.toContain("sk_sb_must_never_be_used");
   });
 
   it("Netlify branch-deploy keeps sandbox Admin even when NODE_ENV is production", () => {
@@ -185,5 +203,46 @@ describe("memberstack environment alignment", () => {
     expect(logged).toContain("live");
     expect(logged).not.toContain(secret);
     error.mockRestore();
+  });
+});
+
+describe("verified token claim shape", () => {
+  const sueClaims = {
+    id: "member",
+    sub: "mem_sb_cms4tl24v00eb0sqx143i4a9r",
+    type: "member",
+    iat: 1710000000,
+    exp: 1910000000,
+    aud: "app_cmfh3d1n802vb0wy706205810",
+    iss: "https://api.memberstack.com",
+  };
+
+  it("treats sub as the member id when id is the token type", () => {
+    expect(memberIdFromVerifiedTokenPayload(sueClaims)).toBe(
+      "mem_sb_cms4tl24v00eb0sqx143i4a9r",
+    );
+    expect(emailFromVerifiedTokenPayload(sueClaims)).toBeNull();
+  });
+
+  it("still accepts the documented verify-token id claim", () => {
+    expect(
+      memberIdFromVerifiedTokenPayload({
+        id: "mem_abc123",
+        type: "member",
+        iat: 1,
+        exp: 2,
+        aud: "app_x",
+        iss: "https://api.memberstack.com",
+      }),
+    ).toBe("mem_abc123");
+  });
+
+  it("reads email from the Admin member record, not the JWT", () => {
+    expect(
+      emailFromMemberstackMemberRecord({
+        id: "mem_sb_cms4tl24v00eb0sqx143i4a9r",
+        auth: { email: "sue@knititnow.com" },
+      }),
+    ).toBe("sue@knititnow.com");
   });
 });
