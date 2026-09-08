@@ -163,12 +163,18 @@ describe("videos-public.json shallow neckline, no shoulder shaping", () => {
     expect(detailPage).toContain('vimeo_hash');
     expect(detailPage).not.toMatch(/href=["']https:\/\/vimeo\.com\//);
 
+    const embedSrc = readFileSync(
+      join(process.cwd(), "src", "lib", "videos", "catalogVideoEmbedSrc.ts"),
+      "utf-8",
+    );
+    expect(embedSrc).toContain('iframeUrl.searchParams.set("h", privacyHash)');
+
     const embed = readFileSync(
       join(process.cwd(), "src", "components", "videos", "GatedVimeoEmbed.astro"),
       "utf-8",
     );
-    expect(embed).toContain('searchParams.set("h", privacyHash)');
-    expect(embed).toContain("data-iframe-src={iframeSrc}");
+    expect(embed).toContain("gatedVimeoEmbedDelivery");
+    expect(embed).not.toContain("data-iframe-src={iframeSrc}");
     expect(embed).not.toMatch(/href=["']https:\/\/vimeo\.com\//);
   });
 });

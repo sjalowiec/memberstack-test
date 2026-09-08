@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   MEMBER_PLAN_IDS,
@@ -131,6 +132,36 @@ describe("hasKinVideoAccess", () => {
   it("returns false for empty payload", () => {
     expect(hasKinVideoAccess(null)).toBe(false);
     expect(hasKinVideoAccess(undefined)).toBe(false);
+  });
+
+  it("returns false for an expired free legacy plan", () => {
+    expect(
+      hasKinVideoAccess(
+        {
+          data: {
+            planConnections: [
+              { planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId, status: "ACTIVE" },
+            ],
+          },
+        },
+        { legacyPaidThroughYmd: "2020-01-01", todayYmd: "2026-09-08" },
+      ),
+    ).toBe(false);
+  });
+
+  it("returns true for a free legacy plan with a current paid-through date", () => {
+    expect(
+      hasKinVideoAccess(
+        {
+          data: {
+            planConnections: [
+              { planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId, status: "ACTIVE" },
+            ],
+          },
+        },
+        { legacyPaidThroughYmd: "2026-12-01", todayYmd: "2026-09-08" },
+      ),
+    ).toBe(true);
   });
 });
 

@@ -6,6 +6,7 @@ import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
+import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { filterPublicCatalogVideos, findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 export const prerender = true;
 
@@ -45,20 +46,11 @@ const downloadLabel = downloadLabelRaw || "Download";
 const rawAccessLevel = String((video as any)?.access_level ?? "member")
   .trim()
   .toLowerCase();
-const normalizedAccessLevel =
-  rawAccessLevel === "open" || rawAccessLevel === "public" || rawAccessLevel === "free"
-    ? "open"
-    : "member";
-
-// Public exception: when this video is the featured Tuesday Tip (isTipOfWeek), show player to everyone.
-// Otherwise use the normalized access_level from JSON (default "member").
-const isFeaturedTip = (video as any)?.isTipOfWeek === true;
-const effectiveAccessLevelFromVideo = isFeaturedTip ? "open" : normalizedAccessLevel;
-/** Temporary until free video exceptions are restored — set false to use JSON/tip logic again. */
-const TEMPORARY_FORCE_MEMBER_WATCH = false;
-const effectiveAccessLevel = TEMPORARY_FORCE_MEMBER_WATCH
-  ? "member"
-  : effectiveAccessLevelFromVideo;
+const effectiveAccessLevel = catalogVideoPlaybackAccess({
+  access_level: rawAccessLevel,
+  isTipOfWeek: (video as any)?.isTipOfWeek === true,
+  tipOfWeek: (video as any)?.tipOfWeek === true,
+});
 
 // thumbnail / poster: support full URL, /path, or filename → /images/filename
 const rawPosterUrl = (video as any)?.posterUrl ?? (video as any)?.poster_url ?? "";
@@ -132,6 +124,7 @@ const enableVideoChapterControls = hasCatalogChapters;
 
             <GatedVimeoEmbed
               videoId={vimeoId}
+              contentId={id}
               title={title}
               access_level={effectiveAccessLevel}
               enableVimeoPlayerApi={enableVideoChapterControls}
@@ -309,8 +302,8 @@ const enableVideoChapterControls = hasCatalogChapters;
           <script
             is:inline
             define:vars={{
-              kbmChapterSeekIframeId: `kbm-gated-vimeo-${vimeoId}`,
-              kbmChapterSeekSlotId: `kbm-vimeo-slot-${vimeoId}`,
+              kbmChapterSeekIframeId: `kbm-gated-vimeo-${id}`,
+              kbmChapterSeekSlotId: `kbm-vimeo-slot-${id}`,
             }}
           >
             (function () {

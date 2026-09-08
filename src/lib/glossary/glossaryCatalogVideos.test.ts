@@ -29,6 +29,7 @@ describe("effectiveCatalogVideoAccess", () => {
 
   it("respects access_level", () => {
     expect(effectiveCatalogVideoAccess({ access_level: "open" })).toBe("open");
+    expect(effectiveCatalogVideoAccess({ access_level: "public" })).toBe("open");
     expect(effectiveCatalogVideoAccess({ access_level: "member" })).toBe("member");
     expect(effectiveCatalogVideoAccess({})).toBe("member");
   });

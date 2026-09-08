@@ -14,6 +14,7 @@ type LessonLibraryVideoEmbed = {
   key: string;
   title: string;
   videoId: string;
+  contentId?: string;
   access_level: "open" | "member";
 };
 
@@ -186,6 +187,7 @@ const showSupportImage =
           {lessonLibraryVideos.map((libVideo) => (
             <GatedVimeoEmbed
               videoId={libVideo.videoId}
+              contentId={libVideo.contentId}
               title={libVideo.title}
               access_level={libVideo.access_level}
             />

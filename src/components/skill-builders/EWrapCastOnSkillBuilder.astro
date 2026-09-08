@@ -51,6 +51,7 @@ const weightsNoteParts = eWrapCastOnWeightsNoteParts(builder.weightsNote);
           <h2>Watch</h2>
           <GatedVimeoEmbed
             videoId={video.vimeoId}
+            contentId={String(video.contentId)}
             title={video.title ?? builder.title}
             access_level={video.accessLevel}
           />

@@ -58,6 +58,16 @@ describe("videoCatalogAccessState", () => {
     ).toBe(false);
   });
 
+  it("does not treat a logged-in body class as membership", () => {
+    expect(readSitewideAccessPublication(undefined, true)).toBe("unpublished");
+    expect(
+      readSitewideAccessPublication(
+        { hasMemberAccess: false, viewerAccessState: "loggedInNoAccess" },
+        true,
+      ),
+    ).toBe("denied");
+  });
+
   it("does not treat an early catalog poll as logged-out before the sitewide snapshot exists", () => {
     expect(readSitewideAccessPublication(undefined, false)).toBe("unpublished");
     expect(

@@ -173,6 +173,7 @@ const gaugeId = `sb-${builderId}`;
             <div class="sb-video-helper__embed">
               <GatedVimeoEmbed
                 videoId={video.vimeoId}
+                contentId={video.contentId != null ? String(video.contentId) : undefined}
                 title={video.title ?? title}
                 access_level={memberOnly ? "member" : "open"}
                 privacyHash={video.privacyHash ?? ""}
