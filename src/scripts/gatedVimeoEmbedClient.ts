@@ -1,6 +1,13 @@
-import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+import { hasMemberAccess, getViewerAccessState } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
+import { getMembershipStatusAuthHeaders } from "../lib/membership/membershipStatusClient";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { getMemberstackReturnPath } from "../lib/memberstackReturnUrl";
+import { catalogVideoPlaybackAccess } from "../lib/videos/catalogVideoPlaybackAccess";
+import { buildCatalogVimeoEmbedSrc } from "../lib/videos/catalogVideoEmbedSrc";
+import { decideGatedVimeoPlayback } from "../lib/videos/gatedVimeoEmbedDelivery";
+
+export const CATALOG_VIDEO_EMBED_API_PATH = "/.netlify/functions/catalog-video-embed";
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
   for (let i = 0; i < attempts; i++) {
@@ -16,22 +23,54 @@ async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
 }
 
 function readConfig(root: HTMLElement) {
-  const videoId = root.dataset.videoId ?? "";
-  const slot = root.querySelector<HTMLElement>(`#kbm-vimeo-slot-${videoId}`);
-  if (!videoId || !slot) return null;
+  const contentId = (root.dataset.contentId ?? "").trim();
+  const videoId = (root.dataset.videoId ?? "").trim();
+  const slotKey = contentId || videoId;
+  const slot = slotKey
+    ? root.querySelector<HTMLElement>(`#kbm-vimeo-slot-${slotKey}`)
+    : null;
+  if (!slot) return null;
 
   return {
     root,
     slot,
+    contentId,
     videoId,
-    iframeSrc: root.dataset.iframeSrc ?? "",
+    iframeSrc: (root.dataset.iframeSrc ?? "").trim(),
     title: root.dataset.videoTitle ?? "Video",
     videoDevBypass: root.dataset.videoDevBypass === "true",
     enableVimeoPlayerApi: root.dataset.enableVimeoPlayerApi === "true",
-    iframePlayerId: `kbm-gated-vimeo-${videoId}`,
+    accessLevel: catalogVideoPlaybackAccess({
+      access_level: root.dataset.accessLevel ?? "member",
+    }),
+    iframePlayerId: videoId ? `kbm-gated-vimeo-${videoId}` : contentId ? `kbm-gated-vimeo-${contentId}` : "",
     ctaHref: root.dataset.ctaHref ?? "/membership",
     ctaText: root.dataset.ctaText ?? "Join to watch",
   };
+}
+
+async function fetchCatalogEmbedSrc(
+  contentId: string,
+  enableVimeoPlayerApi: boolean,
+): Promise<string | null> {
+  const headers = await getMembershipStatusAuthHeaders();
+  const params = new URLSearchParams({ contentId });
+  if (enableVimeoPlayerApi) params.set("playerApi", "1");
+  const res = await fetch(`${CATALOG_VIDEO_EMBED_API_PATH}?${params.toString()}`, {
+    method: "GET",
+    headers,
+    credentials: "same-origin",
+  });
+  if (!res.ok) return null;
+  let body: { ok?: boolean; iframeSrc?: string } | null = null;
+  try {
+    body = (await res.json()) as { ok?: boolean; iframeSrc?: string };
+  } catch {
+    return null;
+  }
+  if (!body || body.ok === false) return null;
+  const src = typeof body.iframeSrc === "string" ? body.iframeSrc.trim() : "";
+  return src.startsWith("https://player.vimeo.com/video/") ? src : null;
 }
 
 function initGatedVimeoEmbed(root: HTMLElement) {
@@ -40,11 +79,13 @@ function initGatedVimeoEmbed(root: HTMLElement) {
 
   const {
     slot,
+    contentId,
     videoId,
-    iframeSrc,
+    iframeSrc: deliveredIframeSrc,
     title,
     videoDevBypass,
     enableVimeoPlayerApi,
+    accessLevel,
     iframePlayerId,
     ctaHref,
     ctaText,
@@ -53,6 +94,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
   const iframeIdAttr =
     enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
   let authListenersBound = false;
+  let renderedSrc: string | null = accessLevel === "open" ? deliveredIframeSrc || null : null;
 
   function buildLockedMarkup(showLogin: boolean) {
     const loginBtn = showLogin
@@ -85,15 +127,21 @@ function initGatedVimeoEmbed(root: HTMLElement) {
   }
 
   function showLocked(showLogin: boolean) {
+    renderedSrc = null;
     slot.innerHTML = buildLockedMarkup(showLogin);
     if (showLogin) wireVideoLoginButton();
     slot.setAttribute("data-state", "ready");
   }
 
-  function showUnlockedIframe() {
+  function showUnlockedIframe(src: string) {
+    if (renderedSrc === src && slot.querySelector("iframe")) {
+      slot.setAttribute("data-state", "ready");
+      return;
+    }
+    renderedSrc = src;
     slot.innerHTML = `
         <iframe${iframeIdAttr}
-          src="${iframeSrc}"
+          src="${src}"
           title="${title}"
           loading="lazy"
           frameborder="0"
@@ -105,35 +153,76 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     slot.setAttribute("data-state", "ready");
   }
 
+  async function resolveEmbedSrc(hasAccess: boolean): Promise<string | null> {
+    if (deliveredIframeSrc) return deliveredIframeSrc;
+    if (contentId && (hasAccess || accessLevel === "open" || videoDevBypass)) {
+      return fetchCatalogEmbedSrc(contentId, enableVimeoPlayerApi);
+    }
+    if (hasAccess && videoId) {
+      return buildCatalogVimeoEmbedSrc({
+        vimeoId: videoId,
+        enableVimeoPlayerApi,
+        iframePlayerId,
+      });
+    }
+    return null;
+  }
+
   async function resolveAccessAndRender() {
     try {
-      if (videoDevBypass) {
-        console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
-          videoId,
-          reason: "videoDevBypass(PUBLIC_DEV_BYPASS_GATING=true)",
+      if (accessLevel === "open") {
+        const src = deliveredIframeSrc || (await resolveEmbedSrc(false));
+        const decision = decideGatedVimeoPlayback({
+          accessLevel,
+          videoDevBypass,
+          membershipResolved: true,
+          hasMemberAccess: true,
+          isLoggedIn: true,
+          embedSrc: src,
         });
-        showUnlockedIframe();
+        if (decision.action === "unlock") showUnlockedIframe(decision.iframeSrc);
         return;
+      }
+
+      if (videoDevBypass) {
+        const src = await resolveEmbedSrc(true);
+        const decision = decideGatedVimeoPlayback({
+          accessLevel,
+          videoDevBypass: true,
+          membershipResolved: true,
+          hasMemberAccess: true,
+          isLoggedIn: true,
+          embedSrc: src,
+        });
+        if (decision.action === "unlock") {
+          showUnlockedIframe(decision.iframeSrc);
+          return;
+        }
       }
 
       const res = await waitForMemberstackReady();
-      const member = res?.data?.member ?? null;
-      const isLoggedIn = Boolean(member);
-      const rawKinAccess = member?.customFields?.["kin-access"];
-      const hasVideoAccess = res ? hasKinVideoAccess(res) : false;
-
-      logKinVideoAccessDebug("GatedVimeoEmbed.iframe", {
-        member: res,
-        rawKinAccess,
-        finalHasVideoAccess: hasVideoAccess,
+      await ensureLegacyPaidThroughContext(res);
+      const viewerState = getViewerAccessState(res);
+      const isLoggedIn = viewerState !== "loggedOut";
+      const memberAccess = hasMemberAccess(res);
+      const embedSrc = await resolveEmbedSrc(memberAccess);
+      const decision = decideGatedVimeoPlayback({
+        accessLevel,
+        videoDevBypass: false,
+        membershipResolved: true,
+        hasMemberAccess: memberAccess,
+        isLoggedIn,
+        embedSrc,
       });
 
-      if (!hasVideoAccess) {
-        showLocked(!isLoggedIn);
+      if (decision.action === "unlock") {
+        showUnlockedIframe(decision.iframeSrc);
         return;
       }
-
-      showUnlockedIframe();
+      if (decision.action === "lock") {
+        showLocked(decision.showLogin);
+        return;
+      }
     } catch (error) {
       console.error("GatedVimeoEmbed resolveAccessAndRender failed:", error);
       showLocked(true);

@@ -4,9 +4,12 @@ import PageHead from "../../components/PageHead.astro";
 import videosRaw from "../../data/videos-public.json";
 import { getPreviewMember } from "../../lib/getPreviewMember";
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
+import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+import { videoCatalogClientCards } from "../../lib/videos/videoCatalogClientCards";
 import "../../styles/favorites.css";
 
 const publicVideos = filterPublicCatalogVideos(Array.isArray(videosRaw) ? videosRaw : []);
+const catalogVideosForClient = videoCatalogClientCards(publicVideos);
 
 // --- Featured tip (Tuesday Tip / Weekly Quick Win) ---
 // Link and text are resolved from videos-public.json via tipOfWeek/isTipOfWeek.
@@ -200,7 +203,7 @@ const forceMemberView =
     <span class="video-back-to-search__label">Back to search</span>
   </button>
 
-  <script id="videos-data" type="application/json" set:html={JSON.stringify(publicVideos)} />
+  <script id="videos-data" type="application/json" set:html={JSON.stringify(catalogVideosForClient)} />
   <script is:inline define:vars={{ forceMemberView, FORCE_ALL_VIDEOS_LOCKED }}>
     window.__PREVIEW_FORCE_MEMBER__ = forceMemberView;
     window.__FORCE_ALL_VIDEOS_LOCKED__ = FORCE_ALL_VIDEOS_LOCKED;
@@ -231,6 +234,7 @@ const forceMemberView =
       syncVideoBackToSearchDesktopPosition,
       syncVideoBackToSearchFromIntersection,
     } from "../../lib/videos/videoBackToSearch";
+    import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
     import {
       nextVideoCatalogAuthCategory,
       readSitewideAccessPublication,
@@ -396,12 +400,9 @@ const forceMemberView =
         el.classList.remove("is-locked");
       });
     }
-    /** Same playback access as GatedVimeoEmbed / videos/[id] (public + open = free). */
-    function catalogVideoPlaybackAccess(v) {
-      if (v.tipOfWeek === true || v.isTipOfWeek === true) return "open";
-      const level = String(v.access_level ?? "member").trim().toLowerCase();
-      if (level === "open" || level === "public") return "open";
-      return "member";
+    /** Same playback access as GatedVimeoEmbed / videos/[id] (public + open + free + tip = free). */
+    function catalogVideoIsFreeToPlay(v) {
+      return catalogVideoPlaybackAccess(v) === "open";
     }
     function isMemberOnlyVideo(v) {
       return catalogVideoPlaybackAccess(v) === "member";
@@ -443,7 +444,7 @@ const forceMemberView =
     }
 
     function isVideoFree(video) {
-      const isFreeByData = catalogVideoPlaybackAccess(video) === "open";
+      const isFreeByData = catalogVideoIsFreeToPlay(video);
       return window.__FORCE_ALL_VIDEOS_LOCKED__ === true ? false : isFreeByData;
     }
 

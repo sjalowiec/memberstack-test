@@ -1,63 +1,60 @@
 ---
 /**
  * GatedVimeoEmbed.astro
- * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": iframe when member has active basic or premium plan (window.kbmHasKinVideoAccess).
- * - When PUBLIC_DEV_BYPASS_GATING=true on the Astro dev server, member videos show without login.
+ * - If access_level is public/open/free (or the featured tip): render iframe for everyone.
+ * - If access_level is member: do not put the Vimeo URL or player on the page.
+ *   The client confirms hasMemberAccess, then loads the embed URL from
+ *   `/.netlify/functions/catalog-video-embed`.
  */
 import { videoDevBypass } from "../../lib/devBypass";
+import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+import { gatedVimeoEmbedDelivery } from "../../lib/videos/gatedVimeoEmbedDelivery";
 
 const {
   videoId: rawVideoId,
+  contentId: rawContentId = "",
   title = "Video",
-  access_level: rawAccessLevel = "open", // "open" | "member" | "public" | "free"
+  access_level: rawAccessLevel = "member",
   aspect = "16/9",
-  thumbUrl = "", // optional: show a thumbnail for locked state
+  thumbUrl = "",
   ctaHref = "/membership",
   ctaText = "Become a Member",
-  /** When true, iframe uses Vimeo Player.js (`api=1`) and a stable `id` for programmatic seek. */
   enableVimeoPlayerApi = false,
-  /** Unlisted privacy hash from catalog `vimeo_hash`. Used only on the player embed (`h=`). */
   privacyHash: rawPrivacyHash = "",
 } = Astro.props;
 
-// Coerce the Vimeo ID to a trimmed string (JSON may store it as a number).
 const videoId = rawVideoId != null ? String(rawVideoId).trim() : "";
+const contentId = rawContentId != null ? String(rawContentId).trim() : "";
 const privacyHash = String(rawPrivacyHash ?? "").trim();
-
-// Normalize access level so gating only ever deals with "open" | "member".
-// Public synonyms ("public", "free", "open") all mean "show to everyone".
-const normalizedAccess = String(rawAccessLevel).trim().toLowerCase();
-const access_level =
-  normalizedAccess === "open" || normalizedAccess === "public" || normalizedAccess === "free"
-    ? "open"
-    : "member";
+const access_level = catalogVideoPlaybackAccess({
+  access_level: rawAccessLevel,
+});
+const iframePlayerId = videoId ? `kbm-gated-vimeo-${videoId}` : contentId ? `kbm-gated-vimeo-${contentId}` : "";
+const delivery = gatedVimeoEmbedDelivery({
+  accessLevel: access_level,
+  videoId,
+  contentId,
+  privacyHash,
+  enableVimeoPlayerApi,
+  iframePlayerId,
+  videoDevBypass,
+});
 
 function paddingPercent(aspectStr: string) {
-  // "16/9" -> 56.25
   const [w, h] = String(aspectStr).split("/").map(Number);
   if (!w || !h) return 56.25;
   return (h / w) * 100;
 }
 
 const pad = paddingPercent(aspect);
-const iframePlayerId = `kbm-gated-vimeo-${videoId}`;
-const iframeUrl = new URL(`https://player.vimeo.com/video/${videoId || "0"}`);
-if (privacyHash && /^[a-zA-Z0-9]+$/.test(privacyHash)) {
-  iframeUrl.searchParams.set("h", privacyHash);
-}
-if (enableVimeoPlayerApi) {
-  iframeUrl.searchParams.set("api", "1");
-  iframeUrl.searchParams.set("player_id", iframePlayerId);
-}
-const iframeSrc = videoId ? iframeUrl.toString() : "";
 ---
 
 <div
   class="kbm-video"
-  data-access-level={access_level}
-  data-video-id={videoId}
-  data-iframe-src={iframeSrc}
+  data-access-level={delivery.accessLevel}
+  data-content-id={delivery.contentIdAttr ?? undefined}
+  data-video-id={delivery.videoIdAttr ?? undefined}
+  data-iframe-src={delivery.iframeSrcAttr ?? undefined}
   data-video-title={title}
   data-video-dev-bypass={videoDevBypass ? "true" : "false"}
   data-enable-vimeo-player-api={enableVimeoPlayerApi ? "true" : "false"}
@@ -66,15 +63,15 @@ const iframeSrc = videoId ? iframeUrl.toString() : "";
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
     <div
-      id={`kbm-vimeo-slot-${videoId}`}
-      data-access-level={access_level}
-      data-state={access_level === "member" ? "loading" : "ready"}
+      id={`kbm-vimeo-slot-${contentId || videoId}`}
+      data-access-level={delivery.accessLevel}
+      data-state={delivery.renderIframe ? "ready" : "loading"}
     >
-      {access_level === "open" ? (
+      {delivery.renderIframe ? (
         <iframe
           class="kbm-video__iframe"
           id={enableVimeoPlayerApi ? iframePlayerId : undefined}
-          src={iframeSrc}
+          src={delivery.iframeSrc}
           title={title}
           loading="lazy"
           frameborder="0"

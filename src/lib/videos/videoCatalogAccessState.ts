@@ -31,11 +31,11 @@ export type CatalogPollViewer = VideoCatalogViewer & {
 
 export function readSitewideAccessPublication(
   snapshot: SitewideMemberAccessSnapshot,
-  bodyHasMsLoggedIn = false,
+  _bodyHasMsLoggedIn = false,
 ): SitewideAccessPublication {
   if (snapshot && snapshot.hasMemberAccess === true) return "granted";
-  if (bodyHasMsLoggedIn) return "granted";
   if (snapshot && snapshot.hasMemberAccess === false) return "denied";
+  // Login (`ms-logged-in`) is not membership. Wait for hasMemberAccess.
   return "unpublished";
 }
 

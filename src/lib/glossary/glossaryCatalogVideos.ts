@@ -6,6 +6,9 @@
 import { catalogChaptersFromVideoRow } from "../catalogVideoChapters";
 import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../lessonVideo";
 import { catalogVideoIsPublic } from "../videoPublic";
+import { catalogVideoPlaybackAccess } from "../videos/catalogVideoPlaybackAccess";
+
+export { catalogVideoPlaybackAccess as effectiveCatalogVideoAccess } from "../videos/catalogVideoPlaybackAccess";
 
 export type GlossaryEntryWithVideos = {
   videoIds?: unknown;
@@ -39,13 +42,6 @@ function escapeHtmlText(s: string): string {
     .replace(/>/g, "&gt;");
 }
 
-/** Same access rule as `src/pages/videos/[id].astro` (featured tip overrides to open). */
-export function effectiveCatalogVideoAccess(v: PublicVideoRow): "open" | "member" {
-  const isFeaturedTip = v.isTipOfWeek === true || v.tipOfWeek === true;
-  if (isFeaturedTip) return "open";
-  const level = String(v.access_level ?? "member").trim().toLowerCase();
-  return level === "open" ? "open" : "member";
-}
 
 export function glossaryInternalVideoIdList(entry: GlossaryEntryWithVideos): string[] {
   const raw = entry.videoIds ?? entry.vimeoIds;
@@ -78,7 +74,7 @@ export function resolveGlossaryCatalogVideos(
     const v = catalog.find((x) => String(x.content_id ?? "").trim() === id);
     if (!v || !catalogVideoIsPublic(v)) continue;
     const vimeoNumericId = vimeoNumericIdFromPublicVideo(v);
-    const access = effectiveCatalogVideoAccess(v);
+    const access = catalogVideoPlaybackAccess(v);
     const rawTitle = typeof v.title === "string" ? v.title.trim() : "";
     const title = rawTitle || "Watch video";
     const useModal = access === "open" && vimeoNumericId != null;

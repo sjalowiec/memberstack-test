@@ -12,6 +12,7 @@ import {
   hasMemberAccess,
   isActiveMemberstackPlanConnection,
   MEMBER_ACCESS_PLAN_IDS,
+  type MemberAccessOptions,
 } from "./memberAccess";
 import { memberEmailFromMemberstackPayload } from "./patterns/memberstackMember";
 
@@ -30,10 +31,14 @@ export function activeVideoPlanIdsFromMemberPayload(memberOrPayload: unknown): s
 
 /**
  * @deprecated Use `hasMemberAccess` from `memberAccess`.
- * True when the member has an active paid membership or legacy paid plan.
+ * Same determination as the global member gate (paid plan, or free legacy plus
+ * a valid Watson paid-through date). Login or plan presence alone is not enough.
  */
-export function hasKinVideoAccess(memberOrPayload: unknown): boolean {
-  return hasMemberAccess(memberOrPayload);
+export function hasKinVideoAccess(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): boolean {
+  return hasMemberAccess(memberOrPayload, options);
 }
 
 /** Temporary: console debug for video plan gating (remove after verification). */
