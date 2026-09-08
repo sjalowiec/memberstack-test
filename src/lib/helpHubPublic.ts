@@ -3,6 +3,8 @@ export type HelpHubTipRecord = {
   id?: number | string;
   slug?: string;
   status?: string;
+  /** ISO timestamp when set; soft-deleted tips are never public. */
+  deletedAt?: string | null;
   /** Legacy override; ignored when status is draft or review. */
   active?: boolean;
   title?: string;
@@ -39,7 +41,12 @@ function normalizeHelpHubStatus(raw: unknown): string {
  * Whether a tip may appear on public Help Hub routes, search, or related links.
  * Draft and review entries are never public, even when `active: true`.
  */
+export function helpHubTipIsDeleted(tip: HelpHubTipRecord): boolean {
+  return typeof tip.deletedAt === "string" && tip.deletedAt.trim() !== "";
+}
+
 export function helpHubTipIsPublic(tip: HelpHubTipRecord): boolean {
+  if (helpHubTipIsDeleted(tip)) return false;
   const status = normalizeHelpHubStatus(tip.status);
   if (status === "draft" || status === "review") return false;
   if (typeof tip.active === "boolean") return tip.active;

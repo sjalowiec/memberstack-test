@@ -1,18 +1,26 @@
 import type { APIRoute } from "astro";
+import { requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
 import {
-  readHelpHubFile,
-  writeHelpHubFile,
-  sortHelpHubTipsBySortOrder,
   getTipId,
   mergeHelpHubPutUpdate,
+  normalizeRelatedLessons,
+  sortHelpHubTipsBySortOrder,
 } from "../../../../lib/helpHubAdminFile";
+import { isHelpHubStatus } from "../../../../lib/helpHub/document";
+import {
+  isUniqueViolation,
+  loadHelpHubTipById,
+  loadHelpHubTipsForAdmin,
+  removeHelpHubTip,
+  saveExistingHelpHubTip,
+} from "../../../../lib/helpHub/loadTips";
 
 export const prerender = false;
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
@@ -24,11 +32,12 @@ function requireNonEmptyString(value: unknown): string | null {
 function slugTaken(
   tips: Record<string, unknown>[],
   slug: string,
-  exceptId: number
+  exceptId: number,
 ): boolean {
+  const needle = slug.trim().toLowerCase();
   return tips.some((t) => {
-    const sid = typeof t.slug === "string" ? t.slug.trim() : "";
-    if (sid !== slug) return false;
+    const sid = typeof t.slug === "string" ? t.slug.trim().toLowerCase() : "";
+    if (sid !== needle) return false;
     const id = getTipId(t);
     if (id === exceptId) return false;
     return true;
@@ -41,7 +50,12 @@ function parseUrlId(raw: string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export const PUT: APIRoute = async ({ params, request }) => {
+export const PUT: APIRoute = async ({ params, request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) {
+    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+  }
+
   const urlId = parseUrlId(params.id);
   if (urlId === null) {
     return jsonResponse({ ok: false, error: "Invalid tip id in URL." }, 400);
@@ -67,25 +81,31 @@ export const PUT: APIRoute = async ({ params, request }) => {
   if (!slug) return jsonResponse({ ok: false, error: "slug is required." }, 400);
   if (!category) return jsonResponse({ ok: false, error: "category is required." }, 400);
   if (!status) return jsonResponse({ ok: false, error: "status is required." }, 400);
+  if (!isHelpHubStatus(status)) {
+    return jsonResponse({ ok: false, error: "status must be draft, published, or review." }, 400);
+  }
 
   let tips: Record<string, unknown>[];
   try {
-    tips = readHelpHubFile();
+    tips = await loadHelpHubTipsForAdmin();
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read help-hub.json";
+    const message = e instanceof Error ? e.message : "Could not read Help Hub tips.";
     return jsonResponse({ ok: false, error: message }, 500);
-  }
-
-  const idx = tips.findIndex((t) => getTipId(t) === urlId);
-  if (idx === -1) {
-    return jsonResponse({ ok: false, error: `No tip with id ${urlId}.` }, 404);
   }
 
   if (slugTaken(tips, slug, urlId)) {
     return jsonResponse({ ok: false, error: `slug "${slug}" is already in use.` }, 400);
   }
 
-  const existing = tips[idx];
+  const existing = await loadHelpHubTipById(urlId);
+  if (!existing) {
+    return jsonResponse({ ok: false, error: `No tip with id ${urlId}.` }, 404);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "relatedLessons")) {
+    body.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
+  }
+
   const row = mergeHelpHubPutUpdate(existing, body, {
     id: urlId,
     title,
@@ -94,44 +114,47 @@ export const PUT: APIRoute = async ({ params, request }) => {
     status,
   });
 
-  tips[idx] = row;
-
   try {
-    writeHelpHubFile(tips);
+    const tip = await saveExistingHelpHubTip(
+      urlId,
+      row,
+      { slug, status, title, category },
+      auth.member,
+    );
+    if (!tip) {
+      return jsonResponse({ ok: false, error: `No tip with id ${urlId}.` }, 404);
+    }
+    const ordered = sortHelpHubTipsBySortOrder(await loadHelpHubTipsForAdmin());
+    return jsonResponse({ ok: true, tips: ordered, tip });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not write help-hub.json";
+    if (isUniqueViolation(e)) {
+      return jsonResponse({ ok: false, error: `slug "${slug}" is already in use.` }, 400);
+    }
+    const message = e instanceof Error ? e.message : "Could not update Help Hub tip.";
     return jsonResponse({ ok: false, error: message }, 500);
   }
-
-  const ordered = sortHelpHubTipsBySortOrder(tips);
-  return jsonResponse({ ok: true, tips: ordered, tip: row });
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) {
+    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+  }
+
   const urlId = parseUrlId(params.id);
   if (urlId === null) {
     return jsonResponse({ ok: false, error: "Invalid tip id in URL." }, 400);
   }
 
-  let tips: Record<string, unknown>[];
   try {
-    tips = readHelpHubFile();
+    const removed = await removeHelpHubTip(urlId, auth.member);
+    if (!removed) {
+      return jsonResponse({ ok: false, error: `No tip with id ${urlId}.` }, 404);
+    }
+    const ordered = sortHelpHubTipsBySortOrder(await loadHelpHubTipsForAdmin());
+    return jsonResponse({ ok: true, tips: ordered });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read help-hub.json";
+    const message = e instanceof Error ? e.message : "Could not delete Help Hub tip.";
     return jsonResponse({ ok: false, error: message }, 500);
   }
-
-  const next = tips.filter((t) => getTipId(t) !== urlId);
-  if (next.length === tips.length) {
-    return jsonResponse({ ok: false, error: `No tip with id ${urlId}.` }, 404);
-  }
-
-  try {
-    writeHelpHubFile(next);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not write help-hub.json";
-    return jsonResponse({ ok: false, error: message }, 500);
-  }
-
-  return jsonResponse({ ok: true, tips: sortHelpHubTipsBySortOrder(next) });
 };

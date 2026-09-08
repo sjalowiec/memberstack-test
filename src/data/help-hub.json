@@ -327,7 +327,7 @@
     "resources": [
       "<a href=\"/stitch?machine=lk150&category=tuck\">Browse LK150-friendly tuck stitches</a>"
     ],
-    "id": 1004
+    "id": 1009
   },
   {
     "question": "How do I knit Slip Stitch on my LK150?",
@@ -369,7 +369,8 @@
     "tryNote": "👉 Needle selection is made on each row.<br>👉 <strong>DO NOT slip edge needles</strong><br>👉 <strong>Needles in work will slip</strong>",
     "tryImage": "/images/help-hub/slip-card.jpg",
     "tryImageAlt": "slip stitch chart example",
-    "tryImageCaption": "Example punchcard\nBlack holes  (D) = KNIT\nWhite & Symbols <img src=\"/images/help-hub/slip-symbol.png\" alt=\"slip symbol\"> (B) = SLIP"
+    "tryImageCaption": "Example punchcard\nBlack holes  (D) = KNIT\nWhite & Symbols <img src=\"/images/help-hub/slip-symbol.png\" alt=\"slip symbol\"> (B) = SLIP",
+    "id": 1010
   },
   {
     "question": "How do I choose the right knitting machine?",

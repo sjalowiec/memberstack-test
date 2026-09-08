@@ -1,10 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import helpHubData from "../../data/help-hub.json";
 import lessons from "../../data/lessons.json";
 import helpHubCategories from "../../data/help-hub-categories.json";
+import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
 
-const entries = Array.isArray(helpHubData) ? helpHubData : [];
+export const prerender = false;
 const lessonRecords = Array.isArray(lessons) ? lessons : [];
 
 const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : [])
@@ -37,16 +37,7 @@ const slug =
   typeof slugParam === "string" && slugParam.trim() !== ""
     ? slugParam.trim()
     : "";
-const slugNormalized = slug.toLowerCase();
-const currentEntry = slug
-  ? entries.find((entry) => {
-      const entrySlug =
-        typeof entry.slug === "string" && entry.slug.trim() !== ""
-          ? entry.slug.trim()
-          : "";
-      return entrySlug.toLowerCase() === slugNormalized;
-    }) ?? null
-  : null;
+const currentEntry = slug ? await loadHelpHubTipBySlug(slug) : null;
 const isEditing = Boolean(currentEntry);
 
 const pageTitle = isEditing
@@ -157,8 +148,8 @@ const entryLabel = currentEntry as {
       </h1>
       <p class="help-hub-admin__sub">
         Draft the question, solution, metadata, media, resources, and CTA content
-        for a Help Hub entry. Use <strong>Save</strong> to write changes directly to
-        <code>src/data/help-hub.json</code>.
+        for a Help Hub entry. Use <strong>Save</strong> to store a draft in the
+        Help Hub content database. Saved drafts stay private until you publish.
       </p>
       <p class="help-hub-edit__context">
         {
@@ -209,6 +200,9 @@ const entryLabel = currentEntry as {
                     >
                       <option value="draft" selected={statusValue === "draft"}>
                         Draft
+                      </option>
+                      <option value="review" selected={statusValue === "review"}>
+                        Review
                       </option>
                       <option value="published" selected={statusValue === "published"}>
                         Published
@@ -766,16 +760,7 @@ const entryLabel = currentEntry as {
               <button type="button" id="copyHelpHubJson" class="kbm-btn kbm-btn-outline">
                 Copy JSON
               </button>
-              <button type="button" id="previewHelpHub" class="kbm-btn kbm-btn-outline">
-                Preview Entry
-              </button>
               <span id="copyHelpHubJsonStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
-            </div>
-            <div class="help-hub-edit__json-preview-actions">
-              <button type="button" id="copyHelpHubCursorPrompt" class="kbm-btn kbm-btn-outline">
-                Copy Cursor Save Prompt
-              </button>
-              <span id="copyHelpHubCursorStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
             </div>
             <pre id="helpHubJsonPreview" class="help-hub-edit__json-pre"></pre>
           </div>
@@ -784,6 +769,12 @@ const entryLabel = currentEntry as {
         <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
           <button type="button" id="saveHelpHubBtn" class="kbm-btn kbm-btn-primary">
             Save
+          </button>
+          <button type="button" id="previewHelpHub" class="kbm-btn kbm-btn-outline">
+            Preview
+          </button>
+          <button type="button" id="deleteHelpHubBtn" class="kbm-btn kbm-btn-outline">
+            Delete
           </button>
           <a href="/admin/help-hub" class="kbm-btn kbm-btn-outline">Cancel</a>
           <span id="saveHelpHubStatus" class="help-hub-edit__save-status" aria-live="polite"></span>
@@ -1229,16 +1220,6 @@ const entryLabel = currentEntry as {
         return out;
       }
 
-      var CURSOR_SAVE_PROMPT_PREFIX =
-        "Update src/data/help-hub.json.\n\n" +
-        "Merge the Help Hub entry below into the existing entry by slug.\n\n" +
-        "If the slug already exists, update only the fields included in ENTRY JSON and preserve any existing fields that are not included.\n" +
-        "If the slug does not exist, add it as a new object.\n" +
-        "Keep the JSON valid.\n" +
-        "Preserve existing entries.\n" +
-        "Do not modify any other files.\n\n" +
-        "ENTRY JSON:\n";
-
       function sanitizeSlugValue(raw) {
         return String(raw)
           .toLowerCase()
@@ -1310,9 +1291,15 @@ const entryLabel = currentEntry as {
         setSaveStatus("Saving…", null);
 
         try {
+          var headers = { "Content-Type": "application/json" };
+          try {
+            var authMod = await import("../../lib/admin/adminAuthClient");
+            var authHeaders = await authMod.getAdminAuthHeaders();
+            Object.assign(headers, authHeaders);
+          } catch (authErr) {}
           var res = await fetch(url, {
             method: method,
-            headers: { "Content-Type": "application/json" },
+            headers: headers,
             body: JSON.stringify(payload),
           });
           var data = await res.json().catch(function () {
@@ -1328,7 +1315,7 @@ const entryLabel = currentEntry as {
           }
 
           clearDraft();
-          setSaveStatus("Saved to help-hub.json", "ok");
+          setSaveStatus("Saved", "ok");
 
           if (method === "POST" && data.tip && data.tip.slug) {
             SUPPRESS_UNLOAD = true;
@@ -1358,17 +1345,15 @@ const entryLabel = currentEntry as {
         var pre = document.getElementById("helpHubJsonPreview");
         var copyBtn = document.getElementById("copyHelpHubJson");
         var status = document.getElementById("copyHelpHubJsonStatus");
-        var cursorBtn = document.getElementById("copyHelpHubCursorPrompt");
-        var cursorStatus = document.getElementById("copyHelpHubCursorStatus");
         var previewBtn = document.getElementById("previewHelpHub");
         var saveBtn = document.getElementById("saveHelpHubBtn");
+        var deleteBtn = document.getElementById("deleteHelpHubBtn");
         var recovery = document.getElementById("helpHubDraftRecovery");
         var restoreBtn = document.getElementById("helpHubRestoreDraft");
         var discardBtn = document.getElementById("helpHubDiscardDraft");
-        if (!form || !pre || !copyBtn || !status || !cursorBtn || !cursorStatus) return;
+        if (!form || !pre || !copyBtn || !status) return;
 
         var jsonCopyTimerHolder = { current: null };
-        var cursorCopyTimerHolder = { current: null };
 
         // Snapshot of the server-loaded form state; used as the "clean" baseline
         // for draft comparison and the unsaved-changes leave warning.
@@ -1450,19 +1435,21 @@ const entryLabel = currentEntry as {
             "Missing required fields: " + missing.join(", ");
 
           copyBtn.disabled = !ok;
-          cursorBtn.disabled = !ok;
-          if (previewBtn) previewBtn.disabled = !ok;
+          if (previewBtn) {
+            var saved =
+              window.currentHelpHub &&
+              window.currentHelpHub.slug &&
+              window.currentHelpHub.id !== undefined &&
+              window.currentHelpHub.id !== null;
+            previewBtn.disabled = !saved;
+          }
           if (saveBtn) saveBtn.disabled = !ok;
           if (!ok) {
             status.textContent = missingText;
-            cursorStatus.textContent = missingText;
             status.classList.add("help-hub-edit__copy-status--error");
-            cursorStatus.classList.add("help-hub-edit__copy-status--error");
           } else {
             status.textContent = "";
-            cursorStatus.textContent = "";
             status.classList.remove("help-hub-edit__copy-status--error");
-            cursorStatus.classList.remove("help-hub-edit__copy-status--error");
           }
         }
 
@@ -1528,26 +1515,64 @@ const entryLabel = currentEntry as {
           copyToClipboard(text, status, jsonCopyTimerHolder);
         });
 
-        cursorBtn.addEventListener("click", function () {
-          if (!hasRequiredFields(form)) {
-            updateCopyUi();
-            return;
-          }
-          var entryJson = JSON.stringify(buildHelpHubObject(form), null, 2);
-          var promptText = CURSOR_SAVE_PROMPT_PREFIX + entryJson;
-          copyToClipboard(promptText, cursorStatus, cursorCopyTimerHolder);
-        });
-
         if (previewBtn) {
           previewBtn.addEventListener("click", function () {
-            if (!hasRequiredFields(form)) {
-              updateCopyUi();
+            var slug =
+              (window.currentHelpHub && window.currentHelpHub.slug) ||
+              trimmedFieldValue(form, "slug");
+            if (!slug) {
+              setSaveStatus("Save the entry before previewing.", "err");
               return;
             }
-            var obj = buildHelpHubObject(form);
-            var data = btoa(JSON.stringify(obj));
-            var url = "/help-hub/preview?data=" + encodeURIComponent(data);
-            window.open(url, "_blank", "noopener,noreferrer");
+            window.open(
+              "/help-hub/preview?slug=" + encodeURIComponent(String(slug)),
+              "_blank",
+              "noopener,noreferrer",
+            );
+          });
+        }
+
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", async function () {
+            var id =
+              window.currentHelpHub &&
+              window.currentHelpHub.id !== undefined &&
+              window.currentHelpHub.id !== null
+                ? window.currentHelpHub.id
+                : null;
+            if (id === null || String(id).trim() === "") {
+              setSaveStatus("Save the entry before deleting.", "err");
+              return;
+            }
+            if (!window.confirm("Delete this Help Hub entry? It can be restored from the database.")) {
+              return;
+            }
+            deleteBtn.disabled = true;
+            try {
+              var headers = { "Content-Type": "application/json" };
+              try {
+                var authMod = await import("../../lib/admin/adminAuthClient");
+                var authHeaders = await authMod.getAdminAuthHeaders();
+                Object.assign(headers, authHeaders);
+              } catch (authErr) {}
+              var res = await fetch("/api/admin/help-hub/" + encodeURIComponent(String(id)), {
+                method: "DELETE",
+                headers: headers,
+              });
+              var data = await res.json().catch(function () {
+                return {};
+              });
+              if (!res.ok || !data.ok) {
+                setSaveStatus(data.error || "Delete failed (" + res.status + ")", "err");
+                return;
+              }
+              SUPPRESS_UNLOAD = true;
+              window.location.href = "/admin/help-hub";
+            } catch (e) {
+              setSaveStatus("Delete failed — network error", "err");
+            } finally {
+              deleteBtn.disabled = false;
+            }
           });
         }
 

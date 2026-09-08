@@ -93,12 +93,24 @@ export function sortHelpHubTipsBySortOrder(tips: Record<string, unknown>[]): Rec
   });
 }
 
-/** Normalize `relatedLessons` from API/admin payloads (slug strings). */
-export function normalizeRelatedLessons(value: unknown): string[] {
+/** Normalize `relatedLessons`: keep numeric ids as numbers, slugs as strings. */
+export function normalizeRelatedLessons(value: unknown): (string | number)[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map((s) => String(s).trim())
-    .filter((s) => s.length > 0);
+  const out: (string | number)[] = [];
+  for (const item of value) {
+    if (typeof item === "number" && Number.isFinite(item)) {
+      out.push(item);
+      continue;
+    }
+    const text = String(item ?? "").trim();
+    if (!text) continue;
+    if (/^\d+$/.test(text)) {
+      out.push(Number(text));
+      continue;
+    }
+    out.push(text);
+  }
+  return out;
 }
 
 /** Remove deprecated tip fields so saves stay aligned with the current schema. */

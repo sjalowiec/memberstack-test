@@ -66,4 +66,35 @@ describe("mergeHelpHubPutUpdate", () => {
 
     expect(merged.relatedLessons).toEqual([]);
   });
+
+  it("keeps numeric relatedLessons as numbers", () => {
+    const existing = {
+      id: 1008,
+      title: "Where can I find patterns for my LK150?",
+      slug: "patterns-for-lk150",
+      category: "pattern-design-confusion",
+      status: "draft",
+      relatedLessons: [259, 368],
+    };
+
+    const merged = mergeHelpHubPutUpdate(
+      existing,
+      {
+        title: existing.title,
+        slug: existing.slug,
+        category: existing.category,
+        status: existing.status,
+        relatedLessons: [259, "368"],
+      },
+      {
+        id: 1008,
+        title: existing.title,
+        slug: existing.slug,
+        category: existing.category,
+        status: existing.status,
+      },
+    );
+
+    expect(merged.relatedLessons).toEqual([259, 368]);
+  });
 });

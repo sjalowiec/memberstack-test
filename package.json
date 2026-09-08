@@ -22,7 +22,8 @@
     "watson:import-legacy-garments": "vite-node scripts/watson-import-legacy-garments.ts",
     "watson:validate": "vite-node scripts/watson-validate-import.ts",
     "watson:analyze-csv": "node scripts/watson-analyze-csv.mjs",
-    "watson:generate-schema": "vite-node scripts/watson-generate-schema.ts"
+    "watson:generate-schema": "vite-node scripts/watson-generate-schema.ts",
+    "help-hub:import": "vite-node scripts/import-help-hub.ts"
   },
   "dependencies": {
     "@fastify/busboy": "^3.2.0",

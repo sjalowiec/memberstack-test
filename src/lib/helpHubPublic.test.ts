@@ -57,6 +57,15 @@ describe("helpHubTipIsPublic", () => {
   it("treats legacy empty status as public", () => {
     expect(helpHubTipIsPublic({ slug: "legacy-tip" })).toBe(true);
   });
+
+  it("hides soft-deleted tips", () => {
+    expect(
+      helpHubTipIsPublic({
+        ...publishedTip,
+        deletedAt: "2026-09-08T12:00:00.000Z",
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("filterPublicHelpHubTips", () => {

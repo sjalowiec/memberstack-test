@@ -1,9 +1,11 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import helpHubData from "../../../data/help-hub.json";
+import { loadHelpHubTipsForAdmin } from "../../../lib/helpHub/loadTips";
 import { buildVideoUsageIndex } from "../../../lib/videoUsageIndex";
 
-const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
+export const prerender = false;
+
+const helpHubEntries = await loadHelpHubTipsForAdmin();
 ---
 
 <BaseLayout

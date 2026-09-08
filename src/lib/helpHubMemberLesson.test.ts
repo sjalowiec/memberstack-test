@@ -85,6 +85,7 @@ describe("listPublicHelpHubMemberLessonCards", () => {
   it("does not include draft Help Hub tips", () => {
     const cards = listPublicHelpHubMemberLessonCards(helpHubTips, lessons);
     expect(cards.some((c) => c.tipSlug === "measure-gauge-on-a-knitting-machine")).toBe(false);
+    expect(cards.some((c) => c.tipSlug === "patterns-for-lk150")).toBe(false);
   });
 });
 

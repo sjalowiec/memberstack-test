@@ -1,10 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import "../../components/talk-bubbles.css";
-import helpHubData from "../../data/help-hub.json";
+import { loadPublicHelpHubTips } from "../../lib/helpHub/loadTips";
 import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 
-export const prerender = true;
+export const prerender = false;
 
 function helpHubTipSortOrder(item: { sortOrder?: unknown; id?: unknown }): number {
   const v = item.sortOrder;
@@ -26,6 +26,8 @@ function helpHubTipId(item: { id?: unknown }): number {
   return 0;
 }
 
+const helpHubData = await loadPublicHelpHubTips();
+
 /** Live entries for the top “New in the Help Hub” section (isNew === true). */
 const newHelpHubItems = helpHubData
   .filter((item) => item.isNew === true && helpHubTipIsPublic(item))
@@ -40,7 +42,7 @@ const debugHelpHubTip = (Array.isArray(helpHubData) ? helpHubData : []).find(
 );
 if (debugHelpHubTip) {
   console.log("[KBM catalog debug] help-hub/index loader", {
-    source: "src/data/help-hub.json",
+    source: "loadPublicHelpHubTips",
     slug: debugHelpHubTip.slug,
     status: debugHelpHubTip.status,
     isNew: debugHelpHubTip.isNew,

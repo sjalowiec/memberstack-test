@@ -3,18 +3,25 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const previewSource = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "preview.astro"),
+const here = dirname(fileURLToPath(import.meta.url));
+const previewSource = readFileSync(join(here, "preview.astro"), "utf8");
+const tipPageSource = readFileSync(
+  join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
   "utf8",
 );
 
-describe("Help Hub preview membership CTA", () => {
-  it("sends View membership to the canonical /membership page", () => {
-    expect(previewSource).toMatch(
-      /<a class="hh-preview__link" href="\/membership">\s*View membership\s*<\/a>/,
-    );
-    expect(previewSource).not.toMatch(
-      /<a class="hh-preview__link" href="\/join">\s*View membership\s*<\/a>/,
-    );
+describe("Help Hub saved-draft preview", () => {
+  it("requires admin auth and loads a saved slug", () => {
+    expect(previewSource).toContain("requireAdminForRequest");
+    expect(previewSource).toContain('searchParams.get("slug")');
+    expect(previewSource).toContain("HelpHubTipPage");
+    expect(previewSource).toContain("preview={true}");
+    expect(previewSource).not.toContain("searchParams.get(\"data\")");
+  });
+
+  it("reuses the public Help Hub renderer", () => {
+    expect(tipPageSource).toContain("data-hh-lesson-cta");
+    expect(tipPageSource).toContain("/help-hub/work-with-sue");
+    expect(tipPageSource).not.toMatch(/href="\/join"/);
   });
 });

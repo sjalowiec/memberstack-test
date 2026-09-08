@@ -1,7 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import lessonsFile from "../../data/lessons.json";
-import helpHub from "../../data/help-hub.json";
 import videosPublic from "../../data/videos-public.json";
 import {
   findPublicVideoByKey,
@@ -9,10 +8,10 @@ import {
   type PublicVideoRow,
 } from "../../lib/lessonVideo";
 import {
-  filterPublicHelpHubTips,
   findPublicHelpHubTipBySlug,
   type HelpHubTipRecord,
 } from "../../lib/helpHubPublic";
+import { loadPublicHelpHubTips } from "../../lib/helpHub/loadTips";
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { lessonRequiresMemberAccess } from "../../lib/helpHubMemberLesson";
@@ -43,7 +42,7 @@ type Lesson = {
   noteTitle?: string;
   noteText?: string;
   relatedTipSlug?: string;
-  /** Help Hub tip slugs or numeric ids from `help-hub.json`. */
+  /** Help Hub tip slugs or numeric ids from published Help Hub entries. */
   relatedHelpHubs?: (string | number)[];
   nextLessonSlug?: string;
   /** Video library slugs (`videos-public.json` stable key). */
@@ -60,9 +59,7 @@ type Lesson = {
 type HelpHubTip = HelpHubTipRecord;
 
 const lessons = lessonsFile as Lesson[];
-const helpHubTips = filterPublicHelpHubTips(
-  Array.isArray(helpHub) ? (helpHub as HelpHubTip[]) : [],
-);
+const helpHubTips = await loadPublicHelpHubTips();
 const catalogVideos = filterPublicCatalogVideos(
   Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
 );
@@ -103,10 +100,7 @@ const from = url.searchParams.get("from");
 const hubSlugParam = url.searchParams.get("hub");
 const hubTipForBackLink =
   typeof hubSlugParam === "string" && hubSlugParam.trim() !== ""
-    ? findPublicHelpHubTipBySlug(
-        Array.isArray(helpHub) ? (helpHub as HelpHubTip[]) : [],
-        hubSlugParam,
-      )
+    ? findPublicHelpHubTipBySlug(helpHubTips, hubSlugParam)
     : undefined;
 const hubSlug =
   hubTipForBackLink && typeof hubTipForBackLink.slug === "string"

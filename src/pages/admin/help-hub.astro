@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import helpHubData from "../../data/help-hub.json";
+import { loadHelpHubTipsForAdmin } from "../../lib/helpHub/loadTips";
 
-const entries = Array.isArray(helpHubData) ? helpHubData : [];
+export const prerender = false;
+
+const entries = await loadHelpHubTipsForAdmin();
 const publishedEntries = entries.filter(
   (e): e is (typeof entries)[number] =>
     Boolean(e) && (e as { status?: string }).status === "published"
@@ -95,12 +97,22 @@ const hubSections = [
                           {entry.status ?? "—"}
                         </span>
                         {slug ? (
-                          <a
-                            class="help-hub-dash__entry-edit"
-                            href={`/admin/help-hub-edit?slug=${encodeURIComponent(slug)}`}
-                          >
-                            Edit
-                          </a>
+                          <>
+                            <a
+                              class="help-hub-dash__entry-edit"
+                              href={`/admin/help-hub-edit?slug=${encodeURIComponent(slug)}`}
+                            >
+                              Edit
+                            </a>
+                            <a
+                              class="help-hub-dash__entry-edit"
+                              href={`/help-hub/preview?slug=${encodeURIComponent(slug)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Preview
+                            </a>
+                          </>
                         ) : (
                           <span class="help-hub-dash__entry-edit help-hub-dash__entry-edit--disabled">
                             Edit (no slug)
