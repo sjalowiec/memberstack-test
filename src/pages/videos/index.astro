@@ -378,46 +378,12 @@ const forceMemberView =
       }
       return null;
     }
-    function applyAccessUiState() {
-      if (ACCESS_STATE === "has_access") {
-        removeLockedUiArtifacts();
-        hideAllVisibleLockIconsForAccess();
-      }
-    }
-    function removeLockedUiArtifacts() {
-      // Explicitly remove any lock UI that may have been rendered before auth resolved.
-      document.querySelectorAll(".kbm-lock-overlay").forEach(function (el) { el.remove(); });
-      document.querySelectorAll(".video-card .fa-lock, .video-card [class*='lock']").forEach(function (el) {
-        if (el.classList && el.classList.contains("kbm-lock-overlay")) return;
-        const lockContainer = el.closest ? el.closest(".kbm-lock-overlay") : null;
-        if (lockContainer) lockContainer.remove();
-        else el.setAttribute("hidden", "");
-      });
-      document.querySelectorAll(".kbm-video-card[hidden], .video-card[hidden]").forEach(function (el) {
-        el.removeAttribute("hidden");
-      });
-      document.querySelectorAll(".kbm-video-card.is-locked, .video-card.is-locked").forEach(function (el) {
-        el.classList.remove("is-locked");
-      });
-    }
     /** Same playback access as GatedVimeoEmbed / videos/[id] (public + open + free + tip = free). */
     function catalogVideoIsFreeToPlay(v) {
       return catalogVideoPlaybackAccess(v) === "open";
     }
     function isMemberOnlyVideo(v) {
       return catalogVideoPlaybackAccess(v) === "member";
-    }
-    function hideAllVisibleLockIconsForAccess() {
-      const pageRoot = document.querySelector(".page-wrap");
-      if (!pageRoot) return;
-      pageRoot.querySelectorAll(
-        ".kbm-lock-overlay, .fa-lock, .fa-lock-open, .svg-inline--fa.fa-lock, [aria-label='Member-only video']"
-      ).forEach(function (el) {
-        if (el.classList && el.classList.contains("videos-access-debug")) return;
-        if (el.classList && el.classList.contains("videos-access-debug__content")) return;
-        if (el.classList && el.classList.contains("videos-access-debug__title")) return;
-        el.remove();
-      });
     }
 
     function updateUrl() {
@@ -551,7 +517,6 @@ const forceMemberView =
       const listQuery = listParams.toString();
       const listQueryString = listQuery ? "?" + listQuery : "";
 
-      const hasVideoAccess = ACCESS_STATE === "has_access" || Boolean(VIEWER.hasVideoAccess);
       grid.innerHTML = filtered.map(v => {
         const contentId = v.content_id != null && String(v.content_id).trim() ? String(v.content_id) : "";
         const baseHref = contentId ? "/videos/" + contentId : "/videos/" + (v.slug || "");
@@ -568,7 +533,6 @@ const forceMemberView =
         const showLocked = shouldShowVideoCatalogLock({
           isMemberOnly,
           accessState: ACCESS_STATE,
-          hasVideoAccess,
         });
         const lockOverlay =
           showLocked
@@ -607,10 +571,6 @@ const forceMemberView =
             "</a>"
         );
       }).join("");
-      if (ACCESS_STATE === "has_access") {
-        removeLockedUiArtifacts();
-        hideAllVisibleLockIconsForAccess();
-      }
     }
 
     /* ---------- Filter buttons + category dropdown (sync before first render so URL category wins) ---------- */
@@ -811,10 +771,9 @@ const forceMemberView =
       if (detail) applyKinMemberAccessDetail(detail);
       else applySitewideMemberAccessSnapshot();
 
-      if (ACCESS_STATE !== "checking") {
-        render(currentCategory);
-        applyAccessUiState();
-      }
+      // Render immediately, including while checking, so member-only cards
+      // show locks before hasMemberAccess is confirmed (no unlocked flash).
+      render(currentCategory);
 
       const viewer = await getViewerState();
       if (gen !== catalogAccessRefreshGen) return;
@@ -823,7 +782,6 @@ const forceMemberView =
       if (gen !== catalogAccessRefreshGen) return;
       applyAuthCategoryDefaults();
       render(currentCategory);
-      applyAccessUiState();
     }
 
     applySitewideMemberAccessSnapshot();

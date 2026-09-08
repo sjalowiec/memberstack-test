@@ -1,9 +1,15 @@
 /**
  * Videos catalog access-state rules.
  *
+ * Lock icons use confirmed `hasMemberAccess` only (`accessState === "has_access"`).
+ * Login (`body.ms-logged-in`) is not membership. Member-only cards stay locked
+ * while access is unresolved so they never flash unlocked.
+ *
  * Sitewide BaseLayout snapshot/events are the source of truth for logged-out /
- * no-access UI. The catalog's own getAppAndMember poll must not finalize a
- * logged-out or Free Videos state before that snapshot is published.
+ * Free Videos filter defaults. The catalog's own getAppAndMember poll must not
+ * finalize a logged-out state before that snapshot is published. A resolved
+ * logged-in poll with no `hasMemberAccess` may finalize `no_access` (expired
+ * legacy / nonmembers) without waiting.
  */
 
 export type VideoCatalogAccessState =
@@ -39,15 +45,18 @@ export function readSitewideAccessPublication(
   return "unpublished";
 }
 
+/**
+ * Catalog lock overlay. Public/free/tip cards pass `isMemberOnly: false`.
+ * Member-only cards stay locked until `hasMemberAccess` is confirmed.
+ */
 export function shouldShowVideoCatalogLock(opts: {
   isMemberOnly: boolean;
   accessState: VideoCatalogAccessState;
-  hasVideoAccess: boolean;
+  /** Ignored. Lock visibility uses `accessState === "has_access"` only. */
+  hasVideoAccess?: boolean;
 }): boolean {
   if (!opts.isMemberOnly) return false;
-  if (opts.accessState === "checking") return false;
-  if (opts.accessState === "has_access" || opts.hasVideoAccess) return false;
-  return opts.accessState === "logged_out" || opts.accessState === "no_access";
+  return opts.accessState !== "has_access";
 }
 
 export function viewerFromSitewidePublication(
@@ -105,8 +114,23 @@ export function reconcileCatalogAccessFromOwnPoll(opts: {
     };
   }
 
-  // Own poll must not finalize no-access until sitewide snapshot is published.
-  if (sitewide === "unpublished") return null;
+  // Own poll must not finalize logged-out until sitewide snapshot is published
+  // (returning members can look logged-out on an early poll). Logged-in viewers
+  // without hasMemberAccess may finalize no-access so expired legacy catalog
+  // locks do not wait on the snapshot.
+  if (sitewide === "unpublished") {
+    if (catalogViewer.resolved && catalogViewer.isLoggedIn && !catalogViewer.hasVideoAccess) {
+      return {
+        accessState: "no_access",
+        viewer: {
+          isLoggedIn: true,
+          hasVideoAccess: false,
+          member: catalogViewer.member,
+        },
+      };
+    }
+    return null;
+  }
 
   if (!catalogViewer.resolved) {
     return viewerFromSitewidePublication(opts.snapshot, false, opts.currentMember ?? null);
