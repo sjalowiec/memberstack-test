@@ -777,6 +777,9 @@ const entryLabel = currentEntry as {
             Delete
           </button>
           <a href="/admin/help-hub" class="kbm-btn kbm-btn-outline">Cancel</a>
+          <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-outline" hidden>
+            Sign in
+          </button>
           <span id="saveHelpHubStatus" class="help-hub-edit__save-status" aria-live="polite"></span>
         </div>
       </div>
@@ -1029,6 +1032,11 @@ const entryLabel = currentEntry as {
     set:html={JSON.stringify(currentEntry ?? null)}
   />
 
+  <script>
+    import { installHelpHubAdminBrowser } from "../../lib/helpHub/adminEditorClient";
+    installHelpHubAdminBrowser();
+  </script>
+
   <script is:inline>
     (function () {
       var currentEntryEl = document.getElementById("help-hub-current-entry");
@@ -1265,6 +1273,14 @@ const entryLabel = currentEntry as {
           el.classList.toggle("is-error", kind === "err");
           el.classList.toggle("is-ok", kind === "ok");
         });
+        var signInBtn = document.getElementById("helpHubAdminSignIn");
+        if (signInBtn) {
+          signInBtn.hidden = kind !== "signin";
+        }
+      }
+
+      function helpHubAdmin() {
+        return window.kbmHelpHubAdmin;
       }
 
       async function saveHelpHubEntry(form, saveBtn) {
@@ -1286,30 +1302,28 @@ const entryLabel = currentEntry as {
             ? "/api/admin/help-hub/" + encodeURIComponent(String(id))
             : "/api/admin/help-hub";
         var method = id !== null && String(id).trim() !== "" ? "PUT" : "POST";
+        var admin = helpHubAdmin();
+        if (!admin || typeof admin.request !== "function") {
+          setSaveStatus("Help Hub admin is still loading. Try Save again.", "err");
+          return false;
+        }
 
         if (saveBtn) saveBtn.disabled = true;
         setSaveStatus("Saving…", null);
 
         try {
-          var headers = { "Content-Type": "application/json" };
-          try {
-            var authMod = await import("../../lib/admin/adminAuthClient");
-            var authHeaders = await authMod.getAdminAuthHeaders();
-            Object.assign(headers, authHeaders);
-          } catch (authErr) {}
-          var res = await fetch(url, {
-            method: method,
-            headers: headers,
-            body: JSON.stringify(payload),
-          });
-          var data = await res.json().catch(function () {
-            return {};
-          });
-          if (!res.ok || !data.ok) {
-            setSaveStatus(data.error || "Save failed (" + res.status + ")", "err");
+          var result = await admin.request(url, { method: method, body: payload });
+          if (result.needsSignIn) {
+            setSaveStatus(result.error || "Sign in with your Knit it Now account to save.", "signin");
+            if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+            return false;
+          }
+          if (!admin.saveSucceeded(result)) {
+            setSaveStatus(result.error || "Save failed (" + result.status + ")", "err");
             return false;
           }
 
+          var data = result.data || {};
           if (data.tip && typeof data.tip === "object") {
             window.currentHelpHub = JSON.parse(JSON.stringify(data.tip));
           }
@@ -1516,7 +1530,7 @@ const entryLabel = currentEntry as {
         });
 
         if (previewBtn) {
-          previewBtn.addEventListener("click", function () {
+          previewBtn.addEventListener("click", async function () {
             var slug =
               (window.currentHelpHub && window.currentHelpHub.slug) ||
               trimmedFieldValue(form, "slug");
@@ -1524,11 +1538,18 @@ const entryLabel = currentEntry as {
               setSaveStatus("Save the entry before previewing.", "err");
               return;
             }
-            window.open(
-              "/help-hub/preview?slug=" + encodeURIComponent(String(slug)),
-              "_blank",
-              "noopener,noreferrer",
-            );
+            var admin = helpHubAdmin();
+            if (!admin) {
+              setSaveStatus("Help Hub admin is still loading. Try Preview again.", "err");
+              return;
+            }
+            var headers = await admin.ensureToken();
+            if (!headers.Authorization) {
+              setSaveStatus("Sign in with your Knit it Now account to preview.", "signin");
+              if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+              return;
+            }
+            window.open(admin.previewUrl(String(slug)), "_blank", "noopener,noreferrer");
           });
         }
 
@@ -1547,23 +1568,24 @@ const entryLabel = currentEntry as {
             if (!window.confirm("Delete this Help Hub entry? It can be restored from the database.")) {
               return;
             }
+            var admin = helpHubAdmin();
+            if (!admin || typeof admin.request !== "function") {
+              setSaveStatus("Help Hub admin is still loading. Try Delete again.", "err");
+              return;
+            }
             deleteBtn.disabled = true;
             try {
-              var headers = { "Content-Type": "application/json" };
-              try {
-                var authMod = await import("../../lib/admin/adminAuthClient");
-                var authHeaders = await authMod.getAdminAuthHeaders();
-                Object.assign(headers, authHeaders);
-              } catch (authErr) {}
-              var res = await fetch("/api/admin/help-hub/" + encodeURIComponent(String(id)), {
-                method: "DELETE",
-                headers: headers,
-              });
-              var data = await res.json().catch(function () {
-                return {};
-              });
-              if (!res.ok || !data.ok) {
-                setSaveStatus(data.error || "Delete failed (" + res.status + ")", "err");
+              var result = await admin.request(
+                "/api/admin/help-hub/" + encodeURIComponent(String(id)),
+                { method: "DELETE" },
+              );
+              if (result.needsSignIn) {
+                setSaveStatus(result.error || "Sign in with your Knit it Now account to delete.", "signin");
+                if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+                return;
+              }
+              if (!result.ok) {
+                setSaveStatus(result.error || "Delete failed (" + result.status + ")", "err");
                 return;
               }
               SUPPRESS_UNLOAD = true;
@@ -1573,6 +1595,14 @@ const entryLabel = currentEntry as {
             } finally {
               deleteBtn.disabled = false;
             }
+          });
+        }
+
+        var signInBtn = document.getElementById("helpHubAdminSignIn");
+        if (signInBtn) {
+          signInBtn.addEventListener("click", function () {
+            var admin = helpHubAdmin();
+            if (admin && typeof admin.promptSignIn === "function") admin.promptSignIn();
           });
         }
 

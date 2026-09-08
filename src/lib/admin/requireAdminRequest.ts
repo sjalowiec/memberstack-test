@@ -20,11 +20,22 @@ export function memberstackTokenFromRequest(
     return null;
   }
 
-  return (
-    cookies.get("memberstack")?.value ||
-    cookies.get("memberstack_access_token")?.value ||
-    null
-  );
+  const cookieNames = [
+    "memberstack",
+    "memberstack_access_token",
+    "_ms_cookie",
+    "_ms-mid",
+    "_ms_mid",
+  ];
+  for (const name of cookieNames) {
+    const value = cookies.get(name)?.value?.trim() || "";
+    if (looksLikeJwt(value)) return value;
+  }
+  return null;
+}
+
+function looksLikeJwt(value: string): boolean {
+  return value.split(".").length === 3 && value.length > 20;
 }
 
 export function requestWithBearerToken(request: Request, token: string | null): Request {
