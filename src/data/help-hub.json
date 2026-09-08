@@ -396,5 +396,35 @@
     "relatedLessons": [],
     "sortOrder": 41,
     "bridge": "Not sure where to start? Use the <a href=\"/reference/machines/choose\">Machine Selection Guide</a> to answer a few simple questions about what you want to knit, the yarns you enjoy, and the features that matter most to you.\n\nWhen you're finished, you'll see a summary of your answers and can contact Sue for friendly, no-pressure guidance."
+  },
+  {
+    "question": "Where can I find patterns for my LK150?",
+    "slug": "patterns-for-lk150",
+    "status": "draft",
+    "bubbleAnswer": "Any Knit It Now pattern works with any machine. YOUR gauge is what matters.",
+    "hook": "Stop searching for an LK150 pattern. Start with your gauge.",
+    "category": "pattern-design-confusion",
+    "relatedLessons": [
+      259,
+      368
+    ],
+    "mediaType": "vimeo",
+    "mediaUrl": "348220717",
+    "thumbnailAlt": "Knit a \"proper\" swatch",
+    "solutionText": "You don’t need a pattern written specifically for the LK150. Knit a swatch with your yarn and machine, then enter your actual stitch and row gauge.\n\nKnit It Now uses your gauge to create the pattern instructions for you. The same Knit It Now pattern can be used with any knitting machine.",
+    "aboutTitle": "Your Pattern Is Based on Your Gauge, Not Your Machine",
+    "tryThis": "Stop searching for patterns written for a specific knitting machine. Knit It Now creates your pattern from the gauge you enter.",
+    "trySteps": [
+      "Choose any Knit It Now pattern.",
+      "Knit a proper swatch with your yarn on your machine.",
+      "Measure and enter your stitch and row gauge.",
+      "Knit the pattern using your customized instructions."
+    ],
+    "tryNote": "Even two knitters using the same machine and yarn may get different gauges. Always use your own swatch measurements.",
+    "tryImage": "/images/glossary/swatch-machine-knitting.jpg",
+    "tryImageCaption": "Measure your stitch and row gauge. These numbers, not your machine model, are used to create your Knit It Now pattern.",
+    "title": "Where can I find patterns for my LK150?",
+    "id": 1008,
+    "sortOrder": 51
   }
 ]
