@@ -4,11 +4,11 @@
  * Call chain:
  *   Bearer JWT ? requireMember (verified Memberstack id)
  *   ? Admin getMember(planConnections)
- *   ? hasMemberAccess / MEMBER_PLAN_IDS (canonical; ACTIVE/TRIALING only)
+ *   ? evaluateMemberAccessForRecord (paid plans, or free legacy + valid paid-through)
  *
  * Never trusts X-KBM-Member-Id, body.entitlement, free-claim, lifetime, or unlock flags.
  */
-import { hasMemberAccess } from "../../../src/lib/memberAccess.ts";
+import { evaluateMemberAccessForRecord, loadLegacyPaidThroughYmdForEmail } from "../../../src/lib/memberAccessServer.ts";
 import { requireMember, bearerTokenFromRequest } from "./member-auth.js";
 import { getMemberstackAdminClient } from "./memberstack-admin.js";
 import {
@@ -74,8 +74,17 @@ export async function requirePatternProjectAccess(req) {
     return { ok: false, status: 503, error: UNAVAILABLE };
   }
 
-  // Fail closed: hasMemberAccess requires an ACTIVE/TRIALING plan in MEMBER_PLAN_IDS.
-  if (!hasMemberAccess(record)) {
+  // Fail closed: paid plan, or free legacy plan with a valid Watson paid-through date.
+  let evaluated;
+  try {
+    evaluated = await evaluateMemberAccessForRecord(record, {
+      loadPaidThroughYmd: loadLegacyPaidThroughYmdForEmail,
+    });
+  } catch (err) {
+    console.error("requirePatternProjectAccess: membership evaluation failed:", err);
+    return { ok: false, status: 503, error: UNAVAILABLE };
+  }
+  if (!evaluated.hasMemberAccess) {
     return { ok: false, status: 403, error: MEMBERSHIP_REQUIRED };
   }
 

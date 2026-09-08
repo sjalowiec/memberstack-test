@@ -1,13 +1,13 @@
 /**
  * Course access — member gating for courses.
  *
- * Courses use the same allow list as the global member gate: the paid
- * Knit it Now Membership and legacy paid plan shells (`COURSE_ACCESS_PLAN_IDS`
- * / `MEMBER_PLAN_IDS`). Retired KIN Beta Access does not unlock courses.
+ * Courses use the same valid-access determination as the rest of the site
+ * (`hasMemberAccess`). Retired KIN Beta Access does not unlock courses.
  * Login alone never unlocks member courses.
  *
  *   - "free"     — open to everyone (no login required).
- *   - "member"   — requires active member access (paid membership / legacy shells)
+ *   - "member"   — requires active member access (paid membership, or free
+ *                  legacy plan with a valid paid-through date)
  *                  or a mapped individual-course plan for this slug.
  *   - "purchase" — included with membership (same as member courses).
  *                  Non-members may unlock via individual purchase entitlement.
@@ -17,8 +17,7 @@
  * with every other gated section.
  */
 import { LEGACY_COURSE_PLAN_SLUGS } from "../config/legacyCourseEntitlements";
-import { COURSE_ACCESS_PLAN_IDS } from "../config/memberships";
-import { getActivePlanIds, isMemberLoggedIn } from "./memberAccess";
+import { getActivePlanIds, hasMemberAccess, isMemberLoggedIn, type MemberAccessOptions } from "./memberAccess";
 
 export type CourseAccessLevel = "free" | "member" | "purchase";
 
@@ -36,8 +35,6 @@ export type CourseViewerState =
   | "needsPurchase";
 
 export const COURSE_ACCESS_LEVELS = ["free", "member", "purchase"] as const;
-
-const courseAccessPlanIds = new Set<string>(COURSE_ACCESS_PLAN_IDS);
 
 /** Type guard for a valid course access level string. */
 export function isCourseAccessLevel(value: unknown): value is CourseAccessLevel {
@@ -67,11 +64,14 @@ export function normalizeCourseAccessLevel(
 }
 
 /**
- * True when the member holds an active plan that unlocks member courses
- * (paid membership or legacy paid shells).
+ * True when the member holds currently valid member access that unlocks
+ * member courses (same determination as {@link hasMemberAccess}).
  */
-export function hasCourseMembershipAccess(memberOrPayload: unknown): boolean {
-  return getActivePlanIds(memberOrPayload).some((id) => courseAccessPlanIds.has(id));
+export function hasCourseMembershipAccess(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): boolean {
+  return hasMemberAccess(memberOrPayload, options);
 }
 
 /** @deprecated Use {@link hasCourseMembershipAccess}. */
@@ -101,10 +101,10 @@ export function hasIndividualCoursePurchase(
 export function canAccessCourse(
   access: CourseAccessLevel,
   memberOrPayload: unknown,
-  options?: { courseSlug?: string | null },
+  options?: { courseSlug?: string | null } & MemberAccessOptions,
 ): boolean {
   if (access === "free") return true;
-  if (hasCourseMembershipAccess(memberOrPayload)) return true;
+  if (hasCourseMembershipAccess(memberOrPayload, options)) return true;
   return hasIndividualCoursePurchase(options?.courseSlug, memberOrPayload);
 }
 
@@ -112,7 +112,7 @@ export function canAccessCourse(
 export function getCourseViewerState(
   access: CourseAccessLevel,
   memberOrPayload: unknown,
-  options?: { courseSlug?: string | null },
+  options?: { courseSlug?: string | null } & MemberAccessOptions,
 ): CourseViewerState {
   if (canAccessCourse(access, memberOrPayload, options)) return "open";
 

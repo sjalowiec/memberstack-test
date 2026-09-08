@@ -213,6 +213,7 @@ const forceMemberView =
       hasMemberAccess,
       logMemberAccessDebug,
     } from "../../lib/memberAccess";
+    import { ensureLegacyPaidThroughContext } from "../../lib/memberAccessClient";
     import { sortWithFreeContentFirst } from "../../lib/catalogFreeContentFirst";
     import { openMemberstackLoginModal } from "../../lib/memberstackLogin";
     import { getMemberstackReturnPath } from "../../lib/memberstackReturnUrl";
@@ -301,6 +302,7 @@ const forceMemberView =
         if (res == null) {
           return { isLoggedIn: false, hasVideoAccess: false, member: null, resolved: false };
         }
+        await ensureLegacyPaidThroughContext(res);
         const member = res?.data?.member ?? null;
         const hasVideoAccess = hasMemberAccess(res);
         logMemberAccessDebug("videos/index.catalog", res, {

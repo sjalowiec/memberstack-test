@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
-  MEMBER_PLAN_IDS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
 } from "../../config/memberships";
+import { PAID_MEMBER_ACCESS_PLAN_IDS } from "../memberAccess";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
 import {
   hasLifetimePatternBuilderAccess,
@@ -50,6 +51,14 @@ describe("hasMemberAccessFromActivePlanIds", () => {
     ).toBe(true);
   });
 
+  it("does not grant access from the free legacy plan without a paid-through date", () => {
+    expect(
+      hasMemberAccessFromActivePlanIds([
+        FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+      ]),
+    ).toBe(false);
+  });
+
   it("denies access when no qualifying plan is present", () => {
     expect(hasMemberAccessFromActivePlanIds([])).toBe(false);
     expect(hasMemberAccessFromActivePlanIds(activePlans("pln_unknown"))).toBe(false);
@@ -88,8 +97,8 @@ describe("hasPatternBuilderAccess  active membership only", () => {
     expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(true);
   });
 
-  it("allows every configured global member plan id", () => {
-    for (const planId of MEMBER_PLAN_IDS) {
+  it("allows every paid global member plan id without a Watson date", () => {
+    for (const planId of PAID_MEMBER_ACCESS_PLAN_IDS) {
       expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: [planId] })).toBe(
         true,
       );
@@ -97,6 +106,27 @@ describe("hasPatternBuilderAccess  active membership only", () => {
         true,
       );
     }
+  });
+
+  it("allows the free legacy plan only with a valid paid-through date", () => {
+    const planIds = [FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId];
+    expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(false);
+    expect(
+      hasPatternBuilderAccess({
+        builder: "sleeveless",
+        activePlanIds: planIds,
+        legacyPaidThroughYmd: "2099-01-01",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(true);
+    expect(
+      hasPatternBuilderAccess({
+        builder: "sleeveless",
+        activePlanIds: planIds,
+        legacyPaidThroughYmd: "2020-01-01",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(false);
   });
 
   it("does not grant access from lifetime builder plans alone", () => {

@@ -91,20 +91,17 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(getMember).toHaveBeenCalledWith("mem_verified");
     expect(summary.identified).toBe(true);
     expect(summary.legacyLinkState).toBe("linked");
-    expect(summary.legacyExpirationDate).toBe("July 30, 2026");
+    expect(summary.legacyExpirationDate).toBeNull();
     expect(summary.previousPlanName).toBe("Premium");
-    expect(summary.recommendedAction).toBe("renew_now");
+    expect(summary.recommendedAction).toBe("contact_support");
     expect(summary.customerFacingMessage).toMatch(
-      /Your Premium annual membership is paid through July 30, 2026/,
+      /could not safely confirm whether it has ended/i,
     );
-    expect(summary.customerFacingMessage).toMatch(
-      /Your new membership and billing period will begin today/,
-    );
-    expect(summary.customerFacingMessage).not.toMatch(/previous/i);
-    expect(summary.customerFacingMessage).not.toMatch(/active membership on your new account/i);
+    expect(summary.customerFacingMessage).not.toMatch(/paid through/i);
+    expect(summary.customerFacingMessage).not.toMatch(/time remaining/i);
   });
 
-  it("uses future legacy_members.subscriptionexpiring for renew_now even without subscription history", async () => {
+  it("treats future subscriptionexpiring without a connected plan as a sync issue", async () => {
     const summary = await loadMembershipStatusForMemberId("mem_so_t", {
       now: PACIFIC_AFTERNOON_JULY_22,
       secretKey: "sk_test",
@@ -125,17 +122,15 @@ describe("loadMembershipStatusForMemberId", () => {
     });
 
     expect(summary.legacyLinkState).toBe("linked");
-    expect(summary.legacyExpirationDate).toBe("December 31, 2026");
-    expect(summary.recommendedAction).toBe("renew_now");
+    expect(summary.legacyExpirationDate).toBeNull();
+    expect(summary.recommendedAction).toBe("contact_support");
     expect(summary.customerFacingMessage).toMatch(
-      /Your membership is paid through December 31, 2026/,
+      /do not currently see an active membership connection/i,
     );
-    expect(summary.customerFacingMessage).toMatch(
-      /Your new membership and billing period will begin today/,
-    );
+    expect(summary.customerFacingMessage).not.toMatch(/paid through/i);
   });
 
-  it("uses today legacy_members.subscriptionexpiring as renew_now", async () => {
+  it("treats today subscriptionexpiring without a connected plan as a sync issue", async () => {
     const summary = await loadMembershipStatusForMemberId("mem_today", {
       now: PACIFIC_AFTERNOON_JULY_22,
       secretKey: "sk_test",
@@ -155,9 +150,10 @@ describe("loadMembershipStatusForMemberId", () => {
       loadMemberships: async () => [],
     });
 
-    expect(summary.recommendedAction).toBe("renew_now");
-    expect(summary.legacyExpirationDate).toBe("July 22, 2026");
-    expect(summary.customerFacingMessage).toMatch(/paid through July 22, 2026/);
+    expect(summary.recommendedAction).toBe("contact_support");
+    expect(summary.legacyExpirationDate).toBeNull();
+    expect(summary.customerFacingMessage).toMatch(/do not currently see an active membership connection/i);
+    expect(summary.customerFacingMessage).not.toMatch(/paid through/i);
   });
 
   it("uses past legacy_members.subscriptionexpiring as purchase", async () => {
@@ -210,11 +206,11 @@ describe("loadMembershipStatusForMemberId", () => {
       ],
     });
 
-    expect(summary.recommendedAction).toBe("renew_now");
-    expect(summary.legacyExpirationDate).toBe("December 31, 2026");
+    expect(summary.recommendedAction).toBe("contact_support");
+    expect(summary.legacyExpirationDate).toBeNull();
   });
 
-  it("falls back to subscription-history expiration when subscriptionexpiring is null", async () => {
+  it("does not use subscription-history expiration as current membership status", async () => {
     const summary = await loadMembershipStatusForMemberId("mem_fallback", {
       now: PACIFIC_AFTERNOON_JULY_22,
       secretKey: "sk_test",
@@ -234,8 +230,9 @@ describe("loadMembershipStatusForMemberId", () => {
       loadMemberships: async () => [historyRow()],
     });
 
-    expect(summary.recommendedAction).toBe("renew_now");
-    expect(summary.legacyExpirationDate).toBe("July 30, 2026");
+    expect(summary.recommendedAction).toBe("contact_support");
+    expect(summary.legacyExpirationDate).toBeNull();
+    expect(summary.customerFacingMessage).not.toMatch(/paid through July 30, 2026/);
   });
 
   it("stays purchase-eligible when subscriptionexpiring and history expiration are both missing", async () => {
@@ -260,9 +257,9 @@ describe("loadMembershipStatusForMemberId", () => {
 
     expect(summary.legacyLinkState).toBe("linked");
     expect(summary.legacyExpirationDate).toBeNull();
-    expect(summary.recommendedAction).toBe("purchase");
+    expect(summary.recommendedAction).toBe("contact_support");
     expect(summary.customerFacingMessage).toMatch(
-      /does not currently include an active Knit it Now membership/,
+      /could not safely confirm whether it has ended/i,
     );
   });
 
@@ -296,6 +293,71 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(summary.accountType).toBe("free_membership");
     expect(summary.recommendedAction).toBe("manage");
     expect(summary.legacyExpirationDate).toBe("December 31, 2026");
+  });
+
+  it("marks a connected free legacy plan as purchase/ended when subscriptionexpiring has passed", async () => {
+    const summary = await loadMembershipStatusForMemberId("mem_free_legacy_expired", {
+      now: PACIFIC_AFTERNOON_JULY_22,
+      secretKey: "sk_test",
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "unique@example.com" },
+            planConnections: [
+              {
+                planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+                planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+                status: "ACTIVE",
+                active: true,
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: uniqueLegacyMember({ subscriptionexpiring: "2026-06-30" }),
+      }),
+      loadMemberships: async () => [],
+    });
+
+    expect(summary.accountType).not.toBe("free_membership");
+    expect(summary.currentStatus).not.toBe("active");
+    expect(summary.recommendedAction).toBe("purchase");
+    expect(summary.customerFacingMessage).toMatch(/ended on/i);
+  });
+
+  it("waits when Watson cannot confirm paid-through for a connected free legacy plan", async () => {
+    const summary = await loadMembershipStatusForMemberId("mem_free_legacy_lookup_fail", {
+      now: PACIFIC_AFTERNOON_JULY_22,
+      secretKey: "sk_test",
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "unique@example.com" },
+            planConnections: [
+              {
+                planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+                planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+                status: "ACTIVE",
+                active: true,
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => {
+        throw new Error("Watson unavailable");
+      },
+    });
+
+    expect(summary.accountType).not.toBe("free_membership");
+    expect(summary.currentStatus).not.toBe("active");
+    expect(summary.recommendedAction).toBe("wait");
+    expect(summary.legacyLinkState).toBe("lookup_unavailable");
+    expect(summary.customerFacingMessage).toMatch(/could not confirm/i);
   });
 
   it("does not auto-link ambiguous legacy emails", async () => {

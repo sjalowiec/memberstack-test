@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MEMBERSHIP_CORNER_CTA, resolveMembershipCornerCta } from "./membershipCornerCta";
 import {
   applyMembershipCornerCta,
@@ -79,7 +79,7 @@ describe("resolveMembershipCornerCta (corner control contract)", () => {
           },
         ]),
       ),
-    ).toBeNull();
+    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
   it("logged-in non-member: button shown", () => {

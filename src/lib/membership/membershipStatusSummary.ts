@@ -13,9 +13,9 @@ import {
 import type { MemberMembershipDisplay } from "../watson/memberMembership";
 import type { CustomerMemberstackSummary } from "../watson/customerMemberstack";
 import type { PlanConnection } from "./membershipSummary";
+import { hasMemberAccess } from "../memberAccess";
 import {
   FREE_MEMBERSHIP_DISPLAY_LABEL,
-  memberHasActiveFreeMembership,
   memberHasActivePaidMembership,
   PAID_MEMBERSHIP_PLAN_IDS,
 } from "./membershipCheckoutDecision";
@@ -223,21 +223,16 @@ function reliablePriorPlanName(planName: string | null | undefined): string | nu
   return trimmed;
 }
 
-function futureLegacyPaidThroughMessage(
-  planName: string | null,
-  dateDisplay: string,
-): string {
-  const paidThrough = planName
-    ? `Your ${planName} annual membership is paid through ${dateDisplay}.`
-    : `Your membership is paid through ${dateDisplay}.`;
-  return `${paidThrough}\n\nYou can renew now. Your new membership and billing period will begin today.`;
-}
-
 function pastLegacyEndedMessage(planName: string | null, dateDisplay: string): string {
   if (planName) {
     return `You have a Knit it Now account, but we do not currently see an active membership. Your previous ${planName} annual membership ended on ${dateDisplay}.`;
   }
   return `You have a Knit it Now account, but we do not currently see an active membership. Your previous annual membership ended on ${dateDisplay}.`;
+}
+
+/** Future Watson date without a connected free plan: sync issue, no promised access. */
+function legacyPlanMissingSyncMessage(): string {
+  return "We found previous membership information on your account, but we do not currently see an active membership connection. Please contact us so we can check your account before you purchase another membership.";
 }
 
 function isPaidPlanId(planId: string | null): boolean {
@@ -376,25 +371,30 @@ export function buildMembershipStatusSummary(input: {
       ? resolveLegacyExpirationTiming(legacy.legacyExpirationYmd, todayYmd)
       : null;
 
-  // Active free membership (e.g. "legacy membership"): full access with no Stripe
-  // billing/checkout/renewal. Present as an active membership (never "no
-  // membership"/purchase) while still preserving any legacy expiration date for
-  // display. Paid membership is handled above and always takes precedence.
-  const hasFreeMembership = !hasPaid && memberHasActiveFreeMembership(payload);
-  if (hasFreeMembership) {
+  // Free legacy plan + currently valid paid-through date: same determination as
+  // hasMemberAccess. A connected plan alone is not shown as active. Paid
+  // membership is handled below and always takes precedence.
+  const hasValidLegacyAccess =
+    !hasPaid &&
+    hasMemberAccess(payload, {
+      legacyPaidThroughYmd:
+        legacy.linkState === "linked" ? legacy.legacyExpirationYmd : null,
+      todayYmd,
+    });
+  if (hasValidLegacyAccess) {
     return {
       identified,
       currentStatus: "active",
       currentPlanName: FREE_MEMBERSHIP_DISPLAY_LABEL,
       previousPlanName,
-      activeThroughDate: null,
+      activeThroughDate: legacyExpirationDisplay,
       legacyExpirationDate: legacyExpirationDisplay,
       legacyLinkState: legacy.linkState,
       accountType: "free_membership",
       recommendedAction: "manage",
       customerFacingMessage: activeMembershipSentence(
         FREE_MEMBERSHIP_DISPLAY_LABEL,
-        null,
+        legacyExpirationDisplay,
       ),
     };
   }
@@ -464,9 +464,7 @@ export function buildMembershipStatusSummary(input: {
   if (legacy.linkState === "linked" && legacyExpirationDisplay && legacyTiming) {
     const planForCopy = reliablePriorPlanName(planFromLegacy ?? previousFromMemberstack);
 
-    if (legacyTiming === "legacy_paid_through_future") {
-      // Do not call the plan "previous" while paid-through is still today/future.
-      // Renew via /join; warn that checkout starts immediately (no prepaid credit).
+    if (legacyTiming === "legacy_expired") {
       return {
         identified,
         currentStatus,
@@ -476,38 +474,35 @@ export function buildMembershipStatusSummary(input: {
         legacyExpirationDate: legacyExpirationDisplay,
         legacyLinkState: "linked",
         accountType: "non_paid_account",
-        recommendedAction: "renew_now",
-        customerFacingMessage: futureLegacyPaidThroughMessage(
-          planForCopy,
-          legacyExpirationDisplay,
-        ),
+        recommendedAction: "purchase",
+        customerFacingMessage: pastLegacyEndedMessage(planForCopy, legacyExpirationDisplay),
       };
     }
 
-    // legacy_expired
+    // Future/today subscriptionexpiring without a qualifying plan: not access,
+    // and not "time remaining". Treat as an account synchronization issue.
     return {
       identified,
       currentStatus,
       currentPlanName: null,
       previousPlanName: planForCopy,
       activeThroughDate: null,
-      legacyExpirationDate: legacyExpirationDisplay,
+      legacyExpirationDate: null,
       legacyLinkState: "linked",
       accountType: "non_paid_account",
-      recommendedAction: "purchase",
-      customerFacingMessage: pastLegacyEndedMessage(planForCopy, legacyExpirationDisplay),
+      recommendedAction: "contact_support",
+      customerFacingMessage: legacyPlanMissingSyncMessage(),
     };
   }
 
-  if (legacy.linkState === "linked" && legacyExpirationDisplay) {
-    // Linked date present but timing unknown ? do not encourage purchase.
+  if (legacy.linkState === "linked") {
     return {
       identified,
       currentStatus,
       currentPlanName: null,
       previousPlanName: previousPlanName,
       activeThroughDate: null,
-      legacyExpirationDate: legacyExpirationDisplay,
+      legacyExpirationDate: null,
       legacyLinkState: "linked",
       accountType: "non_paid_account",
       recommendedAction: "contact_support",
@@ -569,17 +564,6 @@ export function membershipStatusPanelHeading(
   }
   if (summary.legacyLinkState === "ambiguous") {
     return "We need to check your membership";
-  }
-  if (summary.recommendedAction === "renew_now") {
-    return "You still have membership time remaining";
-  }
-  // Linked date present but timing unknown — keep a calm contact heading.
-  if (
-    summary.recommendedAction === "contact_support" &&
-    summary.legacyLinkState === "linked" &&
-    summary.legacyExpirationDate
-  ) {
-    return "Your membership needs a quick update";
   }
   if (summary.recommendedAction === "contact_support") {
     return "We need to check your membership";

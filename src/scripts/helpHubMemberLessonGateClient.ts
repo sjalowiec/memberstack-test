@@ -9,6 +9,7 @@ import {
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { helpHubMemberLessonCtaSpec } from "../lib/helpHubMemberLessonCta";
 import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
@@ -85,6 +86,7 @@ export async function resolveHelpHubMemberLessonViewerState(
   }
 
   const res = await waitForMemberstackAppAndMember();
+  await ensureLegacyPaidThroughContext(res);
   logMemberAccessDebug(gate, res, {
     templateChildCount: getLessonBodyTemplate()?.content.childElementCount ?? null,
     mountChildCount: getLessonBodyMount()?.childElementCount ?? null,

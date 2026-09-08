@@ -4,7 +4,8 @@
  * Per-system free claims are stored on Memberstack member JSON (`getMemberJSON` /
  * `updateMemberJSON`) — account-tied, not localStorage.
  */
-import { getActivePlanIds, hasMemberAccess } from "../memberAccess";
+import { getActivePlanIds, hasMemberAccess, rememberedLegacyPaidThroughYmdForMember } from "../memberAccess";
+import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
@@ -105,11 +106,14 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
   const memberId = memberIdFromMemberstackPayload(memberPayload);
   if (!memberId) return null;
 
+  await ensureLegacyPaidThroughContext(memberPayload);
+
   const activePlanIds = getActivePlanIds(memberPayload);
   const memberJson = await readMemberJson(ms);
   // Historical JSON unlock / free-claim metadata — read for admin/debug only; never grants access.
   const sleevelessUnlockedViaJson = readSleevelessSystemUnlockFromMemberJson(memberJson);
   const freeClaimsBySystem = readFreeClaimsBySystemFromMemberJson(memberJson);
+  const legacyPaidThroughYmd = rememberedLegacyPaidThroughYmdForMember(memberId) ?? null;
 
   const base = {
     loggedIn: true as const,
@@ -117,6 +121,7 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
     activePlanIds,
     sleevelessUnlockedViaJson,
     freeClaimsBySystem,
+    legacyPaidThroughYmd,
   };
   const hasSystemAccess = computeHasSystemAccessFlag(base);
 

@@ -509,6 +509,7 @@ function getStitchFileCleanName(file: StitchFile): string {
       hasMemberAccess,
       logMemberAccessDebug,
     } from "../../lib/memberAccess";
+    import { ensureLegacyPaidThroughContext } from "../../lib/memberAccessClient";
 
     async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
       for (let i = 0; i < attempts; i++) {
@@ -523,9 +524,10 @@ function getStitchFileCleanName(file: StitchFile): string {
       return null;
     }
 
-    function getViewerStateFromRes(res: unknown) {
+    async function getViewerStateFromRes(res: unknown) {
       const r = res as { data?: { member?: Record<string, unknown> } } | null | undefined;
       const member = r?.data?.member ?? null;
+      await ensureLegacyPaidThroughContext(res);
       const isMember = hasMemberAccess(res);
       logMemberAccessDebug("stitch/[id].downloads", res, {
         viewerAccessState: getViewerAccessState(res),
@@ -660,7 +662,7 @@ function getStitchFileCleanName(file: StitchFile): string {
         try {
           const api = window.$memberstackDom?.getAppAndMember;
           const res = typeof api === "function" ? await api() : await waitForMemberstackReady();
-          const viewer = getViewerStateFromRes(res);
+          const viewer = await getViewerStateFromRes(res);
           setFileAccess(Boolean(viewer.isMember));
           setSignInVisibility(Boolean(viewer.isLoggedIn));
           setMyLibraryUI(viewer);

@@ -217,6 +217,7 @@ const enableVideoChapterControls = hasCatalogChapters;
             hasMemberAccess,
             logMemberAccessDebug,
           } from "../../lib/memberAccess";
+          import { ensureLegacyPaidThroughContext } from "../../lib/memberAccessClient";
           import { videoDevBypass } from "../../lib/devBypass";
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
@@ -230,8 +231,9 @@ const enableVideoChapterControls = hasCatalogChapters;
             return null;
           }
 
-          function getViewerStateFromRes(res) {
+          async function getViewerStateFromRes(res) {
             const member = res?.data?.member ?? null;
+            await ensureLegacyPaidThroughContext(res);
             const isLoggedIn = Boolean(member);
             const hasVideoAccess = hasMemberAccess(res);
 
@@ -273,7 +275,7 @@ const enableVideoChapterControls = hasCatalogChapters;
             }
 
             const res = await waitForMemberstackReady();
-            const viewer = getViewerStateFromRes(res);
+            const viewer = await getViewerStateFromRes(res);
             setAccess(Boolean(viewer.hasVideoAccess));
           }
 

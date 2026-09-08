@@ -5,6 +5,11 @@
  */
 
 import {
+  hasFreeLegacyPlanConnection,
+  hasMemberAccess,
+  type MemberAccessOptions,
+} from "../memberAccess";
+import {
   cancelAtLabelFromActivePaidConnection,
   resolveAccountMembershipPanelView,
   type AccountMembershipPanelView,
@@ -165,7 +170,7 @@ function statusFactFromServer(summary: MembershipStatusSummary): string | null {
 
 /**
  * Purchase-eligible logged-in account (client confirms no paid plan).
- * Not a lookup failure ù monthly/annual checkout remains available.
+ * Not a lookup failure ? monthly/annual checkout remains available.
  */
 export function membershipStatusPageViewPurchaseEligible(
   message = MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
@@ -187,9 +192,12 @@ export function membershipStatusPageViewFromServerSummary(
   summary: MembershipStatusSummary,
 ): MembershipStatusPageView {
   if (summary.recommendedAction === "purchase") {
-    // Brand-new / expired-legacy purchase path: compact account message, no empty facts.
+    // Brand-new: compact no-membership note. Expired legacy: ended-on copy so
+    // a lapsed membership is not described as if it were still current.
     return membershipStatusPageViewPurchaseEligible(
-      MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
+      summary.legacyExpirationDate
+        ? summary.customerFacingMessage
+        : MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
     );
   }
 
@@ -235,12 +243,13 @@ export function membershipStatusPageViewClientUnavailable(
  * Precedence:
  * 1. Client Memberstack load failure ? cannot confirm
  * 2. Client active / canceling paid ? Account view wins (ignore server unknown)
- * 3. Client free ? consult server legacy context when available
+ * 3. Client free-legacy with valid hasMemberAccess ? same as access (ignore server unknown)
+ * 4. Client without valid access ? consult server legacy context
  *    - purchase / not_found / expired legacy ? purchase-eligible
- *    - future legacy paid-through ? renew via /join (immediate-start warning)
+ *    - future legacy paid-through without the plan ? renew via /join
  *    - ambiguous ? contact support
  *    - genuine server wait/unknown ? cannot confirm
- * 4. Client free + server missing/failed ? cannot confirm (do not invent purchase
+ * 5. Client free + server missing/failed ? cannot confirm (do not invent purchase
  *    when legacy paid-through could not be checked)
  */
 export function resolveMembershipStatusPageView(options: {
@@ -248,21 +257,36 @@ export function resolveMembershipStatusPageView(options: {
   clientLoaded: boolean;
   memberPayload: unknown | null;
   serverSummary: MembershipStatusSummary | null;
+  /** Same options as hasMemberAccess so display cannot disagree with the gate. */
+  accessOptions?: MemberAccessOptions;
 }): MembershipStatusPageView {
   if (!options.clientLoaded) {
     return membershipStatusPageViewClientUnavailable();
   }
 
-  const account = resolveAccountMembershipPanelView(options.memberPayload);
+  const account = resolveAccountMembershipPanelView(
+    options.memberPayload,
+    options.accessOptions,
+  );
   const fromClient = membershipStatusPageViewFromAccount(
     account,
     options.memberPayload,
   );
-  if (fromClient) {
+  const hasValidAccess = hasMemberAccess(
+    options.memberPayload,
+    options.accessOptions,
+  );
+  // Paid (and portal-eligible) client membership stays client-authoritative.
+  // Valid free-legacy access uses the same hasMemberAccess determination so
+  // /membership cannot show Active while the gate denies, or vice versa.
+  if (
+    fromClient &&
+    (hasValidAccess || !hasFreeLegacyPlanConnection(options.memberPayload))
+  ) {
     return fromClient;
   }
 
-  // Client loaded successfully with no paid plan ù that alone is not a lookup failure.
+  // Client loaded successfully with no qualifying access ? consult server.
   if (options.serverSummary) {
     return membershipStatusPageViewFromServerSummary(options.serverSummary);
   }

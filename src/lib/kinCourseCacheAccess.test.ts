@@ -7,7 +7,7 @@ import {
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
 } from "../config/legacyCourseEntitlements";
-import { COURSE_ACCESS_PLAN_IDS, MEMBERSHIPS } from "../config/memberships";
+import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS, MEMBERSHIPS } from "../config/memberships";
 import {
   KIN_COURSE_CACHE_ATTR,
   kinCourseCacheAccessInlineScript,
@@ -85,11 +85,12 @@ describe("kinCourseCacheUiFromMember uses live course entitlement", () => {
 
 describe("inline cache script stays aligned with canAccessCourse", () => {
   it("embeds the live membership allow list and SK840 mapping", () => {
+    const paidPlanIds = [...CURRENT_MEMBER_PLAN_IDS, ...LEGACY_PAID_MEMBER_PLAN_IDS];
     const vars = kinCourseCacheAccessVars(LEGACY_SK840_COURSE_SLUG);
-    expect(vars.planIds).toEqual([...COURSE_ACCESS_PLAN_IDS]);
+    expect(vars.planIds).toEqual(paidPlanIds);
     expect(vars.slugByPlan[LEGACY_SK840_COURSE_PLAN_ID]).toContain(LEGACY_SK840_COURSE_SLUG);
     const script = kinCourseCacheAccessInlineScript(LEGACY_SK840_COURSE_SLUG);
-    for (const planId of COURSE_ACCESS_PLAN_IDS) {
+    for (const planId of paidPlanIds) {
       expect(script).toContain(planId);
     }
     expect(script).toContain(LEGACY_SK840_COURSE_PLAN_ID);

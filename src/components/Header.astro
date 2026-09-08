@@ -1983,6 +1983,7 @@ div[data-ms-modal-overlay] {
     headerAuthWindowState,
     resolveHeaderAuthState,
   } from "../lib/headerAuthState";
+  import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 
   (function () {
     const pill = document.getElementById("auth-pill");
@@ -2070,7 +2071,8 @@ div[data-ms-modal-overlay] {
       }
       try {
         const res = await ms.getCurrentMember();
-        // Same ACTIVE/TRIALING ∩ MEMBER_PLAN_IDS rule as BaseLayout / hasMemberAccess.
+        // Same valid-access rule as BaseLayout / hasMemberAccess.
+        await ensureLegacyPaidThroughContext(res);
         const auth = resolveHeaderAuthState(res);
         window.__KBM_AUTH = headerAuthWindowState(auth);
         const member = auth.member as Record<string, any> | null;

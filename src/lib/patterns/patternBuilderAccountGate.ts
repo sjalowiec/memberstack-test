@@ -9,6 +9,7 @@
  * already signed in without access). No free-account signup path.
  */
 import { getViewerAccessState, hasMemberAccess, type ViewerAccessState } from "../memberAccess";
+import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { openMemberstackLoginModal } from "../memberstackLogin";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
 
@@ -43,6 +44,7 @@ async function resolveViewerAccessState(): Promise<ViewerAccessState> {
   try {
     await waitForMemberstackReady(ms);
     const res = await ms.getCurrentMember();
+    await ensureLegacyPaidThroughContext(res);
     return getViewerAccessState(res);
   } catch {
     return "loggedOut";
@@ -57,6 +59,7 @@ async function hasPatternBuilderMembershipAccess(): Promise<boolean> {
   try {
     await waitForMemberstackReady(ms);
     const res = await ms.getCurrentMember();
+    await ensureLegacyPaidThroughContext(res);
     return hasMemberAccess(res);
   } catch {
     return false;

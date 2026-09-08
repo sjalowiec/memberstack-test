@@ -35,6 +35,7 @@ beforeEach(() => {
     nextRenewalDate: "August 28, 2026",
     activeThroughDate: null,
     legacyPaidThroughDate: null,
+    legacyAccessActive: null,
     memberSince: "March 14, 2017",
     history: [
       {

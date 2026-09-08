@@ -52,6 +52,11 @@ export interface SleevelessUserAccess {
    * Prefer {@link hasPatternSystemAccess} for builder-specific checks.
    */
   hasSystemAccess: boolean;
+  /**
+   * Watson paid-through YYYY-MM-DD when the only qualifying plan is free legacy.
+   * Required for {@link hasPatternSystemAccess} to grant legacy access.
+   */
+  legacyPaidThroughYmd?: string | null;
   /** Per-system one-time free pattern claims (canonical). */
   freeClaimsBySystem: FreeClaimsBySystem;
 }
@@ -109,13 +114,17 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-export function planIdsGrantSleevelessSystemAccess(planIds: readonly string[]): boolean {
-  return hasMemberAccessFromActivePlanIds(planIds);
+export function planIdsGrantSleevelessSystemAccess(
+  planIds: readonly string[],
+  legacyPaidThroughYmd?: string | null,
+): boolean {
+  return hasMemberAccessFromActivePlanIds(planIds, { legacyPaidThroughYmd });
 }
 
 export interface ResolvePatternSystemAccessParams {
   activePlanIds: readonly string[];
   patternSystemId: PatternSystemId;
+  legacyPaidThroughYmd?: string | null;
   /** @deprecated Ignored — JSON unlock no longer grants access. */
   sleevelessUnlockedViaJson?: boolean;
 }
@@ -126,7 +135,11 @@ export function resolvePatternSystemAccess(params: ResolvePatternSystemAccessPar
 } {
   void params.patternSystemId;
   void params.sleevelessUnlockedViaJson;
-  if (hasMemberAccessFromActivePlanIds(params.activePlanIds)) {
+  if (
+    hasMemberAccessFromActivePlanIds(params.activePlanIds, {
+      legacyPaidThroughYmd: params.legacyPaidThroughYmd,
+    })
+  ) {
     return { hasSystemAccess: true };
   }
   return { hasSystemAccess: false };
@@ -142,6 +155,7 @@ export function hasPatternSystemAccess(
     return resolvePatternSystemAccess({
       activePlanIds: access.activePlanIds,
       patternSystemId: systemId,
+      legacyPaidThroughYmd: access.legacyPaidThroughYmd,
     }).hasSystemAccess;
   }
   // Legacy/test snapshots without plan ids: honor the boolean only when no plan data exists.

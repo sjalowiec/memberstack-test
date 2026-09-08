@@ -13,6 +13,7 @@
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
 import { logMemberAccessDebug } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
@@ -63,6 +64,7 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   }
 
   const res = await waitForMemberstackReady();
+  await ensureLegacyPaidThroughContext(res);
   const unlocked = canAccessCourse(access, res, { courseSlug });
 
   logMemberAccessDebug("courses.gate", res, {

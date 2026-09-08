@@ -13,6 +13,7 @@
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
 import { clearKinCourseCachePaint } from "../lib/kinCourseCacheAccess";
 import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
 import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
 import { detectSiteEnvironment } from "../lib/env/siteEnvironment";
@@ -86,6 +87,7 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   }
 
   const res = await waitForMemberstackReady();
+  await ensureLegacyPaidThroughContext(res);
   const unlocked = canAccessCourse(access, res, { courseSlug });
   gate.dataset.viewer = kinCourseGateViewer(unlocked, res);
 

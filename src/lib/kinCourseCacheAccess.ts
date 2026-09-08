@@ -3,13 +3,14 @@
  *
  * `_ms-mem` is the member object the live SDK already persists. Entitlement
  * still uses `canAccessCourse` (membership allow list + SK840 slug mapping).
- * The inline script only embeds those generated IDs; it does not keep a
- * second plan list. Live `getAppAndMember()` remains the final gate.
+ * The inline script only embeds paid plan IDs (not the free legacy plan, which
+ * also needs a Watson paid-through date). Live `getAppAndMember()` remains the
+ * final gate.
  */
 import {
   LEGACY_COURSE_PLAN_SLUGS,
 } from "../config/legacyCourseEntitlements";
-import { COURSE_ACCESS_PLAN_IDS } from "../config/memberships";
+import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS } from "../config/memberships";
 import { canAccessCourse } from "./courseAccess";
 import { isMemberLoggedIn } from "./memberAccess";
 
@@ -27,7 +28,7 @@ export type KinCourseCacheAccessVars = {
 export function kinCourseCacheAccessVars(courseSlug: string): KinCourseCacheAccessVars {
   return {
     courseSlug,
-    planIds: [...COURSE_ACCESS_PLAN_IDS],
+    planIds: [...CURRENT_MEMBER_PLAN_IDS, ...LEGACY_PAID_MEMBER_PLAN_IDS],
     slugByPlan: { ...LEGACY_COURSE_PLAN_SLUGS },
   };
 }

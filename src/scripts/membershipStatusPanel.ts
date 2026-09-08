@@ -15,6 +15,7 @@
  */
 
 import { isMemberLoggedIn } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import {
   fetchMembershipStatus,
   MembershipStatusAuthError,
@@ -396,7 +397,10 @@ export async function loadAndRenderMembershipStatusPanel(
   const memberId = memberIdFromPayload(payload);
   renderLoading(root);
 
-  // Client paid membership wins immediately — do not wait on / fail because of the server.
+  await ensureLegacyPaidThroughContext(payload);
+  if (generation !== loadGeneration) return;
+
+  // Paid membership and currently valid free-legacy access win immediately.
   const clientFirst = resolveMembershipStatusPageView({
     clientLoaded: true,
     memberPayload: payload,
@@ -412,7 +416,7 @@ export async function loadAndRenderMembershipStatusPanel(
     return;
   }
 
-  // No active paid plan on the client — legacy / transition context from the server.
+  // No active paid plan on the client ? legacy / transition context from the server.
   const serverSummary = await loadServerSummaryForLegacy();
   if (generation !== loadGeneration) return;
 

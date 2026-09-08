@@ -1,6 +1,6 @@
 /**
  * Server-side loader for the public membership-status summary.
- * Member id must come from a verified JWT � never from the browser request body/query.
+ * Member id must come from a verified JWT - never from the browser request body/query.
  */
 
 import {
@@ -16,10 +16,6 @@ import {
 } from "../watson/customerIdentifier";
 import { buildProfileLegacyLinkState } from "../watson/customerProfile";
 import {
-  buildMembershipTimelineEvents,
-  resolveLegacyAccessThroughDate,
-} from "../watson/customerTimeline";
-import {
   getMemberMemberships,
   type MemberMembershipDisplay,
 } from "../watson/memberMembership";
@@ -34,9 +30,6 @@ import {
   type MembershipStatusLegacyContext,
   type MembershipStatusSummary,
 } from "./membershipStatusSummary";
-import {
-  isLegacyMembershipExpirationEvent,
-} from "../watson/customerTimeline";
 
 export type MembershipStatusServiceDeps = {
   secretKey?: string | null;
@@ -89,31 +82,29 @@ export function legacyContextFromLink(options: {
     };
   }
 
-  // Authoritative paid-through: legacy_members.subscriptionexpiring (same field as
-  // expiry/reminders). Fall back to legacy_subscriptions.expirationdate only when
-  // that member-level date is missing, so older history-only records still work.
+  // Authoritative current paid-through: legacy_members.subscriptionexpiring only.
+  // Subscription history may label previous plans and the history accordion; it
+  // must never stand in as the current access date.
   const subscriptionExpiringYmd = ymdFromDateOnlyValue(
     linkState.legacyMember?.subscriptionexpiring ?? null,
   );
-  const timeline = buildMembershipTimelineEvents(options.memberships);
-  const expirationEvent = timeline.find((event) => isLegacyMembershipExpirationEvent(event));
-  const historyExpirationYmd = ymdFromDateOnlyValue(expirationEvent?.dateSort ?? null);
-  const legacyExpirationYmd = subscriptionExpiringYmd ?? historyExpirationYmd;
-  const legacyExpirationDate =
-    (legacyExpirationYmd
-      ? formatMembershipCalendarDateFromYmd(legacyExpirationYmd)
-      : null) ?? resolveLegacyAccessThroughDate(timeline);
   const previousPlanName = previousPlanNameFromLegacyMemberships(
     options.memberships,
-    // Match by display from membership rows (short month) OR by sort date via premium helper.
-    options.memberships.find((row) => ymdFromDateOnlyValue(row.expirationDateSort) === legacyExpirationYmd)
-      ?.expirationDate ?? legacyExpirationDate,
+    subscriptionExpiringYmd
+      ? (options.memberships.find(
+          (row) =>
+            ymdFromDateOnlyValue(row.expirationDateSort) === subscriptionExpiringYmd,
+        )?.expirationDate ??
+        formatMembershipCalendarDateFromYmd(subscriptionExpiringYmd))
+      : null,
   );
 
   return {
     linkState: "linked",
-    legacyExpirationDate,
-    legacyExpirationYmd,
+    legacyExpirationDate: subscriptionExpiringYmd
+      ? formatMembershipCalendarDateFromYmd(subscriptionExpiringYmd)
+      : null,
+    legacyExpirationYmd: subscriptionExpiringYmd,
     previousPlanName,
   };
 }

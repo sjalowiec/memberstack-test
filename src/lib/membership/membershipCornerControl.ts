@@ -11,6 +11,7 @@ import {
   resolveMembershipCornerCta,
   type MembershipCornerCta,
 } from "./membershipCornerCta";
+import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 
 async function waitForMemberstackPayload(
   attempts = 30,
@@ -52,6 +53,7 @@ export function applyMembershipCornerCta(
 
 async function refreshCornerCta(ctaEl: HTMLButtonElement): Promise<void> {
   const payload = await waitForMemberstackPayload();
+  await ensureLegacyPaidThroughContext(payload);
   applyMembershipCornerCta(ctaEl, resolveMembershipCornerCta(payload));
 }
 

@@ -3,6 +3,7 @@ import {
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../lib/memberAccess";
+import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { memberDownloadCtaSpec } from "../lib/printables/memberDownloadCta";
 
@@ -24,6 +25,7 @@ export async function resolvePrintableDownloadViewerState(
   gate: string,
 ): Promise<ViewerAccessState> {
   const res = await waitForMemberstackReady();
+  await ensureLegacyPaidThroughContext(res);
   logMemberAccessDebug(gate, res);
   return getViewerAccessState(res);
 }

@@ -834,12 +834,14 @@ const comingSoonItems = [
     logMemberAccessDebug,
     type ViewerAccessState,
   } from "../../lib/memberAccess";
+  import { ensureLegacyPaidThroughContext } from "../../lib/memberAccessClient";
 
   async function resolveSkillBuilderViewerState(): Promise<ViewerAccessState> {
     const ms = window.$memberstackDom;
     if (!ms?.getCurrentMember) return "loggedOut";
     try {
       const res = await ms.getCurrentMember();
+      await ensureLegacyPaidThroughContext(res);
       logMemberAccessDebug("learn/skill-builders.catalog", res);
       return getViewerAccessState(res);
     } catch {

@@ -87,9 +87,9 @@ export const LEGACY_MEMBERSHIPS = {
  * subscription or checkout price. They have no Stripe/price association and
  * must not appear in `MEMBERSHIP_PRICE_IDS`.
  *
- * Expiration for these plans is managed separately (outside this access gate);
- * the access gate only checks that an ACTIVE connection to one of these plan
- * ids exists.
+ * Expiration for these plans is NOT granted by plan presence alone. Access also
+ * requires a Watson paid-through date that is today or in the future
+ * (America/Los_Angeles). See {@link hasMemberAccess}.
  * ==========================================================================*/
 export const FREE_ACCESS_MEMBERSHIPS = {
   legacyMembership: {
@@ -132,9 +132,8 @@ export const CURRENT_MEMBER_PLAN_IDS = [
 /**
  * Global allow list of Memberstack plan ids that grant member access:
  * current paid membership + legacy paid shells (kept for migration) + active
- * free access plans (e.g. "legacy membership"). Retired KIN Beta Access is
- * intentionally omitted. Gating consumes this as a set, so order does not
- * matter.
+ * free access plans (e.g. "legacy membership", which also require a valid
+ * paid-through date). Retired KIN Beta Access is intentionally omitted.
  */
 export const MEMBER_PLAN_IDS = [
   ...CURRENT_MEMBER_PLAN_IDS,

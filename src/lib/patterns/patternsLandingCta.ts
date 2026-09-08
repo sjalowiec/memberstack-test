@@ -5,6 +5,7 @@
  * Visitors and logged-in non-members ? membership CTAs (never into the builder/catalog).
  */
 import { hasMemberAccess } from "../memberAccess";
+import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { PATTERN_CATALOG_HREF } from "./customPatternProjectNavigation";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
 
@@ -75,6 +76,7 @@ export async function initPatternsLandingCta(root: HTMLElement): Promise<void> {
     try {
       await waitForMemberstackReady(ms);
       const res = await ms.getCurrentMember();
+      await ensureLegacyPaidThroughContext(res);
       // Logged-in without plans stays on prospect CTAs (Become a Member), not a free-account path.
       applyMode(root, resolvePatternsLandingCtaMode(res));
     } catch {

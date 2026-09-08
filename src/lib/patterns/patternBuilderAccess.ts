@@ -1,14 +1,15 @@
 /**
- * Pattern Builder entitlement ù active Knit it Now membership only.
+ * Pattern Builder entitlement ? active Knit it Now membership only.
  *
- * Single source of truth: {@link hasMemberAccess} / {@link hasMemberAccessFromActivePlanIds}
- * (`MEMBER_PLAN_IDS`: paid membership, Beta, and legacy member shells).
+ * Single source of truth: {@link hasMemberAccess} / {@link hasMemberAccessFromActivePlanIds}.
+ * Paid plans grant access from Memberstack. The free legacy plan also requires a
+ * valid Watson paid-through date.
  *
  * Lifetime builder plans, Memberstack JSON unlock flags, and free claims do **not**
  * grant Dynamic Pattern access.
  */
 import type { PatternSystemId } from "./patternSystemId";
-import { hasMemberAccess } from "../memberAccess";
+import { hasMemberAccess, type MemberAccessOptions } from "../memberAccess";
 import {
   patternBuilderLifetimePlanId,
   type PatternBuilderKey,
@@ -23,7 +24,7 @@ export function patternBuilderKeyForSystemId(systemId: PatternSystemId): Pattern
   return null;
 }
 
-export interface HasPatternBuilderAccessParams {
+export interface HasPatternBuilderAccessParams extends MemberAccessOptions {
   builder: string;
   activePlanIds: readonly string[];
 }
@@ -36,16 +37,22 @@ function normalizePlanIds(activePlanIds: readonly string[]): string[] {
 }
 
 /** Reuses {@link hasMemberAccess} without duplicating the global plan allow list. */
-export function hasMemberAccessFromActivePlanIds(activePlanIds: readonly string[]): boolean {
+export function hasMemberAccessFromActivePlanIds(
+  activePlanIds: readonly string[],
+  options?: MemberAccessOptions,
+): boolean {
   const ids = normalizePlanIds(activePlanIds);
   if (!ids.length) return false;
-  return hasMemberAccess({
-    planConnections: ids.map((planId) => ({
-      planId,
-      status: "ACTIVE",
-      active: true,
-    })),
-  });
+  return hasMemberAccess(
+    {
+      planConnections: ids.map((planId) => ({
+        planId,
+        status: "ACTIVE",
+        active: true,
+      })),
+    },
+    options,
+  );
 }
 
 function activePlanIdsIncludeAny(activePlanIds: readonly string[], candidates: readonly string[]): boolean {
@@ -55,7 +62,7 @@ function activePlanIdsIncludeAny(activePlanIds: readonly string[], candidates: r
 
 /**
  * True when `activePlanIds` includes the lifetime Memberstack plan id for this builder.
- * Ownership detection only ù does **not** grant Dynamic Pattern access.
+ * Ownership detection only ? does **not** grant Dynamic Pattern access.
  */
 export function hasLifetimePatternBuilderAccess(
   builder: PatternBuilderKey,
@@ -71,5 +78,6 @@ export function hasLifetimePatternBuilderAccess(
  */
 export function hasPatternBuilderAccess(params: HasPatternBuilderAccessParams): boolean {
   void params.builder;
-  return hasMemberAccessFromActivePlanIds(params.activePlanIds);
+  const { activePlanIds, ...options } = params;
+  return hasMemberAccessFromActivePlanIds(activePlanIds, options);
 }

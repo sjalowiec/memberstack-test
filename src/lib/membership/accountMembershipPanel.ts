@@ -1,7 +1,8 @@
 /**
  * Resolve Account page membership panel display from a Memberstack payload.
  *
- * Uses paid-membership detection ? does not invent access rules.
+ * Paid membership is shown from Memberstack. Free legacy membership is shown
+ * as current only when {@link hasMemberAccess} agrees (valid paid-through date).
  * Billing interval is shown only when an active paid connection maps to a
  * known Memberstack price id in `MEMBERSHIPS`.
  *
@@ -9,8 +10,15 @@
  * sets payment.cancelAtDate to the paid-through date (Unix seconds).
  */
 
-import { isActiveMemberstackPlanConnection } from "../memberAccess";
-import { memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
+import {
+  hasFreeLegacyPlanConnection,
+  hasMemberAccess,
+  isActiveMemberstackPlanConnection,
+  isLegacyPaidThroughCurrentlyValid,
+  rememberedLegacyPaidThroughYmdForMember,
+  type MemberAccessOptions,
+} from "../memberAccess";
+import { memberIdFromMemberstackPayload, memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
 import {
   annualSwitchOverlapWarning,
   canPurchaseAnnualWhileCancelingMonthly,
@@ -18,7 +26,6 @@ import {
 import {
   FREE_MEMBERSHIP_DISPLAY_LABEL,
   PAID_MEMBERSHIP_PLAN_IDS,
-  memberHasActiveFreeMembership,
   memberHasActivePaidMembership,
 } from "./membershipCheckoutDecision";
 import {
@@ -326,8 +333,70 @@ export function renewsLabelFromActivePaidConnection(
   return formatMemberstackUnixDate(payment.nextBillingDate);
 }
 
+export const ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL =
+  "Membership status unavailable";
+export const ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL = "Could not confirm";
+
+function emptyPanelFields(): Pick<
+  AccountMembershipPanelView,
+  | "billingInterval"
+  | "billingLabel"
+  | "renewsLabel"
+  | "isCanceling"
+  | "activeUntilMessage"
+  | "autoRenewNote"
+  | "manageBillingDescription"
+  | "annualSwitchWarning"
+> {
+  return {
+    billingInterval: null,
+    billingLabel: null,
+    renewsLabel: null,
+    isCanceling: false,
+    activeUntilMessage: null,
+    autoRenewNote: null,
+    manageBillingDescription: null,
+    annualSwitchWarning: null,
+  };
+}
+
+function unconfirmedMembershipPanelView(): AccountMembershipPanelView {
+  return {
+    kind: "free",
+    planLabel: ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL,
+    planDisplayLabel: ACCOUNT_MEMBERSHIP_UNCONFIRMED_PLAN_LABEL,
+    statusLabel: ACCOUNT_MEMBERSHIP_UNCONFIRMED_STATUS_LABEL,
+    ...emptyPanelFields(),
+    visibleActions: [],
+  };
+}
+
+function expiredLegacyMembershipPanelView(): AccountMembershipPanelView {
+  return {
+    kind: "free",
+    planLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
+    planDisplayLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
+    statusLabel: "Expired",
+    ...emptyPanelFields(),
+    visibleActions: accountMembershipPanelActions("free"),
+  };
+}
+
+function resolvedLegacyPaidThroughYmd(
+  memberOrPayload: unknown,
+  accessOptions?: MemberAccessOptions,
+): string | null | undefined {
+  if (accessOptions && "legacyPaidThroughYmd" in accessOptions) {
+    return accessOptions.legacyPaidThroughYmd;
+  }
+  return rememberedLegacyPaidThroughYmdForMember(
+    memberIdFromMemberstackPayload(memberOrPayload),
+  );
+}
+
 export function resolveAccountMembershipPanelView(
   memberOrPayload: unknown,
+  accessOptions?: MemberAccessOptions,
 ): AccountMembershipPanelView {
   const billingInterval = billingIntervalFromActivePaidConnection(memberOrPayload);
   const billingLabel = billingInterval ? BILLING_LABEL[billingInterval] : null;
@@ -394,27 +463,34 @@ export function resolveAccountMembershipPanelView(
     };
   }
 
-  // Active free membership (e.g. "legacy membership"): full access, no Stripe
-  // subscription. These legacy members are not active Stripe subscribers, so
-  // offer the existing Memberstack checkout to renew annually or move to
-  // monthly. No Stripe portal / manage billing action (there is no subscription
-  // to manage).
-  if (memberHasActiveFreeMembership(memberOrPayload)) {
+  // Free legacy plan is shown as current membership only when hasMemberAccess
+  // agrees (valid Watson paid-through date). A connected plan whose date has
+  // passed, or whose date cannot be confirmed, is not displayed as active.
+  if (
+    hasFreeLegacyPlanConnection(memberOrPayload) &&
+    hasMemberAccess(memberOrPayload, accessOptions)
+  ) {
     return {
       kind: "member",
       planLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
       planDisplayLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
-      statusLabel: "Active",
-      billingInterval: null,
-      billingLabel: null,
-      renewsLabel: null,
-      isCanceling: false,
-      activeUntilMessage: null,
-      autoRenewNote: null,
-      manageBillingDescription: null,
-      annualSwitchWarning: null,
+      statusLabel: "Legacy Access",
+      ...emptyPanelFields(),
       visibleActions: ["renewAnnual", "becomeMonthly"],
     };
+  }
+
+  const paidThroughYmd = resolvedLegacyPaidThroughYmd(memberOrPayload, accessOptions);
+  if (
+    hasFreeLegacyPlanConnection(memberOrPayload) &&
+    paidThroughYmd &&
+    !isLegacyPaidThroughCurrentlyValid(paidThroughYmd, accessOptions)
+  ) {
+    return expiredLegacyMembershipPanelView();
+  }
+
+  if (hasFreeLegacyPlanConnection(memberOrPayload)) {
+    return unconfirmedMembershipPanelView();
   }
 
   return {
@@ -422,14 +498,7 @@ export function resolveAccountMembershipPanelView(
     planLabel: "No active membership",
     planDisplayLabel: "No active membership",
     statusLabel: "No Active Membership",
-    billingInterval: null,
-    billingLabel: null,
-    renewsLabel: null,
-    isCanceling: false,
-    activeUntilMessage: null,
-    autoRenewNote: null,
-    manageBillingDescription: null,
-    annualSwitchWarning: null,
+    ...emptyPanelFields(),
     visibleActions: accountMembershipPanelActions("free"),
   };
 }
