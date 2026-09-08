@@ -1,24 +1,57 @@
 ---
 import HelpHubTipPage from "../../components/help-hub/HelpHubTipPage.astro";
-import { requireAdminForRequest } from "../../lib/admin/requireAdminRequest";
+import { requireAdminForRequest, adminAuthErrorBody } from "../../lib/admin/requireAdminRequest";
+import { resolveHelpHubPreviewTip } from "../../lib/helpHub/previewDocument";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
+import type { HelpHubPageTip } from "../../lib/helpHub/prepareTipPage";
 
 export const prerender = false;
 
+function jsonError(status: number, error: string) {
+  return new Response(JSON.stringify({ ok: false, error }), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      Allow: "POST",
+    },
+  });
+}
+
+if (Astro.request.method !== "POST") {
+  return jsonError(405, "Preview requires an authenticated POST.");
+}
+
 const auth = await requireAdminForRequest(Astro.request, Astro.cookies);
 if (!auth.ok) {
-  return new Response(auth.error, { status: auth.status });
+  return new Response(JSON.stringify(adminAuthErrorBody(auth)), {
+    status: auth.status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
 }
 
-const slugParam = Astro.url.searchParams.get("slug")?.trim() || "";
-if (!slugParam) {
-  return new Response("Preview requires a saved slug.", { status: 400 });
+if (!Astro.request.headers.get("content-type")?.includes("application/json")) {
+  return jsonError(400, "Content-Type must be application/json");
 }
 
-const tip = await loadHelpHubTipBySlug(slugParam);
-if (!tip) {
-  return new Response("Not found", { status: 404 });
+let body: unknown;
+try {
+  body = await Astro.request.json();
+} catch {
+  return jsonError(400, "Invalid JSON body");
 }
+
+const resolved = await resolveHelpHubPreviewTip(body, async (slug) => {
+  const saved = await loadHelpHubTipBySlug(slug);
+  return saved;
+});
+if (!resolved.ok) {
+  return jsonError(resolved.status, resolved.error);
+}
+
+const tip: HelpHubPageTip = resolved.tip;
+
+Astro.response.headers.set("Cache-Control", "no-store");
 ---
 
 <HelpHubTipPage tip={tip} preview={true} />

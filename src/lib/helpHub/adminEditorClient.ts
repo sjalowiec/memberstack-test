@@ -1,9 +1,15 @@
 import {
+  fetchAdminHtml,
   fetchAdminJson,
   getAdminAuthHeaders,
   promptAdminSignIn,
+  type AdminHtmlResult,
   type AdminJsonResult,
 } from "../admin/adminAuthClient";
+import {
+  HELP_HUB_PREVIEW_PATH,
+  helpHubPreviewUrlExposesDocument,
+} from "./previewDocument";
 
 export type HelpHubAdminRequestInit = {
   method: "GET" | "POST" | "PUT" | "DELETE";
@@ -11,8 +17,12 @@ export type HelpHubAdminRequestInit = {
   fetchAdmin?: typeof fetchAdminJson;
 };
 
-export function helpHubPreviewUrl(slug: string): string {
-  return `/help-hub/preview?slug=${encodeURIComponent(slug.trim())}`;
+export type HelpHubPreviewPayload =
+  | { document: Record<string, unknown> }
+  | { slug: string };
+
+export function helpHubPreviewRequestUrl(): string {
+  return HELP_HUB_PREVIEW_PATH;
 }
 
 export async function requestHelpHubAdmin(
@@ -27,9 +37,53 @@ export function saveSucceeded(result: AdminJsonResult): boolean {
   return result.ok === true && result.status >= 200 && result.status < 300;
 }
 
+export function writePreviewHtmlToWindow(win: Window, html: string): void {
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const objectUrl = URL.createObjectURL(blob);
+  win.location.replace(objectUrl);
+}
+
+export async function requestHelpHubPreview(
+  payload: HelpHubPreviewPayload,
+  options: {
+    fetchHtml?: typeof fetchAdminHtml;
+    previewUrl?: string;
+  } = {},
+): Promise<AdminHtmlResult> {
+  const fetchHtml = options.fetchHtml ?? fetchAdminHtml;
+  const url = options.previewUrl ?? helpHubPreviewRequestUrl();
+  return fetchHtml(url, { method: "POST", body: payload });
+}
+
+export async function openHelpHubPreview(
+  payload: HelpHubPreviewPayload,
+  options: {
+    fetchHtml?: typeof fetchAdminHtml;
+    previewWindow?: Window | null;
+    openWindow?: () => Window | null;
+    writeHtml?: typeof writePreviewHtmlToWindow;
+  } = {},
+): Promise<AdminHtmlResult> {
+  const result = await requestHelpHubPreview(payload, { fetchHtml: options.fetchHtml });
+  if (!result.ok || !result.html) {
+    options.previewWindow?.close();
+    return result;
+  }
+
+  const win = options.previewWindow ?? options.openWindow?.() ?? null;
+  if (!win) {
+    return { ok: false, status: result.status, error: "Preview window was blocked." };
+  }
+  win.opener = null;
+  const writeHtml = options.writeHtml ?? writePreviewHtmlToWindow;
+  writeHtml(win, result.html);
+  return result;
+}
+
 export type HelpHubAdminBrowser = {
   request: typeof requestHelpHubAdmin;
-  previewUrl: typeof helpHubPreviewUrl;
+  previewUrl: typeof helpHubPreviewRequestUrl;
+  openPreview: typeof openHelpHubPreview;
   promptSignIn: typeof promptAdminSignIn;
   ensureToken: typeof getAdminAuthHeaders;
   saveSucceeded: typeof saveSucceeded;
@@ -40,7 +94,8 @@ export function installHelpHubAdminBrowser(
 ): HelpHubAdminBrowser {
   const api: HelpHubAdminBrowser = {
     request: requestHelpHubAdmin,
-    previewUrl: helpHubPreviewUrl,
+    previewUrl: helpHubPreviewRequestUrl,
+    openPreview: openHelpHubPreview,
     promptSignIn: promptAdminSignIn,
     ensureToken: getAdminAuthHeaders,
     saveSucceeded,
@@ -48,6 +103,35 @@ export function installHelpHubAdminBrowser(
   target.kbmHelpHubAdmin = api;
   return api;
 }
+
+export function bindHelpHubPreviewButtons(
+  root: ParentNode = document,
+  options: { admin?: () => HelpHubAdminBrowser | undefined } = {},
+): void {
+  const getAdmin = options.admin ?? (() => window.kbmHelpHubAdmin);
+  root.querySelectorAll<HTMLElement>("[data-help-hub-preview-slug]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const slug = button.getAttribute("data-help-hub-preview-slug")?.trim() || "";
+      if (!slug) return;
+      const admin = getAdmin();
+      if (!admin?.openPreview) return;
+      const previewWindow = window.open("", "_blank");
+      const result = await admin.openPreview({ slug }, { previewWindow });
+      if (!result.ok) {
+        previewWindow?.close();
+        if (result.needsSignIn) {
+          admin.promptSignIn();
+          return;
+        }
+        if (result.forbidden) {
+          window.alert(result.error || "Admin access required.");
+        }
+      }
+    });
+  });
+}
+
+export { helpHubPreviewUrlExposesDocument, HELP_HUB_PREVIEW_PATH };
 
 declare global {
   interface Window {

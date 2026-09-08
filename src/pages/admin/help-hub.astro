@@ -104,14 +104,13 @@ const hubSections = [
                             >
                               Edit
                             </a>
-                            <a
+                            <button
+                              type="button"
                               class="help-hub-dash__entry-edit"
-                              href={`/help-hub/preview?slug=${encodeURIComponent(slug)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              data-help-hub-preview-slug={slug}
                             >
                               Preview
-                            </a>
+                            </button>
                           </>
                         ) : (
                           <span class="help-hub-dash__entry-edit help-hub-dash__entry-edit--disabled">
@@ -261,5 +260,24 @@ const hubSections = [
       font-weight: 500;
       text-decoration: none;
     }
+
+    button.help-hub-dash__entry-edit {
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+    }
   </style>
+
+  <script>
+    import {
+      bindHelpHubPreviewButtons,
+      installHelpHubAdminBrowser,
+    } from "../../lib/helpHub/adminEditorClient";
+
+    installHelpHubAdminBrowser();
+    bindHelpHubPreviewButtons();
+  </script>
 </BaseLayout>

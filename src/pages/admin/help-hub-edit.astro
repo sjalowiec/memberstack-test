@@ -1449,14 +1449,7 @@ const entryLabel = currentEntry as {
             "Missing required fields: " + missing.join(", ");
 
           copyBtn.disabled = !ok;
-          if (previewBtn) {
-            var saved =
-              window.currentHelpHub &&
-              window.currentHelpHub.slug &&
-              window.currentHelpHub.id !== undefined &&
-              window.currentHelpHub.id !== null;
-            previewBtn.disabled = !saved;
-          }
+          if (previewBtn) previewBtn.disabled = !ok;
           if (saveBtn) saveBtn.disabled = !ok;
           if (!ok) {
             status.textContent = missingText;
@@ -1531,25 +1524,41 @@ const entryLabel = currentEntry as {
 
         if (previewBtn) {
           previewBtn.addEventListener("click", async function () {
-            var slug =
-              (window.currentHelpHub && window.currentHelpHub.slug) ||
-              trimmedFieldValue(form, "slug");
-            if (!slug) {
-              setSaveStatus("Save the entry before previewing.", "err");
+            var missing = getMissingRequiredFields(form);
+            if (missing.length) {
+              setSaveStatus("Missing required fields: " + missing.join(", "), "err");
               return;
             }
             var admin = helpHubAdmin();
-            if (!admin) {
+            if (!admin || typeof admin.openPreview !== "function") {
               setSaveStatus("Help Hub admin is still loading. Try Preview again.", "err");
               return;
             }
-            var headers = await admin.ensureToken();
-            if (!headers.Authorization) {
-              setSaveStatus("Sign in with your Knit it Now account to preview.", "signin");
-              if (typeof admin.promptSignIn === "function") admin.promptSignIn();
-              return;
+            var previewWindow = window.open("", "_blank");
+            setSaveStatus("Opening preview…", null);
+            try {
+              var result = await admin.openPreview(
+                { document: prepareApiPayload(form) },
+                { previewWindow: previewWindow },
+              );
+              if (result.needsSignIn) {
+                setSaveStatus(result.error || "Sign in with your Knit it Now account to preview.", "signin");
+                if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+                return;
+              }
+              if (result.forbidden) {
+                setSaveStatus(result.error || "This Knit it Now account does not have admin access.", "err");
+                return;
+              }
+              if (!result.ok) {
+                setSaveStatus(result.error || "Preview failed (" + result.status + ")", "err");
+                return;
+              }
+              setSaveStatus("", null);
+            } catch (e) {
+              if (previewWindow) previewWindow.close();
+              setSaveStatus("Preview failed — network error", "err");
             }
-            window.open(admin.previewUrl(String(slug)), "_blank", "noopener,noreferrer");
           });
         }
 

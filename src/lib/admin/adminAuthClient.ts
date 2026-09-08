@@ -194,6 +194,85 @@ export async function fetchAdminJson<T = Record<string, unknown>>(
   return { ok: true, status: res.status, data };
 }
 
+export type AdminHtmlResult = {
+  ok: boolean;
+  status: number;
+  html?: string;
+  error?: string;
+  needsSignIn?: boolean;
+  forbidden?: boolean;
+};
+
+/**
+ * Authenticated HTML request for admin preview pages.
+ * Reads a fresh Memberstack token immediately before each fetch.
+ * Success is HTML. 401/403 are JSON errors (Sign In / Admin access required).
+ */
+export async function fetchAdminHtml(
+  url: string,
+  init: {
+    method: string;
+    body?: unknown;
+    headers?: Record<string, string>;
+    fetchImpl?: typeof fetch;
+    getHeaders?: typeof getAdminAuthHeaders;
+    allowMissingToken?: boolean;
+  },
+): Promise<AdminHtmlResult> {
+  const fetchImpl = init.fetchImpl ?? fetch;
+  const getHeaders = init.getHeaders ?? getAdminAuthHeaders;
+  const headers: Record<string, string> = { ...(init.headers ?? {}) };
+  if (init.body !== undefined && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const authHeaders = await getHeaders();
+  Object.assign(headers, authHeaders);
+
+  const allowMissingToken = init.allowMissingToken ?? isDevAdminBypassEnabled();
+  if (!headers.Authorization && !allowMissingToken) {
+    return {
+      ok: false,
+      status: 401,
+      error: ADMIN_SIGN_IN_REQUIRED_MESSAGE,
+      needsSignIn: true,
+    };
+  }
+
+  const res = await fetchImpl(url, {
+    method: init.method,
+    headers,
+    credentials: "same-origin",
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+
+  if (res.status === 401 || res.status === 403 || !res.ok) {
+    const raw = await res.json().catch(() => ({}));
+    const record = asRecord(raw);
+    const errorText =
+      typeof record.error === "string" && record.error.trim()
+        ? record.error.trim()
+        : res.status === 401
+          ? ADMIN_SIGN_IN_REQUIRED_MESSAGE
+          : res.status === 403
+            ? ADMIN_FORBIDDEN_MESSAGE
+            : `Request failed (${res.status})`;
+    if (res.status === 401) {
+      return { ok: false, status: 401, error: errorText, needsSignIn: true };
+    }
+    if (res.status === 403) {
+      return { ok: false, status: 403, error: errorText, forbidden: true };
+    }
+    return { ok: false, status: res.status, error: errorText };
+  }
+
+  const html = await res.text();
+  if (!html.trim()) {
+    return { ok: false, status: res.status, error: "Preview returned empty HTML." };
+  }
+  return { ok: true, status: res.status, html };
+}
+
 export function promptAdminSignIn(returnPath?: string): void {
   openMemberstackLoginModal(returnPath);
 }

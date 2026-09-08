@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ADMIN_SIGN_IN_REQUIRED_MESSAGE,
+  fetchAdminHtml,
   fetchAdminJson,
   readMemberstackBearerToken,
   waitForMemberstackDom,
@@ -214,5 +215,28 @@ describe("readMemberstackBearerToken freshness", () => {
     });
     expect(first).toBe("jwt-first");
     expect(second).toBeNull();
+  });
+});
+
+describe("fetchAdminHtml", () => {
+  it("sends a fresh bearer token and returns rendered HTML", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+      text: async () => "<html>preview</html>",
+    }) as Response);
+    const result = await fetchAdminHtml("/help-hub/preview", {
+      method: "POST",
+      body: { document: { slug: "x", title: "Y" } },
+      fetchImpl,
+      getHeaders: async () => ({ Authorization: "Bearer jwt-sue" }),
+      allowMissingToken: false,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.html).toBe("<html>preview</html>");
+    expect(
+      (fetchImpl.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers.Authorization,
+    ).toBe("Bearer jwt-sue");
   });
 });

@@ -26,6 +26,7 @@ describe("Help Hub public SSR", () => {
     expect(previewSource).toContain("requireAdminForRequest");
     expect(previewSource).toContain("HelpHubTipPage");
     expect(previewSource).toContain("preview={true}");
-    expect(previewSource).toContain("loadHelpHubTipBySlug");
+    expect(previewSource).toContain("resolveHelpHubPreviewTip");
+    expect(previewSource).not.toContain("saveExistingHelpHubTip");
   });
 });
