@@ -188,4 +188,29 @@ describe("validateTipOfTheWeekInput", () => {
     });
     expect(unsafe.ok).toBe(false);
   });
+
+  it("treats an empty default Related Help video row as optional", () => {
+    const result = validateTipOfTheWeekInput({
+      ...base,
+      relatedLinks: [{ type: "video", videoId: "", title: "" }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.relatedLinks).toEqual([]);
+  });
+
+  it("attaches a field name so the admin form can highlight the failing input", () => {
+    const missingIntro = validateTipOfTheWeekInput({ ...base, intro: "" });
+    expect(missingIntro.ok).toBe(false);
+    if (missingIntro.ok) return;
+    expect(missingIntro.field).toBe("intro");
+
+    const textOnlyCta = validateTipOfTheWeekInput({
+      ...base,
+      ctaText: "Build Your Sock Pattern",
+    });
+    expect(textOnlyCta.ok).toBe(false);
+    if (textOnlyCta.ok) return;
+    expect(textOnlyCta.field).toBe("ctaUrl");
+  });
 });

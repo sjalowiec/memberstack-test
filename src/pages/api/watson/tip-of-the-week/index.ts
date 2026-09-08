@@ -37,7 +37,10 @@ export const POST: APIRoute = async (context) => {
   try {
     const result = await createTipOfTheWeek(bodyResult.body);
     if (!result.ok) {
-      return watsonJsonResponse({ ok: false, error: result.error }, 400);
+      return watsonJsonResponse(
+        { ok: false, error: result.error, field: result.field ?? null },
+        400,
+      );
     }
     const video = resolveVideoForTip(result.value);
     return watsonJsonResponse(
