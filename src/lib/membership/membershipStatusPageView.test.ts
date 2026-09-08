@@ -83,16 +83,16 @@ function serverUnknown(): MembershipStatusSummary {
 function serverFutureLegacy(): MembershipStatusSummary {
   return {
     identified: true,
-    currentStatus: "no_plan",
-    currentPlanName: null,
+    currentStatus: "active",
+    currentPlanName: "Legacy Membership",
     previousPlanName: "Premium",
-    activeThroughDate: null,
-    legacyExpirationDate: null,
+    activeThroughDate: "July 30, 2026",
+    legacyExpirationDate: "July 30, 2026",
     legacyLinkState: "linked",
-    accountType: "non_paid_account",
-    recommendedAction: "contact_support",
+    accountType: "free_membership",
+    recommendedAction: "manage",
     customerFacingMessage:
-      "We found previous membership information on your account, but we do not currently see an active membership connection. Please contact us so we can check your account before you purchase another membership.",
+      "Your Legacy Membership remains active through July 30, 2026. You do not need to subscribe again before then.",
   };
 }
 
@@ -187,6 +187,34 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(view.facts.status).toBe("Legacy Access");
     expect(view.facts.billing).toBeNull();
     expect(view.facts.renews).toBeNull();
+    expect(view.facts.through).toBe("July 30, 2026");
+    expect(view.message).toMatch(/Legacy Membership remains active through July 30, 2026/);
+    expect(view.ctaMode).not.toBe("purchase");
+  });
+
+  it("recognizes valid Watson access without the free legacy plan", () => {
+    const payload = { data: { id: "mem_migrated", planConnections: [] } };
+    const account = resolveAccountMembershipPanelView(
+      payload,
+      accessOptions("2026-10-07"),
+    );
+    expect(account.kind).toBe("member");
+    expect(account.statusLabel).toBe("Legacy Access");
+    expect(account.visibleActions).not.toContain("join");
+
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: payload,
+      serverSummary: serverUnknown(),
+      accessOptions: accessOptions("2026-10-07"),
+    });
+    expect(view.source).toBe("client_active");
+    expect(view.ctaMode).toBe("manage");
+    expect(view.facts.plan).toBe("Legacy Membership");
+    expect(view.facts.status).toBe("Legacy Access");
+    expect(view.facts.through).toBe("October 7, 2026");
+    expect(view.message).toMatch(/Legacy Membership remains active through October 7, 2026/);
+    expect(view.ctaMode).not.toBe("purchase");
   });
 
   it("does not show a connected free legacy plan as active after paid-through has passed", () => {
@@ -269,21 +297,20 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(page.facts.renews).toBe(parity.renewsOrThrough);
   });
 
-  it("future subscriptionexpiring without a connected plan is a sync issue, not remaining access", () => {
+  it("future subscriptionexpiring without a connected plan is Legacy Access", () => {
     const view = resolveMembershipStatusPageView({
       clientLoaded: true,
       memberPayload: { data: { id: "mem_free", planConnections: [] } },
       serverSummary: serverFutureLegacy(),
     });
     expect(view.source).toBe("server_legacy");
-    expect(view.ctaMode).toBe("contact_support");
-    expect(view.heading).toBe("We need to check your membership");
-    expect(view.message).toMatch(/do not currently see an active membership connection/i);
-    expect(view.message).not.toMatch(/time remaining/i);
-    expect(view.message).not.toMatch(/paid through/i);
-    expect(view.message).not.toMatch(/remains active/i);
+    expect(view.ctaMode).toBe("manage");
+    expect(view.heading).toBe("Your membership is active");
+    expect(view.message).toMatch(/Legacy Membership remains active through/);
+    expect(view.facts.plan).toBe("Legacy Membership");
+    expect(view.facts.status).toBe("Active");
+    expect(view.facts.through).toBe("July 30, 2026");
     expect(membershipStatusUiMode(view)).toBe("inline_blocking");
-    expect(Object.values(view.facts).every((value) => value == null)).toBe(true);
   });
 
   it("no active client membership uses expired legacy server context (purchase)", () => {

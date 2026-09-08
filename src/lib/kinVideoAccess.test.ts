@@ -139,6 +139,7 @@ describe("hasKinVideoAccess", () => {
       hasKinVideoAccess(
         {
           data: {
+            id: "mem_legacy",
             planConnections: [
               { planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId, status: "ACTIVE" },
             ],
@@ -154,12 +155,27 @@ describe("hasKinVideoAccess", () => {
       hasKinVideoAccess(
         {
           data: {
+            id: "mem_legacy",
             planConnections: [
               { planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId, status: "ACTIVE" },
             ],
           },
         },
         { legacyPaidThroughYmd: "2026-12-01", todayYmd: "2026-09-08" },
+      ),
+    ).toBe(true);
+  });
+
+  it("returns true for a valid Watson date without the free legacy plan", () => {
+    expect(
+      hasKinVideoAccess(
+        {
+          data: {
+            id: "mem_migrated",
+            planConnections: [],
+          },
+        },
+        { legacyPaidThroughYmd: "2026-10-07", todayYmd: "2026-09-08" },
       ),
     ).toBe(true);
   });

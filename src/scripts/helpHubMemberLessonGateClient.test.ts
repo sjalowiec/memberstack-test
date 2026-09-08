@@ -369,6 +369,16 @@ describe("hasMemberAccess plan allow list (membership / legacy; beta retired)", 
     expect(hasMemberAccess(res)).toBe(false);
     expect(getViewerAccessState(res)).toBe("loggedInNoAccess");
   });
+
+  it("grants Help Hub member lessons from a valid Watson date without the free legacy plan", () => {
+    const res = memberPayload(null);
+    expect(
+      hasMemberAccess(res, { legacyPaidThroughYmd: "2026-10-07", todayYmd: "2026-07-22" }),
+    ).toBe(true);
+    expect(
+      getViewerAccessState(res, { legacyPaidThroughYmd: "2026-10-07", todayYmd: "2026-07-22" }),
+    ).toBe("memberAccess");
+  });
 });
 
 describe("syncLessonPageMemberGate mount behavior", () => {

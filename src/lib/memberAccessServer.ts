@@ -1,6 +1,6 @@
 /**
  * Server-side membership access: combine Memberstack plans with Watson
- * `legacy_members.subscriptionexpiring` for the free legacy plan.
+ * `legacy_members.subscriptionexpiring` when there is no active paid plan.
  *
  * Client bundles must not import this module (it talks to Watson/Postgres).
  */
@@ -40,7 +40,8 @@ export async function loadLegacyPaidThroughYmdForEmail(
 
 /**
  * Canonical server access decision for an Admin `getMember` record (or equivalent).
- * Paid plans skip Watson. Free-legacy-only members require a valid paid-through date.
+ * Paid plans skip Watson. Any other logged-in member requires a valid Watson
+ * paid-through date. The free Memberstack legacy plan is not required.
  */
 export async function evaluateMemberAccessForRecord(
   record: unknown,

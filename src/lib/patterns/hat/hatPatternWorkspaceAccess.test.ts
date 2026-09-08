@@ -106,6 +106,13 @@ function chromeRoot() {
 }
 
 describe("Hat finished-pattern workspace access (free view vs member save)", () => {
+  it("keeps free Hat viewable without membership", () => {
+    const access = resolveHatPatternWorkspaceAccess("loggedOut");
+    expect(access.canViewPattern).toBe(true);
+    expect(access.hasMemberSavedProjectPrivileges).toBe(false);
+    expect(decidePatternMembershipGate(LOGGED_OUT_SLEEVELESS_ACCESS).state).not.toBe("member");
+  });
+
   it("keeps free Hat viewable for logged-out visitors while showing the temporary-pattern upsell", () => {
     const access = resolveHatPatternWorkspaceAccess("loggedOut");
     expect(access.canViewPattern).toBe(true);

@@ -98,7 +98,8 @@ function unidentifiedDetail(): AccountMembershipDetail {
 
 /**
  * One consistent customer-facing status, derived from the same summary that
- * uses hasMemberAccess. Never label Legacy Access from a date alone.
+ * uses hasMemberAccess. A valid Watson paid-through date is Legacy Access even
+ * without the free Memberstack plan.
  */
 function resolveStatusLabel(summary: MembershipStatusSummary): string | null {
   if (

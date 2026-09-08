@@ -230,11 +230,6 @@ function pastLegacyEndedMessage(planName: string | null, dateDisplay: string): s
   return `You have a Knit it Now account, but we do not currently see an active membership. Your previous annual membership ended on ${dateDisplay}.`;
 }
 
-/** Future Watson date without a connected free plan: sync issue, no promised access. */
-function legacyPlanMissingSyncMessage(): string {
-  return "We found previous membership information on your account, but we do not currently see an active membership connection. Please contact us so we can check your account before you purchase another membership.";
-}
-
 function isPaidPlanId(planId: string | null): boolean {
   return Boolean(planId && PAID_PLAN_ID_SET.has(planId));
 }
@@ -371,9 +366,9 @@ export function buildMembershipStatusSummary(input: {
       ? resolveLegacyExpirationTiming(legacy.legacyExpirationYmd, todayYmd)
       : null;
 
-  // Free legacy plan + currently valid paid-through date: same determination as
-  // hasMemberAccess. A connected plan alone is not shown as active. Paid
-  // membership is handled below and always takes precedence.
+  // Valid Watson paid-through date: same determination as hasMemberAccess.
+  // The free Memberstack legacy plan is not required. Paid membership below
+  // always takes precedence.
   const hasValidLegacyAccess =
     !hasPaid &&
     hasMemberAccess(payload, {
@@ -478,21 +473,6 @@ export function buildMembershipStatusSummary(input: {
         customerFacingMessage: pastLegacyEndedMessage(planForCopy, legacyExpirationDisplay),
       };
     }
-
-    // Future/today subscriptionexpiring without a qualifying plan: not access,
-    // and not "time remaining". Treat as an account synchronization issue.
-    return {
-      identified,
-      currentStatus,
-      currentPlanName: null,
-      previousPlanName: planForCopy,
-      activeThroughDate: null,
-      legacyExpirationDate: null,
-      legacyLinkState: "linked",
-      accountType: "non_paid_account",
-      recommendedAction: "contact_support",
-      customerFacingMessage: legacyPlanMissingSyncMessage(),
-    };
   }
 
   if (legacy.linkState === "linked") {

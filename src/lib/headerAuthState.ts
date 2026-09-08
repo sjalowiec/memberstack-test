@@ -1,9 +1,9 @@
 /**
  * Canonical Header auth state ? same membership definition as BaseLayout / content gates.
  *
- * Uses {@link hasMemberAccess} (paid ACTIVE/TRIALING plans, or free legacy plan
- * with a valid paid-through date). Never treats a raw plan connection as
- * membership without the active-status filter.
+ * Uses {@link hasMemberAccess} (paid ACTIVE/TRIALING plans, or a confirmed
+ * Watson paid-through date today or later). Never treats a raw plan connection
+ * as membership without the active-status filter.
  */
 import { hasMemberAccess, isMemberLoggedIn, type MemberAccessOptions } from "./memberAccess";
 import {

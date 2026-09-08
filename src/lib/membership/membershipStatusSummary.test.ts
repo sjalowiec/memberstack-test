@@ -494,30 +494,25 @@ describe("buildMembershipStatusSummary", () => {
     expect(membershipStatusAllowsPurchase(result)).toBe(true);
   });
 
-  it("legacy expiration today without a connected plan is a sync issue, not remaining access", () => {
+  it("legacy expiration today without a connected plan is still Legacy Access", () => {
     const result = summaryWithLegacy({ ymd: "2026-07-22" });
-    expect(result.recommendedAction).toBe("contact_support");
+    expect(result.currentStatus).toBe("active");
+    expect(result.accountType).toBe("free_membership");
+    expect(result.currentPlanName).toBe("Legacy Membership");
+    expect(result.recommendedAction).toBe("manage");
     expect(membershipStatusAllowsPurchase(result)).toBe(false);
-    expect(membershipStatusPanelHeading(result)).toBe("We need to check your membership");
-    expect(result.customerFacingMessage).toMatch(/do not currently see an active membership connection/i);
-    expect(result.customerFacingMessage).not.toMatch(/time remaining/i);
-    expect(result.customerFacingMessage).not.toMatch(/paid through/i);
-    expect(result.customerFacingMessage).not.toMatch(/You can renew now/i);
+    expect(result.customerFacingMessage).toMatch(/Legacy Membership remains active through/);
   });
 
-  it("legacy expiration tomorrow without a connected plan does not claim access or remaining time", () => {
+  it("legacy expiration tomorrow without a connected plan is Legacy Access", () => {
     const result = summaryWithLegacy({ ymd: "2026-07-23" });
-    expect(result.recommendedAction).toBe("contact_support");
-    expect(result.legacyExpirationDate).toBeNull();
-    expect(result.customerFacingMessage).toMatch(/contact us/i);
-    expect(result.customerFacingMessage).not.toMatch(
-      /currently have access|you have access|site access|time remaining|paid through/i,
-    );
+    expect(result.currentStatus).toBe("active");
+    expect(result.recommendedAction).toBe("manage");
+    expect(result.activeThroughDate).toBe(formatMembershipCalendarDateFromYmd("2026-07-23"));
     expect(membershipStatusAllowsPurchase(result)).toBe(false);
-    expect(membershipStatusPanelHeading(result)).toBe("We need to check your membership");
   });
 
-  it("future legacy without a connected plan is a sync issue, not remaining access", () => {
+  it("future legacy without a connected plan is Legacy Access, not a sync error", () => {
     const result = buildMembershipStatusSummary({
       memberstackMember: { id: "mem_future", planConnections: [] },
       memberstackSummary: summaryFromConnections([]),
@@ -530,10 +525,13 @@ describe("buildMembershipStatusSummary", () => {
         previousPlanName: null,
       }),
     });
-    expect(result.recommendedAction).toBe("contact_support");
-    expect(result.customerFacingMessage).toMatch(/do not currently see an active membership connection/i);
-    expect(result.customerFacingMessage).not.toMatch(/paid through/i);
-    expect(membershipStatusPanelHeading(result)).toBe("We need to check your membership");
+    expect(result.currentStatus).toBe("active");
+    expect(result.accountType).toBe("free_membership");
+    expect(result.currentPlanName).toBe("Legacy Membership");
+    expect(result.recommendedAction).toBe("manage");
+    expect(result.customerFacingMessage).toMatch(/Legacy Membership remains active through/);
+    expect(membershipStatusPanelHeading(result)).toBe("Your membership is active");
+    expect(membershipStatusAllowsPurchase(result)).toBe(false);
   });
 
   it("active Memberstack membership wins regardless of future legacy expiration", () => {

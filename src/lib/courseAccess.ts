@@ -6,8 +6,8 @@
  * Login alone never unlocks member courses.
  *
  *   - "free"     — open to everyone (no login required).
- *   - "member"   — requires active member access (paid membership, or free
- *                  legacy plan with a valid paid-through date)
+ *   - "member"   — requires active member access (paid membership, or a
+ *                  confirmed Watson paid-through date today or later)
  *                  or a mapped individual-course plan for this slug.
  *   - "purchase" — included with membership (same as member courses).
  *                  Non-members may unlock via individual purchase entitlement.

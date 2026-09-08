@@ -8,12 +8,13 @@
  *   currently valid membership:
  *
  *   - An ACTIVE/TRIALING paid plan (current membership or retired paid shells), or
- *   - The free legacy membership plan **and** a Watson paid-through date that is
- *     today or in the future (America/Los_Angeles calendar day).
+ *   - A confirmed Watson `subscriptionexpiring` date that is today or later
+ *     (America/Los_Angeles calendar day). The free Memberstack Legacy Membership
+ *     plan is not required when Watson confirms that date.
  *
- * Merely having a legacy plan connection or a legacy membership record does not
- * grant access. Retired KIN Beta Access does not count. Login alone never grants
- * member access.
+ * The free legacy plan without a valid Watson date does not grant access.
+ * Missing, expired, or unconfirmed Watson dates do not grant access. Retired
+ * KIN Beta Access does not count. Login alone never grants member access.
  *
  * Paid plan ids live in `src/config/memberships.ts`. Do NOT keep a separate plan
  * list in any section.
@@ -56,7 +57,7 @@ export type ViewerAccessState = "loggedOut" | "loggedInNoAccess" | "memberAccess
 export type MemberAccessOptions = {
   /**
    * Watson `legacy_members.subscriptionexpiring` as YYYY-MM-DD.
-   * Required to grant access via the free legacy plan. Ignored for paid plans.
+   * Used when there is no active paid plan. Ignored for paid plans.
    */
   legacyPaidThroughYmd?: string | null;
   /** Deterministic clock for paid-through vs expired (tests). */
@@ -206,15 +207,12 @@ export function hasFreeLegacyPlanConnection(memberOrPayload: unknown): boolean {
 }
 
 /**
- * True when this payload can only gain access via the free legacy plan
- * (no paid plan). Callers should load the Watson paid-through date.
+ * True when this payload has no active paid plan, so access depends on Watson
+ * `subscriptionexpiring`. Callers should load that date. The free Memberstack
+ * legacy plan is not required.
  */
 export function needsLegacyPaidThroughForAccess(memberOrPayload: unknown): boolean {
-  return (
-    isMemberLoggedIn(memberOrPayload) &&
-    !hasPaidMemberAccess(memberOrPayload) &&
-    hasFreeLegacyPlanConnection(memberOrPayload)
-  );
+  return isMemberLoggedIn(memberOrPayload) && !hasPaidMemberAccess(memberOrPayload);
 }
 
 /**
@@ -265,15 +263,15 @@ function resolvedLegacyPaidThroughYmd(
 
 /**
  * The global member-access check. True only when the viewer is logged in AND
- * has a currently valid membership (paid plan, or free legacy plan with a
- * paid-through date that has not passed).
+ * has a currently valid membership (paid plan, or a Watson paid-through date
+ * that is today or later). The free legacy plan is not required.
  */
 export function hasMemberAccess(
   memberOrPayload: unknown,
   options?: MemberAccessOptions,
 ): boolean {
   if (hasPaidMemberAccess(memberOrPayload)) return true;
-  if (!hasFreeLegacyPlanConnection(memberOrPayload)) return false;
+  if (!isMemberLoggedIn(memberOrPayload)) return false;
   return isLegacyPaidThroughCurrentlyValid(
     resolvedLegacyPaidThroughYmd(memberOrPayload, options) ?? null,
     options,

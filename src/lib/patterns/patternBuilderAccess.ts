@@ -2,8 +2,8 @@
  * Pattern Builder entitlement ? active Knit it Now membership only.
  *
  * Single source of truth: {@link hasMemberAccess} / {@link hasMemberAccessFromActivePlanIds}.
- * Paid plans grant access from Memberstack. The free legacy plan also requires a
- * valid Watson paid-through date.
+ * Paid plans grant access from Memberstack. Otherwise a valid Watson paid-through
+ * date grants access; the free legacy plan is not required.
  *
  * Lifetime builder plans, Memberstack JSON unlock flags, and free claims do **not**
  * grant Dynamic Pattern access.
@@ -42,9 +42,9 @@ export function hasMemberAccessFromActivePlanIds(
   options?: MemberAccessOptions,
 ): boolean {
   const ids = normalizePlanIds(activePlanIds);
-  if (!ids.length) return false;
   return hasMemberAccess(
     {
+      id: "active-plan-ids",
       planConnections: ids.map((planId) => ({
         planId,
         status: "ACTIVE",

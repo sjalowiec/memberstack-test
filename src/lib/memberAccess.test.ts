@@ -160,12 +160,31 @@ describe("hasMemberAccess — free legacy membership", () => {
     expect(needsLegacyPaidThroughForAccess(res)).toBe(true);
   });
 
-  it("does not grant access from a legacy record / date without the free plan", () => {
+  it("grants access from a valid Watson date without the free legacy plan", () => {
     const noPlan = payload({ planId: null });
+    expect(needsLegacyPaidThroughForAccess(noPlan)).toBe(true);
     expect(
       hasMemberAccess(noPlan, { legacyPaidThroughYmd: "2026-12-01", todayYmd: TODAY_YMD }),
+    ).toBe(true);
+    expect(
+      getViewerAccessState(noPlan, {
+        legacyPaidThroughYmd: "2026-12-01",
+        todayYmd: TODAY_YMD,
+      }),
+    ).toBe("memberAccess");
+  });
+
+  it("denies an expired Watson date without the free legacy plan", () => {
+    const noPlan = payload({ planId: null });
+    expect(
+      hasMemberAccess(noPlan, { legacyPaidThroughYmd: "2020-01-01", todayYmd: TODAY_YMD }),
     ).toBe(false);
-    expect(getViewerAccessState(noPlan)).toBe("loggedInNoAccess");
+    expect(
+      getViewerAccessState(noPlan, {
+        legacyPaidThroughYmd: "2020-01-01",
+        todayYmd: TODAY_YMD,
+      }),
+    ).toBe("loggedInNoAccess");
   });
 
   it("paid membership still wins when a legacy date is expired", () => {
@@ -207,6 +226,14 @@ describe("remembered legacy paid-through context", () => {
     expect(hasMemberAccess(res, { todayYmd: TODAY_YMD })).toBe(false);
   });
 
+  it("lets sync gates reuse a loaded date for a member without the free plan", () => {
+    const res = payload({ id: "mem_migrated", planId: null });
+    rememberLegacyPaidThroughForAccess("mem_migrated", "2026-12-01");
+    expect(hasMemberAccess(res, { todayYmd: TODAY_YMD })).toBe(true);
+    rememberLegacyPaidThroughForAccess("mem_migrated", "2026-01-01");
+    expect(hasMemberAccess(res, { todayYmd: TODAY_YMD })).toBe(false);
+  });
+
   it("does not apply another member's remembered date", () => {
     const res = payload({ id: "mem_a", planId: LEGACY_FREE });
     rememberLegacyPaidThroughForAccess("mem_b", "2026-12-01");
@@ -230,11 +257,12 @@ describe("expired legacy member cannot use member-only surfaces", () => {
     const access = {
       loggedIn: true,
       memberId: "mem_legacy",
-      activePlanIds: [LEGACY_FREE],
+      activePlanIds: [] as string[],
       hasSystemAccess: false,
       freeClaimsBySystem: {},
       legacyPaidThroughYmd: expired.legacyPaidThroughYmd,
     };
+    expect(hasMemberAccessFromActivePlanIds([], expired)).toBe(false);
     expect(hasMemberAccessFromActivePlanIds([LEGACY_FREE], expired)).toBe(false);
     expect(canCreatePatternForSystem(access, "sleeveless")).toBe(false);
     expect(canCreatePatternForSystem(access, "drop-shoulder")).toBe(false);
@@ -244,5 +272,81 @@ describe("expired legacy member cannot use member-only surfaces", () => {
   it("does not unlock from a direct membership check with only the plan id", () => {
     expect(hasMemberAccess(payload({ planId: LEGACY_FREE }))).toBe(false);
     expect(hasMemberAccessFromActivePlanIds([LEGACY_FREE])).toBe(false);
+  });
+});
+
+describe("corrected legacy access matrix", () => {
+  const future = { legacyPaidThroughYmd: "2026-10-07", todayYmd: TODAY_YMD };
+  const today = { legacyPaidThroughYmd: TODAY_YMD, todayYmd: TODAY_YMD };
+  const expiredDate = { legacyPaidThroughYmd: "2026-07-01", todayYmd: TODAY_YMD };
+  const noPlan = payload({ planId: null });
+  const withFreePlan = payload({ planId: LEGACY_FREE });
+
+  it("1–2. active paid monthly and annual plans grant access without Watson", () => {
+    expect(hasMemberAccess(payload({ planId: PAID, priceId: MONTHLY_PRICE }))).toBe(true);
+    expect(hasMemberAccess(payload({ planId: PAID, priceId: ANNUAL_PRICE }))).toBe(true);
+    expect(needsLegacyPaidThroughForAccess(payload({ planId: PAID }))).toBe(false);
+  });
+
+  it("3. valid Watson date with the free legacy plan grants access", () => {
+    expect(hasMemberAccess(withFreePlan, future)).toBe(true);
+  });
+
+  it("4. valid Watson date without the free legacy plan grants access", () => {
+    expect(hasMemberAccess(noPlan, future)).toBe(true);
+    expect(hasMemberAccessFromActivePlanIds([], future)).toBe(true);
+    const access = {
+      loggedIn: true,
+      memberId: "mem_migrated",
+      activePlanIds: [] as string[],
+      hasSystemAccess: false,
+      freeClaimsBySystem: {},
+      legacyPaidThroughYmd: future.legacyPaidThroughYmd,
+    };
+    expect(canCreatePatternForSystem(access, "sleeveless")).toBe(true);
+    expect(
+      decidePatternMembershipGate({
+        ...access,
+        hasSystemAccess: true,
+      }).state,
+    ).toBe("member");
+  });
+
+  it("5. a Watson date expiring today still grants access", () => {
+    expect(hasMemberAccess(noPlan, today)).toBe(true);
+    expect(hasMemberAccess(withFreePlan, today)).toBe(true);
+  });
+
+  it("6–7. expired Watson dates deny access with or without the free plan", () => {
+    expect(hasMemberAccess(withFreePlan, expiredDate)).toBe(false);
+    expect(hasMemberAccess(noPlan, expiredDate)).toBe(false);
+  });
+
+  it("8. a free legacy plan with no Watson expiration denies access", () => {
+    expect(hasMemberAccess(withFreePlan, { legacyPaidThroughYmd: null, todayYmd: TODAY_YMD })).toBe(
+      false,
+    );
+  });
+
+  it("9. no paid plan and no Watson record denies access", () => {
+    expect(hasMemberAccess(noPlan)).toBe(false);
+    expect(hasMemberAccess(noPlan, { legacyPaidThroughYmd: null, todayYmd: TODAY_YMD })).toBe(
+      false,
+    );
+  });
+
+  it("10. missing or failed Watson expiration data denies access", () => {
+    expect(hasMemberAccess(noPlan, { legacyPaidThroughYmd: null, todayYmd: TODAY_YMD })).toBe(
+      false,
+    );
+    expect(hasMemberAccess(withFreePlan, { legacyPaidThroughYmd: null, todayYmd: TODAY_YMD })).toBe(
+      false,
+    );
+  });
+
+  it("11. an active paid plan still grants access when Watson is expired", () => {
+    expect(
+      hasMemberAccess(payload({ planId: PAID, priceId: MONTHLY_PRICE }), expiredDate),
+    ).toBe(true);
   });
 });

@@ -36,13 +36,31 @@ describe("ensureLegacyPaidThroughContext", () => {
     expect(hasMemberAccess(payload(PAID))).toBe(true);
   });
 
-  it("loads and remembers the date for free-legacy-only members", async () => {
+  it("loads and remembers the date for logged-in members without a paid plan", async () => {
     const fetchPaidThroughYmd = vi.fn(async () => "2026-12-01");
     const res = payload(LEGACY_FREE);
     expect(hasMemberAccess(res, { todayYmd: "2026-07-22" })).toBe(false);
     await ensureLegacyPaidThroughContext(res, { fetchPaidThroughYmd });
     expect(fetchPaidThroughYmd).toHaveBeenCalledTimes(1);
     expect(rememberedLegacyPaidThroughYmdForMember("mem_client")).toBe("2026-12-01");
+    expect(hasMemberAccess(res, { todayYmd: "2026-07-22" })).toBe(true);
+  });
+
+  it("loads Watson for a logged-in member with no free legacy plan", async () => {
+    const fetchPaidThroughYmd = vi.fn(async () => "2026-10-07");
+    const res = {
+      data: {
+        member: {
+          id: "mem_migrated",
+          auth: { email: "client@example.com" },
+          planConnections: [],
+        },
+      },
+    };
+    expect(hasMemberAccess(res, { todayYmd: "2026-07-22" })).toBe(false);
+    await ensureLegacyPaidThroughContext(res, { fetchPaidThroughYmd });
+    expect(fetchPaidThroughYmd).toHaveBeenCalledTimes(1);
+    expect(rememberedLegacyPaidThroughYmdForMember("mem_migrated")).toBe("2026-10-07");
     expect(hasMemberAccess(res, { todayYmd: "2026-07-22" })).toBe(true);
   });
 

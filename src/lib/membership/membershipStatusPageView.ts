@@ -5,8 +5,6 @@
  */
 
 import {
-  hasFreeLegacyPlanConnection,
-  hasMemberAccess,
   type MemberAccessOptions,
 } from "../memberAccess";
 import {
@@ -16,6 +14,7 @@ import {
 } from "./accountMembershipPanel";
 import type { MembershipStatusCtaMode } from "./membershipStatusCta";
 import {
+  formatMembershipCalendarDateFromYmd,
   membershipStatusPanelHeading,
   type MembershipStatusSummary,
 } from "./membershipStatusSummary";
@@ -93,6 +92,7 @@ export function activeMembershipCustomerMessage(
 export function membershipStatusPageViewFromAccount(
   account: AccountMembershipPanelView,
   memberPayload?: unknown,
+  accessOptions?: MemberAccessOptions,
 ): MembershipStatusPageView | null {
   if (account.kind !== "member") return null;
 
@@ -125,17 +125,27 @@ export function membershipStatusPageViewFromAccount(
     };
   }
 
+  const legacyThroughYmd =
+    account.statusLabel === "Legacy Access" &&
+    accessOptions &&
+    typeof accessOptions.legacyPaidThroughYmd === "string"
+      ? accessOptions.legacyPaidThroughYmd
+      : null;
+  const throughDate = legacyThroughYmd
+    ? formatMembershipCalendarDateFromYmd(legacyThroughYmd)
+    : null;
+
   return {
     source: "client_active",
     heading: "Your membership is active",
-    message: activeMembershipCustomerMessage(planLabel, null),
+    message: activeMembershipCustomerMessage(planLabel, throughDate),
     ctaMode: "manage",
     facts: {
       status: account.statusLabel,
       plan: planLabel,
       billing: account.billingLabel,
       renews: account.renewsLabel,
-      through: null,
+      through: throughDate,
       previous: null,
     },
   };
@@ -243,10 +253,10 @@ export function membershipStatusPageViewClientUnavailable(
  * Precedence:
  * 1. Client Memberstack load failure ? cannot confirm
  * 2. Client active / canceling paid ? Account view wins (ignore server unknown)
- * 3. Client free-legacy with valid hasMemberAccess ? same as access (ignore server unknown)
+ * 3. Client with valid hasMemberAccess (paid or Watson legacy) ? same as access
  * 4. Client without valid access ? consult server legacy context
  *    - purchase / not_found / expired legacy ? purchase-eligible
- *    - future legacy paid-through without the plan ? renew via /join
+ *    - valid Watson date (plan optional) is already covered by hasMemberAccess
  *    - ambiguous ? contact support
  *    - genuine server wait/unknown ? cannot confirm
  * 5. Client free + server missing/failed ? cannot confirm (do not invent purchase
@@ -271,18 +281,12 @@ export function resolveMembershipStatusPageView(options: {
   const fromClient = membershipStatusPageViewFromAccount(
     account,
     options.memberPayload,
-  );
-  const hasValidAccess = hasMemberAccess(
-    options.memberPayload,
     options.accessOptions,
   );
-  // Paid (and portal-eligible) client membership stays client-authoritative.
-  // Valid free-legacy access uses the same hasMemberAccess determination so
-  // /membership cannot show Active while the gate denies, or vice versa.
-  if (
-    fromClient &&
-    (hasValidAccess || !hasFreeLegacyPlanConnection(options.memberPayload))
-  ) {
+  // Paid, portal-eligible, and currently valid Watson-legacy access are kind
+  // "member" and stay client-authoritative. Missing the free Memberstack plan
+  // is not a reason to skip that view or invent a sync error.
+  if (fromClient) {
     return fromClient;
   }
 

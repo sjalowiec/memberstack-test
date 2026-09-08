@@ -59,6 +59,23 @@ describe("hasMemberAccessFromActivePlanIds", () => {
     ).toBe(false);
   });
 
+  it("grants access from a valid Watson date even with no Memberstack plans", () => {
+    expect(
+      hasMemberAccessFromActivePlanIds([], {
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(true);
+    expect(
+      hasPatternBuilderAccess({
+        builder: "sleeveless",
+        activePlanIds: [],
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(true);
+  });
+
   it("denies access when no qualifying plan is present", () => {
     expect(hasMemberAccessFromActivePlanIds([])).toBe(false);
     expect(hasMemberAccessFromActivePlanIds(activePlans("pln_unknown"))).toBe(false);

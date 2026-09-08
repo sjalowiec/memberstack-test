@@ -570,21 +570,21 @@ describe("membership status panel page behavior", () => {
     ).toBe(false);
   });
 
-  it("future subscriptionexpiring without a connected plan is a sync issue, not remaining access", async () => {
+  it("future subscriptionexpiring without a connected plan is Legacy Access", async () => {
     installMemberstack({ data: { id: "mem_free", planConnections: [] } });
     vi.mocked(fetchMembershipStatus).mockResolvedValue({
       ok: true,
       identified: true,
-      currentStatus: "no_plan",
-      currentPlanName: null,
+      currentStatus: "active",
+      currentPlanName: "Legacy Membership",
       previousPlanName: "Premium",
-      activeThroughDate: null,
-      legacyExpirationDate: null,
+      activeThroughDate: "July 30, 2026",
+      legacyExpirationDate: "July 30, 2026",
       legacyLinkState: "linked",
-      accountType: "non_paid_account",
-      recommendedAction: "contact_support",
+      accountType: "free_membership",
+      recommendedAction: "manage",
       customerFacingMessage:
-        "We found previous membership information on your account, but we do not currently see an active membership connection. Please contact us so we can check your account before you purchase another membership.",
+        "Your Legacy Membership remains active through July 30, 2026. You do not need to subscribe again before then.",
     });
 
     await loadAndRenderMembershipStatusPanel(root);
@@ -592,25 +592,16 @@ describe("membership status panel page behavior", () => {
     expect((root.querySelector("[data-membership-status-panel]") as unknown as StubEl).hidden).toBe(
       false,
     );
-    expect((root.querySelector("[data-membership-status-modal]") as unknown as StubEl).open).toBe(
-      false,
-    );
     expect(
       (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
-    ).toBe("We need to check your membership");
+    ).toBe("Your membership is active");
     expect(
       (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
-    ).toMatch(/do not currently see an active membership connection/i);
-    expect(
-      (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
-    ).not.toMatch(/time remaining|paid through/i);
-    expect(getMembershipStatusCtaMode()).toBe("contact_support");
+    ).toMatch(/Legacy Membership remains active through/);
+    expect(getMembershipStatusCtaMode()).toBe("manage");
     expect(
       (root.querySelector("[data-membership-status-renew]") as unknown as StubEl).hidden,
     ).toBe(true);
-    expect(
-      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
-    ).toBe(false);
     expect(shouldBlockPurchaseForStatusMode()).toBe(true);
   });
 

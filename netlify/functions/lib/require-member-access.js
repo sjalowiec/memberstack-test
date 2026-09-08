@@ -4,7 +4,7 @@
  * Call chain:
  *   Bearer JWT ? requireMember (verified Memberstack id)
  *   ? Admin getMember(planConnections)
- *   ? evaluateMemberAccessForRecord (paid plans, or free legacy + valid paid-through)
+ *   ? evaluateMemberAccessForRecord (paid plans, or Watson paid-through today or later)
  *
  * Never trusts X-KBM-Member-Id, body.entitlement, free-claim, lifetime, or unlock flags.
  */
@@ -74,7 +74,7 @@ export async function requirePatternProjectAccess(req) {
     return { ok: false, status: 503, error: UNAVAILABLE };
   }
 
-  // Fail closed: paid plan, or free legacy plan with a valid Watson paid-through date.
+  // Fail closed: paid plan, or a confirmed Watson paid-through date today or later.
   let evaluated;
   try {
     evaluated = await evaluateMemberAccessForRecord(record, {

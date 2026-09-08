@@ -14,9 +14,9 @@
  * free legacy plan from their Memberstack record - but only when the member does
  * not also hold another active paid membership (a renewed member keeps access).
  *
- * Access enforcement is in `hasMemberAccess` (paid plans, or free legacy plus a
- * valid paid-through date). This process only removes plan connections. It never
- * grants access.
+ * Access enforcement is in `hasMemberAccess` (paid plans, or a confirmed Watson
+ * paid-through date today or later). This process only removes plan connections.
+ * It never grants access.
  *
  * The calendar rule matches the membership status API
  * (`membershipStatusSummary.ts`): the paid-through date itself still has access;

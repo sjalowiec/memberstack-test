@@ -116,6 +116,24 @@ describe("shouldShowVideoCatalogLock", () => {
     }
   });
 
+  it("grants catalog unlock from a valid Watson date without the free plan", () => {
+    expect(
+      hasMemberAccess(
+        {
+          data: {
+            id: "mem_migrated",
+            planConnections: [],
+          },
+        },
+        { legacyPaidThroughYmd: "2026-10-07", todayYmd: "2026-09-08" },
+      ),
+    ).toBe(true);
+    expect(catalogLockFor(member257, "has_access")).toBe(false);
+    expect(catalogLockFor(public258, "has_access")).toBe(false);
+    expect(catalogLockFor(tuesdayTip, "no_access")).toBe(false);
+    expect(catalogLockFor(member257, "no_access")).toBe(true);
+  });
+
   it("does not treat a stale hasVideoAccess flag as membership", () => {
     expect(
       shouldShowVideoCatalogLock({

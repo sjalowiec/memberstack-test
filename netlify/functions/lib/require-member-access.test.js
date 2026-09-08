@@ -23,7 +23,7 @@ vi.mock("../../../src/lib/memberAccessServer.ts", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    loadLegacyPaidThroughYmdForEmail: vi.fn(async () => "2099-12-31"),
+    loadLegacyPaidThroughYmdForEmail: vi.fn(async () => null),
   };
 });
 
@@ -58,6 +58,7 @@ function memberRecord(planId, { status = "ACTIVE", active = true, email = "owner
 
 beforeEach(() => {
   vi.mocked(isAllowDevPatternUser).mockReturnValue(false);
+  vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue(null);
   vi.mocked(getMemberstackAdminClient).mockReturnValue({
     verifyMemberToken: vi.fn(async (token) => (token === "good-token" ? { id: MEMBER_ID } : null)),
     getMember: vi.fn(async () => memberRecord(ACTIVE_PLAN)),
@@ -105,6 +106,21 @@ describe("requirePatternProjectAccess", () => {
       expect(result.status).toBe(403);
       expect(result.error).toMatch(/membership/i);
     }
+  });
+
+  it("allows a logged-in member with no Memberstack plans when Watson paid-through is valid", async () => {
+    vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue("2099-12-31");
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => ({
+        id: MEMBER_ID,
+        auth: { email: "owner@example.com" },
+        planConnections: [],
+      })),
+    });
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
+    expect(loadLegacyPaidThroughYmdForEmail).toHaveBeenCalled();
   });
 
   it("rejects inactive / canceled membership plans with 403", async () => {
