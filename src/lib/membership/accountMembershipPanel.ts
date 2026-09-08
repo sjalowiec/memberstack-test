@@ -1,8 +1,9 @@
 /**
  * Resolve Account page membership panel display from a Memberstack payload.
  *
- * Paid membership is shown from Memberstack. Free legacy membership is shown
- * as current only when {@link hasMemberAccess} agrees (valid paid-through date).
+ * Paid membership is shown from Memberstack. Legacy access is shown as current
+ * when {@link hasMemberAccess} agrees (valid Watson paid-through date, with or
+ * without the free Memberstack legacy plan).
  * Billing interval is shown only when an active paid connection maps to a
  * known Memberstack price id in `MEMBERSHIPS`.
  *
@@ -15,6 +16,7 @@ import {
   hasMemberAccess,
   isActiveMemberstackPlanConnection,
   isLegacyPaidThroughCurrentlyValid,
+  needsLegacyPaidThroughForAccess,
   rememberedLegacyPaidThroughYmdForMember,
   type MemberAccessOptions,
 } from "../memberAccess";
@@ -463,13 +465,11 @@ export function resolveAccountMembershipPanelView(
     };
   }
 
-  // Free legacy plan is shown as current membership only when hasMemberAccess
-  // agrees (valid Watson paid-through date). A connected plan whose date has
-  // passed, or whose date cannot be confirmed, is not displayed as active.
-  if (
-    hasFreeLegacyPlanConnection(memberOrPayload) &&
-    hasMemberAccess(memberOrPayload, accessOptions)
-  ) {
+  // Valid Watson paid-through date (with or without the free Memberstack plan)
+  // is shown as current legacy membership. hasMemberAccess is the same gate as
+  // the rest of the site. A date that has passed, or cannot be confirmed, is
+  // not displayed as active.
+  if (hasMemberAccess(memberOrPayload, accessOptions)) {
     return {
       kind: "member",
       planLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
@@ -482,14 +482,20 @@ export function resolveAccountMembershipPanelView(
 
   const paidThroughYmd = resolvedLegacyPaidThroughYmd(memberOrPayload, accessOptions);
   if (
-    hasFreeLegacyPlanConnection(memberOrPayload) &&
     paidThroughYmd &&
     !isLegacyPaidThroughCurrentlyValid(paidThroughYmd, accessOptions)
   ) {
     return expiredLegacyMembershipPanelView();
   }
 
-  if (hasFreeLegacyPlanConnection(memberOrPayload)) {
+  // Date not loaded yet, or a connected free plan whose Watson date could not
+  // be confirmed: wait. A completed lookup with no date (null) and no free plan
+  // is a confirmed non-member and falls through to purchase.
+  if (
+    needsLegacyPaidThroughForAccess(memberOrPayload) &&
+    (paidThroughYmd === undefined ||
+      (paidThroughYmd === null && hasFreeLegacyPlanConnection(memberOrPayload)))
+  ) {
     return unconfirmedMembershipPanelView();
   }
 

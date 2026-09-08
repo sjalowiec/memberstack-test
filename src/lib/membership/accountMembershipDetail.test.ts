@@ -377,7 +377,7 @@ describe("loadAccountMembershipDetail", () => {
     expect(detail.memberSince).toBe("January 5, 2012");
   });
 
-  it("does not treat a future Watson date without a connected plan as current access", async () => {
+  it("treats a future Watson date without a connected plan as Legacy Access", async () => {
     const detail = await loadAccountMembershipDetail("mem_future_legacy", {
       secretKey: "sk_test",
       now: new Date("2026-07-28T19:00:00.000Z"),
@@ -409,15 +409,13 @@ describe("loadAccountMembershipDetail", () => {
       ],
     });
 
-    expect(detail.membershipName).toBeNull();
-    expect(detail.statusLabel).toBe("Could not confirm");
-    expect(detail.statusLabel).not.toBe("Legacy Access");
-    expect(detail.statusLabel).not.toBe("Active");
-    expect(detail.legacyPaidThroughDate).toBeNull();
-    expect(detail.legacyAccessActive).toBeNull();
+    expect(detail.membershipName).toBe("Legacy Membership");
+    expect(detail.statusLabel).toBe("Legacy Access");
+    expect(detail.legacyPaidThroughDate).toBe("December 1, 2029");
+    expect(detail.legacyAccessActive).toBe(true);
   });
 
-  it("does not treat a today Watson date without a connected plan as current access", async () => {
+  it("treats a today Watson date without a connected plan as Legacy Access", async () => {
     const detail = await loadAccountMembershipDetail("mem_today_legacy", {
       secretKey: "sk_test",
       now: new Date("2026-07-28T19:00:00.000Z"),
@@ -449,10 +447,10 @@ describe("loadAccountMembershipDetail", () => {
       ],
     });
 
-    expect(detail.statusLabel).toBe("Could not confirm");
-    expect(detail.statusLabel).not.toBe("Legacy Access");
-    expect(detail.legacyPaidThroughDate).toBeNull();
-    expect(detail.legacyAccessActive).toBeNull();
+    expect(detail.statusLabel).toBe("Legacy Access");
+    expect(detail.membershipName).toBe("Legacy Membership");
+    expect(detail.legacyPaidThroughDate).toBe("July 28, 2026");
+    expect(detail.legacyAccessActive).toBe(true);
   });
 
   it("shows Expired with an ended legacy access date for past legacy paid-through", async () => {

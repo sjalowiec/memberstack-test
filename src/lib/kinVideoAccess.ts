@@ -31,8 +31,8 @@ export function activeVideoPlanIdsFromMemberPayload(memberOrPayload: unknown): s
 
 /**
  * @deprecated Use `hasMemberAccess` from `memberAccess`.
- * Same determination as the global member gate (paid plan, or free legacy plus
- * a valid Watson paid-through date). Login or plan presence alone is not enough.
+ * Same determination as the global member gate (paid plan, or a confirmed
+ * Watson paid-through date today or later). Login or plan presence alone is not enough.
  */
 export function hasKinVideoAccess(
   memberOrPayload: unknown,

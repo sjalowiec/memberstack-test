@@ -77,6 +77,32 @@ describe("hasMemberAccess for catalog video playback", () => {
     ).toBe(true);
   });
 
+  it("grants a valid Watson date without the free legacy plan", () => {
+    const noPlan = {
+      data: {
+        id: "mem_migrated",
+        auth: { email: "test@knititnow.com" },
+        planConnections: [],
+      },
+    };
+    expect(
+      hasMemberAccess(noPlan, {
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-09-08",
+      }),
+    ).toBe(true);
+    expect(
+      decideGatedVimeoPlayback({
+        accessLevel: "member",
+        videoDevBypass: false,
+        membershipResolved: true,
+        hasMemberAccess: true,
+        isLoggedIn: true,
+        embedSrc: "https://player.vimeo.com/video/1",
+      }),
+    ).toEqual({ action: "unlock", iframeSrc: "https://player.vimeo.com/video/1" });
+  });
+
   it("grants active paid members", () => {
     expect(hasMemberAccess(payload(PAID))).toBe(true);
   });

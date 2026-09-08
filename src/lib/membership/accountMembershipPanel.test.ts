@@ -100,8 +100,10 @@ describe("resolveAccountMembershipPanelView", () => {
     clearRememberedLegacyPaidThroughForAccess();
   });
 
-  it("shows no active membership when there are no paid plan connections", () => {
-    expect(resolveAccountMembershipPanelView(memberWithPlans([]))).toEqual({
+  it("shows no active membership when Watson confirms there is no paid-through date", () => {
+    expect(
+      resolveAccountMembershipPanelView(memberWithPlans([]), { legacyPaidThroughYmd: null }),
+    ).toEqual({
       kind: "free",
       planLabel: "No active membership",
       planDisplayLabel: "No active membership",
@@ -118,11 +120,17 @@ describe("resolveAccountMembershipPanelView", () => {
     });
   });
 
+  it("does not treat unpaid accounts as purchase-eligible before Watson is checked", () => {
+    const view = resolveAccountMembershipPanelView(memberWithPlans([]));
+    expect(view.statusLabel).toBe("Could not confirm");
+    expect(view.visibleActions).toEqual([]);
+  });
+
   it("treats beta-only as free for this panel (not a paid membership)", () => {
     const member = memberWithPlans([
       { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
     ]);
-    const view = resolveAccountMembershipPanelView(member);
+    const view = resolveAccountMembershipPanelView(member, { legacyPaidThroughYmd: null });
     expect(view.kind).toBe("free");
     expect(view.renewsLabel).toBeNull();
     expect(view.activeUntilMessage).toBeNull();
@@ -296,7 +304,7 @@ describe("resolveAccountMembershipPanelView", () => {
         },
       },
     ]);
-    const view = resolveAccountMembershipPanelView(member);
+    const view = resolveAccountMembershipPanelView(member, { legacyPaidThroughYmd: null });
     expect(view.kind).toBe("free");
     expect(view.visibleActions).toEqual(["join"]);
   });
@@ -596,7 +604,7 @@ describe("resolveAccountMembershipPanelView", () => {
         priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
       },
     ]);
-    const view = resolveAccountMembershipPanelView(member);
+    const view = resolveAccountMembershipPanelView(member, { legacyPaidThroughYmd: null });
     expect(view.visibleActions).toEqual(["join"]);
     expect(memberHasStripeCustomerPortalAccess(member)).toBe(false);
   });
@@ -609,7 +617,7 @@ describe("resolveAccountMembershipPanelView", () => {
         priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
       },
     ]);
-    const view = resolveAccountMembershipPanelView(member);
+    const view = resolveAccountMembershipPanelView(member, { legacyPaidThroughYmd: null });
     expect(view.kind).toBe("free");
     expect(view.renewsLabel).toBeNull();
     expect(view.activeUntilMessage).toBeNull();
@@ -625,6 +633,41 @@ describe("resolveAccountMembershipPanelView", () => {
       },
     ]);
     expect(resolveAccountMembershipPanelView(member).kind).toBe("free");
+  });
+
+  it("shows Legacy Access for a valid Watson date without the free legacy plan", () => {
+    const member = memberWithPlans([]);
+    expect(
+      resolveAccountMembershipPanelView(member, {
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-07-22",
+      }),
+    ).toMatchObject({
+      kind: "member",
+      planLabel: "Legacy Membership",
+      statusLabel: "Legacy Access",
+      visibleActions: ["renewAnnual", "becomeMonthly"],
+    });
+    expect(
+      resolveAccountMembershipPanelView(member, {
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-07-22",
+      }).visibleActions,
+    ).not.toContain("join");
+  });
+
+  it("shows Expired for a past Watson date without the free legacy plan", () => {
+    const member = memberWithPlans([]);
+    expect(
+      resolveAccountMembershipPanelView(member, {
+        legacyPaidThroughYmd: "2026-06-30",
+        todayYmd: "2026-07-22",
+      }),
+    ).toMatchObject({
+      kind: "free",
+      statusLabel: "Expired",
+      visibleActions: ["join"],
+    });
   });
 
   it("shows Legacy Access for a free legacy plan with a currently valid paid-through date", () => {
@@ -712,7 +755,9 @@ describe("resolveAccountMembershipPanelView", () => {
   });
 
   it("does not show Switch to Annual for no-plan members", () => {
-    const view = resolveAccountMembershipPanelView(memberWithPlans([]));
+    const view = resolveAccountMembershipPanelView(memberWithPlans([]), {
+      legacyPaidThroughYmd: null,
+    });
     expect(view.visibleActions).toEqual(["join"]);
     expect(view.annualSwitchWarning).toBeNull();
   });

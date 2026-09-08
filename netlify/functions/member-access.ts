@@ -4,7 +4,8 @@
  * GET /.netlify/functions/member-access
  *
  * Auth: requireMember (Bearer JWT). Combines Admin plan connections with Watson
- * paid-through for the free legacy plan. Paid members skip Watson.
+ * paid-through for logged-in members without an active paid plan. Paid members
+ * skip Watson. The free Memberstack legacy plan is not required.
  */
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";

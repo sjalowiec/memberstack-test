@@ -81,6 +81,40 @@ describe("evaluateMemberAccessForRecord", () => {
     expect(result.viewerAccessState).toBe("loggedInNoAccess");
   });
 
+  it("grants access from a valid Watson date without the free legacy plan", async () => {
+    const result = await evaluateMemberAccessForRecord(
+      {
+        id: "mem_migrated",
+        auth: { email: "legacy@example.com" },
+        planConnections: [],
+      },
+      {
+        loadPaidThroughYmd: async () => "2026-10-07",
+        todayYmd: TODAY,
+      },
+    );
+    expect(result).toMatchObject({
+      hasMemberAccess: true,
+      viewerAccessState: "memberAccess",
+      legacyPaidThroughYmd: "2026-10-07",
+    });
+  });
+
+  it("denies expired Watson dates without the free legacy plan", async () => {
+    const result = await evaluateMemberAccessForRecord(
+      {
+        id: "mem_expired",
+        auth: { email: "legacy@example.com" },
+        planConnections: [],
+      },
+      {
+        loadPaidThroughYmd: async () => "2020-01-01",
+        todayYmd: TODAY,
+      },
+    );
+    expect(result.hasMemberAccess).toBe(false);
+  });
+
   it("fails closed when Watson lookup throws", async () => {
     const result = await evaluateMemberAccessForRecord(record(LEGACY_FREE), {
       loadPaidThroughYmd: async () => {
@@ -88,6 +122,24 @@ describe("evaluateMemberAccessForRecord", () => {
       },
       todayYmd: TODAY,
     });
+    expect(result.hasMemberAccess).toBe(false);
+    expect(result.legacyPaidThroughYmd).toBe(null);
+  });
+
+  it("fails closed on Watson lookup failure even without the free legacy plan", async () => {
+    const result = await evaluateMemberAccessForRecord(
+      {
+        id: "mem_migrated",
+        auth: { email: "legacy@example.com" },
+        planConnections: [],
+      },
+      {
+        loadPaidThroughYmd: async () => {
+          throw new Error("db down");
+        },
+        todayYmd: TODAY,
+      },
+    );
     expect(result.hasMemberAccess).toBe(false);
     expect(result.legacyPaidThroughYmd).toBe(null);
   });

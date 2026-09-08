@@ -217,6 +217,21 @@ describe("canAccessCourse", () => {
     expect(canAccessCourse("member", member, { courseSlug: "lk-150-fun" })).toBe(true);
   });
 
+  it("unlocks member courses from a valid Watson date without the free legacy plan", () => {
+    expect(
+      canAccessCourse("member", loggedInNoPlan, {
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(true);
+    expect(
+      hasCourseMembershipAccess(loggedInNoPlan, {
+        legacyPaidThroughYmd: "2026-10-07",
+        todayYmd: "2026-07-22",
+      }),
+    ).toBe(true);
+  });
+
   it("legacy SK840 plan holders access only the SK840 course", () => {
     const sk840Buyer = payloadWithPlan(LEGACY_SK840_COURSE_PLAN_ID);
     expect(

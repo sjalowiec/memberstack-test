@@ -53,7 +53,7 @@ export interface SleevelessUserAccess {
    */
   hasSystemAccess: boolean;
   /**
-   * Watson paid-through YYYY-MM-DD when the only qualifying plan is free legacy.
+   * Watson paid-through YYYY-MM-DD when there is no active paid plan.
    * Required for {@link hasPatternSystemAccess} to grant legacy access.
    */
   legacyPaidThroughYmd?: string | null;

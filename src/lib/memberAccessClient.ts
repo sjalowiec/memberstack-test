@@ -1,6 +1,6 @@
 /**
- * Browser helper: load Watson paid-through for free-legacy-only members so
- * sync {@link hasMemberAccess} calls share one determination.
+ * Browser helper: load Watson paid-through for logged-in members without an
+ * active paid plan so sync {@link hasMemberAccess} calls share one determination.
  *
  * Paid members skip the network. Fail closed when the lookup is unavailable.
  */
@@ -61,9 +61,9 @@ export type EnsureLegacyPaidThroughContextDeps = {
 };
 
 /**
- * Load and remember the Watson paid-through date when the visitor's only
- * qualifying plan is the free legacy membership. No-op for paid members,
- * logged-out visitors, and users who already have a remembered date.
+ * Load and remember the Watson paid-through date when the visitor has no
+ * active paid plan. No-op for paid members, logged-out visitors, and users
+ * who already have a remembered date. The free legacy plan is not required.
  */
 export async function ensureLegacyPaidThroughContext(
   memberOrPayload: unknown,
