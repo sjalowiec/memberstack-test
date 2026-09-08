@@ -491,7 +491,7 @@ describe("lesson mount markup contract", () => {
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const here = dirname(fileURLToPath(import.meta.url));
-    const page = readFileSync(join(here, "../pages/lessons/[slug].astro"), "utf8");
+    const page = readFileSync(join(here, "../components/lessons/LessonPage.astro"), "utf8");
     expect(page).toMatch(
       new RegExp(`<div ${LESSON_MEMBER_BODY_MOUNT_ATTR} hidden></div>`),
     );
@@ -557,7 +557,7 @@ describe("lesson mount markup contract", () => {
     const { dirname, join } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const here = dirname(fileURLToPath(import.meta.url));
-    const page = readFileSync(join(here, "../pages/lessons/[slug].astro"), "utf8");
+    const page = readFileSync(join(here, "../components/lessons/LessonPage.astro"), "utf8");
     expect(page).toContain("bootHelpHubMemberLessonGates");
     expect(page).toContain("bootLessonVideoModalForPublicLesson");
     expect(page).toContain('document.querySelector("[data-lesson-member-gate]")');

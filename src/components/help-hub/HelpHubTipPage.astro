@@ -3,7 +3,6 @@ import Layout from "../../layouts/Layout.astro";
 import PageBackLink from "../common/PageBackLink.astro";
 import PageHead from "../PageHead.astro";
 import "../talk-bubbles.css";
-import lessons from "../../data/lessons.json";
 import videosPublic from "../../data/videos-public.json";
 import {
   prepareHelpHubTipPage,
@@ -15,13 +14,14 @@ import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
 interface Props {
   tip: HelpHubPageTip;
   preview?: boolean;
+  lessons: HelpHubLessonRecord[];
 }
 
-const { tip, preview = false } = Astro.props;
+const { tip, preview = false, lessons } = Astro.props;
 
 const view = prepareHelpHubTipPage(
   tip,
-  Array.isArray(lessons) ? (lessons as HelpHubLessonRecord[]) : [],
+  Array.isArray(lessons) ? lessons : [],
   Array.isArray(videosPublic) ? videosPublic : [],
 );
 
@@ -266,6 +266,7 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
       </section>
     )}
 
+    {relatedLessonsResolved.length > 0 && (
     <section
       class="help-hub-member-lessons"
       aria-labelledby="member-lessons-heading"
@@ -290,9 +291,6 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
         </p>
       </div>
 
-      {relatedLessonsResolved.length === 0 ? (
-        <p class="help-hub-member-lessons__empty">No lessons linked to this tip yet.</p>
-      ) : (
         <ul class="help-hub-member-lessons__list">
           {relatedLessonsResolved.map((lesson) => {
             const lessonSlug =
@@ -329,8 +327,8 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
             );
           })}
         </ul>
-      )}
     </section>
+    )}
 
     <script>
       import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";

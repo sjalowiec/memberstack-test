@@ -1,6 +1,7 @@
 ---
 import HelpHubTipPage from "../../components/help-hub/HelpHubTipPage.astro";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
+import { loadPublicLessons } from "../../lib/lessons/loadLessons";
 
 export const prerender = false;
 
@@ -16,6 +17,8 @@ const tip = await loadHelpHubTipBySlug(slugParam, { publicOnly: true });
 if (!tip) {
   return new Response("Not found", { status: 404 });
 }
+
+const lessons = await loadPublicLessons();
 ---
 
-<HelpHubTipPage tip={tip} />
+<HelpHubTipPage tip={tip} lessons={lessons} />

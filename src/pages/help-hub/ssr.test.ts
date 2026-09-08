@@ -30,3 +30,18 @@ describe("Help Hub public SSR", () => {
     expect(previewSource).not.toContain("saveExistingHelpHubTip");
   });
 });
+
+describe("Help Hub related lessons public section", () => {
+  it("hides the Related Lessons section when none resolve as published", () => {
+    const tipPageSource = readFileSync(
+      join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
+      "utf8",
+    );
+    expect(tipPageSource).toContain("relatedLessonsResolved.length > 0");
+    expect(tipPageSource).not.toContain("No lessons linked to this tip yet.");
+    expect(tipPageSource).not.toContain("loadPublicLessons");
+    expect(tipPageSource).not.toMatch(/from ["'].*lessons\.json["']/);
+    expect(slugSource).toContain("loadPublicLessons");
+    expect(previewSource).toContain("loadPublicLessons");
+  });
+});

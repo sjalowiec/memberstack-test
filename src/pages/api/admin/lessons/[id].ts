@@ -1,12 +1,14 @@
 import type { APIRoute } from "astro";
-import { requireAdminForRequest, adminAuthErrorBody } from "../../../lib/admin/requireAdminRequest";
-import { getLessonId, sortLessonsById } from "../../../lib/lessons/jsonFile";
-import { isLessonStatus } from "../../../lib/lessons/document";
+import { requireAdminForRequest, adminAuthErrorBody } from "../../../../lib/admin/requireAdminRequest";
+import { getLessonId, sortLessonsById } from "../../../../lib/lessons/jsonFile";
+import { isLessonStatus, mergeLessonPutUpdate } from "../../../../lib/lessons/document";
 import {
   isUniqueViolation,
+  loadLessonById,
   loadLessonsForAdmin,
-  saveNewLesson,
-} from "../../../lib/lessons/loadLessons";
+  removeLesson,
+  saveExistingLesson,
+} from "../../../../lib/lessons/loadLessons";
 
 export const prerender = false;
 
@@ -25,37 +27,33 @@ function requireNonEmptyString(value: unknown): string | null {
 function slugTaken(
   lessons: Record<string, unknown>[],
   slug: string,
-  exceptId: number | null,
+  exceptId: number,
 ): boolean {
   const needle = slug.trim().toLowerCase();
   return lessons.some((row) => {
     const sid = typeof row.slug === "string" ? row.slug.trim().toLowerCase() : "";
     if (sid !== needle) return false;
     const id = getLessonId(row);
-    if (exceptId !== null && id === exceptId) return false;
+    if (id === exceptId) return false;
     return true;
   });
 }
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+function parseUrlId(raw: string | undefined): number | null {
+  if (raw === undefined || raw === "") return null;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+export const PUT: APIRoute = async ({ params, request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) {
     return jsonResponse(adminAuthErrorBody(auth), auth.status);
   }
 
-  try {
-    const lessons = sortLessonsById(await loadLessonsForAdmin());
-    return jsonResponse({ ok: true, lessons });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not read lessons.";
-    return jsonResponse({ ok: false, error: message }, 500);
-  }
-};
-
-export const POST: APIRoute = async ({ request, cookies }) => {
-  const auth = await requireAdminForRequest(request, cookies);
-  if (!auth.ok) {
-    return jsonResponse(adminAuthErrorBody(auth), auth.status);
+  const urlId = parseUrlId(params.id);
+  if (urlId === null) {
+    return jsonResponse({ ok: false, error: "Invalid lesson id in URL." }, 400);
   }
 
   if (!request.headers.get("content-type")?.includes("application/json")) {
@@ -89,30 +87,64 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return jsonResponse({ ok: false, error: message }, 500);
   }
 
-  if (slugTaken(lessons, slug, null)) {
+  if (slugTaken(lessons, slug, urlId)) {
     return jsonResponse({ ok: false, error: `slug "${slug}" is already in use.` }, 400);
   }
 
-  const row: Record<string, unknown> = { ...body };
-  delete row.id;
-  row.title = title;
-  row.slug = slug;
-  row.status = status;
-  if (category) row.category = category;
-  else delete row.category;
-  if (typeof row.access !== "string" || !row.access) {
-    row.access = "member";
+  const existing = await loadLessonById(urlId);
+  if (!existing) {
+    return jsonResponse({ ok: false, error: `No lesson with id ${urlId}.` }, 404);
   }
 
+  const row = mergeLessonPutUpdate(existing, body, {
+    id: urlId,
+    title,
+    slug,
+    category,
+    status,
+  });
+
   try {
-    const lesson = await saveNewLesson(row, { slug, status, title, category }, auth.member);
+    const lesson = await saveExistingLesson(
+      urlId,
+      row,
+      { slug, status, title, category },
+      auth.member,
+    );
+    if (!lesson) {
+      return jsonResponse({ ok: false, error: `No lesson with id ${urlId}.` }, 404);
+    }
     const ordered = sortLessonsById(await loadLessonsForAdmin());
     return jsonResponse({ ok: true, lessons: ordered, lesson });
   } catch (e) {
     if (isUniqueViolation(e)) {
       return jsonResponse({ ok: false, error: `slug "${slug}" is already in use.` }, 400);
     }
-    const message = e instanceof Error ? e.message : "Could not save lesson.";
+    const message = e instanceof Error ? e.message : "Could not update lesson.";
+    return jsonResponse({ ok: false, error: message }, 500);
+  }
+};
+
+export const DELETE: APIRoute = async ({ params, request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) {
+    return jsonResponse(adminAuthErrorBody(auth), auth.status);
+  }
+
+  const urlId = parseUrlId(params.id);
+  if (urlId === null) {
+    return jsonResponse({ ok: false, error: "Invalid lesson id in URL." }, 400);
+  }
+
+  try {
+    const removed = await removeLesson(urlId, auth.member);
+    if (!removed) {
+      return jsonResponse({ ok: false, error: `No lesson with id ${urlId}.` }, 404);
+    }
+    const ordered = sortLessonsById(await loadLessonsForAdmin());
+    return jsonResponse({ ok: true, lessons: ordered });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Could not delete lesson.";
     return jsonResponse({ ok: false, error: message }, 500);
   }
 };

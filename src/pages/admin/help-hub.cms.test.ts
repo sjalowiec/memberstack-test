@@ -44,4 +44,14 @@ describe("Help Hub admin CMS", () => {
     expect(editorClientSource).not.toMatch(/new Blob\b/);
     expect(baseLayoutSource).toContain("<base href={documentBaseHref}");
   });
+
+  it("lets Sue select related member lessons by title instead of typing ids", () => {
+    expect(editSource).toContain("related-lessons-picker");
+    expect(editSource).toContain("Search published lessons by title");
+    expect(editSource).toContain("publishedLessonOptions");
+    expect(editSource).toContain("initRelatedLessonPicker");
+    expect(editSource).not.toContain("Enter lesson IDs separated by commas");
+    expect(editSource).toContain("Missing — no published lesson matches this reference.");
+    expect(editSource).toContain("Unpublished — this lesson will not appear on the public Help Hub.");
+  });
 });

@@ -1,11 +1,16 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import lessons from "../../data/lessons.json";
 import helpHubCategories from "../../data/help-hub-categories.json";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
+import { loadLessonsForAdmin } from "../../lib/lessons/loadLessons";
+import {
+  publishedLessonsForPicker,
+} from "../../lib/helpHubMemberLesson";
+import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
 
 export const prerender = false;
-const lessonRecords = Array.isArray(lessons) ? lessons : [];
+const lessonRecords = (await loadLessonsForAdmin()) as HelpHubLessonRecord[];
+const publishedLessonOptions = publishedLessonsForPicker(lessonRecords);
 
 const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : [])
   .reduce<{ key: string; label: string }[]>((acc, cat) => {
@@ -20,18 +25,6 @@ const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : 
     return acc;
   }, []);
 
-const lessonReferenceLines = lessonRecords.reduce<
-  { id: number; title: string }[]
->((acc, lesson) => {
-  const rec = lesson as Record<string, unknown>;
-  const id = rec.id;
-  if (typeof id !== "number" || !Number.isFinite(id)) return acc;
-  const title = rec.title;
-  const titleStr =
-    typeof title === "string" ? title : title != null ? String(title) : "";
-  acc.push({ id, title: titleStr });
-  return acc;
-}, []);
 const slugParam = Astro.url.searchParams.get("slug");
 const slug =
   typeof slugParam === "string" && slugParam.trim() !== ""
@@ -472,30 +465,37 @@ const entryLabel = currentEntry as {
           </h2>
           <div class="help-hub-edit__fields">
             <div class="help-hub-edit__field">
-              <label for="help-hub-related-lessons" class="help-hub-edit__label">
+              <label for="related-lessons-search" class="help-hub-edit__label">
                 Related Lessons
               </label>
               <input
                 id="help-hub-related-lessons"
-                class="help-hub-edit__input"
-                type="text"
+                type="hidden"
                 name="relatedLessons"
                 value={valueFor("relatedLessons", "")}
               />
-              <p class="help-hub-edit__hint">
-                Published page: Member Lesson cards. HTML not supported. Enter lesson IDs; displayed.
-              </p>
-              <p class="help-hub-edit__hint">
-                Enter lesson IDs separated by commas, for example: 5002, 5003
-              </p>
-              <p class="help-hub-edit__hint" aria-label="Available lessons">
-                {lessonReferenceLines.map((line, i) => (
-                  <>
-                    {i > 0 ? <br /> : null}
-                    {line.title} — ID: {line.id}
-                  </>
-                ))}
-              </p>
+              <div class="related-lessons-picker" data-related-lessons-picker>
+                <ul
+                  class="related-lessons-picker__selected"
+                  id="related-lessons-selected"
+                  aria-label="Selected related lessons"
+                ></ul>
+                <input
+                  id="related-lessons-search"
+                  class="help-hub-edit__input"
+                  type="search"
+                  autocomplete="off"
+                  placeholder="Search published lessons by title"
+                />
+                <ul
+                  class="related-lessons-picker__options"
+                  id="related-lessons-options"
+                  aria-label="Published member lessons"
+                ></ul>
+                <p class="help-hub-edit__hint">
+                  Published page: Member Lesson cards. Select one or more published lessons by title. IDs are stored automatically.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -1024,12 +1024,102 @@ const entryLabel = currentEntry as {
       white-space: pre-wrap;
       word-break: break-word;
     }
+
+    .related-lessons-picker__selected,
+    .related-lessons-picker__options {
+      list-style: none;
+      margin: 0 0 0.65rem;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .related-lessons-picker__options {
+      max-height: 16rem;
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.35rem;
+      background: #fff;
+    }
+
+    .related-lessons-picker__option,
+    .related-lessons-picker__chip {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .related-lessons-picker__option {
+      cursor: pointer;
+    }
+
+    .related-lessons-picker__option:hover,
+    .related-lessons-picker__option.is-selected {
+      background: #f1f5f0;
+    }
+
+    .related-lessons-picker__title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .related-lessons-picker__id {
+      font-size: 0.8rem;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .related-lessons-picker__chip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .related-lessons-picker__chip.is-missing,
+    .related-lessons-picker__chip.is-unpublished {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .related-lessons-picker__warn {
+      font-size: 0.8rem;
+      color: #b91c1c;
+      margin: 0.15rem 0 0;
+    }
+
+    .related-lessons-picker__remove {
+      appearance: none;
+      background: none;
+      border: 0;
+      color: #64748b;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+    }
   </style>
 
   <script
     type="application/json"
     id="help-hub-current-entry"
     set:html={JSON.stringify(currentEntry ?? null)}
+  />
+  <script
+    type="application/json"
+    id="help-hub-related-lessons-data"
+    set:html={JSON.stringify({
+      published: publishedLessonOptions,
+      all: lessonRecords.map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        slug: lesson.slug,
+        status: lesson.status,
+      })),
+    }).replace(/</g, "\\u003c")}
   />
 
   <script>
@@ -1155,7 +1245,27 @@ const entryLabel = currentEntry as {
 
       function parseRelatedLessonIds(text) {
         if (!text) return [];
-        return text
+        var trimmed = String(text).trim();
+        if (!trimmed) return [];
+        if (trimmed.charAt(0) === "[") {
+          try {
+            var parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+              return parsed
+                .map(function (item) {
+                  if (typeof item === "number" && isFinite(item)) return item;
+                  var s = String(item == null ? "" : item).trim();
+                  if (!s) return null;
+                  if (/^\d+$/.test(s)) return Number(s);
+                  return s;
+                })
+                .filter(function (item) {
+                  return item !== null;
+                });
+            }
+          } catch (e) {}
+        }
+        return trimmed
           .split(",")
           .map(function (s) {
             return s.trim();
@@ -1168,6 +1278,211 @@ const entryLabel = currentEntry as {
             }
             return s;
           });
+      }
+
+      function relatedLessonPickerData() {
+        var el = document.getElementById("help-hub-related-lessons-data");
+        if (!el || !el.textContent) return { published: [], all: [] };
+        try {
+          var parsed = JSON.parse(el.textContent);
+          return {
+            published: Array.isArray(parsed.published) ? parsed.published : [],
+            all: Array.isArray(parsed.all) ? parsed.all : [],
+          };
+        } catch (e) {
+          return { published: [], all: [] };
+        }
+      }
+
+      function lessonMatchesRef(lesson, ref) {
+        if (typeof ref === "number" && Number(lesson.id) === ref) return true;
+        var slug = lesson.slug ? String(lesson.slug).trim() : "";
+        if (typeof ref === "string" && slug && slug === ref.trim()) return true;
+        if (typeof ref === "string" && /^\d+$/.test(ref.trim()) && Number(lesson.id) === Number(ref)) {
+          return true;
+        }
+        return false;
+      }
+
+      function describeRef(ref, allLessons) {
+        var found = null;
+        var i;
+        for (i = 0; i < allLessons.length; i++) {
+          if (lessonMatchesRef(allLessons[i], ref)) {
+            found = allLessons[i];
+            break;
+          }
+        }
+        if (!found) {
+          return {
+            ref: ref,
+            id: typeof ref === "number" ? ref : null,
+            title: typeof ref === "string" ? ref : "Lesson " + ref,
+            state: "missing",
+          };
+        }
+        var status = found.status ? String(found.status).trim().toLowerCase() : "";
+        var published = status === "" || status === "published";
+        return {
+          ref: ref,
+          id: typeof found.id === "number" ? found.id : null,
+          title: found.title || found.slug || "Lesson " + (found.id || ref),
+          state: published ? "published" : "unpublished",
+        };
+      }
+
+      function initRelatedLessonPicker(form) {
+        var hidden = document.getElementById("help-hub-related-lessons");
+        var selectedEl = document.getElementById("related-lessons-selected");
+        var optionsEl = document.getElementById("related-lessons-options");
+        var search = document.getElementById("related-lessons-search");
+        if (!hidden || !selectedEl || !optionsEl) return;
+        var data = relatedLessonPickerData();
+        var selectedIds = [];
+        var unresolved = [];
+        parseRelatedLessonIds(hidden.value).forEach(function (ref) {
+          var view = describeRef(ref, data.all);
+          if (view.state === "published" && view.id != null) selectedIds.push(view.id);
+          else unresolved.push(ref);
+        });
+
+        function writeHidden() {
+          var values = selectedIds.slice();
+          unresolved.forEach(function (ref) {
+            values.push(ref);
+          });
+          hidden.value = JSON.stringify(values);
+          form.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        function renderSelected() {
+          selectedEl.innerHTML = "";
+          selectedIds.forEach(function (id) {
+            var item = null;
+            var i;
+            for (i = 0; i < data.published.length; i++) {
+              if (Number(data.published[i].id) === id) {
+                item = data.published[i];
+                break;
+              }
+            }
+            var li = document.createElement("li");
+            li.className = "related-lessons-picker__chip";
+            li.innerHTML =
+              '<span><span class="related-lessons-picker__title"></span><span class="related-lessons-picker__id"></span></span>';
+            li.querySelector(".related-lessons-picker__title").textContent = item
+              ? item.title
+              : "Lesson " + id;
+            li.querySelector(".related-lessons-picker__id").textContent = "ID: " + id;
+            var rm = document.createElement("button");
+            rm.type = "button";
+            rm.className = "related-lessons-picker__remove";
+            rm.setAttribute("data-remove-id", String(id));
+            rm.textContent = "Remove";
+            li.appendChild(rm);
+            selectedEl.appendChild(li);
+          });
+          unresolved.forEach(function (ref, index) {
+            var view = describeRef(ref, data.all);
+            var li = document.createElement("li");
+            li.className =
+              "related-lessons-picker__chip " +
+              (view.state === "unpublished" ? "is-unpublished" : "is-missing");
+            var title = document.createElement("span");
+            var name = document.createElement("span");
+            name.className = "related-lessons-picker__title";
+            name.textContent = view.title;
+            var warn = document.createElement("p");
+            warn.className = "related-lessons-picker__warn";
+            warn.textContent =
+              view.state === "unpublished"
+                ? "Unpublished — this lesson will not appear on the public Help Hub."
+                : "Missing — no published lesson matches this reference.";
+            title.appendChild(name);
+            if (view.id != null) {
+              var idEl = document.createElement("span");
+              idEl.className = "related-lessons-picker__id";
+              idEl.textContent = " ID: " + view.id;
+              title.appendChild(idEl);
+            }
+            title.appendChild(warn);
+            li.appendChild(title);
+            var rm = document.createElement("button");
+            rm.type = "button";
+            rm.className = "related-lessons-picker__remove";
+            rm.setAttribute("data-remove-unresolved", String(index));
+            rm.textContent = "Remove";
+            li.appendChild(rm);
+            selectedEl.appendChild(li);
+          });
+        }
+
+        function renderOptions() {
+          var q = search && "value" in search ? String(search.value).trim().toLowerCase() : "";
+          optionsEl.innerHTML = "";
+          data.published.forEach(function (item) {
+            var hay = (item.title + " " + item.id + " " + (item.slug || "")).toLowerCase();
+            if (q && hay.indexOf(q) === -1) return;
+            var li = document.createElement("li");
+            li.className = "related-lessons-picker__option";
+            if (selectedIds.indexOf(Number(item.id)) !== -1) li.className += " is-selected";
+            li.setAttribute("data-select-id", String(item.id));
+            li.innerHTML =
+              '<span class="related-lessons-picker__title"></span><span class="related-lessons-picker__id"></span>';
+            li.querySelector(".related-lessons-picker__title").textContent = item.title;
+            li.querySelector(".related-lessons-picker__id").textContent = "ID: " + item.id;
+            optionsEl.appendChild(li);
+          });
+        }
+
+        function render() {
+          renderSelected();
+          renderOptions();
+        }
+
+        selectedEl.addEventListener("click", function (ev) {
+          var t = ev.target;
+          if (!t || !t.getAttribute) return;
+          var removeId = t.getAttribute("data-remove-id");
+          if (removeId) {
+            selectedIds = selectedIds.filter(function (id) {
+              return id !== Number(removeId);
+            });
+            writeHidden();
+            render();
+            return;
+          }
+          var removeUnresolved = t.getAttribute("data-remove-unresolved");
+          if (removeUnresolved != null) {
+            unresolved.splice(Number(removeUnresolved), 1);
+            writeHidden();
+            render();
+          }
+        });
+
+        optionsEl.addEventListener("click", function (ev) {
+          var t = ev.target && ev.target.closest ? ev.target.closest("[data-select-id]") : null;
+          if (!t) return;
+          var id = Number(t.getAttribute("data-select-id"));
+          if (!isFinite(id)) return;
+          if (selectedIds.indexOf(id) === -1) selectedIds.push(id);
+          else {
+            selectedIds = selectedIds.filter(function (n) {
+              return n !== id;
+            });
+          }
+          writeHidden();
+          render();
+        });
+
+        if (search) {
+          search.addEventListener("input", function () {
+            renderOptions();
+          });
+        }
+
+        writeHidden();
+        render();
       }
 
       function buildHelpHubObject(form) {
@@ -1201,7 +1516,7 @@ const entryLabel = currentEntry as {
           }
           if (key === "relatedLessons") {
             arr = parseRelatedLessonIds(trimmedFieldValue(form, "relatedLessons"));
-            if (arr.length) out.relatedLessons = arr;
+            out.relatedLessons = arr;
             continue;
           }
           v = trimmedFieldValue(form, key);
@@ -1367,6 +1682,7 @@ const entryLabel = currentEntry as {
         var discardBtn = document.getElementById("helpHubDiscardDraft");
         if (!form || !pre || !copyBtn || !status) return;
 
+        initRelatedLessonPicker(form);
         var jsonCopyTimerHolder = { current: null };
 
         // Snapshot of the server-loaded form state; used as the "clean" baseline

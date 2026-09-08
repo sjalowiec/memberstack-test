@@ -3,6 +3,7 @@ import HelpHubTipPage from "../../components/help-hub/HelpHubTipPage.astro";
 import { requireAdminForRequest, adminAuthErrorBody } from "../../lib/admin/requireAdminRequest";
 import { resolveHelpHubPreviewTip } from "../../lib/helpHub/previewDocument";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
+import { loadPublicLessons } from "../../lib/lessons/loadLessons";
 import type { HelpHubPageTip } from "../../lib/helpHub/prepareTipPage";
 
 export const prerender = false;
@@ -50,8 +51,9 @@ if (!resolved.ok) {
 }
 
 const tip: HelpHubPageTip = resolved.tip;
+const lessons = await loadPublicLessons();
 
 Astro.response.headers.set("Cache-Control", "no-store");
 ---
 
-<HelpHubTipPage tip={tip} preview={true} />
+<HelpHubTipPage tip={tip} preview={true} lessons={lessons} />

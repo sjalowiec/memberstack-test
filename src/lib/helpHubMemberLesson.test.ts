@@ -8,6 +8,8 @@ import {
   type ViewerAccessState,
 } from "./memberAccess";
 import {
+  describeRelatedLessonRefs,
+  lessonIsPubliclyPublished,
   lessonRequiresMemberAccess,
   listPublicHelpHubMemberLessonCards,
   resolveHelpHubRelatedLessons,
@@ -119,6 +121,30 @@ describe("resolveHelpHubRelatedLessons", () => {
     );
     const resolved = resolveHelpHubRelatedLessons(tuckTip?.relatedLessons, lessons);
     expect(resolved.map((l) => l.slug)).toEqual(["tuck-on-the-lk150"]);
+  });
+
+  it("hides unpublished and missing related lesson references from public cards", () => {
+    const resolved = resolveHelpHubRelatedLessons([5002, 5004, 259], [
+      ...lessons,
+      { id: 5004, slug: "draft-lesson", title: "Draft Lesson", status: "draft" },
+    ]);
+    expect(resolved.map((l) => l.id)).toEqual([5002]);
+    const views = describeRelatedLessonRefs([5002, 5004, 259], [
+      ...lessons,
+      { id: 5004, slug: "draft-lesson", title: "Draft Lesson", status: "draft" },
+    ]);
+    expect(views.map((v) => v.state)).toEqual(["published", "unpublished", "missing"]);
+  });
+
+  it("treats deleted lessons as not publicly published", () => {
+    expect(
+      lessonIsPubliclyPublished({
+        id: 5002,
+        slug: "tuck-on-the-lk150",
+        status: "published",
+        deletedAt: "2026-09-08T12:00:00.000Z",
+      }),
+    ).toBe(false);
   });
 });
 

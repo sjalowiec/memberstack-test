@@ -57,6 +57,9 @@ src/data/*.csv
 !/scripts/watson-generate-schema.ts
 !/scripts/watson-analyze-csv.mjs
 !/scripts/import-help-hub.ts
+!/scripts/apply-member-lessons.ts
+!/scripts/import-lessons.ts
+!/scripts/verify-member-lessons.ts
 !/scripts/sql/
 !/scripts/sql/watson-store-fulfillments.sql
 # Backup files

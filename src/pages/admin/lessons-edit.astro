@@ -1,12 +1,11 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import lessonsData from "../../data/lessons.json";
+import { loadLessonBySlug } from "../../lib/lessons/loadLessons";
 
-const entries = Array.isArray(lessonsData) ? lessonsData : [];
+export const prerender = false;
+
 const slug = Astro.url.searchParams.get("slug");
-const currentEntry = slug
-  ? entries.find((entry) => entry.slug === slug)
-  : null;
+const currentEntry = slug ? await loadLessonBySlug(slug) : null;
 const isEditing = Boolean(currentEntry);
 
 function lessonNumericId(
@@ -22,19 +21,12 @@ function lessonNumericId(
   return null;
 }
 
-const maxLessonId = entries.reduce((max, e) => {
-  const n = lessonNumericId(e as Record<string, unknown>);
-  return n != null ? Math.max(max, n) : max;
-}, 0);
-
-const nextLessonId = maxLessonId + 1;
+const rawEntry = currentEntry as Record<string, unknown> | null;
+const existingLessonId = isEditing ? lessonNumericId(rawEntry) : null;
 
 const pageTitle = isEditing
   ? "Edit Lesson | Knit it Now"
   : "Create Lesson | Knit it Now";
-
-const rawEntry = currentEntry as Record<string, unknown> | null;
-const existingLessonId = isEditing ? lessonNumericId(rawEntry) : null;
 
 function stringifyValue(v: unknown): string {
   if (v === undefined || v === null) return "";
@@ -75,7 +67,7 @@ function valueFor(key: string, fallback = ""): string {
 
   if (key === "status") {
     const s = stringifyValue(rawEntry.status).toLowerCase();
-    if (s === "published" || s === "draft") return s;
+    if (s === "published" || s === "draft" || s === "review") return s;
     return fallback;
   }
 
@@ -141,15 +133,15 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
         {isEditing ? "Edit Lesson" : "Create Lesson"}
       </h1>
       <p class="help-hub-admin__sub">
-        Draft title, slug, status, lesson content, media, related links, and metadata.
-        JSON preview updates as you type; saving is not wired yet.
+        Create, save, preview, publish, and unpublish member lessons. Lesson IDs are assigned automatically.
       </p>
       <p class="help-hub-edit__context">
         {
           isEditing && entryLabel
             ? `Editing: ${entryLabel.title || entryLabel.slug || ""}`
-            : "New lesson"
+            : "New lesson — ID assigned on first save"
         }
+        {existingLessonId != null ? ` · ID ${existingLessonId}` : ""}
       </p>
     </header>
 
@@ -160,7 +152,6 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
     <form
       class="help-hub-edit__form lessons-edit__form"
       novalidate
-      data-next-lesson-id={String(nextLessonId)}
       data-original-lesson-id={existingLessonId != null ? String(existingLessonId) : ""}
     >
       <div class="help-hub-edit__sections help-hub-dash__sections">
@@ -193,16 +184,12 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
               />
             </div>
             <div class="help-hub-edit__field">
-              <label for="lesson-id" class="help-hub-edit__label">Lesson ID</label>
-              <input
-                id="lesson-id"
-                class="help-hub-edit__input"
-                type="number"
-                name="id"
-                min="0"
-                step="1"
-                value={valueFor("id", String(nextLessonId))}
-              />
+              <span class="help-hub-edit__label">Lesson ID</span>
+              <p class="help-hub-edit__hint" id="lesson-id-display">
+                {existingLessonId != null
+                  ? String(existingLessonId)
+                  : "Assigned automatically on first save"}
+              </p>
             </div>
             <div class="help-hub-edit__field">
               <label for="lesson-status" class="help-hub-edit__label">Status</label>
@@ -212,13 +199,19 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
                 name="status"
               >
                 <option value="draft" selected={valueFor("status", "draft") === "draft"}>
-                  draft
+                  Draft
                 </option>
                 <option
                   value="published"
                   selected={valueFor("status", "draft") === "published"}
                 >
-                  published
+                  Published
+                </option>
+                <option
+                  value="review"
+                  selected={valueFor("status", "draft") === "review"}
+                >
+                  Review
                 </option>
               </select>
             </div>
@@ -411,20 +404,28 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
               <button type="button" id="copyLessonJson" class="kbm-btn kbm-btn-outline">
                 Copy JSON
               </button>
-              <button type="button" id="previewLesson" class="kbm-btn kbm-btn-outline">
-                Preview Lesson
-              </button>
               <span id="copyLessonJsonStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
-            </div>
-            <div class="help-hub-edit__json-preview-actions">
-              <button type="button" id="copyLessonCursorPrompt" class="kbm-btn kbm-btn-outline">
-                Copy Cursor Save Prompt
-              </button>
-              <span id="copyLessonCursorStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
             </div>
             <pre id="lessonJsonPreview" class="help-hub-edit__json-pre"></pre>
           </div>
         </section>
+
+        <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
+          <button type="button" id="saveLessonBtn" class="kbm-btn kbm-btn-primary">
+            Save
+          </button>
+          <button type="button" id="previewLesson" class="kbm-btn kbm-btn-outline">
+            Preview
+          </button>
+          <button type="button" id="deleteLessonBtn" class="kbm-btn kbm-btn-outline">
+            Delete
+          </button>
+          <a href="/admin/lessons" class="kbm-btn kbm-btn-outline">Cancel</a>
+          <button type="button" id="lessonAdminSignIn" class="kbm-btn kbm-btn-outline" hidden>
+            Sign in
+          </button>
+          <span id="saveLessonStatus" class="help-hub-edit__save-status" aria-live="polite"></span>
+        </div>
       </div>
     </form>
   </main>
@@ -577,6 +578,39 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
       color: #b91c1c;
     }
 
+    .help-hub-edit__save-status {
+      font-size: 0.9rem;
+      color: #475569;
+      align-self: center;
+      min-height: 1.2em;
+    }
+
+    .help-hub-edit__save-status.is-error {
+      color: #b91c1c;
+    }
+
+    .help-hub-edit__save-status.is-ok {
+      color: #166534;
+    }
+
+    .help-hub-admin__form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.1rem;
+      align-items: center;
+    }
+
+    .help-hub-admin__form-actions--sticky {
+      position: sticky;
+      bottom: 0;
+      z-index: 8;
+      padding: 0.6rem 0;
+      margin-top: 1rem;
+      background: linear-gradient(to top, #fff 78%, rgba(255, 255, 255, 0));
+      border-top: 1px solid #e5e7eb;
+    }
+
     .help-hub-edit__json-preview-actions .kbm-btn:disabled {
       opacity: 0.55;
       cursor: not-allowed;
@@ -664,12 +698,22 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
     }
   </style>
 
+  <script
+    type="application/json"
+    id="lesson-current-entry"
+    set:html={JSON.stringify(currentEntry ?? null).replace(/</g, "\\u003c")}
+  />
+
+  <script>
+    import { installLessonAdminBrowser } from "../../lib/lessons/adminEditorClient";
+    installLessonAdminBrowser();
+  </script>
+
   <script is:inline>
     (function () {
       var FIELD_ORDER = [
         "title",
         "slug",
-        "id",
         "status",
         "intro",
         "content",
@@ -717,27 +761,8 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
         return "";
       }
 
-      function parseLessonIdInput(s) {
-        if (s === undefined || s === null) return null;
-        var t = String(s).trim();
-        if (t === "") return null;
-        var n = parseInt(t, 10);
-        if (!Number.isFinite(n) || n < 0) return null;
-        return n;
-      }
-
-      function resolveLessonId(form) {
-        var fromInput = parseLessonIdInput(trimmedFieldValue(form, "id"));
-        if (fromInput !== null) return fromInput;
-        var fromOrig = parseLessonIdInput(form.getAttribute("data-original-lesson-id") || "");
-        if (fromOrig !== null) return fromOrig;
-        var fromNext = parseLessonIdInput(form.getAttribute("data-next-lesson-id") || "");
-        if (fromNext !== null) return fromNext;
-        return 1;
-      }
-
       function buildLessonObject(form) {
-        var out = {};
+        var out = JSON.parse(JSON.stringify(window.currentLesson || {}));
         var i;
         var key;
         var v;
@@ -746,10 +771,6 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
 
         for (i = 0; i < FIELD_ORDER.length; i++) {
           key = FIELD_ORDER[i];
-          if (key === "id") {
-            out.id = resolveLessonId(form);
-            continue;
-          }
           if (key === "tags") {
             arr = splitTags(trimmedFieldValue(form, "tags"));
             if (arr.length) out.tags = arr;
@@ -947,16 +968,6 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
 
       }
 
-      var CURSOR_SAVE_PROMPT_PREFIX =
-        "Update src/data/lessons.json.\n\n" +
-        "Merge the lesson entry below into the existing entry by slug.\n\n" +
-        "If the slug already exists, update only the fields included in ENTRY JSON and preserve any existing fields that are not included.\n" +
-        "If the slug does not exist, add it as a new object.\n" +
-        "Keep the JSON valid.\n" +
-        "Preserve existing entries.\n" +
-        "Do not modify any other files.\n\n" +
-        "ENTRY JSON:\n";
-
       function sanitizeSlugValue(raw) {
         return String(raw)
           .toLowerCase()
@@ -972,20 +983,50 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
         );
       }
 
+      function getMissingRequiredFields(form) {
+        var missing = [];
+        if (trimmedFieldValue(form, "title") === "") missing.push("title");
+        if (trimmedFieldValue(form, "slug") === "") missing.push("slug");
+        if (trimmedFieldValue(form, "status") === "") missing.push("status");
+        return missing;
+      }
+
+      function setSaveStatus(message, kind) {
+        var el = document.getElementById("saveLessonStatus");
+        if (el) {
+          el.textContent = message;
+          el.classList.toggle("is-error", kind === "err");
+          el.classList.toggle("is-ok", kind === "ok");
+        }
+        var signInBtn = document.getElementById("lessonAdminSignIn");
+        if (signInBtn) {
+          signInBtn.hidden = kind !== "signin";
+        }
+      }
+
+      function lessonAdmin() {
+        return window.kbmLessonAdmin;
+      }
+
       function init() {
+        var currentEntryEl = document.getElementById("lesson-current-entry");
+        window.currentLesson = currentEntryEl
+          ? JSON.parse(currentEntryEl.textContent || "null") || {}
+          : {};
+
         var form = document.querySelector(".lessons-edit__form");
         var pre = document.getElementById("lessonJsonPreview");
         var copyBtn = document.getElementById("copyLessonJson");
         var status = document.getElementById("copyLessonJsonStatus");
-        var cursorBtn = document.getElementById("copyLessonCursorPrompt");
-        var cursorStatus = document.getElementById("copyLessonCursorStatus");
         var previewBtn = document.getElementById("previewLesson");
-        if (!form || !pre || !copyBtn || !status || !cursorBtn || !cursorStatus) return;
+        var saveBtn = document.getElementById("saveLessonBtn");
+        var deleteBtn = document.getElementById("deleteLessonBtn");
+        if (!form || !pre || !copyBtn || !status) return;
 
         initLessonBlocksEditor(form);
 
         var jsonCopyTimerHolder = { current: null };
-        var cursorCopyTimerHolder = { current: null };
+        var SUPPRESS_UNLOAD = false;
 
         function copyToClipboard(text, statusEl, timerHolder) {
           function showCopied() {
@@ -1027,17 +1068,14 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
         function updateCopyUi() {
           var ok = hasRequiredFields(form);
           copyBtn.disabled = !ok;
-          cursorBtn.disabled = !ok;
+          if (previewBtn) previewBtn.disabled = !ok;
+          if (saveBtn) saveBtn.disabled = !ok;
           if (!ok) {
             status.textContent = "Missing required fields";
-            cursorStatus.textContent = "Missing required fields";
             status.classList.add("help-hub-edit__copy-status--error");
-            cursorStatus.classList.add("help-hub-edit__copy-status--error");
           } else {
             status.textContent = "";
-            cursorStatus.textContent = "";
             status.classList.remove("help-hub-edit__copy-status--error");
-            cursorStatus.classList.remove("help-hub-edit__copy-status--error");
           }
         }
 
@@ -1065,21 +1103,169 @@ const initialEditorBlocksJsonSafe = JSON.stringify(initialEditorBlocks).replace(
           copyToClipboard(text, status, jsonCopyTimerHolder);
         });
 
-        cursorBtn.addEventListener("click", function () {
-          if (!hasRequiredFields(form)) return;
-          var entryJson = JSON.stringify(buildLessonObject(form), null, 2);
-          var promptText = CURSOR_SAVE_PROMPT_PREFIX + entryJson;
-          copyToClipboard(promptText, cursorStatus, cursorCopyTimerHolder);
-        });
+        async function saveLessonEntry() {
+          var missing = getMissingRequiredFields(form);
+          if (missing.length) {
+            setSaveStatus("Missing required fields: " + missing.join(", "), "err");
+            return false;
+          }
+          var payload = buildLessonObject(form);
+          var id =
+            window.currentLesson &&
+            window.currentLesson.id !== undefined &&
+            window.currentLesson.id !== null
+              ? window.currentLesson.id
+              : null;
+          var url =
+            id !== null && String(id).trim() !== ""
+              ? "/api/admin/lessons/" + encodeURIComponent(String(id))
+              : "/api/admin/lessons";
+          var method = id !== null && String(id).trim() !== "" ? "PUT" : "POST";
+          var admin = lessonAdmin();
+          if (!admin || typeof admin.request !== "function") {
+            setSaveStatus("Lesson admin is still loading. Try Save again.", "err");
+            return false;
+          }
+          if (saveBtn) saveBtn.disabled = true;
+          setSaveStatus("Saving…", null);
+          try {
+            var result = await admin.request(url, { method: method, body: payload });
+            if (result.needsSignIn) {
+              setSaveStatus(result.error || "Sign in with your Knit it Now account to save.", "signin");
+              if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+              return false;
+            }
+            if (!admin.saveSucceeded(result)) {
+              setSaveStatus(result.error || "Save failed (" + result.status + ")", "err");
+              return false;
+            }
+            var data = result.data || {};
+            if (data.lesson && typeof data.lesson === "object") {
+              window.currentLesson = JSON.parse(JSON.stringify(data.lesson));
+              var idDisplay = document.getElementById("lesson-id-display");
+              if (idDisplay && data.lesson.id != null) {
+                idDisplay.textContent = String(data.lesson.id);
+              }
+            }
+            setSaveStatus("Saved", "ok");
+            if (method === "POST" && data.lesson && data.lesson.slug) {
+              SUPPRESS_UNLOAD = true;
+              window.setTimeout(function () {
+                window.location.href =
+                  "/admin/lessons-edit?slug=" + encodeURIComponent(String(data.lesson.slug));
+              }, 400);
+            }
+            return true;
+          } catch (e) {
+            setSaveStatus("Save failed — network error", "err");
+            return false;
+          } finally {
+            if (saveBtn) saveBtn.disabled = false;
+          }
+        }
 
         if (previewBtn) {
-          previewBtn.addEventListener("click", function () {
-            var obj = buildLessonObject(form);
-            var data = btoa(JSON.stringify(obj));
-            var url = "/lessons/preview?data=" + encodeURIComponent(data);
-            window.open(url, "_blank", "noopener,noreferrer");
+          previewBtn.addEventListener("click", async function () {
+            var missing = getMissingRequiredFields(form);
+            if (missing.length) {
+              setSaveStatus("Missing required fields: " + missing.join(", "), "err");
+              return;
+            }
+            var admin = lessonAdmin();
+            if (!admin || typeof admin.openPreview !== "function") {
+              setSaveStatus("Lesson admin is still loading. Try Preview again.", "err");
+              return;
+            }
+            var previewWindow = window.open("", "_blank");
+            setSaveStatus("Opening preview…", null);
+            try {
+              var result = await admin.openPreview(
+                { document: buildLessonObject(form) },
+                { previewWindow: previewWindow },
+              );
+              if (result.needsSignIn) {
+                setSaveStatus(result.error || "Sign in with your Knit it Now account to preview.", "signin");
+                if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+                return;
+              }
+              if (result.forbidden) {
+                setSaveStatus(result.error || "This Knit it Now account does not have admin access.", "err");
+                return;
+              }
+              if (!result.ok) {
+                setSaveStatus(result.error || "Preview failed (" + result.status + ")", "err");
+                return;
+              }
+              setSaveStatus("", null);
+            } catch (e) {
+              if (previewWindow) previewWindow.close();
+              setSaveStatus("Preview failed — network error", "err");
+            }
           });
         }
+
+        if (saveBtn) {
+          saveBtn.addEventListener("click", function () {
+            saveLessonEntry();
+          });
+        }
+
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", async function () {
+            var id =
+              window.currentLesson &&
+              window.currentLesson.id !== undefined &&
+              window.currentLesson.id !== null
+                ? window.currentLesson.id
+                : null;
+            if (id === null || String(id).trim() === "") {
+              setSaveStatus("Save the lesson before deleting.", "err");
+              return;
+            }
+            if (!window.confirm("Delete this lesson? It can be restored from the database.")) {
+              return;
+            }
+            var admin = lessonAdmin();
+            if (!admin || typeof admin.request !== "function") {
+              setSaveStatus("Lesson admin is still loading. Try Delete again.", "err");
+              return;
+            }
+            deleteBtn.disabled = true;
+            try {
+              var result = await admin.request(
+                "/api/admin/lessons/" + encodeURIComponent(String(id)),
+                { method: "DELETE" },
+              );
+              if (result.needsSignIn) {
+                setSaveStatus(result.error || "Sign in with your Knit it Now account to delete.", "signin");
+                if (typeof admin.promptSignIn === "function") admin.promptSignIn();
+                return;
+              }
+              if (!result.ok) {
+                setSaveStatus(result.error || "Delete failed (" + result.status + ")", "err");
+                return;
+              }
+              SUPPRESS_UNLOAD = true;
+              window.location.href = "/admin/lessons";
+            } catch (e) {
+              setSaveStatus("Delete failed — network error", "err");
+            } finally {
+              deleteBtn.disabled = false;
+            }
+          });
+        }
+
+        var signInBtn = document.getElementById("lessonAdminSignIn");
+        if (signInBtn) {
+          signInBtn.addEventListener("click", function () {
+            var admin = lessonAdmin();
+            if (admin && typeof admin.promptSignIn === "function") admin.promptSignIn();
+          });
+        }
+
+        window.addEventListener("beforeunload", function (e) {
+          if (SUPPRESS_UNLOAD) return;
+        });
       }
 
       if (document.readyState === "loading") {
