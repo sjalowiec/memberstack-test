@@ -8,7 +8,9 @@ import {
 } from "../admin/adminAuthClient";
 import {
   HELP_HUB_PREVIEW_PATH,
+  helpHubPreviewBaseHref,
   helpHubPreviewUrlExposesDocument,
+  htmlWithHelpHubPreviewBase,
 } from "./previewDocument";
 
 export type HelpHubAdminRequestInit = {
@@ -37,10 +39,27 @@ export function saveSucceeded(result: AdminJsonResult): boolean {
   return result.ok === true && result.status >= 200 && result.status < 300;
 }
 
-export function writePreviewHtmlToWindow(win: Window, html: string): void {
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const objectUrl = URL.createObjectURL(blob);
-  win.location.replace(objectUrl);
+export function openerPreviewBaseHref(
+  origin = typeof window !== "undefined" ? window.location.origin : "",
+): string {
+  return helpHubPreviewBaseHref(origin);
+}
+
+/**
+ * Write the authenticated preview HTML into a same-origin about:blank tab.
+ * A blob: URL cannot load /_astro CSS, images, or scripts. document.write plus
+ * <base href="{site origin}/"> makes root-relative assets resolve on kin-dev.
+ */
+export function writePreviewHtmlToWindow(
+  win: Window,
+  html: string,
+  options: { baseHref?: string } = {},
+): void {
+  const baseHref = options.baseHref || openerPreviewBaseHref();
+  const complete = htmlWithHelpHubPreviewBase(html, baseHref);
+  win.document.open();
+  win.document.write(complete);
+  win.document.close();
 }
 
 export async function requestHelpHubPreview(
@@ -62,6 +81,7 @@ export async function openHelpHubPreview(
     previewWindow?: Window | null;
     openWindow?: () => Window | null;
     writeHtml?: typeof writePreviewHtmlToWindow;
+    baseHref?: string;
   } = {},
 ): Promise<AdminHtmlResult> {
   const result = await requestHelpHubPreview(payload, { fetchHtml: options.fetchHtml });
@@ -74,9 +94,13 @@ export async function openHelpHubPreview(
   if (!win) {
     return { ok: false, status: result.status, error: "Preview window was blocked." };
   }
-  win.opener = null;
   const writeHtml = options.writeHtml ?? writePreviewHtmlToWindow;
-  writeHtml(win, result.html);
+  writeHtml(win, result.html, { baseHref: options.baseHref || openerPreviewBaseHref() });
+  try {
+    win.opener = null;
+  } catch {
+    /* ignore */
+  }
   return result;
 }
 
@@ -131,7 +155,7 @@ export function bindHelpHubPreviewButtons(
   });
 }
 
-export { helpHubPreviewUrlExposesDocument, HELP_HUB_PREVIEW_PATH };
+export { helpHubPreviewUrlExposesDocument, HELP_HUB_PREVIEW_PATH, htmlWithHelpHubPreviewBase };
 
 declare global {
   interface Window {

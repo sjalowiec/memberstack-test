@@ -6,7 +6,12 @@ import {
   helpHubPreviewUrlExposesDocument,
   openHelpHubPreview,
   requestHelpHubPreview,
+  writePreviewHtmlToWindow,
 } from "./adminEditorClient";
+import {
+  collectPreviewStylesheetHrefs,
+  previewAssetResolvesToSiteOrigin,
+} from "./previewDocument";
 
 function htmlResponse(status: number, body: string, contentType = "text/html"): Response {
   return {
@@ -133,5 +138,37 @@ describe("Help Hub authenticated preview client", () => {
     expect(result.ok).toBe(false);
     expect(writeHtml).not.toHaveBeenCalled();
     expect(previewWindow.close).toHaveBeenCalled();
+  });
+
+  it("writes complete HTML into a same-origin tab with site base, not a blob URL", () => {
+    const origin = "https://kin-dev.netlify.app";
+    const astroHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><link rel="stylesheet" href="/_astro/HelpHubTipPage.Ab12.css"><link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" /></head><body class="page--tight-header"><img src="/images/help-hub/try.jpg"></body></html>`;
+    let written = "";
+    const previewWindow = {
+      close: vi.fn(),
+      opener: {},
+      document: {
+        open: vi.fn(),
+        write: (html: string) => {
+          written = html;
+        },
+        close: vi.fn(),
+      },
+    } as unknown as Window;
+
+    writePreviewHtmlToWindow(previewWindow, astroHtml, { baseHref: origin });
+
+    expect(previewWindow.document.open).toHaveBeenCalledTimes(1);
+    expect(previewWindow.document.close).toHaveBeenCalledTimes(1);
+    expect(written).toContain(`<base href="${origin}/">`);
+    expect(written.indexOf("<base href=")).toBeLessThan(written.indexOf('href="/_astro/HelpHubTipPage'));
+    expect(written).toContain('rel="stylesheet" href="/_astro/HelpHubTipPage.Ab12.css"');
+    expect(written).toContain("page--tight-header");
+    expect(written).not.toMatch(/blob:/i);
+    const hrefs = collectPreviewStylesheetHrefs(written);
+    expect(hrefs.some((href) => href.startsWith("/_astro/"))).toBe(true);
+    for (const href of hrefs) {
+      expect(previewAssetResolvesToSiteOrigin(href, origin)).toBe(true);
+    }
   });
 });

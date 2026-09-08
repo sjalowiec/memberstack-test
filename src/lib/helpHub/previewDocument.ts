@@ -107,3 +107,74 @@ export async function resolveHelpHubPreviewTip(
 export function helpHubPreviewUrlExposesDocument(url: string): boolean {
   return /[?&](?:data|document|tip)=/i.test(url);
 }
+
+function escapeHtmlAttr(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+/** Site origin with a trailing slash, suitable for <base href>. */
+export function helpHubPreviewBaseHref(origin: string): string {
+  const trimmed = String(origin || "").trim();
+  if (!trimmed || trimmed === "null" || /^blob:/i.test(trimmed) || /^about:/i.test(trimmed)) {
+    return "";
+  }
+  try {
+    const url = new URL(trimmed.endsWith("/") ? trimmed : `${trimmed}/`);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return `${url.origin}/`;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Insert <base href="https://origin/"> immediately after charset (or <head>)
+ * so root-relative /_astro CSS, images, and scripts resolve against the site
+ * instead of about:blank or a blob: URL.
+ */
+export function htmlWithHelpHubPreviewBase(html: string, originOrBase: string): string {
+  const baseHref = helpHubPreviewBaseHref(originOrBase);
+  if (!baseHref) return html;
+  const baseTag = `<base href="${escapeHtmlAttr(baseHref)}">`;
+  const withoutBase = html.replace(/<base\b[^>]*>/gi, "");
+  const headMatch = withoutBase.match(/<head\b[^>]*>/i);
+  if (!headMatch || headMatch.index === undefined) {
+    return `${baseTag}${withoutBase}`;
+  }
+  const headEnd = headMatch.index + headMatch[0].length;
+  const afterHead = withoutBase.slice(headEnd);
+  const charset = afterHead.match(/^\s*<meta\b[^>]*charset[^>]*>/i);
+  const insertAt = charset ? headEnd + charset[0].length : headEnd;
+  return withoutBase.slice(0, insertAt) + baseTag + withoutBase.slice(insertAt);
+}
+
+export function collectPreviewStylesheetHrefs(html: string): string[] {
+  const hrefs: string[] = [];
+  for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
+    if (!/\brel\s*=\s*(["']?)stylesheet\1/i.test(tag)) continue;
+    const href = tag.match(/\bhref\s*=\s*["']([^"']+)["']/i)?.[1];
+    if (href) hrefs.push(href);
+  }
+  return hrefs;
+}
+
+export function previewAssetAbsoluteUrl(assetHref: string, baseHref: string): string {
+  return new URL(assetHref, helpHubPreviewBaseHref(baseHref) || baseHref).href;
+}
+
+export function previewAssetResolvesToSiteOrigin(assetHref: string, originOrBase: string): boolean {
+  const base = helpHubPreviewBaseHref(originOrBase);
+  if (!base) return false;
+  let absolute: URL;
+  try {
+    absolute = new URL(assetHref, base);
+  } catch {
+    return false;
+  }
+  if (absolute.protocol === "blob:" || absolute.protocol === "about:") return false;
+  const isRootOrRelative = assetHref.startsWith("/") || !/^[a-z][a-z0-9+.-]*:/i.test(assetHref);
+  if (isRootOrRelative) {
+    return absolute.origin === new URL(base).origin;
+  }
+  return absolute.protocol === "http:" || absolute.protocol === "https:";
+}

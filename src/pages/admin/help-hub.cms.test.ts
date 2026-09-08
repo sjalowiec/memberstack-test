@@ -6,6 +6,11 @@ import { describe, expect, it } from "vitest";
 const here = dirname(fileURLToPath(import.meta.url));
 const editSource = readFileSync(join(here, "help-hub-edit.astro"), "utf8");
 const listSource = readFileSync(join(here, "help-hub.astro"), "utf8");
+const editorClientSource = readFileSync(
+  join(here, "..", "..", "lib", "helpHub", "adminEditorClient.ts"),
+  "utf8",
+);
+const baseLayoutSource = readFileSync(join(here, "..", "..", "layouts", "BaseLayout.astro"), "utf8");
 
 describe("Help Hub admin CMS", () => {
   it("loads and saves through the admin API with a Memberstack bearer token", () => {
@@ -32,5 +37,11 @@ describe("Help Hub admin CMS", () => {
     expect(listSource).toContain("bindHelpHubPreviewButtons");
     expect(listSource).not.toContain("/help-hub/preview?slug=");
     expect(listSource).toContain("loadHelpHubTipsForAdmin");
+    expect(editSource).toContain('window.open("", "_blank")');
+    expect(editorClientSource).toContain("document.write");
+    expect(editorClientSource).toContain("htmlWithHelpHubPreviewBase");
+    expect(editorClientSource).not.toContain("createObjectURL");
+    expect(editorClientSource).not.toMatch(/new Blob\b/);
+    expect(baseLayoutSource).toContain("<base href={documentBaseHref}");
   });
 });

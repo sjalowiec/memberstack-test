@@ -9,6 +9,7 @@ import {
   prepareHelpHubTipPage,
   type HelpHubPageTip,
 } from "../../lib/helpHub/prepareTipPage";
+import { helpHubPreviewBaseHref } from "../../lib/helpHub/previewDocument";
 import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
 
 interface Props {
@@ -50,9 +51,15 @@ const {
 } = view;
 
 const slugParam = typeof tip.slug === "string" ? tip.slug.trim() : "";
+const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origin) : "";
 ---
 
-<Layout title={layoutTitle} description={pageDescription} bodyClass="page--tight-header">
+<Layout
+  title={layoutTitle}
+  description={pageDescription}
+  bodyClass="page--tight-header"
+  documentBaseHref={previewDocumentBaseHref}
+>
   {!preview && faqJsonLd && (
     <script type="application/ld+json" set:html={faqJsonLd} />
   )}

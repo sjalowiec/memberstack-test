@@ -31,4 +31,10 @@ describe("Help Hub saved-draft preview", () => {
     expect(tipPageSource).toContain("/help-hub/work-with-sue");
     expect(tipPageSource).not.toMatch(/href="\/join"/);
   });
+
+  it("sets a document base on preview so site assets resolve against the request origin", () => {
+    expect(tipPageSource).toContain("previewDocumentBaseHref");
+    expect(tipPageSource).toContain("helpHubPreviewBaseHref(Astro.url.origin)");
+    expect(tipPageSource).toContain("documentBaseHref={previewDocumentBaseHref}");
+  });
 });

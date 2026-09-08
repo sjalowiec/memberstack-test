@@ -24,6 +24,11 @@ interface Props {
    * Used by pattern workspaces so the pill never mounts (no flash).
    */
   hideMembershipCorner?: boolean;
+  /**
+   * Help Hub admin preview: document base so CSS/images resolve when the HTML
+   * is written into a same-origin about:blank tab.
+   */
+  documentBaseHref?: string;
 }
 
 const {
@@ -33,6 +38,7 @@ const {
   skipGlobalPinterest = false,
   toolPrintTitle,
   hideMembershipCorner = false,
+  documentBaseHref = "",
 } = Astro.props;
 
 const hostname =
@@ -55,6 +61,7 @@ const isProduction =
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    {documentBaseHref ? <base href={documentBaseHref} /> : null}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- CRITICAL: Inline typography to prevent Astro CSS bundler reordering issues -->
