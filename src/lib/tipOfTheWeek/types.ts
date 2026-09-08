@@ -113,7 +113,7 @@ export type TipOfTheWeekRow = {
 
 export type TipValidationResult<T> =
   | { ok: true; value: T }
-  | { ok: false; error: string };
+  | { ok: false; error: string; field?: string };
 
 export function isTipOfTheWeekStatus(value: unknown): value is TipOfTheWeekStatus {
   return (

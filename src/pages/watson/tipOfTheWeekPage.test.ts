@@ -160,4 +160,19 @@ describe("Watson Tip of the Week page", () => {
     expect(script).toContain("namedField");
     expect(script).toContain("new FormData(form)");
   });
+
+  it("lets Save run custom validation instead of silently failing HTML5 checks", () => {
+    expect(page).toContain("novalidate");
+    expect(page).toContain("formnovalidate");
+    expect(page).toContain('data-totw-form-status');
+    expect(page).toContain('data-totw-field-error="tipId"');
+    expect(page).toContain('data-totw-field-error="intro"');
+    expect(page).not.toMatch(/name="intro"[^>]*maxlength=/);
+    expect(script).toContain("parseTipAdminSaveJson");
+    expect(script).toContain("clientTipAdminFieldErrors");
+    expect(script).toContain("Save failed — network error.");
+    expect(script).toContain("queueTipAdminFlash");
+    expect(script).toContain("readTipAdminFlash");
+    expect(apiIndex).toContain("field: result.field");
+  });
 });

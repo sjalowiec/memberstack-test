@@ -183,13 +183,14 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
 
   <section class="watson-totw__editor" aria-labelledby="totw-form-heading">
     <h2 id="totw-form-heading" data-totw-form-heading>New tip</h2>
-    <form class="watson-totw__form" data-totw-form>
+    <form class="watson-totw__form" data-totw-form novalidate>
       <input type="hidden" name="id" value="" />
 
       <div class="watson-totw__grid">
         <label>
           Tip ID (stable slug for reactions)
           <input name="tipId" required maxlength="80" placeholder="taming-the-curl-2026-08" />
+          <span class="watson-totw__field-error" data-totw-field-error="tipId" hidden></span>
         </label>
         <label>
           Status
@@ -203,6 +204,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
         <label>
           Available from
           <input type="date" name="availableFrom" data-totw-available-from required />
+          <span class="watson-totw__field-error" data-totw-field-error="availableFrom" hidden></span>
         </label>
         <label class="watson-totw__through-field">
           Available through
@@ -219,12 +221,14 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
           <span class="watson-totw__hint">
             Defaults to a 7-day window (start + 6 days). Edit freely, or reset to recalculate.
           </span>
+          <span class="watson-totw__field-error" data-totw-field-error="availableThrough" hidden></span>
         </label>
       </div>
 
       <label>
         Public page title
         <input name="title" required maxlength="160" />
+        <span class="watson-totw__field-error" data-totw-field-error="title" hidden></span>
       </label>
 
       <div class="watson-totw__field">
@@ -295,12 +299,12 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
             class="watson-totw__rte-input"
             data-wn-rte-input
             name="intro"
-            maxlength="1200"
             hidden
             tabindex="-1"
             aria-hidden="true"
           ></textarea>
         </div>
+        <span class="watson-totw__field-error" data-totw-field-error="intro" hidden></span>
       </div>
 
       <label>
@@ -320,6 +324,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
             Resolve video
           </button>
         </div>
+        <span class="watson-totw__field-error" data-totw-field-error="videoContentId" hidden></span>
       </label>
       <div class="watson-totw__preview" data-video-preview hidden></div>
 
@@ -331,6 +336,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
       <label>
         Availability footer (must include {"{date}"})
         <textarea name="availabilityFooterTemplate" rows="2" maxlength="2000"></textarea>
+        <span class="watson-totw__field-error" data-totw-field-error="availabilityFooterTemplate" hidden></span>
       </label>
 
       <fieldset class="watson-totw__fieldset">
@@ -409,7 +415,6 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
             class="watson-totw__rte-input"
             data-wn-rte-input
             name="tryCopy"
-            maxlength="2000"
             hidden
             tabindex="-1"
             aria-hidden="true"
@@ -485,7 +490,6 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
             class="watson-totw__rte-input"
             data-wn-rte-input
             name="sueTipCopy"
-            maxlength="2000"
             hidden
             tabindex="-1"
             aria-hidden="true"
@@ -501,6 +505,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
         <label>
           CTA Text
           <input name="ctaText" maxlength="80" placeholder="Build Your Sock Pattern" />
+          <span class="watson-totw__field-error" data-totw-field-error="ctaText" hidden></span>
         </label>
         <label>
           CTA URL
@@ -508,6 +513,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
             Site path like /patterns/socks/builder?new=1, or https://…
           </span>
           <input name="ctaUrl" maxlength="500" placeholder="/patterns/socks/builder?new=1" />
+          <span class="watson-totw__field-error" data-totw-field-error="ctaUrl" hidden></span>
         </label>
       </fieldset>
 
@@ -518,6 +524,7 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
           Up to 8 resources.
         </p>
         <div data-related-links></div>
+        <span class="watson-totw__field-error" data-totw-field-error="relatedLinks" hidden></span>
         <button type="button" class="watson-totw__btn watson-totw__btn--small" data-related-add>
           Add Related Resource
         </button>
@@ -531,7 +538,10 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
       </section>
 
       <div class="watson-totw__actions">
-        <button type="submit" class="watson-totw__btn watson-totw__btn--primary">Save</button>
+        <div class="watson-totw__status" data-totw-status data-totw-form-status hidden></div>
+        <button type="submit" class="watson-totw__btn watson-totw__btn--primary" formnovalidate>
+          Save
+        </button>
         <button type="button" class="watson-totw__btn" data-totw-save-draft>Save draft</button>
         <button type="button" class="watson-totw__btn" data-totw-schedule>Schedule</button>
         <button type="button" class="watson-totw__btn" data-totw-activate>Activate</button>
@@ -577,6 +587,23 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
   .watson-totw__status[data-kind="warn"] {
     background: #fffbeb;
     color: #92400e;
+  }
+
+  .watson-totw__field-error {
+    display: block;
+    margin: 0.35rem 0 0;
+    color: #991b1b;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .watson-totw__field-error[hidden] {
+    display: none;
+  }
+
+  .watson-totw__actions .watson-totw__status {
+    flex: 1 1 100%;
+    margin: 0 0 0.25rem;
   }
 
   .watson-totw__board {

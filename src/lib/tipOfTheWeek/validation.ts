@@ -203,15 +203,12 @@ function parseOptionalRelatedNote(
 }
 
 function isBlankRelatedRow(row: Record<string, unknown>): boolean {
-  const typeRaw =
-    typeof row.type === "string" ? row.type.trim().toLowerCase() : "";
   const videoId =
     row.videoId ?? row.video_id ?? row.contentId ?? row.content_id ?? row.videoContentId;
   const title = row.title ?? row.label;
   const url = row.url ?? row.href ?? row.destinationUrl;
   const note = row.note ?? row.description;
 
-  const hasType = Boolean(typeRaw);
   const hasVideoId =
     (typeof videoId === "string" && videoId.trim()) ||
     (typeof videoId === "number" && Number.isFinite(videoId));
@@ -219,7 +216,8 @@ function isBlankRelatedRow(row: Record<string, unknown>): boolean {
   const hasUrl = typeof url === "string" && url.trim();
   const hasNote = typeof note === "string" && note.trim();
 
-  return !hasType && !hasVideoId && !hasTitle && !hasUrl && !hasNote;
+  // Type-only rows are the empty Related Help placeholder in the admin form.
+  return !hasVideoId && !hasTitle && !hasUrl && !hasNote;
 }
 
 function parseRelatedVideoResource(
@@ -422,41 +420,42 @@ export function validateTipOfTheWeekInput(
   },
 ): TipValidationResult<ValidatedTipInput> & { warning?: string } {
   const tipId = parseTipId(input.tipId ?? input.tip_id);
-  if (!tipId.ok) return tipId;
+  if (!tipId.ok) return { ...tipId, field: "tipId" };
 
   const title = requireTrimmed(input.title, "Title", TIP_TITLE_MAX);
-  if (!title.ok) return title;
+  if (!title.ok) return { ...title, field: "title" };
 
   const intro = parseSanitizedHtml(input.intro, "Introduction", TIP_INTRO_MAX, true);
-  if (!intro.ok) return intro;
+  if (!intro.ok) return { ...intro, field: "intro" };
 
   const videoContentId = parseVideoContentId(
     input.videoContentId ?? input.video_content_id,
   );
-  if (!videoContentId.ok) return videoContentId;
+  if (!videoContentId.ok) return { ...videoContentId, field: "videoContentId" };
 
   const availableFrom = parseDateField(
     input.availableFrom ?? input.available_from,
     "Available from",
   );
-  if (!availableFrom.ok) return availableFrom;
+  if (!availableFrom.ok) return { ...availableFrom, field: "availableFrom" };
 
   const availableThrough = parseDateField(
     input.availableThrough ?? input.available_through,
     "Available through",
   );
-  if (!availableThrough.ok) return availableThrough;
+  if (!availableThrough.ok) return { ...availableThrough, field: "availableThrough" };
 
   if (availableFrom.value > availableThrough.value) {
     return {
       ok: false,
       error: "Available from must be on or before available through.",
+      field: "availableThrough",
     };
   }
 
   const statusRaw = input.status ?? "draft";
   if (!isTipOfTheWeekStatus(statusRaw)) {
-    return { ok: false, error: "Status is invalid." };
+    return { ok: false, error: "Status is invalid.", field: "status" };
   }
   const status = statusRaw;
 
@@ -466,7 +465,7 @@ export function validateTipOfTheWeekInput(
     120,
     TIP_DEFAULT_AVAILABILITY_NOTICE,
   );
-  if (!availabilityNotice.ok) return availabilityNotice;
+  if (!availabilityNotice.ok) return { ...availabilityNotice, field: "availabilityNotice" };
 
   const availabilityFooterTemplate = optionalTrimmed(
     input.availabilityFooterTemplate ?? input.availability_footer_template,
@@ -474,11 +473,14 @@ export function validateTipOfTheWeekInput(
     TIP_COPY_MAX,
     TIP_DEFAULT_FOOTER_TEMPLATE,
   );
-  if (!availabilityFooterTemplate.ok) return availabilityFooterTemplate;
+  if (!availabilityFooterTemplate.ok) {
+    return { ...availabilityFooterTemplate, field: "availabilityFooterTemplate" };
+  }
   if (!availabilityFooterTemplate.value.includes("{date}")) {
     return {
       ok: false,
       error: 'Availability footer must include the "{date}" placeholder.',
+      field: "availabilityFooterTemplate",
     };
   }
 
@@ -488,7 +490,7 @@ export function validateTipOfTheWeekInput(
     TIP_COPY_MAX,
     false,
   );
-  if (!tryCopy.ok) return tryCopy;
+  if (!tryCopy.ok) return { ...tryCopy, field: "tryCopy" };
 
   const sueTipCopy = parseSanitizedHtml(
     input.sueTipCopy ?? input.sue_tip_copy,
@@ -496,13 +498,16 @@ export function validateTipOfTheWeekInput(
     TIP_COPY_MAX,
     false,
   );
-  if (!sueTipCopy.ok) return sueTipCopy;
+  if (!sueTipCopy.ok) return { ...sueTipCopy, field: "sueTipCopy" };
 
   const cta = parseOptionalCta(
     input.ctaText ?? input.cta_text,
     input.ctaUrl ?? input.cta_url,
   );
-  if (!cta.ok) return cta;
+  if (!cta.ok) {
+    const field = cta.error.startsWith("CTA URL") ? "ctaUrl" : "ctaText";
+    return { ...cta, field };
+  }
 
   const eyebrow = optionalTrimmed(
     input.eyebrow,
@@ -510,17 +515,17 @@ export function validateTipOfTheWeekInput(
     80,
     TIP_DEFAULT_EYEBROW,
   );
-  if (!eyebrow.ok) return eyebrow;
+  if (!eyebrow.ok) return { ...eyebrow, field: "eyebrow" };
 
   const learnPoints = parseLearnPoints(
     input.learnPoints ?? input.learn_points ?? input.learn_points_json,
   );
-  if (!learnPoints.ok) return learnPoints;
+  if (!learnPoints.ok) return { ...learnPoints, field: "learnPoints" };
 
   const relatedLinks = parseRelatedLinks(
     input.relatedLinks ?? input.related_links ?? input.related_links_json,
   );
-  if (!relatedLinks.ok) return relatedLinks;
+  if (!relatedLinks.ok) return { ...relatedLinks, field: "relatedLinks" };
 
   let warning: string | undefined;
   if (status === "scheduled" || status === "active") {

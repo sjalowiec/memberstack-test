@@ -67,7 +67,10 @@ export const PATCH: APIRoute = async (context) => {
 
     if (!result.ok) {
       const status = result.error === "Tip not found." ? 404 : 400;
-      return watsonJsonResponse({ ok: false, error: result.error }, status);
+      return watsonJsonResponse(
+        { ok: false, error: result.error, field: result.field ?? null },
+        status,
+      );
     }
 
     return watsonJsonResponse({

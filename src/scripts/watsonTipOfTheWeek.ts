@@ -2,6 +2,12 @@
  * Watson Tip of the Week admin UI (create / edit / schedule / archive + reaction totals).
  */
 import {
+  clientTipAdminFieldErrors,
+  parseTipAdminSaveJson,
+  queueTipAdminFlash,
+  readTipAdminFlash,
+} from "../lib/tipOfTheWeek/adminSaveClient";
+import {
   initTipDateFormState,
   onTipAvailableFromChanged,
   onTipAvailableThroughChanged,
@@ -71,11 +77,41 @@ function applyTipDateStateToForm(form: HTMLFormElement, state: TipDateFormState)
 }
 
 function showStatus(message: string, kind: "ok" | "error" | "warn" = "ok") {
-  const box = el<HTMLElement>("[data-totw-status]");
-  if (!box) return;
-  box.hidden = false;
-  box.textContent = message;
-  box.dataset.kind = kind;
+  const boxes = document.querySelectorAll<HTMLElement>("[data-totw-status]");
+  boxes.forEach((box) => {
+    box.hidden = !message;
+    box.textContent = message;
+    box.dataset.kind = kind;
+  });
+  const nearSave = el<HTMLElement>("[data-totw-form-status]");
+  if (message && kind !== "ok") {
+    nearSave?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function clearFieldErrors(form: HTMLFormElement) {
+  form.querySelectorAll<HTMLElement>("[data-totw-field-error]").forEach((node) => {
+    node.hidden = true;
+    node.textContent = "";
+  });
+  form.querySelectorAll("[aria-invalid='true']").forEach((node) => {
+    node.removeAttribute("aria-invalid");
+  });
+  form.querySelector("[data-totw-intro-rte]")?.removeAttribute("data-invalid");
+}
+
+function showFieldError(form: HTMLFormElement, field: string | undefined, message: string) {
+  if (!field) return;
+  const errorEl = form.querySelector<HTMLElement>(`[data-totw-field-error="${field}"]`);
+  if (errorEl) {
+    errorEl.hidden = false;
+    errorEl.textContent = message;
+  }
+  const named = namedField(form, field);
+  if (named) named.setAttribute("aria-invalid", "true");
+  if (field === "intro") {
+    form.querySelector("[data-totw-intro-rte]")?.setAttribute("data-invalid", "true");
+  }
 }
 
 function readLearnPoints(form: HTMLFormElement): string[] {
@@ -552,32 +588,63 @@ async function refreshReactions(tipId: string) {
 async function saveTip(form: HTMLFormElement, statusOverride?: TipStatus) {
   // Ensure rich-text editors have synced into their hidden fields.
   syncAllRteCopy(form);
-  const id = (form.elements.namedItem("id") as HTMLInputElement | null)?.value.trim();
+  clearFieldErrors(form);
+
+  const id = namedField(form, "id")?.value.trim();
   const payload = formPayload(form);
   if (statusOverride) payload.status = statusOverride;
+
+  const clientErrors = clientTipAdminFieldErrors(payload);
+  if (clientErrors.length) {
+    const first = clientErrors[0];
+    clientErrors.forEach((item) => showFieldError(form, item.field, item.error));
+    showStatus(first.error, "error");
+    return null;
+  }
 
   const url = id ? `${API}/${encodeURIComponent(id)}` : API;
   const method = id ? "PATCH" : "POST";
 
-  const res = await fetch(url, {
-    method,
-    credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json();
-  if (!res.ok || !data?.ok) {
-    showStatus(data?.error || "Unable to save tip.", "error");
+  try {
+    const res = await fetch(url, {
+      method,
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    let data: unknown = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+    const parsed = parseTipAdminSaveJson(res.ok, data);
+    if (!parsed.ok) {
+      showFieldError(form, parsed.field, parsed.error);
+      showStatus(parsed.error, "error");
+      return null;
+    }
+    const message = parsed.warning || "Saved.";
+    const kind = parsed.warning ? "warn" : "ok";
+    showStatus(message, kind);
+    queueTipAdminFlash({ message, kind });
+    return parsed.tip as TipRecord;
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message.trim()
+        ? `Save failed — ${error.message}`
+        : "Save failed — network error.";
+    showStatus(message, "error");
     return null;
   }
-  if (data.warning) showStatus(data.warning, "warn");
-  else showStatus("Saved.", "ok");
-  return data.tip as TipRecord;
 }
 
 export function initWatsonTipOfTheWeek() {
   const form = el<HTMLFormElement>("[data-totw-form]");
   if (!form) return;
+
+  const flash = readTipAdminFlash();
+  if (flash) showStatus(flash.message, flash.kind);
 
   initWatsonTipTryItRichText(form);
 
