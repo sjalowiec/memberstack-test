@@ -11,6 +11,8 @@ import {
   getSidewaysCardiganChartRowsForAudience,
   isSidewaysCardiganWomenSize,
   resolveSidewaysCardiganChartAudienceFromSize,
+  SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS,
+  sidewaysCardiganChartAudienceDisplayLabel,
 } from "./sidewaysCardiganSizeCharts";
 
 const missesRows: ChartRow[] = [
@@ -57,5 +59,14 @@ describe("sideways cardigan women's combined chart", () => {
     expect(findSidewaysCardiganWomenChartRow("8", "misses")?.chartAudience).toBe("misses");
     expect(findSidewaysCardiganWomenChartRow("8", "plus")).toBeNull();
     expect(findSidewaysCardiganWomenChartRow("X", "plus")?.chartAudience).toBe("plus");
+  });
+
+  it("shows Women's as the plus-chart label without renaming the plus key", () => {
+    expect(sidewaysCardiganChartAudienceDisplayLabel("misses")).toBe("Misses");
+    expect(sidewaysCardiganChartAudienceDisplayLabel("plus")).toBe("Women's");
+    expect(sidewaysCardiganChartAudienceDisplayLabel("plus")).not.toBe("Plus");
+    const plusGroup = SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.find((group) => group.audience === "plus");
+    expect(plusGroup?.audience).toBe("plus");
+    expect(plusGroup?.heading).toBe("Women's");
   });
 });

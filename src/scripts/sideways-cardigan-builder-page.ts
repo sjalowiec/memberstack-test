@@ -29,6 +29,7 @@ import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternSt
 import {
   findSidewaysCardiganWomenChartRow,
   getSidewaysCardiganChartRowsForAudience,
+  sidewaysCardiganChartAudienceDisplayLabel,
   type SidewaysCardiganWomenChartAudience,
   type SidewaysCardiganWomenChartRow,
 } from "../lib/patterns/sidewaysCardiganSizeCharts";
@@ -308,8 +309,7 @@ function renderFinishedBust(state: BuilderState): void {
 function renderReview(state: BuilderState): void {
   const host = document.querySelector("[data-sideways-review-summary]");
   if (!(host instanceof HTMLElement)) return;
-  const chartLabel =
-    state.chartAudience === "plus" ? "Plus" : state.chartAudience === "misses" ? "Misses" : "";
+  const chartLabel = sidewaysCardiganChartAudienceDisplayLabel(state.chartAudience);
   const bust = finishedBustForState(state);
   const rows: Array<[string, string]> = [
     ["Sizing chart", chartLabel],
@@ -383,8 +383,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
   renderReview(state);
   syncStyleInputs(state);
 
-  const chartLabel =
-    state.chartAudience === "plus" ? "Plus" : state.chartAudience === "misses" ? "Misses" : "";
+  const chartLabel = sidewaysCardiganChartAudienceDisplayLabel(state.chartAudience);
   setSummary("chartAudience", chartLabel);
   setSummary(
     "selectedSize",

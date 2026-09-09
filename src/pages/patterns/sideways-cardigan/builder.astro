@@ -20,8 +20,11 @@ import {
   EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
 } from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
+import { sidewaysCardiganChartAudienceDisplayLabel } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/sideways-cardigan/builder");
+const missesChartLabel = sidewaysCardiganChartAudienceDisplayLabel("misses");
+const plusChartLabel = sidewaysCardiganChartAudienceDisplayLabel("plus");
 
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -41,7 +44,7 @@ const expressNavSteps = [
 
 <Layout
   title="Sideways Cardigan Pattern Builder"
-  description="Create a sideways-knit V-neck cardigan pattern from misses and plus sizing charts."
+  description="Create a sideways-knit V-neck cardigan pattern from Misses and Women's sizing charts."
   patternWorkspace={true}
 >
   <main
@@ -141,16 +144,16 @@ const expressNavSteps = [
                   </div>
                   <div class="express-acc__body" id="express-acc-panel-1" role="region">
                     <p class="express-size-instruction">
-                      Misses sizes 1–8 and Plus sizes X–6X use the same sweater charts as the other
-                      Pattern Builders.
+                      {missesChartLabel} sizes 1–8 and {plusChartLabel} sizes X–6X use the same sweater
+                      charts as the other Pattern Builders.
                     </p>
                     <div class="hat-length-picker__grid sg-fit-preference-grid" role="group">
                       <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="chartAudience" data-value="misses" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">Misses</span>
+                        <span class="hat-length-picker__option-label">{missesChartLabel}</span>
                         <span class="sg-fit-preference-note">Sizes 1–8</span>
                       </button>
                       <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="chartAudience" data-value="plus" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">Plus</span>
+                        <span class="hat-length-picker__option-label">{plusChartLabel}</span>
                         <span class="sg-fit-preference-note">Sizes X–6X</span>
                       </button>
                     </div>
