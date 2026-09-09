@@ -78,14 +78,6 @@ export const SHORT_ROWS_SUE_TIP_HEADING = "Sue’s Tip";
 export const SHORT_ROWS_SUE_TIP =
   "The secret to automatic wrapping is carriage position. Slow down and check where your carriage and working yarn are before moving the next needle into hold.";
 
-export const SHORT_ROWS_COMPLETION_PROMPT = "Which method felt more comfortable?";
-
-export const SHORT_ROWS_COMPLETION_OPTIONS: readonly string[] = [
-  "Manual wrapping",
-  "Automatic wrapping",
-  "I need another try",
-];
-
 export const SHORT_ROWS_SHORT_ROW_GLOSSARY_ID = 811;
 export const SHORT_ROWS_HOLDING_POSITION_GLOSSARY_ID = 185;
 export const SHORT_ROWS_WRAP_GLOSSARY_ID = 640;
@@ -207,8 +199,6 @@ export type ShortRowsSkillBuilder = {
   practice2Steps: readonly string[];
   sueTipHeading: string;
   sueTip: string;
-  completionPrompt: string;
-  completionOptions: readonly string[];
   video: ShortRowsVideoSlot | null;
 };
 
@@ -228,8 +218,6 @@ export function getShortRowsSkillBuilder(): ShortRowsSkillBuilder {
     practice2Steps: SHORT_ROWS_PRACTICE_2_STEPS,
     sueTipHeading: SHORT_ROWS_SUE_TIP_HEADING,
     sueTip: SHORT_ROWS_SUE_TIP,
-    completionPrompt: SHORT_ROWS_COMPLETION_PROMPT,
-    completionOptions: SHORT_ROWS_COMPLETION_OPTIONS,
     video: shortRowsVideoSlot(),
   };
 }

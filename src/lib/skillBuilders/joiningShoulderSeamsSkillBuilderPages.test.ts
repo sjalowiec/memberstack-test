@@ -58,7 +58,7 @@ describe("Join Beautiful Shoulder Seams Skill Builder pages", () => {
   it("gates the Skill Builder for logged-out and non-member visitors", () => {
     expect(component).toContain("SkillBuilderMemberGate");
     expect(component).toMatch(
-      /<SkillBuilderMemberGate>[\s\S]*What You'll Practice[\s\S]*Shoulder Seam Checklist[\s\S]*GatedVimeoEmbed/,
+      /<SkillBuilderMemberGate builderId=\{builder.id\}>[\s\S]*What You'll Practice[\s\S]*Shoulder Seam Checklist[\s\S]*GatedVimeoEmbed/,
     );
     expect(component).not.toContain('access_level="open"');
     expect(component).toContain("access_level={video.accessLevel}");

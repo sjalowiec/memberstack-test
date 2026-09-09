@@ -5,11 +5,13 @@ import "../../styles/pattern-tips.css";
 import SkillBuilderGaugeInput from "./SkillBuilderGaugeInput.astro";
 import PrintButton from "../common/PrintButton.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
+import SkillBuilderFeedback from "./SkillBuilderFeedback.astro";
 import {
   ROUND_NECKLINE_SKILL_BUILDERS,
   type RoundNecklineSkillBuilderExerciseId,
   type RoundNecklineSkillBuilderId,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilders";
+import { getSkillBuilderFeedbackConfig } from "../../lib/skillBuilders/skillBuilderFeedback";
 import {
   skillBuilderVideoHelperCopy,
   skillBuilderVideoSlot,
@@ -35,6 +37,7 @@ const practiceVideos = builder.exercises
   }))
   .filter((item) => item.video);
 const gaugeId = `sb-${builderId}`;
+const feedback = getSkillBuilderFeedbackConfig(builderId);
 ---
 
 <section class="sb-practice-panel no-print" data-sb-setup aria-labelledby="sb-gauge-heading">
@@ -255,6 +258,16 @@ const gaugeId = `sb-${builderId}`;
     <h2 id="sb-print-heading">Print Worksheet</h2>
     <PrintButton label="Print Worksheet" />
   </section>
+
+  {
+    feedback ? (
+      <SkillBuilderFeedback
+        skillBuilderId={feedback.id}
+        title={feedback.title}
+        includeBackLink={feedback.includeBackLink}
+      />
+    ) : null
+  }
 </div>
 
 <style>

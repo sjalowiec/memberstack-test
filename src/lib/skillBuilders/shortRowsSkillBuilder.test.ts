@@ -7,8 +7,6 @@ import {
   getShortRowsSkillBuilder,
   SHORT_ROWS_AUTOMATIC_WRAP_GLOSSARY_ID,
   SHORT_ROWS_CATALOG_SUBTITLE,
-  SHORT_ROWS_COMPLETION_OPTIONS,
-  SHORT_ROWS_COMPLETION_PROMPT,
   SHORT_ROWS_HOLDING_POSITION_GLOSSARY_ID,
   SHORT_ROWS_INTRO_PARAGRAPHS,
   SHORT_ROWS_MANUAL_WRAP_GLOSSARY_ID,
@@ -86,14 +84,6 @@ describe("Short Rows Practice Skill Builder", () => {
       "The secret to automatic wrapping is carriage position. Slow down and check where your carriage and working yarn are before moving the next needle into hold.",
     );
     expect(SHORT_ROWS_SUE_TIP).toBe(builder.sueTip);
-    expect(builder.completionPrompt).toBe("Which method felt more comfortable?");
-    expect(SHORT_ROWS_COMPLETION_PROMPT).toBe(builder.completionPrompt);
-    expect(builder.completionOptions).toEqual([
-      "Manual wrapping",
-      "Automatic wrapping",
-      "I need another try",
-    ]);
-    expect(SHORT_ROWS_COMPLETION_OPTIONS).toEqual(builder.completionOptions);
   });
 
   it("mentions socks as one application without sock-specific heel or toe instructions", () => {

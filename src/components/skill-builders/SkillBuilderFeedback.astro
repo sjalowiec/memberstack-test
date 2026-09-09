@@ -1,0 +1,222 @@
+---
+/**
+ * Shared Skill Builder practice feedback. Save is local + blob upsert.
+ * Does not email Sue. Contact uses the existing /contact page.
+ */
+import {
+  SKILL_BUILDER_FEEDBACK_CONTACT_HREF,
+  SKILL_BUILDER_FEEDBACK_CONTACT_LABEL,
+  SKILL_BUILDER_FEEDBACK_HEADING,
+  SKILL_BUILDER_FEEDBACK_HELP_COPY,
+  SKILL_BUILDER_REACTIONS,
+} from "../../lib/skillBuilders/skillBuilderFeedback";
+
+interface Props {
+  skillBuilderId: string;
+  title: string;
+  includeBackLink?: boolean;
+}
+
+const { skillBuilderId, title, includeBackLink = true } = Astro.props;
+const headingId = `sb-feedback-heading-${skillBuilderId}`;
+---
+
+<section
+  class="sb-feedback"
+  data-sb-feedback
+  data-sb-feedback-id={skillBuilderId}
+  data-sb-feedback-title={title}
+  data-sb-print-hide
+  aria-labelledby={headingId}
+>
+  <h2 id={headingId} class="sb-feedback__heading">{SKILL_BUILDER_FEEDBACK_HEADING}</h2>
+  <div class="sb-feedback__buttons" role="group" aria-label={SKILL_BUILDER_FEEDBACK_HEADING}>
+    {
+      SKILL_BUILDER_REACTIONS.map((reaction) => (
+        <button
+          type="button"
+          class="sb-feedback__btn"
+          data-sb-feedback-reaction={reaction.id}
+          aria-pressed="false"
+        >
+          <span class="sb-feedback__emoji" aria-hidden="true">
+            {reaction.emoji}
+          </span>
+          <span class="sb-feedback__label">{reaction.label}</span>
+        </button>
+      ))
+    }
+  </div>
+  <p class="sb-feedback__status" data-sb-feedback-status hidden aria-live="polite"></p>
+  <div class="sb-feedback__help" data-sb-feedback-help hidden>
+    <p class="sb-feedback__help-copy">{SKILL_BUILDER_FEEDBACK_HELP_COPY}</p>
+    <a class="sb-feedback__contact" href={SKILL_BUILDER_FEEDBACK_CONTACT_HREF}>
+      {SKILL_BUILDER_FEEDBACK_CONTACT_LABEL}
+    </a>
+  </div>
+</section>
+
+{
+  includeBackLink ? (
+    <a class="sb-practice-back" href="/learn/skill-builders" data-sb-print-hide>
+      Back to Skill Builders
+    </a>
+  ) : null
+}
+
+<script>
+  import { bindSkillBuilderFeedbackPage } from "../../lib/skillBuilders/skillBuilderReactions";
+
+  function start(): void {
+    bindSkillBuilderFeedbackPage();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+</script>
+
+<style>
+  .sb-feedback {
+    margin: 0 0 1.1rem;
+    padding: 0.95rem 1rem;
+    background: #f8faf6;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+  }
+
+  .sb-feedback__heading {
+    margin: 0 0 0.85rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #52682d;
+  }
+
+  .sb-feedback__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .sb-feedback__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border: 2px solid #d6dbc9;
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 550;
+    cursor: pointer;
+    text-align: left;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .sb-feedback__btn:hover {
+    border-color: #738c52;
+    background: #f7f8f5;
+  }
+
+  .sb-feedback__btn:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .sb-feedback__btn.is-selected {
+    border-color: #52682d;
+    background: #eef2e6;
+    box-shadow: inset 0 0 0 1px #52682d;
+  }
+
+  .sb-feedback__emoji {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .sb-feedback__label {
+    line-height: 1.25;
+  }
+
+  .sb-feedback__status {
+    margin: 0.85rem 0 0;
+    font-size: 0.95rem;
+    color: #52682d;
+    font-weight: 550;
+  }
+
+  .sb-feedback__status[role="alert"] {
+    color: #b91c1c;
+  }
+
+  .sb-feedback__help {
+    margin: 0.9rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid #d6dbc9;
+  }
+
+  .sb-feedback__help[hidden] {
+    display: none;
+  }
+
+  .sb-feedback__help-copy {
+    margin: 0 0 0.75rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #243015;
+  }
+
+  .sb-feedback__contact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.55rem 1.05rem;
+    border-radius: 8px;
+    background: #52682d;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .sb-feedback__contact:hover,
+  .sb-feedback__contact:focus-visible {
+    background: #445626;
+    outline: 2px solid #738c52;
+    outline-offset: 2px;
+  }
+
+  .sb-practice-back {
+    display: inline-block;
+    margin: 0.15rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .sb-practice-back:hover,
+  .sb-practice-back:focus {
+    color: #52682d;
+  }
+
+  @media (max-width: 640px) {
+    .sb-feedback__buttons {
+      flex-direction: column;
+    }
+
+    .sb-feedback__btn {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+</style>
