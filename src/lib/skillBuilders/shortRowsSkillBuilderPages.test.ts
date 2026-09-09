@@ -103,6 +103,9 @@ describe("Short Rows Practice Skill Builder pages", () => {
       /What You'll Learn[\s\S]*data-sb-video-content-id[\s\S]*Watch[\s\S]*Practice Setup[\s\S]*practice1Heading[\s\S]*practice2Heading[\s\S]*data-sb-sue-tip[\s\S]*data-sb-completion/,
     );
     expect(component).toContain("shortRowsIntroParts");
+    expect(component).toContain('<div class="sb-practice-hero__intro">');
+    expect(component).not.toContain('<p class="sb-practice-hero__intro">');
+    expect(component).not.toMatch(/sb-practice-hero__intro[\s\S]{0,200}<br/i);
     expect(component).toContain("GlossaryTooltip");
     expect(component).toContain("part.glossaryId");
     expect(component).toContain('import "../../styles/glossary-tooltip.css"');

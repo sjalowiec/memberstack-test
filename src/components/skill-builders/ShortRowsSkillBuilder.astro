@@ -34,7 +34,7 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
     <div class="sb-intro-copy">
       {
         introParts.map((parts) => (
-          <p class="sb-practice-hero__intro">
+          <div class="sb-practice-hero__intro">
             {parts.map((part) =>
               part.type === "glossary" ? (
                 <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
@@ -42,7 +42,7 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
                 part.text
               )
             )}
-          </p>
+          </div>
         ))
       }
     </div>
