@@ -109,6 +109,21 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).toMatch(
       /\.sb-practice-page :global\(sup\.glossary-tooltip-icon\) \{[\s\S]*?display: none;/,
     );
+    expect(component).toContain("[data-sb-short-rows] :global(button.glossary-tooltip-trigger)");
+    expect(component).toContain("font-weight: inherit");
+    expect(component).toContain("background-image: none");
+    expect(component).not.toMatch(
+      /\.sb-practice-page :global\(\.glossary-tooltip-trigger\) \{[\s\S]*?font-weight: 600/,
+    );
+    expect(component).toContain('src="/images/skill-builders/short-rows.png"');
+    expect(component).toContain(
+      'alt="Diagram showing progressively shortened rows in three colors"',
+    );
+    expect(component).toContain("sb-intro-layout");
+    expect(component).toContain("sb-intro-media");
+    expect(component).toContain("grid-template-columns");
+    expect(component.split("/images/skill-builders/short-rows.png")).toHaveLength(2);
+    expect(component).not.toContain("kin-dev.netlify.app");
     expect(component).not.toContain("sb-related-card");
     for (const copy of REMOVED_COPY) {
       expect(component).not.toContain(copy);
