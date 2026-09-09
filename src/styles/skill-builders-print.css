@@ -1,0 +1,208 @@
+/**
+ * Reusable Skill Builder print sheet.
+ * Import with SkillBuilderPrintButton. Mark excluded regions with data-sb-print-hide.
+ */
+
+.sb-card__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.65rem;
+}
+
+.sb-card__heading > h2 {
+  margin: 0;
+}
+
+.sb-print-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #243015;
+  background: #fff;
+  border: 1px solid #d6dbc9;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sb-print-button svg {
+  flex-shrink: 0;
+}
+
+.sb-print-button:hover {
+  border-color: #52682d;
+}
+
+.sb-print-button:focus-visible {
+  outline: 2px solid rgba(82, 104, 45, 0.35);
+  outline-offset: 2px;
+  border-color: #52682d;
+}
+
+@media print {
+  [data-sb-print-hide],
+  [data-sb-print-button],
+  [data-sb-member-lock],
+  .sb-print-button,
+  .sb-print-toolbar {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /*
+   * Global print.css hides every `header`. Restore the Skill Builder title block.
+   */
+  .sb-practice-page header.sb-practice-hero {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 0 0.75rem !important;
+    padding: 0 !important;
+    top: auto !important;
+    left: auto !important;
+  }
+
+  .sb-practice-page {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .sb-practice-page,
+  .sb-practice-page h1,
+  .sb-practice-page h2,
+  .sb-practice-page p,
+  .sb-practice-page li,
+  .sb-practice-page .sb-practice-hero__subtitle,
+  .sb-practice-page .sb-practice-hero__intro,
+  .sb-practice-page .sb-practice-lead,
+  .sb-practice-page .sb-sue-tip,
+  .sb-practice-page .sb-sue-tip > h2,
+  .sb-practice-page .sb-sue-tip p {
+    color: #000 !important;
+  }
+
+  .sb-intro-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 11.5rem !important;
+    column-gap: 0.9rem !important;
+    row-gap: 0.65rem !important;
+    align-items: start !important;
+  }
+
+  .sb-intro-copy {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .sb-intro-media {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    justify-self: end !important;
+    width: 100% !important;
+    max-width: 11.5rem !important;
+    margin: 0 !important;
+    padding: 0.35rem !important;
+    background: #fff !important;
+    border: 1px solid #333 !important;
+    border-radius: 0 !important;
+  }
+
+  .sb-intro-layout > [data-sb-member-body-mount]:not([hidden]) {
+    display: contents !important;
+  }
+
+  .sb-intro-layout .sb-intro-learn {
+    grid-column: 1 !important;
+  }
+
+  .sb-intro-layout .sb-intro-learn ~ * {
+    grid-column: 1 / -1 !important;
+  }
+
+  .sb-intro-media img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .sb-card,
+  .sb-worksheet__section,
+  .sb-sue-tip {
+    background: transparent !important;
+    box-shadow: none !important;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .sb-card {
+    border: 1px solid #333 !important;
+    border-radius: 0 !important;
+    padding: 0.65rem 0.75rem !important;
+    margin: 0 0 0.85rem !important;
+  }
+
+  .sb-sue-tip {
+    border-left: 2px solid #333 !important;
+    padding: 0 0 0 0.75rem !important;
+  }
+
+  /* Native numbering so steps stay readable in black-and-white. */
+  .sb-practice-page .sb-join-steps {
+    list-style: decimal !important;
+    padding-left: 1.5rem !important;
+    gap: 0.4rem !important;
+  }
+
+  .sb-practice-page .sb-join-step {
+    padding: 0.2rem 0 0.2rem 0.2rem !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: #000 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sb-practice-page .sb-join-step::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .sb-learn-list,
+  .sb-setup-list {
+    color: #000 !important;
+  }
+
+  .sb-practice-page h1 {
+    font-size: 18pt !important;
+    font-weight: 700 !important;
+  }
+
+  .sb-practice-page h2 {
+    font-size: 13pt !important;
+    font-weight: 700 !important;
+  }
+
+  .sb-practice-page p,
+  .sb-practice-page li {
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+}

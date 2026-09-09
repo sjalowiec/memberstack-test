@@ -1,6 +1,7 @@
 ---
 import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
 import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
+import SkillBuilderPrintButton from "./SkillBuilderPrintButton.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
 import GlossaryTooltip from "../common/GlossaryTooltip.astro";
 import "../../styles/glossary-tooltip.css";
@@ -22,8 +23,8 @@ const practice2LeadParts = shortRowsPractice2LeadParts(builder.practice2Lead);
 const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
 ---
 
-<div class="sb-practice-page" data-sb-short-rows data-sb-builder={builder.id}>
-  <a class="sb-practice-eyebrow" href="/learn/skill-builders">Skill Builders</a>
+<div class="sb-practice-page" data-sb-short-rows data-sb-builder={builder.id} data-sb-print-root>
+  <a class="sb-practice-eyebrow" href="/learn/skill-builders" data-sb-print-hide>Skill Builders</a>
 
   <header class="sb-practice-hero">
     <SkillBuilderPageHeader title={builder.title} />
@@ -82,6 +83,7 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
           class="sb-worksheet__section"
           aria-label="Video"
           data-sb-video-content-id={String(video.contentId)}
+          data-sb-print-hide
         >
           <h2>Watch</h2>
           <GatedVimeoEmbed
@@ -95,7 +97,10 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
     }
 
     <section class="sb-card" aria-labelledby="sb-setup-heading">
-      <h2 id="sb-setup-heading">Practice Setup</h2>
+      <div class="sb-card__heading">
+        <h2 id="sb-setup-heading">Practice Setup</h2>
+        <SkillBuilderPrintButton ariaLabel={`Print ${builder.title}`} />
+      </div>
       <ul class="sb-setup-list">
         {builder.practiceSetup.map((item) => <li>{item}</li>)}
       </ul>
@@ -159,6 +164,7 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
       class="sb-card"
       aria-labelledby="sb-completion-heading"
       data-sb-completion
+      data-sb-print-hide
     >
       <h2 id="sb-completion-heading">{builder.completionPrompt}</h2>
       <fieldset class="sb-completion">
@@ -182,7 +188,7 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
       </fieldset>
     </section>
 
-    <a class="sb-practice-back" href="/learn/skill-builders">Back to Skill Builders</a>
+    <a class="sb-practice-back" href="/learn/skill-builders" data-sb-print-hide>Back to Skill Builders</a>
     </SkillBuilderMemberGate>
   </div>
 </div>
@@ -308,11 +314,16 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
   }
 
   .sb-worksheet__section > h2,
-  .sb-card > h2 {
+  .sb-card > h2,
+  .sb-card__heading > h2 {
     margin: 0 0 0.65rem;
     font-size: 1.2rem;
     font-weight: 700;
     color: #52682d;
+  }
+
+  .sb-card__heading > h2 {
+    margin: 0;
   }
 
   .sb-worksheet__section p,
