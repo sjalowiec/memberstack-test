@@ -29,6 +29,7 @@ export type SidewaysCardiganBuilderValidationInput = {
   selectedSize?: string;
   fit?: string;
   sleeveDirection?: string;
+  garmentStyle?: string;
   finishedLengthInches?: string | number;
   vNeckDepthInches?: string | number;
   neckOpeningWidthInches?: string | number;

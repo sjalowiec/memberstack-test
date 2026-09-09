@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   hasAuthoritativeSidewaysCardiganConstruction,
   SIDEWAYS_CARDIGAN_CONSTRUCTION,
+  resolveSidewaysCardiganGarmentStyle,
   withSidewaysCardiganConstructionAuthored,
   withSidewaysCardiganConstructionFamily,
 } from "./sidewaysCardiganConstructionIdentity";
@@ -43,5 +44,23 @@ describe("sideways cardigan construction identity", () => {
     expect(sideways.garmentStyle).toBe("cardigan");
     expect(sideways.neckline).toBe("v");
     expect(sideways.frontStyle).toBe("open");
+  });
+
+  it("defaults existing drafts without a garment-style choice to cardigan", () => {
+    expect(resolveSidewaysCardiganGarmentStyle({})).toBe("cardigan");
+    expect(resolveSidewaysCardiganGarmentStyle({ construction: SIDEWAYS_CARDIGAN_CONSTRUCTION })).toBe(
+      "cardigan",
+    );
+    expect(withSidewaysCardiganConstructionAuthored({}).garmentStyle).toBe("cardigan");
+    expect(withSidewaysCardiganConstructionAuthored({}).frontStyle).toBe("open");
+  });
+
+  it("stores pullover with the shared closed frontStyle", () => {
+    const pullover = withSidewaysCardiganConstructionAuthored({}, "cuff-up", "pullover");
+    expect(pullover.construction).toBe(SIDEWAYS_CARDIGAN_CONSTRUCTION);
+    expect(pullover.garmentStyle).toBe("pullover");
+    expect(pullover.frontStyle).toBe("closed");
+    expect(resolveSidewaysCardiganGarmentStyle(pullover)).toBe("pullover");
+    expect(resolveSidewaysCardiganGarmentStyle({ frontStyle: "closed" })).toBe("pullover");
   });
 });

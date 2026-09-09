@@ -12,7 +12,10 @@ import {
 } from "./expressBuilderReviewSubmit";
 import {
   parseSidewaysCardiganSleeveDirection,
+  resolveSidewaysCardiganGarmentStyle,
+  SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+  type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import {
@@ -33,6 +36,7 @@ function stringField(v: unknown): string {
 }
 
 export type SidewaysCardiganBuilderDraftState = {
+  garmentStyle: SidewaysCardiganGarmentStyle;
   chartAudience: SidewaysCardiganWomenChartAudience | "";
   selectedSize: string;
   fit: string;
@@ -47,6 +51,7 @@ export type SidewaysCardiganBuilderDraftState = {
 
 export function emptySidewaysCardiganBuilderDraftState(): SidewaysCardiganBuilderDraftState {
   return {
+    garmentStyle: SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
     chartAudience: "",
     selectedSize: "",
     fit: "",
@@ -118,6 +123,7 @@ export function readSidewaysCardiganBuilderStateFromDraft(
   const { measurements, edited } = readSidewaysCardiganStyleMeasurementsFromDraft(pattern);
   const unitRaw = stringField(yg.gaugeRawUnit ?? ygm.gaugeRawUnit);
   return {
+    garmentStyle: resolveSidewaysCardiganGarmentStyle(style),
     chartAudience,
     selectedSize,
     fit: ease === "close" || ease === "relaxed" || ease === "standard" ? ease : "",

@@ -34,11 +34,11 @@ import {
   type SidewaysCardiganWomenChartRow,
 } from "../lib/patterns/sidewaysCardiganSizeCharts";
 import {
+  parseSidewaysCardiganGarmentStyle,
   parseSidewaysCardiganSleeveDirection,
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+  SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
   stampSidewaysCardiganWorkingDraftFromPage,
-  type SidewaysCardiganSleeveDirection,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "../lib/patterns/syncSidewaysCardiganBuilderToPatternStorage";
 import { SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF } from "../lib/patterns/customPatternProjectNavigation";
@@ -46,6 +46,7 @@ import { validateSidewaysCardiganBuilder } from "../lib/patterns/sidewaysCardiga
 import { formatInchesWithUnit } from "../lib/patterns/sidewaysCardiganDisplayFormat";
 import {
   applySidewaysCardiganDraftToGaugeInputs,
+  emptySidewaysCardiganBuilderDraftState,
   readSidewaysCardiganBuilderStateFromDraft,
   type SidewaysCardiganBuilderDraftState,
 } from "../lib/patterns/sidewaysCardiganBuilderState";
@@ -58,7 +59,7 @@ import {
   type SidewaysCardiganStyleMeasurementKey,
 } from "../lib/patterns/sidewaysCardiganStyleMeasurements";
 
-const STEPS = 7;
+const STEPS = 8;
 
 const STYLE_INPUT_IDS: Record<SidewaysCardiganStyleMeasurementKey, string> = {
   finishedLength: "sideways-finished-length",
@@ -97,18 +98,7 @@ function readStateFromDraft(): BuilderState {
   try {
     return readSidewaysCardiganBuilderStateFromDraft();
   } catch {
-    return {
-      chartAudience: "",
-      selectedSize: "",
-      fit: "",
-      sleeveDirection: SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-      styleMeasurements: emptySidewaysCardiganStyleMeasurements(),
-      userEditedStyle: {},
-      gaugeStitchRaw: "",
-      gaugeRowRaw: "",
-      availableNeedles: "",
-      unit: "in",
-    };
+    return emptySidewaysCardiganBuilderDraftState();
   }
 }
 
@@ -125,6 +115,10 @@ function gaugeInputs(): { stitch: string; row: string; needles: string; unit: "i
 }
 
 function persist(state: BuilderState): void {
+  stampSidewaysCardiganWorkingDraftFromPage({
+    sleeveDirection: state.sleeveDirection,
+    garmentStyle: state.garmentStyle,
+  });
   const row = currentChartRow(state);
   if (!row || !state.fit || !state.chartAudience) return;
   const g = gaugeInputs();
@@ -140,10 +134,14 @@ function persist(state: BuilderState): void {
       availableNeedles: g.needles,
       unit: g.unit,
       sleeveDirection: state.sleeveDirection,
+      garmentStyle: state.garmentStyle,
     },
     row,
   );
-  stampSidewaysCardiganWorkingDraftFromPage();
+  stampSidewaysCardiganWorkingDraftFromPage({
+    sleeveDirection: state.sleeveDirection,
+    garmentStyle: state.garmentStyle,
+  });
 }
 
 function renderSizeTable(state: BuilderState): void {
@@ -261,6 +259,7 @@ function renderReview(state: BuilderState): void {
   const chartLabel = sidewaysCardiganChartAudienceDisplayLabel(state.chartAudience);
   const bust = finishedBustForState(state);
   const rows: Array<[string, string]> = [
+    ["Garment style", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]],
     ["Sizing chart", chartLabel],
     ["Size", state.selectedSize ? `Size ${state.selectedSize}` : ""],
     ["Fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)}` : ""],
@@ -313,14 +312,15 @@ function gaugePerInch(): { spi?: number; rpi?: number } {
 
 function canOpen(state: BuilderState, step: number): boolean {
   if (step <= 1) return true;
-  if (!state.chartAudience) return false;
   if (step === 2) return true;
-  if (!state.selectedSize) return false;
+  if (!state.chartAudience) return false;
   if (step === 3) return true;
-  if (!state.fit) return false;
+  if (!state.selectedSize) return false;
   if (step === 4) return true;
+  if (!state.fit) return false;
+  if (step === 5) return true;
   if (!styleMeasurementsAreComplete(state.styleMeasurements)) return false;
-  if (step === 5 || step === 6) return true;
+  if (step === 6 || step === 7) return true;
   const g = gaugeInputs();
   return Number(g.stitch) > 0 && Number(g.row) > 0;
 }
@@ -333,6 +333,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
   syncStyleInputs(state);
 
   const chartLabel = sidewaysCardiganChartAudienceDisplayLabel(state.chartAudience);
+  setSummary("garmentStyle", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]);
   setSummary("chartAudience", chartLabel);
   setSummary(
     "selectedSize",
@@ -349,6 +350,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
     const field = btn.getAttribute("data-field");
     const value = btn.getAttribute("data-value");
     const on =
+      (field === "garmentStyle" && value === state.garmentStyle) ||
       (field === "chartAudience" && value === state.chartAudience) ||
       (field === "fit" && value === state.fit) ||
       (field === "sleeveDirection" && value === state.sleeveDirection);
@@ -424,7 +426,7 @@ function init(): void {
       state.selectedSize = sz;
       if (state.fit) applyChartDefaults(state);
       persist(state);
-      openStep = 3;
+      openStep = 4;
       refreshUi(state, openStep);
       return;
     }
@@ -432,6 +434,15 @@ function init(): void {
     if (!choice) return;
     const field = choice.getAttribute("data-field");
     const value = choice.getAttribute("data-value") ?? "";
+    if (field === "garmentStyle") {
+      const style = parseSidewaysCardiganGarmentStyle(value);
+      if (!style) return;
+      state.garmentStyle = style;
+      persist(state);
+      openStep = 2;
+      refreshUi(state, openStep);
+      return;
+    }
     if (field === "chartAudience" && (value === "misses" || value === "plus")) {
       if (state.chartAudience !== value) {
         state.chartAudience = value;
@@ -440,7 +451,7 @@ function init(): void {
         state.styleMeasurements = emptySidewaysCardiganStyleMeasurements();
       }
       persist(state);
-      openStep = 2;
+      openStep = 3;
       refreshUi(state, openStep);
       return;
     }
@@ -448,7 +459,7 @@ function init(): void {
       state.fit = value;
       applyChartDefaults(state);
       persist(state);
-      openStep = 4;
+      openStep = 5;
       refreshUi(state, openStep);
       return;
     }
@@ -457,7 +468,7 @@ function init(): void {
       if (!dir) return;
       state.sleeveDirection = dir;
       persist(state);
-      openStep = 6;
+      openStep = 7;
       refreshUi(state, openStep);
     }
   });
@@ -517,7 +528,7 @@ function init(): void {
 
   wireExpressBuilderReviewSubmit({
     openGaugeStepForValidation: () => {
-      openStep = 6;
+      openStep = 7;
       refreshUi(state, openStep);
     },
     onProceed: () => {
@@ -530,6 +541,7 @@ function init(): void {
         selectedSize: state.selectedSize,
         fit: state.fit,
         sleeveDirection: state.sleeveDirection,
+        garmentStyle: state.garmentStyle,
         finishedLengthInches: state.styleMeasurements.finishedLength,
         vNeckDepthInches: state.styleMeasurements.vNeckDepth,
         neckOpeningWidthInches: state.styleMeasurements.neckOpeningWidth,
@@ -543,7 +555,7 @@ function init(): void {
       });
       if (error) {
         showBuilderError(error.message);
-        openStep = 7;
+        openStep = 8;
         refreshUi(state, openStep);
         return;
       }

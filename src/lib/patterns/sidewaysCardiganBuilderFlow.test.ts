@@ -62,6 +62,59 @@ describe("sideways cardigan builder-to-workspace flow", () => {
     localStorage.clear();
   });
 
+  it("saves and restores cardigan and pullover garment styles", () => {
+    syncSidewaysCardiganBuilderToPatternStorage(
+      {
+        selectedSize: "8",
+        chartAudience: "misses",
+        fit: "standard",
+        styleMeasurements: {
+          finishedLength: "25",
+          vNeckDepth: "8",
+          neckOpeningWidth: "7.5",
+          finishedUpperArm: "14.5",
+          sleeveLength: "17",
+          wrist: "7.25",
+        },
+        gaugeStitchRaw: "20",
+        gaugeRowRaw: "28",
+        availableNeedles: "200",
+        unit: "in",
+        sleeveDirection: "cuff-up",
+        garmentStyle: "pullover",
+      },
+      missesRow,
+    );
+    expect(getCurrentPattern().style.garmentStyle).toBe("pullover");
+    expect(getCurrentPattern().style.frontStyle).toBe("closed");
+    expect(getPatternData().style?.garmentStyle).toBe("pullover");
+
+    syncSidewaysCardiganBuilderToPatternStorage(
+      {
+        selectedSize: "8",
+        chartAudience: "misses",
+        fit: "standard",
+        styleMeasurements: {
+          finishedLength: "25",
+          vNeckDepth: "8",
+          neckOpeningWidth: "7.5",
+          finishedUpperArm: "14.5",
+          sleeveLength: "17",
+          wrist: "7.25",
+        },
+        gaugeStitchRaw: "20",
+        gaugeRowRaw: "28",
+        availableNeedles: "200",
+        unit: "in",
+        sleeveDirection: "cuff-up",
+        garmentStyle: "cardigan",
+      },
+      missesRow,
+    );
+    expect(getCurrentPattern().style.garmentStyle).toBe("cardigan");
+    expect(getCurrentPattern().style.frontStyle).toBe("open");
+  });
+
   it("saves and restores all three sleeve directions", () => {
     for (const sleeveDirection of SIDEWAYS_CARDIGAN_SLEEVE_DIRECTIONS) {
       syncSidewaysCardiganBuilderToPatternStorage(
@@ -168,6 +221,7 @@ describe("sideways cardigan builder-to-workspace flow", () => {
       sleeveDirection: "sideways",
     });
     expect(summary.rows.map((row) => row.term)).toEqual([
+      "Garment style",
       "Garment length",
       "V-neck depth",
       "Armhole slit depth",
@@ -176,8 +230,10 @@ describe("sideways cardigan builder-to-workspace flow", () => {
       "Actual finished bust",
       "Neck-opening width",
       "Each shoulder section",
+      "Total bust rows",
       "Sleeve direction",
     ]);
+    expect(summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
     expect(summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
     expect(summary.rows.find((row) => row.term === "Garment length")?.def).toMatch(/stitches/);
     expect(JSON.stringify(summary)).not.toMatch(/0\.166666/);

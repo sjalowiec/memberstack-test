@@ -16,6 +16,7 @@ import {
 import {
   hasAuthoritativeSidewaysCardiganConstruction,
   parseSidewaysCardiganSleeveDirection,
+  resolveSidewaysCardiganGarmentStyle,
 } from "./sidewaysCardiganConstructionIdentity";
 import {
   buildSidewaysCardiganWorkspaceSummary,
@@ -84,12 +85,12 @@ export function loadSidewaysCardiganWorkspaceView(
 ): SidewaysCardiganWorkspaceView {
   if (!hasAuthoritativeSidewaysCardiganConstruction(section(pattern.style))) {
     const diagnostic =
-      "[DEV] Working draft is not an authored Sideways Cardigan (missing construction / constructionAuthored).";
+      "[DEV] Working draft is not an authored sideways-cardigan construction (missing construction / constructionAuthored).";
     return {
       ok: false,
       reason: "missing-construction",
       message: withDevDiagnostic(
-        "Complete the Sideways Cardigan builder to see the pattern numbers.",
+        "Complete the Sideways V-Neck Sweater builder to see the pattern numbers.",
         diagnostic,
       ),
       diagnostic,
@@ -104,7 +105,7 @@ export function loadSidewaysCardiganWorkspaceView(
       ok: false,
       reason: "incomplete",
       message: withDevDiagnostic(
-        "This Sideways Cardigan is missing measurements needed to calculate the body.",
+        "This Sideways V-Neck Sweater is missing measurements needed to calculate the body.",
         diagnostic,
       ),
       diagnostic,
@@ -123,12 +124,14 @@ export function loadSidewaysCardiganWorkspaceView(
     };
   }
 
-  const body = buildSidewaysCardiganBodyInstructions(inspected.input);
+  const garmentStyle = resolveSidewaysCardiganGarmentStyle(section(pattern.style));
+  const body = buildSidewaysCardiganBodyInstructions(inspected.input, garmentStyle);
   const summary = buildSidewaysCardiganWorkspaceSummary({
     calc: result.calc,
     input: inspected.input,
     sleeveDirection:
       parseSidewaysCardiganSleeveDirection(section(pattern.style).sleeveDirection) ?? undefined,
+    garmentStyle,
   });
 
   if (!body.ok) {

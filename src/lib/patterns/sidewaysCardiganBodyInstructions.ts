@@ -16,6 +16,13 @@ import {
   type SidewaysCardiganBodyCalcError,
   type SidewaysCardiganBodyCalcInput,
 } from "./sidewaysCardiganBodyCalc";
+import {
+  parseSidewaysCardiganGarmentStyle,
+  SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
+  SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
+  type SidewaysCardiganGarmentStyle,
+} from "./sidewaysCardiganConstructionIdentity";
+import { formatRowsCount } from "./sidewaysCardiganDisplayFormat";
 
 export const SIDEWAYS_CARDIGAN_NON_POSITIVE_STARTING_STITCHES =
   "non-positive-starting-stitches";
@@ -93,6 +100,7 @@ export type SidewaysCardiganSectionRowCounts = {
 };
 
 export type SidewaysCardiganBodyInstructions = {
+  garmentStyle: SidewaysCardiganGarmentStyle;
   calc: SidewaysCardiganBodyCalc;
   startingFrontStitches: number;
   backNeckLiveStitches: number;
@@ -106,6 +114,12 @@ export type SidewaysCardiganBodyInstructions = {
 export type SidewaysCardiganBodyInstructionResult =
   | { ok: true; instructions: SidewaysCardiganBodyInstructions }
   | { ok: false; error: SidewaysCardiganBodyInstructionError };
+
+export function knittedArmholeSlitCount(
+  garmentStyle: SidewaysCardiganGarmentStyle,
+): 1 | 2 {
+  return garmentStyle === "pullover" ? 1 : 2;
+}
 
 function stitchesAfterApplyingDeltas(
   startStitches: number,
@@ -152,9 +166,315 @@ function step(args: {
   };
 }
 
+type StepPusher = (
+  partial: Omit<SidewaysCardiganBodyInstructionStep, "rowCounterStart" | "rowCounterEnd">,
+) => void;
+
+function createStepPusher(steps: SidewaysCardiganBodyInstructionStep[]): {
+  push: StepPusher;
+  live: () => number;
+} {
+  let rc = 0;
+  let live = 0;
+  return {
+    live: () => live,
+    push: (partial) => {
+      const built = step({ ...partial, rowCounterStart: rc });
+      steps.push(built);
+      rc = built.rowCounterEnd;
+      live = built.stitchesAfter;
+    },
+  };
+}
+
+function cardiganLandmarks(
+  sectionRowCounts: SidewaysCardiganSectionRowCounts,
+): SidewaysCardiganRowLandmarks {
+  const endFirstVShaping = sectionRowCounts.firstVNeck;
+  const firstSideSeam = endFirstVShaping + sectionRowCounts.firstFrontShoulder;
+  const firstBackNeckEdge = firstSideSeam + sectionRowCounts.firstBackShoulder;
+  const secondBackNeckEdge = firstBackNeckEdge + sectionRowCounts.backNeckOpening;
+  const secondSideSeam = secondBackNeckEdge + sectionRowCounts.secondBackShoulder;
+  const startFinalVShaping = secondSideSeam + sectionRowCounts.secondFrontShoulder;
+  const finalBindOff = startFinalVShaping + sectionRowCounts.secondVNeck;
+  return {
+    endFirstVShaping,
+    firstSideSeam,
+    firstBackNeckEdge,
+    secondBackNeckEdge,
+    secondSideSeam,
+    startFinalVShaping,
+    finalBindOff,
+  };
+}
+
+function pulloverLandmarks(
+  sectionRowCounts: SidewaysCardiganSectionRowCounts,
+): SidewaysCardiganRowLandmarks {
+  const startFinalVShaping = sectionRowCounts.firstFrontShoulder;
+  const endFirstVShaping = startFinalVShaping + sectionRowCounts.firstVNeck;
+  const firstSideSeam = 0;
+  const secondSideSeam =
+    endFirstVShaping + sectionRowCounts.secondVNeck + sectionRowCounts.secondFrontShoulder;
+  const firstBackNeckEdge = secondSideSeam + sectionRowCounts.firstBackShoulder;
+  const secondBackNeckEdge = firstBackNeckEdge + sectionRowCounts.backNeckOpening;
+  const finalBindOff = secondBackNeckEdge + sectionRowCounts.secondBackShoulder;
+  return {
+    endFirstVShaping,
+    firstSideSeam,
+    firstBackNeckEdge,
+    secondBackNeckEdge,
+    secondSideSeam,
+    startFinalVShaping,
+    finalBindOff,
+  };
+}
+
+function buildCardiganSteps(args: {
+  calc: SidewaysCardiganBodyCalc;
+  startingFrontStitches: number;
+  fullWidth: number;
+  neckRows: number;
+  firstV: SidewaysCardiganVNeckSchedule;
+  secondV: SidewaysCardiganVNeckSchedule;
+  backNeckLiveStitches: number;
+}): SidewaysCardiganBodyInstructionStep[] {
+  const { calc, startingFrontStitches, fullWidth, neckRows, firstV, secondV, backNeckLiveStitches } =
+    args;
+  const shoulder = calc.shoulders.firstFrontRows;
+  const armhole = calc.armholeDepthStitches;
+  const backNeck = calc.backNeckDepthStitches;
+  const steps: SidewaysCardiganBodyInstructionStep[] = [];
+  const { push, live } = createStepPusher(steps);
+
+  push({
+    id: "cast-on-starting-front",
+    order: 1,
+    summary: `Cast on ${startingFrontStitches} stitches (center front)`,
+    rows: 0,
+    stitchesBefore: 0,
+    stitchesAfter: startingFrontStitches,
+  });
+  push({
+    id: "first-v-neck",
+    order: 2,
+    summary: `First V-neck: add ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${startingFrontStitches} → ${fullWidth})`,
+    rows: neckRows,
+    stitchesBefore: live(),
+    stitchesAfter: firstV.endStitches,
+  });
+  push({
+    id: "first-front-shoulder",
+    order: 3,
+    summary: `Knit ${shoulder} rows (first-front shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "first-armhole-slit",
+    order: 4,
+    summary: `First side seam: bind off ${armhole} stitches, cast on ${armhole} stitches (knitted armhole slit)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "first-back-shoulder",
+    order: 5,
+    summary: `Knit ${shoulder} rows (first-back shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "bind-off-back-neck",
+    order: 6,
+    summary: `Bind off ${backNeck} stitches (straight back neck)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: backNeckLiveStitches,
+  });
+  push({
+    id: "back-neck-opening",
+    order: 7,
+    summary: `Knit ${neckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
+    rows: neckRows,
+    stitchesBefore: live(),
+    stitchesAfter: backNeckLiveStitches,
+  });
+  push({
+    id: "cast-on-back-neck",
+    order: 8,
+    summary: `Cast on ${backNeck} stitches (straight back neck)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "second-back-shoulder",
+    order: 9,
+    summary: `Knit ${shoulder} rows (second-back shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "second-armhole-slit",
+    order: 10,
+    summary: `Second side seam: bind off ${armhole} stitches, cast on ${armhole} stitches (knitted armhole slit)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "second-front-shoulder",
+    order: 11,
+    summary: `Knit ${shoulder} rows (second-front shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "second-v-neck",
+    order: 12,
+    summary: `Second V-neck: remove ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${fullWidth} → ${startingFrontStitches})`,
+    rows: neckRows,
+    stitchesBefore: live(),
+    stitchesAfter: secondV.endStitches,
+  });
+  push({
+    id: "bind-off-starting-front",
+    order: 13,
+    summary: `Bind off ${startingFrontStitches} stitches (center front)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: 0,
+  });
+  return steps;
+}
+
+function buildPulloverSteps(args: {
+  calc: SidewaysCardiganBodyCalc;
+  vPointStitches: number;
+  fullWidth: number;
+  neckRows: number;
+  firstV: SidewaysCardiganVNeckSchedule;
+  secondV: SidewaysCardiganVNeckSchedule;
+  backNeckLiveStitches: number;
+}): SidewaysCardiganBodyInstructionStep[] {
+  const { calc, vPointStitches, fullWidth, neckRows, firstV, secondV, backNeckLiveStitches } = args;
+  const shoulder = calc.shoulders.firstFrontRows;
+  const armhole = calc.armholeDepthStitches;
+  const backNeck = calc.backNeckDepthStitches;
+  const steps: SidewaysCardiganBodyInstructionStep[] = [];
+  const { push, live } = createStepPusher(steps);
+
+  push({
+    id: "cast-on-side-seam",
+    order: 1,
+    summary: `Cast on ${fullWidth} stitches (side seam)`,
+    rows: 0,
+    stitchesBefore: 0,
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "first-front-shoulder",
+    order: 2,
+    summary: `Knit ${shoulder} rows (first-front shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "first-v-neck",
+    order: 3,
+    summary: `First V-neck: remove ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${fullWidth} → ${vPointStitches}), finishing at the center-front V point`,
+    rows: neckRows,
+    stitchesBefore: live(),
+    stitchesAfter: firstV.endStitches,
+  });
+  push({
+    id: "second-v-neck",
+    order: 4,
+    summary: `Second V-neck: add ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${vPointStitches} → ${fullWidth})`,
+    rows: neckRows,
+    stitchesBefore: live(),
+    stitchesAfter: secondV.endStitches,
+  });
+  push({
+    id: "second-front-shoulder",
+    order: 5,
+    summary: `Knit ${shoulder} rows (second-front shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "knitted-armhole-slit",
+    order: 6,
+    summary: `Opposite side seam: bind off ${armhole} stitches, cast on ${armhole} stitches (knitted armhole slit)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "first-back-shoulder",
+    order: 7,
+    summary: `Knit ${shoulder} rows (first-back shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "bind-off-back-neck",
+    order: 8,
+    summary: `Bind off ${backNeck} stitches (straight back neck)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: backNeckLiveStitches,
+  });
+  push({
+    id: "back-neck-opening",
+    order: 9,
+    summary: `Knit ${neckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
+    rows: neckRows,
+    stitchesBefore: live(),
+    stitchesAfter: backNeckLiveStitches,
+  });
+  push({
+    id: "cast-on-back-neck",
+    order: 10,
+    summary: `Cast on ${backNeck} stitches (straight back neck)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "second-back-shoulder",
+    order: 11,
+    summary: `Knit ${shoulder} rows (second-back shoulder, ${fullWidth} stitches)`,
+    rows: shoulder,
+    stitchesBefore: live(),
+    stitchesAfter: fullWidth,
+  });
+  push({
+    id: "bind-off-side-seam",
+    order: 12,
+    summary: `Bind off ${fullWidth} stitches (original side seam)`,
+    rows: 0,
+    stitchesBefore: live(),
+    stitchesAfter: 0,
+  });
+  return steps;
+}
+
 export function buildSidewaysCardiganBodyInstructions(
   input: SidewaysCardiganBodyCalcInput,
+  garmentStyle: SidewaysCardiganGarmentStyle | unknown = SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
 ): SidewaysCardiganBodyInstructionResult {
+  const resolvedStyle =
+    parseSidewaysCardiganGarmentStyle(garmentStyle) ?? SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT;
   const calcResult = calculateSidewaysCardiganBody(input);
   if (!calcResult.ok) return calcResult;
 
@@ -217,20 +537,34 @@ export function buildSidewaysCardiganBodyInstructions(
   const increaseDeltas = distributeTotalAcrossRows(calc.vNeckDepthStitches, neckRows);
   const decreaseDeltas = [...increaseDeltas].reverse();
   const fullWidth = calc.garmentLengthStitches;
-  const firstV = buildVNeckSchedule({
-    startStitches: startingFrontStitches,
-    endStitches: fullWidth,
-    deltas: increaseDeltas,
-    sign: 1,
-  });
-  const secondV = buildVNeckSchedule({
-    startStitches: fullWidth,
-    endStitches: startingFrontStitches,
-    deltas: decreaseDeltas,
-    sign: -1,
-  });
+  const isPullover = resolvedStyle === "pullover";
+  const firstV = isPullover
+    ? buildVNeckSchedule({
+        startStitches: fullWidth,
+        endStitches: startingFrontStitches,
+        deltas: decreaseDeltas,
+        sign: -1,
+      })
+    : buildVNeckSchedule({
+        startStitches: startingFrontStitches,
+        endStitches: fullWidth,
+        deltas: increaseDeltas,
+        sign: 1,
+      });
+  const secondV = isPullover
+    ? buildVNeckSchedule({
+        startStitches: startingFrontStitches,
+        endStitches: fullWidth,
+        deltas: increaseDeltas,
+        sign: 1,
+      })
+    : buildVNeckSchedule({
+        startStitches: fullWidth,
+        endStitches: startingFrontStitches,
+        deltas: decreaseDeltas,
+        sign: -1,
+      });
 
-  const shoulder = calc.shoulders.firstFrontRows;
   const seq = calc.bodyRowSequence;
   const sectionRowCounts: SidewaysCardiganSectionRowCounts = {
     firstVNeck: seq.firstFrontVNeckShapingRows,
@@ -242,148 +576,34 @@ export function buildSidewaysCardiganBodyInstructions(
     secondVNeck: seq.secondFrontVNeckShapingRows,
   };
 
-  const endFirstVShaping = sectionRowCounts.firstVNeck;
-  const firstSideSeam = endFirstVShaping + sectionRowCounts.firstFrontShoulder;
-  const firstBackNeckEdge = firstSideSeam + sectionRowCounts.firstBackShoulder;
-  const secondBackNeckEdge = firstBackNeckEdge + sectionRowCounts.backNeckOpening;
-  const secondSideSeam = secondBackNeckEdge + sectionRowCounts.secondBackShoulder;
-  const startFinalVShaping = secondSideSeam + sectionRowCounts.secondFrontShoulder;
-  const finalBindOff = startFinalVShaping + sectionRowCounts.secondVNeck;
-
-  const landmarks: SidewaysCardiganRowLandmarks = {
-    endFirstVShaping,
-    firstSideSeam,
-    firstBackNeckEdge,
-    secondBackNeckEdge,
-    secondSideSeam,
-    startFinalVShaping,
-    finalBindOff,
-  };
-
+  const landmarks = isPullover
+    ? pulloverLandmarks(sectionRowCounts)
+    : cardiganLandmarks(sectionRowCounts);
   const backNeckLiveStitches = fullWidth - calc.backNeckDepthStitches;
-  const armhole = calc.armholeDepthStitches;
-  const backNeck = calc.backNeckDepthStitches;
-
-  const steps: SidewaysCardiganBodyInstructionStep[] = [];
-  let rc = 0;
-  let live = 0;
-  const push = (
-    partial: Omit<SidewaysCardiganBodyInstructionStep, "rowCounterStart" | "rowCounterEnd">,
-  ): void => {
-    const built = step({ ...partial, rowCounterStart: rc });
-    steps.push(built);
-    rc = built.rowCounterEnd;
-    live = built.stitchesAfter;
-  };
-
-  push({
-    id: "cast-on-starting-front",
-    order: 1,
-    summary: `Cast on ${startingFrontStitches} stitches`,
-    rows: 0,
-    stitchesBefore: 0,
-    stitchesAfter: startingFrontStitches,
-  });
-  push({
-    id: "first-v-neck",
-    order: 2,
-    summary: `First V-neck: add ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${startingFrontStitches} → ${fullWidth})`,
-    rows: neckRows,
-    stitchesBefore: live,
-    stitchesAfter: firstV.endStitches,
-  });
-  push({
-    id: "first-front-shoulder",
-    order: 3,
-    summary: `Knit ${shoulder} rows (first-front shoulder, ${fullWidth} stitches)`,
-    rows: shoulder,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "first-armhole-slit",
-    order: 4,
-    summary: `First side seam: bind off ${armhole} stitches, cast on ${armhole} stitches`,
-    rows: 0,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "first-back-shoulder",
-    order: 5,
-    summary: `Knit ${shoulder} rows (first-back shoulder, ${fullWidth} stitches)`,
-    rows: shoulder,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "bind-off-back-neck",
-    order: 6,
-    summary: `Bind off ${backNeck} stitches (straight back neck)`,
-    rows: 0,
-    stitchesBefore: live,
-    stitchesAfter: backNeckLiveStitches,
-  });
-  push({
-    id: "back-neck-opening",
-    order: 7,
-    summary: `Knit ${neckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
-    rows: neckRows,
-    stitchesBefore: live,
-    stitchesAfter: backNeckLiveStitches,
-  });
-  push({
-    id: "cast-on-back-neck",
-    order: 8,
-    summary: `Cast on ${backNeck} stitches (straight back neck)`,
-    rows: 0,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "second-back-shoulder",
-    order: 9,
-    summary: `Knit ${shoulder} rows (second-back shoulder, ${fullWidth} stitches)`,
-    rows: shoulder,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "second-armhole-slit",
-    order: 10,
-    summary: `Second side seam: bind off ${armhole} stitches, cast on ${armhole} stitches`,
-    rows: 0,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "second-front-shoulder",
-    order: 11,
-    summary: `Knit ${shoulder} rows (second-front shoulder, ${fullWidth} stitches)`,
-    rows: shoulder,
-    stitchesBefore: live,
-    stitchesAfter: fullWidth,
-  });
-  push({
-    id: "second-v-neck",
-    order: 12,
-    summary: `Second V-neck: remove ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${fullWidth} → ${startingFrontStitches})`,
-    rows: neckRows,
-    stitchesBefore: live,
-    stitchesAfter: secondV.endStitches,
-  });
-  push({
-    id: "bind-off-starting-front",
-    order: 13,
-    summary: `Bind off ${startingFrontStitches} stitches`,
-    rows: 0,
-    stitchesBefore: live,
-    stitchesAfter: 0,
-  });
+  const steps = isPullover
+    ? buildPulloverSteps({
+        calc,
+        vPointStitches: startingFrontStitches,
+        fullWidth,
+        neckRows,
+        firstV,
+        secondV,
+        backNeckLiveStitches,
+      })
+    : buildCardiganSteps({
+        calc,
+        startingFrontStitches,
+        fullWidth,
+        neckRows,
+        firstV,
+        secondV,
+        backNeckLiveStitches,
+      });
 
   return {
     ok: true,
     instructions: {
+      garmentStyle: resolvedStyle,
       calc,
       startingFrontStitches,
       backNeckLiveStitches,
@@ -399,40 +619,66 @@ export function buildSidewaysCardiganBodyInstructions(
 export function renderSidewaysCardiganBodySequenceHtml(
   instructions: SidewaysCardiganBodyInstructions,
 ): string {
+  const isPullover = instructions.garmentStyle === "pullover";
+  const styleLabel = SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[instructions.garmentStyle];
+  const intro = isPullover
+    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem toward the underarm, leaving the calculated armhole depth open.`
+    : `${styleLabel}: starts at center front and has two knitted armhole slits.`;
   const items = instructions.steps
     .map((s) => `<li>${escapeHtml(s.summary)}</li>`)
     .join("");
-  const marks = [
-    ["End first V shaping", instructions.landmarks.endFirstVShaping],
-    ["First side seam", instructions.landmarks.firstSideSeam],
-    ["First back-neck edge", instructions.landmarks.firstBackNeckEdge],
-    ["Second back-neck edge", instructions.landmarks.secondBackNeckEdge],
-    ["Second side seam", instructions.landmarks.secondSideSeam],
-    ["Start final V shaping", instructions.landmarks.startFinalVShaping],
-    ["Final bind-off", instructions.landmarks.finalBindOff],
-  ];
+  const marks = isPullover
+    ? [
+        ["Start (side seam)", instructions.landmarks.firstSideSeam],
+        ["Start first V shaping", instructions.landmarks.startFinalVShaping],
+        ["Center-front V point", instructions.landmarks.endFirstVShaping],
+        ["Knitted armhole slit", instructions.landmarks.secondSideSeam],
+        ["First back-neck edge", instructions.landmarks.firstBackNeckEdge],
+        ["Second back-neck edge", instructions.landmarks.secondBackNeckEdge],
+        ["Final bind-off (original side seam)", instructions.landmarks.finalBindOff],
+      ]
+    : [
+        ["End first V shaping", instructions.landmarks.endFirstVShaping],
+        ["First side seam", instructions.landmarks.firstSideSeam],
+        ["First back-neck edge", instructions.landmarks.firstBackNeckEdge],
+        ["Second back-neck edge", instructions.landmarks.secondBackNeckEdge],
+        ["Second side seam", instructions.landmarks.secondSideSeam],
+        ["Start final V shaping", instructions.landmarks.startFinalVShaping],
+        ["Final bind-off", instructions.landmarks.finalBindOff],
+      ];
   const landmarkItems = marks
     .map(
       ([label, rc]) =>
         `<div class="print-summary-dl__pair"><dt>${escapeHtml(String(label))}</dt><dd>RC ${rc}</dd></div>`,
     )
     .join("");
-  const sections = [
-    ["First V-neck", instructions.sectionRowCounts.firstVNeck],
-    ["First-front shoulder", instructions.sectionRowCounts.firstFrontShoulder],
-    ["First-back shoulder", instructions.sectionRowCounts.firstBackShoulder],
-    ["Back-neck opening", instructions.sectionRowCounts.backNeckOpening],
-    ["Second-back shoulder", instructions.sectionRowCounts.secondBackShoulder],
-    ["Second-front shoulder", instructions.sectionRowCounts.secondFrontShoulder],
-    ["Second V-neck", instructions.sectionRowCounts.secondVNeck],
-  ];
+  const sections = isPullover
+    ? [
+        ["First-front shoulder", instructions.sectionRowCounts.firstFrontShoulder],
+        ["First V-neck", instructions.sectionRowCounts.firstVNeck],
+        ["Second V-neck", instructions.sectionRowCounts.secondVNeck],
+        ["Second-front shoulder", instructions.sectionRowCounts.secondFrontShoulder],
+        ["First-back shoulder", instructions.sectionRowCounts.firstBackShoulder],
+        ["Back-neck opening", instructions.sectionRowCounts.backNeckOpening],
+        ["Second-back shoulder", instructions.sectionRowCounts.secondBackShoulder],
+      ]
+    : [
+        ["First V-neck", instructions.sectionRowCounts.firstVNeck],
+        ["First-front shoulder", instructions.sectionRowCounts.firstFrontShoulder],
+        ["First-back shoulder", instructions.sectionRowCounts.firstBackShoulder],
+        ["Back-neck opening", instructions.sectionRowCounts.backNeckOpening],
+        ["Second-back shoulder", instructions.sectionRowCounts.secondBackShoulder],
+        ["Second-front shoulder", instructions.sectionRowCounts.secondFrontShoulder],
+        ["Second V-neck", instructions.sectionRowCounts.secondVNeck],
+      ];
   const sectionItems = sections
     .map(
       ([label, rows]) =>
         `<div class="print-summary-dl__pair"><dt>${escapeHtml(String(label))}</dt><dd>${rows} rows</dd></div>`,
     )
     .join("");
-  return `<ol class="sideways-body-sequence">${items}</ol><dl class="print-summary-dl print-summary-dl--inline sideways-body-landmarks">${landmarkItems}</dl><dl class="print-summary-dl print-summary-dl--inline sideways-body-sections">${sectionItems}</dl>`;
+  const totalBust = formatRowsCount(instructions.calc.bust.actualTotalBustRows);
+  return `<p class="sg-fit-size-copy sideways-body-style-note">${escapeHtml(intro)}</p><ol class="sideways-body-sequence">${items}</ol><p class="sg-fit-size-copy">Total bust rows: ${escapeHtml(totalBust)}.</p><dl class="print-summary-dl print-summary-dl--inline sideways-body-landmarks">${landmarkItems}</dl><dl class="print-summary-dl print-summary-dl--inline sideways-body-sections">${sectionItems}</dl>`;
 }
 
 function escapeHtml(s: string): string {

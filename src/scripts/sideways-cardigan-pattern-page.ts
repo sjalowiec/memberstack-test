@@ -44,8 +44,8 @@ function renderView(): void {
     const detail = error instanceof Error ? error.message : String(error);
     showDiagnostic(
       import.meta.env.DEV
-        ? `[DEV] Sideways Cardigan workspace failed to load: ${detail}`
-        : "This Sideways Cardigan could not be loaded from the saved draft.",
+        ? `[DEV] Sideways V-Neck Sweater workspace failed to load: ${detail}`
+        : "This Sideways V-Neck Sweater could not be loaded from the saved draft.",
     );
     return;
   }
@@ -97,8 +97,8 @@ function boot(): void {
       missing.hidden = false;
       const detail = error instanceof Error ? error.message : String(error);
       missing.textContent = import.meta.env.DEV
-        ? `[DEV] Sideways Cardigan workspace failed to load: ${detail}`
-        : "This Sideways Cardigan could not be loaded from the saved draft.";
+        ? `[DEV] Sideways V-Neck Sweater workspace failed to load: ${detail}`
+        : "This Sideways V-Neck Sweater could not be loaded from the saved draft.";
     }
   }
 }

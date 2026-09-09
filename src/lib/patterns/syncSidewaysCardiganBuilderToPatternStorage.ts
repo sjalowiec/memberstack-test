@@ -16,9 +16,12 @@ import {
 import { resolveExpressAvailableNeedles } from "./sleevelessExpressAvailableNeedles";
 import { rawSwatchToPerInch } from "./syncExpressWizardToPatternStorage";
 import {
+  parseSidewaysCardiganGarmentStyle,
   parseSidewaysCardiganSleeveDirection,
+  resolveSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
   withSidewaysCardiganConstructionAuthored,
+  type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
@@ -53,6 +56,7 @@ export type SidewaysCardiganBuilderValues = {
   availableNeedles: string;
   unit: "in" | "cm";
   sleeveDirection?: SidewaysCardiganSleeveDirection;
+  garmentStyle?: SidewaysCardiganGarmentStyle;
 };
 
 export function syncSidewaysCardiganBuilderToPatternStorage(
@@ -73,17 +77,22 @@ export function syncSidewaysCardiganBuilderToPatternStorage(
   const sleeveLength = parsePositiveInchesField(style.sleeveLength);
   const wrist = parsePositiveInchesField(style.wrist);
 
+  const previousStyle = {
+    ...section(getCurrentPattern().style),
+    ...section(getPatternData().style),
+    recipientCategory: values.chartAudience,
+  };
   const sleeveDirection =
     parseSidewaysCardiganSleeveDirection(values.sleeveDirection) ??
     SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT;
+  const garmentStyle =
+    parseSidewaysCardiganGarmentStyle(values.garmentStyle) ??
+    resolveSidewaysCardiganGarmentStyle(previousStyle);
 
   const authoredStyle = withSidewaysCardiganConstructionAuthored(
-    {
-      ...section(getCurrentPattern().style),
-      ...section(getPatternData().style),
-      recipientCategory: values.chartAudience,
-    },
+    previousStyle,
     sleeveDirection,
+    garmentStyle,
   );
 
   const prevOverrides = section(section(getCurrentPattern().fit).cbMeasurementOverrides);

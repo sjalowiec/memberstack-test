@@ -43,10 +43,54 @@ export function parseSidewaysCardiganSleeveDirection(
     : null;
 }
 
+/** Shared Drop Shoulder / Sleeveless garment-style storage: cardigan/pullover + open/closed. */
+export const SIDEWAYS_CARDIGAN_GARMENT_STYLES = ["cardigan", "pullover"] as const;
+export type SidewaysCardiganGarmentStyle =
+  (typeof SIDEWAYS_CARDIGAN_GARMENT_STYLES)[number];
+
+export const SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT: SidewaysCardiganGarmentStyle =
+  "cardigan";
+
+export const SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS: Record<
+  SidewaysCardiganGarmentStyle,
+  string
+> = {
+  cardigan: "Cardigan",
+  pullover: "Pullover",
+};
+
+export function parseSidewaysCardiganGarmentStyle(
+  value: unknown,
+): SidewaysCardiganGarmentStyle | null {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (raw === "cardigan" || raw === "open") return "cardigan";
+  if (raw === "pullover" || raw === "closed") return "pullover";
+  return null;
+}
+
+export function frontStyleForSidewaysCardiganGarmentStyle(
+  garmentStyle: SidewaysCardiganGarmentStyle,
+): "open" | "closed" {
+  return garmentStyle === "cardigan" ? "open" : "closed";
+}
+
+export function resolveSidewaysCardiganGarmentStyle(
+  style: Record<string, unknown> | undefined,
+): SidewaysCardiganGarmentStyle {
+  const st = section(style);
+  return (
+    parseSidewaysCardiganGarmentStyle(st.garmentStyle) ??
+    parseSidewaysCardiganGarmentStyle(st.frontStyle) ??
+    SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT
+  );
+}
+
 export const SIDEWAYS_CARDIGAN_STYLE_KEYS = [
   "construction",
   SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY,
   "sleeveDirection",
+  "garmentStyle",
+  "frontStyle",
 ] as const;
 
 function section(obj: unknown): Record<string, unknown> {
@@ -68,13 +112,17 @@ export function readSidewaysCardiganBuilderPageConstruction(): string {
 export function withSidewaysCardiganConstructionAuthored(
   style: Record<string, unknown>,
   sleeveDirection: SidewaysCardiganSleeveDirection = SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
 ): Record<string, unknown> {
+  const resolved =
+    parseSidewaysCardiganGarmentStyle(garmentStyle) ??
+    resolveSidewaysCardiganGarmentStyle(style);
   return {
     ...style,
     construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
     [SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY]: SIDEWAYS_CARDIGAN_CONSTRUCTION,
-    garmentStyle: "cardigan",
-    frontStyle: "open",
+    garmentStyle: resolved,
+    frontStyle: frontStyleForSidewaysCardiganGarmentStyle(resolved),
     neckline: "v",
     bodyShape: "straight",
     length: "top",
@@ -114,7 +162,10 @@ export function hasAuthoritativeSidewaysCardiganConstruction(
   return isSidewaysCardiganConstructionFamily(customOverrides);
 }
 
-export function stampSidewaysCardiganWorkingDraftFromPage(): void {
+export function stampSidewaysCardiganWorkingDraftFromPage(overrides?: {
+  sleeveDirection?: SidewaysCardiganSleeveDirection;
+  garmentStyle?: SidewaysCardiganGarmentStyle;
+}): void {
   if (readSidewaysCardiganBuilderPageConstruction() !== SIDEWAYS_CARDIGAN_CONSTRUCTION) return;
   try {
     const previous = {
@@ -122,9 +173,17 @@ export function stampSidewaysCardiganWorkingDraftFromPage(): void {
       ...section(getPatternData().style),
     };
     const sleeveDirection =
+      parseSidewaysCardiganSleeveDirection(overrides?.sleeveDirection) ??
       parseSidewaysCardiganSleeveDirection(previous.sleeveDirection) ??
       SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT;
-    const style = withSidewaysCardiganConstructionAuthored(previous, sleeveDirection);
+    const garmentStyle =
+      parseSidewaysCardiganGarmentStyle(overrides?.garmentStyle) ??
+      resolveSidewaysCardiganGarmentStyle(previous);
+    const style = withSidewaysCardiganConstructionAuthored(
+      previous,
+      sleeveDirection,
+      garmentStyle,
+    );
     saveCurrentPattern({ style });
     savePatternData("style", style);
   } catch {
