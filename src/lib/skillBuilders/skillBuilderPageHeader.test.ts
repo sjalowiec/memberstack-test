@@ -61,6 +61,7 @@ describe("Skill Builder page title icon", () => {
     const shared = [
       "JoiningShoulderSeamsSkillBuilder.astro",
       "EWrapCastOnSkillBuilder.astro",
+      "ShortRowsSkillBuilder.astro",
       "RoundNecklineSkillBuilderLanding.astro",
       "SkillBuilderLayout.astro",
     ];
@@ -78,6 +79,7 @@ describe("Skill Builder page title icon", () => {
     const routeFiles = [
       readPage("join-beautiful-shoulder-seams.astro"),
       readPage("e-wrap-cast-on-basics.astro"),
+      readPage("short-rows.astro"),
       readPage("round-neckline-basics", "index.astro"),
       readPage("round-neckline-basics", "[exercise].astro"),
       readPage("round-necklines-shaped-shoulders", "index.astro"),
