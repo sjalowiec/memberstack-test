@@ -141,6 +141,7 @@ describe("Skill Builders catalog landing", () => {
     );
     expect(memberConst).toContain("/images/skill-builders/join-shoulder-seams.png");
     expect(memberConst).toContain("/images/skill-builders/e-wrap-cast-on.png");
+    expect(memberConst).toContain("/images/skill-builders/short-rows.png");
     expect(memberConst).not.toContain("round-neckline-deep-");
     expect(memberConst).not.toContain("round-neckline-shallow-straight-shoulders");
     expect(freeSection).toContain("Learn to Shape a Round Neckline");
@@ -247,6 +248,7 @@ describe("Skill Builders catalog landing", () => {
     expect(guest).not.toContain("round-neckline-shallow-shaped-shoulders.png");
     expect(guest).not.toContain("join-shoulder-seams.png");
     expect(guest).not.toContain("e-wrap-cast-on.png");
+    expect(guest).not.toContain("short-rows.png");
     expect(catalog).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
     expect(catalog).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
     expect(catalog).toMatch(

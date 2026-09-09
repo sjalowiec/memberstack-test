@@ -93,7 +93,7 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(SHORT_ROWS_WHAT_YOULL_LEARN).toHaveLength(5);
     expect(SHORT_ROWS_PRACTICE_SETUP).toHaveLength(6);
     expect(SHORT_ROWS_PRACTICE_1_STEPS).toHaveLength(9);
-    expect(SHORT_ROWS_PRACTICE_2_STEPS).toHaveLength(9);
+    expect(SHORT_ROWS_PRACTICE_2_STEPS).toHaveLength(11);
     expect(SHORT_ROWS_COMPLETION_OPTIONS).toEqual([
       "Manual wrapping",
       "Automatic wrapping",
@@ -105,6 +105,10 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).toContain("shortRowsIntroParts");
     expect(component).toContain("GlossaryTooltip");
     expect(component).toContain("part.glossaryId");
+    expect(component).toContain('import "../../styles/glossary-tooltip.css"');
+    expect(component).toMatch(
+      /\.sb-practice-page :global\(sup\.glossary-tooltip-icon\) \{[\s\S]*?display: none;/,
+    );
     expect(component).not.toContain("sb-related-card");
     for (const copy of REMOVED_COPY) {
       expect(component).not.toContain(copy);
@@ -137,6 +141,7 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(listing).toContain(SHORT_ROWS_PATH);
     expect(listing).toContain("Short Rows Practice");
     expect(listing).toContain(SHORT_ROWS_CATALOG_SUBTITLE);
+    expect(listing).toContain("/images/skill-builders/short-rows.png");
     expect(listing).toContain("/learn/skill-builders/e-wrap-cast-on-basics");
     expect(listing).toContain("More Skill Builders");
     const comingSoonConst = listing.slice(

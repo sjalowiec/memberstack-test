@@ -60,7 +60,9 @@ export const SHORT_ROWS_PRACTICE_2_LEAD =
   "Use the automatic wrap method shown in the video. The wrap happens because of carriage position: after you knit across, the next needle moved into hold is on the carriage side and wraps automatically.";
 
 export const SHORT_ROWS_PRACTICE_2_STEPS: readonly string[] = [
-  "Continue on the same 24-stitch practice piece.",
+  "Return all held needles to working position.",
+  "Knit 4 rows even to visually separate the two practice sections.",
+  "Begin the automatic-wrapping exercise with all 24 stitches working.",
   "Slow down and check where the carriage and working yarn are before you move the next needle into hold.",
   "Opposite the carriage, place 2 needles into holding position — one fewer than the 3-needle group from Practice 1.",
   "Knit across. The carriage is now on the same side as those held needles.",

@@ -71,8 +71,13 @@ describe("Short Rows Practice Skill Builder", () => {
     expect(SHORT_ROWS_PRACTICE_SETUP).toEqual(builder.practiceSetup);
     expect(builder.practice1Steps).toHaveLength(9);
     expect(SHORT_ROWS_PRACTICE_1_STEPS).toEqual(builder.practice1Steps);
-    expect(builder.practice2Steps).toHaveLength(9);
+    expect(builder.practice2Steps).toHaveLength(11);
     expect(SHORT_ROWS_PRACTICE_2_STEPS).toEqual(builder.practice2Steps);
+    expect(builder.practice2Steps.slice(0, 3)).toEqual([
+      "Return all held needles to working position.",
+      "Knit 4 rows even to visually separate the two practice sections.",
+      "Begin the automatic-wrapping exercise with all 24 stitches working.",
+    ]);
     expect(builder.sueTip).toBe(
       "The secret to automatic wrapping is carriage position. Slow down and check where your carriage and working yarn are before moving the next needle into hold.",
     );
@@ -105,6 +110,10 @@ describe("Short Rows Practice Skill Builder", () => {
 
   it("keeps automatic wrapping tied to carriage position and the next needle moved into hold", () => {
     const practice2 = [SHORT_ROWS_PRACTICE_2_LEAD, ...SHORT_ROWS_PRACTICE_2_STEPS].join(" ");
+    expect(SHORT_ROWS_PRACTICE_2_STEPS[0]).toMatch(/working position/i);
+    expect(SHORT_ROWS_PRACTICE_2_STEPS[1]).toMatch(/knit 4 rows even/i);
+    expect(SHORT_ROWS_PRACTICE_2_STEPS[2]).toMatch(/all 24 stitches working/i);
+    expect(practice2).not.toMatch(/continue on the same 24-stitch practice piece/i);
     expect(practice2).toMatch(/carriage side/i);
     expect(practice2).toMatch(/one more needle into hold/i);
     expect(practice2).toMatch(/one fewer than the 3-needle group/i);
