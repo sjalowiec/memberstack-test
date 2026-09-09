@@ -28,7 +28,8 @@ const REMOVED_COPY = [
   "What You're Practicing",
   "Print Worksheet",
   "toolPrintTitle",
-  "PrintButton",
+  "<PrintButton",
+  "kbm-print-button",
   "data-sb-diagram",
   "SkillBuilderGaugeInput",
   "SkillBuilderDiagram",
@@ -82,8 +83,8 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).toContain("data-sb-completion");
     expect(component).toContain("builder.completionPrompt");
     expect(component).toContain("builder.completionOptions");
-    expect(component).toContain('href="/learn/skill-builders">Skill Builders</a>');
-    expect(component).toContain('href="/learn/skill-builders">Back to Skill Builders</a>');
+    expect(component).toContain('href="/learn/skill-builders" data-sb-print-hide>Skill Builders</a>');
+    expect(component).toContain('href="/learn/skill-builders" data-sb-print-hide>Back to Skill Builders</a>');
     expect(component).toContain("GatedVimeoEmbed");
     expect(component).toContain("video.vimeoId");
     expect(component).toContain("data-sb-video-content-id={String(video.contentId)}");
@@ -167,5 +168,32 @@ describe("Short Rows Practice Skill Builder pages", () => {
       listing.indexOf("<Layout"),
     );
     expect(comingSoonConst).not.toContain("Short Rows Practice");
+  });
+
+  it("adds a reusable Print Practice control without tools print chrome", () => {
+    expect(component).toContain("SkillBuilderPrintButton");
+    expect(component).toContain("sb-card__heading");
+    expect(component).toContain("data-sb-print-root");
+    expect(component).toContain("data-sb-print-hide");
+    expect(component).toContain('ariaLabel={`Print ${builder.title}`}');
+    expect(component).toMatch(
+      /Practice Setup[\s\S]*SkillBuilderPrintButton[\s\S]*practiceSetup/,
+    );
+    expect(component).toMatch(
+      /data-sb-video-content-id[\s\S]*data-sb-print-hide/,
+    );
+    expect(component).toMatch(/data-sb-completion[\s\S]*data-sb-print-hide/);
+    expect(component).not.toContain("Print Worksheet");
+    expect(component).not.toContain("<PrintButton");
+    expect(component).not.toContain("kbm-print-button");
+    expect(component).not.toContain("toolPrintTitle");
+    expect(page).not.toContain("<PrintButton");
+    expect(page).not.toContain("toolPrintTitle");
+    expect(
+      readFileSync(join(componentsDir, "EWrapCastOnSkillBuilder.astro"), "utf8"),
+    ).not.toContain("SkillBuilderPrintButton");
+    expect(
+      readFileSync(join(componentsDir, "JoiningShoulderSeamsSkillBuilder.astro"), "utf8"),
+    ).not.toContain("SkillBuilderPrintButton");
   });
 });
