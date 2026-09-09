@@ -1,0 +1,65 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
+import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+
+import "../../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+---
+
+<Layout
+  title="Sideways Cardigan Pattern | Knit it Now"
+  description="Sideways-knit V-neck cardigan pattern workspace (body calculations)."
+  patternWorkspace={true}
+>
+  <main
+    class="wizard-page sleeveless-pattern-page pattern-app-shell sideways-cardigan-pattern-page"
+    data-express-construction="sideways-cardigan"
+  >
+    <div class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <PatternPhoneWorkspaceNotice />
+        <header class="pattern-header page-header">
+          <div class="pattern-header__title-row">
+            <h1 class="pattern-title">Sideways Cardigan</h1>
+            <PatternBuilderMyPatternsLink />
+          </div>
+          <p class="pattern-subtext">
+            Body calculations for a one-piece sideways V-neck cardigan. Written instructions,
+            diagrams, and sleeves are not included in this foundation pass.
+          </p>
+        </header>
+
+        <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
+          Complete the Sideways Cardigan builder (size, V-neck depth, fit, and gauge) to see body
+          stitch and row counts.
+        </p>
+        <dl class="sideways-calc-summary" data-sideways-calc-summary hidden></dl>
+        <p class="sg-fit-size-copy" data-sideways-calc-unresolved hidden></p>
+        <p>
+          <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .sideways-calc-summary {
+    display: grid;
+    grid-template-columns: minmax(12rem, 16rem) 1fr;
+    gap: 0.35rem 1rem;
+    margin: 1rem 0;
+    max-width: 40rem;
+  }
+  .sideways-calc-summary dt {
+    font-weight: 600;
+  }
+  .sideways-calc-summary dd {
+    margin: 0;
+  }
+</style>
+
+<script>
+  import "/src/scripts/sideways-cardigan-pattern-page.ts";
+</script>

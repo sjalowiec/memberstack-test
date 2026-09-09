@@ -239,4 +239,53 @@ describe("resolvePatternSystemFromProject", () => {
     expect(resolvePatternSystemFromProject(sock)).toBe("socks");
     expect(patternSystemDisplayName("socks")).toBe("Socks");
   });
+
+  it("classifies sideways-cardigan saved projects separately from drop-shoulder and sleeveless", () => {
+    const sideways: Pick<CustomPatternProject, "pattern" | "customOverrides"> = {
+      pattern: {
+        style: {
+          construction: "sideways-cardigan",
+          constructionAuthored: "sideways-cardigan",
+        },
+      } as CustomPatternProject["pattern"],
+      customOverrides: {},
+    };
+    expect(resolvePatternSystemFromProject(sideways)).toBe("sideways-cardigan");
+    expect(patternSystemDisplayName("sideways-cardigan")).toBe("Sideways Cardigan");
+  });
 });
+
+describe("sideways-cardigan page routing", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    stubSessionStorage();
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("uses sideways-cardigan pathname for builder and pattern pages", () => {
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/sideways-cardigan/builder"))).toBe(
+      "sideways-cardigan",
+    );
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/sideways-cardigan/pattern/"))).toBe(
+      "sideways-cardigan",
+    );
+    expect(resolvePatternSystemForBuilderGate(stubPathname("/patterns/sideways-cardigan/builder"))).toBe(
+      "sideways-cardigan",
+    );
+  });
+
+  it("does not change sleeveless-express or drop-shoulder builder gates", () => {
+    expect(resolvePatternSystemForBuilderGate(stubPathname("/patterns/sleeveless-express"))).toBe(
+      "sleeveless",
+    );
+    expect(resolvePatternSystemForBuilderGate(stubPathname("/patterns/drop-shoulder/builder"))).toBe(
+      "drop-shoulder",
+    );
+  });
+});
+

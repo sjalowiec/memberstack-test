@@ -2,6 +2,7 @@ import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuild
 
 export const SLEEVELESS_REVIEW_LEGACY_PATH = "/patterns/sleeveless/review";
 export const DROP_SHOULDER_REVIEW_LEGACY_PATH = "/patterns/drop-shoulder/review";
+export const SIDEWAYS_CARDIGAN_REVIEW_LEGACY_PATH = "/patterns/sideways-cardigan/review";
 
 /** Normalize pattern workspace paths to the trailing-slash form used across the app. */
 function normalizeWorkspacePath(workspacePath: string): string {
