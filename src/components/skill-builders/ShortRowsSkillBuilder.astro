@@ -1,0 +1,394 @@
+---
+import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
+import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
+import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
+import GlossaryTooltip from "../common/GlossaryTooltip.astro";
+import {
+  getShortRowsSkillBuilder,
+  shortRowsIntroParts,
+  shortRowsPractice1Parts,
+  shortRowsPractice2LeadParts,
+  shortRowsPractice2Parts,
+  shortRowsWhatYoullLearnParts,
+} from "../../lib/skillBuilders/shortRowsSkillBuilder";
+
+const builder = getShortRowsSkillBuilder();
+const video = builder.video;
+const introParts = shortRowsIntroParts(builder.introParagraphs);
+const learnParts = shortRowsWhatYoullLearnParts(builder.whatYoullLearn);
+const practice1Parts = shortRowsPractice1Parts(builder.practice1Steps);
+const practice2LeadParts = shortRowsPractice2LeadParts(builder.practice2Lead);
+const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
+---
+
+<div class="sb-practice-page" data-sb-short-rows data-sb-builder={builder.id}>
+  <a class="sb-practice-eyebrow" href="/learn/skill-builders">Skill Builders</a>
+
+  <header class="sb-practice-hero">
+    <SkillBuilderPageHeader title={builder.title} />
+    <p class="sb-practice-hero__subtitle">{builder.subtitle}</p>
+    {
+      introParts.map((parts) => (
+        <p class="sb-practice-hero__intro">
+          {parts.map((part) =>
+            part.type === "glossary" ? (
+              <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+            ) : (
+              part.text
+            )
+          )}
+        </p>
+      ))
+    }
+  </header>
+
+  <SkillBuilderMemberGate>
+    <section class="sb-worksheet__section" aria-labelledby="sb-learn-heading">
+      <h2 id="sb-learn-heading">What You'll Learn</h2>
+      <ul class="sb-learn-list">
+        {
+          learnParts.map((parts) => (
+            <li>
+              {parts.map((part) =>
+                part.type === "glossary" ? (
+                  <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+                ) : (
+                  part.text
+                )
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      video && (
+        <section
+          class="sb-worksheet__section"
+          aria-label="Video"
+          data-sb-video-content-id={String(video.contentId)}
+        >
+          <h2>Watch</h2>
+          <GatedVimeoEmbed
+            videoId={video.vimeoId}
+            contentId={String(video.contentId)}
+            title={video.title ?? builder.title}
+            access_level={video.accessLevel}
+          />
+        </section>
+      )
+    }
+
+    <section class="sb-card" aria-labelledby="sb-setup-heading">
+      <h2 id="sb-setup-heading">Practice Setup</h2>
+      <ul class="sb-setup-list">
+        {builder.practiceSetup.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="sb-card" aria-labelledby="sb-practice-1-heading">
+      <h2 id="sb-practice-1-heading">{builder.practice1Heading}</h2>
+      <ol class="sb-join-steps">
+        {
+          practice1Parts.map((parts) => (
+            <li class="sb-join-step">
+              {parts.map((part) =>
+                part.type === "glossary" ? (
+                  <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+                ) : (
+                  part.text
+                )
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="sb-card" aria-labelledby="sb-practice-2-heading">
+      <h2 id="sb-practice-2-heading">{builder.practice2Heading}</h2>
+      <p class="sb-practice-lead">
+        {
+          practice2LeadParts.map((part) =>
+            part.type === "glossary" ? (
+              <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+            ) : (
+              part.text
+            )
+          )
+        }
+      </p>
+      <ol class="sb-join-steps">
+        {
+          practice2Parts.map((parts) => (
+            <li class="sb-join-step">
+              {parts.map((part) =>
+                part.type === "glossary" ? (
+                  <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+                ) : (
+                  part.text
+                )
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <aside class="sb-sue-tip" aria-labelledby="sb-sue-tip-heading" data-sb-sue-tip>
+      <h2 id="sb-sue-tip-heading">{builder.sueTipHeading}</h2>
+      <p>{builder.sueTip}</p>
+    </aside>
+
+    <section
+      class="sb-card"
+      aria-labelledby="sb-completion-heading"
+      data-sb-completion
+    >
+      <h2 id="sb-completion-heading">{builder.completionPrompt}</h2>
+      <fieldset class="sb-completion">
+        <legend class="sb-completion__legend">{builder.completionPrompt}</legend>
+        {
+          builder.completionOptions.map((option) => {
+            const optionId = `sb-short-rows-${option.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+            return (
+              <label class="sb-completion__option" for={optionId}>
+                <input
+                  id={optionId}
+                  type="radio"
+                  name="sb-short-rows-comfort"
+                  value={option}
+                />
+                <span>{option}</span>
+              </label>
+            );
+          })
+        }
+      </fieldset>
+    </section>
+
+    <a class="sb-practice-back" href="/learn/skill-builders">Back to Skill Builders</a>
+  </SkillBuilderMemberGate>
+</div>
+
+<style>
+  .sb-practice-page {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 0 20px 3.5rem;
+    overflow-x: hidden;
+  }
+
+  .sb-practice-eyebrow {
+    display: inline-block;
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .sb-practice-eyebrow:hover,
+  .sb-practice-eyebrow:focus,
+  .sb-practice-back:hover,
+  .sb-practice-back:focus {
+    color: #52682d;
+  }
+
+  .sb-practice-hero {
+    margin: 0.5rem 0 1.25rem;
+  }
+
+  .sb-practice-hero :global(h1) {
+    margin: 0;
+    font-size: clamp(1.45rem, 3vw, 1.9rem);
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.2;
+  }
+
+  .sb-practice-hero__subtitle {
+    margin: 0.35rem 0 0.75rem;
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #4d5a48;
+  }
+
+  .sb-practice-hero__intro {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  .sb-practice-hero__intro:last-child {
+    margin-bottom: 0;
+  }
+
+  .sb-worksheet__section {
+    margin-bottom: 1.1rem;
+  }
+
+  .sb-worksheet__section > h2,
+  .sb-card > h2 {
+    margin: 0 0 0.65rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #52682d;
+  }
+
+  .sb-worksheet__section p,
+  .sb-practice-lead {
+    margin: 0 0 0.85rem;
+    line-height: 1.55;
+    color: #243015;
+    font-size: 1rem;
+  }
+
+  .sb-learn-list,
+  .sb-setup-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    color: #243015;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .sb-card {
+    margin: 0 0 1.1rem;
+    padding: 0.95rem 1rem;
+    background: #f8faf6;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+  }
+
+  .sb-join-steps {
+    counter-reset: sb-join-step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sb-join-step {
+    counter-increment: sb-join-step;
+    position: relative;
+    padding: 0.75rem 0.85rem 0.75rem 3rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 8px;
+    line-height: 1.55;
+    color: #243015;
+    font-size: 1rem;
+  }
+
+  .sb-join-step::before {
+    content: counter(sb-join-step);
+    position: absolute;
+    left: 0.65rem;
+    top: 0.7rem;
+    width: 1.7rem;
+    height: 1.7rem;
+    background: #52682d;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .sb-sue-tip {
+    margin: 0 0 1.1rem;
+    padding: 0.15rem 0 0.15rem 0.95rem;
+    border-left: 3px solid #d6dbc9;
+  }
+
+  .sb-sue-tip > h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4d5a48;
+  }
+
+  .sb-sue-tip p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .sb-completion {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .sb-completion__legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sb-completion__option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 0.85rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 8px;
+    line-height: 1.45;
+    color: #243015;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .sb-completion__option:has(input:focus-visible) {
+    border-color: #52682d;
+    box-shadow: 0 0 0 2px rgba(82, 104, 45, 0.2);
+  }
+
+  .sb-completion__option input {
+    margin-top: 0.2rem;
+    accent-color: #52682d;
+  }
+
+  .sb-practice-back {
+    display: inline-block;
+    margin: 0.15rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  @media (max-width: 600px) {
+    .sb-practice-page {
+      padding-inline: 16px;
+    }
+
+    .sb-card {
+      padding-inline: 0.85rem;
+    }
+  }
+</style>

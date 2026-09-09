@@ -108,14 +108,18 @@ describe("Skill Builders catalog landing", () => {
     expect(freeConst).not.toContain("round-necklines-shaped-shoulders");
     expect(freeConst).not.toContain("join-beautiful-shoulder-seams");
     expect(freeConst).not.toContain("e-wrap-cast-on-basics");
+    expect(freeConst).not.toContain("short-rows");
     expect(freeConst).not.toContain("round-neckline-practice");
 
     expect(memberConst).toContain("/learn/skill-builders/round-necklines-shaped-shoulders");
     expect(memberConst).toContain("/learn/skill-builders/join-beautiful-shoulder-seams");
     expect(memberConst).toContain("/learn/skill-builders/e-wrap-cast-on-basics");
+    expect(memberConst).toContain("/learn/skill-builders/short-rows");
     expect(memberConst).toContain("Round Neckline with Shaped Shoulders");
     expect(memberConst).toContain("E-Wrap Cast On Basics");
+    expect(memberConst).toContain("Short Rows Practice");
     expect(memberConst).toContain("Practice a quick, stretchy cast on that works on any knitting machine.");
+    expect(memberConst).toContain("Practice manual and automatic wrapping");
     expect(memberConst).not.toContain("round-neckline-practice");
     expect(memberConst).not.toContain("round-neckline-basics");
 
@@ -183,8 +187,13 @@ describe("Skill Builders catalog landing", () => {
     expect(catalog).toContain("getViewerAccessState");
     expect(catalog).toContain("Coming Soon");
     expect(catalog).toMatch(
-      /const comingSoonItems = \[[\s\S]*Short Rows Practice[\s\S]*Sleeve Cap Practice[\s\S]*Ribber Practice[\s\S]*Cut & Sew Practice[\s\S]*id="skill-builders-coming-soon"/,
+      /const comingSoonItems = \[[\s\S]*Sleeve Cap Practice[\s\S]*Ribber Practice[\s\S]*Cut & Sew Practice[\s\S]*id="skill-builders-coming-soon"/,
     );
+    const comingSoonConst = catalog.slice(
+      catalog.indexOf("const comingSoonItems"),
+      catalog.indexOf("<Layout"),
+    );
+    expect(comingSoonConst).not.toContain("Short Rows Practice");
     expect(catalog).toMatch(
       /data-sb-catalog="member"[\s\S]*id="skill-builders-coming-soon"/,
     );

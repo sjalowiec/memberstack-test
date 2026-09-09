@@ -1,0 +1,17 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import ShortRowsSkillBuilder from "../../../components/skill-builders/ShortRowsSkillBuilder.astro";
+import { getShortRowsSkillBuilder } from "../../../lib/skillBuilders/shortRowsSkillBuilder";
+
+export const prerender = true;
+
+const builder = getShortRowsSkillBuilder();
+---
+
+<Layout
+  title={`${builder.title} | Skill Builders | Knit it Now`}
+  description={builder.introParagraphs[0]}
+  bodyClass="page--tight-header"
+>
+  <ShortRowsSkillBuilder />
+</Layout>
