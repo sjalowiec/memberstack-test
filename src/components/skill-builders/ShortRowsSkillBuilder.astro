@@ -3,6 +3,7 @@ import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
 import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
 import GlossaryTooltip from "../common/GlossaryTooltip.astro";
+import "../../styles/glossary-tooltip.css";
 import {
   getShortRowsSkillBuilder,
   shortRowsIntroParts,
@@ -178,6 +179,16 @@ const practice2Parts = shortRowsPractice2Parts(builder.practice2Steps);
     margin: 0 auto;
     padding: 0 20px 3.5rem;
     overflow-x: hidden;
+  }
+
+  /* Established glossary-link treatment: underline/swipe, no question-mark glyph. */
+  .sb-practice-page :global(.glossary-tooltip-trigger) {
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sb-practice-page :global(sup.glossary-tooltip-icon) {
+    display: none;
   }
 
   .sb-practice-eyebrow {
