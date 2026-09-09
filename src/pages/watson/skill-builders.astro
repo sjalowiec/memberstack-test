@@ -1,0 +1,110 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import { SKILL_BUILDER_REACTIONS } from "../../lib/skillBuilders/skillBuilderFeedback";
+import {
+  loadAllSkillBuilderReactionTotals,
+  skillBuilderReactionDisplayRows,
+} from "../../lib/skillBuilders/skillBuilderReactionsAggregate";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+let loadError: string | null = null;
+let rows: Awaited<ReturnType<typeof loadAllSkillBuilderReactionTotals>> = [];
+
+try {
+  rows = await loadAllSkillBuilderReactionTotals();
+} catch (error) {
+  loadError =
+    error instanceof Error ? error.message : "Unable to load Skill Builder reactions.";
+}
+---
+
+<WatsonPageShell
+  title="Skill Builder Reactions | Watson"
+  heading="Skill Builder practice"
+  intro="Totals for How did this practice go? One response per visitor per Skill Builder. Changing a choice updates the previous response instead of counting twice. These are not Tip of the Week reactions, and they do not email Sue."
+>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : null
+  }
+
+  <section class="watson-sb-reactions" aria-label="Skill Builder reaction totals">
+    <table class="watson-sb-reactions__table">
+      <thead>
+        <tr>
+          <th scope="col">Skill Builder</th>
+          <th scope="col">ID</th>
+          {
+            SKILL_BUILDER_REACTIONS.map((reaction) => (
+              <th scope="col">
+                {reaction.emoji} {reaction.label}
+              </th>
+            ))
+          }
+          <th scope="col">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => {
+            const display = skillBuilderReactionDisplayRows(row);
+            return (
+              <tr data-sb-reaction-row={row.skillBuilderId}>
+                <th scope="row">{row.title}</th>
+                <td>
+                  <code>{row.skillBuilderId}</code>
+                </td>
+                {
+                  display.map((item) => (
+                    <td>{item.count}</td>
+                  ))
+                }
+                <td>
+                  <strong>{row.total}</strong>
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+  </section>
+</WatsonPageShell>
+
+<style>
+  .watson-sb-reactions {
+    overflow-x: auto;
+  }
+
+  .watson-sb-reactions__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .watson-sb-reactions__table th,
+  .watson-sb-reactions__table td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid #e5e8e0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .watson-sb-reactions__table thead th {
+    font-size: 0.85rem;
+    font-weight: 650;
+    color: #52682d;
+    background: #f7f8f5;
+  }
+
+  .watson-sb-reactions__table code {
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+</style>

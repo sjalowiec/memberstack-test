@@ -7,7 +7,6 @@ import { vimeoNumericIdFromPublicVideo } from "../lessonVideo";
 import { findPublicVideoByContentId } from "../patterns/sleevelessCatalogHelpVideo";
 import {
   SHORT_ROWS_CATALOG_SUBTITLE,
-  SHORT_ROWS_COMPLETION_OPTIONS,
   SHORT_ROWS_PATH,
   SHORT_ROWS_PRACTICE_1_STEPS,
   SHORT_ROWS_PRACTICE_2_STEPS,
@@ -62,13 +61,13 @@ describe("Short Rows Practice Skill Builder pages", () => {
   it("gates the Skill Builder for logged-out and non-member visitors", () => {
     expect(component).toContain("SkillBuilderMemberGate");
     expect(component).toMatch(
-      /<SkillBuilderMemberGate>[\s\S]*What You'll Learn[\s\S]*GatedVimeoEmbed[\s\S]*Practice Setup[\s\S]*practice1Heading[\s\S]*practice2Heading[\s\S]*data-sb-completion/,
+      /<SkillBuilderMemberGate builderId=\{builder.id\}>[\s\S]*What You'll Learn[\s\S]*GatedVimeoEmbed[\s\S]*Practice Setup[\s\S]*practice1Heading[\s\S]*practice2Heading[\s\S]*data-sb-sue-tip/,
     );
     expect(component).not.toContain('access_level="open"');
     expect(component).toContain("access_level={video.accessLevel}");
   });
 
-  it("renders required exercise content, video #330, and the completion prompt", () => {
+  it("renders required exercise content, video #330, and shared practice feedback", () => {
     expect(component).toContain("SkillBuilderPageHeader");
     expect(component).toContain("data-sb-short-rows");
     expect(component).toContain("builder.subtitle");
@@ -80,11 +79,14 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).toContain("builder.practice2Heading");
     expect(component).toContain("builder.sueTip");
     expect(component).toContain("data-sb-sue-tip");
-    expect(component).toContain("data-sb-completion");
-    expect(component).toContain("builder.completionPrompt");
-    expect(component).toContain("builder.completionOptions");
+    expect(component).toContain("builderId={builder.id}");
+    expect(component).not.toContain("data-sb-completion");
+    expect(component).not.toContain("builder.completionPrompt");
+    expect(component).not.toContain("builder.completionOptions");
     expect(component).toContain('href="/learn/skill-builders" data-sb-print-hide>Skill Builders</a>');
-    expect(component).toContain('href="/learn/skill-builders" data-sb-print-hide>Back to Skill Builders</a>');
+    expect(
+      readFileSync(join(componentsDir, "SkillBuilderFeedback.astro"), "utf8"),
+    ).toContain("Back to Skill Builders");
     expect(component).toContain("GatedVimeoEmbed");
     expect(component).toContain("video.vimeoId");
     expect(component).toContain("data-sb-video-content-id={String(video.contentId)}");
@@ -95,13 +97,8 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(SHORT_ROWS_PRACTICE_SETUP).toHaveLength(6);
     expect(SHORT_ROWS_PRACTICE_1_STEPS).toHaveLength(9);
     expect(SHORT_ROWS_PRACTICE_2_STEPS).toHaveLength(11);
-    expect(SHORT_ROWS_COMPLETION_OPTIONS).toEqual([
-      "Manual wrapping",
-      "Automatic wrapping",
-      "I need another try",
-    ]);
     expect(component).toMatch(
-      /What You'll Learn[\s\S]*data-sb-video-content-id[\s\S]*Watch[\s\S]*Practice Setup[\s\S]*practice1Heading[\s\S]*practice2Heading[\s\S]*data-sb-sue-tip[\s\S]*data-sb-completion/,
+      /What You'll Learn[\s\S]*data-sb-video-content-id[\s\S]*Watch[\s\S]*Practice Setup[\s\S]*practice1Heading[\s\S]*practice2Heading[\s\S]*data-sb-sue-tip/,
     );
     expect(component).toContain("shortRowsIntroParts");
     expect(component).toContain('<div class="sb-practice-hero__intro">');
@@ -182,7 +179,7 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).toMatch(
       /data-sb-video-content-id[\s\S]*data-sb-print-hide/,
     );
-    expect(component).toMatch(/data-sb-completion[\s\S]*data-sb-print-hide/);
+    expect(component).not.toContain("data-sb-completion");
     expect(component).not.toContain("Print Worksheet");
     expect(component).not.toContain("<PrintButton");
     expect(component).not.toContain("kbm-print-button");

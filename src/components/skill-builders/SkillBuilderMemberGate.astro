@@ -1,10 +1,20 @@
 ---
 import MemberLockOverlay from "../ui/MemberLockOverlay.astro";
+import SkillBuilderFeedback from "./SkillBuilderFeedback.astro";
+import { getSkillBuilderFeedbackConfig } from "../../lib/skillBuilders/skillBuilderFeedback";
 import {
   SKILL_BUILDER_MEMBER_LOCK_CTA,
   SKILL_BUILDER_MEMBER_LOCK_MESSAGE,
   SKILL_BUILDER_MEMBER_LOCK_TITLE,
 } from "../../lib/skillBuilders/skillBuilderMemberGate";
+
+interface Props {
+  /** Existing Skill Builder module id. When set, practice feedback is appended automatically. */
+  builderId?: string;
+}
+
+const { builderId } = Astro.props;
+const feedback = builderId ? getSkillBuilderFeedbackConfig(builderId) : null;
 ---
 
 <div class="sb-member-lock" data-sb-member-lock data-gated="locked">
@@ -16,6 +26,16 @@ import {
 </div>
 <template data-sb-member-body-template>
   <slot />
+  {
+    feedback ? (
+      <SkillBuilderFeedback
+        skillBuilderId={feedback.id}
+        title={feedback.title}
+        includeBackLink={feedback.includeBackLink}
+      />
+    ) : null
+  }
+  <slot name="after-feedback" />
 </template>
 <div data-sb-member-body-mount hidden></div>
 

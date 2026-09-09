@@ -35,7 +35,7 @@ const weightsNoteParts = eWrapCastOnWeightsNoteParts(builder.weightsNote);
     </p>
   </header>
 
-  <SkillBuilderMemberGate>
+  <SkillBuilderMemberGate builderId={builder.id}>
     <section class="sb-worksheet__section" aria-labelledby="sb-practice-heading">
       <h2 id="sb-practice-heading">What You'll Practice</h2>
       <p>{builder.whatYoullPractice}</p>

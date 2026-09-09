@@ -55,7 +55,7 @@ describe("E-Wrap Cast On Basics Skill Builder pages", () => {
   it("gates the Skill Builder for logged-out and non-member visitors", () => {
     expect(component).toContain("SkillBuilderMemberGate");
     expect(component).toMatch(
-      /<SkillBuilderMemberGate>[\s\S]*What You'll Practice[\s\S]*GatedVimeoEmbed[\s\S]*E-Wrap Cast On Checklist[\s\S]*Using weights/,
+      /<SkillBuilderMemberGate builderId=\{builder.id\}>[\s\S]*What You'll Practice[\s\S]*GatedVimeoEmbed[\s\S]*E-Wrap Cast On Checklist[\s\S]*Using weights/,
     );
     expect(component).not.toContain('access_level="open"');
     expect(component).toContain("access_level={video.accessLevel}");
@@ -99,7 +99,7 @@ describe("E-Wrap Cast On Basics Skill Builder pages", () => {
 
   it("does not present waste yarn or ravel cord as a cast-on prerequisite", () => {
     const gatedBody = component.slice(
-      component.indexOf("<SkillBuilderMemberGate>"),
+      component.indexOf("<SkillBuilderMemberGate"),
       component.indexOf("</SkillBuilderMemberGate>"),
     );
     const practiceAndVideo = gatedBody.slice(
