@@ -42,6 +42,8 @@ export type SidewaysCardiganBodyCalcInput = {
   /** Finished sleeve upper-arm circumference — the straight sleeve top. */
   finishedUpperArmInches: number;
   neckOpeningWidthInches: number;
+  /** Chart back-neck depth (straight rectangular opening). Optional on row-allocation only. */
+  backNeckDepthInches?: number;
   stitchesPerInch: number;
   rowsPerInch: number;
 };
@@ -100,6 +102,8 @@ export type SidewaysCardiganBodyCalcError = {
 export type SidewaysCardiganBodyCalc = {
   garmentLengthStitches: number;
   vNeckDepthStitches: number;
+  backNeckDepthInches: number;
+  backNeckDepthStitches: number;
   armholeDepthInches: number;
   armholeDepthStitches: number;
   firstArmholeDepthStitches: number;
@@ -165,6 +169,11 @@ export function calculateSidewaysCardiganBody(
     input.stitchesPerInch,
   );
   const vNeckDepthStitches = stitchesAlongLength(input.vNeckDepthInches, input.stitchesPerInch);
+  const backNeckDepthInches =
+    input.backNeckDepthInches !== undefined && input.backNeckDepthInches > 0
+      ? input.backNeckDepthInches
+      : 0;
+  const backNeckDepthStitches = stitchesAlongLength(backNeckDepthInches, input.stitchesPerInch);
   const requestedTotalBustRows = rowsAlongCircumference(
     input.finishedBustCircumferenceInches,
     input.rowsPerInch,
@@ -225,6 +234,8 @@ export function calculateSidewaysCardiganBody(
     calc: {
       garmentLengthStitches,
       vNeckDepthStitches,
+      backNeckDepthInches,
+      backNeckDepthStitches,
       armholeDepthInches,
       armholeDepthStitches,
       firstArmholeDepthStitches: armholeDepthStitches,

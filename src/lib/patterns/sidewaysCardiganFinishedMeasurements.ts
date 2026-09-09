@@ -6,7 +6,11 @@
 
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
-import { resolveEffectiveFrontNeckDepthInches } from "./customBuildEffectiveNeckDepth";
+import {
+  resolveEffectiveBackNeckDepthInches,
+  resolveEffectiveFrontNeckDepthInches,
+  SWEATER_BACK_NECK_DEPTH_MAX_INCHES,
+} from "./customBuildEffectiveNeckDepth";
 import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import { resolveDropShoulderFinishedUpperArmInches } from "./dropShoulderSleeveEase";
@@ -63,6 +67,11 @@ export function sidewaysCardiganCalcInputFromChartRow(args: {
     fitPreference: args.fitPreference,
     bodyUpperArmIn: bodyUpperArm,
   });
+  const chartBackNeck = selected.back_neck_depth;
+  const backNeckDepthInches =
+    typeof chartBackNeck === "number" && chartBackNeck > 0
+      ? Math.min(chartBackNeck, SWEATER_BACK_NECK_DEPTH_MAX_INCHES)
+      : undefined;
   if (
     !(finishedBust > 0) ||
     !(garmentLength > 0) ||
@@ -80,6 +89,7 @@ export function sidewaysCardiganCalcInputFromChartRow(args: {
     finishedBustCircumferenceInches: finishedBust,
     finishedUpperArmInches: finishedUpperArm,
     neckOpeningWidthInches: neckOpening,
+    ...(backNeckDepthInches !== undefined ? { backNeckDepthInches } : {}),
     stitchesPerInch: args.stitchesPerInch,
     rowsPerInch: args.rowsPerInch,
   };
@@ -127,6 +137,7 @@ export function resolveSidewaysCardiganBodyCalcInputFromPattern(
           bodyUpperArmIn: bodyUpperArm,
           overrideUpperArmIn: overrideUpperArm,
         });
+  const backNeckDepth = resolveEffectiveBackNeckDepthInches(patternData);
 
   if (
     spi === undefined ||
@@ -146,6 +157,7 @@ export function resolveSidewaysCardiganBodyCalcInputFromPattern(
     finishedBustCircumferenceInches: finishedBust,
     finishedUpperArmInches: finishedUpperArm,
     neckOpeningWidthInches: neckOpening,
+    ...(backNeckDepth !== undefined ? { backNeckDepthInches: backNeckDepth } : {}),
     stitchesPerInch: spi,
     rowsPerInch: rpi,
   };

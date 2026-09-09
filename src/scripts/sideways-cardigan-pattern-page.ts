@@ -1,5 +1,5 @@
 /**
- * Sideways Cardigan workspace — calculation summary only.
+ * Sideways Cardigan workspace — calculation summary plus a temporary numeric body sequence.
  * Does not generate Drop Shoulder / Sleeveless instructions.
  */
 import { getCurrentPattern, getPatternData } from "../lib/patterns/patternStorage";
@@ -10,6 +10,10 @@ import {
   parseSidewaysCardiganSleeveDirection,
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
+import {
+  buildSidewaysCardiganBodyInstructions,
+  renderSidewaysCardiganBodySequenceHtml,
+} from "../lib/patterns/sidewaysCardiganBodyInstructions";
 import {
   buildSidewaysCardiganWorkspaceSummary,
   renderSidewaysCardiganWorkspaceSummaryHtml,
@@ -52,6 +56,7 @@ async function render(): Promise<void> {
   const summary = document.querySelector("[data-sideways-calc-summary]");
   const errorEl = document.querySelector("[data-sideways-calc-error]");
   const adjustmentEl = document.querySelector("[data-sideways-calc-adjustment]");
+  const sequenceEl = document.querySelector("[data-sideways-body-sequence]");
   if (
     !(summary instanceof HTMLElement) ||
     !(missing instanceof HTMLElement) ||
@@ -112,6 +117,19 @@ async function render(): Promise<void> {
     } else {
       adjustmentEl.hidden = true;
       adjustmentEl.textContent = "";
+    }
+  }
+
+  if (sequenceEl instanceof HTMLElement) {
+    const body = buildSidewaysCardiganBodyInstructions(input);
+    if (!body.ok) {
+      sequenceEl.replaceChildren();
+      const note = document.createElement("p");
+      note.className = "sg-fit-size-copy";
+      note.textContent = body.error.message;
+      sequenceEl.append(note);
+    } else {
+      sequenceEl.innerHTML = renderSidewaysCardiganBodySequenceHtml(body.instructions);
     }
   }
 }

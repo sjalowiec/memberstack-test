@@ -73,6 +73,14 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
       term: "Armhole slit depth",
       def: inchesAndStitches(calc.armholeDepthInches, calc.armholeDepthStitches),
     },
+    ...(calc.backNeckDepthStitches > 0
+      ? [
+          {
+            term: "Back-neck depth",
+            def: inchesAndStitches(calc.backNeckDepthInches, calc.backNeckDepthStitches),
+          },
+        ]
+      : []),
     {
       term: "Requested finished bust",
       def: formatInchesWithUnit(calc.bust.requestedFinishedBustInches),

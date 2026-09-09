@@ -13,6 +13,7 @@ describe("sidewaysCardiganFinishedMeasurements", () => {
     garment_back_length: 25,
     neck_opening: 7.5,
     front_neck_depth: 5,
+    back_neck_depth: 1,
     upper_arm: 12.5,
   };
 
@@ -28,6 +29,7 @@ describe("sidewaysCardiganFinishedMeasurements", () => {
     expect(input?.finishedBustCircumferenceInches).toBe(
       42 + FIT_EASE_INCHES_BY_CHOICE.standard,
     );
+    expect(input?.backNeckDepthInches).toBe(1);
   });
 
   it("uses full finished upper arm (body + adult sleeve ease), not half", () => {

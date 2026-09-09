@@ -8,6 +8,7 @@ import {
 } from "./sidewaysCardiganConstructionIdentity";
 import { resolveSidewaysCardiganBodyCalcInputFromPattern } from "./sidewaysCardiganFinishedMeasurements";
 import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
+import { buildSidewaysCardiganBodyInstructions } from "./sidewaysCardiganBodyInstructions";
 import { buildSidewaysCardiganWorkspaceSummary } from "./sidewaysCardiganWorkspaceSummary";
 import { SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF } from "./customPatternProjectNavigation";
 import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
@@ -18,6 +19,7 @@ const missesRow: SidewaysCardiganWomenChartRow = {
   garment_back_length: 25,
   neck_opening: 7.5,
   front_neck_depth: 5,
+  back_neck_depth: 1,
   upper_arm: 12.5,
   wrist: 6.5,
   sleeve_length: 17,
@@ -30,6 +32,7 @@ const plusRow: SidewaysCardiganWomenChartRow = {
   garment_back_length: 16.75,
   neck_opening: 7,
   front_neck_depth: 5,
+  back_neck_depth: 1,
   upper_arm: 13,
   wrist: 7,
   sleeve_length: 17,
@@ -168,6 +171,7 @@ describe("sideways cardigan builder-to-workspace flow", () => {
       "Garment length",
       "V-neck depth",
       "Armhole slit depth",
+      "Back-neck depth",
       "Requested finished bust",
       "Actual finished bust",
       "Neck-opening width",
@@ -177,5 +181,11 @@ describe("sideways cardigan builder-to-workspace flow", () => {
     expect(summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
     expect(summary.rows.find((row) => row.term === "Garment length")?.def).toMatch(/stitches/);
     expect(JSON.stringify(summary)).not.toMatch(/0\.166666/);
+
+    const body = buildSidewaysCardiganBodyInstructions(input!);
+    expect(body.ok).toBe(true);
+    if (!body.ok) throw new Error(body.error.message);
+    expect(body.instructions.steps).toHaveLength(13);
+    expect(body.instructions.landmarks.finalBindOff).toBe(result.calc.bust.actualTotalBustRows);
   });
 });
