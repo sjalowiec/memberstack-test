@@ -42,9 +42,13 @@ import {
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "../lib/patterns/syncSidewaysCardiganBuilderToPatternStorage";
 import { SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF } from "../lib/patterns/customPatternProjectNavigation";
-import { getCurrentPattern } from "../lib/patterns/patternStorage";
 import { validateSidewaysCardiganBuilder } from "../lib/patterns/sidewaysCardiganBuilderValidation";
 import { formatInchesWithUnit } from "../lib/patterns/sidewaysCardiganDisplayFormat";
+import {
+  applySidewaysCardiganDraftToGaugeInputs,
+  readSidewaysCardiganBuilderStateFromDraft,
+  type SidewaysCardiganBuilderDraftState,
+} from "../lib/patterns/sidewaysCardiganBuilderState";
 import {
   emptySidewaysCardiganStyleMeasurements,
   finishedBustInchesFromChartRow,
@@ -52,8 +56,6 @@ import {
   SIDEWAYS_CARDIGAN_STYLE_MEASUREMENT_KEYS,
   styleMeasurementsAreComplete,
   type SidewaysCardiganStyleMeasurementKey,
-  type SidewaysCardiganStyleMeasurements,
-  type SidewaysCardiganUserEditedStyle,
 } from "../lib/patterns/sidewaysCardiganStyleMeasurements";
 
 const STEPS = 7;
@@ -67,23 +69,10 @@ const STYLE_INPUT_IDS: Record<SidewaysCardiganStyleMeasurementKey, string> = {
   wrist: "sideways-wrist",
 };
 
-type BuilderState = {
-  chartAudience: SidewaysCardiganWomenChartAudience | "";
-  selectedSize: string;
-  fit: string;
-  sleeveDirection: SidewaysCardiganSleeveDirection;
-  styleMeasurements: SidewaysCardiganStyleMeasurements;
-  userEditedStyle: SidewaysCardiganUserEditedStyle;
-};
+type BuilderState = SidewaysCardiganBuilderDraftState;
 
 function escapeHtml(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function section(obj: unknown): Record<string, unknown> {
-  return obj && typeof obj === "object" && !Array.isArray(obj)
-    ? (obj as Record<string, unknown>)
-    : {};
 }
 
 function clearStaleActiveProjectLink(): void {
@@ -104,53 +93,9 @@ function currentChartRow(state: BuilderState): SidewaysCardiganWomenChartRow | n
   return findSidewaysCardiganWomenChartRow(state.selectedSize, state.chartAudience);
 }
 
-function readStyleMeasurementsFromDraft(): {
-  measurements: SidewaysCardiganStyleMeasurements;
-  edited: SidewaysCardiganUserEditedStyle;
-} {
-  try {
-    const pattern = getCurrentPattern();
-    const fit = section(pattern.fit);
-    const sm = section(fit.selectedMeasurements);
-    const overrides = section(fit.cbMeasurementOverrides);
-    const measurements = emptySidewaysCardiganStyleMeasurements();
-    measurements.finishedLength = String(overrides.finishedLength ?? sm.back_neck_to_hem ?? "").trim();
-    measurements.vNeckDepth = String(overrides.neckDepth ?? sm.front_neck_depth ?? "").trim();
-    measurements.neckOpeningWidth = String(
-      overrides.finishedNeckOpeningWidth ?? sm.neck_width ?? "",
-    ).trim();
-    measurements.finishedUpperArm = String(overrides.upperArm ?? "").trim();
-    measurements.sleeveLength = String(overrides.sleeveLength ?? sm.sleeve_length ?? "").trim();
-    measurements.wrist = String(overrides.wrist ?? sm.wrist ?? "").trim();
-    return { measurements, edited: {} };
-  } catch {
-    return { measurements: emptySidewaysCardiganStyleMeasurements(), edited: {} };
-  }
-}
-
 function readStateFromDraft(): BuilderState {
   try {
-    const pattern = getCurrentPattern();
-    const fit = section(pattern.fit);
-    const style = section(pattern.style);
-    const selectedSize = String(fit.selectedSize ?? "").trim();
-    const ease = String(fit.easeChoice ?? fit.fitChoice ?? "").trim();
-    const audienceRaw = String(style.recipientCategory ?? fit.sizingChart ?? "")
-      .trim()
-      .toLowerCase();
-    const chartAudience: SidewaysCardiganWomenChartAudience | "" =
-      audienceRaw === "plus" || audienceRaw === "misses" ? audienceRaw : "";
-    const { measurements, edited } = readStyleMeasurementsFromDraft();
-    return {
-      chartAudience,
-      selectedSize,
-      fit: ease === "close" || ease === "relaxed" || ease === "standard" ? ease : "",
-      sleeveDirection:
-        parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ??
-        SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-      styleMeasurements: measurements,
-      userEditedStyle: edited,
-    };
+    return readSidewaysCardiganBuilderStateFromDraft();
   } catch {
     return {
       chartAudience: "",
@@ -159,6 +104,10 @@ function readStateFromDraft(): BuilderState {
       sleeveDirection: SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
       styleMeasurements: emptySidewaysCardiganStyleMeasurements(),
       userEditedStyle: {},
+      gaugeStitchRaw: "",
+      gaugeRowRaw: "",
+      availableNeedles: "",
+      unit: "in",
     };
   }
 }
@@ -440,6 +389,7 @@ function init(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
 
   const state = readStateFromDraft();
+  applySidewaysCardiganDraftToGaugeInputs(state);
   let openStep = 1;
 
   void loadExpressSweaterCharts()

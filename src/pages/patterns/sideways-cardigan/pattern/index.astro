@@ -34,7 +34,7 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
           Complete the Sideways Cardigan builder to see the pattern numbers.
         </p>
         <p class="sg-fit-size-copy" data-sideways-calc-error hidden role="alert"></p>
-        <section class="sg-pattern-print-at-a-glance" data-sideways-calc-host hidden>
+        <section class="sideways-calc-host" data-sideways-calc-host hidden>
           <h2 class="sg-pattern-section-title">Pattern numbers</h2>
           <div data-sideways-calc-summary></div>
           <p class="sg-fit-size-copy" data-sideways-calc-adjustment hidden></p>
@@ -50,6 +50,9 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 </Layout>
 
 <style>
+  .sideways-calc-host {
+    margin: 1rem 0 1.5rem;
+  }
   .sideways-body-sequence {
     margin: 0.75rem 0 1.25rem;
     padding-left: 1.4rem;
@@ -60,6 +63,22 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
   .sideways-body-landmarks,
   .sideways-body-sections {
     margin-top: 1rem;
+  }
+  .sideways-cardigan-pattern-page .print-summary-dl--inline {
+    display: grid;
+    gap: 0.35rem 1.25rem;
+    margin: 0.75rem 0 1.25rem;
+  }
+  .sideways-cardigan-pattern-page .print-summary-dl__pair {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) 1fr;
+    gap: 0.25rem 1rem;
+  }
+  .sideways-cardigan-pattern-page .print-summary-dl__pair dt {
+    font-weight: 600;
+  }
+  .sideways-cardigan-pattern-page .print-summary-dl__pair dd {
+    margin: 0;
   }
 </style>
 

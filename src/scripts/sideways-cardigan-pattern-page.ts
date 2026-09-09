@@ -2,55 +2,16 @@
  * Sideways Cardigan workspace — calculation summary plus a temporary numeric body sequence.
  * Does not generate Drop Shoulder / Sleeveless instructions.
  */
-import { getCurrentPattern, getPatternData } from "../lib/patterns/patternStorage";
-import { calculateSidewaysCardiganBody } from "../lib/patterns/sidewaysCardiganBodyCalc";
-import { resolveSidewaysCardiganBodyCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganFinishedMeasurements";
 import {
-  hasAuthoritativeSidewaysCardiganConstruction,
-  parseSidewaysCardiganSleeveDirection,
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
-  buildSidewaysCardiganBodyInstructions,
-  renderSidewaysCardiganBodySequenceHtml,
-} from "../lib/patterns/sidewaysCardiganBodyInstructions";
-import {
-  buildSidewaysCardiganWorkspaceSummary,
-  renderSidewaysCardiganWorkspaceSummaryHtml,
-} from "../lib/patterns/sidewaysCardiganWorkspaceSummary";
-import { loadExpressSweaterCharts } from "../lib/patterns/sleevelessExpressSizeChartClient";
+  loadSidewaysCardiganWorkspaceView,
+} from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
 
-function section(obj: unknown): Record<string, unknown> {
-  return obj && typeof obj === "object" && !Array.isArray(obj)
-    ? (obj as Record<string, unknown>)
-    : {};
-}
-
-function mergedPattern(): Record<string, unknown> {
-  const canonical = getCurrentPattern() as unknown as Record<string, unknown>;
-  const pb = getPatternData();
-  return {
-    ...canonical,
-    ...pb,
-    style: { ...section(canonical.style), ...section(pb.style) },
-    fit: { ...section(canonical.fit), ...section(pb.fit) },
-    yarnGauge: { ...section(canonical.yarnGauge), ...section(pb.yarnGauge) },
-    yarnGaugeMachine: {
-      ...section(canonical.yarnGauge),
-      ...section(pb.yarnGaugeMachine),
-    },
-  };
-}
-
-async function render(): Promise<void> {
+function renderView(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
-  try {
-    await loadExpressSweaterCharts();
-  } catch {
-    /* charts optional once measurements are already on the draft */
-  }
 
-  const pattern = mergedPattern();
   const missing = document.querySelector("[data-sideways-calc-missing]");
   const host = document.querySelector("[data-sideways-calc-host]");
   const summary = document.querySelector("[data-sideways-calc-summary]");
@@ -65,55 +26,49 @@ async function render(): Promise<void> {
     return;
   }
 
-  const hideSummary = (): void => {
+  const showDiagnostic = (message: string): void => {
     missing.hidden = false;
+    missing.textContent = message;
     host.hidden = true;
-  };
-
-  if (!hasAuthoritativeSidewaysCardiganConstruction(section(pattern.style))) {
-    hideSummary();
-    return;
-  }
-
-  const input = resolveSidewaysCardiganBodyCalcInputFromPattern(pattern);
-  if (!input) {
-    hideSummary();
-    return;
-  }
-
-  const result = calculateSidewaysCardiganBody(input);
-  missing.hidden = true;
-  host.hidden = false;
-
-  if (!result.ok) {
     summary.innerHTML = "";
     if (errorEl instanceof HTMLElement) {
       errorEl.hidden = false;
-      errorEl.textContent = result.error.message;
+      errorEl.textContent = message;
     }
-    if (adjustmentEl instanceof HTMLElement) {
-      adjustmentEl.hidden = true;
-      adjustmentEl.textContent = "";
-    }
+  };
+
+  let view;
+  try {
+    view = loadSidewaysCardiganWorkspaceView();
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    showDiagnostic(
+      import.meta.env.DEV
+        ? `[DEV] Sideways Cardigan workspace failed to load: ${detail}`
+        : "This Sideways Cardigan could not be loaded from the saved draft.",
+    );
     return;
   }
 
+  if (!view.ok) {
+    showDiagnostic(view.message);
+    return;
+  }
+
+  missing.hidden = true;
+  missing.textContent = "";
+  host.hidden = false;
   if (errorEl instanceof HTMLElement) {
     errorEl.hidden = true;
     errorEl.textContent = "";
   }
 
-  const workspace = buildSidewaysCardiganWorkspaceSummary({
-    calc: result.calc,
-    input,
-    sleeveDirection: parseSidewaysCardiganSleeveDirection(section(pattern.style).sleeveDirection) ?? undefined,
-  });
-  summary.innerHTML = renderSidewaysCardiganWorkspaceSummaryHtml(workspace);
+  summary.innerHTML = view.summaryHtml;
 
   if (adjustmentEl instanceof HTMLElement) {
-    if (workspace.adjustmentMessage) {
+    if (view.summary.adjustmentMessage) {
       adjustmentEl.hidden = false;
-      adjustmentEl.textContent = `Bust adjusted to keep the pattern symmetrical: ${workspace.adjustmentMessage}.`;
+      adjustmentEl.textContent = `Bust adjusted to keep the pattern symmetrical: ${view.summary.adjustmentMessage}.`;
     } else {
       adjustmentEl.hidden = true;
       adjustmentEl.textContent = "";
@@ -121,23 +76,35 @@ async function render(): Promise<void> {
   }
 
   if (sequenceEl instanceof HTMLElement) {
-    const body = buildSidewaysCardiganBodyInstructions(input);
-    if (!body.ok) {
+    if (view.instructionError) {
       sequenceEl.replaceChildren();
       const note = document.createElement("p");
       note.className = "sg-fit-size-copy";
-      note.textContent = body.error.message;
+      note.textContent = view.instructionError;
       sequenceEl.append(note);
     } else {
-      sequenceEl.innerHTML = renderSidewaysCardiganBodySequenceHtml(body.instructions);
+      sequenceEl.innerHTML = view.sequenceHtml;
+    }
+  }
+}
+
+function boot(): void {
+  try {
+    renderView();
+  } catch (error) {
+    const missing = document.querySelector("[data-sideways-calc-missing]");
+    if (missing instanceof HTMLElement) {
+      missing.hidden = false;
+      const detail = error instanceof Error ? error.message : String(error);
+      missing.textContent = import.meta.env.DEV
+        ? `[DEV] Sideways Cardigan workspace failed to load: ${detail}`
+        : "This Sideways Cardigan could not be loaded from the saved draft.";
     }
   }
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    void render();
-  }, { once: true });
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
 } else {
-  void render();
+  boot();
 }

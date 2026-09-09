@@ -95,10 +95,15 @@ export function sidewaysCardiganCalcInputFromChartRow(args: {
   };
 }
 
-/** Resolve calc inputs from a working draft, honoring custom-measurement overrides. */
-export function resolveSidewaysCardiganBodyCalcInputFromPattern(
+export type SidewaysCardiganBodyCalcInputInspection = {
+  input: SidewaysCardiganBodyCalcInput | null;
+  missing: string[];
+};
+
+/** Inspect calc inputs from a working draft, listing any fields that block generation. */
+export function inspectSidewaysCardiganBodyCalcInputFromPattern(
   patternData: Record<string, unknown>,
-): SidewaysCardiganBodyCalcInput | null {
+): SidewaysCardiganBodyCalcInputInspection {
   const ygm = section(patternData.yarnGaugeMachine);
   const yg = section(patternData.yarnGauge);
   const spi =
@@ -139,26 +144,37 @@ export function resolveSidewaysCardiganBodyCalcInputFromPattern(
         });
   const backNeckDepth = resolveEffectiveBackNeckDepthInches(patternData);
 
-  if (
-    spi === undefined ||
-    rpi === undefined ||
-    garmentLength === undefined ||
-    finishedBust === undefined ||
-    vNeckDepth === undefined ||
-    neckOpening === undefined ||
-    finishedUpperArm === undefined
-  ) {
-    return null;
+  const missing: string[] = [];
+  if (spi === undefined) missing.push("stitch gauge");
+  if (rpi === undefined) missing.push("row gauge");
+  if (garmentLength === undefined) missing.push("garment length");
+  if (finishedBust === undefined) missing.push("finished bust");
+  if (vNeckDepth === undefined) missing.push("V-neck depth");
+  if (neckOpening === undefined) missing.push("neck-opening width");
+  if (finishedUpperArm === undefined) missing.push("finished upper arm");
+
+  if (missing.length > 0) {
+    return { input: null, missing };
   }
 
   return {
-    garmentLengthInches: garmentLength,
-    vNeckDepthInches: vNeckDepth,
-    finishedBustCircumferenceInches: finishedBust,
-    finishedUpperArmInches: finishedUpperArm,
-    neckOpeningWidthInches: neckOpening,
-    ...(backNeckDepth !== undefined ? { backNeckDepthInches: backNeckDepth } : {}),
-    stitchesPerInch: spi,
-    rowsPerInch: rpi,
+    input: {
+      garmentLengthInches: garmentLength!,
+      vNeckDepthInches: vNeckDepth!,
+      finishedBustCircumferenceInches: finishedBust!,
+      finishedUpperArmInches: finishedUpperArm!,
+      neckOpeningWidthInches: neckOpening!,
+      ...(backNeckDepth !== undefined ? { backNeckDepthInches: backNeckDepth } : {}),
+      stitchesPerInch: spi!,
+      rowsPerInch: rpi!,
+    },
+    missing,
   };
+}
+
+/** Resolve calc inputs from a working draft, honoring custom-measurement overrides. */
+export function resolveSidewaysCardiganBodyCalcInputFromPattern(
+  patternData: Record<string, unknown>,
+): SidewaysCardiganBodyCalcInput | null {
+  return inspectSidewaysCardiganBodyCalcInputFromPattern(patternData).input;
 }
