@@ -26,24 +26,33 @@ export const SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS = [
 export function buildSidewaysCardiganWomenChartRows(): SidewaysCardiganWomenChartRow[] {
   const out: SidewaysCardiganWomenChartRow[] = [];
   for (const group of SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS) {
-    for (const row of getExpressChartRowsForAudience(group.audience)) {
-      const size = normalizeChartRowSize(row);
-      if (!size) continue;
-      out.push({ ...row, chartAudience: group.audience });
-    }
+    out.push(...getSidewaysCardiganChartRowsForAudience(group.audience));
+  }
+  return out;
+}
+
+export function getSidewaysCardiganChartRowsForAudience(
+  audience: SidewaysCardiganWomenChartAudience,
+): SidewaysCardiganWomenChartRow[] {
+  const out: SidewaysCardiganWomenChartRow[] = [];
+  for (const row of getExpressChartRowsForAudience(audience)) {
+    const size = normalizeChartRowSize(row);
+    if (!size) continue;
+    out.push({ ...row, chartAudience: audience });
   }
   return out;
 }
 
 export function findSidewaysCardiganWomenChartRow(
   sizeStr: string,
+  audience?: SidewaysCardiganWomenChartAudience,
 ): SidewaysCardiganWomenChartRow | null {
   const key = String(sizeStr ?? "").trim();
   if (!key) return null;
-  return (
-    buildSidewaysCardiganWomenChartRows().find((row) => normalizeChartRowSize(row) === key) ??
-    null
-  );
+  const rows = audience
+    ? getSidewaysCardiganChartRowsForAudience(audience)
+    : buildSidewaysCardiganWomenChartRows();
+  return rows.find((row) => normalizeChartRowSize(row) === key) ?? null;
 }
 
 export function resolveSidewaysCardiganChartAudienceFromSize(

@@ -25,17 +25,20 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
             <PatternBuilderMyPatternsLink />
           </div>
           <p class="pattern-subtext">
-            Body calculations for a one-piece sideways V-neck cardigan. Written instructions,
-            diagrams, and sleeves are not included in this foundation pass.
+            A V-neck cardigan knitted sideways in one piece, with drop-shoulder armholes and a
+            straight back neck.
           </p>
         </header>
 
         <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
-          Complete the Sideways Cardigan builder (size, V-neck depth, fit, and gauge) to see body
-          stitch and row counts.
+          Complete the Sideways Cardigan builder to see the pattern numbers.
         </p>
-        <dl class="sideways-calc-summary" data-sideways-calc-summary hidden></dl>
-        <p class="sg-fit-size-copy" data-sideways-calc-unresolved hidden></p>
+        <p class="sg-fit-size-copy" data-sideways-calc-error hidden role="alert"></p>
+        <section class="sg-pattern-print-at-a-glance" data-sideways-calc-host hidden>
+          <h2 class="sg-pattern-section-title">Pattern numbers</h2>
+          <div data-sideways-calc-summary></div>
+          <p class="sg-fit-size-copy" data-sideways-calc-adjustment hidden></p>
+        </section>
         <p>
           <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
         </p>
@@ -43,22 +46,6 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
     </div>
   </main>
 </Layout>
-
-<style>
-  .sideways-calc-summary {
-    display: grid;
-    grid-template-columns: minmax(12rem, 16rem) 1fr;
-    gap: 0.35rem 1rem;
-    margin: 1rem 0;
-    max-width: 40rem;
-  }
-  .sideways-calc-summary dt {
-    font-weight: 600;
-  }
-  .sideways-calc-summary dd {
-    margin: 0;
-  }
-</style>
 
 <script>
   import "/src/scripts/sideways-cardigan-pattern-page.ts";

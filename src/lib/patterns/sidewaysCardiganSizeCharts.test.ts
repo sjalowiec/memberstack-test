@@ -8,6 +8,7 @@ import {
 import {
   buildSidewaysCardiganWomenChartRows,
   findSidewaysCardiganWomenChartRow,
+  getSidewaysCardiganChartRowsForAudience,
   isSidewaysCardiganWomenSize,
   resolveSidewaysCardiganChartAudienceFromSize,
 } from "./sidewaysCardiganSizeCharts";
@@ -41,5 +42,20 @@ describe("sideways cardigan women's combined chart", () => {
     expect(isSidewaysCardiganWomenSize("X")).toBe(true);
     expect(isSidewaysCardiganWomenSize("M")).toBe(false);
     expect(findSidewaysCardiganWomenChartRow("X")?.bust_or_chest).toBe(39);
+  });
+
+  it("filters Misses vs Plus charts independently", () => {
+    seedExpressSweaterChartsForTests("misses", missesRows);
+    seedExpressSweaterChartsForTests("plus", plusRows);
+
+    const misses = getSidewaysCardiganChartRowsForAudience("misses");
+    const plus = getSidewaysCardiganChartRowsForAudience("plus");
+    expect(misses.every((row) => row.chartAudience === "misses")).toBe(true);
+    expect(plus.every((row) => row.chartAudience === "plus")).toBe(true);
+    expect(misses.map((r) => String(r.size))).toEqual(["1", "8"]);
+    expect(plus.map((r) => String(r.size))).toEqual(["X", "6x"]);
+    expect(findSidewaysCardiganWomenChartRow("8", "misses")?.chartAudience).toBe("misses");
+    expect(findSidewaysCardiganWomenChartRow("8", "plus")).toBeNull();
+    expect(findSidewaysCardiganWomenChartRow("X", "plus")?.chartAudience).toBe("plus");
   });
 });

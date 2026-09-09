@@ -90,8 +90,10 @@ export function resolveSidewaysCardiganBodyCalcInputFromPattern(
   patternData: Record<string, unknown>,
 ): SidewaysCardiganBodyCalcInput | null {
   const ygm = section(patternData.yarnGaugeMachine);
-  const spi = toPositiveNumber(ygm.gaugeStitchesPerInch);
-  const rpi = toPositiveNumber(ygm.gaugeRowsPerInch);
+  const yg = section(patternData.yarnGauge);
+  const spi =
+    toPositiveNumber(ygm.gaugeStitchesPerInch) ?? toPositiveNumber(yg.stitchGauge);
+  const rpi = toPositiveNumber(ygm.gaugeRowsPerInch) ?? toPositiveNumber(yg.rowGauge);
   const fit = section(patternData.fit);
   const sm = section(fit.selectedMeasurements);
   const overrides = section(fit.cbMeasurementOverrides);
@@ -103,10 +105,16 @@ export function resolveSidewaysCardiganBodyCalcInputFromPattern(
   const chartAudience: SidewaysCardiganWomenChartAudience | null =
     audienceRaw === "plus" ? "plus" : audienceRaw === "misses" ? "misses" : null;
 
-  const garmentLength = resolveEffectiveFinishedLengthInches(patternData);
+  const garmentLength =
+    positiveMeasurementInches(overrides.finishedLength) ??
+    resolveEffectiveFinishedLengthInches(patternData);
   const finishedBust = resolveEffectiveFinishedBustInches(patternData);
-  const vNeckDepth = resolveEffectiveFrontNeckDepthInches(patternData);
-  const neckOpening = resolveEffectiveNeckOpeningWidthInches(patternData);
+  const vNeckDepth =
+    positiveMeasurementInches(overrides.neckDepth) ??
+    resolveEffectiveFrontNeckDepthInches(patternData);
+  const neckOpening =
+    positiveMeasurementInches(overrides.finishedNeckOpeningWidth) ??
+    resolveEffectiveNeckOpeningWidthInches(patternData);
   const overrideUpperArm = positiveMeasurementInches(overrides.upperArm);
   const bodyUpperArm = toPositiveNumber(sm.upper_arm);
   const fitPreference = String(fit.easeChoice ?? fit.fitChoice ?? "standard");

@@ -25,6 +25,24 @@ export type SidewaysCardiganSleeveDirection =
 export const SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT: SidewaysCardiganSleeveDirection =
   "cuff-up";
 
+export const SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS: Record<
+  SidewaysCardiganSleeveDirection,
+  string
+> = {
+  "cuff-up": "Cuff up",
+  "top-down": "Top down",
+  sideways: "Sideways",
+};
+
+export function parseSidewaysCardiganSleeveDirection(
+  value: unknown,
+): SidewaysCardiganSleeveDirection | null {
+  const raw = String(value ?? "").trim().toLowerCase();
+  return (SIDEWAYS_CARDIGAN_SLEEVE_DIRECTIONS as readonly string[]).includes(raw)
+    ? (raw as SidewaysCardiganSleeveDirection)
+    : null;
+}
+
 export const SIDEWAYS_CARDIGAN_STYLE_KEYS = [
   "construction",
   SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY,
@@ -99,10 +117,14 @@ export function hasAuthoritativeSidewaysCardiganConstruction(
 export function stampSidewaysCardiganWorkingDraftFromPage(): void {
   if (readSidewaysCardiganBuilderPageConstruction() !== SIDEWAYS_CARDIGAN_CONSTRUCTION) return;
   try {
-    const style = withSidewaysCardiganConstructionAuthored({
+    const previous = {
       ...section(getCurrentPattern().style),
       ...section(getPatternData().style),
-    });
+    };
+    const sleeveDirection =
+      parseSidewaysCardiganSleeveDirection(previous.sleeveDirection) ??
+      SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT;
+    const style = withSidewaysCardiganConstructionAuthored(previous, sleeveDirection);
     saveCurrentPattern({ style });
     savePatternData("style", style);
   } catch {

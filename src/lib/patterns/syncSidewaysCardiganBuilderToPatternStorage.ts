@@ -16,10 +16,16 @@ import {
 import { resolveExpressAvailableNeedles } from "./sleevelessExpressAvailableNeedles";
 import { rawSwatchToPerInch } from "./syncExpressWizardToPatternStorage";
 import {
+  parseSidewaysCardiganSleeveDirection,
+  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
   withSidewaysCardiganConstructionAuthored,
   type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
+import {
+  parsePositiveInchesField,
+  type SidewaysCardiganStyleMeasurements,
+} from "./sidewaysCardiganStyleMeasurements";
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
@@ -31,11 +37,17 @@ function roundQuarter(n: number): number {
   return Math.round(n * 4) / 4;
 }
 
+function formatOverride(n: number | undefined): string | undefined {
+  if (n === undefined || !(n > 0)) return undefined;
+  return formatSwatchCountForGaugeInput(roundQuarter(n));
+}
+
 export type SidewaysCardiganBuilderValues = {
   selectedSize: string;
   chartAudience: "misses" | "plus";
   fit: string;
-  vNeckDepthInches: string;
+  vNeckDepthInches?: string;
+  styleMeasurements?: Partial<SidewaysCardiganStyleMeasurements>;
   gaugeStitchRaw: string;
   gaugeRowRaw: string;
   availableNeedles: string;
@@ -51,26 +63,44 @@ export function syncSidewaysCardiganBuilderToPatternStorage(
   const selectedMeasurements = computeDefaultMeasurementsFromChartRow(chartRow, fitPreference, {
     bodyShape: "straight",
   });
-  const vNeck = parseFloat(String(values.vNeckDepthInches).replace(/[^\d.-]/g, ""));
-  const vNeckInches =
-    Number.isFinite(vNeck) && vNeck > 0
-      ? roundQuarter(vNeck)
-      : selectedMeasurements.front_neck_depth;
+  const style = values.styleMeasurements ?? {};
+  const finishedLength = parsePositiveInchesField(style.finishedLength);
+  const vNeckFromStyle = parsePositiveInchesField(style.vNeckDepth);
+  const vNeckFromLegacy = parsePositiveInchesField(values.vNeckDepthInches);
+  const vNeckInches = vNeckFromStyle ?? vNeckFromLegacy ?? selectedMeasurements.front_neck_depth;
+  const neckOpening = parsePositiveInchesField(style.neckOpeningWidth);
+  const finishedUpperArm = parsePositiveInchesField(style.finishedUpperArm);
+  const sleeveLength = parsePositiveInchesField(style.sleeveLength);
+  const wrist = parsePositiveInchesField(style.wrist);
 
-  const style = withSidewaysCardiganConstructionAuthored(
+  const sleeveDirection =
+    parseSidewaysCardiganSleeveDirection(values.sleeveDirection) ??
+    SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT;
+
+  const authoredStyle = withSidewaysCardiganConstructionAuthored(
     {
       ...section(getCurrentPattern().style),
       ...section(getPatternData().style),
       recipientCategory: values.chartAudience,
     },
-    values.sleeveDirection,
+    sleeveDirection,
   );
 
   const prevOverrides = section(section(getCurrentPattern().fit).cbMeasurementOverrides);
   const overrides: Record<string, string> = { ...prevOverrides };
+  const lengthOverride = formatOverride(finishedLength);
+  if (lengthOverride) overrides.finishedLength = lengthOverride;
   if (typeof vNeckInches === "number" && vNeckInches > 0) {
-    overrides.neckDepth = formatSwatchCountForGaugeInput(vNeckInches);
+    overrides.neckDepth = formatSwatchCountForGaugeInput(roundQuarter(vNeckInches));
   }
+  const neckOverride = formatOverride(neckOpening);
+  if (neckOverride) overrides.finishedNeckOpeningWidth = neckOverride;
+  const upperArmOverride = formatOverride(finishedUpperArm);
+  if (upperArmOverride) overrides.upperArm = upperArmOverride;
+  const sleeveOverride = formatOverride(sleeveLength);
+  if (sleeveOverride) overrides.sleeveLength = sleeveOverride;
+  const wristOverride = formatOverride(wrist);
+  if (wristOverride) overrides.wrist = wristOverride;
   persistMeasurementOverrides(overrides);
 
   const fitPayload: Record<string, unknown> = {
@@ -80,9 +110,12 @@ export function syncSidewaysCardiganBuilderToPatternStorage(
     fitChoice: fitPreference,
     selectedMeasurements: {
       ...selectedMeasurements,
+      ...(finishedLength !== undefined ? { back_neck_to_hem: roundQuarter(finishedLength) } : {}),
       ...(typeof vNeckInches === "number" && vNeckInches > 0
-        ? { front_neck_depth: vNeckInches }
+        ? { front_neck_depth: roundQuarter(vNeckInches) }
         : {}),
+      ...(neckOpening !== undefined ? { neck_width: roundQuarter(neckOpening) } : {}),
+      ...(sleeveLength !== undefined ? { sleeve_length: roundQuarter(sleeveLength) } : {}),
     },
     cbMeasurementOverrides: overrides,
   };
@@ -110,7 +143,7 @@ export function syncSidewaysCardiganBuilderToPatternStorage(
   }
 
   saveCurrentPattern({
-    style,
+    style: authoredStyle,
     fit: fitPayload,
     ...(Object.keys(yarnGaugeCanonical).length > 0 ? { yarnGauge: yarnGaugeCanonical } : {}),
     machine: {
@@ -118,7 +151,7 @@ export function syncSidewaysCardiganBuilderToPatternStorage(
       availableNeedles: resolvedNeedles,
     },
   });
-  savePatternData("style", style);
+  savePatternData("style", authoredStyle);
   savePatternData("fit", fitPayload);
   if (Object.keys(yarnGaugeCanonical).length > 0) {
     savePatternData("yarnGauge", yarnGaugeCanonical);
