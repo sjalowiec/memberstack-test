@@ -52,6 +52,10 @@ describe("Short Rows Practice Skill Builder", () => {
       "The purpose of wrapping is to prevent a hole at the point where the carriage reverses direction.",
     ]);
     expect(SHORT_ROWS_INTRO_PARAGRAPHS).toEqual(builder.introParagraphs);
+    for (const paragraph of SHORT_ROWS_INTRO_PARAGRAPHS) {
+      expect(paragraph).not.toMatch(/<br\s*\/?>/i);
+      expect(paragraph).not.toMatch(/\n/);
+    }
     expect(builder.whatYoullLearn).toEqual([
       "How holding position creates short rows",
       "Why holes can form at short-row turns",
