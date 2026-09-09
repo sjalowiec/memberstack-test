@@ -67,7 +67,7 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(summaryPage).toContain("SOCK_SUMMARY_ART_SRC");
     expect(summaryPage).toContain('data-socks-edit-art');
     expect(summaryPage).toContain("data-socks-edit-chip-targets");
-    expect(summaryPage).not.toContain("socks-pattern-catalog.webp");
+    expect(summaryPage).not.toContain("socks-pattern-catalog.png");
     expect(summaryScript).not.toContain("buildSockFinishedProfileSvg");
     expect(summaryScript).not.toContain("diagramHost.innerHTML");
     expect(summaryScript).not.toContain("finished-profile");
@@ -209,7 +209,7 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");
     expect(patternScript).toContain('mode: "pattern"');
     expect(patternPage).not.toContain("socks-pattern-summary.webp");
-    expect(patternPage).toContain('src="/images/patterns/socks-pattern-catalog.webp"');
+    expect(patternPage).toContain('src="/images/patterns/socks-pattern-catalog.png"');
   });
 
   it("does not alter Sweater or Hat chip wiring", () => {
