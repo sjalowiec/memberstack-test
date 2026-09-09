@@ -17,7 +17,7 @@ export const SIDEWAYS_CARDIGAN_CONSTRUCTION = "sideways-cardigan";
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY = "constructionAuthored";
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION_FAMILY_OVERRIDE_KEY = "constructionFamily";
 
-/** Future sleeve knitting directions — not generated in this task. */
+/** Cuff-up and top-down numeric sleeve sequences are generated; sideways sleeves are not yet connected. */
 export const SIDEWAYS_CARDIGAN_SLEEVE_DIRECTIONS = ["cuff-up", "top-down", "sideways"] as const;
 export type SidewaysCardiganSleeveDirection =
   (typeof SIDEWAYS_CARDIGAN_SLEEVE_DIRECTIONS)[number];

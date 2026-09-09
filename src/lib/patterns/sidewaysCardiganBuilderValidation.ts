@@ -4,6 +4,7 @@
  */
 
 import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDepth";
+import { getDefaultCuffLengthInches } from "./hemDefaults";
 import {
   calculateSidewaysCardiganBody,
   SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS,
@@ -11,13 +12,21 @@ import {
   type SidewaysCardiganBodyCalcInput,
 } from "./sidewaysCardiganBodyCalc";
 import { parsePositiveInchesField } from "./sidewaysCardiganStyleMeasurements";
+import {
+  calculateSidewaysCardiganSleeve,
+  isSidewaysCardiganConventionalSleeveDirection,
+  type SidewaysCardiganSleeveCalcErrorCode,
+} from "./sidewaysCardiganSleeveCalc";
 
 export type SidewaysCardiganValidationCode =
   | "missing-required"
   | "v-neck-not-shorter-than-length"
   | "armhole-not-shorter-than-length"
   | "non-positive-shoulder-rows"
-  | "needles-exceeded";
+  | "needles-exceeded"
+  | "wrist-not-less-than-upper-arm"
+  | "not-enough-rows-for-shaping"
+  | "sleeve-top-armhole-mismatch";
 
 export type SidewaysCardiganValidationError = {
   code: SidewaysCardiganValidationCode;
@@ -145,8 +154,47 @@ export function validateSidewaysCardiganBuilder(
     };
   }
 
-  return validateSidewaysCardiganNeedles({
+  const bodyNeedles = validateSidewaysCardiganNeedles({
     requiredNeedles: requiredNeedlesForSidewaysCardiganBody(result.calc),
     availableNeedles,
   });
+  if (bodyNeedles) return bodyNeedles;
+
+  if (isSidewaysCardiganConventionalSleeveDirection(sleeve)) {
+    const sleeveResult = calculateSidewaysCardiganSleeve({
+      direction: sleeve,
+      finishedUpperArmInches: upperArm,
+      finishedWristInches: wrist,
+      sleeveLengthInches: sleeveLength,
+      stitchesPerInch: spi,
+      rowsPerInch: rpi,
+      cuffDepthInches: getDefaultCuffLengthInches(audience),
+      armholeDepthInches: armholeDepthInches ?? upperArm / 2,
+      availableNeedles,
+    });
+    if (!sleeveResult.ok) {
+      return mapSleeveCalcErrorToBuilderError(sleeveResult.error.code, sleeveResult.error.message);
+    }
+  }
+
+  return null;
+}
+
+function mapSleeveCalcErrorToBuilderError(
+  code: SidewaysCardiganSleeveCalcErrorCode,
+  message: string,
+): SidewaysCardiganValidationError {
+  if (code === "needles-exceeded") {
+    return { code: "needles-exceeded", message };
+  }
+  if (code === "wrist-not-less-than-upper-arm") {
+    return { code: "wrist-not-less-than-upper-arm", message };
+  }
+  if (code === "not-enough-rows-for-shaping") {
+    return { code: "not-enough-rows-for-shaping", message };
+  }
+  if (code === "sleeve-top-armhole-mismatch") {
+    return { code: "sleeve-top-armhole-mismatch", message };
+  }
+  return { code: "missing-required", message };
 }

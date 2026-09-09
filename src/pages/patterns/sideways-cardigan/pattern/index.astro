@@ -40,6 +40,11 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
           <p class="sg-fit-size-copy" data-sideways-calc-adjustment hidden></p>
           <h2 class="sg-pattern-section-title">Body sequence</h2>
           <div data-sideways-body-sequence></div>
+          <section data-sideways-sleeve-host hidden>
+            <h2 class="sg-pattern-section-title">Sleeve sequence</h2>
+            <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
+            <div data-sideways-sleeve-sequence></div>
+          </section>
         </section>
         <p>
           <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
@@ -53,11 +58,13 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
   .sideways-calc-host {
     margin: 1rem 0 1.5rem;
   }
-  .sideways-body-sequence {
+  .sideways-body-sequence,
+  .sideways-sleeve-sequence {
     margin: 0.75rem 0 1.25rem;
     padding-left: 1.4rem;
   }
-  .sideways-body-sequence li {
+  .sideways-body-sequence li,
+  .sideways-sleeve-sequence li {
     margin: 0.35rem 0;
   }
   .sideways-body-landmarks,

@@ -116,4 +116,44 @@ describe("sideways cardigan builder validation", () => {
   it("allows a complete, valid builder submission", () => {
     expect(validateSidewaysCardiganBuilder(VALID)).toBeNull();
   });
+
+  it("blocks creation when wrist stitches are not narrower than the upper arm", () => {
+    const error = validateSidewaysCardiganBuilder({
+      ...VALID,
+      wristInches: 16,
+    });
+    expect(error?.code).toBe("wrist-not-less-than-upper-arm");
+    expect(error?.message).toMatch(/wrist stitches must be less/i);
+  });
+
+  it("blocks creation when the sleeve is too short to distribute shaping", () => {
+    const error = validateSidewaysCardiganBuilder({
+      ...VALID,
+      sleeveLengthInches: 2,
+    });
+    expect(error?.code).toBe("not-enough-rows-for-shaping");
+    expect(error?.message).toMatch(/not long enough to distribute/i);
+  });
+
+  it("does not run conventional sleeve shaping checks when Sideways is selected", () => {
+    expect(
+      validateSidewaysCardiganBuilder({
+        ...VALID,
+        sleeveDirection: "sideways",
+        wristInches: 16,
+      }),
+    ).toBeNull();
+  });
+
+  it("blocks creation when sleeve stitches exceed available needles even if the body fits", () => {
+    const error = validateSidewaysCardiganBuilder({
+      ...VALID,
+      finishedLengthInches: 10,
+      vNeckDepthInches: 4,
+      finishedUpperArmInches: 16,
+      availableNeedles: 60,
+    });
+    expect(error?.code).toBe("needles-exceeded");
+    expect(error?.message).toMatch(/upper-arm stitch count/i);
+  });
 });

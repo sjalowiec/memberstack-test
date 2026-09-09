@@ -121,6 +121,11 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
       recipientCategory: "misses",
       sleeveDirection: "cuff-up",
     });
+    expect(view.sleeveDirection).toBe("cuff-up");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
+    expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
+    expect(view.sleeveHtml).toContain("sideways-sleeve-sequence");
+    expect(view.sleeveHtml).toContain("Cast on");
   });
 
   it("round-trips a Women’s (plus) pattern", () => {
@@ -135,6 +140,12 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.input.finishedUpperArmInches).toBe(15);
     expect(view.summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
     expect(view.instructions?.steps).toHaveLength(13);
+    expect(view.sleeveDirection).toBe("sideways");
+    expect(view.sleeveInstructions).toBeNull();
+    expect(view.sleeveHtml).toContain("Sideways sleeve calculations are not yet connected.");
+    expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(wrist\)/);
+    expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(upper arm\)/);
+    expect(view.sleeveHtml).not.toContain("sideways-sleeve-sequence");
   });
 
   it("keeps user measurement overrides on the workspace", () => {
@@ -161,6 +172,9 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.input.neckOpeningWidthInches).toBe(8);
     expect(view.input.finishedUpperArmInches).toBe(16);
     expect(view.pattern.style).toMatchObject({ sleeveDirection: "top-down" });
+    expect(view.sleeveDirection).toBe("top-down");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-upper-arm");
+    expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-wrist");
   });
 
   it("persists sleeve direction for workspace refresh", () => {
@@ -175,6 +189,9 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     if (!refreshed.ok) throw new Error(refreshed.message);
     expect(refreshed.input).toEqual(first.input);
     expect(refreshed.instructions?.steps).toEqual(first.instructions?.steps);
+    expect(refreshed.sleeveInstructions?.steps).toEqual(first.sleeveInstructions?.steps);
+    expect(refreshed.sleeveDirection).toBe("top-down");
+    expect(refreshed.sleeveInstructions?.steps[0]?.id).toBe("cast-on-upper-arm");
     expect(refreshed.summary).toEqual(first.summary);
     expect(getCurrentPattern().style.sleeveDirection).toBe("top-down");
   });
@@ -301,6 +318,8 @@ describe("sideways cardigan workspace is not print-only", () => {
     );
     expect(page).toContain("data-sideways-calc-host");
     expect(page).toContain("data-sideways-body-sequence");
+    expect(page).toContain("data-sideways-sleeve-sequence");
+    expect(page).toContain("data-sideways-sleeve-host");
     expect(page).toContain('import "/src/scripts/sideways-cardigan-pattern-page.ts"');
     expect(page).not.toMatch(/class="[^"]*sg-pattern-print-at-a-glance[^"]*"/);
     const shared = readFileSync(resolve("src/styles/patterns/sleeveless-pattern-shared.css"), "utf8");

@@ -17,7 +17,19 @@ import {
   hasAuthoritativeSidewaysCardiganConstruction,
   parseSidewaysCardiganSleeveDirection,
   resolveSidewaysCardiganGarmentStyle,
+  type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
+import {
+  inspectSidewaysCardiganSleeveCalcInputFromPattern,
+  SIDEWAYS_CARDIGAN_SLEEVE_MISSING_GAUGE,
+  SIDEWAYS_CARDIGAN_SLEEVE_MISSING_LENGTH,
+} from "./sidewaysCardiganSleeveCalc";
+import {
+  buildSidewaysCardiganSleeveInstructions,
+  renderSidewaysCardiganSleeveSequenceHtml,
+  renderSidewaysSleeveNotConnectedHtml,
+  type SidewaysCardiganSleeveInstructions,
+} from "./sidewaysCardiganSleeveInstructions";
 import {
   buildSidewaysCardiganWorkspaceSummary,
   renderSidewaysCardiganWorkspaceSummaryHtml,
@@ -59,6 +71,10 @@ export type SidewaysCardiganWorkspaceView =
       summaryHtml: string;
       sequenceHtml: string;
       instructionError?: string;
+      sleeveDirection: SidewaysCardiganSleeveDirection;
+      sleeveInstructions: SidewaysCardiganSleeveInstructions | null;
+      sleeveHtml: string;
+      sleeveError?: string;
     }
   | {
       ok: false;
@@ -77,6 +93,72 @@ function isDev(): boolean {
 function withDevDiagnostic(message: string, diagnostic: string): string {
   if (!isDev()) return message;
   return diagnostic ? `${message} ${diagnostic}` : message;
+}
+
+function resolveSidewaysCardiganSleeveWorkspace(args: {
+  pattern: Record<string, unknown>;
+  calc: SidewaysCardiganBodyCalc;
+  input: SidewaysCardiganBodyCalcInput;
+}): {
+  sleeveDirection: SidewaysCardiganSleeveDirection;
+  sleeveInstructions: SidewaysCardiganSleeveInstructions | null;
+  sleeveHtml: string;
+  sleeveError?: string;
+} {
+  const inspected = inspectSidewaysCardiganSleeveCalcInputFromPattern(
+    args.pattern,
+    args.calc,
+    args.input.finishedUpperArmInches,
+    {
+      stitchesPerInch: args.input.stitchesPerInch,
+      rowsPerInch: args.input.rowsPerInch,
+    },
+  );
+  const sleeveDirection = inspected.sleeveDirection;
+
+  if (sleeveDirection === "sideways") {
+    return {
+      sleeveDirection,
+      sleeveInstructions: null,
+      sleeveHtml: isDev() ? renderSidewaysSleeveNotConnectedHtml() : "",
+    };
+  }
+
+  if (!inspected.input) {
+    const missing = inspected.missing;
+    const code = missing.includes("gauge")
+      ? SIDEWAYS_CARDIGAN_SLEEVE_MISSING_GAUGE
+      : SIDEWAYS_CARDIGAN_SLEEVE_MISSING_LENGTH;
+    const message = missing.includes("gauge")
+      ? "Stitch gauge and row gauge are required to calculate sleeve stitches and rows."
+      : missing.includes("sleeve length")
+        ? "Sleeve length is missing. Enter a sleeve length to calculate cuff-up or top-down sleeves."
+        : `This sleeve is missing ${missing.join(", ") || "measurements"}.`;
+    const diagnostic = `[DEV] Sleeve calculation failed (${code}): missing ${missing.join(", ") || "sleeve measurements"}.`;
+    return {
+      sleeveDirection,
+      sleeveInstructions: null,
+      sleeveHtml: "",
+      sleeveError: withDevDiagnostic(message, diagnostic),
+    };
+  }
+
+  const sleeve = buildSidewaysCardiganSleeveInstructions(inspected.input);
+  if (!sleeve.ok) {
+    const diagnostic = `[DEV] Sleeve calculation failed (${sleeve.error.code}).`;
+    return {
+      sleeveDirection,
+      sleeveInstructions: null,
+      sleeveHtml: "",
+      sleeveError: withDevDiagnostic(sleeve.error.message, diagnostic),
+    };
+  }
+
+  return {
+    sleeveDirection,
+    sleeveInstructions: sleeve.instructions,
+    sleeveHtml: renderSidewaysCardiganSleeveSequenceHtml(sleeve.instructions),
+  };
 }
 
 /** Load the workspace view from canonical + patternBuilderData storage. */
@@ -126,12 +208,18 @@ export function loadSidewaysCardiganWorkspaceView(
 
   const garmentStyle = resolveSidewaysCardiganGarmentStyle(section(pattern.style));
   const body = buildSidewaysCardiganBodyInstructions(inspected.input, garmentStyle);
+  const sleeveDirection =
+    parseSidewaysCardiganSleeveDirection(section(pattern.style).sleeveDirection) ?? undefined;
   const summary = buildSidewaysCardiganWorkspaceSummary({
     calc: result.calc,
     input: inspected.input,
-    sleeveDirection:
-      parseSidewaysCardiganSleeveDirection(section(pattern.style).sleeveDirection) ?? undefined,
+    sleeveDirection,
     garmentStyle,
+  });
+  const sleeve = resolveSidewaysCardiganSleeveWorkspace({
+    pattern,
+    calc: result.calc,
+    input: inspected.input,
   });
 
   if (!body.ok) {
@@ -146,6 +234,7 @@ export function loadSidewaysCardiganWorkspaceView(
       summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
       sequenceHtml: "",
       instructionError: withDevDiagnostic(body.error.message, diagnostic),
+      ...sleeve,
     };
   }
 
@@ -158,5 +247,6 @@ export function loadSidewaysCardiganWorkspaceView(
     summary,
     summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
     sequenceHtml: renderSidewaysCardiganBodySequenceHtml(body.instructions),
+    ...sleeve,
   };
 }

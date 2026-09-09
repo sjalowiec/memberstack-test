@@ -1,6 +1,7 @@
 /**
- * Sideways Cardigan workspace — calculation summary plus a temporary numeric body sequence.
- * Does not generate Drop Shoulder / Sleeveless instructions.
+ * Sideways V-Neck Sweater workspace — calculation summary plus temporary numeric
+ * body and cuff-up / top-down sleeve sequences. Does not generate Drop Shoulder /
+ * Sleeveless instructions. Sideways-knit sleeves are not substituted.
  */
 import {
   stampSidewaysCardiganWorkingDraftFromPage,
@@ -18,6 +19,9 @@ function renderView(): void {
   const errorEl = document.querySelector("[data-sideways-calc-error]");
   const adjustmentEl = document.querySelector("[data-sideways-calc-adjustment]");
   const sequenceEl = document.querySelector("[data-sideways-body-sequence]");
+  const sleeveHost = document.querySelector("[data-sideways-sleeve-host]");
+  const sleeveEl = document.querySelector("[data-sideways-sleeve-sequence]");
+  const sleeveErrorEl = document.querySelector("[data-sideways-sleeve-error]");
   if (
     !(summary instanceof HTMLElement) ||
     !(missing instanceof HTMLElement) ||
@@ -34,6 +38,12 @@ function renderView(): void {
     if (errorEl instanceof HTMLElement) {
       errorEl.hidden = false;
       errorEl.textContent = message;
+    }
+    if (sleeveHost instanceof HTMLElement) sleeveHost.hidden = true;
+    if (sleeveEl instanceof HTMLElement) sleeveEl.innerHTML = "";
+    if (sleeveErrorEl instanceof HTMLElement) {
+      sleeveErrorEl.hidden = true;
+      sleeveErrorEl.textContent = "";
     }
   };
 
@@ -85,6 +95,23 @@ function renderView(): void {
     } else {
       sequenceEl.innerHTML = view.sequenceHtml;
     }
+  }
+
+  const hasSleeveContent = Boolean(view.sleeveHtml) || Boolean(view.sleeveError);
+  if (sleeveHost instanceof HTMLElement) {
+    sleeveHost.hidden = !hasSleeveContent;
+  }
+  if (sleeveErrorEl instanceof HTMLElement) {
+    if (view.sleeveError) {
+      sleeveErrorEl.hidden = false;
+      sleeveErrorEl.textContent = view.sleeveError;
+    } else {
+      sleeveErrorEl.hidden = true;
+      sleeveErrorEl.textContent = "";
+    }
+  }
+  if (sleeveEl instanceof HTMLElement) {
+    sleeveEl.innerHTML = view.sleeveError ? "" : view.sleeveHtml;
   }
 }
 
