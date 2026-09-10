@@ -225,3 +225,28 @@ export function splitPublicColumnCards<T>(
     hasMore: remaining.length > 0,
   };
 }
+
+/**
+ * Next visible count for a public column.
+ * Show More reveals the next `pageSize` cards; Show Less (when all are visible)
+ * returns to the first `pageSize`.
+ */
+export function stepPublicColumnVisibleCount(
+  currentVisible: number,
+  total: number,
+  pageSize: number = WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+): number {
+  if (total <= 0) return 0;
+  if (total <= pageSize) return total;
+  if (currentVisible >= total) return pageSize;
+  return Math.min(currentVisible + pageSize, total);
+}
+
+export function publicColumnRevealLabel(
+  visibleCount: number,
+  total: number,
+  pageSize: number = WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+): "Show More" | "Show Less" | null {
+  if (total <= pageSize) return null;
+  return visibleCount >= total ? "Show Less" : "Show More";
+}

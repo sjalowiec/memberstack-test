@@ -55,8 +55,8 @@ export const WHATS_NEW_BOARD_COLUMN_META: Record<
   },
 };
 
-/** How many cards each public column shows before "Show more". */
-export const WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT = 3;
+/** How many cards each public column shows initially, and how many more each Show More click reveals. */
+export const WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT = 5;
 
 export const WHATS_NEW_NEW_BADGE_DAYS = 30;
 export const WHATS_NEW_FEATURED_VIDEO_SETTINGS_KEY = "featured_video";

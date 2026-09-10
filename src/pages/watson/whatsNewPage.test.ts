@@ -3,7 +3,7 @@ import path from "path";
 
 import { describe, expect, it } from "vitest";
 
-describe("Watson Whats New page", () => {
+describe("Watson Whatï¿½s New page", () => {
   const page = fs.readFileSync(path.resolve("src/pages/watson/whats-new.astro"), "utf8");
   const publicPage = fs.readFileSync(path.resolve("src/pages/whats-new.astro"), "utf8");
   const shell = fs.readFileSync(
@@ -122,7 +122,7 @@ describe("Watson Whats New page", () => {
     expect(publicPage).toContain('type="button"');
   });
 
-  it("all three columns use the shared stacked accordion without Show more", () => {
+  it("all three columns use the shared stacked accordion with a five-card Show More reveal", () => {
     expect(publicPage).toContain("data-wn-stack");
     expect(publicPage).toContain("data-wn-stack-item");
     expect(publicPage).toContain("data-wn-stack-toggle");
@@ -140,10 +140,12 @@ describe("Watson Whats New page", () => {
     expect(publicPage).toContain("aria-controls={panelId}");
     expect(publicPage).toContain("--wn-stack-overlap");
     expect(publicPage).toContain("prefers-reduced-motion");
-    // No Show more / per-column reveal leftovers.
-    expect(publicPage).not.toContain("Show more");
-    expect(publicPage).not.toContain("splitPublicColumnCards");
-    expect(publicPage).not.toContain("data-wn-column-toggle");
+    // Per-column Show More reveals five more entries at a time.
+    expect(publicPage).toContain("splitPublicColumnCards");
+    expect(publicPage).toContain("Show More");
+    expect(publicPage).toContain("data-wn-column-toggle");
+    expect(publicPage).toContain("whats-new__column-more");
+    expect(publicPage).toContain("index >= split.initial.length");
     expect(publicPage).not.toContain("data-wn-extra");
     expect(publicPage).not.toContain("isJustAdded");
 
@@ -152,8 +154,10 @@ describe("Watson Whats New page", () => {
       "utf8",
     );
     expect(boardScript).toContain("initWhatsNewCardStacks");
-    expect(boardScript).not.toContain("Show more");
-    expect(boardScript).not.toContain("data-wn-column-toggle");
+    expect(boardScript).toContain("initWhatsNewColumnToggles");
+    expect(boardScript).toContain("Show More");
+    expect(boardScript).toContain("Show Less");
+    expect(boardScript).toContain("data-wn-column-toggle");
   });
 
   it("uses the shared pinwheel palette helpers on public and Watson pages", () => {

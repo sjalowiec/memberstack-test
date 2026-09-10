@@ -7,6 +7,7 @@ import {
   initWhatsNewCardStacks,
   initWhatsNewPublicBoard,
 } from "./whatsNewPublicBoard";
+import { WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT } from "../lib/whatsNew/types";
 
 /**
  * Minimal DOM nodes for public board stack interactions — runs without jsdom.
@@ -116,6 +117,9 @@ function createNode(initial: {
       if (selector === "[data-wn-stack-panel]") {
         return this.attrs.has("data-wn-stack-panel");
       }
+      if (selector === "[data-wn-column-toggle]") {
+        return this.attrs.has("data-wn-column-toggle");
+      }
       return false;
     },
   };
@@ -129,10 +133,23 @@ function isPanelHidden(panel: StubNode, pageCss: string): boolean {
   );
 }
 
-function buildStackDom(totalCards: number, listId = "whats-new-cards-just_added") {
+function isCardHidden(card: StubNode, pageCss: string): boolean {
+  if (!card.hasAttribute("hidden")) return false;
+  return /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/.test(
+    pageCss,
+  );
+}
+
+function buildStackDom(
+  totalCards: number,
+  listId = "whats-new-cards-just_added",
+  options: { initialVisible?: number } = {},
+) {
+  const initialVisible = options.initialVisible ?? totalCards;
   const items: StubNode[] = [];
   for (let i = 0; i < totalCards; i += 1) {
     const expanded = i === 0;
+    const extraHidden = i >= initialVisible;
     const panel = createNode({
       id: `${listId}-panel-${i}`,
       className: "whats-new__stack-panel",
@@ -162,7 +179,10 @@ function buildStackDom(totalCards: number, listId = "whats-new-cards-just_added"
     items.push(
       createNode({
         className: `whats-new__card kbm-card${expanded ? " whats-new__card--expanded" : ""}`,
-        attrs: { "data-wn-stack-item": "" },
+        attrs: {
+          "data-wn-stack-item": "",
+          ...(extraHidden ? { hidden: "" } : {}),
+        },
         children: [toggle, panel],
       }),
     );
@@ -175,7 +195,26 @@ function buildStackDom(totalCards: number, listId = "whats-new-cards-just_added"
     children: items,
   });
 
-  return { stack, items };
+  const moreButton =
+    totalCards > WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT
+      ? createNode({
+          className: "kbm-btn kbm-btn-outline whats-new__column-more",
+          textContent: "Show More",
+          attrs: {
+            type: "button",
+            "data-wn-column-toggle": "",
+            "aria-controls": listId,
+            "aria-expanded": "false",
+          },
+        })
+      : null;
+
+  const column = createNode({
+    className: "whats-new__column whats-new__column--stack",
+    children: moreButton ? [stack, moreButton] : [stack],
+  });
+
+  return { column, stack, items, moreButton };
 }
 
 describe("whatsNewPublicBoard stacked columns", () => {
@@ -189,11 +228,19 @@ describe("whatsNewPublicBoard stacked columns", () => {
     );
   });
 
-  it("wires the public page to the shared stack module only (no Show more)", () => {
+  it("wires the public page to stacked columns and a centered Show More control", () => {
     expect(publicPage).toContain('from "../scripts/whatsNewPublicBoard"');
     expect(publicPage).toContain("initWhatsNewPublicBoard");
-    expect(publicPage).not.toContain("Show more");
-    expect(publicPage).not.toContain("data-wn-column-toggle");
+    expect(publicPage).toContain("splitPublicColumnCards");
+    expect(publicPage).toContain("Show More");
+    expect(publicPage).toContain("data-wn-column-toggle");
+    expect(publicPage).toContain("whats-new__column-more");
+    expect(pageCss).toMatch(
+      /\.whats-new__column-more\s*\{[^}]*align-self:\s*center/,
+    );
+    expect(pageCss).toMatch(
+      /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/,
+    );
   });
 
   it("expands the newest card by default and collapses the others", () => {
@@ -266,5 +313,116 @@ describe("whatsNewPublicBoard stacked columns", () => {
     expect(colA.items[0]!.classList.contains("whats-new__card--expanded")).toBe(false);
     expect(colB.items[2]!.classList.contains("whats-new__card--expanded")).toBe(true);
     expect(colC.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+  });
+
+  it("initially shows only the five newest cards and omits Show More when a column has five or fewer", () => {
+    const longCol = buildStackDom(12, "whats-new-cards-just_added", {
+      initialVisible: WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+    });
+    const shortCol = buildStackDom(5, "whats-new-cards-worth_exploring");
+    const root = createNode({
+      children: [longCol.column, shortCol.column],
+    });
+
+    initWhatsNewPublicBoard(root);
+
+    for (let i = 0; i < 5; i += 1) {
+      expect(longCol.items[i]!.hasAttribute("hidden")).toBe(false);
+    }
+    for (let i = 5; i < 12; i += 1) {
+      expect(isCardHidden(longCol.items[i]!, pageCss)).toBe(true);
+    }
+    expect(longCol.moreButton).not.toBeNull();
+    expect(longCol.moreButton!.textContent).toBe("Show More");
+    expect(longCol.moreButton!.getAttribute("aria-expanded")).toBe("false");
+
+    expect(shortCol.moreButton).toBeNull();
+    for (const item of shortCol.items) {
+      expect(item.hasAttribute("hidden")).toBe(false);
+    }
+  });
+
+  it("reveals the next five cards per click and Show Less restores the first five", () => {
+    const col = buildStackDom(12, "whats-new-cards-just_added", {
+      initialVisible: WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+    });
+    const root = createNode({ children: [col.column] });
+    initWhatsNewPublicBoard(root);
+
+    const button = col.moreButton!;
+    expect(col.items.map((item) => item.hasAttribute("hidden"))).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+    ]);
+
+    button.click();
+    expect(col.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(10);
+    expect(button.textContent).toBe("Show More");
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+
+    button.click();
+    expect(col.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
+    expect(button.textContent).toBe("Show Less");
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+
+    button.click();
+    expect(col.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(5);
+    expect(col.items.slice(0, 5).every((item) => !item.hasAttribute("hidden"))).toBe(true);
+    expect(col.items.slice(5).every((item) => item.hasAttribute("hidden"))).toBe(true);
+    expect(button.textContent).toBe("Show More");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    // Newest-first DOM order is unchanged.
+    expect(col.items[0]!.querySelector("[data-wn-stack-toggle]")!.textContent).toBe("Title 1");
+    expect(col.stack.children.map((child) => child.querySelector("[data-wn-stack-toggle]")!.textContent)).toEqual(
+      col.items.map((_, i) => `Title ${i + 1}`),
+    );
+  });
+
+  it("expands each column independently with Show More and Show Less", () => {
+    const colA = buildStackDom(12, "whats-new-cards-just_added", {
+      initialVisible: WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+    });
+    const colB = buildStackDom(8, "whats-new-cards-worth_exploring", {
+      initialVisible: WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+    });
+    const colC = buildStackDom(3, "whats-new-cards-in_the_pipeline");
+    const root = createNode({
+      children: [colA.column, colB.column, colC.column],
+    });
+
+    initWhatsNewPublicBoard(root);
+
+    expect(colA.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(5);
+    expect(colB.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(5);
+    expect(colC.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
+    expect(colC.moreButton).toBeNull();
+
+    colA.moreButton!.click();
+    expect(colA.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(10);
+    expect(colB.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(5);
+    expect(colC.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
+
+    colB.moreButton!.click();
+    expect(colB.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
+    expect(colB.moreButton!.textContent).toBe("Show Less");
+    expect(colA.moreButton!.textContent).toBe("Show More");
+    expect(colA.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(10);
+
+    colA.moreButton!.click();
+    expect(colA.moreButton!.textContent).toBe("Show Less");
+    colA.moreButton!.click();
+    expect(colA.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(5);
+    expect(colB.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
+    expect(colC.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
   });
 });
