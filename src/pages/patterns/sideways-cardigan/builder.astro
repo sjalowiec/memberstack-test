@@ -20,11 +20,10 @@ import {
   EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
 } from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
-import { sidewaysCardiganChartAudienceDisplayLabel } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
+import { SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS } from "../../../lib/patterns/sidewaysCardiganConstructionIdentity";
+import { SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/sideways-cardigan/builder");
-const missesChartLabel = sidewaysCardiganChartAudienceDisplayLabel("misses");
-const plusChartLabel = sidewaysCardiganChartAudienceDisplayLabel("plus");
 
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -34,15 +33,20 @@ import "../../../styles/custom-pattern-editing-banner.css";
 const imgGarmentCardigan = "/images/patterns/cardigan.png";
 const imgGarmentPullover = "/images/patterns/pullover.png";
 
+const sleeveLengthPicker = [
+  { value: "long", label: SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS.long, img: "/images/patterns/drop-shoulder/picker/long.webp", alt: "Long sleeve" },
+  { value: "three-quarter", label: SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS["three-quarter"], img: "/images/patterns/drop-shoulder/picker/3-4.webp", alt: "Three-quarter sleeve" },
+  { value: "elbow", label: SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS.elbow, img: "/images/patterns/drop-shoulder/picker/elbow.webp", alt: "Elbow sleeve" },
+  { value: "short", label: SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS.short, img: "/images/patterns/drop-shoulder/picker/short.webp", alt: "Short sleeve" },
+] as const;
+
 const expressNavSteps = [
   { step: 1, label: "Style" },
-  { step: 2, label: "Chart" },
-  { step: 3, label: "Size" },
-  { step: 4, label: "Fit" },
-  { step: 5, label: "Measurements" },
-  { step: 6, label: "Sleeves" },
-  { step: 7, label: "Gauge" },
-  { step: 8, label: "Review" },
+  { step: 2, label: "Starting Size" },
+  { step: 3, label: "Fit" },
+  { step: 4, label: "Sleeve" },
+  { step: 5, label: "Gauge" },
+  { step: 6, label: "Review" },
 ] as const;
 ---
 
@@ -184,7 +188,7 @@ const expressNavSteps = [
                   </div>
                 </section>
 
-                <section class="express-acc express-acc--locked" data-express-step="2" data-express-field="chartAudience">
+                <section class="express-acc express-acc--locked" data-express-step="2" data-express-field="selectedSize">
                   <div
                     class="express-acc__header"
                     data-express-header
@@ -196,45 +200,15 @@ const expressNavSteps = [
                     <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
                     <div class="express-acc__header-main">
                       <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-2-title">Choose a sizing chart</h2>
-                      <span class="express-acc__value" data-express-summary="chartAudience"></span>
-                    </div>
-                  </div>
-                  <div class="express-acc__body" id="express-acc-panel-2" role="region" hidden>
-                    <p class="express-size-instruction">
-                      {missesChartLabel} sizes 1–8 and {plusChartLabel} sizes X–6X use the same sweater
-                      charts as the other Pattern Builders.
-                    </p>
-                    <div class="hat-length-picker__grid sg-fit-preference-grid" role="group">
-                      <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="chartAudience" data-value="misses" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">{missesChartLabel}</span>
-                        <span class="sg-fit-preference-note">Sizes 1–8</span>
-                      </button>
-                      <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="chartAudience" data-value="plus" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">{plusChartLabel}</span>
-                        <span class="sg-fit-preference-note">Sizes X–6X</span>
-                      </button>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="express-acc express-acc--locked" data-express-step="3" data-express-field="selectedSize">
-                  <div
-                    class="express-acc__header"
-                    data-express-header
-                    role="button"
-                    tabindex="-1"
-                    aria-expanded="false"
-                    aria-controls="express-acc-panel-3"
-                  >
-                    <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
-                    <div class="express-acc__header-main">
-                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-3-title">Choose your starting size</h2>
+                      <h2 class="express-acc__title" id="express-step-2-title">Choose your starting size</h2>
                       <span class="express-acc__value" data-express-summary="selectedSize"></span>
                     </div>
                   </div>
-                  <div class="express-acc__body" id="express-acc-panel-3" role="region" hidden>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div class="express-acc__body" id="express-acc-panel-2" role="region" hidden>
                     <div class="express-who-size-intro">
                       <h3 class="express-size-heading">{EXPRESS_BUILDER_SIZE_HEADING}</h3>
                       <p class="express-size-instruction">{EXPRESS_BUILDER_SIZE_INSTRUCTION}</p>
@@ -250,19 +224,35 @@ const expressNavSteps = [
                       </p>
                       <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
                         <div class="express-size-table-wrap">
-                          <table class="express-size-table">
-                            <thead>
-                              <tr>
-                                <th scope="col">Size</th>
-                                <th scope="col">{EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN}</th>
-                              </tr>
-                            </thead>
-                            <tbody
-                              role="radiogroup"
-                              aria-labelledby="express-step-3-title"
-                              data-sideways-size-table-body
-                            ></tbody>
-                          </table>
+                          {
+                            SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((group) => (
+                              <section
+                                class="sideways-size-group"
+                                data-sideways-size-group={group.audience}
+                                aria-labelledby={`sideways-size-group-${group.audience}`}
+                              >
+                                <h3
+                                  class="sideways-size-group__heading"
+                                  id={`sideways-size-group-${group.audience}`}
+                                >
+                                  {group.heading}
+                                </h3>
+                                <table class="express-size-table">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Size</th>
+                                      <th scope="col">{EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody
+                                    role="radiogroup"
+                                    aria-labelledby={`sideways-size-group-${group.audience}`}
+                                    data-sideways-size-table-body={group.audience}
+                                  ></tbody>
+                                </table>
+                              </section>
+                            ))
+                          }
                         </div>
                       </div>
                       <div
@@ -275,23 +265,27 @@ const expressNavSteps = [
                   </div>
                 </section>
 
-                <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="fit">
+                <section class="express-acc express-acc--locked" data-express-step="3" data-express-field="fit">
                   <div
                     class="express-acc__header"
                     data-express-header
                     role="button"
                     tabindex="-1"
                     aria-expanded="false"
-                    aria-controls="express-acc-panel-4"
+                    aria-controls="express-acc-panel-3"
                   >
                     <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
                     <div class="express-acc__header-main">
                       <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-4-title">Choose your fit</h2>
+                      <h2 class="express-acc__title" id="express-step-3-title">Choose your fit</h2>
                       <span class="express-acc__value" data-express-summary="fit"></span>
                     </div>
                   </div>
-                  <div class="express-acc__body" id="express-acc-panel-4" role="region" hidden>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div class="express-acc__body" id="express-acc-panel-3" role="region" hidden>
                     <p class="express-size-instruction">
                       Your selected fit adds ease to the standard body measurements. The finished bust
                       updates when you choose close, standard, or relaxed.
@@ -323,7 +317,81 @@ const expressNavSteps = [
                   </div>
                 </section>
 
-                <section class="express-acc express-acc--locked" data-express-step="5" data-express-field="measurements">
+                <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="sleeveDirection sleeveLength">
+                  <div
+                    class="express-acc__header"
+                    data-express-header
+                    role="button"
+                    tabindex="-1"
+                    aria-expanded="false"
+                    aria-controls="express-acc-panel-4"
+                  >
+                    <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
+                    <div class="express-acc__header-main">
+                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
+                      <h2 class="express-acc__title" id="express-step-4-title">Choose your sleeves</h2>
+                      <span class="express-acc__value" data-express-summary="sleeve"></span>
+                    </div>
+                  </div>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div class="express-acc__body" id="express-acc-panel-4" role="region" hidden>
+                    <div class="express-style-group">
+                      <h3 class="express-style-sublabel" id="express-sleeve-direction-label">Sleeve direction</h3>
+                      <p class="express-size-instruction">
+                        Saved for later sleeve instructions. Sideways sleeves keep self-striping yarn
+                        vertical, matching the body.
+                      </p>
+                      <div class="hat-length-picker__grid sg-fit-preference-grid" role="group" aria-labelledby="express-sleeve-direction-label">
+                        <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="cuff-up" aria-pressed="false">
+                          <span class="hat-length-picker__option-label">Cuff up</span>
+                        </button>
+                        <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="top-down" aria-pressed="false">
+                          <span class="hat-length-picker__option-label">Top down</span>
+                        </button>
+                        <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="sideways" aria-pressed="false">
+                          <span class="hat-length-picker__option-label">Sideways</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="express-style-group ds-sleeve-length" data-sideways-sleeve-length>
+                      <h3 class="express-style-sublabel" id="express-sleeve-length-label">Sleeve length</h3>
+                      <div class="ds-sleeve-length__grid hat-length-picker__grid hat-brim-picker__grid" role="group" aria-labelledby="express-sleeve-length-label">
+                        {
+                          sleeveLengthPicker.map((opt, i) => (
+                            <button
+                              type="button"
+                              class:list={[
+                                "hat-length-picker__option",
+                                "ds-sleeve-length__option",
+                                { "is-selected": i === 0 },
+                              ]}
+                              data-choice
+                              data-field="sleeveLength"
+                              data-value={opt.value}
+                              aria-pressed={i === 0 ? "true" : "false"}
+                            >
+                              <img
+                                src={opt.img}
+                                alt={opt.alt}
+                                class="hat-length-picker__img sg-picker-img"
+                                width="120"
+                                height="120"
+                                loading="lazy"
+                                decoding="async"
+                              />
+                              <span class="hat-length-picker__option-label">{opt.label}</span>
+                            </button>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="express-acc express-acc--locked" data-express-step="5" data-express-field="gauge">
                   <div
                     class="express-acc__header"
                     data-express-header
@@ -334,81 +402,19 @@ const expressNavSteps = [
                   >
                     <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
                     <div class="express-acc__header-main">
-                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-5-title">Style measurements</h2>
-                      <span class="express-acc__value" data-express-summary="measurements"></span>
-                    </div>
-                  </div>
-                  <div class="express-acc__body" id="express-acc-panel-5" role="region" hidden>
-                    <p class="express-size-instruction">
-                      These start from your size and fit. Change any value you want to use instead.
-                    </p>
-                    <div class="sideways-style-fields">
-                      <FloatingInput id="sideways-finished-length" name="finishedLength" label="Finished garment length (inches)" type="number" inputMode="decimal" min="1" step="0.25" required />
-                      <FloatingInput id="sideways-vneck-depth" name="vNeckDepth" label="V-neck depth (inches)" type="number" inputMode="decimal" min="1" step="0.25" required />
-                      <FloatingInput id="sideways-neck-opening" name="neckOpeningWidth" label="Neck-opening width (inches)" type="number" inputMode="decimal" min="1" step="0.25" required />
-                      <FloatingInput id="sideways-finished-upper-arm" name="finishedUpperArm" label="Finished upper arm (inches)" type="number" inputMode="decimal" min="1" step="0.25" required />
-                      <FloatingInput id="sideways-sleeve-length" name="sleeveLength" label="Sleeve length (inches)" type="number" inputMode="decimal" min="1" step="0.25" required />
-                      <FloatingInput id="sideways-wrist" name="wrist" label="Wrist (inches)" type="number" inputMode="decimal" min="1" step="0.25" required />
-                    </div>
-                  </div>
-                </section>
-
-                <section class="express-acc express-acc--locked" data-express-step="6" data-express-field="sleeveDirection">
-                  <div
-                    class="express-acc__header"
-                    data-express-header
-                    role="button"
-                    tabindex="-1"
-                    aria-expanded="false"
-                    aria-controls="express-acc-panel-6"
-                  >
-                    <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
-                    <div class="express-acc__header-main">
-                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-6-title">Sleeve direction</h2>
-                      <span class="express-acc__value" data-express-summary="sleeveDirection"></span>
-                    </div>
-                  </div>
-                  <div class="express-acc__body" id="express-acc-panel-6" role="region" hidden>
-                    <p class="express-size-instruction">
-                      Saved for later sleeve instructions. Sideways sleeves keep self-striping yarn
-                      vertical, matching the body.
-                    </p>
-                    <div class="hat-length-picker__grid sg-fit-preference-grid" role="group">
-                      <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="cuff-up" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">Cuff up</span>
-                      </button>
-                      <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="top-down" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">Top down</span>
-                      </button>
-                      <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="sideways" aria-pressed="false">
-                        <span class="hat-length-picker__option-label">Sideways</span>
-                      </button>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="express-acc express-acc--locked" data-express-step="7" data-express-field="gauge">
-                  <div
-                    class="express-acc__header"
-                    data-express-header
-                    role="button"
-                    tabindex="-1"
-                    aria-expanded="false"
-                    aria-controls="express-acc-panel-7"
-                  >
-                    <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
-                    <div class="express-acc__header-main">
                       <div class="express-acc__title-row express-acc__title-row--gauge">
-                        <h2 class="express-acc__title" id="express-step-7-title">Enter your gauge</h2>
+                        <h2 class="express-acc__title" id="express-step-5-title">Enter your gauge</h2>
                         <span class="express-acc__title-glossary">
                           <GlossaryTooltip id={616}>Gauge</GlossaryTooltip>
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div class="express-acc__body" id="express-acc-panel-7" role="region" hidden>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div class="express-acc__body" id="express-acc-panel-5" role="region" hidden>
                     <form class="express-gauge" id="express-gauge-form" novalidate>
                       <p class="express-gauge-intro">Enter the gauge from your swatch over 4 inches / 10 cm.</p>
                       <div class="express-gauge-block">
@@ -441,23 +447,27 @@ const expressNavSteps = [
                   </div>
                 </section>
 
-                <section class="express-acc express-acc--locked" data-express-step="8" data-express-field="review">
+                <section class="express-acc express-acc--locked" data-express-step="6" data-express-field="review">
                   <div
                     class="express-acc__header"
                     data-express-header
                     role="button"
                     tabindex="-1"
                     aria-expanded="false"
-                    aria-controls="express-acc-panel-8"
+                    aria-controls="express-acc-panel-6"
                   >
                     <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
                     <div class="express-acc__header-main">
                       <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-8-title">Review and create</h2>
+                      <h2 class="express-acc__title" id="express-step-6-title">Review and create</h2>
                       <span class="express-acc__value" data-express-summary="review"></span>
                     </div>
                   </div>
-                  <div class="express-acc__body" id="express-acc-panel-8" role="region" hidden>
+                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
+                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
+                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
+                  </p>
+                  <div class="express-acc__body" id="express-acc-panel-6" role="region" hidden>
                     <p class="express-size-instruction">
                       A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a
                       straight back neck.
@@ -483,11 +493,6 @@ const expressNavSteps = [
 </Layout>
 
 <style>
-  .sideways-style-fields {
-    display: grid;
-    gap: 0.85rem;
-    max-width: 22rem;
-  }
   .sideways-cardigan-builder-page .print-summary-dl--inline {
     display: grid;
     gap: 0.35rem 1.25rem;
@@ -507,6 +512,29 @@ const expressNavSteps = [
   .sideways-cardigan-builder-page [data-sideways-builder-error]:not([hidden]) {
     color: #8a1f11;
     font-weight: 600;
+  }
+  .sideways-size-group + .sideways-size-group {
+    margin-top: 1.15rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(82, 104, 45, 0.16);
+  }
+  .sideways-size-group__heading {
+    margin: 0 0 0.45rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--express-nav-green, #52682d);
+  }
+  .express-style-group + .express-style-group {
+    margin-top: 1.4rem;
+  }
+  .express-style-sublabel {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--express-nav-green, #52682d);
+  }
+  .ds-sleeve-length {
+    margin: 0;
   }
 </style>
 

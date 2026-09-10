@@ -51,6 +51,37 @@ describe("sideways cardigan style measurements", () => {
     expect(afterSize4.neckOpeningWidth).toBe("7");
   });
 
+  it("scales sleeve length and wrist from the shared Drop Shoulder picker choices", () => {
+    const long = defaultSidewaysCardiganStyleMeasurements({
+      row: size8,
+      chartAudience: "misses",
+      fitPreference: "standard",
+      sleeveLengthChoice: "long",
+    });
+    const threeQuarter = defaultSidewaysCardiganStyleMeasurements({
+      row: size8,
+      chartAudience: "misses",
+      fitPreference: "standard",
+      sleeveLengthChoice: "three-quarter",
+    });
+    const elbow = defaultSidewaysCardiganStyleMeasurements({
+      row: size8,
+      chartAudience: "misses",
+      fitPreference: "standard",
+      sleeveLengthChoice: "elbow",
+    });
+    const short = defaultSidewaysCardiganStyleMeasurements({
+      row: size8,
+      chartAudience: "misses",
+      fitPreference: "standard",
+      sleeveLengthChoice: "short",
+    });
+    expect(Number(long.sleeveLength)).toBe(17);
+    expect(Number(threeQuarter.sleeveLength)).toBe(12.75);
+    expect(Number(elbow.sleeveLength)).toBe(8.5);
+    expect(Number(short.sleeveLength)).toBe(5.5);
+  });
+
   it("keeps a user-edited measurement when the size changes", () => {
     const fromSize8 = defaultSidewaysCardiganStyleMeasurements({
       row: size8,

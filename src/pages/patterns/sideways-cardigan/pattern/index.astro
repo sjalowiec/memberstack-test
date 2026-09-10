@@ -2,9 +2,13 @@
 import Layout from "../../../../layouts/Layout.astro";
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
+import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
+import { SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS } from "../../../../lib/patterns/sidewaysCardiganSummaryEdit";
 
 import "../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
 ---
 
 <Layout
@@ -19,10 +23,26 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
     <div class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternPhoneWorkspaceNotice />
+        <div class="pattern-action-bar no-print">
+          <div class="pattern-action-bar__group pattern-action-bar__group--start">
+            <PatternBuilderMyPatternsLink />
+          </div>
+          <div class="pattern-action-bar__group pattern-action-bar__group--end">
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-sl-edit-open
+              data-testid="button-edit-pattern"
+              aria-haspopup="dialog"
+              aria-controls="sl-edit-drawer-panel"
+            >
+              <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+            </button>
+          </div>
+        </div>
         <header class="pattern-header page-header">
           <div class="pattern-header__title-row">
             <h1 class="pattern-title">Sideways V-Neck Sweater</h1>
-            <PatternBuilderMyPatternsLink />
           </div>
           <p class="pattern-subtext">
             A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a
@@ -50,6 +70,71 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
           <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
         </p>
       </div>
+    </div>
+
+    <div class="sl-edit-drawer sl-edit-drawer--workspace no-print" data-sl-edit-drawer aria-hidden="true">
+      <div class="sl-edit-drawer__backdrop" data-sl-edit-close aria-hidden="true"></div>
+      <section
+        id="sl-edit-drawer-panel"
+        class="sl-edit-drawer__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Edit pattern"
+        tabindex="-1"
+      >
+        <PatternPhoneWorkspaceNotice />
+        <PatternSummaryEditWorkspace
+          headingClass="pattern-editable-heading"
+          measurePaneAttr="data-sl-measure-pane"
+          actionsAttr="data-sl-edit-actions"
+        >
+          <Fragment slot="quick">
+            <section class="sl-edit-section" aria-labelledby="sideways-edit-setup-heading">
+              <h3 class="sl-edit-section__title" id="sideways-edit-setup-heading">Pattern choices</h3>
+              <p class="sl-edit-ease">
+                Cardigan/Pullover and sleeve direction stay as you set them in the builder.
+              </p>
+              <dl class="print-summary-dl print-summary-dl--inline" data-sideways-edit-choices></dl>
+            </section>
+          </Fragment>
+          <Fragment slot="heading">Measurements</Fragment>
+          <Fragment slot="notes">
+            <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
+            <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
+              Pattern updated.
+            </p>
+          </Fragment>
+          <Fragment slot="actions">
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--ghost"
+              data-sl-edit-close
+              data-testid="button-edit-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--primary"
+              data-sl-edit-apply
+              data-testid="button-edit-apply"
+            >
+              Save Changes
+            </button>
+          </Fragment>
+          <Fragment slot="hint">
+            These start from your size and fit. Change any value, then click Save Changes to
+            update the pattern numbers.
+          </Fragment>
+          <Fragment slot="diagram">
+            <div class="sideways-edit-measure-list" data-sideways-edit-measurements>
+              {SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
+                <PatternSummaryMeasurementChip field={field} />
+              ))}
+            </div>
+          </Fragment>
+        </PatternSummaryEditWorkspace>
+      </section>
     </div>
   </main>
 </Layout>
@@ -87,9 +172,76 @@ import "../../../../styles/patterns/sleeveless-pattern-shared.css";
   .sideways-cardigan-pattern-page .print-summary-dl__pair dd {
     margin: 0;
   }
+  .pattern-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+  }
+  .pattern-action-bar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .pattern-action-bar__group--end {
+    justify-content: flex-end;
+  }
+  .sl-edit-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 1450;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+  .sl-edit-drawer.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.2s ease;
+  }
+  .sl-edit-drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+  }
+  .sl-edit-drawer--workspace .sl-edit-drawer__panel {
+    position: absolute;
+    inset: var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) 0 0 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: none;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, #fdfcf7);
+    transform: translateY(14px);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sl-edit-drawer--workspace.is-open .sl-edit-drawer__panel {
+    transform: translateY(0);
+  }
+  .sl-edit-drawer__panel:focus {
+    outline: none;
+  }
+  .sideways-edit-measure-list {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.5rem 0 1rem;
+  }
 </style>
 
 <script>
   import "/src/scripts/sideways-cardigan-pattern-page.ts";
 </script>
-

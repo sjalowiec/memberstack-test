@@ -12,11 +12,14 @@ import {
 } from "./expressBuilderReviewSubmit";
 import {
   parseSidewaysCardiganSleeveDirection,
+  parseSidewaysCardiganSleeveLengthChoice,
   resolveSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+  SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT,
   type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
+  type SidewaysCardiganSleeveLengthChoice,
 } from "./sidewaysCardiganConstructionIdentity";
 import {
   emptySidewaysCardiganStyleMeasurements,
@@ -41,6 +44,7 @@ export type SidewaysCardiganBuilderDraftState = {
   selectedSize: string;
   fit: string;
   sleeveDirection: SidewaysCardiganSleeveDirection;
+  sleeveLengthChoice: SidewaysCardiganSleeveLengthChoice;
   styleMeasurements: SidewaysCardiganStyleMeasurements;
   userEditedStyle: SidewaysCardiganUserEditedStyle;
   gaugeStitchRaw: string;
@@ -56,6 +60,7 @@ export function emptySidewaysCardiganBuilderDraftState(): SidewaysCardiganBuilde
     selectedSize: "",
     fit: "",
     sleeveDirection: SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+    sleeveLengthChoice: SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT,
     styleMeasurements: emptySidewaysCardiganStyleMeasurements(),
     userEditedStyle: {},
     gaugeStitchRaw: "",
@@ -130,6 +135,7 @@ export function readSidewaysCardiganBuilderStateFromDraft(
     sleeveDirection:
       parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ??
       SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+    sleeveLengthChoice: parseSidewaysCardiganSleeveLengthChoice(style.sleeveLength),
     styleMeasurements: measurements,
     userEditedStyle: edited,
     gaugeStitchRaw: stringField(yg.gaugeStitchRaw ?? ygm.gaugeStitchRaw),

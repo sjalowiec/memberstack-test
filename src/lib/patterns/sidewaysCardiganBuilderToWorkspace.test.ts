@@ -213,6 +213,7 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(restored.selectedSize).toBe("X");
     expect(restored.fit).toBe("standard");
     expect(restored.sleeveDirection).toBe("sideways");
+    expect(restored.sleeveLengthChoice).toBe("long");
     expect(restored.garmentStyle).toBe("cardigan");
     expect(restored.styleMeasurements.vNeckDepth).toBe("9.5");
     expect(restored.styleMeasurements.finishedLength).toBe("22");
@@ -307,6 +308,42 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain('data-field="garmentStyle"');
     expect(builder).toContain("Cardigan");
     expect(builder).toContain("Pullover");
+    expect(builder).toContain('label: "Style"');
+    expect(builder).toContain('label: "Starting Size"');
+    expect(builder).toContain('label: "Fit"');
+    expect(builder).toContain('label: "Sleeve"');
+    expect(builder).toContain('label: "Gauge"');
+    expect(builder).toContain('label: "Review"');
+    expect(builder).not.toContain("Choose a sizing chart");
+    expect(builder).not.toContain("Style measurements");
+    expect(builder).not.toContain('data-express-field="chartAudience"');
+    expect(builder).not.toContain('data-express-field="measurements"');
+    expect(builder).toContain("Misses");
+    expect(builder).toContain("Women's");
+    expect(builder).not.toContain(">Plus<");
+    expect(builder).toContain('data-field="sleeveDirection"');
+    expect(builder).toContain('data-field="sleeveLength"');
+    expect(builder).toContain('data-value="cuff-up"');
+    expect(builder).toContain('data-value="top-down"');
+    expect(builder).toContain('data-value="sideways"');
+    expect(builder).toContain('value: "long"');
+    expect(builder).toContain('value: "three-quarter"');
+    expect(builder).toContain('value: "elbow"');
+    expect(builder).toContain('value: "short"');
+    expect(workspace).toContain("PatternSummaryEditWorkspace");
+    expect(workspace).toContain("data-sl-edit-apply");
+    expect(workspace).toContain("Save Changes");
+    expect(workspace).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
+    expect(workspace).toContain("PatternSummaryMeasurementChip");
+    expect(readFileSync(resolve("src/lib/patterns/sidewaysCardiganSummaryEdit.ts"), "utf8")).toContain(
+      "Finished garment length",
+    );
+    expect(readFileSync(resolve("src/lib/patterns/sidewaysCardiganSummaryEdit.ts"), "utf8")).toContain(
+      "V-neck depth",
+    );
+    expect(readFileSync(resolve("src/lib/patterns/sidewaysCardiganSummaryEdit.ts"), "utf8")).toContain(
+      "Neck-opening width",
+    );
   });
 });
 

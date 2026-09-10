@@ -12,6 +12,11 @@ import {
   savePatternData,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import {
+  DROP_SHOULDER_SLEEVE_LENGTH_CHOICES,
+  normalizeDropShoulderSleeveLengthChoice,
+  type DropShoulderSleeveLengthChoice,
+} from "./patternConstructionIdentity";
 
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION = "sideways-cardigan";
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY = "constructionAuthored";
@@ -41,6 +46,30 @@ export function parseSidewaysCardiganSleeveDirection(
   return (SIDEWAYS_CARDIGAN_SLEEVE_DIRECTIONS as readonly string[]).includes(raw)
     ? (raw as SidewaysCardiganSleeveDirection)
     : null;
+}
+
+/** Same categorical sleeve-length choices as Drop Shoulder. Stored on `style.sleeveLength`. */
+export const SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES = DROP_SHOULDER_SLEEVE_LENGTH_CHOICES;
+export type SidewaysCardiganSleeveLengthChoice = DropShoulderSleeveLengthChoice;
+
+export const SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT: SidewaysCardiganSleeveLengthChoice =
+  "long";
+
+/** Customer-facing labels — match the Drop Shoulder picker. */
+export const SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS: Record<
+  SidewaysCardiganSleeveLengthChoice,
+  string
+> = {
+  long: "Long",
+  "three-quarter": "3/4",
+  elbow: "Elbow",
+  short: "Short",
+};
+
+export function parseSidewaysCardiganSleeveLengthChoice(
+  value: unknown,
+): SidewaysCardiganSleeveLengthChoice {
+  return normalizeDropShoulderSleeveLengthChoice(value);
 }
 
 /** Shared Drop Shoulder / Sleeveless garment-style storage: cardigan/pullover + open/closed. */
@@ -89,6 +118,7 @@ export const SIDEWAYS_CARDIGAN_STYLE_KEYS = [
   "construction",
   SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY,
   "sleeveDirection",
+  "sleeveLength",
   "garmentStyle",
   "frontStyle",
 ] as const;
@@ -113,10 +143,14 @@ export function withSidewaysCardiganConstructionAuthored(
   style: Record<string, unknown>,
   sleeveDirection: SidewaysCardiganSleeveDirection = SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
   garmentStyle?: SidewaysCardiganGarmentStyle,
+  sleeveLength?: SidewaysCardiganSleeveLengthChoice,
 ): Record<string, unknown> {
   const resolved =
     parseSidewaysCardiganGarmentStyle(garmentStyle) ??
     resolveSidewaysCardiganGarmentStyle(style);
+  const sleeveLengthChoice = parseSidewaysCardiganSleeveLengthChoice(
+    sleeveLength ?? style.sleeveLength,
+  );
   return {
     ...style,
     construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
@@ -129,6 +163,7 @@ export function withSidewaysCardiganConstructionAuthored(
     armholeStyle: "drop-shoulder",
     patternMode: "express",
     sleeveDirection,
+    sleeveLength: sleeveLengthChoice,
   };
 }
 
@@ -165,6 +200,7 @@ export function hasAuthoritativeSidewaysCardiganConstruction(
 export function stampSidewaysCardiganWorkingDraftFromPage(overrides?: {
   sleeveDirection?: SidewaysCardiganSleeveDirection;
   garmentStyle?: SidewaysCardiganGarmentStyle;
+  sleeveLength?: SidewaysCardiganSleeveLengthChoice;
 }): void {
   if (readSidewaysCardiganBuilderPageConstruction() !== SIDEWAYS_CARDIGAN_CONSTRUCTION) return;
   try {
@@ -179,10 +215,14 @@ export function stampSidewaysCardiganWorkingDraftFromPage(overrides?: {
     const garmentStyle =
       parseSidewaysCardiganGarmentStyle(overrides?.garmentStyle) ??
       resolveSidewaysCardiganGarmentStyle(previous);
+    const sleeveLength = parseSidewaysCardiganSleeveLengthChoice(
+      overrides?.sleeveLength ?? previous.sleeveLength,
+    );
     const style = withSidewaysCardiganConstructionAuthored(
       previous,
       sleeveDirection,
       garmentStyle,
+      sleeveLength,
     );
     saveCurrentPattern({ style });
     savePatternData("style", style);

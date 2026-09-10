@@ -245,3 +245,23 @@ describe("Sweater Summary/Edit shells use the shared Lego block", () => {
     expect(dropShoulderPattern).toContain("data-cb-measure-root");
   });
 });
+
+const sidewaysPattern = readFileSync(
+  resolve("src/pages/patterns/sideways-cardigan/pattern/index.astro"),
+  "utf8",
+);
+
+describe("Sideways V-Neck Summary/Edit reuses the shared Lego block", () => {
+  it("wraps Sideways measurements in PatternSummaryEditWorkspace without a custom editor", () => {
+    expect(sidewaysPattern).toContain("PatternSummaryEditWorkspace");
+    expect(sidewaysPattern).toContain("PatternSummaryMeasurementChip");
+    expect(sidewaysPattern).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
+    expect(sidewaysPattern).toContain('slot="quick"');
+    expect(sidewaysPattern).toContain('slot="diagram"');
+    expect(sidewaysPattern).toContain("data-sl-edit-apply");
+    expect(sidewaysPattern).toContain("Save Changes");
+    expect(sidewaysPattern).toContain("sl-edit-drawer--workspace");
+    expect(sidewaysPattern).not.toContain("buildHatPatternDiagramSvg");
+    expect(sidewaysPattern).not.toContain("sleevelessPatternEditDrawerPrototype.ts");
+  });
+});

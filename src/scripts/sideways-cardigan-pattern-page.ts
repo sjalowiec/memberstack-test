@@ -4,11 +4,25 @@
  * Sleeveless instructions. Sideways-knit sleeves are not substituted.
  */
 import {
+  SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
+  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
   loadSidewaysCardiganWorkspaceView,
 } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
+import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
+import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
+import { readSidewaysCardiganBuilderStateFromDraft } from "../lib/patterns/sidewaysCardiganBuilderState";
+import { sidewaysCardiganChartAudienceDisplayLabel } from "../lib/patterns/sidewaysCardiganSizeCharts";
+import {
+  applySidewaysCardiganSummaryMeasurementEdits,
+  SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
+} from "../lib/patterns/sidewaysCardiganSummaryEdit";
+import {
+  type SidewaysCardiganStyleMeasurementKey,
+  type SidewaysCardiganStyleMeasurements,
+} from "../lib/patterns/sidewaysCardiganStyleMeasurements";
 
 function renderView(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
@@ -115,9 +129,149 @@ function renderView(): void {
   }
 }
 
+function readMeasurementInputs(): Partial<SidewaysCardiganStyleMeasurements> {
+  const edits: Partial<SidewaysCardiganStyleMeasurements> = {};
+  for (const field of SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS) {
+    const id = field.id as SidewaysCardiganStyleMeasurementKey;
+    if (!field.inputDataAttr) continue;
+    const input = document.querySelector(`[${field.inputDataAttr}]`);
+    if (!(input instanceof HTMLInputElement)) continue;
+    edits[id] = input.value.trim();
+  }
+  return edits;
+}
+
+function fillSummaryEditForm(): void {
+  const state = readSidewaysCardiganBuilderStateFromDraft();
+  for (const field of SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS) {
+    const id = field.id as SidewaysCardiganStyleMeasurementKey;
+    if (!field.inputDataAttr) continue;
+    const input = document.querySelector(`[${field.inputDataAttr}]`);
+    if (!(input instanceof HTMLInputElement)) continue;
+    input.value = state.styleMeasurements[id] ?? "";
+  }
+  const choices = document.querySelector("[data-sideways-edit-choices]");
+  if (!(choices instanceof HTMLElement)) return;
+  const chartLabel = sidewaysCardiganChartAudienceDisplayLabel(state.chartAudience);
+  const rows: Array<[string, string]> = [
+    ["Garment style", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]],
+    [
+      "Starting size",
+      state.selectedSize
+        ? chartLabel
+          ? `Size ${state.selectedSize} · ${chartLabel}`
+          : `Size ${state.selectedSize}`
+        : "",
+    ],
+    ["Fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)}` : ""],
+    ["Sleeve direction", SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection]],
+  ];
+  choices.replaceChildren();
+  for (const [term, def] of rows) {
+    if (!def) continue;
+    const wrap = document.createElement("div");
+    wrap.className = "print-summary-dl__pair";
+    const dt = document.createElement("dt");
+    dt.textContent = term;
+    const dd = document.createElement("dd");
+    dd.textContent = def;
+    wrap.append(dt, dd);
+    choices.append(wrap);
+  }
+}
+
+function showEditError(message: string | null): void {
+  const el = document.querySelector("[data-sl-edit-errors]");
+  if (!(el instanceof HTMLElement)) return;
+  if (!message) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  el.textContent = message;
+}
+
+function showEditSaved(visible: boolean): void {
+  const el = document.querySelector("[data-sl-edit-note]");
+  if (!(el instanceof HTMLElement)) return;
+  el.hidden = !visible;
+}
+
+function wireSummaryEdit(): void {
+  const drawer = document.querySelector("[data-sl-edit-drawer]");
+  if (!(drawer instanceof HTMLElement)) return;
+  const panel = document.getElementById("sl-edit-drawer-panel");
+  let snapshot: SidewaysCardiganStyleMeasurements | null = null;
+
+  const open = (): void => {
+    snapshot = { ...readSidewaysCardiganBuilderStateFromDraft().styleMeasurements };
+    fillSummaryEditForm();
+    showEditError(null);
+    showEditSaved(false);
+    drawer.classList.add("is-open");
+    drawer.setAttribute("aria-hidden", "false");
+    panel?.focus();
+  };
+
+  const close = (restore: boolean): void => {
+    if (restore && snapshot) {
+      applySidewaysCardiganSummaryMeasurementEdits(snapshot);
+      renderView();
+    }
+    drawer.classList.remove("is-open");
+    drawer.setAttribute("aria-hidden", "true");
+    showEditError(null);
+    showEditSaved(false);
+  };
+
+  document.querySelector("[data-sl-edit-open]")?.addEventListener("click", () => open());
+  drawer.querySelectorAll("[data-sl-edit-close]").forEach((el) => {
+    el.addEventListener("click", () => close(true));
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && drawer.classList.contains("is-open")) {
+      close(true);
+    }
+  });
+  document.querySelector("[data-sl-edit-apply]")?.addEventListener("click", () => {
+    void (async () => {
+      const before = readSidewaysCardiganBuilderStateFromDraft();
+      const garmentStyle = before.garmentStyle;
+      const sleeveDirection = before.sleeveDirection;
+      const result = applySidewaysCardiganSummaryMeasurementEdits(readMeasurementInputs());
+      if (!result.ok) {
+        showEditError(result.message);
+        return;
+      }
+      const after = readSidewaysCardiganBuilderStateFromDraft();
+      if (after.garmentStyle !== garmentStyle || after.sleeveDirection !== sleeveDirection) {
+        showEditError("Cardigan/Pullover and sleeve direction must stay unchanged.");
+        return;
+      }
+      snapshot = { ...after.styleMeasurements };
+      const activeId = readActiveCustomPatternProjectId();
+      if (activeId) {
+        const saveRes = await runSaveCustomPatternFromWorkspace(undefined, {
+          skipPreSavePrepare: true,
+          activeProjectId: activeId,
+        });
+        if (!saveRes.ok) {
+          showEditError(saveRes.error);
+          return;
+        }
+      }
+      renderView();
+      showEditError(null);
+      showEditSaved(true);
+    })();
+  });
+}
+
 function boot(): void {
   try {
     renderView();
+    wireSummaryEdit();
   } catch (error) {
     const missing = document.querySelector("[data-sideways-calc-missing]");
     if (missing instanceof HTMLElement) {

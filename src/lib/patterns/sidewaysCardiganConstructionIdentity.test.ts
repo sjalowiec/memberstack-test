@@ -44,6 +44,7 @@ describe("sideways cardigan construction identity", () => {
     expect(sideways.garmentStyle).toBe("cardigan");
     expect(sideways.neckline).toBe("v");
     expect(sideways.frontStyle).toBe("open");
+    expect(sideways.sleeveLength).toBe("long");
   });
 
   it("defaults existing drafts without a garment-style choice to cardigan", () => {

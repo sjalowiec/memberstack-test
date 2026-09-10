@@ -10,6 +10,14 @@ import {
   finishedUpperArmInchesForSidewaysCardigan,
 } from "./sidewaysCardiganFinishedMeasurements";
 import { resolveDropShoulderFinishedWristInches } from "./dropShoulderSleeveEase";
+import {
+  scaleDropShoulderCuffCircumferenceInches,
+  scaleDropShoulderSleeveLengthInches,
+} from "./dropShoulderSleeveMeasurementOverrides";
+import {
+  parseSidewaysCardiganSleeveLengthChoice,
+  type SidewaysCardiganSleeveLengthChoice,
+} from "./sidewaysCardiganConstructionIdentity";
 import type { SidewaysCardiganWomenChartAudience } from "./sidewaysCardiganSizeCharts";
 
 export const SIDEWAYS_CARDIGAN_STYLE_MEASUREMENT_KEYS = [
@@ -64,6 +72,7 @@ export function defaultSidewaysCardiganStyleMeasurements(args: {
   row: ChartRow;
   chartAudience: SidewaysCardiganWomenChartAudience;
   fitPreference: string;
+  sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice | string;
 }): SidewaysCardiganStyleMeasurements {
   const selected = computeDefaultMeasurementsFromChartRow(args.row, args.fitPreference, {
     bodyShape: "straight",
@@ -78,13 +87,23 @@ export function defaultSidewaysCardiganStyleMeasurements(args: {
     fit: args.fitPreference,
     bodyWristIn: selected.wrist,
   });
+  const sleeveLengthChoice = parseSidewaysCardiganSleeveLengthChoice(args.sleeveLengthChoice);
+  const sleeveLengthInches = scaleDropShoulderSleeveLengthInches(
+    selected.sleeve_length,
+    sleeveLengthChoice,
+  );
+  const wristInches = scaleDropShoulderCuffCircumferenceInches(
+    finishedUpperArm,
+    finishedWrist ?? selected.wrist,
+    sleeveLengthChoice,
+  );
   return {
     finishedLength: formatInchesField(selected.back_neck_to_hem),
     vNeckDepth: formatInchesField(selected.front_neck_depth),
     neckOpeningWidth: formatInchesField(selected.neck_width),
     finishedUpperArm: formatInchesField(finishedUpperArm),
-    sleeveLength: formatInchesField(selected.sleeve_length),
-    wrist: formatInchesField(finishedWrist ?? selected.wrist),
+    sleeveLength: formatInchesField(sleeveLengthInches ?? selected.sleeve_length),
+    wrist: formatInchesField(wristInches ?? finishedWrist ?? selected.wrist),
   };
 }
 
@@ -95,6 +114,7 @@ export function reseedSidewaysCardiganStyleMeasurements(args: {
   row: ChartRow;
   chartAudience: SidewaysCardiganWomenChartAudience;
   fitPreference: string;
+  sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice | string;
 }): SidewaysCardiganStyleMeasurements {
   const defaults = defaultSidewaysCardiganStyleMeasurements(args);
   const next = { ...args.previous };

@@ -61,7 +61,7 @@ function missingRequiredMessage(): SidewaysCardiganValidationError {
   return {
     code: "missing-required",
     message:
-      "Choose a sizing chart and size, pick a fit, enter every measurement, and fill in your stitch gauge, row gauge, and needles available before creating the pattern.",
+      "Choose a starting size, pick a fit, and fill in your stitch gauge, row gauge, and needles available before creating the pattern.",
   };
 }
 
