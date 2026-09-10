@@ -13,8 +13,10 @@ import {
 import {
   parseSidewaysCardiganSleeveDirection,
   readSavedSidewaysCardiganSleeveLengthChoice,
+  resolveSidewaysCardiganBuilderSleeveSelections,
   resolveSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
+  writeSidewaysCardiganWorkingDraftStamp,
   type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
   type SidewaysCardiganSleeveLengthChoice,
@@ -54,6 +56,12 @@ export type SidewaysCardiganBuilderDraftState = {
   availableNeedles: string;
   unit: "in" | "cm";
 };
+
+/** Stamp + read used when a new Sideways builder session opens (no page DOM required). */
+export function initializeFreshSidewaysCardiganBuilderState(): SidewaysCardiganBuilderDraftState {
+  writeSidewaysCardiganWorkingDraftStamp();
+  return readSidewaysCardiganBuilderStateFromDraft();
+}
 
 export function emptySidewaysCardiganBuilderDraftState(): SidewaysCardiganBuilderDraftState {
   return {
@@ -132,13 +140,14 @@ export function readSidewaysCardiganBuilderStateFromDraft(
   }
   const { measurements, edited } = readSidewaysCardiganStyleMeasurementsFromDraft(pattern);
   const unitRaw = stringField(yg.gaugeRawUnit ?? ygm.gaugeRawUnit);
+  const sleeveSelections = resolveSidewaysCardiganBuilderSleeveSelections(style);
   return {
     garmentStyle: resolveSidewaysCardiganGarmentStyle(style),
     chartAudience,
     selectedSize,
     fit: ease === "close" || ease === "relaxed" || ease === "standard" ? ease : "",
-    sleeveDirection: parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ?? "",
-    sleeveLengthChoice: readSavedSidewaysCardiganSleeveLengthChoice(style.sleeveLength),
+    sleeveDirection: sleeveSelections.sleeveDirection,
+    sleeveLengthChoice: sleeveSelections.sleeveLengthChoice,
     styleMeasurements: measurements,
     userEditedStyle: edited,
     gaugeStitchRaw: stringField(yg.gaugeStitchRaw ?? ygm.gaugeStitchRaw),

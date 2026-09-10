@@ -207,36 +207,80 @@ export function hasAuthoritativeSidewaysCardiganConstruction(
   return isSidewaysCardiganConstructionFamily(customOverrides);
 }
 
-export function stampSidewaysCardiganWorkingDraftFromPage(overrides?: {
-  sleeveDirection?: SidewaysCardiganSleeveDirection;
+export type SidewaysCardiganWorkingDraftStampOverrides = {
+  sleeveDirection?: SidewaysCardiganSleeveDirection | "";
   garmentStyle?: SidewaysCardiganGarmentStyle;
-  sleeveLength?: SidewaysCardiganSleeveLengthChoice;
-}): void {
+  sleeveLength?: SidewaysCardiganSleeveLengthChoice | string;
+};
+
+/** Restore picker values only from a Sideways draft — not Drop Shoulder defaults such as `long`. */
+function shouldRestoreSavedSidewaysCardiganSleeveSelections(
+  style: Record<string, unknown>,
+): boolean {
+  return (
+    String(style[SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY] ?? "") ===
+      SIDEWAYS_CARDIGAN_CONSTRUCTION ||
+    String(style.construction ?? "") === SIDEWAYS_CARDIGAN_CONSTRUCTION
+  );
+}
+
+/**
+ * Builder sleeve pickers start empty. Explicit empty overrides stay empty.
+ * Saved Sideways drafts keep their stored direction and length.
+ */
+export function resolveSidewaysCardiganBuilderSleeveSelections(
+  style: Record<string, unknown>,
+  overrides?: SidewaysCardiganWorkingDraftStampOverrides,
+): {
+  sleeveDirection: SidewaysCardiganSleeveDirection | "";
+  sleeveLengthChoice: SidewaysCardiganSleeveLengthChoice | "";
+} {
+  const restore = shouldRestoreSavedSidewaysCardiganSleeveSelections(style);
+  const sleeveDirection =
+    overrides && "sleeveDirection" in overrides
+      ? parseSidewaysCardiganSleeveDirection(overrides.sleeveDirection) ?? ""
+      : restore
+        ? parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ?? ""
+        : "";
+  const sleeveLengthChoice =
+    overrides && "sleeveLength" in overrides
+      ? readSavedSidewaysCardiganSleeveLengthChoice(overrides.sleeveLength)
+      : restore
+        ? readSavedSidewaysCardiganSleeveLengthChoice(style.sleeveLength)
+        : "";
+  return { sleeveDirection, sleeveLengthChoice };
+}
+
+/** Same working-draft write as the builder page stamp, without the page-construction guard. */
+export function writeSidewaysCardiganWorkingDraftStamp(
+  overrides?: SidewaysCardiganWorkingDraftStampOverrides,
+): void {
+  const previous = {
+    ...section(getCurrentPattern().style),
+    ...section(getPatternData().style),
+  };
+  const selections = resolveSidewaysCardiganBuilderSleeveSelections(previous, overrides);
+  const garmentStyle =
+    parseSidewaysCardiganGarmentStyle(overrides?.garmentStyle) ??
+    resolveSidewaysCardiganGarmentStyle(previous);
+  const style = withSidewaysCardiganConstructionAuthored(
+    previous,
+    selections.sleeveDirection || SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
+    garmentStyle,
+    selections.sleeveLengthChoice || undefined,
+  );
+  style.sleeveDirection = selections.sleeveDirection;
+  style.sleeveLength = selections.sleeveLengthChoice;
+  saveCurrentPattern({ style });
+  savePatternData("style", style);
+}
+
+export function stampSidewaysCardiganWorkingDraftFromPage(
+  overrides?: SidewaysCardiganWorkingDraftStampOverrides,
+): void {
   if (readSidewaysCardiganBuilderPageConstruction() !== SIDEWAYS_CARDIGAN_CONSTRUCTION) return;
   try {
-    const previous = {
-      ...section(getCurrentPattern().style),
-      ...section(getPatternData().style),
-    };
-    const sleeveDirection =
-      parseSidewaysCardiganSleeveDirection(overrides?.sleeveDirection) ??
-      parseSidewaysCardiganSleeveDirection(previous.sleeveDirection);
-    const garmentStyle =
-      parseSidewaysCardiganGarmentStyle(overrides?.garmentStyle) ??
-      resolveSidewaysCardiganGarmentStyle(previous);
-    const sleeveLength =
-      readSavedSidewaysCardiganSleeveLengthChoice(overrides?.sleeveLength) ||
-      readSavedSidewaysCardiganSleeveLengthChoice(previous.sleeveLength);
-    const style = withSidewaysCardiganConstructionAuthored(
-      previous,
-      sleeveDirection ?? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-      garmentStyle,
-      sleeveLength || undefined,
-    );
-    if (!sleeveDirection) style.sleeveDirection = "";
-    if (!sleeveLength) style.sleeveLength = "";
-    saveCurrentPattern({ style });
-    savePatternData("style", style);
+    writeSidewaysCardiganWorkingDraftStamp(overrides);
   } catch {
     /* ignore */
   }

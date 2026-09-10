@@ -113,9 +113,9 @@ function gaugeInputs(): { stitch: string; row: string; needles: string; unit: "i
 
 function persist(state: BuilderState): void {
   stampSidewaysCardiganWorkingDraftFromPage({
-    sleeveDirection: state.sleeveDirection || undefined,
+    sleeveDirection: state.sleeveDirection,
     garmentStyle: state.garmentStyle,
-    sleeveLength: state.sleeveLengthChoice || undefined,
+    sleeveLength: state.sleeveLengthChoice,
   });
   const row = currentChartRow(state);
   if (row && state.fit && state.chartAudience) {
@@ -131,16 +131,16 @@ function persist(state: BuilderState): void {
         gaugeRowRaw: g.row,
         availableNeedles: g.needles,
         unit: g.unit,
-        sleeveDirection: state.sleeveDirection || undefined,
-        sleeveLengthChoice: state.sleeveLengthChoice || undefined,
+        sleeveDirection: state.sleeveDirection,
+        sleeveLengthChoice: state.sleeveLengthChoice,
         garmentStyle: state.garmentStyle,
       },
       row,
     );
     stampSidewaysCardiganWorkingDraftFromPage({
-      sleeveDirection: state.sleeveDirection || undefined,
+      sleeveDirection: state.sleeveDirection,
       garmentStyle: state.garmentStyle,
-      sleeveLength: state.sleeveLengthChoice || undefined,
+      sleeveLength: state.sleeveLengthChoice,
     });
     return;
   }

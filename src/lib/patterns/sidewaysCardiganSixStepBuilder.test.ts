@@ -3,13 +3,15 @@ import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import { getCurrentPattern, getPatternData, saveCurrentPattern, savePatternData } from "./patternStorage";
+import { startFreshSleevelessExpressPattern } from "./sleevelessExpressFreshStart";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "./syncSidewaysCardiganBuilderToPatternStorage";
 import {
-    applySidewaysCardiganSleeveChoice,
-    applySidewaysCardiganStartingChartSelection,
-    emptySidewaysCardiganBuilderDraftState,
-    isSidewaysCardiganSleeveStepComplete,
-    readSidewaysCardiganBuilderStateFromDraft,
+  applySidewaysCardiganSleeveChoice,
+  applySidewaysCardiganStartingChartSelection,
+  emptySidewaysCardiganBuilderDraftState,
+  initializeFreshSidewaysCardiganBuilderState,
+  isSidewaysCardiganSleeveStepComplete,
+  readSidewaysCardiganBuilderStateFromDraft,
   writeSidewaysCardiganSizingIdentity,
 } from "./sidewaysCardiganBuilderState";
 import { loadSidewaysCardiganWorkspaceView } from "./sidewaysCardiganWorkspaceLoad";
@@ -18,6 +20,7 @@ import { resolveSidewaysCardiganBodyCalcInputFromPattern } from "./sidewaysCardi
 import {
   SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES,
   SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS,
+  writeSidewaysCardiganWorkingDraftStamp,
 } from "./sidewaysCardiganConstructionIdentity";
 import { DROP_SHOULDER_SLEEVE_LENGTH_CHOICES } from "./patternConstructionIdentity";
 import { SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS } from "./sidewaysCardiganSizeCharts";
@@ -228,6 +231,8 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toContain('{ "is-selected": i === 0 }');
     expect(builderScript).toContain("applySidewaysCardiganSleeveChoice");
     expect(builderScript).toContain("result.openStep");
+    expect(builderScript).not.toContain("state.sleeveLengthChoice || undefined");
+    expect(builderScript).not.toContain("state.sleeveDirection || undefined");
     expect(builderAstro).toContain('value: "three-quarter"');
     expect(builderAstro).toContain('value: "elbow"');
     expect(builderAstro).toContain('value: "short"');
@@ -335,6 +340,7 @@ describe("Sideways V-Neck sleeve direction and length persistence", () => {
       { ...baseValues, sleeveDirection: "top-down", sleeveLengthChoice: "elbow" },
       missesRow,
     );
+    writeSidewaysCardiganWorkingDraftStamp();
     expect(getCurrentPattern().style.sleeveDirection).toBe("top-down");
     expect(getCurrentPattern().style.sleeveLength).toBe("elbow");
     expect(getPatternData().style?.sleeveLength).toBe("elbow");
@@ -382,28 +388,72 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     localStorage.clear();
   });
 
-  it("does not close the step when direction is chosen first", () => {
-    const state = emptySidewaysCardiganBuilderDraftState();
-    const result = applySidewaysCardiganSleeveChoice(state, "sleeveDirection", "cuff-up");
-    expect(state.sleeveDirection).toBe("cuff-up");
+  it("a new pattern has no default sleeve length", () => {
+    startFreshSleevelessExpressPattern();
+    const state = initializeFreshSidewaysCardiganBuilderState();
     expect(state.sleeveLengthChoice).toBe("");
-    expect(result.complete).toBe(false);
-    expect(result.openStep).toBe(4);
+    expect(state.sleeveDirection).toBe("");
     expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(false);
+    expect(getCurrentPattern().style.sleeveLength).toBe("");
+    expect(getCurrentPattern().style.sleeveDirection).toBe("");
+  });
+
+  it("does not treat a leftover Drop Shoulder long sleeve as a Sideways selection", () => {
+    saveCurrentPattern({
+      style: { construction: "drop-shoulder", sleeveLength: "long", sleeveDirection: "cuff-up" },
+    });
+    savePatternData("style", {
+      construction: "drop-shoulder",
+      sleeveLength: "long",
+      sleeveDirection: "cuff-up",
+    });
+    const state = initializeFreshSidewaysCardiganBuilderState();
+    expect(state.sleeveLengthChoice).toBe("");
+    expect(state.sleeveDirection).toBe("");
+  });
+
+  it("does not close the step when direction is chosen first", () => {
+    for (const direction of ["top-down", "cuff-up", "sideways"] as const) {
+      localStorage.clear();
+      const state = initializeFreshSidewaysCardiganBuilderState();
+      expect(state.sleeveLengthChoice).toBe("");
+      expect(state.sleeveDirection).toBe("");
+      const result = applySidewaysCardiganSleeveChoice(state, "sleeveDirection", direction);
+      writeSidewaysCardiganWorkingDraftStamp({
+        sleeveDirection: state.sleeveDirection,
+        sleeveLength: state.sleeveLengthChoice,
+      });
+      const restored = readSidewaysCardiganBuilderStateFromDraft();
+      expect(state.sleeveDirection).toBe(direction);
+      expect(state.sleeveLengthChoice).toBe("");
+      expect(restored.sleeveLengthChoice).toBe("");
+      expect(result.complete).toBe(false);
+      expect(result.openStep).toBe(4);
+      expect(isSidewaysCardiganSleeveStepComplete(restored)).toBe(false);
+    }
   });
 
   it("does not close the step when length is chosen first", () => {
-    const state = emptySidewaysCardiganBuilderDraftState();
+    const state = initializeFreshSidewaysCardiganBuilderState();
+    expect(state.sleeveLengthChoice).toBe("");
+    expect(state.sleeveDirection).toBe("");
     const result = applySidewaysCardiganSleeveChoice(state, "sleeveLength", "elbow");
+    writeSidewaysCardiganWorkingDraftStamp({
+      sleeveDirection: state.sleeveDirection,
+      sleeveLength: state.sleeveLengthChoice,
+    });
+    const restored = readSidewaysCardiganBuilderStateFromDraft();
     expect(state.sleeveLengthChoice).toBe("elbow");
     expect(state.sleeveDirection).toBe("");
+    expect(restored.sleeveDirection).toBe("");
     expect(result.complete).toBe(false);
     expect(result.openStep).toBe(4);
     expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(false);
   });
 
   it("completes and advances to Gauge and Machine only after both are selected", () => {
-    const state = emptySidewaysCardiganBuilderDraftState();
+    const state = initializeFreshSidewaysCardiganBuilderState();
+    expect(state.sleeveLengthChoice).toBe("");
     const afterDirection = applySidewaysCardiganSleeveChoice(state, "sleeveDirection", "top-down");
     expect(afterDirection.complete).toBe(false);
     expect(afterDirection.openStep).toBe(4);
@@ -449,12 +499,13 @@ describe("Sideways V-Neck Sleeve step completion", () => {
 
   it("restores a draft with both sleeve selections as complete", () => {
     syncSidewaysCardiganBuilderToPatternStorage(
-      { ...baseValues, sleeveDirection: "top-down", sleeveLengthChoice: "elbow" },
+      { ...baseValues, sleeveDirection: "top-down", sleeveLengthChoice: "long" },
       missesRow,
     );
+    writeSidewaysCardiganWorkingDraftStamp();
     const restored = readSidewaysCardiganBuilderStateFromDraft();
     expect(restored.sleeveDirection).toBe("top-down");
-    expect(restored.sleeveLengthChoice).toBe("elbow");
+    expect(restored.sleeveLengthChoice).toBe("long");
     expect(isSidewaysCardiganSleeveStepComplete(restored)).toBe(true);
   });
 });
