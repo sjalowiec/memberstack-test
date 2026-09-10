@@ -10,6 +10,8 @@ import {
   hasManualWhatsNewDisplayOrder,
   isWithinNewBadgeWindow,
   splitPublicColumnCards,
+  stepPublicColumnVisibleCount,
+  publicColumnRevealLabel,
   WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
 } from "./public";
 import type { WhatsNewCard, WhatsNewCardRow } from "./types";
@@ -269,25 +271,41 @@ describe("whats new public filtering and board grouping", () => {
     expect(board.worth_exploring.map((c) => c.id)).toEqual(["we"]);
   });
 
-  it("limits each public column to the initial visible set with an optional remainder", () => {
-    expect(WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT).toBe(3);
+  it("limits each public column to the five newest entries with an optional remainder", () => {
+    expect(WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT).toBe(5);
+
+    const eight = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    const splitEight = splitPublicColumnCards(eight);
+    expect(splitEight.initial).toEqual(["a", "b", "c", "d", "e"]);
+    expect(splitEight.remaining).toEqual(["f", "g", "h"]);
+    expect(splitEight.hasMore).toBe(true);
 
     const five = ["a", "b", "c", "d", "e"];
     const splitFive = splitPublicColumnCards(five);
-    expect(splitFive.initial).toEqual(["a", "b", "c"]);
-    expect(splitFive.remaining).toEqual(["d", "e"]);
-    expect(splitFive.hasMore).toBe(true);
-
-    const three = ["a", "b", "c"];
-    const splitThree = splitPublicColumnCards(three);
-    expect(splitThree.initial).toEqual(["a", "b", "c"]);
-    expect(splitThree.remaining).toEqual([]);
-    expect(splitThree.hasMore).toBe(false);
+    expect(splitFive.initial).toEqual(["a", "b", "c", "d", "e"]);
+    expect(splitFive.remaining).toEqual([]);
+    expect(splitFive.hasMore).toBe(false);
 
     const two = ["a", "b"];
     const splitTwo = splitPublicColumnCards(two);
     expect(splitTwo.hasMore).toBe(false);
     expect(splitTwo.remaining).toEqual([]);
+  });
+
+  it("reveals the next five entries per Show More click and Show Less restores the first five", () => {
+    expect(stepPublicColumnVisibleCount(5, 12)).toBe(10);
+    expect(stepPublicColumnVisibleCount(10, 12)).toBe(12);
+    expect(stepPublicColumnVisibleCount(12, 12)).toBe(5);
+    expect(stepPublicColumnVisibleCount(5, 7)).toBe(7);
+    expect(stepPublicColumnVisibleCount(7, 7)).toBe(5);
+    expect(stepPublicColumnVisibleCount(3, 3)).toBe(3);
+    expect(stepPublicColumnVisibleCount(5, 5)).toBe(5);
+
+    expect(publicColumnRevealLabel(5, 12)).toBe("Show More");
+    expect(publicColumnRevealLabel(10, 12)).toBe("Show More");
+    expect(publicColumnRevealLabel(12, 12)).toBe("Show Less");
+    expect(publicColumnRevealLabel(5, 5)).toBeNull();
+    expect(publicColumnRevealLabel(3, 3)).toBeNull();
   });
 
   it("keeps draft and archived cards out of the public board even in Bugs & Improvements", () => {

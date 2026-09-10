@@ -1,12 +1,22 @@
 /**
- * Public /whats-new stacked-card accordions (one expanded card per column).
- * Each `[data-wn-stack]` column is independent — opening a card in one column
- * does not affect another.
+ * Public /whats-new stacked-card accordions (one expanded card per column)
+ * plus per-column Show More / Show Less reveals.
+ *
+ * Each `[data-wn-stack]` column is independent — opening a card or revealing
+ * more entries in one column does not affect another.
  *
  * Collapsed panels use the HTML `hidden` attribute. Page CSS must keep
  * `.whats-new__stack-panel[hidden] { display: none !important }` so author
  * display rules cannot reveal them or leave nested CTAs focusable.
+ * Extra cards beyond the current reveal also use `hidden` on the card itself;
+ * `.whats-new__card[hidden] { display: none !important }` keeps those out.
  */
+
+import {
+  publicColumnRevealLabel,
+  stepPublicColumnVisibleCount,
+  WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+} from "../lib/whatsNew/public";
 
 type EventTargetLike = {
   addEventListener: (type: string, listener: (event: Event) => void) => void;
@@ -85,9 +95,51 @@ export function initWhatsNewCardStacks(
 /** @deprecated Use initWhatsNewCardStacks — same shared stack initializer. */
 export const initWhatsNewJustAddedStack = initWhatsNewCardStacks;
 
+/**
+ * Reveal five more cards per click in a column; Show Less restores the first five.
+ * Columns without a `[data-wn-column-toggle]` (five or fewer cards) are unchanged.
+ */
+export function initWhatsNewColumnToggles(
+  root: Pick<ParentNode, "querySelector" | "querySelectorAll"> = document,
+): void {
+  const pageSize = WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT;
+  const buttons = root.querySelectorAll("[data-wn-column-toggle]");
+  buttons.forEach((btnNode) => {
+    const btn = asElement(btnNode);
+    const listId = btn.getAttribute("aria-controls");
+    if (!listId) return;
+    const stackNode = root.querySelector(`#${listId}`);
+    if (!stackNode) return;
+
+    const items = Array.from(
+      asElement(stackNode).querySelectorAll("[data-wn-stack-item]"),
+    ).map(asElement);
+    if (items.length <= pageSize) return;
+
+    const sync = (visible: number) => {
+      items.forEach((item, index) => {
+        if (index < visible) item.removeAttribute("hidden");
+        else item.setAttribute("hidden", "");
+      });
+      const label = publicColumnRevealLabel(visible, items.length, pageSize);
+      if (label) btn.textContent = label;
+      btn.setAttribute("aria-expanded", visible > pageSize ? "true" : "false");
+    };
+
+    let visible = pageSize;
+    sync(visible);
+
+    btn.addEventListener("click", () => {
+      visible = stepPublicColumnVisibleCount(visible, items.length, pageSize);
+      sync(visible);
+    });
+  });
+}
+
 /** Wire all public What's New board interactions. */
 export function initWhatsNewPublicBoard(
   root: Pick<ParentNode, "querySelector" | "querySelectorAll"> = document,
 ): void {
   initWhatsNewCardStacks(root);
+  initWhatsNewColumnToggles(root);
 }

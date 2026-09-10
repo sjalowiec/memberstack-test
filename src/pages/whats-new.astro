@@ -12,6 +12,7 @@ import {
 import {
   boardColumnMeta,
   formatQuietPublishDate,
+  splitPublicColumnCards,
 } from "../lib/whatsNew/public";
 import {
   getPublicBillboardSettings,
@@ -125,6 +126,7 @@ const description =
           const meta = boardColumnMeta(column);
           const cards = board[column];
           const listId = `whats-new-cards-${column}`;
+          const split = splitPublicColumnCards(cards);
           const renderCardBody = (card: (typeof cards)[number]) => {
             return (
               <>
@@ -149,6 +151,7 @@ const description =
             card: (typeof cards)[number],
             index: number,
             total: number,
+            cardHidden: boolean,
           ) => {
             const toolIcon = resolveWhatsNewToolIcon(card);
             const expanded = index === 0;
@@ -161,6 +164,7 @@ const description =
                 class={`whats-new__card kbm-card${card.featured ? " whats-new__card--featured" : ""}${expanded ? " whats-new__card--expanded" : ""}`}
                 style={`${whatsNewCategoryCardStyle(card.category)}; z-index: ${zIndex}`}
                 data-wn-stack-item
+                hidden={cardHidden ? true : undefined}
               >
                 <h3 class="whats-new__stack-heading">
                   <button
@@ -225,15 +229,33 @@ const description =
                 {cards.length === 0 ? (
                   <p class="whats-new__empty">Nothing here yet.</p>
                 ) : (
-                  <ul
-                    class="whats-new__cards whats-new__cards--stack"
-                    id={listId}
-                    data-wn-stack
-                  >
-                    {cards.map((card, index) =>
-                      renderStackCard(card, index, cards.length),
-                    )}
-                  </ul>
+                  <>
+                    <ul
+                      class="whats-new__cards whats-new__cards--stack"
+                      id={listId}
+                      data-wn-stack
+                    >
+                      {cards.map((card, index) =>
+                        renderStackCard(
+                          card,
+                          index,
+                          cards.length,
+                          index >= split.initial.length,
+                        ),
+                      )}
+                    </ul>
+                    {split.hasMore ? (
+                      <button
+                        type="button"
+                        class="kbm-btn kbm-btn-outline whats-new__column-more"
+                        data-wn-column-toggle
+                        aria-controls={listId}
+                        aria-expanded="false"
+                      >
+                        Show More
+                      </button>
+                    ) : null}
+                  </>
                 )}
               </div>
             </section>
@@ -501,7 +523,9 @@ const description =
     margin-top: 0;
   }
 
-  .whats-new__cards--stack .whats-new__card:last-child {
+  .whats-new__cards--stack .whats-new__card:last-child,
+  .whats-new__cards--stack
+    .whats-new__card:not([hidden]):has(+ .whats-new__card[hidden]) {
     padding-bottom: 1.1rem;
   }
 
@@ -701,6 +725,11 @@ const description =
     margin: 0;
     color: var(--text-muted, #6b7280);
     font-size: 0.92rem;
+  }
+
+  .whats-new__column-more {
+    align-self: center;
+    margin-top: 0.85rem;
   }
 
   @media (prefers-reduced-motion: reduce) {
