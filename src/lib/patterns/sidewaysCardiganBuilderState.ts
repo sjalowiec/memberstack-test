@@ -2,7 +2,7 @@
  * Builder edit-state restored from the working draft (Back to builder).
  */
 
-import { getCurrentPattern, getPatternData } from "./patternStorage";
+import { getCurrentPattern, getPatternData, saveCurrentPattern, savePatternData } from "./patternStorage";
 import {
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
 } from "./sleevelessExpressAvailableNeedles";
@@ -12,11 +12,9 @@ import {
 } from "./expressBuilderReviewSubmit";
 import {
   parseSidewaysCardiganSleeveDirection,
-  parseSidewaysCardiganSleeveLengthChoice,
+  readSavedSidewaysCardiganSleeveLengthChoice,
   resolveSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-  SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT,
   type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
   type SidewaysCardiganSleeveLengthChoice,
@@ -26,7 +24,11 @@ import {
   type SidewaysCardiganStyleMeasurements,
   type SidewaysCardiganUserEditedStyle,
 } from "./sidewaysCardiganStyleMeasurements";
-import type { SidewaysCardiganWomenChartAudience } from "./sidewaysCardiganSizeCharts";
+import {
+  isSidewaysCardiganSizeInChart,
+  resolveSidewaysCardiganChartAudienceFromSize,
+  type SidewaysCardiganWomenChartAudience,
+} from "./sidewaysCardiganSizeCharts";
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
@@ -43,8 +45,8 @@ export type SidewaysCardiganBuilderDraftState = {
   chartAudience: SidewaysCardiganWomenChartAudience | "";
   selectedSize: string;
   fit: string;
-  sleeveDirection: SidewaysCardiganSleeveDirection;
-  sleeveLengthChoice: SidewaysCardiganSleeveLengthChoice;
+  sleeveDirection: SidewaysCardiganSleeveDirection | "";
+  sleeveLengthChoice: SidewaysCardiganSleeveLengthChoice | "";
   styleMeasurements: SidewaysCardiganStyleMeasurements;
   userEditedStyle: SidewaysCardiganUserEditedStyle;
   gaugeStitchRaw: string;
@@ -59,8 +61,8 @@ export function emptySidewaysCardiganBuilderDraftState(): SidewaysCardiganBuilde
     chartAudience: "",
     selectedSize: "",
     fit: "",
-    sleeveDirection: SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-    sleeveLengthChoice: SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT,
+    sleeveDirection: "",
+    sleeveLengthChoice: "",
     styleMeasurements: emptySidewaysCardiganStyleMeasurements(),
     userEditedStyle: {},
     gaugeStitchRaw: "",
@@ -123,8 +125,11 @@ export function readSidewaysCardiganBuilderStateFromDraft(
   const selectedSize = stringField(fit.selectedSize);
   const ease = stringField(fit.easeChoice ?? fit.fitChoice);
   const audienceRaw = stringField(style.recipientCategory ?? fit.sizingChart).toLowerCase();
-  const chartAudience: SidewaysCardiganWomenChartAudience | "" =
+  let chartAudience: SidewaysCardiganWomenChartAudience | "" =
     audienceRaw === "plus" || audienceRaw === "misses" ? audienceRaw : "";
+  if (!chartAudience && selectedSize) {
+    chartAudience = resolveSidewaysCardiganChartAudienceFromSize(selectedSize) ?? "";
+  }
   const { measurements, edited } = readSidewaysCardiganStyleMeasurementsFromDraft(pattern);
   const unitRaw = stringField(yg.gaugeRawUnit ?? ygm.gaugeRawUnit);
   return {
@@ -132,10 +137,8 @@ export function readSidewaysCardiganBuilderStateFromDraft(
     chartAudience,
     selectedSize,
     fit: ease === "close" || ease === "relaxed" || ease === "standard" ? ease : "",
-    sleeveDirection:
-      parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ??
-      SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-    sleeveLengthChoice: parseSidewaysCardiganSleeveLengthChoice(style.sleeveLength),
+    sleeveDirection: parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ?? "",
+    sleeveLengthChoice: readSavedSidewaysCardiganSleeveLengthChoice(style.sleeveLength),
     styleMeasurements: measurements,
     userEditedStyle: edited,
     gaugeStitchRaw: stringField(yg.gaugeStitchRaw ?? ygm.gaugeStitchRaw),
@@ -157,4 +160,72 @@ export function applySidewaysCardiganDraftToGaugeInputs(
   if (st instanceof HTMLInputElement && state.gaugeStitchRaw) st.value = state.gaugeStitchRaw;
   if (rw instanceof HTMLInputElement && state.gaugeRowRaw) rw.value = state.gaugeRowRaw;
   if (nd instanceof HTMLInputElement && state.availableNeedles) nd.value = state.availableNeedles;
+}
+
+/**
+ * Activate Misses or Women's on Starting Size. Clears an incompatible size so the
+ * knitter must pick from the newly selected chart. Internal Women's key stays `plus`.
+ */
+export function applySidewaysCardiganStartingChartSelection(
+  state: SidewaysCardiganBuilderDraftState,
+  audience: SidewaysCardiganWomenChartAudience,
+): void {
+  const sizeStillValid = isSidewaysCardiganSizeInChart(state.selectedSize, audience);
+  if (state.chartAudience !== audience) {
+    state.userEditedStyle = {};
+    if (!sizeStillValid) {
+      state.selectedSize = "";
+      state.styleMeasurements = emptySidewaysCardiganStyleMeasurements();
+    }
+  }
+  state.chartAudience = audience;
+}
+
+/** Write chart + size identity without requiring a chart row (cleared size, chart-only pick). */
+export function writeSidewaysCardiganSizingIdentity(args: {
+  chartAudience: SidewaysCardiganWomenChartAudience | "";
+  selectedSize: string;
+}): void {
+  const current = getCurrentPattern() as unknown as Record<string, unknown>;
+  const pb = getPatternData();
+  const fit = {
+    ...section(current.fit),
+    ...section(pb.fit),
+    ...(args.chartAudience ? { sizingChart: args.chartAudience } : {}),
+    selectedSize: args.selectedSize,
+  };
+  const style = {
+    ...section(current.style),
+    ...section(pb.style),
+    ...(args.chartAudience ? { recipientCategory: args.chartAudience } : {}),
+  };
+  saveCurrentPattern({ fit, style });
+  savePatternData("fit", fit);
+  savePatternData("style", style);
+}
+
+export function isSidewaysCardiganSleeveStepComplete(
+  state: Pick<SidewaysCardiganBuilderDraftState, "sleeveDirection" | "sleeveLengthChoice">,
+): boolean {
+  return Boolean(
+    parseSidewaysCardiganSleeveDirection(state.sleeveDirection) &&
+      readSavedSidewaysCardiganSleeveLengthChoice(state.sleeveLengthChoice),
+  );
+}
+
+/** Apply one Sleeve picker choice. The step stays open until both required selections exist. */
+export function applySidewaysCardiganSleeveChoice(
+  state: SidewaysCardiganBuilderDraftState,
+  field: "sleeveDirection" | "sleeveLength",
+  value: string,
+): { complete: boolean; openStep: 4 | 5 } {
+  if (field === "sleeveDirection") {
+    const dir = parseSidewaysCardiganSleeveDirection(value);
+    if (dir) state.sleeveDirection = dir;
+  } else {
+    const length = readSavedSidewaysCardiganSleeveLengthChoice(value);
+    if (length) state.sleeveLengthChoice = length;
+  }
+  const complete = isSidewaysCardiganSleeveStepComplete(state);
+  return { complete, openStep: complete ? 5 : 4 };
 }

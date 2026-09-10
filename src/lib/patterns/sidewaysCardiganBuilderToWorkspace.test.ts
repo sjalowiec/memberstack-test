@@ -54,6 +54,7 @@ const missesValues: SidewaysCardiganBuilderValues = {
   availableNeedles: "200",
   unit: "in",
   sleeveDirection: "cuff-up",
+  sleeveLengthChoice: "long",
 };
 
 const plusValues: SidewaysCardiganBuilderValues = {
@@ -73,6 +74,7 @@ const plusValues: SidewaysCardiganBuilderValues = {
   availableNeedles: "200",
   unit: "in",
   sleeveDirection: "sideways",
+  sleeveLengthChoice: "long",
 };
 
 /** Same persist used by the Create Pattern button. */
@@ -312,8 +314,8 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain('label: "Starting Size"');
     expect(builder).toContain('label: "Fit"');
     expect(builder).toContain('label: "Sleeve"');
-    expect(builder).toContain('label: "Gauge"');
-    expect(builder).toContain('label: "Review"');
+    expect(builder).toContain('label: "Gauge and Machine"');
+    expect(builder).not.toContain('label: "Review"');
     expect(builder).not.toContain("Choose a sizing chart");
     expect(builder).not.toContain("Style measurements");
     expect(builder).not.toContain('data-express-field="chartAudience"');

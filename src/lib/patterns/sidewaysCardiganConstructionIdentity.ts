@@ -72,6 +72,16 @@ export function parseSidewaysCardiganSleeveLengthChoice(
   return normalizeDropShoulderSleeveLengthChoice(value);
 }
 
+/** Saved picker value only — empty when the knitter has not chosen a sleeve length. */
+export function readSavedSidewaysCardiganSleeveLengthChoice(
+  value: unknown,
+): SidewaysCardiganSleeveLengthChoice | "" {
+  const raw = String(value ?? "").trim();
+  return (SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES as readonly string[]).includes(raw)
+    ? (raw as SidewaysCardiganSleeveLengthChoice)
+    : "";
+}
+
 /** Shared Drop Shoulder / Sleeveless garment-style storage: cardigan/pullover + open/closed. */
 export const SIDEWAYS_CARDIGAN_GARMENT_STYLES = ["cardigan", "pullover"] as const;
 export type SidewaysCardiganGarmentStyle =
@@ -210,20 +220,21 @@ export function stampSidewaysCardiganWorkingDraftFromPage(overrides?: {
     };
     const sleeveDirection =
       parseSidewaysCardiganSleeveDirection(overrides?.sleeveDirection) ??
-      parseSidewaysCardiganSleeveDirection(previous.sleeveDirection) ??
-      SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT;
+      parseSidewaysCardiganSleeveDirection(previous.sleeveDirection);
     const garmentStyle =
       parseSidewaysCardiganGarmentStyle(overrides?.garmentStyle) ??
       resolveSidewaysCardiganGarmentStyle(previous);
-    const sleeveLength = parseSidewaysCardiganSleeveLengthChoice(
-      overrides?.sleeveLength ?? previous.sleeveLength,
-    );
+    const sleeveLength =
+      readSavedSidewaysCardiganSleeveLengthChoice(overrides?.sleeveLength) ||
+      readSavedSidewaysCardiganSleeveLengthChoice(previous.sleeveLength);
     const style = withSidewaysCardiganConstructionAuthored(
       previous,
-      sleeveDirection,
+      sleeveDirection ?? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
       garmentStyle,
-      sleeveLength,
+      sleeveLength || undefined,
     );
+    if (!sleeveDirection) style.sleeveDirection = "";
+    if (!sleeveLength) style.sleeveLength = "";
     saveCurrentPattern({ style });
     savePatternData("style", style);
   } catch {

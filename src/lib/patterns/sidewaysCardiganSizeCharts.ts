@@ -1,6 +1,7 @@
 /**
- * Women's size list for the Sideways Cardigan builder only:
- * Misses 1–8 followed by the plus chart (customer-facing label: Women's), sizes X–6X.
+ * Sideways Cardigan starting-size charts: Misses 1–8 and plus (customer-facing
+ * label: Women's) X–6X. The builder shows one chart at a time after the knitter
+ * picks a chart button. The stored audience key remains `misses` | `plus`.
  *
  * Drop Shoulder and Sleeveless Express still map Women → misses only via
  * {@link expressWhoToChartAudience}. This helper must not be wired into those builders.
@@ -19,8 +20,8 @@ export type SidewaysCardiganWomenChartRow = ChartRow & {
 };
 
 export const SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS = [
-  { audience: "misses" as const, heading: "Misses" },
-  { audience: "plus" as const, heading: "Women's" },
+  { audience: "misses" as const, heading: "Misses", range: "1–8", buttonLabel: "Misses (1–8)" },
+  { audience: "plus" as const, heading: "Women's", range: "X–6X", buttonLabel: "Women's (X–6X)" },
 ] as const;
 
 /** Customer-facing chart name. The stored audience key remains `misses` | `plus`. */
@@ -73,4 +74,12 @@ export function resolveSidewaysCardiganChartAudienceFromSize(
 export function isSidewaysCardiganWomenSize(size: unknown): boolean {
   if (size === undefined || size === null || size === "") return false;
   return findSidewaysCardiganWomenChartRow(String(size)) != null;
+}
+
+export function isSidewaysCardiganSizeInChart(
+  size: unknown,
+  audience: SidewaysCardiganWomenChartAudience,
+): boolean {
+  if (size === undefined || size === null || size === "") return false;
+  return findSidewaysCardiganWomenChartRow(String(size), audience) != null;
 }

@@ -18,10 +18,9 @@ import { rawSwatchToPerInch } from "./syncExpressWizardToPatternStorage";
 import {
   parseSidewaysCardiganGarmentStyle,
   parseSidewaysCardiganSleeveDirection,
-  parseSidewaysCardiganSleeveLengthChoice,
+  readSavedSidewaysCardiganSleeveLengthChoice,
   resolveSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
-  SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT,
   withSidewaysCardiganConstructionAuthored,
   type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
@@ -88,20 +87,22 @@ export function syncSidewaysCardiganBuilderToPatternStorage(
   };
   const sleeveDirection =
     parseSidewaysCardiganSleeveDirection(values.sleeveDirection) ??
-    SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT;
-  const sleeveLengthChoice = parseSidewaysCardiganSleeveLengthChoice(
-    values.sleeveLengthChoice ?? previousStyle.sleeveLength ?? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT,
-  );
+    parseSidewaysCardiganSleeveDirection(previousStyle.sleeveDirection);
+  const sleeveLengthChoice =
+    readSavedSidewaysCardiganSleeveLengthChoice(values.sleeveLengthChoice) ||
+    readSavedSidewaysCardiganSleeveLengthChoice(previousStyle.sleeveLength);
   const garmentStyle =
     parseSidewaysCardiganGarmentStyle(values.garmentStyle) ??
     resolveSidewaysCardiganGarmentStyle(previousStyle);
 
   const authoredStyle = withSidewaysCardiganConstructionAuthored(
     previousStyle,
-    sleeveDirection,
+    sleeveDirection ?? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_DEFAULT,
     garmentStyle,
-    sleeveLengthChoice,
+    sleeveLengthChoice || undefined,
   );
+  if (!sleeveDirection) authoredStyle.sleeveDirection = "";
+  if (!sleeveLengthChoice) authoredStyle.sleeveLength = "";
 
   const prevOverrides = section(section(getCurrentPattern().fit).cbMeasurementOverrides);
   const overrides: Record<string, string> = { ...prevOverrides };

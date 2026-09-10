@@ -35,8 +35,6 @@ import {
 } from "../lib/patterns/sidewaysCardiganSizeCharts";
 import {
   parseSidewaysCardiganGarmentStyle,
-  parseSidewaysCardiganSleeveDirection,
-  parseSidewaysCardiganSleeveLengthChoice,
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS,
@@ -48,8 +46,12 @@ import { validateSidewaysCardiganBuilder } from "../lib/patterns/sidewaysCardiga
 import { formatInchesWithUnit } from "../lib/patterns/sidewaysCardiganDisplayFormat";
 import {
   applySidewaysCardiganDraftToGaugeInputs,
+  applySidewaysCardiganSleeveChoice,
+  applySidewaysCardiganStartingChartSelection,
   emptySidewaysCardiganBuilderDraftState,
+  isSidewaysCardiganSleeveStepComplete,
   readSidewaysCardiganBuilderStateFromDraft,
+  writeSidewaysCardiganSizingIdentity,
   type SidewaysCardiganBuilderDraftState,
 } from "../lib/patterns/sidewaysCardiganBuilderState";
 import {
@@ -59,10 +61,12 @@ import {
   styleMeasurementsAreComplete,
 } from "../lib/patterns/sidewaysCardiganStyleMeasurements";
 
-const STEPS = 6;
+const STEPS = 5;
 const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
 
 type BuilderState = SidewaysCardiganBuilderDraftState;
+
+let showingReview = false;
 
 function escapeHtml(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -109,43 +113,56 @@ function gaugeInputs(): { stitch: string; row: string; needles: string; unit: "i
 
 function persist(state: BuilderState): void {
   stampSidewaysCardiganWorkingDraftFromPage({
-    sleeveDirection: state.sleeveDirection,
+    sleeveDirection: state.sleeveDirection || undefined,
     garmentStyle: state.garmentStyle,
-    sleeveLength: state.sleeveLengthChoice,
+    sleeveLength: state.sleeveLengthChoice || undefined,
   });
   const row = currentChartRow(state);
-  if (!row || !state.fit || !state.chartAudience) return;
-  const g = gaugeInputs();
-  syncSidewaysCardiganBuilderToPatternStorage(
-    {
-      selectedSize: state.selectedSize,
-      chartAudience: state.chartAudience,
-      fit: state.fit,
-      vNeckDepthInches: state.styleMeasurements.vNeckDepth,
-      styleMeasurements: state.styleMeasurements,
-      gaugeStitchRaw: g.stitch,
-      gaugeRowRaw: g.row,
-      availableNeedles: g.needles,
-      unit: g.unit,
-      sleeveDirection: state.sleeveDirection,
-      sleeveLengthChoice: state.sleeveLengthChoice,
+  if (row && state.fit && state.chartAudience) {
+    const g = gaugeInputs();
+    syncSidewaysCardiganBuilderToPatternStorage(
+      {
+        selectedSize: state.selectedSize,
+        chartAudience: state.chartAudience,
+        fit: state.fit,
+        vNeckDepthInches: state.styleMeasurements.vNeckDepth,
+        styleMeasurements: state.styleMeasurements,
+        gaugeStitchRaw: g.stitch,
+        gaugeRowRaw: g.row,
+        availableNeedles: g.needles,
+        unit: g.unit,
+        sleeveDirection: state.sleeveDirection || undefined,
+        sleeveLengthChoice: state.sleeveLengthChoice || undefined,
+        garmentStyle: state.garmentStyle,
+      },
+      row,
+    );
+    stampSidewaysCardiganWorkingDraftFromPage({
+      sleeveDirection: state.sleeveDirection || undefined,
       garmentStyle: state.garmentStyle,
-    },
-    row,
-  );
-  stampSidewaysCardiganWorkingDraftFromPage({
-    sleeveDirection: state.sleeveDirection,
-    garmentStyle: state.garmentStyle,
-    sleeveLength: state.sleeveLengthChoice,
+      sleeveLength: state.sleeveLengthChoice || undefined,
+    });
+    return;
+  }
+  writeSidewaysCardiganSizingIdentity({
+    chartAudience: state.chartAudience,
+    selectedSize: state.selectedSize,
   });
 }
 
 function renderSizeTable(state: BuilderState): void {
+  const nested = document.querySelector("[data-express-nested-size]");
+  if (nested instanceof HTMLElement) nested.hidden = !state.chartAudience;
   const unit = getExpressUiUnit();
   for (const group of SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS) {
+    const section = document.querySelector(`[data-sideways-size-group="${group.audience}"]`);
+    if (section instanceof HTMLElement) {
+      section.hidden = state.chartAudience !== group.audience;
+    }
     const tbody = document.querySelector(`[data-sideways-size-table-body="${group.audience}"]`);
     if (!(tbody instanceof HTMLElement)) continue;
     tbody.replaceChildren();
+    if (state.chartAudience !== group.audience) continue;
     const rows = getSidewaysCardiganChartRowsForAudience(group.audience);
     for (const row of rows) {
       const sz = normalizeChartRowSize(row);
@@ -254,8 +271,8 @@ function renderReview(state: BuilderState): void {
     ["Starting size", startingSizeSummary(state)],
     ["Fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)}` : ""],
     ["Finished bust", bust ? formatInchesWithUnit(bust) : ""],
-    ["Sleeve direction", SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection]],
-    ["Sleeve length", SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice]],
+    ["Sleeve direction", state.sleeveDirection ? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection] : ""],
+    ["Sleeve length", state.sleeveLengthChoice ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice] : ""],
     ["Gauge", gaugeLabel],
     ["Machine", g.needles ? `${g.needles} needles available` : ""],
   ];
@@ -306,8 +323,12 @@ function isStepComplete(state: BuilderState, step: number): boolean {
   if (step === 1) return Boolean(state.garmentStyle);
   if (step === 2) return Boolean(state.chartAudience && state.selectedSize);
   if (step === 3) return Boolean(state.fit);
-  if (step === 4) return Boolean(state.sleeveDirection && state.sleeveLengthChoice);
+  if (step === 4) return isSidewaysCardiganSleeveStepComplete(state);
   if (step === 5) return gaugeOk();
+  return false;
+}
+
+function wizardReadyForReview(state: BuilderState): boolean {
   return (
     Boolean(state.chartAudience && state.selectedSize && state.fit) &&
     styleMeasurementsAreComplete(state.styleMeasurements) &&
@@ -316,14 +337,16 @@ function isStepComplete(state: BuilderState, step: number): boolean {
 }
 
 function canOpen(state: BuilderState, step: number): boolean {
+  if (step < 1 || step > STEPS) return false;
   if (step <= 1) return true;
   if (step === 2) return true;
   if (!state.chartAudience || !state.selectedSize) return false;
   if (step === 3) return true;
   if (!state.fit) return false;
   if (step === 4) return true;
+  if (!isSidewaysCardiganSleeveStepComplete(state)) return false;
   if (step === 5) return true;
-  return gaugeOk();
+  return false;
 }
 
 function updatePills(state: BuilderState, openStep: number): void {
@@ -331,7 +354,7 @@ function updatePills(state: BuilderState, openStep: number): void {
     const step = parseInt(btn.getAttribute("data-pill-step") ?? "0", 10);
     const label = btn.getAttribute("data-pill-label") || `Step ${step}`;
     const complete = isStepComplete(state, step);
-    const isCurrent = step === openStep;
+    const isCurrent = !showingReview && step === openStep;
     const locked = !canOpen(state, step);
     const item = btn.closest(".sg-builder-nav__item");
     btn.classList.toggle("is-complete", complete);
@@ -364,8 +387,8 @@ function refreshUi(state: BuilderState, openStep: number): void {
   setSummary("selectedSize", startingSizeSummary(state));
   setSummary("fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)} fit` : "");
   const sleeveSummary = [
-    SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection],
-    SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice],
+    state.sleeveDirection ? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection] : "",
+    state.sleeveLengthChoice ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice] : "",
   ]
     .filter(Boolean)
     .join(" · ");
@@ -376,6 +399,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
     const value = btn.getAttribute("data-value");
     const on =
       (field === "garmentStyle" && value === state.garmentStyle) ||
+      (field === "chartAudience" && value === state.chartAudience) ||
       (field === "fit" && value === state.fit) ||
       (field === "sleeveDirection" && value === state.sleeveDirection) ||
       (field === "sleeveLength" && value === state.sleeveLengthChoice);
@@ -383,10 +407,15 @@ function refreshUi(state: BuilderState, openStep: number): void {
     btn.setAttribute("aria-pressed", on ? "true" : "false");
   });
 
+  const builderRoot = document.querySelector("[data-express-builder]");
+  builderRoot?.classList.toggle("is-reviewing", showingReview);
+  const reviewPanel = document.querySelector("[data-sideways-review-panel]");
+  if (reviewPanel instanceof HTMLElement) reviewPanel.hidden = !showingReview;
+
   for (let step = 1; step <= STEPS; step++) {
     const sec = document.querySelector(`[data-express-step="${step}"]`);
     if (!(sec instanceof HTMLElement)) continue;
-    const isOpen = step === openStep;
+    const isOpen = !showingReview && step === openStep;
     const locked = step > 1 && !canOpen(state, step);
     sec.classList.toggle("express-acc--open", isOpen);
     sec.classList.toggle("express-acc--locked", locked);
@@ -404,13 +433,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
 
   const wrap = document.getElementById("express-generate-wrap");
   if (wrap) {
-    wrap.hidden = !(
-      state.chartAudience &&
-      state.selectedSize &&
-      state.fit &&
-      styleMeasurementsAreComplete(state.styleMeasurements) &&
-      gaugeOk()
-    );
+    wrap.hidden = showingReview || !wizardReadyForReview(state);
   }
   syncExpressNeedleBlockVisibility(document, gaugeOk());
 }
@@ -433,6 +456,7 @@ function init(): void {
   const state = readStateFromDraft();
   applySidewaysCardiganDraftToGaugeInputs(state);
   let openStep = 1;
+  showingReview = false;
 
   void loadExpressSweaterCharts()
     .then(() => {
@@ -472,6 +496,7 @@ function init(): void {
     if (!sz || (audienceRaw !== "misses" && audienceRaw !== "plus")) return;
     selectSize(state, sz, audienceRaw);
     persist(state);
+    showingReview = false;
     openStep = 3;
     refreshUi(state, openStep);
   };
@@ -492,6 +517,15 @@ function init(): void {
       if (!style) return;
       state.garmentStyle = style;
       persist(state);
+      showingReview = false;
+      openStep = 2;
+      refreshUi(state, openStep);
+      return;
+    }
+    if (field === "chartAudience" && (value === "misses" || value === "plus")) {
+      applySidewaysCardiganStartingChartSelection(state, value);
+      persist(state);
+      showingReview = false;
       openStep = 2;
       refreshUi(state, openStep);
       return;
@@ -500,24 +534,17 @@ function init(): void {
       state.fit = value;
       applyChartDefaults(state);
       persist(state);
+      showingReview = false;
       openStep = 4;
       refreshUi(state, openStep);
       return;
     }
-    if (field === "sleeveDirection") {
-      const dir = parseSidewaysCardiganSleeveDirection(value);
-      if (!dir) return;
-      state.sleeveDirection = dir;
+    if (field === "sleeveDirection" || field === "sleeveLength") {
+      const result = applySidewaysCardiganSleeveChoice(state, field, value);
+      if (field === "sleeveLength") applyChartDefaults(state);
       persist(state);
-      openStep = 5;
-      refreshUi(state, openStep);
-      return;
-    }
-    if (field === "sleeveLength") {
-      state.sleeveLengthChoice = parseSidewaysCardiganSleeveLengthChoice(value);
-      applyChartDefaults(state);
-      persist(state);
-      openStep = 5;
+      showingReview = false;
+      openStep = result.openStep;
       refreshUi(state, openStep);
     }
   });
@@ -533,6 +560,7 @@ function init(): void {
       if (fb) fb.removeAttribute("hidden");
       return;
     }
+    showingReview = false;
     openStep = openStep === step ? 0 : step;
     refreshUi(state, openStep);
   };
@@ -551,6 +579,7 @@ function init(): void {
     btn.addEventListener("click", () => {
       const step = parseInt(btn.getAttribute("data-pill-step") ?? "0", 10);
       if (!canOpen(state, step)) return;
+      showingReview = false;
       openStep = step;
       refreshUi(state, openStep);
     });
@@ -581,50 +610,61 @@ function init(): void {
     }
   });
 
+  const createPatternFromReview = (): void => {
+    if (
+      state.chartAudience &&
+      state.fit &&
+      state.selectedSize &&
+      !styleMeasurementsAreComplete(state.styleMeasurements)
+    ) {
+      applyChartDefaults(state);
+    }
+    const g = gaugeInputs();
+    const perInch = gaugePerInch();
+    const bust = finishedBustForState(state);
+    const error = validateSidewaysCardiganBuilder({
+      chartAudience: state.chartAudience,
+      selectedSize: state.selectedSize,
+      fit: state.fit,
+      sleeveDirection: state.sleeveDirection,
+      garmentStyle: state.garmentStyle,
+      finishedLengthInches: state.styleMeasurements.finishedLength,
+      vNeckDepthInches: state.styleMeasurements.vNeckDepth,
+      neckOpeningWidthInches: state.styleMeasurements.neckOpeningWidth,
+      finishedUpperArmInches: state.styleMeasurements.finishedUpperArm,
+      sleeveLengthInches: state.styleMeasurements.sleeveLength,
+      wristInches: state.styleMeasurements.wrist,
+      finishedBustInches: bust,
+      stitchesPerInch: perInch.spi,
+      rowsPerInch: perInch.rpi,
+      availableNeedles: g.needles,
+    });
+    if (error) {
+      showBuilderError(error.message);
+      showingReview = true;
+      refreshUi(state, openStep);
+      return;
+    }
+    showBuilderError(null);
+    persist(state);
+    window.location.assign(SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF);
+  };
+
   wireExpressBuilderReviewSubmit({
     openGaugeStepForValidation: () => {
+      showingReview = false;
       openStep = 5;
       refreshUi(state, openStep);
     },
     onProceed: () => {
-      if (
-        state.chartAudience &&
-        state.fit &&
-        state.selectedSize &&
-        !styleMeasurementsAreComplete(state.styleMeasurements)
-      ) {
-        applyChartDefaults(state);
-      }
-      const g = gaugeInputs();
-      const perInch = gaugePerInch();
-      const bust = finishedBustForState(state);
-      const error = validateSidewaysCardiganBuilder({
-        chartAudience: state.chartAudience,
-        selectedSize: state.selectedSize,
-        fit: state.fit,
-        sleeveDirection: state.sleeveDirection,
-        garmentStyle: state.garmentStyle,
-        finishedLengthInches: state.styleMeasurements.finishedLength,
-        vNeckDepthInches: state.styleMeasurements.vNeckDepth,
-        neckOpeningWidthInches: state.styleMeasurements.neckOpeningWidth,
-        finishedUpperArmInches: state.styleMeasurements.finishedUpperArm,
-        sleeveLengthInches: state.styleMeasurements.sleeveLength,
-        wristInches: state.styleMeasurements.wrist,
-        finishedBustInches: bust,
-        stitchesPerInch: perInch.spi,
-        rowsPerInch: perInch.rpi,
-        availableNeedles: g.needles,
-      });
-      if (error) {
-        showBuilderError(error.message);
-        openStep = 6;
-        refreshUi(state, openStep);
-        return;
-      }
-      showBuilderError(null);
       persist(state);
-      window.location.assign(SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF);
+      showingReview = true;
+      refreshUi(state, openStep);
     },
+  });
+
+  document.getElementById("sideways-create-pattern")?.addEventListener("click", () => {
+    createPatternFromReview();
   });
 
   refreshUi(state, openStep);

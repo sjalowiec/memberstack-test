@@ -45,8 +45,7 @@ const expressNavSteps = [
   { step: 2, label: "Starting Size" },
   { step: 3, label: "Fit" },
   { step: 4, label: "Sleeve" },
-  { step: 5, label: "Gauge" },
-  { step: 6, label: "Review" },
+  { step: 5, label: "Gauge and Machine" },
 ] as const;
 ---
 
@@ -209,6 +208,28 @@ const expressNavSteps = [
                     <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
                   </p>
                   <div class="express-acc__body" id="express-acc-panel-2" role="region" hidden>
+                    <div
+                      class="express-options--who express-options--who-text hat-length-picker__grid sideways-chart-picker"
+                      role="group"
+                      aria-labelledby="express-step-2-title"
+                    >
+                      {
+                        SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((group) => (
+                          <button
+                            type="button"
+                            class="hat-length-picker__option express-who-card"
+                            id={`sideways-chart-${group.audience}`}
+                            data-choice
+                            data-field="chartAudience"
+                            data-value={group.audience}
+                            data-chart-audience={group.audience}
+                            aria-pressed="false"
+                          >
+                            <span class="hat-length-picker__option-label">{group.buttonLabel}</span>
+                          </button>
+                        ))
+                      }
+                    </div>
                     <div class="express-who-size-intro">
                       <h3 class="express-size-heading">{EXPRESS_BUILDER_SIZE_HEADING}</h3>
                       <p class="express-size-instruction">{EXPRESS_BUILDER_SIZE_INSTRUCTION}</p>
@@ -218,7 +239,7 @@ const expressNavSteps = [
                         </a>
                       </p>
                     </div>
-                    <div class="express-who-size-nested" data-express-nested-size>
+                    <div class="express-who-size-nested" data-express-nested-size hidden>
                       <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
                         Loading size charts…
                       </p>
@@ -229,14 +250,9 @@ const expressNavSteps = [
                               <section
                                 class="sideways-size-group"
                                 data-sideways-size-group={group.audience}
-                                aria-labelledby={`sideways-size-group-${group.audience}`}
+                                hidden
+                                aria-labelledby={`sideways-chart-${group.audience}`}
                               >
-                                <h3
-                                  class="sideways-size-group__heading"
-                                  id={`sideways-size-group-${group.audience}`}
-                                >
-                                  {group.heading}
-                                </h3>
                                 <table class="express-size-table">
                                   <thead>
                                     <tr>
@@ -246,7 +262,7 @@ const expressNavSteps = [
                                   </thead>
                                   <tbody
                                     role="radiogroup"
-                                    aria-labelledby={`sideways-size-group-${group.audience}`}
+                                    aria-labelledby={`sideways-chart-${group.audience}`}
                                     data-sideways-size-table-body={group.audience}
                                   ></tbody>
                                 </table>
@@ -360,18 +376,14 @@ const expressNavSteps = [
                       <h3 class="express-style-sublabel" id="express-sleeve-length-label">Sleeve length</h3>
                       <div class="ds-sleeve-length__grid hat-length-picker__grid hat-brim-picker__grid" role="group" aria-labelledby="express-sleeve-length-label">
                         {
-                          sleeveLengthPicker.map((opt, i) => (
+                          sleeveLengthPicker.map((opt) => (
                             <button
                               type="button"
-                              class:list={[
-                                "hat-length-picker__option",
-                                "ds-sleeve-length__option",
-                                { "is-selected": i === 0 },
-                              ]}
+                              class="hat-length-picker__option ds-sleeve-length__option"
                               data-choice
                               data-field="sleeveLength"
                               data-value={opt.value}
-                              aria-pressed={i === 0 ? "true" : "false"}
+                              aria-pressed="false"
                             >
                               <img
                                 src={opt.img}
@@ -445,44 +457,30 @@ const expressNavSteps = [
                       </div>
                     </form>
                   </div>
-                </section>
-
-                <section class="express-acc express-acc--locked" data-express-step="6" data-express-field="review">
-                  <div
-                    class="express-acc__header"
-                    data-express-header
-                    role="button"
-                    tabindex="-1"
-                    aria-expanded="false"
-                    aria-controls="express-acc-panel-6"
-                  >
-                    <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
-                    <div class="express-acc__header-main">
-                      <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-6-title">Review and create</h2>
-                      <span class="express-acc__value" data-express-summary="review"></span>
-                    </div>
-                  </div>
-                  <p class="express-acc__locked-feedback" data-express-locked-feedback hidden role="status">
-                    <span class="express-acc__locked-arrow" aria-hidden="true">↑</span>
-                    <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
-                  </p>
-                  <div class="express-acc__body" id="express-acc-panel-6" role="region" hidden>
-                    <p class="express-size-instruction">
-                      A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a
-                      straight back neck.
-                    </p>
-                    <p class="sg-fit-size-copy" data-sideways-builder-error hidden role="alert"></p>
-                    <div class="sg-pattern-print-at-a-glance" data-sideways-review-host>
-                      <dl class="print-summary-dl print-summary-dl--inline" data-sideways-review-summary></dl>
-                    </div>
-                    <div class="express-generate-wrap express-generate-wrap--footer" id="express-generate-wrap" hidden>
-                      <button type="submit" form="express-gauge-form" class="express-generate" id="express-generate">
-                        Create Pattern
-                      </button>
-                    </div>
+                  <!-- Submit lives outside collapsible .express-acc__body so it stays visible when Gauge is closed. -->
+                  <div class="express-generate-wrap express-generate-wrap--footer" id="express-generate-wrap" hidden>
+                    <p class="express-generate-cta__helper">Your selections are ready to review.</p>
+                    <button type="submit" form="express-gauge-form" class="express-generate" id="express-generate">
+                      Review My Pattern
+                    </button>
                   </div>
                 </section>
+              </div>
+              <div class="sideways-review-panel" data-sideways-review-panel hidden role="region" aria-label="Review your pattern">
+                <p class="express-size-instruction">
+                  A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a
+                  straight back neck.
+                </p>
+                <p class="sg-fit-size-copy" data-sideways-builder-error hidden role="alert"></p>
+                <div class="sg-pattern-print-at-a-glance" data-sideways-review-host>
+                  <dl class="print-summary-dl print-summary-dl--inline" data-sideways-review-summary></dl>
+                </div>
+                <div class="express-generate-wrap">
+                  <button type="button" class="express-generate" id="sideways-create-pattern">
+                    Create Pattern
+                  </button>
+                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -513,16 +511,27 @@ const expressNavSteps = [
     color: #8a1f11;
     font-weight: 600;
   }
+  .sideways-cardigan-builder-page [data-express-builder].is-reviewing .express-accordions {
+    display: none;
+  }
+  .sideways-cardigan-builder-page .sideways-review-panel[hidden] {
+    display: none !important;
+  }
+  .sideways-cardigan-builder-page .sideways-chart-picker.express-options--who-text.hat-length-picker__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 1.15rem;
+  }
+  .sideways-cardigan-builder-page .sideways-chart-picker .hat-length-picker__option {
+    min-height: 3.25rem;
+    padding: 0.85rem 0.75rem;
+  }
+  .sideways-cardigan-builder-page .sideways-size-group[hidden] {
+    display: none !important;
+  }
   .sideways-size-group + .sideways-size-group {
     margin-top: 1.15rem;
     padding-top: 0.85rem;
     border-top: 1px solid rgba(82, 104, 45, 0.16);
-  }
-  .sideways-size-group__heading {
-    margin: 0 0 0.45rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--express-nav-green, #52682d);
   }
   .express-style-group + .express-style-group {
     margin-top: 1.4rem;

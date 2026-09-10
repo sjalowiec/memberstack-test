@@ -9,6 +9,7 @@ import {
   buildSidewaysCardiganWomenChartRows,
   findSidewaysCardiganWomenChartRow,
   getSidewaysCardiganChartRowsForAudience,
+  isSidewaysCardiganSizeInChart,
   isSidewaysCardiganWomenSize,
   resolveSidewaysCardiganChartAudienceFromSize,
   SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS,
@@ -61,6 +62,15 @@ describe("sideways cardigan women's combined chart", () => {
     expect(findSidewaysCardiganWomenChartRow("X", "plus")?.chartAudience).toBe("plus");
   });
 
+  it("treats a size as belonging only to its own chart", () => {
+    seedExpressSweaterChartsForTests("misses", missesRows);
+    seedExpressSweaterChartsForTests("plus", plusRows);
+    expect(isSidewaysCardiganSizeInChart("8", "misses")).toBe(true);
+    expect(isSidewaysCardiganSizeInChart("8", "plus")).toBe(false);
+    expect(isSidewaysCardiganSizeInChart("X", "plus")).toBe(true);
+    expect(isSidewaysCardiganSizeInChart("X", "misses")).toBe(false);
+  });
+
   it("shows Women's as the plus-chart label without renaming the plus key", () => {
     expect(sidewaysCardiganChartAudienceDisplayLabel("misses")).toBe("Misses");
     expect(sidewaysCardiganChartAudienceDisplayLabel("plus")).toBe("Women's");
@@ -68,5 +78,9 @@ describe("sideways cardigan women's combined chart", () => {
     const plusGroup = SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.find((group) => group.audience === "plus");
     expect(plusGroup?.audience).toBe("plus");
     expect(plusGroup?.heading).toBe("Women's");
+    expect(plusGroup?.buttonLabel).toBe("Women's (X–6X)");
+    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.find((g) => g.audience === "misses")?.buttonLabel).toBe(
+      "Misses (1–8)",
+    );
   });
 });
