@@ -19,6 +19,7 @@ export const EDITOR_COMPONENT_TYPES = new Set([
   "exerciseAccordion",
   "embeddedTool",
   "migrationPending",
+  "vimeoJumpLinks",
 ]);
 
 export type EditorValidationIssue = {
@@ -238,6 +239,19 @@ function validateComponent(
         });
       }
       break;
+    case "vimeoJumpLinks": {
+      const jumps = (component as { jumps?: unknown }).jumps;
+      if (!Array.isArray(jumps) || jumps.length === 0) {
+        pushIssue(issues, {
+          ...ctx,
+          componentType: type,
+          legacyComponentId,
+          field: "jumps",
+          message: "vimeoJumpLinks requires a jumps array.",
+        });
+      }
+      break;
+    }
     case "migrationPending":
       if (!String((component as { legacyType?: string }).legacyType ?? "").trim()) {
         pushIssue(issues, {

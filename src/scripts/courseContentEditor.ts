@@ -101,6 +101,13 @@ import {
   sectionNavLabel,
 } from "../lib/legacy_kin/courseContentEditorView";
 import type { CourseLesson } from "../lib/legacy_kin/coursePreviewPoc";
+import {
+  isVimeoJumpLinksComponent,
+  siblingVimeoFromComponents,
+  toNativeVimeoJumpLinksComponent,
+  vimeoJumpLinksSummary,
+} from "../lib/legacy_kin/vimeoJumpLinksEditor";
+import { jumpsFromComponent, type VimeoJump } from "../lib/kinCourse/vimeoJumpLinks";
 
 const API_URL = "/api/admin/course-content";
 const SNIPPETS_OPEN_KEY = "course-editor-snippets-open";
@@ -917,9 +924,16 @@ function findComponentIndex(block: LessonRecord, legacyComponentId: number, type
   const components = Array.isArray(block.components)
     ? (block.components as Record<string, unknown>[])
     : [];
-  return components.findIndex(
+  const exact = components.findIndex(
     (c) => c.legacyComponentId === legacyComponentId && c.type === type,
   );
+  if (exact !== -1) return exact;
+  if (type === "migrationPending" || type === "vimeoJumpLinks") {
+    return components.findIndex(
+      (c) => c.legacyComponentId === legacyComponentId && isVimeoJumpLinksComponent(c),
+    );
+  }
+  return -1;
 }
 
 function getLessonDraft(slug: string) {
@@ -948,6 +962,7 @@ function typeMeta(type: string) {
 }
 
 function imageEditorKind(component: Record<string, unknown>): EditorContentKind {
+  if (isVimeoJumpLinksComponent(component)) return "vimeoJumpLinks";
   if (component.type !== "image") return String(component.type) as EditorContentKind;
   return imageCaptionHasContent(component.caption) ? "imageWithCaption" : "image";
 }
@@ -1106,6 +1121,10 @@ function contentItemMatches(a: ComponentRef | null, b: ComponentRef): boolean {
 }
 
 function contentSummary(component: Record<string, unknown>) {
+  if (isVimeoJumpLinksComponent(component)) {
+    return vimeoJumpLinksSummary(component);
+  }
+
   if (component.type === TEXT_VIDEO_LAYOUT_TYPE) {
     const leftText = component.leftText as Record<string, unknown> | undefined;
     const video = component.video as Record<string, unknown> | undefined;
@@ -2614,6 +2633,47 @@ function applyContentPatch(patch: Record<string, unknown>) {
   updateSaveState();
 }
 
+function applyVimeoJumpLinksPatch(patch: {
+  jumps?: VimeoJump[];
+  vimeoId?: string | null;
+  playerComponentId?: number | null;
+}) {
+  if (!selectedLessonSlug || !contentEditingRef) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  const block = findBlock(lesson, contentEditingRef.blockSlug);
+  if (!block) return;
+  const index = findComponentIndex(
+    block,
+    contentEditingRef.legacyComponentId,
+    contentEditingRef.type,
+  );
+  if (index === -1) return;
+  const target = (block.components as Record<string, unknown>[])[index]!;
+  const sibling = siblingVimeoFromComponents(
+    (block.components as Array<Record<string, unknown>>) ?? [],
+    contentEditingRef.legacyComponentId,
+  );
+  const native = toNativeVimeoJumpLinksComponent(target, {
+    jumps: patch.jumps ?? jumpsFromComponent(target),
+    vimeoId: patch.vimeoId !== undefined ? patch.vimeoId : sibling.vimeoId || String(target.vimeoId ?? ""),
+    playerComponentId:
+      patch.playerComponentId !== undefined ? patch.playerComponentId : sibling.playerComponentId,
+  });
+  (block.components as Record<string, unknown>[])[index] = {
+    ...target,
+    ...native,
+  };
+  contentEditingRef = {
+    ...contentEditingRef,
+    type: "vimeoJumpLinks",
+    legacyComponentId: native.legacyComponentId,
+  };
+  setLessonDraft(selectedLessonSlug, lesson);
+  renderContentList();
+  updateSaveState();
+}
+
 function hideEditFormPanel() {
   if (dom.editForm) dom.editForm.hidden = true;
   if (dom.editEmpty) dom.editEmpty.hidden = false;
@@ -3159,6 +3219,78 @@ function openContentEdit(ref: ComponentRef) {
       });
     };
     paintCarousel([...slides]);
+  } else if (isVimeoJumpLinksComponent(component)) {
+    const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+    const sibling = siblingVimeoFromComponents(
+      (block?.components as Array<Record<string, unknown>>) ?? [],
+      ref.legacyComponentId,
+    );
+    const initialVimeoId = String(component.vimeoId ?? "").trim() || sibling.vimeoId;
+    dom.editFields.innerHTML = `
+      <label class="course-editor__field"><span class="course-editor__field-label">Vimeo ID</span>
+        <input class="course-editor__input" id="ce-jump-vimeo-id" type="text" placeholder="526615684">
+        <span class="course-editor__field-hint">Associates these chapters with the matching Vimeo player in this lesson. Use the sibling video ID to keep a single player.</span></label>
+      <div class="course-editor__field">
+        <span class="course-editor__field-label">Chapters</span>
+        <span class="course-editor__field-hint">Edit title, timestamp, and order. Timestamps can be mm:ss or hh:mm:ss.</span>
+        <div id="ce-jump-chapters"></div>
+      </div>
+    `;
+    const idEl = dom.editFields.querySelector("#ce-jump-vimeo-id") as HTMLInputElement;
+    const wrap = dom.editFields.querySelector("#ce-jump-chapters") as HTMLElement;
+    idEl.value = initialVimeoId;
+
+    const saveChapters = (rows: Record<string, unknown>[]) => {
+      applyVimeoJumpLinksPatch({
+        jumps: rows.map((row) => ({
+          time: String(row.time ?? "").trim(),
+          title: String(row.title ?? ""),
+        })),
+        vimeoId: idEl.value.trim(),
+        playerComponentId: sibling.playerComponentId,
+      });
+    };
+
+    const paintChapters = (list: Record<string, unknown>[]) => {
+      renderListEditor(wrap, {
+        items: list,
+        addLabel: "Add chapter",
+        makeNew: () => ({ time: "00:00:00", title: "New chapter" }),
+        renderRow: (jump) => `
+          <input class="course-editor__input" style="margin-bottom:0.4rem;font-weight:600" data-jump-title value="${escapeHtml(String(jump.title ?? ""))}" placeholder="Chapter title">
+          <input class="course-editor__input" data-jump-time value="${escapeHtml(String(jump.time ?? ""))}" placeholder="00:01:05">
+        `,
+        onChange: (next) => {
+          saveChapters(next);
+          paintChapters(next);
+        },
+      });
+      wrap.querySelectorAll("[data-jump-title]").forEach((input, i) => {
+        input.addEventListener("input", () => {
+          const comp = getContentComponent(contentEditingRef);
+          const rows = jumpsFromComponent(comp).map((jump) => ({ ...jump })) as Record<string, unknown>[];
+          if (!rows[i]) return;
+          rows[i]!.title = (input as HTMLInputElement).value;
+          saveChapters(rows);
+        });
+      });
+      wrap.querySelectorAll("[data-jump-time]").forEach((input, i) => {
+        input.addEventListener("input", () => {
+          const comp = getContentComponent(contentEditingRef);
+          const rows = jumpsFromComponent(comp).map((jump) => ({ ...jump })) as Record<string, unknown>[];
+          if (!rows[i]) return;
+          rows[i]!.time = (input as HTMLInputElement).value;
+          saveChapters(rows);
+        });
+      });
+    };
+
+    idEl.addEventListener("input", () => {
+      const comp = getContentComponent(contentEditingRef);
+      saveChapters(jumpsFromComponent(comp).map((jump) => ({ ...jump })));
+    });
+
+    paintChapters(jumpsFromComponent(component).map((jump) => ({ ...jump })));
   } else {
     dom.editFields.innerHTML = `
       <label class="course-editor__field"><span class="course-editor__field-label">Component data (JSON)</span>

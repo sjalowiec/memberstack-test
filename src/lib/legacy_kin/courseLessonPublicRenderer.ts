@@ -182,6 +182,20 @@ export function validateComponentForPublicRenderer(
         });
       }
       break;
+    case "vimeoJumpLinks": {
+      const jumps = (component as { jumps?: unknown }).jumps;
+      const fields = (component as { legacyFields?: unknown }).legacyFields;
+      if (!Array.isArray(jumps) && (fields == null || typeof fields !== "object")) {
+        pushRenderIssue(issues, {
+          ...ctx,
+          componentType: type,
+          legacyComponentId,
+          field: "jumps",
+          message: "Public renderer requires vimeoJumpLinks.jumps or legacyFields.",
+        });
+      }
+      break;
+    }
     default:
       pushRenderIssue(issues, {
         ...ctx,

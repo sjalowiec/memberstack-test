@@ -41,7 +41,7 @@ const usableSpots = spots.filter((spot) => spot.style || spot.text);
     </div>
   ) : (
     <div class="legacy-hotspot" style={wrapperStyle || undefined}>
-      <div class="legacy-hotspot-stage">
+      <div class="legacy-hotspot-stage" style={stageStyle || undefined}>
         <img
           src={image}
           alt=""

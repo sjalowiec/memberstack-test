@@ -67,6 +67,7 @@ const ITEM_TYPE_NAV_LABELS: Record<string, string> = {
   exerciseAccordion: "Accordion",
   embeddedTool: "Tool",
   migrationPending: "Pending",
+  vimeoJumpLinks: "Jump links",
   [TEXT_VIDEO_LAYOUT_TYPE]: "Text + Video",
   [TEXT_IMAGE_LAYOUT_TYPE]: "Text + Image",
   [THREE_VIDEOS_LAYOUT_TYPE]: "Three Videos",

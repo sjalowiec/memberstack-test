@@ -26,7 +26,8 @@ export type EditorContentKind =
   | "exerciseAccordion"
   | "imageGallery"
   | "imageCarousel"
-  | "migrationPending";
+  | "migrationPending"
+  | "vimeoJumpLinks";
 
 export const EDITOR_TYPE_META: Record<
   EditorContentKind,
@@ -46,6 +47,7 @@ export const EDITOR_TYPE_META: Record<
   imageGallery: { label: "Gallery", color: "#6a5aa0", abbrev: "G" },
   imageCarousel: { label: "Image Carousel", color: "#7a4a8a", abbrev: "C" },
   migrationPending: { label: "Pending", color: "#64748b", abbrev: "?" },
+  vimeoJumpLinks: { label: "Vimeo Jump Links", color: "#35566b", abbrev: "JL" },
 };
 
 export type ComponentRef = {

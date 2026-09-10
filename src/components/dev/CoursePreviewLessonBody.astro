@@ -20,6 +20,7 @@ import { isTextVideoLayoutBlock } from "../../lib/legacy_kin/courseTextVideoLayo
 import { isTextImageLayoutBlock } from "../../lib/legacy_kin/courseTextImageLayout";
 import { isThreeVideosLayoutBlock } from "../../lib/legacy_kin/courseThreeVideosLayout";
 import { isTwoVideosLayoutBlock } from "../../lib/legacy_kin/courseTwoVideosLayout";
+import { jumpLinkButtonLabel, jumpsFromComponent } from "../../lib/kinCourse/vimeoJumpLinks";
 
 interface Props {
   lesson: CourseLesson;
@@ -152,6 +153,24 @@ const { lesson } = Astro.props;
                     </details>
                   ))}
                 </div>
+              );
+            }
+
+            if (
+              component.type === "vimeoJumpLinks" ||
+              (component.type === "migrationPending" && component.legacyType === "VimeoJumpLinks")
+            ) {
+              return (
+                <nav
+                  class="legacy-jumplinks"
+                  data-legacy-component={component.legacyComponentId}
+                  aria-label="In this video"
+                >
+                  <h3>In this video:</h3>
+                  {jumpsFromComponent(component).map((jump) => (
+                    <div class="legacy-jumplink">{jumpLinkButtonLabel(jump)}</div>
+                  ))}
+                </nav>
               );
             }
 

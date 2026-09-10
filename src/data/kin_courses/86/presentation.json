@@ -1,0 +1,120 @@
+{
+  "completion": {
+    "heading": "You did it!",
+    "lead": "Congratulations! You've completed Taitexma TH/TR-160: Getting Started.",
+    "paragraphs": [
+      "You've worked through unboxing, setup, stitch techniques, and your ribber.",
+      "Keep this course handy as a reference whenever you sit down at your machine."
+    ]
+  },
+  "rewriteSrc": [
+    {
+      "from": "/challenge/images/v2/86/v2/86/",
+      "to": "/images/course-content/86/",
+      "reason": "Gallery slides were stored with a doubled /v2/86/v2/86/ path. Map those onto the local Course 86 copies first, before the shorter prefix rewrite."
+    },
+    {
+      "from": "/challenge/images/v2/86/arrow1.png",
+      "to": "/images/course-content/111/arrow1.png",
+      "reason": "Course 86 exercise icons reuse the shared recovered arrow1.png already in Course 111 course-content. Rewrite before the general /v2/86/ prefix so they do not 404 under /images/course-content/86/."
+    },
+    {
+      "from": "/challenge/images/v2/86/arrow2.png",
+      "to": "/images/course-content/111/arrow2.png",
+      "reason": "Course 86 exercise icons reuse the shared recovered arrow2.png already in Course 111 course-content."
+    },
+    {
+      "from": "/challenge/images/v2/86/arrow3.png",
+      "to": "/images/course-content/111/arrow3.png",
+      "reason": "Course 86 exercise icons reuse the shared recovered arrow3.png already in Course 111 course-content."
+    },
+    {
+      "from": "/challenge/images/v2/86/",
+      "to": "/images/course-content/86/",
+      "reason": "Recovered Course 86 images live under /images/course-content/86/. Rewrite leftover production /challenge/ paths at presentation time."
+    },
+    {
+      "from": "/challenge/images/arrow1.png",
+      "to": "/images/course-content/111/arrow1.png",
+      "reason": "Exercise headings still reference the shared /challenge/images/arrow1.png icon. Map onto the recovered Course 111 copy."
+    },
+    {
+      "from": "/challenge/images/arrow2.png",
+      "to": "/images/course-content/111/arrow2.png",
+      "reason": "Exercise headings still reference the shared /challenge/images/arrow2.png icon. Map onto the recovered Course 111 copy."
+    },
+    {
+      "from": "/challenge/images/arrow3.png",
+      "to": "/images/course-content/111/arrow3.png",
+      "reason": "Exercise headings still reference the shared /challenge/images/arrow3.png icon. Map onto the recovered Course 111 copy."
+    },
+    {
+      "from": "/path/images/1480/needle_position.jpg",
+      "to": "/images/course-content/86/needle_position.jpg",
+      "reason": "Legacy KIN path-library URLs are not served locally. The recovered needle_position.jpg lives under /images/course-content/86/."
+    },
+    {
+      "from": "/swatches/6/1017Swatch.jpg",
+      "to": "/stitch-patterns/swatches/6/1017Swatch.jpg",
+      "reason": "The Knit Weave swatch already exists in public/stitch-patterns/swatches/6/. Rewrite the legacy /swatches/ path onto that file."
+    },
+    {
+      "from": "/downloads/160main.pdf",
+      "to": "/images/course-content/86/th160_manual.pdf",
+      "reason": "The recovered main-bed manual is th160_manual.pdf in the Course 86 asset folder, not /downloads/160main.pdf."
+    },
+    {
+      "from": "/downloads/160ribber.pdf",
+      "to": "/images/course-content/86/TR160_manual.pdf",
+      "reason": "The recovered ribber manual is TR160_manual.pdf in the Course 86 asset folder, not /downloads/160ribber.pdf."
+    },
+    {
+      "from": "/downloads/taitexma_160_reference_card.pdf",
+      "to": "/images/course-content/86/taitexma_160_reference_card.pdf",
+      "reason": "The recovered Taitexma 160 reference card PDF is in the Course 86 asset folder."
+    },
+    {
+      "from": "/downloads/reference-cards.pdf",
+      "to": "/images/course-content/86/reference-cards.pdf",
+      "reason": "The recovered printable reference-cards PDF is in the Course 86 asset folder."
+    }
+  ],
+  "rewriteHref": [
+    {
+      "from": "/downloads/160main.pdf",
+      "to": "/images/course-content/86/th160_manual.pdf",
+      "reason": "Open the recovered searchable main-bed manual."
+    },
+    {
+      "from": "/downloads/160ribber.pdf",
+      "to": "/images/course-content/86/TR160_manual.pdf",
+      "reason": "Open the recovered searchable ribber manual."
+    },
+    {
+      "from": "/downloads/taitexma_160_reference_card.pdf",
+      "to": "/images/course-content/86/taitexma_160_reference_card.pdf",
+      "reason": "Open the recovered Taitexma 160 reference card."
+    },
+    {
+      "from": "/downloads/reference-cards.pdf",
+      "to": "/images/course-content/86/reference-cards.pdf",
+      "reason": "Open the recovered printable reference cards."
+    }
+  ],
+  "glossaryLinks": [
+    {
+      "legacyId": 654,
+      "currentTerm": "Punch Lace | Thread Lace",
+      "to": "https://www.knititnow.com/glossary/punch-lace-thread-lace/",
+      "confidence": "HIGH",
+      "reason": "Legacy glossaryId 654 is preserved as Punch Lace | Thread Lace."
+    },
+    {
+      "legacyId": 713,
+      "currentTerm": "Isolated Motif",
+      "to": "https://www.knititnow.com/glossary/isolated-motif/",
+      "confidence": "HIGH",
+      "reason": "Legacy glossaryId 713 is preserved as Isolated Motif."
+    }
+  ]
+}

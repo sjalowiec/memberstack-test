@@ -110,6 +110,22 @@ export type EmbeddedToolComponent = {
   order: number;
 };
 
+export type VimeoJumpLinksJump = {
+  time: string;
+  title?: string | null;
+};
+
+export type VimeoJumpLinksComponent = {
+  type: "vimeoJumpLinks";
+  vimeoId?: string | null;
+  playerComponentId?: number | null;
+  jumps: VimeoJumpLinksJump[];
+  legacyComponentId: number;
+  order: number;
+  legacyFields?: Record<string, string>;
+  notes?: string[];
+};
+
 export type CourseComponent =
   | RichTextComponent
   | VideoComponent
@@ -119,6 +135,7 @@ export type CourseComponent =
   | ImageComponent
   | ExerciseAccordionComponent
   | EmbeddedToolComponent
+  | VimeoJumpLinksComponent
   | MigrationPendingComponent;
 
 export type CourseBlock = {

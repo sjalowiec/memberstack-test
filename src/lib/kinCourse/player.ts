@@ -3,6 +3,7 @@ import {
   type KinCourseNavLink,
 } from "./hrefs";
 import type { KinCourseDocument, KinCourseLesson, KinCourseSection } from "./types";
+import { prepareVimeoJumpLinkPlayback } from "./vimeoJumpLinks";
 
 export function visibleSections(course: KinCourseDocument): KinCourseSection[] {
   return course.sections.filter((section) => !section.empty && section.lessons.length > 0);
@@ -95,7 +96,9 @@ export function visibleLessonComponents(
   const hiddenTypes = new Set(
     hidden.filter((rule) => rule.lessonId === lesson.id).map((rule) => rule.type),
   );
-  return [...lesson.components]
-    .sort((a, b) => a.order - b.order)
-    .filter((component) => !hiddenTypes.has(component.type));
+  return prepareVimeoJumpLinkPlayback(
+    [...lesson.components]
+      .sort((a, b) => a.order - b.order)
+      .filter((component) => !hiddenTypes.has(component.type)),
+  );
 }

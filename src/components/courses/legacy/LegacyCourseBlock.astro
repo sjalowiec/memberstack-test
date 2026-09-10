@@ -9,6 +9,7 @@ import {
   legacyAssetUrl,
   rewriteLegacyHtml,
 } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { jumpLinkButtonLabel, jumpsFromComponent } from "../../../lib/kinCourse/vimeoJumpLinks";
 
 interface Props {
   component: CourseComponent;
@@ -113,6 +114,18 @@ const { component } = Astro.props;
         instanceId={`lc-${component.legacyComponentId}`}
       />
     </div>
+  ) : component.type === "vimeoJumpLinks" ||
+    (component.type === "migrationPending" && component.legacyType === "VimeoJumpLinks") ? (
+    <nav
+      class="legacy-jumplinks"
+      data-legacy-component={component.legacyComponentId}
+      aria-label="In this video"
+    >
+      <h3>In this video:</h3>
+      {jumpsFromComponent(component).map((jump) => (
+        <div class="legacy-jumplink">{jumpLinkButtonLabel(jump)}</div>
+      ))}
+    </nav>
   ) : component.type === "migrationPending" ? (
     <aside
       class="course-preview__migration legacy-course__migration"

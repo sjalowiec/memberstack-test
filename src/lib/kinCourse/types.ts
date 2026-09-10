@@ -29,6 +29,9 @@ export type KinCourseComponent = {
     image?: string;
   }>;
   jumps?: Array<{ time?: string; title?: string }>;
+  playerComponentId?: number | null;
+  playerKey?: string;
+  embedPlayer?: boolean;
   package?: string;
   playMode?: string;
   src?: string;

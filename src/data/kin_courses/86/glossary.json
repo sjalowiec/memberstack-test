@@ -1,0 +1,16 @@
+[
+  {
+    "glossaryId": 654,
+    "slug": "punch-lace-thread-lace",
+    "term": "Punch Lace | Thread Lace",
+    "example": "A \"mock\" lace, knit with one very fine thread/yarn and one thicker yarn.  Adding a very fine thread gives the appearance of lace without stitch transfers.",
+    "helpinfo": "Machines with Thread Lace settings:         With the appropriate Cam/Carriage settings, both threads will knit together (as in plaiting), but the fine yarn will knit singly and form \"lace holes\" with no floats.          This is a great alternative to transferred lace. The sample used a white sewing thread. A more \"invisible\" choice would be to use a transparent filament, like those used by quilters.         Machines without Thread Lace settings:         The appearance of thread lace can be created using a fine \"thread\" for the 2nd color of a fairlisle pattern. Unlike machines with a Thread Lace setting, floats will be formed as normal fairisle."
+  },
+  {
+    "glossaryId": 713,
+    "slug": "isolated-motif",
+    "term": "Isolated Motif",
+    "example": "A single repeat of a stich pattern \"isolated\" on the knitting.",
+    "helpinfo": "Isolated motifs are usually surrounded with a single color of knitting and care must be taken to prevent holes where color changes occur. (Similar to intarsia).  The alternative to an isolated motif is an   all-over stitch pattern  (The motif is repeated over the entire knitted piece).   .."
+  }
+]
