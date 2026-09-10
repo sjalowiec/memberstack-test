@@ -457,7 +457,7 @@ describe("Pattern page does not recalculate geometry", () => {
     expect(patternPage).toContain("pattern-tips-scope");
     expect(patternPage).not.toContain("vimeo");
     expect(patternPage).not.toContain("hat-pattern-diagram");
-    expect(patternPage).toContain('src="/images/patterns/socks-pattern-catalog.webp"');
+    expect(patternPage).toContain('src="/images/patterns/socks-v2.png"');
     expect(patternPage).not.toContain("/images/sock.svg");
     expect(patternPage).not.toContain("kitchener-under");
     expect(patternPage).not.toContain("Fancy Socks");

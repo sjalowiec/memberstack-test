@@ -108,10 +108,10 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("button: 'Create drop shoulder sweater'");
   });
 
-  it("lists Socks as an available card using socks-pattern-catalog.webp", () => {
+  it("lists Socks as an available card using socks-v2.png", () => {
     expect(catalog).toContain("title: 'Socks'");
     expect(catalog).toContain("href: '/patterns/socks/builder?new=1'");
-    expect(catalog).toContain("image: '/images/patterns/socks-pattern-catalog.webp'");
+    expect(catalog).toContain("image: '/images/patterns/socks-v2.png'");
     expect(catalog).toContain("button: 'Create your socks'");
     expect(catalog).toContain("copy: SOCKS_CATALOG_COPY");
     expect(catalog).toContain("socksPattern");
