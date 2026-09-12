@@ -122,6 +122,17 @@ describe("Course 86 numbered hotspot layouts", () => {
     expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
   });
 
+  it("does not disk-check public files from the SSR hotspot module", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/kinCourse/numberedHotspot.ts"), "utf8");
+    expect(source).not.toMatch(/from ["']node:fs["']/);
+    expect(source).not.toMatch(/\bexistsSync\s*\(/);
+    expect(source).not.toMatch(/join\(\s*process\.cwd\(\),\s*["']public["']/);
+    const astroConfig = readFileSync(join(process.cwd(), "astro.config.mjs"), "utf8");
+    expect(astroConfig).toContain("excludeFiles");
+    expect(astroConfig).toContain("./public/images/**");
+    expect(astroConfig).toContain("./src/data/legacy_kin/cleaned/backups/**");
+  });
+
   it("wires the player through presentHotspotComponent instead of always rendering LegacyHotspot", () => {
     const source = readFileSync(
       join(process.cwd(), "src/components/kinCourse/KinCourseComponents.astro"),

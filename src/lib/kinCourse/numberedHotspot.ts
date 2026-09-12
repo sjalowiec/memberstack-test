@@ -1,5 +1,3 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { applyKinCourseSrcRewrites } from "./htmlPresent";
 import type { KinCourseComponent, KinCoursePresentation } from "./types";
 
@@ -95,10 +93,6 @@ export function numberedHotspotPublicPath(originalSrc: string, courseId = 86): s
   return `/images/course-content/${courseId}/${numberedHotspotFilename(originalSrc)}`;
 }
 
-function publicFilePath(src: string): string {
-  return join(process.cwd(), "public", ...src.replace(/^\//, "").split("/"));
-}
-
 export function findNumberedHotspotRule(
   lessonId: number,
   component: Pick<KinCourseComponent, "componentId">,
@@ -110,7 +104,11 @@ export function findNumberedHotspotRule(
   );
 }
 
-/** True only when the static switch is enabled and the numbered image is on disk. */
+/**
+ * True when presentation data opts this hotspot into the static numbered layout.
+ * Do not `existsSync` files under `public/` here: @vercel/nft traces that as the
+ * entire public tree and copies it into the Netlify SSR function.
+ */
 export function numberedHotspotReady(
   lessonId: number,
   component: Pick<KinCourseComponent, "componentId">,
@@ -118,7 +116,7 @@ export function numberedHotspotReady(
 ): boolean {
   const rule = findNumberedHotspotRule(lessonId, component, presentation);
   if (!rule || rule.enabled !== true) return false;
-  return existsSync(publicFilePath(rule.numberedSrc));
+  return typeof rule.numberedSrc === "string" && rule.numberedSrc.trim().length > 0;
 }
 
 export function presentHotspotComponent(
