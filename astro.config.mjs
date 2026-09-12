@@ -5,7 +5,19 @@ import netlify from "@astrojs/netlify";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  adapter: netlify(),
+  adapter: netlify({
+    // @vercel/nft traces dynamic `public/` and `cleaned/` filesystem paths.
+    // Those trees must stay static/on-disk, not inside the SSR zip (Netlify
+    // rejects oversized function uploads). Runtime still reads live POC JSON
+    // from src/data/legacy_kin/cleaned/*.poc.json.
+    excludeFiles: [
+      "./public/images/**",
+      "./public/challenge/**",
+      "./public/downloads/**",
+      "./public/pdfs/**",
+      "./src/data/legacy_kin/cleaned/backups/**",
+    ],
+  }),
 
   server: {
     port: 4321,
