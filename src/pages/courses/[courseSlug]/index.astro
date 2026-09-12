@@ -9,7 +9,7 @@ import { getCourseLandingBySlug } from "../../../lib/legacy_kin/courseLanding";
 export const prerender = false;
 
 const courseId = parseKinCourseId(Astro.params.courseSlug);
-const loadOptions = kinCourseLoadOptions(Astro.url);
+const loadOptions = await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies);
 Astro.response.headers.set("Cache-Control", "no-store");
 
 const bundle = courseId ? await loadKinCourseBundle(courseId, loadOptions) : null;

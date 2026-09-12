@@ -16,7 +16,7 @@ if (!courseId) {
   return new Response("Course not found", { status: 404 });
 }
 
-const loadOptions = kinCourseLoadOptions(Astro.url);
+const loadOptions = await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies);
 Astro.response.headers.set("Cache-Control", "no-store");
 const bundle = await loadKinCourseBundle(courseId, loadOptions);
 if (!bundle) {

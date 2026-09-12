@@ -99,6 +99,7 @@ const previewUnlock = preview === true;
       data-course-gate
       data-course-access="member"
       data-course-slug={courseSlug}
+      data-admin-preview={previewUnlock ? "true" : undefined}
       data-gate-pending={!previewUnlock}
       aria-busy={!previewUnlock}
     >

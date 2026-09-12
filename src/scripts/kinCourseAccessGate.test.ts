@@ -62,6 +62,9 @@ describe("KIN course gate live session refresh", () => {
     expect(gateSource).toContain("openMemberstackLoginModal");
     expect(gateSource).toContain("onAuthChange");
     expect(gateSource).toContain("auth:updated");
+    expect(gateSource).toContain('gate.dataset.adminPreview === "true"');
+    expect(gateSource).not.toContain("detectSiteEnvironment");
+    expect(gateSource).not.toContain('params.get("preview")');
     expect(gateSource).not.toContain('ms.on("member.login"');
     expect(gateSource).not.toContain('ms.on("member.logout"');
     expect(gateSource).not.toContain("kin-ms-login-proxy");
@@ -82,6 +85,7 @@ describe("KIN course layout shared login wiring", () => {
     expect(layoutSource).toContain('from "../lib/memberstackPostLogin"');
     expect(layoutSource).toContain('id="kbm-ms-login-proxy"');
     expect(layoutSource).not.toContain("kin-ms-login-proxy");
+    expect(layoutSource).toContain('data-admin-preview={previewUnlock ? "true" : undefined}');
   });
 
   it("does not clear the same-origin Memberstack session before boot", () => {

@@ -18,8 +18,7 @@ import { loadKinCourseBundle } from "./load";
 import { findLesson, flattenLessons, getLessonContext } from "./player";
 import { pocToKinCourse } from "./pocToKinCourse";
 import { readKinCoursePresentation } from "./presentation";
-import { kinCourseLoadOptions, kinCoursePreviewRequested } from "./request";
-import { isCoursePreviewProductionBlocked } from "../legacy_kin/coursePreviewProductionAccess";
+import { kinCoursePreviewRequested } from "./request";
 
 const COURSE_86_ID = 86;
 
@@ -78,14 +77,13 @@ describe("Course 86 unpublished preview", () => {
     expect(context?.nextNav.href).toContain("/courses/86/lesson/");
   });
 
-  it("unlocks preview only off production", () => {
+  it("does not treat preview=true as granted without admin auth", () => {
     const previewUrl = new URL("http://localhost:4321/courses/86?preview=true");
     expect(kinCoursePreviewRequested(previewUrl)).toBe(true);
-    expect(kinCourseLoadOptions(previewUrl).includeDrafts).toBe(true);
+    expect(kinCoursePreviewRequested(new URL("https://www.knititnow.com/courses/86?preview=true"))).toBe(
+      true,
+    );
     expect(kinCoursePreviewRequested(new URL("http://localhost:4321/courses/86"))).toBe(false);
-
-    expect(isCoursePreviewProductionBlocked("www.knititnow.com")).toBe(true);
-    expect(isCoursePreviewProductionBlocked("knititnow.com")).toBe(true);
   });
 
   it("renders videos, galleries, exercises, and converted interactive components", async () => {
@@ -209,8 +207,11 @@ describe("numeric course player pages", () => {
     expect(home).toContain("parseKinCourseId");
     expect(home).toContain("loadKinCourseBundle");
     expect(home).toContain("KinCourseHomeView");
+    expect(home).toContain("await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies)");
     expect(lesson).toContain("parseKinCourseId(Astro.params.courseSlug)");
     expect(contents).toContain("parseKinCourseId(Astro.params.courseSlug)");
+    expect(lesson).toContain("await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies)");
+    expect(contents).toContain("await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies)");
     expect(existsSync(join(process.cwd(), "src/pages/courses/111/index.astro"))).toBe(false);
     expect(existsSync(join(process.cwd(), "src/pages/courses/[courseId]/contents.astro"))).toBe(
       false,
