@@ -48,7 +48,7 @@ describe("numeric course admin preview", () => {
     expect(kinCoursePreviewRequested(new URL("http://localhost:4321/courses/86"))).toBe(false);
   });
 
-  it("loads unpublished Course 86 on production for an authenticated admin", async () => {
+  it("loads Course 86 with authenticated admin preview", async () => {
     requireAdminForRequest.mockResolvedValue(adminOk);
     const url = new URL("https://www.knititnow.com/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
@@ -61,16 +61,16 @@ describe("numeric course admin preview", () => {
     expect(kinCourseHomeHref(86, options.preview)).toBe("/courses/86?preview=true");
   });
 
-  it("404s unpublished Course 86 on production when the visitor is not an admin", async () => {
+  it("loads temporarily published Course 86 without preview for a non-admin (deployed DEV testing)", async () => {
     requireAdminForRequest.mockResolvedValue(unauthenticated);
     const url = new URL("https://www.knititnow.com/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
     expect(options.preview).toBe(false);
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
   });
 
-  it("404s unpublished Course 86 when a signed-in member is not on the admin allowlist", async () => {
+  it("loads temporarily published Course 86 when a signed-in member is not on the admin allowlist", async () => {
     requireAdminForRequest.mockResolvedValue({
       ok: false,
       status: 403,
@@ -79,21 +79,21 @@ describe("numeric course admin preview", () => {
     const url = new URL("https://www.knititnow.com/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
   });
 
-  it("404s unpublished Course 86 on DEV when the visitor is not an admin", async () => {
+  it("loads temporarily published Course 86 on DEV without admin preview", async () => {
     requireAdminForRequest.mockResolvedValue(unauthenticated);
     const url = new URL("https://kin-dev.netlify.app/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
     expect(options.preview).toBe(false);
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
 
     const local = new URL("http://localhost:4321/courses/86?preview=true");
     const localOptions = await kinCourseLoadOptions(local, requestFor(local));
     expect(localOptions.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, localOptions)).toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, localOptions))?.course.id).toBe(86);
   });
 
   it("does not call admin auth when preview is not requested", async () => {

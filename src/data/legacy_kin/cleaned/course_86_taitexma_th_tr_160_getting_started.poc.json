@@ -5,12 +5,13 @@
     "legacyChallengeId": 86,
     "title": "Taitexma TH/TR-160: Getting Started",
     "slug": "taitexma-th-tr-160-getting-started",
-    "status": "draft",
-    "published": false,
+    "status": "published",
+    "published": true,
     "legacy": {
       "sourceExport": "course_86_taitexma_th_tr_160_getting_started.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
-      "migratedAt": "2026-06-25T10:16:09+00:00"
+      "migratedAt": "2026-06-25T10:16:09+00:00",
+      "temporaryProductionQa": "TEMPORARY 2026-09-12: published for deployed DEV testing so /courses/86 loads without preview. Revert status to draft and published to false after testing. Do not add this course to the public catalog or navigation."
     },
     "thumbnail": "/images/courses/taitexma_160.webp",
     "contentStatus": "in_progress"

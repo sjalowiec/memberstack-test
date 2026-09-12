@@ -22,13 +22,15 @@ import { kinCoursePreviewRequested } from "./request";
 
 const COURSE_86_ID = 86;
 
-describe("Course 86 unpublished preview", () => {
-  it("keeps the cleaned POC as an unpublished draft", () => {
+describe("Course 86 temporary DEV testing publication", () => {
+  it("temporarily publishes the cleaned POC so /courses/86 loads on deployed DEV without preview", () => {
     const poc = readCourseContentFile(COURSE_86_ID);
     expect(poc.course.legacyChallengeId).toBe(86);
-    expect(poc.course.status).toBe("draft");
-    expect(poc.course.published).toBe(false);
+    expect(poc.course.status).toBe("published");
+    expect(poc.course.published).toBe(true);
     expect(poc.course.contentStatus).toBe("in_progress");
+    expect(poc.course.legacy.temporaryProductionQa).toContain("TEMPORARY 2026-09-12");
+    expect(poc.course.legacy.temporaryProductionQa).toMatch(/deployed DEV testing/i);
     expect(poc.lessons[0]?.title).toBe("Unboxing");
     expect(poc.lessons.map((lesson) => lesson.title)).toEqual([
       "Unboxing",
@@ -45,17 +47,24 @@ describe("Course 86 unpublished preview", () => {
     ]);
   });
 
-  it("does not appear on the public /courses catalog", () => {
+  it("does not appear on the public /courses catalog or navigation", () => {
     const entries = getCourseCatalogEntries();
     expect(entries.some((course) => course.slug === "taitexma-th-tr-160-getting-started")).toBe(
       false,
     );
     expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
+
+    const catalog = readFileSync(join(process.cwd(), "src/data/courses-catalog.json"), "utf8");
+    expect(catalog).not.toContain("taitexma-th-tr-160-getting-started");
+    expect(catalog).not.toContain("/courses/86");
+
+    const header = readFileSync(join(process.cwd(), "src/components/Header.astro"), "utf8");
+    expect(header).not.toContain("/courses/86");
+    expect(header).not.toContain("taitexma-th-tr-160-getting-started");
   });
 
-  it("loads with includeDrafts/preview and stays hidden without it", async () => {
-    expect(await loadKinCourseBundle(COURSE_86_ID)).toBeNull();
-    const bundle = await loadKinCourseBundle(COURSE_86_ID, { includeDrafts: true });
+  it("loads without includeDrafts/preview for deployed DEV testing", async () => {
+    const bundle = await loadKinCourseBundle(COURSE_86_ID);
     expect(bundle?.course.id).toBe(86);
     expect(bundle?.course.title).toBe("Taitexma TH/TR-160: Getting Started");
     expect(bundle?.landing.image.src).toBe("/images/courses/taitexma_160.webp");
