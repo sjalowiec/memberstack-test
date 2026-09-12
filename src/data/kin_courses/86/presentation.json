@@ -115,6 +115,16 @@
       "reason": "Course 86 exercise icons reuse the shared recovered arrow3.png already in Course 111 course-content."
     },
     {
+      "from": "/challenge/images/v2/86/arrow4.png",
+      "to": "/images/course-content/111/arrow4.png",
+      "reason": "Course 86 exercise icons reuse the shared numbered arrow set. Rewrite before the general /v2/86/ prefix so they do not 404 under /images/course-content/86/."
+    },
+    {
+      "from": "/challenge/images/v2/86/arrow5.png",
+      "to": "/images/course-content/111/arrow5.png",
+      "reason": "Course 86 exercise icons reuse the shared numbered arrow set. Rewrite before the general /v2/86/ prefix so they do not 404 under /images/course-content/86/."
+    },
+    {
       "from": "/challenge/images/v2/86/",
       "to": "/images/course-content/86/",
       "reason": "Recovered Course 86 images live under /images/course-content/86/. Rewrite leftover production /challenge/ paths at presentation time."
@@ -133,6 +143,16 @@
       "from": "/challenge/images/arrow3.png",
       "to": "/images/course-content/111/arrow3.png",
       "reason": "Exercise headings still reference the shared /challenge/images/arrow3.png icon. Map onto the recovered Course 111 copy."
+    },
+    {
+      "from": "/challenge/images/arrow4.png",
+      "to": "/images/course-content/111/arrow4.png",
+      "reason": "Exercise headings still reference the shared /challenge/images/arrow4.png icon. Map onto the shared numbered arrow set."
+    },
+    {
+      "from": "/challenge/images/arrow5.png",
+      "to": "/images/course-content/111/arrow5.png",
+      "reason": "Exercise headings still reference the shared /challenge/images/arrow5.png icon. Map onto the shared numbered arrow set."
     },
     {
       "from": "/path/images/1480/needle_position.jpg",
@@ -201,6 +221,38 @@
       "to": "https://www.knititnow.com/glossary/isolated-motif/",
       "confidence": "HIGH",
       "reason": "Legacy glossaryId 713 is preserved as Isolated Motif."
+    },
+    {
+      "legacyId": 250,
+      "currentId": 811,
+      "currentTerm": "Short Row | Partial Knitting",
+      "to": "https://www.knititnow.com/glossary/short-row-partial-knitting/",
+      "confidence": "HIGH",
+      "reason": "Lesson 4233 recovered glossaryId 250 (inactive Short Row) onto current Short Rows 811."
+    },
+    {
+      "legacyId": 251,
+      "currentId": 252,
+      "currentTerm": "Slip Stitch",
+      "to": "https://www.knititnow.com/glossary/slip-stitch/",
+      "confidence": "HIGH",
+      "reason": "Lesson 4233 recovered glossaryId 251 (Skip | Slip) onto current Skip/Slip 252."
+    },
+    {
+      "legacyId": 277,
+      "currentId": 277,
+      "currentTerm": "Tuck | Pull Up",
+      "to": "https://www.knititnow.com/glossary/tuck-pull-up/",
+      "confidence": "HIGH",
+      "reason": "Lesson 4233 Tuck already uses current glossaryId 277."
+    },
+    {
+      "legacyId": 352,
+      "currentId": 352,
+      "currentTerm": "Intarsia | Picture Knitting",
+      "to": "https://www.knititnow.com/glossary/intarsia-picture-knitting/",
+      "confidence": "HIGH",
+      "reason": "Lesson 4233 Intarsia already uses current glossaryId 352."
     }
   ]
 }

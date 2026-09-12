@@ -153,10 +153,13 @@ describe("Course 86 lesson 4233 exercise accordion answers", () => {
       expect(item.html).toContain('aria-expanded="false"');
     });
 
-    expect(presented[1]!.html).toContain("data-GlossaryId='250'");
+    expect(presented[1]!.html).toContain('data-GlossaryId="811"');
     expect(presented[1]!.html).toContain("glossaryhelp");
     expect(presented[1]!.html).toContain("/images/course-content/111/arrow2.png");
     expect(presented[1]!.html).not.toContain("/challenge/images/arrow2.png");
+    expect(presented[3]!.html).toContain("/images/course-content/111/arrow4.png");
+    expect(presented[4]!.html).toContain("/images/course-content/111/arrow5.png");
+    expect(presented[4]!.html).not.toContain("/challenge/images/arrow5.png");
   });
 });
 

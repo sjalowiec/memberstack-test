@@ -88,6 +88,57 @@ export function applyKinCourseSrcRewrites(
   return out;
 }
 
+/** Map a recovered `data-GlossaryId` onto the current in-player glossary id. */
+export function currentKinCourseGlossaryId(
+  legacyId: number,
+  presentation: KinCoursePresentation = {},
+): number {
+  const rule = (presentation.glossaryLinks ?? []).find(
+    (item) => item.confidence === "HIGH" && Number(item.legacyId) === legacyId,
+  );
+  if (!rule) return 0;
+  const currentId = Number(rule.currentId ?? rule.legacyId);
+  return Number.isFinite(currentId) && currentId > 0 ? currentId : 0;
+}
+
+/**
+ * Rewrite HIGH-confidence `data-GlossaryId` links onto current catalog ids and
+ * in-player modal hashes. Stored lesson copy is unchanged.
+ */
+export function applyKinCourseGlossaryLinkRewrites(
+  html: string,
+  presentation: KinCoursePresentation = {},
+  glossary: KinCourseGlossaryEntry[] = [],
+): string {
+  const remap = new Map<number, number>();
+  for (const rule of presentation.glossaryLinks ?? []) {
+    if (rule.confidence !== "HIGH") continue;
+    const from = Number(rule.legacyId);
+    const to = Number(rule.currentId ?? rule.legacyId);
+    if (!Number.isFinite(from) || from <= 0 || !Number.isFinite(to) || to <= 0) continue;
+    remap.set(from, to);
+    if (!remap.has(to)) remap.set(to, to);
+  }
+  if (!remap.size || !glossary.length) return html;
+  const byId = new Map(glossary.map((entry) => [entry.glossaryId, entry]));
+  return html.replace(/<a\b([^>]*)>/gi, (full, attrs: string) => {
+    const glossaryId = Number(/data-GlossaryId=["'](\d+)["']/i.exec(attrs)?.[1] || "");
+    const currentId = remap.get(glossaryId) || 0;
+    const entry = currentId ? byId.get(currentId) : undefined;
+    if (!entry) return full;
+    let next = attrs;
+    next = next.replace(/data-GlossaryId=["']\d+["']/i, `data-GlossaryId="${entry.glossaryId}"`);
+    const dest = glossaryModalHref(entry.glossaryId);
+    if (/href=/i.test(next)) next = next.replace(/href=["'][^"']*["']/i, `href="${dest}"`);
+    else next += ` href="${dest}"`;
+    if (!/glossaryhelp/i.test(next)) {
+      if (/class=/i.test(next)) next = next.replace(/class=["']([^"']*)["']/i, 'class="$1 glossaryhelp"');
+      else next += ' class="glossaryhelp"';
+    }
+    return `<a${next}>`;
+  });
+}
+
 /**
  * Legacy KIN HTML sometimes uses the obsolete `<image src>` tag. HTML parsers
  * remap that to `<img>` in a full document, but `set:html` fragments can leave
@@ -225,30 +276,7 @@ export function presentKinCourseHtml(
       return `<a${next}>`;
     });
   }
-  const allowed = new Set(
-    (presentation.glossaryLinks ?? [])
-      .filter((rule) => rule.confidence === "HIGH")
-      .map((rule) => Number(rule.legacyId))
-      .filter((id) => Number.isFinite(id)),
-  );
-  if (allowed.size && glossary.length) {
-    const byId = new Map(glossary.map((entry) => [entry.glossaryId, entry]));
-    out = out.replace(/<a\b([^>]*)>/gi, (full, attrs: string) => {
-      const glossaryId = Number(/data-GlossaryId=["'](\d+)["']/i.exec(attrs)?.[1] || "");
-      const id = Number.isFinite(glossaryId) && allowed.has(glossaryId) ? glossaryId : 0;
-      const entry = id ? byId.get(id) : undefined;
-      if (!entry) return full;
-      let next = attrs;
-      const dest = glossaryModalHref(entry.glossaryId);
-      if (/href=/i.test(next)) next = next.replace(/href=["'][^"']*["']/i, `href="${dest}"`);
-      else next += ` href="${dest}"`;
-      if (!/glossaryhelp/i.test(next)) {
-        if (/class=/i.test(next)) next = next.replace(/class=["']([^"']*)["']/i, 'class="$1 glossaryhelp"');
-        else next += ' class="glossaryhelp"';
-      }
-      return `<a${next}>`;
-    });
-  }
+  out = applyKinCourseGlossaryLinkRewrites(out, presentation, glossary);
   out = applyLegacyGlossaryHrefRewrites(out, glossary);
   out = repairLegacyImageTags(out);
   out = restoreLegacyBootstrapThumbnailGrid(out);
