@@ -18,6 +18,7 @@ import {
 import {
   presentHotspotComponent,
 } from "../../lib/kinCourse/numberedHotspot";
+import { presentExerciseAccordionItem } from "../../lib/kinCourse/legacyCollapse";
 import type { KinCourseDocument, KinCoursePresentation } from "../../lib/kinCourse/types";
 
 interface VideoItem {
@@ -211,12 +212,17 @@ function rewriteExerciseDetails(html: string): string {
           lessonId={lessonId}
           courseId={course.id}
           knownAssignIds={knownAssignIds}
-          items={(component.items || []).map((item) => ({
-            ...item,
-            heading: item.heading ? presentHtml(item.heading) : item.heading,
-            image: presentSrc(item.image),
-            detailsHtml: presentHtml(rewriteExerciseDetails(item.detailsHtml || "")),
-          }))}
+          items={(component.items || []).map((item) =>
+            presentExerciseAccordionItem(
+              {
+                ...item,
+                detailsHtml: rewriteExerciseDetails(item.detailsHtml || ""),
+              },
+              presentHtml,
+              presentSrc,
+              { lessonId, componentId: component.componentId },
+            ),
+          )}
         />
       );
     }
@@ -268,3 +274,8 @@ function rewriteExerciseDetails(html: string): string {
     );
   })
 }
+
+<script>
+  import { bindLegacyCollapse } from "../../lib/kinCourse/legacyCollapse";
+  bindLegacyCollapse(document, window.location.hash);
+</script>

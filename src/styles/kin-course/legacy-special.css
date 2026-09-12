@@ -202,7 +202,13 @@ ol.legacy-hotspot-labels li {
   background: #fff;
 }
 
-.legacy-exercise-item summary {
+.legacy-exercise-item--prompt {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.legacy-exercise-item > summary {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -215,13 +221,39 @@ ol.legacy-hotspot-labels li {
   font-weight: 700;
 }
 
-.legacy-exercise-item summary::-webkit-details-marker {
+.legacy-exercise-item > summary::-webkit-details-marker {
   display: none;
 }
 
-.legacy-exercise-item summary:focus-visible {
+.legacy-exercise-item > summary:focus-visible {
   outline: 3px solid #52682d;
   outline-offset: -3px;
+}
+
+.kin-legacy-collapse {
+  margin: 8px 0 16px;
+}
+
+.kin-legacy-collapse-trigger {
+  cursor: pointer;
+  list-style: none;
+}
+
+.kin-legacy-collapse-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.kin-legacy-collapse-trigger:focus-visible {
+  outline: 3px solid #52682d;
+  outline-offset: 2px;
+}
+
+.kin-legacy-collapse:not([open]) > .kin-legacy-collapse-panel {
+  display: none;
+}
+
+.kin-legacy-collapse-panel {
+  margin-top: 10px;
 }
 
 .legacy-exercise-icon {
