@@ -135,5 +135,7 @@ describe("public course catalog cleanup", () => {
     }
     expect(getCourseCatalogCategories()).toEqual(["Silver Reed"]);
     expect(sections.map((section) => section.category)).toEqual(["Silver Reed"]);
+    expect(entries.some((course) => course.slug.includes("taitexma"))).toBe(false);
+    expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
   });
 });

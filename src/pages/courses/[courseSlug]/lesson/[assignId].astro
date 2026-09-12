@@ -5,7 +5,7 @@ import KinCourseLessonHeader from "../../../../components/kinCourse/KinCourseLes
 import KinCourseStickyNav from "../../../../components/kinCourse/KinCourseStickyNav.astro";
 import KinCourseComponents from "../../../../components/kinCourse/KinCourseComponents.astro";
 import KinCourseLayout from "../../../../layouts/KinCourseLayout.astro";
-import { lessonPlainTitle, parseAssignId } from "../../../../lib/kinCourse/hrefs";
+import { lessonPlainTitle, parseAssignId, parseKinCourseId } from "../../../../lib/kinCourse/hrefs";
 import { loadKinCourseBundle } from "../../../../lib/kinCourse/load";
 import { getLessonContext, visibleLessonComponents } from "../../../../lib/kinCourse/player";
 import { kinCourseHomeHref } from "../../../../lib/kinCourse/hrefs";
@@ -13,22 +13,22 @@ import { kinCourseLoadOptions } from "../../../../lib/kinCourse/request";
 
 export const prerender = false;
 
-const COURSE_ID = 111;
+const courseId = parseKinCourseId(Astro.params.courseSlug);
 const assignId = parseAssignId(Astro.params.assignId);
-if (!assignId) {
+if (!courseId || !assignId) {
   return new Response("Lesson not found", { status: 404 });
 }
 
-const loadOptions = kinCourseLoadOptions(Astro.url);
+const loadOptions = await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies);
 Astro.response.headers.set("Cache-Control", "no-store");
-const bundle = await loadKinCourseBundle(COURSE_ID, loadOptions);
+const bundle = await loadKinCourseBundle(courseId, loadOptions);
 if (!bundle) {
   return new Response("Course not found", { status: 404 });
 }
 
 const context = getLessonContext(bundle.course, assignId, loadOptions.preview);
 if (!context) {
-  return Astro.redirect(kinCourseHomeHref(COURSE_ID, loadOptions.preview));
+  return Astro.redirect(kinCourseHomeHref(courseId, loadOptions.preview));
 }
 
 const { lesson, section, lessonNumber, lessonCount, previousNav, nextNav } = context;

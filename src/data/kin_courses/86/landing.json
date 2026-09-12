@@ -1,0 +1,38 @@
+{
+  "courseId": 86,
+  "catalogSlug": "taitexma-th-tr-160-getting-started",
+  "title": "Taitexma TH/TR-160",
+  "subtitle": "Getting Started",
+  "fullTitle": "Taitexma TH/TR-160: Getting Started",
+  "image": {
+    "src": "/images/courses/taitexma_160.webp",
+    "alt": "Taitexma TH/TR-160 knitting machine"
+  },
+  "descriptionHtml": null,
+  "firstLessonId": 4212,
+  "firstLessonTitle": "Unbox the machine",
+  "topics": [
+    "Unboxing",
+    "Learn about the Machine",
+    "Casting On and Binding Off",
+    "Tuck (Pull-up) Stitch",
+    "Slip (Skip) Stitch",
+    "Intarsia",
+    "Plaiting",
+    "Knit Weave",
+    "Unboxing the Ribber",
+    "Get Familiar with Your Ribber",
+    "Using the Ribber"
+  ],
+  "included": [
+    {
+      "label": "Video tutorials"
+    },
+    {
+      "label": "Printable reference material"
+    },
+    {
+      "label": "Exercises"
+    }
+  ]
+}

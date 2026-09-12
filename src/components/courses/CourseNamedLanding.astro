@@ -1,28 +1,13 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import CourseAccessGate from "../../components/courses/CourseAccessGate.astro";
-import { getCourseLandingBySlug } from "../../lib/legacy_kin/courseLanding";
-import { getLegacyCourses } from "../../lib/legacy_kin/legacyCourseLoader";
+import CourseAccessGate from "./CourseAccessGate.astro";
+import type { CourseLandingView } from "../../lib/legacy_kin/courseLanding";
 
-export const prerender = true;
-
-// Prerender one static landing page per PUBLIC course only. getLegacyCourses()
-// filters by isLegacyCoursePublic, so draft/unpublished/invalid slugs are never
-// generated — invalid slugs 404 naturally (page not built) with no runtime check.
-export function getStaticPaths() {
-  return getLegacyCourses().map((course) => ({
-    params: { courseSlug: course.slug },
-  }));
+interface Props {
+  landing: CourseLandingView;
 }
 
-const courseSlug = Astro.params.courseSlug ?? "";
-const landing = getCourseLandingBySlug(courseSlug);
-
-if (!landing) {
-  // Safety net only: getStaticPaths never emits an unknown slug.
-  return new Response("Course not found", { status: 404 });
-}
-
+const { landing } = Astro.props;
 const pageTitle = `${landing.title} | Knit it Now`;
 const isInProgress = landing.contentStatus === "in_progress";
 const statusClass =
@@ -34,7 +19,7 @@ const statusClass =
 <Layout title={pageTitle} description={landing.description} bodyClass="page--tight-header">
   <div class="course-landing">
     <p class="course-landing__back">
-      <a href="/courses/">? All courses</a>
+      <a href="/courses/">All courses</a>
     </p>
 
     <article class="course-landing__card">
@@ -131,9 +116,6 @@ const statusClass =
               </div>
             </section>
           ) : (
-            // Access/CTA region is excluded from Pagefind: it holds gating UI and
-            // (for premium) a hidden CourseAccessGate content slot — never index
-            // gated/member-only content, only the public landing copy above.
             <div data-pagefind-ignore>
               <CourseAccessGate access={landing.access} courseSlug={landing.slug}>
                 <section slot="content" class="course-landing__access">

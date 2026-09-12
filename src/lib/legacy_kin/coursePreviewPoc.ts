@@ -66,7 +66,12 @@ export type ImageCarouselSlide = {
 export type ImageCarouselComponent = {
   type: "imageCarousel";
   title?: string | null;
+  introHtml?: string | null;
   slides: ImageCarouselSlide[];
+  /** "option" renders "Option X of N" in the carousel status. */
+  countFormat?: "slide" | "option";
+  className?: string;
+  slideLabels?: string[];
   legacyComponentId: number;
   order: number;
 };
@@ -105,6 +110,22 @@ export type EmbeddedToolComponent = {
   order: number;
 };
 
+export type VimeoJumpLinksJump = {
+  time: string;
+  title?: string | null;
+};
+
+export type VimeoJumpLinksComponent = {
+  type: "vimeoJumpLinks";
+  vimeoId?: string | null;
+  playerComponentId?: number | null;
+  jumps: VimeoJumpLinksJump[];
+  legacyComponentId: number;
+  order: number;
+  legacyFields?: Record<string, string>;
+  notes?: string[];
+};
+
 export type CourseComponent =
   | RichTextComponent
   | VideoComponent
@@ -114,6 +135,7 @@ export type CourseComponent =
   | ImageComponent
   | ExerciseAccordionComponent
   | EmbeddedToolComponent
+  | VimeoJumpLinksComponent
   | MigrationPendingComponent;
 
 export type CourseBlock = {
@@ -129,6 +151,11 @@ export type CourseLesson = {
   title: string;
   slug: string;
   displayOrder: number;
+  /**
+   * When false, the lesson is hidden from public navigation and routes.
+   * Omitted or true = visible (backward compatible default).
+   */
+  published?: boolean;
   legacy: { itemId: number; lessonOrder: number };
   blocks: CourseBlock[];
 };

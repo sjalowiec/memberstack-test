@@ -151,3 +151,82 @@ describe("legacy glossary href adapter", () => {
     expect(help).toContain('data-GlossaryId="662"');
   });
 });
+
+describe("Course 86 presentation rewrites", () => {
+  const presentation = readKinCoursePresentation(86);
+
+  it("rewrites leftover /challenge/images/v2/86/ URLs onto local course-content copies", () => {
+    const html = presentKinCourseHtml(
+      '<img src="/challenge/images/v2/86/claw_weights1.jpg">',
+      4313,
+      presentation,
+    );
+    expect(html).toContain("/images/course-content/86/claw_weights1.jpg");
+    expect(html).not.toContain("/challenge/images/v2/86/");
+  });
+
+  it("rewrites warning.png from the recovered challenge path onto the local course-content file", () => {
+    const html = presentKinCourseHtml(
+      '<style>hr.style13 { height: 10px; }</style><img src="/challenge/images/v2/86/warning.png">',
+      4312,
+      presentation,
+    );
+    expect(html).toContain('<img src="/images/course-content/86/warning.png">');
+    expect(html).not.toContain("/challenge/images/v2/86/warning.png");
+    expect(html).toContain('data-kin-inline="scoped"');
+    expect(html).toContain(".legacy-html hr.style13");
+    expect(html.indexOf('<img src="/images/course-content/86/warning.png">')).toBeLessThan(
+      html.indexOf("<style"),
+    );
+  });
+
+  it("normalizes obsolete <image> tags so the player can render them as img", () => {
+    const html = presentKinCourseHtml(
+      '<image src="/images/glossary/ewrap.jpg">',
+      6207,
+      presentation,
+    );
+    expect(html).toContain('<img src="/images/glossary/ewrap.jpg">');
+    expect(html).not.toMatch(/<image\b/i);
+  });
+
+  it("rewrites KIN path-library and shared arrow URLs onto recovered local files", () => {
+    expect(
+      applyKinCourseSrcRewrites("/path/images/1480/needle_position.jpg", presentation),
+    ).toBe("/images/course-content/86/needle_position.jpg");
+    expect(applyKinCourseSrcRewrites("/challenge/images/arrow1.png", presentation)).toBe(
+      "/images/course-content/111/arrow1.png",
+    );
+    expect(
+      applyKinCourseSrcRewrites("/challenge/images/v2/86/arrow2.png", presentation),
+    ).toBe("/images/course-content/111/arrow2.png");
+    expect(applyKinCourseSrcRewrites("/swatches/6/1017Swatch.jpg", presentation)).toBe(
+      "/stitch-patterns/swatches/6/1017Swatch.jpg",
+    );
+  });
+
+  it("rewrites doubled gallery paths before the shorter challenge prefix", () => {
+    expect(
+      applyKinCourseSrcRewrites("/challenge/images/v2/86/v2/86/tuck1.jpg", presentation),
+    ).toBe("/images/course-content/86/tuck1.jpg");
+  });
+
+  it("maps recovered PDF download hrefs onto local Course 86 files", () => {
+    const html = presentKinCourseHtml(
+      [
+        '<a href="/downloads/160main.pdf">Main Bed Manual</a>',
+        '<a href="/downloads/160ribber.pdf">Ribber Manual</a>',
+        '<a href="/downloads/taitexma_160_reference_card.pdf">Cheat sheets</a>',
+        '<a href="/downloads/reference-cards.pdf">Reference cards</a>',
+      ].join(""),
+      4287,
+      presentation,
+    );
+    expect(html).toContain("/images/course-content/86/th160_manual.pdf");
+    expect(html).toContain("/images/course-content/86/TR160_manual.pdf");
+    expect(html).toContain("/images/course-content/86/taitexma_160_reference_card.pdf");
+    expect(html).toContain("/images/course-content/86/reference-cards.pdf");
+    expect(html).not.toContain("/downloads/160main.pdf");
+    expect(html).not.toContain("/downloads/160ribber.pdf");
+  });
+});
