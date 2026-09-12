@@ -15,6 +15,9 @@ import {
   kinVimeoPlayerDomId,
   kinVimeoPlayerKey,
 } from "../../lib/kinCourse/vimeoJumpLinks";
+import {
+  presentHotspotComponent,
+} from "../../lib/kinCourse/numberedHotspot";
 import type { KinCourseDocument, KinCoursePresentation } from "../../lib/kinCourse/types";
 
 interface VideoItem {
@@ -185,6 +188,10 @@ function rewriteExerciseDetails(html: string): string {
     }
 
     if (component.type === 'hotspot') {
+      const presented = presentHotspotComponent(lessonId, component, presentation);
+      if (presented.mode === 'static') {
+        return <div class="legacy-html" set:html={presentHtml(presented.html)} />;
+      }
       return (
         <LegacyHotspot
           lessonId={lessonId}

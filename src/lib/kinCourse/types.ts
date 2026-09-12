@@ -97,4 +97,24 @@ export type KinCoursePresentation = {
     parts: Array<{ literal?: string; text?: string; legacyId?: number }>;
   }>;
   glossaryLinks?: Array<{ legacyId: number; confidence?: string }>;
+  /**
+   * Prepared static numbered-image replacements for hotspot components.
+   * Keep `enabled` false until the numbered PNG exists; the interactive hotspot stays live.
+   */
+  numberedHotspots?: Array<{
+    lessonId: number;
+    componentId: number;
+    enabled?: boolean;
+    numberedSrc: string;
+    alt: string;
+    imageWidth?: number;
+    imageHeight?: number;
+    items: Array<{
+      number: number;
+      originalIndex: number;
+      label: string;
+      top: number;
+      left: number;
+    }>;
+  }>;
 };

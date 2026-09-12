@@ -8,11 +8,23 @@
  * unlocks content.
  *
  * Viewer copy uses `isMemberLoggedIn` (not a truthy Memberstack payload).
+ * Unresolved Memberstack is not a denial: keep the lesson hidden and do not
+ * show the unauthorized card until auth/plans have finished loading.
+ * A confirmed course-access result is reused during lesson navigation.
  * `onAuthChange` / `auth:updated` re-run the gate so a restored or newly
  * completed session unlocks without a second full reload. Login uses the
  * shared Memberstack modal helper (same completion path as BaseLayout).
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
+import {
+  KIN_COURSE_ACCESS_SESSION_KEY,
+  clearConfirmedKinCourseAccessSlug,
+  isKinCourseMemberstackResolved,
+  kinCourseGatePaint,
+  memberIdForKinCourseAccess,
+  writeConfirmedKinCourseAccess,
+  type KinCourseGatePaint,
+} from "../lib/kinCourse/accessGateState";
 import { clearKinCourseCachePaint } from "../lib/kinCourseCacheAccess";
 import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
@@ -31,39 +43,110 @@ export function kinCourseGateViewer(
   return isMemberLoggedIn(memberOrPayload) ? "loggedInNoAccess" : "loggedOut";
 }
 
-async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
+type MemberstackWaitResult =
+  | { ready: true; payload: unknown }
+  | { ready: false; payload: unknown };
+
+async function waitForMemberstackReady({
+  attempts = 30,
+  delayMs = 200,
+} = {}): Promise<MemberstackWaitResult> {
+  let lastPayload: unknown = null;
+  let waitedForReady = false;
   for (let i = 0; i < attempts; i++) {
     try {
-      const api = window.$memberstackDom?.getAppAndMember;
-      if (typeof api === "function") return await api();
+      const ms = window.$memberstackDom;
+      const api = ms?.getAppAndMember;
+      if (typeof api === "function") {
+        if (!waitedForReady && ms.onReady) {
+          waitedForReady = true;
+          await Promise.race([
+            Promise.resolve(ms.onReady).catch(() => undefined),
+            new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+          ]);
+        }
+        const payload = await api.call(ms);
+        lastPayload = payload;
+        if (isKinCourseMemberstackResolved(payload)) {
+          return { ready: true, payload };
+        }
+      }
     } catch {
       /* keep polling until Memberstack is ready */
     }
     await new Promise((r) => setTimeout(r, delayMs));
   }
-  return null;
+  return { ready: false, payload: lastPayload };
 }
 
-function setGateAccess(gate: HTMLElement, unlocked: boolean): void {
-  clearKinCourseCachePaint();
-  gate.removeAttribute("data-gate-pending");
-  gate.removeAttribute("aria-busy");
+function courseAccessStorage(): Storage | null {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function rememberGateAccess(gate: HTMLElement, unlocked: boolean, memberOrPayload: unknown): void {
+  const storage = courseAccessStorage();
+  if (!storage) return;
+  const courseSlug = gate.dataset.courseSlug?.trim() ?? "";
+  const memberId = memberIdForKinCourseAccess(memberOrPayload);
+  if (!courseSlug) return;
+  if (!isMemberLoggedIn(memberOrPayload) || !memberId) {
+    storage.setItem(
+      KIN_COURSE_ACCESS_SESSION_KEY,
+      clearConfirmedKinCourseAccessSlug(storage.getItem(KIN_COURSE_ACCESS_SESSION_KEY), courseSlug),
+    );
+    return;
+  }
+  storage.setItem(
+    KIN_COURSE_ACCESS_SESSION_KEY,
+    writeConfirmedKinCourseAccess(storage.getItem(KIN_COURSE_ACCESS_SESSION_KEY), courseSlug, {
+      memberId,
+      unlocked,
+    }),
+  );
+}
+
+function clearRememberedGateAccess(): void {
+  courseAccessStorage()?.removeItem(KIN_COURSE_ACCESS_SESSION_KEY);
+}
+
+export function applyKinCourseGatePaint(
+  gate: HTMLElement,
+  paint: KinCourseGatePaint,
+  viewer: KinCourseGateViewer = "loggedOut",
+): void {
+  const pending = paint === "pending";
+  if (pending) {
+    gate.setAttribute("data-gate-pending", "");
+    gate.setAttribute("aria-busy", "true");
+  } else {
+    clearKinCourseCachePaint();
+    gate.removeAttribute("data-gate-pending");
+    gate.removeAttribute("aria-busy");
+    gate.dataset.viewer = viewer;
+  }
+
   gate.querySelectorAll('[data-gated="pending"]').forEach((el) => {
-    el.setAttribute("hidden", "");
+    if (paint === "pending") el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
   });
   gate.querySelectorAll('[data-gated="content"]').forEach((el) => {
-    if (unlocked) el.removeAttribute("hidden");
+    if (paint === "open") el.removeAttribute("hidden");
     else el.setAttribute("hidden", "");
   });
   gate.querySelectorAll('[data-gated="locked"]').forEach((el) => {
-    if (unlocked) el.setAttribute("hidden", "");
-    else el.removeAttribute("hidden");
+    if (paint === "locked") el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
   });
 
+  if (paint !== "locked") return;
   const loggedOut = gate.querySelector<HTMLElement>('[data-gate-copy="loggedOut"]');
   const loggedIn = gate.querySelector<HTMLElement>('[data-gate-copy="loggedInNoAccess"]');
-  if (unlocked || !loggedOut || !loggedIn) return;
-  const loggedInNoAccess = gate.dataset.viewer === "loggedInNoAccess";
+  if (!loggedOut || !loggedIn) return;
+  const loggedInNoAccess = viewer === "loggedInNoAccess";
   loggedOut.hidden = loggedInNoAccess;
   loggedIn.hidden = !loggedInNoAccess;
 }
@@ -77,22 +160,29 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   const courseSlug = gate.dataset.courseSlug ?? null;
 
   if (access === "free" || previewUnlockAllowed(gate) || videoDevBypass || localMemberPreviewBypassIsOn()) {
-    setGateAccess(gate, true);
+    applyKinCourseGatePaint(gate, "open", "open");
     return;
   }
 
   const res = await waitForMemberstackReady();
-  await ensureLegacyPaidThroughContext(res);
-  const unlocked = canAccessCourse(access, res, { courseSlug });
-  gate.dataset.viewer = kinCourseGateViewer(unlocked, res);
+  if (!res.ready) {
+    applyKinCourseGatePaint(gate, kinCourseGatePaint({ memberstackReady: false, unlocked: false }));
+    return;
+  }
 
-  logMemberAccessDebug("kinCourse.gate", res, {
+  await ensureLegacyPaidThroughContext(res.payload);
+  const unlocked = canAccessCourse(access, res.payload, { courseSlug });
+  const viewer = kinCourseGateViewer(unlocked, res.payload);
+
+  logMemberAccessDebug("kinCourse.gate", res.payload, {
     courseAccess: access,
     courseSlug,
     unlocked,
+    memberstackReady: true,
   });
 
-  setGateAccess(gate, unlocked);
+  applyKinCourseGatePaint(gate, kinCourseGatePaint({ memberstackReady: true, unlocked }), viewer);
+  rememberGateAccess(gate, unlocked, res.payload);
 }
 
 const boundGates = new WeakSet<HTMLElement>();
@@ -120,6 +210,7 @@ function bindLoginButtons(): void {
     }
     if (target.closest("[data-course-111-logout]")) {
       event.preventDefault();
+      clearRememberedGateAccess();
       void Promise.resolve(window.$memberstackDom?.logout?.()).finally(() => {
         window.dispatchEvent(new Event("auth:updated"));
       });

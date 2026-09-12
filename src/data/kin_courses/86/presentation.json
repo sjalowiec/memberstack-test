@@ -7,6 +7,92 @@
       "Keep this course handy as a reference whenever you sit down at your machine."
     ]
   },
+  "numberedHotspots": [
+    {
+      "lessonId": 4231,
+      "componentId": 6444,
+      "enabled": true,
+      "numberedSrc": "/images/course-content/86/terms.webp",
+      "alt": "Taitexma TH/TR-160 knitting machine with numbered parts identified.",
+      "imageWidth": 1000,
+      "imageHeight": 427,
+      "items": [
+        { "number": 1, "originalIndex": 1, "label": "Yarn Mast Assembly", "top": 9.3709, "left": 3.8977 },
+        { "number": 2, "originalIndex": 2, "label": "Row Counter", "top": 11.0347, "left": 37.3166 },
+        { "number": 3, "originalIndex": 3, "label": "Main Knitting Carriage", "top": 32.3589, "left": 52.6204 },
+        { "number": 4, "originalIndex": 8, "label": "Main Needlebed", "top": 41.2596, "left": 27.3144 },
+        { "number": 5, "originalIndex": 5, "label": "Needle Position Indicator", "top": 44.3065, "left": 90.4274 },
+        { "number": 6, "originalIndex": 7, "label": "Sponge Bar (Needle Presser Bar)", "top": 67.502, "left": 27.7138 },
+        { "number": 7, "originalIndex": 4, "label": "Sinker Plate", "top": 69.6132, "left": 63.925 },
+        { "number": 8, "originalIndex": 6, "label": "Number Strip", "top": 70.317, "left": 87.0291 }
+      ]
+    },
+    {
+      "lessonId": 4221,
+      "componentId": 6410,
+      "enabled": true,
+      "numberedSrc": "/images/course-content/86/tools.webp",
+      "alt": "Taitexma TH/TR-160 tools and accessories numbered 1 through 11.",
+      "imageWidth": 1000,
+      "imageHeight": 770,
+      "items": [
+        { "number": 1, "originalIndex": 1, "label": "Cleaning Brush", "top": 8.9618, "left": 35.4065 },
+        { "number": 2, "originalIndex": 2, "label": "Ravel Cord", "top": 22.7329, "left": 26.9046 },
+        { "number": 3, "originalIndex": 4, "label": "Oil", "top": 20.6535, "left": 49.71 },
+        { "number": 4, "originalIndex": 5, "label": "Needle Pushers", "top": 21.4339, "left": 69.8152 },
+        { "number": 5, "originalIndex": 3, "label": "Wax", "top": 28.5788, "left": 42.1094 },
+        { "number": 6, "originalIndex": 6, "label": "Carriage Lock", "top": 40.7892, "left": 21.1047 },
+        { "number": 7, "originalIndex": 7, "label": "Cast on comb and connecting plate", "top": 46.3757, "left": 49.0102 },
+        { "number": 8, "originalIndex": 8, "label": "Machine Clamps", "top": 53.0019, "left": 67.714 },
+        { "number": 9, "originalIndex": 11, "label": "Transfer Tools", "top": 66.252, "left": 23.8049 },
+        { "number": 10, "originalIndex": 9, "label": "Latch Tool", "top": 71.4483, "left": 80.0171 },
+        { "number": 11, "originalIndex": 10, "label": "Weight(s)", "top": 81.9717, "left": 59.813 }
+      ]
+    },
+    {
+      "lessonId": 4238,
+      "componentId": 6459,
+      "enabled": true,
+      "numberedSrc": "/images/course-content/86/tools-ribber.webp",
+      "alt": "Taitexma TR-160 ribber tools and accessories numbered 1 through 16.",
+      "imageWidth": 1000,
+      "imageHeight": 717,
+      "items": [
+        { "number": 1, "originalIndex": 1, "label": "Cast on Combs", "top": 11.8577, "left": 20.7036 },
+        { "number": 2, "originalIndex": 2, "label": "Sponge Bar", "top": 15.0669, "left": 92.6206 },
+        { "number": 3, "originalIndex": 4, "label": "Ribber Carriage", "top": 24.1353, "left": 32.7062 },
+        { "number": 4, "originalIndex": 5, "label": "Ribber Weights", "top": 34.7369, "left": 12.002 },
+        { "number": 5, "originalIndex": 3, "label": "Double Eye Needle (Bodkin)", "top": 33.3417, "left": 38.6086 },
+        { "number": 6, "originalIndex": 6, "label": "Connecting Arm Assembly", "top": 40.8769, "left": 72.9148 },
+        { "number": 7, "originalIndex": 7, "label": "2x1 | 2x2 Needle Pusher", "top": 55.6639, "left": 29.4051 },
+        { "number": 8, "originalIndex": 9, "label": "Spanner Tool", "top": 61.1063, "left": 52.4103 },
+        { "number": 9, "originalIndex": 10, "label": "Ravel Cord", "top": 57.7566, "left": 60.0126 },
+        { "number": 10, "originalIndex": 14, "label": "Setting Plates (left & right)", "top": 70.7318, "left": 33.0066 },
+        { "number": 11, "originalIndex": 8, "label": "Claw Weight Hangers", "top": 66.6869, "left": 45.6101 },
+        { "number": 12, "originalIndex": 12, "label": "Work Hook", "top": 77.4289, "left": 58.613 },
+        { "number": 13, "originalIndex": 11, "label": "Ribber Table Clamps", "top": 72.8245, "left": 66.9135 },
+        { "number": 14, "originalIndex": 16, "label": "Racking (Grip) Handle", "top": 83.8475, "left": 11.6026 },
+        { "number": 15, "originalIndex": 15, "label": "Wire Weight Hangers (7 hangers)", "top": 85.1021, "left": 25.7047 },
+        { "number": 16, "originalIndex": 13, "label": "Spare Needles", "top": 83.5665, "left": 41.3088 }
+      ]
+    },
+    {
+      "lessonId": 4246,
+      "componentId": 6475,
+      "enabled": true,
+      "numberedSrc": "/images/course-content/86/ribber_carriage.webp",
+      "alt": "Taitexma TR-160 ribber carriage with numbered parts identified.",
+      "imageWidth": 1000,
+      "imageHeight": 571,
+      "items": [
+        { "number": 1, "originalIndex": 1, "label": "Connecting Pin", "top": 5.0784, "left": 50.4098 },
+        { "number": 2, "originalIndex": 2, "label": "Tuck Lever", "top": 33.6365, "left": 52.3113 },
+        { "number": 3, "originalIndex": 3, "label": "Tension Dial", "top": 56.5888, "left": 50.1111 },
+        { "number": 4, "originalIndex": 4, "label": "Cam Lever (left)", "top": 65.6986, "left": 11.4011 },
+        { "number": 5, "originalIndex": 5, "label": "Cam Lever (right)", "top": 64.8226, "left": 85.4176 }
+      ]
+    }
+  ],
   "rewriteSrc": [
     {
       "from": "/challenge/images/v2/86/v2/86/",

@@ -9,6 +9,11 @@ import {
 } from "../config/legacyCourseEntitlements";
 import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS, MEMBERSHIPS } from "../config/memberships";
 import {
+  KIN_COURSE_ACCESS_SESSION_KEY,
+  KIN_TAITEXMA_160_COURSE_SLUG,
+  writeConfirmedKinCourseAccess,
+} from "./kinCourse/accessGateState";
+import {
   KIN_COURSE_CACHE_ATTR,
   kinCourseCacheAccessInlineScript,
   kinCourseCacheAccessVars,
@@ -29,12 +34,19 @@ function memberWithPlan(planId: string, status = "ACTIVE") {
 
 type KinCourseCacheUiFromCase = "open" | "locked" | "unknown";
 
-function runInlineScript(member: unknown, courseSlug = LEGACY_SK840_COURSE_SLUG): string | null {
+function runInlineScript(
+  member: unknown,
+  courseSlug = LEGACY_SK840_COURSE_SLUG,
+  sessionRaw: string | null = null,
+): string | null {
   const attrs: Record<string, string> = {};
   const sandbox = {
     localStorage: {
       getItem: (key: string) =>
         key === "_ms-mem" ? (member == null ? null : JSON.stringify(member)) : null,
+    },
+    sessionStorage: {
+      getItem: (key: string) => (key === KIN_COURSE_ACCESS_SESSION_KEY ? sessionRaw : null),
     },
     document: {
       documentElement: {
@@ -58,33 +70,41 @@ describe("kinCourseCacheUiFromMember uses live course entitlement", () => {
     expect(canAccessCourse("member", sk840, { courseSlug: LEGACY_SK840_COURSE_SLUG })).toBe(true);
     expect(kinCourseCacheUiFromMember(member, LEGACY_SK840_COURSE_SLUG)).toBe("open");
     expect(kinCourseCacheUiFromMember(sk840, LEGACY_SK840_COURSE_SLUG)).toBe("open");
+    expect(kinCourseCacheUiFromMember(member, KIN_TAITEXMA_160_COURSE_SLUG)).toBe("open");
+    expect(kinCourseCacheUiFromMember(sk840, KIN_TAITEXMA_160_COURSE_SLUG)).toBe("unknown");
   });
 
-  it("stays unknown without a cached member and locked without a course plan", () => {
+  it("stays unknown without a cached member and does not treat unresolved plans as denied", () => {
     expect(kinCourseCacheUiFromMember(null, LEGACY_SK840_COURSE_SLUG)).toBe("unknown");
     expect(
       kinCourseCacheUiFromMember(
         { id: "ms_free", planConnections: [] },
         LEGACY_SK840_COURSE_SLUG,
       ),
-    ).toBe("locked");
+    ).toBe("unknown");
+    expect(
+      kinCourseCacheUiFromMember(
+        { id: "ms_member", auth: { email: "member@knititnow.com" } },
+        KIN_TAITEXMA_160_COURSE_SLUG,
+      ),
+    ).toBe("unknown");
     expect(
       kinCourseCacheUiFromMember(
         memberWithPlan(MEMBERSHIPS.beta.memberstackPlanId),
         LEGACY_SK840_COURSE_SLUG,
       ),
-    ).toBe("locked");
+    ).toBe("unknown");
     expect(
       kinCourseCacheUiFromMember(
         memberWithPlan(MEMBERSHIPS.membership.memberstackPlanId, "CANCELED"),
         LEGACY_SK840_COURSE_SLUG,
       ),
-    ).toBe("locked");
+    ).toBe("unknown");
   });
 });
 
 describe("inline cache script stays aligned with canAccessCourse", () => {
-  it("embeds the live membership allow list and SK840 mapping", () => {
+  it("embeds the live membership allow list, SK840 mapping, and session reuse key", () => {
     const paidPlanIds = [...CURRENT_MEMBER_PLAN_IDS, ...LEGACY_PAID_MEMBER_PLAN_IDS];
     const vars = kinCourseCacheAccessVars(LEGACY_SK840_COURSE_SLUG);
     expect(vars.planIds).toEqual(paidPlanIds);
@@ -97,6 +117,8 @@ describe("inline cache script stays aligned with canAccessCourse", () => {
     expect(script).toContain(LEGACY_SK840_COURSE_SLUG);
     expect(script).toContain(KIN_COURSE_CACHE_ATTR);
     expect(script).toContain("_ms-mem");
+    expect(script).toContain(KIN_COURSE_ACCESS_SESSION_KEY);
+    expect(script).toContain("sessionStorage");
   });
 
   it("matches canAccessCourse for membership, SK840, unknown, and no-access caches", () => {
@@ -104,8 +126,8 @@ describe("inline cache script stays aligned with canAccessCourse", () => {
       [null, "unknown"],
       [memberWithPlan(MEMBERSHIPS.membership.memberstackPlanId), "open"],
       [memberWithPlan(LEGACY_SK840_COURSE_PLAN_ID), "open"],
-      [{ id: "ms_free", planConnections: [] }, "locked"],
-      [memberWithPlan(MEMBERSHIPS.beta.memberstackPlanId), "locked"],
+      [{ id: "ms_free", planConnections: [] }, "unknown"],
+      [memberWithPlan(MEMBERSHIPS.beta.memberstackPlanId), "unknown"],
     ];
     const vars = kinCourseCacheAccessVars(LEGACY_SK840_COURSE_SLUG);
     for (const [member, ui] of cases) {
@@ -113,6 +135,25 @@ describe("inline cache script stays aligned with canAccessCourse", () => {
       expect(kinCourseCacheUiFromInlineLogic(member, vars)).toBe(ui);
       expect(runInlineScript(member)).toBe(ui === "unknown" ? null : ui);
     }
+  });
+
+  it("reuses confirmed Course 86 and Course 111 access from sessionStorage", () => {
+    const loadingMember = { id: "ms_member", auth: { email: "member@knititnow.com" } };
+    const open86 = writeConfirmedKinCourseAccess(null, KIN_TAITEXMA_160_COURSE_SLUG, {
+      memberId: "ms_member",
+      unlocked: true,
+    });
+    const locked111 = writeConfirmedKinCourseAccess(null, LEGACY_SK840_COURSE_SLUG, {
+      memberId: "ms_free",
+      unlocked: false,
+    });
+    expect(runInlineScript(loadingMember, KIN_TAITEXMA_160_COURSE_SLUG, open86)).toBe("open");
+    expect(
+      runInlineScript({ id: "ms_free", planConnections: [] }, LEGACY_SK840_COURSE_SLUG, locked111),
+    ).toBe("locked");
+    expect(
+      runInlineScript({ id: "ms_other", planConnections: [] }, KIN_TAITEXMA_160_COURSE_SLUG, open86),
+    ).toBe(null);
   });
 });
 

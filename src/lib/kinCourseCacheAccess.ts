@@ -1,21 +1,27 @@
 /**
- * Pre-paint Course 111 access from the same-origin Memberstack cache.
+ * Pre-paint KIN player access from the same-origin Memberstack cache.
  *
  * `_ms-mem` is the member object the live SDK already persists. Entitlement
  * still uses `canAccessCourse` (membership allow list + SK840 slug mapping).
  * The inline script only embeds paid plan IDs (not the free legacy plan, which
  * also needs a Watson paid-through date). Live `getAppAndMember()` remains the
  * final gate.
+ *
+ * Cache never paints "locked": a logged-in member without paid/course plans may
+ * still receive access after Memberstack/Watson finish. Confirmed session state
+ * may reuse open/locked during lesson navigation.
  */
 import {
   LEGACY_COURSE_PLAN_SLUGS,
 } from "../config/legacyCourseEntitlements";
 import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS } from "../config/memberships";
 import { canAccessCourse } from "./courseAccess";
+import { KIN_COURSE_ACCESS_SESSION_KEY } from "./kinCourse/accessGateState";
 import { isMemberLoggedIn } from "./memberAccess";
 
 export const KIN_COURSE_CACHE_ATTR = "data-kin-course-cache";
 export const KIN_COURSE_MS_MEM_KEY = "_ms-mem";
+export { KIN_COURSE_ACCESS_SESSION_KEY };
 
 export type KinCourseCacheUi = "open" | "locked" | "unknown";
 
@@ -33,13 +39,17 @@ export function kinCourseCacheAccessVars(courseSlug: string): KinCourseCacheAcce
   };
 }
 
-/** Same decision the live gate uses, from a cached member / payload. */
+/**
+ * Cache-only paint from `_ms-mem`. Grant when plans already prove access.
+ * Never treat missing/unresolved plans as denied — that flashes the
+ * unauthorized card while Memberstack is still loading.
+ */
 export function kinCourseCacheUiFromMember(
   memberOrPayload: unknown,
   courseSlug: string,
 ): KinCourseCacheUi {
   if (!isMemberLoggedIn(memberOrPayload)) return "unknown";
-  return canAccessCourse("member", memberOrPayload, { courseSlug }) ? "open" : "locked";
+  return canAccessCourse("member", memberOrPayload, { courseSlug }) ? "open" : "unknown";
 }
 
 export function clearKinCourseCachePaint(): void {
@@ -89,12 +99,12 @@ export function kinCourseCacheUiFromInlineLogic(
   if (slug && ids.some((planId) => Boolean(vars.slugByPlan[planId]?.includes(slug)))) {
     return "open";
   }
-  return "locked";
+  return "unknown";
 }
 
 export function kinCourseCacheAccessInlineScript(courseSlug: string): string {
   const json = JSON.stringify(kinCourseCacheAccessVars(courseSlug)).replace(/</g, "\\u003c");
-  return `(function(){try{var v=${json};var raw=localStorage.getItem("${KIN_COURSE_MS_MEM_KEY}");if(!raw)return;var parsed=JSON.parse(raw);var member=parsed&&parsed.member&&typeof parsed.member==="object"&&!Array.isArray(parsed.member)?parsed.member:parsed;if(!member||typeof member!=="object")return;var id=member.id||member._id;if(!(typeof id==="string"?id.trim():id))return;var plans=member.planConnections||parsed.planConnections;var ids=[];if(Array.isArray(plans)){for(var i=0;i<plans.length;i++){var c=plans[i];if(!c||typeof c!=="object")continue;if(c.active===false)continue;var st=String(c.status||"").trim().toUpperCase();if(st&&st!=="ACTIVE"&&st!=="TRIALING")continue;var pid=c.planId||c.plan||c.id;if(typeof pid==="string"&&pid.trim())ids.push(pid.trim());}}var open=false;for(var j=0;j<ids.length;j++){if(v.planIds.indexOf(ids[j])!==-1){open=true;break;}}if(!open&&v.courseSlug){for(var k=0;k<ids.length;k++){var slugs=v.slugByPlan[ids[k]];if(slugs&&slugs.indexOf(v.courseSlug)!==-1){open=true;break;}}}document.documentElement.setAttribute("${KIN_COURSE_CACHE_ATTR}",open?"open":"locked");}catch(e){}})();`;
+  return `(function(){try{var v=${json};var open=false;var memberId="";var raw=localStorage.getItem("${KIN_COURSE_MS_MEM_KEY}");if(raw){var parsed=JSON.parse(raw);var member=parsed&&parsed.member&&typeof parsed.member==="object"&&!Array.isArray(parsed.member)?parsed.member:parsed;if(member&&typeof member==="object"){var id=member.id||member._id;memberId=typeof id==="string"?id.trim():(id?String(id):"");if(memberId){var plans=member.planConnections||parsed.planConnections;var ids=[];if(Array.isArray(plans)){for(var i=0;i<plans.length;i++){var c=plans[i];if(!c||typeof c!=="object")continue;if(c.active===false)continue;var st=String(c.status||"").trim().toUpperCase();if(st&&st!=="ACTIVE"&&st!=="TRIALING")continue;var pid=c.planId||c.plan||c.id;if(typeof pid==="string"&&pid.trim())ids.push(pid.trim());}}for(var j=0;j<ids.length;j++){if(v.planIds.indexOf(ids[j])!==-1){open=true;break;}}if(!open&&v.courseSlug){for(var k=0;k<ids.length;k++){var slugs=v.slugByPlan[ids[k]];if(slugs&&slugs.indexOf(v.courseSlug)!==-1){open=true;break;}}}}}}if(!open){var sessionRaw=sessionStorage.getItem("${KIN_COURSE_ACCESS_SESSION_KEY}");if(sessionRaw){var session=JSON.parse(sessionRaw);var entry=session&&session[v.courseSlug];if(memberId&&entry&&typeof entry==="object"&&entry.memberId===memberId&&typeof entry.unlocked==="boolean"){if(entry.unlocked===true)open="session-open";else open="session-locked";}}}if(open===true||open==="session-open")document.documentElement.setAttribute("${KIN_COURSE_CACHE_ATTR}","open");else if(open==="session-locked")document.documentElement.setAttribute("${KIN_COURSE_CACHE_ATTR}","locked");}catch(e){}})();`;
 }
 
 export const KIN_COURSE_CACHE_PAINT_CSS = `
