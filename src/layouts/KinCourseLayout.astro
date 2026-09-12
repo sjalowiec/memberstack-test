@@ -5,6 +5,7 @@ import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/site-chrome.css";
 import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
+import { kinCourseNoAccessMessage } from "../lib/kinCourse/accessGateState";
 import {
   KIN_COURSE_CACHE_PAINT_CSS,
   kinCourseCacheAccessInlineScript,
@@ -35,6 +36,7 @@ const lockedTitle = courseTitle;
 const accessLabel = "Member Course";
 const membershipHref = "/membership";
 const previewUnlock = preview === true;
+const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
 ---
 
 <!doctype html>
@@ -140,8 +142,7 @@ const previewUnlock = preview === true;
               <div data-gate-copy="loggedInNoAccess" hidden>
                 <p class="course-111-gate__label">Membership required</p>
                 <p class="course-111-gate__msg">
-                  You are signed in, but this course needs an active Knit It Now
-                  membership or the SK840 course plan.
+                  {noAccessMessage}
                 </p>
                 <div class="course-111-gate__actions">
                   <a class="course-111-gate__join" href={membershipHref}>
@@ -247,6 +248,10 @@ const previewUnlock = preview === true;
   }
 
   .course-111-gate [data-gated][hidden] {
+    display: none !important;
+  }
+
+  .course-111-gate[data-gate-pending] [data-gated="locked"] {
     display: none !important;
   }
 

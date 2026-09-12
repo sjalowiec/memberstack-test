@@ -74,6 +74,41 @@
   display: none;
 }
 
+/* Course 111 static numbered-image + list. Reused by Course 86 when enabled. */
+.sk840-parts-id {
+  margin: 24px 0 8px;
+}
+
+.sk840-parts-id__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
+  gap: 1.5rem 2rem;
+  align-items: start;
+}
+
+.sk840-parts-id__media {
+  margin: 0;
+}
+
+.sk840-parts-id__media img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sk840-parts-id__ol,
+ol.legacy-hotspot-labels {
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.sk840-parts-id__ol li,
+ol.legacy-hotspot-labels li {
+  margin: 0.35em 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
 .legacy-flipbook {
   width: 100%;
   margin: 24px 0 8px;
@@ -262,6 +297,10 @@
 }
 
 @media (max-width: 767px) {
+  .sk840-parts-id__layout {
+    grid-template-columns: 1fr;
+  }
+
   .legacy-ap {
     height: 70vh;
     min-height: 420px;

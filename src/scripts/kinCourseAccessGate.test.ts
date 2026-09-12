@@ -3,6 +3,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { canAccessCourse } from "../lib/courseAccess";
 import {
+  KIN_TAITEXMA_160_COURSE_SLUG,
+  kinCourseNoAccessMessage,
+} from "../lib/kinCourse/accessGateState";
+import {
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
 } from "../config/legacyCourseEntitlements";
@@ -40,6 +44,9 @@ describe("kinCourseGateViewer", () => {
     expect(
       canAccessCourse("member", loggedInNoPlan, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
     ).toBe(false);
+    expect(
+      canAccessCourse("member", loggedInNoPlan, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(false);
   });
 
   it("opens for Knit It Now membership and the SK840-only plan", () => {
@@ -48,9 +55,15 @@ describe("kinCourseGateViewer", () => {
     expect(canAccessCourse("member", member, { courseSlug: LEGACY_SK840_COURSE_SLUG })).toBe(
       true,
     );
+    expect(canAccessCourse("member", member, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG })).toBe(
+      true,
+    );
     expect(
       canAccessCourse("member", sk840Only, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
     ).toBe(true);
+    expect(
+      canAccessCourse("member", sk840Only, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(false);
     expect(kinCourseGateViewer(true, member)).toBe("open");
     expect(kinCourseGateViewer(true, sk840Only)).toBe("open");
   });
@@ -71,6 +84,15 @@ describe("KIN course gate live session refresh", () => {
     expect(gateSource).not.toMatch(
       /unlocked \? "open" : res \? "loggedInNoAccess" : "loggedOut"/,
     );
+  });
+
+  it("waits for onReady and keeps unresolved Memberstack in the pending paint", () => {
+    expect(gateSource).toContain("onReady");
+    expect(gateSource).toContain("isKinCourseMemberstackResolved");
+    expect(gateSource).toContain("kinCourseGatePaint");
+    expect(gateSource).toContain('paint === "pending"');
+    expect(gateSource).toContain("KIN_COURSE_ACCESS_SESSION_KEY");
+    expect(gateSource).toContain("clearRememberedGateAccess");
   });
 });
 
@@ -96,7 +118,26 @@ describe("KIN course layout shared login wiring", () => {
   it("lets the live getAppAndMember result override the cache-first paint", () => {
     expect(gateSource).toContain("getAppAndMember");
     expect(gateSource).toMatch(
-      /function setGateAccess\([\s\S]*?clearKinCourseCachePaint\(\)/,
+      /function applyKinCourseGatePaint\([\s\S]*?clearKinCourseCachePaint\(\)/,
     );
+  });
+
+  it("hides the unauthorized card while the gate is pending", () => {
+    expect(layoutSource).toContain('data-gate-pending={!previewUnlock}');
+    expect(layoutSource).toContain('data-gated="pending"');
+    expect(layoutSource).toContain("Checking access…");
+    expect(layoutSource).toContain(
+      '.course-111-gate[data-gate-pending] [data-gated="locked"]',
+    );
+  });
+
+  it("uses Taitexma denial copy for Course 86 and keeps SK840 copy for Course 111", () => {
+    expect(layoutSource).toContain("kinCourseNoAccessMessage");
+    expect(layoutSource).toContain("{noAccessMessage}");
+    expect(layoutSource).not.toContain("membership or the SK840 course plan.");
+    expect(kinCourseNoAccessMessage(KIN_TAITEXMA_160_COURSE_SLUG)).toContain(
+      "Taitexma TH/TR-160 course",
+    );
+    expect(kinCourseNoAccessMessage(LEGACY_SK840_COURSE_SLUG)).toContain("SK840 course plan");
   });
 });

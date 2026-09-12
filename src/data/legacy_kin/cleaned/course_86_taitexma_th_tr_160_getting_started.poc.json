@@ -233,12 +233,6 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<h3>Click the flashing \"hotspots\" below for more details</h3>",
-              "legacyComponentId": 10173,
-              "order": 1
-            },
-            {
               "type": "migrationPending",
               "legacyType": "Hotspot",
               "notes": [
@@ -358,7 +352,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n\r\n\r\n\t\r\n\t\t\r\n\t\t\t<img src=\"/challenge/images/v2/86/1.png\">\r\n\t\t\t<img src=\"/challenge/images/v2/86/2.png\">\r\n\t\t\t<img src=\"/challenge/images/v2/86/3.png\">\r\n\t\t\t <img src=\"/challenge/images/v2/86/4.png\"><br>\r\n\t\t<br>\r\n\t\tThe 6mm gauge of this machine gives a lot of flexibility in the yarn we can use. It's your choice! you can choose a lightweight yarn and knit it at a very loose tension for a lightweight fabric. You can knit the same yarn at a tighter tension for a very different look. The fiber, color and texture of the yarn is up to you.<br>The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.\r\n\t\r\n\t\r\n <div class=\"videopopup\" data-videotitle=\"Yarn for Knitting Machines\" data-vimeoid=\"527759119\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1338069709-034f196bd22a8f02940e3220839ccf157ac3e09a75b3ee3ab61f8dd9ab7dde81-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n\r\n\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\r\n\t\r\n</div>Use the arrows below to scroll through some yarn examples\r\n<hr class=\"style13\"><br>",
+              "html": "<style>\nhr.style13 {\nheight: 10px;\nborder: 0;\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\n}\n\n</style>\n\n\n\n\t\n\t\t\n\t\t\t<img src=\"/challenge/images/v2/86/1.png\">\n\t\t\t<img src=\"/challenge/images/v2/86/2.png\">\n\t\t\t<img src=\"/challenge/images/v2/86/3.png\">\n\t\t\t <img src=\"/challenge/images/v2/86/4.png\"><br>\n\t\t<br>\n\t\tThe 6mm gauge of this machine gives a lot of flexibility in the yarn we can use. It's your choice! you can choose a lightweight yarn and knit it at a very loose tension for a lightweight fabric. You can knit the same yarn at a tighter tension for a very different look. The fiber, color and texture of the yarn is up to you.<br>The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.\n\t\n\t\n <div class=\"videopopup\" data-videotitle=\"Yarn for Knitting Machines\" data-vimeoid=\"527759119\">\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1338069709-034f196bd22a8f02940e3220839ccf157ac3e09a75b3ee3ab61f8dd9ab7dde81-d_1280x720?r=pad\">\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\n</div>\n\n\n\n\t\t\t<div class=\"imagecenter text-center\"></div><br><hr class=\"style13\"><br>",
               "legacyComponentId": 6429,
               "order": 1
             },
