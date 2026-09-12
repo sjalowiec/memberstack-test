@@ -377,7 +377,7 @@
                 },
                 {
                   "src": "/challenge/images/v2/86/v2/86/pink1.jpg",
-                  "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a 4 it is lighter than the previous blue yarn"
+                  "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a #4 it is lighter than the previous blue yarn"
                 },
                 {
                   "src": "/challenge/images/v2/86/v2/86/pink2.jpg",
@@ -541,17 +541,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For many more cast-on tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/44/cast-on-methods\"><b>Knit it Now Classroom: Cast on Methods</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6416,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "527016660",
               "title": null,
               "legacyComponentId": 6413,
-              "order": 2
+              "order": 1
             },
             {
               "type": "migrationPending",
@@ -578,7 +572,7 @@
                 "LINKTITLE_7": "Essential knitting tips"
               },
               "legacyComponentId": 6417,
-              "order": 3
+              "order": 2
             }
           ],
           "title": "Casting on Stitches",
@@ -593,9 +587,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>img.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\n\r\n<image src=\"/images/glossary/ewrap.jpg\"><Br>\r\nHere is a fast way to create  a closed, e-wrap cast on by using the knitting carriage.<br>This method is helpful if you want to avoid manually wrapping each needle. <br>Using the \"slip\" setting:\r\n\r\nNeedles in \"B\" position don't knit<br>\r\nA single needle in \"E\" position (next to the carriage) will wrap.\r\n<br><ol>\r\n<li>Set the cam to \"slip\"</li>\r\n\r\n<li> Carriage on the left, pull 1 needle to \"E\" Position</li>\r\n<li> Pass the carriage right (the yarn will wrap and the needle will return to \"B\" position)\r\n<li>Pass the carriage left (the needle will not knit)</li>\r\n<li>repeat for the number of needles needed</li>\r\n<li>Hang a cast on comb</li>\r\n<li>Continue knitting</li>\r\n</ol>\r\n\r\n\r\n\r\n <div class=\"videopopup\" data-videotitle=\"wrapping\" data-vimeoid=\"827046152\">\r\n\t\t<img class=\"img-thumbnail ctr\" width=\"300\" src=\"https://i.vimeocdn.com/video/1670264450-c1133bedc76a507b731867eb04304025adb9df76fb46594172b76372da996b39-d\"><br><div class=\"text-center\"><img class=\"ctr\" src=\"/challenge/images/v2/86/no-sound-icon.png\" width=\"35\"> No sound</div>\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n\r\n",
+              "html": "Here is a fast way to create  a closed, e-wrap cast on by using the knitting carriage.<br>This method is helpful if you want to avoid manually wrapping each needle. <br>Using the \"slip\" setting:\n\nNeedles in \"B\" position don't knit<br>\nA single needle in \"E\" position (next to the carriage) will wrap.\n<br><ol>\n<li>Set the cam to \"slip\"</li>\n\n<li> Carriage on the left, pull 1 needle to \"E\" Position</li>\n<li> Pass the carriage right (the yarn will wrap and the needle will return to \"B\" position)\n</li><li>Pass the carriage left (the needle will not knit)</li>\n<li>repeat for the number of needles needed</li>\n<li>Hang a cast on comb</li>\n<li>Continue knitting</li>\n</ol>\n\n\n\n <div class=\"videopopup\" data-videotitle=\"wrapping\" data-vimeoid=\"827046152\">\n\t\t<img class=\"img-thumbnail ctr\" width=\"300\" src=\"https://i.vimeocdn.com/video/1670264450-c1133bedc76a507b731867eb04304025adb9df76fb46594172b76372da996b39-d\"><br><div class=\"text-center\"><img class=\"ctr\" src=\"/challenge/images/v2/86/no-sound-icon.png\" width=\"35\"> No sound</div>\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\n</div>\n\n\n\n",
               "legacyComponentId": 9511,
-              "order": 1
+              "order": 3
             }
           ],
           "title": "Automatic Cast On",
@@ -609,17 +603,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For with many more bind-off techniques, visit:<br>\r\n\t\t<a href=\"/classrooms/81/bind-off-methods\"> the Knit it Now Classroom: Bind off Methods</a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6415,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "527303259",
               "title": null,
               "legacyComponentId": 6412,
-              "order": 2
+              "order": 4
             },
             {
               "type": "migrationPending",
@@ -640,7 +628,7 @@
                 "LINKTITLE_4": "Pull stitch-through-stitch"
               },
               "legacyComponentId": 6414,
-              "order": 3
+              "order": 5
             }
           ],
           "title": "Binding Off",
@@ -671,17 +659,11 @@
               "order": 1
             },
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For tuck inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/91/tuck-talk\"><b>Knit it Now Classroom: Tuck Talk</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6422,
-              "order": 2
-            },
-            {
               "type": "video",
               "vimeoId": "527476073",
               "title": null,
               "legacyComponentId": 6418,
-              "order": 3
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -704,7 +686,7 @@
                 "LINKTITLE_5": "Use a Cheat Sheet"
               },
               "legacyComponentId": 6423,
-              "order": 4
+              "order": 3
             }
           ],
           "title": "About Tuck Stitch",
@@ -719,9 +701,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "Check out the <a href=\"/knit/stitchlibrary.cfm\" target=\"_blank\">Knit it Now Stitch Library</a> for Tuck and Tuck lace Inspiration!  Here are a few samples:<br>",
+              "html": "Check out the <a href=\"https://knititnow.com/stitch/\" target=\"_blank\">Knit it Now Stitch Library</a> for Tuck and Tuck lace Inspiration!  Here are a few samples:<br>",
               "legacyComponentId": 6420,
-              "order": 1
+              "order": 4
             },
             {
               "type": "imageGallery",
@@ -764,7 +746,15 @@
                 "playAudio": "1"
               },
               "legacyComponentId": 6421,
-              "order": 2
+              "order": 5
+            },
+            {
+              "type": "image",
+              "src": "",
+              "alt": "",
+              "caption": "Caption text",
+              "legacyComponentId": 9536,
+              "order": 6
             }
           ],
           "title": "Tuck Inspiration",
@@ -795,17 +785,11 @@
               "order": 1
             },
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For slip inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/118/slip-stitch\"><b>Knit it Now Classroom: Slip Stitch</b></a>\r\n\t</div>\r\n",
-              "legacyComponentId": 6437,
-              "order": 2
-            },
-            {
               "type": "video",
               "vimeoId": "527924763",
               "title": null,
               "legacyComponentId": 6435,
-              "order": 3
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -828,7 +812,7 @@
                 "TYPEOF": "VimeoJumpLinks"
               },
               "legacyComponentId": 6436,
-              "order": 4
+              "order": 3
             }
           ],
           "title": "About Slip (Skip) Stitch",
@@ -843,9 +827,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\n<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/7/slip-stitch\">Slip</a> and <a href=\"/knit/stitchlibrary/8/multi-color-slip\">Multi-Color Slip Stitch</a> inspiration!<br>",
+              "html": "\n\n<br>\nCheck out the Knit it Now Stitch Library for <a href=\"https://knititnow.com/stitch/\">Slip</a> and <a href=\"https://knititnow.com/stitch/\">Multi-Color Slip Stitch</a> inspiration!<br>",
               "legacyComponentId": 6426,
-              "order": 1
+              "order": 4
             },
             {
               "type": "imageGallery",
@@ -880,7 +864,7 @@
                 "playAudio": "1"
               },
               "legacyComponentId": 6425,
-              "order": 2
+              "order": 5
             }
           ],
           "title": "Slip Inspiration",
@@ -897,14 +881,14 @@
               "type": "richText",
               "html": "Since this machine has only 1 cam setting for slip (part) to work I-cord or circular knitting means flipping the cam lever from Part to Plain with every pass of the carrriage.<br>\r\nThis can get tedious.  Explore a work around, by putting needles into D or E position.",
               "legacyComponentId": 9162,
-              "order": 1
+              "order": 6
             },
             {
               "type": "video",
               "vimeoId": "767093877",
               "title": null,
               "legacyComponentId": 9161,
-              "order": 2
+              "order": 7
             }
           ],
           "title": "i-Cord and Slip",
@@ -1531,14 +1515,14 @@
               "type": "richText",
               "html": "Hold on the ribber if this machine is different from other machines.  There is no hold lever or button on the ribber.<br>Needles in \"E\" position are AUTOMATICALLY held.  Manually push them back to work or use the trick in this video to get held needles back to working position.<br>",
               "legacyComponentId": 6531,
-              "order": 1
+              "order": 3
             },
             {
               "type": "video",
               "vimeoId": "568580581",
               "title": null,
               "legacyComponentId": 6530,
-              "order": 2
+              "order": 4
             }
           ],
           "title": "Hold  Setting",
@@ -1552,17 +1536,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For tuck inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/path/328/dust-off-that-ribber\"><b>Knit it Now Classrooms: Ribbers</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6465,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "530087616",
               "title": null,
               "legacyComponentId": 6463,
-              "order": 2
+              "order": 5
             },
             {
               "type": "migrationPending",
@@ -1587,7 +1565,7 @@
                 "TYPEOF": "VimeoJumpLinks"
               },
               "legacyComponentId": 6464,
-              "order": 3
+              "order": 6
             }
           ],
           "title": "Full Needle Rib (FNR)",
@@ -1604,20 +1582,20 @@
               "type": "richText",
               "html": "With English Rib, (Half-Fisherman Rib) one needlebed tucks every other row.  ",
               "legacyComponentId": 7917,
-              "order": 1
+              "order": 7
             },
             {
               "type": "video",
               "vimeoId": "530337447",
               "title": null,
               "legacyComponentId": 6466,
-              "order": 2
+              "order": 8
             },
             {
               "type": "richText",
               "html": "<b>English Rib Carriage Settings:  Tuck on the ribber to the RIGHT</b><br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/1ribber_tuck.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/1main_plain.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
               "legacyComponentId": 6467,
-              "order": 3
+              "order": 9
             }
           ],
           "title": "English Rib",
@@ -1634,14 +1612,14 @@
               "type": "richText",
               "html": "Alternating tuck on each needlebed produces Fisherman Rib.  Working this stitch pattern on this machine is a little different than other machines, so watch this video to make sure you understand this difference before trying this technique.<br>",
               "legacyComponentId": 7918,
-              "order": 1
+              "order": 10
             },
             {
               "type": "video",
               "vimeoId": "664914333",
               "title": null,
               "legacyComponentId": 7916,
-              "order": 2
+              "order": 11
             }
           ],
           "title": "Fisherman Rib",
@@ -1658,14 +1636,14 @@
               "type": "richText",
               "html": "\r\n\tWith the ribber, you can set your machine to knit in the round and eliminate seaming tubular pieces. Yes, there are some limitations, but this technique is very useful for a number of applications.\r\n\t\t<ul>\r\n\t\t\t<li>\r\n\t\t\t\tWhat about quickly knitting hats and caps without a seam?</li>\r\n\t\t\t<li>Knit socks in the round</li>\r\n\t\t\t<li>You can even knit the body of a plain garment to the armholes, then split the fronts and backs and knit them on the single bed, eliminating the side seams</li>\r\n\t\t</ul>\r\n\r\n\t\t<a href=\"#steps\" data-toggle=\"collapse\"><b>Steps for Circular Knitting on the TH160</b> <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></a>\r\n\t\t<div id=\"steps\" class=\"collapse hidden-print\">\r\n\t\t\t<ol>\r\n\t\t\t\t<li>Cast on as for full needle rib:\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Ribber set to Half Pitch \"H\"</li>\r\n\t\t\t\t\t\t<li>All needles in work</li>\r\n\t\t\t\t\t\t<li>Zig Zag with Ravel cord - right to left (end with the carriage on the left)*</li>\r\n\t\t\t\t\t\t<li>Hang the Cast On Comb and weights</li>\r\n\t\t\t\t\t\t<li>Change to main yarn </li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 1 (carriage on the left)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to plain knitting</li>\r\n\t\t\t\t\t\t<li>Ribber (Tuck lever \"R\"  AND right Cam Lever \"P-R\")\r\n\t\t\t\t\t\t<li>Knit right <em>(All needles on the main bed knit only)</em>\r\n<span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/challenge/images/v2/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></span>\r\n\r\n\r\n\r\n\r\n</li>\r\n\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 2 (carriage on the right)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to slip (part)</li>\r\n\t\t\t\t\t\t<li>Ribber set to knit to the left (Tuck lever \"R\"  AND left Cam Lever \"N\") <span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/challenge/images/v2/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></li>\r\n\t\t\t\t\t\t<li>Knit Left <em>(All needles on the ribber knit only)</em></li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t</ol>\r\n\t\t\tRepeat these 2 rows alternating the main bed part button on every other row<br>\r\n\t\t\t<b> Note that the only setting change is the main bed \"part\" button every other row. The ribber setting remains the same for the entire pattern</br><br>\r\n\t\t\t\t*Also note that this creates an open cast on. Other steps need to be taken to create a closed cast on and to bind off\r\n\t\t</div>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/images/glossary/tubular_knitting.jpg\">\r\n\r\n<br>\r\n",
               "legacyComponentId": 6468,
-              "order": 1
+              "order": 12
             },
             {
               "type": "video",
               "vimeoId": "945903166",
               "title": null,
               "legacyComponentId": 6469,
-              "order": 2
+              "order": 13
             }
           ],
           "title": "Circular (Tubular) Knitting",
