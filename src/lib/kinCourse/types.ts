@@ -96,7 +96,11 @@ export type KinCoursePresentation = {
     match?: string;
     parts: Array<{ literal?: string; text?: string; legacyId?: number }>;
   }>;
-  glossaryLinks?: Array<{ legacyId: number; confidence?: string }>;
+  glossaryLinks?: Array<{
+    legacyId: number;
+    currentId?: number;
+    confidence?: string;
+  }>;
   /**
    * Prepared static numbered-image replacements for hotspot components.
    * Keep `enabled` false until the numbered PNG exists; the interactive hotspot stays live.

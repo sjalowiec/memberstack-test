@@ -132,9 +132,12 @@ describe("Course 86 presented assets", () => {
   const presentation = readKinCoursePresentation(COURSE_86_ID);
   const glossary = readKinCourseGlossary(COURSE_86_ID);
 
-  it("includes glossary entries 654 and 713", () => {
-    expect(glossary.map((entry) => entry.glossaryId).sort()).toEqual([654, 713]);
+  it("includes glossary entries 654, 713, and the lesson 4233 current-term ids", () => {
+    expect(glossary.map((entry) => entry.glossaryId).sort((a, b) => a - b)).toEqual([
+      252, 277, 352, 654, 713, 811,
+    ]);
     expect(glossary.find((entry) => entry.glossaryId === 654)?.slug).toBe("punch-lace-thread-lace");
+    expect(glossary.find((entry) => entry.glossaryId === 811)?.term).toBe("Short Row | Partial Knitting");
   });
 
   it("resolves rewritten local images and PDFs", async () => {
@@ -180,6 +183,14 @@ describe("Course 86 presented assets", () => {
     expect(refs.has("/images/course-content/86/warning.png")).toBe(true);
     expect(refs.has("/images/course-content/86/needle_position.jpg")).toBe(true);
     expect(refs.has("/images/course-content/111/arrow1.png")).toBe(true);
+    expect(refs.has("/images/course-content/111/arrow4.png")).toBe(true);
+    expect(refs.has("/images/course-content/111/arrow5.png")).toBe(true);
+    expect(existsSync(join(process.cwd(), "public/images/course-content/111/arrow4.png"))).toBe(
+      true,
+    );
+    expect(existsSync(join(process.cwd(), "public/images/course-content/111/arrow5.png"))).toBe(
+      true,
+    );
     expect(refs.has("/stitch-patterns/swatches/6/1017Swatch.jpg")).toBe(true);
     expect(refs.has("/images/course-content/86/tuck1.jpg")).toBe(true);
     expect(refs.has("/images/course-content/86/th160_manual.pdf")).toBe(true);

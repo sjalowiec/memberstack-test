@@ -12,5 +12,33 @@
     "term": "Isolated Motif",
     "example": "A single repeat of a stich pattern \"isolated\" on the knitting.",
     "helpinfo": "Isolated motifs are usually surrounded with a single color of knitting and care must be taken to prevent holes where color changes occur. (Similar to intarsia).  The alternative to an isolated motif is an   all-over stitch pattern  (The motif is repeated over the entire knitted piece).   .."
+  },
+  {
+    "glossaryId": 811,
+    "slug": "short-row-partial-knitting",
+    "term": "Short Row | Partial Knitting",
+    "example": "Short rows, also called partial knitting, let you knit only part of a row instead of the full width of the piece. This creates shaping and curves in your knitting.",
+    "helpinfo": "Short rows are used for neckline shaping, shoulder shaping, bust darts, sock heels, and other curved areas. When you see short row instructions in a pattern, you are simply turning before the end of the row and working back in the other direction."
+  },
+  {
+    "glossaryId": 252,
+    "slug": "slip-stitch",
+    "term": "Slip Stitch",
+    "example": "Crochet stitch often used to seam knitting pieces (slip is also a textured stitch technique)",
+    "helpinfo": "Slip Stitch in machine knitting refers to the process of missing stitches, allowing the working yarn to travel across the purl side of the knitting. These \"floats\" can be decorative when the purl side is used as the public side of the knitting.      The same process can be used to create Multi-color slip.  Needles are missed (slipped) and colors are changed creating colorful, graphic designs."
+  },
+  {
+    "glossaryId": 277,
+    "slug": "tuck-pull-up",
+    "term": "Tuck | Pull Up",
+    "example": "Textured stitch pattern where individual stitches do not knit and the working yarn travels OVER selected stitches for 1-4 rows",
+    "helpinfo": "Tuck got you stumped? This popular stitch pattern can be worked on any machine.  The secret is UNDERSTANDING what is happening with all the settings on your machine.  "
+  },
+  {
+    "glossaryId": 352,
+    "slug": "intarsia-picture-knitting",
+    "term": "Intarsia | Picture Knitting",
+    "example": "A technique that allows color changes in the middle of the row without having floats across the back of the knitting.",
+    "helpinfo": "Intarsia can be worked in different ways:  Manual: Using slip or hold, each color is worked with a single pass of the carriage. It will take multiple passes of the carriage to knit multiple colors across the row. Built-in Intarsia Setting: Some machines can knit intarsia in one pass of the carriage with a carriage setting. Lay strands of yarn across the needles to be knit and pass the carriage, knitting multiple colors across the row. Intarsia Carriage: Some machines offer an intarsia carriage accessory. This replaces the knitting carriage. Lay strands of yarn across the needles to be knit and pass the carriage, knitting multiple colors across the row.   No matter what method is used, it it important to twist the yarns where they join to prevent holes.   "
   }
 ]

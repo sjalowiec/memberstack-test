@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { readCourseContentFile } from "../legacy_kin/courseContentAdmin";
 import {
   applyKinCourseSrcRewrites,
+  currentKinCourseGlossaryId,
   applyLegacyGlossaryHrefRewrites,
   presentKinCourseHtml,
   readKinCourseGlossary,
   restoreLegacyBootstrapThumbnailGrid,
 } from "./htmlPresent";
+import { findLesson } from "./player";
+import { pocToKinCourse } from "./pocToKinCourse";
 import { buildKinCourseLanding, readKinCoursePresentation } from "./presentation";
 
 describe("Course 111 DEV asset presentation", () => {
@@ -200,6 +204,12 @@ describe("Course 86 presentation rewrites", () => {
     expect(
       applyKinCourseSrcRewrites("/challenge/images/v2/86/arrow2.png", presentation),
     ).toBe("/images/course-content/111/arrow2.png");
+    expect(applyKinCourseSrcRewrites("/challenge/images/arrow4.png", presentation)).toBe(
+      "/images/course-content/111/arrow4.png",
+    );
+    expect(
+      applyKinCourseSrcRewrites("/challenge/images/v2/86/arrow5.png", presentation),
+    ).toBe("/images/course-content/111/arrow5.png");
     expect(applyKinCourseSrcRewrites("/swatches/6/1017Swatch.jpg", presentation)).toBe(
       "/stitch-patterns/swatches/6/1017Swatch.jpg",
     );
@@ -239,5 +249,53 @@ describe("Course 86 presentation rewrites", () => {
     expect(html).toContain('class="kin-legacy-collapse"');
     expect(html).toContain("/images/course-content/86/carriage_circular1.jpg");
     expect(html).not.toContain('data-toggle="collapse"');
+  });
+});
+
+describe("Course 86 lesson 4233 glossary id mappings", () => {
+  const presentation = readKinCoursePresentation(86);
+  const glossary = readKinCourseGlossary(86);
+  const poc = readCourseContentFile(86);
+  const lesson = findLesson(pocToKinCourse(poc, { includeDrafts: true }), 4233);
+  const answers = (lesson?.components.find((component) => component.type === "exercise")?.items ?? [])
+    .map((item) => item.detailsHtml || "")
+    .join("\n");
+
+  it("maps Short Rows, Intarsia, Skip/Slip, and Tuck onto the current glossary ids", () => {
+    expect(currentKinCourseGlossaryId(250, presentation)).toBe(811);
+    expect(currentKinCourseGlossaryId(251, presentation)).toBe(252);
+    expect(currentKinCourseGlossaryId(352, presentation)).toBe(352);
+    expect(currentKinCourseGlossaryId(277, presentation)).toBe(277);
+
+    expect(answers).toContain("data-GlossaryId='250'");
+    expect(answers).toContain("data-GlossaryId='251'");
+    expect(answers).toContain("data-GlossaryId='277'");
+    expect(answers).toContain("data-GlossaryId='352'");
+    expect(answers).toContain("data-GlossaryId='355'");
+
+    const html = presentKinCourseHtml(answers, 4233, presentation, glossary);
+    expect(html).toContain('data-GlossaryId="811"');
+    expect(html).toContain('href="#glossary-811"');
+    expect(html).toContain("short row shaping/partial knitting");
+    expect(html).toContain('data-GlossaryId="352"');
+    expect(html).toContain('href="#glossary-352"');
+    expect(html).toContain("INTARSIA KNITTING");
+    expect(html).toContain('data-GlossaryId="252"');
+    expect(html).toContain('href="#glossary-252"');
+    expect(html).toContain("slip/skip");
+    expect(html).toContain('data-GlossaryId="277"');
+    expect(html).toContain('href="#glossary-277"');
+    expect(html).toContain("TUCK");
+    expect(html).toContain("data-GlossaryId='355'");
+    expect(html).toContain("FREE PASS");
+    expect(html).not.toContain("data-GlossaryId='250'");
+    expect(html).not.toContain("data-GlossaryId='251'");
+    expect(html).not.toContain('data-GlossaryId="250"');
+    expect(html).not.toContain('data-GlossaryId="251"');
+
+    expect(glossary.find((entry) => entry.glossaryId === 811)?.term).toBe("Short Row | Partial Knitting");
+    expect(glossary.find((entry) => entry.glossaryId === 352)?.term).toBe("Intarsia | Picture Knitting");
+    expect(glossary.find((entry) => entry.glossaryId === 252)?.term).toBe("Slip Stitch");
+    expect(glossary.find((entry) => entry.glossaryId === 277)?.term).toBe("Tuck | Pull Up");
   });
 });
