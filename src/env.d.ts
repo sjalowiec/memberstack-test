@@ -12,6 +12,16 @@ interface ImportMetaEnv {
   readonly PUBLIC_NOINDEX?: string;
   /** Server-only: Watson owner password for private admin access. */
   readonly WATSON_ADMIN_PASSWORD?: string;
+  /**
+   * Server-only: Memberstack member ids allowed to use admin APIs and unpublished
+   * course preview. Never expose to the browser.
+   */
+  readonly ADMIN_MEMBER_IDS?: string;
+  /**
+   * Server-only: Memberstack emails allowed to use admin APIs and unpublished
+   * course preview. Never expose to the browser.
+   */
+  readonly ADMIN_MEMBER_EMAILS?: string;
   /** Server-only: live Memberstack Admin API secret (production). */
   readonly MEMBERSTACK_SECRET_KEY?: string;
   /**

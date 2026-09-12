@@ -1,10 +1,15 @@
 ---
 import KinCourseComplete from "../../../components/kinCourse/KinCourseComplete.astro";
 import KinCourseLayout from "../../../layouts/KinCourseLayout.astro";
+import KinCourseAdminPreviewBootstrap from "../../../components/kinCourse/KinCourseAdminPreviewBootstrap.astro";
 import { parseKinCourseId } from "../../../lib/kinCourse/hrefs";
 import { loadKinCourseBundle } from "../../../lib/kinCourse/load";
 import { buildKinCourseCompletion } from "../../../lib/kinCourse/presentation";
-import { kinCourseLoadOptions } from "../../../lib/kinCourse/request";
+import {
+  kinCourseLoadOptions,
+  kinCourseNeedsAdminPreviewBootstrap,
+  kinCoursePreviewRequested,
+} from "../../../lib/kinCourse/request";
 
 export const prerender = false;
 
@@ -13,29 +18,38 @@ if (!courseId) {
   return new Response("Course not found", { status: 404 });
 }
 
+const previewRequested = kinCoursePreviewRequested(Astro.url);
 const loadOptions = await kinCourseLoadOptions(Astro.url, Astro.request, Astro.cookies);
 Astro.response.headers.set("Cache-Control", "no-store");
 const bundle = await loadKinCourseBundle(courseId, loadOptions);
-if (!bundle) {
+const showAdminPreviewBootstrap = kinCourseNeedsAdminPreviewBootstrap(previewRequested, bundle);
+if (!bundle && !showAdminPreviewBootstrap) {
   return new Response("Course not found", { status: 404 });
 }
+if (showAdminPreviewBootstrap) {
+  Astro.response.status = 404;
+}
 
-const completion = buildKinCourseCompletion(
-  bundle.course,
-  bundle.presentation,
-  loadOptions.preview,
-);
+const completion = bundle
+  ? buildKinCourseCompletion(bundle.course, bundle.presentation, loadOptions.preview)
+  : null;
 ---
 
-<KinCourseLayout
-  title={`You did it! | ${bundle.course.title}`}
-  pageClass="course-complete-page"
-  courseTitle={bundle.landing.fullTitle}
-  thumbnailSrc={bundle.landing.image.src}
-  thumbnailAlt={bundle.landing.image.alt}
-  courseSlug={bundle.landing.catalogSlug || bundle.course.slug}
-  preview={loadOptions.preview}
-  glossary={bundle.glossary}
->
-  <KinCourseComplete completion={completion} />
-</KinCourseLayout>
+{
+  showAdminPreviewBootstrap ? (
+    <KinCourseAdminPreviewBootstrap />
+  ) : bundle && completion ? (
+    <KinCourseLayout
+      title={`You did it! | ${bundle.course.title}`}
+      pageClass="course-complete-page"
+      courseTitle={bundle.landing.fullTitle}
+      thumbnailSrc={bundle.landing.image.src}
+      thumbnailAlt={bundle.landing.image.alt}
+      courseSlug={bundle.landing.catalogSlug || bundle.course.slug}
+      preview={loadOptions.preview}
+      glossary={bundle.glossary}
+    >
+      <KinCourseComplete completion={completion} />
+    </KinCourseLayout>
+  ) : null
+}
