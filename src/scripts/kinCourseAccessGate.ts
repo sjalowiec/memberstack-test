@@ -1,9 +1,11 @@
 /**
  * KIN player access gate.
  *
- * `?preview=true` unlocks content on non-production hosts so Watson
- * Save → Preview works without a membership session. Membership still
- * gates the same routes on production and when preview is off.
+ * Unpublished-course `?preview=true` is granted only after the server verifies
+ * an allowlisted admin via `requireAdminForRequest`. The layout then sets
+ * `data-admin-preview="true"`, which unlocks membership gating so Watson
+ * Save → Preview works without a course plan. The query string alone never
+ * unlocks content.
  *
  * Viewer copy uses `isMemberLoggedIn` (not a truthy Memberstack payload).
  * `onAuthChange` / `auth:updated` re-run the gate so a restored or newly
@@ -15,7 +17,6 @@ import { clearKinCourseCachePaint } from "../lib/kinCourseCacheAccess";
 import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
-import { detectSiteEnvironment } from "../lib/env/siteEnvironment";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
 export type KinCourseGateViewer = "open" | "loggedInNoAccess" | "loggedOut";
@@ -66,21 +67,15 @@ function setGateAccess(gate: HTMLElement, unlocked: boolean): void {
   loggedIn.hidden = !loggedInNoAccess;
 }
 
-function previewUnlockAllowed(): boolean {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("preview") !== "true") return false;
-  return (
-    detectSiteEnvironment(window.location.hostname, {
-      isViteDev: Boolean(import.meta.env?.DEV),
-    }) !== "production"
-  );
+function previewUnlockAllowed(gate: HTMLElement): boolean {
+  return gate.dataset.adminPreview === "true";
 }
 
 async function resolveGate(gate: HTMLElement): Promise<void> {
   const access = normalizeCourseAccessLevel(gate.dataset.courseAccess, "member");
   const courseSlug = gate.dataset.courseSlug ?? null;
 
-  if (access === "free" || previewUnlockAllowed() || videoDevBypass) {
+  if (access === "free" || previewUnlockAllowed(gate) || videoDevBypass) {
     setGateAccess(gate, true);
     return;
   }

@@ -99,6 +99,7 @@ const previewUnlock = preview === true;
       data-course-gate
       data-course-access="member"
       data-course-slug={courseSlug}
+      data-admin-preview={previewUnlock ? "true" : undefined}
       data-gate-pending={!previewUnlock}
       aria-busy={!previewUnlock}
     >
@@ -404,6 +405,11 @@ const previewUnlock = preview === true;
   .legacy-content a.glossaryhelp[href]:hover,
   .legacy-content a.glossaryhelp[href]:focus-visible {
     color: #3e4f22;
+  }
+
+  .legacy-content img {
+    max-width: 100%;
+    height: auto;
   }
 
   .legacy-content img[src$="cast_on_checklist.jpg"] {

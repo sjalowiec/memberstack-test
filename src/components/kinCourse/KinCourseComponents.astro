@@ -11,6 +11,10 @@ import {
 } from "../../lib/kinCourse/htmlPresent";
 import { flattenLessons } from "../../lib/kinCourse/player";
 import { kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
+import {
+  kinVimeoPlayerDomId,
+  kinVimeoPlayerKey,
+} from "../../lib/kinCourse/vimeoJumpLinks";
 import type { KinCourseDocument, KinCoursePresentation } from "../../lib/kinCourse/types";
 
 interface VideoItem {
@@ -61,6 +65,9 @@ interface Component {
   spots?: SpotItem[];
   items?: ExerciseItem[];
   jumps?: JumpItem[];
+  playerComponentId?: number | null;
+  playerKey?: string;
+  embedPlayer?: boolean;
   package?: string;
   playMode?: string;
   src?: string;
@@ -123,11 +130,15 @@ function rewriteExerciseDetails(html: string): string {
 
     if (component.type === 'vimeo' || component.type === 'video') {
       const labelText = (component.label || '').replace(/<[^>]+>/g, '').trim();
+      const playerKey = kinVimeoPlayerKey(component);
       return (
         <div class="legacy-vimeo-block">
           {component.label ? <p class="legacy-media-label" set:html={component.label} /> : null}
           <div class="legacy-vimeo">
             <iframe
+              id={playerKey ? kinVimeoPlayerDomId(playerKey) : undefined}
+              data-kin-vimeo-player={playerKey || undefined}
+              data-vimeo-id={component.vimeoId}
               src={`https://player.vimeo.com/video/${component.vimeoId}`}
               title={labelText || fallbackTitle}
               allow="autoplay; fullscreen; picture-in-picture"
@@ -195,6 +206,7 @@ function rewriteExerciseDetails(html: string): string {
           knownAssignIds={knownAssignIds}
           items={(component.items || []).map((item) => ({
             ...item,
+            heading: item.heading ? presentHtml(item.heading) : item.heading,
             image: presentSrc(item.image),
             detailsHtml: presentHtml(rewriteExerciseDetails(item.detailsHtml || "")),
           }))}
@@ -204,7 +216,14 @@ function rewriteExerciseDetails(html: string): string {
 
     if (component.type === 'vimeoJumpLinks') {
       return (
-        <LegacyVimeoJumpLinks lessonId={lessonId} vimeoId={component.vimeoId} jumps={component.jumps} />
+        <LegacyVimeoJumpLinks
+          lessonId={lessonId}
+          fallbackTitle={fallbackTitle}
+          vimeoId={component.vimeoId}
+          playerKey={component.playerKey || kinVimeoPlayerKey(component)}
+          embedPlayer={component.embedPlayer === true}
+          jumps={component.jumps}
+        />
       );
     }
 

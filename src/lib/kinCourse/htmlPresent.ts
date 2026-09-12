@@ -87,6 +87,46 @@ export function applyKinCourseSrcRewrites(
   return out;
 }
 
+/**
+ * Legacy KIN HTML sometimes uses the obsolete `<image src>` tag. HTML parsers
+ * remap that to `<img>` in a full document, but `set:html` fragments can leave
+ * `<image>` unrendered. Normalize at present time so stored lesson copy is unchanged.
+ */
+export function repairLegacyImageTags(html: string): string {
+  return html.replace(/<image\b/gi, "<img").replace(/<\/image>/gi, "");
+}
+
+/**
+ * Prefix bare selectors in recovered inline CSS with `.legacy-html` so lesson
+ * `<style>` blocks cannot leak site-wide or collapse neighboring images.
+ */
+export function scopeLegacyInlineCss(css: string, wrapper = ".legacy-html"): string {
+  const cleaned = css.replace(/<!--[\s\S]*?-->/g, "");
+  return cleaned.replace(/(^|})\s*([^@}{][^{]*)\{/g, (_full, brace: string, selectors: string) => {
+    const scopedSelectors = String(selectors)
+      .split(",")
+      .map((sel) => {
+        const trimmed = sel.trim();
+        if (!trimmed) return trimmed;
+        if (trimmed.startsWith(wrapper)) return trimmed;
+        if (trimmed.startsWith("@")) return trimmed;
+        return `${wrapper} ${trimmed}`;
+      })
+      .join(", ");
+    return `${brace}\n${scopedSelectors} {`;
+  });
+}
+
+export function scopeLegacyInlineStyles(html: string): string {
+  const styles: string[] = [];
+  const body = html.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (_full, css: string) => {
+    styles.push(`<style data-kin-inline="scoped">${scopeLegacyInlineCss(css)}</style>`);
+    return "";
+  });
+  if (!styles.length) return html;
+  return `${body}${styles.join("")}`;
+}
+
 const BOOTSTRAP_COL_CLASS_RE = /\bcol-(?:xs|sm|md|lg)-\d+\b/;
 const THUMBNAIL_CARD_RE =
   /<div\s+class="([^"]*)"\s*>((?:\s|<a\b)(?:(?!<\/div>)[\s\S])*?<img\b[^>]*\bimg-thumbnail\b[\s\S]*?<\/a>\s*)<\/div>/gi;
@@ -209,6 +249,8 @@ export function presentKinCourseHtml(
     });
   }
   out = applyLegacyGlossaryHrefRewrites(out, glossary);
+  out = repairLegacyImageTags(out);
   out = restoreLegacyBootstrapThumbnailGrid(out);
+  out = scopeLegacyInlineStyles(out);
   return ensurePdfOpensInNewWindow(out);
 }
