@@ -229,4 +229,15 @@ describe("Course 86 presentation rewrites", () => {
     expect(html).not.toContain("/downloads/160main.pdf");
     expect(html).not.toContain("/downloads/160ribber.pdf");
   });
+
+  it("converts recovered Bootstrap collapse during presentKinCourseHtml", () => {
+    const html = presentKinCourseHtml(
+      '<a href="#steps" data-toggle="collapse">Steps</a><div id="steps" class="collapse"><img src="/challenge/images/v2/86/carriage_circular1.jpg"></div>',
+      4245,
+      presentation,
+    );
+    expect(html).toContain('class="kin-legacy-collapse"');
+    expect(html).toContain("/images/course-content/86/carriage_circular1.jpg");
+    expect(html).not.toContain('data-toggle="collapse"');
+  });
 });

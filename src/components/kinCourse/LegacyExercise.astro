@@ -1,16 +1,11 @@
 ---
-interface ExerciseItem {
-  order: number;
-  heading?: string;
-  detailsHtml?: string;
-  image?: string;
-}
+import type { PresentedExerciseItem } from "../../lib/kinCourse/legacyCollapse";
 
 interface Props {
   lessonId: number;
   courseId?: number;
   knownAssignIds?: number[];
-  items?: ExerciseItem[];
+  items?: PresentedExerciseItem[];
 }
 
 const { lessonId, items = [] } = Astro.props;
@@ -23,15 +18,19 @@ const { lessonId, items = [] } = Astro.props;
     </div>
   ) : (
     <div class="legacy-exercise">
-      {items.map((item) => (
-        <details class="legacy-exercise-item">
-          <summary>
-            {item.image ? <img class="legacy-exercise-icon" src={item.image} alt="" /> : null}
-            <span class="legacy-exercise-heading" set:html={item.heading || ''} />
-          </summary>
-          <div class="legacy-exercise-body" set:html={item.detailsHtml || ""} />
-        </details>
-      ))}
+      {items.map((item) =>
+        item.mode === "embedded-trigger" ? (
+          <div class="legacy-exercise-item legacy-exercise-item--prompt legacy-html" set:html={item.html} />
+        ) : (
+          <details class="legacy-exercise-item">
+            <summary>
+              {item.image ? <img class="legacy-exercise-icon" src={item.image} alt="" /> : null}
+              <span class="legacy-exercise-heading" set:html={item.headingHtml || ""} />
+            </summary>
+            <div class="legacy-exercise-body" set:html={item.detailsHtml || ""} />
+          </details>
+        ),
+      )}
     </div>
   )
 }

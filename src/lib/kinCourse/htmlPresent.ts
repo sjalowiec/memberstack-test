@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { rewriteLegacyBootstrapCollapse } from "./legacyCollapse";
 import { resolveLegacyGlossaryHref } from "./legacyGlossaryHrefs";
 import type { KinCoursePresentation } from "./types";
 
@@ -251,6 +252,7 @@ export function presentKinCourseHtml(
   out = applyLegacyGlossaryHrefRewrites(out, glossary);
   out = repairLegacyImageTags(out);
   out = restoreLegacyBootstrapThumbnailGrid(out);
+  out = rewriteLegacyBootstrapCollapse(out);
   out = scopeLegacyInlineStyles(out);
   return ensurePdfOpensInNewWindow(out);
 }

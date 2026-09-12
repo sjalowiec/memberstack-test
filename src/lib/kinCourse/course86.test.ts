@@ -137,7 +137,7 @@ describe("Course 86 presented assets", () => {
     expect(glossary.find((entry) => entry.glossaryId === 654)?.slug).toBe("punch-lace-thread-lace");
   });
 
-  it("resolves rewritten local images and PDFs, and reports the missing ewrap.jpg", async () => {
+  it("resolves rewritten local images and PDFs", async () => {
     const bundle = await loadKinCourseBundle(COURSE_86_ID, { includeDrafts: true });
     const refs = new Set<string>();
     for (const lesson of flattenLessons(bundle!.course)) {
@@ -164,6 +164,14 @@ describe("Course 86 presented assets", () => {
               refs.add(match[1]!.split(/[?#]/)[0]!);
             }
           }
+          if (item.detailsHtml) {
+            const html = presentKinCourseHtml(item.detailsHtml, lesson.id, presentation, glossary);
+            const attrRe = /(?:src|href|data-image)=["']([^"']+)["']/gi;
+            let match: RegExpExecArray | null;
+            while ((match = attrRe.exec(html))) {
+              refs.add(match[1]!.split(/[?#]/)[0]!);
+            }
+          }
         }
       }
     }
@@ -178,8 +186,7 @@ describe("Course 86 presented assets", () => {
     expect(refs.has("/images/course-content/86/TR160_manual.pdf")).toBe(true);
     expect(refs.has("/images/course-content/86/taitexma_160_reference_card.pdf")).toBe(true);
     expect(refs.has("/images/course-content/86/reference-cards.pdf")).toBe(true);
-    expect(refs.has("/images/glossary/ewrap.jpg")).toBe(true);
-    expect(existsSync(join(process.cwd(), "public/images/glossary/ewrap.jpg"))).toBe(false);
+    expect(refs.has("/images/glossary/tubular_knitting.jpg")).toBe(true);
     expect(existsSync(join(process.cwd(), "public/images/course-content/86/warning.png"))).toBe(
       true,
     );
