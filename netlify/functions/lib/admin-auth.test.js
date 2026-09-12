@@ -104,4 +104,25 @@ describe("requireAdmin", () => {
       expect(result.error).toMatch(/admin access required/i);
     }
   });
+
+  it("uses the passed env allowlist when process.env is empty", async () => {
+    const savedIds = process.env.ADMIN_MEMBER_IDS;
+    delete process.env.ADMIN_MEMBER_IDS;
+    try {
+      const denied = await requireAdmin(makeRequest("admin-token"), {
+        MEMBERSTACK_SECRET_KEY: "sk_test_secret",
+      });
+      expect(denied.ok).toBe(false);
+      if (!denied.ok) expect(denied.status).toBe(403);
+
+      const allowed = await requireAdmin(makeRequest("admin-token"), {
+        MEMBERSTACK_SECRET_KEY: "sk_test_secret",
+        ADMIN_MEMBER_IDS: ADMIN_ID,
+      });
+      expect(allowed.ok).toBe(true);
+    } finally {
+      if (savedIds === undefined) delete process.env.ADMIN_MEMBER_IDS;
+      else process.env.ADMIN_MEMBER_IDS = savedIds;
+    }
+  });
 });

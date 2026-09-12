@@ -27,12 +27,12 @@ function parseAllowList(value) {
   );
 }
 
-function adminMemberIdAllowList() {
-  return parseAllowList(process.env.ADMIN_MEMBER_IDS);
+function adminMemberIdAllowList(env = process.env) {
+  return parseAllowList(env.ADMIN_MEMBER_IDS);
 }
 
-function adminMemberEmailAllowList() {
-  return parseAllowList(process.env.ADMIN_MEMBER_EMAILS);
+function adminMemberEmailAllowList(env = process.env) {
+  return parseAllowList(env.ADMIN_MEMBER_EMAILS);
 }
 
 /**
@@ -40,12 +40,13 @@ function adminMemberEmailAllowList() {
  * {@link requireAdmin} so callers that already have a verified member (e.g. after a shared lookup)
  * can reuse the allowlist check without re-verifying the token.
  * @param {{ id?: string | null, email?: string | null }} member
+ * @param {NodeJS.ProcessEnv} [env]
  */
-export function isAdminMember(member) {
+export function isAdminMember(member, env = process.env) {
   const id = (member?.id || "").trim().toLowerCase();
-  if (id && adminMemberIdAllowList().has(id)) return true;
+  if (id && adminMemberIdAllowList(env).has(id)) return true;
   const email = (member?.email || "").trim().toLowerCase();
-  if (email && adminMemberEmailAllowList().has(email)) return true;
+  if (email && adminMemberEmailAllowList(env).has(email)) return true;
   return false;
 }
 
@@ -62,12 +63,13 @@ function bearerTokenFromRequest(req) {
  * granted admin access so reports are testable without a real Memberstack login.
  *
  * @param {Request} req
+ * @param {NodeJS.ProcessEnv} [env]
  * @returns {Promise<
  *   | { ok: true, member: { id: string, email: string | null }, mode: "verified" | "dev" }
  *   | { ok: false, status: number, error: string }
  * >}
  */
-export async function requireAdmin(req) {
+export async function requireAdmin(req, env = process.env) {
   const token = bearerTokenFromRequest(req);
 
   if (!token) {
@@ -77,7 +79,11 @@ export async function requireAdmin(req) {
     return { ok: false, status: 401, error: "Sign in required." };
   }
 
-  const client = getMemberstackAdminClient();
+  const secretFromEnv =
+    typeof env?.MEMBERSTACK_SECRET_KEY === "string" ? env.MEMBERSTACK_SECRET_KEY.trim() : "";
+  const client = secretFromEnv
+    ? getMemberstackAdminClient({ secretKey: secretFromEnv })
+    : getMemberstackAdminClient();
   if (!client) {
     // MEMBERSTACK_SECRET_KEY unset — fail closed rather than leak why.
     console.error("admin-auth: MEMBERSTACK_SECRET_KEY is not configured.");
@@ -91,7 +97,7 @@ export async function requireAdmin(req) {
 
   // Allowlist by id first (no extra network call); only fetch the member record for an email
   // check when id alone doesn't already clear the caller.
-  if (adminMemberIdAllowList().has(verified.id.toLowerCase())) {
+  if (adminMemberIdAllowList(env).has(verified.id.toLowerCase())) {
     let email = null;
     try {
       const record = await client.getMember(verified.id);
@@ -111,7 +117,7 @@ export async function requireAdmin(req) {
   }
 
   const email = typeof record?.auth?.email === "string" ? record.auth.email : null;
-  if (!isAdminMember({ id: verified.id, email })) {
+  if (!isAdminMember({ id: verified.id, email }, env)) {
     return { ok: false, status: 403, error: "Admin access required." };
   }
 

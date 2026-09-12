@@ -1,5 +1,10 @@
 import { requireAdminForRequest } from "../admin/requireAdminRequest";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
+import {
+  persistKinCourseAdminPreviewCookie,
+  readKinAdminPreviewGrant,
+  type KinCoursePreviewCookieStore,
+} from "./adminPreviewGrant";
 
 export function kinCourseEnv(): DetectSiteEnvironmentOptions {
   return {
@@ -14,9 +19,7 @@ export function kinCoursePreviewRequested(url: URL): boolean {
   return url.searchParams.get("preview") === "true";
 }
 
-export type KinCourseCookieStore = {
-  get: (name: string) => { value: string } | undefined;
-};
+export type KinCourseCookieStore = KinCoursePreviewCookieStore;
 
 export type KinCourseLoadOptions = {
   hostname: string;
@@ -27,20 +30,35 @@ export type KinCourseLoadOptions = {
 
 /**
  * Unpublished numeric-course preview uses the same Memberstack admin allowlist
- * as Help Hub and member-lesson previews (`requireAdminForRequest`). There is no
- * host-only bypass: localhost, kin-dev, deploy previews, and production all require
- * a verified admin session.
+ * as Help Hub and member-lesson previews (`requireAdminForRequest`). Browser GET
+ * navigation does not send `Authorization: Bearer`; Help Hub/lesson previews send
+ * that header from `getMemberCookie()` on fetch. There is no host-only or
+ * query-string-only bypass.
  */
 export async function kinCourseAdminPreviewGranted(
   request: Request,
   cookies?: KinCourseCookieStore,
-): Promise<boolean> {
+): Promise<{ granted: boolean; memberId?: string }> {
   try {
+    if (readKinAdminPreviewGrant(cookies)) {
+      return { granted: true };
+    }
     const auth = await requireAdminForRequest(request, cookies);
-    return auth.ok === true;
+    if (auth.ok === true) {
+      return { granted: true, memberId: auth.member.id };
+    }
+    return { granted: false };
   } catch {
-    return false;
+    return { granted: false };
   }
+}
+
+/** True when unpublished content 404s but `?preview=true` asked for admin preview. */
+export function kinCourseNeedsAdminPreviewBootstrap(
+  previewRequested: boolean,
+  bundle: unknown,
+): boolean {
+  return previewRequested && bundle == null;
 }
 
 export async function kinCourseLoadOptions(
@@ -58,11 +76,14 @@ export async function kinCourseLoadOptions(
     };
   }
 
-  const preview = await kinCourseAdminPreviewGranted(request, cookies);
+  const { granted, memberId } = await kinCourseAdminPreviewGranted(request, cookies);
+  if (granted && memberId) {
+    persistKinCourseAdminPreviewCookie(cookies, url, memberId);
+  }
   return {
     hostname: url.hostname,
     env,
-    includeDrafts: preview,
-    preview,
+    includeDrafts: granted,
+    preview: granted,
   };
 }

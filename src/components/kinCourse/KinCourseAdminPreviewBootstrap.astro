@@ -1,0 +1,44 @@
+---
+/**
+ * 404 shell for unpublished numeric-course `?preview=true` when the initial GET
+ * has no Memberstack JWT. Query string alone does not unlock the course.
+ * Allowlisted admins are promoted by a follow-up fetch that sends
+ * `Authorization: Bearer` from getMemberCookie().
+ */
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Course not found</title>
+    <script is:inline>
+      var memberstackConfig = {
+        useCookies: true,
+        setCookieOnRootDomain: true,
+      };
+    </script>
+    <script
+      data-memberstack-app="app_cmfh3d1n802vb0wy706205810"
+      data-memberstack-use-cookies
+      src="https://static.memberstack.com/scripts/v2/memberstack.js"
+      type="text/javascript"
+    ></script>
+    <script is:inline>
+      window.$memberstackDom?.onReady?.then(() => {
+        window.$memberstackDom?.init?.(window.memberstackConfig);
+      });
+    </script>
+  </head>
+  <body data-kin-admin-preview-bootstrap>
+    <p>Course not found</p>
+    <script>
+      import { runKinCourseAdminPreviewBootstrap } from "../../scripts/kinCourseAdminPreview";
+      void runKinCourseAdminPreviewBootstrap();
+    </script>
+  </body>
+</html>
