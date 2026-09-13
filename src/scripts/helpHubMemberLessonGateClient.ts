@@ -11,6 +11,7 @@ import {
 } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { helpHubMemberLessonCtaSpec } from "../lib/helpHubMemberLessonCta";
+import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { initGatedVimeoEmbeds } from "./gatedVimeoEmbedClient";
 import { initLessonVideoModal } from "./lessonVideoModal";
@@ -72,6 +73,18 @@ async function waitForMemberstackAppAndMember({
 export async function resolveHelpHubMemberLessonViewerState(
   gate: string,
 ): Promise<ViewerAccessState> {
+  if (localMemberPreviewBypassIsOn()) {
+    logMemberAccessDebug(gate, null, {
+      localMemberPreviewBypass: true,
+      templateChildCount: getLessonBodyTemplate()?.content.childElementCount ?? null,
+      mountChildCount: getLessonBodyMount()?.childElementCount ?? null,
+      mountHidden: getLessonBodyMount()?.hasAttribute("hidden") ?? null,
+      msLoggedIn: document.body.classList.contains("ms-logged-in"),
+      persisted: window.__KIN_MEMBER_ACCESS__ ?? null,
+    });
+    return "memberAccess";
+  }
+
   const res = await waitForMemberstackAppAndMember();
   await ensureLegacyPaidThroughContext(res);
   logMemberAccessDebug(gate, res, {
@@ -275,6 +288,11 @@ let authListenersBound = false;
 let memberstackListenersAttached = false;
 
 function applyPersistedOrBodyAccess(): boolean {
+  if (localMemberPreviewBypassIsOn()) {
+    console.log("[KIN lesson gate] init from localhost ?member=true preview");
+    syncLessonPageMemberGate(true);
+    return true;
+  }
   const persisted = window.__KIN_MEMBER_ACCESS__;
   if (persisted && typeof persisted.hasMemberAccess === "boolean") {
     console.log("[KIN lesson gate] init from persisted __KIN_MEMBER_ACCESS__", persisted);

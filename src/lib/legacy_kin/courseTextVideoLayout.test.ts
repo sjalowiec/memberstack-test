@@ -82,6 +82,22 @@ describe("getTextVideoLayoutParts", () => {
     expect(parts?.leftText.html).toBe("<p>Left</p>");
     expect(parts?.bottomText?.html).toBe("<p>Bottom</p>");
   });
+  it("supports video-first stacked layout with bottom content only", () => {
+    const parts = getTextVideoLayoutParts({
+      components: [
+        { type: "video", vimeoId: "260683875", order: 1 },
+        {
+          type: "richText",
+          html: "<p>Below</p>",
+          order: 2,
+          layoutRole: TEXT_VIDEO_BOTTOM_ROLE,
+        },
+      ],
+    });
+    expect(parts?.leftText).toBeNull();
+    expect(parts?.video.vimeoId).toBe("260683875");
+    expect(parts?.bottomText?.html).toBe("<p>Below</p>");
+  });
 });
 
 describe("getTextVideoPair", () => {

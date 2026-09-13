@@ -49,7 +49,7 @@ describe("Watson member search pages", () => {
     expect(adminReport).toContain("process.env.MEMBERSTACK_SECRET_KEY");
 
     expect(shell).toContain('<a href="/watson/current">Current</a>');
-    expect(shell).toContain('<a href="/watson/course-admin/111">Course 111 Admin</a>');
+    expect(shell).toContain('<a href="/watson/course-admin/111">Course editor</a>');
     expect(shell).toContain('<a href="/watson/video-replies">Video Replies</a>');
     expect(shell).toContain('href="/watson/whats-new"');
     expect(shell).toContain('href="/watson/tip-of-the-week"');
@@ -57,6 +57,11 @@ describe("Watson member search pages", () => {
     expect(shell).toContain('<a href="/watson/email-signups">Email Signups</a>');
     expect(shell).toContain('<a href="/watson/responses">Responses</a>');
     expect(shell).toContain('<a href="/watson/contact-messages">Contact Messages</a>');
+    expect(shell).toContain("watsonAdminNavHref");
+    expect(shell).toContain("<a href={adminHref}>Admin</a>");
+    expect(shell.match(/href=\{adminHref\}>Admin<\/a>/g)).toHaveLength(1);
+    expect(shell).not.toContain('<a href="/admin">Admin</a>');
+    expect(shell).not.toContain('<a href="/admin/">Admin</a>');
 
     expect(component).toContain("loadError");
     expect(component).toContain("watson__status--error");
@@ -146,14 +151,21 @@ describe("Watson member search pages", () => {
       path.resolve("src/pages/watson/reports/remaining-annual-access.astro"),
       "utf8",
     );
+    const formerNoMemberstack = fs.readFileSync(
+      path.resolve("src/pages/watson/reports/former-members-no-memberstack.astro"),
+      "utf8",
+    );
 
     expect(reportsIndex).toContain("/watson/reports/current-legacy-members");
     expect(reportsIndex).toContain("/watson/reports/remaining-annual-access");
+    expect(reportsIndex).toContain("/watson/reports/former-members-no-memberstack");
     expect(reportsIndex).toContain("/watson/pattern-inspector");
     expect(currentMembers).toContain("loadCurrentLegacyMembersReport");
     expect(currentMembers).toContain('export const prerender = false');
     expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
     expect(annualAccess).toContain('export const prerender = false');
+    expect(formerNoMemberstack).toContain("loadFormerMembersNoMemberstackReport");
+    expect(formerNoMemberstack).toContain('export const prerender = false');
   });
 
   it("defines the read-only legacy renewals preview page and nav link", () => {

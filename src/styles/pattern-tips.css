@@ -97,6 +97,19 @@
   color: #c2614e;
 }
 
+/* Neutral card tip — white panel, no pink tip background */
+.pattern-tip.pattern-tip--neutral {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  color: #374151;
+  padding: 0.85rem 2rem 0.85rem 1rem;
+}
+
+.pattern-tip.pattern-tip--neutral strong {
+  color: #1f2937;
+}
+
 .tips-inline-toggle {
   color: #c2614e;
   font-weight: 600;

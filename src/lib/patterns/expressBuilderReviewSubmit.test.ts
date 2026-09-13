@@ -19,6 +19,7 @@ import {
   syncExpressNeedleBlockVisibility,
   wireExpressBuilderReviewSubmit,
 } from "./expressBuilderReviewSubmit";
+import { gaugeSanityAcknowledgementKey } from "./gaugeSanity";
 
 type El = {
   tag: string;
@@ -241,6 +242,45 @@ describe("evaluateExpressGaugeFormSubmit", () => {
     expect(outcome).toEqual({ proceed: true });
     expect(openGauge).not.toHaveBeenCalled();
   });
+
+  it("blocks navigation on the customer 7 / 10 over 4 inches case until acknowledged", () => {
+    const { doc, needles, openGauge } = mountBuilderDom();
+    needles.value = "200";
+    const stitch = doc.getElementById(EXPRESS_GAUGE_STITCH_INPUT_ID) as unknown as El;
+    const row = doc.getElementById(EXPRESS_GAUGE_ROW_INPUT_ID) as unknown as El;
+    stitch.value = "7";
+    row.value = "10";
+    const onUnusualGauge = vi.fn();
+
+    const outcome = evaluateExpressGaugeFormSubmit(doc, {
+      openGaugeStepForValidation: openGauge,
+      onUnusualGauge,
+    });
+
+    expect(outcome.proceed).toBe(false);
+    if (outcome.proceed) return;
+    expect(outcome.reason).toBe("unusual-gauge");
+    expect(outcome.sanity).toMatchObject({ stitchesPerInch: 1.75, rowsPerInch: 2.5 });
+    expect(openGauge).toHaveBeenCalledOnce();
+    expect(onUnusualGauge).toHaveBeenCalledOnce();
+  });
+
+  it("allows the same unusual gauge after the knitter continues", () => {
+    const { doc, needles, openGauge } = mountBuilderDom();
+    needles.value = "200";
+    const stitch = doc.getElementById(EXPRESS_GAUGE_STITCH_INPUT_ID) as unknown as El;
+    const row = doc.getElementById(EXPRESS_GAUGE_ROW_INPUT_ID) as unknown as El;
+    stitch.value = "7";
+    row.value = "10";
+
+    const outcome = evaluateExpressGaugeFormSubmit(doc, {
+      openGaugeStepForValidation: openGauge,
+      acknowledgedGaugeKey: gaugeSanityAcknowledgementKey("7", "10", "in"),
+    });
+
+    expect(outcome).toEqual({ proceed: true });
+    expect(openGauge).not.toHaveBeenCalled();
+  });
 });
 
 describe("wireExpressBuilderReviewSubmit", () => {
@@ -305,6 +345,28 @@ describe("wireExpressBuilderReviewSubmit", () => {
     expect(onProceed).toHaveBeenCalledOnce();
     expect(openGauge).not.toHaveBeenCalled();
   });
+
+  it("does not proceed through the wired handler when gauge looks unusual", () => {
+    const { doc, needles, openGauge } = mountBuilderDom();
+    needles.value = "180";
+    const stitch = doc.getElementById(EXPRESS_GAUGE_STITCH_INPUT_ID) as unknown as El;
+    const row = doc.getElementById(EXPRESS_GAUGE_ROW_INPUT_ID) as unknown as El;
+    stitch.value = "7";
+    row.value = "10";
+    const onProceed = vi.fn();
+
+    wireExpressBuilderReviewSubmit({
+      documentRoot: doc,
+      openGaugeStepForValidation: openGauge,
+      onProceed,
+    });
+
+    const form = doc.getElementById(EXPRESS_GAUGE_FORM_ID) as unknown as El;
+    form.listeners.get("submit")?.[0]?.({ preventDefault: vi.fn() } as unknown as Event);
+
+    expect(onProceed).not.toHaveBeenCalled();
+    expect(openGauge).toHaveBeenCalledOnce();
+  });
 });
 
 describe("builder needles copy parity", () => {
@@ -348,5 +410,10 @@ describe("builder needles field parity", () => {
     expect(dropShoulderBuilderAstro).toContain("AVAILABLE_NEEDLES_REQUIRED_MESSAGE");
     expect(sleevelessBuilderAstro).toContain('id="express-available-needles"');
     expect(dropShoulderBuilderAstro).toContain('id="express-available-needles"');
+  });
+
+  it("hosts the shared unusual-gauge warning on both garment builders", () => {
+    expect(sleevelessBuilderAstro).toContain('id="gauge-sanity-warning"');
+    expect(dropShoulderBuilderAstro).toContain('id="gauge-sanity-warning"');
   });
 });

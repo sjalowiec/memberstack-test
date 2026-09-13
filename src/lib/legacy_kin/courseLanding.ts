@@ -43,8 +43,8 @@ export function courseLandingStartHref(slug: string, record?: LegacyCourseRecord
   const course = record ?? getLegacyCourseRecordBySlug(slug);
   if (!course) return legacyCourseHref(slug);
 
-  const lessons = getSortedLessonsForCourse(course);
-  const firstLesson = lessons[0];
+  const publicLessons = getSortedLessonsForCourse(course, { includeDrafts: false });
+  const firstLesson = publicLessons[0];
   if (firstLesson) {
     return legacyLessonHref(slug, firstLesson.slug);
   }
@@ -87,7 +87,7 @@ export function getCourseLandingBySlug(slug: string): CourseLandingView | undefi
     thumbnailUrl: readCourseLandingThumbnail(record),
     contentStatus,
     contentStatusLabel: CONTENT_STATUS_LABELS[contentStatus],
-    lessonCount: record.lessons.length,
+    lessonCount: getSortedLessonsForCourse(record, { includeDrafts: false }).length,
     startHref: courseLandingStartHref(normalizedSlug, record),
     interestTag: courseInterestActiveCampaignTag(normalizedSlug),
     access: getCourseAccessBySlug(normalizedSlug),

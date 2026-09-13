@@ -178,7 +178,13 @@ export type CoursePreviewData = {
     thumbnail?: string;
     /** When false, hidden from the public /courses catalog and legacy routes. Omitted = active. */
     active?: boolean;
-    legacy: { sourceExport: string; sourceCsv?: string; migratedAt?: string };
+    legacy: {
+      sourceExport: string;
+      sourceCsv?: string;
+      migratedAt?: string;
+      /** Temporary note when a draft course is published for deployed testing. */
+      temporaryProductionQa?: string;
+    };
   };
   lessons: CourseLesson[];
   manifest?: {

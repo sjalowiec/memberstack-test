@@ -238,10 +238,10 @@ describe("findEmptyBlockSlugs", () => {
 });
 
 describe("saveLessonUpdate", () => {
-  it("rejects invalid lesson JSON before writing", () => {
-    expect(() =>
+  it("rejects invalid lesson JSON before writing", async () => {
+    await expect(
       saveLessonUpdate(50, "lesson-one", { title: "Broken lesson" }),
-    ).toThrow("Lesson requires a non-empty slug string.");
+    ).rejects.toThrow("Lesson requires a non-empty slug string.");
   });
 });
 
@@ -319,28 +319,30 @@ describe("readCourseContentStatus", () => {
 });
 
 describe("saveCourseMetadata contentStatus", () => {
-  it('writes the exact value "cleaned" to course JSON', () => {
+  it('writes the exact value "cleaned" to course JSON', async () => {
     const before = readCourseContentFile(66).course.contentStatus;
     try {
-      const result = saveCourseMetadata(66, { contentStatus: "cleaned" });
+      const result = await saveCourseMetadata(66, { contentStatus: "cleaned" });
       expect(result.contentStatus).toBe("cleaned");
+      expect(result.persistedVia).toBe("filesystem");
       expect(readCourseContentFile(66).course.contentStatus).toBe("cleaned");
     } finally {
-      saveCourseMetadata(66, {
+      await saveCourseMetadata(66, {
         contentStatus: before === "cleaned" ? "cleaned" : "in_progress",
       });
     }
   });
 
-  it("writes catalog description to course JSON", () => {
+  it("writes catalog description to course JSON", async () => {
     const before = readCourseContentFile(66).course.description;
     const sample = "Catalog blurb for admin save test.";
     try {
-      const result = saveCourseMetadata(66, { description: sample });
+      const result = await saveCourseMetadata(66, { description: sample });
       expect(result.description).toBe(sample);
+      expect(result.persistedVia).toBe("filesystem");
       expect(readCourseContentFile(66).course.description).toBe(sample);
     } finally {
-      saveCourseMetadata(66, { description: before ?? null });
+      await saveCourseMetadata(66, { description: before ?? null });
     }
   });
 });

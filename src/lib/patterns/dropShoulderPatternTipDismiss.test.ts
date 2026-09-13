@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { DROP_SHOULDER_SHOULDER_BIND_OFF_VIDEO_TIP_ID } from "./dropShoulderShoulderBindOffVideo";
+import { DROP_SHOULDER_ROUND_NECKLINE_VIDEO_TIP_ID } from "./dropShoulderRoundNecklineVideoTip";
 import { DROP_SHOULDER_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID } from "./dropShoulderSleeveConstruction";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
@@ -82,6 +83,10 @@ describe("drop shoulder pattern tip ids", () => {
     const bindOff = tipRows.find((r) => r.tipId === DROP_SHOULDER_SHOULDER_BIND_OFF_VIDEO_TIP_ID);
     expect(bindOff).toBeDefined();
     expect(bindOff?.tipHtml).toContain("Bind-Off Refresher");
+
+    const roundNeck = tipRows.find((r) => r.tipId === DROP_SHOULDER_ROUND_NECKLINE_VIDEO_TIP_ID);
+    expect(roundNeck).toBeDefined();
+    expect(roundNeck?.tipHtml).toContain("Need help shaping the neckline?");
 
     for (const row of tipRows) {
       const html = patternTipWrapperHtml(row);

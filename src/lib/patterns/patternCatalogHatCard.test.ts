@@ -40,6 +40,8 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).not.toContain("title: 'Hat Pattern Builder'");
     expect(catalog).not.toContain("/images/patterns/basic-hat.webp");
     expect(catalog).not.toContain("Hat Pattern Builder — POSTPONED");
+    expect(catalog).toContain("object-fit: contain");
+    expect(catalog).not.toContain("object-fit: cover");
     expect(catalog).toContain("Choose a pattern to get started");
     expect(catalog).not.toContain("Pick a sweater builder");
     expect(catalog).not.toContain("Pattern Builders home");
@@ -151,7 +153,10 @@ describe("pattern catalog Hat card", () => {
     expect(guest).not.toContain("Create your hat");
 
     expect(member).toContain("availablePatterns.map");
+    expect(member).toContain('id="patterns-available-heading"');
     expect(member).toContain("Available now");
+    expect(member).toContain("pattern.pillCount");
+    expect(member).toContain("pattern.pillRest");
     expect(member).toContain("catalog-card");
     expect(member).not.toContain("patterns-featured");
     expect(member).not.toContain("Try a Pattern Builder Free");

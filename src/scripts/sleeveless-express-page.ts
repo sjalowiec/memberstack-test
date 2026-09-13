@@ -195,10 +195,6 @@ function ensureExpressStyleDefaults(v: Record<string, string>): void {
   else delete v.style;
 }
 
-function mapExpressNeckline(n: string) {
-  return n === "v-neck" ? "v" : "round";
-}
-
 function isValidPositiveNumber(v: string) {
   if (v === "" || v === null || v === undefined) return false;
   const n = Number(v);

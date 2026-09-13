@@ -1,19 +1,31 @@
 import { basename } from "node:path";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   addCourse111Block,
+  adjacentCourseOriginalLesson,
   cloneCourse111Data,
   COURSE_111_ID,
   COURSE_111_POC_FILENAME,
   course111IsDraft,
   course111LessonPreviewHref,
+  course111SaveStatusMessage,
   deleteCourse111Block,
+  deleteCourse111Component,
+  describeCourse111Component,
   filterCourse111Lessons,
+  filterCourse111OriginalLessons,
   findCourse111Lesson,
+  findCourse111OriginalLesson,
+  findCourse111OriginalLessonByAssignId,
   getCourse111ContentPath,
+  listCourse111EditorItemsForAssign,
+  listCourse111LessonComponents,
   listCourse111LessonSummaries,
+  listCourse111OriginalLessons,
   loadCourse111,
   moveCourse111Block,
+  parseWatsonCourseAdminCourseId,
   patchCourse111Component,
   preserveCourse111Publication,
   readCourse111Publication,
@@ -22,6 +34,7 @@ import {
   summarizeCourse111Block,
   updateCourse111LessonTitle,
 } from "./course111Admin";
+import { readCourseContentFile } from "./courseContentAdmin";
 import type { CourseComponent, CoursePreviewData } from "./coursePreviewPoc";
 
 function sampleWithUnknownFields(): CoursePreviewData {
@@ -114,37 +127,39 @@ describe("course111Admin load", () => {
     expect(listCourse111LessonSummaries(data).length).toBeGreaterThan(0);
   });
 
-  it("builds draft preview URLs for the selected lesson with preview=true", () => {
+  it("builds draft preview URLs for the selected original lesson assignId", () => {
     const data = loadCourse111();
-    const lessons = listCourse111LessonSummaries(data);
-    const first = lessons[0]!;
-    const second = lessons[1] ?? first;
+    const originals = listCourse111OriginalLessons(data);
+    const first = originals[0]!;
+    const second = originals[1] ?? first;
 
-    const firstHref = course111LessonPreviewHref(data, first.slug);
-    expect(firstHref).toBe(
-      `/courses/legacy/${data.course.slug}/${first.slug}?preview=true`,
+    const firstHref = course111LessonPreviewHref(data, first.assignId);
+    expect(firstHref).toBe(`/courses/111/lesson/${first.assignId}?preview=true`);
+    expect(firstHref).not.toContain("courses.knititnow.com");
+    expect(firstHref).not.toContain("/courses/legacy/");
+
+    const resolved = resolveCourse111SelectedLessonPreview(
+      data,
+      second.parentSlug,
+      second.blockSlug,
     );
-    expect(firstHref).toContain("?preview=true");
-    expect(firstHref).toContain(`/${first.slug}?`);
-
-    const resolved = resolveCourse111SelectedLessonPreview(data, second.slug);
     expect(resolved).toEqual({
-      lessonSlug: second.slug,
-      previewHref: `/courses/legacy/${data.course.slug}/${second.slug}?preview=true`,
+      lessonSlug: second.parentSlug,
+      blockSlug: second.blockSlug,
+      assignId: second.assignId,
+      previewHref: `/courses/111/lesson/${second.assignId}?preview=true`,
     });
-    expect(resolved?.previewHref).not.toBe(
-      `/courses/legacy/${data.course.slug}?preview=true`,
-    );
   });
 
-  it("Save & Preview saves the selected lesson before opening its preview URL", async () => {
+  it("Save & Preview saves the selected lesson before opening its assignId preview URL", async () => {
     const data = loadCourse111();
-    const selected = listCourse111LessonSummaries(data)[2] ?? listCourse111LessonSummaries(data)[0]!;
+    const selected = listCourse111OriginalLessons(data)[2] ?? listCourse111OriginalLessons(data)[0]!;
     const calls: string[] = [];
 
     const result = await runCourse111SaveAndPreview({
       data,
-      selectedLessonSlug: selected.slug,
+      selectedLessonSlug: selected.parentSlug,
+      selectedBlockSlug: selected.blockSlug,
       saveLesson: async (lessonSlug) => {
         calls.push(`save:${lessonSlug}`);
       },
@@ -153,14 +168,125 @@ describe("course111Admin load", () => {
       },
     });
 
-    expect(result.lessonSlug).toBe(selected.slug);
+    expect(result.lessonSlug).toBe(selected.parentSlug);
+    expect(result.assignId).toBe(selected.assignId);
     expect(result.previewHref).toBe(
-      `/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
+      `/courses/111/lesson/${selected.assignId}?preview=true`,
     );
     expect(calls).toEqual([
-      `save:${selected.slug}`,
-      `open:/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
+      `save:${selected.parentSlug}`,
+      `open:/courses/111/lesson/${selected.assignId}?preview=true`,
     ]);
+    expect(result.previewOpened).toBe(true);
+  });
+
+  it("opens preview immediately after a live blob persist", async () => {
+    const data = loadCourse111();
+    const selected = listCourse111OriginalLessons(data)[0]!;
+    const calls: string[] = [];
+
+    const result = await runCourse111SaveAndPreview({
+      data,
+      selectedLessonSlug: selected.parentSlug,
+      selectedBlockSlug: selected.blockSlug,
+      saveLesson: async (lessonSlug) => {
+        calls.push(`save:${lessonSlug}`);
+        return { persistedVia: "blob" };
+      },
+      openPreview: (href) => {
+        calls.push(`open:${href}`);
+      },
+    });
+
+    expect(result.previewOpened).toBe(true);
+    expect(result.persistedVia).toBe("blob");
+    expect(calls).toEqual([
+      `save:${selected.parentSlug}`,
+      `open:/courses/111/lesson/${selected.assignId}?preview=true`,
+    ]);
+  });
+
+  it("does not open preview after a GitHub persist on kin-dev", async () => {
+    const data = loadCourse111();
+    const selected = listCourse111OriginalLessons(data)[0]!;
+    const calls: string[] = [];
+
+    const result = await runCourse111SaveAndPreview({
+      data,
+      selectedLessonSlug: selected.parentSlug,
+      selectedBlockSlug: selected.blockSlug,
+      saveLesson: async (lessonSlug) => {
+        calls.push(`save:${lessonSlug}`);
+        return { persistedVia: "github" };
+      },
+      openPreview: (href) => {
+        calls.push(`open:${href}`);
+      },
+    });
+
+    expect(result.previewOpened).toBe(false);
+    expect(result.persistedVia).toBe("github");
+    expect(calls).toEqual([`save:${selected.parentSlug}`]);
+  });
+
+  it("uses the same Save & Preview URL shape for Course 64", () => {
+    const data = readCourseContentFile(64);
+    const first = listCourse111OriginalLessons(data)[0]!;
+    expect(data.course.legacyChallengeId).toBe(64);
+    expect(first.assignId).toBeGreaterThan(0);
+    expect(course111LessonPreviewHref(data, first.assignId)).toBe(
+      `/courses/64/lesson/${first.assignId}?preview=true`,
+    );
+    const resolved = resolveCourse111SelectedLessonPreview(
+      data,
+      first.parentSlug,
+      first.blockSlug,
+    );
+    expect(resolved?.previewHref).toBe(
+      `/courses/64/lesson/${first.assignId}?preview=true`,
+    );
+  });
+
+  it("parses Watson course-admin URLs and adjacent lessons", () => {
+    expect(parseWatsonCourseAdminCourseId("/watson/course-admin/64")).toBe(64);
+    expect(parseWatsonCourseAdminCourseId("/watson/course-admin/111")).toBe(111);
+    expect(parseWatsonCourseAdminCourseId("/watson/course-admin")).toBeNull();
+
+    const data = readCourseContentFile(64);
+    const lessons = listCourse111OriginalLessons(data);
+    const first = lessons[0]!;
+    const second = lessons[1]!;
+    expect(
+      adjacentCourseOriginalLesson(lessons, first.parentSlug, first.blockSlug, 1),
+    ).toEqual(second);
+    expect(
+      adjacentCourseOriginalLesson(lessons, first.parentSlug, first.blockSlug, -1),
+    ).toBeNull();
+  });
+
+  it("explains live overlay saves versus GitHub deploy delay", () => {
+    expect(
+      course111SaveStatusMessage({
+        persistedVia: "blob",
+        lessonTitle: "Your manuals",
+        previewOpened: true,
+      }),
+    ).toBe(
+      "Saved “Your manuals” to live DEV preview. Course remains draft/unpublished.",
+    );
+    expect(
+      course111SaveStatusMessage({
+        persistedVia: "github",
+        lessonTitle: "Learn About the Machine",
+      }),
+    ).toMatch(/after the site finishes deploying/);
+    expect(
+      course111SaveStatusMessage({
+        persistedVia: "github",
+        lessonTitle: "Learn About the Machine",
+        previewOpened: false,
+      }),
+    ).toMatch(/last deployed lesson/);
   });
 });
 
@@ -289,5 +415,128 @@ describe("course111Admin edit / order / preserve", () => {
     expect(lesson.blocks.some((block) => block.slug === "pending-block")).toBe(true);
     expect(moveCourse111Block(lesson, 1, -1)).toBe(true);
     expect(lesson.blocks.map((block) => block.slug)[0]).toBe("pending-block");
+  });
+});
+
+describe("course111Admin original lesson components", () => {
+  it("loads all components for lesson 6104 in display order", () => {
+    const data = loadCourse111();
+    const summary = findCourse111OriginalLessonByAssignId(data, 6104);
+    expect(summary).toMatchObject({
+      assignId: 6104,
+      blockSlug: "about-automatic-patterning-on-this-machine",
+      parentSlug: "automatic-stitch-patterning",
+    });
+
+    const items = listCourse111EditorItemsForAssign(data, 6104);
+    expect(items).toHaveLength(2);
+    expect(items.map((item) => item.legacyComponentId)).toEqual([9332, 9348]);
+    expect(items.map((item) => item.order)).toEqual([1, 2]);
+    expect(items.map((item) => item.type)).toEqual(["richText", "richText"]);
+    expect(items[1]?.identity).toMatch(/LearnDesignaKnit/i);
+    expect(items[1]?.imageSrcs).toContain(
+      "/images/course-content/111/learn_dak_logos.png",
+    );
+  });
+
+  it("preserves component order when listing Watson editor items", () => {
+    const data = loadCourse111();
+    const items = listCourse111EditorItemsForAssign(data, 6124);
+    expect(items.map((item) => item.type)).toEqual(["richText", "video"]);
+    expect(items.map((item) => item.legacyComponentId)).toEqual([9373, 9372]);
+    expect(items[0]?.order).toBeLessThan(items[1]?.order ?? 0);
+  });
+
+  it("edits an existing component without touching siblings", () => {
+    const data = cloneCourse111Data(loadCourse111());
+    const summary = findCourse111OriginalLessonByAssignId(data, 6104)!;
+    const found = findCourse111OriginalLesson(
+      data,
+      summary.parentSlug,
+      summary.blockSlug,
+    )!;
+
+    expect(
+      patchCourse111Component(found.parent, found.block.slug, 9332, {
+        html: "<p>Updated lesson copy</p>",
+      }),
+    ).toBe(true);
+
+    const components = listCourse111LessonComponents(found.block);
+    expect(components[0]?.identity).toBe("Updated lesson copy");
+    expect(components[1]?.legacyComponentId).toBe(9348);
+    expect(components[1]?.identity).toMatch(/LearnDesignaKnit/i);
+    const promo = found.block.components.find(
+      (component) => component.legacyComponentId === 9348,
+    ) as { html?: string };
+    expect(promo.html).toContain("/images/course-content/111/learn_dak_logos.png");
+  });
+
+  it("deletes a component and leaves the rest of the lesson intact", () => {
+    const data = cloneCourse111Data(loadCourse111());
+    const summary = findCourse111OriginalLessonByAssignId(data, 6104)!;
+    const found = findCourse111OriginalLesson(
+      data,
+      summary.parentSlug,
+      summary.blockSlug,
+    )!;
+
+    expect(deleteCourse111Component(found.parent, found.block.slug, 1)).toBe(true);
+    const remaining = listCourse111LessonComponents(found.block);
+    expect(remaining.map((item) => item.legacyComponentId)).toEqual([9332]);
+    expect(remaining[0]?.order).toBe(1);
+    expect(found.block.components).toHaveLength(1);
+  });
+
+  it("represents every component type in a mixed lesson for Watson", () => {
+    const data = cloneCourse111Data(sampleWithUnknownFields());
+    const lesson = findCourse111Lesson(data, "lesson-a")!;
+    const types = listCourse111OriginalLessons(data).flatMap((entry) =>
+      entry.componentTypes,
+    );
+    expect(types).toEqual(["richText", "migrationPending", "video"]);
+
+    const views = lesson.blocks.flatMap((block) =>
+      listCourse111LessonComponents(block),
+    );
+    expect(views.map((item) => item.typeLabel)).toEqual([
+      "Text",
+      "Pending / unmapped",
+      "Video (Vimeo)",
+    ]);
+    expect(views.every((item) => item.canDelete)).toBe(true);
+    expect(describeCourse111Component(lesson.blocks[1]!.components[0]!).identity).toMatch(
+      /Flash/,
+    );
+
+    const live = loadCourse111();
+    const represented = new Set(
+      listCourse111OriginalLessons(live).flatMap((entry) => entry.componentTypes),
+    );
+    expect(represented.has("richText")).toBe(true);
+    expect(represented.has("video")).toBe(true);
+    expect(represented.has("imageCarousel")).toBe(true);
+    expect(represented.has("exerciseAccordion")).toBe(true);
+    expect(represented.has("imageGallery")).toBe(true);
+    expect(represented.has("migrationPending")).toBe(true);
+
+    expect(filterCourse111OriginalLessons(listCourse111OriginalLessons(live), "6104")).toEqual(
+      [findCourse111OriginalLessonByAssignId(live, 6104)],
+    );
+  });
+});
+
+describe("Watson course editor surface", () => {
+  it("uses a visual HTML editor and a generic course-admin route", () => {
+    const editor = readFileSync("src/scripts/course111AdminEditor.ts", "utf8");
+    const page = readFileSync("src/pages/watson/course-admin/[courseId].astro", "utf8");
+    expect(editor).toContain("mountLegacyHtmlVisualEditor");
+    expect(editor).toContain("currentCourseId");
+    expect(editor).not.toContain(
+      '<label class="course111-admin__label">HTML\n        <textarea',
+    );
+    expect(page).toContain("parseKinCourseId");
+    expect(page).toContain("course111-admin-course-select");
+    expect(page).toContain("Save &amp; Preview Lesson");
   });
 });

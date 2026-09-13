@@ -3,6 +3,7 @@ import {
   isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
+  isLegacyLessonPublished,
   readLegacyCoursePublished,
 } from "./legacyCoursePublication";
 
@@ -76,5 +77,19 @@ describe("readLegacyCoursePublished", () => {
     expect(readLegacyCoursePublished({ active: false, status: "published", published: true })).toBe(
       true,
     );
+  });
+});
+
+describe("isLegacyLessonPublished", () => {
+  it("defaults to visible when published is omitted", () => {
+    expect(isLegacyLessonPublished({})).toBe(true);
+  });
+
+  it("treats published: true as visible", () => {
+    expect(isLegacyLessonPublished({ published: true })).toBe(true);
+  });
+
+  it("treats published: false as hidden", () => {
+    expect(isLegacyLessonPublished({ published: false })).toBe(false);
   });
 });

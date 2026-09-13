@@ -7,6 +7,7 @@ import {
   readCourseContentFile,
   saveLessonUpdate,
   writeCourseContentFile,
+  type CourseContentWriteOptions,
 } from "./courseContentAdmin";
 import {
   COURSE_111_ID,
@@ -31,27 +32,32 @@ export function getCourse111ContentPath(): string {
   return getCourseContentPath(COURSE_111_ID);
 }
 
-export function saveCourse111Lesson(
+export async function saveCourse111Lesson(
   lessonSlug: string,
   lesson: CourseLesson,
-): { backupPath: string; lessonSlug: string } {
-  const result = saveLessonUpdate(COURSE_111_ID, lessonSlug, lesson, {
+  writeOptions: CourseContentWriteOptions = {},
+) {
+  const result = await saveLessonUpdate(COURSE_111_ID, lessonSlug, lesson, {
     removeEmptyBlocks: false,
+    ...writeOptions,
   });
   return {
     backupPath: result.backupPath,
+    persistedVia: result.persistedVia,
+    branch: result.branch,
+    commitSha: result.commitSha,
     lessonSlug: result.lessonSlug,
   };
 }
 
-export function saveCourse111Document(
+export async function saveCourse111Document(
   data: CoursePreviewData,
   publication: Course111PublicationSnapshot,
-): { backupPath: string } {
+  writeOptions: CourseContentWriteOptions = {},
+) {
   if (Number(data.course.legacyChallengeId) !== COURSE_111_ID) {
     throw new Error("Refusing to save: course id is not 111.");
   }
   preserveCourse111Publication(data, publication);
-  const backupPath = writeCourseContentFile(COURSE_111_ID, data);
-  return { backupPath };
+  return writeCourseContentFile(COURSE_111_ID, data, writeOptions);
 }

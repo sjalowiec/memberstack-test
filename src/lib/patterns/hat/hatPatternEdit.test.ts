@@ -1016,6 +1016,7 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("hatSummaryShouldShowProjectDetails");
     expect(summaryScript).toContain("readHatActiveProjectId");
     expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
+    expect(sleevelessPatternPage).toContain("PatternSummaryEditWorkspace");
     expect(summaryWorkspace).toContain("sl-edit-workspace__measure-actions");
     expect(summaryPage).not.toContain("720px");
     expect(summaryWorkspaceCss).toContain("max-width: min(100%, 1000px)");

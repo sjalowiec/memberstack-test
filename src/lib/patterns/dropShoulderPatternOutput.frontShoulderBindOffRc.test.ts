@@ -1,7 +1,7 @@
 /**
  * Front shoulder completion RC must be the same in written instructions and the
- * Front Neckline Shaping Chart. Source of truth: garment shoulder (`totalRows`)
- * as local RC after the neckline reset.
+ * Front Neckline Shaping Chart. After a neckline reset, that is local remaining rows.
+ * When the neckline starts before the armhole marker, both stay on garment RC.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -9,8 +9,10 @@ import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import {
   dropShoulderFrontChartActiveSideRcStart,
+  dropShoulderFrontNecklineDisplayRcOffset,
   dropShoulderFrontShoulderCompletionLocalRc,
   dropShoulderFrontTimelineShoulderBindOffLocalRc,
+  dropShoulderFrontUsesLocalNecklineRc,
 } from "./dropShoulderFrontNeckShapingChart";
 import {
   buildActiveSideInstructionTableRows,
@@ -34,21 +36,49 @@ function frontBlockText(rows: SleevelessPatternDisplayRow[] | undefined): string
 }
 
 function proseShoulderBindOffLocalRc(text: string): number | undefined {
-  const match = text.match(/knit even to RC: (\d+)/i);
-  if (!match) return undefined;
-  return Number(match[1]);
+  const cardigan = text.match(
+    /knit even to RC: (\d+), then bind off \d+ stitches for the shoulder/i,
+  );
+  if (cardigan) return Number(cardigan[1]);
+  const pullover = text.match(
+    /knit even to RC: (\d+) \(no further neck-edge decreases\)/i,
+  );
+  if (pullover) return Number(pullover[1]);
+  return undefined;
+}
+
+function displayedShoulderBindOffRc(
+  result: ReturnType<typeof generateDropShoulderPattern>,
+): number {
+  const usesLocal = dropShoulderFrontUsesLocalNecklineRc(
+    result.debug.frontNecklineStartRC,
+    result.debug.armholeStartRow,
+  );
+  const totalRows = result.debug.totalCalculatedRows ?? 0;
+  if (usesLocal) {
+    return dropShoulderFrontShoulderCompletionLocalRc(
+      result.debug.frontNecklineStartRC ?? 0,
+      totalRows,
+    );
+  }
+  return totalRows;
 }
 
 function chartShoulderBindOffLocalRc(
   result: ReturnType<typeof generateDropShoulderPattern>,
 ): number | undefined {
+  const displayOrigin = dropShoulderFrontNecklineDisplayRcOffset(
+    result.debug.frontNecklineStartRC,
+    result.debug.armholeStartRow,
+  );
   const fromTimeline = dropShoulderFrontTimelineShoulderBindOffLocalRc(
     result.frontNeckShoulderTimeline,
-    result.debug.frontNecklineStartRC ?? 0,
+    displayOrigin,
   );
   const activeSideRcStart = dropShoulderFrontChartActiveSideRcStart(
     result.frontNeckShoulderShapingChart,
     result.debug.frontNecklineStartRC,
+    result.debug.armholeStartRow,
   );
   const tableRows = buildActiveSideInstructionTableRows(
     result.frontNeckShoulderShapingChart,
@@ -66,10 +96,7 @@ function expectProseChartShoulderBindOffAgree(
   const text = frontBlockText(result.frontDisplayRows);
   const proseRc = proseShoulderBindOffLocalRc(text);
   const chartRc = chartShoulderBindOffLocalRc(result);
-  const sourceOfTruth = dropShoulderFrontShoulderCompletionLocalRc(
-    result.debug.frontNecklineStartRC ?? 0,
-    result.debug.totalCalculatedRows ?? 0,
-  );
+  const sourceOfTruth = displayedShoulderBindOffRc(result);
   expect(proseRc).toBeDefined();
   expect(chartRc).toBeDefined();
   expect(proseRc).toBe(chartRc);
@@ -142,7 +169,7 @@ function kids10YrCardiganVNeckClosePattern(): Record<string, unknown> {
 }
 
 describe("Drop Shoulder front shoulder bind-off RC (prose vs chart)", () => {
-  it("Robin's Men's Medium deep V cardigan: prose and chart share the garment-shoulder local RC (not 044 vs 056)", () => {
+  it("Robin's Men's Medium deep V cardigan: prose and chart share the neckline-reset local RC (not a 044 vs 056 split)", () => {
     const result = generateDropShoulderPattern(robinsMensMedDeepVCardiganPattern());
     expect(result.debug.frontNeckDepthRows).toBe(56);
     expect(result.debug.armholeRows).toBe(44);
@@ -150,13 +177,13 @@ describe("Drop Shoulder front shoulder bind-off RC (prose vs chart)", () => {
       result.debug.frontNecklineStartRC ?? 0,
       result.debug.totalCalculatedRows ?? 0,
     );
-    expect(available).toBe(44);
+    expect(available).toBe(56);
 
     const { proseRc, chartRc } = expectProseChartShoulderBindOffAgree(result);
-    expect(proseRc).toBe(44);
-    expect(chartRc).toBe(44);
+    expect(proseRc).toBe(result.debug.totalCalculatedRows);
+    expect(chartRc).toBe(result.debug.totalCalculatedRows);
+    expect(proseRc).not.toBe(44);
     expect(proseRc).not.toBe(56);
-    expect(chartRc).not.toBe(56);
     expect(result.frontNeckShoulderTimeline?.at(-1)?.row).toBe(result.debug.totalCalculatedRows);
   });
 

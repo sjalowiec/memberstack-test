@@ -1,6 +1,7 @@
 import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { hasAuthoritativeSidewaysCardiganConstruction } from "./sidewaysCardiganConstructionIdentity";
 import { isHatCustomPatternProject, isSockCustomPatternProject } from "./patternSystemId";
 import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
 import { withSavedPatternProjectId } from "./savedPatternViewUrl";
@@ -15,6 +16,7 @@ export const PATTERN_CATALOG_HREF = "/patterns";
 
 export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 export const DROP_SHOULDER_OPEN_PATTERN_HREF = "/patterns/drop-shoulder/pattern/";
+export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF = "/patterns/sideways-cardigan/pattern/";
 export const HAT_OPEN_PATTERN_HREF = "/patterns/hat/pattern/";
 export const HAT_SUMMARY_EDIT_HREF = "/patterns/hat/summary/";
 export const SOCK_OPEN_PATTERN_HREF = "/patterns/socks/pattern/";
@@ -34,6 +36,9 @@ export const OPEN_PATTERN_EDIT_WORKSPACE_HREF = `${OPEN_PATTERN_HREF}?${PATTERN_
 export const DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
+export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
+  `${SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
 /** Saved hat Summary/Edit workspace (hat uses a dedicated summary page, not an overlay drawer). */
 export const HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${HAT_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
@@ -52,6 +57,9 @@ export const SLEEVELESS_PATTERN_WORKSPACE_GENERATED_HREF =
 /** Drop-shoulder pattern workspace opened immediately after builder completion. */
 export const DROP_SHOULDER_PATTERN_WORKSPACE_GENERATED_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
+
+export const SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF =
+  `${SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
 
 /** Resume editing an express saved project — pattern workspace with Edit drawer auto-opened. */
 export const EXPRESS_CONTINUE_EDITING_HREF = OPEN_PATTERN_EDIT_WORKSPACE_HREF;
@@ -110,10 +118,23 @@ export function getContinueEditingHref(
   if (project && isSockCustomPatternProject(project)) {
     return sockEditHrefForProject(project);
   }
+  if (project && isSidewaysCardiganCustomPatternProject(project)) {
+    return SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+  }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_CONTINUE_EDITING_HREF;
   }
   return source === "express" ? EXPRESS_CONTINUE_EDITING_HREF : CUSTOM_BUILD_FIRST_EDIT_HREF;
+}
+
+export function isSidewaysCardiganCustomPatternProject(
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
+): boolean {
+  const style =
+    project.pattern?.style && typeof project.pattern.style === "object" && !Array.isArray(project.pattern.style)
+      ? (project.pattern.style as Record<string, unknown>)
+      : undefined;
+  return hasAuthoritativeSidewaysCardiganConstruction(style, project.customOverrides);
 }
 
 export function isDropShoulderCustomPatternProject(
@@ -132,6 +153,7 @@ export function getOpenPatternHrefForProject(
 ): string {
   if (isHatCustomPatternProject(project)) return HAT_OPEN_PATTERN_HREF;
   if (isSockCustomPatternProject(project)) return SOCK_OPEN_PATTERN_HREF;
+  if (isSidewaysCardiganCustomPatternProject(project)) return SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF;
   return isDropShoulderCustomPatternProject(project)
     ? DROP_SHOULDER_OPEN_PATTERN_HREF
     : OPEN_PATTERN_HREF;
@@ -163,6 +185,9 @@ export function getSavedCustomPatternOpenHref(
   }
   if (project && isSockCustomPatternProject(project)) {
     return sockEditHrefForProject(project);
+  }
+  if (project && isSidewaysCardiganCustomPatternProject(project)) {
+    return SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;

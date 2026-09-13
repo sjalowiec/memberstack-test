@@ -15,7 +15,6 @@
 import { calculateBasicPatternNumbers } from "./patternCalculator";
 import {
   calculateHemRowsFromInches,
-  calculateCuffRowsFromInches,
   roundUpToEvenRows,
 } from "./hemDefaults";
 import { resolveEffectiveCuffDepthInches } from "./customBuildEffectiveCuffDepth";
@@ -49,6 +48,7 @@ import {
 } from "./customBuildEffectiveArmholeDepth";
 import { isDropShoulderPatternData } from "./dropShoulderSleeveMeasurementOverrides";
 import { resolveDropShoulderSleeveInches } from "./dropShoulderSleeveMeasurementOverrides";
+import { calculateDropShoulderSleevePieceNumbers } from "./dropShoulderSleevePieceNumbers";
 import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
 import {
@@ -70,6 +70,7 @@ import {
 } from "./roundNeckPlanPresentation";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindOffVideo";
+import { dropShoulderRoundNecklineVideoRow } from "./dropShoulderRoundNecklineVideoTip";
 import { roundBackNecklineShapingVideoRow } from "./roundBackNecklineShapingVideoTip";
 import {
   castOnMethodQuickTipInnerHtml,
@@ -941,6 +942,11 @@ function buildPulloverFrontRows(args: {
         shoulderFinishRc,
         DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
       );
+      // Catalog video 2212: pullover round front only (center + neck-edge, no
+      // shoulder shaping). Insert before the shaping block so knitters can watch
+      // first. V-neck and cardigan use a different process and must not get this tip.
+      const roundNeckHelp = dropShoulderRoundNecklineVideoRow();
+      if (roundNeckHelp) rows.push(roundNeckHelp);
       rows.push({
         kind: "block",
         rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
@@ -1504,11 +1510,15 @@ export function generateDropShoulderPattern(
   const backNeckSts = Math.max(0, bustBodySts - 2 * shoulderStsEach);
 
   // ---- Sleeve math (flat piece width = circumference; top edge = upper arm) ----
-  const topSts = upperArmIn !== undefined && spi > 0 ? forceEven(upperArmIn * spi) : 0;
-  const wristSts = wristIn !== undefined && spi > 0 ? forceEven(wristIn * spi) : 0;
-  const cuffRows = calculateCuffRowsFromInches(rpi, cuffDepthIn);
-  const sleeveTotalRows = sleeveLengthIn && rpi > 0 ? Math.max(cuffRows + 2, Math.round(sleeveLengthIn * rpi)) : 0;
-  const sleeveBodyRows = Math.max(0, sleeveTotalRows - cuffRows);
+  const sleevePiece = calculateDropShoulderSleevePieceNumbers({
+    finishedUpperArmInches: upperArmIn,
+    finishedWristInches: wristIn,
+    sleeveLengthInches: sleeveLengthIn,
+    stitchesPerInch: spi,
+    rowsPerInch: rpi,
+    cuffDepthInches: cuffDepthIn,
+  });
+  const { topSts, wristSts, cuffRows, sleeveBodyRows, sleeveTotalRows } = sleevePiece;
   const sleeveValid = topSts > 0 && wristSts > 0 && sleeveTotalRows > 0;
 
   const backRoundNeckPlan =

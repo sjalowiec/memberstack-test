@@ -492,7 +492,7 @@ describe("Drop Shoulder edit measurement diagram — layout reuse", () => {
     expect(EDIT_WORKSPACE_TWO_COLUMN_MIN_PX).toBe(1100);
     expect(dropShoulderPatternPage).toContain("sl-edit-drawer--workspace");
     expect(dropShoulderPatternPage).toContain("sleevelessPatternEditDrawerPrototype.ts");
-    expect(dropShoulderPatternPage).not.toContain("PatternSummaryEditWorkspace");
+    expect(dropShoulderPatternPage).toContain("PatternSummaryEditWorkspace");
     expect(dropShoulderPatternPage).toContain("data-cb-measure-diagram");
     expect(workspaceCss).toContain("@container sl-edit-workspace (min-width: 1100px)");
     expect(workspaceCss).toContain("flex-direction: row");
@@ -517,7 +517,7 @@ describe("Drop Shoulder edit measurement diagram — layout reuse", () => {
     expect(sleevelessRendererSrc).not.toContain("dropShoulderSleeveBodyPath");
     expect(sleevelessPatternPage).toContain("sl-edit-drawer--workspace");
     expect(sleevelessPatternPage).toContain("sleevelessPatternEditDrawerPrototype.ts");
-    expect(sleevelessPatternPage).not.toContain("PatternSummaryEditWorkspace");
+    expect(sleevelessPatternPage).toContain("PatternSummaryEditWorkspace");
     expect(measurementsPageSrc).toContain("buildSleevelessEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("buildDropShoulderEditMeasurementDiagramSvg");
     expect(measurementsPageSrc).toContain("adoptDropShoulderGeneratedMeasurementArt");

@@ -25,3 +25,14 @@ export function sanitizeLegacyEbookDescriptionHtml(html: string): string {
 
   return out.trim();
 }
+
+/**
+ * Remove <img> tags from description HTML. Used for temporarily unavailable
+ * products whose descriptions embed promotional/purchase imagery that should
+ * not display while sales are disabled. Reversible: callers apply this only
+ * when a product is flagged unavailable, so the original data is untouched.
+ */
+export function stripLegacyEbookDescriptionImages(html: string): string {
+  if (!html) return "";
+  return html.replace(/<\s*img\b[^>]*>/gi, "").trim();
+}

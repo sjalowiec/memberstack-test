@@ -33,7 +33,8 @@ export type KinCourseLoadOptions = {
  * as Help Hub and member-lesson previews (`requireAdminForRequest`). Browser GET
  * navigation does not send `Authorization: Bearer`; Help Hub/lesson previews send
  * that header from `getMemberCookie()` on fetch. There is no host-only or
- * query-string-only bypass.
+ * query-string-only bypass: localhost, kin-dev, deploy previews, and production
+ * all require a verified admin session.
  */
 export async function kinCourseAdminPreviewGranted(
   request: Request,

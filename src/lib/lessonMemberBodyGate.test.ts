@@ -21,7 +21,7 @@ const helpHubTips = Array.isArray(helpHubData) ? helpHubData : [];
 
 const tuckLesson = lessons.find((l) => l.slug === "tuck-on-the-lk150");
 const lessonPageSource = readFileSync(
-  join(repoRoot, "src", "pages", "lessons", "[slug].astro"),
+  join(repoRoot, "src", "components", "lessons", "LessonPage.astro"),
   "utf8",
 );
 const instructionalBodySource = readFileSync(

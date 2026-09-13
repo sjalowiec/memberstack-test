@@ -218,8 +218,8 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(hatSummaryPage).not.toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
     expect(sleevelessPattern).not.toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
     expect(dropShoulderPattern).not.toContain("SOCK_SUMMARY_MEASUREMENT_FIELDS");
-    expect(sleevelessPattern).not.toContain("PatternSummaryEditWorkspace");
-    expect(dropShoulderPattern).not.toContain("PatternSummaryEditWorkspace");
+    expect(sleevelessPattern).toContain("PatternSummaryEditWorkspace");
+    expect(dropShoulderPattern).toContain("PatternSummaryEditWorkspace");
     expect(sleevelessPattern).toContain("sl-edit-drawer--workspace");
     expect(dropShoulderPattern).toContain("sl-edit-drawer--workspace");
   });

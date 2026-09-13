@@ -11,7 +11,7 @@
       "sourceExport": "course_86_taitexma_th_tr_160_getting_started.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
       "migratedAt": "2026-06-25T10:16:09+00:00",
-      "temporaryProductionQa": "TEMPORARY 2026-09-12: published so /courses/86 loads without ?preview=true. Revert status to draft and published to false after testing."
+      "temporaryProductionQa": "TEMPORARY 2026-09-12: published for deployed DEV testing so /courses/86 loads without preview. Revert status to draft and published to false after testing. Do not add this course to the public catalog or navigation."
     },
     "thumbnail": "/images/courses/taitexma_160.webp",
     "contentStatus": "in_progress"
@@ -85,7 +85,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\nBelow are 2 issues that have been reported.  They are not typical of the quality of the machines, but ... mistakes happen in manufacturing.<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/86/warning.png\">\r\n\r\n\r\n\r\n<br>Not every machine has this issue. <br>Inside the machine bed is a METAL holder that will control the \"wings\" of the mast.<br>If your mast sits high and twists inside the plastic holder, it needs to be positioned low enough so the \"wings\" of the mast sit IN THE SLOTS of the metal holder.<br><img src=\"/challenge/images/v2/86/mast1.jpg\">\r\n\r\n\r\n<hr class=\"style13\">\r\n</ul>\r\n<li>\r\nMain Bed: All needles are in \"A\" position (all the way back)</li>\r\n<li>If <b>Needle LEFT #10</b> does not align with the other needles</li>\r\n<li>That ONE needle needs to be replaced with a shorter needle</li>\r\n</ul>\r\n<em>That single needle can hit the bracket inside the machine that holds the tension mast. This is only an issue on select machines.</em><br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/86/short_needle1.jpg\">\r\n<img src=\"/challenge/images/v2/86/short_needles1.jpg\">\r\n\r\n\r\n\r\n\r\n",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\nBelow are 2 issues that have been reported.  They are not typical of the quality of the machines, but ... mistakes happen in manufacturing.<br>\r\n\r\n\r\n<img src=\"/images/course-content/86/warning.png\">\r\n\r\n\r\n\r\n<br>Not every machine has this issue. <br>Inside the machine bed is a METAL holder that will control the \"wings\" of the mast.<br>If your mast sits high and twists inside the plastic holder, it needs to be positioned low enough so the \"wings\" of the mast sit IN THE SLOTS of the metal holder.<br><img src=\"/images/course-content/86/mast1.jpg\">\r\n\r\n\r\n<hr class=\"style13\">\r\n</ul>\r\n<li>\r\nMain Bed: All needles are in \"A\" position (all the way back)</li>\r\n<li>If <b>Needle LEFT #10</b> does not align with the other needles</li>\r\n<li>That ONE needle needs to be replaced with a shorter needle</li>\r\n</ul>\r\n<em>That single needle can hit the bracket inside the machine that holds the tension mast. This is only an issue on select machines.</em><br>\r\n\r\n\r\n<img src=\"/images/course-content/86/short_needle1.jpg\">\r\n<img src=\"/images/course-content/86/short_needles1.jpg\">\r\n\r\n\r\n\r\n\r\n",
               "legacyComponentId": 6526,
               "order": 1
             }
@@ -102,7 +102,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "Download a searchable PDF version of the manual for your  machine.<br>\r\nUse your PDF reader search feature to find terms and instruction in the PDF.<br>NOTE:<em>To make the PDF searchable and keep the file size low, the images may be distorted</em><br>\r\n\r\n\r\n\t\r\n\t\t<a href=\"/downloads/160main.pdf\" target=\"_blank\">\r\n\t\t\t<figure>\r\n\t\t\t\t<figcaption align=\"center\"><br><h3>Main Bed Manual</h3></figcaption>\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/main_manual_cover.jpg\">\r\n\t\t\t</figure>\r\n\t\r\n\t<div class=\"col-offset-1\"><a href=\"/downloads/160ribber.pdf\" target=\"_blank\">\r\n\t\t\t<figure>\r\n\t\t\t\t<figcaption align=\"center\"><br><h3>Ribber Manual</h3></figcaption>\r\n\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/ribber_manual_cover.jpg\">\r\n\t\t</a></figure>\r\n\t</div>\r\n\r\n\r\n",
+              "html": "Download a searchable PDF version of the manual for your  machine.<br>\r\nUse your PDF reader search feature to find terms and instruction in the PDF.<br>NOTE:<em>To make the PDF searchable and keep the file size low, the images may be distorted</em><br>\r\n\r\n\r\n\t\r\n\t\t<a href=\"/downloads/160main.pdf\" target=\"_blank\">\r\n\t\t\t<figure>\r\n\t\t\t\t<figcaption align=\"center\"><br><h3>Main Bed Manual</h3></figcaption>\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/images/course-content/86/main_manual_cover.jpg\">\r\n\t\t\t</figure>\r\n\t\r\n\t<div class=\"col-offset-1\"><a href=\"/downloads/160ribber.pdf\" target=\"_blank\">\r\n\t\t\t<figure>\r\n\t\t\t\t<figcaption align=\"center\"><br><h3>Ribber Manual</h3></figcaption>\r\n\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/images/course-content/86/ribber_manual_cover.jpg\">\r\n\t\t</a></figure>\r\n\t</div>\r\n\r\n\r\n",
               "legacyComponentId": 6507,
               "order": 1
             }
@@ -119,7 +119,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<a target=\"_blank\" href=\"/downloads/taitexma_160_reference_card.pdf\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Download and print \"cheat sheets\" for quick reference.</a>\r\n\r\n\r\n\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards1.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards2.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards3.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards4.jpg\"></a>\r\n",
+              "html": "<a target=\"_blank\" href=\"/downloads/taitexma_160_reference_card.pdf\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Download and print \"cheat sheets\" for quick reference.</a>\r\n\r\n\r\n\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/images/course-content/86/reference-cards1.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/images/course-content/86/reference-cards2.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/images/course-content/86/reference-cards3.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/images/course-content/86/reference-cards4.jpg\"></a>\r\n",
               "legacyComponentId": 9441,
               "order": 1
             }
@@ -136,7 +136,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9e2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n</style>\r\nThe printed manuals provided with the TH/TR 160 were \"cobbled together\" from bits and pieces of previous Brother manuals.<br>They are not as clear as we would expect them to be.  This is the reason this course was created.\r\n<h3>NOTES</h3>\r\n<div class=\"circle\"><a href=\"#\">1</a></div>\r\nPages 13 and 14 of the ribber manual refer to \"needle Stoppers\", \"Presser holders\" and \"extension racks\". These accessories are not included with the TR-160 ribber.\r\n\r\n<br>\r\n    \r\n        <div class=\"circle\"><a href=\"#\">2</a></div> Some machines are shipping with a sub take up spring on the yarn mast. \r\n        Previous Brother manuals refer to this extra spring for 2 uses (both of which aren't applicable to this machine):<br><ol>\r\n            <li><b><a data-GlossaryId=\"654\" class=\"glossaryhelp\">Punch Lace | Thread Lace <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></b> (this is not a possible with the TH-160 machine)</li>\r\n            <li><b><a data-GlossaryId=\"713\" class=\"glossaryhelp\">Isolated Motif <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></b> (this is helpful when automatic patterning - also not available on this machine)</li>\r\n        </ol>\r\n    \r\n    <img src=\"/challenge/images/v2/86/sub_take_up_spring.jpg\">\r\n\r\n",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9e2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n</style>\r\nThe printed manuals provided with the TH/TR 160 were \"cobbled together\" from bits and pieces of previous Brother manuals.<br>They are not as clear as we would expect them to be.  This is the reason this course was created.\r\n<h3>NOTES</h3>\r\n<div class=\"circle\"><a href=\"#\">1</a></div>\r\nPages 13 and 14 of the ribber manual refer to \"needle Stoppers\", \"Presser holders\" and \"extension racks\". These accessories are not included with the TR-160 ribber.\r\n\r\n<br>\r\n    \r\n        <div class=\"circle\"><a href=\"#\">2</a></div> Some machines are shipping with a sub take up spring on the yarn mast. \r\n        Previous Brother manuals refer to this extra spring for 2 uses (both of which aren't applicable to this machine):<br><ol>\r\n            <li><b><a data-GlossaryId=\"654\" class=\"glossaryhelp\">Punch Lace | Thread Lace <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></b> (this is not a possible with the TH-160 machine)</li>\r\n            <li><b><a data-GlossaryId=\"713\" class=\"glossaryhelp\">Isolated Motif <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></b> (this is helpful when automatic patterning - also not available on this machine)</li>\r\n        </ol>\r\n    \r\n    <img src=\"/images/course-content/86/sub_take_up_spring.jpg\">\r\n\r\n",
               "legacyComponentId": 9067,
               "order": 1
             }
@@ -175,7 +175,7 @@
                 "IMAGE_HEIGHT": "426.77778",
                 "IMAGE_WIDTH": "999.77778",
                 "SECONDDIV": "padding-bottom: 42.68726396379803%",
-                "SPOTT_IMAGE": "/challenge/images/v2/86/taitexma_main_spott1.jpg",
+                "SPOTT_IMAGE": "/images/course-content/86/taitexma_main_spott1.jpg",
                 "SPOT_ACTIONID_1": "8242",
                 "SPOT_ACTIONID_2": "8243",
                 "SPOT_ACTIONID_3": "8247",
@@ -245,7 +245,7 @@
                 "IMAGE_HEIGHT": "769.77778",
                 "IMAGE_WIDTH": "999.77778",
                 "SECONDDIV": "padding-bottom: 76.9948878039678%",
-                "SPOTT_IMAGE": "/challenge/images/v2/86/tax_tools.jpg",
+                "SPOTT_IMAGE": "/images/course-content/86/tax_tools.jpg",
                 "SPOT_ACTIONID_1": "8227",
                 "SPOT_ACTIONID_10": "8231",
                 "SPOT_ACTIONID_11": "8240",
@@ -335,7 +335,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\n\r\nIn working with the TH160 we discovered that the claw weights didn't match up with the spacing on the cast on comb.<br>In order to hang the weights cleanly on the cast on comb, we bent back 4 of the teeth. <br>Even if you use this weight to hang in your knitting, the remaining teeth will work as well as the original arrangement.\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/claw_weights1.jpg\">\r\n\r\n\r\n",
+              "html": "\r\n\r\n\r\nIn working with the TH160 we discovered that the claw weights didn't match up with the spacing on the cast on comb.<br>In order to hang the weights cleanly on the cast on comb, we bent back 4 of the teeth. <br>Even if you use this weight to hang in your knitting, the remaining teeth will work as well as the original arrangement.\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/86/claw_weights1.jpg\">\r\n\r\n\r\n",
               "legacyComponentId": 6528,
               "order": 1
             }
@@ -352,7 +352,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\nhr.style13 {\nheight: 10px;\nborder: 0;\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\n}\n\n</style>\n\n\n\n\t\n\t\t\n\t\t\t<img src=\"/challenge/images/v2/86/1.png\">\n\t\t\t<img src=\"/challenge/images/v2/86/2.png\">\n\t\t\t<img src=\"/challenge/images/v2/86/3.png\">\n\t\t\t <img src=\"/challenge/images/v2/86/4.png\"><br>\n\t\t<br>\n\t\tThe 6mm gauge of this machine gives a lot of flexibility in the yarn we can use. It's your choice! you can choose a lightweight yarn and knit it at a very loose tension for a lightweight fabric. You can knit the same yarn at a tighter tension for a very different look. The fiber, color and texture of the yarn is up to you.<br>The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.\n\t\n\t\n <div class=\"videopopup\" data-videotitle=\"Yarn for Knitting Machines\" data-vimeoid=\"527759119\">\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1338069709-034f196bd22a8f02940e3220839ccf157ac3e09a75b3ee3ab61f8dd9ab7dde81-d_1280x720?r=pad\">\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\n</div>\n\n\n\n\t\t\t<div class=\"imagecenter text-center\"></div><br><hr class=\"style13\"><br>",
+              "html": "<style>\nhr.style13 {\nheight: 10px;\nborder: 0;\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\n}\n\n</style>\n\n\n\n\t\n\t\t\n\t\t\t<img src=\"/images/course-content/86/1.png\">\n\t\t\t<img src=\"/images/course-content/86/2.png\">\n\t\t\t<img src=\"/images/course-content/86/3.png\">\n\t\t\t <img src=\"/images/course-content/86/4.png\"><br>\n\t\t<br>\n\t\tThe 6mm gauge of this machine gives a lot of flexibility in the yarn we can use. It's your choice! you can choose a lightweight yarn and knit it at a very loose tension for a lightweight fabric. You can knit the same yarn at a tighter tension for a very different look. The fiber, color and texture of the yarn is up to you.<br>The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.\n\t\n\t\n <div class=\"videopopup\" data-videotitle=\"Yarn for Knitting Machines\" data-vimeoid=\"527759119\">\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1338069709-034f196bd22a8f02940e3220839ccf157ac3e09a75b3ee3ab61f8dd9ab7dde81-d_1280x720?r=pad\">\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\n</div>\n\n\n\n\t\t\t<div class=\"imagecenter text-center\"></div><br><hr class=\"style13\"><br>",
               "legacyComponentId": 6429,
               "order": 1
             },
@@ -360,35 +360,35 @@
               "type": "imageGallery",
               "slides": [
                 {
-                  "src": "/challenge/images/v2/86/v2/86/sock1.jpg",
+                  "src": "/images/course-content/86/sock1.jpg",
                   "caption": "Self-Patterning sock yarn, knit at tension 1-2"
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/sock2.jpg",
+                  "src": "/images/course-content/86/sock2.jpg",
                   "caption": "Self-Patterning sock yarn, knit at tension 1-2"
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/blue1.jpg",
+                  "src": "/images/course-content/86/blue1.jpg",
                   "caption": "Medium weight cotton knit at tension 9"
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/fine.jpg",
+                  "src": "/images/course-content/86/fine.jpg",
                   "caption": "A fine coned yarn (2/8) knit loosely at tension 9 creates open, lacy knitting."
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/pink1.jpg",
+                  "src": "/images/course-content/86/pink1.jpg",
                   "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a 4 it is lighter than the previous blue yarn"
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/pink2.jpg",
+                  "src": "/images/course-content/86/pink2.jpg",
                   "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a 4 it is lighter than the previous blue yarn"
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/purple1.jpg",
+                  "src": "/images/course-content/86/purple1.jpg",
                   "caption": "#4 Acrylic knit at tension 7"
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/purple2.jpg",
+                  "src": "/images/course-content/86/purple2.jpg",
                   "caption": "#4 Acrylic knit at tension 7"
                 }
               ],
@@ -412,7 +412,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\tWe can knit so much more than plain stockinette with this machine. With just a few carriage settings, quickly add texture and color.<br>This is a manual machine. There is no automatic needle selection (punchcard or electronics). Needles are positioned manually.<br>It is critical that you understand the 3 elements that create stitch patterns.\r\n\r\n\t\r\n\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.5em\">3 settings control stitch patterning:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\r\n\t\t\t</div>\r\n\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br>\r\n\t\r\n\t\tMarked on the side of the needlebed A-B-D-E represent:<br>\r\n\t\t<div class=\"table-responsive table-sm table-bordered\">\r\n\t\t\t<table class=\"table\">\r\n\t\t\t\t<tbody>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">A</span></td>\r\n\t\t\t\t\t\t<td>Out of Work Position (Non-working Position |NWP)</td>\r\n\t\t\t\t\t\t<td><em>Unused Needles</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">B</span></td>\r\n\t\t\t\t\t\t<td>Working Position (WP)</td>\r\n\t\t\t\t\t\t<td><em>Needles lined up to knit in stockinette and most stitch patterns</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">D </span></td>\r\n\t\t\t\t\t\t<td>Middle Position(MP) (Pattern Position)</td>\r\n\t\t\t\t\t\t<td><em>Bring the needles from holding position into working and pattern work positions</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">E</span></td>\r\n\t\t\t\t\t\t<td>Holding Position (HP)</td>\r\n\t\t\t\t\t\t<td><em>The farthest position from \"A\" on the needlebed</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t</tbody>\r\n\t\t\t</table>\r\n\t\t</div>\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/path/images/1480/needle_position.jpg\" width=\"150\"></center>\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Change Lever</span><br>The Change Lever controls the action of the needles for specific stitch types.\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/change_lever_gif.gif\"></center>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">3</a></div><span class=\"def\"> Cam Lever(s)</span><br>The Cam Levers are also called the hold levers <br>and control the action of needles in \"E\" position.  Often used for short row shaping.\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/cam_levers_gif1.gif\"></center>\r\n\r\n",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\tWe can knit so much more than plain stockinette with this machine. With just a few carriage settings, quickly add texture and color.<br>This is a manual machine. There is no automatic needle selection (punchcard or electronics). Needles are positioned manually.<br>It is critical that you understand the 3 elements that create stitch patterns.\r\n\r\n\t\r\n\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.5em\">3 settings control stitch patterning:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\r\n\t\t\t</div>\r\n\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br>\r\n\t\r\n\t\tMarked on the side of the needlebed A-B-D-E represent:<br>\r\n\t\t<div class=\"table-responsive table-sm table-bordered\">\r\n\t\t\t<table class=\"table\">\r\n\t\t\t\t<tbody>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">A</span></td>\r\n\t\t\t\t\t\t<td>Out of Work Position (Non-working Position |NWP)</td>\r\n\t\t\t\t\t\t<td><em>Unused Needles</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">B</span></td>\r\n\t\t\t\t\t\t<td>Working Position (WP)</td>\r\n\t\t\t\t\t\t<td><em>Needles lined up to knit in stockinette and most stitch patterns</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">D </span></td>\r\n\t\t\t\t\t\t<td>Middle Position(MP) (Pattern Position)</td>\r\n\t\t\t\t\t\t<td><em>Bring the needles from holding position into working and pattern work positions</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">E</span></td>\r\n\t\t\t\t\t\t<td>Holding Position (HP)</td>\r\n\t\t\t\t\t\t<td><em>The farthest position from \"A\" on the needlebed</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t</tbody>\r\n\t\t\t</table>\r\n\t\t</div>\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/path/images/1480/needle_position.jpg\" width=\"150\"></center>\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Change Lever</span><br>The Change Lever controls the action of the needles for specific stitch types.\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/images/course-content/86/change_lever_gif.gif\"></center>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">3</a></div><span class=\"def\"> Cam Lever(s)</span><br>The Cam Levers are also called the hold levers <br>and control the action of needles in \"E\" position.  Often used for short row shaping.\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/images/course-content/86/cam_levers_gif1.gif\"></center>\r\n\r\n",
               "legacyComponentId": 6424,
               "order": 1
             }
@@ -429,7 +429,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\nExplore the carriage settings.<br>\r\nCast on and have some knitting on the needles.",
+              "html": "<img src=\"/images/course-content/86/lightbulb_icon_40x40.png\">\r\nExplore the carriage settings.<br>\r\nCast on and have some knitting on the needles.",
               "legacyComponentId": 6450,
               "order": 1
             },
@@ -437,29 +437,29 @@
               "type": "exerciseAccordion",
               "sections": [
                 {
-                  "title": "<style>\r\nhr.style13 {\r\nheight: 5px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow1.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-10\">Cam Levers: <ol>\r\n\t\t\t<li>Set both cam levers to \"H\"</li>\r\n\t\t\t<li>Needles in A-B-D-E</li>\r\n\t\t\t<li>Pass the carriage</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "title": "<style>\r\nhr.style13 {\r\nheight: 5px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/images/course-content/86/arrow1.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-10\">Cam Levers: <ol>\r\n\t\t\t<li>Set both cam levers to \"H\"</li>\r\n\t\t\t<li>Needles in A-B-D-E</li>\r\n\t\t\t<li>Pass the carriage</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
                   "bodyHtml": "\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles Knit</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles do not knit</li>\r\n</ul>\r\n",
-                  "iconSrc": "/challenge/images/v2/86/arrow1.png"
+                  "iconSrc": "/images/course-content/86/arrow1.png"
                 },
                 {
-                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow2.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Cam Levers: <ol>\r\n\t\t\t<li>Set both cam levers to \"H\"</li>\r\n\t\t\t<li>Opposite the carriage, place 10 needles in E</li>\r\n\t\t\t<li>Pass the carriage</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/images/course-content/86/arrow2.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Cam Levers: <ol>\r\n\t\t\t<li>Set both cam levers to \"H\"</li>\r\n\t\t\t<li>Opposite the carriage, place 10 needles in E</li>\r\n\t\t\t<li>Pass the carriage</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
                   "bodyHtml": "All needles EXCEPT the needles in hold position will knit.<br>This is the technique behind <a data-GlossaryId='250' class='glossaryhelp'>short row shaping/partial knitting.<i class='fa fa-question-circle-o' aria-hidden='true'></i></a>\r\n\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles Knit</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles do not knit (hold | yarn passes over these needles)</li>\r\n</ul>\r\nBecause the yarn passes over the needles in hold, this setting is also used for <a data-GlossaryId='277' class='glossaryhelp'>TUCK<i class='fa fa-question-circle-o' aria-hidden='true'></i></a> on this machine.\r\n",
-                  "iconSrc": "/challenge/images/v2/86/arrow2.png"
+                  "iconSrc": "/images/course-content/86/arrow2.png"
                 },
                 {
-                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow3.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"PLAIN\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in A-B-D-E</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/images/course-content/86/arrow3.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"PLAIN\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in A-B-D-E</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
                   "bodyHtml": "This is the setting for plain knitting (stockinette)<br><ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles Knit</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles Knit</li>\r\n</ul>\r\n",
-                  "iconSrc": "/challenge/images/v2/86/arrow3.png"
+                  "iconSrc": "/images/course-content/86/arrow3.png"
                 },
                 {
-                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow4.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"PART\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in B </li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/images/course-content/86/arrow4.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"PART\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in B </li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
                   "bodyHtml": "This is the setting for <a data-GlossaryId='251' class='glossaryhelp'>slip/skip<i class='fa fa-question-circle-o' aria-hidden='true'></i></a> and <a data-GlossaryId='355' class='glossaryhelp'>FREE PASS<i class='fa fa-question-circle' aria-hidden='true'></i></a><br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles do not knit (slip/skip)</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles Knit</li>\r\n</ul>\r\n",
-                  "iconSrc": "/challenge/images/v2/86/arrow4.png"
+                  "iconSrc": "/images/course-content/86/arrow4.png"
                 },
                 {
-                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow5.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"INTAR\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in B</li>\r\n<li><b>NO YARN in the feeder</b></li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/images/course-content/86/arrow5.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"INTAR\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in B</li>\r\n<li><b>NO YARN in the feeder</b></li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
                   "bodyHtml": "All needles will be positioned to \"D\" with the latches open.<br>This is a specific setting to prepare for  <a data-GlossaryId='352' class='glossaryhelp'>INTARSIA KNITTING <i class='fa fa-question-circle' aria-hidden='true'></i></a>. All 4 steps must be in place.",
-                  "iconSrc": "/challenge/images/v2/86/arrow5.png"
+                  "iconSrc": "/images/course-content/86/arrow5.png"
                 }
               ],
               "legacy": {
@@ -482,7 +482,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"> <span class=\"handwriting\" style=\"font-size:1.5em\">Save your back, neck and shoulders</span><br>In these videos, you'll see me pushing the carriage with one hand.   BAD!!!!  I'm reaching around the camera.<br>When you are knitting <b>use both hands</b> and push and pull alternately to move the carriage.<br>Many knitters also adjust their knitting table so they can stand while knitting.",
+              "html": "<img src=\"/images/course-content/86/lightbulb_icon_40x40.png\"> <span class=\"handwriting\" style=\"font-size:1.5em\">Save your back, neck and shoulders</span><br>In these videos, you'll see me pushing the carriage with one hand.   BAD!!!!  I'm reaching around the camera.<br>When you are knitting <b>use both hands</b> and push and pull alternately to move the carriage.<br>Many knitters also adjust their knitting table so they can stand while knitting.",
               "legacyComponentId": 6462,
               "order": 1
             },
@@ -541,44 +541,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For many more cast-on tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/44/cast-on-methods\"><b>Knit it Now Classroom: Cast on Methods</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6416,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "527016660",
               "title": null,
               "legacyComponentId": 6413,
-              "order": 2
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "VimeoJumpLinks",
-              "notes": [
-                "Unmapped legacy component type: VimeoJumpLinks"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4222",
-                "CHALLENGE_COMPONENTID": "6417",
-                "LINKTIME_1": "00:00:18",
-                "LINKTIME_2": "00:00:59",
-                "LINKTIME_3": "00:01:27",
-                "LINKTIME_4": "00:02:16",
-                "LINKTIME_5": "00:02:31",
-                "LINKTIME_6": "00:04:24",
-                "LINKTIME_7": "00:06:01",
-                "LINKTITLE_1": "Yarn on cones only? No!",
-                "LINKTITLE_2": "Thread the mast",
-                "LINKTITLE_3": "Mast Tension Dial",
-                "LINKTITLE_4": "Cast on (my method)",
-                "LINKTITLE_5": "Carriage settings (don't skip this)",
-                "LINKTITLE_6": "Use the cast-on comb",
-                "LINKTITLE_7": "Essential knitting tips"
-              },
-              "legacyComponentId": 6417,
-              "order": 3
+              "order": 1
             }
           ],
           "title": "Casting on Stitches",
@@ -593,9 +560,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>img.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\n\r\n<image src=\"/images/glossary/ewrap.jpg\"><Br>\r\nHere is a fast way to create  a closed, e-wrap cast on by using the knitting carriage.<br>This method is helpful if you want to avoid manually wrapping each needle. <br>Using the \"slip\" setting:\r\n\r\nNeedles in \"B\" position don't knit<br>\r\nA single needle in \"E\" position (next to the carriage) will wrap.\r\n<br><ol>\r\n<li>Set the cam to \"slip\"</li>\r\n\r\n<li> Carriage on the left, pull 1 needle to \"E\" Position</li>\r\n<li> Pass the carriage right (the yarn will wrap and the needle will return to \"B\" position)\r\n<li>Pass the carriage left (the needle will not knit)</li>\r\n<li>repeat for the number of needles needed</li>\r\n<li>Hang a cast on comb</li>\r\n<li>Continue knitting</li>\r\n</ol>\r\n\r\n\r\n\r\n <div class=\"videopopup\" data-videotitle=\"wrapping\" data-vimeoid=\"827046152\">\r\n\t\t<img class=\"img-thumbnail ctr\" width=\"300\" src=\"https://i.vimeocdn.com/video/1670264450-c1133bedc76a507b731867eb04304025adb9df76fb46594172b76372da996b39-d\"><br><div class=\"text-center\"><img class=\"ctr\" src=\"/challenge/images/v2/86/no-sound-icon.png\" width=\"35\"> No sound</div>\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n\r\n",
+              "html": "Here is a fast way to create  a closed, e-wrap cast on by using the knitting carriage.<br>This method is helpful if you want to avoid manually wrapping each needle. <br>Using the \"slip\" setting:\n\nNeedles in \"B\" position don't knit<br>\nA single needle in \"E\" position (next to the carriage) will wrap.\n<br><ol>\n<li>Set the cam to \"slip\"</li>\n\n<li> Carriage on the left, pull 1 needle to \"E\" Position</li>\n<li> Pass the carriage right (the yarn will wrap and the needle will return to \"B\" position)\n</li><li>Pass the carriage left (the needle will not knit)</li>\n<li>repeat for the number of needles needed</li>\n<li>Hang a cast on comb</li>\n<li>Continue knitting</li>\n</ol>\n\n\n\n <div class=\"videopopup\" data-videotitle=\"wrapping\" data-vimeoid=\"827046152\">\n\t\t<img class=\"img-thumbnail ctr\" width=\"300\" src=\"https://i.vimeocdn.com/video/1670264450-c1133bedc76a507b731867eb04304025adb9df76fb46594172b76372da996b39-d\"><br><div class=\"text-center\"><img class=\"ctr\" src=\"/images/course-content/86/no-sound-icon.png\" width=\"35\"> No sound</div>\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\n</div>\n\n\n\n",
               "legacyComponentId": 9511,
-              "order": 1
+              "order": 2
             }
           ],
           "title": "Automatic Cast On",
@@ -609,17 +576,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For with many more bind-off techniques, visit:<br>\r\n\t\t<a href=\"/classrooms/81/bind-off-methods\"> the Knit it Now Classroom: Bind off Methods</a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6415,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "527303259",
               "title": null,
               "legacyComponentId": 6412,
-              "order": 2
+              "order": 3
             },
             {
               "type": "migrationPending",
@@ -640,7 +601,7 @@
                 "LINKTITLE_4": "Pull stitch-through-stitch"
               },
               "legacyComponentId": 6414,
-              "order": 3
+              "order": 4
             }
           ],
           "title": "Binding Off",
@@ -666,22 +627,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t\r\n\t\tTuck is a great way to add texture and interest to your knitting.<br>\r\n\t\tWhen knitting tuck, certain needles do not knit and the working yarn travels OVER the needles out of work.\r\n\t\t<br>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Change the number of rows tucked</li>\r\n\t\t\t\t\t<li>Change the needles selected</li>\r\n\t\t\t\t\t<li>Change the number of rows between tucks</li>\r\n\t\t\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t\t\t<li>Add color</li>\r\n\t\t\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<center><img src=\"/challenge/images/v2/45/anatomy_thumbnail.jpg\"></center>\r\n\t\t\t\r\n\t\t\r\n\t\tOnce you understand how tuck stitch is created on your machine, the sky's the limit!<br>\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control TUCK:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"E\")<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PLAIN<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"H\" (hold/tuck)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t\r\n\t\tTuck is a great way to add texture and interest to your knitting.<br>\r\n\t\tWhen knitting tuck, certain needles do not knit and the working yarn travels OVER the needles out of work.\r\n\t\t<br>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Change the number of rows tucked</li>\r\n\t\t\t\t\t<li>Change the needles selected</li>\r\n\t\t\t\t\t<li>Change the number of rows between tucks</li>\r\n\t\t\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t\t\t<li>Add color</li>\r\n\t\t\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<center><img src=\"/images/course-content/86/anatomy_thumbnail.jpg\"></center>\r\n\t\t\t\r\n\t\t\r\n\t\tOnce you understand how tuck stitch is created on your machine, the sky's the limit!<br>\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control TUCK:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"E\")<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PLAIN<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"H\" (hold/tuck)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
               "legacyComponentId": 6432,
               "order": 1
-            },
-            {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For tuck inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/91/tuck-talk\"><b>Knit it Now Classroom: Tuck Talk</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6422,
-              "order": 2
             },
             {
               "type": "video",
               "vimeoId": "527476073",
               "title": null,
               "legacyComponentId": 6418,
-              "order": 3
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -704,7 +659,7 @@
                 "LINKTITLE_5": "Use a Cheat Sheet"
               },
               "legacyComponentId": 6423,
-              "order": 4
+              "order": 3
             }
           ],
           "title": "About Tuck Stitch",
@@ -719,43 +674,43 @@
           "components": [
             {
               "type": "richText",
-              "html": "Check out the <a href=\"/knit/stitchlibrary.cfm\" target=\"_blank\">Knit it Now Stitch Library</a> for Tuck and Tuck lace Inspiration!  Here are a few samples:<br>",
+              "html": "Check out the <a href=\"https://knititnow.com/stitch/\" target=\"_blank\">Knit it Now Stitch Library</a> for Tuck and Tuck lace Inspiration!  Here are a few samples:<br>",
               "legacyComponentId": 6420,
-              "order": 1
+              "order": 4
             },
             {
               "type": "imageGallery",
               "slides": [
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck2.jpg",
+                  "src": "/images/course-content/86/tuck2.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck3.jpg",
+                  "src": "/images/course-content/86/tuck3.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck4.jpg",
+                  "src": "/images/course-content/86/tuck4.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck5.jpg",
+                  "src": "/images/course-content/86/tuck5.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck1.jpg",
+                  "src": "/images/course-content/86/tuck1.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck6.jpg",
+                  "src": "/images/course-content/86/tuck6.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck7.jpg",
+                  "src": "/images/course-content/86/tuck7.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/tuck8.jpg",
+                  "src": "/images/course-content/86/tuck8.jpg",
                   "caption": null
                 }
               ],
@@ -764,7 +719,15 @@
                 "playAudio": "1"
               },
               "legacyComponentId": 6421,
-              "order": 2
+              "order": 5
+            },
+            {
+              "type": "image",
+              "src": "",
+              "alt": "",
+              "caption": "Caption text",
+              "legacyComponentId": 9536,
+              "order": 6
             }
           ],
           "title": "Tuck Inspiration",
@@ -790,22 +753,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n.col-margin-20px-left{\r\npadding-left:20px;\r\n}\r\n</style>\r\n\r\n\r\n\t\r\n\t\tSlip is a great way to add texture and interest to your knitting.<br>\r\n\t\tWhen knitting slip, certain needles do not knit and the working yarn travels UNDER the needles out of work.\r\n\t\t<br>\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Change the number of rows slipped</li>\r\n\t\t\t\t\t<li>Change the needles selected</li>\r\n\t\t\t\t\t<li>Change the number of rows between slip rows</li>\r\n\t\t\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t\t\t<li>Add color</li>\r\n\t\t\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<center>\t<img src=\"/challenge/images/v2/86/taitexma_slip.jpg\"></center>\r\n\t\t\t\r\n\t\t\r\n\t\tOnce you understand how tuck stitch is created on your machine, the sky's the limit!<br>\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control SLIP:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\")<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-xs-12margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PART<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n.col-margin-20px-left{\r\npadding-left:20px;\r\n}\r\n</style>\r\n\r\n\r\n\t\r\n\t\tSlip is a great way to add texture and interest to your knitting.<br>\r\n\t\tWhen knitting slip, certain needles do not knit and the working yarn travels UNDER the needles out of work.\r\n\t\t<br>\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Change the number of rows slipped</li>\r\n\t\t\t\t\t<li>Change the needles selected</li>\r\n\t\t\t\t\t<li>Change the number of rows between slip rows</li>\r\n\t\t\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t\t\t<li>Add color</li>\r\n\t\t\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<center>\t<img src=\"/images/course-content/86/taitexma_slip.jpg\"></center>\r\n\t\t\t\r\n\t\t\r\n\t\tOnce you understand how tuck stitch is created on your machine, the sky's the limit!<br>\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control SLIP:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\")<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-xs-12margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PART<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
               "legacyComponentId": 6433,
               "order": 1
-            },
-            {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For slip inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/118/slip-stitch\"><b>Knit it Now Classroom: Slip Stitch</b></a>\r\n\t</div>\r\n",
-              "legacyComponentId": 6437,
-              "order": 2
             },
             {
               "type": "video",
               "vimeoId": "527924763",
               "title": null,
               "legacyComponentId": 6435,
-              "order": 3
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -828,7 +785,7 @@
                 "TYPEOF": "VimeoJumpLinks"
               },
               "legacyComponentId": 6436,
-              "order": 4
+              "order": 3
             }
           ],
           "title": "About Slip (Skip) Stitch",
@@ -843,35 +800,35 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\n<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/7/slip-stitch\">Slip</a> and <a href=\"/knit/stitchlibrary/8/multi-color-slip\">Multi-Color Slip Stitch</a> inspiration!<br>",
+              "html": "\n\n<br>\nCheck out the Knit it Now Stitch Library for <a href=\"https://knititnow.com/stitch/\">Slip</a> and <a href=\"https://knititnow.com/stitch/\">Multi-Color Slip Stitch</a> inspiration!<br>",
               "legacyComponentId": 6426,
-              "order": 1
+              "order": 4
             },
             {
               "type": "imageGallery",
               "slides": [
                 {
-                  "src": "/challenge/images/v2/86/v2/86/415slip.jpg",
+                  "src": "/images/course-content/86/415slip.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/kin0319_3.jpg",
+                  "src": "/images/course-content/86/kin0319_3.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/KIN406_slip.jpg",
+                  "src": "/images/course-content/86/KIN406_slip.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/KIN454_Slip.jpg",
+                  "src": "/images/course-content/86/KIN454_Slip.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/kin_422_slip.jpg",
+                  "src": "/images/course-content/86/kin_422_slip.jpg",
                   "caption": null
                 },
                 {
-                  "src": "/challenge/images/v2/86/v2/86/thumb_KIN442_Slip1.jpg",
+                  "src": "/images/course-content/86/thumb_KIN442_Slip1.jpg",
                   "caption": null
                 }
               ],
@@ -880,7 +837,7 @@
                 "playAudio": "1"
               },
               "legacyComponentId": 6425,
-              "order": 2
+              "order": 5
             }
           ],
           "title": "Slip Inspiration",
@@ -897,14 +854,14 @@
               "type": "richText",
               "html": "Since this machine has only 1 cam setting for slip (part) to work I-cord or circular knitting means flipping the cam lever from Part to Plain with every pass of the carrriage.<br>\r\nThis can get tedious.  Explore a work around, by putting needles into D or E position.",
               "legacyComponentId": 9162,
-              "order": 1
+              "order": 6
             },
             {
               "type": "video",
               "vimeoId": "767093877",
               "title": null,
               "legacyComponentId": 9161,
-              "order": 2
+              "order": 7
             }
           ],
           "title": "i-Cord and Slip",
@@ -930,22 +887,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\t.col-margin-20px-left{\r\n\t\tpadding-left:20px;\r\n\t}\r\n</style>\r\n\r\n\r\n\t\r\n\t\tAlso called \"Picture Knitting\", Intarsia is a technique that allows color changes in the middle of the row without having floats across the back of the knitting.\r\n\t\t<br>\r\n\t\t\t<a href=\"/classrooms/191/intarsia\"><img class=\"img-thumbnail\" src=\"/images/glossary/intarsia_sample2.jpg\" width=\"300\"></a> \r\n\t\t\r\n\t\t<span class=\"handwriting\" style=\"font-size:2em\">Once you understand how Intarsia is created on your machine, the sky's the limit!</span><br>\r\n\r\n\r\n\t\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control INTARSIA:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\") <br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>INTAR<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t\t\r\n\r\n<hr class=\"style13\">\r\n",
+              "html": "<style>\n\t.circle {\n\t\twidth: 25px;\n\t\theight: 25px;\n\t\tborder-radius: 50%;\n\t\tbox-sizing: border-box;\n\t\ttext-align: center;\n\t\tdisplay: inline-block;\n\t\tline-height: 25px;\n\t\tbackground-color: #9E2065;\n\t}\n\n\t.circle a {\n\t\ttext-decoration: none;\n\t\tcolor: #fff;\n\t\tfont-size: 16px;\n\t}\n\n\t.container-border {\n\t\tborder: 1px solid #ccc;\n\t\tborder-radius: 15px;\n\t\tpadding-top: 20px;\n\t\tpadding-right: 20px;\n\t\tpadding-bottom: 20px;\n\t\tpadding-left: 50px;\n\t}\n\n\t.abc {\n\t\tfont-size: 200%;\n\t\tfont-weight: bold;\n\t}\n\n\t.def {\n\t\tfont-size: 150%;\n\t\tfont-weight: bold;\n\t}\n\n\thr.style13 {\n\t\theight: 10px;\n\t\tborder: 0;\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\n\t}\n\t.col-margin-20px-left{\n\t\tpadding-left:20px;\n\t}\n</style>\n\n\n\t\n\t\tAlso called \"Picture Knitting\", Intarsia is a technique that allows color changes in the middle of the row without having floats across the back of the knitting.\n\t\t<br><br><span style=\"font-size: 15.3px;\">Once you understand how Intarsia is created on your machine, the sky's the limit!</span><div><br>\n\t\t\t<a href=\"/classrooms/191/intarsia\"><img class=\"img-thumbnail\" src=\"/images/glossary/intarsia_sample2.jpg\" width=\"300\"></a>&nbsp;<br>\n\n\n\t\n\t<div class=\"container-border\">\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control INTARSIA:</span><br></center>\n\n\t\t\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\") <br></div>\n\t\t\n\n\t\t\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>INTAR<br></div>\n\t\t\n\n\t\t\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\n\t\t\t</div>\n\t\t\n\t</div>\n\n\t\t\n\n<hr class=\"style13\">\n</div>",
               "legacyComponentId": 6445,
               "order": 1
-            },
-            {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For intarsia inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=/classrooms/191/intarsia\"><b>Knit it Now Classroom: Intarsia</b></a>\r\n\t</div>\r\n",
-              "legacyComponentId": 6447,
-              "order": 2
             },
             {
               "type": "video",
               "vimeoId": "528316951",
               "title": null,
               "legacyComponentId": 6446,
-              "order": 3
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -970,7 +921,7 @@
                 "TYPEOF": "VimeoJumpLinks"
               },
               "legacyComponentId": 6448,
-              "order": 4
+              "order": 3
             }
           ],
           "title": "About Intarsia",
@@ -996,13 +947,13 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\t.col-margin-20px-left{\r\n\t\tpadding-left:20px;\r\n\t}\r\n</style>\r\n\r\n\t\r\n\t\tKnit 2 strands of yarn together and let the machine position them so you view one color on one side of the knitting<br> and the 2nd color on the other side of the knitting.<br>\r\n\t\t\t<div class=\"text-center\">\r\n\r\n\t\t\t\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>When choosing the yarn for plaiting, remember both strands are knitting at the same time. The combined strands must fit in the hooks of the needles. This technique is best used with a thinner yarn than you would normally choose for this machine.</li><br>\r\n\t\t\t\t\t<li>Key to plaiting is positioning the yarns correctly in the yarn feeder</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\r\n\t\t<br>\r\n\t\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">Settings for Plaiting:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> B-C-D<br></div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PLAIN<br></div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\t.col-margin-20px-left{\r\n\t\tpadding-left:20px;\r\n\t}\r\n</style>\r\n\r\n\t\r\n\t\tKnit 2 strands of yarn together and let the machine position them so you view one color on one side of the knitting<br> and the 2nd color on the other side of the knitting.<br>\r\n\t\t\t<div class=\"text-center\">\r\n\r\n\t\t\t\t<img src=\"/images/course-content/86/lightbulb_icon_40x40.png\">\r\n\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>When choosing the yarn for plaiting, remember both strands are knitting at the same time. The combined strands must fit in the hooks of the needles. This technique is best used with a thinner yarn than you would normally choose for this machine.</li><br>\r\n\t\t\t\t\t<li>Key to plaiting is positioning the yarns correctly in the yarn feeder</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\r\n\t\t<br>\r\n\t\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">Settings for Plaiting:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> B-C-D<br></div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PLAIN<br></div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n",
               "legacyComponentId": 6438,
               "order": 1
             },
             {
               "type": "richText",
-              "html": "<style>\r\n\r\nimg.mine {\r\n  border-radius:50%;\r\n  border:solid #A7A9AC 2px ;\r\n  padding: 3px;\r\n}\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n\t\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/thread_carriage_gif.gif\">\r\n\r\n\t\t\t<figcaption align=\"center\"><br>Place the plaiting yarn in the back (plaiting) slot and the main yarn in the front (normal) yarn feeder</figcaption>\r\n\t\t</figure>\r\n\t\r\n\t\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/plaiting_gif.gif\">\r\n\t\t\t<figcaption align=\"center\"><br>Switch the yarns to see the results</figcaption>\r\n\t\t</figure>\r\n\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\t<img class=\"img-circle mine\" src=\"/challenge/images/v2/86/plaiting1.jpg\">\r\n\t<img class=\"img-circle mine\" src=\"/challenge/images/v2/86/plaiting2.jpg\">\r\n\r\n",
+              "html": "<style>\r\n\r\nimg.mine {\r\n  border-radius:50%;\r\n  border:solid #A7A9AC 2px ;\r\n  padding: 3px;\r\n}\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n\t\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/images/course-content/86/thread_carriage_gif.gif\">\r\n\r\n\t\t\t<figcaption align=\"center\"><br>Place the plaiting yarn in the back (plaiting) slot and the main yarn in the front (normal) yarn feeder</figcaption>\r\n\t\t</figure>\r\n\t\r\n\t\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/images/course-content/86/plaiting_gif.gif\">\r\n\t\t\t<figcaption align=\"center\"><br>Switch the yarns to see the results</figcaption>\r\n\t\t</figure>\r\n\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\t<img class=\"img-circle mine\" src=\"/images/course-content/86/plaiting1.jpg\">\r\n\t<img class=\"img-circle mine\" src=\"/images/course-content/86/plaiting2.jpg\">\r\n\r\n",
               "legacyComponentId": 6427,
               "order": 2
             }
@@ -1127,7 +1078,7 @@
                 "IMAGE_HEIGHT": "716.77778",
                 "IMAGE_WIDTH": "999.77778",
                 "SECONDDIV": "padding-bottom: 71.69370977618647%",
-                "SPOTT_IMAGE": "/challenge/images/v2/86/tools3.jpg",
+                "SPOTT_IMAGE": "/images/course-content/86/tools3.jpg",
                 "SPOT_ACTIONID_1": "384",
                 "SPOT_ACTIONID_10": "249",
                 "SPOT_ACTIONID_11": "8284",
@@ -1342,7 +1293,7 @@
                 "IMAGE_HEIGHT": "570.77778",
                 "IMAGE_WIDTH": "999.77778",
                 "SECONDDIV": "padding-bottom: 57.09046464305298%",
-                "SPOTT_IMAGE": "/challenge/images/v2/86/ribber_carraige21.jpg",
+                "SPOTT_IMAGE": "/images/course-content/86/ribber_carraige21.jpg",
                 "SPOT_ACTIONID_1": "529529046",
                 "SPOT_ACTIONID_2": "8288",
                 "SPOT_ACTIONID_3": "203",
@@ -1404,9 +1355,10 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\t<br>Racking refers to the position of the ribber needles in relation to the main bed needles.\r\n\t<img src=\"https://www.knititnow.com/images/glossary/racking.jpg\" width=\"300\">\r\n\r\n",
+              "html": "\n\t<br>Racking refers to the position of the ribber needles in relation to the main bed needles.\n\n\n",
               "legacyComponentId": 6485,
-              "order": 1
+              "order": 1,
+              "layoutRole": "textVideoLeft"
             },
             {
               "type": "video",
@@ -1428,7 +1380,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n\r\n\t<div class=\"container-border\">\r\n\r\n\r\n\t\t<img src=\"/challenge/images/v2/86/adjust_ribber1.jpg\">\r\n\r\n\t</div>\r\n\t<div class=\"container-border\">\r\n\r\n\t\t<img src=\"/challenge/images/v2/86/adjust_ribber1a.jpg\">\r\n\r\n\t</div>\r\n\r\n\r\n\t<div class=\"container-border\"><img src=\"/challenge/images/v2/86/adjust_ribber2.jpg\"></div>\r\n\r\n",
+              "html": "<style>\n\n  .ribber-images {\n    display: flex;\n    gap: 12px;\n    align-items: flex-start;\n  }\n\n  .ribber-images img {\n    width: calc((100% - 24px) / 3);\n    height: auto;\n    display: block;\n  }\n</style>\n\n\n<div class=\"ribber-images\">\n  <img src=\"/images/course-content/86/adjust_ribber1.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/images/course-content/86/adjust_ribber1a.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/images/course-content/86/adjust_ribber2.jpg\" alt=\"Adjusting the ribber\">\n</div>",
               "legacyComponentId": 6534,
               "order": 3
             },
@@ -1531,14 +1483,14 @@
               "type": "richText",
               "html": "Hold on the ribber if this machine is different from other machines.  There is no hold lever or button on the ribber.<br>Needles in \"E\" position are AUTOMATICALLY held.  Manually push them back to work or use the trick in this video to get held needles back to working position.<br>",
               "legacyComponentId": 6531,
-              "order": 1
+              "order": 3
             },
             {
               "type": "video",
               "vimeoId": "568580581",
               "title": null,
               "legacyComponentId": 6530,
-              "order": 2
+              "order": 4
             }
           ],
           "title": "Hold  Setting",
@@ -1552,17 +1504,11 @@
         {
           "components": [
             {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For tuck inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/path/328/dust-off-that-ribber\"><b>Knit it Now Classrooms: Ribbers</b></a>\r\n\t</div>\r\n\r\n",
-              "legacyComponentId": 6465,
-              "order": 1
-            },
-            {
               "type": "video",
               "vimeoId": "530087616",
               "title": null,
               "legacyComponentId": 6463,
-              "order": 2
+              "order": 5
             },
             {
               "type": "migrationPending",
@@ -1587,7 +1533,7 @@
                 "TYPEOF": "VimeoJumpLinks"
               },
               "legacyComponentId": 6464,
-              "order": 3
+              "order": 6
             }
           ],
           "title": "Full Needle Rib (FNR)",
@@ -1604,20 +1550,20 @@
               "type": "richText",
               "html": "With English Rib, (Half-Fisherman Rib) one needlebed tucks every other row.  ",
               "legacyComponentId": 7917,
-              "order": 1
+              "order": 7
             },
             {
               "type": "video",
               "vimeoId": "530337447",
               "title": null,
               "legacyComponentId": 6466,
-              "order": 2
+              "order": 8
             },
             {
               "type": "richText",
-              "html": "<b>English Rib Carriage Settings:  Tuck on the ribber to the RIGHT</b><br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/1ribber_tuck.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/1main_plain.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "html": "<b>English Rib Carriage Settings:  Tuck on the ribber to the RIGHT</b><br>\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/86/1ribber_tuck.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/86/1main_plain.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
               "legacyComponentId": 6467,
-              "order": 3
+              "order": 9
             }
           ],
           "title": "English Rib",
@@ -1634,14 +1580,14 @@
               "type": "richText",
               "html": "Alternating tuck on each needlebed produces Fisherman Rib.  Working this stitch pattern on this machine is a little different than other machines, so watch this video to make sure you understand this difference before trying this technique.<br>",
               "legacyComponentId": 7918,
-              "order": 1
+              "order": 10
             },
             {
               "type": "video",
               "vimeoId": "664914333",
               "title": null,
               "legacyComponentId": 7916,
-              "order": 2
+              "order": 11
             }
           ],
           "title": "Fisherman Rib",
@@ -1656,16 +1602,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\tWith the ribber, you can set your machine to knit in the round and eliminate seaming tubular pieces. Yes, there are some limitations, but this technique is very useful for a number of applications.\r\n\t\t<ul>\r\n\t\t\t<li>\r\n\t\t\t\tWhat about quickly knitting hats and caps without a seam?</li>\r\n\t\t\t<li>Knit socks in the round</li>\r\n\t\t\t<li>You can even knit the body of a plain garment to the armholes, then split the fronts and backs and knit them on the single bed, eliminating the side seams</li>\r\n\t\t</ul>\r\n\r\n\t\t<a href=\"#steps\" data-toggle=\"collapse\"><b>Steps for Circular Knitting on the TH160</b> <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></a>\r\n\t\t<div id=\"steps\" class=\"collapse hidden-print\">\r\n\t\t\t<ol>\r\n\t\t\t\t<li>Cast on as for full needle rib:\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Ribber set to Half Pitch \"H\"</li>\r\n\t\t\t\t\t\t<li>All needles in work</li>\r\n\t\t\t\t\t\t<li>Zig Zag with Ravel cord - right to left (end with the carriage on the left)*</li>\r\n\t\t\t\t\t\t<li>Hang the Cast On Comb and weights</li>\r\n\t\t\t\t\t\t<li>Change to main yarn </li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 1 (carriage on the left)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to plain knitting</li>\r\n\t\t\t\t\t\t<li>Ribber (Tuck lever \"R\"  AND right Cam Lever \"P-R\")\r\n\t\t\t\t\t\t<li>Knit right <em>(All needles on the main bed knit only)</em>\r\n<span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/challenge/images/v2/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></span>\r\n\r\n\r\n\r\n\r\n</li>\r\n\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 2 (carriage on the right)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to slip (part)</li>\r\n\t\t\t\t\t\t<li>Ribber set to knit to the left (Tuck lever \"R\"  AND left Cam Lever \"N\") <span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/challenge/images/v2/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></li>\r\n\t\t\t\t\t\t<li>Knit Left <em>(All needles on the ribber knit only)</em></li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t</ol>\r\n\t\t\tRepeat these 2 rows alternating the main bed part button on every other row<br>\r\n\t\t\t<b> Note that the only setting change is the main bed \"part\" button every other row. The ribber setting remains the same for the entire pattern</br><br>\r\n\t\t\t\t*Also note that this creates an open cast on. Other steps need to be taken to create a closed cast on and to bind off\r\n\t\t</div>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/images/glossary/tubular_knitting.jpg\">\r\n\r\n<br>\r\n",
+              "html": "\r\n\tWith the ribber, you can set your machine to knit in the round and eliminate seaming tubular pieces. Yes, there are some limitations, but this technique is very useful for a number of applications.\r\n\t\t<ul>\r\n\t\t\t<li>\r\n\t\t\t\tWhat about quickly knitting hats and caps without a seam?</li>\r\n\t\t\t<li>Knit socks in the round</li>\r\n\t\t\t<li>You can even knit the body of a plain garment to the armholes, then split the fronts and backs and knit them on the single bed, eliminating the side seams</li>\r\n\t\t</ul>\r\n\r\n\t\t<a href=\"#steps\" data-toggle=\"collapse\"><b>Steps for Circular Knitting on the TH160</b> <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></a>\r\n\t\t<div id=\"steps\" class=\"collapse hidden-print\">\r\n\t\t\t<ol>\r\n\t\t\t\t<li>Cast on as for full needle rib:\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Ribber set to Half Pitch \"H\"</li>\r\n\t\t\t\t\t\t<li>All needles in work</li>\r\n\t\t\t\t\t\t<li>Zig Zag with Ravel cord - right to left (end with the carriage on the left)*</li>\r\n\t\t\t\t\t\t<li>Hang the Cast On Comb and weights</li>\r\n\t\t\t\t\t\t<li>Change to main yarn </li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 1 (carriage on the left)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to plain knitting</li>\r\n\t\t\t\t\t\t<li>Ribber (Tuck lever \"R\"  AND right Cam Lever \"P-R\")\r\n\t\t\t\t\t\t<li>Knit right <em>(All needles on the main bed knit only)</em>\r\n<span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/images/course-content/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></span>\r\n\r\n\r\n\r\n\r\n</li>\r\n\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 2 (carriage on the right)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to slip (part)</li>\r\n\t\t\t\t\t\t<li>Ribber set to knit to the left (Tuck lever \"R\"  AND left Cam Lever \"N\") <span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/images/course-content/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></li>\r\n\t\t\t\t\t\t<li>Knit Left <em>(All needles on the ribber knit only)</em></li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t</ol>\r\n\t\t\tRepeat these 2 rows alternating the main bed part button on every other row<br>\r\n\t\t\t<b> Note that the only setting change is the main bed \"part\" button every other row. The ribber setting remains the same for the entire pattern</br><br>\r\n\t\t\t\t*Also note that this creates an open cast on. Other steps need to be taken to create a closed cast on and to bind off\r\n\t\t</div>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/images/glossary/tubular_knitting.jpg\">\r\n\r\n<br>\r\n",
               "legacyComponentId": 6468,
-              "order": 1
+              "order": 12
             },
             {
               "type": "video",
               "vimeoId": "945903166",
               "title": null,
               "legacyComponentId": 6469,
-              "order": 2
+              "order": 13
             }
           ],
           "title": "Circular (Tubular) Knitting",

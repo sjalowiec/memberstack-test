@@ -2,7 +2,7 @@ import path from "path";
 
 import {
   formatDatabaseTarget,
-  getWatsonDatabaseUrl,
+  getWatsonAdminDatabaseUrl,
   loadEnvFile,
 } from "../src/lib/watson/env";
 import {
@@ -55,7 +55,7 @@ async function main(): Promise<number> {
   }
 
   log("Resolving database URL...");
-  const databaseUrl = getWatsonDatabaseUrl();
+  const databaseUrl = getWatsonAdminDatabaseUrl();
   log(`Database target: ${formatDatabaseTarget(databaseUrl)}`);
 
   if (schemaOnly) {

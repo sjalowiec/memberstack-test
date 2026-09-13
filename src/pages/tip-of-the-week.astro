@@ -5,9 +5,11 @@
  * dev-only fallback when TIP_OF_THE_WEEK_DEV_JSON=true.
  */
 import Layout from "../layouts/Layout.astro";
+import GlossaryTooltip from "../components/common/GlossaryTooltip.astro";
 import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
 import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
 import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
+import { tipOfTheWeekIntroParts } from "../lib/tipOfTheWeek/introGlossary";
 import { tipPublicCta } from "../lib/tipOfTheWeek/map";
 import {
   loadPublicTipOfTheWeekPage,
@@ -55,6 +57,10 @@ const pageTitle = tip?.title ?? "Tip of the Week";
 const pageDescription =
   introPlain ||
   "A free weekly knitting lesson from the Knit It Now Learning Library.";
+const introParts =
+  tip && !introHasRichMarkup
+    ? tipOfTheWeekIntroParts(introPlain || tip.intro, tip.introGlossarySlug)
+    : [];
 const cta = tipPublicCta(tip);
 ---
 
@@ -107,7 +113,17 @@ const cta = tipPublicCta(tip);
               {introHasRichMarkup ? (
                 <div class="totw-lede" set:html={introHtml} />
               ) : (
-                <p class="totw-lede">{introPlain}</p>
+                <p class="totw-lede">
+                  {
+                    introParts.map((part) =>
+                      part.type === "glossary" ? (
+                        <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+                      ) : (
+                        part.text
+                      )
+                    )
+                  }
+                </p>
               )}
               <WeeklyTipSignup variant="inline" />
             </div>

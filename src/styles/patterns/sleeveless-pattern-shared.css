@@ -717,7 +717,9 @@
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled,
-  .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled:hover {
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled:hover,
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action[aria-disabled="true"],
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action[aria-disabled="true"]:hover {
     color: #9ca3af;
     background: #f9fafb;
     border-color: #e5e7eb;
@@ -1131,6 +1133,15 @@
     border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #d1d5db);
     background: #fff;
     box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
+  }
+
+  /* Shared tab container owns chrome; keep these classes only as family hooks. */
+  #pattern-content .sleeveless-back-diagram-panel.pattern-diagram-tabs {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   #pattern-content .drop-shoulder-sleeve-construction-wrap {

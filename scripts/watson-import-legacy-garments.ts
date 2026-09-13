@@ -5,7 +5,7 @@
  */
 import path from "node:path";
 
-import { getWatsonDatabaseUrl, loadEnvFile, formatDatabaseTarget } from "../src/lib/watson/env";
+import { getWatsonAdminDatabaseUrl, loadEnvFile, formatDatabaseTarget } from "../src/lib/watson/env";
 import {
   applyWatsonLegacyGarments,
   dryRunWatsonLegacyGarments,
@@ -51,7 +51,7 @@ async function main(): Promise<number> {
     return report.rejectedRowCount > 0 ? 1 : 0;
   }
 
-  const databaseUrl = getWatsonDatabaseUrl();
+  const databaseUrl = getWatsonAdminDatabaseUrl();
   const databaseTarget = formatDatabaseTarget(databaseUrl);
   console.log(
     `[watson:import-legacy-garments] APPLY — writing to Watson Postgres: ${databaseTarget}`,

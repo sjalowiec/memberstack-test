@@ -5,6 +5,7 @@ import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
 import AccountPasswordResetModal from "../components/auth/AccountPasswordResetModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
+import KinImageModal from "../components/common/KinImageModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
@@ -23,6 +24,11 @@ interface Props {
    * Used by pattern workspaces so the pill never mounts (no flash).
    */
   hideMembershipCorner?: boolean;
+  /**
+   * Help Hub admin preview: document base so CSS/images resolve when the HTML
+   * is written into a same-origin about:blank tab.
+   */
+  documentBaseHref?: string;
 }
 
 const {
@@ -32,6 +38,7 @@ const {
   skipGlobalPinterest = false,
   toolPrintTitle,
   hideMembershipCorner = false,
+  documentBaseHref = "",
 } = Astro.props;
 
 const hostname =
@@ -45,6 +52,8 @@ const pathname =
     : "";
 
 const isWatsonPage = pathname === "/watson" || pathname.startsWith("/watson/");
+const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
+const useWatsonFavicon = isWatsonPage || isAdminPage;
 
 const isProduction =
   (import.meta.env.PUBLIC_SITE_ENV || "").toLowerCase() === "production";
@@ -52,6 +61,7 @@ const isProduction =
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    {documentBaseHref ? <base href={documentBaseHref} /> : null}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- CRITICAL: Inline typography to prevent Astro CSS bundler reordering issues -->
@@ -73,7 +83,7 @@ const isProduction =
     <RobotsMeta />
 
     <!-- Favicons -->
-    {isWatsonPage ? (
+    {useWatsonFavicon ? (
       <link rel="icon" type="image/svg+xml" href="/watson-favicon.svg" />
     ) : (
       <>
@@ -240,14 +250,37 @@ const isProduction =
     store `_ms_mid` / `_ms_cookie` on `.knititnow.com`. This assumes those hosts are listed
     in the Memberstack Application Domains dashboard. memberstackConfig must be defined
     before the CDN script (var, so it is also window.memberstackConfig).
+
+    Origin-scoped leftovers (localStorage / host-only cookies) still win after that
+    switch, so drop them on Knit It Now hosts before Memberstack boots. Keep the
+    `.knititnow.com` cookie; that is the shared session.
 -->
 <script is:inline>
   var memberstackConfig = {
     useCookies: true,
     setCookieOnRootDomain: true,
   };
+  (function () {
+    var host = (location.hostname || "").toLowerCase();
+    if (host !== "knititnow.com" && host.slice(-14) !== ".knititnow.com") return;
+    var names = ["_ms-mid", "_ms_mid", "_ms_cookie"];
+    for (var i = 0; i < names.length; i++) {
+      document.cookie = names[i] + "=; Max-Age=0; Path=/";
+    }
+    function clearMsStorage(storage) {
+      if (!storage) return;
+      var keys = [];
+      for (var j = 0; j < storage.length; j++) {
+        var key = storage.key(j);
+        if (key && /^(?:_?ms[-_]|memberstack)/i.test(key)) keys.push(key);
+      }
+      for (var k = 0; k < keys.length; k++) storage.removeItem(keys[k]);
+    }
+    try { clearMsStorage(localStorage); } catch (e) {}
+    try { clearMsStorage(sessionStorage); } catch (e2) {}
+  })();
 </script>
-<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
+<script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" data-memberstack-use-cookies src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
 
 
   
@@ -277,6 +310,7 @@ const isProduction =
     <ContactModal />
     <AccountPasswordResetModal />
     <KinCatalogVideoModal />
+    <KinImageModal />
     {!hideMembershipCorner && <MembershipCornerControl />}
 
     <script>
@@ -481,6 +515,10 @@ const isProduction =
         logMemberAccessDebug,
       } from "../lib/memberAccess";
       import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
+      import {
+        localMemberPreviewBypassIsOn,
+        resolveSharedMemberAccessSnapshot,
+      } from "../lib/localMemberPreviewBypass";
 
       // Wait for the Memberstack SDK to be ready instead of bailing on the first
       // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
@@ -512,12 +550,21 @@ const isProduction =
         const rawKinAccess = member?.customFields?.["kin-access"];
         await ensureLegacyPaidThroughContext(res);
         const memberHasAccess = hasMemberAccess(res);
+        const viewerAccessState = getViewerAccessState(res);
+        const bypassOn = localMemberPreviewBypassIsOn();
+        const accessDetail = resolveSharedMemberAccessSnapshot({
+          memberHasAccess,
+          viewerAccessState,
+          bypassOn,
+        });
 
         // Detailed log first (always runs, even when access is false) so we can
         // see activePlanIds vs the global allow list and which gate decided.
         logMemberAccessDebug("BaseLayout.ms-logged-in", res, {
           rawKinAccess,
-          viewerAccessState: getViewerAccessState(res),
+          viewerAccessState,
+          localMemberPreviewBypass: bypassOn,
+          snapshotHasMemberAccess: accessDetail.hasMemberAccess,
         });
 
         // Temporary: raw plan connections (all statuses) so we can see the exact
@@ -535,7 +582,7 @@ const isProduction =
           rawPlanConnections,
         });
 
-        if (memberHasAccess) {
+        if (accessDetail.hasMemberAccess) {
           document.body.classList.add("ms-logged-in");
         } else {
           document.body.classList.remove("ms-logged-in");
@@ -544,15 +591,12 @@ const isProduction =
         console.log("[KIN member access] BaseLayout.ms-logged-in applied", {
           gate: "BaseLayout",
           msLoggedIn: document.body.classList.contains("ms-logged-in"),
-          hasMemberAccess: memberHasAccess,
+          hasMemberAccess: accessDetail.hasMemberAccess,
+          localMemberPreviewBypass: bypassOn,
         });
 
         // Persist then notify so late-loading lesson gate can mount even if it
         // missed this event (BaseLayout often resolves before the page module).
-        const accessDetail = {
-          hasMemberAccess: memberHasAccess,
-          viewerAccessState: getViewerAccessState(res),
-        };
         window.__KIN_MEMBER_ACCESS__ = accessDetail;
         window.dispatchEvent(
           new CustomEvent("kin:member-access", { detail: accessDetail }),
@@ -574,20 +618,17 @@ const isProduction =
         if (!ms || typeof ms.on !== "function") return;
         ms.on("member.login", refreshMemberAccess);
         ms.on("member.logout", () => {
-          document.body.classList.remove("ms-logged-in");
-          window.__KIN_MEMBER_ACCESS__ = {
-            hasMemberAccess: false,
-            viewerAccessState: "loggedOut",
-          };
-          window.dispatchEvent(
-            new CustomEvent("kin:member-access", {
-              detail: window.__KIN_MEMBER_ACCESS__,
-            }),
-          );
+          // Re-run the snapshot so localhost `?member=true` stays granted after logout.
+          void applyMsLoggedIn(null);
         });
       }
 
       async function initMsLoggedIn() {
+        // Opt-in preview: write the shared snapshot immediately so late-loading
+        // gates do not wait on Memberstack. Real access still wins when it arrives.
+        if (localMemberPreviewBypassIsOn()) {
+          await applyMsLoggedIn(null);
+        }
         const res = await waitForMemberstackReady(30, 200);
         await applyMsLoggedIn(res);
         bindAuthEvents();
@@ -602,9 +643,16 @@ const isProduction =
 
     <script is:inline>
       (function () {
+        var host = String(window.location.hostname || "").toLowerCase();
+        var isLocalhostHost =
+          host === "localhost" ||
+          host === "127.0.0.1" ||
+          host === "0.0.0.0" ||
+          host === "::1" ||
+          host === "[::1]" ||
+          host.slice(-6) === ".local";
         var params = new URLSearchParams(window.location.search);
-        var localMember =
-          window.location.hostname === "localhost" && params.get("member") === "true";
+        var localMember = isLocalhostHost && params.get("member") === "true";
 
         if (!localMember) return;
 

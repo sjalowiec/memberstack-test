@@ -47,6 +47,80 @@ const {
   <GlossaryTermModal />
 </div>
 
+<script is:inline>
+  (function () {
+    function printCourseImage(src, title) {
+      if (!src) return;
+      const absoluteSrc = new URL(src, window.location.href).href;
+      const printTitle = title || "Printable image";
+      const printWindow = window.open("", "_blank", "width=1200,height=900");
+      if (!printWindow) return;
+
+      const escapedTitle = String(printTitle)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;");
+      const escapedSrc = absoluteSrc
+        .replace(/&/g, "&amp;")
+        .replace(/\"/g, "&quot;");
+
+      printWindow.document.open();
+      printWindow.document.write(
+        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\" />" +
+          "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />" +
+          "<title>" +
+          escapedTitle +
+          "</title><style>" +
+          "html,body{margin:0;padding:0;background:#fff;}" +
+          "@page{margin:0.4in;}" +
+          "img{display:block;width:100%;max-width:100%;height:auto;}" +
+          "</style></head><body>" +
+          "<img id=\"print-target\" src=\"" +
+          escapedSrc +
+          "\" alt=\"" +
+          escapedTitle +
+          "\" />" +
+          "</body></html>"
+      );
+      printWindow.document.close();
+
+      const triggerPrint = function () {
+        try {
+          printWindow.focus();
+          printWindow.print();
+        } catch (_) {
+          /* ignore */
+        }
+      };
+
+      const img = printWindow.document.getElementById("print-target");
+      if (img && img.complete) {
+        setTimeout(triggerPrint, 50);
+      } else if (img) {
+        img.addEventListener("load", function () {
+          setTimeout(triggerPrint, 50);
+        });
+        img.addEventListener("error", triggerPrint);
+      } else {
+        setTimeout(triggerPrint, 400);
+      }
+    }
+
+    document.addEventListener("click", function (event) {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest("[data-print-image]");
+      if (!(button instanceof HTMLElement)) return;
+      event.preventDefault();
+      printCourseImage(
+        button.getAttribute("data-print-image"),
+        button.getAttribute("data-print-title") || button.textContent || "Printable image"
+      );
+    });
+  })();
+</script>
+
 <style>
   .legacy-course__dev-note {
     margin: 0;

@@ -483,3 +483,53 @@
     width: 100%;
   }
 }
+
+/* Soft unusual-gauge warning (Sleeveless, Drop Shoulder, Hat) */
+.express-page .gauge-sanity-warning {
+  margin: 0.85rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #f0d58c;
+  background: #fffbeb;
+}
+
+.express-page .gauge-sanity-warning[hidden] {
+  display: none !important;
+}
+
+.express-page .gauge-sanity-warning__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #92400e;
+}
+
+.express-page .gauge-sanity-warning__body {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #7a4b12;
+}
+
+.express-page .gauge-sanity-warning__continue {
+  appearance: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #92400e;
+  background: #fff;
+  color: #92400e;
+  cursor: pointer;
+}
+
+.express-page .gauge-sanity-warning__continue:hover {
+  background: #fff7ed;
+}
+
+.express-page .gauge-sanity-warning__continue:focus-visible {
+  outline: 2px solid #92400e;
+  outline-offset: 2px;
+}

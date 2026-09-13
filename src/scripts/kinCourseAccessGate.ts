@@ -29,6 +29,7 @@ import { clearKinCourseCachePaint } from "../lib/kinCourseCacheAccess";
 import { isMemberLoggedIn, logMemberAccessDebug } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
+import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
 export type KinCourseGateViewer = "open" | "loggedInNoAccess" | "loggedOut";
@@ -158,7 +159,7 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   const access = normalizeCourseAccessLevel(gate.dataset.courseAccess, "member");
   const courseSlug = gate.dataset.courseSlug ?? null;
 
-  if (access === "free" || previewUnlockAllowed(gate) || videoDevBypass) {
+  if (access === "free" || previewUnlockAllowed(gate) || videoDevBypass || localMemberPreviewBypassIsOn()) {
     applyKinCourseGatePaint(gate, "open", "open");
     return;
   }

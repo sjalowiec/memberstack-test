@@ -1,10 +1,11 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { ADMIN_ROUTES } from "../../lib/adminRoutes";
-import lessons from "../../data/lessons.json";
-import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
+import { loadLessonsForAdmin } from "../../lib/lessons/loadLessons";
 
-const entries = Array.isArray(lessons) ? lessons : [];
+export const prerender = false;
+
+const entries = await loadLessonsForAdmin();
 
 type LessonEntry = {
   id?: number;
@@ -19,20 +20,22 @@ function lessonTitle(entry: LessonEntry): string {
 }
 
 function displayStatus(entry: LessonEntry): string {
-  if (entry.status === "draft") return "draft";
-  if (entry.status === "published") return "published";
+  if (entry.status === "draft") return "Draft";
+  if (entry.status === "published") return "Published";
+  if (entry.status === "review") return "Review";
   if (entry.status?.trim()) return entry.status.trim();
+  return "Published";
+}
+
+function statusKey(entry: LessonEntry): string {
+  const s = typeof entry.status === "string" ? entry.status.trim().toLowerCase() : "";
+  if (s === "draft" || s === "review") return s;
   return "published";
 }
 
-const publishedLessons = entries.filter(
-  (e): e is (typeof entries)[number] =>
-    Boolean(e) && (e as LessonEntry).status !== "draft"
-);
-const draftLessons = entries.filter(
-  (e): e is (typeof entries)[number] =>
-    Boolean(e) && (e as LessonEntry).status === "draft"
-);
+const publishedLessons = entries.filter((e) => statusKey(e as LessonEntry) === "published");
+const draftLessons = entries.filter((e) => statusKey(e as LessonEntry) === "draft");
+const reviewLessons = entries.filter((e) => statusKey(e as LessonEntry) === "review");
 
 const lessonSections = [
   {
@@ -44,6 +47,11 @@ const lessonSections = [
     headingId: "draft-lessons-heading",
     panelTitle: "Draft Lessons",
     items: draftLessons,
+  },
+  {
+    headingId: "review-lessons-heading",
+    panelTitle: "Needs Review",
+    items: reviewLessons,
   },
 ] as const;
 ---
@@ -108,12 +116,21 @@ const lessonSections = [
                             {displayStatus(lesson)}
                           </span>
                           {slug ? (
-                            <a
-                              class="help-hub-dash__entry-edit"
-                              href={`${ADMIN_ROUTES.lessonEdit}?slug=${encodeURIComponent(slug)}`}
-                            >
-                              Edit
-                            </a>
+                            <>
+                              <a
+                                class="help-hub-dash__entry-edit"
+                                href={`${ADMIN_ROUTES.lessonEdit}?slug=${encodeURIComponent(slug)}`}
+                              >
+                                Edit
+                              </a>
+                              <button
+                                type="button"
+                                class="help-hub-dash__entry-edit"
+                                data-lesson-preview-slug={slug}
+                              >
+                                Preview
+                              </button>
+                            </>
                           ) : (
                             <span class="help-hub-dash__entry-edit help-hub-dash__entry-edit--disabled">
                               Edit (no slug)
@@ -272,5 +289,24 @@ const lessonSections = [
       font-weight: 500;
       text-decoration: none;
     }
+
+    button.help-hub-dash__entry-edit {
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+    }
   </style>
+
+  <script>
+    import {
+      bindLessonPreviewButtons,
+      installLessonAdminBrowser,
+    } from "../../lib/lessons/adminEditorClient";
+
+    installLessonAdminBrowser();
+    bindLessonPreviewButtons();
+  </script>
 </BaseLayout>

@@ -6,10 +6,16 @@ import {
   withCourseCatalogOrders,
 } from "../../lib/coursesCatalogFreeFirst";
 
+const catalogHrefEnv = {
+  hostname: Astro.url.hostname,
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+};
+
 // Anonymous-first SSR: free courses/sections first. Active members are restored
 // to catalog order client-side after Memberstack resolves.
 const categorySections = sortCourseCatalogSectionsForViewer(
-  withCourseCatalogOrders(getCourseCatalogEntriesByCategory()),
+  withCourseCatalogOrders(getCourseCatalogEntriesByCategory(catalogHrefEnv)),
   true,
 );
 const availableCount = categorySections

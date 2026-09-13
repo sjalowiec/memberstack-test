@@ -6,11 +6,16 @@ export type LegacyCoursePublicationFields = {
   active?: boolean;
 };
 
+/** Lesson metadata fields used for per-lesson visibility. */
 export type LegacyLessonPublicationFields = {
+  /** When false, hidden from public lesson lists/routes. Omitted = visible. */
   published?: boolean;
 };
 
-/** True unless a lesson is explicitly unpublished. Omitted published = visible. */
+/**
+ * True unless a lesson is explicitly unpublished.
+ * Missing `published` defaults to visible for backward compatibility.
+ */
 export function isLegacyLessonPublished(
   lesson: LegacyLessonPublicationFields,
 ): boolean {

@@ -28,6 +28,7 @@ type TipRecord = {
   tipId: string;
   title: string;
   intro: string;
+  introGlossarySlug: string;
   videoContentId: string;
   availableFrom: string;
   availableThrough: string;
@@ -450,6 +451,7 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
   set("tipId", tip?.tipId || "");
   set("title", tip?.title || "");
   setRteCopy(form, "[data-totw-intro-rte]", tip?.intro || "");
+  set("introGlossarySlug", tip?.introGlossarySlug || "");
   set("videoContentId", tip?.videoContentId || "");
   set("availableFrom", tip?.availableFrom || "");
   set("availableThrough", tip?.availableThrough || "");
@@ -498,6 +500,7 @@ function formPayload(form: HTMLFormElement): Record<string, unknown> {
     tipId: get("tipId"),
     title: get("title"),
     intro: get("intro"),
+    introGlossarySlug: get("introGlossarySlug"),
     videoContentId: get("videoContentId"),
     availableFrom: get("availableFrom"),
     availableThrough: get("availableThrough"),

@@ -34,6 +34,7 @@ import {
 import {
   HAT_BUILDER_INCOMPLETE_MESSAGE,
   HAT_BUILDER_STEPS,
+  evaluateHatBuilderGaugeSanityGate,
   evaluateHatBuilderNeedleCapacity,
   hatBuilderChoiceFieldAdvances,
   hatBuilderStepComplete,
@@ -42,6 +43,7 @@ import {
   type HatBuilderFieldSnapshot,
   type HatBuilderSizeRow,
 } from "../lib/patterns/hat/hatBuilderValidation";
+import { hideGaugeSanityWarning, renderGaugeSanityWarning } from "../lib/patterns/gaugeSanityUi";
 import { HAT_AVAILABLE_NEEDLES_INPUT_ID } from "../lib/patterns/hat/hatAvailableNeedles";
 import { syncExpressNeedleBlockVisibility } from "../lib/patterns/expressBuilderReviewSubmit";
 import {
@@ -607,9 +609,15 @@ async function initHatBuilderPage(): Promise<void> {
   brimLengthInput?.addEventListener("change", () => onFieldChanged({ advance: true }));
   customHatLengthInput?.addEventListener("input", () => onFieldChanged());
   customHatLengthInput?.addEventListener("change", () => onFieldChanged({ advance: true }));
-  stitchGaugeInput?.addEventListener("input", () => onFieldChanged());
+  stitchGaugeInput?.addEventListener("input", () => {
+    hideGaugeSanityWarning(document);
+    onFieldChanged();
+  });
   stitchGaugeInput?.addEventListener("change", () => onFieldChanged());
-  rowGaugeInput?.addEventListener("input", () => onFieldChanged());
+  rowGaugeInput?.addEventListener("input", () => {
+    hideGaugeSanityWarning(document);
+    onFieldChanged();
+  });
   rowGaugeInput?.addEventListener("change", () => onFieldChanged());
   availableNeedlesInput?.addEventListener("input", () => onFieldChanged());
   availableNeedlesInput?.addEventListener("change", () => onFieldChanged());
@@ -694,6 +702,7 @@ async function initHatBuilderPage(): Promise<void> {
     updateFloatingLabels(nextU);
     refreshHatSizeDropdownLabels(nextU);
     refreshFitLengthLabels(nextU);
+    hideGaugeSanityWarning(document);
     onFieldChanged();
   }) as EventListener);
 
@@ -701,6 +710,25 @@ async function initHatBuilderPage(): Promise<void> {
     if (e.button !== 0) return;
     e.preventDefault();
   });
+
+  function submitHatPattern(): void {
+    if (isSubmitting || !createPatternBtn) return;
+    isSubmitting = true;
+    createPatternBtn.classList.add("button-disabled");
+    createPatternBtn.setAttribute("aria-disabled", "true");
+
+    syncCanonicalDraft();
+    const saved = readHatDraft();
+    if (!saved) {
+      isSubmitting = false;
+      updateCtaUi();
+      showFeedback(HAT_BUILDER_INCOMPLETE_MESSAGE);
+      return;
+    }
+
+    markHatGenerationActivityPending();
+    window.location.assign(HAT_SUMMARY_FROM_BUILDER_HREF);
+  }
 
   createPatternBtn?.addEventListener("click", () => {
     if (isSubmitting) return;
@@ -720,26 +748,28 @@ async function initHatBuilderPage(): Promise<void> {
           ? capacity.message
           : HAT_BUILDER_INCOMPLETE_MESSAGE;
       // Stay on builder; do not write over a previously valid draft from this click.
+      hideGaugeSanityWarning(document);
       showFeedback(message);
       focusFirstIncompleteStep(fields);
       return;
     }
 
-    isSubmitting = true;
-    createPatternBtn.classList.add("button-disabled");
-    createPatternBtn.setAttribute("aria-disabled", "true");
-
-    syncCanonicalDraft();
-    const saved = readHatDraft();
-    if (!saved) {
-      isSubmitting = false;
-      updateCtaUi();
-      showFeedback(HAT_BUILDER_INCOMPLETE_MESSAGE);
+    const sanityGate = evaluateHatBuilderGaugeSanityGate(fields, activeUnit, acknowledgedGaugeKey);
+    if (!sanityGate.proceed) {
+      maxReachable = Math.max(maxReachable, 5);
+      goToStep(5);
+      renderGaugeSanityWarning(document, sanityGate.sanity, {
+        onContinue: () => {
+          acknowledgedGaugeKey = sanityGate.acknowledgementKey;
+          hideGaugeSanityWarning(document);
+          submitHatPattern();
+        },
+      });
       return;
     }
 
-    markHatGenerationActivityPending();
-    window.location.assign(HAT_SUMMARY_FROM_BUILDER_HREF);
+    hideGaugeSanityWarning(document);
+    submitHatPattern();
   });
 
   el<HTMLButtonElement>("hat-builder-start-over")?.addEventListener("click", () => {
@@ -749,6 +779,8 @@ async function initHatBuilderPage(): Promise<void> {
       cm: { stitch: "", row: "" },
     };
     hydrateFromDraft(draft);
+    acknowledgedGaugeKey = null;
+    hideGaugeSanityWarning(document);
     openStep = 1;
     refreshAccordionUi();
     showFeedback("");

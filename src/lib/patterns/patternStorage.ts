@@ -35,6 +35,10 @@ export function buildDropShoulderBuilderNewPatternHref(): string {
   return `/patterns/drop-shoulder/builder?${SLEEVELESS_EXPRESS_NEW_SESSION_PARAM}=${SLEEVELESS_EXPRESS_NEW_SESSION_VALUE}`;
 }
 
+export function buildSidewaysCardiganBuilderNewPatternHref(): string {
+  return `/patterns/sideways-cardigan/builder?${SLEEVELESS_EXPRESS_NEW_SESSION_PARAM}=${SLEEVELESS_EXPRESS_NEW_SESSION_VALUE}`;
+}
+
 /**
  * Express-only wizard snapshot (`/patterns/sleeveless-express`).
  * Not used by the Custom builder or {@link PATTERN_STORAGE_KEY} — safe to clear without affecting shared pattern data.

@@ -13,7 +13,21 @@ export type SleevelessHelpVideoMeta = {
   title: string;
   description: string;
   jumpLinks: Array<{ label: string; seconds: number }>;
+  /** Unlisted catalog `vimeo_hash`. Used only on the player embed (`h=`). */
+  privacyHash?: string;
+  /** Catalog poster / fallback image URL. */
+  posterUrl?: string;
 };
+
+function privacyHashFromCatalogRow(row: PublicVideoRow): string | undefined {
+  const hash = typeof row.vimeo_hash === "string" ? row.vimeo_hash.trim() : "";
+  return hash && /^[a-zA-Z0-9]+$/.test(hash) ? hash : undefined;
+}
+
+function posterUrlFromCatalogRow(row: PublicVideoRow): string | undefined {
+  const url = typeof row.posterUrl === "string" ? row.posterUrl.trim() : "";
+  return url || undefined;
+}
 
 export function findPublicVideoByContentId(
   catalog: PublicVideoRow[],
@@ -40,10 +54,15 @@ export function sleevelessHelpVideoFromCatalog(
     seconds: chapter.time,
   }));
 
+  const privacyHash = privacyHashFromCatalogRow(row);
+  const posterUrl = posterUrlFromCatalogRow(row);
+
   return {
     id: vimeoId,
     title: title || "Video tutorial",
     description,
     jumpLinks,
+    ...(privacyHash ? { privacyHash } : {}),
+    ...(posterUrl ? { posterUrl } : {}),
   };
 }

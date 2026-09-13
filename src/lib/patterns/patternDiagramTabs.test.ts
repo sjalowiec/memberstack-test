@@ -340,13 +340,46 @@ describe("shared pattern diagram tabs", () => {
   });
 });
 
-describe("finished Hat pattern uses the shared diagram tabs", () => {
-  it("Hat finished pattern imports the shared tab container CSS", () => {
+describe("finished-pattern families use the shared diagram tabs", () => {
+  it("Hat, Sleeveless, and Drop Shoulder import the shared tab container CSS", () => {
     const hatPage = readFileSync(join(srcRoot, "pages/patterns/hat/pattern.astro"), "utf8");
+    const sleevelessPage = readFileSync(
+      join(srcRoot, "pages/patterns/sleeveless/pattern/index.astro"),
+      "utf8",
+    );
+    const dropShoulderPage = readFileSync(
+      join(srcRoot, "pages/patterns/drop-shoulder/pattern/index.astro"),
+      "utf8",
+    );
     expect(hatPage).toContain("pattern-diagram-tabs.css");
+    expect(sleevelessPage).toContain("pattern-diagram-tabs.css");
+    expect(dropShoulderPage).toContain("pattern-diagram-tabs.css");
+    const socksPage = readFileSync(
+      join(srcRoot, "pages/patterns/socks/pattern.astro"),
+      "utf8",
+    );
+    expect(socksPage).toContain("pattern-diagram-tabs.css");
+    expect(socksPage).toContain("data-sock-diagram-tabs-mount");
+    expect(socksPage).toContain(".pattern-diagram-shaping-help");
     expect(hatPage).toContain("Hat Dimensions");
     expect(hatPage).toContain("data-hat-diagram-tabs-mount");
     expect(sharedCss).toContain(".pattern-diagram-shaping-help__btn.kbm-btn");
+  });
+
+  it("Sleeveless and Drop Shoulder build accessible tabs and keep diagram swapping in the family script", () => {
+    const script = readFileSync(join(srcRoot, "scripts/sleevelessPatternPageShared.ts"), "utf8");
+    expect(script).toContain("buildPatternDiagramTabsShellHtml");
+    expect(script).toContain("initPatternDiagramTabs");
+    expect(script).toContain("buildSleevelessPatternDiagramTabsShellHtml");
+    expect(script).toContain("initSleevelessPatternDiagramTabs");
+    expect(script).toContain("sharedPanel: true");
+    expect(script).toContain("data-sleeveless-back-diagram-mode-btn");
+    expect(script).toContain("data-sleeveless-front-diagram-mode-btn");
+    expect(script).toContain("hydrateSleevelessBackDiagram");
+    expect(script).toContain("tryBuildLiveSleevelessFrontVNeckNotationSvg");
+    expect(script).toContain("tryBuildLiveSleevelessFrontStsRowsDiagramSvg");
+    expect(script).toContain("resolveDropShoulderBackDiagramSvg");
+    expect(script).not.toContain('role="group" aria-label="${modeToggleGroupLabel}"');
   });
 
   it("does not change Hat diagram generators or pattern math entry points", () => {
@@ -356,17 +389,5 @@ describe("finished Hat pattern uses the shared diagram tabs", () => {
     expect(pageScript).toContain("buildHatPatternDiagramSvg");
     expect(pageScript).toContain("buildHatShapingNotationDiagramSvg");
     expect(pageScript).not.toContain("buildHatJapaneseNotationDiagramSvg");
-  });
-});
-
-describe("finished Socks pattern uses the shared diagram tabs", () => {
-  it("Socks finished pattern imports the shared tab container CSS", () => {
-    const socksPage = readFileSync(
-      join(srcRoot, "pages/patterns/socks/pattern.astro"),
-      "utf8",
-    );
-    expect(socksPage).toContain("pattern-diagram-tabs.css");
-    expect(socksPage).toContain("data-sock-diagram-tabs-mount");
-    expect(socksPage).toContain(".pattern-diagram-shaping-help");
   });
 });

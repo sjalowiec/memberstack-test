@@ -29,7 +29,7 @@ const {
 const showContentNav = contentNavEntries.length > 1;
 const loaderOptions = { includeDrafts };
 const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
-const lessons = course ? getSortedLessonsForCourse(course) : [];
+const lessons = course ? getSortedLessonsForCourse(course, loaderOptions) : [];
 const allCourses = getLegacyCourses(loaderOptions);
 
 function lessonHref(lessonSlug: string): string {

@@ -38,6 +38,7 @@ function tipConfigToRecord(config: TipOfTheWeekConfig): TipOfTheWeekRecord {
     tipId: config.tipId,
     title: config.title,
     intro: config.intro,
+    introGlossarySlug: String(config.introGlossarySlug || "").trim(),
     videoContentId: String(config.videoContentId),
     availableFrom:
       typeof config.availableFrom === "string" && config.availableFrom

@@ -1,4 +1,5 @@
-import { isAllowedCourseId, readCourseContentFile } from "../legacy_kin/courseContentAdmin";
+import { isAllowedCourseId, loadCourseContentDocument } from "../legacy_kin/courseContentAdmin";
+import type { CourseContentWriteOptions } from "../legacy_kin/courseContentPersist";
 import { isLegacyCoursePublic } from "../legacy_kin/legacyCoursePublication";
 import { pocToKinCourse } from "./pocToKinCourse";
 import { flattenLessons } from "./player";
@@ -16,7 +17,7 @@ export type KinCourseBundle = {
 
 export async function loadKinCourseBundle(
   courseId: number,
-  options: { includeDrafts?: boolean } = {},
+  options: CourseContentWriteOptions & { includeDrafts?: boolean } = {},
 ): Promise<KinCourseBundle | null> {
   if (!Number.isFinite(courseId) || courseId <= 0 || !isAllowedCourseId(courseId)) {
     return null;
@@ -24,7 +25,7 @@ export async function loadKinCourseBundle(
 
   let poc;
   try {
-    poc = readCourseContentFile(courseId);
+    poc = await loadCourseContentDocument(courseId, options);
   } catch {
     return null;
   }

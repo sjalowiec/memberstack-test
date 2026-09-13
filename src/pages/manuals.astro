@@ -1,0 +1,166 @@
+---
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+import ReferencePageShell from "../components/ReferencePageShell.astro";
+
+const PAGE_H1 = "Looking for a Knitting Machine Manual?";
+const SEO_TITLE = "Knitting Machine Manuals | Free Machine Knitting Manuals";
+const META_DESCRIPTION =
+  "Find free knitting machine manuals for Brother, Silver Reed, Passap, Toyota, and more. Knit It Now points you to MK Manuals for machine, ribber, accessory, and service manuals.";
+const CANONICAL_URL = "https://knititnow.com/manuals";
+const MK_MANUALS_URL = "https://mkmanuals.com/";
+
+const relatedResources = [
+  {
+    href: "/reference/machines",
+    title: "Machine Database",
+    description: "Specs, features, and notes for knitting machine models.",
+  },
+  {
+    href: "/reference/repairs",
+    title: "Machine Repairs",
+    description: "Repair contacts and services by country.",
+  },
+  {
+    href: "/getting-started",
+    title: "Getting Started",
+    description: "A practical path for new machine knitters.",
+  },
+  {
+    href: "/troubleshoot",
+    title: "Troubleshooting",
+    description: "Quick checks when your machine suddenly misbehaves.",
+  },
+];
+---
+
+<Layout
+  title={`${SEO_TITLE} | Knit it Now`}
+  description={META_DESCRIPTION}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={CANONICAL_URL} />
+  </Fragment>
+
+  <ReferencePageShell
+    title={PAGE_H1}
+    backHref="/reference"
+    backLabel="Back to Reference"
+  >
+    <article class="manuals-page">
+      <p class="manuals-page__intro">
+        Knit It Now no longer maintains a separate manual library. For free
+        knitting machine, ribber, accessory, and service manuals, I recommend
+        MKManuals.com.
+
+      </p>
+
+      <p>
+        Their collection includes manuals for Brother/KnitKing, Silver
+        Reed/Studio, Passap, Toyota, and many other machines.
+      </p>
+
+      <div class="manuals-page__cta-block">
+        <a
+          class="kbm-btn kbm-btn-primary manuals-page__cta"
+          href={MK_MANUALS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Visit MK Manuals
+        </a>
+        <p class="manuals-page__disclosure" role="note">
+          MK Manuals is an independent website and is not operated by Knit It Now.
+        </p>
+      </div>
+
+      <section class="manuals-page__related" aria-labelledby="manuals-related-heading">
+        <h2 id="manuals-related-heading">More machine knitting help from Knit it Now</h2>
+        <ul class="manuals-page__related-list">
+          {relatedResources.map((item) => (
+            <li>
+              <a href={item.href}>{item.title}</a>
+              <span> - {item.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <p class="manuals-page__closing">
+        Once you have your manual, come back to Knit It Now for practical help
+        using your machine.
+      </p>
+    </article>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .manuals-page {
+    margin-top: 0.25rem;
+  }
+
+  .manuals-page p {
+    margin: 0 0 1.1rem;
+    line-height: 1.65;
+    font-size: 1.05rem;
+    color: #333;
+  }
+
+  .manuals-page__intro {
+    font-size: var(--text-lg, 1.125rem);
+  }
+
+  .manuals-page__cta-block {
+    margin: 1.75rem 0 2rem;
+    padding: 1.25rem 1.35rem;
+    background: #f7f8f5;
+    border: 1px solid #e4ebd6;
+    border-radius: 10px;
+  }
+
+  .manuals-page__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 48px;
+  }
+
+  .manuals-page__disclosure {
+    margin: 0.85rem 0 0 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    color: #5a6350 !important;
+  }
+
+  .manuals-page__related {
+    margin: 2rem 0 1.5rem;
+  }
+
+  .manuals-page__related h2 {
+    margin: 0 0 0.85rem;
+    font-size: 1.35rem;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .manuals-page__related-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.65rem;
+    line-height: 1.55;
+    color: #333;
+  }
+
+  .manuals-page__related-list a {
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .manuals-page__closing {
+    margin-top: 1.75rem !important;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e4ebd6;
+  }
+</style>

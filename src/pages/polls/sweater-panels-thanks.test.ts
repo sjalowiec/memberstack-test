@@ -20,7 +20,7 @@ describe("sweater panels poll thank-you page", () => {
   it("keeps the requested brief copy and home CTA", () => {
     expect(pageSource).toContain("Thanks for voting!");
     expect(pageSource).toContain(
-      "Your input helps me as I explore new ways to expand our pattern builders.",
+      "Your input helps me as I explore new ways to expand the sizes available in our pattern builders.",
     );
     expect(pageSource).toContain(
       "I appreciate you taking a minute to share your preference.",

@@ -133,36 +133,6 @@
   padding: 0.25rem 1.1rem 1.5rem 1.35rem;
 }
 
-.pattern-workspace-library__manage-row {
-  margin: 0.15rem 0 0.75rem;
-  padding: 0 0 0.75rem;
-  border-bottom: 1px solid rgba(82, 104, 45, 0.12);
-}
-
-.pattern-workspace-library__manage-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.2;
-  color: #5b6472;
-  text-decoration: underline;
-  text-decoration-color: rgba(91, 100, 114, 0.35);
-  text-underline-offset: 0.18em;
-}
-
-.pattern-workspace-library__manage-link:hover {
-  color: #3d4a2f;
-  text-decoration-color: rgba(82, 104, 45, 0.45);
-}
-
-.pattern-workspace-library__manage-link:focus-visible {
-  outline: 2px solid #52682d;
-  outline-offset: 2px;
-  border-radius: 2px;
-}
-
 .pattern-workspace-library__status {
   margin: 0 0 0.75rem;
   font-size: 0.8125rem;

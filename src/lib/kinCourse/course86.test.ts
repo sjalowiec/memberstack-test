@@ -22,15 +22,15 @@ import { kinCoursePreviewRequested } from "./request";
 
 const COURSE_86_ID = 86;
 
-describe("Course 86 temporary production QA", () => {
-  it("temporarily publishes the cleaned POC so /courses/86 loads without preview", () => {
+describe("Course 86 temporary DEV testing publication", () => {
+  it("temporarily publishes the cleaned POC so /courses/86 loads on deployed DEV without preview", () => {
     const poc = readCourseContentFile(COURSE_86_ID);
     expect(poc.course.legacyChallengeId).toBe(86);
-    // TEMPORARY production QA: revert status to "draft" and published to false after testing.
     expect(poc.course.status).toBe("published");
     expect(poc.course.published).toBe(true);
     expect(poc.course.contentStatus).toBe("in_progress");
-    expect(JSON.stringify(poc.course.legacy)).toContain("TEMPORARY 2026-09-12");
+    expect(poc.course.legacy.temporaryProductionQa).toContain("TEMPORARY 2026-09-12");
+    expect(poc.course.legacy.temporaryProductionQa).toMatch(/deployed DEV testing/i);
     expect(poc.lessons[0]?.title).toBe("Unboxing");
     expect(poc.lessons.map((lesson) => lesson.title)).toEqual([
       "Unboxing",
@@ -54,13 +54,13 @@ describe("Course 86 temporary production QA", () => {
     );
     expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
 
-    const header = readFileSync(join(process.cwd(), "src/components/Header.astro"), "utf8");
-    expect(header).not.toContain("/courses/86");
-    expect(header).not.toContain("taitexma-th-tr-160-getting-started");
-
     const catalog = readFileSync(join(process.cwd(), "src/data/courses-catalog.json"), "utf8");
     expect(catalog).not.toContain("taitexma-th-tr-160-getting-started");
     expect(catalog).not.toContain("/courses/86");
+
+    const header = readFileSync(join(process.cwd(), "src/components/Header.astro"), "utf8");
+    expect(header).not.toContain("/courses/86");
+    expect(header).not.toContain("taitexma-th-tr-160-getting-started");
 
     const whatsNew = readFileSync(join(process.cwd(), "src/pages/whats-new.astro"), "utf8");
     expect(whatsNew).not.toContain("/courses/86");
@@ -69,7 +69,7 @@ describe("Course 86 temporary production QA", () => {
     expect(existsSync(join(process.cwd(), "src/pages/sitemap.xml.ts"))).toBe(false);
   });
 
-  it("loads without includeDrafts/preview and stays off the public catalog", async () => {
+  it("loads without includeDrafts/preview for deployed DEV testing", async () => {
     const bundle = await loadKinCourseBundle(COURSE_86_ID);
     expect(bundle?.course.id).toBe(86);
     expect(bundle?.course.title).toBe("Taitexma TH/TR-160: Getting Started");
@@ -188,13 +188,13 @@ describe("Course 86 presented assets", () => {
     expect([...refs].filter((ref) => ref.includes("/challenge/images/v2/86/"))).toEqual([]);
     expect(refs.has("/images/course-content/86/warning.png")).toBe(true);
     expect(refs.has("/images/course-content/86/needle_position.jpg")).toBe(true);
-    expect(refs.has("/images/course-content/111/arrow1.png")).toBe(true);
-    expect(refs.has("/images/course-content/111/arrow4.png")).toBe(true);
-    expect(refs.has("/images/course-content/111/arrow5.png")).toBe(true);
-    expect(existsSync(join(process.cwd(), "public/images/course-content/111/arrow4.png"))).toBe(
+    expect(refs.has("/images/course-content/86/arrow1.png")).toBe(true);
+    expect(refs.has("/images/course-content/86/arrow4.png")).toBe(true);
+    expect(refs.has("/images/course-content/86/arrow5.png")).toBe(true);
+    expect(existsSync(join(process.cwd(), "public/images/course-content/86/arrow4.png"))).toBe(
       true,
     );
-    expect(existsSync(join(process.cwd(), "public/images/course-content/111/arrow5.png"))).toBe(
+    expect(existsSync(join(process.cwd(), "public/images/course-content/86/arrow5.png"))).toBe(
       true,
     );
     expect(refs.has("/stitch-patterns/swatches/6/1017Swatch.jpg")).toBe(true);

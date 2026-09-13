@@ -11,6 +11,12 @@ import {
 } from "./hatAvailableNeedles";
 import type { HatDraftUnit } from "./hatDraft";
 import { isHatSelectableNamedFitStyle } from "./hatMath";
+import {
+  evaluateGaugeSanity,
+  gaugeSanityAcknowledgementKey,
+  gaugeSanityBlocksProceed,
+  type GaugeSanityResult,
+} from "../gaugeSanity";
 
 export const HAT_BUILDER_ALLOWED_CROWNS = ["gathered", "wedge-4-decrease", "spiral"] as const;
 export type HatBuilderAllowedCrown = (typeof HAT_BUILDER_ALLOWED_CROWNS)[number];
@@ -97,6 +103,36 @@ export function isHatBuilderGaugeComplete(
     positiveNumber(fields.rowGauge) &&
     isValidExpressAvailableNeedles(fields.availableNeedles)
   );
+}
+
+export type HatBuilderGaugeSanityGate =
+  | { proceed: true }
+  | {
+      proceed: false;
+      reason: "unusual-gauge";
+      sanity: GaugeSanityResult;
+      acknowledgementKey: string;
+    };
+
+/**
+ * Soft unusual-gauge gate for Review My Pattern.
+ * Does not affect accordion completeness — unusual gauges may still be intentional.
+ */
+export function evaluateHatBuilderGaugeSanityGate(
+  fields: Pick<HatBuilderFieldSnapshot, "stitchGauge" | "rowGauge">,
+  unit: HatDraftUnit,
+  acknowledgedKey: string | null = null,
+): HatBuilderGaugeSanityGate {
+  const sanity = evaluateGaugeSanity(fields.stitchGauge, fields.rowGauge, unit);
+  const acknowledgementKey = gaugeSanityAcknowledgementKey(
+    fields.stitchGauge,
+    fields.rowGauge,
+    unit,
+  );
+  if (gaugeSanityBlocksProceed(sanity, fields.stitchGauge, fields.rowGauge, unit, acknowledgedKey)) {
+    return { proceed: false, reason: "unusual-gauge", sanity, acknowledgementKey };
+  }
+  return { proceed: true };
 }
 
 /**

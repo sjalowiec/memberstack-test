@@ -8,6 +8,22 @@ export type HelpHubLessonRecord = {
   summary?: string;
   access?: string;
   status?: string;
+  deletedAt?: string | null;
+};
+
+export type RelatedLessonPickerItem = {
+  id: number;
+  title: string;
+  slug: string;
+  status: string;
+};
+
+export type RelatedLessonRefView = {
+  ref: string | number;
+  id: number | null;
+  title: string;
+  slug: string;
+  state: "published" | "unpublished" | "missing";
 };
 
 export type HelpHubMemberLessonCard = {
@@ -50,13 +66,87 @@ export function resolveLessonFromRelatedRef(
   return undefined;
 }
 
-/** Same rule as `src/pages/lessons/[slug].astro` `lessonIsPubliclyPublished`. */
+/** Same rule as public `/lessons/[slug]`: published, or no status (legacy). */
 export function lessonIsPubliclyPublished(l: HelpHubLessonRecord): boolean {
+  if (typeof l.deletedAt === "string" && l.deletedAt.trim() !== "") return false;
   const raw = l.status;
   if (raw === undefined || raw === null) return true;
   const s = typeof raw === "string" ? raw.trim().toLowerCase() : "";
   if (s === "") return true;
   return s === "published";
+}
+
+export function publishedLessonsForPicker(
+  lessons: HelpHubLessonRecord[],
+): RelatedLessonPickerItem[] {
+  const items: RelatedLessonPickerItem[] = [];
+  for (const lesson of lessons) {
+    if (!lessonIsPubliclyPublished(lesson)) continue;
+    const id = lessonNumericId(lesson);
+    if (id == null) continue;
+    const title =
+      typeof lesson.title === "string" && lesson.title.trim() !== ""
+        ? lesson.title.trim()
+        : typeof lesson.slug === "string"
+          ? lesson.slug.trim()
+          : `Lesson ${id}`;
+    const slug = typeof lesson.slug === "string" ? lesson.slug.trim() : "";
+    items.push({
+      id,
+      title,
+      slug,
+      status: typeof lesson.status === "string" && lesson.status.trim() ? lesson.status : "published",
+    });
+  }
+  return items.sort((a, b) => a.title.localeCompare(b.title) || a.id - b.id);
+}
+
+export function describeRelatedLessonRefs(
+  relatedLessons: (string | number)[] | undefined,
+  lessonRecords: HelpHubLessonRecord[],
+): RelatedLessonRefView[] {
+  if (!Array.isArray(relatedLessons)) return [];
+  return relatedLessons.map((ref) => {
+    const found = resolveLessonFromRelatedEntry(ref, lessonRecords);
+    const id = found ? lessonNumericId(found) : typeof ref === "number" ? ref : null;
+    const title =
+      found && typeof found.title === "string" && found.title.trim() !== ""
+        ? found.title.trim()
+        : typeof ref === "string"
+          ? ref
+          : `Lesson ${ref}`;
+    const slug = found && typeof found.slug === "string" ? found.slug.trim() : "";
+    if (!found) {
+      return { ref, id, title, slug, state: "missing" as const };
+    }
+    if (!lessonIsPubliclyPublished(found)) {
+      return { ref, id, title, slug, state: "unpublished" as const };
+    }
+    return { ref, id, title, slug, state: "published" as const };
+  });
+}
+
+/** Store numeric ids when a picker selection resolves; keep unresolved refs. */
+export function relatedLessonIdsForStorage(
+  selectedIds: number[],
+  unresolved: (string | number)[] = [],
+): (string | number)[] {
+  const out: (string | number)[] = [];
+  const seen = new Set<string>();
+  function push(value: string | number) {
+    const key = String(value).trim().toLowerCase();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push(value);
+  }
+  for (const id of selectedIds) {
+    if (Number.isFinite(id)) push(id);
+  }
+  for (const ref of unresolved) {
+    if (typeof ref === "number" && Number.isFinite(ref)) push(ref);
+    else if (typeof ref === "string" && ref.trim()) push(ref.trim());
+  }
+  return out;
 }
 
 function resolveLessonFromRelatedEntry(

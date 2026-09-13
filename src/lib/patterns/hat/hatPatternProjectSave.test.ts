@@ -175,8 +175,9 @@ describe("Hat Save Pattern vs Update Pattern source of truth", () => {
       updateFn.indexOf("continueAfterPersist"),
     );
     const bindStart = summaryScript.indexOf("bindHatLeadForm(root");
-    const bindFn = summaryScript.slice(bindStart, bindStart + 220);
+    const bindFn = summaryScript.slice(bindStart, bindStart + 420);
     expect(bindFn).toContain("writeCurrentSummaryDraft");
+    expect(bindFn).toContain("recordHatGenerationIfNeeded");
     expect(bindFn).toContain("navigateAfterPrimarySuccess");
     expect(bindFn).not.toContain("persistHatPatternProject");
     expect(bindFn).not.toContain("promptEditPatternSaveConfirmation");

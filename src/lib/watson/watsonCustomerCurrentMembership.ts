@@ -209,7 +209,7 @@ export function buildWatsonCustomerCurrentMembership(input: {
     };
   }
 
-  // No active paid/free Memberstack plan ù legacy paid-through may still be current.
+  // No active paid/free Memberstack plan ‚Äî legacy paid-through may still be current.
   if (legacyTiming === "legacy_paid_through_future" && legacyDisplay) {
     return {
       currentPlan: summary.previousPlanName,

@@ -1,0 +1,11 @@
+---
+/**
+ * Legacy sideways-cardigan review URL — redirects to the pattern workspace.
+ */
+import { SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF } from "../../../lib/patterns/customPatternProjectNavigation";
+import { buildPatternReviewLegacyRedirect } from "../../../lib/patterns/patternReviewLegacyRedirect";
+
+return Astro.redirect(
+  buildPatternReviewLegacyRedirect(Astro.request.url, SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF),
+);
+---

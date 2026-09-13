@@ -59,7 +59,7 @@ describe("numeric course admin preview", () => {
     expect(kinCoursePreviewRequested(new URL("http://localhost:4321/courses/86"))).toBe(false);
   });
 
-  it("still loads Course 86 on production for an authenticated admin preview", async () => {
+  it("loads Course 86 with authenticated admin preview", async () => {
     requireAdminForRequest.mockResolvedValue(adminOk);
     const url = new URL("https://www.knititnow.com/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
@@ -72,16 +72,16 @@ describe("numeric course admin preview", () => {
     expect(kinCourseHomeHref(86, options.preview)).toBe("/courses/86?preview=true");
   });
 
-  it("loads Course 86 on production without admin preview (temporary QA)", async () => {
+  it("loads temporarily published Course 86 without preview for a non-admin (deployed DEV testing)", async () => {
     requireAdminForRequest.mockResolvedValue(unauthenticated);
     const url = new URL("https://www.knititnow.com/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
     expect(options.preview).toBe(false);
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
   });
 
-  it("loads Course 86 when a signed-in member is not on the admin allowlist (temporary QA)", async () => {
+  it("loads temporarily published Course 86 when a signed-in member is not on the admin allowlist", async () => {
     requireAdminForRequest.mockResolvedValue({
       ok: false,
       status: 403,
@@ -90,21 +90,21 @@ describe("numeric course admin preview", () => {
     const url = new URL("https://www.knititnow.com/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
   });
 
-  it("loads Course 86 on DEV without admin preview (temporary QA)", async () => {
+  it("loads temporarily published Course 86 on DEV without admin preview", async () => {
     requireAdminForRequest.mockResolvedValue(unauthenticated);
     const url = new URL("https://kin-dev.netlify.app/courses/86?preview=true");
     const options = await kinCourseLoadOptions(url, requestFor(url));
     expect(options.preview).toBe(false);
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
 
     const local = new URL("http://localhost:4321/courses/86?preview=true");
     const localOptions = await kinCourseLoadOptions(local, requestFor(local));
     expect(localOptions.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, localOptions)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, localOptions))?.course.id).toBe(86);
   });
 
   it("does not call admin auth when preview is not requested", async () => {
@@ -168,7 +168,7 @@ describe("numeric course admin preview", () => {
     });
     expect(options.preview).toBe(false);
     expect(options.includeDrafts).toBe(false);
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
     expect(kinCourseNeedsAdminPreviewBootstrap(true, null)).toBe(true);
   });
 
@@ -211,7 +211,7 @@ describe("numeric course admin preview", () => {
     });
     expect(options.preview).toBe(true);
     expect(requireAdminForRequest).not.toHaveBeenCalled();
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
   });
 
   it("does not persist a preview cookie when admin auth fails", async () => {
@@ -233,7 +233,7 @@ describe("numeric course admin preview", () => {
     const options = await kinCourseLoadOptions(url, requestFor(url), { get: () => undefined, set });
     expect(options.preview).toBe(false);
     expect(set).not.toHaveBeenCalled();
-    expect(await loadKinCourseBundle(COURSE_86_ID, options)).not.toBeNull();
+    expect((await loadKinCourseBundle(COURSE_86_ID, options))?.course.id).toBe(86);
   });
 
   it("reuses requireAdminForRequest and wires it through every numeric player page", () => {

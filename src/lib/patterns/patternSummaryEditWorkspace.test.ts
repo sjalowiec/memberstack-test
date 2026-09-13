@@ -41,6 +41,14 @@ const hatSummaryScript = readFileSync(
   resolve("src/scripts/hat-pattern-summary-page.ts"),
   "utf8",
 );
+const sleevelessPattern = readFileSync(
+  resolve("src/pages/patterns/sleeveless/pattern/index.astro"),
+  "utf8",
+);
+const dropShoulderPattern = readFileSync(
+  resolve("src/pages/patterns/drop-shoulder/pattern/index.astro"),
+  "utf8",
+);
 
 const PATTERN_NAME_BRANCH = /if\s*\(?\s*(hat|drop[\s-]?shoulder|sleeveless)/i;
 
@@ -77,9 +85,9 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     );
   });
 
-  it("keeps one primary vertical scroll on the overlay workspace at two-column", () => {
+  it("keeps one primary vertical scroll on the overlay drawer panel at two-column", () => {
     expect(workspaceCss).toMatch(
-      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*visible/s,
     );
     const twoColStart = workspaceCss.indexOf("@container sl-edit-workspace (min-width: 1100px)");
     const stackedStart = workspaceCss.indexOf("@container sl-edit-workspace (max-width: 1099.98px)");
@@ -88,10 +96,13 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     const twoColBlock = workspaceCss.slice(twoColStart, stackedStart);
     expect(twoColBlock).toContain("flex-direction: row");
     expect(twoColBlock).toMatch(
-      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*visible/s,
     );
     expect(twoColBlock).not.toMatch(
       /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow:\s*hidden/s,
+    );
+    expect(twoColBlock).not.toMatch(
+      /\.sl-edit-drawer--workspace \.sl-edit-workspace__layout\s*\{[^}]*overflow-y:\s*auto/s,
     );
     expect(twoColBlock).not.toMatch(
       /\.sl-edit-drawer--workspace \.sl-edit-workspace__measure\s*\{[^}]*overflow:\s*hidden/s,
@@ -99,6 +110,14 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     expect(twoColBlock).toMatch(
       /\.sl-edit-workspace__layout\s*\{[^}]*align-items:\s*flex-start/s,
     );
+    for (const src of [sleevelessPattern, dropShoulderPattern]) {
+      expect(src).toMatch(
+        /\.sl-edit-drawer--workspace \.sl-edit-drawer__panel\s*\{[\s\S]*?overflow-y:\s*auto/,
+      );
+      expect(src).not.toMatch(
+        /\.sl-edit-drawer--workspace \.sl-edit-drawer__panel\s*\{[\s\S]*?overflow:\s*hidden/,
+      );
+    }
   });
 
   it("does not require focus/click before wheel can reach the overlay scrollport", () => {
@@ -115,6 +134,10 @@ describe("PatternSummaryEditWorkspace Lego block", () => {
     expect(workspaceCss).not.toMatch(
       /\.sl-edit-workspace__measure\s*\{[^}]*overflow-x:\s*hidden/s,
     );
+    expect(sleevelessPattern).toContain("PatternSummaryEditWorkspace");
+    expect(dropShoulderPattern).toContain("PatternSummaryEditWorkspace");
+    expect(sleevelessPattern).toContain("sl-edit-drawer--workspace");
+    expect(dropShoulderPattern).toContain("sl-edit-drawer--workspace");
   });
 
   it("renders compact measurement chips and stacks them on a narrow stage", () => {
@@ -195,5 +218,50 @@ describe("Hat Summary/Edit uses the shared Lego block", () => {
     const diagramSlot = hatSummaryPage.slice(diagramStart, diagramEnd);
     expect(diagramSlot).toContain("PatternSummaryMeasurementChip");
     expect(diagramSlot).not.toContain("hat-edit-gauge-grid");
+  });
+});
+
+describe("Sweater Summary/Edit shells use the shared Lego block", () => {
+  it("Drop Shoulder and Sleeveless wrap existing controls and diagrams in the shared workspace", () => {
+    for (const src of [sleevelessPattern, dropShoulderPattern]) {
+      expect(src).toContain("PatternSummaryEditWorkspace");
+      expect(src).toContain('slot="quick"');
+      expect(src).toContain('slot="diagram"');
+      expect(src).toContain("data-cb-measure-diagram");
+      expect(src).toContain("data-sl-edit-apply");
+      expect(src).toContain("Save Changes");
+      expect(src).not.toContain("container-name: sl-edit-workspace");
+    }
+    expect(dropShoulderPattern).toContain("data-drop-shoulder-workspace-measure-summary");
+    expect(sleevelessPattern).not.toContain("data-drop-shoulder-workspace-measure-summary");
+  });
+
+  it("keeps sweater measurement editors pattern-specific (no hat diagram on sweater pages)", () => {
+    expect(sleevelessPattern).not.toContain("buildHatPatternDiagramSvg");
+    expect(dropShoulderPattern).not.toContain("buildHatPatternDiagramSvg");
+    expect(sleevelessPattern).toContain("sleevelessPatternEditDrawerPrototype.ts");
+    expect(dropShoulderPattern).toContain("sleevelessPatternEditDrawerPrototype.ts");
+    expect(sleevelessPattern).toContain("data-cb-measure-root");
+    expect(dropShoulderPattern).toContain("data-cb-measure-root");
+  });
+});
+
+const sidewaysPattern = readFileSync(
+  resolve("src/pages/patterns/sideways-cardigan/pattern/index.astro"),
+  "utf8",
+);
+
+describe("Sideways V-Neck Summary/Edit reuses the shared Lego block", () => {
+  it("wraps Sideways measurements in PatternSummaryEditWorkspace without a custom editor", () => {
+    expect(sidewaysPattern).toContain("PatternSummaryEditWorkspace");
+    expect(sidewaysPattern).toContain("PatternSummaryMeasurementChip");
+    expect(sidewaysPattern).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
+    expect(sidewaysPattern).toContain('slot="quick"');
+    expect(sidewaysPattern).toContain('slot="diagram"');
+    expect(sidewaysPattern).toContain("data-sl-edit-apply");
+    expect(sidewaysPattern).toContain("Save Changes");
+    expect(sidewaysPattern).toContain("sl-edit-drawer--workspace");
+    expect(sidewaysPattern).not.toContain("buildHatPatternDiagramSvg");
+    expect(sidewaysPattern).not.toContain("sleevelessPatternEditDrawerPrototype.ts");
   });
 });

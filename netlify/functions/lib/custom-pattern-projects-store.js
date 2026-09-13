@@ -521,7 +521,7 @@ export function isSupportedCustomPatternProjectType(pattern) {
   if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) return false;
   if (pattern.patternType === "hat" || pattern.patternSystem === "hat") return true;
   const system = resolvePatternSystemFromProject({ pattern });
-  if (system === "socks") return true;
+  if (system === "hat" || system === "socks") return true;
   return pattern.patternType === "sleeveless";
 }
 

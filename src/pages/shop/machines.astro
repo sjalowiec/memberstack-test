@@ -24,6 +24,8 @@ const salesHold = MACHINE_SALES_HOLD;
  * (data/machines-for-sale.json). Does not read or modify data/machines.json.
  */
 const holdListings = salesHold ? getStorefrontHoldListings() : [];
+const holdMachines = holdListings.filter((row) => row.listingType === "machine");
+const holdAccessories = holdListings.filter((row) => row.listingType === "accessory");
 
 const title = "Knitting Machines for Sale | Knit it Now";
 const description = salesHold
@@ -66,61 +68,73 @@ function formatPrice(value: number | null): string | null {
             No machines are listed for sale right now. Please check back soon.
           </p>
         ) : (
-        <div class="machines-grid machines-grid--temp">
-          {
-            holdListings.map((product) => {
-              const priceLabel = displayPriceLabel(product);
-              return (
-              <article class="machine-card">
-                <div class="machine-card-image-wrap">
-                  {product.imageSrc ? (
-                    <img
-                      src={product.imageSrc}
-                      alt={product.name}
-                      class="machine-card-image"
-                      width="280"
-                      height="180"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <div class="machine-card-image-placeholder" aria-hidden="true">
-                      Image coming soon
-                    </div>
-                  )}
-                  {product.status === "sold" && (
-                    <span class="machine-status machine-status--sold-out">Sold</span>
-                  )}
+          [
+            { id: "machines", title: "Machines", items: holdMachines },
+            { id: "accessories", title: "Accessories", items: holdAccessories },
+          ]
+            .filter((section) => section.items.length > 0)
+            .map((section) => (
+              <section class="machines-section" aria-labelledby={`${section.id}-heading`}>
+                <h2 id={`${section.id}-heading`} class="machines-section-title">
+                  {section.title}
+                </h2>
+                <div class="machines-grid machines-grid--temp">
+                  {section.items.map((product) => {
+                    const priceLabel = displayPriceLabel(product);
+                    return (
+                      <article class="machine-card">
+                        <div class="machine-card-image-wrap">
+                          {product.imageSrc ? (
+                            <img
+                              src={product.imageSrc}
+                              alt={product.name}
+                              class="machine-card-image"
+                              width="280"
+                              height="180"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : (
+                            <div class="machine-card-image-placeholder" aria-hidden="true">
+                              Image coming soon
+                            </div>
+                          )}
+                          {product.status === "sold" && (
+                            <span class="machine-status machine-status--sold-out">Sold</span>
+                          )}
+                        </div>
+                        <div class="machine-card-body">
+                          <h2 class="machine-name">{product.name}</h2>
+                          <ul class="machine-specs" aria-label="Quick specs">
+                            {product.specs.map((spec) => (
+                              <li>{spec}</li>
+                            ))}
+                          </ul>
+                          {product.shortHtml && (
+                            <div class="machine-short" set:html={product.shortHtml} />
+                          )}
+                          {priceLabel && <p class="machine-price">{priceLabel}</p>}
+                          <div class="machine-actions">
+                            {product.status === "available" ? (
+                              <a
+                                href={product.shopifyUrl}
+                                class="machine-buy"
+                                rel="noopener"
+                                target="_blank"
+                              >
+                                Buy Now
+                              </a>
+                            ) : (
+                              <span class="machine-status-note">Sold</span>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-                <div class="machine-card-body">
-                  <h2 class="machine-name">{product.name}</h2>
-                  <ul class="machine-specs" aria-label="Quick specs">
-                    {product.specs.map((spec) => (
-                      <li>{spec}</li>
-                    ))}
-                  </ul>
-                  {product.shortHtml && <div class="machine-short" set:html={product.shortHtml} />}
-                  {priceLabel && <p class="machine-price">{priceLabel}</p>}
-                  <div class="machine-actions">
-                    {product.status === "available" ? (
-                      <a
-                        href={product.shopifyUrl}
-                        class="machine-buy"
-                        rel="noopener"
-                        target="_blank"
-                      >
-                        Buy Now
-                      </a>
-                    ) : (
-                      <span class="machine-status-note">Sold</span>
-                    )}
-                  </div>
-                </div>
-              </article>
-              );
-            })
-          }
-        </div>
+              </section>
+            ))
         )}
       </>
     ) : (
@@ -243,6 +257,20 @@ function formatPrice(value: number | null): string | null {
 
   .page-intro--follow {
     margin-top: 1rem;
+  }
+
+  .machines-section {
+    margin-top: 2rem;
+  }
+
+  .machines-section:first-of-type {
+    margin-top: 0.35rem;
+  }
+
+  .machines-section-title {
+    font-size: 1.35rem;
+    color: var(--kbm-green);
+    margin: 0 0 1rem;
   }
 
   .machines-hold-actions {

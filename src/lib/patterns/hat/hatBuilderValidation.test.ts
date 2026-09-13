@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   HAT_BUILDER_INCOMPLETE_MESSAGE,
+  evaluateHatBuilderGaugeSanityGate,
   evaluateHatBuilderNeedleCapacity,
   hatBuilderChoiceFieldAdvances,
   isHatBuilderBrimComplete,
@@ -136,6 +137,21 @@ describe("hatBuilderValidation", () => {
 
   it("exposes the incomplete CTA message from the working hat page", () => {
     expect(HAT_BUILDER_INCOMPLETE_MESSAGE).toMatch(/Finish the required sections/i);
+  });
+
+  it("treats unusual gauge as a soft review warning, not an incomplete form", () => {
+    const unusual = { ...completeFields, stitchGauge: "7", rowGauge: "10" };
+    expect(isHatBuilderReadyToCreatePattern(unusual, sizingRows, "inches")).toBe(true);
+    expect(evaluateHatBuilderGaugeSanityGate(unusual, "inches").proceed).toBe(false);
+    expect(
+      evaluateHatBuilderGaugeSanityGate(unusual, "inches", "7|10|in").proceed,
+    ).toBe(true);
+    expect(
+      evaluateHatBuilderGaugeSanityGate(
+        { stitchGauge: "20", rowGauge: "28" },
+        "inches",
+      ).proceed,
+    ).toBe(true);
   });
 });
 
@@ -419,5 +435,22 @@ describe("hat builder brim section stays open after picker selection", () => {
       currentStepComplete: true,
     });
     expect(returnEdit).toBe(3);
+  });
+});
+
+describe("hat builder unusual-gauge warning", () => {
+  const builderAstro = readFileSync(
+    resolve("src/pages/patterns/hat/builder.astro"),
+    "utf8",
+  );
+  const builderScript = readFileSync(
+    resolve("src/scripts/hat-builder-page.ts"),
+    "utf8",
+  );
+
+  it("hosts the shared warning and gates Review My Pattern on unusual gauge", () => {
+    expect(builderAstro).toContain('id="gauge-sanity-warning"');
+    expect(builderScript).toContain("evaluateHatBuilderGaugeSanityGate");
+    expect(builderScript).toContain("renderGaugeSanityWarning");
   });
 });

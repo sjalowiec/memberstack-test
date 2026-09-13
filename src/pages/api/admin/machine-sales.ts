@@ -1,0 +1,109 @@
+import type { APIRoute } from "astro";
+import { requireAdminForRequest } from "../../../lib/admin/requireAdminRequest";
+import {
+  applyListingDelete,
+  applyListingSave,
+  readMachineSalesListings,
+  shopListingImageSrcs,
+  type ListingSaveMode,
+} from "../../../lib/machines/machineSalesListings";
+import { persistMachineSalesListings } from "../../../lib/machines/machineSalesPersist";
+
+export const prerender = false;
+
+const adminEnv = {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+};
+
+function jsonResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+export const GET: APIRoute = async () => {
+  try {
+    const listings = readMachineSalesListings();
+    return jsonResponse({
+      ok: true,
+      listings,
+      listingImages: shopListingImageSrcs(listings),
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Could not read machine sale listings.";
+    return jsonResponse({ ok: false, error: message }, 500);
+  }
+};
+
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) {
+    return jsonResponse({ ok: false, error: auth.error }, auth.status);
+  }
+
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ ok: false, error: "Invalid JSON body" }, 400);
+  }
+
+  if (!body || typeof body !== "object") {
+    return jsonResponse({ ok: false, error: "Request body must be a JSON object." }, 400);
+  }
+
+  const payload = body as Record<string, unknown>;
+  const mode = payload.mode;
+  const hostname = new URL(request.url).hostname;
+
+  try {
+    const current = readMachineSalesListings();
+
+    if (mode === "delete") {
+      const applied = applyListingDelete(current, payload.id);
+      if (!applied.ok) return jsonResponse({ ok: false, error: applied.error }, 400);
+      const persisted = await persistMachineSalesListings(applied.listings, {
+        hostname,
+        env: adminEnv,
+      });
+      return jsonResponse({
+        ok: true,
+        listings: persisted.listings,
+        listingImages: shopListingImageSrcs(persisted.listings),
+        persistedVia: persisted.persistedVia,
+        branch: persisted.branch ?? null,
+        commitSha: persisted.commitSha ?? null,
+      });
+    }
+
+    if (mode !== "new" && mode !== "edit") {
+      return jsonResponse({ ok: false, error: 'Body must include mode: "new" | "edit" | "delete".' }, 400);
+    }
+    const applied = applyListingSave(current, {
+      listing: payload.listing,
+      mode: mode as ListingSaveMode,
+    });
+    if (!applied.ok) return jsonResponse({ ok: false, error: applied.error }, 400);
+    const persisted = await persistMachineSalesListings(applied.listings, {
+      hostname,
+      env: adminEnv,
+    });
+    return jsonResponse({
+      ok: true,
+      listings: persisted.listings,
+      listingImages: shopListingImageSrcs(persisted.listings),
+      persistedVia: persisted.persistedVia,
+      branch: persisted.branch ?? null,
+      commitSha: persisted.commitSha ?? null,
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Could not write machine sale listings.";
+    return jsonResponse({ ok: false, error: message }, 500);
+  }
+};

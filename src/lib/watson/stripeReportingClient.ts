@@ -299,7 +299,18 @@ export interface NormalizedStripeCharge {
   invoiceId: string | null;
   paymentIntentId: string | null;
   paymentMethodType: string | null;
+  /** Invoice.billing_reason when the Charge's invoice was expanded. */
+  billingReason: string | null;
+  /** Checkout / payment link / subscription / invoice / other. */
+  channel: StripePaymentChannel;
 }
+
+export type StripePaymentChannel =
+  | "subscription"
+  | "invoice"
+  | "checkout"
+  | "payment_link"
+  | "other";
 
 interface RawStripePrice {
   id?: string | null;
@@ -328,6 +339,10 @@ interface RawStripeCharge {
     | null
     | {
         id?: string;
+        billing_reason?: string | null;
+        collection_method?: string | null;
+        paid_out_of_band?: boolean | null;
+        charge?: string | { id?: string | null } | null;
         lines?: { data?: RawStripeInvoiceLine[] | null } | null;
       };
   payment_intent?: string | { id?: string | null } | null;
@@ -381,6 +396,7 @@ export function detectShopifyMarker(charge: {
     return { hasShopifyMarker: true, shopifyMarkerReason: 'description contains "shopify"' };
   }
   const metadata = charge.metadata ?? {};
+  const lowerKeys = new Set(Object.keys(metadata).map((key) => key.toLowerCase()));
   for (const [key, value] of Object.entries(metadata)) {
     const haystack = `${key} ${value}`.toLowerCase();
     if (haystack.includes("shopify")) {
@@ -389,14 +405,54 @@ export function detectShopifyMarker(charge: {
         shopifyMarkerReason: `metadata "${key}" contains "shopify"`,
       };
     }
-    if (haystack.includes("order_id")) {
-      return {
-        hasShopifyMarker: true,
-        shopifyMarkerReason: `metadata "${key}" contains "order_id"`,
-      };
-    }
+  }
+  if (lowerKeys.has("shopify_order_id") || lowerKeys.has("shopify_order_number")) {
+    return {
+      hasShopifyMarker: true,
+      shopifyMarkerReason: 'metadata has Shopify order id',
+    };
+  }
+  const hasOrderId = lowerKeys.has("order_id");
+  const hasShopId = lowerKeys.has("shop_id") || lowerKeys.has("shopid");
+  const hasShopName = lowerKeys.has("shop_name") || lowerKeys.has("shopname");
+  if (hasOrderId && (hasShopId || hasShopName)) {
+    return {
+      hasShopifyMarker: true,
+      shopifyMarkerReason: "Shopify Payments metadata (shop_id/shop_name + order_id)",
+    };
   }
   return { hasShopifyMarker: false, shopifyMarkerReason: null };
+}
+
+/**
+ * Classify how money arrived in Stripe from Charge fields already retrieved.
+ * Does not call Stripe. Payment Links without metadata look like one-off
+ * Checkout (empty description, no invoice) and are labeled payment_link.
+ */
+export function classifyStripePaymentChannel(charge: {
+  invoiceId?: string | null;
+  billingReason?: string | null;
+  description?: string | null;
+  metadata?: Record<string, string> | null;
+}): StripePaymentChannel {
+  const reason = (charge.billingReason ?? "").toLowerCase();
+  if (reason.startsWith("subscription")) return "subscription";
+  const description = (charge.description ?? "").toLowerCase();
+  if (description.includes("subscription")) return "subscription";
+
+  const metadata = charge.metadata ?? {};
+  for (const [key, value] of Object.entries(metadata)) {
+    const haystack = `${key} ${value}`.toLowerCase();
+    if (haystack.includes("payment_link") || key.toLowerCase() === "payment_link") {
+      return "payment_link";
+    }
+  }
+  if (description.includes("payment link")) return "payment_link";
+
+  if (charge.invoiceId || description.includes("invoice")) return "invoice";
+  if (!charge.invoiceId && !description.trim()) return "payment_link";
+  if (description.includes("checkout")) return "checkout";
+  return charge.invoiceId ? "invoice" : "checkout";
 }
 
 function invoiceIdOf(charge: RawStripeCharge): string | null {
@@ -404,6 +460,12 @@ function invoiceIdOf(charge: RawStripeCharge): string | null {
   if (!invoice) return null;
   if (typeof invoice === "string") return invoice;
   return invoice.id ?? null;
+}
+
+function billingReasonOf(charge: RawStripeCharge): string | null {
+  const invoice = charge.invoice;
+  if (!invoice || typeof invoice === "string") return null;
+  return invoice.billing_reason ?? null;
 }
 
 export function normalizeStripeCharge(charge: RawStripeCharge): NormalizedStripeCharge {
@@ -415,6 +477,9 @@ export function normalizeStripeCharge(charge: RawStripeCharge): NormalizedStripe
     typeof charge.amount_captured === "number" ? charge.amount_captured : (charge.amount ?? 0);
   const shopify = detectShopifyMarker(charge);
   const paymentIntent = charge.payment_intent;
+  const invoiceId = invoiceIdOf(charge);
+  const billingReason = billingReasonOf(charge);
+  const description = charge.description ?? "";
   return {
     id: charge.id,
     created,
@@ -429,11 +494,18 @@ export function normalizeStripeCharge(charge: RawStripeCharge): NormalizedStripe
     lines: lineRefsOf(charge),
     hasShopifyMarker: shopify.hasShopifyMarker,
     shopifyMarkerReason: shopify.shopifyMarkerReason,
-    description: charge.description ?? "",
-    invoiceId: invoiceIdOf(charge),
+    description,
+    invoiceId,
     paymentIntentId:
       typeof paymentIntent === "string" ? paymentIntent : paymentIntent?.id ?? null,
     paymentMethodType: charge.payment_method_details?.type ?? null,
+    billingReason,
+    channel: classifyStripePaymentChannel({
+      invoiceId,
+      billingReason,
+      description,
+      metadata: charge.metadata,
+    }),
   };
 }
 
@@ -453,9 +525,11 @@ export interface FetchStripeChargesOptions {
 }
 
 /**
- * Fetch all succeeded charges created within [startUtc, endUtc), following
- * Stripe cursor pagination. Throws a classified, secret-free error if Stripe
- * cannot be queried.
+ * Fetch charges created within [startUtc, endUtc), then backfill any paid
+ * invoices created in the same window whose Charge was missing from the list.
+ * Throws a classified, secret-free error if the Charges endpoint cannot be
+ * queried. Invoice backfill is best-effort (missing Invoices permission must
+ * not fail the report).
  */
 export async function fetchStripeChargesInRange(
   options: FetchStripeChargesOptions,
@@ -486,7 +560,12 @@ export async function fetchStripeChargesInRange(
     if (startingAfter) params.set("starting_after", startingAfter);
 
     const url = `${config.apiBase}/charges?${params.toString()}`;
-    const response = await fetchStripeWithRetry(url, config.secretKey, fetchImpl, page);
+    const response = await fetchStripeWithRetry(
+      url,
+      config.secretKey,
+      fetchImpl,
+      `charges page ${page}`,
+    );
 
     if (!response.ok) {
       const body = await response.text().catch(() => "");
@@ -496,7 +575,6 @@ export async function fetchStripeChargesInRange(
     const payload = (await response.json()) as RawStripeListResponse;
     const rows = Array.isArray(payload.data) ? payload.data : [];
     for (const raw of rows) {
-      // Guard against duplicate ids across pages.
       if (seen.has(raw.id)) continue;
       seen.add(raw.id);
       charges.push(normalizeStripeCharge(raw));
@@ -507,14 +585,118 @@ export async function fetchStripeChargesInRange(
     if (!startingAfter) break;
   }
 
+  await appendMissingInvoiceCharges({
+    charges,
+    seen,
+    createdGte,
+    createdLt,
+    config,
+    fetchImpl,
+  });
+
   return charges;
+}
+
+interface RawStripeInvoiceListItem {
+  id?: string;
+  status?: string | null;
+  paid?: boolean | null;
+  paid_out_of_band?: boolean | null;
+  charge?: string | { id?: string | null } | null;
+}
+
+/**
+ * Paid invoices created in-window should already have a Charge in the same
+ * window. If the Charges list missed one, fetch that Charge and append it.
+ * Out-of-band payments have no Charge and are not Stripe-collected.
+ */
+async function appendMissingInvoiceCharges(options: {
+  charges: NormalizedStripeCharge[];
+  seen: Set<string>;
+  createdGte: number;
+  createdLt: number;
+  config: StripeReportingConfig;
+  fetchImpl: typeof fetch;
+}): Promise<void> {
+  const { charges, seen, createdGte, createdLt, config, fetchImpl } = options;
+  let startingAfter: string | null = null;
+  let page = 0;
+
+  try {
+    while (page < MAX_PAGES) {
+      page += 1;
+      const params = new URLSearchParams();
+      params.set("limit", String(PAGE_LIMIT));
+      params.set("status", "paid");
+      params.set("created[gte]", String(createdGte));
+      params.set("created[lt]", String(createdLt));
+      if (startingAfter) params.set("starting_after", startingAfter);
+
+      const url = `${config.apiBase}/invoices?${params.toString()}`;
+      const response = await fetchStripeWithRetry(
+        url,
+        config.secretKey,
+        fetchImpl,
+        `invoices page ${page}`,
+      );
+      if (!response.ok) {
+        // Restricted keys without Invoices read should still report Charges.
+        return;
+      }
+
+      const payload = (await response.json()) as {
+        data?: RawStripeInvoiceListItem[];
+        has_more?: boolean;
+      };
+      const rows = Array.isArray(payload.data) ? payload.data : [];
+      for (const invoice of rows) {
+        if (invoice.paid_out_of_band) continue;
+        const chargeId =
+          typeof invoice.charge === "string"
+            ? invoice.charge
+            : invoice.charge?.id ?? null;
+        if (!chargeId || seen.has(chargeId)) continue;
+        const extra = await fetchStripeChargeById(chargeId, config, fetchImpl);
+        if (!extra) continue;
+        if (extra.created < createdGte || extra.created >= createdLt) continue;
+        seen.add(extra.id);
+        charges.push(extra);
+      }
+
+      if (!payload.has_more || rows.length === 0) break;
+      startingAfter = rows[rows.length - 1]?.id ?? null;
+      if (!startingAfter) break;
+    }
+  } catch {
+    // Best-effort: a failed invoice backfill must not hide Charge totals.
+  }
+}
+
+async function fetchStripeChargeById(
+  chargeId: string,
+  config: StripeReportingConfig,
+  fetchImpl: typeof fetch,
+): Promise<NormalizedStripeCharge | null> {
+  const params = new URLSearchParams();
+  params.append("expand[]", "invoice");
+  const url = `${config.apiBase}/charges/${encodeURIComponent(chargeId)}?${params.toString()}`;
+  const response = await fetchStripeWithRetry(
+    url,
+    config.secretKey,
+    fetchImpl,
+    `charge ${chargeId}`,
+  );
+  if (!response.ok) return null;
+  const raw = (await response.json()) as RawStripeCharge;
+  if (!raw?.id) return null;
+  return normalizeStripeCharge(raw);
 }
 
 async function fetchStripeWithRetry(
   url: string,
   secretKey: string,
   fetchImpl: typeof fetch,
-  page: number,
+  label: string,
 ): Promise<Response> {
   let attempt = 0;
   while (true) {
@@ -529,9 +711,7 @@ async function fetchStripeWithRetry(
         },
       });
     } catch (err) {
-      // Connection/TLS/DNS errors surface as a TypeError("fetch failed") with a
-      // nested cause. Classify into a safe, useful message.
-      throw new Error(`${describeStripeConnectionError(err)} (charges page ${page})`);
+      throw new Error(`${describeStripeConnectionError(err)} (${label})`);
     }
 
     if (response.status !== 429 && response.status < 500) {

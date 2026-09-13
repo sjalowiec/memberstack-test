@@ -25,10 +25,9 @@ const { label = "" } = Astro.props;
 </button>
 
 <style>
-  /* ---- Desktop / tablet: floating pill (unchanged) ---- */
+  /* ---- Desktop / tablet: floating pill ---- */
   .membership-corner-cta {
     --membership-corner-inset: 1.5rem; /* 24px */
-    --membership-bar-tap-h: 3.375rem; /* 54px; used on phone + body padding */
     position: fixed;
     z-index: 2800;
     bottom: max(var(--membership-corner-inset), env(safe-area-inset-bottom, 0px));

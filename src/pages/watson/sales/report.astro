@@ -7,6 +7,8 @@ import { resolveDayRange } from "../../../lib/watson/salesReportDates";
 
 export const prerender = false;
 
+Astro.response.headers.set("Cache-Control", "no-store");
+
 const params = Astro.url.searchParams;
 const presetParam = params.get("preset")?.trim() ?? "";
 const fromParam = params.get("from")?.trim() ?? "";
@@ -40,7 +42,7 @@ if (!resolved.ok) {
   title="Sales | Watson"
   description="Actual revenue collected from Shopify and Stripe."
   heading="Sales"
-  intro="Read-only report of actual money collected (Shopify orders + succeeded Stripe Charges, including paid invoices). Defaults to the last 3 days in America/Los_Angeles time."
+  intro="Read-only report of actual money collected (live Shopify orders + succeeded Stripe Charges, including paid invoices). Defaults to the last 3 days in America/Los_Angeles time."
 >
   <WatsonSalesReport
     report={report}

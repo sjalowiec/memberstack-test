@@ -66,7 +66,7 @@ describe("pocToKinCourse", () => {
     const terms = findLesson(course, 4231);
     const hotspot = terms?.components.find((component) => component.type === "hotspot");
     expect(hotspot?.pending).toBeUndefined();
-    expect(hotspot?.image).toBe("/challenge/images/v2/86/taitexma_main_spott1.jpg");
+    expect(hotspot?.image).toBe("/images/course-content/86/taitexma_main_spott1.jpg");
     expect(hotspot?.spots?.some((spot) => spot.text === "Yarn Mast Assembly" && spot.style?.includes("top:"))).toBe(
       true,
     );

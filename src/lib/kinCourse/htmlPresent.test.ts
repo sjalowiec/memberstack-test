@@ -199,17 +199,17 @@ describe("Course 86 presentation rewrites", () => {
       applyKinCourseSrcRewrites("/path/images/1480/needle_position.jpg", presentation),
     ).toBe("/images/course-content/86/needle_position.jpg");
     expect(applyKinCourseSrcRewrites("/challenge/images/arrow1.png", presentation)).toBe(
-      "/images/course-content/111/arrow1.png",
+      "/images/course-content/86/arrow1.png",
     );
     expect(
       applyKinCourseSrcRewrites("/challenge/images/v2/86/arrow2.png", presentation),
-    ).toBe("/images/course-content/111/arrow2.png");
+    ).toBe("/images/course-content/86/arrow2.png");
     expect(applyKinCourseSrcRewrites("/challenge/images/arrow4.png", presentation)).toBe(
-      "/images/course-content/111/arrow4.png",
+      "/images/course-content/86/arrow4.png",
     );
     expect(
       applyKinCourseSrcRewrites("/challenge/images/v2/86/arrow5.png", presentation),
-    ).toBe("/images/course-content/111/arrow5.png");
+    ).toBe("/images/course-content/86/arrow5.png");
     expect(applyKinCourseSrcRewrites("/swatches/6/1017Swatch.jpg", presentation)).toBe(
       "/stitch-patterns/swatches/6/1017Swatch.jpg",
     );

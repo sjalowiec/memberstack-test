@@ -510,6 +510,7 @@ CREATE TABLE IF NOT EXISTS watson_tip_of_the_week (
   tip_id TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
   intro TEXT NOT NULL,
+  intro_glossary_slug TEXT NOT NULL DEFAULT '',
   video_content_id TEXT NOT NULL,
   available_from DATE NOT NULL,
   available_through DATE NOT NULL,
@@ -537,6 +538,9 @@ WHERE status IN ('scheduled', 'active');
 
 CREATE INDEX IF NOT EXISTS idx_watson_tip_of_the_week_admin
 ON watson_tip_of_the_week (status, available_from DESC, updated_at DESC);
+
+ALTER TABLE watson_tip_of_the_week
+  ADD COLUMN IF NOT EXISTS intro_glossary_slug TEXT NOT NULL DEFAULT '';
 
 ALTER TABLE watson_tip_of_the_week
   ADD COLUMN IF NOT EXISTS cta_text TEXT NOT NULL DEFAULT '',

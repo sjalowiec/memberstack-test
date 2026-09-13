@@ -14,19 +14,48 @@ interface Props {
 
 const { block } = Astro.props;
 const parts = getTextVideoLayoutParts(block);
+const hasLeft =
+  !!parts?.leftText &&
+  richTextHasVisibleContent(String(parts.leftText.html ?? ""));
+const forceStacked = String(block.legacy?.editorLayout ?? "") === "textVideoStacked";
+const stacked = Boolean(parts && (!hasLeft || forceStacked));
+const videoOnly = stacked && !hasLeft;
+const stackClass =
+  String(block.slug ?? "") === "accurate-gauge-measurement"
+    ? "sk840-accurate-gauge"
+    : String(block.slug ?? "") === "gauge-rulers-gauge-scales"
+      ? "sk840-gauge-rulers"
+      : null;
 ---
 
 {
   parts ? (
-    <div class="course-preview__text-video-layout legacy-course__text-video-layout">
-      <div class="lesson-media-row course-preview__media-row legacy-course__media-row">
-        <div
-          class="lesson-text course-preview__richtext legacy-course__richtext"
-          set:html={rewriteLegacyHtml(
-            unwrapTextVideoColumnHtml(String(parts.leftText.html ?? "")),
-          )}
-          data-legacy-component={parts.leftText.legacyComponentId}
-        />
+    <div
+      class:list={[
+        "course-preview__text-video-layout",
+        "legacy-course__text-video-layout",
+        stacked ? "course-preview__text-video-layout--stacked" : null,
+        stackClass,
+      ]}
+    >
+      <div
+        class:list={[
+          "lesson-media-row",
+          "course-preview__media-row",
+          "legacy-course__media-row",
+          videoOnly ? "course-preview__media-row--video-only" : null,
+          stacked && hasLeft ? "course-preview__media-row--stacked" : null,
+        ]}
+      >
+        {hasLeft ? (
+          <div
+            class="lesson-text course-preview__richtext legacy-course__richtext"
+            set:html={rewriteLegacyHtml(
+              unwrapTextVideoColumnHtml(String(parts.leftText!.html ?? "")),
+            )}
+            data-legacy-component={parts.leftText!.legacyComponentId}
+          />
+        ) : null}
         <div
           class="lesson-video legacy-course__media-video"
           data-legacy-component={parts.video.legacyComponentId}
@@ -37,7 +66,11 @@ const parts = getTextVideoLayoutParts(block);
           {String(parts.video.vimeoId ?? "") ? (
             <VimeoEmbed
               vimeoId={String(parts.video.vimeoId)}
-              title={parts.video.title ? String(parts.video.title) : "Course video"}
+              title={
+                parts.video.title
+                  ? String(parts.video.title)
+                  : String(block.title ?? "Course video")
+              }
             />
           ) : null}
         </div>

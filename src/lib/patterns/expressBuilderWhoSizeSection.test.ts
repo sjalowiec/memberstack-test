@@ -245,8 +245,22 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
 
   it("reuses the shared text who picker in Custom Build Design", () => {
     expect(customBuildDesignAstro).toContain("ExpressBuilderWhoPicker");
+    expect(customBuildDesignAstro).not.toContain("<img");
     expect(customBuildDesignAstro).not.toContain("sleeveless-woman-pullover-round-neck.webp");
     expect(customBuildDesignAstro).toContain("Who are you knitting for?");
+  });
+
+  it("removes obsolete audience-card image refresh from builder clients", () => {
+    const expressPageSrc = readFileSync(resolve("src/scripts/sleeveless-express-page.ts"), "utf8");
+    const customBuildDesignPageSrc = readFileSync(
+      resolve("src/scripts/sleeveless-custom-build-design-page.ts"),
+      "utf8",
+    );
+    expect(expressPageSrc).not.toContain("refreshExpressWhoCardHeroImages");
+    expect(expressPageSrc).not.toContain("expressPatternDataForAudienceHeroImages");
+    expect(expressPageSrc).not.toContain("resolveSleevelessAudienceHeroImageSrc");
+    expect(customBuildDesignPageSrc).not.toContain("refreshCbDesignWhoCardImages");
+    expect(customBuildDesignPageSrc).not.toContain("resolveSleevelessAudienceHeroImageSrc");
   });
 });
 

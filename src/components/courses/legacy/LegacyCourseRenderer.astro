@@ -3,6 +3,7 @@ import LegacyCourseBlock from "./LegacyCourseBlock.astro";
 import LegacyCourseTextVideoLayout from "./LegacyCourseTextVideoLayout.astro";
 import LegacyCourseTextImageLayout from "./LegacyCourseTextImageLayout.astro";
 import LegacyCourseThreeVideosLayout from "./LegacyCourseThreeVideosLayout.astro";
+import LegacyCourseTwoVideosLayout from "./LegacyCourseTwoVideosLayout.astro";
 import LegacyCourseAccordionLayout from "./LegacyCourseAccordionLayout.astro";
 import LegacyCourseEmbeddedToolLayout from "./LegacyCourseEmbeddedToolLayout.astro";
 import type { CourseComponent, CourseLesson } from "../../../lib/legacy_kin/coursePreviewPoc";
@@ -10,6 +11,7 @@ import {
   TEXT_IMAGE_LAYOUT_TYPE,
   TEXT_VIDEO_LAYOUT_TYPE,
   THREE_VIDEOS_LAYOUT_TYPE,
+  TWO_VIDEOS_LAYOUT_TYPE,
 } from "../../../lib/legacy_kin/courseContentEditorTypes";
 import {
   contentItemDisplayTitle,
@@ -51,6 +53,8 @@ const items = item ? [item] : flattenLessonContent(lesson);
           <LegacyCourseTextVideoLayout block={block} />
         ) : entry.type === THREE_VIDEOS_LAYOUT_TYPE && block ? (
           <LegacyCourseThreeVideosLayout block={block} />
+        ) : entry.type === TWO_VIDEOS_LAYOUT_TYPE && block ? (
+          <LegacyCourseTwoVideosLayout block={block} />
         ) : entry.type === TEXT_IMAGE_LAYOUT_TYPE && block ? (
           <LegacyCourseTextImageLayout block={block} />
         ) : entry.type === "exerciseAccordion" &&

@@ -82,10 +82,22 @@ const socksPattern = {
   pillRest: SOCKS_CATALOG_PILL_REST,
 };
 
+const sidewaysPattern = {
+  title: 'Sideways Knit Sweater',
+  // `?new=1` clears any leftover sideways draft on boot so this card starts fresh.
+  href: '/patterns/sideways-cardigan/builder?new=1',
+  image: '/images/patterns/sideways.png',
+  copy: 'Custom cardigan or pullover knitted sideways, with flexible sizing that works especially well for larger sizes and limited needle-bed widths.',
+  button: 'Create sideways knit sweater',
+  pillCount: 2,
+  pillRest: 'Styles in 1 Builder',
+};
+
 const sweaterPatterns = [
   sleevelessPattern,
   socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
+  sidewaysPattern,
 ];
 
 const availablePatterns = [
@@ -93,6 +105,7 @@ const availablePatterns = [
   hatPattern,
   socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
+  sidewaysPattern,
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
   // route /patterns/diy-blanket is intact and reachable by direct URL for future development/testing.
   // Uncomment this entry to bring the Blanket builder back to the catalog.

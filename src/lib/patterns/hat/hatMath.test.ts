@@ -696,3 +696,4 @@ describe("hatInstructions + hatDiagram", () => {
     expect(tokens["{{HEIGHT}}"]).toBe('6.2"');
   });
 });
+

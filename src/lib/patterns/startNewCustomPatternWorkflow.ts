@@ -3,6 +3,7 @@
  */
 import {
   buildDropShoulderBuilderNewPatternHref,
+  buildSidewaysCardiganBuilderNewPatternHref,
   buildSleevelessExpressNewPatternHref,
 } from "./patternStorage";
 import { dispatchCustomPatternEditingStateChanged } from "./customPatternEditingBannerActions";
@@ -78,9 +79,10 @@ export function navigateToFreshSleevelessPattern(href = buildSleevelessExpressNe
 }
 
 export function buildFreshPatternHrefForPage(doc?: Document): string {
-  return resolvePatternSystemForBuilderGate(doc) === "drop-shoulder"
-    ? buildDropShoulderBuilderNewPatternHref()
-    : buildSleevelessExpressNewPatternHref();
+  const system = resolvePatternSystemForBuilderGate(doc);
+  if (system === "drop-shoulder") return buildDropShoulderBuilderNewPatternHref();
+  if (system === "sideways-cardigan") return buildSidewaysCardiganBuilderNewPatternHref();
+  return buildSleevelessExpressNewPatternHref();
 }
 
 export function navigateToFreshPatternForPage(doc?: Document): void {

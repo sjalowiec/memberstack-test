@@ -805,6 +805,13 @@ describe("pair helper, renderer, and architecture", () => {
     );
     expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
     expect(toeUp).toContain(`data-tip-id="${SOCK_ANKLE_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_TOE_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`player.vimeo.com/video/${SOCK_TOE_FINISHING_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_HEEL_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_TOE_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_TOE_FINISHING_VIDEO_TIP_ID}"`);
+    expect(toeUp).not.toContain(`data-tip-id="${SOCK_WHY_STOP_ROW_COUNTER_TIP_ID}"`);
   });
 
   it("produces a compact outline for review", () => {

@@ -4,8 +4,15 @@
  * The browser must send a real Memberstack session JWT (`Authorization: Bearer`) on every
  * protected request. A normal navigation GET cannot attach that header; Help Hub and
  * member-lesson previews obtain the JWT via `$memberstackDom.getMemberCookie()` and send it
- * on fetch. Tokens are never cached across requests — each call re-reads the current session.
+ * on fetch. Netlify Basic Auth on `/admin/*` is a separate gate and does not authenticate
+ * these APIs.
+ *
+ * Token reads wait for the Memberstack DOM package and retry `getMemberCookie()` because
+ * `getCurrentMember` can exist before the JWT is available. Tokens are never cached across
+ * requests — each call re-reads the current session.
  */
+
+import { openMemberstackLoginModal } from "../memberstackLogin";
 
 export const ADMIN_SIGN_IN_REQUIRED_MESSAGE = "Sign in with your Knit it Now account to continue.";
 export const ADMIN_FORBIDDEN_MESSAGE = "This Knit it Now account does not have admin access.";
@@ -106,10 +113,87 @@ export async function getAdminAuthHeaders(): Promise<Record<string, string>> {
   return {};
 }
 
+export type AdminJsonResult<T = Record<string, unknown>> = {
+  ok: boolean;
+  status: number;
+  data: T;
+  error?: string;
+  needsSignIn?: boolean;
+  forbidden?: boolean;
+};
+
 function asRecord(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+/**
+ * Authenticated JSON request for Help Hub (and other) admin APIs.
+ * Reads a fresh Memberstack token immediately before each fetch.
+ * Does not report success unless the HTTP response is OK and `data.ok` is true.
+ */
+export async function fetchAdminJson<T = Record<string, unknown>>(
+  url: string,
+  init: {
+    method: string;
+    body?: unknown;
+    headers?: Record<string, string>;
+    fetchImpl?: typeof fetch;
+    getHeaders?: typeof getAdminAuthHeaders;
+    allowMissingToken?: boolean;
+  },
+): Promise<AdminJsonResult<T>> {
+  const fetchImpl = init.fetchImpl ?? fetch;
+  const getHeaders = init.getHeaders ?? getAdminAuthHeaders;
+  const headers: Record<string, string> = { ...(init.headers ?? {}) };
+  if (init.body !== undefined && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const authHeaders = await getHeaders();
+  Object.assign(headers, authHeaders);
+
+  const allowMissingToken = init.allowMissingToken ?? isDevAdminBypassEnabled();
+  if (!headers.Authorization && !allowMissingToken) {
+    return {
+      ok: false,
+      status: 401,
+      data: {} as T,
+      error: ADMIN_SIGN_IN_REQUIRED_MESSAGE,
+      needsSignIn: true,
+    };
+  }
+
+  const res = await fetchImpl(url, {
+    method: init.method,
+    headers,
+    credentials: "same-origin",
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+
+  const raw = await res.json().catch(() => ({}));
+  const data = asRecord(raw) as T;
+  const record = asRecord(raw);
+  const errorText =
+    typeof record.error === "string" && record.error.trim()
+      ? record.error.trim()
+      : res.status === 401
+        ? ADMIN_SIGN_IN_REQUIRED_MESSAGE
+        : res.status === 403
+          ? ADMIN_FORBIDDEN_MESSAGE
+          : `Request failed (${res.status})`;
+
+  if (res.status === 401) {
+    return { ok: false, status: 401, data, error: errorText, needsSignIn: true };
+  }
+  if (res.status === 403) {
+    return { ok: false, status: 403, data, error: errorText, forbidden: true };
+  }
+  if (!res.ok || record.ok !== true) {
+    return { ok: false, status: res.status, data, error: errorText };
+  }
+  return { ok: true, status: res.status, data };
 }
 
 export type AdminHtmlResult = {
@@ -124,7 +208,8 @@ export type AdminHtmlResult = {
 /**
  * Authenticated HTML request for admin preview pages.
  * Reads a fresh Memberstack token immediately before each fetch.
- * Success is HTML. 401/403 are JSON errors when the server returns JSON.
+ * Success is HTML. 401/403 are JSON errors when the server returns JSON
+ * (Sign In / Admin access required).
  */
 export async function fetchAdminHtml(
   url: string,
@@ -195,4 +280,8 @@ export const KIN_ADMIN_PREVIEW_BOOTSTRAP_ATTR = "data-kin-admin-preview-bootstra
 
 export function htmlLooksLikeAdminPreviewBootstrap(html: string): boolean {
   return html.includes(KIN_ADMIN_PREVIEW_BOOTSTRAP_ATTR);
+}
+
+export function promptAdminSignIn(returnPath?: string): void {
+  openMemberstackLoginModal(returnPath);
 }

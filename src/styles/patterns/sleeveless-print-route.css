@@ -916,6 +916,7 @@
       max-width: 1.9in !important;
       height: auto !important;
       max-height: none !important;
+      object-fit: contain !important;
       margin: 0 auto !important;
     }
 

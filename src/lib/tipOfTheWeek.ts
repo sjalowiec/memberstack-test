@@ -18,6 +18,8 @@ export type TipOfTheWeekConfig = {
   eyebrow: string;
   title: string;
   intro: string;
+  /** Optional glossary slug or phrase for the first intro tooltip. */
+  introGlossarySlug?: string;
   availabilityNotice: string;
   /** ISO date (YYYY-MM-DD) — available-from for the free window (LA calendar). */
   availableFrom?: string;

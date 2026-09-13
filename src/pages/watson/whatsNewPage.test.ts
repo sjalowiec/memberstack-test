@@ -3,7 +3,7 @@ import path from "path";
 
 import { describe, expect, it } from "vitest";
 
-describe("Watson What�s New page", () => {
+describe("Watson What's New page", () => {
   const page = fs.readFileSync(path.resolve("src/pages/watson/whats-new.astro"), "utf8");
   const publicPage = fs.readFileSync(path.resolve("src/pages/whats-new.astro"), "utf8");
   const shell = fs.readFileSync(

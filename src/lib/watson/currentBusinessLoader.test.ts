@@ -16,7 +16,7 @@ describe("currentBusinessLoader", () => {
           data: [
             {
               id: "mem_1",
-              createdAt: "2026-07-01T00:00:00.000Z",
+              createdAt: new Date().toISOString(),
               planConnections: [],
             },
           ],

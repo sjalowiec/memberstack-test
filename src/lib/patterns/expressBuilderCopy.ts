@@ -3,6 +3,8 @@
 export const EXPRESS_BUILDER_INTRO_SUBTEXT =
   "Start with the closest size. We'll fill in the measurements for you, and if you own the pattern, you can customize every measurement later.";
 
+export const EXPRESS_BUILDER_SIZE_RANGE_HEADING = "Size Range";
+
 export const EXPRESS_BUILDER_SIZE_HEADING = "Choose your starting size";
 
 export const EXPRESS_BUILDER_SIZE_INSTRUCTION =

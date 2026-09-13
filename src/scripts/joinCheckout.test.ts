@@ -21,7 +21,15 @@ import { MEMBERSHIP_SALES_CTA } from "../lib/membership/membershipSalesCta";
 
 function memberPayload(
   id: string | null,
-  connections: Array<{ planId: string; status: string }> = [],
+  connections: Array<{
+    planId: string;
+    status: string;
+    payment?: {
+      priceId?: string;
+      cancelAtDate?: number | null;
+      nextBillingDate?: number | null;
+    };
+  }> = [],
 ) {
   if (!id) return { data: null };
   return {
@@ -30,6 +38,19 @@ function memberPayload(
       planConnections: connections,
     },
   };
+}
+
+function cancelingMonthlyMember(id = "mem_canceling_monthly") {
+  return memberPayload(id, [
+    {
+      planId: MEMBERSHIPS.membership.memberstackPlanId,
+      status: "ACTIVE",
+      payment: {
+        priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+        cancelAtDate: 1788057600, // 2026-08-30-ish
+      },
+    },
+  ]);
 }
 
 function stubDom(options?: {
@@ -277,8 +298,6 @@ describe("startJoinCheckout (purchase / current)", () => {
     expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
   });
 
-<<<<<<< HEAD
-=======
   it("canceling monthly + switchToAnnual launches annual price checkout (not portal)", async () => {
     const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
       data: { url: "https://checkout.stripe.test/annual-switch" },
@@ -421,7 +440,6 @@ describe("startJoinCheckout (purchase / current)", () => {
     expect(launchStripeCustomerPortal).toHaveBeenCalled();
   });
 
->>>>>>> 5b51b4ff (Improve legacy membership renewal flow)
   it("logged-out monthly click opens SIGNUP (not LOGIN-only) and stores pending checkout", async () => {
     const openModal = vi.fn().mockImplementation(async () => {
       const raw = sessionStorage.getItem(PENDING_MEMBERSHIP_CHECKOUT_KEY);

@@ -13,13 +13,14 @@ interface ImportMetaEnv {
   /** Server-only: Watson owner password for private admin access. */
   readonly WATSON_ADMIN_PASSWORD?: string;
   /**
-   * Server-only: Memberstack member ids allowed to use admin APIs and unpublished
-   * course preview. Never expose to the browser.
+   * Server-only: comma/space/semicolon-separated Memberstack member ids allowed
+   * to use admin APIs (Help Hub, lessons CMS, Shop Machines, reports) and
+   * unpublished course preview. Never expose to the browser.
    */
   readonly ADMIN_MEMBER_IDS?: string;
   /**
-   * Server-only: Memberstack emails allowed to use admin APIs and unpublished
-   * course preview. Never expose to the browser.
+   * Server-only: comma/space/semicolon-separated Memberstack emails allowed
+   * to use admin APIs and unpublished course preview. Never expose to the browser.
    */
   readonly ADMIN_MEMBER_EMAILS?: string;
   /** Server-only: live Memberstack Admin API secret (production). */
@@ -62,6 +63,20 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY?: string;
   /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
   readonly CONTACT_FROM_EMAIL?: string;
+  /**
+   * Server-only: GitHub token for Watson course-content saves on kin-dev.
+   * Contents:write on this repository. Never expose to the browser.
+   */
+  readonly GITHUB_TOKEN?: string;
+  /** Server-only: GitHub repository in `owner/name` form for course-content commits. */
+  readonly GITHUB_REPO?: string;
+  /** Server-only: branch that receives course-content commits. Must be `dev`. */
+  readonly COURSE_CONTENT_GITHUB_BRANCH?: string;
+  /**
+   * Server-only: branch that receives Machines for Sale hosted saves.
+   * Must be `main`. Defaults to `main`.
+   */
+  readonly MACHINE_SALES_GITHUB_BRANCH?: string;
 }
 
 declare global {
@@ -77,7 +92,7 @@ declare global {
     /** rAF + short retry until PinUtils exists (tab-hidden embeds); optional root for scoped build */
     kbmSchedulePinterestEmbedsRefresh?: (root?: Document | Element | null) => void;
     __DEV_BYPASS_GATING?: boolean;
-    /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
+    /** Localhost + ?member=true: set in BaseLayout; shared snapshot also grants memberAccess. */
     __KBM_DEV_MEMBER__?: boolean;
     /** Latest member-access resolution from BaseLayout (for late-loading page gates). */
     __KIN_MEMBER_ACCESS__?: {

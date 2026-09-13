@@ -4,6 +4,11 @@ import {
   ACTIVITY_EVENT_PREFIX,
   describeActivityAdmin403,
   isActivityAdmin,
+  isKinDevNetlifySite,
+  isKinDevPatternActivityOwner,
+  KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
+  KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
+  KIN_DEV_SITE_ID,
   normalizeActivityEvent,
 } from "./pattern-activity-store.js";
 
@@ -178,6 +183,141 @@ describe("isActivityAdmin", () => {
     });
     expect(JSON.stringify(diagnostic)).not.toContain(ADMIN_EMAIL);
     expect(JSON.stringify(diagnostic)).not.toContain("mem_secretadmin");
+  });
+});
+
+describe("isActivityAdmin", () => {
+  const ADMIN_ID = "mem_admin";
+  const ADMIN_EMAIL = "admin@knitbymachine.com";
+  const ENV_KEYS = [
+    "NODE_ENV",
+    "CONTEXT",
+    "ALLOW_DEV_PATTERN_USER",
+    "PATTERN_ACTIVITY_ADMIN_MEMBER_IDS",
+    "PATTERN_ACTIVITY_ADMIN_EMAILS",
+    "SITE_NAME",
+    "SITE_ID",
+    "URL",
+    "DEPLOY_PRIME_URL",
+  ];
+  /** @type {Record<string, string | undefined>} */
+  let savedEnv = {};
+
+  function makeReq(emailHeader = "") {
+    const headers = {};
+    if (emailHeader) headers["x-kbm-member-email"] = emailHeader;
+    return new Request("https://site.test/.netlify/functions/pattern-activity-log", {
+      method: "GET",
+      headers,
+    });
+  }
+
+  beforeEach(() => {
+    savedEnv = {};
+    for (const key of ENV_KEYS) savedEnv[key] = process.env[key];
+    process.env.NODE_ENV = "production";
+    process.env.CONTEXT = "production";
+    delete process.env.ALLOW_DEV_PATTERN_USER;
+    delete process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS;
+    delete process.env.PATTERN_ACTIVITY_ADMIN_EMAILS;
+    delete process.env.SITE_NAME;
+    delete process.env.SITE_ID;
+    delete process.env.URL;
+    delete process.env.DEPLOY_PRIME_URL;
+  });
+
+  afterEach(() => {
+    for (const key of ENV_KEYS) {
+      if (savedEnv[key] === undefined) delete process.env[key];
+      else process.env[key] = savedEnv[key];
+    }
+  });
+
+  it("allows an admin by verified member id", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS = ADMIN_ID;
+    expect(isActivityAdmin(makeReq(), ADMIN_ID, "someone@example.com")).toBe(true);
+  });
+
+  it("allows an admin by verified Memberstack email", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq(), "mem_someone", ADMIN_EMAIL)).toBe(true);
+  });
+
+  it("allows by verified email when the client omits X-KBM-Member-Email", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq(), "mem_someone", ADMIN_EMAIL)).toBe(true);
+  });
+
+  it("rejects a signed-in non-admin", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS = ADMIN_ID;
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq("someone@example.com"), "mem_regular", "someone@example.com")).toBe(
+      false,
+    );
+  });
+
+  it("does not grant access from a spoofed client email when verified identity is not allowlisted", () => {
+    process.env.PATTERN_ACTIVITY_ADMIN_EMAILS = ADMIN_EMAIL;
+    expect(isActivityAdmin(makeReq(ADMIN_EMAIL), "mem_regular", "someone@example.com")).toBe(false);
+  });
+
+  it("identifies the hosted kin-dev Netlify site from SITE_NAME, SITE_ID, or URL", () => {
+    expect(isKinDevNetlifySite({ SITE_NAME: "kin-dev" })).toBe(true);
+    expect(isKinDevNetlifySite({ SITE_ID: KIN_DEV_SITE_ID })).toBe(true);
+    expect(isKinDevNetlifySite({ URL: "https://kin-dev.netlify.app" })).toBe(true);
+    expect(isKinDevNetlifySite({ URL: "https://knititnow.com" })).toBe(false);
+    expect(isKinDevNetlifySite({ SITE_NAME: "knititnow" })).toBe(false);
+    expect(isKinDevNetlifySite({})).toBe(false);
+  });
+
+  it("allows the kin-dev LIVE owner by verified member id without env allowlists", () => {
+    process.env.SITE_NAME = "kin-dev";
+    expect(
+      isActivityAdmin(makeReq(), KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID, "someone@example.com"),
+    ).toBe(true);
+    expect(isKinDevPatternActivityOwner(KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID, "")).toBe(true);
+  });
+
+  it("allows the kin-dev LIVE owner by verified email without env allowlists", () => {
+    process.env.SITE_NAME = "kin-dev";
+    expect(
+      isActivityAdmin(makeReq(), "mem_other_live", KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL),
+    ).toBe(true);
+  });
+
+  it("does not treat a spoofed member-id header as the kin-dev owner", () => {
+    process.env.SITE_NAME = "kin-dev";
+    const req = new Request("https://kin-dev.netlify.app/.netlify/functions/pattern-activity-log", {
+      method: "GET",
+      headers: { "x-kbm-member-id": KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID },
+    });
+    expect(isActivityAdmin(req, "mem_regular", "someone@example.com")).toBe(false);
+  });
+
+  it("does not allow the kin-dev owner identity on production", () => {
+    process.env.SITE_NAME = "knititnow";
+    process.env.URL = "https://knititnow.com";
+    process.env.CONTEXT = "production";
+    expect(
+      isActivityAdmin(
+        makeReq(),
+        KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
+        KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
+      ),
+    ).toBe(false);
+    expect(
+      isKinDevPatternActivityOwner(
+        KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
+        KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
+      ),
+    ).toBe(false);
+  });
+
+  it("still denies other members on kin-dev", () => {
+    process.env.SITE_NAME = "kin-dev";
+    expect(isActivityAdmin(makeReq("other@example.com"), "mem_regular", "other@example.com")).toBe(
+      false,
+    );
   });
 });
 
