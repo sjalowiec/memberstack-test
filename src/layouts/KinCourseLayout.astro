@@ -3,6 +3,7 @@ import KinCourseFooter from "../components/kinCourse/KinCourseFooter.astro";
 import KinCourseHeader from "../components/kinCourse/KinCourseHeader.astro";
 import CoursePurchaseButton from "../components/courses/CoursePurchaseButton.astro";
 import KinCourse86Sales from "../components/courses/KinCourse86Sales.astro";
+import KinCourse111Sales from "../components/courses/KinCourse111Sales.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/site-chrome.css";
@@ -10,8 +11,10 @@ import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
 import { kinCourseNoAccessMessage } from "../lib/kinCourse/accessGateState";
 import {
   courseHasIndividualPurchase,
+  isSk840CourseSlug,
   isTaitexma160CourseSlug,
 } from "../lib/kinCourse/coursePurchase";
+import { getKinCourseSalesCopy } from "../lib/kinCourse/courseSalesCopy";
 import { getCourseAccessBySlug } from "../lib/coursesCatalogAccess";
 import {
   KIN_COURSE_CACHE_PAINT_CSS,
@@ -47,8 +50,8 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
 const courseAccess = getCourseAccessBySlug(courseSlug);
 const canBuy = courseHasIndividualPurchase(courseSlug);
 const showCourse86Sales = isTaitexma160CourseSlug(courseSlug);
-const course86SalesDescription =
-  "Feel confident using your Taitexma TH/TR-160. This course helps you set up, operate, and troubleshoot your machine so you can spend more time knitting.";
+const showCourse111Sales = isSk840CourseSlug(courseSlug);
+const courseSalesDescription = getKinCourseSalesCopy(courseSlug)?.metaDescription ?? "";
 const purchaseCopy =
   "This course is included with Knit It Now membership. You can also purchase this course on its own.";
 ---
@@ -60,8 +63,8 @@ const purchaseCopy =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {
-      showCourse86Sales ? (
-        <meta name="description" content={course86SalesDescription} />
+      showCourse86Sales || showCourse111Sales ? (
+        <meta name="description" content={courseSalesDescription} />
       ) : null
     }
     <link
@@ -133,6 +136,12 @@ const purchaseCopy =
             {
               showCourse86Sales ? (
                 <KinCourse86Sales
+                  courseSlug={courseSlug}
+                  thumbnailSrc={thumbnailSrc}
+                  thumbnailAlt={thumbnailAlt}
+                />
+              ) : showCourse111Sales ? (
+                <KinCourse111Sales
                   courseSlug={courseSlug}
                   thumbnailSrc={thumbnailSrc}
                   thumbnailAlt={thumbnailAlt}

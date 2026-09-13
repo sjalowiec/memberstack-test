@@ -1,11 +1,11 @@
 ---
 /**
- * Course 86 sales page shown in the KIN locked slot for visitors without access.
+ * Course 111 sales page shown in the KIN locked slot for visitors without access.
  * Access rules stay in canAccessCourse / kinCourseAccessGate. Members and Course
- * 86 owners never see this because the gate paints the player instead.
+ * 111 owners never see this because the gate paints the player instead.
  */
 import KinCourseSales from "./KinCourseSales.astro";
-import { KIN_TAITEXMA_SALES_COPY } from "../../lib/kinCourse/courseSalesCopy";
+import { KIN_SK840_SALES_COPY } from "../../lib/kinCourse/courseSalesCopy";
 
 interface Props {
   courseSlug: string;
@@ -18,7 +18,7 @@ const { courseSlug, thumbnailSrc, thumbnailAlt } = Astro.props;
 
 <KinCourseSales
   courseSlug={courseSlug}
-  copy={KIN_TAITEXMA_SALES_COPY}
+  copy={KIN_SK840_SALES_COPY}
   thumbnailSrc={thumbnailSrc}
   thumbnailAlt={thumbnailAlt}
 />

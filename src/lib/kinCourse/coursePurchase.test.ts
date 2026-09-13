@@ -15,6 +15,8 @@ import { MEMBERSHIPS } from "../../config/memberships";
 import {
   courseCheckoutPriceId,
   coursePurchasePriceLabel,
+  isSk840CourseSlug,
+  isTaitexma160CourseSlug,
   shouldShowCoursePurchaseCta,
   shouldShowCoursePurchaseCtaForViewer,
   shouldShowKinCourseSalesPage,
@@ -38,6 +40,11 @@ const loggedInNoPlan = {
 
 describe("course checkout Price IDs", () => {
   it("assigns the TH160 Price ID to Course 86 and the SK840 Price ID to Course 111", () => {
+    expect(isTaitexma160CourseSlug("86")).toBe(true);
+    expect(isTaitexma160CourseSlug("111")).toBe(false);
+    expect(isSk840CourseSlug("111")).toBe(true);
+    expect(isSk840CourseSlug(LEGACY_SK840_COURSE_SLUG)).toBe(true);
+    expect(isSk840CourseSlug("86")).toBe(false);
     expect(courseCheckoutPriceId(KIN_TAITEXMA_160_COURSE_SLUG)).toBe(TH160_COURSE_PRICE_ID);
     expect(courseCheckoutPriceId("86")).toBe(TH160_COURSE_PRICE_ID);
     expect(courseCheckoutPriceId(LEGACY_SK840_COURSE_SLUG)).toBe(SK840_COURSE_PRICE_ID);
@@ -105,7 +112,7 @@ describe("course purchase CTA visibility", () => {
     ).toBe(false);
   });
 
-  it("shows a Course 86 sales page only when the viewer lacks access", () => {
+  it("shows a sales page only when the viewer lacks access to that course", () => {
     expect(
       shouldShowKinCourseSalesPage({
         courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
@@ -117,7 +124,7 @@ describe("course purchase CTA visibility", () => {
         courseSlug: LEGACY_SK840_COURSE_SLUG,
         hasAccess: false,
       }),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       shouldShowKinCourseSalesPageForViewer({
         access: "purchase",
@@ -133,7 +140,7 @@ describe("course purchase CTA visibility", () => {
       }),
     ).toBe(false);
     expect(coursePurchasePriceLabel(KIN_TAITEXMA_160_COURSE_SLUG)).toBe("$49.99");
-    expect(coursePurchasePriceLabel(LEGACY_SK840_COURSE_SLUG)).toBeNull();
+    expect(coursePurchasePriceLabel(LEGACY_SK840_COURSE_SLUG)).toBe("$49.99");
   });
 
   it("keeps TH160 and SK840 purchase options independent", () => {
@@ -169,7 +176,9 @@ describe("course purchase UI wiring", () => {
     expect(button).not.toContain("data-ms-plan");
     expect(layout).toContain("CoursePurchaseButton");
     expect(layout).toContain("KinCourse86Sales");
+    expect(layout).toContain("KinCourse111Sales");
     expect(layout).toContain("isTaitexma160CourseSlug");
+    expect(layout).toContain("isSk840CourseSlug");
     expect(layout).toContain("data-course-access={courseAccess}");
     expect(layout).not.toContain('data-course-access="member"');
     expect(gate).toContain("CoursePurchaseButton");

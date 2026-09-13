@@ -54,6 +54,7 @@ export const COURSE_INDIVIDUAL_SALES = {
     legacyPlanId: LEGACY_SK840_COURSE_PLAN_ID,
     paidPlanId: PAID_SK840_COURSE_PLAN_ID,
     priceId: SK840_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
 } as const satisfies Record<IndividualCourseSaleKey, IndividualCourseSale>;
 
