@@ -2,9 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCourseCatalogEntries } from "../coursesCatalog";
+import { readCourseContentFile } from "../legacy_kin/courseContentAdmin";
+import { kinCourseHomeHref, kinCourseLessonHref, parseKinCourseId } from "./hrefs";
 import { loadKinCourseBundle } from "./load";
 import { flattenLessons, getLessonContext } from "./player";
-import { kinCourseHomeHref, kinCourseLessonHref } from "./hrefs";
 
 const requireAdminForRequest = vi.hoisted(() => vi.fn());
 
@@ -123,6 +124,54 @@ describe("numeric course admin preview", () => {
     expect(bundle?.course.id).toBe(111);
     expect(flattenLessons(bundle!.course).length).toBeGreaterThan(10);
     expect(flattenLessons(bundle!.course).some((lesson) => lesson.id === 6171)).toBe(false);
+  });
+
+  it("resolves published Course 111 through the player route when the DEV overlay is still draft", async () => {
+    requireAdminForRequest.mockResolvedValue(unauthenticated);
+    const overlay = structuredClone(readCourseContentFile(COURSE_111_ID));
+    overlay.course.status = "draft";
+    overlay.course.published = false;
+    overlay.lessons[0]!.title = "Overlay draft title";
+
+    const url = new URL("https://kin-dev.netlify.app/courses/111");
+    expect(parseKinCourseId("111")).toBe(COURSE_111_ID);
+    const options = await kinCourseLoadOptions(url, requestFor(url));
+    expect(options.includeDrafts).toBe(false);
+
+    const bundle = await loadKinCourseBundle(COURSE_111_ID, {
+      ...options,
+      readCourseContentOverlay: async () => overlay,
+    });
+    expect(bundle?.course.id).toBe(111);
+    expect(bundle?.landing.catalogSlug).toBe("mastering-the-silver-reed-sk840");
+    expect(flattenLessons(bundle!.course).length).toBeGreaterThan(10);
+    expect(bundle?.course.sections[0]?.title).toBe("Learn About the Machine");
+    expect(bundle?.course.sections[0]?.title).not.toBe("Overlay draft title");
+
+    const home = readFileSync(join(process.cwd(), "src/pages/courses/[courseSlug]/index.astro"), "utf8");
+    expect(home).toContain("parseKinCourseId(Astro.params.courseSlug)");
+    expect(home).toContain("await loadKinCourseBundle(courseId, loadOptions)");
+    expect(home).toContain('return new Response("Course not found", { status: 404 })');
+    expect(home).toContain("KinCourseHomeView");
+  });
+
+  it("still uses a draft Course 111 overlay for authenticated admin preview", async () => {
+    requireAdminForRequest.mockResolvedValue(adminOk);
+    const overlay = structuredClone(readCourseContentFile(COURSE_111_ID));
+    overlay.course.status = "draft";
+    overlay.course.published = false;
+    overlay.lessons[0]!.title = "Overlay draft title";
+
+    const url = new URL("https://kin-dev.netlify.app/courses/111?preview=true");
+    const options = await kinCourseLoadOptions(url, requestFor(url));
+    expect(options.includeDrafts).toBe(true);
+
+    const bundle = await loadKinCourseBundle(COURSE_111_ID, {
+      ...options,
+      readCourseContentOverlay: async () => overlay,
+    });
+    expect(bundle?.course.id).toBe(111);
+    expect(bundle?.course.sections[0]?.title).toBe("Overlay draft title");
   });
 
   it("ignores preview=true on published Course 111 for an unauthenticated visitor", async () => {
