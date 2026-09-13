@@ -86,10 +86,17 @@ describe("Course 86 sales page visibility", () => {
     expect(layout).toContain("KinCourse86Sales");
     expect(layout).toContain("isTaitexma160CourseSlug");
     expect(layout).toContain("showCourse86Sales");
-    expect(sales).toContain("Feel Confident Using Your TH/TR-160");
+    expect(sales).toContain("Feel Confident Using Your Taitexma TH/TR-160");
+    expect(sales).toContain("Your Taitexma TH/TR-160 should be something you enjoy");
+    expect(sales).toContain("Set up and operate your Taitexma TH/TR-160 more confidently");
+    expect(sales).toContain("Ready to feel more confident with your Taitexma TH/TR-160?");
     expect(sales).toContain("Purchase the Course");
     expect(sales).toContain("Already own this course?");
     expect(sales).toContain("data-course-111-login");
+    expect(sales.match(/Taitexma TH\/TR-160/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(sales.match(/Taitexma TH\/TR-160/g)?.length).toBeLessThanOrEqual(6);
+    expect(sales).not.toMatch(/Titexima|Taitexima|Taitexama|Texima/i);
+    expect(sales).not.toMatch(/Your TH\/TR-160|your TH\/TR-160/);
   });
 
   it("lets authorized members and Course 86 owners enter the course instead", () => {
@@ -147,6 +154,7 @@ describe("Course 86 sales page visibility", () => {
     expect(layout).toContain("course-111-gate__card");
     expect(layout).toContain("Join Knit It Now");
     expect(layout).toContain("kinCourseNoAccessMessage");
+    expect(layout).not.toContain("Feel Confident Using Your Taitexma TH/TR-160");
     expect(layout).not.toContain("Feel Confident Using Your TH/TR-160");
   });
 });
@@ -200,8 +208,23 @@ describe("Course 86 sales thumbnail", () => {
     expect(sales).toContain("course-86-sales__image");
     expect(sales).toContain("height: auto");
     expect(sales).toContain("width: 100%");
+    expect(sales).toContain("border-radius: 10px");
+    expect(sales).toContain("overflow: hidden");
     expect(sales).toContain('"headline"');
     expect(sales).toContain('"image"');
     expect(sales).toContain("max-width: 900px");
+  });
+});
+
+describe("Course 86 sales title and spelling", () => {
+  it("puts Taitexma TH/TR-160 in the document title and Course 86 meta description", () => {
+    const homeView = readFileSync(resolve("src/components/kinCourse/KinCourseHomeView.astro"), "utf8");
+    expect(homeView).toContain("title={kinLanding.fullTitle}");
+    expect(landing).toContain('"fullTitle": "Taitexma TH/TR-160: Getting Started"');
+    expect(layout).toContain("course86SalesDescription");
+    expect(layout).toContain("Feel confident using your Taitexma TH/TR-160");
+    expect(layout).toContain('name="description"');
+    expect(layout).toContain("showCourse86Sales");
+    expect(layout).not.toMatch(/Titexima|Taitexima|Taitexama/i);
   });
 });
