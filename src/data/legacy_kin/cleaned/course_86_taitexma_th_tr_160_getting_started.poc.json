@@ -887,22 +887,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\t.col-margin-20px-left{\r\n\t\tpadding-left:20px;\r\n\t}\r\n</style>\r\n\r\n\r\n\t\r\n\t\tAlso called \"Picture Knitting\", Intarsia is a technique that allows color changes in the middle of the row without having floats across the back of the knitting.\r\n\t\t<br>\r\n\t\t\t<a href=\"/classrooms/191/intarsia\"><img class=\"img-thumbnail\" src=\"/images/glossary/intarsia_sample2.jpg\" width=\"300\"></a> \r\n\t\t\r\n\t\t<span class=\"handwriting\" style=\"font-size:2em\">Once you understand how Intarsia is created on your machine, the sky's the limit!</span><br>\r\n\r\n\r\n\t\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control INTARSIA:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\") <br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>INTAR<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t\t\r\n\r\n<hr class=\"style13\">\r\n",
+              "html": "<style>\n\t.circle {\n\t\twidth: 25px;\n\t\theight: 25px;\n\t\tborder-radius: 50%;\n\t\tbox-sizing: border-box;\n\t\ttext-align: center;\n\t\tdisplay: inline-block;\n\t\tline-height: 25px;\n\t\tbackground-color: #9E2065;\n\t}\n\n\t.circle a {\n\t\ttext-decoration: none;\n\t\tcolor: #fff;\n\t\tfont-size: 16px;\n\t}\n\n\t.container-border {\n\t\tborder: 1px solid #ccc;\n\t\tborder-radius: 15px;\n\t\tpadding-top: 20px;\n\t\tpadding-right: 20px;\n\t\tpadding-bottom: 20px;\n\t\tpadding-left: 50px;\n\t}\n\n\t.abc {\n\t\tfont-size: 200%;\n\t\tfont-weight: bold;\n\t}\n\n\t.def {\n\t\tfont-size: 150%;\n\t\tfont-weight: bold;\n\t}\n\n\thr.style13 {\n\t\theight: 10px;\n\t\tborder: 0;\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\n\t}\n\t.col-margin-20px-left{\n\t\tpadding-left:20px;\n\t}\n</style>\n\n\n\t\n\t\tAlso called \"Picture Knitting\", Intarsia is a technique that allows color changes in the middle of the row without having floats across the back of the knitting.\n\t\t<br><br><span style=\"font-size: 15.3px;\">Once you understand how Intarsia is created on your machine, the sky's the limit!</span><div><br>\n\t\t\t<a href=\"/classrooms/191/intarsia\"><img class=\"img-thumbnail\" src=\"/images/glossary/intarsia_sample2.jpg\" width=\"300\"></a>&nbsp;<br>\n\n\n\t\n\t<div class=\"container-border\">\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control INTARSIA:</span><br></center>\n\n\t\t\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\") <br></div>\n\t\t\n\n\t\t\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>INTAR<br></div>\n\t\t\n\n\t\t\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\n\t\t\t</div>\n\t\t\n\t</div>\n\n\t\t\n\n<hr class=\"style13\">\n</div>",
               "legacyComponentId": 6445,
               "order": 1
-            },
-            {
-              "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For intarsia inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=/classrooms/191/intarsia\"><b>Knit it Now Classroom: Intarsia</b></a>\r\n\t</div>\r\n",
-              "legacyComponentId": 6447,
-              "order": 2
             },
             {
               "type": "video",
               "vimeoId": "528316951",
               "title": null,
               "legacyComponentId": 6446,
-              "order": 3
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -927,7 +921,7 @@
                 "TYPEOF": "VimeoJumpLinks"
               },
               "legacyComponentId": 6448,
-              "order": 4
+              "order": 3
             }
           ],
           "title": "About Intarsia",
@@ -1386,7 +1380,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\n  hr.style13 {\n    height: 10px;\n    border: 0;\n    box-shadow: 0 10px 10px -10px #8c8b8b inset;\n  }\n\n  .ribber-images {\n    display: flex;\n    gap: 12px;\n    align-items: flex-start;\n  }\n\n  .ribber-images img {\n    width: calc((100% - 24px) / 3);\n    height: auto;\n    display: block;\n  }\n</style>\n\n<hr class=\"style13\">\n\n<div class=\"ribber-images\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber1.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber1a.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber2.jpg\" alt=\"Adjusting the ribber\">\n</div>",
+              "html": "<style>\n\n  .ribber-images {\n    display: flex;\n    gap: 12px;\n    align-items: flex-start;\n  }\n\n  .ribber-images img {\n    width: calc((100% - 24px) / 3);\n    height: auto;\n    display: block;\n  }\n</style>\n\n\n<div class=\"ribber-images\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber1.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber1a.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber2.jpg\" alt=\"Adjusting the ribber\">\n</div>",
               "legacyComponentId": 6534,
               "order": 3
             },
