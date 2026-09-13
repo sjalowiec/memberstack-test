@@ -377,7 +377,7 @@
                 },
                 {
                   "src": "/challenge/images/v2/86/v2/86/pink1.jpg",
-                  "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a #4 it is lighter than the previous blue yarn"
+                  "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a 4 it is lighter than the previous blue yarn"
                 },
                 {
                   "src": "/challenge/images/v2/86/v2/86/pink2.jpg",
@@ -546,33 +546,6 @@
               "title": null,
               "legacyComponentId": 6413,
               "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "VimeoJumpLinks",
-              "notes": [
-                "Unmapped legacy component type: VimeoJumpLinks"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "4222",
-                "CHALLENGE_COMPONENTID": "6417",
-                "LINKTIME_1": "00:00:18",
-                "LINKTIME_2": "00:00:59",
-                "LINKTIME_3": "00:01:27",
-                "LINKTIME_4": "00:02:16",
-                "LINKTIME_5": "00:02:31",
-                "LINKTIME_6": "00:04:24",
-                "LINKTIME_7": "00:06:01",
-                "LINKTITLE_1": "Yarn on cones only? No!",
-                "LINKTITLE_2": "Thread the mast",
-                "LINKTITLE_3": "Mast Tension Dial",
-                "LINKTITLE_4": "Cast on (my method)",
-                "LINKTITLE_5": "Carriage settings (don't skip this)",
-                "LINKTITLE_6": "Use the cast-on comb",
-                "LINKTITLE_7": "Essential knitting tips"
-              },
-              "legacyComponentId": 6417,
-              "order": 2
             }
           ],
           "title": "Casting on Stitches",
@@ -589,7 +562,7 @@
               "type": "richText",
               "html": "Here is a fast way to create  a closed, e-wrap cast on by using the knitting carriage.<br>This method is helpful if you want to avoid manually wrapping each needle. <br>Using the \"slip\" setting:\n\nNeedles in \"B\" position don't knit<br>\nA single needle in \"E\" position (next to the carriage) will wrap.\n<br><ol>\n<li>Set the cam to \"slip\"</li>\n\n<li> Carriage on the left, pull 1 needle to \"E\" Position</li>\n<li> Pass the carriage right (the yarn will wrap and the needle will return to \"B\" position)\n</li><li>Pass the carriage left (the needle will not knit)</li>\n<li>repeat for the number of needles needed</li>\n<li>Hang a cast on comb</li>\n<li>Continue knitting</li>\n</ol>\n\n\n\n <div class=\"videopopup\" data-videotitle=\"wrapping\" data-vimeoid=\"827046152\">\n\t\t<img class=\"img-thumbnail ctr\" width=\"300\" src=\"https://i.vimeocdn.com/video/1670264450-c1133bedc76a507b731867eb04304025adb9df76fb46594172b76372da996b39-d\"><br><div class=\"text-center\"><img class=\"ctr\" src=\"/challenge/images/v2/86/no-sound-icon.png\" width=\"35\"> No sound</div>\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\n</div>\n\n\n\n",
               "legacyComponentId": 9511,
-              "order": 3
+              "order": 2
             }
           ],
           "title": "Automatic Cast On",
@@ -607,7 +580,7 @@
               "vimeoId": "527303259",
               "title": null,
               "legacyComponentId": 6412,
-              "order": 4
+              "order": 3
             },
             {
               "type": "migrationPending",
@@ -628,7 +601,7 @@
                 "LINKTITLE_4": "Pull stitch-through-stitch"
               },
               "legacyComponentId": 6414,
-              "order": 5
+              "order": 4
             }
           ],
           "title": "Binding Off",
@@ -1388,9 +1361,10 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\t<br>Racking refers to the position of the ribber needles in relation to the main bed needles.\r\n\t<img src=\"https://www.knititnow.com/images/glossary/racking.jpg\" width=\"300\">\r\n\r\n",
+              "html": "\n\t<br>Racking refers to the position of the ribber needles in relation to the main bed needles.\n\n\n",
               "legacyComponentId": 6485,
-              "order": 1
+              "order": 1,
+              "layoutRole": "textVideoLeft"
             },
             {
               "type": "video",
@@ -1412,7 +1386,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n\r\n\t<div class=\"container-border\">\r\n\r\n\r\n\t\t<img src=\"/challenge/images/v2/86/adjust_ribber1.jpg\">\r\n\r\n\t</div>\r\n\t<div class=\"container-border\">\r\n\r\n\t\t<img src=\"/challenge/images/v2/86/adjust_ribber1a.jpg\">\r\n\r\n\t</div>\r\n\r\n\r\n\t<div class=\"container-border\"><img src=\"/challenge/images/v2/86/adjust_ribber2.jpg\"></div>\r\n\r\n",
+              "html": "<style>\n  hr.style13 {\n    height: 10px;\n    border: 0;\n    box-shadow: 0 10px 10px -10px #8c8b8b inset;\n  }\n\n  .ribber-images {\n    display: flex;\n    gap: 12px;\n    align-items: flex-start;\n  }\n\n  .ribber-images img {\n    width: calc((100% - 24px) / 3);\n    height: auto;\n    display: block;\n  }\n</style>\n\n<hr class=\"style13\">\n\n<div class=\"ribber-images\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber1.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber1a.jpg\" alt=\"Adjusting the ribber\">\n  <img src=\"/challenge/images/v2/86/adjust_ribber2.jpg\" alt=\"Adjusting the ribber\">\n</div>",
               "legacyComponentId": 6534,
               "order": 3
             },
