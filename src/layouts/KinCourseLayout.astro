@@ -1,11 +1,14 @@
 ---
 import KinCourseFooter from "../components/kinCourse/KinCourseFooter.astro";
 import KinCourseHeader from "../components/kinCourse/KinCourseHeader.astro";
+import CoursePurchaseButton from "../components/courses/CoursePurchaseButton.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/site-chrome.css";
 import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
 import { kinCourseNoAccessMessage } from "../lib/kinCourse/accessGateState";
+import { courseHasIndividualPurchase } from "../lib/kinCourse/coursePurchase";
+import { getCourseAccessBySlug } from "../lib/coursesCatalogAccess";
 import {
   KIN_COURSE_CACHE_PAINT_CSS,
   kinCourseCacheAccessInlineScript,
@@ -37,6 +40,10 @@ const accessLabel = "Member Course";
 const membershipHref = "/membership";
 const previewUnlock = preview === true;
 const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
+const courseAccess = getCourseAccessBySlug(courseSlug);
+const canBuy = courseHasIndividualPurchase(courseSlug);
+const purchaseCopy =
+  "This course is included with Knit It Now membership. You can also purchase this course on its own.";
 ---
 
 <!doctype html>
@@ -99,7 +106,7 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
       class="course-111-gate"
       data-kin-course-gate
       data-course-gate
-      data-course-access="member"
+      data-course-access={courseAccess}
       data-course-slug={courseSlug}
       data-admin-preview={previewUnlock ? "true" : undefined}
       data-gate-pending={!previewUnlock}
@@ -127,30 +134,49 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
               <div data-gate-copy="loggedOut">
                 <p class="course-111-gate__label">{accessLabel}</p>
                 <p class="course-111-gate__msg">
-                  This course is included with Knit It Now membership. Log in to
-                  continue, or join to unlock access.
+                  {canBuy
+                    ? purchaseCopy
+                    : "This course is included with Knit It Now membership. Log in to continue, or join to unlock access."}
                 </p>
                 <div class="course-111-gate__actions">
+                  {
+                    canBuy ? (
+                      <CoursePurchaseButton
+                        courseSlug={courseSlug}
+                        className="course-111-gate__purchase"
+                      />
+                    ) : null
+                  }
                   <button type="button" class="course-111-gate__login" data-course-111-login>
                     Log in
                   </button>
                   <a class="course-111-gate__join" href={membershipHref}>
                     Join Knit It Now
                   </a>
+                  <p class="course-111-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
                 </div>
               </div>
               <div data-gate-copy="loggedInNoAccess" hidden>
-                <p class="course-111-gate__label">Membership required</p>
+                <p class="course-111-gate__label">{canBuy ? "Course access" : "Membership required"}</p>
                 <p class="course-111-gate__msg">
                   {noAccessMessage}
                 </p>
                 <div class="course-111-gate__actions">
+                  {
+                    canBuy ? (
+                      <CoursePurchaseButton
+                        courseSlug={courseSlug}
+                        className="course-111-gate__purchase"
+                      />
+                    ) : null
+                  }
                   <a class="course-111-gate__join" href={membershipHref}>
                     Become a member
                   </a>
                   <button type="button" class="course-111-gate__logout" data-course-111-logout>
                     Log out / switch account
                   </button>
+                  <p class="course-111-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
                 </div>
               </div>
             </div>
@@ -221,7 +247,9 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
     </script>
     <script>
       import { runKinCourseAccessGateBoot } from "../scripts/kinCourseAccessGate";
+      import { runCourseCheckoutBoot } from "../scripts/courseCheckout";
       runKinCourseAccessGateBoot();
+      runCourseCheckoutBoot();
     </script>
   </body>
 </html>
@@ -315,7 +343,8 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
 
   .course-111-gate__login,
   .course-111-gate__join,
-  .course-111-gate__logout {
+  .course-111-gate__logout,
+  .course-111-gate__purchase {
     display: inline-block;
     min-width: 12rem;
     padding: 0.65rem 1.25rem;
@@ -326,14 +355,17 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
     cursor: pointer;
   }
 
-  .course-111-gate__login {
+  .course-111-gate__login,
+  .course-111-gate__purchase {
     border: 1px solid var(--kin-green);
     background: var(--kin-green);
     color: #fff;
   }
 
   .course-111-gate__login:hover,
-  .course-111-gate__login:focus {
+  .course-111-gate__login:focus,
+  .course-111-gate__purchase:hover,
+  .course-111-gate__purchase:focus {
     background: var(--kin-green-hover);
     border-color: var(--kin-green-hover);
     color: #fff;
@@ -353,6 +385,16 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
     background: #f3f6ec;
     color: var(--kin-green-hover);
     text-decoration: none;
+  }
+
+  .course-111-gate__checkout-status {
+    margin: 0.15rem 0 0;
+    font-size: 0.88rem;
+    color: #4d5a48;
+  }
+
+  .course-111-gate__checkout-status[data-tone="error"] {
+    color: #b91c1c;
   }
 
   .legacy-page {

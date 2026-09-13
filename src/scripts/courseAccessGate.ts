@@ -38,6 +38,11 @@ function setGateAccess(gate: HTMLElement, unlocked: boolean): void {
     if (unlocked) el.setAttribute("hidden", "");
     else el.removeAttribute("hidden");
   });
+  gate.querySelectorAll<HTMLElement>("[data-course-checkout]").forEach((btn) => {
+    btn.hidden = unlocked;
+    if (unlocked) btn.setAttribute("aria-hidden", "true");
+    else btn.removeAttribute("aria-hidden");
+  });
 }
 
 async function resolveGate(gate: HTMLElement): Promise<void> {

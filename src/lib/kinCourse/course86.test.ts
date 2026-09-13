@@ -56,7 +56,7 @@ describe("Course 86 temporary DEV testing publication", () => {
     expect(catalogCard?.href).toBe("/courses/86");
     expect(catalogCard?.title).toBe("Taitexma TH/TR-160: Getting Started");
     expect(catalogCard?.buttonLabel).toBe("View Course");
-    expect(catalogCard?.access).toBe("member");
+    expect(catalogCard?.access).toBe("purchase");
     expect(catalogCard?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const catalog = readFileSync(join(process.cwd(), "src/data/courses-catalog.json"), "utf8");

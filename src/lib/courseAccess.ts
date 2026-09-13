@@ -10,13 +10,16 @@
  *                  confirmed Watson paid-through date today or later)
  *                  or a mapped individual-course plan for this slug.
  *   - "purchase" — included with membership (same as member courses).
- *                  Non-members may unlock via individual purchase entitlement.
+ *                  Non-members may unlock via that course's Legacy or Paid plan.
  *
  * This helper reuses the global Memberstack payload parsing
  * (`getActivePlanIds`, `isMemberLoggedIn`) so course gating stays consistent
  * with every other gated section.
  */
-import { LEGACY_COURSE_PLAN_SLUGS } from "../config/legacyCourseEntitlements";
+import {
+  canonicalCourseCatalogSlug,
+  LEGACY_COURSE_PLAN_SLUGS,
+} from "../config/legacyCourseEntitlements";
 import { getActivePlanIds, hasMemberAccess, isMemberLoggedIn, type MemberAccessOptions } from "./memberAccess";
 
 export type CourseAccessLevel = "free" | "member" | "purchase";
@@ -80,15 +83,16 @@ export function hasPremiumCourseAccess(memberOrPayload: unknown): boolean {
 }
 
 /**
- * Individual course purchase entitlement for non-members.
+ * Individual course entitlement for non-members.
  * Unlocks only the course slugs mapped to the member's active plan IDs
- * (`LEGACY_COURSE_PLAN_SLUGS`). Catalog locks and CourseAccessGate share this.
+ * (`LEGACY_COURSE_PLAN_SLUGS`: Legacy and Paid plans). Catalog locks and
+ * CourseAccessGate share this. Price IDs are never used for entitlement.
  */
 export function hasIndividualCoursePurchase(
   courseSlug: string | null | undefined,
   memberOrPayload: unknown,
 ): boolean {
-  const slug = typeof courseSlug === "string" ? courseSlug.trim() : "";
+  const slug = canonicalCourseCatalogSlug(courseSlug);
   if (!slug) return false;
 
   return getActivePlanIds(memberOrPayload).some((planId) => {

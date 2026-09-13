@@ -42,7 +42,7 @@ describe("getCourseCatalogEntries href", () => {
     expect(entry?.href).toBe(sk840Href);
     expect(entry?.buttonLabel).toBe("View Course");
     expect(entry?.title).toBe("Mastering the Silver Reed SK840");
-    expect(entry?.access).toBe("member");
+    expect(entry?.access).toBe("purchase");
     expect(entry?.category).toBe("Silver Reed");
     expect(entry?.href).not.toContain("mastering-the-silver-reed-sk840-a-comprehensive-course");
     expect(entry?.href).toMatch(/^\/courses\/111$/);
@@ -81,7 +81,7 @@ describe("getCourseCatalogEntries href", () => {
     expect(entry?.href).toBe(taitexmaHref);
     expect(entry?.buttonLabel).toBe("View Course");
     expect(entry?.title).toBe("Taitexma TH/TR-160: Getting Started");
-    expect(entry?.access).toBe("member");
+    expect(entry?.access).toBe("purchase");
     expect(entry?.category).toBe("Taitexma");
     expect(entry?.href).toMatch(/^\/courses\/86$/);
     expect(entry?.href).not.toContain("courses.knititnow.com");
@@ -194,7 +194,7 @@ describe("public course catalog cleanup", () => {
     ]);
     expect(sections[1]?.courses[0]?.href).toBe("/courses/86");
     expect(sections[1]?.courses[0]?.buttonLabel).toBe("View Course");
-    expect(sections[1]?.courses[0]?.access).toBe("member");
+    expect(sections[1]?.courses[0]?.access).toBe("purchase");
     expect(sections[1]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
@@ -211,7 +211,7 @@ describe("public course catalog cleanup", () => {
       "/courses/86",
     ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
-    expect(entries[0]?.access).toBe("member");
+    expect(entries[0]?.access).toBe("purchase");
     expect(entries[0]?.hasThumbnail).toBe(true);
     expect(entries[0]?.thumbnail).toBe("/images/courses/mastering-silver-reed-sk840.png");
 

@@ -5,14 +5,16 @@
  * - "free":     renders the `content` slot for everyone (no gate markup).
  * - "member" / "purchase":
  *               locked teaser + hidden `content` slot; client script flips them
- *               when `canAccessCourse` grants access (members/Beta always;
- *               purchase entitlements for non-members when available).
+ *               when `canAccessCourse` grants access (members always;
+ *               Legacy/Paid course plans for non-members when mapped).
  *
  * Provide a custom locked state via the `locked` slot (e.g. on the landing page);
  * otherwise a default teaser card is rendered.
  */
 import LoginNudge from "../auth/LoginNudge.astro";
+import CoursePurchaseButton from "./CoursePurchaseButton.astro";
 import type { CourseAccessLevel } from "../../lib/courseAccess";
+import { courseHasIndividualPurchase } from "../../lib/kinCourse/coursePurchase";
 
 interface Props {
   access: CourseAccessLevel;
@@ -24,7 +26,7 @@ interface Props {
 
 const {
   access,
-  courseSlug,
+  courseSlug = "",
   joinHref = "/membership",
   lockedTitle,
   lockedMessage,
@@ -32,12 +34,15 @@ const {
 
 const isFree = access === "free";
 const isPurchase = access === "purchase";
+const canBuy = courseHasIndividualPurchase(courseSlug);
 const hasLockedSlot = Astro.slots.has("locked");
 
 const defaultLockedTitle = isPurchase ? "Course access" : "Member course";
-const defaultLockedMessage = isPurchase
-  ? "This course is included with membership. Individual purchases for non-members are coming soon."
-  : "This course is included with membership.";
+const defaultLockedMessage = canBuy
+  ? "This course is included with Knit It Now membership. You can also purchase this course on its own."
+  : isPurchase
+    ? "This course is included with membership. Individual purchases for non-members are coming soon."
+    : "This course is included with membership.";
 ---
 
 {
@@ -59,10 +64,17 @@ const defaultLockedMessage = isPurchase
             <h2 class="course-gate__title">{lockedTitle ?? defaultLockedTitle}</h2>
             <p class="course-gate__msg">{lockedMessage ?? defaultLockedMessage}</p>
             <div class="course-gate__actions">
+              {canBuy ? (
+                <CoursePurchaseButton
+                  courseSlug={courseSlug}
+                  className="kbm-btn kbm-btn-accent course-gate__cta"
+                />
+              ) : null}
               <a class="kbm-btn kbm-btn-accent course-gate__cta" href={joinHref}>
-                Join to unlock
+                {canBuy ? "Join Knit It Now" : "Join to unlock"}
               </a>
               <LoginNudge className="course-gate__nudge" />
+              <p class="course-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
             </div>
           </div>
         )}
@@ -79,7 +91,9 @@ const defaultLockedMessage = isPurchase
   !isFree ? (
     <script>
       import { runCourseAccessGateBoot } from "../../scripts/courseAccessGate";
+      import { runCourseCheckoutBoot } from "../../scripts/courseCheckout";
       runCourseAccessGateBoot();
+      runCourseCheckoutBoot();
     </script>
   ) : null
 }
@@ -117,6 +131,16 @@ const defaultLockedMessage = isPurchase
 
   .course-gate__cta {
     text-decoration: none;
+  }
+
+  .course-gate__checkout-status {
+    margin: 0.35rem 0 0;
+    font-size: 0.88rem;
+    color: #4d5a48;
+  }
+
+  .course-gate__checkout-status[data-tone="error"] {
+    color: #b91c1c;
   }
 
   /* LoginNudge ships white text (for dark overlays); recolor for this light card. */

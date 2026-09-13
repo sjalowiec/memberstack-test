@@ -9,6 +9,8 @@ import {
 import {
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
+  PAID_SK840_COURSE_PLAN_ID,
+  PAID_TH160_COURSE_PLAN_ID,
 } from "../config/legacyCourseEntitlements";
 import { MEMBERSHIPS } from "../config/memberships";
 import { kinCourseGateViewer } from "./kinCourseAccessGate";
@@ -67,6 +69,23 @@ describe("kinCourseGateViewer", () => {
     expect(kinCourseGateViewer(true, member)).toBe("open");
     expect(kinCourseGateViewer(true, sk840Only)).toBe("open");
   });
+
+  it("treats Paid TH160 and Paid SK840 plans as independent entitlements", () => {
+    const th160Paid = payloadWithPlan(PAID_TH160_COURSE_PLAN_ID);
+    const sk840Paid = payloadWithPlan(PAID_SK840_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("purchase", th160Paid, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", th160Paid, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(false);
+    expect(
+      canAccessCourse("purchase", sk840Paid, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", sk840Paid, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(false);
+  });
 });
 
 describe("KIN course gate live session refresh", () => {
@@ -107,7 +126,9 @@ describe("KIN course layout shared login wiring", () => {
     expect(layoutSource).toContain('from "../lib/memberstackPostLogin"');
     expect(layoutSource).toContain('id="kbm-ms-login-proxy"');
     expect(layoutSource).not.toContain("kin-ms-login-proxy");
-    expect(layoutSource).toContain('data-admin-preview={previewUnlock ? "true" : undefined}');
+    expect(layoutSource).toContain("CoursePurchaseButton");
+    expect(layoutSource).toContain("runCourseCheckoutBoot");
+    expect(layoutSource).toContain("data-course-access={courseAccess}");
   });
 
   it("does not clear the same-origin Memberstack session before boot", () => {

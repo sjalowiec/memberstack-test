@@ -4,7 +4,10 @@
  * Unresolved Memberstack is never a denial: keep the lesson hidden (fail-closed)
  * and do not show the unauthorized card until the SDK has finished loading.
  */
-import { LEGACY_SK840_COURSE_SLUG } from "../../config/legacyCourseEntitlements";
+import {
+  KIN_TAITEXMA_160_COURSE_SLUG,
+  LEGACY_SK840_COURSE_SLUG,
+} from "../../config/legacyCourseEntitlements";
 import { canAccessCourse } from "../courseAccess";
 import { isMemberLoggedIn } from "../memberAccess";
 import {
@@ -12,7 +15,7 @@ import {
   memberRecordFromMemberstackPayload,
 } from "../patterns/memberstackMember";
 
-export const KIN_TAITEXMA_160_COURSE_SLUG = "taitexma-th-tr-160-getting-started" as const;
+export { KIN_TAITEXMA_160_COURSE_SLUG };
 
 export const KIN_COURSE_ACCESS_SESSION_KEY = "kin-course-access-v1";
 
@@ -34,7 +37,7 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
 }
 
 export function kinCourseNoAccessMessage(courseSlug: string): string {
-  return `You are signed in, but this course needs an active Knit It Now membership or ${kinCourseNoAccessPlanPhrase(courseSlug)}.`;
+  return `You are signed in, but this course needs an active Knit It Now membership or ${kinCourseNoAccessPlanPhrase(courseSlug)}. You can also purchase this course on its own.`;
 }
 
 /** Paint the denial card only after Memberstack finished loading. */
