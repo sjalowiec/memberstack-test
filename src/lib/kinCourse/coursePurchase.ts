@@ -8,6 +8,7 @@ import {
   canonicalCourseCatalogSlug,
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
+  LEGACY_SK840_COURSE_SLUG,
   type IndividualCourseSale,
 } from "../../config/legacyCourseEntitlements";
 import { canAccessCourse, type CourseAccessLevel } from "../courseAccess";
@@ -52,17 +53,20 @@ export function isTaitexma160CourseSlug(courseSlug: string | null | undefined): 
   return canonicalCourseCatalogSlug(courseSlug) === KIN_TAITEXMA_160_COURSE_SLUG;
 }
 
+export function isSk840CourseSlug(courseSlug: string | null | undefined): boolean {
+  return canonicalCourseCatalogSlug(courseSlug) === LEGACY_SK840_COURSE_SLUG;
+}
+
 /**
- * Course 86 sales page replaces the generic locked card for visitors without
- * access. Authorized members and Course 86 owners keep the player. Course 111
- * keeps its existing locked card.
+ * Course 86 and Course 111 sales pages replace the generic locked card for
+ * visitors without access. Members and owners of that course keep the player.
  */
 export function shouldShowKinCourseSalesPage(args: {
   courseSlug: string | null | undefined;
   hasAccess: boolean;
 }): boolean {
   if (args.hasAccess) return false;
-  return isTaitexma160CourseSlug(args.courseSlug);
+  return isTaitexma160CourseSlug(args.courseSlug) || isSk840CourseSlug(args.courseSlug);
 }
 
 export function shouldShowKinCourseSalesPageForViewer(args: {
