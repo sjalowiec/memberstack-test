@@ -1,0 +1,292 @@
+---
+/**
+ * Course 86 sales page shown in the KIN locked slot for visitors without access.
+ * Access rules stay in canAccessCourse / kinCourseAccessGate. Members and Course
+ * 86 owners never see this because the gate paints the player instead.
+ */
+import CoursePurchaseButton from "./CoursePurchaseButton.astro";
+import { KIN_TAITEXMA_160_COURSE_SLUG } from "../../config/legacyCourseEntitlements";
+import { getCourseCatalogEntries } from "../../lib/coursesCatalog";
+import {
+  courseCheckoutPriceId,
+  coursePurchasePriceLabel,
+} from "../../lib/kinCourse/coursePurchase";
+
+interface Props {
+  courseSlug: string;
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
+}
+
+const { courseSlug, thumbnailSrc, thumbnailAlt } = Astro.props;
+const catalogEntry = getCourseCatalogEntries().find(
+  (entry) => entry.slug === KIN_TAITEXMA_160_COURSE_SLUG,
+);
+const imageSrc = (thumbnailSrc || catalogEntry?.thumbnail || "").trim();
+const imageAlt = (
+  thumbnailAlt ||
+  catalogEntry?.title ||
+  "Taitexma TH/TR-160 knitting machine"
+).trim();
+const priceId = courseCheckoutPriceId(courseSlug);
+const priceLabel = coursePurchasePriceLabel(courseSlug);
+const benefits = [
+  "Approach your machine without feeling overwhelmed",
+  "Set up and operate your machine more confidently",
+  "Troubleshoot common problems",
+  "Spend less time searching for answers and more time knitting",
+];
+---
+
+<article class="course-86-sales">
+  <header class="course-86-sales__hero">
+    <h1 class="course-86-sales__headline">Feel Confident Using Your TH/TR-160</h1>
+    {
+      imageSrc ? (
+        <figure class="course-86-sales__figure">
+          <img
+            class="course-86-sales__image"
+            src={imageSrc}
+            alt={imageAlt}
+            width="600"
+            height="338"
+          />
+        </figure>
+      ) : null
+    }
+    <div class="course-86-sales__intro">
+      <p>
+        Your knitting machine should be something you enjoy, not something that leaves you
+        wondering what to do next.
+      </p>
+      <p>
+        This course helps you move past the confusion and start using your TH/TR-160 with greater
+        confidence.
+      </p>
+    </div>
+  </header>
+
+  <section class="course-86-sales__benefits" aria-labelledby="course-86-sales-benefits-heading">
+    <h2 id="course-86-sales-benefits-heading">With this course, you’ll be able to:</h2>
+    <ul>
+      {benefits.map((benefit) => (
+        <li>{benefit}</li>
+      ))}
+    </ul>
+    <p class="course-86-sales__support">
+      Work through the course at your own pace and return whenever you need a refresher.
+    </p>
+  </section>
+
+  <section class="course-86-sales__cta" aria-labelledby="course-86-sales-cta-heading">
+    <h2 id="course-86-sales-cta-heading">Ready to feel more confident with your TH/TR-160?</h2>
+    <div class="course-86-sales__buy-row">
+      {
+        priceLabel ? (
+          <p class="course-86-sales__price">
+            <span class="course-86-sales__price-value">{priceLabel}</span>
+          </p>
+        ) : null
+      }
+      {
+        priceId ? (
+          <CoursePurchaseButton
+            courseSlug={courseSlug}
+            label="Purchase the Course"
+            className="course-home-start course-86-sales__buy"
+          />
+        ) : null
+      }
+    </div>
+    <p class="course-86-sales__checkout-status" data-course-checkout-status hidden role="status"></p>
+    <p class="course-86-sales__owner" data-gate-copy="loggedOut">
+      Already own this course?{" "}
+      <button type="button" class="course-86-sales__signin" data-course-111-login>
+        Sign in
+      </button>{" "}
+      to continue learning.
+    </p>
+    <div data-gate-copy="loggedInNoAccess" hidden></div>
+  </section>
+</article>
+
+<style>
+  .course-86-sales {
+    max-width: 960px;
+    margin: 0 auto;
+    color: #222;
+  }
+
+  .course-86-sales__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 42%);
+    grid-template-areas:
+      "headline image"
+      "intro image";
+    gap: 12px 40px;
+    align-items: start;
+    margin-bottom: 28px;
+  }
+
+  .course-86-sales__headline {
+    grid-area: headline;
+    margin: 0;
+    font-family: var(--kin-chrome-font, "Poppins", sans-serif);
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .course-86-sales__figure {
+    grid-area: image;
+    margin: 0;
+  }
+
+  .course-86-sales__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #d7d7d7;
+    background: #fff;
+  }
+
+  .course-86-sales__intro {
+    grid-area: intro;
+  }
+
+  .course-86-sales__intro p,
+  .course-86-sales__support {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: #222;
+  }
+
+  .course-86-sales__intro p:last-child,
+  .course-86-sales__support {
+    margin-bottom: 0;
+  }
+
+  .course-86-sales__benefits,
+  .course-86-sales__cta {
+    margin: 0 0 28px;
+  }
+
+  .course-86-sales__benefits h2,
+  .course-86-sales__cta h2 {
+    margin: 0 0 12px;
+    font-size: 1.35rem;
+    line-height: 1.3;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .course-86-sales__benefits ul {
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .course-86-sales__benefits li {
+    margin: 0 0 8px;
+    padding-left: 18px;
+    position: relative;
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .course-86-sales__benefits li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #52682d;
+  }
+
+  .course-86-sales__buy-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+  }
+
+  .course-86-sales__price {
+    margin: 0;
+    color: #52682d;
+  }
+
+  .course-86-sales__price-value {
+    display: inline-block;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  :global(button.course-86-sales__buy) {
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .course-86-sales__checkout-status {
+    margin: 10px 0 0;
+    font-size: 0.88rem;
+    color: #4d5a48;
+  }
+
+  .course-86-sales__checkout-status[data-tone="error"] {
+    color: #b91c1c;
+  }
+
+  .course-86-sales__owner {
+    margin: 14px 0 0;
+    font-size: 0.98rem;
+    color: #4d5a48;
+  }
+
+  .course-86-sales__signin {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #52682d;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    cursor: pointer;
+  }
+
+  .course-86-sales__signin:hover,
+  .course-86-sales__signin:focus-visible {
+    color: #3f5123;
+  }
+
+  @media (max-width: 900px) {
+    .course-86-sales__hero {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "headline"
+        "image"
+        "intro";
+      gap: 16px;
+    }
+
+    .course-86-sales__headline {
+      font-size: 1.7rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .course-86-sales__headline {
+      font-size: 1.45rem;
+    }
+
+    .course-86-sales__buy-row :global(.course-home-start) {
+      flex: 1 1 100%;
+    }
+  }
+</style>

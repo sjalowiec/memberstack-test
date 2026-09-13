@@ -14,8 +14,11 @@ import {
 import { MEMBERSHIPS } from "../../config/memberships";
 import {
   courseCheckoutPriceId,
+  coursePurchasePriceLabel,
   shouldShowCoursePurchaseCta,
   shouldShowCoursePurchaseCtaForViewer,
+  shouldShowKinCourseSalesPage,
+  shouldShowKinCourseSalesPageForViewer,
 } from "./coursePurchase";
 
 function payloadWithPlan(planId: string) {
@@ -102,6 +105,37 @@ describe("course purchase CTA visibility", () => {
     ).toBe(false);
   });
 
+  it("shows a Course 86 sales page only when the viewer lacks access", () => {
+    expect(
+      shouldShowKinCourseSalesPage({
+        courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
+        hasAccess: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldShowKinCourseSalesPage({
+        courseSlug: LEGACY_SK840_COURSE_SLUG,
+        hasAccess: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldShowKinCourseSalesPageForViewer({
+        access: "purchase",
+        memberOrPayload: loggedOut,
+        courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
+      }),
+    ).toBe(true);
+    expect(
+      shouldShowKinCourseSalesPageForViewer({
+        access: "purchase",
+        memberOrPayload: payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId),
+        courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
+      }),
+    ).toBe(false);
+    expect(coursePurchasePriceLabel(KIN_TAITEXMA_160_COURSE_SLUG)).toBe("$49.99");
+    expect(coursePurchasePriceLabel(LEGACY_SK840_COURSE_SLUG)).toBeNull();
+  });
+
   it("keeps TH160 and SK840 purchase options independent", () => {
     const th160Paid = payloadWithPlan(PAID_TH160_COURSE_PLAN_ID);
     const sk840Paid = payloadWithPlan(PAID_SK840_COURSE_PLAN_ID);
@@ -134,6 +168,8 @@ describe("course purchase UI wiring", () => {
     expect(button).toContain("courseCheckoutPriceId");
     expect(button).not.toContain("data-ms-plan");
     expect(layout).toContain("CoursePurchaseButton");
+    expect(layout).toContain("KinCourse86Sales");
+    expect(layout).toContain("isTaitexma160CourseSlug");
     expect(layout).toContain("data-course-access={courseAccess}");
     expect(layout).not.toContain('data-course-access="member"');
     expect(gate).toContain("CoursePurchaseButton");

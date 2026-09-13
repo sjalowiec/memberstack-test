@@ -2,12 +2,16 @@
 import KinCourseFooter from "../components/kinCourse/KinCourseFooter.astro";
 import KinCourseHeader from "../components/kinCourse/KinCourseHeader.astro";
 import CoursePurchaseButton from "../components/courses/CoursePurchaseButton.astro";
+import KinCourse86Sales from "../components/courses/KinCourse86Sales.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
 import "../styles/kin-course/site-chrome.css";
 import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
 import { kinCourseNoAccessMessage } from "../lib/kinCourse/accessGateState";
-import { courseHasIndividualPurchase } from "../lib/kinCourse/coursePurchase";
+import {
+  courseHasIndividualPurchase,
+  isTaitexma160CourseSlug,
+} from "../lib/kinCourse/coursePurchase";
 import { getCourseAccessBySlug } from "../lib/coursesCatalogAccess";
 import {
   KIN_COURSE_CACHE_PAINT_CSS,
@@ -42,6 +46,7 @@ const previewUnlock = preview === true;
 const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
 const courseAccess = getCourseAccessBySlug(courseSlug);
 const canBuy = courseHasIndividualPurchase(courseSlug);
+const showCourse86Sales = isTaitexma160CourseSlug(courseSlug);
 const purchaseCopy =
   "This course is included with Knit It Now membership. You can also purchase this course on its own.";
 ---
@@ -118,68 +123,78 @@ const purchaseCopy =
       <div class="course-111-gate__locked" data-gated="locked" hidden>
         <main class="legacy-page">
           <div class="legacy-page-inner">
-            <div class="course-111-gate__card">
-              {
-                thumbnailSrc ? (
-                  <img
-                    class="course-111-gate__thumb"
-                    src={thumbnailSrc}
-                    alt={thumbnailAlt || lockedTitle}
-                    width="600"
-                    height="338"
-                  />
-                ) : null
-              }
-              <h1 class="course-111-gate__title">{lockedTitle}</h1>
-              <div data-gate-copy="loggedOut">
-                <p class="course-111-gate__label">{accessLabel}</p>
-                <p class="course-111-gate__msg">
-                  {canBuy
-                    ? purchaseCopy
-                    : "This course is included with Knit It Now membership. Log in to continue, or join to unlock access."}
-                </p>
-                <div class="course-111-gate__actions">
+            {
+              showCourse86Sales ? (
+                <KinCourse86Sales
+                  courseSlug={courseSlug}
+                  thumbnailSrc={thumbnailSrc}
+                  thumbnailAlt={thumbnailAlt}
+                />
+              ) : (
+                <div class="course-111-gate__card">
                   {
-                    canBuy ? (
-                      <CoursePurchaseButton
-                        courseSlug={courseSlug}
-                        className="course-111-gate__purchase"
+                    thumbnailSrc ? (
+                      <img
+                        class="course-111-gate__thumb"
+                        src={thumbnailSrc}
+                        alt={thumbnailAlt || lockedTitle}
+                        width="600"
+                        height="338"
                       />
                     ) : null
                   }
-                  <button type="button" class="course-111-gate__login" data-course-111-login>
-                    Log in
-                  </button>
-                  <a class="course-111-gate__join" href={membershipHref}>
-                    Join Knit It Now
-                  </a>
-                  <p class="course-111-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
+                  <h1 class="course-111-gate__title">{lockedTitle}</h1>
+                  <div data-gate-copy="loggedOut">
+                    <p class="course-111-gate__label">{accessLabel}</p>
+                    <p class="course-111-gate__msg">
+                      {canBuy
+                        ? purchaseCopy
+                        : "This course is included with Knit It Now membership. Log in to continue, or join to unlock access."}
+                    </p>
+                    <div class="course-111-gate__actions">
+                      {
+                        canBuy ? (
+                          <CoursePurchaseButton
+                            courseSlug={courseSlug}
+                            className="course-111-gate__purchase"
+                          />
+                        ) : null
+                      }
+                      <button type="button" class="course-111-gate__login" data-course-111-login>
+                        Log in
+                      </button>
+                      <a class="course-111-gate__join" href={membershipHref}>
+                        Join Knit It Now
+                      </a>
+                      <p class="course-111-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
+                    </div>
+                  </div>
+                  <div data-gate-copy="loggedInNoAccess" hidden>
+                    <p class="course-111-gate__label">{canBuy ? "Course access" : "Membership required"}</p>
+                    <p class="course-111-gate__msg">
+                      {noAccessMessage}
+                    </p>
+                    <div class="course-111-gate__actions">
+                      {
+                        canBuy ? (
+                          <CoursePurchaseButton
+                            courseSlug={courseSlug}
+                            className="course-111-gate__purchase"
+                          />
+                        ) : null
+                      }
+                      <a class="course-111-gate__join" href={membershipHref}>
+                        Become a member
+                      </a>
+                      <button type="button" class="course-111-gate__logout" data-course-111-logout>
+                        Log out / switch account
+                      </button>
+                      <p class="course-111-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div data-gate-copy="loggedInNoAccess" hidden>
-                <p class="course-111-gate__label">{canBuy ? "Course access" : "Membership required"}</p>
-                <p class="course-111-gate__msg">
-                  {noAccessMessage}
-                </p>
-                <div class="course-111-gate__actions">
-                  {
-                    canBuy ? (
-                      <CoursePurchaseButton
-                        courseSlug={courseSlug}
-                        className="course-111-gate__purchase"
-                      />
-                    ) : null
-                  }
-                  <a class="course-111-gate__join" href={membershipHref}>
-                    Become a member
-                  </a>
-                  <button type="button" class="course-111-gate__logout" data-course-111-logout>
-                    Log out / switch account
-                  </button>
-                  <p class="course-111-gate__checkout-status" data-course-checkout-status hidden role="status"></p>
-                </div>
-              </div>
-            </div>
+              )
+            }
           </div>
         </main>
       </div>
