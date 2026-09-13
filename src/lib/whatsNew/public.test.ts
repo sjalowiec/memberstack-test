@@ -12,6 +12,7 @@ import {
   splitPublicColumnCards,
   stepPublicColumnVisibleCount,
   publicColumnRevealLabel,
+  whatsNewStatusLabel,
   WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
 } from "./public";
 import type { WhatsNewCard, WhatsNewCardRow } from "./types";
@@ -49,6 +50,11 @@ describe("whats new public filtering and board grouping", () => {
 
     const publicCards = filterPublicWhatsNewCards(cards);
     expect(publicCards.map((c) => c.id)).toEqual(["pub"]);
+  });
+
+  it("labels statuses as Draft or Published", () => {
+    expect(whatsNewStatusLabel("draft")).toBe("Draft");
+    expect(whatsNewStatusLabel("published")).toBe("Published");
   });
 
   it("groups by board column; deliberate manual order beats default 0 / date sorting", () => {

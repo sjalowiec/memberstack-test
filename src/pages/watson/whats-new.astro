@@ -15,6 +15,7 @@ import {
   boardColumnMeta,
   formatQuietPublishDate,
   groupWhatsNewCardsByColumn,
+  whatsNewStatusLabel,
 } from "../../lib/whatsNew/public";
 import {
   getWhatsNewBillboardSettings,
@@ -54,6 +55,7 @@ if (!loadError) {
 }
 
 const board = groupWhatsNewCardsByColumn(activeCards);
+const draftCount = activeCards.filter((card) => card.status === "draft").length;
 const today = new Date().toISOString().slice(0, 10);
 
 function cardDataAttr(card: (typeof activeCards)[number]): string {
@@ -380,9 +382,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
           </label>
           <label class="watson-wn__field">
             <span>Status</span>
-            <select class="watson__search-input" name="status">
-              <option value="published" selected>Published</option>
+            <select class="watson__search-input" name="status" data-wn-status-select>
               <option value="draft">Draft</option>
+              <option value="published" selected>Published</option>
             </select>
           </label>
           <label class="watson-wn__field">
@@ -417,6 +419,10 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         <h2 id="wn-board-heading" class="watson__panel-title">Board</h2>
         <button type="button" class="watson__button" data-wn-open-create>Add Update</button>
       </div>
+      <p class="watson-wn__hint" data-wn-board-hint>
+        Showing published and draft cards. Drafts stay hidden on the public page.
+        {draftCount === 1 ? " 1 draft on this board." : ` ${draftCount} drafts on this board.`}
+      </p>
 
       <div class="watson-wn__board">
         {
@@ -441,12 +447,18 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                       const toolIcon = resolveWhatsNewToolIcon(card);
                       return (
                       <li
-                        class={`watson-wn__card${card.featured ? " watson-wn__card--featured" : ""}`}
+                        class={`watson-wn__card${card.featured ? " watson-wn__card--featured" : ""}${card.status === "draft" ? " watson-wn__card--draft" : ""}`}
                         style={whatsNewCategoryCardStyle(card.category)}
+                        data-wn-card-status={card.status}
                       >
                         <div class="watson-wn__card-meta">
                           <span class="watson-wn__category">{card.categoryLabel}</span>
-                          <span>{card.status}</span>
+                          <span
+                            class={`watson-wn__status watson-wn__status--${card.status}`}
+                            data-wn-status-label
+                          >
+                            {whatsNewStatusLabel(card.status)}
+                          </span>
                           {card.featured ? (
                             <span class="watson-wn__badge watson-wn__badge--featured">featured</span>
                           ) : null}
@@ -546,11 +558,20 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         ) : (
           <ul class="watson-wn__cards">
             {archivedCards.map((card) => (
-              <li class="watson-wn__card" style={whatsNewCategoryCardStyle(card.category)}>
+              <li
+                class={`watson-wn__card${card.status === "draft" ? " watson-wn__card--draft" : ""}`}
+                style={whatsNewCategoryCardStyle(card.category)}
+                data-wn-card-status={card.status}
+              >
                 <div class="watson-wn__card-meta">
                   <span class="watson-wn__category">{card.categoryLabel}</span>
                   <span>{boardColumnMeta(card.boardColumn).title}</span>
-                  <span>{card.status}</span>
+                  <span
+                    class={`watson-wn__status watson-wn__status--${card.status}`}
+                    data-wn-status-label
+                  >
+                    {whatsNewStatusLabel(card.status)}
+                  </span>
                 </div>
                 <strong>{card.title}</strong>
                 <p class="watson-wn__card-desc">{cardDescriptionPlainText(card.description)}</p>
@@ -607,6 +628,10 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
     flex-wrap: wrap;
     gap: 0.65rem;
     align-items: center;
+  }
+
+  .watson-wn__board-head + .watson-wn__hint {
+    margin: -0.5rem 0 1rem;
   }
 
   .watson-wn__toolbar,
@@ -950,6 +975,27 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
   .watson-wn__badge--featured {
     background: var(--wn-badge-featured-bg, #5c254b) !important;
     color: var(--wn-badge-featured-text, #fff) !important;
+  }
+
+  .watson-wn__card--draft {
+    border-style: dashed;
+    background: #fffdf6;
+  }
+
+  .watson-wn__status {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 700;
+  }
+
+  .watson-wn__status--draft {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+  }
+
+  .watson-wn__status--published {
+    background: #e8f0e3 !important;
+    color: #27632a !important;
   }
 
   .watson-wn__button--danger {

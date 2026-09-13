@@ -34,6 +34,10 @@ export function isWhatsNewStatus(value: string): value is WhatsNewStatus {
   return (WHATS_NEW_STATUSES as readonly string[]).includes(value);
 }
 
+export function whatsNewStatusLabel(status: WhatsNewStatus): "Draft" | "Published" {
+  return status === "published" ? "Published" : "Draft";
+}
+
 export function toIsoDateOnly(value: Date | string | null | undefined): string | null {
   if (value == null) return null;
   if (typeof value === "string") {

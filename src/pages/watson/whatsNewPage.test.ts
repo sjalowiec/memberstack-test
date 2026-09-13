@@ -26,6 +26,37 @@ describe("Watson What's New page", () => {
     expect(shell).toContain('href="/watson/whats-new"');
   });
 
+  it("shows Draft and Published labels and keeps drafts on the Watson board", () => {
+    expect(page).toContain("listAllWhatsNewCards");
+    expect(page).not.toContain("listPublicWhatsNewCards");
+    expect(page).not.toContain("filterPublicWhatsNewCards");
+    expect(page).not.toContain("getPublicWhatsNewBoard");
+    expect(page).toContain("whatsNewStatusLabel");
+    expect(page).toContain("data-wn-status-label");
+    expect(page).toContain("data-wn-card-status");
+    expect(page).toContain("watson-wn__card--draft");
+    expect(page).toContain("watson-wn__status--draft");
+    expect(page).toContain("watson-wn__status--published");
+    expect(page).toContain("Showing published and draft cards");
+    expect(page).toContain('name="status"');
+    expect(page).toContain('value="draft"');
+    expect(page).toContain('value="published"');
+    expect(page).toContain("data-wn-status-select");
+    expect(page).toContain("data-wn-edit");
+    expect(publicPage).toContain("getPublicWhatsNewBoard");
+    expect(publicPage).not.toContain("listAllWhatsNewCards");
+  });
+
+  it("saves status edits to the existing card instead of creating a duplicate", () => {
+    expect(script).toContain("fillForm(form, card)");
+    expect(script).toMatch(
+      /id\s*\n?\s*\?\s*await jsonFetch\(`\/api\/watson\/whats-new\/\$\{encodeURIComponent\(id\)\}`, "PATCH"/,
+    );
+    expect(script).toContain('jsonFetch("/api/watson/whats-new", "POST", payload)');
+    expect(script).toContain('if (action === "publish") body = { status: "published" }');
+    expect(script).toContain('if (action === "unpublish") body = { status: "draft" }');
+  });
+
   it("wires create/update and archive/restore client actions", () => {
     expect(script).toContain("/api/watson/whats-new");
     expect(script).toContain("archive");
