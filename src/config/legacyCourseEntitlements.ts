@@ -31,6 +31,8 @@ export type IndividualCourseSale = {
   legacyPlanId: string;
   paidPlanId: string;
   priceId: string;
+  /** Customer-facing price. Omit rather than inventing a dollar amount. */
+  priceLabel?: string;
 };
 
 export const COURSE_INDIVIDUAL_SALES = {
@@ -42,6 +44,7 @@ export const COURSE_INDIVIDUAL_SALES = {
     legacyPlanId: LEGACY_TH160_COURSE_PLAN_ID,
     paidPlanId: PAID_TH160_COURSE_PLAN_ID,
     priceId: TH160_COURSE_PRICE_ID,
+    priceLabel: "$49.99",
   },
   sk840: {
     key: "sk840",
