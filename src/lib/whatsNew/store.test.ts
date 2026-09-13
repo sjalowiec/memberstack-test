@@ -5,9 +5,11 @@ import {
   createWhatsNewCard,
   deleteWhatsNewCard,
   getPublicBillboardSettings,
+  listAllWhatsNewCards,
   listPublicWhatsNewCards,
   updateWhatsNewCard,
   upsertWhatsNewBillboardSettings,
+  WHATS_NEW_CARDS_ALL_SQL,
   WHATS_NEW_CARDS_PUBLIC_SQL,
   WHATS_NEW_DELETE_ACTIVE_PUBLISHED_ERROR,
 } from "./store";
@@ -36,9 +38,52 @@ function cardRow(overrides: Partial<WhatsNewCardRow> = {}): WhatsNewCardRow {
 }
 
 describe("whatsNew store", () => {
-  it("public list SQL only selects published non-archived cards", () => {
+  it("admin list includes draft cards that the public query excludes", async () => {
+    expect(WHATS_NEW_CARDS_ALL_SQL).not.toContain("status = 'published'");
     expect(WHATS_NEW_CARDS_PUBLIC_SQL).toContain("status = 'published'");
-    expect(WHATS_NEW_CARDS_PUBLIC_SQL).toContain("archived = FALSE");
+
+    const rows = [
+      cardRow({ id: "draft-1", status: "draft", archived: false }),
+      cardRow({ id: "pub-1", status: "published", archived: false }),
+      cardRow({ id: "arch-1", status: "published", archived: true }),
+    ];
+    const adminCards = await listAllWhatsNewCards(vi.fn().mockResolvedValue(rows), now);
+    expect(adminCards.map((card) => card.id)).toEqual(["draft-1", "pub-1", "arch-1"]);
+    expect(adminCards.some((card) => card.status === "draft")).toBe(true);
+
+    const publicCards = await listPublicWhatsNewCards(
+      vi.fn().mockResolvedValue([rows[1]]),
+      now,
+    );
+    expect(publicCards.map((card) => card.id)).toEqual(["pub-1"]);
+    expect(publicCards.every((card) => card.status === "published")).toBe(true);
+  });
+
+  it("changes a draft to published by updating the existing row", async () => {
+    const existing = cardRow({ id: "card-1", status: "draft" });
+    const published = cardRow({ id: "card-1", status: "published" });
+    const queryFn = vi.fn().mockResolvedValueOnce([existing]).mockResolvedValueOnce([published]);
+    const result = await updateWhatsNewCard("card-1", { status: "published" }, queryFn, now);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.status).toBe("published");
+    expect(queryFn).toHaveBeenCalledTimes(2);
+    expect(String(queryFn.mock.calls[1]?.[0])).toContain("UPDATE watson_whats_new_cards");
+    expect(String(queryFn.mock.calls[1]?.[0])).not.toMatch(/INSERT INTO watson_whats_new_cards/);
+    expect(queryFn.mock.calls[1]?.[1]?.[0]).toBe("card-1");
+    expect(queryFn.mock.calls[1]?.[1]?.[9]).toBe("published");
+  });
+
+  it("changes a published card to draft by updating the existing row", async () => {
+    const existing = cardRow({ id: "card-1", status: "published" });
+    const draft = cardRow({ id: "card-1", status: "draft" });
+    const queryFn = vi.fn().mockResolvedValueOnce([existing]).mockResolvedValueOnce([draft]);
+    const result = await updateWhatsNewCard("card-1", { status: "draft" }, queryFn, now);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.status).toBe("draft");
+    expect(String(queryFn.mock.calls[1]?.[0])).toContain("UPDATE watson_whats_new_cards");
+    expect(String(queryFn.mock.calls[1]?.[0])).not.toMatch(/INSERT INTO watson_whats_new_cards/);
+    expect(queryFn.mock.calls[1]?.[1]?.[0]).toBe("card-1");
+    expect(queryFn.mock.calls[1]?.[1]?.[9]).toBe("draft");
   });
 
   it("lists only rows returned by the public query", async () => {
