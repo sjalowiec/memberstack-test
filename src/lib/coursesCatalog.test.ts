@@ -73,6 +73,42 @@ describe("getCourseCatalogEntries href", () => {
     expect(entry?.href).not.toContain("courses.knititnow.com");
   });
 
+  it("lists Course 86 on the production catalog and links to /courses/86", () => {
+    const taitexmaHref = "/courses/86";
+    const entry = getCourseCatalogEntries({ hostname: "www.knititnow.com" }).find(
+      (course) => course.slug === "taitexma-th-tr-160-getting-started",
+    );
+    expect(entry?.href).toBe(taitexmaHref);
+    expect(entry?.buttonLabel).toBe("View Course");
+    expect(entry?.title).toBe("Taitexma TH/TR-160: Getting Started");
+    expect(entry?.access).toBe("member");
+    expect(entry?.category).toBe("Taitexma");
+    expect(entry?.href).toMatch(/^\/courses\/86$/);
+    expect(entry?.href).not.toContain("courses.knititnow.com");
+    expect(entry?.hasThumbnail).toBe(true);
+    expect(entry?.thumbnail).toBe("/images/courses/taitexma_160.webp");
+    expect(entry?.status).toBe("available");
+    expect(entry?.description).toContain("Taitexma TH/TR-160");
+  });
+
+  it("stays on DEV and localhost for the Taitexma TH/TR-160 catalog card", () => {
+    const taitexmaHref = "/courses/86";
+    const dev = getCourseCatalogEntries({ hostname: "kin-dev.netlify.app" }).find(
+      (course) => course.slug === "taitexma-th-tr-160-getting-started",
+    );
+    expect(dev?.href).toBe(taitexmaHref);
+    expect(dev?.buttonLabel).toBe("View Course");
+    expect(dev?.href).not.toContain("courses.knititnow.com");
+    expect(dev?.href).not.toMatch(/^https?:\/\//);
+
+    const local = getCourseCatalogEntries({
+      hostname: "localhost",
+      isViteDev: true,
+    }).find((course) => course.slug === "taitexma-th-tr-160-getting-started");
+    expect(local?.href).toBe(taitexmaHref);
+    expect(local?.href).not.toContain("courses.knititnow.com");
+  });
+
   it("does not use the production KIN host from the catalog on DEV", () => {
     for (const entry of getCourseCatalogEntries({ hostname: "kin-dev.netlify.app" })) {
       if (entry.href) {
@@ -114,6 +150,12 @@ describe("resolveCatalogStatus", () => {
     expect(resolveCatalogStatus("nothing-fits-draft", "coming-soon")).toBe("in-progress");
   });
 
+  it("keeps a published production catalog course available even while contentStatus is in_progress", () => {
+    expect(resolveCatalogStatus("taitexma-th-tr-160-getting-started", "available")).toBe(
+      "available",
+    );
+  });
+
   it(
     "shows available for published cleaned courses",
     () => {
@@ -141,16 +183,22 @@ describe("public course catalog cleanup", () => {
     "mastering-the-silver-reed-sk840-a-comprehensive-course",
   ] as const;
 
-  it("lists SK840 as the only public catalog course in Silver Reed", () => {
+  it("lists SK840 and Course 86 as the public catalog courses", () => {
     const sections = getCourseCatalogEntriesByCategory();
-    expect(sections).toHaveLength(1);
-    expect(sections[0]?.category).toBe("Silver Reed");
+    expect(sections.map((section) => section.category)).toEqual(["Silver Reed", "Taitexma"]);
     expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
       "mastering-the-silver-reed-sk840",
     ]);
+    expect(sections[1]?.courses.map((course) => course.slug)).toEqual([
+      "taitexma-th-tr-160-getting-started",
+    ]);
+    expect(sections[1]?.courses[0]?.href).toBe("/courses/86");
+    expect(sections[1]?.courses[0]?.buttonLabel).toBe("View Course");
+    expect(sections[1]?.courses[0]?.access).toBe("member");
+    expect(sections[1]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
-    expect(entries).toHaveLength(1);
+    expect(entries).toHaveLength(2);
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
@@ -158,7 +206,10 @@ describe("public course catalog cleanup", () => {
     expect(entries[0]?.href).not.toContain("courses.knititnow.com");
 
     const productionEntries = getCourseCatalogEntries({ hostname: "knititnow.com" });
-    expect(productionEntries[0]?.href).toBe("/courses/111");
+    expect(productionEntries.map((course) => course.href)).toEqual([
+      "/courses/111",
+      "/courses/86",
+    ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("member");
     expect(entries[0]?.hasThumbnail).toBe(true);
@@ -168,9 +219,10 @@ describe("public course catalog cleanup", () => {
     for (const slug of hiddenPublicCatalogSlugs) {
       expect(slugs).not.toContain(slug);
     }
-    expect(getCourseCatalogCategories()).toEqual(["Silver Reed"]);
-    expect(sections.map((section) => section.category)).toEqual(["Silver Reed"]);
-    expect(entries.some((course) => course.slug.includes("taitexma"))).toBe(false);
-    expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
+    expect(getCourseCatalogCategories()).toEqual(["Silver Reed", "Taitexma"]);
+    expect(entries.some((course) => course.slug === "taitexma-th-tr-160-getting-started")).toBe(
+      true,
+    );
+    expect(entries.some((course) => course.href === "/courses/86")).toBe(true);
   });
 });

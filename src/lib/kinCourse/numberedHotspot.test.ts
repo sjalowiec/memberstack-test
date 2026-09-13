@@ -117,9 +117,10 @@ describe("Course 86 numbered hotspot layouts", () => {
     ]);
   });
 
-  it("does not add Course 86 to the public catalog", () => {
+  it("does not change Course 86 catalog listing from hotspot presentation", () => {
     const entries = getCourseCatalogEntries();
-    expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
+    const catalogCard = entries.find((course) => course.href === "/courses/86");
+    expect(catalogCard?.slug).toBe("taitexma-th-tr-160-getting-started");
   });
 
   it("does not disk-check public files from the SSR hotspot module", () => {

@@ -154,10 +154,11 @@ describe("numeric course admin preview", () => {
     }
   });
 
-  it("keeps Course 86 out of the public catalog", () => {
+  it("lists Course 86 on the public catalog at /courses/86", () => {
     const entries = getCourseCatalogEntries();
-    expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
-    expect(entries.some((course) => course.slug.includes("taitexma"))).toBe(false);
+    const catalogCard = entries.find((course) => course.slug.includes("taitexma"));
+    expect(catalogCard?.href).toBe("/courses/86");
+    expect(catalogCard?.slug).toBe("taitexma-th-tr-160-getting-started");
   });
 
   it("does not grant preview from a browser GET that has no bearer token", async () => {

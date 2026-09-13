@@ -47,16 +47,21 @@ describe("Course 86 temporary DEV testing publication", () => {
     ]);
   });
 
-  it("does not appear on the public /courses catalog, navigation, search, sitemap, or What's New", () => {
-    const entries = getCourseCatalogEntries();
-    expect(entries.some((course) => course.slug === "taitexma-th-tr-160-getting-started")).toBe(
-      false,
+  it("appears on the public /courses catalog and links to /courses/86", () => {
+    const entries = getCourseCatalogEntries({ hostname: "www.knititnow.com" });
+    const catalogCard = entries.find(
+      (course) => course.slug === "taitexma-th-tr-160-getting-started",
     );
-    expect(entries.some((course) => course.href === "/courses/86")).toBe(false);
+    expect(catalogCard).toBeTruthy();
+    expect(catalogCard?.href).toBe("/courses/86");
+    expect(catalogCard?.title).toBe("Taitexma TH/TR-160: Getting Started");
+    expect(catalogCard?.buttonLabel).toBe("View Course");
+    expect(catalogCard?.access).toBe("member");
+    expect(catalogCard?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const catalog = readFileSync(join(process.cwd(), "src/data/courses-catalog.json"), "utf8");
-    expect(catalog).not.toContain("taitexma-th-tr-160-getting-started");
-    expect(catalog).not.toContain("/courses/86");
+    expect(catalog).toContain("taitexma-th-tr-160-getting-started");
+    expect(catalog).toContain("/courses/86");
 
     const header = readFileSync(join(process.cwd(), "src/components/Header.astro"), "utf8");
     expect(header).not.toContain("/courses/86");

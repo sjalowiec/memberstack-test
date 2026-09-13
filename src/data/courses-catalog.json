@@ -1,6 +1,7 @@
 {
   "categories": [
-    "Silver Reed"
+    "Silver Reed",
+    "Taitexma"
   ],
   "entries": [
     {
@@ -13,6 +14,17 @@
       "href": "/courses/111",
       "buttonLabel": "View Course",
       "thumbnail": "/images/courses/mastering-silver-reed-sk840.png"
+    },
+    {
+      "slug": "taitexma-th-tr-160-getting-started",
+      "title": "Taitexma TH/TR-160: Getting Started",
+      "category": "Taitexma",
+      "catalogStatus": "available",
+      "access": "member",
+      "description": "A step-by-step course for getting started with your Taitexma TH/TR-160, from unboxing and setup through casting on, tuck, slip, intarsia, plaiting, knit weave, and ribber techniques.",
+      "href": "/courses/86",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/taitexma_160.webp"
     },
     {
       "slug": "lk-150-quick-start",

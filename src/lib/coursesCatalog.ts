@@ -203,8 +203,10 @@ function resolveButtonLabel(
 }
 
 /**
- * Catalog card badge/CTA status. When course JSON exists, editorial contentStatus
- * and publication drive the label — courses-catalog.json catalogStatus is fallback only.
+ * Catalog card badge/CTA status. Published cleaned courses are available.
+ * Unpublished courses stay in-progress. A published in-progress course keeps
+ * the catalog overlay status, so production listings marked available remain
+ * available.
  */
 export function resolveCatalogStatus(
   slug: string,
@@ -221,7 +223,7 @@ export function resolveCatalogStatus(
   if (contentStatus === "cleaned" && published) {
     return "available";
   }
-  if (contentStatus === "in_progress" || !published) {
+  if (!published || (contentStatus === "in_progress" && catalogStatus !== "available")) {
     return "in-progress";
   }
   return catalogStatus;
