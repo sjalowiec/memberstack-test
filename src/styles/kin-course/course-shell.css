@@ -515,6 +515,40 @@ body.course-contents-open {
   color: #3f5123;
 }
 
+/*
+ * Landing page only. Global `a` / `a:visited` is dark green and outranks a
+ * plain class color, so Knit It Now, Back to Courses, and Start Course must
+ * be restated as white for link, visited, hover, and focus. Do not apply this to
+ * lesson or contents pages. View Course Contents stays green on white.
+ */
+.course-home-page .kin-site-brand:link,
+.course-home-page .kin-site-brand:visited,
+.course-home-page .kin-site-brand:hover,
+.course-home-page .kin-site-brand:focus,
+.course-home-page .kin-site-brand:focus-visible,
+.course-home-page .kin-site-wordmark {
+  color: #fff;
+  text-decoration: none;
+}
+
+.course-home-page .kin-site-back:link,
+.course-home-page .kin-site-back:visited,
+.course-home-page .kin-site-back:hover,
+.course-home-page .kin-site-back:focus,
+.course-home-page .kin-site-back:focus-visible {
+  color: #fff;
+  text-decoration: none;
+}
+
+.course-home-page .course-home-start:link,
+.course-home-page .course-home-start:visited,
+.course-home-page .course-home-start:hover,
+.course-home-page .course-home-start:focus,
+.course-home-page .course-home-start:focus-visible,
+.course-home-page .course-home-start:active {
+  color: #fff;
+}
+
 .course-home-start:focus-visible,
 .course-home-contents:focus-visible {
   outline: 3px solid #52682d;
