@@ -101,28 +101,28 @@
     },
     {
       "from": "/challenge/images/v2/86/arrow1.png",
-      "to": "/images/course-content/111/arrow1.png",
-      "reason": "Course 86 exercise icons reuse the shared recovered arrow1.png already in Course 111 course-content. Rewrite before the general /v2/86/ prefix so they do not 404 under /images/course-content/86/."
+      "to": "/images/course-content/86/arrow1.png",
+      "reason": "Course 86 exercise icons now have their own copies under /images/course-content/86/. Rewrite leftover /v2/86/ arrow paths before the general prefix."
     },
     {
       "from": "/challenge/images/v2/86/arrow2.png",
-      "to": "/images/course-content/111/arrow2.png",
-      "reason": "Course 86 exercise icons reuse the shared recovered arrow2.png already in Course 111 course-content."
+      "to": "/images/course-content/86/arrow2.png",
+      "reason": "Course 86 exercise icons now have their own copies under /images/course-content/86/."
     },
     {
       "from": "/challenge/images/v2/86/arrow3.png",
-      "to": "/images/course-content/111/arrow3.png",
-      "reason": "Course 86 exercise icons reuse the shared recovered arrow3.png already in Course 111 course-content."
+      "to": "/images/course-content/86/arrow3.png",
+      "reason": "Course 86 exercise icons now have their own copies under /images/course-content/86/."
     },
     {
       "from": "/challenge/images/v2/86/arrow4.png",
-      "to": "/images/course-content/111/arrow4.png",
-      "reason": "Course 86 exercise icons reuse the shared numbered arrow set. Rewrite before the general /v2/86/ prefix so they do not 404 under /images/course-content/86/."
+      "to": "/images/course-content/86/arrow4.png",
+      "reason": "Course 86 exercise icons now have their own copies under /images/course-content/86/. Rewrite leftover /v2/86/ arrow paths before the general prefix."
     },
     {
       "from": "/challenge/images/v2/86/arrow5.png",
-      "to": "/images/course-content/111/arrow5.png",
-      "reason": "Course 86 exercise icons reuse the shared numbered arrow set. Rewrite before the general /v2/86/ prefix so they do not 404 under /images/course-content/86/."
+      "to": "/images/course-content/86/arrow5.png",
+      "reason": "Course 86 exercise icons now have their own copies under /images/course-content/86/. Rewrite leftover /v2/86/ arrow paths before the general prefix."
     },
     {
       "from": "/challenge/images/v2/86/",
@@ -131,28 +131,28 @@
     },
     {
       "from": "/challenge/images/arrow1.png",
-      "to": "/images/course-content/111/arrow1.png",
-      "reason": "Exercise headings still reference the shared /challenge/images/arrow1.png icon. Map onto the recovered Course 111 copy."
+      "to": "/images/course-content/86/arrow1.png",
+      "reason": "Exercise headings that still use /challenge/images/arrow1.png map onto the Course 86 copy."
     },
     {
       "from": "/challenge/images/arrow2.png",
-      "to": "/images/course-content/111/arrow2.png",
-      "reason": "Exercise headings still reference the shared /challenge/images/arrow2.png icon. Map onto the recovered Course 111 copy."
+      "to": "/images/course-content/86/arrow2.png",
+      "reason": "Exercise headings that still use /challenge/images/arrow2.png map onto the Course 86 copy."
     },
     {
       "from": "/challenge/images/arrow3.png",
-      "to": "/images/course-content/111/arrow3.png",
-      "reason": "Exercise headings still reference the shared /challenge/images/arrow3.png icon. Map onto the recovered Course 111 copy."
+      "to": "/images/course-content/86/arrow3.png",
+      "reason": "Exercise headings that still use /challenge/images/arrow3.png map onto the Course 86 copy."
     },
     {
       "from": "/challenge/images/arrow4.png",
-      "to": "/images/course-content/111/arrow4.png",
-      "reason": "Exercise headings still reference the shared /challenge/images/arrow4.png icon. Map onto the shared numbered arrow set."
+      "to": "/images/course-content/86/arrow4.png",
+      "reason": "Exercise headings that still use /challenge/images/arrow4.png map onto the Course 86 copy."
     },
     {
       "from": "/challenge/images/arrow5.png",
-      "to": "/images/course-content/111/arrow5.png",
-      "reason": "Exercise headings still reference the shared /challenge/images/arrow5.png icon. Map onto the shared numbered arrow set."
+      "to": "/images/course-content/86/arrow5.png",
+      "reason": "Exercise headings that still use /challenge/images/arrow5.png map onto the Course 86 copy."
     },
     {
       "from": "/path/images/1480/needle_position.jpg",

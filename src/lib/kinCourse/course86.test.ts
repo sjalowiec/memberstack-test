@@ -182,13 +182,13 @@ describe("Course 86 presented assets", () => {
     expect([...refs].filter((ref) => ref.includes("/challenge/images/v2/86/"))).toEqual([]);
     expect(refs.has("/images/course-content/86/warning.png")).toBe(true);
     expect(refs.has("/images/course-content/86/needle_position.jpg")).toBe(true);
-    expect(refs.has("/images/course-content/111/arrow1.png")).toBe(true);
-    expect(refs.has("/images/course-content/111/arrow4.png")).toBe(true);
-    expect(refs.has("/images/course-content/111/arrow5.png")).toBe(true);
-    expect(existsSync(join(process.cwd(), "public/images/course-content/111/arrow4.png"))).toBe(
+    expect(refs.has("/images/course-content/86/arrow1.png")).toBe(true);
+    expect(refs.has("/images/course-content/86/arrow4.png")).toBe(true);
+    expect(refs.has("/images/course-content/86/arrow5.png")).toBe(true);
+    expect(existsSync(join(process.cwd(), "public/images/course-content/86/arrow4.png"))).toBe(
       true,
     );
-    expect(existsSync(join(process.cwd(), "public/images/course-content/111/arrow5.png"))).toBe(
+    expect(existsSync(join(process.cwd(), "public/images/course-content/86/arrow5.png"))).toBe(
       true,
     );
     expect(refs.has("/stitch-patterns/swatches/6/1017Swatch.jpg")).toBe(true);
