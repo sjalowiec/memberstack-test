@@ -47,6 +47,8 @@ const noAccessMessage = kinCourseNoAccessMessage(courseSlug);
 const courseAccess = getCourseAccessBySlug(courseSlug);
 const canBuy = courseHasIndividualPurchase(courseSlug);
 const showCourse86Sales = isTaitexma160CourseSlug(courseSlug);
+const course86SalesDescription =
+  "Feel confident using your Taitexma TH/TR-160. This course helps you set up, operate, and troubleshoot your machine so you can spend more time knitting.";
 const purchaseCopy =
   "This course is included with Knit It Now membership. You can also purchase this course on its own.";
 ---
@@ -57,6 +59,11 @@ const purchaseCopy =
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    {
+      showCourse86Sales ? (
+        <meta name="description" content={course86SalesDescription} />
+      ) : null
+    }
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
