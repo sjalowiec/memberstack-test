@@ -23,13 +23,15 @@ function expectRootCookieSession(layout: string, label: string): void {
   const configBlock = layout.slice(configIdx, scriptIdx);
   expect(configBlock).toContain("useCookies: true");
   expect(configBlock).toContain("setCookieOnRootDomain: true");
-  expect(configBlock).toContain('"_ms-mid"');
-  expect(configBlock).toContain("Max-Age=0; Path=/");
-  expect(configBlock).toContain("localStorage");
+  expect(configBlock).not.toContain('"_ms-mid"');
+  expect(configBlock).not.toContain("Max-Age=0; Path=/");
+  expect(configBlock).not.toContain("clearMsStorage");
+  expect(configBlock).not.toContain("localStorage");
   expect(configBlock).not.toContain("Domain=.knititnow.com");
 
   expect(layout).toContain(`data-memberstack-app="${MEMBERSTACK_APP_ID}"`);
   expect(layout).toContain("data-memberstack-use-cookies");
+  expect(layout).not.toContain("clearMsStorage");
   expect(layout).not.toMatch(/\$memberstackDom\?\.init\?\(\s*\)/);
   expect(layout).toContain(
     "window.$memberstackDom?.init?.(window.memberstackConfig)",
