@@ -6,6 +6,8 @@ import { canAccessCourse } from "./courseAccess";
 import {
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
+  PAID_SK840_COURSE_PLAN_ID,
+  PAID_TH160_COURSE_PLAN_ID,
 } from "../config/legacyCourseEntitlements";
 import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS, MEMBERSHIPS } from "../config/memberships";
 import {
@@ -72,6 +74,15 @@ describe("kinCourseCacheUiFromMember uses live course entitlement", () => {
     expect(kinCourseCacheUiFromMember(sk840, LEGACY_SK840_COURSE_SLUG)).toBe("open");
     expect(kinCourseCacheUiFromMember(member, KIN_TAITEXMA_160_COURSE_SLUG)).toBe("open");
     expect(kinCourseCacheUiFromMember(sk840, KIN_TAITEXMA_160_COURSE_SLUG)).toBe("unknown");
+    expect(
+      kinCourseCacheUiFromMember(
+        memberWithPlan(PAID_TH160_COURSE_PLAN_ID),
+        KIN_TAITEXMA_160_COURSE_SLUG,
+      ),
+    ).toBe("open");
+    expect(
+      kinCourseCacheUiFromMember(memberWithPlan(PAID_SK840_COURSE_PLAN_ID), LEGACY_SK840_COURSE_SLUG),
+    ).toBe("open");
   });
 
   it("stays unknown without a cached member and does not treat unresolved plans as denied", () => {
@@ -109,11 +120,15 @@ describe("inline cache script stays aligned with canAccessCourse", () => {
     const vars = kinCourseCacheAccessVars(LEGACY_SK840_COURSE_SLUG);
     expect(vars.planIds).toEqual(paidPlanIds);
     expect(vars.slugByPlan[LEGACY_SK840_COURSE_PLAN_ID]).toContain(LEGACY_SK840_COURSE_SLUG);
+    expect(vars.slugByPlan[PAID_SK840_COURSE_PLAN_ID]).toContain(LEGACY_SK840_COURSE_SLUG);
+    expect(vars.slugByPlan[PAID_TH160_COURSE_PLAN_ID]).toContain(KIN_TAITEXMA_160_COURSE_SLUG);
     const script = kinCourseCacheAccessInlineScript(LEGACY_SK840_COURSE_SLUG);
     for (const planId of paidPlanIds) {
       expect(script).toContain(planId);
     }
     expect(script).toContain(LEGACY_SK840_COURSE_PLAN_ID);
+    expect(script).toContain(PAID_SK840_COURSE_PLAN_ID);
+    expect(script).toContain(PAID_TH160_COURSE_PLAN_ID);
     expect(script).toContain(LEGACY_SK840_COURSE_SLUG);
     expect(script).toContain(KIN_COURSE_CACHE_ATTR);
     expect(script).toContain("_ms-mem");

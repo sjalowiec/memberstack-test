@@ -1,0 +1,27 @@
+---
+import { courseCheckoutPriceId } from "../../lib/kinCourse/coursePurchase";
+
+interface Props {
+  courseSlug: string;
+  label?: string;
+  className?: string;
+}
+
+const { courseSlug, label = "Purchase this course", className } = Astro.props;
+const priceId = courseCheckoutPriceId(courseSlug);
+const classes = ["course-purchase-btn", className].filter(Boolean).join(" ");
+---
+
+{
+  priceId ? (
+    <button
+      type="button"
+      class={classes}
+      data-course-checkout
+      data-course-slug={courseSlug}
+      data-course-price-id={priceId}
+    >
+      {label}
+    </button>
+  ) : null
+}

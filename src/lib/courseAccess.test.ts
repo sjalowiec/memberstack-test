@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
+  LEGACY_TH160_COURSE_PLAN_ID,
+  PAID_SK840_COURSE_PLAN_ID,
+  PAID_TH160_COURSE_PLAN_ID,
+  SK840_COURSE_PRICE_ID,
+  TH160_COURSE_PRICE_ID,
 } from "../config/legacyCourseEntitlements";
 import {
   COURSE_ACCESS_PLAN_IDS,
@@ -145,12 +151,17 @@ describe("hasCourseMembershipAccess", () => {
     expect(hasPremiumCourseAccess(payload)).toBe(hasCourseMembershipAccess(payload));
   });
 
-  it("does not treat the legacy SK840 course plan as membership access", () => {
-    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_SK840_COURSE_PLAN_ID);
-    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_SK840_COURSE_PLAN_ID);
-    expect(hasCourseMembershipAccess(payloadWithPlan(LEGACY_SK840_COURSE_PLAN_ID))).toBe(
-      false,
-    );
+  it("does not treat individual course plans as site-wide membership access", () => {
+    for (const planId of [
+      LEGACY_SK840_COURSE_PLAN_ID,
+      PAID_SK840_COURSE_PLAN_ID,
+      LEGACY_TH160_COURSE_PLAN_ID,
+      PAID_TH160_COURSE_PLAN_ID,
+    ]) {
+      expect(MEMBER_PLAN_IDS).not.toContain(planId);
+      expect(COURSE_ACCESS_PLAN_IDS).not.toContain(planId);
+      expect(hasCourseMembershipAccess(payloadWithPlan(planId))).toBe(false);
+    }
   });
 });
 
@@ -262,6 +273,65 @@ describe("canAccessCourse", () => {
     expect(
       canAccessCourse("member", canceled, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
     ).toBe(false);
+  });
+
+  it("active members access both individual-purchase courses", () => {
+    const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
+    expect(
+      canAccessCourse("purchase", member, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", member, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(true);
+  });
+
+  it("Legacy and Paid course plans grant access only to that course", () => {
+    const th160Legacy = payloadWithPlan(LEGACY_TH160_COURSE_PLAN_ID);
+    const th160Paid = payloadWithPlan(PAID_TH160_COURSE_PLAN_ID);
+    const sk840Paid = payloadWithPlan(PAID_SK840_COURSE_PLAN_ID);
+
+    expect(
+      canAccessCourse("purchase", th160Legacy, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", th160Paid, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", th160Legacy, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(false);
+    expect(
+      canAccessCourse("purchase", th160Paid, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(false);
+
+    expect(
+      canAccessCourse("purchase", sk840Paid, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", sk840Paid, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(false);
+    expect(PAID_SK840_COURSE_PLAN_ID).toBe("pln_course-sk840--xy1u30uqt");
+  });
+
+  it("does not grant course access from a Price ID", () => {
+    expect(
+      canAccessCourse("purchase", payloadWithPlan(TH160_COURSE_PRICE_ID), {
+        courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
+      }),
+    ).toBe(false);
+    expect(
+      canAccessCourse("purchase", payloadWithPlan(SK840_COURSE_PRICE_ID), {
+        courseSlug: LEGACY_SK840_COURSE_SLUG,
+      }),
+    ).toBe(false);
+  });
+
+  it("unlocks via numeric player ids as well as catalog slugs", () => {
+    const th160Paid = payloadWithPlan(PAID_TH160_COURSE_PLAN_ID);
+    const sk840Paid = payloadWithPlan(PAID_SK840_COURSE_PLAN_ID);
+    expect(canAccessCourse("purchase", th160Paid, { courseSlug: "86" })).toBe(true);
+    expect(canAccessCourse("purchase", th160Paid, { courseSlug: "111" })).toBe(false);
+    expect(canAccessCourse("purchase", sk840Paid, { courseSlug: "111" })).toBe(true);
+    expect(canAccessCourse("purchase", sk840Paid, { courseSlug: "86" })).toBe(false);
   });
 });
 

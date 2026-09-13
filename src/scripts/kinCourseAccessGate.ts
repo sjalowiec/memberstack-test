@@ -142,6 +142,12 @@ export function applyKinCourseGatePaint(
     else el.setAttribute("hidden", "");
   });
 
+  gate.querySelectorAll<HTMLElement>("[data-course-checkout]").forEach((btn) => {
+    btn.hidden = paint === "open";
+    if (paint === "open") btn.setAttribute("aria-hidden", "true");
+    else btn.removeAttribute("aria-hidden");
+  });
+
   if (paint !== "locked") return;
   const loggedOut = gate.querySelector<HTMLElement>('[data-gate-copy="loggedOut"]');
   const loggedIn = gate.querySelector<HTMLElement>('[data-gate-copy="loggedInNoAccess"]');
