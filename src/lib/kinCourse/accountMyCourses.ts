@@ -1,16 +1,14 @@
 /**
  * Account “My Courses” — permanent individual-course ownership only.
  *
+ * Browser-safe: titles, URLs, and qualifying plan IDs live in this module.
+ * Do not import catalog loaders, courseContentAdmin, fs, path, or other
+ * server-only modules here — the account client bundle imports this file.
+ *
  * Membership plans unlock course playback, but they are not ownership.
- * Owned cards come from catalog entries mapped by {@link COURSE_INDIVIDUAL_SALES}.
  */
 import { COURSE_INDIVIDUAL_SALES } from "../../config/legacyCourseEntitlements";
 import { hasIndividualCoursePurchase } from "../courseAccess";
-import {
-  getCourseCatalogEntries,
-  type CourseCatalogEntry,
-} from "../coursesCatalog";
-import type { CourseHrefResolveOptions } from "../legacy_kin/courseEnvironmentHref";
 
 export type AccountOwnedCourseCard = {
   slug: string;
@@ -18,39 +16,45 @@ export type AccountOwnedCourseCard = {
   href: string;
 };
 
-function catalogCardFromEntry(entry: CourseCatalogEntry): AccountOwnedCourseCard | null {
-  const href = entry.href?.trim();
-  const title = entry.title.trim();
-  if (!href || !title) return null;
+/** Browser-safe display + entitlement metadata for individually owned courses. */
+export type AccountOwnableCourse = {
+  courseId: 86 | 111;
+  slug: string;
+  title: string;
+  href: string;
+  planIds: readonly string[];
+};
 
-  return {
-    slug: entry.slug,
-    title,
-    href,
-  };
-}
+export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
+  {
+    courseId: COURSE_INDIVIDUAL_SALES.th160.courseId,
+    slug: COURSE_INDIVIDUAL_SALES.th160.slug,
+    title: "Taitexma TH/TR-160: Getting Started",
+    href: "/courses/86",
+    planIds: [
+      COURSE_INDIVIDUAL_SALES.th160.legacyPlanId,
+      COURSE_INDIVIDUAL_SALES.th160.paidPlanId,
+    ],
+  },
+  {
+    courseId: COURSE_INDIVIDUAL_SALES.sk840.courseId,
+    slug: COURSE_INDIVIDUAL_SALES.sk840.slug,
+    title: "Mastering the Silver Reed SK840",
+    href: "/courses/111",
+    planIds: [
+      COURSE_INDIVIDUAL_SALES.sk840.legacyPlanId,
+      COURSE_INDIVIDUAL_SALES.sk840.paidPlanId,
+    ],
+  },
+];
 
 /** Catalog cards for individually owned courses, in COURSE_INDIVIDUAL_SALES order. */
-export function accountOwnableCourseCatalogCards(
-  entries: CourseCatalogEntry[] = getCourseCatalogEntries(),
-): AccountOwnedCourseCard[] {
-  const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
-  const cards: AccountOwnedCourseCard[] = [];
-
-  for (const sale of Object.values(COURSE_INDIVIDUAL_SALES)) {
-    const entry = bySlug.get(sale.slug);
-    if (!entry) continue;
-    const card = catalogCardFromEntry(entry);
-    if (card) cards.push(card);
-  }
-
-  return cards;
-}
-
-export function loadAccountOwnableCourseCatalogCards(
-  env: CourseHrefResolveOptions = {},
-): AccountOwnedCourseCard[] {
-  return accountOwnableCourseCatalogCards(getCourseCatalogEntries(env));
+export function accountOwnableCourseCatalogCards(): AccountOwnedCourseCard[] {
+  return ACCOUNT_OWNABLE_COURSES.map(({ slug, title, href }) => ({
+    slug,
+    title,
+    href,
+  }));
 }
 
 /**

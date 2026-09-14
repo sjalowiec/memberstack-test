@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
+  COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
@@ -12,8 +15,8 @@ import {
   MEMBER_PLAN_IDS,
 } from "../../config/memberships";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
-import { getCourseCatalogEntries } from "../coursesCatalog";
 import {
+  ACCOUNT_OWNABLE_COURSES,
   accountOwnableCourseCatalogCards,
   ownedCourseSlugsFromMember,
   ownedCoursesForAccount,
@@ -39,11 +42,36 @@ function payloadWithPlan(planId: string) {
   return payloadWithPlans([{ planId }]);
 }
 
-const catalogCards = accountOwnableCourseCatalogCards(getCourseCatalogEntries());
+const catalogCards = accountOwnableCourseCatalogCards();
 const course86 = catalogCards.find((card) => card.slug === KIN_TAITEXMA_160_COURSE_SLUG);
 const course111 = catalogCards.find((card) => card.slug === LEGACY_SK840_COURSE_SLUG);
 
 describe("account ownable catalog cards", () => {
+  it("exposes browser-safe title, URL, and ownership plan IDs", () => {
+    expect(ACCOUNT_OWNABLE_COURSES).toEqual([
+      {
+        courseId: 86,
+        slug: KIN_TAITEXMA_160_COURSE_SLUG,
+        title: "Taitexma TH/TR-160: Getting Started",
+        href: "/courses/86",
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.th160.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.th160.paidPlanId,
+        ],
+      },
+      {
+        courseId: 111,
+        slug: LEGACY_SK840_COURSE_SLUG,
+        title: "Mastering the Silver Reed SK840",
+        href: "/courses/111",
+        planIds: [
+          COURSE_INDIVIDUAL_SALES.sk840.legacyPlanId,
+          COURSE_INDIVIDUAL_SALES.sk840.paidPlanId,
+        ],
+      },
+    ]);
+  });
+
   it("reuses existing catalog title and course URL", () => {
     expect(course86).toEqual({
       slug: KIN_TAITEXMA_160_COURSE_SLUG,
@@ -162,5 +190,21 @@ describe("ownedCoursesForAccount", () => {
     );
     expect(legacyAndPaidSameCourse).toEqual([course86, course111]);
     expect(legacyAndPaidSameCourse).toHaveLength(2);
+  });
+});
+
+describe("My Courses client/server boundary", () => {
+  const serverOnlyImport = /from\s+["'][^"']*(?:coursesCatalog|courseContentAdmin|legacyCourseLoader|legacy_kin\/courseContentAdmin)["']|from\s+["'](?:node:fs|node:path|pg)["']/;
+
+  it("keeps accountMyCourses free of server-only catalog loaders", () => {
+    const source = readFileSync(resolve("src/lib/kinCourse/accountMyCourses.ts"), "utf8");
+    expect(source).not.toMatch(serverOnlyImport);
+    expect(source).not.toContain("getCourseCatalogEntries");
+  });
+
+  it("keeps the account My Courses script free of server-only catalog loaders", () => {
+    const source = readFileSync(resolve("src/scripts/account-my-courses.ts"), "utf8");
+    expect(source).not.toMatch(serverOnlyImport);
+    expect(source).not.toContain("getCourseCatalogEntries");
   });
 });
