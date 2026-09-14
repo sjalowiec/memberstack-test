@@ -522,20 +522,19 @@ const enableVideoChapterControls = hasCatalogChapters;
     )}
   </div>
 
-  <script is:inline>
-    (function () {
-      var qs = window.location.search || "";
-      var href = qs ? "/videos" + qs : "/videos";
-      var params = new URLSearchParams(qs);
-      var cat = params.get("cat");
-      var q = params.get("q");
-      var suffix = cat ? cat + " Videos" : (q ? "Search Results" : "Videos");
-      document.querySelectorAll(".back-to-videos-link").forEach(function (el) {
-        el.href = href;
-        var prefix = el.id === "back-to-videos" ? "← " : "";
-        el.textContent = prefix + "Back to " + suffix;
-      });
-    })();
+  <script>
+    import { bindVideosWatchPageBackLinks } from "../../lib/videos/videoWatchPageBackLink";
+
+    bindVideosWatchPageBackLinks({
+      links: document.querySelectorAll<HTMLAnchorElement>(".back-to-videos-link"),
+      search: window.location.search || "",
+      referrer: document.referrer || "",
+      historyLength: window.history.length,
+      currentOrigin: window.location.origin,
+      back: () => {
+        window.history.back();
+      },
+    });
   </script>
 
   {video && (
