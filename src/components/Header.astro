@@ -1980,10 +1980,14 @@ div[data-ms-modal-overlay] {
 
 <script>
   import {
-    headerAuthWindowState,
     resolveHeaderAuthState,
   } from "../lib/headerAuthState";
+  import { isMemberLoggedIn } from "../lib/memberAccess";
   import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
+  import {
+    decideHeaderAuthPublish,
+    memberstackPlanConnections,
+  } from "../lib/sharedMemberAccessPublish";
 
   (function () {
     const pill = document.getElementById("auth-pill");
@@ -2064,17 +2068,27 @@ div[data-ms-modal-overlay] {
     }
 
     async function getAuthState() {
+      const snapshot = window.__KIN_MEMBER_ACCESS__ ?? null;
       const ms = window.$memberstackDom;
       if (!ms?.getCurrentMember) {
-        window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
-        return { ms: "missing", loggedIn: false, isMember: false, displayName: "", memberId: null };
+        const publish = decideHeaderAuthPublish({ payload: null, snapshot });
+        return {
+          ms: "missing",
+          loggedIn: false,
+          isMember: false,
+          displayName: "",
+          memberId: null,
+          _member: null,
+          publish,
+        };
       }
       try {
         const res = await ms.getCurrentMember();
-        // Same valid-access rule as BaseLayout / hasMemberAccess.
-        await ensureLegacyPaidThroughContext(res);
+        if (isMemberLoggedIn(res) && memberstackPlanConnections(res) !== undefined) {
+          await ensureLegacyPaidThroughContext(res);
+        }
+        const publish = decideHeaderAuthPublish({ payload: res, snapshot });
         const auth = resolveHeaderAuthState(res);
-        window.__KBM_AUTH = headerAuthWindowState(auth);
         const member = auth.member as Record<string, any> | null;
         const planConnections = Array.isArray(member?.planConnections)
           ? member.planConnections
@@ -2089,33 +2103,56 @@ div[data-ms-modal-overlay] {
           member?.email ||
           "";
         const email = member?.auth?.email || member?.email || "";
+        const loggedIn =
+          publish.label === "loggedIn" ? true : publish.label === "guest" ? false : auth.loggedIn;
+        const isMember =
+          publish.windowState?.member ?? (publish.label === "keep" && snapshot?.hasMemberAccess === true);
         return {
           ms: "ready",
-          loggedIn: auth.loggedIn,
-          isMember: auth.isMember,
+          loggedIn,
+          isMember,
           displayName,
           email,
           plansDebug,
-          memberId: auth.memberId,
+          memberId: publish.windowState?.memberId ?? auth.memberId,
           _member: member,
+          publish,
         };
       } catch (e) {
-        window.__KBM_AUTH = { loggedIn: false, member: false, memberId: null };
-        return { ms: "error", loggedIn: false, isMember: false, displayName: "", email: "", memberId: null, _member: null };
+        const publish = decideHeaderAuthPublish({ payload: null, snapshot });
+        return {
+          ms: "error",
+          loggedIn: false,
+          isMember: false,
+          displayName: "",
+          email: "",
+          memberId: null,
+          _member: null,
+          publish,
+        };
       }
     }
 
     async function refreshHeaderAuthUI() {
       try {
         const state = await getAuthState();
+        const publish = state.publish;
         setPill(state);
+        if (publish.label === "keep") {
+          return state;
+        }
         updateAccountButtonLabel(state);
-        window.__AUTH = {
-          loggedIn: Boolean(state.loggedIn),
-          member: Boolean(state.isMember),
-          memberId: state.memberId || null
-        };
-        window.dispatchEvent(new Event("auth:updated"));
+        if (publish.applyWindowState && publish.windowState) {
+          window.__KBM_AUTH = publish.windowState;
+          window.__AUTH = {
+            loggedIn: publish.windowState.loggedIn,
+            member: publish.windowState.member,
+            memberId: publish.windowState.memberId,
+          };
+        }
+        if (publish.dispatchAuthUpdated) {
+          window.dispatchEvent(new Event("auth:updated"));
+        }
         return state;
       } catch (e) {
         return null;
