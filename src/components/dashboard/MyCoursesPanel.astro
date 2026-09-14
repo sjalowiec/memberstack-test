@@ -4,13 +4,9 @@
  * planConnections (account-my-courses.ts). Hidden until at least one
  * permanent course-ownership plan is present.
  */
-import { loadAccountOwnableCourseCatalogCards } from "../../lib/kinCourse/accountMyCourses";
+import { accountOwnableCourseCatalogCards } from "../../lib/kinCourse/accountMyCourses";
 
-const catalogCards = loadAccountOwnableCourseCatalogCards({
-  hostname: Astro.url.hostname,
-  isViteDev: import.meta.env.DEV,
-  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
-});
+const catalogCards = accountOwnableCourseCatalogCards();
 ---
 
 <section

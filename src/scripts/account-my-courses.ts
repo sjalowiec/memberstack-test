@@ -11,6 +11,7 @@
  */
 import { escapeHtml } from "../lib/favorites/favoriteStarUi";
 import {
+  accountOwnableCourseCatalogCards,
   ownedCoursesForAccount,
   shouldShowAccountMyCourses,
   type AccountOwnedCourseCard,
@@ -22,11 +23,11 @@ import {
 
 function readCatalogCards(): AccountOwnedCourseCard[] {
   const el = document.getElementById("account-my-courses-catalog");
-  if (!el?.textContent) return [];
+  if (!el?.textContent) return accountOwnableCourseCatalogCards();
 
   try {
     const parsed = JSON.parse(el.textContent) as unknown;
-    if (!Array.isArray(parsed)) return [];
+    if (!Array.isArray(parsed)) return accountOwnableCourseCatalogCards();
     const cards: AccountOwnedCourseCard[] = [];
     for (const row of parsed) {
       if (!row || typeof row !== "object") continue;
@@ -41,9 +42,9 @@ function readCatalogCards(): AccountOwnedCourseCard[] {
         href,
       });
     }
-    return cards;
+    return cards.length > 0 ? cards : accountOwnableCourseCatalogCards();
   } catch {
-    return [];
+    return accountOwnableCourseCatalogCards();
   }
 }
 
