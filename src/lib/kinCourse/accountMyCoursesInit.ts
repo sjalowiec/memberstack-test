@@ -6,7 +6,7 @@
  * authenticates, and an early member payload may omit planConnections.
  */
 import { isMemberLoggedIn } from "../memberAccess";
-import { memberstackPlanConnections } from "../sharedMemberAccessPublish";
+import { memberstackPlanConnections } from "./accessGateState";
 
 export const ACCOUNT_MY_COURSES_ROOT_SELECTOR = "[data-kbm-my-courses]";
 
