@@ -73,16 +73,18 @@ describe("Header Patterns navigation", () => {
     expect(panel).not.toContain("Pattern Builders");
   });
 
-  it("orders logged-out items as Catalog, About, Stitch Browser, Sizing Charts", () => {
+  it("orders logged-out items as Catalog, Knit-ables, About, Stitch Browser, Sizing Charts", () => {
     const panel = patternsPanel();
     const catalogIdx = panel.indexOf('data-testid="nav-pattern-catalog"');
+    const knitAblesIdx = panel.indexOf('data-testid="nav-knit-ables"');
     const aboutIdx = panel.indexOf('data-testid="nav-patterns-about"');
     const myPatternsIdx = panel.indexOf('data-testid="nav-my-patterns"');
     const stitchIdx = panel.indexOf('data-testid="nav-stitch-library"');
     const sizingIdx = panel.indexOf('data-testid="nav-sizing-charts"');
 
     expect(catalogIdx).toBeGreaterThan(-1);
-    expect(myPatternsIdx).toBeGreaterThan(catalogIdx);
+    expect(knitAblesIdx).toBeGreaterThan(catalogIdx);
+    expect(myPatternsIdx).toBeGreaterThan(knitAblesIdx);
     expect(aboutIdx).toBeGreaterThan(myPatternsIdx);
     expect(stitchIdx).toBeGreaterThan(aboutIdx);
     expect(sizingIdx).toBeGreaterThan(stitchIdx);
@@ -90,6 +92,38 @@ describe("Header Patterns navigation", () => {
 
   it("adds exactly one top-level Patterns navigation entry", () => {
     expect([...headerSource.matchAll(/data-testid="nav-patterns"/g)]).toHaveLength(1);
+  });
+});
+
+describe("Header Knit-ables navigation", () => {
+  it("does not add a top-level Knit-ables item", () => {
+    expect(headerSource).not.toMatch(
+      /<li class="nav-item">\s*<a href=\{KNIT_ABLES_PATH\} class="nav-link" data-testid="nav-knit-ables">/,
+    );
+    const topLevel = headerSource.match(
+      /<a[\s\S]*?data-testid="nav-patterns"[\s\S]*?<\/a>/,
+    )?.[0];
+    expect(topLevel).not.toContain("Knit-ables");
+  });
+
+  it("adds Knit-ables exactly once in the Patterns dropdown, linking to the landing page", () => {
+    const panel = patternsPanel();
+    const knitAblesLi = panel.match(
+      /<li>\s*<a href=\{KNIT_ABLES_PATH\} data-testid="nav-knit-ables">\s*Knit-ables\s*<\/a>\s*<\/li>/,
+    )?.[0];
+    expect(knitAblesLi).toBeTruthy();
+    expect([...headerSource.matchAll(/data-testid="nav-knit-ables"/g)]).toHaveLength(1);
+    expect([...panel.matchAll(/data-testid="nav-knit-ables"/g)]).toHaveLength(1);
+  });
+
+  it("places Knit-ables immediately after Pattern Catalog", () => {
+    const panel = patternsPanel();
+    const catalogIdx = panel.indexOf('data-testid="nav-pattern-catalog"');
+    const knitAblesIdx = panel.indexOf('data-testid="nav-knit-ables"');
+    const myPatternsIdx = panel.indexOf('data-testid="nav-my-patterns"');
+    expect(catalogIdx).toBeGreaterThan(-1);
+    expect(knitAblesIdx).toBeGreaterThan(catalogIdx);
+    expect(myPatternsIdx).toBeGreaterThan(knitAblesIdx);
   });
 });
 

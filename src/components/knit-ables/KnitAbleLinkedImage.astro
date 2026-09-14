@@ -1,0 +1,61 @@
+---
+interface Props {
+  href: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  rel: string;
+  loading?: "lazy" | "eager";
+  class?: string;
+}
+
+const {
+  href,
+  src,
+  alt,
+  width,
+  height,
+  rel,
+  loading = "lazy",
+  class: className,
+} = Astro.props;
+---
+
+<a
+  class:list={["knit-able-linked-image", className]}
+  href={href}
+  target="_blank"
+  rel={rel}
+  aria-label={alt}
+>
+  <img
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding="async"
+    style={`aspect-ratio: ${width} / ${height}`}
+  />
+</a>
+
+<style>
+  .knit-able-linked-image {
+    display: block;
+    line-height: 0;
+  }
+
+  .knit-able-linked-image::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .knit-able-linked-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+  }
+</style>

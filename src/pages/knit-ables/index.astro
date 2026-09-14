@@ -1,0 +1,157 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import {
+  KNIT_ABLES_CANONICAL_URL,
+  KNIT_ABLES_LOGO,
+} from "../../lib/knit-ables/knitAblesLanding";
+import {
+  TEENAGE_KICKS_IMAGES,
+  TEENAGE_KICKS_SOCKS_PATH,
+} from "../../lib/knit-ables/teenageKicksSocks";
+
+const logo = KNIT_ABLES_LOGO;
+const featured = TEENAGE_KICKS_IMAGES.hero;
+---
+
+<Layout
+  title="Machine Knit-ables | Knit it Now"
+  description="Use hand-knitting patterns as inspiration, then create a custom machine-knit version with Knit It Now Pattern Builders and your own gauge."
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={KNIT_ABLES_CANONICAL_URL} />
+  </Fragment>
+
+  <div class="page-wrap knit-ables-landing">
+    <header class="knit-ables-hero" aria-labelledby="knit-ables-heading">
+      <img
+        class="knit-ables-logo"
+        src={logo.src}
+        alt={logo.alt}
+        width={logo.width}
+        height={logo.height}
+        loading="eager"
+        decoding="async"
+      />
+      <div class="knit-ables-hero__copy">
+        <p class="knit-ables-eyebrow">Knit it Now</p>
+        <h1 id="knit-ables-heading">Machine Knit-ables</h1>
+        <p>
+          Hand-knitting patterns can be wonderful inspiration. Machine Knit-ables show how
+          to get a similar look on a knitting machine—using Knit It Now Pattern Builders
+          and your own gauge.
+        </p>
+      </div>
+    </header>
+
+    <section aria-labelledby="knit-ables-list-heading">
+      <h2 id="knit-ables-list-heading">Start with this Knit-able</h2>
+      <a class="kbm-card knit-ables-feature-card" href={TEENAGE_KICKS_SOCKS_PATH}>
+        <img
+          src={featured.src}
+          alt={featured.alt}
+          width={featured.width}
+          height={featured.height}
+          loading="lazy"
+          decoding="async"
+        />
+        <h3 class="kbm-card__title">Colorful Self-Striping Socks</h3>
+        <p class="kbm-card__desc">
+          Bright stripes from self-striping yarn, using the Basic Socks Pattern Builder.
+        </p>
+      </a>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .knit-ables-landing.page-wrap {
+    padding-top: 12px;
+    padding-bottom: 3rem;
+    overflow-x: hidden;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .knit-ables-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+    align-items: start;
+    margin-bottom: 2rem;
+  }
+
+  .knit-ables-logo {
+    display: block;
+    width: min(100%, 160px);
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .knit-ables-eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .knit-ables-hero h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1.2;
+  }
+
+  .knit-ables-hero__copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .knit-ables-landing h2 {
+    margin: 0 0 0.85rem;
+  }
+
+  .knit-ables-feature-card {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 22rem;
+    text-decoration: none;
+  }
+
+  .knit-ables-feature-card:hover {
+    transform: none;
+  }
+
+  .knit-ables-feature-card img {
+    display: block;
+    width: 100%;
+    max-width: 10rem;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .knit-ables-feature-card .kbm-card__title {
+    margin: 0;
+  }
+
+  .knit-ables-feature-card .kbm-card__desc {
+    margin: 0;
+    font-weight: 400;
+  }
+
+  @media (min-width: 768px) {
+    .knit-ables-hero {
+      grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+      gap: 1.75rem;
+      align-items: start;
+    }
+
+    .knit-ables-logo {
+      width: min(100%, 220px);
+    }
+  }
+</style>

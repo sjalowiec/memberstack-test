@@ -1,0 +1,98 @@
+---
+import {
+  KNIT_ABLES_LOGO,
+  KNIT_ABLES_PAGE_LOGO_ALT,
+  KNIT_ABLES_PATH,
+} from "../../lib/knit-ables/knitAblesLanding";
+
+interface Props {
+  title: string;
+  headingId: string;
+  eyebrow?: string;
+}
+
+const {
+  title,
+  headingId,
+  eyebrow = "Knit-able Inspiration",
+} = Astro.props;
+---
+
+<div class="knit-able-page-header">
+  <p class="knit-able-eyebrow">{eyebrow}</p>
+  <div class="knit-able-page-header__title-row">
+    <a
+      class="knit-able-page-header__logo-link"
+      href={KNIT_ABLES_PATH}
+      aria-label={KNIT_ABLES_PAGE_LOGO_ALT}
+    >
+      <img
+        class="knit-able-page-header__logo"
+        src={KNIT_ABLES_LOGO.src}
+        alt={KNIT_ABLES_PAGE_LOGO_ALT}
+        width={KNIT_ABLES_LOGO.width}
+        height={KNIT_ABLES_LOGO.height}
+        loading="eager"
+        decoding="async"
+      />
+    </a>
+    <h1 id={headingId} class="knit-able-page-header__title">{title}</h1>
+  </div>
+</div>
+
+<style>
+  .knit-able-page-header__title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .knit-able-page-header .knit-able-eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .knit-able-page-header__logo-link {
+    flex: 0 0 auto;
+    line-height: 0;
+    text-decoration: none;
+  }
+
+  .knit-able-page-header__logo-link::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .knit-able-page-header__logo {
+    display: block;
+    width: min(100%, 80px);
+    max-width: 80px;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .knit-able-page-header__title {
+    flex: 1 1 10rem;
+    min-width: 0;
+    margin: 0;
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1.2;
+  }
+
+  @media (min-width: 768px) {
+    .knit-able-page-header__title-row {
+      flex-wrap: nowrap;
+    }
+
+    .knit-able-page-header__logo {
+      width: min(100%, 125px);
+      max-width: 125px;
+    }
+  }
+</style>

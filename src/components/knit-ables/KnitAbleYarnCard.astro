@@ -1,0 +1,128 @@
+---
+import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
+import KnitAbleLinkedImage from "./KnitAbleLinkedImage.astro";
+
+interface Props {
+  heading: string;
+  buttonLabel: string;
+  href: string;
+  imageSrc: string;
+  imageAlt: string;
+  imageWidth: number;
+  imageHeight: number;
+  featured?: boolean;
+}
+
+const {
+  heading,
+  buttonLabel,
+  href,
+  imageSrc,
+  imageAlt,
+  imageWidth,
+  imageHeight,
+  featured = false,
+} = Astro.props;
+---
+
+<article
+  class:list={["kbm-card knit-able-yarn-card", featured && "knit-able-yarn-card--featured"]}
+>
+  {
+    featured ? (
+      <p class="knit-able-yarn-card__eyebrow">Featured yarn</p>
+    ) : null
+  }
+  <KnitAbleLinkedImage
+    class="knit-able-yarn-card__image"
+    href={href}
+    src={imageSrc}
+    alt={imageAlt}
+    width={imageWidth}
+    height={imageHeight}
+    rel={KNIT_ABLE_AFFILIATE_REL}
+    loading="lazy"
+  />
+  <h3 class="kbm-card__title">{heading}</h3>
+  <div class="knit-able-yarn-card__copy">
+    <slot />
+  </div>
+  <a
+    class="kbm-btn kbm-btn-primary knit-able-yarn-card__btn"
+    href={href}
+    target="_blank"
+    rel={KNIT_ABLE_AFFILIATE_REL}
+  >
+    {buttonLabel}
+  </a>
+</article>
+
+<style>
+  .knit-able-yarn-card {
+    cursor: default;
+    padding: 1.35rem 1.4rem 1.5rem;
+    gap: 0;
+  }
+
+  .knit-able-yarn-card:hover {
+    transform: none;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: #c7d8a4;
+  }
+
+  .knit-able-yarn-card--featured {
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  .knit-able-yarn-card__eyebrow {
+    margin: 0 0 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .knit-able-yarn-card :global(.knit-able-yarn-card__image) {
+    margin: 0 0 1rem;
+    max-width: 16rem;
+  }
+
+  .knit-able-yarn-card :global(.knit-able-yarn-card__image img) {
+    border-radius: 12px;
+    background: #f7f8f5;
+  }
+
+  .knit-able-yarn-card .kbm-card__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  .knit-able-yarn-card__copy {
+    color: #4d5a48;
+    font-size: 1rem;
+    font-weight: 400 !important;
+    line-height: 1.6;
+  }
+
+  .knit-able-yarn-card__copy :global(p) {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 400 !important;
+  }
+
+  .knit-able-yarn-card__copy :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .knit-able-yarn-card__btn {
+    margin-top: 1.1rem;
+    align-self: stretch;
+    font-weight: 600;
+    text-align: center;
+    white-space: normal;
+  }
+</style>
