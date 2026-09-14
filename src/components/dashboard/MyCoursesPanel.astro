@@ -1,0 +1,98 @@
+---
+/**
+ * Account My Courses dashboard — owned individual courses from Memberstack
+ * planConnections (account-my-courses.ts). Hidden until at least one
+ * permanent course-ownership plan is present.
+ */
+import { loadAccountOwnableCourseCatalogCards } from "../../lib/kinCourse/accountMyCourses";
+
+const catalogCards = loadAccountOwnableCourseCatalogCards({
+  hostname: Astro.url.hostname,
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+---
+
+<section
+  id="my-courses"
+  class="dashboard-card dashboard-card--courses"
+  aria-labelledby="my-courses-heading"
+  data-kbm-my-courses
+  hidden
+>
+  <h2 id="my-courses-heading" class="dashboard-card__title">My Courses</h2>
+  <p class="dashboard-card__subtitle">
+    Courses you own. Open a course to continue learning.
+  </p>
+
+  <ul class="account-my-courses__list" data-kbm-my-courses-list></ul>
+
+  <script
+    id="account-my-courses-catalog"
+    type="application/json"
+    set:html={JSON.stringify(catalogCards)}
+  />
+</section>
+
+<style>
+  .dashboard-card--courses {
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+    min-width: 0;
+  }
+
+  .dashboard-card--courses .dashboard-card__subtitle {
+    margin-bottom: 0.85rem;
+  }
+
+  .account-my-courses__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  :global(.account-my-courses__item) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    background: #fafbfa;
+    min-width: 0;
+  }
+
+  :global(.account-my-courses__title) {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #2c3a57;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  :global(.account-my-courses__view) {
+    flex: 0 0 auto;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    white-space: nowrap;
+  }
+
+  :global(.account-my-courses__view:hover) {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  :global(.account-my-courses__view:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+</style>
