@@ -13,8 +13,32 @@ describe("memberstackMember", () => {
     expect(memberIdFromMemberstackPayload({ data: { id: "ms_abc" } })).toBe("ms_abc");
   });
 
+  it("reads member id from getAppAndMember data.member.id", () => {
+    expect(
+      memberIdFromMemberstackPayload({
+        data: {
+          app: { id: "app_cmfh3d1n802vb0wy706205810" },
+          member: { id: "mem_existing", planConnections: [] },
+        },
+      }),
+    ).toBe("mem_existing");
+  });
+
   it("reads member id from auth.id", () => {
     expect(memberIdFromMemberstackPayload({ data: { auth: { id: "ms_auth" } } })).toBe("ms_auth");
+  });
+
+  it("does not treat getAppAndMember app.id as a member id when logged out", () => {
+    expect(
+      memberIdFromMemberstackPayload({
+        data: { member: null, app: { id: "app_cmfh3d1n802vb0wy706205810" } },
+      }),
+    ).toBeUndefined();
+    expect(
+      isMemberstackLoggedInPayload({
+        data: { member: null, app: { id: "app_cmfh3d1n802vb0wy706205810" } },
+      }),
+    ).toBe(false);
   });
 
   it("returns undefined for empty payload", () => {
