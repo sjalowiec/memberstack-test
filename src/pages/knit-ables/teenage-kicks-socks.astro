@@ -1,0 +1,379 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import KnitAbleLinkedImage from "../../components/knit-ables/KnitAbleLinkedImage.astro";
+import KnitAblePageHeader from "../../components/knit-ables/KnitAblePageHeader.astro";
+import KnitAbleYarnCard from "../../components/knit-ables/KnitAbleYarnCard.astro";
+import { KNIT_ABLE_EXTERNAL_REL } from "../../lib/knit-ables/links";
+import {
+  TEENAGE_KICKS_CUSTOM_SUGGESTIONS,
+  TEENAGE_KICKS_IMAGES,
+  TEENAGE_KICKS_ORIGINAL_PATTERN_URL,
+  TEENAGE_KICKS_SOCKS_CANONICAL_URL,
+  TEENAGE_KICKS_YARN_RECOMMENDATIONS,
+  teenageKicksSockBuilderHref,
+} from "../../lib/knit-ables/teenageKicksSocks";
+
+const sockBuilderHref = teenageKicksSockBuilderHref();
+const heroImage = TEENAGE_KICKS_IMAGES.hero;
+const stripeImage = TEENAGE_KICKS_IMAGES.stripeProgression;
+---
+
+<Layout
+  title="Colorful Self-Striping Socks | Knit it Now"
+  description="Bright stripes turn a basic pair of socks into something completely different, without complicated color changes or patterning."
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={TEENAGE_KICKS_SOCKS_CANONICAL_URL} />
+  </Fragment>
+
+  <div class="page-wrap knit-able-page">
+    <article>
+      <section class="knit-able-hero" aria-labelledby="knit-able-hero-heading">
+        <figure class="knit-able-hero__figure">
+          <KnitAbleLinkedImage
+            href={TEENAGE_KICKS_ORIGINAL_PATTERN_URL}
+            src={heroImage.src}
+            alt={heroImage.alt}
+            width={heroImage.width}
+            height={heroImage.height}
+            rel={KNIT_ABLE_EXTERNAL_REL}
+            loading="eager"
+          />
+        </figure>
+        <div class="knit-able-hero__copy">
+          <KnitAblePageHeader
+            title="Colorful Self-Striping Socks"
+            headingId="knit-able-hero-heading"
+          />
+          <p>
+            Bright stripes turn a basic pair of socks into something completely different,
+            without complicated color changes, yarn ends or patterning.
+          </p>
+          <p>
+            The original Teenage Kicks Socks, designed by Stacey Winklepleck for Knit Picks,
+            is a hand-knitting pattern worked from the top down. We’ll use it as inspiration
+            and create our own custom machine-knit version with the <b>Knit It Now Sock Pattern
+            Builder.</b>
+          </p>
+          <div class="knit-able-hero__actions">
+            <a class="kbm-btn kbm-btn-accent" href={sockBuilderHref}>
+              Build My Custom Sock Pattern
+            </a>
+            <a
+              class="knit-able-text-link"
+              href={TEENAGE_KICKS_ORIGINAL_PATTERN_URL}
+              target="_blank"
+              rel={KNIT_ABLE_EXTERNAL_REL}
+            >
+              View the Original Knit Picks Pattern
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <hr class="section-divider" />
+
+      <section class="knit-able-split" aria-labelledby="knit-able-why-heading">
+        <div class="knit-able-split__copy">
+          <h2 id="knit-able-why-heading">Why This Works for Machine Knitting</h2>
+          <p>There is no stripe chart to follow. The yarn creates the color changes while you knit.</p>
+          <p>
+            Choose a self-striping sock yarn, knit a plain stockinette sock, and let the changing
+            colors become the design.
+          </p>
+        </div>
+        <figure class="knit-able-split__figure">
+          <KnitAbleLinkedImage
+            href={TEENAGE_KICKS_ORIGINAL_PATTERN_URL}
+            src={stripeImage.src}
+            alt={stripeImage.alt}
+            width={stripeImage.width}
+            height={stripeImage.height}
+            rel={KNIT_ABLE_EXTERNAL_REL}
+            loading="lazy"
+          />
+        </figure>
+      </section>
+
+      <section aria-labelledby="knit-able-own-heading">
+        <h2 id="knit-able-own-heading">Make It Your Own</h2>
+        <p>
+          Use the Basic Socks Pattern Builder to create instructions for your foot size, yarn,
+          gauge, preferred cuff depth, and desired leg length.
+        </p>
+        <ul class="knit-able-checklist">
+          {TEENAGE_KICKS_CUSTOM_SUGGESTIONS.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+        <p>
+          The original inspiration is knitted from the top down, but your Knit It Now pattern can
+          be created either Cuff to Toe or Toe Up. Choose the construction you prefer.
+        </p>
+        <aside class="kbm-intro-callout" aria-labelledby="knit-able-sue-note-heading">
+          <strong id="knit-able-sue-note-heading">Sue’s Machine-Knitting Note</strong>
+          <p>
+            Self-striping yarn may produce a slightly different stripe sequence on a knitting machine
+            than it does when hand knitted. Your stitch count, gauge, and sock size all affect the
+            width of each stripe.
+          </p>
+          <p>That’s part of the fun. Knit from your own gauge and let the yarn surprise you.</p>
+        </aside>
+      </section>
+
+      <section aria-labelledby="knit-able-yarn-heading">
+        <h2 id="knit-able-yarn-heading">Yarn Suggestions</h2>
+        <p>
+          The yarn is the design feature in these socks. Choose a sock-weight yarn that knits
+          successfully on your machine, then use your actual gauge in the Sock Pattern Builder.
+        </p>
+        <div class="knit-able-yarn-grid">
+          {
+            TEENAGE_KICKS_YARN_RECOMMENDATIONS.map((yarn) => (
+              <KnitAbleYarnCard
+                heading={yarn.heading}
+                buttonLabel={yarn.buttonLabel}
+                href={yarn.href}
+                imageSrc={yarn.image.src}
+                imageAlt={yarn.image.alt}
+                imageWidth={yarn.image.width}
+                imageHeight={yarn.image.height}
+                featured={yarn.featured === true}
+              >
+                {yarn.paragraphs.map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </KnitAbleYarnCard>
+            ))
+          }
+        </div>
+        <p class="knit-able-affiliate" role="note">
+          These are affiliate links. If you make a purchase, Knit It Now may receive a commission at
+          no additional cost to you.
+        </p>
+      </section>
+
+      <aside class="kbm-intro-callout knit-able-tip" aria-labelledby="knit-able-sue-tip-heading">
+        <strong id="knit-able-sue-tip-heading">Sue’s Tip</strong>
+        <p>
+          Want matching socks? Begin the second sock at the same place in the yarn’s color
+          sequence. If perfectly matched stripes are not important to you, simply keep knitting
+          and enjoy a coordinating pair.
+        </p>
+      </aside>
+
+      <section class="knit-able-cta" aria-labelledby="knit-able-final-heading">
+        <h2 id="knit-able-final-heading">Ready to Knit Yours?</h2>
+        <a class="kbm-btn kbm-btn-accent" href={sockBuilderHref}>
+          Build My Custom Sock Pattern
+        </a>
+        <p class="knit-able-cta__note">
+          Knit It Now members can use their own measurements and gauge to generate custom
+          machine-knitting instructions.
+        </p>
+      </section>
+
+      <p class="knit-able-credit">
+        <a
+          href={TEENAGE_KICKS_ORIGINAL_PATTERN_URL}
+          target="_blank"
+          rel={KNIT_ABLE_EXTERNAL_REL}
+        >
+          Teenage Kicks Socks
+        </a>
+         designed by Stacey Winklepleck. Images courtesy of Knit Picks.
+      </p>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .knit-able-page.page-wrap {
+    padding-top: 12px;
+    padding-bottom: 3rem;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .knit-able-page p {
+    margin: 0 0 1.05rem;
+  }
+
+  .knit-able-eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .knit-able-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .knit-able-hero__figure,
+  .knit-able-split__figure {
+    margin: 0;
+    max-width: 20rem;
+  }
+
+  .knit-able-hero__figure :global(img),
+  .knit-able-split__figure :global(img) {
+    border-radius: 12px;
+    background: #f7f8f5;
+  }
+
+  .knit-able-hero h1 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1.2;
+  }
+
+  .knit-able-hero__copy p:last-of-type {
+    margin-bottom: 1.15rem;
+  }
+
+  .knit-able-hero__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .knit-able-text-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+
+  .knit-able-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    margin-bottom: 0.25rem;
+  }
+
+  .knit-able-split__copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .knit-able-page h2 {
+    margin: 0 0 0.7rem;
+  }
+
+  .knit-able-checklist {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+  }
+
+  .knit-able-checklist li {
+    margin: 0 0 0.55rem;
+    padding: 0.65rem 0.85rem 0.65rem 2.35rem;
+    position: relative;
+    color: #4d5a48;
+    line-height: 1.5;
+    border-radius: 0.75rem;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+  }
+
+  .knit-able-checklist li:last-child {
+    margin-bottom: 0;
+  }
+
+  .knit-able-checklist li::before {
+    content: "";
+    position: absolute;
+    left: 0.85rem;
+    top: 0.95rem;
+    width: 0.55rem;
+    height: 0.3rem;
+    border-left: 2px solid var(--kbm-green, #52682d);
+    border-bottom: 2px solid var(--kbm-green, #52682d);
+    transform: rotate(-45deg);
+  }
+
+  .knit-able-page :global(.kbm-intro-callout) p + p {
+    margin-top: 0.75rem;
+  }
+
+  .knit-able-yarn-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 1.15rem 0 0.85rem;
+  }
+
+  .knit-able-affiliate {
+    margin: 0 0 0.25rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #5a6350;
+  }
+
+  .knit-able-tip {
+    margin: 1.5rem 0;
+    padding: 14px 18px;
+  }
+
+  .knit-able-cta {
+    margin: 0.5rem 0 1.5rem;
+    padding: 1.25rem 1.35rem;
+    background: #f7f8f5;
+    border: 1px solid #e4ebd6;
+    border-radius: 10px;
+  }
+
+  .knit-able-cta h2 {
+    margin-bottom: 0.85rem;
+  }
+
+  .knit-able-cta .kbm-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+  }
+
+  .knit-able-cta__note {
+    margin: 0.85rem 0 0;
+    color: #5a6350;
+  }
+
+  .knit-able-credit {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #5a6350;
+  }
+
+  .knit-able-credit a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .knit-able-hero {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.15fr);
+      gap: 1.75rem;
+    }
+
+    .knit-able-split {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 1.75rem;
+    }
+
+    .knit-able-yarn-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+</style>

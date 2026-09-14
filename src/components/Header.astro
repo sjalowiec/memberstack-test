@@ -5,6 +5,7 @@ import {
   PATTERN_BUILDERS_HOME_HREF,
   PATTERN_CATALOG_HREF,
 } from "../lib/patterns/customPatternProjectNavigation";
+import { KNIT_ABLES_PATH } from "../lib/knit-ables/knitAblesLanding";
 import { EBOOK_SALES_PAUSED } from "../lib/legacy/legacyEbookSalesHold";
 import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDrawer.astro";
 
@@ -1708,6 +1709,11 @@ div[data-ms-modal-overlay] {
                 <li>
                   <a href={PATTERN_CATALOG_HREF} data-testid="nav-pattern-catalog">
                     Pattern Catalog
+                  </a>
+                </li>
+                <li>
+                  <a href={KNIT_ABLES_PATH} data-testid="nav-knit-ables">
+                    Knit-ables
                   </a>
                 </li>
                 <li data-ms-content="members">
