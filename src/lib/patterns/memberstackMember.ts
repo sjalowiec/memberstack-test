@@ -1,26 +1,5 @@
 /** Shared Memberstack member payload parsing (client-side). */
 
-export function memberIdFromMemberstackPayload(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== "object") return undefined;
-  const root = payload as Record<string, unknown>;
-  const data =
-    root.data && typeof root.data === "object" && !Array.isArray(root.data)
-      ? (root.data as Record<string, unknown>)
-      : root;
-  const id = data.id ?? data._id;
-  if (typeof id === "string" && id.trim()) return id.trim();
-  const auth = data.auth;
-  if (auth && typeof auth === "object" && !Array.isArray(auth)) {
-    const authId = (auth as Record<string, unknown>).id;
-    if (typeof authId === "string" && authId.trim()) return authId.trim();
-  }
-  return undefined;
-}
-
-export function isMemberstackLoggedInPayload(payload: unknown): boolean {
-  return Boolean(memberIdFromMemberstackPayload(payload));
-}
-
 function memberstackDataRecord(payload: unknown): Record<string, unknown> | undefined {
   if (!payload || typeof payload !== "object") return undefined;
   const root = payload as Record<string, unknown>;
@@ -31,7 +10,11 @@ function memberstackDataRecord(payload: unknown): Record<string, unknown> | unde
   return data;
 }
 
-/** Member object from a `getCurrentMember()` payload (`data.member` or `data`). */
+/**
+ * Member object from a Memberstack DOM payload.
+ * `getAppAndMember()` nests the member at `data.member`; `getCurrentMember()`
+ * returns the member as `data` (or sometimes `data.member`).
+ */
 export function memberRecordFromMemberstackPayload(payload: unknown): Record<string, unknown> | undefined {
   const data = memberstackDataRecord(payload);
   if (!data) return undefined;
@@ -40,6 +23,27 @@ export function memberRecordFromMemberstackPayload(payload: unknown): Record<str
     return nested as Record<string, unknown>;
   }
   return data;
+}
+
+/**
+ * Member id from getAppAndMember (`data.member.id`), getCurrentMember
+ * (`data.id`), or `auth.id`. Does not treat `data.app.id` as a member id.
+ */
+export function memberIdFromMemberstackPayload(payload: unknown): string | undefined {
+  const member = memberRecordFromMemberstackPayload(payload);
+  if (!member) return undefined;
+  const id = member.id ?? member._id;
+  if (typeof id === "string" && id.trim()) return id.trim();
+  const auth = member.auth;
+  if (auth && typeof auth === "object" && !Array.isArray(auth)) {
+    const authId = (auth as Record<string, unknown>).id;
+    if (typeof authId === "string" && authId.trim()) return authId.trim();
+  }
+  return undefined;
+}
+
+export function isMemberstackLoggedInPayload(payload: unknown): boolean {
+  return Boolean(memberIdFromMemberstackPayload(payload));
 }
 
 function trimmedString(value: unknown): string | undefined {

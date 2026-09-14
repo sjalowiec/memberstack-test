@@ -40,6 +40,33 @@ function memberPayload(
   };
 }
 
+/** Production `getAppAndMember()` shape: member is nested, not `data.id`. */
+function getAppAndMemberPayload(
+  id: string | null,
+  connections: Array<{
+    planId: string;
+    status: string;
+    payment?: {
+      priceId?: string;
+      cancelAtDate?: number | null;
+      nextBillingDate?: number | null;
+    };
+  }> = [],
+) {
+  if (!id) {
+    return { data: { app: {}, member: null } };
+  }
+  return {
+    data: {
+      app: {},
+      member: {
+        id,
+        planConnections: connections,
+      },
+    },
+  };
+}
+
 function cancelingMonthlyMember(id = "mem_canceling_monthly") {
   return memberPayload(id, [
     {
@@ -189,6 +216,53 @@ describe("startJoinCheckout (purchase / current)", () => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
     __resetMembershipStatusCtaForTests();
+  });
+
+  it("signed-in getAppAndMember member (data.member.id) skips SIGNUP and checks out", async () => {
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.test/existing-member" },
+    });
+    const openModal = vi.fn();
+    installMemberstack({
+      getAppAndMember: vi.fn().mockResolvedValue(
+        getAppAndMemberPayload("mem_existing", []),
+      ),
+      getCurrentMember: vi.fn().mockResolvedValue({ data: null }),
+      openModal,
+      purchasePlansWithCheckout,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("monthly");
+
+    expect(openModal).not.toHaveBeenCalled();
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        priceId: MEMBERSHIP_PRICE_IDS.monthly,
+        successUrl: "https://example.com/signup/thank-you",
+        autoRedirect: false,
+      }),
+    );
+    expect(purchasePlansWithCheckout.mock.calls[0]?.[0]?.priceId).toBe(
+      MEMBERSHIP_PRICE_IDS.monthly,
+    );
+  });
+
+  it("logged-out getAppAndMember payload still opens SIGNUP", async () => {
+    const openModal = vi.fn().mockResolvedValue({ type: "CLOSED" });
+    const purchasePlansWithCheckout = vi.fn();
+    installMemberstack({
+      getAppAndMember: vi.fn().mockResolvedValue(getAppAndMemberPayload(null)),
+      getCurrentMember: vi.fn().mockResolvedValue({ data: null }),
+      openModal,
+      purchasePlansWithCheckout,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("annual");
+
+    expect(openModal).toHaveBeenCalledWith("SIGNUP");
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
   });
 
   it("1. free member buying monthly uses normal checkout", async () => {
@@ -609,6 +683,40 @@ describe("startJoinCheckout (purchase / current)", () => {
 
     expect(purchasePlansWithCheckout).toHaveBeenCalledTimes(1);
     expect(openModal).not.toHaveBeenCalled();
+  });
+
+  it("resumePendingMembershipCheckout recognizes getAppAndMember data.member.id", async () => {
+    savePendingMembershipCheckout(
+      buildPendingMembershipCheckout(
+        "annual",
+        "https://example.com/membership",
+        Date.now(),
+      ),
+    );
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.test/from-pending-nested" },
+    });
+    const openModal = vi.fn();
+    installMemberstack({
+      getAppAndMember: vi.fn().mockResolvedValue(
+        getAppAndMemberPayload("mem_existing", []),
+      ),
+      getCurrentMember: vi.fn().mockResolvedValue({ data: null }),
+      openModal,
+      purchasePlansWithCheckout,
+      hideModal: vi.fn(),
+    });
+
+    const resumed = await resumePendingMembershipCheckout();
+
+    expect(resumed).toBe(true);
+    expect(openModal).not.toHaveBeenCalled();
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        priceId: MEMBERSHIP_PRICE_IDS.annual,
+        successUrl: "https://example.com/signup/thank-you",
+      }),
+    );
   });
 
   it("pending checkout survives login elsewhere and resumePendingMembershipCheckout continues", async () => {
