@@ -140,7 +140,7 @@ describe("BaseLayout wires the preview into the shared snapshot only", () => {
     const layout = readFileSync(join(here, "../layouts/BaseLayout.astro"), "utf8");
     const memberAccess = readFileSync(join(here, "memberAccess.ts"), "utf8");
     expect(layout).toContain("localMemberPreviewBypassIsOn");
-    expect(layout).toContain("resolveSharedMemberAccessSnapshot");
+    expect(layout).toContain("decideSharedMemberAccessPublish");
     expect(layout).toContain("isLocalhostHost");
     expect(memberAccess).not.toContain("localMemberPreviewBypass");
     expect(memberAccess).not.toContain("dev-member");

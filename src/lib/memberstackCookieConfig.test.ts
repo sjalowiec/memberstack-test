@@ -33,9 +33,6 @@ function expectRootCookieSession(layout: string, label: string): void {
   expect(layout).toContain("data-memberstack-use-cookies");
   expect(layout).not.toContain("clearMsStorage");
   expect(layout).not.toMatch(/\$memberstackDom\?\.init\?\(\s*\)/);
-  expect(layout).toContain(
-    "window.$memberstackDom?.init?.(window.memberstackConfig)",
-  );
 }
 
 describe("Memberstack root-domain cookie session", () => {
@@ -76,11 +73,13 @@ describe("Memberstack root-domain cookie session", () => {
     expect(baseLayout).toContain(MEMBERSTACK_CDN);
   });
 
-  it("does not re-init Memberstack without the cookie options", () => {
+  it("does not re-init Memberstack after onReady on the site layout", () => {
     expect(baseLayout).not.toMatch(/\$memberstackDom\?\.init\?\(\s*\)/);
-    expect(baseLayout).toContain(
+    expect(baseLayout).not.toContain(
       "window.$memberstackDom?.init?.(window.memberstackConfig)",
     );
+    expect(baseLayout).toContain("var memberstackConfig");
+    expect(baseLayout).toContain("data-memberstack-use-cookies");
   });
 
   it("still logs out through Memberstack logout", () => {

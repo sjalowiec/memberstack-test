@@ -350,13 +350,12 @@ const isProduction =
 
       initMemberstackPostLoginHandlers();
     </script>
-    <script is:inline>
-  window.$memberstackDom?.onReady?.then(() => {
-    // Pass the same cookie options as memberstackConfig so a later init cannot
-    // fall back to origin-scoped localStorage.
-    window.$memberstackDom?.init?.(window.memberstackConfig);
-  });
-</script>
+    <!--
+      Do not call $memberstackDom.init() after onReady. The CDN script already
+      boots from memberstackConfig (defined above) plus data-memberstack-use-cookies.
+      A second init after the SDK is ready can reset the restored session and
+      briefly look logged out on every page load.
+    -->
     <script is:inline>
   document.addEventListener("click", function (e) {
     const a = e.target?.closest?.("#kbmLoginLink");
@@ -493,14 +492,15 @@ const isProduction =
       // chaining short-circuit).
       import {
         getViewerAccessState,
-        hasMemberAccess,
+        isMemberLoggedIn,
         logMemberAccessDebug,
       } from "../lib/memberAccess";
       import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
+      import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
       import {
-        localMemberPreviewBypassIsOn,
-        resolveSharedMemberAccessSnapshot,
-      } from "../lib/localMemberPreviewBypass";
+        decideSharedMemberAccessPublish,
+        isSharedMemberstackPayloadResolved,
+      } from "../lib/sharedMemberAccessPublish";
 
       // Wait for the Memberstack SDK to be ready instead of bailing on the first
       // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
@@ -509,42 +509,91 @@ const isProduction =
       // SDK init and reliably includes planConnections, so plan-based access is
       // correct on first load. getCurrentMember() can return a cached member
       // without planConnections early, which made finalHasVideoAccess false.
+      //
+      // The first empty getAppAndMember result is pending, not logged-out.
+      // Wait for onReady and keep polling while the payload is null or a
+      // logged-in member is still missing planConnections.
       async function waitForMemberstackReady(attempts: number, delayMs: number) {
+        let lastPayload: unknown = null;
+        let memberstackReady = false;
+        let waitedForReady = false;
         for (let i = 0; i < attempts; i++) {
-          const ms = window.$memberstackDom;
-          // Prefer getAppAndMember only — getCurrentMember can omit planConnections.
-          const api = ms?.getAppAndMember;
-          if (typeof api === "function") {
-            try {
-              return await api.call(ms);
-            } catch (error) {
-              console.warn("MemberStack member check failed", error);
+          const msDom = window.$memberstackDom;
+          const api = msDom?.getAppAndMember;
+          if (!msDom || typeof api !== "function") {
+            await new Promise((r) => setTimeout(r, delayMs));
+            continue;
+          }
+          if (!waitedForReady && msDom.onReady) {
+            waitedForReady = true;
+            await Promise.race([
+              Promise.resolve(msDom.onReady).catch(() => undefined),
+              new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+            ]);
+            memberstackReady = true;
+          }
+          try {
+            const res = await api.call(msDom);
+            lastPayload = res;
+            if (isMemberLoggedIn(res)) memberstackReady = true;
+            if (isSharedMemberstackPayloadResolved(res, memberstackReady)) {
+              return { payload: res, memberstackReady: true };
             }
+          } catch (error) {
+            console.warn("MemberStack member check failed", error);
           }
           await new Promise((r) => setTimeout(r, delayMs));
         }
-        return null;
+        const ready =
+          memberstackReady ||
+          (lastPayload != null && !isMemberLoggedIn(lastPayload));
+        return { payload: lastPayload, memberstackReady: ready };
       }
 
-      async function applyMsLoggedIn(res: any) {
-        const data = res?.data;
+      async function applyMsLoggedIn(
+        res: unknown,
+        options: { memberstackReady?: boolean; logoutEvent?: boolean } = {},
+      ) {
+        const data = (res as { data?: any } | null)?.data;
         const member = (data?.member ?? data) || null;
         const rawKinAccess = member?.customFields?.["kin-access"];
-        await ensureLegacyPaidThroughContext(res);
-        const memberHasAccess = hasMemberAccess(res);
-        const viewerAccessState = getViewerAccessState(res);
         const bypassOn = localMemberPreviewBypassIsOn();
-        const accessDetail = resolveSharedMemberAccessSnapshot({
-          memberHasAccess,
-          viewerAccessState,
+        const memberstackReady = options.memberstackReady === true;
+        const logoutEvent = options.logoutEvent === true;
+
+        if (
+          !logoutEvent &&
+          isMemberLoggedIn(res) &&
+          isSharedMemberstackPayloadResolved(res, memberstackReady)
+        ) {
+          await ensureLegacyPaidThroughContext(res);
+        }
+
+        const decision = decideSharedMemberAccessPublish({
+          payload: res,
+          memberstackReady,
+          currentSnapshot: window.__KIN_MEMBER_ACCESS__,
           bypassOn,
+          logoutEvent,
         });
+
+        if (decision.action === "pending") {
+          console.log("[KIN member access] BaseLayout pending, not publishing", {
+            gate: "BaseLayout",
+            memberstackReady,
+            logoutEvent,
+            hasCurrentGrant: window.__KIN_MEMBER_ACCESS__?.hasMemberAccess === true,
+          });
+          return;
+        }
+
+        const accessDetail = decision.snapshot;
 
         // Detailed log first (always runs, even when access is false) so we can
         // see activePlanIds vs the global allow list and which gate decided.
         logMemberAccessDebug("BaseLayout.ms-logged-in", res, {
           rawKinAccess,
-          viewerAccessState,
+          viewerAccessState: getViewerAccessState(res),
           localMemberPreviewBypass: bypassOn,
           snapshotHasMemberAccess: accessDetail.hasMemberAccess,
         });
@@ -587,10 +636,10 @@ const isProduction =
       }
 
       function refreshMemberAccess() {
-        const ms = window.$memberstackDom;
-        const api = ms?.getAppAndMember;
-        if (typeof api !== "function") return;
-        api.call(ms).then(applyMsLoggedIn).catch(() => {});
+        void (async () => {
+          const { payload, memberstackReady } = await waitForMemberstackReady(15, 200);
+          await applyMsLoggedIn(payload, { memberstackReady });
+        })();
       }
 
       // Re-check on auth changes so login/logout without a full reload also
@@ -601,7 +650,7 @@ const isProduction =
         ms.on("member.login", refreshMemberAccess);
         ms.on("member.logout", () => {
           // Re-run the snapshot so localhost `?member=true` stays granted after logout.
-          void applyMsLoggedIn(null);
+          void applyMsLoggedIn(null, { memberstackReady: true, logoutEvent: true });
         });
       }
 
@@ -609,11 +658,14 @@ const isProduction =
         // Opt-in preview: write the shared snapshot immediately so late-loading
         // gates do not wait on Memberstack. Real access still wins when it arrives.
         if (localMemberPreviewBypassIsOn()) {
-          await applyMsLoggedIn(null);
+          await applyMsLoggedIn(null, { memberstackReady: false });
         }
-        const res = await waitForMemberstackReady(30, 200);
-        await applyMsLoggedIn(res);
+        const { payload, memberstackReady } = await waitForMemberstackReady(30, 200);
+        await applyMsLoggedIn(payload, { memberstackReady });
         bindAuthEvents();
+        window.addEventListener("pageshow", () => {
+          refreshMemberAccess();
+        });
       }
 
       if (document.readyState === "loading") {
