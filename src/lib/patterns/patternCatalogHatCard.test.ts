@@ -80,8 +80,8 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("button: 'Create your hat'");
     expect(catalog).toContain("{hatPattern.href}");
     expect(catalog).toContain("CREATE MY FREE HAT PATTERN");
-    expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
-    expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/sleeveless'");
+    expect(catalog).toContain("href: '/patterns/drop-shoulder'");
   });
 
   it("swaps the hero action by login state: About for logged-out, My Patterns for logged-in", () => {
@@ -100,12 +100,14 @@ describe("pattern catalog Hat card", () => {
 
   it("leaves existing sweater catalog cards unchanged", () => {
     expect(catalog).toContain("title: 'Sleeveless Sweater'");
-    expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/sleeveless'");
+    expect(catalog).not.toContain("href: '/patterns/sleeveless/builder?new=1'");
     expect(catalog).toContain("image: '/images/patterns/sleeveless.webp'");
     expect(catalog).toContain("button: 'Create sleeveless sweater'");
 
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
-    expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/drop-shoulder'");
+    expect(catalog).not.toContain("href: '/patterns/drop-shoulder/builder?new=1'");
     expect(catalog).toContain("image: '/images/patterns/drop_shoulder.webp'");
     expect(catalog).toContain("button: 'Create drop shoulder sweater'");
   });

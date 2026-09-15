@@ -1,11 +1,15 @@
 ---
-export const prerender = true;
+/**
+ * DEV-review landing page. Do not prerender: production hosts must keep hitting
+ * middleware so `/patterns/sideways-cardigan` stays blocked with the builder.
+ */
+export const prerender = false;
 
 import Layout from "../../../layouts/Layout.astro";
 import PatternBuilderLandingPage from "../../../components/patterns/PatternBuilderLandingPage.astro";
-import { SLEEVELESS_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/sleevelessPatternLanding";
+import { SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 
-const landing = SLEEVELESS_PATTERN_BUILDER_LANDING;
+const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
 ---
 
 <Layout

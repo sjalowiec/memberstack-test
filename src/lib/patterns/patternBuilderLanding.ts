@@ -59,19 +59,33 @@ export type PatternBuilderLandingCta = {
   checkingLabel: string;
 };
 
+/** Catalog-card badge values. Landing pages import the existing catalog constants. */
+export type PatternBuilderLandingCatalogBadge = {
+  count: number;
+  rest: string;
+};
+
 export type PatternBuilderLandingContent = {
   patternName: string;
   headline: string;
   intro: string;
   image: PatternBuilderLandingImage;
   seo: PatternBuilderLandingSeo;
+  catalogBadge?: PatternBuilderLandingCatalogBadge;
   why?: PatternBuilderLandingCopySection;
   choices?: PatternBuilderLandingChoicesSection;
+  howItWorks?: PatternBuilderLandingCopySection;
   creates?: PatternBuilderLandingCopySection;
   anyYarn?: PatternBuilderLandingCopySection;
   knitAble?: PatternBuilderLandingKnitAble;
   cta: PatternBuilderLandingCta;
 };
+
+export function hasPatternBuilderLandingCatalogBadge(
+  badge: PatternBuilderLandingCatalogBadge | undefined,
+): badge is PatternBuilderLandingCatalogBadge {
+  return Boolean(badge && Number.isFinite(badge.count) && badge.rest.trim());
+}
 
 export function hasPatternBuilderLandingCopy(
   section: PatternBuilderLandingCopySection | undefined,

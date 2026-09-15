@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  hasPatternBuilderLandingCatalogBadge,
   hasPatternBuilderLandingChoices,
   hasPatternBuilderLandingCopy,
   hasPatternBuilderLandingKnitAble,
@@ -75,15 +76,35 @@ describe("pattern builder landing content model", () => {
     expect(heroComponent).toContain("{patternName}");
     expect(heroComponent).toContain("{headline}");
     expect(heroComponent).toContain("{cta.memberHref}");
+    expect(heroComponent).toContain("pattern-builder-hero__badge");
+    expect(heroComponent).toContain("pattern-builder-hero__visual");
+    expect(heroComponent).toContain("position: absolute");
+    expect(heroComponent).toContain("top: 0.7rem");
+    expect(heroComponent).toContain("left: 50%");
+    expect(heroComponent).toContain("transform: translateX(-50%)");
+    expect(heroComponent).toContain("{catalogBadge.count}");
+    expect(heroComponent).toContain("{catalogBadge.rest}");
+    expect(heroComponent).toContain('data-testid="pattern-builder-landing-catalog-badge"');
+    expect(heroComponent).toContain("white-space: nowrap");
+    expect(heroComponent).not.toContain("Socks in 1 Builder");
+    expect(heroComponent).not.toContain("Styles in 1 Builder");
+    expect(heroComponent).not.toContain("Patterns for Anyone");
   });
 
   it("omits optional copy and choice blocks when they are empty", () => {
     const withoutOptional = minimalLanding();
     expect(hasPatternBuilderLandingCopy(withoutOptional.why)).toBe(false);
     expect(hasPatternBuilderLandingChoices(withoutOptional.choices)).toBe(false);
+    expect(hasPatternBuilderLandingCopy(withoutOptional.howItWorks)).toBe(false);
     expect(hasPatternBuilderLandingCopy(withoutOptional.creates)).toBe(false);
     expect(hasPatternBuilderLandingCopy(withoutOptional.anyYarn)).toBe(false);
     expect(hasPatternBuilderLandingKnitAble(withoutOptional.knitAble)).toBe(false);
+    expect(hasPatternBuilderLandingCatalogBadge(withoutOptional.catalogBadge)).toBe(false);
+    expect(hasPatternBuilderLandingCatalogBadge({ count: 32, rest: "Styles" })).toBe(true);
+    expect(hasPatternBuilderLandingCatalogBadge({ count: Number.NaN, rest: "Styles" })).toBe(
+      false,
+    );
+    expect(hasPatternBuilderLandingCatalogBadge({ count: 32, rest: "   " })).toBe(false);
 
     expect(hasPatternBuilderLandingCopy({ heading: "Why", body: [] })).toBe(false);
     expect(hasPatternBuilderLandingCopy({ heading: "", body: ["Hello"] })).toBe(false);
@@ -98,6 +119,7 @@ describe("pattern builder landing content model", () => {
 
     expect(pageComponent).toContain("hasPatternBuilderLandingCopy(content.why)");
     expect(pageComponent).toContain("hasPatternBuilderLandingChoices(content.choices)");
+    expect(pageComponent).toContain("hasPatternBuilderLandingCopy(content.howItWorks)");
     expect(pageComponent).toContain("hasPatternBuilderLandingCopy(content.creates)");
     expect(pageComponent).toContain("hasPatternBuilderLandingCopy(content.anyYarn)");
     expect(pageComponent).toContain("hasPatternBuilderLandingKnitAble(content.knitAble)");
@@ -105,6 +127,9 @@ describe("pattern builder landing content model", () => {
     expect(pageComponent).toContain("{why ? <PatternBuilderLandingWhy section={why} /> : null}");
     expect(pageComponent).toContain(
       "{choices ? <PatternBuilderLandingChoices section={choices} /> : null}",
+    );
+    expect(pageComponent).toContain(
+      "{howItWorks ? <PatternBuilderLandingHowItWorks section={howItWorks} /> : null}",
     );
     expect(pageComponent).toContain(
       "{creates ? <PatternBuilderLandingCreates section={creates} /> : null}",
@@ -149,7 +174,7 @@ describe("pattern builder landing content model", () => {
     expect(membership).toContain("cta.membershipNote?.trim()");
   });
 
-  it("keeps the optional why section available for future Pattern Builder pages", () => {
+  it("keeps the optional why and how-it-works sections available for Pattern Builder pages", () => {
     const withWhy = minimalLanding({
       why: {
         heading: "Why use this builder?",
@@ -164,6 +189,21 @@ describe("pattern builder landing content model", () => {
     );
     expect(whyComponent).toContain("PatternBuilderLandingCopySection");
     expect(pageComponent).toContain("PatternBuilderLandingWhy");
+
+    const withHow = minimalLanding({
+      howItWorks: {
+        heading: "How it works",
+        body: ["Enter measurements, choose fit, and enter gauge."],
+      },
+    });
+    expect(hasPatternBuilderLandingCopy(withHow.howItWorks)).toBe(true);
+    expect(withHow.howItWorks?.heading).toBe("How it works");
+    const howComponent = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingHowItWorks.astro"),
+      "utf8",
+    );
+    expect(howComponent).toContain("pattern-builder-how-it-works");
+    expect(pageComponent).toContain("PatternBuilderLandingHowItWorks");
   });
 
   it("renders nothing when no Knit-able configuration is supplied", () => {

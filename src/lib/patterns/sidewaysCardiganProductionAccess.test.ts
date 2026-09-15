@@ -59,7 +59,8 @@ describe("Sideways catalog and route wiring", () => {
     expect(catalog).toContain("...(showSidewaysAsComingSoon ? [] : [sidewaysPattern])");
     expect(catalog).toContain("...(showSidewaysAsComingSoon");
     expect(catalog).toContain("title: 'Sideways Knit Sweater'");
-    expect(catalog).toContain("href: '/patterns/sideways-cardigan/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/sideways-cardigan'");
+    expect(catalog).not.toContain("href: '/patterns/sideways-cardigan/builder?new=1'");
     expect(catalog).toContain("image: '/images/patterns/sideways.png'");
     expect(catalog).toContain("button: 'Create sideways knit sweater'");
 
@@ -95,8 +96,8 @@ describe("Sideways catalog and route wiring", () => {
   });
 
   it("does not change Socks, Sleeveless, Drop Shoulder, or Hat live catalog cards", () => {
-    expect(catalog).toContain("href: '/patterns/sleeveless/builder?new=1'");
-    expect(catalog).toContain("href: '/patterns/drop-shoulder/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/sleeveless'");
+    expect(catalog).toContain("href: '/patterns/drop-shoulder'");
     expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
     expect(catalog).toContain("href: '/patterns/socks'");
     expect(catalog).toContain("title: 'Sleeveless Sweater'");

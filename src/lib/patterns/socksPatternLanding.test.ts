@@ -23,6 +23,7 @@ import {
   KNIT_ABLES_PAGE_LOGO_ALT,
   KNIT_ABLES_PATH,
 } from "../knit-ables/knitAblesLanding";
+import { SOCKS_CATALOG_PILL_REST, SOCKS_PATTERN_POSSIBILITIES } from "./patternCatalogPossibilities";
 
 const landingPage = readFileSync(resolve("src/pages/patterns/socks/index.astro"), "utf8");
 const builderPage = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
@@ -53,6 +54,18 @@ describe("Basic Socks Pattern Builder landing page", () => {
       `${BASIC_SOCK_PATTERN_NAME} Pattern Builder`,
     );
     expect(existsSync(resolve(`public${SOCKS_PATTERN_LANDING_IMAGE_SRC}`))).toBe(true);
+    expect(SOCKS_PATTERN_BUILDER_LANDING.catalogBadge).toEqual({
+      count: SOCKS_PATTERN_POSSIBILITIES,
+      rest: SOCKS_CATALOG_PILL_REST,
+    });
+    const socksLandingConfig = readFileSync(
+      resolve("src/lib/patterns/socksPatternLanding.ts"),
+      "utf8",
+    );
+    expect(socksLandingConfig).toContain("SOCKS_PATTERN_POSSIBILITIES");
+    expect(socksLandingConfig).toContain("SOCKS_CATALOG_PILL_REST");
+    expect(socksLandingConfig).not.toContain('"Socks in 1 Builder"');
+    expect(landingPage).not.toContain("Socks in 1 Builder");
   });
 
   it("leaves the member-only builder route unchanged", () => {
@@ -128,8 +141,10 @@ describe("Basic Socks Pattern Builder landing page", () => {
 
   it("omits Why use this builder from the Socks landing page only", () => {
     expect(SOCKS_PATTERN_BUILDER_LANDING.why).toBeUndefined();
+    expect(SOCKS_PATTERN_BUILDER_LANDING.howItWorks).toBeUndefined();
     const socksConfig = readFileSync(resolve("src/lib/patterns/socksPatternLanding.ts"), "utf8");
     expect(socksConfig).not.toContain("Why use this builder?");
+    expect(socksConfig).not.toContain("How it works");
     const whyComponent = readFileSync(
       resolve("src/components/patterns/PatternBuilderLandingWhy.astro"),
       "utf8",
@@ -140,6 +155,9 @@ describe("Basic Socks Pattern Builder landing page", () => {
       "utf8",
     );
     expect(landingShell).toContain("{why ? <PatternBuilderLandingWhy section={why} /> : null}");
+    expect(landingShell).toContain(
+      "{howItWorks ? <PatternBuilderLandingHowItWorks section={howItWorks} /> : null}",
+    );
   });
 
   it("features the Teenage Kicks Knit-able with existing assets and routes", () => {

@@ -14,6 +14,7 @@ import {
   KNIT_ABLES_PATH,
 } from "../knit-ables/knitAblesLanding";
 import { TEENAGE_KICKS_IMAGES, TEENAGE_KICKS_SOCKS_PATH } from "../knit-ables/teenageKicksSocks";
+import { SOCKS_CATALOG_PILL_REST, SOCKS_PATTERN_POSSIBILITIES } from "./patternCatalogPossibilities";
 
 export const SOCKS_PATTERN_LANDING_PATH = "/patterns/socks";
 export const SOCKS_PATTERN_LANDING_CANONICAL_URL = "https://knititnow.com/patterns/socks";
@@ -31,6 +32,10 @@ export const SOCKS_PATTERN_BUILDER_LANDING: PatternBuilderLandingContent = {
   image: {
     src: SOCKS_PATTERN_LANDING_IMAGE_SRC,
     alt: "A pair of machine-knit basic socks",
+  },
+  catalogBadge: {
+    count: SOCKS_PATTERN_POSSIBILITIES,
+    rest: SOCKS_CATALOG_PILL_REST,
   },
   seo: {
     title: "Basic Socks Pattern Builder | Knit it Now",

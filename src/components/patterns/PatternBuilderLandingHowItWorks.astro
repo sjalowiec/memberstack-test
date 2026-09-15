@@ -1,0 +1,38 @@
+---
+import type { PatternBuilderLandingCopySection } from "../../lib/patterns/patternBuilderLanding";
+
+interface Props {
+  section: PatternBuilderLandingCopySection;
+  headingId?: string;
+}
+
+const { section, headingId = "pattern-builder-how-it-works-heading" } = Astro.props;
+---
+
+<section class="pattern-builder-how-it-works" aria-labelledby={headingId}>
+  <h2 id={headingId}>{section.heading}</h2>
+  {section.body.map((paragraph) => <p>{paragraph}</p>)}
+</section>
+
+<style>
+  .pattern-builder-how-it-works {
+    margin: 0 0 1.75rem;
+  }
+
+  .pattern-builder-how-it-works h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-how-it-works p {
+    margin: 0 0 0.85rem;
+    color: #333;
+    line-height: 1.55;
+  }
+
+  .pattern-builder-how-it-works p:last-child {
+    margin-bottom: 0;
+  }
+</style>
