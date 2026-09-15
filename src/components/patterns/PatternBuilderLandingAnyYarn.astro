@@ -1,0 +1,42 @@
+---
+import type { PatternBuilderLandingCopySection } from "../../lib/patterns/patternBuilderLanding";
+
+interface Props {
+  section: PatternBuilderLandingCopySection;
+  headingId?: string;
+}
+
+const { section, headingId = "pattern-builder-any-yarn-heading" } = Astro.props;
+---
+
+<section class="pattern-builder-any-yarn" aria-labelledby={headingId}>
+  <h2 id={headingId}>{section.heading}</h2>
+  {section.body.map((paragraph) => <p>{paragraph}</p>)}
+</section>
+
+<style>
+  .pattern-builder-any-yarn {
+    margin: 0 0 1.75rem;
+    padding: 1.1rem 1.2rem;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
+    border: 1px solid #c7d8a4;
+    border-radius: 10px;
+  }
+
+  .pattern-builder-any-yarn h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-any-yarn p {
+    margin: 0 0 0.85rem;
+    color: #243015;
+    line-height: 1.55;
+  }
+
+  .pattern-builder-any-yarn p:last-child {
+    margin-bottom: 0;
+  }
+</style>

@@ -43,9 +43,9 @@ describe("Teenage Kicks Socks Knit-able page", () => {
     expect(pageSource).not.toContain("data-ms-content");
   });
 
-  it("links both pattern CTAs to the existing Basic Socks Pattern Builder", () => {
-    expect(teenageKicksSockBuilderHref()).toBe("/patterns/socks/builder?new=1");
-    expect(teenageKicksSockBuilderHref()).toBe(buildSockBuilderNewPatternHref());
+  it("links both pattern CTAs to the Basic Socks landing page", () => {
+    expect(teenageKicksSockBuilderHref()).toBe("/patterns/socks");
+    expect(teenageKicksSockBuilderHref()).not.toBe(buildSockBuilderNewPatternHref());
     expect(pageSource).toContain("teenageKicksSockBuilderHref()");
     expect(pageSource.match(/Build My Custom Sock Pattern/g)?.length).toBe(2);
     expect(pageSource.match(/href=\{sockBuilderHref\}/g)?.length).toBe(2);

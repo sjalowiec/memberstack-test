@@ -1,0 +1,65 @@
+---
+import {
+  hasPatternBuilderLandingChoices,
+  hasPatternBuilderLandingCopy,
+  hasPatternBuilderLandingMembership,
+  type PatternBuilderLandingContent,
+} from "../../lib/patterns/patternBuilderLanding";
+import PatternBuilderLandingHero from "./PatternBuilderLandingHero.astro";
+import PatternBuilderLandingWhy from "./PatternBuilderLandingWhy.astro";
+import PatternBuilderLandingChoices from "./PatternBuilderLandingChoices.astro";
+import PatternBuilderLandingCreates from "./PatternBuilderLandingCreates.astro";
+import PatternBuilderLandingAnyYarn from "./PatternBuilderLandingAnyYarn.astro";
+import PatternBuilderLandingMembershipCta from "./PatternBuilderLandingMembershipCta.astro";
+
+interface Props {
+  content: PatternBuilderLandingContent;
+}
+
+const { content } = Astro.props;
+const why = hasPatternBuilderLandingCopy(content.why) ? content.why : null;
+const choices = hasPatternBuilderLandingChoices(content.choices) ? content.choices : null;
+const creates = hasPatternBuilderLandingCopy(content.creates) ? content.creates : null;
+const anyYarn = hasPatternBuilderLandingCopy(content.anyYarn) ? content.anyYarn : null;
+const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta : null;
+---
+
+<div
+  class="pattern-builder-landing page-wrap"
+  data-pattern-builder-landing
+  data-cta-mode="pending"
+>
+  <PatternBuilderLandingHero content={content} />
+  {why ? <PatternBuilderLandingWhy section={why} /> : null}
+  {choices ? <PatternBuilderLandingChoices section={choices} /> : null}
+  {creates ? <PatternBuilderLandingCreates section={creates} /> : null}
+  {anyYarn ? <PatternBuilderLandingAnyYarn section={anyYarn} /> : null}
+  {membership ? <PatternBuilderLandingMembershipCta cta={membership} /> : null}
+</div>
+
+<script>
+  import { initPatternBuilderLandingCta } from "../../lib/patterns/patternBuilderLandingCta";
+
+  function boot(): void {
+    const root = document.querySelector("[data-pattern-builder-landing]");
+    if (!(root instanceof HTMLElement)) return;
+    void initPatternBuilderLandingCta(root);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>
+
+<style>
+  .pattern-builder-landing.page-wrap {
+    max-width: 1000px;
+    padding-top: 12px;
+    padding-bottom: 3rem;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+</style>

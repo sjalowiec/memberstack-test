@@ -1,0 +1,21 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import PatternBuilderLandingPage from "../../../components/patterns/PatternBuilderLandingPage.astro";
+import { SOCKS_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/socksPatternLanding";
+
+const landing = SOCKS_PATTERN_BUILDER_LANDING;
+---
+
+<Layout
+  title={landing.seo.title}
+  description={landing.seo.description}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={landing.seo.canonicalUrl} />
+  </Fragment>
+
+  <PatternBuilderLandingPage content={landing} />
+</Layout>

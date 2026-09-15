@@ -1,0 +1,169 @@
+---
+import type { PatternBuilderLandingContent } from "../../lib/patterns/patternBuilderLanding";
+
+interface Props {
+  content: PatternBuilderLandingContent;
+}
+
+const { content } = Astro.props;
+const { patternName, headline, intro, image, cta } = content;
+---
+
+<section class="pattern-builder-hero" aria-labelledby="pattern-builder-hero-heading">
+  <div class="pattern-builder-hero__visual">
+    <img
+      src={image.src}
+      alt={image.alt}
+      {...(image.width ? { width: image.width } : {})}
+      {...(image.height ? { height: image.height } : {})}
+      loading="eager"
+      decoding="async"
+    />
+  </div>
+  <div class="pattern-builder-hero__copy">
+    <p class="pattern-builder-hero__name">{patternName}</p>
+    <h1 id="pattern-builder-hero-heading">{headline}</h1>
+    <p class="pattern-builder-hero__intro">{intro}</p>
+    <div class="pattern-builder-hero__actions">
+      <p
+        class="pattern-builder-hero__loading"
+        data-pattern-builder-landing-cta-loading
+        role="status"
+      >
+        {cta.checkingLabel}
+      </p>
+      <div data-pattern-builder-landing-cta-member hidden>
+        <a
+          class="kbm-btn kbm-btn-accent"
+          href={cta.memberHref}
+          data-testid="pattern-builder-landing-member-cta"
+        >
+          {cta.memberLabel}
+        </a>
+      </div>
+      <div
+        class="pattern-builder-hero__prospect"
+        data-pattern-builder-landing-cta-prospect
+        hidden
+      >
+        <a
+          class="kbm-btn kbm-btn-accent"
+          href={cta.prospectHref}
+          data-testid="pattern-builder-landing-prospect-cta"
+        >
+          {cta.prospectLabel}
+        </a>
+        <a
+          class="pattern-builder-hero__signin"
+          href="#"
+          data-ms-modal="login"
+          data-ms-redirect="current-url"
+          data-testid="pattern-builder-landing-hero-signin"
+        >
+          {cta.signInLabel}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pattern-builder-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: center;
+    margin: 0 0 1.75rem;
+  }
+
+  .pattern-builder-hero__visual {
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: transparent;
+    background-image: url("/images/patterns/background.webp");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid #d6dbc9;
+  }
+
+  .pattern-builder-hero__visual img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+  }
+
+  .pattern-builder-hero__name {
+    margin: 0 0 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-hero h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-hero__intro {
+    margin: 0 0 1.1rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: #243015;
+  }
+
+  .pattern-builder-hero__actions {
+    min-height: 4.75rem;
+  }
+
+  .pattern-builder-hero__loading {
+    margin: 0;
+    color: #4d5a48;
+    font-size: 1rem;
+  }
+
+  .pattern-builder-hero__loading[hidden],
+  .pattern-builder-hero__actions [hidden] {
+    display: none !important;
+  }
+
+  .pattern-builder-hero__prospect {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pattern-builder-hero__actions :global(.kbm-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.25rem;
+    padding: 0.85rem 1.35rem;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .pattern-builder-hero__signin {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+
+  @media (min-width: 768px) {
+    .pattern-builder-hero {
+      grid-template-columns: minmax(14rem, 0.85fr) minmax(0, 1.15fr);
+      gap: 1.75rem;
+    }
+  }
+</style>
