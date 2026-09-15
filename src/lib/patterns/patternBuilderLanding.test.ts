@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   hasPatternBuilderLandingChoices,
   hasPatternBuilderLandingCopy,
+  hasPatternBuilderLandingKnitAble,
   hasPatternBuilderLandingMembership,
   type PatternBuilderLandingContent,
 } from "./patternBuilderLanding";
@@ -80,6 +81,7 @@ describe("pattern builder landing content model", () => {
     expect(hasPatternBuilderLandingChoices(withoutOptional.choices)).toBe(false);
     expect(hasPatternBuilderLandingCopy(withoutOptional.creates)).toBe(false);
     expect(hasPatternBuilderLandingCopy(withoutOptional.anyYarn)).toBe(false);
+    expect(hasPatternBuilderLandingKnitAble(withoutOptional.knitAble)).toBe(false);
 
     expect(hasPatternBuilderLandingCopy({ heading: "Why", body: [] })).toBe(false);
     expect(hasPatternBuilderLandingCopy({ heading: "", body: ["Hello"] })).toBe(false);
@@ -96,6 +98,7 @@ describe("pattern builder landing content model", () => {
     expect(pageComponent).toContain("hasPatternBuilderLandingChoices(content.choices)");
     expect(pageComponent).toContain("hasPatternBuilderLandingCopy(content.creates)");
     expect(pageComponent).toContain("hasPatternBuilderLandingCopy(content.anyYarn)");
+    expect(pageComponent).toContain("hasPatternBuilderLandingKnitAble(content.knitAble)");
     expect(pageComponent).toContain("hasPatternBuilderLandingMembership(content.cta)");
     expect(pageComponent).toContain("{why ? <PatternBuilderLandingWhy section={why} /> : null}");
     expect(pageComponent).toContain(
@@ -106,6 +109,9 @@ describe("pattern builder landing content model", () => {
     );
     expect(pageComponent).toContain(
       "{anyYarn ? <PatternBuilderLandingAnyYarn section={anyYarn} /> : null}",
+    );
+    expect(pageComponent).toContain(
+      "{knitAble ? <PatternBuilderLandingKnitAble section={knitAble} /> : null}",
     );
     expect(pageComponent).toContain(
       "{membership ? <PatternBuilderLandingMembershipCta cta={membership} /> : null}",
@@ -139,6 +145,37 @@ describe("pattern builder landing content model", () => {
       "utf8",
     );
     expect(membership).toContain("cta.membershipNote?.trim()");
+  });
+
+  it("keeps the optional why section available for future Pattern Builder pages", () => {
+    const withWhy = minimalLanding({
+      why: {
+        heading: "Why use this builder?",
+        body: ["A future Pattern Builder can still use this section."],
+      },
+    });
+    expect(hasPatternBuilderLandingCopy(withWhy.why)).toBe(true);
+    expect(withWhy.why?.heading).toBe("Why use this builder?");
+    const whyComponent = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingWhy.astro"),
+      "utf8",
+    );
+    expect(whyComponent).toContain("PatternBuilderLandingCopySection");
+    expect(pageComponent).toContain("PatternBuilderLandingWhy");
+  });
+
+  it("renders nothing when no Knit-able configuration is supplied", () => {
+    expect(hasPatternBuilderLandingKnitAble(undefined)).toBe(false);
+    expect(hasPatternBuilderLandingKnitAble(minimalLanding().knitAble)).toBe(false);
+    expect(pageComponent).toContain(
+      "{knitAble ? <PatternBuilderLandingKnitAble section={knitAble} /> : null}",
+    );
+    const knitAbleComponent = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingKnitAble.astro"),
+      "utf8",
+    );
+    expect(knitAbleComponent).not.toContain("Teenage Kicks");
+    expect(knitAbleComponent).not.toContain("/knit-ables/teenage-kicks-socks");
   });
 });
 

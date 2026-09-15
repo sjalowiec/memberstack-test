@@ -1,0 +1,173 @@
+---
+import type { PatternBuilderLandingKnitAble } from "../../lib/patterns/patternBuilderLanding";
+
+interface Props {
+  section: PatternBuilderLandingKnitAble;
+  headingId?: string;
+}
+
+const { section, headingId = "pattern-builder-knit-able-heading" } = Astro.props;
+const logoLabel = section.logo.label?.trim() || section.logo.alt;
+---
+
+<section
+  class="pattern-builder-knit-able"
+  data-pattern-builder-landing-knit-able
+  aria-labelledby={headingId}
+>
+  <a
+    class="pattern-builder-knit-able__image-link"
+    href={section.href}
+    aria-label={section.buttonLabel}
+    data-testid="pattern-builder-landing-knit-able-image"
+  >
+    <img
+      src={section.image.src}
+      alt={section.image.alt}
+      width={section.image.width}
+      height={section.image.height}
+      loading="lazy"
+      decoding="async"
+    />
+  </a>
+  <div class="pattern-builder-knit-able__copy">
+    <div class="pattern-builder-knit-able__identity">
+      <a
+        class="pattern-builder-knit-able__logo-link"
+        href={section.logo.href}
+        aria-label={logoLabel}
+        data-testid="pattern-builder-landing-knit-able-logo"
+      >
+        <img
+          src={section.logo.src}
+          alt=""
+          width={section.logo.width}
+          height={section.logo.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+      <p class="pattern-builder-knit-able__eyebrow">{section.eyebrow}</p>
+    </div>
+    <h2 id={headingId}>{section.heading}</h2>
+    <p class="pattern-builder-knit-able__description">{section.description}</p>
+    <a
+      class="kbm-btn kbm-btn-accent"
+      href={section.href}
+      data-testid="pattern-builder-landing-knit-able-cta"
+    >
+      {section.buttonLabel}
+    </a>
+  </div>
+</section>
+
+<style>
+  .pattern-builder-knit-able {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: center;
+    margin: 0 0 1.75rem;
+    padding: 1rem 1.1rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
+  }
+
+  .pattern-builder-knit-able__image-link {
+    display: block;
+    max-width: 11rem;
+    margin: 0 auto;
+    line-height: 0;
+    text-decoration: none;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .pattern-builder-knit-able__image-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 11rem;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #f7f8f5;
+  }
+
+  .pattern-builder-knit-able__copy {
+    min-width: 0;
+  }
+
+  .pattern-builder-knit-able__identity {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.45rem;
+  }
+
+  .pattern-builder-knit-able__logo-link {
+    flex: 0 0 auto;
+    line-height: 0;
+    text-decoration: none;
+  }
+
+  .pattern-builder-knit-able__logo-link img {
+    display: block;
+    width: 2.75rem;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .pattern-builder-knit-able__eyebrow {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-knit-able h2 {
+    margin: 0 0 0.45rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    line-height: 1.25;
+  }
+
+  .pattern-builder-knit-able__description {
+    margin: 0 0 0.85rem;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  .pattern-builder-knit-able__copy :global(.kbm-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.65rem 1.15rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (min-width: 700px) {
+    .pattern-builder-knit-able {
+      grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr);
+      gap: 1.15rem 1.35rem;
+      padding: 1rem 1.2rem;
+    }
+
+    .pattern-builder-knit-able__image-link {
+      margin: 0;
+      max-width: none;
+    }
+
+    .pattern-builder-knit-able__logo-link img {
+      width: 3.25rem;
+    }
+  }
+</style>
