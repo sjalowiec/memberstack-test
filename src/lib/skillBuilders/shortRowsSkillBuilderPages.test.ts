@@ -86,7 +86,7 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).toContain("SkillBuilderPracticeBackLink");
     expect(
       readFileSync(join(componentsDir, "SkillBuilderPracticeBackLink.astro"), "utf8"),
-    ).toContain("Back to Skill Builders");
+    ).toContain("← Back to Skill Builders");
     expect(
       readFileSync(join(componentsDir, "SkillBuilderFeedback.astro"), "utf8"),
     ).not.toContain("Back to Skill Builders");

@@ -10,6 +10,13 @@ import {
   SKILL_BUILDER_MEMBER_BODY_MOUNT_ATTR,
   SKILL_BUILDER_MEMBER_BODY_TEMPLATE_ATTR,
   SKILL_BUILDER_MEMBER_LOCK_ATTR,
+  SKILL_BUILDER_MEMBER_LOCKED_ATTR,
+  SKILL_BUILDER_MEMBER_LOCK_TITLE,
+  SKILL_BUILDER_MEMBER_PENDING_ATTR,
+  SKILL_BUILDER_MEMBER_PENDING_COPY,
+  applySkillBuilderMemberGatePaint,
+  bindSkillBuilderMemberGate,
+  decideSkillBuilderMemberGatePaint,
   mountSkillBuilderMemberBody,
   resetSkillBuilderMemberGateBindForTests,
   skillBuilderMemberBodyIsMounted,
@@ -129,6 +136,11 @@ function makeEl(tag: string): FakeEl {
     dataset: {},
     children: [],
     hidden: false,
+    classList: {
+      contains() {
+        return false;
+      },
+    },
     get childElementCount() {
       return this.children.length;
     },
@@ -230,11 +242,29 @@ function queryAllIn(els: FakeEl[], sel: string): FakeEl[] {
   return out;
 }
 
-function installGateDom() {
+function installGateDom(options?: {
+  snapshot?: { hasMemberAccess: boolean; viewerAccessState: string } | null;
+}) {
   const body = makeEl("body");
   const lock = makeEl("div");
   lock.setAttribute(SKILL_BUILDER_MEMBER_LOCK_ATTR, "");
-  lock.setAttribute("data-gated", "locked");
+  lock.setAttribute("data-gated", "pending");
+  lock.setAttribute("data-gate-pending", "");
+
+  const pending = makeEl("p");
+  pending.setAttribute(SKILL_BUILDER_MEMBER_PENDING_ATTR, "");
+  pending.setAttribute("role", "status");
+  pending.textContent = SKILL_BUILDER_MEMBER_PENDING_COPY;
+
+  const lockedCard = makeEl("div");
+  lockedCard.setAttribute(SKILL_BUILDER_MEMBER_LOCKED_ATTR, "");
+  lockedCard.setAttribute("hidden", "");
+  const overlayTitle = makeEl("h2");
+  overlayTitle.textContent = SKILL_BUILDER_MEMBER_LOCK_TITLE;
+  lockedCard.appendChild(overlayTitle);
+
+  lock.appendChild(pending);
+  lock.appendChild(lockedCard);
 
   const template = makeEl("template");
   template.setAttribute(SKILL_BUILDER_MEMBER_BODY_TEMPLATE_ATTR, "");
@@ -264,6 +294,8 @@ function installGateDom() {
       if (sel === `template[${SKILL_BUILDER_MEMBER_BODY_TEMPLATE_ATTR}]`) return template;
       if (sel === `[${SKILL_BUILDER_MEMBER_BODY_MOUNT_ATTR}]`) return mount;
       if (sel === `[${SKILL_BUILDER_MEMBER_LOCK_ATTR}]`) return lock;
+      if (sel === `[${SKILL_BUILDER_MEMBER_PENDING_ATTR}]`) return pending;
+      if (sel === `[${SKILL_BUILDER_MEMBER_LOCKED_ATTR}]`) return lockedCard;
       return queryIn(body.children, sel);
     },
     querySelectorAll(sel: string) {
@@ -271,17 +303,19 @@ function installGateDom() {
     },
   };
 
-  vi.stubGlobal("document", doc);
-  vi.stubGlobal("window", {
+  const host = new EventTarget();
+  const fakeWindow = Object.assign(host, {
     document: doc,
-    addEventListener() {},
-    dispatchEvent() {
-      return true;
+    __KIN_MEMBER_ACCESS__: options && "snapshot" in options ? options.snapshot : null,
+    $memberstackDom: {
+      getCurrentMember: vi.fn().mockResolvedValue({ data: null }),
     },
-    $memberstackDom: undefined,
   });
 
-  return { body, lock, template, mount, doc };
+  vi.stubGlobal("document", doc);
+  vi.stubGlobal("window", fakeWindow);
+
+  return { body, lock, pending, lockedCard, template, mount, doc, fakeWindow };
 }
 
 function memberPayload(planId: string | null) {
@@ -308,14 +342,22 @@ describe("Skill Builder membership gate wiring", () => {
     "utf8",
   );
 
-  it("defers protected markup in a template and uses MemberLockOverlay with hasMemberAccess", () => {
+  it("defers protected markup and keeps the non-member card hidden until auth resolves", () => {
     expect(gate).toContain("MemberLockOverlay");
     expect(gate).toContain("data-sb-member-lock");
-    expect(gate).toContain('data-gated="locked"');
+    expect(gate).toContain('data-gated="pending"');
+    expect(gate).toContain("data-gate-pending");
+    expect(gate).toContain("data-sb-member-pending");
+    expect(gate).toContain('data-sb-member-locked hidden');
+    expect(gate).toContain('aria-hidden="true"');
+    expect(gate).toContain("SKILL_BUILDER_MEMBER_PENDING_COPY");
     expect(gate).toContain("data-sb-member-body-template");
     expect(gate).toContain("data-sb-member-body-mount");
     expect(gate).toContain("bindSkillBuilderMemberGate");
-    expect(gateLib).toContain("hasMemberAccess");
+    expect(gateLib).toContain("decideSkillBuilderMemberGatePaint");
+    expect(gateLib).toContain("kin:member-access");
+    expect(gateLib).toContain("__KIN_MEMBER_ACCESS__");
+    expect(gateLib).not.toContain("getCurrentMember");
     expect(gateLib).toContain("initGatedVimeoEmbeds");
   });
 
@@ -348,11 +390,13 @@ describe("Skill Builder membership gate wiring", () => {
 
 describe("Skill Builder membership gate live DOM", () => {
   it("does not expose worksheet or checklist in the live DOM when logged out", () => {
-    const { lock, mount } = installGateDom();
+    const { lock, lockedCard, pending, mount } = installGateDom();
 
     syncSkillBuilderMemberGate(false);
 
     expect(lock.hidden).toBe(false);
+    expect(lockedCard.hidden).toBe(false);
+    expect(pending.hidden).toBe(true);
     expect(skillBuilderMemberBodyIsMounted(mount)).toBe(false);
     expect(mount.childElementCount).toBe(0);
     expect(mount.hidden).toBe(true);
@@ -360,13 +404,14 @@ describe("Skill Builder membership gate live DOM", () => {
   });
 
   it("mounts protected instructional content for a confirmed member", () => {
-    const { lock, mount } = installGateDom();
+    const { lock, lockedCard, mount } = installGateDom();
     const member = memberPayload(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasMemberAccess(member)).toBe(true);
 
     syncSkillBuilderMemberGate(true);
 
     expect(lock.hidden).toBe(true);
+    expect(lockedCard.hidden).toBe(true);
     expect(skillBuilderMemberBodyIsMounted(mount)).toBe(true);
     expect(mount.childElementCount).toBe(2);
     expect(mount.hidden).toBe(false);
@@ -382,5 +427,156 @@ describe("Skill Builder membership gate live DOM", () => {
     unmountSkillBuilderMemberBody();
     expect(skillBuilderMemberBodyIsMounted(mount)).toBe(false);
     expect(mount.childElementCount).toBe(0);
+  });
+});
+
+describe("decideSkillBuilderMemberGatePaint", () => {
+  it("keeps unresolved auth pending instead of claiming a non-member", () => {
+    expect(decideSkillBuilderMemberGatePaint({})).toBe("pending");
+    expect(decideSkillBuilderMemberGatePaint({ snapshot: null })).toBe("pending");
+    expect(decideSkillBuilderMemberGatePaint({ snapshot: {} })).toBe("pending");
+  });
+
+  it("unlocks a confirmed member snapshot", () => {
+    expect(
+      decideSkillBuilderMemberGatePaint({
+        snapshot: { hasMemberAccess: true, viewerAccessState: "memberAccess" },
+      }),
+    ).toBe("member");
+  });
+
+  it("locks a confirmed logged-out visitor", () => {
+    expect(
+      decideSkillBuilderMemberGatePaint({
+        snapshot: { hasMemberAccess: false, viewerAccessState: "loggedOut" },
+      }),
+    ).toBe("locked");
+  });
+
+  it("locks a logged-in visitor without membership access", () => {
+    expect(
+      decideSkillBuilderMemberGatePaint({
+        snapshot: { hasMemberAccess: false, viewerAccessState: "loggedInNoAccess" },
+      }),
+    ).toBe("locked");
+  });
+
+  it("does not re-lock confirmed member content on a later empty snapshot", () => {
+    expect(
+      decideSkillBuilderMemberGatePaint({
+        confirmedMember: true,
+        snapshot: null,
+      }),
+    ).toBe("member");
+    expect(
+      decideSkillBuilderMemberGatePaint({
+        confirmedMember: true,
+        snapshot: {},
+      }),
+    ).toBe("member");
+  });
+});
+
+describe("Skill Builder membership gate pending vs confirmed paints", () => {
+  it("does not render the non-member membership card while auth is unresolved", () => {
+    const { lock, pending, lockedCard, mount } = installGateDom();
+
+    applySkillBuilderMemberGatePaint("pending");
+
+    expect(lock.hidden).toBe(false);
+    expect(lock.getAttribute("data-gated")).toBe("pending");
+    expect(pending.hidden).toBe(false);
+    expect(pending.textContent).toBe(SKILL_BUILDER_MEMBER_PENDING_COPY);
+    expect(lockedCard.hidden).toBe(true);
+    expect(lockedCard.getAttribute("aria-hidden")).toBe("true");
+    expect(skillBuilderMemberBodyIsMounted(mount)).toBe(false);
+  });
+
+  it("shows the membership card for a confirmed logged-out visitor", () => {
+    const { pending, lockedCard } = installGateDom();
+
+    applySkillBuilderMemberGatePaint("locked");
+
+    expect(pending.hidden).toBe(true);
+    expect(lockedCard.hidden).toBe(false);
+    expect(lockedCard.getAttribute("aria-hidden")).toBe("false");
+    expect(lockedCard.querySelector("h2")?.textContent).toBe(SKILL_BUILDER_MEMBER_LOCK_TITLE);
+  });
+
+  it("shows the membership card for a logged-in visitor without access", () => {
+    const { pending, lockedCard, mount } = installGateDom();
+
+    applySkillBuilderMemberGatePaint(
+      decideSkillBuilderMemberGatePaint({
+        snapshot: { hasMemberAccess: false, viewerAccessState: "loggedInNoAccess" },
+      }),
+    );
+
+    expect(pending.hidden).toBe(true);
+    expect(lockedCard.hidden).toBe(false);
+    expect(skillBuilderMemberBodyIsMounted(mount)).toBe(false);
+  });
+});
+
+describe("Skill Builder membership gate shared-auth events", () => {
+  it("goes pending → member without ever showing the non-member card", () => {
+    const { fakeWindow, pending, lockedCard, mount } = installGateDom();
+    const paints: Array<{ lockedVisible: boolean; pendingVisible: boolean; memberMounted: boolean }> =
+      [];
+
+    bindSkillBuilderMemberGate();
+    paints.push({
+      lockedVisible: !lockedCard.hidden,
+      pendingVisible: !pending.hidden,
+      memberMounted: skillBuilderMemberBodyIsMounted(mount),
+    });
+
+    fakeWindow.dispatchEvent(
+      new CustomEvent("kin:member-access", {
+        detail: { hasMemberAccess: true, viewerAccessState: "memberAccess" },
+      }),
+    );
+    paints.push({
+      lockedVisible: !lockedCard.hidden,
+      pendingVisible: !pending.hidden,
+      memberMounted: skillBuilderMemberBodyIsMounted(mount),
+    });
+
+    expect(paints[0]).toEqual({
+      lockedVisible: false,
+      pendingVisible: true,
+      memberMounted: false,
+    });
+    expect(paints[1]).toEqual({
+      lockedVisible: false,
+      pendingVisible: false,
+      memberMounted: true,
+    });
+    expect(paints.some((paint) => paint.lockedVisible)).toBe(false);
+  });
+
+  it("does not re-lock confirmed member content on a later empty auth:updated", () => {
+    const { fakeWindow, lockedCard, mount } = installGateDom({
+      snapshot: { hasMemberAccess: true, viewerAccessState: "memberAccess" },
+    });
+
+    bindSkillBuilderMemberGate();
+    expect(skillBuilderMemberBodyIsMounted(mount)).toBe(true);
+    expect(lockedCard.hidden).toBe(true);
+
+    fakeWindow.__KIN_MEMBER_ACCESS__ = null;
+    fakeWindow.dispatchEvent(new Event("auth:updated"));
+
+    expect(skillBuilderMemberBodyIsMounted(mount)).toBe(true);
+    expect(lockedCard.hidden).toBe(true);
+    expect(fakeWindow.$memberstackDom.getCurrentMember).not.toHaveBeenCalled();
+  });
+
+  it("uses the shared SkillBuilderMemberGate on every member-only practice page", () => {
+    expect(readComponent("JoiningShoulderSeamsSkillBuilder")).toContain("SkillBuilderMemberGate");
+    expect(readComponent("EWrapCastOnSkillBuilder")).toContain("SkillBuilderMemberGate");
+    expect(readComponent("ShortRowsSkillBuilder")).toContain("SkillBuilderMemberGate");
+    expect(readComponent("RoundNecklineSkillBuilderLanding")).toContain("SkillBuilderMemberGate");
+    expect(readComponent("RoundNecklineSkillBuilderLanding")).toContain("memberOnly");
   });
 });

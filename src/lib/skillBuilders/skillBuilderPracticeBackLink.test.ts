@@ -276,7 +276,7 @@ describe("Skill Builder practice return-link wiring", () => {
     expect(backLinkSource).toContain("bindSkillBuilderPracticeBackLinks");
     expect(backLinkSource).toContain('class="sb-practice-back back-to-skill-builders-link"');
     expect(backLinkSource).toContain('href="/learn/skill-builders"');
-    expect(backLinkSource).toContain("Back to Skill Builders");
+    expect(backLinkSource).toContain("← Back to Skill Builders");
     expect(backLinkSource).not.toMatch(
       /if\s*\(\s*window\.history\.length\s*>\s*1\s*\)\s*\{\s*event\.preventDefault\(\);\s*window\.history\.back\(\);/,
     );
