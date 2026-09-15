@@ -1,15 +1,17 @@
 /**
  * Membership gate for member-only Skill Builders.
  *
- * Reuses `hasMemberAccess()` like the rest of the site. Protected instructional
- * markup stays in a `<template>` until access is confirmed, so worksheets,
- * checklists, generated instructions, and printable content are not in the live DOM.
+ * Shared BaseLayout snapshot/events (`__KIN_MEMBER_ACCESS__` / `kin:member-access`)
+ * are the source of truth. Unresolved auth stays pending and must not paint the
+ * non-member card. Protected instructional markup stays in a `<template>` until
+ * access is confirmed.
  */
-import { hasMemberAccess, logMemberAccessDebug } from "../memberAccess";
-import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { initGatedVimeoEmbeds } from "../../scripts/gatedVimeoEmbedClient";
+import type { SharedMemberAccessSnapshot } from "../localMemberPreviewBypass";
 
 export const SKILL_BUILDER_MEMBER_LOCK_ATTR = "data-sb-member-lock";
+export const SKILL_BUILDER_MEMBER_LOCKED_ATTR = "data-sb-member-locked";
+export const SKILL_BUILDER_MEMBER_PENDING_ATTR = "data-sb-member-pending";
 export const SKILL_BUILDER_MEMBER_BODY_TEMPLATE_ATTR = "data-sb-member-body-template";
 export const SKILL_BUILDER_MEMBER_BODY_MOUNT_ATTR = "data-sb-member-body-mount";
 export const SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT = "sb:member-body-mounted";
@@ -18,6 +20,14 @@ export const SKILL_BUILDER_MEMBER_LOCK_TITLE = "Skill Builders are for members";
 export const SKILL_BUILDER_MEMBER_LOCK_MESSAGE =
   "You'll need an active membership to use this Skill Builder.";
 export const SKILL_BUILDER_MEMBER_LOCK_CTA = "Become a member";
+export const SKILL_BUILDER_MEMBER_PENDING_COPY = "Checking membership…";
+
+export type SkillBuilderMemberGatePaint = "pending" | "member" | "locked";
+
+export type SkillBuilderMemberAccessSnapshot = {
+  hasMemberAccess?: boolean;
+  viewerAccessState?: string;
+} | null | undefined;
 
 function getMemberBodyTemplate(): HTMLTemplateElement | null {
   return document.querySelector<HTMLTemplateElement>(
@@ -33,6 +43,14 @@ function getMemberLock(): HTMLElement | null {
   return document.querySelector<HTMLElement>(`[${SKILL_BUILDER_MEMBER_LOCK_ATTR}]`);
 }
 
+function getMemberPending(): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`[${SKILL_BUILDER_MEMBER_PENDING_ATTR}]`);
+}
+
+function getMemberLockedCard(): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`[${SKILL_BUILDER_MEMBER_LOCKED_ATTR}]`);
+}
+
 function previewBypassIsOn(): boolean {
   if (typeof document === "undefined") return false;
   return (
@@ -41,12 +59,45 @@ function previewBypassIsOn(): boolean {
   );
 }
 
-function persistedMemberAccess(): boolean | null {
+function readSharedMemberAccessSnapshot(): SharedMemberAccessSnapshot | null {
+  if (typeof window === "undefined") return null;
   const persisted = window.__KIN_MEMBER_ACCESS__;
   if (persisted && typeof persisted.hasMemberAccess === "boolean") {
-    return persisted.hasMemberAccess;
+    return persisted;
   }
   return null;
+}
+
+/**
+ * Unpublished / incomplete snapshots are pending, never a non-member card.
+ * A confirmed member grant is not replaced by a later empty event.
+ */
+export function decideSkillBuilderMemberGatePaint(input: {
+  snapshot?: SkillBuilderMemberAccessSnapshot;
+  previewBypass?: boolean;
+  confirmedMember?: boolean;
+}): SkillBuilderMemberGatePaint {
+  if (input.previewBypass) return "member";
+
+  const snapshot = input.snapshot ?? null;
+  const granted =
+    snapshot?.hasMemberAccess === true || snapshot?.viewerAccessState === "memberAccess";
+  const denied =
+    snapshot?.hasMemberAccess === false ||
+    snapshot?.viewerAccessState === "loggedOut" ||
+    snapshot?.viewerAccessState === "loggedInNoAccess";
+
+  if (granted) return "member";
+  if (input.confirmedMember && !denied) return "member";
+  if (denied) return "locked";
+  return "pending";
+}
+
+function setHidden(el: HTMLElement | null, hidden: boolean): void {
+  if (!el) return;
+  el.hidden = hidden;
+  if (hidden) el.setAttribute("hidden", "");
+  else el.removeAttribute("hidden");
 }
 
 export function skillBuilderMemberBodyIsMounted(
@@ -100,45 +151,44 @@ export function unmountSkillBuilderMemberBody(): void {
   mount.setAttribute("hidden", "");
 }
 
-function syncMemberLock(hasAccess: boolean): void {
+/** Apply a confirmed pending / member / locked paint. */
+export function applySkillBuilderMemberGatePaint(paint: SkillBuilderMemberGatePaint): void {
   const lock = getMemberLock();
-  if (!lock) return;
-  if (hasAccess) {
-    lock.hidden = true;
-    lock.setAttribute("hidden", "");
-  } else {
-    lock.hidden = false;
-    lock.removeAttribute("hidden");
-  }
-}
+  const pending = getMemberPending();
+  const lockedCard = getMemberLockedCard();
 
-/** Toggle lock overlay and deferred instructional body. */
-export function syncSkillBuilderMemberGate(hasAccess: boolean): void {
-  syncMemberLock(hasAccess);
-  if (hasAccess) {
+  if (lock) {
+    if (paint === "member") {
+      setHidden(lock, true);
+      lock.removeAttribute("data-gate-pending");
+      lock.setAttribute("data-gated", "content");
+    } else if (paint === "pending") {
+      setHidden(lock, false);
+      lock.setAttribute("data-gate-pending", "");
+      lock.setAttribute("data-gated", "pending");
+    } else {
+      setHidden(lock, false);
+      lock.removeAttribute("data-gate-pending");
+      lock.setAttribute("data-gated", "locked");
+    }
+  }
+
+  setHidden(pending, paint !== "pending");
+  setHidden(lockedCard, paint !== "locked");
+  if (lockedCard) {
+    lockedCard.setAttribute("aria-hidden", paint === "locked" ? "false" : "true");
+  }
+
+  if (paint === "member") {
     mountSkillBuilderMemberBody();
     return;
   }
   unmountSkillBuilderMemberBody();
 }
 
-export async function resolveSkillBuilderMemberAccess(): Promise<boolean> {
-  if (previewBypassIsOn()) return true;
-
-  const persisted = persistedMemberAccess();
-  const ms = window.$memberstackDom;
-  if (!ms?.getCurrentMember) {
-    return persisted === true || document.body.classList.contains("ms-logged-in");
-  }
-
-  try {
-    const res = await ms.getCurrentMember();
-    await ensureLegacyPaidThroughContext(res);
-    logMemberAccessDebug("skill-builders.memberGate", res);
-    return hasMemberAccess(res);
-  } catch {
-    return persisted === true;
-  }
+/** Toggle lock overlay and deferred instructional body after access is confirmed. */
+export function syncSkillBuilderMemberGate(hasAccess: boolean): void {
+  applySkillBuilderMemberGatePaint(hasAccess ? "member" : "locked");
 }
 
 let gateBound = false;
@@ -148,36 +198,29 @@ export function bindSkillBuilderMemberGate(): void {
   if (!getMemberBodyTemplate() && !getMemberLock()) return;
   gateBound = true;
 
-  async function refresh(): Promise<void> {
-    const hasAccess = await resolveSkillBuilderMemberAccess();
-    syncSkillBuilderMemberGate(hasAccess);
+  let confirmedMember = false;
+
+  function applyFromSnapshot(snapshot: SkillBuilderMemberAccessSnapshot): void {
+    const paint = decideSkillBuilderMemberGatePaint({
+      snapshot,
+      previewBypass: previewBypassIsOn(),
+      confirmedMember,
+    });
+    if (paint === "member") confirmedMember = true;
+    if (paint === "locked") confirmedMember = false;
+    applySkillBuilderMemberGatePaint(paint);
   }
 
-  const persisted = persistedMemberAccess();
-  if (persisted === true || document.body.classList.contains("ms-logged-in") || previewBypassIsOn()) {
-    syncSkillBuilderMemberGate(true);
-  }
+  applyFromSnapshot(readSharedMemberAccessSnapshot());
 
   window.addEventListener("kin:member-access", ((event: Event) => {
-    const detail = (event as CustomEvent<{ hasMemberAccess?: boolean }>).detail;
-    if (detail && typeof detail.hasMemberAccess === "boolean") {
-      syncSkillBuilderMemberGate(detail.hasMemberAccess);
-      return;
-    }
-    void refresh();
+    const detail = (event as CustomEvent<SkillBuilderMemberAccessSnapshot>).detail;
+    applyFromSnapshot(detail ?? readSharedMemberAccessSnapshot());
   }) as EventListener);
 
   window.addEventListener("auth:updated", () => {
-    void refresh();
+    applyFromSnapshot(readSharedMemberAccessSnapshot());
   });
-
-  const ms = window.$memberstackDom;
-  if (ms?.on) {
-    ms.on("member.login", () => void refresh());
-    ms.on("member.logout", () => void refresh());
-  }
-
-  void refresh();
 }
 
 /** Reset the bind-once flag in tests. */
