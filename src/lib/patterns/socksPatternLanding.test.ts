@@ -38,6 +38,7 @@ describe("Basic Socks Pattern Builder landing page", () => {
     expect(landingPage).toContain("export const prerender = true");
     expect(landingPage).toContain("SOCKS_PATTERN_BUILDER_LANDING");
     expect(landingPage).toContain("PatternBuilderLandingPage");
+    expect(landingPage).toContain("socksSavedPatternRedirect");
     expect(landingPage).toContain("landing.seo.canonicalUrl");
     expect(landingPage).not.toContain("SleevelessPatternMemberGate");
     expect(landingPage).not.toContain("noindex");
@@ -210,6 +211,7 @@ describe("Basic Socks Pattern Builder landing page", () => {
 describe("Socks landing page inbound links", () => {
   it("points the Patterns catalog Socks card to the public landing page", () => {
     expect(catalog).toContain("href: '/patterns/socks'");
+    expect(catalog).toContain('data-socks-catalog-card');
     expect(catalog).not.toContain("href: '/patterns/socks/builder?new=1'");
     expect(catalog).toContain("title: 'Socks'");
     expect(catalog).toContain("image: '/images/patterns/socks-v2.png'");

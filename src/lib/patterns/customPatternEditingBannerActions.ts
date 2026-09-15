@@ -35,6 +35,7 @@ import { syncCustomBuildFoundationPageHeader } from "./customBuildFoundationPage
 import { syncPatternWorkspaceExpressTabLabel } from "./patternWorkspaceExpressTabLabel";
 import { resolvePatternProjectSaveName } from "./sleevelessPatternProjectMeta";
 import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "./customPatternEditingEvents";
+import { isSavedPatternReadOnlyDocument } from "./savedPatternReadOnlyChrome";
 
 export { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT };
 
@@ -87,6 +88,11 @@ export async function runSaveCustomPatternFromWorkspace(
   root?: ParentNode,
   options?: SaveCustomPatternFromWorkspaceOptions,
 ): Promise<UpdateActiveSavedCustomPatternResult> {
+  if (typeof document !== "undefined" && isSavedPatternReadOnlyDocument()) {
+    const message = "Renew your membership to edit, recalculate, or create new patterns.";
+    options?.onStatus?.(message, true);
+    return { ok: false, error: message };
+  }
   const pinnedActiveId = options?.activeProjectId?.trim() || readActiveCustomPatternProjectId();
   const willCreate = !pinnedActiveId;
 

@@ -42,7 +42,8 @@ import { buildHatSummaryEditFromPatternHref } from "../lib/patterns/hat/hatPatte
 import { readSavedPatternProjectIdFromUrl } from "../lib/patterns/savedPatternViewUrl";
 import { applyPatternProjectOnlineNotes, HAT_PATTERN_ONLINE_NOTES_SELECTORS } from "../lib/patterns/patternProjectOnlineNotes";
 import { getSleevelessPatternOnlineNotesText } from "../lib/patterns/sleevelessPatternProjectMeta";
-import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { isHatPatternLeadRecognized } from "../lib/patterns/hat/hatPatternLeadHint";
 import {
   bindHatLeadForm,
@@ -489,7 +490,12 @@ export function initHatPatternPage() {
       setVisible(results, false);
     }
     void (async () => {
-      await ensureUrlRequestedSavedPatternHydrated();
+      const hydrateOutcome = await ensureUrlRequestedSavedPatternHydrated();
+      if (hydrateOutcome === "load-failed") {
+        applySavedPatternUnavailableMessage();
+        showEmptyState(SAVED_PATTERN_UNAVAILABLE_BODY);
+        return;
+      }
       await resolveLeadAndRender();
     })();
   };

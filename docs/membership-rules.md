@@ -1,6 +1,6 @@
 # Membership Rules
 
-updated 2026-07-22
+updated 2026-09-15
 
 ## Membership plans
 
@@ -76,10 +76,14 @@ A scheduled reconciliation continues to remove expired connections:
 ## Dynamic Patterns access
 
 - Dynamic Patterns (catalog, builders, saved/generated patterns, print) require **active Knit it Now membership** only — canonical `hasMemberAccess` (paid membership, or a confirmed Watson paid-through date today or later). Retired KIN Beta Access does not grant access.
-- A Memberstack account alone (login, DesignaKnit, course, prior/canceled membership) does **not** grant Dynamic Pattern access.
+- A Memberstack account alone (login, DesignaKnit, course, prior/canceled membership) does **not** grant Dynamic Pattern create/edit access.
 - Lifetime Pattern Builder plan connections, Memberstack JSON unlock flags (`sleevelessPatternSystemUnlocked`), free-claim JSON, and localhost/dev bypass do **not** grant Dynamic Pattern access.
-- There is no free-account or one-free-pattern path for Dynamic Patterns.
-- The public Patterns landing page (`/patterns/about`) remains public for marketing; the catalog and builders are membership-gated.
+- There is no free-account or one-free-pattern path for paid Dynamic Patterns.
+- **Basic Hat remains the free Pattern Builder and lead magnet.** Creation and local Hat use are not membership-gated. Cloud saving of Hats still follows authenticated-account rules.
+- Active membership (including Watson paid-through) is required to create, edit, recalculate, copy, rename, and save paid Pattern Builder patterns.
+- Former members retain authenticated read-only access to patterns already saved in their Memberstack account. They may view, print, download, and delete their own saved patterns. They cannot create new paid patterns or change saved inputs.
+- Broader learning-library access (courses, catalog-gated videos, Help Hub member lessons, Skill Builders) ends with membership. Inline glossary help and technique videos embedded in an owned saved Socks pattern remain available when viewing that pattern.
+- The public Patterns landing page (`/patterns/about`) remains public for marketing; paid builders stay membership-gated, with the former-member read-only exception above for owned saved patterns.
 
 ## Lifetime Pattern Builder purchases
 

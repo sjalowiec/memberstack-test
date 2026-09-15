@@ -38,6 +38,7 @@ import { bindPatternProjectNotesField } from "../lib/patterns/patternProjectNote
 import { hashRequestsNotesEditing } from "../lib/patterns/sleevelessPatternNotesCollapse";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
+import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
 import {
   markDropShoulderSleeveFieldUserEdited,
@@ -1122,6 +1123,11 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   openBtn.addEventListener("click", (event) => {
+    if (isSavedPatternReadOnlyDocument()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     logPatternEditGateDebug("edit-button.click-listener", {
       extra: {
         defaultPrevented: event.defaultPrevented,

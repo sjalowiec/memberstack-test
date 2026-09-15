@@ -5,6 +5,7 @@ import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId
 import { patchCustomPatternProjectReadingWorkflow } from "./customPatternProjectClient";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import { collectSleevelessReadingWorkflow } from "./patternReadingWorkflow";
+import { isSavedPatternReadOnlyDocument } from "./savedPatternReadOnlyChrome";
 
 const DEBOUNCE_MS = 650;
 
@@ -17,6 +18,7 @@ export function scheduleReadingWorkflowSync(
   patternId: string,
   family: CustomPatternFamily = "sleeveless",
 ): void {
+  if (typeof document !== "undefined" && isSavedPatternReadOnlyDocument()) return;
   if (!patternId.trim()) return;
   if (!readActiveCustomPatternProjectId()) return;
 
@@ -30,6 +32,7 @@ export function scheduleReadingWorkflowSync(
 }
 
 export async function flushReadingWorkflowSync(): Promise<void> {
+  if (typeof document !== "undefined" && isSavedPatternReadOnlyDocument()) return;
   const projectId = readActiveCustomPatternProjectId();
   const patternId = pendingPatternId;
   if (!projectId || !patternId) return;

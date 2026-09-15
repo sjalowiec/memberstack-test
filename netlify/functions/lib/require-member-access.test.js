@@ -27,7 +27,7 @@ vi.mock("../../../src/lib/memberAccessServer.ts", async (importOriginal) => {
   };
 });
 
-import { requirePatternProjectAccess, resolveVerifiedProjectUserId } from "./require-member-access.js";
+import { requirePatternProjectAccess, requirePatternProjectIdentity, resolveVerifiedProjectUserId } from "./require-member-access.js";
 import { getMemberstackAdminClient } from "./memberstack-admin.js";
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
 import { loadLegacyPaidThroughYmdForEmail } from "../../../src/lib/memberAccessServer.ts";
@@ -67,6 +67,34 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks();
+});
+
+describe("requirePatternProjectIdentity", () => {
+  it("rejects anonymous requests with 401", async () => {
+    const result = await requirePatternProjectIdentity(makeRequest());
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(401);
+  });
+
+  it("allows a signed-in former member without paid access", async () => {
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => ({ id: MEMBER_ID, planConnections: [] })),
+    });
+    const result = await requirePatternProjectIdentity(makeRequest("good-token"));
+    expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
+  });
+
+  it("ignores spoofed X-KBM-Member-Id", async () => {
+    const result = await requirePatternProjectIdentity(
+      makeRequest("good-token", { "X-KBM-Member-Id": OTHER_ID }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.userId).toBe(MEMBER_ID);
+      expect(result.userId).not.toBe(OTHER_ID);
+    }
+  });
 });
 
 describe("requirePatternProjectAccess", () => {

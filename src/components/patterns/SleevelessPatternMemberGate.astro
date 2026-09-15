@@ -1,11 +1,12 @@
 ---
 /**
  * Wraps Dynamic Pattern pages (catalog, builders, workspaces, print).
- * Content stays hidden until active Knit it Now membership (or lifetime builder
- * entitlement) is confirmed. Login alone never unlocks pattern UI.
+ * Content stays hidden until active Knit it Now membership is confirmed, or until a
+ * former member's owned saved pattern loads for read-only view.
  *
  * Logged-out: Become a Member + Log In
  * Logged-in without access: Become a Member + View Membership
+ * Former member read-only: completed pattern + quiet renew notice
  */
 ---
 
@@ -71,7 +72,33 @@
         </a>
       </div>
     </div>
+    <div
+      class="sleeveless-pattern-gate__signin"
+      data-sleeveless-pattern-gate-unavailable
+      hidden
+    >
+      <h2 class="sleeveless-pattern-gate__title" data-saved-pattern-unavailable-title>
+        This pattern isn’t available
+      </h2>
+      <p class="sleeveless-pattern-gate__lead" data-saved-pattern-unavailable-message>
+        This saved pattern could not be opened. It may have been deleted, or it does not belong to
+        this account.
+      </p>
+    </div>
   </section>
+
+  <div
+    class="sleeveless-pattern-gate__readonly no-print"
+    data-sleeveless-pattern-gate-readonly
+    hidden
+  >
+    <p class="sleeveless-pattern-gate__readonly-copy">
+      This pattern is saved to your account. You can view, print, and download it anytime. Renew your membership to edit, recalculate, or create new patterns.
+    </p>
+    <a href="/membership" class="kbm-btn kbm-btn-outline sleeveless-pattern-gate__renew">
+      Renew Membership
+    </a>
+  </div>
 
   <div class="sleeveless-pattern-gate__content" data-sleeveless-pattern-gate-content hidden>
     <slot />
@@ -125,11 +152,49 @@
     margin-bottom: 0.25rem;
   }
 
-  .sleeveless-pattern-gate[data-gate-state="member"] .sleeveless-pattern-gate__locked {
+  .sleeveless-pattern-gate[data-gate-state="member"] .sleeveless-pattern-gate__locked,
+  .sleeveless-pattern-gate[data-gate-state="readonly"] .sleeveless-pattern-gate__locked {
     display: none;
   }
 
   .sleeveless-pattern-gate[data-gate-pending] .sleeveless-pattern-gate__signin {
     display: none;
+  }
+
+  .sleeveless-pattern-gate__readonly {
+    max-width: 40rem;
+    margin: 1rem auto 0;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+  }
+
+  .sleeveless-pattern-gate__readonly[hidden] {
+    display: none !important;
+  }
+
+  .sleeveless-pattern-gate__readonly-copy {
+    margin: 0;
+    flex: 1 1 16rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .sleeveless-pattern-gate__renew {
+    flex: 0 0 auto;
+  }
+
+  :global([data-saved-pattern-mode="readonly"] .sleeveless-pattern-edit-action),
+  :global([data-saved-pattern-mode="readonly"] [data-pattern-workspace-new-pattern-trigger]),
+  :global([data-saved-pattern-mode="readonly"] [data-cb-editing-banner-host]),
+  :global([data-saved-pattern-mode="readonly"] .sl-edit-drawer) {
+    display: none !important;
   }
 </style>

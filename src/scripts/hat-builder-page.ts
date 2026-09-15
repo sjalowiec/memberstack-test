@@ -54,7 +54,7 @@ import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSecti
 import { isValidExpressAvailableNeedles } from "../lib/patterns/sleevelessExpressAvailableNeedles";
 import { buildHatSummaryEditFromBuilderHref } from "../lib/patterns/hat/hatPatternNavigation";
 import { markHatGenerationActivityPending } from "../lib/patterns/hat/hatPatternActivity";
-import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 
 const STEPS = HAT_BUILDER_STEPS;
 const LEGACY_HAT_UNIT_KEY = "hat-unit";
@@ -180,7 +180,11 @@ async function initHatBuilderPage(): Promise<void> {
 
   // --- Fresh start (`?new=1`), then authoritative saved-project hydrate, then local draft ---
   applyHatNewSessionFromUrl();
-  await ensureUrlRequestedSavedPatternHydrated();
+  const hydrateOutcome = await ensureUrlRequestedSavedPatternHydrated();
+  if (hydrateOutcome === "load-failed") {
+    applySavedPatternUnavailableMessage();
+    return;
+  }
   ensureHatDraftMigrated();
   let draft: HatDraft = readHatDraft() ?? createEmptyHatDraft();
   if (!readHatDraft()) {

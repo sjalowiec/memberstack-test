@@ -16,9 +16,10 @@ import PatternBuilderLandingMembershipCta from "./PatternBuilderLandingMembershi
 
 interface Props {
   content: PatternBuilderLandingContent;
+  socksSavedPatternRedirect?: boolean;
 }
 
-const { content } = Astro.props;
+const { content, socksSavedPatternRedirect = false } = Astro.props;
 const why = hasPatternBuilderLandingCopy(content.why) ? content.why : null;
 const choices = hasPatternBuilderLandingChoices(content.choices) ? content.choices : null;
 const creates = hasPatternBuilderLandingCopy(content.creates) ? content.creates : null;
@@ -31,6 +32,7 @@ const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta
   class="pattern-builder-landing page-wrap"
   data-pattern-builder-landing
   data-cta-mode="pending"
+  {...(socksSavedPatternRedirect ? { "data-socks-saved-pattern-landing": "" } : {})}
 >
   <PatternBuilderLandingHero content={content} />
   {why ? <PatternBuilderLandingWhy section={why} /> : null}

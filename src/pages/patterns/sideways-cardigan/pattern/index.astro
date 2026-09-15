@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
@@ -16,6 +17,7 @@ import "../../../../styles/patterns/pattern-app-shell.css";
   description="Sideways-knit V-neck sweater pattern workspace (body calculations)."
   patternWorkspace={true}
 >
+  <SleevelessPatternMemberGate>
   <main
     class="wizard-page sleeveless-pattern-page pattern-app-shell sideways-cardigan-pattern-page"
     data-express-construction="sideways-cardigan"
@@ -137,6 +139,7 @@ import "../../../../styles/patterns/pattern-app-shell.css";
       </section>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>

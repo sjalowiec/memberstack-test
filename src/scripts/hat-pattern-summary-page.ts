@@ -90,7 +90,8 @@ import {
   revealHatLeadCapture,
   resolveHatPatternLeadContinue,
 } from "../lib/patterns/hat/hatPatternLeadUi";
-import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import {
   bindPatternSummaryOverlayPositioning,
   collectOverlayAnchors,
@@ -185,7 +186,12 @@ export function initHatPatternSummaryPage(): void {
 
   void (async () => {
     // When Edit carries `?project=`, the saved cloud Hat replaces any leftover local draft.
-    await ensureUrlRequestedSavedPatternHydrated();
+    const hydrateOutcome = await ensureUrlRequestedSavedPatternHydrated();
+    if (hydrateOutcome === "load-failed") {
+      applySavedPatternUnavailableMessage();
+      showEmptyState(SAVED_PATTERN_UNAVAILABLE_BODY);
+      return;
+    }
     initHatPatternSummaryWorkspace(root);
   })();
 }

@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
@@ -54,6 +55,7 @@ const expressNavSteps = [
   description="Create a sideways-knit V-neck sweater pattern from Misses and Women's sizing charts."
   patternWorkspace={true}
 >
+  <SleevelessPatternMemberGate>
   <main
     class="express-page wizard-page sleeveless-express-page sleeveless-unified-builder-page sideways-cardigan-builder-page"
     data-express-page="sideways-cardigan-builder"
@@ -488,6 +490,7 @@ const expressNavSteps = [
       </div>
     </div>
   </main>
+  </SleevelessPatternMemberGate>
 </Layout>
 
 <style>

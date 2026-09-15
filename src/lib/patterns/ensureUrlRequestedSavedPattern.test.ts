@@ -76,7 +76,11 @@ vi.mock("./customPatternProjectClient", async (importOriginal) => {
   };
 });
 
-import { ensureUrlRequestedSavedPatternHydrated } from "./ensureUrlRequestedSavedPattern";
+import {
+  ensureUrlRequestedSavedPatternHydrated,
+  didAuthoritativeSavedPatternLoadFail,
+  resetAuthoritativeSavedPatternLoadFlagForTests,
+} from "./ensureUrlRequestedSavedPattern";
 
 function seedStalePatternAState(): void {
   // Simulate a previously-open Pattern A: working draft, active project link, and Express mirror all
@@ -93,6 +97,7 @@ describe("ensureUrlRequestedSavedPatternHydrated", () => {
   beforeEach(() => {
     stubLocalStorage();
     loadCustomPatternProjectMock.mockReset();
+    resetAuthoritativeSavedPatternLoadFlagForTests();
   });
 
   it("loads Pattern B when B's id is in the URL, even after Pattern A was open (same construction)", async () => {
@@ -224,7 +229,8 @@ describe("ensureUrlRequestedSavedPatternHydrated", () => {
     expect(localStorage.getItem(HAT_DRAFT_STORAGE_KEY)).not.toContain("Stale Local Hat");
   });
 
-  it("strips the project id and falls back when the requested project cannot be loaded", async () => {
+  it("does not strip the project id or hydrate a different local draft when load fails", async () => {
+    seedStalePatternAState();
     const stripUrlProjectId = vi.fn();
     loadCustomPatternProjectMock.mockResolvedValue({ ok: false, error: "not found" });
 
@@ -234,6 +240,8 @@ describe("ensureUrlRequestedSavedPatternHydrated", () => {
     });
 
     expect(outcome).toBe("load-failed");
-    expect(stripUrlProjectId).toHaveBeenCalledTimes(1);
+    expect(stripUrlProjectId).not.toHaveBeenCalled();
+    expect(getCurrentPattern().patternProject?.title).toBe("Kids Pattern A");
+    expect(didAuthoritativeSavedPatternLoadFail()).toBe(true);
   });
 });

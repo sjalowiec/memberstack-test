@@ -11,8 +11,11 @@ import {
 import {
   loadSidewaysCardiganWorkspaceView,
 } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
+import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
+import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import { readSidewaysCardiganBuilderStateFromDraft } from "../lib/patterns/sidewaysCardiganBuilderState";
 import { sidewaysCardiganChartAudienceDisplayLabel } from "../lib/patterns/sidewaysCardiganSizeCharts";
 import {
@@ -205,6 +208,7 @@ function wireSummaryEdit(): void {
   let snapshot: SidewaysCardiganStyleMeasurements | null = null;
 
   const open = (): void => {
+    if (isSavedPatternReadOnlyDocument()) return;
     snapshot = { ...readSidewaysCardiganBuilderStateFromDraft().styleMeasurements };
     fillSummaryEditForm();
     showEditError(null);
@@ -269,19 +273,31 @@ function wireSummaryEdit(): void {
 }
 
 function boot(): void {
-  try {
-    renderView();
-    wireSummaryEdit();
-  } catch (error) {
-    const missing = document.querySelector("[data-sideways-calc-missing]");
-    if (missing instanceof HTMLElement) {
-      missing.hidden = false;
-      const detail = error instanceof Error ? error.message : String(error);
-      missing.textContent = import.meta.env.DEV
-        ? `[DEV] Sideways V-Neck Sweater workspace failed to load: ${detail}`
-        : "This Sideways V-Neck Sweater could not be loaded from the saved draft.";
+  void (async () => {
+    try {
+      const hydrateOutcome = await ensureUrlRequestedSavedPatternHydrated();
+      if (hydrateOutcome === "load-failed") {
+        applySavedPatternUnavailableMessage();
+        const missing = document.querySelector("[data-sideways-calc-missing]");
+        if (missing instanceof HTMLElement) {
+          missing.hidden = false;
+          missing.textContent = SAVED_PATTERN_UNAVAILABLE_BODY;
+        }
+        return;
+      }
+      renderView();
+      wireSummaryEdit();
+    } catch (error) {
+      const missing = document.querySelector("[data-sideways-calc-missing]");
+      if (missing instanceof HTMLElement) {
+        missing.hidden = false;
+        const detail = error instanceof Error ? error.message : String(error);
+        missing.textContent = import.meta.env.DEV
+          ? `[DEV] Sideways V-Neck Sweater workspace failed to load: ${detail}`
+          : "This Sideways V-Neck Sweater could not be loaded from the saved draft.";
+      }
     }
-  }
+  })();
 }
 
 if (document.readyState === "loading") {

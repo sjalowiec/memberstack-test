@@ -43,7 +43,8 @@ import {
 } from "../lib/patterns/sock/sockSavedProject";
 import { bindPatternProjectNotesField } from "../lib/patterns/patternProjectNotesField";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
-import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { withSavedPatternProjectId } from "../lib/patterns/savedPatternViewUrl";
 import { PATTERN_SUMMARY_MEASURE_CHIP_INVALID_CLASS } from "../lib/patterns/patternSummaryMeasurementField";
 import {
@@ -93,7 +94,12 @@ async function initSocksEditPage(): Promise<void> {
   root.dataset.socksEditBound = "true";
 
   await reconcilePatternDraftOwner();
-  await ensureUrlRequestedSavedPatternHydrated();
+  const hydrateOutcome = await ensureUrlRequestedSavedPatternHydrated();
+  if (hydrateOutcome === "load-failed") {
+    applySavedPatternUnavailableMessage();
+    showEmptyState(SAVED_PATTERN_UNAVAILABLE_BODY);
+    return;
+  }
 
   const adapter = loadSizingAdapterFromPage();
   const stored = readSockDraft();

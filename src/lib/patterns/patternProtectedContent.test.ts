@@ -51,6 +51,16 @@ describe("protected pattern markup (no flash / fail closed)", () => {
     expect(hatBuilder).not.toMatch(/SleevelessPatternMemberGate/);
   });
 
+  it("gates the Sideways V-Neck builder and saved-pattern workspace behind the shared membership wrap", () => {
+    const sidewaysPages = [
+      "src/pages/patterns/sideways-cardigan/builder.astro",
+      "src/pages/patterns/sideways-cardigan/pattern/index.astro",
+    ].map((rel) => readFileSync(resolve(root, rel), "utf8"));
+    for (const src of sidewaysPages) {
+      expect(src).toMatch(/SleevelessPatternMemberGate/);
+    }
+  });
+
   it("keeps the pattern catalog public so the free Hat card is visible without membership", () => {
     const catalog = readFileSync(resolve(root, "src/pages/patterns/index.astro"), "utf8");
     expect(catalog).not.toMatch(/SleevelessPatternMemberGate/);
