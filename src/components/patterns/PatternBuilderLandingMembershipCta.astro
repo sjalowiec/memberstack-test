@@ -1,0 +1,91 @@
+---
+import type { PatternBuilderLandingCta } from "../../lib/patterns/patternBuilderLanding";
+
+interface Props {
+  cta: PatternBuilderLandingCta;
+  headingId?: string;
+}
+
+const { cta, headingId = "pattern-builder-membership-heading" } = Astro.props;
+---
+
+<section
+  class="pattern-builder-membership"
+  data-pattern-builder-landing-membership
+  hidden
+  aria-labelledby={headingId}
+>
+  <h2 id={headingId}>{cta.membershipHeading}</h2>
+  <p>{cta.membershipBody}</p>
+  {cta.membershipNote?.trim() ? <p>{cta.membershipNote}</p> : null}
+  <div class="pattern-builder-membership__actions">
+    <a
+      class="kbm-btn kbm-btn-accent"
+      href={cta.prospectHref}
+      data-testid="pattern-builder-landing-membership-cta"
+    >
+      {cta.prospectLabel}
+    </a>
+    <a
+      class="pattern-builder-membership__signin"
+      href="#"
+      data-ms-modal="login"
+      data-ms-redirect="current-url"
+      data-testid="pattern-builder-landing-membership-signin"
+    >
+      {cta.signInLabel}
+    </a>
+  </div>
+</section>
+
+<style>
+  .pattern-builder-membership {
+    margin: 0.25rem 0 0;
+    padding: 1.2rem 1.25rem;
+    background: #f7f8f5;
+    border: 1px solid #e4ebd6;
+    border-radius: 10px;
+  }
+
+  .pattern-builder-membership[hidden] {
+    display: none !important;
+  }
+
+  .pattern-builder-membership h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-membership p {
+    margin: 0 0 1rem;
+    color: #333;
+    line-height: 1.55;
+  }
+
+  .pattern-builder-membership__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pattern-builder-membership__actions :global(.kbm-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.25rem;
+    padding: 0.85rem 1.35rem;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .pattern-builder-membership__signin {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+</style>

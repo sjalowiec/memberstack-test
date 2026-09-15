@@ -1,0 +1,81 @@
+---
+import type { PatternBuilderLandingChoicesSection } from "../../lib/patterns/patternBuilderLanding";
+
+interface Props {
+  section: PatternBuilderLandingChoicesSection;
+  headingId?: string;
+}
+
+const { section, headingId = "pattern-builder-choices-heading" } = Astro.props;
+---
+
+<section class="pattern-builder-choices" aria-labelledby={headingId}>
+  <h2 id={headingId}>{section.heading}</h2>
+  {section.intro ? <p class="pattern-builder-choices__intro">{section.intro}</p> : null}
+  <ul class="pattern-builder-choices__list">
+    {
+      section.items.map((item) => (
+        <li>
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .pattern-builder-choices {
+    margin: 0 0 1.75rem;
+  }
+
+  .pattern-builder-choices h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .pattern-builder-choices__intro {
+    margin: 0 0 1rem;
+    color: #333;
+    line-height: 1.55;
+  }
+
+  .pattern-builder-choices__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .pattern-builder-choices__list li {
+    padding: 0.9rem 1rem;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
+  }
+
+  .pattern-builder-choices__list h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .pattern-builder-choices__list p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  @media (min-width: 700px) {
+    .pattern-builder-choices__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

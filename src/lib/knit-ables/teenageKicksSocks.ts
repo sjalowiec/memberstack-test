@@ -1,4 +1,4 @@
-import { knitAbleSockBuilderHref } from "./links";
+import { SOCKS_PATTERN_LANDING_PATH } from "../patterns/socksPatternLanding";
 
 export const TEENAGE_KICKS_SOCKS_PATH = "/knit-ables/teenage-kicks-socks";
 
@@ -88,5 +88,5 @@ export const TEENAGE_KICKS_YARN_RECOMMENDATIONS: readonly KnitAbleYarnRecommenda
 ];
 
 export function teenageKicksSockBuilderHref(): string {
-  return knitAbleSockBuilderHref();
+  return SOCKS_PATTERN_LANDING_PATH;
 }

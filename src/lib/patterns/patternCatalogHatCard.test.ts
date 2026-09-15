@@ -112,7 +112,7 @@ describe("pattern catalog Hat card", () => {
 
   it("lists Socks as an available card using socks-v2.png", () => {
     expect(catalog).toContain("title: 'Socks'");
-    expect(catalog).toContain("href: '/patterns/socks/builder?new=1'");
+    expect(catalog).toContain("href: '/patterns/socks'");
     expect(catalog).toContain("image: '/images/patterns/socks-v2.png'");
     expect(catalog).toContain("button: 'Create your socks'");
     expect(catalog).toContain("copy: SOCKS_CATALOG_COPY");
