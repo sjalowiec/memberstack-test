@@ -32,7 +32,12 @@ import {
 } from "../lib/patterns/sleevelessDiagramModal";
 import type { BasicSockCalc } from "../lib/patterns/sock/sockMath";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
-import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
+import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
+import {
+  applySavedPatternReadOnlyChrome,
+  isSavedPatternReadOnlyDocument,
+} from "../lib/patterns/savedPatternReadOnlyChrome";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 
@@ -72,11 +77,16 @@ function mountPrintAction(): void {
   if (!(host instanceof HTMLElement)) return;
   const editBtn = document.querySelector("[data-socks-edit-open]");
   if (editBtn instanceof HTMLElement) {
-    if (editBtn instanceof HTMLAnchorElement) {
-      editBtn.href = SOCK_EDIT_HREF;
+    if (isSavedPatternReadOnlyDocument()) {
+      editBtn.hidden = true;
+      editBtn.style.display = "none";
+    } else {
+      if (editBtn instanceof HTMLAnchorElement) {
+        editBtn.href = SOCK_EDIT_HREF;
+      }
+      editBtn.hidden = false;
+      editBtn.style.display = "inline-flex";
     }
-    editBtn.hidden = false;
-    editBtn.style.display = "inline-flex";
   }
   let printBtn = host.querySelector("#print-btn");
   if (!(printBtn instanceof HTMLButtonElement)) {
@@ -196,8 +206,18 @@ async function initSocksPatternPage(): Promise<void> {
   root.dataset.socksPatternBound = "true";
 
   await reconcilePatternDraftOwner();
-  await ensureUrlRequestedSavedPatternHydrated();
+  const hydrateOutcome = await ensureUrlRequestedSavedPatternHydrated();
+  if (hydrateOutcome === "load-failed") {
+    applySavedPatternUnavailableMessage();
+    showEmptyState(SAVED_PATTERN_UNAVAILABLE_BODY);
+    const emptyCta = document.querySelector("[data-testid='socks-pattern-empty-cta']");
+    if (emptyCta instanceof HTMLElement) emptyCta.hidden = true;
+    return;
+  }
   await renderSocksPattern();
+  if (isSavedPatternReadOnlyDocument()) {
+    applySavedPatternReadOnlyChrome(document);
+  }
 }
 
 function boot(): void {

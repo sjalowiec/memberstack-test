@@ -1,8 +1,12 @@
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader.ts";
 import { initSleevelessPatternBuilderPage } from "./sleevelessPatternPageShared.ts";
 import { ensureClaimedSavedPatternHydratedForView } from "../lib/patterns/loadClaimedSavedPatternForView.ts";
-import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern.ts";
+import {
+  applySavedPatternUnavailableMessage,
+  ensureUrlRequestedSavedPatternHydrated,
+} from "../lib/patterns/ensureUrlRequestedSavedPattern.ts";
 import { isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
+import { hasAuthoritativeUrlSavedPatternId } from "../lib/patterns/savedPatternViewUrl.ts";
 import {
   PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT,
   runPatternWorkspaceBuilderGenerationHandoff,
@@ -28,17 +32,23 @@ async function boot(): Promise<void> {
   }
 
   // When the URL carries an explicit `project` id (My Patterns View), that id is authoritative:
-  // load exactly that saved project BEFORE any self-heal / reconciliation runs, so localStorage
-  // (working draft, activeProjectId, Express mirror, drift-promotion) can never substitute a
-  // different, previously-open pattern. On success the self-heal below is skipped; on failure the id
-  // is stripped so the normal fallbacks still run.
+  // load exactly that saved project BEFORE any self-heal / reconciliation runs. A failed load is
+  // terminal — do not fall back to a different localStorage draft.
   if (isDedicatedSleevelessPatternWorkspacePage()) {
     let urlProjectAuthoritative = false;
     try {
       const outcome = await ensureUrlRequestedSavedPatternHydrated();
       urlProjectAuthoritative = outcome === "loaded";
+      if (outcome === "load-failed") {
+        applySavedPatternUnavailableMessage();
+        return;
+      }
     } catch (error) {
-      console.error("[kbm] Authoritative saved-pattern URL load failed; continuing.", error);
+      console.error("[kbm] Authoritative saved-pattern URL load failed.", error);
+      if (hasAuthoritativeUrlSavedPatternId()) {
+        applySavedPatternUnavailableMessage();
+        return;
+      }
     }
 
     // Self-heal the read-only saved-pattern view: when no saved project is linked locally (e.g. the

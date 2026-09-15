@@ -1,10 +1,11 @@
 /**
- * Server-side membership gate for Dynamic Pattern project APIs.
+ * Server-side identity and membership gates for Dynamic Pattern project APIs.
  *
- * Call chain:
- *   Bearer JWT ? requireMember (verified Memberstack id)
- *   ? Admin getMember(planConnections)
- *   ? evaluateMemberAccessForRecord (paid plans, or Watson paid-through today or later)
+ * Identity (list / load / delete):
+ *   Bearer JWT → requireMember (verified Memberstack id)
+ *
+ * Mutation (save / update):
+ *   identity + evaluateMemberAccessForRecord (paid plan or Watson paid-through)
  *
  * Never trusts X-KBM-Member-Id, body.entitlement, free-claim, lifetime, or unlock flags.
  */
@@ -21,13 +22,16 @@ const UNAVAILABLE = "Pattern projects are unavailable in this environment.";
 const MEMBERSHIP_REQUIRED = "An active Knit it Now membership is required.";
 
 /**
+ * Verified Memberstack identity for owner-scoped pattern reads and deletes.
+ * Does not require paid membership.
+ *
  * @param {Request} req
  * @returns {Promise<
  *   | { ok: true, userId: string, mode: "member" | "dev" }
  *   | { ok: false, status: number, error: string }
  * >}
  */
-export async function requirePatternProjectAccess(req) {
+export async function requirePatternProjectIdentity(req) {
   const token = bearerTokenFromRequest(req);
 
   // Local/dev only: stable pattern-user storage without a Memberstack session.
@@ -56,6 +60,28 @@ export async function requirePatternProjectAccess(req) {
     };
   }
 
+  return {
+    ok: true,
+    userId: sanitizeKeySegment(auth.member.id),
+    mode: "member",
+  };
+}
+
+/**
+ * Paid-membership gate for create/update (and any other mutation that must stay members-only).
+ * Identity is verified first; client headers and entitlement fields cannot grant access.
+ *
+ * @param {Request} req
+ * @returns {Promise<
+ *   | { ok: true, userId: string, mode: "member" | "dev" }
+ *   | { ok: false, status: number, error: string }
+ * >}
+ */
+export async function requirePatternProjectAccess(req) {
+  const identity = await requirePatternProjectIdentity(req);
+  if (!identity.ok) return identity;
+  if (identity.mode === "dev") return identity;
+
   const client = getMemberstackAdminClient();
   if (!client?.getMember) {
     console.error("requirePatternProjectAccess: Memberstack Admin client unavailable.");
@@ -64,7 +90,7 @@ export async function requirePatternProjectAccess(req) {
 
   let record;
   try {
-    record = await client.getMember(auth.member.id);
+    record = await client.getMember(identity.userId);
   } catch (err) {
     console.error("requirePatternProjectAccess: getMember failed:", err);
     return { ok: false, status: 503, error: UNAVAILABLE };
@@ -90,13 +116,13 @@ export async function requirePatternProjectAccess(req) {
 
   return {
     ok: true,
-    userId: sanitizeKeySegment(auth.member.id),
+    userId: identity.userId,
     mode: "member",
   };
 }
 
 /**
- * Identity-only gate (verified JWT → member id + email). Does not grant pattern access.
+ * Identity-only gate (verified JWT → member id + email). Does not grant pattern mutation access.
  * Used by non-pattern endpoints that previously trusted X-KBM-Member-Id via resolveProjectUserId.
  * `email` is the Memberstack Admin record address from {@link requireMember} (empty when lookup
  * did not return one). Callers must not treat a client `X-KBM-Member-Email` header as equivalent.

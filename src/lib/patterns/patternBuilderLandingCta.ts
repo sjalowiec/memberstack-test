@@ -3,11 +3,17 @@
  *
  * Starts pending so the wrong primary action never flashes while Memberstack loads.
  * Visitors and logged-in non-members see membership CTAs.
- * Active members see the pattern-specific builder CTA.
+ * Active members see the pattern-specific builder CTA, except Socks which redirects
+ * active members and former members with saved Socks to My Patterns.
  */
 import { hasMemberAccess } from "../memberAccess";
 import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
+import { resolveSavedPatternAccessStateFromSession } from "./savedPatternAccessStateClient";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
+import {
+  resolveSocksLandingAction,
+  SOCKS_SAVED_PATTERN_LANDING_ATTR,
+} from "./socksPatternLandingAccess";
 
 export type PatternBuilderLandingCtaMode = "pending" | "member" | "prospect";
 
@@ -39,9 +45,38 @@ export function applyPatternBuilderLandingCtaMode(
   });
 }
 
+function isSocksSavedPatternLanding(root: HTMLElement): boolean {
+  return root.hasAttribute(SOCKS_SAVED_PATTERN_LANDING_ATTR);
+}
+
+async function applySocksLandingPresentation(root: HTMLElement): Promise<void> {
+  applyPatternBuilderLandingCtaMode(root, "pending");
+  const state = await resolveSavedPatternAccessStateFromSession();
+  const action = resolveSocksLandingAction(state);
+  if (action.type === "redirect") {
+    window.location.replace(action.href);
+    return;
+  }
+  applyPatternBuilderLandingCtaMode(root, "prospect");
+}
+
 /** Wires `[data-pattern-builder-landing]`. Defaults to pending (no CTA flash). */
 export async function initPatternBuilderLandingCta(root: HTMLElement): Promise<void> {
   applyPatternBuilderLandingCtaMode(root, "pending");
+
+  if (isSocksSavedPatternLanding(root)) {
+    await applySocksLandingPresentation(root);
+    const ms = window.$memberstackDom;
+    if (ms && typeof ms.on === "function") {
+      ms.on("member.login", () => {
+        void applySocksLandingPresentation(root);
+      });
+      ms.on("member.logout", () => {
+        applyPatternBuilderLandingCtaMode(root, "prospect");
+      });
+    }
+    return;
+  }
 
   await waitForMemberstackDom();
   const ms = window.$memberstackDom;

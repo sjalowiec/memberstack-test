@@ -70,6 +70,8 @@ describe("pattern builder landing content model", () => {
     expect(hatLike.cta.memberHref).toBe("/patterns/hat/builder?new=1");
     expect(pageComponent).toContain("content: PatternBuilderLandingContent");
     expect(pageComponent).toContain("<PatternBuilderLandingHero content={content} />");
+    expect(pageComponent).toContain("socksSavedPatternRedirect");
+    expect(pageComponent).toContain("data-socks-saved-pattern-landing");
     expect(heroComponent).toContain("{patternName}");
     expect(heroComponent).toContain("{headline}");
     expect(heroComponent).toContain("{cta.memberHref}");

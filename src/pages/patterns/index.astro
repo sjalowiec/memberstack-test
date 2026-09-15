@@ -72,7 +72,8 @@ const sleevelessPattern = {
 
 const socksPattern = {
   title: 'Socks',
-  // Public landing page. Members continue to the builder from `/patterns/socks`.
+  // Public landing page. Access-aware client routing may send members with saved Socks
+  // to `/account#my-patterns` without flashing a different catalog destination.
   href: '/patterns/socks',
   image: '/images/patterns/socks-v2.png',
   copy: SOCKS_CATALOG_COPY,
@@ -195,7 +196,11 @@ const comingSoonPatterns = [
         <p class="patterns-section-note">{PATTERN_CATALOG_MEMBERSHIP_BODY}</p>
         <div class="patterns-grid">
           {sweaterPatterns.map((pattern) => (
-            <a href={pattern.href} class="catalog-card">
+            <a
+              href={pattern.href}
+              class="catalog-card"
+              {...(pattern.title === "Socks" ? { "data-socks-catalog-card": "" } : {})}
+            >
               <div class="catalog-card__media">
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
               </div>
@@ -244,7 +249,11 @@ const comingSoonPatterns = [
         <h2 id="patterns-available-heading" class="patterns-section-title">Available now</h2>
         <div class="patterns-grid">
           {availablePatterns.map((pattern) => (
-            <a href={pattern.href} class="catalog-card">
+            <a
+              href={pattern.href}
+              class="catalog-card"
+              {...(pattern.title === "Socks" ? { "data-socks-catalog-card": "" } : {})}
+            >
               <div class="catalog-card__media">
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
               </div>
@@ -289,11 +298,14 @@ const comingSoonPatterns = [
 
 <script>
   import { initPatternsLandingCta } from "../../lib/patterns/patternsLandingCta";
+  import { initSocksCatalogCardRouting } from "../../lib/patterns/socksCatalogCardAccess";
 
   function boot(): void {
     const root = document.querySelector("[data-patterns-landing-cta]");
-    if (!(root instanceof HTMLElement)) return;
-    void initPatternsLandingCta(root);
+    if (root instanceof HTMLElement) {
+      void initPatternsLandingCta(root);
+    }
+    void initSocksCatalogCardRouting(document);
   }
 
   if (document.readyState === "loading") {

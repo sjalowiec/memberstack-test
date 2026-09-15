@@ -22,9 +22,32 @@
     Loading your saved patterns…
   </p>
 
+  <p
+    class="dashboard-muted account-my-patterns__readonly-notice"
+    data-kbm-my-patterns-readonly-notice
+    hidden
+  >
+    These patterns are saved to your account. You can view, print, and download them anytime. Renew
+    your membership to edit, recalculate, or create new patterns.
+  </p>
+  <p class="account-my-patterns__renew-wrap" data-kbm-my-patterns-renew-wrap hidden>
+    <a href="/membership" class="kbm-btn kbm-btn-outline" data-kbm-my-patterns-renew>
+      Renew Membership
+    </a>
+  </p>
+
   <div class="account-my-patterns__empty-cta" data-kbm-my-patterns-empty-cta hidden>
     <a href="/patterns" class="kbm-btn kbm-btn-accent account-my-patterns__create-btn">
       Create a Pattern
+    </a>
+  </div>
+
+  <div class="account-my-patterns__empty-cta" data-kbm-my-patterns-no-access-cta hidden>
+    <a href="/membership" class="kbm-btn kbm-btn-accent account-my-patterns__create-btn">
+      Become a Member
+    </a>
+    <a href="/patterns/hat/builder?new=1" class="kbm-btn kbm-btn-outline account-my-patterns__create-btn">
+      Create a free hat
     </a>
   </div>
 
@@ -63,6 +86,19 @@
 
   .account-my-patterns__empty-cta {
     margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .account-my-patterns__readonly-notice {
+    margin: 0.35rem 0 0.65rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .account-my-patterns__renew-wrap {
+    margin: 0 0 0.85rem;
   }
 
   .account-my-patterns__create-btn,

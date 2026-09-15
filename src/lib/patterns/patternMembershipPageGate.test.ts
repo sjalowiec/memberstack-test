@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decidePatternMembershipGate } from "./patternMembershipPageGate";
+import { applyFormerMemberReadOnlyException, decidePatternMembershipGate } from "./patternMembershipPageGate";
 import { LOGGED_OUT_SLEEVELESS_ACCESS, type SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 const nosub: SleevelessUserAccess = {
@@ -53,5 +53,35 @@ describe("decidePatternMembershipGate", () => {
 
   it("unlocks when viewer reports memberAccess even if access snapshot lags", () => {
     expect(decidePatternMembershipGate(nosub, "memberAccess").state).toBe("member");
+  });
+
+  it("unlocks a former member only after an owner-scoped saved-pattern load succeeds", async () => {
+    const membership = decidePatternMembershipGate(nosub, "loggedInNoAccess");
+    const readonly = await applyFormerMemberReadOnlyException(membership, {
+      href: "https://knititnow.com/patterns/socks/pattern/?project=proj-1",
+      loadOwnedProject: async () => ({ ok: true }),
+    });
+    expect(readonly.state).toBe("readonly");
+
+    const missing = await applyFormerMemberReadOnlyException(membership, {
+      href: "https://knititnow.com/patterns/socks/pattern/?project=proj-1",
+      loadOwnedProject: async () => ({ ok: false }),
+    });
+    expect(missing.state).toBe("unavailable");
+  });
+
+  it("does not treat a URL project id as enough to open the Socks builder", async () => {
+    const membership = decidePatternMembershipGate(nosub, "loggedInNoAccess");
+    const builder = await applyFormerMemberReadOnlyException(membership, {
+      href: "https://knititnow.com/patterns/socks/builder?new=1",
+      loadOwnedProject: async () => ({ ok: true }),
+    });
+    expect(builder.state).toBe("locked-no-access");
+
+    const edit = await applyFormerMemberReadOnlyException(membership, {
+      href: "https://knititnow.com/patterns/socks/edit/?edit=1&project=proj-1",
+      loadOwnedProject: async () => ({ ok: true }),
+    });
+    expect(edit.state).toBe("locked-no-access");
   });
 });

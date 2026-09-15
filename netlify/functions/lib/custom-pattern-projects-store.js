@@ -480,7 +480,8 @@ export function resolveDevPatternUserId(req) {
 
 /**
  * @deprecated Prefer {@link resolveVerifiedProjectUserId} from `require-member-access.js`
- * (JWT identity) or {@link requirePatternProjectAccess} (JWT + membership).
+ * (JWT identity via {@link requirePatternProjectIdentity}) or mutation access via
+ * {@link requirePatternProjectAccess} (JWT + membership).
  * Kept as a thin sync helper for tests that only exercise the fail-closed path when
  * neither a verified session nor local-dev mode is available. Does **not** trust
  * `X-KBM-Member-Id`.

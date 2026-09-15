@@ -37,6 +37,10 @@ import {
   formatPatternCopiedMessage,
   renameSavedCustomPatternProject,
 } from "./savedCustomPatternManageActions";
+import { buildSockBuilderNewPatternHref } from "./sock/sockFreshStart";
+import {
+  MY_PATTERNS_NO_ACCESS_EMPTY_MESSAGE,
+} from "./savedPatternAccessState";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 /** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
@@ -47,6 +51,9 @@ export { DELETE_SAVED_PATTERN_CONFIRM_MESSAGE };
 export const RENAME_SAVED_PATTERN_PROMPT_MESSAGE = "Rename this saved pattern:";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
+export const ACCOUNT_MY_PATTERNS_SOCKS_CREATE_LABEL = "Create a Sock Pattern";
+export const ACCOUNT_MY_PATTERNS_SOCKS_CREATE_NEW_LABEL = "Create New";
+export { MY_PATTERNS_NO_ACCESS_EMPTY_MESSAGE };
 
 /** Max patterns shown inside each open pattern-system group on the account dashboard. */
 export const ACCOUNT_MY_PATTERNS_GROUP_PREVIEW_LIMIT = 3;
@@ -194,13 +201,38 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
 }
 
 function showEmptyListState(root: HTMLElement): void {
+  const access = listAccess(root);
+  const canMutate = access?.hasSystemAccess === true;
+  const container = root.querySelector("[data-kbm-my-patterns-list]");
+  if (container instanceof HTMLElement) container.replaceChildren();
+  setViewAllVisible(root, false);
+  setReadonlyNoticeVisible(root, false);
+  if (canMutate) {
+    listStateByRoot.set(root, { projects: [], access });
+    renderProjectList(root);
+    setListVisible(root, true);
+    setStatus(root, EMPTY_LIST_MESSAGE);
+    setEmptyCtaVisible(root, true);
+    setMembershipCtaVisible(root, false);
+  } else {
+    listStateByRoot.delete(root);
+    setListVisible(root, false);
+    setStatus(root, MY_PATTERNS_NO_ACCESS_EMPTY_MESSAGE);
+    setEmptyCtaVisible(root, false);
+    setMembershipCtaVisible(root, true);
+  }
+}
+
+function showNoAccessEmptyState(root: HTMLElement): void {
   listStateByRoot.delete(root);
   const container = root.querySelector("[data-kbm-my-patterns-list]");
   if (container instanceof HTMLElement) container.replaceChildren();
   setListVisible(root, false);
   setViewAllVisible(root, false);
-  setStatus(root, EMPTY_LIST_MESSAGE);
-  setEmptyCtaVisible(root, true);
+  setReadonlyNoticeVisible(root, false);
+  setEmptyCtaVisible(root, false);
+  setMembershipCtaVisible(root, true);
+  setStatus(root, MY_PATTERNS_NO_ACCESS_EMPTY_MESSAGE);
 }
 
 /** Keep the global My Patterns drawer list in sync when it is already on the page. */
@@ -216,6 +248,26 @@ function refreshOpenPatternLibraryDrawer(): void {
 
 function listAccess(root: HTMLElement): SleevelessUserAccess | null {
   return listStateByRoot.get(root)?.access ?? null;
+}
+
+function canMutateFromList(root: HTMLElement): boolean {
+  return listAccess(root)?.hasSystemAccess === true;
+}
+
+function setReadonlyNoticeVisible(root: HTMLElement, visible: boolean): void {
+  const el = root.querySelector("[data-kbm-my-patterns-readonly-notice]");
+  if (el instanceof HTMLElement) el.hidden = !visible;
+  const renew = root.querySelector("[data-kbm-my-patterns-renew-wrap]");
+  if (renew instanceof HTMLElement) renew.hidden = !visible;
+}
+
+function setMembershipCtaVisible(root: HTMLElement, visible: boolean): void {
+  const el = root.querySelector("[data-kbm-my-patterns-no-access-cta]");
+  if (el instanceof HTMLElement) el.hidden = !visible;
+}
+
+function isMembershipRequiredListError(error: string): boolean {
+  return /membership is required/i.test(error);
 }
 
 function canEditSavedPatternFromList(
@@ -598,53 +650,57 @@ function renderPatternEntry(
     void onProjectView(root, project.id, displayName);
   });
 
-  const editBtn = document.createElement("button");
-  editBtn.type = "button";
-  editBtn.className = "account-my-patterns__action account-my-patterns__action--edit";
-  editBtn.setAttribute("data-kbm-my-patterns-edit", "");
-  editBtn.dataset.projectId = project.id;
-  editBtn.dataset.patternSystem = patternSystem;
-  editBtn.setAttribute("aria-label", `Edit ${displayName}`);
-  editBtn.textContent = "Edit";
-  editBtn.addEventListener("click", (event) => {
-    event?.stopPropagation?.();
-    if (editBtn.disabled) return;
-    void onProjectEdit(root, project.id, displayName);
-  });
-  applyEditAccessToButton(editBtn, listAccess(root), patternSystem);
+  actions.append(openBtn);
 
-  const copyBtn = document.createElement("button");
-  copyBtn.type = "button";
-  copyBtn.className = "account-my-patterns__action account-my-patterns__action--copy";
-  copyBtn.setAttribute("data-kbm-my-patterns-copy", "");
-  copyBtn.dataset.projectId = project.id;
-  copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
-  copyBtn.textContent = "Copy";
-  copyBtn.addEventListener("click", (event) => {
-    event?.stopPropagation?.();
-    if (copyBtn.disabled) return;
-    void onProjectCopy(root, project.id, displayName);
-  });
-  syncSavedCustomPatternCopyAccessForAccess(copyBtn, listAccess(root));
-
-  actions.append(openBtn, editBtn, copyBtn);
-
-  if (shouldOfferSavedPatternRename(patternSystem)) {
-    const renameBtn = document.createElement("button");
-    renameBtn.type = "button";
-    renameBtn.className = "account-my-patterns__action account-my-patterns__action--rename";
-    renameBtn.setAttribute("data-kbm-my-patterns-rename", "");
-    renameBtn.dataset.projectId = project.id;
-    renameBtn.dataset.patternSystem = patternSystem;
-    renameBtn.setAttribute("aria-label", `Rename ${displayName}`);
-    renameBtn.textContent = "Rename";
-    renameBtn.addEventListener("click", (event) => {
+  if (canMutateFromList(root)) {
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "account-my-patterns__action account-my-patterns__action--edit";
+    editBtn.setAttribute("data-kbm-my-patterns-edit", "");
+    editBtn.dataset.projectId = project.id;
+    editBtn.dataset.patternSystem = patternSystem;
+    editBtn.setAttribute("aria-label", `Edit ${displayName}`);
+    editBtn.textContent = "Edit";
+    editBtn.addEventListener("click", (event) => {
       event?.stopPropagation?.();
-      if (renameBtn.disabled) return;
-      void onProjectRename(root, project.id, displayName);
+      if (editBtn.disabled) return;
+      void onProjectEdit(root, project.id, displayName);
     });
-    applyEditAccessToButton(renameBtn, listAccess(root), patternSystem);
-    actions.append(renameBtn);
+    applyEditAccessToButton(editBtn, listAccess(root), patternSystem);
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "account-my-patterns__action account-my-patterns__action--copy";
+    copyBtn.setAttribute("data-kbm-my-patterns-copy", "");
+    copyBtn.dataset.projectId = project.id;
+    copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
+    copyBtn.textContent = "Copy";
+    copyBtn.addEventListener("click", (event) => {
+      event?.stopPropagation?.();
+      if (copyBtn.disabled) return;
+      void onProjectCopy(root, project.id, displayName);
+    });
+    syncSavedCustomPatternCopyAccessForAccess(copyBtn, listAccess(root));
+
+    actions.append(editBtn, copyBtn);
+
+    if (shouldOfferSavedPatternRename(patternSystem)) {
+      const renameBtn = document.createElement("button");
+      renameBtn.type = "button";
+      renameBtn.className = "account-my-patterns__action account-my-patterns__action--rename";
+      renameBtn.setAttribute("data-kbm-my-patterns-rename", "");
+      renameBtn.dataset.projectId = project.id;
+      renameBtn.dataset.patternSystem = patternSystem;
+      renameBtn.setAttribute("aria-label", `Rename ${displayName}`);
+      renameBtn.textContent = "Rename";
+      renameBtn.addEventListener("click", (event) => {
+        event?.stopPropagation?.();
+        if (renameBtn.disabled) return;
+        void onProjectRename(root, project.id, displayName);
+      });
+      applyEditAccessToButton(renameBtn, listAccess(root), patternSystem);
+      actions.append(renameBtn);
+    }
   }
 
   const deleteBtn = document.createElement("button");
@@ -710,8 +766,35 @@ function renderPatternGroup(
     renderPatternEntry(root, list, project);
   }
 
+  if (group.patternSystem === "socks" && canMutateFromList(root)) {
+    appendSocksCreateAction(list, group.projects.length > 0);
+  }
+
   details.append(summary, list);
   container.append(details);
+}
+
+function appendSocksCreateAction(list: HTMLElement, hasSavedSocks: boolean): void {
+  const item = document.createElement("li");
+  item.className = "account-my-patterns__item account-my-patterns__item--create";
+  const create = document.createElement("a");
+  create.className = "kbm-btn kbm-btn-outline account-my-patterns__socks-create";
+  create.setAttribute("data-kbm-my-patterns-socks-create", "");
+  create.href = buildSockBuilderNewPatternHref();
+  create.textContent = hasSavedSocks
+    ? ACCOUNT_MY_PATTERNS_SOCKS_CREATE_NEW_LABEL
+    : ACCOUNT_MY_PATTERNS_SOCKS_CREATE_LABEL;
+  item.append(create);
+  list.append(item);
+}
+
+function renderEmptySocksCreateGroup(root: HTMLElement, container: HTMLElement): void {
+  renderPatternGroup(root, container, {
+    patternSystem: "socks",
+    label: patternSystemDisplayName("socks"),
+    projects: [],
+    newestUpdatedAt: "",
+  });
 }
 
 export function renderProjectList(root: HTMLElement): void {
@@ -725,11 +808,18 @@ export function renderProjectList(root: HTMLElement): void {
   for (const group of groups) {
     renderPatternGroup(root, container, group);
   }
+  const hasSocks = groups.some((group) => group.patternSystem === "socks");
+  if (!hasSocks && canMutateFromList(root)) {
+    renderEmptySocksCreateGroup(root, container);
+  }
   wireExclusiveAccordionGroups(root);
   syncMyPatternsEditAccess(root);
   syncMyPatternsCopyAccess(root);
   syncMyPatternsRenameAccess(root);
   setViewAllVisible(root, state.projects.length > 0);
+  setReadonlyNoticeVisible(root, Boolean(state.access?.loggedIn) && !canMutateFromList(root));
+  setMembershipCtaVisible(root, false);
+  setEmptyCtaVisible(root, false);
 }
 
 export async function initAccountMyPatternsList(root: HTMLElement): Promise<void> {
@@ -743,6 +833,8 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
   setStatus(root, "Loading your saved patterns…");
   setListVisible(root, false);
   setEmptyCtaVisible(root, false);
+  setMembershipCtaVisible(root, false);
+  setReadonlyNoticeVisible(root, false);
   setViewAllVisible(root, false);
 
   const listStart = perfStart();
@@ -753,6 +845,14 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
     projectCount: res.ok ? res.projects.length : 0,
   });
   if (!res.ok) {
+    if (isMembershipRequiredListError(res.error)) {
+      showNoAccessEmptyState(root);
+      perfEnd("1-account-page-init total", initStart, {
+        renderNumber,
+        outcome: "no-access-empty",
+      });
+      return;
+    }
     const message =
       res.error === SIGN_IN_REQUIRED_ERROR
         ? "Sign in to view your saved patterns."
@@ -766,18 +866,6 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
   }
 
   const domStart = perfStart();
-  if (res.projects.length === 0) {
-    setStatus(root, EMPTY_LIST_MESSAGE);
-    setEmptyCtaVisible(root, true);
-    setViewAllVisible(root, false);
-    perfEnd("5-saved-patterns-dom-render", domStart, { renderNumber, projectCount: 0, fullRebuild: true });
-    perfEnd("1-account-page-init total", initStart, { renderNumber, outcome: "empty-list" });
-    return;
-  }
-
-  hideStatus(root);
-
-  // Snapshot access for Edit gating without priming the shared access cache.
   let access: SleevelessUserAccess | null = null;
   try {
     access = await resolveSleevelessUserAccessSnapshot();
@@ -789,6 +877,23 @@ export async function initAccountMyPatternsList(root: HTMLElement): Promise<void
     projects: res.projects,
     access,
   });
+
+  if (res.projects.length === 0) {
+    if (canMutateFromList(root)) {
+      renderProjectList(root);
+      setListVisible(root, true);
+      setEmptyCtaVisible(root, true);
+      setStatus(root, EMPTY_LIST_MESSAGE);
+    } else {
+      showNoAccessEmptyState(root);
+    }
+    perfEnd("5-saved-patterns-dom-render", domStart, { renderNumber, projectCount: 0, fullRebuild: true });
+    perfEnd("1-account-page-init total", initStart, { renderNumber, outcome: "empty-list" });
+    return;
+  }
+
+  hideStatus(root);
+
   renderProjectList(root);
   setListVisible(root, true);
   setEmptyCtaVisible(root, false);

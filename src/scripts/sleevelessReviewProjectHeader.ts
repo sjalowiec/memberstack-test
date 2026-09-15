@@ -13,6 +13,7 @@ import {
   resolveSleevelessUserAccess,
 } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import { getCurrentPattern } from "../lib/patterns/patternStorage";
+import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import { bindSleevelessPatternProjectCloudSave } from "../lib/patterns/sleevelessPatternProjectCloudSave";
 import {
   buildChangePatternChoicesHref,
@@ -387,7 +388,9 @@ export async function initSleevelessReviewProjectHeader(): Promise<void> {
   // Project notes stay editable for any logged-in user (including a free claimed pattern). The
   // title field can be edited locally, but renaming only persists via the cloud save, which now
   // requires membership (gated in runSleevelessPatternProjectCloudSave) — matching My Patterns.
-  if (canEditSleevelessPatternNotes(access)) {
+  // Project notes stay editable for any logged-in member who can mutate saved patterns.
+  // Former-member read-only views keep notes visible but not editable.
+  if (canEditSleevelessPatternNotes(access) && !isSavedPatternReadOnlyDocument()) {
     bindEditableHeader(root);
   } else {
     applyReadOnlyProjectHeader(root);
