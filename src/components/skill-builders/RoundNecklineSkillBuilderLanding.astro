@@ -1,5 +1,6 @@
 ---
 import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
+import SkillBuilderPracticeBackLink from "./SkillBuilderPracticeBackLink.astro";
 import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
 import RoundNecklineSkillBuilderLandingBody from "./RoundNecklineSkillBuilderLandingBody.astro";
 import {
@@ -28,7 +29,7 @@ const initialExerciseId =
   data-sb-builder={builderId}
   data-sb-exercise={initialExerciseId}
 >
-  <a class="sb-landing__back" href="/learn/skill-builders">Skill Builders</a>
+  <SkillBuilderPracticeBackLink />
 
   <header class="sb-landing__hero">
     <SkillBuilderPageHeader title={builder.title} />
@@ -60,22 +61,6 @@ const initialExerciseId =
     overflow-x: hidden;
   }
 
-  .sb-landing__back {
-    display: inline-block;
-    margin: 0.25rem 0 0.75rem;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6b7280;
-    text-decoration: none;
-  }
-
-  .sb-landing__back:hover,
-  .sb-landing__back:focus {
-    color: #52682d;
-  }
-
   .sb-landing__hero {
     margin: 0.5rem 0 1.25rem;
   }
@@ -99,10 +84,6 @@ const initialExerciseId =
       max-width: none;
       padding: 0;
       overflow: visible;
-    }
-
-    .sb-landing__back {
-      display: none;
     }
   }
 </style>

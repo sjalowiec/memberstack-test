@@ -31,7 +31,6 @@ const feedback = builderId ? getSkillBuilderFeedbackConfig(builderId) : null;
       <SkillBuilderFeedback
         skillBuilderId={feedback.id}
         title={feedback.title}
-        includeBackLink={feedback.includeBackLink}
       />
     ) : null
   }

@@ -58,8 +58,6 @@ export type SkillBuilderFeedbackConfig = {
   title: string;
   path: string;
   memberOnly: boolean;
-  /** Hide the shared back link when the page already has a different footer CTA. */
-  includeBackLink: boolean;
 };
 
 export const SKILL_BUILDER_FEEDBACK_CATALOG: readonly SkillBuilderFeedbackConfig[] = [
@@ -69,7 +67,6 @@ export const SKILL_BUILDER_FEEDBACK_CATALOG: readonly SkillBuilderFeedbackConfig
     title: ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].title,
     path: ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].path,
     memberOnly: false,
-    includeBackLink: true,
   },
   {
     builderId: ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].id,
@@ -77,7 +74,6 @@ export const SKILL_BUILDER_FEEDBACK_CATALOG: readonly SkillBuilderFeedbackConfig
     title: ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].title,
     path: ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].path,
     memberOnly: true,
-    includeBackLink: true,
   },
   {
     builderId: JOINING_SHOULDER_SEAMS_SKILL_BUILDER_ID,
@@ -85,7 +81,6 @@ export const SKILL_BUILDER_FEEDBACK_CATALOG: readonly SkillBuilderFeedbackConfig
     title: JOINING_SHOULDER_SEAMS_TITLE,
     path: JOINING_SHOULDER_SEAMS_PATH,
     memberOnly: true,
-    includeBackLink: false,
   },
   {
     builderId: E_WRAP_CAST_ON_SKILL_BUILDER_ID,
@@ -93,7 +88,6 @@ export const SKILL_BUILDER_FEEDBACK_CATALOG: readonly SkillBuilderFeedbackConfig
     title: E_WRAP_CAST_ON_TITLE,
     path: E_WRAP_CAST_ON_PATH,
     memberOnly: true,
-    includeBackLink: true,
   },
   {
     builderId: SHORT_ROWS_SKILL_BUILDER_ID,
@@ -101,7 +95,6 @@ export const SKILL_BUILDER_FEEDBACK_CATALOG: readonly SkillBuilderFeedbackConfig
     title: SHORT_ROWS_TITLE,
     path: SHORT_ROWS_PATH,
     memberOnly: true,
-    includeBackLink: true,
   },
 ];
 

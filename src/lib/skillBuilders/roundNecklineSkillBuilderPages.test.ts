@@ -81,7 +81,7 @@ describe("public round neckline Skill Builder pages", () => {
 
   it("opens a combined workspace with in-page practice selection and shared gauge", () => {
     expect(landingComponent).toContain("SkillBuilderPageHeader");
-    expect(landingComponent).toContain('href="/learn/skill-builders">Skill Builders</a>');
+    expect(landingComponent).toContain("SkillBuilderPracticeBackLink");
     expect(landingComponent).toContain("data-sb-round-neckline-exercise");
     expect(landingComponent).not.toContain("Back to practices");
     expect(landingBody).toContain("Choose Your Practice");
