@@ -31,6 +31,11 @@ export function buildSleevelessExpressNewPatternHref(): string {
   return `/patterns/sleeveless-express?${SLEEVELESS_EXPRESS_NEW_SESSION_PARAM}=${SLEEVELESS_EXPRESS_NEW_SESSION_VALUE}`;
 }
 
+/** Public Sleeveless builder entry used by the landing-page CTA. */
+export function buildSleevelessBuilderNewPatternHref(): string {
+  return `/patterns/sleeveless/builder?${SLEEVELESS_EXPRESS_NEW_SESSION_PARAM}=${SLEEVELESS_EXPRESS_NEW_SESSION_VALUE}`;
+}
+
 export function buildDropShoulderBuilderNewPatternHref(): string {
   return `/patterns/drop-shoulder/builder?${SLEEVELESS_EXPRESS_NEW_SESSION_PARAM}=${SLEEVELESS_EXPRESS_NEW_SESSION_VALUE}`;
 }

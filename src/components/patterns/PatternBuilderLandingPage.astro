@@ -9,6 +9,7 @@ import {
 import PatternBuilderLandingHero from "./PatternBuilderLandingHero.astro";
 import PatternBuilderLandingWhy from "./PatternBuilderLandingWhy.astro";
 import PatternBuilderLandingChoices from "./PatternBuilderLandingChoices.astro";
+import PatternBuilderLandingHowItWorks from "./PatternBuilderLandingHowItWorks.astro";
 import PatternBuilderLandingCreates from "./PatternBuilderLandingCreates.astro";
 import PatternBuilderLandingAnyYarn from "./PatternBuilderLandingAnyYarn.astro";
 import PatternBuilderLandingKnitAble from "./PatternBuilderLandingKnitAble.astro";
@@ -22,6 +23,7 @@ interface Props {
 const { content, socksSavedPatternRedirect = false } = Astro.props;
 const why = hasPatternBuilderLandingCopy(content.why) ? content.why : null;
 const choices = hasPatternBuilderLandingChoices(content.choices) ? content.choices : null;
+const howItWorks = hasPatternBuilderLandingCopy(content.howItWorks) ? content.howItWorks : null;
 const creates = hasPatternBuilderLandingCopy(content.creates) ? content.creates : null;
 const anyYarn = hasPatternBuilderLandingCopy(content.anyYarn) ? content.anyYarn : null;
 const knitAble = hasPatternBuilderLandingKnitAble(content.knitAble) ? content.knitAble : null;
@@ -37,6 +39,7 @@ const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta
   <PatternBuilderLandingHero content={content} />
   {why ? <PatternBuilderLandingWhy section={why} /> : null}
   {choices ? <PatternBuilderLandingChoices section={choices} /> : null}
+  {howItWorks ? <PatternBuilderLandingHowItWorks section={howItWorks} /> : null}
   {creates ? <PatternBuilderLandingCreates section={creates} /> : null}
   {anyYarn ? <PatternBuilderLandingAnyYarn section={anyYarn} /> : null}
   {knitAble ? <PatternBuilderLandingKnitAble section={knitAble} /> : null}

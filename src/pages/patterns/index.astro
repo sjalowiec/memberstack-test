@@ -39,9 +39,8 @@ const showSidewaysAsComingSoon = isSidewaysCardiganProductionBlocked(Astro.url.h
 
 const dropShoulderPattern = {
   title: 'Drop Shoulder Sweater',
-  // `?new=1` clears any active draft on boot so this card always starts fresh
-  // (mirrors the sleeveless builder). Drop shoulder reuses the same review/pattern flow.
-  href: '/patterns/drop-shoulder/builder?new=1',
+  // Public landing page. The landing CTA starts a fresh builder session with `?new=1`.
+  href: '/patterns/drop-shoulder',
   image: '/images/patterns/drop_shoulder.webp',
   copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
   button: 'Create drop shoulder sweater',
@@ -65,10 +64,8 @@ const hatPattern = {
 
 const sleevelessPattern = {
   title: 'Sleeveless Sweater',
-  // Force a brand-new draft from the catalog. `?new=1` makes the Express builder clear any
-  // persisted/active session on boot (see applySleevelessExpressNewSessionFromUrl) so this card
-  // never resumes a previous or another user's pattern. Use "My Patterns" to resume/open.
-  href: '/patterns/sleeveless/builder?new=1',
+  // Public landing page. The landing CTA starts a fresh builder session with `?new=1`.
+  href: '/patterns/sleeveless',
   image: '/images/patterns/sleeveless.webp',
   copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
   button: 'Create sleeveless sweater',
@@ -90,8 +87,8 @@ const socksPattern = {
 
 const sidewaysPattern = {
   title: 'Sideways Knit Sweater',
-  // `?new=1` clears any leftover sideways draft on boot so this card starts fresh.
-  href: '/patterns/sideways-cardigan/builder?new=1',
+  // Public landing page on DEV. Production still hides this live card.
+  href: '/patterns/sideways-cardigan',
   image: '/images/patterns/sideways.png',
   copy: 'Custom cardigan or pullover knitted sideways, with flexible sizing that works especially well for larger sizes and limited needle-bed widths.',
   button: 'Create sideways knit sweater',

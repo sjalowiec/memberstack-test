@@ -1,5 +1,8 @@
 ---
-import type { PatternBuilderLandingContent } from "../../lib/patterns/patternBuilderLanding";
+import {
+  hasPatternBuilderLandingCatalogBadge,
+  type PatternBuilderLandingContent,
+} from "../../lib/patterns/patternBuilderLanding";
 
 interface Props {
   content: PatternBuilderLandingContent;
@@ -7,6 +10,9 @@ interface Props {
 
 const { content } = Astro.props;
 const { patternName, headline, intro, image, cta } = content;
+const catalogBadge = hasPatternBuilderLandingCatalogBadge(content.catalogBadge)
+  ? content.catalogBadge
+  : null;
 ---
 
 <section class="pattern-builder-hero" aria-labelledby="pattern-builder-hero-heading">
@@ -19,6 +25,17 @@ const { patternName, headline, intro, image, cta } = content;
       loading="eager"
       decoding="async"
     />
+    {
+      catalogBadge ? (
+        <span
+          class="pattern-builder-hero__badge"
+          data-testid="pattern-builder-landing-catalog-badge"
+        >
+          <span class="pattern-builder-hero__badge-count">{catalogBadge.count}</span>
+          <span class="pattern-builder-hero__badge-rest">{catalogBadge.rest}</span>
+        </span>
+      ) : null
+    }
   </div>
   <div class="pattern-builder-hero__copy">
     <p class="pattern-builder-hero__name">{patternName}</p>
@@ -77,6 +94,7 @@ const { patternName, headline, intro, image, cta } = content;
   }
 
   .pattern-builder-hero__visual {
+    position: relative;
     margin: 0;
     border-radius: 12px;
     overflow: hidden;
@@ -94,6 +112,45 @@ const { patternName, headline, intro, image, cta } = content;
     height: auto;
     aspect-ratio: 1 / 1;
     object-fit: contain;
+  }
+
+  /* Match catalog-card__status--available overlay on the hero image. */
+  .pattern-builder-hero__badge {
+    position: absolute;
+    top: 0.7rem;
+    left: 50%;
+    z-index: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3em;
+    max-width: calc(100% - 1.4rem);
+    padding: 0.28em 0.7em 0.3em;
+    border-radius: 999px;
+    box-sizing: border-box;
+    color: #52682d;
+    background: #eef2e3;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .pattern-builder-hero__badge-count {
+    font-size: 1.6em;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+
+  .pattern-builder-hero__badge-rest {
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1.2;
   }
 
   .pattern-builder-hero__name {
