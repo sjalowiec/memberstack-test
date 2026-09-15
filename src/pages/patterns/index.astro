@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
+import { isSidewaysCardiganProductionBlocked } from '../../lib/patterns/sidewaysCardiganProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
 import {
   PATTERN_CATALOG_MEMBERSHIP_BODY,
@@ -27,6 +28,11 @@ import {
 // Membership CTA is informational only; sweater builders enforce their own gates.
 
 const hideDropShoulderInCatalog = isDropShoulderProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+
+const showSidewaysAsComingSoon = isSidewaysCardiganProductionBlocked(Astro.url.hostname, {
   isViteDev: import.meta.env.DEV,
   publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
 });
@@ -97,7 +103,7 @@ const sweaterPatterns = [
   sleevelessPattern,
   socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
-  sidewaysPattern,
+  ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
 ];
 
 const availablePatterns = [
@@ -105,7 +111,7 @@ const availablePatterns = [
   hatPattern,
   socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
-  sidewaysPattern,
+  ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
   // route /patterns/diy-blanket is intact and reachable by direct URL for future development/testing.
   // Uncomment this entry to bring the Blanket builder back to the catalog.
@@ -120,6 +126,13 @@ const availablePatterns = [
 ];
 
 const comingSoonPatterns = [
+  ...(showSidewaysAsComingSoon
+    ? [{
+        title: sidewaysPattern.title,
+        image: sidewaysPattern.image,
+        copy: sidewaysPattern.copy,
+      }]
+    : []),
   {
     title: 'Raglan Sweater',
     image: '/images/patterns/raglan.webp',

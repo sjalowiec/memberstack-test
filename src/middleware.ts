@@ -16,6 +16,10 @@ import {
   isDropShoulderRoute,
 } from "./lib/patterns/dropShoulderProductionAccess";
 import {
+  isSidewaysCardiganProductionBlocked,
+  isSidewaysCardiganRoute,
+} from "./lib/patterns/sidewaysCardiganProductionAccess";
+import {
   isWatsonApiRoute,
   isWatsonRoute,
   watsonApiUnauthorizedResponse,
@@ -59,6 +63,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (
     isDropShoulderRoute(u.pathname) &&
     isDropShoulderProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return context.redirect("/patterns/", 302);
+  }
+
+  if (
+    isSidewaysCardiganRoute(u.pathname) &&
+    isSidewaysCardiganProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/patterns/", 302);
   }
