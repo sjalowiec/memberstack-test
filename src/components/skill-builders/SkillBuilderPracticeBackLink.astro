@@ -1,0 +1,51 @@
+---
+/**
+ * Shared Skill Builder practice return link. Catalog href is the fallback;
+ * history.back() is used only when the previous same-origin document was the
+ * Skill Builders catalog (see skillBuilderPracticeBackLink.ts).
+ */
+---
+
+<a
+  class="sb-practice-back back-to-skill-builders-link"
+  href="/learn/skill-builders"
+  data-sb-print-hide
+>
+  Back to Skill Builders
+</a>
+
+<script>
+  import { bindSkillBuilderPracticeBackLinks } from "../../lib/skillBuilders/skillBuilderPracticeBackLink";
+
+  bindSkillBuilderPracticeBackLinks({
+    links: document.querySelectorAll<HTMLAnchorElement>(".back-to-skill-builders-link"),
+    referrer: document.referrer || "",
+    historyLength: window.history.length,
+    currentOrigin: window.location.origin,
+    back: () => {
+      window.history.back();
+    },
+  });
+</script>
+
+<style>
+  .sb-practice-back {
+    display: inline-block;
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .sb-practice-back:hover,
+  .sb-practice-back:focus {
+    color: #52682d;
+  }
+
+  @media print {
+    .sb-practice-back {
+      display: none;
+    }
+  }
+</style>

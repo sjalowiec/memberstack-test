@@ -83,10 +83,13 @@ describe("Short Rows Practice Skill Builder pages", () => {
     expect(component).not.toContain("data-sb-completion");
     expect(component).not.toContain("builder.completionPrompt");
     expect(component).not.toContain("builder.completionOptions");
-    expect(component).toContain('href="/learn/skill-builders" data-sb-print-hide>Skill Builders</a>');
+    expect(component).toContain("SkillBuilderPracticeBackLink");
+    expect(
+      readFileSync(join(componentsDir, "SkillBuilderPracticeBackLink.astro"), "utf8"),
+    ).toContain("Back to Skill Builders");
     expect(
       readFileSync(join(componentsDir, "SkillBuilderFeedback.astro"), "utf8"),
-    ).toContain("Back to Skill Builders");
+    ).not.toContain("Back to Skill Builders");
     expect(component).toContain("GatedVimeoEmbed");
     expect(component).toContain("video.vimeoId");
     expect(component).toContain("data-sb-video-content-id={String(video.contentId)}");

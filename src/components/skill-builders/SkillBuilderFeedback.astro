@@ -14,10 +14,9 @@ import {
 interface Props {
   skillBuilderId: string;
   title: string;
-  includeBackLink?: boolean;
 }
 
-const { skillBuilderId, title, includeBackLink = true } = Astro.props;
+const { skillBuilderId, title } = Astro.props;
 const headingId = `sb-feedback-heading-${skillBuilderId}`;
 ---
 
@@ -55,14 +54,6 @@ const headingId = `sb-feedback-heading-${skillBuilderId}`;
     </a>
   </div>
 </section>
-
-{
-  includeBackLink ? (
-    <a class="sb-practice-back" href="/learn/skill-builders" data-sb-print-hide>
-      Back to Skill Builders
-    </a>
-  ) : null
-}
 
 <script>
   import { bindSkillBuilderFeedbackPage } from "../../lib/skillBuilders/skillBuilderReactions";
@@ -193,20 +184,6 @@ const headingId = `sb-feedback-heading-${skillBuilderId}`;
     background: #445626;
     outline: 2px solid #738c52;
     outline-offset: 2px;
-  }
-
-  .sb-practice-back {
-    display: inline-block;
-    margin: 0.15rem 0 0;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-decoration: none;
-  }
-
-  .sb-practice-back:hover,
-  .sb-practice-back:focus {
-    color: #52682d;
   }
 
   @media (max-width: 640px) {

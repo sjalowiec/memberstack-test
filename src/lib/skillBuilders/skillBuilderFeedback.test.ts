@@ -111,9 +111,6 @@ describe("Skill Builder feedback shared rendering", () => {
     expect(gate.slice(templateStart)).toContain("<SkillBuilderFeedback");
     expect(getSkillBuilderFeedbackConfig("round-neckline-basics")?.memberOnly).toBe(false);
     expect(getSkillBuilderFeedbackConfig("round-necklines-shaped-shoulders")?.memberOnly).toBe(true);
-    expect(getSkillBuilderFeedbackConfig("join-beautiful-shoulder-seams")?.includeBackLink).toBe(
-      false,
-    );
     expect(gate).toContain("getSkillBuilderFeedbackConfig");
     expect(shortRows).toContain("<SkillBuilderMemberGate builderId={builder.id}>");
     expect(eWrap).toContain("<SkillBuilderMemberGate builderId={builder.id}>");

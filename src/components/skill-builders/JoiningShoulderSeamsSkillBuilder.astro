@@ -1,5 +1,6 @@
 ---
 import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
+import SkillBuilderPracticeBackLink from "./SkillBuilderPracticeBackLink.astro";
 import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
 import GlossaryTooltip from "../common/GlossaryTooltip.astro";
@@ -21,7 +22,7 @@ const checklistParts = joiningShoulderSeamsChecklistParts(builder.checklist);
   data-sb-joining-shoulder-seams
   data-sb-builder={builder.id}
 >
-  <a class="sb-practice-eyebrow" href="/learn/skill-builders">Skill Builders</a>
+  <SkillBuilderPracticeBackLink />
 
   <header class="sb-practice-hero">
     <SkillBuilderPageHeader title={builder.title} />
@@ -111,22 +112,6 @@ const checklistParts = joiningShoulderSeamsChecklistParts(builder.checklist);
     margin: 0 auto;
     padding: 0 20px 3.5rem;
     overflow-x: hidden;
-  }
-
-  .sb-practice-eyebrow {
-    display: inline-block;
-    margin: 0.25rem 0 0.75rem;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6b7280;
-    text-decoration: none;
-  }
-
-  .sb-practice-eyebrow:hover,
-  .sb-practice-eyebrow:focus {
-    color: #52682d;
   }
 
   .sb-practice-hero {
