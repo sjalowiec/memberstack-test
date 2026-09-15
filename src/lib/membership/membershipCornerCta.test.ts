@@ -163,6 +163,19 @@ describe("resolveMembershipCornerCta", () => {
     ).toBeNull();
   });
 
+  it("imported grandfathered monthly plan: button hidden", () => {
+    expect(
+      resolveMembershipCornerCta(
+        memberWithPlans([
+          {
+            planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+            status: "ACTIVE",
+          },
+        ]),
+      ),
+    ).toBeNull();
+  });
+
   it("beta-only does not grant access → Become a Member", () => {
     expect(
       resolveMembershipCornerCta(

@@ -192,6 +192,34 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
   });
 
+  it("shows Active Monthly Membership for an imported grandfathered plan even with expired Watson", () => {
+    const member = memberWithPlans([
+      {
+        planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member, {
+      legacyPaidThroughYmd: "2026-07-16",
+      todayYmd: "2026-07-22",
+    });
+    expect(memberHasActivePaidMembership(member)).toBe(true);
+    expect(
+      hasMemberAccess(member, { legacyPaidThroughYmd: "2026-07-16", todayYmd: "2026-07-22" }),
+    ).toBe(true);
+    expect(view).toMatchObject({
+      kind: "member",
+      planDisplayLabel: "Monthly Membership",
+      statusLabel: "Active",
+      billingInterval: "monthly",
+      visibleActions: ["manageBilling"],
+    });
+    expect(view.visibleActions).not.toContain("join");
+    expect(view.planDisplayLabel).not.toBe("Legacy Membership");
+    expect(view.statusLabel).not.toBe("Expired");
+  });
+
   it("shows Canceling monthly with Switch to Annual, Manage Billing, and overlap warning", () => {
     const cancelAtDate = 1787055395;
     const member = memberWithPlans([

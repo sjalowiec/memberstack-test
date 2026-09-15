@@ -4,8 +4,8 @@
  * Paid membership is shown from Memberstack. Legacy access is shown as current
  * when {@link hasMemberAccess} agrees (valid Watson paid-through date, with or
  * without the free Memberstack legacy plan).
- * Billing interval is shown only when an active paid connection maps to a
- * known Memberstack price id in `MEMBERSHIPS`.
+ * Billing interval is shown from a known Memberstack price id, or monthly for
+ * imported/retired “Monthly Subscription to Knititnow” plan shells.
  *
  * Canceling-but-still-active: Memberstack keeps status ACTIVE / active true and
  * sets payment.cancelAtDate to the paid-through date (Unix seconds).
@@ -21,6 +21,7 @@ import {
   type MemberAccessOptions,
 } from "../memberAccess";
 import { memberIdFromMemberstackPayload, memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
+import { isGrandfatheredMonthlySubscriptionPlanId } from "../../config/memberships";
 import {
   annualSwitchOverlapWarning,
   canPurchaseAnnualWhileCancelingMonthly,
@@ -270,8 +271,12 @@ function billingIntervalFromPaidConnection(
 ): AccountMembershipBillingInterval | null {
   if (!connection) return null;
   const priceId = paidConnectionPriceId(connection);
-  if (!priceId) return null;
-  return buildPriceIndex().get(priceId)?.interval ?? null;
+  if (priceId) {
+    const fromPrice = buildPriceIndex().get(priceId)?.interval ?? null;
+    if (fromPrice) return fromPrice;
+  }
+  const planId = planIdFromConnection(asRecord(connection));
+  return isGrandfatheredMonthlySubscriptionPlanId(planId) ? "monthly" : null;
 }
 
 /**

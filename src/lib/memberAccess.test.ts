@@ -106,6 +106,30 @@ describe("hasMemberAccess — paid Memberstack memberships", () => {
         payload({ planId: LEGACY_MEMBERSHIPS.grandfatheredAnnual.memberstackPlanId }),
       ),
     ).toBe(true);
+    expect(
+      hasMemberAccess(
+        payload({
+          planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("lets an imported grandfathered monthly plan win over an expired Watson record", () => {
+    const res = payload({
+      planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+    });
+    expect(hasPaidMemberAccess(res)).toBe(true);
+    expect(
+      hasMemberAccess(res, { legacyPaidThroughYmd: "2026-07-16", todayYmd: TODAY_YMD }),
+    ).toBe(true);
+    expect(
+      getViewerAccessState(res, {
+        legacyPaidThroughYmd: "2026-07-16",
+        todayYmd: TODAY_YMD,
+      }),
+    ).toBe("memberAccess");
+    expect(needsLegacyPaidThroughForAccess(res)).toBe(false);
   });
 });
 

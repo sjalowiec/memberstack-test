@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
+import { FREE_ACCESS_MEMBERSHIPS, LEGACY_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
 import type { LegacyMemberDetailRow } from "../watson/memberDetail";
 import type { MemberMembershipDisplay } from "../watson/memberMembership";
 import {
@@ -489,6 +489,60 @@ describe("loadAccountMembershipDetail", () => {
     expect(detail.statusLabel).toBe("Expired");
     expect(detail.legacyPaidThroughDate).toBe("April 6, 2026");
     expect(detail.legacyAccessActive).toBe(false);
+  });
+
+  it("lets an imported grandfathered Memberstack plan win over an expired Watson record", async () => {
+    const detail = await loadAccountMembershipDetail("mem_imported_monthly", {
+      secretKey: "sk_test",
+      now: new Date("2026-07-22T19:00:00.000Z"),
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "imported@example.com" },
+            createdAt: "2018-04-01T00:00:00.000Z",
+            planConnections: [
+              {
+                planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+                planName: "Monthly Subscription to Knititnow",
+                status: "ACTIVE",
+                active: true,
+                createdAt: "2018-04-01T00:00:00.000Z",
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: legacyMember({
+          memberid: "L-IMPORTED",
+          email: "imported@example.com",
+          datejoined: "2012-01-05T00:00:00.000Z",
+          subscriptionexpiring: "2026-07-16",
+        }),
+      }),
+      loadMemberships: async () => [
+        legacyRow({
+          startDateSort: "2012-01-05T00:00:00.000Z",
+          expirationDate: "Jul 16, 2026",
+          expirationDateSort: "2026-07-16T00:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(detail.statusLabel).toBe("Active");
+    expect(detail.membershipName).toBe(MEMBERSHIPS.membership.name);
+    expect(detail.legacyPaidThroughDate).toBeNull();
+    expect(detail.legacyAccessActive).toBeNull();
+    expect(detail.history.map((event) => event.title)).toContain("Joined Knit it Now");
+    const view = resolveAccountMembershipDetailView(detail);
+    expect(view.statusOverride).toBeNull();
+    expect(view.planOverride).toBeNull();
+    expect(view.membershipDateLabel).toBe("Member Since");
+    expect(view.membershipDateValue).not.toBe("July 16, 2026");
+    expect(view.visibleActions).toBeNull();
+    expect(view.history.visible).toBe(true);
   });
 
   it("shows Expired for a connected free legacy plan whose paid-through date has passed", async () => {
