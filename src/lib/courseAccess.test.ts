@@ -110,6 +110,11 @@ describe("hasCourseMembershipAccess", () => {
         payloadWithPlan(LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId),
       ),
     ).toBe(true);
+    expect(
+      hasCourseMembershipAccess(
+        payloadWithPlan(LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId),
+      ),
+    ).toBe(true);
   });
 
   it("is false for a canceled membership plan", () => {

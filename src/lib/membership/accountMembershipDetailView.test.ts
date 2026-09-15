@@ -70,18 +70,21 @@ describe("resolveAccountMembershipDetailView", () => {
     expect(view.legacyAccessValue).toBe("Ended April 6, 2026");
   });
 
-  it("does not override plan/status for an active paid member", () => {
+  it("does not overlay Expired or Become a Member for an active paid member", () => {
     const view = resolveAccountMembershipDetailView(
       detail({
         membershipName: "Knit it Now Membership",
         statusLabel: "Active",
         legacyPaidThroughDate: null,
         legacyAccessActive: null,
+        memberSince: "March 14, 2017",
         history: [event("Joined Knit it Now")],
       }),
     );
     expect(view.planOverride).toBeNull();
     expect(view.statusOverride).toBeNull();
+    expect(view.visibleActions).toBeNull();
+    expect(view.membershipDateLabel).toBe("Member Since");
     expect(view.legacyAccessValue).toBeNull();
   });
 

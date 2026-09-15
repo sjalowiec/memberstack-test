@@ -177,6 +177,9 @@ describe("membership plan ids grant edit workspace access", () => {
     expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(
       LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
     );
+    expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(
+      LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+    );
     expect(MEMBER_PLAN_IDS).toEqual(expect.arrayContaining([...LEGACY_PAID_MEMBER_PLAN_IDS]));
     expect(COURSE_ACCESS_PLAN_IDS).toEqual(expect.arrayContaining([...LEGACY_PAID_MEMBER_PLAN_IDS]));
   });

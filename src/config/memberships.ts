@@ -78,6 +78,15 @@ export const LEGACY_MEMBERSHIPS = {
     name: "Monthly Subscription to Knititnow (retired plan shell)",
     memberstackPlanId: "pln_monthly-subscription-to-knititnow-webx0nz5",
   },
+  /**
+   * Imported grandfathered monthly plan still billed in Stripe (historically
+   * $15.99). Access-only — never used for checkout. Distinct from
+   * {@link monthlySubscription} (`…-webx0nz5`).
+   */
+  importedMonthlySubscription: {
+    name: "Monthly Subscription to Knititnow (imported grandfathered)",
+    memberstackPlanId: "pln_monthly-subscription-to-knititnow-yv8b0ujt",
+  },
 } as const;
 
 /* ============================================================================
@@ -109,6 +118,7 @@ export const LEGACY_PAID_MEMBER_PLAN_IDS = [
   LEGACY_MEMBERSHIPS.grandfatheredAnnual.memberstackPlanId,
   LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
   LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+  LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
 ] as const;
 
 /** Removed Basic plan — must never appear in access allow lists. */
@@ -119,7 +129,27 @@ export const REMOVED_BASIC_MEMBERSHIP_PLAN_ID =
 export const LEGACY_PREMIUM_MEMBER_PLAN_IDS = [
   LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
   LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+  LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
 ] as const;
+
+/**
+ * Retired “Monthly Subscription to Knititnow” plan shells. Display-only: treat
+ * as monthly when the Stripe price id is unknown so Account can show
+ * “Monthly Membership” without mapping a checkout price.
+ */
+export const GRANDFATHERED_MONTHLY_SUBSCRIPTION_PLAN_IDS = [
+  LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+  LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+] as const;
+
+const grandfatheredMonthlySubscriptionPlanIds = new Set<string>(
+  GRANDFATHERED_MONTHLY_SUBSCRIPTION_PLAN_IDS,
+);
+
+/** True for imported/retired monthly-subscription shells (display interval only). */
+export function isGrandfatheredMonthlySubscriptionPlanId(planId: string): boolean {
+  return grandfatheredMonthlySubscriptionPlanIds.has(planId);
+}
 
 /** Legacy plan ids retained for access only. */
 export const LEGACY_MEMBER_PLAN_IDS = LEGACY_PAID_MEMBER_PLAN_IDS;

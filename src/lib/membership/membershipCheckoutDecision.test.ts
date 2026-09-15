@@ -99,6 +99,10 @@ describe("resolveMembershipCheckoutDecision", () => {
         planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
         planKey: "monthly",
       },
+      {
+        planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+        planKey: "monthly",
+      },
     ];
 
     for (const { planId, planKey } of cases) {

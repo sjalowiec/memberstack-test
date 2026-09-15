@@ -553,6 +553,28 @@ describe("buildMembershipStatusSummary", () => {
     expect(result.legacyExpirationDate).toBe("July 30, 2026");
   });
 
+  it("lets an imported grandfathered monthly plan win over an expired Watson record", () => {
+    const connections = [
+      connection({
+        planId: LEGACY_MEMBERSHIPS.importedMonthlySubscription.memberstackPlanId,
+        planName: LEGACY_MEMBERSHIPS.importedMonthlySubscription.name,
+        status: "ACTIVE",
+        active: true,
+      }),
+    ];
+    const result = summaryWithLegacy({
+      ymd: "2026-07-16",
+      connections,
+      memberId: "mem_imported_expired_watson",
+    });
+    expect(result.currentStatus).toBe("active");
+    expect(result.accountType).toBe("paid_membership");
+    expect(result.recommendedAction).toBe("manage");
+    expect(result.currentPlanName).toBe(MEMBERSHIPS.membership.name);
+    expect(membershipStatusAllowsPurchase(result)).toBe(false);
+    expect(membershipStatusPanelHeading(result)).toBe("Your membership is active");
+  });
+
   it("canceling-but-active Memberstack wins regardless of future legacy expiration", () => {
     const cancelAt = Math.floor(Date.UTC(2026, 7, 18) / 1000);
     const connections = [
