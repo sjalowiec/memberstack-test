@@ -13,6 +13,16 @@ import {
 import { SOCK_CONSTRUCTION_DIRECTION_LABELS } from "./sock/sockPatternFromDraft";
 import { AVAILABLE_NEEDLES_LABEL } from "./sleevelessExpressAvailableNeedles";
 import { BASIC_SOCK_PATTERN_NAME } from "./sock/sockDraft";
+import {
+  TEENAGE_KICKS_IMAGES,
+  TEENAGE_KICKS_SOCKS_PATH,
+  teenageKicksSockBuilderHref,
+} from "../knit-ables/teenageKicksSocks";
+import {
+  KNIT_ABLES_LOGO,
+  KNIT_ABLES_PAGE_LOGO_ALT,
+  KNIT_ABLES_PATH,
+} from "../knit-ables/knitAblesLanding";
 
 const landingPage = readFileSync(resolve("src/pages/patterns/socks/index.astro"), "utf8");
 const builderPage = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
@@ -21,7 +31,6 @@ const teenageKicksPage = readFileSync(
   resolve("src/pages/knit-ables/teenage-kicks-socks.astro"),
   "utf8",
 );
-const teenageKicksLib = readFileSync(resolve("src/lib/knit-ables/teenageKicksSocks.ts"), "utf8");
 
 describe("Basic Socks Pattern Builder landing page", () => {
   it("is a public crawlable landing page at /patterns/socks", () => {
@@ -116,6 +125,53 @@ describe("Basic Socks Pattern Builder landing page", () => {
     expect(choiceTitles.join(" ")).not.toMatch(/yarn weight/i);
   });
 
+  it("omits Why use this builder from the Socks landing page only", () => {
+    expect(SOCKS_PATTERN_BUILDER_LANDING.why).toBeUndefined();
+    const socksConfig = readFileSync(resolve("src/lib/patterns/socksPatternLanding.ts"), "utf8");
+    expect(socksConfig).not.toContain("Why use this builder?");
+    const whyComponent = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingWhy.astro"),
+      "utf8",
+    );
+    expect(whyComponent).toContain("pattern-builder-why");
+    const landingShell = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingPage.astro"),
+      "utf8",
+    );
+    expect(landingShell).toContain("{why ? <PatternBuilderLandingWhy section={why} /> : null}");
+  });
+
+  it("features the Teenage Kicks Knit-able with existing assets and routes", () => {
+    const knitAble = SOCKS_PATTERN_BUILDER_LANDING.knitAble;
+    expect(knitAble?.eyebrow).toBe("Knit-able Inspiration");
+    expect(knitAble?.heading).toBe("See this pattern in action");
+    expect(knitAble?.description).toBe(
+      "Start with your custom Basic Socks pattern, then add color and creativity with the Teenage Kicks Knit-able.",
+    );
+    expect(knitAble?.buttonLabel).toBe("Explore Teenage Kicks");
+    expect(knitAble?.href).toBe(TEENAGE_KICKS_SOCKS_PATH);
+    expect(knitAble?.href).toBe("/knit-ables/teenage-kicks-socks");
+    expect(knitAble?.image.src).toBe(TEENAGE_KICKS_IMAGES.hero.src);
+    expect(knitAble?.image.src).toBe("/images/knit-ables/teenage-kicks-socks/56188220_2.jpg");
+    expect(existsSync(resolve(`public${TEENAGE_KICKS_IMAGES.hero.src}`))).toBe(true);
+    expect(knitAble?.logo.src).toBe(KNIT_ABLES_LOGO.src);
+    expect(knitAble?.logo.href).toBe(KNIT_ABLES_PATH);
+    expect(knitAble?.logo.href).toBe("/knit-ables");
+    expect(knitAble?.logo.label).toBe(KNIT_ABLES_PAGE_LOGO_ALT);
+
+    const knitAbleComponent = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingKnitAble.astro"),
+      "utf8",
+    );
+    expect(knitAbleComponent).toContain('data-testid="pattern-builder-landing-knit-able-image"');
+    expect(knitAbleComponent).toContain('data-testid="pattern-builder-landing-knit-able-cta"');
+    expect(knitAbleComponent).toContain('data-testid="pattern-builder-landing-knit-able-logo"');
+    expect(knitAbleComponent).toContain("href={section.href}");
+    expect(knitAbleComponent).toContain("href={section.logo.href}");
+    expect(knitAbleComponent).not.toContain("teenage-kicks-socks");
+    expect(knitAbleComponent).not.toContain("/images/knit-ables");
+  });
+
   it("explains that members can recalculate after changing their choices", () => {
     expect(SOCKS_PATTERN_BUILDER_LANDING.creates?.body).toContain(
       "While your membership is active, you can update the size, yarn, gauge, or construction choices and let the builder recalculate the pattern for you.",
@@ -160,7 +216,7 @@ describe("Socks landing page inbound links", () => {
   });
 
   it("points the Teenage Kicks Socks Pattern CTA to the public landing page", () => {
-    expect(teenageKicksLib).toContain("SOCKS_PATTERN_LANDING_PATH");
+    expect(teenageKicksSockBuilderHref()).toBe(SOCKS_PATTERN_LANDING_PATH);
     expect(teenageKicksPage).toContain("teenageKicksSockBuilderHref()");
     expect(teenageKicksPage.match(/href=\{sockBuilderHref\}/g)?.length).toBe(2);
     expect(teenageKicksPage).not.toContain("/patterns/socks/builder");

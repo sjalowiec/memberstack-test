@@ -32,6 +32,20 @@ export type PatternBuilderLandingChoicesSection = {
   items: readonly PatternBuilderLandingChoice[];
 };
 
+export type PatternBuilderLandingKnitAble = {
+  eyebrow: string;
+  heading: string;
+  description: string;
+  href: string;
+  buttonLabel: string;
+  image: PatternBuilderLandingImage;
+  logo: PatternBuilderLandingImage & {
+    href: string;
+    /** Accessible name for the logo link when it should differ from alt. */
+    label?: string;
+  };
+};
+
 export type PatternBuilderLandingCta = {
   memberLabel: string;
   memberHref: string;
@@ -55,6 +69,7 @@ export type PatternBuilderLandingContent = {
   choices?: PatternBuilderLandingChoicesSection;
   creates?: PatternBuilderLandingCopySection;
   anyYarn?: PatternBuilderLandingCopySection;
+  knitAble?: PatternBuilderLandingKnitAble;
   cta: PatternBuilderLandingCta;
 };
 
@@ -74,4 +89,18 @@ export function hasPatternBuilderLandingMembership(
   cta: PatternBuilderLandingCta | undefined,
 ): cta is PatternBuilderLandingCta {
   return Boolean(cta?.membershipHeading?.trim() && cta.membershipBody.trim());
+}
+
+export function hasPatternBuilderLandingKnitAble(
+  section: PatternBuilderLandingKnitAble | undefined,
+): section is PatternBuilderLandingKnitAble {
+  return Boolean(
+    section?.heading?.trim() &&
+      section.description.trim() &&
+      section.href.trim() &&
+      section.buttonLabel.trim() &&
+      section.image.src.trim() &&
+      section.logo.src.trim() &&
+      section.logo.href.trim(),
+  );
 }

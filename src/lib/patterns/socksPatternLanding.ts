@@ -8,6 +8,12 @@ import { SOCK_CONSTRUCTION_DIRECTION_LABELS } from "./sock/sockPatternFromDraft"
 import { buildSockBuilderNewPatternHref } from "./sock/sockFreshStart";
 import { BASIC_SOCK_PATTERN_NAME } from "./sock/sockDraft";
 import type { PatternBuilderLandingContent } from "./patternBuilderLanding";
+import {
+  KNIT_ABLES_LOGO,
+  KNIT_ABLES_PAGE_LOGO_ALT,
+  KNIT_ABLES_PATH,
+} from "../knit-ables/knitAblesLanding";
+import { TEENAGE_KICKS_IMAGES, TEENAGE_KICKS_SOCKS_PATH } from "../knit-ables/teenageKicksSocks";
 
 export const SOCKS_PATTERN_LANDING_PATH = "/patterns/socks";
 export const SOCKS_PATTERN_LANDING_CANONICAL_URL = "https://knititnow.com/patterns/socks";
@@ -31,14 +37,6 @@ export const SOCKS_PATTERN_BUILDER_LANDING: PatternBuilderLandingContent = {
     description:
       "Create a custom machine-knit sock pattern from your foot size, construction, and gauge. The Basic Socks Pattern Builder is included with Knit It Now membership.",
     canonicalUrl: SOCKS_PATTERN_LANDING_CANONICAL_URL,
-  },
-  why: {
-    heading: "Why use this builder?",
-    body: [
-      "A generic sock pattern is written for someone else's yarn, machine, gauge, and foot. Yours are probably different.",
-      "Recalculating sock shaping by hand is frustrating, and it is easy to miss a stitch or a row.",
-      "Choose your size, construction, and gauge. The Basic Socks Pattern Builder turns those choices into practical knitting instructions.",
-    ],
   },
   choices: {
     heading: "What you choose",
@@ -73,6 +71,28 @@ export const SOCKS_PATTERN_BUILDER_LANDING: PatternBuilderLandingContent = {
     body: [
       "This is not a pattern written for one particular knitting machine. Enter the gauge you achieved with your yarn and machine, and the builder calculates the pattern for you.",
     ],
+  },
+  knitAble: {
+    eyebrow: "Knit-able Inspiration",
+    heading: "See this pattern in action",
+    description:
+      "Start with your custom Basic Socks pattern, then add color and creativity with the Teenage Kicks Knit-able.",
+    href: TEENAGE_KICKS_SOCKS_PATH,
+    buttonLabel: "Explore Teenage Kicks",
+    image: {
+      src: TEENAGE_KICKS_IMAGES.hero.src,
+      alt: TEENAGE_KICKS_IMAGES.hero.alt,
+      width: TEENAGE_KICKS_IMAGES.hero.width,
+      height: TEENAGE_KICKS_IMAGES.hero.height,
+    },
+    logo: {
+      src: KNIT_ABLES_LOGO.src,
+      alt: KNIT_ABLES_PAGE_LOGO_ALT,
+      href: KNIT_ABLES_PATH,
+      width: KNIT_ABLES_LOGO.width,
+      height: KNIT_ABLES_LOGO.height,
+      label: KNIT_ABLES_PAGE_LOGO_ALT,
+    },
   },
   cta: {
     memberLabel: SOCKS_PATTERN_LANDING_MEMBER_CTA_LABEL,
