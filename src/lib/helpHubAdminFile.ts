@@ -6,6 +6,12 @@ import { getTipId } from "./helpHub/tipId";
 export { getTipId };
 
 export const HELP_HUB_JSON_PATH = join(process.cwd(), "src", "data", "help-hub.json");
+export const HELP_HUB_CATEGORIES_JSON_PATH = join(
+  process.cwd(),
+  "src",
+  "data",
+  "help-hub-categories.json",
+);
 export const LESSONS_JSON_PATH = join(process.cwd(), "src", "data", "lessons.json");
 
 export function readHelpHubFile(): Record<string, unknown>[] {

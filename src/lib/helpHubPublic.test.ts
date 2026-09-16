@@ -113,6 +113,18 @@ describe("searchPublicHelpHubTips", () => {
       [],
     );
   });
+
+  it("matches published tips by the LK150 catalog key or label", () => {
+    const lk150Tip: HelpHubTipRecord = {
+      slug: "lk150-cast-on",
+      status: "published",
+      title: "A clean plastic-bed cast on",
+      question: "How do I cast on without the edge collapsing?",
+      category: "lk150",
+    };
+    expect(searchPublicHelpHubTips([lk150Tip, draftTip], "LK150")).toEqual([lk150Tip]);
+    expect(searchPublicHelpHubTips([lk150Tip], "lk150")).toEqual([lk150Tip]);
+  });
 });
 
 describe("findPublicHelpHubTipsForVideo", () => {

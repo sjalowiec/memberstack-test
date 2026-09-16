@@ -15,6 +15,16 @@ describe("Help Hub public SSR", () => {
     expect(indexSource).not.toMatch(/from ["'].*help-hub\.json["']/);
   });
 
+  it("groups published entries into catalog categories and omits hardcoded filler cards", () => {
+    expect(indexSource).toContain("helpHubIndexCategorySections");
+    expect(indexSource).toContain("helpHubIndexNewCards");
+    expect(indexSource).toContain("loadPublicHelpHubCategories");
+    expect(indexSource).not.toContain("fixCategories");
+    expect(indexSource).not.toContain("Stuck Carriage Rescue");
+    expect(indexSource).not.toContain("The Gravity Check");
+    expect(indexSource).not.toContain("fix-bubble--inactive");
+  });
+
   it("404s unpublished slugs and uses the shared tip renderer", () => {
     expect(slugSource).toContain("export const prerender = false");
     expect(slugSource).toContain("publicOnly: true");
