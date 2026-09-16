@@ -41,7 +41,7 @@ import {
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "../lib/patterns/syncSidewaysCardiganBuilderToPatternStorage";
-import { SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import { SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import { validateSidewaysCardiganBuilder } from "../lib/patterns/sidewaysCardiganBuilderValidation";
 import { formatInchesWithUnit } from "../lib/patterns/sidewaysCardiganDisplayFormat";
 import {
@@ -647,7 +647,7 @@ function init(): void {
     }
     showBuilderError(null);
     persist(state);
-    window.location.assign(SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF);
+    window.location.assign(SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF);
   };
 
   wireExpressBuilderReviewSubmit({

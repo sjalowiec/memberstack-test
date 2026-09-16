@@ -49,6 +49,10 @@ const sidewaysPatternPage = readFileSync(
   resolve("src/pages/patterns/sideways-cardigan/pattern/index.astro"),
   "utf8",
 );
+const sidewaysSummaryPage = readFileSync(
+  resolve("src/pages/patterns/sideways-cardigan/summary/index.astro"),
+  "utf8",
+);
 
 function memberPayload(planId: string) {
   return {
@@ -279,6 +283,7 @@ describe("sweater member behavior remains unchanged", () => {
     expect(socksPatternPage).toContain("SleevelessPatternMemberGate");
     expect(sidewaysBuilderPage).toContain("SleevelessPatternMemberGate");
     expect(sidewaysPatternPage).toContain("SleevelessPatternMemberGate");
+    expect(sidewaysSummaryPage).toContain("SleevelessPatternMemberGate");
     expect(hatPatternPage).not.toContain("SleevelessPatternMemberGate");
     expect(hatPatternPage).not.toContain("PatternBuilderAccountGate");
     expect(hatPatternPage).not.toContain("initPatternMembershipPageGate");

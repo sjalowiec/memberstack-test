@@ -55,6 +55,7 @@ describe("protected pattern markup (no flash / fail closed)", () => {
     const sidewaysPages = [
       "src/pages/patterns/sideways-cardigan/builder.astro",
       "src/pages/patterns/sideways-cardigan/pattern/index.astro",
+      "src/pages/patterns/sideways-cardigan/summary/index.astro",
     ].map((rel) => readFileSync(resolve(root, rel), "utf8"));
     for (const src of sidewaysPages) {
       expect(src).toMatch(/SleevelessPatternMemberGate/);

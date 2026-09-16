@@ -17,6 +17,7 @@ export const PATTERN_CATALOG_HREF = "/patterns";
 export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 export const DROP_SHOULDER_OPEN_PATTERN_HREF = "/patterns/drop-shoulder/pattern/";
 export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF = "/patterns/sideways-cardigan/pattern/";
+export const SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF = "/patterns/sideways-cardigan/summary/";
 export const HAT_OPEN_PATTERN_HREF = "/patterns/hat/pattern/";
 export const HAT_SUMMARY_EDIT_HREF = "/patterns/hat/summary/";
 export const SOCK_OPEN_PATTERN_HREF = "/patterns/socks/pattern/";
@@ -37,7 +38,7 @@ export const DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
 export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
-  `${SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+  `${SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
 /** Saved hat Summary/Edit workspace (hat uses a dedicated summary page, not an overlay drawer). */
 export const HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
@@ -60,6 +61,10 @@ export const DROP_SHOULDER_PATTERN_WORKSPACE_GENERATED_HREF =
 
 export const SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF =
   `${SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
+
+/** First destination after the Sideways builder — Summary/Edit, not knitting instructions. */
+export const SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF =
+  `${SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
 
 /** Resume editing an express saved project — pattern workspace with Edit drawer auto-opened. */
 export const EXPRESS_CONTINUE_EDITING_HREF = OPEN_PATTERN_EDIT_WORKSPACE_HREF;
@@ -119,7 +124,10 @@ export function getContinueEditingHref(
     return sockEditHrefForProject(project);
   }
   if (project && isSidewaysCardiganCustomPatternProject(project)) {
-    return SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+    const id = project.id?.trim() ?? "";
+    return id
+      ? withSavedPatternProjectId(SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
+      : SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_CONTINUE_EDITING_HREF;
@@ -187,7 +195,10 @@ export function getSavedCustomPatternOpenHref(
     return sockEditHrefForProject(project);
   }
   if (project && isSidewaysCardiganCustomPatternProject(project)) {
-    return SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+    const id = project.id?.trim() ?? "";
+    return id
+      ? withSavedPatternProjectId(SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
+      : SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;

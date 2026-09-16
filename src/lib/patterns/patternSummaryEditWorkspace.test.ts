@@ -250,18 +250,25 @@ const sidewaysPattern = readFileSync(
   resolve("src/pages/patterns/sideways-cardigan/pattern/index.astro"),
   "utf8",
 );
+const sidewaysSummary = readFileSync(
+  resolve("src/pages/patterns/sideways-cardigan/summary/index.astro"),
+  "utf8",
+);
 
 describe("Sideways V-Neck Summary/Edit reuses the shared Lego block", () => {
   it("wraps Sideways measurements in PatternSummaryEditWorkspace without a custom editor", () => {
-    expect(sidewaysPattern).toContain("PatternSummaryEditWorkspace");
-    expect(sidewaysPattern).toContain("PatternSummaryMeasurementChip");
-    expect(sidewaysPattern).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
-    expect(sidewaysPattern).toContain('slot="quick"');
-    expect(sidewaysPattern).toContain('slot="diagram"');
-    expect(sidewaysPattern).toContain("data-sl-edit-apply");
-    expect(sidewaysPattern).toContain("Save Changes");
-    expect(sidewaysPattern).toContain("sl-edit-drawer--workspace");
-    expect(sidewaysPattern).not.toContain("buildHatPatternDiagramSvg");
-    expect(sidewaysPattern).not.toContain("sleevelessPatternEditDrawerPrototype.ts");
+    expect(sidewaysSummary).toContain("PatternSummaryEditWorkspace");
+    expect(sidewaysSummary).toContain("PatternSummaryMeasurementChip");
+    expect(sidewaysSummary).toContain("PatternSummaryDiagramStage");
+    expect(sidewaysSummary).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
+    expect(sidewaysSummary).toContain('slot="quick"');
+    expect(sidewaysSummary).toContain('slot="diagram"');
+    expect(sidewaysSummary).toContain("data-sideways-edit-update");
+    expect(sidewaysSummary).toContain("Update Pattern");
+    expect(sidewaysSummary).not.toContain("sl-edit-drawer--workspace");
+    expect(sidewaysSummary).not.toContain("buildHatPatternDiagramSvg");
+    expect(sidewaysSummary).not.toContain("sleevelessPatternEditDrawerPrototype.ts");
+    expect(sidewaysPattern).not.toContain("PatternSummaryEditWorkspace");
+    expect(sidewaysPattern).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF");
   });
 });

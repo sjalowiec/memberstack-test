@@ -332,19 +332,26 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain('value: "three-quarter"');
     expect(builder).toContain('value: "elbow"');
     expect(builder).toContain('value: "short"');
-    expect(workspace).toContain("PatternSummaryEditWorkspace");
-    expect(workspace).toContain("data-sl-edit-apply");
-    expect(workspace).toContain("Save Changes");
-    expect(workspace).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
-    expect(workspace).toContain("PatternSummaryMeasurementChip");
+    expect(workspace).not.toContain("PatternSummaryEditWorkspace");
+    expect(workspace).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF");
+    expect(workspace).toContain("data-sideways-edit-open");
+    expect(workspace).not.toContain("Save Changes");
+    expect(workspace).not.toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
+    expect(workspace).not.toContain("PatternSummaryMeasurementChip");
+    const summaryPage = readFileSync(
+      resolve("src/pages/patterns/sideways-cardigan/summary/index.astro"),
+      "utf8",
+    );
+    expect(summaryPage).toContain("PatternSummaryEditWorkspace");
+    expect(summaryPage).toContain("PatternSummaryMeasurementChip");
     expect(readFileSync(resolve("src/lib/patterns/sidewaysCardiganSummaryEdit.ts"), "utf8")).toContain(
-      "Finished garment length",
+      "Finished back length",
     );
     expect(readFileSync(resolve("src/lib/patterns/sidewaysCardiganSummaryEdit.ts"), "utf8")).toContain(
       "V-neck depth",
     );
     expect(readFileSync(resolve("src/lib/patterns/sidewaysCardiganSummaryEdit.ts"), "utf8")).toContain(
-      "Neck-opening width",
+      "Neck opening width",
     );
   });
 });
