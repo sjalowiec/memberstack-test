@@ -36,13 +36,14 @@ export const SIDEWAYS_SUMMARY_DERIVED_ROLES = {
   halfNeckOpening: "derived-half-neck-opening",
 } as const;
 
-const PAD = { top: 72, right: 168, bottom: 92, left: 118 };
+const PAD = { top: 56, right: 210, bottom: 118, left: 132 };
 const MIN_SECTION = 28;
 const MIN_V_CUT = 26;
-const MIN_ARMHOLE = 24;
+const MIN_ARMHOLE = 18;
 const MIN_BODY_W = 88;
 const MIN_SLEEVE_L = 48;
 const MIN_SLEEVE_W = 22;
+const CHIP_CLEAR = 46;
 
 export type SidewaysCardiganEditMeasurementInput = {
   finishedBustInches: number;
@@ -148,12 +149,13 @@ function buildFrame(
     contentH / Math.max(bust, 1),
   );
 
+  const isPullover = garmentStyle === "pullover";
   let bodyW = visual(length, pxPerInch, MIN_BODY_W);
   let vCut = visual(vDepth, pxPerInch, MIN_V_CUT);
   let armholeCut = visual(armhole, pxPerInch, MIN_ARMHOLE);
   const backNeckCut = visual(backNeck, pxPerInch, 16);
   vCut = Math.min(vCut, bodyW * 0.72);
-  armholeCut = Math.min(armholeCut, bodyW * 0.55);
+  armholeCut = Math.min(armholeCut, bodyW * (isPullover ? 0.55 : 0.2));
 
   let vH = visual(neck, pxPerInch, MIN_SECTION);
   let shoulderH = visual(shoulder, pxPerInch, MIN_SECTION);
@@ -167,7 +169,6 @@ function buildFrame(
   const hemX = PAD.left;
   const neckX = hemX + bodyW;
   const topY = PAD.top;
-  const isPullover = garmentStyle === "pullover";
   // Cardigan knits CF → front → armhole → back → armhole → front → CF.
   // Pullover starts at an underarm, knits the closed V in the front, then the
   // opposite armhole and back, and grafts at the original underarm.
@@ -253,14 +254,11 @@ function cardiganBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
     hemX,
     neckX,
     vCutX,
-    armholeX,
     backNeckX,
     topY,
     firstVEndY,
-    firstArmholeY,
     backNeckStartY,
     backNeckEndY,
-    secondArmholeY,
     secondVStartY,
     bottomY,
   } = frame;
@@ -268,16 +266,10 @@ function cardiganBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
     `M ${fmtNum(hemX)} ${fmtNum(topY)}`,
     `L ${fmtNum(vCutX)} ${fmtNum(topY)}`,
     `L ${fmtNum(neckX)} ${fmtNum(firstVEndY)}`,
-    `L ${fmtNum(neckX)} ${fmtNum(firstArmholeY)}`,
-    `L ${fmtNum(armholeX)} ${fmtNum(firstArmholeY)}`,
-    `L ${fmtNum(neckX)} ${fmtNum(firstArmholeY)}`,
     `L ${fmtNum(neckX)} ${fmtNum(backNeckStartY)}`,
     `L ${fmtNum(backNeckX)} ${fmtNum(backNeckStartY)}`,
     `L ${fmtNum(backNeckX)} ${fmtNum(backNeckEndY)}`,
     `L ${fmtNum(neckX)} ${fmtNum(backNeckEndY)}`,
-    `L ${fmtNum(neckX)} ${fmtNum(secondArmholeY)}`,
-    `L ${fmtNum(armholeX)} ${fmtNum(secondArmholeY)}`,
-    `L ${fmtNum(neckX)} ${fmtNum(secondArmholeY)}`,
     `L ${fmtNum(neckX)} ${fmtNum(secondVStartY)}`,
     `L ${fmtNum(vCutX)} ${fmtNum(bottomY)}`,
     `L ${fmtNum(hemX)} ${fmtNum(bottomY)}`,
@@ -332,13 +324,14 @@ function sleevePath(frame: SidewaysCardiganEditMeasurementFrame): string {
 }
 
 function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame): string {
-  const midX = (frame.hemX + frame.vCutX) / 2;
   return [
     `<line data-role="center-front-start" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.vCutX)}" y2="${fmtNum(frame.topY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2"/>`,
     `<line data-role="center-front-end" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.bottomY)}" x2="${fmtNum(frame.vCutX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2"/>`,
     `<line data-role="v-neck" data-side="first" x1="${fmtNum(frame.vCutX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.firstVEndY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.6"/>`,
     `<line data-role="v-neck" data-side="second" x1="${fmtNum(frame.neckX)}" y1="${fmtNum(frame.secondVStartY)}" x2="${fmtNum(frame.vCutX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.6"/>`,
-    `<text data-role="center-front-label" x="${fmtNum(midX)}" y="${fmtNum(frame.topY - 10)}" text-anchor="middle" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}">Center front</text>`,
+    `<line data-role="first-front" data-join="first-armhole" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.firstArmholeY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.firstArmholeY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.4"/>`,
+    `<line data-role="back-panel" data-join="second-armhole" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.secondArmholeY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.secondArmholeY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.4"/>`,
+    `<line data-role="second-front" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.secondArmholeY)}" x2="${fmtNum(frame.hemX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.4"/>`,
   ].join("");
 }
 
@@ -361,23 +354,22 @@ function drawArmholeAndBack(frame: SidewaysCardiganEditMeasurementFrame): string
     parts.push(
       `<line data-role="armhole-slit" data-side="second" x1="${fmtNum(frame.armholeX)}" y1="${fmtNum(frame.secondArmholeY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.secondArmholeY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.8"/>`,
     );
+  } else {
+    parts.push(
+      `<rect data-role="back-neck" x="${fmtNum(frame.backNeckX)}" y="${fmtNum(frame.backNeckStartY)}" width="${fmtNum(frame.neckX - frame.backNeckX)}" height="${fmtNum(frame.backNeckEndY - frame.backNeckStartY)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.2"/>`,
+    );
   }
-  parts.push(
-    `<rect data-role="back-neck" x="${fmtNum(frame.backNeckX)}" y="${fmtNum(frame.backNeckStartY)}" width="${fmtNum(frame.neckX - frame.backNeckX)}" height="${fmtNum(frame.backNeckEndY - frame.backNeckStartY)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.2"/>`,
-  );
   return parts.join("");
 }
 
-function drawDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
+function drawPulloverDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
   const { sleeve } = frame;
   const bustX = frame.hemX - 36;
   const lengthY = frame.bottomY + 28;
-  const vDepthY = frame.garmentStyle === "pullover"
-    ? (frame.firstVEndY + frame.secondVStartY) / 2
-    : frame.topY - 22;
+  const vDepthY = (frame.firstVEndY + frame.secondVStartY) / 2;
   const halfNeckY = (frame.topY + frame.firstVEndY) / 2;
   const shoulderMidY = (frame.firstVEndY + frame.firstArmholeY) / 2;
-  const armholeY = frame.garmentStyle === "pullover" ? frame.secondArmholeY : frame.firstArmholeY;
+  const armholeY = frame.secondArmholeY;
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
     hDim(frame.hemX, frame.neckX, lengthY, "dim-finished-back-length"),
@@ -395,22 +387,48 @@ function drawDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
   ].join("");
 }
 
-function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
+function drawCardiganDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
+  const bustX = Math.max(18, frame.hemX - 48);
+  const midBackY = (frame.firstArmholeY + frame.secondArmholeY) / 2;
+  const neckDimX = frame.neckX + 40;
+  const shoulderDimX = frame.neckX + 40;
+  const halfNeckMidY = (frame.secondVStartY + frame.bottomY) / 2;
+  const shoulderMidY = (frame.secondArmholeY + frame.secondVStartY) / 2;
+  const sleeveDimY = frame.secondArmholeY + CHIP_CLEAR + 8;
+  const wristX = frame.neckX + 118;
+  return [
+    vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
+    hDim(frame.hemX, frame.neckX, midBackY, "dim-finished-back-length"),
+    vDim(neckDimX, frame.backNeckStartY, frame.backNeckEndY, "dim-neck-opening"),
+    hDim(frame.vCutX, frame.neckX, frame.bottomY + 32, "dim-vneck-depth"),
+    hDim(frame.armholeX, frame.neckX, frame.secondArmholeY - 14, "dim-armhole-depth"),
+    vDim(shoulderDimX, frame.secondArmholeY, frame.secondVStartY, "dim-shoulder-section"),
+    vDim(neckDimX, frame.secondVStartY, frame.bottomY, "dim-half-neck-opening"),
+    hDim(frame.neckX + 64, wristX, sleeveDimY, "dim-sleeve-length"),
+    vDim(frame.neckX + 64, frame.secondArmholeY - 18, frame.secondArmholeY + 18, "dim-upper-arm"),
+    vDim(wristX, sleeveDimY - 16, sleeveDimY + 16, "dim-wrist"),
+    derivedLabel((frame.armholeX + frame.neckX) / 2, frame.secondArmholeY - 22, "Armhole depth", SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth),
+    derivedLabel(shoulderDimX + 52, shoulderMidY, "Shoulder", SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection),
+    derivedLabel(neckDimX + 52, halfNeckMidY, "½ neck opening", SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening),
+  ].join("");
+}
+
+function drawDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
+  return frame.garmentStyle === "pullover"
+    ? drawPulloverDimensions(frame)
+    : drawCardiganDimensions(frame);
+}
+
+function drawPulloverTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
   const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
   const { sleeve } = frame;
-  const armholeY = frame.garmentStyle === "pullover" ? frame.secondArmholeY : frame.firstArmholeY;
+  const armholeY = frame.secondArmholeY;
   return [
     `<g data-role="measurement-targets">`,
     targetCircle(t.finishedBust, frame.hemX - 36, (frame.topY + frame.bottomY) / 2),
     targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, frame.bottomY + 28),
     targetCircle(t.neckOpeningWidth, frame.neckX + 18, (frame.topY + frame.firstVEndY) / 2),
-    targetCircle(
-      t.vNeckDepth,
-      (frame.vCutX + frame.neckX) / 2,
-      frame.garmentStyle === "pullover"
-        ? frame.firstVEndY
-        : frame.topY - 22,
-    ),
+    targetCircle(t.vNeckDepth, (frame.vCutX + frame.neckX) / 2, frame.firstVEndY),
     targetCircle(t.upperArm, sleeve.attachX + 14, sleeve.attachY),
     targetCircle(t.sleeveLength, (sleeve.attachX + sleeve.farX) / 2, sleeve.attachY + sleeve.upperHalf + 22),
     targetCircle(t.wrist, sleeve.farX + 16, sleeve.attachY),
@@ -418,12 +436,45 @@ function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
   ].join("");
 }
 
+function drawCardiganTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
+  const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
+  const bustX = Math.max(18, frame.hemX - 48);
+  const midBackY = (frame.firstArmholeY + frame.secondArmholeY) / 2;
+  const sleeveDimY = frame.secondArmholeY + CHIP_CLEAR + 8;
+  const wristX = frame.neckX + 118;
+  return [
+    `<g data-role="measurement-targets">`,
+    targetCircle(t.finishedBust, bustX, (frame.topY + frame.bottomY) / 2),
+    targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, midBackY),
+    targetCircle(t.neckOpeningWidth, frame.neckX + 40, (frame.backNeckStartY + frame.backNeckEndY) / 2),
+    targetCircle(t.vNeckDepth, (frame.vCutX + frame.neckX) / 2, frame.bottomY + 32),
+    targetCircle(t.upperArm, frame.neckX + 64, frame.secondArmholeY),
+    targetCircle(t.sleeveLength, (frame.neckX + 64 + wristX) / 2, sleeveDimY),
+    targetCircle(t.wrist, wristX, sleeveDimY),
+    `</g>`,
+  ].join("");
+}
+
+function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
+  return frame.garmentStyle === "pullover"
+    ? drawPulloverTargets(frame)
+    : drawCardiganTargets(frame);
+}
+
 function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): { width: number; height: number } {
-  const maxX = frame.sleeve.farX + 40;
-  const maxY = frame.bottomY + 48;
+  if (frame.garmentStyle === "pullover") {
+    const maxX = frame.sleeve.farX + 40;
+    const maxY = frame.bottomY + 48;
+    return {
+      width: Math.ceil(maxX + PAD.right * 0.35),
+      height: Math.ceil(maxY + PAD.bottom * 0.35),
+    };
+  }
+  const maxX = frame.neckX + 170;
+  const maxY = frame.bottomY + 86;
   return {
-    width: Math.ceil(maxX + PAD.right * 0.35),
-    height: Math.ceil(maxY + PAD.bottom * 0.35),
+    width: Math.ceil(Math.max(maxX, PAD.left + frame.bodyW + PAD.right)),
+    height: Math.ceil(maxY),
   };
 }
 
@@ -446,10 +497,14 @@ export function buildSidewaysCardiganEditMeasurementDiagramSvg(
     garmentStyle === "pullover"
       ? "Sideways pullover measurement diagram starting at the underarm"
       : "Sideways cardigan measurement diagram starting at center front";
+  const sleeve =
+    garmentStyle === "pullover"
+      ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
+      : "";
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-start="${start}" data-display-unit="${unit}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}">`,
     `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
-    `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    sleeve,
     drawArmholeAndBack(frame),
     garmentStyle === "pullover" ? drawPulloverMarkers(frame) : drawCardiganMarkers(frame),
     drawDimensions(frame),
