@@ -181,6 +181,12 @@ export function prepareHelpHubTipPage(
       "",
     catalogVimeoEmbedUrl:
       catalogVimeoNumericId != null ? `https://player.vimeo.com/video/${catalogVimeoNumericId}` : "",
+    hasHeroMedia: Boolean(
+      catalogVimeoNumericId != null ||
+        (typeof tip.mediaUrl === "string" &&
+          tip.mediaUrl.trim() !== "" &&
+          (tip.mediaType === "image" || tip.mediaType === "vimeo" || tip.mediaType === "video")),
+    ),
     layoutTitle,
     pageDescription,
     aboutHeading:

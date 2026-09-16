@@ -196,7 +196,7 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
                       rows="2">{valueFor("tryThis", "")}</textarea>
                   </div>
                   <div class="help-hub-edit__field">
-                    <label for="help-hub-try-steps" class="help-hub-edit__label">Try This steps</label>
+                    <label for="help-hub-try-steps" class="help-hub-edit__label">TRY THIS STEPS</label>
                     <textarea
                       id="help-hub-try-steps"
                       class="help-hub-edit__textarea"
@@ -290,7 +290,8 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
                       <ul
                         class="related-lessons-picker__options"
                         id="member-resources-options"
-                        aria-label="Existing Knit It Now lessons"
+                        aria-label="Matching Knit It Now lessons"
+                        hidden
                       ></ul>
                       <p class="help-hub-edit__hint">
                         Search the Learning Library and member lessons by number, title, or URL name.
@@ -390,9 +391,6 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
                   </button>
                 )}
                 <a href="/admin/help-hub" class="kbm-btn kbm-btn-outline">Cancel</a>
-                <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-outline" hidden>
-                  Sign in
-                </button>
                 <span id="saveHelpHubStatus" class="help-hub-edit__save-status" aria-live="polite"></span>
               </div>
             </div>
@@ -627,6 +625,10 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
       border-radius: 8px;
       padding: 0.35rem;
       background: #fff;
+    }
+
+    .related-lessons-picker__options[hidden] {
+      display: none;
     }
 
     .related-lessons-picker__option,

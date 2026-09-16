@@ -28,7 +28,7 @@ describe("Help Hub admin CMS", () => {
     expect(formClientSource).toContain("admin.saveSucceeded");
     expect(formClientSource).toContain("admin.openPreview");
     expect(formClientSource).toContain("admin.promptSignIn");
-    expect(editSource).toContain('id="helpHubAdminSignIn"');
+    expect(editSource).not.toContain('id="helpHubAdminSignIn"');
     expect(editSource).not.toContain("src/data/help-hub.json");
     expect(editSource).not.toContain("Copy Cursor Save Prompt");
   });
@@ -72,7 +72,17 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).not.toContain("requireAdminForRequest");
     expect(editSource).not.toContain("Sign in with your Knit it Now account to continue.");
     expect(listSource).not.toContain("Sign in with your Knit it Now account to continue.");
-    expect(editSource).not.toContain('id="helpHubAdminSignIn" class="kbm-btn kbm-btn-primary"');
+    expect(editSource).not.toContain('id="helpHubAdminSignIn"');
+  });
+
+  it("uses a lesson search box instead of dumping the catalog, and labels Try This steps", () => {
+    expect(editSource).toContain("member-resources-search");
+    expect(editSource).toContain("member-resources-options");
+    expect(editSource).toContain("hidden");
+    expect(formClientSource).toContain("memberResourcePickerResults");
+    expect(formClientSource).toContain("memberResourceOptionLabel");
+    expect(editSource).toContain("TRY THIS STEPS");
+    expect(editSource).toContain("One step per line.");
   });
 
   it("keeps Help Hub admin pages behind the same /admin Basic Auth used by the dashboard", () => {
@@ -99,5 +109,6 @@ describe("Help Hub admin CMS", () => {
     expect(formClientSource).toContain("admin.request");
     expect(formClientSource).toContain("admin.openPreview");
     expect(formClientSource).toContain("admin.promptSignIn");
+    expect(formClientSource).not.toContain('getElementById("helpHubAdminSignIn")');
   });
 });

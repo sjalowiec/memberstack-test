@@ -4,6 +4,8 @@ import {
   combinedMemberResourcePickerItems,
   filterMemberResourcePickerItems,
   libraryVideosForPicker,
+  memberResourceOptionLabel,
+  memberResourcePickerResults,
   normalizeRelatedLibraryVideos,
   resolveRelatedLibraryVideoCards,
   selectedResourceConfirmation,
@@ -114,5 +116,32 @@ describe("combined picker", () => {
     const lesson = items.find((item) => item.id === 5002);
     expect(library?.source).toBe("library");
     expect(lesson?.source).toBe("lesson");
+  });
+});
+
+describe("memberResourcePickerResults", () => {
+  const library = libraryVideosForPicker(videosPublic);
+
+  it("does not list the catalog until the author types at least 2 characters", () => {
+    expect(memberResourcePickerResults(library, "")).toEqual([]);
+    expect(memberResourcePickerResults(library, "1")).toEqual([]);
+    expect(memberResourcePickerResults(library, "10").length).toBeGreaterThan(0);
+  });
+
+  it("limits visible matches to 8", () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({
+      source: "library" as const,
+      id: 2000 + i,
+      title: `Sample lesson ${i}`,
+      slug: `sample-lesson-${i}`,
+    }));
+    expect(memberResourcePickerResults(many, "sample")).toHaveLength(8);
+  });
+
+  it("shows 1027 as 1027 — Every other Needle Knitting", () => {
+    const matches = memberResourcePickerResults(library, "1027");
+    const item = matches.find((row) => row.id === 1027);
+    expect(item).toBeDefined();
+    expect(memberResourceOptionLabel(item!)).toBe("1027 — Every other Needle Knitting");
   });
 });

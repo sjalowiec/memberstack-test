@@ -43,6 +43,7 @@ const {
   mediaPoster,
   mediaAlt,
   catalogVimeoEmbedUrl,
+  hasHeroMedia,
   layoutTitle,
   pageDescription,
   aboutHeading,
@@ -90,7 +91,7 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
         </div>
       )}
 
-      <div class="tuesday-tip-hero__columns">
+      <div class:list={["tuesday-tip-hero__columns", !hasHeroMedia && "tuesday-tip-hero__columns--no-media"]}>
         <div class="tuesday-tip-hero__content">
           <div class="tuesday-tip-bubbles">
             {(tip.question || tip.title) && (
@@ -125,6 +126,7 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
           </div>
         </div>
 
+        {hasHeroMedia && (
         <div class="tuesday-tip-hero__media" aria-label="Free visual">
         <div class="tuesday-tip-video-shell" data-placeholder="hero media">
           <div class="tuesday-tip-video-aspect">
@@ -168,17 +170,11 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
                 <source src={mediaUrl} />
                 {mediaAlt ? <p>{mediaAlt}</p> : null}
               </video>
-            ) : (
-              <div class="tuesday-tip-video-fallback">
-                <p class="tuesday-tip-video-fallback__text">
-                  Media will appear here when a published media URL is set in the Help Hub
-                  record.
-                </p>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
         </div>
+        )}
       </div>
     </div>
 
@@ -394,6 +390,10 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
       grid-template-columns: minmax(320px, 1fr) minmax(420px, 1fr);
       gap: clamp(1.2rem, 2.5vw, 2rem);
       align-items: start;
+    }
+
+    .tuesday-tip-hero__columns--no-media {
+      grid-template-columns: 1fr;
     }
   }
 

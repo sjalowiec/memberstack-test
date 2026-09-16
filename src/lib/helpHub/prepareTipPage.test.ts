@@ -95,6 +95,34 @@ describe("prepareHelpHubTipPage member resources", () => {
     );
     expect(view.whyBody).toBe("Most knitters are taught to measure 4 inches.");
   });
+
+  it("does not flag hero media when none is stored", () => {
+    const view = prepareHelpHubTipPage(
+      {
+        slug: "every-other-needle-swatch",
+        question: "How do I swatch over every other needle?",
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(view.hasHeroMedia).toBe(false);
+    expect(view.catalogVimeoEmbedUrl).toBe("");
+    expect(view.mediaUrl).toBe("");
+  });
+
+  it("keeps existing public hero media", () => {
+    const view = prepareHelpHubTipPage(
+      {
+        slug: "cut-and-sew-shaping",
+        mediaType: "image",
+        mediaUrl: "/images/help-hub/cut-n-sew.jpg",
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(view.hasHeroMedia).toBe(true);
+    expect(view.mediaUrl).toBe("/images/help-hub/cut-n-sew.jpg");
+  });
 });
 
 describe("Help Hub membership CTA for library resources", () => {

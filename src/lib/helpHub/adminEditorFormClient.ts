@@ -11,7 +11,8 @@ import {
 } from "./adminForm";
 import {
   describeSelectedMemberResources,
-  filterMemberResourcePickerItems,
+  memberResourceOptionLabel,
+  memberResourcePickerResults,
   memberResourceSourceLabel,
   selectedResourceConfirmation,
   serializeMemberResources,
@@ -119,8 +120,6 @@ function setSaveStatus(message: string, kind: "ok" | "err" | "signin" | null): v
     el.classList.toggle("is-error", kind === "err" || kind === "signin");
     el.classList.toggle("is-ok", kind === "ok");
   });
-  const signInBtn = document.getElementById("helpHubAdminSignIn");
-  if (signInBtn) signInBtn.hidden = kind !== "signin";
 }
 
 function updateSaveButtonLabel(form: HTMLFormElement): void {
@@ -182,10 +181,10 @@ function renderResourceOptions(
     if (selectedKeys.has(key)) li.classList.add("is-selected");
     const title = document.createElement("span");
     title.className = "related-lessons-picker__title";
-    title.textContent = item.title;
+    title.textContent = memberResourceOptionLabel(item);
     const meta = document.createElement("span");
     meta.className = "related-lessons-picker__id";
-    meta.textContent = `${memberResourceSourceLabel(item.source)} ${item.id}`;
+    meta.textContent = memberResourceSourceLabel(item.source);
     li.appendChild(title);
     li.appendChild(meta);
     li.addEventListener("click", () => onToggle(item));
@@ -284,7 +283,8 @@ export function initHelpHubAdminEditor(): boolean {
       renderPicker();
     });
     const q = search?.value ?? "";
-    const filtered = filterMemberResourcePickerItems(combinedItems, q);
+    const filtered = memberResourcePickerResults(combinedItems, q);
+    optionsEl.hidden = filtered.length === 0;
     const selectedKeys = new Set<string>([
       ...selection.libraryContentIds.map((id) => resourceKey("library", id)),
       ...selection.lessonIds.map((id) => resourceKey("lesson", id)),
@@ -292,20 +292,19 @@ export function initHelpHubAdminEditor(): boolean {
     renderResourceOptions(optionsEl, filtered, selectedKeys, (item) => {
       const key = resourceKey(item.source, item.id);
       if (item.source === "library") {
+        if (!selectedKeys.has(key)) {
+          selection = {
+            ...selection,
+            libraryContentIds: [...selection.libraryContentIds, item.id],
+          };
+        }
+      } else if (!selectedKeys.has(key)) {
         selection = {
           ...selection,
-          libraryContentIds: selectedKeys.has(key)
-            ? selection.libraryContentIds.filter((id) => id !== item.id)
-            : [...selection.libraryContentIds, item.id],
-        };
-      } else {
-        selection = {
-          ...selection,
-          lessonIds: selectedKeys.has(key)
-            ? selection.lessonIds.filter((id) => id !== item.id)
-            : [...selection.lessonIds, item.id],
+          lessonIds: [...selection.lessonIds, item.id],
         };
       }
+      if (search) search.value = "";
       writeHidden();
       renderPicker();
     });
@@ -551,9 +550,6 @@ export function initHelpHubAdminEditor(): boolean {
 export function bootHelpHubAdminEditor(): void {
   const run = () => {
     installHelpHubAdminBrowser();
-    document.getElementById("helpHubAdminSignIn")?.addEventListener("click", () => {
-      window.kbmHelpHubAdmin?.promptSignIn?.();
-    });
     initHelpHubAdminEditor();
   };
   if (document.readyState === "loading") {
