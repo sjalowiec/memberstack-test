@@ -1,4 +1,5 @@
 import type { HelpHubAdminBrowser } from "./adminEditorClient";
+import { helpHubCategoryAdminErrorMessage } from "./categoryApiErrors";
 import { isHelpHubCategoryRetired, type HelpHubManagedCategory } from "./categoryTypes";
 
 export type HelpHubCategoryAdminRow = HelpHubManagedCategory & { usageCount: number };
@@ -66,9 +67,11 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
             <button type="button" class="kbm-btn kbm-btn-outline" data-cat-down ${retired ? "disabled" : ""}>Down</button>
             <button type="button" class="kbm-btn kbm-btn-outline" data-cat-save ${retired ? "disabled" : ""}>Save name</button>
             ${
-              retired || category.usageCount === 0
-                ? `<button type="button" class="kbm-btn kbm-btn-outline" data-cat-delete>Delete</button>`
-                : `<button type="button" class="kbm-btn kbm-btn-outline" data-cat-retire>Retire</button>`
+              retired
+                ? `<button type="button" class="kbm-btn kbm-btn-outline" data-cat-restore>Restore</button>`
+                : category.usageCount === 0
+                  ? `<button type="button" class="kbm-btn kbm-btn-outline" data-cat-delete>Delete</button>`
+                  : `<button type="button" class="kbm-btn kbm-btn-outline" data-cat-retire>Retire</button>`
             }
           </div>
         </li>`;
@@ -84,7 +87,7 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
     }
     const result = await requestCategories(api, "/api/admin/help-hub/categories", "GET");
     if (!api.saveSucceeded(result) || !result.data || typeof result.data !== "object") {
-      setStatus(statusEl, result.error || "Could not load categories.", "err");
+      setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
       return;
     }
     const rows = (result.data as { categories?: HelpHubCategoryAdminRow[] }).categories;
@@ -111,7 +114,7 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
     const label = input instanceof HTMLInputElement ? input.value.trim() : "";
     const result = await requestCategories(api, "/api/admin/help-hub/categories", "POST", { label });
     if (!api.saveSucceeded(result)) {
-      setStatus(statusEl, result.error || "Could not add category.", "err");
+      setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
       return;
     }
     if (input instanceof HTMLInputElement) input.value = "";
@@ -134,7 +137,7 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
       const label = input instanceof HTMLInputElement ? input.value.trim() : "";
       const result = await requestCategories(api, `/api/admin/help-hub/categories/${id}`, "PUT", { label });
       if (!api.saveSucceeded(result)) {
-        setStatus(statusEl, result.error || "Could not rename category.", "err");
+        setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
         return;
       }
       await refresh();
@@ -155,7 +158,7 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
       next[swapWith] = currentId;
       const result = await requestCategories(api, "/api/admin/help-hub/categories/reorder", "PUT", { ids: next });
       if (!api.saveSucceeded(result)) {
-        setStatus(statusEl, result.error || "Could not reorder categories.", "err");
+        setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
         return;
       }
       await refresh();
@@ -167,14 +170,25 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
         setStatus(statusEl, "This category still has entries. Retire it and reassign them first.", "err");
         return;
       }
-      if (!window.confirm(`Delete “${category.label}”? This cannot be undone.`)) return;
+      if (!window.confirm(`Remove “${category.label}” from the category list? Existing Help Hub entries will not change. You can restore this category later.`)) return;
       const result = await requestCategories(api, `/api/admin/help-hub/categories/${id}`, "DELETE");
       if (!api.saveSucceeded(result)) {
-        setStatus(statusEl, result.error || "Could not delete category.", "err");
+        setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
         return;
       }
       await refresh();
-      setStatus(statusEl, "Category deleted.", "ok");
+      setStatus(statusEl, "Category removed from the list. You can restore it later.", "ok");
+      return;
+    }
+
+    if (button.hasAttribute("data-cat-restore")) {
+      const result = await requestCategories(api, `/api/admin/help-hub/categories/${id}/restore`, "POST");
+      if (!api.saveSucceeded(result)) {
+        setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
+        return;
+      }
+      await refresh();
+      setStatus(statusEl, "Category restored.", "ok");
       return;
     }
 
@@ -216,7 +230,7 @@ export function bootHelpHubCategoryAdmin(root: ParentNode = document): void {
       { replacementKey, confirm: true },
     );
     if (!api.saveSucceeded(result)) {
-      setStatus(statusEl, result.error || "Could not retire category.", "err");
+      setStatus(statusEl, helpHubCategoryAdminErrorMessage(result.error), "err");
       return;
     }
     retiring = null;

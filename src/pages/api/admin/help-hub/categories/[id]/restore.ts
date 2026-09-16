@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { requireAdminForRequest, adminAuthErrorBody } from "../../../../../../lib/admin/requireAdminRequest";
 import { helpHubCategoryErrorResponse } from "../../../../../../lib/helpHub/categoryApiErrors";
-import { retireManagedHelpHubCategory } from "../../../../../../lib/helpHub/loadCategories";
+import { restoreManagedHelpHubCategory } from "../../../../../../lib/helpHub/loadCategories";
 
 export const prerender = false;
 
@@ -25,29 +25,9 @@ export const POST: APIRoute = async ({ params, request, cookies }) => {
   }
   const id = parseUrlId(params.id);
   if (id === null) return jsonResponse({ ok: false, error: "Invalid category id in URL." }, 400);
-  if (!request.headers.get("content-type")?.includes("application/json")) {
-    return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
-  }
-  let body: Record<string, unknown>;
   try {
-    body = (await request.json()) as Record<string, unknown>;
-  } catch {
-    return jsonResponse({ ok: false, error: "Invalid JSON body" }, 400);
-  }
-  try {
-    const result = await retireManagedHelpHubCategory(
-      id,
-      {
-        replacementKey: typeof body.replacementKey === "string" ? body.replacementKey : undefined,
-        confirm: body.confirm === true,
-      },
-      auth.member,
-    );
-    return jsonResponse({
-      ok: true,
-      categories: result.categories,
-      reassigned: result.reassigned,
-    });
+    const categories = await restoreManagedHelpHubCategory(id, auth.member);
+    return jsonResponse({ ok: true, categories });
   } catch (error) {
     return helpHubCategoryErrorResponse(error);
   }

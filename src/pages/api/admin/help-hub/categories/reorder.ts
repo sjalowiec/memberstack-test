@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { requireAdminForRequest, adminAuthErrorBody } from "../../../../../lib/admin/requireAdminRequest";
-import { HelpHubCategoryError } from "../../../../../lib/helpHub/categoryManage";
+import { helpHubCategoryErrorResponse } from "../../../../../lib/helpHub/categoryApiErrors";
 import { reorderManagedHelpHubCategories } from "../../../../../lib/helpHub/loadCategories";
 
 export const prerender = false;
@@ -33,10 +33,6 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
     const categories = await reorderManagedHelpHubCategories(ids, auth.member);
     return jsonResponse({ ok: true, categories });
   } catch (error) {
-    if (error instanceof HelpHubCategoryError) {
-      return jsonResponse({ ok: false, error: error.message, code: error.code }, 400);
-    }
-    const message = error instanceof Error ? error.message : "Could not reorder categories.";
-    return jsonResponse({ ok: false, error: message }, 500);
+    return helpHubCategoryErrorResponse(error);
   }
 };

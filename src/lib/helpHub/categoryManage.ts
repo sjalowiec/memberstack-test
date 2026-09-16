@@ -15,7 +15,7 @@ import {
 
 export { HelpHubCategoryError };
 
-function nextCategoryId(categories: HelpHubManagedCategory[]): number {
+export function nextHelpHubCategoryId(categories: { id: number }[]): number {
   const max = categories.reduce((m, category) => Math.max(m, category.id), 9);
   return max + 1;
 }
@@ -68,7 +68,7 @@ export function createHelpHubCategory(
     throw new HelpHubCategoryError("KEY_TAKEN", `Category key "${key}" is already in use.`);
   }
   const created: HelpHubManagedCategory = {
-    id: nextCategoryId(categories),
+    id: nextHelpHubCategoryId(categories),
     key,
     label,
     sortOrder: nextCategorySortOrder(categories),
@@ -142,7 +142,21 @@ export function deleteHelpHubCategory(
   }
   const usage = helpHubCategoryUsageCounts(tips)[found.key] ?? 0;
   assertHelpHubCategoryCanDelete(found, usage);
-  return categories.filter((category) => category.id !== id);
+  return retireHelpHubCategory(categories, tips, { id }).categories;
+}
+
+export function restoreHelpHubCategory(
+  categories: HelpHubManagedCategory[],
+  id: number,
+): HelpHubManagedCategory[] {
+  const found = categories.find((category) => category.id === id);
+  if (!found) {
+    throw new HelpHubCategoryError("NOT_FOUND", `No category with id ${id}.`);
+  }
+  if (!isHelpHubCategoryRetired(found)) return categories;
+  return categories.map((category) =>
+    category.id === id ? { ...category, retiredAt: null } : category,
+  );
 }
 
 export function reassignHelpHubTipCategories<T extends { category?: unknown }>(
@@ -228,7 +242,7 @@ export function mergeSeededHelpHubCategories(
   for (const seeded of seed) {
     if (byKey.has(seeded.key)) continue;
     let id = seeded.id;
-    if (usedIds.has(id)) id = nextCategoryId(next);
+    if (usedIds.has(id)) id = nextHelpHubCategoryId(next);
     const row = { ...seeded, id };
     next.push(row);
     usedIds.add(id);

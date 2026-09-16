@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { requireAdminForRequest, adminAuthErrorBody } from "../../../../../lib/admin/requireAdminRequest";
-import { HelpHubCategoryError } from "../../../../../lib/helpHub/categoryManage";
+import { helpHubCategoryErrorResponse } from "../../../../../lib/helpHub/categoryApiErrors";
 import {
   createManagedHelpHubCategory,
   loadHelpHubCategoriesForAdmin,
@@ -15,15 +15,6 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
-function errorResponse(error: unknown) {
-  if (error instanceof HelpHubCategoryError) {
-    const status = error.code === "NOT_FOUND" ? 404 : 400;
-    return jsonResponse({ ok: false, error: error.message, code: error.code }, status);
-  }
-  const message = error instanceof Error ? error.message : "Could not update Help Hub categories.";
-  return jsonResponse({ ok: false, error: message }, 500);
-}
-
 export const GET: APIRoute = async ({ request, cookies }) => {
   const auth = await requireAdminForRequest(request, cookies);
   if (!auth.ok) {
@@ -33,7 +24,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     const categories = await loadHelpHubCategoriesForAdmin();
     return jsonResponse({ ok: true, categories });
   } catch (error) {
-    return errorResponse(error);
+    return helpHubCategoryErrorResponse(error);
   }
 };
 
@@ -57,6 +48,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const result = await createManagedHelpHubCategory(label, auth.member);
     return jsonResponse({ ok: true, categories: result.categories, category: result.created });
   } catch (error) {
-    return errorResponse(error);
+    return helpHubCategoryErrorResponse(error);
   }
 };

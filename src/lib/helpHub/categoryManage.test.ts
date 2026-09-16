@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { helpHubJsonSeedCategories } from "./categories";
+import { helpHubCategoryChoices, helpHubJsonSeedCategories } from "./categories";
 import {
   createHelpHubCategory,
   deleteHelpHubCategory,
   helpHubCategoryKeyFromLabel,
   mergeSeededHelpHubCategories,
+  nextHelpHubCategoryId,
   renameHelpHubCategory,
   reorderHelpHubCategories,
+  restoreHelpHubCategory,
   retireHelpHubCategory,
 } from "./categoryManage";
 import {
@@ -27,9 +29,11 @@ describe("Help Hub category key generation", () => {
 });
 
 describe("Help Hub managed categories", () => {
-  it("creates a category with a new id and generated key", () => {
+  it("creates a category with a new id above the seeded maximum", () => {
     const { categories, created } = createHelpHubCategory(seed, { label: "Ribber Basics" });
     expect(created.key).toBe("ribber-basics");
+    expect(created.id).toBe(nextHelpHubCategoryId(seed));
+    expect(created.id).toBeGreaterThan(Math.max(...seed.map((row) => row.id)));
     expect(created.id).toBeGreaterThan(9);
     expect(created.retiredAt).toBeNull();
     expect(categories.find((row) => row.id === 1)?.key).toBe("machine-not-working");
@@ -68,10 +72,45 @@ describe("Help Hub managed categories", () => {
     }
   });
 
-  it("deletes an unused category", () => {
+  it("retires an unused category instead of removing the row", () => {
     const unused = seed.find((row) => row.key === "shaping-fit-problems")!;
     const next = deleteHelpHubCategory(seed, [{ category: "machines" }], unused.id);
-    expect(next.some((row) => row.key === "shaping-fit-problems")).toBe(false);
+    const retired = next.find((row) => row.key === "shaping-fit-problems");
+    expect(retired?.id).toBe(unused.id);
+    expect(retired?.retiredAt).toBeTruthy();
+    expect(helpHubCategoryChoices(next).some((row) => row.key === "shaping-fit-problems")).toBe(
+      false,
+    );
+  });
+
+  it("does not recreate a retired seeded category on merge", () => {
+    const unused = seed.find((row) => row.key === "shaping-fit-problems")!;
+    const retired = deleteHelpHubCategory(seed, [], unused.id);
+    const merged = mergeSeededHelpHubCategories(retired, seed);
+    expect(merged.filter((row) => row.key === "shaping-fit-problems")).toHaveLength(1);
+    expect(merged.find((row) => row.key === "shaping-fit-problems")?.retiredAt).toBeTruthy();
+    expect(merged.find((row) => row.key === "shaping-fit-problems")?.id).toBe(unused.id);
+  });
+
+  it("restores a retired category without changing its id or key", () => {
+    const unused = seed.find((row) => row.key === "shaping-fit-problems")!;
+    const retired = deleteHelpHubCategory(seed, [], unused.id);
+    const restored = restoreHelpHubCategory(retired, unused.id);
+    const row = restored.find((item) => item.id === unused.id);
+    expect(row?.key).toBe("shaping-fit-problems");
+    expect(row?.retiredAt).toBeNull();
+    expect(helpHubCategoryChoices(restored).some((item) => item.key === "shaping-fit-problems")).toBe(
+      true,
+    );
+  });
+
+  it("keeps unique ids above the current maximum after retiring a seeded category", () => {
+    const unused = seed.find((row) => row.key === "shaping-fit-problems")!;
+    const retired = deleteHelpHubCategory(seed, [], unused.id);
+    const { created } = createHelpHubCategory(retired, { label: "Ribber" });
+    expect(created.id).toBe(Math.max(...retired.map((row) => row.id)) + 1);
+    expect(created.id).not.toBe(unused.id);
+    expect(retired.some((row) => row.id === unused.id)).toBe(true);
   });
 
   it("reassigns entries while retiring a category and does not orphan them", () => {
@@ -106,6 +145,9 @@ describe("Help Hub managed categories", () => {
     expect(result.tips.some((tip) => tip.category === HELP_HUB_RETIRED_LOOK_RIGHT_KEY)).toBe(false);
     expect(result.retired.retiredAt).toBeTruthy();
     expect(result.retired.key).toBe(HELP_HUB_RETIRED_LOOK_RIGHT_KEY);
+    expect(result.tips.every((tip) => typeof tip.category === "string" && tip.category.trim() !== "")).toBe(
+      true,
+    );
   });
 
   it("keeps JSON seed keys and IDs when merging into an existing catalog", () => {

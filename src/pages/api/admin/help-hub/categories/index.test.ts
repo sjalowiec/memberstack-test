@@ -7,6 +7,7 @@ const renameManagedHelpHubCategory = vi.hoisted(() => vi.fn());
 const deleteManagedHelpHubCategory = vi.hoisted(() => vi.fn());
 const reorderManagedHelpHubCategories = vi.hoisted(() => vi.fn());
 const retireManagedHelpHubCategory = vi.hoisted(() => vi.fn());
+const restoreManagedHelpHubCategory = vi.hoisted(() => vi.fn());
 
 vi.mock("../../../../../lib/admin/requireAdminRequest", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../../../../lib/admin/requireAdminRequest")>();
@@ -20,12 +21,14 @@ vi.mock("../../../../../lib/helpHub/loadCategories", () => ({
   deleteManagedHelpHubCategory,
   reorderManagedHelpHubCategories,
   retireManagedHelpHubCategory,
+  restoreManagedHelpHubCategory,
 }));
 
 import { GET, POST } from "./index";
 import { DELETE, PUT } from "./[id]";
 import { PUT as reorder } from "./reorder";
 import { POST as retire } from "./[id]/retire";
+import { POST as restore } from "./[id]/restore";
 
 const cookies = { get: () => undefined };
 
@@ -46,6 +49,7 @@ describe("Help Hub category admin API auth", () => {
     deleteManagedHelpHubCategory.mockReset();
     reorderManagedHelpHubCategories.mockReset();
     retireManagedHelpHubCategory.mockReset();
+    restoreManagedHelpHubCategory.mockReset();
   });
 
   it("rejects unauthorized category GET and does not return catalog data", async () => {
@@ -90,12 +94,19 @@ describe("Help Hub category admin API auth", () => {
       }),
       cookies,
     } as never);
+    const restoreRes = await restore({
+      params: { id: "2" },
+      request: jsonRequest("https://knititnow.com/api/admin/help-hub/categories/2/restore", "POST"),
+      cookies,
+    } as never);
     expect(post.status).toBe(403);
     expect(del.status).toBe(403);
     expect(retireRes.status).toBe(403);
+    expect(restoreRes.status).toBe(403);
     expect(createManagedHelpHubCategory).not.toHaveBeenCalled();
     expect(deleteManagedHelpHubCategory).not.toHaveBeenCalled();
     expect(retireManagedHelpHubCategory).not.toHaveBeenCalled();
+    expect(restoreManagedHelpHubCategory).not.toHaveBeenCalled();
   });
 
   it("creates a category for an admin", async () => {
@@ -147,5 +158,50 @@ describe("Help Hub category admin API auth", () => {
     expect(reordered.status).toBe(200);
     expect(renameManagedHelpHubCategory).toHaveBeenCalledWith(8, "Swatches", expect.any(Object));
     expect(reorderManagedHelpHubCategories).toHaveBeenCalledWith([1, 8, 7], expect.any(Object));
+  });
+
+  it("does not return raw database errors when creating a category fails", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_sue", email: "sue@knititnow.com" },
+      mode: "verified",
+    });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    createManagedHelpHubCategory.mockRejectedValue(
+      new Error('duplicate key value violates unique constraint "help_hub_categories_pkey"'),
+    );
+    const response = await POST({
+      request: jsonRequest("https://knititnow.com/api/admin/help-hub/categories", "POST", {
+        label: "Ribber",
+      }),
+      cookies,
+    } as never);
+    const body = await response.json();
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("We couldn’t update that category. Nothing was changed.");
+    expect(JSON.stringify(body)).not.toMatch(/help_hub_categories_pkey/);
+    expect(JSON.stringify(body)).not.toMatch(/duplicate key/i);
+    spy.mockRestore();
+  });
+
+  it("restores a retired category for an admin", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_sue", email: "sue@knititnow.com" },
+      mode: "verified",
+    });
+    restoreManagedHelpHubCategory.mockResolvedValue([
+      { id: 2, key: "knitting-doesnt-look-right", label: "Look Right", sortOrder: 20, retiredAt: null },
+    ]);
+    const response = await restore({
+      params: { id: "2" },
+      request: jsonRequest("https://knititnow.com/api/admin/help-hub/categories/2/restore", "POST"),
+      cookies,
+    } as never);
+    expect(response.status).toBe(200);
+    expect(restoreManagedHelpHubCategory).toHaveBeenCalledWith(2, {
+      id: "mem_sue",
+      email: "sue@knititnow.com",
+    });
   });
 });
