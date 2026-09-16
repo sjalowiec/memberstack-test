@@ -1,5 +1,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { normalizeRelatedLibraryVideos } from "./helpHub/memberResources";
+import { getTipId } from "./helpHub/tipId";
+
+export { getTipId };
 
 export const HELP_HUB_JSON_PATH = join(process.cwd(), "src", "data", "help-hub.json");
 export const LESSONS_JSON_PATH = join(process.cwd(), "src", "data", "lessons.json");
@@ -47,16 +51,6 @@ export function nextHelpHubId(tips: Record<string, unknown>[]): number {
     .filter((n) => Number.isFinite(n));
   if (ids.length === 0) return 1000;
   return Math.max(...ids) + 1;
-}
-
-export function getTipId(row: Record<string, unknown>): number | null {
-  const v = row.id;
-  if (typeof v === "number" && Number.isFinite(v)) return Math.floor(v);
-  if (typeof v === "string" && v.trim()) {
-    const n = parseInt(v.trim(), 10);
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
 }
 
 function parseTipSortOrder(value: unknown): number | null {
@@ -151,6 +145,9 @@ export function mergeHelpHubPutUpdate(
   stripLegacyHelpHubTipFields(row);
   if (Object.prototype.hasOwnProperty.call(body, "relatedLessons")) {
     row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "relatedLibraryVideos")) {
+    row.relatedLibraryVideos = normalizeRelatedLibraryVideos(body.relatedLibraryVideos);
   }
   return row;
 }

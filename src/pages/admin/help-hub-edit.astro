@@ -1,37 +1,67 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import helpHubCategories from "../../data/help-hub-categories.json";
+import videosPublic from "../../data/videos-public.json";
+import { requireAdminForRequest } from "../../lib/admin/requireAdminRequest";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
 import { loadLessonsForAdmin } from "../../lib/lessons/loadLessons";
-import {
-  publishedLessonsForPicker,
-} from "../../lib/helpHubMemberLesson";
 import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
+import {
+  explanationForAdminForm,
+  slugFromQuestion,
+  tryStepsLinesForForm,
+  tryThisIntroForForm,
+} from "../../lib/helpHub/adminForm";
+import { helpHubAdminClientPayload } from "../../lib/helpHub/adminPageGate";
+import {
+  libraryVideosForPicker,
+  memberLessonsForResourcePicker,
+} from "../../lib/helpHub/memberResources";
 
 export const prerender = false;
-const lessonRecords = (await loadLessonsForAdmin()) as HelpHubLessonRecord[];
-const publishedLessonOptions = publishedLessonsForPicker(lessonRecords);
 
-const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : [])
-  .reduce<{ key: string; label: string }[]>((acc, cat) => {
-    const rec = cat as Record<string, unknown>;
-    const key = typeof rec.key === "string" ? rec.key.trim() : "";
-    if (!key) return acc;
-    const label =
-      typeof rec.label === "string" && rec.label.trim() !== ""
-        ? rec.label.trim()
-        : key;
-    acc.push({ key, label });
-    return acc;
-  }, []);
+const auth = await requireAdminForRequest(Astro.request, Astro.cookies);
+const authorized = auth.ok === true;
 
 const slugParam = Astro.url.searchParams.get("slug");
 const slug =
-  typeof slugParam === "string" && slugParam.trim() !== ""
-    ? slugParam.trim()
-    : "";
-const currentEntry = slug ? await loadHelpHubTipBySlug(slug) : null;
+  typeof slugParam === "string" && slugParam.trim() !== "" ? slugParam.trim() : "";
+
+const currentEntry = authorized && slug ? await loadHelpHubTipBySlug(slug) : null;
 const isEditing = Boolean(currentEntry);
+
+const lessonRecords = authorized
+  ? ((await loadLessonsForAdmin()) as HelpHubLessonRecord[])
+  : [];
+const libraryPickerItems = authorized
+  ? libraryVideosForPicker(Array.isArray(videosPublic) ? videosPublic : [])
+  : [];
+const lessonPickerItems = authorized ? memberLessonsForResourcePicker(lessonRecords) : [];
+
+const clientPayload = helpHubAdminClientPayload({
+  auth,
+  entry: currentEntry as Record<string, unknown> | null,
+  lessons: lessonPickerItems,
+  library: libraryPickerItems,
+  allLessons: lessonRecords.map((lesson) => ({
+    id: lesson.id,
+    title: lesson.title,
+    slug: lesson.slug,
+    status: lesson.status,
+  })),
+});
+
+const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : []).reduce<
+  { key: string; label: string }[]
+>((acc, cat) => {
+  const rec = cat as Record<string, unknown>;
+  const key = typeof rec.key === "string" ? rec.key.trim() : "";
+  if (!key) return acc;
+  const label =
+    typeof rec.label === "string" && rec.label.trim() !== "" ? rec.label.trim() : key;
+  acc.push({ key, label });
+  return acc;
+}, []);
 
 const pageTitle = isEditing
   ? "Edit Help Hub Entry | Knit it Now"
@@ -46,92 +76,30 @@ function stringifyValue(v: unknown): string {
   return String(v);
 }
 
-const multiKeyFields: Record<string, string[]> = {
-  thumbnailAlt: ["thumbnailAlt", "mediaAlt"],
-  solutionText: ["solutionText", "bridge"],
-  intro: ["intro", "aboutTitle"],
-  aboutTitle: ["aboutTitle"],
-  bridge: ["bridge", "solutionText"],
-  atAGlance: ["atAGlance"],
-  specificMention: ["specificMention"],
-  tags: ["tags"],
-  resources: ["resources"],
-};
-
-function tryThisIntroForForm(entry: Record<string, unknown>): string {
-  const t = entry.tryThis;
-  if (typeof t === "string") return t;
-  if (t && typeof t === "object" && !Array.isArray(t)) {
-    const o = t as { quickActionTitle?: unknown };
-    if (typeof o.quickActionTitle === "string") return o.quickActionTitle;
-  }
-  return "";
-}
-
-function tryStepsLinesForForm(entry: Record<string, unknown>): string {
-  const s = entry.trySteps;
-  if (!Array.isArray(s)) return "";
-  return s.map(String).join("\n");
-}
-
 function valueFor(key: string, fallback = ""): string {
   if (!rawEntry) return fallback;
-
-  if (key === "tryThis") {
-    return tryThisIntroForForm(rawEntry) || fallback;
-  }
-  if (key === "trySteps") {
-    return tryStepsLinesForForm(rawEntry) || fallback;
-  }
-
-  if (key === "relatedLessons") {
-    const rl = rawEntry.relatedLessons;
-    if (!Array.isArray(rl)) return fallback;
-    const parts = rl
-      .map((x) => {
-        if (typeof x === "number" && Number.isFinite(x)) return String(x);
-        if (typeof x === "string") {
-          const t = x.trim();
-          return t.length > 0 ? t : "";
-        }
-        return "";
-      })
-      .filter((s) => s.length > 0);
-    return parts.length ? parts.join(", ") : fallback;
-  }
-
-  if (key === "mediaType") {
-    const mt = stringifyValue(rawEntry.mediaType);
-    const normalized = mt === "video" ? "youtube" : mt;
-    const allowed = ["placeholder", "image", "vimeo", "youtube"];
-    if (normalized && allowed.includes(normalized)) return normalized;
-    return fallback;
-  }
-
-  const keysToTry = multiKeyFields[key] ?? [key];
-  for (const jsonKey of keysToTry) {
-    const v = rawEntry[jsonKey];
-    if (v === undefined) continue;
-    if (Array.isArray(v)) {
-      return v.map(String).join("\n");
-    }
-    if (typeof v === "object" && v !== null) continue;
-    return stringifyValue(v);
-  }
-
-  return fallback;
+  if (key === "tryThis") return tryThisIntroForForm(rawEntry) || fallback;
+  if (key === "trySteps") return tryStepsLinesForForm(rawEntry) || fallback;
+  if (key === "solutionText") return explanationForAdminForm(rawEntry) || fallback;
+  if (key === "slug" && !isEditing) return fallback;
+  const v = rawEntry[key];
+  if (v === undefined || v === null) return fallback;
+  if (Array.isArray(v) || typeof v === "object") return fallback;
+  return stringifyValue(v);
 }
 
-const entryLabel = currentEntry as {
-  question?: string;
-  title?: string;
-  slug?: string;
-} | null;
+const statusValue = valueFor("status", "draft");
+const categoryValue = valueFor("category", "");
+const knownKeys = categoryOptions.map((opt) => opt.key);
+const showLegacyOption = categoryValue !== "" && !knownKeys.includes(categoryValue);
+const isNewChecked = rawEntry?.isNew === true;
+const entryLabel = currentEntry as { question?: string; title?: string; slug?: string } | null;
+const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor("question", ""));
 ---
 
 <BaseLayout
   title={pageTitle}
-  description="Draft the question, solution, metadata, media, resources, and CTA content for a Help Hub entry."
+  description="Write a public Help Hub answer and choose an existing member lesson."
   bodyClass="help-hub-admin-body"
 >
   <main class="help-hub-admin help-hub-dash help-hub-edit">
@@ -139,18 +107,27 @@ const entryLabel = currentEntry as {
       <h1 class="help-hub-admin__title">
         {isEditing ? "Edit Help Hub Entry" : "Create Help Hub Entry"}
       </h1>
-      <p class="help-hub-admin__sub">
-        Draft the question, solution, metadata, media, resources, and CTA content
-        for a Help Hub entry. Use <strong>Save</strong> to store a draft in the
-        Help Hub content database. Saved drafts stay private until you publish.
-      </p>
-      <p class="help-hub-edit__context">
-        {
-          isEditing && entryLabel
-            ? `Editing: ${entryLabel.question || entryLabel.title || entryLabel.slug || ""}`
-            : "New entry"
-        }
-      </p>
+      {
+        authorized ? (
+          <>
+            <p class="help-hub-admin__sub">
+              Fill in the public answer, choose an existing lesson for members, then preview and
+              publish.
+            </p>
+            <p class="help-hub-edit__context">
+              {isEditing && entryLabel
+                ? `Editing: ${entryLabel.question || entryLabel.title || entryLabel.slug || ""}`
+                : "New entry"}
+            </p>
+          </>
+        ) : (
+          <p class="help-hub-admin__sub">
+            {auth.ok === false && auth.status === 403
+              ? "This Knit it Now account does not have admin access."
+              : "Sign in with your Knit it Now account to continue."}
+          </p>
+        )
+      }
     </header>
 
     <div class="help-hub-admin__toolbar help-hub-dash__toolbar">
@@ -158,70 +135,218 @@ const entryLabel = currentEntry as {
       <span id="saveHelpHubStatusTop" class="help-hub-edit__save-status" aria-live="polite"></span>
     </div>
 
-    <div id="helpHubDraftRecovery" class="help-hub-edit__recovery" role="alert" hidden>
-      <span class="help-hub-edit__recovery-text">Recovered unsaved draft available.</span>
-      <div class="help-hub-edit__recovery-actions">
-        <button type="button" id="helpHubRestoreDraft" class="kbm-btn kbm-btn-primary">
-          Restore Draft
-        </button>
-        <button type="button" id="helpHubDiscardDraft" class="kbm-btn kbm-btn-outline">
-          Discard Draft
-        </button>
-      </div>
-    </div>
+    {
+      !authorized && (
+        <section class="admin-panel help-hub-dash__panel">
+          <p class="help-hub-dash__placeholder">
+            {auth.ok === false && auth.status === 403
+              ? "You are signed in, but this account cannot edit Help Hub entries."
+              : "Sign in to create or edit Help Hub entries."}
+          </p>
+          <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-primary">
+            Sign in
+          </button>
+        </section>
+      )
+    }
 
-    <form class="help-hub-edit__form" novalidate>
-      <div class="help-hub-edit__sections help-hub-dash__sections">
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="core-details-heading"
-        >
-          <h2 id="core-details-heading" class="help-hub-dash__panel-title">
-            Core Details
-          </h2>
-          <div class="help-hub-edit__fields">
-            <div class="help-hub-edit__field">
-              <label for="help-hub-status" class="help-hub-edit__label">Status</label>
-              {
-                (() => {
-                  const statusValue = valueFor("status", "draft");
-                  return (
-                    <select
-                      id="help-hub-status"
-                      class="help-hub-edit__select"
-                      name="status"
-                    >
-                      <option value="draft" selected={statusValue === "draft"}>
-                        Draft
-                      </option>
-                      <option value="review" selected={statusValue === "review"}>
-                        Review
-                      </option>
-                      <option value="published" selected={statusValue === "published"}>
-                        Published
-                      </option>
-                    </select>
-                  );
-                })()
-              }
-              <p class="help-hub-edit__hint">
-                Published page location: visibility control. HTML not supported. Displayed.
-              </p>
+    {
+      authorized && (
+        <>
+          <div id="helpHubDraftRecovery" class="help-hub-edit__recovery" role="alert" hidden>
+            <span class="help-hub-edit__recovery-text">Recovered unsaved draft available.</span>
+            <div class="help-hub-edit__recovery-actions">
+              <button type="button" id="helpHubRestoreDraft" class="kbm-btn kbm-btn-primary">
+                Restore Draft
+              </button>
+              <button type="button" id="helpHubDiscardDraft" class="kbm-btn kbm-btn-outline">
+                Discard Draft
+              </button>
             </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-category" class="help-hub-edit__label">Category</label>
-              {
-                (() => {
-                  const categoryValue = valueFor("category", "");
-                  const knownKeys = categoryOptions.map((opt) => opt.key);
-                  const showLegacyOption =
-                    categoryValue !== "" && !knownKeys.includes(categoryValue);
-                  return (
-                    <select
-                      id="help-hub-category"
-                      class="help-hub-edit__select"
-                      name="category"
-                    >
+          </div>
+
+          <form class="help-hub-edit__form" novalidate>
+            <div class="help-hub-edit__sections help-hub-dash__sections">
+              <section class="admin-panel help-hub-dash__panel" aria-labelledby="free-answer-heading">
+                <h2 id="free-answer-heading" class="help-hub-dash__panel-title">
+                  Free Answer: Everyone Sees This
+                </h2>
+                <p class="help-hub-edit__section-intro">
+                  This information appears on the public Help Hub page.
+                </p>
+                <div class="help-hub-edit__fields">
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-question" class="help-hub-edit__label">Question</label>
+                    <textarea
+                      id="help-hub-question"
+                      class="help-hub-edit__textarea"
+                      name="question"
+                      rows="3">{valueFor("question", "")}</textarea>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-bubble" class="help-hub-edit__label">Short answer</label>
+                    <textarea
+                      id="help-hub-bubble"
+                      class="help-hub-edit__textarea"
+                      name="bubbleAnswer"
+                      rows="3">{valueFor("bubbleAnswer", "")}</textarea>
+                    <p class="help-hub-edit__hint">The quick answer shown in the speech bubble.</p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-hook" class="help-hub-edit__label">One-line hook</label>
+                    <textarea
+                      id="help-hub-hook"
+                      class="help-hub-edit__textarea"
+                      name="hook"
+                      rows="2">{valueFor("hook", "")}</textarea>
+                    <p class="help-hub-edit__hint">A short introduction above the question and answer.</p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-about-title" class="help-hub-edit__label">
+                      Explanation heading
+                    </label>
+                    <input
+                      id="help-hub-about-title"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="aboutTitle"
+                      value={valueFor("aboutTitle", "")}
+                    />
+                    <p class="help-hub-edit__hint">
+                      Leave blank to use the default heading, “Why This Works.”
+                    </p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-solution-text" class="help-hub-edit__label">Explanation</label>
+                    <textarea
+                      id="help-hub-solution-text"
+                      class="help-hub-edit__textarea"
+                      name="solutionText"
+                      rows="6">{valueFor("solutionText", "")}</textarea>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-try-this-intro" class="help-hub-edit__label">
+                      Try This introduction
+                    </label>
+                    <textarea
+                      id="help-hub-try-this-intro"
+                      class="help-hub-edit__textarea"
+                      name="tryThis"
+                      rows="2">{valueFor("tryThis", "")}</textarea>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-try-steps" class="help-hub-edit__label">Try This steps</label>
+                    <textarea
+                      id="help-hub-try-steps"
+                      class="help-hub-edit__textarea"
+                      name="trySteps"
+                      rows="8">{valueFor("trySteps", "")}</textarea>
+                    <p class="help-hub-edit__hint">One step per line.</p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-try-note" class="help-hub-edit__label">
+                      Important note, optional
+                    </label>
+                    <textarea
+                      id="help-hub-try-note"
+                      class="help-hub-edit__textarea"
+                      name="tryNote"
+                      rows="3">{valueFor("tryNote", "")}</textarea>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-try-image" class="help-hub-edit__label">
+                      Optional supporting image URL
+                    </label>
+                    <input
+                      id="help-hub-try-image"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="tryImage"
+                      value={valueFor("tryImage", "")}
+                    />
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-try-image-alt" class="help-hub-edit__label">
+                      Image alt text
+                    </label>
+                    <input
+                      id="help-hub-try-image-alt"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="tryImageAlt"
+                      value={valueFor("tryImageAlt", "")}
+                    />
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-try-image-caption" class="help-hub-edit__label">
+                      Image caption
+                    </label>
+                    <textarea
+                      id="help-hub-try-image-caption"
+                      class="help-hub-edit__textarea"
+                      name="tryImageCaption"
+                      rows="2">{valueFor("tryImageCaption", "")}</textarea>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                class="admin-panel help-hub-dash__panel"
+                aria-labelledby="complete-lesson-heading"
+              >
+                <h2 id="complete-lesson-heading" class="help-hub-dash__panel-title">
+                  Complete Lesson: Members Only
+                </h2>
+                <p class="help-hub-edit__section-intro">
+                  Choose an existing Knit It Now lesson for members who want the complete
+                  demonstration. You do not need to create another lesson or enter a Vimeo ID.
+                </p>
+                <div class="help-hub-edit__fields">
+                  <div class="help-hub-edit__field">
+                    <label for="member-resources-search" class="help-hub-edit__label">
+                      Find an existing lesson
+                    </label>
+                    <input id="help-hub-related-lessons" type="hidden" name="relatedLessons" value="" />
+                    <input
+                      id="help-hub-related-library"
+                      type="hidden"
+                      name="relatedLibraryVideos"
+                      value=""
+                    />
+                    <div class="related-lessons-picker" data-member-resource-picker>
+                      <ul
+                        class="related-lessons-picker__selected"
+                        id="member-resources-selected"
+                        aria-label="Selected member lessons"
+                      ></ul>
+                      <input
+                        id="member-resources-search"
+                        class="help-hub-edit__input"
+                        type="search"
+                        autocomplete="off"
+                        placeholder="Search by lesson number or title, for example 1027"
+                      />
+                      <ul
+                        class="related-lessons-picker__options"
+                        id="member-resources-options"
+                        aria-label="Existing Knit It Now lessons"
+                      ></ul>
+                      <p class="help-hub-edit__hint">
+                        Search the Learning Library and member lessons by number, title, or URL name.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="admin-panel help-hub-dash__panel" aria-labelledby="find-this-heading">
+                <h2 id="find-this-heading" class="help-hub-dash__panel-title">
+                  Help People Find This
+                </h2>
+                <div class="help-hub-edit__fields">
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-category" class="help-hub-edit__label">Category</label>
+                    <select id="help-hub-category" class="help-hub-edit__select" name="category">
                       <option value="" selected={categoryValue === ""}>
                         — Select a category —
                       </option>
@@ -236,554 +361,84 @@ const entryLabel = currentEntry as {
                         </option>
                       )}
                     </select>
-                  );
-                })()
-              }
-              <p class="help-hub-edit__hint">
-                Groups the entry in the Help Hub. Choose from the shared category list.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-slug" class="help-hub-edit__label">Slug</label>
-              <input
-                id="help-hub-slug"
-                class="help-hub-edit__input"
-                type="text"
-                name="slug"
-                value={valueFor("slug", "")}
-              />
-              <p class="help-hub-edit__hint">
-                Published page: URL and page identity. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-question" class="help-hub-edit__label">Question</label>
-              <textarea
-                id="help-hub-question"
-                class="help-hub-edit__textarea"
-                name="question"
-                rows={3}>{valueFor("question", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: main question bubble heading. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-bubble" class="help-hub-edit__label">Bubble Answer</label>
-              <textarea
-                id="help-hub-bubble"
-                class="help-hub-edit__textarea"
-                name="bubbleAnswer"
-                rows={3}>{valueFor("bubbleAnswer", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: quick answer bubble. HTML supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-hook" class="help-hub-edit__label">Hook</label>
-              <textarea
-                id="help-hub-hook"
-                class="help-hub-edit__textarea"
-                name="hook"
-                rows={2}>{valueFor("hook", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: subtitle above bubbles. HTML not supported. Displayed.
-              </p>
-            </div>
-          </div>
-        </section>
+                  </div>
+                  <div class="help-hub-edit__field help-hub-edit__field--checkbox">
+                    <label class="help-hub-edit__checkbox-label">
+                      <input
+                        id="help-hub-is-new"
+                        type="checkbox"
+                        name="isNew"
+                        checked={isNewChecked}
+                      />
+                      Show in “New in the Help Hub”
+                    </label>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-slug" class="help-hub-edit__label">URL name</label>
+                    <input
+                      id="help-hub-slug"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="slug"
+                      value={initialSlug}
+                    />
+                    <p class="help-hub-edit__hint">
+                      Used in the page address. For a new entry it is created from the question; you
+                      can still edit it.
+                    </p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-status" class="help-hub-edit__label">Status</label>
+                    <select id="help-hub-status" class="help-hub-edit__select" name="status">
+                      <option value="draft" selected={statusValue === "draft"}>
+                        Draft
+                      </option>
+                      <option value="review" selected={statusValue === "review"}>
+                        Needs review
+                      </option>
+                      <option value="published" selected={statusValue === "published"}>
+                        Published
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </section>
 
-        {false && (
-          <section
-            class="admin-panel help-hub-dash__panel"
-            aria-labelledby="metadata-heading"
-          >
-            <h2 id="metadata-heading" class="help-hub-dash__panel-title">Metadata</h2>
-            <div class="help-hub-edit__fields">
-              <div class="help-hub-edit__field">
-                <label for="help-hub-category-pill" class="help-hub-edit__label">
-                  Category Pill
-                </label>
-                <input
-                  id="help-hub-category-pill"
-                  class="help-hub-edit__input"
-                  type="text"
-                  name="categoryPill"
-                  value={valueFor("categoryPill", "")}
-                />
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. HTML not supported. Currently unused.
-                </p>
-              </div>
-              <div class="help-hub-edit__field">
-                <label for="help-hub-tags" class="help-hub-edit__label">Tags</label>
-                <textarea
-                  id="help-hub-tags"
-                  class="help-hub-edit__textarea"
-                  name="tags"
-                  rows={3}>{valueFor("tags", "")}</textarea>
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. HTML not supported. Currently unused.
-                </p>
-              </div>
-              <div class="help-hub-edit__field">
-                <label for="help-hub-solution-type" class="help-hub-edit__label">
-                  Solution Type
-                </label>
-                <input
-                  id="help-hub-solution-type"
-                  class="help-hub-edit__input"
-                  type="text"
-                  name="solutionType"
-                  value={valueFor("solutionType", "")}
-                />
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. HTML not supported. Currently unused.
-                </p>
-              </div>
-              <div class="help-hub-edit__field">
-                <label for="help-hub-success-path" class="help-hub-edit__label">
-                  Success Path Level
-                </label>
-                <select
-                  id="help-hub-success-path"
-                  class="help-hub-edit__select"
-                  name="successPathLevel"
-                >
-                  <option
-                    value="Beginner"
-                    selected={valueFor("successPathLevel", "Beginner") === "Beginner"}
-                  >
-                    Beginner
-                  </option>
-                  <option
-                    value="Confident Beginner"
-                    selected={valueFor("successPathLevel", "Beginner") ===
-                      "Confident Beginner"}
-                  >
-                    Confident Beginner
-                  </option>
-                  <option
-                    value="Intermediate"
-                    selected={valueFor("successPathLevel", "Beginner") === "Intermediate"}
-                  >
-                    Intermediate
-                  </option>
-                  <option
-                    value="Advanced"
-                    selected={valueFor("successPathLevel", "Beginner") === "Advanced"}
-                  >
-                    Advanced
-                  </option>
-                </select>
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. HTML not supported. Currently unused.
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="media-heading"
-        >
-          <h2 id="media-heading" class="help-hub-dash__panel-title">Media</h2>
-          <div class="help-hub-edit__fields">
-            <div class="help-hub-edit__field">
-              <label for="help-hub-media-type" class="help-hub-edit__label">Media Type</label>
-              <select
-                id="help-hub-media-type"
-                class="help-hub-edit__select"
-                name="mediaType"
+              <section
+                class="admin-panel help-hub-dash__panel"
+                aria-labelledby="preview-publish-heading"
               >
-                <option
-                  value="placeholder"
-                  selected={valueFor("mediaType", "placeholder") === "placeholder"}
-                >
-                  placeholder
-                </option>
-                <option
-                  value="image"
-                  selected={valueFor("mediaType", "placeholder") === "image"}
-                >
-                  image
-                </option>
-                <option
-                  value="vimeo"
-                  selected={valueFor("mediaType", "placeholder") === "vimeo"}
-                >
-                  vimeo
-                </option>
-                <option
-                  value="youtube"
-                  selected={valueFor("mediaType", "placeholder") === "youtube"}
-                >
-                  youtube
-                </option>
-              </select>
-              <p class="help-hub-edit__hint">
-                Published page: hero media chooser (image/video). HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-media-url" class="help-hub-edit__label">
-                Media URL or ID
-              </label>
-              <input
-                id="help-hub-media-url"
-                class="help-hub-edit__input"
-                type="text"
-                name="mediaUrl"
-                value={valueFor("mediaUrl", "")}
-              />
-              <p class="help-hub-edit__hint">
-                Published page: hero media source URL or ID. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-thumb-alt" class="help-hub-edit__label">
-                Thumbnail Alt Text
-              </label>
-              <textarea
-                id="help-hub-thumb-alt"
-                class="help-hub-edit__textarea"
-                name="thumbnailAlt"
-                rows={2}>{valueFor("thumbnailAlt", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: hero image/video fallback alt text. HTML not supported. Displayed.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="member-related-heading"
-        >
-          <h2 id="member-related-heading" class="help-hub-dash__panel-title">
-            Member / Related Content
-          </h2>
-          <div class="help-hub-edit__fields">
-            <div class="help-hub-edit__field">
-              <label for="related-lessons-search" class="help-hub-edit__label">
-                Related Lessons
-              </label>
-              <input
-                id="help-hub-related-lessons"
-                type="hidden"
-                name="relatedLessons"
-                value={valueFor("relatedLessons", "")}
-              />
-              <div class="related-lessons-picker" data-related-lessons-picker>
-                <ul
-                  class="related-lessons-picker__selected"
-                  id="related-lessons-selected"
-                  aria-label="Selected related lessons"
-                ></ul>
-                <input
-                  id="related-lessons-search"
-                  class="help-hub-edit__input"
-                  type="search"
-                  autocomplete="off"
-                  placeholder="Search published lessons by title"
-                />
-                <ul
-                  class="related-lessons-picker__options"
-                  id="related-lessons-options"
-                  aria-label="Published member lessons"
-                ></ul>
-                <p class="help-hub-edit__hint">
-                  Published page: Member Lesson cards. Select one or more published lessons by title. IDs are stored automatically.
+                <h2 id="preview-publish-heading" class="help-hub-dash__panel-title">
+                  Preview and Publish
+                </h2>
+                <p class="help-hub-edit__section-intro">
+                  Preview the public page, then save. Drafts stay private until you publish.
                 </p>
+              </section>
+
+              <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
+                <button type="button" id="saveHelpHubBtn" class="kbm-btn kbm-btn-primary">
+                  Save draft
+                </button>
+                <button type="button" id="previewHelpHub" class="kbm-btn kbm-btn-outline">
+                  Preview
+                </button>
+                {isEditing && (
+                  <button type="button" id="deleteHelpHubBtn" class="kbm-btn kbm-btn-outline">
+                    Delete
+                  </button>
+                )}
+                <a href="/admin/help-hub" class="kbm-btn kbm-btn-outline">Cancel</a>
+                <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-outline" hidden>
+                  Sign in
+                </button>
+                <span id="saveHelpHubStatus" class="help-hub-edit__save-status" aria-live="polite"></span>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="solution-heading"
-        >
-          <h2 id="solution-heading" class="help-hub-dash__panel-title">Solution</h2>
-          <div class="help-hub-edit__fields">
-            {false && (
-              <>
-                <div class="help-hub-edit__field">
-                  <label for="help-hub-intro" class="help-hub-edit__label">Intro</label>
-                  <textarea
-                    id="help-hub-intro"
-                    class="help-hub-edit__textarea"
-                    name="intro"
-                    rows={3}>{valueFor("intro", "")}</textarea>
-                  <p class="help-hub-edit__hint">
-                    Published page: not currently displayed. HTML not supported. Currently unused.
-                  </p>
-                </div>
-                <div class="help-hub-edit__field">
-                  <label for="help-hub-at-glance" class="help-hub-edit__label">
-                    At-a-Glance
-                  </label>
-                  <textarea
-                    id="help-hub-at-glance"
-                    class="help-hub-edit__textarea"
-                    name="atAGlance"
-                    rows={3}>{valueFor("atAGlance", "")}</textarea>
-                  <p class="help-hub-edit__hint">
-                    Published page: not currently displayed. HTML not supported. Currently unused.
-                  </p>
-                </div>
-              </>
-            )}
-            <div class="help-hub-edit__field">
-              <label for="help-hub-solution-text" class="help-hub-edit__label">
-                Solution Text
-              </label>
-              <textarea
-                id="help-hub-solution-text"
-                class="help-hub-edit__textarea"
-                name="solutionText"
-                rows={6}>{valueFor("solutionText", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: "What's this about" body text. HTML supported. Displayed.
-              </p>
-            </div>
-            {false && (
-              <div class="help-hub-edit__field">
-                <label for="help-hub-specific" class="help-hub-edit__label">
-                  Specific Mention / Warning
-                </label>
-                <textarea
-                  id="help-hub-specific"
-                  class="help-hub-edit__textarea"
-                  name="specificMention"
-                  rows={3}>{valueFor("specificMention", "")}</textarea>
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. HTML not supported. Currently unused.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="public-page-sections-heading"
-        >
-          <h2 id="public-page-sections-heading" class="help-hub-dash__panel-title">
-            Public Page Sections
-          </h2>
-          <div class="help-hub-edit__fields">
-            <div class="help-hub-edit__field">
-              <label for="help-hub-about-title" class="help-hub-edit__label">
-                About Title
-              </label>
-              <input
-                id="help-hub-about-title"
-                class="help-hub-edit__input"
-                type="text"
-                name="aboutTitle"
-                value={valueFor("aboutTitle", "")}
-              />
-              <p class="help-hub-edit__hint">
-                Published page: "What's this about" section heading. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-bridge" class="help-hub-edit__label"><del>Bridge not used</del</label>
-              <textarea
-                id="help-hub-bridge"
-                class="help-hub-edit__textarea"
-                name="bridge"
-                rows={6}>{valueFor("bridge", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: fallback "What's this about" body if Solution Text is empty. HTML supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-try-this-intro" class="help-hub-edit__label">
-                Try This Intro
-              </label>
-              <textarea
-                id="help-hub-try-this-intro"
-                class="help-hub-edit__textarea"
-                name="tryThis"
-                rows={2}>{valueFor("tryThis", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: "Try This" intro/subhead. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-try-steps" class="help-hub-edit__label">Try Steps</label>
-              <textarea
-                id="help-hub-try-steps"
-                class="help-hub-edit__textarea"
-                name="trySteps"
-                rows={10}>{valueFor("trySteps", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: "Try This" checklist. Plain text only. Displayed.
-              </p>
-              <p class="help-hub-edit__hint">One checklist item per line.</p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-try-note" class="help-hub-edit__label">
-                Try This Note
-              </label>
-              <textarea
-                id="help-hub-try-note"
-                class="help-hub-edit__textarea"
-                name="tryNote"
-                rows={3}>{valueFor("tryNote", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: note under the "Try This" checklist. HTML supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-try-image" class="help-hub-edit__label">
-                Try This Image URL
-              </label>
-              <input
-                id="help-hub-try-image"
-                class="help-hub-edit__input"
-                type="text"
-                name="tryImage"
-                value={valueFor("tryImage", "")}
-              />
-              <p class="help-hub-edit__hint">
-                Published page: image beside the "Try This" checklist. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-try-image-alt" class="help-hub-edit__label">
-                Try This Image Alt Text
-              </label>
-              <input
-                id="help-hub-try-image-alt"
-                class="help-hub-edit__input"
-                type="text"
-                name="tryImageAlt"
-                value={valueFor("tryImageAlt", "")}
-              />
-              <p class="help-hub-edit__hint">
-                Published page: alt text for the "Try This" image. HTML not supported. Displayed.
-              </p>
-            </div>
-            <div class="help-hub-edit__field">
-              <label for="help-hub-try-image-caption" class="help-hub-edit__label">
-                Try This Image Caption
-              </label>
-              <textarea
-                id="help-hub-try-image-caption"
-                class="help-hub-edit__textarea"
-                name="tryImageCaption"
-                rows={3}>{valueFor("tryImageCaption", "")}</textarea>
-              <p class="help-hub-edit__hint">
-                Published page: caption under the "Try This" image. HTML supported. Displayed.
-              </p>
-            </div>
-            {false && (
-              <>
-                <div class="help-hub-edit__field">
-                  <label for="help-hub-member-heading" class="help-hub-edit__label">
-                    Member Heading
-                  </label>
-                  <input
-                    id="help-hub-member-heading"
-                    class="help-hub-edit__input"
-                    type="text"
-                    name="memberHeading"
-                    value={valueFor("memberHeading", "")}
-                  />
-                  <p class="help-hub-edit__hint">
-                    Published page: not currently displayed. HTML not supported. Currently unused.
-                  </p>
-                </div>
-                <div class="help-hub-edit__field">
-                  <label for="help-hub-member-text" class="help-hub-edit__label">
-                    Member Text
-                  </label>
-                  <textarea
-                    id="help-hub-member-text"
-                    class="help-hub-edit__textarea"
-                    name="memberText"
-                    rows={4}>{valueFor("memberText", "")}</textarea>
-                  <p class="help-hub-edit__hint">
-                    Published page: not currently displayed. HTML not supported. Currently unused.
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-
-        {false && (
-          <section
-            class="admin-panel help-hub-dash__panel"
-            aria-labelledby="resources-heading"
-          >
-            <h2 id="resources-heading" class="help-hub-dash__panel-title">Resources</h2>
-            <div class="help-hub-edit__fields">
-              <div class="help-hub-edit__field">
-                <label for="help-hub-resources" class="help-hub-edit__label">Resources</label>
-                <textarea
-                  id="help-hub-resources"
-                  class="help-hub-edit__textarea"
-                  name="resources"
-                  rows={5}>{valueFor("resources", "")}</textarea>
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. Plain text only. Currently unused.
-                </p>
-                <p class="help-hub-edit__hint">One resource per line.</p>
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="cta-heading"
-        >
-          <h2 id="cta-heading" class="help-hub-dash__panel-title">CTA Blocks</h2>
-          <p class="help-hub-dash__placeholder">
-            CTA blocks are included automatically in the Help Hub template.
-          </p>
-        </section>
-
-        <section
-          class="admin-panel help-hub-dash__panel"
-          aria-labelledby="json-preview-heading"
-        >
-          <h2 id="json-preview-heading" class="help-hub-dash__panel-title">
-            JSON Preview
-          </h2>
-          <div class="help-hub-edit__json-preview">
-            <div class="help-hub-edit__json-preview-actions">
-              <button type="button" id="copyHelpHubJson" class="kbm-btn kbm-btn-outline">
-                Copy JSON
-              </button>
-              <span id="copyHelpHubJsonStatus" class="help-hub-edit__copy-status" aria-live="polite"></span>
-            </div>
-            <pre id="helpHubJsonPreview" class="help-hub-edit__json-pre"></pre>
-          </div>
-        </section>
-
-        <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
-          <button type="button" id="saveHelpHubBtn" class="kbm-btn kbm-btn-primary">
-            Save
-          </button>
-          <button type="button" id="previewHelpHub" class="kbm-btn kbm-btn-outline">
-            Preview
-          </button>
-          <button type="button" id="deleteHelpHubBtn" class="kbm-btn kbm-btn-outline">
-            Delete
-          </button>
-          <a href="/admin/help-hub" class="kbm-btn kbm-btn-outline">Cancel</a>
-          <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-outline" hidden>
-            Sign in
-          </button>
-          <span id="saveHelpHubStatus" class="help-hub-edit__save-status" aria-live="polite"></span>
-        </div>
-      </div>
-    </form>
+          </form>
+        </>
+      )
+    }
   </main>
 
   <style>
@@ -879,8 +534,15 @@ const entryLabel = currentEntry as {
       color: #243015;
     }
 
+    .help-hub-edit__section-intro {
+      margin: 0 0 0.85rem;
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+
     .help-hub-dash__placeholder {
-      margin: 0;
+      margin: 0 0 1rem;
       font-size: 0.92rem;
       color: #64748b;
       line-height: 1.45;
@@ -917,6 +579,15 @@ const entryLabel = currentEntry as {
       letter-spacing: 0.02em;
     }
 
+    .help-hub-edit__checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
     .help-hub-edit__input,
     .help-hub-edit__select,
     .help-hub-edit__textarea {
@@ -944,30 +615,8 @@ const entryLabel = currentEntry as {
     .help-hub-edit__hint {
       margin: 0;
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #64748b;
       line-height: 1.4;
-    }
-
-    .help-hub-edit__json-preview-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .help-hub-edit__json-preview-actions:last-of-type {
-      margin-bottom: 0.65rem;
-    }
-
-    .help-hub-edit__copy-status {
-      font-size: 0.85rem;
-      color: #16a34a;
-      min-height: 1.2em;
-    }
-
-    .help-hub-edit__copy-status--error {
-      color: #b91c1c;
     }
 
     .help-hub-edit__save-status {
@@ -1003,28 +652,6 @@ const entryLabel = currentEntry as {
       border-top: 1px solid #e5e7eb;
     }
 
-    .help-hub-edit__json-preview-actions .kbm-btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .help-hub-edit__json-pre {
-      margin: 0;
-      padding: 0.75rem 0.85rem;
-      font-size: 0.8rem;
-      line-height: 1.45;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-        "Courier New", monospace;
-      color: #1e293b;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      overflow: auto;
-      max-height: min(70vh, 32rem);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
     .related-lessons-picker__selected,
     .related-lessons-picker__options {
       list-style: none;
@@ -1045,7 +672,8 @@ const entryLabel = currentEntry as {
     }
 
     .related-lessons-picker__option,
-    .related-lessons-picker__chip {
+    .related-lessons-picker__chip,
+    .member-resource-picker__card {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -1075,15 +703,30 @@ const entryLabel = currentEntry as {
       white-space: nowrap;
     }
 
-    .related-lessons-picker__chip {
+    .member-resource-picker__card {
+      flex-direction: column;
+      align-items: stretch;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
     }
 
-    .related-lessons-picker__chip.is-missing,
-    .related-lessons-picker__chip.is-unpublished {
+    .member-resource-picker__card.is-missing,
+    .member-resource-picker__card.is-unpublished {
       background: #fef2f2;
       border-color: #fecaca;
+    }
+
+    .member-resource-picker__confirm {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .member-resource-picker__source {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #64748b;
     }
 
     .related-lessons-picker__warn {
@@ -1100,858 +743,32 @@ const entryLabel = currentEntry as {
       cursor: pointer;
       font: inherit;
       font-weight: 600;
+      align-self: flex-end;
     }
   </style>
 
-  <script
-    type="application/json"
-    id="help-hub-current-entry"
-    set:html={JSON.stringify(currentEntry ?? null)}
-  />
-  <script
-    type="application/json"
-    id="help-hub-related-lessons-data"
-    set:html={JSON.stringify({
-      published: publishedLessonOptions,
-      all: lessonRecords.map((lesson) => ({
-        id: lesson.id,
-        title: lesson.title,
-        slug: lesson.slug,
-        status: lesson.status,
-      })),
-    }).replace(/</g, "\\u003c")}
-  />
+  {
+    authorized && (
+      <>
+        <script
+          type="application/json"
+          id="help-hub-current-entry"
+          set:html={JSON.stringify(clientPayload.entry ?? null).replace(/</g, "\\u003c")}
+        />
+        <script
+          type="application/json"
+          id="help-hub-member-resource-data"
+          set:html={JSON.stringify(clientPayload.picker).replace(/</g, "\\u003c")}
+        />
+      </>
+    )
+  }
 
   <script>
     import { installHelpHubAdminBrowser } from "../../lib/helpHub/adminEditorClient";
+    import { bootHelpHubAdminEditor } from "../../lib/helpHub/adminEditorFormClient";
+
     installHelpHubAdminBrowser();
-  </script>
-
-  <script is:inline>
-    (function () {
-      var currentEntryEl = document.getElementById("help-hub-current-entry");
-      var INITIAL_HELP_HUB = currentEntryEl
-        ? JSON.parse(currentEntryEl.textContent || "null")
-        : null;
-
-      var FIELD_ORDER = [
-        "question",
-        "slug",
-        "status",
-        "bubbleAnswer",
-        "hook",
-        "category",
-        "categoryPill",
-        "tags",
-        "solutionType",
-        "successPathLevel",
-        "relatedLessons",
-        "mediaType",
-        "mediaUrl",
-        "thumbnailAlt",
-        "intro",
-        "atAGlance",
-        "solutionText",
-        "specificMention",
-        "aboutTitle",
-        "bridge",
-        "tryThis",
-        "trySteps",
-        "tryNote",
-        "tryImage",
-        "tryImageAlt",
-        "tryImageCaption",
-        "memberHeading",
-        "memberText",
-        "resources",
-      ];
-
-      var DRAFT_KEY = (function () {
-        var base = "kbm:helpHubEditDraft:";
-        var e = INITIAL_HELP_HUB;
-        if (e && typeof e === "object") {
-          if (e.id !== undefined && e.id !== null && String(e.id).trim() !== "") {
-            return base + "id:" + String(e.id);
-          }
-          if (typeof e.slug === "string" && e.slug.trim() !== "") {
-            return base + "slug:" + e.slug.trim();
-          }
-        }
-        return base + "new";
-      })();
-
-      var SUPPRESS_UNLOAD = false;
-
-      function snapshotForm(form) {
-        var data = {};
-        var els = form.elements;
-        for (var i = 0; i < els.length; i++) {
-          var el = els[i];
-          var name = el && el.getAttribute ? el.getAttribute("name") : null;
-          if (!name) continue;
-          if ("value" in el) data[name] = String(el.value);
-        }
-        return data;
-      }
-
-      function snapshotString(form) {
-        return JSON.stringify(snapshotForm(form));
-      }
-
-      function readDraft() {
-        try {
-          var raw = localStorage.getItem(DRAFT_KEY);
-          if (!raw) return null;
-          var parsed = JSON.parse(raw);
-          if (parsed && parsed.data && typeof parsed.data === "object") {
-            return parsed.data;
-          }
-        } catch (e) {}
-        return null;
-      }
-
-      function clearDraft() {
-        try {
-          localStorage.removeItem(DRAFT_KEY);
-        } catch (e) {}
-      }
-
-      function trimmedFieldValue(form, name) {
-        var el = form.elements.namedItem(name);
-        if (!el) return "";
-        if ("value" in el) return String(el.value).trim();
-        return "";
-      }
-
-      function splitTags(text) {
-        if (!text) return [];
-        return text
-          .split(/[\r\n,]+/)
-          .map(function (s) {
-            return s.trim();
-          })
-          .filter(Boolean);
-      }
-
-      function splitLines(text) {
-        if (!text) return [];
-        return text
-          .split(/\r?\n/)
-          .map(function (s) {
-            return s.trim();
-          })
-          .filter(Boolean);
-      }
-
-      function parseRelatedLessonIds(text) {
-        if (!text) return [];
-        var trimmed = String(text).trim();
-        if (!trimmed) return [];
-        if (trimmed.charAt(0) === "[") {
-          try {
-            var parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) {
-              return parsed
-                .map(function (item) {
-                  if (typeof item === "number" && isFinite(item)) return item;
-                  var s = String(item == null ? "" : item).trim();
-                  if (!s) return null;
-                  if (/^\d+$/.test(s)) return Number(s);
-                  return s;
-                })
-                .filter(function (item) {
-                  return item !== null;
-                });
-            }
-          } catch (e) {}
-        }
-        return trimmed
-          .split(",")
-          .map(function (s) {
-            return s.trim();
-          })
-          .filter(Boolean)
-          .map(function (s) {
-            if (/^\d+$/.test(s)) {
-              var n = Number(s);
-              if (typeof n === "number" && !isNaN(n) && isFinite(n)) return n;
-            }
-            return s;
-          });
-      }
-
-      function relatedLessonPickerData() {
-        var el = document.getElementById("help-hub-related-lessons-data");
-        if (!el || !el.textContent) return { published: [], all: [] };
-        try {
-          var parsed = JSON.parse(el.textContent);
-          return {
-            published: Array.isArray(parsed.published) ? parsed.published : [],
-            all: Array.isArray(parsed.all) ? parsed.all : [],
-          };
-        } catch (e) {
-          return { published: [], all: [] };
-        }
-      }
-
-      function lessonMatchesRef(lesson, ref) {
-        if (typeof ref === "number" && Number(lesson.id) === ref) return true;
-        var slug = lesson.slug ? String(lesson.slug).trim() : "";
-        if (typeof ref === "string" && slug && slug === ref.trim()) return true;
-        if (typeof ref === "string" && /^\d+$/.test(ref.trim()) && Number(lesson.id) === Number(ref)) {
-          return true;
-        }
-        return false;
-      }
-
-      function describeRef(ref, allLessons) {
-        var found = null;
-        var i;
-        for (i = 0; i < allLessons.length; i++) {
-          if (lessonMatchesRef(allLessons[i], ref)) {
-            found = allLessons[i];
-            break;
-          }
-        }
-        if (!found) {
-          return {
-            ref: ref,
-            id: typeof ref === "number" ? ref : null,
-            title: typeof ref === "string" ? ref : "Lesson " + ref,
-            state: "missing",
-          };
-        }
-        var status = found.status ? String(found.status).trim().toLowerCase() : "";
-        var published = status === "" || status === "published";
-        return {
-          ref: ref,
-          id: typeof found.id === "number" ? found.id : null,
-          title: found.title || found.slug || "Lesson " + (found.id || ref),
-          state: published ? "published" : "unpublished",
-        };
-      }
-
-      function initRelatedLessonPicker(form) {
-        var hidden = document.getElementById("help-hub-related-lessons");
-        var selectedEl = document.getElementById("related-lessons-selected");
-        var optionsEl = document.getElementById("related-lessons-options");
-        var search = document.getElementById("related-lessons-search");
-        if (!hidden || !selectedEl || !optionsEl) return;
-        var data = relatedLessonPickerData();
-        var selectedIds = [];
-        var unresolved = [];
-        parseRelatedLessonIds(hidden.value).forEach(function (ref) {
-          var view = describeRef(ref, data.all);
-          if (view.state === "published" && view.id != null) selectedIds.push(view.id);
-          else unresolved.push(ref);
-        });
-
-        function writeHidden() {
-          var values = selectedIds.slice();
-          unresolved.forEach(function (ref) {
-            values.push(ref);
-          });
-          hidden.value = JSON.stringify(values);
-          form.dispatchEvent(new Event("input", { bubbles: true }));
-        }
-
-        function renderSelected() {
-          selectedEl.innerHTML = "";
-          selectedIds.forEach(function (id) {
-            var item = null;
-            var i;
-            for (i = 0; i < data.published.length; i++) {
-              if (Number(data.published[i].id) === id) {
-                item = data.published[i];
-                break;
-              }
-            }
-            var li = document.createElement("li");
-            li.className = "related-lessons-picker__chip";
-            li.innerHTML =
-              '<span><span class="related-lessons-picker__title"></span><span class="related-lessons-picker__id"></span></span>';
-            li.querySelector(".related-lessons-picker__title").textContent = item
-              ? item.title
-              : "Lesson " + id;
-            li.querySelector(".related-lessons-picker__id").textContent = "ID: " + id;
-            var rm = document.createElement("button");
-            rm.type = "button";
-            rm.className = "related-lessons-picker__remove";
-            rm.setAttribute("data-remove-id", String(id));
-            rm.textContent = "Remove";
-            li.appendChild(rm);
-            selectedEl.appendChild(li);
-          });
-          unresolved.forEach(function (ref, index) {
-            var view = describeRef(ref, data.all);
-            var li = document.createElement("li");
-            li.className =
-              "related-lessons-picker__chip " +
-              (view.state === "unpublished" ? "is-unpublished" : "is-missing");
-            var title = document.createElement("span");
-            var name = document.createElement("span");
-            name.className = "related-lessons-picker__title";
-            name.textContent = view.title;
-            var warn = document.createElement("p");
-            warn.className = "related-lessons-picker__warn";
-            warn.textContent =
-              view.state === "unpublished"
-                ? "Unpublished — this lesson will not appear on the public Help Hub."
-                : "Missing — no published lesson matches this reference.";
-            title.appendChild(name);
-            if (view.id != null) {
-              var idEl = document.createElement("span");
-              idEl.className = "related-lessons-picker__id";
-              idEl.textContent = " ID: " + view.id;
-              title.appendChild(idEl);
-            }
-            title.appendChild(warn);
-            li.appendChild(title);
-            var rm = document.createElement("button");
-            rm.type = "button";
-            rm.className = "related-lessons-picker__remove";
-            rm.setAttribute("data-remove-unresolved", String(index));
-            rm.textContent = "Remove";
-            li.appendChild(rm);
-            selectedEl.appendChild(li);
-          });
-        }
-
-        function renderOptions() {
-          var q = search && "value" in search ? String(search.value).trim().toLowerCase() : "";
-          optionsEl.innerHTML = "";
-          data.published.forEach(function (item) {
-            var hay = (item.title + " " + item.id + " " + (item.slug || "")).toLowerCase();
-            if (q && hay.indexOf(q) === -1) return;
-            var li = document.createElement("li");
-            li.className = "related-lessons-picker__option";
-            if (selectedIds.indexOf(Number(item.id)) !== -1) li.className += " is-selected";
-            li.setAttribute("data-select-id", String(item.id));
-            li.innerHTML =
-              '<span class="related-lessons-picker__title"></span><span class="related-lessons-picker__id"></span>';
-            li.querySelector(".related-lessons-picker__title").textContent = item.title;
-            li.querySelector(".related-lessons-picker__id").textContent = "ID: " + item.id;
-            optionsEl.appendChild(li);
-          });
-        }
-
-        function render() {
-          renderSelected();
-          renderOptions();
-        }
-
-        selectedEl.addEventListener("click", function (ev) {
-          var t = ev.target;
-          if (!t || !t.getAttribute) return;
-          var removeId = t.getAttribute("data-remove-id");
-          if (removeId) {
-            selectedIds = selectedIds.filter(function (id) {
-              return id !== Number(removeId);
-            });
-            writeHidden();
-            render();
-            return;
-          }
-          var removeUnresolved = t.getAttribute("data-remove-unresolved");
-          if (removeUnresolved != null) {
-            unresolved.splice(Number(removeUnresolved), 1);
-            writeHidden();
-            render();
-          }
-        });
-
-        optionsEl.addEventListener("click", function (ev) {
-          var t = ev.target && ev.target.closest ? ev.target.closest("[data-select-id]") : null;
-          if (!t) return;
-          var id = Number(t.getAttribute("data-select-id"));
-          if (!isFinite(id)) return;
-          if (selectedIds.indexOf(id) === -1) selectedIds.push(id);
-          else {
-            selectedIds = selectedIds.filter(function (n) {
-              return n !== id;
-            });
-          }
-          writeHidden();
-          render();
-        });
-
-        if (search) {
-          search.addEventListener("input", function () {
-            renderOptions();
-          });
-        }
-
-        writeHidden();
-        render();
-      }
-
-      function buildHelpHubObject(form) {
-        var out = JSON.parse(JSON.stringify(window.currentHelpHub || {}));
-        var i;
-        var key;
-        var v;
-        var arr;
-
-        for (i = 0; i < FIELD_ORDER.length; i++) {
-          key = FIELD_ORDER[i];
-          if (key === "tags") {
-            arr = splitTags(trimmedFieldValue(form, "tags"));
-            if (arr.length) out.tags = arr;
-            continue;
-          }
-          if (key === "atAGlance") {
-            arr = splitLines(trimmedFieldValue(form, "atAGlance"));
-            if (arr.length) out.atAGlance = arr;
-            continue;
-          }
-          if (key === "resources") {
-            arr = splitLines(trimmedFieldValue(form, "resources"));
-            if (arr.length) out.resources = arr;
-            continue;
-          }
-          if (key === "trySteps") {
-            arr = splitLines(trimmedFieldValue(form, "trySteps"));
-            if (arr.length) out.trySteps = arr;
-            continue;
-          }
-          if (key === "relatedLessons") {
-            arr = parseRelatedLessonIds(trimmedFieldValue(form, "relatedLessons"));
-            out.relatedLessons = arr;
-            continue;
-          }
-          v = trimmedFieldValue(form, key);
-          if (key === "tryThis") {
-            var existing = out.tryThis;
-
-            if (existing && typeof existing === "object" && !Array.isArray(existing)) {
-              if (v !== "") {
-                existing.quickActionTitle = v;
-                out.tryThis = existing;
-              }
-            } else {
-              if (v !== "") out.tryThis = v;
-            }
-            continue;
-          }
-          if (v !== "") out[key] = v;
-        }
-
-        if (!out.status) {
-          out.status = "draft";
-        }
-
-        return out;
-      }
-
-      function sanitizeSlugValue(raw) {
-        return String(raw)
-          .toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, "");
-      }
-
-      function hasRequiredFields(form) {
-        return getMissingRequiredFields(form).length === 0;
-      }
-
-      function getMissingRequiredFields(form) {
-        var built = buildHelpHubObject(form);
-        var required = ["question", "slug", "status", "category"];
-        var missing = [];
-        var i;
-        var name;
-        for (i = 0; i < required.length; i++) {
-          name = required[i];
-          if (!built[name] || String(built[name]).trim() === "") {
-            missing.push(name);
-          }
-        }
-        return missing;
-      }
-
-      function prepareApiPayload(form) {
-        var built = buildHelpHubObject(form);
-        if (!built.title || String(built.title).trim() === "") {
-          built.title = built.question || built.slug || "Untitled";
-        }
-        return built;
-      }
-
-      function setSaveStatus(message, kind) {
-        var els = [
-          document.getElementById("saveHelpHubStatus"),
-          document.getElementById("saveHelpHubStatusTop"),
-        ];
-        els.forEach(function (el) {
-          if (!el) return;
-          el.textContent = message;
-          el.classList.toggle("is-error", kind === "err");
-          el.classList.toggle("is-ok", kind === "ok");
-        });
-        var signInBtn = document.getElementById("helpHubAdminSignIn");
-        if (signInBtn) {
-          signInBtn.hidden = kind !== "signin";
-        }
-      }
-
-      function helpHubAdmin() {
-        return window.kbmHelpHubAdmin;
-      }
-
-      async function saveHelpHubEntry(form, saveBtn) {
-        var missing = getMissingRequiredFields(form);
-        if (missing.length) {
-          setSaveStatus("Missing required fields: " + missing.join(", "), "err");
-          return false;
-        }
-
-        var payload = prepareApiPayload(form);
-        var id =
-          window.currentHelpHub &&
-          window.currentHelpHub.id !== undefined &&
-          window.currentHelpHub.id !== null
-            ? window.currentHelpHub.id
-            : null;
-        var url =
-          id !== null && String(id).trim() !== ""
-            ? "/api/admin/help-hub/" + encodeURIComponent(String(id))
-            : "/api/admin/help-hub";
-        var method = id !== null && String(id).trim() !== "" ? "PUT" : "POST";
-        var admin = helpHubAdmin();
-        if (!admin || typeof admin.request !== "function") {
-          setSaveStatus("Help Hub admin is still loading. Try Save again.", "err");
-          return false;
-        }
-
-        if (saveBtn) saveBtn.disabled = true;
-        setSaveStatus("Saving…", null);
-
-        try {
-          var result = await admin.request(url, { method: method, body: payload });
-          if (result.needsSignIn) {
-            setSaveStatus(result.error || "Sign in with your Knit it Now account to save.", "signin");
-            if (typeof admin.promptSignIn === "function") admin.promptSignIn();
-            return false;
-          }
-          if (!admin.saveSucceeded(result)) {
-            setSaveStatus(result.error || "Save failed (" + result.status + ")", "err");
-            return false;
-          }
-
-          var data = result.data || {};
-          if (data.tip && typeof data.tip === "object") {
-            window.currentHelpHub = JSON.parse(JSON.stringify(data.tip));
-          }
-
-          clearDraft();
-          setSaveStatus("Saved", "ok");
-
-          if (method === "POST" && data.tip && data.tip.slug) {
-            SUPPRESS_UNLOAD = true;
-            window.setTimeout(function () {
-              window.location.href =
-                "/admin/help-hub-edit?slug=" + encodeURIComponent(String(data.tip.slug));
-            }, 400);
-            return true;
-          }
-
-          return true;
-        } catch (e) {
-          setSaveStatus("Save failed — network error", "err");
-          return false;
-        } finally {
-          if (saveBtn) saveBtn.disabled = false;
-        }
-      }
-
-      function init() {
-        window.currentHelpHub =
-          INITIAL_HELP_HUB && typeof INITIAL_HELP_HUB === "object"
-            ? JSON.parse(JSON.stringify(INITIAL_HELP_HUB))
-            : {};
-
-        var form = document.querySelector(".help-hub-edit__form");
-        var pre = document.getElementById("helpHubJsonPreview");
-        var copyBtn = document.getElementById("copyHelpHubJson");
-        var status = document.getElementById("copyHelpHubJsonStatus");
-        var previewBtn = document.getElementById("previewHelpHub");
-        var saveBtn = document.getElementById("saveHelpHubBtn");
-        var deleteBtn = document.getElementById("deleteHelpHubBtn");
-        var recovery = document.getElementById("helpHubDraftRecovery");
-        var restoreBtn = document.getElementById("helpHubRestoreDraft");
-        var discardBtn = document.getElementById("helpHubDiscardDraft");
-        if (!form || !pre || !copyBtn || !status) return;
-
-        initRelatedLessonPicker(form);
-        var jsonCopyTimerHolder = { current: null };
-
-        // Snapshot of the server-loaded form state; used as the "clean" baseline
-        // for draft comparison and the unsaved-changes leave warning.
-        var baselineSnapshot = snapshotString(form);
-        var savedSnapshot = baselineSnapshot;
-        var pendingDraft = readDraft();
-
-        function saveDraft() {
-          try {
-            var snap = snapshotForm(form);
-            if (JSON.stringify(snap) === baselineSnapshot) {
-              clearDraft();
-            } else {
-              localStorage.setItem(
-                DRAFT_KEY,
-                JSON.stringify({ v: 1, ts: Date.now(), data: snap })
-              );
-            }
-          } catch (e) {}
-        }
-
-        function applySnapshot(data) {
-          if (!data || typeof data !== "object") return;
-          Object.keys(data).forEach(function (name) {
-            var el = form.elements.namedItem(name);
-            if (el && "value" in el) el.value = data[name];
-          });
-        }
-
-        function showRecovery() {
-          if (recovery) recovery.hidden = false;
-        }
-
-        function hideRecovery() {
-          if (recovery) recovery.hidden = true;
-        }
-
-        function copyToClipboard(text, statusEl, timerHolder) {
-          function showCopied() {
-            statusEl.textContent = "Copied";
-            if (timerHolder.current) clearTimeout(timerHolder.current);
-            timerHolder.current = window.setTimeout(function () {
-              statusEl.textContent = "";
-              timerHolder.current = null;
-            }, 2000);
-          }
-
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(showCopied).catch(function () {
-              statusEl.textContent = "";
-            });
-          } else {
-            try {
-              var ta = document.createElement("textarea");
-              ta.value = text;
-              ta.setAttribute("readonly", "");
-              ta.style.position = "fixed";
-              ta.style.left = "-9999px";
-              document.body.appendChild(ta);
-              ta.select();
-              document.execCommand("copy");
-              document.body.removeChild(ta);
-              showCopied();
-            } catch (e) {
-              statusEl.textContent = "";
-            }
-          }
-        }
-
-        function updatePreview() {
-          var obj = buildHelpHubObject(form);
-          pre.textContent = JSON.stringify(obj, null, 2);
-        }
-
-        function updateCopyUi() {
-          var missing = getMissingRequiredFields(form);
-          var ok = missing.length === 0;
-          var missingText =
-            "Missing required fields: " + missing.join(", ");
-
-          copyBtn.disabled = !ok;
-          if (previewBtn) previewBtn.disabled = !ok;
-          if (saveBtn) saveBtn.disabled = !ok;
-          if (!ok) {
-            status.textContent = missingText;
-            status.classList.add("help-hub-edit__copy-status--error");
-          } else {
-            status.textContent = "";
-            status.classList.remove("help-hub-edit__copy-status--error");
-          }
-        }
-
-        function onFormActivity(ev) {
-          var t = ev.target;
-          if (t && t.getAttribute && t.getAttribute("name") === "slug") {
-            var before = t.value;
-            var after = sanitizeSlugValue(before);
-            if (after !== before) {
-              t.value = after;
-            }
-          }
-          updatePreview();
-          updateCopyUi();
-          saveDraft();
-        }
-
-        form.addEventListener("input", onFormActivity);
-        form.addEventListener("change", onFormActivity);
-        updatePreview();
-        updateCopyUi();
-
-        if (pendingDraft && JSON.stringify(pendingDraft) !== baselineSnapshot) {
-          showRecovery();
-        } else if (pendingDraft) {
-          clearDraft();
-        }
-
-        if (restoreBtn) {
-          restoreBtn.addEventListener("click", function () {
-            if (pendingDraft) {
-              applySnapshot(pendingDraft);
-              updatePreview();
-              updateCopyUi();
-              saveDraft();
-            }
-            hideRecovery();
-          });
-        }
-
-        if (discardBtn) {
-          discardBtn.addEventListener("click", function () {
-            clearDraft();
-            hideRecovery();
-          });
-        }
-
-        window.addEventListener("beforeunload", function (e) {
-          if (SUPPRESS_UNLOAD) return;
-          if (snapshotString(form) !== savedSnapshot) {
-            e.preventDefault();
-            e.returnValue = "";
-            return "";
-          }
-        });
-
-        copyBtn.addEventListener("click", function () {
-          if (!hasRequiredFields(form)) {
-            updateCopyUi();
-            return;
-          }
-          var text = JSON.stringify(buildHelpHubObject(form), null, 2);
-          copyToClipboard(text, status, jsonCopyTimerHolder);
-        });
-
-        if (previewBtn) {
-          previewBtn.addEventListener("click", async function () {
-            var missing = getMissingRequiredFields(form);
-            if (missing.length) {
-              setSaveStatus("Missing required fields: " + missing.join(", "), "err");
-              return;
-            }
-            var admin = helpHubAdmin();
-            if (!admin || typeof admin.openPreview !== "function") {
-              setSaveStatus("Help Hub admin is still loading. Try Preview again.", "err");
-              return;
-            }
-            var previewWindow = window.open("", "_blank");
-            setSaveStatus("Opening preview…", null);
-            try {
-              var result = await admin.openPreview(
-                { document: prepareApiPayload(form) },
-                { previewWindow: previewWindow },
-              );
-              if (result.needsSignIn) {
-                setSaveStatus(result.error || "Sign in with your Knit it Now account to preview.", "signin");
-                if (typeof admin.promptSignIn === "function") admin.promptSignIn();
-                return;
-              }
-              if (result.forbidden) {
-                setSaveStatus(result.error || "This Knit it Now account does not have admin access.", "err");
-                return;
-              }
-              if (!result.ok) {
-                setSaveStatus(result.error || "Preview failed (" + result.status + ")", "err");
-                return;
-              }
-              setSaveStatus("", null);
-            } catch (e) {
-              if (previewWindow) previewWindow.close();
-              setSaveStatus("Preview failed — network error", "err");
-            }
-          });
-        }
-
-        if (deleteBtn) {
-          deleteBtn.addEventListener("click", async function () {
-            var id =
-              window.currentHelpHub &&
-              window.currentHelpHub.id !== undefined &&
-              window.currentHelpHub.id !== null
-                ? window.currentHelpHub.id
-                : null;
-            if (id === null || String(id).trim() === "") {
-              setSaveStatus("Save the entry before deleting.", "err");
-              return;
-            }
-            if (!window.confirm("Delete this Help Hub entry? It can be restored from the database.")) {
-              return;
-            }
-            var admin = helpHubAdmin();
-            if (!admin || typeof admin.request !== "function") {
-              setSaveStatus("Help Hub admin is still loading. Try Delete again.", "err");
-              return;
-            }
-            deleteBtn.disabled = true;
-            try {
-              var result = await admin.request(
-                "/api/admin/help-hub/" + encodeURIComponent(String(id)),
-                { method: "DELETE" },
-              );
-              if (result.needsSignIn) {
-                setSaveStatus(result.error || "Sign in with your Knit it Now account to delete.", "signin");
-                if (typeof admin.promptSignIn === "function") admin.promptSignIn();
-                return;
-              }
-              if (!result.ok) {
-                setSaveStatus(result.error || "Delete failed (" + result.status + ")", "err");
-                return;
-              }
-              SUPPRESS_UNLOAD = true;
-              window.location.href = "/admin/help-hub";
-            } catch (e) {
-              setSaveStatus("Delete failed — network error", "err");
-            } finally {
-              deleteBtn.disabled = false;
-            }
-          });
-        }
-
-        var signInBtn = document.getElementById("helpHubAdminSignIn");
-        if (signInBtn) {
-          signInBtn.addEventListener("click", function () {
-            var admin = helpHubAdmin();
-            if (admin && typeof admin.promptSignIn === "function") admin.promptSignIn();
-          });
-        }
-
-        if (saveBtn) {
-          saveBtn.addEventListener("click", async function () {
-            var saved = await saveHelpHubEntry(form, saveBtn);
-            if (saved) {
-              baselineSnapshot = snapshotString(form);
-              savedSnapshot = baselineSnapshot;
-              pendingDraft = null;
-              clearDraft();
-              hideRecovery();
-              updatePreview();
-              updateCopyUi();
-            }
-          });
-        }
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-      } else {
-        init();
-      }
-    })();
+    bootHelpHubAdminEditor();
   </script>
 </BaseLayout>

@@ -1,4 +1,5 @@
 import type { HelpHubPageTip } from "./prepareTipPage";
+import { normalizeRelatedLibraryVideos } from "./memberResources";
 
 export const HELP_HUB_PREVIEW_PATH = "/help-hub/preview";
 
@@ -50,6 +51,9 @@ export function toHelpHubPreviewTip(doc: Record<string, unknown>): HelpHubPageTi
   stripLegacyHelpHubTipFields(tip);
   if (Object.prototype.hasOwnProperty.call(tip, "relatedLessons")) {
     tip.relatedLessons = normalizeRelatedLessons(tip.relatedLessons);
+  }
+  if (Object.prototype.hasOwnProperty.call(tip, "relatedLibraryVideos")) {
+    tip.relatedLibraryVideos = normalizeRelatedLibraryVideos(tip.relatedLibraryVideos);
   }
   return tip as HelpHubPageTip;
 }

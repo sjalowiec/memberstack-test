@@ -125,8 +125,9 @@ describe("helpHubMemberLessonCtaSpec", () => {
 describe("Help Hub Member Lesson card markup", () => {
   it("uses one CTA mount per card instead of three hidden state links", () => {
     expect(helpHubPageSource).toContain("data-hh-lesson-cta");
-    expect(helpHubPageSource).toContain("data-lesson-href={lessonHref}");
+    expect(helpHubPageSource).toContain("data-lesson-href={resource.href}");
     expect(helpHubPageSource).not.toContain("data-hh-lesson-state");
+    expect(helpHubPageSource).not.toContain("502818680");
   });
 
   it("keeps the membership note hidden until member access is confirmed", () => {
