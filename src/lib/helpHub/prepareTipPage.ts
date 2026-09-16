@@ -14,6 +14,7 @@ import {
   resolveRelatedLibraryVideoCards,
   type HelpHubMemberResourceCard,
 } from "./memberResources";
+import { helpHubRelatedToolButton } from "./adminForm";
 
 export type HelpHubTryThis = {
   quickActionTitle?: string;
@@ -39,6 +40,7 @@ export type HelpHubPageTip = {
   mediaUrl?: string;
   mediaPoster?: string;
   mediaAlt?: string;
+  mediaCaption?: string;
   thumbnailAlt?: string;
   aboutTitle?: string;
   solutionText?: string;
@@ -52,6 +54,8 @@ export type HelpHubPageTip = {
   tryImageCaption?: string;
   relatedLessons?: (string | number)[];
   relatedLibraryVideos?: unknown;
+  relatedToolLabel?: string;
+  relatedToolUrl?: string;
   jumpLinks?: { label: string; href: string }[];
 };
 
@@ -179,6 +183,11 @@ export function prepareHelpHubTipPage(
       (typeof tip.mediaAlt === "string" && tip.mediaAlt.trim()) ||
       (typeof tip.thumbnailAlt === "string" && tip.thumbnailAlt.trim()) ||
       "",
+    mediaCaption:
+      typeof tip.mediaCaption === "string" && tip.mediaCaption.trim() !== ""
+        ? tip.mediaCaption.trim()
+        : "",
+    relatedTool: helpHubRelatedToolButton(tip),
     catalogVimeoEmbedUrl:
       catalogVimeoNumericId != null ? `https://player.vimeo.com/video/${catalogVimeoNumericId}` : "",
     hasHeroMedia: Boolean(

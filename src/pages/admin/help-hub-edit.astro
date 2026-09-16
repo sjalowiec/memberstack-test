@@ -9,6 +9,7 @@ import {
   slugFromQuestion,
   tryStepsLinesForForm,
   tryThisIntroForForm,
+  topImageFieldsForAdminForm,
 } from "../../lib/helpHub/adminForm";
 import { helpHubAdminEditorPayload } from "../../lib/helpHub/adminPageGate";
 import { helpHubCategoryChoices } from "../../lib/helpHub/categories";
@@ -76,6 +77,7 @@ const showLegacyOption = categoryValue !== "" && !knownKeys.includes(categoryVal
 const isNewChecked = rawEntry?.isNew === true;
 const entryLabel = currentEntry as { question?: string; title?: string; slug?: string } | null;
 const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor("question", ""));
+const topImage = topImageFieldsForAdminForm(rawEntry);
 ---
 
 <BaseLayout
@@ -142,6 +144,41 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
                       name="bubbleAnswer"
                       rows="3">{valueFor("bubbleAnswer", "")}</textarea>
                     <p class="help-hub-edit__hint">The quick answer shown in the speech bubble.</p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-top-image" class="help-hub-edit__label">Top image URL</label>
+                    <input
+                      id="help-hub-top-image"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="mediaUrl"
+                      value={topImage.url}
+                    />
+                    <p class="help-hub-edit__hint">
+                      Optional public image shown beside the question and short answer.
+                    </p>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-top-image-alt" class="help-hub-edit__label">
+                      Top image alt text
+                    </label>
+                    <input
+                      id="help-hub-top-image-alt"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="mediaAlt"
+                      value={topImage.alt}
+                    />
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-top-image-caption" class="help-hub-edit__label">
+                      Optional top image caption
+                    </label>
+                    <textarea
+                      id="help-hub-top-image-caption"
+                      class="help-hub-edit__textarea"
+                      name="mediaCaption"
+                      rows="2">{topImage.caption}</textarea>
                   </div>
                   <div class="help-hub-edit__field">
                     <label for="help-hub-hook" class="help-hub-edit__label">One-line hook</label>
@@ -237,6 +274,34 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
                       class="help-hub-edit__textarea"
                       name="tryImageCaption"
                       rows="2">{valueFor("tryImageCaption", "")}</textarea>
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-related-tool-label" class="help-hub-edit__label">
+                      Related tool button label
+                    </label>
+                    <input
+                      id="help-hub-related-tool-label"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="relatedToolLabel"
+                      value={valueFor("relatedToolLabel", "")}
+                    />
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-related-tool-url" class="help-hub-edit__label">
+                      Related tool internal URL
+                    </label>
+                    <input
+                      id="help-hub-related-tool-url"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="relatedToolUrl"
+                      value={valueFor("relatedToolUrl", "")}
+                    />
+                    <p class="help-hub-edit__hint">
+                      Optional. The button appears after Try This and opens in the same tab.
+                      Leave either field blank to hide it.
+                    </p>
                   </div>
                 </div>
               </section>
