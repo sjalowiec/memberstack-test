@@ -14,9 +14,19 @@ import {
   DS_FONT,
   DS_MUTED,
   DS_STROKE,
+  DS_VB_H,
+  DS_VB_W,
   endCap,
   fmtNum,
 } from "./dropShoulderPatternDiagramSvgShared";
+import {
+  buildDropShoulderMeasurementSleeveFrame,
+  dropShoulderSleeveBodyPath,
+  drawSleeveCuffJoin,
+  offsetDropShoulderSleeveDiagramFrame,
+  type DropShoulderSleeveDiagramFrame,
+} from "./dropShoulderSleeveDiagramSvgShared";
+import type { DropShoulderEditPreviewTab } from "./dropShoulderEditMeasurementPreview";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import type { SidewaysCardiganGarmentStyle } from "./sidewaysCardiganConstructionIdentity";
 
@@ -25,6 +35,7 @@ export const SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS = {
   finishedLength: "target_sideways_back_length",
   neckOpeningWidth: "target_sideways_neck_opening",
   vNeckDepth: "target_sideways_vneck_depth",
+  armholeDepth: "target_sideways_armhole_depth",
   upperArm: "target_sideways_upper_arm",
   sleeveLength: "target_sideways_sleeve_length",
   wrist: "target_sideways_wrist",
@@ -36,14 +47,13 @@ export const SIDEWAYS_SUMMARY_DERIVED_ROLES = {
   halfNeckOpening: "derived-half-neck-opening",
 } as const;
 
-const PAD = { top: 56, right: 210, bottom: 118, left: 132 };
+const PAD = { top: 56, right: 96, bottom: 118, left: 132 };
 const MIN_SECTION = 28;
 const MIN_V_CUT = 26;
 const MIN_ARMHOLE = 18;
 const MIN_BODY_W = 88;
 const MIN_SLEEVE_L = 48;
 const MIN_SLEEVE_W = 22;
-const CHIP_CLEAR = 46;
 
 export type SidewaysCardiganEditMeasurementInput = {
   finishedBustInches: number;
@@ -363,7 +373,6 @@ function drawArmholeAndBack(frame: SidewaysCardiganEditMeasurementFrame): string
 }
 
 function drawPulloverDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
-  const { sleeve } = frame;
   const bustX = frame.hemX - 36;
   const lengthY = frame.bottomY + 28;
   const vDepthY = (frame.firstVEndY + frame.secondVStartY) / 2;
@@ -378,9 +387,6 @@ function drawPulloverDimensions(frame: SidewaysCardiganEditMeasurementFrame): st
     hDim(frame.armholeX, frame.neckX, armholeY - 16, "dim-armhole-depth"),
     vDim(frame.hemX + 22, frame.firstVEndY, frame.firstArmholeY, "dim-shoulder-section"),
     vDim(frame.neckX + 18, frame.topY, halfNeckY, "dim-half-neck-opening"),
-    hDim(sleeve.attachX, sleeve.farX, sleeve.attachY + sleeve.upperHalf + 22, "dim-sleeve-length"),
-    vDim(sleeve.attachX + 14, sleeve.attachY - sleeve.upperHalf, sleeve.attachY + sleeve.upperHalf, "dim-upper-arm"),
-    vDim(sleeve.farX + 16, sleeve.attachY - sleeve.wristHalf, sleeve.attachY + sleeve.wristHalf, "dim-wrist"),
     derivedLabel((frame.armholeX + frame.neckX) / 2, armholeY - 22, "Armhole depth", SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth),
     derivedLabel(frame.hemX + 22, shoulderMidY - 8, "Shoulder", SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection),
     derivedLabel(frame.neckX + 48, (frame.topY + halfNeckY) / 2, "½ neck opening", SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening),
@@ -394,8 +400,6 @@ function drawCardiganDimensions(frame: SidewaysCardiganEditMeasurementFrame): st
   const shoulderDimX = frame.neckX + 40;
   const halfNeckMidY = (frame.secondVStartY + frame.bottomY) / 2;
   const shoulderMidY = (frame.secondArmholeY + frame.secondVStartY) / 2;
-  const sleeveDimY = frame.secondArmholeY + CHIP_CLEAR + 8;
-  const wristX = frame.neckX + 118;
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
     hDim(frame.hemX, frame.neckX, midBackY, "dim-finished-back-length"),
@@ -404,9 +408,6 @@ function drawCardiganDimensions(frame: SidewaysCardiganEditMeasurementFrame): st
     hDim(frame.armholeX, frame.neckX, frame.secondArmholeY - 14, "dim-armhole-depth"),
     vDim(shoulderDimX, frame.secondArmholeY, frame.secondVStartY, "dim-shoulder-section"),
     vDim(neckDimX, frame.secondVStartY, frame.bottomY, "dim-half-neck-opening"),
-    hDim(frame.neckX + 64, wristX, sleeveDimY, "dim-sleeve-length"),
-    vDim(frame.neckX + 64, frame.secondArmholeY - 18, frame.secondArmholeY + 18, "dim-upper-arm"),
-    vDim(wristX, sleeveDimY - 16, sleeveDimY + 16, "dim-wrist"),
     derivedLabel((frame.armholeX + frame.neckX) / 2, frame.secondArmholeY - 22, "Armhole depth", SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth),
     derivedLabel(shoulderDimX + 52, shoulderMidY, "Shoulder", SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection),
     derivedLabel(neckDimX + 52, halfNeckMidY, "½ neck opening", SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening),
@@ -421,7 +422,6 @@ function drawDimensions(frame: SidewaysCardiganEditMeasurementFrame): string {
 
 function drawPulloverTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
   const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
-  const { sleeve } = frame;
   const armholeY = frame.secondArmholeY;
   return [
     `<g data-role="measurement-targets">`,
@@ -429,9 +429,7 @@ function drawPulloverTargets(frame: SidewaysCardiganEditMeasurementFrame): strin
     targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, frame.bottomY + 28),
     targetCircle(t.neckOpeningWidth, frame.neckX + 18, (frame.topY + frame.firstVEndY) / 2),
     targetCircle(t.vNeckDepth, (frame.vCutX + frame.neckX) / 2, frame.firstVEndY),
-    targetCircle(t.upperArm, sleeve.attachX + 14, sleeve.attachY),
-    targetCircle(t.sleeveLength, (sleeve.attachX + sleeve.farX) / 2, sleeve.attachY + sleeve.upperHalf + 22),
-    targetCircle(t.wrist, sleeve.farX + 16, sleeve.attachY),
+    targetCircle(t.armholeDepth, (frame.armholeX + frame.neckX) / 2, armholeY - 16),
     `</g>`,
   ].join("");
 }
@@ -440,17 +438,13 @@ function drawCardiganTargets(frame: SidewaysCardiganEditMeasurementFrame): strin
   const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
   const bustX = Math.max(18, frame.hemX - 48);
   const midBackY = (frame.firstArmholeY + frame.secondArmholeY) / 2;
-  const sleeveDimY = frame.secondArmholeY + CHIP_CLEAR + 8;
-  const wristX = frame.neckX + 118;
   return [
     `<g data-role="measurement-targets">`,
     targetCircle(t.finishedBust, bustX, (frame.topY + frame.bottomY) / 2),
     targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, midBackY),
     targetCircle(t.neckOpeningWidth, frame.neckX + 40, (frame.backNeckStartY + frame.backNeckEndY) / 2),
     targetCircle(t.vNeckDepth, (frame.vCutX + frame.neckX) / 2, frame.bottomY + 32),
-    targetCircle(t.upperArm, frame.neckX + 64, frame.secondArmholeY),
-    targetCircle(t.sleeveLength, (frame.neckX + 64 + wristX) / 2, sleeveDimY),
-    targetCircle(t.wrist, wristX, sleeveDimY),
+    targetCircle(t.armholeDepth, (frame.armholeX + frame.neckX) / 2, frame.secondArmholeY - 14),
     `</g>`,
   ].join("");
 }
@@ -470,7 +464,7 @@ function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): { width: numbe
       height: Math.ceil(maxY + PAD.bottom * 0.35),
     };
   }
-  const maxX = frame.neckX + 170;
+  const maxX = frame.neckX + 110;
   const maxY = frame.bottomY + 86;
   return {
     width: Math.ceil(Math.max(maxX, PAD.left + frame.bodyW + PAD.right)),
@@ -484,7 +478,84 @@ export function buildSidewaysCardiganEditMeasurementFrame(
   return buildFrame(input.measurements, input.garmentStyle);
 }
 
-export function buildSidewaysCardiganEditMeasurementDiagramSvg(
+const DS_SLEEVE_PAD_TOP = 64;
+const DS_SLEEVE_PAD_BOTTOM = 68;
+const DS_SLEEVE_PAD_LEFT = 84;
+const DS_SLEEVE_PAD_RIGHT = 78;
+const DS_SLEEVE_REF_LENGTH_IN = 22;
+const DS_SLEEVE_REF_FLAT_WIDTH_IN = 9;
+const DS_SLEEVE_CONTENT_FILL = 0.78;
+const DS_SLEEVE_DIM = {
+  upperArm: 20,
+  cuffCirc: 24,
+  sleeveLength: 32,
+} as const;
+
+function buildSidewaysSleeveFrame(
+  measurements: SidewaysCardiganEditMeasurementInput,
+): DropShoulderSleeveDiagramFrame {
+  const lengthIn = Math.max(1, measurements.sleeveLengthInches);
+  const upperFlatIn = Math.max(0.5, measurements.finishedUpperArmInches / 2);
+  const cuffFlatIn = Math.max(0.4, measurements.wristInches / 2);
+  const contentW = DS_VB_W - DS_SLEEVE_PAD_LEFT - DS_SLEEVE_PAD_RIGHT;
+  const contentH = DS_VB_H - DS_SLEEVE_PAD_TOP - DS_SLEEVE_PAD_BOTTOM;
+  const envelopeW = Math.max(upperFlatIn, cuffFlatIn, DS_SLEEVE_REF_FLAT_WIDTH_IN);
+  const envelopeH = Math.max(lengthIn, DS_SLEEVE_REF_LENGTH_IN);
+  const pxPerInch =
+    Math.min(contentW / envelopeW, contentH / envelopeH) * DS_SLEEVE_CONTENT_FILL;
+  const local = buildDropShoulderMeasurementSleeveFrame({
+    upperArmWidthPx: upperFlatIn * pxPerInch,
+    cuffWidthPx: cuffFlatIn * pxPerInch,
+    sleeveLengthPx: lengthIn * pxPerInch,
+    cuffDepthPx: 0,
+  });
+  const sleeveH = local.bottom - local.top;
+  const midX = DS_VB_W / 2;
+  const desiredTop = (DS_VB_H - sleeveH) / 2;
+  const top = Math.min(
+    DS_VB_H - DS_SLEEVE_PAD_BOTTOM - sleeveH,
+    Math.max(DS_SLEEVE_PAD_TOP, desiredTop),
+  );
+  return offsetDropShoulderSleeveDiagramFrame(local, midX, top);
+}
+
+function drawSidewaysSleeveTargets(frame: DropShoulderSleeveDiagramFrame): string {
+  const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
+  const lengthX = Math.min(frame.wristLeft, frame.upperLeft) - DS_SLEEVE_DIM.sleeveLength;
+  return [
+    `<g data-role="measurement-targets">`,
+    targetCircle(t.upperArm, frame.midX, frame.upperArmY - DS_SLEEVE_DIM.upperArm),
+    targetCircle(t.sleeveLength, lengthX, (frame.top + frame.bottom) / 2),
+    targetCircle(t.wrist, frame.midX, frame.wristY + DS_SLEEVE_DIM.cuffCirc),
+    `</g>`,
+  ].join("");
+}
+
+function drawSidewaysSleeveDimensions(frame: DropShoulderSleeveDiagramFrame): string {
+  const lengthX = Math.min(frame.wristLeft, frame.upperLeft) - DS_SLEEVE_DIM.sleeveLength;
+  return [
+    hDim(frame.upperLeft, frame.upperRight, frame.upperArmY - DS_SLEEVE_DIM.upperArm, "dim-upper-arm"),
+    hDim(frame.wristLeft, frame.wristRight, frame.wristY + DS_SLEEVE_DIM.cuffCirc, "dim-wrist"),
+    vDim(lengthX, frame.top, frame.bottom, "dim-sleeve-length"),
+  ].join("");
+}
+
+export function buildSidewaysCardiganEditSleeveMeasurementDiagramSvg(
+  input: SidewaysCardiganEditMeasurementDiagramInput,
+): string {
+  const unit = input.displayUnit === "cm" ? "cm" : "in";
+  const frame = buildSidewaysSleeveFrame(input.measurements);
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sideways sweater sleeve measurement diagram" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${input.garmentStyle === "pullover" ? "pullover" : "cardigan"}" data-sideways-edit-piece="sleeve" data-sleeve-cap="false" data-display-unit="${unit}">`,
+    `<path data-role="sleeve-outline" data-sleeve-cap="false" d="${dropShoulderSleeveBodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    drawSleeveCuffJoin(frame),
+    drawSidewaysSleeveDimensions(frame),
+    drawSidewaysSleeveTargets(frame),
+    `</svg>`,
+  ].join("");
+}
+
+export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
   input: SidewaysCardiganEditMeasurementDiagramInput,
 ): string {
   const garmentStyle = input.garmentStyle === "pullover" ? "pullover" : "cardigan";
@@ -502,7 +573,7 @@ export function buildSidewaysCardiganEditMeasurementDiagramSvg(
       ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
       : "";
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-edit-piece="body" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}">`,
     `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     sleeve,
     drawArmholeAndBack(frame),
@@ -511,4 +582,13 @@ export function buildSidewaysCardiganEditMeasurementDiagramSvg(
     drawTargets(frame),
     `</svg>`,
   ].join("");
+}
+
+export function buildSidewaysCardiganEditMeasurementDiagramSvg(
+  input: SidewaysCardiganEditMeasurementDiagramInput,
+  piece: DropShoulderEditPreviewTab = "body",
+): string {
+  return piece === "sleeve"
+    ? buildSidewaysCardiganEditSleeveMeasurementDiagramSvg(input)
+    : buildSidewaysCardiganEditBodyMeasurementDiagramSvg(input);
 }

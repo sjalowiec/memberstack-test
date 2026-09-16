@@ -1,6 +1,7 @@
 /**
  * Sideways V-Neck Summary/Edit — reuse sweater override storage and the shared
- * PatternSummaryEditWorkspace chips. Does not change Cardigan/Pullover or sleeve direction.
+ * PatternSummaryEditWorkspace chips, Body/Sleeve tabs, and Drop Shoulder
+ * Upper Arm → armhole relationship. Quick edits may change style/fit/size.
  */
 
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
@@ -21,14 +22,18 @@ import {
   type SidewaysCardiganBuilderDraftState,
 } from "./sidewaysCardiganBuilderState";
 import {
+  finishedBustInchesFromChartRow,
   parsePositiveInchesField,
+  reseedSidewaysCardiganStyleMeasurements,
   SIDEWAYS_CARDIGAN_STYLE_MEASUREMENT_KEYS,
-  type SidewaysCardiganStyleMeasurementKey,
   type SidewaysCardiganStyleMeasurements,
 } from "./sidewaysCardiganStyleMeasurements";
 import {
+  parseSidewaysCardiganGarmentStyle,
+  parseSidewaysCardiganSleeveLengthChoice,
   writeSidewaysCardiganWorkingDraftStamp,
   type SidewaysCardiganGarmentStyle,
+  type SidewaysCardiganSleeveLengthChoice,
 } from "./sidewaysCardiganConstructionIdentity";
 import {
   SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS,
@@ -36,6 +41,13 @@ import {
 } from "./sidewaysCardiganEditMeasurementDiagramSvg";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { mergeSidewaysCardiganWorkingDraft } from "./sidewaysCardiganWorkspaceLoad";
+import { DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT } from "./dropShoulderEditMeasurementPreview";
+import {
+  findSidewaysCardiganWomenChartRow,
+  resolveSidewaysCardiganChartAudienceFromSize,
+  type SidewaysCardiganWomenChartAudience,
+} from "./sidewaysCardiganSizeCharts";
+import { syncSidewaysCardiganBuilderToPatternStorage } from "./syncSidewaysCardiganBuilderToPatternStorage";
 
 export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS = {
   finishedBust: "chestBust",
@@ -71,11 +83,12 @@ const MEASURE_INPUT = {
   unitSuffixAttr: "data-sideways-edit-unit-suffix",
 };
 
-export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasurementField[] = [
+export const SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS: PatternSummaryMeasurementField[] = [
   {
     ...MEASURE_INPUT,
     id: "finishedBust",
     label: "Finished bust/chest",
+    previewTab: "body",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust,
     transform: "translate(calc(-100% - 8px), -50%)",
     inputId: "sideways-edit-finished-bust",
@@ -87,6 +100,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasure
     ...MEASURE_INPUT,
     id: "finishedLength",
     label: "Finished back length",
+    previewTab: "body",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedLength,
     transform: "translate(-50%, 8px)",
     inputId: "sideways-edit-finished-length",
@@ -98,6 +112,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasure
     ...MEASURE_INPUT,
     id: "neckOpeningWidth",
     label: "Neck opening width",
+    previewTab: "body",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.neckOpeningWidth,
     transform: "translate(8px, -50%)",
     inputId: "sideways-edit-neck-opening",
@@ -109,6 +124,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasure
     ...MEASURE_INPUT,
     id: "vNeckDepth",
     label: "V-neck depth",
+    previewTab: "body",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth,
     transform: "translate(-50%, calc(-100% - 8px))",
     inputId: "sideways-edit-vneck-depth",
@@ -117,20 +133,39 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasure
     inputTestId: "sideways-edit-vneck-depth",
   },
   {
+    id: "armholeDepth",
+    label: "Armhole depth",
+    previewTab: "body",
+    editable: false,
+    secondary: DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT,
+    targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.armholeDepth,
+    transform: "translate(-50%, calc(-100% - 8px))",
+    unitSuffixAttr: "data-sideways-edit-unit-suffix",
+    testId: "sideways-edit-chip-armhole-depth",
+    extraChipAttrs: { "data-sideways-armhole-help": "" },
+  },
+];
+
+export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementField[] = [
+  {
     ...MEASURE_INPUT,
     id: "finishedUpperArm",
     label: "Upper arm",
+    previewTab: "sleeve",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm,
     transform: "translate(8px, -50%)",
     inputId: "sideways-edit-finished-upper-arm",
     inputDataAttr: "data-sideways-edit-finished-upper-arm",
+    extraInputAttrs: { "data-cb-measure-input": "upperArm" },
     testId: "sideways-edit-chip-finished-upper-arm",
     inputTestId: "sideways-edit-finished-upper-arm",
+    secondary: DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT,
   },
   {
     ...MEASURE_INPUT,
     id: "sleeveLength",
     label: "Sleeve length",
+    previewTab: "sleeve",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength,
     transform: "translate(-50%, 8px)",
     inputId: "sideways-edit-sleeve-length",
@@ -142,6 +177,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasure
     ...MEASURE_INPUT,
     id: "wrist",
     label: "Wrist",
+    previewTab: "sleeve",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist,
     transform: "translate(8px, -50%)",
     inputId: "sideways-edit-wrist",
@@ -151,9 +187,14 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasure
   },
 ];
 
-export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_KEYS = SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.map(
-  (field) => field.id as SidewaysCardiganSummaryMeasurementKey,
-);
+export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasurementField[] = [
+  ...SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS,
+  ...SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS,
+];
+
+export const SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_KEYS = Object.keys(
+  SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS,
+) as SidewaysCardiganSummaryMeasurementKey[];
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
@@ -307,6 +348,116 @@ export function applySidewaysCardiganSummaryMeasurementEdits(
     },
   };
   return { ok: true, state: next, garmentStyle };
+}
+
+export type SidewaysCardiganSummaryQuickEdits = {
+  selectedSize?: string;
+  chartAudience?: SidewaysCardiganWomenChartAudience;
+  garmentStyle?: SidewaysCardiganGarmentStyle;
+  fit?: string;
+  sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice;
+};
+
+function persistChartBustOverride(bustInches: number | undefined): void {
+  if (bustInches === undefined || !(bustInches > 0)) return;
+  const rounded = roundQuarter(bustInches);
+  const overrides: Record<string, string> = {
+    ...loadMeasurementOverrides(),
+    chestBust: formatSwatchCountForGaugeInput(rounded),
+  };
+  persistMeasurementOverrides(overrides);
+  const prevFit = {
+    ...section(getCurrentPattern().fit),
+    ...section(getPatternData().fit),
+  };
+  const fitPayload = {
+    ...prevFit,
+    selectedMeasurements: {
+      ...section(prevFit.selectedMeasurements),
+      finished_bust_chest: rounded,
+    },
+    cbMeasurementOverrides: overrides,
+  };
+  saveCurrentPattern({ fit: fitPayload });
+  savePatternData("fit", fitPayload);
+}
+
+/** Size, garment style, fit, or sleeve-length picker — reseeds chart fields and remounts. */
+export function applySidewaysCardiganSummaryQuickEdits(
+  edits: SidewaysCardiganSummaryQuickEdits,
+  state: SidewaysCardiganBuilderDraftState = readSidewaysCardiganBuilderStateFromDraft(),
+): { ok: true; state: SidewaysCardiganBuilderDraftState; garmentStyle: SidewaysCardiganGarmentStyle } | { ok: false; message: string } {
+  const next: SidewaysCardiganBuilderDraftState = { ...state };
+  if (edits.garmentStyle) {
+    const parsed = parseSidewaysCardiganGarmentStyle(edits.garmentStyle);
+    if (parsed) next.garmentStyle = parsed;
+  }
+  if (edits.fit !== undefined && edits.fit.trim()) next.fit = edits.fit.trim();
+  if (edits.sleeveLengthChoice) {
+    next.sleeveLengthChoice = parseSidewaysCardiganSleeveLengthChoice(edits.sleeveLengthChoice);
+  }
+  if (edits.selectedSize !== undefined) next.selectedSize = edits.selectedSize.trim();
+  if (edits.chartAudience) {
+    next.chartAudience = edits.chartAudience;
+  } else if (next.selectedSize) {
+    next.chartAudience =
+      resolveSidewaysCardiganChartAudienceFromSize(next.selectedSize) ?? next.chartAudience;
+  }
+
+  const reseedMeasurements =
+    edits.selectedSize !== undefined ||
+    edits.fit !== undefined ||
+    edits.sleeveLengthChoice !== undefined;
+
+  writeSidewaysCardiganWorkingDraftStamp({
+    garmentStyle: next.garmentStyle,
+    sleeveDirection: next.sleeveDirection,
+    sleeveLength: next.sleeveLengthChoice,
+  });
+
+  if (reseedMeasurements) {
+    const row = findSidewaysCardiganWomenChartRow(
+      next.selectedSize,
+      next.chartAudience || undefined,
+    );
+    if (!row) return { ok: false, message: "Choose a size." };
+    next.chartAudience = row.chartAudience;
+    next.styleMeasurements = reseedSidewaysCardiganStyleMeasurements({
+      previous: next.styleMeasurements,
+      userEdited: next.userEditedStyle,
+      row,
+      chartAudience: row.chartAudience,
+      fitPreference: next.fit || "standard",
+      sleeveLengthChoice: next.sleeveLengthChoice,
+    });
+    syncSidewaysCardiganBuilderToPatternStorage(
+      {
+        selectedSize: next.selectedSize,
+        chartAudience: row.chartAudience,
+        fit: next.fit || "standard",
+        garmentStyle: next.garmentStyle,
+        styleMeasurements: next.styleMeasurements,
+        gaugeStitchRaw: next.gaugeStitchRaw,
+        gaugeRowRaw: next.gaugeRowRaw,
+        availableNeedles: next.availableNeedles,
+        unit: next.unit,
+        sleeveDirection: next.sleeveDirection,
+        sleeveLengthChoice: next.sleeveLengthChoice,
+      },
+      row,
+    );
+    if (edits.selectedSize !== undefined || edits.fit !== undefined) {
+      persistChartBustOverride(finishedBustInchesFromChartRow(row, next.fit || "standard"));
+    }
+  }
+
+  writeSidewaysCardiganWorkingDraftStamp({
+    garmentStyle: next.garmentStyle,
+    sleeveDirection: next.sleeveDirection,
+    sleeveLength: next.sleeveLengthChoice,
+  });
+
+  return { ok: true, state: next, garmentStyle: next.garmentStyle };
 }
 
 export function buildSidewaysCardiganSummaryDiagramInput(

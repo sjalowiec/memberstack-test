@@ -33,7 +33,19 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(svg).toContain("viewBox=");
     expect(svg).toContain("preserveAspectRatio=\"xMidYMid meet\"");
     expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
-    expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.armholeDepth}"`);
+    expect(svg).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    expect(svg).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist}"`);
+    const sleeve = buildSidewaysCardiganEditMeasurementDiagramSvg(
+      { garmentStyle: "cardigan", measurements: BASE },
+      "sleeve",
+    );
+    expect(sleeve).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    expect(sleeve).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
+    expect(sleeve).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist}"`);
+    expect(sleeve).toContain('data-sideways-edit-piece="sleeve"');
+    expect(src).toContain("buildDropShoulderMeasurementSleeveFrame");
+    expect(src).toContain("dropShoulderSleeveBodyPath");
   });
 
   it("keeps extreme sizes recognizable by normalizing into a viewBox", () => {
@@ -77,6 +89,8 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(cardigan).toContain("dim-finished-back-length");
     expect(cardigan).toContain("dim-vneck-depth");
     expect(cardigan).not.toContain('data-role="sleeve-outline"');
+    expect(cardigan).not.toContain("dim-sleeve-length");
+    expect(cardigan).not.toContain("dim-wrist");
     expect(pullover).toContain('data-role="sleeve-outline"');
     expect(pullover).toContain('data-role="underarm-start"');
   });

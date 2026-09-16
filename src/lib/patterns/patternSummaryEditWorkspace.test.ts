@@ -260,11 +260,16 @@ describe("Sideways V-Neck Summary/Edit reuses the shared Lego block", () => {
     expect(sidewaysSummary).toContain("PatternSummaryEditWorkspace");
     expect(sidewaysSummary).toContain("PatternSummaryMeasurementChip");
     expect(sidewaysSummary).toContain("PatternSummaryDiagramStage");
+    expect(sidewaysSummary).toContain("PatternProjectDetails");
+    expect(sidewaysSummary).toContain("EditWorkspaceGaugeFields");
     expect(sidewaysSummary).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
     expect(sidewaysSummary).toContain('slot="quick"');
     expect(sidewaysSummary).toContain('slot="diagram"');
+    expect(sidewaysSummary).toContain("Quick edits");
+    expect(sidewaysSummary).toContain("data-cb-build-summary");
     expect(sidewaysSummary).toContain("data-sideways-edit-update");
     expect(sidewaysSummary).toContain("Update Pattern");
+    expect((sidewaysSummary.match(/id="sideways-edit-units-heading"/g) ?? []).length).toBe(1);
     expect(sidewaysSummary).not.toContain("sl-edit-drawer--workspace");
     expect(sidewaysSummary).not.toContain("buildHatPatternDiagramSvg");
     expect(sidewaysSummary).not.toContain("sleevelessPatternEditDrawerPrototype.ts");
