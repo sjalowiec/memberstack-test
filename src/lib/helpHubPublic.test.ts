@@ -96,6 +96,23 @@ describe("searchPublicHelpHubTips", () => {
   it("returns empty for draft-only catalogs", () => {
     expect(searchPublicHelpHubTips([draftTip], "change color")).toEqual([]);
   });
+
+  it("matches published tips by category key or display label", () => {
+    const gaugeTip: HelpHubTipRecord = {
+      slug: "every-other-needle-swatch",
+      status: "published",
+      title: "Every other needle swatch",
+      question: "How do I swatch over every other needle?",
+      category: "gauge-swatching",
+    };
+    expect(searchPublicHelpHubTips([gaugeTip, draftTip], "Gauge & Swatching")).toEqual([
+      gaugeTip,
+    ]);
+    expect(searchPublicHelpHubTips([gaugeTip], "gauge-swatching")).toEqual([gaugeTip]);
+    expect(searchPublicHelpHubTips([{ ...gaugeTip, status: "draft" }], "Gauge & Swatching")).toEqual(
+      [],
+    );
+  });
 });
 
 describe("findPublicHelpHubTipsForVideo", () => {

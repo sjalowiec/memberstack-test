@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import helpHubCategories from "../../data/help-hub-categories.json";
 import videosPublic from "../../data/videos-public.json";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
 import { loadLessonsForAdmin } from "../../lib/lessons/loadLessons";
@@ -12,6 +11,7 @@ import {
   tryThisIntroForForm,
 } from "../../lib/helpHub/adminForm";
 import { helpHubAdminEditorPayload } from "../../lib/helpHub/adminPageGate";
+import { helpHubCategoryChoices } from "../../lib/helpHub/categories";
 import {
   libraryVideosForPicker,
   memberLessonsForResourcePicker,
@@ -42,17 +42,7 @@ const clientPayload = helpHubAdminEditorPayload({
   })),
 });
 
-const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : []).reduce<
-  { key: string; label: string }[]
->((acc, cat) => {
-  const rec = cat as Record<string, unknown>;
-  const key = typeof rec.key === "string" ? rec.key.trim() : "";
-  if (!key) return acc;
-  const label =
-    typeof rec.label === "string" && rec.label.trim() !== "" ? rec.label.trim() : key;
-  acc.push({ key, label });
-  return acc;
-}, []);
+const categoryOptions = helpHubCategoryChoices();
 
 const pageTitle = isEditing
   ? "Edit Help Hub Entry | Knit it Now"

@@ -81,8 +81,26 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain("hidden");
     expect(formClientSource).toContain("memberResourcePickerResults");
     expect(formClientSource).toContain("memberResourceOptionLabel");
+    expect(editSource).toContain("helpHubCategoryChoices");
     expect(editSource).toContain("TRY THIS STEPS");
     expect(editSource).toContain("One step per line.");
+  });
+
+  it("includes Gauge & Swatching in the admin category choices after Getting Started", () => {
+    const categoriesSource = readFileSync(
+      join(here, "..", "..", "data", "help-hub-categories.json"),
+      "utf8",
+    );
+    const categories = JSON.parse(categoriesSource) as { key: string; label: string }[];
+    const keys = categories.map((row) => row.key);
+    expect(keys).toContain("getting-started");
+    expect(keys).toContain("machines");
+    expect(keys.indexOf("gauge-swatching")).toBe(keys.indexOf("getting-started") + 1);
+    expect(keys.indexOf("machines")).toBe(keys.indexOf("gauge-swatching") + 1);
+    expect(categories.find((row) => row.key === "gauge-swatching")?.label).toBe(
+      "Gauge & Swatching",
+    );
+    expect(editSource).toContain("helpHubCategoryChoices");
   });
 
   it("keeps Help Hub admin pages behind the same /admin Basic Auth used by the dashboard", () => {
