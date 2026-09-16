@@ -86,6 +86,23 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain("One step per line.");
   });
 
+  it("offers optional top image and related-tool fields without video embed controls", () => {
+    expect(editSource).toContain("Top image URL");
+    expect(editSource).toContain("Top image alt text");
+    expect(editSource).toContain("Optional top image caption");
+    expect(editSource).toContain('name="mediaUrl"');
+    expect(editSource).toContain('name="mediaAlt"');
+    expect(editSource).toContain('name="mediaCaption"');
+    expect(editSource).toContain("Related tool button label");
+    expect(editSource).toContain("Related tool internal URL");
+    expect(editSource).toContain('name="relatedToolLabel"');
+    expect(editSource).toContain('name="relatedToolUrl"');
+    expect(editSource).not.toContain("name=\"mediaType\"");
+    expect(editSource).not.toContain("YouTube");
+    expect(formClientSource).toContain("relatedToolLabel");
+    expect(formClientSource).toContain("relatedToolUrl");
+  });
+
   it("includes Gauge & Swatching in the admin category choices after Getting Started", () => {
     const categoriesSource = readFileSync(
       join(here, "..", "..", "data", "help-hub-categories.json"),

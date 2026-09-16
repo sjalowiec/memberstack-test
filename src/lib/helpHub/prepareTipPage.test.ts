@@ -123,6 +123,61 @@ describe("prepareHelpHubTipPage member resources", () => {
     expect(view.hasHeroMedia).toBe(true);
     expect(view.mediaUrl).toBe("/images/help-hub/cut-n-sew.jpg");
   });
+
+  it("shows a supplied top image beside the question and keeps existing videos", () => {
+    const withImage = prepareHelpHubTipPage(
+      {
+        slug: "every-other-needle-swatch",
+        mediaType: "image",
+        mediaUrl: "/images/help-hub/every-other-needle.jpg",
+        mediaAlt: "Turquoise knitting worked on every other needle of a knitting machine",
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(withImage.hasHeroMedia).toBe(true);
+    expect(withImage.mediaType).toBe("image");
+    expect(withImage.mediaUrl).toBe("/images/help-hub/every-other-needle.jpg");
+    expect(withImage.mediaAlt).toBe(
+      "Turquoise knitting worked on every other needle of a knitting machine",
+    );
+
+    const withVideo = prepareHelpHubTipPage(
+      {
+        slug: "cut-and-sew-shaping",
+        mediaType: "vimeo",
+        mediaUrl: "1175910961",
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(withVideo.hasHeroMedia).toBe(true);
+    expect(withVideo.mediaType).toBe("vimeo");
+    expect(withVideo.mediaUrl).toBe("1175910961");
+  });
+
+  it("shows the related tool button only when both fields are stored", () => {
+    const withTool = prepareHelpHubTipPage(
+      {
+        slug: "every-other-needle-swatch",
+        relatedToolLabel: "Calculate My Gauge",
+        relatedToolUrl: "/tools/gauge-calculator",
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(withTool.relatedTool).toEqual({
+      label: "Calculate My Gauge",
+      href: "/tools/gauge-calculator",
+    });
+    expect(
+      prepareHelpHubTipPage(
+        { slug: "every-other-needle-swatch", relatedToolLabel: "Calculate My Gauge" },
+        lessons,
+        videosPublic,
+      ).relatedTool,
+    ).toBeNull();
+  });
 });
 
 describe("Help Hub membership CTA for library resources", () => {

@@ -9,6 +9,7 @@ const MEDIA_KEYS_TO_PRESERVE = [
   "mediaUrl",
   "mediaPoster",
   "mediaAlt",
+  "mediaCaption",
   "thumbnailAlt",
   "videoId",
 ] as const;
@@ -25,6 +26,11 @@ export type HelpHubAdminFormValues = {
   tryImage: string;
   tryImageAlt: string;
   tryImageCaption: string;
+  mediaUrl: string;
+  mediaAlt: string;
+  mediaCaption: string;
+  relatedToolLabel: string;
+  relatedToolUrl: string;
   relatedLessons: (string | number)[];
   relatedLibraryVideos: HelpHubLibraryVideoRef[];
   category: string;
@@ -83,6 +89,55 @@ export function slugFromQuestion(question: string): string {
   return sanitizeHelpHubSlug(question);
 }
 
+/** Public Help Hub images are site paths, never embeds or remote video URLs. */
+export function isHelpHubImageUrl(url: string): boolean {
+  const t = url.trim();
+  if (!t.startsWith("/") || t.startsWith("//")) return false;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(t)) return false;
+  return true;
+}
+
+export function isHelpHubInternalHref(href: string): boolean {
+  const t = href.trim();
+  if (!t.startsWith("/") || t.startsWith("//")) return false;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(t)) return false;
+  return true;
+}
+
+export function storedHeroMediaIsImage(
+  entry: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!entry) return false;
+  const type = asTrimmed(entry.mediaType).toLowerCase();
+  if (type === "vimeo" || type === "video") return false;
+  const url = asTrimmed(entry.mediaUrl);
+  if (!url || !isHelpHubImageUrl(url)) return false;
+  return type === "image" || type === "";
+}
+
+export function topImageFieldsForAdminForm(
+  entry: Record<string, unknown> | null | undefined,
+): { url: string; alt: string; caption: string } {
+  if (!storedHeroMediaIsImage(entry)) return { url: "", alt: "", caption: "" };
+  return {
+    url: asTrimmed(entry?.mediaUrl),
+    alt: asTrimmed(entry?.mediaAlt) || asTrimmed(entry?.thumbnailAlt),
+    caption: asTrimmed(entry?.mediaCaption),
+  };
+}
+
+export type HelpHubRelatedToolButton = { label: string; href: string };
+
+export function helpHubRelatedToolButton(tip: {
+  relatedToolLabel?: unknown;
+  relatedToolUrl?: unknown;
+}): HelpHubRelatedToolButton | null {
+  const label = typeof tip.relatedToolLabel === "string" ? tip.relatedToolLabel.trim() : "";
+  const href = typeof tip.relatedToolUrl === "string" ? tip.relatedToolUrl.trim() : "";
+  if (!label || !href || !isHelpHubInternalHref(href)) return null;
+  return { label, href };
+}
+
 export function shouldAutofillSlug(options: {
   isNewEntry: boolean;
   slugManuallyEdited: boolean;
@@ -132,6 +187,18 @@ export function applyAdminFormToDocument(
   if (form.tryImageCaption) out.tryImageCaption = form.tryImageCaption;
   else delete out.tryImageCaption;
 
+  const relatedTool = helpHubRelatedToolButton({
+    relatedToolLabel: form.relatedToolLabel,
+    relatedToolUrl: form.relatedToolUrl,
+  });
+  if (relatedTool) {
+    out.relatedToolLabel = relatedTool.label;
+    out.relatedToolUrl = relatedTool.href;
+  } else {
+    delete out.relatedToolLabel;
+    delete out.relatedToolUrl;
+  }
+
   out.relatedLessons = normalizeRelatedLessonRefs(form.relatedLessons);
   out.relatedLibraryVideos = normalizeRelatedLibraryVideos(form.relatedLibraryVideos);
 
@@ -144,9 +211,19 @@ export function applyAdminFormToDocument(
     out.title = form.question || form.slug || "Untitled";
   }
 
-  for (const key of MEDIA_KEYS_TO_PRESERVE) {
-    if (existing && Object.prototype.hasOwnProperty.call(existing, key)) {
-      out[key] = existing[key];
+  const topImageUrl = form.mediaUrl.trim();
+  if (topImageUrl && isHelpHubImageUrl(topImageUrl)) {
+    out.mediaType = "image";
+    out.mediaUrl = topImageUrl;
+    if (form.mediaAlt.trim()) out.mediaAlt = form.mediaAlt.trim();
+    else delete out.mediaAlt;
+    if (form.mediaCaption.trim()) out.mediaCaption = form.mediaCaption.trim();
+    else delete out.mediaCaption;
+  } else {
+    for (const key of MEDIA_KEYS_TO_PRESERVE) {
+      if (existing && Object.prototype.hasOwnProperty.call(existing, key)) {
+        out[key] = existing[key];
+      }
     }
   }
 

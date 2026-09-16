@@ -56,4 +56,15 @@ describe("Help Hub empty media", () => {
     expect(tipPageSource).toContain("tuesday-tip-hero__columns--no-media");
     expect(tipPageSource).not.toContain("Media will appear here");
   });
+
+  it("renders a related tool after Try This in the same tab when both fields exist", () => {
+    const tipPageSource = readFileSync(
+      join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
+      "utf8",
+    );
+    expect(tipPageSource).toContain("relatedTool");
+    expect(tipPageSource).toContain("help-hub-related-tool");
+    expect(tipPageSource).toContain("href={relatedTool.href}");
+    expect(tipPageSource).not.toMatch(/help-hub-related-tool[\s\S]*target="_blank"/);
+  });
 });

@@ -4,6 +4,7 @@ import {
   explanationForAdminForm,
   helpHubAdminEditorCanInit,
   slugFromQuestion,
+  topImageFieldsForAdminForm,
   type HelpHubAdminFormValues,
 } from "./adminForm";
 
@@ -21,6 +22,11 @@ const form = (overrides: Partial<HelpHubAdminFormValues> = {}): HelpHubAdminForm
   tryImage: "",
   tryImageAlt: "",
   tryImageCaption: "",
+  mediaUrl: "",
+  mediaAlt: "",
+  mediaCaption: "",
+  relatedToolLabel: "",
+  relatedToolUrl: "",
   relatedLessons: [],
   relatedLibraryVideos: [],
   category: "getting-started",
@@ -100,6 +106,81 @@ describe("applyAdminFormToDocument", () => {
     );
     expect(next.category).toBe("gauge-swatching");
   });
+
+  it("stores an optional top image on the existing hero-media fields", () => {
+    const next = applyAdminFormToDocument(
+      { status: "draft" },
+      form({
+        mediaUrl: "/images/help-hub/every-other-needle.jpg",
+        mediaAlt: "Turquoise knitting worked on every other needle of a knitting machine",
+      }),
+    );
+    expect(next.mediaType).toBe("image");
+    expect(next.mediaUrl).toBe("/images/help-hub/every-other-needle.jpg");
+    expect(next.mediaAlt).toBe(
+      "Turquoise knitting worked on every other needle of a knitting machine",
+    );
+  });
+
+  it("does not restore video or embed controls when saving a top image", () => {
+    const next = applyAdminFormToDocument(
+      { status: "draft" },
+      form({ mediaUrl: "/images/help-hub/every-other-needle.jpg" }),
+    );
+    expect(next.mediaType).toBe("image");
+    expect(next).not.toHaveProperty("videoId");
+    expect(JSON.stringify(next)).not.toMatch(/youtube|player\.vimeo/i);
+  });
+
+  it("preserves existing vimeo hero media when the top image fields are blank", () => {
+    const existing = {
+      mediaType: "vimeo",
+      mediaUrl: "1175910961",
+      mediaAlt: "Sue demonstrating Cut 'n Sew",
+    };
+    const next = applyAdminFormToDocument(existing, form());
+    expect(next.mediaType).toBe("vimeo");
+    expect(next.mediaUrl).toBe("1175910961");
+    expect(next.mediaAlt).toBe("Sue demonstrating Cut 'n Sew");
+  });
+
+  it("stores a related tool only when both label and internal URL are present", () => {
+    const next = applyAdminFormToDocument(
+      { status: "draft" },
+      form({
+        relatedToolLabel: "Calculate My Gauge",
+        relatedToolUrl: "/tools/gauge-calculator",
+        tryImage: "/images/tools/gauge-generator.png",
+        tryImageAlt: "Gauge swatch marked to measure stitches across and rows vertically",
+        tryImageCaption:
+          "Measure the width and height between the markers, then enter those measurements in the Gauge Calculator.",
+      }),
+    );
+    expect(next.relatedToolLabel).toBe("Calculate My Gauge");
+    expect(next.relatedToolUrl).toBe("/tools/gauge-calculator");
+    expect(next.tryImage).toBe("/images/tools/gauge-generator.png");
+    expect(next.tryImageAlt).toBe(
+      "Gauge swatch marked to measure stitches across and rows vertically",
+    );
+    expect(next.tryImageCaption).toBe(
+      "Measure the width and height between the markers, then enter those measurements in the Gauge Calculator.",
+    );
+  });
+
+  it("omits the related tool when either field is blank or the URL is not internal", () => {
+    expect(
+      applyAdminFormToDocument(
+        { relatedToolLabel: "Calculate My Gauge", relatedToolUrl: "/tools/gauge-calculator" },
+        form({ relatedToolLabel: "Calculate My Gauge" }),
+      ),
+    ).not.toHaveProperty("relatedToolLabel");
+    expect(
+      applyAdminFormToDocument(
+        { status: "draft" },
+        form({ relatedToolLabel: "Calculate My Gauge", relatedToolUrl: "https://example.com" }),
+      ),
+    ).not.toHaveProperty("relatedToolUrl");
+  });
 });
 
 describe("helpHubAdminEditorCanInit", () => {
@@ -114,5 +195,28 @@ describe("slugFromQuestion", () => {
     expect(slugFromQuestion("I’m knitting over every other needle. How do I swatch?")).toBe(
       "im-knitting-over-every-other-needle-how-do-i-swatch",
     );
+  });
+});
+
+describe("topImageFieldsForAdminForm", () => {
+  it("loads stored public images and hides existing video media from the image fields", () => {
+    expect(
+      topImageFieldsForAdminForm({
+        mediaType: "image",
+        mediaUrl: "/images/help-hub/every-other-needle.jpg",
+        mediaAlt: "Turquoise knitting worked on every other needle of a knitting machine",
+      }),
+    ).toEqual({
+      url: "/images/help-hub/every-other-needle.jpg",
+      alt: "Turquoise knitting worked on every other needle of a knitting machine",
+      caption: "",
+    });
+    expect(
+      topImageFieldsForAdminForm({
+        mediaType: "vimeo",
+        mediaUrl: "1175910961",
+        mediaAlt: "Sue demonstrating Cut 'n Sew",
+      }),
+    ).toEqual({ url: "", alt: "", caption: "" });
   });
 });

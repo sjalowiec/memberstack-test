@@ -42,8 +42,10 @@ const {
   mediaUrl,
   mediaPoster,
   mediaAlt,
+  mediaCaption,
   catalogVimeoEmbedUrl,
   hasHeroMedia,
+  relatedTool,
   layoutTitle,
   pageDescription,
   aboutHeading,
@@ -173,6 +175,9 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
             ) : null}
           </div>
         </div>
+        {mediaType === "image" && mediaCaption ? (
+          <p class="tuesday-tip-media-caption">{mediaCaption}</p>
+        ) : null}
         </div>
         )}
       </div>
@@ -259,6 +264,14 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
           </div>
         </div>
       </section>
+    )}
+
+    {relatedTool && (
+      <div class="help-hub-related-tool">
+        <a class="kbm-btn kbm-btn-primary help-hub-related-tool__button" href={relatedTool.href}>
+          {relatedTool.label}
+        </a>
+      </div>
     )}
 
     {memberResourceCards.length > 0 && (
@@ -531,6 +544,14 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
     object-fit: cover;
   }
 
+  .tuesday-tip-media-caption {
+    margin: 0.55rem 0 0;
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
   .tuesday-tip-video-fallback {
     position: absolute;
     inset: 0;
@@ -556,6 +577,14 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
 
   .tuesday-tip__section--why {
     margin-top: 0.75rem;
+  }
+
+  .help-hub-related-tool {
+    margin-top: 1.25rem;
+  }
+
+  .help-hub-related-tool__button {
+    display: inline-flex;
   }
 
   .tuesday-tip__section-heading {
