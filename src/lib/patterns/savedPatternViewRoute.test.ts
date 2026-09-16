@@ -12,6 +12,7 @@ describe("savedPatternViewRoute", () => {
     expect(isPaidPatternMutationRoute("/patterns/sleeveless/builder?edit=choices")).toBe(true);
     expect(isPaidPatternMutationRoute("/patterns/sleeveless/custom-build/design")).toBe(true);
     expect(isPaidPatternMutationRoute("/patterns/sideways-cardigan/builder")).toBe(true);
+    expect(isPaidPatternMutationRoute("/patterns/sideways-cardigan/summary/")).toBe(true);
     expect(isPaidPatternMutationRoute("/patterns/drop-shoulder/builder?new=1")).toBe(true);
   });
 

@@ -172,8 +172,8 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toMatch(
       /data-express-step="6"[\s\S]*Create Pattern/,
     );
-    expect(builderScript).toContain("SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF");
-    expect(builderAstro).toContain('data-express-review-href="/patterns/sideways-cardigan/pattern/?generated=1"');
+    expect(builderScript).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF");
+    expect(builderAstro).toContain('data-express-review-href="/patterns/sideways-cardigan/summary/?generated=1"');
   });
 
   it("keeps the review screen, Back to builder, and Create Pattern on the existing routes", () => {
@@ -183,6 +183,7 @@ describe("Sideways V-Neck five-step builder", () => {
     );
     expect(patternPage).toContain("Back to builder");
     expect(patternPage).toContain('href="/patterns/sideways-cardigan/builder"');
+    expect(patternPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF");
     expect(builderAstro).toContain("data-sideways-review-summary");
     expect(builderScript).toContain('["Garment style"');
     expect(builderScript).toContain('["Starting size"');

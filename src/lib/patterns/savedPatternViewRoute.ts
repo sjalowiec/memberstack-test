@@ -22,6 +22,7 @@ const PAID_MUTATION_PATHS = [
   /^\/patterns\/sleeveless-express\/?$/,
   /^\/patterns\/drop-shoulder\/builder\/?$/,
   /^\/patterns\/sideways-cardigan\/builder\/?$/,
+  /^\/patterns\/sideways-cardigan\/summary\/?$/,
 ];
 
 export function pathnameFromHref(
