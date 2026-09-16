@@ -7,6 +7,7 @@ import {
   stripLegacyHelpHubTipFields,
 } from "../../../../lib/helpHubAdminFile";
 import { isHelpHubStatus } from "../../../../lib/helpHub/document";
+import { normalizeRelatedLibraryVideos } from "../../../../lib/helpHub/memberResources";
 import {
   isUniqueViolation,
   loadHelpHubTipsForAdmin,
@@ -108,6 +109,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   row.status = status;
   stripLegacyHelpHubTipFields(row);
   row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
+  if (Object.prototype.hasOwnProperty.call(body, "relatedLibraryVideos")) {
+    row.relatedLibraryVideos = normalizeRelatedLibraryVideos(body.relatedLibraryVideos);
+  }
 
   try {
     const tip = await saveNewHelpHubTip(row, { slug, status, title, category }, auth.member);

@@ -26,7 +26,7 @@ const view = prepareHelpHubTipPage(
 );
 
 const {
-  relatedLessonsResolved,
+  memberResourceCards,
   memberLessonsSectionTitle,
   whyBody,
   tipJumpLinks,
@@ -50,7 +50,6 @@ const {
   faqJsonLd,
 } = view;
 
-const slugParam = typeof tip.slug === "string" ? tip.slug.trim() : "";
 const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origin) : "";
 ---
 
@@ -266,7 +265,7 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
       </section>
     )}
 
-    {relatedLessonsResolved.length > 0 && (
+    {memberResourceCards.length > 0 && (
     <section
       class="help-hub-member-lessons"
       aria-labelledby="member-lessons-heading"
@@ -292,40 +291,24 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
       </div>
 
         <ul class="help-hub-member-lessons__list">
-          {relatedLessonsResolved.map((lesson) => {
-            const lessonSlug =
-              typeof lesson.slug === "string" ? lesson.slug.trim() : "";
-            const title =
-              typeof lesson.title === "string" && lesson.title.trim() !== ""
-                ? lesson.title
-                : lessonSlug;
-            const summary =
-              typeof lesson.summary === "string" ? lesson.summary.trim() : "";
-            const hubSlug =
-              typeof tip.slug === "string" ? tip.slug.trim() : slugParam;
-            const lessonHref =
-              lessonSlug.length > 0
-                ? `/lessons/${lessonSlug}?from=help-hub&hub=${hubSlug}`
-                : `/lessons?from=help-hub&hub=${hubSlug}`;
-            return (
-              <li class="help-hub-member-lessons__card">
-                <h3 class="help-hub-member-lessons__title">{title}</h3>
-                {summary ? (
-                  <div class="help-hub-member-lessons__summary" set:html={summary}></div>
-                ) : null}
-                <div class="help-hub-member-lessons__actions">
-                  <div
-                    class="help-hub-member-lessons__cta-mount"
-                    data-hh-lesson-cta
-                    data-lesson-href={lessonHref}
-                  ></div>
-                  <p class="help-hub-member-lessons__note" data-hh-lesson-note hidden>
-                    Included with Knit it Now membership.
-                  </p>
-                </div>
-              </li>
-            );
-          })}
+          {memberResourceCards.map((resource) => (
+            <li class="help-hub-member-lessons__card">
+              <h3 class="help-hub-member-lessons__title">{resource.title}</h3>
+              {resource.summary ? (
+                <div class="help-hub-member-lessons__summary" set:html={resource.summary}></div>
+              ) : null}
+              <div class="help-hub-member-lessons__actions">
+                <div
+                  class="help-hub-member-lessons__cta-mount"
+                  data-hh-lesson-cta
+                  data-lesson-href={resource.href}
+                ></div>
+                <p class="help-hub-member-lessons__note" data-hh-lesson-note hidden>
+                  Included with Knit it Now membership.
+                </p>
+              </div>
+            </li>
+          ))}
         </ul>
     </section>
     )}

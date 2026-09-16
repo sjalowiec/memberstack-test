@@ -2,12 +2,18 @@ import {
   vimeoNumericIdFromPublicVideo,
   type PublicVideoRow,
 } from "../lessonVideo";
+import { catalogVideoPlaybackAccess } from "../videos/catalogVideoPlaybackAccess";
 import { filterPublicCatalogVideos } from "../videoPublic";
 import { buildHelpHubFaqPage, serializeJsonLd } from "../helpHubFaqSchema";
 import {
   resolveHelpHubRelatedLessons,
   type HelpHubLessonRecord,
 } from "../helpHubMemberLesson";
+import {
+  memberLessonCardsFromResolved,
+  resolveRelatedLibraryVideoCards,
+  type HelpHubMemberResourceCard,
+} from "./memberResources";
 
 export type HelpHubTryThis = {
   quickActionTitle?: string;
@@ -45,6 +51,7 @@ export type HelpHubPageTip = {
   tryImageAlt?: string;
   tryImageCaption?: string;
   relatedLessons?: (string | number)[];
+  relatedLibraryVideos?: unknown;
   jumpLinks?: { label: string; href: string }[];
 };
 
@@ -70,6 +77,15 @@ export function prepareHelpHubTipPage(
     Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
   );
   const relatedLessonsResolved = resolveHelpHubRelatedLessons(tip.relatedLessons, lessons);
+  const tipSlug = typeof tip.slug === "string" ? tip.slug.trim() : "";
+  const libraryResourceCards = resolveRelatedLibraryVideoCards(tip.relatedLibraryVideos, catalogVideosHelpHub, {
+    tipSlug,
+  });
+  const lessonResourceCards = memberLessonCardsFromResolved(relatedLessonsResolved, { tipSlug });
+  const memberResourceCards: HelpHubMemberResourceCard[] = [
+    ...libraryResourceCards,
+    ...lessonResourceCards,
+  ];
   const tryObj = tryThisObject(tip.tryThis);
   const whyBodyRaw =
     typeof tip.solutionText === "string" && tip.solutionText.trim() !== ""
@@ -90,8 +106,12 @@ export function prepareHelpHubTipPage(
     tipVideoId !== ""
       ? catalogVideosHelpHub.find((v) => String(v.content_id ?? "") === tipVideoId)
       : undefined;
+  const catalogIsOpenForPublicEmbed =
+    catalogVideoForTip != null && catalogVideoPlaybackAccess(catalogVideoForTip) === "open";
   const catalogVimeoNumericId =
-    catalogVideoForTip != null ? vimeoNumericIdFromPublicVideo(catalogVideoForTip) : null;
+    catalogIsOpenForPublicEmbed && catalogVideoForTip != null
+      ? vimeoNumericIdFromPublicVideo(catalogVideoForTip)
+      : null;
   const pageTitle =
     (typeof tip.metaTitle === "string" && tip.metaTitle.trim() !== ""
       ? tip.metaTitle.trim()
@@ -124,8 +144,9 @@ export function prepareHelpHubTipPage(
 
   return {
     relatedLessonsResolved,
+    memberResourceCards,
     memberLessonsSectionTitle:
-      relatedLessonsResolved.length === 1 ? "Member Lesson" : "Member Lessons",
+      memberResourceCards.length === 1 ? "Member Lesson" : "Member Lessons",
     whyBody: whyBodyRaw,
     tipJumpLinks: Array.isArray(tip.jumpLinks)
       ? tip.jumpLinks.filter(

@@ -1,5 +1,6 @@
-import { getTipId } from "../helpHubAdminFile";
+import { getTipId } from "./tipId";
 import { HELP_HUB_STATUSES, type HelpHubStatus, type HelpHubTipDocument, type HelpHubTipRecord, type HelpHubTipRow, type HelpHubWriteActor } from "./types";
+import { normalizeRelatedLibraryVideos } from "./memberResources";
 
 export function isHelpHubStatus(value: string): value is HelpHubStatus {
   return (HELP_HUB_STATUSES as readonly string[]).includes(value);
@@ -54,6 +55,9 @@ export function canonicalHelpHubDocument(doc: HelpHubTipDocument): HelpHubTipDoc
   delete copy.deletedAt;
   if (Object.prototype.hasOwnProperty.call(copy, "relatedLessons")) {
     copy.relatedLessons = normalizeRelatedLessonRefs(copy.relatedLessons);
+  }
+  if (Object.prototype.hasOwnProperty.call(copy, "relatedLibraryVideos")) {
+    copy.relatedLibraryVideos = normalizeRelatedLibraryVideos(copy.relatedLibraryVideos);
   }
   return copy;
 }
@@ -120,6 +124,9 @@ export function fieldsFromTipDocument(
   }
   if (Object.prototype.hasOwnProperty.call(tip, "relatedLessons") || Array.isArray(document.relatedLessons)) {
     document.relatedLessons = normalizeRelatedLessonRefs(document.relatedLessons);
+  }
+  if (Object.prototype.hasOwnProperty.call(tip, "relatedLibraryVideos") || Array.isArray(document.relatedLibraryVideos)) {
+    document.relatedLibraryVideos = normalizeRelatedLibraryVideos(document.relatedLibraryVideos);
   }
   return {
     id: required.id,

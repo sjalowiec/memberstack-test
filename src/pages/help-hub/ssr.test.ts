@@ -37,7 +37,7 @@ describe("Help Hub related lessons public section", () => {
       join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
       "utf8",
     );
-    expect(tipPageSource).toContain("relatedLessonsResolved.length > 0");
+    expect(tipPageSource).toContain("memberResourceCards.length > 0");
     expect(tipPageSource).not.toContain("No lessons linked to this tip yet.");
     expect(tipPageSource).not.toContain("loadPublicLessons");
     expect(tipPageSource).not.toMatch(/from ["'].*lessons\.json["']/);
