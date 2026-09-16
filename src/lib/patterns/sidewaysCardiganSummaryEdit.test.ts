@@ -26,7 +26,10 @@ import {
 import {
   SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF,
   SIDEWAYS_CARDIGAN_SUMMARY_PRIMARY_LABEL,
+  SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_BUILDER_LABEL,
   resolveSidewaysCardiganSummaryEntryPath,
+  sidewaysCardiganSummaryCancelHref,
+  sidewaysCardiganSummaryCancelLabel,
 } from "./sidewaysCardiganPatternNavigation";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
@@ -131,6 +134,10 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(builderAstro).not.toContain(
       'data-express-review-href="/patterns/sideways-cardigan/pattern/?generated=1"',
     );
+    expect(builderScript).toContain("completeBuilderAndOpenSummary");
+    expect(builderAstro).not.toContain("data-sideways-review-panel");
+    expect(builderAstro).not.toContain("Create Pattern");
+    expect(builderAstro).not.toContain('id="sideways-create-pattern"');
     expect(resolveSidewaysCardiganSummaryEntryPath("?generated=1")).toBe("from-builder");
     saveBuild(cardiganValues);
     expect(getCurrentPattern().style.garmentStyle).toBe("cardigan");
@@ -145,6 +152,29 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(builderScript).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF");
     expect(summaryPage).toContain(SIDEWAYS_CARDIGAN_SUMMARY_PRIMARY_LABEL);
     expect(patternPage).not.toContain("PatternSummaryEditWorkspace");
+  });
+
+  it("does not show the legacy text-only review screen and keeps Back to Builder", () => {
+    expect(builderScript).toContain("completeBuilderAndOpenSummary()");
+    expect(builderScript).toContain("window.location.assign(SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF)");
+    expect(builderScript).not.toContain("showingReview");
+    expect(builderAstro).not.toContain("data-sideways-review-summary");
+    expect(sidewaysCardiganSummaryCancelLabel("from-builder")).toBe(
+      SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_BUILDER_LABEL,
+    );
+    expect(sidewaysCardiganSummaryCancelHref("from-builder")).toBe(
+      "/patterns/sideways-cardigan/builder",
+    );
+    expect(summaryScript).toContain("sidewaysCardiganSummaryCancelHref");
+    expect(summaryScript).toContain("Garment style");
+    expect(summaryScript).toContain("Starting size");
+    const reviewAstro = readFileSync(
+      resolve("src/pages/patterns/sideways-cardigan/review.astro"),
+      "utf8",
+    );
+    expect(reviewAstro).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF");
+    expect(reviewAstro).toContain("buildPatternReviewLegacyRedirect");
+    expect(reviewAstro).not.toContain("data-sideways-review-panel");
   });
 });
 
@@ -168,6 +198,13 @@ describe("Sideways Summary/Edit Cardigan vs Pullover diagrams", () => {
     expect(pullover).toContain('data-sideways-edit-diagram="pullover"');
     expect(pullover).toContain('data-sideways-start="underarm"');
     expect(pullover).not.toBe(cardigan);
+    expect(cardigan).toContain('data-cardigan-structure="front-back-front"');
+    expect(cardigan).toContain('data-role="first-front"');
+    expect(cardigan).toContain('data-role="back-panel"');
+    expect(cardigan).toContain('data-role="second-front"');
+    expect(cardigan).not.toContain('data-role="sleeve-outline"');
+    expect(pullover).toContain('data-role="sleeve-outline"');
+    expect(pullover).toContain('data-cardigan-structure="underarm-graft"');
     expect(cardigan).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
     expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
   });

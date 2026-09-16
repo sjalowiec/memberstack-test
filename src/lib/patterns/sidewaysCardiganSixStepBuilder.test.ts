@@ -149,7 +149,8 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toContain('id="express-acc-panel-6"');
     expect(builderScript).toContain("if (step < 1 || step > STEPS) return false");
     expect(builderScript).toContain('header?.setAttribute("tabindex", locked ? "-1" : "0")');
-    expect(builderAstro).toContain('aria-label="Review your pattern"');
+    expect(builderAstro).not.toContain('aria-label="Review your pattern"');
+    expect(builderAstro).not.toContain("data-sideways-review-panel");
   });
 
   it("shows Review My Pattern after Gauge and Machine, not as a numbered step", () => {
@@ -164,37 +165,39 @@ describe("Sideways V-Neck five-step builder", () => {
       /data-express-step="6"[\s\S]*Review My Pattern/,
     );
     expect(builderScript).toContain("wizardReadyForReview");
-    expect(builderScript).toContain("showingReview");
-    expect(builderScript).toContain("is-reviewing");
-    expect(builderAstro).toContain("data-sideways-review-panel");
-    expect(builderAstro).toContain("Create Pattern");
-    expect(builderAstro).toContain('id="sideways-create-pattern"');
+    expect(builderScript).not.toContain("showingReview");
+    expect(builderScript).not.toContain("is-reviewing");
+    expect(builderAstro).not.toContain("data-sideways-review-panel");
+    expect(builderAstro).not.toContain("Create Pattern");
+    expect(builderAstro).not.toContain('id="sideways-create-pattern"');
     expect(builderAstro).not.toMatch(
       /data-express-step="6"[\s\S]*Create Pattern/,
     );
+    expect(builderScript).toContain("completeBuilderAndOpenSummary");
     expect(builderScript).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF");
     expect(builderAstro).toContain('data-express-review-href="/patterns/sideways-cardigan/summary/?generated=1"');
   });
 
-  it("keeps the review screen, Back to builder, and Create Pattern on the existing routes", () => {
+  it("routes the final builder CTA directly to Summary/Edit and keeps Back to Builder", () => {
     const patternPage = readFileSync(
       resolve("src/pages/patterns/sideways-cardigan/pattern/index.astro"),
+      "utf8",
+    );
+    const summaryPage = readFileSync(
+      resolve("src/pages/patterns/sideways-cardigan/summary/index.astro"),
       "utf8",
     );
     expect(patternPage).toContain("Back to builder");
     expect(patternPage).toContain('href="/patterns/sideways-cardigan/builder"');
     expect(patternPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF");
-    expect(builderAstro).toContain("data-sideways-review-summary");
-    expect(builderScript).toContain('["Garment style"');
-    expect(builderScript).toContain('["Starting size"');
-    expect(builderScript).toContain('["Fit"');
-    expect(builderScript).toContain('["Finished bust"');
-    expect(builderScript).toContain('["Sleeve direction"');
-    expect(builderScript).toContain('["Sleeve length"');
-    expect(builderScript).toContain('["Gauge"');
-    expect(builderScript).toContain('["Machine"');
-    expect(builderAstro).toContain('id="sideways-create-pattern"');
-    expect(builderScript).toContain('getElementById("sideways-create-pattern")');
+    expect(summaryPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_EDIT_LABEL");
+    expect(builderAstro).not.toContain("data-sideways-review-summary");
+    expect(builderScript).toContain("onProceed: () => {");
+    expect(builderScript).toContain("completeBuilderAndOpenSummary()");
+    expect(builderScript).toContain("window.location.assign(SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF)");
+    expect(builderScript).toContain("persist(state)");
+    expect(builderAstro).not.toContain('id="sideways-create-pattern"');
+    expect(builderScript).not.toContain("getElementById(\"sideways-create-pattern\")");
     expect(builderScript).toContain("readSidewaysCardiganBuilderStateFromDraft");
   });
 
@@ -237,14 +240,6 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).toContain('value: "three-quarter"');
     expect(builderAstro).toContain('value: "elbow"');
     expect(builderAstro).toContain('value: "short"');
-    expect(builderScript).toContain('["Garment style"');
-    expect(builderScript).toContain('["Starting size"');
-    expect(builderScript).toContain('["Fit"');
-    expect(builderScript).toContain('["Finished bust"');
-    expect(builderScript).toContain('["Sleeve direction"');
-    expect(builderScript).toContain('["Sleeve length"');
-    expect(builderScript).toContain('["Gauge"');
-    expect(builderScript).toContain('["Machine"');
   });
 });
 

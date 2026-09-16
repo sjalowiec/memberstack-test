@@ -66,8 +66,6 @@ const LOCKED_STEP_NAV_TITLE = "Finish the previous step to continue.";
 
 type BuilderState = SidewaysCardiganBuilderDraftState;
 
-let showingReview = false;
-
 function escapeHtml(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -257,39 +255,6 @@ function startingSizeSummary(state: BuilderState): string {
   return chartLabel ? `Size ${state.selectedSize} · ${chartLabel}` : `Size ${state.selectedSize}`;
 }
 
-function renderReview(state: BuilderState): void {
-  const host = document.querySelector("[data-sideways-review-summary]");
-  if (!(host instanceof HTMLElement)) return;
-  const bust = finishedBustForState(state);
-  const g = gaugeInputs();
-  const gaugeLabel =
-    Number(g.stitch) > 0 && Number(g.row) > 0
-      ? `${g.stitch} sts / ${g.row} rows over ${g.unit === "cm" ? "10 cm" : "4 inches"}`
-      : "";
-  const rows: Array<[string, string]> = [
-    ["Garment style", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]],
-    ["Starting size", startingSizeSummary(state)],
-    ["Fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)}` : ""],
-    ["Finished bust", bust ? formatInchesWithUnit(bust) : ""],
-    ["Sleeve direction", state.sleeveDirection ? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection] : ""],
-    ["Sleeve length", state.sleeveLengthChoice ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice] : ""],
-    ["Gauge", gaugeLabel],
-    ["Machine", g.needles ? `${g.needles} needles available` : ""],
-  ];
-  host.replaceChildren();
-  for (const [term, def] of rows) {
-    if (!def) continue;
-    const wrap = document.createElement("div");
-    wrap.className = "print-summary-dl__pair";
-    const dt = document.createElement("dt");
-    dt.textContent = term;
-    const dd = document.createElement("dd");
-    dd.textContent = def;
-    wrap.append(dt, dd);
-    host.append(wrap);
-  }
-}
-
 function showBuilderError(message: string | null): void {
   const el = document.querySelector("[data-sideways-builder-error]");
   if (!(el instanceof HTMLElement)) return;
@@ -354,7 +319,7 @@ function updatePills(state: BuilderState, openStep: number): void {
     const step = parseInt(btn.getAttribute("data-pill-step") ?? "0", 10);
     const label = btn.getAttribute("data-pill-label") || `Step ${step}`;
     const complete = isStepComplete(state, step);
-    const isCurrent = !showingReview && step === openStep;
+    const isCurrent = step === openStep;
     const locked = !canOpen(state, step);
     const item = btn.closest(".sg-builder-nav__item");
     btn.classList.toggle("is-complete", complete);
@@ -381,7 +346,6 @@ function refreshUi(state: BuilderState, openStep: number): void {
   renderSizeTable(state);
   renderBodySummary(state);
   renderFinishedBust(state);
-  renderReview(state);
 
   setSummary("garmentStyle", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]);
   setSummary("selectedSize", startingSizeSummary(state));
@@ -407,15 +371,10 @@ function refreshUi(state: BuilderState, openStep: number): void {
     btn.setAttribute("aria-pressed", on ? "true" : "false");
   });
 
-  const builderRoot = document.querySelector("[data-express-builder]");
-  builderRoot?.classList.toggle("is-reviewing", showingReview);
-  const reviewPanel = document.querySelector("[data-sideways-review-panel]");
-  if (reviewPanel instanceof HTMLElement) reviewPanel.hidden = !showingReview;
-
   for (let step = 1; step <= STEPS; step++) {
     const sec = document.querySelector(`[data-express-step="${step}"]`);
     if (!(sec instanceof HTMLElement)) continue;
-    const isOpen = !showingReview && step === openStep;
+    const isOpen = step === openStep;
     const locked = step > 1 && !canOpen(state, step);
     sec.classList.toggle("express-acc--open", isOpen);
     sec.classList.toggle("express-acc--locked", locked);
@@ -433,7 +392,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
 
   const wrap = document.getElementById("express-generate-wrap");
   if (wrap) {
-    wrap.hidden = showingReview || !wizardReadyForReview(state);
+    wrap.hidden = !wizardReadyForReview(state);
   }
   syncExpressNeedleBlockVisibility(document, gaugeOk());
 }
@@ -456,7 +415,6 @@ function init(): void {
   const state = readStateFromDraft();
   applySidewaysCardiganDraftToGaugeInputs(state);
   let openStep = 1;
-  showingReview = false;
 
   void loadExpressSweaterCharts()
     .then(() => {
@@ -496,7 +454,6 @@ function init(): void {
     if (!sz || (audienceRaw !== "misses" && audienceRaw !== "plus")) return;
     selectSize(state, sz, audienceRaw);
     persist(state);
-    showingReview = false;
     openStep = 3;
     refreshUi(state, openStep);
   };
@@ -517,7 +474,6 @@ function init(): void {
       if (!style) return;
       state.garmentStyle = style;
       persist(state);
-      showingReview = false;
       openStep = 2;
       refreshUi(state, openStep);
       return;
@@ -525,7 +481,6 @@ function init(): void {
     if (field === "chartAudience" && (value === "misses" || value === "plus")) {
       applySidewaysCardiganStartingChartSelection(state, value);
       persist(state);
-      showingReview = false;
       openStep = 2;
       refreshUi(state, openStep);
       return;
@@ -534,7 +489,6 @@ function init(): void {
       state.fit = value;
       applyChartDefaults(state);
       persist(state);
-      showingReview = false;
       openStep = 4;
       refreshUi(state, openStep);
       return;
@@ -543,7 +497,6 @@ function init(): void {
       const result = applySidewaysCardiganSleeveChoice(state, field, value);
       if (field === "sleeveLength") applyChartDefaults(state);
       persist(state);
-      showingReview = false;
       openStep = result.openStep;
       refreshUi(state, openStep);
     }
@@ -560,7 +513,6 @@ function init(): void {
       if (fb) fb.removeAttribute("hidden");
       return;
     }
-    showingReview = false;
     openStep = openStep === step ? 0 : step;
     refreshUi(state, openStep);
   };
@@ -579,7 +531,6 @@ function init(): void {
     btn.addEventListener("click", () => {
       const step = parseInt(btn.getAttribute("data-pill-step") ?? "0", 10);
       if (!canOpen(state, step)) return;
-      showingReview = false;
       openStep = step;
       refreshUi(state, openStep);
     });
@@ -610,7 +561,7 @@ function init(): void {
     }
   });
 
-  const createPatternFromReview = (): void => {
+  const completeBuilderAndOpenSummary = (): void => {
     if (
       state.chartAudience &&
       state.fit &&
@@ -641,7 +592,7 @@ function init(): void {
     });
     if (error) {
       showBuilderError(error.message);
-      showingReview = true;
+      openStep = 5;
       refreshUi(state, openStep);
       return;
     }
@@ -652,19 +603,12 @@ function init(): void {
 
   wireExpressBuilderReviewSubmit({
     openGaugeStepForValidation: () => {
-      showingReview = false;
       openStep = 5;
       refreshUi(state, openStep);
     },
     onProceed: () => {
-      persist(state);
-      showingReview = true;
-      refreshUi(state, openStep);
+      completeBuilderAndOpenSummary();
     },
-  });
-
-  document.getElementById("sideways-create-pattern")?.addEventListener("click", () => {
-    createPatternFromReview();
   });
 
   refreshUi(state, openStep);
