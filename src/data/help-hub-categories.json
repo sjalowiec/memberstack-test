@@ -30,6 +30,11 @@
     "label": "Getting Started"
   },
   {
+    "id": 8,
+    "key": "gauge-swatching",
+    "label": "Gauge & Swatching"
+  },
+  {
     "id": 7,
     "key": "machines",
     "label": "Machines"

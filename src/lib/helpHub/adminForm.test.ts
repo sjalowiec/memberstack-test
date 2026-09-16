@@ -92,6 +92,14 @@ describe("applyAdminFormToDocument", () => {
     const next = applyAdminFormToDocument({ status: "draft" }, form({ status: "draft" }));
     expect(next.status).toBe("draft");
   });
+
+  it("stores Gauge & Swatching as the catalog key", () => {
+    const next = applyAdminFormToDocument(
+      { status: "draft" },
+      form({ category: "gauge-swatching" }),
+    );
+    expect(next.category).toBe("gauge-swatching");
+  });
 });
 
 describe("helpHubAdminEditorCanInit", () => {

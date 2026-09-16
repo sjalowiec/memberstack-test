@@ -1,3 +1,5 @@
+import { helpHubCategoryLabel } from "./helpHub/categories";
+
 /** Minimal Help Hub tip fields used for public visibility and search. */
 export type HelpHubTipRecord = {
   id?: number | string;
@@ -18,6 +20,7 @@ export type HelpHubTipRecord = {
   videoId?: string | number;
   tags?: string[];
   relatedLessons?: (string | number)[];
+  category?: string;
 };
 
 export type HelpHubVideoRef = {
@@ -90,6 +93,7 @@ export function findPublicHelpHubTipsForVideo<T extends HelpHubTipRecord>(
 }
 
 function helpHubTipSearchText(tip: HelpHubTipRecord): string {
+  const categoryKey = typeof tip.category === "string" ? tip.category.trim() : "";
   const parts = [
     tip.title,
     tip.question,
@@ -98,6 +102,8 @@ function helpHubTipSearchText(tip: HelpHubTipRecord): string {
     tip.hook,
     tip.bubbleAnswer,
     tip.slug,
+    categoryKey,
+    categoryKey ? helpHubCategoryLabel(categoryKey) : "",
     ...(Array.isArray(tip.tags) ? tip.tags : []),
   ];
   return parts
