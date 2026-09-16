@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { replacementOptionsFor } from "./categoryAdminClient";
+import { helpHubCategoryAdminErrorMessage } from "./categoryApiErrors";
 
 describe("Help Hub category admin replacements", () => {
   it("offers only active categories other than the one being retired", () => {
@@ -12,5 +13,13 @@ describe("Help Hub category admin replacements", () => {
       2,
     );
     expect(options.map((row) => row.key)).toEqual(["machine-not-working"]);
+  });
+
+  it("does not show raw database errors in the category admin status", () => {
+    expect(
+      helpHubCategoryAdminErrorMessage(
+        'duplicate key value violates unique constraint "help_hub_categories_pkey"',
+      ),
+    ).toBe("We couldn’t update that category. Nothing was changed.");
   });
 });

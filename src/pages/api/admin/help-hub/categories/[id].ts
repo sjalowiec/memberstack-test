@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { requireAdminForRequest, adminAuthErrorBody } from "../../../../../lib/admin/requireAdminRequest";
-import { HelpHubCategoryError } from "../../../../../lib/helpHub/categoryManage";
+import { helpHubCategoryErrorResponse } from "../../../../../lib/helpHub/categoryApiErrors";
 import {
   deleteManagedHelpHubCategory,
   renameManagedHelpHubCategory,
@@ -19,15 +19,6 @@ function parseUrlId(raw: string | undefined): number | null {
   if (raw === undefined || raw === "") return null;
   const n = parseInt(raw, 10);
   return Number.isFinite(n) ? n : null;
-}
-
-function errorResponse(error: unknown) {
-  if (error instanceof HelpHubCategoryError) {
-    const status = error.code === "NOT_FOUND" ? 404 : 400;
-    return jsonResponse({ ok: false, error: error.message, code: error.code }, status);
-  }
-  const message = error instanceof Error ? error.message : "Could not update Help Hub category.";
-  return jsonResponse({ ok: false, error: message }, 500);
 }
 
 export const PUT: APIRoute = async ({ params, request, cookies }) => {
@@ -52,7 +43,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
     const categories = await renameManagedHelpHubCategory(id, label, auth.member);
     return jsonResponse({ ok: true, categories });
   } catch (error) {
-    return errorResponse(error);
+    return helpHubCategoryErrorResponse(error);
   }
 };
 
@@ -67,6 +58,6 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
     const categories = await deleteManagedHelpHubCategory(id, auth.member);
     return jsonResponse({ ok: true, categories });
   } catch (error) {
-    return errorResponse(error);
+    return helpHubCategoryErrorResponse(error);
   }
 };

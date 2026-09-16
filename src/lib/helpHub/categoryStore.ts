@@ -41,6 +41,22 @@ export const HELP_HUB_CATEGORY_LIST_SQL = `
   ORDER BY sort_order ASC NULLS LAST, id ASC
 `;
 
+export const HELP_HUB_CATEGORY_LIST_ALL_SQL = `
+  SELECT ${COLUMNS}
+  FROM help_hub_categories
+  ORDER BY sort_order ASC NULLS LAST, id ASC
+`;
+
+export const HELP_HUB_CATEGORY_SYNC_ID_SEQUENCE_SQL = `
+  SELECT CASE
+    WHEN pg_get_serial_sequence('public.help_hub_categories', 'id') IS NULL THEN NULL
+    ELSE setval(
+      pg_get_serial_sequence('public.help_hub_categories', 'id'),
+      GREATEST(COALESCE((SELECT MAX(id) FROM public.help_hub_categories), 9), 9)
+    )
+  END AS last_value
+`;
+
 export const HELP_HUB_CATEGORY_GET_SQL = `
   SELECT ${COLUMNS}
   FROM help_hub_categories
@@ -126,6 +142,19 @@ export async function listHelpHubCategories(
   return sortHelpHubManagedCategories(rows.map(categoryFromRow));
 }
 
+export async function listHelpHubCategoriesIncludingDeleted(
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<HelpHubManagedCategory[]> {
+  const rows = await queryFn<HelpHubCategoryRow>(HELP_HUB_CATEGORY_LIST_ALL_SQL);
+  return sortHelpHubManagedCategories(rows.map(categoryFromRow));
+}
+
+export async function advanceHelpHubCategoryIdSequence(
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<void> {
+  await queryFn(HELP_HUB_CATEGORY_SYNC_ID_SEQUENCE_SQL);
+}
+
 export async function insertHelpHubCategoryRow(
   category: HelpHubManagedCategory,
   actor: HelpHubWriteActor | null,
@@ -140,6 +169,7 @@ export async function insertHelpHubCategoryRow(
     helpHubActorLabel(actor),
   ]);
   if (!rows[0]) throw new Error("Help Hub category insert returned no row.");
+  await advanceHelpHubCategoryIdSequence(queryFn);
   return categoryFromRow(rows[0]);
 }
 
@@ -211,32 +241,32 @@ export async function ensureHelpHubCategoriesSeeded(
   actor: HelpHubWriteActor | null = null,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<HelpHubManagedCategory[]> {
-  const existing = await listHelpHubCategories(queryFn);
-  const merged = mergeSeededHelpHubCategories(existing, helpHubJsonSeedCategories());
-  if (existing.length === 0) {
+  const occupancy = await listHelpHubCategoriesIncludingDeleted(queryFn);
+  const merged = mergeSeededHelpHubCategories(occupancy, helpHubJsonSeedCategories());
+  const existingKeys = new Set(occupancy.map((category) => category.key));
+  if (occupancy.length === 0) {
     for (const category of merged) {
       await insertHelpHubCategoryRow(category, actor, queryFn);
     }
+    await advanceHelpHubCategoryIdSequence(queryFn);
     return listHelpHubCategories(queryFn);
   }
-  const existingKeys = new Set(existing.map((category) => category.key));
-  let changed = false;
   for (const category of merged) {
-    if (!existingKeys.has(category.key)) {
-      await insertHelpHubCategoryRow(category, actor, queryFn);
-      changed = true;
+    if (existingKeys.has(category.key)) {
+      const current = occupancy.find((row) => row.key === category.key);
+      if (
+        current &&
+        category.key === HELP_HUB_RETIRED_LOOK_RIGHT_KEY &&
+        !current.retiredAt &&
+        category.retiredAt
+      ) {
+        await updateHelpHubCategoryRow({ ...current, retiredAt: category.retiredAt }, actor, queryFn);
+      }
       continue;
     }
-    const current = existing.find((row) => row.key === category.key);
-    if (
-      current &&
-      category.key === HELP_HUB_RETIRED_LOOK_RIGHT_KEY &&
-      !current.retiredAt &&
-      category.retiredAt
-    ) {
-      await updateHelpHubCategoryRow({ ...current, retiredAt: category.retiredAt }, actor, queryFn);
-      changed = true;
-    }
+    await insertHelpHubCategoryRow(category, actor, queryFn);
+    existingKeys.add(category.key);
   }
-  return changed ? listHelpHubCategories(queryFn) : sortHelpHubManagedCategories(existing);
+  await advanceHelpHubCategoryIdSequence(queryFn);
+  return listHelpHubCategories(queryFn);
 }

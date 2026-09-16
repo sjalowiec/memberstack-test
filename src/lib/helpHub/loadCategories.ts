@@ -17,14 +17,13 @@ import {
   mergeSeededHelpHubCategories,
   renameHelpHubCategory,
   reorderHelpHubCategories,
+  restoreHelpHubCategory,
   retireHelpHubCategory,
 } from "./categoryManage";
 import {
-  deleteHelpHubCategoryRow,
   ensureHelpHubCategoriesSeeded,
   insertHelpHubCategoryRow,
   isMissingHelpHubCategoryTable,
-  listHelpHubCategories,
   reassignHelpHubTipCategoryKey,
   replaceHelpHubCategoryRows,
   updateHelpHubCategoryRow,
@@ -147,10 +146,28 @@ export async function deleteManagedHelpHubCategory(
     loadHelpHubTipsForAdmin(),
   ]);
   const next = deleteHelpHubCategory(current, tips, id);
+  const retired = next.find((category) => category.id === id);
+  if (!retired) throw new HelpHubCategoryError("NOT_FOUND", `No category with id ${id}.`);
   if (useHelpHubJsonStore()) {
     writeHelpHubCategoriesFile(next);
   } else {
-    await deleteHelpHubCategoryRow(id, actor);
+    await updateHelpHubCategoryRow(retired, actor);
+  }
+  return loadHelpHubCategoriesForAdmin();
+}
+
+export async function restoreManagedHelpHubCategory(
+  id: number,
+  actor: HelpHubWriteActor | null,
+): Promise<HelpHubCategoryAdminRow[]> {
+  const current = await loadManagedHelpHubCategories();
+  const next = restoreHelpHubCategory(current, id);
+  const restored = next.find((category) => category.id === id);
+  if (!restored) throw new HelpHubCategoryError("NOT_FOUND", `No category with id ${id}.`);
+  if (useHelpHubJsonStore()) {
+    writeHelpHubCategoriesFile(next);
+  } else {
+    await updateHelpHubCategoryRow(restored, actor);
   }
   return loadHelpHubCategoriesForAdmin();
 }

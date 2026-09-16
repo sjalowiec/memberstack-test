@@ -133,6 +133,14 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain("helpHubCategoryChoices");
     expect(listSource).toContain("Manage Categories");
     expect(listSource).toContain("bootHelpHubCategoryAdmin");
+    expect(listSource).toContain("you can restore");
+    const categoryClient = readFileSync(
+      join(here, "..", "..", "lib", "helpHub", "categoryAdminClient.ts"),
+      "utf8",
+    );
+    expect(categoryClient).toContain("data-cat-restore");
+    expect(categoryClient).toContain("helpHubCategoryAdminErrorMessage");
+    expect(categoryClient).not.toContain("This cannot be undone.");
   });
 
   it("keeps Help Hub admin pages behind the same /admin Basic Auth used by the dashboard", () => {
