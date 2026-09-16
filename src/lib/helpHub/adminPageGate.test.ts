@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { helpHubAdminClientPayload } from "./adminPageGate";
+import {
+  HELP_HUB_ADMIN_PAGE_AUTH,
+  helpHubAdminClientPayload,
+  helpHubAdminEditorPayload,
+} from "./adminPageGate";
+
+describe("helpHubAdminEditorPayload", () => {
+  it("includes editor data for an existing site admin who already passed /admin Basic Auth", () => {
+    const payload = helpHubAdminEditorPayload({
+      entry: { question: "Visible to admin", slug: "cut-and-sew-shaping", status: "draft" },
+      lessons: [{ id: 5002, title: "Tuck on the LK150" }],
+      library: [{ id: 1027, title: "Every other Needle Knitting" }],
+    });
+    expect(HELP_HUB_ADMIN_PAGE_AUTH).toBe("site-admin-basic");
+    expect(payload.entry?.question).toBe("Visible to admin");
+    expect(payload.entry?.status).toBe("draft");
+    expect(payload.picker.library).toHaveLength(1);
+  });
+});
 
 describe("helpHubAdminClientPayload", () => {
   it("does not give unauthorized visitors draft entry or picker data", () => {
@@ -19,17 +37,5 @@ describe("helpHubAdminClientPayload", () => {
     expect(payload.entry).toBeNull();
     expect(payload.picker).toEqual({ lessons: [], library: [], allLessons: [] });
     expect(JSON.stringify(payload)).not.toContain("Draft secret question");
-  });
-
-  it("includes editor data for an allowlisted admin", () => {
-    const payload = helpHubAdminClientPayload({
-      auth: { ok: true },
-      entry: { question: "Visible to admin", slug: "cut-and-sew-shaping" },
-      lessons: [{ id: 5002, title: "Tuck on the LK150" }],
-      library: [{ id: 1027, title: "Every other Needle Knitting" }],
-    });
-    expect(payload.authorized).toBe(true);
-    expect(payload.entry?.question).toBe("Visible to admin");
-    expect(payload.picker.library).toHaveLength(1);
   });
 });

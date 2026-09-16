@@ -62,11 +62,42 @@ describe("Help Hub admin CMS", () => {
     expect(formHelperSource).toContain("helpHubAdminEditorCanInit");
   });
 
-  it("protects the admin HTML so unauthorized visitors do not receive draft JSON", () => {
-    expect(editSource).toContain("requireAdminForRequest");
-    expect(listSource).toContain("requireAdminForRequest");
-    expect(editSource).toContain("helpHubAdminClientPayload");
-    expect(editSource).toContain("authorized &&");
-    expect(editSource).toContain('id="help-hub-current-entry"');
+  it("loads both Help Hub admin pages with the site admin gate, not a Memberstack email login", () => {
+    expect(listSource).toContain("loadHelpHubTipsForAdmin");
+    expect(listSource).toContain("Create New Help Hub Entry");
+    expect(listSource).not.toContain("requireAdminForRequest");
+    expect(editSource).toContain("loadHelpHubTipBySlug");
+    expect(editSource).toContain("help-hub-edit__form");
+    expect(editSource).toContain("bootHelpHubAdminEditor");
+    expect(editSource).not.toContain("requireAdminForRequest");
+    expect(editSource).not.toContain("Sign in with your Knit it Now account to continue.");
+    expect(listSource).not.toContain("Sign in with your Knit it Now account to continue.");
+    expect(editSource).not.toContain('id="helpHubAdminSignIn" class="kbm-btn kbm-btn-primary"');
+  });
+
+  it("keeps Help Hub admin pages behind the same /admin Basic Auth used by the dashboard", () => {
+    const netlifyToml = readFileSync(join(here, "..", "..", "..", "netlify.toml"), "utf8");
+    const adminIndex = readFileSync(join(here, "index.astro"), "utf8");
+    const lessonsAdmin = readFileSync(join(here, "lessons.astro"), "utf8");
+    expect(netlifyToml).toMatch(/for = "\/admin\/\*"/);
+    expect(netlifyToml).toContain("Basic-Auth");
+    expect(adminIndex).not.toContain("requireAdminForRequest");
+    expect(lessonsAdmin).not.toContain("requireAdminForRequest");
+    expect(listSource).not.toContain("requireAdminForRequest");
+    expect(editSource).not.toContain("requireAdminForRequest");
+  });
+
+  it("does not leak draft Help Hub data on public pages or unauthenticated APIs", () => {
+    const slugSource = readFileSync(join(here, "..", "help-hub", "[slug].astro"), "utf8");
+    const previewSource = readFileSync(join(here, "..", "help-hub", "preview.astro"), "utf8");
+    const apiIndex = readFileSync(join(here, "..", "api", "admin", "help-hub", "index.ts"), "utf8");
+    const apiItem = readFileSync(join(here, "..", "api", "admin", "help-hub", "[id].ts"), "utf8");
+    expect(slugSource).toContain("publicOnly: true");
+    expect(previewSource).toContain("requireAdminForRequest");
+    expect(apiIndex).toContain("requireAdminForRequest");
+    expect(apiItem).toContain("requireAdminForRequest");
+    expect(formClientSource).toContain("admin.request");
+    expect(formClientSource).toContain("admin.openPreview");
+    expect(formClientSource).toContain("admin.promptSignIn");
   });
 });

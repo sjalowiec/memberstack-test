@@ -2,7 +2,6 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import helpHubCategories from "../../data/help-hub-categories.json";
 import videosPublic from "../../data/videos-public.json";
-import { requireAdminForRequest } from "../../lib/admin/requireAdminRequest";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
 import { loadLessonsForAdmin } from "../../lib/lessons/loadLessons";
 import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
@@ -12,7 +11,7 @@ import {
   tryStepsLinesForForm,
   tryThisIntroForForm,
 } from "../../lib/helpHub/adminForm";
-import { helpHubAdminClientPayload } from "../../lib/helpHub/adminPageGate";
+import { helpHubAdminEditorPayload } from "../../lib/helpHub/adminPageGate";
 import {
   libraryVideosForPicker,
   memberLessonsForResourcePicker,
@@ -20,26 +19,18 @@ import {
 
 export const prerender = false;
 
-const auth = await requireAdminForRequest(Astro.request, Astro.cookies);
-const authorized = auth.ok === true;
-
 const slugParam = Astro.url.searchParams.get("slug");
 const slug =
   typeof slugParam === "string" && slugParam.trim() !== "" ? slugParam.trim() : "";
 
-const currentEntry = authorized && slug ? await loadHelpHubTipBySlug(slug) : null;
+const currentEntry = slug ? await loadHelpHubTipBySlug(slug) : null;
 const isEditing = Boolean(currentEntry);
 
-const lessonRecords = authorized
-  ? ((await loadLessonsForAdmin()) as HelpHubLessonRecord[])
-  : [];
-const libraryPickerItems = authorized
-  ? libraryVideosForPicker(Array.isArray(videosPublic) ? videosPublic : [])
-  : [];
-const lessonPickerItems = authorized ? memberLessonsForResourcePicker(lessonRecords) : [];
+const lessonRecords = (await loadLessonsForAdmin()) as HelpHubLessonRecord[];
+const libraryPickerItems = libraryVideosForPicker(Array.isArray(videosPublic) ? videosPublic : []);
+const lessonPickerItems = memberLessonsForResourcePicker(lessonRecords);
 
-const clientPayload = helpHubAdminClientPayload({
-  auth,
+const clientPayload = helpHubAdminEditorPayload({
   entry: currentEntry as Record<string, unknown> | null,
   lessons: lessonPickerItems,
   library: libraryPickerItems,
@@ -107,27 +98,15 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
       <h1 class="help-hub-admin__title">
         {isEditing ? "Edit Help Hub Entry" : "Create Help Hub Entry"}
       </h1>
-      {
-        authorized ? (
-          <>
-            <p class="help-hub-admin__sub">
-              Fill in the public answer, choose an existing lesson for members, then preview and
-              publish.
-            </p>
-            <p class="help-hub-edit__context">
-              {isEditing && entryLabel
-                ? `Editing: ${entryLabel.question || entryLabel.title || entryLabel.slug || ""}`
-                : "New entry"}
-            </p>
-          </>
-        ) : (
-          <p class="help-hub-admin__sub">
-            {auth.ok === false && auth.status === 403
-              ? "This Knit it Now account does not have admin access."
-              : "Sign in with your Knit it Now account to continue."}
-          </p>
-        )
-      }
+      <p class="help-hub-admin__sub">
+        Fill in the public answer, choose an existing lesson for members, then preview and
+        publish.
+      </p>
+      <p class="help-hub-edit__context">
+        {isEditing && entryLabel
+          ? `Editing: ${entryLabel.question || entryLabel.title || entryLabel.slug || ""}`
+          : "New entry"}
+      </p>
     </header>
 
     <div class="help-hub-admin__toolbar help-hub-dash__toolbar">
@@ -135,24 +114,6 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
       <span id="saveHelpHubStatusTop" class="help-hub-edit__save-status" aria-live="polite"></span>
     </div>
 
-    {
-      !authorized && (
-        <section class="admin-panel help-hub-dash__panel">
-          <p class="help-hub-dash__placeholder">
-            {auth.ok === false && auth.status === 403
-              ? "You are signed in, but this account cannot edit Help Hub entries."
-              : "Sign in to create or edit Help Hub entries."}
-          </p>
-          <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-primary">
-            Sign in
-          </button>
-        </section>
-      )
-    }
-
-    {
-      authorized && (
-        <>
           <div id="helpHubDraftRecovery" class="help-hub-edit__recovery" role="alert" hidden>
             <span class="help-hub-edit__recovery-text">Recovered unsaved draft available.</span>
             <div class="help-hub-edit__recovery-actions">
@@ -436,9 +397,6 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
               </div>
             </div>
           </form>
-        </>
-      )
-    }
   </main>
 
   <style>
@@ -747,22 +705,16 @@ const initialSlug = isEditing ? valueFor("slug", "") : slugFromQuestion(valueFor
     }
   </style>
 
-  {
-    authorized && (
-      <>
-        <script
-          type="application/json"
-          id="help-hub-current-entry"
-          set:html={JSON.stringify(clientPayload.entry ?? null).replace(/</g, "\\u003c")}
-        />
-        <script
-          type="application/json"
-          id="help-hub-member-resource-data"
-          set:html={JSON.stringify(clientPayload.picker).replace(/</g, "\\u003c")}
-        />
-      </>
-    )
-  }
+  <script
+    type="application/json"
+    id="help-hub-current-entry"
+    set:html={JSON.stringify(clientPayload.entry ?? null).replace(/</g, "\\u003c")}
+  />
+  <script
+    type="application/json"
+    id="help-hub-member-resource-data"
+    set:html={JSON.stringify(clientPayload.picker).replace(/</g, "\\u003c")}
+  />
 
   <script>
     import { installHelpHubAdminBrowser } from "../../lib/helpHub/adminEditorClient";
