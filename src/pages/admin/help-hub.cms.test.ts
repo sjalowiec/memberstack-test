@@ -103,21 +103,36 @@ describe("Help Hub admin CMS", () => {
     expect(formClientSource).toContain("relatedToolUrl");
   });
 
-  it("includes Gauge & Swatching in the admin category choices after Getting Started", () => {
+  it("includes Gauge & Swatching and LK150 in the admin category choices", () => {
     const categoriesSource = readFileSync(
       join(here, "..", "..", "data", "help-hub-categories.json"),
       "utf8",
     );
-    const categories = JSON.parse(categoriesSource) as { key: string; label: string }[];
-    const keys = categories.map((row) => row.key);
+    const categories = JSON.parse(categoriesSource) as {
+      id?: number;
+      key: string;
+      label: string;
+      retired?: boolean;
+    }[];
+    const active = categories.filter((row) => row.retired !== true);
+    const keys = active.map((row) => row.key);
     expect(keys).toContain("getting-started");
     expect(keys).toContain("machines");
     expect(keys.indexOf("gauge-swatching")).toBe(keys.indexOf("getting-started") + 1);
     expect(keys.indexOf("machines")).toBe(keys.indexOf("gauge-swatching") + 1);
+    expect(keys.indexOf("lk150")).toBe(keys.indexOf("machines") + 1);
     expect(categories.find((row) => row.key === "gauge-swatching")?.label).toBe(
       "Gauge & Swatching",
     );
+    expect(categories.find((row) => row.key === "lk150")).toEqual(
+      expect.objectContaining({ id: 9, key: "lk150", label: "LK150" }),
+    );
+    expect(keys).not.toContain("knitting-doesnt-look-right");
+    expect(categories.find((row) => row.key === "knitting-doesnt-look-right")?.retired).toBe(true);
+    expect(editSource).toContain("loadManagedHelpHubCategories");
     expect(editSource).toContain("helpHubCategoryChoices");
+    expect(listSource).toContain("Manage Categories");
+    expect(listSource).toContain("bootHelpHubCategoryAdmin");
   });
 
   it("keeps Help Hub admin pages behind the same /admin Basic Auth used by the dashboard", () => {

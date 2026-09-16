@@ -2,40 +2,23 @@
 import Layout from "../../layouts/Layout.astro";
 import "../../components/talk-bubbles.css";
 import { loadPublicHelpHubTips } from "../../lib/helpHub/loadTips";
+import { loadPublicHelpHubCategories } from "../../lib/helpHub/loadCategories";
+import {
+  helpHubIndexCategorySections,
+  helpHubIndexNewCards,
+} from "../../lib/helpHub/publicIndex";
 import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 
 export const prerender = false;
 
-function helpHubTipSortOrder(item: { sortOrder?: unknown; id?: unknown }): number {
-  const v = item.sortOrder;
-  if (typeof v === "number" && Number.isFinite(v)) return v;
-  if (typeof v === "string" && v.trim() !== "") {
-    const n = parseInt(v.trim(), 10);
-    if (Number.isFinite(n)) return n;
-  }
-  return Number.POSITIVE_INFINITY;
-}
-
-function helpHubTipId(item: { id?: unknown }): number {
-  const v = item.id;
-  if (typeof v === "number" && Number.isFinite(v)) return v;
-  if (typeof v === "string" && v.trim() !== "") {
-    const n = parseInt(v.trim(), 10);
-    if (Number.isFinite(n)) return n;
-  }
-  return 0;
-}
-
-const helpHubData = await loadPublicHelpHubTips();
+const [helpHubData, helpHubCategories] = await Promise.all([
+  loadPublicHelpHubTips(),
+  loadPublicHelpHubCategories(),
+]);
 
 /** Live entries for the top “New in the Help Hub” section (isNew === true). */
-const newHelpHubItems = helpHubData
-  .filter((item) => item.isNew === true && helpHubTipIsPublic(item))
-  .sort((a, b) => {
-    const c = helpHubTipSortOrder(a) - helpHubTipSortOrder(b);
-    if (c !== 0) return c;
-    return helpHubTipId(a) - helpHubTipId(b);
-  });
+const newHelpHubItems = helpHubIndexNewCards(helpHubData);
+const categorySections = helpHubIndexCategorySections(helpHubData, helpHubCategories);
 
 const debugHelpHubTip = (Array.isArray(helpHubData) ? helpHubData : []).find(
   (item) => typeof item.slug === "string" && item.slug.trim() === "change-colors-lk150",
@@ -52,41 +35,6 @@ if (debugHelpHubTip) {
     ),
   });
 }
-
-/** Placeholder grouped data — lower catalog until more entries go live. */
-const fixCategories = [
-  {
-    category: "Carriage & Machine Issues",
-    fixes: [
-      { symptom: "Help! My carriage is jammed", title: "The Stuck Carriage Rescue", slug: "stuck-carriage" },
-      { symptom: "Why is my carriage making a loud grinding noise?", title: "The Maintenance Minute", slug: "grinding-noise" },
-      { symptom: "My knitting is falling off the machine.", title: "The Gravity Check", slug: "falling-off" }
-    ]
-  },
-  {
-    category: "Edges, Cast-On & Bind-Off",
-    fixes: [
-      { symptom: "Why are my edges looping/messy?", title: "The Clean Edge Secret", slug: "messy-edges" },
-      { symptom: "What's the best way to cast on?", title: "The Smooth Start", slug: "cast-on-bunching" },
-      { symptom: "How do I bind off so it doesn't pull tight?", title: "The Stretchy Finish", slug: "tight-bindoff" }
-    ]
-  },
-  {
-    category: "Stitches, Gauge & Yarn",
-    fixes: [
-      { symptom: "How do I fix a dropped stitch 10 rows down?", title: "The Ladder Rescue", slug: "dropped-stitch" },
-      { symptom: "Why is my yarn breaking/shredding?", title: "The Tension Tamer", slug: "yarn-breaking" },
-      { symptom: "Nothing I knit fits, what's wrong?", title: "The Gauge Truth", slug: "gauge-off" }
-    ]
-  },
-  {
-    category: "Ribber",
-    fixes: [
-      { symptom: "My ribbing cast on is ugly.", title: "The Ribber Reset", slug: "ribbing-holes" },
-      { symptom: "Do I need a ribber?", title: "using a ribber", slug: "why-ribber" }
-    ]
-  }
-];
 ---
 
 <Layout
@@ -148,9 +96,13 @@ const fixCategories = [
                   href={`/help-hub/${item.slug}`}
                   class="talk-bubble bubble-bl bubble-question"
                 >
-                  <strong>{item.question}</strong>
-                  <br />
-                  <span>{item.title}</span>
+                  <strong>{item.heading}</strong>
+                  {item.subtitle ? (
+                    <>
+                      <br />
+                      <span>{item.subtitle}</span>
+                    </>
+                  ) : null}
                 </a>
               ))}
             </div>
@@ -159,16 +111,23 @@ const fixCategories = [
       )}
 
       <div class="fix-category-list">
-        {fixCategories.map((group) => (
+        {categorySections.map((group) => (
           <section class="fix-category-section">
-            <h2 class="fix-category-heading">{group.category}</h2>
+            <h2 class="fix-category-heading">{group.label}</h2>
             <div class="fix-bubble-grid">
-              {group.fixes.map((fix) => (
-                <div class="talk-bubble bubble-bl bubble-question fix-bubble--inactive">
-                  <strong>{fix.symptom}</strong>
-                  <br />
-                  <span>{fix.title}</span>
-                </div>
+              {group.cards.map((card) => (
+                <a
+                  href={`/help-hub/${card.slug}`}
+                  class="talk-bubble bubble-bl bubble-question"
+                >
+                  <strong>{card.heading}</strong>
+                  {card.subtitle ? (
+                    <>
+                      <br />
+                      <span>{card.subtitle}</span>
+                    </>
+                  ) : null}
+                </a>
               ))}
             </div>
           </section>
@@ -409,19 +368,6 @@ const fixCategories = [
 
     .fix-category-section--new {
       margin-bottom: 3rem;
-    }
-
-    /* Placeholder bubbles: not links, clearly inactive */
-    .fix-bubble--inactive.talk-bubble {
-      opacity: 0.5;
-      cursor: default;
-      pointer-events: none;
-      transition: none;
-    }
-
-    .fix-bubble--inactive.talk-bubble:hover {
-      transform: none;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     .help-hub-footer {

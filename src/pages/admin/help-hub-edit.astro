@@ -13,6 +13,7 @@ import {
 } from "../../lib/helpHub/adminForm";
 import { helpHubAdminEditorPayload } from "../../lib/helpHub/adminPageGate";
 import { helpHubCategoryChoices } from "../../lib/helpHub/categories";
+import { loadManagedHelpHubCategories } from "../../lib/helpHub/loadCategories";
 import {
   libraryVideosForPicker,
   memberLessonsForResourcePicker,
@@ -43,7 +44,7 @@ const clientPayload = helpHubAdminEditorPayload({
   })),
 });
 
-const categoryOptions = helpHubCategoryChoices();
+const categoryOptions = helpHubCategoryChoices(await loadManagedHelpHubCategories());
 
 const pageTitle = isEditing
   ? "Edit Help Hub Entry | Knit it Now"

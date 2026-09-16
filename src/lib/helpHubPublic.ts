@@ -1,4 +1,5 @@
-import { helpHubCategoryLabel } from "./helpHub/categories";
+import { helpHubCategoryLabel, helpHubJsonSeedCategories } from "./helpHub/categories";
+import type { HelpHubManagedCategory } from "./helpHub/categoryTypes";
 
 /** Minimal Help Hub tip fields used for public visibility and search. */
 export type HelpHubTipRecord = {
@@ -92,7 +93,10 @@ export function findPublicHelpHubTipsForVideo<T extends HelpHubTipRecord>(
   return filterPublicHelpHubTips(tips).filter((t) => helpHubTipMatchesVideo(t, video));
 }
 
-function helpHubTipSearchText(tip: HelpHubTipRecord): string {
+function helpHubTipSearchText(
+  tip: HelpHubTipRecord,
+  categories: HelpHubManagedCategory[] = helpHubJsonSeedCategories(),
+): string {
   const categoryKey = typeof tip.category === "string" ? tip.category.trim() : "";
   const parts = [
     tip.title,
@@ -103,7 +107,7 @@ function helpHubTipSearchText(tip: HelpHubTipRecord): string {
     tip.bubbleAnswer,
     tip.slug,
     categoryKey,
-    categoryKey ? helpHubCategoryLabel(categoryKey) : "",
+    categoryKey ? helpHubCategoryLabel(categoryKey, categories) : "",
     ...(Array.isArray(tip.tags) ? tip.tags : []),
   ];
   return parts
@@ -115,10 +119,11 @@ function helpHubTipSearchText(tip: HelpHubTipRecord): string {
 export function searchPublicHelpHubTips<T extends HelpHubTipRecord>(
   tips: T[],
   query: string,
+  categories: HelpHubManagedCategory[] = helpHubJsonSeedCategories(),
 ): T[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  return filterPublicHelpHubTips(tips).filter((t) => helpHubTipSearchText(t).includes(q));
+  return filterPublicHelpHubTips(tips).filter((t) => helpHubTipSearchText(t, categories).includes(q));
 }
 
 export function publicHelpHubTipsForClientSearch(

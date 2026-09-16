@@ -65,8 +65,47 @@ const hubSections = [
 
     <div class="help-hub-admin__toolbar help-hub-dash__toolbar">
       <a href="/admin/help-hub-edit" class="kbm-btn kbm-btn-primary">Create New Help Hub Entry</a>
+      <button type="button" class="kbm-btn kbm-btn-outline" data-help-hub-categories-toggle>
+        Manage Categories
+      </button>
       <a href="/admin" class="kbm-btn kbm-btn-outline">Back to Creator Control Panel</a>
     </div>
+
+    <section class="admin-panel help-hub-cats" data-help-hub-categories hidden>
+      <h2 class="help-hub-dash__panel-title">Help Hub Categories</h2>
+      <p class="help-hub-cats__intro">
+        Add, rename, and reorder categories here. Renaming changes the public heading, not the stored
+        key, so existing entries stay attached. A category with entries cannot be deleted until those
+        entries are reassigned.
+      </p>
+      <form class="help-hub-cats__add" data-help-hub-categories-add>
+        <label class="help-hub-cats__add-label">
+          New category
+          <input class="help-hub-cats__add-input" type="text" name="label" required />
+        </label>
+        <button type="submit" class="kbm-btn kbm-btn-primary">Add category</button>
+      </form>
+      <p class="help-hub-cats__status" data-help-hub-categories-status aria-live="polite"></p>
+      <ul class="help-hub-cats__list" data-help-hub-categories-list></ul>
+      <div class="help-hub-cats__retire" data-help-hub-categories-retire hidden>
+        <p>
+          This category is used by <strong data-cat-retire-count>0</strong> entries. Choose a
+          replacement, then confirm. Entry URLs, IDs, and content will not change.
+        </p>
+        <label class="help-hub-cats__add-label">
+          Replacement category
+          <select class="help-hub-cats__add-input" data-cat-replacement></select>
+        </label>
+        <div class="help-hub-cats__retire-actions">
+          <button type="button" class="kbm-btn kbm-btn-primary" data-cat-retire-confirm>
+            Reassign and retire
+          </button>
+          <button type="button" class="kbm-btn kbm-btn-outline" data-cat-retire-cancel>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </section>
 
     <div class="help-hub-dash__sections">
       {
@@ -167,6 +206,89 @@ const hubSections = [
       flex-wrap: wrap;
       align-items: center;
       gap: 0.65rem 1rem;
+    }
+
+    .help-hub-cats {
+      margin-bottom: 1.5rem;
+    }
+
+    .help-hub-cats__intro,
+    .help-hub-cats__status,
+    .help-hub-cats__meta {
+      margin: 0 0 0.85rem;
+      font-size: 0.92rem;
+      color: #475569;
+      line-height: 1.45;
+    }
+
+    .help-hub-cats__status[data-kind="err"] {
+      color: #b91c1c;
+    }
+
+    .help-hub-cats__status[data-kind="ok"] {
+      color: #3f6212;
+    }
+
+    .help-hub-cats__add,
+    .help-hub-cats__retire-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .help-hub-cats__add-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .help-hub-cats__add-input,
+    .help-hub-cats__label {
+      min-width: 16rem;
+      padding: 0.4rem 0.55rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    .help-hub-cats__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .help-hub-cats__row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      justify-content: space-between;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .help-hub-cats__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .help-hub-cats__retire {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      background: #fffbeb;
     }
 
     .admin-panel {
@@ -276,8 +398,10 @@ const hubSections = [
       bindHelpHubPreviewButtons,
       installHelpHubAdminBrowser,
     } from "../../lib/helpHub/adminEditorClient";
+    import { bootHelpHubCategoryAdmin } from "../../lib/helpHub/categoryAdminClient";
 
     installHelpHubAdminBrowser();
     bindHelpHubPreviewButtons();
+    bootHelpHubCategoryAdmin();
   </script>
 </BaseLayout>

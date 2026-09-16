@@ -2,31 +2,56 @@
   {
     "id": 1,
     "key": "machine-not-working",
-    "label": "Something’s Not Working"
+    "label": "Something’s Not Working",
+    "sortOrder": 10
   },
   {
     "id": 2,
     "key": "knitting-doesnt-look-right",
-    "label": "My Knitting Doesn’t Look Right"
+    "label": "My Knitting Doesn’t Look Right",
+    "sortOrder": 20,
+    "retired": true
   },
   {
     "id": 3,
     "key": "edges-finishing-assembly",
-    "label": "Edges, Finishing & Assembly"
+    "label": "Edges, Finishing & Assembly",
+    "sortOrder": 30
   },
   {
     "id": 4,
     "key": "shaping-fit-problems",
-    "label": "Shaping & Fit Problems"
+    "label": "Shaping & Fit Problems",
+    "sortOrder": 40
   },
   {
     "id": 5,
     "key": "pattern-design-confusion",
-    "label": "Pattern & Design Confusion"
+    "label": "Pattern & Design Confusion",
+    "sortOrder": 50
   },
   {
     "id": 6,
     "key": "getting-started",
-    "label": "Getting Started"
+    "label": "Getting Started",
+    "sortOrder": 60
+  },
+  {
+    "id": 8,
+    "key": "gauge-swatching",
+    "label": "Gauge & Swatching",
+    "sortOrder": 70
+  },
+  {
+    "id": 7,
+    "key": "machines",
+    "label": "Machines",
+    "sortOrder": 80
+  },
+  {
+    "id": 9,
+    "key": "lk150",
+    "label": "LK150",
+    "sortOrder": 90
   }
 ]
