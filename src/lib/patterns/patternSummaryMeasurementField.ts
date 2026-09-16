@@ -35,6 +35,12 @@ export type PatternSummaryMeasurementField = {
   unitSuffixAttr?: string;
   /** Optional secondary line (stitches, rows, etc.). */
   secondary?: string;
+  /** Body/Sleeve preview tab used by the shared Drop Shoulder tab helpers. */
+  previewTab?: "body" | "sleeve";
+  /** Extra attributes on the input (e.g. `data-cb-measure-input`). */
+  extraInputAttrs?: Record<string, string>;
+  /** Extra attributes on the chip wrapper. */
+  extraChipAttrs?: Record<string, string>;
 };
 
 export const PATTERN_SUMMARY_MEASURE_CHIP_CLASS = "ps-measure-chip";

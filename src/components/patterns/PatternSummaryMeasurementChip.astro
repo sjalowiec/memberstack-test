@@ -14,7 +14,7 @@ interface Props {
 const { field } = Astro.props;
 const editable = field.editable !== false;
 const inputId = field.inputId || `ps-measure-${field.id}`;
-const inputDataAttrs: Record<string, string> = {};
+const inputDataAttrs: Record<string, string> = { ...(field.extraInputAttrs ?? {}) };
 if (field.inputDataAttr) inputDataAttrs[field.inputDataAttr] = "";
 const unitSuffixAttrs: Record<string, string> = {};
 if (field.unitSuffixAttr) unitSuffixAttrs[field.unitSuffixAttr] = "";
@@ -22,6 +22,8 @@ const errorAttrs: Record<string, string> = {};
 if (field.errorDataAttr && field.errorKey) {
   errorAttrs[field.errorDataAttr] = field.errorKey;
 }
+const chipAttrs: Record<string, string> = { ...(field.extraChipAttrs ?? {}) };
+if (field.previewTab) chipAttrs["data-ds-preview-tab"] = field.previewTab;
 ---
 
 <div
@@ -30,6 +32,7 @@ if (field.errorDataAttr && field.errorKey) {
   data-measurement-transform={field.transform}
   data-ps-measure-id={field.id}
   data-testid={field.testId}
+  {...chipAttrs}
 >
   {
     editable ? (

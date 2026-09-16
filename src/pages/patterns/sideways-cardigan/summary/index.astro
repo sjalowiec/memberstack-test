@@ -7,21 +7,38 @@
 import Layout from "../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
+import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
+import EditWorkspaceGaugeFields from "../../../../components/patterns/EditWorkspaceGaugeFields.astro";
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
 import PatternSummaryDiagramStage from "../../../../components/patterns/PatternSummaryDiagramStage.astro";
 import PatternSummaryMeasurementChip from "../../../../components/patterns/PatternSummaryMeasurementChip.astro";
+import FloatingInput from "../../../../components/lego/FloatingInput.astro";
 import { SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS } from "../../../../lib/patterns/sidewaysCardiganSummaryEdit";
+import {
+  SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
+  SIDEWAYS_CARDIGAN_GARMENT_STYLES,
+  SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES,
+  SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS,
+} from "../../../../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
   SIDEWAYS_CARDIGAN_PATTERN_BUILDER_HREF,
   SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_EDIT_LABEL,
   SIDEWAYS_CARDIGAN_SUMMARY_HINT_FROM_EDIT,
   SIDEWAYS_CARDIGAN_SUMMARY_PRIMARY_LABEL,
 } from "../../../../lib/patterns/sidewaysCardiganPatternNavigation";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../../../lib/patterns/sleevelessExpressAvailableNeedles";
 
 import "../../../../styles/wizard.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
 import "../../../../styles/patterns/pattern-editable-pencil.css";
+import "../../../../styles/sleeveless-express-measurements-confirm.css";
+import "../../../../styles/sleeveless-custom-build-measurements.css";
 import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
 ---
 
@@ -63,10 +80,13 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
           hidden
         >
           <PatternSummaryEditWorkspace
+            headingClass="pattern-editable-heading"
             measurePaneAttr="data-sideways-measure-pane"
             actionsAttr="data-sideways-edit-actions"
           >
             <Fragment slot="quick">
+              <PatternProjectDetails titlePlaceholder="Sideways V-Neck sweater" />
+
               <section class="sl-edit-section sl-edit-units-section" aria-labelledby="sideways-edit-units-heading">
                 <h3 class="sl-edit-section__title" id="sideways-edit-units-heading">Units</h3>
                 <div
@@ -93,23 +113,108 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
                   </button>
                 </div>
                 <p class="sl-edit-ease">
-                  Switch how measurements are shown. Your pattern's measurements don't change.
+                  Switch how measurements and gauge are shown. Your pattern's measurements don't change.
                 </p>
               </section>
 
               <section class="sl-edit-section" aria-labelledby="sideways-edit-setup-heading">
-                <h3 class="sl-edit-section__title" id="sideways-edit-setup-heading">Pattern choices</h3>
-                <p class="sl-edit-ease">
-                  Cardigan/Pullover, fit, size, sleeve length, gauge, and machine stay as you set them
-                  in the builder.
-                </p>
-                <dl class="print-summary-dl print-summary-dl--inline" data-sideways-edit-choices></dl>
+                <h3 class="sl-edit-section__title pattern-editable-heading" id="sideways-edit-setup-heading">
+                  Quick edits
+                  <PatternEditablePencilIcon />
+                </h3>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="sideways-edit-size">Starting size</label>
+                  <select
+                    id="sideways-edit-size"
+                    class="sl-edit-input sl-edit-select"
+                    data-sideways-edit-size
+                    data-testid="sideways-edit-size"
+                  >
+                    <option value="">Loading sizes…</option>
+                  </select>
+                  <p class="sl-edit-ease">
+                    Changing the size updates the pattern measurements automatically.
+                  </p>
+                </div>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Garment style</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Garment style">
+                    {SIDEWAYS_CARDIGAN_GARMENT_STYLES.map((value) => (
+                      <label class="sl-edit-segment__option">
+                        <input type="radio" name="sideways-edit-garment" value={value} />
+                        <span class="sl-edit-segment__pill">{SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[value]}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Fit</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Fit">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sideways-edit-fit" value="close" />
+                      <span class="sl-edit-segment__pill">Close</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sideways-edit-fit" value="standard" />
+                      <span class="sl-edit-segment__pill">Standard</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sideways-edit-fit" value="relaxed" />
+                      <span class="sl-edit-segment__pill">Relaxed</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Sleeve length</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Sleeve length">
+                    {SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES.map((value) => (
+                      <label class="sl-edit-segment__option">
+                        <input type="radio" name="sideways-edit-sleeve-length" value={value} />
+                        <span class="sl-edit-segment__pill">{SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[value]}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="sideways-edit-gauge-heading">
+                <h3 class="sl-edit-section__title pattern-editable-heading" id="sideways-edit-gauge-heading">
+                  Gauge
+                  <PatternEditablePencilIcon />
+                </h3>
+                <EditWorkspaceGaugeFields />
+                <div class="sl-edit-needles-field">
+                  <FloatingInput
+                    id="sl-edit-needles"
+                    label={AVAILABLE_NEEDLES_LABEL}
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    required
+                    errorId="sl-edit-needles-error"
+                    errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+                  />
+                  <p class="sl-edit-needles-help" id="sl-edit-needles-help">
+                    {AVAILABLE_NEEDLES_HELPER_TEXT}
+                  </p>
+                </div>
               </section>
             </Fragment>
 
-            <Fragment slot="heading">Measurements</Fragment>
+            <Fragment slot="heading">
+              Measurements
+              <PatternEditablePencilIcon />
+            </Fragment>
             <Fragment slot="notes">
               <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
+              <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
+                Pattern updated.
+              </p>
             </Fragment>
             <Fragment slot="actions">
               <button
@@ -133,16 +238,32 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
               {SIDEWAYS_CARDIGAN_SUMMARY_HINT_FROM_EDIT}
             </span>
             <Fragment slot="diagram">
-              <PatternSummaryDiagramStage
-                stageTestId="sideways-edit-diagram-area"
-                diagramAttr="data-sideways-edit-diagram"
-                overlayAttr="data-sideways-edit-overlay"
-                stageInnerAttr="data-sideways-edit-stage"
-              >
-                {SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
-                  <PatternSummaryMeasurementChip field={field} />
-                ))}
-              </PatternSummaryDiagramStage>
+              <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
+                <div
+                  class="sl-measure-workspace__editor"
+                  data-cb-measure-root
+                  data-express-construction="sideways-cardigan"
+                  data-sideways-workspace-measure-summary
+                >
+                  <div class="sleeveless-measure-review-body" data-sideways-edit-preview-wrap>
+                    <div
+                      class="sleeveless-measure-project-summary"
+                      data-cb-build-summary
+                      aria-label="Current build summary"
+                    ></div>
+                    <PatternSummaryDiagramStage
+                      stageTestId="sideways-edit-diagram-area"
+                      diagramAttr="data-sideways-edit-diagram"
+                      overlayAttr="data-sideways-edit-overlay"
+                      stageInnerAttr="data-sideways-edit-stage"
+                    >
+                      {SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
+                        <PatternSummaryMeasurementChip field={field} />
+                      ))}
+                    </PatternSummaryDiagramStage>
+                  </div>
+                </div>
+              </div>
             </Fragment>
           </PatternSummaryEditWorkspace>
         </div>
@@ -173,22 +294,6 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
   }
   .sideways-summary-workspace[hidden] {
     display: none;
-  }
-  .sideways-summary-page .print-summary-dl--inline {
-    display: grid;
-    gap: 0.35rem 1.25rem;
-    margin: 0.75rem 0 0;
-  }
-  .sideways-summary-page .print-summary-dl__pair {
-    display: grid;
-    grid-template-columns: minmax(8rem, 12rem) 1fr;
-    gap: 0.25rem 1rem;
-  }
-  .sideways-summary-page .print-summary-dl__pair dt {
-    font-weight: 600;
-  }
-  .sideways-summary-page .print-summary-dl__pair dd {
-    margin: 0;
   }
 </style>
 

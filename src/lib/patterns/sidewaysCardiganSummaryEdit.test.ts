@@ -8,10 +8,14 @@ import { loadSidewaysCardiganWorkspaceView } from "./sidewaysCardiganWorkspaceLo
 import { readSidewaysCardiganBuilderStateFromDraft } from "./sidewaysCardiganBuilderState";
 import {
   applySidewaysCardiganSummaryMeasurementEdits,
+  applySidewaysCardiganSummaryQuickEdits,
   buildSidewaysCardiganSummaryDiagramInput,
   displaySidewaysCardiganSummaryMeasurements,
   readSidewaysCardiganSummaryMeasurements,
+  SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS,
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
+  SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS,
+  SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS,
 } from "./sidewaysCardiganSummaryEdit";
 import {
   buildSidewaysCardiganEditMeasurementDiagramSvg,
@@ -34,6 +38,10 @@ import {
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
 import type { SidewaysCardiganBuilderValues } from "./syncSidewaysCardiganBuilderToPatternStorage";
+import {
+  resetExpressSweaterChartsForTests,
+  seedExpressSweaterChartsForTests,
+} from "./sleevelessExpressSizeChartClient";
 
 const missesRow: SidewaysCardiganWomenChartRow = {
   size: 8,
@@ -166,8 +174,8 @@ describe("Sideways Summary/Edit first-time routing", () => {
       "/patterns/sideways-cardigan/builder",
     );
     expect(summaryScript).toContain("sidewaysCardiganSummaryCancelHref");
-    expect(summaryScript).toContain("Garment style");
-    expect(summaryScript).toContain("Starting size");
+    expect(summaryPage).toContain("Garment style");
+    expect(summaryPage).toContain("Starting size");
     const reviewAstro = readFileSync(
       resolve("src/pages/patterns/sideways-cardigan/review.astro"),
       "utf8",
@@ -287,9 +295,17 @@ describe("Sideways Summary/Edit live measurement edits", () => {
     expect(svg).toContain("Armhole depth");
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"`);
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening}"`);
-    expect(SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.map((f) => f.id)).not.toContain(
-      "armholeDepth",
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS).not.toHaveProperty("armholeDepth");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.some((f) => f.id === "armholeDepth" && f.editable === false)).toBe(
+      true,
     );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("sleeveLength");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("wrist");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.map((f) => f.id)).toEqual([
+      "finishedUpperArm",
+      "sleeveLength",
+      "wrist",
+    ]);
   });
 
   it("changing one measurement does not reset the other overrides", () => {
@@ -390,5 +406,106 @@ describe("Sideways Summary/Edit workspace copy", () => {
     expect(summaryPage).not.toContain("Cuff up");
     expect(summaryPage).not.toContain("data-sideways-edit-sleeve-direction");
     expect(summaryScript).not.toContain("SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS");
+    expect(summaryPage).not.toContain("Neckline");
+    expect(summaryPage).not.toContain("sl-edit-neckline");
+  });
+});
+
+describe("Sideways Summary/Edit shared workspace structure", () => {
+  it("uses the shared sweater Summary/Edit sidebar and Body/Sleeve tabs", () => {
+    expect(summaryPage).toContain("PatternProjectDetails");
+    expect(summaryPage).toContain("EditWorkspaceGaugeFields");
+    expect(summaryPage).toContain("Quick edits");
+    expect(summaryPage).toContain("data-cb-build-summary");
+    expect(summaryPage).toContain("data-sideways-workspace-measure-summary");
+    expect((summaryPage.match(/>Units</g) ?? []).length).toBe(1);
+    expect(summaryScript).toContain("createDropShoulderEditPreviewTablist");
+    expect(summaryScript).toContain("applyDropShoulderEditPreviewChipVisibility");
+    expect(summaryScript).toContain("focusDropShoulderUpperArmMeasurement");
+    expect(summaryScript).toContain("buildSidewaysCardiganEditMeasurementDiagramSvg(input, previewTab)");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.filter((f) => f.previewTab === "body").map((f) => f.id)).not.toContain(
+      "sleeveLength",
+    );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.filter((f) => f.previewTab === "body").map((f) => f.id)).not.toContain(
+      "wrist",
+    );
+    expect(
+      SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.filter((f) => f.previewTab === "sleeve").map((f) => f.id),
+    ).toEqual(["finishedUpperArm", "sleeveLength", "wrist"]);
+  });
+});
+
+describe("Sideways Summary/Edit quick edits and tabs", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+    seedExpressSweaterChartsForTests("misses", [missesRow]);
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    resetExpressSweaterChartsForTests();
+  });
+
+  it("updates the pattern and SVG when garment style, fit, or sleeve length change", () => {
+    saveBuild(cardiganValues);
+    const before = diagramFor(cardiganValues);
+    expect(before).toContain('data-sideways-edit-diagram="cardigan"');
+    expect(before).toContain('data-sideways-edit-piece="body"');
+
+    const styleResult = applySidewaysCardiganSummaryQuickEdits({ garmentStyle: "pullover" });
+    expect(styleResult.ok).toBe(true);
+    expect(getCurrentPattern().style.garmentStyle).toBe("pullover");
+    const pulloverSvg = buildSidewaysCardiganEditMeasurementDiagramSvg(
+      buildSidewaysCardiganSummaryDiagramInput(
+        readSidewaysCardiganSummaryMeasurements(),
+        readSidewaysCardiganBuilderStateFromDraft().garmentStyle,
+        "in",
+      )!,
+      "body",
+    );
+    expect(pulloverSvg).toContain('data-sideways-edit-diagram="pullover"');
+    expect(pulloverSvg).not.toBe(before);
+
+    const fitResult = applySidewaysCardiganSummaryQuickEdits({ fit: "relaxed" });
+    expect(fitResult.ok).toBe(true);
+    expect(getCurrentPattern().fit?.easeChoice).toBe("relaxed");
+    const afterFit = readSidewaysCardiganSummaryMeasurements();
+    expect(afterFit.finishedBust).not.toBe("");
+
+    const sleeveResult = applySidewaysCardiganSummaryQuickEdits({ sleeveLengthChoice: "short" });
+    expect(sleeveResult.ok).toBe(true);
+    expect(getCurrentPattern().style.sleeveLength).toBe("short");
+    const sleeveSvg = buildSidewaysCardiganEditMeasurementDiagramSvg(
+      buildSidewaysCardiganSummaryDiagramInput(
+        readSidewaysCardiganSummaryMeasurements(),
+        "pullover",
+        "in",
+      )!,
+      "sleeve",
+    );
+    expect(sleeveSvg).toContain('data-sideways-edit-piece="sleeve"');
+    expect(sleeveSvg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
+    expect(sleeveSvg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    expect(sleeveSvg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist}"`);
+    expect(summaryScript).toContain("applySidewaysCardiganSummaryQuickEdits");
+  });
+
+  it("keeps Body chips off the sleeve drawing and Sleeve chips off the body drawing", () => {
+    saveBuild(cardiganValues);
+    const body = diagramFor(cardiganValues);
+    const sleeve = buildSidewaysCardiganEditMeasurementDiagramSvg(
+      buildSidewaysCardiganSummaryDiagramInput(
+        readSidewaysCardiganSummaryMeasurements(),
+        "cardigan",
+        "in",
+      )!,
+      "sleeve",
+    );
+    expect(body).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    expect(body).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist}"`);
+    expect(body).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
+    expect(sleeve).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
+    expect(sleeve).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
   });
 });
