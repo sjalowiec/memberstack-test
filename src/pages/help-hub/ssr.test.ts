@@ -45,3 +45,15 @@ describe("Help Hub related lessons public section", () => {
     expect(previewSource).toContain("loadPublicLessons");
   });
 });
+
+describe("Help Hub empty media", () => {
+  it("does not render the empty media placeholder on preview or published pages", () => {
+    const tipPageSource = readFileSync(
+      join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
+      "utf8",
+    );
+    expect(tipPageSource).toContain("hasHeroMedia");
+    expect(tipPageSource).toContain("tuesday-tip-hero__columns--no-media");
+    expect(tipPageSource).not.toContain("Media will appear here");
+  });
+});

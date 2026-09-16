@@ -129,6 +129,9 @@ export function combinedMemberResourcePickerItems(
   );
 }
 
+export const MEMBER_RESOURCE_SEARCH_MIN_CHARS = 2;
+export const MEMBER_RESOURCE_SEARCH_LIMIT = 8;
+
 export function filterMemberResourcePickerItems(
   items: MemberResourcePickerItem[],
   query: string,
@@ -142,6 +145,23 @@ export function filterMemberResourcePickerItems(
       item.slug.toLowerCase().includes(q)
     );
   });
+}
+
+/** Search results for the admin picker: empty until 2 characters, then a short list. */
+export function memberResourcePickerResults(
+  items: MemberResourcePickerItem[],
+  query: string,
+  options: { minChars?: number; limit?: number } = {},
+): MemberResourcePickerItem[] {
+  const minChars = options.minChars ?? MEMBER_RESOURCE_SEARCH_MIN_CHARS;
+  const limit = options.limit ?? MEMBER_RESOURCE_SEARCH_LIMIT;
+  const q = query.trim();
+  if (q.length < minChars) return [];
+  return filterMemberResourcePickerItems(items, q).slice(0, limit);
+}
+
+export function memberResourceOptionLabel(item: MemberResourcePickerItem): string {
+  return `${item.id} — ${item.title}`;
 }
 
 export type MemberResourceSelection = {
