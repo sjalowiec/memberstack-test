@@ -28,8 +28,17 @@ describe("Help Hub saved-draft preview", () => {
   it("reuses the public Help Hub renderer", () => {
     expect(slugSource).toContain("HelpHubTipPage");
     expect(tipPageSource).toContain("data-hh-lesson-cta");
-    expect(tipPageSource).toContain("/help-hub/work-with-sue");
     expect(tipPageSource).not.toMatch(/href="\/join"/);
+  });
+
+  it("omits the personal-guidance Work with Sue block from preview and published tip pages", () => {
+    expect(previewSource).toContain("HelpHubTipPage");
+    expect(slugSource).toContain("HelpHubTipPage");
+    expect(tipPageSource).not.toContain("Need more help?");
+    expect(tipPageSource).not.toContain("personal guidance");
+    expect(tipPageSource).not.toContain("help-hub-cta-inline");
+    expect(tipPageSource).not.toContain("help-hub-cta-link");
+    expect(tipPageSource).not.toContain("/help-hub/work-with-sue");
   });
 
   it("sets a document base on preview so site assets resolve against the request origin", () => {
