@@ -11,7 +11,6 @@ import type { HelpHubManagedCategory } from "./categoryTypes";
 export type HelpHubIndexCard = {
   slug: string;
   heading: string;
-  subtitle: string;
 };
 
 export type HelpHubIndexCategorySection = {
@@ -48,24 +47,13 @@ function sortHelpHubIndexTips<T extends { sortOrder?: unknown; id?: unknown }>(t
   });
 }
 
-function normalizeCardText(value: string): string {
-  return value.replace(/\s+/g, " ").trim().toLowerCase();
-}
-
-/** Card heading is the question; subtitle is title only when it adds different, useful text. */
+/** Catalog cards show the stored question only. Titles stay on the entry for search and the tip page. */
 export function helpHubIndexCardCopy(tip: {
   question?: unknown;
   title?: unknown;
-}): { heading: string; subtitle: string } {
+}): { heading: string } {
   const question = typeof tip.question === "string" ? tip.question.trim() : "";
-  const title = typeof tip.title === "string" ? tip.title.trim() : "";
-  const heading = question || title;
-  if (!heading) return { heading: "", subtitle: "" };
-  if (!title) return { heading, subtitle: "" };
-  if (normalizeCardText(title) === normalizeCardText(heading)) {
-    return { heading, subtitle: "" };
-  }
-  return { heading, subtitle: title };
+  return { heading: question };
 }
 
 function helpHubIndexCardFromTip(tip: HelpHubTipRecord): HelpHubIndexCard | null {
@@ -73,7 +61,7 @@ function helpHubIndexCardFromTip(tip: HelpHubTipRecord): HelpHubIndexCard | null
   if (!slug) return null;
   const copy = helpHubIndexCardCopy(tip);
   if (!copy.heading) return null;
-  return { slug, heading: copy.heading, subtitle: copy.subtitle };
+  return { slug, heading: copy.heading };
 }
 
 export function helpHubIndexNewCards(tips: HelpHubTipRecord[]): HelpHubIndexCard[] {

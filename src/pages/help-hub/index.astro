@@ -65,11 +65,6 @@ if (debugHelpHubTip) {
               problems, questions, and next steps. Browse the fixes below to find the one
               that matches what you need.
             </p>
-            <p class="help-hub-cta">
-              If you’re in a hurry or you want a 1-on-1 fix,
-              <a href="/help-hub/work-with-sue">Work with Sue</a>
-              for more personal support.
-            </p>
             <p style="margin-top: 10px;">
               Not finding what you need? 
               <strong><a href="#help-request">Tell me where you're stuck →</a></strong>
@@ -86,7 +81,6 @@ if (debugHelpHubTip) {
             class="fix-category-section fix-category-section--new"
             aria-labelledby="help-hub-new-heading"
           >
-            <p class="help-hub-orientation-label" aria-hidden="true">Start here</p>
             <h2 id="help-hub-new-heading" class="fix-category-heading">
               New in the Help Hub
             </h2>
@@ -97,12 +91,6 @@ if (debugHelpHubTip) {
                   class="talk-bubble bubble-bl bubble-question"
                 >
                   <strong>{item.heading}</strong>
-                  {item.subtitle ? (
-                    <>
-                      <br />
-                      <span>{item.subtitle}</span>
-                    </>
-                  ) : null}
                 </a>
               ))}
             </div>
@@ -121,12 +109,6 @@ if (debugHelpHubTip) {
                   class="talk-bubble bubble-bl bubble-question"
                 >
                   <strong>{card.heading}</strong>
-                  {card.subtitle ? (
-                    <>
-                      <br />
-                      <span>{card.subtitle}</span>
-                    </>
-                  ) : null}
                 </a>
               ))}
             </div>
@@ -205,22 +187,6 @@ if (debugHelpHubTip) {
     html {
   scroll-behavior: smooth;
 }
-
-    .help-hub-cta {
-      margin-top: 0.9rem;
-    }
-
-    /* Target ONLY the link */
-    .help-hub-cta a {
-      color: var(--kbm-accent) !important;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .help-hub-cta a:hover,
-    .help-hub-cta a:focus {
-      text-decoration: underline;
-    }
 
     .knit-fix-hub-inner {
       max-width: 960px;
@@ -307,15 +273,6 @@ if (debugHelpHubTip) {
 
     .fix-hub-divider--after-cards {
       margin: 2.25rem 0 0;
-    }
-
-    .help-hub-orientation-label {
-      font-size: 0.85rem;
-      line-height: 1.2;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: rgba(36, 48, 21, 0.7);
-      margin: 0 0 0.5rem 0;
     }
 
     .fix-category-section {
