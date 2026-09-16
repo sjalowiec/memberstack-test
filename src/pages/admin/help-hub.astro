@@ -1,14 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { requireAdminForRequest } from "../../lib/admin/requireAdminRequest";
 import { loadHelpHubTipsForAdmin } from "../../lib/helpHub/loadTips";
 
 export const prerender = false;
 
-const auth = await requireAdminForRequest(Astro.request, Astro.cookies);
-const authorized = auth.ok === true;
-
-const entries = authorized ? await loadHelpHubTipsForAdmin() : [];
+const entries = await loadHelpHubTipsForAdmin();
 const publishedEntries = entries.filter(
   (e): e is (typeof entries)[number] =>
     Boolean(e) && (e as { status?: string }).status === "published"
@@ -63,23 +59,10 @@ const hubSections = [
     <header class="help-hub-admin__head">
       <h1 class="help-hub-admin__title">Help Hub Admin</h1>
       <p class="help-hub-admin__sub">
-        {authorized
-          ? "Create, review, and manage Help Hub entries."
-          : auth.ok === false && auth.status === 403
-            ? "This Knit it Now account does not have admin access."
-            : "Sign in with your Knit it Now account to continue."}
+        Create, review, and manage Help Hub entries.
       </p>
     </header>
 
-    {
-      !authorized ? (
-        <section class="admin-panel help-hub-dash__panel">
-          <button type="button" id="helpHubAdminSignIn" class="kbm-btn kbm-btn-primary">
-            Sign in
-          </button>
-        </section>
-      ) : (
-        <>
     <div class="help-hub-admin__toolbar help-hub-dash__toolbar">
       <a href="/admin/help-hub-edit" class="kbm-btn kbm-btn-primary">Create New Help Hub Entry</a>
       <a href="/admin" class="kbm-btn kbm-btn-outline">Back to Creator Control Panel</a>
@@ -144,9 +127,6 @@ const hubSections = [
         ))
       }
     </div>
-        </>
-      )
-    }
   </main>
 
   <style>
@@ -299,8 +279,5 @@ const hubSections = [
 
     installHelpHubAdminBrowser();
     bindHelpHubPreviewButtons();
-    document.getElementById("helpHubAdminSignIn")?.addEventListener("click", () => {
-      window.kbmHelpHubAdmin?.promptSignIn?.();
-    });
   </script>
 </BaseLayout>
