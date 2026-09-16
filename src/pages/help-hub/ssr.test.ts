@@ -19,10 +19,34 @@ describe("Help Hub public SSR", () => {
     expect(indexSource).toContain("helpHubIndexCategorySections");
     expect(indexSource).toContain("helpHubIndexNewCards");
     expect(indexSource).toContain("loadPublicHelpHubCategories");
+    expect(indexSource).toContain("New in the Help Hub");
     expect(indexSource).not.toContain("fixCategories");
     expect(indexSource).not.toContain("Stuck Carriage Rescue");
     expect(indexSource).not.toContain("The Gravity Check");
     expect(indexSource).not.toContain("fix-bubble--inactive");
+  });
+
+  it("omits the Start here eyebrow and keeps the New in the Help Hub section", () => {
+    expect(indexSource).toContain("New in the Help Hub");
+    expect(indexSource).toContain("helpHubIndexNewCards");
+    expect(indexSource).not.toMatch(/start here/i);
+    expect(indexSource).not.toContain("help-hub-orientation-label");
+  });
+
+  it("renders catalog bubbles with the question only", () => {
+    expect(indexSource).toContain("<strong>{item.heading}</strong>");
+    expect(indexSource).toContain("<strong>{card.heading}</strong>");
+    expect(indexSource).not.toContain("item.subtitle");
+    expect(indexSource).not.toContain("card.subtitle");
+  });
+
+  it("omits the catalog-only Work with Sue promotion without removing the help form", () => {
+    expect(indexSource).not.toContain("/help-hub/work-with-sue");
+    expect(indexSource).not.toContain("If you’re in a hurry or you want a 1-on-1 fix");
+    expect(indexSource).not.toContain("for more personal support");
+    expect(indexSource).not.toContain("help-hub-cta");
+    expect(indexSource).toContain("help-hub-question-form");
+    expect(indexSource).toContain("Not finding your answer?");
   });
 
   it("404s unpublished slugs and uses the shared tip renderer", () => {

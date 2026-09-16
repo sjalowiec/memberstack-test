@@ -111,18 +111,16 @@ const somethingNotWorking: HelpHubTipRecord = {
 };
 
 describe("helpHubIndexCardCopy", () => {
-  it("shows the question as the heading and omits a duplicate subtitle", () => {
+  it("shows the question only, even when the stored title differs", () => {
     expect(helpHubIndexCardCopy(everyOtherNeedle)).toEqual({
       heading: "I’m knitting over every other needle. How do I swatch?",
-      subtitle: "",
     });
-  });
-
-  it("keeps a useful subtitle that differs from the question", () => {
     expect(helpHubIndexCardCopy(sandwichBand)).toEqual({
       heading: "How do I create a clean, professional band finish for my neckline?",
-      subtitle: "The Perfect Sandwich Band",
     });
+    expect(helpHubIndexCardCopy(sandwichBand)).not.toEqual(
+      expect.objectContaining({ heading: "The Perfect Sandwich Band" }),
+    );
   });
 });
 
@@ -141,7 +139,10 @@ describe("helpHubIndexNewCards", () => {
     expect(cards.find((card) => card.slug === "every-other-needle-swatch")?.heading).toBe(
       "I’m knitting over every other needle. How do I swatch?",
     );
-    expect(cards.find((card) => card.slug === "every-other-needle-swatch")?.subtitle).toBe("");
+    expect(cards.find((card) => card.slug === "sandwich-neckband-finish")?.heading).toBe(
+      "How do I create a clean, professional band finish for my neckline?",
+    );
+    expect(cards.every((card) => !("subtitle" in card))).toBe(true);
   });
 });
 
@@ -177,7 +178,6 @@ describe("helpHubIndexCategorySections", () => {
       {
         slug: "every-other-needle-swatch",
         heading: "I’m knitting over every other needle. How do I swatch?",
-        subtitle: "",
       },
     ]);
   });
@@ -248,9 +248,11 @@ describe("helpHubIndexCategorySections", () => {
       {
         slug: "lk150-tuck-swatch",
         heading: "How do I knit tuck stitch on my LK150?",
-        subtitle: "Easy, beautiful texture with tuck stitch",
       },
     ]);
+    expect(lk150?.cards[0]).not.toEqual(
+      expect.objectContaining({ subtitle: "Easy, beautiful texture with tuck stitch" }),
+    );
   });
 
   it("does not show the removed My Knitting Doesn’t Look Right category", () => {
@@ -292,7 +294,7 @@ describe("helpHubIndexCategorySections", () => {
 });
 
 describe("Help Hub public index search text", () => {
-  it("still matches questions, useful subtitles, category keys, and category labels", () => {
+  it("still matches questions, stored titles, category keys, and category labels", () => {
     const tips = [everyOtherNeedle, sandwichBand, draftTip];
     expect(searchPublicHelpHubTips(tips, "every other needle").map((t) => t.slug)).toEqual([
       "every-other-needle-swatch",
