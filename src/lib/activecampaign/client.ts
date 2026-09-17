@@ -33,6 +33,7 @@ export interface ActiveCampaignClient {
   syncContact(input: {
     email: string;
     firstName?: string;
+    lastName?: string;
     fieldValues?: Array<{ field: string; value: string }>;
   }): Promise<{ id: string }>;
   /** Read the contact's status on a specific list. */
@@ -57,6 +58,13 @@ export function getActiveCampaignConfig(
     return null;
   }
   return { baseUrl, apiKey };
+}
+
+/** Existing Knit It Now marketing list id (`ACTIVECAMPAIGN_KIN_LIST_ID`). */
+export function getActiveCampaignKinListId(
+  env: NodeJS.ProcessEnv = process.env,
+): string | null {
+  return (env.ACTIVECAMPAIGN_KIN_LIST_ID || "").trim() || null;
 }
 
 interface AcContact {
@@ -150,6 +158,7 @@ export function createActiveCampaignClient(
     async syncContact(input): Promise<{ id: string }> {
       const contact: Record<string, unknown> = { email: input.email };
       if (input.firstName) contact.firstName = input.firstName;
+      if (input.lastName) contact.lastName = input.lastName;
       if (input.fieldValues && input.fieldValues.length > 0) {
         contact.fieldValues = input.fieldValues;
       }

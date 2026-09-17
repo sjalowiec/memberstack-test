@@ -158,6 +158,47 @@
       </p>
     </div>
   </details>
+
+  <section
+    class="account-email-updates"
+    aria-labelledby="account-email-updates-heading"
+    data-kbm-account-email-updates
+  >
+    <h3 id="account-email-updates-heading" class="account-details-block__title">
+      Email updates
+    </h3>
+    <p
+      class="account-email-updates__status"
+      data-kbm-account-email-updates-status
+      aria-live="polite"
+    >
+      Checking your email updates…
+    </p>
+    <p
+      class="account-email-updates__extra"
+      data-kbm-account-email-updates-extra
+      hidden
+    ></p>
+    <p
+      class="account-email-updates__error"
+      data-kbm-account-email-updates-error
+      role="alert"
+      hidden
+    ></p>
+    <div class="account-email-updates__actions" data-kbm-account-email-updates-actions hidden>
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-accent account-email-updates__button"
+        data-kbm-account-email-updates-subscribe
+      >
+        Start Receiving Emails
+      </button>
+      <p class="account-email-updates__consent" data-kbm-account-email-updates-consent>
+        By clicking this button, you’re asking Knit It Now to send marketing emails to the email
+        address on your account. You can unsubscribe at any time.
+      </p>
+    </div>
+  </section>
 </section>
 
 <style>
@@ -272,6 +313,55 @@
   .account-settings__logout:hover {
     color: #2c3a57;
     text-decoration: underline;
+  }
+
+  .account-email-updates [hidden] {
+    display: none !important;
+  }
+
+  .account-email-updates {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid #eef0f2;
+  }
+
+  .account-email-updates .account-details-block__title {
+    margin-bottom: 0.45rem;
+  }
+
+  .account-email-updates__status,
+  .account-email-updates__extra,
+  .account-email-updates__consent {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .account-email-updates__extra {
+    margin-top: 0.35rem;
+  }
+
+  .account-email-updates__error {
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #b42318;
+  }
+
+  .account-email-updates__actions {
+    margin-top: 0.85rem;
+  }
+
+  .account-email-updates__button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+  }
+
+  .account-email-updates__consent {
+    margin-top: 0.65rem;
+    font-size: 0.88rem;
+    color: #6b7280;
   }
 
   @media (max-width: 640px) {
