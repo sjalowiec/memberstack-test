@@ -16,6 +16,7 @@ export type AccountEmailSubscriptionView = {
   statusMessage: string;
   extraMessage: string | null;
   showButton: boolean;
+  showCheckmark: boolean;
   buttonLabel: string;
   consentText: string | null;
   errorMessage: string | null;
@@ -32,6 +33,7 @@ export function resolveAccountEmailSubscriptionView(input: {
       statusMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.nowSubscribed,
       extraMessage: null,
       showButton: false,
+      showCheckmark: true,
       buttonLabel: ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL,
       consentText: null,
       errorMessage: null,
@@ -44,6 +46,7 @@ export function resolveAccountEmailSubscriptionView(input: {
       statusMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.unavailable,
       extraMessage: null,
       showButton: false,
+      showCheckmark: false,
       buttonLabel: ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL,
       consentText: null,
       errorMessage: input.errorMessage ?? null,
@@ -56,6 +59,7 @@ export function resolveAccountEmailSubscriptionView(input: {
       statusMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.receiving,
       extraMessage: null,
       showButton: false,
+      showCheckmark: true,
       buttonLabel: ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL,
       consentText: null,
       errorMessage: null,
@@ -68,6 +72,7 @@ export function resolveAccountEmailSubscriptionView(input: {
       statusMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving,
       extraMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.bounced,
       showButton: false,
+      showCheckmark: false,
       buttonLabel: ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL,
       consentText: null,
       errorMessage: null,
@@ -80,6 +85,7 @@ export function resolveAccountEmailSubscriptionView(input: {
       statusMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving,
       extraMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.unconfirmed,
       showButton: canResubscribeFromState(input.state),
+      showCheckmark: false,
       buttonLabel: ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL,
       consentText: ACCOUNT_EMAIL_SUBSCRIPTION_CONSENT,
       errorMessage: input.errorMessage ?? null,
@@ -92,6 +98,7 @@ export function resolveAccountEmailSubscriptionView(input: {
     statusMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving,
     extraMessage: null,
     showButton,
+    showCheckmark: false,
     buttonLabel: ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL,
     consentText: showButton ? ACCOUNT_EMAIL_SUBSCRIPTION_CONSENT : null,
     errorMessage: input.errorMessage ?? null,

@@ -43,6 +43,17 @@ describe("Account page email updates markup and wiring", () => {
     expect(pageSource).toContain("account-email-subscription.ts");
   });
 
+  it("uses a decorative dark-green check SVG only for subscribed markup", () => {
+    expect(panelSource).toContain('data-kbm-account-email-updates-check');
+    expect(panelSource).toContain('aria-hidden="true"');
+    expect(panelSource).toContain('M5 13l4 4L19 7');
+    expect(panelSource).toContain("color: #52682d");
+    expect(panelSource).toContain("width: 1em");
+    expect(panelSource).toContain("height: 1em");
+    expect(panelSource).not.toMatch(/👍|😊|✓|✔/);
+    expect(scriptSource).toContain("els.checkEl.hidden = !view.showCheckmark");
+  });
+
   it("does not expose ActiveCampaign credentials or let the browser choose an email", () => {
     expect(clientSource).not.toMatch(/ACTIVECAMPAIGN/);
     expect(clientSource).not.toMatch(/Api-Token/);

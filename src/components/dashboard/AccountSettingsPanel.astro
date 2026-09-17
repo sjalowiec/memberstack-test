@@ -167,12 +167,23 @@
     <h3 id="account-email-updates-heading" class="account-details-block__title">
       Email updates
     </h3>
-    <p
-      class="account-email-updates__status"
-      data-kbm-account-email-updates-status
-      aria-live="polite"
-    >
-      Checking your email updates…
+    <p class="account-email-updates__status" aria-live="polite">
+      <svg
+        class="account-email-updates__check"
+        data-kbm-account-email-updates-check
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.25"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+        hidden
+      >
+        <path d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span data-kbm-account-email-updates-status>Checking your email updates…</span>
     </p>
     <p
       class="account-email-updates__extra"
@@ -336,6 +347,19 @@
     font-size: 0.95rem;
     line-height: 1.5;
     color: #4b5563;
+  }
+
+  .account-email-updates__status {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  .account-email-updates__check {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    color: #52682d;
   }
 
   .account-email-updates__extra {

@@ -19,6 +19,7 @@ const ROOT_SELECTOR = "[data-kbm-account-email-updates]";
 type StatusEls = {
   root: Element;
   statusEl: HTMLElement;
+  checkEl: HTMLElement;
   extraEl: HTMLElement;
   errorEl: HTMLElement;
   actionsEl: HTMLElement;
@@ -28,15 +29,16 @@ type StatusEls = {
 
 function queryEls(root: Element): StatusEls | null {
   const statusEl = root.querySelector<HTMLElement>("[data-kbm-account-email-updates-status]");
+  const checkEl = root.querySelector<HTMLElement>("[data-kbm-account-email-updates-check]");
   const extraEl = root.querySelector<HTMLElement>("[data-kbm-account-email-updates-extra]");
   const errorEl = root.querySelector<HTMLElement>("[data-kbm-account-email-updates-error]");
   const actionsEl = root.querySelector<HTMLElement>("[data-kbm-account-email-updates-actions]");
   const buttonEl = root.querySelector<HTMLButtonElement>("[data-kbm-account-email-updates-subscribe]");
   const consentEl = root.querySelector<HTMLElement>("[data-kbm-account-email-updates-consent]");
-  if (!statusEl || !extraEl || !errorEl || !actionsEl || !buttonEl || !consentEl) {
+  if (!statusEl || !checkEl || !extraEl || !errorEl || !actionsEl || !buttonEl || !consentEl) {
     return null;
   }
-  return { root, statusEl, extraEl, errorEl, actionsEl, buttonEl, consentEl };
+  return { root, statusEl, checkEl, extraEl, errorEl, actionsEl, buttonEl, consentEl };
 }
 
 function setBusy(els: StatusEls, busy: boolean): void {
@@ -49,6 +51,7 @@ function applyView(
   view: ReturnType<typeof resolveAccountEmailSubscriptionView>,
 ): void {
   els.statusEl.textContent = view.statusMessage;
+  els.checkEl.hidden = !view.showCheckmark;
   els.extraEl.textContent = view.extraMessage ?? "";
   els.extraEl.hidden = !view.extraMessage;
   els.errorEl.textContent = view.errorMessage ?? "";
