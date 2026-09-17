@@ -1,12 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  buildLegacyMemberSearchSql,
   buildMemberSearchPattern,
   formatMemberDisplayName,
   formatMemberJoinedDate,
   isMemberSearchQueryUsable,
   MEMBER_SEARCH_LIMIT,
   MEMBER_SEARCH_SQL,
+  memberSearchTokens,
+  normalizeMemberSearchQuery,
+  rankLegacyMemberSearchMatch,
   searchLegacyMembers,
 } from "./memberSearch";
 
@@ -38,9 +42,51 @@ describe("memberSearch", () => {
 
     const result = await searchLegacyMembers("sue", queryFn);
 
-    expect(queryFn).toHaveBeenCalledWith(MEMBER_SEARCH_SQL, ["%sue%", MEMBER_SEARCH_LIMIT + 1]);
+    expect(queryFn).toHaveBeenCalledWith(MEMBER_SEARCH_SQL, [
+      "sue",
+      "%sue%",
+      MEMBER_SEARCH_LIMIT + 1,
+    ]);
     expect(result.rows).toHaveLength(1);
     expect(result.truncated).toBe(false);
+  });
+
+  it("collapses extra spaces and searches first and last name as required tokens", async () => {
+    const queryFn = vi.fn(async () => []);
+    await searchLegacyMembers("  Jane    Smith  ", queryFn);
+
+    expect(normalizeMemberSearchQuery("  Jane    Smith  ")).toBe("Jane Smith");
+    expect(memberSearchTokens("  Jane    Smith  ")).toEqual(["Jane", "Smith"]);
+    expect(queryFn).toHaveBeenCalledWith(buildLegacyMemberSearchSql(2), [
+      "Jane Smith",
+      "%Jane%",
+      "%Smith%",
+      MEMBER_SEARCH_LIMIT + 1,
+    ]);
+    const sql = String(queryFn.mock.calls[0]?.[0]);
+    expect(sql).toContain(" AND ");
+    expect(sql).toContain("watson_legacy_customers");
+    expect(sql).toContain("fristname");
+    expect(sql).toContain("lastname");
+  });
+
+  it("ranks exact last-name matches ahead of partial last-name matches", () => {
+    expect(
+      rankLegacyMemberSearchMatch(
+        { memberid: "M1", fristname: "Pat", lastname: "Hall", email: "pat.hall@example.com" },
+        "Hall",
+      ),
+    ).toBeLessThan(
+      rankLegacyMemberSearchMatch(
+        {
+          memberid: "M2",
+          fristname: "Sam",
+          lastname: "Halliday",
+          email: "sam.halliday@example.com",
+        },
+        "Hall",
+      ),
+    );
   });
 
   it("flags truncated result sets", async () => {

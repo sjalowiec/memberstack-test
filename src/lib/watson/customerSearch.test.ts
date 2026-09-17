@@ -4,6 +4,7 @@ import { MEMBER_BY_EMAIL_SQL } from "./customerIdentifier";
 import {
   canRunMemberstackDirectorySearch,
   CUSTOMER_NAME_SEARCH_MIN_LENGTH,
+  MEMBER_SEARCH_LIMIT,
   searchCustomers,
 } from "./customerSearch";
 
@@ -269,5 +270,362 @@ describe("customerSearch", () => {
     expect(result.rows[0]?.legacyProfileHref).toContain(
       "/watson/customers/legacy/F1A91EE9-F002-5DD0-39F2-51AE099F4FB2",
     );
+  });
+});
+
+describe("customerSearch name and partial matching", () => {
+  type LegacyFixture = {
+    memberid: string;
+    fristname: string;
+    lastname: string;
+    email: string;
+    datejoined?: string | null;
+  };
+
+  type MemberstackFixture = {
+    id: string;
+    auth: { email: string; firstName?: string; lastName?: string };
+    planConnections?: Array<{ active?: boolean; status?: string }>;
+  };
+
+  function haystacksForLegacy(row: LegacyFixture): string[] {
+    return [
+      row.memberid,
+      row.email,
+      row.fristname,
+      row.lastname,
+      `${row.fristname} ${row.lastname}`,
+    ].map((value) => value.toLowerCase());
+  }
+
+  function createSearchDeps(args: {
+    legacyMembers?: LegacyFixture[];
+    memberstackMembers?: MemberstackFixture[];
+  }) {
+    const legacyMembers = args.legacyMembers ?? [];
+    const memberstackMembers = args.memberstackMembers ?? [];
+    const listMembers = vi.fn(async () => ({
+      data: memberstackMembers,
+      hasNextPage: false,
+    }));
+
+    const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
+      if (sql.includes("ILIKE") && sql.includes("fristname")) {
+        const tokens = (params ?? []).slice(1, -1).map((param) =>
+          String(param).replace(/^%/, "").replace(/%$/, "").toLowerCase(),
+        );
+        return legacyMembers.filter((row) => {
+          const haystacks = haystacksForLegacy(row);
+          return tokens.every((token) => haystacks.some((value) => value.includes(token)));
+        });
+      }
+
+      if (sql === MEMBER_BY_EMAIL_SQL) {
+        const email = String(params?.[0] ?? "").toLowerCase();
+        return legacyMembers
+          .filter((row) => row.email.toLowerCase() === email)
+          .map((row) => ({
+            ...row,
+            address: null,
+            address2: null,
+            city: null,
+            state: null,
+            postalcode: null,
+            country: null,
+            birthdayinfo: null,
+            datejoined: row.datejoined ?? null,
+            active: null,
+            betaactive: null,
+            currentsubscriber: null,
+          }));
+      }
+
+      if (sql.includes("WHERE memberid = $1")) {
+        const memberid = String(params?.[0] ?? "");
+        return legacyMembers
+          .filter((row) => row.memberid === memberid)
+          .map((row) => ({
+            ...row,
+            address: null,
+            address2: null,
+            city: null,
+            state: null,
+            postalcode: null,
+            country: null,
+            birthdayinfo: null,
+            datejoined: row.datejoined ?? null,
+            active: null,
+            betaactive: null,
+            currentsubscriber: null,
+          }));
+      }
+
+      return [];
+    });
+
+    return {
+      listMembers,
+      queryFn,
+      deps: {
+        secretKey: "sk_live_test_key",
+        queryFn,
+        getClient: async () => ({
+          getMember: async (lookup: string) =>
+            memberstackMembers.find(
+              (member) => member.id === lookup || member.auth.email === lookup,
+            ) ?? null,
+          listMembers,
+        }),
+      },
+    };
+  }
+
+  const janeSmith: LegacyFixture = {
+    memberid: "M-JANE-SMITH",
+    fristname: "Jane",
+    lastname: "Smith",
+    email: "jane.smith@example.com",
+  };
+  const janeOther: LegacyFixture = {
+    memberid: "M-JANE-OTHER",
+    fristname: "Jane",
+    lastname: "Other",
+    email: "jane.other@example.com",
+  };
+  const janeSmithDuplicate: LegacyFixture = {
+    memberid: "M-JANE-SMITH-2",
+    fristname: "Jane",
+    lastname: "Smith",
+    email: "jane.smith.2@example.com",
+  };
+  const patHall: LegacyFixture = {
+    memberid: "M-PAT-HALL",
+    fristname: "Pat",
+    lastname: "Hall",
+    email: "pat.hall@example.com",
+  };
+  const samHalliday: LegacyFixture = {
+    memberid: "M-SAM-HALLIDAY",
+    fristname: "Sam",
+    lastname: "Halliday",
+    email: "sam.halliday@example.com",
+  };
+
+  it("keeps complete emails on the exact-email path and does not directory-search", async () => {
+    const { listMembers, deps } = createSearchDeps({
+      legacyMembers: [janeSmith],
+      memberstackMembers: [
+        {
+          id: "mem_jane",
+          auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [{ active: true, status: "ACTIVE" }],
+        },
+      ],
+    });
+
+    const result = await searchCustomers("jane.smith@example.com", deps);
+
+    expect(listMembers).not.toHaveBeenCalled();
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.email).toBe("jane.smith@example.com");
+    expect(result.rows[0]?.name).toBe("Jane Smith");
+    expect(result.rows[0]?.memberstackId).toBe("mem_jane");
+    expect(result.rows[0]?.legacyMemberid).toBe("M-JANE-SMITH");
+    expect(result.rows[0]?.membershipStatus).toBe("Active");
+    expect(result.searchError).toBeNull();
+  });
+
+  it("finds a customer by a partial email address", async () => {
+    const { listMembers, deps } = createSearchDeps({
+      legacyMembers: [janeSmith, janeOther],
+      memberstackMembers: [
+        {
+          id: "mem_jane",
+          auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [],
+        },
+      ],
+    });
+
+    const result = await searchCustomers("jane.smi", deps);
+
+    expect(listMembers).not.toHaveBeenCalled();
+    expect(result.rows.map((row) => row.email)).toEqual(["jane.smith@example.com"]);
+    expect(result.rows[0]?.name).toBe("Jane Smith");
+    expect(result.rows[0]?.legacyMemberid).toBe("M-JANE-SMITH");
+  });
+
+  it("finds a customer by a partial email that includes @", async () => {
+    const { listMembers, deps } = createSearchDeps({
+      legacyMembers: [janeSmith, janeOther],
+      memberstackMembers: [
+        {
+          id: "mem_jane",
+          auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [],
+        },
+      ],
+    });
+
+    const result = await searchCustomers("jane.smith@exam", deps);
+
+    expect(listMembers).not.toHaveBeenCalled();
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.email).toBe("jane.smith@example.com");
+  });
+
+  it("finds a customer by exact last name and ranks it before a partial last-name match", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [patHall, samHalliday],
+    });
+
+    const result = await searchCustomers("Hall", deps);
+
+    expect(result.rows.map((row) => row.legacyMemberid)).toEqual(["M-PAT-HALL", "M-SAM-HALLIDAY"]);
+    expect(result.rows[0]?.name).toBe("Pat Hall");
+    expect(result.rows[0]?.email).toBe("pat.hall@example.com");
+  });
+
+  it("finds a customer by a partial last name", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith, janeOther],
+    });
+
+    const result = await searchCustomers("Smi", deps);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.name).toBe("Jane Smith");
+    expect(result.rows[0]?.email).toBe("jane.smith@example.com");
+  });
+
+  it("finds customers by first name", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith, janeOther, patHall],
+    });
+
+    const result = await searchCustomers("Jane", deps);
+
+    expect(result.rows.map((row) => row.legacyMemberid).sort()).toEqual([
+      "M-JANE-OTHER",
+      "M-JANE-SMITH",
+    ]);
+  });
+
+  it("requires both first and last name parts to match the same customer", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith, janeOther, patHall],
+      memberstackMembers: [
+        {
+          id: "mem_jane",
+          auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [],
+        },
+        {
+          id: "mem_other",
+          auth: { email: "jane.other@example.com", firstName: "Jane", lastName: "Other" },
+          planConnections: [],
+        },
+      ],
+    });
+
+    const result = await searchCustomers("Jane Smith", deps);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.name).toBe("Jane Smith");
+    expect(result.rows[0]?.email).toBe("jane.smith@example.com");
+    expect(result.rows[0]?.legacyMemberid).toBe("M-JANE-SMITH");
+    expect(result.rows[0]?.memberstackId).toBe("mem_jane");
+  });
+
+  it("matches names with mixed capitalization", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith],
+    });
+
+    const result = await searchCustomers("jAnE sMiTh", deps);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.name).toBe("Jane Smith");
+  });
+
+  it("matches names with leading, trailing, or repeated spaces", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith],
+    });
+
+    const result = await searchCustomers("  Jane    Smith  ", deps);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.query).toBe("Jane Smith");
+    expect(result.rows[0]?.email).toBe("jane.smith@example.com");
+  });
+
+  it("returns duplicate names with enough identifying information to tell them apart", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith, janeSmithDuplicate],
+      memberstackMembers: [
+        {
+          id: "mem_jane",
+          auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [{ active: true, status: "ACTIVE" }],
+        },
+        {
+          id: "mem_jane_2",
+          auth: { email: "jane.smith.2@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [],
+        },
+      ],
+    });
+
+    const result = await searchCustomers("Jane Smith", deps);
+
+    expect(result.rows).toHaveLength(2);
+    expect(result.rows.map((row) => row.name)).toEqual(["Jane Smith", "Jane Smith"]);
+    expect(result.rows.map((row) => row.email).sort()).toEqual([
+      "jane.smith.2@example.com",
+      "jane.smith@example.com",
+    ]);
+    expect(result.rows.map((row) => row.legacyMemberid).sort()).toEqual([
+      "M-JANE-SMITH",
+      "M-JANE-SMITH-2",
+    ]);
+    expect(result.rows.map((row) => row.memberstackId).sort()).toEqual(["mem_jane", "mem_jane_2"]);
+    expect(result.rows.some((row) => row.membershipStatus === "Active")).toBe(true);
+    expect(result.rows.some((row) => row.membershipStatus === "Inactive")).toBe(true);
+  });
+
+  it("returns no results when nothing matches", async () => {
+    const { deps } = createSearchDeps({
+      legacyMembers: [janeSmith, patHall],
+      memberstackMembers: [
+        {
+          id: "mem_jane",
+          auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+          planConnections: [],
+        },
+      ],
+    });
+
+    const result = await searchCustomers("zzznomatch", deps);
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.truncated).toBe(false);
+  });
+
+  it("caps a common last-name search instead of returning thousands of rows", async () => {
+    const legacyMembers = Array.from({ length: MEMBER_SEARCH_LIMIT + 8 }, (_, index) => ({
+      memberid: `M-SMITH-${index}`,
+      fristname: `First${index}`,
+      lastname: "Smith",
+      email: `smith${index}@example.com`,
+    }));
+    const { deps } = createSearchDeps({ legacyMembers });
+
+    const result = await searchCustomers("Smith", deps);
+
+    expect(result.rows).toHaveLength(MEMBER_SEARCH_LIMIT);
+    expect(result.truncated).toBe(true);
+    expect(result.rows.every((row) => row.name.endsWith("Smith"))).toBe(true);
+    expect(result.rows.every((row) => row.email && row.legacyMemberid)).toBe(true);
   });
 });

@@ -6,6 +6,8 @@ import {
   formatMemberstackDisplayName,
   loadCustomerMemberstackMember,
   MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+  memberstackMemberMatchesQuery,
+  rankMemberstackSearchMatch,
   resolveCustomerMemberstackSecretKey,
   resolveMemberstackMemberByExactEmail,
 } from "./customerMemberstack";
@@ -202,6 +204,38 @@ describe("customerMemberstack", () => {
     };
 
     expect(formatMemberstackDisplayName(member)).toBe("only@example.com");
+  });
+
+  it("matches Memberstack customers by name tokens, email fragments, and custom fields", () => {
+    const jane = {
+      id: "mem_jane",
+      auth: { email: "jane.smith@example.com", firstName: "Jane", lastName: "Smith" },
+      planConnections: [],
+    };
+    const janeOther = {
+      id: "mem_other",
+      auth: { email: "jane.other@example.com", firstName: "Jane", lastName: "Other" },
+      planConnections: [],
+    };
+    const customName = {
+      id: "mem_custom",
+      auth: { email: "custom@example.com" },
+      customFields: { "first-name": "Pat", lastName: "Lee" },
+      planConnections: [],
+    } as MemberstackMember & { customFields: Record<string, string> };
+
+    expect(memberstackMemberMatchesQuery(jane, "jane.smith@example.com")).toBe(true);
+    expect(memberstackMemberMatchesQuery(jane, "jane.smi")).toBe(true);
+    expect(memberstackMemberMatchesQuery(jane, "Smith")).toBe(true);
+    expect(memberstackMemberMatchesQuery(jane, "Smi")).toBe(true);
+    expect(memberstackMemberMatchesQuery(jane, "Jane")).toBe(true);
+    expect(memberstackMemberMatchesQuery(jane, "Jane Smith")).toBe(true);
+    expect(memberstackMemberMatchesQuery(janeOther, "Jane Smith")).toBe(false);
+    expect(memberstackMemberMatchesQuery(jane, "  jAnE    sMiTh  ")).toBe(true);
+    expect(memberstackMemberMatchesQuery(customName, "Pat Lee")).toBe(true);
+    expect(rankMemberstackSearchMatch(jane, "Jane Smith")).toBeLessThan(
+      rankMemberstackSearchMatch(jane, "Smi"),
+    );
   });
 
   it("returns admin_not_configured when the Memberstack secret/client is missing", async () => {

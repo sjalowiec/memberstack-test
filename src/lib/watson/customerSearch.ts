@@ -3,6 +3,7 @@ import {
   buildLegacyMemberDetailUrl,
   buildMemberstackCustomerProfileUrl,
   classifyCustomerIdentifier,
+  isCompleteCustomerEmail,
   isMemberstackMemberId,
   resolveCustomerByMemberid,
   resolveLegacyLinkByMemberstackEmail,
@@ -16,7 +17,6 @@ import {
   formatMemberstackDisplayName,
   loadCustomerMemberstackMember,
   resolveMemberstackMemberByExactEmail,
-  searchMemberstackCustomerDirectory,
   type MemberstackGetMemberClient,
 } from "./customerMemberstack";
 import {
@@ -26,6 +26,7 @@ import {
   formatMemberLocation,
   isMemberSearchQueryUsable,
   MEMBER_SEARCH_LIMIT,
+  normalizeMemberSearchQuery,
   searchLegacyMembers,
   type LegacyMemberSearchRow,
   type WatsonQueryFn,
@@ -34,7 +35,7 @@ import {
 export const CUSTOMER_NAME_SEARCH_MIN_LENGTH = 2;
 
 export function canRunMemberstackDirectorySearch(query: string): boolean {
-  const normalized = query.trim();
+  const normalized = normalizeMemberSearchQuery(query);
   if (!normalized) {
     return false;
   }
@@ -249,11 +250,41 @@ function dedupeSearchRows(rows: CustomerSearchResultRow[]): CustomerSearchResult
   return deduped;
 }
 
+function rankSearchRow(row: CustomerSearchResultRow, query: string): number {
+  const normalized = normalizeMemberSearchQuery(query).toLowerCase();
+  if (!normalized) {
+    return 2;
+  }
+
+  const email = row.email?.trim().toLowerCase() ?? "";
+  const name = row.name.trim().toLowerCase();
+  const nameParts = name.split(/\s+/).filter(Boolean);
+  const first = nameParts[0] ?? "";
+  const last = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+  const memberstackId = row.memberstackId?.trim().toLowerCase() ?? "";
+  const legacyId = row.legacyMemberid?.trim().toLowerCase() ?? "";
+
+  if (email === normalized || name === normalized || memberstackId === normalized || legacyId === normalized) {
+    return 0;
+  }
+  if (first === normalized || last === normalized) {
+    return 1;
+  }
+  return 2;
+}
+
+function sortSearchRowsByMatchQuality(
+  rows: CustomerSearchResultRow[],
+  query: string,
+): CustomerSearchResultRow[] {
+  return [...rows].sort((left, right) => rankSearchRow(left, query) - rankSearchRow(right, query));
+}
+
 export async function searchCustomers(
   query: string,
   deps: SearchDeps = {},
 ): Promise<CustomerSearchResult> {
-  const normalized = query.trim();
+  const normalized = normalizeMemberSearchQuery(query);
   if (!isMemberSearchQueryUsable(normalized)) {
     return {
       query: normalized,
@@ -294,7 +325,7 @@ export async function searchCustomers(
     return { query: normalized, rows, truncated: false, configured, searchError };
   }
 
-  if (kind === "email") {
+  if (kind === "email" && isCompleteCustomerEmail(normalized)) {
     const memberLookup = await resolveMemberstackMemberByExactEmail(normalized, {
       secretKey: deps.secretKey,
       getClient: deps.getClient,
@@ -389,44 +420,23 @@ export async function searchCustomers(
     };
   }
 
-  const directory = await searchMemberstackCustomerDirectory(normalized, {
-    secretKey: deps.secretKey,
-    getClient: deps.getClient,
-    limit: MEMBER_SEARCH_LIMIT,
-  });
-  configured = directory.configured;
-  searchError = directory.error;
-  truncated = directory.truncated;
+  const legacyNameMatches = await searchLegacyMembers(normalized, deps.queryFn);
 
-  for (const member of directory.members) {
-    const legacyRow = await resolveUniqueLegacySearchRow(member.auth?.email, deps.queryFn);
-    rows.push(
-      legacyRow
-        ? buildLinkedSearchRow(member, legacyRow, normalized)
-        : buildMemberstackOnlySearchRow(member, normalized),
-    );
+  for (const legacyMember of legacyNameMatches.rows) {
+    const enriched = await enrichLegacyRowWithMemberstack(legacyMember, normalized, deps);
+    rows.push(enriched);
   }
 
-  if (rows.length < MEMBER_SEARCH_LIMIT) {
-    const legacyNameMatches = await searchLegacyMembers(normalized, deps.queryFn);
-    truncated = truncated || legacyNameMatches.truncated;
-
-    for (const legacyMember of legacyNameMatches.rows) {
-      if (rows.length >= MEMBER_SEARCH_LIMIT) {
-        truncated = true;
-        break;
-      }
-      const enriched = await enrichLegacyRowWithMemberstack(legacyMember, normalized, deps);
-      rows.push(enriched);
-    }
-  }
+  const deduped = dedupeSearchRows(rows);
+  const ranked = sortSearchRowsByMatchQuality(deduped, normalized);
+  truncated = legacyNameMatches.truncated || ranked.length > MEMBER_SEARCH_LIMIT;
 
   return {
     query: normalized,
-    rows: dedupeSearchRows(rows).slice(0, MEMBER_SEARCH_LIMIT),
+    rows: ranked.slice(0, MEMBER_SEARCH_LIMIT),
     truncated,
-    configured,
-    searchError,
+    configured: true,
+    searchError: null,
   };
 }
 
@@ -434,11 +444,11 @@ export function describeCustomerSearchQuery(query: string): string {
   const kind = classifyCustomerIdentifier(query);
   switch (kind) {
     case "email":
-      return "exact email";
+      return isCompleteCustomerEmail(query) ? "exact email" : "partial email";
     case "memberstack_id":
       return "Memberstack member ID";
     case "memberid":
-      return "legacy member ID";
+      return "name, email, or customer ID";
     default:
       return "name, email, or customer ID";
   }
