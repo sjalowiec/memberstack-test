@@ -96,6 +96,12 @@ export function isEmailLikeIdentifier(value: string): boolean {
   return normalized.includes("@") && normalized.length >= 3;
 }
 
+/** Complete email (local@domain.tld), used to keep exact-email search on the exact path. */
+export function isCompleteCustomerEmail(value: string): boolean {
+  const normalized = normalizeCustomerIdentifier(value);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
+}
+
 export function isMemberstackMemberId(value: string): boolean {
   return /^mem_[a-z0-9]+$/i.test(normalizeCustomerIdentifier(value));
 }

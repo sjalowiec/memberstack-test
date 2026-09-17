@@ -6,6 +6,7 @@ import {
   classifyCustomerIdentifier,
   customerEmailLookupKeys,
   emailsMatchForLegacyLink,
+  isCompleteCustomerEmail,
   isEmailLikeIdentifier,
   isMemberstackMemberId,
   MEMBER_BY_EMAIL_SQL,
@@ -19,6 +20,17 @@ describe("customerIdentifier", () => {
     expect(classifyCustomerIdentifier("M12345")).toBe("memberid");
     expect(classifyCustomerIdentifier("sue@example.com")).toBe("email");
     expect(classifyCustomerIdentifier("mem_abc123")).toBe("memberstack_id");
+    expect(classifyCustomerIdentifier("sue@exam")).toBe("email");
+    expect(classifyCustomerIdentifier("Sue Hall")).toBe("memberid");
+  });
+
+  it("distinguishes complete emails from partial email fragments", () => {
+    expect(isCompleteCustomerEmail("sue@example.com")).toBe(true);
+    expect(isCompleteCustomerEmail("  Sue@Example.COM  ")).toBe(true);
+    expect(isCompleteCustomerEmail("sue@exam")).toBe(false);
+    expect(isCompleteCustomerEmail("sue@")).toBe(false);
+    expect(isCompleteCustomerEmail("@example.com")).toBe(false);
+    expect(isCompleteCustomerEmail("Sue Hall")).toBe(false);
   });
 
   it("detects email and memberstack patterns", () => {

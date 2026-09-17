@@ -15,7 +15,11 @@ import {
   type MemberstackMember,
   type PlanConnection,
 } from "../membership/membershipSummary";
-import { formatMemberDisplayName } from "./memberSearch";
+import {
+  formatMemberDisplayName,
+  memberSearchTokens,
+  normalizeMemberSearchQuery,
+} from "./memberSearch";
 import { type LegacyMemberDetailRow } from "./memberDetail";
 import { customerEmailLookupKeys } from "./customerIdentifier";
 
@@ -573,26 +577,67 @@ export async function resolveMemberstackMemberByExactEmail(
   };
 }
 
+function memberstackCustomFieldStrings(member: MemberstackMember): string[] {
+  const raw = member as MemberstackMember & {
+    customFields?: Record<string, unknown>;
+  };
+  const fields = raw.customFields;
+  if (!fields || typeof fields !== "object") {
+    return [];
+  }
+
+  const values: string[] = [];
+  for (const key of ["first-name", "firstName", "last-name", "lastName", "name"]) {
+    const value = fields[key];
+    if (typeof value === "string" && value.trim()) {
+      values.push(value);
+    }
+  }
+  return values;
+}
+
+export function memberstackSearchHaystacks(member: MemberstackMember): string[] {
+  const firstName = member.auth?.firstName?.trim() ?? "";
+  const lastName = member.auth?.lastName?.trim() ?? "";
+  const email = member.auth?.email?.trim() ?? "";
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  return [member.id, email, firstName, lastName, fullName, ...memberstackCustomFieldStrings(member)].filter(
+    Boolean,
+  );
+}
+
+export function rankMemberstackSearchMatch(member: MemberstackMember, query: string): number {
+  const normalized = normalizeMemberSearchQuery(query).toLowerCase();
+  if (!normalized) {
+    return 2;
+  }
+
+  const email = member.auth?.email?.trim().toLowerCase() ?? "";
+  const firstName = member.auth?.firstName?.trim().toLowerCase() ?? "";
+  const lastName = member.auth?.lastName?.trim().toLowerCase() ?? "";
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  const memberId = member.id.trim().toLowerCase();
+
+  if (email === normalized || fullName === normalized || memberId === normalized) {
+    return 0;
+  }
+  if (firstName === normalized || lastName === normalized) {
+    return 1;
+  }
+  return 2;
+}
+
 export function memberstackMemberMatchesQuery(
   member: MemberstackMember,
   query: string,
 ): boolean {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) {
+  const tokens = memberSearchTokens(query).map((token) => token.toLowerCase());
+  if (tokens.length === 0) {
     return false;
   }
 
-  if (member.id.toLowerCase().includes(normalized)) {
-    return true;
-  }
-
-  const email = member.auth?.email?.trim().toLowerCase() ?? "";
-  if (email.includes(normalized)) {
-    return true;
-  }
-
-  const displayName = formatMemberstackDisplayName(member).toLowerCase();
-  return displayName.includes(normalized);
+  const haystacks = memberstackSearchHaystacks(member).map((value) => value.toLowerCase());
+  return tokens.every((token) => haystacks.some((value) => value.includes(token)));
 }
 
 export async function searchMemberstackCustomerDirectory(
@@ -608,7 +653,14 @@ export async function searchMemberstackCustomerDirectory(
     options?.secretKey !== undefined
       ? options.secretKey
       : resolveCustomerMemberstackSecretKey();
-  const getClient = options?.getClient ?? getMemberstackClient;
+  const getClient =
+    options?.getClient ??
+    (async (key: string | null) => {
+      if (!key) {
+        return null;
+      }
+      return getSharedMemberstackAdminClient(key);
+    });
   const client = await getClient(secretKey);
 
   if (!client) {
@@ -620,14 +672,19 @@ export async function searchMemberstackCustomerDirectory(
     };
   }
 
-  const normalized = query.trim();
+  const normalized = normalizeMemberSearchQuery(query);
   if (!normalized) {
     return { members: [], truncated: false, configured: true, error: null };
   }
 
   try {
     const { members, truncated } = await fetchAllMembers(client);
-    const matches = members.filter((member) => memberstackMemberMatchesQuery(member, normalized));
+    const matches = members
+      .filter((member) => memberstackMemberMatchesQuery(member, normalized))
+      .sort(
+        (left, right) =>
+          rankMemberstackSearchMatch(left, normalized) - rankMemberstackSearchMatch(right, normalized),
+      );
     return {
       members: matches.slice(0, limit),
       truncated: truncated || matches.length > limit,
