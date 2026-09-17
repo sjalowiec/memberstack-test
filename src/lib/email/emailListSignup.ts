@@ -6,6 +6,7 @@
 import {
   createActiveCampaignClient,
   getActiveCampaignConfig,
+  getActiveCampaignKinListId,
   type ActiveCampaignClient,
   type ActiveCampaignListStatus,
 } from "../activecampaign/client";
@@ -106,7 +107,7 @@ export function normalizeFirstName(value: unknown): string {
 export function getEmailListSignupListId(
   env: NodeJS.ProcessEnv = process.env,
 ): string | null {
-  return (env.ACTIVECAMPAIGN_KIN_LIST_ID || "").trim() || null;
+  return getActiveCampaignKinListId(env);
 }
 
 /**
