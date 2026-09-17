@@ -13,6 +13,7 @@ describe("resolveAccountEmailSubscriptionView", () => {
     expect(view.heading).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_HEADING);
     expect(view.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.receiving);
     expect(view.showButton).toBe(false);
+    expect(view.showCheckmark).toBe(true);
     expect(view.consentText).toBeNull();
     expect(view.statusMessage).not.toMatch(/unsubscribe/i);
   });
@@ -21,6 +22,7 @@ describe("resolveAccountEmailSubscriptionView", () => {
     const view = resolveAccountEmailSubscriptionView({ state: "unsubscribed" });
     expect(view.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving);
     expect(view.showButton).toBe(true);
+    expect(view.showCheckmark).toBe(false);
     expect(view.buttonLabel).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_BUTTON_LABEL);
     expect(view.consentText).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_CONSENT);
   });
@@ -29,6 +31,7 @@ describe("resolveAccountEmailSubscriptionView", () => {
     const view = resolveAccountEmailSubscriptionView({ state: "not_found" });
     expect(view.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving);
     expect(view.showButton).toBe(true);
+    expect(view.showCheckmark).toBe(false);
     expect(view.statusMessage).not.toMatch(/unsubscribed/i);
   });
 
@@ -38,6 +41,7 @@ describe("resolveAccountEmailSubscriptionView", () => {
     expect(view.extraMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.unconfirmed);
     expect(view.extraMessage).not.toMatch(/unsubscribed/i);
     expect(view.showButton).toBe(true);
+    expect(view.showCheckmark).toBe(false);
   });
 
   it("does not offer resubscribe for a bounced contact", () => {
@@ -45,6 +49,7 @@ describe("resolveAccountEmailSubscriptionView", () => {
     expect(view.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving);
     expect(view.extraMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.bounced);
     expect(view.showButton).toBe(false);
+    expect(view.showCheckmark).toBe(false);
     expect(view.consentText).toBeNull();
   });
 
@@ -55,11 +60,22 @@ describe("resolveAccountEmailSubscriptionView", () => {
     });
     expect(view.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.nowSubscribed);
     expect(view.showButton).toBe(false);
+    expect(view.showCheckmark).toBe(true);
   });
 
   it("hides the button when status cannot be checked", () => {
     const view = resolveAccountEmailSubscriptionView({ state: "unavailable" });
     expect(view.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.unavailable);
     expect(view.showButton).toBe(false);
+    expect(view.showCheckmark).toBe(false);
+  });
+
+  it("does not show a checkmark for loading-style unavailable or error overlays", () => {
+    const errorView = resolveAccountEmailSubscriptionView({
+      state: "unsubscribed",
+      errorMessage: ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.genericFailure,
+    });
+    expect(errorView.showCheckmark).toBe(false);
+    expect(errorView.statusMessage).toBe(ACCOUNT_EMAIL_SUBSCRIPTION_MESSAGES.notReceiving);
   });
 });
