@@ -151,6 +151,35 @@ describe("customerTimeline", () => {
     expect(resolveLastActivityDate(timeline)).not.toBe("Jul 30, 2026");
     expect(resolveLastActivityDate(timeline)).toBeTruthy();
   });
+
+  it("labels Shopify store orders on the timeline", () => {
+    const timeline = buildCustomerTimeline({
+      member: null,
+      memberstack: buildEmptyMemberstack(),
+      memberships: [],
+      courses: [],
+      orders: [
+        {
+          storeTransactionId: "shopify:555",
+          transactionId: "#1042",
+          orderDate: "Mar 15, 2024",
+          orderDateSort: "2024-03-15T00:00:00.000Z",
+          orderStatus: "Paid",
+          orderTotal: "$999.00",
+          orderTotalSort: "999",
+          paymentMethod: null,
+          items: [],
+          source: "shopify",
+          shopifyOrderNumber: "1042",
+        },
+      ],
+      notes: [],
+    });
+
+    const orderEvent = timeline.find((event) => event.eventType === "store_order");
+    expect(orderEvent?.source).toBe("watson_shopify_orders");
+    expect(orderEvent?.description).toContain("Shopify #1042");
+  });
 });
 
 function buildEmptyMemberstack() {

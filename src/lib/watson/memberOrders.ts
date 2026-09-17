@@ -1,7 +1,12 @@
 import { joinWatsonDisplayParts } from "./displayFormat";
-import { hasDisplayValue } from "./memberDetail";
+import { getLegacyMemberById, hasDisplayValue } from "./memberDetail";
 import { formatMemberJoinedDateDisplay, type WatsonQueryFn } from "./memberSearch";
 import { queryWatson } from "./db";
+import {
+  getShopifyOrderCountForEmails,
+  getShopifyOrdersForEmails,
+  mergeMemberOrders,
+} from "./shopifyPurchaseHistory";
 
 export interface LegacyStoreTransactionRow {
   storetransactionid: string | number;
@@ -34,6 +39,8 @@ export interface MemberOrderItemDisplay {
   lineTotal: string | null;
 }
 
+export type MemberOrderSource = "legacy" | "shopify";
+
 export interface MemberOrderDisplay {
   storeTransactionId: string;
   transactionId: string;
@@ -44,6 +51,11 @@ export interface MemberOrderDisplay {
   orderTotalSort: string;
   paymentMethod: string | null;
   items: MemberOrderItemDisplay[];
+  source?: MemberOrderSource;
+  sourceLabel?: string;
+  shopifyOrderId?: string | null;
+  shopifyOrderNumber?: string | null;
+  shopifyOrderHref?: string | null;
 }
 
 export const MEMBER_ORDERS_SQL = `
@@ -194,6 +206,11 @@ export function buildOrderDisplay(
       ? String(order.transactionmethod).trim()
       : null,
     items: items.map(buildOrderItemDisplay),
+    source: "legacy",
+    sourceLabel: "Legacy store",
+    shopifyOrderId: null,
+    shopifyOrderNumber: null,
+    shopifyOrderHref: null,
   };
 }
 
@@ -213,10 +230,12 @@ export function groupOrderItemsByStoreTransactionId(
 export function getVisibleOrderColumns(orders: MemberOrderDisplay[]): {
   showStatus: boolean;
   showPayment: boolean;
+  showSource: boolean;
 } {
   return {
     showStatus: orders.some((order) => order.orderStatus != null),
     showPayment: orders.some((order) => order.paymentMethod != null),
+    showSource: orders.some((order) => order.source === "shopify"),
   };
 }
 
@@ -235,38 +254,49 @@ export function getVisibleItemColumns(items: MemberOrderItemDisplay[]): {
 export async function getMemberOrderCount(
   memberid: string,
   queryFn: WatsonQueryFn = queryWatson,
+  options: { extraEmails?: Array<string | null | undefined> } = {},
 ): Promise<number> {
   const normalized = memberid.trim();
   if (!normalized) {
     return 0;
   }
 
-  const rows = await queryFn<{ order_count: string }>(MEMBER_ORDER_COUNT_SQL, [normalized]);
-  const count = Number.parseInt(rows[0]?.order_count ?? "0", 10);
-  return Number.isNaN(count) ? 0 : count;
+  const member = await getLegacyMemberById(normalized, queryFn);
+  const [legacyRows, shopifyCount] = await Promise.all([
+    queryFn<{ order_count: string }>(MEMBER_ORDER_COUNT_SQL, [normalized]),
+    getShopifyOrderCountForEmails([member?.email, ...(options.extraEmails ?? [])], queryFn),
+  ]);
+  const legacyCount = Number.parseInt(legacyRows[0]?.order_count ?? "0", 10);
+  return (Number.isNaN(legacyCount) ? 0 : legacyCount) + shopifyCount;
 }
 
 export async function getMemberOrders(
   memberid: string,
   queryFn: WatsonQueryFn = queryWatson,
+  options: { extraEmails?: Array<string | null | undefined> } = {},
 ): Promise<MemberOrderDisplay[]> {
   const normalized = memberid.trim();
   if (!normalized) {
     return [];
   }
 
+  const member = await getLegacyMemberById(normalized, queryFn);
   const orders = await queryFn<LegacyStoreTransactionRow>(MEMBER_ORDERS_SQL, [normalized]);
-  if (orders.length === 0) {
-    return [];
+  let legacyDisplays: MemberOrderDisplay[] = [];
+  if (orders.length > 0) {
+    const storeTransactionIds = orders.map((order) => Number(order.storetransactionid));
+    const items = await queryFn<LegacyStoreTransactionItemRow>(MEMBER_ORDER_ITEMS_SQL, [
+      storeTransactionIds,
+    ]);
+    const itemsByOrder = groupOrderItemsByStoreTransactionId(items);
+    legacyDisplays = orders.map((order) =>
+      buildOrderDisplay(order, itemsByOrder.get(String(order.storetransactionid)) ?? []),
+    );
   }
 
-  const storeTransactionIds = orders.map((order) => Number(order.storetransactionid));
-  const items = await queryFn<LegacyStoreTransactionItemRow>(MEMBER_ORDER_ITEMS_SQL, [
-    storeTransactionIds,
-  ]);
-  const itemsByOrder = groupOrderItemsByStoreTransactionId(items);
-
-  return orders.map((order) =>
-    buildOrderDisplay(order, itemsByOrder.get(String(order.storetransactionid)) ?? []),
+  const shopifyDisplays = await getShopifyOrdersForEmails(
+    [member?.email, ...(options.extraEmails ?? [])],
+    queryFn,
   );
+  return mergeMemberOrders(legacyDisplays, shopifyDisplays);
 }

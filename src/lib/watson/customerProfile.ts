@@ -34,8 +34,16 @@ import {
   parseLegacyMoneyAmount,
   type MemberOrderDisplay,
 } from "./memberOrders";
+import {
+  getShopifyOrdersForEmails,
+  shopifyOrderCountsTowardPaidSales,
+} from "./shopifyPurchaseHistory";
 import { getMemberLegacySupportNoteCount } from "./memberSupportNotes";
-import { formatMemberDisplayName, formatMemberJoinedDateDisplay } from "./memberSearch";
+import {
+  formatMemberDisplayName,
+  formatMemberJoinedDateDisplay,
+  type WatsonQueryFn,
+} from "./memberSearch";
 import {
   formatLegacyPaidThroughDisplay,
   legacyPaidThroughYmd,
@@ -392,6 +400,9 @@ function resolveProfileCurrentMembership(input: {
 
 function sumStoreLifetimeSales(orders: MemberOrderDisplay[]): number {
   return orders.reduce((total, order) => {
+    if (!shopifyOrderCountsTowardPaidSales(order)) {
+      return total;
+    }
     const amount = parseLegacyMoneyAmount(order.orderTotalSort || order.orderTotal);
     return total + (amount ?? 0);
   }, 0);
@@ -569,7 +580,8 @@ export function buildCustomerSnapshot(input: {
     unavailable: !tenure,
   });
 
-  if (input.hasLegacyHistory) {
+  const hasStoreOrderRecords = input.hasLegacyHistory || input.orders.length > 0;
+  if (hasStoreOrderRecords) {
     metrics.push({
       label: "Store orders",
       value: String(input.orders.length),
@@ -580,7 +592,12 @@ export function buildCustomerSnapshot(input: {
       label: "Store lifetime sales",
       value: formatLegacyMoney(lifetimeSales) ?? "$0.00",
     });
+  } else {
+    metrics.push({ label: "Store orders", value: NOT_AVAILABLE_YET, unavailable: true });
+    metrics.push({ label: "Store lifetime sales", value: NOT_AVAILABLE_YET, unavailable: true });
+  }
 
+  if (input.hasLegacyHistory) {
     metrics.push({
       label: "Learn DesignaKnit enrollments",
       value: String(input.courses.length),
@@ -593,14 +610,16 @@ export function buildCustomerSnapshot(input: {
       unavailable: input.pdfPurchaseCount == null,
     });
   } else {
-    for (const label of [
-      "Store orders",
-      "Store lifetime sales",
-      "Learn DesignaKnit enrollments",
-      "Pattern PDF purchases",
-    ]) {
-      metrics.push({ label, value: NOT_AVAILABLE_YET, unavailable: true });
-    }
+    metrics.push({
+      label: "Learn DesignaKnit enrollments",
+      value: NOT_AVAILABLE_YET,
+      unavailable: true,
+    });
+    metrics.push({
+      label: "Pattern PDF purchases",
+      value: NOT_AVAILABLE_YET,
+      unavailable: true,
+    });
   }
 
   metrics.push({
@@ -609,7 +628,7 @@ export function buildCustomerSnapshot(input: {
     unavailable: true,
   });
 
-  const mostRecentPurchase = input.hasLegacyHistory
+  const mostRecentPurchase = hasStoreOrderRecords || input.hasLegacyHistory
     ? resolveMostRecentPurchaseLabel(input.orders, input.courses)
     : null;
   metrics.push({
@@ -775,7 +794,11 @@ export function buildLoadErrorMemberstackSummary(error: string): CustomerMembers
   };
 }
 
-async function loadLegacyHistoryData(legacyMemberid: string): Promise<{
+async function loadLegacyHistoryData(
+  legacyMemberid: string,
+  queryFn?: WatsonQueryFn,
+  extraEmails: Array<string | null | undefined> = [],
+): Promise<{
   courses: MemberCourseDisplay[];
   orders: MemberOrderDisplay[];
   memberships: MemberMembershipDisplay[];
@@ -783,11 +806,11 @@ async function loadLegacyHistoryData(legacyMemberid: string): Promise<{
   pdfPurchaseCount: number;
 }> {
   const [courses, orders, memberships, legacyNoteCount, pdfPurchaseCount] = await Promise.all([
-    getMemberCourses(legacyMemberid),
-    getMemberOrders(legacyMemberid),
-    getMemberMemberships(legacyMemberid),
-    getMemberLegacySupportNoteCount(legacyMemberid),
-    getMemberPdfPurchaseCount(legacyMemberid),
+    getMemberCourses(legacyMemberid, queryFn),
+    getMemberOrders(legacyMemberid, queryFn, { extraEmails }),
+    getMemberMemberships(legacyMemberid, queryFn),
+    getMemberLegacySupportNoteCount(legacyMemberid, queryFn),
+    getMemberPdfPurchaseCount(legacyMemberid, queryFn),
   ]);
 
   return { courses, orders, memberships, legacyNoteCount, pdfPurchaseCount };
@@ -859,7 +882,8 @@ export async function loadLegacyCustomerProfile(
         ? buildLoadErrorMemberstackSummary(memberstackLookup.error)
         : buildNotFoundMemberstackSummary();
 
-    const legacyData = await loadLegacyHistoryData(member.memberid);
+    const extraEmails = [member.email, memberstack.email];
+    const legacyData = await loadLegacyHistoryData(member.memberid, deps.queryFn, extraEmails);
     const notesRead = resolveNotesReadIds(
       "legacy",
       linkedMemberstackId,
@@ -1003,11 +1027,15 @@ export async function loadMemberstackCustomerProfile(
     const legacyMember = linkState.legacyMember;
     const hasLegacyHistory = linkState.hasLegacyHistory;
 
+    const extraEmails = [
+      memberstackResult.member.auth?.email,
+      legacyMember?.email,
+    ];
     const legacyData = hasLegacyHistory && legacyMemberid
-      ? await loadLegacyHistoryData(legacyMemberid)
+      ? await loadLegacyHistoryData(legacyMemberid, deps.queryFn, extraEmails)
       : {
           courses: [] as MemberCourseDisplay[],
-          orders: [] as MemberOrderDisplay[],
+          orders: await getShopifyOrdersForEmails(extraEmails, deps.queryFn),
           memberships: [] as MemberMembershipDisplay[],
           legacyNoteCount: 0,
           pdfPurchaseCount: null as number | null,

@@ -230,9 +230,13 @@ export function buildOrderTimelineEvents(orders: MemberOrderDisplay[]): Customer
       description: joinWatsonDisplayParts([
         order.orderTotal ?? "Order",
         order.orderStatus,
-        order.transactionId ? `Txn ${order.transactionId}` : null,
+        order.source === "shopify"
+          ? `Shopify ${order.shopifyOrderNumber ? `#${order.shopifyOrderNumber}` : order.transactionId}`
+          : order.transactionId
+            ? `Txn ${order.transactionId}`
+            : null,
       ]),
-      source: "legacy_store_transactions",
+      source: order.source === "shopify" ? "watson_shopify_orders" : "legacy_store_transactions",
     }));
 }
 

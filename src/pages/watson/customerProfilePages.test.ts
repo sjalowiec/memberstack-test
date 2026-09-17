@@ -226,6 +226,7 @@ describe("Watson customer profile pages", () => {
     expect(legacyHistory).not.toContain("contenteditable");
 
     expect(purchases).toContain('title="Store Purchases"');
+    expect(purchases).toContain("Shopify");
     expect(purchases).toContain("WatsonCustomerStoreFulfillment");
     expect(purchases).toContain("notesWriteId");
     expect(purchases).toContain('title="Course Access"');
