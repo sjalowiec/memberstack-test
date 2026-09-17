@@ -12,7 +12,10 @@ interface Props {
 const { orders } = Astro.props;
 const visibleColumns = getVisibleOrderColumns(orders);
 const colspan =
-  3 + (visibleColumns.showStatus ? 1 : 0) + (visibleColumns.showPayment ? 1 : 0);
+  3 +
+  (visibleColumns.showStatus ? 1 : 0) +
+  (visibleColumns.showPayment ? 1 : 0) +
+  (visibleColumns.showSource ? 1 : 0);
 ---
 
 {
@@ -29,6 +32,13 @@ const colspan =
             <th scope="col" data-sort-key="transactionid" data-sort-type="string" tabindex="0">
               Transaction ID
             </th>
+            {
+              visibleColumns.showSource ? (
+                <th scope="col" data-sort-key="source" data-sort-type="string" tabindex="0">
+                  Source
+                </th>
+              ) : null
+            }
             <th
               scope="col"
               data-sort-key="orderdate"
@@ -76,7 +86,30 @@ const colspan =
                         Show items
                       </button>
                     </td>
-                    <td data-sort-value={order.transactionId}>{order.transactionId}</td>
+                    <td data-sort-value={order.transactionId}>
+                      {
+                        order.shopifyOrderHref ? (
+                          <a href={order.shopifyOrderHref}>{order.transactionId}</a>
+                        ) : (
+                          order.transactionId
+                        )
+                      }
+                    </td>
+                    {
+                      visibleColumns.showSource ? (
+                        <td data-sort-value={order.sourceLabel ?? order.source ?? "legacy"}>
+                          {
+                            order.source === "shopify" ? (
+                              <span class="watson-sales__badge watson-sales__badge--live">
+                                Shopify{order.shopifyOrderNumber ? ` #${order.shopifyOrderNumber}` : ""}
+                              </span>
+                            ) : (
+                              order.sourceLabel ?? "Legacy store"
+                            )
+                          }
+                        </td>
+                      ) : null
+                    }
                     <td data-sort-value={order.orderDateSort}>{order.orderDate ?? ""}</td>
                     {
                       visibleColumns.showStatus ? (

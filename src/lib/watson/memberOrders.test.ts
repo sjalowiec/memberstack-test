@@ -11,6 +11,11 @@ import {
   MEMBER_ORDER_ITEMS_SQL,
   MEMBER_ORDERS_SQL,
 } from "./memberOrders";
+import { MEMBER_DETAIL_SQL } from "./memberDetail";
+import {
+  SHOPIFY_ORDER_COUNT_BY_EMAILS_SQL,
+  SHOPIFY_ORDERS_BY_EMAILS_SQL,
+} from "./shopifyPurchaseHistory";
 
 describe("memberOrders", () => {
   const orderRow = {
@@ -37,7 +42,15 @@ describe("memberOrders", () => {
   };
 
   it("counts orders for a member without loading line items", async () => {
-    const queryFn = vi.fn().mockResolvedValueOnce([{ order_count: "27" }]);
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_DETAIL_SQL) {
+        return [];
+      }
+      if (sql === MEMBER_ORDER_COUNT_SQL) {
+        return [{ order_count: "27" }];
+      }
+      return [];
+    });
 
     const count = await getMemberOrderCount("DD0CC51B-F6A7-3304-EBC0-C3F510A7BAC3", queryFn);
 
@@ -48,21 +61,90 @@ describe("memberOrders", () => {
   });
 
   it("loads orders and items for a member", async () => {
-    const queryFn = vi
-      .fn()
-      .mockResolvedValueOnce([orderRow])
-      .mockResolvedValueOnce([itemRow]);
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_DETAIL_SQL) {
+        return [];
+      }
+      if (sql === MEMBER_ORDERS_SQL) {
+        return [orderRow];
+      }
+      if (sql === MEMBER_ORDER_ITEMS_SQL) {
+        return [itemRow];
+      }
+      return [];
+    });
 
     const orders = await getMemberOrders("DD0CC51B-F6A7-3304-EBC0-C3F510A7BAC3", queryFn);
 
-    expect(queryFn).toHaveBeenNthCalledWith(1, MEMBER_ORDERS_SQL, [
+    expect(queryFn).toHaveBeenCalledWith(MEMBER_ORDERS_SQL, [
       "DD0CC51B-F6A7-3304-EBC0-C3F510A7BAC3",
     ]);
-    expect(queryFn).toHaveBeenNthCalledWith(2, MEMBER_ORDER_ITEMS_SQL, [[29812]]);
+    expect(queryFn).toHaveBeenCalledWith(MEMBER_ORDER_ITEMS_SQL, [[29812]]);
     expect(orders).toHaveLength(1);
     expect(orders[0]?.transactionId).toBe(orderRow.transactionid);
+    expect(orders[0]?.source).toBe("legacy");
     expect(orders[0]?.items).toHaveLength(1);
     expect(orders[0]?.items[0]?.lineTotal).toBe("$135.00");
+  });
+
+  it("merges Shopify orders matched by member email", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_DETAIL_SQL) {
+        return [{ memberid: "M1", email: "Sue@Example.com" }];
+      }
+      if (sql === MEMBER_ORDERS_SQL || sql === MEMBER_ORDER_COUNT_SQL) {
+        return sql === MEMBER_ORDER_COUNT_SQL ? [{ order_count: "1" }] : [orderRow];
+      }
+      if (sql === MEMBER_ORDER_ITEMS_SQL) {
+        return [itemRow];
+      }
+      if (sql === SHOPIFY_ORDERS_BY_EMAILS_SQL) {
+        return [
+          {
+            shopify_order_id: "555001",
+            order_number: "1001",
+            order_name: "#1001",
+            processed_at: "2024-03-15T14:00:00.000Z",
+            customer_email: "Sue@Example.com",
+            currency: "USD",
+            total_price: "999.00",
+            total_refunded: "0",
+            financial_status: "paid",
+            fulfillment_status: "fulfilled",
+            cancelled_at: null,
+            cancel_reason: null,
+            source: "shopify",
+          },
+        ];
+      }
+      if (sql === SHOPIFY_ORDER_COUNT_BY_EMAILS_SQL) {
+        return [{ order_count: "1" }];
+      }
+      if (sql.includes("watson_shopify_order_items")) {
+        return [
+          {
+            shopify_order_id: "555001",
+            shopify_line_item_id: "9",
+            title: "Taitexma TH160 Mid-Gauge Machine",
+            quantity: 1,
+            sku: "TH160",
+            variant_title: null,
+            unit_price: "999.00",
+          },
+        ];
+      }
+      return [];
+    });
+
+    const orders = await getMemberOrders("M1", queryFn);
+    expect(orders).toHaveLength(2);
+    expect(orders[0]?.source).toBe("legacy");
+    expect(orders[1]?.source).toBe("shopify");
+    expect(orders[1]?.shopifyOrderNumber).toBe("1001");
+    expect(orders[1]?.transactionId).toBe("#1001");
+
+    const count = await getMemberOrderCount("M1", queryFn);
+    expect(count).toBe(2);
   });
 
   it("formats order status from fulfillment or paid flag", () => {
@@ -97,6 +179,7 @@ describe("memberOrders", () => {
     );
     expect(display.paymentMethod).toBeNull();
     expect(display.orderTotal).toBe("$18.99");
+    expect(display.source).toBe("legacy");
   });
 
   it("detects visible optional columns", async () => {

@@ -438,6 +438,85 @@ describe("customerProfile", () => {
     );
   });
 
+  it("counts Shopify store orders on Memberstack-only profiles", () => {
+    const snapshot = buildCustomerSnapshot({
+      member: null,
+      memberstack: memberstackSummary({ hasActiveConnection: true, membershipStatusLabel: "Active" }),
+      memberstackLinkStatus: "linked",
+      courses: [],
+      orders: [
+        {
+          storeTransactionId: "shopify:555",
+          transactionId: "#1042",
+          orderDate: "Mar 15, 2024",
+          orderDateSort: "2024-03-15T00:00:00.000Z",
+          orderStatus: "Paid",
+          orderTotal: "$999.00",
+          orderTotalSort: "999",
+          paymentMethod: null,
+          items: [],
+          source: "shopify",
+          sourceLabel: "Shopify",
+          shopifyOrderId: "555",
+          shopifyOrderNumber: "1042",
+          shopifyOrderHref: "/watson/sales/555",
+        },
+      ],
+      pdfPurchaseCount: null,
+      timeline: [],
+      hasLegacyHistory: false,
+    });
+
+    expect(snapshot.find((metric) => metric.label === "Store orders")?.value).toBe("1");
+    expect(snapshot.find((metric) => metric.label === "Store orders")?.unavailable).toBeFalsy();
+    expect(snapshot.find((metric) => metric.label === "Learn DesignaKnit enrollments")?.unavailable).toBe(
+      true,
+    );
+  });
+
+  it("keeps refunded Shopify orders visible without counting them as paid lifetime sales", () => {
+    const snapshot = buildCustomerSnapshot({
+      member: null,
+      memberstack: memberstackSummary({ hasActiveConnection: true, membershipStatusLabel: "Active" }),
+      memberstackLinkStatus: "linked",
+      courses: [],
+      orders: [
+        {
+          storeTransactionId: "shopify:1",
+          transactionId: "#100",
+          orderDate: "Feb 1, 2024",
+          orderDateSort: "2024-02-01T00:00:00.000Z",
+          orderStatus: "Refunded",
+          orderTotal: "$10.00",
+          orderTotalSort: "10",
+          paymentMethod: null,
+          items: [],
+          source: "shopify",
+          shopifyOrderId: "1",
+        },
+        {
+          storeTransactionId: "shopify:2",
+          transactionId: "#101",
+          orderDate: "Mar 1, 2024",
+          orderDateSort: "2024-03-01T00:00:00.000Z",
+          orderStatus: "Paid",
+          orderTotal: "$25.00",
+          orderTotalSort: "25",
+          paymentMethod: null,
+          items: [],
+          source: "shopify",
+          shopifyOrderId: "2",
+        },
+      ],
+      pdfPurchaseCount: null,
+      timeline: [],
+      hasLegacyHistory: false,
+    });
+
+    expect(snapshot.find((metric) => metric.label === "Store orders")?.value).toBe("2");
+    expect(snapshot.find((metric) => metric.label === "Store lifetime sales")?.value).toBe("$25.00");
+  });
+
   it("builds snapshot metrics from legacy purchase data", () => {
     const snapshot = buildCustomerSnapshot({
       member: legacyMember,

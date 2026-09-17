@@ -38,6 +38,7 @@ const {
 const pdfCount = pdfPurchaseCount ?? 0;
 const pdfFragmentUrl =
   hasLegacyHistory && legacyMemberid ? buildPdfPurchasesFragmentUrl(legacyMemberid) : "";
+const showStorePurchases = hasLegacyHistory || orders.length > 0;
 
 function formatRecentSummary(count: number, label: string, recentDate: string | null | undefined): string {
   const plural = count === 1 ? label : `${label}s`;
@@ -52,13 +53,14 @@ function formatRecentSummary(count: number, label: string, recentDate: string | 
   <WatsonCustomerAccordionSection
     id="customer-store-orders"
     title="Store Purchases"
-    count={hasLegacyHistory ? orders.length : 0}
+    count={showStorePurchases ? orders.length : 0}
   >
     {
-      hasLegacyHistory ? (
+      showStorePurchases ? (
         <>
           <p class="watson__section-note">
-            Imported legacy store transactions and line items from confirmed paid purchases.
+            Legacy ColdFusion store transactions plus Shopify orders matched by email.
+            Shopify rows are labeled Shopify and show the Shopify order number.
           </p>
           {
             orders.length > 0 ? (
