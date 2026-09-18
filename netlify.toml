@@ -21,6 +21,9 @@
   ALLOW_DEV_PATTERN_USER = "true"
   # Reduce Windows EPERM failures from chokidar on `.netlify/functions-serve`
   CHOKIDAR_USEPOLLING = "true"
+  # Local `netlify dev` only. Production My Downloads stays CSV until a reviewed
+  # production env sets LEGACY_EBOOK_WATSON_LOOKUP=true.
+  LEGACY_EBOOK_WATSON_LOOKUP = "true"
 
 # Watson live Shopify order sync (every 6 hours). Requires WATSON_DATABASE_URL +
 # SHOPIFY_* env vars in the Netlify site. Manual sync: POST /api/watson/shopify/sync

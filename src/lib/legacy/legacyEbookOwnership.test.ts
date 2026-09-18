@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import {
   LEGACY_EBOOK_ENTITLEMENT_CATALOG,
   LEGACY_EBOOK_EXCLUDED_ITEM_IDS,
@@ -20,6 +20,7 @@ import {
   clearLegacyEbookOwnershipIndexCache,
   countApprovedLegacyEbookOwnershipRecords,
   isLegacyEbookPurchasePaid,
+  resolveCustomerLegacyEbookEntitlementsForEmail,
   resolveLegacyEbookEntitlementsForEmail,
 } from "./legacyEbookOwnership";
 import {
@@ -318,5 +319,105 @@ describe("legacy ebook ownership resolver", () => {
     expect(payload).not.toContain(email);
     expect(payload).not.toMatch(/@/);
     expect(payload).not.toMatch(/storageKey|PurchaseDate|Price|E:\\/i);
+  });
+});
+
+describe("customer My Downloads CSV + Watson union", () => {
+  beforeEach(() => {
+    clearLegacyEbookOwnershipIndexCache();
+  });
+
+  it("restores Karen Wylie's two paid ebooks from Watson when the CSV snapshot omitted them", async () => {
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "karen.l.wylie@gmail.com",
+      {
+        csvPurchases: [
+          purchase({
+            storeTransactionId: "21293",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "687",
+            itemName: "Mousam Falls 4/6 Aran",
+            paid: "1",
+          }),
+        ],
+        watsonPurchases: [
+          purchase({
+            storeTransactionId: "29763",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "675",
+            itemName: "Decorative Raglan Seams for Machine Knitters",
+            pricePerItem: "14.99",
+            totalPrice: "14.99",
+          }),
+          purchase({
+            storeTransactionId: "29763",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "505",
+            itemName: "Machine Knitting Trims and Edges - Single Bed",
+            pricePerItem: "18.99",
+            totalPrice: "18.99",
+          }),
+          purchase({
+            storeTransactionId: "29763",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "687",
+            itemName: "Mousam Falls 4/6 Aran",
+            paid: "1",
+          }),
+          purchase({
+            storeTransactionId: "99999",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "416",
+            paid: "0",
+          }),
+        ],
+      },
+    );
+
+    expect(ebooks.map((row) => row.itemId).sort()).toEqual(["505", "675"]);
+    expect(ebooks).toEqual(
+      expect.arrayContaining([
+        {
+          itemId: "675",
+          title: "Decorative Raglan Seams for Machine Knitters",
+          downloadUrl: "/downloads/shop/raglan_seam_ebook_optimized.pdf",
+        },
+        {
+          itemId: "505",
+          title: "Machine Knitting Trims and Edges - Single Bed",
+          downloadUrl: "/downloads/shop/505_Single_bed_trims_and_edges1.pdf",
+        },
+      ]),
+    );
+  });
+
+  it("keeps CSV entitlements when Watson is empty", async () => {
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "owner@example.com",
+      {
+        csvPurchases: [
+          purchase({ billingEmail: "owner@example.com", legacyItemId: "416" }),
+        ],
+        watsonPurchases: [],
+      },
+    );
+    expect(ebooks.map((row) => row.itemId)).toEqual(["416"]);
+  });
+
+  it("still returns CSV ebooks if Watson lookup throws", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "owner@example.com",
+      {
+        csvPurchases: [
+          purchase({ billingEmail: "owner@example.com", legacyItemId: "416" }),
+        ],
+        loadWatson: async () => {
+          throw new Error("watson unavailable");
+        },
+      },
+    );
+    expect(ebooks.map((row) => row.itemId)).toEqual(["416"]);
+    errorSpy.mockRestore();
   });
 });

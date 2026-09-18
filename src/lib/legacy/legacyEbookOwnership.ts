@@ -1,8 +1,9 @@
 /**
  * Resolve approved legacy ebook ownership for a Memberstack account email.
  *
- * Reads paid rows from legacy-ebook-purchases.csv, normalizes email, dedupes by
- * email + item ID, and returns customer-safe entitlements only.
+ * Reads paid rows from legacy-ebook-purchases.csv and, on DEV, unions paid
+ * Watson store transactions for the same verified email. Dedupes by email +
+ * item ID and returns customer-safe entitlements only.
  */
 import {
   getLegacyEbookEntitlement,
@@ -17,6 +18,10 @@ import {
   loadLegacyEbookPurchases,
   type LegacyEbookPurchaseRow,
 } from "./legacyEbookPurchases";
+import {
+  loadLegacyEbookPurchasesFromWatson,
+  shouldReadLegacyEbooksFromWatson,
+} from "./legacyEbookWatsonPurchases";
 
 export type LegacyEbookOwnershipRecord = {
   email: string;
@@ -132,6 +137,62 @@ export function resolveLegacyEbookEntitlementsForEmail(
   }
 
   return [...(getOwnershipIndex().get(normalized) ?? [])];
+}
+
+export type ResolveCustomerLegacyEbookOptions = {
+  /** When set, used as the sole purchase source (CSV tests; skips Watson). */
+  purchases?: LegacyEbookPurchaseRow[];
+  csvPurchases?: LegacyEbookPurchaseRow[];
+  watsonPurchases?: LegacyEbookPurchaseRow[];
+  loadWatson?: (
+    email: string | null | undefined,
+  ) => Promise<LegacyEbookPurchaseRow[]>;
+  /**
+   * Permit the default live Watson SELECT. Netlify My Downloads sets this.
+   * Tests must leave it unset and inject `watsonPurchases` / `loadWatson`.
+   */
+  allowLiveWatson?: boolean;
+  useCache?: boolean;
+};
+
+/**
+ * Customer My Downloads resolver: CSV entitlements plus optional Watson rows
+ * for the same verified email. Watson failures must not hide CSV results.
+ */
+export async function resolveCustomerLegacyEbookEntitlementsForEmail(
+  email: string | null | undefined,
+  options?: ResolveCustomerLegacyEbookOptions,
+): Promise<LegacyEbookCustomerEntitlement[]> {
+  if (options?.purchases) {
+    return resolveLegacyEbookEntitlementsForEmail(email, {
+      purchases: options.purchases,
+      useCache: options.useCache,
+    });
+  }
+
+  const csv = options?.csvPurchases ?? loadLegacyEbookPurchases();
+  let watson: LegacyEbookPurchaseRow[] = options?.watsonPurchases ?? [];
+
+  if (options?.watsonPurchases === undefined) {
+    const loader =
+      options?.loadWatson ??
+      (options?.allowLiveWatson && shouldReadLegacyEbooksFromWatson()
+        ? loadLegacyEbookPurchasesFromWatson
+        : null);
+    if (loader) {
+      try {
+        watson = await loader(email);
+      } catch (err) {
+        console.error("legacy-ebook-ownership: Watson lookup failed:", err);
+        watson = [];
+      }
+    }
+  }
+
+  return resolveLegacyEbookEntitlementsForEmail(email, {
+    purchases: [...csv, ...watson],
+    useCache: false,
+  });
 }
 
 /** Exact unique approved ownership pairs from repository purchase data. */
