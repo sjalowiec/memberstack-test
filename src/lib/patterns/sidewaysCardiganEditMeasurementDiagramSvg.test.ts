@@ -276,6 +276,40 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(Number(backMatch?.[1])).toBeLessThan(bodyMidX - 40);
   });
 
+  it("keeps the Cardigan Finished bust/chest lane, end caps, and chip target inside the viewBox", () => {
+    const sizes = [
+      { ...BASE, finishedBustInches: 40, finishedLengthInches: 16.75 },
+      { ...BASE, finishedBustInches: 18, finishedLengthInches: 10 },
+      { ...BASE, finishedBustInches: 70, finishedLengthInches: 40 },
+    ];
+    for (const measurements of sizes) {
+      const svg = buildSidewaysCardiganEditMeasurementDiagramSvg({
+        garmentStyle: "cardigan",
+        measurements,
+      });
+      const vb = parseViewBox(svg);
+      expect(vb).not.toBeNull();
+      const bustGroup = dimGroup(svg, "dim-finished-bust");
+      const bust = dimLineFromGroup(bustGroup);
+      const inner = dimLineFromGroup(dimGroup(svg, "dim-back-section"));
+      const target = new RegExp(
+        `<circle id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}" cx="([^"]+)" cy="([^"]+)"`,
+      ).exec(svg);
+      expect(bust).not.toBeNull();
+      expect(inner).not.toBeNull();
+      expect(endCapCount(bustGroup)).toBe(2);
+      expect(bust!.x1).toBeLessThan(inner!.x1);
+      expect(bust!.x1 - vb!.x).toBeGreaterThanOrEqual(160);
+      expect(Number(target?.[1])).toBeCloseTo(bust!.x1, 1);
+      const capXs = [...bustGroup.matchAll(/\b(?:x|x1|x2|cx)="([^"]+)"/g)].map((m) => Number(m[1]));
+      for (const x of capXs) {
+        expect(x).toBeGreaterThanOrEqual(vb!.x);
+        expect(x).toBeLessThanOrEqual(vb!.x + vb!.width);
+      }
+      expect(diagramGeometryStaysInsideViewBox(svg)).toBe(true);
+    }
+  });
+
   it("draws Finished back length as a separate hem-to-neck dimension below the body", () => {
     const svg = buildSidewaysCardiganEditMeasurementDiagramSvg({
       garmentStyle: "cardigan",
@@ -313,6 +347,16 @@ describe("Sideways Summary/Edit measurement SVG", () => {
   });
 });
 
+function parseViewBox(svg: string): { x: number; y: number; width: number; height: number } | null {
+  const vb = /viewBox="([^"]+)"/.exec(svg);
+  if (!vb) return null;
+  const parts = vb[1].trim().split(/[\s,]+/).map(Number);
+  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return null;
+  const [x, y, width, height] = parts;
+  if (!(width > 0) || !(height > 0)) return null;
+  return { x, y, width, height };
+}
+
 function dimGroup(svg: string, role: string, side?: string): string {
   const sideAttr = side ? ` data-side="${side}"` : "";
   const re = new RegExp(
@@ -343,23 +387,18 @@ function dimSegment(svg: string, role: string): { length: number } | null {
 }
 
 function diagramGeometryStaysInsideViewBox(svg: string): boolean {
-  const vb = /viewBox="0 0 ([^" ]+) ([^"]+)"/.exec(svg);
+  const vb = parseViewBox(svg);
   if (!vb) return false;
-  const width = Number(vb[1]);
-  const height = Number(vb[2]);
-  if (!(width > 0) || !(height > 0)) return false;
   const pad = 0.5;
-  const attrs = [
-    ...svg.matchAll(/\b(?:x|x1|x2|cx)="([^"]+)"/g),
-  ];
+  const attrs = [...svg.matchAll(/\b(?:x|x1|x2|cx)="([^"]+)"/g)];
   const ys = [...svg.matchAll(/\b(?:y|y1|y2|cy)="([^"]+)"/g)];
   for (const m of attrs) {
     const n = Number(m[1]);
-    if (!Number.isFinite(n) || n < -pad || n > width + pad) return false;
+    if (!Number.isFinite(n) || n < vb.x - pad || n > vb.x + vb.width + pad) return false;
   }
   for (const m of ys) {
     const n = Number(m[1]);
-    if (!Number.isFinite(n) || n < -pad || n > height + pad) return false;
+    if (!Number.isFinite(n) || n < vb.y - pad || n > vb.y + vb.height + pad) return false;
   }
   return true;
 }
