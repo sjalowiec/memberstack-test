@@ -58,13 +58,18 @@ const MIN_SLEEVE_L = 48;
 const MIN_SLEEVE_W = 22;
 /** Cardigan Body dimension lanes — offsets from the garment, not stitch/row math. */
 const CARDIGAN_DIM = {
-  bustLane: 56,
+  bustLane: 40,
   sectionLane: 24,
   capSep: 8,
   extGap: 5,
   extStandoff: 2,
   lengthOffset: 64,
   neckLane: 18,
+  /**
+   * ViewBox space to the left of the outer bust dimension. The Finished bust/chest
+   * chip parks to the left of that line (`translate(calc(-100% - 8px), -50%)`).
+   */
+  bustChipGutter: 168,
 } as const;
 
 export type SidewaysCardiganEditMeasurementInput = {
@@ -719,20 +724,28 @@ function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
     : drawCardiganTargets(frame);
 }
 
-function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): { width: number; height: number } {
+function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): {
+  x: number;
+  width: number;
+  height: number;
+} {
   if (frame.garmentStyle === "pullover") {
     const maxX = frame.sleeve.farX + 40;
     const maxY = frame.bottomY + 48;
     return {
+      x: 0,
       width: Math.ceil(maxX + PAD.right * 0.35),
       height: Math.ceil(maxY + PAD.bottom * 0.35),
     };
   }
-  const maxX = frame.neckX + 168;
+  const { bustX } = cardiganDimLayout(frame);
+  const minX = Math.min(0, bustX - CARDIGAN_DIM.bustChipGutter);
+  const maxX = Math.max(frame.neckX + 168, PAD.left + frame.bodyW + PAD.right);
   const lengthY = frame.bottomY + CARDIGAN_DIM.lengthOffset;
   const maxY = Math.max(frame.bottomY + 86, lengthY + 16);
   return {
-    width: Math.ceil(Math.max(maxX, PAD.left + frame.bodyW + PAD.right)),
+    x: minX,
+    width: Math.ceil(maxX - minX),
     height: Math.ceil(maxY),
   };
 }
@@ -825,7 +838,7 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
 ): string {
   const garmentStyle = input.garmentStyle === "pullover" ? "pullover" : "cardigan";
   const frame = buildFrame(input.measurements, garmentStyle);
-  const { width, height } = viewBoxFor(frame);
+  const { x: vbX, width, height } = viewBoxFor(frame);
   const unit = input.displayUnit === "cm" ? "cm" : "in";
   const start = garmentStyle === "pullover" ? "underarm" : "center-front";
   const bodyD = garmentStyle === "pullover" ? pulloverBodyPath(frame) : cardiganBodyPath(frame);
@@ -838,7 +851,7 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
       ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
       : "";
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-edit-piece="body" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(vbX)} 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-edit-piece="body" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}">`,
     `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     sleeve,
     drawArmholeAndBack(frame),
