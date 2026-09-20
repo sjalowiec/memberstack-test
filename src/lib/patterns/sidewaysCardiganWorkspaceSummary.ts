@@ -55,6 +55,9 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
 }): SidewaysCardiganWorkspaceSummary {
   const { calc, input } = args;
   const neckInches = input.neckOpeningWidthInches;
+  const frontInches = rowsToInches(calc.frontRows, input.rowsPerInch) ?? 0;
+  const backInches = rowsToInches(calc.backRows, input.rowsPerInch) ?? 0;
+  const halfNeckInches = rowsToInches(calc.halfNeckRows, input.rowsPerInch) ?? 0;
   const shoulderInches =
     rowsToInches(calc.shoulders.firstFrontRows, input.rowsPerInch) ?? 0;
   const sleeve =
@@ -101,8 +104,20 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
       def: formatInchesWithUnit(calc.bust.actualFinishedBustInches),
     },
     {
+      term: "Each front",
+      def: inchesAndRows(frontInches, calc.frontRows),
+    },
+    {
+      term: "Back",
+      def: inchesAndRows(backInches, calc.backRows),
+    },
+    {
       term: "Neck-opening width",
-      def: inchesAndRows(neckInches, calc.neckOpeningRows),
+      def: inchesAndRows(neckInches, calc.backNeckOpeningRows),
+    },
+    {
+      term: "Each V-neck section",
+      def: inchesAndRows(halfNeckInches, calc.halfNeckRows),
     },
     {
       term: "Each shoulder section",

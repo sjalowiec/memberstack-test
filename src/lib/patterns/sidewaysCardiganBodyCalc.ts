@@ -11,11 +11,23 @@
  * Slit depth is half the finished upper-arm measurement (the sleeve top is sewn around
  * both sides of the slit). The straight sleeve top still uses the full upper arm.
  *
- * Body rows are seven measured sections:
- *   V1 → front shoulder 1 → back shoulder 1 → back neck →
- *   back shoulder 2 → front shoulder 2 → V2
+ * Garment sections are the primary row calculations:
+ *   frontRows = round((finishedBust / 4) × rowsPerInch)
+ *   backRows = 2 × frontRows
+ *   halfNeckRows = round((neckOpening / 2) × rowsPerInch)
+ *   backNeckRows = 2 × halfNeckRows
+ *   shoulderRows = frontRows − halfNeckRows
+ *   actualTotalBustRows = 4 × frontRows
+ *
+ * Cardigan and pullover use the same geometry (half the circumference in the front,
+ * half in the back) and different knitting sequences. Body rows are seven sections:
+ *   Cardigan: V1 → front shoulder 1 → back shoulder 1 → back neck →
+ *             back shoulder 2 → front shoulder 2 → V2
+ *   Pullover: front shoulder 1 → V1 → V2 → front shoulder 2 →
+ *             back shoulder 1 → back neck → back shoulder 2
  *
  * The two slits sit at the side-seam boundaries (between the front and back shoulders).
+ * A pullover knits only one slit; the cast-on / bind-off edges form the other.
  */
 
 import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDepth";
@@ -95,6 +107,8 @@ export type SidewaysCardiganBodyCalcError = {
   requestedTotalBustRows: number;
   requestedFinishedBustInches: number;
   neckOpeningRows: number;
+  halfNeckRows: number;
+  frontRows: number;
   remainingRowsForShoulders: number;
   roundedShoulderRows: number;
 };
@@ -112,6 +126,10 @@ export type SidewaysCardiganBodyCalc = {
     first: SidewaysCardiganArmholeSlit;
     second: SidewaysCardiganArmholeSlit;
   };
+  frontRows: number;
+  backRows: number;
+  halfNeckRows: number;
+  /** Raw full-neck rows: round(neckOpening × rowsPerInch). May be odd. */
   neckOpeningRows: number;
   frontNeckOpeningRows: number;
   backNeckOpeningRows: number;
@@ -153,14 +171,6 @@ function identicalFronts(panel: SidewaysCardiganFrontPanel): {
   return { first: { ...panel }, second: { ...panel } };
 }
 
-function shoulderRowsFromRequestedBust(
-  requestedTotalBustRows: number,
-  neckOpeningRows: number,
-): number {
-  const remainingRowsForShoulders = requestedTotalBustRows - 3 * neckOpeningRows;
-  return Math.round(remainingRowsForShoulders / 4);
-}
-
 export function calculateSidewaysCardiganBody(
   input: SidewaysCardiganBodyCalcInput,
 ): SidewaysCardiganBodyCalcResult {
@@ -182,15 +192,23 @@ export function calculateSidewaysCardiganBody(
     input.neckOpeningWidthInches,
     input.rowsPerInch,
   );
+  const frontRows = rowsAlongCircumference(
+    input.finishedBustCircumferenceInches / 4,
+    input.rowsPerInch,
+  );
+  const halfNeckRows = rowsAlongCircumference(
+    input.neckOpeningWidthInches / 2,
+    input.rowsPerInch,
+  );
+  const backRows = 2 * frontRows;
+  const backNeckRows = 2 * halfNeckRows;
+  const shoulderRows = frontRows - halfNeckRows;
   const armholeDepthInches =
     computeDropShoulderArmholeDepthInches(input.finishedUpperArmInches) ?? 0;
   const armholeDepthStitches = stitchesAlongLength(
     armholeDepthInches,
     input.stitchesPerInch,
   );
-
-  const remainingRowsForShoulders = requestedTotalBustRows - 3 * neckOpeningRows;
-  const shoulderRows = shoulderRowsFromRequestedBust(requestedTotalBustRows, neckOpeningRows);
 
   if (shoulderRows <= 0) {
     return {
@@ -202,31 +220,33 @@ export function calculateSidewaysCardiganBody(
         requestedTotalBustRows,
         requestedFinishedBustInches: input.finishedBustCircumferenceInches,
         neckOpeningRows,
-        remainingRowsForShoulders,
+        halfNeckRows,
+        frontRows,
+        remainingRowsForShoulders: shoulderRows,
         roundedShoulderRows: shoulderRows,
       },
     };
   }
 
-  const actualTotalBustRows = 3 * neckOpeningRows + 4 * shoulderRows;
+  const actualTotalBustRows = 4 * frontRows;
   const actualFinishedBustInches =
     rowsToInches(actualTotalBustRows, input.rowsPerInch) ?? 0;
   const adjustmentRows = actualTotalBustRows - requestedTotalBustRows;
   const adjustmentInches = rowsToInches(adjustmentRows, input.rowsPerInch) ?? 0;
 
   const frontPanel: SidewaysCardiganFrontPanel = {
-    vNeckShapingRows: neckOpeningRows,
+    vNeckShapingRows: halfNeckRows,
     shoulderRows,
   };
   const shoulders = identicalShoulders(shoulderRows);
   const bodyRowSequence: SidewaysCardiganBodyRowSequence = {
-    firstFrontVNeckShapingRows: neckOpeningRows,
+    firstFrontVNeckShapingRows: halfNeckRows,
     firstFrontShoulderRows: shoulders.firstFrontRows,
     firstBackShoulderRows: shoulders.firstBackRows,
-    backNeckOpeningRows: neckOpeningRows,
+    backNeckOpeningRows: backNeckRows,
     secondBackShoulderRows: shoulders.secondBackRows,
     secondFrontShoulderRows: shoulders.secondFrontRows,
-    secondFrontVNeckShapingRows: neckOpeningRows,
+    secondFrontVNeckShapingRows: halfNeckRows,
   };
 
   return {
@@ -254,9 +274,12 @@ export function calculateSidewaysCardiganBody(
           beforeSection: "secondFrontShoulder",
         },
       },
+      frontRows,
+      backRows,
+      halfNeckRows,
       neckOpeningRows,
-      frontNeckOpeningRows: neckOpeningRows,
-      backNeckOpeningRows: neckOpeningRows,
+      frontNeckOpeningRows: halfNeckRows,
+      backNeckOpeningRows: backNeckRows,
       shoulders,
       fronts: identicalFronts(frontPanel),
       bodyRowSequence,
@@ -276,12 +299,29 @@ export function armholeSlitsMatch(calc: SidewaysCardiganBodyCalc): boolean {
   return calc.firstArmholeDepthStitches === calc.secondArmholeDepthStitches;
 }
 
-export function threeNeckSectionsMatch(calc: SidewaysCardiganBodyCalc): boolean {
+/** Two V sections match; each V is half the back-neck; two V sections equal one back-neck. */
+export function neckSectionsMatch(calc: SidewaysCardiganBodyCalc): boolean {
   const seq = calc.bodyRowSequence;
   return (
-    seq.firstFrontVNeckShapingRows === seq.backNeckOpeningRows &&
-    seq.backNeckOpeningRows === seq.secondFrontVNeckShapingRows &&
-    calc.frontNeckOpeningRows === calc.backNeckOpeningRows
+    seq.firstFrontVNeckShapingRows === seq.secondFrontVNeckShapingRows &&
+    seq.firstFrontVNeckShapingRows * 2 === seq.backNeckOpeningRows &&
+    calc.fronts.first.vNeckShapingRows === calc.fronts.second.vNeckShapingRows &&
+    calc.fronts.first.vNeckShapingRows * 2 === calc.backNeckOpeningRows &&
+    calc.frontNeckOpeningRows === seq.firstFrontVNeckShapingRows &&
+    calc.halfNeckRows === seq.firstFrontVNeckShapingRows &&
+    calc.backNeckOpeningRows === seq.backNeckOpeningRows
+  );
+}
+
+export function garmentSectionIdentitiesHold(calc: SidewaysCardiganBodyCalc): boolean {
+  const shoulder = calc.shoulders.firstFrontRows;
+  return (
+    calc.frontRows === calc.halfNeckRows + shoulder &&
+    calc.backRows === 2 * calc.frontRows &&
+    calc.backRows === shoulder + calc.backNeckOpeningRows + shoulder &&
+    calc.bust.actualTotalBustRows === 4 * calc.frontRows &&
+    calc.bust.actualTotalBustRows === 2 * calc.backRows &&
+    calc.backNeckOpeningRows === 2 * calc.halfNeckRows
   );
 }
 
