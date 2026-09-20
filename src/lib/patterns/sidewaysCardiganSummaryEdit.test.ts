@@ -305,14 +305,17 @@ describe("Sideways Summary/Edit live measurement edits", () => {
     expect(getCurrentPattern().fit?.cbMeasurementOverrides).not.toHaveProperty("armholeDepth");
 
     const svg = diagramFor(cardiganValues, { finishedUpperArm: "16" });
-    expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth}"`);
-    expect(svg).toContain("Armhole depth");
+    expect(svg).toContain(`data-derived-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth}"`);
+    expect(svg).not.toMatch(/>Armhole depth</);
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"`);
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening}"`);
     expect(SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS).not.toHaveProperty("armholeDepth");
     expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.some((f) => f.id === "armholeDepth" && f.editable === false)).toBe(
       true,
     );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("halfNeckOpening");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("frontSection");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("backSection");
     expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("sleeveLength");
     expect(SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.map((f) => f.id)).not.toContain("wrist");
     expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.map((f) => f.id)).toEqual([
