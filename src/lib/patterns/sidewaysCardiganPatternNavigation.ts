@@ -23,15 +23,15 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF =
 
 export type SidewaysCardiganSummaryEntryPath = "from-builder" | "from-finished-pattern";
 
-export const SIDEWAYS_CARDIGAN_SUMMARY_PRIMARY_LABEL = "Update Pattern";
-export const SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_BUILDER_LABEL = "Back to Builder";
+export const SIDEWAYS_CARDIGAN_SUMMARY_PRIMARY_LABEL = "Save Changes";
+export const SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_BUILDER_LABEL = "Cancel";
 export const SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_EDIT_LABEL = "Cancel";
 
 export const SIDEWAYS_CARDIGAN_SUMMARY_HINT_FROM_BUILDER =
-  "Review or change your measurements, then click Update Pattern to open your knitting instructions.";
+  "Review or change your measurements, then click Save Changes to open your knitting instructions.";
 
 export const SIDEWAYS_CARDIGAN_SUMMARY_HINT_FROM_EDIT =
-  "Make your changes, then click Update Pattern to update your pattern.";
+  "Make your changes, then click Save Changes to update your pattern.";
 
 export function resolveSidewaysCardiganSummaryEntryPath(
   search: string = typeof window !== "undefined" ? window.location.search : "",

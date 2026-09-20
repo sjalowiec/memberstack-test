@@ -162,6 +162,8 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(summaryScript).toContain("applySidewaysCardiganSummaryQuickEdits");
     expect(summaryScript).toContain("applySidewaysCardiganSummaryMeasurementEdits");
     expect(summaryScript).toContain("buildSidewaysCardiganSummaryDiagramInput");
+    expect(summaryScript).toContain("refreshAutoPatternProjectTitle");
+    expect(summaryScript).toContain("stampSidewaysSummaryMeasureShell");
   });
 
   it("opens Summary/Edit after a new Pullover build, not knitting instructions", () => {
@@ -172,7 +174,7 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(patternPage).not.toContain("PatternSummaryEditWorkspace");
   });
 
-  it("does not show the legacy text-only review screen and keeps Back to Builder", () => {
+  it("does not show the legacy text-only review screen and keeps Cancel on Summary/Edit", () => {
     expect(builderScript).toContain("completeBuilderAndOpenSummary()");
     expect(builderScript).toContain("window.location.assign(SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF)");
     expect(builderScript).not.toContain("showingReview");
@@ -180,6 +182,8 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(sidewaysCardiganSummaryCancelLabel("from-builder")).toBe(
       SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_BUILDER_LABEL,
     );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_BUILDER_LABEL).toBe("Cancel");
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_PRIMARY_LABEL).toBe("Save Changes");
     expect(sidewaysCardiganSummaryCancelHref("from-builder")).toBe(
       "/patterns/sideways-cardigan/builder",
     );

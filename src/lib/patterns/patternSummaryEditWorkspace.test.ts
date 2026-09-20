@@ -268,7 +268,11 @@ describe("Sideways V-Neck Summary/Edit reuses the shared Lego block", () => {
     expect(sidewaysSummary).toContain("Quick edits");
     expect(sidewaysSummary).toContain("data-cb-build-summary");
     expect(sidewaysSummary).toContain("data-sideways-edit-update");
-    expect(sidewaysSummary).toContain("Update Pattern");
+    expect(sidewaysSummary).toContain("Save Changes");
+    expect(sidewaysSummary).not.toContain("Update Pattern");
+    expect(sidewaysSummary).not.toContain("Back to Builder");
+    expect(workspaceCss).toContain(".sl-edit-segment__pill");
+    expect(sidewaysSummary).toContain('data-express-construction="sideways-cardigan"');
     expect((sidewaysSummary.match(/id="sideways-edit-units-heading"/g) ?? []).length).toBe(1);
     expect(sidewaysSummary).not.toContain("sl-edit-drawer--workspace");
     expect(sidewaysSummary).not.toContain("buildHatPatternDiagramSvg");

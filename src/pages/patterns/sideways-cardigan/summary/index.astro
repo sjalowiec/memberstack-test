@@ -1,7 +1,7 @@
 ---
 /**
  * Sideways V-Neck Summary/Edit — shared PatternSummaryEditWorkspace.
- * After the builder (`?generated=1`): review measurements, then Update Pattern.
+ * After the builder (`?generated=1`): review measurements, then Save Changes.
  * From Edit Pattern (`?edit=1`): same workspace; Cancel returns to knitting instructions.
  */
 import Layout from "../../../../layouts/Layout.astro";
@@ -238,7 +238,10 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
               {SIDEWAYS_CARDIGAN_SUMMARY_HINT_FROM_EDIT}
             </span>
             <Fragment slot="diagram">
-              <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
+              <div
+                class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page"
+                data-express-construction="sideways-cardigan"
+              >
                 <div
                   class="sl-measure-workspace__editor"
                   data-cb-measure-root
