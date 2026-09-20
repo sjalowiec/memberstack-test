@@ -50,7 +50,7 @@ describe("sideways cardigan body instruction model", () => {
     const added = firstV.stitchesChangedOnRow.reduce((sum, n) => sum + n, 0);
     expect(added).toBe(calc.vNeckDepthStitches);
     expect(firstV.stitchesChangedOnRow).toEqual(
-      distributeTotalAcrossRows(calc.vNeckDepthStitches, calc.neckOpeningRows),
+      distributeTotalAcrossRows(calc.vNeckDepthStitches, calc.halfNeckRows),
     );
   });
 
@@ -58,7 +58,7 @@ describe("sideways cardigan body instruction model", () => {
     expect(firstV.startStitches).toBe(instructions.startingFrontStitches);
     expect(firstV.endStitches).toBe(calc.garmentLengthStitches);
     expect(firstV.stitchesAfterRow.at(-1)).toBe(calc.garmentLengthStitches);
-    expect(firstV.rows).toBe(calc.neckOpeningRows);
+    expect(firstV.rows).toBe(calc.halfNeckRows);
   });
 
   it("keeps the four shoulder sections at identical row counts", () => {
@@ -97,10 +97,11 @@ describe("sideways cardigan body instruction model", () => {
     expect(castOn?.summary).toContain(String(calc.backNeckDepthStitches));
   });
 
-  it("uses the established neck-opening rows for the straight back neck", () => {
+  it("uses twice the V-section rows for the straight back neck", () => {
     const opening = steps.find((s) => s.id === "back-neck-opening");
-    expect(opening?.rows).toBe(calc.neckOpeningRows);
-    expect(sectionRowCounts.backNeckOpening).toBe(calc.neckOpeningRows);
+    expect(opening?.rows).toBe(calc.backNeckOpeningRows);
+    expect(sectionRowCounts.backNeckOpening).toBe(calc.backNeckOpeningRows);
+    expect(sectionRowCounts.backNeckOpening).toBe(2 * sectionRowCounts.firstVNeck);
     expect(opening?.stitchesAfter).toBe(instructions.backNeckLiveStitches);
   });
 
@@ -128,25 +129,28 @@ describe("sideways cardigan body instruction model", () => {
     expect(calc.backNeckDepthStitches).toBe(6);
     expect(calc.armholeDepthStitches).toBe(36);
     expect(calc.neckOpeningRows).toBe(49);
-    expect(calc.shoulders.firstFrontRows).toBe(33);
-    expect(calc.bust.actualTotalBustRows).toBe(279);
+    expect(calc.halfNeckRows).toBe(25);
+    expect(calc.frontRows).toBe(70);
+    expect(calc.backRows).toBe(140);
+    expect(calc.shoulders.firstFrontRows).toBe(45);
+    expect(calc.bust.actualTotalBustRows).toBe(280);
     expect(sectionRowCounts).toEqual({
-      firstVNeck: 49,
-      firstFrontShoulder: 33,
-      firstBackShoulder: 33,
-      backNeckOpening: 49,
-      secondBackShoulder: 33,
-      secondFrontShoulder: 33,
-      secondVNeck: 49,
+      firstVNeck: 25,
+      firstFrontShoulder: 45,
+      firstBackShoulder: 45,
+      backNeckOpening: 50,
+      secondBackShoulder: 45,
+      secondFrontShoulder: 45,
+      secondVNeck: 25,
     });
     expect(landmarks).toEqual({
-      endFirstVShaping: 49,
-      firstSideSeam: 82,
+      endFirstVShaping: 25,
+      firstSideSeam: 70,
       firstBackNeckEdge: 115,
-      secondBackNeckEdge: 164,
-      secondSideSeam: 197,
-      startFinalVShaping: 230,
-      finalBindOff: 279,
+      secondBackNeckEdge: 165,
+      secondSideSeam: 210,
+      startFinalVShaping: 255,
+      finalBindOff: 280,
     });
   });
 
@@ -290,14 +294,27 @@ describe("sideways pullover body instruction model", () => {
     expect(pullover.steps.some((s) => s.id === "second-armhole-slit")).toBe(false);
   });
 
-  it("keeps four equal shoulders and three equal neck sections on both styles", () => {
+  it("keeps four equal shoulders and matching V sections that sum to the back-neck on both styles", () => {
     for (const body of [cardigan, pullover]) {
       expect(body.sectionRowCounts.firstFrontShoulder).toBe(body.sectionRowCounts.firstBackShoulder);
       expect(body.sectionRowCounts.firstBackShoulder).toBe(body.sectionRowCounts.secondBackShoulder);
       expect(body.sectionRowCounts.secondBackShoulder).toBe(body.sectionRowCounts.secondFrontShoulder);
-      expect(body.sectionRowCounts.firstVNeck).toBe(body.sectionRowCounts.backNeckOpening);
-      expect(body.sectionRowCounts.backNeckOpening).toBe(body.sectionRowCounts.secondVNeck);
+      expect(body.sectionRowCounts.firstVNeck).toBe(body.sectionRowCounts.secondVNeck);
+      expect(body.sectionRowCounts.firstVNeck * 2).toBe(body.sectionRowCounts.backNeckOpening);
     }
+  });
+
+  it("locks pullover cumulative RC landmarks for the 40/7/7 example", () => {
+    expect(pullover.sectionRowCounts).toEqual(cardigan.sectionRowCounts);
+    expect(pullover.landmarks).toEqual({
+      startFinalVShaping: 45,
+      endFirstVShaping: 70,
+      firstSideSeam: 0,
+      secondSideSeam: 140,
+      firstBackNeckEdge: 185,
+      secondBackNeckEdge: 235,
+      finalBindOff: 280,
+    });
   });
 
   it("uses the same total bust rows and finished measurements for both styles", () => {

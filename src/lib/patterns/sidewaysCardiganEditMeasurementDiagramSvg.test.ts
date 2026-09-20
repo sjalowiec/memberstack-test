@@ -72,7 +72,7 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(shallow.halfNeckOpeningInches).toBe(3.75);
   });
 
-  it("derives ½ neck, fronts, and back from the seven-section bust math — not bust/2 and bust/4", () => {
+  it("derives fronts, back, and shoulders from bust/4 and bust/2 garment sections", () => {
     const derived = derivedSidewaysSummaryInches({
       ...BASE,
       finishedBustInches: 40,
@@ -81,12 +81,12 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     });
     expect(derived.halfNeckOpeningInches).toBe(3.5);
     expect(derived.armholeDepthInches).toBe(7);
-    expect(derived.shoulderSectionInches).toBe(4.75);
-    expect(derived.frontSectionInches).toBe(11.75);
-    expect(derived.backSectionInches).toBe(16.5);
-    expect(derived.frontSectionInches).not.toBe(10);
-    expect(derived.backSectionInches).not.toBe(20);
-    expect(2 * derived.frontSectionInches + derived.backSectionInches).toBe(40);
+    expect(derived.shoulderSectionInches).toBe(6.5);
+    expect(derived.frontSectionInches).toBe(10);
+    expect(derived.backSectionInches).toBe(20);
+    expect(derived.frontSectionInches).toBe(derived.halfNeckOpeningInches + derived.shoulderSectionInches);
+    expect(derived.backSectionInches).toBe(2 * derived.frontSectionInches);
+    expect(2 * derived.backSectionInches).toBe(40);
   });
 
   it("shows display-only ½ neck, front, and back values and keeps them off editable chips", () => {
@@ -102,9 +102,11 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening}"`);
     expect(svg).toContain('data-derived-inches="3.5"');
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}"`);
-    expect(svg).toContain('data-derived-inches="11.75"');
+    expect(svg).toContain('data-derived-inches="10"');
     expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection}"`);
-    expect(svg).toContain('data-derived-inches="16.5"');
+    expect(svg).toContain('data-derived-inches="20"');
+    expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"`);
+    expect(svg).toContain('data-derived-inches="6.5"');
     expect(svg).toContain("dim-half-neck-opening");
     expect(svg).toContain("dim-front-section");
     expect(svg).toContain("dim-back-section");
@@ -118,8 +120,9 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       measurements: { ...BASE, finishedBustInches: 40, neckOpeningWidthInches: 8 },
     });
     expect(widerNeck).toContain('data-derived-inches="4"');
-    expect(widerNeck).toContain('data-derived-inches="12"');
-    expect(widerNeck).toContain('data-derived-inches="16"');
+    expect(widerNeck).toContain('data-derived-inches="6"');
+    expect(widerNeck).toContain('data-derived-inches="10"');
+    expect(widerNeck).toContain('data-derived-inches="20"');
   });
 
   it("draws equal-length dimension lines for equal inch measurements", () => {
@@ -165,6 +168,35 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(cardigan).not.toContain("dim-wrist");
     expect(pullover).toContain('data-role="sleeve-outline"');
     expect(pullover).toContain('data-role="underarm-start"');
+  });
+
+  it("labels front, back, and shoulder sections on both Cardigan and Pullover", () => {
+    const measurements = {
+      ...BASE,
+      finishedBustInches: 40,
+      neckOpeningWidthInches: 7,
+      finishedUpperArmInches: 14,
+    };
+    const cardigan = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "cardigan",
+      measurements,
+    });
+    const pullover = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements,
+    });
+    for (const svg of [cardigan, pullover]) {
+      expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}"`);
+      expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection}"`);
+      expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"`);
+      expect(svg).toContain('data-derived-inches="10"');
+      expect(svg).toContain('data-derived-inches="20"');
+      expect(svg).toContain('data-derived-inches="6.5"');
+      expect(svg).toContain("dim-front-section");
+      expect(svg).toContain("dim-back-section");
+      expect(svg).toContain("dim-shoulder-section");
+      expect(diagramGeometryStaysInsideViewBox(svg)).toBe(true);
+    }
   });
 
   it("keeps Cardigan labels, dimension lines, and chip targets inside the viewBox", () => {

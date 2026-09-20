@@ -2,7 +2,7 @@
  * Numeric Sideways Cardigan body instruction model (no written knitting copy).
  *
  * V-neck stitch changes are spread with {@link distributeTotalAcrossRows} so the first V
- * adds exactly `vNeckDepthStitches` across exactly `neckOpeningRows`, and the second V is
+ * adds exactly `vNeckDepthStitches` across exactly `halfNeckRows`, and the second V is
  * that schedule reversed. {@link evenShapingSchedule} is not used: it encodes carriage-side
  * interval spacing and cannot place more shaping actions than rows.
  *
@@ -234,13 +234,22 @@ function buildCardiganSteps(args: {
   calc: SidewaysCardiganBodyCalc;
   startingFrontStitches: number;
   fullWidth: number;
-  neckRows: number;
+  vRows: number;
+  backNeckRows: number;
   firstV: SidewaysCardiganVNeckSchedule;
   secondV: SidewaysCardiganVNeckSchedule;
   backNeckLiveStitches: number;
 }): SidewaysCardiganBodyInstructionStep[] {
-  const { calc, startingFrontStitches, fullWidth, neckRows, firstV, secondV, backNeckLiveStitches } =
-    args;
+  const {
+    calc,
+    startingFrontStitches,
+    fullWidth,
+    vRows,
+    backNeckRows,
+    firstV,
+    secondV,
+    backNeckLiveStitches,
+  } = args;
   const shoulder = calc.shoulders.firstFrontRows;
   const armhole = calc.armholeDepthStitches;
   const backNeck = calc.backNeckDepthStitches;
@@ -258,8 +267,8 @@ function buildCardiganSteps(args: {
   push({
     id: "first-v-neck",
     order: 2,
-    summary: `First V-neck: add ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${startingFrontStitches} → ${fullWidth})`,
-    rows: neckRows,
+    summary: `First V-neck: add ${calc.vNeckDepthStitches} stitches over ${vRows} rows (${startingFrontStitches} → ${fullWidth})`,
+    rows: vRows,
     stitchesBefore: live(),
     stitchesAfter: firstV.endStitches,
   });
@@ -298,8 +307,8 @@ function buildCardiganSteps(args: {
   push({
     id: "back-neck-opening",
     order: 7,
-    summary: `Knit ${neckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
-    rows: neckRows,
+    summary: `Knit ${backNeckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
+    rows: backNeckRows,
     stitchesBefore: live(),
     stitchesAfter: backNeckLiveStitches,
   });
@@ -338,8 +347,8 @@ function buildCardiganSteps(args: {
   push({
     id: "second-v-neck",
     order: 12,
-    summary: `Second V-neck: remove ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${fullWidth} → ${startingFrontStitches})`,
-    rows: neckRows,
+    summary: `Second V-neck: remove ${calc.vNeckDepthStitches} stitches over ${vRows} rows (${fullWidth} → ${startingFrontStitches})`,
+    rows: vRows,
     stitchesBefore: live(),
     stitchesAfter: secondV.endStitches,
   });
@@ -358,12 +367,22 @@ function buildPulloverSteps(args: {
   calc: SidewaysCardiganBodyCalc;
   vPointStitches: number;
   fullWidth: number;
-  neckRows: number;
+  vRows: number;
+  backNeckRows: number;
   firstV: SidewaysCardiganVNeckSchedule;
   secondV: SidewaysCardiganVNeckSchedule;
   backNeckLiveStitches: number;
 }): SidewaysCardiganBodyInstructionStep[] {
-  const { calc, vPointStitches, fullWidth, neckRows, firstV, secondV, backNeckLiveStitches } = args;
+  const {
+    calc,
+    vPointStitches,
+    fullWidth,
+    vRows,
+    backNeckRows,
+    firstV,
+    secondV,
+    backNeckLiveStitches,
+  } = args;
   const shoulder = calc.shoulders.firstFrontRows;
   const armhole = calc.armholeDepthStitches;
   const backNeck = calc.backNeckDepthStitches;
@@ -389,16 +408,16 @@ function buildPulloverSteps(args: {
   push({
     id: "first-v-neck",
     order: 3,
-    summary: `First V-neck: remove ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${fullWidth} → ${vPointStitches}), finishing at the center-front V point`,
-    rows: neckRows,
+    summary: `First V-neck: remove ${calc.vNeckDepthStitches} stitches over ${vRows} rows (${fullWidth} → ${vPointStitches}), finishing at the center-front V point`,
+    rows: vRows,
     stitchesBefore: live(),
     stitchesAfter: firstV.endStitches,
   });
   push({
     id: "second-v-neck",
     order: 4,
-    summary: `Second V-neck: add ${calc.vNeckDepthStitches} stitches over ${neckRows} rows (${vPointStitches} → ${fullWidth})`,
-    rows: neckRows,
+    summary: `Second V-neck: add ${calc.vNeckDepthStitches} stitches over ${vRows} rows (${vPointStitches} → ${fullWidth})`,
+    rows: vRows,
     stitchesBefore: live(),
     stitchesAfter: secondV.endStitches,
   });
@@ -437,8 +456,8 @@ function buildPulloverSteps(args: {
   push({
     id: "back-neck-opening",
     order: 9,
-    summary: `Knit ${neckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
-    rows: neckRows,
+    summary: `Knit ${backNeckRows} rows (back-neck opening, ${backNeckLiveStitches} stitches)`,
+    rows: backNeckRows,
     stitchesBefore: live(),
     stitchesAfter: backNeckLiveStitches,
   });
@@ -533,8 +552,9 @@ export function buildSidewaysCardiganBodyInstructions(
     };
   }
 
-  const neckRows = calc.neckOpeningRows;
-  const increaseDeltas = distributeTotalAcrossRows(calc.vNeckDepthStitches, neckRows);
+  const vRows = calc.halfNeckRows;
+  const backNeckRows = calc.backNeckOpeningRows;
+  const increaseDeltas = distributeTotalAcrossRows(calc.vNeckDepthStitches, vRows);
   const decreaseDeltas = [...increaseDeltas].reverse();
   const fullWidth = calc.garmentLengthStitches;
   const isPullover = resolvedStyle === "pullover";
@@ -585,7 +605,8 @@ export function buildSidewaysCardiganBodyInstructions(
         calc,
         vPointStitches: startingFrontStitches,
         fullWidth,
-        neckRows,
+        vRows,
+        backNeckRows,
         firstV,
         secondV,
         backNeckLiveStitches,
@@ -594,7 +615,8 @@ export function buildSidewaysCardiganBodyInstructions(
         calc,
         startingFrontStitches,
         fullWidth,
-        neckRows,
+        vRows,
+        backNeckRows,
         firstV,
         secondV,
         backNeckLiveStitches,
