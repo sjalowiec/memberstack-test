@@ -56,6 +56,16 @@ export const SIDEWAYS_SUMMARY_DERIVED_ROLES = {
 const PAD = { top: 56, right: 168, bottom: 118, left: 132 };
 const MIN_SLEEVE_L = 48;
 const MIN_SLEEVE_W = 22;
+/** Cardigan Body dimension lanes — offsets from the garment, not stitch/row math. */
+const CARDIGAN_DIM = {
+  bustLane: 56,
+  sectionLane: 24,
+  capSep: 8,
+  extGap: 5,
+  extStandoff: 2,
+  lengthOffset: 64,
+  neckLane: 18,
+} as const;
 
 export type SidewaysCardiganEditMeasurementInput = {
   finishedBustInches: number;
@@ -262,6 +272,71 @@ function vDim(x: number, y1: number, y2: number, role: string, extraAttrs = ""):
     endCap(x, bot, true),
     `</g>`,
   ].join("");
+}
+
+function toward(from: number, to: number, dist: number): number {
+  const d = to - from;
+  if (d === 0) return from;
+  return from + Math.sign(d) * dist;
+}
+
+function dimExtension(x1: number, y1: number, x2: number, y2: number): string {
+  if (![x1, y1, x2, y2].every(Number.isFinite)) return "";
+  if (Math.hypot(x2 - x1, y2 - y1) < 2) return "";
+  return `<line data-role="dim-extension" x1="${fmtNum(x1)}" y1="${fmtNum(y1)}" x2="${fmtNum(x2)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1" opacity="0.7" fill="none"/>`;
+}
+
+/** Witness line from a garment point toward a dimension line, stopping short of the end cap. */
+function extTowardDim(
+  garmentX: number,
+  garmentY: number,
+  dimX: number,
+  dimY: number,
+): string {
+  const dx = dimX - garmentX;
+  const dy = dimY - garmentY;
+  const horizontal = Math.abs(dx) >= Math.abs(dy);
+  if (horizontal) {
+    const startX = toward(garmentX, dimX, CARDIGAN_DIM.extStandoff);
+    const endX = toward(dimX, garmentX, CARDIGAN_DIM.extGap);
+    return dimExtension(startX, garmentY, endX, garmentY);
+  }
+  const startY = toward(garmentY, dimY, CARDIGAN_DIM.extStandoff);
+  const endY = toward(dimY, garmentY, CARDIGAN_DIM.extGap);
+  return dimExtension(garmentX, startY, garmentX, endY);
+}
+
+function stackedSectionEnds(
+  startY: number,
+  endY: number,
+  insetStart: boolean,
+  insetEnd: boolean,
+): { top: number; bot: number } {
+  const top = Math.min(startY, endY);
+  const bot = Math.max(startY, endY);
+  const maxInset = Math.max(0, (bot - top) / 2 - 3);
+  const sep = Math.min(CARDIGAN_DIM.capSep, maxInset);
+  return {
+    top: top + (insetStart ? sep : 0),
+    bot: bot - (insetEnd ? sep : 0),
+  };
+}
+
+function cardiganDimLayout(frame: SidewaysCardiganEditMeasurementFrame) {
+  const bustX = Math.max(18, frame.hemX - CARDIGAN_DIM.bustLane);
+  const sectionDimX = frame.hemX - CARDIGAN_DIM.sectionLane;
+  const neckDimX = frame.neckX + CARDIGAN_DIM.neckLane;
+  return {
+    bustX,
+    sectionDimX,
+    neckDimX,
+    lengthY: frame.bottomY + CARDIGAN_DIM.lengthOffset,
+    sectionLabelX: sectionDimX + 10,
+    neckLabelX: neckDimX + 10,
+    firstFront: stackedSectionEnds(frame.topY, frame.firstArmholeY, false, true),
+    back: stackedSectionEnds(frame.firstArmholeY, frame.secondArmholeY, true, true),
+    secondFront: stackedSectionEnds(frame.secondArmholeY, frame.bottomY, true, false),
+  };
 }
 
 function targetCircle(id: string, x: number, y: number): string {
@@ -482,27 +557,27 @@ function drawCardiganDimensions(
   unit: MeasurementDisplayUnit,
 ): string {
   const derived = frame.derived;
-  const bustX = Math.max(18, frame.hemX - 48);
-  const sectionDimX = frame.hemX + 18;
-  const neckDimX = frame.neckX + 18;
-  const labelX = neckDimX + 10;
+  const layout = cardiganDimLayout(frame);
+  const { bustX, sectionDimX, neckDimX, lengthY, sectionLabelX, neckLabelX } = layout;
   const firstFrontMidY = (frame.topY + frame.firstArmholeY) / 2;
   const backMidY = (frame.firstArmholeY + frame.secondArmholeY) / 2;
   const secondFrontMidY = (frame.secondArmholeY + frame.bottomY) / 2;
-  const firstBackShoulderMidY = (frame.firstArmholeY + frame.backNeckStartY) / 2;
   const halfNeckTop = frame.secondVStartY;
   const halfNeckBot = frame.bottomY;
   const halfNeckMidY = (halfNeckTop + halfNeckBot) / 2;
   const shoulderMidY = (frame.secondArmholeY + frame.secondVStartY) / 2;
   const armholeDimY = frame.firstArmholeY - 16;
+  const vDepthY = frame.bottomY + 32;
+  const outerExtStartX = toward(sectionDimX, bustX, CARDIGAN_DIM.extGap + 2);
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
     // Finished back length is garmentLengthInches (chart back_neck_to_hem): the
     // full hem-to-neck-edge span. Back-neck depth is bound off from that neck
-    // edge, so this line includes the back-neck depth.
-    hDim(frame.hemX, frame.neckX, firstBackShoulderMidY, "dim-finished-back-length"),
+    // edge, so this line includes the back-neck depth. Drawn below the body so
+    // it cannot read as a seam or section boundary.
+    hDim(frame.hemX, frame.neckX, lengthY, "dim-finished-back-length"),
     vDim(neckDimX, frame.backNeckStartY, frame.backNeckEndY, "dim-neck-opening"),
-    hDim(frame.vCutX, frame.neckX, frame.bottomY + 32, "dim-vneck-depth"),
+    hDim(frame.vCutX, frame.neckX, vDepthY, "dim-vneck-depth"),
     hDim(
       frame.armholeX,
       frame.neckX,
@@ -512,11 +587,53 @@ function drawCardiganDimensions(
     ),
     vDim(neckDimX, frame.secondArmholeY, frame.secondVStartY, "dim-shoulder-section"),
     vDim(neckDimX, halfNeckTop, halfNeckBot, "dim-half-neck-opening"),
-    vDim(sectionDimX, frame.topY, frame.firstArmholeY, "dim-front-section", ` data-side="first"`),
-    vDim(sectionDimX, frame.firstArmholeY, frame.secondArmholeY, "dim-back-section"),
-    vDim(sectionDimX, frame.secondArmholeY, frame.bottomY, "dim-front-section", ` data-side="second"`),
+    vDim(
+      sectionDimX,
+      layout.firstFront.top,
+      layout.firstFront.bot,
+      "dim-front-section",
+      ` data-side="first"`,
+    ),
+    vDim(sectionDimX, layout.back.top, layout.back.bot, "dim-back-section"),
+    vDim(
+      sectionDimX,
+      layout.secondFront.top,
+      layout.secondFront.bot,
+      "dim-front-section",
+      ` data-side="second"`,
+    ),
+    extTowardDim(frame.hemX, frame.topY, sectionDimX, frame.topY),
+    extTowardDim(frame.hemX, frame.firstArmholeY, sectionDimX, frame.firstArmholeY),
+    extTowardDim(frame.hemX, frame.secondArmholeY, sectionDimX, frame.secondArmholeY),
+    extTowardDim(frame.hemX, frame.bottomY, sectionDimX, frame.bottomY),
+    dimExtension(
+      outerExtStartX,
+      frame.topY,
+      toward(bustX, sectionDimX, CARDIGAN_DIM.extGap),
+      frame.topY,
+    ),
+    dimExtension(
+      outerExtStartX,
+      frame.bottomY,
+      toward(bustX, sectionDimX, CARDIGAN_DIM.extGap),
+      frame.bottomY,
+    ),
+    extTowardDim(frame.hemX, frame.bottomY, frame.hemX, lengthY),
+    extTowardDim(
+      frame.neckX,
+      vDepthY + CARDIGAN_DIM.extGap + 4,
+      frame.neckX,
+      lengthY,
+    ),
+    extTowardDim(frame.neckX, frame.backNeckStartY, neckDimX, frame.backNeckStartY),
+    extTowardDim(frame.neckX, frame.backNeckEndY, neckDimX, frame.backNeckEndY),
+    extTowardDim(frame.neckX, frame.secondArmholeY, neckDimX, frame.secondArmholeY),
+    extTowardDim(frame.neckX, frame.secondVStartY, neckDimX, frame.secondVStartY),
+    extTowardDim(frame.neckX, frame.bottomY, neckDimX, frame.bottomY),
+    extTowardDim(frame.vCutX, frame.bottomY, frame.vCutX, vDepthY),
+    extTowardDim(frame.armholeX, frame.firstArmholeY, frame.armholeX, armholeDimY),
     derivedValueLabel(
-      labelX,
+      neckLabelX,
       shoulderMidY - 4,
       "Shoulder",
       derived.shoulderSectionInches,
@@ -524,7 +641,7 @@ function drawCardiganDimensions(
       SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection,
     ),
     derivedValueLabel(
-      labelX,
+      neckLabelX,
       halfNeckMidY - 4,
       "½ neck opening",
       derived.halfNeckOpeningInches,
@@ -532,7 +649,7 @@ function drawCardiganDimensions(
       SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening,
     ),
     derivedValueLabel(
-      sectionDimX + 10,
+      sectionLabelX,
       firstFrontMidY - 4,
       "Front",
       derived.frontSectionInches,
@@ -540,16 +657,15 @@ function drawCardiganDimensions(
       SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
     ),
     derivedValueLabel(
-      (frame.hemX + frame.neckX) / 2,
+      sectionLabelX,
       backMidY - 4,
       "Back",
       derived.backSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection,
-      "middle",
     ),
     derivedValueLabel(
-      sectionDimX + 10,
+      sectionLabelX,
       secondFrontMidY - 4,
       "Front",
       derived.frontSectionInches,
@@ -584,14 +700,13 @@ function drawPulloverTargets(frame: SidewaysCardiganEditMeasurementFrame): strin
 
 function drawCardiganTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
   const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
-  const bustX = Math.max(18, frame.hemX - 48);
-  const firstBackShoulderMidY = (frame.firstArmholeY + frame.backNeckStartY) / 2;
+  const { bustX, neckDimX, lengthY } = cardiganDimLayout(frame);
   const armholeDimY = frame.firstArmholeY - 16;
   return [
     `<g data-role="measurement-targets">`,
     targetCircle(t.finishedBust, bustX, (frame.topY + frame.bottomY) / 2),
-    targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, firstBackShoulderMidY),
-    targetCircle(t.neckOpeningWidth, frame.neckX + 18, (frame.backNeckStartY + frame.backNeckEndY) / 2),
+    targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, lengthY),
+    targetCircle(t.neckOpeningWidth, neckDimX, (frame.backNeckStartY + frame.backNeckEndY) / 2),
     targetCircle(t.vNeckDepth, (frame.vCutX + frame.neckX) / 2, frame.bottomY + 32),
     targetCircle(t.armholeDepth, (frame.armholeX + frame.neckX) / 2, armholeDimY),
     `</g>`,
@@ -614,7 +729,8 @@ function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): { width: numbe
     };
   }
   const maxX = frame.neckX + 168;
-  const maxY = frame.bottomY + 86;
+  const lengthY = frame.bottomY + CARDIGAN_DIM.lengthOffset;
+  const maxY = Math.max(frame.bottomY + 86, lengthY + 16);
   return {
     width: Math.ceil(Math.max(maxX, PAD.left + frame.bodyW + PAD.right)),
     height: Math.ceil(maxY),

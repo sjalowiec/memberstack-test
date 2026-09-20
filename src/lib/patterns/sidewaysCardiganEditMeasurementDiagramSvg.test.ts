@@ -216,20 +216,130 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       expect(diagramGeometryStaysInsideViewBox(drawing)).toBe(true);
     }
   });
+
+  it("keeps Cardigan width dimensions in outer/inner lanes with independent end caps", () => {
+    const svg = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "cardigan",
+      measurements: {
+        ...BASE,
+        finishedBustInches: 40,
+        finishedLengthInches: 16.75,
+        neckOpeningWidthInches: 7,
+        finishedUpperArmInches: 14,
+      },
+    });
+    const hemX = Number(/data-role="center-front-start"[^>]*x1="([^"]+)"/.exec(svg)?.[1]);
+    const firstArmholeY = Number(/data-role="first-front"[^>]*y1="([^"]+)"/.exec(svg)?.[1]);
+    const secondArmholeY = Number(/data-role="back-panel"[^>]*y1="([^"]+)"/.exec(svg)?.[1]);
+    const bust = dimLineFromGroup(dimGroup(svg, "dim-finished-bust"));
+    const front1 = dimLineFromGroup(dimGroup(svg, "dim-front-section", "first"));
+    const back = dimLineFromGroup(dimGroup(svg, "dim-back-section"));
+    const front2 = dimLineFromGroup(dimGroup(svg, "dim-front-section", "second"));
+    expect(hemX).toBeGreaterThan(0);
+    expect(bust).not.toBeNull();
+    expect(front1).not.toBeNull();
+    expect(back).not.toBeNull();
+    expect(front2).not.toBeNull();
+    expect(endCapCount(dimGroup(svg, "dim-finished-bust"))).toBe(2);
+    expect(endCapCount(dimGroup(svg, "dim-front-section", "first"))).toBe(2);
+    expect(endCapCount(dimGroup(svg, "dim-back-section"))).toBe(2);
+    expect(endCapCount(dimGroup(svg, "dim-front-section", "second"))).toBe(2);
+    expect(front1!.x1).toBe(back!.x1);
+    expect(front2!.x1).toBe(back!.x1);
+    expect(front1!.x1).toBeLessThan(hemX);
+    expect(bust!.x1).toBeLessThan(front1!.x1);
+    expect(front1!.y2).toBeLessThan(back!.y1);
+    expect(back!.y2).toBeLessThan(front2!.y1);
+    expect(back!.y1 - front1!.y2).toBeGreaterThanOrEqual(8);
+    expect(front2!.y1 - back!.y2).toBeGreaterThanOrEqual(8);
+    expect(front1!.y2).toBeLessThan(firstArmholeY);
+    expect(back!.y1).toBeGreaterThan(firstArmholeY);
+    expect(back!.y2).toBeLessThan(secondArmholeY);
+    expect(front2!.y1).toBeGreaterThan(secondArmholeY);
+    expect(svg).toContain('data-role="dim-extension"');
+    expect(svg).toContain('data-derived-inches="10"');
+    expect(svg).toContain('data-derived-inches="20"');
+
+    const frontXs = [...svg.matchAll(/data-role="derived-front-section"[^>]*x="([^"]+)"/g)].map(
+      (m) => m[1],
+    );
+    const backMatch = /data-role="derived-back-section"[^>]*x="([^"]+)"/.exec(svg);
+    const backAnchor = /data-role="derived-back-section"[^>]*text-anchor="([^"]+)"/.exec(svg);
+    const frontAnchor = /data-role="derived-front-section"[^>]*text-anchor="([^"]+)"/.exec(svg);
+    expect(frontXs.length).toBeGreaterThanOrEqual(2);
+    expect(backMatch?.[1]).toBe(frontXs[0]);
+    expect(frontXs[0]).toBe(frontXs[1]);
+    expect(backAnchor?.[1]).toBe(frontAnchor?.[1]);
+    expect(Number(frontXs[0])).toBeLessThan(hemX + 20);
+    const bodyMidX =
+      (hemX + Number(/data-role="first-front"[^>]*x2="([^"]+)"/.exec(svg)?.[1])) / 2;
+    expect(Number(backMatch?.[1])).toBeLessThan(bodyMidX - 40);
+  });
+
+  it("draws Finished back length as a separate hem-to-neck dimension below the body", () => {
+    const svg = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "cardigan",
+      measurements: {
+        ...BASE,
+        finishedBustInches: 40,
+        finishedLengthInches: 16.75,
+        neckOpeningWidthInches: 7,
+        finishedUpperArmInches: 14,
+      },
+    });
+    const hemX = Number(/data-role="center-front-start"[^>]*x1="([^"]+)"/.exec(svg)?.[1]);
+    const neckX = Number(/data-role="first-front"[^>]*x2="([^"]+)"/.exec(svg)?.[1]);
+    const bottomY = Number(/data-role="center-front-end"[^>]*y1="([^"]+)"/.exec(svg)?.[1]);
+    const topY = Number(/data-role="center-front-start"[^>]*y1="([^"]+)"/.exec(svg)?.[1]);
+    const firstArmholeY = Number(/data-role="first-front"[^>]*y1="([^"]+)"/.exec(svg)?.[1]);
+    const secondArmholeY = Number(/data-role="back-panel"[^>]*y1="([^"]+)"/.exec(svg)?.[1]);
+    const group = dimGroup(svg, "dim-finished-back-length");
+    const length = dimLineFromGroup(group);
+    expect(length).not.toBeNull();
+    expect(endCapCount(group)).toBe(2);
+    expect(length!.y1).toBe(length!.y2);
+    expect(length!.x1).toBeCloseTo(hemX, 1);
+    expect(length!.x2).toBeCloseTo(neckX, 1);
+    expect(length!.y1).toBeGreaterThan(bottomY + 8);
+    expect(length!.y1).not.toBe(topY);
+    expect(length!.y1).not.toBe(firstArmholeY);
+    expect(length!.y1).not.toBe(secondArmholeY);
+    expect(length!.y1).not.toBe(bottomY);
+    const target = new RegExp(
+      `<circle id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedLength}" cx="([^"]+)" cy="([^"]+)"`,
+    ).exec(svg);
+    expect(Number(target?.[1])).toBeCloseTo((hemX + neckX) / 2, 1);
+    expect(Number(target?.[2])).toBeCloseTo(length!.y1, 1);
+  });
 });
 
-function dimSegment(svg: string, role: string): { length: number } | null {
+function dimGroup(svg: string, role: string, side?: string): string {
+  const sideAttr = side ? ` data-side="${side}"` : "";
   const re = new RegExp(
-    `data-role="${role}"[\\s\\S]*?<line x1="([^"]+)" y1="([^"]+)" x2="([^"]+)" y2="([^"]+)"`,
+    `<g class="ds-edit-dim" data-role="${role}"${sideAttr}[\\s\\S]*?</g>`,
   );
-  const m = re.exec(svg);
+  return re.exec(svg)?.[0] ?? "";
+}
+
+function dimLineFromGroup(group: string): { x1: number; y1: number; x2: number; y2: number } | null {
+  const m = /<line x1="([^"]+)" y1="([^"]+)" x2="([^"]+)" y2="([^"]+)"/.exec(group);
   if (!m) return null;
   const x1 = Number(m[1]);
   const y1 = Number(m[2]);
   const x2 = Number(m[3]);
   const y2 = Number(m[4]);
   if (![x1, y1, x2, y2].every(Number.isFinite)) return null;
-  return { length: Math.hypot(x2 - x1, y2 - y1) };
+  return { x1, y1, x2, y2 };
+}
+
+function endCapCount(group: string): number {
+  return (group.match(/<rect /g) ?? []).length;
+}
+
+function dimSegment(svg: string, role: string): { length: number } | null {
+  const line = dimLineFromGroup(dimGroup(svg, role));
+  if (!line) return null;
+  return { length: Math.hypot(line.x2 - line.x1, line.y2 - line.y1) };
 }
 
 function diagramGeometryStaysInsideViewBox(svg: string): boolean {
