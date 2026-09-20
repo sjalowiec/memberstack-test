@@ -44,6 +44,18 @@ import {
   sidewaysCardiganSummaryPrimarySuccessHref,
 } from "../lib/patterns/sidewaysCardiganPatternNavigation";
 import { inspectSidewaysCardiganBodyCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganFinishedMeasurements";
+import {
+  applySidewaysCardiganSummaryMeasurementEdits,
+  applySidewaysCardiganSummaryQuickEdits,
+  buildSidewaysCardiganSummaryDiagramInput,
+  displaySidewaysCardiganSummaryMeasurements,
+  emptySidewaysCardiganSummaryMeasurements,
+  readSidewaysCardiganSummaryMeasurements,
+  SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
+  summaryMeasurementsToInches,
+  type SidewaysCardiganSummaryMeasurementKey,
+  type SidewaysCardiganSummaryMeasurements,
+} from "../lib/patterns/sidewaysCardiganSummaryEdit";
 import { mergeSidewaysCardiganWorkingDraft } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
 import { bindPatternProjectNotesField } from "../lib/patterns/patternProjectNotesField";
 import {
