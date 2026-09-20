@@ -154,6 +154,16 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(summaryPage).toContain("PatternSummaryMeasurementChip");
   });
 
+  it("imports Summary/Edit helpers so the page can unhide the workspace after a build", () => {
+    expect(summaryScript).toContain('from "../lib/patterns/sidewaysCardiganSummaryEdit"');
+    expect(summaryScript).toContain("readSidewaysCardiganSummaryMeasurements");
+    expect(summaryScript).toContain("emptySidewaysCardiganSummaryMeasurements");
+    expect(summaryScript).toContain("SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS");
+    expect(summaryScript).toContain("applySidewaysCardiganSummaryQuickEdits");
+    expect(summaryScript).toContain("applySidewaysCardiganSummaryMeasurementEdits");
+    expect(summaryScript).toContain("buildSidewaysCardiganSummaryDiagramInput");
+  });
+
   it("opens Summary/Edit after a new Pullover build, not knitting instructions", () => {
     saveBuild(pulloverValues);
     expect(getCurrentPattern().style.garmentStyle).toBe("pullover");
