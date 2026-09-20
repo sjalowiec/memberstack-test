@@ -43,6 +43,9 @@ export const SLEEVELESS_PATTERN_FAMILY_NAME = "Sleeveless";
 /** Family name used for drop-shoulder construction patterns. */
 export const DROP_SHOULDER_PATTERN_FAMILY_NAME = "Drop Shoulder";
 
+/** Family name used for Sideways V-Neck construction patterns. */
+export const SIDEWAYS_V_NECK_PATTERN_FAMILY_NAME = "Sideways V-Neck";
+
 /** True when the pattern's style is a drop-shoulder construction. */
 function isDropShoulderPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): boolean {
   return hasAuthoritativeDropShoulderConstruction(
@@ -50,8 +53,18 @@ function isDropShoulderPattern(pattern: SleevelessPatternRecord = getCurrentPatt
   );
 }
 
+/** True when the working draft is an authored Sideways V-Neck construction. */
+function isSidewaysCardiganPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): boolean {
+  const style = (pattern.style ?? {}) as Record<string, unknown>;
+  return (
+    style.construction === "sideways-cardigan" &&
+    style.constructionAuthored === "sideways-cardigan"
+  );
+}
+
 /** Family name for auto-titles, by construction. */
 function patternFamilyNameForPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): string {
+  if (isSidewaysCardiganPattern(pattern)) return SIDEWAYS_V_NECK_PATTERN_FAMILY_NAME;
   return isDropShoulderPattern(pattern)
     ? DROP_SHOULDER_PATTERN_FAMILY_NAME
     : SLEEVELESS_PATTERN_FAMILY_NAME;
@@ -265,8 +278,18 @@ export function refreshAutoPatternProjectTitle(
   ctx: SleevelessPatternTitleContext = inferSleevelessPatternTitleContext(),
 ): SleevelessPatternProjectMeta {
   const current = getPatternProjectMeta();
-  if (current.titleCustomized) return current;
-  const title = buildDefaultSleevelessPatternTitle(ctx, patternFamilyNameForPattern());
+  const family = patternFamilyNameForPattern();
+  const title = buildDefaultSleevelessPatternTitle(ctx, family);
+  if (current.titleCustomized) {
+    const leftoverOtherFamilyAuto = [
+      SLEEVELESS_PATTERN_FAMILY_NAME,
+      DROP_SHOULDER_PATTERN_FAMILY_NAME,
+      SIDEWAYS_V_NECK_PATTERN_FAMILY_NAME,
+    ]
+      .filter((other) => other !== family)
+      .some((other) => current.title.trim() === buildDefaultSleevelessPatternTitle(ctx, other));
+    if (!leftoverOtherFamilyAuto) return current;
+  }
   return savePatternProjectMeta({ title, titleCustomized: false });
 }
 

@@ -1,7 +1,7 @@
 /**
  * Sideways V-Neck Summary/Edit page — shared sweater workspace.
  * Quick edits, Body/Sleeve tabs, and chips reuse Drop Shoulder helpers.
- * Update Pattern persists overrides and opens knitting-instruction workspace.
+ * Save Changes persists overrides and opens knitting-instruction workspace.
  */
 
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
@@ -60,6 +60,7 @@ import { mergeSidewaysCardiganWorkingDraft } from "../lib/patterns/sidewaysCardi
 import { bindPatternProjectNotesField } from "../lib/patterns/patternProjectNotesField";
 import {
   getPatternProjectMeta,
+  refreshAutoPatternProjectTitle,
   resolvePatternProjectSaveNameFromState,
   savePatternProjectMeta,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
@@ -208,8 +209,19 @@ export function initSidewaysCardiganSummaryPage(): void {
   })();
 }
 
+function stampSidewaysSummaryMeasureShell(): void {
+  const editor = document.querySelector("[data-sideways-workspace-measure-summary]");
+  const page =
+    editor?.closest(".cb-measure-page, .express-measurements-confirm-page") ??
+    document.querySelector(".cb-measure-page");
+  if (page instanceof HTMLElement) {
+    page.setAttribute("data-express-construction", "sideways-cardigan");
+  }
+}
+
 function initWorkspace(root: HTMLElement): void {
   stampSidewaysCardiganWorkingDraftFromPage();
+  stampSidewaysSummaryMeasureShell();
   let state = readSidewaysCardiganBuilderStateFromDraft();
   const stored = readSidewaysCardiganSummaryMeasurements();
   if (!stored.finishedLength || !stored.finishedBust) {
@@ -304,7 +316,7 @@ function initWorkspace(root: HTMLElement): void {
   }
 
   function fillProjectDetails(): void {
-    const meta = getPatternProjectMeta();
+    const meta = refreshAutoPatternProjectTitle();
     if (titleInput) titleInput.value = meta.title || resolvePatternProjectSaveNameFromState();
     notesFieldApi.setNotes(meta.notes);
   }

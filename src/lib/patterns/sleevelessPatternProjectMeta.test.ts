@@ -7,6 +7,7 @@ import {
   DROP_SHOULDER_CONSTRUCTION,
   withDropShoulderConstructionAuthored,
 } from "./patternConstructionIdentity";
+import { withSidewaysCardiganConstructionAuthored } from "./sidewaysCardiganConstructionIdentity";
 import { saveCurrentPattern } from "./patternStorage";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
@@ -16,6 +17,7 @@ import {
   getPatternProjectPrintFields,
   getSleevelessPatternOnlineHeading,
   getSleevelessPatternOnlineNotesText,
+  refreshAutoPatternProjectTitle,
   resetPatternProjectMetaForNewDraft,
   resolvePatternDisplayName,
   resolvePatternPrintDocumentTitle,
@@ -116,6 +118,15 @@ describe("buildDefaultSleevelessPatternTitle", () => {
     ).toBe("Kids' Drop Shoulder");
   });
 
+  it("uses the provided pattern family for Sideways V-Neck", () => {
+    expect(
+      buildDefaultSleevelessPatternTitle({ who: "women" }, "Sideways V-Neck"),
+    ).toBe("Women's Sideways V-Neck");
+    expect(
+      buildDefaultSleevelessPatternTitle({ chartAudience: "misses" }, "Sideways V-Neck"),
+    ).toBe("Women's Sideways V-Neck");
+  });
+
   it("falls back to family only when audience is unknown", () => {
     expect(buildDefaultSleevelessPatternTitle({})).toBe("Sleeveless");
     expect(buildDefaultSleevelessPatternTitle({}, "Drop Shoulder")).toBe("Drop Shoulder");
@@ -199,6 +210,29 @@ describe("resolvePatternProjectSaveName", () => {
       patternProject: { title: "", notes: "" },
     });
     expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Sleeveless");
+  });
+
+  it("uses Sideways V-Neck family in the auto title for a sideways construction draft", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "8" },
+      style: withSidewaysCardiganConstructionAuthored({
+        garmentStyle: "cardigan",
+      }),
+      patternProject: { title: "", notes: "" },
+    });
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Sideways V-Neck");
+  });
+
+  it("replaces a leftover Sleeveless auto title when the draft is a Sideways construction", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "8" },
+      style: withSidewaysCardiganConstructionAuthored({
+        garmentStyle: "cardigan",
+      }),
+      patternProject: { title: "Women's Sleeveless", notes: "", titleCustomized: true },
+    });
+    expect(refreshAutoPatternProjectTitle().title).toBe("Women's Sideways V-Neck");
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Sideways V-Neck");
   });
 
   it("prefers a non-empty edit drawer title over state fallbacks", () => {
