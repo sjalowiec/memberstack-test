@@ -5,7 +5,7 @@
  */
 
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
-import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
+import { persistSidewaysCardiganSummaryProject } from "../lib/patterns/sidewaysCardiganSummarySave";
 import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import {
@@ -41,7 +41,6 @@ import {
   sidewaysCardiganSummaryCancelHref,
   sidewaysCardiganSummaryCancelLabel,
   sidewaysCardiganSummaryHint,
-  sidewaysCardiganSummaryPrimarySuccessHref,
 } from "../lib/patterns/sidewaysCardiganPatternNavigation";
 import { inspectSidewaysCardiganBodyCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganFinishedMeasurements";
 import {
@@ -586,18 +585,12 @@ function initWorkspace(root: HTMLElement): void {
         titleCustomized: enteredTitle ? true : prevMeta.titleCustomized,
       });
       persistSummaryGauge(displayUnit, spiInput?.value.trim() ?? "", rpiInput?.value.trim() ?? "", needlesInput?.value.trim() ?? "");
-      const activeId = readActiveCustomPatternProjectId();
-      if (activeId) {
-        const saveRes = await runSaveCustomPatternFromWorkspace(undefined, {
-          skipPreSavePrepare: true,
-          activeProjectId: activeId,
-        });
-        if (!saveRes.ok) {
-          showEditError(saveRes.error);
-          return;
-        }
+      const saveRes = await persistSidewaysCardiganSummaryProject(workspace);
+      if (!saveRes.ok) {
+        showEditError(saveRes.error);
+        return;
       }
-      window.location.assign(sidewaysCardiganSummaryPrimarySuccessHref(activeId));
+      window.location.assign(saveRes.href);
     })();
   });
 }

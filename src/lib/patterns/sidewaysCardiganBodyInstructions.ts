@@ -1,15 +1,15 @@
 /**
  * Numeric Sideways Cardigan body instruction model.
  *
- * V-neck short-row shaping uses {@link calculateSlopeShaping}: every-other-row actions
- * across the even half-neck row count. The first V returns held stitches using
- * `slope.sequence`; the matching V places stitches into hold using that sequence reversed.
- * {@link evenShapingSchedule} is not used: it cannot place more shaping actions than rows.
+ * V-neck short-row shaping returns (or holds) V-neck-depth stitches every other row
+ * across the even half-neck row count. Action count is ceil(halfNeckRows / 2). Stitches
+ * are compared to that action count, not to the row count — depth is a stitch-gauge
+ * measurement and half-neck width is a row-gauge measurement.
  *
  * Armhole bind-off/cast-on and back-neck bind-off/cast-on do not add measured row sections.
  */
 
-import { calculateSlopeShaping } from "./legoBlocks/slopeShaping";
+import { distributeTotalAcrossRows } from "./distributeTotalAcrossRows";
 import {
   calculateSidewaysCardiganBody,
   type SidewaysCardiganBodyCalc,
@@ -68,6 +68,7 @@ export type SidewaysCardiganBodyInstructionError =
       message: string;
       vNeckDepthStitches: number;
       halfNeckRows: number;
+      shapingActions: number;
     };
 
 export type SidewaysCardiganVNeckSchedule = {
@@ -575,6 +576,50 @@ function buildPulloverSteps(args: {
   return steps;
 }
 
+/** Every-other-row short-row actions available in an even V-neck section. */
+export function sidewaysVNeckShapingActions(halfNeckRows: number): number {
+  return Math.ceil(halfNeckRows / 2);
+}
+
+/**
+ * Distribute V-neck-depth stitches across every-other-row actions.
+ * Compares stitches to action count, not to the half-neck row count.
+ */
+export function buildSidewaysVNeckSlopeSequence(
+  vNeckDepthStitches: number,
+  halfNeckRows: number,
+):
+  | { ok: true; sequence: number[]; shapingActions: number; rowInterval: 2 }
+  | {
+      ok: false;
+      vNeckDepthStitches: number;
+      halfNeckRows: number;
+      shapingActions: number;
+    } {
+  const shapingActions = sidewaysVNeckShapingActions(halfNeckRows);
+  if (
+    !Number.isInteger(vNeckDepthStitches) ||
+    vNeckDepthStitches < 1 ||
+    !Number.isInteger(halfNeckRows) ||
+    halfNeckRows < 2 ||
+    halfNeckRows % 2 !== 0 ||
+    vNeckDepthStitches < shapingActions
+  ) {
+    return {
+      ok: false,
+      vNeckDepthStitches,
+      halfNeckRows,
+      shapingActions,
+    };
+  }
+  return {
+    ok: true,
+    sequence: distributeTotalAcrossRows(vNeckDepthStitches, shapingActions),
+    shapingActions,
+    rowInterval: 2,
+  };
+}
+
 export function buildSidewaysCardiganBodyInstructions(
   input: SidewaysCardiganBodyCalcInput,
   garmentStyle: SidewaysCardiganGarmentStyle | unknown = SIDEWAYS_CARDIGAN_GARMENT_STYLE_DEFAULT,
@@ -641,16 +686,17 @@ export function buildSidewaysCardiganBodyInstructions(
 
   const vRows = calc.halfNeckRows;
   const backNeckRows = calc.backNeckOpeningRows;
-  const slope = calculateSlopeShaping(calc.vNeckDepthStitches, vRows);
+  const slope = buildSidewaysVNeckSlopeSequence(calc.vNeckDepthStitches, vRows);
   if (!slope.ok) {
     return {
       ok: false,
       error: {
         code: SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE,
         message:
-          "V-neck depth stitches must exceed the even half-neck rows so short-row slope shaping can return stitches from hold every other row.",
+          "There are not enough V-neck stitches to work short-row shaping every other row across this neck opening. Deepen the V-neck or narrow the neck opening.",
         vNeckDepthStitches: calc.vNeckDepthStitches,
         halfNeckRows: vRows,
+        shapingActions: slope.shapingActions,
       },
     };
   }

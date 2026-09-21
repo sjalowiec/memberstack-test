@@ -12,6 +12,7 @@ import {
   SIDEWAYS_CARDIGAN_NON_POSITIVE_STARTING_STITCHES,
   SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE,
   SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE,
+  sidewaysVNeckShapingActions,
 } from "./sidewaysCardiganBodyInstructions";
 import { SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
@@ -258,6 +259,12 @@ describe("sideways cardigan body instruction model", () => {
     expect(notSlope.ok).toBe(false);
     if (notSlope.ok) throw new Error("expected slope error");
     expect(notSlope.error.code).toBe(SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE);
+    if (notSlope.error.code === SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE) {
+      expect(notSlope.error.vNeckDepthStitches).toBe(10);
+      expect(notSlope.error.halfNeckRows).toBe(26);
+      expect(notSlope.error.shapingActions).toBe(13);
+    }
+    expect(notSlope.error.message).not.toMatch(/must exceed the even half-neck rows/i);
   });
 });
 
@@ -403,5 +410,65 @@ describe("sideways pullover body instruction model", () => {
     const cardiganHtml = renderSidewaysCardiganBodySequenceHtml(cardigan);
     expect(cardiganHtml).toMatch(/starts at center front/i);
     expect(cardiganHtml).toMatch(/two knitted armhole slits/i);
+  });
+
+  it("keeps a chart-depth Pullover BODY when V-neck stitches are not greater than half-neck rows", () => {
+    const chartDepth: SidewaysCardiganBodyCalcInput = {
+      garmentLengthInches: 25,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 46,
+      finishedUpperArmInches: 14.5,
+      neckOpeningWidthInches: 7.5,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    };
+    const calcResult = calculateSidewaysCardiganBody(chartDepth);
+    expect(calcResult.ok).toBe(true);
+    if (!calcResult.ok) throw new Error(calcResult.error.message);
+    const { calc } = calcResult;
+    expect(calc.vNeckDepthStitches).toBe(26);
+    expect(calc.rawHalfNeckRows).toBe(26);
+    expect(calc.halfNeckRows).toBe(26);
+    expect(sidewaysVNeckShapingActions(calc.halfNeckRows)).toBe(13);
+    expect(calculateSlopeShaping(calc.vNeckDepthStitches, calc.halfNeckRows).ok).toBe(false);
+
+    const result = buildSidewaysCardiganBodyInstructions(chartDepth, "pullover");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.instructions.increaseSequence).toEqual(Array(13).fill(2));
+    expect(result.instructions.decreaseSequence).toEqual(Array(13).fill(2));
+    const html = renderSidewaysCardiganBodySequenceHtml(result.instructions);
+    expect(html).toContain("sideways-body-sequence");
+    expect(html).toMatch(/starts at a side seam/i);
+  });
+
+  it("builds Cardigan short-row V shaping from 26 stitches across 13 EOR actions, not 26 rows", () => {
+    const sueCardigan: SidewaysCardiganBodyCalcInput = {
+      garmentLengthInches: 25,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 46,
+      finishedUpperArmInches: 14.5,
+      neckOpeningWidthInches: 7.5,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    };
+    const calcResult = calculateSidewaysCardiganBody(sueCardigan);
+    expect(calcResult.ok).toBe(true);
+    if (!calcResult.ok) throw new Error(calcResult.error.message);
+    expect(calcResult.calc.vNeckDepthStitches).toBe(26);
+    expect(calcResult.calc.rawHalfNeckRows).toBe(26);
+    expect(calcResult.calc.halfNeckRows).toBe(26);
+    expect(sidewaysVNeckShapingActions(26)).toBe(13);
+    expect(calculateSlopeShaping(26, 26).ok).toBe(false);
+
+    const result = buildSidewaysCardiganBodyInstructions(sueCardigan, "cardigan");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.instructions.garmentStyle).toBe("cardigan");
+    expect(result.instructions.firstV.shapingActions).toBe(13);
+    expect(result.instructions.increaseSequence).toEqual(Array(13).fill(2));
+    expect(result.instructions.decreaseSequence).toEqual(Array(13).fill(2));
   });
 });

@@ -25,6 +25,7 @@ import {
   resolvePatternProjectSaveNameFromState,
   sanitizePatternPrintFilenameTitle,
   SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK,
+  SIDEWAYS_V_NECK_PATTERN_ONLINE_HEADING_FALLBACK,
 } from "./sleevelessPatternProjectMeta";
 import {
   EXPRESS_EDITING_FALLBACK_LABEL,
@@ -363,6 +364,51 @@ describe("resolvePatternDisplayName — saved name is source of truth", () => {
         "Drop Shoulder Sweater Pattern | Knit it Now",
       ),
     ).toBe("Cynthia's Drop Shoulder");
+  });
+
+  it("uses a named saved Sideways pattern title for the online heading", () => {
+    saveCurrentPattern({
+      style: withSidewaysCardiganConstructionAuthored(
+        { garmentStyle: "pullover", patternMode: "express" },
+        "cuff-up",
+        "pullover",
+      ),
+      fit: { sizingChart: "misses", selectedSize: "8" },
+      patternProject: { title: "Sue's V-neck pullover", notes: "", titleCustomized: true },
+    });
+    writeActiveCustomPatternProjectId("proj-sw", "Sue's V-neck pullover");
+
+    expect(resolvePatternDisplayName()).toBe("Sue's V-neck pullover");
+    expect(getPatternProjectPrintFields().title).toBe("Sue's V-neck pullover");
+    expect(getSleevelessPatternOnlineHeading(getPatternProjectMeta())).toBe(
+      "Sue's V-neck pullover",
+    );
+  });
+
+  it("uses Sue's Sideways V-Neck as the Cardigan pattern-page heading", () => {
+    saveCurrentPattern({
+      style: withSidewaysCardiganConstructionAuthored(
+        { garmentStyle: "cardigan", patternMode: "express" },
+        "cuff-up",
+        "cardigan",
+      ),
+      fit: { sizingChart: "misses", selectedSize: "8" },
+      patternProject: { title: "Sue's Sideways V-Neck", notes: "", titleCustomized: true },
+    });
+    writeActiveCustomPatternProjectId("proj-sw-cardigan", "Sue's Sideways V-Neck");
+    expect(getSleevelessPatternOnlineHeading(getPatternProjectMeta())).toBe(
+      "Sue's Sideways V-Neck",
+    );
+  });
+
+  it("uses the Sideways online heading fallback when the sideways draft has no title", () => {
+    saveCurrentPattern({
+      style: withSidewaysCardiganConstructionAuthored({ garmentStyle: "pullover" }, "cuff-up", "pullover"),
+      patternProject: { title: "", notes: "" },
+    });
+    expect(getSleevelessPatternOnlineHeading({ title: "", notes: "" })).toBe(
+      SIDEWAYS_V_NECK_PATTERN_ONLINE_HEADING_FALLBACK,
+    );
   });
 
   it("preserves the saved name when reopening and editing a saved pattern", () => {

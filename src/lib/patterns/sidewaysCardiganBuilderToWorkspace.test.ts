@@ -273,6 +273,66 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(refreshed.instructions?.steps).toEqual(view.instructions?.steps);
   });
 
+  it("shows numbered Pullover BODY for the Women's chart V-neck depth, not a stitch-vs-row error", () => {
+    saveFromCreatePattern(
+      {
+        ...missesValues,
+        garmentStyle: "pullover",
+        styleMeasurements: {
+          ...missesValues.styleMeasurements,
+          vNeckDepth: "5",
+        },
+      },
+      missesRow,
+    );
+    const view = loadSidewaysCardiganWorkspaceView();
+    expect(view.ok).toBe(true);
+    if (!view.ok) throw new Error(view.message);
+    expect(view.instructionError).toBeUndefined();
+    expect(view.input.vNeckDepthInches).toBe(5);
+    expect(view.calc.vNeckDepthStitches).toBe(26);
+    expect(view.calc.halfNeckRows).toBe(26);
+    expect(view.instructions?.garmentStyle).toBe("pullover");
+    expect(view.sequenceHtml).toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).toMatch(/starts at a side seam/i);
+    expect(view.sequenceHtml).not.toMatch(/must exceed the even half-neck rows/i);
+  });
+
+  it("renders Cardigan BODY Lego and sleeves for the Women's 5-inch V / 7.5-inch neck / 5×7 gauge case", () => {
+    saveFromCreatePattern(
+      {
+        ...missesValues,
+        garmentStyle: "cardigan",
+        styleMeasurements: {
+          ...missesValues.styleMeasurements,
+          vNeckDepth: "5",
+        },
+      },
+      missesRow,
+    );
+    const view = loadSidewaysCardiganWorkspaceView();
+    expect(view.ok).toBe(true);
+    if (!view.ok) throw new Error(view.message);
+    expect(view.instructionError).toBeUndefined();
+    expect(view.instructions?.garmentStyle).toBe("cardigan");
+    expect(view.input.vNeckDepthInches).toBe(5);
+    expect(view.input.neckOpeningWidthInches).toBe(7.5);
+    expect(view.input.stitchesPerInch).toBe(5);
+    expect(view.input.rowsPerInch).toBe(7);
+    expect(view.calc.vNeckDepthStitches).toBe(26);
+    expect(view.calc.halfNeckRows).toBe(26);
+    expect(view.instructions?.firstV.shapingActions).toBe(13);
+    expect(view.instructions?.increaseSequence).toEqual(Array(13).fill(2));
+    expect(view.sequenceHtml).toContain("pattern-section");
+    expect(view.sequenceHtml).toContain("CAST ON");
+    expect(view.sequenceHtml).toContain("FIRST V-NECK");
+    expect(view.sequenceHtml).toContain("Return 2 stitches to work 13 times.");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).not.toMatch(/must exceed the even half-neck rows/i);
+    expect(view.sleeveHtml).toContain("sideways-sleeve-sequence");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
+  });
+
   it("reports a diagnostic when stored data is incomplete", () => {
     const view = loadSidewaysCardiganWorkspaceView();
     expect(view.ok).toBe(false);
@@ -366,6 +426,7 @@ describe("sideways cardigan workspace is not print-only", () => {
     expect(page).toContain("data-sideways-body-sequence");
     expect(page).toContain("data-sideways-sleeve-sequence");
     expect(page).toContain("data-sideways-sleeve-host");
+    expect(page).toContain('data-sleeveless-pattern-online-heading');
     expect(page).toContain('import "/src/scripts/sideways-cardigan-pattern-page.ts"');
     expect(page).not.toMatch(/class="[^"]*sg-pattern-print-at-a-glance[^"]*"/);
     const shared = readFileSync(resolve("src/styles/patterns/sleeveless-pattern-shared.css"), "utf8");

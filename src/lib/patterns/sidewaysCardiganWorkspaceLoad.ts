@@ -12,6 +12,10 @@ import {
 } from "./sidewaysCardiganBodyInstructions";
 import { renderSidewaysCardiganBodyDisplayHtml } from "./sidewaysCardiganPatternOutput";
 import {
+  escapePatternDisplayHtml,
+  wrapPatternSectionHtml,
+} from "./sleevelessPatternDisplayHtml";
+import {
   inspectSidewaysCardiganBodyCalcInputFromPattern,
 } from "./sidewaysCardiganFinishedMeasurements";
 import {
@@ -162,6 +166,13 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
   };
 }
 
+function renderSidewaysBodyInstructionErrorHtml(message: string): string {
+  const inner = `<p class="sg-fit-size-copy" role="alert">${escapePatternDisplayHtml(message)}</p>`;
+  return wrapPatternSectionHtml("sg-body", "BODY", inner, {
+    sectionClassName: "pattern-section--garment-piece",
+  });
+}
+
 /** Load the workspace view from canonical + patternBuilderData storage. */
 export function loadSidewaysCardiganWorkspaceView(
   pattern: Record<string, unknown> = mergeSidewaysCardiganWorkingDraft(),
@@ -233,7 +244,7 @@ export function loadSidewaysCardiganWorkspaceView(
       instructions: null,
       summary,
       summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
-      sequenceHtml: "",
+      sequenceHtml: renderSidewaysBodyInstructionErrorHtml(body.error.message),
       instructionError: withDevDiagnostic(body.error.message, diagnostic),
       ...sleeve,
     };

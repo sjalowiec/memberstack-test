@@ -14,11 +14,13 @@ import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternP
 import { buildSidewaysCardiganSummaryEditFromPatternHref } from "../lib/patterns/sidewaysCardiganPatternNavigation";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { bindPatternSectionCollapse } from "../lib/patterns/sleevelessPatternDisplayHtml";
+import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import { initChartProgressTracking } from "./chartProgressTracker";
 import { getCurrentPattern } from "../lib/patterns/patternStorage";
 
 function renderView(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
+  applySleevelessPatternOnlineProjectHeader();
 
   const missing = document.querySelector("[data-sideways-calc-missing]");
   const host = document.querySelector("[data-sideways-calc-host]");
@@ -70,18 +72,17 @@ function renderView(): void {
   missing.textContent = "";
   host.hidden = false;
   if (errorEl instanceof HTMLElement) {
-    errorEl.hidden = true;
-    errorEl.textContent = "";
+    if (view.instructionError) {
+      errorEl.hidden = false;
+      errorEl.textContent = view.instructionError;
+    } else {
+      errorEl.hidden = true;
+      errorEl.textContent = "";
+    }
   }
 
   if (sequenceEl instanceof HTMLElement) {
-    if (view.instructionError) {
-      sequenceEl.replaceChildren();
-      const note = document.createElement("p");
-      note.className = "sg-fit-size-copy";
-      note.textContent = view.instructionError;
-      sequenceEl.append(note);
-    } else {
+    if (view.sequenceHtml) {
       sequenceEl.innerHTML = view.sequenceHtml;
       bindPatternSectionCollapse(sequenceEl);
       hydrateGlossaryTooltipPlaceholders(sequenceEl);
@@ -93,6 +94,15 @@ function renderView(): void {
       } catch {
         /* pattern id is optional for checklist persistence */
       }
+    } else if (view.instructionError) {
+      sequenceEl.replaceChildren();
+      const note = document.createElement("p");
+      note.className = "sg-fit-size-copy";
+      note.setAttribute("role", "alert");
+      note.textContent = view.instructionError;
+      sequenceEl.append(note);
+    } else {
+      sequenceEl.replaceChildren();
     }
   }
 

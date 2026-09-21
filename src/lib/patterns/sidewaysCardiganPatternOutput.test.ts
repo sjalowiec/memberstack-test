@@ -198,4 +198,35 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(pulloverHtml).toContain("sideways-body-landmarks");
     expect(pulloverHtml).toMatch(/starts at a side seam/i);
   });
+
+  it("renders Cardigan BODY Lego for the Women's 5-inch V / 7.5-inch neck / 5×7 gauge case", () => {
+    const sueCardigan: SidewaysCardiganBodyCalcInput = {
+      garmentLengthInches: 25,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 46,
+      finishedUpperArmInches: 14.5,
+      neckOpeningWidthInches: 7.5,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    };
+    const result = buildSidewaysCardiganBodyInstructions(sueCardigan, "cardigan");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    const { instructions } = result;
+    expect(instructions.garmentStyle).toBe("cardigan");
+    expect(instructions.calc.vNeckDepthStitches).toBe(26);
+    expect(instructions.calc.halfNeckRows).toBe(26);
+    expect(instructions.firstV.shapingActions).toBe(13);
+    expect(instructions.increaseSequence).toEqual(Array(13).fill(2));
+    expect(calculateSlopeShaping(26, 26).ok).toBe(false);
+
+    const html = renderSidewaysCardiganBodyDisplayHtml(instructions);
+    expect(html).toContain("pattern-section");
+    expect(html).toContain("CAST ON");
+    expect(html).toContain("FIRST V-NECK");
+    expect(html).toContain("Return 2 stitches to work 13 times.");
+    expect(html).not.toContain("sideways-body-sequence");
+    expect(html).not.toMatch(/must exceed the even half-neck rows/i);
+  });
 });

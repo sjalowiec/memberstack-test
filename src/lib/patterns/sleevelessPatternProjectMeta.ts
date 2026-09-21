@@ -333,6 +333,9 @@ export const SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK =
 export const DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK =
   "Drop shoulder sweater · Pattern instructions";
 
+export const SIDEWAYS_V_NECK_PATTERN_ONLINE_HEADING_FALLBACK =
+  "Sideways V-Neck sweater · Pattern instructions";
+
 /**
  * Online pattern tab heading from draft/linked user name, or construction-aware generic fallback.
  * Does not use the Astro page title — that is only a last resort for browser PDF Save-as when
@@ -349,6 +352,7 @@ export function getSleevelessPatternOnlineHeading(
   if (linked) return linked;
 
   if (fallback !== undefined) return fallback;
+  if (isSidewaysCardiganPattern()) return SIDEWAYS_V_NECK_PATTERN_ONLINE_HEADING_FALLBACK;
   return isDropShoulderPattern()
     ? DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK
     : SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK;

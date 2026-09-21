@@ -163,6 +163,7 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(summaryScript).toContain("applySidewaysCardiganSummaryMeasurementEdits");
     expect(summaryScript).toContain("buildSidewaysCardiganSummaryDiagramInput");
     expect(summaryScript).toContain("refreshAutoPatternProjectTitle");
+    expect(summaryScript).toContain("persistSidewaysCardiganSummaryProject");
     expect(summaryScript).toContain("stampSidewaysSummaryMeasureShell");
   });
 
