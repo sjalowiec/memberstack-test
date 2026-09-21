@@ -986,6 +986,17 @@
   text-decoration: none;
 }
 
+.watson-customer__header-action-list a.watson-customer__header-action--primary {
+  color: #fff;
+  background: #3f6212;
+  border-color: #3f6212;
+}
+
+.watson-customer__header-action-list a.watson-customer__header-action--primary:hover {
+  background: #365314;
+  border-color: #365314;
+}
+
 .watson-customer__header-meta {
   display: flex;
   flex-wrap: wrap;

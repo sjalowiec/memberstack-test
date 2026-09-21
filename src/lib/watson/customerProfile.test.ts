@@ -577,6 +577,12 @@ describe("customerProfile", () => {
     expect(legacyActions.some((action) => action.label === "Memberstack customer profile")).toBe(
       true,
     );
+    expect(legacyActions.find((action) => action.label === "Account Repair")).toEqual(
+      expect.objectContaining({
+        href: "/watson/member-account-repair?legacyMemberid=M1&memberstackId=mem_123",
+        emphasis: "primary",
+      }),
+    );
 
     const memberstackActions = buildCustomerProfileActions({
       profileType: "memberstack",
@@ -586,6 +592,7 @@ describe("customerProfile", () => {
     expect(memberstackActions.some((action) => action.label === "Legacy customer profile")).toBe(
       true,
     );
+    expect(memberstackActions.some((action) => action.label === "Account Repair")).toBe(true);
   });
 
   it("loads a full legacy-only profile without Memberstack", async () => {

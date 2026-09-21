@@ -1,4 +1,5 @@
 import { getMemberCourses, type MemberCourseDisplay } from "./memberCourses";
+import { buildMemberAccountRepairHref } from "./memberAccountRepair";
 import { getMemberPdfPurchaseCount } from "./memberPdfPurchases";
 import {
   buildLegacyCustomerProfileUrl,
@@ -84,6 +85,7 @@ export interface CustomerProfileAction {
   label: string;
   href: string;
   description?: string;
+  emphasis?: "primary";
 }
 
 export type CustomerMembershipStatusTone = "active" | "inactive" | "unknown" | "not_linked";
@@ -660,6 +662,15 @@ export function buildCustomerProfileActions(input: {
   legacyMemberid: string | null;
 }): CustomerProfileAction[] {
   const actions: CustomerProfileAction[] = [
+    {
+      label: "Account Repair",
+      href: buildMemberAccountRepairHref({
+        legacyMemberid: input.legacyMemberid,
+        memberstackId: input.memberstackId,
+      }),
+      description: "Open the account repair report form with this customer prefilled",
+      emphasis: "primary",
+    },
     {
       label: "View store orders",
       href: "#customer-store-orders",

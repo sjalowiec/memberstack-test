@@ -66,7 +66,13 @@ const showCurrentMembership =
             {
               actions.map((action) => (
                 <li>
-                  <a href={action.href} title={action.description}>{action.label}</a>
+                  <a
+                    href={action.href}
+                    title={action.description}
+                    class={action.emphasis === "primary" ? "watson-customer__header-action--primary" : undefined}
+                  >
+                    {action.label}
+                  </a>
                 </li>
               ))
             }

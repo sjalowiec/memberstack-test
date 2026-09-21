@@ -1,0 +1,289 @@
+---
+import type {
+  DetectedAccountField,
+  MemberAccountRepairValues,
+} from "../../lib/watson/memberAccountRepair";
+import {
+  MEMBER_ACCOUNT_REPAIR_PERMISSION_OPTIONS,
+} from "../../lib/watson/memberAccountRepair";
+
+interface Props {
+  values: MemberAccountRepairValues;
+  detected: DetectedAccountField[];
+  prefilled: boolean;
+  prefillJson: string;
+}
+
+const { values, detected, prefilled, prefillJson } = Astro.props;
+---
+
+<form
+  id="repairForm"
+  class="watson-repair"
+  data-watson-member-account-repair
+  data-repair-prefill={prefillJson}
+  autocomplete="off"
+  novalidate
+>
+  <fieldset class="watson__panel watson-repair__section">
+    <legend class="watson__panel-title">Customer</legend>
+    <div class="watson-repair__grid">
+      <label>
+        Email
+        <input name="Email" type="email" value={values.Email} autocomplete="off" />
+      </label>
+      <label>
+        Customer name
+        <input name="Name" value={values.Name} autocomplete="off" />
+      </label>
+      <label class="watson-repair__full">
+        Brief problem description
+        <textarea name="Problem" placeholder="What is mismatched or missing?">{values.Problem}</textarea>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="watson__panel watson-repair__section">
+    <legend class="watson__panel-title">Stripe correction</legend>
+    <div class="watson-repair__grid">
+      <label>
+        Correct paid Stripe customer ID
+        <input
+          name="Correct paid Stripe customer"
+          value={values["Correct paid Stripe customer"]}
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="cus_"
+        />
+      </label>
+      <label>
+        Wrong Stripe customer ID currently connected
+        <input
+          name="Wrong connected Stripe customer"
+          value={values["Wrong connected Stripe customer"]}
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="cus_ if known"
+        />
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="watson__panel watson-repair__section">
+    <legend class="watson__panel-title">Permission</legend>
+    <div class="watson-repair__grid">
+      <label>
+        Permission
+        <select name="Permission">
+          <option value="" selected={values.Permission === ""}>Choose…</option>
+          {
+            MEMBER_ACCOUNT_REPAIR_PERMISSION_OPTIONS.map((option) => (
+              <option value={option} selected={values.Permission === option}>
+                {option}
+              </option>
+            ))
+          }
+        </select>
+      </label>
+      <label class="watson-repair__full">
+        Optional notes
+        <textarea name="Notes">{values.Notes}</textarea>
+      </label>
+    </div>
+  </fieldset>
+
+  {
+    detected.length > 0 ? (
+      <details class="watson__panel watson-repair__detected">
+        <summary class="watson-repair__detected-summary">Detected account data</summary>
+        <p class="watson-repair__detected-hint">
+          Filled in from Watson for the later technical audit. You do not need to review this
+          before copying the repair request.
+        </p>
+        <dl class="watson-repair__detected-list">
+          {
+            detected.map((field) => (
+              <div class="watson-repair__detected-row">
+                <dt>{field.label}</dt>
+                <dd>{field.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </details>
+    ) : null
+  }
+
+  <p class="watson-repair__privacy">
+    Do not enter passwords, complete card numbers, API keys, or login credentials. This form does
+    not save what you type and does not change Memberstack, Stripe, Watson, or any production data.
+  </p>
+
+  <div class="watson-repair__actions">
+    <button class="watson__button" type="button" data-repair-copy>Copy report</button>
+    <button class="watson__button watson__button--secondary" type="button" data-repair-preview>
+      Preview report
+    </button>
+    <button class="watson__button watson__button--secondary" type="button" data-repair-clear>
+      Clear form
+    </button>
+    {
+      prefilled ? (
+        <button class="watson__button watson__button--secondary" type="button" data-repair-restore>
+          Restore Watson data
+        </button>
+      ) : null
+    }
+    <span class="watson-repair__status" data-repair-status aria-live="polite"></span>
+  </div>
+
+  <textarea
+    class="watson-repair__output"
+    data-repair-output
+    aria-label="Generated report"
+    readonly
+    hidden
+  ></textarea>
+</form>
+
+<style>
+  .watson-repair__section {
+    margin-top: 1.25rem;
+  }
+
+  .watson-repair__section legend {
+    padding: 0 0.35rem;
+  }
+
+  .watson-repair__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem 1.15rem;
+  }
+
+  .watson-repair__full {
+    grid-column: 1 / -1;
+  }
+
+  .watson-repair label {
+    display: block;
+    font-weight: 650;
+    color: #243015;
+  }
+
+  .watson-repair input,
+  .watson-repair select,
+  .watson-repair textarea {
+    width: 100%;
+    margin-top: 0.35rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #243015;
+    font: inherit;
+    box-sizing: border-box;
+  }
+
+  .watson-repair textarea {
+    min-height: 5.2rem;
+    resize: vertical;
+  }
+
+  .watson-repair input:focus,
+  .watson-repair select:focus,
+  .watson-repair textarea:focus {
+    outline: 2px solid #3f6212;
+    outline-offset: 1px;
+    border-color: #3f6212;
+  }
+
+  .watson-repair__detected {
+    margin-top: 1.25rem;
+  }
+
+  .watson-repair__detected-summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .watson-repair__detected-hint {
+    margin: 0.65rem 0 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #64748b;
+  }
+
+  .watson-repair__detected-list {
+    margin: 0;
+  }
+
+  .watson-repair__detected-row {
+    display: grid;
+    grid-template-columns: minmax(10rem, 16rem) minmax(0, 1fr);
+    gap: 0.35rem 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .watson-repair__detected-row:last-child {
+    border-bottom: none;
+  }
+
+  .watson-repair__detected-row dt {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748b;
+  }
+
+  .watson-repair__detected-row dd {
+    margin: 0;
+    color: #243015;
+    word-break: break-word;
+  }
+
+  .watson-repair__privacy {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.45;
+  }
+
+  .watson-repair__actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.9rem 0 0.35rem;
+    background: linear-gradient(transparent, #f8fafc 28%);
+  }
+
+  .watson-repair__status {
+    font-weight: 700;
+    color: #3f6212;
+  }
+
+  .watson-repair__output {
+    width: 100%;
+    min-height: 12rem;
+    margin-top: 0.75rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 680px) {
+    .watson-repair__grid,
+    .watson-repair__detected-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

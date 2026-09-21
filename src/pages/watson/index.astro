@@ -43,13 +43,23 @@ try {
 >
   <section class="watson__panel watson-dashboard__tools" aria-labelledby="watson-support-tools-heading">
     <h2 id="watson-support-tools-heading" class="watson__panel-title">Support tools</h2>
-    <article class="watson-dashboard__tool-card">
-      <h3 class="watson-dashboard__tool-title">Saved Pattern Inspector</h3>
-      <p class="watson-dashboard__tool-desc">
-        Look up exactly what a member saved using the project ID from a pattern URL or PDF.
-      </p>
-      <a class="watson__button" href="/watson/pattern-inspector">Inspect a Pattern</a>
-    </article>
+    <div class="watson-dashboard__tool-grid">
+      <article class="watson-dashboard__tool-card">
+        <h3 class="watson-dashboard__tool-title">Saved Pattern Inspector</h3>
+        <p class="watson-dashboard__tool-desc">
+          Look up exactly what a member saved using the project ID from a pattern URL or PDF.
+        </p>
+        <a class="watson__button" href="/watson/pattern-inspector">Inspect a Pattern</a>
+      </article>
+      <article class="watson-dashboard__tool-card">
+        <h3 class="watson-dashboard__tool-title">Member Account Repair</h3>
+        <p class="watson-dashboard__tool-desc">
+          Collect Memberstack, Stripe, and Watson details for an account mismatch. Reporting only —
+          nothing is changed.
+        </p>
+        <a class="watson__button" href="/watson/member-account-repair">Open Account Repair</a>
+      </article>
+    </div>
   </section>
 
   {
@@ -67,8 +77,14 @@ try {
     margin-top: 1.25rem;
   }
 
+  .watson-dashboard__tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0.85rem;
+  }
+
   .watson-dashboard__tool-card {
-    max-width: 28rem;
+    max-width: none;
     padding: 0.95rem 1rem;
     border: 1px solid #d9f99d;
     border-radius: 10px;

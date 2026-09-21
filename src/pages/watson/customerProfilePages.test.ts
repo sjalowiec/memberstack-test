@@ -183,6 +183,7 @@ describe("Watson customer profile pages", () => {
     expect(header).toContain("watson-customer__header");
     expect(header).toContain("header.displayName");
     expect(header).toContain("header.email");
+    expect(header).toContain("watson-customer__header-action--primary");
     expect(header).not.toContain("WatsonCustomerAccordionSection");
 
     // Success banner shows the saved date and only appears when paidThroughUpdated=1.

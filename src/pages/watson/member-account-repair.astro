@@ -1,0 +1,59 @@
+---
+import WatsonMemberAccountRepairForm from "../../components/watson/WatsonMemberAccountRepairForm.astro";
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import { emptyMemberAccountRepairValues } from "../../lib/watson/memberAccountRepair";
+import { loadMemberAccountRepairPageData } from "../../lib/watson/memberAccountRepairLoad";
+
+export const prerender = false;
+
+const pageData = await loadMemberAccountRepairPageData(Astro.url.searchParams);
+const values = pageData.values ?? emptyMemberAccountRepairValues();
+const detected = pageData.detected ?? [];
+const prefillJson = pageData.prefilled ? JSON.stringify(values) : "";
+---
+
+<WatsonPageShell
+  title="Member Account Repair | Watson"
+  description="Short intake form for Memberstack and Stripe account mismatches."
+  heading="Member Account Repair"
+  intro="Describe the customer, the Stripe IDs involved, and permission. This is a reporting tool only — nothing is changed. The technical audit fills in the rest."
+>
+  {
+    pageData.backHref ? (
+      <p slot="head" class="watson__back-link">
+        <a href={pageData.backHref}>Back to customer profile</a>
+      </p>
+    ) : null
+  }
+
+  {
+    pageData.loadError ? (
+      <p class="watson__status watson__status--error" role="alert">{pageData.loadError}</p>
+    ) : null
+  }
+
+  {
+    pageData.prefilled ? (
+      <p class="watson__status">
+        Customer name and email were filled from the Watson profile. Add the Stripe correction and
+        copy the request. You do not need to complete a technical audit first.
+      </p>
+    ) : (
+      <p class="watson__status">
+        Open this form from a customer profile to prefill name and email, or fill those in by hand.
+      </p>
+    )
+  }
+
+  <WatsonMemberAccountRepairForm
+    values={values}
+    detected={detected}
+    prefilled={pageData.prefilled}
+    prefillJson={prefillJson}
+  />
+</WatsonPageShell>
+
+<script>
+  import { initWatsonMemberAccountRepair } from "../../lib/watson/memberAccountRepairClient";
+  initWatsonMemberAccountRepair(document);
+</script>
