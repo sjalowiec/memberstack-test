@@ -10,6 +10,7 @@ import {
   renderSidewaysCardiganBodySequenceHtml,
   type SidewaysCardiganBodyInstructions,
 } from "./sidewaysCardiganBodyInstructions";
+import { renderSidewaysCardiganBodyDisplayHtml } from "./sidewaysCardiganPatternOutput";
 import {
   inspectSidewaysCardiganBodyCalcInputFromPattern,
 } from "./sidewaysCardiganFinishedMeasurements";
@@ -246,7 +247,10 @@ export function loadSidewaysCardiganWorkspaceView(
     instructions: body.instructions,
     summary,
     summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
-    sequenceHtml: renderSidewaysCardiganBodySequenceHtml(body.instructions),
+    sequenceHtml:
+      body.instructions.garmentStyle === "cardigan"
+        ? renderSidewaysCardiganBodyDisplayHtml(body.instructions)
+        : renderSidewaysCardiganBodySequenceHtml(body.instructions),
     ...sleeve,
   };
 }

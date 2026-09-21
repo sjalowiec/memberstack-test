@@ -49,7 +49,10 @@ import {
   patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
-import { parseInlineMarkedLine } from "../lib/patterns/inlineRcHeading.ts";
+import {
+  renderPatternDisplayBlockHtml,
+  wrapPatternSectionHtml,
+} from "../lib/patterns/sleevelessPatternDisplayHtml.ts";
 import {
   DROP_SHOULDER_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
   dropShoulderSleeveConstructionChoiceQuickTipInnerHtml,
@@ -92,7 +95,6 @@ import {
   initGarmentPatternYarnDrawer,
   setGarmentPatternYarnActionVisible,
 } from "./garment-pattern-yarn-drawer.ts";
-import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   bindNeckShoulderShoulderTabs,
@@ -110,8 +112,6 @@ import {
   renderSleevelessPatternTabFrontWrittenIntroHtml,
   sleevelessPatternTabFrontChartTableOptions,
 } from "../lib/patterns/sleevelessFrontChartIntroHtml.ts";
-import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
-import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
 import { buildDropShoulderMountShapingMapData } from "../lib/patterns/dropShoulderMountVisualGuides.ts";
 import {
@@ -646,7 +646,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         visualGuidesPlaced = true;
       }
       targetParts.push(
-        wrapPatternSection(
+        wrapPatternSectionHtml(
           `sg-${pieceSectionId}-${sectionSlug || "section"}`,
           headingHtml,
           sectionInner,
@@ -668,59 +668,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
      * @param {Extract<(typeof list)[number], { kind: "block" }>} row
      */
     function instructionRowHtml(row) {
-      const showStitch = row.stitchCount !== undefined;
-
-      const leftBits = [];
-      if (row.rowCounterReset) {
-        leftBits.push(rowCounterResetBlockHtml(row.rowCounterResetGarmentRc ?? 0));
-      }
-      if (row.rc) {
-        leftBits.push(`<p class="sleeveless-pattern-rc">${escapeHtml(row.rc)}</p>`);
-      }
-      const trusted = row.trustedParagraphs;
-      if (trusted && trusted.length > 0) {
-        for (const p of trusted) {
-          const t = String(p).trim();
-          if (!t) continue;
-          const marked = parseInlineMarkedLine(t);
-          if (marked) {
-            const cls =
-              marked.kind === "rc-heading" ? "sleeveless-pattern-rc" : "sleeveless-pattern-subhead";
-            leftBits.push(`<p class="${cls}">${escapeHtml(marked.text)}</p>`);
-            continue;
-          }
-          leftBits.push(`<p class="sleeveless-pattern-line">${p}</p>`);
-        }
-      } else {
-        for (const p of row.paragraphs) {
-          const t = String(p).trim();
-          if (t) leftBits.push(`<p class="sleeveless-pattern-line">${escapeHtml(t)}</p>`);
-        }
-      }
-      if (row.bodyShapingChartRows && row.bodyShapingChartRows.length > 0) {
-        leftBits.push(
-          renderSleevelessBodyShapingChartHtml(row.bodyShapingChartRows, {
-            chartId: `sleeveless-body-shaping-chart-${pieceSectionId || "back"}`,
-          })
-        );
-      }
-      if (row.sleeveShapingChartRows && row.sleeveShapingChartRows.length > 0) {
-        leftBits.push(
-          renderDropShoulderSleeveShapingChartHtml(row.sleeveShapingChartRows, {
-            chartId: `drop-shoulder-sleeve-shaping-chart-${pieceSectionId || "sleeve"}`,
-            showTitle: false,
-          }),
-        );
-      }
-      if (row.tipHtml) {
-        leftBits.push(patternTipWrapperHtml(row));
-      }
-      const leftHtml = `<div class="sleeveless-pattern-left">${leftBits.join("")}</div>`;
-      const rightHtml = showStitch
-        ? `<div class="sleeveless-pattern-sts">${row.stitchCount} sts</div>`
-        : "";
-      const rowClass = rightHtml ? "sleeveless-pattern-row" : "sleeveless-pattern-row sleeveless-pattern-row--full";
-      return `<div class="${rowClass}">${leftHtml}${rightHtml}</div>`;
+      return renderPatternDisplayBlockHtml(row, {
+        pieceSectionId: pieceSectionId || "back",
+      });
     }
 
     for (const row of list) {
@@ -2615,23 +2565,7 @@ table {
   }
 
   function wrapPatternSection(sectionId, title, innerHtml, opts) {
-    const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
-    const defaultCollapsed = opts?.defaultCollapsed === true;
-    const sectionClassName =
-      typeof opts?.sectionClassName === "string" && opts.sectionClassName.trim()
-        ? ` ${opts.sectionClassName.trim()}`
-        : "";
-    const collapsedClass = defaultCollapsed ? " is-collapsed" : "";
-    const checkedAttr = defaultCollapsed ? " checked" : "";
-    return `<section id="${sid}" class="pattern-section${sectionClassName}${collapsedClass}" data-section-id="${sid}">
-  <div class="pattern-section__header">
-    <label class="pattern-section__collapse-label">
-      <input type="checkbox" class="pattern-section__collapse" data-section-id="${sid}" aria-label="Collapse this section"${checkedAttr} />
-    </label>
-    <div class="pattern-section__heading"><h2>${title}</h2></div>
-  </div>
-  <div class="pattern-section__content">${innerHtml}</div>
-</section>`;
+    return wrapPatternSectionHtml(sectionId, title, innerHtml, opts);
   }
 
   function setPatternSectionCollapsed(section, collapsed) {

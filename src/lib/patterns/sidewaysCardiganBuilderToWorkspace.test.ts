@@ -114,9 +114,10 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.summary.rows.length).toBeGreaterThan(0);
     expect(view.summaryHtml).toContain("Garment length");
     expect(view.instructions).not.toBeNull();
-    expect(view.instructions?.steps).toHaveLength(13);
-    expect(view.sequenceHtml).toContain("sideways-body-sequence");
-    expect(view.sequenceHtml).toContain("Cast on");
+    expect(view.sequenceHtml).toContain("pattern-section");
+    expect(view.sequenceHtml).toContain("CAST ON");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).not.toContain("sideways-body-landmarks");
     expect(view.input.vNeckDepthInches).toBe(8);
     expect(view.pattern.style).toMatchObject({
       construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
@@ -141,7 +142,6 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     });
     expect(view.input.finishedUpperArmInches).toBe(15);
     expect(view.summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
-    expect(view.instructions?.steps).toHaveLength(13);
     expect(view.sleeveDirection).toBe("sideways");
     expect(view.sleeveInstructions).toBeNull();
     expect(view.sleeveHtml).toContain("Sideways sleeve calculations are not yet connected.");
@@ -234,8 +234,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     if (!view.ok) throw new Error(view.message);
     expect(view.instructions?.garmentStyle).toBe("cardigan");
     expect(view.summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
-    expect(view.sequenceHtml).toMatch(/starts at center front/i);
-    expect(view.sequenceHtml).toMatch(/two knitted armhole slits/i);
+    expect(view.sequenceHtml).toMatch(/beginning at one center-front edge/i);
+    expect(view.sequenceHtml).toMatch(/two armhole slits are knitted into the body/i);
     expect(view.instructions?.steps.filter((s) => /armhole-slit/.test(s.id))).toHaveLength(2);
   });
 

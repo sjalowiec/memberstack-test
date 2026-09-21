@@ -1,0 +1,358 @@
+/**
+ * Customer-facing Sideways Cardigan BODY instructions.
+ * Adapts {@link SidewaysCardiganBodyInstructions} onto Sleeveless display rows.
+ * Does not recompute measurements or landmarks.
+ */
+
+import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
+import { formatStitchesCount } from "./sidewaysCardiganDisplayFormat";
+import {
+  wrapPatternSectionHtml,
+  renderPatternDisplayRowsHtml,
+} from "./sleevelessPatternDisplayHtml";
+import {
+  formatRcColon,
+  type SleevelessPatternDisplayRow,
+} from "./sleevelessPatternOutput";
+import type { SleevelessBodyShapingChartRow } from "./sleevelessBodyShapingChartHtml";
+import type {
+  SidewaysCardiganBodyInstructions,
+  SidewaysCardiganBodyInstructionStep,
+} from "./sidewaysCardiganBodyInstructions";
+
+export const SHORT_ROW_INCREASE_GLOSSARY_ID = 1789995174575;
+export const SHORT_ROW_DECREASE_GLOSSARY_ID = 1789995192454;
+export const SHORT_ROW_PARTIAL_KNITTING_GLOSSARY_ID = 811;
+export const EVERY_OTHER_ROW_GLOSSARY_ID = 182;
+export const MANUAL_WRAP_GLOSSARY_ID = 718;
+export const CAST_ON_RAG_GLOSSARY_ID = 339;
+export const EWRAP_CAST_ON_GLOSSARY_ID = 312;
+export const RAVEL_CORD_GLOSSARY_ID = 249;
+export const CLOSED_CAST_ON_GLOSSARY_ID = 263;
+
+const BODY_PIECE_TITLE = "BODY";
+
+export const SIDEWAYS_CARDIGAN_BODY_SECTION_TITLES = [
+  "BEFORE YOU BEGIN",
+  "CAST ON",
+  "FIRST V-NECK",
+  "FIRST FRONT SHOULDER",
+  "FIRST ARMHOLE",
+  "FIRST BACK SHOULDER",
+  "BACK NECK",
+  "SECOND BACK SHOULDER",
+  "SECOND ARMHOLE",
+  "SECOND FRONT SHOULDER",
+  "SECOND V-NECK",
+  "BIND OFF",
+] as const;
+
+function escAttr(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
+function g(glossaryId: number, visibleText: string): string {
+  return buildGlossaryTooltipPlaceholderHtml(glossaryId, visibleText, escAttr, (s) => s);
+}
+
+function requireStep(
+  instructions: SidewaysCardiganBodyInstructions,
+  id: string,
+): SidewaysCardiganBodyInstructionStep {
+  const step = instructions.steps.find((s) => s.id === id);
+  if (!step) {
+    throw new Error(`Sideways Cardigan instruction model is missing step "${id}".`);
+  }
+  return step;
+}
+
+export function compactSlopeSequence(
+  sequence: readonly number[],
+): { stitches: number; times: number }[] {
+  const groups: { stitches: number; times: number }[] = [];
+  for (const stitches of sequence) {
+    const last = groups[groups.length - 1];
+    if (last && last.stitches === stitches) last.times += 1;
+    else groups.push({ stitches, times: 1 });
+  }
+  return groups;
+}
+
+function timesPhrase(times: number): string {
+  return times === 1 ? "once" : `${times} times`;
+}
+
+function slopeProseLines(sequence: readonly number[], returningFromHold: boolean): string[] {
+  const verb = returningFromHold ? "Return" : "Place";
+  const prep = returningFromHold ? "to work" : "into hold";
+  return compactSlopeSequence(sequence).map(
+    (group) =>
+      `${verb} ${formatStitchesCount(group.stitches)} ${prep} ${timesPhrase(group.times)}.`,
+  );
+}
+
+export function shortRowActionRowCounters(
+  startRc: number,
+  interval: number,
+  actionCount: number,
+): number[] {
+  const rcs: number[] = [];
+  for (let i = 0; i < actionCount; i += 1) {
+    rcs.push(startRc + i * interval);
+  }
+  return rcs;
+}
+
+function formatActionRcRange(rcs: readonly number[]): string {
+  if (rcs.length === 0) return "";
+  if (rcs.length === 1) return formatRcColon(rcs[0]!);
+  if (rcs.length === 2) return `${formatRcColon(rcs[0]!)}, ${formatRcColon(rcs[1]!)}`;
+  return `${formatRcColon(rcs[0]!)}, ${formatRcColon(rcs[1]!)}, through ${formatRcColon(rcs[rcs.length - 1]!)}`;
+}
+
+function shapingChartRows(
+  rcs: readonly number[],
+  deltas: readonly number[],
+  workingAfter: readonly number[],
+  returningFromHold: boolean,
+): SleevelessBodyShapingChartRow[] {
+  const actionVerb = returningFromHold ? "Return" : "Place";
+  const prep = returningFromHold ? "to work" : "into hold";
+  return rcs.map((rc, i) => ({
+    rc,
+    action: `${actionVerb} ${formatStitchesCount(deltas[i] ?? 0)} ${prep}`,
+    stitchesRemaining: workingAfter[i] ?? 0,
+  }));
+}
+
+function section(title: string): Extract<SleevelessPatternDisplayRow, { kind: "section" }> {
+  return { kind: "section", title };
+}
+
+function block(args: {
+  rc?: number;
+  paragraphs?: string[];
+  trustedParagraphs?: string[];
+  stitchCount?: number;
+  bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
+  bodyShapingChartId?: string;
+}): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
+  return {
+    kind: "block",
+    ...(args.rc !== undefined ? { rc: formatRcColon(args.rc) } : {}),
+    paragraphs: args.paragraphs ?? [],
+    ...(args.trustedParagraphs ? { trustedParagraphs: args.trustedParagraphs } : {}),
+    ...(args.stitchCount !== undefined ? { stitchCount: args.stitchCount } : {}),
+    ...(args.bodyShapingChartRows ? { bodyShapingChartRows: args.bodyShapingChartRows } : {}),
+    ...(args.bodyShapingChartId ? { bodyShapingChartId: args.bodyShapingChartId } : {}),
+  };
+}
+
+/**
+ * Cardigan BODY display rows only. Pullover returns an empty list so its
+ * existing numbered sequence is left unchanged.
+ */
+export function buildSidewaysCardiganBodyDisplayRows(
+  instructions: SidewaysCardiganBodyInstructions,
+): SleevelessPatternDisplayRow[] {
+  if (instructions.garmentStyle !== "cardigan") return [];
+
+  const { calc, firstV, secondV, landmarks, startingFrontStitches, backNeckLiveStitches } =
+    instructions;
+  const fullWidth = calc.garmentLengthStitches;
+  const vSts = calc.vNeckDepthStitches;
+  const armhole = calc.armholeDepthStitches;
+  const backNeck = calc.backNeckDepthStitches;
+  const firstVStep = requireStep(instructions, "first-v-neck");
+  const secondVStep = requireStep(instructions, "second-v-neck");
+  const firstVActionRcs = shortRowActionRowCounters(
+    firstVStep.rowCounterStart,
+    firstV.rowInterval,
+    firstV.shapingActions,
+  );
+  const secondVActionRcs = shortRowActionRowCounters(
+    secondVStep.rowCounterStart,
+    secondV.rowInterval,
+    secondV.shapingActions,
+  );
+  const lastDecreaseWorking = secondV.workingStitchesAfterAction.at(-1) ?? startingFrontStitches;
+  const lastDecreaseHeld = secondV.heldStitchesAfterAction.at(-1) ?? vSts;
+
+  const increasePh = g(SHORT_ROW_INCREASE_GLOSSARY_ID, "Short-row Increase");
+  const decreasePh = g(SHORT_ROW_DECREASE_GLOSSARY_ID, "Short-row Decrease");
+  const eorPh = g(EVERY_OTHER_ROW_GLOSSARY_ID, "every other row");
+  const wrapPh = g(MANUAL_WRAP_GLOSSARY_ID, "manually wrap");
+  const ravelPh = g(RAVEL_CORD_GLOSSARY_ID, "ravel cord");
+  const closedPh = g(CLOSED_CAST_ON_GLOSSARY_ID, "closed cast-on");
+  const ewrapPh = g(EWRAP_CAST_ON_GLOSSARY_ID, "e-wrap");
+  const ragPh = g(CAST_ON_RAG_GLOSSARY_ID, "cast-on rag");
+
+  return [
+    { kind: "piece", title: BODY_PIECE_TITLE },
+    block({
+      paragraphs: [
+        "The cardigan body is knitted sideways in one piece, beginning at one center-front edge and ending at the other. Two armhole slits are knitted into the body.",
+      ],
+    }),
+    section("BEFORE YOU BEGIN"),
+    block({
+      trustedParagraphs: [
+        `V-neck shaping is worked with ${g(SHORT_ROW_PARTIAL_KNITTING_GLOSSARY_ID, "short rows")} (${increasePh} and ${decreasePh}).`,
+        `Shaping is performed ${eorPh}.`,
+        "Move needles into or out of hold opposite the carriage.",
+        `${g(MANUAL_WRAP_GLOSSARY_ID, "Manually wrap")} at each shaping turn to prevent holes.`,
+        "Keep the row counter running continuously through the body.",
+      ],
+    }),
+    section("CAST ON"),
+    block({
+      rc: 0,
+      trustedParagraphs: [
+        `Bring ${fullWidth} needles into work.`,
+        `Scrap on across all ${fullWidth} needles to provide fabric for weights.`,
+        `Knit one row of ${ravelPh}.`,
+        `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
+        `Set ${formatRcColon(0)}.`,
+        `Place the ${vSts} neckline stitches into hold.`,
+        `Leave ${startingFrontStitches} body stitches working.`,
+      ],
+      stitchCount: startingFrontStitches,
+    }),
+    section("FIRST V-NECK"),
+    block({
+      rc: firstVStep.rowCounterStart,
+      trustedParagraphs: [
+        `Work a ${increasePh} over ${firstV.rows} rows:`,
+        ...slopeProseLines(instructions.increaseSequence, true),
+        `Work each action ${eorPh}.`,
+        `Move needles opposite the carriage and ${wrapPh}.`,
+        `Action row counters: ${formatActionRcRange(firstVActionRcs)}.`,
+        `End at ${formatRcColon(firstVStep.rowCounterEnd)} with all ${fullWidth} stitches working.`,
+      ],
+      stitchCount: fullWidth,
+      bodyShapingChartId: "sideways-cardigan-first-v-neck",
+      bodyShapingChartRows: shapingChartRows(
+        firstVActionRcs,
+        firstV.stitchesChangedOnAction,
+        firstV.workingStitchesAfterAction,
+        true,
+      ),
+    }),
+    section("FIRST FRONT SHOULDER"),
+    block({
+      rc: firstVStep.rowCounterEnd,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.firstFrontShoulder} rows even on ${fullWidth} stitches.`,
+        `End at ${formatRcColon(landmarks.firstSideSeam)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("FIRST ARMHOLE"),
+    block({
+      rc: landmarks.firstSideSeam,
+      trustedParagraphs: [
+        `At ${formatRcColon(landmarks.firstSideSeam)}:`,
+        `At the neck edge, bind off the ${armhole} armhole stitches.`,
+        `Immediately cast on ${armhole} stitches.`,
+        `Recommend an ${ewrapPh} cast-on, but you may use the cast-on method of your choice.`,
+        `Use a ${ragPh} as needed to support and weight the new stitches.`,
+        `Continue with ${fullWidth} stitches.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("FIRST BACK SHOULDER"),
+    block({
+      rc: landmarks.firstSideSeam,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.firstBackShoulder} rows even.`,
+        `End at ${formatRcColon(landmarks.firstBackNeckEdge)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("BACK NECK"),
+    block({
+      rc: landmarks.firstBackNeckEdge,
+      trustedParagraphs: [
+        "At the neck edge:",
+        `Bind off the ${backNeck} back-neck-depth stitches.`,
+        `Knit ${instructions.sectionRowCounts.backNeckOpening} rows on the remaining ${backNeckLiveStitches} stitches.`,
+        `End at ${formatRcColon(landmarks.secondBackNeckEdge)}.`,
+        `Cast the ${backNeck} stitches back on.`,
+        `Recommend an ${ewrapPh}, while allowing the cast-on method of your choice.`,
+        `Continue with all ${fullWidth} stitches.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("SECOND BACK SHOULDER"),
+    block({
+      rc: landmarks.secondBackNeckEdge,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.secondBackShoulder} rows even.`,
+        `End at ${formatRcColon(landmarks.secondSideSeam)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("SECOND ARMHOLE"),
+    block({
+      rc: landmarks.secondSideSeam,
+      trustedParagraphs: [
+        `At ${formatRcColon(landmarks.secondSideSeam)}, repeat the first armhole procedure using the ${armhole} stitches.`,
+        `Continue with all ${fullWidth} stitches.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("SECOND FRONT SHOULDER"),
+    block({
+      rc: landmarks.secondSideSeam,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.secondFrontShoulder} rows even.`,
+        `End at ${formatRcColon(landmarks.startFinalVShaping)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("SECOND V-NECK"),
+    block({
+      rc: secondVStep.rowCounterStart,
+      trustedParagraphs: [
+        `Work a ${decreasePh} using the reversed slope sequence:`,
+        ...slopeProseLines(instructions.decreaseSequence, false),
+        `Work actions ${eorPh}.`,
+        `Move needles opposite the carriage and ${wrapPh}.`,
+        `Action row counters: ${formatActionRcRange(secondVActionRcs)}.`,
+        `During the final two-row interval: after the first row, ${lastDecreaseWorking} stitches are working and ${lastDecreaseHeld} stitches are held.`,
+        `Return all held stitches to work. Knit the second row across all ${fullWidth} stitches to enclose the wraps.`,
+        `End at ${formatRcColon(landmarks.endSecondVShaping)}, not ${formatRcColon(landmarks.endSecondVShaping + 1)}.`,
+      ],
+      stitchCount: fullWidth,
+      bodyShapingChartId: "sideways-cardigan-second-v-neck",
+      bodyShapingChartRows: shapingChartRows(
+        secondVActionRcs,
+        secondV.stitchesChangedOnAction,
+        secondV.workingStitchesAfterAction,
+        false,
+      ),
+    }),
+    section("BIND OFF"),
+    block({
+      rc: landmarks.finalBindOff,
+      paragraphs: [`Bind off all ${fullWidth} stitches loosely.`],
+    }),
+  ];
+}
+
+export function renderSidewaysCardiganBodyDisplayHtml(
+  instructions: SidewaysCardiganBodyInstructions,
+): string {
+  const rows = buildSidewaysCardiganBodyDisplayRows(instructions);
+  if (rows.length === 0) return "";
+  const inner = renderPatternDisplayRowsHtml(rows, {
+    pieceSectionId: "body",
+    omitPieceBanner: true,
+  });
+  return wrapPatternSectionHtml("sg-body", BODY_PIECE_TITLE, inner, {
+    sectionClassName: "pattern-section--garment-piece",
+  });
+}
