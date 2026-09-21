@@ -6,6 +6,15 @@
  * are compared to that action count, not to the row count — depth is a stitch-gauge
  * measurement and half-neck width is a row-gauge measurement.
  *
+ * First-V increase (return from hold): knit the first two-row interval over the starting
+ * working stitches and wrap at the neckline, then return stitches every other row. The
+ * final return is at the section-end RC. The next section's first row knits across all
+ * stitches. That initial pair is inside the V-neck row count — it does not add rows.
+ *
+ * Second-V decrease (place into hold): place stitches into hold at the section-start RC,
+ * opposite the carriage, then knit the pair. The last decrease is two rows before section
+ * end so the final interval can enclose wraps. This is not a mirror of First V.
+ *
  * Armhole bind-off/cast-on and back-neck bind-off/cast-on do not add measured row sections.
  */
 
@@ -87,6 +96,13 @@ export type SidewaysCardiganVNeckSchedule = {
    * knitted row and works the second row across full width (encloses wraps; no extra RC).
    */
   encloseHeldStitchesOnFinalRow: boolean;
+  /**
+   * Knitted rows in this section before the first hold/return action.
+   * Increase (return from hold): 2. Decrease (place into hold): 0.
+   */
+  rowsBeforeFirstAction: number;
+  /** Absolute row counters for each slope action. */
+  actionRowCounters: number[];
 };
 
 export type SidewaysCardiganBodyInstructionStep = {
@@ -145,6 +161,32 @@ export function knittedArmholeSlitCount(
   return garmentStyle === "pullover" ? 1 : 2;
 }
 
+export function shortRowActionRowCounters(
+  startRc: number,
+  interval: number,
+  actionCount: number,
+): number[] {
+  const rcs: number[] = [];
+  for (let i = 0; i < actionCount; i += 1) {
+    rcs.push(startRc + i * interval);
+  }
+  return rcs;
+}
+
+function withActionRowCounters(
+  schedule: SidewaysCardiganVNeckSchedule,
+  sectionStartRc: number,
+): SidewaysCardiganVNeckSchedule {
+  return {
+    ...schedule,
+    actionRowCounters: shortRowActionRowCounters(
+      sectionStartRc + schedule.rowsBeforeFirstAction,
+      schedule.rowInterval,
+      schedule.shapingActions,
+    ),
+  };
+}
+
 function stitchesAfterApplyingHoldDeltas(args: {
   startWorking: number;
   startHeld: number;
@@ -194,6 +236,8 @@ function buildVNeckSchedule(args: {
     workingStitchesAfterAction: after.working,
     heldStitchesAfterAction: after.held,
     encloseHeldStitchesOnFinalRow: args.encloseHeldStitchesOnFinalRow,
+    rowsBeforeFirstAction: args.returningFromHold ? 2 : 0,
+    actionRowCounters: [],
   };
 }
 
@@ -784,6 +828,12 @@ export function buildSidewaysCardiganBodyInstructions(
         finalEdgeRc: landmarks.finalBindOff,
       });
 
+  const firstVStep = steps.find((s) => s.id === "first-v-neck");
+  const secondVStep = steps.find((s) => s.id === "second-v-neck");
+  if (!firstVStep || !secondVStep) {
+    throw new Error("Sideways Cardigan instruction model is missing a V-neck step.");
+  }
+
   return {
     ok: true,
     instructions: {
@@ -791,8 +841,8 @@ export function buildSidewaysCardiganBodyInstructions(
       calc,
       startingFrontStitches,
       backNeckLiveStitches,
-      firstV,
-      secondV,
+      firstV: withActionRowCounters(firstV, firstVStep.rowCounterStart),
+      secondV: withActionRowCounters(secondV, secondVStep.rowCounterStart),
       increaseSequence,
       decreaseSequence,
       landmarks,

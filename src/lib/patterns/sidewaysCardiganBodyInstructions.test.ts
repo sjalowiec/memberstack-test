@@ -73,6 +73,12 @@ describe("sideways cardigan body instruction model", () => {
     expect(firstV.endStitches).toBe(110);
     expect(firstV.rows).toBe(26);
     expect(firstV.shapingActions).toBe(13);
+    expect(firstV.rowsBeforeFirstAction).toBe(2);
+    expect(firstV.actionRowCounters).toEqual([
+      2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26,
+    ]);
+    expect(firstV.actionRowCounters[0]).toBe(2);
+    expect(firstV.actionRowCounters.at(-1)).toBe(26);
     expect(firstV.workingStitchesAfterAction.at(-1)).toBe(110);
     expect(firstV.heldStitchesAfterAction.at(-1)).toBe(0);
     expect(firstV.encloseHeldStitchesOnFinalRow).toBe(false);
@@ -127,6 +133,12 @@ describe("sideways cardigan body instruction model", () => {
     expect(secondV.stitchesChangedOnAction).toEqual(SAMPLE_DECREASE_SEQUENCE);
     expect(secondV.startStitches).toBe(110);
     expect(secondV.endStitches).toBe(70);
+    expect(secondV.rowsBeforeFirstAction).toBe(0);
+    expect(secondV.actionRowCounters[0]).toBe(landmarks.startFinalVShaping);
+    expect(secondV.actionRowCounters.at(-1)).toBe(landmarks.endSecondVShaping - 2);
+    expect(secondV.actionRowCounters).toEqual([
+      254, 256, 258, 260, 262, 264, 266, 268, 270, 272, 274, 276, 278,
+    ]);
     expect(secondV.workingStitchesAfterAction.at(-1)).toBe(70);
     expect(secondV.heldStitchesAfterAction.at(-1)).toBe(40);
     expect(secondV.encloseHeldStitchesOnFinalRow).toBe(true);
@@ -265,6 +277,44 @@ describe("sideways cardigan body instruction model", () => {
       expect(notSlope.error.shapingActions).toBe(13);
     }
     expect(notSlope.error.message).not.toMatch(/must exceed the even half-neck rows/i);
+  });
+
+  it("knits two First V-Neck rows before the first return-to-work action in the 68-stitch example", () => {
+    const result = buildSidewaysCardiganBodyInstructions({
+      garmentLengthInches: 17,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 40,
+      finishedUpperArmInches: 14,
+      neckOpeningWidthInches: 7,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 4,
+      rowsPerInch: 6,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    const { instructions: model } = result;
+    expect(model.calc.garmentLengthStitches).toBe(68);
+    expect(model.calc.vNeckDepthStitches).toBe(20);
+    expect(model.startingFrontStitches).toBe(48);
+    expect(model.firstV.rows).toBe(22);
+    expect(model.firstV.shapingActions).toBe(11);
+    expect(model.increaseSequence).toEqual([2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1]);
+    expect(model.firstV.rowsBeforeFirstAction).toBe(2);
+    expect(model.firstV.actionRowCounters[0]).toBe(2);
+    expect(model.firstV.actionRowCounters.at(-1)).toBe(22);
+    expect(model.firstV.actionRowCounters).toEqual([
+      2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22,
+    ]);
+    expect(model.firstV.workingStitchesAfterAction.at(-1)).toBe(68);
+    expect(model.firstV.heldStitchesAfterAction.at(-1)).toBe(0);
+    expect(model.landmarks.endFirstVShaping).toBe(22);
+    expect(model.landmarks.endFirstVShaping).toBe(model.sectionRowCounts.firstVNeck);
+    expect(model.landmarks.finalBindOff).toBe(model.calc.bust.actualTotalBustRows);
+    expect(model.steps.find((s) => s.id === "first-v-neck")?.rowCounterEnd).toBe(22);
+    expect(model.steps.find((s) => s.id === "first-front-shoulder")?.rowCounterStart).toBe(22);
+    expect(model.secondV.rowsBeforeFirstAction).toBe(0);
+    expect(model.secondV.actionRowCounters[0]).toBe(model.landmarks.startFinalVShaping);
+    expect(model.secondV.actionRowCounters.at(-1)).toBe(model.landmarks.endSecondVShaping - 2);
   });
 });
 

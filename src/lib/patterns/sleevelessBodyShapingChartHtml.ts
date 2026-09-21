@@ -88,11 +88,11 @@ function buildBodyShapingStableRowId(chartId: string, r: SleevelessBodyShapingCh
 }
 
 /** Progress toolbar — mirrors the neckline/shoulder chart toolbar; `no-print` so it is online-only. */
-function renderBodyShapingProgressToolbarHtml(): string {
+function renderBodyShapingProgressToolbarHtml(completedRowsLabel = "Show Completed Rows"): string {
   return `<div class="ns-shaping-chart__progress-toolbar no-print">
     <div class="ns-shaping-chart__progress-toolbar-main" role="toolbar" aria-label="Body shaping checklist tracking">
       <button type="button" role="switch" aria-checked="true" class="pattern-tips-switch ns-shaping-chart__progress-show-completed" data-chart-progress-show-completed>
-        <span class="pattern-tips-switch__label">Show Completed Rows</span>
+        <span class="pattern-tips-switch__label">${escapeHtml(completedRowsLabel)}</span>
         <span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>
         <span class="pattern-tips-switch__state" data-chart-progress-show-state>Rows visible</span>
       </button>
@@ -106,6 +106,8 @@ export type SleevelessBodyShapingChartRenderOptions = {
   chartId: string;
   /** Section heading; defaults to `Body Shaping Chart`. */
   title?: string;
+  /** Completed-rows switch label. Defaults to `Show Completed Rows`. */
+  completedRowsSwitchLabel?: string;
 };
 
 /**
@@ -145,7 +147,7 @@ export function renderSleevelessBodyShapingChartHtml(
     title,
   )}</h3>
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(chartId)}">
-    ${renderBodyShapingProgressToolbarHtml()}
+    ${renderBodyShapingProgressToolbarHtml(options.completedRowsSwitchLabel)}
     <div class="ns-shaping-chart__table-wrap">
     <div class="ns-shaping-chart__table-scroll">
     <table class="ns-shaping-chart__table ns-shaping-chart__table--checklist">

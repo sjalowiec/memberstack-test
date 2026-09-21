@@ -595,6 +595,8 @@ export type SleevelessPatternDisplayRow =
       bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
       /** Overrides the default body-shaping chart id when more than one chart is on a piece. */
       bodyShapingChartId?: string;
+      /** Optional completed-rows switch label for this body-shaping chart only. */
+      bodyShapingChartCompletedRowsLabel?: string;
       /**
        * Drop-shoulder sleeve shaping checklist (Done · RC · Action · Edge · Sts Remaining).
        * Generated from the same schedule as sleeve JP notation.

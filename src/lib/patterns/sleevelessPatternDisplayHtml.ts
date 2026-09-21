@@ -86,6 +86,7 @@ export function renderPatternDisplayBlockHtml(
         chartId:
           row.bodyShapingChartId ||
           `sleeveless-body-shaping-chart-${pieceSectionId}`,
+        completedRowsSwitchLabel: row.bodyShapingChartCompletedRowsLabel,
       }),
     );
   }

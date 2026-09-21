@@ -20,6 +20,8 @@ import type {
   SidewaysCardiganBodyInstructionStep,
 } from "./sidewaysCardiganBodyInstructions";
 
+export { shortRowActionRowCounters } from "./sidewaysCardiganBodyInstructions";
+
 export const SHORT_ROW_INCREASE_GLOSSARY_ID = 1789995174575;
 export const SHORT_ROW_DECREASE_GLOSSARY_ID = 1789995192454;
 export const SHORT_ROW_PARTIAL_KNITTING_GLOSSARY_ID = 811;
@@ -31,6 +33,7 @@ export const RAVEL_CORD_GLOSSARY_ID = 249;
 export const CLOSED_CAST_ON_GLOSSARY_ID = 263;
 
 const BODY_PIECE_TITLE = "BODY";
+const SIDEWAYS_COMPLETED_ROWS_LABEL = "Completed rows";
 
 export const SIDEWAYS_CARDIGAN_BODY_SECTION_TITLES = [
   "BEFORE YOU BEGIN",
@@ -94,25 +97,6 @@ function slopeProseLines(sequence: readonly number[], returningFromHold: boolean
   );
 }
 
-export function shortRowActionRowCounters(
-  startRc: number,
-  interval: number,
-  actionCount: number,
-): number[] {
-  const rcs: number[] = [];
-  for (let i = 0; i < actionCount; i += 1) {
-    rcs.push(startRc + i * interval);
-  }
-  return rcs;
-}
-
-function formatActionRcRange(rcs: readonly number[]): string {
-  if (rcs.length === 0) return "";
-  if (rcs.length === 1) return formatRcColon(rcs[0]!);
-  if (rcs.length === 2) return `${formatRcColon(rcs[0]!)}, ${formatRcColon(rcs[1]!)}`;
-  return `${formatRcColon(rcs[0]!)}, ${formatRcColon(rcs[1]!)}, through ${formatRcColon(rcs[rcs.length - 1]!)}`;
-}
-
 function shapingChartRows(
   rcs: readonly number[],
   deltas: readonly number[],
@@ -152,6 +136,7 @@ function block(args: {
   stitchCensus?: { working: number; held: number; total: number };
   bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
   bodyShapingChartId?: string;
+  bodyShapingChartCompletedRowsLabel?: string;
 }): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
   return {
     kind: "block",
@@ -162,6 +147,9 @@ function block(args: {
     ...(args.stitchCensus ? { stitchCensus: args.stitchCensus } : {}),
     ...(args.bodyShapingChartRows ? { bodyShapingChartRows: args.bodyShapingChartRows } : {}),
     ...(args.bodyShapingChartId ? { bodyShapingChartId: args.bodyShapingChartId } : {}),
+    ...(args.bodyShapingChartCompletedRowsLabel
+      ? { bodyShapingChartCompletedRowsLabel: args.bodyShapingChartCompletedRowsLabel }
+      : {}),
   };
 }
 
@@ -182,16 +170,8 @@ export function buildSidewaysCardiganBodyDisplayRows(
   const backNeck = calc.backNeckDepthStitches;
   const firstVStep = requireStep(instructions, "first-v-neck");
   const secondVStep = requireStep(instructions, "second-v-neck");
-  const firstVActionRcs = shortRowActionRowCounters(
-    firstVStep.rowCounterStart,
-    firstV.rowInterval,
-    firstV.shapingActions,
-  );
-  const secondVActionRcs = shortRowActionRowCounters(
-    secondVStep.rowCounterStart,
-    secondV.rowInterval,
-    secondV.shapingActions,
-  );
+  const firstVActionRcs = firstV.actionRowCounters;
+  const secondVActionRcs = secondV.actionRowCounters;
   const lastDecreaseWorking = secondV.workingStitchesAfterAction.at(-1) ?? startingFrontStitches;
   const lastDecreaseHeld = secondV.heldStitchesAfterAction.at(-1) ?? vSts;
   const heldStartCensus = formatSidewaysHeldStitchCensus({
@@ -219,7 +199,7 @@ export function buildSidewaysCardiganBodyDisplayRows(
     { kind: "piece", title: BODY_PIECE_TITLE },
     block({
       paragraphs: [
-        "The cardigan body is knitted sideways in one piece, beginning at one center-front edge and ending at the other. Two armhole slits are knitted into the body.",
+        "The cardigan body is knitted sideways in one piece, beginning at one center-front edge and ending at the other. Two armhole openings are knitted into the body.",
       ],
     }),
     section("BEFORE YOU BEGIN"),
@@ -252,12 +232,12 @@ export function buildSidewaysCardiganBodyDisplayRows(
       rc: firstVStep.rowCounterStart,
       trustedParagraphs: [
         `Begin with ${startingFrontStitches} stitches working and ${vSts} stitches held.`,
+        `Knit ${firstV.rowInterval} rows over the ${startingFrontStitches} working stitches before the first return-to-work action.`,
         `Work a ${increasePh} over ${firstV.rows} rows:`,
         ...slopeProseLines(instructions.increaseSequence, true),
         `Work each action ${eorPh}.`,
         `Move needles opposite the carriage and ${wrapPh}.`,
-        `Action row counters: ${formatActionRcRange(firstVActionRcs)}.`,
-        `After the final action, all ${fullWidth} stitches are working.`,
+        `After the final action, all ${fullWidth} stitches are in work.`,
         `End at ${formatRcColon(firstVStep.rowCounterEnd)} with ${allWorkingCount}.`,
       ],
       ...startStateCount({
@@ -266,6 +246,7 @@ export function buildSidewaysCardiganBodyDisplayRows(
         total: fullWidth,
       }),
       bodyShapingChartId: "sideways-cardigan-first-v-neck",
+      bodyShapingChartCompletedRowsLabel: SIDEWAYS_COMPLETED_ROWS_LABEL,
       bodyShapingChartRows: shapingChartRows(
         firstVActionRcs,
         firstV.stitchesChangedOnAction,
@@ -277,6 +258,7 @@ export function buildSidewaysCardiganBodyDisplayRows(
     block({
       rc: firstVStep.rowCounterEnd,
       paragraphs: [
+        `The first row knits across all ${fullWidth} stitches.`,
         `Knit ${instructions.sectionRowCounts.firstFrontShoulder} rows even on ${fullWidth} stitches.`,
         `End at ${formatRcColon(landmarks.firstSideSeam)}.`,
       ],
@@ -314,7 +296,7 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `End at ${formatRcColon(landmarks.secondBackNeckEdge)}.`,
         `Cast the ${backNeck} stitches back on.`,
         `Recommend an ${ewrapPh}, while allowing the cast-on method of your choice.`,
-        `Continue with all ${fullWidth} stitches.`,
+        `Continue knitting over ${fullWidth} stitches.`,
       ],
       stitchCount: fullWidth,
     }),
@@ -331,8 +313,8 @@ export function buildSidewaysCardiganBodyDisplayRows(
     block({
       rc: landmarks.secondSideSeam,
       trustedParagraphs: [
-        `At ${formatRcColon(landmarks.secondSideSeam)}, repeat the first armhole procedure using the ${armhole} stitches.`,
-        `Continue with all ${fullWidth} stitches.`,
+        `At ${formatRcColon(landmarks.secondSideSeam)}, repeat the first armhole shaping using ${armhole} stitches.`,
+        `Continue knitting over ${fullWidth} stitches.`,
       ],
       stitchCount: fullWidth,
     }),
@@ -349,18 +331,18 @@ export function buildSidewaysCardiganBodyDisplayRows(
     block({
       rc: secondVStep.rowCounterStart,
       trustedParagraphs: [
-        `Begin with all ${fullWidth} stitches working.`,
+        `Begin with all ${fullWidth} stitches in work.`,
         `Work a ${decreasePh} using the reversed slope sequence:`,
         ...slopeProseLines(instructions.decreaseSequence, false),
         `Work actions ${eorPh}.`,
         `Move needles opposite the carriage and ${wrapPh}.`,
-        `Action row counters: ${formatActionRcRange(secondVActionRcs)}.`,
         `After the last short-row action, ${lastDecreaseCensus}.`,
         `During the final two-row interval, return all held stitches to work and knit across all ${fullWidth} stitches to enclose the wraps.`,
         `End at ${formatRcColon(landmarks.endSecondVShaping)}, not ${formatRcColon(landmarks.endSecondVShaping + 1)}, with ${allWorkingCount}.`,
       ],
       ...startStateCount({ working: fullWidth, held: 0, total: fullWidth }),
       bodyShapingChartId: "sideways-cardigan-second-v-neck",
+      bodyShapingChartCompletedRowsLabel: SIDEWAYS_COMPLETED_ROWS_LABEL,
       bodyShapingChartRows: shapingChartRows(
         secondVActionRcs,
         secondV.stitchesChangedOnAction,

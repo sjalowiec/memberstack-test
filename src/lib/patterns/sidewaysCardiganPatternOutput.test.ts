@@ -182,15 +182,36 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(text).toContain("Place 4 stitches into hold once.");
   });
 
-  it("shows calculated increase action RCs through the even V section", () => {
+  it("keeps calculated V-neck action RCs on the shaping chart without an action-row-counter summary", () => {
+    const firstVStep = instructions.steps.find((s) => s.id === "first-v-neck");
+    expect(firstVStep?.rowCounterStart).toBe(0);
+    expect(instructions.firstV.rowsBeforeFirstAction).toBe(2);
     const rcs = shortRowActionRowCounters(
-      instructions.firstV.rowInterval === 2 ? 0 : instructions.firstV.rowInterval,
+      (firstVStep?.rowCounterStart ?? 0) + instructions.firstV.rowsBeforeFirstAction,
       instructions.firstV.rowInterval,
       instructions.firstV.shapingActions,
     );
-    expect(rcs).toEqual([0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]);
-    expect(text).toContain(`${formatRcColon(0)}, ${formatRcColon(2)}, through ${formatRcColon(24)}`);
+    expect(rcs).toEqual([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]);
+    expect(instructions.firstV.actionRowCounters).toEqual(rcs);
+    const firstV = blocks(rows).find((row) => row.bodyShapingChartId === "sideways-cardigan-first-v-neck");
+    expect(firstV?.bodyShapingChartRows?.map((row) => row.rc)).toEqual(rcs);
+    expect(firstV?.bodyShapingChartRows?.[0]?.rc).toBe(2);
+    expect(firstV?.bodyShapingChartRows?.at(-1)?.rc).toBe(26);
+    expect(firstV?.bodyShapingChartRows?.at(-1)?.stitchesRemaining).toBe(110);
+    expect(text).toContain(
+      `Knit ${instructions.firstV.rowInterval} rows over the ${instructions.startingFrontStitches} working stitches before the first return-to-work action.`,
+    );
     expect(text).toContain(`End at ${formatRcColon(26)}`);
+    expect(text).not.toContain("Action row counters:");
+    expect(text).not.toContain(
+      `${formatRcColon(0)}, ${formatRcColon(2)}, through ${formatRcColon(24)}`,
+    );
+    const secondV = blocks(rows).find((row) => row.bodyShapingChartId === "sideways-cardigan-second-v-neck");
+    expect(instructions.secondV.rowsBeforeFirstAction).toBe(0);
+    expect(secondV?.bodyShapingChartRows?.[0]?.rc).toBe(instructions.landmarks.startFinalVShaping);
+    expect(secondV?.bodyShapingChartRows?.at(-1)?.rc).toBe(
+      instructions.landmarks.endSecondVShaping - instructions.secondV.rowInterval,
+    );
   });
 
   it("uses the approved glossary IDs", () => {
@@ -297,6 +318,8 @@ describe("sideways cardigan BODY display adapter", () => {
 
     expect(headerCountLabel(firstShoulder)).toBe(allWorking);
     expect(firstShoulder?.stitchCensus).toBeUndefined();
+    expect(firstShoulder?.rc).toBe(formatRcColon(26));
+    expect(firstShoulder?.paragraphs[0]).toBe(`The first row knits across all ${total} stitches.`);
     expect(lastInstruction(firstShoulder)).toContain(formatRcColon(70));
 
     expect(headerCountLabel(secondV)).toBe(allWorking);
@@ -320,9 +343,13 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(text).toContain(`Leave ${starting} body stitches working.`);
     expect(text).toContain(`Continue with ${census}.`);
     expect(text).toContain(`Begin with ${starting} stitches working and ${held} stitches held.`);
-    expect(text).toContain(`After the final action, all ${total} stitches are working.`);
+    expect(text).toContain(
+      `Knit ${instructions.firstV.rowInterval} rows over the ${starting} working stitches before the first return-to-work action.`,
+    );
+    expect(text).toContain(`After the final action, all ${total} stitches are in work.`);
+    expect(text).toContain(`The first row knits across all ${total} stitches.`);
     expect(text).toContain(`End at ${formatRcColon(26)} with ${total} sts.`);
-    expect(text).toContain(`Begin with all ${total} stitches working.`);
+    expect(text).toContain(`Begin with all ${total} stitches in work.`);
     expect(text).toContain(`After the last short-row action, ${census}.`);
     expect(text).toContain(
       `During the final two-row interval, return all held stitches to work and knit across all ${total} stitches to enclose the wraps.`,
@@ -330,6 +357,18 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(text).toContain(
       `End at ${formatRcColon(280)}, not ${formatRcColon(281)}, with ${total} sts.`,
     );
+    expect(text).toContain("Two armhole openings are knitted into the body.");
+    expect(text).toContain(
+      `At ${formatRcColon(instructions.landmarks.secondSideSeam)}, repeat the first armhole shaping using ${instructions.calc.armholeDepthStitches} stitches.`,
+    );
+    expect(text).toContain(`Continue knitting over ${total} stitches.`);
+    expect(text).not.toContain("Two armhole slits are knitted into the body.");
+    expect(text).not.toContain("Action row counters:");
+    expect(text).not.toContain("repeat the first armhole procedure");
+    expect(text).not.toContain(`Continue with all ${total} stitches.`);
+    expect(html).toContain(">Completed rows<");
+    expect(html).not.toContain("Show Completed Rows");
+    expect(html).not.toContain("Show completed rows");
   });
 
   it("renders the 68-stitch Cardigan example with start-state headers and ending-state instructions", () => {
@@ -350,6 +389,9 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(model.calc.garmentLengthStitches).toBe(68);
     expect(model.calc.vNeckDepthStitches).toBe(20);
     expect(model.startingFrontStitches).toBe(48);
+    expect(model.firstV.rowsBeforeFirstAction).toBe(2);
+    expect(model.firstV.actionRowCounters).toEqual([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]);
+    expect(model.landmarks.endFirstVShaping).toBe(22);
 
     const displayRows = buildSidewaysCardiganBodyDisplayRows(model);
     const displayText = allTrustedAndPlain(displayRows);
@@ -367,11 +409,18 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(renderPatternDisplayBlockHtml(castOn!)).not.toContain("sleeveless-pattern-sts--census");
 
     expect(headerCountLabel(firstV)).toBe(census);
-    expect(lastInstruction(firstV)).toMatch(/with 68 sts\.$/);
+    expect(firstV?.rc).toBe(formatRcColon(0));
+    expect(firstV?.bodyShapingChartRows?.map((row) => row.rc)).toEqual(model.firstV.actionRowCounters);
+    expect(firstV?.bodyShapingChartRows?.[0]?.rc).toBe(2);
+    expect(firstV?.bodyShapingChartRows?.at(-1)?.rc).toBe(22);
+    expect(firstV?.bodyShapingChartRows?.at(-1)?.stitchesRemaining).toBe(68);
+    expect(lastInstruction(firstV)).toBe(`End at ${formatRcColon(22)} with 68 sts.`);
     expect(renderPatternDisplayBlockHtml(firstV!)).toContain(census);
     expect(renderPatternDisplayBlockHtml(firstV!)).toContain("sleeveless-pattern-sts--census");
 
     expect(headerCountLabel(firstShoulder)).toBe("68 sts");
+    expect(firstShoulder?.rc).toBe(formatRcColon(22));
+    expect(firstShoulder?.paragraphs[0]).toBe("The first row knits across all 68 stitches.");
     expect(lastInstruction(firstShoulder)).toMatch(/End at RC:/);
 
     expect(headerCountLabel(secondV)).toBe("68 sts");
@@ -384,8 +433,20 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(displayText).toContain("Place the 20 neckline stitches into hold.");
     expect(displayText).toContain("Leave 48 body stitches working.");
     expect(displayText).toContain("Begin with 48 stitches working and 20 stitches held.");
-    expect(displayText).toContain("After the final action, all 68 stitches are working.");
-    expect(displayText).toContain("Begin with all 68 stitches working.");
+    expect(displayText).toContain(
+      "Knit 2 rows over the 48 working stitches before the first return-to-work action.",
+    );
+    expect(displayText).toContain("After the final action, all 68 stitches are in work.");
+    expect(displayText).toContain("The first row knits across all 68 stitches.");
+    expect(displayText).toContain("Begin with all 68 stitches in work.");
+    expect(displayText).toContain("Two armhole openings are knitted into the body.");
+    expect(displayText).toContain("Continue knitting over 68 stitches.");
+    expect(displayText).not.toContain("Action row counters:");
+    expect(displayText).not.toContain("Two armhole slits are knitted into the body.");
+    expect(displayText).not.toContain("repeat the first armhole procedure");
+    expect(displayText).not.toContain("Continue with all 68 stitches.");
+    expect(renderSidewaysCardiganBodyDisplayHtml(model)).toContain(">Completed rows<");
+    expect(renderSidewaysCardiganBodyDisplayHtml(model)).not.toContain("Show Completed Rows");
     expect(displayText).toContain(
       "During the final two-row interval, return all held stitches to work and knit across all 68 stitches to enclose the wraps.",
     );

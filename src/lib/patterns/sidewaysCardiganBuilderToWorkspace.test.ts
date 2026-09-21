@@ -235,7 +235,7 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.instructions?.garmentStyle).toBe("cardigan");
     expect(view.summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
     expect(view.sequenceHtml).toMatch(/beginning at one center-front edge/i);
-    expect(view.sequenceHtml).toMatch(/two armhole slits are knitted into the body/i);
+    expect(view.sequenceHtml).toMatch(/two armhole openings are knitted into the body/i);
     expect(view.instructions?.steps.filter((s) => /armhole-slit/.test(s.id))).toHaveLength(2);
   });
 
