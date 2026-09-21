@@ -25,7 +25,7 @@
 | 820 | Bobbin  \|  Yarn Bobbin |
 | 710 | Bobbles |
 | 779 | Bodkin  \|  Double Eye Needle |
-| 381 | Bouclé |
+| 381 | BouclÃ© |
 | 885 | Bridging |
 | 647 | Broken Toe Cast On |
 | 414 | Brother  \|  Knit King |
@@ -65,9 +65,8 @@
 | 827 | Color Pooling |
 | 214 | Continue |
 | 175 | Contrast Color |
-| 629 | Contrasting Color |
+| 629 | Contrasting Color (cc) |
 | 853 | COR |
-| 594 | Craft Yarn Council |
 | 622 | Crochet Cast on  \|  Chain Cast on |
 | 770 | Curl Cord (Silver Reed) |
 | 320 | Cut 'n Sew |
@@ -89,7 +88,6 @@
 | 845 | Drop the Ribber |
 | 815 | Dropped Shoulder |
 | 699 | Dry Knitting |
-| 598 | Dynamic patterns |
 | 312 | e-Wrap |
 | 470 | Ease |
 | 730 | EC1 Pattern Controller |
@@ -111,7 +109,6 @@
 | 370 | Eyelet  \|  yo |
 | 217 | Fair Isle  \|  Knit-In |
 | 660 | Fashion Lace |
-| 665 | Fashion Lace |
 | 753 | Fine Gauge |
 | 340 | Fine Knit Bar |
 | 396 | Fine Lace |
@@ -145,6 +142,7 @@
 | 653 | Half Fisherman Rib |
 | 394 | Half Milano  \|  Long Stitch |
 | 578 | Half-Circular  \|  U-Knitting |
+| 1783693868473 | Hem |
 | 185 | Holding Position |
 | 284 | Hung Hem |
 | 292 | I-Cord |
@@ -153,10 +151,12 @@
 | 645 | Increase Evenly |
 | 352 | Intarsia  \|  Picture Knitting |
 | 751 | Interactive Knitting |
+| 598 | Interactive patterns |
 | 713 | Isolated Motif |
 | 711 | Jacquard |
 | 661 | Japanese Knitting Machines |
 | 354 | Japanese Notation |
+| 1779400000001 | Japanese Notation (Traditional) |
 | 696 | Jaws (Shadow Lace Transfer Tool) |
 | 775 | Joiner: Cast On Comb |
 | 222 | Jones & Brother |
@@ -189,7 +189,7 @@
 | 188 | Left |
 | 337 | Left ## - Left ## |
 | 331 | Left-Leaning |
-| 343 | Lifeline |
+| 1779296723857 | Lifeline |
 | 745 | Linker |
 | 271 | Live Stitches |
 | 592 | Logging In |
@@ -212,6 +212,7 @@
 | 610 | Manual Slip Turning Column |
 | 718 | Manual Wrap |
 | 844 | Mark Needlebed |
+| 1779219555295 | Marker |
 | 388 | Marker Row |
 | 380 | Marled |
 | 314 | Mattress Stitch |
@@ -228,7 +229,6 @@
 | 387 | Multi-Prong Transfer Tool |
 | 621 | Mylar Sheets |
 | 728 | N-1 Cam (Needle 1) |
-| 461 | Neck Styling   \|  <small><small><em>SGS Tool</em></small></small> |
 | 193 | Needle |
 | 784 | Needle (Passap) |
 | 642 | Needle 1 Cam |
@@ -256,7 +256,6 @@
 | 276 | Partial Knitting |
 | 777 | Passap |
 | 196 | Pattern |
-| 591 | Pattern Notes |
 | 731 | PE1 Pattern Controller |
 | 766 | Peasant Heel |
 | 769 | Peplum |
@@ -275,7 +274,6 @@
 | 641 | Point Cams |
 | 200 | Position |
 | 611 | PPD (Brother) |
-| 692 | Premium Membership |
 | 198 | Preparation Row |
 | 323 | Private Side |
 | 843 | Proper Swatch |
@@ -288,7 +286,6 @@
 | 230 | Punchcard |
 | 842 | Punchcard Holder Pin |
 | 195 | Purl Side |
-| 326 | Quick Win |
 | 373 | Racking  \|  P/H |
 | 695 | Racking Handle (Swing Handle) |
 | 792 | Raglan |
@@ -328,7 +325,7 @@
 | 265 | Scrap and Ravel Cast On |
 | 311 | Scrap Off |
 | 255 | Scrap Yarn |
-| 676 | Screen Link SL-USB <em><small>  \|  DAK Cable</small></em> |
+| 676 | Screen Link SL-USB  \|  DAK Cable |
 | 605 | Seaming Stitches |
 | 604 | Seaming Stitches To Rows |
 | 603 | Seed Stitch / Moss Stitch |
@@ -339,7 +336,11 @@
 | 364 | Sew-As-You-Go |
 | 680 | Shadow lace |
 | 389 | Shadow Lace Transfer Tool  \|  Jaws |
+| 1779400000002 | Shaping Notation (Knit It Now) |
+| 250 | Short Row  \|  Partial Knitting |
 | 811 | Short Row  \|  Partial Knitting |
+| 1789995192454 | Short-row Decrease |
+| 1789995174575 | Short-row Increase |
 | 649 | Side Lever |
 | 679 | SilverKnit USB |
 | 828 | SilverLINK 5 |
@@ -359,6 +360,7 @@
 | 374 | Spanner |
 | 524 | Sponge Bar  \|  Presser Bar |
 | 817 | Square Armhole |
+| 902 | Stair steps |
 | 754 | Standard Gauge |
 | 637 | Stitch |
 | 270 | Stitch Dial |
