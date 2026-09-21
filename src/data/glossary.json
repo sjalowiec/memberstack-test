@@ -6067,5 +6067,31 @@
     "metaDescription": "",
     "active": true,
     "vimeoIds": []
+  },
+  {
+    "glossaryId": 1789995174575,
+    "english": "Short-row Increase",
+    "example": "A shaping method that increases the number of stitches being knitted by returning held needles to working position in groups. No new stitches are cast on.",
+    "helpinfo": "Begin with the instructed stitches in holding position. Work the shaping <a href=\"#\" data-glossary-id=\"182\">every other row</a>. With the carriage opposite the shaping edge, return the instructed number of needles to working position and <a href=\"#\" data-glossary-id=\"718\">manually wrap</a> the yarn to prevent a hole. Continue following the pattern's shaping schedule until all held stitches have been returned to work.<br><br>For example: If 40 stitches are held and the shaping schedule says 4 stitches once, then 3 stitches 12 times, return those groups to work every other row. After 26 rows, all 40 stitches will be working.<br><br>See: <a href=\"#\" data-glossary-id=\"811\">Short Row | Partial Knitting</a>. Opposite shaping: <a href=\"#\" data-glossary-id=\"1789995192454\">Short-row Decrease</a>.",
+    "image": "/images/glossary/short-row-increase-decrease.jpg",
+    "image_alt": "Hands displaying short-row shaping in a striped machine-knit sample.",
+    "image_description": "Close-up of a striped machine-knit sample being held open to show the shaped edge created by short-row knitting.",
+    "metaTitle": "Short-row Increase | Machine Knitting Glossary",
+    "metaDescription": "Learn how a short-row increase returns held needles to work in groups every other row to shape machine-knitted fabric without casting on new stitches.",
+    "active": true,
+    "vimeoIds": []
+  },
+  {
+    "glossaryId": 1789995192454,
+    "english": "Short-row Decrease",
+    "example": "A shaping method that decreases the number of stitches being knitted by placing working needles into hold in groups. No stitches are bound off.",
+    "helpinfo": "Begin with all instructed stitches working. Work the shaping <a href=\"#\" data-glossary-id=\"182\">every other row</a>. With the carriage opposite the shaping edge, place the instructed number of needles into holding position and <a href=\"#\" data-glossary-id=\"718\">manually wrap</a> the yarn to prevent a hole. Continue following the pattern's shaping schedule until the required number of stitches are held.<br><br>For example: If 40 stitches must be placed into hold and the shaping schedule says 3 stitches 12 times, then 4 stitches once, place those groups into hold every other row. After 26 rows, 40 stitches will be held.<br><br>See: <a href=\"#\" data-glossary-id=\"811\">Short Row | Partial Knitting</a>. Opposite shaping: <a href=\"#\" data-glossary-id=\"1789995174575\">Short-row Increase</a>.",
+    "image": "/images/glossary/short-row-increase-decrease.jpg",
+    "image_alt": "Hands displaying short-row shaping in a striped machine-knit sample.",
+    "image_description": "Close-up of a striped machine-knit sample being held open to show the shaped edge created by short-row knitting.",
+    "metaTitle": "Short-row Decrease | Machine Knitting Glossary",
+    "metaDescription": "Learn how a short-row decrease places stitches into hold in groups every other row to shape machine-knitted fabric without binding off stitches.",
+    "active": true,
+    "vimeoIds": []
   }
 ]
