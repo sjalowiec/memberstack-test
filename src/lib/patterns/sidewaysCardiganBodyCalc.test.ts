@@ -5,6 +5,7 @@ import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDept
 import {
   armholeSlitsMatch,
   calculateSidewaysCardiganBody,
+  evenRowCountForShortRowShaping,
   frontsAreMirrored,
   garmentSectionIdentitiesHold,
   hasNoArmholeRowSections,
@@ -126,15 +127,25 @@ describe("calculateSidewaysCardiganBody — true drop-shoulder armhole slit", ()
   });
 });
 
+describe("evenRowCountForShortRowShaping", () => {
+  it("leaves even raw half-neck rows unchanged and rounds odd values up", () => {
+    expect(evenRowCountForShortRowShaping(24)).toBe(24);
+    expect(evenRowCountForShortRowShaping(25)).toBe(26);
+    expect(evenRowCountForShortRowShaping(26)).toBe(26);
+    expect(evenRowCountForShortRowShaping(0)).toBe(0);
+  });
+});
+
 describe("calculateSidewaysCardiganBody — 40/7/7 garment-section rows", () => {
   const calc = calcOk();
 
   it("uses the exact 40-inch bust, 7-inch neck, 7 RPI example", () => {
     expect(calc.frontRows).toBe(70);
     expect(calc.backRows).toBe(140);
-    expect(calc.halfNeckRows).toBe(25);
-    expect(calc.backNeckOpeningRows).toBe(50);
-    expect(calc.shoulders.firstFrontRows).toBe(45);
+    expect(calc.rawHalfNeckRows).toBe(25);
+    expect(calc.halfNeckRows).toBe(26);
+    expect(calc.backNeckOpeningRows).toBe(52);
+    expect(calc.shoulders.firstFrontRows).toBe(44);
     expect(calc.bust.actualTotalBustRows).toBe(280);
     expect(calc.bust.actualFinishedBustInches).toBe(40);
     expect(calc.bust.requestedTotalBustRows).toBe(280);
@@ -157,10 +168,10 @@ describe("calculateSidewaysCardiganBody — 40/7/7 garment-section rows", () => 
     expect(summary.rows.find((row) => row.term === "Each front")?.def).toBe("10 in · 70 rows");
     expect(summary.rows.find((row) => row.term === "Back")?.def).toBe("20 in · 140 rows");
     expect(summary.rows.find((row) => row.term === "Each V-neck section")?.def).toBe(
-      "3.57 in · 25 rows",
+      "3.71 in · 26 rows",
     );
     expect(summary.rows.find((row) => row.term === "Each shoulder section")?.def).toBe(
-      "6.43 in · 45 rows",
+      "6.29 in · 44 rows",
     );
     expect(summary.rows.find((row) => row.term === "Total bust rows")?.def).toBe("280 rows");
     expect(summary.rows.find((row) => row.term === "Actual finished bust")?.def).toBe("40 in");
@@ -217,6 +228,7 @@ describe("calculateSidewaysCardiganBody — seven-section bust rows", () => {
     expect(rawFullNeck).toBe(35);
     expect(rawFullNeck % 2).toBe(1);
     expect(oddNeck.neckOpeningRows).toBe(35);
+    expect(oddNeck.rawHalfNeckRows).toBe(18);
     expect(oddNeck.halfNeckRows).toBe(18);
     expect(oddNeck.bodyRowSequence.firstFrontVNeckShapingRows).toBe(18);
     expect(oddNeck.bodyRowSequence.secondFrontVNeckShapingRows).toBe(18);
@@ -274,9 +286,10 @@ describe("calculateSidewaysCardiganBody — seven-section bust rows", () => {
     if (zeroShoulders.ok) throw new Error("expected validation error");
     expect(zeroShoulders.error.code).toBe(SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS);
     expect(zeroShoulders.error.frontRows).toBe(35);
-    expect(zeroShoulders.error.halfNeckRows).toBe(35);
-    expect(zeroShoulders.error.roundedShoulderRows).toBe(0);
-    expect(zeroShoulders.error.remainingRowsForShoulders).toBe(0);
+    expect(zeroShoulders.error.rawHalfNeckRows).toBe(35);
+    expect(zeroShoulders.error.halfNeckRows).toBe(36);
+    expect(zeroShoulders.error.roundedShoulderRows).toBe(-1);
+    expect(zeroShoulders.error.remainingRowsForShoulders).toBe(-1);
     expect(zeroShoulders.error.message).toMatch(/shoulder/i);
 
     const justPositive = calculateSidewaysCardiganBody({
@@ -288,6 +301,7 @@ describe("calculateSidewaysCardiganBody — seven-section bust rows", () => {
     expect(justPositive.ok).toBe(true);
     if (!justPositive.ok) throw new Error(justPositive.error.message);
     expect(justPositive.calc.frontRows).toBe(35);
+    expect(justPositive.calc.rawHalfNeckRows).toBe(34);
     expect(justPositive.calc.halfNeckRows).toBe(34);
     expect(justPositive.calc.shoulders.firstFrontRows).toBe(1);
 

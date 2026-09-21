@@ -13,8 +13,10 @@
  *
  * Garment sections are the primary row calculations:
  *   frontRows = round((finishedBust / 4) × rowsPerInch)
+ *   rawHalfNeckRows = round((neckOpening / 2) × rowsPerInch)
+ *   halfNeckRows = rawHalfNeckRows, or the next even integer when raw is odd
+ *     (short-row V shaping is every other row, so each V must occupy an even row count)
  *   backRows = 2 × frontRows
- *   halfNeckRows = round((neckOpening / 2) × rowsPerInch)
  *   backNeckRows = 2 × halfNeckRows
  *   shoulderRows = frontRows − halfNeckRows
  *   actualTotalBustRows = 4 × frontRows
@@ -107,6 +109,7 @@ export type SidewaysCardiganBodyCalcError = {
   requestedTotalBustRows: number;
   requestedFinishedBustInches: number;
   neckOpeningRows: number;
+  rawHalfNeckRows: number;
   halfNeckRows: number;
   frontRows: number;
   remainingRowsForShoulders: number;
@@ -128,6 +131,12 @@ export type SidewaysCardiganBodyCalc = {
   };
   frontRows: number;
   backRows: number;
+  /**
+   * Raw half-neck rows: round((neckOpening / 2) × rowsPerInch). May be odd.
+   * Short-row V shaping uses {@link halfNeckRows}, which rounds an odd raw value up to even.
+   */
+  rawHalfNeckRows: number;
+  /** Even half-neck rows used for V shaping, back neck, and shoulders. */
   halfNeckRows: number;
   /** Raw full-neck rows: round(neckOpening × rowsPerInch). May be odd. */
   neckOpeningRows: number;
@@ -153,6 +162,16 @@ function stitchesAlongLength(inches: number, stitchesPerInch: number): number {
 
 function rowsAlongCircumference(inches: number, rowsPerInch: number): number {
   return inchesToRows(inches, rowsPerInch);
+}
+
+/**
+ * Short-row V shaping is every other row. An odd raw half-neck row count cannot
+ * complete the last two-row interval, so it rounds up to the next even integer.
+ */
+export function evenRowCountForShortRowShaping(rawRows: number): number {
+  const n = Math.max(0, Math.trunc(rawRows));
+  if (n === 0) return 0;
+  return n % 2 === 0 ? n : n + 1;
 }
 
 function identicalShoulders(rows: number): SidewaysCardiganShoulderRows {
@@ -196,10 +215,11 @@ export function calculateSidewaysCardiganBody(
     input.finishedBustCircumferenceInches / 4,
     input.rowsPerInch,
   );
-  const halfNeckRows = rowsAlongCircumference(
+  const rawHalfNeckRows = rowsAlongCircumference(
     input.neckOpeningWidthInches / 2,
     input.rowsPerInch,
   );
+  const halfNeckRows = evenRowCountForShortRowShaping(rawHalfNeckRows);
   const backRows = 2 * frontRows;
   const backNeckRows = 2 * halfNeckRows;
   const shoulderRows = frontRows - halfNeckRows;
@@ -220,6 +240,7 @@ export function calculateSidewaysCardiganBody(
         requestedTotalBustRows,
         requestedFinishedBustInches: input.finishedBustCircumferenceInches,
         neckOpeningRows,
+        rawHalfNeckRows,
         halfNeckRows,
         frontRows,
         remainingRowsForShoulders: shoulderRows,
@@ -276,6 +297,7 @@ export function calculateSidewaysCardiganBody(
       },
       frontRows,
       backRows,
+      rawHalfNeckRows,
       halfNeckRows,
       neckOpeningRows,
       frontNeckOpeningRows: halfNeckRows,
