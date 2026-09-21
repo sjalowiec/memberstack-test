@@ -101,9 +101,24 @@ export function renderPatternDisplayBlockHtml(
     leftBits.push(patternTipWrapperHtml(row));
   }
   const leftHtml = `<div class="sleeveless-pattern-left">${leftBits.join("")}</div>`;
-  const rightHtml = showStitch
-    ? `<div class="sleeveless-pattern-sts">${row.stitchCount} sts</div>`
+  const census = row.stitchCensus;
+  const showCensus = census !== undefined && census.held > 0;
+  const censusLabel = showCensus
+    ? `${census.working} working · ${census.held} held · ${census.total} total`
     : "";
+  const rightHtml = showCensus
+    ? `<div class="sleeveless-pattern-sts sleeveless-pattern-sts--census">${escapePatternDisplayHtml(
+        censusLabel,
+      )}${
+        row.stitchCensusFinalWorking !== undefined
+          ? `<span class="sleeveless-pattern-sts__final">then ${escapePatternDisplayHtml(
+              String(row.stitchCensusFinalWorking),
+            )} working</span>`
+          : ""
+      }</div>`
+    : showStitch
+      ? `<div class="sleeveless-pattern-sts">${row.stitchCount} sts</div>`
+      : "";
   const rowClass = rightHtml
     ? "sleeveless-pattern-row"
     : "sleeveless-pattern-row sleeveless-pattern-row--full";

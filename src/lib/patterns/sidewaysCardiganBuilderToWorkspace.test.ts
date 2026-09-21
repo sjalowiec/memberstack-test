@@ -356,11 +356,13 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain("Sideways V-Neck Sweater");
     expect(workspace).toContain("Sideways V-Neck Sweater");
     expect(builder).toContain(
-      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a",
+      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.",
     );
     expect(workspace).toContain(
-      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a",
+      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.",
     );
+    expect(builder).not.toContain("straight back neck");
+    expect(workspace).not.toContain("straight back neck");
     expect(builder).not.toContain("Sideways Cardigan");
     expect(workspace).not.toContain("Sideways Cardigan");
     expect(builder).not.toContain("V-neck cardigan");

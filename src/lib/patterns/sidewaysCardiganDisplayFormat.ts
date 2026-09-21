@@ -29,6 +29,15 @@ export function formatRowsCount(rows: number): string {
   return `${n} ${n === 1 ? "row" : "rows"}`;
 }
 
+/** Right-column census when some stitches are parked, not removed. */
+export function formatSidewaysHeldStitchCensus(args: {
+  working: number;
+  held: number;
+  total: number;
+}): string {
+  return `${args.working} working · ${args.held} held · ${args.total} total`;
+}
+
 /**
  * Friendly bust-row adjustment. Returns null when there is no adjustment to mention.
  * Example: "1 row smaller (0.17 inches smaller)"

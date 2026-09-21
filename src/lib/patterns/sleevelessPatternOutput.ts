@@ -607,6 +607,17 @@ export type SleevelessPatternDisplayRow =
       }[];
       /** Total stitches on the piece after this block; shown in the right column when defined */
       stitchCount?: number;
+      /**
+       * Working / held / total census for constructions that park stitches.
+       * When `held` is greater than 0, the right column shows all three states
+       * instead of a single “N sts” working-only count.
+       */
+      stitchCensus?: { working: number; held: number; total: number };
+      /**
+       * Optional follow-on working count after a held-stitch section resolves
+       * (e.g. enclosing wraps so every stitch is working again).
+       */
+      stitchCensusFinalWorking?: number;
     };
 
 export type SleevelessBackPatternResult = {

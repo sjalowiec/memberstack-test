@@ -5,7 +5,7 @@
  */
 
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
-import { formatStitchesCount } from "./sidewaysCardiganDisplayFormat";
+import { formatSidewaysHeldStitchCensus, formatStitchesCount } from "./sidewaysCardiganDisplayFormat";
 import {
   wrapPatternSectionHtml,
   renderPatternDisplayRowsHtml,
@@ -132,11 +132,24 @@ function section(title: string): Extract<SleevelessPatternDisplayRow, { kind: "s
   return { kind: "section", title };
 }
 
+function heldCensus(working: number, held: number, total: number) {
+  return { working, held, total };
+}
+
+function startStateCount(args: { working: number; held: number; total: number }): {
+  stitchCount?: number;
+  stitchCensus?: { working: number; held: number; total: number };
+} {
+  if (args.held > 0) return { stitchCensus: heldCensus(args.working, args.held, args.total) };
+  return { stitchCount: args.total };
+}
+
 function block(args: {
   rc?: number;
   paragraphs?: string[];
   trustedParagraphs?: string[];
   stitchCount?: number;
+  stitchCensus?: { working: number; held: number; total: number };
   bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
   bodyShapingChartId?: string;
 }): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
@@ -146,6 +159,7 @@ function block(args: {
     paragraphs: args.paragraphs ?? [],
     ...(args.trustedParagraphs ? { trustedParagraphs: args.trustedParagraphs } : {}),
     ...(args.stitchCount !== undefined ? { stitchCount: args.stitchCount } : {}),
+    ...(args.stitchCensus ? { stitchCensus: args.stitchCensus } : {}),
     ...(args.bodyShapingChartRows ? { bodyShapingChartRows: args.bodyShapingChartRows } : {}),
     ...(args.bodyShapingChartId ? { bodyShapingChartId: args.bodyShapingChartId } : {}),
   };
@@ -180,6 +194,17 @@ export function buildSidewaysCardiganBodyDisplayRows(
   );
   const lastDecreaseWorking = secondV.workingStitchesAfterAction.at(-1) ?? startingFrontStitches;
   const lastDecreaseHeld = secondV.heldStitchesAfterAction.at(-1) ?? vSts;
+  const heldStartCensus = formatSidewaysHeldStitchCensus({
+    working: startingFrontStitches,
+    held: vSts,
+    total: fullWidth,
+  });
+  const lastDecreaseCensus = formatSidewaysHeldStitchCensus({
+    working: lastDecreaseWorking,
+    held: lastDecreaseHeld,
+    total: fullWidth,
+  });
+  const allWorkingCount = `${fullWidth} sts`;
 
   const increasePh = g(SHORT_ROW_INCREASE_GLOSSARY_ID, "Short-row Increase");
   const decreasePh = g(SHORT_ROW_DECREASE_GLOSSARY_ID, "Short-row Decrease");
@@ -218,21 +243,28 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `Set ${formatRcColon(0)}.`,
         `Place the ${vSts} neckline stitches into hold.`,
         `Leave ${startingFrontStitches} body stitches working.`,
+        `Continue with ${heldStartCensus}.`,
       ],
-      stitchCount: startingFrontStitches,
+      ...startStateCount({ working: fullWidth, held: 0, total: fullWidth }),
     }),
     section("FIRST V-NECK"),
     block({
       rc: firstVStep.rowCounterStart,
       trustedParagraphs: [
+        `Begin with ${startingFrontStitches} stitches working and ${vSts} stitches held.`,
         `Work a ${increasePh} over ${firstV.rows} rows:`,
         ...slopeProseLines(instructions.increaseSequence, true),
         `Work each action ${eorPh}.`,
         `Move needles opposite the carriage and ${wrapPh}.`,
         `Action row counters: ${formatActionRcRange(firstVActionRcs)}.`,
-        `End at ${formatRcColon(firstVStep.rowCounterEnd)} with all ${fullWidth} stitches working.`,
+        `After the final action, all ${fullWidth} stitches are working.`,
+        `End at ${formatRcColon(firstVStep.rowCounterEnd)} with ${allWorkingCount}.`,
       ],
-      stitchCount: fullWidth,
+      ...startStateCount({
+        working: startingFrontStitches,
+        held: vSts,
+        total: fullWidth,
+      }),
       bodyShapingChartId: "sideways-cardigan-first-v-neck",
       bodyShapingChartRows: shapingChartRows(
         firstVActionRcs,
@@ -317,16 +349,17 @@ export function buildSidewaysCardiganBodyDisplayRows(
     block({
       rc: secondVStep.rowCounterStart,
       trustedParagraphs: [
+        `Begin with all ${fullWidth} stitches working.`,
         `Work a ${decreasePh} using the reversed slope sequence:`,
         ...slopeProseLines(instructions.decreaseSequence, false),
         `Work actions ${eorPh}.`,
         `Move needles opposite the carriage and ${wrapPh}.`,
         `Action row counters: ${formatActionRcRange(secondVActionRcs)}.`,
-        `During the final two-row interval: after the first row, ${lastDecreaseWorking} stitches are working and ${lastDecreaseHeld} stitches are held.`,
-        `Return all held stitches to work. Knit the second row across all ${fullWidth} stitches to enclose the wraps.`,
-        `End at ${formatRcColon(landmarks.endSecondVShaping)}, not ${formatRcColon(landmarks.endSecondVShaping + 1)}.`,
+        `After the last short-row action, ${lastDecreaseCensus}.`,
+        `During the final two-row interval, return all held stitches to work and knit across all ${fullWidth} stitches to enclose the wraps.`,
+        `End at ${formatRcColon(landmarks.endSecondVShaping)}, not ${formatRcColon(landmarks.endSecondVShaping + 1)}, with ${allWorkingCount}.`,
       ],
-      stitchCount: fullWidth,
+      ...startStateCount({ working: fullWidth, held: 0, total: fullWidth }),
       bodyShapingChartId: "sideways-cardigan-second-v-neck",
       bodyShapingChartRows: shapingChartRows(
         secondVActionRcs,

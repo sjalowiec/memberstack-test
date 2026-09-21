@@ -48,4 +48,20 @@ describe("narrow Sleeveless display-row renderer", () => {
     expect(html).toContain("Bind off 36 stitches.");
     expect(html).toContain("110 sts");
   });
+
+  it("renders a held-stitch census instead of a working-only sts label", () => {
+    const html = renderPatternDisplayBlockHtml(
+      {
+        kind: "block",
+        rc: "RC: 000",
+        paragraphs: ["Place neckline stitches into hold."],
+        stitchCensus: { working: 48, held: 20, total: 68 },
+      },
+      { pieceSectionId: "body" },
+    );
+    expect(html).toContain("48 working · 20 held · 68 total");
+    expect(html).toContain("sleeveless-pattern-sts--census");
+    expect(html).not.toContain("48 sts");
+    expect(html).not.toContain("68 sts");
+  });
 });

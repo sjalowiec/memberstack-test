@@ -19,6 +19,8 @@ import {
   EWRAP_CAST_ON_GLOSSARY_ID,
   RAVEL_CORD_GLOSSARY_ID,
 } from "./sidewaysCardiganPatternOutput";
+import { formatSidewaysHeldStitchCensus } from "./sidewaysCardiganDisplayFormat";
+import { renderPatternDisplayBlockHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSidewaysCardiganBodySequenceHtml } from "./sidewaysCardiganBodyInstructions";
 
 const SAMPLE: SidewaysCardiganBodyCalcInput = {
@@ -54,6 +56,33 @@ function blocks(rows: readonly SleevelessPatternDisplayRow[]) {
   return rows.filter(
     (row): row is Extract<SleevelessPatternDisplayRow, { kind: "block" }> => row.kind === "block",
   );
+}
+
+function blockAfterSection(
+  rows: readonly SleevelessPatternDisplayRow[],
+  title: string,
+): Extract<SleevelessPatternDisplayRow, { kind: "block" }> | undefined {
+  const index = rows.findIndex((row) => row.kind === "section" && row.title === title);
+  const next = index >= 0 ? rows[index + 1] : undefined;
+  return next?.kind === "block" ? next : undefined;
+}
+
+function lastInstruction(
+  row: Extract<SleevelessPatternDisplayRow, { kind: "block" }> | undefined,
+): string {
+  const lines = row?.trustedParagraphs?.length ? row.trustedParagraphs : row?.paragraphs ?? [];
+  return lines.at(-1) ?? "";
+}
+
+function headerCountLabel(
+  row: Extract<SleevelessPatternDisplayRow, { kind: "block" }> | undefined,
+): string | undefined {
+  if (!row) return undefined;
+  if (row.stitchCensus && row.stitchCensus.held > 0) {
+    return formatSidewaysHeldStitchCensus(row.stitchCensus);
+  }
+  if (row.stitchCount !== undefined) return `${row.stitchCount} sts`;
+  return undefined;
 }
 
 function allTrustedAndPlain(rows: readonly SleevelessPatternDisplayRow[]): string {
@@ -107,8 +136,15 @@ describe("sideways cardigan BODY display adapter", () => {
     const stitchCounts = blocks(rows)
       .map((row) => row.stitchCount)
       .filter((n): n is number => n !== undefined);
-    expect(stitchCounts).toContain(starting);
     expect(stitchCounts).toContain(fullWidth);
+    expect(stitchCounts).not.toContain(starting);
+    const firstV = blockAfterSection(rows, "FIRST V-NECK");
+    expect(firstV?.stitchCensus).toEqual({
+      working: starting,
+      held: instructions.calc.vNeckDepthStitches,
+      total: fullWidth,
+    });
+    expect(firstV?.stitchCount).toBeUndefined();
   });
 
   it("lists 13 short-row actions for the increase and the reversed decrease", () => {
@@ -228,5 +264,132 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(html).toContain("Return 2 stitches to work 13 times.");
     expect(html).not.toContain("sideways-body-sequence");
     expect(html).not.toMatch(/must exceed the even half-neck rows/i);
+  });
+
+  it("does not call the back neck a straight back neck in Cardigan BODY copy", () => {
+    expect(text).not.toMatch(/straight back neck/i);
+    expect(html).not.toMatch(/straight back neck/i);
+  });
+
+  it("puts the starting stitch state in the section header and the ending state in the last instruction", () => {
+    const starting = instructions.startingFrontStitches;
+    const held = instructions.calc.vNeckDepthStitches;
+    const total = instructions.calc.garmentLengthStitches;
+    const census = formatSidewaysHeldStitchCensus({ working: starting, held, total });
+    const allWorking = `${total} sts`;
+
+    const castOn = blockAfterSection(rows, "CAST ON");
+    const firstV = blockAfterSection(rows, "FIRST V-NECK");
+    const firstShoulder = blockAfterSection(rows, "FIRST FRONT SHOULDER");
+    const secondV = blockAfterSection(rows, "SECOND V-NECK");
+
+    expect(headerCountLabel(castOn)).toBe(allWorking);
+    expect(castOn?.stitchCensus).toBeUndefined();
+    expect(lastInstruction(castOn)).toBe(`Continue with ${census}.`);
+    expect(renderPatternDisplayBlockHtml(castOn!)).toContain(`>${allWorking}<`);
+    expect(renderPatternDisplayBlockHtml(castOn!)).not.toContain("sleeveless-pattern-sts--census");
+
+    expect(headerCountLabel(firstV)).toBe(census);
+    expect(firstV?.stitchCount).toBeUndefined();
+    expect(lastInstruction(firstV)).toBe(`End at ${formatRcColon(26)} with ${allWorking}.`);
+    expect(renderPatternDisplayBlockHtml(firstV!)).toContain("sleeveless-pattern-sts--census");
+    expect(renderPatternDisplayBlockHtml(firstV!)).toContain(census);
+
+    expect(headerCountLabel(firstShoulder)).toBe(allWorking);
+    expect(firstShoulder?.stitchCensus).toBeUndefined();
+    expect(lastInstruction(firstShoulder)).toContain(formatRcColon(70));
+
+    expect(headerCountLabel(secondV)).toBe(allWorking);
+    expect(secondV?.stitchCensus).toBeUndefined();
+    expect(text).toContain(`After the last short-row action, ${census}.`);
+    expect(lastInstruction(secondV)).toBe(
+      `End at ${formatRcColon(280)}, not ${formatRcColon(281)}, with ${allWorking}.`,
+    );
+    expect(renderPatternDisplayBlockHtml(secondV!)).toContain(`>${allWorking}<`);
+    expect(renderPatternDisplayBlockHtml(secondV!)).not.toContain("sleeveless-pattern-sts--census");
+    expect(html).not.toContain(`then ${total} working`);
+  });
+
+  it("states Cast On and V-neck working/held transitions from the calculated model", () => {
+    const starting = instructions.startingFrontStitches;
+    const held = instructions.calc.vNeckDepthStitches;
+    const total = instructions.calc.garmentLengthStitches;
+    const census = formatSidewaysHeldStitchCensus({ working: starting, held, total });
+    expect(text).toContain(`Bring ${total} needles into work.`);
+    expect(text).toContain(`Place the ${held} neckline stitches into hold.`);
+    expect(text).toContain(`Leave ${starting} body stitches working.`);
+    expect(text).toContain(`Continue with ${census}.`);
+    expect(text).toContain(`Begin with ${starting} stitches working and ${held} stitches held.`);
+    expect(text).toContain(`After the final action, all ${total} stitches are working.`);
+    expect(text).toContain(`End at ${formatRcColon(26)} with ${total} sts.`);
+    expect(text).toContain(`Begin with all ${total} stitches working.`);
+    expect(text).toContain(`After the last short-row action, ${census}.`);
+    expect(text).toContain(
+      `During the final two-row interval, return all held stitches to work and knit across all ${total} stitches to enclose the wraps.`,
+    );
+    expect(text).toContain(
+      `End at ${formatRcColon(280)}, not ${formatRcColon(281)}, with ${total} sts.`,
+    );
+  });
+
+  it("renders the 68-stitch Cardigan example with start-state headers and ending-state instructions", () => {
+    const sixtyEight: SidewaysCardiganBodyCalcInput = {
+      garmentLengthInches: 17,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 40,
+      finishedUpperArmInches: 14,
+      neckOpeningWidthInches: 7,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 4,
+      rowsPerInch: 6,
+    };
+    const result = buildSidewaysCardiganBodyInstructions(sixtyEight, "cardigan");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    const { instructions: model } = result;
+    expect(model.calc.garmentLengthStitches).toBe(68);
+    expect(model.calc.vNeckDepthStitches).toBe(20);
+    expect(model.startingFrontStitches).toBe(48);
+
+    const displayRows = buildSidewaysCardiganBodyDisplayRows(model);
+    const displayText = allTrustedAndPlain(displayRows);
+    const census = formatSidewaysHeldStitchCensus({ working: 48, held: 20, total: 68 });
+    expect(census).toBe("48 working · 20 held · 68 total");
+
+    const castOn = blockAfterSection(displayRows, "CAST ON");
+    const firstV = blockAfterSection(displayRows, "FIRST V-NECK");
+    const firstShoulder = blockAfterSection(displayRows, "FIRST FRONT SHOULDER");
+    const secondV = blockAfterSection(displayRows, "SECOND V-NECK");
+
+    expect(headerCountLabel(castOn)).toBe("68 sts");
+    expect(lastInstruction(castOn)).toBe(`Continue with ${census}.`);
+    expect(renderPatternDisplayBlockHtml(castOn!)).toContain(">68 sts<");
+    expect(renderPatternDisplayBlockHtml(castOn!)).not.toContain("sleeveless-pattern-sts--census");
+
+    expect(headerCountLabel(firstV)).toBe(census);
+    expect(lastInstruction(firstV)).toMatch(/with 68 sts\.$/);
+    expect(renderPatternDisplayBlockHtml(firstV!)).toContain(census);
+    expect(renderPatternDisplayBlockHtml(firstV!)).toContain("sleeveless-pattern-sts--census");
+
+    expect(headerCountLabel(firstShoulder)).toBe("68 sts");
+    expect(lastInstruction(firstShoulder)).toMatch(/End at RC:/);
+
+    expect(headerCountLabel(secondV)).toBe("68 sts");
+    expect(displayText).toContain(`After the last short-row action, ${census}.`);
+    expect(lastInstruction(secondV)).toMatch(/with 68 sts\.$/);
+    expect(renderPatternDisplayBlockHtml(secondV!)).toContain(">68 sts<");
+    expect(renderPatternDisplayBlockHtml(secondV!)).not.toContain("sleeveless-pattern-sts--census");
+
+    expect(displayText).toContain("Bring 68 needles into work.");
+    expect(displayText).toContain("Place the 20 neckline stitches into hold.");
+    expect(displayText).toContain("Leave 48 body stitches working.");
+    expect(displayText).toContain("Begin with 48 stitches working and 20 stitches held.");
+    expect(displayText).toContain("After the final action, all 68 stitches are working.");
+    expect(displayText).toContain("Begin with all 68 stitches working.");
+    expect(displayText).toContain(
+      "During the final two-row interval, return all held stitches to work and knit across all 68 stitches to enclose the wraps.",
+    );
+    expect(displayText).not.toMatch(/straight back neck/i);
+    expect(displayText).not.toContain("48 sts");
   });
 });
