@@ -3,9 +3,17 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   KNIT_ABLES_CANONICAL_URL,
+  KNIT_ABLES_CARDS,
   KNIT_ABLES_LOGO,
   KNIT_ABLES_PATH,
 } from "./knitAblesLanding";
+import { TEENAGE_KICKS_IMAGES, TEENAGE_KICKS_SOCKS_PATH } from "./teenageKicksSocks";
+import {
+  WORSTED_COLOR_BLOCK_SOCKS_CARD_COPY,
+  WORSTED_COLOR_BLOCK_SOCKS_IMAGES,
+  WORSTED_COLOR_BLOCK_SOCKS_PATH,
+  WORSTED_COLOR_BLOCK_SOCKS_TITLE,
+} from "./worstedColorBlockSocks";
 
 const landingSource = readFileSync(
   resolve("src/pages/knit-ables/index.astro"),
@@ -51,5 +59,36 @@ describe("Knit-ables landing page logo", () => {
   it("does not add the logo to the site Header", () => {
     expect(headerSource).not.toContain("machine-knit-ables-logo.png");
     expect(inspirationSource).toContain("KnitAblePageHeader");
+  });
+});
+
+describe("Knit-ables landing page cards", () => {
+  it("keeps the Teenage Kicks Knit-able and adds Worsted Color-Block Socks", () => {
+    expect(landingSource).toContain("KNIT_ABLES_CARDS");
+    expect(landingSource).toContain("knit-ables-card-list");
+    expect(landingSource).toContain("knit-ables-feature-card");
+    expect(KNIT_ABLES_CARDS).toHaveLength(2);
+
+    const teenageKicks = KNIT_ABLES_CARDS[0];
+    expect(teenageKicks?.href).toBe(TEENAGE_KICKS_SOCKS_PATH);
+    expect(teenageKicks?.href).toBe("/knit-ables/teenage-kicks-socks");
+    expect(teenageKicks?.title).toBe("Colorful Self-Striping Socks");
+    expect(teenageKicks?.description).toBe(
+      "Bright stripes from self-striping yarn, using the Basic Socks Pattern Builder.",
+    );
+    expect(teenageKicks?.image.src).toBe(TEENAGE_KICKS_IMAGES.hero.src);
+    expect(existsSync(resolve(`public${TEENAGE_KICKS_IMAGES.hero.src}`))).toBe(true);
+
+    const worstedSocks = KNIT_ABLES_CARDS[1];
+    expect(worstedSocks?.href).toBe(WORSTED_COLOR_BLOCK_SOCKS_PATH);
+    expect(worstedSocks?.href).toBe("/knit-ables/worsted-color-block-socks");
+    expect(worstedSocks?.title).toBe(WORSTED_COLOR_BLOCK_SOCKS_TITLE);
+    expect(worstedSocks?.title).toBe("Worsted Color-Block Socks");
+    expect(worstedSocks?.description).toBe(WORSTED_COLOR_BLOCK_SOCKS_CARD_COPY);
+    expect(worstedSocks?.image.src).toBe(WORSTED_COLOR_BLOCK_SOCKS_IMAGES.hero.src);
+    expect(worstedSocks?.image.alt).toBe(WORSTED_COLOR_BLOCK_SOCKS_IMAGES.hero.alt);
+    expect(existsSync(resolve(`public${WORSTED_COLOR_BLOCK_SOCKS_IMAGES.hero.src}`))).toBe(
+      true,
+    );
   });
 });

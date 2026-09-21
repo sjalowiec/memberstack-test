@@ -4,15 +4,11 @@ export const prerender = true;
 import Layout from "../../layouts/Layout.astro";
 import {
   KNIT_ABLES_CANONICAL_URL,
+  KNIT_ABLES_CARDS,
   KNIT_ABLES_LOGO,
 } from "../../lib/knit-ables/knitAblesLanding";
-import {
-  TEENAGE_KICKS_IMAGES,
-  TEENAGE_KICKS_SOCKS_PATH,
-} from "../../lib/knit-ables/teenageKicksSocks";
 
 const logo = KNIT_ABLES_LOGO;
-const featured = TEENAGE_KICKS_IMAGES.hero;
 ---
 
 <Layout
@@ -47,21 +43,25 @@ const featured = TEENAGE_KICKS_IMAGES.hero;
     </header>
 
     <section aria-labelledby="knit-ables-list-heading">
-      <h2 id="knit-ables-list-heading">Start with this Knit-able</h2>
-      <a class="kbm-card knit-ables-feature-card" href={TEENAGE_KICKS_SOCKS_PATH}>
-        <img
-          src={featured.src}
-          alt={featured.alt}
-          width={featured.width}
-          height={featured.height}
-          loading="lazy"
-          decoding="async"
-        />
-        <h3 class="kbm-card__title">Colorful Self-Striping Socks</h3>
-        <p class="kbm-card__desc">
-          Bright stripes from self-striping yarn, using the Basic Socks Pattern Builder.
-        </p>
-      </a>
+      <h2 id="knit-ables-list-heading">Start with a Knit-able</h2>
+      <div class="knit-ables-card-list">
+        {
+          KNIT_ABLES_CARDS.map((card) => (
+            <a class="kbm-card knit-ables-feature-card" href={card.href}>
+              <img
+                src={card.image.src}
+                alt={card.image.alt}
+                width={card.image.width}
+                height={card.image.height}
+                loading="lazy"
+                decoding="async"
+              />
+              <h3 class="kbm-card__title">{card.title}</h3>
+              <p class="kbm-card__desc">{card.description}</p>
+            </a>
+          ))
+        }
+      </div>
     </section>
   </div>
 </Layout>
@@ -115,6 +115,12 @@ const featured = TEENAGE_KICKS_IMAGES.hero;
     margin: 0 0 0.85rem;
   }
 
+  .knit-ables-card-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
   .knit-ables-feature-card {
     display: grid;
     gap: 0.75rem;
@@ -152,6 +158,11 @@ const featured = TEENAGE_KICKS_IMAGES.hero;
 
     .knit-ables-logo {
       width: min(100%, 220px);
+    }
+
+    .knit-ables-card-list {
+      grid-template-columns: repeat(2, minmax(0, 22rem));
+      gap: 1.75rem;
     }
   }
 </style>

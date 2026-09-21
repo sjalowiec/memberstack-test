@@ -15,6 +15,10 @@ const pageSource = readFileSync(
   resolve("src/pages/knit-ables/teenage-kicks-socks.astro"),
   "utf8",
 );
+const worstedPageSource = readFileSync(
+  resolve("src/pages/knit-ables/worsted-color-block-socks.astro"),
+  "utf8",
+);
 
 describe("KnitAblePageHeader", () => {
   it("shows the Knit-able eyebrow, logo, and title", () => {
@@ -52,5 +56,11 @@ describe("KnitAblePageHeader", () => {
     expect(pageSource).toContain('title="Colorful Self-Striping Socks"');
     expect(pageSource).toContain('headingId="knit-able-hero-heading"');
     expect(pageSource).not.toContain("<h1 id=\"knit-able-hero-heading\">");
+  });
+
+  it("is used by the Worsted Color-Block Socks page", () => {
+    expect(worstedPageSource).toContain("KnitAblePageHeader");
+    expect(worstedPageSource).toContain("WORSTED_COLOR_BLOCK_SOCKS_TITLE");
+    expect(worstedPageSource).toContain('headingId="knit-able-hero-heading"');
   });
 });
