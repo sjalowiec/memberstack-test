@@ -1,7 +1,7 @@
 import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../lessonVideo";
 import { catalogVideoIsPublic, findPublicCatalogVideoByContentId } from "../videoPublic";
 import { catalogVideoPlaybackAccess } from "./catalogVideoPlaybackAccess";
-import { buildCatalogVimeoEmbedSrc } from "./catalogVideoEmbedSrc";
+import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "./catalogVideoEmbedSrc";
 
 export type CatalogVideoEmbedResult =
   | { ok: true; access: "open" | "member"; iframeSrc: string; title: string }
@@ -16,7 +16,7 @@ export function resolveCatalogVideoEmbed(
   if (!row || !catalogVideoIsPublic(row)) return { ok: false, error: "not_found" };
   const vimeoId = vimeoNumericIdFromPublicVideo(row);
   if (!vimeoId) return { ok: false, error: "no_player" };
-  const iframePlayerId = `kbm-gated-vimeo-${contentId}`;
+  const iframePlayerId = catalogVimeoIframePlayerId(vimeoId, contentId);
   const privacyHash =
     typeof row.vimeo_hash === "string" ? row.vimeo_hash.trim() : "";
   const iframeSrc = buildCatalogVimeoEmbedSrc({

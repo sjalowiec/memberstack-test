@@ -14,9 +14,29 @@ import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
 import { getMemberstackAdminClient } from "./lib/memberstack-admin.js";
 import { evaluateMemberAccessForRecord } from "../../src/lib/memberAccessServer";
 import { resolveCatalogVideoEmbed } from "../../src/lib/videos/resolveCatalogVideoEmbed";
+import { videoDetailMigratedJumpLinks } from "../../src/lib/jumplinks/jumplinksByContent";
 import type { PublicVideoRow } from "../../src/lib/lessonVideo";
 
 const catalog = videosPublic as PublicVideoRow[];
+
+function authorizedEmbedBody(resolved: {
+  iframeSrc: string;
+  title: string;
+}, contentId: string) {
+  const jumplinks = videoDetailMigratedJumpLinks(contentId);
+  return jumplinks.length > 0
+    ? {
+        ok: true as const,
+        iframeSrc: resolved.iframeSrc,
+        title: resolved.title,
+        jumplinks,
+      }
+    : {
+        ok: true as const,
+        iframeSrc: resolved.iframeSrc,
+        title: resolved.title,
+      };
+}
 
 export default async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -39,13 +59,7 @@ export default async (req: Request): Promise<Response> => {
   }
 
   if (resolved.access === "open") {
-    return withCors(
-      jsonResponse({
-        ok: true,
-        iframeSrc: resolved.iframeSrc,
-        title: resolved.title,
-      }),
-    );
+    return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId)));
   }
 
   const auth = await requireMember(req);
@@ -83,11 +97,5 @@ export default async (req: Request): Promise<Response> => {
     return withCors(jsonResponse({ ok: false, error: "Membership required." }, 403));
   }
 
-  return withCors(
-    jsonResponse({
-      ok: true,
-      iframeSrc: resolved.iframeSrc,
-      title: resolved.title,
-    }),
-  );
+  return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId)));
 };

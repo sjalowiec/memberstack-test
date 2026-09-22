@@ -43,6 +43,7 @@ describe("videos/[id] phase-1 English transcript", () => {
     expect(descriptionAt).toBeGreaterThan(playerAt);
     expect(jumpAt).toBeGreaterThan(descriptionAt);
     expect(transcriptAt).toBeGreaterThan(jumpAt);
+    expect(page).not.toContain("<h2>Description</h2>");
   });
 });
 
