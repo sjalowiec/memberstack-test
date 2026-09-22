@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import {
   LEGACY_EBOOK_ENTITLEMENT_CATALOG,
   LEGACY_EBOOK_EXCLUDED_ITEM_IDS,
@@ -20,12 +20,17 @@ import {
   clearLegacyEbookOwnershipIndexCache,
   countApprovedLegacyEbookOwnershipRecords,
   isLegacyEbookPurchasePaid,
+  resolveCustomerLegacyEbookEntitlementsForEmail,
   resolveLegacyEbookEntitlementsForEmail,
 } from "./legacyEbookOwnership";
 import {
   loadLegacyEbookPurchases,
   type LegacyEbookPurchaseRow,
 } from "./legacyEbookPurchases";
+import {
+  watsonEbookRowToPurchase,
+  type WatsonEbookPurchaseRow,
+} from "./legacyEbookWatsonPurchases";
 
 function purchase(partial: Partial<LegacyEbookPurchaseRow>): LegacyEbookPurchaseRow {
   return {
@@ -318,5 +323,282 @@ describe("legacy ebook ownership resolver", () => {
     expect(payload).not.toContain(email);
     expect(payload).not.toMatch(/@/);
     expect(payload).not.toMatch(/storageKey|PurchaseDate|Price|E:\\/i);
+  });
+});
+
+describe("customer My Downloads CSV + Watson union", () => {
+  beforeEach(() => {
+    clearLegacyEbookOwnershipIndexCache();
+  });
+
+  it("restores Karen Wylie's two paid ebooks from Watson when the CSV snapshot omitted them", async () => {
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "karen.l.wylie@gmail.com",
+      {
+        csvPurchases: [
+          purchase({
+            storeTransactionId: "21293",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "687",
+            itemName: "Mousam Falls 4/6 Aran",
+            paid: "1",
+          }),
+        ],
+        watsonPurchases: [
+          purchase({
+            storeTransactionId: "29763",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "675",
+            itemName: "Decorative Raglan Seams for Machine Knitters",
+            pricePerItem: "14.99",
+            totalPrice: "14.99",
+          }),
+          purchase({
+            storeTransactionId: "29763",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "505",
+            itemName: "Machine Knitting Trims and Edges - Single Bed",
+            pricePerItem: "18.99",
+            totalPrice: "18.99",
+          }),
+          purchase({
+            storeTransactionId: "29763",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "687",
+            itemName: "Mousam Falls 4/6 Aran",
+            paid: "1",
+          }),
+          purchase({
+            storeTransactionId: "99999",
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "416",
+            paid: "0",
+          }),
+        ],
+      },
+    );
+
+    expect(ebooks.map((row) => row.itemId).sort()).toEqual(["505", "675"]);
+    expect(ebooks).toEqual(
+      expect.arrayContaining([
+        {
+          itemId: "675",
+          title: "Decorative Raglan Seams for Machine Knitters",
+          downloadUrl: "/downloads/shop/raglan_seam_ebook_optimized.pdf",
+        },
+        {
+          itemId: "505",
+          title: "Machine Knitting Trims and Edges - Single Bed",
+          downloadUrl: "/downloads/shop/505_Single_bed_trims_and_edges1.pdf",
+        },
+      ]),
+    );
+  });
+
+  it("keeps CSV entitlements when Watson is empty", async () => {
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "owner@example.com",
+      {
+        csvPurchases: [
+          purchase({ billingEmail: "owner@example.com", legacyItemId: "416" }),
+        ],
+        watsonPurchases: [],
+      },
+    );
+    expect(ebooks.map((row) => row.itemId)).toEqual(["416"]);
+  });
+
+  it("still returns CSV ebooks if Watson lookup throws", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "owner@example.com",
+      {
+        csvPurchases: [
+          purchase({ billingEmail: "owner@example.com", legacyItemId: "416" }),
+        ],
+        loadWatson: async () => {
+          throw new Error("watson unavailable");
+        },
+      },
+    );
+    expect(ebooks.map((row) => row.itemId)).toEqual(["416"]);
+    errorSpy.mockRestore();
+  });
+});
+
+const LINDA_MEMBERID = "6ECD81B4-B172-04D6-2FDF-9D46FFB6B909";
+const LINDA_EMAIL = "texas44@gmail.com";
+const LINDA_OLD_EMAIL = "texas44@comcast.net";
+const LINDA_QUALIFYING_ITEM_IDS = [
+  "416",
+  "418",
+  "422",
+  "474",
+  "505",
+  "536",
+  "589",
+  "620",
+  "675",
+];
+
+function watsonRow(
+  partial: Partial<WatsonEbookPurchaseRow>,
+): WatsonEbookPurchaseRow {
+  return {
+    storetransactionid: 1,
+    purchasedate: "2014-07-01",
+    billing_email: null,
+    billing_firstname: "Linda",
+    billing_lastname: "Dawson",
+    paid: 1,
+    itemid: 505,
+    itemname: "Machine Knitting Trims and Edges - Single Bed",
+    priceperitem: "0.0000",
+    totalprice: "0.0000",
+    ...partial,
+  };
+}
+
+function lindaWatsonStoreRows(): WatsonEbookPurchaseRow[] {
+  return [
+    watsonRow({ storetransactionid: 8318, itemid: 589, itemname: "Yarn on Cones" }),
+    watsonRow({ storetransactionid: 9142, itemid: 620, itemname: "Stitch Symbols" }),
+    watsonRow({ storetransactionid: 10428, itemid: 422, itemname: "Signature Hats" }),
+    watsonRow({ storetransactionid: 11415, itemid: 474, itemname: "Cut n Sew" }),
+    watsonRow({ storetransactionid: 12405, itemid: 536, itemname: "Picture Knits" }),
+    watsonRow({
+      storetransactionid: 13819,
+      itemid: 621,
+      itemname: "Passap E-6000 Guidebook",
+      billing_email: LINDA_OLD_EMAIL,
+      priceperitem: "24.95",
+      totalprice: "24.95",
+    }),
+    watsonRow({ storetransactionid: 14190, itemid: 418, itemname: "Shirt for All Seasons" }),
+    watsonRow({ storetransactionid: 17512, itemid: 505 }),
+    watsonRow({ storetransactionid: 18154, itemid: 675, itemname: "Decorative Raglan Seams" }),
+    watsonRow({
+      storetransactionid: 20740,
+      itemid: 416,
+      itemname: "Cheat Sheets",
+      billing_email: LINDA_OLD_EMAIL,
+      priceperitem: "4.99",
+      totalprice: "4.99",
+    }),
+    watsonRow({
+      storetransactionid: 29152,
+      itemid: 737,
+      itemname: "Japanese Patterns",
+    }),
+    watsonRow({
+      storetransactionid: 9000,
+      itemid: 279,
+      itemname: "Machine Knitting Workbook 3",
+    }),
+  ];
+}
+
+describe("trusted member-ID My Downloads recovery", () => {
+  beforeEach(() => {
+    clearLegacyEbookOwnershipIndexCache();
+  });
+
+  it("restores Linda's nine qualifying titles, including blank and old billing emails", async () => {
+    const mapped = lindaWatsonStoreRows()
+      .map((row) => watsonEbookRowToPurchase(row, { ownerEmail: LINDA_EMAIL }))
+      .filter((row): row is LegacyEbookPurchaseRow => row != null);
+
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(LINDA_EMAIL, {
+      csvPurchases: [],
+      watsonPurchases: [],
+      resolveTrustedLegacyMemberid: async () => ({
+        status: "unique",
+        memberid: LINDA_MEMBERID,
+        source: "email",
+      }),
+      loadWatsonByMemberid: async (memberid, ownerEmail) => {
+        expect(memberid).toBe(LINDA_MEMBERID);
+        expect(ownerEmail).toBe(LINDA_EMAIL);
+        return mapped;
+      },
+    });
+
+    expect(ebooks.map((row) => row.itemId).sort()).toEqual([...LINDA_QUALIFYING_ITEM_IDS].sort());
+    expect(ebooks.some((row) => row.itemId === "621")).toBe(false);
+    expect(ebooks.some((row) => row.itemId === "737")).toBe(false);
+    expect(ebooks.some((row) => row.itemId === "279")).toBe(false);
+    expect(ebooks.find((row) => row.itemId === "416")?.downloadUrl).toBe(
+      "/downloads/shop/cheet_sheet_book2.pdf",
+    );
+    expect(ebooks.find((row) => row.itemId === "589")?.downloadUrl).toBe(
+      "/downloads/shop/yarn_counts_doc_PDF_format.pdf",
+    );
+  });
+
+  it("does not recover ebooks when the legacy link is missing", async () => {
+    const loadWatsonByMemberid = vi.fn();
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(LINDA_EMAIL, {
+      csvPurchases: [
+        purchase({ billingEmail: LINDA_EMAIL, legacyItemId: "416" }),
+      ],
+      watsonPurchases: [],
+      resolveTrustedLegacyMemberid: async () => ({ status: "none" }),
+      loadWatsonByMemberid,
+    });
+    expect(loadWatsonByMemberid).not.toHaveBeenCalled();
+    expect(ebooks.map((row) => row.itemId)).toEqual(["416"]);
+  });
+
+  it("does not recover ebooks when the legacy link is ambiguous", async () => {
+    const loadWatsonByMemberid = vi.fn();
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "shared@example.com",
+      {
+        csvPurchases: [],
+        watsonPurchases: [],
+        resolveTrustedLegacyMemberid: async () => ({ status: "ambiguous" }),
+        loadWatsonByMemberid,
+      },
+    );
+    expect(loadWatsonByMemberid).not.toHaveBeenCalled();
+    expect(ebooks).toEqual([]);
+  });
+
+  it("collapses duplicate titles from email lookup and trusted member-ID lookup", async () => {
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(LINDA_EMAIL, {
+      csvPurchases: [
+        purchase({ billingEmail: LINDA_EMAIL, legacyItemId: "416" }),
+        purchase({ billingEmail: LINDA_EMAIL, legacyItemId: "505" }),
+      ],
+      watsonPurchases: [
+        purchase({ billingEmail: LINDA_EMAIL, legacyItemId: "505" }),
+      ],
+      watsonMemberidPurchases: [
+        purchase({ billingEmail: LINDA_EMAIL, legacyItemId: "416" }),
+        purchase({ billingEmail: LINDA_EMAIL, legacyItemId: "675" }),
+      ],
+    });
+    expect(ebooks.map((row) => row.itemId).sort()).toEqual(["416", "505", "675"]);
+    expect(ebooks).toHaveLength(3);
+  });
+
+  it("keeps existing email-based access unchanged when member-ID recovery is skipped", async () => {
+    const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(
+      "karen.l.wylie@gmail.com",
+      {
+        csvPurchases: [],
+        watsonPurchases: [
+          purchase({
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "675",
+          }),
+          purchase({
+            billingEmail: "karen.l.wylie@gmail.com",
+            legacyItemId: "505",
+          }),
+        ],
+      },
+    );
+    expect(ebooks.map((row) => row.itemId).sort()).toEqual(["505", "675"]);
   });
 });

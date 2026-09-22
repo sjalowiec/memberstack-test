@@ -560,6 +560,16 @@ export function listApprovedLegacyEbookEntitlements(): LegacyEbookEntitlementEnt
   return [...LEGACY_EBOOK_ENTITLEMENT_CATALOG];
 }
 
+/** Numeric catalog item IDs for Watson `legacy_store_transaction_items.itemid` filters. */
+export function listApprovedLegacyEbookItemIds(): number[] {
+  const ids: number[] = [];
+  for (const entry of LEGACY_EBOOK_ENTITLEMENT_CATALOG) {
+    const id = Number.parseInt(entry.itemId, 10);
+    if (Number.isInteger(id) && id > 0) ids.push(id);
+  }
+  return ids;
+}
+
 export function approvedLegacyEbookTitleCount(): number {
   return LEGACY_EBOOK_ENTITLEMENT_CATALOG.length;
 }

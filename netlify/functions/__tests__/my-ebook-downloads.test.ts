@@ -5,7 +5,7 @@ vi.mock("../lib/member-auth.js", () => ({
 }));
 
 vi.mock("../../../src/lib/legacy/legacyEbookOwnership", () => ({
-  resolveLegacyEbookEntitlementsForEmail: vi.fn(),
+  resolveCustomerLegacyEbookEntitlementsForEmail: vi.fn(),
 }));
 
 vi.mock("../../../src/lib/downloads/paidDownloadEntitlements", () => ({
@@ -15,7 +15,7 @@ vi.mock("../../../src/lib/downloads/paidDownloadEntitlements", () => ({
 import handler from "../my-ebook-downloads";
 import { requireMember } from "../lib/member-auth.js";
 import { listPaidDownloadCustomerEntitlementsForEmail } from "../../../src/lib/downloads/paidDownloadEntitlements";
-import { resolveLegacyEbookEntitlementsForEmail } from "../../../src/lib/legacy/legacyEbookOwnership";
+import { resolveCustomerLegacyEbookEntitlementsForEmail } from "../../../src/lib/legacy/legacyEbookOwnership";
 
 const VERIFIED_ID = "mem_from_jwt";
 const VERIFIED_EMAIL = "jwt@example.com";
@@ -33,7 +33,7 @@ beforeEach(() => {
     member: { id: VERIFIED_ID, email: VERIFIED_EMAIL },
     mode: "verified",
   });
-  vi.mocked(resolveLegacyEbookEntitlementsForEmail).mockReturnValue([
+  vi.mocked(resolveCustomerLegacyEbookEntitlementsForEmail).mockResolvedValue([
     {
       itemId: "416",
       title: "Cheat Sheets for Hand Manipulated Stitch Patterns",
@@ -57,7 +57,7 @@ describe("my-ebook-downloads Netlify function", () => {
 
     const res = await handler(makeRequest());
     expect(res.status).toBe(401);
-    expect(resolveLegacyEbookEntitlementsForEmail).not.toHaveBeenCalled();
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).not.toHaveBeenCalled();
     expect(listPaidDownloadCustomerEntitlementsForEmail).not.toHaveBeenCalled();
   });
 
@@ -78,8 +78,9 @@ describe("my-ebook-downloads Netlify function", () => {
       },
     ]);
     expect(body.downloads).toEqual(body.ebooks);
-    expect(resolveLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
+      { allowLiveWatson: true },
     );
   });
 
@@ -159,19 +160,43 @@ describe("my-ebook-downloads Netlify function", () => {
       ),
     );
     expect(res.status).toBe(200);
-    expect(resolveLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
+      { allowLiveWatson: true },
     );
-    expect(resolveLegacyEbookEntitlementsForEmail).not.toHaveBeenCalledWith(
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).not.toHaveBeenCalledWith(
       "spoof@example.com",
+    );
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        storedLegacyMemberid: expect.anything(),
+        memberstackId: expect.anything(),
+        allowLiveNativeGrants: expect.anything(),
+      }),
     );
     expect(listPaidDownloadCustomerEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
     );
   });
 
+  it("ignores browser-supplied member ID and Memberstack ID query parameters", async () => {
+    const res = await handler(
+      makeRequest(
+        "https://example.com/.netlify/functions/my-ebook-downloads?email=spoof@example.com&memberid=OTHER-ID&memberstackId=mem_other",
+        { headers: { Authorization: "Bearer good-token" } },
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledTimes(1);
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
+      VERIFIED_EMAIL,
+      { allowLiveWatson: true },
+    );
+  });
+
   it("returns an empty list when the verified email has no purchases", async () => {
-    vi.mocked(resolveLegacyEbookEntitlementsForEmail).mockReturnValue([]);
+    vi.mocked(resolveCustomerLegacyEbookEntitlementsForEmail).mockResolvedValue([]);
     const res = await handler(makeRequest());
     expect(res.status).toBe(200);
     const body = await res.json();
