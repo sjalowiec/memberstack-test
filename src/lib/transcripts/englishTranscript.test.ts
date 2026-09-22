@@ -87,9 +87,28 @@ describe("bundled 1046394794.vtt", () => {
     expect(text).not.toMatch(/\d{2}:\d{2}:\d{2}\.\d{3}/);
   });
 
-  it("is what lookup finds for Vimeo 1046394794 and not for other ids", () => {
+  it("is what lookup finds for Vimeo 1046394794", () => {
     const fromFile = parseVttToReadableText(raw);
     expect(readableEnglishTranscriptForVimeoId("1046394794")).toBe(fromFile);
-    expect(readableEnglishTranscriptForVimeoId("151857129")).toBeNull();
+    expect(readableEnglishTranscriptForVimeoId("999999999")).toBeNull();
+  });
+});
+
+describe("bundled 151857129.vtt", () => {
+  const vttPath = join(process.cwd(), "src", "data", "transcripts", "en", "151857129.vtt");
+  const raw = readFileSync(vttPath, "utf8");
+
+  it("parses the I-Cord VTT into spoken text without captions chrome", () => {
+    const text = parseVttToReadableText(raw);
+    expect(text).toBeTruthy();
+    expect(text).toContain("Begin by casting on three stitches.");
+    expect(text).toContain("Designer your machine to slip in one direction.");
+    expect(text).not.toMatch(/WEBVTT/);
+    expect(text).not.toMatch(/\d{2}:\d{2}:\d{2}\.\d{3}/);
+  });
+
+  it("is what lookup finds for Vimeo 151857129", () => {
+    const fromFile = parseVttToReadableText(raw);
+    expect(readableEnglishTranscriptForVimeoId("151857129")).toBe(fromFile);
   });
 });

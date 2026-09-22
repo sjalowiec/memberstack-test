@@ -7,6 +7,7 @@ import { catalogVideoPlaybackAccess } from "../lib/videos/catalogVideoPlaybackAc
 import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "../lib/videos/catalogVideoEmbedSrc";
 import { decideGatedVimeoPlayback } from "../lib/videos/gatedVimeoEmbedDelivery";
 import { parseAuthorizedJumpLinks } from "../lib/jumplinks/videoJumpLinkButtons";
+import { parseAuthorizedTranscript } from "../lib/transcripts/videoGatedTranscript";
 import type { CatalogChapterRow } from "../lib/catalogVideoChapters";
 
 export const CATALOG_VIDEO_EMBED_API_PATH = "/.netlify/functions/catalog-video-embed";
@@ -54,7 +55,7 @@ function readConfig(root: HTMLElement) {
 async function fetchCatalogEmbed(
   contentId: string,
   enableVimeoPlayerApi: boolean,
-): Promise<{ iframeSrc: string; jumplinks: CatalogChapterRow[] } | null> {
+): Promise<{ iframeSrc: string; jumplinks: CatalogChapterRow[]; transcript: string[] } | null> {
   const headers = await getMembershipStatusAuthHeaders();
   const params = new URLSearchParams({ contentId });
   if (enableVimeoPlayerApi) params.set("playerApi", "1");
@@ -64,23 +65,36 @@ async function fetchCatalogEmbed(
     credentials: "same-origin",
   });
   if (!res.ok) return null;
-  let body: { ok?: boolean; iframeSrc?: string; jumplinks?: unknown } | null = null;
+  let body: { ok?: boolean; iframeSrc?: string; jumplinks?: unknown; transcript?: unknown } | null = null;
   try {
-    body = (await res.json()) as { ok?: boolean; iframeSrc?: string; jumplinks?: unknown };
+    body = (await res.json()) as {
+      ok?: boolean;
+      iframeSrc?: string;
+      jumplinks?: unknown;
+      transcript?: unknown;
+    };
   } catch {
     return null;
   }
   if (!body || body.ok === false) return null;
   const src = typeof body.iframeSrc === "string" ? body.iframeSrc.trim() : "";
   if (!src.startsWith("https://player.vimeo.com/video/")) return null;
-  return { iframeSrc: src, jumplinks: parseAuthorizedJumpLinks(body.jumplinks) };
+  return {
+    iframeSrc: src,
+    jumplinks: parseAuthorizedJumpLinks(body.jumplinks),
+    transcript: parseAuthorizedTranscript(body.transcript),
+  };
 }
 
-function announceCatalogVideoEmbed(contentId: string, jumplinks: CatalogChapterRow[]) {
+function announceCatalogVideoEmbed(
+  contentId: string,
+  jumplinks: CatalogChapterRow[],
+  transcript: string[],
+) {
   if (!contentId) return;
   window.dispatchEvent(
     new CustomEvent("kbm:catalog-video-embed", {
-      detail: { contentId, jumplinks },
+      detail: { contentId, jumplinks, transcript },
     }),
   );
 }
@@ -176,7 +190,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     if (contentId && (hasAccess || accessLevel === "open" || videoDevBypass)) {
       const fetched = await fetchCatalogEmbed(contentId, enableVimeoPlayerApi);
       if (fetched) {
-        announceCatalogVideoEmbed(contentId, fetched.jumplinks);
+        announceCatalogVideoEmbed(contentId, fetched.jumplinks, fetched.transcript);
         return fetched.iframeSrc;
       }
     }

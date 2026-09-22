@@ -75,9 +75,11 @@ const ssrJumpLinks = isOpenPlayback ? resolvedJumpLinks.links : [];
 const enableVideoChapterControls = hasJumpLinks;
 
 const englishTranscript = video ? readableEnglishTranscriptForVimeoId(vimeoId) : null;
-const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript).map((text) => ({
-  text,
-}));
+const englishTranscriptParagraphsList = englishTranscriptParagraphs(englishTranscript);
+const ssrTranscriptSections = isOpenPlayback
+  ? englishTranscriptParagraphsList.map((text) => ({ text }))
+  : [];
+const hasGatedTranscript = !isOpenPlayback && englishTranscriptParagraphsList.length > 0;
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
@@ -198,16 +200,24 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
           </nav>
           ) : null}
 
-          {englishTranscriptSections.length > 0 ? (
+          {ssrTranscriptSections.length > 0 ? (
             <div class="video-english-transcript" data-testid="video-english-transcript">
-              <Transcript title="Read transcript" sections={englishTranscriptSections} />
+              <Transcript title="Read transcript" sections={ssrTranscriptSections} />
               {/* Closed <details> does not print in Chromium. Keep a print-only copy. */}
               <div class="video-english-transcript-print" aria-hidden="true">
-                {englishTranscriptSections.map((section) => (
+                {ssrTranscriptSections.map((section) => (
                   <p>{section.text}</p>
                 ))}
               </div>
             </div>
+          ) : hasGatedTranscript ? (
+            <div
+              class="video-english-transcript"
+              data-testid="video-english-transcript"
+              data-transcript-source="gated"
+              data-content-id={contentIdAttr}
+              hidden
+            ></div>
           ) : null}
         </article>
 
@@ -224,6 +234,10 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
             bindGatedJumpLinkEmbedListener,
             hydrateGatedJumpLinks,
           } from "../../scripts/videoDetailGatedJumpLinks";
+          import {
+            bindGatedTranscriptEmbedListener,
+            hydrateGatedTranscript,
+          } from "../../scripts/videoDetailGatedTranscript";
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -267,9 +281,19 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
               ?.getAttribute("data-content-id")
               ?.trim() ?? "";
 
+          const gatedTranscriptContentId =
+            document
+              .querySelector(".video-english-transcript[data-transcript-source='gated']")
+              ?.getAttribute("data-content-id")
+              ?.trim() ?? "";
+
           async function hydrateGatedIfAllowed(hasFullAccess: boolean) {
             await hydrateGatedJumpLinks({
               contentId: gatedJumpContentId,
+              hasAccess: hasFullAccess,
+            });
+            await hydrateGatedTranscript({
+              contentId: gatedTranscriptContentId,
               hasAccess: hasFullAccess,
             });
           }
@@ -316,6 +340,7 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
 
           void (async () => {
             bindGatedJumpLinkEmbedListener(gatedJumpContentId);
+            bindGatedTranscriptEmbedListener(gatedTranscriptContentId);
             await refreshJumpLinkAccess();
             bindJumpLinkAuthRefresh();
             void window.$memberstackDom?.onReady?.then(() => {
