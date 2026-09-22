@@ -24,10 +24,6 @@ function formatLabel(key: string): string {
     .join(" ");
 }
 
-function formatAudienceLabel(subCategory: string): string {
-  return subCategory === "misses" ? "Women" : formatLabel(subCategory);
-}
-
 type ChartRow = Record<string, unknown>;
 
 export function initSweaterSizingChartTable(options: {
@@ -53,21 +49,20 @@ export function initSweaterSizingChartTable(options: {
     const metadata = SWEATER_CHART_METADATA[currentType];
     if (!chartHeader || !metadata) return;
 
-    const subCategory = currentType.replace("sweaters_", "");
     chartHeader.innerHTML = `
       <h2 id="${metadata.hash}">
         <img src="${metadata.icon}" alt="" />
         Sweaters - 
         <div class="chart-header-dropdown">
           <button type="button" class="chart-header-dropdown-button">
-            ${formatAudienceLabel(subCategory)} <span class="chart-header-dropdown-caret">▾</span>
+            ${metadata.audienceLabel} <span class="chart-header-dropdown-caret">▾</span>
           </button>
           <div class="chart-header-dropdown-content">
-            <button type="button" data-type="sweaters_men">Men</button>
-            <button type="button" data-type="sweaters_misses">Women</button>
-            <button type="button" data-type="sweaters_plus">Plus</button>
-            <button type="button" data-type="sweaters_kids">Kids</button>
-            <button type="button" data-type="sweaters_baby">Baby</button>
+            <button type="button" data-type="sweaters_men">${SWEATER_CHART_METADATA.sweaters_men.audienceLabel}</button>
+            <button type="button" data-type="sweaters_misses">${SWEATER_CHART_METADATA.sweaters_misses.audienceLabel}</button>
+            <button type="button" data-type="sweaters_plus">${SWEATER_CHART_METADATA.sweaters_plus.audienceLabel}</button>
+            <button type="button" data-type="sweaters_kids">${SWEATER_CHART_METADATA.sweaters_kids.audienceLabel}</button>
+            <button type="button" data-type="sweaters_baby">${SWEATER_CHART_METADATA.sweaters_baby.audienceLabel}</button>
           </div>
         </div>
       </h2>

@@ -460,8 +460,8 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
     // Chart metadata for titles and icons
     const CHART_METADATA = {
       sweaters_men: { label: 'Sweaters - Men', icon: '/images/sweater.svg', hash: 'sweaters-men-chart' },
-      sweaters_misses: { label: 'Sweaters - Women', icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
-      sweaters_plus: { label: 'Sweaters - Plus', icon: '/images/sweater.svg', hash: 'sweaters-plus-chart' },
+      sweaters_misses: { label: 'Sweaters - Misses', icon: '/images/sweater.svg', hash: 'sweaters-misses-chart' },
+      sweaters_plus: { label: 'Sweaters - Women', icon: '/images/sweater.svg', hash: 'sweaters-plus-chart' },
       sweaters_kids: { label: 'Sweaters - Kids', icon: '/images/sweater.svg', hash: 'sweaters-kids-chart' },
       sweaters_baby: { label: 'Sweaters - Baby', icon: '/images/sweater.svg', hash: 'sweaters-baby-chart' },
       hats: { label: 'Hats Sizing Chart', icon: '/images/hat.svg', hash: 'hats-chart' },
@@ -559,11 +559,11 @@ import ReferencePageShell from "../../components/ReferencePageShell.astro";
               Sweaters – 
               <div class="chart-header-dropdown">
                 <button class="chart-header-dropdown-button">
-${subCategory === 'misses' ? 'Women' : formattedSubCategory} <span class="chart-header-dropdown-caret">▾</span>                </button>
+${subCategory === 'misses' ? 'Misses' : subCategory === 'plus' ? 'Women' : formattedSubCategory} <span class="chart-header-dropdown-caret">▾</span>                </button>
                 <div class="chart-header-dropdown-content">
                   <button data-type="sweaters_men">Men</button>
-                  <button data-type="sweaters_misses">Women</button>
-                  <button data-type="sweaters_plus">Plus</button>
+                  <button data-type="sweaters_misses">Misses</button>
+                  <button data-type="sweaters_plus">Women</button>
                   <button data-type="sweaters_kids">Kids</button>
                   <button data-type="sweaters_baby">Baby</button>
                 </div>

@@ -16,6 +16,7 @@ import {
   SWEATER_SIZING_CHART_CALLOUT_BULLETS,
   SWEATER_SIZING_CHART_INTRO_SENTENCE,
 } from "./sweaterSizingChartIntro";
+import { SWEATER_CHART_METADATA } from "../sizing/sizingChartCatalog";
 
 const sweaterSizingChartPage = readFileSync(
   resolve("src/pages/reference/sweater-sizing-chart.astro"),
@@ -103,6 +104,10 @@ describe("sweater sizing chart reference page", () => {
     expect(sweaterSizingChartPage).toContain("initSweaterSizingChartTable");
     expect(sweaterSizingChartPage).toContain("meta.audienceLabel");
     expect(sweaterSizingChartPage).toContain("resolveSweaterSizingChartBackLink");
+    expect(SWEATER_CHART_METADATA.sweaters_misses.audienceLabel).toBe("Misses");
+    expect(SWEATER_CHART_METADATA.sweaters_plus.audienceLabel).toBe("Women");
+    expect(SWEATER_CHART_METADATA.sweaters_misses.label).toBe("Sweaters - Misses");
+    expect(SWEATER_CHART_METADATA.sweaters_plus.label).toBe("Sweaters - Women");
   });
 
   it("uses the concise two-bullet sizing chart callout copy", () => {

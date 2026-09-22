@@ -39,14 +39,14 @@ export const SWEATER_CHART_METADATA: Record<
   { label: string; icon: string; hash: string; audienceLabel: string }
 > = {
   sweaters_misses: {
-    label: "Sweaters - Women",
-    audienceLabel: "Women",
+    label: "Sweaters - Misses",
+    audienceLabel: "Misses",
     icon: "/images/sweater.svg",
     hash: "sweaters-misses-chart",
   },
   sweaters_plus: {
-    label: "Sweaters - Plus",
-    audienceLabel: "Plus",
+    label: "Sweaters - Women",
+    audienceLabel: "Women",
     icon: "/images/sweater.svg",
     hash: "sweaters-plus-chart",
   },
