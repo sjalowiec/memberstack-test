@@ -1,0 +1,139 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import { listVendors, parseVendorStatusFilter } from "../../../lib/watson/vendors";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const rawQuery = Astro.url.searchParams.get("q") ?? "";
+const status = parseVendorStatusFilter(Astro.url.searchParams.get("status"));
+
+let loadError: string | null = null;
+let vendors: Awaited<ReturnType<typeof listVendors>> = [];
+
+try {
+  vendors = await listVendors({ q: rawQuery, status });
+} catch (error) {
+  loadError =
+    error instanceof Error
+      ? error.message
+      : "Unable to load vendors. Apply scripts/sql/watson-vendors.sql against WATSON_DATABASE_URL.";
+}
+
+const statusScope = status === "all" ? "" : `${status} `;
+---
+
+<WatsonPageShell
+  title="Vendors | Watson"
+  description="Internal vendor directory for Knit It Now."
+  heading="Vendors"
+  intro="A simple address book of vendors. Mark a vendor inactive to keep the record without deleting it."
+>
+  <form class="watson-report__filters" method="get" action="/watson/vendors" role="search">
+    <div class="watson-report__filter">
+      <label for="watson-vendor-search">Search</label>
+      <input
+        id="watson-vendor-search"
+        class="watson__search-input"
+        type="search"
+        name="q"
+        value={rawQuery}
+        placeholder="Company, contact, email, phone, category, or account #"
+        autocomplete="off"
+      />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-vendor-status">Status</label>
+      <select id="watson-vendor-status" name="status">
+        <option value="active" selected={status === "active"}>Active</option>
+        <option value="inactive" selected={status === "inactive"}>Inactive</option>
+        <option value="all" selected={status === "all"}>All</option>
+      </select>
+    </div>
+    <div class="watson-report__actions">
+      <button class="watson__button" type="submit">Search</button>
+      <a class="watson__button watson__button--secondary" href="/watson/vendors">Clear</a>
+      <a class="watson__button" href="/watson/vendors/new">Add vendor</a>
+    </div>
+  </form>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : (
+      <p class="watson__status">
+        {vendors.length === 0
+          ? rawQuery
+            ? `No ${statusScope}vendors matched "${rawQuery}".`
+            : status === "all"
+              ? "No vendors yet."
+              : `No ${status} vendors.`
+          : `Showing ${vendors.length} ${statusScope}vendor${vendors.length === 1 ? "" : "s"}${
+              rawQuery ? ` matching "${rawQuery}"` : ""
+            }, sorted by company name.`}
+      </p>
+    )
+  }
+
+  {
+    !loadError && vendors.length > 0 ? (
+      <section class="watson__panel" aria-label="Vendor list">
+        <div class="watson__table-wrap">
+          <table class="watson-table" data-sortable-table>
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  data-sort-key="company"
+                  data-sort-type="string"
+                  data-sort-default="true"
+                  tabindex="0"
+                >
+                  Company
+                </th>
+                <th scope="col" data-sort-key="contact" data-sort-type="string" tabindex="0">
+                  Contact
+                </th>
+                <th scope="col" data-sort-key="category" data-sort-type="string" tabindex="0">
+                  Category
+                </th>
+                <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">
+                  Email
+                </th>
+                <th scope="col" data-sort-key="phone" data-sort-type="string" tabindex="0">
+                  Phone
+                </th>
+                <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">
+                  Status
+                </th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vendors.map((vendor) => (
+                <tr>
+                  <td data-sort-value={vendor.companyName}>
+                    <a href={vendor.href}>{vendor.companyName}</a>
+                  </td>
+                  <td data-sort-value={vendor.contactName ?? ""}>{vendor.contactName ?? ""}</td>
+                  <td data-sort-value={vendor.vendorType ?? ""}>{vendor.vendorType ?? ""}</td>
+                  <td data-sort-value={vendor.email ?? ""}>{vendor.email ?? ""}</td>
+                  <td data-sort-value={vendor.phone ?? ""}>{vendor.phone ?? ""}</td>
+                  <td data-sort-value={vendor.statusLabel}>{vendor.statusLabel}</td>
+                  <td>
+                    <a href={vendor.href}>View</a>
+                    {" · "}
+                    <a href={vendor.editHref}>Edit</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ) : null
+  }
+</WatsonPageShell>

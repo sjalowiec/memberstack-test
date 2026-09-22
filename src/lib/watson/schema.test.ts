@@ -104,6 +104,17 @@ describe("schema", () => {
     expect(ebookSql).toContain("verified_legacy_purchase");
     expect(ebookSql).toContain("subscriber_bonus");
     expect(ebookSql).not.toContain("legacy_store_transactions");
+    expect(labels).toContain("table watson_vendors");
+    expect(labels).toContain("index idx_watson_vendors_company_name");
+    expect(labels).toContain("index idx_watson_vendors_active_company");
+    const vendorSql = nativeStatements.find(
+      (statement) => statement.label === "table watson_vendors",
+    )?.sql;
+    expect(vendorSql).toContain("company_name TEXT NOT NULL");
+    expect(vendorSql).toContain("is_active BOOLEAN NOT NULL DEFAULT TRUE");
+    expect(vendorSql).toContain("account_number TEXT");
+    expect(vendorSql).not.toContain("legacy_members");
+    expect(vendorSql).not.toContain("REFERENCES");
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {

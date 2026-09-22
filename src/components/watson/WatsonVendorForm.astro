@@ -1,0 +1,293 @@
+---
+interface Props {
+  mode: "add" | "edit";
+  action: string;
+  cancelHref: string;
+  values: {
+    companyName: string;
+    contactName: string;
+    email: string;
+    phone: string;
+    website: string;
+    vendorType: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    accountNumber: string;
+    notes: string;
+    isActive: boolean;
+  };
+  error?: string | null;
+}
+
+const { mode, action, cancelHref, values, error = null } = Astro.props;
+const heading = mode === "add" ? "Add Vendor" : "Edit Vendor";
+const saveLabel = mode === "add" ? "Save vendor" : "Save changes";
+---
+
+<section class="watson__panel" aria-labelledby="vendor-form-heading">
+  <h2 id="vendor-form-heading" class="watson__panel-title">{heading}</h2>
+
+  {
+    error ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {error}
+      </p>
+    ) : null
+  }
+
+  <form class="watson-vendor__form" method="post" action={action}>
+    <div class="watson-vendor__grid">
+      <label class="watson-vendor__field watson-vendor__field--full">
+        <span>Company name <abbr title="required">*</abbr></span>
+        <input
+          class="watson__search-input"
+          name="companyName"
+          type="text"
+          required
+          maxlength="200"
+          autocomplete="organization"
+          value={values.companyName}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Contact name</span>
+        <input
+          class="watson__search-input"
+          name="contactName"
+          type="text"
+          maxlength="200"
+          autocomplete="name"
+          value={values.contactName}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Vendor type/category</span>
+        <input
+          class="watson__search-input"
+          name="vendorType"
+          type="text"
+          maxlength="100"
+          placeholder="Yarn, shipping, software…"
+          value={values.vendorType}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Email</span>
+        <input
+          class="watson__search-input"
+          name="email"
+          type="text"
+          inputmode="email"
+          maxlength="320"
+          autocomplete="email"
+          value={values.email}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Phone</span>
+        <input
+          class="watson__search-input"
+          name="phone"
+          type="tel"
+          maxlength="50"
+          autocomplete="tel"
+          value={values.phone}
+        />
+      </label>
+
+      <label class="watson-vendor__field watson-vendor__field--full">
+        <span>Website</span>
+        <input
+          class="watson__search-input"
+          name="website"
+          type="text"
+          inputmode="url"
+          maxlength="500"
+          autocomplete="url"
+          placeholder="https://example.com"
+          value={values.website}
+        />
+      </label>
+
+      <label class="watson-vendor__field watson-vendor__field--full">
+        <span>Address line 1</span>
+        <input
+          class="watson__search-input"
+          name="addressLine1"
+          type="text"
+          maxlength="200"
+          autocomplete="address-line1"
+          value={values.addressLine1}
+        />
+      </label>
+
+      <label class="watson-vendor__field watson-vendor__field--full">
+        <span>Address line 2</span>
+        <input
+          class="watson__search-input"
+          name="addressLine2"
+          type="text"
+          maxlength="200"
+          autocomplete="address-line2"
+          value={values.addressLine2}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>City</span>
+        <input
+          class="watson__search-input"
+          name="city"
+          type="text"
+          maxlength="100"
+          autocomplete="address-level2"
+          value={values.city}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>State/province</span>
+        <input
+          class="watson__search-input"
+          name="state"
+          type="text"
+          maxlength="100"
+          autocomplete="address-level1"
+          value={values.state}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Postal code</span>
+        <input
+          class="watson__search-input"
+          name="postalCode"
+          type="text"
+          maxlength="20"
+          autocomplete="postal-code"
+          value={values.postalCode}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Country</span>
+        <input
+          class="watson__search-input"
+          name="country"
+          type="text"
+          maxlength="100"
+          autocomplete="country-name"
+          value={values.country}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Account number</span>
+        <input
+          class="watson__search-input"
+          name="accountNumber"
+          type="text"
+          maxlength="100"
+          value={values.accountNumber}
+        />
+      </label>
+
+      <label class="watson-vendor__field">
+        <span>Status</span>
+        <select class="watson__search-input" name="isActive">
+          <option value="true" selected={values.isActive}>Active</option>
+          <option value="false" selected={!values.isActive}>Inactive</option>
+        </select>
+      </label>
+
+      <label class="watson-vendor__field watson-vendor__field--full">
+        <span>Notes</span>
+        <textarea
+          class="watson-vendor__textarea"
+          name="notes"
+          rows="5"
+          maxlength="5000"
+        >{values.notes}</textarea>
+      </label>
+    </div>
+
+    <div class="watson-vendor__actions">
+      <button type="submit" class="watson__button">{saveLabel}</button>
+      <a class="watson__button watson__button--secondary" href={cancelHref}>Cancel</a>
+    </div>
+  </form>
+</section>
+
+<style>
+  .watson-vendor__form {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .watson-vendor__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+  }
+
+  .watson-vendor__field {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .watson-vendor__field--full {
+    grid-column: 1 / -1;
+  }
+
+  .watson-vendor__field abbr {
+    text-decoration: none;
+    color: #b91c1c;
+  }
+
+  .watson-vendor__textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.75rem;
+    font: inherit;
+    font-weight: 400;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+  }
+
+  .watson-vendor__textarea:focus {
+    outline: 2px solid #3f6212;
+    outline-offset: 1px;
+    border-color: #3f6212;
+  }
+
+  .watson-vendor__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .watson-vendor__actions a {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  @media (max-width: 720px) {
+    .watson-vendor__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

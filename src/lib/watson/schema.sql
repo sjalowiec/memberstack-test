@@ -600,6 +600,35 @@ CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_legacy_memberid ON wats
 
 CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_item ON watson_ebook_entitlements (item_id);
 
+CREATE TABLE IF NOT EXISTS watson_vendors (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_name TEXT NOT NULL CHECK (BTRIM(company_name) <> ''),
+  contact_name TEXT,
+  email TEXT,
+  phone TEXT,
+  website TEXT,
+  vendor_type TEXT,
+  address_line1 TEXT,
+  address_line2 TEXT,
+  city TEXT,
+  state TEXT,
+  postal_code TEXT,
+  country TEXT,
+  account_number TEXT,
+  notes TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_watson_vendors_company_name ON watson_vendors (LOWER(company_name));
+
+CREATE INDEX IF NOT EXISTS idx_watson_vendors_active_company ON watson_vendors (is_active, LOWER(company_name));
+
+CREATE INDEX IF NOT EXISTS idx_watson_vendors_email ON watson_vendors (LOWER(email));
+
+CREATE INDEX IF NOT EXISTS idx_watson_vendors_account_number ON watson_vendors (LOWER(account_number));
+
 CREATE INDEX IF NOT EXISTS idx_legacy_members_email ON legacy_members (LOWER(email));
 
 CREATE INDEX IF NOT EXISTS idx_legacy_members_lastname ON legacy_members (lastname);
