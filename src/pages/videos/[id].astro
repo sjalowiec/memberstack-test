@@ -6,8 +6,7 @@ import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import Transcript from "../../components/media/Transcript.astro";
-import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
-import { videoDetailMigratedJumpLinks } from "../../lib/jumplinks/jumplinksByContent";
+import { resolveVideoDetailJumpLinks } from "../../lib/jumplinks/jumplinksByContent";
 import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSrc";
 import {
   englishTranscriptParagraphs,
@@ -68,12 +67,12 @@ const posterSrc =
       ? `/images/${rawPosterUrl}`
       : "";
 
-/** Catalog `chapters` or `jumpLinks` from the video record for Vimeo Player.js seek on the detail page. */
-const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
-const hasCatalogChapters = catalogChapters.length > 0;
-const migratedJumpLinks = video ? videoDetailMigratedJumpLinks(id) : [];
-const hasMigratedJumpLinks = !hasCatalogChapters && migratedJumpLinks.length > 0;
-const enableVideoChapterControls = hasCatalogChapters || hasMigratedJumpLinks;
+/** Catalog `chapters`, then `jumpLinks`, then migrated rows. Never combined. */
+const resolvedJumpLinks = video ? resolveVideoDetailJumpLinks(video, id) : { source: "none" as const, links: [] };
+const hasJumpLinks = resolvedJumpLinks.links.length > 0;
+const isOpenPlayback = effectiveAccessLevel === "open";
+const ssrJumpLinks = isOpenPlayback ? resolvedJumpLinks.links : [];
+const enableVideoChapterControls = hasJumpLinks;
 
 const englishTranscript = video ? readableEnglishTranscriptForVimeoId(vimeoId) : null;
 const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript).map((text) => ({
@@ -159,15 +158,20 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
             ) : null}
           </section>
 
-          {/* JUMP LINKS — catalog `chapters`/`jumpLinks` stay SSR'd. Migrated member
-              links (content 266) load only after the same access decision as the player. */}
-          {hasCatalogChapters ? (
-          <nav class="video-jumplinks" aria-label="Jump links" data-content-id={contentIdAttr}>
+          {/* JUMP LINKS — public videos SSR labels. Member labels load only after
+              the same access decision as the player. */}
+          {hasJumpLinks ? (
+          <nav
+            class="video-jumplinks"
+            aria-label="Jump links"
+            data-content-id={contentIdAttr}
+            data-jump-source={isOpenPlayback ? "public" : "gated"}
+          >
             <div class="jumplinks-head"><h2>Jump to</h2></div>
 
-            {effectiveAccessLevel === "open" ? (
+            {isOpenPlayback ? (
               <div class="jumplinks" id="jumplinks">
-                {catalogChapters.map((chapter) => (
+                {ssrJumpLinks.map((chapter) => (
                   <button
                     type="button"
                     class="jumplink btn btn-secondary btn-small"
@@ -186,41 +190,11 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
                     <p class="locked-inline">Jump links are available with access.</p>
                   </div>
                 </div>
-
                 <div class="gated-content" data-gated="content" hidden>
-                  <div class="jumplinks" id="jumplinks">
-                    {catalogChapters.map((chapter) => (
-                      <button
-                        type="button"
-                        class="jumplink btn btn-secondary btn-small"
-                        data-video-jump={String(chapter.time)}
-                        data-video-start={String(chapter.time)}
-                      >
-                        <i class="fa fa-fast-forward" aria-hidden="true"></i>
-                        {chapter.label}
-                      </button>
-                    ))}
-                  </div>
+                  <div class="jumplinks" id="jumplinks"></div>
                 </div>
               </>
             )}
-          </nav>
-          ) : hasMigratedJumpLinks ? (
-          <nav
-            class="video-jumplinks"
-            aria-label="Jump links"
-            data-content-id={contentIdAttr}
-            data-jump-source="migrated"
-          >
-            <div class="jumplinks-head"><h2>Jump to</h2></div>
-            <div class="gated-locked" data-gated="locked">
-              <div class="jumplinks-disabled" aria-disabled="true">
-                <p class="locked-inline">Jump links are available with access.</p>
-              </div>
-            </div>
-            <div class="gated-content" data-gated="content" hidden>
-              <div class="jumplinks" id="jumplinks"></div>
-            </div>
           </nav>
           ) : null}
 
@@ -247,9 +221,9 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
           import { ensureLegacyPaidThroughContext } from "../../lib/memberAccessClient";
           import { videoDevBypass } from "../../lib/devBypass";
           import {
-            bindMigratedJumpLinkEmbedListener,
-            hydrateMigratedJumpLinks,
-          } from "../../scripts/videoDetailMigratedJumpLinks";
+            bindGatedJumpLinkEmbedListener,
+            hydrateGatedJumpLinks,
+          } from "../../scripts/videoDetailGatedJumpLinks";
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -287,17 +261,16 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
             });
           }
 
-          const migratedJumpContentId =
+          const gatedJumpContentId =
             document
-              .querySelector(".video-jumplinks[data-jump-source='migrated']")
+              .querySelector(".video-jumplinks[data-jump-source='gated']")
               ?.getAttribute("data-content-id")
               ?.trim() ?? "";
 
-          async function hydrateMigratedIfAllowed(hasFullAccess: boolean) {
-            await hydrateMigratedJumpLinks({
-              contentId: migratedJumpContentId,
+          async function hydrateGatedIfAllowed(hasFullAccess: boolean) {
+            await hydrateGatedJumpLinks({
+              contentId: gatedJumpContentId,
               hasAccess: hasFullAccess,
-              videoDevBypass,
             });
           }
 
@@ -309,7 +282,7 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
                 videoDevBypass,
               });
               setAccess(true);
-              await hydrateMigratedIfAllowed(true);
+              await hydrateGatedIfAllowed(true);
               return;
             }
 
@@ -317,14 +290,14 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
             if (urlParams.get("mode") === "full") {
               console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", { mode: "full" });
               setAccess(true);
-              await hydrateMigratedIfAllowed(true);
+              await hydrateGatedIfAllowed(true);
               return;
             }
 
             const res = await waitForMemberstackReady();
             const viewer = await getViewerStateFromRes(res);
             setAccess(Boolean(viewer.hasVideoAccess));
-            await hydrateMigratedIfAllowed(Boolean(viewer.hasVideoAccess));
+            await hydrateGatedIfAllowed(Boolean(viewer.hasVideoAccess));
           }
 
           let jumpLinkAuthBound = false;
@@ -342,7 +315,7 @@ const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript)
           }
 
           void (async () => {
-            bindMigratedJumpLinkEmbedListener(migratedJumpContentId);
+            bindGatedJumpLinkEmbedListener(gatedJumpContentId);
             await refreshJumpLinkAccess();
             bindJumpLinkAuthRefresh();
             void window.$memberstackDom?.onReady?.then(() => {

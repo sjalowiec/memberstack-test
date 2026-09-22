@@ -14,7 +14,8 @@ import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
 import { getMemberstackAdminClient } from "./lib/memberstack-admin.js";
 import { evaluateMemberAccessForRecord } from "../../src/lib/memberAccessServer";
 import { resolveCatalogVideoEmbed } from "../../src/lib/videos/resolveCatalogVideoEmbed";
-import { videoDetailMigratedJumpLinks } from "../../src/lib/jumplinks/jumplinksByContent";
+import { resolveVideoDetailJumpLinks } from "../../src/lib/jumplinks/jumplinksByContent";
+import { findPublicCatalogVideoByContentId } from "../../src/lib/videoPublic";
 import type { PublicVideoRow } from "../../src/lib/lessonVideo";
 
 const catalog = videosPublic as PublicVideoRow[];
@@ -23,7 +24,8 @@ function authorizedEmbedBody(resolved: {
   iframeSrc: string;
   title: string;
 }, contentId: string) {
-  const jumplinks = videoDetailMigratedJumpLinks(contentId);
+  const row = findPublicCatalogVideoByContentId(catalog, contentId);
+  const jumplinks = resolveVideoDetailJumpLinks(row, contentId).links;
   return jumplinks.length > 0
     ? {
         ok: true as const,

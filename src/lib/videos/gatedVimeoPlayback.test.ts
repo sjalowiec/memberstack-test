@@ -310,5 +310,7 @@ describe("video page wiring", () => {
     const page = readFileSync(join(process.cwd(), "src", "pages", "videos", "[id].astro"), "utf8");
     expect(page).toContain("contentId={id}");
     expect(page).toContain("catalogVideoPlaybackAccess");
+    expect(page).toContain("hydrateGatedJumpLinks");
+    expect(page).toContain("catalogVimeoIframePlayerId(vimeoId, id)");
   });
 });
