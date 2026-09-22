@@ -79,5 +79,38 @@ describe("catalog-video-embed", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.iframeSrc).toContain("player.vimeo.com/video/");
+    expect(body).not.toHaveProperty("jumplinks");
+  });
+
+  it("omits I-Cord jump links when membership is denied", async () => {
+    const res = await handler(
+      makeRequest("266", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(JSON.stringify(body)).not.toContain("Helecopter");
+    expect(JSON.stringify(body)).not.toContain("Slip stitch on your machine");
+  });
+
+  it("returns I-Cord jump links only after member access is confirmed", async () => {
+    vi.mocked(evaluateMemberAccessForRecord).mockResolvedValue({
+      hasMemberAccess: true,
+      viewerAccessState: "memberAccess",
+      legacyPaidThroughYmd: "2026-12-01",
+    });
+    const res = await handler(
+      makeRequest("266", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.jumplinks).toEqual([
+      { time: 36, label: "Slip stitch on your machine" },
+      { time: 43, label: "Pick up and knit I-cord" },
+      { time: 64, label: "Turn a corner" },
+      { time: 80, label: "Loop Trim" },
+      { time: 112, label: "Helecopter trim (give it a twist)" },
+    ]);
   });
 });

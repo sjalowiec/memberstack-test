@@ -8,6 +8,7 @@ import {
   decideGatedVimeoPlayback,
   gatedVimeoEmbedDelivery,
 } from "./gatedVimeoEmbedDelivery";
+import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "./catalogVideoEmbedSrc";
 import { resolveCatalogVideoEmbed } from "./resolveCatalogVideoEmbed";
 import type { PublicVideoRow } from "../lessonVideo";
 import { videoCatalogClientCards } from "./videoCatalogClientCards";
@@ -210,6 +211,25 @@ describe("decideGatedVimeoPlayback", () => {
   });
 });
 
+describe("catalogVimeoIframePlayerId", () => {
+  it("prefers the Vimeo id over the catalog content id", () => {
+    expect(catalogVimeoIframePlayerId("151857129", "266")).toBe("kbm-gated-vimeo-151857129");
+    expect(catalogVimeoIframePlayerId("", "266")).toBe("kbm-gated-vimeo-266");
+    expect(catalogVimeoIframePlayerId(null, null)).toBe("");
+  });
+
+  it("puts the Vimeo id on the Player API player_id param", () => {
+    const src = buildCatalogVimeoEmbedSrc({
+      vimeoId: "151857129",
+      enableVimeoPlayerApi: true,
+      iframePlayerId: catalogVimeoIframePlayerId("151857129", "266"),
+    });
+    expect(src).toContain("player.vimeo.com/video/151857129");
+    expect(src).toContain("player_id=kbm-gated-vimeo-151857129");
+    expect(src).not.toContain("player_id=kbm-gated-vimeo-266");
+  });
+});
+
 describe("resolveCatalogVideoEmbed", () => {
   const catalog: PublicVideoRow[] = [
     {
@@ -236,6 +256,15 @@ describe("resolveCatalogVideoEmbed", () => {
       expect(resolved.access).toBe("member");
       expect(resolved.iframeSrc).toContain("player.vimeo.com/video/151849234");
       expect(resolved.iframeSrc).toContain("h=abc123");
+    }
+  });
+
+  it("uses the Vimeo id for the Player API player_id", () => {
+    const resolved = resolveCatalogVideoEmbed(catalog, "257", { enableVimeoPlayerApi: true });
+    expect(resolved.ok).toBe(true);
+    if (resolved.ok) {
+      expect(resolved.iframeSrc).toContain("player_id=kbm-gated-vimeo-151849234");
+      expect(resolved.iframeSrc).not.toContain("player_id=kbm-gated-vimeo-257");
     }
   });
 
@@ -273,6 +302,7 @@ describe("video page wiring", () => {
     );
     expect(embed).toContain("gatedVimeoEmbedDelivery");
     expect(embed).toContain("delivery.renderIframe");
+    expect(embed).toContain("catalogVimeoIframePlayerId");
     expect(embed).not.toContain("data-iframe-src={iframeSrc}");
   });
 

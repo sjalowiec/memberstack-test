@@ -9,6 +9,7 @@
 import { videoDevBypass } from "../../lib/devBypass";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { gatedVimeoEmbedDelivery } from "../../lib/videos/gatedVimeoEmbedDelivery";
+import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSrc";
 
 const {
   videoId: rawVideoId,
@@ -29,7 +30,7 @@ const privacyHash = String(rawPrivacyHash ?? "").trim();
 const access_level = catalogVideoPlaybackAccess({
   access_level: rawAccessLevel,
 });
-const iframePlayerId = videoId ? `kbm-gated-vimeo-${videoId}` : contentId ? `kbm-gated-vimeo-${contentId}` : "";
+const iframePlayerId = catalogVimeoIframePlayerId(videoId, contentId);
 const delivery = gatedVimeoEmbedDelivery({
   accessLevel: access_level,
   videoId,

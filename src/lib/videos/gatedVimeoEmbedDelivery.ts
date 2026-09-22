@@ -1,5 +1,5 @@
 import { catalogVideoPlaybackAccess, type CatalogVideoPlaybackAccess } from "./catalogVideoPlaybackAccess";
-import { buildCatalogVimeoEmbedSrc } from "./catalogVideoEmbedSrc";
+import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "./catalogVideoEmbedSrc";
 
 export type GatedVimeoEmbedDelivery = {
   accessLevel: CatalogVideoPlaybackAccess;
@@ -36,7 +36,7 @@ export function gatedVimeoEmbedDelivery(options: {
   const videoId = String(options.videoId ?? "").trim();
   const contentId = String(options.contentId ?? "").trim();
   const iframePlayerId =
-    String(options.iframePlayerId ?? "").trim() || (videoId ? `kbm-gated-vimeo-${videoId}` : "");
+    String(options.iframePlayerId ?? "").trim() || catalogVimeoIframePlayerId(videoId, contentId);
   const iframeSrc = videoId
     ? buildCatalogVimeoEmbedSrc({
         vimeoId: videoId,

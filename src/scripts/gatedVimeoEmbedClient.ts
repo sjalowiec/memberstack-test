@@ -4,8 +4,10 @@ import { getMembershipStatusAuthHeaders } from "../lib/membership/membershipStat
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { getMemberstackReturnPath } from "../lib/memberstackReturnUrl";
 import { catalogVideoPlaybackAccess } from "../lib/videos/catalogVideoPlaybackAccess";
-import { buildCatalogVimeoEmbedSrc } from "../lib/videos/catalogVideoEmbedSrc";
+import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "../lib/videos/catalogVideoEmbedSrc";
 import { decideGatedVimeoPlayback } from "../lib/videos/gatedVimeoEmbedDelivery";
+import { parseAuthorizedJumpLinks } from "../lib/jumplinks/videoJumpLinkButtons";
+import type { CatalogChapterRow } from "../lib/catalogVideoChapters";
 
 export const CATALOG_VIDEO_EMBED_API_PATH = "/.netlify/functions/catalog-video-embed";
 
@@ -43,16 +45,16 @@ function readConfig(root: HTMLElement) {
     accessLevel: catalogVideoPlaybackAccess({
       access_level: root.dataset.accessLevel ?? "member",
     }),
-    iframePlayerId: videoId ? `kbm-gated-vimeo-${videoId}` : contentId ? `kbm-gated-vimeo-${contentId}` : "",
+    iframePlayerId: catalogVimeoIframePlayerId(videoId, contentId),
     ctaHref: root.dataset.ctaHref ?? "/membership",
     ctaText: root.dataset.ctaText ?? "Join to watch",
   };
 }
 
-async function fetchCatalogEmbedSrc(
+async function fetchCatalogEmbed(
   contentId: string,
   enableVimeoPlayerApi: boolean,
-): Promise<string | null> {
+): Promise<{ iframeSrc: string; jumplinks: CatalogChapterRow[] } | null> {
   const headers = await getMembershipStatusAuthHeaders();
   const params = new URLSearchParams({ contentId });
   if (enableVimeoPlayerApi) params.set("playerApi", "1");
@@ -62,15 +64,25 @@ async function fetchCatalogEmbedSrc(
     credentials: "same-origin",
   });
   if (!res.ok) return null;
-  let body: { ok?: boolean; iframeSrc?: string } | null = null;
+  let body: { ok?: boolean; iframeSrc?: string; jumplinks?: unknown } | null = null;
   try {
-    body = (await res.json()) as { ok?: boolean; iframeSrc?: string };
+    body = (await res.json()) as { ok?: boolean; iframeSrc?: string; jumplinks?: unknown };
   } catch {
     return null;
   }
   if (!body || body.ok === false) return null;
   const src = typeof body.iframeSrc === "string" ? body.iframeSrc.trim() : "";
-  return src.startsWith("https://player.vimeo.com/video/") ? src : null;
+  if (!src.startsWith("https://player.vimeo.com/video/")) return null;
+  return { iframeSrc: src, jumplinks: parseAuthorizedJumpLinks(body.jumplinks) };
+}
+
+function announceCatalogVideoEmbed(contentId: string, jumplinks: CatalogChapterRow[]) {
+  if (!contentId) return;
+  window.dispatchEvent(
+    new CustomEvent("kbm:catalog-video-embed", {
+      detail: { contentId, jumplinks },
+    }),
+  );
 }
 
 function initGatedVimeoEmbed(root: HTMLElement) {
@@ -95,6 +107,13 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
   let authListenersBound = false;
   let renderedSrc: string | null = accessLevel === "open" ? deliveredIframeSrc || null : null;
+
+  function iframeIdAttributeForSrc(src: string): string {
+    if (!enableVimeoPlayerApi) return "";
+    const fromSrc = src.match(/player\.vimeo\.com\/video\/(\d+)/)?.[1] ?? "";
+    const playerId = catalogVimeoIframePlayerId(fromSrc || videoId, contentId);
+    return playerId ? ` id="${playerId}"` : iframeIdAttr;
+  }
 
   function buildLockedMarkup(showLogin: boolean) {
     const loginBtn = showLogin
@@ -140,7 +159,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     }
     renderedSrc = src;
     slot.innerHTML = `
-        <iframe${iframeIdAttr}
+        <iframe${iframeIdAttributeForSrc(src)}
           src="${src}"
           title="${title}"
           loading="lazy"
@@ -154,10 +173,14 @@ function initGatedVimeoEmbed(root: HTMLElement) {
   }
 
   async function resolveEmbedSrc(hasAccess: boolean): Promise<string | null> {
-    if (deliveredIframeSrc) return deliveredIframeSrc;
     if (contentId && (hasAccess || accessLevel === "open" || videoDevBypass)) {
-      return fetchCatalogEmbedSrc(contentId, enableVimeoPlayerApi);
+      const fetched = await fetchCatalogEmbed(contentId, enableVimeoPlayerApi);
+      if (fetched) {
+        announceCatalogVideoEmbed(contentId, fetched.jumplinks);
+        return fetched.iframeSrc;
+      }
     }
+    if (deliveredIframeSrc) return deliveredIframeSrc;
     if (hasAccess && videoId) {
       return buildCatalogVimeoEmbedSrc({
         vimeoId: videoId,
