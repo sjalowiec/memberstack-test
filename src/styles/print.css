@@ -593,4 +593,71 @@
     font-size: 11pt !important;
     line-height: 1.6 !important;
   }
+
+  /* Video watch page: print the readable English transcript even if
+     <details> is closed on screen. Do not print the Vimeo player. */
+  .video-detail-wrap .page-head {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    margin: 0 0 1rem 0 !important;
+    padding: 0 !important;
+  }
+
+  .video-detail-wrap .page-title,
+  .video-detail-wrap .page-title__text {
+    display: block !important;
+    font-size: 18pt !important;
+    color: #000000 !important;
+  }
+
+  .kbm-video,
+  .vimeo-embed-wrapper,
+  .video-detail-wrap iframe,
+  iframe[src*="player.vimeo.com"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .video-detail-wrap .video-jumplinks,
+  .video-detail-wrap .video-description {
+    display: none !important;
+  }
+
+  /* Closed <details> is omitted from Chromium print layout even when
+     descendants are forced visible. Hide the widget and print the copy. */
+  details.kbm-transcript {
+    display: none !important;
+  }
+
+  .video-english-transcript-print {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  .video-english-transcript-print p {
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    margin: 0 0 0.75rem 0 !important;
+  }
+
+  .kbm-transcript-text,
+  .kbm-transcript-text p {
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+  }
 }

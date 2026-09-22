@@ -5,7 +5,12 @@ import PageHead from "../../components/PageHead.astro";
 import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
+import Transcript from "../../components/media/Transcript.astro";
 import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
+import {
+  englishTranscriptParagraphs,
+  readableEnglishTranscriptForVimeoId,
+} from "../../lib/transcripts/englishTranscript";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { filterPublicCatalogVideos, findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 export const prerender = true;
@@ -65,6 +70,11 @@ const posterSrc =
 const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
 const hasCatalogChapters = catalogChapters.length > 0;
 const enableVideoChapterControls = hasCatalogChapters;
+
+const englishTranscript = video ? readableEnglishTranscriptForVimeoId(vimeoId) : null;
+const englishTranscriptSections = englishTranscriptParagraphs(englishTranscript).map((text) => ({
+  text,
+}));
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
@@ -72,6 +82,7 @@ const enableVideoChapterControls = hasCatalogChapters;
     /* Override global .page-wrap top padding; Layout already supplies header clearance */
     .video-detail-wrap.page-wrap { padding-top: 8px; }
     .back-link { display: inline-block; margin-bottom: 0.75rem; }
+    .video-english-transcript-print { display: none; }
   </style>
   <div class="page-wrap video-detail-wrap">
     <a class="back-link back-to-videos-link" id="back-to-videos" href="/videos">← Back to Videos</a>
@@ -132,11 +143,25 @@ const enableVideoChapterControls = hasCatalogChapters;
             />
           </section>
 
+          {/* DESCRIPTION (always visible); plain text only — optional worksheet link via downloadUrl */}
+          <section class="video-description">
+            <h2>Description</h2>
+            {description ? <div class="video-desc-text">{description}</div> : null}
+            {downloadUrl ? (
+              <p class="video-desc-download">
+                <a class="video-desc-download__link kbm-btn kbm-btn-primary" href={downloadUrl}>
+                  {downloadLabel}
+                </a>
+              </p>
+            ) : null}
+          </section>
+
           {/* JUMP LINKS — from `chapters` or `jumpLinks` on the record (open: always visible; member: gated until access). */}
+          {hasCatalogChapters ? (
           <nav class="video-jumplinks" aria-label="Jump links" data-content-id={contentIdAttr}>
             <div class="jumplinks-head"><h2>Jump to</h2></div>
 
-            {hasCatalogChapters && effectiveAccessLevel === "open" ? (
+            {effectiveAccessLevel === "open" ? (
               <div class="jumplinks" id="jumplinks">
                 {catalogChapters.map((chapter) => (
                   <button
@@ -150,7 +175,7 @@ const enableVideoChapterControls = hasCatalogChapters;
                   </button>
                 ))}
               </div>
-            ) : hasCatalogChapters && effectiveAccessLevel === "member" ? (
+            ) : (
               <>
                 <div class="gated-locked" data-gated="locked">
                   <div class="jumplinks-disabled" aria-disabled="true">
@@ -174,33 +199,21 @@ const enableVideoChapterControls = hasCatalogChapters;
                   </div>
                 </div>
               </>
-            ) : (
-              <>
-                <div class="gated-locked" data-gated="locked">
-                  <div class="jumplinks-disabled" aria-disabled="true">
-                    <p class="locked-inline">Jump links are available with access.</p>
-                  </div>
-                </div>
-
-                <div class="gated-content" data-gated="content" hidden>
-                  <div class="jumplinks" id="jumplinks"></div>
-                </div>
-              </>
             )}
           </nav>
+          ) : null}
 
-          {/* DESCRIPTION (always visible); plain text only — optional worksheet link via downloadUrl */}
-          <section class="video-description">
-            <h2>Description</h2>
-            {description ? <div class="video-desc-text">{description}</div> : null}
-            {downloadUrl ? (
-              <p class="video-desc-download">
-                <a class="video-desc-download__link kbm-btn kbm-btn-primary" href={downloadUrl}>
-                  {downloadLabel}
-                </a>
-              </p>
-            ) : null}
-          </section>
+          {englishTranscriptSections.length > 0 ? (
+            <div class="video-english-transcript" data-testid="video-english-transcript">
+              <Transcript title="Read transcript" sections={englishTranscriptSections} />
+              {/* Closed <details> does not print in Chromium. Keep a print-only copy. */}
+              <div class="video-english-transcript-print" aria-hidden="true">
+                {englishTranscriptSections.map((section) => (
+                  <p>{section.text}</p>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </article>
 
         <script>
