@@ -1,11 +1,19 @@
 import data from "../../../data/jumplinks-by-content.json";
-import type { CatalogChapterRow } from "../catalogVideoChapters";
+import {
+  catalogChaptersFieldFromVideoRow,
+  catalogJumpLinksFieldFromVideoRow,
+  type CatalogChapterRow,
+} from "../catalogVideoChapters";
 
 type RawJumpLink = { t?: unknown; label?: unknown };
 type RawRow = { content_id?: unknown; jumplinks?: unknown };
 
-/** One-video DEV proof of concept: I-Cord Trims. */
-export const VIDEO_DETAIL_MIGRATED_JUMPLINKS_CONTENT_ID = 266;
+export type VideoDetailJumpLinkSource = "chapters" | "jumpLinks" | "migrated" | "none";
+
+export type ResolvedVideoDetailJumpLinks = {
+  source: VideoDetailJumpLinkSource;
+  links: CatalogChapterRow[];
+};
 
 function parseJumpLink(raw: unknown): CatalogChapterRow | null {
   if (!raw || typeof raw !== "object") return null;
@@ -38,10 +46,24 @@ export function jumplinksByContentId(contentId: string | number): CatalogChapter
 }
 
 /**
- * Video-detail PoC: only content 266 is wired from the migrated table.
- * Other catalog videos keep using `chapters` / `jumpLinks` on the row.
+ * Video-detail jump links. Catalog `chapters` win, then catalog `jumpLinks`,
+ * then migrated rows. Sources are never combined.
  */
-export function videoDetailMigratedJumpLinks(contentId: string | number): CatalogChapterRow[] {
-  if (Number(contentId) !== VIDEO_DETAIL_MIGRATED_JUMPLINKS_CONTENT_ID) return [];
-  return jumplinksByContentId(contentId);
+export function resolveVideoDetailJumpLinks(
+  video: unknown,
+  contentId?: string | number,
+): ResolvedVideoDetailJumpLinks {
+  const fromChapters = catalogChaptersFieldFromVideoRow(video);
+  if (fromChapters.length > 0) return { source: "chapters", links: fromChapters };
+
+  const fromJumpLinks = catalogJumpLinksFieldFromVideoRow(video);
+  if (fromJumpLinks.length > 0) return { source: "jumpLinks", links: fromJumpLinks };
+
+  const id =
+    contentId ??
+    (video && typeof video === "object" ? (video as { content_id?: unknown }).content_id : undefined);
+  const migrated = jumplinksByContentId(id ?? "");
+  if (migrated.length > 0) return { source: "migrated", links: migrated };
+
+  return { source: "none", links: [] };
 }

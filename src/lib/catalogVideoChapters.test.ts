@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { catalogChaptersFromVideoRow } from "./catalogVideoChapters";
+import {
+  catalogChaptersFieldFromVideoRow,
+  catalogChaptersFromVideoRow,
+  catalogJumpLinksFieldFromVideoRow,
+} from "./catalogVideoChapters";
 
 describe("catalogChaptersFromVideoRow", () => {
   it("parses valid chapter rows", () => {
@@ -20,6 +24,21 @@ describe("catalogChaptersFromVideoRow", () => {
     expect(catalogChaptersFromVideoRow(null)).toEqual([]);
     expect(catalogChaptersFromVideoRow({ chapters: [{ label: "", time: 1 }] })).toEqual([]);
     expect(catalogChaptersFromVideoRow({ chapters: [{ label: "x", time: -1 }] })).toEqual([]);
+  });
+
+  it("reads chapters and jumpLinks fields independently", () => {
+    expect(
+      catalogChaptersFieldFromVideoRow({
+        chapters: [{ label: "A", time: 13 }],
+        jumpLinks: [{ label: "B", time: 99 }],
+      }),
+    ).toEqual([{ label: "A", time: 13 }]);
+    expect(
+      catalogJumpLinksFieldFromVideoRow({
+        chapters: [{ label: "A", time: 13 }],
+        jumpLinks: [{ label: "B", time: 99 }],
+      }),
+    ).toEqual([{ label: "B", time: 99 }]);
   });
 
   it("uses jumpLinks when chapters are absent", () => {

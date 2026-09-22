@@ -21,14 +21,22 @@ function catalogChapterRowsFromLabelTimeArray(raw: unknown): CatalogChapterRow[]
   return out;
 }
 
+export function catalogChaptersFieldFromVideoRow(v: unknown): CatalogChapterRow[] {
+  if (!v || typeof v !== "object") return [];
+  return catalogChapterRowsFromLabelTimeArray((v as { chapters?: unknown }).chapters);
+}
+
+export function catalogJumpLinksFieldFromVideoRow(v: unknown): CatalogChapterRow[] {
+  if (!v || typeof v !== "object") return [];
+  return catalogChapterRowsFromLabelTimeArray((v as { jumpLinks?: unknown }).jumpLinks);
+}
+
 /**
  * Jump / chapter controls for the video detail page and catalog modal.
  * Uses `chapters` when present; otherwise `jumpLinks` (same `{ label, time }` shape).
  */
 export function catalogChaptersFromVideoRow(v: unknown): CatalogChapterRow[] {
-  if (!v || typeof v !== "object") return [];
-  const o = v as { chapters?: unknown; jumpLinks?: unknown };
-  const fromChapters = catalogChapterRowsFromLabelTimeArray(o.chapters);
+  const fromChapters = catalogChaptersFieldFromVideoRow(v);
   if (fromChapters.length > 0) return fromChapters;
-  return catalogChapterRowsFromLabelTimeArray(o.jumpLinks);
+  return catalogJumpLinksFieldFromVideoRow(v);
 }

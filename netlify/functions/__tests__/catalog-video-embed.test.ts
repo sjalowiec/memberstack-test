@@ -79,7 +79,41 @@ describe("catalog-video-embed", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.iframeSrc).toContain("player.vimeo.com/video/");
-    expect(body).not.toHaveProperty("jumplinks");
+    expect(body.jumplinks[0]).toEqual({ time: 60, label: "Hang purl side to purl side" });
+  });
+
+  it("returns public catalog jump links without membership", async () => {
+    const res = await handler(makeRequest("535"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(requireMember).not.toHaveBeenCalled();
+    expect(body.jumplinks[0]).toEqual({ label: "Sample Neckline overview", time: 44 });
+  });
+
+  it("omits member catalog chapter labels when membership is denied", async () => {
+    const res = await handler(
+      makeRequest("520", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(JSON.stringify(body)).not.toContain("Seaming on the machine");
+  });
+
+  it("returns catalog chapters after member access is confirmed", async () => {
+    vi.mocked(evaluateMemberAccessForRecord).mockResolvedValue({
+      hasMemberAccess: true,
+      viewerAccessState: "memberAccess",
+      legacyPaidThroughYmd: "2026-12-01",
+    });
+    const res = await handler(
+      makeRequest("520", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.jumplinks[0]).toEqual({ label: "Seaming on the machine", time: 13 });
   });
 
   it("omits I-Cord jump links when membership is denied", async () => {
@@ -112,5 +146,41 @@ describe("catalog-video-embed", () => {
       { time: 80, label: "Loop Trim" },
       { time: 112, label: "Helecopter trim (give it a twist)" },
     ]);
+  });
+
+  it("returns catalog jumpLinks after member access is confirmed", async () => {
+    vi.mocked(evaluateMemberAccessForRecord).mockResolvedValue({
+      hasMemberAccess: true,
+      viewerAccessState: "memberAccess",
+      legacyPaidThroughYmd: "2026-12-01",
+    });
+    const res = await handler(
+      makeRequest("2148", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.jumplinks[0]).toEqual({ label: "Overview Steps", time: 15 });
+  });
+
+  it("does not attach jump links to videos that have none", async () => {
+    vi.mocked(evaluateMemberAccessForRecord).mockResolvedValue({
+      hasMemberAccess: true,
+      viewerAccessState: "memberAccess",
+      legacyPaidThroughYmd: "2026-12-01",
+    });
+    const memberNone = await handler(
+      makeRequest("259", { headers: { Authorization: "Bearer good-token" } }),
+    );
+    expect(memberNone.status).toBe(200);
+    const memberBody = await memberNone.json();
+    expect(memberBody.ok).toBe(true);
+    expect(memberBody).not.toHaveProperty("jumplinks");
+
+    const publicNone = await handler(makeRequest("459"));
+    expect(publicNone.status).toBe(200);
+    const publicBody = await publicNone.json();
+    expect(publicBody.ok).toBe(true);
+    expect(publicBody).not.toHaveProperty("jumplinks");
   });
 });
