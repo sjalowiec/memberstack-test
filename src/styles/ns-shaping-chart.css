@@ -465,9 +465,22 @@
     display: block !important;
   }
 
-  /* Collapsible checklist prints in full even when collapsed on-screen; hide the chevron. */
-  .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-body {
+  /*
+   * Collapsible checklist prints in full even when collapsed on-screen.
+   * Closed native `<details>` hide the body with `::details-content { content-visibility: hidden }`,
+   * so `display: block` on `.ns-shaping-chart__disclosure-body` alone is not enough.
+   */
+  .ns-shaping-chart--collapsible {
+    overflow: visible !important;
+  }
+
+  .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-body,
+  .ns-shaping-chart--collapsible > summary + *,
+  .ns-shaping-chart--collapsible::details-content {
     display: block !important;
+    content-visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .ns-shaping-chart__checklist-inner {

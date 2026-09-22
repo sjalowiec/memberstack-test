@@ -454,7 +454,8 @@ describe("shoulder checklist full-width collapsible layout", () => {
       tableHeading: "First Shoulder Checklist",
     });
 
-    expect(html).toContain('class="ns-shaping-chart ns-shaping-chart--collapsible"');
+    expect(html).toContain("ns-shaping-chart--collapsible");
+    expect(html).toContain("pattern-print-essential-disclosure");
     expect(html).toContain("ns-shaping-chart__disclosure-header");
     expect(html).toContain("ns-shaping-chart__disclosure-chevron");
     expect(html).toContain("data-chart-print-slot");

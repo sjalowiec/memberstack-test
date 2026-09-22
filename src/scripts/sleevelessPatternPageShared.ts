@@ -2294,6 +2294,26 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         display: block !important;
         visibility: visible !important;
       }
+      .ns-shaping-chart--collapsible,
+      details.pattern-print-essential-disclosure {
+        overflow: visible !important;
+      }
+      .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-header {
+        display: none !important;
+      }
+      .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-body,
+      .ns-shaping-chart--collapsible > summary + *,
+      .ns-shaping-chart--collapsible::details-content,
+      details.pattern-print-essential-disclosure > summary + *,
+      details.pattern-print-essential-disclosure::details-content {
+        display: block !important;
+        content-visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .ns-shaping-chart--second-shoulder[hidden] {
+        display: block !important;
+      }
       .ns-shaping-chart__print-lead-heading {
         display: block !important;
         margin: 0 0 0.45rem;
@@ -2338,6 +2358,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         host.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(ctx.chart, ctx.idPrefix, ctx.introHtml, {
           ...ctx.options,
           compactPlainKnitSpansForPrint: true,
+          collapsibleDefaultOpen: true,
         });
       }
     }

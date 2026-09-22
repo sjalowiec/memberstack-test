@@ -17,6 +17,7 @@ import {
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
 } from "./neckShoulderShapingChart";
+import { PATTERN_PRINT_ESSENTIAL_DISCLOSURE_CLASS } from "./patternEssentialDisclosurePrint";
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
@@ -1091,7 +1092,7 @@ function collapsibleChecklistShellHtml(
     ? `<span class="ns-shaping-chart__disclosure-actions" data-chart-print-slot></span>`
     : "";
   return {
-    open: `<details class="${escapeHtml(`${sectionClass} ns-shaping-chart--collapsible${extraClass}`)}"${dataAttr}${hiddenAttr}${openAttr}>
+    open: `<details class="${escapeHtml(`${sectionClass} ns-shaping-chart--collapsible ${PATTERN_PRINT_ESSENTIAL_DISCLOSURE_CLASS}${extraClass}`)}"${dataAttr}${hiddenAttr}${openAttr}>
   <summary class="ns-shaping-chart__disclosure-header">
     <span class="ns-shaping-chart__disclosure-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
     <span id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__disclosure-title">${escapeHtml(title)}</span>

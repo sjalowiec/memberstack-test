@@ -73,6 +73,17 @@ describe("ns-shaping-chart print layout regression", () => {
     expect(sharedPrintCss).toMatch(/\.ns-shaping-chart__print-lead-heading[\s\S]*break-after:\s*avoid\s*!important/);
   });
 
+  it("prints collapsible checklist bodies even when the accordion is collapsed on screen", () => {
+    const printCss = printBlock(nsShapingChartCss);
+    expect(printCss).toMatch(
+      /\.ns-shaping-chart--collapsible::details-content[\s\S]*content-visibility:\s*visible\s*!important/,
+    );
+    expect(printCss).toMatch(
+      /\.ns-shaping-chart--collapsible > \.ns-shaping-chart__disclosure-body[\s\S]*display:\s*block\s*!important/,
+    );
+    expect(printCss).toMatch(/\.ns-shaping-chart--collapsible \{\s*[\s\S]*overflow:\s*visible\s*!important/);
+  });
+
   it("prints both First/Second Side tab panels even when the second tab is hidden on screen", () => {
     const printCss = printBlock(nsShapingChartCss);
     expect(printCss).toMatch(/\.ns-shaping-chart__tablist[\s\S]*display:\s*none\s*!important/);
@@ -83,5 +94,6 @@ describe("ns-shaping-chart print layout regression", () => {
     const screenCss = nsShapingChartCss.replace(printBlock(nsShapingChartCss), "");
     expect(screenCss).toMatch(/\.ns-shaping-chart__disclosure-header[\s\S]*cursor:\s*pointer/);
     expect(screenCss).toMatch(/\.ns-shaping-chart__print-lead-heading[\s\S]*display:\s*none/);
+    expect(screenCss).not.toMatch(/::details-content[\s\S]*content-visibility:\s*visible/);
   });
 });

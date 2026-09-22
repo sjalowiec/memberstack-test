@@ -8,10 +8,8 @@ describe("sleevelessPatternPrintNoticeHtml", () => {
     expect(SLEEVELESS_PATTERN_PRINT_NOTICE_HTML).toContain(
       "Interactive glossary popups, videos, and help overlays are not included in printed copies.",
     );
-    expect(SLEEVELESS_PATTERN_PRINT_NOTICE_HTML).toContain(
-      "<strong>only if they are visible on screen</strong>",
-    );
-    expect(SLEEVELESS_PATTERN_PRINT_NOTICE_HTML).toContain("Pattern Tips and shaping chart rows");
+    expect(SLEEVELESS_PATTERN_PRINT_NOTICE_HTML).not.toContain("visible on screen");
+    expect(SLEEVELESS_PATTERN_PRINT_NOTICE_HTML).not.toContain("shaping chart rows");
     expect(SLEEVELESS_PATTERN_PRINT_NOTICE_HTML).not.toContain("no-print");
   });
 });
