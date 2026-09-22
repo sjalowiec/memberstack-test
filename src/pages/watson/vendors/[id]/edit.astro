@@ -1,0 +1,92 @@
+---
+import WatsonPageShell from "../../../../components/watson/WatsonPageShell.astro";
+import WatsonVendorForm from "../../../../components/watson/WatsonVendorForm.astro";
+import {
+  EMPTY_VENDOR_FORM,
+  getVendorById,
+  updateVendor,
+  vendorFormValuesFromDisplay,
+  vendorFormValuesFromUnknown,
+  vendorWriteInputFromFormData,
+} from "../../../../lib/watson/vendors";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const id = Astro.params.id ? decodeURIComponent(Astro.params.id) : "";
+
+let loadError: string | null = null;
+let notFound = false;
+let error: string | null = null;
+let values = { ...EMPTY_VENDOR_FORM };
+let companyName = "Vendor";
+let cancelHref = "/watson/vendors";
+
+if (!id) {
+  notFound = true;
+} else {
+  cancelHref = `/watson/vendors/${encodeURIComponent(id)}`;
+  try {
+    const existing = await getVendorById(id);
+    if (!existing) {
+      notFound = true;
+    } else {
+      companyName = existing.companyName;
+      values = vendorFormValuesFromDisplay(existing);
+    }
+  } catch (caught) {
+    loadError = caught instanceof Error ? caught.message : "Unable to load vendor.";
+  }
+}
+
+if (!notFound && !loadError && Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const raw = vendorWriteInputFromFormData(form);
+  values = vendorFormValuesFromUnknown(raw);
+
+  try {
+    const result = await updateVendor(id, raw);
+    if (result.ok) {
+      return Astro.redirect(
+        `/watson/vendors/${encodeURIComponent(result.value.id)}?updated=1`,
+        303,
+      );
+    }
+    error = result.error;
+  } catch (caught) {
+    error = caught instanceof Error ? caught.message : "Unable to save vendor.";
+  }
+}
+---
+
+<WatsonPageShell
+  title={`Edit ${companyName} | Watson`}
+  description="Edit a vendor in the Watson directory."
+  heading={`Edit ${companyName}`}
+  intro="Company name is required. Mark a vendor inactive to keep the record without deleting it."
+>
+  <p slot="head" class="watson__back-link">
+    <a href={cancelHref}>Back to vendor</a>
+  </p>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : notFound ? (
+      <p class="watson__status watson__status--error" role="alert">
+        Vendor not found.
+      </p>
+    ) : (
+      <WatsonVendorForm
+        mode="edit"
+        action={`/watson/vendors/${encodeURIComponent(id)}/edit`}
+        cancelHref={cancelHref}
+        values={values}
+        error={error}
+      />
+    )
+  }
+</WatsonPageShell>

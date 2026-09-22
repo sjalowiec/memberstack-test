@@ -1,0 +1,87 @@
+---
+import WatsonMemberOverview from "../../../components/watson/WatsonMemberOverview.astro";
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import {
+  buildVendorOverviewFields,
+  getVendorById,
+} from "../../../lib/watson/vendors";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const id = Astro.params.id ? decodeURIComponent(Astro.params.id) : "";
+const saved = Astro.url.searchParams.get("saved") === "1";
+const updated = Astro.url.searchParams.get("updated") === "1";
+
+let loadError: string | null = null;
+let notFound = false;
+let vendor: Awaited<ReturnType<typeof getVendorById>> = null;
+
+if (!id) {
+  notFound = true;
+} else {
+  try {
+    vendor = await getVendorById(id);
+    if (!vendor) {
+      notFound = true;
+    }
+  } catch (error) {
+    loadError = error instanceof Error ? error.message : "Unable to load vendor.";
+  }
+}
+
+const title = vendor ? `${vendor.companyName} | Watson Vendor` : "Vendor | Watson";
+const heading = vendor?.companyName ?? "Vendor";
+---
+
+<WatsonPageShell
+  title={title}
+  description="Vendor directory record."
+  heading={heading}
+  intro={vendor ? vendor.statusLabel : undefined}
+>
+  <p slot="head" class="watson__back-link">
+    <a href="/watson/vendors">Back to vendors</a>
+  </p>
+
+  {
+    saved ? (
+      <p class="watson__status watson__status--success" role="status">
+        Vendor saved.
+      </p>
+    ) : null
+  }
+  {
+    updated ? (
+      <p class="watson__status watson__status--success" role="status">
+        Vendor updated.
+      </p>
+    ) : null
+  }
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : notFound ? (
+      <p class="watson__status watson__status--error" role="alert">
+        Vendor not found.
+      </p>
+    ) : vendor ? (
+      <>
+        <p class="watson-vendor__detail-actions">
+          <a class="watson__button" href={vendor.editHref}>Edit</a>
+        </p>
+        <WatsonMemberOverview fields={buildVendorOverviewFields(vendor)} />
+      </>
+    ) : null
+  }
+</WatsonPageShell>
+
+<style>
+  .watson-vendor__detail-actions {
+    margin: 0 0 0.25rem;
+  }
+</style>

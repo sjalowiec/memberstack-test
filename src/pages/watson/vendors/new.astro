@@ -1,0 +1,55 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonVendorForm from "../../../components/watson/WatsonVendorForm.astro";
+import {
+  createVendor,
+  EMPTY_VENDOR_FORM,
+  vendorFormValuesFromUnknown,
+  vendorWriteInputFromFormData,
+} from "../../../lib/watson/vendors";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+let error: string | null = null;
+let values = { ...EMPTY_VENDOR_FORM };
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const raw = vendorWriteInputFromFormData(form);
+  values = vendorFormValuesFromUnknown(raw);
+
+  try {
+    const result = await createVendor(raw);
+    if (result.ok) {
+      return Astro.redirect(
+        `/watson/vendors/${encodeURIComponent(result.value.id)}?saved=1`,
+        303,
+      );
+    }
+    error = result.error;
+  } catch (caught) {
+    error = caught instanceof Error ? caught.message : "Unable to save vendor.";
+  }
+}
+---
+
+<WatsonPageShell
+  title="Add Vendor | Watson"
+  description="Add a vendor to the Watson directory."
+  heading="Add Vendor"
+  intro="Company name is required. Email and website are optional, but must be valid if entered."
+>
+  <p slot="head" class="watson__back-link">
+    <a href="/watson/vendors">Back to vendors</a>
+  </p>
+
+  <WatsonVendorForm
+    mode="add"
+    action="/watson/vendors/new"
+    cancelHref="/watson/vendors"
+    values={values}
+    error={error}
+  />
+</WatsonPageShell>

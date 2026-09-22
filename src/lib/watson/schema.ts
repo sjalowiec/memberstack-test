@@ -500,6 +500,45 @@ WHERE status = 'added'`,
       label: "index idx_watson_email_signups_status_created",
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_email_signups_status_created ON watson_email_signups (status, created_at)",
     },
+    {
+      label: "table watson_vendors",
+      sql: `CREATE TABLE IF NOT EXISTS watson_vendors (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_name TEXT NOT NULL CHECK (BTRIM(company_name) <> ''),
+  contact_name TEXT,
+  email TEXT,
+  phone TEXT,
+  website TEXT,
+  vendor_type TEXT,
+  address_line1 TEXT,
+  address_line2 TEXT,
+  city TEXT,
+  state TEXT,
+  postal_code TEXT,
+  country TEXT,
+  account_number TEXT,
+  notes TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "index idx_watson_vendors_company_name",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_vendors_company_name ON watson_vendors (LOWER(company_name))",
+    },
+    {
+      label: "index idx_watson_vendors_active_company",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_vendors_active_company ON watson_vendors (is_active, LOWER(company_name))",
+    },
+    {
+      label: "index idx_watson_vendors_email",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_vendors_email ON watson_vendors (LOWER(email))",
+    },
+    {
+      label: "index idx_watson_vendors_account_number",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_vendors_account_number ON watson_vendors (LOWER(account_number))",
+    },
   ];
 }
 
