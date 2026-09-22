@@ -125,6 +125,9 @@ describe("catalog-video-embed", () => {
     expect(body.ok).toBe(false);
     expect(JSON.stringify(body)).not.toContain("Helecopter");
     expect(JSON.stringify(body)).not.toContain("Slip stitch on your machine");
+    expect(JSON.stringify(body)).not.toContain("Begin by casting on three stitches");
+    expect(JSON.stringify(body)).not.toContain("Designer your machine");
+    expect(body).not.toHaveProperty("transcript");
   });
 
   it("returns I-Cord jump links only after member access is confirmed", async () => {
@@ -146,6 +149,10 @@ describe("catalog-video-embed", () => {
       { time: 80, label: "Loop Trim" },
       { time: 112, label: "Helecopter trim (give it a twist)" },
     ]);
+    expect(body.transcript.join(" ")).toContain("Begin by casting on three stitches.");
+    expect(body.transcript.join(" ")).toContain("Designer your machine to slip in one direction.");
+    expect(JSON.stringify(body.transcript)).not.toContain("WEBVTT");
+    expect(JSON.stringify(body.transcript)).not.toMatch(/\d{2}:\d{2}:\d{2}\.\d{3}/);
   });
 
   it("returns catalog jumpLinks after member access is confirmed", async () => {
@@ -176,11 +183,24 @@ describe("catalog-video-embed", () => {
     const memberBody = await memberNone.json();
     expect(memberBody.ok).toBe(true);
     expect(memberBody).not.toHaveProperty("jumplinks");
+    expect(memberBody).not.toHaveProperty("transcript");
 
     const publicNone = await handler(makeRequest("459"));
     expect(publicNone.status).toBe(200);
     const publicBody = await publicNone.json();
     expect(publicBody.ok).toBe(true);
     expect(publicBody).not.toHaveProperty("jumplinks");
+    expect(publicBody).not.toHaveProperty("transcript");
+  });
+
+  it("returns the public swatch transcript without membership", async () => {
+    const res = await handler(makeRequest("2189"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(requireMember).not.toHaveBeenCalled();
+    expect(body.transcript.join(" ")).toContain(
+      "Knitting a proper swatch is the key to success with your knitting machine.",
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -24,6 +24,10 @@ describe("videos/[id] phase-1 English transcript", () => {
     expect(page).not.toMatch(/["'`]\/transcripts\//);
     expect(page).not.toContain("public/transcripts");
     expect(page).not.toContain(".vtt");
+    expect(existsSync(join(process.cwd(), "public", "transcripts", "en", "151857129.vtt"))).toBe(
+      false,
+    );
+    expect(existsSync(join(process.cwd(), "public", "151857129.vtt"))).toBe(false);
   });
 
   it("forces closed transcript details to print and hides the player", () => {
@@ -32,6 +36,15 @@ describe("videos/[id] phase-1 English transcript", () => {
     expect(printCss).toContain(".video-english-transcript-print");
     expect(printCss).toContain(".kbm-video");
     expect(printCss).toContain("player.vimeo.com");
+  });
+
+  it("does not put member transcript text in the page template", () => {
+    expect(page).not.toContain("Begin by casting on three stitches");
+    expect(page).not.toContain("Designer your machine to slip in one direction");
+    expect(page).toContain('data-transcript-source="gated"');
+    expect(page).toContain("hydrateGatedTranscript");
+    expect(page).toContain("ssrTranscriptSections");
+    expect(page).toContain("hasGatedTranscript");
   });
 
   it("renders player, then description, then jump links, then transcript", () => {
@@ -63,5 +76,28 @@ describe("Transcript disclosure control", () => {
     expect(css).toContain(".kbm-transcript-caret");
     expect(css).toContain("rotate(45deg)");
     expect(css).toContain("rotate(-135deg)");
+  });
+});
+
+describe("gated member transcript paint", () => {
+  it("renders Read transcript plus a print copy from authorized paragraphs", async () => {
+    const { parseAuthorizedTranscript, renderVideoTranscriptDisclosure } = await import(
+      "./videoGatedTranscript"
+    );
+    const parsed = parseAuthorizedTranscript([
+      "Begin by casting on three stitches.",
+      { text: "Designer your machine to slip in one direction." },
+      "   ",
+    ]);
+    expect(parsed).toEqual([
+      "Begin by casting on three stitches.",
+      "Designer your machine to slip in one direction.",
+    ]);
+    const html = renderVideoTranscriptDisclosure(parsed);
+    expect(html).toContain("Read transcript");
+    expect(html).toContain('class="kbm-transcript-caret"');
+    expect(html).toContain("video-english-transcript-print");
+    expect(html).toContain("Begin by casting on three stitches.");
+    expect(html).not.toContain("WEBVTT");
   });
 });

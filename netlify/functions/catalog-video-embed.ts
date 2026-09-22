@@ -16,7 +16,11 @@ import { evaluateMemberAccessForRecord } from "../../src/lib/memberAccessServer"
 import { resolveCatalogVideoEmbed } from "../../src/lib/videos/resolveCatalogVideoEmbed";
 import { resolveVideoDetailJumpLinks } from "../../src/lib/jumplinks/jumplinksByContent";
 import { findPublicCatalogVideoByContentId } from "../../src/lib/videoPublic";
-import type { PublicVideoRow } from "../../src/lib/lessonVideo";
+import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../../src/lib/lessonVideo";
+import {
+  englishTranscriptParagraphs,
+  readableEnglishTranscriptForVimeoId,
+} from "../../src/lib/transcripts/englishTranscript";
 
 const catalog = videosPublic as PublicVideoRow[];
 
@@ -26,18 +30,19 @@ function authorizedEmbedBody(resolved: {
 }, contentId: string) {
   const row = findPublicCatalogVideoByContentId(catalog, contentId);
   const jumplinks = resolveVideoDetailJumpLinks(row, contentId).links;
-  return jumplinks.length > 0
-    ? {
-        ok: true as const,
-        iframeSrc: resolved.iframeSrc,
-        title: resolved.title,
-        jumplinks,
-      }
-    : {
-        ok: true as const,
-        iframeSrc: resolved.iframeSrc,
-        title: resolved.title,
-      };
+  const vimeoId =
+    (row ? vimeoNumericIdFromPublicVideo(row) : null) ??
+    (row?.vimeo_id_public != null || row?.vimeo_id != null
+      ? String(row.vimeo_id_public ?? row.vimeo_id).trim()
+      : "");
+  const transcript = englishTranscriptParagraphs(readableEnglishTranscriptForVimeoId(vimeoId));
+  return {
+    ok: true as const,
+    iframeSrc: resolved.iframeSrc,
+    title: resolved.title,
+    ...(jumplinks.length > 0 ? { jumplinks } : {}),
+    ...(transcript.length > 0 ? { transcript } : {}),
+  };
 }
 
 export default async (req: Request): Promise<Response> => {

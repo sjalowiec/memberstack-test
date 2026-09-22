@@ -311,6 +311,7 @@ describe("video page wiring", () => {
     expect(page).toContain("contentId={id}");
     expect(page).toContain("catalogVideoPlaybackAccess");
     expect(page).toContain("hydrateGatedJumpLinks");
+    expect(page).toContain("hydrateGatedTranscript");
     expect(page).toContain("catalogVimeoIframePlayerId(vimeoId, id)");
   });
 });
