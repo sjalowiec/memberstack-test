@@ -5,12 +5,16 @@
  * GET /.netlify/functions/my-ebook-downloads
  *
  * Auth: requireMember (Bearer JWT). Email is taken only from the verified
- * session — query/body email parameters are ignored.
+ * session — query/body email, member ID, and Memberstack ID are ignored.
  *
- * Legacy CSV lookup is unioned with paid Watson store transactions on DEV.
- * Production stays CSV-only until LEGACY_EBOOK_WATSON_LOOKUP=true. Paid-download
- * lookup failures must not hide legacy ebooks; Watson lookup failures must not
- * hide CSV ebooks.
+ * Legacy CSV lookup is unioned with paid Watson store transactions on DEV
+ * (billing email, then trusted unique legacy member ID) and with Watson-native
+ * Assign ebook grants. Native grants match the authenticated Memberstack ID
+ * first, then the verified session email.
+ * Production stays CSV-only for paid store rows until LEGACY_EBOOK_WATSON_LOOKUP=true.
+ * Paid-download lookup failures must not hide legacy ebooks; Watson lookup
+ * failures must not hide CSV ebooks; native grant lookup failures must not
+ * hide paid purchases.
  */
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
@@ -34,12 +38,14 @@ export default async (req: Request): Promise<Response> => {
     return withCors(jsonResponse({ ok: false, error: auth.error }, auth.status));
   }
 
-  // Intentionally ignore any client-supplied email (query or body).
+  // Intentionally ignore any client-supplied email, member ID, or Memberstack ID.
   const email = auth.member.email;
 
   try {
     const ebooks = await resolveCustomerLegacyEbookEntitlementsForEmail(email, {
       allowLiveWatson: true,
+      allowLiveNativeGrants: true,
+      memberstackId: auth.member.id,
     });
 
     let paid: PaidDownloadCustomerEntitlement[] = [];

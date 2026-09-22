@@ -54,6 +54,10 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage.indexOf("<WatsonCustomerLegacyHistory")).toBeLessThan(
       legacyProfilePage.indexOf("<WatsonCustomerPurchases"),
     );
+    expect(legacyProfilePage).toContain("WatsonCustomerEbooks");
+    expect(legacyProfilePage.indexOf("<WatsonCustomerPurchases")).toBeLessThan(
+      legacyProfilePage.indexOf("<WatsonCustomerEbooks"),
+    );
 
     expect(memberstackProfilePage).toContain('export const prerender = false');
     expect(memberstackProfilePage).toContain("loadMemberstackCustomerProfile");
@@ -76,6 +80,10 @@ describe("Watson customer profile pages", () => {
     );
     expect(memberstackProfilePage.indexOf("<WatsonCustomerLegacyHistory")).toBeLessThan(
       memberstackProfilePage.indexOf("<WatsonCustomerPurchases"),
+    );
+    expect(memberstackProfilePage).toContain("WatsonCustomerEbooks");
+    expect(memberstackProfilePage.indexOf("<WatsonCustomerPurchases")).toBeLessThan(
+      memberstackProfilePage.indexOf("<WatsonCustomerEbooks"),
     );
 
     expect(middleware).toContain("isWatsonRoute");
@@ -150,6 +158,10 @@ describe("Watson customer profile pages", () => {
     );
     const purchases = fs.readFileSync(
       path.resolve("src/components/watson/WatsonCustomerPurchases.astro"),
+      "utf8",
+    );
+    const ebooks = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerEbooks.astro"),
       "utf8",
     );
     const timeline = fs.readFileSync(
@@ -235,6 +247,13 @@ describe("Watson customer profile pages", () => {
     expect(purchases).toContain("data-watson-customer-pdf-panel");
     expect(purchases).toContain("Not available yet");
     expect(purchases).toContain("No legacy history");
+
+    expect(ebooks).toContain("WatsonCustomerAccordionSection");
+    expect(ebooks).toContain('title="Assign ebook"');
+    expect(ebooks).toContain('id="customer-ebooks"');
+    expect(ebooks).toContain("data-watson-ebook-grant-form");
+    expect(ebooks).toContain("Purchase history cannot be revoked");
+    expect(ebooks).not.toContain("legacy_store_transactions");
 
     const storeFulfillment = fs.readFileSync(
       path.resolve("src/components/watson/WatsonCustomerStoreFulfillment.astro"),

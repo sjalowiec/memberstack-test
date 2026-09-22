@@ -500,6 +500,53 @@ WHERE status = 'added'`,
       label: "index idx_watson_email_signups_status_created",
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_email_signups_status_created ON watson_email_signups (status, created_at)",
     },
+    {
+      label: "table watson_ebook_entitlements",
+      sql: `CREATE TABLE IF NOT EXISTS watson_ebook_entitlements (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  item_id TEXT NOT NULL,
+  memberstack_id TEXT,
+  entitlement_email TEXT NOT NULL,
+  legacy_memberid TEXT,
+  reason TEXT NOT NULL CHECK (reason IN (
+    'verified_legacy_purchase',
+    'subscriber_bonus',
+    'included_with_product',
+    'courtesy_replacement',
+    'manual_correction'
+  )),
+  note TEXT,
+  source_storetransactionid BIGINT,
+  granted_by TEXT NOT NULL DEFAULT 'Sue',
+  granted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  revoked_by TEXT,
+  revoked_at TIMESTAMPTZ
+)`,
+    },
+    {
+      label: "index idx_watson_ebook_entitlements_active_memberstack_item",
+      sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_active_memberstack_item
+ON watson_ebook_entitlements (memberstack_id, item_id)
+WHERE revoked_at IS NULL AND memberstack_id IS NOT NULL`,
+    },
+    {
+      label: "index idx_watson_ebook_entitlements_active_email_item",
+      sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_active_email_item
+ON watson_ebook_entitlements (LOWER(TRIM(entitlement_email)), item_id)
+WHERE revoked_at IS NULL AND memberstack_id IS NULL`,
+    },
+    {
+      label: "index idx_watson_ebook_entitlements_email",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_email ON watson_ebook_entitlements (LOWER(TRIM(entitlement_email)))",
+    },
+    {
+      label: "index idx_watson_ebook_entitlements_legacy_memberid",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_legacy_memberid ON watson_ebook_entitlements (legacy_memberid)",
+    },
+    {
+      label: "index idx_watson_ebook_entitlements_item",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_item ON watson_ebook_entitlements (item_id)",
+    },
   ];
 }
 
@@ -717,6 +764,14 @@ export function getWatsonLegacyGarmentsSchemaStatements(): SchemaStatement[] {
   );
 }
 
+export function getWatsonEbookEntitlementsSchemaStatements(): SchemaStatement[] {
+  return getWatsonNativeSchemaStatements().filter(
+    (statement) =>
+      statement.label === "table watson_ebook_entitlements" ||
+      statement.label.startsWith("index idx_watson_ebook_entitlements"),
+  );
+}
+
 export async function applyWatsonNativeSchema(
   client: { query: (sql: string) => Promise<unknown> },
   options: { onProgress?: (message: string) => void } = {},
@@ -736,6 +791,17 @@ export async function applyWatsonLegacyGarmentsSchema(
   options: { onProgress?: (message: string) => void } = {},
 ): Promise<void> {
   await applySchemaStatements(client, getWatsonLegacyGarmentsSchemaStatements(), options.onProgress);
+}
+
+export async function applyWatsonEbookEntitlementsSchema(
+  client: { query: (sql: string) => Promise<unknown> },
+  options: { onProgress?: (message: string) => void } = {},
+): Promise<void> {
+  await applySchemaStatements(
+    client,
+    getWatsonEbookEntitlementsSchemaStatements(),
+    options.onProgress,
+  );
 }
 
 export async function truncateLegacyTables(

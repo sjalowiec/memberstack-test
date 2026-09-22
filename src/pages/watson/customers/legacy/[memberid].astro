@@ -6,6 +6,7 @@ import WatsonCustomerMembership from "../../../../components/watson/WatsonCustom
 import WatsonCustomerNotes from "../../../../components/watson/WatsonCustomerNotes.astro";
 import WatsonCustomerProfileHeader from "../../../../components/watson/WatsonCustomerProfileHeader.astro";
 import WatsonCustomerPurchases from "../../../../components/watson/WatsonCustomerPurchases.astro";
+import WatsonCustomerEbooks from "../../../../components/watson/WatsonCustomerEbooks.astro";
 import WatsonCustomerSnapshot from "../../../../components/watson/WatsonCustomerSnapshot.astro";
 import WatsonCustomerSupportResponses from "../../../../components/watson/WatsonCustomerSupportResponses.astro";
 import WatsonCustomerTimeline from "../../../../components/watson/WatsonCustomerTimeline.astro";
@@ -95,6 +96,15 @@ if (!result.ok && result.reason === "not_found") {
           profileType="legacy"
           destinationState={result.profile.member?.state ?? null}
           destinationPostal={result.profile.member?.postalcode ?? null}
+        />
+        <WatsonCustomerEbooks
+          profileType="legacy"
+          memberstackId={result.profile.memberstackId}
+          memberstackEmail={result.profile.memberstack.email}
+          legacyMemberid={result.profile.legacyMemberid}
+          legacyEmail={result.profile.member?.email ?? null}
+          memberstackLinkStatus={result.profile.memberstackLinkStatus}
+          legacyLinkAmbiguous={result.profile.legacyLinkAmbiguous}
         />
         <WatsonCustomerTimeline events={result.profile.timeline} />
         <WatsonCustomerNotes

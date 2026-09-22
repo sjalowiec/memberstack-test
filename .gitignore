@@ -60,6 +60,8 @@ src/data/*.csv
 !/scripts/apply-member-lessons.ts
 !/scripts/import-lessons.ts
 !/scripts/verify-member-lessons.ts
+!/scripts/audit-legacy-ebook-watson-lookup-impact.ts
+!/scripts/verify-legacy-ebook-memberid-recovery.ts
 !/scripts/sql/
 !/scripts/sql/watson-store-fulfillments.sql
 # Backup files

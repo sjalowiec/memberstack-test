@@ -80,7 +80,11 @@ describe("my-ebook-downloads Netlify function", () => {
     expect(body.downloads).toEqual(body.ebooks);
     expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
-      { allowLiveWatson: true },
+      {
+        allowLiveWatson: true,
+        allowLiveNativeGrants: true,
+        memberstackId: VERIFIED_ID,
+      },
     );
   });
 
@@ -162,13 +166,42 @@ describe("my-ebook-downloads Netlify function", () => {
     expect(res.status).toBe(200);
     expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
-      { allowLiveWatson: true },
+      {
+        allowLiveWatson: true,
+        allowLiveNativeGrants: true,
+        memberstackId: VERIFIED_ID,
+      },
     );
     expect(resolveCustomerLegacyEbookEntitlementsForEmail).not.toHaveBeenCalledWith(
       "spoof@example.com",
     );
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        storedLegacyMemberid: expect.anything(),
+      }),
+    );
     expect(listPaidDownloadCustomerEntitlementsForEmail).toHaveBeenCalledWith(
       VERIFIED_EMAIL,
+    );
+  });
+
+  it("ignores browser-supplied member ID and Memberstack ID query parameters", async () => {
+    const res = await handler(
+      makeRequest(
+        "https://example.com/.netlify/functions/my-ebook-downloads?email=spoof@example.com&memberid=OTHER-ID&memberstackId=mem_other",
+        { headers: { Authorization: "Bearer good-token" } },
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledTimes(1);
+    expect(resolveCustomerLegacyEbookEntitlementsForEmail).toHaveBeenCalledWith(
+      VERIFIED_EMAIL,
+      {
+        allowLiveWatson: true,
+        allowLiveNativeGrants: true,
+        memberstackId: VERIFIED_ID,
+      },
     );
   });
 

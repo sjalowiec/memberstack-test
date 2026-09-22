@@ -93,6 +93,17 @@ describe("schema", () => {
     expect(
       nativeStatements.find((statement) => statement.label === "table watson_shopify_orders")?.sql,
     ).toContain("source TEXT NOT NULL DEFAULT 'shopify'");
+    expect(labels).toContain("table watson_ebook_entitlements");
+    expect(labels).toContain("index idx_watson_ebook_entitlements_active_memberstack_item");
+    expect(labels).toContain("index idx_watson_ebook_entitlements_active_email_item");
+    const ebookSql = nativeStatements.find(
+      (statement) => statement.label === "table watson_ebook_entitlements",
+    )?.sql;
+    expect(ebookSql).toContain("memberstack_id TEXT");
+    expect(ebookSql).toContain("entitlement_email TEXT NOT NULL");
+    expect(ebookSql).toContain("verified_legacy_purchase");
+    expect(ebookSql).toContain("subscriber_bonus");
+    expect(ebookSql).not.toContain("legacy_store_transactions");
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {

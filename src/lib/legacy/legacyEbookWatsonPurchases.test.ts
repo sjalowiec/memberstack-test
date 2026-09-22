@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { listApprovedLegacyEbookItemIds } from "./legacyEbookEntitlements";
 import {
+  LEGACY_EBOOK_WATSON_PURCHASES_BY_MEMBERID_SQL,
   LEGACY_EBOOK_WATSON_PURCHASES_SQL,
   isLegacyStoreTransactionPaid,
   legacyEbookEmailLookupKeys,
   loadLegacyEbookPurchasesFromWatson,
+  loadLegacyEbookPurchasesFromWatsonByMemberid,
+  normalizeTrustedLegacyMemberid,
   shouldReadLegacyEbooksFromWatson,
   watsonEbookRowToPurchase,
   type WatsonEbookPurchaseRow,
@@ -97,9 +100,39 @@ describe("legacy ebook Watson purchase mapping", () => {
     expect(watsonEbookRowToPurchase(row({ paid: 0 }))).toBeNull();
   });
 
-  it("drops rows without a billing email", () => {
+  it("drops unapproved item IDs", () => {
     expect(watsonEbookRowToPurchase(row({ itemid: 687 }))).toBeNull();
     expect(watsonEbookRowToPurchase(row({ itemid: 520 }))).toBeNull();
+    expect(watsonEbookRowToPurchase(row({ itemid: 621 }))).toBeNull();
+  });
+
+  it("drops rows without a billing email unless a trusted owner email is supplied", () => {
+    expect(watsonEbookRowToPurchase(row({ billing_email: null, itemid: 505 }))).toBeNull();
+    expect(watsonEbookRowToPurchase(row({ billing_email: "  ", itemid: 416 }))).toBeNull();
+    expect(
+      watsonEbookRowToPurchase(row({ billing_email: null, itemid: 505 }), {
+        ownerEmail: "texas44@gmail.com",
+      }),
+    ).toMatchObject({
+      billingEmail: "texas44@gmail.com",
+      paid: "1",
+      legacyItemId: "505",
+    });
+  });
+
+  it("attributes an old billing email to the authenticated owner on the member-ID path", () => {
+    expect(
+      watsonEbookRowToPurchase(
+        row({
+          billing_email: "texas44@comcast.net",
+          itemid: 416,
+        }),
+        { ownerEmail: "texas44@gmail.com" },
+      ),
+    ).toMatchObject({
+      billingEmail: "texas44@gmail.com",
+      legacyItemId: "416",
+    });
   });
 
   it("maps Karen's paid ebook rows", () => {
@@ -126,11 +159,20 @@ describe("legacy ebook Watson purchase mapping", () => {
     expect(LEGACY_EBOOK_WATSON_PURCHASES_SQL).toContain(
       "LOWER(TRIM(t.billing_email)) = ANY($2::text[])",
     );
+    expect(LEGACY_EBOOK_WATSON_PURCHASES_BY_MEMBERID_SQL).toContain("t.paid = 1");
+    expect(LEGACY_EBOOK_WATSON_PURCHASES_BY_MEMBERID_SQL).toContain(
+      "i.itemid = ANY($1::int[])",
+    );
+    expect(LEGACY_EBOOK_WATSON_PURCHASES_BY_MEMBERID_SQL).toContain("t.memberid_fk = $2");
+    expect(LEGACY_EBOOK_WATSON_PURCHASES_BY_MEMBERID_SQL).not.toContain(
+      "LOWER(TRIM(t.billing_email))",
+    );
     expect(listApprovedLegacyEbookItemIds()).toEqual(
       expect.arrayContaining([505, 675, 416]),
     );
     expect(listApprovedLegacyEbookItemIds()).not.toContain(687);
     expect(listApprovedLegacyEbookItemIds()).not.toContain(520);
+    expect(listApprovedLegacyEbookItemIds()).not.toContain(621);
   });
 });
 
@@ -166,5 +208,72 @@ describe("loadLegacyEbookPurchasesFromWatson", () => {
       "karen.l.wylie@googlemail.com",
     ]);
     expect(purchases.map((p) => p.legacyItemId).sort()).toEqual(["505", "675"]);
+  });
+});
+
+describe("normalizeTrustedLegacyMemberid", () => {
+  it("rejects empty values, emails, and Memberstack IDs", () => {
+    expect(normalizeTrustedLegacyMemberid("  ")).toBeNull();
+    expect(normalizeTrustedLegacyMemberid("texas44@gmail.com")).toBeNull();
+    expect(normalizeTrustedLegacyMemberid("mem_from_browser")).toBeNull();
+    expect(normalizeTrustedLegacyMemberid("mem_cmub5343c00eo0ttp7wsv63aa")).toBeNull();
+    expect(
+      normalizeTrustedLegacyMemberid("6ECD81B4-B172-04D6-2FDF-9D46FFB6B909"),
+    ).toBe("6ECD81B4-B172-04D6-2FDF-9D46FFB6B909");
+  });
+});
+
+describe("loadLegacyEbookPurchasesFromWatsonByMemberid", () => {
+  it("does not query when the member ID or owner email is empty", async () => {
+    const queryFn = vi.fn();
+    await expect(
+      loadLegacyEbookPurchasesFromWatsonByMemberid("  ", "texas44@gmail.com", queryFn),
+    ).resolves.toEqual([]);
+    await expect(
+      loadLegacyEbookPurchasesFromWatsonByMemberid(
+        "6ECD81B4-B172-04D6-2FDF-9D46FFB6B909",
+        "  ",
+        queryFn,
+      ),
+    ).resolves.toEqual([]);
+    await expect(
+      loadLegacyEbookPurchasesFromWatsonByMemberid(
+        "mem_spoof",
+        "texas44@gmail.com",
+        queryFn,
+      ),
+    ).resolves.toEqual([]);
+    expect(queryFn).not.toHaveBeenCalled();
+  });
+
+  it("keeps blank-email and old-email paid approved rows and drops excluded or non-ebook items", async () => {
+    const queryFn = vi.fn().mockResolvedValue([
+      row({ paid: 0, itemid: 505, billing_email: null }),
+      row({ itemid: 687, itemname: "Mousam Falls 4/6 Aran", billing_email: null }),
+      row({ itemid: 621, itemname: "Passap E-6000 Guidebook", billing_email: "texas44@comcast.net" }),
+      row({ itemid: 737, itemname: "Japanese Patterns", billing_email: null }),
+      row({ billing_email: null, itemid: 505, totalprice: "0.0000" }),
+      row({
+        billing_email: "texas44@comcast.net",
+        itemid: 416,
+        itemname: "Cheat Sheets",
+      }),
+      row(),
+    ]);
+
+    const purchases = await loadLegacyEbookPurchasesFromWatsonByMemberid(
+      "6ECD81B4-B172-04D6-2FDF-9D46FFB6B909",
+      "texas44@gmail.com",
+      queryFn,
+    );
+
+    expect(queryFn).toHaveBeenCalledTimes(1);
+    const [sql, params] = queryFn.mock.calls[0];
+    expect(sql).toBe(LEGACY_EBOOK_WATSON_PURCHASES_BY_MEMBERID_SQL);
+    expect(params[0]).toEqual(expect.arrayContaining([505, 675, 416]));
+    expect(params[0]).not.toContain(621);
+    expect(params[1]).toBe("6ECD81B4-B172-04D6-2FDF-9D46FFB6B909");
+    expect(purchases.map((p) => p.legacyItemId).sort()).toEqual(["416", "505", "675"]);
+    expect(purchases.every((p) => p.billingEmail === "texas44@gmail.com")).toBe(true);
   });
 });

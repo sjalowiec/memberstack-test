@@ -1,0 +1,215 @@
+---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
+import {
+  WATSON_EBOOK_GRANT_REASON_LABELS,
+  WATSON_EBOOK_GRANT_REASONS,
+  listApprovedEbookCatalogForAdmin,
+} from "../../lib/watson/ebookEntitlements";
+import { loadCustomerEbookLibrary } from "../../lib/watson/customerEbookLibrary";
+import { WATSON_NOTE_DEFAULT_AUTHOR } from "../../lib/watson/watsonNotes";
+
+interface Props {
+  profileType: "legacy" | "memberstack";
+  memberstackId?: string | null;
+  memberstackEmail?: string | null;
+  legacyMemberid?: string | null;
+  legacyEmail?: string | null;
+  memberstackLinkStatus?: string | null;
+  legacyLinkAmbiguous?: boolean;
+}
+
+const {
+  profileType,
+  memberstackId = null,
+  memberstackEmail = null,
+  legacyMemberid = null,
+  legacyEmail = null,
+  memberstackLinkStatus = null,
+  legacyLinkAmbiguous = false,
+} = Astro.props;
+
+const catalog = listApprovedEbookCatalogForAdmin();
+const listUrl =
+  profileType === "legacy" && legacyMemberid
+    ? `/api/watson/customers/legacy/${encodeURIComponent(legacyMemberid)}/ebook-entitlements`
+    : memberstackId
+      ? `/api/watson/customers/memberstack/${encodeURIComponent(memberstackId)}/ebook-entitlements`
+      : "";
+
+let library: Awaited<ReturnType<typeof loadCustomerEbookLibrary>> | null = null;
+let loadError: string | null = null;
+
+try {
+  library = await loadCustomerEbookLibrary({
+    memberstackId,
+    memberstackEmail,
+    legacyMemberid,
+    legacyEmail,
+    memberstackLinkStatus,
+    legacyLinkAmbiguous,
+  });
+} catch (error) {
+  loadError = error instanceof Error ? error.message : "Unable to load ebook library.";
+}
+
+const identity = library?.identity ?? null;
+const items = library?.items ?? [];
+const warning = identity?.warning ?? null;
+const canGrant = Boolean(identity && !identity.refuseReason && listUrl);
+---
+
+<WatsonCustomerAccordionSection
+  id="customer-ebooks"
+  title="Assign ebook"
+  count={items.length}
+  class="watson-customer__ebooks"
+>
+  <div
+    class="watson-customer-ebooks"
+    data-watson-ebooks-root
+    data-list-url={listUrl}
+    data-can-grant={canGrant ? "true" : "false"}
+  >
+    {
+      loadError ? (
+        <p class="watson__status watson__status--error" role="alert">{loadError}</p>
+      ) : null
+    }
+
+    {
+      warning ? (
+        <p class="watson__status watson__status--warning" role="status" data-watson-ebooks-warning>
+          {warning}
+        </p>
+      ) : null
+    }
+
+    {
+      identity?.refuseReason ? (
+        <p class="watson__status watson__status--error" role="alert" data-watson-ebooks-refuse>
+          {identity.refuseReason}
+        </p>
+      ) : null
+    }
+
+    {
+      identity?.canAppearInMyDownloads ? (
+        <p class="watson__section-note">
+          Grants are stored on this customer’s Memberstack ID. Changing their login email later
+          will not remove the ebook from My Downloads.
+        </p>
+      ) : null
+    }
+
+    <h4 class="watson-customer-ebooks__heading">Current library</h4>
+    {
+      items.length === 0 ? (
+        <p class="watson__placeholder" data-watson-ebooks-empty>No ebooks in this customer’s library.</p>
+      ) : (
+        <ul class="watson-customer-ebooks__list" data-watson-ebooks-list>
+          {
+            items.map((item) => (
+              <li class="watson-customer-ebooks__item" data-ebook-item-id={item.itemId}>
+                <div class="watson-customer-ebooks__item-main">
+                  <p class="watson-customer-ebooks__title">{item.title}</p>
+                  <p class="watson-customer-ebooks__meta">
+                    {item.sources.includes("purchase") ? "Paid purchase" : ""}
+                    {item.sources.includes("purchase") && item.sources.includes("grant")
+                      ? " · "
+                      : ""}
+                    {item.grant
+                      ? `Manual grant · ${item.grant.reasonLabel} · ${item.grant.grantedBy}`
+                      : ""}
+                  </p>
+                </div>
+                {
+                  item.canRevoke && item.grant ? (
+                    <button
+                      type="button"
+                      class="watson-customer-ebooks__revoke"
+                      data-watson-ebook-revoke
+                      data-grant-id={item.grant.id}
+                    >
+                      Revoke grant
+                    </button>
+                  ) : (
+                    <span class="watson-customer-ebooks__locked">Purchase history cannot be revoked</span>
+                  )
+                }
+              </li>
+            ))
+          }
+        </ul>
+      )
+    }
+
+    <form class="watson-customer-ebooks__form" data-watson-ebook-grant-form>
+      <h4 class="watson-customer-ebooks__heading">Grant an ebook</h4>
+      <label class="watson-customer-ebooks__label">
+        Search titles
+        <input
+          type="search"
+          class="watson-customer-ebooks__search"
+          data-watson-ebook-search
+          placeholder="Search approved ebooks"
+          autocomplete="off"
+        />
+      </label>
+      <label class="watson-customer-ebooks__label">
+        eBook
+        <select name="itemId" required data-watson-ebook-select>
+          <option value="">Select an approved ebook</option>
+          {
+            catalog.map((book) => (
+              <option value={book.itemId}>{book.title}</option>
+            ))
+          }
+        </select>
+      </label>
+      <label class="watson-customer-ebooks__label">
+        Reason
+        <select name="reason" required>
+          <option value="">Select a reason</option>
+          {
+            WATSON_EBOOK_GRANT_REASONS.map((reason) => (
+              <option value={reason}>{WATSON_EBOOK_GRANT_REASON_LABELS[reason]}</option>
+            ))
+          }
+        </select>
+      </label>
+      <label class="watson-customer-ebooks__label">
+        Note (optional)
+        <textarea name="note" rows="3" placeholder="Verification details"></textarea>
+      </label>
+      <label class="watson-customer-ebooks__label">
+        Legacy transaction ID (optional)
+        <input
+          type="text"
+          name="sourceStoreTransactionId"
+          inputmode="numeric"
+          placeholder="StoreTransactionID if known"
+        />
+      </label>
+      <input type="hidden" name="grantedBy" value={WATSON_NOTE_DEFAULT_AUTHOR} />
+      <div class="watson-customer-ebooks__form-actions">
+        <button type="submit" class="watson__button" disabled={!canGrant}>
+          Assign ebook
+        </button>
+      </div>
+      <p class="watson-customer-ebooks__status" data-watson-ebooks-status hidden></p>
+    </form>
+  </div>
+</WatsonCustomerAccordionSection>
+
+<script>
+  import { initWatsonCustomerEbooksPanel } from "../../lib/watson/watsonCustomerEbooksSection";
+
+  const root = document.querySelector<HTMLElement>("[data-watson-ebooks-root]");
+  if (root) {
+    initWatsonCustomerEbooksPanel(root, {
+      onChanged: async () => {
+        window.location.reload();
+      },
+    });
+  }
+</script>

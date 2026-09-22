@@ -565,6 +565,41 @@ CREATE INDEX IF NOT EXISTS idx_watson_email_signups_source_created ON watson_ema
 
 CREATE INDEX IF NOT EXISTS idx_watson_email_signups_status_created ON watson_email_signups (status, created_at);
 
+CREATE TABLE IF NOT EXISTS watson_ebook_entitlements (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  item_id TEXT NOT NULL,
+  memberstack_id TEXT,
+  entitlement_email TEXT NOT NULL,
+  legacy_memberid TEXT,
+  reason TEXT NOT NULL CHECK (reason IN (
+    'verified_legacy_purchase',
+    'subscriber_bonus',
+    'included_with_product',
+    'courtesy_replacement',
+    'manual_correction'
+  )),
+  note TEXT,
+  source_storetransactionid BIGINT,
+  granted_by TEXT NOT NULL DEFAULT 'Sue',
+  granted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  revoked_by TEXT,
+  revoked_at TIMESTAMPTZ
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_active_memberstack_item
+ON watson_ebook_entitlements (memberstack_id, item_id)
+WHERE revoked_at IS NULL AND memberstack_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_active_email_item
+ON watson_ebook_entitlements (LOWER(TRIM(entitlement_email)), item_id)
+WHERE revoked_at IS NULL AND memberstack_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_email ON watson_ebook_entitlements (LOWER(TRIM(entitlement_email)));
+
+CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_legacy_memberid ON watson_ebook_entitlements (legacy_memberid);
+
+CREATE INDEX IF NOT EXISTS idx_watson_ebook_entitlements_item ON watson_ebook_entitlements (item_id);
+
 CREATE INDEX IF NOT EXISTS idx_legacy_members_email ON legacy_members (LOWER(email));
 
 CREATE INDEX IF NOT EXISTS idx_legacy_members_lastname ON legacy_members (lastname);

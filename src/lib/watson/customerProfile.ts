@@ -677,6 +677,11 @@ export function buildCustomerProfileActions(input: {
       description: "Jump to store order history on this page",
     },
     {
+      label: "Assign ebook",
+      href: "#customer-ebooks",
+      description: "Grant a redistributable ebook to this customer’s My Downloads library",
+    },
+    {
       label: "View course enrollments",
       href: "#customer-course-enrollments",
       description: "Jump to legacy course enrollments on this page",
