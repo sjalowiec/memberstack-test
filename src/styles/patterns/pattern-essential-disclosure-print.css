@@ -1,0 +1,21 @@
+/*
+ * Essential pattern instruction disclosures (row-by-row shaping checklists).
+ * Closed native `<details>` hide their body with `::details-content { content-visibility: hidden }`,
+ * which ignores `display: block` on the inner wrapper. Force that slot visible in print.
+ * Optional help (`.pattern-help-card`, `.pattern-quick-tip`, glossary popups, videos) must NOT
+ * use `.pattern-print-essential-disclosure`.
+ */
+
+@media print {
+  details.pattern-print-essential-disclosure {
+    overflow: visible !important;
+  }
+
+  details.pattern-print-essential-disclosure > summary + *,
+  details.pattern-print-essential-disclosure::details-content {
+    display: block !important;
+    content-visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
