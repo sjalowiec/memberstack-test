@@ -9,19 +9,36 @@ const CATALOG_VIDEO_EMBED_API_PATH = "/.netlify/functions/catalog-video-embed";
 
 const GATED_NAV = '.video-jumplinks[data-jump-source="gated"]';
 
+function gatedNav(contentId: string): HTMLElement | null {
+  const nav = document.querySelector(`${GATED_NAV}[data-content-id="${contentId}"]`);
+  return nav instanceof HTMLElement ? nav : null;
+}
+
 function jumplinksContainer(contentId: string): HTMLElement | null {
-  const nav = document.querySelector(
-    `${GATED_NAV}[data-content-id="${contentId}"]`,
-  );
-  if (!(nav instanceof HTMLElement)) return null;
+  const nav = gatedNav(contentId);
+  if (!nav) return null;
   const host = nav.querySelector("#jumplinks");
   return host instanceof HTMLElement ? host : null;
 }
 
 export function paintGatedJumpLinks(contentId: string, links: CatalogChapterRow[]): void {
   const host = jumplinksContainer(contentId);
-  if (!host || links.length === 0) return;
+  const nav = gatedNav(contentId);
+  if (!host) return;
+  if (links.length === 0) {
+    host.innerHTML = "";
+    nav?.querySelector(".jumplinks-head")?.remove();
+    nav?.setAttribute("hidden", "");
+    return;
+  }
+  if (nav && !nav.querySelector(".jumplinks-head")) {
+    host.insertAdjacentHTML(
+      "beforebegin",
+      '<div class="jumplinks-head"><h2>Jump to</h2></div>',
+    );
+  }
   host.innerHTML = renderVideoJumpLinkButtons(links);
+  nav?.removeAttribute("hidden");
 }
 
 async function fetchAuthorizedJumpLinks(contentId: string): Promise<CatalogChapterRow[]> {
@@ -48,10 +65,17 @@ export async function hydrateGatedJumpLinks(options: {
   hasAccess: boolean;
 }): Promise<void> {
   const { contentId, hasAccess } = options;
-  if (!contentId || !hasAccess) return;
+  if (!contentId) return;
+  if (!hasAccess) {
+    paintGatedJumpLinks(contentId, []);
+    return;
+  }
   const host = jumplinksContainer(contentId);
   if (!host) return;
-  if (host.querySelector("button.jumplink")) return;
+  if (host.querySelector("button.jumplink")) {
+    gatedNav(contentId)?.removeAttribute("hidden");
+    return;
+  }
 
   const links = await fetchAuthorizedJumpLinks(contentId);
   paintGatedJumpLinks(contentId, links);

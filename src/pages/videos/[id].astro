@@ -163,34 +163,27 @@ const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length >
             aria-label="Jump links"
             data-content-id={contentIdAttr}
             data-jump-source={isOpenPlayback ? "public" : "gated"}
+            hidden={isOpenPlayback ? undefined : true}
           >
-            <div class="jumplinks-head"><h2>Jump to</h2></div>
-
             {isOpenPlayback ? (
-              <div class="jumplinks" id="jumplinks">
-                {ssrJumpLinks.map((chapter) => (
-                  <button
-                    type="button"
-                    class="jumplink btn btn-secondary btn-small"
-                    data-video-jump={String(chapter.time)}
-                    data-video-start={String(chapter.time)}
-                  >
-                    <i class="fa fa-fast-forward" aria-hidden="true"></i>
-                    {chapter.label}
-                  </button>
-                ))}
-              </div>
-            ) : (
               <>
-                <div class="gated-locked" data-gated="locked">
-                  <div class="jumplinks-disabled" aria-disabled="true">
-                    <p class="locked-inline">Jump links are available with access.</p>
-                  </div>
-                </div>
-                <div class="gated-content" data-gated="content" hidden>
-                  <div class="jumplinks" id="jumplinks"></div>
+                <div class="jumplinks-head"><h2>Jump to</h2></div>
+                <div class="jumplinks" id="jumplinks">
+                  {ssrJumpLinks.map((chapter) => (
+                    <button
+                      type="button"
+                      class="jumplink btn btn-secondary btn-small"
+                      data-video-jump={String(chapter.time)}
+                      data-video-start={String(chapter.time)}
+                    >
+                      <i class="fa fa-fast-forward" aria-hidden="true"></i>
+                      {chapter.label}
+                    </button>
+                  ))}
                 </div>
               </>
+            ) : (
+              <div class="jumplinks" id="jumplinks"></div>
             )}
           </nav>
           ) : null}

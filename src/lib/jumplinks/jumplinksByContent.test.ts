@@ -148,9 +148,15 @@ describe("video detail jump-link page wiring", () => {
     expect(page).not.toContain("kbm-gated-vimeo-${id}");
   });
 
-  it("keeps public SSR buttons and gated empty member containers", () => {
+  it("keeps public SSR buttons and a hidden empty member container", () => {
     expect(page).toContain('data-jump-source={isOpenPlayback ? "public" : "gated"}');
+    expect(page).toContain("ssrJumpLinks.map");
+    expect(page).toContain("hidden={isOpenPlayback ? undefined : true}");
     expect(page).toContain('id="jumplinks"></div>');
+    expect(page).not.toContain("Jump links are available with access");
+    const gated = page.slice(page.indexOf('data-jump-source={isOpenPlayback ? "public" : "gated"}'));
+    const gatedBranch = gated.slice(gated.indexOf(") : ("), gated.indexOf("</nav>"));
+    expect(gatedBranch).not.toContain("Jump to");
     expect(hydrate).toContain("catalog-video-embed");
     expect(hydrate).not.toContain("/api/jumplinks/");
   });

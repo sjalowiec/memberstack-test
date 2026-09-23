@@ -124,7 +124,7 @@ const pad = paddingPercent(aspect);
     height:100%;
     border:0;
   }
-  .kbm-video__locked{
+  :global(.kbm-video__locked){
     position:absolute;
     inset:0;
     display:block;
@@ -137,7 +137,7 @@ const pad = paddingPercent(aspect);
     display:block;
     filter: blur(0px);
   }
-  .kbm-video__overlay{
+  :global(.kbm-video__overlay){
     position:absolute;
     inset:0;
     display:flex;
@@ -149,40 +149,58 @@ const pad = paddingPercent(aspect);
     background: rgba(255,255,255,0.86);
     gap:10px;
   }
-  .kbm-video__lockline{
+  :global(.kbm-video__lockline){
     display:flex;
     gap:8px;
     align-items:center;
     font-size: 1.05rem;
   }
-  .kbm-video__msg{
+  :global(.kbm-video__msg){
     margin:0;
     max-width: 42ch;
   }
-  .kbm-video__actions{
+  :global(.kbm-video__actions){
     display:flex;
     flex-wrap:wrap;
     gap:10px;
     justify-content:center;
     align-items:center;
+    width:100%;
+    max-width:22rem;
   }
-  .kbm-video__cta{
-    display:inline-block;
-    padding:10px 14px;
-    border-radius: 999px;
+  :global(.kbm-video__cta){
+    appearance:none;
+    -webkit-appearance:none;
+    box-sizing:border-box;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    padding:10px 16px;
+    border-radius:999px;
+    border:2px solid var(--kbm-green, #52682d);
     text-decoration:none;
+    font-family:inherit;
+    font-size:1rem;
     font-weight:700;
+    line-height:1.2;
+    cursor:pointer;
     background: var(--kbm-green, #52682d);
     color:#fff;
   }
-  .kbm-video__cta--login{
+  :global(.kbm-video__cta--login){
     background:#fff;
     color: var(--kbm-green, #52682d);
-    border: 2px solid var(--kbm-green, #52682d);
-    cursor: pointer;
-    font: inherit;
   }
-  .kbm-video__cta--login:hover{
+  :global(.kbm-video__cta--login:hover){
     background: rgba(82, 104, 45, 0.08);
+  }
+  @media (max-width: 640px) {
+    :global(.kbm-video__actions){
+      flex-direction:column;
+    }
+    :global(.kbm-video__cta){
+      width:100%;
+    }
   }
 </style>
