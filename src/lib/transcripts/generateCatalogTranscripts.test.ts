@@ -25,19 +25,32 @@ describe("catalog transcript generation", () => {
       catalog,
     });
 
-    expect(docs.publicDocument.records.map((record) => record.vimeoId)).toEqual(["1046394794"]);
-    expect(docs.memberDocument.records.map((record) => record.vimeoId)).toEqual(["151857129"]);
-    expect(docs.publicDocument.records[0]?.paragraphs.join(" ")).toContain(PUBLIC_SENTENCE);
-    expect(docs.memberDocument.records[0]?.paragraphs.join(" ")).toContain(MEMBER_SENTENCE);
+    const publicProof = docs.publicDocument.records.find((record) => record.vimeoId === "1046394794");
+    const memberProof = docs.memberDocument.records.find((record) => record.vimeoId === "151857129");
+    expect(publicProof?.paragraphs.join(" ")).toContain(PUBLIC_SENTENCE);
+    expect(memberProof?.paragraphs.join(" ")).toContain(MEMBER_SENTENCE);
+    expect(docs.memberDocument.records.some((record) => record.vimeoId === "1046394794")).toBe(false);
+    expect(docs.publicDocument.records.some((record) => record.vimeoId === "151857129")).toBe(false);
     expect(JSON.stringify(docs.publicDocument)).not.toContain(MEMBER_SENTENCE);
     expect(JSON.stringify(docs.publicDocument)).not.toContain("WEBVTT");
     expect(JSON.stringify(docs.memberDocument)).not.toContain(PUBLIC_SENTENCE);
-    expect(docs.publicDocument.records[0]?.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
-    expect(docs.memberDocument.records[0]?.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
-    expect(docs.audit.publicCount).toBe(1);
-    expect(docs.audit.memberCount).toBe(1);
-    expect(docs.audit.records[0]?.contentIds.length).toBe(1);
-    expect(docs.audit.records[1]?.contentIds.length).toBe(1);
+    expect(publicProof?.sourceSha256).toBe(
+      "e719cee93c063d08b7d0238a7761c9773d07cf1f6d727aa1ab208829e34f9107",
+    );
+    expect(memberProof?.sourceSha256).toBe(
+      "a66776f8a7148e1744abb28a3ff9fcbf7f18b541a866c8cde43d936eaddbb421",
+    );
+    expect(docs.audit.publicCount).toBe(13);
+    expect(docs.audit.memberCount).toBe(236);
+    // Published, but the source VTTs have no spoken text: content 487
+    // (151858276) is a WEBVTT header only, and content 503 (151858332)
+    // is that header plus the placeholder "dsfsd".
+    expect(docs.audit.records.some((record) => record.vimeoId === "151858276")).toBe(false);
+    expect(docs.audit.records.some((record) => record.vimeoId === "151858332")).toBe(false);
+    expect(docs.audit.duplicatePublishedRows).toEqual([
+      { vimeoId: "537425558", contentIds: ["237", "1035"] },
+      { vimeoId: "569614718", contentIds: ["2060", "2061"] },
+    ]);
   });
 
   it("reports duplicate published rows once and rejects an unusable VTT", () => {

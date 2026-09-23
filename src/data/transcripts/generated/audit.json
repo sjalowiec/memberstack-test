@@ -2,8 +2,8 @@
   "generator": "catalog-transcripts",
   "kind": "audit",
   "sourceDirectory": "src/data/transcripts/en",
-  "publicCount": 1,
-  "memberCount": 1,
+  "publicCount": 13,
+  "memberCount": 236,
   "records": [
     {
       "vimeoId": "151857129",
@@ -16,6 +16,2398 @@
       ]
     },
     {
+      "vimeoId": "151857321",
+      "access": "member",
+      "sourceFile": "151857321.vtt",
+      "sourceSha256": "5fef5e2dc334ba054d413aefed32b3861eb27b3b11b3ecd35f39626059d4ffeb",
+      "paragraphCount": 13,
+      "contentIds": [
+        "280"
+      ]
+    },
+    {
+      "vimeoId": "151857423",
+      "access": "member",
+      "sourceFile": "151857423.vtt",
+      "sourceSha256": "abe995c919be853311260d3710e0b140ed0acff6028a5027c3709054f30ac625",
+      "paragraphCount": 8,
+      "contentIds": [
+        "337"
+      ]
+    },
+    {
+      "vimeoId": "151857659",
+      "access": "member",
+      "sourceFile": "151857659.vtt",
+      "sourceSha256": "700a3c266ddc4c14825497d83462731d7d0e9816c2c6641725f80fa0b853681c",
+      "paragraphCount": 15,
+      "contentIds": [
+        "396"
+      ]
+    },
+    {
+      "vimeoId": "151857771",
+      "access": "member",
+      "sourceFile": "151857771.vtt",
+      "sourceSha256": "ce62fb60d2d91b942e01ef1e78f3e12ef12a5ac18412d7569a3137156614bb2b",
+      "paragraphCount": 9,
+      "contentIds": [
+        "429"
+      ]
+    },
+    {
+      "vimeoId": "151857779",
+      "access": "member",
+      "sourceFile": "151857779.vtt",
+      "sourceSha256": "4c092befab2df9ab4d1c2cebaa4cb6cdbaa0acc6146adb2cda1e2df8b391929b",
+      "paragraphCount": 14,
+      "contentIds": [
+        "430"
+      ]
+    },
+    {
+      "vimeoId": "151858084",
+      "access": "member",
+      "sourceFile": "151858084.vtt",
+      "sourceSha256": "df9718f86bcfe2be808f08848a17b5c1119370ecac027f896dba44dbb9aaf633",
+      "paragraphCount": 5,
+      "contentIds": [
+        "457"
+      ]
+    },
+    {
+      "vimeoId": "151858160",
+      "access": "member",
+      "sourceFile": "151858160.vtt",
+      "sourceSha256": "752a126284e0fad2ef0f66ed694a2d0a253f1c456a8ab0ec7cb1140a86b523a4",
+      "paragraphCount": 20,
+      "contentIds": [
+        "466"
+      ]
+    },
+    {
+      "vimeoId": "151858290",
+      "access": "member",
+      "sourceFile": "151858290.vtt",
+      "sourceSha256": "0c6b1422da1bc2cb58381fb2d6cb09cef3557b0732f7c46949279393fdfab355",
+      "paragraphCount": 10,
+      "contentIds": [
+        "490"
+      ]
+    },
+    {
+      "vimeoId": "151858349",
+      "access": "member",
+      "sourceFile": "151858349.vtt",
+      "sourceSha256": "4b40fa234920d1495ee6b1fc99aed37bea048f137f4365993734ad90efcddb6c",
+      "paragraphCount": 11,
+      "contentIds": [
+        "505"
+      ]
+    },
+    {
+      "vimeoId": "151858358",
+      "access": "member",
+      "sourceFile": "151858358.vtt",
+      "sourceSha256": "236f64148a9c8c34c4e93fa4d83373f546af050ea98c461f3382f7e021477929",
+      "paragraphCount": 15,
+      "contentIds": [
+        "507"
+      ]
+    },
+    {
+      "vimeoId": "151858364",
+      "access": "member",
+      "sourceFile": "151858364.vtt",
+      "sourceSha256": "94cedadbc123f94e338e141fdeba62c0e06a1255d4637876fc9a3562cc24c9de",
+      "paragraphCount": 19,
+      "contentIds": [
+        "508"
+      ]
+    },
+    {
+      "vimeoId": "151858368",
+      "access": "member",
+      "sourceFile": "151858368.vtt",
+      "sourceSha256": "0da29023f5c07df08bbffdf6b8b5607d4851db58dd7bc0ba6fee7f42dc6242c3",
+      "paragraphCount": 14,
+      "contentIds": [
+        "513"
+      ]
+    },
+    {
+      "vimeoId": "151858377",
+      "access": "member",
+      "sourceFile": "151858377.vtt",
+      "sourceSha256": "62692663f7d290576c4a432f958a64325c5f20a7a67eed788ee9ab850339853d",
+      "paragraphCount": 7,
+      "contentIds": [
+        "515"
+      ]
+    },
+    {
+      "vimeoId": "151858391",
+      "access": "member",
+      "sourceFile": "151858391.vtt",
+      "sourceSha256": "e46d678dfc96298c1a56e46a3c2a777b9807c2b4807f8b50b967ca4d78adffb3",
+      "paragraphCount": 5,
+      "contentIds": [
+        "516"
+      ]
+    },
+    {
+      "vimeoId": "151858398",
+      "access": "member",
+      "sourceFile": "151858398.vtt",
+      "sourceSha256": "c74e3aedce997a3b2fde1a9eafeb9e98c2f3e2407c383ceafdf5993bd8278aa8",
+      "paragraphCount": 6,
+      "contentIds": [
+        "517"
+      ]
+    },
+    {
+      "vimeoId": "151858404",
+      "access": "member",
+      "sourceFile": "151858404.vtt",
+      "sourceSha256": "ac2ab63937845f48213c4da847077d87406899ef0dc82d7c5393f597e5a38aa4",
+      "paragraphCount": 6,
+      "contentIds": [
+        "518"
+      ]
+    },
+    {
+      "vimeoId": "151858409",
+      "access": "member",
+      "sourceFile": "151858409.vtt",
+      "sourceSha256": "919c24b7153e78cb20856987d6aecd63d8cf0e3e4fd3b8bc60c994442255f3a4",
+      "paragraphCount": 10,
+      "contentIds": [
+        "519"
+      ]
+    },
+    {
+      "vimeoId": "151858451",
+      "access": "member",
+      "sourceFile": "151858451.vtt",
+      "sourceSha256": "113ea43dfc1a71a71a6e0e23ccfdab01fa57ffd9923973ed42d20e27024b04b3",
+      "paragraphCount": 5,
+      "contentIds": [
+        "526"
+      ]
+    },
+    {
+      "vimeoId": "151858474",
+      "access": "member",
+      "sourceFile": "151858474.vtt",
+      "sourceSha256": "4a7c26f334be511c3d5500f1878cdbee5440d4f713143b3912efa513b4833eda",
+      "paragraphCount": 12,
+      "contentIds": [
+        "527"
+      ]
+    },
+    {
+      "vimeoId": "151858524",
+      "access": "member",
+      "sourceFile": "151858524.vtt",
+      "sourceSha256": "37b62a17855cf4488352759cb0ec231ce328a510c750a2b9e3aa71361b9ebb66",
+      "paragraphCount": 19,
+      "contentIds": [
+        "530"
+      ]
+    },
+    {
+      "vimeoId": "151858538",
+      "access": "member",
+      "sourceFile": "151858538.vtt",
+      "sourceSha256": "d96fa7766e8c753f2862a3ecfa655ab7b99694b0f32e133ec6d0ce3ebe2ea8e7",
+      "paragraphCount": 8,
+      "contentIds": [
+        "534"
+      ]
+    },
+    {
+      "vimeoId": "151858579",
+      "access": "member",
+      "sourceFile": "151858579.vtt",
+      "sourceSha256": "786cb3323d0daedbff78b6f1cb324959af35d421132a4f7a74e1e1534f0d46be",
+      "paragraphCount": 14,
+      "contentIds": [
+        "539"
+      ]
+    },
+    {
+      "vimeoId": "151858649",
+      "access": "member",
+      "sourceFile": "151858649.vtt",
+      "sourceSha256": "347596be7b25e74f8519071c3db102f0991a26804422007091389294b1ea6785",
+      "paragraphCount": 9,
+      "contentIds": [
+        "546"
+      ]
+    },
+    {
+      "vimeoId": "151858833",
+      "access": "member",
+      "sourceFile": "151858833.vtt",
+      "sourceSha256": "8621cb79cae4697e35a45752250ee0cee8741fababe4df58781b28f192a76153",
+      "paragraphCount": 13,
+      "contentIds": [
+        "563"
+      ]
+    },
+    {
+      "vimeoId": "151858934",
+      "access": "member",
+      "sourceFile": "151858934.vtt",
+      "sourceSha256": "3b24c53d8b34139a44fb666c79a284e638c7ae72833f5581c1c5eaea3aa6386d",
+      "paragraphCount": 5,
+      "contentIds": [
+        "576"
+      ]
+    },
+    {
+      "vimeoId": "151858984",
+      "access": "member",
+      "sourceFile": "151858984.vtt",
+      "sourceSha256": "5faec46f38e60efa9e47f559e11d9e6cac9fb17b9584c84a0b6276cd401c2442",
+      "paragraphCount": 9,
+      "contentIds": [
+        "584"
+      ]
+    },
+    {
+      "vimeoId": "151859104",
+      "access": "member",
+      "sourceFile": "151859104.vtt",
+      "sourceSha256": "6dff7204adf8a0f206522c422cef6fb2b0edc70c052c4bf8afda84f28003a27a",
+      "paragraphCount": 8,
+      "contentIds": [
+        "600"
+      ]
+    },
+    {
+      "vimeoId": "151859221",
+      "access": "member",
+      "sourceFile": "151859221.vtt",
+      "sourceSha256": "a75cfde0097f821d28ee110678ef2d6ba804ab0286d3cc627bcd7b6d09703d5c",
+      "paragraphCount": 6,
+      "contentIds": [
+        "613"
+      ]
+    },
+    {
+      "vimeoId": "151859224",
+      "access": "member",
+      "sourceFile": "151859224.vtt",
+      "sourceSha256": "09b71d782c8870f875cb9366168251b9464cf312b2408fe264fa97c8090eafe3",
+      "paragraphCount": 18,
+      "contentIds": [
+        "614"
+      ]
+    },
+    {
+      "vimeoId": "151859299",
+      "access": "member",
+      "sourceFile": "151859299.vtt",
+      "sourceSha256": "0bfc1adc513ca2951ec50e1bbab9864152320a5c32908d003b28fd58921f2bfe",
+      "paragraphCount": 16,
+      "contentIds": [
+        "625"
+      ]
+    },
+    {
+      "vimeoId": "151859427",
+      "access": "member",
+      "sourceFile": "151859427.vtt",
+      "sourceSha256": "3f5e8095ee5fba9a4aa38b5fb0236eeeea5dee82f2bc48fb7925f42d8ad197d9",
+      "paragraphCount": 6,
+      "contentIds": [
+        "630"
+      ]
+    },
+    {
+      "vimeoId": "151859450",
+      "access": "member",
+      "sourceFile": "151859450.vtt",
+      "sourceSha256": "d9d3cae87b3bbc8d08544f42f3e95081a8e82d0e4353ff0e08481fffe606ab6d",
+      "paragraphCount": 4,
+      "contentIds": [
+        "635"
+      ]
+    },
+    {
+      "vimeoId": "151859486",
+      "access": "member",
+      "sourceFile": "151859486.vtt",
+      "sourceSha256": "b619440328b6d75616910fc68cabdb8221f9b773d55d5cdaeab739b73444ed98",
+      "paragraphCount": 13,
+      "contentIds": [
+        "643"
+      ]
+    },
+    {
+      "vimeoId": "151859552",
+      "access": "member",
+      "sourceFile": "151859552.vtt",
+      "sourceSha256": "ef0a5c86f7d4790ed902fe6dbd7f9c74d2ed34e460a0e393b0608a9f1350db5f",
+      "paragraphCount": 13,
+      "contentIds": [
+        "653"
+      ]
+    },
+    {
+      "vimeoId": "151859566",
+      "access": "member",
+      "sourceFile": "151859566.vtt",
+      "sourceSha256": "bd4f88df07e967a3015b2d22ecf7caaf9a699b1b31b2e47e39eefc228aa73eae",
+      "paragraphCount": 13,
+      "contentIds": [
+        "655"
+      ]
+    },
+    {
+      "vimeoId": "151859618",
+      "access": "member",
+      "sourceFile": "151859618.vtt",
+      "sourceSha256": "eb1a1a2595df1141a53c41cd35abeb3271c9b6a1cc09bd3e2cf5d7fd5879707b",
+      "paragraphCount": 13,
+      "contentIds": [
+        "663"
+      ]
+    },
+    {
+      "vimeoId": "151859630",
+      "access": "member",
+      "sourceFile": "151859630.vtt",
+      "sourceSha256": "ac327e46d0f7b206549aa780dd412751288550c0eb99402758a0fff0616a3141",
+      "paragraphCount": 5,
+      "contentIds": [
+        "665"
+      ]
+    },
+    {
+      "vimeoId": "151859681",
+      "access": "member",
+      "sourceFile": "151859681.vtt",
+      "sourceSha256": "5d91943905ef89984ad8917240cb21a542198f9e8f3127cdd1563b9b7e5e54ff",
+      "paragraphCount": 11,
+      "contentIds": [
+        "673"
+      ]
+    },
+    {
+      "vimeoId": "151859692",
+      "access": "member",
+      "sourceFile": "151859692.vtt",
+      "sourceSha256": "60bc38f785fe05cc7db3e001f9afeaf57101a0f610df6f349a772e9f1ee72793",
+      "paragraphCount": 13,
+      "contentIds": [
+        "675"
+      ]
+    },
+    {
+      "vimeoId": "151859815",
+      "access": "member",
+      "sourceFile": "151859815.vtt",
+      "sourceSha256": "8612281751d1654bea07296c508dfaa24d1d1960b0343b93148db3fbdb7cc3be",
+      "paragraphCount": 10,
+      "contentIds": [
+        "697"
+      ]
+    },
+    {
+      "vimeoId": "151859837",
+      "access": "member",
+      "sourceFile": "151859837.vtt",
+      "sourceSha256": "8e9a578be46b430a14b54ca61583ebea7b4622a58e49aeceb6113c383d556c9d",
+      "paragraphCount": 16,
+      "contentIds": [
+        "704"
+      ]
+    },
+    {
+      "vimeoId": "151859908",
+      "access": "member",
+      "sourceFile": "151859908.vtt",
+      "sourceSha256": "f835caac0e5272dc0e8e173d793718d869a1d0e8ae5c563061c7332d58246865",
+      "paragraphCount": 11,
+      "contentIds": [
+        "112"
+      ]
+    },
+    {
+      "vimeoId": "151860028",
+      "access": "member",
+      "sourceFile": "151860028.vtt",
+      "sourceSha256": "c1b80a1ba8255c740b67fc2d247de650e66eff67f736f5976a9d97a40815d5b0",
+      "paragraphCount": 4,
+      "contentIds": [
+        "196"
+      ]
+    },
+    {
+      "vimeoId": "151860044",
+      "access": "member",
+      "sourceFile": "151860044.vtt",
+      "sourceSha256": "a598d6388328ea77be812355e9fa7de2e393cc9be9ef26cbf76f6d888d1e0923",
+      "paragraphCount": 9,
+      "contentIds": [
+        "200"
+      ]
+    },
+    {
+      "vimeoId": "151860053",
+      "access": "member",
+      "sourceFile": "151860053.vtt",
+      "sourceSha256": "4536c36a9157ecb6d88ad902fb547b043d1c9cc9f4bed431524084bb816407de",
+      "paragraphCount": 6,
+      "contentIds": [
+        "205"
+      ]
+    },
+    {
+      "vimeoId": "152228985",
+      "access": "member",
+      "sourceFile": "152228985.vtt",
+      "sourceSha256": "6ec77cf1d8370f9ddec3eadc7b684eef3f082d1eaa1493ad57b587937033485e",
+      "paragraphCount": 4,
+      "contentIds": [
+        "713"
+      ]
+    },
+    {
+      "vimeoId": "158632983",
+      "access": "public",
+      "sourceFile": "158632983.vtt",
+      "sourceSha256": "34dd527fb5220ef7c0375755ef2f6c7bfc70fc5218537db967925e4b1c52e040",
+      "paragraphCount": 8,
+      "contentIds": [
+        "242"
+      ]
+    },
+    {
+      "vimeoId": "160131708",
+      "access": "member",
+      "sourceFile": "160131708.vtt",
+      "sourceSha256": "c907964c7c4fe8b1912d9fb70363477c9f21e4f8513d561895387fa950f51da1",
+      "paragraphCount": 5,
+      "contentIds": [
+        "722"
+      ]
+    },
+    {
+      "vimeoId": "167581864",
+      "access": "member",
+      "sourceFile": "167581864.vtt",
+      "sourceSha256": "3a29da28e8d3e5c989d6a034b7af4b5c8b53719753f8fc0ccfe969a74c119cf3",
+      "paragraphCount": 16,
+      "contentIds": [
+        "232"
+      ]
+    },
+    {
+      "vimeoId": "167581952",
+      "access": "member",
+      "sourceFile": "167581952.vtt",
+      "sourceSha256": "f516ea9cde95052e56b9c6157682cb9e2dcd34e12d28a3e342d023c88135b6cf",
+      "paragraphCount": 19,
+      "contentIds": [
+        "728"
+      ]
+    },
+    {
+      "vimeoId": "169798401",
+      "access": "member",
+      "sourceFile": "169798401.vtt",
+      "sourceSha256": "7c10436c572438388854522011d76d071ebf8b06ce7b256f91d229247f3ea10d",
+      "paragraphCount": 11,
+      "contentIds": [
+        "733"
+      ]
+    },
+    {
+      "vimeoId": "178356691",
+      "access": "member",
+      "sourceFile": "178356691.vtt",
+      "sourceSha256": "06b945c9af5301bf346ab3d64fea8c1ec98ded6206db776cea0d81391099dd67",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2159"
+      ]
+    },
+    {
+      "vimeoId": "186498698",
+      "access": "member",
+      "sourceFile": "186498698.vtt",
+      "sourceSha256": "67cca788b443dd443717c4dffe24dec966554f7d3495d4224388c2bd0c701d1d",
+      "paragraphCount": 12,
+      "contentIds": [
+        "159"
+      ]
+    },
+    {
+      "vimeoId": "211234207",
+      "access": "member",
+      "sourceFile": "211234207.vtt",
+      "sourceSha256": "7b906486d48510ba0dc936932b701721b87d3892c62537c0420bda73e460caf2",
+      "paragraphCount": 11,
+      "contentIds": [
+        "766"
+      ]
+    },
+    {
+      "vimeoId": "232583690",
+      "access": "public",
+      "sourceFile": "232583690.vtt",
+      "sourceSha256": "3224df1a3954e5d51736a219536eef84aa9a1365ba3f147fdd43461a94843493",
+      "paragraphCount": 9,
+      "contentIds": [
+        "783"
+      ]
+    },
+    {
+      "vimeoId": "239179511",
+      "access": "member",
+      "sourceFile": "239179511.vtt",
+      "sourceSha256": "5af4f5f954bae76ad1c39dd48be1ae38094b6f377d799614c8eb8b26ac7b714f",
+      "paragraphCount": 3,
+      "contentIds": [
+        "795"
+      ]
+    },
+    {
+      "vimeoId": "244347021",
+      "access": "member",
+      "sourceFile": "244347021.vtt",
+      "sourceSha256": "1fb1fb53d25e094cd0369fbbcae4b3e16d75268d0d01f9beda9df6af98890a0c",
+      "paragraphCount": 8,
+      "contentIds": [
+        "803"
+      ]
+    },
+    {
+      "vimeoId": "251668442",
+      "access": "member",
+      "sourceFile": "251668442.vtt",
+      "sourceSha256": "a2e3e285dc3b16c22fc7a255eb523fbc66df2f4893766c5686d0d336f555cb40",
+      "paragraphCount": 7,
+      "contentIds": [
+        "810"
+      ]
+    },
+    {
+      "vimeoId": "252565241",
+      "access": "member",
+      "sourceFile": "252565241.vtt",
+      "sourceSha256": "4abba6de8938219aa2a16d0c5303f7f80ecf57ca32151cd212d793fc8eebf0ca",
+      "paragraphCount": 18,
+      "contentIds": [
+        "813"
+      ]
+    },
+    {
+      "vimeoId": "262467515",
+      "access": "member",
+      "sourceFile": "262467515.vtt",
+      "sourceSha256": "84545d46132d0813dff564a1a16a4e0f182da9b1d6deaafb35436825b478a859",
+      "paragraphCount": 7,
+      "contentIds": [
+        "837"
+      ]
+    },
+    {
+      "vimeoId": "268091842",
+      "access": "member",
+      "sourceFile": "268091842.vtt",
+      "sourceSha256": "973341d8b8f66bd838e1fd7c6204e1fc31f95e568083568d0ddcd72c85171fb2",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2168"
+      ]
+    },
+    {
+      "vimeoId": "274199831",
+      "access": "member",
+      "sourceFile": "274199831.vtt",
+      "sourceSha256": "c8df82eddaa57055c88f5892254704f2c17112ea0bb9609b8d982a4479d23034",
+      "paragraphCount": 27,
+      "contentIds": [
+        "853"
+      ]
+    },
+    {
+      "vimeoId": "286440921",
+      "access": "member",
+      "sourceFile": "286440921.vtt",
+      "sourceSha256": "647a3d642ead691cab1007e31e33a7b705a533e0c72511836d8058e165e7a9b9",
+      "paragraphCount": 7,
+      "contentIds": [
+        "865"
+      ]
+    },
+    {
+      "vimeoId": "288739130",
+      "access": "member",
+      "sourceFile": "288739130.vtt",
+      "sourceSha256": "7b9d34a3e7070bff515c39c0c856532ca11f79885309edb8f6283d0e0bdd094f",
+      "paragraphCount": 12,
+      "contentIds": [
+        "868"
+      ]
+    },
+    {
+      "vimeoId": "292616094",
+      "access": "member",
+      "sourceFile": "292616094.vtt",
+      "sourceSha256": "90763259b04ced83ed951186af7747fd343a9961dad4b66b863a43c755dc6870",
+      "paragraphCount": 5,
+      "contentIds": [
+        "875"
+      ]
+    },
+    {
+      "vimeoId": "302497313",
+      "access": "member",
+      "sourceFile": "302497313.vtt",
+      "sourceSha256": "833c36736c7261f248bb679b4e5b975fa3e481c801867e1bb1812e6b9d865822",
+      "paragraphCount": 6,
+      "contentIds": [
+        "409"
+      ]
+    },
+    {
+      "vimeoId": "312574558",
+      "access": "member",
+      "sourceFile": "312574558.vtt",
+      "sourceSha256": "fb70b2a472a0dc305d442279c2eae4931b7dbb857433287aa37c425e1680c7cf",
+      "paragraphCount": 15,
+      "contentIds": [
+        "2064"
+      ]
+    },
+    {
+      "vimeoId": "317801328",
+      "access": "member",
+      "sourceFile": "317801328.vtt",
+      "sourceSha256": "5971445368ebadc3bf355ca2b16c8529c7f7043109730112a569bd1665b8aaf9",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2129"
+      ]
+    },
+    {
+      "vimeoId": "318312175",
+      "access": "member",
+      "sourceFile": "318312175.vtt",
+      "sourceSha256": "bda046b4bdde5cfa8faff234fd0b9e3ab164fd4520ff3bbdae720cdac35b0a7e",
+      "paragraphCount": 12,
+      "contentIds": [
+        "899"
+      ]
+    },
+    {
+      "vimeoId": "323575618",
+      "access": "member",
+      "sourceFile": "323575618.vtt",
+      "sourceSha256": "0e12def8f8ab151eca904d395e76e43afad30b7add04b1c3039bb5606929b55e",
+      "paragraphCount": 20,
+      "contentIds": [
+        "951"
+      ]
+    },
+    {
+      "vimeoId": "333139920",
+      "access": "public",
+      "sourceFile": "333139920.vtt",
+      "sourceSha256": "e14dbb616a00891df5d3a741963c13ffedb4bd8c01d39d4c28b833d8cbdd89ab",
+      "paragraphCount": 13,
+      "contentIds": [
+        "920"
+      ]
+    },
+    {
+      "vimeoId": "340003841",
+      "access": "member",
+      "sourceFile": "340003841.vtt",
+      "sourceSha256": "94653955039898a9fa041e1abe7db05ad43f96393720cc9392e2458d69f5ca9f",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2087"
+      ]
+    },
+    {
+      "vimeoId": "342110904",
+      "access": "member",
+      "sourceFile": "342110904.vtt",
+      "sourceSha256": "241762f515f2b197708ab590b2b88e1926da51101c664b0aa33b65656a408a8f",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2207"
+      ]
+    },
+    {
+      "vimeoId": "345981696",
+      "access": "member",
+      "sourceFile": "345981696.vtt",
+      "sourceSha256": "55d9c17d6224d10a8378ec0bb2c3c6bb9cdf93bc81c321d6caa3d5e5d32f6505",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2097"
+      ]
+    },
+    {
+      "vimeoId": "345989065",
+      "access": "member",
+      "sourceFile": "345989065.vtt",
+      "sourceSha256": "ddd14088af14d5330ac8f0ee22fada2cc413b8d78d0f82f77715cca14cb1b2e0",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2098"
+      ]
+    },
+    {
+      "vimeoId": "346190764",
+      "access": "member",
+      "sourceFile": "346190764.vtt",
+      "sourceSha256": "4042b868b629b4f9dbaa1cd5d23a731d584acc520478c59ae0663513a0f7fb9e",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2194"
+      ]
+    },
+    {
+      "vimeoId": "346419104",
+      "access": "member",
+      "sourceFile": "346419104.vtt",
+      "sourceSha256": "4ca203044ee6bcb97f755a360e98d09ff60664ffacce3e103c42695d75caff16",
+      "paragraphCount": 2,
+      "contentIds": [
+        "831"
+      ]
+    },
+    {
+      "vimeoId": "347192595",
+      "access": "member",
+      "sourceFile": "347192595.vtt",
+      "sourceSha256": "3f034acee68b50db405e53e0209aed99965edd95fe8cdd8ba22227a3786c48ad",
+      "paragraphCount": 13,
+      "contentIds": [
+        "944"
+      ]
+    },
+    {
+      "vimeoId": "350396241",
+      "access": "member",
+      "sourceFile": "350396241.vtt",
+      "sourceSha256": "e7796f24fbce068241a1dccdc93d98eb12ab2e7ee0a09259a5d5adf2bc3c8cf0",
+      "paragraphCount": 5,
+      "contentIds": [
+        "496"
+      ]
+    },
+    {
+      "vimeoId": "350596789",
+      "access": "member",
+      "sourceFile": "350596789.vtt",
+      "sourceSha256": "057e836a6a0d5a379b9b2fbb046c6b1b54733e516992076b5b6456e6e72ddd7a",
+      "paragraphCount": 9,
+      "contentIds": [
+        "497"
+      ]
+    },
+    {
+      "vimeoId": "355873340",
+      "access": "member",
+      "sourceFile": "355873340.vtt",
+      "sourceSha256": "325b3fa5a1cf2078cb157af0cbe5bfe180fe44bfdc5895176e4ee5fcf57dd5e1",
+      "paragraphCount": 3,
+      "contentIds": [
+        "948"
+      ]
+    },
+    {
+      "vimeoId": "382002220",
+      "access": "member",
+      "sourceFile": "382002220.vtt",
+      "sourceSha256": "fe84b743d2cf65023d96a3aba58a95a1314e20f8a8b44ed7b56099a10704716c",
+      "paragraphCount": 29,
+      "contentIds": [
+        "965"
+      ]
+    },
+    {
+      "vimeoId": "382929252",
+      "access": "member",
+      "sourceFile": "382929252.vtt",
+      "sourceSha256": "684978712d8be209305037ca7e88d9e5a3c5950555a8532f0f477d2a9e493975",
+      "paragraphCount": 16,
+      "contentIds": [
+        "966"
+      ]
+    },
+    {
+      "vimeoId": "387548501",
+      "access": "member",
+      "sourceFile": "387548501.vtt",
+      "sourceSha256": "1eae933141415b75c655e2a0b5a3c59db15214d0ba6702a1bbe21398d2e9664e",
+      "paragraphCount": 14,
+      "contentIds": [
+        "967"
+      ]
+    },
+    {
+      "vimeoId": "389096971",
+      "access": "member",
+      "sourceFile": "389096971.vtt",
+      "sourceSha256": "87346e860a1a0b88df85e88d3ec26dc2bffcad868310edc706d378dfe653ebcc",
+      "paragraphCount": 25,
+      "contentIds": [
+        "968"
+      ]
+    },
+    {
+      "vimeoId": "390204273",
+      "access": "member",
+      "sourceFile": "390204273.vtt",
+      "sourceSha256": "3527e9377ae85c53bf410f45784f6e535aba0f19372740facbb7127687bf6b8f",
+      "paragraphCount": 24,
+      "contentIds": [
+        "970"
+      ]
+    },
+    {
+      "vimeoId": "391660712",
+      "access": "member",
+      "sourceFile": "391660712.vtt",
+      "sourceSha256": "917521bbe569bea1031828c9e826dfeeb34046940fa64f521bce708bc76dc166",
+      "paragraphCount": 16,
+      "contentIds": [
+        "971"
+      ]
+    },
+    {
+      "vimeoId": "391663684",
+      "access": "member",
+      "sourceFile": "391663684.vtt",
+      "sourceSha256": "283e92658c6c7197506f7c86a988e71c488b31dd024c482187a0d20013d6799e",
+      "paragraphCount": 18,
+      "contentIds": [
+        "972"
+      ]
+    },
+    {
+      "vimeoId": "392986594",
+      "access": "member",
+      "sourceFile": "392986594.vtt",
+      "sourceSha256": "cd53a41e2e83caacebca717ecf1041e04cbfd55e9f20fbe3783cefeaa8a5b90b",
+      "paragraphCount": 4,
+      "contentIds": [
+        "973"
+      ]
+    },
+    {
+      "vimeoId": "395334482",
+      "access": "member",
+      "sourceFile": "395334482.vtt",
+      "sourceSha256": "bbd57d6bc698036206569e676533c62fa9d85778999bad3d8b426e8781cc0504",
+      "paragraphCount": 14,
+      "contentIds": [
+        "979"
+      ]
+    },
+    {
+      "vimeoId": "396776651",
+      "access": "member",
+      "sourceFile": "396776651.vtt",
+      "sourceSha256": "46995a8c23147873399f6ef7524c7905179523b12e6976a41ef0b8bac81ebb3c",
+      "paragraphCount": 13,
+      "contentIds": [
+        "980"
+      ]
+    },
+    {
+      "vimeoId": "398070112",
+      "access": "member",
+      "sourceFile": "398070112.vtt",
+      "sourceSha256": "972a08134da90a0091faf8cbdf5a7aed6d1e7126bccd63754e963bc729db92f0",
+      "paragraphCount": 7,
+      "contentIds": [
+        "983"
+      ]
+    },
+    {
+      "vimeoId": "399942302",
+      "access": "member",
+      "sourceFile": "399942302.vtt",
+      "sourceSha256": "1c7b0807cc5af3478475d208fcd65359e19cc03f296747e9c2f5b78f37c831a1",
+      "paragraphCount": 7,
+      "contentIds": [
+        "984"
+      ]
+    },
+    {
+      "vimeoId": "401989093",
+      "access": "member",
+      "sourceFile": "401989093.vtt",
+      "sourceSha256": "e5b012f7a4f8969dd2bd17a2d2921f1825b96e8b2fa988182af253cda0e8da75",
+      "paragraphCount": 5,
+      "contentIds": [
+        "986"
+      ]
+    },
+    {
+      "vimeoId": "402750159",
+      "access": "member",
+      "sourceFile": "402750159.vtt",
+      "sourceSha256": "f2c840b2c079332c8e82037e0df6be5e3f086c09d48a92c6a844c414e79b5e96",
+      "paragraphCount": 3,
+      "contentIds": [
+        "988"
+      ]
+    },
+    {
+      "vimeoId": "404738562",
+      "access": "member",
+      "sourceFile": "404738562.vtt",
+      "sourceSha256": "9a4188c400ee4fe80c64cb32c06586f174b3e47838189f93f61f4dde6518698f",
+      "paragraphCount": 3,
+      "contentIds": [
+        "823"
+      ]
+    },
+    {
+      "vimeoId": "404813848",
+      "access": "member",
+      "sourceFile": "404813848.vtt",
+      "sourceSha256": "ddf5b660623cd123bbc0d4b0f1ea5d67082cb142efebaa71678244ed68cda2c8",
+      "paragraphCount": 10,
+      "contentIds": [
+        "990"
+      ]
+    },
+    {
+      "vimeoId": "406025735",
+      "access": "member",
+      "sourceFile": "406025735.vtt",
+      "sourceSha256": "5483aa56ba362624785bd02c46f43c852e80e1d00ebaf14271e1041c1bdcd28b",
+      "paragraphCount": 23,
+      "contentIds": [
+        "992"
+      ]
+    },
+    {
+      "vimeoId": "407719543",
+      "access": "member",
+      "sourceFile": "407719543.vtt",
+      "sourceSha256": "2921faadd2e04f85a74b564a7a521b362991e809c025ebc29ce109b8d8255472",
+      "paragraphCount": 4,
+      "contentIds": [
+        "994"
+      ]
+    },
+    {
+      "vimeoId": "408198846",
+      "access": "member",
+      "sourceFile": "408198846.vtt",
+      "sourceSha256": "bb0607a283f713290e8a358f5fcc3cf3fbb86d8a2a3c709a90fe62de1d15f5b8",
+      "paragraphCount": 8,
+      "contentIds": [
+        "995"
+      ]
+    },
+    {
+      "vimeoId": "409496260",
+      "access": "member",
+      "sourceFile": "409496260.vtt",
+      "sourceSha256": "d989687dc2d100f7f230c325261d7605888ca6107b7e7ff70c5a82d728f96b45",
+      "paragraphCount": 9,
+      "contentIds": [
+        "999"
+      ]
+    },
+    {
+      "vimeoId": "410013233",
+      "access": "member",
+      "sourceFile": "410013233.vtt",
+      "sourceSha256": "15c8593460d8def60689010ce187cb9f008590a90ea0ae779e83660d7fb16d29",
+      "paragraphCount": 10,
+      "contentIds": [
+        "1000"
+      ]
+    },
+    {
+      "vimeoId": "413695829",
+      "access": "member",
+      "sourceFile": "413695829.vtt",
+      "sourceSha256": "8d5c70635bfddc6d0f1b5d4ef8522cb9273b48b11bd2bf07e5e1e42049dd5044",
+      "paragraphCount": 8,
+      "contentIds": [
+        "1001"
+      ]
+    },
+    {
+      "vimeoId": "416646987",
+      "access": "member",
+      "sourceFile": "416646987.vtt",
+      "sourceSha256": "11436329620bcdde479695db72e5520ea72494ff70fc91194bb27647400dc5f0",
+      "paragraphCount": 9,
+      "contentIds": [
+        "1002"
+      ]
+    },
+    {
+      "vimeoId": "432339172",
+      "access": "member",
+      "sourceFile": "432339172.vtt",
+      "sourceSha256": "84cdea94fcc81cf4bcceb366884625a4e7f4e08ba242d920f3cfc4237d95b2ab",
+      "paragraphCount": 7,
+      "contentIds": [
+        "1008"
+      ]
+    },
+    {
+      "vimeoId": "434198371",
+      "access": "public",
+      "sourceFile": "434198371.vtt",
+      "sourceSha256": "b23b6695930003333ee5a8bfa1145945f4bc2fa1c91a9c02ccf7f0a8b33ecf23",
+      "paragraphCount": 18,
+      "contentIds": [
+        "2100"
+      ]
+    },
+    {
+      "vimeoId": "439549701",
+      "access": "member",
+      "sourceFile": "439549701.vtt",
+      "sourceSha256": "8ea3f9fad15d84db7f854569d336a46cc39fb986e2b627b4958f78e824928487",
+      "paragraphCount": 4,
+      "contentIds": [
+        "1009"
+      ]
+    },
+    {
+      "vimeoId": "443512049",
+      "access": "member",
+      "sourceFile": "443512049.vtt",
+      "sourceSha256": "7ae4a85288651a1df9cfa851e99f0817aaec684210a451d54b3fb7702dee336c",
+      "paragraphCount": 8,
+      "contentIds": [
+        "1010"
+      ]
+    },
+    {
+      "vimeoId": "444375575",
+      "access": "member",
+      "sourceFile": "444375575.vtt",
+      "sourceSha256": "9c86172ae165fe3eded9aca6415325ffd1b3751db1fa5204fcf8be19192fee80",
+      "paragraphCount": 11,
+      "contentIds": [
+        "1011"
+      ]
+    },
+    {
+      "vimeoId": "454539776",
+      "access": "member",
+      "sourceFile": "454539776.vtt",
+      "sourceSha256": "b9d0489cec64f2f977361a71dc3fa82a85f9b2c62b7dd9912da277bd1eae95e1",
+      "paragraphCount": 6,
+      "contentIds": [
+        "1012"
+      ]
+    },
+    {
+      "vimeoId": "464734421",
+      "access": "member",
+      "sourceFile": "464734421.vtt",
+      "sourceSha256": "38c8830dd6ff7911aa3760776c5feb567a350ed2a8d3fa47d6cf359296c3cbba",
+      "paragraphCount": 2,
+      "contentIds": [
+        "1013"
+      ]
+    },
+    {
+      "vimeoId": "465425233",
+      "access": "member",
+      "sourceFile": "465425233.vtt",
+      "sourceSha256": "d0866b8f0251c1820fcfe392e7b13b6c9c2687e9dff8ba86ccfdd63123c1908b",
+      "paragraphCount": 10,
+      "contentIds": [
+        "1014"
+      ]
+    },
+    {
+      "vimeoId": "467756922",
+      "access": "member",
+      "sourceFile": "467756922.vtt",
+      "sourceSha256": "d1fa82551e6bde93534a530642177f3a0c186a713f59b9a1ce6cd3636b0487e8",
+      "paragraphCount": 4,
+      "contentIds": [
+        "1015"
+      ]
+    },
+    {
+      "vimeoId": "468219328",
+      "access": "member",
+      "sourceFile": "468219328.vtt",
+      "sourceSha256": "21a5b74c337cc3a3e4954b65dd582a765a02c5a144b7eb2512dff0e2d6f77f83",
+      "paragraphCount": 5,
+      "contentIds": [
+        "1016"
+      ]
+    },
+    {
+      "vimeoId": "475492261",
+      "access": "member",
+      "sourceFile": "475492261.vtt",
+      "sourceSha256": "5a9eb4751b8c31d928756eac59991614a598b75d5a6f689023775d9e92e26f81",
+      "paragraphCount": 16,
+      "contentIds": [
+        "1019"
+      ]
+    },
+    {
+      "vimeoId": "484835250",
+      "access": "member",
+      "sourceFile": "484835250.vtt",
+      "sourceSha256": "efbd2b5a37807a565e117c5bf334c41771ec5f9c3a465aea6ac2177a711ac1f2",
+      "paragraphCount": 10,
+      "contentIds": [
+        "1020"
+      ]
+    },
+    {
+      "vimeoId": "488705208",
+      "access": "member",
+      "sourceFile": "488705208.vtt",
+      "sourceSha256": "fdc6adc8cfe2caf180c5d729b3bcf785753bfa9237bc4f8131370f76cccbd0bf",
+      "paragraphCount": 11,
+      "contentIds": [
+        "1023"
+      ]
+    },
+    {
+      "vimeoId": "490251157",
+      "access": "member",
+      "sourceFile": "490251157.vtt",
+      "sourceSha256": "2bdbf0fd220f21459f1a88a69330f8b06c5de10d33b85fc97dd028793960813e",
+      "paragraphCount": 9,
+      "contentIds": [
+        "1022"
+      ]
+    },
+    {
+      "vimeoId": "490449687",
+      "access": "member",
+      "sourceFile": "490449687.vtt",
+      "sourceSha256": "8830f16596aa943aec9d293beaf2f47ad70b25bfd8f95408a5e638cd1b5dabf4",
+      "paragraphCount": 6,
+      "contentIds": [
+        "1024"
+      ]
+    },
+    {
+      "vimeoId": "495862624",
+      "access": "member",
+      "sourceFile": "495862624.vtt",
+      "sourceSha256": "a3163af5517eb8f995896a747757ca85ef59031f4bd00fabcf60c5860f2833ad",
+      "paragraphCount": 9,
+      "contentIds": [
+        "1025"
+      ]
+    },
+    {
+      "vimeoId": "502818680",
+      "access": "member",
+      "sourceFile": "502818680.vtt",
+      "sourceSha256": "402ffc67384c75e28000d7704eb50d6dd7a239caaa50265d571dcd3467204cab",
+      "paragraphCount": 11,
+      "contentIds": [
+        "1027"
+      ]
+    },
+    {
+      "vimeoId": "505215337",
+      "access": "member",
+      "sourceFile": "505215337.vtt",
+      "sourceSha256": "0f5efb25771e33e093db5fdde92226871615f03f6feeedb003de9e3c5883c3f5",
+      "paragraphCount": 4,
+      "contentIds": [
+        "1028"
+      ]
+    },
+    {
+      "vimeoId": "505881068",
+      "access": "member",
+      "sourceFile": "505881068.vtt",
+      "sourceSha256": "25e14031aa15167631258eea68f4b14e7dc0d1279201e2951a483658736dcc53",
+      "paragraphCount": 7,
+      "contentIds": [
+        "1029"
+      ]
+    },
+    {
+      "vimeoId": "510472959",
+      "access": "member",
+      "sourceFile": "510472959.vtt",
+      "sourceSha256": "447f912a93dfbb6ffc4c9e7c9af71e8267fad8f23234412457ab6c6e23564687",
+      "paragraphCount": 8,
+      "contentIds": [
+        "1030"
+      ]
+    },
+    {
+      "vimeoId": "511340616",
+      "access": "member",
+      "sourceFile": "511340616.vtt",
+      "sourceSha256": "a594d7b427c21262db56ee20be548efe85c9122dfe1170811d7dad9b19b9a674",
+      "paragraphCount": 9,
+      "contentIds": [
+        "1031"
+      ]
+    },
+    {
+      "vimeoId": "520406352",
+      "access": "member",
+      "sourceFile": "520406352.vtt",
+      "sourceSha256": "b68ca98d917f6b0aae4e4d42f493c5e4522aa0c1522bf66065d47028c68fd6a6",
+      "paragraphCount": 4,
+      "contentIds": [
+        "1032"
+      ]
+    },
+    {
+      "vimeoId": "527759119",
+      "access": "public",
+      "sourceFile": "527759119.vtt",
+      "sourceSha256": "1c5522075d5ffc60dbc51b7988f408845609ccc2f4098d6339a7ddf4dfb32f8a",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2049"
+      ]
+    },
+    {
+      "vimeoId": "528316951",
+      "access": "member",
+      "sourceFile": "528316951.vtt",
+      "sourceSha256": "ba7f4696ed2219d965252aa7d6e7bba0525791e8c45da52230e11e805ba3a9fc",
+      "paragraphCount": 12,
+      "contentIds": [
+        "2191"
+      ]
+    },
+    {
+      "vimeoId": "533647469",
+      "access": "member",
+      "sourceFile": "533647469.vtt",
+      "sourceSha256": "647ecc612b295bca8d98eadd7cf948e9b879bb52168d04b0ba02461b9cafa159",
+      "paragraphCount": 5,
+      "contentIds": [
+        "1033"
+      ]
+    },
+    {
+      "vimeoId": "535079490",
+      "access": "member",
+      "sourceFile": "535079490.vtt",
+      "sourceSha256": "1bac2996e8ad7cf15990e5f0fa38b07ea4ab7c6bb29de57b061feabb19c7dcb5",
+      "paragraphCount": 3,
+      "contentIds": [
+        "1034"
+      ]
+    },
+    {
+      "vimeoId": "537425558",
+      "access": "member",
+      "sourceFile": "537425558.vtt",
+      "sourceSha256": "45d1a490b62202f936c7bad83b2c7b42fae7df7e622afdd59f9f13cc68988259",
+      "paragraphCount": 3,
+      "contentIds": [
+        "237",
+        "1035"
+      ]
+    },
+    {
+      "vimeoId": "542346138",
+      "access": "member",
+      "sourceFile": "542346138.vtt",
+      "sourceSha256": "30c70894e0c006bd472f7307f3faa46f6045e0e6837006fb8febd5e6177b0655",
+      "paragraphCount": 18,
+      "contentIds": [
+        "2035"
+      ]
+    },
+    {
+      "vimeoId": "553393641",
+      "access": "member",
+      "sourceFile": "553393641.vtt",
+      "sourceSha256": "f76f3241693fadb408e222e8020692263c99a7eb131dfb34216264da91791650",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2036"
+      ]
+    },
+    {
+      "vimeoId": "557357787",
+      "access": "member",
+      "sourceFile": "557357787.vtt",
+      "sourceSha256": "0a00b13deba2b38fff44fb705fa66a8e8c3804439aa368ea05198350b8896df7",
+      "paragraphCount": 24,
+      "contentIds": [
+        "2037"
+      ]
+    },
+    {
+      "vimeoId": "558579138",
+      "access": "member",
+      "sourceFile": "558579138.vtt",
+      "sourceSha256": "049ffdd41dc20bb7523edbebfa876b5ee2b8e140741ec071a897ca02b7339689",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2038"
+      ]
+    },
+    {
+      "vimeoId": "568999608",
+      "access": "member",
+      "sourceFile": "568999608.vtt",
+      "sourceSha256": "240e9d7b6e4c03884449ca8f17a174eeb5fab020e38d9c569cc71723a629c8c7",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2039"
+      ]
+    },
+    {
+      "vimeoId": "569614718",
+      "access": "member",
+      "sourceFile": "569614718.vtt",
+      "sourceSha256": "a90c0dfe5a8a3372826eacfc2d353a1df6a65cb6de936aa0642c7ccb1c66acbf",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2060",
+        "2061"
+      ]
+    },
+    {
+      "vimeoId": "572586808",
+      "access": "member",
+      "sourceFile": "572586808.vtt",
+      "sourceSha256": "4706e99801c835bb54351f7bdd16a51e7b40563f31238aef8bdcddd56825bcd3",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2040"
+      ]
+    },
+    {
+      "vimeoId": "574879659",
+      "access": "member",
+      "sourceFile": "574879659.vtt",
+      "sourceSha256": "a34cb9e042a1f88eb17473281901a8465bbbd8e1028104248793eca53df69e94",
+      "paragraphCount": 13,
+      "contentIds": [
+        "433"
+      ]
+    },
+    {
+      "vimeoId": "584011979",
+      "access": "member",
+      "sourceFile": "584011979.vtt",
+      "sourceSha256": "b8a5edddaef70ce61243ea6e8d94cb5b982170254fff7d451059edad3c6a4ff1",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2041"
+      ]
+    },
+    {
+      "vimeoId": "601804336",
+      "access": "member",
+      "sourceFile": "601804336.vtt",
+      "sourceSha256": "f39d478bb48c9496fa71ad879541d5929259aea7686d35e1373d7c22a751acdb",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2042"
+      ]
+    },
+    {
+      "vimeoId": "606746624",
+      "access": "member",
+      "sourceFile": "606746624.vtt",
+      "sourceSha256": "6a45f35d2a4566fafec8e91f074cedba530a80b564da7f65c22a098adee5eb0b",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2043"
+      ]
+    },
+    {
+      "vimeoId": "613786178",
+      "access": "member",
+      "sourceFile": "613786178.vtt",
+      "sourceSha256": "2a0ee7137fd7a4543bf5869915d7a4f594d871bbf361fcbea273099a6ed4a2c3",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2044"
+      ]
+    },
+    {
+      "vimeoId": "636646296",
+      "access": "member",
+      "sourceFile": "636646296.vtt",
+      "sourceSha256": "48a24452ae6b0837f5864f9090df27bee8cb9189ee2a3993bac37b24feff304b",
+      "paragraphCount": 15,
+      "contentIds": [
+        "2045"
+      ]
+    },
+    {
+      "vimeoId": "653893647",
+      "access": "member",
+      "sourceFile": "653893647.vtt",
+      "sourceSha256": "a644e4df814c07ce46fd714d140b20ead861153dc71543fb2be222993739648c",
+      "paragraphCount": 29,
+      "contentIds": [
+        "2050"
+      ]
+    },
+    {
+      "vimeoId": "654328598",
+      "access": "member",
+      "sourceFile": "654328598.vtt",
+      "sourceSha256": "ee83b165964e5503c1ed600b63b11aa6259528ef47504eca60333a6a64e86265",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2051"
+      ]
+    },
+    {
+      "vimeoId": "658161398",
+      "access": "member",
+      "sourceFile": "658161398.vtt",
+      "sourceSha256": "fdf37b9d1c7f19bc965a097b9f35bea7049ada50992c6231cb739b20db70361a",
+      "paragraphCount": 13,
+      "contentIds": [
+        "2052"
+      ]
+    },
+    {
+      "vimeoId": "660658866",
+      "access": "member",
+      "sourceFile": "660658866.vtt",
+      "sourceSha256": "7549ba69728c612230c81b292d3cbb8a13c600924964609db20667c8b8795261",
+      "paragraphCount": 21,
+      "contentIds": [
+        "2053"
+      ]
+    },
+    {
+      "vimeoId": "664914333",
+      "access": "member",
+      "sourceFile": "664914333.vtt",
+      "sourceSha256": "a3fcaefcbb45f8ec862cf9b158aad404699e92ba22f120e4262caf5737480288",
+      "paragraphCount": 14,
+      "contentIds": [
+        "2054"
+      ]
+    },
+    {
+      "vimeoId": "670227665",
+      "access": "member",
+      "sourceFile": "670227665.vtt",
+      "sourceSha256": "081039ddd2e0dcca9d6e5073f652464853af309b316ff3c51dff95da94b93725",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2055"
+      ]
+    },
+    {
+      "vimeoId": "670249272",
+      "access": "member",
+      "sourceFile": "670249272.vtt",
+      "sourceSha256": "a79b0c101a7fc07adaa140e6174072fa36f46b4f322790cba97615d2bee0ba6d",
+      "paragraphCount": 10,
+      "contentIds": [
+        "2056"
+      ]
+    },
+    {
+      "vimeoId": "671448415",
+      "access": "member",
+      "sourceFile": "671448415.vtt",
+      "sourceSha256": "41b9f2294e9d839dfccd0134560d3cadc16376441700000bf58538508c024a7d",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2057"
+      ]
+    },
+    {
+      "vimeoId": "672100555",
+      "access": "member",
+      "sourceFile": "672100555.vtt",
+      "sourceSha256": "9e2dc06cd516cf6ab507c1c0d89eac8a3a8ed08f29de05f7a5982301f12dfdce",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2058"
+      ]
+    },
+    {
+      "vimeoId": "677422340",
+      "access": "member",
+      "sourceFile": "677422340.vtt",
+      "sourceSha256": "bc3650293c571775e5216977def90abd775cb2da040e56776f973d10167f74e7",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2059"
+      ]
+    },
+    {
+      "vimeoId": "681013133",
+      "access": "member",
+      "sourceFile": "681013133.vtt",
+      "sourceSha256": "d4a6e0bbada7d7d7e2320bdb3ee7da3a01fe8b19b4a62b01dc57f1dda094d28e",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2180"
+      ]
+    },
+    {
+      "vimeoId": "681026361",
+      "access": "member",
+      "sourceFile": "681026361.vtt",
+      "sourceSha256": "7c1b1aa3b34c18e9cc5259f8457f1b1e936f2898b3477b8d961f80908eafe56d",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2179"
+      ]
+    },
+    {
+      "vimeoId": "685503940",
+      "access": "member",
+      "sourceFile": "685503940.vtt",
+      "sourceSha256": "42a57aca9d02f5de516680f37746dc98ae466f0faf4bceec2adcb75be3d286c9",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2063"
+      ]
+    },
+    {
+      "vimeoId": "699191838",
+      "access": "member",
+      "sourceFile": "699191838.vtt",
+      "sourceSha256": "c73822f0c84a69f38132e6951e1c371397530ed21d3adfcc890dcef3db805d78",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2065"
+      ]
+    },
+    {
+      "vimeoId": "699787852",
+      "access": "member",
+      "sourceFile": "699787852.vtt",
+      "sourceSha256": "dd70490aea43b98ac7ca49e374cd2d4e5887cf078b5caa0d41894758cc134520",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2066"
+      ]
+    },
+    {
+      "vimeoId": "710887711",
+      "access": "public",
+      "sourceFile": "710887711.vtt",
+      "sourceSha256": "f0779a89d4930e1943920d0bb402889570ba8a55b3964054d91a2504e9f0b798",
+      "paragraphCount": 1,
+      "contentIds": [
+        "2067"
+      ]
+    },
+    {
+      "vimeoId": "718396283",
+      "access": "member",
+      "sourceFile": "718396283.vtt",
+      "sourceSha256": "509e8487a913c9e196c3d6e7440a07d54cdccde7cfeda8338e6187698a36878e",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2068"
+      ]
+    },
+    {
+      "vimeoId": "718492073",
+      "access": "member",
+      "sourceFile": "718492073.vtt",
+      "sourceSha256": "b45b37d3a7c412ab6c1e2381f557f29f79d671cbc5cc65ef3ad8d54870fafb00",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2069"
+      ]
+    },
+    {
+      "vimeoId": "722352486",
+      "access": "member",
+      "sourceFile": "722352486.vtt",
+      "sourceSha256": "e4ab7386e3c7e026b71cca9de0834e0e501a6fc7cfa60ea2637f12b354e76847",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2070"
+      ]
+    },
+    {
+      "vimeoId": "722761899",
+      "access": "member",
+      "sourceFile": "722761899.vtt",
+      "sourceSha256": "527f695f4aea76ea22cdcfe6f0979e2a31bde3922947bec42a862aa6f52e0592",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2071"
+      ]
+    },
+    {
+      "vimeoId": "723016463",
+      "access": "member",
+      "sourceFile": "723016463.vtt",
+      "sourceSha256": "f0a4e2fc39b56fda8939dbfd2f81c4850cd59010a4b53641fb737ed0d881d8a8",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2072"
+      ]
+    },
+    {
+      "vimeoId": "723146878",
+      "access": "member",
+      "sourceFile": "723146878.vtt",
+      "sourceSha256": "349b5ff94d512c60a4b38c43d476bf57bbaf96d65135e6e612f9f6d097972717",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2073"
+      ]
+    },
+    {
+      "vimeoId": "723431217",
+      "access": "member",
+      "sourceFile": "723431217.vtt",
+      "sourceSha256": "63c890ebb92eb87b931007aeb3d9b9ad84b7874db178766c3c45d929b690605d",
+      "paragraphCount": 10,
+      "contentIds": [
+        "2074"
+      ]
+    },
+    {
+      "vimeoId": "727148865",
+      "access": "member",
+      "sourceFile": "727148865.vtt",
+      "sourceSha256": "39ca4851b66bd36711cf4ff5c9dd27197030ca1048c2fdc8aa062ef7dd9c081d",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2075"
+      ]
+    },
+    {
+      "vimeoId": "728877115",
+      "access": "member",
+      "sourceFile": "728877115.vtt",
+      "sourceSha256": "81f8ae2911e2150d7be3b1e5b38c19b6c5df81b4297553a08ba6bc1f2cf1cd62",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2076"
+      ]
+    },
+    {
+      "vimeoId": "730612853",
+      "access": "member",
+      "sourceFile": "730612853.vtt",
+      "sourceSha256": "3943ba18700bd8e92e05308e8ed8adfc1e8c45ec5234c5835e4f11728e1ff076",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2077"
+      ]
+    },
+    {
+      "vimeoId": "742452827",
+      "access": "member",
+      "sourceFile": "742452827.vtt",
+      "sourceSha256": "a3b4ce153fa28e7e5842b7b25203f9b9ef61ccb99731a240770dad2f1072ac5b",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2078"
+      ]
+    },
+    {
+      "vimeoId": "743935950",
+      "access": "member",
+      "sourceFile": "743935950.vtt",
+      "sourceSha256": "5084e3ea49e7e91faaa7a2856e0a29e02d09f555e1b2a378dc62aad535d77aeb",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2081"
+      ]
+    },
+    {
+      "vimeoId": "746202286",
+      "access": "public",
+      "sourceFile": "746202286.vtt",
+      "sourceSha256": "c00f377773c77b2c76222b89dc59298f6c869b7ff9f287a9ca87614e2ba94ace",
+      "paragraphCount": 10,
+      "contentIds": [
+        "2083"
+      ]
+    },
+    {
+      "vimeoId": "749240261",
+      "access": "member",
+      "sourceFile": "749240261.vtt",
+      "sourceSha256": "c5a55bfd23d5281af831cbd13025ef112ef24fc808d93a697107fb666bd57443",
+      "paragraphCount": 17,
+      "contentIds": [
+        "2086"
+      ]
+    },
+    {
+      "vimeoId": "755126615",
+      "access": "member",
+      "sourceFile": "755126615.vtt",
+      "sourceSha256": "21f99fa8d08c82a47d1f6abc93b4bff7528650d77a2781b3094661c21071f87a",
+      "paragraphCount": 18,
+      "contentIds": [
+        "2088"
+      ]
+    },
+    {
+      "vimeoId": "756763233",
+      "access": "member",
+      "sourceFile": "756763233.vtt",
+      "sourceSha256": "c2eb4e55e4f4df8d6a786a4d01c6da063c9b83a3f1795eaf348c44f9d130189b",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2089"
+      ]
+    },
+    {
+      "vimeoId": "758929259",
+      "access": "member",
+      "sourceFile": "758929259.vtt",
+      "sourceSha256": "ddcf37aad74d8621732d925ac816ba5e9e869f5ff9f6d1ecb8edf5799a19acb3",
+      "paragraphCount": 19,
+      "contentIds": [
+        "2090"
+      ]
+    },
+    {
+      "vimeoId": "759564870",
+      "access": "member",
+      "sourceFile": "759564870.vtt",
+      "sourceSha256": "dfcb505e9b827bf4d16652274776fc5ef2b6082b45293112571eea6284f61d22",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2091"
+      ]
+    },
+    {
+      "vimeoId": "761692456",
+      "access": "member",
+      "sourceFile": "761692456.vtt",
+      "sourceSha256": "be3616b23d5f2811e42a457e291e837c126ecd39dae4235deaad8a4740f4b68d",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2092"
+      ]
+    },
+    {
+      "vimeoId": "764344052",
+      "access": "member",
+      "sourceFile": "764344052.vtt",
+      "sourceSha256": "bd94534dea2673193bf1deef23df45d264b7cedbad46e4c899f9383ed1ac8c9b",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2093"
+      ]
+    },
+    {
+      "vimeoId": "767093877",
+      "access": "member",
+      "sourceFile": "767093877.vtt",
+      "sourceSha256": "5151aad23213de1b0520a14c9b245f0a15ea040d012990cfcabfd1c9c118a466",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2094"
+      ]
+    },
+    {
+      "vimeoId": "772020892",
+      "access": "member",
+      "sourceFile": "772020892.vtt",
+      "sourceSha256": "45f5a1e73283e662fa8c3ce32d77c603b2782b1032767ecfd3697817161bfc2f",
+      "paragraphCount": 14,
+      "contentIds": [
+        "2096"
+      ]
+    },
+    {
+      "vimeoId": "788068157",
+      "access": "member",
+      "sourceFile": "788068157.vtt",
+      "sourceSha256": "bf16e7cd36f8a7c8ec8375d2b222a708a1abb3a946644e00909e8a86ece272b8",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2101"
+      ]
+    },
+    {
+      "vimeoId": "799143778",
+      "access": "member",
+      "sourceFile": "799143778.vtt",
+      "sourceSha256": "f16d1830a0735cd954762c08160757177b1e5772ff15e9b84de30fe7f8ee3bb9",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2103"
+      ]
+    },
+    {
+      "vimeoId": "799493924",
+      "access": "member",
+      "sourceFile": "799493924.vtt",
+      "sourceSha256": "a675e349dbcd995a6a7affbfaf905b05ef0fcc04aa77eebbe35196efad24db92",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2164"
+      ]
+    },
+    {
+      "vimeoId": "804686525",
+      "access": "member",
+      "sourceFile": "804686525.vtt",
+      "sourceSha256": "5af60cca039bb5ad8945c92ac0a51d32a36a7acd3f0809561a971f6e38d68b7c",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2165"
+      ]
+    },
+    {
+      "vimeoId": "805200812",
+      "access": "member",
+      "sourceFile": "805200812.vtt",
+      "sourceSha256": "04fba37982bd0bbc8c2ac43b8cd3e4f314b1da117490ae63393f746eff24ed37",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2104"
+      ]
+    },
+    {
+      "vimeoId": "806146931",
+      "access": "member",
+      "sourceFile": "806146931.vtt",
+      "sourceSha256": "1a50cfaa18b6afb9b93f595d6a75cf2e0032cc28d6f4f7fe8d8c53d111ba90ba",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2105"
+      ]
+    },
+    {
+      "vimeoId": "807274499",
+      "access": "member",
+      "sourceFile": "807274499.vtt",
+      "sourceSha256": "51d5e6a0ebfe7c07a819adfac38ecea20f72f933e8985cd30b8be44ca5d2b17e",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2106"
+      ]
+    },
+    {
+      "vimeoId": "815440824",
+      "access": "member",
+      "sourceFile": "815440824.vtt",
+      "sourceSha256": "90f4113d8ba358d198716e5a4d55339c457e51d92c850fc5cf805f581954db1d",
+      "paragraphCount": 12,
+      "contentIds": [
+        "2108"
+      ]
+    },
+    {
+      "vimeoId": "820634377",
+      "access": "member",
+      "sourceFile": "820634377.vtt",
+      "sourceSha256": "0f839762eaec840a796401951705638772f9a73d8d0861ca307e9a9ec8bf6826",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2109"
+      ]
+    },
+    {
+      "vimeoId": "832913112",
+      "access": "member",
+      "sourceFile": "832913112.vtt",
+      "sourceSha256": "df929349f19d8f8f3a52dfadc228f2f4ec859a0f1997e471b977c7d7a109bd04",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2111"
+      ]
+    },
+    {
+      "vimeoId": "833480988",
+      "access": "member",
+      "sourceFile": "833480988.vtt",
+      "sourceSha256": "2f0c12d82c6ae8bf49f19ffcb34ebde9004e249acaafe1422b754e4432c9ea13",
+      "paragraphCount": 19,
+      "contentIds": [
+        "2113"
+      ]
+    },
+    {
+      "vimeoId": "837567892",
+      "access": "public",
+      "sourceFile": "837567892.vtt",
+      "sourceSha256": "fd1e8a740d490090ca99ae30ac0ae82e1c475a810e00b576fa64252aa9838c97",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2116"
+      ]
+    },
+    {
+      "vimeoId": "839083729",
+      "access": "member",
+      "sourceFile": "839083729.vtt",
+      "sourceSha256": "b589da9e9a0b318d237625bdb3b0792ccfdeba7c71f20ccc40cd10c5072d7ffc",
+      "paragraphCount": 14,
+      "contentIds": [
+        "2117"
+      ]
+    },
+    {
+      "vimeoId": "849757905",
+      "access": "member",
+      "sourceFile": "849757905.vtt",
+      "sourceSha256": "b9656a20c9a1a34b52dac093ca59446c548591d054c5a3a43b5d88e701a77b65",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2119"
+      ]
+    },
+    {
+      "vimeoId": "855557007",
+      "access": "member",
+      "sourceFile": "855557007.vtt",
+      "sourceSha256": "5a51a53a98529c553f64724399df01c988898ef67f0511b8c76abc8958d07d5c",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2121"
+      ]
+    },
+    {
+      "vimeoId": "856982908",
+      "access": "member",
+      "sourceFile": "856982908.vtt",
+      "sourceSha256": "49be39a3bfc29bd639f64171fd6708a3b17e45b2282f787bb953c652954057d4",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2123"
+      ]
+    },
+    {
+      "vimeoId": "858685205",
+      "access": "member",
+      "sourceFile": "858685205.vtt",
+      "sourceSha256": "e4a282a98e0918e3bac01df257d8483378304292d6cebf5b7265c71e0dfef3be",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2124"
+      ]
+    },
+    {
+      "vimeoId": "872680085",
+      "access": "member",
+      "sourceFile": "872680085.vtt",
+      "sourceSha256": "79b9f36c62f326b6fc4f8225116320344aebfa15ce08bdfe404853ea1fb8ae29",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2125"
+      ]
+    },
+    {
+      "vimeoId": "873332368",
+      "access": "member",
+      "sourceFile": "873332368.vtt",
+      "sourceSha256": "db640d089f3a11e9b2db270da0da7694156529ed7995f23556594a3fd08fe9f3",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2126"
+      ]
+    },
+    {
+      "vimeoId": "876386142",
+      "access": "member",
+      "sourceFile": "876386142.vtt",
+      "sourceSha256": "04f238719859328c8c0f4dcc70c87ddc0d6293015d56527e57dad8de7bef1bbe",
+      "paragraphCount": 19,
+      "contentIds": [
+        "2127"
+      ]
+    },
+    {
+      "vimeoId": "894954466",
+      "access": "member",
+      "sourceFile": "894954466.vtt",
+      "sourceSha256": "47a440b1440449893a9e834bf7022665f0d47b75419667e51a2a347635f9209c",
+      "paragraphCount": 12,
+      "contentIds": [
+        "2132"
+      ]
+    },
+    {
+      "vimeoId": "900283940",
+      "access": "member",
+      "sourceFile": "900283940.vtt",
+      "sourceSha256": "3900a23288942f1178d75f63a34c7a78927d0575bf3f628ecd31454c0d6c1cf0",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2134"
+      ]
+    },
+    {
+      "vimeoId": "901887073",
+      "access": "member",
+      "sourceFile": "901887073.vtt",
+      "sourceSha256": "887efcd9923e5fd3aaefc8b8d6da59554defc02d08d1f27eb1ddc6a677802f6a",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2135"
+      ]
+    },
+    {
+      "vimeoId": "902598708",
+      "access": "member",
+      "sourceFile": "902598708.vtt",
+      "sourceSha256": "b0bb5c9ff9362a7331f2adeb1724f3fddaa78f0b893321c0aa9ec877ba929be6",
+      "paragraphCount": 20,
+      "contentIds": [
+        "2136"
+      ]
+    },
+    {
+      "vimeoId": "908384563",
+      "access": "member",
+      "sourceFile": "908384563.vtt",
+      "sourceSha256": "5384a4face3cacd64b1d67857d8285a59d9ab2934cb9825a02a5da50456fd1d5",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2140"
+      ]
+    },
+    {
+      "vimeoId": "908615559",
+      "access": "member",
+      "sourceFile": "908615559.vtt",
+      "sourceSha256": "bd0a2216855d6e1ef4ce0cfe78c846d30200ccefdba556d5b1f336a826182f90",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2141"
+      ]
+    },
+    {
+      "vimeoId": "910982168",
+      "access": "public",
+      "sourceFile": "910982168.vtt",
+      "sourceSha256": "3f2ece3519ba11d22e98b42aa790dad6d874c9c046fb6b1f0d35b92508d06777",
+      "paragraphCount": 92,
+      "contentIds": [
+        "2142"
+      ]
+    },
+    {
+      "vimeoId": "911192099",
+      "access": "member",
+      "sourceFile": "911192099.vtt",
+      "sourceSha256": "e075e873ac92f482df2f4551e8a1cc8e40c6b91e5d26c251d2f7b2362544d23e",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2143"
+      ]
+    },
+    {
+      "vimeoId": "911350340",
+      "access": "member",
+      "sourceFile": "911350340.vtt",
+      "sourceSha256": "f2ae9c73e59697d94ea1ec975581fb964a647ec769aae4193ea33f641bd50bd4",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2144"
+      ]
+    },
+    {
+      "vimeoId": "911395489",
+      "access": "member",
+      "sourceFile": "911395489.vtt",
+      "sourceSha256": "ff17a153f2483790fe30829cd4222d63c9f2925946f383978af0f5285a578b4e",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2145"
+      ]
+    },
+    {
+      "vimeoId": "912775930",
+      "access": "member",
+      "sourceFile": "912775930.vtt",
+      "sourceSha256": "f3a6fe9cfc6cb303be02a0424548562f5fa8351da0a10cac61b7fc66a76b2b05",
+      "paragraphCount": 10,
+      "contentIds": [
+        "2146"
+      ]
+    },
+    {
+      "vimeoId": "914158952",
+      "access": "member",
+      "sourceFile": "914158952.vtt",
+      "sourceSha256": "afd7cd2c4df89cbc38ed1424a61c6a473427a49e48979364459358db776c3159",
+      "paragraphCount": 3,
+      "contentIds": [
+        "2147"
+      ]
+    },
+    {
+      "vimeoId": "930091062",
+      "access": "member",
+      "sourceFile": "930091062.vtt",
+      "sourceSha256": "e6f686bc4e7b42fa062bef6e3c08b098ebafa98a1a726a6e015f3232e12bb665",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2151"
+      ]
+    },
+    {
+      "vimeoId": "931545606",
+      "access": "public",
+      "sourceFile": "931545606.vtt",
+      "sourceSha256": "6d60de3cb3d349161d77ec81713500de2a67635a242c8bfde2628df60463abff",
+      "paragraphCount": 21,
+      "contentIds": [
+        "2152"
+      ]
+    },
+    {
+      "vimeoId": "935474319",
+      "access": "member",
+      "sourceFile": "935474319.vtt",
+      "sourceSha256": "a599dc810811e136858c1dc079dcab2caecc9300815d047c35cb133def497f07",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2153"
+      ]
+    },
+    {
+      "vimeoId": "938705954",
+      "access": "member",
+      "sourceFile": "938705954.vtt",
+      "sourceSha256": "ebe7f96360c516a1d8f3662620ea129d6f19995e0eea692501fd08d6b3af0ea1",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2154"
+      ]
+    },
+    {
+      "vimeoId": "942986947",
+      "access": "member",
+      "sourceFile": "942986947.vtt",
+      "sourceSha256": "5a07383b913288aaefd7a8341d5aa23bd9c6d86be0095e02fc3962e0b56f5812",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2155"
+      ]
+    },
+    {
+      "vimeoId": "945903166",
+      "access": "member",
+      "sourceFile": "945903166.vtt",
+      "sourceSha256": "0d64aa0f0b103a93005ac06608d85cd3946cfb764e60d4003f4ce6ab0f6f9be3",
+      "paragraphCount": 8,
+      "contentIds": [
+        "2157"
+      ]
+    },
+    {
+      "vimeoId": "949339646",
+      "access": "member",
+      "sourceFile": "949339646.vtt",
+      "sourceSha256": "756d022ce5e0d76ce3b8939c588627f0bc9e26059da493e21adbd6a4632ced57",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2158"
+      ]
+    },
+    {
+      "vimeoId": "957443266",
+      "access": "member",
+      "sourceFile": "957443266.vtt",
+      "sourceSha256": "a18c00c73d6398af3af5a499d7b03fda97462e149da3abf97df702cea090d6d1",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2160"
+      ]
+    },
+    {
+      "vimeoId": "988120195",
+      "access": "member",
+      "sourceFile": "988120195.vtt",
+      "sourceSha256": "d62134526563c5e3b09043833ae646def5100be82b2225da90f7e94d9e51bc1d",
+      "paragraphCount": 12,
+      "contentIds": [
+        "2166"
+      ]
+    },
+    {
+      "vimeoId": "989062737",
+      "access": "member",
+      "sourceFile": "989062737.vtt",
+      "sourceSha256": "2cb48959a24f5b88c2c904dd773b93cfb74ac15f308da3d4a0fd1fe3048b1d4d",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2167"
+      ]
+    },
+    {
+      "vimeoId": "997188903",
+      "access": "member",
+      "sourceFile": "997188903.vtt",
+      "sourceSha256": "f4262389b49211307526d409bb0d8009fdd06e17a53a9a200f177a7543692e6b",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2170"
+      ]
+    },
+    {
+      "vimeoId": "997824479",
+      "access": "member",
+      "sourceFile": "997824479.vtt",
+      "sourceSha256": "d6ca8cfdb533e436e21d52546005150b8bf8e66d47e6399eb02ae21cd06e9378",
+      "paragraphCount": 14,
+      "contentIds": [
+        "2171"
+      ]
+    },
+    {
+      "vimeoId": "1002439068",
+      "access": "member",
+      "sourceFile": "1002439068.vtt",
+      "sourceSha256": "f52a698fd300b4d5b8fe9dbb7a65c293648b23ece320b9aa1e19cb2cb587b2f6",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2172"
+      ]
+    },
+    {
+      "vimeoId": "1002736866",
+      "access": "member",
+      "sourceFile": "1002736866.vtt",
+      "sourceSha256": "08bb1d87331c146a547986bbafa5f261980c5a5bf406cdff52dee996b1739963",
+      "paragraphCount": 2,
+      "contentIds": [
+        "2173"
+      ]
+    },
+    {
+      "vimeoId": "1002748354",
+      "access": "member",
+      "sourceFile": "1002748354.vtt",
+      "sourceSha256": "7e336e063205e1cf74d147f06f89c1eee1c4b86d5b1acbd0ef9b3aaa5f3365c3",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2174"
+      ]
+    },
+    {
+      "vimeoId": "1006650104",
+      "access": "member",
+      "sourceFile": "1006650104.vtt",
+      "sourceSha256": "8e96b2dbd0a1b100ca1c5d9ae2b62a687422787c75005a177a58c3ebb099d39a",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2176"
+      ]
+    },
+    {
+      "vimeoId": "1018125371",
+      "access": "member",
+      "sourceFile": "1018125371.vtt",
+      "sourceSha256": "4cb50ee1664e1eca128bdd9afb8b4c14fbe22ae4468e5ccc610253ca62ea3d83",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2177"
+      ]
+    },
+    {
+      "vimeoId": "1019478312",
+      "access": "member",
+      "sourceFile": "1019478312.vtt",
+      "sourceSha256": "d128fe58eecd4ffc3064d4aad6c5d0e2db0cb729dce648653832380dc9649d56",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2178"
+      ]
+    },
+    {
+      "vimeoId": "1022707004",
+      "access": "member",
+      "sourceFile": "1022707004.vtt",
+      "sourceSha256": "505afe973fc19a3d4b27a3d8b07c49339d9d0aeb273b9530dd86cc8be6800c05",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2181"
+      ]
+    },
+    {
+      "vimeoId": "1024807662",
+      "access": "member",
+      "sourceFile": "1024807662.vtt",
+      "sourceSha256": "0e6a27d56fab31820eac48aff4b697acbb870c62a40ad6844d9f3d5964aa5a20",
+      "paragraphCount": 9,
+      "contentIds": [
+        "2182"
+      ]
+    },
+    {
+      "vimeoId": "1033671296",
+      "access": "member",
+      "sourceFile": "1033671296.vtt",
+      "sourceSha256": "b711638957058eff1657512cd717540e28c890c7d76f77e6c0b1fbfc2ca12497",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2183"
+      ]
+    },
+    {
+      "vimeoId": "1034767881",
+      "access": "member",
+      "sourceFile": "1034767881.vtt",
+      "sourceSha256": "eb23d97f36ad02134a01d99d5896d2531f8f23112de163f4ee76e4b131d48de9",
+      "paragraphCount": 4,
+      "contentIds": [
+        "2184"
+      ]
+    },
+    {
+      "vimeoId": "1036872392",
+      "access": "member",
+      "sourceFile": "1036872392.vtt",
+      "sourceSha256": "7e3dc4c9e0eb484746d29fc138a4aac27243554bbcf0acddd75c8ef84f60f9f2",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2186"
+      ]
+    },
+    {
+      "vimeoId": "1037961455",
+      "access": "member",
+      "sourceFile": "1037961455.vtt",
+      "sourceSha256": "d796b5b34e1e75d7372aa664bc74e66256f0edbfe2d1c8b8492396e8a3b99cda",
+      "paragraphCount": 6,
+      "contentIds": [
+        "2187"
+      ]
+    },
+    {
+      "vimeoId": "1043948249",
+      "access": "member",
+      "sourceFile": "1043948249.vtt",
+      "sourceSha256": "245180953ad9fd206a7996e30c9c288fadbd78520a8592554eb95157f13cdb89",
+      "paragraphCount": 13,
+      "contentIds": [
+        "2188"
+      ]
+    },
+    {
       "vimeoId": "1046394794",
       "access": "public",
       "sourceFile": "1046394794.vtt",
@@ -24,7 +2416,102 @@
       "contentIds": [
         "2189"
       ]
+    },
+    {
+      "vimeoId": "1046931121",
+      "access": "member",
+      "sourceFile": "1046931121.vtt",
+      "sourceSha256": "66ba3b0d126f49ceba34ced9a4c945ae9f14889d5f365f2700c9fffd0f352e09",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2190"
+      ]
+    },
+    {
+      "vimeoId": "1055227693",
+      "access": "member",
+      "sourceFile": "1055227693.vtt",
+      "sourceSha256": "934de5125d93cbadb839f02388d4dc56cdb7728830f37e4e383cdc52ed55dfd6",
+      "paragraphCount": 5,
+      "contentIds": [
+        "2193"
+      ]
+    },
+    {
+      "vimeoId": "1059161400",
+      "access": "public",
+      "sourceFile": "1059161400.vtt",
+      "sourceSha256": "49e3ed84166458168e7157e718b5fe2da4945e06c8c8dc07a95d40ca20bda7cc",
+      "paragraphCount": 7,
+      "contentIds": [
+        "2196"
+      ]
+    },
+    {
+      "vimeoId": "1060131897",
+      "access": "public",
+      "sourceFile": "1060131897.vtt",
+      "sourceSha256": "29130ab6d853236085976467076831bb70ff6b1dac705072e7ca4497b66e9457",
+      "paragraphCount": 14,
+      "contentIds": [
+        "2200"
+      ]
+    },
+    {
+      "vimeoId": "1060296632",
+      "access": "member",
+      "sourceFile": "1060296632.vtt",
+      "sourceSha256": "76a5c1a2872497d5fa36fabf2ae9d13e174b298c71641dafa71292e3b51815f4",
+      "paragraphCount": 19,
+      "contentIds": [
+        "2201"
+      ]
+    },
+    {
+      "vimeoId": "1062424196",
+      "access": "member",
+      "sourceFile": "1062424196.vtt",
+      "sourceSha256": "3f24c971c68c43621d301feb1319a85df1ee353d8db2c32898f9a87eb4aa2633",
+      "paragraphCount": 13,
+      "contentIds": [
+        "2202"
+      ]
+    },
+    {
+      "vimeoId": "1063668397",
+      "access": "member",
+      "sourceFile": "1063668397.vtt",
+      "sourceSha256": "1e1708d9415203e3b4fe750c5f046067585dec9d823c59e1fb134bf78ec41db0",
+      "paragraphCount": 19,
+      "contentIds": [
+        "2203"
+      ]
+    },
+    {
+      "vimeoId": "1068850716",
+      "access": "member",
+      "sourceFile": "1068850716.vtt",
+      "sourceSha256": "93aa7731a54050ce6eea665ab841c8f6ce042cc5f1ade2ceb1519fbd7a88edc3",
+      "paragraphCount": 12,
+      "contentIds": [
+        "2205"
+      ]
     }
   ],
-  "duplicatePublishedRows": []
+  "duplicatePublishedRows": [
+    {
+      "vimeoId": "537425558",
+      "contentIds": [
+        "237",
+        "1035"
+      ]
+    },
+    {
+      "vimeoId": "569614718",
+      "contentIds": [
+        "2060",
+        "2061"
+      ]
+    }
+  ]
 }
