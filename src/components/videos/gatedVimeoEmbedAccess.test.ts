@@ -32,4 +32,30 @@ describe("denied video membership actions", () => {
     expect(embed).toContain("background:#fff");
     expect(embed).toContain("flex-direction:column");
   });
+
+  it("keeps the primary Become a Member link white against global link colors", () => {
+    const globalCss = readFileSync(join(process.cwd(), "src", "styles", "global.css"), "utf8");
+    const primaryLinkStates = [
+      "a.kbm-video__cta:link",
+      "a.kbm-video__cta:visited",
+      "a.kbm-video__cta:hover",
+      "a.kbm-video__cta:focus",
+      "a.kbm-video__cta:active",
+    ];
+    const rule = globalCss.match(
+      /a\.kbm-video__cta:link\s*,\s*a\.kbm-video__cta:visited\s*,\s*a\.kbm-video__cta:hover\s*,\s*a\.kbm-video__cta:focus\s*,\s*a\.kbm-video__cta:active\s*\{([^}]+)\}/,
+    );
+
+    expect(rule, "primary locked-video link needs a global color rule").not.toBeNull();
+    for (const selector of primaryLinkStates) {
+      expect(globalCss).toContain(selector);
+    }
+    expect(rule?.[1]).toMatch(/color:\s*#fff\b/);
+    expect(rule?.[0]).not.toContain("kbm-video__cta--login");
+    expect(globalCss).not.toMatch(/a\.kbm-video__cta--login[^{]*\{[^}]*color:\s*#fff\b/);
+
+    expect(embed).toMatch(
+      /:global\(\.kbm-video__cta--login\)\{\s*background:#fff;\s*color:\s*var\(--kbm-green,\s*#52682d\);/,
+    );
+  });
 });

@@ -251,6 +251,21 @@ a:visited {
   color: #3e5221;
 }
 
+/*
+ * Locked-video "Become a Member" is an anchor inserted after load.
+ * `a:hover` and `a:visited` outrank `.kbm-video__cta { color:#fff }`, so the
+ * filled green button was rendering dark green text. These selectors beat
+ * that link color for every requested state. The white login control is a
+ * button, so it is not matched here.
+ */
+a.kbm-video__cta:link,
+a.kbm-video__cta:visited,
+a.kbm-video__cta:hover,
+a.kbm-video__cta:focus,
+a.kbm-video__cta:active {
+  color: #fff;
+}
+
 a[target="_blank"]::after {
   content: " ↗";  
   display: inline-block;
