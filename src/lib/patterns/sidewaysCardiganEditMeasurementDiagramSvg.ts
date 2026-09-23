@@ -455,13 +455,19 @@ export function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame)
   ].join("");
 }
 
-export function drawPulloverMarkers(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function drawPulloverMarkers(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  options?: { includeStartLabel?: boolean },
+): string {
+  const includeStartLabel = options?.includeStartLabel !== false;
   const midX = (frame.hemX + frame.neckX) / 2;
   return [
     `<line data-role="underarm-start" data-scrap-on="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.topY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
     `<line data-role="graft-join" data-scrap-off="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.bottomY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
     `<polyline data-role="v-neck" data-closed-front="true" points="${fmtNum(frame.neckX)},${fmtNum(frame.firstArmholeY)} ${fmtNum(frame.vCutX)},${fmtNum(frame.firstVEndY)} ${fmtNum(frame.neckX)},${fmtNum(frame.secondVStartY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.6"/>`,
-    `<text data-role="underarm-start-label" x="${fmtNum(midX)}" y="${fmtNum(frame.topY - 10)}" text-anchor="middle" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}">Start at underarm · scrap on / graft</text>`,
+    includeStartLabel
+      ? `<text data-role="underarm-start-label" x="${fmtNum(midX)}" y="${fmtNum(frame.topY - 10)}" text-anchor="middle" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}">Start at underarm · scrap on / graft</text>`
+      : "",
   ].join("");
 }
 

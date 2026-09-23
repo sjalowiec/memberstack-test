@@ -7,6 +7,7 @@ import { buildSidewaysVNeckSlopeSequence } from "./sidewaysCardiganBodyInstructi
 import {
   buildSidewaysCardiganPatternDiagramModel,
   buildSidewaysCardiganPatternDiagramSvg,
+  sidewaysDiagramEdgeStitchCount,
 } from "./sidewaysCardiganPatternDiagramSvg";
 import {
   buildSidewaysCardiganShapingNotationDiagramSvg,
@@ -80,7 +81,9 @@ describe("Sideways Stitches & Rows diagram", () => {
     const model = modelFor("cardigan", SAMPLE, { includeSleeve: false });
     const svg = buildSidewaysCardiganPatternDiagramSvg(model);
     expect(svg).toContain('data-sideways-pattern-diagram="sts-rows"');
-    expect(svg).toContain(`data-cast-on-sts="${model.castOnStitches}"`);
+    expect(svg).toContain(`data-cast-on-sts="${sidewaysDiagramEdgeStitchCount(model.calc)}"`);
+    expect(svg).toContain(`data-bind-off-sts="${sidewaysDiagramEdgeStitchCount(model.calc)}"`);
+    expect(svg).toContain(`data-starting-front-sts="${model.castOnStitches}"`);
     expect(svg).toContain(`data-length-sts="${model.calc.garmentLengthStitches}"`);
     expect(svg).toContain(`data-vneck-sts="${model.calc.vNeckDepthStitches}"`);
     expect(svg).toContain(`data-armhole-sts="${model.calc.armholeDepthStitches}"`);
@@ -92,7 +95,8 @@ describe("Sideways Stitches & Rows diagram", () => {
     expect(svg).toContain(`${model.calc.garmentLengthStitches} sts`);
     expect(svg).toContain(`${model.calc.frontRows} rows`);
     expect(svg).toContain(`${model.calc.backNeckOpeningRows} rows`);
-    expect(svg).toContain(`CO ${model.castOnStitches} sts`);
+    expect(svg).toContain(`CO ${sidewaysDiagramEdgeStitchCount(model.calc)} sts`);
+    expect(svg).toContain(`BO ${sidewaysDiagramEdgeStitchCount(model.calc)} sts`);
   });
 
   it("updates diagram values when Summary/Edit measurement overrides change the calc input", () => {
@@ -187,11 +191,12 @@ describe("Sideways Stitches & Rows diagram", () => {
   });
 });
 
-function roleChunk(svg: string, role: string): string {
-  const start = svg.indexOf(`data-role="${role}"`);
-  if (start < 0) return "";
-  const end = svg.indexOf("</text>", start);
-  return svg.slice(start, end);
+function roleTexts(svg: string, role: string): string[] {
+  const re = new RegExp(`<text\\b[^>]*data-role="${role}"[^>]*>[\\s\\S]*?</text>`, "g");
+  return [...svg.matchAll(re)].sort((a, b) => {
+    const order = (tag: string) => Number(/data-stack-order="(\d+)"/.exec(tag)?.[1] ?? 0);
+    return order(a[0]) - order(b[0]);
+  }).map((match) => match[0]);
 }
 
 describe("Sideways Shaping Notation diagram", () => {
@@ -207,7 +212,7 @@ describe("Sideways Shaping Notation diagram", () => {
     const lines = sidewaysCardiganVNeckNotationLines(model);
     expect(lines.increase[0]).not.toBe(lines.decrease[0]);
     expect(svg).toContain('data-sideways-pattern-diagram="shaping-notation"');
-    expect(svg).toContain(formatCastOnNotation(model.castOnStitches));
+    expect(svg).toContain(formatCastOnNotation(sidewaysDiagramEdgeStitchCount(model.calc)));
     expect(svg).toContain(formatHoldNotation(model.calc.vNeckDepthStitches));
     expect(svg).toContain(formatBindOffNotation(model.calc.armholeDepthStitches));
     expect(svg).toContain(formatCastOnNotation(model.calc.armholeDepthStitches));
@@ -215,13 +220,13 @@ describe("Sideways Shaping Notation diagram", () => {
     expect(svg).toContain(formatCastOnNotation(model.calc.backNeckDepthStitches));
     expect(svg).toContain(formatBindOffNotation(model.calc.garmentLengthStitches));
     expect(svg).toContain(`data-vneck-sts="${model.calc.vNeckDepthStitches}"`);
-    const first = roleChunk(svg, "jp-vneck-first");
-    const second = roleChunk(svg, "jp-vneck-second");
-    expect(first.indexOf(lines.increase[0]!)).toBeGreaterThanOrEqual(0);
-    expect(first.indexOf(lines.increase[0]!)).toBeLessThan(first.indexOf(lines.increase[1]!));
-    expect(second.indexOf(lines.decrease[0]!)).toBeGreaterThanOrEqual(0);
-    expect(second.indexOf(lines.decrease[0]!)).toBeLessThan(second.indexOf(lines.decrease[1]!));
-    expect(svg.match(/data-role="jp-armhole-slit"/g)).toHaveLength(2);
+    const first = roleTexts(svg, "jp-vneck-first");
+    const second = roleTexts(svg, "jp-vneck-second");
+    expect(first[0]).toContain(lines.increase[0]!);
+    expect(first[1]).toContain(lines.increase[1]!);
+    expect(second[0]).toContain(lines.decrease[0]!);
+    expect(second[1]).toContain(lines.decrease[1]!);
+    expect(svg.match(/data-role="jp-armhole-slit"/g)).toHaveLength(4);
   });
 
   it("keeps V-neck notation when the instruction slope is valid but the generic slope helper is not", () => {
@@ -261,8 +266,9 @@ describe("Sideways Shaping Notation diagram", () => {
     expect(lines.increase).toEqual(["+5s-2r-1x", "+1s-2r-1x"]);
     expect(lines.decrease).toEqual(["-1s-2r-1x", "-5s-2r-1x"]);
     const svg = buildSidewaysCardiganShapingNotationDiagramSvg(model);
-    const first = roleChunk(svg, "jp-vneck-first");
-    expect(first.indexOf("+5s-2r-1x")).toBeLessThan(first.indexOf("+1s-2r-1x"));
+    const first = roleTexts(svg, "jp-vneck-first");
+    expect(first[0]).toContain("+5s-2r-1x");
+    expect(first[1]).toContain("+1s-2r-1x");
   });
 
   it("omits V-neck notation when the instruction sequences are empty", () => {
@@ -288,8 +294,8 @@ describe("Sideways Shaping Notation diagram", () => {
     const baseSvg = buildSidewaysCardiganShapingNotationDiagramSvg(base);
     const deeperSvg = buildSidewaysCardiganShapingNotationDiagramSvg(deeper);
     expect(deeper.calc.vNeckDepthStitches).not.toBe(base.calc.vNeckDepthStitches);
-    expect(baseSvg).toContain(formatCastOnNotation(base.castOnStitches));
-    expect(deeperSvg).toContain(formatCastOnNotation(deeper.castOnStitches));
+    expect(baseSvg).toContain(formatCastOnNotation(sidewaysDiagramEdgeStitchCount(base.calc)));
+    expect(deeperSvg).toContain(formatCastOnNotation(sidewaysDiagramEdgeStitchCount(deeper.calc)));
     expect(baseLines.increase.join("|")).not.toBe(deeperLines.increase.join("|"));
     expect(deeperSvg).toContain(deeperLines.increase[0]!);
   });
@@ -305,7 +311,7 @@ describe("Sideways Shaping Notation diagram", () => {
     expect(cardiganSvg).toContain(cardiganLines.increase[0]!);
     expect(pulloverSvg).toContain('data-role="sleeve-outline"');
     expect(cardiganSvg).not.toContain('data-role="sleeve-outline"');
-    expect(pulloverSvg.match(/data-role="jp-armhole-slit"/g)).toHaveLength(1);
+    expect(pulloverSvg.match(/data-role="jp-armhole-slit"/g)).toHaveLength(2);
     expect(pulloverSvg).toContain('data-side="knitted"');
   });
 

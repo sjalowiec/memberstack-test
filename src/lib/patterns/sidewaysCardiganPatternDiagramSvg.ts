@@ -2,19 +2,28 @@
  * Sideways V-Neck finished-pattern Stitches & Rows schematic.
  *
  * Reuses the Summary/Edit silhouette ({@link buildSidewaysCardiganEditMeasurementFrame}).
+ * The finished-pattern view mirrors that silhouette vertically so the knitter reads
+ * the piece from the bottom (cast-on) to the top (bind-off). Label type uses the
+ * shared Drop Shoulder / Sleeveless sizes, scaled to this viewBox so on-screen
+ * text matches those diagrams. The silhouette itself is not scaled.
  * Labels are stitch/row counts from the workspace calc — not a second math path.
  */
 
 import {
   DS_ARROW,
   DS_FILL,
-  DS_FONT,
+  DS_FS_MEASURE,
+  DS_FS_TITLE,
+  DS_FW_TITLE,
   DS_MUTED,
   DS_STROKE,
+  DS_VB_W,
   endCap,
   escapeXml,
   fmtNum,
+  textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
+import { DS_FS_NOTATION, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
 import type { SidewaysCardiganBodyCalc, SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
 import {
   parseSidewaysCardiganGarmentStyle,
@@ -105,6 +114,84 @@ export function buildSidewaysCardiganPatternDiagramModel(args: {
   };
 }
 
+/**
+ * Closed cast-on (cardigan) or side-seam cast-on (pullover), and the final bind-off.
+ * Both are the full garment-length stitch count in the body instructions.
+ */
+export function sidewaysDiagramEdgeStitchCount(
+  calc: Pick<SidewaysCardiganBodyCalc, "garmentLengthStitches">,
+): number {
+  return Math.max(0, Math.round(calc.garmentLengthStitches));
+}
+
+export type SidewaysPatternDiagramType = {
+  /** Width the sizes were resolved against. Vertical padding is not included. */
+  viewBoxWidth: number;
+  stitch: number;
+  row: number;
+  piece: number;
+  pieceWeight: number;
+  notation: number;
+  notationGap: number;
+};
+
+/**
+ * Shared finished-pattern type (stitch/notation 17, row/measure 14, piece title 13,
+ * notation gap 18 on the 430-wide Drop Shoulder viewBox), scaled so a Sideways SVG
+ * at `width: 100%` matches that on-screen size. Does not scale the silhouette.
+ */
+export function sidewaysPatternDiagramTypography(viewBoxWidth: number): SidewaysPatternDiagramType {
+  const width = viewBoxWidth > 0 ? viewBoxWidth : DS_VB_W;
+  const scale = width / DS_VB_W;
+  const px = (canonical: number) => Math.max(1, Math.round(canonical * scale));
+  return {
+    viewBoxWidth: width,
+    stitch: px(DS_FS_NOTATION),
+    row: px(DS_FS_MEASURE),
+    piece: px(DS_FS_TITLE),
+    pieceWeight: DS_FW_TITLE,
+    notation: px(DS_FS_NOTATION),
+    notationGap: px(DS_NOTATION_GAP),
+  };
+}
+
+/** Knitting-sequence Y (small = cast-on) drawn with cast-on at the bottom. */
+export function sidewaysKnitVisualY(
+  frame: Pick<SidewaysCardiganEditMeasurementFrame, "topY" | "bottomY">,
+  y: number,
+): number {
+  return frame.topY + frame.bottomY - y;
+}
+
+export type SidewaysPatternDiagramCanvas = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  type: SidewaysPatternDiagramType;
+};
+
+/** Same canvas for both finished-pattern SVGs so the silhouette scale matches. */
+export function sidewaysPatternDiagramCanvas(
+  frame: SidewaysCardiganEditMeasurementFrame,
+): SidewaysPatternDiagramCanvas {
+  const base = viewBoxFor(frame);
+  // Neck-edge notation grows to the right of the silhouette. Include that gutter
+  // in the width before resolving type, so on-screen size still matches the
+  // shared 430-wide diagrams.
+  const rightPad = Math.round(base.width * 0.1);
+  const type = sidewaysPatternDiagramTypography(base.width + rightPad);
+  const topPad = Math.ceil(type.notation * 3.2);
+  const bottomPad = Math.ceil(type.stitch * 5.6);
+  return {
+    x: base.x,
+    y: -topPad,
+    width: base.width + rightPad,
+    height: base.height + topPad + bottomPad,
+    type,
+  };
+}
+
 function stsLabel(n: number): string {
   const count = Math.max(0, Math.round(n));
   return `${count} sts`;
@@ -139,123 +226,152 @@ function vDim(x: number, y1: number, y2: number, role: string, extraAttrs = ""):
   ].join("");
 }
 
+function pieceLineGap(type: SidewaysPatternDiagramType): number {
+  return Math.round(type.piece * 0.35 + type.row * 1.15);
+}
+
 function countLabel(
   x: number,
   y: number,
   title: string,
   value: string,
   role: string,
+  type: SidewaysPatternDiagramType,
   anchor: "start" | "middle" | "end" = "start",
 ): string {
-  return `<text data-role="${role}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="${anchor}" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}"><tspan x="${fmtNum(x)}" dy="0">${escapeXml(title)}</tspan><tspan x="${fmtNum(x)}" dy="13">${escapeXml(value)}</tspan></text>`;
+  const gap = pieceLineGap(type);
+  const titleY = y - gap / 2;
+  return `<text data-role="${role}" x="${fmtNum(x)}" y="${fmtNum(titleY)}" text-anchor="${anchor}" fill="${DS_STROKE}" ${textFont(type.piece, type.pieceWeight)}><tspan x="${fmtNum(x)}" dy="0">${escapeXml(title)}</tspan><tspan x="${fmtNum(x)}" dy="${gap}" font-size="${type.row}" font-weight="400" fill="${DS_MUTED}">${escapeXml(value)}</tspan></text>`;
 }
 
-function singleLabel(
+function measureLabel(
   x: number,
   y: number,
   text: string,
   role: string,
+  size: number,
   anchor: "start" | "middle" | "end" = "middle",
+  extra = "",
 ): string {
-  return `<text data-role="${role}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="${anchor}" font-family="${DS_FONT}" font-size="12" fill="${DS_STROKE}">${escapeXml(text)}</text>`;
+  if (!text) return "";
+  return `<text data-role="${role}"${extra} x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="${anchor}" fill="${DS_MUTED}" ${textFont(size)}>${escapeXml(text)}</text>`;
 }
 
 function drawCardiganStsRows(
   frame: SidewaysCardiganEditMeasurementFrame,
   model: SidewaysCardiganPatternDiagramModel,
+  type: SidewaysPatternDiagramType,
 ): string {
+  const y = (value: number) => sidewaysKnitVisualY(frame, value);
   const { calc } = model;
   const layout = cardiganDimLayout(frame);
-  const { bustX, sectionDimX, neckDimX, lengthY, sectionLabelX, neckLabelX } = layout;
-  const firstFrontMidY = (frame.topY + frame.firstArmholeY) / 2;
-  const backMidY = (frame.firstArmholeY + frame.secondArmholeY) / 2;
-  const secondFrontMidY = (frame.secondArmholeY + frame.bottomY) / 2;
-  const halfNeckMidY = (frame.secondVStartY + frame.bottomY) / 2;
-  const shoulderMidY = (frame.secondArmholeY + frame.secondVStartY) / 2;
-  const armholeDimY = frame.firstArmholeY - 16;
-  const vDepthY = frame.bottomY + 32;
+  const { bustX, sectionDimX, neckDimX, sectionLabelX, neckLabelX } = layout;
+  const edge = sidewaysDiagramEdgeStitchCount(calc);
+  const edgeX = (frame.hemX + frame.vCutX) / 2;
   const midX = (frame.hemX + frame.neckX) / 2;
+  const startEdge = y(frame.topY);
+  const endEdge = y(frame.bottomY);
+  const castOnY = startEdge + type.notationGap;
+  const lengthLineY = castOnY + type.stitch * 1.45;
+  const lengthLabelY = lengthLineY + type.stitch * 1.05;
+  const bindOffY = endEdge - type.notationGap;
+  const vDepthY = y(frame.bottomY + type.notationGap);
+  const armholeDimY = y(frame.firstArmholeY - type.row);
+  const labelClear = Math.round(type.stitch * 0.85);
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
-    hDim(frame.hemX, frame.neckX, lengthY, "dim-finished-back-length"),
-    vDim(neckDimX, frame.backNeckStartY, frame.backNeckEndY, "dim-neck-opening"),
+    hDim(frame.hemX, frame.neckX, lengthLineY, "dim-finished-back-length"),
+    vDim(neckDimX, y(frame.backNeckStartY), y(frame.backNeckEndY), "dim-neck-opening"),
     hDim(frame.vCutX, frame.neckX, vDepthY, "dim-vneck-depth"),
     hDim(frame.armholeX, frame.neckX, armholeDimY, "dim-armhole-depth"),
-    vDim(neckDimX, frame.secondArmholeY, frame.secondVStartY, "dim-shoulder-section"),
-    vDim(neckDimX, frame.secondVStartY, frame.bottomY, "dim-half-neck-opening"),
-    vDim(sectionDimX, layout.firstFront.top, layout.firstFront.bot, "dim-front-section", ` data-side="first"`),
-    vDim(sectionDimX, layout.back.top, layout.back.bot, "dim-back-section"),
-    vDim(sectionDimX, layout.secondFront.top, layout.secondFront.bot, "dim-front-section", ` data-side="second"`),
-    countLabel(sectionLabelX, firstFrontMidY - 4, "Front", rowsLabel(calc.frontRows), "front-rows"),
-    countLabel(sectionLabelX, backMidY - 4, "Back", rowsLabel(calc.backRows), "back-rows"),
-    countLabel(sectionLabelX, secondFrontMidY - 4, "Front", rowsLabel(calc.frontRows), "front-rows"),
-    countLabel(neckLabelX, shoulderMidY - 4, "Shoulder", rowsLabel(calc.shoulders.firstFrontRows), "shoulder-rows"),
-    countLabel(neckLabelX, halfNeckMidY - 4, "½ neck", rowsLabel(calc.halfNeckRows), "half-neck-rows"),
-    singleLabel(midX, lengthY + 16, stsLabel(calc.garmentLengthStitches), "length-sts"),
-    singleLabel((frame.vCutX + frame.neckX) / 2, vDepthY + 16, stsLabel(calc.vNeckDepthStitches), "vneck-sts"),
-    singleLabel((frame.armholeX + frame.neckX) / 2, armholeDimY - 8, stsLabel(calc.armholeDepthStitches), "armhole-sts"),
-    singleLabel(
+    vDim(neckDimX, y(frame.secondArmholeY), y(frame.secondVStartY), "dim-shoulder-section"),
+    vDim(neckDimX, y(frame.secondVStartY), y(frame.bottomY), "dim-half-neck-opening"),
+    vDim(sectionDimX, y(layout.firstFront.top), y(layout.firstFront.bot), "dim-front-section", ` data-side="first"`),
+    vDim(sectionDimX, y(layout.back.top), y(layout.back.bot), "dim-back-section"),
+    vDim(sectionDimX, y(layout.secondFront.top), y(layout.secondFront.bot), "dim-front-section", ` data-side="second"`),
+    countLabel(sectionLabelX, y((frame.topY + frame.firstArmholeY) / 2), "Front", rowsLabel(calc.frontRows), "front-rows", type, "start"),
+    countLabel(sectionLabelX, y((frame.firstArmholeY + frame.secondArmholeY) / 2), "Back", rowsLabel(calc.backRows), "back-rows", type),
+    countLabel(sectionLabelX, y((frame.secondArmholeY + frame.bottomY) / 2), "Front", rowsLabel(calc.frontRows), "front-rows", type, "start"),
+    countLabel(neckLabelX, y((frame.secondArmholeY + frame.secondVStartY) / 2) + type.row * 0.65, "Shoulder", rowsLabel(calc.shoulders.firstFrontRows), "shoulder-rows", type),
+    countLabel(neckLabelX, y((frame.secondVStartY + frame.bottomY) / 2), "½ neck", rowsLabel(calc.halfNeckRows), "half-neck-rows", type),
+    measureLabel(midX, lengthLabelY, stsLabel(calc.garmentLengthStitches), "length-sts", type.stitch),
+    measureLabel((frame.vCutX + frame.neckX) / 2, vDepthY - labelClear, stsLabel(calc.vNeckDepthStitches), "vneck-sts", type.stitch),
+    measureLabel((frame.armholeX + frame.neckX) / 2, armholeDimY + labelClear, stsLabel(calc.armholeDepthStitches), "armhole-sts", type.stitch),
+    measureLabel(
       (frame.backNeckX + frame.neckX) / 2,
-      frame.backNeckStartY - 8,
+      y(frame.backNeckStartY) + labelClear,
       stsLabel(calc.backNeckDepthStitches),
       "back-neck-sts",
+      type.stitch,
     ),
-    singleLabel(
-      neckDimX + 8,
-      (frame.backNeckStartY + frame.backNeckEndY) / 2,
+    measureLabel(
+      neckDimX + type.row,
+      y((frame.backNeckStartY + frame.backNeckEndY) / 2),
       rowsLabel(calc.backNeckOpeningRows),
       "neck-opening-rows",
+      type.row,
       "start",
     ),
-    singleLabel(bustX - 8, (frame.topY + frame.bottomY) / 2, rowsLabel(calc.bust.actualTotalBustRows), "bust-rows", "end"),
-    singleLabel(midX, frame.topY - 12, `CO ${stsLabel(model.castOnStitches)}`, "cast-on-sts"),
+    measureLabel(bustX - type.row, (frame.topY + frame.bottomY) / 2, rowsLabel(calc.bust.actualTotalBustRows), "bust-rows", type.row, "end"),
+    measureLabel(edgeX, castOnY, `CO ${stsLabel(edge)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
+    measureLabel(edgeX, bindOffY, `BO ${stsLabel(edge)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
   ].join("");
 }
 
 function drawPulloverStsRows(
   frame: SidewaysCardiganEditMeasurementFrame,
   model: SidewaysCardiganPatternDiagramModel,
+  type: SidewaysPatternDiagramType,
 ): string {
+  const y = (value: number) => sidewaysKnitVisualY(frame, value);
   const { calc, sleeveCalc } = model;
   const bustX = frame.hemX - 36;
   const sectionDimX = frame.hemX + 18;
-  const lengthY = frame.bottomY + 28;
-  const vDepthY = (frame.firstVEndY + frame.secondVStartY) / 2;
-  const firstFrontMidY = (frame.topY + frame.firstVEndY) / 2;
-  const secondFrontMidY = (frame.firstVEndY + frame.secondArmholeY) / 2;
-  const backMidY = (frame.secondArmholeY + frame.bottomY) / 2;
-  const shoulderMidY = (frame.topY + frame.firstArmholeY) / 2;
-  const halfNeckMidY = (frame.firstArmholeY + frame.firstVEndY) / 2;
-  const armholeY = frame.secondArmholeY;
+  const edge = sidewaysDiagramEdgeStitchCount(calc);
   const midX = (frame.hemX + frame.neckX) / 2;
+  const startEdge = y(frame.topY);
+  const endEdge = y(frame.bottomY);
+  const castOnY = startEdge + type.notationGap;
+  const startNoteY = castOnY + type.row * 2.05;
+  const lengthLineY = startNoteY + type.stitch * 1.15;
+  const lengthLabelY = lengthLineY + type.stitch * 1.05;
+  const bindOffY = endEdge - type.notationGap;
+  const vDepthY = y((frame.firstVEndY + frame.secondVStartY) / 2);
+  const armholeY = y(frame.secondArmholeY);
+  const labelClear = Math.round(type.stitch * 0.85);
+  const wristY = y(frame.sleeve.attachY);
   const sleeve = sleeveCalc
     ? [
-        singleLabel(
-          frame.sleeve.farX + 10,
-          frame.sleeve.attachY,
+        measureLabel(
+          frame.sleeve.farX + type.row,
+          wristY + type.stitch * 0.2,
           stsLabel(sleeveCalc.wristSts),
           "sleeve-wrist-sts",
+          type.stitch,
           "start",
         ),
-        singleLabel(
+        measureLabel(
           (frame.sleeve.attachX + frame.sleeve.farX) / 2,
-          frame.sleeve.attachY - frame.sleeve.upperHalf - 10,
+          y(frame.sleeve.attachY - frame.sleeve.upperHalf - type.row),
           stsLabel(sleeveCalc.topSts),
           "sleeve-top-sts",
+          type.stitch,
         ),
-        singleLabel(
+        measureLabel(
           (frame.sleeve.attachX + frame.sleeve.farX) / 2,
-          frame.sleeve.attachY + frame.sleeve.upperHalf + 16,
+          y(frame.sleeve.attachY + frame.sleeve.upperHalf + type.row),
           rowsLabel(sleeveCalc.sleeveBodyRows),
           "sleeve-body-rows",
+          type.row,
         ),
         ...(sleeveCalc.cuffRows > 0
           ? [
-              singleLabel(
-                frame.sleeve.farX + 10,
-                frame.sleeve.attachY + 16,
+              measureLabel(
+                frame.sleeve.farX + type.row,
+                wristY - type.stitch * 1.95,
                 rowsLabel(sleeveCalc.cuffRows),
                 "sleeve-cuff-rows",
+                type.row,
                 "start",
               ),
             ]
@@ -264,38 +380,48 @@ function drawPulloverStsRows(
     : [];
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
-    hDim(frame.hemX, frame.neckX, lengthY, "dim-finished-back-length"),
-    vDim(frame.neckX + 18, frame.firstArmholeY, frame.secondVStartY, "dim-neck-opening"),
+    hDim(frame.hemX, frame.neckX, lengthLineY, "dim-finished-back-length"),
+    vDim(frame.neckX + type.row, y(frame.firstArmholeY), y(frame.secondVStartY), "dim-neck-opening"),
     hDim(frame.vCutX, frame.neckX, vDepthY, "dim-vneck-depth"),
-    hDim(frame.armholeX, frame.neckX, armholeY - 16, "dim-armhole-depth"),
-    vDim(sectionDimX, frame.topY, frame.firstArmholeY, "dim-shoulder-section"),
-    vDim(frame.neckX + 18, frame.firstArmholeY, frame.firstVEndY, "dim-half-neck-opening"),
-    vDim(sectionDimX, frame.topY, frame.firstVEndY, "dim-front-section", ` data-side="first"`),
-    vDim(sectionDimX, frame.firstVEndY, frame.secondArmholeY, "dim-front-section", ` data-side="second"`),
-    vDim(sectionDimX, frame.secondArmholeY, frame.bottomY, "dim-back-section"),
-    countLabel(sectionDimX + 10, firstFrontMidY - 4, "Front", rowsLabel(calc.frontRows), "front-rows"),
-    countLabel(sectionDimX + 10, secondFrontMidY - 4, "Front", rowsLabel(calc.frontRows), "front-rows"),
-    countLabel(midX, backMidY - 4, "Back", rowsLabel(calc.backRows), "back-rows", "middle"),
-    countLabel(frame.hemX + 32, shoulderMidY - 4, "Shoulder", rowsLabel(calc.shoulders.firstFrontRows), "shoulder-rows"),
-    countLabel(frame.neckX + 48, halfNeckMidY - 4, "½ neck", rowsLabel(calc.halfNeckRows), "half-neck-rows"),
-    singleLabel(midX, lengthY + 16, stsLabel(calc.garmentLengthStitches), "length-sts"),
-    singleLabel((frame.vCutX + frame.neckX) / 2, vDepthY + 14, stsLabel(calc.vNeckDepthStitches), "vneck-sts"),
-    singleLabel((frame.armholeX + frame.neckX) / 2, armholeY - 22, stsLabel(calc.armholeDepthStitches), "armhole-sts"),
-    singleLabel(
+    hDim(frame.armholeX, frame.neckX, armholeY + labelClear, "dim-armhole-depth"),
+    vDim(sectionDimX, y(frame.topY), y(frame.firstArmholeY), "dim-shoulder-section"),
+    vDim(frame.neckX + type.row, y(frame.firstArmholeY), y(frame.firstVEndY), "dim-half-neck-opening"),
+    vDim(sectionDimX, y(frame.topY), y(frame.firstVEndY), "dim-front-section", ` data-side="first"`),
+    vDim(sectionDimX, y(frame.firstVEndY), y(frame.secondArmholeY), "dim-front-section", ` data-side="second"`),
+    vDim(sectionDimX, y(frame.secondArmholeY), y(frame.bottomY), "dim-back-section"),
+    countLabel(frame.hemX - type.row * 0.45, y((frame.topY + frame.firstVEndY) / 2), "Front", rowsLabel(calc.frontRows), "front-rows", type, "end"),
+    countLabel(sectionDimX + type.row, y((frame.firstVEndY + frame.secondArmholeY) / 2), "Front", rowsLabel(calc.frontRows), "front-rows", type),
+    countLabel(midX, y((frame.secondArmholeY + frame.bottomY) / 2), "Back", rowsLabel(calc.backRows), "back-rows", type, "middle"),
+    countLabel(frame.neckX + type.row * 0.45, y((frame.topY + frame.firstArmholeY) / 2), "Shoulder", rowsLabel(calc.shoulders.firstFrontRows), "shoulder-rows", type),
+    countLabel(frame.vCutX - type.row * 0.35, y((frame.firstArmholeY + frame.firstVEndY) / 2) + type.row * 0.5, "½ neck", rowsLabel(calc.halfNeckRows), "half-neck-rows", type, "end"),
+    measureLabel(midX, lengthLabelY, stsLabel(calc.garmentLengthStitches), "length-sts", type.stitch),
+    measureLabel((frame.vCutX + frame.neckX) / 2 + type.row * 0.55, vDepthY + labelClear, stsLabel(calc.vNeckDepthStitches), "vneck-sts", type.stitch),
+    measureLabel(frame.armholeX - type.row * 0.2, armholeY - type.row * 0.85, stsLabel(calc.armholeDepthStitches), "armhole-sts", type.stitch, "end"),
+    measureLabel(
       (frame.backNeckX + frame.neckX) / 2,
-      frame.backNeckStartY - 8,
+      y(frame.backNeckStartY) + labelClear,
       stsLabel(calc.backNeckDepthStitches),
       "back-neck-sts",
+      type.stitch,
     ),
-    singleLabel(
-      frame.neckX + 28,
-      (frame.firstArmholeY + frame.secondVStartY) / 2,
+    measureLabel(
+      frame.neckX + type.row * 0.85,
+      y(frame.secondVStartY) - type.row * 1.35,
       rowsLabel(calc.backNeckOpeningRows),
       "neck-opening-rows",
-      "start",
+      type.row,
+      "end",
     ),
-    singleLabel(bustX - 8, (frame.topY + frame.bottomY) / 2, rowsLabel(calc.bust.actualTotalBustRows), "bust-rows", "end"),
-    singleLabel(midX, frame.topY - 22, `CO ${stsLabel(model.castOnStitches)}`, "cast-on-sts"),
+    measureLabel(Math.max(bustX, type.row * 5.4), (frame.topY + frame.bottomY) / 2, rowsLabel(calc.bust.actualTotalBustRows), "bust-rows", type.row, "end"),
+    measureLabel(midX, castOnY, `CO ${stsLabel(edge)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
+    measureLabel(
+      midX,
+      startNoteY,
+      "Start at underarm · scrap on / graft",
+      "underarm-start-label",
+      type.row,
+    ),
+    measureLabel(midX, bindOffY, `BO ${stsLabel(edge)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
     ...sleeve,
   ].join("");
 }
@@ -307,12 +433,17 @@ function silhouetteMarkup(frame: SidewaysCardiganEditMeasurementFrame): string {
     garmentStyle === "pullover"
       ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
       : "";
-  return [
+  const markers =
+    garmentStyle === "pullover"
+      ? drawPulloverMarkers(frame, { includeStartLabel: false })
+      : drawCardiganMarkers(frame);
+  const pivot = frame.topY + frame.bottomY;
+  return `<g data-knit-flip="vertical" transform="translate(0 ${fmtNum(pivot)}) scale(1 -1)">${[
     `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     sleeve,
     drawArmholeAndBack(frame),
-    garmentStyle === "pullover" ? drawPulloverMarkers(frame) : drawCardiganMarkers(frame),
-  ].join("");
+    markers,
+  ].join("")}</g>`;
 }
 
 function svgDataAttrs(model: SidewaysCardiganPatternDiagramModel, mode: "sts-rows" | "shaping-notation"): string {
@@ -328,7 +459,10 @@ function svgDataAttrs(model: SidewaysCardiganPatternDiagramModel, mode: "sts-row
     ` data-garment-style="${model.garmentStyle}"` +
     ` data-sideways-start="${start}"` +
     ` data-cardigan-structure="${structure}"` +
-    ` data-cast-on-sts="${model.castOnStitches}"` +
+    ` data-knit-direction="bottom-up"` +
+    ` data-cast-on-sts="${sidewaysDiagramEdgeStitchCount(calc)}"` +
+    ` data-bind-off-sts="${sidewaysDiagramEdgeStitchCount(calc)}"` +
+    ` data-starting-front-sts="${model.castOnStitches}"` +
     ` data-length-sts="${calc.garmentLengthStitches}"` +
     ` data-vneck-sts="${calc.vNeckDepthStitches}"` +
     ` data-armhole-sts="${calc.armholeDepthStitches}"` +
@@ -356,17 +490,17 @@ export function buildSidewaysCardiganPatternDiagramSvg(
   model: SidewaysCardiganPatternDiagramModel,
 ): string {
   const frame = buildSidewaysCardiganPatternDiagramFrame(model);
-  const { x: vbX, width, height } = viewBoxFor(frame);
+  const canvas = sidewaysPatternDiagramCanvas(frame);
   const aria =
     model.garmentStyle === "pullover"
-      ? "Sideways pullover stitches and rows diagram starting at the underarm"
-      : "Sideways cardigan stitches and rows diagram starting at center front";
+      ? "Sideways pullover stitches and rows diagram knitted upward from the underarm"
+      : "Sideways cardigan stitches and rows diagram knitted upward from center front";
   const labels =
     model.garmentStyle === "pullover"
-      ? drawPulloverStsRows(frame, model)
-      : drawCardiganStsRows(frame, model);
+      ? drawPulloverStsRows(frame, model, canvas.type)
+      : drawCardiganStsRows(frame, model, canvas.type);
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(vbX)} 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline"${svgDataAttrs(model, "sts-rows")}>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline"${svgDataAttrs(model, "sts-rows")}>`,
     silhouetteMarkup(frame),
     labels,
     `</svg>`,
