@@ -19,7 +19,7 @@
       "vimeoId": "151857321",
       "access": "member",
       "sourceFile": "151857321.vtt",
-      "sourceSha256": "5fef5e2dc334ba054d413aefed32b3861eb27b3b11b3ecd35f39626059d4ffeb",
+      "sourceSha256": "e9322b4790aebd6510617dd43c06cd78be4a7c71dfd35891221924926e187478",
       "paragraphCount": 13,
       "contentIds": [
         "280"
@@ -39,7 +39,7 @@
       "vimeoId": "151857659",
       "access": "member",
       "sourceFile": "151857659.vtt",
-      "sourceSha256": "700a3c266ddc4c14825497d83462731d7d0e9816c2c6641725f80fa0b853681c",
+      "sourceSha256": "108161c608b124e56620ed0f86345d0d5896e58737b648c28d7fcf297a4a04fe",
       "paragraphCount": 15,
       "contentIds": [
         "396"
@@ -49,7 +49,7 @@
       "vimeoId": "151857771",
       "access": "member",
       "sourceFile": "151857771.vtt",
-      "sourceSha256": "ce62fb60d2d91b942e01ef1e78f3e12ef12a5ac18412d7569a3137156614bb2b",
+      "sourceSha256": "75bbb0251a234df452dfb2519e0778d546ce3717a78f4b2081b405fd2c8c5165",
       "paragraphCount": 9,
       "contentIds": [
         "429"
@@ -59,7 +59,7 @@
       "vimeoId": "151857779",
       "access": "member",
       "sourceFile": "151857779.vtt",
-      "sourceSha256": "4c092befab2df9ab4d1c2cebaa4cb6cdbaa0acc6146adb2cda1e2df8b391929b",
+      "sourceSha256": "c9724bd9d203bfc132069f2159e8fdb514e5a61d20c34e249adedfc631ff5b8a",
       "paragraphCount": 14,
       "contentIds": [
         "430"
@@ -69,7 +69,7 @@
       "vimeoId": "151858084",
       "access": "member",
       "sourceFile": "151858084.vtt",
-      "sourceSha256": "df9718f86bcfe2be808f08848a17b5c1119370ecac027f896dba44dbb9aaf633",
+      "sourceSha256": "0489dbe3baa179fb22378038beb9504c969813e8340620baec634e5119620071",
       "paragraphCount": 5,
       "contentIds": [
         "457"
@@ -89,7 +89,7 @@
       "vimeoId": "151858290",
       "access": "member",
       "sourceFile": "151858290.vtt",
-      "sourceSha256": "0c6b1422da1bc2cb58381fb2d6cb09cef3557b0732f7c46949279393fdfab355",
+      "sourceSha256": "72cc452775e3fc4b0144224218b850e287e8609da0e2e466967f38dad59a9b40",
       "paragraphCount": 10,
       "contentIds": [
         "490"
@@ -99,7 +99,7 @@
       "vimeoId": "151858349",
       "access": "member",
       "sourceFile": "151858349.vtt",
-      "sourceSha256": "4b40fa234920d1495ee6b1fc99aed37bea048f137f4365993734ad90efcddb6c",
+      "sourceSha256": "2a4038ed38cea654ef95e8aebd7feec052843721f44202e1332191b64e0fa78e",
       "paragraphCount": 11,
       "contentIds": [
         "505"
@@ -119,7 +119,7 @@
       "vimeoId": "151858364",
       "access": "member",
       "sourceFile": "151858364.vtt",
-      "sourceSha256": "94cedadbc123f94e338e141fdeba62c0e06a1255d4637876fc9a3562cc24c9de",
+      "sourceSha256": "16223bc0a9532c3889aec03e94cb01830bb56fcebb25b34fe8768e5606e81500",
       "paragraphCount": 19,
       "contentIds": [
         "508"
@@ -169,7 +169,7 @@
       "vimeoId": "151858404",
       "access": "member",
       "sourceFile": "151858404.vtt",
-      "sourceSha256": "ac2ab63937845f48213c4da847077d87406899ef0dc82d7c5393f597e5a38aa4",
+      "sourceSha256": "9b5554049cfd7cf60a4f4930abb80f1737b2e3f008beb4251f1c303206839c96",
       "paragraphCount": 6,
       "contentIds": [
         "518"
@@ -179,7 +179,7 @@
       "vimeoId": "151858409",
       "access": "member",
       "sourceFile": "151858409.vtt",
-      "sourceSha256": "919c24b7153e78cb20856987d6aecd63d8cf0e3e4fd3b8bc60c994442255f3a4",
+      "sourceSha256": "c7268202b593f1684ee4202b32ec35b0e0f9bfd85fedc1a81939141eecce4f50",
       "paragraphCount": 10,
       "contentIds": [
         "519"
@@ -199,7 +199,7 @@
       "vimeoId": "151858474",
       "access": "member",
       "sourceFile": "151858474.vtt",
-      "sourceSha256": "4a7c26f334be511c3d5500f1878cdbee5440d4f713143b3912efa513b4833eda",
+      "sourceSha256": "e4a48a4fe1af8317a4be49bf3fbd815c684735252bd4d1cd189e931975c040e2",
       "paragraphCount": 12,
       "contentIds": [
         "527"
@@ -219,7 +219,7 @@
       "vimeoId": "151858538",
       "access": "member",
       "sourceFile": "151858538.vtt",
-      "sourceSha256": "d96fa7766e8c753f2862a3ecfa655ab7b99694b0f32e133ec6d0ce3ebe2ea8e7",
+      "sourceSha256": "9455c1101063bee8d9e7fd164442d5a7ccdb5b9337408fb982e256048050e319",
       "paragraphCount": 8,
       "contentIds": [
         "534"
@@ -239,7 +239,7 @@
       "vimeoId": "151858649",
       "access": "member",
       "sourceFile": "151858649.vtt",
-      "sourceSha256": "347596be7b25e74f8519071c3db102f0991a26804422007091389294b1ea6785",
+      "sourceSha256": "7e05a373a2f4c137e80772b90dad42ade1e12798b85f71304cf90cdc95a06bd3",
       "paragraphCount": 9,
       "contentIds": [
         "546"
@@ -269,7 +269,7 @@
       "vimeoId": "151858984",
       "access": "member",
       "sourceFile": "151858984.vtt",
-      "sourceSha256": "5faec46f38e60efa9e47f559e11d9e6cac9fb17b9584c84a0b6276cd401c2442",
+      "sourceSha256": "80fd4a82c2dc0b096ce3ab6bf3dc4c292ddca953c020f73e751ba3df295b0a2a",
       "paragraphCount": 9,
       "contentIds": [
         "584"
@@ -279,7 +279,7 @@
       "vimeoId": "151859104",
       "access": "member",
       "sourceFile": "151859104.vtt",
-      "sourceSha256": "6dff7204adf8a0f206522c422cef6fb2b0edc70c052c4bf8afda84f28003a27a",
+      "sourceSha256": "39f29b279acb2db0328f3942fba6a9c434985e4b1f67d6708cb322867049c4d9",
       "paragraphCount": 8,
       "contentIds": [
         "600"
@@ -299,7 +299,7 @@
       "vimeoId": "151859224",
       "access": "member",
       "sourceFile": "151859224.vtt",
-      "sourceSha256": "09b71d782c8870f875cb9366168251b9464cf312b2408fe264fa97c8090eafe3",
+      "sourceSha256": "13714c30454f1d5edf1fd84ecc1cbe978f5b76fcf26d584eb03c24f708925c3f",
       "paragraphCount": 18,
       "contentIds": [
         "614"
@@ -319,7 +319,7 @@
       "vimeoId": "151859427",
       "access": "member",
       "sourceFile": "151859427.vtt",
-      "sourceSha256": "3f5e8095ee5fba9a4aa38b5fb0236eeeea5dee82f2bc48fb7925f42d8ad197d9",
+      "sourceSha256": "e1c6293e6cc3178a14892cc62ed381101157914194fa9e0afe4e203ace894d75",
       "paragraphCount": 6,
       "contentIds": [
         "630"
@@ -339,7 +339,7 @@
       "vimeoId": "151859486",
       "access": "member",
       "sourceFile": "151859486.vtt",
-      "sourceSha256": "b619440328b6d75616910fc68cabdb8221f9b773d55d5cdaeab739b73444ed98",
+      "sourceSha256": "0856f248b03617ea68124b574e5a7a1740f77db07bc21bb0ea6dc3fababe19ce",
       "paragraphCount": 13,
       "contentIds": [
         "643"
@@ -359,7 +359,7 @@
       "vimeoId": "151859566",
       "access": "member",
       "sourceFile": "151859566.vtt",
-      "sourceSha256": "bd4f88df07e967a3015b2d22ecf7caaf9a699b1b31b2e47e39eefc228aa73eae",
+      "sourceSha256": "630a9821b36bc92e3a4b510f7be01bebbb08147d4a24fba56ba59d154bbe6279",
       "paragraphCount": 13,
       "contentIds": [
         "655"
@@ -369,7 +369,7 @@
       "vimeoId": "151859618",
       "access": "member",
       "sourceFile": "151859618.vtt",
-      "sourceSha256": "eb1a1a2595df1141a53c41cd35abeb3271c9b6a1cc09bd3e2cf5d7fd5879707b",
+      "sourceSha256": "dce8e2f6d4b220357587a2544ec9f49e32176d9d88b3a3cec5118633c7183c58",
       "paragraphCount": 13,
       "contentIds": [
         "663"
@@ -379,7 +379,7 @@
       "vimeoId": "151859630",
       "access": "member",
       "sourceFile": "151859630.vtt",
-      "sourceSha256": "ac327e46d0f7b206549aa780dd412751288550c0eb99402758a0fff0616a3141",
+      "sourceSha256": "bd9dc7c871bd84243d1532b3141a447be0160d9d080ff8ef6e1d0953d21c688e",
       "paragraphCount": 5,
       "contentIds": [
         "665"
@@ -389,7 +389,7 @@
       "vimeoId": "151859681",
       "access": "member",
       "sourceFile": "151859681.vtt",
-      "sourceSha256": "5d91943905ef89984ad8917240cb21a542198f9e8f3127cdd1563b9b7e5e54ff",
+      "sourceSha256": "90fe05fb6376c68e830767b55d1f15ff9531dea1efe4035b36033c6dece7614b",
       "paragraphCount": 11,
       "contentIds": [
         "673"
@@ -399,7 +399,7 @@
       "vimeoId": "151859692",
       "access": "member",
       "sourceFile": "151859692.vtt",
-      "sourceSha256": "60bc38f785fe05cc7db3e001f9afeaf57101a0f610df6f349a772e9f1ee72793",
+      "sourceSha256": "8f670eb1b28056957aaa8a402f8931b50f83b27c726f53b6d8b586f79d274ce6",
       "paragraphCount": 13,
       "contentIds": [
         "675"
@@ -429,7 +429,7 @@
       "vimeoId": "151859908",
       "access": "member",
       "sourceFile": "151859908.vtt",
-      "sourceSha256": "f835caac0e5272dc0e8e173d793718d869a1d0e8ae5c563061c7332d58246865",
+      "sourceSha256": "3501df88740392fe238b2cf1308487f20a073e364020010f71315a62566dcac2",
       "paragraphCount": 11,
       "contentIds": [
         "112"
@@ -469,7 +469,7 @@
       "vimeoId": "152228985",
       "access": "member",
       "sourceFile": "152228985.vtt",
-      "sourceSha256": "6ec77cf1d8370f9ddec3eadc7b684eef3f082d1eaa1493ad57b587937033485e",
+      "sourceSha256": "5ff7ecf745f1aa71c4bec2db62d8045e17e101a2a7a8d5e022f98b77b9403652",
       "paragraphCount": 4,
       "contentIds": [
         "713"
@@ -479,7 +479,7 @@
       "vimeoId": "158632983",
       "access": "public",
       "sourceFile": "158632983.vtt",
-      "sourceSha256": "34dd527fb5220ef7c0375755ef2f6c7bfc70fc5218537db967925e4b1c52e040",
+      "sourceSha256": "d1807e19643784707d05edbb2f0be38c94dbcdd2f055d3532dc41f9462606954",
       "paragraphCount": 8,
       "contentIds": [
         "242"
@@ -489,7 +489,7 @@
       "vimeoId": "160131708",
       "access": "member",
       "sourceFile": "160131708.vtt",
-      "sourceSha256": "c907964c7c4fe8b1912d9fb70363477c9f21e4f8513d561895387fa950f51da1",
+      "sourceSha256": "a9aad7b002e4cda0b3acbf11ce7ed15612a5d45c70cd000d6dd293868532b28b",
       "paragraphCount": 5,
       "contentIds": [
         "722"
@@ -499,7 +499,7 @@
       "vimeoId": "167581864",
       "access": "member",
       "sourceFile": "167581864.vtt",
-      "sourceSha256": "3a29da28e8d3e5c989d6a034b7af4b5c8b53719753f8fc0ccfe969a74c119cf3",
+      "sourceSha256": "21ee4cb1bf8663873302d408f014b2688b37abf79029a6d12d1deb307a037557",
       "paragraphCount": 16,
       "contentIds": [
         "232"
@@ -509,7 +509,7 @@
       "vimeoId": "167581952",
       "access": "member",
       "sourceFile": "167581952.vtt",
-      "sourceSha256": "f516ea9cde95052e56b9c6157682cb9e2dcd34e12d28a3e342d023c88135b6cf",
+      "sourceSha256": "02ac6b833c850201b4529a00737b2e55fb41b3a7b664fc7fe88b28b2320cc216",
       "paragraphCount": 19,
       "contentIds": [
         "728"
@@ -539,7 +539,7 @@
       "vimeoId": "186498698",
       "access": "member",
       "sourceFile": "186498698.vtt",
-      "sourceSha256": "67cca788b443dd443717c4dffe24dec966554f7d3495d4224388c2bd0c701d1d",
+      "sourceSha256": "847bdb5d29c586ed1f9650523e3e25132a5aecfc7a014e8d49e92dc49afa60bb",
       "paragraphCount": 12,
       "contentIds": [
         "159"
@@ -589,7 +589,7 @@
       "vimeoId": "251668442",
       "access": "member",
       "sourceFile": "251668442.vtt",
-      "sourceSha256": "a2e3e285dc3b16c22fc7a255eb523fbc66df2f4893766c5686d0d336f555cb40",
+      "sourceSha256": "3fca7c18fd23647be23fea89dfd2c5caf40f52f1b2c6aa2227626b1d55777607",
       "paragraphCount": 7,
       "contentIds": [
         "810"
@@ -599,7 +599,7 @@
       "vimeoId": "252565241",
       "access": "member",
       "sourceFile": "252565241.vtt",
-      "sourceSha256": "4abba6de8938219aa2a16d0c5303f7f80ecf57ca32151cd212d793fc8eebf0ca",
+      "sourceSha256": "33e96d9fae787aa26f20cf495729f3a4c4ca8c0a5d16f69ea7b3d8bc873fef98",
       "paragraphCount": 18,
       "contentIds": [
         "813"
@@ -649,7 +649,7 @@
       "vimeoId": "288739130",
       "access": "member",
       "sourceFile": "288739130.vtt",
-      "sourceSha256": "7b9d34a3e7070bff515c39c0c856532ca11f79885309edb8f6283d0e0bdd094f",
+      "sourceSha256": "aa842f98b8a9777131b49c4609d2bff1c00b0001ab921e0ff26e9035d7c7c7d0",
       "paragraphCount": 12,
       "contentIds": [
         "868"
@@ -689,7 +689,7 @@
       "vimeoId": "317801328",
       "access": "member",
       "sourceFile": "317801328.vtt",
-      "sourceSha256": "5971445368ebadc3bf355ca2b16c8529c7f7043109730112a569bd1665b8aaf9",
+      "sourceSha256": "eb39bed7d22dea6ca6ccb35d1877f14ef811fe649ef0387f67f031c3bdee9c39",
       "paragraphCount": 3,
       "contentIds": [
         "2129"
@@ -699,7 +699,7 @@
       "vimeoId": "318312175",
       "access": "member",
       "sourceFile": "318312175.vtt",
-      "sourceSha256": "bda046b4bdde5cfa8faff234fd0b9e3ab164fd4520ff3bbdae720cdac35b0a7e",
+      "sourceSha256": "8604aa7a4b0f7f9d83abfcb1cae1637ea2401425c3c56da10f51ef7df25cfcc8",
       "paragraphCount": 12,
       "contentIds": [
         "899"
@@ -709,7 +709,7 @@
       "vimeoId": "323575618",
       "access": "member",
       "sourceFile": "323575618.vtt",
-      "sourceSha256": "0e12def8f8ab151eca904d395e76e43afad30b7add04b1c3039bb5606929b55e",
+      "sourceSha256": "371ee5e0508f1176904aa81ab2cd125f2077dcf91d6a7193882625120c7dee80",
       "paragraphCount": 20,
       "contentIds": [
         "951"
@@ -819,7 +819,7 @@
       "vimeoId": "355873340",
       "access": "member",
       "sourceFile": "355873340.vtt",
-      "sourceSha256": "325b3fa5a1cf2078cb157af0cbe5bfe180fe44bfdc5895176e4ee5fcf57dd5e1",
+      "sourceSha256": "9a6fd7fc97ac5c8591da7e0861efe59f710104877ae483d4c6ec0fe4d7eab5ac",
       "paragraphCount": 3,
       "contentIds": [
         "948"
@@ -829,7 +829,7 @@
       "vimeoId": "382002220",
       "access": "member",
       "sourceFile": "382002220.vtt",
-      "sourceSha256": "fe84b743d2cf65023d96a3aba58a95a1314e20f8a8b44ed7b56099a10704716c",
+      "sourceSha256": "67c27a0d1fa2ab7c888f726da4baf1f7e207362ace5317612195bd54f474d67b",
       "paragraphCount": 29,
       "contentIds": [
         "965"
@@ -839,7 +839,7 @@
       "vimeoId": "382929252",
       "access": "member",
       "sourceFile": "382929252.vtt",
-      "sourceSha256": "684978712d8be209305037ca7e88d9e5a3c5950555a8532f0f477d2a9e493975",
+      "sourceSha256": "79971da25715e97aa8779cdf5f45bd771103b6f2711c1aacc7a557317e15240c",
       "paragraphCount": 16,
       "contentIds": [
         "966"
@@ -849,7 +849,7 @@
       "vimeoId": "387548501",
       "access": "member",
       "sourceFile": "387548501.vtt",
-      "sourceSha256": "1eae933141415b75c655e2a0b5a3c59db15214d0ba6702a1bbe21398d2e9664e",
+      "sourceSha256": "ffe9da26560a33bf4655f4008e3932537845da4f02455af6d4cfa53bdad5aeec",
       "paragraphCount": 14,
       "contentIds": [
         "967"
@@ -859,7 +859,7 @@
       "vimeoId": "389096971",
       "access": "member",
       "sourceFile": "389096971.vtt",
-      "sourceSha256": "87346e860a1a0b88df85e88d3ec26dc2bffcad868310edc706d378dfe653ebcc",
+      "sourceSha256": "fa272021516f53477c044a75518a3a7fff0d08dfa10d7f54cfdb057b4f5de8a5",
       "paragraphCount": 25,
       "contentIds": [
         "968"
@@ -869,7 +869,7 @@
       "vimeoId": "390204273",
       "access": "member",
       "sourceFile": "390204273.vtt",
-      "sourceSha256": "3527e9377ae85c53bf410f45784f6e535aba0f19372740facbb7127687bf6b8f",
+      "sourceSha256": "93c542f247ecb6eec21959e78838da5f081dc2dd59f94a9a92a3e776394444cc",
       "paragraphCount": 24,
       "contentIds": [
         "970"
@@ -879,7 +879,7 @@
       "vimeoId": "391660712",
       "access": "member",
       "sourceFile": "391660712.vtt",
-      "sourceSha256": "917521bbe569bea1031828c9e826dfeeb34046940fa64f521bce708bc76dc166",
+      "sourceSha256": "c2a497a1924bbd2ee89e8022564bc7c97a4af43ba028747526dbcdae43674603",
       "paragraphCount": 16,
       "contentIds": [
         "971"
@@ -889,7 +889,7 @@
       "vimeoId": "391663684",
       "access": "member",
       "sourceFile": "391663684.vtt",
-      "sourceSha256": "283e92658c6c7197506f7c86a988e71c488b31dd024c482187a0d20013d6799e",
+      "sourceSha256": "5f72d99f9c7e5ffe881ffbf6bbcb98f3075df55429075c92da2be5d47ed882ae",
       "paragraphCount": 18,
       "contentIds": [
         "972"
@@ -899,7 +899,7 @@
       "vimeoId": "392986594",
       "access": "member",
       "sourceFile": "392986594.vtt",
-      "sourceSha256": "cd53a41e2e83caacebca717ecf1041e04cbfd55e9f20fbe3783cefeaa8a5b90b",
+      "sourceSha256": "7d81307c60689710806a7ca1d201b6883ff378ef8da02aaeb5553276165dad14",
       "paragraphCount": 4,
       "contentIds": [
         "973"
@@ -909,7 +909,7 @@
       "vimeoId": "395334482",
       "access": "member",
       "sourceFile": "395334482.vtt",
-      "sourceSha256": "bbd57d6bc698036206569e676533c62fa9d85778999bad3d8b426e8781cc0504",
+      "sourceSha256": "d7beae1ea9da886682601584f50d54d7556325c0c063b10bd0129e78561e65ba",
       "paragraphCount": 14,
       "contentIds": [
         "979"
@@ -919,7 +919,7 @@
       "vimeoId": "396776651",
       "access": "member",
       "sourceFile": "396776651.vtt",
-      "sourceSha256": "46995a8c23147873399f6ef7524c7905179523b12e6976a41ef0b8bac81ebb3c",
+      "sourceSha256": "bdf73bdfea5e09c1ae2e4ac479fafe9b896e25d2ef4cd3cbe368110653f35b00",
       "paragraphCount": 13,
       "contentIds": [
         "980"
@@ -929,7 +929,7 @@
       "vimeoId": "398070112",
       "access": "member",
       "sourceFile": "398070112.vtt",
-      "sourceSha256": "972a08134da90a0091faf8cbdf5a7aed6d1e7126bccd63754e963bc729db92f0",
+      "sourceSha256": "8ca5d6fe22dd7d4a258f547c393b69f4b7c2ddf85fa0aa5075276a89de9c2d31",
       "paragraphCount": 7,
       "contentIds": [
         "983"
@@ -939,7 +939,7 @@
       "vimeoId": "399942302",
       "access": "member",
       "sourceFile": "399942302.vtt",
-      "sourceSha256": "1c7b0807cc5af3478475d208fcd65359e19cc03f296747e9c2f5b78f37c831a1",
+      "sourceSha256": "5ca9e0e780e8b351fc5283facb7d0e4214a76b040ab7738a08694d0f6524c4ad",
       "paragraphCount": 7,
       "contentIds": [
         "984"
@@ -949,7 +949,7 @@
       "vimeoId": "401989093",
       "access": "member",
       "sourceFile": "401989093.vtt",
-      "sourceSha256": "e5b012f7a4f8969dd2bd17a2d2921f1825b96e8b2fa988182af253cda0e8da75",
+      "sourceSha256": "a503957284f0fee7c150ccf414378b34bb95f6e2d0fafc70c122e4a19aa158bf",
       "paragraphCount": 5,
       "contentIds": [
         "986"
@@ -959,7 +959,7 @@
       "vimeoId": "402750159",
       "access": "member",
       "sourceFile": "402750159.vtt",
-      "sourceSha256": "f2c840b2c079332c8e82037e0df6be5e3f086c09d48a92c6a844c414e79b5e96",
+      "sourceSha256": "e0e0dfd99df3d2d735c4a50fae84790b74464ba4c1f4985ea1f64c07211242fe",
       "paragraphCount": 3,
       "contentIds": [
         "988"
@@ -969,7 +969,7 @@
       "vimeoId": "404738562",
       "access": "member",
       "sourceFile": "404738562.vtt",
-      "sourceSha256": "9a4188c400ee4fe80c64cb32c06586f174b3e47838189f93f61f4dde6518698f",
+      "sourceSha256": "d671e2ae5ca2242d5aaf0c2e06d2e3dd1234e8914414bb15f9f58933bd8b4486",
       "paragraphCount": 3,
       "contentIds": [
         "823"
@@ -979,7 +979,7 @@
       "vimeoId": "404813848",
       "access": "member",
       "sourceFile": "404813848.vtt",
-      "sourceSha256": "ddf5b660623cd123bbc0d4b0f1ea5d67082cb142efebaa71678244ed68cda2c8",
+      "sourceSha256": "f1b63937b1d3a2a7bb7f8ef3db1931531370d69d3e3fe91fb216c7512901a744",
       "paragraphCount": 10,
       "contentIds": [
         "990"
@@ -989,7 +989,7 @@
       "vimeoId": "406025735",
       "access": "member",
       "sourceFile": "406025735.vtt",
-      "sourceSha256": "5483aa56ba362624785bd02c46f43c852e80e1d00ebaf14271e1041c1bdcd28b",
+      "sourceSha256": "c9901b0ddd904e30db97319a39aca1c199380a59b33eda04a7a4c937f93bcb8a",
       "paragraphCount": 23,
       "contentIds": [
         "992"
@@ -999,7 +999,7 @@
       "vimeoId": "407719543",
       "access": "member",
       "sourceFile": "407719543.vtt",
-      "sourceSha256": "2921faadd2e04f85a74b564a7a521b362991e809c025ebc29ce109b8d8255472",
+      "sourceSha256": "d69f5bd6dafe9db4f5c1192a98a2d0c6dd29f23d281d0cfebb274e9afdec95a8",
       "paragraphCount": 4,
       "contentIds": [
         "994"
@@ -1009,7 +1009,7 @@
       "vimeoId": "408198846",
       "access": "member",
       "sourceFile": "408198846.vtt",
-      "sourceSha256": "bb0607a283f713290e8a358f5fcc3cf3fbb86d8a2a3c709a90fe62de1d15f5b8",
+      "sourceSha256": "596d86364a333b5f48fd09d4e2b27041ed280af6085efbef87232d1ced685ea3",
       "paragraphCount": 8,
       "contentIds": [
         "995"
@@ -1019,7 +1019,7 @@
       "vimeoId": "409496260",
       "access": "member",
       "sourceFile": "409496260.vtt",
-      "sourceSha256": "d989687dc2d100f7f230c325261d7605888ca6107b7e7ff70c5a82d728f96b45",
+      "sourceSha256": "d3ab513071162d61be9eeacf3ce6b28ff0b10bf809d588ea2d1b19bab0a9f006",
       "paragraphCount": 9,
       "contentIds": [
         "999"
@@ -1029,7 +1029,7 @@
       "vimeoId": "410013233",
       "access": "member",
       "sourceFile": "410013233.vtt",
-      "sourceSha256": "15c8593460d8def60689010ce187cb9f008590a90ea0ae779e83660d7fb16d29",
+      "sourceSha256": "31c4cc771890d3fab8a9989682428071c6e786145cb9b03d554b7bb2d9983161",
       "paragraphCount": 10,
       "contentIds": [
         "1000"
@@ -1039,7 +1039,7 @@
       "vimeoId": "413695829",
       "access": "member",
       "sourceFile": "413695829.vtt",
-      "sourceSha256": "8d5c70635bfddc6d0f1b5d4ef8522cb9273b48b11bd2bf07e5e1e42049dd5044",
+      "sourceSha256": "5d7a6d356ed1f9344b8fb6a453552ecefa6bf3048a42219d29de7c64700010c5",
       "paragraphCount": 8,
       "contentIds": [
         "1001"
@@ -1049,7 +1049,7 @@
       "vimeoId": "416646987",
       "access": "member",
       "sourceFile": "416646987.vtt",
-      "sourceSha256": "11436329620bcdde479695db72e5520ea72494ff70fc91194bb27647400dc5f0",
+      "sourceSha256": "12ef72edc8bab02b36770fbe99870745ced872d2a1f308f42caba22ed8591115",
       "paragraphCount": 9,
       "contentIds": [
         "1002"
@@ -1059,7 +1059,7 @@
       "vimeoId": "432339172",
       "access": "member",
       "sourceFile": "432339172.vtt",
-      "sourceSha256": "84cdea94fcc81cf4bcceb366884625a4e7f4e08ba242d920f3cfc4237d95b2ab",
+      "sourceSha256": "8fe013dfbf775eef13de7ce6e636a3bddd4bdedf076c7cba499838e8aeb0db1c",
       "paragraphCount": 7,
       "contentIds": [
         "1008"
@@ -1079,7 +1079,7 @@
       "vimeoId": "439549701",
       "access": "member",
       "sourceFile": "439549701.vtt",
-      "sourceSha256": "8ea3f9fad15d84db7f854569d336a46cc39fb986e2b627b4958f78e824928487",
+      "sourceSha256": "ec14469dc9d95d4c3629320b92ebe49f2e13b28d35ddd7adf332b5dd829b8133",
       "paragraphCount": 4,
       "contentIds": [
         "1009"
@@ -1089,7 +1089,7 @@
       "vimeoId": "443512049",
       "access": "member",
       "sourceFile": "443512049.vtt",
-      "sourceSha256": "7ae4a85288651a1df9cfa851e99f0817aaec684210a451d54b3fb7702dee336c",
+      "sourceSha256": "51eef8d9f952ab4ff61d8cfaff3293f403ca9cbdaf57e6c624fece22f89e9840",
       "paragraphCount": 8,
       "contentIds": [
         "1010"
@@ -1099,7 +1099,7 @@
       "vimeoId": "444375575",
       "access": "member",
       "sourceFile": "444375575.vtt",
-      "sourceSha256": "9c86172ae165fe3eded9aca6415325ffd1b3751db1fa5204fcf8be19192fee80",
+      "sourceSha256": "f1cc529b6f10a8fba1900e4c7a183dde55b660b41749986a0ef688731b317ec5",
       "paragraphCount": 11,
       "contentIds": [
         "1011"
@@ -1109,7 +1109,7 @@
       "vimeoId": "454539776",
       "access": "member",
       "sourceFile": "454539776.vtt",
-      "sourceSha256": "b9d0489cec64f2f977361a71dc3fa82a85f9b2c62b7dd9912da277bd1eae95e1",
+      "sourceSha256": "dac564660d7e6fde1dedc731d8ae8b9825dabda393dcea4cac0d04c7e7366063",
       "paragraphCount": 6,
       "contentIds": [
         "1012"
@@ -1119,7 +1119,7 @@
       "vimeoId": "464734421",
       "access": "member",
       "sourceFile": "464734421.vtt",
-      "sourceSha256": "38c8830dd6ff7911aa3760776c5feb567a350ed2a8d3fa47d6cf359296c3cbba",
+      "sourceSha256": "bbe63980707f3542898811154f5cf1c2fb622ab9a5f8761ef2df08e074ea2443",
       "paragraphCount": 2,
       "contentIds": [
         "1013"
@@ -1129,7 +1129,7 @@
       "vimeoId": "465425233",
       "access": "member",
       "sourceFile": "465425233.vtt",
-      "sourceSha256": "d0866b8f0251c1820fcfe392e7b13b6c9c2687e9dff8ba86ccfdd63123c1908b",
+      "sourceSha256": "43d3dac5201923b82528387aafe5510a273fe6a75e9cf7d9ecdf51fd9ee88537",
       "paragraphCount": 10,
       "contentIds": [
         "1014"
@@ -1139,7 +1139,7 @@
       "vimeoId": "467756922",
       "access": "member",
       "sourceFile": "467756922.vtt",
-      "sourceSha256": "d1fa82551e6bde93534a530642177f3a0c186a713f59b9a1ce6cd3636b0487e8",
+      "sourceSha256": "32643a94987896692e58b1f59c53c481f3bd425d86892ac5000292e0c11c1b63",
       "paragraphCount": 4,
       "contentIds": [
         "1015"
@@ -1149,7 +1149,7 @@
       "vimeoId": "468219328",
       "access": "member",
       "sourceFile": "468219328.vtt",
-      "sourceSha256": "21a5b74c337cc3a3e4954b65dd582a765a02c5a144b7eb2512dff0e2d6f77f83",
+      "sourceSha256": "dd5b64374631ce70552c13ad09554b28087ca66884f569571eeca76604948956",
       "paragraphCount": 5,
       "contentIds": [
         "1016"
@@ -1159,7 +1159,7 @@
       "vimeoId": "475492261",
       "access": "member",
       "sourceFile": "475492261.vtt",
-      "sourceSha256": "5a9eb4751b8c31d928756eac59991614a598b75d5a6f689023775d9e92e26f81",
+      "sourceSha256": "5af1fc6d405473525486ddf95013980a2ad507941bde6482aeaf539aab5e695e",
       "paragraphCount": 16,
       "contentIds": [
         "1019"
@@ -1169,7 +1169,7 @@
       "vimeoId": "484835250",
       "access": "member",
       "sourceFile": "484835250.vtt",
-      "sourceSha256": "efbd2b5a37807a565e117c5bf334c41771ec5f9c3a465aea6ac2177a711ac1f2",
+      "sourceSha256": "8d0073ec0b33cf59d1ac2a65549d999529af4f0aa564abeb9dba1170ebc8689e",
       "paragraphCount": 10,
       "contentIds": [
         "1020"
@@ -1209,7 +1209,7 @@
       "vimeoId": "495862624",
       "access": "member",
       "sourceFile": "495862624.vtt",
-      "sourceSha256": "a3163af5517eb8f995896a747757ca85ef59031f4bd00fabcf60c5860f2833ad",
+      "sourceSha256": "0c2a9ff852de61ab08200c41f81ff297a1eeb7f0d877754c71b9e2cf77a9c52e",
       "paragraphCount": 9,
       "contentIds": [
         "1025"
@@ -1279,7 +1279,7 @@
       "vimeoId": "527759119",
       "access": "public",
       "sourceFile": "527759119.vtt",
-      "sourceSha256": "1c5522075d5ffc60dbc51b7988f408845609ccc2f4098d6339a7ddf4dfb32f8a",
+      "sourceSha256": "92cd81da308fd6c5182ecbc47e13003ae72c08d4d27c0625cd0417c401e70a41",
       "paragraphCount": 3,
       "contentIds": [
         "2049"
@@ -1391,7 +1391,7 @@
       "vimeoId": "572586808",
       "access": "member",
       "sourceFile": "572586808.vtt",
-      "sourceSha256": "4706e99801c835bb54351f7bdd16a51e7b40563f31238aef8bdcddd56825bcd3",
+      "sourceSha256": "82b192b86841e425d9182798ceab31331f2b682609d8dfa2fd29ed613479d1c8",
       "paragraphCount": 7,
       "contentIds": [
         "2040"
@@ -1611,7 +1611,7 @@
       "vimeoId": "710887711",
       "access": "public",
       "sourceFile": "710887711.vtt",
-      "sourceSha256": "f0779a89d4930e1943920d0bb402889570ba8a55b3964054d91a2504e9f0b798",
+      "sourceSha256": "89cc07e69d3b0d6857dbb384d04318a0f0b6b0fbb20c954bf4f8e2e873c523a0",
       "paragraphCount": 1,
       "contentIds": [
         "2067"
@@ -1991,7 +1991,7 @@
       "vimeoId": "856982908",
       "access": "member",
       "sourceFile": "856982908.vtt",
-      "sourceSha256": "49be39a3bfc29bd639f64171fd6708a3b17e45b2282f787bb953c652954057d4",
+      "sourceSha256": "e92ddb05d0680fbded044798bd9d705c0bfd7b427d3500ae55cba1ab1b9bd510",
       "paragraphCount": 9,
       "contentIds": [
         "2123"
