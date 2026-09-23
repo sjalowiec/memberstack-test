@@ -8,10 +8,13 @@ describe("videos/[id] phase-1 English transcript", () => {
   const printCss = readFileSync(join(process.cwd(), "src", "styles", "print.css"), "utf8");
 
   it("loads a readable transcript by Vimeo id and reuses Transcript.astro", () => {
-    expect(page).toContain('from "../../lib/transcripts/englishTranscript"');
+    expect(page).toContain('from "../../data/transcripts/generated/public.json"');
+    expect(page).toContain('from "../../lib/transcripts/catalogTranscriptData"');
+    expect(page).toContain("paragraphsForVimeoId");
+    expect(page).not.toContain("generated/member");
+    expect(page).not.toContain("import.meta.glob");
+    expect(page).not.toContain("englishTranscript");
     expect(page).toContain('from "../../components/media/Transcript.astro"');
-    expect(page).toContain("readableEnglishTranscriptForVimeoId");
-    expect(page).toContain("englishTranscriptParagraphs");
     expect(page).toContain('data-testid="video-english-transcript"');
   });
 
@@ -45,6 +48,7 @@ describe("videos/[id] phase-1 English transcript", () => {
     expect(page).toContain("hydrateGatedTranscript");
     expect(page).toContain("ssrTranscriptSections");
     expect(page).toContain("hasGatedTranscript");
+    expect(page).toContain('ms.on("member.logout"');
   });
 
   it("renders player, then description, then jump links, then transcript", () => {

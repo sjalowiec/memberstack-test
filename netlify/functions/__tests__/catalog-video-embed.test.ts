@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../lib/member-auth.js", () => ({
@@ -47,6 +50,17 @@ afterEach(() => {
 });
 
 describe("catalog-video-embed", () => {
+  it("loads member transcripts from generated JSON, not a Vite glob", () => {
+    const source = readFileSync(
+      join(process.cwd(), "netlify", "functions", "catalog-video-embed.ts"),
+      "utf8",
+    );
+    expect(source).toContain('from "../../src/data/transcripts/generated/member.json"');
+    expect(source).not.toContain("generated/public.json");
+    expect(source).not.toContain("import.meta.glob");
+    expect(source).not.toContain("englishTranscript");
+  });
+
   it("returns a public video embed without requiring membership", async () => {
     const res = await handler(makeRequest("258"));
     expect(res.status).toBe(200);
@@ -193,14 +207,16 @@ describe("catalog-video-embed", () => {
     expect(publicBody).not.toHaveProperty("transcript");
   });
 
-  it("returns the public swatch transcript without membership", async () => {
+  it("does not put the public transcript in the open embed response", async () => {
     const res = await handler(makeRequest("2189"));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(requireMember).not.toHaveBeenCalled();
-    expect(body.transcript.join(" ")).toContain(
+    expect(body).not.toHaveProperty("transcript");
+    expect(JSON.stringify(body)).not.toContain(
       "Knitting a proper swatch is the key to success with your knitting machine.",
     );
+    expect(JSON.stringify(body)).not.toContain("Begin by casting on three stitches");
   });
 });

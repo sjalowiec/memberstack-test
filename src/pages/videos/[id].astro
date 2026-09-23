@@ -8,10 +8,8 @@ import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import Transcript from "../../components/media/Transcript.astro";
 import { resolveVideoDetailJumpLinks } from "../../lib/jumplinks/jumplinksByContent";
 import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSrc";
-import {
-  englishTranscriptParagraphs,
-  readableEnglishTranscriptForVimeoId,
-} from "../../lib/transcripts/englishTranscript";
+import publicCatalogTranscripts from "../../data/transcripts/generated/public.json";
+import { paragraphsForVimeoId } from "../../lib/transcripts/catalogTranscriptData";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { filterPublicCatalogVideos, findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 export const prerender = true;
@@ -74,12 +72,10 @@ const isOpenPlayback = effectiveAccessLevel === "open";
 const ssrJumpLinks = isOpenPlayback ? resolvedJumpLinks.links : [];
 const enableVideoChapterControls = hasJumpLinks;
 
-const englishTranscript = video ? readableEnglishTranscriptForVimeoId(vimeoId) : null;
-const englishTranscriptParagraphsList = englishTranscriptParagraphs(englishTranscript);
-const ssrTranscriptSections = isOpenPlayback
-  ? englishTranscriptParagraphsList.map((text) => ({ text }))
-  : [];
-const hasGatedTranscript = !isOpenPlayback && englishTranscriptParagraphsList.length > 0;
+const publicTranscriptParagraphs =
+  video && isOpenPlayback ? paragraphsForVimeoId(publicCatalogTranscripts, vimeoId) : [];
+const ssrTranscriptSections = publicTranscriptParagraphs.map((text) => ({ text }));
+const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length > 0;
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>

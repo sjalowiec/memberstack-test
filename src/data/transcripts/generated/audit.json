@@ -1,0 +1,30 @@
+{
+  "generator": "catalog-transcripts",
+  "kind": "audit",
+  "sourceDirectory": "src/data/transcripts/en",
+  "publicCount": 1,
+  "memberCount": 1,
+  "records": [
+    {
+      "vimeoId": "151857129",
+      "access": "member",
+      "sourceFile": "151857129.vtt",
+      "sourceSha256": "a66776f8a7148e1744abb28a3ff9fcbf7f18b541a866c8cde43d936eaddbb421",
+      "paragraphCount": 9,
+      "contentIds": [
+        "266"
+      ]
+    },
+    {
+      "vimeoId": "1046394794",
+      "access": "public",
+      "sourceFile": "1046394794.vtt",
+      "sourceSha256": "e719cee93c063d08b7d0238a7761c9773d07cf1f6d727aa1ab208829e34f9107",
+      "paragraphCount": 22,
+      "contentIds": [
+        "2189"
+      ]
+    }
+  ],
+  "duplicatePublishedRows": []
+}
