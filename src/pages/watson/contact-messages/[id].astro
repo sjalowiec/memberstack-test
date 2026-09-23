@@ -1,14 +1,14 @@
 ---
-import WatsonPageShell from "../../../../components/watson/WatsonPageShell.astro";
-import { getContactMessageById } from "../../../../lib/contact/contactMessagesDb";
-import { buildContactReplyMailto } from "../../../../lib/contact/contactMessageMailto";
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import { getContactMessageById } from "../../../lib/contact/contactMessagesDb";
+import { buildContactReplyMailto } from "../../../lib/contact/contactMessageMailto";
 import {
   buildContactAttachmentUrl,
   formatContactTimestamp,
   isSafeHttpUrl,
   statusLabel,
   validateContactMessageId,
-} from "../../../../lib/contact/contactMessageRecord";
+} from "../../../lib/contact/contactMessageRecord";
 
 export const prerender = false;
 
@@ -304,6 +304,6 @@ const heading = message ? message.name || message.email : "Contact message";
 </style>
 
 <script>
-  import { initWatsonContactMessageActions } from "../../../../scripts/watsonContactMessages";
+  import { initWatsonContactMessageActions } from "../../../scripts/watsonContactMessages";
   initWatsonContactMessageActions(document);
 </script>
