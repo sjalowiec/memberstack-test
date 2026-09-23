@@ -78,6 +78,32 @@ function contentId(row: PublicVideoRow): string {
   return String(row.content_id ?? "").trim();
 }
 
+/**
+ * Hash and parse a newline-stable copy of the VTT bytes.
+ * Git stores these files as LF. Windows checkout with autocrlf turns them
+ * into CRLF, so hashing the raw working-tree bytes does not match Linux.
+ */
+function canonicalTranscriptSource(bytes: Buffer): { text: string; sha256: string } {
+  const canonical = Buffer.alloc(bytes.length);
+  let length = 0;
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i];
+    if (byte === 0x0d) {
+      if (bytes[i + 1] === 0x0a) i += 1;
+      canonical[length] = 0x0a;
+      length += 1;
+      continue;
+    }
+    canonical[length] = byte;
+    length += 1;
+  }
+  const normalized = canonical.subarray(0, length);
+  return {
+    text: normalized.toString("utf8"),
+    sha256: createHash("sha256").update(normalized).digest("hex"),
+  };
+}
+
 function readSourceGroups(sourceDir: string): SourceGroup[] {
   const byId = new Map<string, SourceGroup[]>();
   let names: string[];
@@ -93,13 +119,13 @@ function readSourceGroups(sourceDir: string): SourceGroup[] {
     if (!vimeoId) {
       throw new Error(`Unusable transcript filename ${name}. Expected <vimeoId>.vtt or <vimeoId>_en.vtt.`);
     }
-    const bytes = readFileSync(join(sourceDir, name));
+    const source = canonicalTranscriptSource(readFileSync(join(sourceDir, name)));
     const group = byId.get(vimeoId) ?? [];
     group.push({
       vimeoId,
       name,
-      text: bytes.toString("utf8"),
-      sha256: createHash("sha256").update(bytes).digest("hex"),
+      text: source.text,
+      sha256: source.sha256,
     });
     byId.set(vimeoId, group);
   }

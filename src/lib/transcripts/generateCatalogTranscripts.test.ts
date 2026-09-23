@@ -86,6 +86,32 @@ describe("catalog transcript generation", () => {
     }
   });
 
+  it("hashes LF and CRLF copies of the same VTT as the same transcript", () => {
+    const lf = "WEBVTT\n\n00:00:01.000 --> 00:00:03.000\nHello there.\nThis is spoken text.\n";
+    const catalog = [
+      { content_id: 9, status: "published", access_level: "member", vimeo_id: 444 },
+    ] as PublicVideoRow[];
+    const dirs: string[] = [];
+    try {
+      const documents = [lf, lf.replace(/\n/g, "\r\n"), lf.replace(/\n/g, "\r")].map((body) => {
+        const dir = mkdtempSync(join(tmpdir(), "kin-transcript-newlines-"));
+        dirs.push(dir);
+        writeFileSync(join(dir, "444.vtt"), body);
+        return buildCatalogTranscriptDocuments({ sourceDir: dir, catalog });
+      });
+      const [fromLf, fromCrlf, fromCr] = documents;
+      expect(fromCrlf.memberDocument).toEqual(fromLf.memberDocument);
+      expect(fromCr.memberDocument).toEqual(fromLf.memberDocument);
+      expect(serializeCatalogTranscriptJson(fromCrlf.memberDocument)).toBe(
+        serializeCatalogTranscriptJson(fromLf.memberDocument),
+      );
+      expect(fromLf.memberDocument.records[0]?.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(fromLf.memberDocument.records[0]?.paragraphs.join(" ")).toContain("Hello there.");
+    } finally {
+      for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("refuses to drop a Vimeo id already stored in a generated artifact", () => {
     const existing = serializeCatalogTranscriptJson({
       generator: "catalog-transcripts",
