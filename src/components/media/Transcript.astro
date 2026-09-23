@@ -1,4 +1,6 @@
 ---
+import { transcriptPrintButtonHtml } from "../../lib/transcripts/videoGatedTranscript";
+
 interface TranscriptSection {
   heading?: string;
   text: string;
@@ -25,6 +27,7 @@ const hasContent = content || (sections && sections.length > 0) || hasSlotConten
     <summary class="kbm-transcript-summary" data-testid="transcript-toggle">
       <span class="kbm-transcript-caret" aria-hidden="true"></span>
       <span class="kbm-transcript-summary-label">{title}</span>
+      <Fragment set:html={transcriptPrintButtonHtml()} />
     </summary>
     <div class="kbm-transcript-content" data-testid="transcript-content">
       {hasSlotContent && (
