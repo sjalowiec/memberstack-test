@@ -16,6 +16,9 @@ export default defineConfig({
       "./public/downloads/**",
       "./public/pdfs/**",
       "./src/data/legacy_kin/cleaned/backups/**",
+      // Member transcript text is inlined into catalog-video-embed by esbuild.
+      // Keep that JSON out of the public SSR upload.
+      "./src/data/transcripts/generated/member.json",
     ],
   }),
 

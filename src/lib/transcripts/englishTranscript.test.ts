@@ -89,8 +89,9 @@ describe("bundled 1046394794.vtt", () => {
 
   it("is what lookup finds for Vimeo 1046394794", () => {
     const fromFile = parseVttToReadableText(raw);
-    expect(readableEnglishTranscriptForVimeoId("1046394794")).toBe(fromFile);
-    expect(readableEnglishTranscriptForVimeoId("999999999")).toBeNull();
+    const sources = { "src/data/transcripts/en/1046394794.vtt": raw };
+    expect(readableEnglishTranscriptForVimeoId("1046394794", sources)).toBe(fromFile);
+    expect(readableEnglishTranscriptForVimeoId("999999999", sources)).toBeNull();
   });
 });
 
@@ -109,6 +110,7 @@ describe("bundled 151857129.vtt", () => {
 
   it("is what lookup finds for Vimeo 151857129", () => {
     const fromFile = parseVttToReadableText(raw);
-    expect(readableEnglishTranscriptForVimeoId("151857129")).toBe(fromFile);
+    const sources = { "src/data/transcripts/en/151857129.vtt": raw };
+    expect(readableEnglishTranscriptForVimeoId("151857129", sources)).toBe(fromFile);
   });
 });

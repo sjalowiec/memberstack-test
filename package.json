@@ -4,7 +4,9 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/generate-public-manifests.mjs",
+    "prebuild": "node scripts/generate-public-manifests.mjs && vite-node scripts/generate-catalog-transcripts.ts --check",
+    "transcripts:generate": "vite-node scripts/generate-catalog-transcripts.ts",
+    "transcripts:check": "vite-node scripts/generate-catalog-transcripts.ts --check",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",

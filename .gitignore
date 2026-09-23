@@ -19,6 +19,7 @@ tmp/
 !/scripts/prepare-transition-site.mjs
 !/scripts/check-utf8.mjs
 !/scripts/patch-netlify-functions-dev-multipart.mjs
+!/scripts/generate-catalog-transcripts.ts
 !/scripts/memberstack/
 !/scripts/memberstack/**
 src/data/glossary.backup.before-strip-html.json

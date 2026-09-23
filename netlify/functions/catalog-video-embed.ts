@@ -17,25 +17,21 @@ import { resolveCatalogVideoEmbed } from "../../src/lib/videos/resolveCatalogVid
 import { resolveVideoDetailJumpLinks } from "../../src/lib/jumplinks/jumplinksByContent";
 import { findPublicCatalogVideoByContentId } from "../../src/lib/videoPublic";
 import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../../src/lib/lessonVideo";
-import {
-  englishTranscriptParagraphs,
-  readableEnglishTranscriptForVimeoId,
-} from "../../src/lib/transcripts/englishTranscript";
+import memberCatalogTranscripts from "../../src/data/transcripts/generated/member.json";
+import { paragraphsForVimeoId } from "../../src/lib/transcripts/catalogTranscriptData";
 
 const catalog = videosPublic as PublicVideoRow[];
 
-function authorizedEmbedBody(resolved: {
-  iframeSrc: string;
-  title: string;
-}, contentId: string) {
+function authorizedEmbedBody(
+  resolved: {
+    iframeSrc: string;
+    title: string;
+  },
+  contentId: string,
+  transcript: string[],
+) {
   const row = findPublicCatalogVideoByContentId(catalog, contentId);
   const jumplinks = resolveVideoDetailJumpLinks(row, contentId).links;
-  const vimeoId =
-    (row ? vimeoNumericIdFromPublicVideo(row) : null) ??
-    (row?.vimeo_id_public != null || row?.vimeo_id != null
-      ? String(row.vimeo_id_public ?? row.vimeo_id).trim()
-      : "");
-  const transcript = englishTranscriptParagraphs(readableEnglishTranscriptForVimeoId(vimeoId));
   return {
     ok: true as const,
     iframeSrc: resolved.iframeSrc,
@@ -43,6 +39,16 @@ function authorizedEmbedBody(resolved: {
     ...(jumplinks.length > 0 ? { jumplinks } : {}),
     ...(transcript.length > 0 ? { transcript } : {}),
   };
+}
+
+function memberTranscriptFor(contentId: string): string[] {
+  const row = findPublicCatalogVideoByContentId(catalog, contentId);
+  const vimeoId =
+    (row ? vimeoNumericIdFromPublicVideo(row) : null) ??
+    (row?.vimeo_id_public != null || row?.vimeo_id != null
+      ? String(row.vimeo_id_public ?? row.vimeo_id).trim()
+      : "");
+  return paragraphsForVimeoId(memberCatalogTranscripts, vimeoId);
 }
 
 export default async (req: Request): Promise<Response> => {
@@ -66,7 +72,7 @@ export default async (req: Request): Promise<Response> => {
   }
 
   if (resolved.access === "open") {
-    return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId)));
+    return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId, [])));
   }
 
   const auth = await requireMember(req);
@@ -104,5 +110,7 @@ export default async (req: Request): Promise<Response> => {
     return withCors(jsonResponse({ ok: false, error: "Membership required." }, 403));
   }
 
-  return withCors(jsonResponse(authorizedEmbedBody(resolved, contentId)));
+  return withCors(
+    jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId))),
+  );
 };

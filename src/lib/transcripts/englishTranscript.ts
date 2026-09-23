@@ -1,16 +1,12 @@
 import { parseVttToReadableText } from "./parseVtt";
 
 /**
- * English transcript files live in `src/data/transcripts/en/`.
- * Filenames: `<vimeoId>.vtt` or `<vimeoId>_EN.vtt` / `<vimeoId>_en.vtt`.
- * Vite `?raw` keeps them out of `public/` (no public VTT URL).
+ * Source-file helpers for generation and tests.
+ * Deployed pages and `catalog-video-embed` must not load transcripts through
+ * this module. They read the generated public or member JSON instead.
+ * There is no `import.meta.glob` here: Netlify's esbuild bundler would leave
+ * that call unresolved and ship the function without transcript text.
  */
-const ENGLISH_VTT_MODULES = import.meta.glob("../../data/transcripts/en/*.vtt", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as Record<string, string>;
-
 const TRANSCRIPT_FILE = /(\d+)(?:_en(?:-US)?)?\.vtt$/i;
 
 export function vimeoIdFromTranscriptFilename(pathOrName: string): string | null {
@@ -36,7 +32,7 @@ export function indexEnglishTranscriptSources(
 
 export function readableEnglishTranscriptForVimeoId(
   vimeoId: string | number | null | undefined,
-  sources: Record<string, string> | Map<string, string> = ENGLISH_VTT_MODULES,
+  sources: Record<string, string> | Map<string, string>,
 ): string | null {
   const id = String(vimeoId ?? "").trim();
   if (!/^\d+$/.test(id)) return null;
