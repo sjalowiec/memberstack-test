@@ -2063,6 +2063,13 @@ p {
   margin-bottom: 0;
 }
 
+/* Screen-only. Hydrated member markup does not receive the page's scoped
+   attribute, so this rule has to be global or the print copy stays visible
+   and the closed accordion looks stuck open. */
+.video-english-transcript-print {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .kbm-transcript-summary {
     padding: 0.6rem 0.75rem;
