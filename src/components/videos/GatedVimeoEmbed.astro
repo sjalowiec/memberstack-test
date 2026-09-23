@@ -10,6 +10,7 @@ import { videoDevBypass } from "../../lib/devBypass";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { gatedVimeoEmbedDelivery } from "../../lib/videos/gatedVimeoEmbedDelivery";
 import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSrc";
+import { lockedVideoPanelHtml, permittedCatalogThumbnailUrl } from "../../lib/videos/lockedVideoPanel";
 
 const {
   videoId: rawVideoId,
@@ -48,6 +49,15 @@ function paddingPercent(aspectStr: string) {
 }
 
 const pad = paddingPercent(aspect);
+const safeThumbUrl = permittedCatalogThumbnailUrl(thumbUrl);
+const deniedPanelHtml = delivery.renderIframe
+  ? ""
+  : lockedVideoPanelHtml({
+      thumbUrl: safeThumbUrl,
+      showLogin: true,
+      ctaHref,
+      ctaText,
+    });
 ---
 
 <div
@@ -61,6 +71,7 @@ const pad = paddingPercent(aspect);
   data-enable-vimeo-player-api={enableVimeoPlayerApi ? "true" : "false"}
   data-cta-href={ctaHref}
   data-cta-text={ctaText}
+  data-thumb-url={safeThumbUrl || undefined}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
     <div
@@ -80,7 +91,7 @@ const pad = paddingPercent(aspect);
           allowfullscreen
         />
       ) : (
-        <div class="kbm-video__loading" aria-hidden="true"></div>
+        <Fragment set:html={deniedPanelHtml} />
       )}
     </div>
   </div>
@@ -96,11 +107,6 @@ const pad = paddingPercent(aspect);
 
 <style>
   .kbm-video__frame [data-state="loading"] {
-    position: absolute;
-    inset: 0;
-    background: #f3f4ef;
-  }
-  .kbm-video__loading {
     position: absolute;
     inset: 0;
     background: #f3f4ef;
@@ -128,26 +134,34 @@ const pad = paddingPercent(aspect);
     position:absolute;
     inset:0;
     display:block;
-    background:#fff;
+    background:#f3f4ef;
+    overflow:hidden;
   }
-  .kbm-video__thumb{
+  :global(.kbm-video__thumb){
+    position:absolute;
+    inset:0;
     width:100%;
     height:100%;
     object-fit:cover;
+    object-position:center;
     display:block;
-    filter: blur(0px);
   }
   :global(.kbm-video__overlay){
     position:absolute;
     inset:0;
     display:flex;
     flex-direction:column;
-    justify-content:center;
+    justify-content:safe center;
     align-items:center;
     padding:16px;
     text-align:center;
-    background: rgba(255,255,255,0.86);
+    background: rgba(255,255,255,0.92);
+    color:#1c2414;
     gap:10px;
+  }
+  :global(.kbm-video__locked--thumb .kbm-video__overlay){
+    background: rgba(16, 22, 12, 0.72);
+    color:#fff;
   }
   :global(.kbm-video__lockline){
     display:flex;
@@ -196,11 +210,26 @@ const pad = paddingPercent(aspect);
     background: rgba(82, 104, 45, 0.08);
   }
   @media (max-width: 640px) {
+    :global(.kbm-video__overlay){
+      padding:4px 8px;
+      gap:2px;
+      overflow:auto;
+    }
+    :global(.kbm-video__lockline){
+      font-size:0.875rem;
+    }
+    :global(.kbm-video__msg){
+      font-size:0.8125rem;
+      line-height:1.2;
+    }
     :global(.kbm-video__actions){
       flex-direction:column;
+      gap:4px;
     }
     :global(.kbm-video__cta){
       width:100%;
+      min-height:44px;
+      padding:8px 12px;
     }
   }
 </style>
