@@ -1,34 +1,13 @@
 import type { APIRoute } from "astro";
 
-import {
-  computeContactMessageCounts,
-  getContactMessagesStore,
-  listContactMessages,
-  matchesListFilter,
-  type ContactMessageListFilter,
-} from "../../../../lib/contact/contactMessagesStore";
+import { listContactMessages, countNewContactMessages } from "../../../../lib/contact/contactMessagesDb";
+import { parseContactMessageFilter } from "../../../../lib/contact/contactMessageRecord";
 import {
   requireWatsonAdminJson,
   watsonJsonResponse,
 } from "../../../../lib/watson/watsonApiAuth";
 
 export const prerender = false;
-
-const FILTERS: ContactMessageListFilter[] = [
-  "all",
-  "open",
-  "new",
-  "in_progress",
-  "waiting_for_customer",
-  "resolved",
-];
-
-function parseFilter(value: string | null): ContactMessageListFilter {
-  if (value && (FILTERS as string[]).includes(value)) {
-    return value as ContactMessageListFilter;
-  }
-  return "open";
-}
 
 export const GET: APIRoute = async (context) => {
   const auth = await requireWatsonAdminJson(context);
@@ -37,16 +16,15 @@ export const GET: APIRoute = async (context) => {
   }
 
   try {
-    const filter = parseFilter(context.url.searchParams.get("filter"));
-    const store = getContactMessagesStore();
-    const allMessages = await listContactMessages(store, { filter: "all" });
-    const messages = allMessages.filter((message) => matchesListFilter(message, filter));
-    const counts = computeContactMessageCounts(allMessages);
-
+    const filter = parseContactMessageFilter(context.url.searchParams.get("filter"));
+    const [messages, newCount] = await Promise.all([
+      listContactMessages(filter),
+      countNewContactMessages(),
+    ]);
     return watsonJsonResponse({
       ok: true,
       filter,
-      counts,
+      newCount,
       messages,
     });
   } catch (error) {

@@ -57,7 +57,10 @@ describe("Watson member search pages", () => {
     expect(shell).toContain('href="/watson/skill-builders"');
     expect(shell).toContain('<a href="/watson/email-signups">Email Signups</a>');
     expect(shell).toContain('<a href="/watson/responses">Responses</a>');
-    expect(shell).toContain('<a href="/watson/contact-messages">Contact Messages</a>');
+    expect(shell).toContain('href="/watson/contact-messages"');
+    expect(shell).toContain("Contact Messages");
+    expect(shell).toContain("countNewContactMessages");
+    expect(shell).toContain("newContactCount");
     expect(shell).toContain("watsonAdminNavHref");
     expect(shell).toContain("<a href={adminHref}>Admin</a>");
     expect(shell.match(/href=\{adminHref\}>Admin<\/a>/g)).toHaveLength(1);

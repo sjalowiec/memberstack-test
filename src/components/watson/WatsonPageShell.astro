@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { watsonAdminNavHref } from "../../lib/adminRoutes";
+import { countNewContactMessages } from "../../lib/contact/contactMessagesDb";
 import "../../styles/watson.css";
 
 interface Props {
@@ -15,6 +16,17 @@ const adminHref = watsonAdminNavHref(Astro.url.hostname, {
   publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
   isViteDev: import.meta.env.DEV,
 });
+
+let newContactCount: number | null = null;
+try {
+  newContactCount = await countNewContactMessages();
+} catch (error) {
+  console.error(
+    "[watson] Contact message count unavailable:",
+    error instanceof Error ? error.message : "unknown error",
+  );
+  newContactCount = null;
+}
 ---
 
 <BaseLayout title={title} description={description} bodyClass="watson-body">
@@ -26,7 +38,13 @@ const adminHref = watsonAdminNavHref(Astro.url.hostname, {
         <a href="/watson/customers">Customers</a>
         <a href="/watson/vendors">Vendors</a>
         <a href="/watson/birthdays">Birthdays</a>
-        <a href="/watson/contact-messages">Contact Messages</a>
+        <a href="/watson/contact-messages">
+          Contact Messages{
+            newContactCount !== null ? (
+              <span class="watson-nav__count">{newContactCount}</span>
+            ) : null
+          }
+        </a>
         <a href="/watson/video-replies">Video Replies</a>
         <a href="/watson/whats-new">What’s New</a>
         <a href="/watson/tip-of-the-week">Tip of the Week</a>
