@@ -1,9 +1,13 @@
+const ACTIONS_BOUND_ATTR = "data-contact-actions-bound";
+
 export function initWatsonContactMessageActions(root: ParentNode = document): void {
   const item = root.querySelector<HTMLElement>("[data-contact-id]");
-  if (!item) return;
+  if (!item || item.getAttribute(ACTIONS_BOUND_ATTR) === "true") return;
 
   const messageId = item.getAttribute("data-contact-id");
   if (!messageId) return;
+
+  item.setAttribute(ACTIONS_BOUND_ATTR, "true");
 
   const notesEl = item.querySelector<HTMLTextAreaElement>("[data-contact-notes]");
   const statusMsg = item.querySelector<HTMLElement>("[data-contact-action-status]");

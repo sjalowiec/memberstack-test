@@ -305,5 +305,19 @@ const heading = message ? message.name || message.email : "Contact message";
 
 <script>
   import { initWatsonContactMessageActions } from "../../../scripts/watsonContactMessages";
-  initWatsonContactMessageActions(document);
+
+  function bootContactMessageActions(): void {
+    initWatsonContactMessageActions(document);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootContactMessageActions, { once: true });
+  } else {
+    bootContactMessageActions();
+  }
+
+  if (document.documentElement.dataset.contactMessageActionsBoot !== "true") {
+    document.documentElement.dataset.contactMessageActionsBoot = "true";
+    document.addEventListener("astro:page-load", bootContactMessageActions);
+  }
 </script>
