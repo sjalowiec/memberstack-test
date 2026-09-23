@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import { renderVideoTranscriptDisclosure } from "../lib/transcripts/videoGatedTranscript";
 import { hydrateGatedTranscript, paintGatedTranscript } from "./videoDetailGatedTranscript";
 
 class HostElement {
@@ -32,6 +33,28 @@ const originalDocument = globalThis.document;
 afterEach(() => {
   globalThis.HTMLElement = originalHtmlElement;
   globalThis.document = originalDocument;
+});
+
+describe("hydrated member accordion", () => {
+  it("starts closed and uses the same native details toggle as the public transcript", () => {
+    const html = renderVideoTranscriptDisclosure(["Begin by casting on three stitches."]);
+    const details = html.slice(0, html.indexOf("</details>"));
+
+    expect(html.startsWith('<details class="kbm-transcript"')).toBe(true);
+    expect(details).not.toMatch(/\sopen(\s|=|>)/);
+    expect(details.indexOf("<summary")).toBeGreaterThan(-1);
+    expect(details.indexOf("<summary")).toBeLessThan(details.indexOf("kbm-transcript-content"));
+    expect(details.indexOf("</summary>")).toBeLessThan(details.indexOf("kbm-transcript-content"));
+    expect(html.indexOf("</details>")).toBeLessThan(html.indexOf("video-english-transcript-print"));
+
+    const css = readFileSync(join(process.cwd(), "src", "styles", "global.css"), "utf8").replace(
+      /\r\n/g,
+      "\n",
+    );
+    const page = readFileSync(join(process.cwd(), "src", "pages", "videos", "[id].astro"), "utf8");
+    expect(css).toContain(".video-english-transcript-print {\n  display: none;\n}");
+    expect(page).not.toContain(".video-english-transcript-print { display: none; }");
+  });
 });
 
 describe("gated transcript logout", () => {
