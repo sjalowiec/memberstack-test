@@ -586,6 +586,23 @@ WHERE revoked_at IS NULL AND memberstack_id IS NULL`,
       label: "index idx_watson_vendors_account_number",
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_vendors_account_number ON watson_vendors (LOWER(account_number))",
     },
+    {
+      label: "table watson_legacy_homestudy_course_plans",
+      sql: `CREATE TABLE IF NOT EXISTS watson_legacy_homestudy_course_plans (
+  course_id INTEGER PRIMARY KEY,
+  recreation_status TEXT NOT NULL DEFAULT 'not_reviewed' CHECK (recreation_status IN (
+    'not_reviewed',
+    'considering',
+    'planned',
+    'in_progress',
+    'recreated',
+    'will_not_recreate'
+  )),
+  other_uses TEXT,
+  private_notes TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
   ];
 }
 

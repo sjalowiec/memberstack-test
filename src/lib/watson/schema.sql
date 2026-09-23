@@ -629,6 +629,21 @@ CREATE INDEX IF NOT EXISTS idx_watson_vendors_email ON watson_vendors (LOWER(ema
 
 CREATE INDEX IF NOT EXISTS idx_watson_vendors_account_number ON watson_vendors (LOWER(account_number));
 
+CREATE TABLE IF NOT EXISTS watson_legacy_homestudy_course_plans (
+  course_id INTEGER PRIMARY KEY,
+  recreation_status TEXT NOT NULL DEFAULT 'not_reviewed' CHECK (recreation_status IN (
+    'not_reviewed',
+    'considering',
+    'planned',
+    'in_progress',
+    'recreated',
+    'will_not_recreate'
+  )),
+  other_uses TEXT,
+  private_notes TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_legacy_members_email ON legacy_members (LOWER(email));
 
 CREATE INDEX IF NOT EXISTS idx_legacy_members_lastname ON legacy_members (lastname);

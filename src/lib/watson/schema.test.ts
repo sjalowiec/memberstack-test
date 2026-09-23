@@ -115,6 +115,17 @@ describe("schema", () => {
     expect(vendorSql).toContain("account_number TEXT");
     expect(vendorSql).not.toContain("legacy_members");
     expect(vendorSql).not.toContain("REFERENCES");
+    expect(labels).toContain("table watson_legacy_homestudy_course_plans");
+    const planSql = nativeStatements.find(
+      (statement) => statement.label === "table watson_legacy_homestudy_course_plans",
+    )?.sql;
+    expect(planSql).toContain("course_id INTEGER PRIMARY KEY");
+    expect(planSql).toContain("recreation_status TEXT NOT NULL");
+    expect(planSql).toContain("other_uses TEXT");
+    expect(planSql).toContain("private_notes TEXT");
+    expect(planSql).not.toContain("legacy_course_member_library");
+    expect(planSql).not.toContain("REFERENCES");
+    expect(planSql).not.toContain("memberstack");
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {
