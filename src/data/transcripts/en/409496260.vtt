@@ -1,0 +1,175 @@
+WEBVTT
+
+
+00:00:01.630 --> 00:00:05.680
+Let's use DesignaKnit to
+create a triangular shawl.
+
+00:00:06.520 --> 00:00:12.560
+We'll make the shawl exactly the
+size we want and we'll make sure
+
+00:00:12.560 --> 00:00:16.010
+that we can knit it on our machine
+with a number of needles available.
+
+00:00:16.850 --> 00:00:20.630
+We'll also use the yarn
+calculation feature to make
+
+00:00:20.630 --> 00:00:22.520
+sure that we have enough yarn.
+
+00:00:24.160 --> 00:00:26.050
+In Original Pattern Drafting
+
+00:00:26.110 --> 00:00:27.160
+start a new file.
+
+00:00:28.215 --> 00:00:33.555
+I'm planning to use my LK-150 and I've
+already swatched and I know my gauge.
+
+00:00:34.245 --> 00:00:35.715
+So I'll enter it now.
+
+00:00:36.254 --> 00:00:37.935
+It can always be changed later.
+
+00:00:43.715 --> 00:00:47.075
+Click piece, >block new piece.
+
+00:00:48.695 --> 00:00:49.595
+Enter a name.
+
+00:00:51.065 --> 00:00:53.915
+Now let's size this new
+piece to our dimensions.
+
+00:00:54.885 --> 00:00:57.074
+Use the >fit to width tool.
+
+00:00:58.214 --> 00:01:03.405
+Since my rulers are showing stitches in
+rows, it's prompting me with stitches.
+
+00:01:04.185 --> 00:01:07.035
+I have 150 needles
+available on my machine.
+
+00:01:08.985 --> 00:01:15.285
+I want my shawl to be 30 inches long,
+so I'll switch the rulers to inches
+
+00:01:16.365 --> 00:01:18.854
+and use the >fit to length tool.
+
+00:01:22.024 --> 00:01:25.445
+Use the >measure edge
+tool to confirm the size.
+
+00:01:31.074 --> 00:01:33.955
+Remember, we measure counter-clockwise.
+
+00:01:40.244 --> 00:01:41.384
+And here's a tip.
+
+00:01:41.595 --> 00:01:45.524
+Click again to turn off
+the measuring on one side.
+
+00:01:46.574 --> 00:01:48.405
+Let's now make this a triangle.
+
+00:01:49.170 --> 00:01:52.170
+Use the >delete tool, the minus sign.
+
+00:01:53.610 --> 00:01:57.810
+And since I have >mirroring on,
+I just have to remove one point.
+
+00:01:58.340 --> 00:01:59.040
+That's it.
+
+00:01:59.670 --> 00:02:06.880
+I have a triangle that I can knit with all
+150 needles, but do I have enough yarn?
+
+00:02:08.230 --> 00:02:11.110
+Let's use DesignaKnit
+to calculate it for us.
+
+00:02:12.480 --> 00:02:14.850
+Click >file >print.
+
+00:02:26.140 --> 00:02:27.940
+Choose >yarn calculation.
+
+00:02:29.410 --> 00:02:35.290
+Now, select the >single wrench tool
+and tell DesignaKnit about your swatch.
+
+00:02:36.490 --> 00:02:39.400
+How many stitches and rows
+did you knit in your swatch?
+
+00:02:42.490 --> 00:02:44.019
+How much yarn did you use?
+
+00:02:44.665 --> 00:02:51.065
+Weighing in grams with a food
+scale is best click okay.
+
+00:02:52.295 --> 00:02:53.805
+And then >preview.
+
+00:02:55.265 --> 00:02:59.475
+DesignaKnit is telling me how much
+yarn I need based on my swatch.
+
+00:03:02.245 --> 00:03:05.045
+Next, let's get the knitting instructions.
+
+00:03:06.135 --> 00:03:08.755
+You might want to use
+Interactive Knitting, but
+
+00:03:08.755 --> 00:03:10.555
+that's a topic for another day.
+
+00:03:12.220 --> 00:03:14.680
+Here's a shortcut you may not have found.
+
+00:03:15.010 --> 00:03:19.870
+Click this button and you can now
+choose your preferred printing method.
+
+00:03:21.780 --> 00:03:26.790
+If you use garment notation or Japanese
+notation, if you use that format,
+
+00:03:27.000 --> 00:03:29.040
+you'll want to align the columns.
+
+00:03:30.470 --> 00:03:34.670
+Tick this box, it'll
+make it easier to read.
+
+00:03:43.400 --> 00:03:48.680
+Now you might be tempted to work your
+shaping over every other row, but notice
+
+00:03:48.680 --> 00:03:54.440
+that DesignaKnit is accurately creating
+the shaping to make your desired length.
+
+00:03:58.935 --> 00:04:01.035
+I hope this tutorial is helpful.
+
+00:04:01.275 --> 00:04:05.055
+The tools you used for this
+exercise will help you create
+
+00:04:05.775 --> 00:04:08.145
+any other shape and DesignaKnit.
+

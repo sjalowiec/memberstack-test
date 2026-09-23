@@ -1,0 +1,128 @@
+WEBVTT
+
+00:00:00.680 --> 00:00:04.690
+A knitter is asking about knitting
+swatches using DesignaKnit.
+
+00:00:04.760 --> 00:00:08.520
+She has a Silver Reed electronic machine,
+and with these machines,
+
+00:00:08.586 --> 00:00:14.170
+in order to knit in pattern for her
+swatches, she needs to use DesignaKnit.
+
+00:00:14.240 --> 00:00:18.050
+She asked how she should set
+the gauge to knit her swatch.
+
+00:00:18.120 --> 00:00:21.490
+The answer is, it doesn't matter.
+
+00:00:21.560 --> 00:00:23.490
+Let's explore why.
+
+00:00:23.560 --> 00:00:27.370
+If you're using Stitch Designer and you're
+creating a new stitch pattern,
+
+00:00:27.440 --> 00:00:31.490
+it's important to set your gauge
+similar to what you'll be knitting.
+
+00:00:31.560 --> 00:00:37.130
+For example, these hearts knit at this
+gauge are a little bit distorted
+
+00:00:37.200 --> 00:00:41.640
+from knitting them at this gauge.
+
+00:00:42.000 --> 00:00:45.360
+In Stitch Designer,
+DesignaKnit uses your entered gauge
+
+00:00:45.426 --> 00:00:48.250
+to display your stitch pattern.
+
+00:00:48.320 --> 00:00:53.410
+It's up to you to design the hearts
+so they look good at your gauge.
+
+00:00:53.480 --> 00:00:57.240
+In designing stitch patterns,
+there are no calculations like
+
+00:00:57.306 --> 00:00:59.130
+in designing garment pieces.
+
+00:00:59.200 --> 00:01:04.400
+So DesignaKnit it uses the gauge
+to preview how a stitch pattern will look.
+
+00:01:04.867 --> 00:01:07.890
+To knit a swatch, we'll
+use Interactive knitting.
+
+00:01:07.960 --> 00:01:12.160
+For this example, we'll use this
+pretty hearts stitch pattern.
+
+00:01:12.320 --> 00:01:16.370
+Open Interactive Knitting and tell DesignaKnit that you want to use
+
+00:01:16.440 --> 00:01:18.090
+just the stitch pattern.
+
+00:01:18.160 --> 00:01:21.400
+Now, we're not going to be
+using the shape file.
+
+00:01:22.040 --> 00:01:26.240
+For a standard gauge swatch,
+it's common to cast on 60 stitches
+
+00:01:26.306 --> 00:01:30.040
+and knit for 80 rows
+so that you can measure 40 stitches gauges
+
+00:01:30.106 --> 00:01:35.440
+in 60 rows and use a green
+gauge ruler to measure.
+
+00:01:36.080 --> 00:01:40.520
+Of course, you could choose to knit
+your swatch any size you like.
+
+00:01:44.360 --> 00:01:48.920
+DesignaKnit is going to display
+a preview of the hearts as they will
+
+00:01:48.986 --> 00:01:52.450
+look at the gauge that is currently set.
+
+00:01:52.520 --> 00:01:59.600
+Now, if you change the gauge, you
+can see the changes in this preview.
+
+00:02:01.120 --> 00:02:04.930
+However, changing the gauge is not
+impacting the number of stitches
+
+00:02:05.000 --> 00:02:06.920
+and rows you're knitting.
+
+00:02:07.400 --> 00:02:12.080
+No matter what gauge you set,
+the display will change, but the stitches
+
+00:02:12.146 --> 00:02:15.170
+and rows will remain the same.
+
+00:02:15.240 --> 00:02:20.890
+You will establish your gauge by knitting
+60 stitches and 80 rows,
+
+00:02:20.960 --> 00:02:24.760
+and it may look very different than
+the display in Interactive Knitting.
+
