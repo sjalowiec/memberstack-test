@@ -12,6 +12,7 @@ import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
 import { getMemberstackAdminClient } from "./lib/memberstack-admin.js";
 import { evaluateMemberAccessForRecord } from "../../src/lib/memberAccessServer";
 import { getViewerAccessState } from "../../src/lib/memberAccess";
+import { loadHomeStudyPurchasesForMemberstackRecord } from "../../src/lib/kinCourse/homeStudyPurchaseAccess";
 
 export default async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -57,12 +58,34 @@ export default async (req: Request): Promise<Response> => {
 
   try {
     const evaluated = await evaluateMemberAccessForRecord(record);
+    let homeStudy = {
+      verifiedCourseIds: [] as number[],
+      accountCourses: [] as Array<{
+        courseId: number;
+        title: string;
+        href: string | null;
+        availability: "available" | "not_on_site";
+      }>,
+    };
+    try {
+      const purchases = await loadHomeStudyPurchasesForMemberstackRecord(record);
+      homeStudy = {
+        verifiedCourseIds: purchases.accountCourses
+          .filter((course) => course.availability === "available")
+          .map((course) => course.courseId),
+        accountCourses: purchases.accountCourses,
+      };
+    } catch {
+      console.error("member-access: home study purchase lookup failed");
+    }
     return withCors(
       jsonResponse({
         ok: true,
         hasMemberAccess: evaluated.hasMemberAccess,
         viewerAccessState: evaluated.viewerAccessState,
         legacyPaidThroughYmd: evaluated.legacyPaidThroughYmd,
+        verifiedHomeStudyCourseIds: homeStudy.verifiedCourseIds,
+        homeStudyAccountCourses: homeStudy.accountCourses,
       }),
     );
   } catch (err) {

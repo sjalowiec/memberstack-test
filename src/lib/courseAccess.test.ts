@@ -338,6 +338,45 @@ describe("canAccessCourse", () => {
     expect(canAccessCourse("purchase", sk840Paid, { courseSlug: "111" })).toBe(true);
     expect(canAccessCourse("purchase", sk840Paid, { courseSlug: "86" })).toBe(false);
   });
+
+  it("keeps membership and course-plan access, and adds a verified Home Study purchase", () => {
+    const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
+    expect(
+      canAccessCourse("member", member, {
+        courseSlug: "ribber-basic-bootcamp",
+        verifiedHomeStudyCourseIds: [],
+      }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", loggedInNoPlan, {
+        courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
+        verifiedHomeStudyCourseIds: [86],
+      }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("purchase", loggedInNoPlan, {
+        courseSlug: "86",
+        verifiedHomeStudyCourseIds: [86],
+      }),
+    ).toBe(true);
+    expect(
+      canAccessCourse("member", loggedInNoPlan, {
+        courseSlug: LEGACY_SK840_COURSE_SLUG,
+        verifiedHomeStudyCourseIds: [86],
+      }),
+    ).toBe(false);
+    expect(
+      canAccessCourse("member", loggedInNoPlan, {
+        courseSlug: "49",
+        verifiedHomeStudyCourseIds: [49],
+      }),
+    ).toBe(false);
+    expect(
+      canAccessCourse("member", loggedInNoPlan, {
+        courseSlug: KIN_TAITEXMA_160_COURSE_SLUG,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("getCourseViewerState", () => {

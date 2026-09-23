@@ -13,7 +13,8 @@ import { hasIndividualCoursePurchase } from "../courseAccess";
 export type AccountOwnedCourseCard = {
   slug: string;
   title: string;
-  href: string;
+  href: string | null;
+  availability?: "available" | "not_on_site";
 };
 
 /** Browser-safe display + entitlement metadata for individually owned courses. */
@@ -77,7 +78,56 @@ export function ownedCoursesForAccount(
   catalogCards: AccountOwnedCourseCard[] = accountOwnableCourseCatalogCards(),
 ): AccountOwnedCourseCard[] {
   const owned = new Set(ownedCourseSlugsFromMember(memberOrPayload));
-  return catalogCards.filter((card) => owned.has(card.slug));
+  return catalogCards.filter((card) => card.slug && owned.has(card.slug));
+}
+
+export type HomeStudyAccountCourseCard = {
+  courseId: number;
+  title: string;
+  href: string | null;
+  availability: "available" | "not_on_site";
+};
+
+/**
+ * Plan-owned courses plus verified Home Study purchases.
+ * Subscriber-free enrollments are not in `homeStudyCourses`.
+ * A purchase with no player has no link.
+ */
+export function accountCoursesForMember(
+  memberOrPayload: unknown,
+  homeStudyCourses: readonly HomeStudyAccountCourseCard[] = [],
+  catalogCards: AccountOwnedCourseCard[] = accountOwnableCourseCatalogCards(),
+): AccountOwnedCourseCard[] {
+  const planOwned = ownedCoursesForAccount(memberOrPayload, catalogCards).map((card) => ({
+    ...card,
+    availability: "available" as const,
+  }));
+  const seen = new Set(planOwned.map((card) => card.slug));
+  const purchases: AccountOwnedCourseCard[] = [];
+  for (const course of homeStudyCourses) {
+    const slug = String(course.courseId);
+    if (course.availability === "available" && course.href) {
+      const saleSlug = catalogCards.find((card) => card.href === course.href)?.slug ?? slug;
+      if (seen.has(saleSlug)) continue;
+      seen.add(saleSlug);
+      purchases.push({
+        slug: saleSlug,
+        title: course.title,
+        href: course.href,
+        availability: "available",
+      });
+      continue;
+    }
+    if (seen.has(slug)) continue;
+    seen.add(slug);
+    purchases.push({
+      slug,
+      title: course.title,
+      href: null,
+      availability: "not_on_site",
+    });
+  }
+  return [...planOwned, ...purchases];
 }
 
 export function shouldShowAccountMyCourses(courses: AccountOwnedCourseCard[]): boolean {

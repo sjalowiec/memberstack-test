@@ -87,7 +87,7 @@ describe("memberCourses", () => {
 
   it("formats access status from imported subscriberfree and credit_id_fk", () => {
     expect(formatCourseAccessStatus(subscriberFreeRow)).toBe("Subscriber free");
-    expect(formatCourseAccessStatus(creditPurchaseRow)).toBe("Credit purchase");
+    expect(formatCourseAccessStatus(creditPurchaseRow)).toBe("Credit on file");
     expect(
       formatCourseAccessStatus({
         subscriberfree: 0,

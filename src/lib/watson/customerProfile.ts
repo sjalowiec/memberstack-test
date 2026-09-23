@@ -1,4 +1,10 @@
 import { getMemberCourses, type MemberCourseDisplay } from "./memberCourses";
+import {
+  emptyCustomerPurchasedCoursesView,
+  loadCustomerPurchasedCourses,
+  type CustomerPurchasedCoursesView,
+} from "./customerPurchasedCourses";
+import { loadHomeStudyPurchasesForLegacyMemberId } from "../kinCourse/homeStudyPurchaseAccess";
 import { buildMemberAccountRepairHref } from "./memberAccountRepair";
 import { getMemberPdfPurchaseCount } from "./memberPdfPurchases";
 import {
@@ -143,6 +149,7 @@ export interface CustomerProfileData {
   snapshot: CustomerSnapshotMetric[];
   actions: CustomerProfileAction[];
   courses: MemberCourseDisplay[];
+  purchasedCourses: CustomerPurchasedCoursesView;
   orders: MemberOrderDisplay[];
   memberships: MemberMembershipDisplay[];
   pdfPurchaseCount: number | null;
@@ -527,6 +534,8 @@ export function buildCustomerSnapshot(input: {
   pdfPurchaseCount: number | null;
   timeline: CustomerTimelineEvent[];
   hasLegacyHistory: boolean;
+  /** Distinct verified Home Study purchases. Null when credit evidence is unavailable. */
+  verifiedHomeStudyPurchaseCount?: number | null;
   memberstackMember?: MemberstackMember | null;
   legacyLinkAmbiguous?: boolean;
   now?: Date;
@@ -601,7 +610,7 @@ export function buildCustomerSnapshot(input: {
 
   if (input.hasLegacyHistory) {
     metrics.push({
-      label: "Learn DesignaKnit enrollments",
+      label: "Home Study library records",
       value: String(input.courses.length),
     });
 
@@ -613,7 +622,7 @@ export function buildCustomerSnapshot(input: {
     });
   } else {
     metrics.push({
-      label: "Learn DesignaKnit enrollments",
+      label: "Home Study library records",
       value: NOT_AVAILABLE_YET,
       unavailable: true,
     });
@@ -624,11 +633,19 @@ export function buildCustomerSnapshot(input: {
     });
   }
 
-  metrics.push({
-    label: "Knit It Now courses owned",
-    value: NOT_AVAILABLE_YET,
-    unavailable: true,
-  });
+  const verifiedCount = input.verifiedHomeStudyPurchaseCount;
+  if (input.hasLegacyHistory && typeof verifiedCount === "number") {
+    metrics.push({
+      label: "Verified Home Study purchases",
+      value: String(verifiedCount),
+    });
+  } else {
+    metrics.push({
+      label: "Verified Home Study purchases",
+      value: NOT_AVAILABLE_YET,
+      unavailable: true,
+    });
+  }
 
   const mostRecentPurchase = hasStoreOrderRecords || input.hasLegacyHistory
     ? resolveMostRecentPurchaseLabel(input.orders, input.courses)
@@ -682,9 +699,9 @@ export function buildCustomerProfileActions(input: {
       description: "Grant a redistributable ebook to this customer’s My Downloads library",
     },
     {
-      label: "View course enrollments",
-      href: "#customer-course-enrollments",
-      description: "Jump to legacy course enrollments on this page",
+      label: "View purchased courses",
+      href: "#customer-purchased-courses",
+      description: "Jump to purchased courses on this page",
     },
     {
       label: "Add note",
@@ -820,16 +837,27 @@ async function loadLegacyHistoryData(
   memberships: MemberMembershipDisplay[];
   legacyNoteCount: number;
   pdfPurchaseCount: number;
+  verifiedHomeStudyPurchaseCount: number | null;
 }> {
-  const [courses, orders, memberships, legacyNoteCount, pdfPurchaseCount] = await Promise.all([
-    getMemberCourses(legacyMemberid, queryFn),
-    getMemberOrders(legacyMemberid, queryFn, { extraEmails }),
-    getMemberMemberships(legacyMemberid, queryFn),
-    getMemberLegacySupportNoteCount(legacyMemberid, queryFn),
-    getMemberPdfPurchaseCount(legacyMemberid, queryFn),
-  ]);
+  const [courses, orders, memberships, legacyNoteCount, pdfPurchaseCount, purchaseLookup] =
+    await Promise.all([
+      getMemberCourses(legacyMemberid, queryFn),
+      getMemberOrders(legacyMemberid, queryFn, { extraEmails }),
+      getMemberMemberships(legacyMemberid, queryFn),
+      getMemberLegacySupportNoteCount(legacyMemberid, queryFn),
+      getMemberPdfPurchaseCount(legacyMemberid, queryFn),
+      loadHomeStudyPurchasesForLegacyMemberId(legacyMemberid, queryFn),
+    ]);
 
-  return { courses, orders, memberships, legacyNoteCount, pdfPurchaseCount };
+  return {
+    courses,
+    orders,
+    memberships,
+    legacyNoteCount,
+    pdfPurchaseCount,
+    verifiedHomeStudyPurchaseCount:
+      purchaseLookup.identity === "unavailable" ? null : purchaseLookup.verifiedCourseIds.length,
+  };
 }
 
 function resolveNotesReadIds(
@@ -906,7 +934,7 @@ export async function loadLegacyCustomerProfile(
       member.memberid,
       Boolean(linkedMemberstackId),
     );
-    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory] = await Promise.all([
+    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory, purchasedCourses] = await Promise.all([
       getCustomerWatsonNotes(notesRead.memberstackId, notesRead.legacyMemberId),
       getCustomerWatsonNoteCount(notesRead.memberstackId, notesRead.legacyMemberId),
       loadCleanedLegacyHistoryForProfile({
@@ -916,6 +944,7 @@ export async function loadLegacyCustomerProfile(
         dumpLegacyMemberid: member.memberid,
         queryFn: deps.queryFn,
       }),
+      loadCustomerPurchasedCourses(member.memberid, deps.queryFn),
     ]);
 
     const timeline = buildCustomerTimeline({
@@ -945,6 +974,7 @@ export async function loadLegacyCustomerProfile(
       courses: legacyData.courses,
       orders: legacyData.orders,
       pdfPurchaseCount: legacyData.pdfPurchaseCount,
+      verifiedHomeStudyPurchaseCount: legacyData.verifiedHomeStudyPurchaseCount,
       timeline,
       hasLegacyHistory: true,
       memberstackMember,
@@ -972,6 +1002,7 @@ export async function loadLegacyCustomerProfile(
         legacyMemberid: member.memberid,
       }),
       courses: legacyData.courses,
+      purchasedCourses,
       orders: legacyData.orders,
       memberships: legacyData.memberships,
       pdfPurchaseCount: legacyData.pdfPurchaseCount,
@@ -1055,6 +1086,7 @@ export async function loadMemberstackCustomerProfile(
           memberships: [] as MemberMembershipDisplay[],
           legacyNoteCount: 0,
           pdfPurchaseCount: null as number | null,
+          verifiedHomeStudyPurchaseCount: null,
         };
 
     const notesRead = resolveNotesReadIds(
@@ -1074,6 +1106,10 @@ export async function loadMemberstackCustomerProfile(
         queryFn: deps.queryFn,
       }),
     ]);
+    const purchasedCourseMemberid = cleanedLegacyHistory?.legacyMemberid ?? legacyMemberid;
+    const purchasedCourses = purchasedCourseMemberid
+      ? await loadCustomerPurchasedCourses(purchasedCourseMemberid, deps.queryFn)
+      : emptyCustomerPurchasedCoursesView();
 
     const timeline = buildCustomerTimeline({
       member: hasLegacyHistory ? legacyMember : null,
@@ -1103,6 +1139,7 @@ export async function loadMemberstackCustomerProfile(
       courses: legacyData.courses,
       orders: legacyData.orders,
       pdfPurchaseCount: legacyData.pdfPurchaseCount,
+      verifiedHomeStudyPurchaseCount: legacyData.verifiedHomeStudyPurchaseCount,
       timeline,
       hasLegacyHistory,
       memberstackMember,
@@ -1133,6 +1170,7 @@ export async function loadMemberstackCustomerProfile(
         legacyMemberid,
       }),
       courses: legacyData.courses,
+      purchasedCourses,
       orders: legacyData.orders,
       memberships: legacyData.memberships,
       pdfPurchaseCount: legacyData.pdfPurchaseCount,

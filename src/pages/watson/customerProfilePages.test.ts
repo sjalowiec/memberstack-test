@@ -227,7 +227,8 @@ describe("Watson customer profile pages", () => {
     expect(legacyHistory).toContain("data-legacy-customer-notes-admin-only");
     expect(legacyHistory).toContain("Private legacy admin notes");
     expect(legacyHistory).toContain("Membership History");
-    expect(legacyHistory).toContain("Purchased Courses");
+    expect(legacyHistory).not.toContain('class="watson-customer__subsection-title">Purchased Courses');
+    expect(legacyHistory).toContain("Course purchases are listed under");
     expect(legacyHistory).not.toContain("LearnDesignKnit Course Purchase");
     expect(legacyHistory).toContain("Purchased Patterns");
     expect(legacyHistory).toContain("LK150 Bundle");
@@ -242,7 +243,9 @@ describe("Watson customer profile pages", () => {
     expect(purchases).toContain("Shopify");
     expect(purchases).toContain("WatsonCustomerStoreFulfillment");
     expect(purchases).toContain("notesWriteId");
-    expect(purchases).toContain('title="Course Access"');
+    expect(purchases).toContain('title="Purchased Courses"');
+    expect(purchases).toContain('id="customer-purchased-courses"');
+    expect(purchases).not.toContain('title="Course Access"');
     expect(purchases).toContain('title="PDF Purchases"');
     expect(purchases).toContain("data-watson-customer-pdf-panel");
     expect(purchases).toContain("Not available yet");

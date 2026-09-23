@@ -19,9 +19,10 @@ const visibleColumns = getVisibleCourseColumns(courses);
   embedded ? (
     <>
       <p class="watson__section-note">
-        Imported from <code>legacy_course_member_library</code>. Each row is a separate legacy
-        enrollment record. Completion, progress, amount paid, and last activity are not in this
-        export.
+        Imported from <code>legacy_course_member_library</code>. Each row is a Home Study
+        library record, including subscriber-free enrollments. "Credit on file" is not proof of
+        payment. Verified purchases use the separate credit-evidence table. This list is not
+        LearnDesignKnit, and it is not the Legacy History purchased-course list.
       </p>
       {
         courses.length === 0 ? (
@@ -109,9 +110,10 @@ const visibleColumns = getVisibleCourseColumns(courses);
         {heading}
       </h2>
       <p class="watson__section-note">
-        Imported from <code>legacy_course_member_library</code>. Each row is a separate legacy
-        enrollment record. Completion, progress, amount paid, and last activity are not in this
-        export.
+        Imported from <code>legacy_course_member_library</code>. Each row is a Home Study
+        library record, including subscriber-free enrollments. "Credit on file" is not proof of
+        payment. Verified purchases use the separate credit-evidence table. This list is not
+        LearnDesignKnit, and it is not the Legacy History purchased-course list.
       </p>
       {
         courses.length === 0 ? (

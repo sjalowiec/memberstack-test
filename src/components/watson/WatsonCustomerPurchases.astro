@@ -1,16 +1,19 @@
 ---
 import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
 import WatsonCustomerStoreFulfillment from "./WatsonCustomerStoreFulfillment.astro";
-import WatsonMemberCourses from "./WatsonMemberCourses.astro";
+import WatsonCustomerPurchasedCourses from "./WatsonCustomerPurchasedCourses.astro";
 import WatsonMemberOrdersTable from "./WatsonMemberOrdersTable.astro";
 import {
   buildPdfPurchasesFragmentUrl,
 } from "../../lib/watson/watsonMemberPdfPurchasesSection";
-import { type MemberCourseDisplay } from "../../lib/watson/memberCourses";
+import {
+  emptyCustomerPurchasedCoursesView,
+  type CustomerPurchasedCoursesView,
+} from "../../lib/watson/customerPurchasedCourses";
 import { type MemberOrderDisplay } from "../../lib/watson/memberOrders";
 
 interface Props {
-  courses: MemberCourseDisplay[];
+  purchasedCourses?: CustomerPurchasedCoursesView;
   orders: MemberOrderDisplay[];
   hasLegacyHistory: boolean;
   legacyMemberid?: string | null;
@@ -23,7 +26,7 @@ interface Props {
 }
 
 const {
-  courses,
+  purchasedCourses = emptyCustomerPurchasedCoursesView(),
   orders,
   hasLegacyHistory,
   legacyMemberid = null,
@@ -36,6 +39,10 @@ const {
 } = Astro.props;
 
 const pdfCount = pdfPurchaseCount ?? 0;
+const showPurchasedCourses =
+  hasLegacyHistory ||
+  purchasedCourses.purchaseCount > 0 ||
+  purchasedCourses.needsReview.length > 0;
 const pdfFragmentUrl =
   hasLegacyHistory && legacyMemberid ? buildPdfPurchasesFragmentUrl(legacyMemberid) : "";
 const showStorePurchases = hasLegacyHistory || orders.length > 0;
@@ -87,13 +94,13 @@ function formatRecentSummary(count: number, label: string, recentDate: string | 
   />
 
   <WatsonCustomerAccordionSection
-    id="customer-course-enrollments"
-    title="Course Access"
-    count={hasLegacyHistory ? courses.length : 0}
+    id="customer-purchased-courses"
+    title="Purchased Courses"
+    count={showPurchasedCourses ? purchasedCourses.purchaseCount : 0}
   >
     {
-      hasLegacyHistory ? (
-        <WatsonMemberCourses courses={courses} embedded={true} />
+      showPurchasedCourses ? (
+        <WatsonCustomerPurchasedCourses purchasedCourses={purchasedCourses} />
       ) : (
         <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
       )

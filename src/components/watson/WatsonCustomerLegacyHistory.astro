@@ -12,7 +12,8 @@ interface Props {
 }
 
 const { history } = Astro.props;
-const visible = hasVisibleCleanedLegacyHistory(history);
+const historyForSection = history ? { ...history, coursePurchases: [] } : null;
+const visible = hasVisibleCleanedLegacyHistory(historyForSection);
 const showProcessor = history ? membershipHistoryShowsProcessor(history.memberships) : false;
 ---
 
@@ -21,12 +22,13 @@ const showProcessor = history ? membershipHistoryShowsProcessor(history.membersh
     <WatsonCustomerAccordionSection
       id="customer-legacy-history"
       title="Legacy History"
-      count={cleanedLegacyHistoryAccordionCount(history)}
+      count={historyForSection ? cleanedLegacyHistoryAccordionCount(historyForSection) : 0}
       class="watson-customer__legacy-history"
     >
       <p class="watson__section-note">
         Cleaned historical records from Watson-native legacy history. This is not current
-        Memberstack billing or live membership status. Amounts are shown as recorded.
+        Memberstack billing or live membership status. Course purchases are listed under
+        Purchased Courses. Amounts are shown as recorded.
       </p>
 
       {
@@ -95,51 +97,6 @@ const showProcessor = history ? membershipHistoryShowsProcessor(history.membersh
                             </td>
                           ) : null
                         }
-                      </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : null
-      }
-
-      {
-        history.coursePurchases.length > 0 ? (
-          <div class="watson-customer__membership-section">
-            <h3 class="watson-customer__subsection-title">Purchased Courses</h3>
-            <div class="watson__table-wrap">
-              <table class="watson-table" data-sortable-table data-cleaned-legacy-course-table>
-                <thead>
-                  <tr>
-                    <th scope="col" data-sort-key="description" data-sort-type="string" tabindex="0">
-                      Description
-                    </th>
-                    <th
-                      scope="col"
-                      data-sort-key="purchasedate"
-                      data-sort-type="date"
-                      data-sort-default="true"
-                      data-sort-default-direction="desc"
-                      tabindex="0"
-                    >
-                      Purchase date
-                    </th>
-                    <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    history.coursePurchases.map((record) => (
-                      <tr>
-                        <td data-sort-value={record.description}>{record.description}</td>
-                        <td data-sort-value={record.transactionDateSort}>
-                          {record.transactionDate ?? ""}
-                        </td>
-                        <td data-sort-value={record.amountSort}>{record.amount ?? ""}</td>
                       </tr>
                     ))
                   }

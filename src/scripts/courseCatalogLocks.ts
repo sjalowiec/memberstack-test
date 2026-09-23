@@ -15,6 +15,10 @@ import {
   preferCourseCatalogFreeFirst,
 } from "../lib/coursesCatalogFreeFirst";
 import { logMemberAccessDebug } from "../lib/memberAccess";
+import {
+  ensureHomeStudyPurchaseContext,
+  verifiedHomeStudyCourseIdsForAccess,
+} from "../lib/homeStudyPurchaseClient";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
 
@@ -64,7 +68,11 @@ function applyLocks(memberOrPayload: unknown): void {
 
       const courseSlug = card.dataset.courseSlug ?? null;
       const unlocked =
-        forceUnlock || canAccessCourse(access, memberOrPayload, { courseSlug });
+        forceUnlock ||
+        canAccessCourse(access, memberOrPayload, {
+          courseSlug,
+          verifiedHomeStudyCourseIds: verifiedHomeStudyCourseIdsForAccess(memberOrPayload),
+        });
       setLockVisible(lock, !unlocked);
     });
 
@@ -84,6 +92,7 @@ async function resolveLocks(): Promise<void> {
 
   const res = await waitForMemberstackReady();
   await ensureLegacyPaidThroughContext(res);
+  await ensureHomeStudyPurchaseContext(res);
   logMemberAccessDebug("courses.catalogLocks", res, {
     preferFreeFirst: preferCourseCatalogFreeFirst(res),
   });

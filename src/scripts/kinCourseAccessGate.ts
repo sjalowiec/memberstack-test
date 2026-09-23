@@ -17,6 +17,10 @@
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
 import {
+  ensureHomeStudyPurchaseContext,
+  verifiedHomeStudyCourseIdsForAccess,
+} from "../lib/homeStudyPurchaseClient";
+import {
   KIN_COURSE_ACCESS_SESSION_KEY,
   clearConfirmedKinCourseAccessSlug,
   isKinCourseMemberstackResolved,
@@ -177,7 +181,11 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   }
 
   await ensureLegacyPaidThroughContext(res.payload);
-  const unlocked = canAccessCourse(access, res.payload, { courseSlug });
+  await ensureHomeStudyPurchaseContext(res.payload);
+  const unlocked = canAccessCourse(access, res.payload, {
+    courseSlug,
+    verifiedHomeStudyCourseIds: verifiedHomeStudyCourseIdsForAccess(res.payload),
+  });
   const viewer = kinCourseGateViewer(unlocked, res.payload);
 
   logMemberAccessDebug("kinCourse.gate", res.payload, {

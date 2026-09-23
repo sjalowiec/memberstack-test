@@ -1,7 +1,7 @@
 import { hasDisplayValue } from "./memberDetail";
 import { formatMemberJoinedDateDisplay, type WatsonQueryFn } from "./memberSearch";
 import { queryWatson } from "./db";
-import { resolveLegacyCourseName } from "./courseNameLookup";
+import { homeStudyPlaybackTitle } from "../../config/homeStudyCourseMap";
 
 export interface LegacyCourseMemberLibraryRow {
   homestudy_libraryid: string | number;
@@ -58,7 +58,7 @@ export function formatCourseAccessStatus(
     return "Subscriber free";
   }
   if (row.credit_id_fk != null && row.credit_id_fk !== 0) {
-    return "Credit purchase";
+    return "Credit on file";
   }
   if (row.subscriberfree === 0) {
     return "Standard enrollment";
@@ -78,7 +78,7 @@ export function buildCourseDateAddedSort(dateadded: Date | string | null): strin
 
 export function buildCourseDisplay(
   row: LegacyCourseMemberLibraryRow,
-  courseName: string | null = resolveLegacyCourseName(row.homestudy_courseid_fk),
+  courseName: string | null = homeStudyPlaybackTitle(row.homestudy_courseid_fk),
 ): MemberCourseDisplay {
   const creditId =
     row.credit_id_fk != null && row.credit_id_fk !== 0 ? String(row.credit_id_fk) : null;

@@ -12,6 +12,10 @@
  * Retired KIN Beta Access does not unlock courses.
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
+import {
+  ensureHomeStudyPurchaseContext,
+  verifiedHomeStudyCourseIdsForAccess,
+} from "../lib/homeStudyPurchaseClient";
 import { logMemberAccessDebug } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { videoDevBypass } from "../lib/devBypass";
@@ -70,7 +74,11 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
 
   const res = await waitForMemberstackReady();
   await ensureLegacyPaidThroughContext(res);
-  const unlocked = canAccessCourse(access, res, { courseSlug });
+  await ensureHomeStudyPurchaseContext(res);
+  const unlocked = canAccessCourse(access, res, {
+    courseSlug,
+    verifiedHomeStudyCourseIds: verifiedHomeStudyCourseIdsForAccess(res),
+  });
 
   logMemberAccessDebug("courses.gate", res, {
     courseAccess: access,

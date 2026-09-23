@@ -10,7 +10,8 @@
  *                  confirmed Watson paid-through date today or later)
  *                  or a mapped individual-course plan for this slug.
  *   - "purchase" — included with membership (same as member courses).
- *                  Non-members may unlock via that course's Legacy or Paid plan.
+ *                  Non-members may unlock via that course's Legacy or Paid plan,
+ *                  or a verified Home Study purchase of a mapped course id.
  *
  * This helper reuses the global Memberstack payload parsing
  * (`getActivePlanIds`, `isMemberLoggedIn`) so course gating stays consistent
@@ -20,6 +21,7 @@ import {
   canonicalCourseCatalogSlug,
   LEGACY_COURSE_PLAN_SLUGS,
 } from "../config/legacyCourseEntitlements";
+import { verifiedHomeStudyPlaybackCourse } from "../config/homeStudyCourseMap";
 import { getActivePlanIds, hasMemberAccess, isMemberLoggedIn, type MemberAccessOptions } from "./memberAccess";
 
 export type CourseAccessLevel = "free" | "member" | "purchase";
@@ -101,22 +103,47 @@ export function hasIndividualCoursePurchase(
   });
 }
 
+/**
+ * Verified historical Home Study purchase for this page.
+ * `courseIds` must come from the authenticated member-access lookup.
+ * A slug or id that is not in the explicit playback map never unlocks.
+ */
+export function hasVerifiedHomeStudyCourseAccess(
+  courseSlug: string | null | undefined,
+  courseIds: readonly number[] | null | undefined,
+): boolean {
+  if (!courseIds || courseIds.length === 0) return false;
+  const sale = verifiedHomeStudyPlaybackCourse(courseSlug);
+  if (!sale) return false;
+  return courseIds.includes(sale.courseId);
+}
+
 /** Whether the given course access level unlocks content for this viewer. */
 export function canAccessCourse(
   access: CourseAccessLevel,
   memberOrPayload: unknown,
-  options?: { courseSlug?: string | null } & MemberAccessOptions,
+  options?: {
+    courseSlug?: string | null;
+    verifiedHomeStudyCourseIds?: readonly number[] | null;
+  } & MemberAccessOptions,
 ): boolean {
   if (access === "free") return true;
   if (hasCourseMembershipAccess(memberOrPayload, options)) return true;
-  return hasIndividualCoursePurchase(options?.courseSlug, memberOrPayload);
+  if (hasIndividualCoursePurchase(options?.courseSlug, memberOrPayload)) return true;
+  return hasVerifiedHomeStudyCourseAccess(
+    options?.courseSlug,
+    options?.verifiedHomeStudyCourseIds,
+  );
 }
 
 /** Resolve the viewer's state for a course, for choosing CTAs / gate copy. */
 export function getCourseViewerState(
   access: CourseAccessLevel,
   memberOrPayload: unknown,
-  options?: { courseSlug?: string | null } & MemberAccessOptions,
+  options?: {
+    courseSlug?: string | null;
+    verifiedHomeStudyCourseIds?: readonly number[] | null;
+  } & MemberAccessOptions,
 ): CourseViewerState {
   if (canAccessCourse(access, memberOrPayload, options)) return "open";
 

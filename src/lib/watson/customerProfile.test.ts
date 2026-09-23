@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
 import { MEMBER_BY_EMAIL_SQL, resolveLegacyLinkByMemberstackEmail } from "./customerIdentifier";
+import { CUSTOMER_COURSE_PURCHASE_HISTORY_SQL } from "./customerPurchasedCourses";
 import {
   WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL,
   WATSON_LEGACY_CUSTOMERS_BY_EMAIL_SQL,
@@ -430,7 +431,7 @@ describe("customerProfile", () => {
     });
 
     expect(snapshot.find((metric) => metric.label === "Store orders")?.unavailable).toBe(true);
-    expect(snapshot.find((metric) => metric.label === "Knit It Now courses owned")?.unavailable).toBe(
+    expect(snapshot.find((metric) => metric.label === "Verified Home Study purchases")?.unavailable).toBe(
       true,
     );
     expect(snapshot.find((metric) => metric.label === "Current membership plan")?.value).not.toBe(
@@ -469,7 +470,7 @@ describe("customerProfile", () => {
 
     expect(snapshot.find((metric) => metric.label === "Store orders")?.value).toBe("1");
     expect(snapshot.find((metric) => metric.label === "Store orders")?.unavailable).toBeFalsy();
-    expect(snapshot.find((metric) => metric.label === "Learn DesignaKnit enrollments")?.unavailable).toBe(
+    expect(snapshot.find((metric) => metric.label === "Home Study library records")?.unavailable).toBe(
       true,
     );
   });
@@ -1142,7 +1143,7 @@ describe("customerProfile", () => {
       if (sql === WATSON_LEGACY_CUSTOMER_BY_MEMBERID_SQL) {
         return [{ legacy_memberid: "DAK-ONLY", email: "pat@example.com", customer_notes: "" }];
       }
-      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL) {
+      if (sql === WATSON_LEGACY_HISTORY_BY_MEMBERID_SQL || sql === CUSTOMER_COURSE_PURCHASE_HISTORY_SQL) {
         return [
           {
             category: "LearnDesignKnit Course Purchase",
@@ -1151,6 +1152,9 @@ describe("customerProfile", () => {
             amount: "49.99",
             expiration_date: null,
             processor: null,
+            source_record_id: "learndesignknit:8811",
+            item_id: "1",
+            transaction_id: "8811",
           },
         ];
       }
@@ -1176,6 +1180,14 @@ describe("customerProfile", () => {
         category: "LearnDesignKnit Course Purchase",
       }),
     ]);
+    expect(result.profile.purchasedCourses.homeStudyPurchases).toEqual([]);
+    expect(result.profile.purchasedCourses.designaknitPurchases[0]?.title).toBe(
+      "Original Pattern Drafting 101",
+    );
+    expect(result.profile.purchasedCourses.designaknitPurchases[0]?.sourceLabel).toBe(
+      "Transaction 8811",
+    );
+    expect(result.profile.purchasedCourses.purchaseCount).toBe(1);
   });
 
   it("attaches googlemail DAK history to a gmail.com Memberstack profile without rewriting the purchase email", async () => {

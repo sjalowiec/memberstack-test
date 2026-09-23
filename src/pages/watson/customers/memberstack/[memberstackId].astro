@@ -94,7 +94,7 @@ if (!result.ok && result.reason === "not_found") {
         />
         <WatsonCustomerLegacyHistory history={result.profile.cleanedLegacyHistory} />
         <WatsonCustomerPurchases
-          courses={result.profile.courses}
+          purchasedCourses={result.profile.purchasedCourses}
           orders={result.profile.orders}
           hasLegacyHistory={result.profile.hasLegacyHistory}
           legacyMemberid={result.profile.legacyMemberid}

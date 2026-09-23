@@ -1,0 +1,190 @@
+---
+import type { CustomerPurchasedCoursesView } from "../../lib/watson/customerPurchasedCourses";
+
+interface Props {
+  purchasedCourses: CustomerPurchasedCoursesView;
+}
+
+const { purchasedCourses } = Astro.props;
+const { purchases, needsReview, creditEvidenceAvailable } = purchasedCourses;
+---
+
+<p class="watson__section-note">
+  Courses this customer paid for. Home Study, LearnDAK, and LK150 stay labeled as separate
+  families, and a course ID is never used to match one family to another. Subscriber-free Home
+  Study enrollments are omitted from this list and from the count. A row is not called a purchase
+  unless a Legacy History purchase record or loaded credit-history evidence verifies it.
+</p>
+<p class="watson__section-note">
+  Challenges have a content catalog only. Watson has no Challenges enrollment or payment table, so
+  none are listed here. Saved-pattern challenge ids, DesignaKnit software, books, and license
+  records are not course purchases.
+</p>
+{
+  creditEvidenceAvailable ? null : (
+    <p class="watson__section-note">
+      Credit-history payment evidence is not loaded. Home Study rows without a matching Legacy
+      History course purchase are under Needs review.
+    </p>
+  )
+}
+
+{
+  purchases.length > 0 ? null : (
+    <p class="watson__placeholder">No purchased courses found for this customer.</p>
+  )
+}
+
+{
+  purchases.length > 0 ? (
+    <div class="watson__table-wrap" data-purchased-courses>
+      <table class="watson-table" data-sortable-table data-purchased-course-table>
+        <thead>
+          <tr>
+            <th scope="col" data-sort-key="course" data-sort-type="string" tabindex="0">
+              Course
+            </th>
+            <th scope="col" data-sort-key="family" data-sort-type="string" tabindex="0">
+              Family
+            </th>
+            <th
+              scope="col"
+              data-sort-key="purchasedate"
+              data-sort-type="date"
+              data-sort-default="true"
+              data-sort-default-direction="desc"
+              tabindex="0"
+            >
+              Purchase date
+            </th>
+            <th scope="col" data-sort-key="source" data-sort-type="string" tabindex="0">
+              Evidence
+            </th>
+            <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
+              Amount
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            purchases.map((course) => (
+              <tr data-course-family={course.family}>
+                <td data-sort-value={course.title ?? "Needs review"}>
+                  {course.titleNeedsReview ? (
+                    <div class="watson-customer__title-review" data-course-title-needs-review>
+                      <p>Needs review</p>
+                      {course.titleReviewNote ? <p>{course.titleReviewNote}</p> : null}
+                      {
+                        course.recordedTitles.length > 0 ? (
+                          <ul>
+                            {course.recordedTitles.map((recorded) => (
+                              <li>
+                                {recorded.source}: {recorded.title}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null
+                      }
+                    </div>
+                  ) : (
+                    (course.title ?? "")
+                  )}
+                </td>
+                <td data-sort-value={course.family}>{course.family}</td>
+                <td data-sort-value={course.purchaseDateSort}>{course.purchaseDate ?? ""}</td>
+                <td data-sort-value={course.sourceLabel ?? ""}>{course.sourceLabel ?? ""}</td>
+                <td data-sort-value={course.amount ?? ""}>{course.amount ?? ""}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  ) : null
+}
+
+{
+  needsReview.length > 0 ? (
+    <div
+      class="watson-customer__membership-section"
+      data-purchased-courses-needs-review
+      data-admin-only="true"
+    >
+      <h3 class="watson-customer__subsection-title">Needs review</h3>
+      <p class="watson__section-note">
+        Admin only. These rows are not purchases and are not included in the count.
+      </p>
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table data-course-review-table>
+          <thead>
+            <tr>
+              <th scope="col" data-sort-key="course" data-sort-type="string" tabindex="0">
+                Course
+              </th>
+              <th scope="col" data-sort-key="family" data-sort-type="string" tabindex="0">
+                Family
+              </th>
+              <th scope="col" data-sort-key="courseid" data-sort-type="string" tabindex="0">
+                Course ID
+              </th>
+              <th scope="col" data-sort-key="dateadded" data-sort-type="date" tabindex="0">
+                Date added
+              </th>
+              <th scope="col" data-sort-key="credit" data-sort-type="string" tabindex="0">
+                Credit ID
+              </th>
+              <th scope="col" data-sort-key="reason" data-sort-type="string" tabindex="0">
+                Why it is not a purchase
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              needsReview.map((course) => (
+                <tr>
+                  <td data-sort-value={course.title ?? "Needs review"}>
+                    {course.titleNeedsReview ? (
+                      <div class="watson-customer__title-review" data-course-title-needs-review>
+                        <p>Needs review</p>
+                        {course.titleReviewNote ? <p>{course.titleReviewNote}</p> : null}
+                        {
+                          course.recordedTitles.length > 0 ? (
+                            <ul>
+                              {course.recordedTitles.map((recorded) => (
+                                <li>
+                                  {recorded.source}: {recorded.title}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null
+                        }
+                      </div>
+                    ) : (
+                      (course.title ?? "")
+                    )}
+                  </td>
+                  <td data-sort-value={course.family}>{course.family}</td>
+                  <td data-sort-value={course.courseId}>{course.courseId}</td>
+                  <td data-sort-value={course.dateAddedSort}>{course.dateAdded ?? ""}</td>
+                  <td data-sort-value={course.creditId ?? ""}>{course.creditId ?? ""}</td>
+                  <td data-sort-value={course.reason}>{course.reason}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ) : null
+}
+
+<style>
+  .watson-customer__title-review p {
+    margin: 0 0 0.35rem;
+  }
+
+  .watson-customer__title-review ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+</style>

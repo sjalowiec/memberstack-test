@@ -11,11 +11,16 @@
  */
 import { escapeHtml } from "../lib/favorites/favoriteStarUi";
 import {
+  accountCoursesForMember,
   accountOwnableCourseCatalogCards,
-  ownedCoursesForAccount,
   shouldShowAccountMyCourses,
   type AccountOwnedCourseCard,
+  type HomeStudyAccountCourseCard,
 } from "../lib/kinCourse/accountMyCourses";
+import {
+  ensureHomeStudyPurchaseContext,
+  rememberedHomeStudyAccountCoursesForMember,
+} from "../lib/homeStudyPurchaseClient";
 import {
   createAccountMyCoursesController,
   findAccountMyCoursesRoot,
@@ -82,17 +87,26 @@ function renderList(root: HTMLElement, courses: AccountOwnedCourseCard[]): void 
 
     li.innerHTML =
       `<p class="account-my-courses__title">${escapeHtml(course.title)}</p>` +
-      `<a class="account-my-courses__view" href="${escapeHtml(course.href)}">View Course</a>`;
+      (course.href
+        ? `<a class="account-my-courses__view" href="${escapeHtml(course.href)}">View Course</a>`
+        : `<span class="account-my-courses__view">Not on this site yet</span>`);
     list.appendChild(li);
   }
 }
 
-export function applyAccountMyCoursesView(
+export async function applyAccountMyCoursesView(
   root: HTMLElement,
   memberOrPayload: unknown,
   catalogCards: AccountOwnedCourseCard[] = readCatalogCards(),
-): AccountOwnedCourseCard[] {
-  const courses = ownedCoursesForAccount(memberOrPayload, catalogCards);
+  homeStudyCourses?: readonly HomeStudyAccountCourseCard[],
+): Promise<AccountOwnedCourseCard[]> {
+  if (memberOrPayload && homeStudyCourses === undefined) {
+    await ensureHomeStudyPurchaseContext(memberOrPayload);
+  }
+  const purchases =
+    homeStudyCourses ??
+    rememberedHomeStudyAccountCoursesForMember(memberOrPayload);
+  const courses = accountCoursesForMember(memberOrPayload, purchases, catalogCards);
   const visible = shouldShowAccountMyCourses(courses);
 
   if (!visible) {
@@ -110,7 +124,7 @@ export function applyAccountMyCoursesView(
 const controller = createAccountMyCoursesController({
   getRoot: () => findAccountMyCoursesRoot(document),
   applyView: (root, payload) => {
-    applyAccountMyCoursesView(root, payload);
+    void applyAccountMyCoursesView(root, payload);
   },
   readPayload: () => waitForMemberstackPayload(),
   addWindowListener: (type, listener) => {

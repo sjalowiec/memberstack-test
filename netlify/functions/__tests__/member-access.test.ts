@@ -12,10 +12,15 @@ vi.mock("../../../src/lib/memberAccessServer", () => ({
   evaluateMemberAccessForRecord: vi.fn(),
 }));
 
+vi.mock("../../../src/lib/kinCourse/homeStudyPurchaseAccess", () => ({
+  loadHomeStudyPurchasesForMemberstackRecord: vi.fn(),
+}));
+
 import handler from "../member-access";
 import { requireMember } from "../lib/member-auth.js";
 import { getMemberstackAdminClient } from "../lib/memberstack-admin.js";
 import { evaluateMemberAccessForRecord } from "../../../src/lib/memberAccessServer";
+import { loadHomeStudyPurchasesForMemberstackRecord } from "../../../src/lib/kinCourse/homeStudyPurchaseAccess";
 
 const VERIFIED_ID = "mem_from_jwt";
 
@@ -48,6 +53,11 @@ beforeEach(() => {
     hasMemberAccess: false,
     viewerAccessState: "loggedInNoAccess",
     legacyPaidThroughYmd: null,
+  });
+  vi.mocked(loadHomeStudyPurchasesForMemberstackRecord).mockResolvedValue({
+    identity: "none",
+    verifiedCourseIds: [],
+    accountCourses: [],
   });
 });
 
@@ -91,6 +101,12 @@ describe("member-access Netlify function", () => {
     });
     const client = getMemberstackAdminClient();
     expect(client?.getMember).toHaveBeenCalledWith(VERIFIED_ID);
+    expect(loadHomeStudyPurchasesForMemberstackRecord).toHaveBeenCalledWith(
+      expect.objectContaining({ id: VERIFIED_ID }),
+    );
+    expect(loadHomeStudyPurchasesForMemberstackRecord).not.toHaveBeenCalledWith(
+      expect.objectContaining({ id: "mem_spoof" }),
+    );
   });
 
   it("returns 503 when Admin client is unavailable", async () => {
