@@ -1,14 +1,14 @@
 ---
-import WatsonPageShell from "../../../../components/watson/WatsonPageShell.astro";
-import { getContactMessageById } from "../../../../lib/contact/contactMessagesDb";
-import { buildContactReplyMailto } from "../../../../lib/contact/contactMessageMailto";
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import { getContactMessageById } from "../../../lib/contact/contactMessagesDb";
+import { buildContactReplyMailto } from "../../../lib/contact/contactMessageMailto";
 import {
   buildContactAttachmentUrl,
   formatContactTimestamp,
   isSafeHttpUrl,
   statusLabel,
   validateContactMessageId,
-} from "../../../../lib/contact/contactMessageRecord";
+} from "../../../lib/contact/contactMessageRecord";
 
 export const prerender = false;
 
@@ -304,6 +304,20 @@ const heading = message ? message.name || message.email : "Contact message";
 </style>
 
 <script>
-  import { initWatsonContactMessageActions } from "../../../../scripts/watsonContactMessages";
-  initWatsonContactMessageActions(document);
+  import { initWatsonContactMessageActions } from "../../../scripts/watsonContactMessages";
+
+  function bootContactMessageActions(): void {
+    initWatsonContactMessageActions(document);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootContactMessageActions, { once: true });
+  } else {
+    bootContactMessageActions();
+  }
+
+  if (document.documentElement.dataset.contactMessageActionsBoot !== "true") {
+    document.documentElement.dataset.contactMessageActionsBoot = "true";
+    document.addEventListener("astro:page-load", bootContactMessageActions);
+  }
 </script>
