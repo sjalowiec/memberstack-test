@@ -55,6 +55,12 @@ export const CONTACT_MESSAGE_COUNT_NEW_SQL = `
   WHERE status = 'new'
 `;
 
+export const CONTACT_MESSAGE_DELETE_SQL = `
+  DELETE FROM watson_contact_messages
+  WHERE id = $1
+  RETURNING id, status, attachment_blob_key
+`;
+
 export const CONTACT_MESSAGE_INSERT_SQL = `
   INSERT INTO watson_contact_messages (
     id,
@@ -341,4 +347,43 @@ export async function updateContactMessage(
     return { ok: false, error: "Unable to update contact message.", status: 500 };
   }
   return { ok: true, value: record };
+}
+
+export type DeletedContactMessage = {
+  id: string;
+  status: ContactMessageStatus;
+  attachmentBlobKey: string | null;
+};
+
+export async function deleteContactMessage(
+  id: string,
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<ContactMessageWriteResult<DeletedContactMessage>> {
+  const validatedId = validateContactMessageId(id);
+  if (!validatedId.ok) {
+    return { ok: false, error: validatedId.error, status: 400 };
+  }
+
+  const rows = await queryFn<{
+    id: string;
+    status: string;
+    attachment_blob_key: string | null;
+  }>(CONTACT_MESSAGE_DELETE_SQL, [validatedId.value]);
+  const row = rows[0];
+  if (!row?.id) {
+    return { ok: false, error: "Message not found.", status: 404 };
+  }
+
+  const status =
+    row.status === "new" || row.status === "responded" || row.status === "closed"
+      ? row.status
+      : "closed";
+  return {
+    ok: true,
+    value: {
+      id: row.id,
+      status,
+      attachmentBlobKey: row.attachment_blob_key?.trim() || null,
+    },
+  };
 }

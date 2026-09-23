@@ -5,9 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   CONTACT_MESSAGE_COUNT_NEW_SQL,
+  CONTACT_MESSAGE_DELETE_SQL,
   CONTACT_MESSAGE_INSERT_SQL,
   CONTACT_MESSAGE_LIST_SQL,
   countNewContactMessages,
+  deleteContactMessage,
   insertContactMessage,
   updateContactMessage,
   type ContactMessageRow,
@@ -180,6 +182,49 @@ describe("contact message database writes", () => {
     expect(updateParams[1]).toBe("responded");
     expect(updateParams[2]).toBe("2026-09-23T18:00:00.000Z");
     expect(updateParams[3]).toBeNull();
+  });
+
+  it("deletes one message by id and returns its attachment key", async () => {
+    const queryFn = vi.fn().mockResolvedValueOnce([
+      {
+        id: storedRow.id,
+        status: "new",
+        attachment_blob_key: " contact/11111111-1111-4111-8111-111111111111.png ",
+      },
+    ]);
+
+    const result = await deleteContactMessage(storedRow.id, queryFn);
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        id: storedRow.id,
+        status: "new",
+        attachmentBlobKey: "contact/11111111-1111-4111-8111-111111111111.png",
+      },
+    });
+    expect(queryFn).toHaveBeenCalledWith(CONTACT_MESSAGE_DELETE_SQL, [storedRow.id]);
+    expect(CONTACT_MESSAGE_DELETE_SQL).toMatch(/DELETE FROM watson_contact_messages/i);
+    expect(CONTACT_MESSAGE_DELETE_SQL).toContain("WHERE id = $1");
+    expect(CONTACT_MESSAGE_DELETE_SQL).not.toMatch(/\bDROP\b/i);
+  });
+
+  it("does not delete when the id is invalid or the message is missing", async () => {
+    const queryFn = vi.fn().mockResolvedValueOnce([]);
+
+    await expect(deleteContactMessage("bad id", queryFn)).resolves.toEqual({
+      ok: false,
+      error: "Message id is invalid.",
+      status: 400,
+    });
+    expect(queryFn).not.toHaveBeenCalled();
+
+    await expect(deleteContactMessage(storedRow.id, queryFn)).resolves.toEqual({
+      ok: false,
+      error: "Message not found.",
+      status: 404,
+    });
+    expect(queryFn).toHaveBeenCalledTimes(1);
   });
 });
 

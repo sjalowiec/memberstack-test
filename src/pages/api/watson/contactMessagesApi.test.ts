@@ -38,7 +38,16 @@ describe("Watson contact-messages API routes", () => {
     expect(itemApi).toContain("requireWatsonAdminJson");
     expect(itemApi).toContain("export const GET");
     expect(itemApi).toContain("export const PATCH");
+    expect(itemApi).toContain("export const DELETE");
     expect(itemApi).toContain("updateContactMessage");
+    expect(itemApi).toContain("deleteContactMessage");
+    expect(itemApi).toContain("countNewContactMessages");
+    expect(listPage).toContain("Open message");
+    expect(listPage).toContain("data-contact-list-respond");
+    expect(listPage).toContain("Mark Responded");
+    expect(listPage).toContain('message.status === "new"');
+    expect(listPage).toContain("data-contact-list-delete");
+    expect(listPage).toContain("initWatsonContactMessageList");
     expect(listPage).toContain('export const prerender = false');
     expect(listPage).toContain('parseContactMessageFilter');
     expect(detailPage).toContain("Reply by email");
@@ -49,9 +58,9 @@ describe("Watson contact-messages API routes", () => {
 });
 
 describe("Watson contact-messages authorization gate", () => {
-  it("requires a Watson session for list, detail, and update", async () => {
+  it("requires a Watson session for list, detail, update, and delete", async () => {
     const { GET: list } = await import("./contact-messages/index");
-    const { GET: detail, PATCH } = await import("./contact-messages/[id]");
+    const { GET: detail, PATCH, DELETE } = await import("./contact-messages/[id]");
 
     const listResponse = await list(unauthenticatedContext("/api/watson/contact-messages"));
     const detailResponse = await detail(
@@ -69,8 +78,14 @@ describe("Watson contact-messages authorization gate", () => {
         },
       ),
     );
+    const deleteResponse = await DELETE(
+      unauthenticatedContext(
+        "/api/watson/contact-messages/11111111-1111-1111-1111-111111111111",
+        { method: "DELETE" },
+      ),
+    );
 
-    for (const response of [listResponse, detailResponse, updateResponse]) {
+    for (const response of [listResponse, detailResponse, updateResponse, deleteResponse]) {
       expect(response.status).toBe(401);
       const body = await response.json();
       expect(body.ok).toBe(false);

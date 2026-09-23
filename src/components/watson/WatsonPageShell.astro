@@ -41,7 +41,9 @@ try {
         <a href="/watson/contact-messages">
           Contact Messages{
             newContactCount !== null ? (
-              <span class="watson-nav__count">{newContactCount}</span>
+              <span class="watson-nav__count" data-contact-new-count>
+                {newContactCount}
+              </span>
             ) : null
           }
         </a>
