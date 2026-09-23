@@ -358,9 +358,16 @@ describe("finished-pattern families use the shared diagram tabs", () => {
       join(srcRoot, "pages/patterns/socks/pattern.astro"),
       "utf8",
     );
+    const sidewaysPage = readFileSync(
+      join(srcRoot, "pages/patterns/sideways-cardigan/pattern/index.astro"),
+      "utf8",
+    );
     expect(socksPage).toContain("pattern-diagram-tabs.css");
     expect(socksPage).toContain("data-sock-diagram-tabs-mount");
     expect(socksPage).toContain(".pattern-diagram-shaping-help");
+    expect(sidewaysPage).toContain("pattern-diagram-tabs.css");
+    expect(sidewaysPage).toContain("data-sideways-diagram-tabs-mount");
+    expect(sidewaysPage).toContain("Garment Dimensions");
     expect(hatPage).toContain("Hat Dimensions");
     expect(hatPage).toContain("data-hat-diagram-tabs-mount");
     expect(sharedCss).toContain(".pattern-diagram-shaping-help__btn.kbm-btn");

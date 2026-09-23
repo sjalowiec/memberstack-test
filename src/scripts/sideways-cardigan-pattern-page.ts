@@ -3,11 +3,30 @@
  * existing sleeve sequence. Does not boot the Sleeveless page initializer.
  */
 import {
+  resolveSidewaysCardiganGarmentStyle,
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
   loadSidewaysCardiganWorkspaceView,
+  type SidewaysCardiganWorkspaceView,
 } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
+import {
+  buildSidewaysCardiganPatternDiagramTabsShellHtml,
+  initSidewaysCardiganPatternDiagramTabs,
+} from "../lib/patterns/sidewaysCardiganPatternDiagramTabs";
+import {
+  buildSidewaysCardiganPatternDiagramModel,
+  buildSidewaysCardiganPatternDiagramSvg,
+} from "../lib/patterns/sidewaysCardiganPatternDiagramSvg";
+import { buildSidewaysCardiganShapingNotationDiagramSvg } from "../lib/patterns/sidewaysCardiganShapingNotationDiagramSvg";
+import { positiveMeasurementInches } from "../lib/patterns/customBuildEffectiveArmholeDepth";
+import { inspectSidewaysCardiganSleeveCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganSleeveCalc";
+import {
+  SLEEVELESS_DIAGRAM_INLINE_CLASS,
+  bindSleevelessDiagramZoom,
+  closeSleevelessDiagramModal,
+  ensureSleevelessDiagramModal,
+} from "../lib/patterns/sleevelessDiagramModal";
 import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
@@ -29,6 +48,7 @@ function renderView(): void {
   const sleeveHost = document.querySelector("[data-sideways-sleeve-host]");
   const sleeveEl = document.querySelector("[data-sideways-sleeve-sequence]");
   const sleeveErrorEl = document.querySelector("[data-sideways-sleeve-error]");
+  const diagramHost = document.querySelector("[data-sideways-diagram-tabs-mount]");
   if (!(missing instanceof HTMLElement) || !(host instanceof HTMLElement)) {
     return;
   }
@@ -48,6 +68,7 @@ function renderView(): void {
       sleeveErrorEl.hidden = true;
       sleeveErrorEl.textContent = "";
     }
+    if (diagramHost instanceof HTMLElement) diagramHost.replaceChildren();
   };
 
   let view;
@@ -121,6 +142,95 @@ function renderView(): void {
   }
   if (sleeveEl instanceof HTMLElement) {
     sleeveEl.innerHTML = view.sleeveError ? "" : view.sleeveHtml;
+  }
+
+  fillSidewaysPatternDiagrams(view);
+}
+
+function section(obj: unknown): Record<string, unknown> {
+  return obj && typeof obj === "object" && !Array.isArray(obj)
+    ? (obj as Record<string, unknown>)
+    : {};
+}
+
+function markSidewaysDiagramForEnlarge(host: HTMLElement): void {
+  const svg = host.querySelector("svg");
+  if (svg) svg.classList.add(SLEEVELESS_DIAGRAM_INLINE_CLASS);
+}
+
+function savedSleeveMeasurementInches(pattern: Record<string, unknown>): {
+  sleeveLengthInches?: number;
+  wristInches?: number;
+} {
+  const fit = section(pattern.fit);
+  const measurements = section(fit.selectedMeasurements);
+  const overrides = section(fit.cbMeasurementOverrides);
+  const sleeveLengthInches =
+    positiveMeasurementInches(overrides.sleeveLength) ??
+    positiveMeasurementInches(measurements.sleeve_length);
+  const wristInches =
+    positiveMeasurementInches(overrides.wrist) ?? positiveMeasurementInches(measurements.wrist);
+  return {
+    ...(sleeveLengthInches !== undefined ? { sleeveLengthInches } : {}),
+    ...(wristInches !== undefined ? { wristInches } : {}),
+  };
+}
+
+function fillSidewaysPatternDiagrams(
+  view: Extract<SidewaysCardiganWorkspaceView, { ok: true }>,
+): void {
+  const diagramHost = document.querySelector("[data-sideways-diagram-tabs-mount]");
+  if (!(diagramHost instanceof HTMLElement)) return;
+
+  const sleeveCalc = view.sleeveInstructions?.calc ?? null;
+  const inspectedSleeve = inspectSidewaysCardiganSleeveCalcInputFromPattern(
+    view.pattern,
+    view.calc,
+    view.input.finishedUpperArmInches,
+    {
+      stitchesPerInch: view.input.stitchesPerInch,
+      rowsPerInch: view.input.rowsPerInch,
+    },
+  );
+  const savedSleeve = savedSleeveMeasurementInches(view.pattern);
+  const instructionSequences = view.instructions
+    ? {
+        vNeckIncreaseSequence: view.instructions.increaseSequence,
+        vNeckDecreaseSequence: view.instructions.decreaseSequence,
+      }
+    : {
+        vNeckIncreaseSequence: [] as number[],
+        vNeckDecreaseSequence: [] as number[],
+      };
+  const model = buildSidewaysCardiganPatternDiagramModel({
+    garmentStyle:
+      view.instructions?.garmentStyle ??
+      resolveSidewaysCardiganGarmentStyle(section(view.pattern.style)),
+    sleeveDirection: view.sleeveDirection,
+    calc: view.calc,
+    input: view.input,
+    sleeveCalc,
+    sleeveLengthInches:
+      inspectedSleeve.input?.sleeveLengthInches ?? savedSleeve.sleeveLengthInches,
+    wristInches: inspectedSleeve.input?.finishedWristInches ?? savedSleeve.wristInches,
+    ...instructionSequences,
+  });
+
+  closeSleevelessDiagramModal();
+  diagramHost.innerHTML = buildSidewaysCardiganPatternDiagramTabsShellHtml();
+  initSidewaysCardiganPatternDiagramTabs(diagramHost);
+  ensureSleevelessDiagramModal();
+  bindSleevelessDiagramZoom(diagramHost);
+
+  const stsHost = diagramHost.querySelector("[data-sideways-diagram-sts-rows-host]");
+  if (stsHost instanceof HTMLElement) {
+    stsHost.innerHTML = buildSidewaysCardiganPatternDiagramSvg(model);
+    markSidewaysDiagramForEnlarge(stsHost);
+  }
+  const shapingHost = diagramHost.querySelector("[data-sideways-diagram-shaping-host]");
+  if (shapingHost instanceof HTMLElement) {
+    shapingHost.innerHTML = buildSidewaysCardiganShapingNotationDiagramSvg(model);
+    markSidewaysDiagramForEnlarge(shapingHost);
   }
 }
 

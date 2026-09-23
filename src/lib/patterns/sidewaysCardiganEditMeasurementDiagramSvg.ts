@@ -327,7 +327,7 @@ function stackedSectionEnds(
   };
 }
 
-function cardiganDimLayout(frame: SidewaysCardiganEditMeasurementFrame) {
+export function cardiganDimLayout(frame: SidewaysCardiganEditMeasurementFrame) {
   const bustX = Math.max(18, frame.hemX - CARDIGAN_DIM.bustLane);
   const sectionDimX = frame.hemX - CARDIGAN_DIM.sectionLane;
   const neckDimX = frame.neckX + CARDIGAN_DIM.neckLane;
@@ -369,7 +369,7 @@ function derivedValueLabel(
   return `<text data-role="${role}" data-derived-inches="${fmtNum(inches)}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="${anchor}" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}"><tspan x="${fmtNum(x)}" dy="0">${escapeXml(title)}</tspan><tspan x="${fmtNum(x)}" dy="13">${escapeXml(value)}</tspan></text>`;
 }
 
-function cardiganBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function cardiganBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
   const {
     hemX,
     neckX,
@@ -397,7 +397,7 @@ function cardiganBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
   ].join(" ");
 }
 
-function pulloverBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function pulloverBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
   const {
     hemX,
     neckX,
@@ -432,7 +432,7 @@ function pulloverBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
   ].join(" ");
 }
 
-function sleevePath(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function sleevePath(frame: SidewaysCardiganEditMeasurementFrame): string {
   const { attachX, attachY, farX, upperHalf, wristHalf } = frame.sleeve;
   return [
     `M ${fmtNum(attachX)} ${fmtNum(attachY - upperHalf)}`,
@@ -443,7 +443,7 @@ function sleevePath(frame: SidewaysCardiganEditMeasurementFrame): string {
   ].join(" ");
 }
 
-function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame): string {
   return [
     `<line data-role="center-front-start" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.vCutX)}" y2="${fmtNum(frame.topY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2"/>`,
     `<line data-role="center-front-end" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.bottomY)}" x2="${fmtNum(frame.vCutX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2"/>`,
@@ -455,7 +455,7 @@ function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame): strin
   ].join("");
 }
 
-function drawPulloverMarkers(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function drawPulloverMarkers(frame: SidewaysCardiganEditMeasurementFrame): string {
   const midX = (frame.hemX + frame.neckX) / 2;
   return [
     `<line data-role="underarm-start" data-scrap-on="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.topY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
@@ -465,7 +465,7 @@ function drawPulloverMarkers(frame: SidewaysCardiganEditMeasurementFrame): strin
   ].join("");
 }
 
-function drawArmholeAndBack(frame: SidewaysCardiganEditMeasurementFrame): string {
+export function drawArmholeAndBack(frame: SidewaysCardiganEditMeasurementFrame): string {
   const first = frame.garmentStyle === "cardigan";
   const parts = [
     `<line data-role="armhole-slit" data-side="${first ? "first" : "opposite"}" x1="${fmtNum(frame.armholeX)}" y1="${fmtNum(first ? frame.firstArmholeY : frame.secondArmholeY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(first ? frame.firstArmholeY : frame.secondArmholeY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.8"/>`,
@@ -724,7 +724,7 @@ function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
     : drawCardiganTargets(frame);
 }
 
-function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): {
+export function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): {
   x: number;
   width: number;
   height: number;

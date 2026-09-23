@@ -10,6 +10,7 @@ import "../../../../styles/ns-shaping-chart.css";
 import "../../../../styles/glossary-tooltip.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-diagram-tabs.css";
 ---
 
 <Layout
@@ -54,12 +55,35 @@ import "../../../../styles/patterns/pattern-app-shell.css";
         </p>
         <p class="sg-fit-size-copy" data-sideways-calc-error hidden role="alert"></p>
         <section class="sideways-calc-host" data-sideways-calc-host hidden>
-          <div id="pattern-content" data-sideways-body-sequence></div>
-          <section data-sideways-sleeve-host hidden>
-            <h2 class="sg-pattern-section-title">Sleeve sequence</h2>
-            <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
-            <div data-sideways-sleeve-sequence></div>
-          </section>
+          <div
+            id="pattern-content"
+            class="pattern-layout pattern-layout--garment-columns sideways-pattern-reading-layout"
+            data-sideways-pattern-reading-layout
+          >
+            <div
+              class="pattern-layout__content sideways-pattern-reading-layout__instructions"
+            >
+              <div data-sideways-body-sequence></div>
+              <section data-sideways-sleeve-host hidden>
+                <h2 class="sg-pattern-section-title">Sleeve sequence</h2>
+                <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
+                <div data-sideways-sleeve-sequence></div>
+              </section>
+            </div>
+            <aside
+              class="pattern-layout__sidebar sideways-pattern-reading-layout__diagram"
+              aria-label="Garment dimensions"
+            >
+              <div class="sideways-pattern-diagram-panel pattern-print-keep-together">
+                <h3 class="sideways-pattern-diagram-panel__title no-print">Garment Dimensions</h3>
+                <div
+                  class="sideways-pattern-diagram-panel__tabs-mount"
+                  id="diagram-content"
+                  data-sideways-diagram-tabs-mount
+                ></div>
+              </div>
+            </aside>
+          </div>
         </section>
         <p>
           <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
@@ -100,6 +124,108 @@ import "../../../../styles/patterns/pattern-app-shell.css";
   }
   .pattern-action-bar__group--end {
     justify-content: flex-end;
+  }
+
+  .sideways-pattern-reading-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .sideways-pattern-reading-layout__diagram {
+    order: 0;
+    min-width: 0;
+  }
+
+  .sideways-pattern-reading-layout__instructions {
+    order: 1;
+    min-width: 0;
+  }
+
+  .sideways-pattern-diagram-panel {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .sideways-pattern-diagram-panel__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .sideways-pattern-diagram-panel__svg,
+  :global(.sideways-pattern-diagram-panel__svg) {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    overflow-x: visible;
+    box-sizing: border-box;
+  }
+
+  .sideways-pattern-diagram-panel__svg :global(svg),
+  :global(.sideways-pattern-diagram-panel__svg svg) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (min-width: 1100px) {
+    #pattern-content.pattern-layout.sideways-pattern-reading-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+      gap: clamp(1.25rem, 2.5vw, 2rem);
+      align-items: start;
+    }
+
+    .sideways-pattern-reading-layout__instructions {
+      order: 0;
+    }
+
+    .sideways-pattern-reading-layout__diagram {
+      order: 0;
+    }
+  }
+
+  :global(.sideways-pattern-diagram-print-heading) {
+    display: none;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  @media print {
+    :global(.pattern-diagram-tabs__list),
+    :global(.pattern-diagram-shaping-help) {
+      display: none !important;
+    }
+
+    :global(.sideways-pattern-diagram-print-heading) {
+      display: block !important;
+    }
+
+    :global(.sideways-pattern-diagram-tabs__panel),
+    :global(.sideways-pattern-diagram-tabs__panel[hidden]),
+    :global(.pattern-diagram-tabs__panel),
+    :global(.pattern-diagram-tabs__panel[hidden]) {
+      display: block !important;
+      visibility: visible !important;
+      margin-top: 0.85rem;
+    }
+
+    #pattern-content.pattern-layout.sideways-pattern-reading-layout {
+      display: block !important;
+    }
+
+    .sideways-pattern-reading-layout__diagram {
+      max-width: 4.2in;
+      margin: 0 auto 1rem;
+    }
   }
 </style>
 
