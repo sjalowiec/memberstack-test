@@ -8,6 +8,10 @@ describe("denied video membership actions", () => {
     join(process.cwd(), "src", "scripts", "gatedVimeoEmbedClient.ts"),
     "utf8",
   );
+  const panel = readFileSync(
+    join(process.cwd(), "src", "lib", "videos", "lockedVideoPanel.ts"),
+    "utf8",
+  );
   const embed = readFileSync(
     join(process.cwd(), "src", "components", "videos", "GatedVimeoEmbed.astro"),
     "utf8",
@@ -16,9 +20,10 @@ describe("denied video membership actions", () => {
   it("keeps Become a Member primary and styles login as a tappable outlined button", () => {
     expect(embed).toContain('ctaHref = "/membership"');
     expect(embed).toContain('ctaText = "Become a Member"');
-    expect(client).toContain('class="kbm-video__cta"');
-    expect(client).toContain("kbm-video__cta kbm-video__cta--login");
-    expect(client).toContain("Already a member? Log in");
+    expect(panel).toContain('class="kbm-video__cta"');
+    expect(panel).toContain("kbm-video__cta kbm-video__cta--login");
+    expect(panel).toContain("Already a member? Log in");
+    expect(client).toContain("lockedVideoPanelHtml");
     expect(client).toContain("openMemberstackLoginModal");
     expect(embed).toContain(":global(.kbm-video__cta)");
     expect(embed).toContain("min-height:44px");

@@ -6,6 +6,7 @@ import { getMemberstackReturnPath } from "../lib/memberstackReturnUrl";
 import { catalogVideoPlaybackAccess } from "../lib/videos/catalogVideoPlaybackAccess";
 import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "../lib/videos/catalogVideoEmbedSrc";
 import { decideGatedVimeoPlayback } from "../lib/videos/gatedVimeoEmbedDelivery";
+import { lockedVideoPanelHtml } from "../lib/videos/lockedVideoPanel";
 import { parseAuthorizedJumpLinks } from "../lib/jumplinks/videoJumpLinkButtons";
 import { parseAuthorizedTranscript } from "../lib/transcripts/videoGatedTranscript";
 import type { CatalogChapterRow } from "../lib/catalogVideoChapters";
@@ -49,6 +50,7 @@ function readConfig(root: HTMLElement) {
     iframePlayerId: catalogVimeoIframePlayerId(videoId, contentId),
     ctaHref: root.dataset.ctaHref ?? "/membership",
     ctaText: root.dataset.ctaText ?? "Join to watch",
+    thumbUrl: root.dataset.thumbUrl ?? "",
   };
 }
 
@@ -115,6 +117,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     iframePlayerId,
     ctaHref,
     ctaText,
+    thumbUrl,
   } = config;
 
   const iframeIdAttr =
@@ -130,24 +133,12 @@ function initGatedVimeoEmbed(root: HTMLElement) {
   }
 
   function buildLockedMarkup(showLogin: boolean) {
-    const loginBtn = showLogin
-      ? `<button type="button" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login>Already a member? Log in</button>`
-      : "";
-    const membershipCta = `<a href="${ctaHref}" class="kbm-video__cta">${ctaText}</a>`;
-    return `
-  <div class="kbm-video__locked">
-    <div class="kbm-video__overlay">
-      <div class="kbm-video__lockline">
-        <strong>Members only</strong>
-      </div>
-      <p>This video is available with membership.</p>
-      <div class="kbm-video__actions">
-        ${membershipCta}
-        ${loginBtn}
-      </div>
-    </div>
-  </div>
-`;
+    return lockedVideoPanelHtml({
+      thumbUrl,
+      showLogin,
+      ctaHref,
+      ctaText,
+    });
   }
 
   function wireVideoLoginButton() {
@@ -278,6 +269,8 @@ function initGatedVimeoEmbed(root: HTMLElement) {
       void resolveAccessAndRender();
     });
   }
+
+  wireVideoLoginButton();
 
   void (async () => {
     await resolveAccessAndRender();
