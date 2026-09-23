@@ -1,5 +1,6 @@
 /**
- * Netlify Blobs store for durable Contact Us messages.
+ * Legacy Netlify Blobs copy of contact messages.
+ * New submissions are stored in Postgres (`watson_contact_messages`).
  * Key layout: `messages/{id}.json` in store `contact-messages`.
  */
 
@@ -377,7 +378,7 @@ export function buildContactAttachmentUrl(
 export function messagePreview(message: string, maxLength = 120): string {
   const trimmed = String(message || "").replace(/\s+/g, " ").trim();
   if (trimmed.length <= maxLength) return trimmed;
-  return `${trimmed.slice(0, maxLength - 1)}…`;
+  return `${trimmed.slice(0, maxLength - 1)}Â…`;
 }
 
 export function statusLabel(status: ContactMessageStatus): string {

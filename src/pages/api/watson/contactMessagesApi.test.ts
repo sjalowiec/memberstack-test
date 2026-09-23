@@ -1,37 +1,19 @@
 import fs from "fs";
 import path from "path";
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import {
-  computeContactMessageCounts,
-  listContactMessages,
-  saveContactMessage,
-  updateContactMessage,
-  type ContactMessage,
-} from "../../../lib/contact/contactMessagesStore";
-
-function createMemoryStore() {
-  const data = new Map<string, unknown>();
+function unauthenticatedContext(pathname: string, init?: RequestInit) {
   return {
-    async get(key: string, opts?: { type?: string }) {
-      if (!data.has(key)) return null;
-      return opts?.type === "json" ? data.get(key) : data.get(key);
-    },
-    async setJSON(key: string, value: unknown) {
-      data.set(key, value);
-    },
-    async list({ prefix }: { prefix?: string } = {}) {
-      const blobs = [...data.keys()]
-        .filter((key) => !prefix || key.startsWith(prefix))
-        .map((key) => ({ key }));
-      return { blobs };
-    },
-  };
+    cookies: { get: () => undefined },
+    url: new URL(`https://example.com${pathname}`),
+    params: { id: "11111111-1111-1111-1111-111111111111" },
+    request: new Request(`https://example.com${pathname}`, init),
+  } as never;
 }
 
 describe("Watson contact-messages API routes", () => {
-  it("defines admin-gated list and update endpoints", () => {
+  it("defines session-gated list, detail, and update endpoints", () => {
     const listApi = fs.readFileSync(
       path.resolve("src/pages/api/watson/contact-messages/index.ts"),
       "utf8",
@@ -40,97 +22,59 @@ describe("Watson contact-messages API routes", () => {
       path.resolve("src/pages/api/watson/contact-messages/[id].ts"),
       "utf8",
     );
+    const listPage = fs.readFileSync(
+      path.resolve("src/pages/watson/contact-messages/index.astro"),
+      "utf8",
+    );
+    const detailPage = fs.readFileSync(
+      path.resolve("src/pages/watson/contact-messages/[id].astro"),
+      "utf8",
+    );
 
     expect(listApi).toContain("requireWatsonAdminJson");
     expect(listApi).toContain("export const GET");
     expect(listApi).toContain("listContactMessages");
-    expect(listApi).toContain("export const prerender = false");
-
+    expect(listApi).toContain("countNewContactMessages");
     expect(itemApi).toContain("requireWatsonAdminJson");
     expect(itemApi).toContain("export const GET");
     expect(itemApi).toContain("export const PATCH");
     expect(itemApi).toContain("updateContactMessage");
-  });
-
-  it("keeps contact-messages under Watson API routes only", () => {
-    const listPath = path.resolve("src/pages/api/watson/contact-messages/index.ts");
-    const itemPath = path.resolve("src/pages/api/watson/contact-messages/[id].ts");
-    expect(listPath).toContain(`${path.sep}api${path.sep}watson${path.sep}`);
-    expect(itemPath).toContain(`${path.sep}api${path.sep}watson${path.sep}`);
-
-    const listApi = fs.readFileSync(listPath, "utf8");
-    expect(listApi).toContain("requireWatsonAdminJson");
-    expect(listApi).not.toContain("pages/contact");
+    expect(listPage).toContain('export const prerender = false');
+    expect(listPage).toContain('parseContactMessageFilter');
+    expect(detailPage).toContain("Reply by email");
+    expect(detailPage).toContain("Mark Responded");
+    expect(detailPage).toContain("Reopen as New");
     expect(listApi).not.toContain("/.netlify/functions/contact");
   });
 });
 
 describe("Watson contact-messages authorization gate", () => {
-  it("requires Watson admin session for the list endpoint", async () => {
-    vi.resetModules();
-    vi.doMock("../../../lib/watson/watsonApiAuth", async () => {
-      const actual = await vi.importActual<typeof import("../../../lib/watson/watsonApiAuth")>(
-        "../../../lib/watson/watsonApiAuth",
-      );
-      return {
-        ...actual,
-        requireWatsonAdminJson: vi.fn(async () =>
-          actual.watsonJsonResponse({ ok: false, error: "Sign in required." }, 401),
-        ),
-      };
-    });
+  it("requires a Watson session for list, detail, and update", async () => {
+    const { GET: list } = await import("./contact-messages/index");
+    const { GET: detail, PATCH } = await import("./contact-messages/[id]");
 
-    const { GET } = await import("./contact-messages/index");
-    const response = await GET({
-      cookies: {},
-      url: new URL("https://example.com/api/watson/contact-messages"),
-    } as never);
+    const listResponse = await list(unauthenticatedContext("/api/watson/contact-messages"));
+    const detailResponse = await detail(
+      unauthenticatedContext(
+        "/api/watson/contact-messages/11111111-1111-1111-1111-111111111111",
+      ),
+    );
+    const updateResponse = await PATCH(
+      unauthenticatedContext(
+        "/api/watson/contact-messages/11111111-1111-1111-1111-111111111111",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "closed" }),
+        },
+      ),
+    );
 
-    expect(response.status).toBe(401);
-    const body = await response.json();
-    expect(body.ok).toBe(false);
-    expect(body.error).toMatch(/sign in/i);
-
-    vi.doUnmock("../../../lib/watson/watsonApiAuth");
-    vi.resetModules();
-  });
-});
-
-describe("Watson contact-messages persistence helpers", () => {
-  it("persists status and notes and keeps resolved messages listable", async () => {
-    const store = createMemoryStore();
-    await saveContactMessage(store, {
-      name: "A",
-      email: "a@example.com",
-      message: "first",
-      id: "one",
-      now: "2026-07-19T10:00:00.000Z",
-    });
-    await saveContactMessage(store, {
-      name: "B",
-      email: "b@example.com",
-      message: "second",
-      id: "two",
-      now: "2026-07-19T11:00:00.000Z",
-    });
-
-    await updateContactMessage(store, "one", {
-      status: "resolved",
-      admin_notes: "Closed after reply",
-    });
-
-    const all = await listContactMessages(store, { filter: "all" });
-    expect(all.map((m) => m.id)).toEqual(["two", "one"]);
-
-    const resolved = all.find((m) => m.id === "one") as ContactMessage;
-    expect(resolved.status).toBe("resolved");
-    expect(resolved.admin_notes).toBe("Closed after reply");
-
-    const open = await listContactMessages(store, { filter: "open" });
-    expect(open.map((m) => m.id)).toEqual(["two"]);
-
-    const counts = computeContactMessageCounts(all);
-    expect(counts.open).toBe(1);
-    expect(counts.new).toBe(1);
+    for (const response of [listResponse, detailResponse, updateResponse]) {
+      expect(response.status).toBe(401);
+      const body = await response.json();
+      expect(body.ok).toBe(false);
+      expect(body.error).toMatch(/sign in/i);
+    }
   });
 });

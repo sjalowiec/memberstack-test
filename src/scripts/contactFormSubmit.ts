@@ -51,7 +51,7 @@ export function validateContactImage(file: File | undefined) {
 
 /**
  * POST via fetch (multipart FormData) to the contact Netlify function.
- * Redirects to thanks only after a 2xx response (email accepted server-side).
+ * Redirects to thanks only after a 2xx response (message stored server-side).
  */
 export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
   const {

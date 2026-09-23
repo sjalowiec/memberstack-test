@@ -1,0 +1,252 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import { listContactMessages } from "../../../lib/contact/contactMessagesDb";
+import {
+  formatContactTimestamp,
+  listPreview,
+  parseContactMessageFilter,
+  statusLabel,
+  type ContactMessageFilter,
+} from "../../../lib/contact/contactMessageRecord";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const FILTERS: { value: ContactMessageFilter; label: string }[] = [
+  { value: "new", label: "New" },
+  { value: "responded", label: "Responded" },
+  { value: "closed", label: "Closed" },
+  { value: "all", label: "All" },
+];
+
+const filter = parseContactMessageFilter(Astro.url.searchParams.get("filter"));
+
+let loadError: string | null = null;
+let messages: Awaited<ReturnType<typeof listContactMessages>> = [];
+
+try {
+  messages = await listContactMessages(filter);
+} catch (error) {
+  loadError = formatLoadError(error);
+}
+
+function formatLoadError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "Unable to load contact messages.";
+  if (/watson_contact_messages/i.test(message) && /does not exist/i.test(message)) {
+    return "Contact messages are not available yet. Apply scripts/sql/watson-contact-messages.sql to the DEV Watson database.";
+  }
+  return message;
+}
+
+function emptyCopy(current: ContactMessageFilter): string {
+  switch (current) {
+    case "new":
+      return "No new contact messages.";
+    case "responded":
+      return "No responded contact messages.";
+    case "closed":
+      return "No closed contact messages.";
+    default:
+      return "No contact messages yet.";
+  }
+}
+---
+
+<WatsonPageShell
+  title="Contact Messages | Watson"
+  description="Review contact form submissions stored in Watson."
+  heading="Contact Messages"
+  intro="Every valid contact message is stored here before the notification email is sent. A failed email does not remove the message."
+>
+  <nav class="watson-contact__filters" aria-label="Filter contact messages">
+    {
+      FILTERS.map((item) => (
+        <a
+          class:list={[
+            "watson-contact__filter",
+            item.value === filter && "watson-contact__filter--active",
+          ]}
+          href={`/watson/contact-messages?filter=${item.value}`}
+          aria-current={item.value === filter ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : messages.length === 0 ? (
+      <p class="watson__status">{emptyCopy(filter)}</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table watson-contact__table">
+          <thead>
+            <tr>
+              <th>Received</th>
+              <th>From</th>
+              <th>Message</th>
+              <th>Source</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.map((message) => (
+              <tr
+                class:list={[message.status === "new" && "watson-contact__row--new"]}
+              >
+                <td data-label="Received">
+                  <time datetime={message.createdAt}>{formatContactTimestamp(message.createdAt)}</time>
+                </td>
+                <td data-label="From">
+                  <a href={`/watson/contact-messages/${encodeURIComponent(message.id)}`}>
+                    {message.name || "(No name)"}
+                  </a>
+                  <div class="watson-contact__email">{message.email}</div>
+                </td>
+                <td data-label="Message">{listPreview(message.subject, message.message)}</td>
+                <td data-label="Source">{message.source || "—"}</td>
+                <td data-label="Status">
+                  <span
+                    class:list={[
+                      "watson-contact__badge",
+                      `watson-contact__badge--${message.status}`,
+                    ]}
+                  >
+                    {statusLabel(message.status)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</WatsonPageShell>
+
+<style>
+  .watson-contact__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.25rem 0 1rem;
+  }
+
+  .watson-contact__filter {
+    display: inline-block;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #334155;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: #fff;
+  }
+
+  .watson-contact__filter--active {
+    background: #3f6212;
+    border-color: #3f6212;
+    color: #fff;
+  }
+
+  .watson-contact__table {
+    min-width: 40rem;
+  }
+
+  .watson-contact__row--new {
+    background: #eff6ff;
+  }
+
+  .watson-contact__row--new td:first-child {
+    box-shadow: inset 3px 0 0 #1d4ed8;
+  }
+
+  .watson-contact__email {
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .watson-contact__badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  .watson-contact__badge--new {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .watson-contact__badge--responded {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .watson-contact__badge--closed {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  @media (max-width: 720px) {
+    .watson-contact__table {
+      min-width: 0;
+    }
+
+    .watson-contact__table thead {
+      display: none;
+    }
+
+    .watson-contact__table,
+    .watson-contact__table tbody,
+    .watson-contact__table tr,
+    .watson-contact__table td {
+      display: block;
+      width: 100%;
+    }
+
+    .watson-contact__table tr {
+      margin: 0 0 0.75rem;
+      padding: 0.75rem 0.85rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .watson-contact__row--new {
+      border-color: #93c5fd;
+    }
+
+    .watson-contact__table td {
+      border: 0;
+      padding: 0.2rem 0;
+    }
+
+    .watson-contact__table td::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 0.1rem;
+      color: #64748b;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .watson-contact__row--new td:first-child {
+      box-shadow: none;
+    }
+  }
+</style>

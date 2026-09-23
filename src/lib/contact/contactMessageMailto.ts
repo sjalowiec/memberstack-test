@@ -6,14 +6,18 @@
 export function buildContactReplyMailto(options: {
   email: string;
   name?: string;
+  subject?: string;
   source?: string;
   createdAt?: string;
 }): string {
   const email = String(options.email || "").trim();
   if (!email) return "";
 
-  const subjectParts = ["Re: Knit It Now contact"];
-  if (options.source?.trim()) {
+  const submittedSubject = options.subject?.trim();
+  const subjectParts = submittedSubject
+    ? [`Re: ${submittedSubject}`]
+    : ["Re: Knit It Now contact"];
+  if (!submittedSubject && options.source?.trim()) {
     subjectParts.push(`(${options.source.trim()})`);
   }
 

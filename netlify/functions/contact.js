@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { getStore } from "@netlify/blobs";
+import { normalizeContactSubmission } from "../../src/lib/contact/contactMessageRecord.ts";
 import {
-  getContactMessagesStore,
-  saveContactMessage,
-  updateContactMessage,
-} from "../../src/lib/contact/contactMessagesStore.ts";
+  insertContactMessage,
+  updateContactMessageNotification,
+} from "../../src/lib/contact/contactMessagesDb.ts";
 import {
   handlerEventToRequest,
   isHandlerEvent,
@@ -44,7 +44,7 @@ export default async (reqOrEvent) => {
  *
  * @param {import('@netlify/functions').HandlerEvent} event
  */
-export async function handler(event) {
+export async function handler(event, deps) {
   if (!isHandlerEvent(event)) {
     return {
       statusCode: 400,
@@ -54,7 +54,7 @@ export async function handler(event) {
   }
 
   const req = handlerEventToRequest(event);
-  const response = await handleContactPost(req, event);
+  const response = await handleContactPost(req, event, deps || {});
   return webResponseToLambdaResult(response);
 }
 
@@ -82,7 +82,12 @@ async function webResponseToLambdaResult(response) {
 
 /**
  * @typedef {object} ContactHandlerDeps
- * @property {import("@netlify/blobs").Store} [messagesStore]
+ * @property {(input: object) => Promise<{ id: string }>} [persistMessage]
+ * @property {(id: string, patch: {
+ *   notificationEmailSent: boolean,
+ *   notificationEmailError?: string | null,
+ *   now?: string,
+ * }) => Promise<void>} [recordNotification]
  * @property {typeof fetch} [fetchImpl]
  * @property {(image: File | Blob, req: Request) => Promise<{
  *   link: string | null,
@@ -209,36 +214,26 @@ export async function handleContactPost(req, event, deps = {}) {
       }
     }
 
-    // --- Validate required fields (prevents empty spam) ---
-    const name = (
-      formData.get("name") ||
-      formData.get("firstName") ||
-      ""
-    )
-      .toString()
-      .trim();
-    const email = (formData.get("email") || "").toString().trim();
-    const message = (
-      formData.get("message") ||
-      formData.get("question") ||
-      ""
-    )
-      .toString()
-      .trim();
-    const pageUrl = (formData.get("page_url") || "").toString().trim();
+    // --- Validate and normalize required fields (prevents empty spam) ---
     const submittedAt = (formData.get("submitted_at") || "").toString().trim();
-    const formSource = (formData.get("form_source") || "").toString().trim();
+    const submission = normalizeContactSubmission({
+      name: formData.get("name") || formData.get("firstName") || "",
+      email: formData.get("email") || "",
+      subject: formData.get("subject") || "",
+      message: formData.get("message") || formData.get("question") || "",
+      source: formData.get("form_source") || formData.get("form-name") || "",
+      pageUrl: formData.get("page_url") || "",
+    });
 
-    if (!email || !message) {
-      console.warn("[contact] Rejected — missing required email or message", {
-        hasEmail: !!email,
-        hasMessage: !!message,
-        hasName: !!name,
-        formSource: formSource || null,
+    if (!submission.ok) {
+      console.warn("[contact] Rejected submission", {
+        error: submission.error,
         ip,
       });
-      return validationErrorResponse();
+      return validationErrorResponse(submission.error);
     }
+
+    const { name, email, message, subject, source: formSource, pageUrl } = submission.value;
 
     // --- Optional image (contact page: field name "images") ---
     const imageResult = validateContactImage(formData.get("images"));
@@ -267,30 +262,30 @@ export async function handleContactPost(req, event, deps = {}) {
           originalFilename: null,
         };
 
-    const messagesStore = deps.messagesStore || getContactMessagesStore();
+    const persistMessage = deps.persistMessage || insertContactMessage;
+    const recordNotification =
+      deps.recordNotification ||
+      ((id, patch) => updateContactMessageNotification(id, patch));
     const nowIso = deps.nowIso || (() => new Date().toISOString());
 
-    /** @type {import("../../src/lib/contact/contactMessagesStore.ts").ContactMessage} */
+    /** @type {{ id: string }} */
     let savedMessage;
     try {
-      savedMessage = await saveContactMessage(messagesStore, {
+      savedMessage = await persistMessage({
         name,
         email,
+        subject,
         message,
-        source: formSource || undefined,
-        page_url: pageUrl || undefined,
+        source: formSource,
+        pageUrl,
         now: nowIso(),
         ...(imageStorage.blobKey && imageStorage.accessToken
           ? {
               attachment: {
-                blob_key: imageStorage.blobKey,
-                access_token: imageStorage.accessToken,
-                ...(imageStorage.contentType
-                  ? { content_type: imageStorage.contentType }
-                  : {}),
-                ...(imageStorage.originalFilename
-                  ? { original_filename: imageStorage.originalFilename }
-                  : {}),
+                blobKey: imageStorage.blobKey,
+                accessToken: imageStorage.accessToken,
+                contentType: imageStorage.contentType,
+                filename: imageStorage.originalFilename,
               },
             }
           : {}),
@@ -304,7 +299,7 @@ export async function handleContactPost(req, event, deps = {}) {
 
     console.info("[contact] Contact message saved", {
       id: savedMessage.id,
-      hasAttachment: !!savedMessage.attachment,
+      hasAttachment: !!(imageStorage.blobKey && imageStorage.accessToken),
       formSource: formSource || null,
     });
 
@@ -325,9 +320,10 @@ export async function handleContactPost(req, event, deps = {}) {
 
 Name: ${name}
 Email: ${email}
-Source: ${formSource}
+Subject: ${subject || ""}
+Source: ${formSource || ""}
 IP: ${ip}
-Page: ${pageUrl}
+Page: ${pageUrl || ""}
 Submitted: ${submittedAt}
 
 Message:
@@ -339,6 +335,7 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
       <h2>New contact form submission</h2>
       <p><strong>Name:</strong> ${escapeHtml(name)}</p>
       <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      ${subject ? `<p><strong>Subject:</strong> ${escapeHtml(subject)}</p>` : ""}
       ${formSource ? `<p><strong>Source:</strong> ${escapeHtml(formSource)}</p>` : ""}
       <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
       ${pageUrl ? `<p><strong>Page:</strong> ${escapeHtml(pageUrl)}</p>` : ""}
@@ -419,9 +416,9 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
     }
 
     try {
-      await updateContactMessage(messagesStore, savedMessage.id, {
-        notification_email_sent: notificationSent,
-        notification_email_error: notificationSent ? null : notificationError || "Unknown error",
+      await recordNotification(savedMessage.id, {
+        notificationEmailSent: notificationSent,
+        notificationEmailError: notificationSent ? null : notificationError || "Unknown error",
         now: nowIso(),
       });
     } catch (updateError) {
@@ -486,9 +483,10 @@ function formParseErrorResponse() {
   );
 }
 
-function validationErrorResponse() {
+function validationErrorResponse(message) {
   return new Response(
-    "We couldn't read your message. Please check your email and message, then try again.",
+    message ||
+      "We couldn't read your message. Please check your email and message, then try again.",
     {
       status: 400,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
