@@ -596,6 +596,12 @@
 
   /* Video watch page: print the readable English transcript even if
      <details> is closed on screen. Do not print the Vimeo player. */
+  .video-detail-wrap {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0.6in !important;
+  }
+
   .video-detail-wrap .page-head {
     display: block !important;
     visibility: visible !important;
@@ -607,6 +613,16 @@
     left: auto !important;
     margin: 0 0 1rem 0 !important;
     padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .video-detail-wrap [data-favorite-star],
+  .video-detail-wrap .video-detail > :not(.video-english-transcript),
+  .video-detail-wrap aside,
+  .video-detail-wrap .sidebar,
+  .kbm-transcript-print {
+    display: none !important;
   }
 
   .video-detail-wrap .page-title,

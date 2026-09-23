@@ -234,6 +234,7 @@ const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length >
             bindGatedTranscriptEmbedListener,
             hydrateGatedTranscript,
           } from "../../scripts/videoDetailGatedTranscript";
+          import { bindTranscriptPrintButton } from "../../lib/transcripts/videoTranscriptPrint";
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -333,6 +334,8 @@ const hasGatedTranscript = Boolean(video) && !isOpenPlayback && vimeoId.length >
               void refreshJumpLinkAccess();
             });
           }
+
+          bindTranscriptPrintButton();
 
           void (async () => {
             bindGatedJumpLinkEmbedListener(gatedJumpContentId);

@@ -15,6 +15,23 @@ export function parseAuthorizedTranscript(raw: unknown): string[] {
   return out;
 }
 
+const PRINT_TRANSCRIPT_ICON =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+  `<path d="M4 6V2.5h8V6"></path>` +
+  `<path d="M4 11.5H2.5A1.5 1.5 0 0 1 1 10V7.5A1.5 1.5 0 0 1 2.5 6h11A1.5 1.5 0 0 1 15 7.5V10a1.5 1.5 0 0 1-1.5 1.5H12"></path>` +
+  `<rect x="4" y="9.5" width="8" height="4.5" rx="0.5"></rect>` +
+  `</svg>`;
+
+/** Secondary control for the Read transcript header. Present only in rendered transcript markup. */
+export function transcriptPrintButtonHtml(): string {
+  return (
+    `<button type="button" class="kbm-transcript-print" data-print-transcript data-testid="print-transcript" aria-label="Print Transcript">` +
+    PRINT_TRANSCRIPT_ICON +
+    `<span class="kbm-transcript-print-label">Print Transcript</span>` +
+    `</button>`
+  );
+}
+
 export function renderVideoTranscriptDisclosure(paragraphs: string[]): string {
   if (paragraphs.length === 0) return "";
   const sections = paragraphs
@@ -29,6 +46,7 @@ export function renderVideoTranscriptDisclosure(paragraphs: string[]): string {
     `<summary class="kbm-transcript-summary" data-testid="transcript-toggle">` +
     `<span class="kbm-transcript-caret" aria-hidden="true"></span>` +
     `<span class="kbm-transcript-summary-label">Read transcript</span>` +
+    transcriptPrintButtonHtml() +
     `</summary>` +
     `<div class="kbm-transcript-content" data-testid="transcript-content">${sections}</div>` +
     `</details>` +

@@ -41,6 +41,24 @@ describe("videos/[id] phase-1 English transcript", () => {
     expect(printCss).toContain("player.vimeo.com");
   });
 
+  it("prints only the video title and transcript", () => {
+    expect(page).toContain("bindTranscriptPrintButton");
+    expect(printCss).toContain(".video-detail-wrap .page-title");
+    expect(printCss).toContain("background: #ffffff !important");
+    expect(printCss).toContain("padding: 0.6in !important");
+    expect(printCss).toContain(".video-english-transcript-print p");
+    expect(printCss).toContain("margin: 0 0 0.75rem 0 !important");
+    expect(printCss).toContain(".video-detail > :not(.video-english-transcript)");
+    expect(printCss).toContain("[data-favorite-star]");
+    expect(printCss).toContain(".kbm-transcript-print");
+    expect(printCss).toContain("header,");
+    expect(printCss).toContain("footer,");
+    expect(printCss).toContain("nav,");
+    const gated = page.match(/data-transcript-source="gated"[\s\S]*?<\/div>/);
+    expect(gated?.[0]).not.toContain("Print Transcript");
+    expect(gated?.[0]).not.toContain("data-print-transcript");
+  });
+
   it("does not put member transcript text in the page template", () => {
     expect(page).not.toContain("Begin by casting on three stitches");
     expect(page).not.toContain("Designer your machine to slip in one direction");
@@ -75,9 +93,16 @@ describe("Transcript disclosure control", () => {
     expect(transcript).toContain('class="kbm-transcript-caret"');
     expect(transcript).toContain("<details");
     expect(transcript).toContain("<summary");
+    expect(transcript).toContain("transcriptPrintButtonHtml()");
+    expect(transcript.indexOf("transcriptPrintButtonHtml()")).toBeLessThan(
+      transcript.indexOf("</summary>"),
+    );
     expect(transcript).not.toContain("kbm-transcript-icon");
     expect(transcript).not.toContain('viewBox="0 0 24 24"');
     expect(css).toContain(".kbm-transcript-caret");
+    expect(css).toContain(".kbm-transcript-print");
+    expect(css).toContain("margin-left: auto");
+    expect(css).toContain(".kbm-transcript-print-label");
     expect(css).toContain("rotate(45deg)");
     expect(css).toContain("rotate(-135deg)");
   });
@@ -100,8 +125,17 @@ describe("gated member transcript paint", () => {
     const html = renderVideoTranscriptDisclosure(parsed);
     expect(html).toContain("Read transcript");
     expect(html).toContain('class="kbm-transcript-caret"');
+    expect(html).toContain('data-print-transcript');
+    expect(html).toContain("Print Transcript");
+    expect(html.indexOf("data-print-transcript")).toBeLessThan(html.indexOf("</summary>"));
+    expect(html.slice(html.indexOf("video-english-transcript-print"))).not.toContain(
+      "data-print-transcript",
+    );
+    expect(html.slice(html.indexOf("video-english-transcript-print"))).not.toContain("<a ");
+    expect(html.slice(html.indexOf("video-english-transcript-print"))).not.toContain("<button");
     expect(html).toContain("video-english-transcript-print");
     expect(html).toContain("Begin by casting on three stitches.");
     expect(html).not.toContain("WEBVTT");
+    expect(renderVideoTranscriptDisclosure([])).toBe("");
   });
 });
