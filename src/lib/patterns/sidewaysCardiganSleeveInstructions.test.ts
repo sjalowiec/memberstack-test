@@ -364,17 +364,24 @@ describe("Drop Shoulder and Sleeveless behavior remains unchanged", () => {
     });
     expect(body.ok).toBe(true);
     if (!body.ok) throw new Error(body.error.message);
-    expect(body.instructions.steps).toHaveLength(13);
+    expect(body.instructions.steps).toHaveLength(16);
     expect(body.instructions.steps.some((s) => s.id.includes("sleeve"))).toBe(false);
   });
 });
 
-describe("sideways sleeve HTML is a temporary numeric list", () => {
-  it("renders cuff-up as an ordered numeric sequence", () => {
-    const html = renderSidewaysCardiganSleeveSequenceHtml(sleeveOk());
-    expect(html).toContain("sideways-sleeve-sequence");
-    expect(html).toContain("Cast on");
-    expect(html).toContain("Bind off");
-    expect(html).not.toMatch(/Begin sleeve shaping/i);
+describe("sideways sleeve pattern instructions", () => {
+  it("renders cuff-up instructions from the shared sleeve rows", () => {
+    const instructions = sleeveOk();
+    const html = renderSidewaysCardiganSleeveSequenceHtml(instructions);
+    expect(html).toContain('id="sg-sleeve"');
+    expect(html).toContain("Make 2 sleeves");
+    expect(html).toContain(`Cast on ${instructions.calc.wristSts} stitches for the sleeve cuff.`);
+    expect(html).toContain("Begin sleeve shaping.");
+    expect(html).toContain("Increase 1 stitch at each side");
+    expect(html).toContain("Wrist/Cuff");
+    expect(html).toContain("Upper arm");
+    expect(html).toContain("Sleeve length");
+    expect(html).toContain("data-sideways-sleeve-diagram-tabs-mount");
+    expect(html).not.toContain("sideways-sleeve-sequence");
   });
 });

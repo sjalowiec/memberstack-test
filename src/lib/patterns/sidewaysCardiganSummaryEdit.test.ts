@@ -450,6 +450,15 @@ describe("Sideways Summary/Edit shared workspace structure", () => {
     expect(
       SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.filter((f) => f.previewTab === "sleeve").map((f) => f.id),
     ).toEqual(["finishedUpperArm", "sleeveLength", "wrist"]);
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "wrist")?.label).toBe(
+      "Wrist/Cuff",
+    );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "finishedUpperArm")?.label).toBe(
+      "Upper arm",
+    );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "sleeveLength")?.label).toBe(
+      "Sleeve length",
+    );
   });
 });
 
@@ -525,5 +534,50 @@ describe("Sideways Summary/Edit quick edits and tabs", () => {
     expect(body).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
     expect(sleeve).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
     expect(sleeve).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
+  });
+
+  it("sends a wrist override to the finished sleeve for cardigan and pullover", () => {
+    saveBuild(cardiganValues);
+    const edited = applySidewaysCardiganSummaryMeasurementEdits({ wrist: "8" });
+    expect(edited.ok).toBe(true);
+    const cardigan = loadSidewaysCardiganWorkspaceView();
+    expect(cardigan.ok).toBe(true);
+    if (!cardigan.ok) throw new Error(cardigan.message);
+    expect(cardigan.sleeveInstructions?.calc.finished.wristInches).toBe(8);
+    expect(cardigan.sleeveHtml).toContain("Wrist/Cuff");
+    expect(cardigan.sleeveHtml).toContain("8 in");
+    expect(cardigan.summary.rows.find((row) => row.term === "Wrist/Cuff")?.def).toContain("8 in");
+    expect(cardigan.summaryHtml).toContain("Wrist/Cuff");
+
+    saveBuild(pulloverValues);
+    applySidewaysCardiganSummaryMeasurementEdits({ wrist: "8" });
+    const pullover = loadSidewaysCardiganWorkspaceView();
+    expect(pullover.ok).toBe(true);
+    if (!pullover.ok) throw new Error(pullover.message);
+    expect(pullover.instructions?.garmentStyle).toBe("pullover");
+    expect(pullover.sleeveInstructions?.calc.finished.wristInches).toBe(8);
+    expect(pullover.sleeveInstructions?.calc.wristSts).toBe(cardigan.sleeveInstructions?.calc.wristSts);
+    expect(pullover.sleeveInstructions?.calc.topSts).toBe(cardigan.sleeveInstructions?.calc.topSts);
+    expect(pullover.sleeveHtml).toContain("Make 2 sleeves");
+    expect(pullover.sleeveHtml).toContain("8 in");
+    expect(pullover.sequenceHtml).not.toContain("data-sideways-sleeve-diagram-tabs-mount");
+  });
+
+  it("uses the scaled opening and sleeve length for a shorter sleeve", () => {
+    saveBuild(cardiganValues);
+    const result = applySidewaysCardiganSummaryQuickEdits({ sleeveLengthChoice: "short" });
+    expect(result.ok).toBe(true);
+    const measurements = readSidewaysCardiganSummaryMeasurements();
+    expect(Number(measurements.sleeveLength)).toBeLessThan(17);
+    expect(Number(measurements.wrist)).toBeGreaterThan(7.25);
+    const view = loadSidewaysCardiganWorkspaceView();
+    expect(view.ok).toBe(true);
+    if (!view.ok) throw new Error(view.message);
+    expect(view.sleeveInstructions?.calc.finished.sleeveLengthInches).toBe(
+      Number(measurements.sleeveLength),
+    );
+    expect(view.sleeveInstructions?.calc.finished.wristInches).toBe(Number(measurements.wrist));
+    expect(view.sleeveHtml).toContain(`${measurements.wrist} in`);
+    expect(view.sleeveHtml).toContain(`${measurements.sleeveLength} in`);
   });
 });

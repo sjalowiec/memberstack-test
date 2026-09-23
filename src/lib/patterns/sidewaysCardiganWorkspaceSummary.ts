@@ -5,6 +5,7 @@
 
 import type { SidewaysCardiganBodyCalc } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
+import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
 import {
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
@@ -47,11 +48,35 @@ function inchesAndRows(inches: number, rows: number): string {
   return `${formatInchesWithUnit(inches)} · ${formatRowsCount(rows)}`;
 }
 
+/** Finished sleeve measurements shared by the workspace summary and the sleeve piece. */
+export function sidewaysCardiganSleeveFinishedMeasurementPairs(
+  calc: Pick<
+    SidewaysCardiganSleeveCalc,
+    "topSts" | "wristSts" | "sleeveTotalRows" | "finished"
+  >,
+): SidewaysCardiganWorkspaceSummaryRow[] {
+  return [
+    {
+      term: "Upper arm",
+      def: inchesAndStitches(calc.finished.upperArmInches, calc.topSts),
+    },
+    {
+      term: "Sleeve length",
+      def: inchesAndRows(calc.finished.sleeveLengthInches, calc.sleeveTotalRows),
+    },
+    {
+      term: "Wrist/Cuff",
+      def: inchesAndStitches(calc.finished.wristInches, calc.wristSts),
+    },
+  ];
+}
+
 export function buildSidewaysCardiganWorkspaceSummary(args: {
   calc: SidewaysCardiganBodyCalc;
   input: SidewaysCardiganBodyCalcInput;
   sleeveDirection?: string | SidewaysCardiganSleeveDirection;
   garmentStyle?: string | SidewaysCardiganGarmentStyle;
+  sleeveCalc?: SidewaysCardiganSleeveCalc | null;
 }): SidewaysCardiganWorkspaceSummary {
   const { calc, input } = args;
   const neckInches = input.neckOpeningWidthInches;
@@ -131,6 +156,9 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
       term: "Sleeve direction",
       def: SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[sleeve],
     },
+    ...(args.sleeveCalc
+      ? sidewaysCardiganSleeveFinishedMeasurementPairs(args.sleeveCalc)
+      : []),
   ];
 
   return { rows, adjustmentMessage };

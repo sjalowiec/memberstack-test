@@ -1,6 +1,6 @@
 /**
- * Sideways V-Neck Sweater workspace — Cardigan BODY Lego instructions plus the
- * existing sleeve sequence. Does not boot the Sleeveless page initializer.
+ * Sideways V-Neck Sweater workspace — body instructions plus cuff-up / top-down sleeves.
+ * Does not boot the Sleeveless page initializer.
  */
 import {
   resolveSidewaysCardiganGarmentStyle,
@@ -12,6 +12,7 @@ import {
 } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
 import {
   buildSidewaysCardiganPatternDiagramTabsShellHtml,
+  buildSidewaysCardiganSleeveDiagramTabsShellHtml,
   initSidewaysCardiganPatternDiagramTabs,
 } from "../lib/patterns/sidewaysCardiganPatternDiagramTabs";
 import {
@@ -19,6 +20,10 @@ import {
   buildSidewaysCardiganPatternDiagramSvg,
 } from "../lib/patterns/sidewaysCardiganPatternDiagramSvg";
 import { buildSidewaysCardiganShapingNotationDiagramSvg } from "../lib/patterns/sidewaysCardiganShapingNotationDiagramSvg";
+import {
+  buildSidewaysCardiganSleeveShapingNotationSvg,
+  buildSidewaysCardiganSleeveStitchesRowsSvg,
+} from "../lib/patterns/sidewaysCardiganSleeveDiagramSvg";
 import { positiveMeasurementInches } from "../lib/patterns/customBuildEffectiveArmholeDepth";
 import { inspectSidewaysCardiganSleeveCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganSleeveCalc";
 import {
@@ -142,9 +147,22 @@ function renderView(): void {
   }
   if (sleeveEl instanceof HTMLElement) {
     sleeveEl.innerHTML = view.sleeveError ? "" : view.sleeveHtml;
+    if (!view.sleeveError && view.sleeveHtml) {
+      bindPatternSectionCollapse(sleeveEl);
+      hydrateGlossaryTooltipPlaceholders(sleeveEl);
+      try {
+        const patternId = String(getCurrentPattern()?.id ?? "").trim();
+        if (patternId) {
+          initChartProgressTracking({ root: sleeveEl, patternId });
+        }
+      } catch {
+        /* pattern id is optional for checklist persistence */
+      }
+    }
   }
 
   fillSidewaysPatternDiagrams(view);
+  fillSidewaysSleeveDiagrams(view);
 }
 
 function section(obj: unknown): Record<string, unknown> {
@@ -230,6 +248,39 @@ function fillSidewaysPatternDiagrams(
   const shapingHost = diagramHost.querySelector("[data-sideways-diagram-shaping-host]");
   if (shapingHost instanceof HTMLElement) {
     shapingHost.innerHTML = buildSidewaysCardiganShapingNotationDiagramSvg(model);
+    markSidewaysDiagramForEnlarge(shapingHost);
+  }
+}
+
+function fillSidewaysSleeveDiagrams(
+  view: Extract<SidewaysCardiganWorkspaceView, { ok: true }>,
+): void {
+  const diagramHost = document.querySelector("[data-sideways-sleeve-diagram-tabs-mount]");
+  if (!(diagramHost instanceof HTMLElement)) return;
+  const calc = view.sleeveInstructions?.calc;
+  if (!calc) {
+    diagramHost.replaceChildren();
+    return;
+  }
+
+  diagramHost.innerHTML = buildSidewaysCardiganSleeveDiagramTabsShellHtml();
+  initSidewaysCardiganPatternDiagramTabs(diagramHost);
+  ensureSleevelessDiagramModal();
+  bindSleevelessDiagramZoom(diagramHost);
+
+  const diagramArgs = {
+    calc,
+    stitchesPerInch: view.input.stitchesPerInch,
+    rowsPerInch: view.input.rowsPerInch,
+  };
+  const stsHost = diagramHost.querySelector("[data-sideways-sleeve-diagram-sts-rows-host]");
+  if (stsHost instanceof HTMLElement) {
+    stsHost.innerHTML = buildSidewaysCardiganSleeveStitchesRowsSvg(diagramArgs) ?? "";
+    markSidewaysDiagramForEnlarge(stsHost);
+  }
+  const shapingHost = diagramHost.querySelector("[data-sideways-sleeve-diagram-shaping-host]");
+  if (shapingHost instanceof HTMLElement) {
+    shapingHost.innerHTML = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs) ?? "";
     markSidewaysDiagramForEnlarge(shapingHost);
   }
 }

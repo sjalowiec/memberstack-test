@@ -127,8 +127,9 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.sleeveDirection).toBe("cuff-up");
     expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
     expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
-    expect(view.sleeveHtml).toContain("sideways-sleeve-sequence");
-    expect(view.sleeveHtml).toContain("Cast on");
+    expect(view.sleeveHtml).toContain("Make 2 sleeves");
+    expect(view.sleeveHtml).toContain("Wrist/Cuff");
+    expect(view.sleeveHtml).toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 
   it("round-trips a Women’s (plus) pattern", () => {
@@ -147,7 +148,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.sleeveHtml).toContain("Sideways sleeve calculations are not yet connected.");
     expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(wrist\)/);
     expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(upper arm\)/);
-    expect(view.sleeveHtml).not.toContain("sideways-sleeve-sequence");
+    expect(view.sleeveHtml).not.toContain("Make 2 sleeves");
+    expect(view.sleeveHtml).not.toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 
   it("keeps user measurement overrides on the workspace", () => {
@@ -329,7 +331,7 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.sequenceHtml).toContain("Return 2 stitches to work 13 times.");
     expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
     expect(view.sequenceHtml).not.toMatch(/must exceed the even half-neck rows/i);
-    expect(view.sleeveHtml).toContain("sideways-sleeve-sequence");
+    expect(view.sleeveHtml).toContain("Make 2 sleeves");
     expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
   });
 

@@ -176,7 +176,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementF
   {
     ...MEASURE_INPUT,
     id: "wrist",
-    label: "Wrist",
+    label: "Wrist/Cuff",
     previewTab: "sleeve",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist,
     transform: "translate(8px, -50%)",

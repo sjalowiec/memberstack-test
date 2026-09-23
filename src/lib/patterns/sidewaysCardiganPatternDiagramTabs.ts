@@ -76,6 +76,55 @@ export function buildSidewaysCardiganPatternDiagramTabsShellHtml(): string {
   });
 }
 
+export const SIDEWAYS_SLEEVE_DIAGRAM_STS_ROWS_ALT = "Sideways sleeve stitches and rows";
+export const SIDEWAYS_SLEEVE_DIAGRAM_SHAPING_ALT = "Sideways sleeve shaping notation";
+
+function buildSidewaysSleeveDiagramHostHtml(mode: SidewaysDiagramTabId): string {
+  const isShaping = mode === SIDEWAYS_DIAGRAM_TAB_SHAPING;
+  const hostAttr = isShaping
+    ? "data-sideways-sleeve-diagram-shaping-host"
+    : "data-sideways-sleeve-diagram-sts-rows-host";
+  const alt = isShaping ? SIDEWAYS_SLEEVE_DIAGRAM_SHAPING_ALT : SIDEWAYS_SLEEVE_DIAGRAM_STS_ROWS_ALT;
+  return buildSleevelessPatternDiagramEnlargeHostHtml({
+    alt,
+    innerHostHtml:
+      `<div class="sideways-pattern-diagram-panel__svg sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" ${hostAttr}></div>`,
+  });
+}
+
+/** Sleeve piece tabs. Separate ids from the body Garment Dimensions tabs. */
+export function buildSidewaysCardiganSleeveDiagramTabsShellHtml(): string {
+  return buildPatternDiagramTabsShellHtml({
+    idPrefix: "sideways-sleeve-diagram",
+    tablistLabel: "Sleeve diagram view",
+    extraRootClass: "sideways-pattern-diagram-tabs sideways-sleeve-diagram-tabs",
+    extraRootAttrs: "data-sideways-diagram-tabs data-sideways-sleeve-diagram-tabs",
+    extraListClass: "sideways-pattern-diagram-tabs__list",
+    extraTabClass: "sideways-pattern-diagram-tabs__tab",
+    extraPanelClass: "sideways-pattern-diagram-tabs__panel",
+    testId: "sideways-sleeve-diagram-tabs",
+    tabTestIdPrefix: "sideways-sleeve-diagram-tab",
+    panelTestIdPrefix: "sideways-sleeve-diagram-panel",
+    tabAttrAliases: ["data-sideways-diagram-tab", "data-sideways-sleeve-diagram-tab"],
+    panelAttrAliases: ["data-sideways-diagram-panel", "data-sideways-sleeve-diagram-panel"],
+    printHeadingClass: "sideways-pattern-diagram-print-heading",
+    tabs: [
+      {
+        id: SIDEWAYS_DIAGRAM_TAB_STS_ROWS,
+        printHeading: true,
+        panelHtml: buildSidewaysSleeveDiagramHostHtml(SIDEWAYS_DIAGRAM_TAB_STS_ROWS),
+      },
+      {
+        id: SIDEWAYS_DIAGRAM_TAB_SHAPING,
+        printHeading: true,
+        panelHtml:
+          buildPatternDiagramShapingNotationHelpHtml() +
+          buildSidewaysSleeveDiagramHostHtml(SIDEWAYS_DIAGRAM_TAB_SHAPING),
+      },
+    ],
+  });
+}
+
 export function activateSidewaysDiagramTab(
   root: ParentNode,
   tabIdValue: SidewaysDiagramTabId,

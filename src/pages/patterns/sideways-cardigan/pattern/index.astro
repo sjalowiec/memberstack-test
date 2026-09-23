@@ -15,7 +15,7 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
 
 <Layout
   title="Sideways V-Neck Sweater Pattern | Knit it Now"
-  description="Sideways-knit V-neck sweater pattern workspace (body calculations)."
+  description="Sideways-knit V-neck sweater pattern workspace."
   patternWorkspace={true}
 >
   <SleevelessPatternMemberGate>
@@ -64,11 +64,6 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
               class="pattern-layout__content sideways-pattern-reading-layout__instructions"
             >
               <div data-sideways-body-sequence></div>
-              <section data-sideways-sleeve-host hidden>
-                <h2 class="sg-pattern-section-title">Sleeve sequence</h2>
-                <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
-                <div data-sideways-sleeve-sequence></div>
-              </section>
             </div>
             <aside
               class="pattern-layout__sidebar sideways-pattern-reading-layout__diagram"
@@ -84,6 +79,10 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
               </div>
             </aside>
           </div>
+          <section data-sideways-sleeve-host hidden>
+            <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
+            <div data-sideways-sleeve-sequence></div>
+          </section>
         </section>
         <p>
           <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
@@ -98,12 +97,22 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
   .sideways-calc-host {
     margin: 1rem 0 1.5rem;
   }
-  .sideways-sleeve-sequence {
-    margin: 0.75rem 0 1.25rem;
-    padding-left: 1.4rem;
+  :global(.sideways-sleeve-reading-layout) {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
   }
-  .sideways-sleeve-sequence li {
-    margin: 0.35rem 0;
+  :global(.sideways-sleeve-reading-layout__diagram) {
+    order: 0;
+    min-width: 0;
+  }
+  :global(.sideways-sleeve-reading-layout__instructions) {
+    order: 1;
+    min-width: 0;
+  }
+  :global(.sideways-sleeve-measurements) {
+    margin: 0 0 1rem;
   }
   .pattern-action-bar {
     display: flex;
@@ -189,6 +198,18 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
     .sideways-pattern-reading-layout__diagram {
       order: 0;
     }
+
+    :global(.sideways-sleeve-reading-layout) {
+      display: grid;
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+      gap: clamp(1.25rem, 2.5vw, 2rem);
+      align-items: start;
+    }
+
+    :global(.sideways-sleeve-reading-layout__instructions),
+    :global(.sideways-sleeve-reading-layout__diagram) {
+      order: 0;
+    }
   }
 
   :global(.sideways-pattern-diagram-print-heading) {
@@ -222,9 +243,14 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
       display: block !important;
     }
 
-    .sideways-pattern-reading-layout__diagram {
+    .sideways-pattern-reading-layout__diagram,
+    :global(.sideways-sleeve-reading-layout__diagram) {
       max-width: 4.2in;
       margin: 0 auto 1rem;
+    }
+
+    :global(.sideways-sleeve-reading-layout) {
+      display: block !important;
     }
   }
 </style>

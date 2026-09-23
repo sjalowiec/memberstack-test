@@ -222,16 +222,17 @@ export function loadSidewaysCardiganWorkspaceView(
   const body = buildSidewaysCardiganBodyInstructions(inspected.input, garmentStyle);
   const sleeveDirection =
     parseSidewaysCardiganSleeveDirection(section(pattern.style).sleeveDirection) ?? undefined;
+  const sleeve = resolveSidewaysCardiganSleeveWorkspace({
+    pattern,
+    calc: result.calc,
+    input: inspected.input,
+  });
   const summary = buildSidewaysCardiganWorkspaceSummary({
     calc: result.calc,
     input: inspected.input,
     sleeveDirection,
     garmentStyle,
-  });
-  const sleeve = resolveSidewaysCardiganSleeveWorkspace({
-    pattern,
-    calc: result.calc,
-    input: inspected.input,
+    sleeveCalc: sleeve.sleeveInstructions?.calc ?? null,
   });
 
   if (!body.ok) {
