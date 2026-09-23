@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   LEGACY_CREDIT_ENTRIES_LABEL,
+  LEGACY_HOME_STUDY_COURSES_CSV,
   LEGACY_HOME_STUDY_COURSE_CATALOG,
   LEGACY_HOME_STUDY_SNAPSHOT,
   LIST_LEGACY_HOME_STUDY_PLANS_SQL,
@@ -18,7 +19,7 @@ import {
   validateLegacyHomeStudyPlanWrite,
 } from "./legacyHomeStudyCourses";
 
-const csvPath = path.resolve("data/watson/legacy-home-study-courses.csv");
+const csvPath = path.resolve("data/watson/legacy-home-study-courses.csv.txt");
 
 const spotChecks: Record<
   number,
@@ -99,8 +100,12 @@ const spotChecks: Record<
 
 describe("legacy Home Study course catalog", () => {
   it("imports every row from the SQL export", () => {
-    const fromDisk = parseLegacyHomeStudyCoursesCsv(fs.readFileSync(csvPath, "utf8"));
-    expect(fromDisk).toEqual(LEGACY_HOME_STUDY_COURSE_CATALOG);
+    const fromDisk = fs.readFileSync(csvPath, "utf8");
+    expect(LEGACY_HOME_STUDY_COURSES_CSV).toBe(fromDisk);
+    expect(parseLegacyHomeStudyCoursesCsv(LEGACY_HOME_STUDY_COURSES_CSV)).toEqual(
+      LEGACY_HOME_STUDY_COURSE_CATALOG,
+    );
+    expect(parseLegacyHomeStudyCoursesCsv(fromDisk)).toEqual(LEGACY_HOME_STUDY_COURSE_CATALOG);
     expect(LEGACY_HOME_STUDY_COURSE_CATALOG).toHaveLength(60);
     expect(LEGACY_HOME_STUDY_COURSE_CATALOG.map((course) => course.courseId)).toEqual(
       Array.from({ length: 60 }, (_, index) => index + 1),

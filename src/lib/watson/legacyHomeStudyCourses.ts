@@ -1,8 +1,14 @@
-import catalogCsv from "../../../data/watson/legacy-home-study-courses.csv?raw";
-
+/**
+ * The export stays one CSV file. The `.txt` suffix lets Vite (`?raw`) and
+ * Netlify's esbuild text loader inline the same bytes. A `.csv` import fails
+ * function bundling with "No loader is configured for .csv".
+ */
+import catalogCsv from "../../../data/watson/legacy-home-study-courses.csv.txt?raw";
 import { queryWatson } from "./db";
 import type { WatsonQueryFn } from "./memberSearch";
 import { formatLaTimestamp } from "./salesReportDates";
+
+export const LEGACY_HOME_STUDY_COURSES_CSV = catalogCsv;
 
 /**
  * Planning catalog for legacy Home Study courses.
