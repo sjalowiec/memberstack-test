@@ -42,7 +42,7 @@ describe("normalizeActivityEvent", () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(result.event.metadata).toEqual({ action: "view" });
+    expect(result.event.metadata).toEqual({ action: "view", memberId: "mem_1" });
   });
 
   it("omits missing optional fields", () => {
@@ -55,7 +55,8 @@ describe("normalizeActivityEvent", () => {
     expect(result.event).not.toHaveProperty("userEmail");
     expect(result.event).not.toHaveProperty("patternId");
     expect(result.event).not.toHaveProperty("patternTitle");
-    expect(result.event).not.toHaveProperty("metadata");
+    expect(result.event.metadata).toEqual({ memberId: "mem_1" });
+    expect(result.event.environment).toBeTruthy();
   });
 
   it("rejects unknown event types and missing user id", () => {
@@ -86,7 +87,11 @@ describe("normalizeActivityEvent", () => {
       "mem_1",
     );
     expect(kept.ok).toBe(true);
-    expect(kept.event.metadata).toEqual({ membership: "member", extra: true });
+    expect(kept.event.metadata).toEqual({
+      membership: "member",
+      extra: true,
+      memberId: "mem_1",
+    });
 
     const dropped = normalizeActivityEvent(
       {
@@ -97,7 +102,7 @@ describe("normalizeActivityEvent", () => {
       "mem_1",
     );
     expect(dropped.ok).toBe(true);
-    expect(dropped.event.metadata).toEqual({});
+    expect(dropped.event.metadata).toEqual({ memberId: "mem_1" });
   });
 });
 

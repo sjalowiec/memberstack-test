@@ -8,6 +8,7 @@
 import { loadExpressSweaterCharts } from "./sleevelessExpressSizeChartClient";
 import { flushExpressWizardToCanonicalPattern } from "./flushExpressWizardToCanonicalPattern";
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
+import { takePatternGenerationPending } from "./patternGenerationActivity";
 import { logCurrentPatternActivity } from "./sleevelessPatternActivity";
 import type { PatternSystemId } from "./patternSystemId";
 
@@ -118,9 +119,11 @@ export async function runPatternWorkspaceBuilderGenerationHandoff(
 
   prepareCustomBuildPatternGeneration({ root: root ?? undefined });
   flushExpressWizardToCanonicalPattern();
-  logCurrentPatternActivity("pattern_generated", {
-    patternSystem: resolvePatternSystemFromHandoffHref(options.href),
-  });
+  if (takePatternGenerationPending()) {
+    logCurrentPatternActivity("pattern_generated", {
+      patternSystem: resolvePatternSystemFromHandoffHref(options.href),
+    });
+  }
 
   clearHandoffSession();
   stripPatternWorkspaceBuilderHandoffFromUrl();

@@ -12,43 +12,36 @@ import {
   membershipFromViewerAccess,
   type PatternActivityMembership,
 } from "../patternActivityIdentity";
+import {
+  markPatternGenerationPending,
+  PATTERN_GENERATION_ACTIVITY_SESSION_KEY,
+  peekPatternGenerationPending,
+  takePatternGenerationPending,
+} from "../patternGenerationActivity";
 import { readHatActiveProjectId, resolveHatSavedPatternName } from "./hatSavedProject";
 import { readHatDraft } from "./hatDraft";
 
-export const HAT_GENERATION_ACTIVITY_SESSION_KEY = "kbm_hat_generation_activity";
+/** Same one-shot token as the other builders. */
+export const HAT_GENERATION_ACTIVITY_SESSION_KEY = PATTERN_GENERATION_ACTIVITY_SESSION_KEY;
 export const HAT_ACTIVITY_EMAIL_KEY = "kbm_hat_activity_email";
 
 export function markHatGenerationActivityPending(
   storage: Pick<Storage, "setItem"> | null = defaultSessionStorage(),
 ): void {
-  try {
-    storage?.setItem(HAT_GENERATION_ACTIVITY_SESSION_KEY, "1");
-  } catch {
-    /* ignore */
-  }
+  markPatternGenerationPending(storage);
 }
 
 export function peekHatGenerationActivityPending(
   storage: Pick<Storage, "getItem"> | null = defaultSessionStorage(),
 ): boolean {
-  try {
-    return storage?.getItem(HAT_GENERATION_ACTIVITY_SESSION_KEY) === "1";
-  } catch {
-    return false;
-  }
+  return peekPatternGenerationPending(storage);
 }
 
 /** Consume the one-shot generation token. Returns false when already used or missing. */
 export function takeHatGenerationActivityPending(
   storage: Pick<Storage, "getItem" | "removeItem"> | null = defaultSessionStorage(),
 ): boolean {
-  if (!peekHatGenerationActivityPending(storage)) return false;
-  try {
-    storage?.removeItem(HAT_GENERATION_ACTIVITY_SESSION_KEY);
-  } catch {
-    /* ignore */
-  }
-  return true;
+  return takePatternGenerationPending(storage);
 }
 
 export function rememberHatActivityEmail(

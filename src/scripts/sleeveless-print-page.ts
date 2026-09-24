@@ -46,8 +46,6 @@ import {
   hydratePatternPrintPersonalizationSlotsFromSession,
   triggerPatternPrint,
 } from "./patternPrintPersonalization.ts";
-import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity.ts";
-
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
     return obj as Record<string, unknown>;
@@ -134,7 +132,6 @@ function bindPrintButton(): void {
   if (!(btn instanceof HTMLButtonElement)) return;
   sleevelessPrintBtnBound = true;
   btn.addEventListener("click", () => {
-    logSleevelessPatternActivity("pattern_printed", { sourcePage: "/patterns/sleeveless/print" });
     triggerPatternPrint(btn);
   });
 }

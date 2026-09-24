@@ -5,6 +5,7 @@
  * It must not make an unsaved Hat look like an update.
  */
 import type { ViewerAccessState } from "../../memberAccess";
+import { logPatternActivity } from "../patternActivityLog";
 import {
   createCustomPatternProject,
   listCustomPatternProjects,
@@ -185,6 +186,13 @@ export async function persistHatPatternProject(options: {
     if (!res.ok) return { ok: false, error: res.error };
     writeHatDraft(namedDraft);
     writeHatActiveProjectId(activeId, res.project.name);
+    void logPatternActivity({
+      eventType: "pattern_updated",
+      patternSystem: "hat",
+      patternId: activeId,
+      patternTitle: res.project.name,
+      sourcePage: "/patterns/hat/summary/",
+    });
     return { ok: true, project: { ...res.project, id: activeId }, created: false };
   }
 
@@ -201,5 +209,12 @@ export async function persistHatPatternProject(options: {
   if (!res.ok) return { ok: false, error: res.error };
   writeHatDraft(namedDraft);
   writeHatActiveProjectId(res.project.id, res.project.name);
+  void logPatternActivity({
+    eventType: "pattern_saved",
+    patternSystem: "hat",
+    patternId: res.project.id,
+    patternTitle: res.project.name,
+    sourcePage: "/patterns/hat/summary/",
+  });
   return { ok: true, project: res.project, created: true };
 }

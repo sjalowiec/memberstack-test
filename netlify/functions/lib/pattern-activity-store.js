@@ -164,6 +164,31 @@ export function activityEventKey(event) {
 }
 
 /**
+ * Site that stored the event. Kin-dev is checked before CONTEXT=production,
+ * because hosted DEV deploys also set CONTEXT=production.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function activityEnvironment(env = process.env) {
+  if (isAllowDevPatternUser()) return "localhost";
+  if (isKinDevNetlifySite(env)) return "dev";
+  const host = hostnameFromNetlifyUrl(env.URL || env.DEPLOY_PRIME_URL || "");
+  if (host === "knititnow.com" || host === "www.knititnow.com" || host === "app.knititnow.com") {
+    return "production";
+  }
+  if (String(env.CONTEXT || "").trim().toLowerCase() === "production") return "production";
+  return "dev";
+}
+
+/** Authenticated member id is the verified user id. Guest hashes are not member ids. */
+function stampActivityIdentity(metadata, userId) {
+  const base =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata) ? { ...metadata } : {};
+  if (String(userId).startsWith("mem_")) base.memberId = userId;
+  else delete base.memberId;
+  return base;
+}
+
+/**
  * Normalizes a client-sent event into a stored record. `userId` is authoritative (server-resolved)
  * and overrides any client value. Returns `{ ok: false }` when required fields are missing/invalid.
  * @param {Record<string, unknown>} raw
@@ -206,6 +231,12 @@ export function normalizeActivityEvent(raw, userId) {
   if (mode) event.mode = mode;
   const sourcePage = cleanString(raw.sourcePage, 300);
   if (sourcePage) event.sourcePage = sourcePage;
+  event.environment = activityEnvironment();
+
+  const metadata = stampActivityIdentity(raw.metadata, safeUserId);
+  if (metadata) {
+    raw = { ...raw, metadata };
+  }
 
   if (
     raw.metadata &&

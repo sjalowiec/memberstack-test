@@ -128,7 +128,6 @@ import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
-import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity.ts";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate.ts";
 import { buildGlossaryTooltipPlaceholderHtml } from "../lib/glossary/glossaryTooltipPrint.ts";
 import { buildPatternHelpCardInnerHtml } from "../lib/patterns/patternHelpCard.ts";
@@ -351,7 +350,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     if (printBtn.dataset.sleevelessPrintBound !== "true") {
       printBtn.dataset.sleevelessPrintBound = "true";
       printBtn.addEventListener("click", () => {
-        logSleevelessPatternActivity("pattern_printed");
         triggerPatternPrint(printBtn, {});
       });
     }

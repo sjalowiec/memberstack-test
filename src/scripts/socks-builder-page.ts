@@ -44,6 +44,7 @@ import {
 import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 import { isValidExpressAvailableNeedles } from "../lib/patterns/sleevelessExpressAvailableNeedles";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
+import { markPatternGenerationPending } from "../lib/patterns/patternGenerationActivity";
 import { buildSockSummaryFromBuilderHref } from "../lib/patterns/sock/sockPatternNavigation";
 import {
   buildSockSizeOptionLabel,
@@ -568,6 +569,7 @@ async function initSocksBuilderPage(): Promise<void> {
       showFeedback(SOCK_BUILDER_INCOMPLETE_MESSAGE);
       return;
     }
+    markPatternGenerationPending();
     window.location.assign(buildSockSummaryFromBuilderHref());
   }
 
