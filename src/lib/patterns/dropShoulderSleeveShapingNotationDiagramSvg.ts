@@ -16,6 +16,7 @@ import { dropShoulderSleeveShapingVerb } from "./dropShoulderSleeveShaping";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
   DS_FILL,
+  DS_FONT,
   DS_FS_TITLE,
   DS_FW_TITLE,
   DS_MUTED,
@@ -28,8 +29,16 @@ import {
 } from "./dropShoulderPatternDiagramSvgShared";
 import {
   DS_FS_NOTATION,
+  DS_FS_RC,
+  DS_RC_GUTTER_X,
   dropShoulderNotationFontFace,
 } from "./dropShoulderShapingNotationDiagramShared";
+import {
+  shapingNotationRcText,
+  sleeveRcLandmarkY,
+  sleeveShapingRcLandmarks,
+  spreadRcLabelYs,
+} from "./shapingNotationRcLandmarks";
 import {
   buildDropShoulderSleeveFrame,
   dropShoulderSleeveBodyPath,
@@ -62,6 +71,58 @@ function notationText(
     `<text data-role="${escapeXml(role)}" data-notation="${escapeXml(label)}" x="${fmtNum(x)}" y="${fmtNum(y)}"` +
     ` text-anchor="${anchor}" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}>${escapeXml(label)}</text>`
   );
+}
+
+function drawSleeveRcLandmarks(
+  frame: DropShoulderSleeveDiagramFrame,
+  model: DropShoulderSleeveStitchesRowsModel,
+): string {
+  const input = {
+    topSts: model.topStitches,
+    wristSts: model.wristStitches,
+    cuffRows: model.cuffRows,
+    sleeveBodyRows: model.sleeveBodyRows,
+    sleeveTotalRows: model.sleeveTotalRows,
+    direction: model.direction,
+  };
+  const landmarks = sleeveShapingRcLandmarks(input);
+  const rawYs = landmarks.map((landmark) =>
+    sleeveRcLandmarkY({
+      direction: model.direction,
+      landmark,
+      wristY: frame.wristY,
+      upperArmY: frame.upperArmY,
+      cuffJoinY: frame.cuffJoinY,
+      cuffRows: model.cuffRows,
+      sleeveBodyRows: model.sleeveBodyRows,
+    }),
+  );
+  const order = rawYs
+    .map((y, index) => ({ y, index }))
+    .sort((a, b) => a.y - b.y);
+  const spread = spreadRcLabelYs(
+    order.map((item) => item.y),
+    DS_FS_RC + 2,
+  );
+  const ys = rawYs.slice();
+  order.forEach((item, spreadIndex) => {
+    ys[item.index] = spread[spreadIndex]!;
+  });
+  return landmarks
+    .map((landmark, index) =>
+      shapingNotationRcText({
+        landmark,
+        x: DS_RC_GUTTER_X,
+        y: ys[index]!,
+        size: DS_FS_RC,
+        anchor: "end",
+        fill: DS_MUTED,
+        font: DS_FONT,
+        escape: escapeXml,
+        formatNumber: fmtNum,
+      }),
+    )
+    .join("");
 }
 
 function drawSleeveNotationLabels(
@@ -100,6 +161,7 @@ export function buildDropShoulderSleeveShapingNotationSvgFromModel(
     drawSleeveCuffJoin(frame),
     drawSleevePieceLabel(frame),
     drawSleeveNotationLabels(frame, repl),
+    drawSleeveRcLandmarks(frame, model),
   ].join("");
 
   return wrapGeneratedDiagramSvg({

@@ -9,11 +9,18 @@
  */
 
 import {
+  DS_FONT,
   DS_MUTED,
   escapeXml,
   fmtNum,
   textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
+import {
+  shapingNotationRcText,
+  sidewaysGarmentRcLandmarks,
+  spreadRcLabelYs,
+  type ShapingNotationRcLandmark,
+} from "./shapingNotationRcLandmarks";
 import {
   dropShoulderSleeveBodyRowSpans,
   formatDropShoulderSleeveWorkingNotation,
@@ -213,6 +220,88 @@ function vNeckCenterY(
     : (frame.secondVStartY + frame.bottomY) / 2;
 }
 
+function sidewaysRcKnitY(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  landmark: ShapingNotationRcLandmark,
+): number {
+  const t = landmark.sectionPosition ?? landmark.position;
+  const pullover = frame.garmentStyle === "pullover";
+  const lerp = (a: number, b: number) => a + (b - a) * t;
+  switch (landmark.anchor) {
+    case "cast-on":
+      return frame.topY;
+    case "bind-off":
+      return frame.bottomY;
+    case "v1":
+      return pullover
+        ? lerp(frame.firstArmholeY, frame.firstVEndY)
+        : lerp(frame.topY, frame.firstVEndY);
+    case "v2":
+      return pullover
+        ? lerp(frame.firstVEndY, frame.secondVStartY)
+        : lerp(frame.secondVStartY, frame.bottomY);
+    case "armhole-1":
+      return frame.firstArmholeY;
+    case "armhole-2":
+      return frame.secondArmholeY;
+    case "neck-1":
+      return frame.backNeckStartY;
+    case "neck-2":
+      return frame.backNeckEndY;
+    default:
+      return frame.topY + (frame.bottomY - frame.topY) * landmark.position;
+  }
+}
+
+function drawSidewaysGarmentRcLandmarks(
+  model: SidewaysCardiganPatternDiagramModel,
+  frame: SidewaysCardiganEditMeasurementFrame,
+  type: SidewaysPatternDiagramType,
+  labelX: number,
+): string {
+  const slope = buildSidewaysVNeckSlopeSequence(
+    model.calc.vNeckDepthStitches,
+    model.calc.halfNeckRows,
+  );
+  const increase =
+    model.vNeckIncreaseSequence ??
+    (slope.ok ? slope.sequence : []);
+  const decrease =
+    model.vNeckDecreaseSequence ??
+    (slope.ok ? [...slope.sequence].reverse() : []);
+  if (increase.length === 0 && decrease.length === 0) return "";
+  const landmarks = sidewaysGarmentRcLandmarks({
+    garmentStyle: model.garmentStyle,
+    calc: model.calc,
+    increaseSequence: increase,
+    decreaseSequence: decrease,
+  });
+  const visual = landmarks.map((landmark) =>
+    sidewaysKnitVisualY(frame, sidewaysRcKnitY(frame, landmark)),
+  );
+  const order = visual.map((y, index) => ({ y, index })).sort((a, b) => a.y - b.y);
+  const spread = spreadRcLabelYs(order.map((item) => item.y), Math.round(type.row * 1.15));
+  const ys = visual.slice();
+  order.forEach((item, spreadIndex) => {
+    ys[item.index] = spread[spreadIndex]!;
+  });
+  return landmarks
+    .map((landmark, index) =>
+      shapingNotationRcText({
+        landmark,
+        x: labelX,
+        y: ys[index]!,
+        size: type.row,
+        anchor: "end",
+        fill: DS_MUTED,
+        font: DS_FONT,
+        escape: escapeXml,
+        formatNumber: fmtNum,
+      }),
+    )
+    .join("");
+}
+
 export function buildSidewaysCardiganShapingNotationDiagramSvg(
   model: SidewaysCardiganPatternDiagramModel,
 ): string {
@@ -365,6 +454,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
       ` data-knit-edge="end" data-sts="${edgeStitches}"`,
     ),
     ...sleeveLabels,
+    drawSidewaysGarmentRcLandmarks(model, frame, type, frame.hemX - 8),
     `</svg>`,
   ].join("");
 }

@@ -24,7 +24,9 @@ import {
 } from "./dropShoulderSleeveDiagramSvgShared";
 import {
   DS_FILL,
+  DS_FONT,
   DS_FS_MEASURE,
+  DS_MUTED,
   DS_FS_SMALL,
   DS_FS_TITLE,
   DS_FW_TITLE,
@@ -36,8 +38,16 @@ import {
 } from "./dropShoulderPatternDiagramSvgShared";
 import {
   DS_FS_NOTATION,
+  DS_FS_RC,
+  DS_RC_GUTTER_X,
   dropShoulderNotationFontFace,
 } from "./dropShoulderShapingNotationDiagramShared";
+import {
+  shapingNotationRcText,
+  sleeveRcLandmarkY,
+  sleeveShapingRcLandmarks,
+  spreadRcLabelYs,
+} from "./shapingNotationRcLandmarks";
 import {
   dropShoulderSleeveShapingRcSequence,
   formatDropShoulderSleeveWorkingNotation,
@@ -284,6 +294,52 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   return svg.replace(/<title>[\s\S]*?<\/title>/, "");
 }
 
+function drawSidewaysSleeveRcLandmarks(
+  frame: DropShoulderSleeveDiagramFrame,
+  calc: SidewaysCardiganSleeveCalc,
+): string {
+  const landmarks = sleeveShapingRcLandmarks({
+    topSts: calc.topSts,
+    wristSts: calc.wristSts,
+    cuffRows: calc.cuffRows,
+    sleeveBodyRows: calc.sleeveBodyRows,
+    sleeveTotalRows: calc.sleeveTotalRows,
+    direction: calc.direction,
+  });
+  const rawYs = landmarks.map((landmark) =>
+    sleeveRcLandmarkY({
+      direction: calc.direction,
+      landmark,
+      wristY: frame.wristY,
+      upperArmY: frame.upperArmY,
+      cuffJoinY: frame.cuffJoinY,
+      cuffRows: calc.cuffRows,
+      sleeveBodyRows: calc.sleeveBodyRows,
+    }),
+  );
+  const order = rawYs.map((y, index) => ({ y, index })).sort((a, b) => a.y - b.y);
+  const spread = spreadRcLabelYs(order.map((item) => item.y), DS_FS_RC + 2);
+  const ys = rawYs.slice();
+  order.forEach((item, spreadIndex) => {
+    ys[item.index] = spread[spreadIndex]!;
+  });
+  return landmarks
+    .map((landmark, index) =>
+      shapingNotationRcText({
+        landmark,
+        x: DS_RC_GUTTER_X,
+        y: ys[index]!,
+        size: DS_FS_RC,
+        anchor: "end",
+        fill: DS_MUTED,
+        font: DS_FONT,
+        escape: escapeXml,
+        formatNumber: fmtNum,
+      }),
+    )
+    .join("");
+}
+
 export function buildSidewaysCardiganSleeveShapingNotationSvg(
   args: SidewaysCardiganSleeveDiagramArgs,
 ): string | null {
@@ -315,10 +371,10 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
       const t = notationParts.length <= 1 ? 0.5 : index / (notationParts.length - 1);
       const along = startAtBottom ? 1 - t : t;
       const y = bodyTop + (bodyBottom - bodyTop) * (0.25 + along * 0.5);
-      const leftX = Math.min(frame.wristLeft, frame.upperLeft) - 8;
+      const leftX = Math.min(frame.wristLeft, frame.upperLeft) + 12;
       const rightX = Math.max(frame.wristRight, frame.upperRight) + 8;
       return (
-        diagramText("sleeve-shaping-left", part, leftX, y, DS_FS_NOTATION, "end", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`) +
+        diagramText("sleeve-shaping-left", part, leftX, y, DS_FS_NOTATION, "start", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`) +
         diagramText("sleeve-shaping-right", part, rightX, y, DS_FS_NOTATION, "start", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`)
       );
     })
@@ -356,6 +412,7 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
       "start",
     ),
     edgeLabels,
+    drawSidewaysSleeveRcLandmarks(frame, calc),
   ].join("");
 
   return wrapGeneratedDiagramSvg({

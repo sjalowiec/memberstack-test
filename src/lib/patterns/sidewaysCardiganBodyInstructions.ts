@@ -300,6 +300,16 @@ function cardiganLandmarks(
   };
 }
 
+/** Same section counters the written instructions use for cardigan and pullover. */
+export function sidewaysBodyRowLandmarks(
+  garmentStyle: SidewaysCardiganGarmentStyle,
+  sectionRowCounts: SidewaysCardiganSectionRowCounts,
+): SidewaysCardiganRowLandmarks {
+  return garmentStyle === "pullover"
+    ? pulloverLandmarks(sectionRowCounts)
+    : cardiganLandmarks(sectionRowCounts);
+}
+
 function pulloverLandmarks(
   sectionRowCounts: SidewaysCardiganSectionRowCounts,
 ): SidewaysCardiganRowLandmarks {
