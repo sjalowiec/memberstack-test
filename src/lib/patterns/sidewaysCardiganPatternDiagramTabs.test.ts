@@ -201,6 +201,21 @@ describe("Sideways diagram tabs", () => {
     expect(stsTab.getAttribute("aria-selected")).toBe("true");
   });
 
+  it("puts the shared diagram Print button on both body diagram panels", () => {
+    const html = buildSidewaysCardiganPatternDiagramTabsShellHtml();
+    const shapingStart = html.indexOf('data-sideways-diagram-panel="shaping-notation"');
+    const stsStart = html.indexOf('data-sideways-diagram-panel="sts-rows"');
+    const shapingChunk = html.slice(shapingStart);
+    const stsChunk = html.slice(stsStart, shapingStart);
+    expect(shapingChunk).toContain("data-sideways-diagram-print");
+    expect(shapingChunk).toContain("sleeveless-diagram-modal__print");
+    expect(shapingChunk).toContain("Print shaping notation diagram");
+    expect(stsChunk).toContain("data-sideways-diagram-print");
+    expect(stsChunk).toContain("sleeveless-diagram-modal__print");
+    expect(stsChunk).toContain("Print stitches and rows diagram");
+    expect(html.split("data-sideways-diagram-print").length - 1).toBe(2);
+  });
+
   it("wraps both diagram hosts in the shared sweater enlarge card", () => {
     const html = buildSidewaysCardiganPatternDiagramTabsShellHtml();
     expect(html.split("data-sleeveless-diagram-enlarge").length - 1).toBe(2);
@@ -248,6 +263,16 @@ describe("Sideways diagram tabs", () => {
     expect(pageScript).toContain("buildSidewaysCardiganPatternDiagramTabsShellHtml");
     expect(pageScript).toContain("initSidewaysCardiganPatternDiagramTabs");
     expect(pageScript).toContain("buildSidewaysCardiganPatternDiagramSvg");
+    expect(pageScript).toContain("triggerPatternPrint");
+    expect(pageScript).toContain("printShapingNotationDiagramDocument");
+    expect(pageScript).toContain("isPrintablePatternDiagramSvg");
+    expect(pageScript).toContain('aria-label", "Print pattern"');
+    const page = readFileSync(
+      join(srcRoot, "pages/patterns/sideways-cardigan/pattern/index.astro"),
+      "utf8",
+    );
+    expect(page).toContain("data-sideways-pattern-actions");
+    expect(page).toContain("data-pattern-print-skip-modal");
     expect(pageScript).toContain("buildSidewaysCardiganShapingNotationDiagramSvg");
     expect(pageScript).toContain("buildSidewaysCardiganPatternDiagramModel");
     expect(pageScript).toContain("bindSleevelessDiagramZoom(diagramHost)");

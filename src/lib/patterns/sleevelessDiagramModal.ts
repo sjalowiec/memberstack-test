@@ -86,6 +86,23 @@ export function isDisplayedShapingNotationSvg(svg: Element | null): boolean {
   return SHAPING_NOTATION_ARIA_RE.test(label);
 }
 
+const PRINTABLE_PATTERN_DIAGRAM_TYPES = new Set(["sts-rows", "shaping-notation"]);
+
+/**
+ * Finished-pattern diagrams that can use the single-diagram print window.
+ * Type comes from the diagram data attribute, not from words in the label.
+ * Summary/Edit measurement editors are not included.
+ */
+export function isPrintablePatternDiagramSvg(svg: Element | null): boolean {
+  if (!svg || svg.hasAttribute("data-sideways-edit-piece")) return false;
+  const patternType = svg.getAttribute("data-sideways-pattern-diagram");
+  const sleeveType = svg.getAttribute("data-sideways-sleeve-diagram");
+  return (
+    (patternType != null && PRINTABLE_PATTERN_DIAGRAM_TYPES.has(patternType)) ||
+    (sleeveType != null && PRINTABLE_PATTERN_DIAGRAM_TYPES.has(sleeveType))
+  );
+}
+
 /**
  * True when the enlarged diagram is back/front shaping notation (not Stitches & Rows).
  * Uses the displayed SVG first so a mode toggle is reflected before enlarge.
@@ -106,14 +123,9 @@ export function shouldShowShapingNotationDiagramPrint(triggerEl: HTMLElement): b
 
 export const SLEEVELESS_DIAGRAM_INLINE_CLASS = "sleeveless-piece-split__diagram-inline";
 
-function printSleevelessShapingNotationDiagramModal(modal: HTMLElement): void {
-  if (modal.dataset.sleevelessDiagramMode !== "shaping-notation") return;
-  const content = modal.querySelector("[data-sleeveless-diagram-content]");
-  const svg = content?.querySelector("svg");
-  if (!(svg instanceof SVGElement)) return;
-
-  const label = modal.getAttribute("aria-label") || "Shaping notation diagram";
-  const printHtml = buildShapingNotationDiagramPrintDocument(svg.outerHTML, label);
+/** Print one shaping-notation diagram in its own window. Does not print the pattern page. */
+export function printShapingNotationDiagramDocument(svgMarkup: string, title: string): void {
+  const printHtml = buildShapingNotationDiagramPrintDocument(svgMarkup, title);
   const printWindow = window.open("", "_blank", "width=900,height=700");
   if (!printWindow) return;
 
@@ -125,6 +137,16 @@ function printSleevelessShapingNotationDiagramModal(modal: HTMLElement): void {
     printWindow.focus();
     printWindow.print();
   }, 400);
+}
+
+function printSleevelessShapingNotationDiagramModal(modal: HTMLElement): void {
+  if (modal.dataset.sleevelessDiagramMode !== "shaping-notation") return;
+  const content = modal.querySelector("[data-sleeveless-diagram-content]");
+  const svg = content?.querySelector("svg");
+  if (!(svg instanceof SVGElement)) return;
+
+  const label = modal.getAttribute("aria-label") || "Shaping notation diagram";
+  printShapingNotationDiagramDocument(svg.outerHTML, label);
 }
 
 /** Create (once) the shared enlarge modal used by sweater and Socks diagrams. */

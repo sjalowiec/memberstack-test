@@ -82,13 +82,17 @@ export type BuildSleevelessDiagramHostOptions = {
 export function buildSleevelessPatternDiagramEnlargeHostHtml(options: {
   alt: string;
   innerHostHtml: string;
+  /** Optional Print control. Sweater families pass the shared shaping-notation button. */
+  printButtonHtml?: string;
 }): string {
   const alt = escapeHtml(options.alt);
+  const printButton = options.printButtonHtml ?? "";
   return (
     `<div class="sleeveless-piece-split__diagram-card">` +
     `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">` +
     `<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>` +
     `</button>` +
+    printButton +
     `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">` +
     options.innerHostHtml +
     `</button>` +

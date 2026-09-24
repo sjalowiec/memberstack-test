@@ -16,6 +16,18 @@ import {
 } from "./sidewaysCardiganShapingNotationDiagramSvg";
 import { calculateSidewaysCardiganSleeve } from "./sidewaysCardiganSleeveCalc";
 import {
+  buildSidewaysCardiganSleeveShapingNotationSvg,
+  buildSidewaysCardiganSleeveStitchesRowsSvg,
+} from "./sidewaysCardiganSleeveDiagramSvg";
+import {
+  buildSidewaysCardiganEditBodyMeasurementDiagramSvg,
+  buildSidewaysCardiganEditSleeveMeasurementDiagramSvg,
+} from "./sidewaysCardiganEditMeasurementDiagramSvg";
+import {
+  buildShapingNotationDiagramPrintDocument,
+  isPrintablePatternDiagramSvg,
+} from "./sleevelessDiagramModal";
+import {
   formatBindOffNotation,
   formatBodyRowsNotation,
   formatCastOnNotation,
@@ -362,5 +374,84 @@ describe("Sideways Shaping Notation diagram", () => {
     expect(svg).not.toContain('data-role="sleeve-outline"');
     expect(svg).toContain('data-sleeve-calculated="true"');
     expect(svg).toContain('data-sleeve-direction="top-down"');
+  });
+});
+
+function diagramElement(svg: string): Element {
+  const attrs = new Map<string, string>();
+  const open = svg.match(/^<svg\b[^>]*>/)?.[0] ?? "";
+  for (const match of open.matchAll(/\s([\w:-]+)="([^"]*)"/g)) {
+    attrs.set(match[1]!, match[2]!);
+  }
+  return {
+    hasAttribute: (name: string) => attrs.has(name),
+    getAttribute: (name: string) => attrs.get(name) ?? null,
+  } as unknown as Element;
+}
+
+function printDocument(svg: string): string {
+  const label = diagramElement(svg).getAttribute("aria-label") ?? "diagram";
+  return buildShapingNotationDiagramPrintDocument(svg, label);
+}
+
+describe("single-diagram print for Sideways body and sleeve", () => {
+  it("prints only the clicked diagram for cardigan and pullover, both sleeve directions", () => {
+    for (const style of ["cardigan", "pullover"] as const) {
+      for (const direction of ["cuff-up", "top-down"] as const) {
+        const model = modelFor(style, SAMPLE, { sleeveDirection: direction });
+        const sleeve = model.sleeveCalc;
+        expect(sleeve).not.toBeNull();
+        const sleeveArgs = {
+          calc: sleeve!,
+          stitchesPerInch: SAMPLE.stitchesPerInch,
+          rowsPerInch: SAMPLE.rowsPerInch,
+        };
+        const diagrams = {
+          bodySts: buildSidewaysCardiganPatternDiagramSvg(model),
+          bodyShaping: buildSidewaysCardiganShapingNotationDiagramSvg(model),
+          sleeveSts: buildSidewaysCardiganSleeveStitchesRowsSvg(sleeveArgs) ?? "",
+          sleeveShaping: buildSidewaysCardiganSleeveShapingNotationSvg(sleeveArgs) ?? "",
+        };
+        for (const svg of Object.values(diagrams)) {
+          expect(isPrintablePatternDiagramSvg(diagramElement(svg))).toBe(true);
+          const printed = printDocument(svg);
+          expect(printed).toContain("print-diagram-root");
+          expect(printed).toContain(diagramElement(svg).getAttribute("aria-label") ?? "");
+          for (const other of Object.values(diagrams)) {
+            if (other === svg) continue;
+            const otherLabel = diagramElement(other).getAttribute("aria-label") ?? "";
+            expect(printed).not.toContain(otherLabel);
+          }
+        }
+      }
+    }
+  });
+
+  it("does not treat summary measurement diagrams as printable pattern diagrams", () => {
+    const measurements = {
+      finishedBustInches: SAMPLE.finishedBustCircumferenceInches,
+      finishedLengthInches: SAMPLE.garmentLengthInches,
+      neckOpeningWidthInches: SAMPLE.neckOpeningWidthInches,
+      vNeckDepthInches: SAMPLE.vNeckDepthInches,
+      finishedUpperArmInches: SAMPLE.finishedUpperArmInches,
+      sleeveLengthInches: 18,
+      wristInches: 8,
+    };
+    for (const garmentStyle of ["cardigan", "pullover"] as const) {
+      expect(
+        isPrintablePatternDiagramSvg(
+          diagramElement(
+            buildSidewaysCardiganEditBodyMeasurementDiagramSvg({ garmentStyle, measurements }),
+          ),
+        ),
+      ).toBe(false);
+      expect(
+        isPrintablePatternDiagramSvg(
+          diagramElement(
+            buildSidewaysCardiganEditSleeveMeasurementDiagramSvg({ garmentStyle, measurements }),
+          ),
+        ),
+      ).toBe(false);
+    }
   });
 });

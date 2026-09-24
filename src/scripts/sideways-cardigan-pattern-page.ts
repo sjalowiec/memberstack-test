@@ -38,7 +38,10 @@ import {
   bindSleevelessDiagramZoom,
   closeSleevelessDiagramModal,
   ensureSleevelessDiagramModal,
+  isPrintablePatternDiagramSvg,
+  printShapingNotationDiagramDocument,
 } from "../lib/patterns/sleevelessDiagramModal";
+import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
@@ -176,6 +179,7 @@ function renderView(): void {
       sleeveErrorEl.textContent = "";
     }
     if (diagramHost instanceof HTMLElement) diagramHost.replaceChildren();
+    mountSidewaysPrintAction(false);
     syncSidewaysPatternInpageNav();
   };
 
@@ -200,6 +204,7 @@ function renderView(): void {
   missing.hidden = true;
   missing.textContent = "";
   host.hidden = false;
+  mountSidewaysPrintAction(true);
   if (errorEl instanceof HTMLElement) {
     if (view.instructionError) {
       errorEl.hidden = false;
@@ -283,6 +288,49 @@ function markSidewaysDiagramForEnlarge(host: HTMLElement): void {
   if (svg) svg.classList.add(SLEEVELESS_DIAGRAM_INLINE_CLASS);
 }
 
+/** Header Print prints the whole pattern. Diagram Print prints one shaping diagram. */
+function mountSidewaysPrintAction(visible: boolean): void {
+  const actions = document.querySelector("[data-sideways-pattern-actions]");
+  if (!(actions instanceof HTMLElement)) return;
+  let printBtn = actions.querySelector("#print-btn");
+  if (!(printBtn instanceof HTMLButtonElement)) {
+    printBtn = document.createElement("button");
+    printBtn.type = "button";
+    printBtn.id = "print-btn";
+    printBtn.className = "sleeveless-pattern-print-action no-print";
+    printBtn.setAttribute("data-testid", "button-print");
+    printBtn.setAttribute("aria-label", "Print pattern");
+    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+    actions.appendChild(printBtn);
+  }
+  if (printBtn.dataset.sidewaysPrintBound !== "true") {
+    printBtn.dataset.sidewaysPrintBound = "true";
+    printBtn.addEventListener("click", () => {
+      triggerPatternPrint(printBtn, {});
+    });
+  }
+  printBtn.hidden = !visible;
+  printBtn.style.display = visible ? "inline-flex" : "none";
+}
+
+function bindSidewaysDiagramPrint(root: HTMLElement): void {
+  if (root.dataset.sidewaysDiagramPrintBound === "true") return;
+  root.dataset.sidewaysDiagramPrintBound = "true";
+  root.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("[data-sideways-diagram-print]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const card = button.closest(".sleeveless-piece-split__diagram-card");
+    const svg = card?.querySelector("svg");
+    if (!(svg instanceof SVGElement) || !isPrintablePatternDiagramSvg(svg)) return;
+    const title = svg.getAttribute("aria-label") || "Shaping notation diagram";
+    printShapingNotationDiagramDocument(svg.outerHTML, title);
+  });
+}
+
 function savedSleeveMeasurementInches(pattern: Record<string, unknown>): {
   sleeveLengthInches?: number;
   wristInches?: number;
@@ -346,6 +394,7 @@ function fillSidewaysPatternDiagrams(
   initSidewaysCardiganPatternDiagramTabs(diagramHost);
   ensureSleevelessDiagramModal();
   bindSleevelessDiagramZoom(diagramHost);
+  bindSidewaysDiagramPrint(diagramHost);
 
   const stsHost = diagramHost.querySelector("[data-sideways-diagram-sts-rows-host]");
   if (stsHost instanceof HTMLElement) {
@@ -375,6 +424,7 @@ function fillSidewaysSleeveDiagrams(
   initSidewaysCardiganSleeveDiagramTabs(diagramHost);
   ensureSleevelessDiagramModal();
   bindSleevelessDiagramZoom(diagramHost);
+  bindSidewaysDiagramPrint(diagramHost);
 
   const diagramArgs = {
     calc,

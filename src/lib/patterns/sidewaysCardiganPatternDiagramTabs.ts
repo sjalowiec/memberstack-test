@@ -38,6 +38,22 @@ const SIDEWAYS_SLEEVE_TAB_BIND_OPTIONS = {
   initAttr: "data-sideways-sleeve-diagram-tabs-init",
 } as const;
 
+/** Same Print control and styling as the shaping-notation diagram button. */
+export function buildSidewaysDiagramPrintButtonHtml(mode: SidewaysDiagramTabId): string {
+  const label =
+    mode === SIDEWAYS_DIAGRAM_TAB_SHAPING
+      ? "Print shaping notation diagram"
+      : "Print stitches and rows diagram";
+  return (
+    `<button type="button"` +
+    ` class="sleeveless-diagram-modal__print kbm-btn kbm-btn-outline no-print"` +
+    ` data-sideways-diagram-print` +
+    ` data-sleeveless-diagram-print` +
+    ` aria-label="${label}"` +
+    `>Print</button>`
+  );
+}
+
 function buildSidewaysDiagramHostHtml(mode: SidewaysDiagramTabId): string {
   const isShaping = mode === SIDEWAYS_DIAGRAM_TAB_SHAPING;
   const hostAttr = isShaping
@@ -48,6 +64,7 @@ function buildSidewaysDiagramHostHtml(mode: SidewaysDiagramTabId): string {
     alt,
     innerHostHtml:
       `<div class="sideways-pattern-diagram-panel__svg sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" ${hostAttr}></div>`,
+    printButtonHtml: buildSidewaysDiagramPrintButtonHtml(mode),
   });
 }
 
@@ -96,6 +113,7 @@ function buildSidewaysSleeveDiagramHostHtml(mode: SidewaysDiagramTabId): string 
     alt,
     innerHostHtml:
       `<div class="sideways-pattern-diagram-panel__svg sleeveless-piece-split__diagram-svg sleeveless-pattern-diagram-panel__svg" ${hostAttr}></div>`,
+    printButtonHtml: buildSidewaysDiagramPrintButtonHtml(mode),
   });
 }
 

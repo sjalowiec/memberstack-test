@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
+import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
 import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
@@ -21,12 +22,15 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
 <Layout
   title="Sideways V-Neck Sweater Pattern | Knit it Now"
   description="Sideways-knit V-neck sweater pattern workspace."
+  bodyClass="pattern-print-global-footer"
   patternWorkspace={true}
 >
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/sideways-cardigan" />
   <SleevelessPatternMemberGate>
   <main
     class="wizard-page sleeveless-pattern-page pattern-app-shell sideways-cardigan-pattern-page"
     data-express-construction="sideways-cardigan"
+    data-pattern-print-skip-modal
   >
     <div class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -42,6 +46,7 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
           tipsScopeSelector="#sideways-pattern-tips-scope"
           printOriginLabel="Created with the Knit It Now Sideways Knit Sweater Pattern Builder"
           printOriginUrl="KnitItNow.com/patterns/sideways-cardigan"
+          actionsEndAttrs={["data-sideways-pattern-actions"]}
         >
           <PatternBuilderMyPatternsLink slot="actions-start" />
           <a
@@ -53,6 +58,7 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
           >
             <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
           </a>
+          <!-- Print button (#print-btn) is injected here when a pattern renders. -->
         </SavedPatternHeader>
 
         <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
@@ -148,6 +154,15 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
     font-size: 1.05rem;
     font-weight: 600;
     color: #374151;
+  }
+
+  /* Same Print button as the enlarge modal, sitting left of the magnifying glass. */
+  .sideways-pattern-diagram-panel :global([data-sideways-diagram-print]),
+  :global(.sideways-sleeve-reading-layout [data-sideways-diagram-print]) {
+    position: absolute;
+    top: 0.15rem;
+    right: 1.9rem;
+    z-index: 2;
   }
 
   .sideways-pattern-diagram-panel__svg,

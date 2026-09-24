@@ -358,6 +358,11 @@ describe("sideways sleeve diagram tabs stay readable", () => {
     expect(shell).toContain('aria-selected="true"');
     expect(shell).toContain('aria-selected="false"');
     expect(shell).toContain("data-sleeveless-diagram-enlarge");
+    expect(shell.split("data-sideways-diagram-print").length - 1).toBe(2);
+    const shapingStart = shell.indexOf('data-sideways-sleeve-diagram-panel="shaping-notation"');
+    const stsStart = shell.indexOf('data-sideways-sleeve-diagram-panel="sts-rows"');
+    expect(shell.slice(shapingStart)).toContain("Print shaping notation diagram");
+    expect(shell.slice(stsStart, shapingStart)).toContain("Print stitches and rows diagram");
     expect(shell).toContain("Enlarge diagram");
     expect(shell).toContain("sideways-pattern-diagram-print-heading");
     expect(shell).toContain("data-sideways-sleeve-diagram-sts-rows-host");
