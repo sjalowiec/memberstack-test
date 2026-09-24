@@ -123,7 +123,8 @@ function bindSidewaysSleeveConstructionChoice(
         /* checklist persistence is optional */
       }
     }
-    fillSidewaysSleeveDiagrams(nextView);
+    closeSleevelessDiagramModal();
+    fillSidewaysSleeveDiagrams(nextView, sleeveEl);
     bindSidewaysSleeveConstructionChoice(sleeveEl, nextView);
   });
 }
@@ -252,7 +253,7 @@ function renderView(): void {
   }
 
   fillSidewaysPatternDiagrams(view);
-  fillSidewaysSleeveDiagrams(sleeveView);
+  fillSidewaysSleeveDiagrams(sleeveView, sleeveEl instanceof HTMLElement ? sleeveEl : document);
   syncSidewaysPatternInpageNav();
 }
 
@@ -345,8 +346,9 @@ function fillSidewaysPatternDiagrams(
 
 function fillSidewaysSleeveDiagrams(
   view: Extract<SidewaysCardiganWorkspaceView, { ok: true }>,
+  root: ParentNode,
 ): void {
-  const diagramHost = document.querySelector("[data-sideways-sleeve-diagram-tabs-mount]");
+  const diagramHost = root.querySelector("[data-sideways-sleeve-diagram-tabs-mount]");
   if (!(diagramHost instanceof HTMLElement)) return;
   const calc = view.sleeveInstructions?.calc;
   if (!calc) {

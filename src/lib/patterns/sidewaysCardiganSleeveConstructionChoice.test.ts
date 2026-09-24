@@ -137,6 +137,23 @@ describe("sideways finished sleeve construction choice", () => {
     expect(cuff.indexOf("no-print")).toBeLessThan(cuff.indexOf(">Cuff Up<"));
   });
 
+  it("places sleeve instructions before the diagram in reading order", () => {
+    const { html } = sleeveHtml("cuff-up");
+    const instructionsAt = html.indexOf("sideways-sleeve-reading-layout__instructions");
+    const diagramAt = html.indexOf("data-sideways-sleeve-diagram-tabs-mount");
+    expect(instructionsAt).toBeGreaterThan(-1);
+    expect(diagramAt).toBeGreaterThan(instructionsAt);
+    expect(html).toContain("sleeveless-pattern-reading-layout");
+    expect(html).toContain("pattern-layout__content");
+    expect(html).toContain("pattern-layout__sidebar");
+    const page = readFileSync("src/pages/patterns/sideways-cardigan/pattern/index.astro", "utf8");
+    expect(page).not.toContain("sideways-sleeve-reading-layout__instructions");
+    const css = readFileSync("src/styles/patterns/sleeveless-pattern-shared.css", "utf8");
+    expect(css).toContain("grid-template-columns: minmax(0, 62fr) minmax(0, 38fr)");
+    expect(css).toContain("position: sticky");
+    expect(css).toContain("@media (min-width: 1100px)");
+  });
+
   it("uses native buttons and the shared construction styles for keyboard and mobile", () => {
     const { html } = sleeveHtml("cuff-up");
     expect(html).toContain('type="button" class="sleeveless-back-diagram-mode__btn is-active"');
@@ -153,7 +170,8 @@ describe("sideways finished sleeve construction choice", () => {
     const handler = page.slice(page.indexOf("function bindSidewaysSleeveConstructionChoice"));
     const handlerBody = handler.slice(0, handler.indexOf("function renderView"));
     expect(handlerBody).toContain("sleeveEl.innerHTML = rendered.html");
-    expect(handlerBody).toContain("fillSidewaysSleeveDiagrams(nextView)");
+    expect(handlerBody).toContain("fillSidewaysSleeveDiagrams(nextView, sleeveEl)");
+    expect(handlerBody).toContain("closeSleevelessDiagramModal()");
     expect(handlerBody).not.toContain("sequenceEl");
     expect(handlerBody).not.toContain("fillSidewaysPatternDiagrams");
   });

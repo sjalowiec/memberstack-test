@@ -41,7 +41,10 @@ import {
 } from "./dropShoulderShapingNotationDiagramShared";
 import { formatDropShoulderSleeveShapingNotation } from "./dropShoulderSleeveShaping";
 import { dropShoulderSleeveShapingRcSequence } from "./dropShoulderSleeveShapingChart";
-import { SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS } from "./sidewaysCardiganConstructionIdentity";
+import {
+  SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
+} from "./dropShoulderSleeveConstruction";
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
 import {
   formatInchesWithUnit,
@@ -79,12 +82,18 @@ function diagramText(
   );
 }
 
-function measurementLabel(name: string, stitches: number, inches: number): string {
-  return `${name} · ${formatStitchesCount(stitches)} / ${formatInchesWithUnit(inches)}`;
+function stitchDimensionLabel(stitches: number, inches: number): string {
+  return `${formatStitchesCount(stitches)} / ${formatInchesWithUnit(inches)}`;
 }
 
-function sleeveLengthLabel(calc: SidewaysCardiganSleeveCalc): string {
-  return `Sleeve length · ${formatRowsCount(calc.sleeveTotalRows)} / ${formatInchesWithUnit(calc.finished.sleeveLengthInches)}`;
+function rowDimensionLabel(rows: number, inches: number): string {
+  return `${formatRowsCount(rows)} / ${formatInchesWithUnit(inches)}`;
+}
+
+function directionChoiceLabel(calc: SidewaysCardiganSleeveCalc): string {
+  return calc.direction === "top-down"
+    ? SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL
+    : SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL;
 }
 
 function shapingNotation(calc: SidewaysCardiganSleeveCalc): string {
@@ -202,29 +211,47 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
 ): string | null {
   const upright = uprightSleeveFrame(args);
   if (!upright) return null;
-  const { frame, model } = upright;
+  const { frame } = upright;
   const { calc } = args;
-  const directionLabel = SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[calc.direction];
+  const directionLabel = directionChoiceLabel(calc);
   const castOnEdge = calc.direction === "top-down" ? "upper-arm" : "wrist";
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
   const castOnY = edgeLabelY(frame, castOnEdge);
   const bindOffY = edgeLabelY(frame, bindOffEdge);
+  const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
+  const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
+  const labelY = bodyTop + (bodyBottom - bodyTop) * 0.55;
 
   const body = [
     silhouette(frame),
+    diagramText(
+      "sleeve-direction",
+      directionLabel,
+      frame.midX,
+      labelY,
+      DS_FS_TITLE,
+      "middle",
+      ` font-weight="${DS_FW_TITLE}"`,
+    ),
     drawSleeveWristWidth(
       frame,
-      measurementLabel("Wrist/Cuff", calc.wristSts, calc.finished.wristInches),
+      stitchDimensionLabel(calc.wristSts, calc.finished.wristInches),
     ),
     drawSleeveUpperArmWidth(
       frame,
-      measurementLabel("Upper arm", calc.topSts, calc.finished.upperArmInches),
+      stitchDimensionLabel(calc.topSts, calc.finished.upperArmInches),
     ),
-    drawSleeveTotalLength(frame, sleeveLengthLabel(calc)),
-    drawSleeveCuffDepth(frame, model.cuffDepthLabel),
+    drawSleeveTotalLength(
+      frame,
+      rowDimensionLabel(calc.sleeveTotalRows, calc.finished.sleeveLengthInches),
+    ),
+    drawSleeveCuffDepth(
+      frame,
+      rowDimensionLabel(calc.cuffRows, calc.finished.cuffDepthInches),
+    ),
   ].join("");
 
-  return wrapGeneratedDiagramSvg({
+  const svg = wrapGeneratedDiagramSvg({
     ariaLabel: `Sideways sleeve stitches and rows, ${directionLabel}`,
     className: "sleeveless-piece-split__diagram-inline ds-sleeve-diagram ds-sleeve-diagram--generated",
     dataAttrs: {
@@ -234,9 +261,10 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
       "data-cast-on-y": fmtNum(castOnY),
       "data-bind-off-y": fmtNum(bindOffY),
     },
-    title: `Sideways Sleeve - Stitches & Rows - ${directionLabel}`,
+    title: `Sideways sleeve stitches and rows, ${directionLabel}`,
     body,
   });
+  return svg.replace(/<title>[\s\S]*?<\/title>/, "");
 }
 
 export function buildSidewaysCardiganSleeveShapingNotationSvg(
@@ -246,7 +274,7 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
   if (!upright) return null;
   const { frame } = upright;
   const { calc } = args;
-  const directionLabel = SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[calc.direction];
+  const directionLabel = directionChoiceLabel(calc);
   const castOnEdge = calc.direction === "top-down" ? "upper-arm" : "wrist";
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
   const castOnY = edgeLabelY(frame, castOnEdge);

@@ -121,9 +121,15 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
       expect(attr(view.sts, "data-wrist-inches")).toBe(String(calc.finished.wristInches));
       expect(attr(view.sts, "data-sleeve-length-inches")).toBe(String(calc.finished.sleeveLengthInches));
       expect(attr(view.notation, "data-shaping-notation")).toBe(attr(view.sts, "data-shaping-notation"));
-      expect(view.sts).toContain("Upper arm");
-      expect(view.sts).toContain("Wrist/Cuff");
-      expect(view.sts).toContain("Sleeve length");
+      expect(view.sts).toContain(formatStitchesCount(calc.topSts));
+      expect(view.sts).toContain(formatStitchesCount(calc.wristSts));
+      expect(view.sts).toContain(formatRowsCount(calc.sleeveTotalRows));
+      expect(view.sts).toContain(formatRowsCount(calc.cuffRows));
+      expect(view.sts).not.toContain("Upper arm");
+      expect(view.sts).not.toContain("Wrist/Cuff");
+      expect(view.sts).not.toContain("Sleeve length");
+      expect(view.sts).not.toContain("Cuff length");
+      expect(view.sts).not.toContain("<title>");
     }
   });
 
@@ -159,7 +165,7 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(texts(cuff.notation, "bind-off")).toEqual([formatBindOffNotation(calc.topSts)]);
     expect(texts(cuff.notation, "sleeve-shaping-left")).toEqual([notation]);
     expect(texts(cuff.notation, "sleeve-shaping-right")).toEqual([notation]);
-    expect(texts(cuff.sts, "sleeve-direction")).toEqual([]);
+    expect(texts(cuff.sts, "sleeve-direction")).toEqual(["Cuff Up"]);
   });
 
   it("starts top-down at the upper arm with decreases and ends at the cuff", () => {
@@ -186,7 +192,7 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(texts(down.notation, "sleeve-shaping-right")).toEqual([notation]);
     expect(attr(down.sts, "data-shaping-notation")).toBe(notation);
     expect(attr(down.sts, "data-shaping-rows")).toBe(attr(down.notation, "data-shaping-rows"));
-    expect(texts(down.sts, "sleeve-direction")).toEqual([]);
+    expect(texts(down.sts, "sleeve-direction")).toEqual(["Top Down"]);
     expect(texts(down.sts, "sleeve-travel")).toEqual([]);
     expect(down.sts).not.toContain("Bind off");
     expect(down.sts).not.toContain("Cast on");
@@ -344,7 +350,7 @@ describe("sideways sleeve diagram tabs stay readable", () => {
       expect(sizes.length).toBeGreaterThan(0);
       expect(Math.min(...sizes)).toBeGreaterThanOrEqual(12);
       expect(svg).not.toMatch(/\bNaN\b/);
-      expect(texts(svg, "sleeve-direction").join("")).toBe(svg === view.notation ? texts(svg, "sleeve-direction").join("") : "");
+      expect(texts(svg, "sleeve-direction").join("")).toContain(svg === view.notation ? "Cuff Up" : "Cuff Up");
       if (svg === view.notation) {
         expect(texts(svg, "cast-on").join("")).not.toBe("");
         expect(texts(svg, "bind-off").join("")).not.toBe("");
