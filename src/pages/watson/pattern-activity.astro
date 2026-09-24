@@ -79,10 +79,6 @@ export const prerender = false;
 </WatsonPageShell>
 
 <script>
-  import {
-    authHeadersForCustomPatternProjects,
-    resolveCustomPatternProjectAuth,
-  } from "../../lib/patterns/customPatternProjectAuth";
   import type { PatternActivityEvent } from "../../lib/patterns/patternActivityLog";
   import { patternActivityEventLabel, patternActivitySystemLabel, patternActivitySystemFilterOptions, dateRangeForPreset, type PatternActivityDatePreset } from "../../lib/patterns/patternActivityReport";
   import { buildPatternActivityUsage, type PatternActivityPersonUsage } from "../../lib/patterns/patternActivityUsage";
@@ -145,11 +141,6 @@ export const prerender = false;
       if (el instanceof HTMLElement) el.hidden = selected("[data-pa-date]") !== "custom";
     });
     setStatus("Loading…");
-    const auth = await resolveCustomPatternProjectAuth();
-    if (auth.mode === "none") {
-      setStatus("Sign in with the member account that can view pattern activity, then try again.");
-      return;
-    }
     const preset = (selected("[data-pa-date]") || "all") as PatternActivityDatePreset;
     const range = dateRangeForPreset(preset, new Date(), {
       from: selected("[data-pa-from]"),
@@ -159,7 +150,8 @@ export const prerender = false;
     if (range.fromIso) params.set("from", range.fromIso);
     if (range.toIso) params.set("to", range.toIso);
     const res = await fetch(`/api/watson/pattern-activity?${params}`, {
-      headers: authHeadersForCustomPatternProjects(auth),
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
     });
     const data = (await res.json()) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
     if (!res.ok || !data.ok || !Array.isArray(data.events)) {
