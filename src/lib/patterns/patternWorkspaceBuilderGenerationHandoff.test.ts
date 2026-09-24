@@ -9,6 +9,7 @@ import {
   runPatternWorkspaceBuilderGenerationHandoff,
   stripPatternWorkspaceBuilderHandoffFromUrl,
 } from "./patternWorkspaceBuilderGenerationHandoff";
+import { markPatternGenerationPending } from "./patternGenerationActivity";
 
 const loadChartsMock = vi.fn();
 const prepareMock = vi.fn();
@@ -75,6 +76,7 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
   });
 
   it("run handoff flushes, prepares, logs, and consumes flags", async () => {
+    markPatternGenerationPending();
     markPatternWorkspaceBuilderHandoff();
     const replaceState = vi.fn();
     vi.stubGlobal("window", {
@@ -98,6 +100,7 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
   });
 
   it("run handoff from query param strips generated from the URL", async () => {
+    markPatternGenerationPending();
     const replaceState = vi.fn();
     vi.stubGlobal("window", {
       location: {
@@ -115,6 +118,20 @@ describe("patternWorkspaceBuilderGenerationHandoff", () => {
     );
     stripPatternWorkspaceBuilderHandoffFromUrl();
     expect(replaceState).toHaveBeenCalled();
+  });
+
+  it("does not log generation when the page is reopened without a builder token", async () => {
+    const replaceState = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        href: `https://example.test/patterns/sleeveless/pattern/?${PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY}=1`,
+        pathname: "/patterns/sleeveless/pattern/",
+      },
+      history: { replaceState, state: null },
+    });
+    const ran = await runPatternWorkspaceBuilderGenerationHandoff();
+    expect(ran).toBe(true);
+    expect(logActivityMock).not.toHaveBeenCalled();
   });
 
   it("no-ops when no handoff flag is present", async () => {

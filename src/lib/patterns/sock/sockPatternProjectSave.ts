@@ -4,6 +4,7 @@
  * Reuses the existing Custom Pattern create/update helpers (same as Hat).
  * Does not touch the sweater active-project pointer. Update never creates a new project.
  */
+import { logPatternActivity } from "../patternActivityLog";
 import {
   createCustomPatternProject,
   listCustomPatternProjects,
@@ -91,6 +92,13 @@ export async function persistSockPatternProject(options: {
     if (!res.ok) return { ok: false, error: res.error };
     writeSockDraft(namedDraft);
     writeSockActiveProjectId(activeId, res.project.name);
+    void logPatternActivity({
+      eventType: "pattern_updated",
+      patternSystem: "socks",
+      patternId: activeId,
+      patternTitle: res.project.name,
+      sourcePage: "/patterns/socks/summary/",
+    });
     return { ok: true, project: { ...res.project, id: activeId }, created: false };
   }
 
@@ -107,5 +115,12 @@ export async function persistSockPatternProject(options: {
   if (!res.ok) return { ok: false, error: res.error };
   writeSockDraft(namedDraft);
   writeSockActiveProjectId(res.project.id, res.project.name);
+  void logPatternActivity({
+    eventType: "pattern_saved",
+    patternSystem: "socks",
+    patternId: res.project.id,
+    patternTitle: res.project.name,
+    sourcePage: "/patterns/socks/summary/",
+  });
   return { ok: true, project: res.project, created: true };
 }

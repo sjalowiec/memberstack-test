@@ -5,6 +5,8 @@
  * other patterns may still use session keys + optional modal.
  */
 
+import { logPatternActivity } from "../lib/patterns/patternActivityLog";
+import { patternSystemFromPathname } from "../lib/patterns/patternGenerationActivity";
 import {
   isHatPatternPrintPage,
   isSockPatternPrintPage,
@@ -275,6 +277,11 @@ function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): vo
       // Some environments never fire afterprint; do not restore while the dialog may still be open.
       window.setTimeout(restoreTitle, 60_000);
     }
+    void logPatternActivity({
+      eventType: "pattern_printed",
+      patternSystem: patternSystemFromPathname(window.location?.pathname ?? ""),
+      sourcePage: window.location?.pathname,
+    });
     window.print();
   } finally {
     opts?.onAfterPrint?.();

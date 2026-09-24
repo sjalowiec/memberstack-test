@@ -1104,6 +1104,10 @@ function initExpressPage() {
           baseWorkspaceHref,
           access.hasSystemAccess,
         );
+        const { markPatternGenerationPending } = await import(
+          "../lib/patterns/patternGenerationActivity"
+        );
+        markPatternGenerationPending();
         window.location.href = workspaceHref;
       })();
     },

@@ -1,0 +1,261 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+
+export const prerender = false;
+---
+
+<WatsonPageShell
+  title="Pattern Activity | Watson"
+  description="Read-only pattern generation and save activity for Production or DEV."
+  heading="Pattern Activity"
+  intro="Who generated and saved patterns. Production is the live member site. This page only reads events."
+>
+  <section class="watson__panel" aria-labelledby="pattern-activity-filters-heading">
+    <h2 id="pattern-activity-filters-heading" class="watson__panel-title">Filters</h2>
+    <div class="pa-filters">
+      <label>
+        Environment
+        <select data-pa-environment>
+          <option value="production" selected>Production — live site</option>
+          <option value="dev">DEV — kin-dev</option>
+        </select>
+      </label>
+      <label>
+        Date
+        <select data-pa-date>
+          <option value="week">This week</option>
+          <option value="today">Today</option>
+          <option value="month">This month</option>
+          <option value="all" selected>All stored events</option>
+          <option value="custom">Custom range</option>
+        </select>
+      </label>
+      <label data-pa-custom hidden>
+        From
+        <input type="date" data-pa-from />
+      </label>
+      <label data-pa-custom hidden>
+        To
+        <input type="date" data-pa-to />
+      </label>
+      <label>
+        Pattern
+        <select data-pa-system>
+          <option value="">All patterns</option>
+        </select>
+      </label>
+      <label class="pa-check">
+        <input type="checkbox" data-pa-exclude-sue />
+        Exclude Sue’s account from member totals
+      </label>
+      <button type="button" class="watson__button" data-pa-apply>Show activity</button>
+    </div>
+    <p class="pa-source" data-pa-source>Source: Production — live site</p>
+    <p class="pa-status" data-pa-status>Choose Show activity to load events.</p>
+  </section>
+
+  <section class="watson__panel" aria-labelledby="pattern-activity-totals-heading">
+    <h2 id="pattern-activity-totals-heading" class="watson__panel-title">Totals</h2>
+    <dl class="pa-stats">
+      <div><dt>People who generated or saved</dt><dd data-pa-people>—</dd></div>
+      <div><dt>Total generations</dt><dd data-pa-generated>—</dd></div>
+      <div><dt>Distinct saved projects</dt><dd data-pa-saved>—</dd></div>
+      <div><dt>Opens</dt><dd data-pa-opens>—</dd></div>
+      <div><dt>Edits</dt><dd data-pa-edits>—</dd></div>
+      <div><dt>Prints</dt><dd data-pa-prints>—</dd></div>
+    </dl>
+  </section>
+
+  <section class="watson__panel" aria-labelledby="pattern-activity-people-heading">
+    <h2 id="pattern-activity-people-heading" class="watson__panel-title">Members</h2>
+    <div data-pa-people-list></div>
+  </section>
+
+  <section class="watson__panel" aria-labelledby="pattern-activity-anon-heading">
+    <h2 id="pattern-activity-anon-heading" class="watson__panel-title">Anonymous visitors</h2>
+    <p>Visitors without a member account. A captured email is shown when the event stored one. Guest ids are not shown as names.</p>
+    <div data-pa-anon-list></div>
+  </section>
+</WatsonPageShell>
+
+<script>
+  import {
+    authHeadersForCustomPatternProjects,
+    resolveCustomPatternProjectAuth,
+  } from "../../lib/patterns/customPatternProjectAuth";
+  import type { PatternActivityEvent } from "../../lib/patterns/patternActivityLog";
+  import { patternActivityEventLabel, patternActivitySystemLabel, patternActivitySystemFilterOptions, dateRangeForPreset, type PatternActivityDatePreset } from "../../lib/patterns/patternActivityReport";
+  import { buildPatternActivityUsage, type PatternActivityPersonUsage } from "../../lib/patterns/patternActivityUsage";
+
+  const statusEl = document.querySelector("[data-pa-status]");
+  const sourceEl = document.querySelector("[data-pa-source]");
+
+  function setStatus(message: string): void {
+    if (statusEl) statusEl.textContent = message;
+  }
+
+  function selected(selector: string): string {
+    const el = document.querySelector(selector);
+    return el instanceof HTMLSelectElement || el instanceof HTMLInputElement ? el.value : "";
+  }
+
+  function environmentLabel(value: string): string {
+    return value === "dev" ? "DEV — kin-dev" : "Production — live site";
+  }
+
+  function renderPeople(host: Element | null, people: PatternActivityPersonUsage[]): void {
+    if (!host) return;
+    host.replaceChildren();
+    if (people.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "None in this filter.";
+      host.appendChild(empty);
+      return;
+    }
+    for (const person of people) {
+      const article = document.createElement("article");
+      article.className = "pa-person";
+      const heading = document.createElement("h3");
+      heading.textContent = person.label;
+      article.appendChild(heading);
+      const meta = document.createElement("p");
+      const bits = [
+        person.memberId ? `Member ID ${person.memberId}` : "",
+        person.patterns.length ? `Patterns: ${person.patterns.join(", ")}` : "",
+      ].filter(Boolean);
+      meta.textContent = bits.join(" · ");
+      article.appendChild(meta);
+      const list = document.createElement("ul");
+      for (const action of person.actions) {
+        const item = document.createElement("li");
+        const when = new Date(action.createdAt);
+        const stamp = Number.isNaN(when.getTime()) ? action.createdAt : when.toLocaleString();
+        item.textContent = `${stamp} — ${patternActivityEventLabel(action.eventType)} — ${patternActivitySystemLabel(action.patternSystem)} — ${action.patternTitle || action.patternId || "Pattern"}`;
+        list.appendChild(item);
+      }
+      article.appendChild(list);
+      host.appendChild(article);
+    }
+  }
+
+  async function loadActivity(): Promise<void> {
+    const environment = selected("[data-pa-environment]") === "dev" ? "dev" : "production";
+    if (sourceEl) sourceEl.textContent = `Source: ${environmentLabel(environment)}`;
+    document.querySelectorAll("[data-pa-custom]").forEach((el) => {
+      if (el instanceof HTMLElement) el.hidden = selected("[data-pa-date]") !== "custom";
+    });
+    setStatus("Loading…");
+    const auth = await resolveCustomPatternProjectAuth();
+    if (auth.mode === "none") {
+      setStatus("Sign in with the member account that can view pattern activity, then try again.");
+      return;
+    }
+    const preset = (selected("[data-pa-date]") || "all") as PatternActivityDatePreset;
+    const range = dateRangeForPreset(preset, new Date(), {
+      from: selected("[data-pa-from]"),
+      to: selected("[data-pa-to]"),
+    });
+    const params = new URLSearchParams({ environment });
+    if (range.fromIso) params.set("from", range.fromIso);
+    if (range.toIso) params.set("to", range.toIso);
+    const res = await fetch(`/api/watson/pattern-activity?${params}`, {
+      headers: authHeadersForCustomPatternProjects(auth),
+    });
+    const data = (await res.json()) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
+    if (!res.ok || !data.ok || !Array.isArray(data.events)) {
+      setStatus(data.error || "Could not load pattern activity.");
+      return;
+    }
+    const system = selected("[data-pa-system]");
+    const options = patternActivitySystemFilterOptions(data.events);
+    const select = document.querySelector("[data-pa-system]");
+    if (select instanceof HTMLSelectElement && select.options.length <= 1) {
+      for (const option of options) {
+        const node = document.createElement("option");
+        node.value = option.value;
+        node.textContent = option.label;
+        select.appendChild(node);
+      }
+      if ([...select.options].some((option) => option.value === system)) select.value = system;
+    }
+    const report = buildPatternActivityUsage(data.events, {
+      datePreset: "all",
+      patternSystem: selected("[data-pa-system]"),
+      excludeSue: document.querySelector<HTMLInputElement>("[data-pa-exclude-sue]")?.checked === true,
+    });
+    const set = (selector: string, value: number) => {
+      const el = document.querySelector(selector);
+      if (el) el.textContent = String(value);
+    };
+    set("[data-pa-people]", report.peopleWhoGeneratedOrSaved);
+    set("[data-pa-generated]", report.totalGenerations);
+    set("[data-pa-saved]", report.distinctSavedProjects);
+    set("[data-pa-opens]", report.opens);
+    set("[data-pa-edits]", report.edits);
+    set("[data-pa-prints]", report.prints);
+    renderPeople(document.querySelector("[data-pa-people-list]"), report.people);
+    renderPeople(document.querySelector("[data-pa-anon-list]"), report.anonymous);
+    setStatus(`${data.events.length} events loaded from ${environmentLabel(environment)}.`);
+  }
+
+  document.querySelector("[data-pa-apply]")?.addEventListener("click", () => {
+    void loadActivity();
+  });
+  document.querySelector("[data-pa-date]")?.addEventListener("change", () => {
+    document.querySelectorAll("[data-pa-custom]").forEach((el) => {
+      if (el instanceof HTMLElement) el.hidden = selected("[data-pa-date]") !== "custom";
+    });
+  });
+  document.querySelector("[data-pa-environment]")?.addEventListener("change", () => {
+    if (sourceEl) sourceEl.textContent = `Source: ${environmentLabel(selected("[data-pa-environment]"))}`;
+  });
+</script>
+
+<style>
+  .pa-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: end;
+  }
+  .pa-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+  .pa-check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .pa-source {
+    font-weight: 700;
+  }
+  .pa-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0.75rem;
+  }
+  .pa-stats div {
+    margin: 0;
+  }
+  .pa-stats dd {
+    margin: 0.15rem 0 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  .pa-person {
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .pa-person h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+  }
+  .pa-person ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.1rem;
+  }
+</style>

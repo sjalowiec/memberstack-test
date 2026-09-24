@@ -3,6 +3,7 @@
  * Drop Shoulder / Sleeveless wizard client (those builders stay unchanged).
  */
 import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
+import { markPatternGenerationPending } from "../lib/patterns/patternGenerationActivity";
 import { readHydratedConstructionBaseline } from "../lib/patterns/customPatternProjectConstructionBaseline";
 import {
   applySleevelessExpressNewSessionFromUrl,
@@ -598,6 +599,7 @@ function init(): void {
     }
     showBuilderError(null);
     persist(state);
+    markPatternGenerationPending();
     window.location.assign(SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_BUILDER_HREF);
   };
 

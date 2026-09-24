@@ -5,6 +5,7 @@
  */
 
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
+import { logGeneratedPatternOnce } from "../lib/patterns/patternGenerationActivity";
 import { persistSidewaysCardiganSummaryProject } from "../lib/patterns/sidewaysCardiganSummarySave";
 import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
@@ -256,6 +257,15 @@ function initWorkspace(root: HTMLElement): void {
   );
   const sizeSelect = workspace.querySelector<HTMLSelectElement>("[data-sideways-edit-size]");
   const titleInput = workspace.querySelector<HTMLInputElement>("#sl-edit-title");
+  if (entryPath === "from-builder") {
+    void logGeneratedPatternOnce({
+      patternSystem: "sideways-cardigan",
+      patternId: readActiveCustomPatternProjectId() || undefined,
+      patternTitle: titleInput?.value?.trim() || undefined,
+      sourcePage: "/patterns/sideways-cardigan/summary/",
+      mode: "express",
+    });
+  }
   const notesFieldApi = bindPatternProjectNotesField(workspace);
   const spiInput = workspace.querySelector<HTMLInputElement>("#sl-edit-spi");
   const rpiInput = workspace.querySelector<HTMLInputElement>("#sl-edit-rpi");
