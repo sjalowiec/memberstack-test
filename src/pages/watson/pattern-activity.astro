@@ -149,13 +149,29 @@ export const prerender = false;
     const params = new URLSearchParams({ environment });
     if (range.fromIso) params.set("from", range.fromIso);
     if (range.toIso) params.set("to", range.toIso);
-    const res = await fetch(`/api/watson/pattern-activity?${params}`, {
-      credentials: "same-origin",
-      headers: { Accept: "application/json" },
-    });
-    const data = (await res.json()) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
-    if (!res.ok || !data.ok || !Array.isArray(data.events)) {
-      setStatus(data.error || "Could not load pattern activity.");
+    let data: { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
+    try {
+      const res = await fetch(`/api/watson/pattern-activity?${params}`, {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      const text = await res.text();
+      try {
+        data = JSON.parse(text) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
+      } catch {
+        setStatus(
+          res.ok
+            ? "Pattern activity returned a page instead of data."
+            : `Pattern activity failed (${res.status}). The report did not finish.`,
+        );
+        return;
+      }
+      if (!res.ok || !data.ok || !Array.isArray(data.events)) {
+        setStatus(data.error || `Could not load pattern activity (${res.status}).`);
+        return;
+      }
+    } catch {
+      setStatus("Could not load pattern activity. The request did not finish.");
       return;
     }
     const system = selected("[data-pa-system]");

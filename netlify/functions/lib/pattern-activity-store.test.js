@@ -9,6 +9,7 @@ import {
   KIN_DEV_PATTERN_ACTIVITY_ADMIN_EMAIL,
   KIN_DEV_PATTERN_ACTIVITY_ADMIN_MEMBER_ID,
   KIN_DEV_SITE_ID,
+  listActivityEvents,
   normalizeActivityEvent,
 } from "./pattern-activity-store.js";
 
@@ -323,6 +324,37 @@ describe("isActivityAdmin", () => {
     expect(isActivityAdmin(makeReq("other@example.com"), "mem_regular", "other@example.com")).toBe(
       false,
     );
+  });
+});
+
+describe("listActivityEvents", () => {
+  it("reads a date range without waiting for one blob at a time", async () => {
+    const keys = Array.from({ length: 45 }, (_, index) => `events/2026-09-01/${index}.json`);
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const store = {
+      async list() {
+        return { blobs: keys.map((key) => ({ key })) };
+      },
+      async get(key) {
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        inFlight -= 1;
+        return JSON.stringify({
+          id: key,
+          createdAt: "2026-09-01T12:00:00.000Z",
+          eventType: "pattern_generated",
+        });
+      },
+    };
+    const listed = await listActivityEvents(store, {
+      from: "2026-09-01T07:00:00.000Z",
+      to: "2026-09-01T23:00:00.000Z",
+      limit: 45,
+    });
+    expect(listed.events).toHaveLength(45);
+    expect(maxInFlight).toBeGreaterThan(1);
   });
 });
 
