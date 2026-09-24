@@ -38,8 +38,8 @@ describe("hat pattern-tip dismiss API (production)", () => {
   });
 
   it("finished Hat Pattern uses PatternTipsToggle with the hat storage key", () => {
-    expect(hatPatternAstro).toContain("PatternTipsToggle");
-    expect(hatPatternAstro).toContain('storageKey="hat-show-tips"');
+    expect(hatPatternAstro).toContain("SavedPatternHeader");
+    expect(hatPatternAstro).toContain('tipsStorageKey="hat-show-tips"');
     expect(hatPatternAstro).not.toMatch(/updateTipsResetLinkVisibility/);
     expect(hatPatternAstro).not.toMatch(/installPatternBuilderAccountGate\s*\(/);
     expect(hatPatternAstro).not.toMatch(/lockPatternBuilderForLoggedOut\s*\(/);

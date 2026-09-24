@@ -146,7 +146,11 @@ describe("hat finished-pattern navigation markup", () => {
     expect(patternPage).toContain("data-hat-edit-open");
     expect(patternPage).toContain('data-testid="button-edit-pattern"');
     expect(patternPage).toContain("HAT_SUMMARY_EDIT_FROM_PATTERN_HREF");
-    expect(patternPage).toContain("pattern-action-bar__group--end");
+    expect(patternPage).toContain("SavedPatternHeader");
+    expect(patternPage).toContain('part="actions"');
+    expect(
+      readFileSync(resolve("src/components/patterns/SavedPatternHeader.astro"), "utf8"),
+    ).toContain("pattern-action-bar__group--end");
     expect(pageScript).toContain("button-print");
     expect(pageScript).toContain("data-hat-edit-open");
     expect(pageScript).not.toContain("initHatPatternEditDrawer");

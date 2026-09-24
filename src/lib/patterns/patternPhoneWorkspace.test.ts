@@ -174,9 +174,10 @@ describe("pattern phone workspace — notice + compact header", () => {
     expect(sleevelessPattern).toMatch(
       /sl-edit-drawer__panel[\s\S]*PatternPhoneWorkspaceNotice[\s\S]*PatternSummaryEditWorkspace/,
     );
+    const actionStart = sleevelessPattern.indexOf("SavedPatternHeader");
     const actionBarChunk = sleevelessPattern.slice(
-      sleevelessPattern.indexOf("pattern-action-bar"),
-      sleevelessPattern.indexOf("sl-edit-drawer"),
+      actionStart,
+      sleevelessPattern.indexOf("SavedPatternHeader", actionStart + 1),
     );
     expect(actionBarChunk).not.toContain("PatternPhoneWorkspaceNotice");
   });

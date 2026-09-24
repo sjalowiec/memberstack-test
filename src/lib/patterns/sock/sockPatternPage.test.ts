@@ -451,13 +451,13 @@ describe("Pattern page does not recalculate geometry", () => {
 
   it("does not embed videos or Kitchener as a Builder choice", () => {
     const patternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
-    expect(patternPage).toContain("PatternTipsToggle");
-    expect(patternPage).toContain('storageKey="socks-show-tips"');
+    expect(patternPage).toContain("SavedPatternHeader");
+    expect(patternPage).toContain('tipsStorageKey="socks-show-tips"');
     expect(patternPage).toContain('id="socks-pattern-tips-scope"');
     expect(patternPage).toContain("pattern-tips-scope");
     expect(patternPage).not.toContain("vimeo");
     expect(patternPage).not.toContain("hat-pattern-diagram");
-    expect(patternPage).toContain('src="/images/patterns/socks-v2.png"');
+    expect(patternPage).toContain('thumbnailSrc="/images/patterns/socks-v2.png"');
     expect(patternPage).not.toContain("/images/sock.svg");
     expect(patternPage).not.toContain("kitchener-under");
     expect(patternPage).not.toContain("Fancy Socks");

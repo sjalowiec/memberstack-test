@@ -8,14 +8,31 @@ import {
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
   loadSidewaysCardiganWorkspaceView,
+  mergeSidewaysCardiganWorkingDraft,
 } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
 import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { buildSidewaysCardiganSummaryEditFromPatternHref } from "../lib/patterns/sidewaysCardiganPatternNavigation";
+import { buildSidewaysCardiganPatternHeaderDetailsHtml } from "../lib/patterns/sidewaysCardiganPatternHeaderDetails";
+import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
+
+function fillSidewaysPatternHeaderDetails(): void {
+  const introEl = document.querySelector("[data-sg-pattern-intro]");
+  if (!(introEl instanceof HTMLElement)) return;
+  try {
+    introEl.innerHTML = buildSidewaysCardiganPatternHeaderDetailsHtml(
+      mergeSidewaysCardiganWorkingDraft(),
+    );
+  } catch {
+    introEl.innerHTML = "";
+  }
+}
 
 function renderView(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
+  applySleevelessPatternOnlineProjectHeader();
+  fillSidewaysPatternHeaderDetails();
 
   const missing = document.querySelector("[data-sideways-calc-missing]");
   const host = document.querySelector("[data-sideways-calc-host]");

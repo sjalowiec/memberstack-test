@@ -137,7 +137,8 @@ describe("finished sweater How Much Yarn? markup", () => {
     );
     expect(drawer).toContain('class="hat-yarn-drawer no-print"');
     for (const page of [sleevelessPatternPage, dropShoulderPatternPage]) {
-      expect(page).toContain('class="pattern-action-bar no-print"');
+      expect(page).toContain("SavedPatternHeader");
+      expect(page).toContain('part="actions"');
       const yarnBtnSlice = page.slice(
         page.indexOf('id="express-yarn-drawer-open"'),
         page.indexOf("How Much Yarn?") + "How Much Yarn?".length,
