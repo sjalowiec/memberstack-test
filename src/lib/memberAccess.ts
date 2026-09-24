@@ -8,6 +8,7 @@
  *   currently valid membership:
  *
  *   - An ACTIVE/TRIALING paid plan (current membership or retired paid shells), or
+ *   - An ACTIVE/TRIALING Complimentary Membership plan, or
  *   - A confirmed Watson `subscriptionexpiring` date that is today or later
  *     (America/Los_Angeles calendar day). The free Memberstack Legacy Membership
  *     plan is not required when Watson confirms that date.
@@ -20,6 +21,7 @@
  * list in any section.
  */
 import {
+  COMPLIMENTARY_MEMBER_PLAN_IDS,
   CURRENT_MEMBER_PLAN_IDS,
   FREE_ACCESS_MEMBER_PLAN_IDS,
   LEGACY_PAID_MEMBER_PLAN_IDS,
@@ -43,12 +45,20 @@ export const PAID_MEMBER_ACCESS_PLAN_IDS = [
 /** Free legacy plan ids that also require a valid Watson paid-through date. */
 export const FREE_LEGACY_MEMBER_ACCESS_PLAN_IDS = FREE_ACCESS_MEMBER_PLAN_IDS;
 
+/**
+ * Complimentary plans that grant access from an ACTIVE/TRIALING connection.
+ * They do not use the Watson paid-through rule and do not keep access after
+ * the connection is canceled or expired.
+ */
+export const COMPLIMENTARY_MEMBER_ACCESS_PLAN_IDS = COMPLIMENTARY_MEMBER_PLAN_IDS;
+
 export { MEMBER_PLAN_IDS };
 
 /** Business calendar for legacy paid-through vs expired (date-only, not timestamps). */
 export const MEMBER_ACCESS_CALENDAR_TIMEZONE = "America/Los_Angeles";
 
 const paidPlanIds = new Set<string>(PAID_MEMBER_ACCESS_PLAN_IDS);
+const complimentaryPlanIds = new Set<string>(COMPLIMENTARY_MEMBER_ACCESS_PLAN_IDS);
 const freeLegacyPlanIds = new Set<string>(FREE_LEGACY_MEMBER_ACCESS_PLAN_IDS);
 
 /** Resolved viewer state for any gated area. */
@@ -197,6 +207,11 @@ export function hasPaidMemberAccess(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => paidPlanIds.has(id));
 }
 
+/** True when an ACTIVE complimentary membership plan is present. */
+export function hasComplimentaryMemberAccess(memberOrPayload: unknown): boolean {
+  return getActivePlanIds(memberOrPayload).some((id) => complimentaryPlanIds.has(id));
+}
+
 /**
  * True when the free legacy membership plan is currently connected.
  * This is only a candidate for access ? {@link hasMemberAccess} still requires
@@ -212,7 +227,11 @@ export function hasFreeLegacyPlanConnection(memberOrPayload: unknown): boolean {
  * legacy plan is not required.
  */
 export function needsLegacyPaidThroughForAccess(memberOrPayload: unknown): boolean {
-  return isMemberLoggedIn(memberOrPayload) && !hasPaidMemberAccess(memberOrPayload);
+  return (
+    isMemberLoggedIn(memberOrPayload) &&
+    !hasPaidMemberAccess(memberOrPayload) &&
+    !hasComplimentaryMemberAccess(memberOrPayload)
+  );
 }
 
 /**
@@ -271,6 +290,7 @@ export function hasMemberAccess(
   options?: MemberAccessOptions,
 ): boolean {
   if (hasPaidMemberAccess(memberOrPayload)) return true;
+  if (hasComplimentaryMemberAccess(memberOrPayload)) return true;
   if (!isMemberLoggedIn(memberOrPayload)) return false;
   return isLegacyPaidThroughCurrentlyValid(
     resolvedLegacyPaidThroughYmd(memberOrPayload, options) ?? null,

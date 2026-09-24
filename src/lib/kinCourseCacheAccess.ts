@@ -3,9 +3,9 @@
  *
  * `_ms-mem` is the member object the live SDK already persists. Entitlement
  * still uses `canAccessCourse` (membership allow list + SK840 slug mapping).
- * The inline script only embeds paid plan IDs (not the free legacy plan, which
- * also needs a Watson paid-through date). Live `getAppAndMember()` remains the
- * final gate.
+ * The inline script embeds paid plan IDs and Complimentary Membership (not the
+ * free legacy plan, which also needs a Watson paid-through date). Live
+ * `getAppAndMember()` remains the final gate.
  *
  * Cache never paints "locked": a logged-in member without paid/course plans may
  * still receive access after Memberstack/Watson finish. Confirmed session state
@@ -14,7 +14,11 @@
 import {
   LEGACY_COURSE_PLAN_SLUGS,
 } from "../config/legacyCourseEntitlements";
-import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS } from "../config/memberships";
+import {
+  COMPLIMENTARY_MEMBER_PLAN_IDS,
+  CURRENT_MEMBER_PLAN_IDS,
+  LEGACY_PAID_MEMBER_PLAN_IDS,
+} from "../config/memberships";
 import { canAccessCourse } from "./courseAccess";
 import { KIN_COURSE_ACCESS_SESSION_KEY } from "./kinCourse/accessGateState";
 import { isMemberLoggedIn } from "./memberAccess";
@@ -34,7 +38,11 @@ export type KinCourseCacheAccessVars = {
 export function kinCourseCacheAccessVars(courseSlug: string): KinCourseCacheAccessVars {
   return {
     courseSlug,
-    planIds: [...CURRENT_MEMBER_PLAN_IDS, ...LEGACY_PAID_MEMBER_PLAN_IDS],
+    planIds: [
+      ...CURRENT_MEMBER_PLAN_IDS,
+      ...LEGACY_PAID_MEMBER_PLAN_IDS,
+      ...COMPLIMENTARY_MEMBER_PLAN_IDS,
+    ],
     slugByPlan: { ...LEGACY_COURSE_PLAN_SLUGS },
   };
 }
