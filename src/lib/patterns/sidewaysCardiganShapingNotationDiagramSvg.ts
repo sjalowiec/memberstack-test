@@ -14,8 +14,16 @@ import {
   fmtNum,
   textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
-import { formatDropShoulderSleeveShapingNotation } from "./dropShoulderSleeveShaping";
-import { compressSlopeSequence, slopeJapaneseNotationLines } from "./legoBlocks/slopeShaping";
+import {
+  dropShoulderSleeveBodyRowSpans,
+  formatDropShoulderSleeveWorkingNotation,
+} from "./dropShoulderSleeveShapingChart";
+import { compressSlopeSequence } from "./legoBlocks/slopeShaping";
+import {
+  formatRowBasedShapingNotation,
+  rowBasedShapingNotation,
+  type RowBasedShapingNotation,
+} from "./shapingNotationCompress";
 import { buildSidewaysVNeckSlopeSequence } from "./sidewaysCardiganBodyInstructions";
 import {
   formatBindOffNotation,
@@ -105,22 +113,51 @@ function openingPair(
   ].join("");
 }
 
-function signedSlopeLines(sequence: readonly number[], sign: "+" | "-"): string[] {
+const ARMHOLE_SLIT_NOT_ROW_BASED =
+  "Armhole slit is a stitch bind-off and cast-on, not a row interval.";
+
+/** Even-row spans around the same every-other-row actions the written V-neck uses. */
+export function sidewaysVNeckRowBasedNotation(
+  sequence: readonly number[],
+  totalRows: number,
+  rowsBefore: number,
+): RowBasedShapingNotation {
   const steps = compressSlopeSequence(sequence);
-  if (!steps.length) return [];
-  return slopeJapaneseNotationLines(steps, 2).map((line) => `${sign}${line}`);
+  const lastAction =
+    sequence.length === 0 ? rowsBefore : rowsBefore + (sequence.length - 1) * 2;
+  return rowBasedShapingNotation({
+    rowsBefore,
+    segments: steps.map((step) => ({
+      stitches: step.stitches,
+      intervalRows: 2,
+      times: step.times,
+    })),
+    rowsAfter: Math.max(0, totalRows - lastAction),
+    totalRows,
+  });
+}
+
+function signedSectionLines(section: RowBasedShapingNotation, sign: "+" | "-"): string[] {
+  const text = formatRowBasedShapingNotation(section);
+  if (!text) return [];
+  return text.split(" ").map((part) => {
+    const shaped = /^\d+s-/.test(part);
+    return shaped ? `${sign}${part}` : part;
+  });
 }
 
 export function sidewaysCardiganVNeckNotationLines(
   model: SidewaysCardiganPatternDiagramModel,
 ): { increase: string[]; decrease: string[] } {
-  if (
-    model.vNeckIncreaseSequence !== undefined &&
-    model.vNeckDecreaseSequence !== undefined
-  ) {
+  const totalRows = model.calc.halfNeckRows;
+  const fromSequence = (sequence: readonly number[] | undefined, sign: "+" | "-", rowsBefore: number) =>
+    sequence && sequence.length > 0
+      ? signedSectionLines(sidewaysVNeckRowBasedNotation(sequence, totalRows, rowsBefore), sign)
+      : null;
+  if (model.vNeckIncreaseSequence !== undefined && model.vNeckDecreaseSequence !== undefined) {
     return {
-      increase: signedSlopeLines(model.vNeckIncreaseSequence, "+"),
-      decrease: signedSlopeLines(model.vNeckDecreaseSequence, "-"),
+      increase: fromSequence(model.vNeckIncreaseSequence, "+", 2) ?? [],
+      decrease: fromSequence(model.vNeckDecreaseSequence, "-", 0) ?? [],
     };
   }
   const slope = buildSidewaysVNeckSlopeSequence(
@@ -129,8 +166,11 @@ export function sidewaysCardiganVNeckNotationLines(
   );
   if (!slope.ok) return { increase: [], decrease: [] };
   return {
-    increase: signedSlopeLines(slope.sequence, "+"),
-    decrease: signedSlopeLines([...slope.sequence].reverse(), "-"),
+    increase: signedSectionLines(sidewaysVNeckRowBasedNotation(slope.sequence, totalRows, 2), "+"),
+    decrease: signedSectionLines(
+      sidewaysVNeckRowBasedNotation([...slope.sequence].reverse(), totalRows, 0),
+      "-",
+    ),
   };
 }
 
@@ -202,12 +242,26 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
           openingPair(slitX, y(frame.secondArmholeY), armholeBo, armholeCo, "jp-armhole-slit", "second", type),
         ];
   const sleevePlan = model.sleeveCalc?.shapingPlan;
-  const sleeveSegments =
-    model.sleeveCalc && sleevePlan && !sleevePlan.noShaping
-      ? formatDropShoulderSleeveShapingNotation(sleevePlan.steps)
+  const sleeveChart = model.sleeveCalc
+    ? {
+        topSts: model.sleeveCalc.topSts,
+        wristSts: model.sleeveCalc.wristSts,
+        cuffRows: model.sleeveCalc.cuffRows,
+        sleeveBodyRows: model.sleeveCalc.sleeveBodyRows,
+        sleeveTotalRows: model.sleeveCalc.sleeveTotalRows,
+        direction: model.sleeveCalc.direction,
+      }
+    : null;
+  const sleeveSpans = sleeveChart ? dropShoulderSleeveBodyRowSpans(sleeveChart) : null;
+  const sleeveWorking =
+    sleeveChart && sleevePlan && !sleevePlan.noShaping
+      ? formatDropShoulderSleeveWorkingNotation(sleeveChart, { includeRowSpans: true })
       : "";
-  const sleeveNotation = sleeveSegments
-    ? `${sleevePlan?.shapingDirection === "decrease" ? "-" : "+"}${sleeveSegments}`
+  const sleeveNotation = sleeveWorking
+    ? sleeveWorking
+        .split(" ")
+        .map((part) => (/^\d+s-/.test(part) ? `${sleevePlan?.shapingDirection === "decrease" ? "-" : "+"}${part}` : part))
+        .join(" ")
     : model.sleeveCalc
       ? formatBodyRowsNotation(model.sleeveCalc.sleeveBodyRows)
       : "";
@@ -242,12 +296,20 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
   const sleeveLabels =
     model.garmentStyle === "pullover" && model.sleeveCalc
       ? [
-          textAt(
-            (frame.sleeve.attachX + frame.sleeve.farX) / 2,
-            y(frame.sleeve.attachY),
-            sleeveNotation,
-            "jp-sleeve",
-            type,
+          ...sleeveNotation.split(" ").filter(Boolean).map((part, index) =>
+            textAt(
+              (frame.sleeve.attachX + frame.sleeve.farX) / 2,
+              y(frame.sleeve.attachY) - index * sidewaysNotationLinePitch(type),
+              part,
+              "jp-sleeve",
+              type,
+              "middle",
+              ` data-stack-order="${index}"${
+                sleeveSpans
+                  ? ` data-rows-before="${sleeveSpans.rowsBeforeShaping}" data-rows-after="${sleeveSpans.rowsAfterShaping}"`
+                  : ""
+              }`,
+            ),
           ),
           textAt(
             frame.sleeve.farX + type.row,
@@ -260,7 +322,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
         ]
       : [];
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline"${sidewaysCardiganPatternDiagramDataAttrs(model, "shaping-notation")}>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline" data-not-row-based-reason="${escapeXml(ARMHOLE_SLIT_NOT_ROW_BASED)}" data-vneck-rows="${model.calc.halfNeckRows}"${sidewaysCardiganPatternDiagramDataAttrs(model, "shaping-notation")}>`,
     buildSidewaysCardiganPatternSilhouetteMarkup(model),
     textAt(
       edgeX,

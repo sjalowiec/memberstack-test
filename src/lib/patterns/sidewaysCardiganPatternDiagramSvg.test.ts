@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { calculateSlopeShaping } from "./legoBlocks/slopeShaping";
 import { formatDropShoulderSleeveShapingNotation } from "./dropShoulderSleeveShaping";
+import { rowBasedShapingNotation } from "./shapingNotationCompress";
 import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
 import { buildSidewaysVNeckSlopeSequence } from "./sidewaysCardiganBodyInstructions";
@@ -199,6 +200,19 @@ function roleTexts(svg: string, role: string): string[] {
   }).map((match) => match[0]);
 }
 
+describe("row-based shaping notation", () => {
+  it("refuses a row-based section that omits the row spans", () => {
+    expect(() =>
+      rowBasedShapingNotation({
+        rowsBefore: Number.NaN,
+        segments: [{ stitches: 1, intervalRows: 2, times: 4 }],
+        rowsAfter: 0,
+        totalRows: 8,
+      }),
+    ).toThrow(/rows before, after, and total/);
+  });
+});
+
 describe("Sideways Shaping Notation diagram", () => {
   it("formats the body-instruction V-neck sequences, including the reversed decrease", () => {
     const model = modelFor("cardigan", SAMPLE, { includeSleeve: false });
@@ -222,10 +236,13 @@ describe("Sideways Shaping Notation diagram", () => {
     expect(svg).toContain(`data-vneck-sts="${model.calc.vNeckDepthStitches}"`);
     const first = roleTexts(svg, "jp-vneck-first");
     const second = roleTexts(svg, "jp-vneck-second");
-    expect(first[0]).toContain(lines.increase[0]!);
-    expect(first[1]).toContain(lines.increase[1]!);
-    expect(second[0]).toContain(lines.decrease[0]!);
-    expect(second[1]).toContain(lines.decrease[1]!);
+    expect(lines.increase[0]).toBe("2r");
+    expect(lines.decrease.at(-1)).toMatch(/^\d+r$/);
+    expect(lines.increase.join(" ")).not.toBe(lines.decrease.join(" "));
+    for (const line of lines.increase) expect(first.join(" ")).toContain(line);
+    for (const line of lines.decrease) expect(second.join(" ")).toContain(line);
+    expect(svg).toContain('data-not-row-based-reason="Armhole slit is a stitch bind-off and cast-on, not a row interval."');
+    expect(svg).toContain(`data-vneck-rows="${model.calc.halfNeckRows}"`);
     expect(svg.match(/data-role="jp-armhole-slit"/g)).toHaveLength(4);
   });
 
@@ -263,12 +280,13 @@ describe("Sideways Shaping Notation diagram", () => {
       vNeckDecreaseSequence: [1, 5],
     });
     const lines = sidewaysCardiganVNeckNotationLines(model);
-    expect(lines.increase).toEqual(["+5s-2r-1x", "+1s-2r-1x"]);
-    expect(lines.decrease).toEqual(["-1s-2r-1x", "-5s-2r-1x"]);
+    expect(lines.increase).toEqual(["2r", "+5s-2r-1x", "+1s-2r-1x", "22r"]);
+    expect(lines.decrease).toEqual(["-1s-2r-1x", "-5s-2r-1x", "24r"]);
     const svg = buildSidewaysCardiganShapingNotationDiagramSvg(model);
     const first = roleTexts(svg, "jp-vneck-first");
-    expect(first[0]).toContain("+5s-2r-1x");
-    expect(first[1]).toContain("+1s-2r-1x");
+    expect(first[0]).toContain("2r");
+    expect(first[1]).toContain("+5s-2r-1x");
+    expect(first[2]).toContain("+1s-2r-1x");
   });
 
   it("omits V-neck notation when the instruction sequences are empty", () => {
@@ -328,6 +346,8 @@ describe("Sideways Shaping Notation diagram", () => {
     const topSign = topDown.sleeveCalc!.shapingPlan.shapingDirection === "decrease" ? "-" : "+";
     expect(cuffSvg).toContain(`${cuffSign}${cuffNotation}`);
     expect(topSvg).toContain(`${topSign}${topNotation}`);
+    expect(cuffSvg).toMatch(/\d+r/);
+    expect(topSvg).toMatch(/\d+r/);
     expect(cuffSign).not.toBe(topSign);
     expect(cuffSvg).toContain(formatBodyRowsNotation(cuffUp.sleeveCalc!.cuffRows));
     expect(cuffSvg).toContain('data-role="jp-cuff"');

@@ -6,7 +6,7 @@
  */
 
 import { sleeveShapingPerSide, type EvenShapingSchedule } from "./evenShapingSchedule";
-import { formatBodyRowsNotation } from "./sleevelessBackJapaneseNotation";
+import { formatRowBasedShapingNotation, rowBasedShapingNotation } from "./shapingNotationCompress";
 import {
   dropShoulderSleeveShapingBreakdown,
   dropShoulderSleeveShapingPlan,
@@ -88,13 +88,15 @@ export function formatDropShoulderSleeveWorkingNotation(
   const shaping = formatDropShoulderSleeveShapingNotation(plan.steps);
   if (!options?.includeRowSpans) return shaping;
   const spans = dropShoulderSleeveBodyRowSpans(input);
-  const parts: string[] = [];
-  const before = formatBodyRowsNotation(spans.rowsBeforeShaping);
-  if (before) parts.push(before);
-  if (shaping) parts.push(shaping);
-  const after = formatBodyRowsNotation(spans.rowsAfterShaping);
-  if (after) parts.push(after);
-  return parts.join(" ");
+  const section = rowBasedShapingNotation({
+    rowsBefore: spans.rowsBeforeShaping,
+    segments: plan.steps
+      .filter((step) => step.times > 0 && step.rows > 0)
+      .map((step) => ({ stitches: step.sts, intervalRows: step.rows, times: step.times })),
+    rowsAfter: spans.rowsAfterShaping,
+    totalRows: input.sleeveBodyRows,
+  });
+  return formatRowBasedShapingNotation(section) || shaping;
 }
 
 /**

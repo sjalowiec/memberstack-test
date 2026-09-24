@@ -105,7 +105,7 @@ export function sidewaysSleeveConstructionChoiceQuickTipBodyHtml(): string {
     "<p><strong>Cuff Up:</strong> Begins at the cuff and increases toward the upper arm.</p>" +
     "<p><strong>Top Down:</strong> Begins at the upper arm and decreases toward the cuff.</p>" +
     "</div>" +
-    '<p class="drop-shoulder-sleeve-construction-tip-body__summary">Either construction produces the same finished sleeve. Choose the method that is most comfortable.</p>' +
+    '<p class="drop-shoulder-sleeve-construction-tip-body__summary">Either construction produces the same finished sleeve.</p>' +
     "</div>"
   );
 }

@@ -1,11 +1,10 @@
 /**
  * Sideways V-Neck sleeve diagrams (Stitches & Rows and Shaping Notation).
  *
- * Geometry, colors, and dimension arrows come from the Drop Shoulder sleeve
- * schematic. The silhouette stays cuff-at-bottom / upper-arm-at-top for both
- * knitting directions. Cast-on, bind-off, and shaping labels follow the
- * calculated cuff-up or top-down sequence. This module does not recalculate
- * stitches, rows, or shaping.
+ * Geometry, colors, and direction come from the Drop Shoulder sleeve frame.
+ * Cuff Up keeps the cuff at the bottom. Top Down uses that frame's Top Down
+ * orientation, with the upper arm as the starting edge. Labels stay upright.
+ * This module does not recalculate stitches, rows, or shaping.
  */
 
 import {
@@ -136,16 +135,13 @@ function workingDirectionArrow(
   );
 }
 
-/**
- * Cuff-up frame for both directions so the finished sleeve stays upright.
- * Drop Shoulder's own top-down schematic flips the artwork; Sideways does not.
- */
-function uprightSleeveModel(
-  args: SidewaysCardiganSleeveDiagramArgs,
-): DropShoulderSleeveStitchesRowsModel | null {
+function sleeveFrame(args: SidewaysCardiganSleeveDiagramArgs): {
+  frame: DropShoulderSleeveDiagramFrame;
+  model: DropShoulderSleeveStitchesRowsModel;
+} | null {
   const { calc } = args;
   if (!(args.stitchesPerInch > 0) || !(args.rowsPerInch > 0)) return null;
-  return buildDropShoulderSleeveStitchesRowsModel(
+  const model = buildDropShoulderSleeveStitchesRowsModel(
     {
       isDropShoulder: true,
       debug: {
@@ -158,16 +154,9 @@ function uprightSleeveModel(
         dropShoulderSleeveTotalRows: calc.sleeveTotalRows,
       } as SleevelessBackPatternResult["debug"],
     },
-    "cuff-up",
+    calc.direction,
     "in",
   );
-}
-
-function uprightSleeveFrame(args: SidewaysCardiganSleeveDiagramArgs): {
-  frame: DropShoulderSleeveDiagramFrame;
-  model: DropShoulderSleeveStitchesRowsModel;
-} | null {
-  const model = uprightSleeveModel(args);
   if (!model) return null;
   return { frame: buildDropShoulderSleeveFrame(model), model };
 }
@@ -193,6 +182,7 @@ function sharedDataAttrs(
   return {
     "data-supported": "true",
     "data-sleeve-direction": calc.direction,
+    "data-sleeve-frame": frame.direction,
     "data-wrist-stitches": calc.wristSts,
     "data-top-stitches": calc.topSts,
     "data-cuff-rows": calc.cuffRows,
@@ -214,9 +204,11 @@ function sharedDataAttrs(
   };
 }
 
+/** Place a label just outside an edge. SVG y grows downward; text is not rotated. */
 function edgeLabelY(frame: DropShoulderSleeveDiagramFrame, edge: "upper-arm" | "wrist"): number {
-  if (edge === "upper-arm") return frame.upperArmY + 28;
-  return Math.max(frame.cuffJoinY + 16, frame.wristY - 22);
+  const y = edge === "upper-arm" ? frame.upperArmY : frame.wristY;
+  const towardBody = Math.sign(frame.cuffJoinY - y) || 1;
+  return y - towardBody * 22;
 }
 
 function silhouette(frame: DropShoulderSleeveDiagramFrame): string {
@@ -229,9 +221,9 @@ function silhouette(frame: DropShoulderSleeveDiagramFrame): string {
 export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   args: SidewaysCardiganSleeveDiagramArgs,
 ): string | null {
-  const upright = uprightSleeveFrame(args);
-  if (!upright) return null;
-  const { frame } = upright;
+  const oriented = sleeveFrame(args);
+  if (!oriented) return null;
+  const { frame } = oriented;
   const { calc } = args;
   const directionLabel = directionChoiceLabel(calc);
   const castOnEdge = calc.direction === "top-down" ? "upper-arm" : "wrist";
@@ -241,6 +233,10 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
   const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
   const labelY = bodyTop + (bodyBottom - bodyTop) * 0.55;
+  const knitToward = frame[castOnEdge === "wrist" ? "wristY" : "upperArmY"] >
+    frame[bindOffEdge === "wrist" ? "wristY" : "upperArmY"]
+    ? "up"
+    : "down";
 
   const body = [
     silhouette(frame),
@@ -253,7 +249,7 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
       "middle",
       ` font-weight="${DS_FW_TITLE}"`,
     ),
-    workingDirectionArrow(frame, calc.direction === "top-down" ? "down" : "up"),
+    workingDirectionArrow(frame, knitToward),
     drawSleeveWristWidth(
       frame,
       stitchDimensionLabel(calc.wristSts, calc.finished.wristInches),
@@ -291,15 +287,18 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
 export function buildSidewaysCardiganSleeveShapingNotationSvg(
   args: SidewaysCardiganSleeveDiagramArgs,
 ): string | null {
-  const upright = uprightSleeveFrame(args);
-  if (!upright) return null;
-  const { frame } = upright;
+  const oriented = sleeveFrame(args);
+  if (!oriented) return null;
+  const { frame } = oriented;
   const { calc } = args;
   const directionLabel = directionChoiceLabel(calc);
   const castOnEdge = calc.direction === "top-down" ? "upper-arm" : "wrist";
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
   const castOnY = edgeLabelY(frame, castOnEdge);
   const bindOffY = edgeLabelY(frame, bindOffEdge);
+  const castOnEdgeY = castOnEdge === "wrist" ? frame.wristY : frame.upperArmY;
+  const bindOffEdgeY = bindOffEdge === "wrist" ? frame.wristY : frame.upperArmY;
+  const knitToward = castOnEdgeY > bindOffEdgeY ? "up" : "down";
   const notation = formatDropShoulderSleeveWorkingNotation(chartInput(calc), {
     includeRowSpans: true,
   });
@@ -310,11 +309,11 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
   const castOn = `${formatCastOnNotation(castOnStitches(calc))} sts`;
   const bindOff = formatBindOffNotation(bindOffStitches(calc));
   const cuff = formatBodyRowsNotation(calc.cuffRows);
-  const downward = calc.direction === "top-down";
+  const startAtBottom = castOnEdgeY > bindOffEdgeY;
   const edgeLabels = notationParts
     .map((part, index) => {
       const t = notationParts.length <= 1 ? 0.5 : index / (notationParts.length - 1);
-      const along = downward ? t : 1 - t;
+      const along = startAtBottom ? 1 - t : t;
       const y = bodyTop + (bodyBottom - bodyTop) * (0.25 + along * 0.5);
       const leftX = Math.min(frame.wristLeft, frame.upperLeft) - 8;
       const rightX = Math.max(frame.wristRight, frame.upperRight) + 8;
@@ -329,7 +328,7 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
     dropShoulderNotationFontFace(),
     silhouette(frame),
     diagramText("sleeve-direction", directionLabel, frame.midX, (bodyTop + bodyBottom) / 2, DS_FS_MEASURE),
-    workingDirectionArrow(frame, downward ? "down" : "up"),
+    workingDirectionArrow(frame, knitToward),
     diagramText(
       "cast-on",
       castOn,

@@ -308,8 +308,10 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
         expect(group[i - 1]!.y - group[i]!.y).toBeCloseTo(sidewaysNotationLinePitch(canvas.type), 1);
       }
     }
-    expect(lines.increase.every((line) => line.startsWith("+"))).toBe(true);
-    expect(lines.decrease.every((line) => line.startsWith("-"))).toBe(true);
+    expect(lines.increase.some((line) => line.startsWith("+"))).toBe(true);
+    expect(lines.decrease.some((line) => line.startsWith("-"))).toBe(true);
+    expect(lines.increase.every((line) => line.startsWith("+") || /^\d+r$/.test(line))).toBe(true);
+    expect(lines.decrease.every((line) => line.startsWith("-") || /^\d+r$/.test(line))).toBe(true);
   });
 
   it("matches body-instruction stitch and row counts", () => {
@@ -416,7 +418,8 @@ describe("Sideways pullover sleeve notation follows the flipped sleeve", () => {
     const sleeve = byRole(shaping, "jp-sleeve")[0];
     expect(model.sleeveCalc).not.toBeNull();
     const sign = model.sleeveCalc!.shapingPlan.shapingDirection === "decrease" ? "-" : "+";
-    expect(sleeve?.text.startsWith(sign)).toBe(true);
+    expect(byRole(shaping, "jp-sleeve").some((item) => item.text.startsWith(sign))).toBe(true);
+    expect(sleeve?.text).toMatch(/^\d+r$/);
     expect(sleeve!.x).toBeGreaterThan(frame.neckX);
     expect(sleeve!.y).toBeCloseTo(
       sidewaysKnitVisualY(frame, frame.sleeve.attachY),

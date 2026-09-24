@@ -233,6 +233,7 @@ export function buildSidewaysCardiganSleeveDisplayRows(
     sleeveTotalRows: calc.sleeveTotalRows,
     direction: calc.direction,
     valid: true,
+    optionalRibbing: true,
   });
 }
 

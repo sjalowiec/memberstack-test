@@ -112,6 +112,8 @@ import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstructi
 import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
 import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import { buildGlossaryTooltipPlaceholderHtml, PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
+import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
+import { BIND_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { inlineRcHeadingLine, parseInlineMarkedLine } from "./inlineRcHeading";
 
@@ -136,6 +138,8 @@ export type BuildDropShoulderSleeveRowsArgs = {
   sleeveTotalRows: number;
   direction: DropShoulderSleeveDirection;
   valid: boolean;
+  /** Sideways offers an optional ribbed cuff. Drop Shoulder leaves this unset. */
+  optionalRibbing?: boolean;
 };
 
 type Block = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
@@ -251,6 +255,48 @@ function sleeveBodyRemainderLine(
     return `After the final ${noun}, knit ${rowWord} in pattern, then begin the cuff at ${formatRcColon(cuffStartRc)}.`;
   }
   return knitInPatternLine(rowsAfterShaping);
+}
+
+function cuffRowPhrase(cuffRows: number): string {
+  return cuffRows === 1 ? "1 row" : `${cuffRows} rows`;
+}
+
+function cuffUpRibbingNote(cuffRows: number): string {
+  return (
+    "For a ribbed cuff, work the calculated cuff rows in ribbing instead of knitting them plain. " +
+    "Cast on in the ribbing needle arrangement of your choice. " +
+    `Knit ${cuffRowPhrase(cuffRows)} of ribbing, transfer the stitches to the main bed, then continue with the sleeve.`
+  );
+}
+
+function topDownRibbingNoteHtml(cuffRows: number): string {
+  const bindOff = buildGlossaryTooltipPlaceholderHtml(
+    BIND_OFF_GLOSSARY_ID,
+    "bind off",
+    glossaryAttrEscape,
+    (s) => s,
+  );
+  return (
+    "For a ribbed cuff, work the calculated cuff rows in ribbing instead of knitting them plain. " +
+    "Transfer the stitches to the ribber in the needle arrangement of your choice. " +
+    `Knit ${cuffRowPhrase(cuffRows)} of ribbing, then ${bindOff}.`
+  );
+}
+
+function optionalRibbingTip(direction: DropShoulderSleeveDirection, cuffRows: number) {
+  const body =
+    direction === "top-down"
+      ? `<p>${topDownRibbingNoteHtml(cuffRows)}</p>`
+      : `<p>${cuffUpRibbingNote(cuffRows)}</p>`;
+  return {
+    tipHtml: buildPatternQuickTipInnerHtml({
+      summaryLabel: "Optional ribbed cuff",
+      bodyHtml: body,
+    }),
+    tipHtmlIsFull: true as const,
+    tipPresentation: "quick-tip" as const,
+    tipId: direction === "top-down" ? "sleeve-ribbing-top-down" : "sleeve-ribbing-cuff-up",
+  };
 }
 
 function glossaryAttrEscape(s: string): string {
@@ -1303,8 +1349,10 @@ export function buildDropShoulderSleeveDisplayRows(
       paragraphs: [knitEvenLine(args.cuffRows)],
       trustedParagraphs: [
         knitEvenLine(args.cuffRows),
+        ...(args.optionalRibbing ? [topDownRibbingNoteHtml(args.cuffRows)] : []),
         bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge"),
       ].filter((line) => line.length > 0),
+      ...(args.optionalRibbing ? optionalRibbingTip("top-down", args.cuffRows) : {}),
       stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
     });
     return rows;
@@ -1320,7 +1368,11 @@ export function buildDropShoulderSleeveDisplayRows(
   rows.push({
     kind: "block",
     rc: formatRcColon(0),
-    paragraphs: [knitEvenLine(args.cuffRows)],
+    paragraphs: [
+      knitEvenLine(args.cuffRows),
+      ...(args.optionalRibbing ? [cuffUpRibbingNote(args.cuffRows)] : []),
+    ],
+    ...(args.optionalRibbing ? optionalRibbingTip("cuff-up", args.cuffRows) : {}),
     stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
   });
   appendSleeveBodyBlocks(

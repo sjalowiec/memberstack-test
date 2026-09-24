@@ -113,7 +113,11 @@ describe("sideways finished sleeve construction choice", () => {
     const cuffNotation = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs("cuff-up"));
     const topNotation = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs("top-down"));
     expect(cuffSts).toContain('data-knit-direction="up"');
-    expect(topSts).toContain('data-knit-direction="down"');
+    expect(topSts).toContain('data-sleeve-frame="top-down"');
+    expect(Number(topSts?.match(/data-wrist-y="([^"]+)"/)?.[1])).toBeLessThan(
+      Number(topSts?.match(/data-upper-arm-y="([^"]+)"/)?.[1]),
+    );
+    expect(cuffSts).toContain('data-sleeve-frame="cuff-up"');
     expect(cuffNotation).toContain('data-knit-edge="start"');
     expect(cuffNotation).not.toContain("Increase both edges");
     expect(topNotation).not.toContain("Decrease both edges");
@@ -125,8 +129,11 @@ describe("sideways finished sleeve construction choice", () => {
   });
 
   it("prints only the selected sleeve direction", () => {
-    const cuff = sleeveHtml("cuff-up").html;
-    const top = sleeveHtml("top-down").html;
+    const cuffRendered = sleeveHtml("cuff-up");
+    const topRendered = sleeveHtml("top-down");
+    const cuff = cuffRendered.html;
+    const top = topRendered.html;
+    const cuffRows = cuffRendered.instructions.calc.cuffRows;
     expect(cuff).toContain('class="drop-shoulder-sleeve-construction-wrap no-print"');
     expect(top).toContain('class="drop-shoulder-sleeve-construction-wrap no-print"');
     const cuffInstructions = cuff.slice(cuff.indexOf('id="sg-sleeve"'));
@@ -135,8 +142,55 @@ describe("sideways finished sleeve construction choice", () => {
     expect(cuffInstructions).not.toContain("Decrease 1 stitch at each side");
     expect(topInstructions).toContain("Decrease 1 stitch at each side");
     expect(topInstructions).not.toContain("Increase 1 stitch at each side");
+    expect(cuffInstructions).not.toContain("Choose the method that is most comfortable.");
+    expect(cuffInstructions).toContain("Either construction produces the same finished sleeve.");
+    expect(cuffInstructions).toContain(
+      `Knit ${cuffRows} rows of ribbing, transfer the stitches to the main bed`,
+    );
+    expect(cuffInstructions).toContain("instead of knitting them plain");
+    expect(cuffInstructions).not.toContain("transfer the stitches to the ribber");
+    expect(topInstructions).toContain(
+      `Knit ${topRendered.instructions.calc.cuffRows} rows of ribbing, then`,
+    );
+    expect(topInstructions).toContain("Transfer the stitches to the ribber in the needle arrangement of your choice.");
+    expect(topInstructions).not.toContain("cast on in the ribbing needle arrangement");
+    expect(cuffInstructions).toContain("Knit");
+    expect(cuffInstructions.indexOf("For a ribbed cuff")).toBeLessThan(cuffInstructions.indexOf("SLEEVE BODY"));
+    expect(topInstructions.indexOf("SLEEVE BODY")).toBeLessThan(topInstructions.indexOf("For a ribbed cuff"));
     expect(cuff.indexOf(">Cuff Up<")).toBeLessThan(cuff.indexOf("Increase 1 stitch at each side"));
     expect(cuff.indexOf("no-print")).toBeLessThan(cuff.indexOf(">Cuff Up<"));
+  });
+
+  it("uses the calculated cuff rows for ribbing and does not add sleeve length", () => {
+    const depths = [1.5, 3];
+    const cuffCounts: number[] = [];
+    for (const cuffDepthInches of depths) {
+      for (const direction of ["cuff-up", "top-down"] as const) {
+        const rendered = renderSidewaysSleeveSequenceForDirection(
+          { ...INPUT, cuffDepthInches, direction },
+          direction,
+        );
+        expect(rendered.ok).toBe(true);
+        if (!rendered.ok) throw new Error(rendered.error.message);
+        const { calc } = rendered.instructions;
+        cuffCounts.push(calc.cuffRows);
+        expect(calc.sleeveTotalRows).toBe(calc.sleeveBodyRows + calc.cuffRows);
+        expect(rendered.html).toContain(`Knit ${calc.cuffRows} rows even.`);
+        expect(rendered.html).toContain(`Knit ${calc.cuffRows} rows of ribbing`);
+        expect(rendered.html).toContain("instead of knitting them plain");
+        expect(rendered.html).not.toContain(`Knit ${calc.cuffRows + calc.sleeveBodyRows} rows of ribbing`);
+        if (direction === "cuff-up") {
+          expect(rendered.html).toContain("transfer the stitches to the main bed, then continue with the sleeve.");
+          expect(rendered.html).not.toContain("transfer the stitches to the ribber");
+          expect(rendered.html).toContain(`RC: ${String(calc.sleeveTotalRows).padStart(3, "0")}`);
+        } else {
+          expect(rendered.html).toContain("Transfer the stitches to the ribber in the needle arrangement of your choice.");
+          expect(rendered.html).not.toContain("cast on in the ribbing needle arrangement");
+          expect(rendered.html).toContain(`RC: ${String(calc.sleeveBodyRows).padStart(3, "0")}`);
+        }
+      }
+    }
+    expect(new Set(cuffCounts).size).toBeGreaterThan(1);
   });
 
   it("places sleeve instructions before the diagram in reading order", () => {
