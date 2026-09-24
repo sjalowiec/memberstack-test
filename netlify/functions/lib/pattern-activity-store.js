@@ -294,6 +294,32 @@ function utcDay(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : "";
 }
 
+const ACTIVITY_READ_CONCURRENCY = 40;
+
+async function readActivityBlobs(store, keys, options) {
+  const events = new Array(keys.length);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < keys.length) {
+      const index = cursor;
+      cursor += 1;
+      const raw = await store.get(keys[index], { type: "text" });
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        if (options.from && parsed?.createdAt && parsed.createdAt < options.from) continue;
+        if (options.to && parsed?.createdAt && parsed.createdAt > options.to) continue;
+        events[index] = parsed;
+      } catch {
+        /* skip unparseable blob */
+      }
+    }
+  }
+  const workers = Math.min(ACTIVITY_READ_CONCURRENCY, keys.length);
+  await Promise.all(Array.from({ length: workers }, () => worker()));
+  return events.filter(Boolean);
+}
+
 function dayFromActivityKey(key) {
   const match = String(key).match(/^events\/(\d{4}-\d{2}-\d{2})\//);
   return match ? match[1] : "";
@@ -364,19 +390,7 @@ export async function listActivityEvents(store, options = {}) {
   const total = keys.length;
   const pageKeys = keys.slice(offset, offset + limit);
 
-  const events = [];
-  for (const key of pageKeys) {
-    const raw = await store.get(key, { type: "text" });
-    if (!raw) continue;
-    try {
-      const parsed = JSON.parse(raw);
-      if (options.from && parsed?.createdAt && parsed.createdAt < options.from) continue;
-      if (options.to && parsed?.createdAt && parsed.createdAt > options.to) continue;
-      events.push(parsed);
-    } catch {
-      /* skip unparseable blob */
-    }
-  }
+  const events = await readActivityBlobs(store, pageKeys, options);
   return {
     events,
     total,
