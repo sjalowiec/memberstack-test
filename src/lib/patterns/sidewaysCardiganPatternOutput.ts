@@ -10,6 +10,7 @@ import {
   wrapPatternSectionHtml,
   renderPatternDisplayRowsHtml,
 } from "./sleevelessPatternDisplayHtml";
+import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
 import {
   formatRcColon,
   type SleevelessPatternDisplayRow,
@@ -128,6 +129,18 @@ function startStateCount(args: { working: number; held: number; total: number })
   return { stitchCount: args.total };
 }
 
+function castOnHelpTip(tipId: string, bodyHtml: string) {
+  return {
+    tipHtml: buildPatternQuickTipInnerHtml({
+      summaryLabel: "Cast-on method",
+      bodyHtml,
+    }),
+    tipHtmlIsFull: true as const,
+    tipPresentation: "quick-tip" as const,
+    tipId,
+  };
+}
+
 function block(args: {
   rc?: number;
   paragraphs?: string[];
@@ -137,12 +150,20 @@ function block(args: {
   bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
   bodyShapingChartId?: string;
   bodyShapingChartCompletedRowsLabel?: string;
+  tipHtml?: string;
+  tipHtmlIsFull?: boolean;
+  tipPresentation?: "quick-tip" | "help-card";
+  tipId?: string;
 }): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
   return {
     kind: "block",
     ...(args.rc !== undefined ? { rc: formatRcColon(args.rc) } : {}),
     paragraphs: args.paragraphs ?? [],
     ...(args.trustedParagraphs ? { trustedParagraphs: args.trustedParagraphs } : {}),
+    ...(args.tipHtml ? { tipHtml: args.tipHtml } : {}),
+    ...(args.tipHtmlIsFull ? { tipHtmlIsFull: true as const } : {}),
+    ...(args.tipPresentation ? { tipPresentation: args.tipPresentation } : {}),
+    ...(args.tipId ? { tipId: args.tipId } : {}),
     ...(args.stitchCount !== undefined ? { stitchCount: args.stitchCount } : {}),
     ...(args.stitchCensus ? { stitchCensus: args.stitchCensus } : {}),
     ...(args.bodyShapingChartRows ? { bodyShapingChartRows: args.bodyShapingChartRows } : {}),
@@ -271,10 +292,13 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `At ${formatRcColon(landmarks.firstSideSeam)}:`,
         `At the neck edge, bind off the ${armhole} armhole stitches.`,
         `Immediately cast on ${armhole} stitches.`,
-        `Recommend an ${ewrapPh} cast-on, but you may use the cast-on method of your choice.`,
-        `Use a ${ragPh} as needed to support and weight the new stitches.`,
         `Continue with ${fullWidth} stitches.`,
       ],
+      ...castOnHelpTip(
+        "sideways-cardigan-cast-on-first-armhole",
+        `<p>Recommend an ${ewrapPh} cast-on, but you may use the cast-on method of your choice.</p>` +
+          `<p>Use a ${ragPh} as needed to support and weight the new stitches.</p>`,
+      ),
       stitchCount: fullWidth,
     }),
     section("FIRST BACK SHOULDER"),
@@ -295,9 +319,12 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `Knit ${instructions.sectionRowCounts.backNeckOpening} rows on the remaining ${backNeckLiveStitches} stitches.`,
         `End at ${formatRcColon(landmarks.secondBackNeckEdge)}.`,
         `Cast the ${backNeck} stitches back on.`,
-        `Recommend an ${ewrapPh}, while allowing the cast-on method of your choice.`,
         `Continue knitting over ${fullWidth} stitches.`,
       ],
+      ...castOnHelpTip(
+        "sideways-cardigan-cast-on-back-neck",
+        `<p>Recommend an ${ewrapPh}, while allowing the cast-on method of your choice.</p>`,
+      ),
       stitchCount: fullWidth,
     }),
     section("SECOND BACK SHOULDER"),

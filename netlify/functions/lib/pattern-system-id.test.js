@@ -1,13 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   CONSTRUCTION_AUTHORED_KEY,
+  CONSTRUCTION_FAMILY_OVERRIDE_KEY,
   DROP_SHOULDER_CONSTRUCTION,
+  patternSystemDisplayName,
   resolvePatternSystemFromProject,
+  SIDEWAYS_CARDIGAN_CONSTRUCTION,
 } from "./pattern-system-id.js";
 import {
   buildProjectRecord,
+  countProjectsForPatternSystem,
   listProjectSummaries,
+  projectBlobKey,
   projectIndexKey,
+  PROJECT_SUMMARY_INDEX_VERSION,
   summaryFromProject,
   upsertProjectSummaryInIndex,
 } from "./custom-pattern-projects-store.js";
@@ -231,6 +237,104 @@ describe("summaryFromProject index patternSystem", () => {
     const indexed = await listProjectSummaries(store, "sleeveless", "user-1");
     expect(indexed).toEqual([
       expect.objectContaining({ id: built.project.id, patternSystem: "socks" }),
+    ]);
+  });
+
+  it("classifies a Sideways blob as sideways-cardigan and leaves Sleeveless unchanged", () => {
+    const sideways = {
+      family: "sleeveless",
+      name: "new Women's Sideways V-Neck",
+      pattern: {
+        style: {
+          construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+          [CONSTRUCTION_AUTHORED_KEY]: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+        },
+      },
+      customOverrides: {},
+    };
+    expect(resolvePatternSystemFromProject(sideways)).toBe("sideways-cardigan");
+    expect(patternSystemDisplayName("sideways-cardigan")).toBe("Sideways V-Neck");
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { style: { patternMode: "express", neckline: "round" } },
+        customOverrides: {},
+      }),
+    ).toBe("sleeveless");
+    expect(
+      resolvePatternSystemFromProject({
+        ...sideways,
+        pattern: {
+          style: { construction: SIDEWAYS_CARDIGAN_CONSTRUCTION },
+        },
+        customOverrides: {
+          [CONSTRUCTION_FAMILY_OVERRIDE_KEY]: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+        },
+      }),
+    ).toBe("sideways-cardigan");
+  });
+
+  it("writes patternSystem sideways-cardigan and does not count it as Sleeveless", () => {
+    const summary = summaryFromProject({
+      id: "proj-sw-1",
+      name: "new Women's Sideways V-Neck",
+      family: "sleeveless",
+      source: "express",
+      createdAt: "2026-09-24T00:00:00.000Z",
+      updatedAt: "2026-09-24T00:00:00.000Z",
+      version: 1,
+      pattern: {
+        style: {
+          construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+          [CONSTRUCTION_AUTHORED_KEY]: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+        },
+      },
+      customOverrides: {},
+    });
+    expect(summary.patternSystem).toBe("sideways-cardigan");
+    expect(summary.name).toBe("new Women's Sideways V-Neck");
+    const sleeveless = summaryFromProject({
+      id: "proj-sl-2",
+      name: "Summer shell",
+      family: "sleeveless",
+      source: "express",
+      pattern: { style: { patternMode: "express" } },
+      customOverrides: {},
+    });
+    expect(sleeveless.patternSystem).toBe("sleeveless");
+    expect(countProjectsForPatternSystem([summary, sleeveless], "sleeveless")).toBe(1);
+    expect(countProjectsForPatternSystem([summary, sleeveless], "sideways-cardigan")).toBe(1);
+  });
+
+  it("rebuilds a stale Sleeveless index label from the Sideways project blob", async () => {
+    const project = {
+      id: "proj-sw-stale",
+      name: "new Women's Sideways V-Neck",
+      family: "sleeveless",
+      source: "express",
+      createdAt: "2026-09-24T00:00:00.000Z",
+      updatedAt: "2026-09-24T00:00:00.000Z",
+      version: 1,
+      pattern: {
+        style: {
+          construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+          [CONSTRUCTION_AUTHORED_KEY]: SIDEWAYS_CARDIGAN_CONSTRUCTION,
+        },
+      },
+      customOverrides: {},
+    };
+    const blobKey = projectBlobKey("sleeveless", "user-1", project.id);
+    const indexKey = projectIndexKey("sleeveless", "user-1");
+    const store = createMockStore({
+      [blobKey]: JSON.stringify(project),
+      [indexKey]: JSON.stringify({
+        version: PROJECT_SUMMARY_INDEX_VERSION - 1,
+        summaries: [{ id: project.id, name: project.name, family: "sleeveless", patternSystem: "sleeveless" }],
+      }),
+    });
+    const listed = await listProjectSummaries(store, "sleeveless", "user-1");
+    expect(listed).toEqual([
+      expect.objectContaining({ id: project.id, patternSystem: "sideways-cardigan", name: project.name }),
     ]);
   });
 });

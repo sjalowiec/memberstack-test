@@ -308,6 +308,34 @@ describe("patternWorkspaceLibraryDrawer display helpers", () => {
         patternSystem: "socks",
       }),
     ).toBe("Socks");
+    expect(
+      formatCustomPatternProjectType({
+        id: "p-sw",
+        name: "new Women's Sideways V-Neck",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "sideways-cardigan",
+      }),
+    ).toBe("Sideways V-Neck");
+    expect(
+      buildCustomPatternProjectDrawerLines({
+        id: "p-sw",
+        name: "new Women's Sideways V-Neck",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "sideways-cardigan",
+        updatedAt: "2026-09-24T15:00:00.000Z",
+      }).contextLine,
+    ).toMatch(/^Sideways V-Neck • /);
+    expect(
+      formatCustomPatternProjectType({
+        id: "p-sl",
+        name: "Summer shell",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "sleeveless",
+      }),
+    ).toBe("Sleeveless");
     expect(formatCustomPatternProjectUpdatedAt("2026-01-15T12:00:00.000Z")).toMatch(/2026/);
   });
 

@@ -251,7 +251,7 @@ describe("resolvePatternSystemFromProject", () => {
       customOverrides: {},
     };
     expect(resolvePatternSystemFromProject(sideways)).toBe("sideways-cardigan");
-    expect(patternSystemDisplayName("sideways-cardigan")).toBe("Sideways V-Neck Sweater");
+    expect(patternSystemDisplayName("sideways-cardigan")).toBe("Sideways V-Neck");
   });
 });
 

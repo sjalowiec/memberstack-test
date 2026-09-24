@@ -20,6 +20,7 @@ import {
 import { formatDropShoulderSleeveShapingWrittenLines } from "./dropShoulderSleeveShaping";
 import {
   SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
+  type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import { buildDropShoulderSleeveDisplayRows } from "./dropShoulderPatternOutput";
 import {
@@ -28,6 +29,14 @@ import {
 } from "./sleevelessPatternDisplayHtml";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { sidewaysCardiganSleeveFinishedMeasurementPairs } from "./sidewaysCardiganWorkspaceSummary";
+import {
+  readStoredDropShoulderSleeveConstruction,
+  renderSleeveConstructionChoiceHtml,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
+  sidewaysSleeveConstructionChoiceQuickTipInnerHtml,
+} from "./dropShoulderSleeveConstruction";
 
 export type SidewaysCardiganSleeveInstructionStep = {
   id: string;
@@ -254,14 +263,48 @@ export function renderSidewaysCardiganSleeveSequenceHtml(
     pieceSectionId: "sleeve",
     omitPieceBanner: true,
   });
+  const choice = renderSleeveConstructionChoiceHtml({
+    direction: instructions.direction,
+    cuffUpLabel: SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL,
+    topDownLabel: SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
+    tipInnerHtml: sidewaysSleeveConstructionChoiceQuickTipInnerHtml(),
+    tipId: SIDEWAYS_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
+  });
   const split =
-    `<div class="sideways-sleeve-reading-layout">` +
-    `<div class="sideways-sleeve-reading-layout__instructions">${renderSleeveMeasurementHtml(instructions)}${instructionsHtml}</div>` +
-    `<aside class="sideways-sleeve-reading-layout__diagram pattern-print-keep-together" aria-label="Sleeve diagram" data-sideways-sleeve-diagram-tabs-mount></aside>` +
+    `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-sleeve-reading-layout" data-sideways-sleeve-layout>` +
+    `<div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-sleeve-reading-layout__instructions">${choice}${renderSleeveMeasurementHtml(instructions)}${instructionsHtml}</div>` +
+    `<aside class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram sideways-sleeve-reading-layout__diagram pattern-print-keep-together" aria-label="Sleeve diagram" data-sideways-sleeve-diagram-tabs-mount></aside>` +
     `</div>`;
   return wrapPatternSectionHtml("sg-sleeve", "SLEEVE", split, {
     sectionClassName: "pattern-section--garment-piece",
   });
+}
+
+/**
+ * Builder direction until the knitter changes the finished-pattern choice.
+ * That change uses the same localStorage key as Drop Shoulder.
+ */
+export function resolveSidewaysFinishedSleeveDirection(
+  builderDirection: SidewaysCardiganSleeveDirection,
+  patternId: string,
+): SidewaysCardiganConventionalSleeveDirection | "sideways" {
+  if (builderDirection === "sideways") return "sideways";
+  const stored = readStoredDropShoulderSleeveConstruction(patternId);
+  if (stored) return stored;
+  return builderDirection === "top-down" ? "top-down" : "cuff-up";
+}
+
+export function renderSidewaysSleeveSequenceForDirection(
+  input: SidewaysCardiganSleeveCalcInput,
+  direction: SidewaysCardiganConventionalSleeveDirection,
+): { ok: true; html: string; instructions: SidewaysCardiganSleeveInstructions } | { ok: false; error: SidewaysCardiganSleeveCalcError } {
+  const built = buildSidewaysCardiganSleeveInstructions({ ...input, direction });
+  if (!built.ok) return built;
+  return {
+    ok: true,
+    instructions: built.instructions,
+    html: renderSidewaysCardiganSleeveSequenceHtml(built.instructions),
+  };
 }
 
 export function renderSidewaysSleeveNotConnectedHtml(): string {

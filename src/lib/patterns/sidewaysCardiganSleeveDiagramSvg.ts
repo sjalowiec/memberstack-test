@@ -102,10 +102,6 @@ function bindOffStitches(calc: SidewaysCardiganSleeveCalc): number {
   return calc.direction === "top-down" ? calc.wristSts : calc.topSts;
 }
 
-function travelLabel(calc: SidewaysCardiganSleeveCalc): string {
-  return calc.direction === "top-down" ? "Knit downward" : "Knit upward";
-}
-
 function shapingVerbLabel(calc: SidewaysCardiganSleeveCalc): string {
   if (calc.shapingPlan.noShaping || calc.shapingPerSide <= 0) return "Knit even";
   return calc.shapingPlan.shapingDirection === "decrease"
@@ -213,36 +209,9 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
   const castOnY = edgeLabelY(frame, castOnEdge);
   const bindOffY = edgeLabelY(frame, bindOffEdge);
-  const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
-  const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
-  const midY = bodyTop + (bodyBottom - bodyTop) * 0.42;
-  const notation = shapingNotation(calc);
 
   const body = [
     silhouette(frame),
-    diagramText("sleeve-piece-label", "SLEEVE", frame.midX, midY - 36, DS_FS_TITLE, "middle", ` font-weight="${DS_FW_TITLE}"`),
-    diagramText("sleeve-direction", directionLabel, frame.midX, midY - 16, DS_FS_MEASURE),
-    diagramText("sleeve-travel", travelLabel(calc), frame.midX, midY + 4, DS_FS_MEASURE),
-    diagramText("sleeve-shaping-verb", shapingVerbLabel(calc), frame.midX, midY + 24, DS_FS_MEASURE),
-    diagramText("sleeve-shaping", notation, frame.midX, midY + 46, DS_FS_NOTATION),
-    diagramText(
-      "cast-on",
-      `Cast on ${formatStitchesCount(castOnStitches(calc))}`,
-      frame.midX,
-      castOnY,
-      DS_FS_MEASURE,
-      "middle",
-      ` data-knit-edge="start"`,
-    ),
-    diagramText(
-      "bind-off",
-      `Bind off ${formatStitchesCount(bindOffStitches(calc))}`,
-      frame.midX,
-      bindOffY,
-      DS_FS_MEASURE,
-      "middle",
-      ` data-knit-edge="end"`,
-    ),
     drawSleeveWristWidth(
       frame,
       measurementLabel("Wrist/Cuff", calc.wristSts, calc.finished.wristInches),

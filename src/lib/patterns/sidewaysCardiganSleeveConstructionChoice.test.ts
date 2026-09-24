@@ -1,0 +1,160 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+  dropShoulderSleeveConstructionStorageKey,
+  readStoredDropShoulderSleeveConstruction,
+  renderSleeveConstructionChoiceHtml,
+  writeDropShoulderSleeveConstruction,
+} from "./dropShoulderSleeveConstruction";
+import {
+  buildSidewaysCardiganSleeveShapingNotationSvg,
+  buildSidewaysCardiganSleeveStitchesRowsSvg,
+} from "./sidewaysCardiganSleeveDiagramSvg";
+import {
+  buildSidewaysCardiganSleeveInstructions,
+  renderSidewaysSleeveSequenceForDirection,
+  resolveSidewaysFinishedSleeveDirection,
+  type SidewaysCardiganSleeveCalcInput,
+} from "./sidewaysCardiganSleeveInstructions";
+import { stubLocalStorage } from "./test/stubLocalStorage";
+
+const INPUT: SidewaysCardiganSleeveCalcInput = {
+  direction: "cuff-up",
+  finishedUpperArmInches: 14,
+  finishedWristInches: 7,
+  sleeveLengthInches: 17,
+  stitchesPerInch: 5,
+  rowsPerInch: 7,
+  cuffDepthInches: 2,
+  armholeDepthInches: 7,
+};
+
+function sleeveHtml(direction: "cuff-up" | "top-down") {
+  const rendered = renderSidewaysSleeveSequenceForDirection(INPUT, direction);
+  expect(rendered.ok).toBe(true);
+  if (!rendered.ok) throw new Error(rendered.error.message);
+  return rendered;
+}
+
+describe("sideways finished sleeve construction choice", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("renders the shared choice block and shared tip inside the SLEEVE section", () => {
+    const { html } = sleeveHtml("cuff-up");
+    const sleeveAt = html.indexOf(">SLEEVE<");
+    const choiceAt = html.indexOf('class="drop-shoulder-sleeve-construction"');
+    expect(sleeveAt).toBeGreaterThan(-1);
+    expect(choiceAt).toBeGreaterThan(sleeveAt);
+    expect(html).toContain('role="group" aria-label="Sleeve construction"');
+    expect(html).toContain(">Cuff Up<");
+    expect(html).toContain(">Top Down<");
+    expect(html).not.toContain(">Bottom-up<");
+    expect(html).toContain("pattern-quick-tip");
+    expect(html).toContain("drop-shoulder-sleeve-construction-tip-body__columns");
+    expect(html).toContain("data-tip-id=\"sideways-sleeve-construction-choice\"");
+    expect(html).toContain("Begins at the cuff and increases toward the upper arm.");
+    expect(html).toContain("Begins at the upper arm and decreases toward the cuff.");
+    expect(html).toContain("Either construction produces the same finished sleeve.");
+    expect(html).toContain('class="drop-shoulder-sleeve-construction-wrap no-print"');
+  });
+
+  it("keeps Drop Shoulder labels on the shared renderer", () => {
+    const html = renderSleeveConstructionChoiceHtml({ direction: "cuff-up" });
+    expect(html).toContain(">Bottom-up<");
+    expect(html).toContain(">Top-down<");
+    expect(html).toContain('data-tip-id="drop-shoulder-sleeve-construction-choice"');
+  });
+
+  it("selects the builder direction until the finished pattern stores a choice", () => {
+    expect(readStoredDropShoulderSleeveConstruction("pattern-sideways")).toBeNull();
+    expect(resolveSidewaysFinishedSleeveDirection("top-down", "pattern-sideways")).toBe("top-down");
+    expect(resolveSidewaysFinishedSleeveDirection("cuff-up", "pattern-sideways")).toBe("cuff-up");
+    const cuff = sleeveHtml("cuff-up").html;
+    expect(cuff).toContain('data-drop-shoulder-sleeve-construction="cuff-up" aria-pressed="true"');
+    expect(cuff).toContain('data-drop-shoulder-sleeve-construction="top-down" aria-pressed="false"');
+    const top = sleeveHtml("top-down").html;
+    expect(top).toContain('data-drop-shoulder-sleeve-construction="top-down" aria-pressed="true"');
+  });
+
+  it("persists the finished-pattern choice with the Drop Shoulder storage key", () => {
+    writeDropShoulderSleeveConstruction("pattern-sideways", "top-down");
+    expect(localStorage.getItem(dropShoulderSleeveConstructionStorageKey("pattern-sideways"))).toBe(
+      "top-down",
+    );
+    expect(resolveSidewaysFinishedSleeveDirection("cuff-up", "pattern-sideways")).toBe("top-down");
+    expect(resolveSidewaysFinishedSleeveDirection("sideways", "pattern-sideways")).toBe("sideways");
+  });
+
+  it("switches sleeve instructions and both sleeve diagrams without changing the body", () => {
+    const cuff = sleeveHtml("cuff-up");
+    const top = sleeveHtml("top-down");
+    expect(cuff.html).toContain("Increase 1 stitch at each side");
+    expect(cuff.html).not.toContain("Decrease 1 stitch at each side");
+    expect(top.html).toContain("Decrease 1 stitch at each side");
+    expect(top.html).not.toContain("Increase 1 stitch at each side");
+    expect(cuff.instructions.direction).toBe("cuff-up");
+    expect(top.instructions.direction).toBe("top-down");
+
+    const diagramArgs = (direction: "cuff-up" | "top-down") => {
+      const built = buildSidewaysCardiganSleeveInstructions({ ...INPUT, direction });
+      if (!built.ok) throw new Error(built.error.message);
+      return {
+        calc: built.instructions.calc,
+        stitchesPerInch: INPUT.stitchesPerInch,
+        rowsPerInch: INPUT.rowsPerInch,
+      };
+    };
+    const cuffSts = buildSidewaysCardiganSleeveStitchesRowsSvg(diagramArgs("cuff-up"));
+    const topSts = buildSidewaysCardiganSleeveStitchesRowsSvg(diagramArgs("top-down"));
+    const cuffNotation = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs("cuff-up"));
+    const topNotation = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs("top-down"));
+    expect(cuffSts).not.toBe(topSts);
+    expect(cuffNotation).toContain("Increase both edges");
+    expect(topNotation).toContain("Decrease both edges");
+    expect(cuffNotation).not.toBe(topNotation);
+    expect(cuff.html).not.toContain("data-sideways-diagram-tabs-mount");
+    expect(top.html).not.toContain("data-sideways-diagram-tabs-mount");
+    expect(cuff.html).not.toContain('id="sg-body"');
+    expect(top.html).toContain('id="sg-sleeve"');
+  });
+
+  it("prints only the selected sleeve direction", () => {
+    const cuff = sleeveHtml("cuff-up").html;
+    const top = sleeveHtml("top-down").html;
+    expect(cuff).toContain('class="drop-shoulder-sleeve-construction-wrap no-print"');
+    expect(top).toContain('class="drop-shoulder-sleeve-construction-wrap no-print"');
+    const cuffInstructions = cuff.slice(cuff.indexOf('id="sg-sleeve"'));
+    const topInstructions = top.slice(top.indexOf('id="sg-sleeve"'));
+    expect(cuffInstructions).toContain("Increase 1 stitch at each side");
+    expect(cuffInstructions).not.toContain("Decrease 1 stitch at each side");
+    expect(topInstructions).toContain("Decrease 1 stitch at each side");
+    expect(topInstructions).not.toContain("Increase 1 stitch at each side");
+    expect(cuff.indexOf(">Cuff Up<")).toBeLessThan(cuff.indexOf("Increase 1 stitch at each side"));
+    expect(cuff.indexOf("no-print")).toBeLessThan(cuff.indexOf(">Cuff Up<"));
+  });
+
+  it("uses native buttons and the shared construction styles for keyboard and mobile", () => {
+    const { html } = sleeveHtml("cuff-up");
+    expect(html).toContain('type="button" class="sleeveless-back-diagram-mode__btn is-active"');
+    expect(html).toContain('type="button" class="sleeveless-back-diagram-mode__btn"');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('aria-pressed="false"');
+    const css = readFileSync(
+      resolve("src/styles/patterns/sleeveless-pattern-shared.css"),
+      "utf8",
+    );
+    expect(css).toContain("#pattern-content .drop-shoulder-sleeve-construction");
+    expect(css).toContain("@media (min-width: 520px)");
+    const page = readFileSync("src/scripts/sideways-cardigan-pattern-page.ts", "utf8");
+    const handler = page.slice(page.indexOf("function bindSidewaysSleeveConstructionChoice"));
+    const handlerBody = handler.slice(0, handler.indexOf("function renderView"));
+    expect(handlerBody).toContain("sleeveEl.innerHTML = rendered.html");
+    expect(handlerBody).toContain("fillSidewaysSleeveDiagrams(nextView)");
+    expect(handlerBody).not.toContain("sequenceEl");
+    expect(handlerBody).not.toContain("fillSidewaysPatternDiagrams");
+  });
+});

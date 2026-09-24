@@ -21,7 +21,12 @@ import {
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
-import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
+import {
+  patternSystemDisplayName,
+  resolvePatternSystemFromPage,
+  type PatternSystemId,
+} from "./patternSystemId";
+import { resolveAccountMyPatternsSystem } from "./accountMyPatternsList";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import { formatSavedPatternGauge } from "./savedPatternGaugeDisplay";
 import { promptSavedPatternDeleteConfirmation } from "./savedPatternDeleteConfirmation";
@@ -37,6 +42,7 @@ export function formatCustomPatternProjectType(project: CustomPatternProjectSumm
   const system = project.patternSystem?.trim();
   if (system === "hat") return "Hat";
   if (system === "socks") return "Socks";
+  if (system === "sideways-cardigan") return patternSystemDisplayName("sideways-cardigan");
   if (system === "drop-shoulder") return "Drop Shoulder";
   if (system === "sleeveless") return "Sleeveless";
   const familyLabels: Record<string, string> = {
@@ -93,9 +99,7 @@ let lastResolvedLibraryAccess: SleevelessUserAccess | null = null;
 let lastLibraryProjects: CustomPatternProjectSummary[] = [];
 
 function projectSystemFromSummary(project: CustomPatternProjectSummary): PatternSystemId {
-  const raw = project.patternSystem?.trim();
-  if (raw === "drop-shoulder" || raw === "sleeveless") return raw;
-  return "sleeveless";
+  return resolveAccountMyPatternsSystem(project);
 }
 
 function canEditProjectFromLibrary(

@@ -15,6 +15,7 @@ import { renderSidewaysCardiganBodyDisplayHtml } from "./sidewaysCardiganPattern
 import { buildSidewaysCardiganBodyInstructions } from "./sidewaysCardiganBodyInstructions";
 import { buildSidewaysCardiganPatternDiagramModel, buildSidewaysCardiganPatternDiagramSvg } from "./sidewaysCardiganPatternDiagramSvg";
 import {
+  buildSidewaysCardiganPatternDiagramTabsShellHtml,
   buildSidewaysCardiganSleeveDiagramTabsShellHtml,
 } from "./sidewaysCardiganPatternDiagramTabs";
 import {
@@ -147,14 +148,18 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(attr(cuff.sts, "data-shaping-direction")).toBe("increase");
     expect(Number(attr(cuff.sts, "data-wrist-y"))).toBeGreaterThan(Number(attr(cuff.sts, "data-upper-arm-y")));
     expect(Number(attr(cuff.sts, "data-cast-on-y"))).toBeGreaterThan(Number(attr(cuff.sts, "data-bind-off-y")));
-    expect(texts(cuff.sts, "cast-on").join(" ")).toContain(String(calc.wristSts));
-    expect(texts(cuff.sts, "bind-off").join(" ")).toContain(String(calc.topSts));
-    expect(texts(cuff.sts, "sleeve-shaping-verb").join(" ")).toMatch(/Increase both edges/);
+    expect(texts(cuff.sts, "cast-on")).toEqual([]);
+    expect(texts(cuff.sts, "bind-off")).toEqual([]);
+    expect(texts(cuff.sts, "sleeve-shaping-verb")).toEqual([]);
+    expect(texts(cuff.sts, "sleeve-piece-label")).toEqual([]);
+    expect(cuff.sts).not.toContain("Bind off");
+    expect(cuff.sts).not.toContain("Cast on");
+    expect(cuff.sts).not.toContain("Increase both edges");
     expect(texts(cuff.notation, "cast-on")).toEqual([`${formatCastOnNotation(calc.wristSts)} sts`]);
     expect(texts(cuff.notation, "bind-off")).toEqual([formatBindOffNotation(calc.topSts)]);
     expect(texts(cuff.notation, "sleeve-shaping-left")).toEqual([notation]);
     expect(texts(cuff.notation, "sleeve-shaping-right")).toEqual([notation]);
-    expect(texts(cuff.sts, "sleeve-direction").join(" ")).toBe("Cuff up");
+    expect(texts(cuff.sts, "sleeve-direction")).toEqual([]);
   });
 
   it("starts top-down at the upper arm with decreases and ends at the cuff", () => {
@@ -181,8 +186,10 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(texts(down.notation, "sleeve-shaping-right")).toEqual([notation]);
     expect(attr(down.sts, "data-shaping-notation")).toBe(notation);
     expect(attr(down.sts, "data-shaping-rows")).toBe(attr(down.notation, "data-shaping-rows"));
-    expect(texts(down.sts, "sleeve-direction").join(" ")).toBe("Top down");
-    expect(texts(down.sts, "sleeve-travel").join(" ")).toBe("Knit downward");
+    expect(texts(down.sts, "sleeve-direction")).toEqual([]);
+    expect(texts(down.sts, "sleeve-travel")).toEqual([]);
+    expect(down.sts).not.toContain("Bind off");
+    expect(down.sts).not.toContain("Cast on");
   });
 
   it("makes both-edge shaping reach the opposite stitch count", () => {
@@ -309,6 +316,26 @@ describe("sideways sleeve diagram tabs stay readable", () => {
     expect(page).toContain("sideways-pattern-diagram-print-heading");
     expect(page).toContain("display: block !important");
     expect(page).toContain("data-sideways-sleeve-sequence");
+    expect(shell).not.toContain("data-sideways-diagram-tab=");
+    expect(shell).not.toContain("data-sideways-diagram-panel=");
+    expect(shell).toContain('id="sideways-sleeve-diagram-tab-shaping-notation"');
+    expect(shell).toContain('id="sideways-sleeve-diagram-panel-shaping-notation"');
+    expect(shell).toContain('aria-controls="sideways-sleeve-diagram-panel-shaping-notation"');
+    const bodyShell = buildSidewaysCardiganPatternDiagramTabsShellHtml();
+    expect(bodyShell).toContain('id="sideways-diagram-panel-shaping-notation"');
+    expect(bodyShell).not.toContain("sideways-sleeve-diagram-panel");
+    expect(shell).not.toContain('id="sideways-diagram-panel-shaping-notation"');
+    expect(page).toContain("data-sideways-body-layout");
+    expect(page).not.toContain('id="pattern-content"\n              class="pattern-layout');
+    expect(page).toContain("sleeveless-pattern-reading-layout sideways-pattern-reading-layout");
+    const script = readFileSync(resolve("src/scripts/sideways-cardigan-pattern-page.ts"), "utf8");
+    expect(script).toContain("initSidewaysCardiganSleeveDiagramTabs");
+    expect(script).toContain("buildSidewaysCardiganSleeveShapingNotationSvg");
+    expect(script).toContain("data-sideways-sleeve-diagram-shaping-host");
+    const sleeveHtml = renderSidewaysCardiganSleeveSequenceHtml(view.instructions);
+    expect(sleeveHtml).toContain("data-sideways-sleeve-layout");
+    expect(sleeveHtml).toContain("sleeveless-pattern-reading-layout");
+    expect(sleeveHtml).toContain("pattern-layout__sidebar");
   });
 
   it("keeps diagram text at the shared readable size in the normal view", () => {
@@ -317,9 +344,14 @@ describe("sideways sleeve diagram tabs stay readable", () => {
       expect(sizes.length).toBeGreaterThan(0);
       expect(Math.min(...sizes)).toBeGreaterThanOrEqual(12);
       expect(svg).not.toMatch(/\bNaN\b/);
-      expect(texts(svg, "sleeve-direction").join("")).not.toBe("");
-      expect(texts(svg, "cast-on").join("")).not.toBe("");
-      expect(texts(svg, "bind-off").join("")).not.toBe("");
+      expect(texts(svg, "sleeve-direction").join("")).toBe(svg === view.notation ? texts(svg, "sleeve-direction").join("") : "");
+      if (svg === view.notation) {
+        expect(texts(svg, "cast-on").join("")).not.toBe("");
+        expect(texts(svg, "bind-off").join("")).not.toBe("");
+      } else {
+        expect(texts(svg, "cast-on")).toEqual([]);
+        expect(texts(svg, "bind-off")).toEqual([]);
+      }
     }
   });
 });

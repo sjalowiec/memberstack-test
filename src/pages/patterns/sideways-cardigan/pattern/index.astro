@@ -3,11 +3,15 @@ import Layout from "../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
 import { SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../../lib/patterns/sidewaysCardiganPatternNavigation";
 
 import "../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../styles/ns-shaping-chart.css";
 import "../../../../styles/glossary-tooltip.css";
+import "../../../../styles/pattern-tips.css";
+import "../../../../styles/pattern-quick-tip.css";
+import "../../../../styles/pattern-help-card.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
 import "../../../../styles/patterns/pattern-diagram-tabs.css";
@@ -41,6 +45,7 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
             </a>
           </div>
         </div>
+        <div id="sideways-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
         <header class="pattern-header page-header">
           <div class="pattern-header__title-row">
             <h1 class="pattern-title" data-sleeveless-pattern-online-heading>Sideways V-Neck Sweater</h1>
@@ -48,6 +53,10 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
           <p class="pattern-subtext">
             A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.
           </p>
+          <PatternTipsToggle
+            storageKey="sleeveless-show-tips"
+            scopeSelector="#sideways-pattern-tips-scope"
+          />
         </header>
 
         <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
@@ -55,42 +64,47 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
         </p>
         <p class="sg-fit-size-copy" data-sideways-calc-error hidden role="alert"></p>
         <section class="sideways-calc-host" data-sideways-calc-host hidden>
-          <div
-            id="pattern-content"
-            class="pattern-layout pattern-layout--garment-columns sideways-pattern-reading-layout"
-            data-pattern-content
-            data-sideways-pattern-reading-layout
-          >
-            <nav
-              class="sleeveless-pattern-inpage-nav no-print"
-              data-sleeveless-pattern-inpage-nav
-              aria-label="Jump to pattern section"
-              hidden
-            ></nav>
             <div
-              class="pattern-layout__content sideways-pattern-reading-layout__instructions"
+              id="pattern-content"
+              data-pattern-content
+              data-sideways-pattern-reading-layout
             >
-              <div data-sideways-body-sequence></div>
-            </div>
-            <aside
-              class="pattern-layout__sidebar sideways-pattern-reading-layout__diagram"
-              aria-label="Garment dimensions"
-            >
-              <div class="sideways-pattern-diagram-panel pattern-print-keep-together">
-                <h3 class="sideways-pattern-diagram-panel__title no-print">Garment Dimensions</h3>
+              <nav
+                class="sleeveless-pattern-inpage-nav no-print"
+                data-sleeveless-pattern-inpage-nav
+                aria-label="Jump to pattern section"
+                hidden
+              ></nav>
+              <div
+                class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-pattern-reading-layout"
+                data-sideways-body-layout
+              >
                 <div
-                  class="sideways-pattern-diagram-panel__tabs-mount"
-                  id="diagram-content"
-                  data-sideways-diagram-tabs-mount
-                ></div>
+                  class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-pattern-reading-layout__instructions"
+                >
+                  <div data-sideways-body-sequence></div>
+                </div>
+                <aside
+                  class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram sideways-pattern-reading-layout__diagram"
+                  aria-label="Garment dimensions"
+                >
+                  <div class="sleeveless-piece-split__diagram-inner sideways-pattern-diagram-panel pattern-print-keep-together">
+                    <h3 class="sideways-pattern-diagram-panel__title no-print">Garment Dimensions</h3>
+                    <div
+                      class="sideways-pattern-diagram-panel__tabs-mount"
+                      id="diagram-content"
+                      data-sideways-diagram-tabs-mount
+                    ></div>
+                  </div>
+                </aside>
               </div>
-            </aside>
-            <section data-sideways-sleeve-host hidden>
+              <section data-sideways-sleeve-host hidden>
               <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
               <div data-sideways-sleeve-sequence></div>
             </section>
           </div>
         </section>
+        </div>
         <p>
           <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
         </p>
@@ -142,35 +156,24 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
     justify-content: flex-end;
   }
 
-  .sideways-pattern-reading-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-width: 0;
-  }
-
-  /* Stay above the diagram (shared sidebar order is -1) and scroll inside the row on narrow screens. */
+  /* Body and sleeve each own a reading-layout grid. The page column is not sticky. */
   #pattern-content > .sleeveless-pattern-inpage-nav {
-    order: -2;
-    grid-column: 1 / -1;
     width: 100%;
     max-width: 100%;
     min-width: 0;
   }
 
   #pattern-content > [data-sideways-sleeve-host] {
-    order: 2;
-    grid-column: 1 / -1;
+    display: block;
+    width: 100%;
     min-width: 0;
+    clear: both;
+    position: relative;
   }
 
-  .sideways-pattern-reading-layout__diagram {
-    order: 0;
-    min-width: 0;
-  }
-
-  .sideways-pattern-reading-layout__instructions {
-    order: 1;
+  #pattern-content > [data-sideways-body-layout] {
+    position: relative;
+    width: 100%;
     min-width: 0;
   }
 
@@ -205,32 +208,10 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
     height: auto;
   }
 
-  @media (min-width: 1100px) {
-    #pattern-content.pattern-layout.sideways-pattern-reading-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
-      gap: clamp(1.25rem, 2.5vw, 2rem);
-      align-items: start;
-    }
-
-    .sideways-pattern-reading-layout__instructions {
-      order: 0;
-    }
-
-    .sideways-pattern-reading-layout__diagram {
-      order: 0;
-    }
-
+  @media print {
+    #pattern-content > [data-sideways-body-layout],
     :global(.sideways-sleeve-reading-layout) {
-      display: grid;
-      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
-      gap: clamp(1.25rem, 2.5vw, 2rem);
-      align-items: start;
-    }
-
-    :global(.sideways-sleeve-reading-layout__instructions),
-    :global(.sideways-sleeve-reading-layout__diagram) {
-      order: 0;
+      display: block !important;
     }
   }
 
@@ -261,7 +242,7 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
       margin-top: 0.85rem;
     }
 
-    #pattern-content.pattern-layout.sideways-pattern-reading-layout {
+    #pattern-content > [data-sideways-body-layout] {
       display: block !important;
     }
 
@@ -269,10 +250,7 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
     :global(.sideways-sleeve-reading-layout__diagram) {
       max-width: 4.2in;
       margin: 0 auto 1rem;
-    }
-
-    :global(.sideways-sleeve-reading-layout) {
-      display: block !important;
+      position: static !important;
     }
   }
 </style>

@@ -14,6 +14,7 @@ import {
   buildSidewaysCardiganPatternDiagramTabsShellHtml,
   buildSidewaysCardiganSleeveDiagramTabsShellHtml,
   initSidewaysCardiganPatternDiagramTabs,
+  initSidewaysCardiganSleeveDiagramTabs,
 } from "../lib/patterns/sidewaysCardiganPatternDiagramTabs";
 import {
   buildSidewaysCardiganPatternDiagramModel,
@@ -26,6 +27,11 @@ import {
 } from "../lib/patterns/sidewaysCardiganSleeveDiagramSvg";
 import { positiveMeasurementInches } from "../lib/patterns/customBuildEffectiveArmholeDepth";
 import { inspectSidewaysCardiganSleeveCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganSleeveCalc";
+import {
+  renderSidewaysSleeveSequenceForDirection,
+  resolveSidewaysFinishedSleeveDirection,
+} from "../lib/patterns/sidewaysCardiganSleeveInstructions";
+import { writeDropShoulderSleeveConstruction } from "../lib/patterns/dropShoulderSleeveConstruction";
 import {
   SLEEVELESS_DIAGRAM_INLINE_CLASS,
   bindSleevelessDiagramZoom,
@@ -46,6 +52,80 @@ import { getCurrentPattern } from "../lib/patterns/patternStorage";
 
 function syncSidewaysPatternInpageNav(): void {
   syncPatternInpageNav({ items: SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS });
+}
+
+function sleeveViewForFinishedPattern(
+  view: Extract<SidewaysCardiganWorkspaceView, { ok: true }>,
+  patternId: string,
+): Extract<SidewaysCardiganWorkspaceView, { ok: true }> {
+  const direction = resolveSidewaysFinishedSleeveDirection(view.sleeveDirection, patternId);
+  if (direction === "sideways" || direction === view.sleeveDirection) return view;
+  const inspected = inspectSidewaysCardiganSleeveCalcInputFromPattern(
+    view.pattern,
+    view.calc,
+    view.input.finishedUpperArmInches,
+    {
+      stitchesPerInch: view.input.stitchesPerInch,
+      rowsPerInch: view.input.rowsPerInch,
+    },
+  );
+  if (!inspected.input) return view;
+  const rendered = renderSidewaysSleeveSequenceForDirection(inspected.input, direction);
+  if (!rendered.ok) return view;
+  return {
+    ...view,
+    sleeveDirection: direction,
+    sleeveInstructions: rendered.instructions,
+    sleeveHtml: rendered.html,
+  };
+}
+
+function bindSidewaysSleeveConstructionChoice(
+  sleeveEl: HTMLElement,
+  view: Extract<SidewaysCardiganWorkspaceView, { ok: true }>,
+): void {
+  if (sleeveEl.dataset.sidewaysSleeveConstructionBound === "true") return;
+  sleeveEl.dataset.sidewaysSleeveConstructionBound = "true";
+  sleeveEl.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const btn = target.closest("[data-drop-shoulder-sleeve-construction]");
+    if (!(btn instanceof HTMLButtonElement) || !sleeveEl.contains(btn)) return;
+    const raw = btn.getAttribute("data-drop-shoulder-sleeve-construction");
+    const direction = raw === "top-down" ? "top-down" : "cuff-up";
+    const patternId = String(getCurrentPattern()?.id ?? "").trim();
+    writeDropShoulderSleeveConstruction(patternId || "default", direction);
+    const inspected = inspectSidewaysCardiganSleeveCalcInputFromPattern(
+      view.pattern,
+      view.calc,
+      view.input.finishedUpperArmInches,
+      {
+        stitchesPerInch: view.input.stitchesPerInch,
+        rowsPerInch: view.input.rowsPerInch,
+      },
+    );
+    if (!inspected.input) return;
+    const rendered = renderSidewaysSleeveSequenceForDirection(inspected.input, direction);
+    if (!rendered.ok) return;
+    const nextView: Extract<SidewaysCardiganWorkspaceView, { ok: true }> = {
+      ...view,
+      sleeveDirection: direction,
+      sleeveInstructions: rendered.instructions,
+      sleeveHtml: rendered.html,
+    };
+    sleeveEl.innerHTML = rendered.html;
+    bindPatternSectionCollapse(sleeveEl);
+    hydrateGlossaryTooltipPlaceholders(sleeveEl);
+    if (patternId) {
+      try {
+        initChartProgressTracking({ root: sleeveEl, patternId });
+      } catch {
+        /* checklist persistence is optional */
+      }
+    }
+    fillSidewaysSleeveDiagrams(nextView);
+    bindSidewaysSleeveConstructionChoice(sleeveEl, nextView);
+  });
 }
 
 function renderView(): void {
@@ -139,24 +219,27 @@ function renderView(): void {
     }
   }
 
-  const hasSleeveContent = Boolean(view.sleeveHtml) || Boolean(view.sleeveError);
+  const patternId = String(getCurrentPattern()?.id ?? "").trim();
+  const sleeveView = sleeveViewForFinishedPattern(view, patternId);
+  const hasSleeveContent = Boolean(sleeveView.sleeveHtml) || Boolean(sleeveView.sleeveError);
   if (sleeveHost instanceof HTMLElement) {
     sleeveHost.hidden = !hasSleeveContent;
   }
   if (sleeveErrorEl instanceof HTMLElement) {
-    if (view.sleeveError) {
+    if (sleeveView.sleeveError) {
       sleeveErrorEl.hidden = false;
-      sleeveErrorEl.textContent = view.sleeveError;
+      sleeveErrorEl.textContent = sleeveView.sleeveError;
     } else {
       sleeveErrorEl.hidden = true;
       sleeveErrorEl.textContent = "";
     }
   }
   if (sleeveEl instanceof HTMLElement) {
-    sleeveEl.innerHTML = view.sleeveError ? "" : view.sleeveHtml;
-    if (!view.sleeveError && view.sleeveHtml) {
+    sleeveEl.innerHTML = sleeveView.sleeveError ? "" : sleeveView.sleeveHtml;
+    if (!sleeveView.sleeveError && sleeveView.sleeveHtml) {
       bindPatternSectionCollapse(sleeveEl);
       hydrateGlossaryTooltipPlaceholders(sleeveEl);
+      bindSidewaysSleeveConstructionChoice(sleeveEl, sleeveView);
       try {
         const patternId = String(getCurrentPattern()?.id ?? "").trim();
         if (patternId) {
@@ -169,7 +252,7 @@ function renderView(): void {
   }
 
   fillSidewaysPatternDiagrams(view);
-  fillSidewaysSleeveDiagrams(view);
+  fillSidewaysSleeveDiagrams(sleeveView);
   syncSidewaysPatternInpageNav();
 }
 
@@ -272,7 +355,7 @@ function fillSidewaysSleeveDiagrams(
   }
 
   diagramHost.innerHTML = buildSidewaysCardiganSleeveDiagramTabsShellHtml();
-  initSidewaysCardiganPatternDiagramTabs(diagramHost);
+  initSidewaysCardiganSleeveDiagramTabs(diagramHost);
   ensureSleevelessDiagramModal();
   bindSleevelessDiagramZoom(diagramHost);
 

@@ -39,7 +39,8 @@ export function projectIndexKey(family, userId) {
 }
 
 // v5 derives Hat gauge from gaugeSlots (not sweater yarnGauge); bumping forces stale indexes to rebuild.
-export const PROJECT_SUMMARY_INDEX_VERSION = 5;
+// v6 classifies sideways-cardigan from construction instead of the sleeveless fallback.
+export const PROJECT_SUMMARY_INDEX_VERSION = 6;
 
 /** @param {unknown} value */
 function gaugePositiveNumber(value) {
