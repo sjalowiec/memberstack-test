@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildDropShoulderSleeveShapingChartRows } from "./dropShoulderSleeveShapingChart";
+import {
+  buildDropShoulderSleeveShapingChartRows,
+  dropShoulderSleeveShapingRcSequence,
+  formatDropShoulderSleeveWorkingNotation,
+} from "./dropShoulderSleeveShapingChart";
 import {
   formatDropShoulderSleeveShapingNotation,
   formatDropShoulderSleeveShapingWrittenLines,
@@ -108,12 +112,10 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     for (const view of [cuff, down]) {
       const { calc } = view.instructions;
       const html = renderSidewaysCardiganSleeveSequenceHtml(view.instructions);
-      expect(html).toContain(formatInchesWithUnit(calc.finished.upperArmInches));
-      expect(html).toContain(formatInchesWithUnit(calc.finished.wristInches));
-      expect(html).toContain(formatInchesWithUnit(calc.finished.sleeveLengthInches));
-      expect(html).toContain(formatStitchesCount(calc.topSts));
-      expect(html).toContain(formatStitchesCount(calc.wristSts));
-      expect(html).toContain(formatRowsCount(calc.sleeveTotalRows));
+      expect(html).not.toContain("sideways-sleeve-measurements");
+      expect(html).toContain("Make 2 sleeves");
+      expect(html).toContain(`${calc.wristSts} sts`);
+      expect(html).toContain(`${calc.topSts} sts`);
       expect(attr(view.sts, "data-top-stitches")).toBe(String(calc.topSts));
       expect(attr(view.sts, "data-wrist-stitches")).toBe(String(calc.wristSts));
       expect(attr(view.sts, "data-sleeve-total-rows")).toBe(String(calc.sleeveTotalRows));
@@ -121,6 +123,9 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
       expect(attr(view.sts, "data-wrist-inches")).toBe(String(calc.finished.wristInches));
       expect(attr(view.sts, "data-sleeve-length-inches")).toBe(String(calc.finished.sleeveLengthInches));
       expect(attr(view.notation, "data-shaping-notation")).toBe(attr(view.sts, "data-shaping-notation"));
+      expect(view.sts).toContain(formatInchesWithUnit(calc.finished.upperArmInches));
+      expect(view.sts).toContain(formatInchesWithUnit(calc.finished.wristInches));
+      expect(view.sts).toContain(formatInchesWithUnit(calc.finished.sleeveLengthInches));
       expect(view.sts).toContain(formatStitchesCount(calc.topSts));
       expect(view.sts).toContain(formatStitchesCount(calc.wristSts));
       expect(view.sts).toContain(formatRowsCount(calc.sleeveTotalRows));
@@ -160,11 +165,14 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(texts(cuff.sts, "sleeve-piece-label")).toEqual([]);
     expect(cuff.sts).not.toContain("Bind off");
     expect(cuff.sts).not.toContain("Cast on");
+    expect(cuff.sts).toContain('data-knit-direction="up"');
     expect(cuff.sts).not.toContain("Increase both edges");
     expect(texts(cuff.notation, "cast-on")).toEqual([`${formatCastOnNotation(calc.wristSts)} sts`]);
     expect(texts(cuff.notation, "bind-off")).toEqual([formatBindOffNotation(calc.topSts)]);
-    expect(texts(cuff.notation, "sleeve-shaping-left")).toEqual([notation]);
-    expect(texts(cuff.notation, "sleeve-shaping-right")).toEqual([notation]);
+    expect(texts(cuff.notation, "sleeve-shaping-left").join(" ")).toContain(notation);
+    expect(texts(cuff.notation, "sleeve-shaping-left").join(" ")).toBe(attr(cuff.notation, "data-shaping-notation"));
+    expect(cuff.notation).toContain('data-knit-direction="up"');
+    expect(cuff.notation).not.toContain("Increase both edges");
     expect(texts(cuff.sts, "sleeve-direction")).toEqual(["Cuff Up"]);
   });
 
@@ -177,6 +185,23 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(html).toContain(`Cast on or pick up ${calc.topSts} stitches.`);
     expect(html).toContain("Decrease 1 stitch at each side");
     expect(html).not.toContain("Increase 1 stitch at each side");
+    const chartInput = {
+      topSts: calc.topSts,
+      wristSts: calc.wristSts,
+      cuffRows: calc.cuffRows,
+      sleeveBodyRows: calc.sleeveBodyRows,
+      sleeveTotalRows: calc.sleeveTotalRows,
+      direction: "top-down" as const,
+    };
+    const topRcs = dropShoulderSleeveShapingRcSequence(chartInput);
+    const cuffRcs = dropShoulderSleeveShapingRcSequence({ ...chartInput, direction: "cuff-up" });
+    const fabricEnd = calc.cuffRows + calc.sleeveBodyRows;
+    expect(topRcs).toEqual([...cuffRcs].map((rc) => fabricEnd - rc).sort((a, b) => a - b));
+    expect(attr(down.notation, "data-shaping-notation")).toBe(
+      formatDropShoulderSleeveWorkingNotation(chartInput, { includeRowSpans: true }),
+    );
+    expect(html).toContain(`(RC: ${topRcs.join(", ")})`);
+    expect(html).toContain(`Knit ${topRcs[0]} rows even.`);
     expect(html).toContain("cuff/wrist edge");
     expect(attr(down.sts, "data-sleeve-direction")).toBe("top-down");
     expect(attr(down.sts, "data-cast-on-edge")).toBe("upper-arm");
@@ -188,10 +213,13 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(Number(attr(down.sts, "data-cast-on-y"))).toBeLessThan(Number(attr(down.sts, "data-bind-off-y")));
     expect(texts(down.notation, "cast-on")).toEqual([`${formatCastOnNotation(calc.topSts)} sts`]);
     expect(texts(down.notation, "bind-off")).toEqual([formatBindOffNotation(calc.wristSts)]);
-    expect(texts(down.notation, "sleeve-shaping-left")).toEqual([notation]);
-    expect(texts(down.notation, "sleeve-shaping-right")).toEqual([notation]);
-    expect(attr(down.sts, "data-shaping-notation")).toBe(notation);
+    expect(texts(down.notation, "sleeve-shaping-left").join(" ")).toContain(notation);
+    expect(texts(down.notation, "sleeve-shaping-left").join(" ")).toBe(attr(down.notation, "data-shaping-notation"));
+    expect(down.notation).toContain('data-knit-direction="down"');
+    expect(down.notation).not.toContain("Decrease both edges");
+    expect(attr(down.sts, "data-shaping-notation")).toContain(notation);
     expect(attr(down.sts, "data-shaping-rows")).toBe(attr(down.notation, "data-shaping-rows"));
+    expect(down.sts).toContain('data-knit-direction="down"');
     expect(texts(down.sts, "sleeve-direction")).toEqual(["Top Down"]);
     expect(texts(down.sts, "sleeve-travel")).toEqual([]);
     expect(down.sts).not.toContain("Bind off");
@@ -285,8 +313,8 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
       expect(instructions.calc.sleeveTotalRows).toBeGreaterThan(previousRows);
       previousRows = instructions.calc.sleeveTotalRows;
       const html = renderSidewaysCardiganSleeveSequenceHtml(instructions);
-      expect(html).toContain(`${wrist} in`);
-      expect(html).toContain(formatRowsCount(instructions.calc.sleeveTotalRows));
+      expect(html).not.toContain(`${length} in`);
+      expect(html).toContain(`${instructions.calc.wristSts} sts`);
       if (choice === "short") {
         expect(instructions.calc.wristSts).toBe(instructions.calc.topSts);
         expect(html).not.toContain("Increase 1 stitch at each side");

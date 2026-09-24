@@ -100,6 +100,7 @@ import {
   DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES,
   buildDropShoulderSleeveShapingChartRows,
   dropShoulderSleeveNeedsShapingChart,
+  dropShoulderSleeveBodyRowSpans,
   dropShoulderSleevePreShapingSpan,
   dropShoulderSleeveShapingRcSequence,
 } from "./dropShoulderSleeveShapingChart";
@@ -233,17 +234,23 @@ function knitEvenAfterFinalShapingLine(
 }
 
 function sleeveBodyRemainderLine(
-  plan: { remainderRows: number; steps: readonly { times: number }[] },
+  rowsAfterShaping: number,
   direction: DropShoulderSleeveDirection,
   sleeveTotalRows: number,
   shapingVerb: "increase" | "decrease" = "increase",
+  hadShaping = false,
+  cuffStartRc?: number,
 ): string {
-  if (plan.remainderRows <= 0) return "";
-  const hadShaping = plan.steps.some((s) => s.times > 0);
+  if (rowsAfterShaping <= 0) return "";
   if (hadShaping && direction === "cuff-up") {
-    return knitEvenAfterFinalShapingLine(plan.remainderRows, sleeveTotalRows, shapingVerb);
+    return knitEvenAfterFinalShapingLine(rowsAfterShaping, sleeveTotalRows, shapingVerb);
   }
-  return knitInPatternLine(plan.remainderRows);
+  if (hadShaping && direction === "top-down" && cuffStartRc !== undefined) {
+    const rowWord = rowsAfterShaping === 1 ? "1 row even" : `${rowsAfterShaping} rows even`;
+    const noun = shapingVerb === "decrease" ? "decrease" : "increase";
+    return `After the final ${noun}, knit ${rowWord} in pattern, then begin the cuff at ${formatRcColon(cuffStartRc)}.`;
+  }
+  return knitInPatternLine(rowsAfterShaping);
 }
 
 function glossaryAttrEscape(s: string): string {
@@ -1190,8 +1197,19 @@ export function buildDropShoulderSleeveDisplayRows(
     shapingPlan.steps,
     shapingRcSequence,
   );
+  const hadShaping = shapingPlan.steps.some((step) => step.times > 0);
+  const rowsAfterShaping = hadShaping
+    ? dropShoulderSleeveBodyRowSpans(chartInput).rowsAfterShaping
+    : shapingPlan.remainderRows;
   const sleeveBodyTailLines = [
-    sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows, shapingPlan.shapingDirection),
+    sleeveBodyRemainderLine(
+      rowsAfterShaping,
+      args.direction,
+      args.sleeveTotalRows,
+      shapingPlan.shapingDirection,
+      hadShaping,
+      args.sleeveBodyRows,
+    ),
   ].filter((p) => p.length > 0);
   const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
   const hasSleeveShaping = shapingWrittenLines.length > 0;
@@ -1283,7 +1301,10 @@ export function buildDropShoulderSleeveDisplayRows(
       kind: "block",
       rc: formatRcColon(args.sleeveBodyRows),
       paragraphs: [knitEvenLine(args.cuffRows)],
-      trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge")],
+      trustedParagraphs: [
+        knitEvenLine(args.cuffRows),
+        bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge"),
+      ].filter((line) => line.length > 0),
       stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
     });
     return rows;

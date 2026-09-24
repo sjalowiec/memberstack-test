@@ -128,7 +128,7 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
     expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
     expect(view.sleeveHtml).toContain("Make 2 sleeves");
-    expect(view.sleeveHtml).toContain("Wrist/Cuff");
+    expect(view.sleeveHtml).not.toContain("Wrist/Cuff");
     expect(view.sleeveHtml).toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 

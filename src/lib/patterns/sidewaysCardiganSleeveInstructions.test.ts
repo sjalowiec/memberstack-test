@@ -378,9 +378,9 @@ describe("sideways sleeve pattern instructions", () => {
     expect(html).toContain(`Cast on ${instructions.calc.wristSts} stitches for the sleeve cuff.`);
     expect(html).toContain("Begin sleeve shaping.");
     expect(html).toContain("Increase 1 stitch at each side");
-    expect(html).toContain("Wrist/Cuff");
-    expect(html).toContain("Upper arm");
-    expect(html).toContain("Sleeve length");
+    expect(html).not.toContain("Wrist/Cuff");
+    expect(html).not.toContain("sideways-sleeve-measurements");
+    expect(html).not.toContain("Sleeve direction");
     expect(html).toContain("data-sideways-sleeve-diagram-tabs-mount");
     expect(html).not.toContain("sideways-sleeve-sequence");
   });

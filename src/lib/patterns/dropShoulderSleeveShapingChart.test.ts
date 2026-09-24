@@ -6,8 +6,10 @@ import {
   buildDropShoulderSleeveShapingChartRows,
   DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
   dropShoulderSleeveNeedsShapingChart,
+  dropShoulderSleeveBodyRowSpans,
   dropShoulderSleevePreShapingSpan,
   dropShoulderSleeveShapingRcSequence,
+  formatDropShoulderSleeveWorkingNotation,
   dropShoulderSleeveShapingSchedule,
   renderDropShoulderSleeveShapingChartHtml,
 } from "./dropShoulderSleeveShapingChart";
@@ -176,11 +178,12 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
 
     expect(shapingRows).toHaveLength(20);
     expect(shapingRows[0]).toMatchObject({
-      rc: 4,
+      rc: 20,
       action: "Decrease 1 stitch at each side",
       edge: "Both sides",
       stitchesRemaining: 78,
     });
+    expect(shapingRows[shapingRows.length - 1]?.rc).toBe(96);
     expect(shapingRows[shapingRows.length - 1]?.stitchesRemaining).toBe(40);
   });
 
@@ -213,6 +216,64 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
     expect(dropShoulderSleeveNeedsShapingChart({ ...CUFF_UP_SAMPLE, topSts: 40, wristSts: 40 })).toBe(
       false,
     );
+  });
+
+  it("reverses unequal even-row spans for top-down knitting order", () => {
+    const cuffEvents = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
+    const bodyStart = CUFF_UP_SAMPLE.cuffRows;
+    const bodyEnd = CUFF_UP_SAMPLE.cuffRows + CUFF_UP_SAMPLE.sleeveBodyRows;
+    const rowsFromCuff = cuffEvents[0]! - bodyStart;
+    const rowsAtUpperArm = bodyEnd - cuffEvents[cuffEvents.length - 1]!;
+    expect(rowsFromCuff).not.toBe(rowsAtUpperArm);
+    expect(rowsFromCuff).toBeGreaterThan(0);
+    expect(rowsAtUpperArm).toBeGreaterThan(0);
+
+    const segment = formatShapingSegment(
+      1,
+      dropShoulderSleeveShapingSchedule(CUFF_UP_SAMPLE).interval,
+      dropShoulderSleeveShapingSchedule(CUFF_UP_SAMPLE).count,
+    );
+    const cuffNotation = formatDropShoulderSleeveWorkingNotation(CUFF_UP_SAMPLE, {
+      includeRowSpans: true,
+    });
+    const topNotation = formatDropShoulderSleeveWorkingNotation(TOP_DOWN_SAMPLE, {
+      includeRowSpans: true,
+    });
+    expect(cuffNotation).toBe(`${rowsFromCuff}r ${segment} ${rowsAtUpperArm}r`);
+    expect(topNotation).toBe(`${rowsAtUpperArm}r ${segment} ${rowsFromCuff}r`);
+    expect(dropShoulderSleeveBodyRowSpans(TOP_DOWN_SAMPLE)).toEqual({
+      rowsBeforeShaping: rowsAtUpperArm,
+      rowsAfterShaping: rowsFromCuff,
+    });
+    expect(formatDropShoulderSleeveWorkingNotation(CUFF_UP_SAMPLE)).toBe(segment);
+    expect(CUFF_UP_SAMPLE.sleeveTotalRows).toBe(TOP_DOWN_SAMPLE.sleeveTotalRows);
+
+    const topRows = buildDropShoulderSleeveDisplayRows({ ...TOP_DOWN_SAMPLE, valid: true });
+    const topText = sleeveInstructionTrustedText(topRows);
+    const topRcs = dropShoulderSleeveShapingRcSequence(TOP_DOWN_SAMPLE);
+    const cuffRcs = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
+    const fabricEnd = CUFF_UP_SAMPLE.cuffRows + CUFF_UP_SAMPLE.sleeveBodyRows;
+    expect(topRcs).toEqual([...cuffRcs].map((rc) => fabricEnd - rc).sort((a, b) => a - b));
+    expect(topRcs[0]).toBe(rowsAtUpperArm);
+    expect(fabricEnd - topRcs[topRcs.length - 1]!).toBe(cuffRcs[0]);
+    expect(topText).toContain(`Knit ${rowsAtUpperArm} rows even.`);
+    expect(topText).toContain(
+      `After the final decrease, knit ${rowsFromCuff} rows even in pattern, then begin the cuff at RC: ${String(TOP_DOWN_SAMPLE.sleeveBodyRows).padStart(3, "0")}.`,
+    );
+    expect(shapingRcListFromWrittenLine(
+      topRows
+        .filter((r) => r.kind === "block")
+        .flatMap((r) => (r.kind === "block" ? (r.trustedParagraphs ?? []) : []))
+        .find((p) => /Decrease 1 stitch at each side/i.test(p)) ?? "",
+    )).toEqual(topRcs);
+    const cuffBlock = topRows.find(
+      (row, index) =>
+        row.kind === "block" &&
+        topRows.slice(0, index).some((earlier) => earlier.kind === "section" && earlier.title === "CUFF"),
+    );
+    expect(cuffBlock && cuffBlock.kind === "block" ? cuffBlock.rc : "").toBe("RC: 100");
+    expect(cuffBlock && cuffBlock.kind === "block" ? cuffBlock.stitchCount : 0).toBe(TOP_DOWN_SAMPLE.wristSts);
+    expect(TOP_DOWN_SAMPLE.sleeveBodyRows + TOP_DOWN_SAMPLE.cuffRows).toBe(TOP_DOWN_SAMPLE.sleeveTotalRows);
   });
 
   it("RC values match the shared sleeve shaping schedule used for JP notation", () => {
@@ -298,9 +359,9 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
       .find((p) => /Decrease 1 stitch at each side/i.test(p));
 
     expect(text).toContain("Cast on or pick up 80 stitches.");
-    expect(preShaping.straightRows).toBe(4);
+    expect(preShaping.straightRows).toBe(20);
     expect(bodyBlocks).toHaveLength(2);
-    expect(blockParagraphText(bodyBlocks[0]!)).toContain("Knit 4 rows even.");
+    expect(blockParagraphText(bodyBlocks[0]!)).toContain("Knit 20 rows even.");
     expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
     expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(preShaping.firstShapingRc);
     expect(shapingLine).toContain("Decrease 1 stitch at each side every 4 rows 20 times.");

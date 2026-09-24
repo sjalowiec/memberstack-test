@@ -39,8 +39,10 @@ import {
   DS_FS_NOTATION,
   dropShoulderNotationFontFace,
 } from "./dropShoulderShapingNotationDiagramShared";
-import { formatDropShoulderSleeveShapingNotation } from "./dropShoulderSleeveShaping";
-import { dropShoulderSleeveShapingRcSequence } from "./dropShoulderSleeveShapingChart";
+import {
+  dropShoulderSleeveShapingRcSequence,
+  formatDropShoulderSleeveWorkingNotation,
+} from "./dropShoulderSleeveShapingChart";
 import {
   SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL,
   SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
@@ -96,13 +98,6 @@ function directionChoiceLabel(calc: SidewaysCardiganSleeveCalc): string {
     : SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL;
 }
 
-function shapingNotation(calc: SidewaysCardiganSleeveCalc): string {
-  return (
-    formatDropShoulderSleeveShapingNotation(calc.shapingPlan.steps) ||
-    formatBodyRowsNotation(calc.sleeveBodyRows)
-  );
-}
-
 function castOnStitches(calc: SidewaysCardiganSleeveCalc): number {
   return calc.direction === "top-down" ? calc.topSts : calc.wristSts;
 }
@@ -111,11 +106,34 @@ function bindOffStitches(calc: SidewaysCardiganSleeveCalc): number {
   return calc.direction === "top-down" ? calc.wristSts : calc.topSts;
 }
 
-function shapingVerbLabel(calc: SidewaysCardiganSleeveCalc): string {
-  if (calc.shapingPlan.noShaping || calc.shapingPerSide <= 0) return "Knit even";
-  return calc.shapingPlan.shapingDirection === "decrease"
-    ? "Decrease both edges"
-    : "Increase both edges";
+function chartInput(calc: SidewaysCardiganSleeveCalc) {
+  return {
+    topSts: calc.topSts,
+    wristSts: calc.wristSts,
+    cuffRows: calc.cuffRows,
+    sleeveBodyRows: calc.sleeveBodyRows,
+    sleeveTotalRows: calc.sleeveTotalRows,
+    direction: calc.direction,
+  };
+}
+
+function workingDirectionArrow(
+  frame: DropShoulderSleeveDiagramFrame,
+  direction: "up" | "down",
+): string {
+  const x = frame.midX + 28;
+  const top = Math.min(frame.cuffJoinY, frame.upperArmY) + 18;
+  const bottom = Math.max(frame.cuffJoinY, frame.upperArmY) - 18;
+  const headY = direction === "up" ? top : bottom;
+  const tailY = direction === "up" ? bottom : top;
+  const tip = 7;
+  const wing = direction === "up" ? headY + tip : headY - tip;
+  return (
+    `<g data-role="working-direction" data-knit-direction="${direction}">` +
+    `<line x1="${fmtNum(x)}" y1="${fmtNum(tailY)}" x2="${fmtNum(x)}" y2="${fmtNum(headY)}" stroke="${DS_STROKE}" stroke-width="1.6"/>` +
+    `<polygon points="${fmtNum(x)},${fmtNum(headY)} ${fmtNum(x - 5)},${fmtNum(wing)} ${fmtNum(x + 5)},${fmtNum(wing)}" fill="${DS_STROKE}"/>` +
+    `</g>`
+  );
 }
 
 /**
@@ -161,8 +179,7 @@ function sharedDataAttrs(
   const { calc } = args;
   const castOn = castOnStitches(calc);
   const bindOff = bindOffStitches(calc);
-  const notation = shapingNotation(calc);
-  const chartInput = {
+  const shapingChart = {
     topSts: calc.topSts,
     wristSts: calc.wristSts,
     cuffRows: calc.cuffRows,
@@ -170,6 +187,9 @@ function sharedDataAttrs(
     sleeveTotalRows: calc.sleeveTotalRows,
     direction: calc.direction,
   };
+  const notation = formatDropShoulderSleeveWorkingNotation(shapingChart, {
+    includeRowSpans: true,
+  });
   return {
     "data-supported": "true",
     "data-sleeve-direction": calc.direction,
@@ -190,7 +210,7 @@ function sharedDataAttrs(
     "data-bind-off-edge": calc.direction === "top-down" ? "wrist" : "upper-arm",
     "data-shaping-direction": calc.shapingPlan.shapingDirection,
     "data-shaping-notation": notation,
-    "data-shaping-rows": dropShoulderSleeveShapingRcSequence(chartInput).join(","),
+    "data-shaping-rows": dropShoulderSleeveShapingRcSequence(shapingChart).join(","),
   };
 }
 
@@ -233,6 +253,7 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
       "middle",
       ` font-weight="${DS_FW_TITLE}"`,
     ),
+    workingDirectionArrow(frame, calc.direction === "top-down" ? "down" : "up"),
     drawSleeveWristWidth(
       frame,
       stitchDimensionLabel(calc.wristSts, calc.finished.wristInches),
@@ -279,21 +300,36 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
   const castOnY = edgeLabelY(frame, castOnEdge);
   const bindOffY = edgeLabelY(frame, bindOffEdge);
-  const notation = shapingNotation(calc);
+  const notation = formatDropShoulderSleeveWorkingNotation(chartInput(calc), {
+    includeRowSpans: true,
+  });
+  const notationParts = notation.split(" ").filter(Boolean);
   const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
   const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
-  const shapingY = bodyTop + (bodyBottom - bodyTop) * 0.45;
   const cuffMidY = (frame.wristY + frame.cuffJoinY) / 2;
   const castOn = `${formatCastOnNotation(castOnStitches(calc))} sts`;
   const bindOff = formatBindOffNotation(bindOffStitches(calc));
   const cuff = formatBodyRowsNotation(calc.cuffRows);
+  const downward = calc.direction === "top-down";
+  const edgeLabels = notationParts
+    .map((part, index) => {
+      const t = notationParts.length <= 1 ? 0.5 : index / (notationParts.length - 1);
+      const along = downward ? t : 1 - t;
+      const y = bodyTop + (bodyBottom - bodyTop) * (0.25 + along * 0.5);
+      const leftX = Math.min(frame.wristLeft, frame.upperLeft) - 8;
+      const rightX = Math.max(frame.wristRight, frame.upperRight) + 8;
+      return (
+        diagramText("sleeve-shaping-left", part, leftX, y, DS_FS_NOTATION, "end", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`) +
+        diagramText("sleeve-shaping-right", part, rightX, y, DS_FS_NOTATION, "start", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`)
+      );
+    })
+    .join("");
 
   const body = [
     dropShoulderNotationFontFace(),
     silhouette(frame),
-    diagramText("sleeve-piece-label", "SLEEVE", frame.midX, shapingY - 28, DS_FS_TITLE, "middle", ` font-weight="${DS_FW_TITLE}"`),
-    diagramText("sleeve-direction", directionLabel, frame.midX, shapingY - 8, DS_FS_MEASURE),
-    diagramText("sleeve-shaping-verb", shapingVerbLabel(calc), frame.midX, shapingY + 14, DS_FS_MEASURE),
+    diagramText("sleeve-direction", directionLabel, frame.midX, (bodyTop + bodyBottom) / 2, DS_FS_MEASURE),
+    workingDirectionArrow(frame, downward ? "down" : "up"),
     diagramText(
       "cast-on",
       castOn,
@@ -320,24 +356,7 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
       DS_FS_NOTATION,
       "start",
     ),
-    diagramText(
-      "sleeve-shaping-left",
-      notation,
-      Math.min(frame.wristLeft, frame.upperLeft) - 8,
-      shapingY,
-      DS_FS_NOTATION,
-      "end",
-      ` data-notation="${escapeXml(notation)}"`,
-    ),
-    diagramText(
-      "sleeve-shaping-right",
-      notation,
-      Math.max(frame.wristRight, frame.upperRight) + 8,
-      shapingY,
-      DS_FS_NOTATION,
-      "start",
-      ` data-notation="${escapeXml(notation)}"`,
-    ),
+    edgeLabels,
   ].join("");
 
   return wrapGeneratedDiagramSvg({

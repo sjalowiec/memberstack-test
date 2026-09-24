@@ -124,8 +124,8 @@ describe("dropShoulderSleevePreShapingSpan", () => {
   it("derives straight rows from sleeve-body start for top-down", () => {
     expect(dropShoulderSleevePreShapingSpan(TOP_DOWN_CHART_INPUT)).toEqual({
       bodyStartRc: 0,
-      firstShapingRc: 4,
-      straightRows: 4,
+      firstShapingRc: 20,
+      straightRows: 20,
     });
   });
 

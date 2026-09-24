@@ -544,8 +544,8 @@ describe("Sideways Summary/Edit quick edits and tabs", () => {
     expect(cardigan.ok).toBe(true);
     if (!cardigan.ok) throw new Error(cardigan.message);
     expect(cardigan.sleeveInstructions?.calc.finished.wristInches).toBe(8);
-    expect(cardigan.sleeveHtml).toContain("Wrist/Cuff");
-    expect(cardigan.sleeveHtml).toContain("8 in");
+    expect(cardigan.sleeveHtml).not.toContain("Wrist/Cuff");
+    expect(cardigan.sleeveHtml).toContain(`Cast on ${cardigan.sleeveInstructions?.calc.wristSts} stitches`);
     expect(cardigan.summary.rows.find((row) => row.term === "Wrist/Cuff")?.def).toContain("8 in");
     expect(cardigan.summaryHtml).toContain("Wrist/Cuff");
 
@@ -559,7 +559,7 @@ describe("Sideways Summary/Edit quick edits and tabs", () => {
     expect(pullover.sleeveInstructions?.calc.wristSts).toBe(cardigan.sleeveInstructions?.calc.wristSts);
     expect(pullover.sleeveInstructions?.calc.topSts).toBe(cardigan.sleeveInstructions?.calc.topSts);
     expect(pullover.sleeveHtml).toContain("Make 2 sleeves");
-    expect(pullover.sleeveHtml).toContain("8 in");
+    expect(pullover.sleeveHtml).toContain(`Cast on ${pullover.sleeveInstructions?.calc.wristSts} stitches`);
     expect(pullover.sequenceHtml).not.toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 
@@ -577,7 +577,7 @@ describe("Sideways Summary/Edit quick edits and tabs", () => {
       Number(measurements.sleeveLength),
     );
     expect(view.sleeveInstructions?.calc.finished.wristInches).toBe(Number(measurements.wrist));
-    expect(view.sleeveHtml).toContain(`${measurements.wrist} in`);
-    expect(view.sleeveHtml).toContain(`${measurements.sleeveLength} in`);
+    expect(view.sleeveHtml).toContain(`${view.sleeveInstructions?.calc.wristSts} sts`);
+    expect(view.sleeveHtml).not.toContain(`${measurements.sleeveLength} in`);
   });
 });

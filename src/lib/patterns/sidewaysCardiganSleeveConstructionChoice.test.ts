@@ -112,9 +112,11 @@ describe("sideways finished sleeve construction choice", () => {
     const topSts = buildSidewaysCardiganSleeveStitchesRowsSvg(diagramArgs("top-down"));
     const cuffNotation = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs("cuff-up"));
     const topNotation = buildSidewaysCardiganSleeveShapingNotationSvg(diagramArgs("top-down"));
-    expect(cuffSts).not.toBe(topSts);
-    expect(cuffNotation).toContain("Increase both edges");
-    expect(topNotation).toContain("Decrease both edges");
+    expect(cuffSts).toContain('data-knit-direction="up"');
+    expect(topSts).toContain('data-knit-direction="down"');
+    expect(cuffNotation).toContain('data-knit-edge="start"');
+    expect(cuffNotation).not.toContain("Increase both edges");
+    expect(topNotation).not.toContain("Decrease both edges");
     expect(cuffNotation).not.toBe(topNotation);
     expect(cuff.html).not.toContain("data-sideways-diagram-tabs-mount");
     expect(top.html).not.toContain("data-sideways-diagram-tabs-mount");

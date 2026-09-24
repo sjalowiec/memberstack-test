@@ -18,17 +18,13 @@ import {
   dropShoulderSleeveShapingRcSequence,
 } from "./dropShoulderSleeveShapingChart";
 import { formatDropShoulderSleeveShapingWrittenLines } from "./dropShoulderSleeveShaping";
-import {
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
-  type SidewaysCardiganSleeveDirection,
-} from "./sidewaysCardiganConstructionIdentity";
+import { type SidewaysCardiganSleeveDirection } from "./sidewaysCardiganConstructionIdentity";
 import { buildDropShoulderSleeveDisplayRows } from "./dropShoulderPatternOutput";
 import {
   renderPatternDisplayRowsHtml,
   wrapPatternSectionHtml,
 } from "./sleevelessPatternDisplayHtml";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
-import { sidewaysCardiganSleeveFinishedMeasurementPairs } from "./sidewaysCardiganWorkspaceSummary";
 import {
   readStoredDropShoulderSleeveConstruction,
   renderSleeveConstructionChoiceHtml,
@@ -240,21 +236,6 @@ export function buildSidewaysCardiganSleeveDisplayRows(
   });
 }
 
-function renderSleeveMeasurementHtml(instructions: SidewaysCardiganSleeveInstructions): string {
-  const label = SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[instructions.direction];
-  const pairs = [
-    { term: "Sleeve direction", def: label },
-    ...sidewaysCardiganSleeveFinishedMeasurementPairs(instructions.calc),
-  ];
-  const items = pairs
-    .map(
-      (row) =>
-        `<div class="print-summary-dl__pair"><dt>${escapeHtml(row.term)}</dt><dd>${escapeHtml(row.def)}</dd></div>`,
-    )
-    .join("");
-  return `<dl class="print-summary-dl print-summary-dl--inline sideways-sleeve-measurements">${items}</dl>`;
-}
-
 export function renderSidewaysCardiganSleeveSequenceHtml(
   instructions: SidewaysCardiganSleeveInstructions,
 ): string {
@@ -272,7 +253,7 @@ export function renderSidewaysCardiganSleeveSequenceHtml(
   });
   const split =
     `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-sleeve-reading-layout" data-sideways-sleeve-layout>` +
-    `<div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-sleeve-reading-layout__instructions">${choice}${renderSleeveMeasurementHtml(instructions)}${instructionsHtml}</div>` +
+    `<div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-sleeve-reading-layout__instructions">${choice}${instructionsHtml}</div>` +
     `<aside class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram sideways-sleeve-reading-layout__diagram pattern-print-keep-together" aria-label="Sleeve diagram" data-sideways-sleeve-diagram-tabs-mount></aside>` +
     `</div>`;
   return wrapPatternSectionHtml("sg-sleeve", "SLEEVE", split, {

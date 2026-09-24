@@ -6,10 +6,13 @@
  */
 
 import { sleeveShapingPerSide, type EvenShapingSchedule } from "./evenShapingSchedule";
+import { formatBodyRowsNotation } from "./sleevelessBackJapaneseNotation";
 import {
   dropShoulderSleeveShapingBreakdown,
   dropShoulderSleeveShapingPlan,
+  dropShoulderSleeveShapingPlanForDirection,
   dropShoulderSleeveShapingVerb,
+  formatDropShoulderSleeveShapingNotation,
 } from "./dropShoulderSleeveShaping";
 
 export const DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES = [
@@ -66,6 +69,56 @@ export type DropShoulderSleevePreShapingSpan = {
 /**
  * Straight rows between sleeve-body start and the first shaping row — derived from the shared RC sequence.
  */
+/**
+ * Japanese notation for one sleeve edge, in knitting order.
+ * Optional row spans use the existing `Nr` token. Omitting them keeps `1s-6r-13x` alone.
+ */
+export function formatDropShoulderSleeveWorkingNotation(
+  input: DropShoulderSleeveShapingChartInput,
+  options?: { includeRowSpans?: boolean },
+): string {
+  const plan = dropShoulderSleeveShapingPlanForDirection(
+    {
+      topSts: input.topSts,
+      wristSts: input.wristSts,
+      sleeveBodyRows: input.sleeveBodyRows,
+    },
+    input.direction,
+  );
+  const shaping = formatDropShoulderSleeveShapingNotation(plan.steps);
+  if (!options?.includeRowSpans) return shaping;
+  const spans = dropShoulderSleeveBodyRowSpans(input);
+  const parts: string[] = [];
+  const before = formatBodyRowsNotation(spans.rowsBeforeShaping);
+  if (before) parts.push(before);
+  if (shaping) parts.push(shaping);
+  const after = formatBodyRowsNotation(spans.rowsAfterShaping);
+  if (after) parts.push(after);
+  return parts.join(" ");
+}
+
+/**
+ * Even-row spans around the shared cuff-up shaping events.
+ * Top Down reads those same events from the upper arm, so the spans swap.
+ */
+export function dropShoulderSleeveBodyRowSpans(input: DropShoulderSleeveShapingChartInput): {
+  rowsBeforeShaping: number;
+  rowsAfterShaping: number;
+} {
+  const cuffUpEvents = dropShoulderSleeveShapingRcSequence({ ...input, direction: "cuff-up" });
+  if (cuffUpEvents.length === 0) {
+    return { rowsBeforeShaping: input.sleeveBodyRows, rowsAfterShaping: 0 };
+  }
+  const bodyStart = input.cuffRows;
+  const bodyEnd = input.cuffRows + input.sleeveBodyRows;
+  const rowsFromCuff = Math.max(0, cuffUpEvents[0]! - bodyStart);
+  const rowsAtUpperArm = Math.max(0, bodyEnd - cuffUpEvents[cuffUpEvents.length - 1]!);
+  if (input.direction === "top-down") {
+    return { rowsBeforeShaping: rowsAtUpperArm, rowsAfterShaping: rowsFromCuff };
+  }
+  return { rowsBeforeShaping: rowsFromCuff, rowsAfterShaping: rowsAtUpperArm };
+}
+
 export function dropShoulderSleevePreShapingSpan(
   input: DropShoulderSleeveShapingChartInput,
 ): DropShoulderSleevePreShapingSpan {
@@ -79,31 +132,45 @@ export function dropShoulderSleevePreShapingSpan(
   return { bodyStartRc, firstShapingRc, straightRows };
 }
 
-export function dropShoulderSleeveShapingRcSequence(
-  input: DropShoulderSleeveShapingChartInput,
-): number[] {
+function cuffUpSleeveShapingRcSequence(input: DropShoulderSleeveShapingChartInput): number[] {
   const plan = dropShoulderSleeveShapingPlan({
     topSts: input.topSts,
     wristSts: input.wristSts,
     sleeveBodyRows: input.sleeveBodyRows,
   });
   if (plan.noShaping || plan.steps.length === 0) return [];
+  const breakdown = dropShoulderSleeveShapingBreakdown(
+    { topSts: input.topSts, wristSts: input.wristSts, direction: "cuff-up" },
+    plan.steps,
+  );
+  return breakdown.map((entry) => input.cuffRows + entry.rowNumber);
+}
 
-  const isCuffUp = input.direction === "cuff-up";
-  const shapingStartRc = isCuffUp ? input.cuffRows : 0;
-  const breakdown = dropShoulderSleeveShapingBreakdown(input, plan.steps);
-  return breakdown.map((entry) => shapingStartRc + entry.rowNumber);
+/**
+ * RC of each shaping pass, in knitting order.
+ * Cuff-up events are measured from the cuff cast-on. Top-down reads those same
+ * fabric rows from the upper-arm cast-on (`sleeve end − cuff-up RC`).
+ * The named RC is the counter when the increase or decrease is worked; the
+ * even rows before it are knitted to reach that RC.
+ */
+export function dropShoulderSleeveShapingRcSequence(
+  input: DropShoulderSleeveShapingChartInput,
+): number[] {
+  const cuffUpEvents = cuffUpSleeveShapingRcSequence(input);
+  if (input.direction !== "top-down") return cuffUpEvents;
+  const fabricEnd = input.cuffRows + input.sleeveBodyRows;
+  return cuffUpEvents.map((rc) => fabricEnd - rc).sort((a, b) => a - b);
 }
 
 export function buildDropShoulderSleeveShapingChartRows(
   input: DropShoulderSleeveShapingChartInput,
 ): DropShoulderSleeveShapingChartRow[] {
-  const { topSts, wristSts, cuffRows, sleeveBodyRows, sleeveTotalRows, direction } = input;
+  const { topSts, wristSts, sleeveBodyRows, sleeveTotalRows, direction } = input;
   const plan = dropShoulderSleeveShapingPlan({ topSts, wristSts, sleeveBodyRows });
   if (plan.noShaping || plan.steps.length === 0) return [];
 
   const isCuffUp = direction === "cuff-up";
-  const shapingStartRc = isCuffUp ? cuffRows : 0;
+  const shapingRcs = dropShoulderSleeveShapingRcSequence(input);
   const breakdown = dropShoulderSleeveShapingBreakdown(
     { topSts, wristSts, direction },
     plan.steps,
@@ -114,8 +181,8 @@ export function buildDropShoulderSleeveShapingChartRows(
     shapingVerb === "increase"
       ? "Increase 1 stitch at each side"
       : "Decrease 1 stitch at each side";
-  const rows: DropShoulderSleeveShapingChartRow[] = breakdown.map((entry) => ({
-    rc: shapingStartRc + entry.rowNumber,
+  const rows: DropShoulderSleeveShapingChartRow[] = breakdown.map((entry, index) => ({
+    rc: shapingRcs[index] ?? entry.rowNumber,
     action: shapingAction,
     edge: "Both sides",
     stitchesRemaining: entry.stitchesAfter,
