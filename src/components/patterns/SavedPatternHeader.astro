@@ -1,0 +1,247 @@
+---
+/**
+ * Shared saved-pattern header.
+ * Action buttons across the top, then a compact block: title and details on the
+ * left, thumbnail on the right, with Pattern Tips inside that block.
+ * Each builder supplies its own actions, details, and thumbnail.
+ */
+import PatternProjectOnlineNotes from "./PatternProjectOnlineNotes.astro";
+import PatternTipsToggle from "./PatternTipsToggle.astro";
+
+interface Props {
+  /**
+   * `actions` and `intro` can be placed separately when the action bar must stay
+   * visible while the pattern results (and intro) are hidden.
+   */
+  part?: "all" | "actions" | "intro";
+  /** Fallback title until the page script fills the saved project name. */
+  title?: string;
+  /** Attribute the page script uses to update the title. */
+  titleAttr?: string;
+  /** Screen title element. Existing sweater and hat pages use a paragraph. */
+  titleTag?: "h1" | "p";
+  showTitle?: boolean;
+  /** Default project-notes block. Hat passes its own notes markup instead. */
+  showNotes?: boolean;
+  thumbnailSrc?: string;
+  thumbnailAlt?: string;
+  thumbnailWidth?: number;
+  thumbnailHeight?: number;
+  tipsStorageKey?: string;
+  tipsScopeSelector?: string;
+  printOriginLabel?: string;
+  printOriginUrl?: string;
+  /** Attributes on the end action group, for pages that inject Print there. */
+  actionsEndAttrs?: string[];
+  /**
+   * Hide the on-screen title in print when the page supplies a separate print title.
+   * Sideways prints this title.
+   */
+  hideTitleOnPrint?: boolean;
+}
+
+const {
+  part = "all",
+  title = "",
+  titleAttr = "data-saved-pattern-heading",
+  titleTag = "p",
+  showTitle = true,
+  showNotes = true,
+  thumbnailSrc = "",
+  thumbnailAlt = "",
+  thumbnailWidth = 360,
+  thumbnailHeight = 360,
+  tipsStorageKey = "",
+  tipsScopeSelector = "#pattern-content",
+  printOriginLabel,
+  printOriginUrl,
+  actionsEndAttrs: actionsEndAttrNames = [],
+  hideTitleOnPrint = false,
+} = Astro.props;
+
+const titleAttrs: Record<string, string> = { [titleAttr]: "" };
+const actionsEndAttrs: Record<string, string> = {};
+for (const name of actionsEndAttrNames) actionsEndAttrs[name] = "";
+const showActions = part === "all" || part === "actions";
+const showIntro = part === "all" || part === "intro";
+---
+
+{
+  showActions && (
+<div class="pattern-action-bar no-print" data-pattern-action-bar data-saved-pattern-header-actions>
+  <div class="pattern-action-bar__group pattern-action-bar__group--start">
+    <slot name="actions-start" />
+  </div>
+  <div
+    class="pattern-action-bar__group pattern-action-bar__group--end"
+    data-saved-pattern-header-actions-end
+    {...actionsEndAttrs}
+  >
+    <slot name="actions-end" />
+  </div>
+</div>
+  )
+}
+
+{
+  showIntro && (
+<section class="sleeveless-pattern-intro" data-saved-pattern-header>
+  <div class="sleeveless-pattern-intro__image">
+    <div class="saved-pattern-header__thumb">
+      <div class="saved-pattern-header__thumb-frame">
+        <img
+          src={thumbnailSrc}
+          alt={thumbnailAlt}
+          width={thumbnailWidth}
+          height={thumbnailHeight}
+          loading="lazy"
+          decoding="async"
+          class="sg-pattern-hero-image saved-pattern-header__image"
+        />
+      </div>
+    </div>
+    {
+      printOriginLabel && printOriginUrl ? (
+        <div class="pattern-print-origin" aria-hidden="true">
+          <div class="pattern-print-origin__label">{printOriginLabel}</div>
+          <div class="pattern-print-origin__url">{printOriginUrl}</div>
+        </div>
+      ) : null
+    }
+  </div>
+  <div class="sleeveless-pattern-intro__content">
+    {
+      (showTitle || showNotes) && (
+        <div class:list={["sleeveless-pattern-online-project-header", hideTitleOnPrint && "no-print"]}>
+          {
+            showTitle && (
+              <div class="sleeveless-pattern-online-heading-row">
+                {titleTag === "h1" ? (
+                  <h1 class="sleeveless-pattern-online-heading" {...titleAttrs}>
+                    {title}
+                  </h1>
+                ) : (
+                  <p class="sleeveless-pattern-online-heading" {...titleAttrs}>
+                    {title}
+                  </p>
+                )}
+              </div>
+            )
+          }
+          {
+            showNotes && (
+              <slot name="notes">
+                <PatternProjectOnlineNotes />
+              </slot>
+            )
+          }
+        </div>
+      )
+    }
+    <slot name="print-personalization" />
+    <div
+      class="sg-pattern-intro-metadata pattern-generated-description"
+      data-sg-pattern-intro
+      data-pattern-generated-description
+      aria-label="Pattern summary"
+    >
+      <slot name="details" />
+    </div>
+    {
+      tipsStorageKey && (
+        <PatternTipsToggle storageKey={tipsStorageKey} scopeSelector={tipsScopeSelector} />
+      )
+    }
+  </div>
+</section>
+  )
+}
+
+<style>
+  .pattern-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
+  }
+
+  .pattern-action-bar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .pattern-action-bar__group--end {
+    justify-content: flex-end;
+  }
+
+  .sleeveless-pattern-online-project-header {
+    margin: 0 0 0.75rem;
+  }
+
+  .sleeveless-pattern-online-heading-row {
+    margin: 0 0 0.4rem;
+  }
+
+  .sleeveless-pattern-online-heading {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #374151;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: left;
+  }
+
+  .sleeveless-pattern-intro__image {
+    width: 100%;
+    min-width: 0;
+    justify-self: end;
+  }
+
+  .saved-pattern-header__thumb {
+    display: block;
+    width: 360px;
+    max-width: 100%;
+    margin-left: auto;
+  }
+
+  .saved-pattern-header__thumb-frame {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    border-radius: 8px;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .saved-pattern-header__image {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 560px) {
+    .sleeveless-pattern-intro__image {
+      justify-self: stretch;
+    }
+
+    .saved-pattern-header__thumb {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+</style>

@@ -3,7 +3,8 @@ import Layout from "../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
-import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
+import SavedPatternHeader from "../../../../components/patterns/SavedPatternHeader.astro";
+import { SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC } from "../../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 import { SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../../lib/patterns/sidewaysCardiganPatternNavigation";
 
 import "../../../../styles/sleeveless-express-wizard-layout.css";
@@ -30,34 +31,29 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
     <div class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
         <PatternPhoneWorkspaceNotice />
-        <div class="pattern-action-bar no-print">
-          <div class="pattern-action-bar__group pattern-action-bar__group--start">
-            <PatternBuilderMyPatternsLink />
-          </div>
-          <div class="pattern-action-bar__group pattern-action-bar__group--end">
-            <a
-              href={SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF}
-              class="sleeveless-pattern-edit-action no-print"
-              data-sideways-edit-open
-              data-testid="button-edit-pattern"
-            >
-              <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-            </a>
-          </div>
-        </div>
         <div id="sideways-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
-        <header class="pattern-header page-header">
-          <div class="pattern-header__title-row">
-            <h1 class="pattern-title" data-sleeveless-pattern-online-heading>Sideways V-Neck Sweater</h1>
-          </div>
-          <p class="pattern-subtext">
-            A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.
-          </p>
-          <PatternTipsToggle
-            storageKey="sleeveless-show-tips"
-            scopeSelector="#sideways-pattern-tips-scope"
-          />
-        </header>
+        <SavedPatternHeader
+          title="Sideways V-Neck Sweater"
+          titleTag="h1"
+          titleAttr="data-sleeveless-pattern-online-heading"
+          thumbnailSrc={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC}
+          thumbnailAlt="A machine-knit sideways sweater"
+          tipsStorageKey="sleeveless-show-tips"
+          tipsScopeSelector="#sideways-pattern-tips-scope"
+          printOriginLabel="Created with the Knit It Now Sideways Knit Sweater Pattern Builder"
+          printOriginUrl="KnitItNow.com/patterns/sideways-cardigan"
+        >
+          <PatternBuilderMyPatternsLink slot="actions-start" />
+          <a
+            slot="actions-end"
+            href={SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF}
+            class="sleeveless-pattern-edit-action no-print"
+            data-sideways-edit-open
+            data-testid="button-edit-pattern"
+          >
+            <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+          </a>
+        </SavedPatternHeader>
 
         <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
           Complete the Sideways V-Neck Sweater builder to see the pattern numbers.
@@ -118,26 +114,6 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
   .sideways-calc-host {
     margin: 1rem 0 1.5rem;
   }
-  .pattern-action-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin: 0 0 0.85rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
-  }
-  .pattern-action-bar__group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0;
-  }
-  .pattern-action-bar__group--end {
-    justify-content: flex-end;
-  }
 
   /* Body and sleeve each own a reading-layout grid. The page column is not sticky. */
   #pattern-content > .sleeveless-pattern-inpage-nav {
@@ -192,6 +168,13 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
   }
 
   @media print {
+    /* Screen details stay in the header for print. Sweater pages hide this block
+       because they print a separate At a glance list. */
+    :global(.sg-pattern-intro-metadata),
+    :global([data-pattern-generated-description]) {
+      display: block !important;
+    }
+
     #pattern-content > [data-sideways-body-layout],
     :global(.sideways-sleeve-reading-layout) {
       display: block !important;

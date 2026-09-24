@@ -3,10 +3,9 @@ import Layout from "../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
-import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
+import SavedPatternHeader from "../../../../components/patterns/SavedPatternHeader.astro";
 import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
 import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
-import PatternProjectOnlineNotes from "../../../../components/patterns/PatternProjectOnlineNotes.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import EditWorkspaceGaugeFields from "../../../../components/patterns/EditWorkspaceGaugeFields.astro";
 import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
@@ -53,8 +52,11 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
   <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <div class="pattern-action-bar no-print" data-pattern-action-bar>
-          <div class="pattern-action-bar__group pattern-action-bar__group--start">
+        <SavedPatternHeader
+          part="actions"
+          actionsEndAttrs={["data-sleeveless-pattern-actions"]}
+        >
+          <Fragment slot="actions-start">
             <button
               type="button"
               class="sleeveless-pattern-edit-action no-print"
@@ -74,11 +76,8 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
             >
               <i class="fa-solid fa-plus" aria-hidden="true"></i> New Pattern
             </button>
-          </div>
-          <div
-            class="pattern-action-bar__group pattern-action-bar__group--end"
-            data-sleeveless-pattern-actions
-          >
+          </Fragment>
+          <Fragment slot="actions-end">
             <button
               type="button"
               id="express-yarn-drawer-open"
@@ -103,59 +102,33 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
               <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
             </button>
             <!-- Print button (#print-btn) is injected here by mountSleevelessPrintAction(). -->
-          </div>
-        </div>
+          </Fragment>
+        </SavedPatternHeader>
 
         <div id="sg-sleeveless-results" class="sg-sleeveless-results">
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
             <SleevelessPatternPrintNotice />
-            <section class="sleeveless-pattern-intro">
-              <div class="sleeveless-pattern-intro__image">
-                <div class="beta-pattern-video">
-                  <div class="beta-pattern-video__wrap">
-                    <img
-                      src="/images/patterns/drop_shoulder.webp"
-                      alt="Drop shoulder sweater pattern preview"
-                      width="1536"
-                      height="1024"
-                      loading="lazy"
-                      decoding="async"
-                      class="sg-pattern-hero-image"
-                    />
-                  </div>
+            <SavedPatternHeader
+              part="intro"
+              title="Drop shoulder sweater · Pattern instructions"
+              titleAttr="data-sleeveless-pattern-online-heading"
+              hideTitleOnPrint
+              thumbnailSrc="/images/patterns/drop_shoulder.webp"
+              thumbnailAlt="Drop shoulder sweater pattern preview"
+              thumbnailWidth={1536}
+              thumbnailHeight={1024}
+              tipsStorageKey="sleeveless-show-tips"
+              tipsScopeSelector="#sleeveless-pattern-tips-scope"
+              printOriginLabel="Created with the Knit It Now Drop Shoulder Pattern Builder"
+              printOriginUrl="KnitItNow.com/drop-shoulder"
+            >
+              <PatternPrintPersonalization slot="print-personalization">
+                <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
+                  <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
+                  <div data-sg-pattern-print-basics-body></div>
                 </div>
-                <div class="pattern-print-origin" aria-hidden="true">
-                  <div class="pattern-print-origin__label">Created with the Knit It Now Drop Shoulder Pattern Builder</div>
-                  <div class="pattern-print-origin__url">KnitItNow.com/drop-shoulder</div>
-                </div>
-              </div>
-              <div class="sleeveless-pattern-intro__content">
-                <div class="sleeveless-pattern-online-project-header no-print">
-                  <div class="sleeveless-pattern-online-heading-row">
-                    <p class="sleeveless-pattern-online-heading" data-sleeveless-pattern-online-heading>
-                      Drop shoulder sweater · Pattern instructions
-                    </p>
-                  </div>
-                  <PatternProjectOnlineNotes />
-                </div>
-                <PatternPrintPersonalization>
-                  <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
-                    <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
-                    <div data-sg-pattern-print-basics-body></div>
-                  </div>
-                </PatternPrintPersonalization>
-                <div
-                  class="sg-pattern-intro-metadata pattern-generated-description"
-                  data-sg-pattern-intro
-                  data-pattern-generated-description
-                  aria-label="Pattern summary"
-                ></div>
-                <PatternTipsToggle
-                  storageKey="sleeveless-show-tips"
-                  scopeSelector="#sleeveless-pattern-tips-scope"
-                />
-              </div>
-            </section>
+              </PatternPrintPersonalization>
+            </SavedPatternHeader>
 
             <div id="pattern-content" data-pattern-content>
               <nav
@@ -430,126 +403,6 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
 </Layout>
 
 <style>
-  /*
-   * Pattern workspace action bar — replaces the former tab navigation.
-   */
-  .pattern-action-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin: 0 0 0.85rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid rgba(82, 104, 45, 0.12);
-  }
-
-  .pattern-action-bar__group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0;
-  }
-
-  .pattern-action-bar__group--end {
-    justify-content: flex-end;
-  }
-
-  .sleeveless-pattern-online-project-header {
-    margin: 0 0 0.75rem;
-  }
-
-  .sleeveless-pattern-online-heading-row {
-    margin: 0 0 0.4rem;
-  }
-
-  .sleeveless-pattern-online-heading {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-    line-height: 1.35;
-    color: #374151;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
-  .sleeveless-pattern-project-notes-wrap {
-    margin: 0;
-  }
-
-  .sleeveless-pattern-project-notes__head {
-    margin-bottom: 0.25rem;
-  }
-
-  .sleeveless-pattern-project-notes {
-    padding: 0.45rem 0.6rem;
-    border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #fff);
-  }
-
-  .sleeveless-pattern-project-notes__label {
-    margin: 0;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
-  }
-
-  .sleeveless-pattern-project-notes__text {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.45;
-    color: #4b5563;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
-  .sleeveless-pattern-intro__image {
-    width: 100%;
-    min-width: 280px;
-    justify-self: end;
-  }
-
-  .beta-pattern-video {
-    display: block;
-    width: 360px;
-    max-width: 100%;
-  }
-
-  .beta-pattern-video__wrap {
-    position: relative;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
-    border-radius: 8px;
-    background: transparent;
-  }
-
-  .sg-pattern-hero-image {
-    display: block;
-    width: 100%;
-    max-height: 320px;
-    height: auto;
-    object-fit: contain;
-    border-radius: inherit;
-  }
-
-  @media (max-width: 560px) {
-    .sleeveless-pattern-intro__image {
-      min-width: 0;
-      justify-self: stretch;
-    }
-
-    .beta-pattern-video {
-      width: 100%;
-    }
-  }
-
   @media print {
     :global(#pattern-content .pattern-section),
     :global(#pattern-content .pattern-section--garment-piece),

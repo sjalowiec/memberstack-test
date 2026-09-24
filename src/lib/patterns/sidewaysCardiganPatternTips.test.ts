@@ -101,9 +101,9 @@ describe("Sideways finished-pattern tips", () => {
     expect(page).toContain('import "../../../../styles/pattern-help-card.css"');
     expect(page).toContain('id="sideways-pattern-tips-scope"');
     expect(page).toContain('class="pattern-tips-scope"');
-    expect(page).toContain("PatternTipsToggle");
-    expect(page).toContain('storageKey="sleeveless-show-tips"');
-    expect(dropShoulder).toContain('storageKey="sleeveless-show-tips"');
+    expect(page).toContain("SavedPatternHeader");
+    expect(page).toContain('tipsStorageKey="sleeveless-show-tips"');
+    expect(dropShoulder).toContain('tipsStorageKey="sleeveless-show-tips"');
     expect(page).not.toMatch(/\.sideways-tip|\.sideways-pattern-tip/);
 
     const tipsCss = readFileSync(resolve("src/styles/pattern-tips.css"), "utf8");

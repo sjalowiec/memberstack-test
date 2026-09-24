@@ -8,6 +8,7 @@ import {
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
   loadSidewaysCardiganWorkspaceView,
+  mergeSidewaysCardiganWorkingDraft,
   type SidewaysCardiganWorkspaceView,
 } from "../lib/patterns/sidewaysCardiganWorkspaceLoad";
 import {
@@ -46,6 +47,7 @@ import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTool
 import { bindPatternSectionCollapse } from "../lib/patterns/sleevelessPatternDisplayHtml";
 import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
 import { SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS } from "../lib/patterns/sidewaysCardiganPatternInpageNav";
+import { buildSidewaysCardiganPatternHeaderDetailsHtml } from "../lib/patterns/sidewaysCardiganPatternHeaderDetails";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import { initChartProgressTracking } from "./chartProgressTracker";
 import { getCurrentPattern } from "../lib/patterns/patternStorage";
@@ -129,9 +131,22 @@ function bindSidewaysSleeveConstructionChoice(
   });
 }
 
+function fillSidewaysPatternHeaderDetails(): void {
+  const introEl = document.querySelector("[data-sg-pattern-intro]");
+  if (!(introEl instanceof HTMLElement)) return;
+  try {
+    introEl.innerHTML = buildSidewaysCardiganPatternHeaderDetailsHtml(
+      mergeSidewaysCardiganWorkingDraft(),
+    );
+  } catch {
+    introEl.innerHTML = "";
+  }
+}
+
 function renderView(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
   applySleevelessPatternOnlineProjectHeader();
+  fillSidewaysPatternHeaderDetails();
 
   const missing = document.querySelector("[data-sideways-calc-missing]");
   const host = document.querySelector("[data-sideways-calc-host]");

@@ -2,7 +2,7 @@
 import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
-import PatternTipsToggle from "../../../components/patterns/PatternTipsToggle.astro";
+import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
 import ActionBar from "../../../components/wizards/ActionBar.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 
@@ -44,45 +44,26 @@ import "../../../styles/patterns/pattern-app-shell.css";
           <ActionBar formScrollTarget="sleeveless-beta-pattern-top" />
           <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
             <SleevelessPatternPrintNotice />
-            <section class="sleeveless-pattern-intro">
-              <div class="sleeveless-pattern-intro__image">
-                <div class="beta-pattern-video">
-                  <div class="beta-pattern-video__wrap">
-                    <img
-                      src="/images/patterns/sleeveless.webp"
-                      alt="Sleeveless sweater pattern preview"
-                      width="1536"
-                      height="1024"
-                      loading="lazy"
-                      decoding="async"
-                      class="sg-pattern-hero-image"
-                    />
-                  </div>
+            <SavedPatternHeader
+              part="intro"
+              showTitle={false}
+              showNotes={false}
+              thumbnailSrc="/images/patterns/sleeveless.webp"
+              thumbnailAlt="Sleeveless sweater pattern preview"
+              thumbnailWidth={1536}
+              thumbnailHeight={1024}
+              tipsStorageKey="sleeveless-show-tips"
+              tipsScopeSelector="#sleeveless-pattern-tips-scope"
+              printOriginLabel="Created with the Knit It Now Sleeveless Pattern Builder"
+              printOriginUrl="KnitItNow.com/sleeveless"
+            >
+              <PatternPrintPersonalization slot="print-personalization">
+                <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
+                  <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
+                  <div data-sg-pattern-print-basics-body></div>
                 </div>
-                <div class="pattern-print-origin" aria-hidden="true">
-                  <div class="pattern-print-origin__label">Created with the Knit It Now Sleeveless Pattern Builder</div>
-                  <div class="pattern-print-origin__url">KnitItNow.com/sleeveless</div>
-                </div>
-              </div>
-              <div class="sleeveless-pattern-intro__content">
-                <PatternPrintPersonalization>
-                  <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
-                    <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
-                    <div data-sg-pattern-print-basics-body></div>
-                  </div>
-                </PatternPrintPersonalization>
-                <div
-                  class="sg-pattern-intro-metadata pattern-generated-description"
-                  data-sg-pattern-intro
-                  data-pattern-generated-description
-                  aria-label="Pattern summary"
-                ></div>
-                <PatternTipsToggle
-                  storageKey="sleeveless-show-tips"
-                  scopeSelector="#sleeveless-pattern-tips-scope"
-                />
-              </div>
-            </section>
+              </PatternPrintPersonalization>
+            </SavedPatternHeader>
 
             <div id="pattern-content" data-pattern-content>
               <nav
@@ -155,49 +136,6 @@ import "../../../styles/patterns/pattern-app-shell.css";
     font-size: 0.95rem;
     font-weight: 600;
     color: #374151;
-  }
-
-  /* Prevent grid shrink-collapse on the intro media column (override shared justify-self sizing). */
-  .sleeveless-pattern-intro__image {
-    width: 100%;
-    min-width: 280px;
-    justify-self: end;
-  }
-
-  .beta-pattern-video {
-    display: block;
-    width: 360px;
-    max-width: 100%;
-  }
-
-  .beta-pattern-video__wrap {
-    position: relative;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: 100%;
-    border-radius: 8px;
-    background: transparent;
-  }
-
-  .sg-pattern-hero-image {
-    display: block;
-    width: 100%;
-    max-height: 320px;
-    height: auto;
-    object-fit: contain;
-    border-radius: inherit;
-  }
-
-  @media (max-width: 560px) {
-    .sleeveless-pattern-intro__image {
-      min-width: 0;
-      justify-self: stretch;
-    }
-
-    .beta-pattern-video {
-      width: 100%;
-    }
   }
 
   @media print {

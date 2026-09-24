@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getCurrentPattern, getPatternData } from "./patternStorage";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "./syncSidewaysCardiganBuilderToPatternStorage";
-import { loadSidewaysCardiganWorkspaceView } from "./sidewaysCardiganWorkspaceLoad";
+import { loadSidewaysCardiganWorkspaceView, mergeSidewaysCardiganWorkingDraft } from "./sidewaysCardiganWorkspaceLoad";
+import { buildSidewaysCardiganPatternHeaderDetailsHtml } from "./sidewaysCardiganPatternHeaderDetails";
 import { readSidewaysCardiganBuilderStateFromDraft } from "./sidewaysCardiganBuilderState";
 import { SIDEWAYS_CARDIGAN_CONSTRUCTION } from "./sidewaysCardiganConstructionIdentity";
 import { SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF } from "./customPatternProjectNavigation";
@@ -113,6 +114,16 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     if (!view.ok) throw new Error(view.message);
     expect(view.summary.rows.length).toBeGreaterThan(0);
     expect(view.summaryHtml).toContain("Garment length");
+    const headerDetails = buildSidewaysCardiganPatternHeaderDetailsHtml(
+      mergeSidewaysCardiganWorkingDraft(),
+    );
+    expect(headerDetails).toContain("Cardigan");
+    expect(headerDetails).toContain("Women's");
+    expect(headerDetails).toContain("Chart size 8");
+    expect(headerDetails).toContain("Standard");
+    expect(headerDetails).toContain("Cuff up · Long");
+    expect(headerDetails).toContain("sts /");
+    expect(headerDetails).toContain("rows over");
     expect(view.instructions).not.toBeNull();
     expect(view.sequenceHtml).toContain("pattern-section");
     expect(view.sequenceHtml).toContain("CAST ON");
@@ -360,7 +371,8 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain(
       "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.",
     );
-    expect(workspace).toContain(
+    expect(workspace).toContain("SavedPatternHeader");
+    expect(workspace).not.toContain(
       "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.",
     );
     expect(builder).not.toContain("straight back neck");
@@ -430,7 +442,12 @@ describe("sideways cardigan workspace is not print-only", () => {
     expect(page).toContain("data-sideways-body-sequence");
     expect(page).toContain("data-sideways-sleeve-sequence");
     expect(page).toContain("data-sideways-sleeve-host");
+    expect(page).toContain("SavedPatternHeader");
     expect(page).toContain('data-sleeveless-pattern-online-heading');
+    expect(page).toContain("SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC");
+    expect(page).toContain("data-sleeveless-pattern-inpage-nav");
+    expect(page).not.toContain("pattern-title");
+    expect(page).not.toContain("A V-neck sweater knitted sideways");
     expect(page).toContain('import "/src/scripts/sideways-cardigan-pattern-page.ts"');
     expect(page).not.toMatch(/class="[^"]*sg-pattern-print-at-a-glance[^"]*"/);
     const shared = readFileSync(resolve("src/styles/patterns/sleeveless-pattern-shared.css"), "utf8");
