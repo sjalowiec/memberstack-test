@@ -9,6 +9,12 @@ updated 2026-09-15
 
 There is one paid membership. KIN Beta Access (`pln_kin-beta-access-vyek0a38`) is retired and no longer grants site content access.
 
+## Complimentary membership
+
+- Active Memberstack plan **Complimentary Membership** (`pln_complimentary-membership-30-days-ai28093g`) grants the same access as paid membership while the connection is ACTIVE or TRIALING.
+- It does not use the Watson paid-through date. A canceled or expired connection does not grant access.
+- It is not a checkout plan and must not appear in `MEMBERSHIP_PRICE_IDS`.
+
 ## Legacy membership (free access plan)
 
 - A confirmed Watson `legacy_members.subscriptionexpiring` date that is today or in the future (America/Los_Angeles calendar day) grants the same access as paid membership. The free Memberstack plan **legacy membership** (`pln_legacy-membership-t012x0xw0`) is **not required** when that date is confirmed.

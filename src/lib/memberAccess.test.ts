@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  COMPLIMENTARY_MEMBERSHIPS,
   FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
@@ -23,6 +24,8 @@ import {
   needsLegacyPaidThroughForAccess,
   rememberLegacyPaidThroughForAccess,
 } from "./memberAccess";
+import { canAccessCourse } from "./courseAccess";
+import { hasPatternBuilderAccess } from "./patterns/patternBuilderAccess";
 import { hasMemberAccessFromActivePlanIds } from "./patterns/patternBuilderAccess";
 import { decidePatternMembershipGate } from "./patterns/patternMembershipPageGate";
 import { canCreatePatternForSystem } from "./patterns/sleevelessPatternSystemAccess";
@@ -31,6 +34,8 @@ const PAID = MEMBERSHIPS.membership.memberstackPlanId;
 const MONTHLY_PRICE = MEMBERSHIP_PRICE_IDS.monthly;
 const ANNUAL_PRICE = MEMBERSHIP_PRICE_IDS.annual;
 const LEGACY_FREE = FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId;
+const COMPLIMENTARY =
+  COMPLIMENTARY_MEMBERSHIPS.complimentaryMembership.memberstackPlanId;
 const LEGACY_PAID_SHELL = LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId;
 const BETA = MEMBERSHIPS.beta.memberstackPlanId;
 
@@ -130,6 +135,68 @@ describe("hasMemberAccess — paid Memberstack memberships", () => {
       }),
     ).toBe("memberAccess");
     expect(needsLegacyPaidThroughForAccess(res)).toBe(false);
+  });
+});
+
+describe("hasMemberAccess — complimentary membership", () => {
+  it("grants access for an active complimentary plan without a Watson date", () => {
+    const res = payload({ planId: COMPLIMENTARY });
+    expect(hasMemberAccess(res)).toBe(true);
+    expect(getViewerAccessState(res)).toBe("memberAccess");
+    expect(needsLegacyPaidThroughForAccess(res)).toBe(false);
+    expect(canAccessCourse("member", res)).toBe(true);
+    expect(canAccessCourse("purchase", res, { courseSlug: "86" })).toBe(true);
+    expect(
+      hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: [COMPLIMENTARY] }),
+    ).toBe(true);
+    expect(
+      decidePatternMembershipGate(
+        {
+          loggedIn: true,
+          memberId: "mem_test",
+          activePlanIds: [COMPLIMENTARY],
+          hasSystemAccess: true,
+          freeClaimsBySystem: {},
+        },
+        getViewerAccessState(res),
+      ).state,
+    ).toBe("member");
+  });
+
+  it("grants access for a trialing complimentary plan", () => {
+    const res = payload({ planId: COMPLIMENTARY, status: "TRIALING" });
+    expect(hasMemberAccess(res)).toBe(true);
+    expect(getViewerAccessState(res)).toBe("memberAccess");
+  });
+
+  it("denies an expired complimentary connection", () => {
+    const res = payload({ planId: COMPLIMENTARY, status: "EXPIRED", active: false });
+    expect(hasMemberAccess(res)).toBe(false);
+    expect(getViewerAccessState(res)).toBe("loggedInNoAccess");
+  });
+
+  it("keeps access when legacy Watson date is expired but complimentary is active", () => {
+    const res = payload({
+      planConnections: [
+        { planId: LEGACY_FREE, status: "ACTIVE", active: true },
+        { planId: COMPLIMENTARY, status: "ACTIVE", active: true },
+      ],
+    });
+    expect(
+      hasMemberAccess(res, { legacyPaidThroughYmd: "2020-01-01", todayYmd: TODAY_YMD }),
+    ).toBe(true);
+  });
+
+  it("denies a canceled complimentary plan and an expired legacy date", () => {
+    const res = payload({
+      planConnections: [
+        { planId: LEGACY_FREE, status: "ACTIVE", active: true },
+        { planId: COMPLIMENTARY, status: "CANCELED", active: false },
+      ],
+    });
+    expect(
+      hasMemberAccess(res, { legacyPaidThroughYmd: "2020-01-01", todayYmd: TODAY_YMD }),
+    ).toBe(false);
   });
 });
 

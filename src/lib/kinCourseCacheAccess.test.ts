@@ -9,7 +9,12 @@ import {
   PAID_SK840_COURSE_PLAN_ID,
   PAID_TH160_COURSE_PLAN_ID,
 } from "../config/legacyCourseEntitlements";
-import { CURRENT_MEMBER_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS, MEMBERSHIPS } from "../config/memberships";
+import {
+  COMPLIMENTARY_MEMBER_PLAN_IDS,
+  CURRENT_MEMBER_PLAN_IDS,
+  LEGACY_PAID_MEMBER_PLAN_IDS,
+  MEMBERSHIPS,
+} from "../config/memberships";
 import {
   KIN_COURSE_ACCESS_SESSION_KEY,
   KIN_TAITEXMA_160_COURSE_SLUG,
@@ -116,7 +121,11 @@ describe("kinCourseCacheUiFromMember uses live course entitlement", () => {
 
 describe("inline cache script stays aligned with canAccessCourse", () => {
   it("embeds the live membership allow list, SK840 mapping, and session reuse key", () => {
-    const paidPlanIds = [...CURRENT_MEMBER_PLAN_IDS, ...LEGACY_PAID_MEMBER_PLAN_IDS];
+    const paidPlanIds = [
+      ...CURRENT_MEMBER_PLAN_IDS,
+      ...LEGACY_PAID_MEMBER_PLAN_IDS,
+      ...COMPLIMENTARY_MEMBER_PLAN_IDS,
+    ];
     const vars = kinCourseCacheAccessVars(LEGACY_SK840_COURSE_SLUG);
     expect(vars.planIds).toEqual(paidPlanIds);
     expect(vars.slugByPlan[LEGACY_SK840_COURSE_PLAN_ID]).toContain(LEGACY_SK840_COURSE_SLUG);
