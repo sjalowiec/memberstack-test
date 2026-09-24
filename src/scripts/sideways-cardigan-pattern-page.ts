@@ -38,9 +38,15 @@ import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternP
 import { buildSidewaysCardiganSummaryEditFromPatternHref } from "../lib/patterns/sidewaysCardiganPatternNavigation";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { bindPatternSectionCollapse } from "../lib/patterns/sleevelessPatternDisplayHtml";
+import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
+import { SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS } from "../lib/patterns/sidewaysCardiganPatternInpageNav";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import { initChartProgressTracking } from "./chartProgressTracker";
 import { getCurrentPattern } from "../lib/patterns/patternStorage";
+
+function syncSidewaysPatternInpageNav(): void {
+  syncPatternInpageNav({ items: SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS });
+}
 
 function renderView(): void {
   stampSidewaysCardiganWorkingDraftFromPage();
@@ -74,6 +80,7 @@ function renderView(): void {
       sleeveErrorEl.textContent = "";
     }
     if (diagramHost instanceof HTMLElement) diagramHost.replaceChildren();
+    syncSidewaysPatternInpageNav();
   };
 
   let view;
@@ -163,6 +170,7 @@ function renderView(): void {
 
   fillSidewaysPatternDiagrams(view);
   fillSidewaysSleeveDiagrams(view);
+  syncSidewaysPatternInpageNav();
 }
 
 function section(obj: unknown): Record<string, unknown> {
