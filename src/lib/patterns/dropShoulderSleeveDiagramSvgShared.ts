@@ -176,6 +176,25 @@ export function dropShoulderSleeveBodyPath(frame: DropShoulderSleeveDiagramFrame
   ].join(" ");
 }
 
+/** Left or right outline x at a diagram y. Cuff sides are vertical; the body side is the slope. */
+export function dropShoulderSleeveSideXAtY(
+  frame: DropShoulderSleeveDiagramFrame,
+  y: number,
+  side: "left" | "right",
+): number {
+  const wristX = side === "left" ? frame.wristLeft : frame.wristRight;
+  const upperX = side === "left" ? frame.upperLeft : frame.upperRight;
+  const cuffTop = Math.min(frame.wristY, frame.cuffJoinY);
+  const cuffBottom = Math.max(frame.wristY, frame.cuffJoinY);
+  if (y >= cuffTop && y <= cuffBottom) return wristX;
+  const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
+  const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
+  const span = bodyBottom - bodyTop || 1;
+  const t = Math.max(0, Math.min(1, (y - bodyTop) / span));
+  const cuffIsBodyTop = frame.cuffJoinY <= frame.upperArmY;
+  return cuffIsBodyTop ? wristX + (upperX - wristX) * t : upperX + (wristX - upperX) * t;
+}
+
 export function drawSleeveCuffJoin(frame: DropShoulderSleeveDiagramFrame): string {
   return (
     `<line data-sleeve-cuff-join="true" x1="${fmtNum(frame.cuffJoinLeft)}" y1="${fmtNum(frame.cuffJoinY)}"` +

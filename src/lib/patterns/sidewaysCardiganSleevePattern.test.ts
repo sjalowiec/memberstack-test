@@ -95,6 +95,17 @@ function texts(svg: string, role: string): string[] {
     .map((match) => (match[2] ?? "").replace(/<[^>]+>/g, ""));
 }
 
+function workingNotationTexts(svg: string): string[] {
+  return [...svg.matchAll(/<text\b([^>]*)>([\s\S]*?)<\/text>/g)]
+    .filter((match) => /data-role="(?:row-span|sleeve-shaping)"/.test(match[1] ?? ""))
+    .map((match) => ({
+      order: Number(/data-knit-order="(\d+)"/.exec(match[1] ?? "")?.[1] ?? 0),
+      text: (match[2] ?? "").replace(/<[^>]+>/g, ""),
+    }))
+    .sort((a, b) => a.order - b.order)
+    .map((item) => item.text);
+}
+
 function fontSizes(svg: string): number[] {
   return [...svg.matchAll(/font-size="(\d+(?:\.\d+)?)"/g)].map((match) => Number(match[1]));
 }
@@ -169,9 +180,13 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(cuff.sts).not.toContain("Increase both edges");
     expect(texts(cuff.notation, "cast-on")).toEqual([`${formatCastOnNotation(calc.wristSts)} sts`]);
     expect(texts(cuff.notation, "bind-off")).toEqual([formatBindOffNotation(calc.topSts)]);
-    expect(texts(cuff.notation, "sleeve-shaping-left").join(" ")).toContain(notation);
-    expect(texts(cuff.notation, "sleeve-shaping-left").join(" ")).toBe(attr(cuff.notation, "data-shaping-notation"));
-    expect(cuff.notation).toContain('data-knit-direction="up"');
+    expect(workingNotationTexts(cuff.notation).join(" ")).toContain(notation);
+    expect(workingNotationTexts(cuff.notation).join(" ")).toBe(attr(cuff.notation, "data-shaping-notation"));
+    expect(cuff.notation).toContain('data-both-edges="true"');
+    expect(texts(cuff.notation, "sleeve-shaping")).toHaveLength(1);
+    expect(cuff.notation).not.toContain('data-knit-direction=');
+    expect(cuff.notation).not.toContain('data-role="sleeve-direction"');
+    expect(cuff.sts).toContain('data-knit-direction="up"');
     expect(cuff.notation).not.toContain("Increase both edges");
     expect(texts(cuff.sts, "sleeve-direction")).toEqual(["Cuff Up"]);
   });
@@ -215,9 +230,13 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(down.sts).not.toContain(cuff.sts.match(/<path[^>]*d="([^"]+)"/)?.[1] ?? "missing-cuff-path");
     expect(texts(down.notation, "cast-on")).toEqual([`${formatCastOnNotation(calc.topSts)} sts`]);
     expect(texts(down.notation, "bind-off")).toEqual([formatBindOffNotation(calc.wristSts)]);
-    expect(texts(down.notation, "sleeve-shaping-left").join(" ")).toContain(notation);
-    expect(texts(down.notation, "sleeve-shaping-left").join(" ")).toBe(attr(down.notation, "data-shaping-notation"));
-    expect(down.notation).toContain('data-knit-direction="up"');
+    expect(workingNotationTexts(down.notation).join(" ")).toContain(notation);
+    expect(workingNotationTexts(down.notation).join(" ")).toBe(attr(down.notation, "data-shaping-notation"));
+    expect(down.notation).toContain('data-both-edges="true"');
+    expect(texts(down.notation, "sleeve-shaping")).toHaveLength(1);
+    expect(down.notation).not.toContain('data-knit-direction=');
+    expect(down.notation).not.toContain('data-role="sleeve-direction"');
+    expect(down.sts).toContain('data-knit-direction="up"');
     expect(attr(down.notation, "data-sleeve-frame")).toBe("top-down");
     expect(down.notation).not.toContain("Decrease both edges");
     expect(attr(down.sts, "data-shaping-notation")).toContain(notation);
@@ -381,7 +400,15 @@ describe("sideways sleeve diagram tabs stay readable", () => {
       expect(sizes.length).toBeGreaterThan(0);
       expect(Math.min(...sizes)).toBeGreaterThanOrEqual(12);
       expect(svg).not.toMatch(/\bNaN\b/);
-      expect(texts(svg, "sleeve-direction").join("")).toContain(svg === view.notation ? "Cuff Up" : "Cuff Up");
+      if (svg === view.sts) {
+        expect(texts(svg, "sleeve-direction").join("")).toContain("Cuff Up");
+        expect(svg).toContain('data-knit-direction="up"');
+      } else {
+        expect(texts(svg, "sleeve-direction")).toEqual([]);
+        expect(svg).not.toContain('data-knit-direction=');
+        expect(svg).not.toContain(">Cuff Up<");
+        expect(svg).not.toContain(">Top Down<");
+      }
       if (svg === view.notation) {
         expect(texts(svg, "cast-on").join("")).not.toBe("");
         expect(texts(svg, "bind-off").join("")).not.toBe("");

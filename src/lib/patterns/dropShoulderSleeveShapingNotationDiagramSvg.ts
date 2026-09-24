@@ -21,7 +21,6 @@ import {
   DS_FW_TITLE,
   DS_MUTED,
   DS_STROKE,
-  DS_VB_H,
   escapeXml,
   fmtNum,
   textFont,
@@ -30,15 +29,13 @@ import {
 import {
   DS_FS_NOTATION,
   DS_FS_RC,
-  DS_RC_GUTTER_X,
   dropShoulderNotationFontFace,
 } from "./dropShoulderShapingNotationDiagramShared";
+import { dropShoulderSleeveBodyRowSpans } from "./dropShoulderSleeveShapingChart";
 import {
-  shapingNotationRcText,
-  sleeveRcLandmarkY,
-  sleeveShapingRcLandmarks,
-  spreadRcLabelYs,
-} from "./shapingNotationRcLandmarks";
+  layoutSleeveShapingNotationLabels,
+  renderSleeveShapingRcLandmarks,
+} from "./sleeveShapingNotationLayout";
 import {
   buildDropShoulderSleeveFrame,
   dropShoulderSleeveBodyPath,
@@ -65,88 +62,47 @@ function notationText(
   x: number,
   y: number,
   anchor: "middle" | "start" | "end" = "middle",
+  extra = "",
 ): string {
   if (!label) return "";
   return (
-    `<text data-role="${escapeXml(role)}" data-notation="${escapeXml(label)}" x="${fmtNum(x)}" y="${fmtNum(y)}"` +
-    ` text-anchor="${anchor}" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}>${escapeXml(label)}</text>`
+    `<text data-role="${escapeXml(role)}" x="${fmtNum(x)}" y="${fmtNum(y)}"` +
+    ` text-anchor="${anchor}" fill="${DS_MUTED}" ${textFont(DS_FS_NOTATION)}${extra}>${escapeXml(label)}</text>`
   );
 }
 
-function drawSleeveRcLandmarks(
+function drawSleeveNotationLabels(
   frame: DropShoulderSleeveDiagramFrame,
   model: DropShoulderSleeveStitchesRowsModel,
+  repl: Record<string, string>,
 ): string {
-  const input = {
+  const spans = dropShoulderSleeveBodyRowSpans({
     topSts: model.topStitches,
     wristSts: model.wristStitches,
     cuffRows: model.cuffRows,
     sleeveBodyRows: model.sleeveBodyRows,
     sleeveTotalRows: model.sleeveTotalRows,
     direction: model.direction,
-  };
-  const landmarks = sleeveShapingRcLandmarks(input);
-  const rawYs = landmarks.map((landmark) =>
-    sleeveRcLandmarkY({
-      direction: model.direction,
-      landmark,
-      wristY: frame.wristY,
-      upperArmY: frame.upperArmY,
-      cuffJoinY: frame.cuffJoinY,
-      cuffRows: model.cuffRows,
-      sleeveBodyRows: model.sleeveBodyRows,
-    }),
-  );
-  const order = rawYs
-    .map((y, index) => ({ y, index }))
-    .sort((a, b) => a.y - b.y);
-  const spread = spreadRcLabelYs(
-    order.map((item) => item.y),
-    DS_FS_RC + 2,
-  );
-  const ys = rawYs.slice();
-  order.forEach((item, spreadIndex) => {
-    ys[item.index] = spread[spreadIndex]!;
   });
-  return landmarks
-    .map((landmark, index) =>
-      shapingNotationRcText({
-        landmark,
-        x: DS_RC_GUTTER_X,
-        y: ys[index]!,
-        size: DS_FS_RC,
-        anchor: "end",
-        fill: DS_MUTED,
-        font: DS_FONT,
-        escape: escapeXml,
-        formatNumber: fmtNum,
-      }),
-    )
+  const shaping = (repl["jp-sleeve"] ?? "").split(" ").filter(Boolean);
+  const tokens = [
+    spans.rowsBeforeShaping > 0 ? `${spans.rowsBeforeShaping}r` : "",
+    ...shaping,
+    spans.rowsAfterShaping > 0 ? `${spans.rowsAfterShaping}r` : "",
+  ].filter(Boolean);
+  return layoutSleeveShapingNotationLabels({
+    frame,
+    direction: model.direction,
+    sleeveBodyRows: model.sleeveBodyRows,
+    cuffLabel: repl["jp-cuff"] ?? "",
+    castOnLabel: repl["jp-caston"] ?? "",
+    bindOffLabel: repl["jp-sleeve_cap_sts"] ?? "",
+    workingTokens: tokens,
+    fontSize: DS_FS_NOTATION,
+    bindOffRole: "sleeve-cap-sts",
+  })
+    .map((label) => notationText(label.role, label.text, label.x, label.y, label.anchor, label.extra))
     .join("");
-}
-
-function drawSleeveNotationLabels(
-  frame: DropShoulderSleeveDiagramFrame,
-  repl: Record<string, string>,
-): string {
-  const castOn = repl["jp-caston"] ?? "";
-  const cuff = repl["jp-cuff"] ?? "";
-  const sleeve = repl["jp-sleeve"] ?? "";
-  const capSts = repl["jp-sleeve_cap_sts"] ?? "";
-  const cuffMidY = (frame.wristY + frame.cuffJoinY) / 2;
-  const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
-  const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
-  const shapingY = bodyTop + (bodyBottom - bodyTop) * 0.32;
-  const bodyRight = Math.max(frame.wristRight, frame.upperRight);
-  const castOnY = Math.min(DS_VB_H - 8, frame.bottom + 16);
-  const capY = frame.top - 14;
-
-  return [
-    notationText("cast-on", castOn, frame.midX, castOnY),
-    notationText("sleeve-cap-sts", capSts, frame.midX, capY),
-    notationText("cuff", cuff, frame.midX, cuffMidY + 5),
-    notationText("sleeve-shaping", sleeve, bodyRight + 10, shapingY, "start"),
-  ].join("");
 }
 
 export function buildDropShoulderSleeveShapingNotationSvgFromModel(
@@ -160,8 +116,23 @@ export function buildDropShoulderSleeveShapingNotationSvgFromModel(
     `<path class="ds-sleeve-diagram__body" d="${dropShoulderSleeveBodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75"/>`,
     drawSleeveCuffJoin(frame),
     drawSleevePieceLabel(frame),
-    drawSleeveNotationLabels(frame, repl),
-    drawSleeveRcLandmarks(frame, model),
+    drawSleeveNotationLabels(frame, model, repl),
+    renderSleeveShapingRcLandmarks({
+      frame,
+      input: {
+        topSts: model.topStitches,
+        wristSts: model.wristStitches,
+        cuffRows: model.cuffRows,
+        sleeveBodyRows: model.sleeveBodyRows,
+        sleeveTotalRows: model.sleeveTotalRows,
+        direction: model.direction,
+      },
+      fontSize: DS_FS_RC,
+      fill: DS_MUTED,
+      font: DS_FONT,
+      escape: escapeXml,
+      formatNumber: fmtNum,
+    }),
   ].join("");
 
   return wrapGeneratedDiagramSvg({

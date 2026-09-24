@@ -291,8 +291,10 @@ describe("shaping notation diagrams show cumulative RC landmarks", () => {
       rcTexts(topSvg).find((mark) => mark.label === "first-shaping")?.rc,
     );
     expect(cuffSvg).toContain("s-");
-    expectNoRcCollision(cuffSvg, ["cast-on", "bind-off", "cuff", "sleeve-shaping-right"]);
-    expectNoRcCollision(topSvg, ["cast-on", "bind-off", "cuff", "sleeve-shaping-right"]);
+    expectNoRcCollision(cuffSvg, ["cast-on", "bind-off", "cuff", "sleeve-shaping", "row-span"]);
+    expectNoRcCollision(topSvg, ["cast-on", "bind-off", "cuff", "sleeve-shaping", "row-span"]);
+    expect(cuffSvg).not.toContain('data-role="sleeve-direction"');
+    expect(cuffSvg).not.toContain('data-knit-direction=');
   });
 
   it("adds drop-shoulder sleeve RC landmarks and leaves body notation on rc000", () => {
@@ -310,7 +312,9 @@ describe("shaping notation diagrams show cumulative RC landmarks", () => {
       rcTexts(top).find((mark) => mark.label === "first-shaping")?.rc,
     );
     expect(cuff).toMatch(/\d+s-\d+r-\d+x/);
-    expectNoRcCollision(cuff, ["cast-on", "sleeve-cap-sts", "cuff", "sleeve-shaping"]);
+    expectNoRcCollision(cuff, ["cast-on", "sleeve-cap-sts", "cuff", "sleeve-shaping", "row-span", "sleeve-piece-label"]);
+    expect(cuff).not.toContain('data-knit-direction=');
+    expect(top).not.toContain('data-role="sleeve-direction"');
     const back = tryBuildLiveDropShoulderBackNotationSvg(result)!;
     expect(back).toContain('data-role="rc-caston"');
     expect(back).toContain(formatRcNotation(0));

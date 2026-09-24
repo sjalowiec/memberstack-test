@@ -39,15 +39,12 @@ import {
 import {
   DS_FS_NOTATION,
   DS_FS_RC,
-  DS_RC_GUTTER_X,
   dropShoulderNotationFontFace,
 } from "./dropShoulderShapingNotationDiagramShared";
 import {
-  shapingNotationRcText,
-  sleeveRcLandmarkY,
-  sleeveShapingRcLandmarks,
-  spreadRcLabelYs,
-} from "./shapingNotationRcLandmarks";
+  layoutSleeveShapingNotationLabels,
+  renderSleeveShapingRcLandmarks,
+} from "./sleeveShapingNotationLayout";
 import {
   dropShoulderSleeveShapingRcSequence,
   formatDropShoulderSleeveWorkingNotation,
@@ -84,12 +81,13 @@ function diagramText(
   size: number,
   anchor: "middle" | "start" | "end" = "middle",
   extra = "",
+  fill = DS_STROKE,
 ): string {
   if (!label) return "";
   const fontSize = Math.max(MIN_READABLE_FONT, size);
   return (
     `<text data-role="${escapeXml(role)}" x="${fmtNum(x)}" y="${fmtNum(y)}"` +
-    ` text-anchor="${anchor}" fill="${DS_STROKE}" ${textFont(fontSize)}${extra}>${escapeXml(label)}</text>`
+    ` text-anchor="${anchor}" fill="${fill}" ${textFont(fontSize)}${extra}>${escapeXml(label)}</text>`
   );
 }
 
@@ -294,52 +292,6 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   return svg.replace(/<title>[\s\S]*?<\/title>/, "");
 }
 
-function drawSidewaysSleeveRcLandmarks(
-  frame: DropShoulderSleeveDiagramFrame,
-  calc: SidewaysCardiganSleeveCalc,
-): string {
-  const landmarks = sleeveShapingRcLandmarks({
-    topSts: calc.topSts,
-    wristSts: calc.wristSts,
-    cuffRows: calc.cuffRows,
-    sleeveBodyRows: calc.sleeveBodyRows,
-    sleeveTotalRows: calc.sleeveTotalRows,
-    direction: calc.direction,
-  });
-  const rawYs = landmarks.map((landmark) =>
-    sleeveRcLandmarkY({
-      direction: calc.direction,
-      landmark,
-      wristY: frame.wristY,
-      upperArmY: frame.upperArmY,
-      cuffJoinY: frame.cuffJoinY,
-      cuffRows: calc.cuffRows,
-      sleeveBodyRows: calc.sleeveBodyRows,
-    }),
-  );
-  const order = rawYs.map((y, index) => ({ y, index })).sort((a, b) => a.y - b.y);
-  const spread = spreadRcLabelYs(order.map((item) => item.y), DS_FS_RC + 2);
-  const ys = rawYs.slice();
-  order.forEach((item, spreadIndex) => {
-    ys[item.index] = spread[spreadIndex]!;
-  });
-  return landmarks
-    .map((landmark, index) =>
-      shapingNotationRcText({
-        landmark,
-        x: DS_RC_GUTTER_X,
-        y: ys[index]!,
-        size: DS_FS_RC,
-        anchor: "end",
-        fill: DS_MUTED,
-        font: DS_FONT,
-        escape: escapeXml,
-        formatNumber: fmtNum,
-      }),
-    )
-    .join("");
-}
-
 export function buildSidewaysCardiganSleeveShapingNotationSvg(
   args: SidewaysCardiganSleeveDiagramArgs,
 ): string | null {
@@ -352,67 +304,49 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
   const castOnY = edgeLabelY(frame, castOnEdge);
   const bindOffY = edgeLabelY(frame, bindOffEdge);
-  const castOnEdgeY = castOnEdge === "wrist" ? frame.wristY : frame.upperArmY;
-  const bindOffEdgeY = bindOffEdge === "wrist" ? frame.wristY : frame.upperArmY;
-  const knitToward = castOnEdgeY > bindOffEdgeY ? "up" : "down";
   const notation = formatDropShoulderSleeveWorkingNotation(chartInput(calc), {
     includeRowSpans: true,
   });
-  const notationParts = notation.split(" ").filter(Boolean);
-  const bodyTop = Math.min(frame.cuffJoinY, frame.upperArmY);
-  const bodyBottom = Math.max(frame.cuffJoinY, frame.upperArmY);
-  const cuffMidY = (frame.wristY + frame.cuffJoinY) / 2;
   const castOn = `${formatCastOnNotation(castOnStitches(calc))} sts`;
   const bindOff = formatBindOffNotation(bindOffStitches(calc));
   const cuff = formatBodyRowsNotation(calc.cuffRows);
-  const startAtBottom = castOnEdgeY > bindOffEdgeY;
-  const edgeLabels = notationParts
-    .map((part, index) => {
-      const t = notationParts.length <= 1 ? 0.5 : index / (notationParts.length - 1);
-      const along = startAtBottom ? 1 - t : t;
-      const y = bodyTop + (bodyBottom - bodyTop) * (0.25 + along * 0.5);
-      const leftX = Math.min(frame.wristLeft, frame.upperLeft) + 12;
-      const rightX = Math.max(frame.wristRight, frame.upperRight) + 8;
-      return (
-        diagramText("sleeve-shaping-left", part, leftX, y, DS_FS_NOTATION, "start", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`) +
-        diagramText("sleeve-shaping-right", part, rightX, y, DS_FS_NOTATION, "start", ` data-notation="${escapeXml(part)}" data-knit-order="${index}"`)
-      );
-    })
+  const edgeLabels = layoutSleeveShapingNotationLabels({
+    frame,
+    direction: calc.direction,
+    sleeveBodyRows: calc.sleeveBodyRows,
+    cuffLabel: cuff,
+    castOnLabel: castOn,
+    bindOffLabel: bindOff,
+    workingTokens: notation.split(" ").filter(Boolean),
+    fontSize: DS_FS_NOTATION,
+  })
+    .map((label) =>
+      diagramText(
+        label.role,
+        label.text,
+        label.x,
+        label.y,
+        DS_FS_NOTATION,
+        label.anchor,
+        label.extra,
+        DS_MUTED,
+      ),
+    )
     .join("");
 
   const body = [
     dropShoulderNotationFontFace(),
     silhouette(frame),
-    diagramText("sleeve-direction", directionLabel, frame.midX, (bodyTop + bodyBottom) / 2, DS_FS_MEASURE),
-    workingDirectionArrow(frame, knitToward),
-    diagramText(
-      "cast-on",
-      castOn,
-      frame.midX,
-      castOnY,
-      DS_FS_NOTATION,
-      "middle",
-      ` data-knit-edge="start" data-notation="${escapeXml(castOn)}"`,
-    ),
-    diagramText(
-      "bind-off",
-      bindOff,
-      frame.midX,
-      bindOffY,
-      DS_FS_NOTATION,
-      "middle",
-      ` data-knit-edge="end" data-notation="${escapeXml(bindOff)}"`,
-    ),
-    diagramText(
-      "cuff",
-      cuff,
-      frame.wristRight + 12,
-      cuffMidY,
-      DS_FS_NOTATION,
-      "start",
-    ),
     edgeLabels,
-    drawSidewaysSleeveRcLandmarks(frame, calc),
+    renderSleeveShapingRcLandmarks({
+      frame,
+      input: chartInput(calc),
+      fontSize: DS_FS_RC,
+      fill: DS_MUTED,
+      font: DS_FONT,
+      escape: escapeXml,
+      formatNumber: fmtNum,
+    }),
   ].join("");
 
   return wrapGeneratedDiagramSvg({
