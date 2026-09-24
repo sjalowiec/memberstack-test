@@ -605,6 +605,9 @@ function initHatPatternSummaryWorkspace(root: HTMLElement): void {
         }
         applyPersistChrome();
         if (resolveHatSummaryAfterPersistNext(written.persist) === "confirm") {
+          // Members stay on the confirmation dialog, so record the builder
+          // generation before that return. The token is one-shot.
+          await recordHatGenerationIfNeeded();
           const confirmationChoice = await promptEditPatternSaveConfirmation(root);
           if (confirmationChoice === "view") {
             navigateAfterPrimarySuccess();
