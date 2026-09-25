@@ -98,7 +98,7 @@ function emptyCopy(current: ContactMessageFilter): string {
                 <th>Source</th>
                 <th>Status</th>
                 <th>Open</th>
-                <th>Actions</th>
+                <th class="watson-contact__sticky">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -140,7 +140,7 @@ function emptyCopy(current: ContactMessageFilter): string {
                       Open message
                     </a>
                   </td>
-                  <td data-label="Actions">
+                  <td class="watson-contact__sticky" data-label="Actions">
                     <div class="watson-contact__actions">
                       {
                         message.status === "new" ? (
@@ -202,6 +202,21 @@ function emptyCopy(current: ContactMessageFilter): string {
 
   .watson-contact__table {
     min-width: 40rem;
+    /* separate keeps the pinned Actions cells sticky inside the horizontal scroller */
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .watson-contact__sticky {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--page-bg, #f7f8f7);
+    box-shadow: -8px 0 6px -6px rgba(15, 23, 42, 0.18);
+  }
+
+  .watson-contact__row--new .watson-contact__sticky {
+    background: #eff6ff;
   }
 
   .watson-contact__row--new {
@@ -342,6 +357,15 @@ function emptyCopy(current: ContactMessageFilter): string {
     }
 
     .watson-contact__row--new td:first-child {
+      box-shadow: none;
+    }
+
+    .watson-contact__sticky,
+    .watson-contact__row--new .watson-contact__sticky {
+      position: static;
+      right: auto;
+      z-index: auto;
+      background: transparent;
       box-shadow: none;
     }
   }
