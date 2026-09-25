@@ -129,6 +129,24 @@ When creating a new reusable component:
 4. Add a small example if helpful
 
 
+SAVED PATTERN STICKY NAVIGATION
+
+Location:
+src/components/patterns/SavedPatternStickyNav.astro
+src/lib/patterns/patternInpageNav.ts
+
+Purpose:
+Sticky in-page navigation for every saved pattern page. Each pattern passes its own section links and Edit / Print actions. The bar adds a Top link back to the pattern header. On a narrow screen the section links scroll and the actions stay visible. The bar is omitted from print.
+
+Example:
+
+<SavedPatternStickyNav actionsAttrs={["data-sleeveless-pattern-actions"]}>
+  <button type="button" data-testid="button-edit-pattern">Edit Pattern</button>
+</SavedPatternStickyNav>
+
+
+---------------------------------------------------
+
 GLOSSARY TOOLTIP
 
 Location:

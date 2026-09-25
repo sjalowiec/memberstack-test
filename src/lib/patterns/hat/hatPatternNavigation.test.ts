@@ -142,7 +142,7 @@ describe("hat finished-pattern navigation markup", () => {
     expect(sleevelessPatternPage).toContain("data-pattern-workspace-new-pattern-trigger");
   });
 
-  it("keeps Edit Pattern and Print on the end group", () => {
+  it("keeps Edit Pattern in the sticky nav and Print on the pattern actions host", () => {
     expect(patternPage).toContain("data-hat-edit-open");
     expect(patternPage).toContain('data-testid="button-edit-pattern"');
     expect(patternPage).toContain("HAT_SUMMARY_EDIT_FROM_PATTERN_HREF");

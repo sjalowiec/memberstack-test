@@ -55,6 +55,9 @@ import {
   applyPatternPrintPersonalizationToDom,
   triggerPatternPrint,
 } from "./patternPrintPersonalization.ts";
+import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
+import { HAT_PATTERN_INPAGE_NAV_ITEMS } from "../lib/patterns/hat/hatPatternInpageNav";
+import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import hatSizingRows from "../data/sizing_hats.json";
 import type { HatDisplayUnit, HatPatternCalc } from "../lib/patterns/hat/hatMath";
 
@@ -125,6 +128,11 @@ function runHatPatternPrint(triggerEl: HTMLElement | null) {
 function mountEditAction() {
   const editBtn = document.querySelector("[data-hat-edit-open]");
   if (!(editBtn instanceof HTMLElement)) return;
+  if (isSavedPatternReadOnlyDocument()) {
+    editBtn.hidden = true;
+    editBtn.style.display = "none";
+    return;
+  }
   const projectId = readSavedPatternProjectIdFromUrl() || readHatActiveProjectId();
   if (editBtn instanceof HTMLAnchorElement) {
     editBtn.href = buildHatSummaryEditFromPatternHref(projectId);
@@ -380,6 +388,7 @@ export async function renderHatPattern() {
   }
   applyHatPatternSectionCollapseState(mount);
   bindHatPatternSectionCollapse(mount);
+  syncPatternInpageNav({ items: HAT_PATTERN_INPAGE_NAV_ITEMS });
 
   if (import.meta.env.DEV) {
     console.log("[hat-pattern] calc", {

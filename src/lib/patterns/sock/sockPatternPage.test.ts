@@ -134,8 +134,8 @@ describe("Summary Update Pattern → Pattern route", () => {
     expect(patternScript).toContain("initSockPairInstructionTabs");
     expect(patternScript).toContain("syncPatternInpageNav");
     expect(patternScript).toContain("sockPatternInpageNavItems");
-    expect(patternPage).toContain("data-sleeveless-pattern-inpage-nav");
-    expect(patternPage).toContain('aria-label="Jump to pattern section"');
+    expect(patternPage).toContain("SavedPatternStickyNav");
+    expect(patternPage).toContain("data-socks-pattern-actions");
     expect(patternScript).toContain("buildSockPatternDiagramTabsShellHtml");
     expect(patternScript).toContain("buildSockPatternDiagramSvg");
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");

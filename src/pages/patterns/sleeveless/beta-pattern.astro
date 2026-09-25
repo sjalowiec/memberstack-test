@@ -3,6 +3,7 @@ import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
 import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
 import ActionBar from "../../../components/wizards/ActionBar.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 
@@ -66,12 +67,7 @@ import "../../../styles/patterns/pattern-app-shell.css";
             </SavedPatternHeader>
 
             <div id="pattern-content" data-pattern-content>
-              <nav
-                class="sleeveless-pattern-inpage-nav no-print"
-                data-sleeveless-pattern-inpage-nav
-                aria-label="Jump to pattern section"
-                hidden
-              ></nav>
+              <SavedPatternStickyNav />
               <div class="sleeveless-pattern-mount" data-sleeveless-mount>
                 <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>
               </div>
