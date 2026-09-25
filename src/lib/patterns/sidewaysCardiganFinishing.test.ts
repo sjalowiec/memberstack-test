@@ -6,6 +6,8 @@ import {
   readSidewaysBandGauge,
   renderSidewaysCardiganBandSectionHtml,
   renderSidewaysFinishingSectionHtml,
+  nearestOddPositiveStitches,
+  sidewaysCardiganBandMarkers,
   sidewaysCardiganBandNumbers,
   sidewaysCardiganFrontNeckOpeningInches,
   sidewaysFoldedHemCastOnSentence,
@@ -74,8 +76,19 @@ describe("sideways folded hem and cardigan band", () => {
       sweaterStitchesPerInch: 5,
       sweaterRowsPerInch: 7,
     });
-    expect(sweater.castOnStitches).toBe(evenPositiveBodyStitches(4 * 5));
+    expect(sweater.castOnStitches).toBe(nearestOddPositiveStitches(4 * 5));
+    expect(nearestOddPositiveStitches(28)).toBe(29);
     expect(sweater.rows).toBe(inchesToRows(opening.totalInches, 7));
+    const markers = sidewaysCardiganBandMarkers(opening, 7);
+    expect(markers.map((marker) => marker.inches)).toEqual([
+      opening.frontEdgeInches,
+      opening.frontEdgeInches + opening.vSlopeInches,
+      opening.totalInches - opening.frontEdgeInches - opening.vSlopeInches,
+      opening.totalInches - opening.frontEdgeInches,
+    ]);
+    expect(markers.map((marker) => marker.rows)).toEqual(
+      markers.map((marker) => inchesToRows(marker.inches, 7)),
+    );
     expect(sweater.stitchGaugeSource).toBe("sweater");
     const html = renderSidewaysCardiganBandSectionHtml({
       calc: view.calc,
@@ -83,10 +96,30 @@ describe("sideways folded hem and cardigan band", () => {
       rowsPerInch: 7,
     });
     expect(html).toContain(`Cast on ${sweater.castOnStitches} stitches`);
-    expect(html).toContain(`Knit ${sweater.rows} rows`);
+    expect(html).toContain(`sideways-band-counts__action">Cast on ${sweater.castOnStitches} stitches`);
+    expect(html).toContain(`sideways-band-counts__action">Knit approximately ${sweater.rows} rows`);
+    expect(html).toContain(`${sweater.rows} rows is an approximate starting length`);
+    expect(html).toContain("update automatically as you enter your gauge");
+    expect(html).toContain(
+      "Knit a few extra rows and scrap off the live stitches. Pin the band around the opening, matching its markers to the V-neck starts and shoulder seams.",
+    );
+    expect(html).not.toContain("Recalculate");
+    for (const marker of markers) {
+      expect(html).toContain(`Place a marker at approximately row ${marker.rows}.`);
+    }
+    expect(markers[0]!.rows).toBeLessThan(markers[1]!.rows);
+    expect(markers[1]!.rows).toBeLessThan(markers[2]!.rows);
+    expect(markers[2]!.rows).toBeLessThan(markers[3]!.rows);
+    expect(markers[3]!.rows).toBeLessThan(sweater.rows);
+    expect(html).toContain("Keep the center needle out of work throughout the strip.");
+    expect(html).not.toContain("about 2 inches from either edge");
+    expect(html).not.toMatch(/leave needle \d+/);
     expect(html).toContain("sweater gauge");
     expect(html).toContain("Do not hang or pick up");
-    expect(html).toContain("Using a different gauge for your band?");
+    expect(html).toContain("<summary>Use a different gauge for the band</summary>");
+    expect(nearestOddPositiveStitches(4 * 7)).toBe(29);
+    expect(html).not.toContain("Using a different gauge for your band?");
+    expect(html).not.toMatch(/<details[^>]*\sopen/);
     expect(html.match(/FRONT AND NECK BAND/g)).toHaveLength(1);
   });
 
@@ -97,15 +130,37 @@ describe("sideways folded hem and cardigan band", () => {
       sweaterRowsPerInch: 7,
       bandGauge: { stitchesPerInch: 4, rowsPerInch: 6 },
     });
-    expect(band.castOnStitches).toBe(evenPositiveBodyStitches(4 * 4));
+    expect(band.castOnStitches).toBe(nearestOddPositiveStitches(4 * 4));
     expect(band.rows).toBe(inchesToRows(opening.totalInches, 6));
     expect(band.rows).not.toBe(inchesToRows(opening.totalInches, 7));
+    const markers = sidewaysCardiganBandMarkers(opening, 6);
+    expect(markers.map((marker) => marker.rows)).toEqual(
+      markers.map((marker) => inchesToRows(marker.inches, 6)),
+    );
+    expect(markers.map((marker) => marker.rows)).not.toEqual(
+      sidewaysCardiganBandMarkers(opening, 7).map((marker) => marker.rows),
+    );
     const html = renderSidewaysCardiganBandSectionHtml({
       calc: view.calc,
       stitchesPerInch: 5,
       rowsPerInch: 7,
       bandGauge: { stitchesPerInch: 4, rowsPerInch: 6 },
     });
+    expect(html).toContain(`Cast on ${band.castOnStitches} stitches`);
+    expect(html).toContain(`Knit approximately ${band.rows} rows`);
+    for (const marker of markers) {
+      expect(html).toContain(`Place a marker at approximately row ${marker.rows}.`);
+    }
+    expect(markers[3]!.rows).toBeLessThan(band.rows);
+    const cm = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      displayUnit: "cm",
+    });
+    expect(cm).toContain("cm)");
+    expect(cm).toContain(`Knit approximately ${inchesToRows(opening.totalInches, 7)} rows`);
+    expect(cm).not.toContain(`(${opening.totalInches.toFixed(1)} inches)`);
     expect(html).toContain("band stitch gauge (4 stitches per inch)");
     expect(html).toContain("band row gauge (6 rows per inch)");
     expect(html).toContain(`value="4"`);

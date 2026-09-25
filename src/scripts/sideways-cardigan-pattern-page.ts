@@ -294,6 +294,7 @@ function renderView(): void {
               stitchesPerInch: view.input.stitchesPerInch,
               rowsPerInch: view.input.rowsPerInch,
               bandGauge,
+              displayUnit: resolveSavedPatternMeasurementDisplayUnit(),
             })
           : "";
       finishingEl.innerHTML =
@@ -307,15 +308,14 @@ function renderView(): void {
     paintFinishing();
     if (finishingEl.dataset.sidewaysBandGaugeBound !== "true") {
       finishingEl.dataset.sidewaysBandGaugeBound = "true";
-      finishingEl.addEventListener("change", (event) => {
+      finishingEl.addEventListener("input", (event) => {
         const target = event.target;
         if (!(target instanceof HTMLInputElement)) return;
-        if (
-          target.dataset.sidewaysBandStitchesPerInch === undefined &&
-          target.dataset.sidewaysBandRowsPerInch === undefined
-        ) {
-          return;
-        }
+        const editingStitches = target.dataset.sidewaysBandStitchesPerInch !== undefined;
+        const editingRows = target.dataset.sidewaysBandRowsPerInch !== undefined;
+        if (!editingStitches && !editingRows) return;
+        const raw = target.value;
+        const caret = target.selectionStart;
         const root = finishingEl;
         const stitchInput = root.querySelector("[data-sideways-band-stitches-per-inch]");
         const rowInput = root.querySelector("[data-sideways-band-rows-per-inch]");
@@ -328,6 +328,18 @@ function renderView(): void {
         savePatternData("style", stored);
         updatePatternSection("style", stored);
         paintFinishing();
+        const gauge = finishingEl.querySelector("[data-sideways-band-gauge]");
+        if (gauge instanceof HTMLDetailsElement) gauge.open = true;
+        const next = finishingEl.querySelector(
+          editingStitches
+            ? "[data-sideways-band-stitches-per-inch]"
+            : "[data-sideways-band-rows-per-inch]",
+        );
+        if (next instanceof HTMLInputElement) {
+          next.value = raw;
+          next.focus();
+          if (caret !== null) next.setSelectionRange(caret, caret);
+        }
       });
     }
   }

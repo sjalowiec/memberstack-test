@@ -320,6 +320,18 @@
     font-size: 1.05em;
   }
 
+  .sideways-band-counts {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #111827;
+  }
+
+  .sideways-band-counts__action {
+    display: block;
+  }
+
   /*
    * Row Counter Reset — required action marker (NOT a pattern tip).
    * Intentionally distinct from `.pattern-tip`: full accent border, accent
