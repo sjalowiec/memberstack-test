@@ -22,6 +22,9 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL =
 
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC = "/images/patterns/sideways.png";
 
+/** Pattern workspace header photo. Stays on the original render. */
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC = "/images/patterns/sideways.png";
+
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_MEMBER_CTA_LABEL = "Create My Pattern";
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_SIGN_IN_LABEL = "Already a member? Sign in";
 

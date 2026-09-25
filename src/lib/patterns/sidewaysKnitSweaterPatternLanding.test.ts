@@ -7,6 +7,7 @@ import {
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_MEMBER_CTA_LABEL,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_PATH,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_SIGN_IN_LABEL,
 } from "./sidewaysKnitSweaterPatternLanding";
@@ -59,6 +60,15 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       true,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC).toBe("/images/patterns/sideways.png");
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.image.src).toBe(
+      SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC,
+    );
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.image.alt).toBe(
+      "A machine-knit sideways sweater",
+    );
+    expect(existsSync(resolve("public/images/patterns/soft_sideways.png"))).toBe(true);
+    expect(existsSync(resolve(`public${SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC}`))).toBe(true);
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC).toBe("/images/patterns/sideways.png");
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.seo.canonicalUrl).toBe(
       SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL,
     );
