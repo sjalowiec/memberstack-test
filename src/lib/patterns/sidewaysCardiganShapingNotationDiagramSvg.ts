@@ -26,6 +26,7 @@ import {
   formatDropShoulderSleeveWorkingNotation,
 } from "./dropShoulderSleeveShapingChart";
 import { compressSlopeSequence } from "./legoBlocks/slopeShaping";
+import { withFittedPatternDiagramViewBox } from "./legoBlocks/patternDiagramFit";
 import {
   formatRowBasedShapingNotation,
   rowBasedShapingNotation,
@@ -42,6 +43,7 @@ import type { SidewaysCardiganEditMeasurementFrame } from "./sidewaysCardiganEdi
 import {
   buildSidewaysCardiganPatternDiagramFrame,
   buildSidewaysCardiganPatternSilhouetteMarkup,
+  sidewaysSilhouetteDiagramRect,
   sidewaysCardiganPatternDiagramDataAttrs,
   sidewaysDiagramEdgeStitchCount,
   sidewaysKnitVisualY,
@@ -410,7 +412,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
           ),
         ]
       : [];
-  return [
+  const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline" data-not-row-based-reason="${escapeXml(ARMHOLE_SLIT_NOT_ROW_BASED)}" data-vneck-rows="${model.calc.halfNeckRows}"${sidewaysCardiganPatternDiagramDataAttrs(model, "shaping-notation")}>`,
     buildSidewaysCardiganPatternSilhouetteMarkup(model),
     textAt(
@@ -457,4 +459,5 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
     drawSidewaysGarmentRcLandmarks(model, frame, type, frame.hemX - 8),
     `</svg>`,
   ].join("");
+  return withFittedPatternDiagramViewBox(svg, sidewaysSilhouetteDiagramRect(frame));
 }

@@ -50,6 +50,7 @@ import {
   formatPatternDiagramMeasurement,
 } from "./patternStitchesRowsDiagramLabel";
 import { rowsToInches } from "./sleevelessRowAccounting";
+import { withFittedPatternDiagramViewBox, type DiagramRect } from "./legoBlocks/patternDiagramFit";
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
 
 export type SidewaysCardiganPatternDiagramModel = {
@@ -534,6 +535,13 @@ function svgDataAttrs(model: SidewaysCardiganPatternDiagramModel, mode: "sts-row
   );
 }
 
+export function sidewaysSilhouetteDiagramRect(frame: SidewaysCardiganEditMeasurementFrame): DiagramRect {
+  const top = sidewaysKnitVisualY(frame, frame.bottomY);
+  const bottom = sidewaysKnitVisualY(frame, frame.topY);
+  const right = frame.garmentStyle === "pullover" ? frame.sleeve.farX : frame.neckX;
+  return { x: frame.hemX, y: top, width: Math.max(1, right - frame.hemX), height: Math.max(1, bottom - top) };
+}
+
 export function buildSidewaysCardiganPatternDiagramFrame(
   model: SidewaysCardiganPatternDiagramModel,
 ): SidewaysCardiganEditMeasurementFrame {
@@ -556,12 +564,13 @@ export function buildSidewaysCardiganPatternDiagramSvg(
     model.garmentStyle === "pullover"
       ? drawPulloverStsRows(frame, model, canvas.type)
       : drawCardiganStsRows(frame, model, canvas.type);
-  return [
+  const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline"${svgDataAttrs(model, "sts-rows")}>`,
     silhouetteMarkup(frame),
     labels,
     `</svg>`,
   ].join("");
+  return withFittedPatternDiagramViewBox(svg, sidewaysSilhouetteDiagramRect(frame));
 }
 
 export function buildSidewaysCardiganPatternSilhouetteMarkup(

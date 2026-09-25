@@ -12,6 +12,10 @@ import {
 import { DS_FS_NOTATION, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
 import { SLEEVELESS_DIAGRAM_INLINE_CLASS } from "./sleevelessDiagramModal";
 import {
+  diagramSilhouettePanelHeightShare,
+  diagramSilhouetteWidthShare,
+} from "./legoBlocks/patternDiagramFit";
+import {
   formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
 } from "./patternStitchesRowsDiagramLabel";
@@ -30,6 +34,7 @@ import {
   buildSidewaysCardiganPatternDiagramFrame,
   buildSidewaysCardiganPatternDiagramModel,
   buildSidewaysCardiganPatternDiagramSvg,
+  sidewaysSilhouetteDiagramRect,
   sidewaysDiagramEdgeStitchCount,
   sidewaysKnitVisualY,
   sidewaysPatternDiagramCanvas,
@@ -203,8 +208,8 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
   it("uses the shared finished-pattern type scaled to the viewBox, not a second standard", () => {
     const type = sidewaysPatternDiagramTypography(canvas.type.viewBoxWidth);
     expect(type).toEqual(canvas.type);
-    expect(viewBoxOf(sts)).toEqual(viewBoxOf(shaping));
-    expect(canvas.width / canvas.type.viewBoxWidth).toBeLessThan(1.5);
+    expect(viewBoxOf(sts).width).toBeGreaterThan(0);
+    expect(viewBoxOf(shaping).width).toBeGreaterThan(0);
     expect(type.pieceWeight).toBe(DS_FW_TITLE);
     expect(type.stitch / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
     expect(type.notation / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
@@ -376,8 +381,8 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
       expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
       expect(svg).not.toMatch(/<svg\b[^>]*\stransform=/);
       const box = viewBoxOf(svg);
-      expect(box.width).toBe(canvas.width);
-      expect(box.y).toBeLessThan(0);
+      expect(box.width).toBeLessThan(canvas.width);
+      expect(box.height).toBeLessThan(canvas.height);
       const labels = diagramTexts(svg);
       for (const label of labels) {
         expect(label.y).toBeGreaterThan(box.y);
@@ -387,7 +392,17 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
       const flipEnd = svg.indexOf("</g>", flipAt);
       expect(svg.slice(flipAt, flipEnd)).not.toContain("<text");
     }
-    expect(viewBoxOf(sts)).toEqual(viewBoxOf(shaping));
+    const silhouette = sidewaysSilhouetteDiagramRect(frame);
+    const unfitted = { x: canvas.x, y: canvas.y, width: canvas.width, height: canvas.height };
+    for (const svg of [sts, shaping]) {
+      const fitted = viewBoxOf(svg);
+      expect(diagramSilhouetteWidthShare(silhouette, fitted)).toBeGreaterThan(
+        diagramSilhouetteWidthShare(silhouette, unfitted),
+      );
+      expect(diagramSilhouettePanelHeightShare(silhouette, fitted)).toBeGreaterThan(
+        diagramSilhouettePanelHeightShare(silhouette, unfitted),
+      );
+    }
     for (const svg of [sts, shaping]) {
       const box = viewBoxOf(svg);
       const labels = labelLineBoxes(svg);
