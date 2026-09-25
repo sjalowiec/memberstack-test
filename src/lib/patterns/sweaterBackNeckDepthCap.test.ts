@@ -106,8 +106,8 @@ describe("sweater back neck depth cap — Men's 5X (chart 1.75″)", () => {
     const dropModel = buildDropShoulderBackStitchesRowsModel(drop, "in");
     expect(dropModel).not.toBeNull();
     expect(dropModel!.backNeckDepthRows).toBe(6);
-    expect(dropModel!.necklineDepthLabel).toBe("6 rows / 1 in");
-    expect(dropModel!.necklineDepthLabel).not.toBe("12 rows / 2 in");
+    expect(dropModel!.necklineDepthLabel).toBe("6 rows\n1 in");
+    expect(dropModel!.necklineDepthLabel).not.toBe("12 rows\n2 in");
 
     const sleevelessModel = buildSleevelessBackStsRowsDiagramModel(sleeveless, sleevelessData);
     expect(sleevelessModel).not.toBeNull();

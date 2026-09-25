@@ -3,6 +3,8 @@
  * Back and Front renderers use these helpers; they do not compute pattern math.
  */
 
+import { stitchesRowsLabelMarkup } from "./legoBlocks/stitchesRowsDiagramLabel";
+
 export const DS_VB_W = 430;
 export const DS_VB_H = 520;
 export const DS_FONT = "Poppins, system-ui, Arial, sans-serif";
@@ -65,6 +67,32 @@ export function fmtNum(n: number): string {
 export function textFont(size: number, weight?: number): string {
   const w = weight != null ? ` font-weight="${weight}"` : "";
   return `font-family="${DS_FONT}" font-size="${size}"${w}`;
+}
+
+const DS_LABEL_COUNT = 17;
+const DS_LABEL_MEASURE = 14;
+
+function countMeasureText(
+  label: string,
+  x: number,
+  y: number,
+  anchor: "start" | "middle" | "end",
+  extra = "",
+  transform?: string,
+): string {
+  return stitchesRowsLabelMarkup({
+    label,
+    x,
+    y,
+    anchor,
+    fill: DS_MUTED,
+    countSize: DS_LABEL_COUNT,
+    measureSize: DS_LABEL_MEASURE,
+    fontFamily: DS_FONT,
+    extra,
+    transform,
+    fmt: fmtNum,
+  });
 }
 
 export function endCap(x: number, y: number, vertical: boolean): string {
@@ -665,8 +693,6 @@ export function drawArmholeDepth(
   const y1 = frame.top;
   const y2 = frame.armholeMarkerY;
   const midY = (y1 + y2) / 2;
-  const title = escapeXml("Armhole depth");
-  const value = escapeXml(armholeDepthLabel);
   const garmentX = side === "right" ? frame.right : frame.left;
   const labelDir = side === "right" ? 1 : -1;
   return [
@@ -676,8 +702,15 @@ export function drawArmholeDepth(
     `<line x1="${fmtNum(x)}" y1="${fmtNum(y1)}" x2="${fmtNum(x)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1.6" fill="none"/>`,
     endCap(x, y1, true),
     endCap(x, y2, true),
-    `<text transform="translate(${fmtNum(x + 12 * labelDir)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>${title}</text>`,
-    `<text transform="translate(${fmtNum(x + 28 * labelDir)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_MEASURE)}>${value}</text>`,
+    `<text transform="translate(${fmtNum(x + 12 * labelDir)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_STROKE}" ${textFont(DS_FS_TITLE, DS_FW_TITLE)}>Armhole depth</text>`,
+    countMeasureText(
+      armholeDepthLabel,
+      0,
+      0,
+      "middle",
+      "",
+      `translate(${fmtNum(x + 28 * labelDir)} ${fmtNum(midY)}) rotate(-90)`,
+    ),
     `</g>`,
   ].join("");
 }
@@ -698,7 +731,7 @@ export function drawBodyLength(
     `<line x1="${fmtNum(x)}" y1="${fmtNum(y1)}" x2="${fmtNum(x)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x, y1, true),
     endCap(x, y2, true),
-    `<text transform="translate(${fmtNum(labelX)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(bodyLengthLabel)}</text>`,
+    countMeasureText(bodyLengthLabel, 0, 0, "middle", "", `translate(${fmtNum(labelX)} ${fmtNum(midY)}) rotate(-90)`),
     `</g>`,
   ].join("");
 }
@@ -714,7 +747,7 @@ export function drawHemDepth(frame: DropShoulderDiagramFrame, hemDepthLabel: str
     `<line x1="${fmtNum(x)}" y1="${fmtNum(y1)}" x2="${fmtNum(x)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x, y1, true),
     endCap(x, y2, true),
-    `<text x="${fmtNum(x + 8)}" y="${fmtNum(midY + 4)}" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(hemDepthLabel)}</text>`,
+    countMeasureText(hemDepthLabel, x + 8, midY + 4, "start"),
     `</g>`,
   ].join("");
 }
@@ -732,7 +765,7 @@ export function drawBodyWidth(
     `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(left, y, false),
     endCap(right, y, false),
-    `<text x="${fmtNum(labelX)}" y="${fmtNum(y - 6)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(bodyWidthLabel)}</text>`,
+    countMeasureText(bodyWidthLabel, labelX, y - 8, "middle"),
     `</g>`,
   ].join("");
 }
@@ -752,7 +785,7 @@ export function drawHemWidth(
     `<line x1="${fmtNum(frame.hemLeft)}" y1="${fmtNum(y)}" x2="${fmtNum(frame.hemRight)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(frame.hemLeft, y, false),
     endCap(frame.hemRight, y, false),
-    `<text data-cast-on-width-label="true" x="${fmtNum((frame.hemLeft + frame.hemRight) / 2)}" y="${fmtNum(y + 16)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(hemStitchesLabel)}</text>`,
+    countMeasureText(hemStitchesLabel, (frame.hemLeft + frame.hemRight) / 2, y + 16, "middle", ` data-cast-on-width-label="true"`),
     `</g>`,
   ].join("");
 }
@@ -770,7 +803,7 @@ export function drawNecklineWidthDim(
     `<line x1="${fmtNum(x1)}" y1="${fmtNum(y)}" x2="${fmtNum(x2)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x1, y, false),
     endCap(x2, y, false),
-    `<text x="${fmtNum((x1 + x2) / 2)}" y="${fmtNum(y - 6)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineWidthLabel)}</text>`,
+    countMeasureText(necklineWidthLabel, (x1 + x2) / 2, y - 8, "middle"),
     `</g>`,
   ].join("");
 }
@@ -792,8 +825,21 @@ export function drawNecklineDepthDim(
   const towardCenter = frame.midX >= x ? 1 : -1;
   const label =
     placement === "along-line"
-      ? `<text data-neckline-depth-label="true" transform="translate(${fmtNum(x + 12 * towardCenter)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineDepthLabel)}</text>`
-      : `<text data-neckline-depth-label="true" x="${fmtNum((frame.neckLeftX + frame.neckRightX) / 2)}" y="${fmtNum(y2 + 14)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(necklineDepthLabel)}</text>`;
+      ? countMeasureText(
+          necklineDepthLabel,
+          0,
+          0,
+          "middle",
+          ` data-neckline-depth-label="true"`,
+          `translate(${fmtNum(x + 12 * towardCenter)} ${fmtNum(midY)}) rotate(-90)`,
+        )
+      : countMeasureText(
+          necklineDepthLabel,
+          (frame.neckLeftX + frame.neckRightX) / 2,
+          y2 + 14,
+          "middle",
+          ` data-neckline-depth-label="true"`,
+        );
   return [
     `<g data-neckline-depth-dim="true" data-neck-depth-top-y="${fmtNum(y1)}" data-neck-depth-bottom-y="${fmtNum(y2)}">`,
     `<line x1="${fmtNum(x)}" y1="${fmtNum(y1)}" x2="${fmtNum(x)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1.3" fill="none"/>`,

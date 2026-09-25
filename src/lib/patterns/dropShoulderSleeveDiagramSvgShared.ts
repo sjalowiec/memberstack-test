@@ -6,11 +6,12 @@
 
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import type { DropShoulderSleeveStitchesRowsModel } from "./dropShoulderSleeveDiagramModel";
+import { stitchesRowsLabelMarkup } from "./legoBlocks/stitchesRowsDiagramLabel";
 import {
   DS_ARROW,
   DS_BODY_MAX_H,
   DS_BODY_MAX_W,
-  DS_FS_SMALL,
+  DS_FONT,
   DS_MIN_SECTION,
   DS_MUTED,
   DS_PAD_BOTTOM,
@@ -18,9 +19,7 @@ import {
   DS_VB_W,
   DS_VB_H,
   endCap,
-  escapeXml,
   fmtNum,
-  textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
 
 export type DropShoulderSleeveDiagramFrame = {
@@ -217,7 +216,17 @@ function horizontalWidthDim(
     `<line x1="${fmtNum(left)}" y1="${fmtNum(y)}" x2="${fmtNum(right)}" y2="${fmtNum(y)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(left, y, false),
     endCap(right, y, false),
-    `<text x="${fmtNum(labelX)}" y="${fmtNum(labelY)}" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(label)}</text>`,
+    stitchesRowsLabelMarkup({
+      label,
+      x: labelX,
+      y: labelY,
+      anchor: "middle",
+      fill: DS_MUTED,
+      countSize: 17,
+      measureSize: 14,
+      fontFamily: DS_FONT,
+      fmt: fmtNum,
+    }),
     `</g>`,
   ].join("");
 }
@@ -269,7 +278,18 @@ function verticalDim(
     `<line x1="${fmtNum(x)}" y1="${fmtNum(y1)}" x2="${fmtNum(x)}" y2="${fmtNum(y2)}" stroke="${DS_ARROW}" stroke-width="1.4" fill="none"/>`,
     endCap(x, y1, true),
     endCap(x, y2, true),
-    `<text transform="translate(${fmtNum(labelX)} ${fmtNum(midY)}) rotate(-90)" text-anchor="middle" fill="${DS_MUTED}" ${textFont(DS_FS_SMALL)}>${escapeXml(label)}</text>`,
+    stitchesRowsLabelMarkup({
+      label,
+      x: 0,
+      y: 0,
+      anchor: "middle",
+      fill: DS_MUTED,
+      countSize: 17,
+      measureSize: 14,
+      fontFamily: DS_FONT,
+      transform: `translate(${fmtNum(labelX)} ${fmtNum(midY)}) rotate(-90)`,
+      fmt: fmtNum,
+    }),
     `</g>`,
   ].join("");
 }

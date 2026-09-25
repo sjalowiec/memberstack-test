@@ -260,6 +260,7 @@ function drawSidewaysGarmentRcLandmarks(
   frame: SidewaysCardiganEditMeasurementFrame,
   type: SidewaysPatternDiagramType,
   labelX: number,
+  canvas: { y: number; height: number },
 ): string {
   const slope = buildSidewaysVNeckSlopeSequence(
     model.calc.vNeckDepthStitches,
@@ -292,7 +293,7 @@ function drawSidewaysGarmentRcLandmarks(
       shapingNotationRcText({
         landmark,
         x: labelX,
-        y: ys[index]!,
+        y: Math.min(canvas.y + canvas.height - type.row, Math.max(canvas.y + type.row, ys[index]!)),
         size: type.row,
         anchor: "end",
         fill: DS_MUTED,
@@ -364,11 +365,16 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
     model.garmentStyle === "pullover"
       ? "Sideways pullover shaping notation diagram knitted upward from the underarm"
       : "Sideways cardigan shaping notation diagram knitted upward from center front";
+  const clampY = (y: number) => {
+    const min = canvas.y + type.notation;
+    const max = canvas.y + canvas.height - type.notation;
+    return Math.min(max, Math.max(min, y));
+  };
   const hold =
     model.garmentStyle === "cardigan"
       ? textAt(
           edgeX,
-          startEdge - type.notationGap,
+          clampY(startEdge - type.notationGap),
           formatHoldNotation(model.calc.vNeckDepthStitches),
           "jp-hold",
           type,
@@ -376,25 +382,39 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
           ` data-knit-edge="start"`,
         )
       : "";
+  const notationPitch = sidewaysNotationLinePitch(type) + Math.round(type.notation * 0.35);
   const vStacks = separateBottomUpStacks(
     y(vNeckCenterY(frame, "first")),
     firstV.length,
     y(vNeckCenterY(frame, "second")),
     secondV.length,
-    sidewaysNotationLinePitch(type) + Math.round(type.notation * 0.35),
+    notationPitch,
   );
+  if (model.garmentStyle === "pullover" && model.sleeveCalc) {
+    const sleeveY = y(frame.sleeve.attachY);
+    const firstSpan = stackSpan(vStacks.lower, firstV.length, notationPitch);
+    const secondSpan = stackSpan(vStacks.upper, secondV.length, notationPitch);
+    const overlapsSleeve =
+      sleeveY <= Math.max(firstSpan.bottom, secondSpan.bottom) &&
+      sleeveY >= Math.min(firstSpan.top, secondSpan.top) - notationPitch;
+    if (overlapsSleeve) {
+      const shift = sleeveY + notationPitch - Math.min(firstSpan.top, secondSpan.top);
+      vStacks.lower += shift;
+      vStacks.upper += shift;
+    }
+  }
   const backNeckX = frame.backNeckX - Math.max(8, Math.round(type.notation * 0.35));
   const sleeveLabels =
     model.garmentStyle === "pullover" && model.sleeveCalc
       ? [
           ...sleeveNotation.split(" ").filter(Boolean).map((part, index) =>
             textAt(
-              (frame.sleeve.attachX + frame.sleeve.farX) / 2,
+              frame.sleeve.farX + type.row * 0.35,
               y(frame.sleeve.attachY) - index * sidewaysNotationLinePitch(type),
               part,
               "jp-sleeve",
               type,
-              "middle",
+              "start",
               ` data-stack-order="${index}"${
                 sleeveSpans
                   ? ` data-rows-before="${sleeveSpans.rowsBeforeShaping}" data-rows-after="${sleeveSpans.rowsAfterShaping}"`
@@ -403,8 +423,8 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
             ),
           ),
           textAt(
-            frame.sleeve.farX + type.row,
-            y(frame.sleeve.attachY + type.row),
+            frame.sleeve.farX + type.row * 0.35,
+            stackSpan(vStacks.lower, firstV.length, notationPitch).bottom + sidewaysNotationLinePitch(type),
             cuffNotation,
             "jp-cuff",
             type,
@@ -417,7 +437,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
     buildSidewaysCardiganPatternSilhouetteMarkup(model),
     textAt(
       edgeX,
-      startEdge + type.notationGap,
+      clampY(startEdge + type.notationGap),
       formatCastOnNotation(edgeStitches),
       "jp-caston",
       type,
@@ -448,7 +468,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
     ),
     textAt(
       edgeX,
-      endEdge - type.notationGap,
+      clampY(endEdge - type.notationGap),
       formatBindOffNotation(edgeStitches),
       "jp-final-bo",
       type,
@@ -456,7 +476,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
       ` data-knit-edge="end" data-sts="${edgeStitches}"`,
     ),
     ...sleeveLabels,
-    drawSidewaysGarmentRcLandmarks(model, frame, type, frame.hemX - 8),
+    drawSidewaysGarmentRcLandmarks(model, frame, type, Math.max(canvas.x + type.row * 4, frame.hemX - 8), canvas),
     `</svg>`,
   ].join("");
   return withFittedPatternDiagramViewBox(svg, sidewaysSilhouetteDiagramRect(frame));

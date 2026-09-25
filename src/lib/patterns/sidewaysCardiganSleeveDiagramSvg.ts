@@ -56,8 +56,9 @@ import {
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
-  formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
+  stitchesRowsLabelMarkup,
 } from "./patternStitchesRowsDiagramLabel";
 import {
   formatBindOffNotation,
@@ -86,10 +87,24 @@ function diagramText(
 ): string {
   if (!label) return "";
   const fontSize = Math.max(MIN_READABLE_FONT, size);
-  return (
-    `<text data-role="${escapeXml(role)}" x="${fmtNum(x)}" y="${fmtNum(y)}"` +
-    ` text-anchor="${anchor}" fill="${fill}" ${textFont(fontSize)}${extra}>${escapeXml(label)}</text>`
-  );
+  if (!label.includes("\n")) {
+    return (
+      `<text data-role="${escapeXml(role)}" x="${fmtNum(x)}" y="${fmtNum(y)}"` +
+      ` text-anchor="${anchor}" fill="${fill}" ${textFont(fontSize)}${extra}>${escapeXml(label)}</text>`
+    );
+  }
+  return stitchesRowsLabelMarkup({
+    label,
+    x,
+    y,
+    anchor,
+    fill,
+    countSize: fontSize,
+    measureSize: Math.max(MIN_READABLE_FONT, Math.round(fontSize * 0.82)),
+    fontFamily: "Poppins, system-ui, Arial, sans-serif",
+    extra: ` data-role="${escapeXml(role)}"${extra}`,
+    fmt: fmtNum,
+  });
 }
 
 function stitchDimensionLabel(
@@ -97,7 +112,7 @@ function stitchDimensionLabel(
   inches: number | undefined,
   unit: MeasurementDisplayUnit,
 ): string {
-  return formatPatternDiagramCountLabel(stitches, "sts", formatPatternDiagramMeasurement(inches, unit));
+  return formatStitchesRowsDiagramLabel(stitches, "sts", formatPatternDiagramMeasurement(inches, unit));
 }
 
 function rowDimensionLabel(
@@ -105,7 +120,7 @@ function rowDimensionLabel(
   inches: number | undefined,
   unit: MeasurementDisplayUnit,
 ): string {
-  return formatPatternDiagramCountLabel(rows, "rows", formatPatternDiagramMeasurement(inches, unit));
+  return formatStitchesRowsDiagramLabel(rows, "rows", formatPatternDiagramMeasurement(inches, unit));
 }
 
 function directionChoiceLabel(calc: SidewaysCardiganSleeveCalc): string {

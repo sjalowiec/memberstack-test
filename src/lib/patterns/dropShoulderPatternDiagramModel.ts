@@ -9,8 +9,8 @@
  */
 
 import {
-  formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
@@ -82,7 +82,7 @@ function formatStitchWidthLabel(
 ): string {
   const sts = positiveInt(stitches);
   if (sts <= 0) return "";
-  return formatPatternDiagramCountLabel(sts, "sts", formatPatternDiagramMeasurement(inches, unit));
+  return formatStitchesRowsDiagramLabel(sts, "sts", formatPatternDiagramMeasurement(inches, unit));
 }
 
 function formatRowsLengthLabel(
@@ -92,7 +92,7 @@ function formatRowsLengthLabel(
 ): string {
   const rowN = Math.max(0, Math.round(rows));
   if (rowN <= 0) return "";
-  return formatPatternDiagramCountLabel(rowN, "rows", formatPatternDiagramMeasurement(inches, unit));
+  return formatStitchesRowsDiagramLabel(rowN, "rows", formatPatternDiagramMeasurement(inches, unit));
 }
 
 /**

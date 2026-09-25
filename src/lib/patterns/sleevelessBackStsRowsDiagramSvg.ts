@@ -27,8 +27,8 @@ import {
 } from "./sleevelessBackStsRowsDiagramModel";
 import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
-  formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
+  stitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
@@ -83,10 +83,10 @@ function countLines(
   unit: MeasurementDisplayUnit,
   extra: string,
 ): { text: string; extra?: string }[] {
-  const measure = formatPatternDiagramMeasurement(inches, unit);
+  const label = stitchesRowsDiagramLabel(count, kind, formatPatternDiagramMeasurement(inches, unit));
   return [
-    { text: formatPatternDiagramCountLabel(count, kind), extra },
-    ...(measure ? [{ text: measure }] : []),
+    { text: label.count, extra },
+    ...(label.measure ? [{ text: label.measure }] : []),
   ];
 }
 
@@ -362,7 +362,7 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "shoulder",
       [
         {
-          text: formatPatternDiagramCountLabel(model.widths.shoulderStitchesPerSide, "sts"),
+          text: stitchesRowsDiagramLabel(model.widths.shoulderStitchesPerSide, "sts").count,
           extra: ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
         },
       ],

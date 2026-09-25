@@ -36,7 +36,7 @@ import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts
 import { SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES } from "./sidewaysCardiganConstructionIdentity";
 import { formatInchesWithUnit } from "./sidewaysCardiganDisplayFormat";
 import {
-  formatPatternDiagramCountLabel,
+  formatStitchesRowsDiagramLabel,
   formatPatternDiagramMeasurement,
 } from "./patternStitchesRowsDiagramLabel";
 
@@ -137,10 +137,14 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
       expect(view.sts).toContain(formatInchesWithUnit(calc.finished.upperArmInches));
       expect(view.sts).toContain(formatInchesWithUnit(calc.finished.wristInches));
       expect(view.sts).toContain(formatInchesWithUnit(calc.finished.sleeveLengthInches));
-      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.topSts, "sts", formatPatternDiagramMeasurement(calc.finished.upperArmInches, "in")));
-      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.wristSts, "sts", formatPatternDiagramMeasurement(calc.finished.wristInches, "in")));
-      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.sleeveTotalRows, "rows", formatPatternDiagramMeasurement(calc.finished.sleeveLengthInches, "in")));
-      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.cuffRows, "rows", formatPatternDiagramMeasurement(calc.finished.cuffDepthInches, "in")));
+      for (const label of [
+        formatStitchesRowsDiagramLabel(calc.topSts, "sts", formatPatternDiagramMeasurement(calc.finished.upperArmInches, "in")),
+        formatStitchesRowsDiagramLabel(calc.wristSts, "sts", formatPatternDiagramMeasurement(calc.finished.wristInches, "in")),
+        formatStitchesRowsDiagramLabel(calc.sleeveTotalRows, "rows", formatPatternDiagramMeasurement(calc.finished.sleeveLengthInches, "in")),
+        formatStitchesRowsDiagramLabel(calc.cuffRows, "rows", formatPatternDiagramMeasurement(calc.finished.cuffDepthInches, "in")),
+      ]) {
+        for (const line of label.split("\n")) expect(view.sts).toContain(line);
+      }
       expect(view.sts).not.toContain("Upper arm");
       expect(view.sts).not.toContain("Wrist/Cuff");
       expect(view.sts).not.toContain("Sleeve length");

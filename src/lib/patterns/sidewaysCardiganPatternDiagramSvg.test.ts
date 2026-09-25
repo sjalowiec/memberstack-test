@@ -536,7 +536,8 @@ describe("single-diagram print for Sideways body and sleeve", () => {
           expect(svg).not.toContain('data-role="dim-finished-back-length"');
           expect(svg).toContain(`CO ${edge} sts`);
           expect(svg).toContain(`BO ${edge} sts`);
-          expect(svg).toContain(unit === "cm" ? "cm)" : "in)");
+          expect(svg).toContain(unit === "cm" ? "cm" : "in");
+          expect(svg).not.toContain(unit === "cm" ? "cm)" : "in)");
           expect(svg).toContain('data-role="armhole-sts-leader"');
           expect(svg).toContain('data-role="back-neck-sts-leader"');
           const labels = lineBoxes(svg);
@@ -550,7 +551,8 @@ describe("single-diagram print for Sideways body and sleeve", () => {
           if (style === "cardigan") {
             expect(armhole!.x).toBeGreaterThan(frame.neckX);
             expect(backNeck!.x).toBeGreaterThan(frame.neckX);
-            expect(vNeck!.bottom).toBeLessThan(bindOff!.top - 2);
+            expect(svg).toContain('data-role="vneck-sts-leader"');
+            expect(vNeck!.right).toBeLessThanOrEqual(frame.vCutX + 4);
           } else {
             expect(armhole!.right).toBeLessThan(frame.hemX);
             expect(backNeck!.x).toBeGreaterThan(frame.neckX);

@@ -77,13 +77,13 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(model.necklineRowsInsideArmhole + model.armholeEvenRows).toBe(model.armholeRows);
     expect(svg).toContain(`data-neckline-rows-inside-armhole="${model.necklineRowsInsideArmhole}"`);
     expect(svg).toContain("Armhole depth");
-    expect(svg).toContain(model.armholeDepthLabel);
+    for (const line of model.armholeDepthLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(`data-hem-stitches="${result.debug.hemCastOnStitches ?? result.debug.backStitches}"`);
     expect(svg).toContain(`data-neckline-stitches="${Math.round(result.debug.necklineStitches ?? 0)}"`);
     expect(svg).toContain(`data-shoulder-stitches="${Math.round(result.debug.shoulderStitches ?? 0)}"`);
     expect(svg).toContain(`data-hem-rows="${Math.round(result.debug.hemRows)}"`);
     expect(svg).toContain(`data-body-rows="${Math.round(result.debug.bodyRows)}"`);
-    expect(svg).toContain(model.hemStitchesLabel);
+    for (const line of model.hemStitchesLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain(model.shoulderStitchesLabel);
     expect(svg).not.toMatch(/\bNaN\b/);
   });
@@ -99,11 +99,13 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(model.armholeRows).toBe(36);
     expect(model.necklineRowsInsideArmhole).toBe(8);
     expect(model.armholeEvenRows).toBe(28);
-    expect(model.armholeDepthLabel).toBe("36 rows (4.5 in)");
+    expect(model.armholeDepthLabel).toBe("36 rows\n4.5 in");
 
     const svg = buildDropShoulderBackStitchesRowsSvg(model);
     expect(svg).toContain("Armhole depth");
-    expect(svg).toContain("36 rows (4.5 in)");
+    expect(svg).toContain("36 rows");
+    expect(svg).toContain("4.5 in");
+    expect(svg).not.toContain("36 rows (4.5 in)");
     expect(svg).toContain('data-armhole-rows="36"');
     expect(svg).toContain('data-neckline-rows-inside-armhole="8"');
     expect(svg).toContain('data-armhole-even-rows="28"');
@@ -111,9 +113,9 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(svg).toContain('data-body-width="true"');
     expect(svg).toContain('data-neckline-width-dim="true"');
     expect(svg).toContain('data-neckline-depth-dim="true"');
-    expect(svg).toContain(model.bodyWidthLabel);
-    expect(svg).toContain(model.necklineWidthLabel);
-    expect(svg).toContain(model.necklineDepthLabel);
+    for (const line of model.bodyWidthLabel.split("\n")) expect(svg).toContain(line);
+    for (const line of model.necklineWidthLabel.split("\n")) expect(svg).toContain(line);
+    for (const line of model.necklineDepthLabel.split("\n")) expect(svg).toContain(line);
     expect(svg).toContain('width="100%"');
     expect(svg).toContain('height="auto"');
     expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');

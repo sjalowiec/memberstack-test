@@ -14,10 +14,12 @@ import { SLEEVELESS_DIAGRAM_INLINE_CLASS } from "./sleevelessDiagramModal";
 import {
   diagramSilhouettePanelHeightShare,
   diagramSilhouetteWidthShare,
+  PATTERN_DIAGRAM_REFERENCE_PANEL_HEIGHT_SHARE,
+  PATTERN_DIAGRAM_REFERENCE_WIDTH_SHARE,
 } from "./legoBlocks/patternDiagramFit";
 import {
-  formatPatternDiagramCountLabel,
   formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
 } from "./patternStitchesRowsDiagramLabel";
 import {
   formatBindOffNotation,
@@ -244,8 +246,9 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
     const notationCastOn = byRole(shaping, "jp-caston")[0];
     const notationBindOff = byRole(shaping, "jp-final-bo")[0];
     const length = formatPatternDiagramMeasurement(model.measurements.finishedLengthInches, model.displayUnit);
-    expect(castOn?.text).toBe(`CO ${formatPatternDiagramCountLabel(edge, "sts", length)}`);
-    expect(bindOff?.text).toBe(`BO ${formatPatternDiagramCountLabel(edge, "sts", length)}`);
+    const edgeLabel = formatStitchesRowsDiagramLabel(edge, "sts", length).replace("\n", "");
+    expect(castOn?.text).toBe(`CO ${edgeLabel}`);
+    expect(bindOff?.text).toBe(`BO ${edgeLabel}`);
     expect(notationCastOn?.text).toBe(formatCastOnNotation(edge));
     expect(notationBindOff?.text).toBe(formatBindOffNotation(edge));
     expect(castOn!.y).toBeGreaterThan(bindOff!.y);
@@ -381,27 +384,25 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
       expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
       expect(svg).not.toMatch(/<svg\b[^>]*\stransform=/);
       const box = viewBoxOf(svg);
-      expect(box.width).toBeLessThan(canvas.width);
-      expect(box.height).toBeLessThan(canvas.height);
+      expect(box.width).toBeCloseTo(canvas.width, 1);
+      expect(box.height).toBeGreaterThanOrEqual(canvas.height - 0.1);
       const labels = diagramTexts(svg);
       for (const label of labels) {
         expect(label.y).toBeGreaterThan(box.y);
-        expect(label.y).toBeLessThan(box.y + box.height);
+        expect(label.y, `${label.role} ${label.text}`).toBeLessThan(box.y + box.height);
       }
       const flipAt = svg.indexOf('data-knit-flip="vertical"');
       const flipEnd = svg.indexOf("</g>", flipAt);
       expect(svg.slice(flipAt, flipEnd)).not.toContain("<text");
     }
     const silhouette = sidewaysSilhouetteDiagramRect(frame);
-    const unfitted = { x: canvas.x, y: canvas.y, width: canvas.width, height: canvas.height };
     for (const svg of [sts, shaping]) {
       const fitted = viewBoxOf(svg);
-      expect(diagramSilhouetteWidthShare(silhouette, fitted)).toBeGreaterThan(
-        diagramSilhouetteWidthShare(silhouette, unfitted),
-      );
-      expect(diagramSilhouettePanelHeightShare(silhouette, fitted)).toBeGreaterThan(
-        diagramSilhouettePanelHeightShare(silhouette, unfitted),
-      );
+      const widthShare = diagramSilhouetteWidthShare(silhouette, fitted);
+      const heightShare = diagramSilhouettePanelHeightShare(silhouette, fitted);
+      expect(widthShare).toBeLessThanOrEqual(PATTERN_DIAGRAM_REFERENCE_WIDTH_SHARE + 0.02);
+      expect(heightShare).toBeLessThanOrEqual(PATTERN_DIAGRAM_REFERENCE_PANEL_HEIGHT_SHARE + 0.02);
+      expect(Math.max(widthShare / PATTERN_DIAGRAM_REFERENCE_WIDTH_SHARE, heightShare / PATTERN_DIAGRAM_REFERENCE_PANEL_HEIGHT_SHARE)).toBeGreaterThan(0.95);
     }
     for (const svg of [sts, shaping]) {
       const box = viewBoxOf(svg);
