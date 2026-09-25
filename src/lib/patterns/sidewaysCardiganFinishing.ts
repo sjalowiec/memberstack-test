@@ -222,8 +222,8 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
     )
     .join("");
   const basis = bandSwatchBasis(args.displayUnit);
-  const stitchLabel = basis === "cm" ? "Band stitches per 10 cm" : "Band stitches per 4 inches";
-  const rowLabel = basis === "cm" ? "Band rows per 10 cm" : "Band rows per 4 inches";
+  const stitchLabel = "Stitches per 4 inches (10 cm)";
+  const rowLabel = "Rows per 4 inches (10 cm)";
   const used =
     band.stitchGaugeSource === "band" && band.rowGaugeSource === "band"
       ? `The following instructions use your band gauge (${swatchCountFromPerInchForDisplay(band.stitchGauge, basis)} stitches and ${swatchCountFromPerInchForDisplay(band.rowGauge, basis)} rows ${basis === "cm" ? "per 10 cm" : "per 4 inches"}).`
@@ -262,8 +262,8 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
     `<details class="no-print" data-sideways-band-gauge>` +
     `<summary>Use a different gauge for the band</summary>` +
     `<p class="sleeveless-pattern-line">The cast-on, band length, and marker rows update automatically as you enter your gauge.</p>` +
-    `<label>${stitchLabel} <input type="number" min="0" step="any" data-sideways-band-stitches-per-inch value="${escapeHtml(stitchValue)}" /></label>` +
-    `<label>${rowLabel} <input type="number" min="0" step="any" data-sideways-band-rows-per-inch value="${escapeHtml(rowValue)}" /></label>` +
+    `<label>${stitchLabel} <input type="text" inputmode="decimal" autocomplete="off" data-sideways-band-stitches-per-inch value="${escapeHtml(stitchValue)}" /></label>` +
+    `<label>${rowLabel} <input type="text" inputmode="decimal" autocomplete="off" data-sideways-band-rows-per-inch value="${escapeHtml(rowValue)}" /></label>` +
     `</details>` +
     `</div></section>`
   );

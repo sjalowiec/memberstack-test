@@ -309,22 +309,13 @@ function renderView(): void {
     paintFinishing();
     if (finishingEl.dataset.sidewaysBandGaugeBound !== "true") {
       finishingEl.dataset.sidewaysBandGaugeBound = "true";
-      finishingEl.addEventListener("input", (event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLInputElement)) return;
-        const editingStitches = target.dataset.sidewaysBandStitchesPerInch !== undefined;
-        const editingRows = target.dataset.sidewaysBandRowsPerInch !== undefined;
-        if (!editingStitches && !editingRows) return;
-        const raw = target.value;
-        const caret = target.selectionStart;
-        const root = finishingEl;
-        const stitchInput = root.querySelector("[data-sideways-band-stitches-per-inch]");
-        const rowInput = root.querySelector("[data-sideways-band-rows-per-inch]");
-        const unit = resolveSavedPatternMeasurementDisplayUnit();
+      const commitBandGauge = (): void => {
+        const stitchInput = finishingEl.querySelector("[data-sideways-band-stitches-per-inch]");
+        const rowInput = finishingEl.querySelector("[data-sideways-band-rows-per-inch]");
         const gauge = sidewaysBandGaugeFromSwatchInputs(
           stitchInput instanceof HTMLInputElement ? stitchInput.value : "",
           rowInput instanceof HTMLInputElement ? rowInput.value : "",
-          unit,
+          resolveSavedPatternMeasurementDisplayUnit(),
         );
         const stored = {
           sidewaysBandStitchesPerInch: gauge.stitchesPerInch ?? "",
@@ -335,16 +326,17 @@ function renderView(): void {
         paintFinishing();
         const gaugeDetails = finishingEl.querySelector("[data-sideways-band-gauge]");
         if (gaugeDetails instanceof HTMLDetailsElement) gaugeDetails.open = true;
-        const next = finishingEl.querySelector(
-          editingStitches
-            ? "[data-sideways-band-stitches-per-inch]"
-            : "[data-sideways-band-rows-per-inch]",
-        );
-        if (next instanceof HTMLInputElement) {
-          next.value = raw;
-          next.focus();
-          if (caret !== null) next.setSelectionRange(caret, caret);
+      };
+      finishingEl.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (
+          target.dataset.sidewaysBandStitchesPerInch === undefined &&
+          target.dataset.sidewaysBandRowsPerInch === undefined
+        ) {
+          return;
         }
+        commitBandGauge();
       });
     }
   }

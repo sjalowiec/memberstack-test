@@ -196,8 +196,8 @@ describe("sideways folded hem and cardigan band", () => {
     expect(html).toContain(
       "The following instructions use your band gauge (16 stitches and 24 rows per 4 inches).",
     );
-    expect(html).toContain("Band stitches per 4 inches");
-    expect(html).toContain("Band rows per 4 inches");
+    expect(html).toContain("Stitches per 4 inches (10 cm)");
+    expect(html).toContain("Rows per 4 inches (10 cm)");
     expect(html).toContain(`value="16"`);
     expect(html).toContain(`value="24"`);
     expect(html).not.toContain("use your sweater gauge");
@@ -250,14 +250,14 @@ describe("sideways folded hem and cardigan band", () => {
     expect(cmGauge.stitchesPerInch).toBeCloseTo((16 / 10) * 2.54);
     expect(cmGauge.rowsPerInch).toBeCloseTo((24 / 10) * 2.54);
     expect(cmGauge.stitchesPerInch).not.toBeCloseTo(cmGauge.rowsPerInch!);
-    expect(cmBand).toContain("Band stitches per 10 cm");
-    expect(cmBand).toContain("Band rows per 10 cm");
+    expect(cmBand).toContain("Stitches per 4 inches (10 cm)");
+    expect(cmBand).toContain("Rows per 4 inches (10 cm)");
     expect(cmBand).toContain(`value="${swatchCountFromPerInchForDisplay(4, "cm")}"`);
     expect(cmBand).toContain(`value="${swatchCountFromPerInchForDisplay(6, "cm")}"`);
     expect(cmBand).toContain(
       `band gauge (${swatchCountFromPerInchForDisplay(4, "cm")} stitches and ${swatchCountFromPerInchForDisplay(6, "cm")} rows per 10 cm)`,
     );
-    expect(cmBand).not.toContain("per 4 inches");
+    expect(cmBand).toContain("per 10 cm)");
     expect(readSidewaysBandGauge({ sidewaysBandStitchesPerInch: 4, sidewaysBandRowsPerInch: 6 })).toEqual({
       stitchesPerInch: 4,
       rowsPerInch: 6,
