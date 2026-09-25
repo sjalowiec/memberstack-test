@@ -151,6 +151,36 @@ describe("computeSalesReport", () => {
     expect(report.transactions.some((row) => row.id === "ch_shopify" && !row.counted)).toBe(true);
   });
 
+  it("uses This Month totals when no preset is saved", () => {
+    const resolved = resolveDayRange({}, NOW);
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) return;
+
+    const monthReport = computeSalesReport({
+      range: resolved.range,
+      now: NOW,
+      shopifyOrders,
+      stripeCharges,
+      classifyConfig: CLASSIFY,
+      shopifySource: okSource("shopify"),
+      stripeSource: okSource("stripe"),
+    });
+
+    expect(monthReport.range.preset).toBe("month");
+    expect(monthReport.range.fromCivil).toBe("2026-08-01");
+    expect(monthReport.range.toCivil).toBe("2026-08-01");
+    expect(monthReport.range.label).toBe("This Month (Aug 1, 2026)");
+    expect(monthReport.daily.map((day) => day.date)).toEqual(["2026-08-01"]);
+    // Jul 30 Shopify $50 and Jul 31 membership $19.99 are outside This Month.
+    expect(monthReport.summary.shopify.grossCollected).toBe(30);
+    expect(monthReport.summary.shopify.netCollected).toBe(20);
+    expect(monthReport.summary.shopify.transactionCount).toBe(1);
+    expect(monthReport.summary.membership.grossCollected).toBe(461);
+    expect(monthReport.summary.membership.transactionCount).toBe(3);
+    expect(monthReport.summary.stripe.grossCollected).toBe(560);
+    expect(monthReport.summary.combined.netCollected).toBeCloseTo(352, 2);
+  });
+
   it("produces daily rows and marks today as in progress", () => {
     expect(report.daily.map((d) => d.date)).toEqual(["2026-07-30", "2026-07-31", "2026-08-01"]);
     const [d0, d1, d2] = report.daily;

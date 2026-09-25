@@ -1,6 +1,10 @@
 ---
 import { formatReportUsd, type SalesReport, type SourceStatus, type TransactionChannel } from "../../lib/watson/salesReport";
-import { formatCivilLabel, formatLaTimestamp } from "../../lib/watson/salesReportDates";
+import {
+  DEFAULT_SALES_RANGE_PRESET,
+  formatCivilLabel,
+  formatLaTimestamp,
+} from "../../lib/watson/salesReportDates";
 
 interface Props {
   report: SalesReport | null;
@@ -19,7 +23,7 @@ const PRESETS: Array<{ id: string; label: string }> = [
   { id: "custom", label: "Custom" },
 ];
 
-const activePreset = report?.range.preset ?? filters.preset ?? "last3";
+const activePreset = report?.range.preset ?? filters.preset ?? DEFAULT_SALES_RANGE_PRESET;
 
 function presetHref(id: string): string {
   const params = new URLSearchParams({ preset: id });

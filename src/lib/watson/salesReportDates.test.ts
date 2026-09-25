@@ -9,6 +9,7 @@ import {
   laCivilDateOf,
   laCivilMidnightUtc,
   parseCivil,
+  DEFAULT_SALES_RANGE_PRESET,
   resolveDayRange,
 } from "./salesReportDates";
 
@@ -108,24 +109,39 @@ describe("formatLaTimestamp", () => {
 });
 
 describe("resolveDayRange presets", () => {
-  it("defaults to Last 3 Days including today plus the previous two LA days", () => {
-    const result = resolveDayRange({}, NOW_SUMMER);
+  it("defaults to This Month when no preset is saved", () => {
+    expect(DEFAULT_SALES_RANGE_PRESET).toBe("month");
+    const result = resolveDayRange({}, NOW_WINTER);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.range.preset).toBe("last3");
-    expect(result.range.fromCivil).toBe("2026-07-30");
-    expect(result.range.toCivil).toBe("2026-08-01");
-    expect(result.range.todayCivil).toBe("2026-08-01");
-    expect(eachCivilDay(result.range.fromCivil, result.range.toCivil)).toEqual([
-      "2026-07-30",
-      "2026-07-31",
-      "2026-08-01",
-    ]);
+    expect(result.range.preset).toBe("month");
+    expect(result.range.fromCivil).toBe("2026-01-01");
+    expect(result.range.toCivil).toBe("2026-01-15");
+    expect(result.range.todayCivil).toBe("2026-01-15");
+    expect(result.range.label).toBe("This Month (Jan 1, 2026 - Jan 15, 2026)");
+    // Query window matches the displayed civil days (PST midnight boundaries).
+    expect(result.range.startUtc.toISOString()).toBe("2026-01-01T08:00:00.000Z");
+    expect(result.range.endUtc.toISOString()).toBe("2026-01-16T08:00:00.000Z");
+    const days = eachCivilDay(result.range.fromCivil, result.range.toCivil);
+    expect(days[0]).toBe("2026-01-01");
+    expect(days[days.length - 1]).toBe("2026-01-15");
+    expect(days).toHaveLength(15);
   });
 
-  it("unknown preset falls back to Last 3 Days", () => {
+  it("treats a blank preset as no saved selection", () => {
+    const result = resolveDayRange({ preset: "   " }, NOW_SUMMER);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.range.preset).toBe("month");
+    expect(result.range.fromCivil).toBe("2026-08-01");
+    expect(result.range.toCivil).toBe("2026-08-01");
+    expect(result.range.label).toBe("This Month (Aug 1, 2026)");
+  });
+
+  it("unknown preset falls back to This Month", () => {
     const result = resolveDayRange({ preset: "bogus" }, NOW_SUMMER);
-    expect(result.ok && result.range.preset).toBe("last3");
+    expect(result.ok && result.range.preset).toBe("month");
+    expect(result.ok && result.range.fromCivil).toBe("2026-08-01");
   });
 
   it("resolves today and yesterday", () => {
@@ -148,10 +164,14 @@ describe("resolveDayRange presets", () => {
     expect(month.ok && month.range.toCivil).toBe("2026-01-15");
   });
 
-  it("marks today as the in-progress boundary in a range", () => {
+  it("keeps an explicit Last 3 Days selection", () => {
     const result = resolveDayRange({ preset: "last3" }, NOW_SUMMER);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
+    expect(result.range.preset).toBe("last3");
+    expect(result.range.fromCivil).toBe("2026-07-30");
+    expect(result.range.toCivil).toBe("2026-08-01");
+    expect(result.range.label).toBe("Last 3 Days (Jul 30, 2026 - Aug 1, 2026)");
     const days = eachCivilDay(result.range.fromCivil, result.range.toCivil);
     const inProgress = days.filter((d) => d === result.range.todayCivil);
     expect(inProgress).toEqual(["2026-08-01"]);

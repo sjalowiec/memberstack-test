@@ -24,6 +24,13 @@ export type SalesRangePreset =
   | "month"
   | "custom";
 
+/**
+ * Range used when the report URL has no preset, or a preset that is not one
+ * of the named controls. An explicit preset in the URL is a saved selection
+ * and is kept.
+ */
+export const DEFAULT_SALES_RANGE_PRESET: SalesRangePreset = "month";
+
 export interface CivilDate {
   year: number;
   /** 1-12 */
@@ -260,8 +267,8 @@ export type ResolveRangeResult =
   | { ok: false; error: string };
 
 /**
- * Resolve query parameters into an LA calendar-day range. Defaults to the last
- * 3 days (including today). Validates custom ranges.
+ * Resolve query parameters into an LA calendar-day range. Defaults to This
+ * Month (the 1st through today) when no preset is saved. Validates custom ranges.
  */
 export function resolveDayRange(
   input: ResolveRangeInput = {},
@@ -277,7 +284,7 @@ export function resolveDayRange(
     rawPreset === "month" ||
     rawPreset === "custom"
       ? (rawPreset as SalesRangePreset)
-      : "last3";
+      : DEFAULT_SALES_RANGE_PRESET;
 
   switch (preset) {
     case "today":
