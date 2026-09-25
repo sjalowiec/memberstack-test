@@ -291,10 +291,10 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
       page.indexOf("</main>"),
     );
     expect(page).toContain('class="wizard-page sleeveless-pattern-page');
-    expect(content).toContain('data-sleeveless-pattern-inpage-nav');
-    expect(content).toContain('aria-label="Jump to pattern section"');
-    expect(content).toContain("sleeveless-pattern-inpage-nav no-print");
-    expect(content.indexOf("data-sleeveless-pattern-inpage-nav")).toBeLessThan(
+    expect(content).toContain("SavedPatternStickyNav");
+    expect(content).toContain("data-sideways-pattern-actions");
+    expect(content).toContain('data-testid="button-edit-pattern"');
+    expect(content.indexOf("SavedPatternStickyNav")).toBeLessThan(
       content.indexOf("data-sideways-body-sequence"),
     );
     expect(content.indexOf("data-sideways-body-sequence")).toBeLessThan(

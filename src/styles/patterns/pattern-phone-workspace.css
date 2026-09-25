@@ -99,7 +99,8 @@
   body.page--pattern-workspace .sleeveless-pattern-page .calculator-card {
     max-width: 100%;
     min-width: 0;
-    overflow-x: hidden;
+    /* clip avoids a scroll container, so the sticky pattern nav can stick to the viewport */
+    overflow-x: clip;
   }
 
   body.page--pattern-workspace .sleeveless-pattern-page .pattern-action-bar {

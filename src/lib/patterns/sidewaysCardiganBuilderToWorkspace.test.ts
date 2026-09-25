@@ -445,7 +445,7 @@ describe("sideways cardigan workspace is not print-only", () => {
     expect(page).toContain("SavedPatternHeader");
     expect(page).toContain('data-sleeveless-pattern-online-heading');
     expect(page).toContain("SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC");
-    expect(page).toContain("data-sleeveless-pattern-inpage-nav");
+    expect(page).toContain("SavedPatternStickyNav");
     expect(page).not.toContain("pattern-title");
     expect(page).not.toContain("A V-neck sweater knitted sideways");
     expect(page).toContain('import "/src/scripts/sideways-cardigan-pattern-page.ts"');

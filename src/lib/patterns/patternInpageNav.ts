@@ -6,6 +6,10 @@
 export const PATTERN_INPAGE_NAV_ATTR = "data-sleeveless-pattern-inpage-nav";
 export const PATTERN_INPAGE_NAV_TRACK_CLASS = "sleeveless-pattern-inpage-nav__track";
 export const PATTERN_INPAGE_NAV_PILL_CLASS = "sleeveless-pattern-inpage-nav__pill";
+/** Section-link scroller inside the shared sticky nav. Actions stay outside this track. */
+export const PATTERN_INPAGE_NAV_SECTIONS_ATTR = "data-saved-pattern-sticky-nav-sections";
+export const PATTERN_INPAGE_NAV_ACTIONS_ATTR = "data-saved-pattern-sticky-nav-actions";
+export const SAVED_PATTERN_HEADER_ID = "saved-pattern-header";
 
 export type PatternInpageNavNecklinePiece = "back" | "front";
 
@@ -49,7 +53,10 @@ export function findNavTargetInScope(
     if (!(el instanceof HTMLElement)) {
       el = scope.querySelector(`[data-section-id="${id}"]`);
     }
-    if (el instanceof HTMLElement) return { el, id: el.id || id };
+    if (el instanceof HTMLElement) {
+      if (!el.id) el.id = id;
+      return { el, id: el.id || id };
+    }
   }
   if (discoverNecklinePiece === "back" || discoverNecklinePiece === "front") {
     const prefix = discoverNecklinePiece === "front" ? "sg-front-" : "sg-back-";
@@ -60,6 +67,7 @@ export function findNavTargetInScope(
       if (!sid) continue;
       const lower = sid.toLowerCase();
       if (lower.includes("neckline") && lower.includes("shoulder")) {
+        if (!sec.id) sec.id = sid;
         return { el: sec, id: sec.id || sid };
       }
     }
@@ -112,14 +120,42 @@ export function bindPatternInpageNavScrollSpy(): void {
   };
   window.addEventListener("scroll", schedule, { passive: true });
   window.addEventListener("hashchange", schedule);
+  window.addEventListener("resize", schedule, { passive: true });
+}
+
+function patternStickyNavSectionsHost(nav: HTMLElement): HTMLElement {
+  const existing = nav.querySelector(`[${PATTERN_INPAGE_NAV_SECTIONS_ATTR}]`);
+  if (existing instanceof HTMLElement) return existing;
+  const track = document.createElement("div");
+  track.className = PATTERN_INPAGE_NAV_TRACK_CLASS;
+  track.setAttribute(PATTERN_INPAGE_NAV_SECTIONS_ATTR, "");
+  nav.replaceChildren(track);
+  return track;
+}
+
+function patternStickyNavHasVisibleActions(nav: HTMLElement): boolean {
+  const actions = nav.querySelector(`[${PATTERN_INPAGE_NAV_ACTIONS_ATTR}]`);
+  if (!(actions instanceof HTMLElement)) return false;
+  return [...actions.children].some((child) => child instanceof HTMLElement && !child.hidden);
+}
+
+/** Keep a jumped-to heading below the site header and this sticky bar. */
+function syncPatternInpageNavOffset(nav: HTMLElement): void {
+  const root = document.documentElement;
+  if (!(root instanceof HTMLElement) || !root.style?.setProperty) return;
+  const height = nav.offsetHeight;
+  if (height > 0) {
+    root.style.setProperty("--pattern-inpage-nav-height", `${height + 8}px`);
+  }
 }
 
 export function syncPatternInpageNav(options: SyncPatternInpageNavOptions): number {
   const nav = options.nav ?? document.querySelector(`[${PATTERN_INPAGE_NAV_ATTR}]`);
   if (!(nav instanceof HTMLElement)) return 0;
   const scope = options.scope ?? document.getElementById("pattern-content");
-  const track = document.createElement("div");
+  const track = patternStickyNavSectionsHost(nav);
   track.className = PATTERN_INPAGE_NAV_TRACK_CLASS;
+  track.replaceChildren();
   let count = 0;
   for (const item of options.items) {
     const found = findNavTargetInScope(scope, item.ids, item.discoverNecklinePiece);
@@ -135,11 +171,11 @@ export function syncPatternInpageNav(options: SyncPatternInpageNavOptions): numb
   if (count > 0) {
     options.onHasItems?.();
   }
-  nav.replaceChildren(track);
-  nav.hidden = count === 0;
-  if (count > 0) {
+  nav.hidden = count === 0 && !patternStickyNavHasVisibleActions(nav);
+  if (!nav.hidden) {
     bindPatternInpageNavScrollSpy();
     updatePatternInpageNavActivePill();
+    syncPatternInpageNavOffset(nav);
   }
   return count;
 }

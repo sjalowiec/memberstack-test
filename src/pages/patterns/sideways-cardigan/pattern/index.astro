@@ -5,6 +5,7 @@ import SleevelessPatternMemberGate from "../../../../components/patterns/Sleevel
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import SavedPatternHeader from "../../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../../components/patterns/SavedPatternStickyNav.astro";
 import { SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC } from "../../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 import { SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../../lib/patterns/sidewaysCardiganPatternNavigation";
 
@@ -46,19 +47,8 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
           tipsScopeSelector="#sideways-pattern-tips-scope"
           printOriginLabel="Created with the Knit It Now Sideways Knit Sweater Pattern Builder"
           printOriginUrl="KnitItNow.com/patterns/sideways-cardigan"
-          actionsEndAttrs={["data-sideways-pattern-actions"]}
         >
           <PatternBuilderMyPatternsLink slot="actions-start" />
-          <a
-            slot="actions-end"
-            href={SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF}
-            class="sleeveless-pattern-edit-action no-print"
-            data-sideways-edit-open
-            data-testid="button-edit-pattern"
-          >
-            <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-          </a>
-          <!-- Print button (#print-btn) is injected here when a pattern renders. -->
         </SavedPatternHeader>
 
         <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
@@ -71,12 +61,16 @@ import "../../../../styles/patterns/pattern-diagram-tabs.css";
               data-pattern-content
               data-sideways-pattern-reading-layout
             >
-              <nav
-                class="sleeveless-pattern-inpage-nav no-print"
-                data-sleeveless-pattern-inpage-nav
-                aria-label="Jump to pattern section"
-                hidden
-              ></nav>
+              <SavedPatternStickyNav actionsAttrs={["data-sideways-pattern-actions"]}>
+                <a
+                  href={SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF}
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-sideways-edit-open
+                  data-testid="button-edit-pattern"
+                >
+                  <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                </a>
+              </SavedPatternStickyNav>
               <div
                 class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-pattern-reading-layout"
                 data-sideways-body-layout

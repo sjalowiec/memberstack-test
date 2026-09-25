@@ -119,14 +119,14 @@ describe("finished sweater How Much Yarn? markup", () => {
     }
   });
 
-  it("places How Much Yarn before Edit Pattern in the finished-pattern action bar", () => {
+  it("keeps How Much Yarn in the header and Edit Pattern in the sticky nav", () => {
     for (const page of [sleevelessPatternPage, dropShoulderPatternPage]) {
-      const actionsStart = page.indexOf('data-sleeveless-pattern-actions');
-      const yarnIdx = page.indexOf('data-testid="garment-pattern-how-much-yarn"', actionsStart);
-      const editIdx = page.indexOf('data-testid="button-edit-pattern"', actionsStart);
-      expect(actionsStart).toBeGreaterThan(-1);
-      expect(yarnIdx).toBeGreaterThan(actionsStart);
-      expect(editIdx).toBeGreaterThan(yarnIdx);
+      const yarnIdx = page.indexOf('data-testid="garment-pattern-how-much-yarn"');
+      const editIdx = page.indexOf('data-testid="button-edit-pattern"');
+      const navIdx = page.indexOf("<SavedPatternStickyNav");
+      expect(yarnIdx).toBeGreaterThan(-1);
+      expect(navIdx).toBeGreaterThan(yarnIdx);
+      expect(editIdx).toBeGreaterThan(navIdx);
     }
   });
 

@@ -169,9 +169,8 @@ describe("Socks pattern page reuses sweater in-page navigation", () => {
   it("mounts the shared nav shell and syncs from the generated sock document", () => {
     const patternPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
     const patternScript = readFileSync(resolve("src/scripts/socks-pattern-page.ts"), "utf8");
-    expect(patternPage).toContain('data-sleeveless-pattern-inpage-nav');
-    expect(patternPage).toContain('aria-label="Jump to pattern section"');
-    expect(patternPage).toContain("sleeveless-pattern-inpage-nav");
+    expect(patternPage).toContain("SavedPatternStickyNav");
+    expect(patternPage).toContain("data-socks-edit-open");
     expect(patternScript).toContain("syncPatternInpageNav");
     expect(patternScript).toContain("sockPatternInpageNavItems");
     expect(patternScript).toContain("selectedSockPairTab");

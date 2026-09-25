@@ -458,25 +458,47 @@
     );
   }
 
-  /* Document-outline style section navigation (table of contents, not a button row). */
+  /* Shared sticky pattern navigation: Top + section links + pattern actions. */
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav {
     position: sticky;
     top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 4px);
     z-index: 24;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
     margin: 0 0 0.75rem;
     padding: 0.38rem 0 0.42rem;
     background: #fff;
     border-bottom: 1px solid rgba(82, 104, 45, 0.2);
     box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sleeveless-pattern-page .saved-pattern-sticky-nav__top,
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions {
+    flex: 0 0 auto;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions:empty {
+    display: none;
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.05rem 0.15rem;
+    min-width: 0;
     max-width: 52rem;
-    margin: 0 auto;
+    margin: 0;
     padding: 0 0.15rem;
   }
 
@@ -738,9 +760,19 @@
     cursor: not-allowed;
   }
 
+  .sleeveless-pattern-page [data-saved-pattern-header] {
+    scroll-margin-top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 8px);
+  }
+
+  html[data-saved-pattern-mode="readonly"] [data-testid="button-edit-pattern"],
+  body[data-saved-pattern-mode="readonly"] [data-testid="button-edit-pattern"] {
+    display: none !important;
+  }
+
   #pattern-content .pattern-section,
   #pattern-content .pattern-subsection,
-  #pattern-content .sock-pattern-section {
+  #pattern-content .sock-pattern-section,
+  #pattern-content .hat-pattern-section {
     scroll-margin-top: calc(
       var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + var(--pattern-inpage-nav-height, 3.35rem)
     );

@@ -11,6 +11,7 @@ import PatternPrintFooter from "../../../components/common/PatternPrintFooter.as
 import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
 import PatternProjectOnlineNotes from "../../../components/patterns/PatternProjectOnlineNotes.astro";
 import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import WarningBox from "../../../components/ui/WarningBox.astro";
 import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
@@ -79,10 +80,7 @@ const hatZeroBodyRowsWarningMessage =
   >
     <div id="hat-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <SavedPatternHeader
-          part="actions"
-          actionsEndAttrs={["data-hat-pattern-actions", "data-sleeveless-pattern-actions"]}
-        >
+        <SavedPatternHeader part="actions">
           <Fragment slot="actions-start">
             <div data-ms-content="members">
               <button
@@ -122,16 +120,6 @@ const hatZeroBodyRowsWarningMessage =
             >
               How Much Yarn?
             </button>
-            <a
-              href={HAT_SUMMARY_EDIT_FROM_PATTERN_HREF}
-              class="sleeveless-pattern-edit-action no-print"
-              data-hat-edit-open
-              data-testid="button-edit-pattern"
-              hidden
-            >
-              <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-            </a>
-            <!-- Print button (#print-btn) is injected when a valid pattern renders. -->
           </Fragment>
         </SavedPatternHeader>
 
@@ -233,6 +221,17 @@ const hatZeroBodyRowsWarningMessage =
             </SavedPatternHeader>
 
             <div id="pattern-content" data-pattern-content>
+              <SavedPatternStickyNav actionsAttrs={["data-hat-pattern-actions", "data-sleeveless-pattern-actions"]}>
+                <a
+                  href={HAT_SUMMARY_EDIT_FROM_PATTERN_HREF}
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-hat-edit-open
+                  data-testid="button-edit-pattern"
+                  hidden
+                >
+                  <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                </a>
+              </SavedPatternStickyNav>
               <div
                 class="pattern-layout pattern-layout--garment-columns hat-pattern-reading-layout"
                 data-hat-pattern-reading-layout

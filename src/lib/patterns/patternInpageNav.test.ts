@@ -46,11 +46,21 @@ describe("sweater in-page navigation remains unchanged", () => {
     expect(css).toContain("@media (max-width: 640px)");
     expect(css).toContain("overflow-x: auto");
 
+    const stickyNav = readFileSync(
+      resolve("src/components/patterns/SavedPatternStickyNav.astro"),
+      "utf8",
+    );
+    expect(stickyNav).toContain('data-sleeveless-pattern-inpage-nav');
+    expect(stickyNav).toContain('aria-label="Jump to pattern section"');
+    expect(stickyNav).toContain("sleeveless-pattern-inpage-nav no-print");
+    expect(stickyNav).toContain('href="#saved-pattern-header"');
+    expect(stickyNav).toContain("data-saved-pattern-sticky-nav-sections");
+    expect(stickyNav).toContain("data-saved-pattern-sticky-nav-actions");
+
     for (const pagePath of SWEATER_NAV_PAGES) {
       const page = readFileSync(resolve(pagePath), "utf8");
-      expect(page).toContain('data-sleeveless-pattern-inpage-nav');
-      expect(page).toContain('aria-label="Jump to pattern section"');
-      expect(page).toContain("sleeveless-pattern-inpage-nav no-print");
+      expect(page).toContain("SavedPatternStickyNav");
+      expect(page).not.toContain("<!-- Print button");
     }
   });
 });

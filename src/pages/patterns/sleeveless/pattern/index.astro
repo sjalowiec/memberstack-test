@@ -4,6 +4,7 @@ import SleevelessPatternMemberGate from "../../../../components/patterns/Sleevel
 import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
 import SavedPatternHeader from "../../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../../components/patterns/SavedPatternStickyNav.astro";
 import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
 import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
@@ -53,10 +54,7 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
   <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
     <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <SavedPatternHeader
-          part="actions"
-          actionsEndAttrs={["data-sleeveless-pattern-actions"]}
-        >
+        <SavedPatternHeader part="actions">
           <Fragment slot="actions-start">
             <button
               type="button"
@@ -92,17 +90,6 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
             >
               How Much Yarn?
             </button>
-            <button
-              type="button"
-              class="sleeveless-pattern-edit-action no-print"
-              data-sl-edit-open
-              data-testid="button-edit-pattern"
-              aria-haspopup="dialog"
-              aria-controls="sl-edit-drawer-panel"
-            >
-              <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-            </button>
-            <!-- Print button (#print-btn) is injected here by mountSleevelessPrintAction(). -->
           </Fragment>
         </SavedPatternHeader>
 
@@ -132,12 +119,18 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
             </SavedPatternHeader>
 
             <div id="pattern-content" data-pattern-content>
-              <nav
-                class="sleeveless-pattern-inpage-nav no-print"
-                data-sleeveless-pattern-inpage-nav
-                aria-label="Jump to pattern section"
-                hidden
-              ></nav>
+              <SavedPatternStickyNav actionsAttrs={["data-sleeveless-pattern-actions"]}>
+                <button
+                  type="button"
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-sl-edit-open
+                  data-testid="button-edit-pattern"
+                  aria-haspopup="dialog"
+                  aria-controls="sl-edit-drawer-panel"
+                >
+                  <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                </button>
+              </SavedPatternStickyNav>
               <div class="sleeveless-pattern-mount" data-sleeveless-mount>
                 <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>
               </div>

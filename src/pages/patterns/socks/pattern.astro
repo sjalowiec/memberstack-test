@@ -9,6 +9,7 @@ import { resolve } from "node:path";
 import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
 import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import {
@@ -47,23 +48,6 @@ const sockSizingJson = JSON.parse(
   >
     <div id="socks-pattern-top" class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
-        <SavedPatternHeader
-          part="actions"
-          actionsEndAttrs={["data-socks-pattern-actions", "data-sleeveless-pattern-actions"]}
-        >
-          <a
-            slot="actions-end"
-            href={SOCK_EDIT_HREF}
-            class="sleeveless-pattern-edit-action no-print"
-            data-socks-edit-open
-            data-testid="button-edit-pattern"
-            hidden
-          >
-            <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-          </a>
-          <!-- Print button (#print-btn) is injected when a valid pattern renders. -->
-        </SavedPatternHeader>
-
         <div class="hat-pattern-empty" data-socks-pattern-empty role="status" hidden>
           <h1 class="hat-pattern-empty__title">{BASIC_SOCK_PATTERN_NAME}</h1>
           <p class="hat-pattern-empty__message" data-socks-pattern-empty-message>
@@ -99,12 +83,17 @@ const sockSizingJson = JSON.parse(
           <SleevelessPatternPrintNotice />
 
           <div id="pattern-content" data-pattern-content>
-            <nav
-              class="sleeveless-pattern-inpage-nav no-print"
-              data-sleeveless-pattern-inpage-nav
-              aria-label="Jump to pattern section"
-              hidden
-            ></nav>
+            <SavedPatternStickyNav actionsAttrs={["data-socks-pattern-actions", "data-sleeveless-pattern-actions"]}>
+              <a
+                href={SOCK_EDIT_HREF}
+                class="sleeveless-pattern-edit-action no-print"
+                data-socks-edit-open
+                data-testid="button-edit-pattern"
+                hidden
+              >
+                <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+              </a>
+            </SavedPatternStickyNav>
             <div
               class="pattern-layout pattern-layout--garment-columns socks-pattern-reading-layout"
               data-socks-pattern-reading-layout

@@ -58,7 +58,7 @@ export function wrapHatPatternSection(
   contentHtml: string,
 ): string {
   const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, "");
-  return `<section class="hat-pattern-section" data-section-id="${sid}">
+  return `<section id="${sid}" class="hat-pattern-section" data-section-id="${sid}">
   <div class="hat-pattern-section__header">
     <label class="hat-pattern-section__collapse-label">
       <input type="checkbox" class="hat-pattern-section__collapse" data-section-id="${sid}" aria-label="Collapse this section" />
