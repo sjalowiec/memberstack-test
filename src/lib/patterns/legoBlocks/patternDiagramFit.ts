@@ -132,7 +132,13 @@ export function separateOverlappingDiagramLabels(svg: string, gap = 6): string {
   const re = /<text\b([^>]*?)\sy="([^"]+)"([^>]*)>([\s\S]*?)<\/text>/g;
   for (const match of svg.matchAll(re)) {
     const attrs = `${match[1] ?? ""} y="${match[2]}" ${match[3] ?? ""}`;
-    if (/\btransform=/.test(attrs) || /\bdata-role="jp-/.test(attrs) || /\bdata-stack-order=/.test(attrs) || /\bdata-notation=/.test(attrs)) continue;
+    if (
+      /\btransform=/.test(attrs) ||
+      /\bdata-role="jp-/.test(attrs) ||
+      /\bdata-stack-order=/.test(attrs) ||
+      /\bdata-notation=/.test(attrs) ||
+      /\bdata-role="(?:front-rows|back-rows|shoulder-rows|half-neck-rows|back-neck-sts|armhole-sts|neck-opening-rows|vneck-sts)"/.test(attrs)
+    ) continue;
     const anchor = attr(attrs, "text-anchor") || "start";
     const baseSize = Number(attr(attrs, "font-size")) || 16;
     const baseX = Number(attr(attrs, "x"));
