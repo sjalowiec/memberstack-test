@@ -20,6 +20,7 @@ import type {
   SidewaysCardiganBodyInstructions,
   SidewaysCardiganBodyInstructionStep,
 } from "./sidewaysCardiganBodyInstructions";
+import { sidewaysFoldedHemCastOnSentence, sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
 
 export { shortRowActionRowCounters } from "./sidewaysCardiganBodyInstructions";
 
@@ -180,6 +181,7 @@ function block(args: {
  */
 export function buildSidewaysCardiganBodyDisplayRows(
   instructions: SidewaysCardiganBodyInstructions,
+  stitchesPerInch?: number,
 ): SleevelessPatternDisplayRow[] {
   if (instructions.garmentStyle !== "cardigan") return [];
 
@@ -242,6 +244,9 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `Knit one row of ${ravelPh}.`,
         `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
         `Set ${formatRcColon(0)}.`,
+        ...(stitchesPerInch && stitchesPerInch > 0
+          ? [sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch))]
+          : []),
         `Place the ${vSts} neckline stitches into hold.`,
         `Leave ${startingFrontStitches} body stitches working.`,
         `Continue with ${heldStartCensus}.`,
@@ -387,8 +392,9 @@ export function buildSidewaysCardiganBodyDisplayRows(
 
 export function renderSidewaysCardiganBodyDisplayHtml(
   instructions: SidewaysCardiganBodyInstructions,
+  stitchesPerInch?: number,
 ): string {
-  const rows = buildSidewaysCardiganBodyDisplayRows(instructions);
+  const rows = buildSidewaysCardiganBodyDisplayRows(instructions, stitchesPerInch);
   if (rows.length === 0) return "";
   const inner = renderPatternDisplayRowsHtml(rows, {
     pieceSectionId: "body",

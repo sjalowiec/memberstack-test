@@ -8,6 +8,11 @@ import {
 } from "./sidewaysCardiganBodyInstructions";
 import { renderSidewaysCardiganBodyDisplayHtml } from "./sidewaysCardiganPatternOutput";
 import {
+  renderSidewaysCardiganBandSectionHtml,
+  renderSidewaysFinishingSectionHtml,
+  sidewaysFoldedHemTurningNeedle,
+} from "./sidewaysCardiganFinishing";
+import {
   buildSidewaysCardiganPatternDiagramTabsShellHtml,
   buildSidewaysCardiganSleeveDiagramTabsShellHtml,
 } from "./sidewaysCardiganPatternDiagramTabs";
@@ -65,7 +70,18 @@ function cardiganBodyHtml(): string {
   const result = buildSidewaysCardiganBodyInstructions(BODY_INPUT, "cardigan");
   expect(result.ok).toBe(true);
   if (!result.ok) throw new Error(result.error.message);
-  return renderSidewaysCardiganBodyDisplayHtml(result.instructions);
+  return (
+    renderSidewaysCardiganBodyDisplayHtml(result.instructions, BODY_INPUT.stitchesPerInch) +
+    renderSidewaysCardiganBandSectionHtml({
+      calc: result.instructions.calc,
+      stitchesPerInch: BODY_INPUT.stitchesPerInch,
+      rowsPerInch: BODY_INPUT.rowsPerInch,
+    }) +
+    renderSidewaysFinishingSectionHtml({
+      garmentStyle: "cardigan",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(BODY_INPUT.stitchesPerInch),
+    })
+  );
 }
 
 function pulloverBodyHtml(): string {
@@ -272,7 +288,7 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
     const script = readFileSync(resolve("src/scripts/sideways-cardigan-pattern-page.ts"), "utf8");
     const content = page.slice(
       page.indexOf('id="pattern-content"'),
-      page.indexOf("Back to builder"),
+      page.indexOf("</main>"),
     );
     expect(page).toContain('class="wizard-page sleeveless-pattern-page');
     expect(content).toContain('data-sleeveless-pattern-inpage-nav');
@@ -336,6 +352,8 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
       "SECOND ARMHOLE",
       "SECOND V-NECK",
       "SLEEVE",
+      "FRONT AND NECK BAND",
+      "FINISHING",
     ]);
     for (const item of SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS) {
       const id = item.ids[0]!;
@@ -348,10 +366,10 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
       expect(html).toContain(`<h2>${heading}</h2>`);
       expect(labels).not.toContain(heading);
     }
-    expect(html).not.toContain("<h2>Finishing</h2>");
+    expect(html).toContain("<h2>FINISHING</h2>");
+    expect(html).toContain('id="sg-finishing"');
     expect(html).not.toContain("<h2>Neckband</h2>");
-    expect(html).not.toContain('id="sg-finishing"');
-    expect(labels).not.toContain("Finishing");
+    expect(labels).toContain("FINISHING");
     expect(labels).not.toContain("Neckband");
   });
 

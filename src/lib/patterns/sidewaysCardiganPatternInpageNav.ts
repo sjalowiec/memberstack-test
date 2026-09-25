@@ -16,4 +16,6 @@ export const SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS: readonly PatternInpageNavItem[]
   { label: "SECOND ARMHOLE", ids: ["sg-body-second-armhole"] },
   { label: "SECOND V-NECK", ids: ["sg-body-second-v-neck"] },
   { label: "SLEEVE", ids: ["sg-sleeve"] },
+  { label: "FRONT AND NECK BAND", ids: ["sg-front-neck-band"] },
+  { label: "FINISHING", ids: ["sg-finishing"] },
 ];

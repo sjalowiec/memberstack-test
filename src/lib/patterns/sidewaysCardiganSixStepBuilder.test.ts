@@ -187,8 +187,8 @@ describe("Sideways V-Neck five-step builder", () => {
       resolve("src/pages/patterns/sideways-cardigan/summary/index.astro"),
       "utf8",
     );
-    expect(patternPage).toContain("Back to builder");
-    expect(patternPage).toContain('href="/patterns/sideways-cardigan/builder"');
+    expect(patternPage).not.toContain("Back to builder");
+    expect(patternPage).toContain("data-sideways-finishing-host");
     expect(patternPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF");
     expect(summaryPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_EDIT_LABEL");
     expect(builderAstro).not.toContain("data-sideways-review-summary");

@@ -166,6 +166,7 @@ export function dropShoulderSleeveShapingRcSequence(
 
 export function buildDropShoulderSleeveShapingChartRows(
   input: DropShoulderSleeveShapingChartInput,
+  options?: { finalAction?: string },
 ): DropShoulderSleeveShapingChartRow[] {
   const { topSts, wristSts, sleeveBodyRows, sleeveTotalRows, direction } = input;
   const plan = dropShoulderSleeveShapingPlan({ topSts, wristSts, sleeveBodyRows });
@@ -192,7 +193,7 @@ export function buildDropShoulderSleeveShapingChartRows(
 
   rows.push({
     rc: sleeveTotalRows,
-    action: "Bind off loosely or scrap off",
+    action: options?.finalAction ?? "Bind off loosely or scrap off",
     edge: isCuffUp ? "Top edge" : "Cuff edge",
     stitchesRemaining: 0,
   });

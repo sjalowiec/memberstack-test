@@ -53,7 +53,13 @@ import { SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS } from "../lib/patterns/sidewaysCard
 import { buildSidewaysCardiganPatternHeaderDetailsHtml } from "../lib/patterns/sidewaysCardiganPatternHeaderDetails";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import { initChartProgressTracking } from "./chartProgressTracker";
-import { getCurrentPattern } from "../lib/patterns/patternStorage";
+import { getCurrentPattern, savePatternData, updatePatternSection } from "../lib/patterns/patternStorage";
+import {
+  readSidewaysBandGauge,
+  renderSidewaysCardiganBandSectionHtml,
+  renderSidewaysFinishingSectionHtml,
+  sidewaysFoldedHemTurningNeedle,
+} from "../lib/patterns/sidewaysCardiganFinishing";
 
 function syncSidewaysPatternInpageNav(): void {
   syncPatternInpageNav({ items: SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS });
@@ -158,6 +164,7 @@ function renderView(): void {
   const sleeveHost = document.querySelector("[data-sideways-sleeve-host]");
   const sleeveEl = document.querySelector("[data-sideways-sleeve-sequence]");
   const sleeveErrorEl = document.querySelector("[data-sideways-sleeve-error]");
+  const finishingEl = document.querySelector("[data-sideways-finishing-host]");
   const diagramHost = document.querySelector("[data-sideways-diagram-tabs-mount]");
   if (!(missing instanceof HTMLElement) || !(host instanceof HTMLElement)) {
     return;
@@ -174,6 +181,7 @@ function renderView(): void {
     if (sequenceEl instanceof HTMLElement) sequenceEl.innerHTML = "";
     if (sleeveHost instanceof HTMLElement) sleeveHost.hidden = true;
     if (sleeveEl instanceof HTMLElement) sleeveEl.innerHTML = "";
+    if (finishingEl instanceof HTMLElement) finishingEl.innerHTML = "";
     if (sleeveErrorEl instanceof HTMLElement) {
       sleeveErrorEl.hidden = true;
       sleeveErrorEl.textContent = "";
@@ -274,6 +282,54 @@ function renderView(): void {
 
   fillSidewaysPatternDiagrams(view);
   fillSidewaysSleeveDiagrams(sleeveView, sleeveEl instanceof HTMLElement ? sleeveEl : document);
+  if (finishingEl instanceof HTMLElement && view.instructions) {
+    const paintFinishing = (): void => {
+      const bandGauge = readSidewaysBandGauge(section(mergeSidewaysCardiganWorkingDraft().style));
+      const turningNeedle = sidewaysFoldedHemTurningNeedle(view.input.stitchesPerInch);
+      const band =
+        view.instructions && view.instructions.garmentStyle === "cardigan"
+          ? renderSidewaysCardiganBandSectionHtml({
+              calc: view.calc,
+              stitchesPerInch: view.input.stitchesPerInch,
+              rowsPerInch: view.input.rowsPerInch,
+              bandGauge,
+            })
+          : "";
+      finishingEl.innerHTML =
+        band +
+        renderSidewaysFinishingSectionHtml({
+          garmentStyle: view.instructions?.garmentStyle ?? "pullover",
+          turningNeedle,
+        });
+      syncSidewaysPatternInpageNav();
+    };
+    paintFinishing();
+    if (finishingEl.dataset.sidewaysBandGaugeBound !== "true") {
+      finishingEl.dataset.sidewaysBandGaugeBound = "true";
+      finishingEl.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (
+          target.dataset.sidewaysBandStitchesPerInch === undefined &&
+          target.dataset.sidewaysBandRowsPerInch === undefined
+        ) {
+          return;
+        }
+        const root = finishingEl;
+        const stitchInput = root.querySelector("[data-sideways-band-stitches-per-inch]");
+        const rowInput = root.querySelector("[data-sideways-band-rows-per-inch]");
+        const stitches = stitchInput instanceof HTMLInputElement ? Number(stitchInput.value) : 0;
+        const rows = rowInput instanceof HTMLInputElement ? Number(rowInput.value) : 0;
+        const stored = {
+          sidewaysBandStitchesPerInch: stitches > 0 ? stitches : "",
+          sidewaysBandRowsPerInch: rows > 0 ? rows : "",
+        };
+        savePatternData("style", stored);
+        updatePatternSection("style", stored);
+        paintFinishing();
+      });
+    }
+  }
   syncSidewaysPatternInpageNav();
 }
 

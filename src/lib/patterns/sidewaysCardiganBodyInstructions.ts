@@ -32,6 +32,10 @@ import {
   type SidewaysCardiganGarmentStyle,
 } from "./sidewaysCardiganConstructionIdentity";
 import { formatRowsCount } from "./sidewaysCardiganDisplayFormat";
+import {
+  sidewaysFoldedHemCastOnSentence,
+  sidewaysFoldedHemTurningNeedle,
+} from "./sidewaysCardiganFinishing";
 
 export const SIDEWAYS_CARDIGAN_NON_POSITIVE_STARTING_STITCHES =
   "non-positive-starting-stitches";
@@ -864,6 +868,7 @@ export function buildSidewaysCardiganBodyInstructions(
 
 export function renderSidewaysCardiganBodySequenceHtml(
   instructions: SidewaysCardiganBodyInstructions,
+  stitchesPerInch?: number,
 ): string {
   const isPullover = instructions.garmentStyle === "pullover";
   const styleLabel = SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[instructions.garmentStyle];
@@ -925,7 +930,11 @@ export function renderSidewaysCardiganBodySequenceHtml(
     )
     .join("");
   const totalBust = formatRowsCount(instructions.calc.bust.actualTotalBustRows);
-  return `<p class="sg-fit-size-copy sideways-body-style-note">${escapeHtml(intro)}</p><ol class="sideways-body-sequence">${items}</ol><p class="sg-fit-size-copy">Total bust rows: ${escapeHtml(totalBust)}.</p><dl class="print-summary-dl print-summary-dl--inline sideways-body-landmarks">${landmarkItems}</dl><dl class="print-summary-dl print-summary-dl--inline sideways-body-sections">${sectionItems}</dl>`;
+  const hem =
+    stitchesPerInch && stitchesPerInch > 0
+      ? `<p class="sg-fit-size-copy">${escapeHtml(sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch)))}</p>`
+      : "";
+  return `<p class="sg-fit-size-copy sideways-body-style-note">${escapeHtml(intro)}</p>${hem}<ol class="sideways-body-sequence">${items}</ol><p class="sg-fit-size-copy">Total bust rows: ${escapeHtml(totalBust)}.</p><dl class="print-summary-dl print-summary-dl--inline sideways-body-landmarks">${landmarkItems}</dl><dl class="print-summary-dl print-summary-dl--inline sideways-body-sections">${sectionItems}</dl>`;
 }
 
 function escapeHtml(s: string): string {

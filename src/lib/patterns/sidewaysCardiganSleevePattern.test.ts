@@ -159,7 +159,10 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     )[0]!;
     expect(cuff.instructions.steps[0]?.id).toBe("cast-on-wrist");
     expect(cuff.instructions.steps.at(-1)?.id).toBe("bind-off-upper-arm");
-    expect(html).toContain(`Cast on ${calc.wristSts} stitches for the sleeve cuff.`);
+    expect(html).toContain(
+      `Cast on ${calc.wristSts} stitches in the ribbing needle arrangement of your choice`,
+    );
+    expect(html).not.toContain("for the sleeve cuff");
     expect(html).toContain(written.replace(/\.$/, ""));
     expect(html).toContain("upper-arm/top edge");
     expect(attr(cuff.sts, "data-sleeve-direction")).toBe("cuff-up");
@@ -197,7 +200,8 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     const notation = formatDropShoulderSleeveShapingNotation(calc.shapingPlan.steps);
     expect(down.instructions.steps[0]?.id).toBe("cast-on-upper-arm");
     expect(down.instructions.steps.at(-1)?.id).toBe("bind-off-wrist");
-    expect(html).toContain(`Cast on or pick up ${calc.topSts} stitches.`);
+    expect(html).toContain(`Cast on ${calc.topSts} stitches.`);
+    expect(html).not.toContain("or pick up");
     expect(html).toContain("Decrease 1 stitch at each side");
     expect(html).not.toContain("Increase 1 stitch at each side");
     const chartInput = {
@@ -217,7 +221,8 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     );
     expect(html).toContain(`(RC: ${topRcs.join(", ")})`);
     expect(html).toContain(`Knit ${topRcs[0]} rows even.`);
-    expect(html).toContain("cuff/wrist edge");
+    expect(html).toContain("Finish the cuff");
+    expect(html).toContain("Cuff edge");
     expect(attr(down.sts, "data-sleeve-direction")).toBe("top-down");
     expect(attr(down.sts, "data-cast-on-edge")).toBe("upper-arm");
     expect(attr(down.sts, "data-bind-off-edge")).toBe("wrist");

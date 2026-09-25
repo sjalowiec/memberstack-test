@@ -261,8 +261,14 @@ export function loadSidewaysCardiganWorkspaceView(
     summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
     sequenceHtml:
       body.instructions.garmentStyle === "cardigan"
-        ? renderSidewaysCardiganBodyDisplayHtml(body.instructions)
-        : renderSidewaysCardiganBodySequenceHtml(body.instructions),
+        ? renderSidewaysCardiganBodyDisplayHtml(
+            body.instructions,
+            inspected.input.stitchesPerInch,
+          )
+        : renderSidewaysCardiganBodySequenceHtml(
+            body.instructions,
+            inspected.input.stitchesPerInch,
+          ),
     ...sleeve,
   };
 }

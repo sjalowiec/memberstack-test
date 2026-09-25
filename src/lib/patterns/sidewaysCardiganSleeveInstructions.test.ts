@@ -18,11 +18,23 @@ import {
   SIDEWAYS_SLEEVE_NOT_CONNECTED_NOTICE,
   type SidewaysCardiganSleeveCalcInput,
 } from "./sidewaysCardiganSleeveCalc";
+import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import {
+  SIDEWAYS_CUFF_UP_BIND_OFF_LINE,
+  SIDEWAYS_CUFF_UP_CHART_FINISH,
+  SIDEWAYS_HUNG_HEM_GLOSSARY_ID,
+  SIDEWAYS_MOCK_RIB_GLOSSARY_ID,
+  SIDEWAYS_REVERSE_HUNG_HEM_VIDEO_ID,
+  SIDEWAYS_SLEEVE_HAND_SEW_LINE,
+  SIDEWAYS_TOP_DOWN_CHART_FINISH,
+} from "./sidewaysCardiganSleeveCuffCopy";
+import {
+  buildSidewaysCardiganSleeveDisplayRows,
   buildSidewaysCardiganSleeveInstructions,
   renderSidewaysCardiganSleeveSequenceHtml,
   sidewaysSleeveNotConnectedResult,
 } from "./sidewaysCardiganSleeveInstructions";
+import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { buildSidewaysCardiganBodyInstructions } from "./sidewaysCardiganBodyInstructions";
 
 const SAMPLE: SidewaysCardiganSleeveCalcInput = {
@@ -375,7 +387,10 @@ describe("sideways sleeve pattern instructions", () => {
     const html = renderSidewaysCardiganSleeveSequenceHtml(instructions);
     expect(html).toContain('id="sg-sleeve"');
     expect(html).toContain("Make 2 sleeves");
-    expect(html).toContain(`Cast on ${instructions.calc.wristSts} stitches for the sleeve cuff.`);
+    expect(html).toContain(
+      `Cast on ${instructions.calc.wristSts} stitches in the ribbing needle arrangement of your choice`,
+    );
+    expect(html).not.toContain("for the sleeve cuff");
     expect(html).toContain("Begin sleeve shaping.");
     expect(html).toContain("Increase 1 stitch at each side");
     expect(html).not.toContain("Wrist/Cuff");
@@ -383,5 +398,94 @@ describe("sideways sleeve pattern instructions", () => {
     expect(html).not.toContain("Sleeve direction");
     expect(html).toContain("data-sideways-sleeve-diagram-tabs-mount");
     expect(html).not.toContain("sideways-sleeve-sequence");
+  });
+
+  it("writes hand-sewn cuff choices once for each sleeve direction", () => {
+    const cuffUp = sleeveOk();
+    const topDown = sleeveOk({ ...SAMPLE, direction: "top-down" });
+    const cuffHtml = renderSidewaysCardiganSleeveSequenceHtml(cuffUp);
+    const topHtml = renderSidewaysCardiganSleeveSequenceHtml(topDown);
+    const cuffPrint = renderSleevelessPrintPieceHtml(
+      buildSidewaysCardiganSleeveDisplayRows(cuffUp.calc),
+      "",
+      "sleeve",
+    );
+    const topPrint = renderSleevelessPrintPieceHtml(
+      buildSidewaysCardiganSleeveDisplayRows(topDown.calc),
+      "",
+      "sleeve",
+    );
+
+    for (const html of [cuffHtml, cuffPrint]) {
+      expect(html).toContain(SIDEWAYS_SLEEVE_HAND_SEW_LINE);
+      expect(html).toContain("Choose one way to begin:");
+      expect(html).toContain("transfer the stitches to the main bed to continue the sleeve.");
+      expect(html).toContain(`data-glossary-id="${SIDEWAYS_HUNG_HEM_GLOSSARY_ID}"`);
+      expect(html).toContain(`data-glossary-id="${SIDEWAYS_MOCK_RIB_GLOSSARY_ID}"`);
+      expect(html).toContain(
+        "Hand knit ribbing to the desired finished cuff depth, then hang its stitches on the machine",
+      );
+      expect(html).toContain(
+        `hung hem</span> for ${cuffUp.calc.cuffRows * 2} rows so the hem can be folded.`,
+      );
+      expect(html).toContain(
+        `mock ribbing</span> for ${cuffUp.calc.cuffRows * 2} rows so the hem can be folded.`,
+      );
+      expect(html).toContain(`knit ${cuffUp.calc.cuffRows} rows of ribbing, then transfer`);
+      expect(html).toContain(SIDEWAYS_CUFF_UP_BIND_OFF_LINE);
+      expect(html).toContain(SIDEWAYS_CUFF_UP_CHART_FINISH);
+      expect(html).not.toContain("Optional ribbed cuff");
+      expect(html).not.toContain("scrap off");
+      expect(html).not.toContain("Scrap off");
+      expect(html).not.toContain("or pick up");
+      expect(html.match(/Choose one way to begin:/g)).toHaveLength(1);
+    }
+
+    for (const html of [topHtml, topPrint]) {
+      expect(html).toContain(SIDEWAYS_SLEEVE_HAND_SEW_LINE);
+      expect(html).toContain(`Cast on ${topDown.calc.topSts} stitches.`);
+      expect(html).toContain("Choose one way to finish:");
+      expect(html).toContain(
+        "Transfer the live stitches to the ribber and knit",
+      );
+      expect(html).toContain(
+        "then pick them up to hand knit ribbing to the desired finished cuff depth.",
+      );
+      expect(html).toContain(
+        `knit ${topDown.calc.cuffRows} rows of ribbing in the needle arrangement of your choice, then bind off.`,
+      );
+      expect(html).toContain(
+        `mock ribbing</span> hem for ${topDown.calc.cuffRows * 2} rows so the hem can be folded.`,
+      );
+      expect(html).toContain(
+        `reverse hung hem</span></button> for ${topDown.calc.cuffRows * 2} rows so the hem can be folded.`,
+      );
+      expect(html).toContain(`data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}"`);
+      expect(html).toContain(`data-glossary-id="${SIDEWAYS_MOCK_RIB_GLOSSARY_ID}"`);
+      expect(html).toContain(`data-content-id="${SIDEWAYS_REVERSE_HUNG_HEM_VIDEO_ID}"`);
+      expect(html).toContain("Bind off and work a crochet edging.");
+      expect(html).toContain(SIDEWAYS_TOP_DOWN_CHART_FINISH);
+      expect(html).not.toContain("Optional ribbed cuff");
+      expect(html).not.toContain("or pick up");
+      expect(html).not.toContain("Bind off loosely or");
+      expect(html.match(/Choose one way to finish:/g)).toHaveLength(1);
+      expect(html.split(`data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}"`).length - 1).toBe(1);
+    }
+
+    expect(cuffUp.calc.wristSts).toBe(topDown.calc.wristSts);
+    expect(cuffUp.calc.cuffRows).toBe(topDown.calc.cuffRows);
+    expect(cuffHtml).toContain(
+      `The finished cuff is ${cuffUp.calc.wristSts} stitches and ${cuffUp.calc.cuffRows} rows deep.`,
+    );
+    expect(topHtml).toContain(
+      `The finished cuff is ${topDown.calc.wristSts} stitches and ${topDown.calc.cuffRows} rows deep.`,
+    );
+    expect(cuffUp.calc.sleeveBodyRows).toBe(topDown.calc.sleeveBodyRows);
+    expect(cuffHtml).not.toContain(
+      `Hand knit ribbing ${cuffUp.calc.cuffRows} rows`,
+    );
+    expect(topHtml).not.toContain(
+      `hand knit ribbing ${topDown.calc.cuffRows} rows`,
+    );
   });
 });
