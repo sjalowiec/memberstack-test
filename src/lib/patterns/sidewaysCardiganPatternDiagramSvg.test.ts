@@ -548,15 +548,20 @@ describe("single-diagram print for Sideways body and sleeve", () => {
           expect(armhole).toBeDefined();
           expect(backNeck).toBeDefined();
           expect(bindOff && vNeck).toBeTruthy();
+          const neckDepthLineY = Number(
+            /data-role="dim-vneck-depth"[\s\S]*?<line\b[^>]*\sy1="([^"]+)"/.exec(svg)?.[1],
+          );
+          expect(neckDepthLineY).not.toBeNaN();
+          expect(vNeck!.top).toBeGreaterThan(neckDepthLineY);
+          expect(vNeck!.x).toBeGreaterThan(frame.vCutX);
+          expect(vNeck!.x).toBeLessThan(frame.neckX);
+          expect(svg).toContain('data-role="vneck-sts-leader"');
           if (style === "cardigan") {
             expect(armhole!.x).toBeGreaterThan(frame.neckX);
             expect(backNeck!.x).toBeLessThan(frame.neckX);
-            expect(svg).toContain('data-role="vneck-sts-leader"');
-            expect(vNeck!.right).toBeLessThanOrEqual(frame.vCutX + 4);
           } else {
             expect(armhole!.right).toBeLessThan(frame.hemX);
             expect(backNeck!.x).toBeLessThan(frame.neckX);
-            expect(vNeck!.right).toBeLessThan(frame.hemX);
           }
           for (const label of labels) {
             expect(label.top).toBeGreaterThan(box.y);
