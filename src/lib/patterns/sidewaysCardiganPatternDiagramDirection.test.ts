@@ -203,6 +203,8 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
   it("uses the shared finished-pattern type scaled to the viewBox, not a second standard", () => {
     const type = sidewaysPatternDiagramTypography(canvas.type.viewBoxWidth);
     expect(type).toEqual(canvas.type);
+    expect(viewBoxOf(sts)).toEqual(viewBoxOf(shaping));
+    expect(canvas.width / canvas.type.viewBoxWidth).toBeLessThan(1.5);
     expect(type.pieceWeight).toBe(DS_FW_TITLE);
     expect(type.stitch / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
     expect(type.notation / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
