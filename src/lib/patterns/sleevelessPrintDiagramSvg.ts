@@ -77,7 +77,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
       patternData: diagramPatternData,
       measurementPiece: "back",
     });
-    const generatedSvg = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, diagramPatternData);
+    const generatedSvg = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, diagramPatternData, unit);
     if (generatedSvg) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(generatedSvg, "image/svg+xml");
@@ -103,7 +103,7 @@ async function loadSleevelessPieceDiagramSvgMarkup(
       measurementPiece: "front",
       cardiganHalfSide,
     });
-    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, diagramPatternData);
+    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, diagramPatternData, unit);
     if (generatedSvg) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(generatedSvg, "image/svg+xml");

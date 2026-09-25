@@ -12,6 +12,10 @@ import {
 import { DS_FS_NOTATION, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
 import { SLEEVELESS_DIAGRAM_INLINE_CLASS } from "./sleevelessDiagramModal";
 import {
+  formatPatternDiagramCountLabel,
+  formatPatternDiagramMeasurement,
+} from "./patternStitchesRowsDiagramLabel";
+import {
   formatBindOffNotation,
   formatCastOnNotation,
   formatHoldNotation,
@@ -197,14 +201,14 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
   const lines = sidewaysCardiganVNeckNotationLines(model);
 
   it("uses the shared finished-pattern type scaled to the viewBox, not a second standard", () => {
-    const type = sidewaysPatternDiagramTypography(canvas.width);
+    const type = sidewaysPatternDiagramTypography(canvas.type.viewBoxWidth);
     expect(type).toEqual(canvas.type);
     expect(type.pieceWeight).toBe(DS_FW_TITLE);
-    expect(type.stitch / canvas.width).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
-    expect(type.notation / canvas.width).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
-    expect(type.row / canvas.width).toBeCloseTo(DS_FS_MEASURE / DS_VB_W, 2);
-    expect(type.piece / canvas.width).toBeCloseTo(DS_FS_TITLE / DS_VB_W, 2);
-    expect(type.notationGap / canvas.width).toBeCloseTo(DS_NOTATION_GAP / DS_VB_W, 2);
+    expect(type.stitch / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
+    expect(type.notation / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
+    expect(type.row / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_MEASURE / DS_VB_W, 2);
+    expect(type.piece / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_TITLE / DS_VB_W, 2);
+    expect(type.notationGap / canvas.type.viewBoxWidth).toBeCloseTo(DS_NOTATION_GAP / DS_VB_W, 2);
     expect(type.stitch).toBeGreaterThan(DS_FS_NOTATION);
 
     for (const svg of [sts, shaping]) {
@@ -232,8 +236,9 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
     const bindOff = byRole(sts, "bind-off-sts")[0];
     const notationCastOn = byRole(shaping, "jp-caston")[0];
     const notationBindOff = byRole(shaping, "jp-final-bo")[0];
-    expect(castOn?.text).toBe(`CO ${edge} sts`);
-    expect(bindOff?.text).toBe(`BO ${edge} sts`);
+    const length = formatPatternDiagramMeasurement(model.measurements.finishedLengthInches, model.displayUnit);
+    expect(castOn?.text).toBe(`CO ${formatPatternDiagramCountLabel(edge, "sts", length)}`);
+    expect(bindOff?.text).toBe(`BO ${formatPatternDiagramCountLabel(edge, "sts", length)}`);
     expect(notationCastOn?.text).toBe(formatCastOnNotation(edge));
     expect(notationBindOff?.text).toBe(formatBindOffNotation(edge));
     expect(castOn!.y).toBeGreaterThan(bindOff!.y);

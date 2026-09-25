@@ -27,6 +27,7 @@ import {
   buildSidewaysCardiganSleeveStitchesRowsSvg,
 } from "../lib/patterns/sidewaysCardiganSleeveDiagramSvg";
 import { positiveMeasurementInches } from "../lib/patterns/customBuildEffectiveArmholeDepth";
+import { resolveSavedPatternMeasurementDisplayUnit } from "../lib/patterns/patternMeasurementDisplayUnit";
 import { inspectSidewaysCardiganSleeveCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganSleeveCalc";
 import {
   renderSidewaysSleeveSequenceForDirection,
@@ -431,6 +432,7 @@ function fillSidewaysPatternDiagrams(
         vNeckIncreaseSequence: [] as number[],
         vNeckDecreaseSequence: [] as number[],
       };
+  const displayUnit = resolveSavedPatternMeasurementDisplayUnit();
   const model = buildSidewaysCardiganPatternDiagramModel({
     garmentStyle:
       view.instructions?.garmentStyle ??
@@ -443,6 +445,7 @@ function fillSidewaysPatternDiagrams(
       inspectedSleeve.input?.sleeveLengthInches ?? savedSleeve.sleeveLengthInches,
     wristInches: inspectedSleeve.input?.finishedWristInches ?? savedSleeve.wristInches,
     ...instructionSequences,
+    displayUnit,
   });
 
   closeSleevelessDiagramModal();
@@ -486,6 +489,7 @@ function fillSidewaysSleeveDiagrams(
     calc,
     stitchesPerInch: view.input.stitchesPerInch,
     rowsPerInch: view.input.rowsPerInch,
+    displayUnit: resolveSavedPatternMeasurementDisplayUnit(),
   };
   const stsHost = diagramHost.querySelector("[data-sideways-sleeve-diagram-sts-rows-host]");
   if (stsHost instanceof HTMLElement) {

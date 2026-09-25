@@ -34,11 +34,11 @@ import {
 import { defaultSidewaysCardiganStyleMeasurements } from "./sidewaysCardiganStyleMeasurements";
 import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
 import { SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES } from "./sidewaysCardiganConstructionIdentity";
+import { formatInchesWithUnit } from "./sidewaysCardiganDisplayFormat";
 import {
-  formatInchesWithUnit,
-  formatRowsCount,
-  formatStitchesCount,
-} from "./sidewaysCardiganDisplayFormat";
+  formatPatternDiagramCountLabel,
+  formatPatternDiagramMeasurement,
+} from "./patternStitchesRowsDiagramLabel";
 
 const SAMPLE: SidewaysCardiganSleeveCalcInput = {
   direction: "cuff-up",
@@ -137,10 +137,10 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
       expect(view.sts).toContain(formatInchesWithUnit(calc.finished.upperArmInches));
       expect(view.sts).toContain(formatInchesWithUnit(calc.finished.wristInches));
       expect(view.sts).toContain(formatInchesWithUnit(calc.finished.sleeveLengthInches));
-      expect(view.sts).toContain(formatStitchesCount(calc.topSts));
-      expect(view.sts).toContain(formatStitchesCount(calc.wristSts));
-      expect(view.sts).toContain(formatRowsCount(calc.sleeveTotalRows));
-      expect(view.sts).toContain(formatRowsCount(calc.cuffRows));
+      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.topSts, "sts", formatPatternDiagramMeasurement(calc.finished.upperArmInches, "in")));
+      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.wristSts, "sts", formatPatternDiagramMeasurement(calc.finished.wristInches, "in")));
+      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.sleeveTotalRows, "rows", formatPatternDiagramMeasurement(calc.finished.sleeveLengthInches, "in")));
+      expect(view.sts).toContain(formatPatternDiagramCountLabel(calc.cuffRows, "rows", formatPatternDiagramMeasurement(calc.finished.cuffDepthInches, "in")));
       expect(view.sts).not.toContain("Upper arm");
       expect(view.sts).not.toContain("Wrist/Cuff");
       expect(view.sts).not.toContain("Sleeve length");

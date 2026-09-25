@@ -25,6 +25,11 @@ import {
   buildSleevelessBackStsRowsDiagramModel,
   type SleevelessBackStsRowsDiagramModel,
 } from "./sleevelessBackStsRowsDiagramModel";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
+import {
+  formatPatternDiagramCountLabel,
+  formatPatternDiagramMeasurement,
+} from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 const VB_W = SLEEVELESS_BACK_GARMENT_VB_W;
@@ -71,21 +76,18 @@ function buildFrame(model: SleevelessBackStsRowsDiagramModel) {
   return buildSleevelessBackGarmentFrame(model);
 }
 
-function formatDisplayNumber(n: number): string {
-  if (!Number.isFinite(n)) return "";
-  const rounded = Math.round(n);
-  if (Math.abs(n - rounded) < 0.05) return String(rounded);
-  return String(Math.round(n * 10) / 10).replace(/\.0$/, "");
-}
-
-function inchesFromRows(rows: number, rowsPerInch: number): string {
-  if (!(rowsPerInch > 0) || !(rows > 0)) return "";
-  return `${formatDisplayNumber(rows / rowsPerInch)} in`;
-}
-
-function inchesFromStitches(stitches: number, stitchesPerInch: number): string {
-  if (!(stitchesPerInch > 0) || !(stitches > 0)) return "";
-  return `${formatDisplayNumber(stitches / stitchesPerInch)} in`;
+function countLines(
+  count: number,
+  kind: "sts" | "rows",
+  inches: number | undefined,
+  unit: MeasurementDisplayUnit,
+  extra: string,
+): { text: string; extra?: string }[] {
+  const measure = formatPatternDiagramMeasurement(inches, unit);
+  return [
+    { text: formatPatternDiagramCountLabel(count, kind), extra },
+    ...(measure ? [{ text: measure }] : []),
+  ];
 }
 
 function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right"): string {
@@ -192,8 +194,8 @@ function drawSilhouette(frame: Frame, tapered: boolean): string {
 }
 
 function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame): string {
-  const rpi = model.rows.rowsPerInch;
-  const spi = model.widths.stitchesPerInch;
+  const unit = model.finished.unit;
+  const finished = model.finished;
   const totalArrowX = Math.max(40, frame.left - 24);
   const hemArrowX = Math.max(totalArrowX + 12, frame.left - 10);
   const leftGutterLabelX = 34;
@@ -204,13 +206,11 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
   const parts: string[] = [];
 
   const totalLengthLines = [
-    { text: `${model.rows.expectedGarmentRows} rows`, extra: ` data-rows="${fmtNum(model.rows.expectedGarmentRows)}"` },
-    { text: inchesFromRows(model.rows.expectedGarmentRows, rpi) },
-  ].filter((line) => line.text);
+    ...countLines(model.rows.expectedGarmentRows, "rows", finished.garmentLengthInches, unit, ` data-rows="${fmtNum(model.rows.expectedGarmentRows)}"`),
+  ];
   const hemLines = [
-    { text: `${model.rows.hemRows} rows`, extra: ` data-rows="${fmtNum(model.rows.hemRows)}"` },
-    { text: inchesFromRows(model.rows.hemRows, rpi) },
-  ].filter((line) => line.text);
+    ...countLines(model.rows.hemRows, "rows", finished.hemDepthInches, unit, ` data-rows="${fmtNum(model.rows.hemRows)}"`),
+  ];
   const totalLabelY = (frame.shoulderTopY + frame.bottomY) / 2;
   const hemBandMidY = (frame.hemY + frame.bottomY) / 2;
   const minLabelSep = 10;
@@ -245,12 +245,14 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "length-measurement",
       "body-length",
       [
-        {
-          text: `${model.rows.rowsFromCastOnToArmholeStart} rows`,
-          extra: ` data-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}"`,
-        },
-        { text: inchesFromRows(model.rows.rowsFromCastOnToArmholeStart, rpi) },
-      ].filter((line) => line.text),
+        ...countLines(
+          model.rows.rowsFromCastOnToArmholeStart,
+          "rows",
+          finished.bodyToArmholeInches,
+          unit,
+          ` data-rows="${fmtNum(model.rows.rowsFromCastOnToArmholeStart)}"`,
+        ),
+      ],
       "start",
     ),
   );
@@ -280,9 +282,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "length-measurement",
       "armhole",
       [
-        { text: `${model.rows.armholeRows} rows`, extra: ` data-rows="${fmtNum(model.rows.armholeRows)}"` },
-        { text: inchesFromRows(model.rows.armholeRows, rpi) },
-      ].filter((line) => line.text),
+        ...countLines(model.rows.armholeRows, "rows", finished.armholeDepthInches, unit, ` data-rows="${fmtNum(model.rows.armholeRows)}"`),
+      ],
       "start",
     ),
   );
@@ -297,9 +298,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
         "length-measurement",
         "neck-depth",
         [
-          { text: `${model.neckline.depthRows} rows`, extra: ` data-rows="${fmtNum(model.neckline.depthRows)}"` },
-          { text: inchesFromRows(model.neckline.depthRows, rpi) },
-        ].filter((line) => line.text),
+          ...countLines(model.neckline.depthRows, "rows", finished.neckDepthInches, unit, ` data-rows="${fmtNum(model.neckline.depthRows)}"`),
+        ],
       ),
     );
   }
@@ -314,9 +314,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "bust",
       [
-        { text: `${model.widths.bustStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.bustStitches)}"` },
-        { text: inchesFromStitches(model.widths.bustStitches, spi) },
-      ].filter((line) => line.text),
+        ...countLines(model.widths.bustStitches, "sts", finished.bustWidthInches, unit, ` data-sts="${fmtNum(model.widths.bustStitches)}"`),
+      ],
     ),
   );
 
@@ -329,9 +328,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "cast-on",
       [
-        { text: `${model.widths.hemStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.hemStitches)}"` },
-        { text: inchesFromStitches(model.widths.hemStitches, spi) },
-      ].filter((line) => line.text),
+        ...countLines(model.widths.hemStitches, "sts", finished.hemWidthInches, unit, ` data-sts="${fmtNum(model.widths.hemStitches)}"`),
+      ],
     ),
   );
 
@@ -346,9 +344,8 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "width-measurement",
       "neck",
       [
-        { text: `${model.widths.necklineStitches} sts`, extra: ` data-sts="${fmtNum(model.widths.necklineStitches)}"` },
-        { text: inchesFromStitches(model.widths.necklineStitches, spi) },
-      ].filter((line) => line.text),
+        ...countLines(model.widths.necklineStitches, "sts", finished.neckWidthInches, unit, ` data-sts="${fmtNum(model.widths.necklineStitches)}"`),
+      ],
     ),
   );
 
@@ -365,11 +362,10 @@ function drawMeasurements(model: SleevelessBackStsRowsDiagramModel, frame: Frame
       "shoulder",
       [
         {
-          text: `${model.widths.shoulderStitchesPerSide} sts`,
+          text: formatPatternDiagramCountLabel(model.widths.shoulderStitchesPerSide, "sts"),
           extra: ` data-sts="${fmtNum(model.widths.shoulderStitchesPerSide)}"`,
         },
-        { text: inchesFromStitches(model.widths.shoulderStitchesPerSide, spi) },
-      ].filter((line) => line.text),
+      ],
     ),
   );
   parts.push(
@@ -422,8 +418,11 @@ export function tryBuildSleevelessBackStsRowsDiagramSvg(
 export function tryBuildLiveSleevelessBackStsRowsDiagramSvg(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
+  unit?: MeasurementDisplayUnit,
 ): string | null {
   return tryBuildSleevelessBackStsRowsDiagramSvg(
-    buildSleevelessBackStsRowsDiagramModel(result, patternData),
+    buildSleevelessBackStsRowsDiagramModel(result, patternData, {
+      unit: unit === "cm" ? "cm" : "in",
+    }),
   );
 }

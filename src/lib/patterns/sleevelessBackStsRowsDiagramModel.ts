@@ -13,6 +13,11 @@ import {
 } from "./sleevelessDiagramBodyShapeSrc";
 import { isSleevelessCardiganGarmentStyle } from "./sleevelessFrontDiagramSrc";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
+import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
+import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
+import { resolveEffectiveBackNeckDepthInches } from "./customBuildEffectiveNeckDepth";
+import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { armholeBindOffDecreaseFromEachSide } from "./sleevelessBackJapaneseNotation";
 import type { StitchDecreasePoint } from "./shapingNotationCompress";
@@ -74,6 +79,19 @@ export type SleevelessBackStsRowsDiagramBodyShaping = {
   rowNumbers: readonly number[];
 };
 
+/** Finished spans already chosen for the pattern. Missing keys are not labeled. */
+export type SleevelessStsRowsFinishedSpans = {
+  unit: MeasurementDisplayUnit;
+  garmentLengthInches?: number;
+  bodyToArmholeInches?: number;
+  hemDepthInches?: number;
+  armholeDepthInches?: number;
+  neckDepthInches?: number;
+  bustWidthInches?: number;
+  hemWidthInches?: number;
+  neckWidthInches?: number;
+};
+
 export type SleevelessBackStsRowsDiagramModel = {
   piece: "back";
   garmentStyle: "pullover" | "cardigan";
@@ -84,7 +102,44 @@ export type SleevelessBackStsRowsDiagramModel = {
   armhole: SleevelessBackStsRowsDiagramArmhole;
   shoulder: SleevelessBackStsRowsDiagramShoulder;
   bodyShaping: SleevelessBackStsRowsDiagramBodyShaping;
+  finished: SleevelessStsRowsFinishedSpans;
 };
+
+function storedInches(n: unknown): number | undefined {
+  return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+export function sleevelessPieceFinishedSpans(
+  d: SleevelessBackPatternResult["debug"],
+  patternData: unknown,
+  garmentStyle: "pullover" | "cardigan",
+  hemStitches: number,
+  bustStitches: number,
+  unit: MeasurementDisplayUnit,
+  overrides?: { neckDepthInches?: number; neckWidthInches?: number },
+): SleevelessStsRowsFinishedSpans {
+  const data = patternData && typeof patternData === "object" ? (patternData as Record<string, unknown>) : {};
+  const style = data.style && typeof data.style === "object" ? (data.style as Record<string, unknown>) : {};
+  const audience = typeof style.recipientCategory === "string" ? style.recipientCategory : undefined;
+  const bust = storedInches(d.finishedBustChest) ?? resolveEffectiveFinishedBustInches(data);
+  const pieceDivisor = garmentStyle === "cardigan" ? 4 : 2;
+  const bustWidthInches = bust !== undefined ? bust / pieceDivisor : undefined;
+  const neck = storedInches(d.necklineWidthInches) ?? resolveEffectiveNeckOpeningWidthInches(data);
+  return {
+    unit,
+    garmentLengthInches: storedInches(d.backNeckToHem),
+    bodyToArmholeInches: storedInches(d.bodyInchesToArmhole),
+    hemDepthInches: resolveEffectiveHemDepthInches(data, audience),
+    armholeDepthInches: storedInches(d.armholeDepth),
+    neckDepthInches:
+      overrides?.neckDepthInches ??
+      resolveEffectiveBackNeckDepthInches(data) ??
+      storedInches(d.reservedNecklineShoulderInches),
+    bustWidthInches,
+    hemWidthInches: hemStitches === bustStitches ? bustWidthInches : undefined,
+    neckWidthInches: overrides?.neckWidthInches ?? neck,
+  };
+}
 
 function isFiniteNumber(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n);
@@ -180,7 +235,7 @@ export function shouldBuildSleevelessBackStsRowsDiagramModel(
 export function buildSleevelessBackStsRowsDiagramModel(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
-  options?: { requireSupportedBodyShape?: boolean },
+  options?: { requireSupportedBodyShape?: boolean; unit?: MeasurementDisplayUnit },
 ): SleevelessBackStsRowsDiagramModel | null {
   if (options?.requireSupportedBodyShape === false) {
     if (!result.neckShoulderChartUsesLiveRows) return null;
@@ -257,10 +312,12 @@ export function buildSleevelessBackStsRowsDiagramModel(
 
   const strategy: "deep-round" | "shallow-round" =
     d.backNeckRoundNecklineStrategy === "deep-round" ? "deep-round" : "shallow-round";
+  const garmentStyle = isSleevelessCardiganGarmentStyle(patternData ?? {}) ? "cardigan" : "pullover";
+  const unit = options?.unit === "cm" ? "cm" : "in";
 
   return {
     piece: "back",
-    garmentStyle: isSleevelessCardiganGarmentStyle(patternData ?? {}) ? "cardigan" : "pullover",
+    garmentStyle,
     bodyShape: shouldGenerateSleevelessAlineStsRows(patternData, d.alineBodyShapingType)
       ? "aline"
       : "straight",
@@ -305,5 +362,6 @@ export function buildSleevelessBackStsRowsDiagramModel(
       points: backShoulderPoints(result),
     },
     bodyShaping,
+    finished: sleevelessPieceFinishedSpans(d, patternData, garmentStyle, hemStitches, bustStitches, unit),
   };
 }

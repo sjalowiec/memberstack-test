@@ -250,10 +250,10 @@ describe("Front Stitches & Rows neckline depth and cast-on placement", () => {
     const pattern = deepFrontPattern();
     const result = generateDropShoulderPattern(pattern);
     const model = buildDropShoulderFrontStitchesRowsModel(result, pattern, "in")!;
-    expect(model.necklineDepthLabel).toMatch(/72 rows \/ 12 in/);
+    expect(model.necklineDepthLabel).toMatch(/72 rows \(12 in\)/);
     const svg = buildDropShoulderFrontStitchesRowsSvg(model);
     const group = neckDepthGroup(svg);
-    expect(group).toContain("72 rows / 12 in");
+    expect(group).toContain("72 rows (12 in)");
     expect(group).toContain("data-neckline-depth-label");
     expect(group).toContain("rotate(-90)");
     expect(svg).not.toContain('data-body-width="true"');
@@ -281,8 +281,8 @@ describe("Front Stitches & Rows neckline depth and cast-on placement", () => {
     const result = generateDropShoulderPattern(pattern);
     expect(result.debug.frontNeckDepthRows).toBe(72);
     const model = buildDropShoulderFrontStitchesRowsModel(result, pattern, "in")!;
-    expect(model.necklineDepthLabel).toBe("72 rows / 12 in");
-    expect(buildDropShoulderFrontStitchesRowsSvg(model)).toContain("72 rows / 12 in");
+    expect(model.necklineDepthLabel).toBe("72 rows (12 in)");
+    expect(buildDropShoulderFrontStitchesRowsSvg(model)).toContain("72 rows (12 in)");
   });
 
   it("round scoop deepest Y equals row-scaled neckBottomY for the 72-row / 12-in Front", () => {

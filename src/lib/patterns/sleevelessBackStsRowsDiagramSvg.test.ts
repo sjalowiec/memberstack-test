@@ -11,6 +11,7 @@ import {
   tryBuildLiveSleevelessBackStsRowsDiagramSvg,
   tryBuildSleevelessBackStsRowsDiagramSvg,
 } from "./sleevelessBackStsRowsDiagramSvg";
+import { formatPatternDiagramMeasurement } from "./patternStitchesRowsDiagramLabel";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -149,17 +150,6 @@ function pathPoints(d: string): { x: number; y: number }[] {
   return pts;
 }
 
-function expectedInches(count: number, perInch: number): string {
-  if (!(perInch > 0) || !(count > 0)) return "";
-  const n = count / perInch;
-  const rounded = Math.round(n);
-  const text =
-    Math.abs(n - rounded) < 0.05
-      ? String(rounded)
-      : String(Math.round(n * 10) / 10).replace(/\.0$/, "");
-  return `${text} in`;
-}
-
 const UPPER_WIDTH_TOL = 0.51;
 
 function expectUpperSilhouetteMatchesStitchBudget(
@@ -213,8 +203,8 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
     expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
-    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.rows.expectedGarmentRows, model.rows.rowsPerInch));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.garmentLengthInches, "in"));
   });
 
   it("derives post-armhole width from the Back stitch budget", () => {
@@ -418,8 +408,10 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
     expect(lengthLabelRows(svg, "neck-depth")).toBe(model.neckline.depthRows);
-    expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
+    if (model.finished.hemWidthInches) {
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    }
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
   });
 
   it("generates an outward A-line Back when hem stitches are narrower than bust", () => {
@@ -491,8 +483,10 @@ describe("buildSleevelessBackStsRowsDiagramSvg", () => {
     expect(lengthLabelRows(svg, "body-length")).toBe(model.rows.rowsFromCastOnToArmholeStart);
     expect(lengthLabelRows(svg, "hem")).toBe(model.rows.hemRows);
     expect(lengthLabelRows(svg, "armhole")).toBe(model.rows.armholeRows);
-    expect(svg).toContain(expectedInches(model.widths.hemStitches, model.widths.stitchesPerInch));
-    expect(svg).toContain(expectedInches(model.widths.bustStitches, model.widths.stitchesPerInch));
+    if (model.finished.hemWidthInches) {
+      expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.hemWidthInches, "in"));
+    }
+    expect(svg).toContain(formatPatternDiagramMeasurement(model.finished.bustWidthInches, "in"));
   });
 
   it("returns null so shaped Back keeps the static fallback", () => {

@@ -54,11 +54,11 @@ import {
   SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
 } from "./dropShoulderSleeveConstruction";
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
 import {
-  formatInchesWithUnit,
-  formatRowsCount,
-  formatStitchesCount,
-} from "./sidewaysCardiganDisplayFormat";
+  formatPatternDiagramCountLabel,
+  formatPatternDiagramMeasurement,
+} from "./patternStitchesRowsDiagramLabel";
 import {
   formatBindOffNotation,
   formatBodyRowsNotation,
@@ -69,6 +69,7 @@ export type SidewaysCardiganSleeveDiagramArgs = {
   calc: SidewaysCardiganSleeveCalc;
   stitchesPerInch: number;
   rowsPerInch: number;
+  displayUnit?: MeasurementDisplayUnit;
 };
 
 const MIN_READABLE_FONT = DS_FS_SMALL;
@@ -91,12 +92,20 @@ function diagramText(
   );
 }
 
-function stitchDimensionLabel(stitches: number, inches: number): string {
-  return `${formatStitchesCount(stitches)} / ${formatInchesWithUnit(inches)}`;
+function stitchDimensionLabel(
+  stitches: number,
+  inches: number | undefined,
+  unit: MeasurementDisplayUnit,
+): string {
+  return formatPatternDiagramCountLabel(stitches, "sts", formatPatternDiagramMeasurement(inches, unit));
 }
 
-function rowDimensionLabel(rows: number, inches: number): string {
-  return `${formatRowsCount(rows)} / ${formatInchesWithUnit(inches)}`;
+function rowDimensionLabel(
+  rows: number,
+  inches: number | undefined,
+  unit: MeasurementDisplayUnit,
+): string {
+  return formatPatternDiagramCountLabel(rows, "rows", formatPatternDiagramMeasurement(inches, unit));
 }
 
 function directionChoiceLabel(calc: SidewaysCardiganSleeveCalc): string {
@@ -233,6 +242,7 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   if (!oriented) return null;
   const { frame } = oriented;
   const { calc } = args;
+  const unit = args.displayUnit === "cm" ? "cm" : "in";
   const directionLabel = directionChoiceLabel(calc);
   const castOnEdge = calc.direction === "top-down" ? "upper-arm" : "wrist";
   const bindOffEdge = calc.direction === "top-down" ? "wrist" : "upper-arm";
@@ -260,19 +270,19 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
     workingDirectionArrow(frame, knitToward),
     drawSleeveWristWidth(
       frame,
-      stitchDimensionLabel(calc.wristSts, calc.finished.wristInches),
+      stitchDimensionLabel(calc.wristSts, calc.finished.wristInches, unit),
     ),
     drawSleeveUpperArmWidth(
       frame,
-      stitchDimensionLabel(calc.topSts, calc.finished.upperArmInches),
+      stitchDimensionLabel(calc.topSts, calc.finished.upperArmInches, unit),
     ),
     drawSleeveTotalLength(
       frame,
-      rowDimensionLabel(calc.sleeveTotalRows, calc.finished.sleeveLengthInches),
+      rowDimensionLabel(calc.sleeveTotalRows, calc.finished.sleeveLengthInches, unit),
     ),
     drawSleeveCuffDepth(
       frame,
-      rowDimensionLabel(calc.cuffRows, calc.finished.cuffDepthInches),
+      rowDimensionLabel(calc.cuffRows, calc.finished.cuffDepthInches, unit),
     ),
   ].join("");
 

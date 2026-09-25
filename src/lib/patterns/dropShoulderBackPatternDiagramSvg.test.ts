@@ -99,11 +99,11 @@ describe("buildDropShoulderBackStitchesRowsSvg", () => {
     expect(model.armholeRows).toBe(36);
     expect(model.necklineRowsInsideArmhole).toBe(8);
     expect(model.armholeEvenRows).toBe(28);
-    expect(model.armholeDepthLabel).toBe("36 rows / 4.5 in");
+    expect(model.armholeDepthLabel).toBe("36 rows (4.5 in)");
 
     const svg = buildDropShoulderBackStitchesRowsSvg(model);
     expect(svg).toContain("Armhole depth");
-    expect(svg).toContain("36 rows / 4.5 in");
+    expect(svg).toContain("36 rows (4.5 in)");
     expect(svg).toContain('data-armhole-rows="36"');
     expect(svg).toContain('data-neckline-rows-inside-armhole="8"');
     expect(svg).toContain('data-armhole-even-rows="28"');

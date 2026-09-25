@@ -1277,7 +1277,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
-    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, patternData);
+    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, patternData, unit);
     if (generatedSvg) {
       mountFrontStsRowsSvgMarkup(el, generatedSvg, hydrateGen);
       return;
@@ -1316,7 +1316,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
-    const generatedSvg = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, patternData);
+    const generatedSvg = tryBuildLiveSleevelessBackStsRowsDiagramSvg(result, patternData, unit);
     if (generatedSvg) {
       mountBackStsRowsSvgMarkup(el, generatedSvg, hydrateGen);
       return;

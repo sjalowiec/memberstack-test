@@ -5,7 +5,10 @@
  * renderers. Does not compute stitches, rows, shaping, or sizing.
  */
 
-import { lengthFromRowsForDiagram } from "./sleevelessRowAccounting";
+import {
+  formatPatternDiagramCountLabel,
+  formatPatternDiagramMeasurement,
+} from "./patternStitchesRowsDiagramLabel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import { resolveDropShoulderSleeveBodyRowsForDiagram } from "./sleevelessGarmentDiagramReplacements";
@@ -37,40 +40,28 @@ function positiveInt(n: unknown): number {
   return Math.max(0, Math.round(n));
 }
 
-function formatLengthNumber(n: number): string {
-  const rounded = Math.round(n);
-  if (Math.abs(n - rounded) < 1e-9) return String(rounded);
-  const one = Math.round(n * 10) / 10;
-  return String(one).replace(/\.0$/, "");
-}
-
-function formatLength(inchesOrCm: number, unit: DropShoulderDiagramUnit): string {
-  return `${formatLengthNumber(inchesOrCm)} ${unit}`;
+function storedInches(n: unknown): number | undefined {
+  return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
 function formatStitchWidthLabel(
   stitches: number,
-  stitchesPerInch: number,
+  inches: number | undefined,
   unit: DropShoulderDiagramUnit,
 ): string {
   const sts = positiveInt(stitches);
   if (sts <= 0) return "";
-  if (!(stitchesPerInch > 0)) return `${sts} sts`;
-  const inches = sts / stitchesPerInch;
-  const converted = unit === "cm" ? inches * 2.54 : inches;
-  return `${sts} sts / ${formatLength(converted, unit)}`;
+  return formatPatternDiagramCountLabel(sts, "sts", formatPatternDiagramMeasurement(inches, unit));
 }
 
 function formatRowsLengthLabel(
   rows: number,
-  rowsPerInch: number,
+  inches: number | undefined,
   unit: DropShoulderDiagramUnit,
 ): string {
   const rowN = Math.max(0, Math.round(rows));
   if (rowN <= 0) return "";
-  const fromRows = lengthFromRowsForDiagram(rowN, rowsPerInch, unit);
-  if (fromRows === undefined) return `${rowN} rows`;
-  return `${rowN} rows / ${formatLength(fromRows, unit)}`;
+  return formatPatternDiagramCountLabel(rowN, "rows", formatPatternDiagramMeasurement(inches, unit));
 }
 
 /**
@@ -90,6 +81,10 @@ export function buildDropShoulderSleeveStitchesRowsModel(
         dropShoulderSleeveCuffRows?: number;
         dropShoulderSleeveTopStitches?: number;
         dropShoulderSleeveWristStitches?: number;
+        dropShoulderSleeveLengthInches?: number;
+        dropShoulderWristInches?: number;
+        dropShoulderUpperArmInches?: number;
+        dropShoulderCuffDepthInches?: number;
       })
     | undefined;
   if (!d) return null;
@@ -119,10 +114,14 @@ export function buildDropShoulderSleeveStitchesRowsModel(
     cuffRows,
     sleeveBodyRows,
     sleeveTotalRows,
-    wristWidthLabel: formatStitchWidthLabel(wristStitches, spi, unit),
-    topWidthLabel: formatStitchWidthLabel(topStitches, spi, unit),
-    cuffDepthLabel: formatRowsLengthLabel(cuffRows, rpi, unit),
-    sleeveBodyLengthLabel: formatRowsLengthLabel(sleeveBodyRows, rpi, unit),
-    sleeveTotalLengthLabel: formatRowsLengthLabel(sleeveTotalRows, rpi, unit),
+    wristWidthLabel: formatStitchWidthLabel(wristStitches, storedInches(d.dropShoulderWristInches), unit),
+    topWidthLabel: formatStitchWidthLabel(topStitches, storedInches(d.dropShoulderUpperArmInches), unit),
+    cuffDepthLabel: formatRowsLengthLabel(cuffRows, storedInches(d.dropShoulderCuffDepthInches), unit),
+    sleeveBodyLengthLabel: formatRowsLengthLabel(sleeveBodyRows, undefined, unit),
+    sleeveTotalLengthLabel: formatRowsLengthLabel(
+      sleeveTotalRows,
+      storedInches(d.dropShoulderSleeveLengthInches),
+      unit,
+    ),
   };
 }

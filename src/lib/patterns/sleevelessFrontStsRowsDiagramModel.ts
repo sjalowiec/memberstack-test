@@ -7,6 +7,11 @@
  */
 
 import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
+import { resolveEffectiveFrontNeckDepthInches } from "./customBuildEffectiveNeckDepth";
+import {
+  sleevelessPieceFinishedSpans,
+  type SleevelessStsRowsFinishedSpans,
+} from "./sleevelessBackStsRowsDiagramModel";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
 import {
   cardiganFrontInitialNeckBindOffStitches,
@@ -151,7 +156,37 @@ export type SleevelessFrontStsRowsDiagramModel = {
   shoulder: SleevelessFrontStsRowsDiagramShoulder;
   bodyShaping: SleevelessFrontStsRowsDiagramBodyShaping;
   frontBand?: SleevelessFrontStsRowsFrontBand;
+  finished: SleevelessStsRowsFinishedSpans;
 };
+
+function optionalInches(n: unknown): number | undefined {
+  return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function frontFinishedSpans(
+  result: SleevelessBackPatternResult,
+  patternData: unknown,
+  garmentStyle: "pullover" | "cardigan",
+  hemStitches: number,
+  bustStitches: number,
+): SleevelessStsRowsFinishedSpans {
+  const d = result.debug;
+  const data = patternData && typeof patternData === "object" ? (patternData as Record<string, unknown>) : {};
+  const neckDepth = resolveEffectiveFrontNeckDepthInches(data) ?? optionalInches(d.frontNeckDepth);
+  const spans = sleevelessPieceFinishedSpans(
+    d,
+    patternData,
+    garmentStyle,
+    hemStitches,
+    bustStitches,
+    "in",
+    neckDepth !== undefined ? { neckDepthInches: neckDepth } : undefined,
+  );
+  if (garmentStyle === "cardigan" && spans.neckWidthInches !== undefined) {
+    return { ...spans, neckWidthInches: spans.neckWidthInches / 2 };
+  }
+  return spans;
+}
 
 function isFiniteNumber(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n);
@@ -516,6 +551,7 @@ export function buildSleevelessFrontStsRowsDiagramModel(
       points: shoulderPoints,
     },
     bodyShaping,
+    finished: frontFinishedSpans(result, patternData, "pullover", hemStitches, bustStitches),
   };
 }
 
@@ -691,5 +727,12 @@ function buildCardiganFrontStsRowsDiagramModel(
     },
     bodyShaping,
     frontBand: cardiganFrontBand(result, patternData),
+    finished: frontFinishedSpans(
+      result,
+      patternData,
+      "cardigan",
+      widths.hemStitches,
+      widths.bustStitches,
+    ),
   };
 }
