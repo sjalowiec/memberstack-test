@@ -57,6 +57,7 @@ import { initChartProgressTracking } from "./chartProgressTracker";
 import { getCurrentPattern, savePatternData, updatePatternSection } from "../lib/patterns/patternStorage";
 import {
   readSidewaysBandGauge,
+  sidewaysBandGaugeFromSwatchInputs,
   renderSidewaysCardiganBandSectionHtml,
   renderSidewaysFinishingSectionHtml,
   sidewaysFoldedHemTurningNeedle,
@@ -319,17 +320,21 @@ function renderView(): void {
         const root = finishingEl;
         const stitchInput = root.querySelector("[data-sideways-band-stitches-per-inch]");
         const rowInput = root.querySelector("[data-sideways-band-rows-per-inch]");
-        const stitches = stitchInput instanceof HTMLInputElement ? Number(stitchInput.value) : 0;
-        const rows = rowInput instanceof HTMLInputElement ? Number(rowInput.value) : 0;
+        const unit = resolveSavedPatternMeasurementDisplayUnit();
+        const gauge = sidewaysBandGaugeFromSwatchInputs(
+          stitchInput instanceof HTMLInputElement ? stitchInput.value : "",
+          rowInput instanceof HTMLInputElement ? rowInput.value : "",
+          unit,
+        );
         const stored = {
-          sidewaysBandStitchesPerInch: stitches > 0 ? stitches : "",
-          sidewaysBandRowsPerInch: rows > 0 ? rows : "",
+          sidewaysBandStitchesPerInch: gauge.stitchesPerInch ?? "",
+          sidewaysBandRowsPerInch: gauge.rowsPerInch ?? "",
         };
         savePatternData("style", stored);
         updatePatternSection("style", stored);
         paintFinishing();
-        const gauge = finishingEl.querySelector("[data-sideways-band-gauge]");
-        if (gauge instanceof HTMLDetailsElement) gauge.open = true;
+        const gaugeDetails = finishingEl.querySelector("[data-sideways-band-gauge]");
+        if (gaugeDetails instanceof HTMLDetailsElement) gaugeDetails.open = true;
         const next = finishingEl.querySelector(
           editingStitches
             ? "[data-sideways-band-stitches-per-inch]"

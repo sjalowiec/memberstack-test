@@ -10,14 +10,46 @@ import { inchesToRows } from "./sleevelessRowAccounting";
 import type { SidewaysCardiganBodyCalc } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganGarmentStyle } from "./sidewaysCardiganConstructionIdentity";
 import { formatRowsCount, formatStitchesCount } from "./sidewaysCardiganDisplayFormat";
+import type { MeasurementDisplayUnit } from "./patternMeasurementDisplayUnit";
+import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
+import { rawSwatchToPerInch } from "./syncExpressWizardToPatternStorage";
 import {
-  formatMeasurementDisplayFromInches,
-  type MeasurementDisplayUnit,
-} from "./patternMeasurementDisplayUnit";
+  sleevelessHelpVideoFromCatalog,
+  type SleevelessHelpVideoMeta,
+} from "./sleevelessCatalogHelpVideo";
+import type { PublicVideoRow } from "../lessonVideo";
+import videosPublic from "../../data/videos-public.json";
 
 export const SIDEWAYS_FOLDED_HEM_OFFSET_INCHES = 1;
 export const SIDEWAYS_CARDIGAN_BAND_FINISHED_WIDTH_INCHES = 2;
 export const SIDEWAYS_CARDIGAN_BAND_CAST_ON_WIDTH_INCHES = 4;
+
+/** Learning Library content_id for “Crisp, Decorative Fold”. */
+export const SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID = 1025;
+
+export const SIDEWAYS_CARDIGAN_FOLD_VIDEO_WATCH_LABEL = "Watch: Crisp, decorative fold";
+
+export function resolveSidewaysCardiganFoldVideo(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): SleevelessHelpVideoMeta | null {
+  return sleevelessHelpVideoFromCatalog(SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID, catalog);
+}
+
+export function sidewaysCardiganFoldVideoLinkHtml(
+  video: SleevelessHelpVideoMeta | null = resolveSidewaysCardiganFoldVideo(),
+): string {
+  if (!video) return "";
+  return (
+    `<button type="button" class="kbm-kin-catalog-video pattern-help-link__button"` +
+    ` data-vimeo-id="${escapeHtml(video.id)}"` +
+    ` data-video-title="${escapeHtml(video.title)}"` +
+    ` data-content-id="${SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID}"` +
+    ` data-video-autoplay="false"` +
+    ` data-sideways-band-fold-video` +
+    ` aria-haspopup="dialog">` +
+    `${escapeHtml(SIDEWAYS_CARDIGAN_FOLD_VIDEO_WATCH_LABEL)}</button>`
+  );
+}
 
 export type SidewaysBandGauge = {
   stitchesPerInch?: number;
@@ -63,16 +95,16 @@ export function sidewaysCardiganBandMarkers(
 ): SidewaysBandMarker[] {
   const firstShoulderInches = opening.frontEdgeInches + opening.vSlopeInches;
   const positions: Array<Omit<SidewaysBandMarker, "rows">> = [
-    { id: "first-v", label: "Start of the first V-neck slope", inches: opening.frontEdgeInches },
-    { id: "first-shoulder", label: "First shoulder seam", inches: firstShoulderInches },
+    { id: "first-v", label: "first V-neck start", inches: opening.frontEdgeInches },
+    { id: "first-shoulder", label: "first shoulder seam", inches: firstShoulderInches },
     {
       id: "second-shoulder",
-      label: "Second shoulder seam",
+      label: "second shoulder seam",
       inches: opening.totalInches - firstShoulderInches,
     },
     {
       id: "second-v",
-      label: "Start of the second V-neck slope",
+      label: "second V-neck start",
       inches: opening.totalInches - opening.frontEdgeInches,
     },
   ];
@@ -184,21 +216,29 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
   });
   const markers = sidewaysCardiganBandMarkers(opening, band.rowGauge);
   const markerItems = markers
-    .map((marker) => `<li>Place a marker at approximately row ${marker.rows}.</li>`)
+    .map(
+      (marker) =>
+        `<li>${escapeHtml(marker.label)}: approximately row ${marker.rows}</li>`,
+    )
     .join("");
-  const unit = args.displayUnit === "cm" ? "cm" : "in";
-  const openingLength = `${formatMeasurementDisplayFromInches(opening.totalInches, unit)} ${unit === "cm" ? "cm" : "inches"}`;
+  const basis = bandSwatchBasis(args.displayUnit);
+  const stitchLabel = basis === "cm" ? "Band stitches per 10 cm" : "Band stitches per 4 inches";
+  const rowLabel = basis === "cm" ? "Band rows per 10 cm" : "Band rows per 4 inches";
   const used =
-    band.stitchGaugeSource === "band" || band.rowGaugeSource === "band"
-      ? `Cast-on stitches use the ${band.stitchGaugeSource} stitch gauge (${band.stitchGauge} stitches per inch). Band rows use the ${band.rowGaugeSource} row gauge (${band.rowGauge} rows per inch).`
-      : `Cast-on stitches and band rows use the sweater gauge (${args.stitchesPerInch} stitches and ${args.rowsPerInch} rows per inch).`;
+    band.stitchGaugeSource === "band" && band.rowGaugeSource === "band"
+      ? `The following instructions use your band gauge (${swatchCountFromPerInchForDisplay(band.stitchGauge, basis)} stitches and ${swatchCountFromPerInchForDisplay(band.rowGauge, basis)} rows ${basis === "cm" ? "per 10 cm" : "per 4 inches"}).`
+      : band.stitchGaugeSource === "band"
+        ? `The following instructions use your band gauge (${bandSwatchCount(band.stitchGauge, args.displayUnit, "stitches")}) and your sweater gauge (${band.rowGauge} rows per inch).`
+        : band.rowGaugeSource === "band"
+          ? `The following instructions use your sweater gauge (${band.stitchGauge} stitches per inch) and your band gauge (${bandSwatchCount(band.rowGauge, args.displayUnit, "rows")}).`
+          : `The following instructions use your sweater gauge (${args.stitchesPerInch} stitches and ${args.rowsPerInch} rows per inch).`;
   const stitchValue =
     args.bandGauge?.stitchesPerInch !== undefined && args.bandGauge.stitchesPerInch > 0
-      ? String(args.bandGauge.stitchesPerInch)
+      ? swatchCountFromPerInchForDisplay(args.bandGauge.stitchesPerInch, basis)
       : "";
   const rowValue =
     args.bandGauge?.rowsPerInch !== undefined && args.bandGauge.rowsPerInch > 0
-      ? String(args.bandGauge.rowsPerInch)
+      ? swatchCountFromPerInchForDisplay(args.bandGauge.rowsPerInch, basis)
       : "";
   return (
     `<section id="sg-front-neck-band" class="pattern-section pattern-section--garment-piece" data-section-id="sg-front-neck-band">` +
@@ -207,20 +247,24 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
     `<p class="sleeveless-pattern-line">Knit a separate band. Sew it up one front edge, around the V-neck, and down the other front edge. Do not hang or pick up the V-neck edge on the machine.</p>` +
     `<p class="sleeveless-pattern-line">For an adult sweater, the finished band is about ${SIDEWAYS_CARDIGAN_BAND_FINISHED_WIDTH_INCHES} inches wide. Knit a separate ${SIDEWAYS_CARDIGAN_BAND_CAST_ON_WIDTH_INCHES}-inch strip, then fold it lengthwise and sew it in place.</p>` +
     `<p class="sleeveless-pattern-line">${escapeHtml(used)}</p>` +
+    `<p class="sleeveless-pattern-line">Optional fold line: Before casting on, leave the center needle out of work. Keep it out of work throughout the strip. ${sidewaysCardiganFoldVideoLinkHtml()}</p>` +
     `<p class="sideways-band-counts">` +
     `<span class="sideways-band-counts__action">Cast on ${formatStitchesCount(band.castOnStitches)}</span>` +
     `<span class="sideways-band-counts__action">Knit approximately ${formatRowsCount(band.rows)}</span>` +
     `</p>` +
-    `<p class="sleeveless-pattern-line">${formatRowsCount(band.rows)} is an approximate starting length for the complete front and neck opening (${openingLength}).</p>` +
-    `<ul class="sleeveless-pattern-line" data-sideways-band-markers>${markerItems}</ul>` +
-    `<p class="sleeveless-pattern-line">Knit a few extra rows and scrap off the live stitches. Pin the band around the opening, matching its markers to the V-neck starts and shoulder seams. Adjust the fit before sewing, remove any extra rows, and finish the end.</p>` +
+    `<ol class="sleeveless-pattern-line">` +
+    `<li>Cast on the stated stitches and begin knitting the strip.</li>` +
+    `<li>As you knit, place markers at the stated cumulative rows. Label each one: first V-neck start, first shoulder seam, second shoulder seam, and second V-neck start.` +
+    `<ul data-sideways-band-markers>${markerItems}</ul></li>` +
+    `<li>After reaching the approximate total row count, knit a few extra rows and scrap off the live stitches.</li>` +
+    `<li>Pin the band around the opening, align the four markers, adjust the fit, remove excess rows, finish the end, and sew the band in place.</li>` +
+    `</ol>` +
     `<details class="no-print" data-sideways-band-gauge>` +
     `<summary>Use a different gauge for the band</summary>` +
     `<p class="sleeveless-pattern-line">The cast-on, band length, and marker rows update automatically as you enter your gauge.</p>` +
-    `<label>Band stitches per inch <input type="number" min="0" step="any" data-sideways-band-stitches-per-inch value="${escapeHtml(stitchValue)}" /></label>` +
-    `<label>Band rows per inch <input type="number" min="0" step="any" data-sideways-band-rows-per-inch value="${escapeHtml(rowValue)}" /></label>` +
+    `<label>${stitchLabel} <input type="number" min="0" step="any" data-sideways-band-stitches-per-inch value="${escapeHtml(stitchValue)}" /></label>` +
+    `<label>${rowLabel} <input type="number" min="0" step="any" data-sideways-band-rows-per-inch value="${escapeHtml(rowValue)}" /></label>` +
     `</details>` +
-    `<p class="sleeveless-pattern-line">Optional fold line: Keep the center needle out of work throughout the strip.</p>` +
     `</div></section>`
   );
 }
@@ -247,12 +291,46 @@ export function renderSidewaysFinishingSectionHtml(args: {
           "Join the sleeve seams.",
           "Set the sleeves into the armhole openings.",
         ];
-  const items = steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("");
+  const items = steps
+    .map((step) => {
+      const foldLink =
+        args.garmentStyle === "cardigan" && step.startsWith("Make and attach the cardigan front and neck band")
+          ? ` ${sidewaysCardiganFoldVideoLinkHtml()}`
+          : "";
+      return `<li>${escapeHtml(step)}${foldLink}</li>`;
+    })
+    .join("");
   return (
     `<section id="sg-finishing" class="pattern-section pattern-section--garment-piece" data-section-id="sg-finishing">` +
     `<div class="pattern-section__header"><div class="pattern-section__heading"><h2>FINISHING</h2></div></div>` +
     `<div class="pattern-section__content"><ol class="sideways-finishing">${items}</ol></div></section>`
   );
+}
+
+/** Visible swatch counts (per 4 inches or per 10 cm) → per-inch rates. Stitch and row stay in their own fields. */
+export function sidewaysBandGaugeFromSwatchInputs(
+  stitchRaw: string,
+  rowRaw: string,
+  unit: MeasurementDisplayUnit,
+): SidewaysBandGauge {
+  const converted = rawSwatchToPerInch(stitchRaw, rowRaw, unit === "cm" ? "cm" : "in");
+  const stitches = Number(converted.gaugeStitchesPerInch);
+  const rows = Number(converted.gaugeRowsPerInch);
+  return {
+    ...(Number.isFinite(stitches) && stitches > 0 ? { stitchesPerInch: stitches } : {}),
+    ...(Number.isFinite(rows) && rows > 0 ? { rowsPerInch: rows } : {}),
+  };
+}
+
+function bandSwatchBasis(unit: MeasurementDisplayUnit | undefined): "in" | "cm" {
+  return unit === "cm" ? "cm" : "in";
+}
+
+function bandSwatchCount(perInch: number, unit: MeasurementDisplayUnit | undefined, kind: "stitches" | "rows"): string {
+  const basis = bandSwatchBasis(unit);
+  const count = swatchCountFromPerInchForDisplay(perInch, basis);
+  const span = basis === "cm" ? "per 10 cm" : "per 4 inches";
+  return `${count} ${kind} ${span}`;
 }
 
 export function readSidewaysBandGauge(style: Record<string, unknown>): SidewaysBandGauge {
