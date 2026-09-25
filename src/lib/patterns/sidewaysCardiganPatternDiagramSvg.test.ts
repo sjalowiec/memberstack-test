@@ -6,9 +6,11 @@ import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
 import { buildSidewaysVNeckSlopeSequence } from "./sidewaysCardiganBodyInstructions";
 import {
+  buildSidewaysCardiganPatternDiagramFrame,
   buildSidewaysCardiganPatternDiagramModel,
   buildSidewaysCardiganPatternDiagramSvg,
   sidewaysDiagramEdgeStitchCount,
+  sidewaysPatternDiagramCanvas,
 } from "./sidewaysCardiganPatternDiagramSvg";
 import {
   buildSidewaysCardiganShapingNotationDiagramSvg,
@@ -60,6 +62,7 @@ function modelFor(
     wristInches?: number;
     sleeveDirection?: "cuff-up" | "top-down" | "sideways";
     includeSleeve?: boolean;
+    displayUnit?: "in" | "cm";
   } = {},
 ) {
   const calc = mustBody(input);
@@ -86,6 +89,7 @@ function modelFor(
     sleeveCalc: sleeve && sleeve.ok ? sleeve.calc : null,
     sleeveLengthInches: extras.sleeveLengthInches ?? 18,
     wristInches: extras.wristInches ?? 8,
+    displayUnit: extras.displayUnit,
   });
 }
 
@@ -452,6 +456,123 @@ describe("single-diagram print for Sideways body and sleeve", () => {
           ),
         ),
       ).toBe(false);
+    }
+  });
+
+  it("parks neck and armhole counts outside the body and drops the duplicate length label", () => {
+    const sizes: SidewaysCardiganBodyCalcInput[] = [
+      {
+        garmentLengthInches: 16,
+        vNeckDepthInches: 5,
+        finishedBustCircumferenceInches: 32,
+        finishedUpperArmInches: 11,
+        neckOpeningWidthInches: 5.5,
+        backNeckDepthInches: 1,
+        stitchesPerInch: 6,
+        rowsPerInch: 8,
+      },
+      SAMPLE,
+      {
+        garmentLengthInches: 26,
+        vNeckDepthInches: 9,
+        finishedBustCircumferenceInches: 48,
+        finishedUpperArmInches: 16,
+        neckOpeningWidthInches: 8,
+        backNeckDepthInches: 1.5,
+        stitchesPerInch: 7,
+        rowsPerInch: 10,
+      },
+    ];
+    const attr = (source: string, name: string) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(source)?.[1] ?? "";
+    const lineBoxes = (svg: string) => {
+      const boxes: Array<{ role: string; text: string; left: number; right: number; top: number; bottom: number; x: number }> = [];
+      for (const match of svg.matchAll(/<text\b([^>]*)>([\s\S]*?)<\/text>/g)) {
+        const attrs = match[1] ?? "";
+        const inner = match[2] ?? "";
+        const role = attr(attrs, "data-role");
+        const anchor = attr(attrs, "text-anchor") || "start";
+        const baseSize = Number(attr(attrs, "font-size")) || 16;
+        const baseX = Number(attr(attrs, "x"));
+        let y = Number(attr(attrs, "y"));
+        const tspans = [...inner.matchAll(/<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g)];
+        const lines = tspans.length
+          ? tspans.map((span) => {
+              const spanAttrs = span[1] ?? "";
+              y += Number(attr(spanAttrs, "dy")) || 0;
+              return {
+                text: (span[2] ?? "").replace(/<[^>]+>/g, "").trim(),
+                x: Number(attr(spanAttrs, "x")) || baseX,
+                y,
+                size: Number(attr(spanAttrs, "font-size")) || baseSize,
+              };
+            })
+          : [{ text: inner.replace(/<[^>]+>/g, "").trim(), x: baseX, y, size: baseSize }];
+        for (const line of lines) {
+          const width = line.text.length * line.size * 0.55;
+          const left = anchor === "end" ? line.x - width : anchor === "middle" ? line.x - width / 2 : line.x;
+          boxes.push({
+            role,
+            text: line.text,
+            left,
+            right: left + width,
+            top: line.y - line.size * 0.85,
+            bottom: line.y + line.size * 0.25,
+            x: line.x,
+          });
+        }
+      }
+      return boxes;
+    };
+
+    for (const style of ["cardigan", "pullover"] as const) {
+      for (const unit of ["in", "cm"] as const) {
+        for (const input of sizes) {
+          const model = modelFor(style, input, { includeSleeve: style === "pullover", displayUnit: unit });
+          const svg = buildSidewaysCardiganPatternDiagramSvg(model);
+          const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+          const box = sidewaysPatternDiagramCanvas(frame);
+          const edge = sidewaysDiagramEdgeStitchCount(model.calc);
+          expect(svg).not.toContain('data-role="length-sts"');
+          expect(svg).not.toContain('data-role="dim-finished-back-length"');
+          expect(svg).toContain(`CO ${edge} sts`);
+          expect(svg).toContain(`BO ${edge} sts`);
+          expect(svg).toContain(unit === "cm" ? "cm)" : "in)");
+          expect(svg).toContain('data-role="armhole-sts-leader"');
+          expect(svg).toContain('data-role="back-neck-sts-leader"');
+          const labels = lineBoxes(svg);
+          const armhole = labels.find((label) => label.role === "armhole-sts");
+          const backNeck = labels.find((label) => label.role === "back-neck-sts");
+          const bindOff = labels.find((label) => label.role === "bind-off-sts");
+          const vNeck = labels.find((label) => label.role === "vneck-sts");
+          expect(armhole).toBeDefined();
+          expect(backNeck).toBeDefined();
+          expect(bindOff && vNeck).toBeTruthy();
+          if (style === "cardigan") {
+            expect(armhole!.x).toBeGreaterThan(frame.neckX);
+            expect(backNeck!.x).toBeGreaterThan(frame.neckX);
+            expect(vNeck!.bottom).toBeLessThan(bindOff!.top - 2);
+          } else {
+            expect(armhole!.right).toBeLessThan(frame.hemX);
+            expect(backNeck!.x).toBeGreaterThan(frame.neckX);
+            expect(vNeck!.right).toBeLessThan(frame.hemX);
+          }
+          for (const label of labels) {
+            expect(label.top).toBeGreaterThan(box.y);
+            expect(label.left).toBeGreaterThanOrEqual(box.x - 1);
+            expect(label.right).toBeLessThanOrEqual(box.x + box.width + 1);
+          }
+          const callouts = new Set(["armhole-sts", "back-neck-sts", "vneck-sts", "cast-on-sts", "bind-off-sts"]);
+          for (let i = 0; i < labels.length; i += 1) {
+            for (let j = i + 1; j < labels.length; j += 1) {
+              const a = labels[i]!;
+              const b = labels[j]!;
+              if (style === "pullover" && !callouts.has(a.role) && !callouts.has(b.role)) continue;
+              const hits = a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2;
+              expect(hits, `${style} ${unit} ${a.role} "${a.text}" overlaps ${b.role} "${b.text}"`).toBe(false);
+            }
+          }
+        }
+      }
     }
   });
 });
