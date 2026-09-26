@@ -145,6 +145,51 @@ describe("requireAdmin", () => {
     }
   });
 
+  it("allows an admin session cookie when basic auth occupies Authorization", async () => {
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.signature";
+    const client = mockClients();
+    client.verifyMemberToken.mockImplementation(async (token) => {
+      if (token === jwt) return { id: ADMIN_ID };
+      return null;
+    });
+    const headers = new Headers();
+    headers.set("Authorization", "Basic YWRtaW46a25pdDc0MQ==");
+    headers.set("Cookie", `_ms_cookie=${jwt}`);
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", { headers }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.member.id).toBe(ADMIN_ID);
+    expect(client.verifyMemberToken).toHaveBeenCalledWith(jwt);
+  });
+
+  it("does not treat Netlify basic auth alone as an admin session", async () => {
+    const headers = new Headers();
+    headers.set("Authorization", "Basic YWRtaW46a25pdDc0MQ==");
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", { headers }),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(401);
+  });
+
+  it("denies a non-admin session cookie", async () => {
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtZW1iZXIifQ.signature";
+    const client = mockClients();
+    client.verifyMemberToken.mockImplementation(async (token) => {
+      if (token === jwt) return { id: NON_ADMIN_ID };
+      return null;
+    });
+    const headers = new Headers();
+    headers.set("X-Kin-Member-Token", jwt);
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", { headers }),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(403);
+    expect(client.verifyMemberToken).toHaveBeenCalledWith(jwt);
+  });
+
   it("denies a logged-in non-admin member with 403", async () => {
     const result = await requireAdmin(makeRequest("member-token"));
     expect(result.ok).toBe(false);

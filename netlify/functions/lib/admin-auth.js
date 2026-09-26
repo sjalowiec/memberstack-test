@@ -103,10 +103,52 @@ export function safeAdminAuthDiagnostics(args) {
   };
 }
 
+const MEMBERSTACK_SESSION_COOKIE_NAMES = [
+  "_ms_cookie",
+  "_ms-mid",
+  "_ms_mid",
+  "memberstack",
+  "memberstack_access_token",
+];
+
+function looksLikeMemberstackJwt(value) {
+  return typeof value === "string" && value.split(".").length === 3 && value.length > 20;
+}
+
+/** JWT from a Memberstack session cookie. Ignores member-id cookies that are not tokens. */
+function jwtFromCookieHeader(header) {
+  if (!header) return null;
+  for (const part of header.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator === -1) continue;
+    const name = part.slice(0, separator).trim();
+    if (!MEMBERSTACK_SESSION_COOKIE_NAMES.includes(name)) continue;
+    let value = part.slice(separator + 1).trim();
+    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+    try {
+      value = decodeURIComponent(value);
+    } catch {
+      /* keep the raw value */
+    }
+    if (looksLikeMemberstackJwt(value)) return value;
+  }
+  return null;
+}
+
+/**
+ * Memberstack session token.
+ * Netlify Basic Auth on /admin pages puts `Authorization: Basic` on later same-origin
+ * requests, which hides a Bearer token. The custom header and session cookie are the
+ * same JWT, and both still go through verifyMemberToken plus the admin allowlist.
+ */
 function bearerTokenFromRequest(req) {
   const header = req.headers.get("authorization") || "";
   const match = header.match(/^Bearer\s+(.+)$/i);
-  return match ? match[1].trim() : null;
+  const bearer = match ? match[1].trim() : "";
+  if (bearer) return bearer;
+  const custom = req.headers.get("x-kin-member-token")?.trim() || "";
+  if (custom) return custom;
+  return jwtFromCookieHeader(req.headers.get("cookie"));
 }
 
 /**
