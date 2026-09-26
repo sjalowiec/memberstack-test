@@ -259,19 +259,72 @@ describe("requireAdmin", () => {
     }
   });
 
-  it("fails closed when the live id is allowlisted but the TEST JWT has no email lookup", async () => {
+  it("authorizes Sue's test session when only her live member id is allowlisted", async () => {
     process.env.ADMIN_MEMBER_IDS = SUE_LIVE_MEMBER_ID;
-    process.env.ADMIN_MEMBER_EMAILS = SUE_EMAIL;
+    delete process.env.ADMIN_MEMBER_EMAILS;
     mockClients({ getMember: async () => null });
 
-    const result = await requireAdmin(makeRequest("sue-token"));
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", {
+        headers: { Authorization: "Bearer sue-token" },
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.member.id).toBe(SUE_TEST_MEMBER_ID);
+  });
+
+  it("authorizes Sue's live production session when only her test member id is allowlisted", async () => {
+    process.env.ADMIN_MEMBER_IDS = SUE_TEST_MEMBER_ID;
+    delete process.env.ADMIN_MEMBER_EMAILS;
+    const client = mockClients({ getMember: async () => null });
+    client.verifyMemberToken.mockImplementation(async (token) => {
+      if (token === "sue-live-token") {
+        return { id: "member", sub: SUE_LIVE_MEMBER_ID, type: "member" };
+      }
+      return null;
+    });
+
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", {
+        headers: { Authorization: "Bearer sue-live-token" },
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.member.id).toBe(SUE_LIVE_MEMBER_ID);
+      expect(result.member.email).toBeNull();
+    }
+  });
+
+  it("denies a different signed-in member when email lookup fails", async () => {
+    process.env.ADMIN_MEMBER_IDS = SUE_LIVE_MEMBER_ID;
+    process.env.ADMIN_MEMBER_EMAILS = SUE_EMAIL;
+    const client = mockClients({ getMember: async () => null });
+    client.verifyMemberToken.mockImplementation(async (token) => {
+      if (token === "other-token") return { id: "member", sub: "mem_sb_someone_else", type: "member" };
+      return null;
+    });
+
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", {
+        headers: { Authorization: "Bearer other-token" },
+      }),
+    );
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.status).toBe(403);
+      expect(result.error).toMatch(/admin access required/i);
       expect(result.diagnostics?.allowlist.idMatched).toBe(false);
-      expect(result.diagnostics?.allowlist.emailMatched).toBe(false);
       expect(result.diagnostics?.emailExists).toBe(false);
     }
+  });
+
+  it("denies a signed-out visitor to the impact report", async () => {
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/pattern-errata/id/impact"),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(401);
   });
 });
 
@@ -283,6 +336,18 @@ describe("isAdminMember", () => {
         { ADMIN_MEMBER_EMAILS: `"${SUE_EMAIL}"` },
       ),
     ).toBe(true);
+  });
+
+  it("matches Sue's live id to her allowlisted test id and the reverse", () => {
+    expect(isAdminMember({ id: SUE_LIVE_MEMBER_ID }, { ADMIN_MEMBER_IDS: SUE_TEST_MEMBER_ID })).toBe(
+      true,
+    );
+    expect(isAdminMember({ id: SUE_TEST_MEMBER_ID }, { ADMIN_MEMBER_IDS: SUE_LIVE_MEMBER_ID })).toBe(
+      true,
+    );
+    expect(isAdminMember({ id: "mem_someone_else" }, { ADMIN_MEMBER_IDS: SUE_LIVE_MEMBER_ID })).toBe(
+      false,
+    );
   });
 });
 

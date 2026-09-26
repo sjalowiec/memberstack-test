@@ -25,14 +25,38 @@ export type RequireAdminResult =
  * Admin secret must be read here — `process.env.ADMIN_MEMBER_*` inside the bundled
  * Netlify function lib is not enough on kin-dev.
  */
+/**
+ * Keep every allowlist entry from runtime `process.env` and from the Astro build.
+ * Replacing one with the other drops Sue's live id when the other source only has
+ * her test id (or the reverse). Secrets stay a single value: the inlined Astro
+ * secret wins when present, because the bundled function lib may not see it.
+ */
+export function combineAdminAllowlistValue(
+  runtimeValue: string | undefined,
+  buildValue: string | undefined,
+): string | undefined {
+  const parts = [runtimeValue, buildValue]
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter(Boolean);
+  return parts.length ? parts.join(",") : undefined;
+}
+
 export function astroServerAdminEnv(): NodeJS.ProcessEnv {
   const fromAstro: Record<string, unknown> = {
-    ADMIN_MEMBER_IDS: import.meta.env.ADMIN_MEMBER_IDS,
-    ADMIN_MEMBER_EMAILS: import.meta.env.ADMIN_MEMBER_EMAILS,
     MEMBERSTACK_SECRET_KEY: import.meta.env.MEMBERSTACK_SECRET_KEY,
     MEMBERSTACK_SANDBOX_SECRET_KEY: import.meta.env.MEMBERSTACK_SANDBOX_SECRET_KEY,
   };
   const env: NodeJS.ProcessEnv = { ...process.env };
+  const memberIds = combineAdminAllowlistValue(
+    process.env.ADMIN_MEMBER_IDS,
+    import.meta.env.ADMIN_MEMBER_IDS,
+  );
+  const memberEmails = combineAdminAllowlistValue(
+    process.env.ADMIN_MEMBER_EMAILS,
+    import.meta.env.ADMIN_MEMBER_EMAILS,
+  );
+  if (memberIds) env.ADMIN_MEMBER_IDS = memberIds;
+  if (memberEmails) env.ADMIN_MEMBER_EMAILS = memberEmails;
   for (const [key, value] of Object.entries(fromAstro)) {
     if (typeof value === "string" && value.trim()) env[key] = value;
   }
