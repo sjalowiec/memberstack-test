@@ -123,6 +123,7 @@ const builders = new Set(record?.affectedBuilders ?? ["drop-shoulder", "sleevele
 
 <script>
   import { fetchAdminJson } from "../../../lib/admin/adminAuthClient";
+  import { loadPatternErrataImpactReport } from "../../../lib/patterns/errata/patternErrataImpactPanel";
 
   const form = document.querySelector<HTMLFormElement>("#pattern-errata-form");
   const status = document.querySelector<HTMLElement>("#pattern-errata-save-status");
@@ -200,89 +201,7 @@ const builders = new Set(record?.affectedBuilders ?? ["drop-shoulder", "sleevele
     status.textContent = "Saved.";
   });
 
-  function cell(text: string): HTMLTableCellElement {
-    const td = document.createElement("td");
-    td.textContent = text;
-    return td;
-  }
-
-  async function loadImpact() {
-    if (!impact) return;
-    const id = impact.dataset.impactId?.trim() ?? "";
-    if (!id) return;
-    const result = await fetchAdminJson<{
-      report?: {
-        scanned: number;
-        potentiallyAffected: { patternCount: number; ownerCount: number; unknownOwnerCount: number };
-        customized: { patternCount: number; ownerCount: number; unknownOwnerCount: number };
-        currentDefault: { patternCount: number; ownerCount: number };
-        uncertain: { patternCount: number; ownerCount: number };
-        rows: Array<{
-          projectName: string;
-          projectId: string;
-          ownerId: string | null;
-          builder: string | null;
-          audience: string | null;
-          size: string | null;
-          lengthInches: number | null;
-          upperArmInches: number | null;
-          matchedMeasurements: string[];
-          createdAt: string | null;
-          classification: string;
-          reason: string;
-        }>;
-      };
-    }>(`/api/admin/pattern-errata/${encodeURIComponent(id)}/impact`, { method: "GET" });
-    impact.replaceChildren();
-    if (!result.ok || !result.data.report) {
-      impact.textContent = result.ok ? "Impact report was empty." : result.error || "Could not load the impact report.";
-      return;
-    }
-    const report = result.data.report;
-    const summary = document.createElement("p");
-    summary.textContent = `Scanned ${report.scanned} saved patterns. Potentially affected: ${report.potentiallyAffected.patternCount} patterns, ${report.potentiallyAffected.ownerCount} owners. Customized: ${report.customized.patternCount} patterns, ${report.customized.ownerCount} owners. Already on the corrected default: ${report.currentDefault.patternCount}. Uncertain: ${report.uncertain.patternCount}. Uncertain matches are not counted as affected.`;
-    impact.append(summary);
-    if (report.rows.length === 0) return;
-    const table = document.createElement("table");
-    table.className = "pattern-errata-edit__impact";
-    const head = document.createElement("tr");
-    for (const label of ["Pattern", "Owner", "Builder", "Size", "Saved measurements", "Saved", "Match", "Why"]) {
-      const th = document.createElement("th");
-      th.textContent = label;
-      head.append(th);
-    }
-    const thead = document.createElement("thead");
-    thead.append(head);
-    const tbody = document.createElement("tbody");
-    for (const row of report.rows) {
-      const tr = document.createElement("tr");
-      tr.append(
-        cell(row.projectName || row.projectId),
-        cell(row.ownerId ?? "Unknown owner"),
-        cell(row.builder ?? ""),
-        cell([row.audience, row.size].filter(Boolean).join(" ")),
-        cell(
-          [
-            row.lengthInches === null ? "" : `length ${row.lengthInches}`,
-            row.upperArmInches === null ? "" : `upper arm ${row.upperArmInches}`,
-          ]
-            .filter(Boolean)
-            .join(", "),
-        ),
-        cell(row.createdAt ? row.createdAt.slice(0, 10) : ""),
-        cell(
-          row.classification.replaceAll("_", " ") +
-            (row.matchedMeasurements.length > 0 ? `: ${row.matchedMeasurements.join(", ")}` : ""),
-        ),
-        cell(row.reason),
-      );
-      tbody.append(tr);
-    }
-    table.append(thead, tbody);
-    impact.append(table);
-  }
-
-  void loadImpact();
+  if (impact) void loadPatternErrataImpactReport(impact);
 </script>
 
 <style>
