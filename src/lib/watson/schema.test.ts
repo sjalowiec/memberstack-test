@@ -126,6 +126,17 @@ describe("schema", () => {
     expect(planSql).not.toContain("legacy_course_member_library");
     expect(planSql).not.toContain("REFERENCES");
     expect(planSql).not.toContain("memberstack");
+    expect(labels).toContain("table pattern_errata");
+    expect(labels).toContain("index pattern_errata_public_idx");
+    const errataSql = nativeStatements.find(
+      (statement) => statement.label === "table pattern_errata",
+    )?.sql;
+    expect(errataSql).toContain("status IN ('draft', 'published')");
+    expect(errataSql).toContain("what_changed TEXT NOT NULL");
+    expect(errataSql).toContain("knitter_action TEXT NOT NULL");
+    expect(errataSql).toContain("published_on DATE");
+    expect(errataSql).not.toContain("legacy_members");
+    expect(errataSql).not.toMatch(/\bDELETE\b/i);
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {

@@ -82,6 +82,14 @@ async function boot(): Promise<void> {
   applySleevelessPatternOnlineProjectHeader();
   void initSleevelessPatternBuilderPage();
   initBustDartPatternCustomization();
+  try {
+    const { mountSavedPatternErrataNotices } = await import(
+      "../lib/patterns/errata/savedPatternErrataNotice.ts"
+    );
+    await mountSavedPatternErrataNotices();
+  } catch (error) {
+    console.error("[kbm] Pattern errata notice failed; continuing.", error);
+  }
 }
 
 if (document.readyState === "loading") {

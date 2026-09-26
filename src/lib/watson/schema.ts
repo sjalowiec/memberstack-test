@@ -636,6 +636,34 @@ WHERE revoked_at IS NULL AND memberstack_id IS NULL`,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
     },
+    {
+      label: "table pattern_errata",
+      sql: `CREATE TABLE IF NOT EXISTS pattern_errata (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  slug TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+  title TEXT NOT NULL,
+  what_changed TEXT NOT NULL,
+  knitter_action TEXT NOT NULL,
+  published_on DATE,
+  affected_builders TEXT[] NOT NULL DEFAULT '{}',
+  affected_sizes JSONB NOT NULL DEFAULT '{}'::jsonb,
+  match_rules JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_by TEXT,
+  CONSTRAINT pattern_errata_slug_key UNIQUE (slug),
+  CONSTRAINT pattern_errata_published_has_date CHECK (
+    status <> 'published' OR published_on IS NOT NULL
+  )
+)`,
+    },
+    {
+      label: "index pattern_errata_public_idx",
+      sql: `CREATE INDEX IF NOT EXISTS pattern_errata_public_idx
+  ON pattern_errata (published_on DESC, slug)
+  WHERE status = 'published'`,
+    },
   ];
 }
 

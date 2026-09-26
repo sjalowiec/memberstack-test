@@ -1,0 +1,329 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { BABY_KIDS_LENGTH_CHART_CORRECTED_AT } from "../../../lib/patterns/errata/babyKidsLengthErrata";
+import { getPatternErrataById } from "../../../lib/patterns/errata/patternErrataStore";
+import type { PatternErrataRecord } from "../../../lib/patterns/errata/types";
+
+export const prerender = false;
+
+const idParam = Astro.url.searchParams.get("id")?.trim() ?? "";
+let record: PatternErrataRecord | null = null;
+let loadError = "";
+if (idParam) {
+  try {
+    record = await getPatternErrataById(idParam);
+    if (!record) loadError = "Correction not found.";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not read the correction.";
+    loadError = /postgres:\/\/|password/i.test(message)
+      ? "The pattern errata table is not available."
+      : message;
+  }
+}
+
+const sizeLines = record
+  ? record.matchRules.sizes
+      .map(
+        (rule) =>
+          rule.oldUpperArmInches != null && rule.newUpperArmInches != null
+            ? `${rule.audience} | ${rule.size} | ${rule.oldLengthInches} | ${rule.newLengthInches} | ${rule.oldUpperArmInches} | ${rule.newUpperArmInches}`
+            : `${rule.audience} | ${rule.size} | ${rule.oldLengthInches} | ${rule.newLengthInches}`,
+      )
+      .join("\n")
+  : "";
+const correctedAt = record?.matchRules.correctedAt ?? BABY_KIDS_LENGTH_CHART_CORRECTED_AT;
+const builders = new Set(record?.affectedBuilders ?? ["drop-shoulder", "sleeveless"]);
+---
+
+<BaseLayout
+  title={record ? `Edit ${record.title}` : "New pattern correction"}
+  description="Edit a pattern correction and review its impact before publishing."
+>
+  <main class="page-wrap pattern-errata-edit">
+    <p><a href="/admin/pattern-errata">Back to Pattern Errata</a></p>
+    <h1>{record ? "Edit correction" : "New correction"}</h1>
+    {loadError ? <p role="alert">{loadError}</p> : null}
+    {
+      !loadError ? (
+        <form id="pattern-errata-form" data-errata-id={record?.id ?? ""}>
+          <label>
+            Title
+            <input name="title" required value={record?.title ?? ""} />
+          </label>
+          <label>
+            Slug
+            <input name="slug" required value={record?.slug ?? ""} pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+          </label>
+          <fieldset>
+            <legend>Affected builders</legend>
+            <label>
+              <input type="checkbox" name="builder" value="drop-shoulder" checked={builders.has("drop-shoulder")} />
+              Drop Shoulder
+            </label>
+            <label>
+              <input type="checkbox" name="builder" value="sleeveless" checked={builders.has("sleeveless")} />
+              Sleeveless
+            </label>
+          </fieldset>
+          <label>
+            Affected sizes
+            <textarea name="sizes" rows="14" required>{sizeLines}</textarea>
+          </label>
+          <p class="pattern-errata-edit__hint">
+            One size per line: audience, size, previous finished length in inches, corrected finished length in inches.
+            When the upper arm also changed, add the previous and corrected upper arm:
+            <code>kids | 2 yr | 18 | 11.25 | 6 | 7.5</code>
+          </p>
+          <label>
+            What changed
+            <textarea name="whatChanged" rows="12" required>{record?.whatChanged ?? ""}</textarea>
+          </label>
+          <label>
+            What a knitter should do
+            <textarea name="knitterAction" rows="4" required>{record?.knitterAction ?? ""}</textarea>
+          </label>
+          <label>
+            Publication date
+            <input name="publishedOn" type="date" value={record?.publishedOn ?? ""} />
+          </label>
+          <label>
+            Status
+            <select name="status">
+              <option value="draft" selected={record?.status !== "published"}>Draft</option>
+              <option value="published" selected={record?.status === "published"}>Published</option>
+            </select>
+          </label>
+          <input type="hidden" name="correctedAt" value={correctedAt} />
+          <p>
+            <button class="kbm-btn kbm-btn-primary" type="submit">Save correction</button>
+          </p>
+          <p id="pattern-errata-save-status" role="status"></p>
+        </form>
+      ) : null
+    }
+
+    {
+      record ? (
+        <section aria-labelledby="impact-heading">
+          <h2 id="impact-heading">Impact report</h2>
+          <p>
+            Read-only. This counts saved patterns and their owners. It does not change saved
+            measurements or send email. A pattern is potentially affected when a saved finished
+            length or upper arm still matches its previous default. Kids size 2 matches if either
+            measurement is still the old default. The match column names which measurement matched.
+            Customized measurements are separate.
+            Uncertain matches are not counted as affected.
+          </p>
+          <p id="pattern-errata-impact" data-impact-id={record.id}>Loading impact report…</p>
+        </section>
+      ) : null
+    }
+  </main>
+</BaseLayout>
+
+<script>
+  import { fetchAdminJson } from "../../../lib/admin/adminAuthClient";
+
+  const form = document.querySelector<HTMLFormElement>("#pattern-errata-form");
+  const status = document.querySelector<HTMLElement>("#pattern-errata-save-status");
+  const impact = document.querySelector<HTMLElement>("#pattern-errata-impact");
+
+  function sizeRulesFromLines(raw: string) {
+    return raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [audience, size, oldLength, newLength, oldArm, newArm] = line.split("|").map((part) => part.trim());
+        const rule: {
+          audience: string;
+          size: string;
+          oldLengthInches: number;
+          newLengthInches: number;
+          oldUpperArmInches?: number;
+          newUpperArmInches?: number;
+        } = {
+          audience,
+          size,
+          oldLengthInches: Number(oldLength),
+          newLengthInches: Number(newLength),
+        };
+        if (oldArm && newArm) {
+          rule.oldUpperArmInches = Number(oldArm);
+          rule.newUpperArmInches = Number(newArm);
+        }
+        return rule;
+      });
+  }
+
+  function payloadFromForm(source: HTMLFormElement) {
+    const data = new FormData(source);
+    const builders = data.getAll("builder").filter((value): value is string => typeof value === "string");
+    const publishedOn = String(data.get("publishedOn") ?? "").trim();
+    return {
+      title: String(data.get("title") ?? ""),
+      slug: String(data.get("slug") ?? ""),
+      whatChanged: String(data.get("whatChanged") ?? ""),
+      knitterAction: String(data.get("knitterAction") ?? ""),
+      status: String(data.get("status") ?? "draft"),
+      publishedOn: publishedOn || null,
+      affectedBuilders: builders,
+      matchRules: {
+        kind: "finished-length-defaults",
+        correctedAt: String(data.get("correctedAt") ?? ""),
+        sizes: sizeRulesFromLines(String(data.get("sizes") ?? "")),
+      },
+    };
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!form || !status) return;
+    status.textContent = "Saving…";
+    const id = form.dataset.errataId?.trim() ?? "";
+    const result = await fetchAdminJson<{ errata?: { id?: string } }>(
+      id ? `/api/admin/pattern-errata/${encodeURIComponent(id)}` : "/api/admin/pattern-errata",
+      {
+        method: id ? "PATCH" : "POST",
+        body: payloadFromForm(form),
+      },
+    );
+    if (!result.ok) {
+      status.textContent = result.error || "Could not save the correction.";
+      return;
+    }
+    const savedId = result.data.errata?.id;
+    if (!id && savedId) {
+      window.location.assign(`/admin/pattern-errata/edit?id=${encodeURIComponent(savedId)}`);
+      return;
+    }
+    status.textContent = "Saved.";
+  });
+
+  function cell(text: string): HTMLTableCellElement {
+    const td = document.createElement("td");
+    td.textContent = text;
+    return td;
+  }
+
+  async function loadImpact() {
+    if (!impact) return;
+    const id = impact.dataset.impactId?.trim() ?? "";
+    if (!id) return;
+    const result = await fetchAdminJson<{
+      report?: {
+        scanned: number;
+        potentiallyAffected: { patternCount: number; ownerCount: number; unknownOwnerCount: number };
+        customized: { patternCount: number; ownerCount: number; unknownOwnerCount: number };
+        currentDefault: { patternCount: number; ownerCount: number };
+        uncertain: { patternCount: number; ownerCount: number };
+        rows: Array<{
+          projectName: string;
+          projectId: string;
+          ownerId: string | null;
+          builder: string | null;
+          audience: string | null;
+          size: string | null;
+          lengthInches: number | null;
+          upperArmInches: number | null;
+          matchedMeasurements: string[];
+          createdAt: string | null;
+          classification: string;
+          reason: string;
+        }>;
+      };
+    }>(`/api/admin/pattern-errata/${encodeURIComponent(id)}/impact`, { method: "GET" });
+    impact.replaceChildren();
+    if (!result.ok || !result.data.report) {
+      impact.textContent = result.ok ? "Impact report was empty." : result.error || "Could not load the impact report.";
+      return;
+    }
+    const report = result.data.report;
+    const summary = document.createElement("p");
+    summary.textContent = `Scanned ${report.scanned} saved patterns. Potentially affected: ${report.potentiallyAffected.patternCount} patterns, ${report.potentiallyAffected.ownerCount} owners. Customized: ${report.customized.patternCount} patterns, ${report.customized.ownerCount} owners. Already on the corrected default: ${report.currentDefault.patternCount}. Uncertain: ${report.uncertain.patternCount}. Uncertain matches are not counted as affected.`;
+    impact.append(summary);
+    if (report.rows.length === 0) return;
+    const table = document.createElement("table");
+    table.className = "pattern-errata-edit__impact";
+    const head = document.createElement("tr");
+    for (const label of ["Pattern", "Owner", "Builder", "Size", "Saved measurements", "Saved", "Match", "Why"]) {
+      const th = document.createElement("th");
+      th.textContent = label;
+      head.append(th);
+    }
+    const thead = document.createElement("thead");
+    thead.append(head);
+    const tbody = document.createElement("tbody");
+    for (const row of report.rows) {
+      const tr = document.createElement("tr");
+      tr.append(
+        cell(row.projectName || row.projectId),
+        cell(row.ownerId ?? "Unknown owner"),
+        cell(row.builder ?? ""),
+        cell([row.audience, row.size].filter(Boolean).join(" ")),
+        cell(
+          [
+            row.lengthInches === null ? "" : `length ${row.lengthInches}`,
+            row.upperArmInches === null ? "" : `upper arm ${row.upperArmInches}`,
+          ]
+            .filter(Boolean)
+            .join(", "),
+        ),
+        cell(row.createdAt ? row.createdAt.slice(0, 10) : ""),
+        cell(
+          row.classification.replaceAll("_", " ") +
+            (row.matchedMeasurements.length > 0 ? `: ${row.matchedMeasurements.join(", ")}` : ""),
+        ),
+        cell(row.reason),
+      );
+      tbody.append(tr);
+    }
+    table.append(thead, tbody);
+    impact.append(table);
+  }
+
+  void loadImpact();
+</script>
+
+<style>
+  .pattern-errata-edit form {
+    display: grid;
+    gap: 0.85rem;
+    max-width: 42rem;
+  }
+  .pattern-errata-edit label,
+  .pattern-errata-edit fieldset {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .pattern-errata-edit input,
+  .pattern-errata-edit textarea,
+  .pattern-errata-edit select {
+    width: 100%;
+    font: inherit;
+  }
+  .pattern-errata-edit fieldset label {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .pattern-errata-edit fieldset input {
+    width: auto;
+  }
+  .pattern-errata-edit__hint {
+    margin: 0;
+    color: #4b5563;
+  }
+  .pattern-errata-edit__impact {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .pattern-errata-edit__impact th,
+  .pattern-errata-edit__impact td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.4rem 0.6rem 0.4rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+</style>

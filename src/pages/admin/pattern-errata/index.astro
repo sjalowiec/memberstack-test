@@ -1,0 +1,96 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { listPatternErrataForAdmin } from "../../../lib/patterns/errata/patternErrataStore";
+import type { PatternErrataRecord } from "../../../lib/patterns/errata/types";
+
+export const prerender = false;
+
+let errata: PatternErrataRecord[] = [];
+let loadError = "";
+try {
+  errata = await listPatternErrataForAdmin();
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Could not read pattern errata.";
+  loadError = /postgres:\/\/|password/i.test(message)
+    ? "The pattern errata table is not available."
+    : message;
+}
+
+function sizeSummary(row: PatternErrataRecord): string {
+  return Object.entries(row.affectedSizes)
+    .map(([audience, sizes]) => `${audience}: ${sizes.join(", ")}`)
+    .join(" · ");
+}
+---
+
+<BaseLayout
+  title="Pattern Errata | Knit it Now"
+  description="Record and review pattern corrections before they are published."
+>
+  <main class="page-wrap pattern-errata-admin">
+    <header>
+      <h1>Pattern Errata</h1>
+      <p>
+        Corrections stay in draft until you publish them. Publishing shows the note on the
+        Errata page and on a saved pattern that still uses an old default. Saved measurements
+        are not changed.
+      </p>
+    </header>
+    <p>
+      <a class="kbm-btn kbm-btn-primary" href="/admin/pattern-errata/edit">New correction</a>
+      <a class="kbm-btn kbm-btn-outline" href="/admin">Back to Creator Control Panel</a>
+    </p>
+    {loadError ? <p role="alert">{loadError}</p> : null}
+    {
+      !loadError && errata.length === 0 ? (
+        <p>No corrections yet.</p>
+      ) : null
+    }
+    {
+      errata.length > 0 ? (
+        <table class="pattern-errata-admin__table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Publication date</th>
+              <th>Builders and sizes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {errata.map((row) => (
+              <tr>
+                <td>
+                  <a href={`/admin/pattern-errata/edit?id=${encodeURIComponent(row.id)}`}>{row.title}</a>
+                </td>
+                <td>{row.status}</td>
+                <td>{row.publishedOn ?? "—"}</td>
+                <td>
+                  {row.affectedBuilders.join(", ")}
+                  {sizeSummary(row) ? ` · ${sizeSummary(row)}` : ""}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .pattern-errata-admin__table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .pattern-errata-admin__table th,
+  .pattern-errata-admin__table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.5rem 0.75rem 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .pattern-errata-admin p .kbm-btn + .kbm-btn {
+    margin-left: 0.5rem;
+  }
+</style>
