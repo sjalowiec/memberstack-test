@@ -38,6 +38,7 @@ import { GET as adminGet, PATCH } from "./[id]";
 import { GET as impactGet } from "./[id]/impact";
 import { GET as publicList } from "../../pattern-errata";
 import { BABY_KIDS_LENGTH_MATCH_RULES } from "../../../../lib/patterns/errata/babyKidsLengthErrata";
+import { createWatsonSessionToken, WATSON_SESSION_COOKIE } from "../../../../lib/watson/watsonAuth";
 
 const cookies = { get: () => undefined };
 
@@ -144,6 +145,71 @@ describe("pattern errata permissions", () => {
     expect(response.status).toBe(401);
     expect(scanPatternErrataImpact).not.toHaveBeenCalled();
     expect(getPatternErrataById).not.toHaveBeenCalled();
+  });
+
+  it("loads the impact report for Sue's Watson admin session when Memberstack is not the allowlisted id", async () => {
+    const password = "watson-impact-test-password";
+    (import.meta.env as Record<string, unknown>).WATSON_ADMIN_PASSWORD = password;
+    requireAdminForRequest.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "Admin access required.",
+    });
+    getPatternErrataById.mockResolvedValue(draft);
+    scanPatternErrataImpact.mockResolvedValue({
+      readOnly: true,
+      scanned: 4,
+      potentiallyAffected: { patternCount: 2, ownerCount: 1, unknownOwnerCount: 0 },
+      customized: { patternCount: 1, ownerCount: 1, unknownOwnerCount: 0 },
+      currentDefault: { patternCount: 0, ownerCount: 0, unknownOwnerCount: 0 },
+      uncertain: { patternCount: 1, ownerCount: 1, unknownOwnerCount: 0 },
+      outOfScope: 0,
+      rows: [],
+    });
+    const token = createWatsonSessionToken(password);
+
+    const response = await impactGet({
+      request: jsonRequest(
+        "https://knititnow.com/api/admin/pattern-errata/6f3c1a90-7b24-4e1d-9a55-0c8e2b7d4f61/impact",
+        "GET",
+      ),
+      cookies: {
+        get: (name: string) => (name === WATSON_SESSION_COOKIE ? { value: token } : undefined),
+      },
+      params: { id: draft.id },
+    } as never);
+
+    Reflect.deleteProperty(import.meta.env as Record<string, unknown>, "WATSON_ADMIN_PASSWORD");
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.report.scanned).toBe(4);
+    expect(body.report.readOnly).toBe(true);
+    expect(scanPatternErrataImpact).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not treat a forged Watson cookie as admin", async () => {
+    (import.meta.env as Record<string, unknown>).WATSON_ADMIN_PASSWORD = "watson-impact-test-password";
+    requireAdminForRequest.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "Admin access required.",
+    });
+
+    const response = await impactGet({
+      request: jsonRequest(
+        "https://knititnow.com/api/admin/pattern-errata/6f3c1a90-7b24-4e1d-9a55-0c8e2b7d4f61/impact",
+        "GET",
+      ),
+      cookies: {
+        get: (name: string) =>
+          name === WATSON_SESSION_COOKIE ? { value: "not-a-signed-session" } : undefined,
+      },
+      params: { id: draft.id },
+    } as never);
+
+    Reflect.deleteProperty(import.meta.env as Record<string, unknown>, "WATSON_ADMIN_PASSWORD");
+    expect(response.status).toBe(403);
+    expect(scanPatternErrataImpact).not.toHaveBeenCalled();
   });
 
   it("rejects impact lookup for a non-admin and does not scan saved patterns", async () => {
