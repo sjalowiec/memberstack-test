@@ -1,0 +1,114 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { publishedPatternErrata } from "../../lib/patterns/errata/errataVisibility";
+import { listPublishedPatternErrata } from "../../lib/patterns/errata/patternErrataStore";
+import type { PatternErrataRecord } from "../../lib/patterns/errata/types";
+
+export const prerender = false;
+
+const BUILDER_LABELS: Record<string, string> = {
+  "drop-shoulder": "Drop Shoulder",
+  sleeveless: "Sleeveless",
+};
+
+const AUDIENCE_LABELS: Record<string, string> = {
+  baby: "Baby",
+  kids: "Kids",
+};
+
+let errata: PatternErrataRecord[] = [];
+let loadError = "";
+try {
+  errata = publishedPatternErrata(await listPublishedPatternErrata());
+} catch {
+  loadError = "Pattern corrections are not available right now.";
+}
+
+function publishedLabel(value: string | null): string {
+  if (!value) return "";
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+---
+
+<Layout
+  title="Pattern Errata | Knit it Now"
+  description="Published corrections for Knit it Now patterns. Saved measurements are not changed."
+>
+  <div class="page-wrap prose pattern-errata">
+    <h1>Pattern Errata</h1>
+    <p>
+      Published corrections are listed here. A saved pattern keeps the measurements it was saved
+      with. Create a new pattern when you want a corrected default.
+    </p>
+    {loadError ? <p role="alert">{loadError}</p> : null}
+    {!loadError && errata.length === 0 ? <p>No published pattern corrections yet.</p> : null}
+    {
+      errata.map((row) => (
+        <article id={row.slug}>
+          <h2>{row.title}</h2>
+          {row.publishedOn ? <p>Published {publishedLabel(row.publishedOn)}</p> : null}
+          <p>
+            Builders: {row.affectedBuilders.map((builder) => BUILDER_LABELS[builder] ?? builder).join(", ")}
+          </p>
+          {row.matchRules.sizes.length > 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>Size</th>
+                  <th>Previous finished length</th>
+                  <th>Corrected finished length</th>
+                  <th>Previous upper arm</th>
+                  <th>Corrected upper arm</th>
+                </tr>
+              </thead>
+              <tbody>
+                {row.matchRules.sizes.map((size) => (
+                  <tr>
+                    <td>
+                      {AUDIENCE_LABELS[size.audience] ?? size.audience} {size.size}
+                    </td>
+                    <td>{size.oldLengthInches} in</td>
+                    <td>{size.newLengthInches} in</td>
+                    <td>{size.oldUpperArmInches != null ? `${size.oldUpperArmInches} in` : ""}</td>
+                    <td>{size.newUpperArmInches != null ? `${size.newUpperArmInches} in` : ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
+          <div class="pattern-errata__copy">{row.whatChanged}</div>
+          <h3>What to do</h3>
+          <p>{row.knitterAction}</p>
+        </article>
+      ))
+    }
+  </div>
+</Layout>
+
+<style>
+  .pattern-errata article + article {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .pattern-errata table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .pattern-errata th,
+  .pattern-errata td {
+    text-align: left;
+    padding: 0.35rem 0.75rem 0.35rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .pattern-errata__copy {
+    white-space: pre-wrap;
+  }
+</style>
