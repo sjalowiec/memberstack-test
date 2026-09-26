@@ -60,6 +60,29 @@ describe("requireAdminRequest", () => {
     ).toBeNull();
   });
 
+  it("uses the Memberstack session when Netlify basic auth occupies Authorization", () => {
+    const request = new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", {
+      headers: {
+        Authorization: "Basic YWRtaW46a25pdDc0MQ==",
+        "X-Kin-Member-Token": JWT,
+        Cookie: "_ms-mid=mem_not_a_jwt",
+      },
+    });
+    expect(memberstackTokenFromRequest(request)).toBe(JWT);
+    const authRequest = requestWithBearerToken(request, memberstackTokenFromRequest(request));
+    expect(authRequest.headers.get("Authorization")).toBe(`Bearer ${JWT}`);
+  });
+
+  it("reads a JWT session cookie when neither bearer nor custom header is present", () => {
+    const request = new Request("https://knititnow.com/api/admin/pattern-errata/id/impact", {
+      headers: {
+        Authorization: "Basic YWRtaW46a25pdDc0MQ==",
+        Cookie: `_ms_cookie=${encodeURIComponent(JWT)}`,
+      },
+    });
+    expect(memberstackTokenFromRequest(request, { get: () => undefined })).toBe(JWT);
+  });
+
   it("falls back to Memberstack cookies when Authorization is absent", () => {
     const request = new Request("https://example.com/watson");
     const cookies = {

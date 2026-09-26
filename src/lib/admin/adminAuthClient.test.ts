@@ -289,4 +289,18 @@ describe("fetchAdminHtml", () => {
   it("exports getAdminAuthHeaders for the Help Hub / report admin pattern", () => {
     expect(typeof getAdminAuthHeaders).toBe("function");
   });
+
+  it("sends the Memberstack JWT on a second header so basic auth cannot hide it", async () => {
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdWUifQ.sig";
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({}),
+        getMemberCookie: async () => jwt,
+        onReady: Promise.resolve(),
+      },
+    });
+    const headers = await getAdminAuthHeaders();
+    expect(headers.Authorization).toBe(`Bearer ${jwt}`);
+    expect(headers["X-Kin-Member-Token"]).toBe(jwt);
+  });
 });

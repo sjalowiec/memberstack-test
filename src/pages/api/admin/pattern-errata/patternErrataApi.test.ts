@@ -93,6 +93,59 @@ describe("pattern errata permissions", () => {
     expect(body.errata).toBeUndefined();
   });
 
+  it("returns the impact report for an authenticated admin and does not write patterns", async () => {
+    requireAdminForRequest.mockResolvedValue({
+      ok: true,
+      member: { id: "mem_admin", email: "sue@knititnow.com" },
+      mode: "verified",
+    });
+    getPatternErrataById.mockResolvedValue(draft);
+    scanPatternErrataImpact.mockResolvedValue({
+      readOnly: true,
+      scanned: 4,
+      potentiallyAffected: { patternCount: 2, ownerCount: 1, unknownOwnerCount: 0 },
+      customized: { patternCount: 1, ownerCount: 1, unknownOwnerCount: 0 },
+      currentDefault: { patternCount: 0, ownerCount: 0, unknownOwnerCount: 0 },
+      uncertain: { patternCount: 1, ownerCount: 1, unknownOwnerCount: 0 },
+      outOfScope: 0,
+      rows: [],
+    });
+
+    const response = await impactGet({
+      request: jsonRequest(
+        "https://knititnow.com/api/admin/pattern-errata/6f3c1a90-7b24-4e1d-9a55-0c8e2b7d4f61/impact",
+        "GET",
+      ),
+      cookies,
+      params: { id: draft.id },
+    } as never);
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.report.scanned).toBe(4);
+    expect(body.report.potentiallyAffected.patternCount).toBe(2);
+    expect(body.report.readOnly).toBe(true);
+    expect(scanPatternErrataImpact).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a signed-out impact lookup and does not scan saved patterns", async () => {
+    requireAdminForRequest.mockResolvedValue({ ok: false, status: 401, error: "Sign in required." });
+
+    const response = await impactGet({
+      request: jsonRequest(
+        "https://knititnow.com/api/admin/pattern-errata/6f3c1a90-7b24-4e1d-9a55-0c8e2b7d4f61/impact",
+        "GET",
+      ),
+      cookies,
+      params: { id: draft.id },
+    } as never);
+
+    expect(response.status).toBe(401);
+    expect(scanPatternErrataImpact).not.toHaveBeenCalled();
+    expect(getPatternErrataById).not.toHaveBeenCalled();
+  });
+
   it("rejects impact lookup for a non-admin and does not scan saved patterns", async () => {
     requireAdminForRequest.mockResolvedValue({
       ok: false,

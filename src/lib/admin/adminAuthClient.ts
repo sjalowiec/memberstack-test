@@ -109,8 +109,13 @@ export async function readMemberstackBearerToken(
  */
 export async function getAdminAuthHeaders(): Promise<Record<string, string>> {
   const token = await readMemberstackBearerToken();
-  if (token) return { Authorization: `Bearer ${token}` };
-  return {};
+  if (!token) return {};
+  return {
+    Authorization: `Bearer ${token}`,
+    // /admin pages are behind Netlify Basic Auth, which can replace Authorization
+    // on the next request. This header carries the same verified Memberstack JWT.
+    "X-Kin-Member-Token": token,
+  };
 }
 
 export type AdminJsonResult<T = Record<string, unknown>> = {

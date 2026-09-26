@@ -63,25 +63,44 @@ export function adminAuthErrorBody(auth: Extract<RequireAdminResult, { ok: false
   return body;
 }
 
+function jwtFromCookieHeader(header: string | null): string | null {
+  if (!header) return null;
+  for (const part of header.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator === -1) continue;
+    const name = part.slice(0, separator).trim();
+    if (!(MEMBERSTACK_JWT_COOKIE_NAMES as readonly string[]).includes(name)) continue;
+    let value = part.slice(separator + 1).trim();
+    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+    try {
+      value = decodeURIComponent(value);
+    } catch {
+      /* keep the raw value */
+    }
+    if (looksLikeJwt(value)) return value;
+  }
+  return null;
+}
+
 export function memberstackTokenFromRequest(
   request: Request,
   cookies?: CookieStore,
 ): string | null {
   const authorization = request.headers.get("authorization") || "";
   const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  if (bearer) {
-    return bearer;
+  if (bearer) return bearer;
+
+  const custom = request.headers.get("x-kin-member-token")?.trim() || "";
+  if (looksLikeJwt(custom)) return custom;
+
+  if (cookies) {
+    for (const name of MEMBERSTACK_JWT_COOKIE_NAMES) {
+      const value = cookies.get(name)?.value?.trim() || "";
+      if (looksLikeJwt(value)) return value;
+    }
   }
 
-  if (!cookies) {
-    return null;
-  }
-
-  for (const name of MEMBERSTACK_JWT_COOKIE_NAMES) {
-    const value = cookies.get(name)?.value?.trim() || "";
-    if (looksLikeJwt(value)) return value;
-  }
-  return null;
+  return jwtFromCookieHeader(request.headers.get("cookie"));
 }
 
 export function requestWithBearerToken(request: Request, token: string | null): Request {
