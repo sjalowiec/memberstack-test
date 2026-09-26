@@ -38,6 +38,18 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(dropShoulderPatternWorkspaceAstro).not.toContain("Refresh measurements");
   });
 
+  it("shows one Inches/Centimeters control, and that control is the one the editor wires", () => {
+    const toggles = dropShoulderPatternWorkspaceAstro.match(/data-sl-edit-units/g) ?? [];
+    expect(toggles).toHaveLength(1);
+    expect(dropShoulderPatternWorkspaceAstro.match(/data-sl-edit-unit="cm"/g)).toHaveLength(1);
+    expect(editDrawerScript).toContain('querySelector<HTMLElement>("[data-sl-edit-units]")');
+    expect(editDrawerScript).toContain(
+      'setEditDisplayUnit(btn.getAttribute("data-sl-edit-unit") === "cm" ? "cm" : "in")',
+    );
+    const builderToggles = dropShoulderBuilderAstro.match(/<UnitToggle/g) ?? [];
+    expect(builderToggles).toHaveLength(1);
+  });
+
   it("renders Choose your sleeve length in Quick edits after Neckline", () => {
     expect(dropShoulderPatternWorkspaceAstro).toContain("Choose your sleeve length");
     expect(dropShoulderPatternWorkspaceAstro).toContain('name="sl-edit-sleeve-length"');

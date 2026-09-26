@@ -35,16 +35,29 @@ function frontBlockText(rows: SleevelessPatternDisplayRow[] | undefined): string
     .join("\n");
 }
 
+/**
+ * Shoulder row stated in the written front. Cardigans use one of two sentences:
+ * “knit even to RC, then bind off” when neck shaping ends before the shoulder, or
+ * “bind off … at RC” when the last neck action lands on the shoulder row.
+ * Pullovers still say “knit even to RC (no further neck-edge decreases).”
+ * Two matches are accepted only when they name the same row.
+ */
 function proseShoulderBindOffLocalRc(text: string): number | undefined {
-  const cardigan = text.match(
-    /knit even to RC: (\d+), then bind off \d+ stitches for the shoulder/i,
-  );
-  if (cardigan) return Number(cardigan[1]);
-  const pullover = text.match(
-    /knit even to RC: (\d+) \(no further neck-edge decreases\)/i,
-  );
-  if (pullover) return Number(pullover[1]);
-  return undefined;
+  const patterns = [
+    /knit even to RC: (\d+), then bind off \d+ stitches for the shoulder/gi,
+    /bind off \d+ stitches for the shoulder at RC: (\d+)/gi,
+    /knit even to RC: (\d+) \(no further neck-edge decreases\)/gi,
+  ];
+  const found: number[] = [];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      const rc = Number(match[1]);
+      if (Number.isFinite(rc)) found.push(rc);
+    }
+  }
+  const unique = [...new Set(found)];
+  if (unique.length !== 1) return undefined;
+  return unique[0];
 }
 
 function displayedShoulderBindOffRc(

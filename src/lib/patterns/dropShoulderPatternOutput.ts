@@ -54,11 +54,12 @@ import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
 import {
   calculateBackRoundNecklinePlan,
   calculateRoundNecklinePlan,
+  isShallowHoldRoundPlan,
   normalizeRoundNecklineDepthRows,
   type RoundNecklinePlanResult,
 } from "./legoBlocks/roundNeckline";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
-import { evenShapingSchedule } from "./evenShapingSchedule";
+import { evenShapingGarmentRowNumbers, evenShapingSchedule } from "./evenShapingSchedule";
 import {
   roundNeckBackShallowExecutionWrittenLines,
   roundNeckCardiganCfEdgeWrittenLines,
@@ -90,6 +91,7 @@ import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
   buildDropShoulderBackNeckShapingTimeline,
   buildDropShoulderFrontNeckShapingChart,
+  dropShoulderCardiganRoundFrontNeckLastLocalRc,
   dropShoulderFrontNeckShapingChartInputsReady,
   dropShoulderFrontNecklineWorkingRows,
   dropShoulderFrontShoulderCompletionLocalRc,
@@ -486,8 +488,13 @@ function dropShoulderFrontNeckTiming(args: {
   armholeMarkerRc: number;
   totalRows: number;
   frontNeckDepthRows: number;
+  /** When set, keep this garment RC instead of recomputing it from the designed neck depth. */
+  necklineStartRc?: number;
 }): DropShoulderFrontNeckTiming {
-  const neckStartRc = dropShoulderFrontNecklineStartRc(args.totalRows, args.frontNeckDepthRows);
+  const neckStartRc =
+    args.necklineStartRc !== undefined && Number.isFinite(args.necklineStartRc)
+      ? Math.max(0, Math.floor(args.necklineStartRc))
+      : dropShoulderFrontNecklineStartRc(args.totalRows, args.frontNeckDepthRows);
   const neckStartsBeforeMarker = neckStartRc < args.armholeMarkerRc;
   return {
     neckStartRc,
@@ -990,6 +997,7 @@ function buildCardiganFrontRows(args: {
   isVNeck: boolean;
   alineBodyShaping?: SleevelessAlineBodyShapingPlan | null;
   alineShapingEdgeScope?: SleevelessAlineShapingEdgeScope;
+  necklineStartRc?: number;
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   const timing = dropShoulderFrontNeckTiming(args);
@@ -1073,6 +1081,8 @@ function buildCardiganFrontRows(args: {
     );
     if (args.isVNeck) {
       const sched = evenShapingSchedule(args.neckPerFront, vNeckRowBudget);
+      const decreaseRows = evenShapingGarmentRowNumbers(necklineWrittenStartRc ?? 0, sched);
+      const lastDecreaseRc = decreaseRows.length > 0 ? decreaseRows[decreaseRows.length - 1] : undefined;
       const introTrusted = [
         "Begin the V-neck shaping at the center-front edge.",
         sched.count > 0
@@ -1084,9 +1094,13 @@ function buildCardiganFrontRows(args: {
             )
           : "Work straight to the shoulder.",
       ];
+      const shoulderFinishLine =
+        lastDecreaseRc !== undefined && lastDecreaseRc === shoulderFinishRc
+          ? `When ${args.shoulderStsEach} stitches remain, bind off ${args.shoulderStsEach} stitches for the shoulder at ${formatRcColon(shoulderFinishRc)}.`
+          : `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(shoulderFinishRc)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`;
       const finishTrusted = [
         "The first shoulder is complete.",
-        `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(shoulderFinishRc)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
+        shoulderFinishLine,
       ];
       rows.push({
         kind: "block",
@@ -1108,14 +1122,27 @@ function buildCardiganFrontRows(args: {
         necklineStitches: fullNeck,
         necklineDepthRows: args.frontNeckDepthRows,
       });
-      const cfBindOff = cardiganFrontInitialNeckBindOffStitches(fullNeck, args.frontNeckDepthRows);
+      const cfBindOff = isShallowHoldRoundPlan(plan)
+        ? 0
+        : cardiganFrontInitialNeckBindOffStitches(fullNeck, args.frontNeckDepthRows);
       const introTrusted = [
-        `Bind off ${cfBindOff} stitches at the center-front (neck) edge.`,
+        ...(cfBindOff > 0
+          ? [`Bind off ${cfBindOff} stitches at the center-front (neck) edge.`]
+          : []),
         ...roundNeckCardiganCfEdgeWrittenLines(plan, { necklineStartRc: necklineWrittenStartRc }),
       ];
+      const lastNeckLocal = dropShoulderCardiganRoundFrontNeckLastLocalRc(
+        fullNeck,
+        args.frontNeckDepthRows,
+      );
+      const lastNeckRc = (necklineWrittenStartRc ?? 0) + lastNeckLocal;
+      const shoulderFinishLine =
+        lastNeckLocal > 0 && lastNeckRc === shoulderFinishRc
+          ? `When ${args.shoulderStsEach} stitches remain, bind off ${args.shoulderStsEach} stitches for the shoulder at ${formatRcColon(shoulderFinishRc)}.`
+          : `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(shoulderFinishRc)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`;
       const finishTrusted = [
         "The first shoulder is complete.",
-        `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(shoulderFinishRc)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
+        shoulderFinishLine,
       ];
       rows.push({
         kind: "block",
@@ -1548,11 +1575,37 @@ export function generateDropShoulderPattern(
       ? Math.max(armholeMarkerRc, totalRows - backNeckDepthRows)
       : totalRows;
 
-  const frontNecklineStartRC = dropShoulderFrontNecklineStartRc(totalRows, frontNeckDepthRows);
+  let frontNecklineStartRC = dropShoulderFrontNecklineStartRc(totalRows, frontNeckDepthRows);
+  let cardiganVNeckScheduleRows = frontNeckDepthRows;
+  if (isCardigan && isVNeck && neckSts > 0 && frontNeckDepthRows > 0 && totalRows > 0) {
+    const decreaseCount = Math.max(0, Math.round(neckSts / 2));
+    const fitBudget = dropShoulderFrontNecklineWorkingRows(
+      frontNecklineStartRC,
+      totalRows,
+      frontNeckDepthRows,
+    );
+    const sched = evenShapingSchedule(decreaseCount, Math.max(1, fitBudget));
+    const actionRows = evenShapingGarmentRowNumbers(0, sched);
+    const lastLocal = actionRows.length > 0 ? actionRows[actionRows.length - 1]! : 0;
+    if (lastLocal > fitBudget) {
+      frontNecklineStartRC = Math.max(0, totalRows - lastLocal);
+      cardiganVNeckScheduleRows = dropShoulderFrontShoulderCompletionLocalRc(
+        frontNecklineStartRC,
+        totalRows,
+      );
+    }
+  }
+  if (isCardigan && !isVNeck && neckSts > 0 && frontNeckDepthRows > 0 && totalRows > 0) {
+    const lastLocal = dropShoulderCardiganRoundFrontNeckLastLocalRc(neckSts, frontNeckDepthRows);
+    const available = dropShoulderFrontShoulderCompletionLocalRc(frontNecklineStartRC, totalRows);
+    if (lastLocal > available) {
+      frontNecklineStartRC = Math.max(0, totalRows - lastLocal);
+    }
+  }
   const frontNecklineWorkingRows = dropShoulderFrontNecklineWorkingRows(
     frontNecklineStartRC,
     totalRows,
-    frontNeckDepthRows,
+    isCardigan && isVNeck ? cardiganVNeckScheduleRows : frontNeckDepthRows,
   );
 
   // ---- Build display rows ----
@@ -1591,10 +1644,11 @@ export function generateDropShoulderPattern(
         totalRows,
         shoulderStsEach: cardiganFrontShoulderSts,
         neckPerFront: Math.round(neckSts / 2),
-        frontNeckDepthRows,
+        frontNeckDepthRows: isVNeck ? cardiganVNeckScheduleRows : frontNeckDepthRows,
         isVNeck,
         alineBodyShaping: cardiganFrontAlineShaping,
         alineShapingEdgeScope: "armholeEdgeOnly",
+        necklineStartRc: frontNecklineStartRC,
       })
     : buildPulloverFrontRows({
         castOnSts: hemCastOnSts,
@@ -1618,10 +1672,11 @@ export function generateDropShoulderPattern(
     isVNeck,
     neckSts,
     shoulderStsEach: isCardigan ? cardiganFrontShoulderSts : shoulderStsEach,
-    frontNeckDepthRows,
+    frontNeckDepthRows: isCardigan && isVNeck ? cardiganVNeckScheduleRows : frontNeckDepthRows,
     frontNecklineStartRC,
     totalRows,
     bustBodySts,
+    frontPieceStitches: isCardigan ? cardiganHalfLeftBustBodySts : undefined,
     rowsPerInch: rpi,
   });
   if (frontNeckChartBuilt) {
@@ -1685,6 +1740,10 @@ export function generateDropShoulderPattern(
   });
 
   const rowsFromCastOnToArmholeStart = hemRows + bodyToArmholeRows;
+  const frontNecklineLocalRows = dropShoulderFrontShoulderCompletionLocalRc(
+    frontNecklineStartRC,
+    totalRows,
+  );
 
   const debug = {
     finishedBustChest: finishedBust || undefined,
@@ -1722,8 +1781,14 @@ export function generateDropShoulderPattern(
       : {}),
     backNeckRoundNecklineStrategy: backRoundNeckPlan?.strategy,
     frontNeckRoundNecklineStrategy: frontRoundNeckPlan?.strategy,
-    frontNeckDepth: frontNeckDepthIn,
-    frontNeckDepthRows,
+    frontNeckDepth:
+      isCardigan && frontNecklineLocalRows > frontNeckDepthRows && rpi > 0
+        ? frontNecklineLocalRows / rpi
+        : frontNeckDepthIn,
+    frontNeckDepthRows:
+      isCardigan && frontNecklineLocalRows > 0
+        ? frontNecklineLocalRows
+        : frontNeckDepthRows,
     frontNecklineWorkingRows,
     backNeckDepthRows,
     backNecklineStartRC: backNecklineStartRC,
