@@ -46,13 +46,15 @@ export function astroServerAdminEnv(): NodeJS.ProcessEnv {
     MEMBERSTACK_SECRET_KEY: import.meta.env.MEMBERSTACK_SECRET_KEY,
     MEMBERSTACK_SANDBOX_SECRET_KEY: import.meta.env.MEMBERSTACK_SANDBOX_SECRET_KEY,
   };
+  // Copy first. Reading process.env.ADMIN_MEMBER_* directly can be the
+  // build-time string, which would replace the live function environment.
   const env: NodeJS.ProcessEnv = { ...process.env };
   const memberIds = combineAdminAllowlistValue(
-    process.env.ADMIN_MEMBER_IDS,
+    env.ADMIN_MEMBER_IDS,
     import.meta.env.ADMIN_MEMBER_IDS,
   );
   const memberEmails = combineAdminAllowlistValue(
-    process.env.ADMIN_MEMBER_EMAILS,
+    env.ADMIN_MEMBER_EMAILS,
     import.meta.env.ADMIN_MEMBER_EMAILS,
   );
   if (memberIds) env.ADMIN_MEMBER_IDS = memberIds;
