@@ -481,6 +481,32 @@ export function roundNeckBackBothEdgesWrittenLines(
   ];
 }
 
+/** Shallow cardigan CF edge: both sides' hold groups on the one center-front edge. */
+export function roundNeckCardiganCombinedHoldGroups(
+  plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
+): number[] {
+  if (!isShallowHoldRoundPlan(plan)) return [];
+  const combined = [...plan.left.holdGroups];
+  for (let i = 0; i < plan.right.holdGroups.length; i++) {
+    combined[i] = (combined[i] ?? 0) + (plan.right.holdGroups[i] ?? 0);
+  }
+  return combined.filter((group) => group > 0);
+}
+
+/** Cardigan CF edge: combined hold groups from both sides of a shallow plan, or one deep side. */
+export function roundNeckCardiganCfEdgeJpLines(
+  plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
+): string[] {
+  if (!isShallowHoldRoundPlan(plan)) {
+    return roundNeckPlanOneSideNeckEdgeJpLines(plan, "right");
+  }
+  return consolidateConsecutiveJapaneseNotationLines(
+    compressHoldGroupsToSegments(roundNeckCardiganCombinedHoldGroups(plan)).map((seg) =>
+      formatShapingSegment(seg.stitchCount, 2, seg.repeatCount),
+    ),
+  );
+}
+
 /** Cardigan CF edge: combined hold groups from both sides of the full shallow/deep plan. */
 export function roundNeckCardiganCfEdgeWrittenLines(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,

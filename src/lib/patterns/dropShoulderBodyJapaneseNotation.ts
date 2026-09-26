@@ -21,6 +21,7 @@ import {
 } from "./roundNeckNotation";
 import {
   backRoundNeckPlanForDepth,
+  roundNeckCardiganCfEdgeJpLines,
   roundNeckPlanOneSideBackNeckEdgeJpLines,
   roundNeckPlanOneSideNeckEdgeJpLines,
 } from "./roundNeckPlanPresentation";
@@ -198,6 +199,12 @@ function dropShoulderCardiganRoundNeckEdgeNotationLines(
     necklineStitches: fullNeck,
     necklineDepthRows: frontNeckDepthRows,
   });
+  if (isShallowHoldRoundPlan(plan)) {
+    return {
+      centerBindOff: 0,
+      shapingLines: roundNeckCardiganCfEdgeJpLines(plan),
+    };
+  }
   return {
     centerBindOff: cardiganFrontInitialNeckBindOffStitches(fullNeck, frontNeckDepthRows),
     shapingLines: roundNeckPlanOneSideNeckEdgeJpLines(plan, "right"),
