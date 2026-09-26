@@ -51,14 +51,43 @@ function adminMemberEmailAllowList(env = process.env) {
 }
 
 /**
+ * Live and test Memberstack ids for the same account (`mem_…` and `mem_sb_…`).
+ * The suffix after the mode prefix is the account. An allowlisted form of that
+ * account must match the other form, or a production session is rejected when
+ * the allowlist was saved from the test id.
+ * @param {string | null | undefined} memberId
+ * @returns {string[]}
+ */
+export function memberIdAliases(memberId) {
+  const id = String(memberId || "").trim().toLowerCase();
+  if (!id) return [];
+  const aliases = [id];
+  if (id.startsWith("mem_sb_")) {
+    const live = `mem_${id.slice("mem_sb_".length)}`;
+    if (live !== "mem_") aliases.push(live);
+  } else if (id.startsWith("mem_")) {
+    aliases.push(`mem_sb_${id.slice("mem_".length)}`);
+  }
+  return aliases;
+}
+
+/**
+ * @param {string | null | undefined} memberId
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function memberIdOnAdminAllowList(memberId, env = process.env) {
+  const allow = adminMemberIdAllowList(env);
+  return memberIdAliases(memberId).some((alias) => allow.has(alias));
+}
+
+/**
  * True when a verified member id/email is on the admin allowlist. Exported separately from
  * {@link requireAdmin} so callers that already have a verified member (e.g. after a shared lookup)
  * can reuse the allowlist check without re-verifying the token.
  * @param {{ id?: string | null, email?: string | null }} member
  */
 export function isAdminMember(member, env = process.env) {
-  const id = (member?.id || "").trim().toLowerCase();
-  if (id && adminMemberIdAllowList(env).has(id)) return true;
+  if (memberIdOnAdminAllowList(member?.id, env)) return true;
   const email = (member?.email || "").trim().toLowerCase();
   if (email && adminMemberEmailAllowList(env).has(email)) return true;
   return false;
@@ -190,7 +219,7 @@ export async function requireAdmin(req, env = process.env) {
   }
 
   const tokenEmail = emailFromVerifiedTokenPayload(verified);
-  const idMatched = adminMemberIdAllowList(env).has(memberId.toLowerCase());
+  const idMatched = memberIdOnAdminAllowList(memberId, env);
 
   let record = null;
   const lookupClient = getMemberstackAdminClientForMemberId(memberId, env) || client;

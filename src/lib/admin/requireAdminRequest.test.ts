@@ -2,12 +2,21 @@ import { describe, expect, it } from "vitest";
 
 import {
   adminAuthErrorBody,
+  combineAdminAllowlistValue,
   looksLikeJwt,
   memberstackTokenFromRequest,
   requestWithBearerToken,
 } from "./requireAdminRequest";
 
 const JWT = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtZW0ifQ.signature-value";
+
+describe("combineAdminAllowlistValue", () => {
+  it("keeps both the runtime allowlist and the Astro build allowlist", () => {
+    expect(combineAdminAllowlistValue("mem_live", "mem_sb_live")).toBe("mem_live,mem_sb_live");
+    expect(combineAdminAllowlistValue("sue@knititnow.com", undefined)).toBe("sue@knititnow.com");
+    expect(combineAdminAllowlistValue(undefined, undefined)).toBeUndefined();
+  });
+});
 
 describe("requireAdminRequest", () => {
   it("reads a bearer token from the Authorization header", () => {
