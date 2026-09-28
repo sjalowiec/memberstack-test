@@ -18,12 +18,19 @@ export type AccountOwnedCourseCard = {
 
 /** Browser-safe display + entitlement metadata for individually owned courses. */
 export type AccountOwnableCourse = {
-  courseId: 86 | 111;
+  courseId: 86 | 111 | 87;
   slug: string;
   title: string;
   href: string;
   planIds: readonly string[];
 };
+
+function ownablePlanIds(sale: {
+  legacyPlanId: string;
+  paidPlanId?: string;
+}): readonly string[] {
+  return sale.paidPlanId ? [sale.legacyPlanId, sale.paidPlanId] : [sale.legacyPlanId];
+}
 
 export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
   {
@@ -31,20 +38,21 @@ export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
     slug: COURSE_INDIVIDUAL_SALES.th160.slug,
     title: "Taitexma TH/TR-160: Getting Started",
     href: "/courses/86",
-    planIds: [
-      COURSE_INDIVIDUAL_SALES.th160.legacyPlanId,
-      COURSE_INDIVIDUAL_SALES.th160.paidPlanId,
-    ],
+    planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.th160),
   },
   {
     courseId: COURSE_INDIVIDUAL_SALES.sk840.courseId,
     slug: COURSE_INDIVIDUAL_SALES.sk840.slug,
     title: "Mastering the Silver Reed SK840",
     href: "/courses/111",
-    planIds: [
-      COURSE_INDIVIDUAL_SALES.sk840.legacyPlanId,
-      COURSE_INDIVIDUAL_SALES.sk840.paidPlanId,
-    ],
+    planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.sk840),
+  },
+  {
+    courseId: COURSE_INDIVIDUAL_SALES.brother260.courseId,
+    slug: COURSE_INDIVIDUAL_SALES.brother260.slug,
+    title: "Brother KH/KR-260 Quick Start",
+    href: "/courses/87",
+    planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.brother260),
   },
 ];
 

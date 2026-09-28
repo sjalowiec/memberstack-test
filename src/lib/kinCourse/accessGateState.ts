@@ -5,6 +5,7 @@
  * and do not show the unauthorized card until the SDK has finished loading.
  */
 import {
+  BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
@@ -33,11 +34,26 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
   if (slug === KIN_TAITEXMA_160_COURSE_SLUG || slug === "86") {
     return "the Taitexma TH/TR-160 course";
   }
+  if (slug === BROTHER_KH260_COURSE_SLUG || slug === "87") {
+    return "the Brother KH/KR-260 legacy course plan";
+  }
   return "the SK840 course plan";
 }
 
+function offersStandalonePurchase(courseSlug: string): boolean {
+  const slug = courseSlug.trim();
+  return (
+    slug === KIN_TAITEXMA_160_COURSE_SLUG ||
+    slug === "86" ||
+    slug === LEGACY_SK840_COURSE_SLUG ||
+    slug === "111"
+  );
+}
+
 export function kinCourseNoAccessMessage(courseSlug: string): string {
-  return `You are signed in, but this course needs an active Knit It Now membership or ${kinCourseNoAccessPlanPhrase(courseSlug)}. You can also purchase this course on its own.`;
+  const base = `You are signed in, but this course needs an active Knit It Now membership or ${kinCourseNoAccessPlanPhrase(courseSlug)}.`;
+  if (!offersStandalonePurchase(courseSlug)) return base;
+  return `${base} You can also purchase this course on its own.`;
 }
 
 /** Paint the denial card only after Memberstack finished loading. */

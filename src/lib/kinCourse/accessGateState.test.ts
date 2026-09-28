@@ -47,6 +47,11 @@ describe("KIN course gate copy", () => {
     expect(kinCourseNoAccessMessage(slugs.course111)).toContain("SK840 course plan");
     expect(kinCourseNoAccessMessage(slugs.course111)).not.toContain("Taitexma");
     expect(kinCourseNoAccessMessage(slugs.course86)).toContain("purchase this course on its own");
+    expect(kinCourseNoAccessMessage("brother-kh-kr-260-quick-start")).toContain(
+      "Brother KH/KR-260 legacy course plan",
+    );
+    expect(kinCourseNoAccessMessage("87")).not.toContain("purchase this course on its own");
+    expect(kinCourseNoAccessMessage("87")).not.toContain("SK840");
   });
 });
 
