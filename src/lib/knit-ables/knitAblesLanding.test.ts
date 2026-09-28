@@ -7,6 +7,12 @@ import {
   KNIT_ABLES_LOGO,
   KNIT_ABLES_PATH,
 } from "./knitAblesLanding";
+import {
+  CAP_SLEEVE_TANK_CARD_COPY,
+  CAP_SLEEVE_TANK_IMAGES,
+  CAP_SLEEVE_TANK_PATH,
+  CAP_SLEEVE_TANK_TITLE,
+} from "./capSleeveTank";
 import { TEENAGE_KICKS_IMAGES, TEENAGE_KICKS_SOCKS_PATH } from "./teenageKicksSocks";
 import {
   WORSTED_COLOR_BLOCK_SOCKS_CARD_COPY,
@@ -63,13 +69,21 @@ describe("Knit-ables landing page logo", () => {
 });
 
 describe("Knit-ables landing page cards", () => {
-  it("keeps the Teenage Kicks Knit-able and adds Worsted Color-Block Socks", () => {
+  it("keeps the earlier Knit-ables and adds the cap-sleeve tank", () => {
     expect(landingSource).toContain("KNIT_ABLES_CARDS");
     expect(landingSource).toContain("knit-ables-card-list");
     expect(landingSource).toContain("knit-ables-feature-card");
-    expect(KNIT_ABLES_CARDS).toHaveLength(2);
+    expect(KNIT_ABLES_CARDS).toHaveLength(3);
 
-    const teenageKicks = KNIT_ABLES_CARDS[0];
+    const capSleeveTank = KNIT_ABLES_CARDS[0];
+    expect(capSleeveTank?.href).toBe(CAP_SLEEVE_TANK_PATH);
+    expect(capSleeveTank?.href).toBe("/knit-ables/cap-sleeve-tank");
+    expect(capSleeveTank?.title).toBe(CAP_SLEEVE_TANK_TITLE);
+    expect(capSleeveTank?.description).toBe(CAP_SLEEVE_TANK_CARD_COPY);
+    expect(capSleeveTank?.image.src).toBe(CAP_SLEEVE_TANK_IMAGES.hero.src);
+    expect(existsSync(resolve(`public${CAP_SLEEVE_TANK_IMAGES.hero.src}`))).toBe(true);
+
+    const teenageKicks = KNIT_ABLES_CARDS[1];
     expect(teenageKicks?.href).toBe(TEENAGE_KICKS_SOCKS_PATH);
     expect(teenageKicks?.href).toBe("/knit-ables/teenage-kicks-socks");
     expect(teenageKicks?.title).toBe("Colorful Self-Striping Socks");
@@ -79,7 +93,7 @@ describe("Knit-ables landing page cards", () => {
     expect(teenageKicks?.image.src).toBe(TEENAGE_KICKS_IMAGES.hero.src);
     expect(existsSync(resolve(`public${TEENAGE_KICKS_IMAGES.hero.src}`))).toBe(true);
 
-    const worstedSocks = KNIT_ABLES_CARDS[1];
+    const worstedSocks = KNIT_ABLES_CARDS[2];
     expect(worstedSocks?.href).toBe(WORSTED_COLOR_BLOCK_SOCKS_PATH);
     expect(worstedSocks?.href).toBe("/knit-ables/worsted-color-block-socks");
     expect(worstedSocks?.title).toBe(WORSTED_COLOR_BLOCK_SOCKS_TITLE);

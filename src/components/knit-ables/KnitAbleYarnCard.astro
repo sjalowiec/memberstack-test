@@ -11,6 +11,10 @@ interface Props {
   imageWidth?: number;
   imageHeight?: number;
   featured?: boolean;
+  /** Stacked puts the image above the copy. Beside keeps a modest image next to the description and link. */
+  imagePlacement?: "above" | "beside";
+  /** Defaults to the affiliate rel. Pass the external rel for a non-affiliate shop link. */
+  rel?: string;
 }
 
 const {
@@ -22,6 +26,8 @@ const {
   imageWidth,
   imageHeight,
   featured = false,
+  imagePlacement = "above",
+  rel = KNIT_ABLE_AFFILIATE_REL,
 } = Astro.props;
 
 const image =
@@ -31,39 +37,47 @@ const image =
 ---
 
 <article
-  class:list={["kbm-card knit-able-yarn-card", featured && "knit-able-yarn-card--featured"]}
+  class:list={[
+    "kbm-card knit-able-yarn-card",
+    featured && "knit-able-yarn-card--featured",
+    image && imagePlacement === "beside" && "knit-able-yarn-card--beside",
+  ]}
 >
   {
     featured ? (
       <p class="knit-able-yarn-card__eyebrow">Featured yarn</p>
     ) : null
   }
-  {
-    image ? (
-      <KnitAbleLinkedImage
-        class="knit-able-yarn-card__image"
+  <div class="knit-able-yarn-card__layout">
+    {
+      image ? (
+        <KnitAbleLinkedImage
+          class="knit-able-yarn-card__image"
+          href={href}
+          src={image.src}
+          alt={image.alt}
+          width={image.width}
+          height={image.height}
+          rel={rel}
+          loading="lazy"
+        />
+      ) : null
+    }
+    <div class="knit-able-yarn-card__main">
+      <h3 class="kbm-card__title">{heading}</h3>
+      <div class="knit-able-yarn-card__copy">
+        <slot />
+      </div>
+      <a
+        class="kbm-btn kbm-btn-primary knit-able-yarn-card__btn"
         href={href}
-        src={image.src}
-        alt={image.alt}
-        width={image.width}
-        height={image.height}
-        rel={KNIT_ABLE_AFFILIATE_REL}
-        loading="lazy"
-      />
-    ) : null
-  }
-  <h3 class="kbm-card__title">{heading}</h3>
-  <div class="knit-able-yarn-card__copy">
-    <slot />
+        target="_blank"
+        rel={rel}
+      >
+        {buttonLabel}
+      </a>
+    </div>
   </div>
-  <a
-    class="kbm-btn kbm-btn-primary knit-able-yarn-card__btn"
-    href={href}
-    target="_blank"
-    rel={KNIT_ABLE_AFFILIATE_REL}
-  >
-    {buttonLabel}
-  </a>
 </article>
 
 <style>
@@ -93,9 +107,48 @@ const image =
     color: var(--kbm-green, #52682d);
   }
 
+  .knit-able-yarn-card__layout {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .knit-able-yarn-card__main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
   .knit-able-yarn-card :global(.knit-able-yarn-card__image) {
     margin: 0 0 1rem;
     max-width: 16rem;
+  }
+
+  .knit-able-yarn-card--beside .knit-able-yarn-card__layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .knit-able-yarn-card--beside :global(.knit-able-yarn-card__image) {
+    flex: 0 0 auto;
+    width: min(9.5rem, 42%);
+    margin: 0;
+  }
+
+  .knit-able-yarn-card--beside .knit-able-yarn-card__btn {
+    align-self: flex-start;
+  }
+
+  @media (max-width: 640px) {
+    .knit-able-yarn-card--beside .knit-able-yarn-card__layout {
+      flex-direction: column;
+    }
+
+    .knit-able-yarn-card--beside :global(.knit-able-yarn-card__image) {
+      width: min(9.5rem, 55%);
+      margin: 0 0 0.85rem;
+    }
   }
 
   .knit-able-yarn-card :global(.knit-able-yarn-card__image img) {

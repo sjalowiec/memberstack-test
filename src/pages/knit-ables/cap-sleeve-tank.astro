@@ -1,0 +1,371 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import KnitAblePageHeader from "../../components/knit-ables/KnitAblePageHeader.astro";
+import KnitAbleLinkedImage from "../../components/knit-ables/KnitAbleLinkedImage.astro";
+import KnitAbleYarnCard from "../../components/knit-ables/KnitAbleYarnCard.astro";
+import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
+import {
+  CAP_SLEEVE_TANK_BUILD_STEPS,
+  CAP_SLEEVE_TANK_BUILDER_LINK_LABEL,
+  CAP_SLEEVE_TANK_CANONICAL_URL,
+  CAP_SLEEVE_TANK_COLLAR_IDEA,
+  CAP_SLEEVE_TANK_COLLAR_VIDEO,
+  CAP_SLEEVE_TANK_DESIGN_COPY_AFTER,
+  CAP_SLEEVE_TANK_DESIGN_COPY_BEFORE,
+  CAP_SLEEVE_TANK_DESIGN_HEADING,
+  CAP_SLEEVE_TANK_HERO_COPY,
+  CAP_SLEEVE_TANK_IMAGES,
+  CAP_SLEEVE_TANK_ORIGINAL_PATTERN_URL,
+  CAP_SLEEVE_TANK_OWN_IDEAS,
+  CAP_SLEEVE_TANK_TITLE,
+  CAP_SLEEVE_TANK_YARN,
+  capSleeveTankBuilderHref,
+} from "../../lib/knit-ables/capSleeveTank";
+
+const builderHref = capSleeveTankBuilderHref();
+const heroImage = CAP_SLEEVE_TANK_IMAGES.hero;
+const yarnImage = CAP_SLEEVE_TANK_IMAGES.yarn;
+---
+
+<Layout
+  title={`${CAP_SLEEVE_TANK_TITLE} | Knit it Now`}
+  description={CAP_SLEEVE_TANK_HERO_COPY}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={CAP_SLEEVE_TANK_CANONICAL_URL} />
+  </Fragment>
+
+  <div class="page-wrap knit-able-page">
+    <article>
+      <section class="knit-able-hero" aria-labelledby="knit-able-hero-heading">
+        <figure class="knit-able-hero__figure">
+          <KnitAbleLinkedImage
+            href={CAP_SLEEVE_TANK_ORIGINAL_PATTERN_URL}
+            src={heroImage.src}
+            alt={heroImage.alt}
+            width={heroImage.width}
+            height={heroImage.height}
+            rel={KNIT_ABLE_AFFILIATE_REL}
+            loading="eager"
+          />
+        </figure>
+        <div class="knit-able-hero__copy">
+          <KnitAblePageHeader
+            title={CAP_SLEEVE_TANK_TITLE}
+            headingId="knit-able-hero-heading"
+          />
+          <h2 id="knit-able-design-heading">{CAP_SLEEVE_TANK_DESIGN_HEADING}</h2>
+          <p>{CAP_SLEEVE_TANK_HERO_COPY}</p>
+          <p>
+            {CAP_SLEEVE_TANK_DESIGN_COPY_BEFORE}<a class="knit-able-text-link" href={builderHref}>{CAP_SLEEVE_TANK_BUILDER_LINK_LABEL}</a>{CAP_SLEEVE_TANK_DESIGN_COPY_AFTER}
+          </p>
+          <div class="knit-able-hero__actions">
+            <a class="kbm-btn kbm-btn-accent" href={builderHref}>
+              Open the Drop Shoulder Sweater Builder
+            </a>
+            <a
+              class="knit-able-text-link"
+              href={CAP_SLEEVE_TANK_ORIGINAL_PATTERN_URL}
+              target="_blank"
+              rel={KNIT_ABLE_AFFILIATE_REL}
+            >
+              View the Sirdar Branch Out Tank Pattern
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <hr class="section-divider" />
+
+      <section aria-labelledby="knit-able-own-heading">
+        <h2 id="knit-able-own-heading">Make It Your Own</h2>
+        <ul class="knit-able-checklist">
+          {CAP_SLEEVE_TANK_OWN_IDEAS.map((item) => (
+            <li>
+              {item}
+              {item === CAP_SLEEVE_TANK_COLLAR_IDEA ? (
+                <p class="knit-able-member-resource">
+                  {CAP_SLEEVE_TANK_COLLAR_VIDEO.prompt}{" "}
+                  <a href={CAP_SLEEVE_TANK_COLLAR_VIDEO.href}>
+                    Watch {CAP_SLEEVE_TANK_COLLAR_VIDEO.title}</a>.
+                  <span class="knit-able-member-resource__label">{CAP_SLEEVE_TANK_COLLAR_VIDEO.accessLabel}</span>
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="knit-able-build-heading">
+        <h2 id="knit-able-build-heading">Build Your Version</h2>
+        <ul class="knit-able-checklist">
+          {CAP_SLEEVE_TANK_BUILD_STEPS.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+        <aside class="kbm-intro-callout" aria-label="Sirdar inspiration note">
+          <p>
+            The Sirdar Branch Out Tank is the inspiration for this Knit-able. The Knit It Now
+            Drop Shoulder Sweater builder creates a separate custom machine-knitting pattern
+            using your measurements and gauge. You do not need to purchase the Sirdar pattern
+            to use the builder.
+          </p>
+        </aside>
+      </section>
+
+      <section aria-labelledby="knit-able-yarn-heading">
+        <h2 id="knit-able-yarn-heading">Featured Yarn</h2>
+        <div class="knit-able-yarn-grid">
+          <KnitAbleYarnCard
+            heading={CAP_SLEEVE_TANK_YARN.heading}
+            buttonLabel={CAP_SLEEVE_TANK_YARN.buttonLabel}
+            href={CAP_SLEEVE_TANK_YARN.href}
+            imageSrc={yarnImage.src}
+            imageAlt={yarnImage.alt}
+            imageWidth={yarnImage.width}
+            imageHeight={yarnImage.height}
+            imagePlacement="beside"
+            rel={KNIT_ABLE_AFFILIATE_REL}
+          >
+            {CAP_SLEEVE_TANK_YARN.paragraphs.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+          </KnitAbleYarnCard>
+        </div>
+      </section>
+
+      <section aria-labelledby="knit-able-source-heading">
+        <h2 id="knit-able-source-heading">Branch Out Tank by Sirdar</h2>
+        <p>
+          The original hand-knitting pattern is Sirdar 10969, written for Loveful Bio Blend
+          Chunky. It inspired the cap-sleeve tank silhouette of this Knit-able.
+        </p>
+        <a
+          class="kbm-btn kbm-btn-primary knit-able-source-btn"
+          href={CAP_SLEEVE_TANK_ORIGINAL_PATTERN_URL}
+          target="_blank"
+          rel={KNIT_ABLE_AFFILIATE_REL}
+        >
+          View the Sirdar Branch Out Tank Pattern
+        </a>
+      </section>
+
+      <section class="knit-able-cta" aria-labelledby="knit-able-final-heading">
+        <h2 id="knit-able-final-heading">Ready to Knit Your Own?</h2>
+        <p>
+          Choose your yarn, enter your gauge, and create a drop shoulder sweater pattern.
+          Omit the sleeves, then plan finished armholes and a collar.
+        </p>
+        <a class="kbm-btn kbm-btn-accent" href={builderHref}>
+          Open the Drop Shoulder Sweater Builder
+        </a>
+        <p class="knit-able-cta__note">
+          Knit It Now members can use their own measurements and gauge to generate custom
+          machine-knitting instructions.
+        </p>
+      </section>
+
+      <p class="knit-able-credit">
+        <a
+          href={CAP_SLEEVE_TANK_ORIGINAL_PATTERN_URL}
+          target="_blank"
+          rel={KNIT_ABLE_AFFILIATE_REL}
+        >
+          Branch Out Tank
+        </a>
+         knitting pattern by Sirdar. Tank photograph courtesy of Sirdar. Drop shoulder diagrams
+        by Knit It Now.
+      </p>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .knit-able-page.page-wrap {
+    padding-top: 12px;
+    padding-bottom: 3rem;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .knit-able-page p {
+    margin: 0 0 1.05rem;
+  }
+
+  .knit-able-eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .knit-able-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .knit-able-hero__figure {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .knit-able-hero__figure :global(img) {
+    border-radius: 12px;
+    background: #f7f8f5;
+  }
+
+  .knit-able-hero h1 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1.2;
+  }
+
+  .knit-able-hero h2 {
+    margin-bottom: 0.7rem;
+  }
+
+  .knit-able-hero__copy p:last-of-type {
+    margin-bottom: 1.15rem;
+  }
+
+  .knit-able-hero__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .knit-able-text-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+
+  .knit-able-page h2 {
+    margin: 0 0 0.7rem;
+  }
+
+  .knit-able-checklist {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+  }
+
+  .knit-able-checklist li {
+    margin: 0 0 0.55rem;
+    padding: 0.65rem 0.85rem 0.65rem 2.35rem;
+    position: relative;
+    color: #4d5a48;
+    line-height: 1.5;
+    border-radius: 0.75rem;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.18);
+  }
+
+  .knit-able-checklist li:last-child {
+    margin-bottom: 0;
+  }
+
+  .knit-able-member-resource {
+    margin: 0.45rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .knit-able-member-resource a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+
+  .knit-able-member-resource__label {
+    display: inline-block;
+    margin-left: 0.45rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(82, 104, 45, 0.12);
+    color: var(--kbm-green, #52682d);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    vertical-align: 0.1em;
+  }
+
+  .knit-able-checklist li::before {
+    content: "";
+    position: absolute;
+    left: 0.85rem;
+    top: 0.95rem;
+    width: 0.55rem;
+    height: 0.3rem;
+    border-left: 2px solid var(--kbm-green, #52682d);
+    border-bottom: 2px solid var(--kbm-green, #52682d);
+    transform: rotate(-45deg);
+  }
+
+  .knit-able-page :global(.kbm-intro-callout) p + p {
+    margin-top: 0.75rem;
+  }
+
+  .knit-able-yarn-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 1.15rem 0 0.85rem;
+  }
+
+  .knit-able-source-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    margin-bottom: 1.5rem;
+  }
+
+  .knit-able-cta {
+    margin: 0.5rem 0 1.5rem;
+    padding: 1.25rem 1.35rem;
+    background: #f7f8f5;
+    border: 1px solid #e4ebd6;
+    border-radius: 10px;
+  }
+
+  .knit-able-cta h2 {
+    margin-bottom: 0.85rem;
+  }
+
+  .knit-able-cta .kbm-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+  }
+
+  .knit-able-cta__note {
+    margin: 0.85rem 0 0;
+    color: #5a6350;
+  }
+
+  .knit-able-credit {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #5a6350;
+  }
+
+  .knit-able-credit a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .knit-able-hero {
+      gap: 1.5rem;
+    }
+  }
+</style>

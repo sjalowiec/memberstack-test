@@ -1,4 +1,10 @@
 import {
+  CAP_SLEEVE_TANK_CARD_COPY,
+  CAP_SLEEVE_TANK_IMAGES,
+  CAP_SLEEVE_TANK_PATH,
+  CAP_SLEEVE_TANK_TITLE,
+} from "./capSleeveTank";
+import {
   TEENAGE_KICKS_IMAGES,
   TEENAGE_KICKS_SOCKS_PATH,
 } from "./teenageKicksSocks";
@@ -36,6 +42,12 @@ export type KnitAbleLandingCard = {
 };
 
 export const KNIT_ABLES_CARDS: readonly KnitAbleLandingCard[] = [
+  {
+    href: CAP_SLEEVE_TANK_PATH,
+    title: CAP_SLEEVE_TANK_TITLE,
+    description: CAP_SLEEVE_TANK_CARD_COPY,
+    image: CAP_SLEEVE_TANK_IMAGES.hero,
+  },
   {
     href: TEENAGE_KICKS_SOCKS_PATH,
     title: "Colorful Self-Striping Socks",
