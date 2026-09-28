@@ -1,6 +1,5 @@
 ---
 import {
-  jumpLinkButtonLabel,
   jumpSeconds,
   kinVimeoPlayerDomId,
 } from "../../lib/kinCourse/vimeoJumpLinks";
@@ -64,15 +63,20 @@ const canRender = Boolean(playerKey) && usable.length > 0;
         aria-label="In this video"
       >
         <h3>In this video:</h3>
-        {usable.map((jump) => (
-          <button
-            type="button"
-            class="legacy-jumplink"
-            data-jump-seconds={String(jump.seconds)}
-          >
-            {jumpLinkButtonLabel({ time: jump.time, title: jump.title })}
-          </button>
-        ))}
+        <ol class="legacy-jumplinks__list">
+          {usable.map((jump) => (
+            <li>
+              <button
+                type="button"
+                class="legacy-jumplink"
+                data-jump-seconds={String(jump.seconds)}
+              >
+                {jump.time ? <span class="legacy-jumplink__time">{jump.time}</span> : null}
+                {jump.title ? <span class="legacy-jumplink__title">{jump.title}</span> : null}
+              </button>
+            </li>
+          ))}
+        </ol>
       </nav>
     </div>
   )

@@ -103,8 +103,13 @@ import {
 import type { CourseLesson } from "../lib/legacy_kin/coursePreviewPoc";
 import {
   isVimeoJumpLinksComponent,
+  listAfterDeletingVideoWithJumpLinks,
+  listAfterDuplicatingVideoWithJumpLinks,
+  listAfterMovingVideoWithJumpLinks,
+  listsAfterMovingVideoWithJumpLinksAcross,
   siblingVimeoFromComponents,
   toNativeVimeoJumpLinksComponent,
+  videoJumpLinksOutlineSummary,
   vimeoJumpLinksSummary,
 } from "../lib/legacy_kin/vimeoJumpLinksEditor";
 import { jumpsFromComponent, type VimeoJump } from "../lib/kinCourse/vimeoJumpLinks";
@@ -911,7 +916,7 @@ function sortedComponents(block: LessonRecord) {
     const slotA = Number(a.legacySlot ?? 0);
     const slotB = Number(b.legacySlot ?? 0);
     if (slotA !== slotB) return slotA - slotB;
-    return String(a.type).localeCompare(String(b.type));
+    return 0;
   });
 }
 
@@ -1418,7 +1423,7 @@ function renderSectionAddBlockMenu(blockSlug: string) {
 function renderSectionAddBlockRow(blockSlug: string) {
   return `
     <div class="course-editor__outline-add-block">
-      <span class="course-editor__outline-add-block-label">+ Add Block</span>
+      <span class="course-editor__outline-add-block-label">Add block</span>
       <div class="course-editor__outline-add-block-types">${renderSectionAddBlockButtons(blockSlug)}</div>
     </div>
   `;
@@ -1585,6 +1590,21 @@ function bindContentListActions() {
 
   dom.itemsList.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
+
+    const editSectionTitle = target.closest("[data-edit-section-title]") as HTMLButtonElement | null;
+    if (editSectionTitle) {
+      e.preventDefault();
+      e.stopPropagation();
+      const blockSlug = editSectionTitle.getAttribute("data-edit-section-title");
+      const titleInput = blockSlug
+        ? (dom.itemsList.querySelector(
+            `[data-section-title="${CSS.escape(blockSlug)}"]`,
+          ) as HTMLInputElement | null)
+        : null;
+      titleInput?.focus();
+      titleInput?.select();
+      return;
+    }
 
     const toggleSection = target.closest("[data-toggle-section]") as HTMLButtonElement | null;
     if (toggleSection) {
@@ -3928,108 +3948,128 @@ function renderContentList() {
   const groups = buildContentListGroups(lesson, items);
   validateExpandedSectionSlug(groups);
 
+  const lastBlockIndex = groups.reduce(
+    (max, group) => Math.max(max, group.blockIndex ?? 0),
+    0,
+  );
   const sectionHtml = groups
     .map((group, groupIndex) => {
-      const isExpanded = expandedSectionSlug === group.blockSlug;
-      const navTitle = sectionNavLabel(
-        group.blockTitle === "Untitled section" ? "" : group.blockTitle,
-      );
-      const sectionAddBlockMenu = group.isLayout
-        ? ""
-        : `<div class="course-editor__outline-section-add">${renderSectionAddBlockMenu(group.blockSlug)}</div>`;
-      const sectionMoveBtns = `
-        <button type="button" class="course-editor__outline-action" data-move-section-up="${groupIndex}" ${groupIndex === 0 ? "disabled" : ""} title="Move section up">↑</button>
-        <button type="button" class="course-editor__outline-action" data-move-section-down="${groupIndex}" ${groupIndex === groups.length - 1 ? "disabled" : ""} title="Move section down">↓</button>
+      const ownsBlock = group.ownsBlockActions !== false;
+      const blockMoveIndex = group.blockIndex ?? groupIndex;
+      const titleValue = group.titleValue ?? group.blockTitle;
+      const titleEditable = group.titleEditable !== false;
+      const navTitle = sectionNavLabel(titleValue === "Untitled section" ? "" : titleValue);
+      const sectionMoveBtns = ownsBlock
+        ? `
+        <button type="button" class="course-editor__outline-action" data-edit-section-title="${escapeHtml(group.blockSlug)}">Edit section title</button>
+        <button type="button" class="course-editor__outline-action" data-move-section-up="${blockMoveIndex}" ${blockMoveIndex === 0 ? "disabled" : ""}>Move section up</button>
+        <button type="button" class="course-editor__outline-action" data-move-section-down="${blockMoveIndex}" ${blockMoveIndex === lastBlockIndex ? "disabled" : ""}>Move section down</button>
         ${
           group.canSplit
-            ? `<button type="button" class="course-editor__outline-action" data-split-section="${escapeHtml(group.blockSlug)}" title="Split into separate sections">Split</button>`
+            ? `<button type="button" class="course-editor__outline-action" data-split-section="${escapeHtml(group.blockSlug)}">Split section</button>`
             : ""
         }
-        <button type="button" class="course-editor__outline-action is-danger" data-delete-section="${escapeHtml(group.blockSlug)}" title="Delete section">✕</button>
-      `;
+        <button type="button" class="course-editor__outline-action is-danger" data-delete-section="${escapeHtml(group.blockSlug)}">Delete section</button>
+      `
+        : "";
+      const titleHtml = titleEditable
+        ? `<input
+                type="text"
+                class="course-editor__input course-editor__outline-section-title"
+                data-section-title="${escapeHtml(group.blockSlug)}"
+                value="${escapeHtml(titleValue === "Untitled section" ? "" : titleValue)}"
+                placeholder="${escapeHtml(navTitle)}"
+                aria-label="Section ${group.sectionNumber} title"
+                autocomplete="off"
+                spellcheck="true"
+              />`
+        : `<span class="course-editor__outline-section-title">${escapeHtml(group.blockTitle)}</span>`;
 
-      const blocksHtml = isExpanded
-        ? group.entries
-            .map(({ item, index }, blockIndex) => {
-              const meta = typeMeta(
-                item.type === TEXT_VIDEO_LAYOUT_TYPE ||
-                  item.type === TEXT_IMAGE_LAYOUT_TYPE ||
-                  item.type === THREE_VIDEOS_LAYOUT_TYPE
-                  ? (item.type as EditorContentKind)
-                  : imageEditorKind(item.component),
-              );
-              const typeLabel = contentItemTypeLabel(item);
-              const selected = contentItemMatches(contentEditingRef, item);
-              const prevInSection = group.entries[blockIndex - 1];
-              const nextInSection = group.entries[blockIndex + 1];
-              return `
-                <div class="course-editor__outline-block ${selected ? "is-selected" : ""}" data-item-index="${index}" draggable="true">
+      const blocksHtml = group.entries
+        .map(({ item, index, jumpLinks: entryJumpLinks, jumpLinksNote }, blockIndex) => {
+          const meta = typeMeta(
+            item.type === TEXT_VIDEO_LAYOUT_TYPE ||
+              item.type === TEXT_IMAGE_LAYOUT_TYPE ||
+              item.type === THREE_VIDEOS_LAYOUT_TYPE
+              ? (item.type as EditorContentKind)
+              : imageEditorKind(item.component),
+          );
+          const typeLabel = jumpLinksNote ? "Video Jump Links" : contentItemTypeLabel(item);
+          const jumpLinks = item.type === "video" ? (entryJumpLinks ?? []) : [];
+          const jumpSummary =
+            item.type === "video"
+              ? videoJumpLinksOutlineSummary(
+                  item.component,
+                  jumpLinks.map((jump) => jump.component),
+                )
+              : null;
+          const chapterItems =
+            currentCourseId === 87
+              ? jumpLinks.flatMap((jump) => jumpsFromComponent(jump.component))
+              : [];
+          const chapterHtml = chapterItems.length
+            ? `<ol class="course-editor__outline-chapters">${chapterItems
+                .map(
+                  (jump) =>
+                    `<li>${escapeHtml([jump.time, jump.title].filter(Boolean).join(" "))}</li>`,
+                )
+                .join("")}</ol>`
+            : "";
+          const selected = contentItemMatches(contentEditingRef, item);
+          const prevInSection = group.entries[blockIndex - 1];
+          const nextInSection = group.entries[blockIndex + 1];
+          const swapUp = prevInSection ? prevInSection.index : index;
+          const swapDown = nextInSection ? nextInSection.index : index;
+          const canMoveUp = swapUp !== index;
+          const canMoveDown = swapDown !== index;
+          return `
+                <div class="course-editor__outline-block ${selected ? "is-selected" : ""}" data-item-index="${index}" data-section-slug="${escapeHtml(group.blockSlug)}" draggable="true">
                   <span class="course-editor__outline-block-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
                   <div class="course-editor__outline-block-body">
-                    <span class="course-editor__outline-block-type" style="color:${meta.color}">${escapeHtml(typeLabel)}</span>
-                    <span class="course-editor__outline-block-summary">${escapeHtml(contentSummary(item.component))}</span>
+                    <span class="course-editor__outline-block-type" style="color:${meta.color}">Block ${blockIndex + 1}: ${escapeHtml(typeLabel)}</span>
+                    <span class="course-editor__outline-block-summary">${escapeHtml(jumpLinksNote ?? jumpSummary ?? contentSummary(item.component))}</span>
+                    ${chapterHtml}
                   </div>
                   <div class="course-editor__outline-block-actions">
-                    <button type="button" class="course-editor__outline-action" data-action="edit" data-index="${index}" title="Edit block">Edit</button>
-                    <button type="button" class="course-editor__outline-action" data-action="up" data-index="${index}" data-swap-index="${prevInSection ? prevInSection.index : index}" ${blockIndex === 0 ? "disabled" : ""} title="Move block up">↑</button>
-                    <button type="button" class="course-editor__outline-action" data-action="down" data-index="${index}" data-swap-index="${nextInSection ? nextInSection.index : index}" ${blockIndex === group.entries.length - 1 ? "disabled" : ""} title="Move block down">↓</button>
-                    <button type="button" class="course-editor__outline-action" data-action="dup" data-index="${index}" title="Duplicate block">⧉</button>
-                    <button type="button" class="course-editor__outline-action is-danger" data-action="del" data-index="${index}" title="Delete block">✕</button>
+                    <button type="button" class="course-editor__outline-action" data-action="edit" data-index="${index}">Edit block</button>
+                    ${
+                      jumpLinks[0]
+                        ? `<button type="button" class="course-editor__outline-action" data-action="edit-jumps" data-index="${index}" data-jump-id="${jumpLinks[0].legacyComponentId}" data-jump-type="${escapeHtml(jumpLinks[0].type)}">Edit jump links</button>`
+                        : ""
+                    }
+                    <button type="button" class="course-editor__outline-action" data-action="up" data-index="${index}" data-swap-index="${swapUp}" ${canMoveUp ? "" : "disabled"}>Move block up</button>
+                    <button type="button" class="course-editor__outline-action" data-action="down" data-index="${index}" data-swap-index="${swapDown}" ${canMoveDown ? "" : "disabled"}>Move block down</button>
+                    <button type="button" class="course-editor__outline-action" data-action="dup" data-index="${index}">Duplicate block</button>
+                    <button type="button" class="course-editor__outline-action is-danger" data-action="del" data-index="${index}">Delete block</button>
                   </div>
                 </div>
               `;
-            })
-            .join("")
-        : "";
+        })
+        .join("");
 
-      const addBlockRow =
-        isExpanded && !group.isLayout ? renderSectionAddBlockRow(group.blockSlug) : "";
-      const layoutHint =
-        isExpanded && group.isLayout
-          ? `<p class="course-editor__outline-layout-hint">This is a combined layout (Text+Video, etc.) — it holds one fixed layout, not extra blocks. Click <strong>Edit</strong> to change it, or use <strong>+ New Section</strong> for a new heading.</p>`
-          : "";
+      const addBlockRow = !group.isLayout ? renderSectionAddBlockRow(group.blockSlug) : "";
+      const layoutHint = group.isLayout
+        ? `<p class="course-editor__outline-layout-hint">This is a combined layout. Use <strong>Edit block</strong> to change it, or <strong>Add section</strong> on the lesson for a new heading.</p>`
+        : "";
       const emptyBlocksHint =
-        isExpanded && group.blockCount === 0 && !group.isLayout
-          ? `<p class="course-editor__outline-empty">No blocks yet — use <strong>+ Block</strong> on this section.</p>`
+        group.blockCount === 0 && !group.isLayout
+          ? `<p class="course-editor__outline-empty">No blocks yet. Use Add block below.</p>`
           : "";
 
       return `
-        <div class="course-editor__outline-section ${isExpanded ? "is-expanded" : ""}" data-block-slug="${escapeHtml(group.blockSlug)}">
+        <div class="course-editor__outline-section is-expanded" data-block-slug="${escapeHtml(group.blockSlug)}">
           <div
             class="course-editor__outline-section-row"
             data-outline-section-row="${escapeHtml(group.blockSlug)}"
           >
-            <button
-              type="button"
-              class="course-editor__outline-caret"
-              data-toggle-section="${escapeHtml(group.blockSlug)}"
-              aria-expanded="${isExpanded ? "true" : "false"}"
-              title="${isExpanded ? "Collapse section" : "Expand section"}"
-            >${isExpanded ? "▾" : "▸"}</button>
             <div class="course-editor__outline-section-main">
-              <input
-                type="text"
-                class="course-editor__input course-editor__outline-section-title"
-                data-section-title="${escapeHtml(group.blockSlug)}"
-                value="${escapeHtml(group.blockTitle === "Untitled section" ? "" : group.blockTitle)}"
-                placeholder="${escapeHtml(navTitle)}"
-                aria-label="${escapeHtml(navTitle)} title"
-                autocomplete="off"
-                spellcheck="true"
-              />
-              <span class="course-editor__outline-section-meta">
-                <span class="course-editor__outline-section-num">Section ${group.sectionNumber}</span>
-                <span class="course-editor__outline-section-count">${escapeHtml(formatSectionBlockCount(group.blockCount))}</span>
-              </span>
+              <span class="course-editor__outline-section-num">Section ${group.sectionNumber}</span>
+              ${titleHtml}
+              <span class="course-editor__outline-section-count">${escapeHtml(formatSectionBlockCount(group.blockCount))}</span>
             </div>
-            ${sectionAddBlockMenu}
             <div class="course-editor__outline-section-actions">${sectionMoveBtns}</div>
           </div>
-          ${
-            isExpanded
-              ? `<div class="course-editor__outline-blocks">${layoutHint}${emptyBlocksHint}${blocksHtml}${addBlockRow}</div>`
-              : ""
-          }
+          <div class="course-editor__outline-blocks">${layoutHint}${emptyBlocksHint}${blocksHtml}${addBlockRow}</div>
         </div>
       `;
     })
@@ -4073,6 +4113,21 @@ function renderContentList() {
       const action = btn.getAttribute("data-action");
       const index = Number(btn.getAttribute("data-index"));
       const swapIndex = Number(btn.getAttribute("data-swap-index"));
+      if (action === "edit-jumps") {
+        const blockSlug = (btn.closest("[data-section-slug]") as HTMLElement | null)?.getAttribute(
+          "data-section-slug",
+        );
+        const jumpId = Number(btn.getAttribute("data-jump-id"));
+        const jumpType = btn.getAttribute("data-jump-type") || "vimeoJumpLinks";
+        if (blockSlug && Number.isFinite(jumpId)) {
+          openContentEdit({
+            blockSlug,
+            legacyComponentId: jumpId,
+            type: jumpType,
+          });
+        }
+        return;
+      }
       const currentItems = flattenLessonContent(getLessonDraft(selectedLessonSlug!)!);
       const item = currentItems[index];
       if (!item) return;
@@ -4094,7 +4149,7 @@ function renderContentList() {
           delBtn.classList.add("course-editor__item-delete-confirm");
           window.setTimeout(() => {
             deleteConfirm.delete(index);
-            delBtn.textContent = "✕";
+            delBtn.textContent = "Delete block";
             delBtn.classList.remove("course-editor__item-delete-confirm");
           }, 3000);
         }
@@ -4322,6 +4377,55 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     renderContentList();
     updateSaveState();
     return;
+  }
+
+  if (current.type === "video" && current.blockSlug === target.blockSlug) {
+    const block = findBlock(lesson, current.blockSlug);
+    const components = (block?.components as Record<string, unknown>[]) ?? [];
+    const next = listAfterMovingVideoWithJumpLinks(
+      components,
+      current.legacyComponentId,
+      target.legacyComponentId,
+      target.type,
+      moveDown,
+    );
+    if (next && block) {
+      block.components = next;
+      reassignAllContentOrders(lesson);
+      setLessonDraft(selectedLessonSlug, lesson);
+      contentEditingRef = { ...current };
+      renderContentList();
+      updateSaveState();
+      return;
+    }
+  }
+
+  if (current.type === "video" && current.blockSlug !== target.blockSlug) {
+    const source = findBlock(lesson, current.blockSlug);
+    const destination = findBlock(lesson, target.blockSlug);
+    const moved = listsAfterMovingVideoWithJumpLinksAcross(
+      (source?.components as Record<string, unknown>[]) ?? [],
+      (destination?.components as Record<string, unknown>[]) ?? [],
+      current.legacyComponentId,
+      target.legacyComponentId,
+      target.type,
+      moveDown,
+    );
+    if (moved && source && destination) {
+      source.components = moved.source;
+      destination.components = moved.destination;
+      if (moved.source.length === 0) pruneEmptyBlocks(lesson);
+      reassignAllContentOrders(lesson);
+      setLessonDraft(selectedLessonSlug, lesson);
+      contentEditingRef = {
+        blockSlug: target.blockSlug,
+        legacyComponentId: current.legacyComponentId,
+        type: current.type,
+      };
+      renderContentList();
+      updateSaveState();
+      return;
+    }
   }
 
   const movedRef = movePlainContentComponent(
@@ -4559,6 +4663,35 @@ function duplicateContentItem(ref: ComponentRef) {
   );
   if (index === -1) return;
 
+  if (ref.type === "video") {
+    const block = findBlock(lesson, ref.blockSlug);
+    if (block) {
+      let nextId = maxLegacyComponentIdInCourse() ;
+      const duplicated = listAfterDuplicatingVideoWithJumpLinks(
+        block.components as Record<string, unknown>[],
+        ref.legacyComponentId,
+        () => {
+          nextId += 1;
+          return nextId;
+        },
+      );
+      if (duplicated) {
+        block.components = duplicated.components;
+        reassignAllContentOrders(lesson);
+        setLessonDraft(selectedLessonSlug, lesson);
+        contentEditingRef = {
+          blockSlug: ref.blockSlug,
+          legacyComponentId: duplicated.cloneLegacyComponentId,
+          type: "video",
+        };
+        openContentEdit(contentEditingRef);
+        flashToast("Duplicated");
+        updateSaveState();
+        return;
+      }
+    }
+  }
+
   const source = items[index]!.component;
   const clone = JSON.parse(JSON.stringify(source)) as Record<string, unknown>;
   clone.legacyComponentId = maxLegacyComponentIdInCourse();
@@ -4650,15 +4783,38 @@ function deleteContentItem(ref: ComponentRef) {
     return;
   }
 
-  const blockBeforeRemoval = findBlock(lesson, ref.blockSlug);
-  const keepEmptySection = Boolean(
-    blockBeforeRemoval &&
-      !isEditorLayoutBlock(blockBeforeRemoval) &&
-      Array.isArray(blockBeforeRemoval.components) &&
-      blockBeforeRemoval.components.length === 1,
-  );
+  let removedVideoWithJumpLinks = false;
+  if (ref.type === "video") {
+    const block = findBlock(lesson, ref.blockSlug);
+    if (block) {
+      const next = listAfterDeletingVideoWithJumpLinks(
+        block.components as Record<string, unknown>[],
+        ref.legacyComponentId,
+      );
+      if (next) {
+        block.components = next;
+        removedVideoWithJumpLinks = true;
+      }
+    }
+  }
 
-  removeComponentFromBlock(lesson, ref.blockSlug, ref.legacyComponentId, ref.type);
+  const blockBeforeRemoval = findBlock(lesson, ref.blockSlug);
+  const keepEmptySection = removedVideoWithJumpLinks
+    ? Boolean(
+        blockBeforeRemoval &&
+          Array.isArray(blockBeforeRemoval.components) &&
+          blockBeforeRemoval.components.length === 0,
+      )
+    : Boolean(
+        blockBeforeRemoval &&
+          !isEditorLayoutBlock(blockBeforeRemoval) &&
+          Array.isArray(blockBeforeRemoval.components) &&
+          blockBeforeRemoval.components.length === 1,
+      );
+
+  if (!removedVideoWithJumpLinks) {
+    removeComponentFromBlock(lesson, ref.blockSlug, ref.legacyComponentId, ref.type);
+  }
 
   const blockAfterRemoval = findBlock(lesson, ref.blockSlug);
   const keptEmptySection =

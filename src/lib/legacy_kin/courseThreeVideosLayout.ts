@@ -21,6 +21,19 @@ export function threeVideosCaptionRole(slot: 1 | 2 | 3): string {
   return `threeVideosCaption${slot}`;
 }
 
+/** Unused third slot written by the three-video template. The course file keeps it. */
+export function isEmptyThirdVideoPlaceholder(component: {
+  type?: unknown;
+  vimeoId?: unknown;
+  layoutRole?: unknown;
+}): boolean {
+  return (
+    String(component.type ?? "") === "video" &&
+    String(component.layoutRole ?? "") === threeVideosVideoRole(3) &&
+    !String(component.vimeoId ?? "").trim()
+  );
+}
+
 type BlockLike = {
   slug?: string;
   components?: unknown[];

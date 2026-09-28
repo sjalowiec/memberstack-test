@@ -7,7 +7,10 @@ import {
   legacyLessonHref,
   legacyLessonItemHref,
 } from "../../../lib/legacy_kin/legacyCourseLoader";
-import type { LessonContentNavEntry } from "../../../lib/legacy_kin/courseLessonContentItems";
+import {
+  groupLessonContentNavEntries,
+  type LessonContentNavEntry,
+} from "../../../lib/legacy_kin/courseLessonContentItems";
 
 interface Props {
   courseSlug: string;
@@ -27,6 +30,7 @@ const {
   contentNavEntries = [],
 } = Astro.props;
 const showContentNav = contentNavEntries.length > 1;
+const contentNavGroups = groupLessonContentNavEntries(contentNavEntries);
 const loaderOptions = { includeDrafts };
 const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
 const lessons = course ? getSortedLessonsForCourse(course, loaderOptions) : [];
@@ -107,21 +111,50 @@ function itemHref(lessonSlug: string, itemSlug: string): string {
                   {
                     isActive && showContentNav ? (
                       <ol class="course-preview__sidebar-sections">
-                        {contentNavEntries.map((entry) => {
-                          const isActiveItem = entry.itemSlug === currentItemSlug;
+                        {contentNavGroups.map((group) => {
+                          const multiple = group.entries.length > 1;
+                          if (!multiple) {
+                            const entry = group.entries[0]!;
+                            const isActiveItem = entry.itemSlug === currentItemSlug;
+                            return (
+                              <li class="course-preview__sidebar-section">
+                                <a
+                                  class:list={[
+                                    "course-preview__sidebar-section-link",
+                                    isActiveItem &&
+                                      "course-preview__sidebar-section-link--active",
+                                  ]}
+                                  href={itemHref(lesson.slug, entry.itemSlug)}
+                                  aria-current={isActiveItem ? "page" : undefined}
+                                >
+                                  {entry.title}
+                                </a>
+                              </li>
+                            );
+                          }
                           return (
-                            <li class="course-preview__sidebar-section">
-                              <a
-                                class:list={[
-                                  "course-preview__sidebar-section-link",
-                                  isActiveItem &&
-                                    "course-preview__sidebar-section-link--active",
-                                ]}
-                                href={itemHref(lesson.slug, entry.itemSlug)}
-                                aria-current={isActiveItem ? "page" : undefined}
-                              >
-                                {entry.title}
-                              </a>
+                            <li class="course-preview__sidebar-section course-preview__sidebar-section--group">
+                              <p class="course-preview__sidebar-section-label">{group.sectionTitle}</p>
+                              <ol class="course-preview__sidebar-section-items">
+                                {group.entries.map((entry) => {
+                                  const isActiveItem = entry.itemSlug === currentItemSlug;
+                                  return (
+                                    <li>
+                                      <a
+                                        class:list={[
+                                          "course-preview__sidebar-section-link",
+                                          isActiveItem &&
+                                            "course-preview__sidebar-section-link--active",
+                                        ]}
+                                        href={itemHref(lesson.slug, entry.itemSlug)}
+                                        aria-current={isActiveItem ? "page" : undefined}
+                                      >
+                                        {entry.title}
+                                      </a>
+                                    </li>
+                                  );
+                                })}
+                              </ol>
                             </li>
                           );
                         })}

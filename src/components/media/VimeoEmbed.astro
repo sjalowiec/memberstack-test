@@ -1,4 +1,6 @@
 ---
+import { kinVimeoPlayerDomId } from "../../lib/kinCourse/vimeoJumpLinks";
+
 interface Props {
   vimeoId: string;
   title?: string;
@@ -6,6 +8,8 @@ interface Props {
   autoplay?: boolean;
   loop?: boolean;
   muted?: boolean;
+  /** When set, chapter buttons on this page can seek this player. */
+  playerKey?: string;
 }
 
 const { 
@@ -14,7 +18,8 @@ const {
   aspectRatio = "16:9",
   autoplay = false,
   loop = false,
-  muted = false
+  muted = false,
+  playerKey = "",
 } = Astro.props;
 
 const params = new URLSearchParams({
@@ -32,6 +37,8 @@ const paddingBottom = aspectRatio === "16:9" ? "56.25%" : "75%";
 <div class="vimeo-embed-wrapper" data-testid="video-vimeo">
   <div class="vimeo-embed-container" style={`padding-bottom: ${paddingBottom}`}>
     <iframe
+      id={playerKey ? kinVimeoPlayerDomId(playerKey) : undefined}
+      data-kin-vimeo-player={playerKey || undefined}
       src={vimeoUrl}
       title={title}
       frameborder="0"

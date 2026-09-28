@@ -62,4 +62,6 @@ export type ComponentRef = {
 
 export type FlatContentItem = ComponentRef & {
   component: Record<string, unknown>;
+  /** Chapter-link components shown with this video. Omitted from their own preview page. */
+  attachedJumpLinks?: Record<string, unknown>[];
 };
