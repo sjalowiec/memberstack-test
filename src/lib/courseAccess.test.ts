@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   KIN_TAITEXMA_160_COURSE_SLUG,
+  BROTHER_KH260_COURSE_SLUG,
+  LEGACY_BROTHER_260_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
   LEGACY_TH160_COURSE_PLAN_ID,
@@ -256,6 +258,27 @@ describe("canAccessCourse", () => {
     expect(
       hasIndividualCoursePurchase(LEGACY_SK840_COURSE_SLUG, sk840Buyer),
     ).toBe(true);
+  });
+
+  it("legacy Brother 260 plan holders access only Course 87", () => {
+    const brotherBuyer = payloadWithPlan(LEGACY_BROTHER_260_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("purchase", brotherBuyer, { courseSlug: BROTHER_KH260_COURSE_SLUG }),
+    ).toBe(true);
+    expect(canAccessCourse("purchase", brotherBuyer, { courseSlug: "87" })).toBe(true);
+    expect(hasIndividualCoursePurchase(BROTHER_KH260_COURSE_SLUG, brotherBuyer)).toBe(true);
+    expect(
+      canAccessCourse("purchase", brotherBuyer, { courseSlug: LEGACY_SK840_COURSE_SLUG }),
+    ).toBe(false);
+    expect(
+      canAccessCourse("purchase", brotherBuyer, { courseSlug: KIN_TAITEXMA_160_COURSE_SLUG }),
+    ).toBe(false);
+    const loggedInNoPlan = {
+      data: { id: "ms_nosub", auth: { email: "nosub@knititnow.com" }, planConnections: [] },
+    };
+    expect(
+      canAccessCourse("purchase", loggedInNoPlan, { courseSlug: BROTHER_KH260_COURSE_SLUG }),
+    ).toBe(false);
   });
 
   it("legacy SK840 plan holders do not unlock unrelated member courses", () => {

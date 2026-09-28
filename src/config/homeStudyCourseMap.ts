@@ -8,9 +8,9 @@
  * that prompted this work called course 49 Bonnie's Cocoon. Those ids stay
  * unresolved and never play back.
  *
- * Courses 86 and 111 are mapped because the live product config, the player
- * document `legacyChallengeId`, and the public course URL all use those ids
- * for those courses. No other player id is included.
+ * Courses 86, 87, and 111 are mapped because the player document
+ * `legacyChallengeId` and the public course URL use those ids. No other
+ * player id is included.
  */
 import {
   COURSE_INDIVIDUAL_SALES,
@@ -20,6 +20,7 @@ import {
 
 const PLAYBACK_TITLES: Record<IndividualCourseSale["courseId"], string> = {
   86: "Taitexma TH/TR-160: Getting Started",
+  87: "Brother KH/KR-260 Quick Start",
   111: "Mastering the Silver Reed SK840",
 };
 

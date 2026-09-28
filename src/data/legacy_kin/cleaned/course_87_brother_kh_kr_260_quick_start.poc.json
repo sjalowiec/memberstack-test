@@ -5,14 +5,15 @@
     "legacyChallengeId": 87,
     "title": "Brother KH/KR-260 Quick Start",
     "slug": "brother-kh-kr-260-quick-start",
-    "status": "draft",
-    "published": false,
+    "status": "published",
+    "published": true,
     "legacy": {
       "sourceExport": "course_87_brother_kh_kr_260_quick_start.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
       "migratedAt": "2026-06-25T10:16:09+00:00",
+      "temporaryDevAccess": "TEMPORARY 2026-09-28: published so /courses/87 loads on local DEV without preview, with a catalog card. No paid price and no checkout. Do not deploy this publication to production until legacy grants are reviewed.",
       "draftReview": {
-        "note": "Draft conversion for local editing. Original lesson text, videos, and hotspot data are preserved. Not published and not in the sales catalog.",
+        "note": "Published for local DEV access testing. Original lesson text, videos, and hotspot data are preserved. No paid price.",
         "missingAssets": [],
         "assetDisposition": [
           "Full Needle Rib uses /images/glossary/full-needle-rib-machine-knitting.jpg. /images/glossary/full_needle_rib.JPG was not in the known image libraries.",

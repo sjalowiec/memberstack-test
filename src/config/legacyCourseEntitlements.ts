@@ -21,16 +21,21 @@ export const LEGACY_SK840_COURSE_PLAN_ID = "pln_legacy-sk840-course-qy1c4076q" a
 export const PAID_SK840_COURSE_PLAN_ID = "pln_course-sk840--xy1u30uqt" as const;
 export const SK840_COURSE_PRICE_ID = "prc_course-sk840-hn300ud" as const;
 
-export type IndividualCourseSaleKey = "th160" | "sk840";
+export const BROTHER_KH260_COURSE_SLUG = "brother-kh-kr-260-quick-start" as const;
+/** Free plan for verified legacy owners. There is no paid price for this course. */
+export const LEGACY_BROTHER_260_COURSE_PLAN_ID = "pln_course-brother-260-legacy-m2vb0y2r" as const;
+
+export type IndividualCourseSaleKey = "th160" | "sk840" | "brother260";
 
 export type IndividualCourseSale = {
   key: IndividualCourseSaleKey;
-  courseId: 86 | 111;
+  courseId: 86 | 111 | 87;
   slug: string;
   aliases: readonly string[];
   legacyPlanId: string;
-  paidPlanId: string;
-  priceId: string;
+  /** Omit when the course is not sold. Checkout must not invent a price. */
+  paidPlanId?: string;
+  priceId?: string;
   /** Customer-facing price. Omit rather than inventing a dollar amount. */
   priceLabel?: string;
 };
@@ -56,6 +61,13 @@ export const COURSE_INDIVIDUAL_SALES = {
     priceId: SK840_COURSE_PRICE_ID,
     priceLabel: "$49.99",
   },
+  brother260: {
+    key: "brother260",
+    courseId: 87,
+    slug: BROTHER_KH260_COURSE_SLUG,
+    aliases: ["87"],
+    legacyPlanId: LEGACY_BROTHER_260_COURSE_PLAN_ID,
+  },
 } as const satisfies Record<IndividualCourseSaleKey, IndividualCourseSale>;
 
 /** Plan ID → course slugs that plan unlocks (Legacy and Paid). */
@@ -64,6 +76,7 @@ export const LEGACY_COURSE_PLAN_SLUGS: Readonly<Record<string, readonly string[]
   [PAID_TH160_COURSE_PLAN_ID]: [KIN_TAITEXMA_160_COURSE_SLUG],
   [LEGACY_SK840_COURSE_PLAN_ID]: [LEGACY_SK840_COURSE_SLUG],
   [PAID_SK840_COURSE_PLAN_ID]: [LEGACY_SK840_COURSE_SLUG],
+  [LEGACY_BROTHER_260_COURSE_PLAN_ID]: [BROTHER_KH260_COURSE_SLUG],
 };
 
 /** Map numeric player ids (`86`, `111`) to catalog slugs used by entitlement checks. */

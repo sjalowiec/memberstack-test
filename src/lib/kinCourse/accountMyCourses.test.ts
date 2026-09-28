@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  BROTHER_KH260_COURSE_SLUG,
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
+  LEGACY_BROTHER_260_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
   LEGACY_TH160_COURSE_PLAN_ID,
@@ -45,6 +47,7 @@ function payloadWithPlan(planId: string) {
 const catalogCards = accountOwnableCourseCatalogCards();
 const course86 = catalogCards.find((card) => card.slug === KIN_TAITEXMA_160_COURSE_SLUG);
 const course111 = catalogCards.find((card) => card.slug === LEGACY_SK840_COURSE_SLUG);
+const course87 = catalogCards.find((card) => card.slug === BROTHER_KH260_COURSE_SLUG);
 
 describe("account ownable catalog cards", () => {
   it("exposes browser-safe title, URL, and ownership plan IDs", () => {
@@ -69,6 +72,13 @@ describe("account ownable catalog cards", () => {
           COURSE_INDIVIDUAL_SALES.sk840.paidPlanId,
         ],
       },
+      {
+        courseId: 87,
+        slug: BROTHER_KH260_COURSE_SLUG,
+        title: "Brother KH/KR-260 Quick Start",
+        href: "/courses/87",
+        planIds: [COURSE_INDIVIDUAL_SALES.brother260.legacyPlanId],
+      },
     ]);
   });
 
@@ -87,6 +97,11 @@ describe("account ownable catalog cards", () => {
     expect(course86).not.toHaveProperty("description");
     expect(course111).not.toHaveProperty("thumbnail");
     expect(course111).not.toHaveProperty("description");
+    expect(course87).toEqual({
+      slug: BROTHER_KH260_COURSE_SLUG,
+      title: "Brother KH/KR-260 Quick Start",
+      href: "/courses/87",
+    });
   });
 });
 
@@ -110,6 +125,19 @@ describe("ownedCoursesForAccount", () => {
     );
     expect(courses.map((card) => card.slug)).toEqual([KIN_TAITEXMA_160_COURSE_SLUG]);
     expect(courses).toEqual([course86]);
+  });
+
+  it("Brother 260 legacy displays Course 87 only", () => {
+    const courses = ownedCoursesForAccount(
+      payloadWithPlan(LEGACY_BROTHER_260_COURSE_PLAN_ID),
+      catalogCards,
+    );
+    expect(ownedCourseSlugsFromMember(payloadWithPlan(LEGACY_BROTHER_260_COURSE_PLAN_ID))).toEqual([
+      BROTHER_KH260_COURSE_SLUG,
+    ]);
+    expect(courses).toEqual([course87]);
+    expect(COURSE_INDIVIDUAL_SALES.brother260.paidPlanId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.brother260.priceId).toBeUndefined();
   });
 
   it("SK840 Legacy displays Course 111", () => {

@@ -1,7 +1,8 @@
 {
   "categories": [
     "Silver Reed",
-    "Taitexma"
+    "Taitexma",
+    "Brother"
   ],
   "entries": [
     {
@@ -25,6 +26,17 @@
       "href": "/courses/86",
       "buttonLabel": "View Course",
       "thumbnail": "/images/courses/taitexma_160.webp"
+    },
+    {
+      "slug": "brother-kh-kr-260-quick-start",
+      "title": "Brother KH/KR-260 Quick Start",
+      "category": "Brother",
+      "catalogStatus": "available",
+      "access": "purchase",
+      "description": "A step-by-step course for getting started with the Brother KH/KR-260, from setup and casting on through tuck, slip, Fair Isle, lace, plaiting, and ribber techniques.",
+      "href": "/courses/87",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/260.webp"
     },
     {
       "slug": "lk-150-quick-start",

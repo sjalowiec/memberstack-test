@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
@@ -58,6 +59,12 @@ describe("course checkout Price IDs", () => {
     expect(courseCheckoutPriceId(LEGACY_SK840_COURSE_SLUG)).not.toBe(PAID_SK840_COURSE_PLAN_ID);
     expect(courseCheckoutPriceId(LEGACY_SK840_COURSE_SLUG)).not.toBe(LEGACY_SK840_COURSE_PLAN_ID);
     expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
+    expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBeNull();
+    expect(courseCheckoutPriceId("87")).toBeNull();
+    expect(
+      shouldShowKinCourseSalesPage({ courseSlug: BROTHER_KH260_COURSE_SLUG, hasAccess: false }),
+    ).toBe(false);
+    expect(shouldShowKinCourseSalesPage({ courseSlug: "87", hasAccess: false })).toBe(false);
   });
 });
 
