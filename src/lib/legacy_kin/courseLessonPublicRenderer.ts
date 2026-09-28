@@ -3,8 +3,10 @@ import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
 import {
   flattenLessonContent,
   getLessonContentNavEntries,
-} from "./courseLessonContentItems";import type { EditorValidationIssue, LessonEditorValidation } from "./courseContentEditorSchema";
+} from "./courseLessonContentItems";
+import type { EditorValidationIssue, LessonEditorValidation } from "./courseContentEditorSchema";
 import { validateLessonForEditor } from "./courseContentEditorSchema";
+import { isEmptyThirdVideoPlaceholder } from "./courseThreeVideosLayout";
 
 /** Lessons with inline images inside lists — splitting breaks render/editor grouping. */
 export const SPLIT_DISABLED_LESSON_SLUGS = new Set([
@@ -44,7 +46,10 @@ export function validateComponentForPublicRenderer(
       }
       break;
     case "video":
-      if (!String((component as { vimeoId?: string }).vimeoId ?? "").trim()) {
+      if (
+        !isEmptyThirdVideoPlaceholder(component) &&
+        !String((component as { vimeoId?: string }).vimeoId ?? "").trim()
+      ) {
         pushRenderIssue(issues, {
           ...ctx,
           componentType: type,
@@ -101,15 +106,7 @@ export function validateComponentForPublicRenderer(
             return;
           }
           const src = String((slide as { src?: string }).src ?? "").trim();
-          if (!src) {
-            pushRenderIssue(issues, {
-              ...ctx,
-              componentType: type,
-              legacyComponentId,
-              field: `slides[${index}].src`,
-              message: "Public renderer slide requires src.",
-            });
-          }
+          if (!src) return;
         });
       }
       break;

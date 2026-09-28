@@ -27,7 +27,7 @@ export function sortedBlockComponents(block: BlockLike): ComponentLike[] {
     const slotA = Number(a.legacySlot ?? 0);
     const slotB = Number(b.legacySlot ?? 0);
     if (slotA !== slotB) return slotA - slotB;
-    return String(a.type).localeCompare(String(b.type));
+    return 0;
   });
 }
 

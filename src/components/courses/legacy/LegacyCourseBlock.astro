@@ -3,19 +3,62 @@ import VimeoEmbed from "../../media/VimeoEmbed.astro";
 import EmbeddedTool from "../../embedded/EmbeddedTool.astro";
 import LegacyCourseImageCarousel from "./LegacyCourseImageCarousel.astro";
 import LegacyCourseImage from "./LegacyCourseImage.astro";
-import type { CourseComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
+import LegacyHotspot from "../../kinCourse/LegacyHotspot.astro";
+import type { CourseComponent, MigrationPendingComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
 import {
   downloadUrl,
   legacyAssetUrl,
   rewriteLegacyHtml,
 } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { numberedLegacyFields } from "../../../lib/kinCourse/legacyFields";
+import LegacyVimeoJumpLinks from "../../kinCourse/LegacyVimeoJumpLinks.astro";
 import { jumpLinkButtonLabel, jumpsFromComponent } from "../../../lib/kinCourse/vimeoJumpLinks";
 
 interface Props {
   component: CourseComponent;
+  jumpLinks?: Record<string, unknown>[];
 }
 
-const { component } = Astro.props;
+const { component, jumpLinks = [] } = Astro.props;
+const chapterJumps = jumpLinks.flatMap((jump) => jumpsFromComponent(jump));
+const chapterPlayerKey = chapterJumps.length ? String(component.legacyComponentId) : "";
+
+function legacyField(fields: Record<string, string> | undefined, name: string): string {
+  if (!fields) return "";
+  const key = Object.keys(fields).find((item) => item.toLowerCase() === name.toLowerCase());
+  return key ? String(fields[key] ?? "").trim() : "";
+}
+
+function hotspotFromPending(pending: MigrationPendingComponent) {
+  const fields = pending.legacyFields;
+  const image = legacyAssetUrl(legacyField(fields, "SPOTT_IMAGE"));
+  if (!image) return null;
+  const texts = new Map(numberedLegacyFields(fields, "SPOT_TEXT").map((item) => [item.index, item.value]));
+  const locations = new Map(
+    numberedLegacyFields(fields, "SPOT_LOCATION").map((item) => [item.index, item.value]),
+  );
+  const spots = numberedLegacyFields(fields, "SPOT_CORD").map((cord) => ({
+    index: cord.index,
+    text: texts.get(cord.index),
+    style: cord.value,
+    location: locations.get(cord.index),
+  }));
+  if (spots.length === 0) return null;
+  const width = Number(legacyField(fields, "IMAGE_WIDTH"));
+  const height = Number(legacyField(fields, "IMAGE_HEIGHT"));
+  return {
+    image,
+    spots,
+    imageWidth: Number.isFinite(width) && width > 0 ? width : undefined,
+    imageHeight: Number.isFinite(height) && height > 0 ? height : undefined,
+    wrapperStyle: legacyField(fields, "TopDiv") || undefined,
+  };
+}
+
+const hotspot =
+  component.type === "migrationPending" && component.legacyType === "Hotspot"
+    ? hotspotFromPending(component)
+    : null;
 ---
 
 {
@@ -36,7 +79,16 @@ const { component } = Astro.props;
       <VimeoEmbed
         vimeoId={component.vimeoId}
         title={component.title ?? "Course video"}
+        playerKey={chapterPlayerKey}
       />
+      {chapterJumps.length ? (
+        <LegacyVimeoJumpLinks
+          lessonId={component.legacyComponentId}
+          vimeoId={component.vimeoId}
+          playerKey={chapterPlayerKey}
+          jumps={chapterJumps}
+        />
+      ) : null}
     </figure>
   ) : component.type === "download" ? (
     <p
@@ -126,6 +178,15 @@ const { component } = Astro.props;
         <div class="legacy-jumplink">{jumpLinkButtonLabel(jump)}</div>
       ))}
     </nav>
+  ) : hotspot ? (
+    <LegacyHotspot
+      lessonId={component.legacyComponentId}
+      image={hotspot.image}
+      imageWidth={hotspot.imageWidth}
+      imageHeight={hotspot.imageHeight}
+      wrapperStyle={hotspot.wrapperStyle}
+      spots={hotspot.spots}
+    />
   ) : component.type === "migrationPending" ? (
     <aside
       class="course-preview__migration legacy-course__migration"

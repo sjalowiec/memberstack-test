@@ -806,9 +806,13 @@ describe("Course 111 conversion invariants", () => {
     );
     expect(aboutItems).toHaveLength(2);
     expect(aboutItems.map((item) => item.legacyComponentId)).toEqual([9332, 9348]);
-    expect(contentItemNavTitle(lesson!, aboutItems[0]!, items)).toContain(
+    expect(contentItemDisplayTitle(lesson!, aboutItems[0]!)).toBe(
       "About Automatic Patterning on this Machine",
     );
+    expect(contentItemNavTitle(lesson!, aboutItems[0]!, items)).toBe(
+      "NOTE: The N-1 Cams (Needle 1) are NOT used with DesignaKnit",
+    );
+    expect(contentItemNavTitle(lesson!, aboutItems[1]!, items)).toContain("LearnDesignaKnit.com");
 
     const firstNeighbors = getCourseContentItemNeighbors(
       course!,

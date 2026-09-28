@@ -2,7 +2,7 @@ import { validateLessonInput } from "./courseContentAdmin";
 import { isAccordionLayoutBlock } from "./courseAccordionLayout";
 import { isTextImageLayoutBlock } from "./courseTextImageLayout";
 import { isTextVideoLayoutBlock, richTextHasVisibleContent } from "./courseTextVideoLayout";
-import { isThreeVideosLayoutBlock } from "./courseThreeVideosLayout";
+import { isThreeVideosLayoutBlock, isEmptyThirdVideoPlaceholder } from "./courseThreeVideosLayout";
 import { isTwoVideosLayoutBlock } from "./courseTwoVideosLayout";
 import type { CourseBlock, CourseComponent, CourseLesson } from "./coursePreviewPoc";
 import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
@@ -159,7 +159,10 @@ function validateComponent(
       }, issues);
       break;
     case "video":
-      if (!String((component as { vimeoId?: string }).vimeoId ?? "").trim()) {
+      if (
+        !isEmptyThirdVideoPlaceholder(component as { type?: unknown; vimeoId?: unknown; layoutRole?: unknown }) &&
+        !String((component as { vimeoId?: string }).vimeoId ?? "").trim()
+      ) {
         pushIssue(issues, {
           ...ctx,
           componentType: type,

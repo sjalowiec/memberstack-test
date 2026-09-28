@@ -4,6 +4,7 @@ import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
 import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
 import {
   getThreeVideosLayoutParts,
+  isEmptyThirdVideoPlaceholder,
   richTextHasVisibleContent,
   unwrapTextVideoColumnHtml,
 } from "../../../lib/legacy_kin/courseThreeVideosLayout";
@@ -14,6 +15,9 @@ interface Props {
 
 const { block } = Astro.props;
 const parts = getThreeVideosLayoutParts(block);
+const visibleSlots = parts
+  ? parts.slots.filter((slot) => !isEmptyThirdVideoPlaceholder(slot.video))
+  : [];
 ---
 
 {
@@ -30,7 +34,7 @@ const parts = getThreeVideosLayoutParts(block);
       ) : null}
 
       <div class="three-videos-layout__row">
-        {parts.slots.map((slot) => (
+        {visibleSlots.map((slot) => (
           <div
             class="three-videos-layout__column"
             data-legacy-component={slot.video.legacyComponentId}

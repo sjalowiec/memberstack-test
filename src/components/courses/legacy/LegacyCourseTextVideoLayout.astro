@@ -1,7 +1,9 @@
 ---
 import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import LegacyVimeoJumpLinks from "../../kinCourse/LegacyVimeoJumpLinks.astro";
 import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
 import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { jumpsFromComponent } from "../../../lib/kinCourse/vimeoJumpLinks";
 import {
   getTextVideoLayoutParts,
   richTextHasVisibleContent,
@@ -10,10 +12,15 @@ import {
 
 interface Props {
   block: CourseBlock;
+  jumpLinks?: Record<string, unknown>[];
 }
 
-const { block } = Astro.props;
+const { block, jumpLinks = [] } = Astro.props;
 const parts = getTextVideoLayoutParts(block);
+const chapterJumps = jumpLinks.flatMap((jump) => jumpsFromComponent(jump));
+const chapterPlayerKey = chapterJumps.length
+  ? String(parts?.video.legacyComponentId ?? "")
+  : "";
 const hasLeft =
   !!parts?.leftText &&
   richTextHasVisibleContent(String(parts.leftText.html ?? ""));
@@ -71,6 +78,15 @@ const stackClass =
                   ? String(parts.video.title)
                   : String(block.title ?? "Course video")
               }
+              playerKey={chapterPlayerKey}
+            />
+          ) : null}
+          {chapterJumps.length ? (
+            <LegacyVimeoJumpLinks
+              lessonId={Number(parts.video.legacyComponentId)}
+              vimeoId={String(parts.video.vimeoId ?? "")}
+              playerKey={chapterPlayerKey}
+              jumps={chapterJumps}
             />
           ) : null}
         </div>

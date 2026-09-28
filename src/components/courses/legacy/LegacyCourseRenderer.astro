@@ -6,7 +6,7 @@ import LegacyCourseThreeVideosLayout from "./LegacyCourseThreeVideosLayout.astro
 import LegacyCourseTwoVideosLayout from "./LegacyCourseTwoVideosLayout.astro";
 import LegacyCourseAccordionLayout from "./LegacyCourseAccordionLayout.astro";
 import LegacyCourseEmbeddedToolLayout from "./LegacyCourseEmbeddedToolLayout.astro";
-import type { CourseComponent, CourseLesson } from "../../../lib/legacy_kin/coursePreviewPoc";
+import type { CourseBlock, CourseComponent, CourseLesson } from "../../../lib/legacy_kin/coursePreviewPoc";
 import {
   TEXT_IMAGE_LAYOUT_TYPE,
   TEXT_VIDEO_LAYOUT_TYPE,
@@ -17,10 +17,12 @@ import {
   contentItemDisplayTitle,
   findBlockBySlug,
   flattenLessonContent,
+  isPersonalNotesComponent,
   type FlatContentItem,
 } from "../../../lib/legacy_kin/courseLessonContentItems";
 import { isAccordionLayoutBlock } from "../../../lib/legacy_kin/courseAccordionLayout";
 import { isEmbeddedToolLayoutBlock } from "../../../lib/legacy_kin/courseEmbeddedToolLayout";
+import { isVimeoJumpLinksComponent } from "../../../lib/legacy_kin/vimeoJumpLinksEditor";
 
 interface Props {
   lesson: CourseLesson;
@@ -30,6 +32,17 @@ interface Props {
 
 const { lesson, item, showItemTitles = true } = Astro.props;
 const items = item ? [item] : flattenLessonContent(lesson);
+
+function layoutBlock(block: CourseBlock, entry: FlatContentItem): CourseBlock {
+  if (entry.type !== TEXT_VIDEO_LAYOUT_TYPE) return block;
+  return {
+    ...block,
+    components: block.components.filter(
+      (component) =>
+        !isVimeoJumpLinksComponent(component) && !isPersonalNotesComponent(component),
+    ),
+  };
+}
 ---
 
 {
@@ -50,7 +63,10 @@ const items = item ? [item] : flattenLessonContent(lesson);
         ) : null}
 
         {entry.type === TEXT_VIDEO_LAYOUT_TYPE && block ? (
-          <LegacyCourseTextVideoLayout block={block} />
+          <LegacyCourseTextVideoLayout
+            block={layoutBlock(block, entry)}
+            jumpLinks={entry.attachedJumpLinks}
+          />
         ) : entry.type === THREE_VIDEOS_LAYOUT_TYPE && block ? (
           <LegacyCourseThreeVideosLayout block={block} />
         ) : entry.type === TWO_VIDEOS_LAYOUT_TYPE && block ? (
@@ -67,7 +83,10 @@ const items = item ? [item] : flattenLessonContent(lesson);
           <LegacyCourseEmbeddedToolLayout block={block} />
         ) : (
           <div class="course-preview__components legacy-course__components">
-            <LegacyCourseBlock component={entry.component as CourseComponent} />
+            <LegacyCourseBlock
+              component={entry.component as CourseComponent}
+              jumpLinks={entry.attachedJumpLinks}
+            />
           </div>
         )}
       </article>

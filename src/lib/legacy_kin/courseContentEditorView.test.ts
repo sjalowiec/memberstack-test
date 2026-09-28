@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import course87 from "../../data/legacy_kin/cleaned/course_87_brother_kh_kr_260_quick_start.poc.json";
 import {
   appendStandaloneComponentBlock,
   createRichTextComponent,
@@ -16,7 +17,8 @@ import {
   sectionTitleForBlock,
 } from "./courseContentEditorView";
 import { flattenLessonContent } from "./courseLessonContentItems";
-import type { CourseLesson } from "./coursePreviewPoc";
+import { videoJumpLinksOutlineSummary } from "./vimeoJumpLinksEditor";
+import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 
 function cloneLesson(lesson: CourseLesson): CourseLesson {
   return JSON.parse(JSON.stringify(lesson)) as CourseLesson;
@@ -100,6 +102,209 @@ describe("courseContentEditorView", () => {
         selectedBlockSectionSlug: null,
       }),
     ).toBe("intro");
+  });
+
+  it("keeps several components inside one section", () => {
+    const lesson: CourseLesson = {
+      title: "Learn About the Machine",
+      slug: "learn-about-the-machine",
+      displayOrder: 1,
+      legacy: { itemId: 1, lessonOrder: 1 },
+      blocks: [
+        {
+          title: "Plain Knitting",
+          slug: "plain-knitting",
+          order: 1,
+          legacy: { assignId: 1, blockType: "HTML" },
+          components: [
+            { type: "richText", html: "<p>One</p>", legacyComponentId: 1, order: 1 },
+          ],
+        },
+        {
+          title: "The Proper Way to Knit",
+          slug: "the-proper-way-to-knit",
+          order: 2,
+          legacy: { assignId: 2, blockType: "HTML" },
+          components: [
+            { type: "richText", html: "<p>A</p>", legacyComponentId: 2, order: 1 },
+            { type: "richText", html: "<p>B</p>", legacyComponentId: 3, order: 2 },
+            { type: "richText", html: "<p>C</p>", legacyComponentId: 4, order: 3 },
+          ],
+        },
+      ],
+    };
+
+    const items = flattenLessonContent(lesson);
+    const groups = buildContentListGroups(lesson, items);
+    expect(groups.map((group) => group.sectionNumber)).toEqual([1, 2]);
+    expect(groups.map((group) => group.blockTitle)).toEqual([
+      "Plain Knitting",
+      "The Proper Way to Knit",
+    ]);
+    expect(groups[1]!.entries).toHaveLength(3);
+    expect(groups[1]!.blockCount).toBe(3);
+    expect(countLessonSectionsAndBlocks(lesson).sectionCount).toBe(2);
+    expect(countLessonSectionsAndBlocks(lesson).blockCount).toBe(4);
+  });
+
+  it("shows a video and its jump links as one outline block", () => {
+    const lesson: CourseLesson = {
+      title: "Bind off",
+      slug: "bind-off",
+      displayOrder: 1,
+      legacy: { itemId: 1, lessonOrder: 1 },
+      blocks: [
+        {
+          title: "Binding Off",
+          slug: "binding-off",
+          order: 1,
+          legacy: { assignId: 1, blockType: "HTML" },
+          components: [
+            { type: "video", vimeoId: "527303259", title: null, legacyComponentId: 6758, order: 1 },
+            {
+              type: "migrationPending",
+              legacyType: "VimeoJumpLinks",
+              legacyComponentId: 6759,
+              order: 2,
+              legacyFields: {
+                LINKTIME_1: "00:00:10",
+                LINKTITLE_1: "One",
+                LINKTIME_2: "00:01:08",
+                LINKTITLE_2: "Two",
+                LINKTIME_3: "00:01:19",
+                LINKTITLE_3: "Three",
+                LINKTIME_4: "00:01:25",
+                LINKTITLE_4: "Four",
+              },
+            },
+          ],
+        },
+        {
+          title: "Another video",
+          slug: "another-video",
+          order: 2,
+          legacy: { assignId: 2, blockType: "HTML" },
+          components: [
+            { type: "video", vimeoId: "111", title: null, legacyComponentId: 7000, order: 3 },
+          ],
+        },
+      ],
+    };
+
+    const items = flattenLessonContent(lesson);
+    expect(items.map((item) => item.type)).toEqual(["video", "migrationPending", "video"]);
+
+    const groups = buildContentListGroups(lesson, items);
+    expect(groups[0]!.entries).toHaveLength(1);
+    expect(groups[0]!.entries[0]!.item.legacyComponentId).toBe(6758);
+    expect(groups[0]!.entries[0]!.jumpLinks).toHaveLength(1);
+    expect(
+      videoJumpLinksOutlineSummary(
+        groups[0]!.entries[0]!.item.component,
+        groups[0]!.entries[0]!.jumpLinks.map((jump) => jump.component),
+      ),
+    ).toBe("527303259 · 4 jump links");
+    expect(groups[1]!.entries[0]!.jumpLinks).toEqual([]);
+    expect(groups[0]!.entries[0]!.jumpLinksNote).toBeNull();
+    expect(countLessonSectionsAndBlocks(lesson)).toEqual({ sectionCount: 2, blockCount: 2 });
+  });
+
+  it("keeps jump links with no chapters or no matching video as their own block", () => {
+    const lesson: CourseLesson = {
+      title: "Lesson",
+      slug: "lesson",
+      displayOrder: 1,
+      legacy: { itemId: 1, lessonOrder: 1 },
+      blocks: [
+        {
+          title: "Empty links",
+          slug: "empty-links",
+          order: 1,
+          legacy: { assignId: 1, blockType: "HTML" },
+          components: [
+            { type: "video", vimeoId: "111", title: null, legacyComponentId: 1, order: 1 },
+            {
+              type: "migrationPending",
+              legacyType: "VimeoJumpLinks",
+              legacyComponentId: 2,
+              order: 2,
+              legacyFields: {},
+            },
+          ],
+        },
+        {
+          title: "Before the video",
+          slug: "before-the-video",
+          order: 2,
+          legacy: { assignId: 2, blockType: "HTML" },
+          components: [
+            {
+              type: "migrationPending",
+              legacyType: "VimeoJumpLinks",
+              legacyComponentId: 3,
+              order: 1,
+              legacyFields: { LINKTIME_1: "00:00:04", LINKTITLE_1: "Later" },
+            },
+            { type: "video", vimeoId: "222", title: null, legacyComponentId: 4, order: 2 },
+          ],
+        },
+      ],
+    };
+
+    const groups = buildContentListGroups(lesson, flattenLessonContent(lesson));
+    expect(groups[0]!.entries.map((entry) => entry.item.legacyComponentId)).toEqual([1, 2]);
+    expect(groups[0]!.entries[0]!.jumpLinks).toEqual([]);
+    expect(groups[0]!.entries[1]!.jumpLinksNote).toBe("No links");
+    expect(groups[1]!.entries.map((entry) => entry.item.legacyComponentId)).toEqual([3, 4]);
+    expect(groups[1]!.entries[0]!.jumpLinksNote).toBe("No matching video");
+    expect(groups[1]!.entries[1]!.jumpLinks).toEqual([]);
+  });
+
+  it("pairs Course 87 videos with the jump links that follow them", () => {
+    const course = course87 as CoursePreviewData;
+    const outline = (slug: string) => {
+      const lesson = course.lessons.find((item) => item.slug === slug)!;
+      return buildContentListGroups(lesson, flattenLessonContent(lesson)).flatMap((group) =>
+        group.entries.map((entry) => ({
+          section: group.blockTitle,
+          id: entry.item.legacyComponentId,
+          type: entry.item.type,
+          jumps: entry.jumpLinks.map((jump) => jump.legacyComponentId),
+          note: entry.jumpLinksNote,
+        })),
+      );
+    };
+
+    const casting = outline("casting-on");
+    expect(casting.filter((entry) => entry.section === "Casting on Stitches").map((entry) => entry.type)).toEqual([
+      "video",
+    ]);
+    expect(casting.find((entry) => entry.id === 6761)).toMatchObject({
+      type: "video",
+      jumps: [6762],
+      note: null,
+    });
+    expect(casting.find((entry) => entry.id === 6762)).toBeUndefined();
+
+    const binding = outline("bind-off");
+    expect(binding).toEqual([
+      {
+        section: "Binding Off",
+        id: 6758,
+        type: "video",
+        jumps: [6759],
+        note: null,
+      },
+    ]);
+
+    const ribber = outline("using-your-ribber");
+    const english = ribber.filter((entry) => entry.section === "English Rib");
+    expect(english.map((entry) => entry.id)).toEqual([6838, 6841]);
+    expect(english[1]).toMatchObject({ type: "video", jumps: [6842], note: null });
+    expect(ribber.filter((entry) => entry.note)).toEqual([]);
+    expect(ribber.filter((entry) => entry.id === 6893)).toEqual([
+      expect.objectContaining({ jumps: [], note: null }),
+    ]);
   });
 
   it("formats section outline labels", () => {

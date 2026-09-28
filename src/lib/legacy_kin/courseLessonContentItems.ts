@@ -33,6 +33,12 @@ import {
 import type { CourseBlock, CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
 import { slugify } from "../slugify";
+import {
+  isVimeoJumpLinksComponent,
+  jumpLinksOwnedByVideo,
+  unattachedJumpLinksReason,
+  unattachedJumpLinksSummary,
+} from "./vimeoJumpLinksEditor";
 
 export type { FlatContentItem };
 
@@ -47,9 +53,18 @@ export type LessonContentItemRef = FlatContentItem & {
 export type LessonContentNavEntry = {
   blockSlug: string;
   itemSlug: string;
+  /** Label for this navigable block. */
   title: string;
+  /** Section heading, shown once when several blocks share a section. */
+  sectionTitle: string;
   legacyComponentId: number;
   oneBasedIndex: number;
+};
+
+export type LessonContentNavGroup = {
+  blockSlug: string;
+  sectionTitle: string;
+  entries: LessonContentNavEntry[];
 };
 
 export type CourseContentItemStep = {
@@ -100,12 +115,33 @@ function ensureUniqueSlug(base: string, used: Set<string>): string {
   if (!normalized) {
     return ensureUniqueSlug("untitled-section", used);
   }
-  if (!used.has(normalized)) return normalized;
-  let suffix = 2;
-  while (used.has(`${normalized}--${suffix}`)) {
-    suffix += 1;
+  let slug = normalized;
+  if (used.has(slug)) {
+    let suffix = 2;
+    while (used.has(`${normalized}--${suffix}`)) {
+      suffix += 1;
+    }
+    slug = `${normalized}--${suffix}`;
   }
-  return `${normalized}--${suffix}`;
+  used.add(slug);
+  return slug;
+}
+
+/**
+ * Later blocks in a section use the component id when it is unique.
+ * Shared ids (two videos stored with the same legacy component id) need a
+ * stored field that still differs, so each block keeps its own URL.
+ */
+function duplicateBlockTargetSuffix(item: FlatContentItem, duplicateIndex: number): string {
+  if (item.type === "video") {
+    const vimeoId = String(item.component.vimeoId ?? "").trim();
+    if (vimeoId) return vimeoId;
+  }
+  const slot = Number(item.component.legacySlot);
+  if (Number.isFinite(slot) && slot > 0) return `slot-${slot}`;
+  const order = Number(item.component.order);
+  if (Number.isFinite(order) && order > 0) return `order-${order}`;
+  return String(duplicateIndex + 1);
 }
 
 export function findBlockBySlug(
@@ -141,7 +177,181 @@ export function contentItemDisplayTitle(
   return blockTitleForEditing(block.title);
 }
 
-/** Sidebar label — disambiguates multiple items that share a block title. */
+const OUTLINE_DESCRIPTION_LIMIT = 72;
+
+function collapseOutlineText(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function looksLikeStyleOrCode(value: string): boolean {
+  return /[{}]/.test(value) && /[:;]/.test(value);
+}
+
+function isMeaningfulOutlineText(value: string): boolean {
+  const text = collapseOutlineText(value);
+  if (!/[A-Za-z]/.test(text)) return false;
+  if (text.length < 3) return false;
+  return !looksLikeStyleOrCode(text);
+}
+
+function shortenOutlineText(value: string, limit = OUTLINE_DESCRIPTION_LIMIT): string {
+  const text = collapseOutlineText(value);
+  if (text.length <= limit) return text;
+  const slice = text.slice(0, limit);
+  const space = slice.lastIndexOf(" ");
+  const cut = space >= 24 ? slice.slice(0, space) : slice;
+  return `${cut.trim()}…`;
+}
+
+function htmlForOutline(component: Record<string, unknown>): string {
+  const chunks: string[] = [];
+  const push = (value: unknown) => {
+    if (typeof value === "string" && value.trim()) chunks.push(value);
+  };
+  push(component.html);
+  push(component.introHtml);
+  push(component.caption);
+  for (const key of ["leftText", "bottomText", "intro", "text", "outro", "introText", "richText"]) {
+    const nested = component[key];
+    if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+      push((nested as Record<string, unknown>).html);
+    }
+  }
+  return chunks.join("\n");
+}
+
+/** Close heading tags that were stored without the final ">". */
+function repairHeadingMarkup(html: string): string {
+  return html.replace(/<\/h([1-6])(?!\s*>)/gi, "</h$1>");
+}
+
+function firstHeadingText(html: string): string {
+  const repaired = repairHeadingMarkup(html);
+  const re = /<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(repaired)) !== null) {
+    const text = collapseOutlineText((match[1] ?? "").replace(/<[^>]*>/g, " "));
+    if (isMeaningfulOutlineText(text)) return shortenOutlineText(text, 90);
+  }
+  return "";
+}
+
+function visibleOutlineLines(html: string): string[] {
+  const prepared = html
+    .replace(/\r?\n/g, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:p|div|li|h[1-6]|tr|blockquote|section|article)>/gi, "\n");
+  const text = prepared
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+  return text
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+/g, " ").trim())
+    .filter((line) => isMeaningfulOutlineText(line));
+}
+
+function shortHtmlDescription(html: string): string {
+  const lines = visibleOutlineLines(html);
+  if (lines.length === 0) {
+    const alt = html.match(/<img\b[^>]*\balt=["']([^"']+)["']/i);
+    const altText = alt ? collapseOutlineText(alt[1] ?? "") : "";
+    if (isMeaningfulOutlineText(altText)) return shortenOutlineText(altText);
+    if (/<img\b/i.test(html)) return "Image";
+    return "";
+  }
+
+  let text = lines[0]!;
+  for (let index = 1; index < lines.length && text.length < 42 && !/[.!?]$/.test(text); index += 1) {
+    const next = lines[index]!;
+    // Join a title split across a line break. A new sentence stays out of the label.
+    if (!/^[a-z(]/.test(next) || next.length > 70) break;
+    const combined = `${text} ${next}`;
+    if (combined.length > 90) break;
+    text = combined;
+  }
+  return shortenOutlineText(text);
+}
+
+function storedOutlineTitle(item: FlatContentItem): string {
+  const component = item.component;
+  if (item.type === "video") {
+    const title = collapseOutlineText(String(component.title ?? ""));
+    return isMeaningfulOutlineText(title) ? title : "";
+  }
+  if (item.type === "download") {
+    const label = collapseOutlineText(String(component.label ?? ""));
+    if (isMeaningfulOutlineText(label)) return label;
+    return collapseOutlineText(String(component.filename ?? ""));
+  }
+  if (item.type === "image") {
+    const caption = shortHtmlDescription(String(component.caption ?? ""));
+    if (caption && caption !== "Image") return caption;
+    const alt = collapseOutlineText(String(component.alt ?? ""));
+    return isMeaningfulOutlineText(alt) ? alt : "";
+  }
+  if (item.type === "imageGallery" || item.type === "imageCarousel") {
+    const title = collapseOutlineText(String(component.title ?? ""));
+    return isMeaningfulOutlineText(title) ? title : "";
+  }
+  if (item.type === TEXT_VIDEO_LAYOUT_TYPE) {
+    const video = component.video;
+    if (video && typeof video === "object" && !Array.isArray(video)) {
+      const title = collapseOutlineText(String((video as Record<string, unknown>).title ?? ""));
+      if (isMeaningfulOutlineText(title)) return title;
+    }
+  }
+  return "";
+}
+
+function fallbackOutlineLabel(item: FlatContentItem): string {
+  if (item.type === "video") return "Video";
+  if (item.type === "image") return "Image";
+  if (item.type === "imageGallery" || item.type === "imageCarousel") {
+    const slides = Array.isArray(item.component.slides) ? item.component.slides : [];
+    const noun = item.type === "imageCarousel" ? "slide" : "image";
+    if (slides.length === 0) return item.type === "imageCarousel" ? "Slides" : "Images";
+    return `${slides.length} ${noun}${slides.length === 1 ? "" : "s"}`;
+  }
+  if (item.type === "migrationPending") {
+    return String(item.component.legacyType ?? "") === "Hotspot" ? "Diagram" : "Additional content";
+  }
+  if (item.type === "download") return "Download";
+  if (item.type === "richText") return "Text";
+  return ITEM_TYPE_NAV_LABELS[item.type] ?? "Content";
+}
+
+/**
+ * Label for one navigable block inside a multi-block section.
+ * Prefers a stored title, then the first heading, then a short description.
+ */
+export function contentItemOutlineLabel(item: FlatContentItem): string {
+  const stored = storedOutlineTitle(item);
+  if (stored) return stored;
+  const html = htmlForOutline(item.component);
+  const heading = firstHeadingText(html);
+  if (heading) return heading;
+  const description = shortHtmlDescription(html);
+  if (description) return description;
+  return fallbackOutlineLabel(item);
+}
+
+/** Sidebar label. A lone block uses the section title; siblings use their own label. */
 export function contentItemNavTitle(
   lesson: CourseLesson,
   item: FlatContentItem,
@@ -149,10 +359,40 @@ export function contentItemNavTitle(
 ): string {
   const title = contentItemDisplayTitle(lesson, item) || "Untitled Section";
   const blockSiblings = items.filter((entry) => entry.blockSlug === item.blockSlug);
+  if (isVimeoJumpLinksComponent(item.component)) {
+    const section = items.filter((entry) => entry.blockSlug === item.blockSlug);
+    const sectionIndex = section.findIndex((entry) => entry.component === item.component);
+    const reason =
+      sectionIndex >= 0
+        ? unattachedJumpLinksReason(
+            section.map((entry) => entry.component),
+            sectionIndex,
+          )
+        : "no-matching-video";
+    const label = reason
+      ? `Video Jump Links, ${unattachedJumpLinksSummary(reason).toLowerCase()}`
+      : "Video Jump Links";
+    return label;
+  }
   if (blockSiblings.length <= 1) return title;
+  return contentItemOutlineLabel(item);
+}
 
-  const typeLabel = ITEM_TYPE_NAV_LABELS[item.type] ?? item.type;
-  return `${title} (${typeLabel})`;
+/** Keep section order. Several blocks in one section share a single section title. */
+export function groupLessonContentNavEntries(
+  entries: LessonContentNavEntry[],
+): LessonContentNavGroup[] {
+  const groups: LessonContentNavGroup[] = [];
+  for (const entry of entries) {
+    const sectionTitle = entry.sectionTitle || entry.title;
+    const last = groups[groups.length - 1];
+    if (last && last.blockSlug === entry.blockSlug) {
+      last.entries.push(entry);
+      continue;
+    }
+    groups.push({ blockSlug: entry.blockSlug, sectionTitle, entries: [entry] });
+  }
+  return groups;
 }
 
 /** @deprecated Use itemSlug on LessonContentNavEntry instead of in-page anchors. */
@@ -171,18 +411,20 @@ function allocateItemSlug(
 ): string {
   const title = contentItemDisplayTitle(lesson, item);
   const blockSiblings = items.filter((entry) => entry.blockSlug === item.blockSlug);
-  const blockIndex = blockSiblings.findIndex(
-    (entry) =>
-      entry.legacyComponentId === item.legacyComponentId && entry.type === item.type,
+  const blockIndex = blockSiblings.indexOf(item);
+  const sameIdentity = blockSiblings.filter(
+    (entry) => entry.legacyComponentId === item.legacyComponentId && entry.type === item.type,
   );
+  const duplicateIndex = sameIdentity.indexOf(item);
+  const publicSlug = preferredPublicItemSlug(item.blockSlug, title);
 
   let base: string;
-  if (blockSiblings.length === 1) {
-    base = preferredPublicItemSlug(item.blockSlug, title);
-  } else if (blockIndex === 0) {
-    base = preferredPublicItemSlug(item.blockSlug, title);
+  if (blockSiblings.length === 1 || blockIndex === 0) {
+    base = publicSlug;
+  } else if (sameIdentity.length === 1) {
+    base = `${publicSlug}--${item.legacyComponentId}`;
   } else {
-    base = `${preferredPublicItemSlug(item.blockSlug, title)}--${item.legacyComponentId}`;
+    base = `${publicSlug}--${duplicateBlockTargetSuffix(item, duplicateIndex)}`;
   }
 
   return ensureUniqueSlug(base, used);
@@ -329,13 +571,152 @@ export function flattenLessonContent(lesson: CourseLesson): FlatContentItem[] {
 export function getLessonContentItemsWithSlugs(
   lesson: CourseLesson,
 ): LessonContentItemRef[] {
-  const items = flattenLessonContent(lesson);
-  const used = new Set<string>();
+  return assignItemSlugs(lesson, flattenLessonContent(lesson));
+}
 
+function assignItemSlugs(
+  lesson: CourseLesson,
+  items: FlatContentItem[],
+): LessonContentItemRef[] {
+  const used = new Set<string>();
   return items.map((item) => ({
     ...item,
     itemSlug: allocateItemSlug(lesson, item, items, used),
   }));
+}
+
+export function isPersonalNotesComponent(component: unknown): boolean {
+  if (!component || typeof component !== "object" || Array.isArray(component)) return false;
+  const record = component as { type?: unknown; legacyType?: unknown };
+  return record.type === "migrationPending" && record.legacyType === "DataEntrytextarea";
+}
+
+function videosInPreviewItem(item: FlatContentItem): Record<string, unknown>[] {
+  if (item.type === "video") return [item.component];
+  if (item.type === TEXT_VIDEO_LAYOUT_TYPE) {
+    const video = item.component.video;
+    return video && typeof video === "object" ? [video as Record<string, unknown>] : [];
+  }
+  return [];
+}
+
+/**
+ * Matched jump links stay on the video in the shared preview.
+ * A chapter list with no links, or with no single matching video, stays its own step.
+ * Course 87 also omits optional personal-notes boxes. Stored components stay in the file.
+ */
+function previewItemsWithMatchedJumpLinks(
+  lesson: CourseLesson,
+  hidePersonalNotes: boolean,
+): FlatContentItem[] {
+  const items: FlatContentItem[] = [];
+
+  for (const block of sortedBlocks(lesson)) {
+    const ordered = sortedComponents(block);
+    const visible = ordered.filter((component, index) => {
+      if (
+        isVimeoJumpLinksComponent(component) &&
+        unattachedJumpLinksReason(ordered, index) == null
+      ) {
+        return false;
+      }
+      if (hidePersonalNotes && isPersonalNotesComponent(component)) return false;
+      return true;
+    });
+    if (visible.length === 0) continue;
+
+    const laidOut = flattenLessonContent({
+      ...lesson,
+      blocks: [{ ...block, components: visible }],
+    });
+    for (const item of laidOut) {
+      const owned = videosInPreviewItem(item).flatMap((video) => {
+        const videoIndex = ordered.findIndex((component) => component === video);
+        return videoIndex >= 0 ? jumpLinksOwnedByVideo(ordered, videoIndex) : [];
+      });
+      items.push(
+        owned.length > 0
+          ? { ...item, attachedJumpLinks: owned as Record<string, unknown>[] }
+          : item,
+      );
+    }
+  }
+
+  return items;
+}
+
+/** Preview items for every course. Matched jump links are stored on the video. */
+export function getPublicLessonContentItems(
+  course: CoursePreviewData,
+  lesson: CourseLesson,
+): LessonContentItemRef[] {
+  const hidePersonalNotes = course.course.legacyChallengeId === 87;
+  return assignItemSlugs(lesson, previewItemsWithMatchedJumpLinks(lesson, hidePersonalNotes));
+}
+
+export function getPublicLessonContentNavEntries(
+  course: CoursePreviewData,
+  lesson: CourseLesson,
+): LessonContentNavEntry[] {
+  const items = getPublicLessonContentItems(course, lesson);
+  return items.map((item, index) => ({
+    blockSlug: item.blockSlug,
+    itemSlug: item.itemSlug,
+    title: contentItemNavTitle(lesson, item, items),
+    sectionTitle: contentItemDisplayTitle(lesson, item) || "Untitled Section",
+    legacyComponentId: item.legacyComponentId,
+    oneBasedIndex: index + 1,
+  }));
+}
+
+export function getPublicCourseContentItemNeighbors(
+  course: CoursePreviewData,
+  lessonSlug: string,
+  itemSlug: string,
+): {
+  index: number;
+  prev: CourseContentItemStep | null;
+  next: CourseContentItemStep | null;
+} {
+  const lessons = [...course.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sequence = lessons.flatMap((lesson) =>
+    getPublicLessonContentItems(course, lesson).map((item) => ({ lesson, item })),
+  );
+  const index = sequence.findIndex(
+    (step) => step.lesson.slug === lessonSlug && step.item.itemSlug === itemSlug,
+  );
+  if (index < 0) return { index: -1, prev: null, next: null };
+  return {
+    index,
+    prev: index > 0 ? sequence[index - 1]! : null,
+    next: index < sequence.length - 1 ? sequence[index + 1]! : null,
+  };
+}
+
+/** A stored jump-links URL opens the video those chapters belong to. */
+export function resolvePublicLessonItem(
+  course: CoursePreviewData,
+  lesson: CourseLesson,
+  itemSlug: string,
+): { item: LessonContentItemRef | undefined; redirectSlug: string | null } {
+  const publicItems = getPublicLessonContentItems(course, lesson);
+  const direct = publicItems.find((item) => item.itemSlug === itemSlug.trim());
+  if (direct) return { item: direct, redirectSlug: null };
+
+  const stored = getLessonContentItemsWithSlugs(lesson);
+  const hidden = stored.find((item) => item.itemSlug === itemSlug.trim());
+  if (!hidden || !isVimeoJumpLinksComponent(hidden.component)) {
+    return { item: undefined, redirectSlug: null };
+  }
+
+  const owner = publicItems.find((item) =>
+    (item.attachedJumpLinks ?? []).some(
+      (jump) => Number(jump.legacyComponentId) === hidden.legacyComponentId,
+    ),
+  );
+  return owner
+    ? { item: owner, redirectSlug: owner.itemSlug }
+    : { item: undefined, redirectSlug: null };
 }
 
 export function findLessonContentItemBySlug(
@@ -392,6 +773,7 @@ export function getLessonContentNavEntries(
     blockSlug: item.blockSlug,
     itemSlug: item.itemSlug,
     title: contentItemNavTitle(lesson, item, flatItems),
+    sectionTitle: contentItemDisplayTitle(lesson, item) || "Untitled Section",
     legacyComponentId: item.legacyComponentId,
     oneBasedIndex: index + 1,
   }));

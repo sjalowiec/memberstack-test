@@ -234,31 +234,23 @@ if (
               >
                 Delete lesson
               </button>
+              <details class="course-editor__add-section-menu" id="course-editor-add-section-menu">
+                <summary class="course-editor__add-section-btn">Add section</summary>
+                <p class="course-editor__add-section-hint">
+                  Adds a new section to this lesson, with one starting block. Use this for a new topic. To add content under an existing heading, use Add block inside that section.
+                </p>
+                <div class="course-editor__add-section-types" id="course-editor-add-section-types"></div>
+              </details>
             </div>
           </header>
 
-          <div class="course-editor__section-toolbar">
-            <details class="course-editor__add-block-toolbar-menu" id="course-editor-add-block-menu">
-              <summary class="course-editor__add-block-toolbar-btn">+ Add Block</summary>
-              <p id="course-editor-add-block-target" class="course-editor__add-block-target-hint">
-                Expand a section in the outline below, then pick a block type.
-              </p>
-              <div class="course-editor__add-block-types" id="course-editor-add-block-types"></div>
-            </details>
-            <details class="course-editor__add-section-menu" id="course-editor-add-section-menu">
-              <summary class="course-editor__add-section-btn">+ New Section</summary>
-              <p class="course-editor__add-section-hint">
-                Adds a new heading to the lesson with one starting block. Use this for a new topic — not for adding more content under an existing heading.
-              </p>
-              <div class="course-editor__add-section-types" id="course-editor-add-section-types"></div>
-            </details>
-          </div>
-
-          <p class="course-editor__outline-label">Lesson outline</p>
+          <div class="course-editor__lesson-body">
+          <p class="course-editor__outline-label">Sections in this lesson</p>
           <p id="course-editor-items-empty" class="course-editor__empty-lesson" hidden>
             This lesson has no sections yet. Add a section to start building the outline.
           </p>
           <div id="course-editor-items" class="course-editor__outline"></div>
+          </div>
         </div>
       </main>
 

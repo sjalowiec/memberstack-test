@@ -284,8 +284,13 @@ export function sortedComponents(block: CourseBlock): CourseComponent[] {
     const slotA = "legacySlot" in a ? (a.legacySlot ?? 0) : 0;
     const slotB = "legacySlot" in b ? (b.legacySlot ?? 0) : 0;
     if (slotA !== slotB) return slotA - slotB;
-    return a.type.localeCompare(b.type);
+    return 0;
   });
+}
+
+/** Gallery and carousel slides the preview can show. Blank sources stay in the course file. */
+export function slidesWithImageSource<T extends { src?: string | null }>(slides: T[]): T[] {
+  return slides.filter((slide) => String(slide?.src ?? "").trim().length > 0);
 }
 
 export const SECTION_QUERY_PARAM = "section";

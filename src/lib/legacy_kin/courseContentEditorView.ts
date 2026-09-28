@@ -1,6 +1,12 @@
 import type { FlatContentItem } from "./courseContentEditorTypes";
 import { isEditorLayoutBlock } from "./courseContentEditorBlocks";
 import { flattenLessonContent } from "./courseLessonContentItems";
+import {
+  isVimeoJumpLinksComponent,
+  jumpLinksOwnedByVideo,
+  unattachedJumpLinksReason,
+  unattachedJumpLinksSummary,
+} from "./vimeoJumpLinksEditor";
 import type { CourseLesson } from "./coursePreviewPoc";
 import { sortedBlocks } from "./coursePreviewPoc";
 
@@ -9,12 +15,28 @@ type LessonRecord = Record<string, unknown>;
 export type ContentListGroup = {
   blockSlug: string;
   blockTitle: string;
+  /** Block title written back when the section name is edited. */
+  titleValue?: string;
+  /** False for extra preview sections that share one block title. */
+  titleEditable?: boolean;
   sectionNumber: number;
   totalSections: number;
   canSplit: boolean;
   isLayout: boolean;
   blockCount: number;
-  entries: { item: FlatContentItem; index: number }[];
+  /** Index in sorted lesson blocks. Section move uses this, not the preview row index. */
+  blockIndex?: number;
+  /** Section move, split, and delete apply to the whole block only on this row. */
+  ownsBlockActions?: boolean;
+  siblingPrevIndex?: number | null;
+  siblingNextIndex?: number | null;
+  entries: {
+    item: FlatContentItem;
+    index: number;
+    jumpLinks: FlatContentItem[];
+    /** Set when a jump-links component is shown on its own. */
+    jumpLinksNote: string | null;
+  }[];
 };
 
 export function blockTitleForEditing(title: unknown): string {
@@ -39,8 +61,11 @@ export function countLessonSectionsAndBlocks(lesson: LessonRecord): {
   blockCount: number;
 } {
   const items = flattenLessonContent(lesson as CourseLesson);
-  const sectionCount = sortedBlocks(lesson as CourseLesson).length;
-  return { sectionCount, blockCount: items.length };
+  const groups = buildContentListGroups(lesson, items);
+  return {
+    sectionCount: groups.length,
+    blockCount: groups.reduce((total, group) => total + group.blockCount, 0),
+  };
 }
 
 export function formatLessonSidebarMeta(sectionCount: number, blockCount: number): string {
@@ -57,25 +82,62 @@ export function buildContentListGroups(
     .map((block) => String(block.slug ?? ""))
     .filter(Boolean);
 
-  return blockOrder.map((blockSlug, index) => {
+  const groups: ContentListGroup[] = [];
+
+  blockOrder.forEach((blockSlug, blockIndex) => {
     const block = findBlockInLesson(lesson, blockSlug);
-    const entries = items
+    const sectionEntries = items
       .map((item, itemIndex) => ({ item, index: itemIndex }))
       .filter((entry) => entry.item.blockSlug === blockSlug);
-    const componentCount = Array.isArray(block?.components)
-      ? block.components.length
-      : entries.length;
-    return {
+    const sectionComponents = sectionEntries.map((entry) => entry.item.component);
+    const entries = sectionEntries.flatMap((entry, entryIndex) => {
+      const unattached = unattachedJumpLinksReason(sectionComponents, entryIndex);
+      if (isVimeoJumpLinksComponent(entry.item.component) && unattached == null) {
+        return [];
+      }
+      const owned = new Set(
+        entry.item.component.type === "video"
+          ? jumpLinksOwnedByVideo(sectionComponents, entryIndex)
+          : [],
+      );
+      const jumpLinks = sectionEntries
+        .filter((candidate) => owned.has(candidate.item.component))
+        .map((candidate) => candidate.item);
+      return [
+        {
+          ...entry,
+          jumpLinks,
+          jumpLinksNote: unattached ? unattachedJumpLinksSummary(unattached) : null,
+        },
+      ];
+    });
+    const isLayout = Boolean(block && isEditorLayoutBlock(block));
+    const rawTitle = sectionTitleForBlock(lesson, blockSlug);
+    const canSplit = Boolean(block && !isLayout && entries.length > 1);
+
+    groups.push({
       blockSlug,
-      blockTitle: sectionTitleForBlock(lesson, blockSlug),
-      sectionNumber: index + 1,
-      totalSections: blockOrder.length,
-      canSplit: Boolean(block && !isEditorLayoutBlock(block) && componentCount > 1),
-      isLayout: Boolean(block && isEditorLayoutBlock(block)),
+      blockTitle: rawTitle,
+      titleValue: rawTitle,
+      titleEditable: true,
+      sectionNumber: 0,
+      totalSections: 0,
+      canSplit,
+      isLayout,
       blockCount: entries.length,
+      blockIndex,
+      ownsBlockActions: true,
+      siblingPrevIndex: null,
+      siblingNextIndex: null,
       entries,
-    };
+    });
   });
+
+  return groups.map((group, index) => ({
+    ...group,
+    sectionNumber: index + 1,
+    totalSections: groups.length,
+  }));
 }
 
 export function sectionGroupMetaLabel(group: ContentListGroup): string {
