@@ -172,6 +172,14 @@ describe("Drop Shoulder workspace measurement rehydrate", () => {
 });
 
 describe("Sleeveless Edit Pattern workspace", () => {
+  it("shows one Inches/Centimeters control, and that control is the one the editor wires", () => {
+    const toggles = sleevelessPatternWorkspaceAstro.match(/data-sl-edit-units/g) ?? [];
+    expect(toggles).toHaveLength(1);
+    expect(sleevelessPatternWorkspaceAstro.match(/data-sl-edit-unit="cm"/g)).toHaveLength(1);
+    expect(sleevelessPatternWorkspaceAstro.match(/id="sl-edit-units-heading"/g)).toHaveLength(1);
+    expect(editDrawerScript).toContain('querySelector<HTMLElement>("[data-sl-edit-units]")');
+  });
+
   it("supports Drop Shoulder saved projects in the shared edit workspace", () => {
     expect(sleevelessPatternWorkspaceAstro).toContain("Save Changes");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("data-drop-shoulder-workspace-measure-summary");
