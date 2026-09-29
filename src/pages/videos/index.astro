@@ -234,7 +234,14 @@ const forceMemberView =
       syncVideoBackToSearchDesktopPosition,
       syncVideoBackToSearchFromIntersection,
     } from "../../lib/videos/videoBackToSearch";
+    import {
+      installSearchCommitLogger,
+      queueSearchCommit,
+      rememberSearchCommit,
+    } from "../../lib/searchActivityClient";
     import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
+
+    installSearchCommitLogger();
     import {
       nextVideoCatalogAuthCategory,
       readSitewideAccessPublication,
@@ -292,6 +299,10 @@ const forceMemberView =
     const initialSort = urlParams.get("sort") || "";
 
     let currentSearch = initialQ;
+    let lastSearchResultCount = 0;
+    if (initialQ.trim()) {
+      rememberSearchCommit({ area: "video", term: initialQ, resultCount: 0 });
+    }
     let currentCategory = defaultCategory;
     let currentSort = initialSort;
     let searchTimer;
@@ -470,6 +481,14 @@ const forceMemberView =
       });
 
       updateResultsSummary(filtered.length);
+      lastSearchResultCount = filtered.length;
+      if (currentSearch) {
+        queueSearchCommit({
+          area: "video",
+          term: currentSearch,
+          resultCount: lastSearchResultCount,
+        });
+      }
 
       if (!grid) return;
 
@@ -923,7 +942,26 @@ const forceMemberView =
           currentSearch = value.trim();
           updateUrl();
           render(currentCategory);
+          queueSearchCommit({
+            area: "video",
+            term: currentSearch,
+            resultCount: lastSearchResultCount,
+          });
         }, 150);
+      });
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        clearTimeout(searchTimer);
+        currentSearch = (searchInput.value || "").trim();
+        updateUrl();
+        render(currentCategory);
+        queueSearchCommit({
+          area: "video",
+          term: currentSearch,
+          resultCount: lastSearchResultCount,
+        });
+        if (typeof window.__kinFlushSearchCommit === "function") window.__kinFlushSearchCommit();
       });
     }
 
@@ -942,6 +980,7 @@ const forceMemberView =
           syncSelectedUI("");
           history.replaceState(null, "", location.pathname);
           render("");
+          queueSearchCommit({ area: "video", term: "", resultCount: 0 });
           return;
         }
         const tryAgain = e.target && e.target.closest ? e.target.closest(".empty-state-try-again") : null;
@@ -956,6 +995,7 @@ const forceMemberView =
         }
         updateUrl();
         render(currentCategory);
+        queueSearchCommit({ area: "video", term: "", resultCount: 0 });
       });
     }
     })();

@@ -50,6 +50,7 @@ describe("Watson member search pages", () => {
 
     expect(shell).toContain('<a href="/watson/sales/report">Sales</a>');
     expect(shell).toContain('<a href="/watson/pattern-activity">Pattern Activity</a>');
+    expect(shell).toContain('<a href="/watson/search-activity">Search activity</a>');
     expect(shell).toContain('<a href="/watson/vendors">Vendors</a>');
     expect(shell).toContain('<a href="/watson/current">Current</a>');
     expect(shell).toContain('<a href="/watson/course-admin/111">Course editor</a>');

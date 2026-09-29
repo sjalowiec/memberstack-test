@@ -2789,6 +2789,16 @@ div[data-ms-modal-overlay] {
         render();
       });
 
+      function noteGlobalSearchCommit(term, resultCount) {
+        const detail = { area: "global", term: term, resultCount: resultCount };
+        if (typeof window.__kinScheduleSearchCommit === "function") {
+          window.__kinScheduleSearchCommit(detail);
+          return;
+        }
+        window.__kinSearchCommitQueue = window.__kinSearchCommitQueue || [];
+        window.__kinSearchCommitQueue.push(detail);
+      }
+
       async function runSearch(term) {
         currentTerm = term;
         if (!term.trim()) {
@@ -2796,6 +2806,7 @@ div[data-ms-modal-overlay] {
           activeFilter = "all";
           render();
           setStatusText("Start typing to search across Knit it Now.");
+          noteGlobalSearchCommit("", 0);
           return;
         }
         setStatusText("Searching\u2026");
@@ -2828,6 +2839,7 @@ div[data-ms-modal-overlay] {
         const topScore = search.results.length ? search.results[0].score : 0;
         if (!hasGoodMatchedTerm(data) || !(topScore >= MIN_GOOD_RESULT_SCORE)) {
           showNoGoodMatches(term);
+          noteGlobalSearchCommit(term, 0);
           return;
         }
 
@@ -2844,9 +2856,16 @@ div[data-ms-modal-overlay] {
         setStatusText(
           allResults.length ? "" : "No results for \u201C" + term + "\u201D. Try a different word."
         );
+        noteGlobalSearchCommit(term, allResults.length);
       }
 
-      form.addEventListener("submit", (e) => e.preventDefault());
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (typeof window.__kinCancelSearchCommit === "function") window.__kinCancelSearchCommit();
+        void runSearch(input.value).then(() => {
+          if (typeof window.__kinFlushSearchCommit === "function") window.__kinFlushSearchCommit();
+        });
+      });
       input.addEventListener("input", () => runSearch(input.value));
     }
 
@@ -2889,7 +2908,10 @@ div[data-ms-modal-overlay] {
   })();
 </script>
 <script>
+  import { installSearchCommitLogger } from "../lib/searchActivityClient";
   import { openSiteSearchFromUrlIfRequested } from "../lib/siteSearchOpenFromUrl";
+
+  installSearchCommitLogger();
 
   // Same open path as the header magnifying-glass: click an existing trigger.
   openSiteSearchFromUrlIfRequested({

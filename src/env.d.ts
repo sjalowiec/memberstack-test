@@ -206,6 +206,24 @@ declare global {
       member?: unknown;
       memberId?: string | null;
     };
+    __kinScheduleSearchCommit?: (detail: {
+      area?: string;
+      term?: string;
+      resultCount?: number;
+    }) => void;
+    __kinFlushSearchCommit?: () => void;
+    __kinCancelSearchCommit?: () => void;
+    __kinRememberSearchCommit?: (detail: {
+      area?: string;
+      term?: string;
+      resultCount?: number;
+    }) => void;
+    __kinSearchCommitQueue?: Array<{
+      area?: string;
+      term?: string;
+      resultCount?: number;
+      remember?: boolean;
+    }>;
   }
 }
 
