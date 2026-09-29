@@ -188,6 +188,14 @@ describe("patternActivityReport", () => {
     expect(page).toContain("patternActivityReadyMessage");
     expect(page).toContain("void loadActivity()");
     expect(page).toContain('pageParams.set("offset", String(offset))');
+    expect(page).toContain("Free Hat pattern");
+    expect(page).toContain("Member patterns");
+    expect(page).toContain("data-pa-pattern-rows");
+    expect(page).toContain("Exclude Sue");
+    expect(page).toContain("Production — live site");
+    expect(page).toContain("DEV — kin-dev");
+    expect(page).not.toContain("Anonymous visitors");
+    expect(page).not.toContain("data-pa-people-list");
     expect(page).not.toContain("Choose Show activity to load events.");
   });
 

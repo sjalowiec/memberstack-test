@@ -7,9 +7,11 @@ import {
   PATTERN_ACTIVITY_GUEST_USER_PREFIX,
 } from "./patternActivityIdentity";
 import type { PatternActivityEvent, PatternActivityEventType } from "./patternActivityLog";
+import { PATTERN_SYSTEM_IDS, type PatternSystemId } from "./patternSystemId";
 import {
   dateRangeForPreset,
   eventMatchesDateRange,
+  patternActivitySystemLabel,
   type PatternActivityDatePreset,
 } from "./patternActivityReport";
 
@@ -183,4 +185,249 @@ export function activityMembershipNote(
   event: { metadata?: Record<string, unknown> } | null | undefined,
 ): string {
   return membershipFromActivityEvent(event);
+}
+
+/** How a stored user id can be recognized. Access is not inferred from the pattern. */
+export type PatternActivityPersonIdentity = "signed-in" | "guest" | "not-established";
+
+export type PatternActivityPatternGroup = "free-hat" | "member-pattern" | "unknown";
+
+export interface PatternActivityPatternTotals {
+  /** Distinct mem_ accounts that generated or saved. Guests are not included. */
+  signedInPeople: number;
+  /** Distinct guest ids that generated or saved. */
+  guestPeople: number;
+  /** Distinct other ids that generated or saved. The account is not established. */
+  identityNotEstablished: number;
+  generations: number;
+  distinctSavedProjects: number;
+  opens: number;
+  edits: number;
+  prints: number;
+}
+
+export interface PatternActivityPatternRow extends PatternActivityPatternTotals {
+  /** Display name. Unmapped identifiers use "Unknown". */
+  label: string;
+  /** Raw patternSystem values in this row. Blank values are shown as "(blank)". */
+  identifiers: string[];
+  group: PatternActivityPatternGroup;
+}
+
+export interface PatternActivityPatternSummary {
+  rows: PatternActivityPatternRow[];
+  freeHat: PatternActivityPatternTotals;
+  memberPatterns: PatternActivityPatternTotals;
+  unknown: PatternActivityPatternTotals;
+  /** Same filters as {@link buildPatternActivityUsage}. Distinct counts are unions, not sums of rows. */
+  overall: PatternActivityPatternTotals;
+  /**
+   * True when every filtered event is in exactly one row and the row event counts
+   * equal the existing usage totals. Distinct people and saved projects match as unions.
+   */
+  matchesExistingTotals: boolean;
+}
+
+const KNOWN_PATTERN_SYSTEMS = new Set<string>(PATTERN_SYSTEM_IDS);
+
+export function patternActivityPersonIdentity(userId: string): PatternActivityPersonIdentity {
+  const id = userId.trim();
+  if (id.startsWith("mem_")) return "signed-in";
+  if (id.startsWith(PATTERN_ACTIVITY_GUEST_USER_PREFIX)) return "guest";
+  return "not-established";
+}
+
+export function patternActivityPatternGroup(patternSystem: string): PatternActivityPatternGroup {
+  const id = patternSystem.trim();
+  if (id === "hat") return "free-hat";
+  if (KNOWN_PATTERN_SYSTEMS.has(id)) return "member-pattern";
+  return "unknown";
+}
+
+interface PatternCountBucket {
+  identifiers: Set<string>;
+  signedInPeople: Set<string>;
+  guestPeople: Set<string>;
+  identityNotEstablished: Set<string>;
+  generations: number;
+  savedProjects: Set<string>;
+  opens: number;
+  edits: number;
+  prints: number;
+}
+
+function emptyPatternBucket(): PatternCountBucket {
+  return {
+    identifiers: new Set(),
+    signedInPeople: new Set(),
+    guestPeople: new Set(),
+    identityNotEstablished: new Set(),
+    generations: 0,
+    savedProjects: new Set(),
+    opens: 0,
+    edits: 0,
+    prints: 0,
+  };
+}
+
+function rememberIdentifier(bucket: PatternCountBucket, patternSystem: string): void {
+  const trimmed = patternSystem.trim();
+  bucket.identifiers.add(trimmed || "(blank)");
+}
+
+function applyPatternEvent(bucket: PatternCountBucket, event: PatternActivityEvent): void {
+  const generatedOrSaved =
+    event.eventType === "pattern_generated" || event.eventType === "pattern_saved";
+  if (generatedOrSaved) {
+    const identity = patternActivityPersonIdentity(event.userId);
+    if (identity === "signed-in") bucket.signedInPeople.add(event.userId);
+    else if (identity === "guest") bucket.guestPeople.add(event.userId);
+    else bucket.identityNotEstablished.add(event.userId);
+  }
+  if (event.eventType === "pattern_generated") bucket.generations += 1;
+  if (event.eventType === "pattern_saved" && event.patternId) bucket.savedProjects.add(event.patternId);
+  if (event.eventType === "pattern_opened") bucket.opens += 1;
+  if (event.eventType === "pattern_updated") bucket.edits += 1;
+  if (event.eventType === "pattern_printed") bucket.prints += 1;
+}
+
+function totalsFromBuckets(buckets: readonly PatternCountBucket[]): PatternActivityPatternTotals {
+  const signedInPeople = new Set<string>();
+  const guestPeople = new Set<string>();
+  const identityNotEstablished = new Set<string>();
+  const savedProjects = new Set<string>();
+  let generations = 0;
+  let opens = 0;
+  let edits = 0;
+  let prints = 0;
+  for (const bucket of buckets) {
+    for (const id of bucket.signedInPeople) signedInPeople.add(id);
+    for (const id of bucket.guestPeople) guestPeople.add(id);
+    for (const id of bucket.identityNotEstablished) identityNotEstablished.add(id);
+    for (const id of bucket.savedProjects) savedProjects.add(id);
+    generations += bucket.generations;
+    opens += bucket.opens;
+    edits += bucket.edits;
+    prints += bucket.prints;
+  }
+  return {
+    signedInPeople: signedInPeople.size,
+    guestPeople: guestPeople.size,
+    identityNotEstablished: identityNotEstablished.size,
+    generations,
+    distinctSavedProjects: savedProjects.size,
+    opens,
+    edits,
+    prints,
+  };
+}
+
+function rowFromBucket(
+  label: string,
+  group: PatternActivityPatternGroup,
+  bucket: PatternCountBucket,
+): PatternActivityPatternRow {
+  const totals = totalsFromBuckets([bucket]);
+  return {
+    label,
+    identifiers: [...bucket.identifiers].sort((a, b) => a.localeCompare(b)),
+    group,
+    ...totals,
+  };
+}
+
+function knownSystemId(patternSystem: string): PatternSystemId | null {
+  const id = patternSystem.trim();
+  return KNOWN_PATTERN_SYSTEMS.has(id) ? (id as PatternSystemId) : null;
+}
+
+/**
+ * One row per known pattern identifier, plus a single Unknown row for every
+ * identifier that is not in {@link PATTERN_SYSTEM_IDS}. Event counts sum to the
+ * existing usage totals. A person who used two patterns is counted in each row
+ * and once in the overall union.
+ */
+export function buildPatternActivityPatternSummary(
+  events: readonly PatternActivityEvent[],
+  filters: PatternActivityUsageFilters,
+  now: Date = new Date(),
+): PatternActivityPatternSummary {
+  const usage = buildPatternActivityUsage(events, filters, now);
+  const filtered = filterPatternActivityUsageEvents(events, filters, now);
+  const known = new Map<PatternSystemId, PatternCountBucket>();
+  const unknown = emptyPatternBucket();
+
+  for (const event of filtered) {
+    const system = knownSystemId(event.patternSystem ?? "");
+    if (!system) {
+      rememberIdentifier(unknown, event.patternSystem ?? "");
+      applyPatternEvent(unknown, event);
+      continue;
+    }
+    const bucket = known.get(system) ?? emptyPatternBucket();
+    rememberIdentifier(bucket, system);
+    applyPatternEvent(bucket, event);
+    known.set(system, bucket);
+  }
+
+  const rows = [...known.entries()].map(([system, bucket]) =>
+    rowFromBucket(
+      patternActivitySystemLabel(system),
+      system === "hat" ? "free-hat" : "member-pattern",
+      bucket,
+    ),
+  );
+  if (unknown.identifiers.size > 0) {
+    rows.push(rowFromBucket("Unknown", "unknown", unknown));
+  }
+  rows.sort((a, b) => {
+    if (b.signedInPeople !== a.signedInPeople) return b.signedInPeople - a.signedInPeople;
+    if (b.generations !== a.generations) return b.generations - a.generations;
+    return a.label.localeCompare(b.label);
+  });
+
+  const freeHatBucket = known.get("hat");
+  const memberBuckets = [...known.entries()]
+    .filter(([system]) => system !== "hat")
+    .map(([, bucket]) => bucket);
+  const allBuckets = [...known.values()];
+  if (unknown.identifiers.size > 0) allBuckets.push(unknown);
+
+  const overall = totalsFromBuckets(allBuckets);
+  const freeHat = totalsFromBuckets(freeHatBucket ? [freeHatBucket] : []);
+  const memberPatterns = totalsFromBuckets(memberBuckets);
+  const unknownTotals = totalsFromBuckets(unknown.identifiers.size > 0 ? [unknown] : []);
+  const rowGenerations = rows.reduce((sum, row) => sum + row.generations, 0);
+  const rowOpens = rows.reduce((sum, row) => sum + row.opens, 0);
+  const rowEdits = rows.reduce((sum, row) => sum + row.edits, 0);
+  const rowPrints = rows.reduce((sum, row) => sum + row.prints, 0);
+  const groupedGenerations = freeHat.generations + memberPatterns.generations + unknownTotals.generations;
+  const groupedOpens = freeHat.opens + memberPatterns.opens + unknownTotals.opens;
+  const groupedEdits = freeHat.edits + memberPatterns.edits + unknownTotals.edits;
+  const groupedPrints = freeHat.prints + memberPatterns.prints + unknownTotals.prints;
+
+  const matchesExistingTotals =
+    overall.signedInPeople === usage.peopleWhoGeneratedOrSaved &&
+    overall.generations === usage.totalGenerations &&
+    overall.distinctSavedProjects === usage.distinctSavedProjects &&
+    overall.opens === usage.opens &&
+    overall.edits === usage.edits &&
+    overall.prints === usage.prints &&
+    rowGenerations === usage.totalGenerations &&
+    rowOpens === usage.opens &&
+    rowEdits === usage.edits &&
+    rowPrints === usage.prints &&
+    groupedGenerations === usage.totalGenerations &&
+    groupedOpens === usage.opens &&
+    groupedEdits === usage.edits &&
+    groupedPrints === usage.prints;
+
+  return {
+    rows,
+    freeHat,
+    memberPatterns,
+    unknown: unknownTotals,
+    overall,
+    matchesExistingTotals,
+  };
 }
