@@ -39,9 +39,13 @@ const homeSource = readFileSync(resolve("src/pages/index.astro"), "utf8");
 const patternsCatalog = readFileSync(resolve("src/pages/patterns/index.astro"), "utf8");
 
 describe("Worsted Color-Block Socks Knit-able page", () => {
-  it("is a public prerendered page at the Knit-able route", () => {
+  it("is a server-rendered page at the Knit-able route", () => {
     expect(WORSTED_COLOR_BLOCK_SOCKS_PATH).toBe("/knit-ables/worsted-color-block-socks");
-    expect(pageSource).toContain("export const prerender = true");
+    expect(pageSource).toContain("export const prerender = false");
+    expect(pageSource).toContain("loadKnitAblePageAccess");
+    expect(pageSource).toContain("path: WORSTED_COLOR_BLOCK_SOCKS_PATH");
+    expect(pageSource).toContain("knitAbleAccess.visible");
+    expect(pageSource).toContain("applyKnitAbleCacheHeaders");
     expect(pageSource).toContain("WORSTED_COLOR_BLOCK_SOCKS_CANONICAL_URL");
     expect(WORSTED_COLOR_BLOCK_SOCKS_CANONICAL_URL).toBe(
       "https://knititnow.com/knit-ables/worsted-color-block-socks",

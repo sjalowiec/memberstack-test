@@ -35,7 +35,9 @@ describe("Knit-ables landing page logo", () => {
   it("is the public /knit-ables landing page", () => {
     expect(KNIT_ABLES_PATH).toBe("/knit-ables");
     expect(KNIT_ABLES_CANONICAL_URL).toBe("https://knititnow.com/knit-ables");
-    expect(landingSource).toContain("export const prerender = true");
+    expect(landingSource).toContain("export const prerender = false");
+    expect(landingSource).toContain("listPublicKnitAbleCards");
+    expect(landingSource).toContain("applyKnitAbleCacheHeaders");
     expect(landingSource).toContain("KNIT_ABLES_LOGO");
     expect(landingSource).toContain('id="knit-ables-heading"');
   });
@@ -70,7 +72,7 @@ describe("Knit-ables landing page logo", () => {
 
 describe("Knit-ables landing page cards", () => {
   it("keeps the earlier Knit-ables and adds the cap-sleeve tank", () => {
-    expect(landingSource).toContain("KNIT_ABLES_CARDS");
+    expect(landingSource).toContain("publicCards.map");
     expect(landingSource).toContain("knit-ables-card-list");
     expect(landingSource).toContain("knit-ables-feature-card");
     expect(KNIT_ABLES_CARDS).toHaveLength(3);

@@ -127,6 +127,11 @@ describe("schema", () => {
     expect(planSql).not.toContain("REFERENCES");
     expect(planSql).not.toContain("memberstack");
     expect(labels).toContain("table pattern_errata");
+    expect(labels).toContain("table watson_knit_able_schedules");
+    expect(
+      nativeStatements.find((statement) => statement.label === "table watson_knit_able_schedules")
+        ?.sql,
+    ).toContain("publish_date DATE");
     expect(labels).toContain("index pattern_errata_public_idx");
     const errataSql = nativeStatements.find(
       (statement) => statement.label === "table pattern_errata",

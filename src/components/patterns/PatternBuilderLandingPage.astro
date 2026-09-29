@@ -14,6 +14,7 @@ import PatternBuilderLandingCreates from "./PatternBuilderLandingCreates.astro";
 import PatternBuilderLandingAnyYarn from "./PatternBuilderLandingAnyYarn.astro";
 import PatternBuilderLandingKnitAble from "./PatternBuilderLandingKnitAble.astro";
 import PatternBuilderLandingMembershipCta from "./PatternBuilderLandingMembershipCta.astro";
+import { isKnitAblePathPublic } from "../../lib/knit-ables/scheduleStore";
 
 interface Props {
   content: PatternBuilderLandingContent;
@@ -26,7 +27,19 @@ const choices = hasPatternBuilderLandingChoices(content.choices) ? content.choic
 const howItWorks = hasPatternBuilderLandingCopy(content.howItWorks) ? content.howItWorks : null;
 const creates = hasPatternBuilderLandingCopy(content.creates) ? content.creates : null;
 const anyYarn = hasPatternBuilderLandingCopy(content.anyYarn) ? content.anyYarn : null;
-const knitAble = hasPatternBuilderLandingKnitAble(content.knitAble) ? content.knitAble : null;
+const knitAbleCandidate = hasPatternBuilderLandingKnitAble(content.knitAble)
+  ? content.knitAble
+  : null;
+let knitAble = null;
+if (knitAbleCandidate) {
+  try {
+    if (await isKnitAblePathPublic(knitAbleCandidate.href)) {
+      knitAble = knitAbleCandidate;
+    }
+  } catch {
+    knitAble = null;
+  }
+}
 const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta : null;
 ---
 

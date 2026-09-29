@@ -38,9 +38,13 @@ const worstedPage = readFileSync(
 );
 
 describe("Cap-sleeve tank Knit-able page", () => {
-  it("is a public prerendered page at the Knit-able route", () => {
+  it("is a server-rendered page at the Knit-able route", () => {
     expect(CAP_SLEEVE_TANK_PATH).toBe("/knit-ables/cap-sleeve-tank");
-    expect(pageSource).toContain("export const prerender = true");
+    expect(pageSource).toContain("export const prerender = false");
+    expect(pageSource).toContain("loadKnitAblePageAccess");
+    expect(pageSource).toContain("path: CAP_SLEEVE_TANK_PATH");
+    expect(pageSource).toContain("knitAbleAccess.visible");
+    expect(pageSource).toContain("applyKnitAbleCacheHeaders");
     expect(pageSource).toContain("CAP_SLEEVE_TANK_CANONICAL_URL");
     expect(CAP_SLEEVE_TANK_CANONICAL_URL).toBe(
       "https://knititnow.com/knit-ables/cap-sleeve-tank",

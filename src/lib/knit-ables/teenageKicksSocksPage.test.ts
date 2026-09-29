@@ -32,9 +32,13 @@ const patternsCatalog = readFileSync(resolve("src/pages/patterns/index.astro"), 
 const socksBuilder = readFileSync(resolve("src/pages/patterns/socks/builder.astro"), "utf8");
 
 describe("Teenage Kicks Socks Knit-able page", () => {
-  it("is a public prerendered page at the Knit-able route", () => {
+  it("is a server-rendered page at the Knit-able route", () => {
     expect(TEENAGE_KICKS_SOCKS_PATH).toBe("/knit-ables/teenage-kicks-socks");
-    expect(pageSource).toContain("export const prerender = true");
+    expect(pageSource).toContain("export const prerender = false");
+    expect(pageSource).toContain("loadKnitAblePageAccess");
+    expect(pageSource).toContain("path: TEENAGE_KICKS_SOCKS_PATH");
+    expect(pageSource).toContain("knitAbleAccess.visible");
+    expect(pageSource).toContain("applyKnitAbleCacheHeaders");
     expect(pageSource).toContain("TEENAGE_KICKS_SOCKS_CANONICAL_URL");
     expect(TEENAGE_KICKS_SOCKS_CANONICAL_URL).toBe(
       "https://knititnow.com/knit-ables/teenage-kicks-socks",

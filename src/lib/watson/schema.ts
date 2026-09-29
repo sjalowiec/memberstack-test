@@ -664,6 +664,14 @@ WHERE revoked_at IS NULL AND memberstack_id IS NULL`,
   ON pattern_errata (published_on DESC, slug)
   WHERE status = 'published'`,
     },
+    {
+      label: "table watson_knit_able_schedules",
+      sql: `CREATE TABLE IF NOT EXISTS watson_knit_able_schedules (
+  slug TEXT PRIMARY KEY,
+  publish_date DATE,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
   ];
 }
 
@@ -886,6 +894,12 @@ export function getWatsonEbookEntitlementsSchemaStatements(): SchemaStatement[] 
     (statement) =>
       statement.label === "table watson_ebook_entitlements" ||
       statement.label.startsWith("index idx_watson_ebook_entitlements"),
+  );
+}
+
+export function getWatsonKnitAbleScheduleSchemaStatements(): SchemaStatement[] {
+  return getWatsonNativeSchemaStatements().filter(
+    (statement) => statement.label === "table watson_knit_able_schedules",
   );
 }
 

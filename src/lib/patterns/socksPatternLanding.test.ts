@@ -36,7 +36,8 @@ const teenageKicksPage = readFileSync(
 describe("Basic Socks Pattern Builder landing page", () => {
   it("is a public crawlable landing page at /patterns/socks", () => {
     expect(SOCKS_PATTERN_LANDING_PATH).toBe("/patterns/socks");
-    expect(landingPage).toContain("export const prerender = true");
+    expect(landingPage).toContain("export const prerender = false");
+    expect(landingPage).toContain("applyKnitAbleCacheHeaders");
     expect(landingPage).toContain("SOCKS_PATTERN_BUILDER_LANDING");
     expect(landingPage).toContain("PatternBuilderLandingPage");
     expect(landingPage).toContain("socksSavedPatternRedirect");

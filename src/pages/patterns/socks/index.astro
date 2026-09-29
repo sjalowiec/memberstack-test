@@ -1,9 +1,13 @@
 ---
-export const prerender = true;
+// Server-rendered so the Knit-able link follows the live Pacific publish date.
+export const prerender = false;
 
 import Layout from "../../../layouts/Layout.astro";
 import PatternBuilderLandingPage from "../../../components/patterns/PatternBuilderLandingPage.astro";
+import { applyKnitAbleCacheHeaders } from "../../../lib/knit-ables/pageAccess";
 import { SOCKS_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/socksPatternLanding";
+
+applyKnitAbleCacheHeaders(Astro.response.headers);
 
 const landing = SOCKS_PATTERN_BUILDER_LANDING;
 ---
