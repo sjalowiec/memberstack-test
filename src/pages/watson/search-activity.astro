@@ -26,11 +26,14 @@ const range =
     : dateRangeForSearchPreset(preset);
 
 let loadError = "";
+let unreadable = 0;
 let summary = summarizeSearchActivity([]);
 try {
-  const events = await listSearchActivityEvents();
-  summary = summarizeSearchActivity(events, { area, from: range.from, to: range.to });
-} catch {
+  const read = await listSearchActivityEvents();
+  unreadable = read.unreadable;
+  summary = summarizeSearchActivity(read.events, { area, from: range.from, to: range.to });
+} catch (error) {
+  console.error("search activity read failed", error instanceof Error ? error.name : "Error");
   loadError = "Search activity could not be read. This is not a count of zero searches.";
 }
 
@@ -88,6 +91,9 @@ const areaLabel = (value: SearchActivityArea) => (value === "global" ? "Global" 
           : " No searches have been recorded yet."}
         {summary.omittedPersonal > 0
           ? ` ${summary.omittedPersonal} searches were left out of the term lists because they looked like an email, phone number, or member id.`
+          : ""}
+        {unreadable > 0
+          ? ` ${unreadable} saved searches could not be read. The totals below are only the ones that could. This is not a count of zero searches.`
           : ""}
       </p>
     )
