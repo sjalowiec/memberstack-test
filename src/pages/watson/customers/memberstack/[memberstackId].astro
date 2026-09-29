@@ -1,5 +1,6 @@
 ---
 import WatsonCustomerAccordionInit from "../../../../components/watson/WatsonCustomerAccordionInit.astro";
+import WatsonCustomerContactMessages from "../../../../components/watson/WatsonCustomerContactMessages.astro";
 import WatsonCustomerInternalInfo from "../../../../components/watson/WatsonCustomerInternalInfo.astro";
 import WatsonCustomerLegacyAmbiguity from "../../../../components/watson/WatsonCustomerLegacyAmbiguity.astro";
 import WatsonCustomerLegacyHistory from "../../../../components/watson/WatsonCustomerLegacyHistory.astro";
@@ -115,6 +116,10 @@ if (!result.ok && result.reason === "not_found") {
           legacyLinkAmbiguous={result.profile.legacyLinkAmbiguous}
         />
         <WatsonCustomerTimeline events={result.profile.timeline} />
+        <WatsonCustomerContactMessages
+          emails={[result.profile.memberstack.email, result.profile.member?.email]}
+          customerPath={Astro.url.pathname}
+        />
         <WatsonCustomerNotes
           notesWriteId={result.profile.notesWriteId}
           memberstackId={result.profile.memberstackId}

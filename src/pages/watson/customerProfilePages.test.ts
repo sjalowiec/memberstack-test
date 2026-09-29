@@ -34,6 +34,7 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain("memberstackLinkStatus");
     expect(legacyProfilePage).toContain("WatsonCustomerNotes");
     expect(legacyProfilePage).toContain("WatsonCustomerTimeline");
+    expect(legacyProfilePage).toContain("WatsonCustomerContactMessages");
     expect(legacyProfilePage).toContain("WatsonCustomerSnapshot");
     expect(legacyProfilePage).toContain("WatsonCustomerSupportResponses");
     expect(legacyProfilePage).toContain("WatsonCustomerInternalInfo");
@@ -66,6 +67,7 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).toContain("WatsonCustomerMembership");
     expect(memberstackProfilePage).toContain("WatsonCustomerSnapshot");
     expect(memberstackProfilePage).toContain("WatsonCustomerSupportResponses");
+    expect(memberstackProfilePage).toContain("WatsonCustomerContactMessages");
     expect(memberstackProfilePage).toContain("customerFirstNameFromProfile");
     expect(memberstackProfilePage).toContain("notesWriteId");
     expect(memberstackProfilePage).toContain("destinationState");
@@ -271,6 +273,14 @@ describe("Watson customer profile pages", () => {
     expect(timeline).toContain("events.map");
     expect(timeline).not.toContain("previewLimit");
     expect(timeline).not.toContain("Showing ");
+    const contactMessages = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerContactMessages.astro"),
+      "utf8",
+    );
+    expect(contactMessages).toContain('title="Contact messages"');
+    expect(contactMessages).toContain("listContactMessagesForEmails");
+    expect(contactMessages).toContain("listPreview");
+    expect(contactMessages).toContain("contactMessageCustomerHref");
     expect(notes).toContain('title="Customer Notes"');
     expect(notes).toContain('title="Watson Notes"');
     expect(notes).toContain("WatsonMemberWatsonNotesContent");

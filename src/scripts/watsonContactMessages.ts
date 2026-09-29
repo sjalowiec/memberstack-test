@@ -1,3 +1,13 @@
+import {
+  RESPONDED_CONTACT_MESSAGE_NOTICE,
+  contactFilterHidesResponded,
+  contactListHrefAfterRespond,
+  parseContactMessageFilter,
+  parseContactMessagePage,
+  respondedContactNoticeLinks,
+  type ContactMessageListLocation,
+} from "../lib/contact/contactMessageRecord";
+
 const ACTIONS_BOUND_ATTR = "data-contact-actions-bound";
 
 export function initWatsonContactMessageActions(root: ParentNode = document): void {
@@ -13,7 +23,10 @@ export function initWatsonContactMessageActions(root: ParentNode = document): vo
   const statusMsg = item.querySelector<HTMLElement>("[data-contact-action-status]");
   const buttons = item.querySelectorAll<HTMLButtonElement>("button");
 
-  async function patchMessage(body: Record<string, unknown>): Promise<boolean> {
+  async function patchMessage(
+    body: Record<string, unknown>,
+    afterSave: "reload" | "list" = "reload",
+  ): Promise<boolean> {
     if (statusMsg) {
       statusMsg.hidden = true;
       statusMsg.removeAttribute("data-error");
@@ -22,6 +35,7 @@ export function initWatsonContactMessageActions(root: ParentNode = document): vo
       button.disabled = true;
     });
 
+    let navigating = false;
     try {
       const res = await fetch(
         `/api/watson/contact-messages/${encodeURIComponent(messageId as string)}`,
@@ -45,6 +59,14 @@ export function initWatsonContactMessageActions(root: ParentNode = document): vo
         return false;
       }
 
+      if (afterSave === "list") {
+        navigating = true;
+        const filter = parseContactMessageFilter(item.getAttribute("data-contact-filter"));
+        const page = parseContactMessagePage(item.getAttribute("data-contact-page"));
+        window.location.assign(contactListHrefAfterRespond(messageId as string, { filter, page }));
+        return true;
+      }
+
       window.location.reload();
       return true;
     } catch {
@@ -55,14 +77,16 @@ export function initWatsonContactMessageActions(root: ParentNode = document): vo
       }
       return false;
     } finally {
-      buttons.forEach((button) => {
-        button.disabled = false;
-      });
+      if (!navigating) {
+        buttons.forEach((button) => {
+          button.disabled = false;
+        });
+      }
     }
   }
 
   item.querySelector("[data-contact-respond]")?.addEventListener("click", () => {
-    void patchMessage({ status: "responded" });
+    void patchMessage({ status: "responded" }, "list");
   });
   item.querySelector("[data-contact-close]")?.addEventListener("click", () => {
     void patchMessage({ status: "closed" });
@@ -89,6 +113,69 @@ export function deleteContactMessagePrompt(label: string): string {
   return `Delete the contact message from ${who}? This cannot be undone.`;
 }
 
+export type ContactSelectionRow = {
+  visible: boolean;
+  checked: boolean;
+  id: string;
+};
+
+/** Checked rows on the current page only. Hidden rows belong to another page. */
+export function selectedContactMessageIds(rows: readonly ContactSelectionRow[]): string[] {
+  const ids: string[] = [];
+  for (const row of rows) {
+    if (!row.visible || !row.checked) continue;
+    const id = row.id.trim();
+    if (!id || ids.includes(id)) continue;
+    ids.push(id);
+  }
+  return ids;
+}
+
+export function deleteSelectedButtonLabel(count: number): string {
+  const n = Math.max(0, Math.trunc(count));
+  return `Delete selected (${n})`;
+}
+
+export function deleteSelectedContactMessagesPrompt(count: number): string {
+  const n = Math.max(0, Math.trunc(count));
+  const noun = n === 1 ? "message" : "messages";
+  return `Permanently delete ${n} contact ${noun}? This cannot be undone.`;
+}
+
+export function bulkDeleteFollowUp(input: {
+  ok: boolean;
+  deletedCount: number;
+  selectedIds: readonly string[];
+}): { refresh: boolean; selectedIds: readonly string[] } {
+  if (!input.ok || input.deletedCount <= 0) {
+    return { refresh: false, selectedIds: input.selectedIds };
+  }
+  return { refresh: true, selectedIds: [] };
+}
+
+export function contactSelectionState(
+  rows: readonly ContactSelectionRow[],
+  busy: boolean,
+): {
+  selectedCount: number;
+  allSelected: boolean;
+  someSelected: boolean;
+  deleteDisabled: boolean;
+  label: string;
+} {
+  const visible = rows.filter((row) => row.visible);
+  const selectedCount = selectedContactMessageIds(rows).length;
+  const checkedVisible = visible.filter((row) => row.checked && row.id.trim()).length;
+  const allSelected = visible.length > 0 && checkedVisible === visible.length;
+  return {
+    selectedCount,
+    allSelected,
+    someSelected: selectedCount > 0 && !allSelected,
+    deleteDisabled: busy || selectedCount === 0,
+    label: deleteSelectedButtonLabel(selectedCount),
+  };
+}
+
 export function planContactListMutation(input: {
   filter: string;
   status: string;
@@ -111,6 +198,42 @@ export function planContactListMutation(input: {
     nextNewCount = Math.max(0, input.newCount - 1);
   }
   return { removeRow, nextStatus, nextNewCount };
+}
+
+function readListLocation(list: HTMLElement): ContactMessageListLocation {
+  return {
+    filter: parseContactMessageFilter(list.getAttribute("data-contact-filter")),
+    page: parseContactMessagePage(list.getAttribute("data-contact-page")),
+  };
+}
+
+function showRespondedContactNotice(
+  doc: Document,
+  links: { viewMessageHref: string; viewRespondedHref: string },
+): void {
+  const host = doc.querySelector("[data-contact-notices]");
+  if (!host) return;
+  const existing = host.querySelector("[data-contact-responded-notice]");
+  existing?.remove();
+
+  const notice = doc.createElement("p");
+  notice.className = "watson__status watson__status--success";
+  notice.setAttribute("role", "status");
+  notice.setAttribute("data-contact-responded-notice", "");
+  notice.append(doc.createTextNode(`${RESPONDED_CONTACT_MESSAGE_NOTICE} `));
+
+  const viewMessage = doc.createElement("a");
+  viewMessage.href = links.viewMessageHref;
+  viewMessage.textContent = "View message";
+  viewMessage.setAttribute("data-contact-view-message", "");
+
+  const viewResponded = doc.createElement("a");
+  viewResponded.href = links.viewRespondedHref;
+  viewResponded.textContent = "View responded messages";
+  viewResponded.setAttribute("data-contact-view-responded", "");
+
+  notice.append(viewMessage, doc.createTextNode(" "), viewResponded);
+  host.append(notice);
 }
 
 function readNewCount(root: ParentNode): number | null {
@@ -149,8 +272,11 @@ function setRowError(row: HTMLElement, message: string | null): void {
 function setRowBusy(row: HTMLElement, busy: boolean): void {
   if (busy) row.setAttribute("data-contact-row-busy", "true");
   else row.removeAttribute("data-contact-row-busy");
+  const listBusy =
+    row.closest<HTMLElement>("[data-contact-list]")?.getAttribute("data-contact-bulk-busy") ===
+    "true";
   row.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
-    button.disabled = busy;
+    button.disabled = busy || listBusy;
   });
 }
 
@@ -167,10 +293,13 @@ function markContactRowResponded(row: HTMLElement): void {
 
 function removeContactRow(list: HTMLElement, row: HTMLElement): void {
   row.remove();
+  syncContactSelection(list);
   if (list.querySelector("[data-contact-row]")) return;
   const table = list.querySelector<HTMLElement>("[data-contact-table-wrap]");
   const empty = list.querySelector<HTMLElement>("[data-contact-list-empty]");
+  const bulk = list.querySelector<HTMLElement>(".watson-contact__bulk");
   if (table) table.hidden = true;
+  if (bulk) bulk.hidden = true;
   if (empty) empty.hidden = false;
 }
 
@@ -242,6 +371,11 @@ async function respondToContactRow(list: HTMLElement, row: HTMLElement): Promise
         responseNewCount: result.newCount,
       }),
     );
+    const location = readListLocation(list);
+    if (contactFilterHidesResponded(location.filter)) {
+      const links = respondedContactNoticeLinks(messageId, location);
+      if (links) showRespondedContactNotice(list.ownerDocument, links);
+    }
   } catch {
     setRowError(row, "Could not mark this message as responded.");
   } finally {
@@ -288,14 +422,167 @@ async function deleteContactRow(list: HTMLElement, row: HTMLElement): Promise<vo
   }
 }
 
+function selectionRows(list: HTMLElement): ContactSelectionRow[] {
+  return [...list.querySelectorAll<HTMLElement>("[data-contact-row]")].map((row) => {
+    const box = row.querySelector<HTMLInputElement>("[data-contact-select]");
+    return {
+      visible: !row.hidden,
+      checked: box?.checked === true,
+      id: box?.value || row.getAttribute("data-contact-row-id") || "",
+    };
+  });
+}
+
+function pageContactCheckboxes(list: HTMLElement): HTMLInputElement[] {
+  return [...list.querySelectorAll<HTMLElement>("[data-contact-row]")].flatMap((row) => {
+    if (row.hidden) return [];
+    const box = row.querySelector<HTMLInputElement>("[data-contact-select]");
+    return box ? [box] : [];
+  });
+}
+
+function syncContactSelection(list: HTMLElement): void {
+  const state = contactSelectionState(
+    selectionRows(list),
+    list.getAttribute("data-contact-bulk-busy") === "true",
+  );
+  const selectAll = list.querySelector<HTMLInputElement>("[data-contact-select-all]");
+  if (selectAll) {
+    selectAll.checked = state.allSelected;
+    selectAll.indeterminate = state.someSelected;
+  }
+  const button = list.querySelector<HTMLButtonElement>("[data-contact-delete-selected]");
+  if (button) {
+    button.disabled = state.deleteDisabled;
+    button.textContent = state.label;
+  }
+}
+
+function setBulkStatus(list: HTMLElement, message: string | null): void {
+  const el = list.querySelector<HTMLElement>("[data-contact-bulk-status]");
+  if (!el) return;
+  if (!message) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  el.textContent = message;
+}
+
+function setBulkBusy(list: HTMLElement, busy: boolean): void {
+  if (busy) list.setAttribute("data-contact-bulk-busy", "true");
+  else list.removeAttribute("data-contact-bulk-busy");
+  list.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
+    if (button.hasAttribute("data-contact-delete-selected")) return;
+    button.disabled = busy;
+  });
+  list.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((box) => {
+    box.disabled = busy;
+  });
+  syncContactSelection(list);
+}
+
+type BulkDeleteResult =
+  | { ok: true; deletedCount: number }
+  | { ok: false; error: string };
+
+async function readBulkDeleteResult(res: Response): Promise<BulkDeleteResult> {
+  const data = (await res.json().catch(() => null)) as {
+    ok?: boolean;
+    error?: string;
+    deletedCount?: unknown;
+  } | null;
+  if (!res.ok || !data?.ok) {
+    return { ok: false, error: data?.error || "Could not delete the selected messages." };
+  }
+  const deletedCount =
+    typeof data.deletedCount === "number" && Number.isInteger(data.deletedCount)
+      ? data.deletedCount
+      : 0;
+  if (deletedCount <= 0) {
+    return { ok: false, error: "Could not delete the selected messages." };
+  }
+  return { ok: true, deletedCount };
+}
+
+async function deleteSelectedContactRows(list: HTMLElement): Promise<void> {
+  if (list.getAttribute("data-contact-bulk-busy") === "true") return;
+  const ids = selectedContactMessageIds(selectionRows(list));
+  if (ids.length === 0) return;
+  const confirmed = window.confirm(deleteSelectedContactMessagesPrompt(ids.length));
+  if (!confirmed) return;
+
+  setBulkStatus(list, null);
+  setBulkBusy(list, true);
+  let refresh = false;
+  try {
+    const res = await fetch("/api/watson/contact-messages/bulk-delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
+    const result = await readBulkDeleteResult(res);
+    const followUp = bulkDeleteFollowUp({
+      ok: result.ok,
+      deletedCount: result.ok ? result.deletedCount : 0,
+      selectedIds: ids,
+    });
+    if (!result.ok || !followUp.refresh) {
+      setBulkStatus(list, result.ok ? "Could not delete the selected messages." : result.error);
+      return;
+    }
+    refresh = true;
+    const next = new URL(window.location.href);
+    next.searchParams.set("deleted", String(result.deletedCount));
+    window.location.assign(`${next.pathname}${next.search}${next.hash}`);
+  } catch {
+    setBulkStatus(list, "Could not delete the selected messages.");
+  } finally {
+    if (!refresh && list.isConnected) setBulkBusy(list, false);
+  }
+}
+
+function clearNoticeParams(): void {
+  const url = new URL(window.location.href);
+  let changed = false;
+  for (const key of ["deleted", "responded"]) {
+    if (!url.searchParams.has(key)) continue;
+    url.searchParams.delete(key);
+    changed = true;
+  }
+  if (!changed) return;
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
 export function initWatsonContactMessageList(root: ParentNode = document): void {
+  clearNoticeParams();
   const list = root.querySelector<HTMLElement>("[data-contact-list]");
   if (!list || list.getAttribute(LIST_BOUND_ATTR) === "true") return;
   list.setAttribute(LIST_BOUND_ATTR, "true");
+  syncContactSelection(list);
+
+  list.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (target.matches("[data-contact-select-all]")) {
+      const checked = target.checked;
+      pageContactCheckboxes(list).forEach((box) => {
+        box.checked = checked;
+      });
+      syncContactSelection(list);
+      return;
+    }
+    if (target.matches("[data-contact-select]")) syncContactSelection(list);
+  });
 
   list.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
+    if (target.closest("[data-contact-delete-selected]")) {
+      void deleteSelectedContactRows(list);
+      return;
+    }
     const respond = target.closest<HTMLButtonElement>("[data-contact-list-respond]");
     const remove = target.closest<HTMLButtonElement>("[data-contact-list-delete]");
     if (!respond && !remove) return;
