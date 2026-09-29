@@ -111,7 +111,6 @@ export function resolveSearchActivityEnvironment(
   ) {
     return "dev";
   }
-  if (String(env.ALLOW_DEV_PATTERN_USER || "").trim() === "true") return "dev";
   if (
     host === "knititnow.com" ||
     host === "www.knititnow.com" ||
@@ -120,6 +119,7 @@ export function resolveSearchActivityEnvironment(
   ) {
     return "production";
   }
+  if (String(env.ALLOW_DEV_PATTERN_USER || "").trim() === "true") return "dev";
   if (String(env.CONTEXT || "").trim().toLowerCase() === "production") return "production";
   return "dev";
 }

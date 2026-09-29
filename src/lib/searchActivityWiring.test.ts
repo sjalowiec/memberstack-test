@@ -66,11 +66,16 @@ describe("search tracking is tied to a committed search", () => {
   it("does not log search terms from the save route", () => {
     const route = source("src/pages/api/search-activity.ts");
     expect(route).not.toContain("console.log");
-    expect(route).toContain('console.error("search activity write failed")');
+    expect(route).toContain("search activity write failed");
+    expect(route).toContain("error.name");
+    expect(route).not.toContain("error.message");
     const report = source("src/pages/watson/search-activity.astro");
     expect(report).toContain("SEARCH_TRACKING_START_NOTE");
     expect(report).toContain("SEARCH_SETTLE_NOTE");
     expect(report).toContain("Most common terms");
     expect(report).toContain("Terms with zero results");
+    expect(report).toContain(
+      "Search activity could not be read. This is not a count of zero searches.",
+    );
   });
 });

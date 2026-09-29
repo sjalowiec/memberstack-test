@@ -32,6 +32,11 @@ type BlobLike = {
 };
 
 let backendPromise: Promise<BlobLike> | null = null;
+let connectOverride: (() => Promise<BlobLike>) | null = null;
+
+function errorName(error: unknown): string {
+  return error instanceof Error && error.name ? error.name : "Error";
+}
 
 function sanitizeKeySegment(value: string): string {
   return value.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
@@ -95,28 +100,54 @@ async function netlifyBlobBackend(): Promise<BlobLike | null> {
       list: (options) => store.list(options),
       get: (key, options) => store.get(key, options),
     };
-  } catch {
+  } catch (error) {
+    if (resolveSearchActivityEnvironment() === "production") throw error;
     return null;
   }
 }
 
-async function backend(): Promise<BlobLike> {
-  if (!backendPromise) {
-    backendPromise = (async () => {
-      const blobs = await netlifyBlobBackend();
-      if (blobs) return blobs;
-      if (resolveSearchActivityEnvironment() === "production") {
-        throw new Error("Search activity store is unavailable.");
-      }
-      return fileBackend(LOCAL_DIR);
-    })();
+async function connectBackend(): Promise<BlobLike> {
+  if (connectOverride) return connectOverride();
+  const blobs = await netlifyBlobBackend();
+  if (blobs) return blobs;
+  if (resolveSearchActivityEnvironment() === "production") {
+    throw new Error("Search activity store is unavailable.");
   }
-  return backendPromise;
+  return fileBackend(LOCAL_DIR);
+}
+
+/**
+ * A successful connection is reused. A failed connection is not: one storage
+ * error must not make every later read on this server fail.
+ */
+async function backend(): Promise<BlobLike> {
+  if (backendPromise) return backendPromise;
+  const pending = connectBackend();
+  backendPromise = pending;
+  try {
+    return await pending;
+  } catch (error) {
+    if (backendPromise === pending) backendPromise = null;
+    throw error;
+  }
+}
+
+function dropBackend(): void {
+  backendPromise = null;
 }
 
 /** Test hook. Production code does not pass a directory. */
 export function resetSearchActivityBackendForTests(): void {
   backendPromise = null;
+  connectOverride = null;
+}
+
+/** Test hook for a connector that can fail and then recover. */
+export function useSearchActivityConnectorForTests(
+  connect: (() => Promise<BlobLike>) | null,
+): void {
+  backendPromise = null;
+  connectOverride = connect;
 }
 
 export function useFileSearchActivityBackendForTests(directory: string): void {
@@ -175,33 +206,68 @@ export function buildSearchActivityEvent(
 }
 
 export async function appendSearchActivityEvent(event: SearchActivityEvent): Promise<void> {
-  const store = await backend();
-  await store.set(searchActivityEventKey(event), JSON.stringify(event));
+  try {
+    const store = await backend();
+    await store.set(searchActivityEventKey(event), JSON.stringify(event));
+  } catch (error) {
+    dropBackend();
+    throw error;
+  }
 }
 
 const MAX_EVENTS = 5000;
 
-export async function listSearchActivityEvents(): Promise<SearchActivityEvent[]> {
-  const store = await backend();
-  const { blobs } = await store.list({ prefix: SEARCH_ACTIVITY_EVENT_PREFIX });
+export type SearchActivityRead = {
+  events: SearchActivityEvent[];
+  /** Records that were listed but could not be read. A total failure throws instead. */
+  unreadable: number;
+};
+
+async function readStore(store: BlobLike): Promise<SearchActivityRead> {
+  const listed = await store.list({ prefix: SEARCH_ACTIVITY_EVENT_PREFIX });
+  const blobs = Array.isArray(listed?.blobs) ? listed.blobs : [];
   const keys = blobs
-    .map((blob) => blob.key)
-    .filter((key) => key.endsWith(".json"))
+    .map((blob) => blob?.key)
+    .filter((key): key is string => typeof key === "string" && key.endsWith(".json"))
     .sort((a, b) => b.localeCompare(a))
     .slice(0, MAX_EVENTS);
   const events: SearchActivityEvent[] = [];
+  let unreadable = 0;
   for (const key of keys) {
-    const raw = await store.get(key, { type: "text" });
-    if (!raw) continue;
     try {
+      const raw = await store.get(key, { type: "text" });
+      if (typeof raw !== "string" || !raw) continue;
       const parsed = JSON.parse(raw) as SearchActivityEvent;
-      if (!parsed || typeof parsed !== "object") continue;
-      if (!isSearchActivityArea(parsed.area)) continue;
-      if (typeof parsed.createdAt !== "string") continue;
+      if (!parsed || typeof parsed !== "object") {
+        unreadable += 1;
+        continue;
+      }
+      if (!isSearchActivityArea(parsed.area) || typeof parsed.createdAt !== "string") {
+        unreadable += 1;
+        continue;
+      }
       events.push(parsed);
     } catch {
-      /* skip a damaged record */
+      unreadable += 1;
     }
   }
-  return events;
+  if (keys.length > 0 && events.length === 0 && unreadable === keys.length) {
+    throw new Error("Search activity records could not be read.");
+  }
+  return { events, unreadable };
+}
+
+export async function listSearchActivityEvents(): Promise<SearchActivityRead> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const store = await backend();
+      return await readStore(store);
+    } catch (error) {
+      dropBackend();
+      lastError = error;
+    }
+  }
+  console.error("search activity read failed", errorName(lastError));
+  throw lastError instanceof Error ? lastError : new Error("Search activity store is unavailable.");
 }

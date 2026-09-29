@@ -23,6 +23,7 @@ import {
   resetSearchActivityBackendForTests,
   searchActivityEventKey,
   useFileSearchActivityBackendForTests,
+  useSearchActivityConnectorForTests,
 } from "./searchActivityStore";
 
 describe("search term normalization", () => {
@@ -96,6 +97,13 @@ describe("search activity records", () => {
 
   it("labels the live site as production", () => {
     expect(resolveSearchActivityEnvironment({ URL: "https://knititnow.com" })).toBe("production");
+    expect(
+      resolveSearchActivityEnvironment({
+        SITE_NAME: "knititnow",
+        CONTEXT: "production",
+        ALLOW_DEV_PATTERN_USER: "true",
+      }),
+    ).toBe("production");
     expect(resolveStoredIdentity({ clientIdentity: "guest" }).identity).toBe("guest");
     expect(resolveStoredIdentity({ clientIdentity: "member" }).identity).toBe("unknown");
   });
@@ -258,13 +266,83 @@ describe("search activity file store", () => {
     if (!built.ok) return;
     await appendSearchActivityEvent(built.event);
     const listed = await listSearchActivityEvents();
-    expect(listed).toHaveLength(1);
-    expect(listed[0].term).toBe("ribbing");
-    expect(listed[0].resultCount).toBe(0);
+    expect(listed.events).toHaveLength(1);
+    expect(listed.unreadable).toBe(0);
+    expect(listed.events[0].term).toBe("ribbing");
+    expect(listed.events[0].resultCount).toBe(0);
     const raw = await readFile(path.join(dir, searchActivityEventKey(built.event)), "utf8");
     expect(raw).toContain("ribbing");
     expect(raw).not.toContain("console");
     await rm(dir, { recursive: true, force: true });
+  });
+
+  it("retries a failed store connection and still reads saved events", async () => {
+    let connects = 0;
+    useSearchActivityConnectorForTests(async () => {
+      connects += 1;
+      if (connects === 1) throw new Error("BlobsInternalError");
+      return {
+        async set() {},
+        async list() {
+          return { blobs: [{ key: "events/2026-09-29/saved.json" }] };
+        },
+        async get() {
+          return JSON.stringify({
+            id: "saved",
+            createdAt: "2026-09-29T12:00:00.000Z",
+            area: "global",
+            term: "band pickup",
+            resultCount: 3,
+            identity: "guest",
+            environment: "production",
+          });
+        },
+      };
+    });
+    const listed = await listSearchActivityEvents();
+    expect(connects).toBe(2);
+    expect(listed.events.map((event) => event.term)).toEqual(["band pickup"]);
+    expect(listed.unreadable).toBe(0);
+  });
+
+  it("keeps readable events when one record cannot be read", async () => {
+    useSearchActivityConnectorForTests(async () => ({
+      async set() {},
+      async list() {
+        return {
+          blobs: [{ key: "events/2026-09-29/good.json" }, { key: "events/2026-09-29/bad.json" }],
+        };
+      },
+      async get(key) {
+        if (key.endsWith("bad.json")) throw new Error("BlobsInternalError");
+        return JSON.stringify({
+          id: "good",
+          createdAt: "2026-09-29T12:00:00.000Z",
+          area: "video",
+          term: "ribbing",
+          resultCount: 43,
+          identity: "guest",
+          environment: "production",
+        });
+      },
+    }));
+    const listed = await listSearchActivityEvents();
+    expect(listed.events).toHaveLength(1);
+    expect(listed.events[0].term).toBe("ribbing");
+    expect(listed.unreadable).toBe(1);
+  });
+
+  it("does not report zero searches when every listed record fails to read", async () => {
+    useSearchActivityConnectorForTests(async () => ({
+      async set() {},
+      async list() {
+        return { blobs: [{ key: "events/2026-09-29/bad.json" }] };
+      },
+      async get() {
+        throw new Error("BlobsInternalError");
+      },
+    }));
+    await expect(listSearchActivityEvents()).rejects.toThrow(/could not be read/i);
   });
 });
 

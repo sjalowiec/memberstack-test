@@ -42,8 +42,11 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     await appendSearchActivityEvent(built.event);
-  } catch {
-    console.error("search activity write failed");
+  } catch (error) {
+    console.error(
+      "search activity write failed",
+      error instanceof Error ? error.name : "Error",
+    );
     return Response.json({ ok: false, error: "Search activity could not be saved." }, { status: 503 });
   }
 
