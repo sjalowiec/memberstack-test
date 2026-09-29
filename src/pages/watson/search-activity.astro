@@ -1,0 +1,182 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  SEARCH_SETTLE_NOTE,
+  SEARCH_TRACKING_START_NOTE,
+  dateRangeForSearchPreset,
+  summarizeSearchActivity,
+  type SearchActivityArea,
+} from "../../lib/searchActivity";
+import { listSearchActivityEvents } from "../../lib/searchActivityStore";
+
+export const prerender = false;
+
+const preset = Astro.url.searchParams.get("preset") || "all";
+const areaParam = Astro.url.searchParams.get("area") || "all";
+const area: SearchActivityArea | "all" =
+  areaParam === "global" || areaParam === "video" ? areaParam : "all";
+const customFrom = Astro.url.searchParams.get("from")?.trim() || "";
+const customTo = Astro.url.searchParams.get("to")?.trim() || "";
+const range =
+  preset === "custom"
+    ? {
+        from: /^\d{4}-\d{2}-\d{2}$/.test(customFrom) ? customFrom : undefined,
+        to: /^\d{4}-\d{2}-\d{2}$/.test(customTo) ? customTo : undefined,
+      }
+    : dateRangeForSearchPreset(preset);
+
+let loadError = "";
+let summary = summarizeSearchActivity([]);
+try {
+  const events = await listSearchActivityEvents();
+  summary = summarizeSearchActivity(events, { area, from: range.from, to: range.to });
+} catch {
+  loadError = "Search activity could not be read. This is not a count of zero searches.";
+}
+
+const areaLabel = (value: SearchActivityArea) => (value === "global" ? "Global" : "Video");
+---
+
+<WatsonPageShell
+  title="Search activity | Watson"
+  description="What visitors and members search for in the header and video searches."
+  heading="Search activity"
+  intro={SEARCH_TRACKING_START_NOTE}
+>
+  <p class="sa-meta">{SEARCH_SETTLE_NOTE}</p>
+
+  <form class="sa-filters" method="get" action="/watson/search-activity">
+    <label>
+      Date
+      <select name="preset">
+        <option value="all" selected={preset === "all"}>All recorded searches</option>
+        <option value="today" selected={preset === "today"}>Today</option>
+        <option value="week" selected={preset === "week"}>This week</option>
+        <option value="month" selected={preset === "month"}>This month</option>
+        <option value="custom" selected={preset === "custom"}>Custom range</option>
+      </select>
+    </label>
+    <label>
+      From
+      <input type="date" name="from" value={customFrom} />
+    </label>
+    <label>
+      To
+      <input type="date" name="to" value={customTo} />
+    </label>
+    <label>
+      Search area
+      <select name="area">
+        <option value="all" selected={area === "all"}>All areas</option>
+        <option value="global" selected={area === "global"}>Global</option>
+        <option value="video" selected={area === "video"}>Video</option>
+      </select>
+    </label>
+    <button type="submit" class="watson__button">Show searches</button>
+  </form>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : (
+      <p class="sa-meta">
+        {summary.searched} recorded searches in this view.
+        {summary.earliestDay
+          ? ` Earliest search in this store: ${summary.earliestDay}.`
+          : " No searches have been recorded yet."}
+        {summary.omittedPersonal > 0
+          ? ` ${summary.omittedPersonal} searches were left out of the term lists because they looked like an email, phone number, or member id.`
+          : ""}
+      </p>
+    )
+  }
+
+  <section class="watson__panel" aria-labelledby="sa-common-heading">
+    <h2 id="sa-common-heading" class="watson__panel-title">Most common terms</h2>
+    <div class="watson__table-wrap">
+      <table class="watson-table">
+        <thead>
+          <tr>
+            <th scope="col">Term</th>
+            <th scope="col">Area</th>
+            <th scope="col">Searches</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            loadError || summary.commonTerms.length === 0 ? (
+              <tr>
+                <td colspan="3">{loadError ? "—" : "None yet"}</td>
+              </tr>
+            ) : (
+              summary.commonTerms.map((row) => (
+                <tr>
+                  <td>{row.term}</td>
+                  <td>{areaLabel(row.area)}</td>
+                  <td>{row.count}</td>
+                </tr>
+              ))
+            )
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="watson__panel" aria-labelledby="sa-zero-heading">
+    <h2 id="sa-zero-heading" class="watson__panel-title">Terms with zero results</h2>
+    <div class="watson__table-wrap">
+      <table class="watson-table">
+        <thead>
+          <tr>
+            <th scope="col">Term</th>
+            <th scope="col">Area</th>
+            <th scope="col">Searches</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            loadError || summary.zeroResultTerms.length === 0 ? (
+              <tr>
+                <td colspan="3">{loadError ? "—" : "None yet"}</td>
+              </tr>
+            ) : (
+              summary.zeroResultTerms.map((row) => (
+                <tr>
+                  <td>{row.term}</td>
+                  <td>{areaLabel(row.area)}</td>
+                  <td>{row.count}</td>
+                </tr>
+              ))
+            )
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</WatsonPageShell>
+
+<style>
+  .sa-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: end;
+    margin-bottom: 1rem;
+  }
+
+  .sa-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #475569;
+  }
+
+  .sa-meta {
+    color: #475569;
+    margin: 0 0 1rem;
+  }
+</style>

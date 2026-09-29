@@ -839,17 +839,31 @@ const allData = videos.flatMap(video =>
           stickyBar.setAttribute('aria-hidden', visible ? 'false' : 'true');
         }
 
+        function queueVideoSearchCommit(term, resultCount, reason) {
+          const committing =
+            reason === "main-input" ||
+            reason === "sticky-input" ||
+            reason === "main-enter" ||
+            reason === "sticky-enter" ||
+            reason === "clear";
+          if (!committing) return;
+          const detail = { area: "video", term: term, resultCount: resultCount };
+          if (typeof window.__kinScheduleSearchCommit === "function") {
+            window.__kinScheduleSearchCommit(detail);
+          } else {
+            window.__kinSearchCommitQueue = window.__kinSearchCommitQueue || [];
+            window.__kinSearchCommitQueue.push(detail);
+          }
+          if (reason === "main-enter" || reason === "sticky-enter") {
+            if (typeof window.__kinFlushSearchCommit === "function") window.__kinFlushSearchCommit();
+          }
+        }
+
         function runVideoSearch(source, reason = 'input') {
           if (source) syncFrom(source);
 
           const queryRaw = getQuery(source || searchBoxSticky || searchBox);
           const query = queryRaw.toLowerCase();
-          console.log('[video-search] active source', {
-            sourceId: source?.id,
-            value: source?.value
-          });
-
-          console.log('[video-search] runVideoSearch', { reason, queryRaw, dataCount: data.length });
 
           if (emptyHint) {
             emptyHint.hidden = queryRaw.length > 0;
@@ -860,6 +874,7 @@ const allData = videos.flatMap(video =>
             resultsList.innerHTML = '';
             if (resultsContainer) resultsContainer.hidden = true;
             if (noResultsEl) noResultsEl.hidden = true;
+            queueVideoSearchCommit("", 0, reason);
             return;
           }
 
@@ -874,12 +889,7 @@ const allData = videos.flatMap(video =>
             return haystack.includes(query);
           });
           const topMatches = matches.slice(0, 20);
-
-          console.log('[video-search] matches', {
-            total: matches.length,
-            rendered: topMatches.length,
-            first: topMatches[0]
-          });
+          queueVideoSearchCommit(queryRaw, topMatches.length, reason);
 
           resultsList.innerHTML = '';
           topMatches.forEach((item) => {
@@ -1046,7 +1056,10 @@ const allData = videos.flatMap(video =>
     </script>
 
   <script>
+    import { installSearchCommitLogger } from "../lib/searchActivityClient";
     import { wireContactFormSubmit } from "../scripts/contactFormSubmit";
+
+    installSearchCommitLogger();
 
     const form = document.getElementById("video-help-question-form");
     if (form instanceof HTMLFormElement) {
