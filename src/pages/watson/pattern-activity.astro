@@ -13,9 +13,9 @@ const defaultSource =
 
 <WatsonPageShell
   title="Pattern Activity | Watson"
-  description="Read-only summary of which patterns were used on Production or DEV."
+  description="How many people built each pattern on Production or DEV."
   heading="Pattern Activity"
-  intro="Which patterns were used in the selected date range. Production is the live site. This page only reads events."
+  intro="How many people built each pattern in the selected date range. Production is the live site. This page only reads events."
 >
   <section class="watson__panel" aria-labelledby="pattern-activity-filters-heading">
     <h2 id="pattern-activity-filters-heading" class="watson__panel-title">Filters</h2>
@@ -45,12 +45,6 @@ const defaultSource =
         To
         <input type="date" data-pa-to />
       </label>
-      <label>
-        Pattern
-        <select data-pa-system>
-          <option value="">All patterns</option>
-        </select>
-      </label>
       <label class="pa-check">
         <input type="checkbox" data-pa-exclude-sue />
         Exclude Sue’s account
@@ -63,78 +57,16 @@ const defaultSource =
     </p>
   </section>
 
-  <section class="watson__panel" aria-labelledby="pattern-activity-totals-heading">
-    <h2 id="pattern-activity-totals-heading" class="watson__panel-title">Totals</h2>
-    <dl class="pa-stats">
-      <div><dt>People who generated or saved</dt><dd data-pa-people>—</dd></div>
-      <div><dt>Total generations</dt><dd data-pa-generated>—</dd></div>
-      <div><dt>Distinct saved projects</dt><dd data-pa-saved>—</dd></div>
-      <div><dt>Opens</dt><dd data-pa-opens>—</dd></div>
-      <div><dt>Edits</dt><dd data-pa-edits>—</dd></div>
-      <div><dt>Prints</dt><dd data-pa-prints>—</dd></div>
-    </dl>
+  <section class="watson__panel" aria-labelledby="pattern-activity-builds-heading">
+    <h2 id="pattern-activity-builds-heading" class="watson__panel-title">People who built a pattern</h2>
     <p class="pa-note">
-      People who generated or saved are signed-in accounts. Guest identities are not included in that count.
+      People who built counts stored identities with a generation event for that pattern.
+      Someone who only started, opened, saved, edited, or printed is not included.
+      Patterns generated counts every generation event, so a repeat build does not add another person.
     </p>
-  </section>
-
-  <section class="watson__panel" aria-labelledby="pattern-activity-compare-heading">
-    <h2 id="pattern-activity-compare-heading" class="watson__panel-title">Free Hat and member patterns</h2>
     <p class="pa-note">
-      Free Hat pattern is activity stored with the hat identifier. Member patterns are the other known pattern identifiers.
-      Neither group shows whether a person has paid access. Unknown identifiers stay in their own group so they are not folded into member patterns.
-      Generations, saved projects, opens, edits, and prints in these three groups add up to the totals above.
-      People do not: someone who used the free Hat pattern and a member pattern is counted in both groups and once in the totals.
-    </p>
-    <div class="pa-compare">
-      <article>
-        <h3>Free Hat pattern</h3>
-        <dl class="pa-stats">
-          <div><dt>People who generated or saved</dt><dd data-pa-free-people>—</dd></div>
-          <div><dt>Guest identities</dt><dd data-pa-free-guests>—</dd></div>
-          <div><dt>Identity not established</dt><dd data-pa-free-identity>—</dd></div>
-          <div><dt>Generations</dt><dd data-pa-free-generated>—</dd></div>
-          <div><dt>Distinct saved projects</dt><dd data-pa-free-saved>—</dd></div>
-          <div><dt>Opens</dt><dd data-pa-free-opens>—</dd></div>
-          <div><dt>Edits</dt><dd data-pa-free-edits>—</dd></div>
-          <div><dt>Prints</dt><dd data-pa-free-prints>—</dd></div>
-        </dl>
-      </article>
-      <article>
-        <h3>Member patterns</h3>
-        <dl class="pa-stats">
-          <div><dt>People who generated or saved</dt><dd data-pa-member-people>—</dd></div>
-          <div><dt>Guest identities</dt><dd data-pa-member-guests>—</dd></div>
-          <div><dt>Identity not established</dt><dd data-pa-member-identity>—</dd></div>
-          <div><dt>Generations</dt><dd data-pa-member-generated>—</dd></div>
-          <div><dt>Distinct saved projects</dt><dd data-pa-member-saved>—</dd></div>
-          <div><dt>Opens</dt><dd data-pa-member-opens>—</dd></div>
-          <div><dt>Edits</dt><dd data-pa-member-edits>—</dd></div>
-          <div><dt>Prints</dt><dd data-pa-member-prints>—</dd></div>
-        </dl>
-      </article>
-      <article>
-        <h3>Unknown</h3>
-        <dl class="pa-stats">
-          <div><dt>People who generated or saved</dt><dd data-pa-unknown-people>—</dd></div>
-          <div><dt>Guest identities</dt><dd data-pa-unknown-guests>—</dd></div>
-          <div><dt>Identity not established</dt><dd data-pa-unknown-identity>—</dd></div>
-          <div><dt>Generations</dt><dd data-pa-unknown-generated>—</dd></div>
-          <div><dt>Distinct saved projects</dt><dd data-pa-unknown-saved>—</dd></div>
-          <div><dt>Opens</dt><dd data-pa-unknown-opens>—</dd></div>
-          <div><dt>Edits</dt><dd data-pa-unknown-edits>—</dd></div>
-          <div><dt>Prints</dt><dd data-pa-unknown-prints>—</dd></div>
-        </dl>
-      </article>
-    </div>
-  </section>
-
-  <section class="watson__panel" aria-labelledby="pattern-activity-patterns-heading">
-    <h2 id="pattern-activity-patterns-heading" class="watson__panel-title">Patterns</h2>
-    <p class="pa-note">
-      One row per pattern identifier, sorted by signed-in people who generated or saved, then by generations.
-      A person who used more than one pattern is counted in each of those rows and once in the totals above.
-      Guest identities and any other id are listed separately. The events do not establish paid access.
+      Signed-in people are account ids. These events do not reliably record a paid membership at the time of the build, so this is not a count of paying members.
+      Hat guest identities are stored guest ids. Each guest id is not assumed to be a different person.
     </p>
     <p data-pa-pattern-notice></p>
     <div class="pa-table-wrap">
@@ -142,28 +74,46 @@ const defaultSource =
         <thead>
           <tr>
             <th scope="col">Pattern</th>
-            <th scope="col">Identifier</th>
-            <th scope="col">Group</th>
-            <th scope="col">People who generated or saved</th>
-            <th scope="col">Guest identities</th>
-            <th scope="col">Identity not established</th>
-            <th scope="col">Generations</th>
-            <th scope="col">Distinct saved projects</th>
-            <th scope="col">Opens</th>
-            <th scope="col">Edits</th>
-            <th scope="col">Prints</th>
+            <th scope="col">People who built</th>
+            <th scope="col">Patterns generated</th>
           </tr>
         </thead>
-        <tbody data-pa-pattern-rows></tbody>
+        <tbody data-pa-pattern-rows>
+          <tr data-pa-row="hat-guest">
+            <th scope="row">Hat — guest identities</th>
+            <td data-pa-people>—</td>
+            <td data-pa-generated>—</td>
+          </tr>
+          <tr data-pa-row="hat-signed-in">
+            <th scope="row">Hat — signed-in people</th>
+            <td data-pa-people>—</td>
+            <td data-pa-generated>—</td>
+          </tr>
+          <tr data-pa-row="sleeveless">
+            <th scope="row">Sleeveless</th>
+            <td data-pa-people>—</td>
+            <td data-pa-generated>—</td>
+          </tr>
+          <tr data-pa-row="drop-shoulder">
+            <th scope="row">Drop Shoulder</th>
+            <td data-pa-people>—</td>
+            <td data-pa-generated>—</td>
+          </tr>
+          <tr data-pa-row="socks">
+            <th scope="row">Socks</th>
+            <td data-pa-people>—</td>
+            <td data-pa-generated>—</td>
+          </tr>
+        </tbody>
       </table>
     </div>
+    <div data-pa-extra></div>
   </section>
 </WatsonPageShell>
 
 <script>
   import type { PatternActivityEvent } from "../../lib/patterns/patternActivityLog";
   import {
-    patternActivitySystemFilterOptions,
     dateRangeForPreset,
     patternActivityErrorMessage,
     patternActivityReadyMessage,
@@ -174,15 +124,13 @@ const defaultSource =
     type PatternActivityLoadState,
   } from "../../lib/patterns/patternActivityReport";
   import {
-    buildPatternActivityPatternSummary,
-    buildPatternActivityUsage,
-    type PatternActivityPatternGroup,
-    type PatternActivityPatternTotals,
+    buildPatternBuildReport,
+    type PatternBuildReport,
+    type PatternBuildRow,
   } from "../../lib/patterns/patternActivityUsage";
 
   const statusEl = document.querySelector("[data-pa-status]");
   const sourceEl = document.querySelector("[data-pa-source]");
-  const GROUP_FIELDS = ["people", "guests", "identity", "generated", "saved", "opens", "edits", "prints"] as const;
 
   function setStatus(message: string, state: PatternActivityLoadState): void {
     if (!(statusEl instanceof HTMLElement)) return;
@@ -199,62 +147,64 @@ const defaultSource =
     return value === "dev" ? "DEV — kin-dev" : "Production — live site";
   }
 
-  function setText(selector: string, value: string): void {
-    const el = document.querySelector(selector);
-    if (el) el.textContent = value;
+  function setRow(key: string, people: string, generated: string): void {
+    const row = document.querySelector(`[data-pa-row="${key}"]`);
+    if (!(row instanceof HTMLElement)) return;
+    const peopleCell = row.querySelector("[data-pa-people]");
+    const generatedCell = row.querySelector("[data-pa-generated]");
+    if (peopleCell) peopleCell.textContent = people;
+    if (generatedCell) generatedCell.textContent = generated;
   }
 
-  function groupLabel(group: PatternActivityPatternGroup): string {
-    if (group === "free-hat") return "Free Hat pattern";
-    if (group === "member-pattern") return "Member pattern";
-    return "Unknown";
-  }
-
-  function fillGroup(prefix: string, totals: PatternActivityPatternTotals | null): void {
-    if (!totals) {
-      for (const field of GROUP_FIELDS) setText(`[data-pa-${prefix}-${field}]`, "—");
-      return;
+  function clearNumbers(): void {
+    for (const row of document.querySelectorAll("[data-pa-row]")) {
+      if (!(row instanceof HTMLElement)) continue;
+      const key = row.dataset.paRow;
+      if (!key) continue;
+      setRow(key, "—", "—");
     }
-    setText(`[data-pa-${prefix}-people]`, String(totals.signedInPeople));
-    setText(`[data-pa-${prefix}-guests]`, String(totals.guestPeople));
-    setText(`[data-pa-${prefix}-identity]`, String(totals.identityNotEstablished));
-    setText(`[data-pa-${prefix}-generated]`, String(totals.generations));
-    setText(`[data-pa-${prefix}-saved]`, String(totals.distinctSavedProjects));
-    setText(`[data-pa-${prefix}-opens]`, String(totals.opens));
-    setText(`[data-pa-${prefix}-edits]`, String(totals.edits));
-    setText(`[data-pa-${prefix}-prints]`, String(totals.prints));
+    const extra = document.querySelector("[data-pa-extra]");
+    if (extra) extra.replaceChildren();
   }
 
   function renderNotice(message: string): void {
-    setText("[data-pa-pattern-notice]", message);
+    const note = document.querySelector("[data-pa-pattern-notice]");
+    if (note) note.textContent = message;
   }
 
-  function renderRows(rows: ReturnType<typeof buildPatternActivityPatternSummary>["rows"]): void {
-    const body = document.querySelector("[data-pa-pattern-rows]");
-    if (!(body instanceof HTMLElement)) return;
-    body.replaceChildren();
-    for (const row of rows) {
-      const tr = document.createElement("tr");
-      const cells = [
-        row.label,
-        row.identifiers.join(", "),
-        groupLabel(row.group),
-        String(row.signedInPeople),
-        String(row.guestPeople),
-        String(row.identityNotEstablished),
-        String(row.generations),
-        String(row.distinctSavedProjects),
-        String(row.opens),
-        String(row.edits),
-        String(row.prints),
-      ];
-      for (const value of cells) {
-        const td = document.createElement("td");
-        td.textContent = value;
-        tr.appendChild(td);
-      }
-      body.appendChild(tr);
+  function appendExtra(row: PatternBuildRow): void {
+    const host = document.querySelector("[data-pa-extra]");
+    if (!(host instanceof HTMLElement)) return;
+    let table = host.querySelector("table");
+    if (!(table instanceof HTMLTableElement)) {
+      table = document.createElement("table");
+      table.className = "watson-table";
+      const body = document.createElement("tbody");
+      table.appendChild(body);
+      host.appendChild(table);
     }
+    const body = table.querySelector("tbody");
+    if (!body) return;
+    const tr = document.createElement("tr");
+    const label = document.createElement("th");
+    label.scope = "row";
+    label.textContent = row.label;
+    const people = document.createElement("td");
+    people.textContent = String(row.peopleWhoBuilt);
+    const generated = document.createElement("td");
+    generated.textContent = String(row.patternsGenerated);
+    tr.append(label, people, generated);
+    body.appendChild(tr);
+  }
+
+  function renderReport(report: PatternBuildReport): void {
+    for (const row of report.rows) {
+      setRow(row.key, String(row.peopleWhoBuilt), String(row.patternsGenerated));
+    }
+    const extra = document.querySelector("[data-pa-extra]");
+    if (extra) extra.replaceChildren();
+    if (report.hatIdentityNotEstablished) appendExtra(report.hatIdentityNotEstablished);
+    for (const row of report.otherPatterns) appendExtra(row);
   }
 
   async function loadActivity(): Promise<void> {
@@ -264,9 +214,8 @@ const defaultSource =
       if (el instanceof HTMLElement) el.hidden = selected("[data-pa-date]") !== "custom";
     });
     setStatus(PATTERN_ACTIVITY_LOADING_MESSAGE, "loading");
-    clearTotals();
+    clearNumbers();
     renderNotice("");
-    renderRows([]);
     const preset = (selected("[data-pa-date]") || "all") as PatternActivityDatePreset;
     const range = dateRangeForPreset(preset, new Date(), {
       from: selected("[data-pa-from]"),
@@ -311,77 +260,22 @@ const defaultSource =
       showLoadError("Could not load pattern activity. The request did not finish.");
       return;
     }
-    const system = selected("[data-pa-system]");
-    const options = patternActivitySystemFilterOptions(events);
-    const select = document.querySelector("[data-pa-system]");
-    if (select instanceof HTMLSelectElement && select.options.length <= 1) {
-      for (const option of options) {
-        const node = document.createElement("option");
-        node.value = option.value;
-        node.textContent = option.label;
-        select.appendChild(node);
-      }
-      if ([...select.options].some((option) => option.value === system)) select.value = system;
-    }
-    const filters = {
-      datePreset: "all" as const,
-      patternSystem: selected("[data-pa-system]"),
+    const report = buildPatternBuildReport(events, {
+      datePreset: "all",
+      patternSystem: "",
       excludeSue: document.querySelector<HTMLInputElement>("[data-pa-exclude-sue]")?.checked === true,
-    };
-    const report = buildPatternActivityUsage(events, filters);
-    const summary = buildPatternActivityPatternSummary(events, filters);
-    setText("[data-pa-people]", String(report.peopleWhoGeneratedOrSaved));
-    setText("[data-pa-generated]", String(report.totalGenerations));
-    setText("[data-pa-saved]", String(report.distinctSavedProjects));
-    setText("[data-pa-opens]", String(report.opens));
-    setText("[data-pa-edits]", String(report.edits));
-    setText("[data-pa-prints]", String(report.prints));
-    if (!summary.matchesExistingTotals) {
-      clearGroups();
-      renderRows([]);
-      renderNotice(PATTERN_ACTIVITY_ERROR_LIST_MESSAGE);
-      setStatus(
-        patternActivityErrorMessage("Pattern rows do not match the totals, so the summary was not shown."),
-        "error",
-      );
-      return;
-    }
-    fillGroup("free", summary.freeHat);
-    fillGroup("member", summary.memberPatterns);
-    fillGroup("unknown", summary.unknown);
-    renderRows(summary.rows);
+    });
+    renderReport(report);
     const loaded = events.length;
-    const filteredOut = summary.rows.length === 0;
-    renderNotice(filteredOut ? PATTERN_ACTIVITY_EMPTY_MESSAGE : "");
+    renderNotice(loaded === 0 ? PATTERN_ACTIVITY_EMPTY_MESSAGE : "");
     setStatus(
-      patternActivityReadyMessage(filteredOut ? 0 : loaded, environmentLabel(environment)),
-      loaded === 0 || filteredOut ? "empty" : "ready",
+      patternActivityReadyMessage(loaded, environmentLabel(environment)),
+      loaded === 0 ? "empty" : "ready",
     );
   }
 
-  function clearGroups(): void {
-    fillGroup("free", null);
-    fillGroup("member", null);
-    fillGroup("unknown", null);
-  }
-
-  function clearTotals(): void {
-    for (const selector of [
-      "[data-pa-people]",
-      "[data-pa-generated]",
-      "[data-pa-saved]",
-      "[data-pa-opens]",
-      "[data-pa-edits]",
-      "[data-pa-prints]",
-    ]) {
-      setText(selector, "—");
-    }
-    clearGroups();
-  }
-
   function showLoadError(detail: string): void {
-    clearTotals();
-    renderRows([]);
+    clearNumbers();
     renderNotice(PATTERN_ACTIVITY_ERROR_LIST_MESSAGE);
     setStatus(patternActivityErrorMessage(detail), "error");
   }
@@ -418,54 +312,25 @@ const defaultSource =
     align-items: center;
     gap: 0.4rem;
   }
-  .pa-source {
+  .pa-source,
+  .pa-status[data-pa-state="empty"] {
     font-weight: 700;
   }
   .pa-note {
     margin: 0.75rem 0 0;
-    max-width: 52rem;
+    max-width: 46rem;
   }
   .pa-status[data-pa-state="error"] {
     color: #9f1239;
     font-weight: 700;
   }
-  .pa-status[data-pa-state="empty"] {
-    font-weight: 700;
-  }
-  .pa-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: 0.75rem;
-  }
-  .pa-stats div {
-    margin: 0;
-  }
-  .pa-stats dd {
-    margin: 0.15rem 0 0;
-    font-size: 1.4rem;
-    font-weight: 700;
-  }
-  .pa-compare {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  .pa-compare article {
-    margin: 0;
-    padding: 0.75rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-  }
-  .pa-compare h3 {
-    margin: 0 0 0.75rem;
-    font-size: 1rem;
-  }
-  .pa-table-wrap {
+  .pa-table-wrap,
+  [data-pa-extra] {
     overflow-x: auto;
     margin-top: 0.75rem;
   }
-  .pa-table-wrap td:nth-child(n + 4) {
+  .pa-table-wrap td,
+  [data-pa-extra] td {
     text-align: right;
   }
 </style>

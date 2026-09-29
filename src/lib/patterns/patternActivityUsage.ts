@@ -431,3 +431,110 @@ export function buildPatternActivityPatternSummary(
     matchesExistingTotals,
   };
 }
+
+/**
+ * Patterns that have historical `pattern_generated` events on production.
+ * Identifiers checked against the live log: hat, sleeveless, drop-shoulder, socks.
+ */
+export const PATTERN_BUILD_SYSTEMS = ["hat", "sleeveless", "drop-shoulder", "socks"] as const;
+
+export type PatternBuildSystem = (typeof PATTERN_BUILD_SYSTEMS)[number];
+
+export interface PatternBuildRow {
+  key: string;
+  label: string;
+  /** Distinct stored ids with a pattern_generated event. Not opens, saves, edits, prints, or starts. */
+  peopleWhoBuilt: number;
+  /** Every pattern_generated event, including repeat builds by the same id. */
+  patternsGenerated: number;
+}
+
+export interface PatternBuildReport {
+  rows: PatternBuildRow[];
+  /** Hat generations whose id is neither a guest id nor a signed-in account id. */
+  hatIdentityNotEstablished: PatternBuildRow | null;
+  /** Generation events whose pattern identifier is not one of the four rows. */
+  otherPatterns: PatternBuildRow[];
+}
+
+interface BuildCountBucket {
+  people: Set<string>;
+  generations: number;
+}
+
+function emptyBuildCount(): BuildCountBucket {
+  return { people: new Set(), generations: 0 };
+}
+
+function buildRow(key: string, label: string, bucket: BuildCountBucket): PatternBuildRow {
+  return {
+    key,
+    label,
+    peopleWhoBuilt: bucket.people.size,
+    patternsGenerated: bucket.generations,
+  };
+}
+
+function addGeneration(bucket: BuildCountBucket, userId: string): void {
+  bucket.people.add(userId);
+  bucket.generations += 1;
+}
+
+/**
+ * Counts who built each pattern. Only `pattern_generated` events count.
+ * Hat is split into guest ids and signed-in account ids. Signed-in does not
+ * mean a paid membership; membership on the event is often missing.
+ */
+export function buildPatternBuildReport(
+  events: readonly PatternActivityEvent[],
+  filters: PatternActivityUsageFilters,
+  now: Date = new Date(),
+): PatternBuildReport {
+  const filtered = filterPatternActivityUsageEvents(events, filters, now);
+  const hat = {
+    guest: emptyBuildCount(),
+    signedIn: emptyBuildCount(),
+    other: emptyBuildCount(),
+  };
+  const named = {
+    sleeveless: emptyBuildCount(),
+    "drop-shoulder": emptyBuildCount(),
+    socks: emptyBuildCount(),
+  };
+  const other = new Map<string, BuildCountBucket>();
+
+  for (const event of filtered) {
+    if (event.eventType !== "pattern_generated") continue;
+    const system = (event.patternSystem ?? "").trim();
+    if (system === "hat") {
+      const identity = patternActivityPersonIdentity(event.userId);
+      if (identity === "guest") addGeneration(hat.guest, event.userId);
+      else if (identity === "signed-in") addGeneration(hat.signedIn, event.userId);
+      else addGeneration(hat.other, event.userId);
+      continue;
+    }
+    if (system === "sleeveless" || system === "drop-shoulder" || system === "socks") {
+      addGeneration(named[system], event.userId);
+      continue;
+    }
+    const key = system || "(blank)";
+    const bucket = other.get(key) ?? emptyBuildCount();
+    addGeneration(bucket, event.userId);
+    other.set(key, bucket);
+  }
+
+  const hatOther = buildRow("hat-other", "Hat — identity not established", hat.other);
+  return {
+    rows: [
+      buildRow("hat-guest", "Hat — guest identities", hat.guest),
+      buildRow("hat-signed-in", "Hat — signed-in people", hat.signedIn),
+      buildRow("sleeveless", patternActivitySystemLabel("sleeveless"), named.sleeveless),
+      buildRow("drop-shoulder", patternActivitySystemLabel("drop-shoulder"), named["drop-shoulder"]),
+      buildRow("socks", patternActivitySystemLabel("socks"), named.socks),
+    ],
+    hatIdentityNotEstablished: hatOther.patternsGenerated > 0 ? hatOther : null,
+    otherPatterns: [...other.entries()]
+      .map(([system, bucket]) => buildRow(system, patternActivitySystemLabel(system), bucket))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  };
+}
