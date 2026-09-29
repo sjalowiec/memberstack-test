@@ -218,16 +218,32 @@ function drawCenterFrontOpening(frame: SleevelessFrontGarmentFrame): string {
   return `<line data-role="center-front-opening" x1="${f(line.x1)}" y1="${f(line.y1)}" x2="${f(line.x2)}" y2="${f(line.y2)}" fill="none" stroke="${STROKE}" stroke-width="1.6"/>`;
 }
 
+/**
+ * Shoulder width is the full after-armhole span (afterLeft–afterRight).
+ * The outline holds that width from lastArmholeY up to the shoulder, so the
+ * dimension sits on that bottom edge with an endpoint at each armhole corner.
+ */
+function drawShoulderWidthGuide(frame: SleevelessFrontGarmentFrame): string {
+  const f = sleevelessFrontGarmentFmtNum;
+  const y = frame.lastArmholeY;
+  const cap = 6;
+  const mark = "#6b7280";
+  return [
+    `<line data-role="line-shoulder" x1="${f(frame.afterLeft)}" y1="${f(y)}" x2="${f(frame.afterRight)}" y2="${f(y)}" stroke="${mark}" stroke-width="1.15"/>`,
+    `<line data-role="line-shoulder-cap" data-side="left" x1="${f(frame.afterLeft)}" y1="${f(y)}" x2="${f(frame.afterLeft)}" y2="${f(y + cap)}" stroke="${mark}" stroke-dasharray="none" stroke-width="1.4"/>`,
+    `<line data-role="line-shoulder-cap" data-side="right" x1="${f(frame.afterRight)}" y1="${f(y)}" x2="${f(frame.afterRight)}" y2="${f(y + cap)}" stroke="${mark}" stroke-dasharray="none" stroke-width="1.4"/>`,
+  ].join("");
+}
+
 function drawGuides(frame: SleevelessFrontGarmentFrame): string {
   const f = sleevelessFrontGarmentFmtNum;
   const bustY = frame.armholeStartY + 8;
   const hipY = frame.hemY + (frame.bottomY - frame.hemY) * 0.35;
-  const shoulderY = (frame.shoulderY + frame.neckCornerY) / 2;
   return [
     `<g data-role="measurement-guides" fill="none" stroke="${GUIDE}" stroke-width="0.8" stroke-dasharray="4 3">`,
     `<line data-role="line-neck-opening" x1="${f(frame.neckLeft)}" y1="${f(frame.neckCornerY)}" x2="${f(frame.neckRight)}" y2="${f(frame.neckCornerY)}"/>`,
     `<line data-role="line-neck-depth" x1="${f(frame.cx)}" y1="${f(frame.neckCornerY)}" x2="${f(frame.cx)}" y2="${f(frame.neckStartY)}"/>`,
-    `<line data-role="line-shoulder" x1="${f(frame.afterLeft)}" y1="${f(shoulderY)}" x2="${f(frame.neckLeft)}" y2="${f(shoulderY)}"/>`,
+    drawShoulderWidthGuide(frame),
     `<line data-role="line-armhole" x1="${f(frame.left - 8)}" y1="${f(frame.shoulderTopY)}" x2="${f(frame.left - 8)}" y2="${f(frame.armholeStartY)}"/>`,
     `<line data-role="line-bust" x1="${f(frame.left)}" y1="${f(bustY)}" x2="${f(frame.right)}" y2="${f(bustY)}"/>`,
     `<line data-role="line-hip" x1="${f(frame.hemLeft)}" y1="${f(hipY)}" x2="${f(frame.hemRight)}" y2="${f(hipY)}"/>`,
@@ -245,14 +261,13 @@ function targetCircle(id: string, x: number, y: number): string {
 function drawTargets(frame: SleevelessFrontGarmentFrame): string {
   const bustY = frame.armholeStartY + 8;
   const hipY = frame.hemY + (frame.bottomY - frame.hemY) * 0.35;
-  const shoulderY = (frame.shoulderY + frame.neckCornerY) / 2;
   const neckDepthX = Math.min(frame.cx + 22, frame.neckRight + 8);
   const neckDepthY = (frame.neckCornerY + frame.neckStartY) / 2;
   return [
     `<g data-role="measurement-targets">`,
     targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckOpening, frame.cx, frame.neckCornerY - 10),
     targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckDepth, neckDepthX, neckDepthY),
-    targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.chest, (frame.afterLeft + frame.neckLeft) / 2, shoulderY),
+    targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.chest, frame.cx, frame.lastArmholeY),
     targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.bust, frame.cx + 10, bustY),
     targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.hip, frame.cx + 12, hipY),
     targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.armholeDepth, frame.left - 8, (frame.shoulderTopY + frame.armholeStartY) / 2),
