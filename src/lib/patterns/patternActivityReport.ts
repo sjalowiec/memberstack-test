@@ -248,3 +248,24 @@ export const DEFAULT_PATTERN_ACTIVITY_FILTERS: PatternActivityReportFilters = {
   membership: "all",
   eventType: "",
 };
+
+export type PatternActivityLoadState = "loading" | "error" | "empty" | "ready";
+
+export const PATTERN_ACTIVITY_LOADING_MESSAGE = "Loading pattern activity…";
+
+export const PATTERN_ACTIVITY_EMPTY_MESSAGE = "No pattern activity in this filter.";
+
+/** Shown in the member and visitor lists when the query failed. */
+export const PATTERN_ACTIVITY_ERROR_LIST_MESSAGE =
+  "This list is blank because the report did not load. It is not a count of zero activity.";
+
+export function patternActivityErrorMessage(detail: string): string {
+  const reason = detail.trim() || "The report request failed.";
+  return `Pattern activity did not load. ${reason}`;
+}
+
+export function patternActivityReadyMessage(count: number, sourceLabel: string): string {
+  if (count <= 0) return PATTERN_ACTIVITY_EMPTY_MESSAGE;
+  const noun = count === 1 ? "event" : "events";
+  return `${count} ${noun} loaded from ${sourceLabel}.`;
+}

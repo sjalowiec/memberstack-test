@@ -1,7 +1,14 @@
 ---
 import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import { isKinDevNetlifySite } from "../../../netlify/functions/lib/pattern-activity-store.js";
+import { PATTERN_ACTIVITY_LOADING_MESSAGE } from "../../lib/patterns/patternActivityReport";
 
 export const prerender = false;
+
+/** Kin-dev can read its own blob store. Production is a cross-site read and stays opt-in. */
+const defaultEnvironment = isKinDevNetlifySite() ? "dev" : "production";
+const defaultSource =
+  defaultEnvironment === "dev" ? "DEV — kin-dev" : "Production — live site";
 ---
 
 <WatsonPageShell
@@ -16,8 +23,8 @@ export const prerender = false;
       <label>
         Environment
         <select data-pa-environment>
-          <option value="production" selected>Production — live site</option>
-          <option value="dev">DEV — kin-dev</option>
+          <option value="production" selected={defaultEnvironment === "production"}>Production — live site</option>
+          <option value="dev" selected={defaultEnvironment === "dev"}>DEV — kin-dev</option>
         </select>
       </label>
       <label>
@@ -50,8 +57,10 @@ export const prerender = false;
       </label>
       <button type="button" class="watson__button" data-pa-apply>Show activity</button>
     </div>
-    <p class="pa-source" data-pa-source>Source: Production — live site</p>
-    <p class="pa-status" data-pa-status>Choose Show activity to load events.</p>
+    <p class="pa-source" data-pa-source>Source: {defaultSource}</p>
+    <p class="pa-status" data-pa-status data-pa-state="loading" role="status" aria-live="polite">
+      {PATTERN_ACTIVITY_LOADING_MESSAGE}
+    </p>
   </section>
 
   <section class="watson__panel" aria-labelledby="pattern-activity-totals-heading">
@@ -80,14 +89,27 @@ export const prerender = false;
 
 <script>
   import type { PatternActivityEvent } from "../../lib/patterns/patternActivityLog";
-  import { patternActivityEventLabel, patternActivitySystemLabel, patternActivitySystemFilterOptions, dateRangeForPreset, type PatternActivityDatePreset } from "../../lib/patterns/patternActivityReport";
+  import {
+    patternActivityEventLabel,
+    patternActivitySystemLabel,
+    patternActivitySystemFilterOptions,
+    dateRangeForPreset,
+    patternActivityErrorMessage,
+    patternActivityReadyMessage,
+    PATTERN_ACTIVITY_ERROR_LIST_MESSAGE,
+    PATTERN_ACTIVITY_LOADING_MESSAGE,
+    type PatternActivityDatePreset,
+    type PatternActivityLoadState,
+  } from "../../lib/patterns/patternActivityReport";
   import { buildPatternActivityUsage, type PatternActivityPersonUsage } from "../../lib/patterns/patternActivityUsage";
 
   const statusEl = document.querySelector("[data-pa-status]");
   const sourceEl = document.querySelector("[data-pa-source]");
 
-  function setStatus(message: string): void {
-    if (statusEl) statusEl.textContent = message;
+  function setStatus(message: string, state: PatternActivityLoadState): void {
+    if (!(statusEl instanceof HTMLElement)) return;
+    statusEl.textContent = message;
+    statusEl.dataset.paState = state;
   }
 
   function selected(selector: string): string {
@@ -99,13 +121,19 @@ export const prerender = false;
     return value === "dev" ? "DEV — kin-dev" : "Production — live site";
   }
 
+  function renderNotice(host: Element | null, message: string): void {
+    if (!host) return;
+    host.replaceChildren();
+    const note = document.createElement("p");
+    note.textContent = message;
+    host.appendChild(note);
+  }
+
   function renderPeople(host: Element | null, people: PatternActivityPersonUsage[]): void {
     if (!host) return;
     host.replaceChildren();
     if (people.length === 0) {
-      const empty = document.createElement("p");
-      empty.textContent = "None in this filter.";
-      host.appendChild(empty);
+      renderNotice(host, "None in this filter.");
       return;
     }
     for (const person of people) {
@@ -140,7 +168,10 @@ export const prerender = false;
     document.querySelectorAll("[data-pa-custom]").forEach((el) => {
       if (el instanceof HTMLElement) el.hidden = selected("[data-pa-date]") !== "custom";
     });
-    setStatus("Loading…");
+    setStatus(PATTERN_ACTIVITY_LOADING_MESSAGE, "loading");
+    clearTotals();
+    document.querySelector("[data-pa-people-list]")?.replaceChildren();
+    document.querySelector("[data-pa-anon-list]")?.replaceChildren();
     const preset = (selected("[data-pa-date]") || "all") as PatternActivityDatePreset;
     const range = dateRangeForPreset(preset, new Date(), {
       from: selected("[data-pa-from]"),
@@ -159,7 +190,7 @@ export const prerender = false;
       try {
         data = JSON.parse(text) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
       } catch {
-        setStatus(
+        showLoadError(
           res.ok
             ? "Pattern activity returned a page instead of data."
             : `Pattern activity failed (${res.status}). The report did not finish.`,
@@ -167,11 +198,11 @@ export const prerender = false;
         return;
       }
       if (!res.ok || !data.ok || !Array.isArray(data.events)) {
-        setStatus(data.error || `Could not load pattern activity (${res.status}).`);
+        showLoadError(data.error || `Could not load pattern activity (${res.status}).`);
         return;
       }
     } catch {
-      setStatus("Could not load pattern activity. The request did not finish.");
+      showLoadError("Could not load pattern activity. The request did not finish.");
       return;
     }
     const system = selected("[data-pa-system]");
@@ -203,7 +234,33 @@ export const prerender = false;
     set("[data-pa-prints]", report.prints);
     renderPeople(document.querySelector("[data-pa-people-list]"), report.people);
     renderPeople(document.querySelector("[data-pa-anon-list]"), report.anonymous);
-    setStatus(`${data.events.length} events loaded from ${environmentLabel(environment)}.`);
+    const loaded = data.events.length;
+    const filteredOut = loaded > 0 && report.people.length === 0 && report.anonymous.length === 0;
+    setStatus(
+      patternActivityReadyMessage(filteredOut ? 0 : loaded, environmentLabel(environment)),
+      loaded === 0 || filteredOut ? "empty" : "ready",
+    );
+  }
+
+  function clearTotals(): void {
+    for (const selector of [
+      "[data-pa-people]",
+      "[data-pa-generated]",
+      "[data-pa-saved]",
+      "[data-pa-opens]",
+      "[data-pa-edits]",
+      "[data-pa-prints]",
+    ]) {
+      const el = document.querySelector(selector);
+      if (el) el.textContent = "—";
+    }
+  }
+
+  function showLoadError(detail: string): void {
+    clearTotals();
+    setStatus(patternActivityErrorMessage(detail), "error");
+    renderNotice(document.querySelector("[data-pa-people-list]"), PATTERN_ACTIVITY_ERROR_LIST_MESSAGE);
+    renderNotice(document.querySelector("[data-pa-anon-list]"), PATTERN_ACTIVITY_ERROR_LIST_MESSAGE);
   }
 
   document.querySelector("[data-pa-apply]")?.addEventListener("click", () => {
@@ -217,6 +274,7 @@ export const prerender = false;
   document.querySelector("[data-pa-environment]")?.addEventListener("change", () => {
     if (sourceEl) sourceEl.textContent = `Source: ${environmentLabel(selected("[data-pa-environment]"))}`;
   });
+  void loadActivity();
 </script>
 
 <style>
@@ -238,6 +296,13 @@ export const prerender = false;
     gap: 0.4rem;
   }
   .pa-source {
+    font-weight: 700;
+  }
+  .pa-status[data-pa-state="error"] {
+    color: #9f1239;
+    font-weight: 700;
+  }
+  .pa-status[data-pa-state="empty"] {
     font-weight: 700;
   }
   .pa-stats {
