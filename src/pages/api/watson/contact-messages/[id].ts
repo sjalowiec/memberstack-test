@@ -6,7 +6,7 @@ import {
   getContactMessageById,
   updateContactMessage,
 } from "../../../../lib/contact/contactMessagesDb";
-import { deleteContactUpload } from "../../../../lib/contact/contactUploads";
+import { deleteContactMessageAttachments } from "../../../../lib/contact/contactMessageCleanup";
 import {
   isContactMessageStatus,
   normalizeInternalNotes,
@@ -134,20 +134,7 @@ export const DELETE: APIRoute = async (context) => {
       );
     }
 
-    const blobKey = result.value.attachmentBlobKey;
-    if (blobKey) {
-      try {
-        const removed = await deleteContactUpload(blobKey);
-        if (!removed) {
-          console.error("[watson] Contact attachment was not deleted with the message.");
-        }
-      } catch (error) {
-        console.error(
-          "[watson] Contact attachment delete failed:",
-          error instanceof Error ? error.message : "unknown error",
-        );
-      }
-    }
+    await deleteContactMessageAttachments([result.value.attachmentBlobKey]);
 
     return watsonJsonResponse({
       ok: true,

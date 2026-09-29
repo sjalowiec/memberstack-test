@@ -1,0 +1,120 @@
+---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
+import {
+  contactMessageEmailKeys,
+  listContactMessagesForEmails,
+} from "../../lib/contact/contactMessagesDb";
+import {
+  contactMessageCustomerHref,
+  formatContactTimestamp,
+  listPreview,
+  readContactCustomerReturnPath,
+  statusLabel,
+} from "../../lib/contact/contactMessageRecord";
+
+interface Props {
+  emails: Array<string | null | undefined>;
+  customerPath: string;
+}
+
+const { emails, customerPath } = Astro.props;
+const returnPath = readContactCustomerReturnPath(customerPath);
+const emailKeys = contactMessageEmailKeys(emails);
+
+let loadError: string | null = null;
+let messages: Awaited<ReturnType<typeof listContactMessagesForEmails>> = [];
+
+if (emailKeys.length > 0) {
+  try {
+    messages = await listContactMessagesForEmails(emailKeys);
+  } catch (error) {
+    loadError = error instanceof Error ? error.message : "Unable to load contact messages.";
+  }
+}
+---
+
+<WatsonCustomerAccordionSection
+  id="customer-contact-messages"
+  title="Contact messages"
+  count={loadError ? null : messages.length}
+  class="watson-customer__contact-messages"
+>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : emailKeys.length === 0 ? (
+      <p class="watson__placeholder watson-customer__unavailable">No email address on this customer.</p>
+    ) : messages.length === 0 ? (
+      <p class="watson__placeholder watson-customer__unavailable">No contact messages for this email.</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table watson-customer-contact">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.map((message) => {
+              const href = returnPath ? contactMessageCustomerHref(message.id, returnPath) : null;
+              return (
+                <tr>
+                  <td>
+                    <time datetime={message.createdAt}>{formatContactTimestamp(message.createdAt)}</time>
+                  </td>
+                  <td>
+                    <span class:list={["watson-customer-contact__badge", `watson-customer-contact__badge--${message.status}`]}>
+                      {statusLabel(message.status)}
+                    </span>
+                  </td>
+                  <td>
+                    {href ? (
+                      <a href={href}>{listPreview(message.subject, message.message)}</a>
+                    ) : (
+                      listPreview(message.subject, message.message)
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</WatsonCustomerAccordionSection>
+
+<style>
+  .watson-customer-contact a {
+    font-weight: 700;
+  }
+
+  .watson-customer-contact__badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  .watson-customer-contact__badge--new {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .watson-customer-contact__badge--responded {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .watson-customer-contact__badge--closed {
+    background: #e2e8f0;
+    color: #475569;
+  }
+</style>

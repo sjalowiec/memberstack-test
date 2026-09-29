@@ -5,6 +5,7 @@ import { queryWatson } from "../watson/db";
 import {
   clipNotificationError,
   nextStatusTimestamps,
+  parseContactMessageIds,
   validateContactMessageId,
   type ContactMessageAttachment,
   type ContactMessageFilter,
@@ -42,6 +43,14 @@ export const CONTACT_MESSAGE_LIST_SQL = `
   ORDER BY created_at DESC, id DESC
 `;
 
+/** Read-only match on trim + lowercase. Does not rewrite stored addresses. */
+export const CONTACT_MESSAGES_BY_EMAIL_SQL = `
+  SELECT ${CONTACT_MESSAGE_SELECT_COLUMNS}
+  FROM watson_contact_messages
+  WHERE LOWER(TRIM(email)) = ANY($1::text[])
+  ORDER BY created_at DESC, id DESC
+`;
+
 export const CONTACT_MESSAGE_BY_ID_SQL = `
   SELECT ${CONTACT_MESSAGE_SELECT_COLUMNS}
   FROM watson_contact_messages
@@ -58,6 +67,12 @@ export const CONTACT_MESSAGE_COUNT_NEW_SQL = `
 export const CONTACT_MESSAGE_DELETE_SQL = `
   DELETE FROM watson_contact_messages
   WHERE id = $1
+  RETURNING id, status, attachment_blob_key
+`;
+
+export const CONTACT_MESSAGE_BULK_DELETE_SQL = `
+  DELETE FROM watson_contact_messages
+  WHERE id = ANY($1::text[])
   RETURNING id, status, attachment_blob_key
 `;
 
@@ -238,6 +253,51 @@ export async function listContactMessages(
   });
 }
 
+/** Trim and lowercase only. Does not fold Gmail and Googlemail together. */
+export function normalizeContactMatchEmail(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const normalized = value.trim().toLowerCase();
+  return normalized || null;
+}
+
+export function contactMessageEmailKeys(
+  emails: readonly (string | null | undefined)[],
+): string[] {
+  const seen = new Set<string>();
+  const keys: string[] = [];
+  for (const email of emails) {
+    const key = normalizeContactMatchEmail(email);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    keys.push(key);
+  }
+  return keys;
+}
+
+export function sortContactMessagesNewestFirst(
+  messages: readonly ContactMessageRecord[],
+): ContactMessageRecord[] {
+  return [...messages].sort((left, right) => {
+    const byDate = right.createdAt.localeCompare(left.createdAt);
+    if (byDate !== 0) return byDate;
+    return right.id.localeCompare(left.id);
+  });
+}
+
+export async function listContactMessagesForEmails(
+  emails: readonly (string | null | undefined)[],
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<ContactMessageRecord[]> {
+  const keys = contactMessageEmailKeys(emails);
+  if (keys.length === 0) return [];
+  const rows = await queryFn<ContactMessageRow>(CONTACT_MESSAGES_BY_EMAIL_SQL, [keys]);
+  const messages = rows.flatMap((row) => {
+    const record = mapContactMessageRow(row);
+    return record ? [record] : [];
+  });
+  return sortContactMessagesNewestFirst(messages);
+}
+
 export async function getContactMessageById(
   id: string,
   queryFn: WatsonQueryFn = queryWatson,
@@ -355,6 +415,24 @@ export type DeletedContactMessage = {
   attachmentBlobKey: string | null;
 };
 
+type DeletedContactMessageRow = {
+  id: string;
+  status: string;
+  attachment_blob_key: string | null;
+};
+
+function mapDeletedContactMessage(row: DeletedContactMessageRow): DeletedContactMessage {
+  const status =
+    row.status === "new" || row.status === "responded" || row.status === "closed"
+      ? row.status
+      : "closed";
+  return {
+    id: row.id,
+    status,
+    attachmentBlobKey: row.attachment_blob_key?.trim() || null,
+  };
+}
+
 export async function deleteContactMessage(
   id: string,
   queryFn: WatsonQueryFn = queryWatson,
@@ -364,26 +442,32 @@ export async function deleteContactMessage(
     return { ok: false, error: validatedId.error, status: 400 };
   }
 
-  const rows = await queryFn<{
-    id: string;
-    status: string;
-    attachment_blob_key: string | null;
-  }>(CONTACT_MESSAGE_DELETE_SQL, [validatedId.value]);
+  const rows = await queryFn<DeletedContactMessageRow>(CONTACT_MESSAGE_DELETE_SQL, [
+    validatedId.value,
+  ]);
   const row = rows[0];
   if (!row?.id) {
     return { ok: false, error: "Message not found.", status: 404 };
   }
 
-  const status =
-    row.status === "new" || row.status === "responded" || row.status === "closed"
-      ? row.status
-      : "closed";
-  return {
-    ok: true,
-    value: {
-      id: row.id,
-      status,
-      attachmentBlobKey: row.attachment_blob_key?.trim() || null,
-    },
-  };
+  return { ok: true, value: mapDeletedContactMessage(row) };
+}
+
+export async function deleteContactMessages(
+  ids: readonly string[],
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<ContactMessageWriteResult<DeletedContactMessage[]>> {
+  const parsed = parseContactMessageIds([...ids]);
+  if (!parsed.ok) {
+    return { ok: false, error: parsed.error, status: 400 };
+  }
+
+  const rows = await queryFn<DeletedContactMessageRow>(CONTACT_MESSAGE_BULK_DELETE_SQL, [
+    parsed.value,
+  ]);
+  if (!rows.length) {
+    return { ok: false, error: "No matching messages were found.", status: 404 };
+  }
+
+  return { ok: true, value: rows.map(mapDeletedContactMessage) };
 }

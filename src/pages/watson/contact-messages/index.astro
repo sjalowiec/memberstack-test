@@ -2,9 +2,16 @@
 import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
 import { listContactMessages } from "../../../lib/contact/contactMessagesDb";
 import {
+  RESPONDED_CONTACT_MESSAGE_NOTICE,
+  contactFilterHidesResponded,
+  contactMessageDetailHref,
+  deletedContactMessagesNotice,
   formatContactTimestamp,
   listPreview,
-  parseContactMessageFilter,
+  parseDeletedContactMessageCount,
+  readContactMessageListLocation,
+  readRespondedContactMessageId,
+  respondedContactNoticeLinks,
   statusLabel,
   type ContactMessageFilter,
 } from "../../../lib/contact/contactMessageRecord";
@@ -20,7 +27,18 @@ const FILTERS: { value: ContactMessageFilter; label: string }[] = [
   { value: "all", label: "All" },
 ];
 
-const filter = parseContactMessageFilter(Astro.url.searchParams.get("filter"));
+const listLocation = readContactMessageListLocation(Astro.url.searchParams);
+const filter = listLocation.filter;
+const deletedCount = parseDeletedContactMessageCount(Astro.url.searchParams.get("deleted"));
+const respondedMessageId = readRespondedContactMessageId(Astro.url.searchParams.get("responded"));
+const respondedNotice =
+  respondedMessageId && contactFilterHidesResponded(filter)
+    ? respondedContactNoticeLinks(respondedMessageId, listLocation)
+    : null;
+
+function messageHref(id: string): string {
+  return contactMessageDetailHref(id, listLocation);
+}
 
 let loadError: string | null = null;
 let messages: Awaited<ReturnType<typeof listContactMessages>> = [];
@@ -59,6 +77,29 @@ function emptyCopy(current: ContactMessageFilter): string {
   heading="Contact Messages"
   intro="Every valid contact message is stored here before the notification email is sent. A failed email does not remove the message."
 >
+  <div data-contact-notices>
+    {
+      deletedCount ? (
+        <p class="watson__status watson__status--success" role="status" data-contact-deleted-notice>
+          {deletedContactMessagesNotice(deletedCount)}
+        </p>
+      ) : null
+    }
+    {
+      respondedNotice ? (
+        <p class="watson__status watson__status--success" role="status" data-contact-responded-notice>
+          {RESPONDED_CONTACT_MESSAGE_NOTICE}{" "}
+          <a href={respondedNotice.viewMessageHref} data-contact-view-message>
+            View message
+          </a>{" "}
+          <a href={respondedNotice.viewRespondedHref} data-contact-view-responded>
+            View responded messages
+          </a>
+        </p>
+      ) : null
+    }
+  </div>
+
   <nav class="watson-contact__filters" aria-label="Filter contact messages">
     {
       FILTERS.map((item) => (
@@ -84,14 +125,34 @@ function emptyCopy(current: ContactMessageFilter): string {
     ) : messages.length === 0 ? (
       <p class="watson__status">{emptyCopy(filter)}</p>
     ) : (
-      <div data-contact-list data-contact-filter={filter}>
+      <div
+        data-contact-list
+        data-contact-filter={filter}
+        data-contact-page={listLocation.page ?? 1}
+      >
         <p class="watson__status" data-contact-list-empty hidden>
           {emptyCopy(filter)}
         </p>
+        <div class="watson-contact__bulk">
+          <label class="watson-contact__select-all">
+            <input class="watson-contact__checkbox" type="checkbox" data-contact-select-all />
+            Select all on this page
+          </label>
+          <button
+            type="button"
+            class="watson-contact__action watson-contact__action--danger watson-contact__delete-selected"
+            data-contact-delete-selected
+            disabled
+          >
+            Delete selected (0)
+          </button>
+        </div>
+        <p class="watson-contact__bulk-status" data-contact-bulk-status role="alert" hidden></p>
         <div class="watson__table-wrap" data-contact-table-wrap>
           <table class="watson-table watson-contact__table">
             <thead>
               <tr>
+                <th class="watson-contact__select-col">Select</th>
                 <th>Received</th>
                 <th>From</th>
                 <th>Message</th>
@@ -110,16 +171,29 @@ function emptyCopy(current: ContactMessageFilter): string {
                   data-contact-status={message.status}
                   data-contact-label={message.name || message.email}
                 >
+                  <td class="watson-contact__select-col" data-label="Select">
+                    <input
+                      class="watson-contact__checkbox"
+                      type="checkbox"
+                      data-contact-select
+                      value={message.id}
+                      aria-label={`Select message from ${message.name || message.email}`}
+                    />
+                  </td>
                   <td data-label="Received">
                     <time datetime={message.createdAt}>{formatContactTimestamp(message.createdAt)}</time>
                   </td>
                   <td data-label="From">
-                    <a href={`/watson/contact-messages/${encodeURIComponent(message.id)}`}>
+                    <a href={messageHref(message.id)}>
                       {message.name || "(No name)"}
                     </a>
                     <div class="watson-contact__email">{message.email}</div>
                   </td>
-                  <td data-label="Message">{listPreview(message.subject, message.message)}</td>
+                  <td data-label="Message">
+                    <a class="watson-contact__message-link" href={messageHref(message.id)}>
+                      {listPreview(message.subject, message.message)}
+                    </a>
+                  </td>
                   <td data-label="Source">{message.source || "—"}</td>
                   <td data-label="Status">
                     <span
@@ -133,10 +207,7 @@ function emptyCopy(current: ContactMessageFilter): string {
                     </span>
                   </td>
                   <td data-label="Open">
-                    <a
-                      class="watson-contact__open"
-                      href={`/watson/contact-messages/${encodeURIComponent(message.id)}`}
-                    >
+                    <a class="watson-contact__open" href={messageHref(message.id)}>
                       Open message
                     </a>
                   </td>
@@ -175,6 +246,11 @@ function emptyCopy(current: ContactMessageFilter): string {
 </WatsonPageShell>
 
 <style>
+  [data-contact-responded-notice] a {
+    font-weight: 700;
+    margin-left: 0.35rem;
+  }
+
   .watson-contact__filters {
     display: flex;
     flex-wrap: wrap;
@@ -223,8 +299,55 @@ function emptyCopy(current: ContactMessageFilter): string {
     background: #eff6ff;
   }
 
-  .watson-contact__row--new td:first-child {
+  .watson-contact__row--new td[data-label="Received"] {
     box-shadow: inset 3px 0 0 #1d4ed8;
+  }
+
+  .watson-contact__bulk {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    margin: 0 0 0.75rem;
+  }
+
+  .watson-contact__select-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .watson-contact__select-col {
+    width: 4.5rem;
+  }
+
+  .watson-contact__checkbox {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #3f6212;
+  }
+
+  button.watson-contact__delete-selected:disabled {
+    cursor: not-allowed;
+  }
+
+  [data-contact-bulk-busy] .watson-contact__delete-selected:disabled {
+    cursor: wait;
+  }
+
+  .watson-contact__bulk-status {
+    margin: 0 0 0.75rem;
+    color: #b91c1c;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .watson-contact__message-link {
+    color: #243015;
+    font-weight: 700;
+    text-underline-offset: 0.15em;
   }
 
   .watson-contact__email {
@@ -356,7 +479,7 @@ function emptyCopy(current: ContactMessageFilter): string {
       text-transform: uppercase;
     }
 
-    .watson-contact__row--new td:first-child {
+    .watson-contact__row--new td[data-label="Received"] {
       box-shadow: none;
     }
 
