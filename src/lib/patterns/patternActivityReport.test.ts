@@ -6,7 +6,12 @@ import {
   activityMembershipDisplay,
   dateRangeForPreset,
   filterPatternActivityEvents,
+  PATTERN_ACTIVITY_EMPTY_MESSAGE,
+  PATTERN_ACTIVITY_ERROR_LIST_MESSAGE,
   PATTERN_ACTIVITY_FILTER_SYSTEMS,
+  PATTERN_ACTIVITY_LOADING_MESSAGE,
+  patternActivityErrorMessage,
+  patternActivityReadyMessage,
   patternActivitySystemFilterOptions,
   sortPatternActivityEvents,
 } from "./patternActivityReport";
@@ -166,6 +171,23 @@ describe("patternActivityReport", () => {
     expect(adminPage).toContain('value="sleeveless"');
     expect(adminPage).toContain('value="drop-shoulder"');
     expect(adminPage).toContain("patternActivitySystemFilterOptions");
+  });
+
+  it("uses different copy for loading, a failed read, and zero activity", () => {
+    expect(PATTERN_ACTIVITY_LOADING_MESSAGE).toMatch(/Loading/);
+    expect(patternActivityErrorMessage("token missing")).toMatch(/did not load/);
+    expect(patternActivityErrorMessage("token missing")).toContain("token missing");
+    expect(patternActivityErrorMessage("")).not.toBe(PATTERN_ACTIVITY_EMPTY_MESSAGE);
+    expect(patternActivityReadyMessage(0, "DEV — kin-dev")).toBe(PATTERN_ACTIVITY_EMPTY_MESSAGE);
+    expect(patternActivityReadyMessage(2, "DEV — kin-dev")).toContain("2 events loaded");
+    expect(PATTERN_ACTIVITY_ERROR_LIST_MESSAGE).toMatch(/not a count of zero/);
+
+    const page = readFileSync(resolve("src/pages/watson/pattern-activity.astro"), "utf8");
+    expect(page).toContain("isKinDevNetlifySite");
+    expect(page).toContain("patternActivityErrorMessage");
+    expect(page).toContain("patternActivityReadyMessage");
+    expect(page).toContain("void loadActivity()");
+    expect(page).not.toContain("Choose Show activity to load events.");
   });
 
   it("displays historical membership as Unknown", () => {
