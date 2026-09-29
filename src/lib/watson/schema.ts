@@ -600,6 +600,14 @@ WHERE status = 'added'`,
   ON pattern_errata (published_on DESC, slug)
   WHERE status = 'published'`,
     },
+    {
+      label: "table watson_knit_able_schedules",
+      sql: `CREATE TABLE IF NOT EXISTS watson_knit_able_schedules (
+  slug TEXT PRIMARY KEY,
+  publish_date DATE,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
   ];
 }
 
@@ -814,6 +822,12 @@ export function getWatsonLegacyGarmentsSchemaStatements(): SchemaStatement[] {
       statement.label === "table watson_legacy_garments" ||
       statement.label.startsWith("index idx_watson_legacy_garments") ||
       statement.label.startsWith("alter watson_legacy_garments"),
+  );
+}
+
+export function getWatsonKnitAbleScheduleSchemaStatements(): SchemaStatement[] {
+  return getWatsonNativeSchemaStatements().filter(
+    (statement) => statement.label === "table watson_knit_able_schedules",
   );
 }
 

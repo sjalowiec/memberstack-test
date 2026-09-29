@@ -1,0 +1,144 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import { listKnitAbleAdminRows } from "../../lib/knit-ables/scheduleStore";
+import {
+  formatKnitAblePublishDate,
+  KNIT_ABLE_PUBLIC_HOUR_LABEL,
+  KNIT_ABLE_TIME_ZONE,
+  knitAbleLosAngelesCalendarDate,
+  knitAblePreviewPath,
+} from "../../lib/knit-ables/schedule";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const todayIso = knitAbleLosAngelesCalendarDate();
+const todayLabel = formatKnitAblePublishDate(todayIso);
+
+let loadError: string | null = null;
+let rows: Awaited<ReturnType<typeof listKnitAbleAdminRows>> = [];
+
+try {
+  rows = await listKnitAbleAdminRows();
+} catch (error) {
+  console.error(
+    "[watson] Knit-able schedule failed to load:",
+    error instanceof Error ? error.message : "unknown error",
+  );
+  loadError =
+    error instanceof Error
+      ? error.message
+      : "Unable to load Knit-able publish dates. Apply the schedule schema first.";
+}
+---
+
+<WatsonPageShell
+  title="Knit-ables | Watson"
+  description="Choose when each existing Knit-able becomes public."
+  heading="Knit-ables"
+  intro={`Schedule when an existing Knit-able becomes public. A date means 12:00 a.m. Pacific on that date (${KNIT_ABLE_TIME_ZONE}). No date stays unpublished. This page does not edit Knit-able content.`}
+>
+  <p class="watson__section-note">
+    Today in {KNIT_ABLE_TIME_ZONE} is <strong>{todayLabel}</strong>. Public pages check this clock
+    on each visit, so a Knit-able goes live at {KNIT_ABLE_PUBLIC_HOUR_LABEL} without another deploy.
+    Future dates show as Scheduled. Dates that have arrived show as Published.
+  </p>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>URL</th>
+              <th>Status</th>
+              <th>Publish date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr data-knit-able-row={row.slug}>
+                <td>{row.title}</td>
+                <td>
+                  <a href={row.path}>{row.path}</a>
+                  <div>
+                    <a href={knitAblePreviewPath(row.path)} target="_blank" rel="noopener">
+                      Preview
+                    </a>
+                  </div>
+                </td>
+                <td>
+                  <strong data-knit-able-status>{row.statusLabel}</strong>
+                  <div data-knit-able-date>
+                    {row.publishDate ? formatKnitAblePublishDate(row.publishDate) : "No date"}
+                  </div>
+                </td>
+                <td>
+                  <form data-knit-able-schedule data-knit-able-slug={row.slug}>
+                    <label>
+                      Publish date
+                      <input
+                        type="date"
+                        name="publishDate"
+                        value={row.publishDate ?? ""}
+                        min="2000-01-01"
+                        max="2100-12-31"
+                      />
+                    </label>
+                    <p class="knit-able-schedule__zone">
+                      {KNIT_ABLE_PUBLIC_HOUR_LABEL} ({KNIT_ABLE_TIME_ZONE})
+                    </p>
+                    <div class="knit-able-schedule__actions">
+                      <button type="submit" class="watson__button">Save</button>
+                      <button
+                        type="button"
+                        class="watson__button watson__button--secondary"
+                        data-knit-able-clear
+                      >
+                        Clear date
+                      </button>
+                    </div>
+                    <p class="watson__status" data-knit-able-feedback hidden></p>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</WatsonPageShell>
+
+<script>
+  import { initKnitAbleScheduleAdmin } from "../../scripts/watsonKnitAbleSchedule";
+  initKnitAbleScheduleAdmin();
+</script>
+
+<style>
+  .knit-able-schedule__zone {
+    margin: 0.35rem 0 0.65rem;
+    color: #475569;
+    font-size: 0.85rem;
+  }
+
+  .knit-able-schedule__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .knit-able-schedule__actions .watson__button {
+    margin: 0;
+  }
+
+  [data-knit-able-feedback] {
+    margin-top: 0.65rem;
+  }
+</style>

@@ -1,0 +1,43 @@
+---
+import {
+  formatKnitAblePublishDate,
+  KNIT_ABLE_PUBLIC_HOUR_LABEL,
+  KNIT_ABLE_TIME_ZONE,
+  type KnitAblePublicationStatus,
+} from "../../lib/knit-ables/schedule";
+
+interface Props {
+  status: KnitAblePublicationStatus;
+  publishDate: string | null;
+}
+
+const { status, publishDate } = Astro.props;
+const when = publishDate ? formatKnitAblePublishDate(publishDate) : null;
+---
+
+<p class="knit-able-preview-banner" role="status">
+  Admin preview. Visitors receive a 404 for this page.
+  {
+    status === "scheduled" && when
+      ? ` It becomes public at ${KNIT_ABLE_PUBLIC_HOUR_LABEL} (${KNIT_ABLE_TIME_ZONE}) on ${when}.`
+      : ""
+  }
+  {
+    status === "unpublished"
+      ? " No publish date is set, so it stays unpublished."
+      : ""
+  }
+</p>
+
+<style>
+  .knit-able-preview-banner {
+    margin: 0 0 1.25rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #c4b15a;
+    border-radius: 8px;
+    background: #fff8df;
+    color: #3d3410;
+    font-size: 0.98rem;
+    line-height: 1.45;
+  }
+</style>

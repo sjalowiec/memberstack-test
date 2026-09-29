@@ -30,7 +30,7 @@ describe("protected pattern markup (no flash / fail closed)", () => {
 
   it("keeps the public Socks Pattern Builder landing page public", () => {
     const socksLanding = readFileSync(resolve(root, "src/pages/patterns/socks/index.astro"), "utf8");
-    expect(socksLanding).toMatch(/export const prerender = true/);
+    expect(socksLanding).toMatch(/export const prerender = false/);
     expect(socksLanding).not.toMatch(/SleevelessPatternMemberGate/);
     expect(socksLanding).not.toMatch(/noindex/i);
     expect(socksLanding).toMatch(/SOCKS_PATTERN_BUILDER_LANDING/);

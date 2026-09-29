@@ -1,11 +1,19 @@
 ---
-export const prerender = true;
+// Request-time schedule. A build-time date check would stay cached until the next deploy.
+export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
+import KnitAblePreviewBanner from "../../components/knit-ables/KnitAblePreviewBanner.astro";
+import KnitAbleUnavailable from "../../components/knit-ables/KnitAbleUnavailable.astro";
+import SiteNotFound from "../../components/SiteNotFound.astro";
 import KnitAblePageHeader from "../../components/knit-ables/KnitAblePageHeader.astro";
 import KnitAbleLinkedImage from "../../components/knit-ables/KnitAbleLinkedImage.astro";
 import KnitAbleYarnCard from "../../components/knit-ables/KnitAbleYarnCard.astro";
 import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
+import {
+  applyKnitAbleCacheHeaders,
+  loadKnitAblePageAccess,
+} from "../../lib/knit-ables/pageAccess";
 import {
   CAP_SLEEVE_TANK_BUILD_STEPS,
   CAP_SLEEVE_TANK_BUILDER_LINK_LABEL,
@@ -19,6 +27,7 @@ import {
   CAP_SLEEVE_TANK_IMAGES,
   CAP_SLEEVE_TANK_ORIGINAL_PATTERN_URL,
   CAP_SLEEVE_TANK_OWN_IDEAS,
+  CAP_SLEEVE_TANK_PATH,
   CAP_SLEEVE_TANK_TITLE,
   CAP_SLEEVE_TANK_YARN,
   capSleeveTankBuilderHref,
@@ -27,8 +36,21 @@ import {
 const builderHref = capSleeveTankBuilderHref();
 const heroImage = CAP_SLEEVE_TANK_IMAGES.hero;
 const yarnImage = CAP_SLEEVE_TANK_IMAGES.yarn;
+const knitAbleAccess = await loadKnitAblePageAccess({
+  path: CAP_SLEEVE_TANK_PATH,
+  url: Astro.url,
+  cookies: Astro.cookies,
+});
+applyKnitAbleCacheHeaders(Astro.response.headers);
+if (!knitAbleAccess.visible) {
+  Astro.response.status = knitAbleAccess.httpStatus;
+}
+const knitAblePreview = knitAbleAccess.visible && knitAbleAccess.preview;
+const knitAbleStatus = knitAbleAccess.visible ? knitAbleAccess.status : "unpublished";
+const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate : null;
 ---
 
+{knitAbleAccess.visible ? (
 <Layout
   title={`${CAP_SLEEVE_TANK_TITLE} | Knit it Now`}
   description={CAP_SLEEVE_TANK_HERO_COPY}
@@ -36,7 +58,11 @@ const yarnImage = CAP_SLEEVE_TANK_IMAGES.yarn;
 >
   <Fragment slot="head">
     <link rel="canonical" href={CAP_SLEEVE_TANK_CANONICAL_URL} />
+    {knitAblePreview ? <meta name="robots" content="noindex" /> : null}
   </Fragment>
+  {knitAblePreview ? (
+    <KnitAblePreviewBanner status={knitAbleStatus} publishDate={knitAblePublishDate} />
+  ) : null}
 
   <div class="page-wrap knit-able-page">
     <article>
@@ -182,6 +208,11 @@ const yarnImage = CAP_SLEEVE_TANK_IMAGES.yarn;
     </article>
   </div>
 </Layout>
+) : knitAbleAccess.httpStatus === 404 ? (
+  <SiteNotFound />
+) : (
+  <KnitAbleUnavailable />
+)}
 
 <style>
   .knit-able-page.page-wrap {
