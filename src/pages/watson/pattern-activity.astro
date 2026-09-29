@@ -180,33 +180,44 @@ const defaultSource =
     const params = new URLSearchParams({ environment });
     if (range.fromIso) params.set("from", range.fromIso);
     if (range.toIso) params.set("to", range.toIso);
-    let data: { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
+    const events: PatternActivityEvent[] = [];
+    let offset = 0;
+    let total = Number.POSITIVE_INFINITY;
     try {
-      const res = await fetch(`/api/watson/pattern-activity?${params}`, {
-        credentials: "same-origin",
-        headers: { Accept: "application/json" },
-      });
-      const text = await res.text();
-      try {
-        data = JSON.parse(text) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string };
-      } catch {
-        showLoadError(
-          res.ok
-            ? "Pattern activity returned a page instead of data."
-            : `Pattern activity failed (${res.status}). The report did not finish.`,
-        );
-        return;
-      }
-      if (!res.ok || !data.ok || !Array.isArray(data.events)) {
-        showLoadError(data.error || `Could not load pattern activity (${res.status}).`);
-        return;
+      while (events.length < total) {
+        const pageParams = new URLSearchParams(params);
+        if (offset > 0) pageParams.set("offset", String(offset));
+        const res = await fetch(`/api/watson/pattern-activity?${pageParams}`, {
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+        });
+        const text = await res.text();
+        let data: { ok?: boolean; events?: PatternActivityEvent[]; error?: string; total?: number };
+        try {
+          data = JSON.parse(text) as { ok?: boolean; events?: PatternActivityEvent[]; error?: string; total?: number };
+        } catch {
+          showLoadError(
+            res.ok
+              ? "Pattern activity returned a page instead of data."
+              : `Pattern activity failed (${res.status}). The report did not finish.`,
+          );
+          return;
+        }
+        if (!res.ok || !data.ok || !Array.isArray(data.events)) {
+          showLoadError(data.error || `Could not load pattern activity (${res.status}).`);
+          return;
+        }
+        events.push(...data.events);
+        total = typeof data.total === "number" ? data.total : events.length;
+        if (data.events.length === 0) break;
+        offset += data.events.length;
       }
     } catch {
       showLoadError("Could not load pattern activity. The request did not finish.");
       return;
     }
     const system = selected("[data-pa-system]");
-    const options = patternActivitySystemFilterOptions(data.events);
+    const options = patternActivitySystemFilterOptions(events);
     const select = document.querySelector("[data-pa-system]");
     if (select instanceof HTMLSelectElement && select.options.length <= 1) {
       for (const option of options) {
@@ -217,7 +228,7 @@ const defaultSource =
       }
       if ([...select.options].some((option) => option.value === system)) select.value = system;
     }
-    const report = buildPatternActivityUsage(data.events, {
+    const report = buildPatternActivityUsage(events, {
       datePreset: "all",
       patternSystem: selected("[data-pa-system]"),
       excludeSue: document.querySelector<HTMLInputElement>("[data-pa-exclude-sue]")?.checked === true,
@@ -234,7 +245,7 @@ const defaultSource =
     set("[data-pa-prints]", report.prints);
     renderPeople(document.querySelector("[data-pa-people-list]"), report.people);
     renderPeople(document.querySelector("[data-pa-anon-list]"), report.anonymous);
-    const loaded = data.events.length;
+    const loaded = events.length;
     const filteredOut = loaded > 0 && report.people.length === 0 && report.anonymous.length === 0;
     setStatus(
       patternActivityReadyMessage(filteredOut ? 0 : loaded, environmentLabel(environment)),

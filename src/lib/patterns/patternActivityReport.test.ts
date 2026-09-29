@@ -187,6 +187,7 @@ describe("patternActivityReport", () => {
     expect(page).toContain("patternActivityErrorMessage");
     expect(page).toContain("patternActivityReadyMessage");
     expect(page).toContain("void loadActivity()");
+    expect(page).toContain('pageParams.set("offset", String(offset))');
     expect(page).not.toContain("Choose Show activity to load events.");
   });
 
