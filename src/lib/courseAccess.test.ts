@@ -3,6 +3,8 @@ import {
   KIN_TAITEXMA_160_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
+  LK150_PATTERNING_COURSE_PLAN_ID,
+  LK150_PATTERNING_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
   LEGACY_TH160_COURSE_PLAN_ID,
@@ -164,6 +166,8 @@ describe("hasCourseMembershipAccess", () => {
       PAID_SK840_COURSE_PLAN_ID,
       LEGACY_TH160_COURSE_PLAN_ID,
       PAID_TH160_COURSE_PLAN_ID,
+      LEGACY_BROTHER_260_COURSE_PLAN_ID,
+      LK150_PATTERNING_COURSE_PLAN_ID,
     ]) {
       expect(MEMBER_PLAN_IDS).not.toContain(planId);
       expect(COURSE_ACCESS_PLAN_IDS).not.toContain(planId);
@@ -279,6 +283,35 @@ describe("canAccessCourse", () => {
     expect(
       canAccessCourse("purchase", loggedInNoPlan, { courseSlug: BROTHER_KH260_COURSE_SLUG }),
     ).toBe(false);
+  });
+
+  it("LK150 Patterning plan holders access only Course 34", () => {
+    const buyer = payloadWithPlan(LK150_PATTERNING_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("member", buyer, { courseSlug: LK150_PATTERNING_COURSE_SLUG }),
+    ).toBe(true);
+    expect(canAccessCourse("member", buyer, { courseSlug: "34" })).toBe(true);
+    expect(hasIndividualCoursePurchase(LK150_PATTERNING_COURSE_SLUG, buyer)).toBe(true);
+    expect(hasIndividualCoursePurchase("34", buyer)).toBe(true);
+    expect(
+      canAccessCourse("member", buyer, { courseSlug: BROTHER_KH260_COURSE_SLUG }),
+    ).toBe(false);
+    expect(canAccessCourse("member", buyer, { courseSlug: "lk-150-fun" })).toBe(false);
+    expect(hasCourseMembershipAccess(buyer)).toBe(false);
+    const canceled = {
+      data: {
+        id: "ms_member",
+        planConnections: [{ planId: LK150_PATTERNING_COURSE_PLAN_ID, status: "CANCELED" }],
+      },
+    };
+    expect(
+      canAccessCourse("member", canceled, { courseSlug: LK150_PATTERNING_COURSE_SLUG }),
+    ).toBe(false);
+    const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
+    expect(
+      canAccessCourse("member", member, { courseSlug: LK150_PATTERNING_COURSE_SLUG }),
+    ).toBe(true);
+    expect(hasIndividualCoursePurchase(LK150_PATTERNING_COURSE_SLUG, member)).toBe(false);
   });
 
   it("legacy SK840 plan holders do not unlock unrelated member courses", () => {

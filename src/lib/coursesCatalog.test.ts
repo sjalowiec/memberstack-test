@@ -189,6 +189,7 @@ describe("public course catalog cleanup", () => {
       "Silver Reed",
       "Taitexma",
       "Brother",
+      "LK-150",
     ]);
     expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
       "mastering-the-silver-reed-sk840",
@@ -203,13 +204,20 @@ describe("public course catalog cleanup", () => {
     expect(sections[2]?.courses[0]?.buttonLabel).toBe("View Course");
     expect(sections[2]?.courses[0]?.access).toBe("purchase");
     expect(sections[2]?.courses[0]?.thumbnail).toBe("/images/courses/260.webp");
+    expect(sections[3]?.courses.map((course) => course.slug)).toEqual([
+      "master-lk-patterning",
+    ]);
+    expect(sections[3]?.courses[0]?.href).toBe("/courses/34");
+    expect(sections[3]?.courses[0]?.buttonLabel).toBe("View Course");
+    expect(sections[3]?.courses[0]?.access).toBe("purchase");
+    expect(sections[3]?.courses[0]?.thumbnail).toBe("/images/courses/lk-150_patterning.webp");
     expect(sections[1]?.courses[0]?.href).toBe("/courses/86");
     expect(sections[1]?.courses[0]?.buttonLabel).toBe("View Course");
     expect(sections[1]?.courses[0]?.access).toBe("purchase");
     expect(sections[1]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
-    expect(entries).toHaveLength(3);
+    expect(entries).toHaveLength(4);
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
@@ -221,6 +229,7 @@ describe("public course catalog cleanup", () => {
       "/courses/111",
       "/courses/86",
       "/courses/87",
+      "/courses/34",
     ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("purchase");
@@ -231,7 +240,12 @@ describe("public course catalog cleanup", () => {
     for (const slug of hiddenPublicCatalogSlugs) {
       expect(slugs).not.toContain(slug);
     }
-    expect(getCourseCatalogCategories()).toEqual(["Silver Reed", "Taitexma", "Brother"]);
+    expect(getCourseCatalogCategories()).toEqual([
+      "Silver Reed",
+      "Taitexma",
+      "Brother",
+      "LK-150",
+    ]);
     expect(entries.some((course) => course.slug === "taitexma-th-tr-160-getting-started")).toBe(
       true,
     );

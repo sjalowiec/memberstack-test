@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
+  LK150_PATTERNING_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
   LEGACY_SK840_COURSE_SLUG,
   LEGACY_TH160_COURSE_PLAN_ID,
@@ -61,6 +62,9 @@ describe("course checkout Price IDs", () => {
     expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
     expect(courseCheckoutPriceId(BROTHER_KH260_COURSE_SLUG)).toBeNull();
     expect(courseCheckoutPriceId("87")).toBeNull();
+    expect(courseCheckoutPriceId(LK150_PATTERNING_COURSE_SLUG)).toBeNull();
+    expect(courseCheckoutPriceId("34")).toBeNull();
+    expect(coursePurchasePriceLabel(LK150_PATTERNING_COURSE_SLUG)).toBeNull();
     expect(
       shouldShowKinCourseSalesPage({ courseSlug: BROTHER_KH260_COURSE_SLUG, hasAccess: false }),
     ).toBe(false);

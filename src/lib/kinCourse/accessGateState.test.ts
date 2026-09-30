@@ -52,6 +52,11 @@ describe("KIN course gate copy", () => {
     );
     expect(kinCourseNoAccessMessage("87")).not.toContain("purchase this course on its own");
     expect(kinCourseNoAccessMessage("87")).not.toContain("SK840");
+    expect(kinCourseNoAccessMessage("master-lk-patterning")).toContain(
+      "LK150 Patterning course plan",
+    );
+    expect(kinCourseNoAccessMessage("34")).not.toContain("purchase this course on its own");
+    expect(kinCourseNoAccessMessage("34")).not.toContain("SK840");
   });
 });
 
