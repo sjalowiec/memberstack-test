@@ -1,6 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCourseCatalogEntriesByCategory } from "../../lib/coursesCatalog";
+import {
+  getCourseCatalogEntriesByCategory,
+  groupCourseCatalogSections,
+} from "../../lib/coursesCatalog";
 import {
   sortCourseCatalogSectionsForViewer,
   withCourseCatalogOrders,
@@ -15,7 +18,9 @@ const catalogHrefEnv = {
 // Anonymous-first SSR: free courses/sections first. Active members are restored
 // to catalog order client-side after Memberstack resolves.
 const categorySections = sortCourseCatalogSectionsForViewer(
-  withCourseCatalogOrders(getCourseCatalogEntriesByCategory(catalogHrefEnv)),
+  withCourseCatalogOrders(
+    groupCourseCatalogSections(getCourseCatalogEntriesByCategory(catalogHrefEnv)),
+  ),
   true,
 );
 const availableCount = categorySections

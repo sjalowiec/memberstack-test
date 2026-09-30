@@ -3,9 +3,13 @@ import {
   getCourseCatalogCategories,
   getCourseCatalogEntries,
   getCourseCatalogEntriesByCategory,
+  groupCourseCatalogSections,
+  LK150_COURSES_HEADING,
+  MACHINE_SPECIFIC_COURSES_HEADING,
   resolveCatalogStatus,
   resolveCourseCatalogDescription,
   resolveCourseThumbnail,
+  type CourseCatalogEntry,
 } from "./coursesCatalog";
 
 describe("resolveCourseThumbnail", () => {
@@ -250,5 +254,111 @@ describe("public course catalog cleanup", () => {
       true,
     );
     expect(entries.some((course) => course.href === "/courses/86")).toBe(true);
+  });
+});
+
+describe("groupCourseCatalogSections", () => {
+  function sectionCourse(
+    slug: string,
+    category: string,
+  ): CourseCatalogEntry {
+    return {
+      slug,
+      title: slug,
+      category,
+      status: "available",
+      hasThumbnail: false,
+      buttonLabel: "View Course",
+      access: "purchase",
+    };
+  }
+
+  it("folds Silver Reed, Taitexma, and Brother into one section and keeps LK-150 separate", () => {
+    const sections = groupCourseCatalogSections([
+      {
+        category: "Intro",
+        courses: [sectionCourse("intro", "Intro")],
+      },
+      {
+        category: "Silver Reed",
+        courses: [sectionCourse("sk", "Silver Reed")],
+      },
+      {
+        category: "Taitexma",
+        courses: [sectionCourse("tx", "Taitexma")],
+      },
+      {
+        category: "Brother",
+        courses: [sectionCourse("br", "Brother"), sectionCourse("br-2", "Brother")],
+      },
+      {
+        category: "LK-150",
+        courses: [sectionCourse("lk", "LK-150"), sectionCourse("lk-2", "LK-150")],
+      },
+    ]);
+
+    expect(sections.map((section) => section.category)).toEqual([
+      "Intro",
+      MACHINE_SPECIFIC_COURSES_HEADING,
+      LK150_COURSES_HEADING,
+    ]);
+    expect(sections[1]?.courses.map((course) => course.slug)).toEqual(["sk", "tx", "br", "br-2"]);
+    expect(sections[1]?.courses.map((course) => course.category)).toEqual([
+      "Silver Reed",
+      "Taitexma",
+      "Brother",
+      "Brother",
+    ]);
+    expect(sections[2]?.courses.map((course) => course.slug)).toEqual(["lk", "lk-2"]);
+    expect(sections[2]?.courses.every((course) => course.access === "purchase")).toBe(true);
+  });
+
+  it("groups the published catalog into Machine-Specific Courses and LK-150 Courses", () => {
+    const sections = groupCourseCatalogSections(getCourseCatalogEntriesByCategory());
+
+    expect(sections.map((section) => section.category)).toEqual([
+      MACHINE_SPECIFIC_COURSES_HEADING,
+      LK150_COURSES_HEADING,
+    ]);
+    expect(sections[0]?.courses.map((course) => course.slug)).toEqual([
+      "mastering-the-silver-reed-sk840",
+      "taitexma-th-tr-160-getting-started",
+      "brother-kh-kr-260-quick-start",
+    ]);
+    expect(sections[0]?.courses.map((course) => course.category)).toEqual([
+      "Silver Reed",
+      "Taitexma",
+      "Brother",
+    ]);
+    expect(sections[0]?.courses.map((course) => course.href)).toEqual([
+      "/courses/111",
+      "/courses/86",
+      "/courses/87",
+    ]);
+    expect(sections[0]?.courses.map((course) => course.access)).toEqual([
+      "purchase",
+      "purchase",
+      "purchase",
+    ]);
+    expect(sections[1]?.courses.map((course) => ({
+      slug: course.slug,
+      category: course.category,
+      href: course.href,
+      access: course.access,
+      status: course.status,
+    }))).toEqual([
+      {
+        slug: "master-lk-patterning",
+        category: "LK-150",
+        href: "/courses/34",
+        access: "purchase",
+        status: "available",
+      },
+    ]);
+
+    const published = sections.flatMap((section) => section.courses);
+    expect(published.filter((course) => course.status === "available")).toHaveLength(4);
+    expect(published.map((course) => course.slug)).not.toContain("lk-150-quick-start");
+    expect(published.map((course) => course.slug)).not.toContain("lk-150-fun");
   });
 });

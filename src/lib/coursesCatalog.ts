@@ -262,12 +262,21 @@ export function getCourseCatalogEntries(
     });
 }
 
-export function getCourseCatalogEntriesByCategory(
-  env: CourseHrefResolveOptions = {},
-): {
+export type CourseCatalogCategorySection = {
   category: string;
   courses: CourseCatalogEntry[];
-}[] {
+};
+
+/** Catalog categories that share one /courses heading. Entry categories stay unchanged. */
+const MACHINE_SPECIFIC_CATALOG_CATEGORIES = new Set(["Silver Reed", "Taitexma", "Brother"]);
+const LK150_CATALOG_CATEGORY = "LK-150";
+
+export const MACHINE_SPECIFIC_COURSES_HEADING = "Machine-Specific Courses";
+export const LK150_COURSES_HEADING = "LK-150 Courses";
+
+export function getCourseCatalogEntriesByCategory(
+  env: CourseHrefResolveOptions = {},
+): CourseCatalogCategorySection[] {
   const entries = getCourseCatalogEntries(env);
   const grouped = new Map<string, CourseCatalogEntry[]>();
 
@@ -283,6 +292,50 @@ export function getCourseCatalogEntriesByCategory(
       category,
       courses: grouped.get(category) ?? [],
     }));
+}
+
+/**
+ * Display grouping for /courses.
+ * Silver Reed, Taitexma, and Brother remain separate catalog categories and
+ * render together under Machine-Specific Courses, in catalog order.
+ * LK-150 renders as LK-150 Courses so later published LK-150 courses join it.
+ * Other public categories keep their own headings.
+ */
+export function groupCourseCatalogSections(
+  sections: readonly CourseCatalogCategorySection[],
+): CourseCatalogCategorySection[] {
+  const machineCourses: CourseCatalogEntry[] = [];
+  const grouped: CourseCatalogCategorySection[] = [];
+  let machineInserted = false;
+
+  for (const section of sections) {
+    if (MACHINE_SPECIFIC_CATALOG_CATEGORIES.has(section.category)) {
+      machineCourses.push(...section.courses);
+      if (!machineInserted) {
+        grouped.push({
+          category: MACHINE_SPECIFIC_COURSES_HEADING,
+          courses: machineCourses,
+        });
+        machineInserted = true;
+      }
+      continue;
+    }
+
+    if (section.category === LK150_CATALOG_CATEGORY) {
+      grouped.push({
+        category: LK150_COURSES_HEADING,
+        courses: section.courses,
+      });
+      continue;
+    }
+
+    grouped.push({
+      category: section.category,
+      courses: section.courses,
+    });
+  }
+
+  return grouped;
 }
 
 export function courseCatalogStatusLabel(status: CourseCatalogStatus): string {
