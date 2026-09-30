@@ -34,6 +34,14 @@ describe("Courses page library notice", () => {
     expect(firstCatalogIdx).toBeGreaterThan(noticeIdx);
     expect(firstGridIdx).toBeGreaterThan(noticeIdx);
 
+    expect(pageSource).toContain(
+      "groupCourseCatalogSections(getCourseCatalogEntriesByCategory(catalogHrefEnv))",
+    );
+    expect(pageSource).toContain("grid-template-columns: repeat(3, minmax(0, 1fr));");
+    expect(pageSource).toContain("@media (max-width: 1024px)");
+    expect(pageSource).toContain("grid-template-columns: repeat(2, minmax(0, 1fr));");
+    expect(pageSource).toContain("@media (max-width: 640px)");
+    expect(pageSource).toContain("grid-template-columns: 1fr;");
     expect(pageSource).toContain("kbm-intro-callout courses-library-notice");
     expect(pageSource).toMatch(
       /<h2[^>]*id="courses-library-notice-heading"[^>]*>[\s\S]*More Courses Are Coming/,
