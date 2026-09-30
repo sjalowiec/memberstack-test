@@ -2,7 +2,8 @@
   "categories": [
     "Silver Reed",
     "Taitexma",
-    "Brother"
+    "Brother",
+    "LK-150"
   ],
   "entries": [
     {
@@ -39,15 +40,26 @@
       "thumbnail": "/images/courses/260.webp"
     },
     {
-      "slug": "lk-150-quick-start",
+      "slug": "master-lk-patterning",
+      "title": "Master LK-150 Patterning",
       "category": "LK-150",
+      "catalogStatus": "available",
+      "access": "purchase",
+      "description": "A step-by-step course for patterning on the LK-150, from needle selection through tuck, slip, plating, Fair Isle, and intarsia.",
+      "href": "/courses/34",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/lk-150_patterning.webp"
+    },
+    {
+      "slug": "lk-150-quick-start",
+      "category": "LK-150 Library",
       "catalogStatus": "available",
       "access": "free",
       "description": "Introduce yourself to the LK-150, understand how it works, and build confidence with step-by-step exercises."
     },
     {
       "slug": "lk-150-fun",
-      "category": "LK-150",
+      "category": "LK-150 Library",
       "catalogStatus": "available",
       "access": "member",
       "description": "Build on your LK-150 basics with texture, shaping, and creative techniques you can use in any project."

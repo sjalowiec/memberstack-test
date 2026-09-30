@@ -9,8 +9,10 @@
  * unresolved and never play back.
  *
  * Courses 86, 87, and 111 are mapped because the player document
- * `legacyChallengeId` and the public course URL use those ids. No other
- * player id is included.
+ * `legacyChallengeId` and the public course URL use those ids.
+ * Challenges course 34, Master LK-150 Patterning, is an individual-plan
+ * course. Home Study course 34 is DIY Beginners Blanket, so that id is not
+ * a playback id.
  */
 import {
   COURSE_INDIVIDUAL_SALES,
@@ -18,7 +20,15 @@ import {
   type IndividualCourseSale,
 } from "./legacyCourseEntitlements";
 
-const PLAYBACK_TITLES: Record<IndividualCourseSale["courseId"], string> = {
+type HomeStudyPlaybackCourseId = 86 | 87 | 111;
+
+const HOME_STUDY_PLAYBACK_COURSE_IDS: readonly HomeStudyPlaybackCourseId[] = [86, 87, 111];
+
+function isHomeStudyPlaybackCourseId(courseId: number): courseId is HomeStudyPlaybackCourseId {
+  return (HOME_STUDY_PLAYBACK_COURSE_IDS as readonly number[]).includes(courseId);
+}
+
+const PLAYBACK_TITLES: Record<HomeStudyPlaybackCourseId, string> = {
   86: "Taitexma TH/TR-160: Getting Started",
   87: "Brother KH/KR-260 Quick Start",
   111: "Mastering the Silver Reed SK840",
@@ -54,7 +64,7 @@ export function verifiedHomeStudyPlaybackCourse(
     if (!Number.isInteger(courseKey) || courseKey <= 0) return null;
     if (isUnresolvedHomeStudyCourseId(courseKey)) return null;
     for (const sale of Object.values(COURSE_INDIVIDUAL_SALES)) {
-      if (sale.courseId === courseKey) return sale;
+      if (sale.courseId === courseKey && isHomeStudyPlaybackCourseId(sale.courseId)) return sale;
     }
     return null;
   }
@@ -67,6 +77,7 @@ export function verifiedHomeStudyPlaybackCourse(
 
   const slug = canonicalCourseCatalogSlug(raw);
   for (const sale of Object.values(COURSE_INDIVIDUAL_SALES)) {
+    if (!isHomeStudyPlaybackCourseId(sale.courseId)) continue;
     if (sale.slug === slug || sale.aliases.includes(raw)) return sale;
   }
   return null;
@@ -79,6 +90,6 @@ export function homeStudyPlaybackHref(courseId: number): string | null {
 
 export function homeStudyPlaybackTitle(courseId: number): string | null {
   const sale = verifiedHomeStudyPlaybackCourse(courseId);
-  if (!sale) return null;
-  return PLAYBACK_TITLES[sale.courseId] ?? null;
+  if (!sale || !isHomeStudyPlaybackCourseId(sale.courseId)) return null;
+  return PLAYBACK_TITLES[sale.courseId];
 }
