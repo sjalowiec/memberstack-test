@@ -112,6 +112,15 @@ export function getSortedLessonsForCourse(
   return sorted.filter((lesson) => isLegacyLessonPublished(lesson));
 }
 
+/**
+ * Learner-facing lesson number: 1-based position in the sorted list.
+ * Stored `displayOrder` stays the legacy sort key and numeric reference.
+ */
+export function sequentialLessonNumber(sortedIndex: number): number {
+  if (!Number.isInteger(sortedIndex) || sortedIndex < 0) return 0;
+  return sortedIndex + 1;
+}
+
 export function getLegacyCourses(
   options: LegacyCourseLoadOptions = {},
 ): LegacyCourseSummary[] {

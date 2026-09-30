@@ -8,7 +8,9 @@ import { getCourseAccessBySlug } from "../../../../../lib/coursesCatalogAccess";
 import {
   getLegacyCourseBySlug,
   getLegacyLessonBySlug,
+  getSortedLessonsForCourse,
   legacyCourseLoadOptionsFromPreviewRequest,
+  sequentialLessonNumber,
 } from "../../../../../lib/legacy_kin/legacyCourseLoader";
 import {
   contentItemDisplayTitle,
@@ -42,6 +44,11 @@ if (!course || !lesson || !item) {
   return new Response("Lesson section not found", { status: 404 });
 }
 
+const lessonNumber = sequentialLessonNumber(
+  getSortedLessonsForCourse(course, loaderOptions).findIndex(
+    (entry) => entry.slug === lesson.slug,
+  ),
+);
 const contentNavEntries = getPublicLessonContentNavEntries(course, lesson);
 const { prev, next } = getPublicCourseContentItemNeighbors(course, lesson.slug, item.itemSlug);
 const sectionTitle = contentItemDisplayTitle(lesson, item) || item.itemSlug;
@@ -66,7 +73,7 @@ const courseAccess = loaderOptions.includeDrafts ? "free" : getCourseAccessBySlu
     <article class="course-preview__content legacy-course__lesson">
       <header class="course-preview__section-header">
         <p class="course-preview__content-lesson">
-          Lesson {lesson.displayOrder}: {lesson.title}
+          Lesson {lessonNumber}: {lesson.title}
         </p>
         <h1 class="course-preview__content-title">{sectionTitle}</h1>
       </header>

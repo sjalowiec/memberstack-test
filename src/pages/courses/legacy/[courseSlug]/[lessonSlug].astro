@@ -4,8 +4,10 @@ import LegacyCourseShell from "../../../../components/courses/legacy/LegacyCours
 import {
   getLegacyCourseBySlug,
   getLegacyLessonBySlug,
+  getSortedLessonsForCourse,
   legacyCourseLoadOptionsFromPreviewRequest,
   legacyLessonItemHref,
+  sequentialLessonNumber,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
 import { getFirstLessonContentItemSlug } from "../../../../lib/legacy_kin/courseLessonContentItems";
 
@@ -23,6 +25,11 @@ if (!course || !lesson) {
   return new Response("Lesson not found", { status: 404 });
 }
 
+const lessonNumber = sequentialLessonNumber(
+  getSortedLessonsForCourse(course, loaderOptions).findIndex(
+    (item) => item.slug === lesson.slug,
+  ),
+);
 const firstItemSlug = getFirstLessonContentItemSlug(lesson);
 if (firstItemSlug) {
   const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
@@ -49,7 +56,7 @@ const pageTitle = `${lesson.title} · ${course.course.title} | Knit it Now`;
     <article class="course-preview__content legacy-course__lesson">
       <header class="course-preview__section-header">
         <p class="course-preview__content-lesson">
-          Lesson {lesson.displayOrder}
+          Lesson {lessonNumber}
         </p>
         <h1 class="course-preview__content-title">{lesson.title}</h1>
       </header>

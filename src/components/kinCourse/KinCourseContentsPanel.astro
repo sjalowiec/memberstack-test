@@ -1,6 +1,7 @@
 ---
 import { kinCourseHomeHref, kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
 import { courseHeading, paddedSectionNumber, visibleSections } from "../../lib/kinCourse/player";
+import { sequentialLessonNumber } from "../../lib/legacy_kin/legacyCourseLoader";
 import type { KinCourseDocument } from "../../lib/kinCourse/types";
 
 interface Props {
@@ -35,10 +36,10 @@ const sections = visibleSections(course);
     </div>
     <nav class="course-contents-nav" aria-label="Course contents">
       {
-        sections.map((section) => (
+        sections.map((section, index) => (
           <section class="course-contents-section">
             <div class="course-contents-section-head">
-              <span class="course-contents-section-num">{paddedSectionNumber(section.order)}</span>
+              <span class="course-contents-section-num">{paddedSectionNumber(sequentialLessonNumber(index))}</span>
               <span class="course-contents-section-title">{section.title}</span>
             </div>
             {section.lessons.map((lesson) => (

@@ -8,6 +8,7 @@ import {
 } from "../../../lib/kinCourse/hrefs";
 import { loadKinCourseBundle } from "../../../lib/kinCourse/load";
 import { courseHeading, paddedSectionNumber, visibleSections } from "../../../lib/kinCourse/player";
+import { sequentialLessonNumber } from "../../../lib/legacy_kin/legacyCourseLoader";
 import {
   kinCourseLoadOptions,
   kinCourseNeedsAdminPreviewBootstrap,
@@ -65,10 +66,10 @@ function lessonCountLabel(count: number): string {
 
       <nav class="course-outline-accordion" aria-label="Course contents">
         {
-          sections.map((section) => (
+          sections.map((section, index) => (
             <details class="course-outline-item">
               <summary class="course-outline-summary">
-                <span class="course-outline-section-num">{paddedSectionNumber(section.order)}</span>
+                <span class="course-outline-section-num">{paddedSectionNumber(sequentialLessonNumber(index))}</span>
                 <h2 class="course-outline-section-title">{section.title}</h2>
                 <span class="course-outline-count">{lessonCountLabel(section.lessons.length)}</span>
                 <span class="course-outline-chevron" aria-hidden="true"></span>

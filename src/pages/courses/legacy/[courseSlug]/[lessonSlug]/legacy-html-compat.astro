@@ -17,7 +17,9 @@ import { getCourseAccessBySlug } from "../../../../../lib/coursesCatalogAccess";
 import {
   getLegacyCourseBySlug,
   getLegacyLessonBySlug,
+  getSortedLessonsForCourse,
   legacyCourseLoadOptionsFromPreviewRequest,
+  sequentialLessonNumber,
 } from "../../../../../lib/legacy_kin/legacyCourseLoader";
 import {
   getCourseContentItemNeighbors,
@@ -59,6 +61,11 @@ if (!course || !lesson) {
   return new Response("Lesson not found", { status: 404 });
 }
 
+const lessonNumber = sequentialLessonNumber(
+  getSortedLessonsForCourse(course, loaderOptions).findIndex(
+    (item) => item.slug === lesson.slug,
+  ),
+);
 const contentNavEntries = getLessonContentNavEntries(lesson);
 const firstItemSlug = contentNavEntries[0]?.itemSlug ?? "";
 const { prev, next } = getCourseContentItemNeighbors(
@@ -101,7 +108,7 @@ const compatKey = `course-111-${lesson.slug}`;
     <article class="course-preview__content legacy-course__lesson">
       <header class="course-preview__section-header">
         <p class="course-preview__content-lesson">
-          Lesson {lesson.displayOrder}: {lesson.title}
+          Lesson {lessonNumber}: {lesson.title}
         </p>
         <h1 class="course-preview__content-title">
           Legacy HTML compatibility experiment
