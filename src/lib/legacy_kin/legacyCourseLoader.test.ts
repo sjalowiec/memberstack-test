@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   getLegacyCourseBySlug,
   getLegacyCourses,
+  getLegacyLessonBySlug,
+  getSortedLessonsForCourse,
   legacyCourseLoadOptionsFromPreviewRequest,
   legacyCoursePreviewHref,
+  sequentialLessonNumber,
 } from "./legacyCourseLoader";
 
 describe("getLegacyCourses public visibility", () => {
@@ -97,6 +100,45 @@ describe("legacyCoursePreviewHref", () => {
 
   it("returns null when course slug is missing", () => {
     expect(legacyCoursePreviewHref("", "decorative-seams")).toBeNull();
+  });
+});
+
+describe("Course 34 lesson order", () => {
+  const drafts = { includeDrafts: true as const };
+
+  it("keeps stored displayOrder as the legacy reference and numbers lessons by position", () => {
+    const course = getLegacyCourseBySlug("master-lk-patterning", drafts);
+    expect(course).toBeDefined();
+    const lessons = getSortedLessonsForCourse(course!, drafts);
+    expect(lessons.map((lesson) => lesson.slug)).toEqual([
+      "intro-to-patterning",
+      "selecting-needles-for-stitch-patterning",
+      "tuck",
+      "slip-skip",
+      "plating",
+      "fairisle-stranded-knitting",
+      "intarsia",
+      "miscellaneous",
+    ]);
+    expect(lessons.map((lesson) => lesson.displayOrder)).toEqual([
+      1, 15, 20, 30, 40, 45, 70, 90,
+    ]);
+    expect(lessons.map((lesson) => lesson.legacy.lessonOrder)).toEqual([
+      1, 15, 20, 30, 40, 45, 70, 90,
+    ]);
+    expect(lessons.map((_, index) => sequentialLessonNumber(index))).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8,
+    ]);
+  });
+
+  it("still opens lessons by slug and by the original displayOrder reference", () => {
+    expect(getLegacyLessonBySlug("master-lk-patterning", "tuck", drafts)?.title).toBe("TUCK");
+    expect(getLegacyLessonBySlug("master-lk-patterning", "15", drafts)?.slug).toBe(
+      "selecting-needles-for-stitch-patterning",
+    );
+    expect(getLegacyLessonBySlug("master-lk-patterning", "90", drafts)?.slug).toBe(
+      "miscellaneous",
+    );
   });
 });
 

@@ -6,6 +6,7 @@ import {
   getSortedLessonsForCourse,
   legacyCourseLoadOptionsFromPreviewRequest,
   legacyCoursePreviewHref,
+  sequentialLessonNumber,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
 
 const courseSlug = Astro.params.courseSlug ?? "";
@@ -69,14 +70,14 @@ const firstLessonHref = firstLesson
         <h2 id="legacy-course-lessons-heading">Lessons</h2>
         <ol class="course-preview__lesson-list legacy-course__lesson-list">
           {
-            lessons.map((lesson) => (
+            lessons.map((lesson, index) => (
               <li>
                 <a
                   href={legacyCoursePreviewHref(courseSlug, lesson.slug, {
                     includeDraftPreview: loaderOptions.includeDrafts,
                   })}
                 >
-                  <span class="legacy-course__lesson-order">{lesson.displayOrder}.</span>
+                  <span class="legacy-course__lesson-order">{sequentialLessonNumber(index)}.</span>
                   {lesson.title}
                 </a>
               </li>
