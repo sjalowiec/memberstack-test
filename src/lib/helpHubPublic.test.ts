@@ -114,6 +114,26 @@ describe("searchPublicHelpHubTips", () => {
     );
   });
 
+  it("matches body content, try steps, and machine names on published tips only", () => {
+    const spongeTip = {
+      slug: "replace-sponge-bar",
+      status: "published",
+      title: "Carriage trouble",
+      question: "Why is the carriage sticking?",
+      bridge: "Replace the <strong>sponge bar</strong> under the needles.",
+      appliesTo: ["Brother KH930"],
+      tryThis: {
+        quickAction: ["Lift the sponge bar out of the needle bed"],
+      },
+    };
+    expect(searchPublicHelpHubTips([spongeTip, draftTip], "sponge bar").map((tip) => tip.slug)).toEqual([
+      "replace-sponge-bar",
+    ]);
+    expect(searchPublicHelpHubTips([spongeTip], "needles")).toEqual([spongeTip]);
+    expect(searchPublicHelpHubTips([spongeTip], "KH930")).toEqual([spongeTip]);
+    expect(searchPublicHelpHubTips([{ ...spongeTip, status: "draft" }], "sponge bar")).toEqual([]);
+  });
+
   it("matches published tips by the LK150 catalog key or label", () => {
     const lk150Tip: HelpHubTipRecord = {
       slug: "lk150-cast-on",

@@ -53,6 +53,7 @@ function asOptionalSortOrder(value: unknown): number | null {
 export function canonicalHelpHubDocument(doc: HelpHubTipDocument): HelpHubTipDocument {
   const copy: HelpHubTipDocument = { ...doc };
   delete copy.deletedAt;
+  delete copy.createdAt;
   if (Object.prototype.hasOwnProperty.call(copy, "relatedLessons")) {
     copy.relatedLessons = normalizeRelatedLessonRefs(copy.relatedLessons);
   }
@@ -91,6 +92,10 @@ export function tipFromRow(row: HelpHubTipRow): HelpHubTipRecord {
   } else {
     delete tip.deletedAt;
   }
+  const created =
+    row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at ?? "").trim();
+  if (created) tip.createdAt = created;
+  else delete tip.createdAt;
   return tip;
 }
 

@@ -27,6 +27,8 @@ export type HelpHubTipRecord = HelpHubTipDocument & {
   slug: string;
   status: string;
   deletedAt?: string | null;
+  /** From the row timestamp. Not stored inside the jsonb document. */
+  createdAt?: string | null;
 };
 
 export type HelpHubWriteActor = {

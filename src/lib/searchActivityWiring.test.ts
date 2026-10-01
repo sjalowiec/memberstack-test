@@ -63,6 +63,24 @@ describe("search tracking is tied to a committed search", () => {
     expect(page).toContain("installSearchCommitLogger");
   });
 
+  it("records a settled Help Hub search on the shared logger", () => {
+    const client = source("src/scripts/helpHubIndexClient.ts");
+    const page = source("src/pages/help-hub/index.astro");
+    const input = sliceBetween(client, 'querySelector("#help-hub-search-input")', "const siteSearch");
+    expect(input).toContain("applyHelpHubIndexQuery");
+    expect(input).toContain('area: "help-hub"');
+    expect(input).toContain("queueSearchCommit");
+    expect(input).toContain('if (event.key !== "Enter") return;');
+    expect(input).toContain("__kinFlushSearchCommit");
+    const siteSearch = sliceBetween(client, "const siteSearch", "}");
+    expect(siteSearch).not.toContain("queueSearchCommit");
+    expect(page).toContain("installSearchCommitLogger");
+    const report = source("src/pages/watson/search-activity.astro");
+    expect(report).toContain("SEARCH_ACTIVITY_AREAS");
+    expect(report).toContain("searchActivityAreaLabel");
+    expect(source("src/lib/searchActivity.ts")).toContain('"help-hub": "Help Hub"');
+  });
+
   it("does not log search terms from the save route", () => {
     const route = source("src/pages/api/search-activity.ts");
     expect(route).not.toContain("console.log");

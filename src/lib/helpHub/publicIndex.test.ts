@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { helpHubCategoryChoices, helpHubCategoryLabel } from "./categories";
 import {
+  HELP_HUB_INDEX_NEW_LIMIT,
   helpHubIndexCardCopy,
   helpHubIndexCategorySections,
   helpHubIndexNewCards,
@@ -133,8 +134,8 @@ describe("helpHubIndexNewCards", () => {
       draftTip,
     ]);
     expect(cards.map((card) => card.slug)).toEqual([
-      "sandwich-neckband-finish",
       "every-other-needle-swatch",
+      "sandwich-neckband-finish",
     ]);
     expect(cards.find((card) => card.slug === "every-other-needle-swatch")?.heading).toBe(
       "I’m knitting over every other needle. How do I swatch?",
@@ -143,6 +144,37 @@ describe("helpHubIndexNewCards", () => {
       "How do I create a clean, professional band finish for my neckline?",
     );
     expect(cards.every((card) => !("subtitle" in card))).toBe(true);
+  });
+
+  it("keeps the three newest isNew entries, dated rows before an id fallback", () => {
+    expect(HELP_HUB_INDEX_NEW_LIMIT).toBe(3);
+    const dated = [1, 2, 3, 4].map((n) => ({
+      id: 3000 + n,
+      slug: `dated-${n}`,
+      status: "published" as const,
+      isNew: true,
+      question: `Dated question ${n}?`,
+      createdAt: `2026-0${n}-15T00:00:00.000Z`,
+      category: "machines",
+    }));
+    const undated = {
+      id: 9999,
+      slug: "undated-high-id",
+      status: "published" as const,
+      isNew: true,
+      question: "Undated question?",
+      category: "machines",
+    };
+    expect(helpHubIndexNewCards([...dated, undated, draftTip]).map((card) => card.slug)).toEqual([
+      "dated-4",
+      "dated-3",
+      "dated-2",
+    ]);
+    expect(helpHubIndexNewCards([undated, sandwichBand, everyOtherNeedle]).map((card) => card.slug)).toEqual([
+      "undated-high-id",
+      "every-other-needle-swatch",
+      "sandwich-neckband-finish",
+    ]);
   });
 });
 

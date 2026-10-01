@@ -167,7 +167,7 @@ export function buildSearchActivityEvent(
   }
   const body = raw as Record<string, unknown>;
   if (!isSearchActivityArea(body.area)) {
-    return { ok: false, error: "Search area must be global or video." };
+    return { ok: false, error: "Search area must be global, video, or help-hub." };
   }
   const resultCount = cleanResultCount(body.resultCount);
   if (resultCount === null) {

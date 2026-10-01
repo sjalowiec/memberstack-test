@@ -1,9 +1,12 @@
 ---
 import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
 import {
+  SEARCH_ACTIVITY_AREAS,
   SEARCH_SETTLE_NOTE,
   SEARCH_TRACKING_START_NOTE,
   dateRangeForSearchPreset,
+  isSearchActivityArea,
+  searchActivityAreaLabel,
   summarizeSearchActivity,
   type SearchActivityArea,
 } from "../../lib/searchActivity";
@@ -13,8 +16,7 @@ export const prerender = false;
 
 const preset = Astro.url.searchParams.get("preset") || "all";
 const areaParam = Astro.url.searchParams.get("area") || "all";
-const area: SearchActivityArea | "all" =
-  areaParam === "global" || areaParam === "video" ? areaParam : "all";
+const area: SearchActivityArea | "all" = isSearchActivityArea(areaParam) ? areaParam : "all";
 const customFrom = Astro.url.searchParams.get("from")?.trim() || "";
 const customTo = Astro.url.searchParams.get("to")?.trim() || "";
 const range =
@@ -37,12 +39,11 @@ try {
   loadError = "Search activity could not be read. This is not a count of zero searches.";
 }
 
-const areaLabel = (value: SearchActivityArea) => (value === "global" ? "Global" : "Video");
 ---
 
 <WatsonPageShell
   title="Search activity | Watson"
-  description="What visitors and members search for in the header and video searches."
+  description="What visitors and members search for in the header, video, and Help Hub searches."
   heading="Search activity"
   intro={SEARCH_TRACKING_START_NOTE}
 >
@@ -71,8 +72,13 @@ const areaLabel = (value: SearchActivityArea) => (value === "global" ? "Global" 
       Search area
       <select name="area">
         <option value="all" selected={area === "all"}>All areas</option>
-        <option value="global" selected={area === "global"}>Global</option>
-        <option value="video" selected={area === "video"}>Video</option>
+        {
+          SEARCH_ACTIVITY_AREAS.map((value) => (
+            <option value={value} selected={area === value}>
+              {searchActivityAreaLabel(value)}
+            </option>
+          ))
+        }
       </select>
     </label>
     <button type="submit" class="watson__button">Show searches</button>
@@ -120,7 +126,7 @@ const areaLabel = (value: SearchActivityArea) => (value === "global" ? "Global" 
               summary.commonTerms.map((row) => (
                 <tr>
                   <td>{row.term}</td>
-                  <td>{areaLabel(row.area)}</td>
+                  <td>{searchActivityAreaLabel(row.area)}</td>
                   <td>{row.count}</td>
                 </tr>
               ))
@@ -152,7 +158,7 @@ const areaLabel = (value: SearchActivityArea) => (value === "global" ? "Global" 
               summary.zeroResultTerms.map((row) => (
                 <tr>
                   <td>{row.term}</td>
-                  <td>{areaLabel(row.area)}</td>
+                  <td>{searchActivityAreaLabel(row.area)}</td>
                   <td>{row.count}</td>
                 </tr>
               ))
