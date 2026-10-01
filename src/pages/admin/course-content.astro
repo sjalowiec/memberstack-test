@@ -212,20 +212,25 @@ if (
       <main class="course-editor__center">
         <div class="course-editor__center-inner">
           <header class="course-editor__lesson-header">
-            <span class="course-editor__hierarchy-label">Lesson</span>
             <div class="course-editor__lesson-toolbar">
-              <div class="course-editor__lesson-title-wrap">
+              <label class="course-editor__field course-editor__lesson-title-wrap" for="course-editor-lesson-title">
+                <span class="course-editor__field-label">Lesson title</span>
                 <input
                   id="course-editor-lesson-title"
                   class="course-editor__input course-editor__lesson-title-input"
                   type="text"
                   placeholder="Untitled lesson"
                   aria-label="Lesson title"
+                  aria-describedby="course-editor-lesson-title-hint course-editor-lesson-url"
                   autocomplete="off"
                   spellcheck="true"
                   disabled
                 />
-              </div>
+                <span id="course-editor-lesson-title-hint" class="course-editor__field-hint">
+                  Shown to students in the course sidebar and at the top of the lesson.
+                </span>
+                <span id="course-editor-lesson-url" class="course-editor__field-hint" hidden></span>
+              </label>
               <button
                 type="button"
                 id="course-editor-delete-lesson"
@@ -246,6 +251,9 @@ if (
 
           <div class="course-editor__lesson-body">
           <p class="course-editor__outline-label">Sections in this lesson</p>
+          <p class="course-editor__field-hint">
+            Each section title is shown in the student sidebar and as the heading on the lesson page.
+          </p>
           <p id="course-editor-items-empty" class="course-editor__empty-lesson" hidden>
             This lesson has no sections yet. Add a section to start building the outline.
           </p>
@@ -260,6 +268,30 @@ if (
             <p>Select a block from the lesson outline.</p>
           </div>
           <div id="course-editor-edit-form" hidden>
+            <nav id="course-editor-sequence-nav" class="course-editor__sequence-nav" aria-label="Block sequence" hidden>
+              <dl class="course-editor__sequence-place">
+                <div>
+                  <dt>Lesson</dt>
+                  <dd id="course-editor-sequence-lesson"></dd>
+                </div>
+                <div>
+                  <dt>Section</dt>
+                  <dd id="course-editor-sequence-section"></dd>
+                </div>
+                <div>
+                  <dt>Block</dt>
+                  <dd id="course-editor-sequence-block"></dd>
+                </div>
+              </dl>
+              <div class="course-editor__sequence-actions">
+                <button type="button" class="course-editor__sequence-btn" id="course-editor-sequence-prev">
+                  Previous
+                </button>
+                <button type="button" class="course-editor__sequence-btn" id="course-editor-sequence-next">
+                  Next
+                </button>
+              </div>
+            </nav>
             <div id="course-editor-edit-head" class="course-editor__panel-head"></div>
             <div id="course-editor-edit-fields" class="course-editor__panel-body"></div>
           </div>

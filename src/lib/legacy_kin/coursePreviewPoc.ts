@@ -49,7 +49,7 @@ export type ImageGallerySlide = {
 export type ImageGalleryComponent = {
   type: "imageGallery";
   introHtml?: string | null;
-  /** Plain-text heading saved by an earlier editor version; prefer introHtml */
+  /** Sidebar label when this gallery shares a section, and the heading above the images when introHtml is empty. */
   title?: string | null;
   slides: ImageGallerySlide[];
   legacyComponentId: number;
@@ -89,6 +89,8 @@ export type ImageComponent = {
 
 export type ExerciseAccordionComponent = {
   type: "exerciseAccordion";
+  /** Sidebar label when this accordion shares a section. Not the headings students click. */
+  title?: string | null;
   sections: { title: string; bodyHtml: string; iconSrc?: string }[];
   legacyComponentId: number;
   order: number;

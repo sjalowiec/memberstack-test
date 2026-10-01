@@ -42,9 +42,12 @@ import {
 
 export type { FlatContentItem };
 
-/** Block slugs generated at import time (not human-readable section names). */
+/** Block slugs generated at import or in the editor (not human-readable section names). */
 export const AUTO_GENERATED_BLOCK_SLUG_RE =
-  /^(text-image|text-video|three-videos)-\d+$/;
+  /^(text-image|text-video|three-videos|content)-\d+$/;
+
+/** Lesson slugs created by Add Lesson. The stored value stays the lesson id. */
+export const AUTO_GENERATED_LESSON_SLUG_RE = /^lesson-\d+$/;
 
 export type LessonContentItemRef = FlatContentItem & {
   itemSlug: string;
@@ -108,6 +111,40 @@ export function preferredPublicItemSlug(
     if (fromTitle) return fromTitle;
   }
   return blockSlug.trim();
+}
+
+export type LessonSlugSource = {
+  slug: string;
+  title?: string | null;
+  displayOrder?: number;
+};
+
+/**
+ * Student URL segment for a lesson. Timestamp ids such as lesson-1790793285497
+ * stay stored; the address uses the lesson title when that slug is free.
+ */
+export function urlLessonSlug(lessons: LessonSlugSource[], storedSlug: string): string {
+  const target = storedSlug.trim();
+  if (!target) return "";
+  const ordered = [...lessons].sort(
+    (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+  );
+  const used = new Set(ordered.map((lesson) => lesson.slug.trim()).filter(Boolean));
+  const map = new Map<string, string>();
+  for (const lesson of ordered) {
+    const stored = lesson.slug.trim();
+    if (!stored || map.has(stored)) continue;
+    let publicSlug = stored;
+    if (AUTO_GENERATED_LESSON_SLUG_RE.test(stored)) {
+      const fromTitle = slugify(String(lesson.title ?? ""));
+      if (fromTitle && !used.has(fromTitle)) {
+        publicSlug = fromTitle;
+        used.add(fromTitle);
+      }
+    }
+    map.set(stored, publicSlug);
+  }
+  return map.get(target) ?? target;
 }
 
 function ensureUniqueSlug(base: string, used: Set<string>): string {
@@ -307,6 +344,10 @@ function storedOutlineTitle(item: FlatContentItem): string {
   }
   if (item.type === "imageGallery" || item.type === "imageCarousel") {
     const title = collapseOutlineText(String(component.title ?? ""));
+    return isMeaningfulOutlineText(title) ? title : "";
+  }
+  if (item.type === "exerciseAccordion") {
+    const title = collapseOutlineText(String(component.title ?? "").replace(/<[^>]*>/g, " "));
     return isMeaningfulOutlineText(title) ? title : "";
   }
   if (item.type === TEXT_VIDEO_LAYOUT_TYPE) {
@@ -669,6 +710,16 @@ export function getPublicLessonContentNavEntries(
   }));
 }
 
+/** Student player order: lessons by display order, then each lesson's public blocks. */
+export function getPublicCourseContentItemSequence(
+  course: CoursePreviewData,
+): CourseContentItemStep[] {
+  const lessons = [...course.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
+  return lessons.flatMap((lesson) =>
+    getPublicLessonContentItems(course, lesson).map((item) => ({ lesson, item })),
+  );
+}
+
 export function getPublicCourseContentItemNeighbors(
   course: CoursePreviewData,
   lessonSlug: string,
@@ -678,10 +729,7 @@ export function getPublicCourseContentItemNeighbors(
   prev: CourseContentItemStep | null;
   next: CourseContentItemStep | null;
 } {
-  const lessons = [...course.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
-  const sequence = lessons.flatMap((lesson) =>
-    getPublicLessonContentItems(course, lesson).map((item) => ({ lesson, item })),
-  );
+  const sequence = getPublicCourseContentItemSequence(course);
   const index = sequence.findIndex(
     (step) => step.lesson.slug === lessonSlug && step.item.itemSlug === itemSlug,
   );
@@ -693,15 +741,39 @@ export function getPublicCourseContentItemNeighbors(
   };
 }
 
+/** Old content-123 addresses still open the section after the title slug is used. */
+function publicItemForLegacyContentSlug(
+  items: LessonContentItemRef[],
+  requested: string,
+): LessonContentItemRef | undefined {
+  const match = /^(content-\d+)(?:--(.+))?$/.exec(requested);
+  if (!match) return undefined;
+  const blockSlug = match[1]!;
+  const suffix = match[2];
+  const siblings = items.filter((item) => item.blockSlug === blockSlug);
+  if (siblings.length === 0) return undefined;
+  if (!suffix) return siblings[0];
+  return (
+    siblings.find((item) => String(item.legacyComponentId) === suffix) ??
+    siblings.find((item) => item.itemSlug.endsWith(`--${suffix}`))
+  );
+}
+
 /** A stored jump-links URL opens the video those chapters belong to. */
 export function resolvePublicLessonItem(
   course: CoursePreviewData,
   lesson: CourseLesson,
   itemSlug: string,
 ): { item: LessonContentItemRef | undefined; redirectSlug: string | null } {
+  const requested = itemSlug.trim();
   const publicItems = getPublicLessonContentItems(course, lesson);
-  const direct = publicItems.find((item) => item.itemSlug === itemSlug.trim());
+  const direct = publicItems.find((item) => item.itemSlug === requested);
   if (direct) return { item: direct, redirectSlug: null };
+
+  const legacyContentItem = publicItemForLegacyContentSlug(publicItems, requested);
+  if (legacyContentItem && legacyContentItem.itemSlug !== requested) {
+    return { item: legacyContentItem, redirectSlug: legacyContentItem.itemSlug };
+  }
 
   const stored = getLessonContentItemsWithSlugs(lesson);
   const hidden = stored.find((item) => item.itemSlug === itemSlug.trim());
