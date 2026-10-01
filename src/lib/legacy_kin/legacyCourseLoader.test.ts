@@ -131,6 +131,16 @@ describe("Course 34 lesson order", () => {
     ]);
   });
 
+  it("opens Course 51 Quick Project by its readable address and by the stored lesson id", () => {
+    const drafts = { includeDrafts: true };
+    const byId = getLegacyLessonBySlug("lk-150-fun", "lesson-1790793285497", drafts);
+    const byTitle = getLegacyLessonBySlug("lk-150-fun", "quick-project", drafts);
+    expect(byId?.title).toBe("Quick Project");
+    expect(byId?.slug).toBe("lesson-1790793285497");
+    expect(byTitle?.slug).toBe("lesson-1790793285497");
+    expect(byTitle?.legacy.itemId).toBe(796);
+  });
+
   it("still opens lessons by slug and by the original displayOrder reference", () => {
     expect(getLegacyLessonBySlug("master-lk-patterning", "tuck", drafts)?.title).toBe("TUCK");
     expect(getLegacyLessonBySlug("master-lk-patterning", "15", drafts)?.slug).toBe(

@@ -5,6 +5,8 @@
     "legacyChallengeId": 51,
     "title": "LK-150 Fun",
     "slug": "lk-150-fun",
+    "status": "published",
+    "published": true,
     "thumbnail": "/images/courses/lk-150_fun.webp",
     "legacy": {
       "sourceExport": "course_51_lk150_fun.csv"
@@ -25,7 +27,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n\">\n    <div style=\"\n        flex:1 1 400px;\n        min-width:280px;\n    \">\n        Now that you've gotten a little more familiar with your LK-150, it's time to build on your previous experience and explore more possibilities!\n\n        <br><br>\n\n        If you are a hand knitter, you will probably recognize many of these techniques.\n\n        <br><br>\n\n        <strong>Your challenge is to \"translate\" what you've done by hand to the machine.</strong>\n\n        <br><br>\n\n        Please take time to work the exercises and strengthen your knitting muscles and expand your mastery of your machine.  \n\n        <br><br>\n\n        The techniques you learn here can be applied to any type of knitting, sweaters, hats, socks, blankets. Once you understand the mechanics of creating texture and interesting fabrics, you can mix and match techniques and quickly design your own creations!\n    </div>\n\n    <div style=\"\n        flex:0 0 300px;\n        max-width:300px;\n    \">\n        <img src=\"/challenge/images/v2/51/7-2019.jpg\" alt=\"LK-150 knitting\" style=\"\n                width:100%;\n                height:auto;\n                border-radius:8px;\n                display:block;\n            \">\n    </div>\n</div>",
+              "html": "<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n\">\n    <div style=\"\n        flex:1 1 400px;\n        min-width:280px;\n    \">\n        Now that you've gotten a little more familiar with your LK-150, it's time to build on your previous experience and explore more possibilities!\n\n        <br><br>\n\n        If you are a hand knitter, you will probably recognize many of these techniques.\n\n        <br><br>\n\n        <strong>Your challenge is to \"translate\" what you've done by hand to the machine.</strong>\n\n        <br><br>\n\n        Please take time to work the exercises and strengthen your knitting muscles and expand your mastery of your machine.  \n\n        <br><br>\n\n        The techniques you learn here can be applied to any type of knitting, sweaters, hats, socks, blankets. Once you understand the mechanics of creating texture and interesting fabrics, you can mix and match techniques and quickly design your own creations!\n    </div>\n\n    <div style=\"\n        flex:0 0 300px;\n        max-width:300px;\n    \">\n        <img src=\"/images/course-content/51/v2/51/7-2019.jpg\" alt=\"LK-150 knitting\" style=\"\n                width:100%;\n                height:auto;\n                border-radius:8px;\n                display:block;\n            \">\n    </div>\n</div>",
               "legacyComponentId": 4968,
               "order": 1
             }
@@ -42,16 +44,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"row\">\n<div class=\"col-sm-8 col-xs-12\">\n\nThis course is assuming you know how to cast on, bind off and knit plain stockinette. You also need to be familiar with the tools that came with your machine<br><br>\nIf you are brand new to your LK-150, we recommend the Knit it Now Course <a href=\"/challenge/50/course/lk-quick-start\"target=\"_blank\">\"LK-150 Quick Start\".</a>  It will give you a solid foundation for some of the terms and techniques used in this course.<br><br>\n\n\nFor most of the exercises in this course your carriage will be set for \"Plain Knitting\".  To learn  more about the various carriage and lever settings, please look at the Knit it Now Course <a href=\"/challenge/34/course/master-lk-patterning\" target=\"_blank\"> \"Master LK-150 Patterning\"</a><br><br>\n</div>\n<div class=\"col-sm-3 col-xs-12\"><figure><img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/51/plain_knitting.jpg\"><figcaption align=\"center\"><br>Plain knitting: Both levers on both sides dis-engaged</figcaption>\n</figure></div>\n</div>\n<hr><br><br>\nPlease watch the following videos before moving on to the \"fun stuff\" covered in this course.\n<br><br>\n\n",
-              "legacyComponentId": 5021,
-              "order": 1,
-              "layoutRole": "textVideoLeft"
-            },
-            {
-              "type": "video",
-              "vimeoId": "343258703",
-              "title": null,
-              "legacySource": "embedded-html",
+              "html": "<div class=\"row\">\n<div class=\"col-sm-8 col-xs-12\">\n\nThis course is assuming you know how to cast on, bind off and knit plain stockinette. You also need to be familiar with the tools that came with your machine<br><br>\nIf you are brand new to your LK-150, we recommend the Knit it Now Course <a href=\"/courses/lk-150-quick-start\"target=\"_blank\">\"LK-150 Quick Start\".</a>  It will give you a solid foundation for some of the terms and techniques used in this course.<br><br>\n\n\nFor most of the exercises in this course your carriage will be set for \"Plain Knitting\".  To learn  more about the various carriage and lever settings, please look at the Knit it Now Course <a href=\"/courses/master-lk-patterning\" target=\"_blank\"> \"Master LK-150 Patterning\"</a><br><br>\n</div>\n<div class=\"col-sm-3 col-xs-12\"><figure><img class=\"img-thumbnail zoom\" src=\"/images/course-content/51/v2/51/plain_knitting.jpg\"><figcaption align=\"center\"><br>Plain knitting: Both levers on both sides dis-engaged</figcaption>\n</figure></div>\n</div>\n<hr><br><br>\nPlease watch the following videos before moving on to the \"fun stuff\" covered in this course.\n<br><br>\n\n",
               "legacyComponentId": 5021,
               "order": 1
             }
@@ -131,7 +124,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<h3>Open and Closed Cast Ons</h3>\n\n<p>\nThe cast on method you've been using from your machine manual is quick and easy,\nbut it isn't usually the best choice for the finished edge of a project.\n</p>\n\n<table style=\"width:100%; border-collapse:collapse;\">\n<tbody><tr>\n<td style=\"width:50%; vertical-align:top; padding-right:20px;\">\n\n<h4>Open Cast On</h4>\n\n<p>\nAn <strong>open cast on</strong> leaves live stitches in the main yarn that can be picked up later.\n</p>\n\n<p>\nMachine knitters often use an open cast on when they plan to add a finished edge after the knitting is complete.\n</p>\n\n<ul>\n<li>Pick up the stitches and hand-knit ribbing</li>\n<li>Pick up the stitches and machine-knit ribbing</li>\n<li>Work a decorative bind-off</li>\n<li>Finish the edge with crochet</li>\n</ul>\n\n<p>\nThe most common way to create an open cast on is by using <strong>waste yarn</strong>.\n</p>\n\n</td>\n\n<td style=\"width:50%; vertical-align:top; text-align:center;\">\n\n<figure>\n<img src=\"/challenge/images/v2/50/open_400.jpg\" alt=\"Open Cast On\" style=\"width:100%; max-width:350px; height:auto;\">\n\n<figcaption>\nOpen Cast On<br>\n(raw stitches in the main yarn)\n</figcaption>\n</figure>\n\n</td>\n</tr>\n</tbody></table>\n\n<hr>\n\n<table style=\"width:100%; border-collapse:collapse;\">\n<tbody><tr>\n<td style=\"width:50%; vertical-align:top; padding-right:20px;\">\n\n<h4>Closed Cast On</h4>\n\n<p>\nA <strong>closed cast on</strong> creates a finished edge as you begin knitting.\n</p>\n\n<p>\nSome closed cast ons are decorative, while others are simply functional,\nsuch as the cast on method described in your machine manual.\n</p>\n\n<p>\nThere are many closed cast on methods. In the next section, we'll take a look at two of the most commonly used by machine knitters.\n</p>\n\n<ul>\n<li><strong>E-wrap cast on</strong> — stretchy and fast</li>\n<li><strong>Chain/crochet cast on</strong> — firm and decorative</li>\n</ul>\n\n</td>\n\n<td style=\"width:50%; vertical-align:top; text-align:center;\">\n\n<figure>\n<img src=\"/challenge/images/v2/50/closed_400.jpg\" alt=\"Closed Cast On\" style=\"width:100%; max-width:350px; height:auto;\">\n\n<figcaption>\nClosed Cast On<br>\n(main yarn has finished edge)\n</figcaption>\n</figure>\n\n</td>\n</tr>\n</tbody></table>",
+              "html": "<h3>Open and Closed Cast Ons</h3>\n\n<p>\nThe cast on method you've been using from your machine manual is quick and easy,\nbut it isn't usually the best choice for the finished edge of a project.\n</p>\n\n<table style=\"width:100%; border-collapse:collapse;\">\n<tbody><tr>\n<td style=\"width:50%; vertical-align:top; padding-right:20px;\">\n\n<h4>Open Cast On</h4>\n\n<p>\nAn <strong>open cast on</strong> leaves live stitches in the main yarn that can be picked up later.\n</p>\n\n<p>\nMachine knitters often use an open cast on when they plan to add a finished edge after the knitting is complete.\n</p>\n\n<ul>\n<li>Pick up the stitches and hand-knit ribbing</li>\n<li>Pick up the stitches and machine-knit ribbing</li>\n<li>Work a decorative bind-off</li>\n<li>Finish the edge with crochet</li>\n</ul>\n\n<p>\nThe most common way to create an open cast on is by using <strong>waste yarn</strong>.\n</p>\n\n</td>\n\n<td style=\"width:50%; vertical-align:top; text-align:center;\">\n\n<figure>\n<img src=\"/images/course-content/51/v2/50/open_400.jpg\" alt=\"Open Cast On\" style=\"width:100%; max-width:350px; height:auto;\">\n\n<figcaption>\nOpen Cast On<br>\n(raw stitches in the main yarn)\n</figcaption>\n</figure>\n\n</td>\n</tr>\n</tbody></table>\n\n<hr>\n\n<table style=\"width:100%; border-collapse:collapse;\">\n<tbody><tr>\n<td style=\"width:50%; vertical-align:top; padding-right:20px;\">\n\n<h4>Closed Cast On</h4>\n\n<p>\nA <strong>closed cast on</strong> creates a finished edge as you begin knitting.\n</p>\n\n<p>\nSome closed cast ons are decorative, while others are simply functional,\nsuch as the cast on method described in your machine manual.\n</p>\n\n<p>\nThere are many closed cast on methods. In the next section, we'll take a look at two of the most commonly used by machine knitters.\n</p>\n\n<ul>\n<li><strong>E-wrap cast on</strong> — stretchy and fast</li>\n<li><strong>Chain/crochet cast on</strong> — firm and decorative</li>\n</ul>\n\n</td>\n\n<td style=\"width:50%; vertical-align:top; text-align:center;\">\n\n<figure>\n<img src=\"/images/course-content/51/v2/50/closed_400.jpg\" alt=\"Closed Cast On\" style=\"width:100%; max-width:350px; height:auto;\">\n\n<figcaption>\nClosed Cast On<br>\n(main yarn has finished edge)\n</figcaption>\n</figure>\n\n</td>\n</tr>\n</tbody></table>",
               "legacyComponentId": 9639,
               "order": 1
             }
@@ -148,7 +141,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n    margin:1.5rem 0;\n\">\n    <div style=\"flex:1 1 400px; min-width:280px;\">\n\n        <blockquote style=\"\n            margin:0 0 1.5rem 0;\n            padding:1rem 1.25rem;\n            border-left:4px solid #4d6b2a;\n            background:#f6f8f2;\n            font-style:italic;\n        \">\n            A preferred method of getting knitting on your machine is to \"cast on with waste yarn and ravel cord\". With this method, you add a few rows of knitting before starting your cast on with your garment yarn.\n        </blockquote>\n\n        <h3>Benefits of Scrap 'n Ravel</h3>\n\n        <ul>\n            <li>Use waste knitting to hang cast on comb and/or weights</li>\n            <li>Protect delicate/fine yarns</li>\n            <li>Immediately start patterning (tuck, lace, etc.) with weights in place</li>\n            <li>Leave waste knitting in place to make blocking easier, especially for edges that roll</li>\n        </ul>\n\n    </div>\n\n    <div style=\"flex:0 0 500px; max-width 500px;\">\n        <img src=\"/challenge/images/v2/50/scrap_ravel.jpg\" alt=\"Scrap and ravel cast on\" style=\"width:100%; height:auto; display:block;\">\n    </div>\n</div>\n\n<div style=\"\n    background:#f6f8f2;\n    border:1px solid #d8dfcf;\n    border-radius:8px;\n    padding:1.25rem;\n    margin:2rem 0;\n\">\n    <h3 style=\"margin-top:0;\">Overview of Scrap 'n Ravel</h3>\n\n    <ul>\n        <li>Work a fast cast on with waste yarn</li>\n        <li>Knit a few rows</li>\n        <li>Knit a row of ravel cord so you can remove the scrap easily</li>\n        <li>Start knitting with the garment yarn, safely leaving open stitches to be worked later</li>\n    </ul>\n\n    <p style=\"margin-bottom:0;\">\n        You'll practice this in the next section.\n    </p>\n</div>\n\n<h3>What Is Ravel Cord?</h3>\n\n<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n    margin:1.5rem 0;\n\">\n    <div style=\"flex:1 1 400px; min-width:280px;\">\n\n        <h4>Characteristics of Ravel Cord</h4>\n\n        <ul>\n            <li>Similar weight to your garment yarn (or lighter)</li>\n            <li>Contrasting color</li>\n            <li>Smooth and slippery</li>\n            <li>Strong enough that it must be cut rather than broken by hand</li>\n        </ul>\n\n        <p>\n            Your machine may have come with ravel cord, but you can use anything that meets these criteria. Use your cord over and over, or toss it. It's your choice.\n        </p>\n\n    </div>\n\n    <div style=\"flex:0 0 500px; max-width:500px;\">\n        <img class=\"zoom\" src=\"/challenge/images/v2/50/ravel_cord.jpg\" alt=\"Ravel cord\" style=\"width:100%; height:auto; display:block;\">\n    </div>\n</div>",
+              "html": "<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n    margin:1.5rem 0;\n\">\n    <div style=\"flex:1 1 400px; min-width:280px;\">\n\n        <blockquote style=\"\n            margin:0 0 1.5rem 0;\n            padding:1rem 1.25rem;\n            border-left:4px solid #4d6b2a;\n            background:#f6f8f2;\n            font-style:italic;\n        \">\n            A preferred method of getting knitting on your machine is to \"cast on with waste yarn and ravel cord\". With this method, you add a few rows of knitting before starting your cast on with your garment yarn.\n        </blockquote>\n\n        <h3>Benefits of Scrap 'n Ravel</h3>\n\n        <ul>\n            <li>Use waste knitting to hang cast on comb and/or weights</li>\n            <li>Protect delicate/fine yarns</li>\n            <li>Immediately start patterning (tuck, lace, etc.) with weights in place</li>\n            <li>Leave waste knitting in place to make blocking easier, especially for edges that roll</li>\n        </ul>\n\n    </div>\n\n    <div style=\"flex:0 0 500px; max-width 500px;\">\n        <img src=\"/images/course-content/51/v2/50/scrap_ravel.jpg\" alt=\"Scrap and ravel cast on\" style=\"width:100%; height:auto; display:block;\">\n    </div>\n</div>\n\n<div style=\"\n    background:#f6f8f2;\n    border:1px solid #d8dfcf;\n    border-radius:8px;\n    padding:1.25rem;\n    margin:2rem 0;\n\">\n    <h3 style=\"margin-top:0;\">Overview of Scrap 'n Ravel</h3>\n\n    <ul>\n        <li>Work a fast cast on with waste yarn</li>\n        <li>Knit a few rows</li>\n        <li>Knit a row of ravel cord so you can remove the scrap easily</li>\n        <li>Start knitting with the garment yarn, safely leaving open stitches to be worked later</li>\n    </ul>\n\n    <p style=\"margin-bottom:0;\">\n        You'll practice this in the next section.\n    </p>\n</div>\n\n<h3>What Is Ravel Cord?</h3>\n\n<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n    margin:1.5rem 0;\n\">\n    <div style=\"flex:1 1 400px; min-width:280px;\">\n\n        <h4>Characteristics of Ravel Cord</h4>\n\n        <ul>\n            <li>Similar weight to your garment yarn (or lighter)</li>\n            <li>Contrasting color</li>\n            <li>Smooth and slippery</li>\n            <li>Strong enough that it must be cut rather than broken by hand</li>\n        </ul>\n\n        <p>\n            Your machine may have come with ravel cord, but you can use anything that meets these criteria. Use your cord over and over, or toss it. It's your choice.\n        </p>\n\n    </div>\n\n    <div style=\"flex:0 0 500px; max-width:500px;\">\n        <img class=\"zoom\" src=\"/images/course-content/51/v2/50/ravel_cord.jpg\" alt=\"Ravel cord\" style=\"width:100%; height:auto; display:block;\">\n    </div>\n</div>",
               "legacyComponentId": 9640,
               "order": 2
             }
@@ -173,7 +166,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<img src=\"/challenge/images/v2/50/dont_just_watch.gif\"><br>\n\nHaving more than one cast on method in your toolbox is critical to mastering your knitting machine<br><br>\n\nAs you work practice exercises (and knit swatches) in this course, use all 3 of these cast on methods.  ",
+              "html": "<img src=\"/images/course-content/51/v2/50/dont_just_watch.gif\"><br>\n\nHaving more than one cast on method in your toolbox is critical to mastering your knitting machine<br><br>\n\nAs you work practice exercises (and knit swatches) in this course, use all 3 of these cast on methods.  ",
               "legacyComponentId": 9649,
               "order": 3,
               "layoutRole": "threeVideosIntro"
@@ -236,23 +229,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<blockquote style=\"\n    margin:0 0 1.5rem 0;\n    padding:1rem 1.25rem;\n    border-left:4px solid #4d6b2a;\n    background:#f6f8f2;\n    font-style:italic;\n\">\n    Use the videos in the previous section and practice these cast on techniques.\n</blockquote>\n\n<div style=\"\n    background:#f6f8f2;\n    border:1px solid #d8dfcf;\n    border-radius:8px;\n    padding:1.5rem;\n    margin:1.5rem 0;\n\">\n\n    <div style=\"\n        display:flex;\n        gap:2rem;\n        align-items:flex-start;\n        flex-wrap:wrap;\n    \">\n\n        <div style=\"flex:1 1 600px; min-width:300px;\">\n\n            <h3>e-Wrap Cast On (with Waste Yarn)</h3>\n\n            <ol class=\"kin-steps\">\n                <li>Set carriage for plain knitting.</li>\n                <li>Put 20–30 needles into work.</li>\n                <li>Using scrap yarn similar in weight to your garment yarn, e-wrap cast on.</li>\n                <li>Knit a few rows with scrap yarn. End on the left.</li>\n                <li>Knit 1 row with ravel cord.</li>\n                <li>Carriage on the right.</li>\n                <li>Starting on the left, with the garment yarn, e-wrap cast on over all the needles (over the ravel cord stitches).</li>\n                <li>Thread your carriage.</li>\n                <li>Continue knitting.</li>\n                <li>Drop the knitting from the machine.</li>\n            </ol>\n\n            <h3>Chain Cast On (with Waste Yarn)</h3>\n\n            <ol class=\"kin-steps\">\n                <li>Cast on with waste yarn and ravel cord.</li>\n                <li>Starting on the left, follow the video.</li>\n                <li>Form a slip knot and place it on your latch tool.</li>\n                <li>Insert the tool between the first and second needle.</li>\n                <li>Catch the working yarn in the hook of the tool.</li>\n                <li>Pull the strand through the slip knot, forming a new loop.</li>\n                <li>Keeping the loop in the hook of the tool, position the tool between the next two needles.</li>\n                <li>Reach up and hook the working yarn again, pulling it through the loop on the hook (this forms a chain).</li>\n                <li>Continue to chain across all the needles.</li>\n                <li>Knit for a few inches.</li>\n                <li>Drop the work from the machine.</li>\n            </ol>\n\n        </div>\n\n        <div style=\"flex:0 0 350px; max-width:350px;\">\n\n            <a href=\"/downloads/lk_150_cast_on_worksheet.pdf\" target=\"_blank\">\n                <img\n                    src=\"/challenge/images/v2/50/LK-150-cast_on_worksheet.jpg\"\n                    alt=\"LK-150 Cast On Worksheet\"\n                    style=\"width:100%; height:auto; display:block;\"\n                >\n            </a>\n\n        </div>\n\n    </div>\n\n</div>\n\n<style>\n.kin-steps {\n    list-style: none;\n    padding: 0;\n    margin: 0 0 2rem 0;\n    counter-reset: step;\n}\n\n.kin-steps li {\n    counter-increment: step;\n    display: grid;\n    grid-template-columns: 2.25rem 1fr;\n    gap: .75rem;\n    align-items: start;\n    margin-bottom: .75rem;\n}\n\n.kin-steps li::before {\n    content: counter(step);\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    width: 2rem;\n    height: 2rem;\n    border-radius: 999px;\n    background: #4d6b2a;\n    color: #fff;\n    font-weight: 700;\n    font-size: .9rem;\n}\n</style>",
+              "html": "<blockquote style=\"\n    margin:0 0 1.5rem 0;\n    padding:1rem 1.25rem;\n    border-left:4px solid #4d6b2a;\n    background:#f6f8f2;\n    font-style:italic;\n\">\n    Use the videos in the previous section and practice these cast on techniques.\n</blockquote>\n\n<div style=\"\n    background:#f6f8f2;\n    border:1px solid #d8dfcf;\n    border-radius:8px;\n    padding:1.5rem;\n    margin:1.5rem 0;\n\">\n\n    <div style=\"\n        display:flex;\n        gap:2rem;\n        align-items:flex-start;\n        flex-wrap:wrap;\n    \">\n\n        <div style=\"flex:1 1 600px; min-width:300px;\">\n\n            <h3>e-Wrap Cast On (with Waste Yarn)</h3>\n\n            <ol class=\"kin-steps\">\n                <li>Set carriage for plain knitting.</li>\n                <li>Put 20–30 needles into work.</li>\n                <li>Using scrap yarn similar in weight to your garment yarn, e-wrap cast on.</li>\n                <li>Knit a few rows with scrap yarn. End on the left.</li>\n                <li>Knit 1 row with ravel cord.</li>\n                <li>Carriage on the right.</li>\n                <li>Starting on the left, with the garment yarn, e-wrap cast on over all the needles (over the ravel cord stitches).</li>\n                <li>Thread your carriage.</li>\n                <li>Continue knitting.</li>\n                <li>Drop the knitting from the machine.</li>\n            </ol>\n\n            <h3>Chain Cast On (with Waste Yarn)</h3>\n\n            <ol class=\"kin-steps\">\n                <li>Cast on with waste yarn and ravel cord.</li>\n                <li>Starting on the left, follow the video.</li>\n                <li>Form a slip knot and place it on your latch tool.</li>\n                <li>Insert the tool between the first and second needle.</li>\n                <li>Catch the working yarn in the hook of the tool.</li>\n                <li>Pull the strand through the slip knot, forming a new loop.</li>\n                <li>Keeping the loop in the hook of the tool, position the tool between the next two needles.</li>\n                <li>Reach up and hook the working yarn again, pulling it through the loop on the hook (this forms a chain).</li>\n                <li>Continue to chain across all the needles.</li>\n                <li>Knit for a few inches.</li>\n                <li>Drop the work from the machine.</li>\n            </ol>\n\n        </div>\n\n        <div style=\"flex:0 1 350px; max-width:100%;\">\n\n    <a href=\"/downloads/lk_150_cast_on_worksheet.pdf\" target=\"_blank\" rel=\"noopener\">\n        <img src=\"/images/course-content/51/v2/50/LK-150-cast_on_worksheet.jpg\" alt=\"LK-150 Cast On Worksheet\" style=\"width:100%; height:auto; display:block;\">\n    </a>\n\n    <a href=\"/downloads/lk_150_cast_on_worksheet.pdf\" target=\"_blank\" rel=\"noopener\" style=\"\n           display:block;\n           margin-top:1rem;\n           padding:.75rem 1rem;\n           background:#4d6b2a;\n           color:#fff;\n           border-radius:6px;\n           text-align:center;\n           text-decoration:none;\n           font-weight:700;\n       \">\n        Open Cast On Worksheet (PDF)\n    </a>\n\n</div>\n\n    </div>\n\n</div>\n\n<style>\n.kin-steps {\n    list-style: none;\n    padding: 0;\n    margin: 0 0 2rem 0;\n    counter-reset: step;\n}\n\n.kin-steps li {\n    counter-increment: step;\n    display: grid;\n    grid-template-columns: 2.25rem 1fr;\n    gap: .75rem;\n    align-items: start;\n    margin-bottom: .75rem;\n}\n\n.kin-steps li::before {\n    content: counter(step);\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    width: 2rem;\n    height: 2rem;\n    border-radius: 999px;\n    background: #4d6b2a;\n    color: #fff;\n    font-weight: 700;\n    font-size: .9rem;\n}\n</style>",
               "legacyComponentId": 9643,
               "order": 11
-            },
-            {
-              "type": "download",
-              "label": "Print the Worksheet",
-              "filename": "lk_150_cast_on_worksheet1.pdf",
-              "showInline": false,
-              "legacy": {
-                "assignId": "3490",
-                "componentId": "4930",
-                "viewHeight": "600",
-                "icon": "fa fa-download"
-              },
-              "legacyComponentId": 9644,
-              "order": 12
             }
           ],
           "title": "Your Turn",
@@ -269,35 +248,36 @@
               "type": "richText",
               "html": "Just like in hand knitting, there are many, many ways of binding off your knitting.  From plain 'ol, functional bind offs to decorative edges machine knitters have lots of choices. Let's take a look at a couple of basics that are great with your machine.<br><br>\r\n\r\n\r\n\r\n",
               "legacyComponentId": 9636,
-              "order": 13
+              "order": 12
             },
             {
               "type": "exerciseAccordion",
+              "title": "Bind-off methods",
               "sections": [
                 {
                   "title": "<b>Drop the work from the machine</b>",
-                  "bodyHtml": "<img class=\"img-responsive\" src=\"/challenge/images/v2/50/you_have_My_permission.gif\">\r\n<div class=\"row\">\r\n    <div class=\"col-sm-6 col-xs-6\">When swatching or practicing, sometimes it's OK to just remove the yarn from the yarn feeder, pass the carriage across the needles in work and let the knitting drop from the machine.<br><br> Obviously these stitches can easily unravel, but if you are just playing, why take time to bind off?\r\n\r\n    </div>\r\n    <div class=\"col-sm-4 col-xs-6\">\r\n        <div class='embed-video-container'><iframe src='https://player.vimeo.com/video/343470911' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>\r\n    </div>\r\n</div>\r\n<br><hr><br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-3 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/50/scrap-off1.jpg\"></div>\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\nSimply dropping the work is often done when scrapping off your knitting.<br><br>\r\nBy knitting a few rows of waste yarn, you safely maintain open stitches at the end of your knitting. These stitches can then be re-hung on the machine or picked up with hand knitting needles to finish the piece.  (This is similar to using Scrap 'n Ravel cast on methods)\r\n<br><br></div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow1.png"
+                  "bodyHtml": "<img class=\"img-responsive\" src=\"/images/course-content/51/v2/50/you_have_My_permission.gif\">\r\n<div class=\"row\">\r\n    <div class=\"col-sm-6 col-xs-6\">When swatching or practicing, sometimes it's OK to just remove the yarn from the yarn feeder, pass the carriage across the needles in work and let the knitting drop from the machine.<br><br> Obviously these stitches can easily unravel, but if you are just playing, why take time to bind off?\r\n\r\n    </div>\r\n    <div class=\"col-sm-4 col-xs-6\">\r\n        <div class='embed-video-container'><iframe src='https://player.vimeo.com/video/343470911' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>\r\n    </div>\r\n</div>\r\n<br><hr><br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-3 col-xs-12\"><img class=\"img-responsive\" src=\"/images/course-content/51/v2/50/scrap-off1.jpg\"></div>\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\nSimply dropping the work is often done when scrapping off your knitting.<br><br>\r\nBy knitting a few rows of waste yarn, you safely maintain open stitches at the end of your knitting. These stitches can then be re-hung on the machine or picked up with hand knitting needles to finish the piece.  (This is similar to using Scrap 'n Ravel cast on methods)\r\n<br><br></div>\r\n</div>",
+                  "iconSrc": "/images/course-content/51/arrow1.png"
                 },
                 {
                   "title": "<b>Fast, Secure, Temporary Bind Off</b>",
-                  "bodyHtml": "OK, if you are knitting a swatch and you are going to wash it, or you are going to handle your knitted piece a lot, Just leaving open stitches isn't practical you'll want to secure the stitches. <br><br> Running the tail of yarn through each stitch is a fast way to secure them.<br><br>\r\n<div class=\"row\">\r\n    <div class=\"col-sm-4 col-sm-offset-1 col-xs-6\">\r\n        <div class='embed-video-container'><iframe src='https://player.vimeo.com/video/343495391' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\r\n        </div>\r\n    </div>\r\n        <div class=\"col-sm-5 col-sm-offset-1col-xs-6\">\r\n            <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Sometimes you have a very stretchy, open piece of knitting. Using a regular bind off method may distort the piece. Use this method to temporarily secure the stitches and avoid any distortion.<br> <br>\r\n <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> This is also a good technique for gathering the top of hats. Just run the tail through the stitches, pull tight and secure ... instant gathers!\r\n        </div>\r\n\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow2.png"
+                  "bodyHtml": "OK, if you are knitting a swatch and you are going to wash it, or you are going to handle your knitted piece a lot, Just leaving open stitches isn't practical you'll want to secure the stitches. <br><br> Running the tail of yarn through each stitch is a fast way to secure them.<br><br>\r\n<div class=\"row\">\r\n    <div class=\"col-sm-4 col-sm-offset-1 col-xs-6\">\r\n        <div class='embed-video-container'><iframe src='https://player.vimeo.com/video/343495391' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\r\n        </div>\r\n    </div>\r\n        <div class=\"col-sm-5 col-sm-offset-1 col-xs-6\">\r\n            <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Sometimes you have a very stretchy, open piece of knitting. Using a regular bind off method may distort the piece. Use this method to temporarily secure the stitches and avoid any distortion.<br> <br>\r\n <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> This is also a good technique for gathering the top of hats. Just run the tail through the stitches, pull tight and secure ... instant gathers!\r\n        </div>\r\n\r\n</div>",
+                  "iconSrc": "/images/course-content/51/arrow2.png"
                 },
                 {
                   "title": "<b>Back Stitch Bind off</b>",
                   "bodyHtml": "Hand stitching creates a very stretchy bind off.<br>\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12 col-sm-offset-3\">\r\n<div class='embed-video-container'><iframe src='https://player.vimeo.com/video/151858299' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>\r\n</div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow3.png"
+                  "iconSrc": "/images/course-content/51/arrow3.png"
                 },
                 {
                   "title": "<b>Bind off by hand</b>",
                   "bodyHtml": "There is no rule that says you have to do EVERYTHING on the machine.  If you are a hand knitter, you may want to take the stitches off the machine on a hand knitting needle and work the bind off method of your choice<br><br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12 col-sm-offset-3\">\r\n<div class='embed-video-container'><iframe src='https://player.vimeo.com/video/343473040' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>\r\n</div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow4.png"
+                  "iconSrc": "/images/course-content/51/arrow4.png"
                 },
                 {
                   "title": "<b>My Favorite Bind Off - Stitch thru Stitch</b>",
                   "bodyHtml": "Stitch thru stitch bind off that is worked so YOU control the size of the bind off stitches and the tension of the bind off edge.  Make it as firm or loose as you like. No guesswork.<br><br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12 col-sm-offset-3\">\r\n<div class='embed-video-container'><iframe src='https://player.vimeo.com/video/343513501' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></div>\r\n</div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow5.png"
+                  "iconSrc": "/images/course-content/51/arrow5.png"
                 }
               ],
               "legacy": {
@@ -305,13 +285,13 @@
                 "size": null
               },
               "legacyComponentId": 9637,
-              "order": 14
+              "order": 13
             },
             {
               "type": "richText",
-              "html": "<blockquote class=\"blockquote_style\"><i class=\"fa fa-refresh fa-2x aria-hidden=\"true\"></i> Take time to try different bind off  methods while you are knitting swatches and practicing techniques.  Don't get stuck using only one method.<br><br>Part of your journey to learn your machine is to learn different techniques and when to apply them.</blockquote>",
+              "html": "<blockquote class=\"blockquote_style\"><i class=\"fa fa-refresh fa-2x\" aria-hidden=\"true\"></i> Take time to try different bind off  methods while you are knitting swatches and practicing techniques.  Don't get stuck using only one method.<br><br>Part of your journey to learn your machine is to learn different techniques and when to apply them.</blockquote>",
               "legacyComponentId": 9638,
-              "order": 15
+              "order": 14
             }
           ],
           "title": "Bind off choices",
@@ -344,7 +324,7 @@
             {
               "type": "download",
               "label": "Print the Worksheets",
-              "filename": "swatch_exercises2.pdf",
+              "filename": "/downloads/swatch_exercises2.pdf",
               "showInline": false,
               "legacy": {
                 "assignId": "3307",
@@ -372,7 +352,7 @@
           }
         },
         {
-          "title": "Content",
+          "title": "Don't Skip This",
           "slug": "content-1782238317264",
           "order": 2,
           "legacy": {
@@ -382,7 +362,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your project? </div></b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your project? </b></div>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
               "legacyComponentId": 5029,
               "order": 4
             }
@@ -392,7 +372,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"row cleanwell\">\r\n<div class=\"col-md-7\">\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote></div>\r\n<div class=\"col-md-5\"><img class=\"img-responsive\" src=\"//www.knititnow.com/challenge/images/swatch_measure.jpg\" /></div>\r\n</div>",
+              "html": "<div class=\"row cleanwell\">\n<div class=\"col-md-7\">\n<h4><strong>GAUGE SWATCH</strong></h4>\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\n<br>\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\n<blockquote class=\"smallblock\">\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote></div>\n<div class=\"col-md-5\"><img class=\"img-responsive\" src=\"/images/course-content/51/swatch_measure.jpg\"></div>\n</div>",
               "legacyComponentId": 5030,
               "order": 5
             },
@@ -404,7 +384,7 @@
             },
             {
               "type": "richText",
-              "html": "<div class=\"row well\">\r\n<div class=\"col-xs-12 col-md-10\">\r\n<h4>Play!</h4>\r\n<ol class=\"instruction-list\">\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n</div>\r\n<div class=\"col-xs-12 col-md-2\"><img class=\"img-responsive\" src=\"http://www.knititnow.com/challenge/images/tension_swatch.jpg\" /></div>\r\n</div>\r\n",
+              "html": "<div class=\"row well\">\n<div class=\"col-xs-12 col-md-10\">\n<h4>Play!</h4>\n<ol class=\"instruction-list\">\n<li>Start knitting stockenette at the tightest tension that will knit.&nbsp; (If the tension is too tight, you'll see stitches that don't form properly.</li>\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\n<li>Keep knitting sections, marking the tension dial number in each section.&nbsp; Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\n</ol>\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.&nbsp; If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.&nbsp; Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\n</div>\n<div class=\"col-xs-12 col-md-2\"><img class=\"img-responsive\" src=\"/images/course-content/51/tension_swatch.jpg\"></div>\n</div>\n",
               "legacyComponentId": 5032,
               "order": 7
             }
@@ -444,7 +424,7 @@
             },
             {
               "type": "richText",
-              "html": "<p>\n    Optional caption or notes.\n</p>",
+              "html": "",
               "legacyComponentId": 9659,
               "order": 9,
               "layoutRole": "threeVideosCaption1"
@@ -466,7 +446,7 @@
             },
             {
               "type": "video",
-              "vimeoId": "178357292",
+              "vimeoId": "178357247",
               "title": "Tension: Controllling your gauge",
               "legacyComponentId": 9662,
               "order": 14,
@@ -492,14 +472,14 @@
           "components": [
             {
               "type": "richText",
-              "html": "<h3>Knitting a \"Proper\" Swatch</h3>\n\n<p>The goal of a swatch is to determine how many stitches and rows it takes to knit a 1\" (or 4\"/10cm) square.</p>\n\n<p>To do this accurately, you will knit a larger piece and mark off a set number of stitches and rows <strong>AS YOU KNIT</strong>.</p>\n\n<p>After you dress (rest, wash, block) your swatch, you can easily measure and calculate your stitch and row gauge.</p>\n\n<p>When you knit your swatch, you will cast on <strong>MORE</strong> stitches and knit <strong>MORE</strong> rows than shown. This prevents you from measuring edge to edge and allows you to measure only the isolated area.</p>\n\n<ol class=\"kin-steps\">\n  <li>Garment yarn: Cast on 50 stitches with any method.</li>\n  <li>Knit for 1\" or so. Carriage on the right.</li>\n  <li>Contrasting waste yarn: Knit 2 rows.</li>\n  <li>Garment yarn: Knit 20 rows.</li>\n  <li>Use a yarn marker or run a strand as you knit to isolate the stitches.</li>\n  <li>Knit 20 rows.</li>\n  <li>Contrasting waste yarn: Knit 2 rows.</li>\n  <li>Garment yarn: Knit 1\" or so.</li>\n  <li>Bind off or drop the work from the machine.</li>\n  <li>Dress the swatch (wash, block, and treat as you will the finished item).</li>\n</ol>",
+              "html": "<h3>Knitting a \"Proper\" Swatch</h3>\n\n<p>The goal of a swatch is to determine how many stitches and rows it takes to knit a 1\" (or 4\"/10cm) square.</p>\n\n<p>To do this accurately, you will knit a larger piece and mark off a set number of stitches and rows <strong>AS YOU KNIT</strong>.</p>\n\n<p>After you dress (rest, wash, block) your swatch, you can easily measure and calculate your stitch and row gauge.</p>\n\n<p>When you knit your swatch, you will cast on <strong>MORE</strong> stitches and knit <strong>MORE</strong> rows than shown. This prevents you from measuring edge to edge and allows you to measure only the isolated area.</p>\n\n<ol class=\"kin-steps\">\n  <li>Garment yarn: Cast on 50 stitches with any method.</li>\n  <li>Knit for 1\" or so. Carriage on the right.</li>\n  <li>Contrasting waste yarn: Knit 2 rows.</li>\n  <li>Garment yarn: Knit 20 rows.</li>\n  <li>Use a yarn marker or run a strand as you knit to isolate the stitches.</li>\n  <li>Knit 20 rows.</li>\n  <li>Contrasting waste yarn: Knit 2 rows.</li>\n  <li>Garment yarn: Knit 1\" or so.</li>\n  <li>Bind off or drop the work from the machine.</li>\n  <li>Dress the swatch (wash, block, and treat as you will the finished item).</li>\n</ol>\n<figure><img src=\"/images/course-content/51/v2/50/lk-150_swatch2.png\" alt=\"\"></figure>",
               "legacyComponentId": 5034,
               "order": 16
             },
             {
               "type": "download",
-              "label": "Print the Worksheet",
-              "filename": "swatch_practice.pdf",
+              "label": "Your Turn ",
+              "filename": "/downloads/swatch_practice.pdf",
               "showInline": false,
               "legacy": {
                 "assignId": "3473",
@@ -541,23 +521,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<p>\n  Accurate gauge swatching and accurate measuring is <strong>CRITICAL</strong> to your success as a machine knitter.\n</p>\n\n<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 400px;\">\n\n    <p>Test yourself with this exercise.</p>\n\n    <ol class=\"kin-steps\">\n      <li>Knit a \"proper\" swatch.</li>\n      <li>Let it rest, wash, and block.</li>\n      <li>Carefully measure and calculate your gauge.</li>\n      <li>\n        Calculate the stitches and rows for a 6\" square.\n        <ol>\n          <li>Cast on {Stitches per inch × 6} stitches.</li>\n          <li>Knit {Rows per inch × 6} rows.</li>\n        </ol>\n      </li>\n      <li>Knit a square according to your pattern.</li>\n      <li>Let it rest, wash, and block.</li>\n      <li>Does your square fit in the template? Is it accurate? If not, double-check your gauge measurements and try again.</li></ol></div>\n\n</div>",
+              "html": "<p>\n  Accurate gauge swatching and accurate measuring is <strong>CRITICAL</strong> to your success as a machine knitter.\n</p>\n\n<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 400px;\">\n\n    <p>Test yourself with this exercise.</p>\n\n    <ol class=\"kin-steps\">\n      <li>Knit a \"proper\" swatch.</li>\n      <li>Let it rest, wash, and block.</li>\n      <li>Carefully measure and calculate your gauge.</li>\n      <li>\n        Calculate the stitches and rows for a 6\" square.\n        <ol>\n          <li>Cast on {Stitches per inch × 6} stitches.</li>\n          <li>Knit {Rows per inch × 6} rows.</li>\n        </ol>\n      </li>\n      <li>Knit a square according to your pattern.</li>\n      <li>Let it rest, wash, and block.</li>\n      <li>Does your square fit in the template? Is it accurate? If not, double-check your gauge measurements and try again.</li></ol></div>\n\n</div>\n<figure>\n    <a href=\"/downloads/swatch_practice.pdf\" download>\n        <img\n            src=\"/images/course-content/51/v2/50/swatch_worksheet.png\"\n            alt=\"Download Swatch Practice Worksheet\">\n    </a>\n    <figcaption>\n        <a href=\"/downloads/swatch_practice.pdf\" download>\n            Download Swatch Practice Worksheet (PDF)\n        </a>\n    </figcaption>\n</figure>",
               "legacyComponentId": 5038,
               "order": 19
-            },
-            {
-              "type": "download",
-              "label": "Print the Worksheet",
-              "filename": "downloads/swatch_challenge1.pdf",
-              "showInline": false,
-              "legacy": {
-                "assignId": "3480",
-                "componentId": "4906",
-                "viewHeight": "600",
-                "icon": "fa fa-download"
-              },
-              "legacyComponentId": 5039,
-              "order": 20
             }
           ],
           "title": "Test Yourself",
@@ -571,16 +537,44 @@
       ]
     },
     {
-      "title": "Stripes",
-      "slug": "stripes",
+      "title": "Quick Project",
+      "slug": "lesson-1790793285497",
       "displayOrder": 4,
       "legacy": {
-        "itemId": 332,
+        "itemId": 796,
         "lessonOrder": 4
       },
       "blocks": [
         {
-          "title": "Horizontal Design Possibilities",
+          "title": "Quick - Basic Hat",
+          "slug": "content-1790793484462",
+          "order": 1,
+          "legacy": {
+            "assignId": 1,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start; margin:1.5rem 0;\">\n\n    <div style=\"flex:1 1 220px; max-width:300px;\">\n        <a href=\"/patterns/hat/builder\" target=\"_blank\" rel=\"noopener\">\n            <img\n                src=\"/images/patterns/hat.webp\"\n                alt=\"Open the Hat Builder\"\n                style=\"width:100%; max-width:250px; height:auto; display:block;\">\n        </a>\n\n        <a href=\"/patterns/hat/builder\"\n           target=\"_blank\"\n           rel=\"noopener\"\n           style=\"display:inline-block; margin-top:1rem; padding:.75rem 1.25rem; background:#4d6b2a; color:#fff; border-radius:6px; text-decoration:none; font-weight:700;\">\n            Use the Hat Builder\n        </a>\n    </div>\n\n    <div style=\"flex:2 1 400px; min-width:0;\">\n        <iframe\n            src=\"https://player.vimeo.com/video/319202520\"\n            title=\"Basic Hat Video\"\n            style=\"width:100%; aspect-ratio:16/9; border:0; display:block;\"\n            allow=\"autoplay; fullscreen; picture-in-picture\"\n            allowfullscreen>\n        </iframe>\n    </div>\n\n</div>",
+              "legacyComponentId": 9692,
+              "order": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Stripes",
+      "slug": "stripes",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 332,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "title": "Stripes",
           "slug": "three-videos-1782240716061",
           "order": 2,
           "legacy": {
@@ -606,7 +600,7 @@
             },
             {
               "type": "richText",
-              "html": "<p>\n    Optional caption or notes.\n</p>",
+              "html": "",
               "legacyComponentId": 9667,
               "order": 2,
               "layoutRole": "threeVideosCaption1"
@@ -621,7 +615,7 @@
             },
             {
               "type": "richText",
-              "html": "<p>\n    Optional caption or notes.\n</p>",
+              "html": "",
               "legacyComponentId": 9669,
               "order": 4,
               "layoutRole": "threeVideosCaption2"
@@ -636,14 +630,14 @@
             },
             {
               "type": "richText",
-              "html": "<p>\n    Optional caption or notes.\n</p>",
+              "html": "",
               "legacyComponentId": 9671,
               "order": 6,
               "layoutRole": "threeVideosCaption3"
             },
             {
               "type": "richText",
-              "html": "<p>\n    Optional text below the videos. Summarize key points, compare techniques, or provide an exercise/challenge.\n</p>",
+              "html": "",
               "legacyComponentId": 9672,
               "order": 8,
               "layoutRole": "threeVideosOutro"
@@ -672,17 +666,17 @@
     {
       "title": "Garter Stitch",
       "slug": "garter-stitch",
-      "displayOrder": 5,
+      "displayOrder": 6,
       "legacy": {
         "itemId": 331,
-        "lessonOrder": 5
+        "lessonOrder": 6
       },
       "blocks": [
         {
           "components": [
             {
               "type": "richText",
-              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 500px;\">\n\n    <p>\n      One of the first surprises for most machine knitters is the fact that the humble garter stitch is problematic on the knitting machine. Because our needles face in one direction and they form uniform stitches in one direction, we can easily produce stockinette stitch, but knitting every row is a different story!\n    </p>\n\n    <p>\n      By default, knitting machines knit stockinette stitch. Stockinette has a smooth side (knit side) and a bumpy side (purl side). In hand-knitting terms, this is knit one row, purl one row.\n    </p>\n\n    <p>\n      Hand knitters can easily knit garter stitch by knitting every row. The purl bumps are visible on both sides of the knitting.\n    </p>\n\n    <p>\n      As machine knitters, we have to take extra steps to show the purl bumps on the opposite side of our knitting.\n    </p>\n\n    <p>\n      There are a number of techniques you can use to get garter stitch texture in your knitting:\n    </p>\n\n    <ul>\n      <li>Hand manipulate (re-form) stitches</li>\n      <li>Remove live stitches from the machine, turn the work, and rehang the stitches</li>\n    </ul>\n\n    <p>\n      With a little planning, machine knitters <strong>CAN</strong> incorporate purl bumps into our knitting.\n    </p>\n\n    <p>\n      <em><small>\n        You may have heard about an accessory called a ribber. A ribber is basically a second needle bed positioned directly opposite the main bed. Because the needles face the opposite direction, both knit and purl stitches can be formed. The LK-150 was never designed with a ribber.\n      </small></em>\n    </p>\n\n  </div>\n\n  <div style=\"flex:0 0 300px; text-align:center;\">\n    <img\n      src=\"/challenge/images/v2/51/garter.jpg\"\n      alt=\"Garter stitch example\"\n      style=\"max-width:100%; height:auto; border:1px solid #ddd; padding:4px;\"\n    >\n  </div>\n\n</div>",
+              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 500px;\">\n\n    <p>\n      One of the first surprises for most machine knitters is the fact that the humble garter stitch is problematic on the knitting machine. Because our needles face in one direction and they form uniform stitches in one direction, we can easily produce stockinette stitch, but knitting every row is a different story!\n    </p>\n\n    <p>\n      By default, knitting machines knit stockinette stitch. Stockinette has a smooth side (knit side) and a bumpy side (purl side). In hand-knitting terms, this is knit one row, purl one row.\n    </p>\n\n    <p>\n      Hand knitters can easily knit garter stitch by knitting every row. The purl bumps are visible on both sides of the knitting.\n    </p>\n\n    <p>\n      As machine knitters, we have to take extra steps to show the purl bumps on the opposite side of our knitting.\n    </p>\n\n    <p>\n      There are a number of techniques you can use to get garter stitch texture in your knitting:\n    </p>\n\n    <ul>\n      <li>Hand manipulate (re-form) stitches</li>\n      <li>Remove live stitches from the machine, turn the work, and rehang the stitches</li>\n    </ul>\n\n    <p>\n      With a little planning, machine knitters <strong>CAN</strong> incorporate purl bumps into our knitting.\n    </p>\n\n    <p>\n      <em><small>\n        You may have heard about an accessory called a ribber. A ribber is basically a second needle bed positioned directly opposite the main bed. Because the needles face the opposite direction, both knit and purl stitches can be formed. The LK-150 was never designed with a ribber.\n      </small></em>\n    </p>\n\n  </div>\n\n  <div style=\"flex:0 0 300px; text-align:center;\">\n    <img\n      src=\"/images/course-content/51/v2/51/garter.jpg\"\n      alt=\"Garter stitch example\"\n      style=\"max-width:100%; height:auto; border:1px solid #ddd; padding:4px;\"\n    >\n  </div>\n\n</div>",
               "legacyComponentId": 4972,
               "order": 1
             }
@@ -699,51 +693,52 @@
           "components": [
             {
               "type": "richText",
-              "html": "Because the needles on our needlebeds are positioned in one direction, passing the carriage and knitting a row produces stitches with the purl bumps facing.<br><br>\r\nYou might want purl bumps on the opposite side of the knitting:\r\n<ul>\r\n<li>Ribbing</li>\r\n<li>Garter stitch accent rows</li>\r\n<li>Vertical accents between cables</li>\r\n<li>Accents to eyelets for lace</li>\r\n</ul>\r\n<b>To reform individual Stitches:</b>\r\n<ol>\r\n<li>Use your latch tool to remove an individual stitch from the machine needle</li>\r\n<li>Insert the hook of the latch tool in the stitch in the row below</li>\r\n<li>Release the loose stitch</li>\r\n<li>Place the stitch behind the latch</li>\r\n<li>Place the unknit strand in the hook of the tool</li>\r\n<li>Pull the strand through, closing the latch with the stitch and forming a new stitch</li>\r\n<li>\r\nReplace the new stitch back on the machine</li>\r\n<li>Notice that the purl bump is now away from you</li>\r\n</ul>\r\n\r\n",
+              "html": "Because the needles on our needlebeds are positioned in one direction, passing the carriage and knitting a row produces stitches with the purl bumps facing.<br><br>\r\nYou might want purl bumps on the opposite side of the knitting:\r\n<ul>\r\n<li>Ribbing</li>\r\n<li>Garter stitch accent rows</li>\r\n<li>Vertical accents between cables</li>\r\n<li>Accents to eyelets for lace</li>\r\n</ul>\r\n<b>To reform individual Stitches:</b>\r\n<ol>\r\n<li>Use your latch tool to remove an individual stitch from the machine needle</li>\r\n<li>Insert the hook of the latch tool in the stitch in the row below</li>\r\n<li>Release the loose stitch</li>\r\n<li>Place the stitch behind the latch</li>\r\n<li>Place the unknit strand in the hook of the tool</li>\r\n<li>Pull the strand through, closing the latch with the stitch and forming a new stitch</li>\r\n<li>\r\nReplace the new stitch back on the machine</li>\r\n<li>Notice that the purl bump is now away from you</li>\r\n</ol>\r\n\r\n",
               "legacyComponentId": 5015,
               "order": 2
             },
             {
               "type": "imageGallery",
+              "title": "Garter Stitch: Step by Step.",
               "slides": [
                 {
-                  "src": "/challenge/images/v2/51/garter1.jpg",
+                  "src": "/images/course-content/51/v2/51/garter1.jpg",
                   "caption": "Insert the latch tool in the loop of the stitch in the row below"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter2.jpg",
+                  "src": "/images/course-content/51/v2/51/garter2.jpg",
                   "caption": "Pull the machine needle all the way out - putting the stitch behind the open latch"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter3.jpg",
+                  "src": "/images/course-content/51/v2/51/garter3.jpg",
                   "caption": "Pull the machine needle back, dropping the stitch. Don't worry, because you've secured the stitch below with the latch tool, the dropped stitch won't run"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter4.jpg",
+                  "src": "/images/course-content/51/v2/51/garter4.jpg",
                   "caption": "Un-knit (loosen) the stitch and free the strand"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter5.jpg",
+                  "src": "/images/course-content/51/v2/51/garter5.jpg",
                   "caption": "Place the stitch that is on the tool behind the latch and place the un-knit strand in the hook of the tool"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter6.jpg",
+                  "src": "/images/course-content/51/v2/51/garter6.jpg",
                   "caption": "Pull back on the tool, closing the latch over the strand"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter7.jpg",
+                  "src": "/images/course-content/51/v2/51/garter7.jpg",
                   "caption": "Continue to pull back, pulling the strand through the stitch, forming a new stitch"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter8.jpg",
+                  "src": "/images/course-content/51/v2/51/garter8.jpg",
                   "caption": "Position the new stitch behind the latch of the tool and place the hood over the hook of the needle on the  machine"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter9.jpg",
+                  "src": "/images/course-content/51/v2/51/garter9.jpg",
                   "caption": "Lift up on the tool, sliding the new stitch over the machine needle"
                 },
                 {
-                  "src": "/challenge/images/v2/51/garter10_1.jpg",
+                  "src": "/images/course-content/51/v2/51/garter10_1.jpg",
                   "caption": "Notice the knit stitch that is facing you ... the purl bump is now on the opposite side"
                 }
               ],
@@ -798,7 +793,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 500px;\">\n\n    <p>\n      Using any method, cast on 30 stitches. This is a great place to practice different cast-on methods.\n    </p>\n\n    <h3>Ribbing Practice</h3>\n\n    <ol class=\"kin-steps\">\n      <li>Knit 10 rows.</li>\n      <li>Place your latch tool in a stitch in the middle of the knitting, down 4-5 rows.</li>\n      <li>Drop the stitch down to the tool.</li>\n      <li>Re-latch the stitch and re-hang it on the needle.</li>\n      <li>Skip 1 stitch and repeat.</li>\n      <li>Skip 1 stitch and repeat.</li>\n    </ol>\n\n    <h3>Hand Knitting Needle Remove, Turn, Rehang</h3>\n\n    <ol class=\"kin-steps\">\n      <li>Knit a few rows.</li>\n      <li>Remove all the stitches on a circular hand knitting needle.</li>\n      <li>Turn the knitting.</li>\n      <li>Rehang all the stitches back on the same needles.</li>\n      <li>Knit a few rows.</li>\n      <li>Drop the work or bind off.</li>\n    </ol>\n\n  </div>\n\n  <div style=\"flex:0 0 260px; text-align:center; background:#f7f7f7; padding:1rem; border-radius:8px;\">\n    <img\n      src=\"/challenge/images/v2/51/feeling_ambitious.gif\"\n      alt=\"Feeling ambitious\"\n      style=\"max-width:100%; height:auto;\"\n    >\n\n    <p>\n      Knit one of the patterns in this course and add a \"stripe\" of garter stitch.\n    </p>\n  </div>\n\n</div>",
+              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 500px;\">\n\n    <p>\n      Using any method, cast on 30 stitches. This is a great place to practice different cast-on methods.\n    </p>\n\n    <h3>Ribbing Practice</h3>\n\n    <ol class=\"kin-steps\">\n      <li>Knit 10 rows.</li>\n      <li>Place your latch tool in a stitch in the middle of the knitting, down 4-5 rows.</li>\n      <li>Drop the stitch down to the tool.</li>\n      <li>Re-latch the stitch and re-hang it on the needle.</li>\n      <li>Skip 1 stitch and repeat.</li>\n      <li>Skip 1 stitch and repeat.</li>\n    </ol>\n\n    <h3>Hand Knitting Needle Remove, Turn, Rehang</h3>\n\n    <ol class=\"kin-steps\">\n      <li>Knit a few rows.</li>\n      <li>Remove all the stitches on a circular hand knitting needle.</li>\n      <li>Turn the knitting.</li>\n      <li>Rehang all the stitches back on the same needles.</li>\n      <li>Knit a few rows.</li>\n      <li>Drop the work or bind off.</li>\n    </ol>\n\n  </div>\n\n</div>",
               "legacyComponentId": 5023,
               "order": 7
             }
@@ -844,67 +839,31 @@
           "legacy": {
             "assignId": 3702,
             "blockType": "HTML",
-            "editorLayout": "threeVideosWithText"
+            "editorLayout": "twoVideosSideBySide"
           },
           "components": [
             {
               "type": "richText",
               "html": "To join the scarf ends, join stitches to stitches with Kitchener grafting on the machine",
               "legacyComponentId": 9675,
-              "order": 10,
-              "layoutRole": "threeVideosIntro"
-            },
-            {
-              "type": "video",
-              "vimeoId": "151859209",
-              "title": "Single Bed Infinity Scarf",
-              "legacyComponentId": 9676,
-              "order": 12,
-              "layoutRole": "threeVideosVideo1"
-            },
-            {
-              "type": "richText",
-              "html": "",
-              "legacyComponentId": 9677,
-              "order": 11,
-              "layoutRole": "threeVideosCaption1"
+              "order": 1,
+              "layoutRole": "twoVideosIntro"
             },
             {
               "type": "video",
               "vimeoId": "151849234",
-              "title": "Kitchener Grafting on the Machine",
+              "title": "Kitchener Grafting on the Machine - Knit Side",
               "legacyComponentId": 9678,
-              "order": 14,
-              "layoutRole": "threeVideosVideo2"
-            },
-            {
-              "type": "richText",
-              "html": "",
-              "legacyComponentId": 9679,
-              "order": 13,
-              "layoutRole": "threeVideosCaption2"
+              "order": 2,
+              "layoutRole": "twoVideosVideo1"
             },
             {
               "type": "video",
-              "vimeoId": "151849234",
-              "title": "Graft from the Purl Side",
+              "vimeoId": "151850342",
+              "title": "Kitchener Grafting on the Machine - Purl Side",
               "legacyComponentId": 9680,
-              "order": 16,
-              "layoutRole": "threeVideosVideo3"
-            },
-            {
-              "type": "richText",
-              "html": "",
-              "legacyComponentId": 9681,
-              "order": 15,
-              "layoutRole": "threeVideosCaption3"
-            },
-            {
-              "type": "richText",
-              "html": "",
-              "legacyComponentId": 9682,
-              "order": 17,
-              "layoutRole": "threeVideosOutro"
+              "order": 3,
+              "layoutRole": "twoVideosVideo2"
             }
           ]
         }
@@ -913,10 +872,10 @@
     {
       "title": "Increasing and Decreasing",
       "slug": "increasing-and-decreasing",
-      "displayOrder": 6,
+      "displayOrder": 7,
       "legacy": {
         "itemId": 327,
-        "lessonOrder": 6
+        "lessonOrder": 7
       },
       "blocks": [
         {
@@ -965,16 +924,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 600px;\">\n\n    <div style=\"background:#f5f5f5; border-left:4px solid #4d6b2a; padding:1rem; margin-bottom:1.5rem; border-radius:6px;\">\n      <p>\n        In this practice, you will be working with 2 increase methods and 2 decrease methods.\n      </p>\n\n      <p>\n        Follow the video in the previous section.\n      </p>\n\n      <p><strong>The goals:</strong></p>\n\n      <ul>\n        <li>Get comfortable transferring stitches</li>\n        <li>Compare working shaping on the edge stitch versus leaving a seaming stitch</li>\n        <li>Experiment with leaving eyelets next to the increases</li>\n      </ul>\n    </div>\n\n    <ol class=\"kin-steps\">\n      <li>Cast on 20 stitches.</li>\n\n      <li>\n        Knit 4–6 rows.\n        <br><strong>Decreases</strong>\n      </li>\n\n      <li>\n        On the right:\n        <ul>\n          <li>Transfer the edge stitch one needle to the left, putting 2 stitches on 1 needle.</li>\n          <li>Place the emptied needle out of work.</li>\n        </ul>\n      </li>\n\n      <li>\n        On the left:\n        <ul>\n          <li>Transfer the 2 left edge stitches 1 needle to the right, putting 2 stitches on the 2nd needle from the left.</li>\n          <li>Place the emptied needle out of work.</li>\n        </ul>\n      </li>\n\n      <li>(18 stitches) Knit 2 rows.</li>\n\n      <li>Repeat these decreases 5 more times. Twelve stitches decreased (8 stitches remaining).</li>\n\n      <li>\n        Knit 4 rows.\n        <br><strong>Increases</strong>\n      </li>\n\n      <li>\n        On the right:\n        <ul>\n          <li>Transfer the right-most stitch 1 needle to the right.</li>\n          <li>Pick up the heel of the stitch in the row below and fill the emptied needle.</li>\n          <li>For best results, use the bump from the 3rd stitch below, not the stitch that was moved.</li>\n        </ul>\n      </li>\n\n      <li>\n        On the left:\n        <ul>\n          <li>Transfer 2 stitches to the left.</li>\n          <li>Leave the emptied needle in working position (do not fill the emptied needle).</li>\n        </ul>\n      </li>\n\n      <li>(10 stitches) Knit 2 rows.</li>\n\n      <li>Repeat these increases 5 more times. Twelve stitches increased (20 stitches).</li>\n\n      <li>Knit 4 rows.</li>\n\n      <li>Bind off.</li>\n    </ol>\n\n  </div>\n\n  <div style=\"flex:0 0 300px;\">\n    <img\n      src=\"/challenge/images/v2/51/inc_dec_chart1.jpg\"\n      alt=\"Increase and decrease chart\"\n      style=\"width:100%; height:auto;\"\n    >\n  </div>\n\n</div>",
-              "legacyComponentId": 5148,
-              "order": 2,
-              "layoutRole": "textVideoLeft"
-            },
-            {
-              "type": "video",
-              "vimeoId": "360923118",
-              "title": null,
-              "legacySource": "embedded-html",
+              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n  <div style=\"flex:1 1 600px;\">\n\n    <div style=\"background:#f5f5f5; border-left:4px solid #4d6b2a; padding:1rem; margin-bottom:1.5rem; border-radius:6px;\">\n      <p>\n        In this practice, you will be working with 2 increase methods and 2 decrease methods.\n      </p>\n\n      <p>\n        Follow the video in the previous section.\n      </p>\n\n      <p><strong>The goals:</strong></p>\n\n      <ul>\n        <li>Get comfortable transferring stitches</li>\n        <li>Compare working shaping on the edge stitch versus leaving a seaming stitch</li>\n        <li>Experiment with leaving eyelets next to the increases</li>\n      </ul>\n    </div>\n\n    <ol class=\"kin-steps\">\n      <li>Cast on 20 stitches.</li>\n\n      <li>\n        Knit 4–6 rows.\n        <br><strong>Decreases</strong>\n      </li>\n\n      <li>\n        On the right:\n        <ul>\n          <li>Transfer the edge stitch one needle to the left, putting 2 stitches on 1 needle.</li>\n          <li>Place the emptied needle out of work.</li>\n        </ul>\n      </li>\n\n      <li>\n        On the left:\n        <ul>\n          <li>Transfer the 2 left edge stitches 1 needle to the right, putting 2 stitches on the 2nd needle from the left.</li>\n          <li>Place the emptied needle out of work.</li>\n        </ul>\n      </li>\n\n      <li>(18 stitches) Knit 2 rows.</li>\n\n      <li>Repeat these decreases 5 more times. Twelve stitches decreased (8 stitches remaining).</li>\n\n      <li>\n        Knit 4 rows.\n        <br><strong>Increases</strong>\n      </li>\n\n      <li>\n        On the right:\n        <ul>\n          <li>Transfer the right-most stitch 1 needle to the right.</li>\n          <li>Pick up the heel of the stitch in the row below and fill the emptied needle.</li>\n          <li>For best results, use the bump from the 3rd stitch below, not the stitch that was moved.</li>\n        </ul>\n      </li>\n\n      <li>\n        On the left:\n        <ul>\n          <li>Transfer 2 stitches to the left.</li>\n          <li>Leave the emptied needle in working position (do not fill the emptied needle).</li>\n        </ul>\n      </li>\n\n      <li>(10 stitches) Knit 2 rows.</li>\n\n      <li>Repeat these increases 5 more times. Twelve stitches increased (20 stitches).</li>\n\n      <li>Knit 4 rows.</li>\n\n      <li>Bind off.</li>\n    </ol>\n\n  </div>\n\n  <div style=\"flex:0 0 300px;\">\n    <img\n      src=\"/images/course-content/51/v2/51/inc_dec_chart1.jpg\"\n      alt=\"Increase and decrease chart\"\n      style=\"width:100%; height:auto;\"\n    >\n  </div>\n\n</div>",
               "legacyComponentId": 5148,
               "order": 2
             }
@@ -1057,23 +1007,53 @@
               "layoutRole": "threeVideosOutro"
             }
           ]
+        },
+        {
+          "title": "Increase Practice",
+          "slug": "increase-practice-videos",
+          "order": 5,
+          "legacy": {
+            "assignId": 3592,
+            "blockType": "HTML",
+            "editorLayout": "twoVideosSideBySide"
+          },
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "354538104",
+              "title": "Fill the emptied needle from the row below",
+              "legacyComponentId": 9693,
+              "legacySlot": 3,
+              "order": 1,
+              "layoutRole": "twoVideosVideo1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "360920025",
+              "title": "Leave the emptied needle in working position",
+              "legacyComponentId": 9694,
+              "legacySlot": 4,
+              "order": 2,
+              "layoutRole": "twoVideosVideo2"
+            }
+          ]
         }
       ]
     },
     {
       "title": "Turning Corners (Partial Knitting)",
       "slug": "turning-corners-partial-knitting",
-      "displayOrder": 7,
+      "displayOrder": 8,
       "legacy": {
         "itemId": 333,
-        "lessonOrder": 7
+        "lessonOrder": 8
       },
       "blocks": [
         {
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">Another way to shape your knitting and \"turn corners\" is partial knitting or short rows. If you are a hand knitter, think of the \"wrap and turn\" technique.<br><br>On the knitting machine, we use a combination of the needle position (all the way out or \"D\" position) AND the Russel levers to \"hold\" for short row shaping.<br><br><em>You'll notice in the photos in this course, I marked \"H\" directly on my carriage, making it difficult to forget which levers control hold. <i class=\"fa fa-smile-o aria-hidden=\"true\"></i></em><br><br>\r\n From adding bust darts to shaping shoulders to increasing and decreasing, short rows are used so often in machine knitting that it is critical that you learn, understand AND PRACTICE this technique. <br><br>\r\n<center><figure><img class=\"img-responsive\" src=\"/challenge/images/v2/51/short_rows.jpg\"><figcaption align=\"center\"><br>Needle Position \"D\" PLUS Russel Lever engaged = Hold for short row shaping</figcaption>\r\n</figure>\r\n\r\n</center>\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/51/short_row_diagram.jpg\"></div>\r\n</div>\r\n\r\n\r\n",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">Another way to shape your knitting and \"turn corners\" is partial knitting or short rows. If you are a hand knitter, think of the \"wrap and turn\" technique.<br><br>On the knitting machine, we use a combination of the needle position (all the way out or \"D\" position) AND the Russel levers to \"hold\" for short row shaping.<br><br><em>You'll notice in the photos in this course, I marked \"H\" directly on my carriage, making it difficult to forget which levers control hold. <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i></em><br><br>\r\n From adding bust darts to shaping shoulders to increasing and decreasing, short rows are used so often in machine knitting that it is critical that you learn, understand AND PRACTICE this technique. <br><br>\r\n<center><figure><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/short_rows.jpg\"><figcaption align=\"center\"><br>Needle Position \"D\" PLUS Russel Lever engaged = Hold for short row shaping</figcaption>\r\n</figure>\r\n\r\n</center>\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/short_row_diagram.jpg\"></div>\r\n</div>\r\n\r\n\r\n",
               "legacyComponentId": 5147,
               "order": 1
             }
@@ -1090,7 +1070,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<p>\n  Get familiar with the Russel levers. The goal is to understand the relationship between the levers and the needle positions. Understanding this technique will serve you throughout your machine knitting journey. It is used not only for short row shaping, but for stitch patterning as well.\n</p>\n\n<div class=\"kin-two-column\">\n  <div>\n\n    <h3>Hold Practice with No Yarn</h3>\n\n    <ol class=\"kin-steps\">\n      <li>Put 30 needles in working position.</li>\n      <li>Set your carriage for plain knitting (both Russel levers not engaged).</li>\n      <li>Pass the carriage back and forth. What happens?</li>\n      <li>Put a few needles into hold (D).</li>\n      <li>Engage the LEFT Russel lever.</li>\n      <li>Pass the carriage to the left. What happens?</li>\n      <li>With the RIGHT Russel lever set to plain knitting, pass the carriage. What happens?</li>\n      <li>Put a few needles in hold.</li>\n      <li>Engage both Russel levers (set your carriage to hold in both directions).</li>\n      <li>Pass the carriage back and forth. What happens?</li>\n      <li>Continue to play with needles in hold and the levers in different positions until you get a feel for the relationship between them.</li>\n    </ol>\n\n  </div>\n\n  <div>\n    <img\n      src=\"/challenge/images/v2/51/russel_gif.gif\"\n      alt=\"Russel lever demonstration\"\n      class=\"kin-course-image\"\n    >\n  </div>\n</div>",
+              "html": "<p>\n  Get familiar with the Russel levers. The goal is to understand the relationship between the levers and the needle positions. Understanding this technique will serve you throughout your machine knitting journey. It is used not only for short row shaping, but for stitch patterning as well.\n</p>\n\n<div class=\"kin-two-column\">\n  <div>\n\n    <h3>Hold Practice with No Yarn</h3>\n\n    <ol class=\"kin-steps\">\n      <li>Put 30 needles in working position.</li>\n      <li>Set your carriage for plain knitting (both Russel levers not engaged).</li>\n      <li>Pass the carriage back and forth. What happens?</li>\n      <li>Put a few needles into hold (D).</li>\n      <li>Engage the LEFT Russel lever.</li>\n      <li>Pass the carriage to the left. What happens?</li>\n      <li>With the RIGHT Russel lever set to plain knitting, pass the carriage. What happens?</li>\n      <li>Put a few needles in hold.</li>\n      <li>Engage both Russel levers (set your carriage to hold in both directions).</li>\n      <li>Pass the carriage back and forth. What happens?</li>\n      <li>Continue to play with needles in hold and the levers in different positions until you get a feel for the relationship between them.</li>\n    </ol>\n\n  </div>\n\n  <div>\n    <img\n      src=\"/images/course-content/51/v2/51/russel_gif.gif\"\n      alt=\"Russel lever demonstration\"\n      class=\"kin-course-image\"\n    >\n  </div>\n</div>",
               "legacyComponentId": 5166,
               "order": 1,
               "layoutRole": "textVideoLeft"
@@ -1133,16 +1113,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<p>\n  One of the most common uses for short row shaping is to shape shoulders. Instead of binding off to create a shoulder slope, working short rows allow you to hold live stitches. These live stitches can then be joined neatly for a beautiful shoulder finish.\n</p>\n\n<p>\n  <em>\n    NOTE: Normally you might be shaping a neckline at the same time as shaping the shoulder. To keep things simple, we'll work through the shoulder shaping only for this exercise.\n  </em>\n</p>\n\n<p>\n  This is only one of many ways short row shaping is used in machine knitting.\n</p>\n\n<div class=\"kin-two-column\">\n  <div>\n    <img src=\"/challenge/images/v2/51/shaped-shoulders2.jpg\" alt=\"Shaped shoulders\" class=\"kin-course-image\">\n  </div>\n\n  <div>\n    <img src=\"/challenge/images/v2/51/dont_just_watch.gif\" alt=\"Don't just watch\" class=\"kin-course-image\">\n  </div>\n</div>\n\n<h3>Shape a Shoulder</h3>\n\n<ol class=\"kin-steps\">\n  <li>Cast on 30 stitches with any method.</li>\n  <li>Knit 8 rows.</li>\n  <li>Carriage on the right. Set carriage to hold (both Russel levers).</li>\n  <li>Put 5 needles on the left (opposite the carriage) into hold position.</li>\n  <li>Knit to the left.</li>\n  <li>\n    Wrap\n    \n  </li>\n  <li>Knit to the right.</li>\n  <li>Wrap.</li>\n  <li>Repeat until 5 needles remain in work.</li>\n  <li>Break the yarn.</li>\n  <li>Thread up a contrasting color.</li>\n  <li>Scrap off.</li>\n</ol>",
+              "html": "<p>\n  One of the most common uses for short row shaping is to shape shoulders. Instead of binding off to create a shoulder slope, working short rows allow you to hold live stitches. These live stitches can then be joined neatly for a beautiful shoulder finish.\n</p>\n\n<p>\n  <em>\n    NOTE: Normally you might be shaping a neckline at the same time as shaping the shoulder. To keep things simple, we'll work through the shoulder shaping only for this exercise.\n  </em>\n</p>\n\n<p>\n  This is only one of many ways short row shaping is used in machine knitting.\n</p>\n\n<div class=\"kin-two-column\">\n  <div>\n    <img src=\"/images/course-content/51/v2/51/shaped-shoulders2.jpg\" alt=\"Shaped shoulders\" class=\"kin-course-image\">\n  </div>\n\n  <div>\n    <img src=\"/images/course-content/51/v2/51/dont_just_watch.gif\" alt=\"Don't just watch\" class=\"kin-course-image\">\n  </div>\n</div>\n\n<h3>Shape a Shoulder</h3>\n\n<ol class=\"kin-steps\">\n  <li>Cast on 30 stitches with any method.</li>\n  <li>Knit 8 rows.</li>\n  <li>Carriage on the right. Set carriage to hold (both Russel levers).</li>\n  <li>Put 5 needles on the left (opposite the carriage) into hold position.</li>\n  <li>Knit to the left.</li>\n  <li>\n    Wrap\n    \n  </li>\n  <li>Knit to the right.</li>\n  <li>Wrap.</li>\n  <li>Repeat until 5 needles remain in work.</li>\n  <li>Break the yarn.</li>\n  <li>Thread up a contrasting color.</li>\n  <li>Scrap off.</li>\n</ol>",
               "legacyComponentId": 5167,
               "order": 1
             },
             {
               "type": "video",
               "vimeoId": "360925130",
-              "title": null,
+              "title": "Wrap",
               "legacySource": "embedded-html",
-              "legacyComponentId": 5167,
+              "legacyComponentId": 9695,
               "order": 1
             },
             {
@@ -1166,17 +1146,17 @@
     {
       "title": "Hems and Ribbing",
       "slug": "hems-and-ribbing",
-      "displayOrder": 8,
+      "displayOrder": 9,
       "legacy": {
         "itemId": 330,
-        "lessonOrder": 8
+        "lessonOrder": 9
       },
       "blocks": [
         {
           "components": [
             {
               "type": "richText",
-              "html": "<img class=\"img-responsive\" src=\"/challenge/images/v2/51/dont_just_watch_practice_ribbing.gif\">\n\n\n<br>No matter what machine you have, you can add ribbing to your knitting.  Examine and try whatever method works for you.",
+              "html": "<img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/dont_just_watch_practice_ribbing.gif\">\n\n\n<br>No matter what machine you have, you can add ribbing to your knitting.  Examine and try whatever method works for you.",
               "legacyComponentId": 4989,
               "order": 1
             },
@@ -1193,7 +1173,7 @@
               "vimeoId": "178357056",
               "title": "Mock Ribbing",
               "legacySlot": 2,
-              "legacyComponentId": 4991,
+              "legacyComponentId": 9696,
               "order": 3
             }
           ],
@@ -1208,36 +1188,22 @@
         {
           "components": [
             {
-              "type": "download",
-              "label": "Print the Worksheet",
-              "filename": "ribbing_options1.pdf",
-              "showInline": false,
-              "legacy": {
-                "assignId": "3515",
-                "componentId": "5004",
-                "viewHeight": "600",
-                "icon": "fa fa-download"
-              },
-              "legacyComponentId": 5004,
-              "order": 4
-            },
-            {
               "type": "exerciseAccordion",
               "sections": [
                 {
                   "title": "<h3>Hand Knit and Rehang</h3>",
-                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Cast on 20-30 stitches on hand knitting needles</li>\r\n<li>Hand knit a few rows of ribbing (1x1, 2x2 your choice)</li>\r\n<li>Pull out the same number of needles on the machine</li>\r\n<li>Carefully rehang the stitches from the needle to the machine needles, taking care not to twist the stitches</li>\r\n<li>Knit for a few inches and drop the work from the machine (or practice a bind off method)</li>\r\n</ol>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/51/rib_stitches.jpg\">",
-                  "iconSrc": "/challenge/images/arrow1.png"
+                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Cast on 20-30 stitches on hand knitting needles</li>\r\n<li>Hand knit a few rows of ribbing (1x1, 2x2 your choice)</li>\r\n<li>Pull out the same number of needles on the machine</li>\r\n<li>Carefully rehang the stitches from the needle to the machine needles, taking care not to twist the stitches</li>\r\n<li>Knit for a few inches and drop the work from the machine (or practice a bind off method)</li>\r\n</ol>\r\n<img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/rib_stitches.jpg\">",
+                  "iconSrc": "/images/course-content/51/arrow1.png"
                 },
                 {
                   "title": "<h3>Hand Manipulate Ribbing</h3>",
-                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Cast on 20-40 </li>\r\n<li>Knit 8 rows</li>\r\n<li>Drop the 3rd stitch from the right and re-latch</li>\r\n<li>Skip a stitch,  drop and re-latch</li>\r\n<li>Continue Across the swatch</li>\r\n<li>Knit for a few inches across all needles</li>\r\n<li>Drop the work from the machine (or practice a bind off method)</li>\r\n</ol>\r\n\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/51/rib_stitches.jpg\">",
-                  "iconSrc": "/challenge/images/arrow2.png"
+                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Cast on 20-40 </li>\r\n<li>Knit 8 rows</li>\r\n<li>Drop the 3rd stitch from the right and re-latch</li>\r\n<li>Skip a stitch,  drop and re-latch</li>\r\n<li>Continue Across the swatch</li>\r\n<li>Knit for a few inches across all needles</li>\r\n<li>Drop the work from the machine (or practice a bind off method)</li>\r\n</ol>\r\n\r\n<img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/rib_stitches.jpg\">",
+                  "iconSrc": "/images/course-content/51/arrow2.png"
                 },
                 {
                   "title": "<h3>Mock Ribbing</h3>",
-                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Cast on 20-40 stitches over every other needle. Use the cast on method of your choice. (Make sure every other needle is out of work)</li>\r\n<li>Knit 15-20 rows (twice the desired length of your ribbing)</li>\r\n<li>Pick up the cast on edge and rehang it on the empty needles</li>\r\n<li>With all needles in work, knit 1 row across all needles</li>\r\n<li>Knit for a few inches and drop the work from the machine.</li>\r\n</ol>",
-                  "iconSrc": "/challenge/images/arrow3.png"
+                  "bodyHtml": "<ol class=\"instruction-list\">\n<li>Cast on 20-40 stitches over every other needle. Use the cast on method of your choice. (Make sure every other needle is out of work)</li>\n<li>Knit 15-20 rows (twice the desired length of your ribbing)</li>\n<li>Pick up the cast on edge and rehang it on the empty needles</li>\n<li>With all needles in work, knit 1 row across all needles</li>\n<li>Knit for a few inches and drop the work from the machine.</li>\n<li>Insert a straight edge (ruler, pencil, hand knitting needle) in the hem and pull down to set the stitches</li>\n</ol>",
+                  "iconSrc": "/images/course-content/51/arrow3.png"
                 }
               ],
               "legacy": {
@@ -1245,7 +1211,7 @@
                 "size": null
               },
               "legacyComponentId": 5007,
-              "order": 5
+              "order": 4
             }
           ],
           "title": "Ribbing Practice",
@@ -1260,18 +1226,18 @@
           "components": [
             {
               "type": "richText",
-              "html": "\n\nFor most knitting projects a plain 'ol cast just isn't enough.<br>Hems are a beautiful way to start (and end) your knitting.<br><br>\n\n<ul>\n<li>Scrap and Ravel </li>\n<li>E-Wrap</li>\n<li>Every Other Needle</lI>\n</ul>\n<br><br><br>\n<img class=\"img-responsive\" src=\"/challenge/images/v2/51/your_turn_practice_hems.gif\">\n",
+              "html": "\n\nFor most knitting projects a plain 'ol cast just isn't enough.<br>Hems are a beautiful way to start (and end) your knitting.<br><br>\n\n<ul>\n<li>Scrap and Ravel </li>\n<li>E-Wrap</li>\n<li>Every Other Needle</li>\n</ul>\n<br><br><br>\n<img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/your_turn_practice_hems.gif\">\n",
               "legacyComponentId": 4997,
-              "order": 6,
+              "order": 5,
               "layoutRole": "textVideoLeft"
             },
             {
               "type": "video",
               "vimeoId": "178357079",
-              "title": null,
+              "title": "Machine Knit Hems",
               "legacySource": "embedded-html",
-              "legacyComponentId": 4997,
-              "order": 7
+              "legacyComponentId": 9697,
+              "order": 6
             }
           ],
           "title": "Hems",
@@ -1285,36 +1251,22 @@
         {
           "components": [
             {
-              "type": "download",
-              "label": "Print the Worksheets",
-              "filename": "hem_worksheets1.pdf",
-              "showInline": false,
-              "legacy": {
-                "assignId": "3511",
-                "componentId": "5002",
-                "viewHeight": "600",
-                "icon": "fa fa-download"
-              },
-              "legacyComponentId": 5002,
-              "order": 8
-            },
-            {
               "type": "exerciseAccordion",
               "sections": [
                 {
                   "title": "<h3>Scrap and Ravel Hem</h3>",
-                  "bodyHtml": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n\r\n<ol class=\"instruction-list\">\r\n    <li>With SCRAP YARN, cast on 20-40 stitches, using any cast on method.</li>\r\n    <li>Knit 8-10 rows. End with carriage on the left</li>\r\n    <li>Knit 1 row of ravel cord</li>\r\n    <li>1st half of hem:\r\n        <ul class=\"instruction-nolist\">\r\n            <li>Main yarn</li>\r\n            <li>Garment Tension Minus 1</li>\r\n            <li>Knit 7 rows</li>\r\n        </ul>\r\n    </li>\r\n    <li>Knit 1 row at a loose tension (turning row)</li>\r\n\r\n    <li>2nd half of hem:\r\n        <ul class=\"instruction-nolist\">\r\n            <li>Garment Tension </li>\r\n            <li>Knit 8 rows</li>\r\n        </ul>\r\n    </li>\r\n    <li>Pick up open cast on from the ravel cord</li>\r\n    <li>Knit 1 row loosely</li>\r\n    <li>At Garment Tension, continue knitting for a few inches</li>\r\n    <li>Practice binding off or drop the work from the machine</li>\r\n</ol>\r\n\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/51/scrap_hem1.jpg\"></div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow1.png"
+                  "bodyHtml": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n\r\n<ol class=\"instruction-list\">\r\n    <li>With SCRAP YARN, cast on 20-40 stitches, using any cast on method.</li>\r\n    <li>Knit 8-10 rows. End with carriage on the left</li>\r\n    <li>Knit 1 row of ravel cord</li>\r\n    <li>1st half of hem:\r\n        <ul class=\"instruction-nolist\">\r\n            <li>Main yarn</li>\r\n            <li>Garment Tension Minus 1</li>\r\n            <li>Knit 7 rows</li>\r\n        </ul>\r\n    </li>\r\n    <li>Knit 1 row at a loose tension (turning row)</li>\r\n\r\n    <li>2nd half of hem:\r\n        <ul class=\"instruction-nolist\">\r\n            <li>Garment Tension </li>\r\n            <li>Knit 8 rows</li>\r\n        </ul>\r\n    </li>\r\n    <li>Pick up open cast on from the ravel cord</li>\r\n    <li>Knit 1 row loosely</li>\r\n    <li>At Garment Tension, continue knitting for a few inches</li>\r\n    <li>Practice binding off or drop the work from the machine</li>\r\n</ol>\r\n\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/scrap_hem1.jpg\"></div>\r\n</div>",
+                  "iconSrc": "/images/course-content/51/arrow1.png"
                 },
                 {
                   "title": "<h3>E-Wrap Hem</h3>",
-                  "bodyHtml": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<ol class=\"instruction-list\">\r\n<li>With MAIN YARN,  e-wrap cast on 20-40 stitches</li>\r\n<li>1st half of hem:\r\n  <ul class=\"instruction-nolist\">\r\n<li>Main yarn</li>\r\n<li>Garment Tension Minus 1</li>\r\n<li>Knit 7 rows</li>\r\n</ul>\r\n</li>\r\n<li>Knit 1 row at a loose tension (turning row)</li>\r\n<li>2nd half of hem:\r\n  <ul class=\"instruction-nolist\">\r\n<li>Garment Tension </li>\r\n <li>Knit 8 rows</li>\r\n</ul>\r\n</li>\r\n<li>Pick up e-wraps</li>\r\n<li>Knit 1 row loosely</li>\r\n<li>At Garment Tension, continue knitting for a few inches</li>\r\n<li>Practice binding off or drop the work from the machine</li>\r\n\r\n</ol>\r\n\r\n</div>\r\n\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/51/ewrap1.jpg\"></div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow2.png"
+                  "bodyHtml": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<ol class=\"instruction-list\">\r\n<li>With MAIN YARN,  e-wrap cast on 20-40 stitches</li>\r\n<li>1st half of hem:\r\n  <ul class=\"instruction-nolist\">\r\n<li>Main yarn</li>\r\n<li>Garment Tension Minus 1</li>\r\n<li>Knit 7 rows</li>\r\n</ul>\r\n</li>\r\n<li>Knit 1 row at a loose tension (turning row)</li>\r\n<li>2nd half of hem:\r\n  <ul class=\"instruction-nolist\">\r\n<li>Garment Tension </li>\r\n <li>Knit 8 rows</li>\r\n</ul>\r\n</li>\r\n<li>Pick up e-wraps</li>\r\n<li>Knit 1 row loosely</li>\r\n<li>At Garment Tension, continue knitting for a few inches</li>\r\n<li>Practice binding off or drop the work from the machine</li>\r\n\r\n</ol>\r\n\r\n</div>\r\n\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/ewrap1.jpg\"></div>\r\n</div>",
+                  "iconSrc": "/images/course-content/51/arrow2.png"
                 },
                 {
                   "title": "<h3>Every Other Needle (EON) Hem</h3>",
-                  "bodyHtml": "<div class=\"row\">\r\n    <div class=\"col-sm-6 col-xs-12\">\r\n        <ol class=\"instruction-list\">\r\n            <li>With SCRAP YARN, cast on 20-40 stitches over EVERY OTHER NEEDLE</li>\r\n            <li>Knit 8-10 rows. End with carriage on the left</li>\r\n            <li>Knit 1 row of ravel cord</li>\r\n            <li>1st half of hem:\r\n                  <ul class=\"instruction-nolist\">\r\n                    <li> Main yarn</li>\r\n                    <li> Garment Tension Minus 1</li>\r\n                    <li>Knit 4 rows over every other needle</li>\r\n                    <li> Pull all needles to working position</li>\r\n                    <li>Knit 3 rows over EVERY Needle</li>\r\n                </ul>\r\n            </li>\r\n            <li>Knit 1 row at a loose tension (turning row)</li>\r\n            <li>2nd half of hem:\r\n                  <ul class=\"instruction-nolist\">\r\n                    <li>Garment Tension </li>\r\n                    <li> Knit 8 rows</li>\r\n                </ul>\r\n            </li>\r\n            <li>Pick up open cast on from the ravel cord</li>\r\n\r\n            <li>Knit 1 row loosely</li>\r\n\r\n            <li>At Garment Tension, continue knitting for a few inches</li>\r\n\r\n            <li>Practice binding off or drop the work from the machine</li>\r\n        </ol>\r\n\r\n    </div>\r\n    <div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/51/eon_hem1.jpg\"></div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow3.png"
+                  "bodyHtml": "<div class=\"row\">\r\n    <div class=\"col-sm-6 col-xs-12\">\r\n        <ol class=\"instruction-list\">\r\n            <li>With SCRAP YARN, cast on 20-40 stitches over EVERY OTHER NEEDLE</li>\r\n            <li>Knit 8-10 rows. End with carriage on the left</li>\r\n            <li>Knit 1 row of ravel cord</li>\r\n            <li>1st half of hem:\r\n                  <ul class=\"instruction-nolist\">\r\n                    <li> Main yarn</li>\r\n                    <li> Garment Tension Minus 1</li>\r\n                    <li>Knit 4 rows over every other needle</li>\r\n                    <li> Pull all needles to working position</li>\r\n                    <li>Knit 3 rows over EVERY Needle</li>\r\n                </ul>\r\n            </li>\r\n            <li>Knit 1 row at a loose tension (turning row)</li>\r\n            <li>2nd half of hem:\r\n                  <ul class=\"instruction-nolist\">\r\n                    <li>Garment Tension </li>\r\n                    <li> Knit 8 rows</li>\r\n                </ul>\r\n            </li>\r\n            <li>Pick up open cast on from the ravel cord</li>\r\n\r\n            <li>Knit 1 row loosely</li>\r\n\r\n            <li>At Garment Tension, continue knitting for a few inches</li>\r\n\r\n            <li>Practice binding off or drop the work from the machine</li>\r\n        </ol>\r\n\r\n    </div>\r\n    <div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/eon_hem1.jpg\"></div>\r\n</div>",
+                  "iconSrc": "/images/course-content/51/arrow3.png"
                 }
               ],
               "legacy": {
@@ -1322,7 +1274,7 @@
                 "size": null
               },
               "legacyComponentId": 4992,
-              "order": 9
+              "order": 7
             }
           ],
           "title": "Hem Practice",
@@ -1332,23 +1284,40 @@
             "assignId": 3511,
             "blockType": "VimeoID"
           }
+        },
+        {
+          "title": "Slouchy hat",
+          "slug": "project-3-slouchy-hat",
+          "order": 5,
+          "legacy": {
+            "assignId": 3519,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start; margin:1.5rem 0;\">\n\n    <div style=\"flex:2 1 320px;\">\n        <h3>Make It Your Own</h3>\n\n        <p>\n            Start with a simple hat pattern, then mix and match stitch\n            patterns to create a fun, fashionable slouchy hat.\n        </p>\n\n        <p>\n            Use the Hat Builder to generate a pattern for your measurements\n            and gauge. Add your favorite stitch patterns and finishing\n            touches to make it your own.\n        </p>\n\n        <p>\n            These hats knit quickly and make great gifts or craft fair items.\n        </p>\n\n        <a href=\"/patterns/hat/builder\"\n           target=\"_blank\"\n           rel=\"noopener\"\n           style=\"display:inline-block; margin-top:.5rem; padding:.75rem 1.25rem; background:#4d6b2a; color:#fff; border-radius:6px; text-decoration:none; font-weight:700;\">\n            Use the Hat Builder\n        </a>\n    </div>\n\n    <div style=\"flex:1 1 220px; max-width:300px;\">\n        <img\n            src=\"/images/course-content/51/slouchy.jpg\"\n            alt=\"Slouchy hat with decorative stitch patterns\"\n            style=\"width:100%; height:auto; display:block; border-radius:8px;\">\n    </div>\n\n</div>\n\n<figure style=\"margin:2rem 0;\">\n    <img\n        src=\"/images/course-content/51/slouchy_builder.jpg\"\n        alt=\"Slouchy hat pattern example\"\n        style=\"width:100%; max-width:700px; height:auto; display:block;\">\n</figure>",
+              "legacyComponentId": 5464,
+              "order": 8
+            }
+          ]
         }
       ]
     },
     {
       "title": "Lace",
       "slug": "lace",
-      "displayOrder": 9,
+      "displayOrder": 10,
       "legacy": {
         "itemId": 329,
-        "lessonOrder": 9
+        "lessonOrder": 10
       },
       "blocks": [
         {
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"row\">\r\n    <div class=\"col-sm-6 col-sm-offset-1 col-xs-12\">\r\n\r\n        Lace in knitting consists of secure holes (or eyelets) that are strategically placed to form graphic designs.<br> If you are a hand knitter you are probably familiar with k2tog, yo (Knit 2 together, yarn over). You can work this same type of eyelet sequence on the machine.\r\n\r\n        <blockquote class=\"blockquote_style\">The secret to knitting lace is remembering that the purl side is facing, so traditional lace patterns may need to be reversed</blockquote>\r\n\r\n        With the LK-150, lace is created by hand manipulating individual stitches. The technique is similar to decreases, the key is to keep the emptied needle in working position so an eyelet is formed and the stitch forms a new stitch on the following row.<br><br> Simple all-over lace patterns can easily be created by alternating the stitches that are transferred and the direction of the transfers.<br><br>\r\n    </div>    \r\n\r\n        <div class=\"col-sm-4 col-sm-offset-1 col-xs-12 well\">\r\n\r\n            <center><img class=\"img-responsive\" src=\"/challenge/images/v2/51/eyelets_gauge.gif\"><br>\r\n                <i class=\"fa fa-lightbulb-o fa-2x aria-hidden=\" true \"></i> For accurate fit, be sure to swatch in lace as well as stockinette.</center>\r\n        </div>\r\n</div>\r\n<center><img class=\"img-responsive\" src=\"/challenge/images/v2/51/transfer_gif_online.gif\"></center>",
+              "html": "<div class=\"row\">\r\n    <div class=\"col-sm-6 col-sm-offset-1 col-xs-12\">\r\n\r\n        Lace in knitting consists of secure holes (or eyelets) that are strategically placed to form graphic designs.<br> If you are a hand knitter you are probably familiar with k2tog, yo (Knit 2 together, yarn over). You can work this same type of eyelet sequence on the machine.\r\n\r\n        <blockquote class=\"blockquote_style\">The secret to knitting lace is remembering that the purl side is facing, so traditional lace patterns may need to be reversed</blockquote>\r\n\r\n        With the LK-150, lace is created by hand manipulating individual stitches. The technique is similar to decreases, the key is to keep the emptied needle in working position so an eyelet is formed and the stitch forms a new stitch on the following row.<br><br> Simple all-over lace patterns can easily be created by alternating the stitches that are transferred and the direction of the transfers.<br><br>\r\n    </div>    \r\n\r\n        <div class=\"col-sm-4 col-sm-offset-1 col-xs-12 well\">\r\n\r\n            <center><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/eyelets_gauge.gif\"><br>\r\n                <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> For accurate fit, be sure to swatch in lace as well as stockinette.</center>\r\n        </div>\r\n</div>\r\n<center><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/transfer_gif_online.gif\"></center>",
               "legacyComponentId": 4970,
               "order": 1
             }
@@ -1365,7 +1334,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<p>\n  <strong>The Goal:</strong>\n</p>\n\n<p>\n  <strong>Left side:</strong> Practice transferring stitches right and left and examine the difference in the shape of the eyelet.\n  <br>\n  <strong>Right side:</strong> Take a single needle out of work and examine the possibilities of needles out of work.\n</p>\n\n<div class=\"kin-two-column\">\n  <div>\n\n    <ol class=\"kin-steps\">\n      <li>Cast on 20 stitches L10-1 R1-10.</li>\n      <li>Knit 4 rows.</li>\n      <li>Transfer needle R5 to the right. Keep the emptied needle in out-of-work position.</li>\n      <li>Transfer needle L6 to the right. Keep the emptied needle in working position.</li>\n      <li>Knit 2 rows.</li>\n      <li>Transfer needle L5 to the left. Keep the emptied needle in working position.</li>\n      <li>Knit 2 rows.</li>\n      <li>Transfer needle L6 to the right. Keep the emptied needle in working position.</li>\n      <li>Knit 4 rows.</li>\n      <li>Bind off or drop the work from the machine.</li>\n    </ol>\n\n  </div>\n\n  <div>\n    <img\n      src=\"/challenge/images/v2/51/lace_practice.jpg\"\n      alt=\"Lace practice sample\"\n      class=\"kin-course-image\"\n    >\n  </div>\n</div>\n\n<div class=\"kin-image-row\">\n  <img\n    src=\"/challenge/images/v2/51/lace1.jpg\"\n    alt=\"Lace sample 1\"\n    class=\"kin-course-image zoom\"\n  >\n\n  <img\n    src=\"/challenge/images/v2/51/lace2.jpg\"\n    alt=\"Lace sample 2\"\n    class=\"kin-course-image zoom\"\n  >\n</div>",
+              "html": "<p>\n  <strong>The Goal:</strong>\n</p>\n\n<p>\n  <strong>Left side:</strong> Practice transferring stitches right and left and examine the difference in the shape of the eyelet.\n  <br>\n  <strong>Right side:</strong> Take a single needle out of work and examine the possibilities of needles out of work.\n</p>\n\n<div class=\"kin-two-column\">\n  <div>\n\n    <ol class=\"kin-steps\">\n      <li>Cast on 20 stitches L10-1 R1-10.</li>\n      <li>Knit 4 rows.</li>\n      <li>Transfer needle R5 to the right. Keep the emptied needle in out-of-work position.</li>\n      <li>Transfer needle L6 to the right. Keep the emptied needle in working position.</li>\n      <li>Knit 2 rows.</li>\n      <li>Transfer needle L5 to the left. Keep the emptied needle in working position.</li>\n      <li>Knit 2 rows.</li>\n      <li>Transfer needle L6 to the right. Keep the emptied needle in working position.</li>\n      <li>Knit 4 rows.</li>\n      <li>Bind off or drop the work from the machine.</li>\n    </ol>\n\n  </div>\n\n  <div>\n    <img\n      src=\"/images/course-content/51/v2/51/lace_practice.jpg\"\n      alt=\"Lace practice sample\"\n      class=\"kin-course-image\"\n    >\n  </div>\n</div>\n\n<div class=\"kin-image-row\">\n  <img\n    src=\"/images/course-content/51/v2/51/lace1.jpg\"\n    alt=\"Lace sample 1\"\n    class=\"kin-course-image zoom\"\n  >\n\n  <img\n    src=\"/images/course-content/51/v2/51/lace2.jpg\"\n    alt=\"Lace sample 2\"\n    class=\"kin-course-image zoom\"\n  >\n</div>",
               "legacyComponentId": 5043,
               "order": 2
             }
@@ -1399,7 +1368,7 @@
               "vimeoId": "216102871",
               "title": "Zig Zag Lace",
               "legacySlot": 2,
-              "legacyComponentId": 5144,
+              "legacyComponentId": 9698,
               "order": 5
             }
           ],
@@ -1421,7 +1390,7 @@
             },
             {
               "type": "richText",
-              "html": "\n<a href=\"/tools/graph-paper\"><figure><img src=\"/challenge/images/v2/51/knitters-graph-paper.webp\" width=\"200\"></a>\n\n  <figcaption>Use full-scale, knitters graph paper to plan the placement of your eyelets</figcaption>\n</figure>",
+              "html": "\n<a href=\"/tools/graph-paper\"><figure><img src=\"/images/course-content/51/v2/51/knitters-graph-paper.webp\" width=\"200\" style=\"max-width:100%;height:auto;\">\n  <figcaption>Use full-scale, knitters graph paper to plan the placement of your eyelets</figcaption>\n</figure></a>",
               "legacyComponentId": 5468,
               "order": 7
             }
@@ -1439,17 +1408,17 @@
     {
       "title": "Cables",
       "slug": "cables",
-      "displayOrder": 10,
+      "displayOrder": 11,
       "legacy": {
         "itemId": 328,
-        "lessonOrder": 10
+        "lessonOrder": 11
       },
       "blocks": [
         {
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"row\">\r\n    <div class=\"col-sm-6 col-xs-12\">Cables on the knitting machine?   YES!<br><br>\r\nHand manipulating cables on the machine is similar to using a cable needle by hand.  By changing the order that the stitches are knit we can create fabulous texture for our knitting.<br><br>\r\nSome considerations:\r\n<ul>\r\n<li>As machine knitters we are viewing the knitting from the purl side. So we need to \"translate\" in our minds left cross and right cross cable stitch charts that are written for hand knitters. </li>\r\n<li>Most hand knitting cable patterns incorporate purl stitches to give the cables more depth.  Purl stitches that will show on the public (right) side of the knitting need to be hand manipulated</li>\r\n<li>Because the knitting is stretched across the needlebed, crossing more than 1-2 stitches can be a bit tricky.  But there are many ways to ovecome this and create beautiful cables on the machine.</li>\r\n</ul>\r\n    </div>\r\n    <div class=\"col-sm-4 col-xs-12\">\r\n        \r\n\r\n    </div>\r\n</div>\r\n<blockquote class=\"blockquote_style\"><b>Crossing \"backward\"</b><br><br>\r\nIf your pattern tells you to knit a right or a left cross cable, the challenge is to picture the cable from the knit side of the work (which is hidden when you are knitting on the machine)<br><br>\r\nTake time to envision the finished direction of the cross on the public side of the work.</blockquote><br><br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<figure>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/51/right_wrong_exampl1.jpg\">\r\n<figcaption align=\"center\"><br><b>3x3 RIGHT cross cable</b>\r\n<br><em>Hand knitting instructions: \"Place 3 stitches on a cable needle and hold in FRONT\"</em><br>\r\n\r\n</figcaption>\r\n</figure></div>\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<figure>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/51/right_wrong_exampl2.jpg\">\r\n<figcaption align=\"center\"><br><b>3x3 LEFT cross cable</b><br>\r\n<em>Hand knitting instructions: \"Place 3 stitches on a cable needle and hold in BACK\"</em>\r\n</figcaption>\r\n</figure></div>\r\n</div>",
+              "html": "<div class=\"row\">\r\n    <div class=\"col-xs-12\">Cables on the knitting machine?   YES!<br><br>\r\nHand manipulating cables on the machine is similar to using a cable needle by hand.  By changing the order that the stitches are knit we can create fabulous texture for our knitting.<br><br>\r\nSome considerations:\r\n<ul>\r\n<li>As machine knitters we are viewing the knitting from the purl side. So we need to \"translate\" in our minds left cross and right cross cable stitch charts that are written for hand knitters. </li>\r\n<li>Most hand knitting cable patterns incorporate purl stitches to give the cables more depth.  Purl stitches that will show on the public (right) side of the knitting need to be hand manipulated</li>\r\n<li>Because the knitting is stretched across the needlebed, crossing more than 1-2 stitches can be a bit tricky.  But there are many ways to ovecome this and create beautiful cables on the machine.</li>\r\n</ul>\r\n    </div>\r\n</div>\r\n<blockquote class=\"blockquote_style\"><b>Crossing \"backward\"</b><br><br>\r\nIf your pattern tells you to knit a right or a left cross cable, the challenge is to picture the cable from the knit side of the work (which is hidden when you are knitting on the machine)<br><br>\r\nTake time to envision the finished direction of the cross on the public side of the work.</blockquote><br><br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<figure>\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/51/v2/51/right_wrong_exampl1.jpg\">\r\n<figcaption align=\"center\"><br><b>3x3 RIGHT cross cable</b>\r\n<br><em>Hand knitting instructions: \"Place 3 stitches on a cable needle and hold in FRONT\"</em><br>\r\n\r\n</figcaption>\r\n</figure></div>\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<figure>\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/51/v2/51/right_wrong_exampl2.jpg\">\r\n<figcaption align=\"center\"><br><b>3x3 LEFT cross cable</b><br>\r\n<em>Hand knitting instructions: \"Place 3 stitches on a cable needle and hold in BACK\"</em>\r\n</figcaption>\r\n</figure></div>\r\n</div>",
               "legacyComponentId": 5008,
               "order": 1
             },
@@ -1458,8 +1427,8 @@
               "vimeoId": "151859299",
               "title": null,
               "legacySource": "embedded-html",
-              "legacyComponentId": 5008,
-              "order": 1
+              "legacyComponentId": 9699,
+              "order": 2
             }
           ],
           "title": "Crossing Cables on the Machine",
@@ -1477,7 +1446,7 @@
               "vimeoId": "348270745",
               "title": "Watch as we knit the sample",
               "legacyComponentId": 5172,
-              "order": 1
+              "order": 3
             }
           ],
           "title": "Cable Practice",
@@ -1492,23 +1461,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<div class=\"row\">\r\n<div class=\"col-sm-4 col-sm-offset-2 col-xs-12\">\r\n\t<img class=\"img-responsive\" src=\"/challenge/images/v2/51/braided_cable.jpg\"></div>\r\n\r\n</div>",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-4 col-sm-offset-2 col-xs-12\">\r\n\t<img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/braided_cable.jpg\"></div>\r\n\r\n</div>",
               "legacyComponentId": 5171,
-              "order": 1
-            },
-            {
-              "type": "download",
-              "label": "Print the Worksheet",
-              "filename": "cable_worksheet.pdf",
-              "showInline": false,
-              "legacy": {
-                "assignId": "3517",
-                "componentId": "5013",
-                "viewHeight": "600",
-                "icon": "fa fa-download"
-              },
-              "legacyComponentId": 5013,
-              "order": 2
+              "order": 4
             },
             {
               "type": "exerciseAccordion",
@@ -1516,17 +1471,17 @@
                 {
                   "title": "The goal: Braided Cable",
                   "bodyHtml": "Knit 2 columns of cables with 2 purl stitches between and on each side.<br> The cables are reversed and alternate creating the braided (plait) appearance.<br>\r\n\r\n<div class=\"row\">\r\n    <div class=\"col-sm-4 col-sm-offset-1 col-xs-12 well\"><span style=\"background-color: #FFF200\"><b>Cable 1</b></span>\r\n        <ol>\r\n            <li> Remove the LEFT 2 stitches and hold them aside.</li>\r\n            <li>Transfer the RIGHT 2 stitches to the empty needles.</li>\r\n            <li>Replace the held stitches on the newly emptied needles</li>\r\n        </ol>\r\n    </div>\r\n        <div class=\"col-sm-4 col-sm-offset-1 col-xs-12 well\"><span style=\"background-color: #F7941D\"><b>Cable 2:</b></span>\r\n            <ol>\r\n                <li>Remove the RIGHT 2 stitches and hold them aside</li>\r\n                <li>Transfer the LEFT 2 stitches to the empty needles</li>\r\n                <li>Replace the held stitches on the newly emptied needles.</li>\r\n            </ol>\r\n        </div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow1.png"
+                  "iconSrc": "/images/course-content/51/arrow1.png"
                 },
                 {
                   "title": "Setup",
-                  "bodyHtml": "<ol>\r\n<li>Cast on 40 stitches with any method (left 20-1, right 1-20)</li>\r\n<li>Knit 6 rows (carriage on the right)</li>\r\n<li>Mark the needlebed, indicating the cable stitches and the purl columns</li>\r\n<li>Knit 3 rows </li>\r\n</ol>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/51/mark_the_bed.jpg\">",
-                  "iconSrc": "/challenge/images/arrow2.png"
+                  "bodyHtml": "<ol>\r\n<li>Cast on 40 stitches with any method (left 20-1, right 1-20)</li>\r\n<li>Knit 6 rows (carriage on the right)</li>\r\n<li>Mark the needlebed, indicating the cable stitches and the purl columns</li>\r\n<li>Knit 3 rows </li>\r\n</ol>\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/51/v2/51/mark_the_bed.jpg\">",
+                  "iconSrc": "/images/course-content/51/arrow2.png"
                 },
                 {
                   "title": "The Cable Pattern",
-                  "bodyHtml": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<ol>\r\n<li>*Work <span style=\"background-color: #FFF200\">Cable 1</span over needles: L5-2 and  R4-7<br>\r\nCarefully Knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)\r\n</li>\r\n<br>\r\n<li>Work <span style=\"background-color: #F7941D\">Cable 2</span> over needles: L7-4 and R2-5<br>\r\nCarefully knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)<br>\r\n</li>\r\n<br>\r\n<li>Work <span style=\"background-color: #FFF200\">Cable 1</span> over needles: L5-2 and  R4-7<br>\r\nCarefully knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)\r\n</li>\r\n<br>\r\n<li>Work <span style=\"background-color: #F7941D\">Cable 2</span> over needles: L7-4 and R2-5<br>\r\nCarefully knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)*\r\n</li>\r\n<br>\r\n<li>Repeat from * to * at least 1 more time.</li>\r\n</ol>\r\n\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/51/cable practice.jpg\"></div>\r\n</div>",
-                  "iconSrc": "/challenge/images/arrow3.png"
+                  "bodyHtml": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<ol>\r\n<li>*Work <span style=\"background-color: #FFF200\">Cable 1</span over needles: L5-2 and  R4-7<br>\r\nCarefully Knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)\r\n</li>\r\n<br>\r\n<li>Work <span style=\"background-color: #F7941D\">Cable 2</span> over needles: L7-4 and R2-5<br>\r\nCarefully knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)<br>\r\n</li>\r\n<br>\r\n<li>Work <span style=\"background-color: #FFF200\">Cable 1</span> over needles: L5-2 and  R4-7<br>\r\nCarefully knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)\r\n</li>\r\n<br>\r\n<li>Work <span style=\"background-color: #F7941D\">Cable 2</span> over needles: L7-4 and R2-5<br>\r\nCarefully knit 1 row<br>\r\nKnit 3 rows (Reform XX purl stitches)*\r\n</li>\r\n<br>\r\n<li>Repeat from * to * at least 1 more time.</li>\r\n</ol>\r\n\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/images/course-content/51/v2/51/cable%20practice.jpg\"></div>\r\n</div>",
+                  "iconSrc": "/images/course-content/51/arrow3.png"
                 }
               ],
               "legacy": {
@@ -1534,7 +1489,7 @@
                 "size": null
               },
               "legacyComponentId": 5014,
-              "order": 3
+              "order": 5
             }
           ],
           "title": "Your Turn - Cable Practice",
@@ -1550,26 +1505,27 @@
     {
       "title": "What's next?",
       "slug": "what-s-next",
-      "displayOrder": 11,
+      "displayOrder": 12,
       "legacy": {
         "itemId": 378,
-        "lessonOrder": 11
+        "lessonOrder": 12
       },
       "blocks": [
         {
           "components": [
             {
               "type": "richText",
-              "html": "<blockquote class=\"blockquote_style\"><h3><a href=\"/challenge/34/course/master-lk-patterning\" target=\"_blank\">Master LK-150 Patterning Course</a></h3><br>Tuck, Slip, Fairisle, Plaiting, Intarsia ... add color, different yarns and hand manipulation to these basics and the possibilities are endless!<br>\r\n\r\n</blockquote>\r\n<div class=\"row\">\r\n <div class=\"col-md-6 col-xs-12\">\r\n                \r\nHave you had your LK-150 for a bit?  Can you do the basics?<br><br>\r\n          Have you made swatches or items in plain stockinette?  Maybe you've played with stitch patterning a bit.<br><br>\r\n          <b>This course is for you!</b></div>\r\n <div class=\"col-md-4 col-xs-12\"><img class=\"img-responsive\" src=\"/path/images/21/ready_to_do_more.gif\"></div>\r\n</div>\r\n\r\n\r\n\r\n\r\n<div class=\"row\">\r\n\r\n <div class=\"col-md-4 col-xs-12\">\r\n</div>\r\n    \r\n           \r\n\r\n         <div class=\"col-md-6 col-xs-12\">\r\n             <i class=\"fa fa-check\" aria-hidden=\"true\"></i> UNDERSTAND what the levers on your machine do<br><br>\r\n\r\n              <i class=\"fa fa-check\" aria-hidden=\"true\"></i> Don't search for your manual to work stitch patterns<br><br>\r\n\r\n              <i class=\"fa fa-check\" aria-hidden=\"true\"></i> Explore the possibilities of stitch patterning on your machine \r\n                <br><br>\r\n             <i class=\"fa fa-check\" aria-hidden=\"true\"></i>UNDERSTAND your machine, don't just blindly follow instructions<br><br>\r\n<a href=\"/challenge/34/course/master-lk-patterning\" class=\"btn btn btn-primary lecture_complete_button\"  target=\"_blank\">Check out the course</a>\r\n         </div>\r\n\r\n</div>\r\n<br>\r\n\r\n\r\n\r\n<div class=\"row\">\r\n     <div class=\"col-md-12 col-xs-12\">\r\n         <center><h3>Be the master of your machine .. not the other way around!</h3></center>\r\n      </div>\r\n</div>",
+              "html": "<section style=\"background:#f6f8f2; border:1px solid #d8dfcf; border-radius:8px; padding:1.5rem; margin:1.5rem 0;\">\n\n    <h3 style=\"margin-top:0;\">Ready for More? Master LK-150 Patterning</h3>\n\n    <p>\n        Comfortable with the basics on your LK-150?\n        If you've knitted stockinette swatches or projects and are ready\n        to explore stitch patterns, this course is for you!\n    </p>\n\n    <div style=\"display:flex; flex-wrap:wrap; gap:2rem; align-items:flex-start;\">\n\n        <div style=\"flex:2 1 300px;\">\n            <p>\n                Explore tuck, slip, Fairisle, plaiting, and intarsia.\n                Add color, different yarns, and hand manipulation\n                to open up even more possibilities.\n            </p>\n\n            <ul style=\"padding-left:1.25rem; line-height:1.7;\">\n                <li>Understand what your machine's levers do.</li>\n                <li>Work stitch patterns with less reliance on your manual.</li>\n                <li>Explore the possibilities of patterning on your LK-150.</li>\n                <li>Understand your machine instead of blindly following instructions.</li>\n            </ul>\n\n            <a href=\"/courses/master-lk-patterning\"\n               target=\"_blank\"\n               rel=\"noopener\"\n               style=\"display:inline-block; margin-top:.75rem; padding:.75rem 1.25rem; background:#4d6b2a; color:#fff; border-radius:6px; text-decoration:none; font-weight:700;\">\n                Explore the Course\n            </a>\n        </div>\n\n        <div style=\"flex:1 1 220px; max-width:320px;\">\n            <a href=\"/courses/master-lk-patterning\"\n               target=\"_blank\"\n               rel=\"noopener\">\n                <img\n                    src=\"/images/courses/lk-150_patterning.webp\"\n                    alt=\"Master LK-150 Patterning Course\"\n                    style=\"width:100%; height:auto; display:block; border-radius:8px;\">\n            </a>\n        </div>\n\n    </div>\n\n    <p style=\"margin:1.5rem 0 0; text-align:center; font-weight:700; font-size:1.1rem;\">\n        Be the master of your machine!\n    </p>\n\n</section>",
               "legacyComponentId": 5474,
-              "order": 1
+              "order": 1,
+              "layoutRole": "textVideoLeft"
             },
             {
               "type": "video",
               "vimeoId": "290792798",
               "title": null,
               "legacySource": "embedded-html",
-              "legacyComponentId": 5474,
+              "legacyComponentId": 9700,
               "order": 1
             }
           ],
@@ -1585,31 +1541,37 @@
     }
   ],
   "manifest": {
-    "videoCount": 33,
+    "videoCount": 38,
     "videos": [
       {
         "vimeoId": "343258703",
-        "title": null,
+        "title": "LK150 Cast On",
         "lessonSlug": "introduction",
-        "blockSlug": "don-t-skip-this"
+        "blockSlug": "text-video-1782234235719"
+      },
+      {
+        "vimeoId": "347424329",
+        "title": "LK150 Free Pass",
+        "lessonSlug": "introduction",
+        "blockSlug": "text-video-1782234428479"
       },
       {
         "vimeoId": "343326408",
         "title": "Scrap 'n Ravel OPEN Cast On",
         "lessonSlug": "the-basics",
-        "blockSlug": "must-know-cast-ons"
+        "blockSlug": "three-videos-1782235964486"
       },
       {
         "vimeoId": "343343552",
         "title": "Scrap 'n Ravel E-Wrap Cast ON",
         "lessonSlug": "the-basics",
-        "blockSlug": "must-know-cast-ons"
+        "blockSlug": "three-videos-1782235964486"
       },
       {
         "vimeoId": "343340595",
         "title": "Scrap 'n Ravel CHAIN Cast On",
         "lessonSlug": "the-basics",
-        "blockSlug": "must-know-cast-ons"
+        "blockSlug": "three-videos-1782235964486"
       },
       {
         "vimeoId": "178357273",
@@ -1621,19 +1583,19 @@
         "vimeoId": "178357292",
         "title": "The Importance of Gauge",
         "lessonSlug": "your-success-depends-on-this",
-        "blockSlug": "understanding-gauge"
+        "blockSlug": "three-videos-1782238122542"
       },
       {
         "vimeoId": "178357264",
-        "title": "TIP!  Using Weights",
+        "title": "TIP! Using Weights",
         "lessonSlug": "your-success-depends-on-this",
-        "blockSlug": "understanding-gauge"
+        "blockSlug": "three-videos-1782238122542"
       },
       {
         "vimeoId": "178357247",
-        "title": "Tension: Controlling your gauge",
+        "title": "Tension: Controllling your gauge",
         "lessonSlug": "your-success-depends-on-this",
-        "blockSlug": "understanding-gauge"
+        "blockSlug": "three-videos-1782238122542"
       },
       {
         "vimeoId": "260683875",
@@ -1645,19 +1607,19 @@
         "vimeoId": "151857939",
         "title": "Yipes Stripes!",
         "lessonSlug": "stripes",
-        "blockSlug": "horizontal-design-possibilities"
+        "blockSlug": "three-videos-1782240716061"
       },
       {
         "vimeoId": "151859649",
         "title": "Taming Yarn Tails",
         "lessonSlug": "stripes",
-        "blockSlug": "horizontal-design-possibilities"
+        "blockSlug": "three-videos-1782240716061"
       },
       {
         "vimeoId": "151859081",
-        "title": "Perfect Jog-Less Stripes",
+        "title": "Perfect Jog-less Stripes",
         "lessonSlug": "stripes",
-        "blockSlug": "horizontal-design-possibilities"
+        "blockSlug": "three-videos-1782240716061"
       },
       {
         "vimeoId": "319202520",
@@ -1679,21 +1641,21 @@
       },
       {
         "vimeoId": "151859209",
-        "title": null,
+        "title": "Infinity Scarf",
         "lessonSlug": "garter-stitch",
-        "blockSlug": "project-2-infinity-scarf"
+        "blockSlug": "text-video-1782247681314"
       },
       {
         "vimeoId": "151849234",
         "title": "Kitchener Grafting on the Machine - Knit Side",
         "lessonSlug": "garter-stitch",
-        "blockSlug": "project-2-infinity-scarf"
+        "blockSlug": "three-videos-1782247791363"
       },
       {
         "vimeoId": "151850342",
         "title": "Kitchener Grafting on the Machine - Purl Side",
         "lessonSlug": "garter-stitch",
-        "blockSlug": "project-2-infinity-scarf"
+        "blockSlug": "three-videos-1782247791363"
       },
       {
         "vimeoId": "151858447",
@@ -1709,9 +1671,33 @@
       },
       {
         "vimeoId": "360923118",
-        "title": null,
+        "title": "Decrease 1x",
         "lessonSlug": "increasing-and-decreasing",
-        "blockSlug": "your-turn-inc-dec-practice"
+        "blockSlug": "three-videos-1782248522306"
+      },
+      {
+        "vimeoId": "360921914",
+        "title": "Decrease 2x",
+        "lessonSlug": "increasing-and-decreasing",
+        "blockSlug": "three-videos-1782248522306"
+      },
+      {
+        "vimeoId": "1203977381",
+        "title": "Full Fashioned Decrease",
+        "lessonSlug": "increasing-and-decreasing",
+        "blockSlug": "three-videos-1782248522306"
+      },
+      {
+        "vimeoId": "354538104",
+        "title": "Fill the emptied needle from the row below",
+        "lessonSlug": "increasing-and-decreasing",
+        "blockSlug": "increase-practice-videos"
+      },
+      {
+        "vimeoId": "360920025",
+        "title": "Leave the emptied needle in working position",
+        "lessonSlug": "increasing-and-decreasing",
+        "blockSlug": "increase-practice-videos"
       },
       {
         "vimeoId": "348215514",
@@ -1727,7 +1713,7 @@
       },
       {
         "vimeoId": "360925130",
-        "title": null,
+        "title": "Wrap",
         "lessonSlug": "turning-corners-partial-knitting",
         "blockSlug": "your-turn-short-row-practice"
       },
@@ -1751,7 +1737,7 @@
       },
       {
         "vimeoId": "178357079",
-        "title": null,
+        "title": "Machine Knit Hems",
         "lessonSlug": "hems-and-ribbing",
         "blockSlug": "hems"
       },
@@ -1795,7 +1781,7 @@
         "blockSlug": "your-turn"
       },
       {
-        "filename": "swatch_exercises2.pdf",
+        "filename": "/downloads/swatch_exercises2.pdf",
         "label": "Print the Worksheets",
         "lessonSlug": "your-success-depends-on-this",
         "blockSlug": "swatching-is-not-optional"
@@ -1807,7 +1793,7 @@
         "blockSlug": "knit-a-swatch"
       },
       {
-        "filename": "swatch_challenge1.pdf",
+        "filename": "/downloads/swatch_challenge1.pdf",
         "label": "Print the Worksheet",
         "lessonSlug": "your-success-depends-on-this",
         "blockSlug": "test-yourself"

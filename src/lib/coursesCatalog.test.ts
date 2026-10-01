@@ -178,7 +178,6 @@ describe("resolveCatalogStatus", () => {
 describe("public course catalog cleanup", () => {
   const hiddenPublicCatalogSlugs = [
     "lk-150-quick-start",
-    "lk-150-fun",
     "beginner-workshop",
     "ribber-basic-bootcamp",
     "not-enough-needles",
@@ -210,18 +209,25 @@ describe("public course catalog cleanup", () => {
     expect(sections[2]?.courses[0]?.thumbnail).toBe("/images/courses/260.webp");
     expect(sections[3]?.courses.map((course) => course.slug)).toEqual([
       "master-lk-patterning",
+      "lk-150-fun",
     ]);
     expect(sections[3]?.courses[0]?.href).toBe("/courses/34");
     expect(sections[3]?.courses[0]?.buttonLabel).toBe("View Course");
     expect(sections[3]?.courses[0]?.access).toBe("purchase");
     expect(sections[3]?.courses[0]?.thumbnail).toBe("/images/courses/lk-150_patterning.webp");
+    expect(sections[3]?.courses[1]?.href).toBe("/courses/51");
+    expect(sections[3]?.courses[1]?.title).toBe("LK-150 Fun");
+    expect(sections[3]?.courses[1]?.buttonLabel).toBe("View Course");
+    expect(sections[3]?.courses[1]?.access).toBe("member");
+    expect(sections[3]?.courses[1]?.status).toBe("available");
+    expect(sections[3]?.courses[1]?.thumbnail).toBe("/images/courses/lk-150_fun.webp");
     expect(sections[1]?.courses[0]?.href).toBe("/courses/86");
     expect(sections[1]?.courses[0]?.buttonLabel).toBe("View Course");
     expect(sections[1]?.courses[0]?.access).toBe("purchase");
     expect(sections[1]?.courses[0]?.thumbnail).toBe("/images/courses/taitexma_160.webp");
 
     const entries = getCourseCatalogEntries();
-    expect(entries).toHaveLength(4);
+    expect(entries).toHaveLength(5);
     expect(entries[0]?.slug).toBe("mastering-the-silver-reed-sk840");
     expect(entries[0]?.title).toBe("Mastering the Silver Reed SK840");
     expect(entries[0]?.buttonLabel).toBe("View Course");
@@ -234,6 +240,7 @@ describe("public course catalog cleanup", () => {
       "/courses/86",
       "/courses/87",
       "/courses/34",
+      "/courses/51",
     ]);
     expect(productionEntries[0]?.href).not.toContain("courses.knititnow.com");
     expect(entries[0]?.access).toBe("purchase");
@@ -354,11 +361,17 @@ describe("groupCourseCatalogSections", () => {
         access: "purchase",
         status: "available",
       },
+      {
+        slug: "lk-150-fun",
+        category: "LK-150",
+        href: "/courses/51",
+        access: "member",
+        status: "available",
+      },
     ]);
 
     const published = sections.flatMap((section) => section.courses);
-    expect(published.filter((course) => course.status === "available")).toHaveLength(4);
+    expect(published.filter((course) => course.status === "available")).toHaveLength(5);
     expect(published.map((course) => course.slug)).not.toContain("lk-150-quick-start");
-    expect(published.map((course) => course.slug)).not.toContain("lk-150-fun");
   });
 });

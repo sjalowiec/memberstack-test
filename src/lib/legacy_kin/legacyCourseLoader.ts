@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { urlLessonSlug } from "./courseLessonContentItems";
 import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import {
   isLegacyCoursePublic,
@@ -160,6 +161,9 @@ export function getLegacyLessonBySlug(
 
   const bySlug = lessons.find((lesson) => lesson.slug === ref);
   if (bySlug) return bySlug;
+
+  const byPublicSlug = lessons.find((lesson) => urlLessonSlug(lessons, lesson.slug) === ref);
+  if (byPublicSlug) return byPublicSlug;
 
   if (/^\d+$/.test(ref)) {
     const numeric = Number.parseInt(ref, 10);

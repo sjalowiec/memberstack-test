@@ -3,6 +3,7 @@ import { getCourseAccessBySlug } from "../coursesCatalogAccess";
 import { getCatalogOverlayDescription } from "../coursesCatalogOverlay";
 import { readCourseContentStatus } from "./courseContentAdmin";
 import { legacyAssetUrl } from "./legacyCourseAssetUrls";
+import { urlLessonSlug } from "./courseLessonContentItems";
 import {
   getLegacyCourseRecordBySlug,
   getSortedLessonsForCourse,
@@ -46,7 +47,7 @@ export function courseLandingStartHref(slug: string, record?: LegacyCourseRecord
   const publicLessons = getSortedLessonsForCourse(course, { includeDrafts: false });
   const firstLesson = publicLessons[0];
   if (firstLesson) {
-    return legacyLessonHref(slug, firstLesson.slug);
+    return legacyLessonHref(slug, urlLessonSlug(course.lessons, firstLesson.slug));
   }
   return legacyCourseHref(slug);
 }

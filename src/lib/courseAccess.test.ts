@@ -3,6 +3,8 @@ import {
   KIN_TAITEXMA_160_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
+  LK150_FUN_COURSE_PLAN_ID,
+  LK150_FUN_COURSE_SLUG,
   LK150_PATTERNING_COURSE_PLAN_ID,
   LK150_PATTERNING_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
@@ -297,6 +299,13 @@ describe("canAccessCourse", () => {
       canAccessCourse("member", buyer, { courseSlug: BROTHER_KH260_COURSE_SLUG }),
     ).toBe(false);
     expect(canAccessCourse("member", buyer, { courseSlug: "lk-150-fun" })).toBe(false);
+    const funOwner = payloadWithPlan(LK150_FUN_COURSE_PLAN_ID);
+    expect(canAccessCourse("member", funOwner, { courseSlug: LK150_FUN_COURSE_SLUG })).toBe(true);
+    expect(canAccessCourse("member", funOwner, { courseSlug: "51" })).toBe(true);
+    expect(canAccessCourse("member", funOwner, { courseSlug: LK150_PATTERNING_COURSE_SLUG })).toBe(
+      false,
+    );
+    expect(hasCourseMembershipAccess(funOwner)).toBe(false);
     expect(hasCourseMembershipAccess(buyer)).toBe(false);
     const canceled = {
       data: {

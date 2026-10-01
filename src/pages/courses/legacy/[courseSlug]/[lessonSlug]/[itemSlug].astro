@@ -17,6 +17,7 @@ import {
   getPublicCourseContentItemNeighbors,
   getPublicLessonContentNavEntries,
   resolvePublicLessonItem,
+  urlLessonSlug,
 } from "../../../../../lib/legacy_kin/courseLessonContentItems";
 
 const courseSlug = Astro.params.courseSlug ?? "";
@@ -32,9 +33,17 @@ const lesson = getLegacyLessonBySlug(courseSlug, lessonSlug, loaderOptions);
 const resolved = course && lesson ? resolvePublicLessonItem(course, lesson, itemSlug) : undefined;
 const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
 
-if (resolved?.redirectSlug && resolved.redirectSlug !== itemSlug) {
+const publicLessonSlug =
+  course && lesson ? urlLessonSlug(course.lessons, lesson.slug) : lessonSlug;
+const canonicalItemSlug = resolved?.redirectSlug || resolved?.item?.itemSlug || itemSlug;
+if (
+  course &&
+  lesson &&
+  resolved?.item &&
+  (lessonSlug !== publicLessonSlug || canonicalItemSlug !== itemSlug)
+) {
   return Astro.redirect(
-    `/courses/legacy/${courseSlug}/${lessonSlug}/${resolved.redirectSlug}${previewQuery}`,
+    `/courses/legacy/${encodeURIComponent(courseSlug)}/${encodeURIComponent(publicLessonSlug)}/${encodeURIComponent(canonicalItemSlug)}${previewQuery}`,
   );
 }
 

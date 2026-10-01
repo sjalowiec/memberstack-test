@@ -9,7 +9,10 @@ import {
   legacyLessonItemHref,
   sequentialLessonNumber,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
-import { getFirstLessonContentItemSlug } from "../../../../lib/legacy_kin/courseLessonContentItems";
+import {
+  getFirstLessonContentItemSlug,
+  urlLessonSlug,
+} from "../../../../lib/legacy_kin/courseLessonContentItems";
 
 const courseSlug = Astro.params.courseSlug ?? "";
 const lessonSlug = Astro.params.lessonSlug ?? "";
@@ -35,7 +38,11 @@ if (firstItemSlug) {
   const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
   const search = Astro.url.search || previewQuery;
   return Astro.redirect(
-    `${legacyLessonItemHref(courseSlug, lesson.slug, firstItemSlug)}${search}`,
+    `${legacyLessonItemHref(
+      courseSlug,
+      urlLessonSlug(course.lessons, lesson.slug),
+      firstItemSlug,
+    )}${search}`,
   );
 }
 
