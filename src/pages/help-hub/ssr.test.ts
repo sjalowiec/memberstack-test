@@ -40,6 +40,25 @@ describe("Help Hub public SSR", () => {
     expect(indexSource).not.toContain("card.subtitle");
   });
 
+  it("searches Help Hub content in place and expands answers without leaving the page", () => {
+    expect(indexSource).toContain('for="help-hub-search-input"');
+    expect(indexSource).toContain("Search the Help Hub");
+    expect(indexSource).toContain("Search for a problem, technique, or machine...");
+    expect(indexSource).toContain("helpHubTipSearchText");
+    expect(indexSource).toContain("initHelpHubIndex");
+    expect(indexSource).toContain("data-help-hub-category");
+    expect(indexSource).toContain("data-help-hub-answer");
+    expect(indexSource).toContain("No Help Hub answer yet.");
+    expect(indexSource).toContain("data-help-hub-open-site-search");
+    expect(indexSource).toContain("HelpHubTipContent");
+    expect(indexSource).toContain("deferMedia");
+    expect(indexSource).toContain("data-pagefind-ignore");
+    expect(indexSource).not.toContain("/pagefind/");
+    expect(indexSource).not.toContain("pagefind.js");
+    expect(indexSource).not.toContain("href={`/help-hub/${item.slug}`}");
+    expect(indexSource).not.toContain("href={`/help-hub/${card.slug}`}");
+  });
+
   it("omits the catalog-only Work with Sue promotion without removing the help form", () => {
     expect(indexSource).not.toContain("/help-hub/work-with-sue");
     expect(indexSource).not.toContain("If you’re in a hurry or you want a 1-on-1 fix");
@@ -68,7 +87,7 @@ describe("Help Hub public SSR", () => {
 describe("Help Hub related lessons public section", () => {
   it("hides the Related Lessons section when none resolve as published", () => {
     const tipPageSource = readFileSync(
-      join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
+      join(here, "..", "..", "components", "help-hub", "HelpHubTipContent.astro"),
       "utf8",
     );
     expect(tipPageSource).toContain("memberResourceCards.length > 0");
@@ -83,7 +102,7 @@ describe("Help Hub related lessons public section", () => {
 describe("Help Hub empty media", () => {
   it("does not render the empty media placeholder on preview or published pages", () => {
     const tipPageSource = readFileSync(
-      join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
+      join(here, "..", "..", "components", "help-hub", "HelpHubTipContent.astro"),
       "utf8",
     );
     expect(tipPageSource).toContain("hasHeroMedia");
@@ -93,7 +112,7 @@ describe("Help Hub empty media", () => {
 
   it("renders a related tool after Try This in the same tab when both fields exist", () => {
     const tipPageSource = readFileSync(
-      join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
+      join(here, "..", "..", "components", "help-hub", "HelpHubTipContent.astro"),
       "utf8",
     );
     expect(tipPageSource).toContain("relatedTool");

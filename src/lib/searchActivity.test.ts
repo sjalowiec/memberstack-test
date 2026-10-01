@@ -12,6 +12,7 @@ import {
   normalizeSearchTerm,
   resolveSearchActivityEnvironment,
   resolveStoredIdentity,
+  searchActivityAreaLabel,
   summarizeSearchActivity,
   type SearchActivityEvent,
 } from "./searchActivity";
@@ -81,6 +82,26 @@ describe("search activity records", () => {
     if (sandbox.ok) expect(sandbox.event.memberId).toBe("mem_sb_abc123");
     expect(built.event.environment).toBe("dev");
     expect(JSON.stringify(built.event)).not.toContain("spoofed");
+  });
+
+  it("stores a Help Hub search, including a zero-result count", () => {
+    const built = buildSearchActivityEvent(
+      { area: "help-hub", term: "  Fair Isle ", resultCount: 0, identity: "guest" },
+      { now: "2026-10-01T12:00:00.000Z", env: { SITE_NAME: "kin-dev" } },
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+    expect(built.event.area).toBe("help-hub");
+    expect(built.event.term).toBe("fair isle");
+    expect(built.event.resultCount).toBe(0);
+    expect(built.event.identity).toBe("guest");
+    expect(built.event.environment).toBe("dev");
+    expect(searchActivityAreaLabel("help-hub")).toBe("Help Hub");
+    const rejected = buildSearchActivityEvent(
+      { area: "patterns", term: "tuck", resultCount: 1, identity: "guest" },
+      { env: {} },
+    );
+    expect(rejected.ok).toBe(false);
   });
 
   it("does not store an email address", () => {
@@ -168,6 +189,27 @@ describe("search activity summary", () => {
     const today = summarizeSearchActivity(events, { from: "2026-09-29", to: "2026-09-29" });
     expect(today.commonTerms.map((row) => row.term)).toEqual(["tuck"]);
     expect(today.zeroResultTerms).toHaveLength(0);
+  });
+
+  it("keeps Help Hub terms in the same report and date filter", () => {
+    const helpHub: SearchActivityEvent = {
+      id: "hh-1",
+      createdAt: "2026-09-29T18:00:00.000Z",
+      area: "help-hub",
+      term: "sponge bar",
+      resultCount: 0,
+      identity: "member",
+      memberId: "mem_abc123",
+      environment: "dev",
+    };
+    const summary = summarizeSearchActivity([...events, helpHub], { area: "help-hub" });
+    expect(summary.searched).toBe(1);
+    expect(summary.commonTerms).toEqual([{ term: "sponge bar", area: "help-hub", count: 1 }]);
+    expect(summary.zeroResultTerms).toEqual([{ term: "sponge bar", area: "help-hub", count: 1 }]);
+    const allAreas = summarizeSearchActivity([...events, helpHub], { area: "all" });
+    expect(allAreas.commonTerms.some((row) => row.area === "help-hub" && row.term === "sponge bar")).toBe(
+      true,
+    );
   });
 });
 

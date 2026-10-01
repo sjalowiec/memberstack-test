@@ -1,5 +1,6 @@
 import { helpHubCategoryLabel, helpHubJsonSeedCategories } from "./helpHub/categories";
 import type { HelpHubManagedCategory } from "./helpHub/categoryTypes";
+import { stripHtmlToText } from "./helpHubFaqSchema";
 
 /** Minimal Help Hub tip fields used for public visibility and search. */
 export type HelpHubTipRecord = {
@@ -22,6 +23,8 @@ export type HelpHubTipRecord = {
   tags?: string[];
   relatedLessons?: (string | number)[];
   category?: string;
+  /** Row timestamp when the loader provides it. Used to order New in the Help Hub. */
+  createdAt?: string | null;
 };
 
 export type HelpHubVideoRef = {
@@ -93,27 +96,72 @@ export function findPublicHelpHubTipsForVideo<T extends HelpHubTipRecord>(
   return filterPublicHelpHubTips(tips).filter((t) => helpHubTipMatchesVideo(t, video));
 }
 
-function helpHubTipSearchText(
+function pushHelpHubSearchText(parts: string[], value: unknown): void {
+  if (typeof value === "string") {
+    const text = stripHtmlToText(value);
+    if (text) parts.push(text);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) pushHelpHubSearchText(parts, item);
+  }
+}
+
+function pushHelpHubSearchObject(parts: string[], value: unknown): void {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    pushHelpHubSearchText(parts, value);
+    return;
+  }
+  for (const item of Object.values(value as Record<string, unknown>)) {
+    pushHelpHubSearchText(parts, item);
+  }
+}
+
+/** Lowercased text used by Help Hub search. Draft filtering happens in the search caller. */
+export function helpHubTipSearchText(
   tip: HelpHubTipRecord,
   categories: HelpHubManagedCategory[] = helpHubJsonSeedCategories(),
 ): string {
+  const record = tip as Record<string, unknown>;
   const categoryKey = typeof tip.category === "string" ? tip.category.trim() : "";
-  const parts = [
-    tip.title,
-    tip.question,
-    tip.metaTitle,
-    tip.metaDescription,
-    tip.hook,
-    tip.bubbleAnswer,
-    tip.slug,
-    categoryKey,
-    categoryKey ? helpHubCategoryLabel(categoryKey, categories) : "",
-    ...(Array.isArray(tip.tags) ? tip.tags : []),
-  ];
-  return parts
-    .filter((p): p is string => typeof p === "string" && p.trim() !== "")
-    .join(" ")
-    .toLowerCase();
+  const parts: string[] = [];
+  for (const key of [
+    "title",
+    "question",
+    "metaTitle",
+    "metaDescription",
+    "shortAnswer",
+    "hook",
+    "bubbleAnswer",
+    "slug",
+    "aboutTitle",
+    "solutionText",
+    "bridge",
+    "tryThisTitle",
+    "tryNote",
+    "tryImageAlt",
+    "tryImageCaption",
+    "mediaAlt",
+    "mediaCaption",
+    "thumbnailAlt",
+    "relatedToolEyebrow",
+    "relatedToolTitle",
+    "relatedToolNote",
+    "relatedToolLabel",
+  ]) {
+    pushHelpHubSearchText(parts, record[key]);
+  }
+  pushHelpHubSearchText(parts, record.trySteps);
+  pushHelpHubSearchObject(parts, record.tryThis);
+  pushHelpHubSearchText(parts, record.appliesTo);
+  pushHelpHubSearchText(parts, record.tags);
+  if (record.allMachines === true) parts.push("all machines");
+  if (categoryKey) {
+    parts.push(categoryKey);
+    const label = helpHubCategoryLabel(categoryKey, categories);
+    if (label) parts.push(label);
+  }
+  return parts.join(" ").toLowerCase();
 }
 
 export function searchPublicHelpHubTips<T extends HelpHubTipRecord>(

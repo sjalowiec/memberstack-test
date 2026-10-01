@@ -8,6 +8,8 @@ import {
 } from "./categories";
 import type { HelpHubManagedCategory } from "./categoryTypes";
 
+export const HELP_HUB_INDEX_NEW_LIMIT = 3;
+
 export type HelpHubIndexCard = {
   slug: string;
   heading: string;
@@ -39,6 +41,29 @@ function helpHubTipId(item: { id?: unknown }): number {
   return 0;
 }
 
+function helpHubTipCreatedAtMs(item: { createdAt?: unknown }): number | null {
+  const raw = item.createdAt;
+  if (raw instanceof Date) {
+    const time = raw.getTime();
+    return Number.isFinite(time) ? time : null;
+  }
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const time = Date.parse(raw.trim());
+    return Number.isFinite(time) ? time : null;
+  }
+  return null;
+}
+
+/** Newest isNew entries first. Dated rows win; missing dates fall back to a higher id. */
+function compareHelpHubNewest<T extends { createdAt?: unknown; id?: unknown }>(a: T, b: T): number {
+  const aTime = helpHubTipCreatedAtMs(a);
+  const bTime = helpHubTipCreatedAtMs(b);
+  if (aTime != null && bTime != null && aTime !== bTime) return bTime - aTime;
+  if (aTime != null && bTime == null) return -1;
+  if (aTime == null && bTime != null) return 1;
+  return helpHubTipId(b) - helpHubTipId(a);
+}
+
 function sortHelpHubIndexTips<T extends { sortOrder?: unknown; id?: unknown }>(tips: T[]): T[] {
   return [...tips].sort((a, b) => {
     const c = helpHubTipSortOrder(a) - helpHubTipSortOrder(b);
@@ -65,9 +90,12 @@ function helpHubIndexCardFromTip(tip: HelpHubTipRecord): HelpHubIndexCard | null
 }
 
 export function helpHubIndexNewCards(tips: HelpHubTipRecord[]): HelpHubIndexCard[] {
-  return sortHelpHubIndexTips(filterPublicHelpHubTips(tips).filter((tip) => tip.isNew === true))
+  return filterPublicHelpHubTips(tips)
+    .filter((tip) => tip.isNew === true)
+    .sort(compareHelpHubNewest)
     .map(helpHubIndexCardFromTip)
-    .filter((card): card is HelpHubIndexCard => card != null);
+    .filter((card): card is HelpHubIndexCard => card != null)
+    .slice(0, HELP_HUB_INDEX_NEW_LIMIT);
 }
 
 /**

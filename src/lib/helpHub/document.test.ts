@@ -74,5 +74,39 @@ describe("Help Hub document helpers", () => {
     };
     expect(tipFromRow(row).relatedLessons).toEqual([259, 368]);
     expect(tipFromRow(row).deletedAt).toBeUndefined();
+    expect(tipFromRow(row).createdAt).toBe("2026-09-08T00:00:00.000Z");
+  });
+
+  it("keeps createdAt off the jsonb document", () => {
+    const fields = fieldsFromTipDocument(
+      {
+        id: 1008,
+        slug: "patterns-for-lk150",
+        status: "published",
+        title: "Where can I find patterns for my LK150?",
+        createdAt: "2026-09-08T00:00:00.000Z",
+      },
+      {
+        id: 1008,
+        slug: "patterns-for-lk150",
+        status: "published",
+        title: "Where can I find patterns for my LK150?",
+        category: "lk150",
+      },
+    );
+    expect(fields.document.createdAt).toBeUndefined();
+    expect(
+      documentsMatch(
+        {
+          id: 1008,
+          slug: "patterns-for-lk150",
+          status: "published",
+          title: "Where can I find patterns for my LK150?",
+          category: "lk150",
+          createdAt: "2026-09-08T00:00:00.000Z",
+        },
+        fields.document,
+      ),
+    ).toBe(true);
   });
 });

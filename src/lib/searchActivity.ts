@@ -20,7 +20,18 @@ export const SEARCH_COMMIT_IDLE_MS = 2000;
 export const SEARCH_SETTLE_NOTE =
   "A search is counted when it settles: the visitor stops changing the words for 2 seconds after the results on the page match those words, or they press Enter. Letters still being typed are not counted. Opening search, reloading a page that already has the words in the address, and clicking a result are not counted.";
 
-export type SearchActivityArea = "global" | "video";
+export const SEARCH_ACTIVITY_AREAS = ["global", "video", "help-hub"] as const;
+export type SearchActivityArea = (typeof SEARCH_ACTIVITY_AREAS)[number];
+
+export const SEARCH_ACTIVITY_AREA_LABELS: Record<SearchActivityArea, string> = {
+  global: "Global",
+  video: "Video",
+  "help-hub": "Help Hub",
+};
+
+export function searchActivityAreaLabel(area: SearchActivityArea): string {
+  return SEARCH_ACTIVITY_AREA_LABELS[area];
+}
 export type SearchActivityIdentity = "member" | "guest" | "unknown";
 export type SearchActivityEnvironment = "production" | "dev";
 
@@ -73,7 +84,10 @@ export function classifySearchTerm(
 }
 
 export function isSearchActivityArea(value: unknown): value is SearchActivityArea {
-  return value === "global" || value === "video";
+  return (
+    typeof value === "string" &&
+    (SEARCH_ACTIVITY_AREAS as readonly string[]).includes(value)
+  );
 }
 
 export function cleanResultCount(value: unknown): number | null {

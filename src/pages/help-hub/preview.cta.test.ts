@@ -10,6 +10,10 @@ const tipPageSource = readFileSync(
   join(here, "..", "..", "components", "help-hub", "HelpHubTipPage.astro"),
   "utf8",
 );
+const tipContentSource = readFileSync(
+  join(here, "..", "..", "components", "help-hub", "HelpHubTipContent.astro"),
+  "utf8",
+);
 
 describe("Help Hub saved-draft preview", () => {
   it("requires admin auth on POST and never persists", () => {
@@ -27,18 +31,24 @@ describe("Help Hub saved-draft preview", () => {
 
   it("reuses the public Help Hub renderer", () => {
     expect(slugSource).toContain("HelpHubTipPage");
-    expect(tipPageSource).toContain("data-hh-lesson-cta");
-    expect(tipPageSource).not.toMatch(/href="\/join"/);
+    expect(tipPageSource).toContain("HelpHubTipContent");
+    expect(tipContentSource).toContain("data-hh-lesson-cta");
+    expect(tipContentSource).not.toMatch(/href="\/join"/);
   });
 
   it("omits the personal-guidance Work with Sue block from preview and published tip pages", () => {
     expect(previewSource).toContain("HelpHubTipPage");
     expect(slugSource).toContain("HelpHubTipPage");
     expect(tipPageSource).not.toContain("Need more help?");
+    expect(tipContentSource).not.toContain("Need more help?");
     expect(tipPageSource).not.toContain("personal guidance");
+    expect(tipContentSource).not.toContain("personal guidance");
     expect(tipPageSource).not.toContain("help-hub-cta-inline");
+    expect(tipContentSource).not.toContain("help-hub-cta-inline");
     expect(tipPageSource).not.toContain("help-hub-cta-link");
+    expect(tipContentSource).not.toContain("help-hub-cta-link");
     expect(tipPageSource).not.toContain("/help-hub/work-with-sue");
+    expect(tipContentSource).not.toContain("/help-hub/work-with-sue");
   });
 
   it("sets a document base on preview so site assets resolve against the request origin", () => {

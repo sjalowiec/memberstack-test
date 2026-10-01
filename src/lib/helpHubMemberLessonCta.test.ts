@@ -12,7 +12,7 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url));
 const helpHubPageSource = readFileSync(
-  join(here, "..", "components", "help-hub", "HelpHubTipPage.astro"),
+  join(here, "..", "components", "help-hub", "HelpHubTipContent.astro"),
   "utf8",
 );
 
