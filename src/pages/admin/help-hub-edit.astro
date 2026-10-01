@@ -277,6 +277,41 @@ const topImage = topImageFieldsForAdminForm(rawEntry);
                       rows="2">{valueFor("tryImageCaption", "")}</textarea>
                   </div>
                   <div class="help-hub-edit__field">
+                    <label for="help-hub-related-tool-eyebrow" class="help-hub-edit__label">
+                      Eyebrow
+                    </label>
+                    <input
+                      id="help-hub-related-tool-eyebrow"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="relatedToolEyebrow"
+                      value={valueFor("relatedToolEyebrow", "")}
+                    />
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-related-tool-title" class="help-hub-edit__label">
+                      CTA title
+                    </label>
+                    <input
+                      id="help-hub-related-tool-title"
+                      class="help-hub-edit__input"
+                      type="text"
+                      name="relatedToolTitle"
+                      value={valueFor("relatedToolTitle", "")}
+                    />
+                  </div>
+                  <div class="help-hub-edit__field">
+                    <label for="help-hub-related-tool-note" class="help-hub-edit__label">
+                      CTA note
+                    </label>
+                    <textarea
+                      id="help-hub-related-tool-note"
+                      class="help-hub-edit__textarea"
+                      name="relatedToolNote"
+                      rows="2">{valueFor("relatedToolNote", "")}</textarea>
+                    <p class="help-hub-edit__hint">Optional. Leave blank to hide the note.</p>
+                  </div>
+                  <div class="help-hub-edit__field">
                     <label for="help-hub-related-tool-label" class="help-hub-edit__label">
                       Related tool button label
                     </label>
@@ -300,8 +335,9 @@ const topImage = topImageFieldsForAdminForm(rawEntry);
                       value={valueFor("relatedToolUrl", "")}
                     />
                     <p class="help-hub-edit__hint">
-                      Optional. The button appears after Try This and opens in the same tab.
-                      Leave either field blank to hide it.
+                      Optional. Use a site path such as /reference/repairs, or a full
+                      https://knititnow.com link. The button appears after Try This and opens in
+                      the same tab. Leave the button label or URL blank to hide it.
                     </p>
                   </div>
                 </div>

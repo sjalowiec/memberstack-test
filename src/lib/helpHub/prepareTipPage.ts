@@ -54,6 +54,9 @@ export type HelpHubPageTip = {
   tryImageCaption?: string;
   relatedLessons?: (string | number)[];
   relatedLibraryVideos?: unknown;
+  relatedToolEyebrow?: string;
+  relatedToolTitle?: string;
+  relatedToolNote?: string;
   relatedToolLabel?: string;
   relatedToolUrl?: string;
   jumpLinks?: { label: string; href: string }[];

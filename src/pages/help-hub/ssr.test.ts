@@ -98,6 +98,9 @@ describe("Help Hub empty media", () => {
     );
     expect(tipPageSource).toContain("relatedTool");
     expect(tipPageSource).toContain("help-hub-related-tool");
+    expect(tipPageSource).toContain("help-hub-related-tool__eyebrow");
+    expect(tipPageSource).toContain("help-hub-related-tool__title");
+    expect(tipPageSource).toContain("help-hub-related-tool__note");
     expect(tipPageSource).toContain("href={relatedTool.href}");
     expect(tipPageSource).not.toMatch(/help-hub-related-tool[\s\S]*target="_blank"/);
   });
