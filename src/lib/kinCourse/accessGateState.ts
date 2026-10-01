@@ -8,6 +8,7 @@ import {
   BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
+  LK150_FUN_COURSE_SLUG,
   LK150_PATTERNING_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
 import { canAccessCourse } from "../courseAccess";
@@ -40,6 +41,9 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
   }
   if (slug === LK150_PATTERNING_COURSE_SLUG || slug === "34") {
     return "the LK150 Patterning course plan";
+  }
+  if (slug === LK150_FUN_COURSE_SLUG || slug === "51") {
+    return "the LK-150 Fun course plan";
   }
   return "the SK840 course plan";
 }
