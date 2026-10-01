@@ -29,6 +29,9 @@ export type HelpHubAdminFormValues = {
   mediaUrl: string;
   mediaAlt: string;
   mediaCaption: string;
+  relatedToolEyebrow: string;
+  relatedToolTitle: string;
+  relatedToolNote: string;
   relatedToolLabel: string;
   relatedToolUrl: string;
   relatedLessons: (string | number)[];
@@ -104,6 +107,20 @@ export function isHelpHubInternalHref(href: string): boolean {
   return true;
 }
 
+const HELP_HUB_CTA_HOSTS = new Set(["knititnow.com", "www.knititnow.com"]);
+
+/** Site path, or an https link on knititnow.com. Other sites stay blocked. */
+export function isHelpHubCtaHref(href: string): boolean {
+  const t = href.trim();
+  if (isHelpHubInternalHref(t)) return true;
+  try {
+    const url = new URL(t);
+    return url.protocol === "https:" && HELP_HUB_CTA_HOSTS.has(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 export function storedHeroMediaIsImage(
   entry: Record<string, unknown> | null | undefined,
 ): boolean {
@@ -126,16 +143,31 @@ export function topImageFieldsForAdminForm(
   };
 }
 
-export type HelpHubRelatedToolButton = { label: string; href: string };
+export type HelpHubRelatedToolButton = {
+  label: string;
+  href: string;
+  eyebrow: string;
+  title: string;
+  note: string;
+};
 
 export function helpHubRelatedToolButton(tip: {
   relatedToolLabel?: unknown;
   relatedToolUrl?: unknown;
+  relatedToolEyebrow?: unknown;
+  relatedToolTitle?: unknown;
+  relatedToolNote?: unknown;
 }): HelpHubRelatedToolButton | null {
   const label = typeof tip.relatedToolLabel === "string" ? tip.relatedToolLabel.trim() : "";
   const href = typeof tip.relatedToolUrl === "string" ? tip.relatedToolUrl.trim() : "";
-  if (!label || !href || !isHelpHubInternalHref(href)) return null;
-  return { label, href };
+  if (!label || !href || !isHelpHubCtaHref(href)) return null;
+  return {
+    label,
+    href,
+    eyebrow: typeof tip.relatedToolEyebrow === "string" ? tip.relatedToolEyebrow.trim() : "",
+    title: typeof tip.relatedToolTitle === "string" ? tip.relatedToolTitle.trim() : "",
+    note: typeof tip.relatedToolNote === "string" ? tip.relatedToolNote.trim() : "",
+  };
 }
 
 export function shouldAutofillSlug(options: {
@@ -190,13 +222,25 @@ export function applyAdminFormToDocument(
   const relatedTool = helpHubRelatedToolButton({
     relatedToolLabel: form.relatedToolLabel,
     relatedToolUrl: form.relatedToolUrl,
+    relatedToolEyebrow: form.relatedToolEyebrow,
+    relatedToolTitle: form.relatedToolTitle,
+    relatedToolNote: form.relatedToolNote,
   });
   if (relatedTool) {
     out.relatedToolLabel = relatedTool.label;
     out.relatedToolUrl = relatedTool.href;
+    if (relatedTool.eyebrow) out.relatedToolEyebrow = relatedTool.eyebrow;
+    else delete out.relatedToolEyebrow;
+    if (relatedTool.title) out.relatedToolTitle = relatedTool.title;
+    else delete out.relatedToolTitle;
+    if (relatedTool.note) out.relatedToolNote = relatedTool.note;
+    else delete out.relatedToolNote;
   } else {
     delete out.relatedToolLabel;
     delete out.relatedToolUrl;
+    delete out.relatedToolEyebrow;
+    delete out.relatedToolTitle;
+    delete out.relatedToolNote;
   }
 
   out.relatedLessons = normalizeRelatedLessonRefs(form.relatedLessons);

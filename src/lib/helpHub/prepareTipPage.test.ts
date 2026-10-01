@@ -169,6 +169,9 @@ describe("prepareHelpHubTipPage member resources", () => {
     expect(withTool.relatedTool).toEqual({
       label: "Calculate My Gauge",
       href: "/tools/gauge-calculator",
+      eyebrow: "",
+      title: "",
+      note: "",
     });
     expect(
       prepareHelpHubTipPage(
@@ -177,6 +180,26 @@ describe("prepareHelpHubTipPage member resources", () => {
         videosPublic,
       ).relatedTool,
     ).toBeNull();
+    expect(
+      prepareHelpHubTipPage(
+        {
+          slug: "can-i-maintain-my-knitting-machine-myself-what-if-theres-no-repair-person-near-me",
+          relatedLessons: [],
+          relatedToolEyebrow: "Helpful Resource",
+          relatedToolTitle: "Knitting Machine Repair Contacts and Services",
+          relatedToolLabel: "Find Repair Help",
+          relatedToolUrl: "https://knititnow.com/reference/repairs",
+        },
+        lessons,
+        videosPublic,
+      ).relatedTool,
+    ).toEqual({
+      eyebrow: "Helpful Resource",
+      title: "Knitting Machine Repair Contacts and Services",
+      note: "",
+      label: "Find Repair Help",
+      href: "https://knititnow.com/reference/repairs",
+    });
   });
 });
 

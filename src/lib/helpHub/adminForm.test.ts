@@ -25,6 +25,9 @@ const form = (overrides: Partial<HelpHubAdminFormValues> = {}): HelpHubAdminForm
   mediaUrl: "",
   mediaAlt: "",
   mediaCaption: "",
+  relatedToolEyebrow: "",
+  relatedToolTitle: "",
+  relatedToolNote: "",
   relatedToolLabel: "",
   relatedToolUrl: "",
   relatedLessons: [],
@@ -180,6 +183,26 @@ describe("applyAdminFormToDocument", () => {
         form({ relatedToolLabel: "Calculate My Gauge", relatedToolUrl: "https://example.com" }),
       ),
     ).not.toHaveProperty("relatedToolUrl");
+  });
+
+  it("stores a public resource CTA and leaves a blank note off the document", () => {
+    const next = applyAdminFormToDocument(
+      { relatedToolNote: "Old note", relatedLessons: [12] },
+      form({
+        relatedLessons: [],
+        relatedToolEyebrow: "Helpful Resource",
+        relatedToolTitle: "Knitting Machine Repair Contacts and Services",
+        relatedToolNote: "   ",
+        relatedToolLabel: "Find Repair Help",
+        relatedToolUrl: "https://knititnow.com/reference/repairs",
+      }),
+    );
+    expect(next.relatedLessons).toEqual([]);
+    expect(next.relatedToolEyebrow).toBe("Helpful Resource");
+    expect(next.relatedToolTitle).toBe("Knitting Machine Repair Contacts and Services");
+    expect(next).not.toHaveProperty("relatedToolNote");
+    expect(next.relatedToolLabel).toBe("Find Repair Help");
+    expect(next.relatedToolUrl).toBe("https://knititnow.com/reference/repairs");
   });
 });
 

@@ -95,10 +95,16 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain('name="mediaCaption"');
     expect(editSource).toContain("Related tool button label");
     expect(editSource).toContain("Related tool internal URL");
+    expect(editSource).toContain('name="relatedToolEyebrow"');
+    expect(editSource).toContain('name="relatedToolTitle"');
+    expect(editSource).toContain('name="relatedToolNote"');
     expect(editSource).toContain('name="relatedToolLabel"');
     expect(editSource).toContain('name="relatedToolUrl"');
     expect(editSource).not.toContain("name=\"mediaType\"");
     expect(editSource).not.toContain("YouTube");
+    expect(formClientSource).toContain("relatedToolEyebrow");
+    expect(formClientSource).toContain("relatedToolTitle");
+    expect(formClientSource).toContain("relatedToolNote");
     expect(formClientSource).toContain("relatedToolLabel");
     expect(formClientSource).toContain("relatedToolUrl");
   });
