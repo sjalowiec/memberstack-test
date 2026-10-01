@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import course2 from "../../data/legacy_kin/cleaned/course_2_not_enough_needles.poc.json";
 import course50 from "../../data/legacy_kin/cleaned/course_50_lk150_quick.poc.json";
+import course51 from "../../data/legacy_kin/cleaned/course_51_lk150_fun.poc.json";
 import course87 from "../../data/legacy_kin/cleaned/course_87_brother_kh_kr_260_quick_start.poc.json";
 import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import {
@@ -16,6 +17,7 @@ import {
   getPublicLessonContentNavEntries,
   groupLessonContentNavEntries,
   resolvePublicLessonItem,
+  urlLessonSlug,
 } from "./courseLessonContentItems";
 import { isVimeoJumpLinksComponent } from "./vimeoJumpLinksEditor";
 import { jumpsFromComponent } from "../kinCourse/vimeoJumpLinks";
@@ -267,6 +269,44 @@ describe("courseLessonContentItems", () => {
         expect(new Set(labels).size).toBe(labels.length);
       }
     }
+  });
+
+  it("Course 51 public labels come from stored titles, and Quick Project keeps its lesson id", () => {
+    const course = course51 as CoursePreviewData;
+    const quick = findLesson(course, "lesson-1790793285497");
+    expect(quick.legacy.itemId).toBe(796);
+    expect(urlLessonSlug(course.lessons, quick.slug)).toBe("quick-project");
+    expect(getPublicLessonContentItems(course, quick)[0]?.itemSlug).toBe("quick-basic-hat");
+    expect(resolvePublicLessonItem(course, quick, "content-1790793484462").redirectSlug).toBe(
+      "quick-basic-hat",
+    );
+
+    const garter = findLesson(course, "garter-stitch");
+    const garterNav = getPublicLessonContentNavEntries(course, garter);
+    expect(garterNav.find((entry) => entry.legacyComponentId === 5016)?.title).toBe(
+      "Garter Stitch: Step by Step.",
+    );
+
+    const basics = findLesson(course, "the-basics");
+    const basicsNav = getPublicLessonContentNavEntries(course, basics);
+    expect(basicsNav.find((entry) => entry.legacyComponentId === 9637)?.title).toBe(
+      "Bind-off methods",
+    );
+
+    const turning = findLesson(course, "turning-corners-partial-knitting");
+    const turningNav = getPublicLessonContentNavEntries(course, turning);
+    expect(turningNav.find((entry) => entry.legacyComponentId === 9695)?.title).toBe("Wrap");
+    expect(turningNav.some((entry) => entry.title === "Video")).toBe(false);
+
+    const hems = findLesson(course, "hems-and-ribbing");
+    const hemsBlock = hems.blocks.find((block) => block.slug === "hems");
+    const hemsVideo = hemsBlock?.components.find(
+      (component) => component.type === "video" && component.vimeoId === "178357079",
+    );
+    expect(hemsVideo && "title" in hemsVideo ? hemsVideo.title : "").toBe("Machine Knit Hems");
+    const hemsNav = getPublicLessonContentNavEntries(course, hems);
+    expect(hemsNav.find((entry) => entry.blockSlug === "hems")?.title).toBe("Hems");
+    expect(hemsNav.some((entry) => entry.title === "Video")).toBe(false);
   });
 
   it("Course 2 Decorative Seams resolves hairpin-lace-seam item slug", () => {

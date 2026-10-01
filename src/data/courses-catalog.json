@@ -59,10 +59,14 @@
     },
     {
       "slug": "lk-150-fun",
-      "category": "LK-150 Library",
+      "title": "LK-150 Fun",
+      "category": "LK-150",
       "catalogStatus": "available",
       "access": "member",
-      "description": "Build on your LK-150 basics with texture, shaping, and creative techniques you can use in any project."
+      "description": "Build on your LK-150 basics with texture, shaping, and creative techniques you can use in any project.",
+      "href": "/courses/51",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/lk-150_fun.webp"
     },
     {
       "slug": "ribber-basic-bootcamp",

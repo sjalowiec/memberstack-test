@@ -1,9 +1,10 @@
 ---
 import {
+  getLegacyCourseRecordBySlug,
   legacyLessonItemHref,
 } from "../../../lib/legacy_kin/legacyCourseLoader";
 import type { CourseContentItemStep } from "../../../lib/legacy_kin/courseLessonContentItems";
-import { contentItemDisplayTitle } from "../../../lib/legacy_kin/courseLessonContentItems";
+import { contentItemDisplayTitle, urlLessonSlug } from "../../../lib/legacy_kin/courseLessonContentItems";
 
 interface Props {
   courseSlug: string;
@@ -21,9 +22,14 @@ const {
   next = null,
   placement = "bottom",
 } = Astro.props;
+const courseLessons = getLegacyCourseRecordBySlug(courseSlug)?.lessons ?? [];
 
 function stepHref(step: CourseContentItemStep): string {
-  return `${legacyLessonItemHref(courseSlug, step.lesson.slug, step.item.itemSlug)}${previewQuery}`;
+  const lessonSlug = urlLessonSlug(
+    courseLessons.length > 0 ? courseLessons : [step.lesson],
+    step.lesson.slug,
+  );
+  return `${legacyLessonItemHref(courseSlug, lessonSlug, step.item.itemSlug)}${previewQuery}`;
 }
 
 function stepLabel(step: CourseContentItemStep): string {

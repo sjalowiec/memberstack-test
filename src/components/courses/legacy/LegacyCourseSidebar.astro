@@ -6,9 +6,11 @@ import {
   legacyCourseHref,
   legacyLessonHref,
   legacyLessonItemHref,
+  sequentialLessonNumber,
 } from "../../../lib/legacy_kin/legacyCourseLoader";
 import {
   groupLessonContentNavEntries,
+  urlLessonSlug,
   type LessonContentNavEntry,
 } from "../../../lib/legacy_kin/courseLessonContentItems";
 
@@ -37,11 +39,11 @@ const lessons = course ? getSortedLessonsForCourse(course, loaderOptions) : [];
 const allCourses = getLegacyCourses(loaderOptions);
 
 function lessonHref(lessonSlug: string): string {
-  return `${legacyLessonHref(courseSlug, lessonSlug)}${previewQuery}`;
+  return `${legacyLessonHref(courseSlug, urlLessonSlug(lessons, lessonSlug))}${previewQuery}`;
 }
 
 function itemHref(lessonSlug: string, itemSlug: string): string {
-  return `${legacyLessonItemHref(courseSlug, lessonSlug, itemSlug)}${previewQuery}`;
+  return `${legacyLessonItemHref(courseSlug, urlLessonSlug(lessons, lessonSlug), itemSlug)}${previewQuery}`;
 }
 ---
 
@@ -88,7 +90,7 @@ function itemHref(lessonSlug: string, itemSlug: string): string {
       <nav class="course-preview__sidebar-nav" aria-label="Lessons">
         <ol class="course-preview__sidebar-lessons">
           {
-            lessons.map((lesson) => {
+            lessons.map((lesson, index) => {
               const isActive = lesson.slug === currentLessonSlug;
               return (
                 <li
@@ -103,7 +105,7 @@ function itemHref(lessonSlug: string, itemSlug: string): string {
                     aria-current={isActive && !currentItemSlug ? "page" : undefined}
                   >
                     <span class="course-preview__sidebar-lesson-order">
-                      {lesson.displayOrder}.
+                      {sequentialLessonNumber(index)}.
                     </span>
                     {lesson.title}
                   </a>

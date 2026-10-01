@@ -6,6 +6,8 @@ import {
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
+  LK150_FUN_COURSE_PLAN_ID,
+  LK150_FUN_COURSE_SLUG,
   LK150_PATTERNING_COURSE_PLAN_ID,
   LK150_PATTERNING_COURSE_SLUG,
   LEGACY_SK840_COURSE_PLAN_ID,
@@ -89,6 +91,13 @@ describe("account ownable catalog cards", () => {
         href: "/courses/34",
         planIds: [COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId],
       },
+      {
+        courseId: 51,
+        slug: LK150_FUN_COURSE_SLUG,
+        title: "LK-150 Fun",
+        href: "/courses/51",
+        planIds: [COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId],
+      },
     ]);
   });
 
@@ -170,6 +179,21 @@ describe("ownedCoursesForAccount", () => {
     expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId).toBe(
       "pln_course-lk150-patterning-nw00gk6",
     );
+  });
+
+  it("LK150 Fun legacy plan displays Course 51 only and has no checkout price", () => {
+    const course51 = catalogCards.find((card) => card.slug === LK150_FUN_COURSE_SLUG);
+    const courses = ownedCoursesForAccount(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID), catalogCards);
+    expect(ownedCourseSlugsFromMember(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID))).toEqual([
+      LK150_FUN_COURSE_SLUG,
+    ]);
+    expect(courses).toEqual([course51]);
+    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.paidPlanId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId).toBe(
+      "pln_course-lk150-fun-legacy-qn6n0gzm",
+    );
+    expect(MEMBER_PLAN_IDS).not.toContain(LK150_FUN_COURSE_PLAN_ID);
   });
 
   it("SK840 Legacy displays Course 111", () => {
