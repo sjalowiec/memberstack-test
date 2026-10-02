@@ -191,6 +191,9 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("${panel.title} Machines");
     expect(page).toContain('border-color: var(--kbm-accent)');
     expect(page).toContain('border-color: var(--kbm-green)');
+    expect(page).toContain("border: 3px solid var(--kbm-accent)");
+    expect(page).toContain("border: 3px solid var(--kbm-green)");
+    expect(page).not.toContain("color-mix(in srgb, var(--kbm-accent) 40%");
     expect(page).toContain("border-width: 4px");
     expect(page).not.toContain('includes("ribber")');
     expect(page).not.toContain('includes("Ribber")');
