@@ -27,6 +27,18 @@ const salesHold = MACHINE_SALES_HOLD;
  */
 const holdListings = salesHold ? getStorefrontHoldListings() : [];
 const brandPanels = storefrontBrandPanels(holdListings);
+const brandChooserCopy: Record<string, { description: string; action: string }> = {
+  taitexma: {
+    description:
+      "Explore standard and bulky gauge knitting machines. Taitexma machines are ordered in batches, so availability varies by shipment. Check individual listings for current availability.",
+    action: "Browse Taitexma",
+  },
+  "silver-reed": {
+    description:
+      "Explore Silver Reed knitting machines, from the portable LK150 to punchcard and electronic models.",
+    action: "Browse Silver Reed",
+  },
+};
 
 const title = "Knitting Machines for Sale | Knit it Now";
 const description = salesHold
@@ -72,17 +84,22 @@ function formatPrice(value: number | null): string | null {
           <>
           <div class="brand-catalog" data-brand-catalog>
             <div class="brand-switch" role="group" aria-label="Choose a brand">
-              {brandPanels.map((panel, index) => (
-                <button
-                  type="button"
-                  class="brand-switch-btn"
-                  data-brand-tab={panel.id}
-                  aria-controls={`${panel.id}-panel`}
-                  aria-pressed={index === 0 ? "true" : "false"}
-                >
-                  {panel.title}
-                </button>
-              ))}
+              {brandPanels.map((panel, index) => {
+                const copy = brandChooserCopy[panel.id];
+                return (
+                  <button
+                    type="button"
+                    class="brand-card"
+                    data-brand-tab={panel.id}
+                    aria-controls={`${panel.id}-panel`}
+                    aria-pressed={index === 0 ? "true" : "false"}
+                  >
+                    <span class="brand-card-title">{panel.title}</span>
+                    {copy && <span class="brand-card-copy">{copy.description}</span>}
+                    {copy && <span class="brand-card-action">{copy.action}</span>}
+                  </button>
+                );
+              })}
             </div>
             {brandPanels.map((panel, index) => (
               <div
@@ -335,49 +352,76 @@ function formatPrice(value: number | null): string | null {
   }
 
   .brand-switch {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 0.75rem;
     margin: 0.25rem 0 0.5rem;
   }
 
-  .brand-switch-btn {
-    flex: 1 1 12rem;
+  @media (min-width: 700px) {
+    .brand-switch {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .brand-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+    width: 100%;
     min-height: 3.25rem;
-    padding: 0.85rem 1.25rem;
-    border: 2px solid var(--kbm-green);
-    border-radius: 10px;
+    margin: 0;
+    padding: 1rem 1.1rem 1.05rem;
+    border: 2px solid #d5ddc8;
+    border-radius: 12px;
     background: #ffffff;
-    color: var(--kbm-green);
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1.2;
+    color: #3d4a32;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
   }
 
-  .brand-switch-btn[aria-pressed="true"] {
-    background: var(--kbm-green);
-    color: #ffffff;
+  .brand-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--kbm-green);
   }
 
-  .brand-switch-btn:hover {
-    background: #f3f6ee;
+  .brand-card-copy {
+    font-size: 0.98rem;
+    font-weight: 400;
+    line-height: 1.45;
+    color: #4d5c3d;
   }
 
-  .brand-switch-btn[aria-pressed="true"]:hover {
-    background: var(--kbm-green-hover, #445626);
-    color: #ffffff;
+  .brand-card-action {
+    margin-top: auto;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--kbm-green);
   }
 
-  .brand-switch-btn:focus-visible {
+  .brand-card[aria-pressed="true"] {
+    border-color: var(--kbm-green);
+    background: #f4f7ef;
+    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.28);
+  }
+
+  .brand-card[aria-pressed="true"] .brand-card-action {
+    color: var(--kbm-green);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .brand-card:hover {
+    border-color: var(--kbm-green);
+  }
+
+  .brand-card:focus-visible {
     outline: 3px solid #1d4ed8;
     outline-offset: 3px;
-  }
-
-  @media (max-width: 520px) {
-    .brand-switch-btn {
-      flex-basis: 100%;
-    }
   }
 
   .machines-section {
