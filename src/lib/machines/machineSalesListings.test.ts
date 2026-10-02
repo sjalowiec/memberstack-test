@@ -179,6 +179,9 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("Taitexma machines are ordered in batches, so availability varies by shipment.");
     expect(page).toContain("Browse Taitexma");
     expect(page).toContain("Machines are available for customers in the United States only.");
+    expect(page).toContain(
+      'class="contact-modal-trigger" data-contact-source="shop-machines">Contact Sue</a>',
+    );
     expect(page).not.toContain("These products are available to purchase now.");
     expect(page).toContain(
       "Explore Silver Reed knitting machines, from the portable LK150 to punchcard and electronic models.",
