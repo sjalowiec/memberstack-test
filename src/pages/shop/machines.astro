@@ -432,10 +432,26 @@ function formatPrice(value: number | null): string | null {
     color: var(--kbm-green);
   }
 
-  .brand-card[aria-pressed="true"] {
+  .brand-card[data-brand-tab="taitexma"] {
+    border-color: var(--kbm-accent);
+  }
+
+  .brand-card[data-brand-tab="silver-reed"] {
     border-color: var(--kbm-green);
+  }
+
+  .brand-card[aria-pressed="true"] {
+    border-width: 4px;
     background: #f4f7ef;
-    box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.28);
+  }
+
+  .brand-card[data-brand-tab="taitexma"][aria-pressed="true"] {
+    background: color-mix(in srgb, var(--kbm-accent) 9%, #ffffff);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-accent) 28%, transparent);
+  }
+
+  .brand-card[data-brand-tab="silver-reed"][aria-pressed="true"] {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green) 28%, transparent);
   }
 
   .brand-card[aria-pressed="true"] .brand-card-action {
@@ -444,8 +460,12 @@ function formatPrice(value: number | null): string | null {
     text-underline-offset: 0.15em;
   }
 
-  .brand-card:hover {
-    border-color: var(--kbm-green);
+  .brand-card[data-brand-tab="taitexma"]:hover {
+    border-color: var(--kbm-accent-hover);
+  }
+
+  .brand-card[data-brand-tab="silver-reed"]:hover {
+    border-color: var(--kbm-green-hover);
   }
 
   .brand-card:focus-visible {
@@ -525,6 +545,14 @@ function formatPrice(value: number | null): string | null {
     display: flex;
     flex-direction: column;
     transition: box-shadow 0.2s ease;
+  }
+
+  .brand-panel[data-brand-panel="taitexma"] .machine-card {
+    border-color: color-mix(in srgb, var(--kbm-accent) 40%, #e8ebe4);
+  }
+
+  .brand-panel[data-brand-panel="silver-reed"] .machine-card {
+    border-color: color-mix(in srgb, var(--kbm-green) 40%, #e8ebe4);
   }
 
   .machine-card:hover {
