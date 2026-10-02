@@ -175,8 +175,11 @@ describe("machine sales hold listings", () => {
     expect(page).toContain('type="button"');
     expect(page).toContain("aria-pressed");
     expect(page).toContain("data-brand-catalog");
-    expect(page).toContain("Explore standard and bulky gauge knitting machines.");
+    expect(page).toContain("(tie-tex-ma)");
+    expect(page).toContain("Taitexma machines are ordered in batches, so availability varies by shipment.");
     expect(page).toContain("Browse Taitexma");
+    expect(page).toContain("Machines are available for customers in the United States only.");
+    expect(page).not.toContain("These products are available to purchase now.");
     expect(page).toContain(
       "Explore Silver Reed knitting machines, from the portable LK150 to punchcard and electronic models.",
     );
