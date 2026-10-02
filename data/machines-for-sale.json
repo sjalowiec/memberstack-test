@@ -108,5 +108,24 @@
     "shortHtml": "Machine only\nAt 6mm this Taitexma (tie-tex-ma) machine is the perfect gauge for the use of a wide range of yarns.\n\nBeing a metal bed, this machine will provide years of service.\nGet all of the basic knitting machine functionality with minimal fuss.\nThis machine does not have a punchcard mechanism\n\nLK-150 Knitter?\nUpgrade to this metal machine and you will be amazed at the expanded capabilities of this machine,\n\nNew to machine knitting?\nThe learning curve is very straightforward. Take it step by step and you’ll be using all the features of the machine in no time.\n\nExperienced machine knitter?\nYou’ll appreciate the quality of the machine, the in-between gauge and the control you’ll have over your knitting with a minimum of fuss.",
     "imageSrc": "/images/machines/taitexma-th160-machine.jpg",
     "sortOrder": 60
+  },
+  {
+    "id": "silver-reed-lk150",
+    "name": "Silver Reed LK150",
+    "brand": "Silver Reed",
+    "model": "LK150",
+    "price": 575,
+    "priceLabel": "$575",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/silver-reed-lk150",
+    "status": "available",
+    "listingType": "machine",
+    "specs": [
+      "MId-Gauge",
+      "Manual",
+      "150 Needles"
+    ],
+    "shortHtml": "A lightweight, portable knitting machine for beginners and experienced knitters. Knit sport, DK, and light worsted yarns quickly, or combine machine knitting with your favorite hand-knit details.",
+    "imageSrc": "/images/machines/lk150-knitting-machine.jpg",
+    "sortOrder": 70
   }
 ]
