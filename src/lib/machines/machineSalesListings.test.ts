@@ -175,6 +175,12 @@ describe("machine sales hold listings", () => {
     expect(page).toContain('type="button"');
     expect(page).toContain("aria-pressed");
     expect(page).toContain("data-brand-catalog");
+    expect(page).toContain("Explore standard and bulky gauge knitting machines.");
+    expect(page).toContain("Browse Taitexma");
+    expect(page).toContain(
+      "Explore Silver Reed knitting machines, from the portable LK150 to punchcard and electronic models.",
+    );
+    expect(page).toContain("Browse Silver Reed");
     expect(page).not.toContain('includes("ribber")');
     expect(page).not.toContain('includes("Ribber")');
   });
