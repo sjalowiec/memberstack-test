@@ -34,7 +34,7 @@ export const LK150_FUN_COURSE_SLUG = "lk-150-fun" as const;
 export const LK150_FUN_COURSE_PLAN_ID = "pln_course-lk150-fun-legacy-qn6n0gzm" as const;
 
 export const LK150_QUICK_START_COURSE_SLUG = "lk-150-quick-start" as const;
-/** Free permanent plan for verified LK-150 Quick Start owners. The catalog course stays free. No checkout price is configured here. */
+/** Permanent plan for verified LK-150 Quick Start owners. Active membership also opens the course. No checkout price is configured here. */
 export const LK150_QUICK_START_COURSE_PLAN_ID = "pln_kin-lk150-quickstart-7h8i0oxj" as const;
 
 export type IndividualCourseSaleKey = "th160" | "sk840" | "brother260" | "lk150Patterning" | "lk150QuickStart" | "lk150Fun";

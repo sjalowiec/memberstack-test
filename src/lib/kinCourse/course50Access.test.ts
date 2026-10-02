@@ -8,8 +8,8 @@ import {
   LK150_QUICK_START_COURSE_PLAN_ID,
   LK150_QUICK_START_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
-import { COURSE_ACCESS_PLAN_IDS, MEMBER_PLAN_IDS } from "../../config/memberships";
-import { canAccessCourse, hasIndividualCoursePurchase } from "../courseAccess";
+import { COURSE_ACCESS_PLAN_IDS, MEMBER_PLAN_IDS, MEMBERSHIPS } from "../../config/memberships";
+import { canAccessCourse, getCourseViewerState, hasIndividualCoursePurchase } from "../courseAccess";
 import { getCourseAccessBySlug } from "../coursesCatalogAccess";
 import { readCourseContentFile } from "../legacy_kin/courseContentAdmin";
 import { ownedCourseSlugsFromMember, ownedCoursesForAccount } from "./accountMyCourses";
@@ -25,17 +25,33 @@ function payloadWithPlan(planId: string, status = "ACTIVE") {
   };
 }
 
+const loggedInNeither = {
+  data: { id: "ms_nosub", auth: { email: "nosub@example.com" }, planConnections: [] },
+};
+
 describe("Course 50 LK-150 Quick Start legacy plan", () => {
-  it("keeps the published course free and unsold", () => {
+  it("opens for a legacy owner or an active member, and stays closed otherwise", () => {
     const poc = readCourseContentFile(50);
+    const slug = LK150_QUICK_START_COURSE_SLUG;
+    const access = getCourseAccessBySlug(slug);
+    const owner = payloadWithPlan(LK150_QUICK_START_COURSE_PLAN_ID);
+    const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
+    const inactiveMember = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId, "CANCELED");
+
     expect(poc.course.legacyChallengeId).toBe(50);
     expect(poc.course.title).toBe("LK-150 Quick Start");
-    expect(poc.course.slug).toBe(LK150_QUICK_START_COURSE_SLUG);
+    expect(poc.course.slug).toBe(slug);
     expect(poc.course.status).toBe("published");
     expect(poc.course.published).toBe(true);
-    expect(getCourseAccessBySlug(LK150_QUICK_START_COURSE_SLUG)).toBe("free");
-    expect(canAccessCourse("free", null, { courseSlug: LK150_QUICK_START_COURSE_SLUG })).toBe(true);
-    expect(courseCheckoutPriceId(LK150_QUICK_START_COURSE_SLUG)).toBeNull();
+    expect(access).toBe("member");
+    expect(canAccessCourse(access, owner, { courseSlug: slug })).toBe(true);
+    expect(canAccessCourse(access, member, { courseSlug: slug })).toBe(true);
+    expect(canAccessCourse(access, null, { courseSlug: slug })).toBe(false);
+    expect(getCourseViewerState(access, null, { courseSlug: slug })).toBe("loggedOut");
+    expect(canAccessCourse(access, loggedInNeither, { courseSlug: slug })).toBe(false);
+    expect(getCourseViewerState(access, loggedInNeither, { courseSlug: slug })).toBe("needsMembership");
+    expect(canAccessCourse(access, inactiveMember, { courseSlug: slug })).toBe(false);
+    expect(courseCheckoutPriceId(slug)).toBeNull();
     expect(courseCheckoutPriceId("50")).toBeNull();
     expect(MEMBER_PLAN_IDS).not.toContain(LK150_QUICK_START_COURSE_PLAN_ID);
     expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LK150_QUICK_START_COURSE_PLAN_ID);

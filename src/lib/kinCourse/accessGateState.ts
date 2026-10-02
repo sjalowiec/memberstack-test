@@ -10,6 +10,7 @@ import {
   LEGACY_SK840_COURSE_SLUG,
   LK150_FUN_COURSE_SLUG,
   LK150_PATTERNING_COURSE_SLUG,
+  LK150_QUICK_START_COURSE_SLUG,
 } from "../../config/legacyCourseEntitlements";
 import { canAccessCourse } from "../courseAccess";
 import { isMemberLoggedIn } from "../memberAccess";
@@ -44,6 +45,9 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
   }
   if (slug === LK150_FUN_COURSE_SLUG || slug === "51") {
     return "the LK-150 Fun course plan";
+  }
+  if (slug === LK150_QUICK_START_COURSE_SLUG || slug === "50") {
+    return "the LK-150 Quick Start course plan";
   }
   return "the SK840 course plan";
 }
