@@ -14,7 +14,7 @@ import {
   displayPriceLabel,
   getStorefrontHoldListings,
   listingGaugeLabel,
-  storefrontCatalogSections,
+  storefrontBrandPanels,
 } from "../../lib/machines/machineSalesListings";
 
 // TEMPORARY: launch hold while shipping/ordering is finalized.
@@ -26,7 +26,7 @@ const salesHold = MACHINE_SALES_HOLD;
  * (data/machines-for-sale.json). Does not read or modify data/machines.json.
  */
 const holdListings = salesHold ? getStorefrontHoldListings() : [];
-const holdSections = storefrontCatalogSections(holdListings);
+const brandPanels = storefrontBrandPanels(holdListings);
 
 const title = "Knitting Machines for Sale | Knit it Now";
 const description = salesHold
@@ -69,77 +69,147 @@ function formatPrice(value: number | null): string | null {
             No machines are listed for sale right now. Please check back soon.
           </p>
         ) : (
-          holdSections.map((section) => (
-              <section class="machines-section" aria-labelledby={`${section.id}-heading`}>
-                <h2 id={`${section.id}-heading`} class="machines-section-title">
-                  {section.title}
-                </h2>
-                <div class="machines-grid machines-grid--temp">
-                  {section.items.map((product) => {
-                    const priceLabel = displayPriceLabel(product);
-                    const gaugeLabel = listingGaugeLabel(product.specs);
-                    const gaugeIndex = gaugeLabel ? product.specs.indexOf(gaugeLabel) : -1;
-                    const specChips =
-                      gaugeIndex >= 0
-                        ? product.specs.filter((_, index) => index !== gaugeIndex)
-                        : product.specs;
-                    return (
-                      <article class="machine-card">
-                        <div class="machine-card-image-wrap">
-                          {product.imageSrc ? (
-                            <img
-                              src={product.imageSrc}
-                              alt={product.name}
-                              class="machine-card-image"
-                              width="280"
-                              height="180"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : (
-                            <div class="machine-card-image-placeholder" aria-hidden="true">
-                              Image coming soon
-                            </div>
-                          )}
-                          {product.status === "sold" && (
-                            <span class="machine-status machine-status--sold-out">Sold</span>
-                          )}
+          <>
+          <div class="brand-catalog" data-brand-catalog>
+            <div class="brand-switch" role="group" aria-label="Choose a brand">
+              {brandPanels.map((panel, index) => (
+                <button
+                  type="button"
+                  class="brand-switch-btn"
+                  data-brand-tab={panel.id}
+                  aria-controls={`${panel.id}-panel`}
+                  aria-pressed={index === 0 ? "true" : "false"}
+                >
+                  {panel.title}
+                </button>
+              ))}
+            </div>
+            {brandPanels.map((panel, index) => (
+              <div
+                class="brand-panel"
+                id={`${panel.id}-panel`}
+                data-brand-panel={panel.id}
+                hidden={index !== 0}
+              >
+                {panel.machines.length === 0 && panel.extras.length === 0 ? (
+                  <p class="machines-empty">
+                    No {panel.title} products are listed right now.
+                  </p>
+                ) : (
+                  [
+                    { key: "machines", title: "Machines", items: panel.machines },
+                    {
+                      key: "ribbers-accessories",
+                      title: "Ribbers and Accessories",
+                      items: panel.extras,
+                    },
+                  ]
+                    .filter((group) => group.items.length > 0)
+                    .map((group) => (
+                      <section
+                        class="machines-section"
+                        aria-labelledby={`${panel.id}-${group.key}-heading`}
+                      >
+                        <h2
+                          id={`${panel.id}-${group.key}-heading`}
+                          class="machines-section-title"
+                        >
+                          {group.title}
+                        </h2>
+                        <div class="machines-grid machines-grid--temp">
+                          {group.items.map((product) => {
+                            const priceLabel = displayPriceLabel(product);
+                            const gaugeLabel = listingGaugeLabel(product.specs);
+                            const gaugeIndex = gaugeLabel ? product.specs.indexOf(gaugeLabel) : -1;
+                            const specChips =
+                              gaugeIndex >= 0
+                                ? product.specs.filter((_, specIndex) => specIndex !== gaugeIndex)
+                                : product.specs;
+                            return (
+                              <article class="machine-card">
+                                <div class="machine-card-image-wrap">
+                                  {product.imageSrc ? (
+                                    <img
+                                      src={product.imageSrc}
+                                      alt={product.name}
+                                      class="machine-card-image"
+                                      width="280"
+                                      height="180"
+                                      loading="lazy"
+                                      decoding="async"
+                                    />
+                                  ) : (
+                                    <div class="machine-card-image-placeholder" aria-hidden="true">
+                                      Image coming soon
+                                    </div>
+                                  )}
+                                  {product.status === "sold" && (
+                                    <span class="machine-status machine-status--sold-out">Sold</span>
+                                  )}
+                                </div>
+                                <div class="machine-card-body">
+                                  <h2 class="machine-name">{product.name}</h2>
+                                  {gaugeLabel && <p class="machine-gauge">Gauge: {gaugeLabel}</p>}
+                                  {specChips.length > 0 && (
+                                    <ul class="machine-specs" aria-label="Quick specs">
+                                      {specChips.map((spec) => (
+                                        <li>{spec}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                  {product.shortHtml && (
+                                    <div class="machine-short" set:html={product.shortHtml} />
+                                  )}
+                                  {priceLabel && <p class="machine-price">{priceLabel}</p>}
+                                  <div class="machine-actions">
+                                    {product.status === "available" ? (
+                                      <a
+                                        href={product.shopifyUrl}
+                                        class="machine-buy"
+                                        rel="noopener"
+                                        target="_blank"
+                                      >
+                                        Buy Now
+                                      </a>
+                                    ) : (
+                                      <span class="machine-status-note">Sold</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </article>
+                            );
+                          })}
                         </div>
-                        <div class="machine-card-body">
-                          <h2 class="machine-name">{product.name}</h2>
-                          {gaugeLabel && <p class="machine-gauge">Gauge: {gaugeLabel}</p>}
-                          {specChips.length > 0 && (
-                            <ul class="machine-specs" aria-label="Quick specs">
-                              {specChips.map((spec) => (
-                                <li>{spec}</li>
-                              ))}
-                            </ul>
-                          )}
-                          {product.shortHtml && (
-                            <div class="machine-short" set:html={product.shortHtml} />
-                          )}
-                          {priceLabel && <p class="machine-price">{priceLabel}</p>}
-                          <div class="machine-actions">
-                            {product.status === "available" ? (
-                              <a
-                                href={product.shopifyUrl}
-                                class="machine-buy"
-                                rel="noopener"
-                                target="_blank"
-                              >
-                                Buy Now
-                              </a>
-                            ) : (
-                              <span class="machine-status-note">Sold</span>
-                            )}
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              </section>
-            ))
+                      </section>
+                    ))
+                )}
+              </div>
+            ))}
+          </div>
+          <script>
+            const brandCatalog = document.querySelector("[data-brand-catalog]");
+            if (brandCatalog) {
+              const brandTabs = [
+                ...brandCatalog.querySelectorAll<HTMLButtonElement>("[data-brand-tab]"),
+              ];
+              const showBrand = (id: string) => {
+                for (const tab of brandTabs) {
+                  const selected = tab.dataset.brandTab === id;
+                  tab.setAttribute("aria-pressed", selected ? "true" : "false");
+                  const panelId = tab.getAttribute("aria-controls");
+                  const panel = panelId ? document.getElementById(panelId) : null;
+                  if (panel) panel.hidden = !selected;
+                }
+              };
+              for (const tab of brandTabs) {
+                tab.addEventListener("click", () => {
+                  const id = tab.dataset.brandTab;
+                  if (id) showBrand(id);
+                });
+              }
+            }
+          </script>
+          </>
         )}
       </>
     ) : (
@@ -262,6 +332,52 @@ function formatPrice(value: number | null): string | null {
 
   .page-intro--follow {
     margin-top: 1rem;
+  }
+
+  .brand-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0.25rem 0 0.5rem;
+  }
+
+  .brand-switch-btn {
+    flex: 1 1 12rem;
+    min-height: 3.25rem;
+    padding: 0.85rem 1.25rem;
+    border: 2px solid var(--kbm-green);
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--kbm-green);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .brand-switch-btn[aria-pressed="true"] {
+    background: var(--kbm-green);
+    color: #ffffff;
+  }
+
+  .brand-switch-btn:hover {
+    background: #f3f6ee;
+  }
+
+  .brand-switch-btn[aria-pressed="true"]:hover {
+    background: var(--kbm-green-hover, #445626);
+    color: #ffffff;
+  }
+
+  .brand-switch-btn:focus-visible {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 520px) {
+    .brand-switch-btn {
+      flex-basis: 100%;
+    }
   }
 
   .machines-section {
