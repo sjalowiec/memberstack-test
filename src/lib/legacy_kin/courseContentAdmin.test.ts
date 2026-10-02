@@ -8,6 +8,7 @@ import {
   getAllowedCourseIds,
   isAllowedCourseId,
   listAdminCourseSummaries,
+  publishedBundleReplacesImplicitOverlay,
   readCourseContentFile,
   readCourseContentStatus,
   removeEmptyBlocksFromLesson,
@@ -366,5 +367,38 @@ describe("readCourseContentFile discovery", () => {
     expect(data.course.slug).toBe("ribber-basic-bootcamp");
     expect(data.course.contentStatus).toBe("cleaned");
     expect(readCourseContentStatus(data.course)).toBe("cleaned");
+  });
+});
+
+describe("publishedBundleReplacesImplicitOverlay", () => {
+  it("replaces Course 50's older implicit DEV copy with the published file", () => {
+    const overlay = sampleCourse();
+    delete overlay.course.status;
+    delete overlay.course.published;
+    const bundled = sampleCourse();
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(true);
+  });
+
+  it("keeps an explicitly published overlay, including a later editor save", () => {
+    const overlay = sampleCourse();
+    overlay.course.status = "published";
+    overlay.course.published = true;
+    const bundled = sampleCourse();
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
+  });
+
+  it("does not replace another course", () => {
+    const overlay = sampleCourse();
+    delete overlay.course.status;
+    delete overlay.course.published;
+    const bundled = sampleCourse();
+    bundled.course.legacyChallengeId = 51;
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
   });
 });
