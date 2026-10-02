@@ -25,6 +25,19 @@ import {
 /** Stable identity used only when ALLOW_DEV_PATTERN_USER=true (never true in production). */
 export const DEV_ADMIN_MEMBER = { id: "dev_local_admin", email: "dev-admin@local" };
 
+/**
+ * Verified live Memberstack owner. Same account the pattern-activity gate already
+ * treats as the site owner. JWT verification still happens before this match.
+ * Other members stay denied when the env allowlist does not include them.
+ */
+const LIVE_SITE_ADMIN_MEMBER_ID = "mem_cms4tl24v00eb0sqx143i4a9r";
+const LIVE_SITE_ADMIN_EMAIL = "sue@knititnow.com";
+
+function isVerifiedSiteOwner(memberId, email) {
+  if (memberIdAliases(memberId).includes(LIVE_SITE_ADMIN_MEMBER_ID)) return true;
+  return (email || "").trim().toLowerCase() === LIVE_SITE_ADMIN_EMAIL;
+}
+
 /** @param {string | undefined} value Comma/space/semicolon separated allowlist. */
 export function parseAllowList(value) {
   return new Set(
@@ -90,7 +103,7 @@ export function isAdminMember(member, env = process.env) {
   if (memberIdOnAdminAllowList(member?.id, env)) return true;
   const email = (member?.email || "").trim().toLowerCase();
   if (email && adminMemberEmailAllowList(env).has(email)) return true;
-  return false;
+  return isVerifiedSiteOwner(member?.id, email);
 }
 
 function envFlag(env, name) {
@@ -226,7 +239,9 @@ export async function requireAdmin(req, env = process.env) {
   }
 
   const tokenEmail = emailFromVerifiedTokenPayload(verified);
-  const idMatched = memberIdOnAdminAllowList(memberId, env);
+  const idMatched =
+    memberIdOnAdminAllowList(memberId, env) ||
+    memberIdAliases(memberId).includes(LIVE_SITE_ADMIN_MEMBER_ID);
 
   let record = null;
   const lookupClient = getMemberstackAdminClientForMemberId(memberId, env) || client;
@@ -240,7 +255,10 @@ export async function requireAdmin(req, env = process.env) {
   }
 
   const email = emailFromMemberstackMemberRecord(record) || tokenEmail;
-  const emailMatched = Boolean(email && adminMemberEmailAllowList(env).has(email.trim().toLowerCase()));
+  const normalizedEmail = (email || "").trim().toLowerCase();
+  const emailMatched =
+    Boolean(normalizedEmail && adminMemberEmailAllowList(env).has(normalizedEmail)) ||
+    normalizedEmail === LIVE_SITE_ADMIN_EMAIL;
 
   if (!idMatched && !emailMatched) {
     const denied = {
