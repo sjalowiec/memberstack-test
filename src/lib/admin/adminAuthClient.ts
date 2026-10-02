@@ -13,6 +13,11 @@
  */
 
 import { openMemberstackLoginModal } from "../memberstackLogin";
+import {
+  looksLikeMemberstackSessionJwt,
+  publishBrowserMemberstackSessionCookie,
+  readStoredMemberstackJwt,
+} from "../memberstackSessionBridge";
 
 export const ADMIN_SIGN_IN_REQUIRED_MESSAGE = "Sign in with your Knit it Now account to continue.";
 export const ADMIN_FORBIDDEN_MESSAGE = "This Knit it Now account does not have admin access.";
@@ -73,6 +78,18 @@ export async function waitForMemberstackDom(
  * Read the current Memberstack session JWT. Retries because the SDK can expose
  * getCurrentMember before getMemberCookie returns a token.
  */
+function defaultStoredMemberstackJwt(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return readStoredMemberstackJwt({
+      localStorage: window.localStorage,
+      cookie: typeof document === "undefined" ? null : document.cookie,
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function readMemberstackBearerToken(
   options: {
     attempts?: number;
@@ -80,9 +97,15 @@ export async function readMemberstackBearerToken(
     memberstack?: MemberstackDomLike;
     waitForDom?: typeof waitForMemberstackDom;
     sleep?: (ms: number) => Promise<void>;
+    readStoredJwt?: () => string | null;
   } = {},
 ): Promise<string | null> {
-  if (typeof window === "undefined" && !options.memberstack && !options.waitForDom) {
+  if (
+    typeof window === "undefined" &&
+    !options.memberstack &&
+    !options.waitForDom &&
+    !options.readStoredJwt
+  ) {
     return null;
   }
   const attempts = options.attempts ?? 8;
@@ -90,11 +113,28 @@ export async function readMemberstackBearerToken(
   const sleep =
     options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
   const waitForDom = options.waitForDom ?? waitForMemberstackDom;
+  const readStored = options.readStoredJwt ?? defaultStoredMemberstackJwt;
+  const storedNow = readStored();
+  if (storedNow && looksLikeMemberstackSessionJwt(storedNow)) {
+    publishBrowserMemberstackSessionCookie(storedNow);
+    return storedNow.trim();
+  }
   try {
     const ms = options.memberstack ?? (await waitForDom());
     for (let i = 0; i < attempts; i++) {
+      const stored = readStored();
+      if (stored && looksLikeMemberstackSessionJwt(stored)) {
+        publishBrowserMemberstackSessionCookie(stored);
+        return stored.trim();
+      }
       const token = await ms?.getMemberCookie?.();
-      if (typeof token === "string" && token.trim()) return token.trim();
+      if (typeof token === "string" && token.trim()) {
+        const trimmed = token.trim();
+        if (looksLikeMemberstackSessionJwt(trimmed)) {
+          publishBrowserMemberstackSessionCookie(trimmed);
+        }
+        return trimmed;
+      }
       if (i < attempts - 1) await sleep(intervalMs);
     }
   } catch {

@@ -26,6 +26,16 @@ describe("requireAdminRequest", () => {
     expect(memberstackTokenFromRequest(request)).toBe("header-token");
   });
 
+  it("prefers a Memberstack JWT cookie over a non-JWT bearer", () => {
+    const request = new Request("https://knititnow.com/api/admin/machine-sales", {
+      headers: {
+        Authorization: "Bearer mem_not_a_jwt",
+        Cookie: `_ms_cookie=${encodeURIComponent(JWT)}`,
+      },
+    });
+    expect(memberstackTokenFromRequest(request, { get: () => undefined })).toBe(JWT);
+  });
+
   it("does not treat a normal browser GET as authenticated without a JWT cookie", () => {
     const request = new Request("https://www.knititnow.com/courses/86?preview=true");
     expect(memberstackTokenFromRequest(request)).toBeNull();

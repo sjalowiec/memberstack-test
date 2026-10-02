@@ -174,10 +174,17 @@ function bearerTokenFromRequest(req) {
   const header = req.headers.get("authorization") || "";
   const match = header.match(/^Bearer\s+(.+)$/i);
   const bearer = match ? match[1].trim() : "";
-  if (bearer) return bearer;
   const custom = req.headers.get("x-kin-member-token")?.trim() || "";
+  const cookie = jwtFromCookieHeader(req.headers.get("cookie"));
+  // A JWT cookie is the same verified session as the custom header. A non-JWT
+  // Authorization value (Basic is already ignored; a member id is not a session)
+  // must not hide that cookie. Opaque test tokens still fall through when no JWT exists.
+  if (looksLikeMemberstackJwt(bearer)) return bearer;
+  if (looksLikeMemberstackJwt(custom)) return custom;
+  if (cookie) return cookie;
+  if (bearer) return bearer;
   if (custom) return custom;
-  return jwtFromCookieHeader(req.headers.get("cookie"));
+  return null;
 }
 
 /**
