@@ -238,6 +238,26 @@ export function readCourseContentFile(courseId: number): CoursePreviewData {
   return data;
 }
 
+function isExplicitlyPublished(course: LegacyCoursePublicationFields): boolean {
+  return course.status === "published" || course.published === true;
+}
+
+/**
+ * Course 50's DEV blob is an older copy with no publication flags, so it stays
+ * public and hides the published git course. Replace that copy once. An
+ * explicitly published overlay, including a later editor save, is left alone.
+ */
+export function publishedBundleReplacesImplicitOverlay(
+  overlay: CoursePreviewData,
+  bundled: CoursePreviewData,
+): boolean {
+  if (Number(bundled.course.legacyChallengeId) !== 50) return false;
+  if (!isExplicitlyPublished(bundled.course)) return false;
+  if (isExplicitlyPublished(overlay.course)) return false;
+  if (overlay.course.status === "draft" || overlay.course.published === false) return false;
+  return true;
+}
+
 /**
  * Editorial + player source of truth: live overlay when DEV uses blobs,
  * otherwise the bundled/cleaned POC file on disk.
@@ -255,7 +275,19 @@ export async function loadCourseContentDocument(
   try {
     if (resolveCourseContentPersistMode(options) === "blob") {
       const overlay = await readCourseContentOverlay(courseId);
-      if (overlay) return overlay;
+      if (overlay) {
+        const bundled = readCourseContentFile(courseId);
+        if (publishedBundleReplacesImplicitOverlay(overlay, bundled)) {
+          const writer = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
+          try {
+            await writer(courseId, bundled);
+          } catch {
+            // Still serve the published course if the overlay write fails.
+          }
+          return bundled;
+        }
+        return overlay;
+      }
     }
   } catch {
     // Production writes are blocked; blob store may be unavailable locally.
