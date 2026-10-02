@@ -249,6 +249,98 @@ export function getStorefrontHoldListings(
   );
 }
 
+/**
+ * Gauge already stored on a listing spec. Returns that spec text unchanged.
+ * Does not invent a gauge from the name, description, or needle count.
+ */
+const GAUGE_SPEC_RE = /\bgauge\b|\bbulky\b|\bchunky\b/i;
+
+export function listingGaugeLabel(specs: readonly string[]): string | null {
+  const match = specs.find((spec) => GAUGE_SPEC_RE.test(spec.trim()));
+  const label = match?.trim() ?? "";
+  return label || null;
+}
+
+const RIBBER_PRODUCT_RE = /\bribber\b/i;
+
+/**
+ * Accessories use the saved listing type. A product whose name or model is a
+ * ribber is grouped with them. Specs such as "Ribber included" stay with the
+ * machine, because that marks a bundle rather than a standalone ribber.
+ */
+export function isStorefrontRibberOrAccessory(
+  listing: Pick<MachineSalesListing, "listingType" | "name" | "model">
+): boolean {
+  if (listing.listingType === "accessory") return true;
+  return RIBBER_PRODUCT_RE.test(listing.name) || RIBBER_PRODUCT_RE.test(listing.model);
+}
+
+export type StorefrontCatalogSection = {
+  id: string;
+  title: string;
+  items: MachineSalesListing[];
+};
+
+const STOREFRONT_MACHINE_BRANDS = [
+  { id: "taitexma", title: "Taitexma", brand: "taitexma" },
+  { id: "silver-reed", title: "Silver Reed", brand: "silver reed" },
+] as const;
+
+function normalizeStorefrontBrand(brand: string): string {
+  return brand.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function storefrontSectionId(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "other-machines";
+}
+
+/** Brand sections for knitting machines, then ribbers and accessories. */
+export function storefrontCatalogSections(
+  listings: MachineSalesListing[]
+): StorefrontCatalogSection[] {
+  const sorted = sortMachineSalesListings(listings);
+  const extras = sorted.filter((row) => isStorefrontRibberOrAccessory(row));
+  const machines = sorted.filter((row) => !isStorefrontRibberOrAccessory(row));
+  const sections: StorefrontCatalogSection[] = [];
+  const placed = new Set<string>();
+
+  for (const brand of STOREFRONT_MACHINE_BRANDS) {
+    const items = machines.filter((row) => normalizeStorefrontBrand(row.brand) === brand.brand);
+    for (const item of items) placed.add(item.id);
+    if (items.length > 0) sections.push({ id: brand.id, title: brand.title, items });
+  }
+
+  const otherOrder: string[] = [];
+  const otherMap = new Map<string, MachineSalesListing[]>();
+  for (const row of machines) {
+    if (placed.has(row.id)) continue;
+    const title = row.brand.trim() || "Other machines";
+    const group = otherMap.get(title);
+    if (group) {
+      group.push(row);
+    } else {
+      otherMap.set(title, [row]);
+      otherOrder.push(title);
+    }
+  }
+  for (const title of otherOrder) {
+    sections.push({
+      id: storefrontSectionId(title),
+      title,
+      items: otherMap.get(title) ?? [],
+    });
+  }
+
+  if (extras.length > 0) {
+    sections.push({
+      id: "ribbers-accessories",
+      title: "Ribbers and Accessories",
+      items: extras,
+    });
+  }
+  return sections;
+}
+
 export function applyListingSave(
   listings: MachineSalesListing[],
   input: { listing: unknown; mode: ListingSaveMode }
