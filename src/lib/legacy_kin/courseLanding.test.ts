@@ -15,8 +15,8 @@ describe("courseLanding", () => {
   it("loads landing data for a known course slug", () => {
     const landing = getCourseLandingBySlug("lk-150-quick-start");
     expect(landing?.title).toBe("LK-150 Quick Start");
-    expect(landing?.contentStatus).toBe("cleaned");
-    expect(landing?.contentStatusLabel).toBe("Ready");
+    expect(landing?.contentStatus).toBe("in_progress");
+    expect(landing?.contentStatusLabel).toBe("Being updated");
     expect(landing?.interestTag).toBe("course-interest-lk-150-quick-start");
   });
 

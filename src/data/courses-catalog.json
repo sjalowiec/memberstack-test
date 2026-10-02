@@ -52,10 +52,14 @@
     },
     {
       "slug": "lk-150-quick-start",
-      "category": "LK-150 Library",
+      "title": "LK-150 Quick Start",
+      "category": "LK-150",
       "catalogStatus": "available",
       "access": "free",
-      "description": "Introduce yourself to the LK-150, understand how it works, and build confidence with step-by-step exercises."
+      "description": "A step-by-step course for getting started with the LK-150, from yarn and machine setup through casting on, binding off, gauge, and a first project.",
+      "href": "/courses/50",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/lk-150_quick.webp"
     },
     {
       "slug": "lk-150-fun",
