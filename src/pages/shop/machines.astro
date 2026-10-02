@@ -63,23 +63,18 @@ function formatPrice(value: number | null): string | null {
         Shopify product cards below. Set MACHINE_SALES_HOLD = false to restore the full catalog. */}
     {salesHold ? (
       <>
-        <header class="page-header">
-          <a class="back-link" href="/shop">← Back to Shop</a>
-          <h1 class="page-title">Knitting Machines for Sale</h1>
-          <p class="page-intro">
-            Machines are available for customers in the United States only. Questions?
-            <a href="/contact">Contact Sue</a>.
-          </p>
-        </header>
-
-        {holdListings.length === 0 ? (
-          <p class="machines-empty">
-            No machines are listed for sale right now. Please check back soon.
-          </p>
-        ) : (
-          <>
-          <div class="brand-catalog" data-brand-catalog>
-            <div class="brand-switch" role="group" aria-label="Choose a brand">
+        <div class="brand-catalog" data-brand-catalog>
+          <div class="shop-top">
+            <div class="shop-top-intro">
+              <a class="back-link" href="/shop">← Back to Shop</a>
+              <h1 class="page-title">Knitting Machines for Sale</h1>
+              <p class="page-intro">
+                Machines are available for customers in the United States only. Questions?
+                <a href="/contact">Contact Sue</a>.
+              </p>
+            </div>
+            {holdListings.length > 0 && (
+              <div class="brand-switch" role="group" aria-label="Choose a brand">
               {brandPanels.map((panel, index) => {
                 const copy = brandChooserCopy[panel.id];
                 return (
@@ -101,8 +96,15 @@ function formatPrice(value: number | null): string | null {
                   </button>
                 );
               })}
-            </div>
-            {brandPanels.map((panel, index) => (
+              </div>
+            )}
+          </div>
+          {holdListings.length === 0 ? (
+            <p class="machines-empty">
+              No machines are listed for sale right now. Please check back soon.
+            </p>
+          ) : (
+            brandPanels.map((panel, index) => (
               <div
                 class="brand-panel"
                 id={`${panel.id}-panel`}
@@ -202,8 +204,9 @@ function formatPrice(value: number | null): string | null {
                     ))
                 )}
               </div>
-            ))}
-          </div>
+            ))
+          )}
+        </div>
           <script>
             const brandCatalog = document.querySelector("[data-brand-catalog]");
             if (brandCatalog) {
@@ -227,8 +230,6 @@ function formatPrice(value: number | null): string | null {
               }
             }
           </script>
-          </>
-        )}
       </>
     ) : (
       <>
@@ -316,7 +317,7 @@ function formatPrice(value: number | null): string | null {
   .machines-page {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 2rem 1rem 4rem;
+    padding: 1.15rem 1rem 4rem;
   }
 
   .back-link {
@@ -333,6 +334,30 @@ function formatPrice(value: number | null): string | null {
 
   .page-header {
     margin-bottom: 1.25rem;
+  }
+
+  .shop-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    align-items: start;
+    margin-bottom: 0.65rem;
+  }
+
+  .shop-top .back-link {
+    margin-bottom: 0.3rem;
+  }
+
+  .shop-top .page-title {
+    margin-bottom: 0.35rem;
+  }
+
+  @media (min-width: 760px) {
+    .shop-top {
+      grid-template-columns: minmax(0, 1.15fr) minmax(15.5rem, 0.85fr);
+      column-gap: 1.25rem;
+      row-gap: 0;
+    }
   }
 
   .page-title {
@@ -353,27 +378,21 @@ function formatPrice(value: number | null): string | null {
   }
 
   .brand-switch {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    margin: 0.25rem 0 0.5rem;
-  }
-
-  @media (min-width: 700px) {
-    .brand-switch {
-      grid-template-columns: 1fr 1fr;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
   }
 
   .brand-card {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.55rem;
+    gap: 0.25rem;
     width: 100%;
-    min-height: 3.25rem;
+    min-height: 0;
     margin: 0;
-    padding: 1rem 1.1rem 1.05rem;
+    padding: 0.55rem 0.7rem 0.6rem;
     border: 2px solid #d5ddc8;
     border-radius: 12px;
     background: #ffffff;
@@ -400,9 +419,9 @@ function formatPrice(value: number | null): string | null {
   }
 
   .brand-card-copy {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
     font-weight: 400;
-    line-height: 1.45;
+    line-height: 1.35;
     color: #4d5c3d;
   }
 
@@ -435,17 +454,17 @@ function formatPrice(value: number | null): string | null {
   }
 
   .machines-section {
-    margin-top: 2rem;
+    margin-top: 1.15rem;
   }
 
   .machines-section:first-of-type {
-    margin-top: 0.35rem;
+    margin-top: 0;
   }
 
   .machines-section-title {
     font-size: 1.35rem;
     color: var(--kbm-green);
-    margin: 0 0 1rem;
+    margin: 0 0 0.65rem;
   }
 
   .machines-hold-actions {
