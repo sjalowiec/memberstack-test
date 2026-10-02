@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import YarnEstimatorCalculator from "../../components/tools/YarnEstimatorCalculator.astro";
@@ -15,9 +16,101 @@ const tools = toolsData as Array<{
 }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 const toolPrintTitle = tool?.title ?? "Yarn Estimator";
+const isEmbed = Astro.url.searchParams.get("embed") === "true";
 ---
 
-<Layout
+{
+  isEmbed ? (
+    <BaseLayout
+      title="Yarn Estimator | Knit by Machine"
+      description="Estimate how much yarn you need by weighing a swatch and comparing swatch area and weight to the finished dimensions of each pattern piece."
+      bodyClass="page--tool-embed"
+      skipGlobalPinterest={true}
+      hideMembershipCorner={true}
+    >
+      <main class="ye-embed" data-tool-embed="yarn-estimator">
+        <YarnEstimatorCalculator embedded instanceId="embed" />
+      </main>
+      <script is:inline>
+        (function () {
+          function embedHeight() {
+            var root = document.querySelector("[data-yarn-estimator]");
+            var doc = document.documentElement;
+            var body = document.body;
+            var rootBottom = 0;
+            if (root) {
+              var rect = root.getBoundingClientRect();
+              rootBottom = Math.ceil(rect.bottom + window.scrollY);
+            }
+            return Math.ceil(
+              Math.max(
+                rootBottom,
+                doc.scrollHeight,
+                body ? body.scrollHeight : 0,
+                doc.offsetHeight,
+              ),
+            );
+          }
+
+          function sendEmbedHeight() {
+            if (window.parent === window) return;
+            window.parent.postMessage(
+              {
+                type: "kbm-tool-embed-resize",
+                tool: "yarn-estimator",
+                height: embedHeight(),
+              },
+              window.location.origin,
+            );
+          }
+
+          function watchEmbedHeight() {
+            sendEmbedHeight();
+            if (typeof ResizeObserver !== "undefined") {
+              var observer = new ResizeObserver(sendEmbedHeight);
+              observer.observe(document.documentElement);
+              if (document.body) observer.observe(document.body);
+              var root = document.querySelector("[data-yarn-estimator]");
+              if (root) observer.observe(root);
+            }
+            function scheduleEmbedHeight() {
+              window.requestAnimationFrame(function () {
+                window.requestAnimationFrame(sendEmbedHeight);
+              });
+            }
+
+            window.addEventListener("load", scheduleEmbedHeight);
+            window.addEventListener("resize", scheduleEmbedHeight);
+            document.addEventListener("input", scheduleEmbedHeight);
+            if (typeof MutationObserver !== "undefined") {
+              var toolRoot = document.querySelector("[data-yarn-estimator]");
+              if (toolRoot) {
+                new MutationObserver(scheduleEmbedHeight).observe(toolRoot, {
+                  attributes: true,
+                  childList: true,
+                  subtree: true,
+                  attributeFilter: ["hidden", "class", "style"],
+                });
+              }
+            }
+            var ticks = 0;
+            var timer = window.setInterval(function () {
+              sendEmbedHeight();
+              ticks += 1;
+              if (ticks >= 24) window.clearInterval(timer);
+            }, 250);
+          }
+
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", watchEmbedHeight);
+          } else {
+            watchEmbedHeight();
+          }
+        })();
+      </script>
+    </BaseLayout>
+  ) : (
+    <Layout
   title="Yarn Estimator | Knit by Machine"
   description="Estimate how much yarn you need by weighing a swatch and comparing swatch area and weight to the finished dimensions of each pattern piece."
   toolPrintTitle={toolPrintTitle}
@@ -68,4 +161,42 @@ const toolPrintTitle = tool?.title ?? "Yarn Estimator";
       margin-bottom: 2rem;
     }
   </style>
-</Layout>
+    </Layout>
+  )
+}
+
+<style is:global>
+  body.page--tool-embed {
+    margin: 0;
+    background: #fff;
+  }
+
+  body.page--tool-embed .kbm-env-banner,
+  body.page--tool-embed #preview-banner,
+  body.page--tool-embed #ms-inspector-badge,
+  body.page--tool-embed memberstack-prebuilt-ui {
+    display: none !important;
+  }
+
+  html[data-kbm-env-banner="on"] body.page--tool-embed {
+    --kbm-env-banner-h: 0px;
+  }
+
+  body.page--tool-embed .ye-embed {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 0.75rem 0.75rem 1.25rem;
+    overflow: visible;
+  }
+
+  body.page--tool-embed .ye-panel,
+  body.page--tool-embed .ye-panel--embedded,
+  body.page--tool-embed .tool-result-card {
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+</style>
