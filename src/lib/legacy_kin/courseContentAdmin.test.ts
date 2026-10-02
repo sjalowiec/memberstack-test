@@ -391,6 +391,40 @@ describe("publishedBundleReplacesImplicitOverlay", () => {
     expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
   });
 
+  it("replaces a published Course 50 overlay when the git course has a newer revision", () => {
+    const overlay = sampleCourse();
+    overlay.course.status = "published";
+    overlay.course.published = true;
+    const bundled = sampleCourse();
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(true);
+  });
+
+  it("keeps a published overlay that is already at the git revision", () => {
+    const overlay = sampleCourse();
+    overlay.course.status = "published";
+    overlay.course.published = true;
+    overlay.course.legacy = { ...overlay.course.legacy, contentRevision: 1 };
+    const bundled = sampleCourse();
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
+  });
+
+  it("does not replace a draft overlay with a newer published revision", () => {
+    const overlay = sampleCourse();
+    overlay.course.status = "draft";
+    overlay.course.published = false;
+    const bundled = sampleCourse();
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
+  });
+
   it("does not replace another course", () => {
     const overlay = sampleCourse();
     delete overlay.course.status;

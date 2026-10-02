@@ -1705,7 +1705,7 @@ function appendBlockToSection(blockSlug: string, kind: string) {
   flashToast(`Added ${typeMeta(imageEditorKind(component)).label} block`);
 }
 
-function deleteContentSection(blockSlug: string) {
+async function deleteContentSection(blockSlug: string) {
   if (!selectedLessonSlug) return;
   const lesson = getLessonDraft(selectedLessonSlug);
   if (!lesson) return;
@@ -1728,7 +1728,8 @@ function deleteContentSection(blockSlug: string) {
   renderContentList();
   renderLessonList();
   updateSaveState();
-  flashToast("Section deleted");
+  const saved = await saveLesson();
+  if (saved) flashToast("Section deleted");
 }
 
 function splitContentSection(blockSlug: string) {
@@ -5525,9 +5526,9 @@ function findEmptyBlockSlugs(lesson: LessonRecord) {
     .map((block) => String(block.slug ?? ""));
 }
 
-async function saveLesson(fromRaw = false) {
-  if (!selectedLessonSlug || currentCourseId == null) return;
-  if (lessonSaveInFlight) return;
+async function saveLesson(fromRaw = false): Promise<boolean> {
+  if (!selectedLessonSlug || currentCourseId == null) return false;
+  if (lessonSaveInFlight) return false;
 
   const savedLessonSlug = selectedLessonSlug;
   const editingRef = contentEditingRef ? { ...contentEditingRef } : null;
@@ -5546,14 +5547,14 @@ async function saveLesson(fromRaw = false) {
         dom.rawError.textContent = message;
       }
       setStatus(message, "is-error");
-      return;
+      return false;
     }
   } else {
     flushOpenRichTextEditor();
   }
 
   const lesson = getLessonDraft(selectedLessonSlug);
-  if (!lesson) return;
+  if (!lesson) return false;
 
   lesson.title = normalizeLessonTitleInput(String(lesson.title ?? ""));
   setLessonDraft(selectedLessonSlug, lesson);
@@ -5564,7 +5565,7 @@ async function saveLesson(fromRaw = false) {
     const ok = window.confirm(
       `This lesson has ${emptyBlocks.length} empty block(s) that will be removed on save:\n${emptyBlocks.join(", ")}\n\nContinue?`,
     );
-    if (!ok) return;
+    if (!ok) return false;
   }
 
   const savedItemIndex = editingRef
@@ -5642,11 +5643,13 @@ async function saveLesson(fromRaw = false) {
       : "created";
     setSaveButtonSaved(saveButton);
     confirmSaveSuccess("Lesson saved", `Lesson saved. Backup: ${backupName}`);
+    return true;
   } catch (err) {
     resetSaveButtonSaving(saveButton);
     updateSaveState();
     setStatus(err instanceof Error ? err.message : "Save failed.", "is-error");
     flashToast("Save failed", { kind: "error", duration: 4000 });
+    return false;
   } finally {
     const keepSavedLocation = contentEditingRef != null || editingRef == null;
     lessonSaveInFlight = false;

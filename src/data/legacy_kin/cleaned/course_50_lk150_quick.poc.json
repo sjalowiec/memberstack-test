@@ -33,12 +33,14 @@
           "What's Next section title is Your Next Steps.",
           "Removed a broken threading placeholder whose HTML was only \"<\". The threading diagram is already in that section.",
           "lk_150_cast_on_worksheet1.pdf and gauge-swatch-worksheet.pdf were not found. Links use lk_150_cast_on_worksheet.pdf and swatch_challenge1.pdf.",
-          "release_lever.png and carriage-release.mp4 are served from /images/course-content/50/."
+          "release_lever.png and carriage-release.mp4 are served from /images/course-content/50/.",
+          "Setup Checklist keeps original assign 3451. Duplicate assign 5725 was removed after its PDF link, release-lever photo, and setup photo were merged into 3451."
         ],
         "needsDecision": [
           "Right Angles Blanket video 328452201 stays in Ready for a Project? for review. The old pattern generator (garment 915) was not restored, and no replacement pattern was added."
         ]
-      }
+      },
+      "contentRevision": 1
     },
     "contentStatus": "in_progress"
   },
@@ -344,52 +346,35 @@
         },
         {
           "title": "Setup Checklist",
-          "slug": "text-image-1782150116131",
-          "order": 4,
+          "slug": "setup-checklist",
+          "order": 3,
           "legacy": {
-            "assignId": 5725,
+            "assignId": 3451,
             "blockType": "HTML",
             "editorLayout": "textImage"
-          },
-          "layoutOptions": {
-            "imagePosition": "right",
-            "header": "Setup Checklist"
           },
           "components": [
             {
               "type": "richText",
-              "html": "<ul>\n    <li>Insert the Tension Rod Socket</li>\n    <li>Pull out the carriage rests</li>\n    <li>Clamp the machine to a sturdy table</li>\n    <li>Insert the tension rod</li>\n    <li>Snap the tension guide on the tension rod</li>\n    <li>Place the tensioner assembly on the top of the tension rod</li>\n    <li>Attach the row counter</li>\n    <li>Raise the carriage handle</li>\n    <li>Position the carriage on the needlebed</li>\n    <li>Confirm the carriage is seated correctly</li>\n    <li>Pass it back and forth with and without needles in work</li>\n    <li>\n        Practice removing the carriage using the carriage release lever.\n\n    <details style=\"margin-top:0.5rem;\">\n    <summary style=\"cursor:pointer;color:#005f73;text-decoration:underline;\">\n        Click to see the carriage release lever\n    </summary>\n\n    <img src=\"/images/course-content/50/release_lever.png\"\n         alt=\"Location of the carriage release lever\"\n         style=\"max-width:350px;width:100%;height:auto;margin-top:0.5rem;\">\n</details>\n    </li>\n</ul>\n<a href=\"/downloads/quickstart_checklist.pdf\" class=\"btn btn-primary\">Download the Quick Start Checklist PDF</a>\n\n",
-              "legacyComponentId": 10040,
-              "order": 5,
+              "html": "<ul>\n    <li>Insert the Tension Rod Socket</li>\n    <li>Pull out the carriage rests</li>\n    <li>Clamp the machine to a sturdy table</li>\n    <li>Insert the tension rod</li>\n    <li>Snap the tension guide on the tension rod</li>\n    <li>Place the tensioner assembly on the top of the tension rod</li>\n    <li>Attach the row counter</li>\n    <li>Raise the carriage handle</li>\n    <li>Position the carriage on the needlebed</li>\n    <li>Confirm the carriage is seated correctly</li>\n    <li>Pass it back and forth with and without needles in work</li>\n    <li>\n        Practice removing the carriage using the carriage release lever.\n\n    <details style=\"margin-top:0.5rem;\">\n    <summary style=\"cursor:pointer;color:#005f73;text-decoration:underline;\">\n        Click to see the carriage release lever\n    </summary>\n\n    <img src=\"/images/course-content/50/release_lever.png\"\n         alt=\"Location of the carriage release lever\"\n         style=\"max-width:350px;width:100%;height:auto;margin-top:0.5rem;\">\n</details>\n    </li>\n</ul>\n\n<p><strong>Not sure where the carriage release lever is?</strong></p>\n\n<video\n  controls\n  muted\n  playsinline\n  preload=\"auto\"\n  width=\"350\"\n  style=\"display:block;max-width:350px;width:100%;height:auto;\"\n>\n  <source src=\"/images/course-content/50/carriage-release.mp4\" type=\"video/mp4\">\n  <a href=\"/images/course-content/50/carriage-release.mp4\">Watch the carriage release video</a>\n</video>\n\n<a href=\"/downloads/quickstart_checklist.pdf\" class=\"btn btn-primary\">Download the Quick Start Checklist PDF</a>\n",
+              "legacyComponentId": 4865,
+              "order": 1,
               "layoutRole": "textImageText"
             },
             {
               "type": "image",
               "src": "/images/course-content/50/20190610_073420.jpg",
-              "alt": "",
+              "alt": "LK150 setup",
               "caption": "LK150 setup",
               "legacyComponentId": 10041,
-              "order": 6,
+              "order": 2,
               "layoutRole": "textImageImage"
             }
-          ]
-        },
-        {
-          "title": "Setup Checklist",
-          "slug": "setup-checklist",
-          "order": 5,
-          "legacy": {
-            "assignId": 3451,
-            "blockType": "HTML"
-          },
-          "components": [
-            {
-              "type": "richText",
-              "html": "<ul>\n  <li>Insert the Tension Rod Socket</li>\n  <li>Pull out the carriage rests</li>\n  <li>Clamp the machine to a sturdy table</li>\n  <li>Insert the tension rod</li>\n  <li>Snap the tension guide on the tension rod</li>\n  <li>Place the tensioner assembly on the top of the tension rod</li>\n  <li>Attach the row counter</li>\n  <li>Raise the carriage handle</li>\n  <li>Position the carriage on the needlebed</li>\n  <li>Confirm the carriage is seated correctly</li>\n  <li>Pass it back and forth with and without needles in work</li>\n  <li>Practice removing the carriage using the carriage release lever.</li>\n</ul>\n\n<p><strong>Not sure where the carriage release lever is?</strong></p>\n\n<video\n  controls\n  muted\n  playsinline\n  preload=\"auto\"\n  width=\"350\"\n  style=\"display:block;max-width:350px;width:100%;height:auto;\"\n>\n  <source src=\"/images/course-content/50/carriage-release.mp4\" type=\"video/mp4\">\n  <a href=\"/images/course-content/50/carriage-release.mp4\">Watch the carriage release video</a>\n</video>",
-              "legacyComponentId": 4865,
-              "order": 7
-            }
-          ]
+          ],
+          "layoutOptions": {
+            "imagePosition": "right",
+            "header": "Setup Checklist"
+          }
         }
       ]
     },

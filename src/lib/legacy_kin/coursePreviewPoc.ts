@@ -180,6 +180,11 @@ export type CoursePreviewData = {
       sourceExport: string;
       sourceCsv?: string;
       migratedAt?: string;
+      /**
+       * Bumped when a published git course should replace an older DEV overlay.
+       * Editor saves keep the revision they loaded, so a later save is not replaced.
+       */
+      contentRevision?: number;
       /** Temporary note when a draft course is published for deployed testing. */
       temporaryProductionQa?: string;
     };
