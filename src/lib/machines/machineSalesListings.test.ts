@@ -210,7 +210,11 @@ describe("machine sales hold listings", () => {
     expect(page).toContain(
       "Explore Silver Reed knitting machines, from the portable LK150 to punchcard and electronic models.",
     );
-    expect(page).toContain("Browse Silver Reed");
+    expect(page).toContain('product.id === "silver-reed-lk150"');
+    expect(page).toContain("LK150 Quick Start course included");
+    expect(page).toContain(
+      "Buy your LK150 from Knit it Now and receive complimentary access to our LK150 Quick Start course. Step-by-step video lessons help you get to know your machine and start knitting with confidence.",
+    );
     expect(page).toContain("{!salesHold && <PageHead");
     expect(page).toContain("${panel.title} Machines");
     expect(page).toContain('border-color: var(--kbm-accent)');
