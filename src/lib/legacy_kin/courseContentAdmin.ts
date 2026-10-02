@@ -5,6 +5,7 @@ import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAcces
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 import {
   courseContentWriteMatches,
+  isCourseContentProductionWriteBlocked,
   resolveCourseContentPersistMode,
   type CourseContentPersistResult,
   type CourseContentWriteOptions,
@@ -270,35 +271,58 @@ export function publishedBundleReplacesImplicitOverlay(
  * Editorial + player source of truth: live overlay when DEV uses blobs,
  * otherwise the bundled/cleaned POC file on disk.
  */
+async function replaceStaleCourse50Overlay(
+  courseId: number,
+  overlay: CoursePreviewData | null,
+  bundled: CoursePreviewData,
+  writeOverlay: NonNullable<CourseContentWriteOptions["writeCourseContentOverlay"]>,
+): Promise<boolean> {
+  if (courseId !== 50) return false;
+  if (overlay && !publishedBundleReplacesImplicitOverlay(overlay, bundled)) return false;
+  try {
+    await writeOverlay(courseId, bundled);
+  } catch {
+    // Still serve the published course if the overlay write fails.
+  }
+  return true;
+}
+
 export async function loadCourseContentDocument(
   courseId: number,
   options: CourseContentWriteOptions = {},
 ): Promise<CoursePreviewData> {
-  if (options.readCourseContentOverlay) {
-    const overlay = await options.readCourseContentOverlay(courseId);
-    if (overlay) return overlay;
-    return readCourseContentFile(courseId);
-  }
+  const readOverlay = options.readCourseContentOverlay ?? readCourseContentOverlay;
+  const writeOverlay = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
 
   try {
     if (resolveCourseContentPersistMode(options) === "blob") {
-      const overlay = await readCourseContentOverlay(courseId);
+      const overlay = await readOverlay(courseId);
       if (overlay) {
         const bundled = readCourseContentFile(courseId);
-        if (publishedBundleReplacesImplicitOverlay(overlay, bundled)) {
-          const writer = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
-          try {
-            await writer(courseId, bundled);
-          } catch {
-            // Still serve the published course if the overlay write fails.
-          }
+        if (await replaceStaleCourse50Overlay(courseId, overlay, bundled, writeOverlay)) {
           return bundled;
         }
         return overlay;
       }
     }
   } catch {
-    // Production writes are blocked; blob store may be unavailable locally.
+    // Production blocks ordinary course-content writes. Course 50 still copies
+    // the published git course into that site's overlay when the overlay is
+    // missing or older, then serves the published file.
+    if (
+      courseId === 50 &&
+      isCourseContentProductionWriteBlocked(options.hostname, options.env)
+    ) {
+      const bundled = readCourseContentFile(courseId);
+      let overlay: CoursePreviewData | null = null;
+      try {
+        overlay = await readOverlay(courseId);
+      } catch {
+        overlay = null;
+      }
+      await replaceStaleCourse50Overlay(courseId, overlay, bundled, writeOverlay);
+      return bundled;
+    }
   }
 
   return readCourseContentFile(courseId);

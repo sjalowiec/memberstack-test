@@ -157,4 +157,78 @@ describe("loadCourseContentDocument overlay", () => {
     });
     expect(data.lessons[0]?.title).toBe("Overlay lesson title");
   });
+
+  it("copies the published Course 50 file onto a stale production overlay", async () => {
+    const bundled = readCourseContentFile(50);
+    const overlay = structuredClone(bundled);
+    delete overlay.course.status;
+    delete overlay.course.published;
+    overlay.course.legacy = { ...overlay.course.legacy, contentRevision: 0 };
+    const written: unknown[] = [];
+    const data = await loadCourseContentDocument(50, {
+      hostname: "knititnow.com",
+      env: { isViteDev: false },
+      readCourseContentOverlay: async () => overlay,
+      writeCourseContentOverlay: async (_courseId, course) => {
+        written.push(course);
+      },
+    });
+    expect(data).toEqual(bundled);
+    expect(data.course.legacy.contentRevision).toBe(1);
+    expect(written).toEqual([bundled]);
+    const assignIds = data.lessons.flatMap((lesson) =>
+      lesson.blocks.map((block) => block.legacy.assignId),
+    );
+    expect(assignIds).toContain(3451);
+    expect(assignIds).not.toContain(5725);
+  });
+
+  it("copies the published Course 50 file when production has no overlay", async () => {
+    const bundled = readCourseContentFile(50);
+    const written: unknown[] = [];
+    const data = await loadCourseContentDocument(50, {
+      hostname: "www.knititnow.com",
+      env: { isViteDev: false },
+      readCourseContentOverlay: async () => null,
+      writeCourseContentOverlay: async (_courseId, course) => {
+        written.push(course);
+      },
+    });
+    expect(data).toEqual(bundled);
+    expect(written).toEqual([bundled]);
+  });
+
+  it("does not overwrite a draft Course 50 overlay, and still serves the published file", async () => {
+    const bundled = readCourseContentFile(50);
+    const overlay = structuredClone(bundled);
+    overlay.course.status = "draft";
+    overlay.course.published = false;
+    const written: unknown[] = [];
+    const data = await loadCourseContentDocument(50, {
+      hostname: "knititnow.com",
+      env: { isViteDev: false },
+      readCourseContentOverlay: async () => overlay,
+      writeCourseContentOverlay: async (_courseId, course) => {
+        written.push(course);
+      },
+    });
+    expect(data).toEqual(bundled);
+    expect(written).toEqual([]);
+  });
+
+  it("does not write another course's production overlay", async () => {
+    const written: unknown[] = [];
+    const overlay = structuredClone(readCourseContentFile(COURSE_111_ID));
+    overlay.lessons[0]!.title = "Leave this overlay alone";
+    const data = await loadCourseContentDocument(COURSE_111_ID, {
+      hostname: "knititnow.com",
+      env: { isViteDev: false },
+      readCourseContentOverlay: async () => overlay,
+      writeCourseContentOverlay: async (_courseId, course) => {
+        written.push(course);
+      },
+    });
+    expect(data.lessons[0]?.title).not.toBe("Leave this overlay alone");
+    expect(written).toEqual([]);
+  });
 });
