@@ -127,5 +127,24 @@
     "shortHtml": "A lightweight, portable knitting machine for beginners and experienced knitters. Knit sport, DK, and light worsted yarns quickly, or combine machine knitting with your favorite hand-knit details.",
     "imageSrc": "/images/machines/lk150-knitting-machine-1790963179128.jpg",
     "sortOrder": 70
+  },
+  {
+    "id": "silver-reed-sk155",
+    "name": "SK155",
+    "brand": "Silver Reed",
+    "model": "SK155",
+    "price": 1750,
+    "priceLabel": "$1,750",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/sk155-bulky-machine",
+    "status": "available",
+    "listingType": "machine",
+    "specs": [
+      "Bulky/Chunky",
+      "Punchcard",
+      "110 needles"
+    ],
+    "shortHtml": "Silver Reed Model SK155 Chunky. This machine will produce a \"hand knitting\" look at approx 3 - 4.5 sts per inch.\nThe 12 stitch punchcard opens up a world of automatic patterning including stockinet, slip and tuck stitch, fair isle, weaving and punch lace.",
+    "imageSrc": "/images/machines/silver-reed-sk155-bulky-gauge-knitting-machine.jpg",
+    "sortOrder": 80
   }
 ]
