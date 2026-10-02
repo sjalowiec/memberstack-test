@@ -14,7 +14,7 @@ import {
   parseMachineSalesListingsFile,
   readMachineSalesListings,
   shopListingImageSrcs,
-  storefrontCatalogSections,
+  storefrontBrandPanels,
   type MachineSalesListing,
 } from "./machineSalesListings";
 import { sanitizeMachineSalesUploadFilename } from "./machineSalesImageUpload";
@@ -144,9 +144,12 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("getStorefrontHoldListings");
     expect(page).not.toContain("TEMP_SHOPIFY_PRODUCTS");
     expect(page).toContain("MACHINE_SALES_HOLD");
-    expect(page).toContain("storefrontCatalogSections");
+    expect(page).toContain("storefrontBrandPanels");
     expect(page).toContain("listingGaugeLabel");
     expect(page).toContain("Gauge:");
+    expect(page).toContain('type="button"');
+    expect(page).toContain("aria-pressed");
+    expect(page).toContain("data-brand-catalog");
     expect(page).not.toContain('includes("ribber")');
     expect(page).not.toContain('includes("Ribber")');
   });
@@ -353,24 +356,30 @@ describe("storefront catalog sections", () => {
     }),
   ];
 
-  it("groups knitting machines by brand and places ribbers and accessories below", () => {
-    const sections = storefrontCatalogSections(listings);
-    expect(sections.map((section) => section.title)).toEqual([
-      "Taitexma",
-      "Silver Reed",
-      "Ribbers and Accessories",
-    ]);
-    expect(sections[0]?.items.map((row) => row.id)).toEqual([
+  it("keeps machines ahead of that brand's ribbers and accessories", () => {
+    const panels = storefrontBrandPanels(listings);
+    expect(panels.map((panel) => panel.title)).toEqual(["Taitexma", "Silver Reed"]);
+    expect(panels[0]?.machines.map((row) => row.id)).toEqual([
       "taitexma-th860",
       "taitexma-th-tr-160-bundle",
       "taitexma-th160",
       "no-gauge-machine",
     ]);
-    expect(sections[1]?.items.map((row) => row.id)).toEqual(["silver-reed-lk150"]);
-    expect(sections[2]?.items.map((row) => row.id)).toEqual([
+    expect(panels[0]?.extras.map((row) => row.id)).toEqual([
       "taitexma-tr-850",
       "taitexma-tr260",
     ]);
+    expect(panels[1]?.machines.map((row) => row.id)).toEqual(["silver-reed-lk150"]);
+    expect(panels[1]?.extras).toEqual([]);
+  });
+
+  it("still returns both brand panels when a brand has no listings", () => {
+    const panels = storefrontBrandPanels(
+      listings.filter((row) => row.brand !== "Silver Reed"),
+    );
+    expect(panels.map((panel) => panel.id)).toEqual(["taitexma", "silver-reed"]);
+    expect(panels[1]?.machines).toEqual([]);
+    expect(panels[1]?.extras).toEqual([]);
   });
 
   it("keeps a machine-and-ribber bundle with the machines", () => {

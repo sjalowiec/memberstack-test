@@ -275,10 +275,11 @@ export function isStorefrontRibberOrAccessory(
   return RIBBER_PRODUCT_RE.test(listing.name) || RIBBER_PRODUCT_RE.test(listing.model);
 }
 
-export type StorefrontCatalogSection = {
+export type StorefrontBrandPanel = {
   id: string;
   title: string;
-  items: MachineSalesListing[];
+  machines: MachineSalesListing[];
+  extras: MachineSalesListing[];
 };
 
 const STOREFRONT_MACHINE_BRANDS = [
@@ -290,55 +291,18 @@ function normalizeStorefrontBrand(brand: string): string {
   return brand.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function storefrontSectionId(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "other-machines";
-}
-
-/** Brand sections for knitting machines, then ribbers and accessories. */
-export function storefrontCatalogSections(
-  listings: MachineSalesListing[]
-): StorefrontCatalogSection[] {
+/** Both brand panels, machines first and that brand's ribbers and accessories after. */
+export function storefrontBrandPanels(listings: MachineSalesListing[]): StorefrontBrandPanel[] {
   const sorted = sortMachineSalesListings(listings);
-  const extras = sorted.filter((row) => isStorefrontRibberOrAccessory(row));
-  const machines = sorted.filter((row) => !isStorefrontRibberOrAccessory(row));
-  const sections: StorefrontCatalogSection[] = [];
-  const placed = new Set<string>();
-
-  for (const brand of STOREFRONT_MACHINE_BRANDS) {
-    const items = machines.filter((row) => normalizeStorefrontBrand(row.brand) === brand.brand);
-    for (const item of items) placed.add(item.id);
-    if (items.length > 0) sections.push({ id: brand.id, title: brand.title, items });
-  }
-
-  const otherOrder: string[] = [];
-  const otherMap = new Map<string, MachineSalesListing[]>();
-  for (const row of machines) {
-    if (placed.has(row.id)) continue;
-    const title = row.brand.trim() || "Other machines";
-    const group = otherMap.get(title);
-    if (group) {
-      group.push(row);
-    } else {
-      otherMap.set(title, [row]);
-      otherOrder.push(title);
-    }
-  }
-  for (const title of otherOrder) {
-    sections.push({
-      id: storefrontSectionId(title),
-      title,
-      items: otherMap.get(title) ?? [],
-    });
-  }
-
-  if (extras.length > 0) {
-    sections.push({
-      id: "ribbers-accessories",
-      title: "Ribbers and Accessories",
-      items: extras,
-    });
-  }
-  return sections;
+  return STOREFRONT_MACHINE_BRANDS.map((brand) => {
+    const rows = sorted.filter((row) => normalizeStorefrontBrand(row.brand) === brand.brand);
+    return {
+      id: brand.id,
+      title: brand.title,
+      machines: rows.filter((row) => !isStorefrontRibberOrAccessory(row)),
+      extras: rows.filter((row) => isStorefrontRibberOrAccessory(row)),
+    };
+  });
 }
 
 export function applyListingSave(
