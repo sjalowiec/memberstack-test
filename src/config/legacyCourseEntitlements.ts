@@ -33,11 +33,15 @@ export const LK150_FUN_COURSE_SLUG = "lk-150-fun" as const;
 /** Free permanent plan for verified LK-150 Fun owners. No checkout price is configured here. */
 export const LK150_FUN_COURSE_PLAN_ID = "pln_course-lk150-fun-legacy-qn6n0gzm" as const;
 
-export type IndividualCourseSaleKey = "th160" | "sk840" | "brother260" | "lk150Patterning" | "lk150Fun";
+export const LK150_QUICK_START_COURSE_SLUG = "lk-150-quick-start" as const;
+/** Free permanent plan for verified LK-150 Quick Start owners. The catalog course stays free. No checkout price is configured here. */
+export const LK150_QUICK_START_COURSE_PLAN_ID = "pln_kin-lk150-quickstart-7h8i0oxj" as const;
+
+export type IndividualCourseSaleKey = "th160" | "sk840" | "brother260" | "lk150Patterning" | "lk150QuickStart" | "lk150Fun";
 
 export type IndividualCourseSale = {
   key: IndividualCourseSaleKey;
-  courseId: 86 | 111 | 87 | 34 | 51;
+  courseId: 86 | 111 | 87 | 34 | 50 | 51;
   slug: string;
   aliases: readonly string[];
   legacyPlanId: string;
@@ -83,6 +87,13 @@ export const COURSE_INDIVIDUAL_SALES = {
     aliases: ["34"],
     legacyPlanId: LK150_PATTERNING_COURSE_PLAN_ID,
   },
+  lk150QuickStart: {
+    key: "lk150QuickStart",
+    courseId: 50,
+    slug: LK150_QUICK_START_COURSE_SLUG,
+    aliases: ["50"],
+    legacyPlanId: LK150_QUICK_START_COURSE_PLAN_ID,
+  },
   lk150Fun: {
     key: "lk150Fun",
     courseId: 51,
@@ -100,6 +111,7 @@ export const LEGACY_COURSE_PLAN_SLUGS: Readonly<Record<string, readonly string[]
   [PAID_SK840_COURSE_PLAN_ID]: [LEGACY_SK840_COURSE_SLUG],
   [LEGACY_BROTHER_260_COURSE_PLAN_ID]: [BROTHER_KH260_COURSE_SLUG],
   [LK150_PATTERNING_COURSE_PLAN_ID]: [LK150_PATTERNING_COURSE_SLUG],
+  [LK150_QUICK_START_COURSE_PLAN_ID]: [LK150_QUICK_START_COURSE_SLUG],
   [LK150_FUN_COURSE_PLAN_ID]: [LK150_FUN_COURSE_SLUG],
 };
 
