@@ -45,9 +45,24 @@ function rewriteAttributeUrl(
     `(\\s${attribute}=)(["'])(${valuePattern})\\2`,
     "gi",
   );
-  return html.replace(attrPattern, (_, prefix: string, quote: string, path: string) => {
-    return `${prefix}${quote}${legacyAssetUrl(path)}${quote}`;
-  });
+  return html.replace(
+    attrPattern,
+    (match: string, prefix: string, quote: string, path: string, offset: number, source: string) => {
+      if (attribute === "src" && isSameSiteToolEmbedSrc(source, offset, path)) {
+        return match;
+      }
+      return `${prefix}${quote}${legacyAssetUrl(path)}${quote}`;
+    },
+  );
+}
+
+/** Keep pasted course iframes on this site instead of the legacy image host. */
+function isSameSiteToolEmbedSrc(source: string, offset: number, path: string): boolean {
+  if (!String(path).trim().startsWith("/tools/")) return false;
+  const lookbehind = source.slice(Math.max(0, offset - 240), offset);
+  const tagStart = lookbehind.lastIndexOf("<");
+  if (tagStart < 0) return false;
+  return /^<iframe\b/i.test(lookbehind.slice(tagStart));
 }
 
 export function rewriteLegacyHtml(html: string): string {

@@ -116,6 +116,12 @@ describe("rewriteLegacyHtml", () => {
     expect(rewriteLegacyHtml(input)).toBe(input);
   });
 
+  it("keeps a same-site Yarn Estimator embed iframe on this site", () => {
+    const input =
+      '<iframe src="/tools/yarn-estimator?embed=true" title="Yarn Estimator"></iframe>';
+    expect(rewriteLegacyHtml(input)).toBe(input);
+  });
+
   it("rewrites legacy PDF hrefs to the legacy origin", () => {
     expect(rewriteLegacyHtml('<a href="/KIN_Images/Challenges/guide.pdf">Guide</a>')).toBe(
       `<a href="${LEGACY_ASSET_ORIGIN}/KIN_Images/Challenges/guide.pdf">Guide</a>`,
