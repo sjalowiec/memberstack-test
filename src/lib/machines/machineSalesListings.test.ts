@@ -56,7 +56,7 @@ describe("machine sales hold listings", () => {
 
   it("keeps the original three storefront cards and includes the later approved listings", () => {
     const listings = getStorefrontHoldListings();
-    expect(listings).toHaveLength(6);
+    expect(listings).toHaveLength(10);
     expect(
       listings.slice(0, 3).map((row) => ({
         name: row.name,
@@ -93,9 +93,54 @@ describe("machine sales hold listings", () => {
       shopifyUrl: "https://vjzu11-86.myshopify.com/products/taitexma-mid-gauge-th160",
       imageSrc: "/images/machines/taitexma-th160-machine.jpg",
     });
+    const lk150 = listings.find((row) => row.id === "silver-reed-lk150");
+    expect(lk150).toMatchObject({
+      name: "Silver Reed LK150",
+      brand: "Silver Reed",
+      status: "available",
+      listingType: "machine",
+      priceLabel: "$575",
+      shopifyUrl: "https://vjzu11-86.myshopify.com/products/silver-reed-lk150",
+    });
+    const sk155 = listings.find((row) => row.id === "silver-reed-sk155");
+    expect(sk155).toMatchObject({
+      name: "SK155",
+      brand: "Silver Reed",
+      status: "available",
+      listingType: "machine",
+      priceLabel: "$1,750",
+      shopifyUrl: "https://vjzu11-86.myshopify.com/products/sk155-bulky-machine",
+    });
+    const sk840 = listings.find((row) => row.id === "silver-reed-sk840");
+    expect(sk840).toMatchObject({
+      name: "Silver Reed SK840 Standard Gauge Machine",
+      brand: "Silver Reed",
+      status: "available",
+      listingType: "machine",
+      priceLabel: "$1,765",
+      shopifyUrl: "https://vjzu11-86.myshopify.com/products/silver-reed-sk840-standard-gauge-machine",
+      imageSrc: "/images/machines/silver-reed-sk840-electronic-standard-gauge.png",
+    });
+    const sk280 = listings.find((row) => row.id === "silver-reed-sk280");
+    expect(sk280).toMatchObject({
+      name: "SK280 Standard Gauge Knitting Machine",
+      brand: "Silver Reed",
+      status: "available",
+      listingType: "machine",
+      priceLabel: "$1,425",
+      shopifyUrl: "https://vjzu11-86.myshopify.com/products/sk280-standard-gauge-knitting-machine",
+      imageSrc: "/images/machines/silver-reed-sk280-punch-card-standard-gauge.png",
+    });
     expect(listings.every((row) => row.status === "available")).toBe(true);
-    expect(listings.filter((row) => row.listingType === "machine")).toHaveLength(5);
+    expect(listings.filter((row) => row.listingType === "machine")).toHaveLength(9);
     expect(listings.filter((row) => row.listingType === "accessory")).toHaveLength(1);
+    const panels = storefrontBrandPanels(listings);
+    expect(panels.find((panel) => panel.id === "silver-reed")?.machines.map((row) => row.id)).toEqual([
+      "silver-reed-lk150",
+      "silver-reed-sk155",
+      "silver-reed-sk840",
+      "silver-reed-sk280",
+    ]);
   });
 
   it("hides hidden listings from the storefront and keeps sold listings", () => {
@@ -103,13 +148,13 @@ describe("machine sales hold listings", () => {
     const hidden = getStorefrontHoldListings(
       seeded.map((row, i) => (i === 0 ? { ...row, status: "hidden" as const } : row))
     );
-    expect(hidden).toHaveLength(5);
+    expect(hidden).toHaveLength(9);
     expect(hidden.some((row) => row.id === "taitexma-th860")).toBe(false);
 
     const sold = getStorefrontHoldListings(
       seeded.map((row, i) => (i === 1 ? { ...row, status: "sold" as const } : row))
     );
-    expect(sold).toHaveLength(6);
+    expect(sold).toHaveLength(10);
     expect(sold.find((row) => row.id === "taitexma-tr-850")?.status).toBe("sold");
   });
 
@@ -122,6 +167,10 @@ describe("machine sales hold listings", () => {
       "/images/machines/taxema-bulky1.jpg",
       "/images/machines/taitexma-tr260-ribber.jpg",
       "/images/machines/taitexma-th160-machine.jpg",
+      "/images/machines/lk150-knitting-machine-1790963179128.jpg",
+      "/images/machines/silver-reed-sk155-bulky-gauge-knitting-machine.jpg",
+      "/images/machines/silver-reed-sk840-electronic-standard-gauge.png",
+      "/images/machines/silver-reed-sk280-punch-card-standard-gauge.png",
     ]);
     expect(images).not.toContain("/images/machines/taxema_bulky1.jpg");
   });
@@ -234,7 +283,7 @@ describe("listing save helpers", () => {
     });
     expect(applied.ok).toBe(true);
     if (!applied.ok) return;
-    expect(applied.listings).toHaveLength(7);
+    expect(applied.listings).toHaveLength(11);
     expect(applied.listings.find((row) => row.id === "taitexma-th860")?.shopifyUrl).toContain(
       "taitexma-th860-punchcard-knitting-machine"
     );
