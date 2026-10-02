@@ -3,6 +3,7 @@ import VimeoEmbed from "../../media/VimeoEmbed.astro";
 import EmbeddedTool from "../../embedded/EmbeddedTool.astro";
 import LegacyCourseImageCarousel from "./LegacyCourseImageCarousel.astro";
 import LegacyCourseImage from "./LegacyCourseImage.astro";
+import LegacyCourseExerciseAccordion from "./LegacyCourseExerciseAccordion.astro";
 import LegacyHotspot from "../../kinCourse/LegacyHotspot.astro";
 import type { CourseComponent, MigrationPendingComponent } from "../../../lib/legacy_kin/coursePreviewPoc";
 import {
@@ -132,30 +133,10 @@ const hotspot =
       slideLabels={component.slideLabels}
     />
   ) : component.type === "exerciseAccordion" ? (
-    <div
-      class="course-preview__exercise legacy-course__exercise"
-      data-legacy-component={component.legacyComponentId}
-    >
-      {component.sections.map((section) => (
-        <details class="course-preview__exercise-section">
-          <summary set:html={section.title} />
-          {section.iconSrc ? (
-            <img
-              class="course-preview__exercise-icon"
-              src={legacyAssetUrl(section.iconSrc)}
-              alt=""
-              loading="lazy"
-            />
-          ) : null}
-          {section.bodyHtml ? (
-            <div
-              class="course-preview__richtext"
-              set:html={rewriteLegacyHtml(section.bodyHtml)}
-            />
-          ) : null}
-        </details>
-      ))}
-    </div>
+    <LegacyCourseExerciseAccordion
+      legacyComponentId={component.legacyComponentId}
+      sections={component.sections}
+    />
   ) : component.type === "embeddedTool" ? (
     <div
       class="course-preview__embedded-tool legacy-course__embedded-tool"

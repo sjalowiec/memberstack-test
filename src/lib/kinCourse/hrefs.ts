@@ -26,6 +26,25 @@ export function withPreviewQuery(path: string, preview: boolean): string {
   return path.includes("?") ? `${path}&preview=true` : `${path}?preview=true`;
 }
 
+/**
+ * Draft preview adds ?preview=true to same-course lesson links stored without it.
+ * Other courses and non-preview renders keep the stored href.
+ */
+export function appendSameCoursePreviewQuery(
+  html: string,
+  courseId: number,
+  preview: boolean,
+): string {
+  if (!preview || !html) return html;
+  return html.replace(
+    /(<a\b[^>]*?\shref=)(["'])(\/courses\/(\d+)\/lesson\/\d+[^"']*)\2/gi,
+    (match, prefix: string, quote: string, path: string, id: string) => {
+      if (Number(id) !== Number(courseId)) return match;
+      return `${prefix}${quote}${withPreviewQuery(path, true)}${quote}`;
+    },
+  );
+}
+
 export function parseKinCourseId(value: string | undefined | null): number | null {
   const trimmed = String(value ?? "").trim();
   if (!/^\d+$/.test(trimmed)) return null;

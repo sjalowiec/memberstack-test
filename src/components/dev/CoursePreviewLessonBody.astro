@@ -3,6 +3,7 @@ import VimeoEmbed from "../media/VimeoEmbed.astro";
 import LegacyCourseImageCarousel from "../courses/legacy/LegacyCourseImageCarousel.astro";
 import LegacyCourseImage from "../courses/legacy/LegacyCourseImage.astro";
 import LegacyCourseAccordionLayout from "../courses/legacy/LegacyCourseAccordionLayout.astro";
+import LegacyCourseExerciseAccordion from "../courses/legacy/LegacyCourseExerciseAccordion.astro";
 import LegacyCourseTextVideoLayout from "../courses/legacy/LegacyCourseTextVideoLayout.astro";
 import LegacyCourseTextImageLayout from "../courses/legacy/LegacyCourseTextImageLayout.astro";
 import LegacyCourseThreeVideosLayout from "../courses/legacy/LegacyCourseThreeVideosLayout.astro";
@@ -10,7 +11,6 @@ import LegacyCourseTwoVideosLayout from "../courses/legacy/LegacyCourseTwoVideos
 import type { CourseLesson } from "../../lib/legacy_kin/coursePreviewPoc";
 import {
   downloadUrl,
-  legacyAssetUrl,
   rewriteLegacyHtml,
   sortedBlocks,
   sortedComponents,
@@ -132,27 +132,10 @@ const { lesson } = Astro.props;
 
             if (component.type === "exerciseAccordion") {
               return (
-                <div class="course-preview__exercise" data-legacy-component={component.legacyComponentId}>
-                  {component.sections.map((section) => (
-                    <details class="course-preview__exercise-section">
-                      <summary set:html={section.title} />
-                      {section.iconSrc ? (
-                        <img
-                          class="course-preview__exercise-icon"
-                          src={legacyAssetUrl(section.iconSrc)}
-                          alt=""
-                          loading="lazy"
-                        />
-                      ) : null}
-                      {section.bodyHtml ? (
-                        <div
-                          class="course-preview__richtext"
-                          set:html={rewriteLegacyHtml(section.bodyHtml)}
-                        />
-                      ) : null}
-                    </details>
-                  ))}
-                </div>
+                <LegacyCourseExerciseAccordion
+                  legacyComponentId={component.legacyComponentId}
+                  sections={component.sections}
+                />
               );
             }
 

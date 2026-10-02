@@ -72,7 +72,9 @@ import {
   lessonTitleForEditing,
   normalizeLessonTitleInput,
   parseEditorNavigationState,
+  resolveEditorSelection,
   resolveInitialLessonSlug,
+  type EditorRichTextTab,
 } from "../lib/legacy_kin/courseContentEditorNavigation";
 import {
   appendComponentToBlock,
@@ -126,6 +128,7 @@ const API_URL = "/api/admin/course-content";
 const SNIPPETS_OPEN_KEY = "course-editor-snippets-open";
 const SELECTED_LESSON_KEY = "course-editor-selected-lesson";
 const SELECTED_COURSE_KEY = "course-editor-selected-course";
+const EDITOR_VIEW_KEY = "course-editor-view";
 const COURSE_THUMBNAIL_PREFIX = "/images/courses/";
 
 type LessonRecord = Record<string, unknown>;
@@ -161,6 +164,10 @@ let selectedLessonSlug: string | null = null;
 let contentEditingRef: ComponentRef | null = null;
 let renamingLessonSlug: string | null = null;
 let advancedOpen = false;
+let preferredEditorTab: EditorRichTextTab = "visual";
+let applyingEditorView = false;
+let pinnedEditorView: EditorViewSnapshot | null = null;
+let pendingEditorView: EditorViewSnapshot | null = null;
 let focusLessonTitlePending = false;
 let expandedSectionSlug: string | null = null;
 /** After first expand for a lesson, allow all sections to stay collapsed. */
@@ -728,13 +735,27 @@ function bindDom() {
 type ScrollSnapshot = {
   center: number;
   lessons: number;
+  fields: number;
   windowY: number;
+};
+
+type EditorViewSnapshot = {
+  courseId: number;
+  lessonSlug: string | null;
+  blockSlug: string | null;
+  legacyComponentId: number | null;
+  componentType: string | null;
+  itemIndex: number | null;
+  editorTab: EditorRichTextTab | null;
+  advancedOpen: boolean;
+  scroll: ScrollSnapshot;
 };
 
 function captureScrollSnapshot(): ScrollSnapshot {
   return {
     center: dom.centerPanel?.scrollTop ?? 0,
     lessons: dom.lessonList?.scrollTop ?? 0,
+    fields: dom.editFields?.scrollTop ?? 0,
     windowY: window.scrollY,
   };
 }
@@ -742,7 +763,138 @@ function captureScrollSnapshot(): ScrollSnapshot {
 function restoreScrollSnapshot(snapshot: ScrollSnapshot) {
   if (dom.centerPanel) dom.centerPanel.scrollTop = snapshot.center;
   if (dom.lessonList) dom.lessonList.scrollTop = snapshot.lessons;
+  if (dom.editFields) dom.editFields.scrollTop = snapshot.fields;
   window.scrollTo(0, snapshot.windowY);
+}
+
+function editorViewFromNavigation(
+  courseId: number,
+  nav: {
+    lessonSlug: string | null;
+    blockSlug: string | null;
+    legacyComponentId: number | null;
+    componentType: string | null;
+    itemIndex: number | null;
+    editorTab: EditorRichTextTab | null;
+    advancedOpen: boolean;
+  },
+): EditorViewSnapshot {
+  const stored = readStoredEditorView(courseId);
+  const storedMatchesLesson =
+    stored != null && (nav.lessonSlug == null || stored.lessonSlug === nav.lessonSlug);
+  return {
+    courseId,
+    lessonSlug: nav.lessonSlug ?? stored?.lessonSlug ?? null,
+    blockSlug: nav.blockSlug ?? (storedMatchesLesson ? stored?.blockSlug ?? null : null),
+    legacyComponentId:
+      nav.legacyComponentId ?? (storedMatchesLesson ? stored?.legacyComponentId ?? null : null),
+    componentType: nav.componentType ?? (storedMatchesLesson ? stored?.componentType ?? null : null),
+    itemIndex: nav.itemIndex ?? (storedMatchesLesson ? stored?.itemIndex ?? null : null),
+    editorTab: nav.editorTab ?? (storedMatchesLesson ? stored?.editorTab ?? null : null),
+    advancedOpen: nav.advancedOpen || Boolean(storedMatchesLesson && stored?.advancedOpen),
+    scroll:
+      storedMatchesLesson && stored
+        ? stored.scroll
+        : { center: 0, lessons: 0, fields: 0, windowY: 0 },
+  };
+}
+
+function captureEditorView(): EditorViewSnapshot | null {
+  if (currentCourseId == null) return null;
+  const lesson = selectedLessonSlug ? getLessonDraft(selectedLessonSlug) : null;
+  const items = lesson ? flattenLessonContent(lesson) : [];
+  const itemIndex = contentEditingRef
+    ? items.findIndex((item) => contentItemMatches(contentEditingRef, item))
+    : -1;
+  return {
+    courseId: currentCourseId,
+    lessonSlug: selectedLessonSlug,
+    blockSlug: contentEditingRef?.blockSlug ?? null,
+    legacyComponentId: contentEditingRef?.legacyComponentId ?? null,
+    componentType: contentEditingRef?.type ?? null,
+    itemIndex: itemIndex >= 0 ? itemIndex : null,
+    editorTab: contentEditingRef ? preferredEditorTab : null,
+    advancedOpen,
+    scroll: captureScrollSnapshot(),
+  };
+}
+
+function writeStoredEditorView(view: EditorViewSnapshot) {
+  try {
+    sessionStorage.setItem(EDITOR_VIEW_KEY, JSON.stringify(view));
+  } catch {
+    /* ignore storage failures */
+  }
+}
+
+function readStoredEditorView(courseId: number): EditorViewSnapshot | null {
+  try {
+    const raw = sessionStorage.getItem(EDITOR_VIEW_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<EditorViewSnapshot>;
+    if (parsed.courseId !== courseId) return null;
+    const editorTab =
+      parsed.editorTab === "visual" || parsed.editorTab === "html" || parsed.editorTab === "preview"
+        ? parsed.editorTab
+        : null;
+    return {
+      courseId,
+      lessonSlug: parsed.lessonSlug?.trim() || null,
+      blockSlug: parsed.blockSlug?.trim() || null,
+      legacyComponentId:
+        parsed.legacyComponentId != null && Number.isFinite(parsed.legacyComponentId)
+          ? parsed.legacyComponentId
+          : null,
+      componentType: parsed.componentType?.trim() || null,
+      itemIndex:
+        parsed.itemIndex != null && Number.isFinite(parsed.itemIndex) && parsed.itemIndex >= 0
+          ? parsed.itemIndex
+          : null,
+      editorTab,
+      advancedOpen: Boolean(parsed.advancedOpen),
+      scroll: {
+        center: Number(parsed.scroll?.center) || 0,
+        lessons: Number(parsed.scroll?.lessons) || 0,
+        fields: Number(parsed.scroll?.fields) || 0,
+        windowY: Number(parsed.scroll?.windowY) || 0,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+function replaceEditorUrl(view: {
+  lessonSlug: string | null;
+  blockSlug: string | null;
+  legacyComponentId: number | null;
+  componentType: string | null;
+  itemIndex: number | null;
+  editorTab: EditorRichTextTab | null;
+  advancedOpen: boolean;
+}) {
+  const params = buildEditorSearchParams({
+    courseId: currentCourseId,
+    lessonSlug: view.lessonSlug,
+    lessonIndex: lessonIndexFromSlug(sortedLessons(courseData), view.lessonSlug),
+    advancedOpen: view.advancedOpen,
+    blockSlug: view.blockSlug,
+    legacyComponentId: view.legacyComponentId,
+    componentType: view.componentType,
+    itemIndex: view.itemIndex,
+    editorTab: view.editorTab,
+  });
+  const url = new URL(window.location.href);
+  url.search = params;
+  window.history.replaceState(null, "", url.toString());
+}
+
+function rememberEditorLocation() {
+  if (lessonSaveInFlight || applyingEditorView) return;
+  const view = captureEditorView();
+  if (!view) return;
+  writeStoredEditorView(view);
+  replaceEditorUrl(view);
 }
 
 function captureSnippetsOpen() {
@@ -894,16 +1046,12 @@ function applyCourseFromServer(
 }
 
 function syncEditorUrl() {
-  const lessons = sortedLessons(courseData);
-  const params = buildEditorSearchParams({
-    courseId: currentCourseId,
-    lessonSlug: selectedLessonSlug,
-    lessonIndex: lessonIndexFromSlug(lessons, selectedLessonSlug),
-    advancedOpen,
-  });
-  const url = new URL(window.location.href);
-  url.search = params;
-  window.history.replaceState(null, "", url.toString());
+  if (applyingEditorView) return;
+  if (lessonSaveInFlight && pinnedEditorView) {
+    replaceEditorUrl(pinnedEditorView);
+    return;
+  }
+  rememberEditorLocation();
 }
 
 function setAdvancedOpen(next: boolean) {
@@ -916,12 +1064,42 @@ function setAdvancedOpen(next: boolean) {
   if (advancedOpen) syncRawTextarea();
 }
 
-function restoreContentEditIfPossible(ref: ComponentRef | null) {
-  if (!ref || !selectedLessonSlug) return;
+function restoreContentEditIfPossible(
+  ref: ComponentRef | null,
+  itemIndex: number | null = null,
+) {
+  if (!selectedLessonSlug) return;
   const lesson = getLessonDraft(selectedLessonSlug);
   if (!lesson) return;
-  const match = flattenLessonContent(lesson).find((item) => contentItemMatches(ref, item));
+  const match = resolveEditorSelection(flattenLessonContent(lesson), {
+    blockSlug: ref?.blockSlug ?? null,
+    legacyComponentId: ref?.legacyComponentId ?? null,
+    componentType: ref?.type ?? null,
+    itemIndex,
+  });
   if (match) openContentEdit(match);
+}
+
+function restoreEditorView(view: EditorViewSnapshot) {
+  if (!selectedLessonSlug || view.lessonSlug !== selectedLessonSlug) return;
+  if (view.editorTab) preferredEditorTab = view.editorTab;
+  if (view.advancedOpen !== advancedOpen) setAdvancedOpen(view.advancedOpen);
+  restoreContentEditIfPossible(
+    view.blockSlug || view.legacyComponentId != null
+      ? {
+          blockSlug: view.blockSlug ?? "",
+          legacyComponentId: view.legacyComponentId ?? -1,
+          type: view.componentType ?? "",
+        }
+      : null,
+    view.itemIndex,
+  );
+  const applyScroll = () => restoreScrollSnapshot(view.scroll);
+  applyScroll();
+  window.requestAnimationFrame(() => {
+    applyScroll();
+    window.requestAnimationFrame(applyScroll);
+  });
 }
 
 function escapeHtml(value: string) {
@@ -1381,9 +1559,11 @@ function resetSaveButtonSaving(button: HTMLButtonElement | null) {
 
 function updateSaveHint() {
   if (!dom.saveHint || !selectedLessonSlug) return;
+  const dirty = isLessonDirty(selectedLessonSlug);
+  if (dirty) dom.saveHint.classList.remove("is-saved");
   if (dom.saveHint.classList.contains("is-saved")) return;
-  dom.saveHint.textContent = isLessonDirty(selectedLessonSlug) ? "Unsaved changes" : "Saved";
-  dom.saveHint.classList.toggle("is-dirty", isLessonDirty(selectedLessonSlug));
+  dom.saveHint.textContent = dirty ? "Unsaved changes" : "";
+  dom.saveHint.classList.toggle("is-dirty", dirty);
 }
 
 function updateSaveState() {
@@ -2679,6 +2859,18 @@ function updateTextImageLayoutPreview() {
   `;
 }
 
+function flushOpenRichTextEditor() {
+  const visual = document.querySelector(".course-editor__rt-visual") as HTMLElement | null;
+  const htmlArea = document.querySelector(
+    ".course-editor__textarea--rt-html",
+  ) as HTMLTextAreaElement | null;
+  if (visual?.isContentEditable) {
+    applyContentPatch({ html: visual.innerHTML });
+    return;
+  }
+  if (htmlArea) applyContentPatch({ html: htmlArea.value });
+}
+
 function applyContentPatch(patch: Record<string, unknown>) {
   if (!selectedLessonSlug || !contentEditingRef) return;
   const lesson = getLessonDraft(selectedLessonSlug);
@@ -2758,9 +2950,11 @@ function mountRichTextEditor(
 ) {
   const allowedTabs = options.tabs ?? ["visual", "html", "preview"];
   const prosePreview = options.prosePreview !== false;
-  let tab: "visual" | "html" | "preview" = allowedTabs.includes("visual")
-    ? "visual"
-    : allowedTabs[0] ?? "html";
+  let tab: "visual" | "html" | "preview" = allowedTabs.includes(preferredEditorTab)
+    ? preferredEditorTab
+    : allowedTabs.includes("visual")
+      ? "visual"
+      : (allowedTabs[0] ?? "html");
   let value = html;
 
   const render = () => {
@@ -2843,7 +3037,11 @@ function mountRichTextEditor(
           if (textarea) value = textarea.value;
         }
         const nextTab = btn.getAttribute("data-rt-tab") as "visual" | "html" | "preview";
-        if (allowedTabs.includes(nextTab)) tab = nextTab;
+        if (allowedTabs.includes(nextTab)) {
+          tab = nextTab;
+          preferredEditorTab = nextTab;
+          rememberEditorLocation();
+        }
         render();
       });
     });
@@ -3463,6 +3661,7 @@ function openContentEdit(ref: ComponentRef) {
   }
 
   renderContentList();
+  rememberEditorLocation();
 }
 
 function openAccordionLayoutEdit(ref: ComponentRef) {
@@ -3567,6 +3766,7 @@ function openAccordionLayoutEdit(ref: ComponentRef) {
 
   updateCombinePreviousButton();
   renderContentList();
+  rememberEditorLocation();
 }
 
 function openEmbeddedToolLayoutEdit(ref: ComponentRef) {
@@ -3640,6 +3840,7 @@ function openEmbeddedToolLayoutEdit(ref: ComponentRef) {
   });
 
   renderContentList();
+  rememberEditorLocation();
 }
 
 function openTextVideoLayoutEdit(ref: ComponentRef) {
@@ -3738,6 +3939,7 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
   updateTextVideoLayoutPreview();
   updateCombineNextButton();
   renderContentList();
+  rememberEditorLocation();
 }
 
 function openTextImageLayoutEdit(ref: ComponentRef) {
@@ -3841,6 +4043,7 @@ function openTextImageLayoutEdit(ref: ComponentRef) {
 
   updateTextImageLayoutPreview();
   renderContentList();
+  rememberEditorLocation();
 }
 
 function openThreeVideosLayoutEdit(ref: ComponentRef) {
@@ -3960,6 +4163,7 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
 
   updateThreeVideosLayoutPreview();
   renderContentList();
+  rememberEditorLocation();
 }
 
 function contentItemTypeLabel(item: FlatContentItem): string {
@@ -4947,12 +5151,7 @@ function deleteContentItem(ref: ComponentRef) {
           Array.isArray(blockBeforeRemoval.components) &&
           blockBeforeRemoval.components.length === 0,
       )
-    : Boolean(
-        blockBeforeRemoval &&
-          !isEditorLayoutBlock(blockBeforeRemoval) &&
-          Array.isArray(blockBeforeRemoval.components) &&
-          blockBeforeRemoval.components.length === 1,
-      );
+    : false;
 
   if (!removedVideoWithJumpLinks) {
     removeComponentFromBlock(lesson, ref.blockSlug, ref.legacyComponentId, ref.type);
@@ -4982,9 +5181,15 @@ function deleteContentItem(ref: ComponentRef) {
     hideEditFormPanel();
   }
 
+  const sectionRemoved = !findBlock(lesson, ref.blockSlug);
   if (keptEmptySection) {
     expandSection(ref.blockSlug);
     flashToast("Block removed — section kept. Use + Add Block to add content.");
+  } else if (sectionRemoved) {
+    validateExpandedSectionSlug(
+      buildContentListGroups(lesson, flattenLessonContent(lesson as CourseLesson)),
+    );
+    flashToast("Section removed");
   }
 
   renderContentList();
@@ -5590,6 +5795,8 @@ async function saveLesson(fromRaw = false) {
       setStatus(message, "is-error");
       return;
     }
+  } else {
+    flushOpenRichTextEditor();
   }
 
   const lesson = getLessonDraft(selectedLessonSlug);
@@ -5607,6 +5814,15 @@ async function saveLesson(fromRaw = false) {
     if (!ok) return;
   }
 
+  const savedItemIndex = editingRef
+    ? flattenLessonContent(lesson).findIndex((item) => contentItemMatches(editingRef, item))
+    : -1;
+  pinnedEditorView = captureEditorView();
+  if (pinnedEditorView && savedItemIndex >= 0) {
+    pinnedEditorView = { ...pinnedEditorView, itemIndex: savedItemIndex };
+  }
+  if (pinnedEditorView) writeStoredEditorView(pinnedEditorView);
+
   lessonSaveInFlight = true;
   setSaveButtonSaving(saveButton, saveButtonLabel);
   if (!fromRaw && dom.advancedSaveBtn) {
@@ -5623,30 +5839,50 @@ async function saveLesson(fromRaw = false) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         courseId: currentCourseId,
-        lessonSlug: selectedLessonSlug,
+        lessonSlug: savedLessonSlug,
         lesson,
         removeEmptyBlocks: true,
       }),
     });
-    const payload = (await res.json()) as { ok?: boolean; error?: string; backupPath?: string; removedEmptyBlocks?: string[] };
-    if (!res.ok || !payload.ok) throw new Error(payload.error || "Save failed.");
-
-    lessonSavedJson.set(selectedLessonSlug, JSON.stringify(cloneLesson(lesson)));
-
-    const refreshRes = await fetch(`${API_URL}?courseId=${currentCourseId}`);
-    const refreshPayload = (await refreshRes.json()) as { ok?: boolean; course?: CourseRecord };
-    if (refreshRes.ok && refreshPayload.ok && refreshPayload.course) {
-      applyCourseFromServer(refreshPayload.course, {
-        selectSlug: savedLessonSlug,
-        preserveScroll: true,
-      });
+    const payload = (await res.json()) as {
+      ok?: boolean;
+      error?: string;
+      backupPath?: string;
+      removedEmptyBlocks?: string[];
+      storedLesson?: LessonRecord;
+    };
+    if (!res.ok || !payload.ok || !payload.storedLesson) {
+      throw new Error(payload.error || "Save failed: the lesson was not stored.");
     }
 
-    restoreContentEditIfPossible(editingRef);
+    const refreshRes = await fetch(`${API_URL}?courseId=${currentCourseId}&reload=${Date.now()}`);
+    const refreshPayload = (await refreshRes.json()) as { ok?: boolean; course?: CourseRecord };
+    const refreshedLesson = refreshPayload.course?.lessons?.find(
+      (item) => String(item.slug ?? "") === savedLessonSlug,
+    );
+    if (
+      !refreshRes.ok ||
+      !refreshPayload.ok ||
+      !refreshPayload.course ||
+      !refreshedLesson ||
+      JSON.stringify(refreshedLesson) !== JSON.stringify(payload.storedLesson)
+    ) {
+      throw new Error(
+        "Save failed: the editor reloaded a different copy than the one just written. Preview was not updated.",
+      );
+    }
+
+    setLessonDraft(savedLessonSlug, JSON.parse(JSON.stringify(payload.storedLesson)) as LessonRecord);
+    lessonSavedJson.set(savedLessonSlug, JSON.stringify(payload.storedLesson));
+    applyCourseFromServer(refreshPayload.course, {
+      selectSlug: savedLessonSlug,
+      preserveScroll: true,
+    });
+
+    restoreContentEditIfPossible(editingRef, savedItemIndex >= 0 ? savedItemIndex : null);
     restoreSnippetsOpen();
-    restoreScrollSnapshot(scrollSnapshot);
+    restoreScrollSnapshot(pinnedEditorView?.scroll ?? scrollSnapshot);
     updateSaveState();
-    syncEditorUrl();
 
     const backupName = payload.backupPath
       ? String(payload.backupPath).split(/[/\\]/).pop()
@@ -5659,7 +5895,10 @@ async function saveLesson(fromRaw = false) {
     setStatus(err instanceof Error ? err.message : "Save failed.", "is-error");
     flashToast("Save failed", { kind: "error", duration: 4000 });
   } finally {
+    const keepSavedLocation = contentEditingRef != null || editingRef == null;
     lessonSaveInFlight = false;
+    pinnedEditorView = null;
+    if (keepSavedLocation) rememberEditorLocation();
   }
 }
 
@@ -5729,16 +5968,30 @@ async function loadCourse(
       lessonSlug: options.lessonSlug ?? preferredLessonSlug ?? persistedSlug,
       lessonIndex: options.lessonIndex ?? preferredLessonIndex,
     });
+    const viewToRestore = pendingEditorView;
+    pendingEditorView = null;
+    applyingEditorView = viewToRestore != null;
     if (targetSlug) selectLesson(targetSlug, true);
 
-    if (preferredAdvancedOpen != null) {
+    if (
+      viewToRestore &&
+      (viewToRestore.lessonSlug == null || viewToRestore.lessonSlug === selectedLessonSlug)
+    ) {
+      restoreEditorView({
+        ...viewToRestore,
+        lessonSlug: selectedLessonSlug,
+      });
+    } else if (preferredAdvancedOpen != null) {
       setAdvancedOpen(preferredAdvancedOpen);
     }
+    applyingEditorView = false;
     restoreSnippetsOpen();
-    if (scrollSnapshot) restoreScrollSnapshot(scrollSnapshot);
-    syncEditorUrl();
+    if (!viewToRestore && scrollSnapshot) restoreScrollSnapshot(scrollSnapshot);
+    rememberEditorLocation();
     flashToast("Course loaded");
   } catch (err) {
+    applyingEditorView = false;
+    pendingEditorView = null;
     if (dom.loading) dom.loading.hidden = true;
     setStatus(err instanceof Error ? err.message : "Could not load course.", "is-error");
   }
@@ -5779,6 +6032,7 @@ export function initCourseContentEditor() {
   });
   dom.reloadBtn?.addEventListener("click", () => {
     if (currentCourseId != null) {
+      pendingEditorView = captureEditorView();
       void loadCourse(currentCourseId, {
         lessonSlug: selectedLessonSlug,
         advancedOpen,
@@ -5792,6 +6046,7 @@ export function initCourseContentEditor() {
   dom.courseSelect?.addEventListener("change", () => {
     const courseId = Number.parseInt(dom.courseSelect!.value, 10);
     if (Number.isFinite(courseId)) {
+      pendingEditorView = null;
       void loadCourse(courseId, { lessonSlug: null, lessonIndex: null, advancedOpen: false });
     }
   });
@@ -5873,6 +6128,7 @@ export function initCourseContentEditor() {
         (courseCatalog.length > 0 ? courseCatalog[0]!.id : null);
 
       if (initialCourseId != null) {
+        pendingEditorView = editorViewFromNavigation(initialCourseId, nav);
         await loadCourse(initialCourseId, {
           lessonSlug: nav.lessonSlug,
           lessonIndex: nav.lessonIndex,

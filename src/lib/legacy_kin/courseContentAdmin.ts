@@ -4,6 +4,7 @@ import type { CoursePreviewData, CourseLesson, CourseContentStatus } from "./cou
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 import {
+  courseContentWriteMatches,
   resolveCourseContentPersistMode,
   type CourseContentPersistResult,
   type CourseContentWriteOptions,
@@ -186,6 +187,7 @@ export type SaveCourseContentResult = CourseContentPersistResult & {
 export type SaveLessonResult = CourseContentPersistResult & {
   lessonSlug: string;
   removedEmptyBlocks: string[];
+  storedLesson: CoursePreviewData["lessons"][number];
 };
 
 export type CourseMetadataUpdate = {
@@ -496,11 +498,17 @@ export async function saveLessonUpdate(
     removeEmptyBlocks: options.removeEmptyBlocks,
   });
   const persist = await writeCourseContentFile(courseId, applied.data, options);
+  const stored = await loadCourseContentDocument(courseId, options);
+  const storedLesson = stored.lessons.find((lesson) => lesson.slug === applied.lessonSlug);
+  if (!storedLesson) {
+    throw new Error("Save failed: the lesson was not in the course after writing.");
+  }
 
   return {
     ...persist,
     lessonSlug: applied.lessonSlug,
     removedEmptyBlocks: applied.removedEmptyBlocks,
+    storedLesson,
   };
 }
 
@@ -547,7 +555,12 @@ export async function writeCourseContentFile(
   }
 
   const backupPath = backupCourseContentFile(courseId);
-  writeFileSync(getCourseContentPath(courseId), serialized, "utf-8");
+  const coursePath = getCourseContentPath(courseId);
+  writeFileSync(coursePath, serialized, "utf-8");
+  const readBack = readFileSync(coursePath, "utf-8");
+  if (!courseContentWriteMatches(serialized, readBack)) {
+    throw new Error("Save failed: the course file did not keep this change.");
+  }
   return {
     backupPath,
     persistedVia: "filesystem",

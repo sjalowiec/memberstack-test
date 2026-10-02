@@ -5,8 +5,17 @@ import {
   mergeNavigationAfterSave,
   normalizeLessonTitleInput,
   parseEditorNavigationState,
+  resolveEditorSelection,
   resolveInitialLessonSlug,
 } from "./courseContentEditorNavigation";
+
+const emptyBlockSelection = {
+  blockSlug: null,
+  legacyComponentId: null,
+  componentType: null,
+  itemIndex: null,
+  editorTab: null,
+};
 
 const sampleLessons = [
   { slug: "lesson-one" },
@@ -27,6 +36,29 @@ describe("courseContentEditorNavigation", () => {
       lessonSlug: "lesson-four",
       lessonIndex: null,
       advancedOpen: true,
+      ...emptyBlockSelection,
+    });
+  });
+
+  it("round-trips the open block and HTML tab", () => {
+    const query = buildEditorSearchParams({
+      courseId: 50,
+      lessonSlug: "cast-on-options",
+      blockSlug: "must-know-cast-ons",
+      legacyComponentId: 4926,
+      componentType: "richText",
+      itemIndex: 5,
+      editorTab: "html",
+      advancedOpen: false,
+    });
+    expect(parseEditorNavigationState(`?${query}`)).toMatchObject({
+      courseId: 50,
+      lessonSlug: "cast-on-options",
+      blockSlug: "must-know-cast-ons",
+      legacyComponentId: 4926,
+      componentType: "richText",
+      itemIndex: 5,
+      editorTab: "html",
     });
   });
 
@@ -59,6 +91,69 @@ describe("courseContentEditorNavigation", () => {
   it("rejects course ids not in the provided catalog allowlist", () => {
     expect(parseEditorNavigationState("?course=99&lesson=lesson-one", [50, 51]).courseId).toBeNull();
     expect(parseEditorNavigationState("?course=50&lesson=lesson-one", [50, 51]).courseId).toBe(50);
+  });
+});
+
+describe("resolveEditorSelection", () => {
+  const items = [
+    { blockSlug: "intro", legacyComponentId: 1, type: "richText" },
+    { blockSlug: "cast-ons", legacyComponentId: 2, type: "video" },
+    { blockSlug: "cast-ons", legacyComponentId: 4926, type: "richText" },
+    { blockSlug: "practice", legacyComponentId: 4, type: "download" },
+  ];
+
+  it("keeps the same component when an earlier block is inserted", () => {
+    const withInsert = [
+      { blockSlug: "new", legacyComponentId: 9, type: "richText" },
+      ...items,
+    ];
+    expect(
+      resolveEditorSelection(withInsert, {
+        blockSlug: "cast-ons",
+        legacyComponentId: 4926,
+        componentType: "richText",
+        itemIndex: 2,
+      }),
+    ).toEqual(withInsert[3]);
+  });
+
+  it("selects the nearest remaining item when the saved component was deleted", () => {
+    const remaining = items.filter((item) => item.legacyComponentId !== 4926);
+    expect(
+      resolveEditorSelection(remaining, {
+        blockSlug: "cast-ons",
+        legacyComponentId: 4926,
+        componentType: "richText",
+        itemIndex: 2,
+      }),
+    ).toEqual(remaining[2]);
+  });
+
+  it("selects the last remaining item when the deleted component was at the end", () => {
+    const remaining = items.slice(0, 3);
+    expect(
+      resolveEditorSelection(remaining, {
+        blockSlug: "practice",
+        legacyComponentId: 4,
+        componentType: "download",
+        itemIndex: 3,
+      }),
+    ).toEqual(remaining[2]);
+  });
+
+  it("keeps a layout block by section id when component ids shift", () => {
+    const layouts = [
+      { blockSlug: "yarn", legacyComponentId: 10, type: "textVideoLayout" },
+      { blockSlug: "gauge", legacyComponentId: 80, type: "textVideoLayout" },
+    ];
+    expect(
+      resolveEditorSelection(layouts, {
+        blockSlug: "gauge",
+        legacyComponentId: 11,
+        componentType: "textVideoLayout",
+        itemIndex: 0,
+      })?.blockSlug,
+    ).toBe("gauge");
   });
 });
 

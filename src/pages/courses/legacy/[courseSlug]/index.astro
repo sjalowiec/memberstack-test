@@ -9,6 +9,8 @@ import {
   sequentialLessonNumber,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
 
+Astro.response.headers.set("Cache-Control", "no-store");
+
 const courseSlug = Astro.params.courseSlug ?? "";
 const loaderOptions = legacyCourseLoadOptionsFromPreviewRequest(
   Astro.url.searchParams.get("preview"),
