@@ -257,23 +257,49 @@ describe("requireAdmin", () => {
   it("does not treat the JWT type claim as the member id", async () => {
     process.env.ADMIN_MEMBER_IDS = "member";
     delete process.env.ADMIN_MEMBER_EMAILS;
-    mockClients({ getMember: async () => null });
+    const client = mockClients({ getMember: async () => null });
+    client.verifyMemberToken.mockImplementation(async (token) => {
+      if (token === "typed-member-token") {
+        return { id: "member", sub: "mem_sb_someone_else", type: "member", aud: "app", iss: "https://api.memberstack.com" };
+      }
+      return null;
+    });
 
-    const result = await requireAdmin(makeRequest("sue-token"));
+    const result = await requireAdmin(makeRequest("typed-member-token"));
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.status).toBe(403);
       expect(result.diagnostics?.claimKeys).toEqual(
         expect.arrayContaining(["id", "sub", "type", "aud", "iss"]),
       );
-      expect(result.diagnostics?.claimKeys).not.toContain("email");
       expect(result.diagnostics?.subjectExists).toBe(true);
       expect(result.diagnostics?.emailExists).toBe(false);
       expect(result.diagnostics?.allowlist).toEqual({ idMatched: false, emailMatched: false });
       expect(result.diagnostics?.env.ADMIN_MEMBER_IDS).toBe(true);
       expect(result.diagnostics?.env.ADMIN_MEMBER_EMAILS).toBe(false);
-      expect(JSON.stringify(result)).not.toContain(SUE_TEST_MEMBER_ID);
-      expect(JSON.stringify(result)).not.toContain(SUE_EMAIL);
+    }
+  });
+
+  it("authorizes the verified site owner when the env allowlist is empty", async () => {
+    delete process.env.ADMIN_MEMBER_IDS;
+    delete process.env.ADMIN_MEMBER_EMAILS;
+    mockClients({ getMember: async () => null });
+
+    const result = await requireAdmin(makeRequest("sue-token"));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.member.id).toBe(SUE_TEST_MEMBER_ID);
+  });
+
+  it("still denies a different signed-in member when the env allowlist is empty", async () => {
+    delete process.env.ADMIN_MEMBER_IDS;
+    delete process.env.ADMIN_MEMBER_EMAILS;
+    mockClients();
+
+    const result = await requireAdmin(makeRequest("member-token"));
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(403);
+      expect(result.error).toMatch(/admin access required/i);
     }
   });
 
@@ -366,6 +392,8 @@ describe("isAdminMember", () => {
     expect(isAdminMember({ id: "mem_someone_else" }, { ADMIN_MEMBER_IDS: SUE_LIVE_MEMBER_ID })).toBe(
       false,
     );
+    expect(isAdminMember({ id: SUE_LIVE_MEMBER_ID }, {})).toBe(true);
+    expect(isAdminMember({ id: "mem_someone_else", email: "member@example.com" }, {})).toBe(false);
   });
 });
 
