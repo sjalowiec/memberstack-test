@@ -6,12 +6,16 @@ import {
   applyListingDelete,
   applyListingSave,
   getStorefrontHoldListings,
+  isStorefrontRibberOrAccessory,
+  listingGaugeLabel,
   listingIdFromBrandModel,
   listingTypeFromUnknown,
   normalizeMachineSalesListing,
   parseMachineSalesListingsFile,
   readMachineSalesListings,
   shopListingImageSrcs,
+  storefrontCatalogSections,
+  type MachineSalesListing,
 } from "./machineSalesListings";
 import { sanitizeMachineSalesUploadFilename } from "./machineSalesImageUpload";
 
@@ -140,8 +144,9 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("getStorefrontHoldListings");
     expect(page).not.toContain("TEMP_SHOPIFY_PRODUCTS");
     expect(page).toContain("MACHINE_SALES_HOLD");
-    expect(page).toContain('listingType === "machine"');
-    expect(page).toContain('listingType === "accessory"');
+    expect(page).toContain("storefrontCatalogSections");
+    expect(page).toContain("listingGaugeLabel");
+    expect(page).toContain("Gauge:");
     expect(page).not.toContain('includes("ribber")');
     expect(page).not.toContain('includes("Ribber")');
   });
@@ -265,6 +270,123 @@ describe("listing save helpers", () => {
     expect(applied.listings.find((row) => row.id === "taitexma-th160")).toBeUndefined();
     expect(applied.listings).toHaveLength(current.length - 1);
     expect(shopListingImageSrcs(current)).toContain("/images/machines/taitexma-th160-machine.jpg");
+  });
+});
+
+function catalogListing(
+  partial: Pick<MachineSalesListing, "id" | "name" | "brand" | "model"> &
+    Partial<MachineSalesListing>
+): MachineSalesListing {
+  return {
+    price: 1,
+    priceLabel: "$1",
+    shopifyUrl: "https://example.com/products/item",
+    status: "available",
+    listingType: "machine",
+    specs: [],
+    shortHtml: "",
+    imageSrc: "/images/machines/8601.jpg",
+    sortOrder: 0,
+    ...partial,
+  };
+}
+
+describe("storefront catalog sections", () => {
+  const listings: MachineSalesListing[] = [
+    catalogListing({
+      id: "taitexma-th860",
+      name: "Taitexma TH860 Punchcard Knitting Machine",
+      brand: "Taitexma",
+      model: "TH860",
+      specs: ["Standard Gauge", "Punchcard", "200 needles"],
+      sortOrder: 10,
+    }),
+    catalogListing({
+      id: "taitexma-tr-850",
+      name: "Taitexma TR-850 Standard Ribber",
+      brand: "Taitexma",
+      model: "TR-850",
+      specs: ["4.5 Standard Gauge", "200 needles"],
+      sortOrder: 20,
+    }),
+    catalogListing({
+      id: "taitexma-th-tr-160-bundle",
+      name: "Taitexma Mid-Gauge TH/TR 160 Bundle",
+      brand: "Taitexma",
+      model: "TH/TR 160 Bundle",
+      specs: ["Mid-Gauge 6mm", "164 needles", "Ribber included"],
+      shortHtml: "Machine and ribber bundle.",
+      sortOrder: 30,
+    }),
+    catalogListing({
+      id: "taitexma-tr260",
+      name: "Taitexma TR260 Ribber",
+      brand: "Taitexma",
+      model: "TR260",
+      listingType: "accessory",
+      specs: ["Bulky/Chunky", "114 needles"],
+      sortOrder: 50,
+    }),
+    catalogListing({
+      id: "taitexma-th160",
+      name: "Taitexma TH160 Mid-Gauge Machine",
+      brand: "Taitexma",
+      model: "TH160",
+      specs: ["Mid-Gauge"],
+      sortOrder: 60,
+    }),
+    catalogListing({
+      id: "silver-reed-lk150",
+      name: "Silver Reed LK150",
+      brand: "Silver Reed",
+      model: "LK150",
+      specs: ["MId-Gauge", "Manual", "150 Needles"],
+      sortOrder: 70,
+    }),
+    catalogListing({
+      id: "no-gauge-machine",
+      name: "Plain Knitter",
+      brand: "Taitexma",
+      model: "X",
+      specs: ["Punchcard", "200 needles"],
+      sortOrder: 80,
+    }),
+  ];
+
+  it("groups knitting machines by brand and places ribbers and accessories below", () => {
+    const sections = storefrontCatalogSections(listings);
+    expect(sections.map((section) => section.title)).toEqual([
+      "Taitexma",
+      "Silver Reed",
+      "Ribbers and Accessories",
+    ]);
+    expect(sections[0]?.items.map((row) => row.id)).toEqual([
+      "taitexma-th860",
+      "taitexma-th-tr-160-bundle",
+      "taitexma-th160",
+      "no-gauge-machine",
+    ]);
+    expect(sections[1]?.items.map((row) => row.id)).toEqual(["silver-reed-lk150"]);
+    expect(sections[2]?.items.map((row) => row.id)).toEqual([
+      "taitexma-tr-850",
+      "taitexma-tr260",
+    ]);
+  });
+
+  it("keeps a machine-and-ribber bundle with the machines", () => {
+    const bundle = listings.find((row) => row.id === "taitexma-th-tr-160-bundle");
+    expect(bundle && isStorefrontRibberOrAccessory(bundle)).toBe(false);
+  });
+
+  it("shows a gauge only when a spec already states one", () => {
+    expect(listingGaugeLabel(["Standard Gauge", "Punchcard"])).toBe("Standard Gauge");
+    expect(listingGaugeLabel(["4.5 Standard Gauge", "200 needles"])).toBe("4.5 Standard Gauge");
+    expect(listingGaugeLabel(["Mid-Gauge 6mm", "Ribber included"])).toBe("Mid-Gauge 6mm");
+    expect(listingGaugeLabel(["Bulky/Chunky", "114 needles"])).toBe("Bulky/Chunky");
+    expect(listingGaugeLabel(["MId-Gauge", "Manual"])).toBe("MId-Gauge");
+    expect(listingGaugeLabel(["Punchcard", "200 needles"])).toBeNull();
+    expect(listingGaugeLabel([])).toBeNull();
+    expect(listingGaugeLabel(["Ribber included"])).toBeNull();
   });
 });
 
