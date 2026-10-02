@@ -146,5 +146,24 @@
     "shortHtml": "Silver Reed Model SK155 Chunky. This machine will produce a \"hand knitting\" look at approx 3 - 4.5 sts per inch.\nThe 12 stitch punchcard opens up a world of automatic patterning including stockinet, slip and tuck stitch, fair isle, weaving and punch lace.",
     "imageSrc": "/images/machines/silver-reed-sk155-bulky-gauge-knitting-machine.jpg",
     "sortOrder": 80
+  },
+  {
+    "id": "silver-reed-sk840",
+    "name": "Silver Reed SK840 Standard Gauge Machine",
+    "brand": "Silver Reed",
+    "model": "SK840",
+    "price": 1765,
+    "priceLabel": "$1,765",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/silver-reed-sk840-standard-gauge-machine",
+    "status": "available",
+    "listingType": "machine",
+    "specs": [
+      "Standard Gauge",
+      "Electronic",
+      "200"
+    ],
+    "shortHtml": "The Silver Reed SK840 is an electronic standard gauge knitting machine for fine yarns and detailed stitch patterns. Pair it with compatible DesignaKnit software and a connecting cable to bring your stitch designs to life.",
+    "imageSrc": "/images/machines/silver-reed-sk840-electronic-standard-gauge.png",
+    "sortOrder": 90
   }
 ]
