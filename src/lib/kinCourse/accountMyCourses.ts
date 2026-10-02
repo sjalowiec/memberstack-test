@@ -19,7 +19,7 @@ export type AccountOwnedCourseCard = {
 
 /** Browser-safe display + entitlement metadata for individually owned courses. */
 export type AccountOwnableCourse = {
-  courseId: 86 | 111 | 87 | 34 | 51;
+  courseId: 86 | 111 | 87 | 34 | 50 | 51;
   slug: string;
   title: string;
   href: string;
@@ -61,6 +61,13 @@ export const ACCOUNT_OWNABLE_COURSES: readonly AccountOwnableCourse[] = [
     title: "Master LK-150 Patterning",
     href: "/courses/34",
     planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.lk150Patterning),
+  },
+  {
+    courseId: COURSE_INDIVIDUAL_SALES.lk150QuickStart.courseId,
+    slug: COURSE_INDIVIDUAL_SALES.lk150QuickStart.slug,
+    title: "LK-150 Quick Start",
+    href: "/courses/50",
+    planIds: ownablePlanIds(COURSE_INDIVIDUAL_SALES.lk150QuickStart),
   },
   {
     courseId: COURSE_INDIVIDUAL_SALES.lk150Fun.courseId,

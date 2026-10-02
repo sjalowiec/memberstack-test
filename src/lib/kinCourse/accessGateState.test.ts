@@ -57,6 +57,9 @@ describe("KIN course gate copy", () => {
     );
     expect(kinCourseNoAccessMessage("34")).not.toContain("purchase this course on its own");
     expect(kinCourseNoAccessMessage("34")).not.toContain("SK840");
+    expect(kinCourseNoAccessMessage("lk-150-quick-start")).toContain("LK-150 Quick Start course plan");
+    expect(kinCourseNoAccessMessage("50")).not.toContain("purchase this course on its own");
+    expect(kinCourseNoAccessMessage("50")).not.toContain("SK840");
   });
 });
 

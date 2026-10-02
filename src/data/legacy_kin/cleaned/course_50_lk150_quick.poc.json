@@ -13,7 +13,7 @@
       "sourceExport": "course_50_lk150_quick.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
       "draftReview": {
-        "note": "Published at /courses/50. Free access is unchanged. Original lesson order restored where sections were missing. No Memberstack, price, or email changes.",
+        "note": "Published at /courses/50. Lessons open for an active membership or the Course 50 legacy plan. Original lesson order restored where sections were missing. No Memberstack, price, or email changes.",
         "restored": [
           "Cast on Options: Scrap On (ravel cord), original section before Must Know Cast Ons.",
           "Yarn estimator video 151859805.",

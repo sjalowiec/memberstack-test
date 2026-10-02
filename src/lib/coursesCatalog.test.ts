@@ -218,7 +218,7 @@ describe("public course catalog cleanup", () => {
     expect(sections[3]?.courses[1]?.href).toBe("/courses/50");
     expect(sections[3]?.courses[1]?.title).toBe("LK-150 Quick Start");
     expect(sections[3]?.courses[1]?.buttonLabel).toBe("View Course");
-    expect(sections[3]?.courses[1]?.access).toBe("free");
+    expect(sections[3]?.courses[1]?.access).toBe("member");
     expect(sections[3]?.courses[1]?.status).toBe("available");
     expect(sections[3]?.courses[1]?.thumbnail).toBe("/images/courses/lk-150_quick.webp");
     expect(sections[3]?.courses[2]?.href).toBe("/courses/51");
@@ -372,7 +372,7 @@ describe("groupCourseCatalogSections", () => {
         slug: "lk-150-quick-start",
         category: "LK-150",
         href: "/courses/50",
-        access: "free",
+        access: "member",
         status: "available",
       },
       {
