@@ -68,11 +68,13 @@ describe("memberstack session cookie bridge", () => {
     expect(assignment).toContain("Secure");
   });
 
-  it("is installed from the site and course layouts", () => {
+  it("is called from the site layout script production already loads", () => {
     const base = readFileSync(resolve("src/layouts/BaseLayout.astro"), "utf8");
-    const course = readFileSync(resolve("src/layouts/KinCourseLayout.astro"), "utf8");
-    expect(base).toContain("memberstackSessionBridge");
-    expect(course).toContain("memberstackSessionBridge");
+    const helpersStart = base.indexOf('import { openMemberstackLoginModal }');
+    const helpersEnd = base.indexOf("kbmOpenMemberstackLoginModal");
+    const helpers = base.slice(helpersStart, helpersEnd);
+    expect(helpers).toContain("installMemberstackSessionBridge()");
+    expect(base).not.toContain('import "../scripts/memberstackSessionBridge.ts"');
     expect(base).not.toContain("$memberstackDom?.init?.()");
   });
 });

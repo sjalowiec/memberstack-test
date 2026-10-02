@@ -216,6 +216,10 @@ const isProduction =
     logMemberAccessDebug,
   } from "../lib/memberAccess";
   import { openMemberstackLoginModal } from "../lib/memberstackLogin";
+  import { installMemberstackSessionBridge } from "../lib/memberstackSessionBridge";
+
+  // Copy a JWT already stored by Memberstack into the cookie the admin save accepts.
+  installMemberstackSessionBridge();
 
   // Global member-access helpers (single source of truth for all gated sections).
   window.kbmHasMemberAccess = hasMemberAccess;
@@ -268,9 +272,6 @@ const isProduction =
   
 
   <body class={bodyClass}>
-    <script>
-      import "../scripts/memberstackSessionBridge.ts";
-    </script>
     <EnvBanner />
     {import.meta.env.DEV && (
       <div class="preview-banner" id="preview-banner"></div>
