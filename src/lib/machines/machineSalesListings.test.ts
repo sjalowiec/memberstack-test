@@ -189,6 +189,9 @@ describe("machine sales hold listings", () => {
     expect(page).toContain("Browse Silver Reed");
     expect(page).toContain("{!salesHold && <PageHead");
     expect(page).toContain("${panel.title} Machines");
+    expect(page).toContain('border-color: var(--kbm-accent)');
+    expect(page).toContain('border-color: var(--kbm-green)');
+    expect(page).toContain("border-width: 4px");
     expect(page).not.toContain('includes("ribber")');
     expect(page).not.toContain('includes("Ribber")');
   });
