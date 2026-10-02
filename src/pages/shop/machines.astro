@@ -27,10 +27,10 @@ const salesHold = MACHINE_SALES_HOLD;
  */
 const holdListings = salesHold ? getStorefrontHoldListings() : [];
 const brandPanels = storefrontBrandPanels(holdListings);
-const brandChooserCopy: Record<string, { description: string; action: string }> = {
+const brandChooserCopy: Record<string, { description: string; action: string; pronunciation?: string }> = {
   taitexma: {
-    description:
-      "Explore standard and bulky gauge knitting machines. Taitexma machines are ordered in batches, so availability varies by shipment. Check individual listings for current availability.",
+    pronunciation: "(tie-tex-ma)",
+    description: "Taitexma machines are ordered in batches, so availability varies by shipment.",
     action: "Browse Taitexma",
   },
   "silver-reed": {
@@ -67,12 +67,8 @@ function formatPrice(value: number | null): string | null {
           <a class="back-link" href="/shop">← Back to Shop</a>
           <h1 class="page-title">Knitting Machines for Sale</h1>
           <p class="page-intro">
-            These products are available to purchase now. Select
-            <strong> View and Purchase</strong> to complete your order on our Shopify store.
-          </p>
-          <p class="page-intro page-intro--follow">
-            Taitexma machines are available for customers in the United States only. Questions?
-            <a href="/contact"> Contact Sue</a>.
+            Machines are available for customers in the United States only. Questions?
+            <a href="/contact">Contact Sue</a>.
           </p>
         </header>
 
@@ -94,7 +90,12 @@ function formatPrice(value: number | null): string | null {
                     aria-controls={`${panel.id}-panel`}
                     aria-pressed={index === 0 ? "true" : "false"}
                   >
-                    <span class="brand-card-title">{panel.title}</span>
+                    <span class="brand-card-title">
+                      {panel.title}
+                      {copy?.pronunciation && (
+                        <span class="brand-card-pronunciation">{copy.pronunciation}</span>
+                      )}
+                    </span>
                     {copy && <span class="brand-card-copy">{copy.description}</span>}
                     {copy && <span class="brand-card-action">{copy.action}</span>}
                   </button>
@@ -383,10 +384,19 @@ function formatPrice(value: number | null): string | null {
   }
 
   .brand-card-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
     font-size: 1.25rem;
     font-weight: 700;
     line-height: 1.2;
     color: var(--kbm-green);
+  }
+
+  .brand-card-pronunciation {
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   .brand-card-copy {
