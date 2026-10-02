@@ -10,7 +10,7 @@ import {
   type KinCourseGlossaryEntry,
 } from "../../lib/kinCourse/htmlPresent";
 import { flattenLessons } from "../../lib/kinCourse/player";
-import { kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
+import { appendSameCoursePreviewQuery, kinCourseLessonHref } from "../../lib/kinCourse/hrefs";
 import {
   kinVimeoPlayerDomId,
   kinVimeoPlayerKey,
@@ -87,6 +87,8 @@ interface Props {
   course: KinCourseDocument;
   presentation?: KinCoursePresentation;
   glossary?: KinCourseGlossaryEntry[];
+  /** When true, same-course lesson links keep draft preview via ?preview=true. */
+  preview?: boolean;
 }
 
 const {
@@ -96,10 +98,15 @@ const {
   course,
   presentation = {},
   glossary = [],
+  preview = false,
 } = Astro.props;
 
 function presentHtml(html: string): string {
-  return presentKinCourseHtml(html, lessonId, presentation, glossary);
+  return appendSameCoursePreviewQuery(
+    presentKinCourseHtml(html, lessonId, presentation, glossary),
+    course.id,
+    preview,
+  );
 }
 
 function presentSrc(src: string | undefined): string {

@@ -74,6 +74,11 @@ export function resolveCourseContentPersistMode(
 }
 
 /** Deployed writes (kin-dev, not localhost) must present a Watson session. */
+/** True only when the bytes just written are the bytes read back. */
+export function courseContentWriteMatches(serialized: string, readBack: string): boolean {
+  return serialized === readBack;
+}
+
 export function courseContentWriteRequiresWatsonSession(
   hostname: string | null | undefined,
   env?: DetectSiteEnvironmentOptions,

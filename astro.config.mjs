@@ -37,6 +37,9 @@ export default defineConfig({
           // leaks file handles on Windows (EMFILE). Not app source, so safe to ignore.
           "**/.netlify/**",
           "**/src/data/legacy_kin/cleaned/backups/**",
+          // Editor saves write these files. Watching them restarts the dev server mid-save
+          // and reloads the editor before the save response can confirm persistence.
+          "**/src/data/legacy_kin/cleaned/*.poc.json",
           // Illustrator masters + autosave temps (avoid dev-server HMR thrash).
           "**/assets/**/*.ai",
           "**/assets/**/~ai-*",

@@ -1,5 +1,3 @@
-import course50Poc from "../../data/legacy_kin/cleaned/course_50_lk150_quick.poc.json";
-import course51Poc from "../../data/legacy_kin/cleaned/course_51_lk150_fun.poc.json";
 import { getLayoutHeader, isTextImageLayoutBlock } from "./courseTextImageLayout";
 
 export const COURSE_PREVIEW_BASE = "/dev/course-preview";
@@ -195,85 +193,6 @@ export type CoursePreviewData = {
   };
 };
 
-const previewCourses: Record<number, CoursePreviewData> = {
-  50: course50Poc as CoursePreviewData,
-  51: course51Poc as CoursePreviewData,
-};
-
-/** Legacy default export — course 50 only. */
-export const coursePreviewData = previewCourses[DEFAULT_PREVIEW_COURSE_ID];
-export const coursePreviewCourse = coursePreviewData.course;
-
-export function getPreviewCourseIds(): number[] {
-  return Object.keys(previewCourses)
-    .map(Number)
-    .sort((a, b) => a - b);
-}
-
-export function getCoursePreviewData(
-  courseId: number,
-): CoursePreviewData | undefined {
-  return previewCourses[courseId];
-}
-
-export function parseCourseId(
-  value: string | number | null | undefined,
-): number {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_PREVIEW_COURSE_ID), 10);
-  if (Number.isNaN(parsed) || !previewCourses[parsed]) {
-    return DEFAULT_PREVIEW_COURSE_ID;
-  }
-  return parsed;
-}
-
-export function getSortedLessons(
-  courseId: number = DEFAULT_PREVIEW_COURSE_ID,
-): CourseLesson[] {
-  const data = getCoursePreviewData(parseCourseId(courseId));
-  if (!data) return [];
-  return [...data.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
-}
-
-export function coursePreviewHref(
-  courseId: number = DEFAULT_PREVIEW_COURSE_ID,
-): string {
-  return `${COURSE_PREVIEW_BASE}/${parseCourseId(courseId)}`;
-}
-
-export function lessonPreviewHref(
-  courseId: number,
-  slug: string,
-): string {
-  return `${coursePreviewHref(courseId)}/${slug}`;
-}
-
-export function getLessonBySlug(
-  courseId: number,
-  slug: string,
-): CourseLesson | undefined {
-  return getSortedLessons(courseId).find((lesson) => lesson.slug === slug);
-}
-
-export function getLessonNeighbors(
-  courseId: number,
-  slug: string,
-): {
-  index: number;
-  prev: CourseLesson | null;
-  next: CourseLesson | null;
-} {
-  const lessons = getSortedLessons(courseId);
-  const index = lessons.findIndex((lesson) => lesson.slug === slug);
-  if (index < 0) {
-    return { index: -1, prev: null, next: null };
-  }
-  return {
-    index,
-    prev: index > 0 ? lessons[index - 1] : null,
-    next: index < lessons.length - 1 ? lessons[index + 1] : null,
-  };
-}
-
 export function sortedBlocks(lesson: CourseLesson): CourseBlock[] {
   return [...lesson.blocks].sort((a, b) => a.order - b.order);
 }
@@ -434,10 +353,3 @@ export function formatSectionQueryIndex(zeroBasedIndex: number): string {
   return String(zeroBasedIndex + 1);
 }
 
-export function lessonPreviewSectionHref(
-  courseId: number,
-  slug: string,
-  oneBasedSection: number,
-): string {
-  return `${lessonPreviewHref(courseId, slug)}?${SECTION_QUERY_PARAM}=${oneBasedSection}`;
-}

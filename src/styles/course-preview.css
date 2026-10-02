@@ -1015,8 +1015,52 @@ main.site-content:has(.course-preview--reader) {
 }
 
 .course-preview__exercise-section summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.15rem 0;
   cursor: pointer;
   font-weight: 600;
+  list-style: none;
+}
+
+.course-preview__exercise-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.course-preview__exercise-section summary::marker {
+  content: "";
+}
+
+.course-preview__exercise-caret {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.32em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+.course-preview__exercise-section[open] > summary .course-preview__exercise-caret {
+  margin-top: 0.18em;
+  transform: rotate(45deg);
+}
+
+.course-preview__exercise-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.course-preview__exercise-heading :is(h1, h2, h3, h4, p) {
+  margin: 0;
+}
+
+.course-preview__exercise-section summary:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 3px;
 }
 
 .course-preview__exercise-icon {

@@ -20,6 +20,8 @@ import {
   urlLessonSlug,
 } from "../../../../../lib/legacy_kin/courseLessonContentItems";
 
+Astro.response.headers.set("Cache-Control", "no-store");
+
 const courseSlug = Astro.params.courseSlug ?? "";
 const lessonSlug = Astro.params.lessonSlug ?? "";
 const itemSlug = Astro.params.itemSlug ?? "";

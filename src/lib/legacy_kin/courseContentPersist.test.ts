@@ -8,10 +8,18 @@ import {
   writeCourseContentFile,
 } from "./courseContentAdmin";
 import {
+  courseContentWriteMatches,
   courseContentWriteRequiresWatsonSession,
   resolveCourseContentPersistMode,
 } from "./courseContentPersist";
 import { COURSE_111_ID } from "./course111AdminModel";
+
+describe("course content write verification", () => {
+  it("accepts an exact read-back and rejects a stale copy", () => {
+    expect(courseContentWriteMatches("{\"ok\":true}\n", "{\"ok\":true}\n")).toBe(true);
+    expect(courseContentWriteMatches("{\"ok\":true}\n", "{\"ok\":false}\n")).toBe(false);
+  });
+});
 
 describe("course content persist mode", () => {
   it("uses filesystem persistence on localhost", () => {

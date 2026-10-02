@@ -10,10 +10,10 @@ import {
   getCoursePreviewData,
   getPreviewCourseIds,
   getSortedLessons,
-} from "../../../lib/legacy_kin/coursePreviewPoc";
+} from "../../../lib/legacy_kin/coursePreviewCatalog";
 import "../../../styles/course-preview.css";
 
-export const prerender = true;
+export const prerender = false;
 
 const courses = getPreviewCourseIds().map((courseId) => {
   const data = getCoursePreviewData(courseId)!;

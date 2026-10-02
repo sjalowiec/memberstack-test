@@ -310,6 +310,7 @@ export const POST: APIRoute = async (context) => {
       removedEmptyBlocks: result.removedEmptyBlocks,
       backupPath: result.backupPath,
       persistedVia: result.persistedVia,
+      storedLesson: result.storedLesson,
       branch: result.branch,
       commitSha: result.commitSha,
       savedAt: new Date().toISOString(),
