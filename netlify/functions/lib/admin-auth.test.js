@@ -163,6 +163,24 @@ describe("requireAdmin", () => {
     expect(client.verifyMemberToken).toHaveBeenCalledWith(jwt);
   });
 
+  it("uses the session cookie when Authorization is a non-JWT bearer", async () => {
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.signature";
+    const client = mockClients();
+    client.verifyMemberToken.mockImplementation(async (token) => {
+      if (token === jwt) return { id: ADMIN_ID };
+      return null;
+    });
+    const headers = new Headers();
+    headers.set("Authorization", "Bearer mem_not_a_jwt");
+    headers.set("Cookie", `_ms_cookie=${jwt}`);
+    const result = await requireAdmin(
+      new Request("https://knititnow.com/api/admin/machine-sales", { headers }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.member.id).toBe(ADMIN_ID);
+    expect(client.verifyMemberToken).toHaveBeenCalledWith(jwt);
+  });
+
   it("does not treat Netlify basic auth alone as an admin session", async () => {
     const headers = new Headers();
     headers.set("Authorization", "Basic YWRtaW46a25pdDc0MQ==");

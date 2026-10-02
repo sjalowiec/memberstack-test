@@ -193,7 +193,7 @@ import "../../styles/admin-machines.css";
 
   <script>
     import type { MachineSalesListing } from "../../lib/machines/machineSalesListings";
-    import { getAdminAuthHeaders } from "../../lib/admin/adminAuthClient";
+    import { fetchAdminJson, type AdminJsonResult } from "../../lib/admin/adminAuthClient";
 
     const API = "/api/admin/machine-sales";
     const IMAGE_API = "/api/admin/machine-sales-image";
@@ -243,11 +243,18 @@ import "../../styles/admin-machines.css";
       formStatusEl.classList.toggle("is-error", kind === "err");
     }
 
-    async function mutationHeaders(): Promise<Record<string, string>> {
-      return {
-        "Content-Type": "application/json",
-        ...(await getAdminAuthHeaders()),
-      };
+    function failureMessage(
+      result: Pick<AdminJsonResult, "error" | "needsSignIn" | "forbidden">,
+      fallback: string,
+    ): string {
+      if (result.needsSignIn) {
+        return "Sign in with your Knit it Now account to continue. Everything you entered is still in this form.";
+      }
+      if (result.forbidden) {
+        return "This Knit it Now account does not have admin access. Everything you entered is still in this form.";
+      }
+      const detail = result.error?.trim() || fallback;
+      return `${detail} Everything you entered is still in this form.`;
     }
 
     function escapeHtml(value: string): string {
@@ -416,18 +423,16 @@ import "../../styles/admin-machines.css";
 
     async function uploadPendingImage(): Promise<string | null> {
       if (!pendingUpload) return val("ms-field-imageSrc") || null;
-      const res = await fetch(IMAGE_API, {
+      const result = await fetchAdminJson<{ imageSrc?: string }>(IMAGE_API, {
         method: "POST",
-        headers: await mutationHeaders(),
-        body: JSON.stringify(pendingUpload),
+        body: pendingUpload,
       });
-      const data = (await res.json()) as { ok?: boolean; imageSrc?: string; error?: string };
-      if (!res.ok || !data.ok || !data.imageSrc) {
-        throw new Error(data.error || "Image upload failed.");
+      if (!result.ok || !result.data.imageSrc) {
+        throw new Error(failureMessage(result, "Image upload failed."));
       }
       pendingUpload = null;
-      listingImages = Array.from(new Set([...listingImages, data.imageSrc]));
-      return data.imageSrc;
+      listingImages = Array.from(new Set([...listingImages, result.data.imageSrc]));
+      return result.data.imageSrc;
     }
 
     function slugFromBrandModel(brand: string, model: string): string {
@@ -457,22 +462,18 @@ import "../../styles/admin-machines.css";
           }
           setVal("ms-field-id", listing.id);
         }
-        const res = await fetch(API, {
-          method: "POST",
-          headers: await mutationHeaders(),
-          body: JSON.stringify({ mode, listing }),
-        });
-        const data = (await res.json()) as {
-          ok?: boolean;
+        const result = await fetchAdminJson<{
           listings?: MachineSalesListing[];
           listingImages?: string[];
-          error?: string;
-        };
-        if (!res.ok || !data.ok || !Array.isArray(data.listings)) {
-          throw new Error(data.error || "Save failed.");
+        }>(API, {
+          method: "POST",
+          body: { mode, listing },
+        });
+        if (!result.ok || !Array.isArray(result.data.listings)) {
+          throw new Error(failureMessage(result, "The listing could not be saved."));
         }
-        listings = data.listings;
-        listingImages = data.listingImages ?? listingImages;
+        listings = result.data.listings;
+        listingImages = result.data.listingImages ?? listingImages;
         mode = "edit";
         renderTable();
         const saved = listings.find((row) => row.id === listing.id);
@@ -480,8 +481,11 @@ import "../../styles/admin-machines.css";
         setFormStatus("Listing saved. Hidden listings stay off the shop. Available listings appear after the site rebuilds.", "ok");
         setStatus("Listing saved.", "ok");
       } catch (err) {
-        const detail = err instanceof Error ? err.message : "";
-        setFormStatus(detail || "The listing could not be saved.", "err");
+        const detail = err instanceof Error ? err.message.trim() : "";
+        const message = detail.includes("still in this form")
+          ? detail
+          : failureMessage({ error: detail }, "The listing could not be saved.");
+        setFormStatus(message, "err");
       } finally {
         saving = false;
       }
@@ -498,22 +502,18 @@ import "../../styles/admin-machines.css";
       deleting = true;
       setStatus(`Deleting ${listing.name}…`, "neutral");
       try {
-        const res = await fetch(API, {
-          method: "POST",
-          headers: await mutationHeaders(),
-          body: JSON.stringify({ mode: "delete", id }),
-        });
-        const data = (await res.json()) as {
-          ok?: boolean;
+        const result = await fetchAdminJson<{
           listings?: MachineSalesListing[];
           listingImages?: string[];
-          error?: string;
-        };
-        if (!res.ok || !data.ok || !Array.isArray(data.listings)) {
-          throw new Error(data.error || "Delete failed.");
+        }>(API, {
+          method: "POST",
+          body: { mode: "delete", id },
+        });
+        if (!result.ok || !Array.isArray(result.data.listings)) {
+          throw new Error(result.error || "Delete failed.");
         }
-        listings = data.listings;
-        listingImages = data.listingImages ?? listingImages;
+        listings = result.data.listings;
+        listingImages = result.data.listingImages ?? listingImages;
         renderTable();
         if (mode !== "none" && val("ms-field-id") === id) {
           mode = "none";
@@ -569,6 +569,10 @@ import "../../styles/admin-machines.css";
       }
     }
 
+    form?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void save();
+    });
     document.getElementById("ms-add")?.addEventListener("click", () => {
       loadListing(blankListing(), "new");
     });

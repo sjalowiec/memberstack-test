@@ -40,8 +40,10 @@ describe("Machines for Sale admin page", () => {
   const page = fs.readFileSync(path.resolve("src/pages/admin/shop-machines.astro"), "utf8");
 
   it("sends admin auth on mutations and no longer has a publish step", () => {
-    expect(page).toContain("getAdminAuthHeaders");
-    expect(page).toContain("mutationHeaders");
+    expect(page).toContain("fetchAdminJson");
+    expect(page).toContain("Everything you entered is still in this form.");
+    expect(page).toContain("event.preventDefault()");
+    expect(page).not.toContain("mutationHeaders");
     expect(page).not.toContain("Publish to Production");
     expect(page).not.toContain("/api/admin/machine-sales-publish");
     expect(page).not.toContain("GITHUB_TOKEN");

@@ -63,6 +63,20 @@ describe("readMemberstackBearerToken", () => {
     expect(calls).toBe(3);
   });
 
+  it("uses a JWT already stored by a sign-in in another tab", async () => {
+    const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdWUifQ.signature-value";
+    const token = await readMemberstackBearerToken({
+      readStoredJwt: () => jwt,
+      memberstack: {
+        getCurrentMember: async () => ({ data: null }),
+        getMemberCookie: async () => null,
+      },
+      attempts: 1,
+      sleep: async () => undefined,
+    });
+    expect(token).toBe(jwt);
+  });
+
   it("returns null when the session is missing", async () => {
     const token = await readMemberstackBearerToken({
       memberstack: {

@@ -108,25 +108,37 @@ function jwtFromCookieHeader(header: string | null): string | null {
   return null;
 }
 
-export function memberstackTokenFromRequest(
-  request: Request,
-  cookies?: CookieStore,
-): string | null {
-  const authorization = request.headers.get("authorization") || "";
-  const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  if (bearer) return bearer;
-
-  const custom = request.headers.get("x-kin-member-token")?.trim() || "";
-  if (looksLikeJwt(custom)) return custom;
-
+function jwtFromCookieStore(request: Request, cookies?: CookieStore): string | null {
   if (cookies) {
     for (const name of MEMBERSTACK_JWT_COOKIE_NAMES) {
       const value = cookies.get(name)?.value?.trim() || "";
       if (looksLikeJwt(value)) return value;
     }
   }
-
   return jwtFromCookieHeader(request.headers.get("cookie"));
+}
+
+/**
+ * Memberstack session JWT for requireAdmin.
+ * Netlify Basic auth, or a stale non-JWT value in Authorization, must not hide a
+ * real session cookie. A non-JWT bearer is used only when no JWT is present, and
+ * verifyMemberToken still rejects it. This does not treat Basic auth as admin.
+ */
+export function memberstackTokenFromRequest(
+  request: Request,
+  cookies?: CookieStore,
+): string | null {
+  const authorization = request.headers.get("authorization") || "";
+  const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ?? "";
+  const custom = request.headers.get("x-kin-member-token")?.trim() || "";
+  const cookieJwt = jwtFromCookieStore(request, cookies);
+
+  if (looksLikeJwt(bearer)) return bearer;
+  if (looksLikeJwt(custom)) return custom;
+  if (cookieJwt) return cookieJwt;
+  if (bearer) return bearer;
+  if (custom) return custom;
+  return null;
 }
 
 export function requestWithBearerToken(request: Request, token: string | null): Request {
