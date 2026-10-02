@@ -242,10 +242,17 @@ function isExplicitlyPublished(course: LegacyCoursePublicationFields): boolean {
   return course.status === "published" || course.published === true;
 }
 
+function contentRevision(data: CoursePreviewData): number {
+  const legacy = data.course.legacy as { contentRevision?: unknown };
+  const value = Number(legacy?.contentRevision);
+  return Number.isFinite(value) ? value : 0;
+}
+
 /**
- * Course 50's DEV blob is an older copy with no publication flags, so it stays
- * public and hides the published git course. Replace that copy once. An
- * explicitly published overlay, including a later editor save, is left alone.
+ * Course 50's DEV blob can hide a newer published git course. Replace an
+ * implicit public copy, and replace a published copy when the git course
+ * has a higher contentRevision. A draft overlay, or a published overlay at
+ * the same or newer revision, is left alone so a later editor save sticks.
  */
 export function publishedBundleReplacesImplicitOverlay(
   overlay: CoursePreviewData,
@@ -253,8 +260,9 @@ export function publishedBundleReplacesImplicitOverlay(
 ): boolean {
   if (Number(bundled.course.legacyChallengeId) !== 50) return false;
   if (!isExplicitlyPublished(bundled.course)) return false;
-  if (isExplicitlyPublished(overlay.course)) return false;
   if (overlay.course.status === "draft" || overlay.course.published === false) return false;
+  if (contentRevision(bundled) > contentRevision(overlay)) return true;
+  if (isExplicitlyPublished(overlay.course)) return false;
   return true;
 }
 
