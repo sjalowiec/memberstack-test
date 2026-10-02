@@ -165,5 +165,24 @@
     "shortHtml": "The Silver Reed SK840 is an electronic standard gauge knitting machine for fine yarns and detailed stitch patterns. Pair it with compatible DesignaKnit software and a connecting cable to bring your stitch designs to life.",
     "imageSrc": "/images/machines/silver-reed-sk840-electronic-standard-gauge.png",
     "sortOrder": 90
+  },
+  {
+    "id": "silver-reed-sk280",
+    "name": "SK280 Standard Gauge Knitting Machine",
+    "brand": "Silver Reed",
+    "model": "SK280",
+    "price": 1425,
+    "priceLabel": "$1,425",
+    "shopifyUrl": "https://vjzu11-86.myshopify.com/products/sk280-standard-gauge-knitting-machine",
+    "status": "available",
+    "listingType": "machine",
+    "specs": [
+      "Standard Gauge",
+      "Punchcard",
+      "200"
+    ],
+    "shortHtml": "The Silver Reed SK280 is a standard gauge punchcard knitting machine with 200 needles and a sturdy metal bed. Create automatic stitch patterns without software, using fine yarns such as lace, fingering, and sport weights.",
+    "imageSrc": "/images/machines/silver-reed-sk280-punch-card-standard-gauge.png",
+    "sortOrder": 100
   }
 ]
