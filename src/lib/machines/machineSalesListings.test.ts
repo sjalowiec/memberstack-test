@@ -184,6 +184,8 @@ describe("machine sales hold listings", () => {
       "Explore Silver Reed knitting machines, from the portable LK150 to punchcard and electronic models.",
     );
     expect(page).toContain("Browse Silver Reed");
+    expect(page).toContain("{!salesHold && <PageHead");
+    expect(page).toContain("${panel.title} Machines");
     expect(page).not.toContain('includes("ribber")');
     expect(page).not.toContain('includes("Ribber")');
   });

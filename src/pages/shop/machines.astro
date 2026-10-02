@@ -56,7 +56,7 @@ function formatPrice(value: number | null): string | null {
 ---
 
 <Layout {title} {description}>
-  <PageHead title="Knitting Machines for Sale" />
+  {!salesHold && <PageHead title="Knitting Machines for Sale" />}
 
   <div class="machines-page">
     {/* === TEMPORARY MACHINE SALES HOLD (start) ===
@@ -117,7 +117,7 @@ function formatPrice(value: number | null): string | null {
                   </p>
                 ) : (
                   [
-                    { key: "machines", title: "Machines", items: panel.machines },
+                    { key: "machines", title: `${panel.title} Machines`, items: panel.machines },
                     {
                       key: "ribbers-accessories",
                       title: "Ribbers and Accessories",
