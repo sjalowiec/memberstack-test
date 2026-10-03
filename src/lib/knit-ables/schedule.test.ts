@@ -1,7 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { KNIT_ABLES_CARDS } from "./knitAblesLanding";
 import { applyKnitAbleCacheHeaders, decideKnitAbleVisibility, loadKnitAblePageAccess } from "./pageAccess";
 import {
   KNIT_ABLE_INITIAL_PUBLISH_DATES,
@@ -60,9 +59,11 @@ describe("Knit-able Pacific publish dates", () => {
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["teenage-kicks-socks"]).toBe("2026-09-14");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["worsted-color-block-socks"]).toBe("2026-09-21");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["cap-sleeve-tank"]).toBe("2026-10-01");
+    expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["coco-loco-tank"]).toBeUndefined();
 
     const rows = buildKnitAbleAdminRows(KNIT_ABLE_INITIAL_PUBLISH_DATES, SEP_29_NOON_PACIFIC);
     expect(rows.map((row) => [row.slug, row.status])).toEqual([
+      ["coco-loco-tank", "unpublished"],
       ["cap-sleeve-tank", "scheduled"],
       ["teenage-kicks-socks", "published"],
       ["worsted-color-block-socks", "published"],
@@ -75,7 +76,11 @@ describe("Knit-able Pacific publish dates", () => {
       selectPublishedKnitAbleCards(KNIT_ABLE_INITIAL_PUBLISH_DATES, AT_OCT_1_MIDNIGHT).map(
         (card) => card.href,
       ),
-    ).toEqual(KNIT_ABLES_CARDS.map((card) => card.href));
+    ).toEqual([
+      "/knit-ables/cap-sleeve-tank",
+      "/knit-ables/teenage-kicks-socks",
+      "/knit-ables/worsted-color-block-socks",
+    ]);
   });
 
   it("omits a Knit-able that has no stored date", () => {
@@ -146,6 +151,8 @@ describe("Knit-able Pacific publish dates", () => {
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS watson_knit_able_schedules");
     expect(sql).toContain(knitAbleScheduleSeedSql());
     expect(knitAbleScheduleSeedSql()).toContain("ON CONFLICT (slug) DO NOTHING");
+    expect(knitAbleScheduleSeedSql()).not.toContain("coco-loco-tank");
+    expect(sql).not.toContain("coco-loco-tank");
     expect(sql).toContain("Do not apply this on production until the scheduler release is approved");
   });
 });
