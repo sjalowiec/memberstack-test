@@ -115,14 +115,20 @@ describe("Help Hub empty media", () => {
       join(here, "..", "..", "components", "help-hub", "HelpHubTipContent.astro"),
       "utf8",
     );
-    expect(tipPageSource).toContain("relatedTool");
-    expect(tipPageSource).toContain("help-hub-related-tool");
-    expect(tipPageSource).toContain("help-hub-related-tool__eyebrow");
-    expect(tipPageSource).toContain("help-hub-related-tool__title");
-    expect(tipPageSource).toContain("help-hub-related-tool__note");
-    expect(tipPageSource).toContain("href={relatedTool.href}");
-    expect(tipPageSource).toContain("Member Tool");
-    expect(tipPageSource).toContain("relatedTool.memberOnly");
-    expect(tipPageSource).not.toMatch(/help-hub-related-tool[\s\S]*target="_blank"/);
+    const relatedToolSource = readFileSync(
+      join(here, "..", "..", "components", "help-hub", "HelpHubRelatedTool.astro"),
+      "utf8",
+    );
+    expect(tipPageSource.indexOf("<HelpHubRelatedTool")).toBeGreaterThan(
+      tipPageSource.indexOf("hasTrySection"),
+    );
+    expect(relatedToolSource).toContain("help-hub-related-tool");
+    expect(relatedToolSource).toContain("help-hub-related-tool__eyebrow");
+    expect(relatedToolSource).toContain("help-hub-related-tool__title");
+    expect(relatedToolSource).toContain("help-hub-related-tool__note");
+    expect(relatedToolSource).toContain("href={relatedTool.href}");
+    expect(relatedToolSource).toContain("Member Tool");
+    expect(relatedToolSource).toContain("relatedTool.memberOnly");
+    expect(relatedToolSource).not.toContain('target="_blank"');
   });
 });

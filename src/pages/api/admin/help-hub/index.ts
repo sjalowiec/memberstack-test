@@ -7,7 +7,10 @@ import {
   stripLegacyHelpHubTipFields,
 } from "../../../../lib/helpHubAdminFile";
 import { isHelpHubStatus } from "../../../../lib/helpHub/document";
-import { normalizeRelatedLibraryVideos } from "../../../../lib/helpHub/memberResources";
+import {
+  normalizeMemberResourceOrder,
+  normalizeRelatedLibraryVideos,
+} from "../../../../lib/helpHub/memberResources";
 import {
   isUniqueViolation,
   loadHelpHubTipsForAdmin,
@@ -111,6 +114,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
   if (Object.prototype.hasOwnProperty.call(body, "relatedLibraryVideos")) {
     row.relatedLibraryVideos = normalizeRelatedLibraryVideos(body.relatedLibraryVideos);
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "memberResourceOrder")) {
+    const order = normalizeMemberResourceOrder(body.memberResourceOrder);
+    if (order.length) row.memberResourceOrder = order;
+    else delete row.memberResourceOrder;
   }
 
   try {

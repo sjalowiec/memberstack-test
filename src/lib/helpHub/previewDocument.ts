@@ -1,5 +1,5 @@
 import type { HelpHubPageTip } from "./prepareTipPage";
-import { normalizeRelatedLibraryVideos } from "./memberResources";
+import { normalizeMemberResourceOrder, normalizeRelatedLibraryVideos } from "./memberResources";
 
 export const HELP_HUB_PREVIEW_PATH = "/help-hub/preview";
 
@@ -54,6 +54,11 @@ export function toHelpHubPreviewTip(doc: Record<string, unknown>): HelpHubPageTi
   }
   if (Object.prototype.hasOwnProperty.call(tip, "relatedLibraryVideos")) {
     tip.relatedLibraryVideos = normalizeRelatedLibraryVideos(tip.relatedLibraryVideos);
+  }
+  if (Object.prototype.hasOwnProperty.call(tip, "memberResourceOrder")) {
+    const order = normalizeMemberResourceOrder(tip.memberResourceOrder);
+    if (order.length) tip.memberResourceOrder = order;
+    else delete tip.memberResourceOrder;
   }
   return tip as HelpHubPageTip;
 }

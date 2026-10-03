@@ -133,4 +133,24 @@ describe("Help Hub Member Lesson card markup", () => {
   it("keeps the membership note hidden until member access is confirmed", () => {
     expect(helpHubPageSource).toContain('data-hh-lesson-note hidden');
   });
+
+  it("starts collapsed and lists lesson titles without a video player", () => {
+    const memberStart = helpHubPageSource.indexOf("data-help-hub-lessons");
+    const memberEnd = helpHubPageSource.indexOf("</section>", memberStart);
+    const memberBlock = helpHubPageSource.slice(memberStart, memberEnd);
+    expect(helpHubPageSource.indexOf("tuesday-tip__section--why")).toBeLessThan(memberStart);
+    expect(helpHubPageSource).toContain('? "Show lesson" : "Show lessons"');
+    expect(helpHubPageSource).toContain('? "Hide lesson" : "Hide lessons"');
+    expect(memberBlock).toContain("<details");
+    expect(memberBlock).not.toContain("<details open");
+    expect(memberBlock).toContain("{showLessonsLabel}");
+    expect(memberBlock).toContain("{hideLessonsLabel}");
+    expect(memberBlock).toContain("data-help-hub-lesson-open");
+    expect(memberBlock).toContain("data-help-hub-lesson-modal");
+    expect(memberBlock).toContain("data-help-hub-lesson-close");
+    expect(memberBlock).toContain("Close");
+    expect(memberBlock).toContain("data-hh-lesson-gate hidden");
+    expect(memberBlock).not.toContain("player.vimeo.com");
+    expect(memberBlock).not.toContain("<iframe");
+  });
 });

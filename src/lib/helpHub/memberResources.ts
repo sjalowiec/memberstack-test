@@ -1,6 +1,7 @@
 import { catalogVideoIsPublic } from "../videoPublic";
 import {
   describeRelatedLessonRefs,
+  lessonNumericId,
   publishedLessonsForPicker,
   relatedLessonIdsForStorage,
   type HelpHubLessonRecord,
@@ -46,6 +47,12 @@ export type HelpHubMemberResourceCard = {
   title: string;
   summary: string;
   href: string;
+  resourceId?: number;
+};
+
+export type MemberResourceOrderRef = {
+  source: MemberResourceSource;
+  id: number;
 };
 
 export function memberResourceSourceLabel(source: MemberResourceSource): string {
@@ -132,6 +139,16 @@ export function combinedMemberResourcePickerItems(
 export const MEMBER_RESOURCE_SEARCH_MIN_CHARS = 2;
 export const MEMBER_RESOURCE_SEARCH_LIMIT = 8;
 
+function memberResourceSearchHaystack(item: MemberResourcePickerItem): string {
+  const id = String(item.id);
+  const slug = item.slug.toLowerCase();
+  const paths =
+    item.source === LEARNING_LIBRARY_SOURCE
+      ? [`/videos/${id}`, slug ? `/videos/${slug}` : ""]
+      : [slug ? `/lessons/${slug}` : "", `/lessons/${id}`];
+  return [item.title.toLowerCase(), id, slug, ...paths].filter(Boolean).join(" ");
+}
+
 export function filterMemberResourcePickerItems(
   items: MemberResourcePickerItem[],
   query: string,
@@ -139,11 +156,11 @@ export function filterMemberResourcePickerItems(
   const q = query.trim().toLowerCase();
   if (!q) return items;
   return items.filter((item) => {
-    return (
-      item.title.toLowerCase().includes(q) ||
-      String(item.id).includes(q) ||
-      item.slug.toLowerCase().includes(q)
-    );
+    if (memberResourceSearchHaystack(item).includes(q)) return true;
+    const id = String(item.id);
+    const slug = item.slug.toLowerCase();
+    if (q.includes(`/videos/${id}`) || q.includes(`/lessons/${id}`)) return true;
+    return slug.length > 0 && (q.includes(`/videos/${slug}`) || q.includes(`/lessons/${slug}`));
   });
 }
 
@@ -157,7 +174,11 @@ export function memberResourcePickerResults(
   const limit = options.limit ?? MEMBER_RESOURCE_SEARCH_LIMIT;
   const q = query.trim();
   if (q.length < minChars) return [];
-  return filterMemberResourcePickerItems(items, q).slice(0, limit);
+  const matches = filterMemberResourcePickerItems(items, q);
+  const needle = q.toLowerCase();
+  const exactId = matches.filter((item) => String(item.id) === needle);
+  const rest = matches.filter((item) => String(item.id) !== needle);
+  return [...exactId, ...rest].slice(0, limit);
 }
 
 export function memberResourceOptionLabel(item: MemberResourcePickerItem): string {
@@ -168,13 +189,61 @@ export type MemberResourceSelection = {
   lessonIds: number[];
   unresolvedLessons: (string | number)[];
   libraryContentIds: number[];
+  /** Display order for resolved lessons. Omitted selections fall back to library, then lessons. */
+  order?: MemberResourceOrderRef[];
 };
+
+export function normalizeMemberResourceOrder(value: unknown): MemberResourceOrderRef[] {
+  if (!Array.isArray(value)) return [];
+  const out: MemberResourceOrderRef[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const rec = item as Record<string, unknown>;
+    const source =
+      rec.source === LEARNING_LIBRARY_SOURCE || rec.source === MEMBER_LESSON_SOURCE
+        ? rec.source
+        : null;
+    const id = asPositiveInt(rec.id);
+    if (!source || id == null) continue;
+    const key = `${source}:${id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ source, id });
+  }
+  return out;
+}
+
+function selectionWithOrder(
+  unresolvedLessons: (string | number)[],
+  order: MemberResourceOrderRef[],
+): MemberResourceSelection {
+  return {
+    order,
+    unresolvedLessons,
+    lessonIds: order.filter((ref) => ref.source === MEMBER_LESSON_SOURCE).map((ref) => ref.id),
+    libraryContentIds: order
+      .filter((ref) => ref.source === LEARNING_LIBRARY_SOURCE)
+      .map((ref) => ref.id),
+  };
+}
+
+/** Resolved lessons in the order authors will see and save. */
+export function selectionDisplayOrder(selection: MemberResourceSelection): MemberResourceOrderRef[] {
+  const explicit = normalizeMemberResourceOrder(selection.order);
+  if (explicit.length) return explicit;
+  return normalizeMemberResourceOrder([
+    ...selection.libraryContentIds.map((id) => ({ source: LEARNING_LIBRARY_SOURCE, id })),
+    ...selection.lessonIds.map((id) => ({ source: MEMBER_LESSON_SOURCE, id })),
+  ]);
+}
 
 export function selectionFromStoredResources(
   relatedLessons: (string | number)[] | undefined,
   relatedLibraryVideos: unknown,
   lessons: HelpHubLessonRecord[],
   libraryItems: MemberResourcePickerItem[],
+  memberResourceOrder?: unknown,
 ): MemberResourceSelection {
   const lessonState = pickerStateFromRefs(relatedLessons, lessons);
   const libraryContentIds: number[] = [];
@@ -186,21 +255,91 @@ export function selectionFromStoredResources(
       libraryContentIds.push(ref.contentId);
     }
   }
-  return {
-    lessonIds: lessonState.selectedIds,
-    unresolvedLessons: lessonState.unresolved,
-    libraryContentIds,
-  };
+  const lessonSet = new Set(lessonState.selectedIds);
+  const librarySet = new Set(libraryContentIds);
+  const order: MemberResourceOrderRef[] = [];
+  const seen = new Set<string>();
+  for (const ref of normalizeMemberResourceOrder(memberResourceOrder)) {
+    const available = ref.source === LEARNING_LIBRARY_SOURCE ? librarySet : lessonSet;
+    const key = `${ref.source}:${ref.id}`;
+    if (!available.has(ref.id) || seen.has(key)) continue;
+    seen.add(key);
+    order.push(ref);
+  }
+  for (const id of libraryContentIds) {
+    const key = `${LEARNING_LIBRARY_SOURCE}:${id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    order.push({ source: LEARNING_LIBRARY_SOURCE, id });
+  }
+  for (const id of lessonState.selectedIds) {
+    const key = `${MEMBER_LESSON_SOURCE}:${id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    order.push({ source: MEMBER_LESSON_SOURCE, id });
+  }
+  return selectionWithOrder(lessonState.unresolved, order);
 }
 
 export function serializeMemberResources(selection: MemberResourceSelection): {
   relatedLessons: (string | number)[];
   relatedLibraryVideos: HelpHubLibraryVideoRef[];
+  memberResourceOrder: MemberResourceOrderRef[];
 } {
+  const order = selectionDisplayOrder(selection);
   return {
-    relatedLessons: relatedLessonIdsForStorage(selection.lessonIds, selection.unresolvedLessons),
-    relatedLibraryVideos: normalizeRelatedLibraryVideos(selection.libraryContentIds),
+    relatedLessons: relatedLessonIdsForStorage(
+      order.filter((ref) => ref.source === MEMBER_LESSON_SOURCE).map((ref) => ref.id),
+      selection.unresolvedLessons,
+    ),
+    relatedLibraryVideos: normalizeRelatedLibraryVideos(
+      order.filter((ref) => ref.source === LEARNING_LIBRARY_SOURCE).map((ref) => ref.id),
+    ),
+    memberResourceOrder: order,
   };
+}
+
+export function addMemberResource(
+  selection: MemberResourceSelection,
+  item: MemberResourcePickerItem,
+): MemberResourceSelection {
+  const order = selectionDisplayOrder(selection);
+  if (order.some((ref) => ref.source === item.source && ref.id === item.id)) return selection;
+  return selectionWithOrder(selection.unresolvedLessons, [
+    ...order,
+    { source: item.source, id: item.id },
+  ]);
+}
+
+export function removeMemberResourceAt(
+  selection: MemberResourceSelection,
+  index: number,
+): MemberResourceSelection {
+  const order = [...selectionDisplayOrder(selection)];
+  if (index >= 0 && index < order.length) {
+    order.splice(index, 1);
+    return selectionWithOrder(selection.unresolvedLessons, order);
+  }
+  const unresolvedIndex = index - order.length;
+  if (unresolvedIndex < 0 || unresolvedIndex >= selection.unresolvedLessons.length) return selection;
+  return selectionWithOrder(
+    selection.unresolvedLessons.filter((_, itemIndex) => itemIndex !== unresolvedIndex),
+    order,
+  );
+}
+
+export function moveMemberResource(
+  selection: MemberResourceSelection,
+  index: number,
+  delta: -1 | 1,
+): MemberResourceSelection {
+  const order = [...selectionDisplayOrder(selection)];
+  const target = index + delta;
+  if (index < 0 || target < 0 || index >= order.length || target >= order.length) return selection;
+  const [item] = order.splice(index, 1);
+  if (!item) return selection;
+  order.splice(target, 0, item);
+  return selectionWithOrder(selection.unresolvedLessons, order);
 }
 
 export function describeSelectedMemberResources(
@@ -211,21 +350,42 @@ export function describeSelectedMemberResources(
   const libraryById = new Map(
     libraryItems.filter((item) => item.source === LEARNING_LIBRARY_SOURCE).map((item) => [item.id, item]),
   );
-  const selected: SelectedMemberResource[] = [];
-  for (const id of selection.libraryContentIds) {
-    const item = libraryById.get(id);
-    selected.push({
-      source: LEARNING_LIBRARY_SOURCE,
-      id,
-      title: item?.title || `Lesson ${id}`,
-      slug: item?.slug || "",
-      state: item ? "published" : "missing",
-    });
-  }
-  for (const view of describeRelatedLessonRefs(
+  const lessonViews = describeRelatedLessonRefs(
     relatedLessonIdsForStorage(selection.lessonIds, selection.unresolvedLessons),
     lessons,
-  )) {
+  );
+  const selected: SelectedMemberResource[] = [];
+  for (const ref of selectionDisplayOrder(selection)) {
+    if (ref.source === LEARNING_LIBRARY_SOURCE) {
+      const item = libraryById.get(ref.id);
+      selected.push({
+        source: LEARNING_LIBRARY_SOURCE,
+        id: ref.id,
+        title: item?.title || `Lesson ${ref.id}`,
+        slug: item?.slug || "",
+        state: item ? "published" : "missing",
+      });
+      continue;
+    }
+    const view =
+      lessonViews.find((item) => item.id === ref.id && item.state === "published") ??
+      lessonViews.find((item) => item.id === ref.id);
+    selected.push({
+      source: MEMBER_LESSON_SOURCE,
+      id: view?.id ?? ref.id,
+      title: view?.title || `Lesson ${ref.id}`,
+      slug: view?.slug || "",
+      state: view?.state ?? "missing",
+      ref: view?.ref ?? ref.id,
+    });
+  }
+  for (const view of lessonViews) {
+    const alreadyListed = selected.some(
+      (item) =>
+        item.source === MEMBER_LESSON_SOURCE &&
+        ((view.id != null && item.id === view.id) || String(item.ref ?? "") === String(view.ref)),
+    );
+    if (alreadyListed) continue;
     selected.push({
       source: MEMBER_LESSON_SOURCE,
       id: view.id,
@@ -236,6 +396,11 @@ export function describeSelectedMemberResources(
     });
   }
   return selected;
+}
+
+export function selectedLessonNumberLabel(resource: SelectedMemberResource): string {
+  const raw = resource.id != null ? String(resource.id) : String(resource.ref ?? "").trim();
+  return raw ? `Lesson ${raw}` : "";
 }
 
 export function selectedResourceConfirmation(resource: SelectedMemberResource): string {
@@ -276,6 +441,7 @@ export function resolveRelatedLibraryVideoCards(
       title,
       summary,
       href,
+      resourceId: ref.contentId,
     });
   }
   return cards;
@@ -306,8 +472,34 @@ export function memberLessonCardsFromResolved(
       title,
       summary,
       href,
+      resourceId: lessonNumericId(lesson) ?? undefined,
     };
   });
+}
+
+/** Preview and published pages follow the saved order, then any lesson not listed in it. */
+export function orderedMemberResourceCards(
+  libraryCards: HelpHubMemberResourceCard[],
+  lessonCards: HelpHubMemberResourceCard[],
+  order: unknown,
+): HelpHubMemberResourceCard[] {
+  const refs = normalizeMemberResourceOrder(order);
+  const pool = [...libraryCards, ...lessonCards];
+  if (!refs.length) return pool;
+  const used = new Set<HelpHubMemberResourceCard>();
+  const ordered: HelpHubMemberResourceCard[] = [];
+  for (const ref of refs) {
+    const match = pool.find(
+      (card) => !used.has(card) && card.kind === ref.source && card.resourceId === ref.id,
+    );
+    if (!match) continue;
+    used.add(match);
+    ordered.push(match);
+  }
+  for (const card of pool) {
+    if (!used.has(card)) ordered.push(card);
+  }
+  return ordered;
 }
 
 export function pickerPayloadIsSafeForAdmin(payload: unknown): boolean {

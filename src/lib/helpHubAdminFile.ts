@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { normalizeRelatedLibraryVideos } from "./helpHub/memberResources";
+import { normalizeMemberResourceOrder, normalizeRelatedLibraryVideos } from "./helpHub/memberResources";
 import { getTipId } from "./helpHub/tipId";
 
 export { getTipId };
@@ -154,6 +154,11 @@ export function mergeHelpHubPutUpdate(
   }
   if (Object.prototype.hasOwnProperty.call(body, "relatedLibraryVideos")) {
     row.relatedLibraryVideos = normalizeRelatedLibraryVideos(body.relatedLibraryVideos);
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "memberResourceOrder")) {
+    const order = normalizeMemberResourceOrder(body.memberResourceOrder);
+    if (order.length) row.memberResourceOrder = order;
+    else delete row.memberResourceOrder;
   }
   return row;
 }

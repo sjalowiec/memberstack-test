@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findToolByRequestPath,
   isMemberOnlyToolPath,
+  toolGateLoginRedirect,
   toolRequestPath,
 } from "./toolMembership";
 
@@ -24,5 +25,15 @@ describe("tool membership path matching", () => {
   it("does not mark free tools or off-site links as member tools", () => {
     expect(isMemberOnlyToolPath("/tools/gauge-calculator")).toBe(false);
     expect(isMemberOnlyToolPath("https://knititnow.com/reference/repairs")).toBe(false);
+  });
+
+  it("keeps tool login on the current page unless given a same-site path", () => {
+    expect(toolGateLoginRedirect()).toBe("current-url");
+    expect(toolGateLoginRedirect("")).toBe("current-url");
+    expect(toolGateLoginRedirect("https://evil.example/phish")).toBe("current-url");
+    expect(toolGateLoginRedirect("//evil.example")).toBe("current-url");
+    expect(toolGateLoginRedirect("/help-hub/how-do-i-finish-the-front-edges-of-my-cardigan")).toBe(
+      "/help-hub/how-do-i-finish-the-front-edges-of-my-cardigan",
+    );
   });
 });

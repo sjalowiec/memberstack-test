@@ -1,15 +1,20 @@
 import { describe, expect, it } from "vitest";
 import videosPublic from "../../data/videos-public.json";
 import {
+  addMemberResource,
   combinedMemberResourcePickerItems,
+  describeSelectedMemberResources,
   filterMemberResourcePickerItems,
   libraryVideosForPicker,
   memberResourceOptionLabel,
   memberResourcePickerResults,
+  moveMemberResource,
   normalizeRelatedLibraryVideos,
   resolveRelatedLibraryVideoCards,
+  selectedLessonNumberLabel,
   selectedResourceConfirmation,
   serializeMemberResources,
+  selectionDisplayOrder,
   selectionFromStoredResources,
 } from "./memberResources";
 
@@ -116,6 +121,76 @@ describe("combined picker", () => {
     const lesson = items.find((item) => item.id === 5002);
     expect(library?.source).toBe("library");
     expect(lesson?.source).toBe("lesson");
+  });
+});
+
+const BUTTON_LESSON_IDS = [552, 662, 551, 2072, 2071] as const;
+
+describe("multiple related lessons", () => {
+  const library = libraryVideosForPicker(videosPublic);
+
+  function lessonItem(id: number) {
+    const item = library.find((row) => row.id === id);
+    if (!item) throw new Error(`Missing lesson ${id}`);
+    return item;
+  }
+
+  it("finds lesson 552 by number, title, and URL", () => {
+    expect(memberResourcePickerResults(library, "552").some((item) => item.id === 552)).toBe(true);
+    expect(
+      memberResourcePickerResults(library, "Button Band Finishes").some((item) => item.id === 552),
+    ).toBe(true);
+    expect(
+      memberResourcePickerResults(library, "https://knititnow.com/videos/552").some(
+        (item) => item.id === 552,
+      ),
+    ).toBe(true);
+    expect(
+      memberResourcePickerResults(library, "/videos/button-band-finishes").some((item) => item.id === 552),
+    ).toBe(true);
+  });
+
+  it("adds lessons in click order, blocks duplicates, and keeps that order after reload", () => {
+    let selection = selectionFromStoredResources([], [], [], library);
+    for (const id of BUTTON_LESSON_IDS) {
+      const next = addMemberResource(selection, lessonItem(id));
+      expect(next).not.toBe(selection);
+      selection = next;
+      expect(addMemberResource(selection, lessonItem(id))).toBe(selection);
+    }
+    expect(selectionDisplayOrder(selection).map((ref) => ref.id)).toEqual([...BUTTON_LESSON_IDS]);
+    const stored = serializeMemberResources(selection);
+    expect(stored.relatedLibraryVideos.map((ref) => ref.contentId)).toEqual([...BUTTON_LESSON_IDS]);
+    const reloaded = selectionFromStoredResources(
+      stored.relatedLessons,
+      stored.relatedLibraryVideos,
+      [],
+      library,
+      stored.memberResourceOrder,
+    );
+    expect(describeSelectedMemberResources(reloaded, [], library).map((resource) => resource.id)).toEqual([
+      ...BUTTON_LESSON_IDS,
+    ]);
+    expect(selectedLessonNumberLabel({ ...describeSelectedMemberResources(reloaded, [], library)[0]! })).toBe(
+      "Lesson 552",
+    );
+  });
+
+  it("moves a selected lesson and saves the new order", () => {
+    let selection = selectionFromStoredResources([], [], [], library);
+    for (const id of BUTTON_LESSON_IDS) selection = addMemberResource(selection, lessonItem(id));
+    selection = moveMemberResource(selection, 2, -1);
+    expect(selectionDisplayOrder(selection).map((ref) => ref.id)).toEqual([552, 551, 662, 2072, 2071]);
+    const stored = serializeMemberResources(selection);
+    expect(stored.memberResourceOrder.map((ref) => ref.id)).toEqual([552, 551, 662, 2072, 2071]);
+  });
+
+  it("keeps an existing single member lesson selected", () => {
+    const selection = selectionFromStoredResources([5002], [], lessons, library);
+    expect(serializeMemberResources(selection).relatedLessons).toEqual([5002]);
+    expect(describeSelectedMemberResources(selection, lessons, library).map((resource) => resource.title)).toEqual([
+      "Tuck on the LK150",
+    ]);
   });
 });
 
