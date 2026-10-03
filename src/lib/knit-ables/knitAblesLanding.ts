@@ -5,6 +5,12 @@ import {
   CAP_SLEEVE_TANK_TITLE,
 } from "./capSleeveTank";
 import {
+  COCO_LOCO_TANK_CARD_COPY,
+  COCO_LOCO_TANK_IMAGES,
+  COCO_LOCO_TANK_PATH,
+  COCO_LOCO_TANK_TITLE,
+} from "./cocoLocoTank";
+import {
   TEENAGE_KICKS_IMAGES,
   TEENAGE_KICKS_SOCKS_PATH,
 } from "./teenageKicksSocks";
@@ -42,6 +48,12 @@ export type KnitAbleLandingCard = {
 };
 
 export const KNIT_ABLES_CARDS: readonly KnitAbleLandingCard[] = [
+  {
+    href: COCO_LOCO_TANK_PATH,
+    title: COCO_LOCO_TANK_TITLE,
+    description: COCO_LOCO_TANK_CARD_COPY,
+    image: COCO_LOCO_TANK_IMAGES.hero,
+  },
   {
     href: CAP_SLEEVE_TANK_PATH,
     title: CAP_SLEEVE_TANK_TITLE,
