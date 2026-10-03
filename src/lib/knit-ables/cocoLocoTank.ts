@@ -3,6 +3,7 @@ import {
   SLEEVELESS_PATTERN_BUILDER_LANDING,
   SLEEVELESS_PATTERN_LANDING_PATH,
 } from "../patterns/sleevelessPatternLanding";
+import type { KnitAbleInspirationPageContent } from "./inspirationPage";
 
 export const COCO_LOCO_TANK_PATH = "/knit-ables/coco-loco-tank";
 
@@ -30,6 +31,18 @@ export const COCO_LOCO_TANK_IMAGES = {
 } as const;
 
 export const COCO_LOCO_TANK_INTRO_LEAD = "Simple shape. Playful stripes. Your machine.";
+
+/** Swatches follow the suggested Mellizas colors, not only the photographed tank. */
+export const COCO_LOCO_TANK_PALETTE = {
+  label: "Color inspiration",
+  caption: "Choose your own combination.",
+  colors: [
+    { color: "#e56b93" },
+    { color: "#b5d44a" },
+    { color: "#f08a3c" },
+    { color: "#f6f3ee", bordered: true },
+  ],
+} as const;
 
 export const COCO_LOCO_TANK_INTRO =
   "A few colorful stripes can give a simple tank a whole new personality. The Coco Loco Tank by Twin Stitches Designs pairs a sleeveless shape with pops of contrast color, making it a fun starting point for your next machine knitting project.";
@@ -114,3 +127,58 @@ export function cocoLocoTankLandingHref(): string {
 export function cocoLocoTankBuilderHref(): string {
   return buildSleevelessBuilderNewPatternHref();
 }
+
+/** Page content for the shared Knit-able inspiration template. */
+export const COCO_LOCO_TANK_PAGE: KnitAbleInspirationPageContent = {
+  path: COCO_LOCO_TANK_PATH,
+  canonicalUrl: COCO_LOCO_TANK_CANONICAL_URL,
+  title: COCO_LOCO_TANK_TITLE,
+  description: COCO_LOCO_TANK_INTRO,
+  hero: {
+    src: COCO_LOCO_TANK_IMAGES.hero.src,
+    alt: COCO_LOCO_TANK_IMAGES.hero.alt,
+    width: COCO_LOCO_TANK_IMAGES.hero.width,
+    height: COCO_LOCO_TANK_IMAGES.hero.height,
+    href: COCO_LOCO_TANK_ORIGINAL_PATTERN_URL,
+  },
+  tagline: COCO_LOCO_TANK_INTRO_LEAD,
+  intro: COCO_LOCO_TANK_INTRO,
+  palette: COCO_LOCO_TANK_PALETTE,
+  builder: {
+    heading: COCO_LOCO_TANK_BUILDER_HEADING,
+    introduction: {
+      before: COCO_LOCO_TANK_BUILDER_COPY_BEFORE,
+      link: {
+        label: COCO_LOCO_TANK_BUILDER_LINK_LABEL,
+        href: cocoLocoTankLandingHref(),
+      },
+      after: COCO_LOCO_TANK_BUILDER_COPY_AFTER,
+    },
+    steps: COCO_LOCO_TANK_BUILD_STEPS,
+    closing: [
+      { text: COCO_LOCO_TANK_STRIPE_NOTE },
+      { text: COCO_LOCO_TANK_ANY_YARN, emphasis: true },
+    ],
+    cta: COCO_LOCO_TANK_CTA,
+  },
+  pattern: {
+    heading: COCO_LOCO_TANK_INSPIRED_HEADING,
+    copy: COCO_LOCO_TANK_INSPIRED_COPY,
+    linkLabel: COCO_LOCO_TANK_PATTERN_LINK_LABEL,
+    href: COCO_LOCO_TANK_ORIGINAL_PATTERN_URL,
+  },
+  yarn: {
+    heading: COCO_LOCO_TANK_YARN_HEADING,
+    cardHeading: COCO_LOCO_TANK_YARN.heading,
+    paragraphs: COCO_LOCO_TANK_YARN.paragraphs,
+    buttonLabel: COCO_LOCO_TANK_YARN.buttonLabel,
+    href: COCO_LOCO_TANK_YARN.href,
+  },
+  lessons: {
+    heading: COCO_LOCO_TANK_MEMBER_LESSONS_HEADING,
+    intro: COCO_LOCO_TANK_MEMBER_LESSONS_INTRO,
+    accessLabel: COCO_LOCO_TANK_MEMBER_LESSON_ACCESS_LABEL,
+    items: COCO_LOCO_TANK_MEMBER_LESSONS,
+  },
+  affiliateDisclosure: COCO_LOCO_TANK_AFFILIATE_DISCLOSURE,
+};
