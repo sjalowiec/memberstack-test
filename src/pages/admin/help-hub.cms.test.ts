@@ -75,6 +75,18 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).not.toContain('id="helpHubAdminSignIn"');
   });
 
+  it("shows a Related Lessons list that can hold more than one lesson", () => {
+    expect(editSource).toContain("Related Lessons");
+    expect(editSource).toContain(
+      "Search for a lesson, then select it to add it. You can add more than one.",
+    );
+    expect(formClientSource).toContain("addMemberResource");
+    expect(formClientSource).toContain("moveMemberResource");
+    expect(formClientSource).toContain("removeMemberResourceAt");
+    expect(formClientSource).toContain("selectedLessonNumberLabel");
+    expect(formClientSource).toContain('search.value = ""');
+  });
+
   it("uses a lesson search box instead of dumping the catalog, and labels Try This steps", () => {
     expect(editSource).toContain("member-resources-search");
     expect(editSource).toContain("member-resources-options");

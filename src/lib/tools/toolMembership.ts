@@ -48,3 +48,15 @@ export function findToolByRequestPath(pathname: string): CatalogTool | null {
 export function isMemberOnlyToolPath(href: string): boolean {
   return findToolByRequestPath(href)?.membersonly === true;
 }
+
+/**
+ * Post-login path for a tool gate. Explicit same-site paths are used as-is.
+ * Anything else keeps Memberstack on the current page.
+ */
+export function toolGateLoginRedirect(returnPath?: string | null): string {
+  const path = typeof returnPath === "string" ? returnPath.trim() : "";
+  if (!path) return "current-url";
+  if (!path.startsWith("/") || path.startsWith("//")) return "current-url";
+  if (/[\s\\]/.test(path) || path.includes("://")) return "current-url";
+  return path;
+}

@@ -23,13 +23,21 @@
  *     logged-out visitors and members without a qualifying plan, and hidden
  *     for members with access.
  */
+import { toolGateLoginRedirect } from "../../lib/tools/toolMembership";
+
 interface Props {
   /** Tool entry from data/tools.json (only `membersonly` is read). */
   tool?: { membersonly?: boolean } | null;
+  /**
+   * Where to return after login if Memberstack leaves this page.
+   * Defaults to the current URL. Help Hub passes the entry path.
+   */
+  loginReturnPath?: string;
 }
 
-const { tool = null } = Astro.props;
+const { tool = null, loginReturnPath } = Astro.props;
 const isMemberOnly = tool?.membersonly === true;
+const loginRedirect = toolGateLoginRedirect(loginReturnPath);
 ---
 
 {isMemberOnly && (
@@ -43,7 +51,7 @@ const isMemberOnly = tool?.membersonly === true;
         class="tool-gate-notice__login"
         data-ms-content="!members"
         data-ms-modal="login"
-        data-ms-redirect="current-url"
+        data-ms-redirect={loginRedirect}
       >
         Already a member? Log in
       </a>

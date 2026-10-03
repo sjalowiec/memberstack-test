@@ -10,12 +10,16 @@ import {
   type HelpHubAdminFormValues,
 } from "./adminForm";
 import {
+  addMemberResource,
   describeSelectedMemberResources,
   memberResourceOptionLabel,
   memberResourcePickerResults,
   memberResourceSourceLabel,
-  selectedResourceConfirmation,
+  moveMemberResource,
+  removeMemberResourceAt,
+  selectedLessonNumberLabel,
   serializeMemberResources,
+  selectionDisplayOrder,
   selectionFromStoredResources,
   type MemberResourcePickerItem,
   type MemberResourceSelection,
@@ -82,6 +86,7 @@ function readFormValues(
     relatedToolUrl: fieldValue(form, "relatedToolUrl").trim(),
     relatedLessons: serialized.relatedLessons,
     relatedLibraryVideos: serialized.relatedLibraryVideos,
+    memberResourceOrder: serialized.memberResourceOrder,
     category: fieldValue(form, "category").trim(),
     isNew,
     slug: sanitizeHelpHubSlug(fieldValue(form, "slug")),
@@ -139,23 +144,39 @@ function updateSaveButtonLabel(form: HTMLFormElement): void {
 function renderSelectedResources(
   selectedEl: HTMLElement,
   resources: SelectedMemberResource[],
-  onRemove: (resource: SelectedMemberResource, index: number) => void,
+  orderCount: number,
+  onRemove: (index: number) => void,
+  onMove: (index: number, delta: -1 | 1) => void,
 ): void {
   selectedEl.replaceChildren();
+  if (!resources.length) {
+    const empty = document.createElement("li");
+    empty.className = "related-lessons-picker__empty";
+    empty.textContent = "No related lessons selected yet.";
+    selectedEl.appendChild(empty);
+    return;
+  }
   resources.forEach((resource, index) => {
     const li = document.createElement("li");
     li.className = "member-resource-picker__card";
     if (resource.state !== "published") {
       li.classList.add(resource.state === "unpublished" ? "is-unpublished" : "is-missing");
     }
+    const copy = document.createElement("div");
+    copy.className = "member-resource-picker__copy";
     const title = document.createElement("p");
-    title.className = "member-resource-picker__confirm";
-    title.textContent = selectedResourceConfirmation(resource);
+    title.className = "member-resource-picker__title";
+    title.textContent = resource.title;
+    const number = document.createElement("p");
+    number.className = "member-resource-picker__number";
+    number.textContent = selectedLessonNumberLabel(resource);
     const source = document.createElement("p");
     source.className = "member-resource-picker__source";
     source.textContent = memberResourceSourceLabel(resource.source);
-    li.appendChild(title);
-    li.appendChild(source);
+    copy.appendChild(title);
+    copy.appendChild(number);
+    copy.appendChild(source);
+    li.appendChild(copy);
     if (resource.state !== "published") {
       const warn = document.createElement("p");
       warn.className = "related-lessons-picker__warn";
@@ -165,12 +186,34 @@ function renderSelectedResources(
           : "Missing — no published lesson matches this reference.";
       li.appendChild(warn);
     }
+    const actions = document.createElement("div");
+    actions.className = "member-resource-picker__actions";
+    if (resources.length > 1 && index < orderCount) {
+      const up = document.createElement("button");
+      up.type = "button";
+      up.className = "related-lessons-picker__move";
+      up.textContent = "Move up";
+      up.disabled = index === 0;
+      up.setAttribute("aria-label", `Move ${resource.title} up`);
+      up.addEventListener("click", () => onMove(index, -1));
+      const down = document.createElement("button");
+      down.type = "button";
+      down.className = "related-lessons-picker__move";
+      down.textContent = "Move down";
+      down.disabled = index >= orderCount - 1;
+      down.setAttribute("aria-label", `Move ${resource.title} down`);
+      down.addEventListener("click", () => onMove(index, 1));
+      actions.appendChild(up);
+      actions.appendChild(down);
+    }
     const rm = document.createElement("button");
     rm.type = "button";
     rm.className = "related-lessons-picker__remove";
     rm.textContent = "Remove";
-    rm.addEventListener("click", () => onRemove(resource, index));
-    li.appendChild(rm);
+    rm.setAttribute("aria-label", `Remove ${resource.title}`);
+    rm.addEventListener("click", () => onRemove(index));
+    actions.appendChild(rm);
+    li.appendChild(actions);
     selectedEl.appendChild(li);
   });
 }
@@ -234,6 +277,7 @@ export function initHelpHubAdminEditor(): boolean {
     window.currentHelpHub.relatedLibraryVideos,
     allLessons,
     libraryItems,
+    window.currentHelpHub.memberResourceOrder,
   );
 
   const isNewEntry = window.currentHelpHub.id == null;
@@ -242,6 +286,7 @@ export function initHelpHubAdminEditor(): boolean {
 
   const hiddenLessons = document.getElementById("help-hub-related-lessons") as HTMLInputElement | null;
   const hiddenLibrary = document.getElementById("help-hub-related-library") as HTMLInputElement | null;
+  const hiddenOrder = document.getElementById("help-hub-member-resource-order") as HTMLInputElement | null;
   const selectedEl = document.getElementById("member-resources-selected");
   const optionsEl = document.getElementById("member-resources-options");
   const search = document.getElementById("member-resources-search") as HTMLInputElement | null;
@@ -264,32 +309,29 @@ export function initHelpHubAdminEditor(): boolean {
     const serialized = serializeMemberResources(selection);
     if (hiddenLessons) hiddenLessons.value = JSON.stringify(serialized.relatedLessons);
     if (hiddenLibrary) hiddenLibrary.value = JSON.stringify(serialized.relatedLibraryVideos);
+    if (hiddenOrder) hiddenOrder.value = JSON.stringify(serialized.memberResourceOrder);
     form.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   function renderPicker(): void {
     if (!selectedEl || !optionsEl) return;
     const resources = describeSelectedMemberResources(selection, allLessons, libraryItems);
-    renderSelectedResources(selectedEl, resources, (resource) => {
-      if (resource.source === "library" && resource.id != null) {
-        selection = {
-          ...selection,
-          libraryContentIds: selection.libraryContentIds.filter((id) => id !== resource.id),
-        };
-      } else if (resource.source === "lesson" && resource.id != null) {
-        selection = {
-          ...selection,
-          lessonIds: selection.lessonIds.filter((id) => id !== resource.id),
-        };
-      } else if (resource.ref != null) {
-        selection = {
-          ...selection,
-          unresolvedLessons: selection.unresolvedLessons.filter((ref) => String(ref) !== String(resource.ref)),
-        };
-      }
-      writeHidden();
-      renderPicker();
-    });
+    const orderCount = selectionDisplayOrder(selection).length;
+    renderSelectedResources(
+      selectedEl,
+      resources,
+      orderCount,
+      (index) => {
+        selection = removeMemberResourceAt(selection, index);
+        writeHidden();
+        renderPicker();
+      },
+      (index, delta) => {
+        selection = moveMemberResource(selection, index, delta);
+        writeHidden();
+        renderPicker();
+      },
+    );
     const q = search?.value ?? "";
     const filtered = memberResourcePickerResults(combinedItems, q);
     optionsEl.hidden = filtered.length === 0;
@@ -298,20 +340,9 @@ export function initHelpHubAdminEditor(): boolean {
       ...selection.lessonIds.map((id) => resourceKey("lesson", id)),
     ]);
     renderResourceOptions(optionsEl, filtered, selectedKeys, (item) => {
-      const key = resourceKey(item.source, item.id);
-      if (item.source === "library") {
-        if (!selectedKeys.has(key)) {
-          selection = {
-            ...selection,
-            libraryContentIds: [...selection.libraryContentIds, item.id],
-          };
-        }
-      } else if (!selectedKeys.has(key)) {
-        selection = {
-          ...selection,
-          lessonIds: [...selection.lessonIds, item.id],
-        };
-      }
+      const next = addMemberResource(selection, item);
+      if (next === selection) return;
+      selection = next;
       if (search) search.value = "";
       writeHidden();
       renderPicker();

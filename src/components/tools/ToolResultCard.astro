@@ -24,23 +24,37 @@ interface Props {
   id?: string;
   hidden?: boolean;
   title?: string;
+  /** Heading id. Pass a unique value when more than one card is on the page. */
+  titleId?: string;
   resultsContentId?: string;
+  /** Print-date element id. Pass a unique value when more than one card is on the page. */
+  dateId?: string;
   singleColumn?: boolean;
 }
 
-const { id, hidden = false, title, resultsContentId = "results", singleColumn = false } = Astro.props;
+const {
+  id,
+  hidden = false,
+  title,
+  titleId = "tool-result-card-title",
+  resultsContentId = "results",
+  dateId = "printDate",
+  singleColumn = false,
+} = Astro.props;
+const headingId = titleId.trim() || "tool-result-card-title";
+const printDateId = dateId.trim() || "printDate";
 ---
 
 <section
   id={id}
   class:list={["tool-result-card", "pattern-result-card", { "tool-result-card--single": singleColumn }]}
   hidden={hidden}
-  aria-labelledby={title ? "tool-result-card-title" : undefined}
+  aria-labelledby={title ? headingId : undefined}
 >
   <div class="tool-result-card__inner">
     <div class="tool-result-card__header">
       {title && (
-        <h2 id="tool-result-card-title" class="tool-result-card__title">
+        <h2 id={headingId} class="tool-result-card__title">
           {title}
         </h2>
       )}
@@ -55,15 +69,21 @@ const { id, hidden = false, title, resultsContentId = "results", singleColumn = 
       <slot name="diagram" />
     </div>
     <div class="pattern-print-footer" aria-hidden="true">
-      Created with Knit It Now • <span id="printDate" class="pattern-print-date"></span>
+      Created with Knit It Now • <span id={printDateId} class="pattern-print-date"></span>
     </div>
   </div>
 </section>
 
 <script>
   (function () {
-    const el = document.getElementById("printDate");
-    if (el) el.textContent = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    const printed = new Date().toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    document.querySelectorAll(".pattern-print-date").forEach((el) => {
+      el.textContent = printed;
+    });
   })();
 </script>
 

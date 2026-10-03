@@ -1,6 +1,6 @@
 import { getTipId } from "./tipId";
 import { HELP_HUB_STATUSES, type HelpHubStatus, type HelpHubTipDocument, type HelpHubTipRecord, type HelpHubTipRow, type HelpHubWriteActor } from "./types";
-import { normalizeRelatedLibraryVideos } from "./memberResources";
+import { normalizeMemberResourceOrder, normalizeRelatedLibraryVideos } from "./memberResources";
 
 export function isHelpHubStatus(value: string): value is HelpHubStatus {
   return (HELP_HUB_STATUSES as readonly string[]).includes(value);
@@ -59,6 +59,11 @@ export function canonicalHelpHubDocument(doc: HelpHubTipDocument): HelpHubTipDoc
   }
   if (Object.prototype.hasOwnProperty.call(copy, "relatedLibraryVideos")) {
     copy.relatedLibraryVideos = normalizeRelatedLibraryVideos(copy.relatedLibraryVideos);
+  }
+  if (Object.prototype.hasOwnProperty.call(copy, "memberResourceOrder")) {
+    const order = normalizeMemberResourceOrder(copy.memberResourceOrder);
+    if (order.length) copy.memberResourceOrder = order;
+    else delete copy.memberResourceOrder;
   }
   return copy;
 }
@@ -132,6 +137,11 @@ export function fieldsFromTipDocument(
   }
   if (Object.prototype.hasOwnProperty.call(tip, "relatedLibraryVideos") || Array.isArray(document.relatedLibraryVideos)) {
     document.relatedLibraryVideos = normalizeRelatedLibraryVideos(document.relatedLibraryVideos);
+  }
+  if (Object.prototype.hasOwnProperty.call(tip, "memberResourceOrder") || Array.isArray(document.memberResourceOrder)) {
+    const order = normalizeMemberResourceOrder(document.memberResourceOrder);
+    if (order.length) document.memberResourceOrder = order;
+    else delete document.memberResourceOrder;
   }
   return {
     id: required.id,

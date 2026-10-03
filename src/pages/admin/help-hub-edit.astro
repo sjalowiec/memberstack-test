@@ -351,7 +351,7 @@ const topImage = topImageFieldsForAdminForm(rawEntry);
                   Complete Lesson: Members Only
                 </h2>
                 <p class="help-hub-edit__section-intro">
-                  Choose an existing Knit It Now lesson for members who want the complete
+                  Choose existing Knit It Now lessons for members who want the complete
                   demonstration. You do not need to create another lesson or enter a Vimeo ID.
                 </p>
                 <div class="help-hub-edit__fields">
@@ -366,18 +366,27 @@ const topImage = topImageFieldsForAdminForm(rawEntry);
                       name="relatedLibraryVideos"
                       value=""
                     />
+                    <input
+                      id="help-hub-member-resource-order"
+                      type="hidden"
+                      name="memberResourceOrder"
+                      value=""
+                    />
                     <div class="related-lessons-picker" data-member-resource-picker>
+                      <p class="related-lessons-picker__list-label" id="related-lessons-label">
+                        Related Lessons
+                      </p>
                       <ul
                         class="related-lessons-picker__selected"
                         id="member-resources-selected"
-                        aria-label="Selected member lessons"
+                        aria-labelledby="related-lessons-label"
                       ></ul>
                       <input
                         id="member-resources-search"
                         class="help-hub-edit__input"
                         type="search"
                         autocomplete="off"
-                        placeholder="Search by lesson number or title, for example 1027"
+                        placeholder="Search by lesson number, title, or URL"
                       />
                       <ul
                         class="related-lessons-picker__options"
@@ -386,7 +395,7 @@ const topImage = topImageFieldsForAdminForm(rawEntry);
                         hidden
                       ></ul>
                       <p class="help-hub-edit__hint">
-                        Search the Learning Library and member lessons by number, title, or URL name.
+                        Search for a lesson, then select it to add it. You can add more than one.
                       </p>
                     </div>
                   </div>
@@ -768,17 +777,65 @@ const topImage = topImageFieldsForAdminForm(rawEntry);
       border-color: #fecaca;
     }
 
-    .member-resource-picker__confirm {
+    .related-lessons-picker__list-label {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .related-lessons-picker__empty {
       margin: 0;
+      padding: 0.55rem 0.65rem;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .member-resource-picker__copy {
+      min-width: 0;
+    }
+
+    .member-resource-picker__title,
+    .member-resource-picker__number,
+    .member-resource-picker__source {
+      margin: 0;
+    }
+
+    .member-resource-picker__title {
       font-size: 0.95rem;
       font-weight: 600;
       color: #1e293b;
     }
 
+    .member-resource-picker__number,
     .member-resource-picker__source {
-      margin: 0;
       font-size: 0.85rem;
       color: #64748b;
+    }
+
+    .member-resource-picker__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .related-lessons-picker__move {
+      appearance: none;
+      background: none;
+      border: 0;
+      color: #334155;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+      padding: 0;
+    }
+
+    .related-lessons-picker__move:disabled {
+      color: #94a3b8;
+      cursor: default;
     }
 
     .related-lessons-picker__warn {

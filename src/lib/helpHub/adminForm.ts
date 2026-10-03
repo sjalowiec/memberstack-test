@@ -1,7 +1,9 @@
 import { normalizeRelatedLessonRefs } from "./document";
 import {
+  normalizeMemberResourceOrder,
   normalizeRelatedLibraryVideos,
   type HelpHubLibraryVideoRef,
+  type MemberResourceOrderRef,
 } from "./memberResources";
 
 const MEDIA_KEYS_TO_PRESERVE = [
@@ -36,6 +38,7 @@ export type HelpHubAdminFormValues = {
   relatedToolUrl: string;
   relatedLessons: (string | number)[];
   relatedLibraryVideos: HelpHubLibraryVideoRef[];
+  memberResourceOrder?: MemberResourceOrderRef[];
   category: string;
   isNew: boolean;
   slug: string;
@@ -245,6 +248,11 @@ export function applyAdminFormToDocument(
 
   out.relatedLessons = normalizeRelatedLessonRefs(form.relatedLessons);
   out.relatedLibraryVideos = normalizeRelatedLibraryVideos(form.relatedLibraryVideos);
+  if (Array.isArray(form.memberResourceOrder)) {
+    const order = normalizeMemberResourceOrder(form.memberResourceOrder);
+    if (order.length) out.memberResourceOrder = order;
+    else delete out.memberResourceOrder;
+  }
 
   out.category = form.category;
   out.isNew = form.isNew;

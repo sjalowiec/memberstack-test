@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import videosPublic from "../../data/videos-public.json";
 import { prepareHelpHubTipPage } from "./prepareTipPage";
+import {
+  addMemberResource,
+  libraryVideosForPicker,
+  serializeMemberResources,
+  selectionFromStoredResources,
+} from "./memberResources";
 import { helpHubMemberLessonCtaSpec } from "../helpHubMemberLessonCta";
 import { getViewerAccessState } from "../memberAccess";
 import { MEMBERSHIPS } from "../../config/memberships";
@@ -173,6 +179,7 @@ describe("prepareHelpHubTipPage member resources", () => {
       title: "",
       note: "",
       memberOnly: false,
+      modal: null,
     });
     expect(
       prepareHelpHubTipPage(
@@ -201,6 +208,7 @@ describe("prepareHelpHubTipPage member resources", () => {
       label: "Find Repair Help",
       href: "https://knititnow.com/reference/repairs",
       memberOnly: false,
+      modal: null,
     });
 
     expect(
@@ -221,7 +229,50 @@ describe("prepareHelpHubTipPage member resources", () => {
       label: "Calculate Band Pickup",
       href: "/tools/band-pickup/",
       memberOnly: true,
+      modal: { title: "Band Pickup", toolPath: "/tools/band-pickup" },
     });
+  });
+});
+
+describe("multiple related lessons on the Help Hub page", () => {
+  it("shows all five saved lessons in order and keeps membership gating on each link", () => {
+    const library = libraryVideosForPicker(videosPublic);
+    const ids = [552, 662, 551, 2072, 2071];
+    let selection = selectionFromStoredResources([], [], [], library);
+    for (const id of ids) {
+      const item = library.find((row) => row.id === id);
+      if (!item) throw new Error(`Missing lesson ${id}`);
+      selection = addMemberResource(selection, item);
+    }
+    const stored = serializeMemberResources(selection);
+    const view = prepareHelpHubTipPage(
+      {
+        slug: "button-band-lessons",
+        status: "published",
+        question: "How do I finish a button band?",
+        relatedLibraryVideos: stored.relatedLibraryVideos,
+        memberResourceOrder: stored.memberResourceOrder,
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(view.memberResourceCards.map((card) => card.resourceId)).toEqual(ids);
+    expect(view.memberResourceCards.map((card) => card.title)).toEqual([
+      "Button Band Finishes",
+      "Basic Buttonholes",
+      "In-the-ditch Buttonholes",
+      "Ribbed Buttonband with Tubular Cast On",
+      "Ribbed Buttonbands",
+    ]);
+    expect(view.memberLessonsSectionTitle).toBe("Member Lessons");
+    for (const card of view.memberResourceCards) {
+      const member = helpHubMemberLessonCtaSpec("memberAccess", card.href);
+      expect(member.buttons[0]?.action).toBe("lesson");
+      expect(member.buttons[0]?.href).toBe(card.href);
+      expect(member.showMembershipNote).toBe(true);
+      const loggedOut = helpHubMemberLessonCtaSpec("loggedOut", card.href);
+      expect(loggedOut.buttons.some((button) => button.href === card.href)).toBe(false);
+    }
   });
 });
 

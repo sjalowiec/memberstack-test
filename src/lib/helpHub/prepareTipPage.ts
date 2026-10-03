@@ -11,11 +11,16 @@ import {
 } from "../helpHubMemberLesson";
 import {
   memberLessonCardsFromResolved,
+  orderedMemberResourceCards,
   resolveRelatedLibraryVideoCards,
   type HelpHubMemberResourceCard,
 } from "./memberResources";
 import { isMemberOnlyToolPath } from "../tools/toolMembership";
 import { helpHubRelatedToolButton, type HelpHubRelatedToolButton } from "./adminForm";
+import {
+  helpHubRelatedToolModal,
+  type HelpHubRelatedToolModal,
+} from "./relatedToolModal";
 
 export type HelpHubTryThis = {
   quickActionTitle?: string;
@@ -23,9 +28,13 @@ export type HelpHubTryThis = {
   quickActionNote?: string;
 };
 
+export type { HelpHubRelatedToolModal };
+
 export type HelpHubRelatedToolView = HelpHubRelatedToolButton & {
   /** True when the link opens a member-only tool from the tool catalog. */
   memberOnly: boolean;
+  /** Set when this catalog tool opens over the Help Hub entry. */
+  modal: HelpHubRelatedToolModal | null;
 };
 
 export type HelpHubPageTip = {
@@ -60,6 +69,7 @@ export type HelpHubPageTip = {
   tryImageCaption?: string;
   relatedLessons?: (string | number)[];
   relatedLibraryVideos?: unknown;
+  memberResourceOrder?: unknown;
   relatedToolEyebrow?: string;
   relatedToolTitle?: string;
   relatedToolNote?: string;
@@ -74,6 +84,7 @@ function helpHubRelatedToolView(tip: HelpHubPageTip): HelpHubRelatedToolView | n
   return {
     ...button,
     memberOnly: isMemberOnlyToolPath(button.href),
+    modal: helpHubRelatedToolModal(button.href),
   };
 }
 
@@ -104,10 +115,11 @@ export function prepareHelpHubTipPage(
     tipSlug,
   });
   const lessonResourceCards = memberLessonCardsFromResolved(relatedLessonsResolved, { tipSlug });
-  const memberResourceCards: HelpHubMemberResourceCard[] = [
-    ...libraryResourceCards,
-    ...lessonResourceCards,
-  ];
+  const memberResourceCards: HelpHubMemberResourceCard[] = orderedMemberResourceCards(
+    libraryResourceCards,
+    lessonResourceCards,
+    tip.memberResourceOrder,
+  );
   const tryObj = tryThisObject(tip.tryThis);
   const whyBodyRaw =
     typeof tip.solutionText === "string" && tip.solutionText.trim() !== ""
