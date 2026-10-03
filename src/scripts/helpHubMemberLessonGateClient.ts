@@ -11,8 +11,13 @@ import {
 } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { helpHubMemberLessonCtaSpec } from "../lib/helpHubMemberLessonCta";
+import {
+  closeActiveHelpHubLessonModal,
+  initHelpHubLessonModals,
+} from "../lib/helpHub/helpHubLessonModal";
 import { localMemberPreviewBypassIsOn } from "../lib/localMemberPreviewBypass";
-import { openMemberstackLoginModal } from "../lib/memberstackLogin";
+import { MEMBERSTACK_LOGIN_PROXY_ID, openMemberstackLoginModal } from "../lib/memberstackLogin";
+import { getMemberstackReturnPath } from "../lib/memberstackReturnUrl";
 import { initGatedVimeoEmbeds } from "./gatedVimeoEmbedClient";
 import { initLessonVideoModal } from "./lessonVideoModal";
 
@@ -97,6 +102,12 @@ export async function resolveHelpHubMemberLessonViewerState(
   return getViewerAccessState(res);
 }
 
+function helpHubLessonLoginReturn(mount: HTMLElement): string {
+  const section = mount.closest("[data-help-hub-lessons]");
+  if (!(section instanceof HTMLElement)) return "";
+  return section.dataset.helpHubLessonReturn?.trim() || "";
+}
+
 /** Render CTA content into each `[data-hh-lesson-cta]` mount. */
 export function renderHelpHubMemberLessonCta(
   mount: HTMLElement,
@@ -106,6 +117,7 @@ export function renderHelpHubMemberLessonCta(
   mount.replaceChildren();
   const spec = helpHubMemberLessonCtaSpec(state, lessonHref);
   syncHelpHubMemberLessonNote(mount, spec.showMembershipNote);
+  const loginReturn = helpHubLessonLoginReturn(mount);
 
   if (spec.lockedStatus) {
     const status = document.createElement("p");
@@ -131,9 +143,18 @@ export function renderHelpHubMemberLessonCta(
     link.textContent = button.text;
 
     if (button.action === "login") {
+      const redirect = loginReturn || getMemberstackReturnPath();
+      link.setAttribute("data-ms-modal", "login");
+      link.setAttribute("data-ms-redirect", redirect);
       link.addEventListener("click", (event) => {
         event.preventDefault();
-        openMemberstackLoginModal();
+        const proxy = document.getElementById(MEMBERSTACK_LOGIN_PROXY_ID);
+        if (proxy instanceof HTMLAnchorElement) {
+          proxy.setAttribute("data-ms-redirect", redirect);
+          proxy.click();
+          return;
+        }
+        openMemberstackLoginModal(redirect);
       });
     }
 
@@ -149,8 +170,27 @@ function syncHelpHubMemberLessonNote(mount: HTMLElement, show: boolean): void {
   note.toggleAttribute("hidden", !show);
 }
 
+function applyHelpHubLessonAccess(state: ViewerAccessState | null): void {
+  if (state !== "memberAccess") closeActiveHelpHubLessonModal();
+  document.querySelectorAll<HTMLElement>("[data-help-hub-lessons]").forEach((section) => {
+    if (state) section.dataset.helpHubLessonAccess = state;
+    else delete section.dataset.helpHubLessonAccess;
+    section.querySelectorAll<HTMLElement>("[data-help-hub-lesson-open]").forEach((button) => {
+      if (state === "memberAccess") button.setAttribute("aria-haspopup", "dialog");
+      else button.removeAttribute("aria-haspopup");
+    });
+    if (state === "memberAccess") {
+      section.querySelectorAll<HTMLElement>("[data-hh-lesson-gate]").forEach((gate) => {
+        gate.hidden = true;
+        gate.setAttribute("hidden", "");
+      });
+    }
+  });
+}
+
 /** Update every Help Hub Member Lesson CTA mount for the resolved viewer state. */
 export function syncHelpHubMemberLessonCtas(state: ViewerAccessState): void {
+  applyHelpHubLessonAccess(state);
   document.querySelectorAll<HTMLElement>("[data-hh-lesson-cta]").forEach((mount) => {
     const lessonHref = mount.dataset.lessonHref?.trim() || "/lessons";
     renderHelpHubMemberLessonCta(mount, state, lessonHref);
@@ -159,6 +199,7 @@ export function syncHelpHubMemberLessonCtas(state: ViewerAccessState): void {
 
 /** Clear CTA mounts while viewer state is unresolved. */
 export function clearHelpHubMemberLessonCtas(): void {
+  applyHelpHubLessonAccess(null);
   document.querySelectorAll<HTMLElement>("[data-hh-lesson-cta]").forEach((mount) => {
     const lessonHref = mount.dataset.lessonHref?.trim() || "/lessons";
     renderHelpHubMemberLessonCta(mount, null, lessonHref);
@@ -358,6 +399,7 @@ function bindMemberLessonGateRefresh(onRefresh: () => void): void {
 }
 
 export function runHelpHubMemberLessonCtaGate(): void {
+  initHelpHubLessonModals();
   clearHelpHubMemberLessonCtas();
 
   async function refresh(): Promise<void> {
