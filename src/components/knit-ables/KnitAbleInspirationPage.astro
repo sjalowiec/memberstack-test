@@ -1,0 +1,802 @@
+---
+/**
+ * Shared Knit-able inspiration layout.
+ * Copy, images, colors, links, and lessons stay in each Knit-able's data.
+ * See docs/knit-ables-inspiration-template.md.
+ */
+import Layout from "../../layouts/Layout.astro";
+import KnitAbleLinkedImage from "./KnitAbleLinkedImage.astro";
+import KnitAblePageHeader from "./KnitAblePageHeader.astro";
+import KnitAblePreviewBanner from "./KnitAblePreviewBanner.astro";
+import KnitAbleYarnCard from "./KnitAbleYarnCard.astro";
+import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
+import {
+  knitAbleInspirationClosingLines,
+  knitAbleInspirationDisclosure,
+  knitAbleInspirationLessonContentId,
+  knitAbleInspirationLessons,
+  knitAbleInspirationSwatches,
+  type KnitAbleInspirationPageContent,
+} from "../../lib/knit-ables/inspirationPage";
+import type { KnitAblePublicationStatus } from "../../lib/knit-ables/schedule";
+
+interface Props {
+  content: KnitAbleInspirationPageContent;
+  preview: boolean;
+  status: KnitAblePublicationStatus;
+  publishDate: string | null;
+}
+
+const { content, preview, status, publishDate } = Astro.props;
+const paletteSwatches = knitAbleInspirationSwatches(content.palette);
+const paletteLabel = content.palette?.label?.trim() ?? "";
+const paletteCaption = content.palette?.caption?.trim() ?? "";
+const closingLines = knitAbleInspirationClosingLines(content.builder.closing);
+const lessons = knitAbleInspirationLessons(content.lessons);
+const lessonsIntro = lessons?.intro?.trim() ?? "";
+const disclosure = knitAbleInspirationDisclosure(content.affiliateDisclosure);
+const heroHref = content.hero.href?.trim() || content.pattern.href;
+const heroRel = content.hero.rel ?? content.pattern.rel ?? KNIT_ABLE_AFFILIATE_REL;
+const patternRel = content.pattern.rel ?? KNIT_ABLE_AFFILIATE_REL;
+const introductionLink = content.builder.introduction.link;
+const lessonModalId = "knit-able-lesson-modal";
+const lessonModalTitleId = "knit-able-lesson-modal-title";
+const yarnImage = content.yarn.image;
+---
+
+<Layout
+  title={`${content.title} | Knit it Now`}
+  description={content.description}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={content.canonicalUrl} />
+    {preview ? <meta name="robots" content="noindex" /> : null}
+  </Fragment>
+  {preview ? <KnitAblePreviewBanner status={status} publishDate={publishDate} /> : null}
+
+  <div class="page-wrap knit-able-page">
+    <article>
+      <section class="knit-able-hero" aria-labelledby="knit-able-hero-heading">
+        <figure class="knit-able-hero__figure">
+          <KnitAbleLinkedImage
+            href={heroHref}
+            src={content.hero.src}
+            alt={content.hero.alt}
+            width={content.hero.width}
+            height={content.hero.height}
+            rel={heroRel}
+            loading="eager"
+          />
+        </figure>
+        <div class="knit-able-hero__copy">
+          <KnitAblePageHeader title={content.title} headingId="knit-able-hero-heading" />
+          <p class="knit-able-lead">{content.tagline}</p>
+          {
+            paletteSwatches.length > 0 ? (
+              <div class="knit-able-palette">
+                {paletteLabel ? <p class="knit-able-palette__label">{paletteLabel}</p> : null}
+                <div class="knit-able-palette__swatches" aria-hidden="true">
+                  {paletteSwatches.map((swatch) => (
+                    <span
+                      class:list={[
+                        "knit-able-palette__swatch",
+                        swatch.bordered && "knit-able-palette__swatch--bordered",
+                      ]}
+                      style={`background-color: ${swatch.color}`}
+                    ></span>
+                  ))}
+                </div>
+                {paletteCaption ? <p class="knit-able-palette__note">{paletteCaption}</p> : null}
+              </div>
+            ) : null
+          }
+          <p>{content.intro}</p>
+        </div>
+      </section>
+
+      <section class="knit-able-builder" aria-labelledby="knit-able-builder-heading">
+        <h2 id="knit-able-builder-heading">{content.builder.heading}</h2>
+        <p>
+          {content.builder.introduction.before}{
+            introductionLink ? (
+              <a class="knit-able-text-link" href={introductionLink.href}>
+                {introductionLink.label}
+              </a>
+            ) : null
+          }{content.builder.introduction.after}
+        </p>
+        {
+          content.builder.steps.length > 0 ? (
+            <ul class="knit-able-steps">
+              {content.builder.steps.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          ) : null
+        }
+        {
+          closingLines.map((line) => (
+            <p class={line.emphasis ? "knit-able-any-yarn" : undefined}>{line.text}</p>
+          ))
+        }
+        <div class="knit-able-builder-cta" data-pattern-builder-landing data-cta-mode="pending">
+          <p
+            class="knit-able-builder-cta__loading"
+            data-pattern-builder-landing-cta-loading
+            role="status"
+          >
+            {content.builder.cta.checkingLabel}
+          </p>
+          <div data-pattern-builder-landing-cta-member hidden>
+            <a class="kbm-btn kbm-btn-accent" href={content.builder.cta.memberHref}>
+              {content.builder.cta.memberLabel}
+            </a>
+          </div>
+          <div
+            class="knit-able-builder-cta__prospect"
+            data-pattern-builder-landing-cta-prospect
+            hidden
+          >
+            <a class="kbm-btn kbm-btn-accent" href={content.builder.cta.prospectHref}>
+              {content.builder.cta.prospectLabel}
+            </a>
+            <a
+              class="knit-able-text-link"
+              href="#"
+              data-ms-modal="login"
+              data-ms-redirect="current-url"
+            >
+              {content.builder.cta.signInLabel}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div class="knit-able-pair">
+        <section class="knit-able-source" aria-labelledby="knit-able-source-heading">
+          <h2 id="knit-able-source-heading">{content.pattern.heading}</h2>
+          <p>{content.pattern.copy}</p>
+          <a
+            class="kbm-btn kbm-btn-primary knit-able-source-btn"
+            href={content.pattern.href}
+            target="_blank"
+            rel={patternRel}
+          >
+            {content.pattern.linkLabel}
+          </a>
+        </section>
+
+        <section class="knit-able-yarn" aria-labelledby="knit-able-yarn-heading">
+          <h2 id="knit-able-yarn-heading">{content.yarn.heading}</h2>
+          <div class="knit-able-yarn-grid">
+            <KnitAbleYarnCard
+              heading={content.yarn.cardHeading}
+              buttonLabel={content.yarn.buttonLabel}
+              href={content.yarn.href}
+              imageSrc={yarnImage?.src}
+              imageAlt={yarnImage?.alt}
+              imageWidth={yarnImage?.width}
+              imageHeight={yarnImage?.height}
+              featured={content.yarn.featured}
+              imagePlacement={content.yarn.imagePlacement}
+              rel={content.yarn.rel ?? KNIT_ABLE_AFFILIATE_REL}
+            >
+              {content.yarn.paragraphs.map((paragraph) => (
+                <p>{paragraph}</p>
+              ))}
+            </KnitAbleYarnCard>
+          </div>
+        </section>
+      </div>
+
+      {
+        lessons ? (
+          <section class="knit-able-lessons-panel" aria-labelledby="knit-able-lessons-heading">
+            <h2 id="knit-able-lessons-heading">{lessons.heading}</h2>
+            {lessonsIntro ? <p class="knit-able-lessons-panel__intro">{lessonsIntro}</p> : null}
+            <details class="knit-able-lessons-disclosure">
+              <summary class="knit-able-lessons-disclosure__summary">
+                <span class="knit-able-lessons-disclosure__show">
+                  Show lessons ({lessons.items.length})
+                </span>
+                <span class="knit-able-lessons-disclosure__hide">Hide lessons</span>
+              </summary>
+              <div data-help-hub-lessons data-help-hub-lesson-return={content.path}>
+                <ul class="knit-able-member-lessons">
+                  {lessons.items.map((lesson) => (
+                    <li class="knit-able-member-resource">
+                      <p>
+                        <button
+                          type="button"
+                          class="knit-able-member-resource__open"
+                          data-help-hub-lesson-open
+                          data-lesson-title={lesson.title}
+                          data-content-id={knitAbleInspirationLessonContentId(lesson.href)}
+                          aria-controls={lessonModalId}
+                          aria-expanded="false"
+                        >
+                          {lesson.title}
+                        </button>
+                        <span class="knit-able-member-resource__label">{lessons.accessLabel}</span>
+                      </p>
+                      <p>{lesson.description}</p>
+                      <div class="knit-able-member-resource__gate" data-hh-lesson-gate hidden>
+                        <div data-hh-lesson-cta data-lesson-href={lesson.href}></div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div
+                  id={lessonModalId}
+                  class="help-hub-lesson-modal"
+                  data-help-hub-lesson-modal
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby={lessonModalTitleId}
+                  tabindex="-1"
+                  hidden
+                >
+                  <div class="help-hub-lesson-modal__panel">
+                    <div class="help-hub-lesson-modal__header">
+                      <h2
+                        id={lessonModalTitleId}
+                        class="help-hub-lesson-modal__title"
+                        data-help-hub-lesson-modal-title
+                      >
+                        Lesson
+                      </h2>
+                      <button
+                        type="button"
+                        class="help-hub-lesson-modal__close"
+                        data-help-hub-lesson-close
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div class="help-hub-lesson-modal__body">
+                      <div class="help-hub-lesson-modal__player" data-help-hub-lesson-player>
+                        <p
+                          class="help-hub-lesson-modal__status"
+                          data-help-hub-lesson-status
+                          aria-live="polite"
+                        ></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </section>
+        ) : null
+      }
+      {disclosure ? <p class="knit-able-affiliate" role="note">{disclosure}</p> : null}
+    </article>
+  </div>
+</Layout>
+
+<script>
+  import { initPatternBuilderLandingCta } from "../../lib/patterns/patternBuilderLandingCta";
+  import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";
+
+  function boot(): void {
+    const root = document.querySelector("[data-pattern-builder-landing]");
+    if (root instanceof HTMLElement) void initPatternBuilderLandingCta(root);
+    bootHelpHubMemberLessonGates();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>
+
+<style>
+  .knit-able-page.page-wrap {
+    padding-top: 12px;
+    padding-bottom: 2.5rem;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .knit-able-page p {
+    margin: 0 0 0.9rem;
+  }
+
+  .knit-able-page article {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+
+  .knit-able-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .knit-able-hero__figure {
+    margin: 0;
+    width: 100%;
+    max-width: 20rem;
+    min-width: 0;
+  }
+
+  .knit-able-hero__figure :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto !important;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #f7f8f5;
+  }
+
+  .knit-able-hero__copy {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .knit-able-hero h1 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1.2;
+  }
+
+  .knit-able-lead {
+    margin: 0 0 0.55rem;
+    color: #3f4b35;
+    font-weight: 600;
+  }
+
+  .knit-able-palette {
+    margin: 0 0 0.85rem;
+    max-width: 100%;
+  }
+
+  .knit-able-page .knit-able-palette__label,
+  .knit-able-page .knit-able-palette__note {
+    margin: 0;
+    color: #333;
+    font-weight: 600;
+    cursor: default;
+  }
+
+  .knit-able-palette__label {
+    margin-bottom: 0.4rem;
+  }
+
+  .knit-able-palette__note {
+    margin-top: 0.45rem;
+    font-weight: 400;
+  }
+
+  .knit-able-palette__swatches {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .knit-able-palette__swatch {
+    display: block;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+
+  .knit-able-palette__swatch--bordered {
+    border: 1px solid #c5c5c5;
+  }
+
+  .knit-able-builder {
+    margin: 0;
+    padding: 1.15rem 1.2rem 1.05rem;
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    border-radius: 16px;
+    background: #f3f6ee;
+  }
+
+  .knit-able-any-yarn {
+    margin: 0 0 0.85rem;
+    color: #3f4b35;
+    font-weight: 700;
+  }
+
+  .knit-able-text-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-underline-offset: 2px;
+  }
+
+  .knit-able-page h2 {
+    margin: 0 0 0.7rem;
+  }
+
+  .knit-able-steps {
+    margin: 0 0 0.9rem;
+    padding-left: 24px;
+  }
+
+  .knit-able-steps li {
+    margin: 0 0 0.4rem;
+    padding: 0;
+    color: #333;
+    line-height: 1.55;
+  }
+
+  .knit-able-steps li:last-child {
+    margin-bottom: 0;
+  }
+
+  .knit-able-lessons-panel {
+    margin: 0;
+    padding: 1rem 1.1rem 1.05rem;
+    border: 2px solid #c7d8a4;
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  .knit-able-lessons-panel__intro {
+    margin: 0 0 0.75rem;
+    color: #333;
+  }
+
+  .knit-able-lessons-disclosure {
+    margin: 0;
+  }
+
+  .knit-able-lessons-disclosure__summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.4rem 0.95rem;
+    border: 1px solid rgba(82, 104, 45, 0.45);
+    border-radius: 8px;
+    background: #f3f6ee;
+    color: #3f4b35;
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .knit-able-lessons-disclosure__summary:hover {
+    background: #e7eedd;
+  }
+
+  .knit-able-lessons-disclosure__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .knit-able-lessons-disclosure__summary:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .knit-able-lessons-disclosure__hide,
+  .knit-able-lessons-disclosure[open] .knit-able-lessons-disclosure__show {
+    display: none;
+  }
+
+  .knit-able-lessons-disclosure[open] .knit-able-lessons-disclosure__hide {
+    display: inline;
+  }
+
+  .knit-able-lessons-disclosure[open] .knit-able-member-lessons {
+    margin-top: 0.35rem;
+  }
+
+  .knit-able-member-lessons {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .knit-able-member-resource {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .knit-able-member-resource p {
+    margin: 0;
+  }
+
+  .knit-able-member-resource p + p {
+    margin-top: 0.2rem;
+  }
+
+  .knit-able-member-resource__open {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--kbm-green, #52682d);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .knit-able-member-resource__open:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .knit-able-member-resource__gate {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-top: 0.55rem;
+  }
+
+  .knit-able-member-resource__gate[hidden] {
+    display: none !important;
+  }
+
+  .knit-able-member-resource__gate :global(.help-hub-member-lessons__cta-mount) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+  }
+
+  .knit-able-member-resource__gate :global(.help-hub-member-lessons__locked-status) {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+    line-height: 1.45;
+  }
+
+  .knit-able-member-resource__gate :global(.help-hub-member-lessons__locked-support) {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  .help-hub-lesson-modal[hidden] {
+    display: none !important;
+  }
+
+  .help-hub-lesson-modal:not([hidden]) {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.48);
+  }
+
+  .help-hub-lesson-modal:focus {
+    outline: none;
+  }
+
+  .help-hub-lesson-modal__panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-height: 100dvh;
+    min-height: 0;
+    background: var(--page-bg, #f6f4ef);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  }
+
+  .help-hub-lesson-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    padding: calc(0.85rem + env(safe-area-inset-top, 0px)) 1rem 0.85rem;
+    background: #fff;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.16);
+  }
+
+  .help-hub-lesson-modal__title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .help-hub-lesson-modal__close {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    min-width: 4.5rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid rgba(82, 104, 45, 0.35);
+    border-radius: 8px;
+    background: #fff;
+    color: #3f4b35;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .help-hub-lesson-modal__close:hover,
+  .help-hub-lesson-modal__close:focus-visible {
+    background: #f3f6ee;
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .help-hub-lesson-modal__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.85rem 1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .help-hub-lesson-modal__player {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #0f172a;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .help-hub-lesson-modal__status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+    color: #f8fafc;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .help-hub-lesson-modal__status:empty {
+    display: none;
+  }
+
+  .knit-able-member-resource__label {
+    display: inline-block;
+    margin-left: 0.45rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(82, 104, 45, 0.12);
+    color: var(--kbm-green, #52682d);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    vertical-align: 0.1em;
+  }
+
+  .knit-able-builder-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .knit-able-builder-cta [hidden] {
+    display: none !important;
+  }
+
+  .knit-able-builder-cta__loading {
+    margin: 0;
+    color: #5a6350;
+  }
+
+  .knit-able-builder-cta__prospect {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .knit-able-builder-cta :global(.kbm-btn) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+  }
+
+  .knit-able-pair {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+    min-width: 0;
+  }
+
+  .knit-able-source,
+  .knit-able-yarn {
+    min-width: 0;
+  }
+
+  .knit-able-yarn-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .knit-able-source-btn {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-height: 48px;
+    margin: 0.15rem 0 0;
+    white-space: normal;
+  }
+
+  .knit-able-affiliate {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #5a6350;
+  }
+
+  @media (min-width: 700px) {
+    .help-hub-lesson-modal:not([hidden]) {
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .help-hub-lesson-modal__panel {
+      width: min(56rem, 100%);
+      height: auto;
+      max-height: calc(100dvh - 2rem);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .help-hub-lesson-modal__header {
+      padding-top: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .knit-able-hero {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 1.35rem;
+    }
+
+    .knit-able-hero__figure {
+      flex: 0 0 20rem;
+      width: 20rem;
+    }
+
+    .knit-able-hero__copy {
+      flex: 1 1 auto;
+    }
+
+    .knit-able-pair {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+  }
+</style>
