@@ -293,7 +293,10 @@ function deferredMediaSrc(url: string): string | undefined {
         ) : null}
         {relatedTool.note ? <p class="help-hub-related-tool__note">{relatedTool.note}</p> : null}
         <a class="kbm-btn kbm-btn-primary help-hub-related-tool__button" href={relatedTool.href}>
-          {relatedTool.label}
+          {relatedTool.memberOnly ? (
+            <span class="help-hub-related-tool__member-label">Member Tool</span>
+          ) : null}
+          <span class="help-hub-related-tool__button-label">{relatedTool.label}</span>
         </a>
       </div>
     )}
@@ -636,6 +639,22 @@ function deferredMediaSrc(url: string): string | undefined {
 
   .help-hub-related-tool__button {
     display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .help-hub-related-tool__member-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-transform: none;
   }
 
   .tuesday-tip__section-heading {
