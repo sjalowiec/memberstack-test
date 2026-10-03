@@ -14,12 +14,18 @@ import {
   resolveRelatedLibraryVideoCards,
   type HelpHubMemberResourceCard,
 } from "./memberResources";
-import { helpHubRelatedToolButton } from "./adminForm";
+import { isMemberOnlyToolPath } from "../tools/toolMembership";
+import { helpHubRelatedToolButton, type HelpHubRelatedToolButton } from "./adminForm";
 
 export type HelpHubTryThis = {
   quickActionTitle?: string;
   quickAction?: string[];
   quickActionNote?: string;
+};
+
+export type HelpHubRelatedToolView = HelpHubRelatedToolButton & {
+  /** True when the link opens a member-only tool from the tool catalog. */
+  memberOnly: boolean;
 };
 
 export type HelpHubPageTip = {
@@ -61,6 +67,15 @@ export type HelpHubPageTip = {
   relatedToolUrl?: string;
   jumpLinks?: { label: string; href: string }[];
 };
+
+function helpHubRelatedToolView(tip: HelpHubPageTip): HelpHubRelatedToolView | null {
+  const button = helpHubRelatedToolButton(tip);
+  if (!button) return null;
+  return {
+    ...button,
+    memberOnly: isMemberOnlyToolPath(button.href),
+  };
+}
 
 function filterTrySteps(steps: unknown): string[] {
   if (!Array.isArray(steps)) return [];
@@ -190,7 +205,7 @@ export function prepareHelpHubTipPage(
       typeof tip.mediaCaption === "string" && tip.mediaCaption.trim() !== ""
         ? tip.mediaCaption.trim()
         : "",
-    relatedTool: helpHubRelatedToolButton(tip),
+    relatedTool: helpHubRelatedToolView(tip),
     catalogVimeoEmbedUrl:
       catalogVimeoNumericId != null ? `https://player.vimeo.com/video/${catalogVimeoNumericId}` : "",
     hasHeroMedia: Boolean(

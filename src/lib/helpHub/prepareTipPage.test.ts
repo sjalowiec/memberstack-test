@@ -172,6 +172,7 @@ describe("prepareHelpHubTipPage member resources", () => {
       eyebrow: "",
       title: "",
       note: "",
+      memberOnly: false,
     });
     expect(
       prepareHelpHubTipPage(
@@ -199,6 +200,27 @@ describe("prepareHelpHubTipPage member resources", () => {
       note: "",
       label: "Find Repair Help",
       href: "https://knititnow.com/reference/repairs",
+      memberOnly: false,
+    });
+
+    expect(
+      prepareHelpHubTipPage(
+        {
+          slug: "how-do-i-finish-the-front-edges-of-my-cardigan",
+          relatedToolEyebrow: "Band Pickup Calculator",
+          relatedToolTitle: "How Many Stitches Do You Need?",
+          relatedToolNote:
+            "Use your cardigan edge measurement and band stitch gauge to calculate a starting stitch count.",
+          relatedToolLabel: "Calculate Band Pickup",
+          relatedToolUrl: "/tools/band-pickup/",
+        },
+        lessons,
+        videosPublic,
+      ).relatedTool,
+    ).toMatchObject({
+      label: "Calculate Band Pickup",
+      href: "/tools/band-pickup/",
+      memberOnly: true,
     });
   });
 });
