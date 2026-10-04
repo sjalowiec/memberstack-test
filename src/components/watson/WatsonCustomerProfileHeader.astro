@@ -1,5 +1,6 @@
 ---
 import {
+  COMPLIMENTARY_ACCESS_THROUGH_LABEL,
   LEGACY_RECORD_PAID_THROUGH_LABEL,
   type CustomerProfileAction,
   type CustomerProfileHeaderView,
@@ -9,15 +10,24 @@ interface Props {
   header: CustomerProfileHeaderView;
   actions?: CustomerProfileAction[];
   paidThroughUpdated?: boolean;
+  complimentaryAccessUpdated?: boolean;
 }
 
-const { header, actions = [], paidThroughUpdated = false } = Astro.props;
+const {
+  header,
+  actions = [],
+  paidThroughUpdated = false,
+  complimentaryAccessUpdated = false,
+} = Astro.props;
 
 const statusClass = `watson-customer__status-badge watson-customer__status-badge--${header.membershipStatusTone}`;
 const memberLabel = header.email ?? header.displayName;
 const paidThroughUpdatedMessage = header.legacyAccessThroughDate
   ? `${LEGACY_RECORD_PAID_THROUGH_LABEL} updated to ${header.legacyAccessThroughDate}.`
   : `${LEGACY_RECORD_PAID_THROUGH_LABEL} updated.`;
+const complimentaryAccessUpdatedMessage = header.complimentaryAccessThroughDisplay
+  ? `${COMPLIMENTARY_ACCESS_THROUGH_LABEL} updated to ${header.complimentaryAccessThroughDisplay}.`
+  : `${COMPLIMENTARY_ACCESS_THROUGH_LABEL} updated.`;
 const showCurrentMembership =
   Boolean(header.currentPlan) ||
   Boolean(header.primaryDateValue) ||
@@ -34,6 +44,14 @@ const showCurrentMembership =
       <p class="watson__status watson__status--success" role="status" data-paid-through-updated-banner>
         {paidThroughUpdatedMessage} This is a Watson legacy record only and does not change
         Memberstack or Stripe. Future renewal reminders will use this date when Legacy is current.
+      </p>
+    ) : null
+  }
+  {
+    complimentaryAccessUpdated ? (
+      <p class="watson__status watson__status--success" role="status" data-complimentary-access-updated-banner>
+        {complimentaryAccessUpdatedMessage} This Watson date limits complimentary access through
+        the selected day. It does not change the legacy paid-through date.
       </p>
     ) : null
   }
@@ -199,6 +217,52 @@ const showCurrentMembership =
         <div class="watson-customer__header-meta-item">
           <dt>{LEGACY_RECORD_PAID_THROUGH_LABEL}</dt>
           <dd>{header.legacyAccessThroughDate}</dd>
+        </div>
+      ) : null
+    }
+    {
+      header.canEditComplimentaryAccess && header.memberstackId ? (
+        <div
+          class="watson-customer__header-meta-item watson-customer__paid-through"
+          data-complimentary-access
+          data-memberstack-id={header.memberstackId}
+          data-member-label={memberLabel}
+          data-old-ymd={header.complimentaryAccessThroughYmd ?? ""}
+          data-old-display={header.complimentaryAccessThroughDisplay ?? "(none)"}
+        >
+          <dt>{COMPLIMENTARY_ACCESS_THROUGH_LABEL}</dt>
+          <dd>
+            <span data-complimentary-access-display>
+              {header.complimentaryAccessThroughDisplay ?? "Not set"}
+            </span>
+            <button
+              type="button"
+              class="watson-customer__paid-through-edit"
+              data-complimentary-access-edit
+            >
+              Edit
+            </button>
+            <form class="watson-customer__paid-through-form" data-complimentary-access-form hidden>
+              <label class="watson-customer__paid-through-label" for="complimentary-access-through-date">
+                New complimentary access-through date
+              </label>
+              <input
+                id="complimentary-access-through-date"
+                type="date"
+                name="accessThroughYmd"
+                required
+                value={header.complimentaryAccessThroughYmd ?? ""}
+                data-complimentary-access-input
+              />
+              <button type="submit" class="watson__button" data-complimentary-access-save>
+                Save
+              </button>
+              <button type="button" class="watson__button watson__button--secondary" data-complimentary-access-cancel>
+                Cancel
+              </button>
+            </form>
+            <p class="watson__status watson__status--error" data-complimentary-access-error hidden></p>
+          </dd>
         </div>
       ) : null
     }
@@ -408,5 +472,103 @@ const showCurrentMembership =
   const roots = document.querySelectorAll<HTMLElement>("[data-legacy-paid-through]");
   for (const root of roots) {
     initLegacyPaidThroughEditor(root);
+  }
+
+  function initComplimentaryAccessEditor(root: HTMLElement) {
+    const memberstackId = root.dataset.memberstackId ?? "";
+    const memberLabel = root.dataset.memberLabel ?? memberstackId;
+    const oldYmd = root.dataset.oldYmd ?? "";
+    const oldDisplay = root.dataset.oldDisplay ?? "(none)";
+    const editBtn = root.querySelector<HTMLButtonElement>("[data-complimentary-access-edit]");
+    const form = root.querySelector<HTMLFormElement>("[data-complimentary-access-form]");
+    const input = root.querySelector<HTMLInputElement>("[data-complimentary-access-input]");
+    const cancelBtn = root.querySelector<HTMLButtonElement>("[data-complimentary-access-cancel]");
+    const errorEl = root.querySelector<HTMLElement>("[data-complimentary-access-error]");
+    const displayEl = root.querySelector<HTMLElement>("[data-complimentary-access-display]");
+    if (!editBtn || !form || !input || !cancelBtn || !errorEl || !displayEl || !memberstackId) {
+      return;
+    }
+
+    const showError = (message: string) => {
+      errorEl.hidden = false;
+      errorEl.textContent = message;
+    };
+    const clearError = () => {
+      errorEl.hidden = true;
+      errorEl.textContent = "";
+    };
+
+    editBtn.addEventListener("click", () => {
+      clearError();
+      form.hidden = false;
+      editBtn.hidden = true;
+      displayEl.hidden = true;
+      input.focus();
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      clearError();
+      form.hidden = true;
+      editBtn.hidden = false;
+      displayEl.hidden = false;
+      input.value = oldYmd;
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearError();
+      const newYmd = input.value.trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(newYmd)) {
+        showError("Enter a valid access-through date (YYYY-MM-DD).");
+        return;
+      }
+
+      const newDisplay = formatConfirmDate(newYmd);
+      const confirmed = window.confirm(
+        [
+          "Update complimentary access-through date?",
+          "",
+          `Member: ${memberLabel}`,
+          `Current: ${oldDisplay}${oldYmd ? ` (${oldYmd})` : ""}`,
+          `New: ${newDisplay} (${newYmd})`,
+          "",
+          "Access remains valid through this date in America/Los_Angeles.",
+          "This does not change the legacy paid-through date, Memberstack, or Stripe.",
+        ].join("\n"),
+      );
+      if (!confirmed) return;
+
+      const saveBtn = form.querySelector<HTMLButtonElement>("[data-complimentary-access-save]");
+      if (saveBtn) saveBtn.disabled = true;
+
+      try {
+        const response = await fetch(
+          `/api/watson/memberstack/${encodeURIComponent(memberstackId)}/complimentary-access`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accessThroughYmd: newYmd }),
+          },
+        );
+        const payload = (await response.json()) as { ok?: boolean; error?: string };
+        if (!response.ok || !payload.ok) {
+          showError(payload.error ?? "Unable to update complimentary access-through date.");
+          return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("complimentaryAccessUpdated", "1");
+        window.location.assign(url.toString());
+      } catch {
+        showError("Unable to update complimentary access-through date.");
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    });
+  }
+
+  const complimentaryRoots = document.querySelectorAll<HTMLElement>("[data-complimentary-access]");
+  for (const root of complimentaryRoots) {
+    initComplimentaryAccessEditor(root);
   }
 </script>

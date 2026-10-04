@@ -7,6 +7,7 @@
  * available as a clearly labeled historical record.
  */
 
+import { COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL } from "../../config/memberships";
 import {
   resolveAccountMembershipPanelView,
 } from "../membership/accountMembershipPanel";
@@ -23,7 +24,7 @@ import {
 } from "../membership/membershipStatusSummary";
 import type { CustomerMemberstackSummary } from "./customerMemberstack";
 
-export type WatsonMembershipSource = "Memberstack/Stripe" | "Legacy";
+export type WatsonMembershipSource = "Memberstack/Stripe" | "Legacy" | "Complimentary";
 
 export type WatsonCurrentMembershipLinkStatus =
   | "linked"
@@ -94,6 +95,11 @@ export function buildWatsonCustomerCurrentMembership(input: {
    * Used as the current paid-through date when Legacy is the active source.
    */
   legacyAccessThroughDisplay?: string | null;
+  /**
+   * Saved complimentary access-through day. `null` means loaded and no date.
+   * Omit when it was not loaded.
+   */
+  complimentaryThroughYmd?: string | null;
   now?: Date;
 }): WatsonCustomerCurrentMembership {
   const empty: WatsonCustomerCurrentMembership = {
@@ -164,6 +170,9 @@ export function buildWatsonCustomerCurrentMembership(input: {
     memberstackLookupOk: true,
     legacy: input.legacy,
     now: input.now,
+    ...(input.complimentaryThroughYmd !== undefined
+      ? { complimentaryThroughYmd: input.complimentaryThroughYmd }
+      : {}),
   });
 
   const todayYmd = calendarYmdForNow(
@@ -194,6 +203,18 @@ export function buildWatsonCustomerCurrentMembership(input: {
         : panel.renewsLabel,
       membershipSource: "Memberstack/Stripe",
       isPaidMemberstack: true,
+    };
+  }
+
+  if (summary.accountType === "complimentary_membership") {
+    return {
+      currentPlan: COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+      currentStatus: statusLabel,
+      membershipStatusTone: toneForStatus(statusLabel, summary),
+      primaryDateLabel: "Access through",
+      primaryDateValue: summary.activeThroughDate ?? "Not set",
+      membershipSource: "Complimentary",
+      isPaidMemberstack: false,
     };
   }
 

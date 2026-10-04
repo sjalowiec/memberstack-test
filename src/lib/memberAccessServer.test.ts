@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../config/memberships";
+import { COMPLIMENTARY_MEMBERSHIPS, FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../config/memberships";
 import { evaluateMemberAccessForRecord, loadLegacyPaidThroughYmdForEmail } from "./memberAccessServer";
 
 vi.mock("./watson/customerIdentifier", () => ({
@@ -10,6 +10,7 @@ import { resolveLegacyLinkByMemberstackEmail } from "./watson/customerIdentifier
 
 const LEGACY_FREE = FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId;
 const PAID = MEMBERSHIPS.membership.memberstackPlanId;
+const COMPLIMENTARY = COMPLIMENTARY_MEMBERSHIPS.complimentaryMembership.memberstackPlanId;
 const TODAY = "2026-07-22";
 
 function record(planId: string, email = "legacy@example.com") {
@@ -112,6 +113,62 @@ describe("evaluateMemberAccessForRecord", () => {
         todayYmd: TODAY,
       },
     );
+    expect(result.hasMemberAccess).toBe(false);
+  });
+
+  it("enforces a saved complimentary date before any cleanup", async () => {
+    const loadComplimentary = vi.fn(async () => "2026-07-21");
+    const loadLegacy = vi.fn(async () => null);
+    const expired = await evaluateMemberAccessForRecord(record(COMPLIMENTARY), {
+      loadComplimentaryThroughYmd: loadComplimentary,
+      loadPaidThroughYmd: loadLegacy,
+      todayYmd: TODAY,
+    });
+    expect(expired.hasMemberAccess).toBe(false);
+    expect(expired.complimentaryThroughYmd).toBe("2026-07-21");
+    expect(loadLegacy).toHaveBeenCalled();
+
+    const stillLegacy = await evaluateMemberAccessForRecord(record(COMPLIMENTARY), {
+      loadComplimentaryThroughYmd: async () => "2026-07-21",
+      loadPaidThroughYmd: async () => "2026-12-01",
+      todayYmd: TODAY,
+    });
+    expect(stillLegacy.hasMemberAccess).toBe(true);
+
+    const finalDay = await evaluateMemberAccessForRecord(record(COMPLIMENTARY), {
+      loadComplimentaryThroughYmd: async () => TODAY,
+      loadPaidThroughYmd: async () => null,
+      todayYmd: TODAY,
+    });
+    expect(finalDay.hasMemberAccess).toBe(true);
+
+    const future = await evaluateMemberAccessForRecord(record(COMPLIMENTARY), {
+      loadComplimentaryThroughYmd: async () => "2027-01-04",
+      loadPaidThroughYmd: async () => null,
+      todayYmd: TODAY,
+    });
+    expect(future.hasMemberAccess).toBe(true);
+    expect(future.complimentaryThroughYmd).toBe("2027-01-04");
+  });
+
+  it("keeps complimentary access when no date is saved and does not require legacy", async () => {
+    const loadLegacy = vi.fn(async () => "2020-01-01");
+    const result = await evaluateMemberAccessForRecord(record(COMPLIMENTARY), {
+      loadComplimentaryThroughYmd: async () => null,
+      loadPaidThroughYmd: loadLegacy,
+      todayYmd: TODAY,
+    });
+    expect(result.hasMemberAccess).toBe(true);
+    expect(result.complimentaryThroughYmd).toBeNull();
+    expect(loadLegacy).not.toHaveBeenCalled();
+  });
+
+  it("denies expired complimentary access when legacy is also expired", async () => {
+    const result = await evaluateMemberAccessForRecord(record(COMPLIMENTARY), {
+      loadComplimentaryThroughYmd: async () => "2026-07-21",
+      loadPaidThroughYmd: async () => "2020-01-01",
+      todayYmd: TODAY,
+    });
     expect(result.hasMemberAccess).toBe(false);
   });
 

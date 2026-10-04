@@ -608,6 +608,23 @@ WHERE status = 'added'`,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
     },
+    {
+      label: "table watson_complimentary_access",
+      sql: `CREATE TABLE IF NOT EXISTS watson_complimentary_access (
+  memberstack_id TEXT PRIMARY KEY,
+  access_through DATE NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_by TEXT
+)`,
+    },
+    {
+      label: "index idx_watson_complimentary_access_through",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_complimentary_access_through ON watson_complimentary_access (access_through)",
+    },
+    {
+      label: "rls watson_complimentary_access",
+      sql: "ALTER TABLE watson_complimentary_access ENABLE ROW LEVEL SECURITY",
+    },
   ];
 }
 

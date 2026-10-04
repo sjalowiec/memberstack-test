@@ -37,6 +37,13 @@
 [functions."legacy-annual-expiry"]
   schedule = "0 9 * * *"
 
+# Complimentary access-through cleanup (daily at 09:15 UTC). Removes only the
+# complimentary plan after watson_complimentary_access.access_through is before
+# today in America/Los_Angeles. Scheduled runs are live only when
+# COMPLIMENTARY_EXPIRY_LIVE_ENABLED === "true".
+[functions."complimentary-expiry"]
+  schedule = "15 9 * * *"
+
 # Legacy annual renewal reminders (daily at 08:00 UTC, ~midnight America/Los_Angeles).
 # Tags legacy annual members in ActiveCampaign at 30 / 7 / 1 day before their Watson
 # paid-through date, after re-checking Memberstack for an active paid plan. Scheduled

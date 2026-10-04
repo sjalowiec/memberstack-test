@@ -12,7 +12,10 @@ There is one paid membership. KIN Beta Access (`pln_kin-beta-access-vyek0a38`) i
 ## Complimentary membership
 
 - Active Memberstack plan **Complimentary Membership** (`pln_complimentary-membership-30-days-ai28093g`) grants the same access as paid membership while the connection is ACTIVE or TRIALING.
-- It does not use the Watson paid-through date. A canceled or expired connection does not grant access.
+- A saved Watson access-through date (`watson_complimentary_access.access_through`, keyed by Memberstack member id) limits that access through the selected America/Los_Angeles day. The day itself still has access. No saved date leaves the connection open.
+- That date is separate from `legacy_members.subscriptionexpiring`. An expired complimentary date does not remove a still-valid legacy paid-through date, and a legacy date does not limit an open complimentary plan.
+- `hasMemberAccess` enforces a saved date immediately. The daily `complimentary-expiry` job later removes only the complimentary plan connection.
+- A canceled or expired connection does not grant access. An active paid plan still grants access.
 - It is not a checkout plan and must not appear in `MEMBERSHIP_PRICE_IDS`.
 
 ## Legacy membership (free access plan)

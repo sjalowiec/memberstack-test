@@ -8,7 +8,9 @@
  *   currently valid membership:
  *
  *   - An ACTIVE/TRIALING paid plan (current membership or retired paid shells), or
- *   - An ACTIVE/TRIALING Complimentary Membership plan, or
+ *   - An ACTIVE/TRIALING Complimentary Membership plan. A saved Watson
+ *     access-through date limits that plan through the selected day; no saved
+ *     date leaves the plan open, or
  *   - A confirmed Watson `subscriptionexpiring` date that is today or later
  *     (America/Los_Angeles calendar day). The free Memberstack Legacy Membership
  *     plan is not required when Watson confirms that date.
@@ -47,8 +49,10 @@ export const FREE_LEGACY_MEMBER_ACCESS_PLAN_IDS = FREE_ACCESS_MEMBER_PLAN_IDS;
 
 /**
  * Complimentary plans that grant access from an ACTIVE/TRIALING connection.
- * They do not use the Watson paid-through rule and do not keep access after
- * the connection is canceled or expired.
+ * A saved Watson access-through date (`complimentaryThroughYmd`) limits access
+ * through that America/Los_Angeles day. No saved date leaves the connection
+ * open. The legacy paid-through date is a separate rule. A canceled or expired
+ * connection does not grant access.
  */
 export const COMPLIMENTARY_MEMBER_ACCESS_PLAN_IDS = COMPLIMENTARY_MEMBER_PLAN_IDS;
 
@@ -67,9 +71,17 @@ export type ViewerAccessState = "loggedOut" | "loggedInNoAccess" | "memberAccess
 export type MemberAccessOptions = {
   /**
    * Watson `legacy_members.subscriptionexpiring` as YYYY-MM-DD.
-   * Used when there is no active paid plan. Ignored for paid plans.
+   * Used when there is no active paid plan and complimentary access does not
+   * already grant. Ignored for paid plans.
    */
   legacyPaidThroughYmd?: string | null;
+  /**
+   * Watson `watson_complimentary_access.access_through` as YYYY-MM-DD.
+   * `null` means loaded and no saved date (complimentary plan stays open).
+   * Omit the property when the date has not been loaded.
+   * Ignored unless an active complimentary plan is present. Paid plans ignore it.
+   */
+  complimentaryThroughYmd?: string | null;
   /** Deterministic clock for paid-through vs expired (tests). */
   now?: Date;
   /** Override for today's YYYY-MM-DD (takes precedence over {@link now}). */
@@ -82,6 +94,13 @@ type RememberedLegacyPaidThrough = {
 };
 
 let rememberedLegacyPaidThrough: RememberedLegacyPaidThrough | null = null;
+
+type RememberedComplimentaryThrough = {
+  memberId: string;
+  ymd: string | null;
+};
+
+let rememberedComplimentaryThrough: RememberedComplimentaryThrough | null = null;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -213,6 +232,21 @@ export function hasComplimentaryMemberAccess(memberOrPayload: unknown): boolean 
 }
 
 /**
+ * True when the active complimentary plan currently grants access.
+ * No saved date (or a date that is not loaded yet) keeps today's open-ended
+ * behavior. A saved date grants access through that America/Los_Angeles day.
+ */
+export function hasCurrentComplimentaryAccess(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): boolean {
+  if (!hasComplimentaryMemberAccess(memberOrPayload)) return false;
+  const ymd = resolvedComplimentaryThroughYmd(memberOrPayload, options);
+  if (ymd == null) return true;
+  return isLegacyPaidThroughCurrentlyValid(ymd, options);
+}
+
+/**
  * True when the free legacy membership plan is currently connected.
  * This is only a candidate for access ? {@link hasMemberAccess} still requires
  * a valid paid-through date.
@@ -226,11 +260,14 @@ export function hasFreeLegacyPlanConnection(memberOrPayload: unknown): boolean {
  * `subscriptionexpiring`. Callers should load that date. The free Memberstack
  * legacy plan is not required.
  */
-export function needsLegacyPaidThroughForAccess(memberOrPayload: unknown): boolean {
+export function needsLegacyPaidThroughForAccess(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): boolean {
   return (
     isMemberLoggedIn(memberOrPayload) &&
     !hasPaidMemberAccess(memberOrPayload) &&
-    !hasComplimentaryMemberAccess(memberOrPayload)
+    !hasCurrentComplimentaryAccess(memberOrPayload, options)
   );
 }
 
@@ -250,6 +287,36 @@ export function rememberLegacyPaidThroughForAccess(
 
 export function clearRememberedLegacyPaidThroughForAccess(): void {
   rememberedLegacyPaidThrough = null;
+}
+
+/** Remember a Watson complimentary access-through date for sync access checks. */
+export function rememberComplimentaryThroughForAccess(
+  memberId: string,
+  ymd: string | null,
+): void {
+  const id = memberId.trim();
+  if (!id) return;
+  rememberedComplimentaryThrough = { memberId: id, ymd };
+}
+
+export function clearRememberedComplimentaryThroughForAccess(): void {
+  rememberedComplimentaryThrough = null;
+}
+
+/** `undefined` = not loaded; `null` = loaded but no saved date. */
+export function rememberedComplimentaryThroughYmdForMember(
+  memberId: string | null | undefined,
+): string | null | undefined {
+  if (!memberId || !rememberedComplimentaryThrough) return undefined;
+  if (rememberedComplimentaryThrough.memberId !== memberId) return undefined;
+  return rememberedComplimentaryThrough.ymd;
+}
+
+export function complimentaryThroughYmdForAccess(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): string | null | undefined {
+  return resolvedComplimentaryThroughYmd(memberOrPayload, options);
 }
 
 /** `undefined` = not loaded; `null` = loaded but no usable date. */
@@ -280,17 +347,42 @@ function resolvedLegacyPaidThroughYmd(
   return rememberedLegacyPaidThroughYmdForMember(memberId);
 }
 
+function memberIdForRememberedAccess(memberOrPayload: unknown): string | undefined {
+  return (
+    memberIdFromMemberstackPayload(memberOrPayload) ??
+    (isMemberLoggedIn(memberOrPayload)
+      ? String(
+          memberRecordFromMemberstackPayload(memberOrPayload)?.id ??
+            memberRecordFromMemberstackPayload(memberOrPayload)?._id ??
+            "",
+        ).trim() || undefined
+      : undefined)
+  );
+}
+
+function resolvedComplimentaryThroughYmd(
+  memberOrPayload: unknown,
+  options?: MemberAccessOptions,
+): string | null | undefined {
+  if (options && "complimentaryThroughYmd" in options) {
+    return options.complimentaryThroughYmd;
+  }
+  return rememberedComplimentaryThroughYmdForMember(memberIdForRememberedAccess(memberOrPayload));
+}
+
 /**
  * The global member-access check. True only when the viewer is logged in AND
- * has a currently valid membership (paid plan, or a Watson paid-through date
- * that is today or later). The free legacy plan is not required.
+ * has a currently valid membership (paid plan, complimentary access, or a
+ * Watson paid-through date that is today or later). The free legacy plan is
+ * not required. An expired complimentary date does not block a still-valid
+ * legacy paid-through date.
  */
 export function hasMemberAccess(
   memberOrPayload: unknown,
   options?: MemberAccessOptions,
 ): boolean {
   if (hasPaidMemberAccess(memberOrPayload)) return true;
-  if (hasComplimentaryMemberAccess(memberOrPayload)) return true;
+  if (hasCurrentComplimentaryAccess(memberOrPayload, options)) return true;
   if (!isMemberLoggedIn(memberOrPayload)) return false;
   return isLegacyPaidThroughCurrentlyValid(
     resolvedLegacyPaidThroughYmd(memberOrPayload, options) ?? null,

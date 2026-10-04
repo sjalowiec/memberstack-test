@@ -45,9 +45,15 @@ import {
   type WatsonQueryFn,
 } from "./memberSearch";
 import {
+  complimentaryAccessThroughYmd,
+  COMPLIMENTARY_ACCESS_THROUGH_LABEL,
+  loadComplimentaryAccessThroughYmd,
+} from "./complimentaryAccess";
+import {
   formatLegacyPaidThroughDisplay,
   legacyPaidThroughYmd,
 } from "./legacyPaidThrough";
+import { hasComplimentaryMemberAccess } from "../memberAccess";
 import {
   buildWatsonCustomerCurrentMembership,
   watsonLegacyContextFromPaidThrough,
@@ -66,6 +72,8 @@ import {
 
 /** Snapshot / header label for Watson `subscriptionexpiring` (historical record). */
 export const LEGACY_RECORD_PAID_THROUGH_LABEL = "Legacy record paid-through";
+
+export { COMPLIMENTARY_ACCESS_THROUGH_LABEL };
 
 export type MemberstackLinkStatus =
   | "linked"
@@ -115,6 +123,11 @@ export interface CustomerProfileHeaderView {
   legacyPaidThroughYmd: string | null;
   /** True when this profile has a legacy member row that can be edited. */
   canEditLegacyPaidThrough: boolean;
+  /** YYYY-MM-DD complimentary access-through date, or null when unset. */
+  complimentaryAccessThroughYmd: string | null;
+  complimentaryAccessThroughDisplay: string | null;
+  /** True when this Memberstack member has an active complimentary plan. */
+  canEditComplimentaryAccess: boolean;
 }
 
 export interface CustomerSnapshotMetric {
@@ -367,6 +380,7 @@ function resolveProfileCurrentMembership(input: {
   timeline: CustomerTimelineEvent[];
   legacyLinkAmbiguous?: boolean;
   now?: Date;
+  complimentaryThroughYmd?: string | null;
 }): {
   paidThroughYmd: string | null;
   paidThroughDisplay: string | null;
@@ -392,6 +406,7 @@ function resolveProfileCurrentMembership(input: {
     memberstackLinkStatus: input.memberstackLinkStatus,
     legacy,
     legacyAccessThroughDisplay: paidThroughDisplay,
+    complimentaryThroughYmd: input.complimentaryThroughYmd,
     now: input.now,
   });
 
@@ -444,8 +459,11 @@ export function buildCustomerProfileHeaderView(input: {
   memberstackMember?: MemberstackMember | null;
   legacyLinkAmbiguous?: boolean;
   now?: Date;
+  complimentaryThroughYmd?: string | null;
+  hasComplimentaryPlan?: boolean;
 }): CustomerProfileHeaderView {
   const email = input.memberstack.email ?? input.member?.email ?? null;
+  const complimentaryYmd = complimentaryAccessThroughYmd(input.complimentaryThroughYmd ?? null);
   const { paidThroughYmd, paidThroughDisplay, currentMembership } =
     resolveProfileCurrentMembership({
       member: input.member,
@@ -455,6 +473,7 @@ export function buildCustomerProfileHeaderView(input: {
       timeline: input.timeline,
       legacyLinkAmbiguous: input.legacyLinkAmbiguous,
       now: input.now,
+      complimentaryThroughYmd: input.complimentaryThroughYmd,
     });
 
   let membershipStatus: string | null = null;
@@ -513,6 +532,17 @@ export function buildCustomerProfileHeaderView(input: {
     legacyAccessThroughDate: paidThroughDisplay,
     legacyPaidThroughYmd: paidThroughYmd,
     canEditLegacyPaidThrough: Boolean(input.legacyMemberid && input.member),
+    complimentaryAccessThroughYmd: complimentaryYmd,
+    complimentaryAccessThroughDisplay: complimentaryYmd
+      ? formatLegacyPaidThroughDisplay(complimentaryYmd)
+      : null,
+    canEditComplimentaryAccess: Boolean(
+      input.memberstackId &&
+        (input.hasComplimentaryPlan ||
+          hasComplimentaryMemberAccess(
+            input.memberstackMember ? { data: input.memberstackMember } : null,
+          )),
+    ),
   };
 }
 
@@ -528,6 +558,7 @@ export function buildCustomerSnapshot(input: {
   memberstackMember?: MemberstackMember | null;
   legacyLinkAmbiguous?: boolean;
   now?: Date;
+  complimentaryThroughYmd?: string | null;
 }): CustomerSnapshotMetric[] {
   const metrics: CustomerSnapshotMetric[] = [];
   const { paidThroughDisplay, currentMembership } = resolveProfileCurrentMembership({
@@ -538,6 +569,7 @@ export function buildCustomerSnapshot(input: {
     timeline: input.timeline,
     legacyLinkAmbiguous: input.legacyLinkAmbiguous,
     now: input.now,
+    complimentaryThroughYmd: input.complimentaryThroughYmd,
   });
 
   const currentPlanLabel = resolveCurrentPlanLabel(
@@ -890,7 +922,8 @@ export async function loadLegacyCustomerProfile(
       member.memberid,
       Boolean(linkedMemberstackId),
     );
-    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory] = await Promise.all([
+    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory, complimentaryThroughYmd] =
+      await Promise.all([
       getCustomerWatsonNotes(notesRead.memberstackId, notesRead.legacyMemberId),
       getCustomerWatsonNoteCount(notesRead.memberstackId, notesRead.legacyMemberId),
       loadCleanedLegacyHistoryForProfile({
@@ -900,6 +933,9 @@ export async function loadLegacyCustomerProfile(
         dumpLegacyMemberid: member.memberid,
         queryFn: deps.queryFn,
       }),
+      linkedMemberstackId
+        ? loadComplimentaryAccessThroughYmd(linkedMemberstackId, deps.queryFn)
+        : Promise.resolve(null),
     ]);
 
     const timeline = buildCustomerTimeline({
@@ -921,6 +957,7 @@ export async function loadLegacyCustomerProfile(
       memberstackId: linkedMemberstackId,
       timeline,
       memberstackMember,
+      complimentaryThroughYmd,
     });
     const snapshot = buildCustomerSnapshot({
       member,
@@ -932,6 +969,7 @@ export async function loadLegacyCustomerProfile(
       timeline,
       hasLegacyHistory: true,
       memberstackMember,
+      complimentaryThroughYmd,
     });
 
     const profile: CustomerProfileData = {
@@ -1047,7 +1085,8 @@ export async function loadMemberstackCustomerProfile(
       legacyMemberid,
       hasLegacyHistory,
     );
-    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory] = await Promise.all([
+    const [watsonNotes, watsonNoteCount, cleanedLegacyHistory, complimentaryThroughYmd] =
+      await Promise.all([
       getCustomerWatsonNotes(notesRead.memberstackId, notesRead.legacyMemberId),
       getCustomerWatsonNoteCount(notesRead.memberstackId, notesRead.legacyMemberId),
       loadCleanedLegacyHistoryForProfile({
@@ -1057,6 +1096,7 @@ export async function loadMemberstackCustomerProfile(
         dumpLegacyMemberid: legacyMemberid,
         queryFn: deps.queryFn,
       }),
+      loadComplimentaryAccessThroughYmd(memberstackId, deps.queryFn),
     ]);
 
     const timeline = buildCustomerTimeline({
@@ -1079,6 +1119,7 @@ export async function loadMemberstackCustomerProfile(
       timeline,
       memberstackMember,
       legacyLinkAmbiguous: linkState.legacyLinkAmbiguous,
+      complimentaryThroughYmd,
     });
     const snapshot = buildCustomerSnapshot({
       member: hasLegacyHistory ? legacyMember : null,
@@ -1091,6 +1132,7 @@ export async function loadMemberstackCustomerProfile(
       hasLegacyHistory,
       memberstackMember,
       legacyLinkAmbiguous: linkState.legacyLinkAmbiguous,
+      complimentaryThroughYmd,
     });
 
     const profile: CustomerProfileData = {
