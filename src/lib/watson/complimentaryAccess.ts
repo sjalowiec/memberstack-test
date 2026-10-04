@@ -31,6 +31,14 @@ export const UPSERT_COMPLIMENTARY_ACCESS_SQL = `
   RETURNING memberstack_id, access_through
 `;
 
+/** Every saved complimentary date. Rows without a date do not exist. */
+export const ALL_COMPLIMENTARY_ACCESS_SQL = `
+  SELECT memberstack_id, access_through
+  FROM watson_complimentary_access
+  WHERE access_through IS NOT NULL
+  ORDER BY memberstack_id ASC
+`;
+
 /** Expired complimentary rows for the daily cleanup. The access-through day itself is excluded. */
 export const EXPIRED_COMPLIMENTARY_ACCESS_SQL = `
   SELECT memberstack_id, access_through

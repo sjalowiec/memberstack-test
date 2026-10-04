@@ -46,6 +46,16 @@ export interface ActiveCampaignClient {
   contactHasTag(contactId: string, tagId: string): Promise<boolean>;
   /** Apply a tag to a contact. */
   addTag(contactId: string, tagId: string): Promise<void>;
+  /**
+   * Find a custom field by exact title, optionally creating it when missing.
+   * Does not create a second field when the title already exists.
+   */
+  resolveFieldId?(
+    title: string,
+    options?: { create?: boolean; type?: "date" | "text" },
+  ): Promise<string | null>;
+  /** Read one custom field value for a contact, or null when unset. */
+  readFieldValue?(contactId: string, fieldId: string): Promise<string | null>;
 }
 
 /** Read AC credentials from the environment (same vars as the signup webhook). */
@@ -98,6 +108,33 @@ interface AcContactTagLink {
 }
 interface AcContactTagsResponse {
   contactTags?: AcContactTagLink[];
+}
+interface AcField {
+  id?: string;
+  title?: string;
+  type?: string;
+}
+interface AcFieldsResponse {
+  fields?: AcField[];
+}
+interface AcFieldResponse {
+  field?: AcField;
+}
+interface AcFieldValue {
+  field?: string;
+  value?: string;
+}
+interface AcFieldValuesResponse {
+  fieldValues?: AcFieldValue[];
+}
+
+/** Exact field title match. Reuses the first match so a second field is not created. */
+export function selectExactActiveCampaignField(
+  fields: ReadonlyArray<{ id?: string; title?: string }>,
+  title: string,
+): string | null {
+  const match = fields.find((field) => field.title === title && field.id);
+  return match?.id ? String(match.id) : null;
 }
 
 function mapListStatus(status: string | number | undefined): ActiveCampaignListStatus {
@@ -249,6 +286,55 @@ export function createActiveCampaignClient(
         const text = await resp.text().catch(() => "");
         throw new Error(`ActiveCampaign apply tag failed (HTTP ${resp.status}): ${text}`);
       }
+    },
+
+    async resolveFieldId(title, options = {}): Promise<string | null> {
+      const fields: AcField[] = [];
+      let offset = 0;
+      for (let page = 0; page < 20; page += 1) {
+        const resp = await request(`/api/3/fields?limit=100&offset=${offset}`);
+        const data = await readJson<AcFieldsResponse>(resp, "field list");
+        const batch = data.fields ?? [];
+        fields.push(...batch);
+        if (batch.length < 100) break;
+        offset += batch.length;
+      }
+      const existing = selectExactActiveCampaignField(fields, title);
+      if (existing) return existing;
+      if (!options.create) return null;
+
+      const createResp = await request("/api/3/fields", {
+        method: "POST",
+        body: JSON.stringify({
+          field: {
+            type: options.type ?? "text",
+            title,
+            visible: 1,
+          },
+        }),
+      });
+      if (createResp.ok) {
+        const data = (await createResp.json()) as AcFieldResponse;
+        if (data.field?.id) return String(data.field.id);
+      }
+      const retryResp = await request(`/api/3/fields?limit=100`);
+      if (retryResp.ok) {
+        const data = (await retryResp.json()) as AcFieldsResponse;
+        return selectExactActiveCampaignField(data.fields ?? [], title);
+      }
+      return null;
+    },
+
+    async readFieldValue(contactId, fieldId): Promise<string | null> {
+      const resp = await request(
+        `/api/3/contacts/${encodeURIComponent(contactId)}/fieldValues`,
+      );
+      const data = await readJson<AcFieldValuesResponse>(resp, "field value read");
+      const match = (data.fieldValues ?? []).find(
+        (entry) => String(entry.field ?? "") === String(fieldId),
+      );
+      const value = match?.value?.trim();
+      return value || null;
     },
   };
 }

@@ -46,9 +46,17 @@
   schedule = "15 9 * * *"
 
 # Production context only. kin-dev also publishes with CONTEXT=production, but
-# the function refuses live removals unless SITE_ID is the production site.
+# the functions refuse live Memberstack and ActiveCampaign writes unless
+# SITE_ID is the production site.
 [context.production.environment]
   COMPLIMENTARY_EXPIRY_LIVE_ENABLED = "true"
+  COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED = "true"
+
+# Complimentary ActiveCampaign date sync (daily at 09:30 UTC). Updates the
+# complimentary access-through date and the paid-membership field. Does not
+# send email. Live writes only on the production site.
+[functions."complimentary-campaign-sync"]
+  schedule = "30 9 * * *"
 
 # Legacy annual renewal reminders (daily at 08:00 UTC, ~midnight America/Los_Angeles).
 # Tags legacy annual members in ActiveCampaign at 30 / 7 / 1 day before their Watson
