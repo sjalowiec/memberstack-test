@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ActiveCampaignClient } from "../activecampaign/client";
@@ -107,6 +109,37 @@ describe("complimentary campaign sync guards", () => {
         COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED: "true",
       }),
     ).toBe(false);
+    expect(
+      complimentaryCampaignSyncWillWrite({
+        CONTEXT: "production",
+        URL: "https://knititnow.com",
+        COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED: "true",
+      }),
+    ).toBe(true);
+    expect(
+      complimentaryCampaignSyncWillWrite({
+        CONTEXT: "production",
+        URL: "https://kin-dev.netlify.app",
+        COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED: "true",
+      }),
+    ).toBe(false);
+  });
+
+  it("lets Watson routes read the Astro build env before deciding to write", () => {
+    const root = path.resolve(import.meta.dirname, "../../..");
+    const syncRoute = fs.readFileSync(
+      path.join(root, "src/pages/api/watson/complimentary-campaign-sync.ts"),
+      "utf8",
+    );
+    const dateRoute = fs.readFileSync(
+      path.join(
+        root,
+        "src/pages/api/watson/memberstack/[memberstackId]/complimentary-access.ts",
+      ),
+      "utf8",
+    );
+    expect(syncRoute).toContain("complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv())");
+    expect(dateRoute).toContain("complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv())");
   });
 
   it("reuses an existing field title instead of creating another", () => {
