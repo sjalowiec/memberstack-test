@@ -43,6 +43,8 @@ export type MemberstackMember = {
   id: string;
   createdAt?: string;
   auth?: { email?: string; firstName?: string; lastName?: string };
+  /** Memberstack profile fields. Dashboard names live here as `first-name` / `last-name`. */
+  customFields?: Record<string, unknown>;
   planConnections?: PlanConnection[];
 };
 

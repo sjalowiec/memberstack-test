@@ -116,14 +116,32 @@ function parseMemberstackMember(raw: Record<string, unknown> | null): Memberstac
         })
       : undefined;
 
+  const customFields =
+    raw.customFields && typeof raw.customFields === "object" && !Array.isArray(raw.customFields)
+      ? (raw.customFields as Record<string, unknown>)
+      : undefined;
+
   return {
     id,
     createdAt: typeof raw.createdAt === "string" ? raw.createdAt : undefined,
     auth,
+    customFields,
     planConnections: Array.isArray(raw.planConnections)
       ? (raw.planConnections as PlanConnection[])
       : [],
   };
+}
+
+function memberstackCustomFieldText(
+  fields: Record<string, unknown> | undefined,
+  ...keys: string[]
+): string {
+  if (!fields) return "";
+  for (const key of keys) {
+    const value = fields[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
 }
 
 function formatIsoDateDisplay(value: string | null | undefined): string | null {
@@ -153,12 +171,20 @@ function formatIsoDateSort(value: string | null | undefined): string {
 }
 
 export function formatMemberstackDisplayName(member: MemberstackMember): string {
-  const firstName = member.auth?.firstName?.trim();
-  const lastName = member.auth?.lastName?.trim();
+  const firstName =
+    memberstackCustomFieldText(member.customFields, "first-name", "firstName") ||
+    member.auth?.firstName?.trim() ||
+    "";
+  const lastName =
+    memberstackCustomFieldText(member.customFields, "last-name", "lastName") ||
+    member.auth?.lastName?.trim() ||
+    "";
   const parts = [firstName, lastName].filter(Boolean);
   if (parts.length > 0) {
     return parts.join(" ");
   }
+  const singleName = memberstackCustomFieldText(member.customFields, "name");
+  if (singleName) return singleName;
   const email = member.auth?.email?.trim();
   if (email) {
     return email;
