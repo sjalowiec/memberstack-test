@@ -39,13 +39,29 @@ export const ACTIVE_PAID_MEMBERSHIP_NO = "no";
 /** Published knititnow.com site. kin-dev must not write to the shared account. */
 export const PRODUCTION_CAMPAIGN_SITE_ID = "7a6a8dde-c0a0-4a21-960d-dff3f0ba358b";
 
+const PRODUCTION_CAMPAIGN_HOSTS = new Set(["knititnow.com", "www.knititnow.com"]);
+
+function hostnameFromCampaignUrl(value: string | undefined): string {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).hostname.trim().toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
 export function isProductionActiveCampaignWriteRuntime(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   if (isKinDevMemberstackRuntime(env)) return false;
   if (!isMemberstackProductionRuntime(env)) return false;
   const siteId = String(env.SITE_ID || "").trim().toLowerCase();
-  return siteId === PRODUCTION_CAMPAIGN_SITE_ID;
+  if (siteId === PRODUCTION_CAMPAIGN_SITE_ID) return true;
+  // Astro SSR on knititnow.com can omit SITE_ID. The primary site URL still
+  // identifies production. kin-dev is already rejected above.
+  const host = hostnameFromCampaignUrl(env.URL) || hostnameFromCampaignUrl(env.DEPLOY_PRIME_URL);
+  return PRODUCTION_CAMPAIGN_HOSTS.has(host);
 }
 
 /** Scheduled and manual live writes require the production site and an exact flag. */

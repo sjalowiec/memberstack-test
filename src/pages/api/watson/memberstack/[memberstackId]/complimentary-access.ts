@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 
+import { complimentaryCampaignAstroEnv } from "../../../../../lib/watson/complimentaryCampaignAstroEnv";
 import {
   complimentaryCampaignSyncWillWrite,
   runComplimentaryCampaignSync,
@@ -47,7 +48,7 @@ export const PATCH: APIRoute = async (context) => {
       ok: true,
       skipped: "not_production",
     };
-    if (complimentaryCampaignSyncWillWrite()) {
+    if (complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv())) {
       try {
         const synced = await runComplimentaryCampaignSync({
           liveWrite: true,

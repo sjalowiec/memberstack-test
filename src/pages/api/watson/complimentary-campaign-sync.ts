@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 
+import { complimentaryCampaignAstroEnv } from "../../../lib/watson/complimentaryCampaignAstroEnv";
 import {
   complimentaryCampaignSyncWillWrite,
   runComplimentaryCampaignSync,
@@ -22,7 +23,7 @@ export const POST: APIRoute = async (context) => {
     return auth;
   }
 
-  const liveWrite = complimentaryCampaignSyncWillWrite();
+  const liveWrite = complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv());
   try {
     const result = await runComplimentaryCampaignSync({ liveWrite });
     return watsonJsonResponse({
