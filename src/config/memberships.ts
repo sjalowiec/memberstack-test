@@ -108,9 +108,12 @@ export const FREE_ACCESS_MEMBERSHIPS = {
 } as const;
 
 /**
- * Staff complimentary access. An ACTIVE connection grants member access by
- * itself. It is not a paid checkout plan and it does not follow the Watson
- * paid-through rule used for {@link FREE_ACCESS_MEMBERSHIPS.legacyMembership}.
+ * Staff complimentary access. An ACTIVE or TRIALING connection grants member
+ * access. A saved Watson access-through date
+ * (`watson_complimentary_access.access_through`, keyed by Memberstack member
+ * id) limits that access through the selected America/Los_Angeles day. No
+ * saved date keeps the connection open. It is not a paid checkout plan and it
+ * does not use `legacy_members.subscriptionexpiring`.
  * A canceled or expired connection does not grant access.
  */
 export const COMPLIMENTARY_MEMBERSHIPS = {
@@ -119,6 +122,8 @@ export const COMPLIMENTARY_MEMBERSHIPS = {
     memberstackPlanId: "pln_complimentary-membership-30-days-ai28093g",
   },
 } as const;
+
+export const COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL = "Complimentary Membership";
 
 /** Active complimentary plan ids that grant member access without Watson. */
 export const COMPLIMENTARY_MEMBER_PLAN_IDS = [

@@ -52,6 +52,7 @@ export default async (req: Request): Promise<Response> => {
         hasMemberAccess: false,
         viewerAccessState: getViewerAccessState(null),
         legacyPaidThroughYmd: null,
+        complimentaryThroughYmd: null,
       }),
     );
   }
@@ -84,6 +85,7 @@ export default async (req: Request): Promise<Response> => {
         hasMemberAccess: evaluated.hasMemberAccess,
         viewerAccessState: evaluated.viewerAccessState,
         legacyPaidThroughYmd: evaluated.legacyPaidThroughYmd,
+        complimentaryThroughYmd: evaluated.complimentaryThroughYmd,
         verifiedHomeStudyCourseIds: homeStudy.verifiedCourseIds,
         homeStudyAccountCourses: homeStudy.accountCourses,
       }),
@@ -96,6 +98,7 @@ export default async (req: Request): Promise<Response> => {
         hasMemberAccess: false,
         viewerAccessState: "loggedInNoAccess",
         legacyPaidThroughYmd: null,
+        complimentaryThroughYmd: null,
       }),
     );
   }

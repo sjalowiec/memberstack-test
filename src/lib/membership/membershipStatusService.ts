@@ -20,6 +20,8 @@ import {
   type MemberMembershipDisplay,
 } from "../watson/memberMembership";
 import type { WatsonQueryFn } from "../watson/memberSearch";
+import { hasComplimentaryMemberAccess } from "../memberAccess";
+import { loadComplimentaryAccessThroughYmd } from "../watson/complimentaryAccess";
 import type { MemberstackMember } from "./membershipSummary";
 import {
   buildMembershipStatusSummary,
@@ -197,11 +199,24 @@ export async function loadMembershipStatusForMemberId(
     };
   }
 
+  let complimentaryThroughYmd: string | null | undefined;
+  if (hasComplimentaryMemberAccess({ data: member })) {
+    try {
+      complimentaryThroughYmd = await loadComplimentaryAccessThroughYmd(
+        member.id,
+        deps.queryFn,
+      );
+    } catch {
+      complimentaryThroughYmd = undefined;
+    }
+  }
+
   return buildMembershipStatusSummary({
     memberstackMember: member,
     memberstackSummary,
     memberstackLookupOk: true,
     legacy,
     now: deps.now,
+    ...(complimentaryThroughYmd !== undefined ? { complimentaryThroughYmd } : {}),
   });
 }

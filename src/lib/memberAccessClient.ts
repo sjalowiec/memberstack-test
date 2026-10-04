@@ -5,11 +5,16 @@
  * Paid members skip the network. Fail closed when the lookup is unavailable.
  */
 import {
+  clearRememberedComplimentaryThroughForAccess,
   clearRememberedLegacyPaidThroughForAccess,
+  hasComplimentaryMemberAccess,
+  hasPaidMemberAccess,
   isMemberLoggedIn,
   memberAccessYmdFromDateOnlyValue,
   needsLegacyPaidThroughForAccess,
+  rememberComplimentaryThroughForAccess,
   rememberLegacyPaidThroughForAccess,
+  rememberedComplimentaryThroughYmdForMember,
   rememberedLegacyPaidThroughYmdForMember,
 } from "./memberAccess";
 import { getMembershipStatusAuthHeaders } from "./membership/membershipStatusClient";
@@ -32,9 +37,15 @@ function memberIdForAccessContext(memberOrPayload: unknown): string | undefined 
 type MemberAccessApiBody = {
   ok?: boolean;
   legacyPaidThroughYmd?: string | null;
+  complimentaryThroughYmd?: string | null;
 };
 
-async function fetchLegacyPaidThroughYmdFromApi(): Promise<string | null> {
+export type MemberAccessDateContext = {
+  legacyPaidThroughYmd: string | null;
+  complimentaryThroughYmd: string | null;
+};
+
+async function fetchMemberAccessDatesFromApi(): Promise<MemberAccessDateContext | null> {
   if (typeof window === "undefined") return null;
   const headers = await getMembershipStatusAuthHeaders();
   if (!headers.Authorization) return null;
@@ -53,11 +64,16 @@ async function fetchLegacyPaidThroughYmdFromApi(): Promise<string | null> {
     return null;
   }
   if (!body || body.ok === false) return null;
-  return memberAccessYmdFromDateOnlyValue(body.legacyPaidThroughYmd ?? null);
+  return {
+    legacyPaidThroughYmd: memberAccessYmdFromDateOnlyValue(body.legacyPaidThroughYmd ?? null),
+    complimentaryThroughYmd: memberAccessYmdFromDateOnlyValue(body.complimentaryThroughYmd ?? null),
+  };
 }
 
 export type EnsureLegacyPaidThroughContextDeps = {
+  /** Legacy-only test hook. Complimentary date stays unloaded when this is used alone. */
   fetchPaidThroughYmd?: () => Promise<string | null>;
+  fetchAccessDates?: () => Promise<MemberAccessDateContext | null>;
 };
 
 /**
@@ -71,13 +87,22 @@ export async function ensureLegacyPaidThroughContext(
 ): Promise<void> {
   if (!isMemberLoggedIn(memberOrPayload)) {
     clearRememberedLegacyPaidThroughForAccess();
+    clearRememberedComplimentaryThroughForAccess();
     return;
   }
-  if (!needsLegacyPaidThroughForAccess(memberOrPayload)) return;
+  if (hasPaidMemberAccess(memberOrPayload)) return;
+
+  const needsComplimentary = hasComplimentaryMemberAccess(memberOrPayload);
+  const needsLegacy = needsLegacyPaidThroughForAccess(memberOrPayload);
+  if (!needsComplimentary && !needsLegacy) return;
 
   const memberId = memberIdForAccessContext(memberOrPayload);
   if (!memberId) return;
-  if (rememberedLegacyPaidThroughYmdForMember(memberId) !== undefined) return;
+
+  const legacyKnown = rememberedLegacyPaidThroughYmdForMember(memberId) !== undefined;
+  const complimentaryKnown =
+    rememberedComplimentaryThroughYmdForMember(memberId) !== undefined;
+  if ((!needsLegacy || legacyKnown) && (!needsComplimentary || complimentaryKnown)) return;
 
   const existing = inFlightByMemberId.get(memberId);
   if (existing) {
@@ -87,11 +112,23 @@ export async function ensureLegacyPaidThroughContext(
 
   const work = (async () => {
     try {
-      const load = deps.fetchPaidThroughYmd ?? fetchLegacyPaidThroughYmdFromApi;
-      const ymd = await load();
-      rememberLegacyPaidThroughForAccess(memberId, ymd);
+      if (deps.fetchPaidThroughYmd && !deps.fetchAccessDates) {
+        const ymd = await deps.fetchPaidThroughYmd();
+        rememberLegacyPaidThroughForAccess(memberId, ymd);
+        return;
+      }
+      const load = deps.fetchAccessDates ?? fetchMemberAccessDatesFromApi;
+      const dates = await load();
+      if (!dates) {
+        if (needsLegacy) rememberLegacyPaidThroughForAccess(memberId, null);
+        return;
+      }
+      rememberLegacyPaidThroughForAccess(memberId, dates.legacyPaidThroughYmd);
+      if (needsComplimentary) {
+        rememberComplimentaryThroughForAccess(memberId, dates.complimentaryThroughYmd);
+      }
     } catch {
-      rememberLegacyPaidThroughForAccess(memberId, null);
+      if (needsLegacy) rememberLegacyPaidThroughForAccess(memberId, null);
     } finally {
       inFlightByMemberId.delete(memberId);
     }

@@ -13,6 +13,7 @@ import {
   resolveLegacyExpirationTiming,
 } from "./membership/membershipStatusSummary";
 import {
+  clearRememberedComplimentaryThroughForAccess,
   clearRememberedLegacyPaidThroughForAccess,
   getViewerAccessState,
   hasFreeLegacyPlanConnection,
@@ -78,6 +79,7 @@ function payload(options: {
 
 afterEach(() => {
   clearRememberedLegacyPaidThroughForAccess();
+  clearRememberedComplimentaryThroughForAccess();
 });
 
 describe("hasMemberAccess — paid Memberstack memberships", () => {
@@ -184,6 +186,62 @@ describe("hasMemberAccess — complimentary membership", () => {
     });
     expect(
       hasMemberAccess(res, { legacyPaidThroughYmd: "2020-01-01", todayYmd: TODAY_YMD }),
+    ).toBe(true);
+  });
+
+  it("grants access through a future complimentary date", () => {
+    const res = payload({ planId: COMPLIMENTARY });
+    expect(
+      hasMemberAccess(res, { complimentaryThroughYmd: "2027-01-04", todayYmd: TODAY_YMD }),
+    ).toBe(true);
+  });
+
+  it("grants access on the complimentary access-through day itself", () => {
+    const res = payload({ planId: COMPLIMENTARY });
+    expect(
+      hasMemberAccess(res, { complimentaryThroughYmd: TODAY_YMD, todayYmd: TODAY_YMD }),
+    ).toBe(true);
+  });
+
+  it("denies an expired complimentary date when no other access applies", () => {
+    const res = payload({ planId: COMPLIMENTARY });
+    expect(
+      hasMemberAccess(res, { complimentaryThroughYmd: "2026-07-21", todayYmd: TODAY_YMD }),
+    ).toBe(false);
+  });
+
+  it("keeps access when the complimentary plan has no saved date", () => {
+    const res = payload({ planId: COMPLIMENTARY });
+    expect(hasMemberAccess(res, { complimentaryThroughYmd: null, todayYmd: TODAY_YMD })).toBe(
+      true,
+    );
+  });
+
+  it("lets an active paid plan win over an expired complimentary date", () => {
+    const res = payload({
+      planConnections: [
+        { planId: PAID, status: "ACTIVE", active: true, payment: { priceId: MONTHLY_PRICE } },
+        { planId: COMPLIMENTARY, status: "ACTIVE", active: true },
+      ],
+    });
+    expect(
+      hasMemberAccess(res, { complimentaryThroughYmd: "2020-01-01", todayYmd: TODAY_YMD }),
+    ).toBe(true);
+  });
+
+  it("keeps legacy access when the complimentary date has expired", () => {
+    const res = payload({
+      planConnections: [
+        { planId: LEGACY_FREE, status: "ACTIVE", active: true },
+        { planId: COMPLIMENTARY, status: "ACTIVE", active: true },
+      ],
+    });
+    expect(
+      hasMemberAccess(res, {
+        complimentaryThroughYmd: "2026-07-21",
+        legacyPaidThroughYmd: "2026-12-01",
+        todayYmd: TODAY_YMD,
+      }),
     ).toBe(true);
   });
 

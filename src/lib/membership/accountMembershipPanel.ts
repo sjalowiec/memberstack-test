@@ -12,6 +12,8 @@
  */
 
 import {
+  complimentaryThroughYmdForAccess,
+  hasCurrentComplimentaryAccess,
   hasFreeLegacyPlanConnection,
   hasMemberAccess,
   isActiveMemberstackPlanConnection,
@@ -21,7 +23,11 @@ import {
   type MemberAccessOptions,
 } from "../memberAccess";
 import { memberIdFromMemberstackPayload, memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
-import { isGrandfatheredMonthlySubscriptionPlanId } from "../../config/memberships";
+import {
+  COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+  isGrandfatheredMonthlySubscriptionPlanId,
+} from "../../config/memberships";
+import { formatMembershipCalendarDateFromYmd } from "./membershipStatusSummary";
 import {
   annualSwitchOverlapWarning,
   canPurchaseAnnualWhileCancelingMonthly,
@@ -467,6 +473,23 @@ export function resolveAccountMembershipPanelView(
       manageBillingDescription: MANAGE_BILLING_DESCRIPTION_PAST_DUE,
       annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
+    };
+  }
+
+  if (hasCurrentComplimentaryAccess(memberOrPayload, accessOptions)) {
+    const throughYmd = complimentaryThroughYmdForAccess(memberOrPayload, accessOptions);
+    const throughLabel =
+      typeof throughYmd === "string" ? formatMembershipCalendarDateFromYmd(throughYmd) : null;
+    return {
+      kind: "member",
+      planLabel: COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+      planDisplayLabel: COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+      statusLabel: "Active",
+      ...emptyPanelFields(),
+      activeUntilMessage: throughLabel
+        ? `Your complimentary membership remains active through ${throughLabel}.`
+        : null,
+      visibleActions: ["renewAnnual", "becomeMonthly"],
     };
   }
 

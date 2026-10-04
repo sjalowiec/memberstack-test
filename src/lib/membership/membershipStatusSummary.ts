@@ -6,6 +6,7 @@
  */
 
 import {
+  COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
@@ -13,7 +14,7 @@ import {
 import type { MemberMembershipDisplay } from "../watson/memberMembership";
 import type { CustomerMemberstackSummary } from "../watson/customerMemberstack";
 import type { PlanConnection } from "./membershipSummary";
-import { hasMemberAccess } from "../memberAccess";
+import { hasComplimentaryMemberAccess, hasMemberAccess } from "../memberAccess";
 import {
   FREE_MEMBERSHIP_DISPLAY_LABEL,
   memberHasActivePaidMembership,
@@ -39,6 +40,7 @@ export type MembershipLegacyLinkState =
 
 export type MembershipAccountType =
   | "paid_membership"
+  | "complimentary_membership"
   | "free_membership"
   | "non_paid_account"
   | "unknown";
@@ -307,6 +309,11 @@ export function buildMembershipStatusSummary(input: {
   now?: Date;
   /** Optional override for today's YYYY-MM-DD (takes precedence over {@link now}). */
   todayYmd?: string;
+  /**
+   * Saved complimentary access-through day. `null` means loaded and no date.
+   * Omit when the complimentary date was not loaded.
+   */
+  complimentaryThroughYmd?: string | null;
 }): MembershipStatusSummary {
   const {
     memberstackMember,
@@ -366,15 +373,48 @@ export function buildMembershipStatusSummary(input: {
       ? resolveLegacyExpirationTiming(legacy.legacyExpirationYmd, todayYmd)
       : null;
 
+  const complimentaryOptions =
+    input.complimentaryThroughYmd !== undefined
+      ? { complimentaryThroughYmd: input.complimentaryThroughYmd, todayYmd }
+      : { todayYmd };
+  if (!hasPaid && hasComplimentaryMemberAccess(payload)) {
+    const complimentaryYmd = input.complimentaryThroughYmd;
+    const complimentaryOpen =
+      complimentaryYmd === undefined ||
+      complimentaryYmd === null ||
+      (complimentaryYmd != null && complimentaryYmd >= todayYmd);
+    if (complimentaryOpen) {
+      const throughDisplay = complimentaryYmd
+        ? formatMembershipCalendarDateFromYmd(complimentaryYmd)
+        : null;
+      return {
+        identified,
+        currentStatus: "active",
+        currentPlanName: COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+        previousPlanName,
+        activeThroughDate: throughDisplay,
+        legacyExpirationDate: legacyExpirationDisplay,
+        legacyLinkState: legacy.linkState,
+        accountType: "complimentary_membership",
+        recommendedAction: "manage",
+        customerFacingMessage: activeMembershipSentence(
+          COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+          throughDisplay,
+        ),
+      };
+    }
+  }
+
   // Valid Watson paid-through date: same determination as hasMemberAccess.
-  // The free Memberstack legacy plan is not required. Paid membership below
-  // always takes precedence.
+  // The free Memberstack legacy plan is not required. Paid membership above
+  // always takes precedence. An expired complimentary date does not count.
   const hasValidLegacyAccess =
     !hasPaid &&
     hasMemberAccess(payload, {
       legacyPaidThroughYmd:
         legacy.linkState === "linked" ? legacy.legacyExpirationYmd : null,
       todayYmd,
+      ...complimentaryOptions,
     });
   if (hasValidLegacyAccess) {
     return {
@@ -444,6 +484,29 @@ export function buildMembershipStatusSummary(input: {
       accountType: "paid_membership",
       recommendedAction: "manage",
       customerFacingMessage: activeMembershipSentence(planLabel, null),
+    };
+  }
+
+  if (
+    !hasPaid &&
+    hasComplimentaryMemberAccess(payload) &&
+    input.complimentaryThroughYmd &&
+    input.complimentaryThroughYmd < todayYmd
+  ) {
+    const throughDisplay = formatMembershipCalendarDateFromYmd(input.complimentaryThroughYmd);
+    return {
+      identified,
+      currentStatus: "inactive",
+      currentPlanName: COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+      previousPlanName,
+      activeThroughDate: throughDisplay,
+      legacyExpirationDate: legacyExpirationDisplay,
+      legacyLinkState: legacy.linkState,
+      accountType: "complimentary_membership",
+      recommendedAction: "purchase",
+      customerFacingMessage: throughDisplay
+        ? `Your complimentary membership ended on ${throughDisplay}.`
+        : "Your complimentary membership has ended.",
     };
   }
 

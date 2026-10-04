@@ -24,6 +24,7 @@ export const prerender = false;
 const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
 const searchQuery = Astro.url.searchParams.get("q");
 const paidThroughUpdated = Astro.url.searchParams.get("paidThroughUpdated") === "1";
+const complimentaryAccessUpdated = Astro.url.searchParams.get("complimentaryAccessUpdated") === "1";
 const backHref = buildCustomerSearchReturnUrl(searchQuery);
 
 if (!memberid) {
@@ -77,6 +78,7 @@ if (!result.ok && result.reason === "not_found") {
           header={result.profile.headerView}
           actions={result.profile.actions}
           paidThroughUpdated={paidThroughUpdated}
+          complimentaryAccessUpdated={complimentaryAccessUpdated}
         />
         <WatsonCustomerSnapshot metrics={result.profile.snapshot} />
         <WatsonCustomerMembership

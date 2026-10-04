@@ -27,6 +27,7 @@ const memberstackId = Astro.params.memberstackId
   : "";
 const searchQuery = Astro.url.searchParams.get("q");
 const paidThroughUpdated = Astro.url.searchParams.get("paidThroughUpdated") === "1";
+const complimentaryAccessUpdated = Astro.url.searchParams.get("complimentaryAccessUpdated") === "1";
 const backHref = buildCustomerSearchReturnUrl(searchQuery);
 
 if (!memberstackId) {
@@ -80,6 +81,7 @@ if (!result.ok && result.reason === "not_found") {
           header={result.profile.headerView}
           actions={result.profile.actions}
           paidThroughUpdated={paidThroughUpdated}
+          complimentaryAccessUpdated={complimentaryAccessUpdated}
         />
         {
           result.profile.legacyLinkAmbiguous ? (

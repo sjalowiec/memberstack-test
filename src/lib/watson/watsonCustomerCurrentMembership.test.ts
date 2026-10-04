@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
+import {
+  COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL,
+  COMPLIMENTARY_MEMBERSHIPS,
+  FREE_ACCESS_MEMBERSHIPS,
+  MEMBERSHIPS,
+} from "../../config/memberships";
 import { FREE_MEMBERSHIP_DISPLAY_LABEL } from "../membership/membershipCheckoutDecision";
 import { buildCustomerMemberstackSummary } from "./customerMemberstack";
 import {
@@ -271,5 +276,47 @@ describe("buildWatsonCustomerCurrentMembership", () => {
     expect(current.primaryDateLabel).toBe("Active through");
     expect(current.primaryDateValue).toBe("August 18, 2026");
     expect(current.membershipSource).toBe("Memberstack/Stripe");
+  });
+
+  it("labels an active complimentary plan and its own access-through date", () => {
+    const member = {
+      id: "mem_comp",
+      auth: { email: "new@example.com" },
+      planConnections: [
+        {
+          id: "pc_comp",
+          planId: COMPLIMENTARY_MEMBERSHIPS.complimentaryMembership.memberstackPlanId,
+          planName: "complimentary-membership",
+          status: "ACTIVE",
+          active: true,
+          type: "FREE",
+          payment: null,
+        },
+      ],
+    };
+    const summary = buildCustomerMemberstackSummary({
+      member,
+      configured: true,
+      loadError: null,
+    });
+    const current = buildWatsonCustomerCurrentMembership({
+      memberstackMember: member,
+      memberstackSummary: summary,
+      memberstackLinkStatus: "linked",
+      legacy: watsonLegacyContextFromPaidThrough({
+        hasLegacyHistory: false,
+        legacyExpirationYmd: null,
+        legacyExpirationDate: null,
+      }),
+      complimentaryThroughYmd: "2027-01-04",
+      now: NOW,
+    });
+
+    expect(current.currentPlan).toBe(COMPLIMENTARY_MEMBERSHIP_DISPLAY_LABEL);
+    expect(current.currentStatus).toBe("Active");
+    expect(current.primaryDateLabel).toBe("Access through");
+    expect(current.primaryDateValue).toBe("January 4, 2027");
+    expect(current.membershipSource).toBe("Complimentary");
+    expect(current.isPaidMemberstack).toBe(false);
   });
 });
