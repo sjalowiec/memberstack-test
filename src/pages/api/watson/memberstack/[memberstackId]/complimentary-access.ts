@@ -48,7 +48,14 @@ export const PATCH: APIRoute = async (context) => {
       ok: true,
       skipped: "not_production",
     };
-    if (complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv(context.url))) {
+    if (
+      complimentaryCampaignSyncWillWrite(
+        complimentaryCampaignAstroEnv({
+          requestUrl: context.url,
+          request: context.request,
+        }),
+      )
+    ) {
       try {
         const synced = await runComplimentaryCampaignSync({
           liveWrite: true,
