@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildCustomerMemberstackSummary,
   buildCustomerPlanConnectionDisplay,
+  formatCustomerDisplayName,
   formatMemberstackDisplayName,
   loadCustomerMemberstackMember,
   MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
@@ -204,6 +205,39 @@ describe("customerMemberstack", () => {
     };
 
     expect(formatMemberstackDisplayName(member)).toBe("only@example.com");
+  });
+
+  it("uses Memberstack custom-field names when auth has only an email", () => {
+    const member: MemberstackMember = {
+      id: "mem_cmutocyhr00ot0txbd9w64exb",
+      auth: { email: "mrshappysnow@gmail.com" },
+      customFields: { "first-name": "Stevie", "last-name": "Merryweather" },
+      planConnections: [],
+    };
+
+    expect(formatMemberstackDisplayName(member)).toBe("Stevie Merryweather");
+  });
+
+  it("keeps a linked legacy name ahead of the Memberstack custom-field name", () => {
+    const memberstack = buildCustomerMemberstackSummary({
+      member: {
+        id: "mem_legacy",
+        auth: { email: "legacy@example.com" },
+        customFields: { "first-name": "Stevie", "last-name": "Merryweather" },
+        planConnections: [],
+      },
+      configured: true,
+      loadError: null,
+    });
+
+    expect(
+      formatCustomerDisplayName(memberstack, {
+        memberid: "LEGACY1",
+        fristname: "Julie",
+        lastname: "Bennett",
+      } as never),
+    ).toBe("Julie Bennett");
+    expect(memberstack.displayName).toBe("Stevie Merryweather");
   });
 
   it("matches Memberstack customers by name tokens, email fragments, and custom fields", () => {
@@ -434,6 +468,33 @@ describe("customerMemberstack", () => {
 
     expect(getMember).toHaveBeenCalledWith("mem_cmrq9lzwl02c70sor1uuwamcf");
     expect(result.ok).toBe(true);
+  });
+
+  it("keeps Memberstack custom-field names on the loaded member", async () => {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: "mem_cmutocyhr00ot0txbd9w64exb",
+      secretKey: "sk_live_admin_secret",
+      getClient: async () => ({
+        getMember: async () => ({
+          id: "mem_cmutocyhr00ot0txbd9w64exb",
+          auth: { email: "mrshappysnow@gmail.com" },
+          customFields: { "first-name": " Stevie ", "last-name": "Merryweather" },
+          planConnections: [],
+        }),
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.member.customFields?.["first-name"]).toBe(" Stevie ");
+    expect(
+      buildCustomerMemberstackSummary({
+        member: result.member,
+        configured: true,
+        loadError: null,
+      }).displayName,
+    ).toBe("Stevie Merryweather");
   });
 
   it("default Admin path uses bare getMemberstackAdminClient() like requireMember", async () => {
