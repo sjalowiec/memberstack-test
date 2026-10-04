@@ -1,5 +1,9 @@
 import type { APIRoute } from "astro";
 
+import {
+  complimentaryCampaignSyncWillWrite,
+  runComplimentaryCampaignSync,
+} from "../../../../../lib/watson/complimentaryCampaignSync";
 import { updateComplimentaryAccessThrough } from "../../../../../lib/watson/complimentaryAccess";
 import {
   readWatsonJsonBody,
@@ -39,6 +43,27 @@ export const PATCH: APIRoute = async (context) => {
       return watsonJsonResponse({ ok: false, error: result.error }, result.status);
     }
 
+    let campaignSync: { ok: boolean; skipped?: string; error?: string } = {
+      ok: true,
+      skipped: "not_production",
+    };
+    if (complimentaryCampaignSyncWillWrite()) {
+      try {
+        const synced = await runComplimentaryCampaignSync({
+          liveWrite: true,
+          onlyMemberstackIds: [result.value.memberstackId],
+        });
+        campaignSync = synced.ok
+          ? { ok: true }
+          : { ok: false, error: synced.errorMessage ?? "ActiveCampaign sync failed." };
+      } catch (error) {
+        campaignSync = {
+          ok: false,
+          error: error instanceof Error ? error.message : "ActiveCampaign sync failed.",
+        };
+      }
+    }
+
     return watsonJsonResponse({
       ok: true,
       memberstackId: result.value.memberstackId,
@@ -46,6 +71,7 @@ export const PATCH: APIRoute = async (context) => {
       newAccessThroughYmd: result.value.newAccessThroughYmd,
       oldAccessThroughDisplay: result.value.oldAccessThroughDisplay,
       newAccessThroughDisplay: result.value.newAccessThroughDisplay,
+      campaignSync,
     });
   } catch (error) {
     const message =
