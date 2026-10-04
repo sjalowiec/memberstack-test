@@ -123,6 +123,19 @@ describe("complimentary campaign sync guards", () => {
         COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED: "true",
       }),
     ).toBe(false);
+    expect(
+      complimentaryCampaignSyncWillWrite({
+        CONTEXT: "production",
+        NODE_ENV: "production",
+        URL: "https://knititnow.com",
+      }),
+    ).toBe(true);
+    expect(
+      complimentaryCampaignSyncWillWrite({
+        NODE_ENV: "production",
+        URL: "https://kin-dev.netlify.app",
+      }),
+    ).toBe(false);
   });
 
   it("lets Watson routes read the Astro build env before deciding to write", () => {
@@ -138,8 +151,8 @@ describe("complimentary campaign sync guards", () => {
       ),
       "utf8",
     );
-    expect(syncRoute).toContain("complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv())");
-    expect(dateRoute).toContain("complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv())");
+    expect(syncRoute).toContain("complimentaryCampaignAstroEnv(context.url)");
+    expect(dateRoute).toContain("complimentaryCampaignAstroEnv(context.url)");
   });
 
   it("reuses an existing field title instead of creating another", () => {

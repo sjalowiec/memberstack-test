@@ -64,14 +64,19 @@ export function isProductionActiveCampaignWriteRuntime(
   return PRODUCTION_CAMPAIGN_HOSTS.has(host);
 }
 
-/** Scheduled and manual live writes require the production site and an exact flag. */
+/**
+ * Live writes require the production site. An explicit flag must be the
+ * string "true". Astro SSR often cannot see that Netlify flag at all; a
+ * missing flag still writes on the confirmed production site, and kin-dev
+ * stays dry-run.
+ */
 export function complimentaryCampaignSyncWillWrite(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return (
-    env.COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED === "true" &&
-    isProductionActiveCampaignWriteRuntime(env)
-  );
+  if (!isProductionActiveCampaignWriteRuntime(env)) return false;
+  const flag = env.COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED;
+  if (flag == null || String(flag).trim() === "") return true;
+  return flag === "true";
 }
 
 export type ComplimentaryCampaignOutcome =

@@ -23,7 +23,9 @@ export const POST: APIRoute = async (context) => {
     return auth;
   }
 
-  const liveWrite = complimentaryCampaignSyncWillWrite(complimentaryCampaignAstroEnv());
+  const liveWrite = complimentaryCampaignSyncWillWrite(
+    complimentaryCampaignAstroEnv(context.url),
+  );
   try {
     const result = await runComplimentaryCampaignSync({ liveWrite });
     return watsonJsonResponse({
