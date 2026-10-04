@@ -55,13 +55,46 @@ export function isProductionActiveCampaignWriteRuntime(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   if (isKinDevMemberstackRuntime(env)) return false;
+  // The public production host only serves the published site. Astro SSR may
+  // omit SITE_ID and CONTEXT, so this host is enough. kin-dev is rejected above.
+  const host = hostnameFromCampaignUrl(env.URL) || hostnameFromCampaignUrl(env.DEPLOY_PRIME_URL);
+  if (PRODUCTION_CAMPAIGN_HOSTS.has(host)) return true;
   if (!isMemberstackProductionRuntime(env)) return false;
   const siteId = String(env.SITE_ID || "").trim().toLowerCase();
-  if (siteId === PRODUCTION_CAMPAIGN_SITE_ID) return true;
-  // Astro SSR on knititnow.com can omit SITE_ID. The primary site URL still
-  // identifies production. kin-dev is already rejected above.
-  const host = hostnameFromCampaignUrl(env.URL) || hostnameFromCampaignUrl(env.DEPLOY_PRIME_URL);
-  return PRODUCTION_CAMPAIGN_HOSTS.has(host);
+  return siteId === PRODUCTION_CAMPAIGN_SITE_ID;
+}
+
+const KIN_DEV_CAMPAIGN_HOST = "kin-dev.netlify.app";
+
+function campaignHost(value: string | undefined): string {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  return hostnameFromCampaignUrl(raw.includes("://") ? raw : `https://${raw}`);
+}
+
+/**
+ * Watson SSR can see a Netlify-internal URL instead of knititnow.com. Prefer an
+ * observed public host when the env URL is not already the production site.
+ * A kin-dev host always wins so DEV cannot write to the shared account.
+ */
+export function applyComplimentaryCampaignRequestHosts(
+  env: NodeJS.ProcessEnv,
+  hosts: string[],
+): NodeJS.ProcessEnv {
+  const next: NodeJS.ProcessEnv = { ...env };
+  const observed = hosts.map((host) => campaignHost(host)).filter((host) => host.length > 0);
+  const siteId = String(next.SITE_ID || "").trim().toLowerCase();
+  if (siteId === PRODUCTION_CAMPAIGN_SITE_ID) return next;
+  if (isKinDevMemberstackRuntime(next) || observed.includes(KIN_DEV_CAMPAIGN_HOST)) {
+    if (campaignHost(next.URL) !== KIN_DEV_CAMPAIGN_HOST) {
+      next.URL = `https://${KIN_DEV_CAMPAIGN_HOST}`;
+    }
+    return next;
+  }
+  if (PRODUCTION_CAMPAIGN_HOSTS.has(campaignHost(next.URL))) return next;
+  const productionHost = observed.find((host) => PRODUCTION_CAMPAIGN_HOSTS.has(host));
+  if (productionHost) next.URL = `https://${productionHost}`;
+  return next;
 }
 
 /**

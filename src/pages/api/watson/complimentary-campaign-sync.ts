@@ -1,6 +1,9 @@
 import type { APIRoute } from "astro";
 
-import { complimentaryCampaignAstroEnv } from "../../../lib/watson/complimentaryCampaignAstroEnv";
+import {
+  complimentaryCampaignAstroEnv,
+  observedComplimentaryCampaignHosts,
+} from "../../../lib/watson/complimentaryCampaignAstroEnv";
 import {
   complimentaryCampaignSyncWillWrite,
   runComplimentaryCampaignSync,
@@ -23,14 +26,17 @@ export const POST: APIRoute = async (context) => {
     return auth;
   }
 
-  const liveWrite = complimentaryCampaignSyncWillWrite(
-    complimentaryCampaignAstroEnv(context.url),
-  );
+  const campaignEnv = complimentaryCampaignAstroEnv({
+    requestUrl: context.url,
+    request: context.request,
+  });
+  const liveWrite = complimentaryCampaignSyncWillWrite(campaignEnv);
   try {
     const result = await runComplimentaryCampaignSync({ liveWrite });
     return watsonJsonResponse({
       ok: result.ok,
       liveWrite: result.liveWrite,
+      hosts: observedComplimentaryCampaignHosts(context.url, context.request),
       result,
     });
   } catch (error) {

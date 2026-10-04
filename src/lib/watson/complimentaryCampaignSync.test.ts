@@ -12,6 +12,7 @@ import {
   ACTIVE_PAID_MEMBERSHIP_YES,
   COMPLIMENTARY_ACCESS_THROUGH_FIELD,
   COMPLIMENTARY_MEMBERSHIP_TAG,
+  applyComplimentaryCampaignRequestHosts,
   complimentaryCampaignSyncWillWrite,
   isProductionActiveCampaignWriteRuntime,
   PRODUCTION_CAMPAIGN_SITE_ID,
@@ -136,6 +137,15 @@ describe("complimentary campaign sync guards", () => {
         URL: "https://kin-dev.netlify.app",
       }),
     ).toBe(false);
+    expect(complimentaryCampaignSyncWillWrite({ URL: "https://knititnow.com" })).toBe(true);
+    expect(
+      complimentaryCampaignSyncWillWrite({
+        CONTEXT: "deploy-preview",
+        SITE_ID: PRODUCTION_CAMPAIGN_SITE_ID,
+        URL: "https://deploy-preview.netlify.app",
+        COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED: "true",
+      }),
+    ).toBe(false);
   });
 
   it("lets Watson routes read the Astro build env before deciding to write", () => {
@@ -151,8 +161,18 @@ describe("complimentary campaign sync guards", () => {
       ),
       "utf8",
     );
-    expect(syncRoute).toContain("complimentaryCampaignAstroEnv(context.url)");
-    expect(dateRoute).toContain("complimentaryCampaignAstroEnv(context.url)");
+    expect(syncRoute).toContain("complimentaryCampaignAstroEnv({");
+    expect(dateRoute).toContain("complimentaryCampaignAstroEnv({");
+    const withPublicHost = applyComplimentaryCampaignRequestHosts(
+      { CONTEXT: "production", NODE_ENV: "production", URL: "https://deploy-preview.netlify.app" },
+      ["deploy-preview.netlify.app", "knititnow.com"],
+    );
+    expect(complimentaryCampaignSyncWillWrite(withPublicHost)).toBe(true);
+    const kinDevWins = applyComplimentaryCampaignRequestHosts(
+      { CONTEXT: "production", NODE_ENV: "production" },
+      ["knititnow.com", "kin-dev.netlify.app"],
+    );
+    expect(complimentaryCampaignSyncWillWrite(kinDevWins)).toBe(false);
   });
 
   it("reuses an existing field title instead of creating another", () => {
