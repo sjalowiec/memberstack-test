@@ -29,6 +29,7 @@ export const POST: APIRoute = async (context) => {
     return watsonJsonResponse({
       ok: result.ok,
       liveWrite: result.liveWrite,
+      runtime: "astro-env",
       result,
     });
   } catch (error) {
