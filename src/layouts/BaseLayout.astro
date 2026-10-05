@@ -10,6 +10,7 @@ import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
 import RobotsMeta from "../components/seo/RobotsMeta.astro";
+import TurnstileScript from "../components/TurnstileScript.astro";
 
 interface Props {
   title?: string;
@@ -294,6 +295,7 @@ const isProduction =
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
 
     <ContactModal />
+    <TurnstileScript />
     <AccountPasswordResetModal />
     <KinCatalogVideoModal />
     <KinImageModal />

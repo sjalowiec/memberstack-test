@@ -1,0 +1,33 @@
+---
+/**
+ * Cloudflare Turnstile mount point (Managed widget, interaction-only appearance).
+ * Rendered explicitly via src/scripts/turnstile.ts after api.js loads.
+ */
+interface Props {
+  /** Optional id for the mount element (helpful for modal targeting). */
+  id?: string;
+  class?: string;
+}
+
+const { id, class: className } = Astro.props;
+const siteKey = (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "").trim();
+---
+
+{
+  siteKey ? (
+    <div
+      id={id}
+      class:list={["contact-turnstile", className]}
+      data-turnstile-slot
+      data-sitekey={siteKey}
+      data-appearance="interaction-only"
+    />
+  ) : null
+}
+
+<style>
+  .contact-turnstile {
+    margin: 0.25rem 0 0.15rem;
+    min-height: 0;
+  }
+</style>

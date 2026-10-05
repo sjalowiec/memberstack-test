@@ -2,6 +2,12 @@ import {
   formatContactSubmittedAtLocale,
   wireContactFormSubmit,
 } from "./contactFormSubmit";
+import {
+  ensureTurnstileWidget,
+  getTurnstileSlot,
+  resetTurnstileWidget,
+  whenTurnstileReady,
+} from "./turnstile";
 
 /** Open/close Contact Sue modal and wire shared form submit. */
 export function initContactModal() {
@@ -42,6 +48,22 @@ export function initContactModal() {
     }
   }
 
+  function modalTurnstileSlot() {
+    return getTurnstileSlot(form instanceof HTMLFormElement ? form : null);
+  }
+
+  function refreshModalTurnstile() {
+    const slot = modalTurnstileSlot();
+    if (!slot) return;
+    whenTurnstileReady(() => {
+      ensureTurnstileWidget(slot);
+    });
+  }
+
+  function clearModalTurnstile() {
+    resetTurnstileWidget(modalTurnstileSlot());
+  }
+
   function openModal(source: string) {
     if (pageUrlInput) {
       pageUrlInput.value = window.location.href;
@@ -57,6 +79,8 @@ export function initContactModal() {
     modal?.setAttribute("aria-hidden", "false");
     modal?.classList.add("contact-modal--open");
     document.body.style.overflow = "hidden";
+    // Render/reset after the modal is visible (Turnstile needs a displayed container).
+    refreshModalTurnstile();
   }
 
   function closeModal() {
@@ -66,6 +90,7 @@ export function initContactModal() {
     if (form instanceof HTMLFormElement) {
       form.reset();
     }
+    clearModalTurnstile();
     clearFieldErrors();
   }
 

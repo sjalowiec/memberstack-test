@@ -10,6 +10,10 @@ import {
   isHandlerEvent,
   parseContactFormData,
 } from "./lib/parse-contact-body.js";
+import {
+  getTurnstileSecretKey,
+  verifyTurnstileToken,
+} from "./lib/turnstile.js";
 
 const CONTACT_UPLOADS_STORE = "contact-uploads";
 
@@ -98,6 +102,7 @@ async function webResponseToLambdaResult(response) {
  *   originalFilename: string | null,
  * }>} [persistImage]
  * @property {() => string} [getResendApiKey]
+ * @property {() => string} [getTurnstileSecretKey]
  * @property {() => string} [getFromAddress]
  * @property {() => string} [nowIso]
  */
@@ -235,6 +240,38 @@ export async function handleContactPost(req, event, deps = {}) {
 
     const { name, email, message, subject, source: formSource, pageUrl } = submission.value;
 
+    // --- SPAM PROTECTION #3: Cloudflare Turnstile ---
+    // After honeypot / rate-limit / field checks; before Watson storage and Resend.
+    const fetchImpl = deps.fetchImpl || fetch;
+    const resolveTurnstileSecret =
+      deps.getTurnstileSecretKey || (() => getTurnstileSecretKey());
+    const turnstileToken = formData.get("cf-turnstile-response")?.toString();
+    const turnstile = await verifyTurnstileToken(turnstileToken, ip, {
+      secret: resolveTurnstileSecret(),
+      fetchImpl,
+    });
+    if (!turnstile.ok) {
+      if (turnstile.reason === "missing_secret") {
+        console.error("[contact] Missing TURNSTILE_SECRET_KEY");
+        return new Response(
+          "We couldn't send your message right now. Please try again later or email us directly.",
+          {
+            status: 500,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          },
+        );
+      }
+
+      console.warn("[contact] Turnstile verification failed:", turnstile.reason, {
+        errorCodes: turnstile.errorCodes || null,
+        ip,
+        formSource: formSource || null,
+      });
+      return validationErrorResponse(
+        "We couldn't verify this submission. Please wait a moment and try again.",
+      );
+    }
+
     // --- Optional image (contact page: field name "images") ---
     const imageResult = validateContactImage(formData.get("images"));
     if (!imageResult.ok) {
@@ -304,7 +341,6 @@ export async function handleContactPost(req, event, deps = {}) {
     });
 
     // --- Resend notification (must not lose the saved message on failure) ---
-    const fetchImpl = deps.fetchImpl || fetch;
     const getResendApiKey =
       deps.getResendApiKey || (() => (process.env.RESEND_API_KEY || "").trim());
     const getFromAddress = deps.getFromAddress || getContactFromAddress;

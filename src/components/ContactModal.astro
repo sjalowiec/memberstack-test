@@ -1,4 +1,5 @@
 ---
+import TurnstileWidget from "./TurnstileWidget.astro";
 ---
 <!-- Contact Modal -->
 <div
@@ -87,6 +88,8 @@
         <p id="contact-image-error-modal" class="contact-form__error" hidden role="alert"></p>
         <p id="contact-submit-error-modal" class="contact-form__error" hidden role="alert"></p>
       </div>
+
+      <TurnstileWidget id="turnstile-contact-modal" />
 
       <div class="contact-form__submit-wrap">
         <button type="submit" class="contact-form__submit kbm-btn kbm-btn-primary" id="contact-modal-submit-btn">

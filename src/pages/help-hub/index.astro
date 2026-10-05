@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import TurnstileWidget from "../../components/TurnstileWidget.astro";
 import "../../components/talk-bubbles.css";
 import HelpHubTipContent from "../../components/help-hub/HelpHubTipContent.astro";
 import { loadPublicHelpHubTips } from "../../lib/helpHub/loadTips";
@@ -227,6 +228,8 @@ if (debugHelpHubTip) {
             <textarea id="question" name="question" rows="4" placeholder=" " required></textarea>
             <label for="question" class="floating-label">What do you need help with?</label>
           </div>
+
+          <TurnstileWidget id="turnstile-help-hub" />
 
           <p id="help-hub-submit-error" class="help-hub-form__error" hidden role="alert"></p>
 
