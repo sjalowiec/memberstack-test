@@ -84,6 +84,14 @@ function deferredMediaSrc(url: string): string | undefined {
   if (!deferMedia || !url) return undefined;
   return url;
 }
+
+/** Keep the play mark on the same line as the last word of the lesson title. */
+function lessonTitleEnding(title: string): { lead: string; end: string } {
+  const trimmed = title.trim();
+  const splitAt = trimmed.lastIndexOf(" ");
+  if (splitAt <= 0) return { lead: "", end: trimmed };
+  return { lead: trimmed.slice(0, splitAt + 1), end: trimmed.slice(splitAt + 1) };
+}
 ---
 
 <div
@@ -331,7 +339,9 @@ function deferredMediaSrc(url: string): string | undefined {
           <span class="help-hub-member-lessons__toggle-hide">{hideLessonsLabel}</span>
         </summary>
         <ul class="help-hub-member-lessons__list">
-          {memberResourceCards.map((resource) => (
+          {memberResourceCards.map((resource) => {
+            const titleEnding = lessonTitleEnding(resource.title);
+            return (
             <li class="help-hub-member-lessons__item">
               <button
                 type="button"
@@ -346,7 +356,7 @@ function deferredMediaSrc(url: string): string | undefined {
                 aria-controls={lessonDialogId}
                 aria-expanded="false"
               >
-                {resource.title}
+                <span class="help-hub-member-lessons__lesson-label">{titleEnding.lead}<span class="help-hub-member-lessons__title-end">{titleEnding.end}<span class="help-hub-member-lessons__play" aria-hidden="true"></span></span></span>
               </button>
               <div class="help-hub-member-lessons__gate" data-hh-lesson-gate hidden>
                 <div
@@ -359,7 +369,8 @@ function deferredMediaSrc(url: string): string | undefined {
                 </p>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </details>
 
@@ -960,6 +971,26 @@ function deferredMediaSrc(url: string): string | undefined {
     background: #f7faf4;
     outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
+  }
+
+  .help-hub-member-lessons__lesson-label {
+    min-width: 0;
+  }
+
+  .help-hub-member-lessons__title-end {
+    white-space: nowrap;
+  }
+
+  .help-hub-member-lessons__play {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 0.4em;
+    vertical-align: 0.12em;
+    border-style: solid;
+    border-width: 0.26em 0 0.26em 0.4em;
+    border-color: transparent transparent transparent currentColor;
+    opacity: 0.55;
   }
 
   .help-hub-member-lessons__gate {
