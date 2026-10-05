@@ -11,6 +11,14 @@ import {
 
 export const prerender = false;
 
+const REMINDER_PUBLISH_MARKER = "live-flag-1";
+
+function reminderLiveEnabled(): boolean {
+  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+    ?.env;
+  return env?.["LEGACY_RENEWAL_REMINDER_LIVE_ENABLED"] === "true";
+}
+
 /**
  * Read-only check that each legacy renewal tag is the start trigger of an
  * ActiveCampaign automation. Does not apply tags or run the reminder job.
@@ -35,7 +43,8 @@ export const GET: APIRoute = async (context) => {
     return watsonJsonResponse({
       ok: true,
       ...report,
-      reminderLiveEnabled: process.env.LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true",
+      reminderLiveEnabled: reminderLiveEnabled(),
+      reminderPublishMarker: REMINDER_PUBLISH_MARKER,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Trigger check failed.";
