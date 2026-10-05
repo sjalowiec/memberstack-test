@@ -288,7 +288,7 @@ describe("preview view helpers", () => {
     const rows = buildReminderPreviewRows([
       {
         windowDays: 30,
-        tag: "legacy-renewal-30-day",
+        tag: "legacy-renewal-30-days",
         legacyMemberId: "m1",
         fristname: "Ada",
         lastname: "Lovelace",

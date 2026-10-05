@@ -37,8 +37,8 @@ when `subscriptionexpiring::date = D + windowDays`:
 
 | Window | Condition (paid-through) | Exact tag |
 |---|---|---|
-| 30-day | `D + 30` | `legacy-renewal-30-day` |
-| 7-day | `D + 7` | `legacy-renewal-7-day` |
+| 30-day | `D + 30` | `legacy-renewal-30-days` |
+| 7-day | `D + 7` | `legacy-renewal-7-days` |
 | 1-day | `D + 1` | `legacy-renewal-1-day` |
 
 Monthly subscribers (auto-renewing via Stripe) and beta rows are excluded from
@@ -113,7 +113,7 @@ logs. The audit table is reserved for **live** attempts and outcomes.
    *Legacy Membership Paid Through*; set `ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID`
    to its numeric id.
 3. **Tags** — the three tags are auto-created on first live use, or create them
-   manually: `legacy-renewal-30-day`, `legacy-renewal-7-day`, `legacy-renewal-1-day`.
+   manually: `legacy-renewal-30-days`, `legacy-renewal-7-days`, `legacy-renewal-1-day`.
 4. **Automations** — build one automation per tag ("when tag is added ? send
    email"), each set to run **once per contact**.
 

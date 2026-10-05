@@ -51,8 +51,8 @@ export type ReminderWindowDays = (typeof REMINDER_WINDOW_DAYS)[number];
 
 /** The exact ActiveCampaign tag applied for each window. */
 export const REMINDER_TAG_BY_WINDOW: Record<ReminderWindowDays, string> = {
-  30: "legacy-renewal-30-day",
-  7: "legacy-renewal-7-day",
+  30: "legacy-renewal-30-days",
+  7: "legacy-renewal-7-days",
   1: "legacy-renewal-1-day",
 };
 
