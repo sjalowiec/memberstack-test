@@ -91,6 +91,29 @@ describe("resolveReminderExecution — manual runs", () => {
     ).toBe(false);
   });
 
+  it("keeps kin-dev dry-run even when the live flag and secret are set", () => {
+    expect(
+      resolveReminderExecution({
+        scheduled: true,
+        confirmLive: false,
+        providedSecret: null,
+        configuredSecret: null,
+        liveEnabled: true,
+        productionWritesAllowed: false,
+      }),
+    ).toEqual({ authorized: true, dryRun: true, triggerSource: "scheduled" });
+    expect(
+      resolveReminderExecution({
+        scheduled: false,
+        confirmLive: true,
+        providedSecret: SECRET,
+        configuredSecret: SECRET,
+        liveEnabled: true,
+        productionWritesAllowed: false,
+      }),
+    ).toEqual({ authorized: true, dryRun: true, triggerSource: "manual" });
+  });
+
   it("allows a live manual run with confirm=LIVE and the correct secret", () => {
     expect(
       resolveReminderExecution({

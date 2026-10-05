@@ -345,6 +345,8 @@ function emptyTotals(): ReminderTotals {
     skippedUnsubscribed: 0,
     skippedBounced: 0,
     skippedUnconfirmed: 0,
+    skippedComplimentary: 0,
+    skippedNotSubscribed: 0,
     createdContacts: 0,
     failures: 0,
   };

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { MEMBERSHIPS } from "../../config/memberships";
+import { COMPLIMENTARY_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
 import type { MemberstackMember } from "../membership/membershipSummary";
 import type {
   ActiveCampaignClient,
@@ -32,6 +32,25 @@ const paidMember: MemberstackMember = {
   auth: { email: "a@x.com" },
   planConnections: [
     { planId: MEMBERSHIPS.membership.memberstackPlanId, active: true },
+  ],
+};
+const trialingPaidMember: MemberstackMember = {
+  id: "mem_trial",
+  auth: { email: "a@x.com" },
+  planConnections: [
+    { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "TRIALING", active: true },
+  ],
+};
+const openComplimentaryMember: MemberstackMember = {
+  id: "mem_comp",
+  auth: { email: "a@x.com" },
+  planConnections: [
+    { planId: LEGACY_ANNUAL_PLAN_ID, active: true },
+    {
+      planId: COMPLIMENTARY_MEMBERSHIPS.complimentaryMembership.memberstackPlanId,
+      status: "ACTIVE",
+      active: true,
+    },
   ],
 };
 
@@ -170,7 +189,7 @@ describe("runLegacyRenewalReminders - dry-run safety", () => {
     expect(result.details[0]?.tag).toBe(REMINDER_TAG_BY_WINDOW[30]);
   });
 
-  it("previews create+subscribe+tag for an unknown contact without writes", async () => {
+  it("does not preview a tag for a contact who is not on the list", async () => {
     const ac = makeAc();
     const result = await runLegacyRenewalReminders(
       baseOpts({
@@ -181,10 +200,11 @@ describe("runLegacyRenewalReminders - dry-run safety", () => {
       }),
     );
 
-    expect(result.totals.wouldTag).toBe(1);
-    expect(result.details[0]?.created).toBe(true);
-    expect(result.details[0]?.tag).toBe(REMINDER_TAG_BY_WINDOW[7]);
+    expect(result.totals.wouldTag).toBe(0);
+    expect(result.totals.skippedNotSubscribed).toBe(1);
+    expect(result.details[0]?.created).toBe(false);
     expect(ac.spies.syncContact).not.toHaveBeenCalled();
+    expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
   });
 
   it("defaults to dry-run when dryRun is not specified", async () => {
@@ -204,9 +224,9 @@ describe("runLegacyRenewalReminders - dry-run safety", () => {
 });
 
 describe("runLegacyRenewalReminders - live tagging", () => {
-  it("updates the date field, subscribes if needed, then tags", async () => {
+  it("updates the date field and tags an active subscriber without subscribing", async () => {
     const ac = makeAc({
-      "a@x.com": { id: "ac_1", listStatus: "not_on_list", tags: new Set() },
+      "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() },
     });
     const recorded: ReminderAuditRow[] = [];
     const result = await runLegacyRenewalReminders(
@@ -229,13 +249,13 @@ describe("runLegacyRenewalReminders - live tagging", () => {
       firstName: "Ada",
       fieldValues: [{ field: FIELD_ID, value: "2026-08-27" }],
     });
-    expect(ac.spies.subscribeToList).toHaveBeenCalledWith("ac_1");
+    expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
     expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-days");
     expect(recorded).toHaveLength(1);
     expect(recorded[0]?.outcome).toBe("tagged");
   });
 
-  it("creates, subscribes and tags a brand-new contact", async () => {
+  it("does not create or subscribe a brand-new contact", async () => {
     const ac = makeAc();
     const result = await runLegacyRenewalReminders(
       baseOpts({
@@ -245,11 +265,31 @@ describe("runLegacyRenewalReminders - live tagging", () => {
         resolveMemberstackMemberByEmail: resolverFor({ "a@x.com": { status: "not_found" } }),
       }),
     );
-    expect(result.totals.tagged).toBe(1);
-    expect(result.totals.createdContacts).toBe(1);
-    expect(ac.spies.syncContact).toHaveBeenCalledTimes(1);
-    expect(ac.spies.subscribeToList).toHaveBeenCalledTimes(1);
-    expect(ac.spies.addTag).toHaveBeenCalledTimes(1);
+    expect(result.totals.tagged).toBe(0);
+    expect(result.totals.skippedNotSubscribed).toBe(1);
+    expect(result.totals.createdContacts).toBe(0);
+    expect(ac.spies.syncContact).not.toHaveBeenCalled();
+    expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
+    expect(ac.spies.addTag).not.toHaveBeenCalled();
+  });
+
+  it("does not subscribe a contact who is not on the list", async () => {
+    const ac = makeAc({
+      "a@x.com": { id: "ac_1", listStatus: "not_on_list", tags: new Set() },
+    });
+    const result = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: false,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "a@x.com": { status: "unique", member: legacyOnlyMember },
+        }),
+      }),
+    );
+    expect(result.totals.skippedNotSubscribed).toBe(1);
+    expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
+    expect(ac.spies.addTag).not.toHaveBeenCalled();
   });
 });
 
@@ -268,6 +308,66 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
     );
     expect(result.totals.skippedActivePaid).toBe(1);
     expect(ac.spies.addTag).not.toHaveBeenCalled();
+  });
+
+  it("skips a trialing paid membership", async () => {
+    const ac = makeAc({ "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() } });
+    const result = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: false,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "a@x.com": { status: "unique", member: trialingPaidMember },
+        }),
+      }),
+    );
+    expect(result.totals.skippedActivePaid).toBe(1);
+    expect(ac.spies.addTag).not.toHaveBeenCalled();
+  });
+
+  it("skips open-ended complimentary access and complimentary dates past the legacy date", async () => {
+    const ac = makeAc({ "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() } });
+    const open = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: true,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "a@x.com": { status: "unique", member: openComplimentaryMember },
+        }),
+        loadComplimentaryAccessYmdByMemberstackId: async () => new Map(),
+      }),
+    );
+    expect(open.totals.skippedComplimentary).toBe(1);
+    expect(open.totals.wouldTag).toBe(0);
+
+    const later = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: true,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "a@x.com": { status: "unique", member: openComplimentaryMember },
+        }),
+        loadComplimentaryAccessYmdByMemberstackId: async () => new Map([["mem_comp", "2026-12-01"]]),
+      }),
+    );
+    expect(later.totals.skippedComplimentary).toBe(1);
+
+    const endingFirst = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: true,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "a@x.com": { status: "unique", member: openComplimentaryMember },
+        }),
+        loadComplimentaryAccessYmdByMemberstackId: async () => new Map([["mem_comp", "2026-08-01"]]),
+      }),
+    );
+    expect(endingFirst.totals.wouldTag).toBe(1);
+    expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
   });
 
   it("respects an unsubscribed list status", async () => {

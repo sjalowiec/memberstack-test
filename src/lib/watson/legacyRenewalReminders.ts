@@ -7,10 +7,11 @@
  * Knit It Now membership in Memberstack. Therefore the unchanged legacy date can
  * never prove they have not repurchased.
  *
- * This job sends renewal nudges by tagging the member in ActiveCampaign at 30, 7
- * and 1 day before the Watson paid-through date - but only after re-checking
- * Memberstack (authoritative for "has repurchased"). It never modifies Watson
- * dates and never touches the separate legacy annual expiration process.
+ * This job sends renewal nudges by tagging an already-subscribed member in
+ * ActiveCampaign at 30, 7 and 1 day before the Watson paid-through date, after
+ * re-checking Memberstack. It never subscribes or resubscribes a contact, never
+ * modifies Watson dates, and never touches the separate legacy annual expiration
+ * process.
  *
  * Source-of-truth split:
  *   - Watson  = WHEN to remind (subscriptionexpiring, America/Los_Angeles day).
@@ -19,6 +20,8 @@
  *
  * Safety: dry-run performs zero ActiveCampaign writes and writes no audit rows.
  */
+import { COMPLIMENTARY_MEMBERSHIPS } from "../../config/memberships";
+import { getActivePlanIds } from "../memberAccess";
 import { memberHasActivePaidMembership } from "../membership/membershipCheckoutDecision";
 import {
   calendarYmdForNow,
@@ -30,6 +33,10 @@ import {
   type ActiveCampaignClient,
   type ActiveCampaignListStatus,
 } from "../activecampaign/client";
+import {
+  ALL_COMPLIMENTARY_ACCESS_SQL,
+  complimentaryAccessThroughYmd,
+} from "./complimentaryAccess";
 import { normalizeCustomerEmail } from "./customerIdentifier";
 import { queryWatson } from "./db";
 import {
@@ -60,6 +67,8 @@ export type ReminderOutcome =
   | "tagged"
   | "would_tag"
   | "skipped_active_paid"
+  | "skipped_complimentary"
+  | "skipped_not_subscribed"
   | "skipped_ambiguous"
   | "skipped_missing_email"
   | "skipped_staff_or_test"
@@ -108,6 +117,8 @@ export interface ReminderWindowSummary {
   tagged: number;
   wouldTag: number;
   skippedActivePaid: number;
+  skippedComplimentary: number;
+  skippedNotSubscribed: number;
   skippedAmbiguous: number;
   skippedMissingEmail: number;
   skippedStaffOrTest: number;
@@ -124,6 +135,8 @@ export interface ReminderTotals {
   tagged: number;
   wouldTag: number;
   skippedActivePaid: number;
+  skippedComplimentary: number;
+  skippedNotSubscribed: number;
   skippedAmbiguous: number;
   skippedMissingEmail: number;
   skippedStaffOrTest: number;
@@ -327,6 +340,44 @@ export interface RunLegacyRenewalRemindersOptions {
   recordAttempt?: (row: ReminderAuditRow) => Promise<void>;
   /** Skip validating that the AC list id exists (tests). */
   skipListValidation?: boolean;
+  /**
+   * Saved complimentary access-through dates keyed by Memberstack id.
+   * An active complimentary plan with no entry is open-ended.
+   */
+  loadComplimentaryAccessYmdByMemberstackId?: () => Promise<Map<string, string>>;
+  /**
+   * When false, a requested live run stays a dry run. kin-dev must pass false.
+   * Omitted means the caller already decided the mode.
+   */
+  productionWritesAllowed?: boolean;
+}
+
+const COMPLIMENTARY_PLAN_ID =
+  COMPLIMENTARY_MEMBERSHIPS.complimentaryMembership.memberstackPlanId;
+
+export function activeComplimentaryOutlastsLegacyDate(input: {
+  memberOrPayload: unknown;
+  legacyYmd: string;
+  complimentaryYmd: string | null;
+}): boolean {
+  const active = getActivePlanIds(input.memberOrPayload).includes(COMPLIMENTARY_PLAN_ID);
+  if (!active) return false;
+  if (!input.complimentaryYmd) return true;
+  return input.complimentaryYmd > input.legacyYmd;
+}
+
+async function loadComplimentaryAccessYmdByMemberstackId(
+  queryFn: WatsonQueryFn,
+): Promise<Map<string, string>> {
+  const rows = await queryFn<{ memberstack_id: string; access_through: Date | string | null }>(
+    ALL_COMPLIMENTARY_ACCESS_SQL,
+  );
+  const dates = new Map<string, string>();
+  for (const row of rows) {
+    const ymd = complimentaryAccessThroughYmd(row.access_through);
+    if (row.memberstack_id && ymd) dates.set(row.memberstack_id, ymd);
+  }
+  return dates;
 }
 
 function emptyWindowSummary(windowDays: ReminderWindowDays): ReminderWindowSummary {
@@ -337,6 +388,8 @@ function emptyWindowSummary(windowDays: ReminderWindowDays): ReminderWindowSumma
     tagged: 0,
     wouldTag: 0,
     skippedActivePaid: 0,
+    skippedComplimentary: 0,
+    skippedNotSubscribed: 0,
     skippedAmbiguous: 0,
     skippedMissingEmail: 0,
     skippedStaffOrTest: 0,
@@ -363,6 +416,12 @@ function tallyOutcome(
       break;
     case "skipped_active_paid":
       summary.skippedActivePaid += 1;
+      break;
+    case "skipped_complimentary":
+      summary.skippedComplimentary += 1;
+      break;
+    case "skipped_not_subscribed":
+      summary.skippedNotSubscribed += 1;
       break;
     case "skipped_ambiguous":
       summary.skippedAmbiguous += 1;
@@ -423,7 +482,8 @@ export async function runLegacyRenewalReminders(
 ): Promise<LegacyRenewalReminderResult> {
   const now = options.now ?? new Date();
   const todayLosAngeles = calendarYmdForNow(now, MEMBERSHIP_STATUS_CALENDAR_TIMEZONE);
-  const dryRun = options.dryRun ?? true;
+  const productionWritesAllowed = options.productionWritesAllowed !== false;
+  const dryRun = (options.dryRun ?? true) || !productionWritesAllowed;
   const triggerSource = options.triggerSource ?? "manual";
   const queryFn = options.queryFn ?? queryWatson;
   const env = options.env ?? process.env;
@@ -448,6 +508,8 @@ export async function runLegacyRenewalReminders(
       tagged: 0,
       wouldTag: 0,
       skippedActivePaid: 0,
+      skippedComplimentary: 0,
+      skippedNotSubscribed: 0,
       skippedAmbiguous: 0,
       skippedMissingEmail: 0,
       skippedStaffOrTest: 0,
@@ -506,6 +568,9 @@ export async function runLegacyRenewalReminders(
         defaultHasTaggedRecord(memberId, tagName, queryFn));
     const recordAttempt =
       options.recordAttempt ?? ((row: ReminderAuditRow) => defaultRecordAttempt(row, queryFn));
+    const complimentaryByMemberstackId = options.loadComplimentaryAccessYmdByMemberstackId
+      ? await options.loadComplimentaryAccessYmdByMemberstackId()
+      : await loadComplimentaryAccessYmdByMemberstackId(queryFn);
 
     // 1) Gather candidates for all three windows.
     const allCandidates: Array<{
@@ -656,6 +721,22 @@ export async function runLegacyRenewalReminders(
             });
             continue;
           }
+          if (
+            activeComplimentaryOutlastsLegacyDate({
+              memberOrPayload: { data: resolution.member },
+              legacyYmd: paidThrough,
+              complimentaryYmd: complimentaryByMemberstackId.get(memberstackId) ?? null,
+            })
+          ) {
+            await pushDetail({
+              ...base,
+              memberstackId,
+              memberstackResolution,
+              outcome: "skipped_complimentary",
+              reason: "complimentary_access_outlasts_legacy_date",
+            });
+            continue;
+          }
         }
         // `not_found` continues: no Memberstack account means no active paid plan;
         // they may still be a valid legacy annual member who should be reminded.
@@ -672,65 +753,22 @@ export async function runLegacyRenewalReminders(
           continue;
         }
 
-        // Resolve the AC contact (reads are allowed in dry-run).
+        // Reads are allowed in dry-run. Never create a contact or change list status.
         const existing = await ac.findContactByEmail(normalizedEmail);
-
-        // Brand-new contact: no consent conflict possible; create + subscribe + tag.
         if (!existing) {
-          if (dryRun) {
-            await pushDetail({
-              ...base,
-              memberstackId,
-              memberstackResolution,
-              listStatus: "not_on_list",
-              created: true,
-              subscribed: true,
-              outcome: "would_tag",
-              reason: "would_create_subscribe_tag",
-            });
-            continue;
-          }
-
-          const synced = await ac.syncContact({
-            email: normalizedEmail,
-            firstName: row.fristname?.trim() || undefined,
-            fieldValues: [{ field: paidThroughFieldId, value: paidThrough }],
-          });
-          await ac.subscribeToList(synced.id, listId);
-          const tagId = await ac.resolveTagId(tag, { create: true });
-          if (!tagId) {
-            await pushDetail({
-              ...base,
-              memberstackId,
-              memberstackResolution,
-              acContactId: synced.id,
-              listStatus: "active",
-              created: true,
-              subscribed: true,
-              outcome: "failure",
-              reason: "tag_resolve_failed",
-            });
-            continue;
-          }
-          await ac.addTag(synced.id, tagId);
           await pushDetail({
             ...base,
             memberstackId,
             memberstackResolution,
-            acContactId: synced.id,
-            listStatus: "active",
-            created: true,
-            subscribed: true,
-            outcome: "tagged",
-            reason: "created_subscribed_tagged",
+            listStatus: "not_on_list",
+            outcome: "skipped_not_subscribed",
+            reason: "contact_not_subscribed",
           });
           continue;
         }
 
-        // Existing contact: protect consent before doing anything.
         const contactId = existing.id;
         const listStatus = await ac.getListStatus(contactId, listId);
-
         if (listStatus === "unsubscribed") {
           await pushDetail({
             ...base,
@@ -767,6 +805,18 @@ export async function runLegacyRenewalReminders(
           });
           continue;
         }
+        if (listStatus !== "active") {
+          await pushDetail({
+            ...base,
+            memberstackId,
+            memberstackResolution,
+            acContactId: contactId,
+            listStatus,
+            outcome: "skipped_not_subscribed",
+            reason: "list_not_active",
+          });
+          continue;
+        }
 
         // Duplicate protection: skip if the tag is already on the contact.
         const tagId = await ac.resolveTagId(tag, { create: !dryRun });
@@ -783,8 +833,6 @@ export async function runLegacyRenewalReminders(
           continue;
         }
 
-        const needsSubscribe = listStatus === "not_on_list";
-
         if (dryRun) {
           await pushDetail({
             ...base,
@@ -792,22 +840,18 @@ export async function runLegacyRenewalReminders(
             memberstackResolution,
             acContactId: contactId,
             listStatus,
-            subscribed: needsSubscribe,
             outcome: "would_tag",
             reason: "would_update_field_and_tag",
           });
           continue;
         }
 
-        // LIVE: write the paid-through date field, ensure subscription, then tag.
+        // LIVE: write the paid-through date, then tag. Do not subscribe.
         await ac.syncContact({
           email: normalizedEmail,
           firstName: row.fristname?.trim() || undefined,
           fieldValues: [{ field: paidThroughFieldId, value: paidThrough }],
         });
-        if (needsSubscribe) {
-          await ac.subscribeToList(contactId, listId);
-        }
         if (!tagId) {
           await pushDetail({
             ...base,
@@ -815,7 +859,6 @@ export async function runLegacyRenewalReminders(
             memberstackResolution,
             acContactId: contactId,
             listStatus,
-            subscribed: needsSubscribe,
             outcome: "failure",
             reason: "tag_resolve_failed",
           });
@@ -828,7 +871,6 @@ export async function runLegacyRenewalReminders(
           memberstackResolution,
           acContactId: contactId,
           listStatus,
-          subscribed: needsSubscribe,
           outcome: "tagged",
           reason: "field_updated_and_tagged",
         });
@@ -847,6 +889,8 @@ export async function runLegacyRenewalReminders(
       result.totals.tagged += w.tagged;
       result.totals.wouldTag += w.wouldTag;
       result.totals.skippedActivePaid += w.skippedActivePaid;
+      result.totals.skippedComplimentary += w.skippedComplimentary;
+      result.totals.skippedNotSubscribed += w.skippedNotSubscribed;
       result.totals.skippedAmbiguous += w.skippedAmbiguous;
       result.totals.skippedMissingEmail += w.skippedMissingEmail;
       result.totals.skippedStaffOrTest += w.skippedStaffOrTest;
