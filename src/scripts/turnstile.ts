@@ -42,14 +42,10 @@ function storeWidgetId(slot: HTMLElement, id: string) {
 export function whenTurnstileReady(callback: () => void): void {
   if (typeof window === "undefined") return;
 
+  // api.js is loaded with async/defer. turnstile.ready() throws in that mode;
+  // the onload callback and this waiter only run after window.turnstile exists.
   const run = () => {
-    if (window.turnstile?.ready) {
-      window.turnstile.ready(callback);
-      return;
-    }
-    if (window.turnstile) {
-      callback();
-    }
+    if (window.turnstile) callback();
   };
 
   if (window.turnstile) {
