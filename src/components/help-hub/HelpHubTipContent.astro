@@ -70,11 +70,6 @@ const lessonLoginReturn = helpHubToolLoginReturnPath(
 );
 const showLessonsLabel = memberResourceCards.length === 1 ? "Show lesson" : "Show lessons";
 const hideLessonsLabel = memberResourceCards.length === 1 ? "Hide lesson" : "Hide lessons";
-const standaloneHref =
-  embedded && typeof tip.slug === "string" && tip.slug.trim() !== ""
-    ? `/help-hub/${tip.slug.trim()}`
-    : "";
-
 function liveMediaSrc(url: string): string | undefined {
   if (deferMedia || !url) return undefined;
   return url;
@@ -98,11 +93,6 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
   class:list={["help-hub-tip-body", embedded && "help-hub-tip-body--embedded"]}
   data-pagefind-ignore={embedded ? true : undefined}
 >
-    {embedded && standaloneHref && (
-      <p class="help-hub-standalone-link">
-        <a href={standaloneHref}>Open this page</a>
-      </p>
-    )}
     <div class="tuesday-tip-hero">
       {typeof tip.hook === "string" && tip.hook.trim() !== "" && (
         <p class="bubble-hook tuesday-tip-hero__hook" data-placeholder="short subtitle/supporting sentence">
@@ -409,22 +399,6 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     min-width: 0;
     max-width: 100%;
     overflow-wrap: break-word;
-  }
-
-  .help-hub-standalone-link {
-    margin: 0 0 0.75rem;
-    text-align: right;
-    font-size: 0.92rem;
-    line-height: 1.4;
-  }
-
-  .help-hub-standalone-link a {
-    color: var(--kbm-green, #52682d);
-  }
-
-  .help-hub-standalone-link a:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 3px;
   }
 
   .tuesday-tip-hero {
