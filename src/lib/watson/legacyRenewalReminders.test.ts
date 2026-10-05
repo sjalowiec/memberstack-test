@@ -583,6 +583,31 @@ describe("runLegacyRenewalReminders - configuration guards", () => {
     expect(result.errorMessage).toContain("ACTIVECAMPAIGN_KIN_LIST_ID");
   });
 
+  it("reads the existing paid-through field by name without creating one", async () => {
+    const ac = makeAc({ "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() } });
+    const resolveFieldId = vi.fn(async () => "9");
+    ac.client.resolveFieldId = resolveFieldId;
+    const result = await runLegacyRenewalReminders(
+      baseOpts({
+        dryRun: true,
+        env: { ACTIVECAMPAIGN_KIN_LIST_ID: LIST_ID } as NodeJS.ProcessEnv,
+        listId: undefined,
+        paidThroughFieldId: undefined,
+        activeCampaign: ac.client,
+        queryFn: makeQueryFn({ 30: [row({ memberid: "m1" })] }),
+        resolveMemberstackMemberByEmail: resolverFor({
+          "a@x.com": { status: "unique", member: legacyOnlyMember },
+        }),
+      }),
+    );
+    expect(resolveFieldId).toHaveBeenCalledWith("Legacy Membership Paid Through", {
+      create: false,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.totals.wouldTag).toBe(1);
+    expect(result.paidThroughFieldId).toBe("9");
+  });
+
   it("fails fast when the paid-through field id is missing", async () => {
     const result = await runLegacyRenewalReminders({
       now: NOW,
