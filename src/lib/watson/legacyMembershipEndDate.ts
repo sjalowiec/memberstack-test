@@ -45,6 +45,21 @@ export interface LegacyEndDateGroup {
   members: LegacyEndDateMember[];
 }
 
+export interface LegacyWindDownMonth {
+  month: string;
+  count: number;
+}
+
+export interface LegacyWindDown {
+  customerCount: number;
+  alreadyExpired: number;
+  byMonth: LegacyWindDownMonth[];
+  ninetyPercentDate: string | null;
+  remainingAfterNinetyPercent: number;
+  finalDate: string | null;
+  lastTen: Array<{ name: string; email: string; paidThrough: string }>;
+}
+
 export interface LegacyMembershipEndDateReport {
   ok: true;
   todayLosAngeles: string;
@@ -53,6 +68,7 @@ export interface LegacyMembershipEndDateReport {
   nextConfirmed: LegacyEndDateGroup;
   latestStillOnLegacy: LegacyEndDateGroup;
   nextStillOnLegacy: LegacyEndDateGroup;
+  windDown: LegacyWindDown;
   unresolved: LegacyEndDateUnresolved[];
   staffOrTest: {
     latestConfirmed: LegacyEndDateGroup;
@@ -131,7 +147,52 @@ function nextGroup(members: LegacyEndDateMember[]): LegacyEndDateGroup {
   return groupOnDate(earlier, latestDate(earlier));
 }
 
+/** Customers still on legacy access whose paid-through day is today or later. */
+export function summarizeLegacyWindDown(
+  members: LegacyEndDateMember[],
+  todayYmd: string,
+): LegacyWindDown {
+  const alreadyExpired = members.filter((member) => member.paidThrough < todayYmd).length;
+  const remaining = members
+    .filter((member) => member.paidThrough >= todayYmd)
+    .sort(
+      (a, b) => a.paidThrough.localeCompare(b.paidThrough) || a.email.localeCompare(b.email),
+    );
+  const counts = new Map<string, number>();
+  for (const member of remaining) {
+    const month = member.paidThrough.slice(0, 7);
+    counts.set(month, (counts.get(month) ?? 0) + 1);
+  }
+  const threshold = remaining.length * 0.9;
+  let seen = 0;
+  let ninetyPercentDate: string | null = null;
+  for (const member of remaining) {
+    seen += 1;
+    if (seen >= threshold) {
+      ninetyPercentDate = member.paidThrough;
+      break;
+    }
+  }
+  const remainingAfter = ninetyPercentDate
+    ? remaining.filter((member) => member.paidThrough > ninetyPercentDate).length
+    : 0;
+  return {
+    customerCount: remaining.length,
+    alreadyExpired,
+    byMonth: [...counts.entries()].map(([month, count]) => ({ month, count })),
+    ninetyPercentDate,
+    remainingAfterNinetyPercent: remainingAfter,
+    finalDate: remaining.at(-1)?.paidThrough ?? null,
+    lastTen: remaining.slice(-10).map((member) => ({
+      name: member.name,
+      email: member.email,
+      paidThrough: member.paidThrough,
+    })),
+  };
+}
+
 export function summarizeLegacyMembershipEndDate(input: {
+  todayYmd: string;
   members: MemberstackMember[];
   watsonRows: ExpiredLegacyWatsonRow[];
   complimentaryByMemberstackId: Map<string, string>;
@@ -208,6 +269,7 @@ export function summarizeLegacyMembershipEndDate(input: {
     nextConfirmed: nextGroup(confirmed),
     latestStillOnLegacy: groupOnDate(stillOnLegacy, latestDate(stillOnLegacy)),
     nextStillOnLegacy: nextGroup(stillOnLegacy),
+    windDown: summarizeLegacyWindDown(stillOnLegacy, input.todayYmd),
     unresolved,
     staffOrTest: {
       latestConfirmed: groupOnDate(staffConfirmed, latestDate(staffConfirmed)),
@@ -239,6 +301,7 @@ export async function loadLegacyMembershipEndDate(options: {
     todayLosAngeles,
     truncated: listed.truncated,
     ...summarizeLegacyMembershipEndDate({
+      todayYmd: todayLosAngeles,
       members: listed.members,
       watsonRows,
       complimentaryByMemberstackId: new Map(
