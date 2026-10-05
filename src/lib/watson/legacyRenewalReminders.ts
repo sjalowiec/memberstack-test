@@ -57,6 +57,8 @@ export const REMINDER_WINDOW_DAYS = [30, 7, 1] as const;
 export type ReminderWindowDays = (typeof REMINDER_WINDOW_DAYS)[number];
 
 /** The exact ActiveCampaign tag applied for each window. */
+export const LEGACY_PAID_THROUGH_FIELD_TITLE = "Legacy Membership Paid Through";
+
 export const REMINDER_TAG_BY_WINDOW: Record<ReminderWindowDays, string> = {
   30: "legacy-renewal-30-days",
   7: "legacy-renewal-7-days",
@@ -490,7 +492,7 @@ export async function runLegacyRenewalReminders(
 
   const settings = getLegacyReminderActiveCampaignSettings(env);
   const listId = options.listId ?? settings.listId;
-  const paidThroughFieldId = options.paidThroughFieldId ?? settings.paidThroughFieldId;
+  let paidThroughFieldId = options.paidThroughFieldId ?? settings.paidThroughFieldId;
 
   const windows = REMINDER_WINDOW_DAYS.map((days) => emptyWindowSummary(days));
   const details: ReminderDetail[] = [];
@@ -534,12 +536,6 @@ export async function runLegacyRenewalReminders(
         "ACTIVECAMPAIGN_KIN_LIST_ID is not set. Configure the existing Knit It Now list id (never auto-created).",
       );
     }
-    if (!paidThroughFieldId) {
-      throw new Error(
-        "ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID is not set. Configure the 'Legacy Membership Paid Through' date field id.",
-      );
-    }
-
     // Resolve the ActiveCampaign client (real HTTP client from env unless injected).
     let ac = options.activeCampaign;
     if (!ac) {
@@ -561,6 +557,18 @@ export async function runLegacyRenewalReminders(
         );
       }
     }
+
+    if (!paidThroughFieldId && ac.resolveFieldId) {
+      paidThroughFieldId = await ac.resolveFieldId(LEGACY_PAID_THROUGH_FIELD_TITLE, {
+        create: false,
+      });
+    }
+    if (!paidThroughFieldId) {
+      throw new Error(
+        "ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID is not set. Configure the 'Legacy Membership Paid Through' date field id.",
+      );
+    }
+    result.paidThroughFieldId = paidThroughFieldId;
 
     const hasTaggedRecord =
       options.hasTaggedRecord ??
