@@ -50,7 +50,9 @@ export interface LegacyMembershipEndDateReport {
   todayLosAngeles: string;
   truncated: boolean;
   latestConfirmed: LegacyEndDateGroup;
+  nextConfirmed: LegacyEndDateGroup;
   latestStillOnLegacy: LegacyEndDateGroup;
+  nextStillOnLegacy: LegacyEndDateGroup;
   unresolved: LegacyEndDateUnresolved[];
   staffOrTest: {
     latestConfirmed: LegacyEndDateGroup;
@@ -121,6 +123,12 @@ function latestDate(members: LegacyEndDateMember[]): string | null {
     (latest, member) => (latest == null || member.paidThrough > latest ? member.paidThrough : latest),
     null,
   );
+}
+
+function nextGroup(members: LegacyEndDateMember[]): LegacyEndDateGroup {
+  const latest = latestDate(members);
+  const earlier = latest ? members.filter((member) => member.paidThrough < latest) : [];
+  return groupOnDate(earlier, latestDate(earlier));
 }
 
 export function summarizeLegacyMembershipEndDate(input: {
@@ -197,7 +205,9 @@ export function summarizeLegacyMembershipEndDate(input: {
 
   return {
     latestConfirmed: groupOnDate(confirmed, latestDate(confirmed)),
+    nextConfirmed: nextGroup(confirmed),
     latestStillOnLegacy: groupOnDate(stillOnLegacy, latestDate(stillOnLegacy)),
+    nextStillOnLegacy: nextGroup(stillOnLegacy),
     unresolved,
     staffOrTest: {
       latestConfirmed: groupOnDate(staffConfirmed, latestDate(staffConfirmed)),

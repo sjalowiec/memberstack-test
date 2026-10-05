@@ -62,7 +62,10 @@ describe("legacy membership end date", () => {
       paidMembership: true,
       complimentaryBeyondLegacy: false,
     });
+    expect(report.nextConfirmed.paidThrough).toBe("2027-03-01");
+    expect(report.nextConfirmed.members.map((row) => row.email)).toEqual(["comp@example.com"]);
     expect(report.latestStillOnLegacy.paidThrough).toBe("2027-01-15");
+    expect(report.nextStillOnLegacy.paidThrough).toBe(null);
     expect(report.latestStillOnLegacy.members.map((row) => row.email)).toEqual([
       "legacy@example.com",
     ]);
