@@ -8,15 +8,18 @@ import {
   requireWatsonAdminJson,
   watsonJsonResponse,
 } from "../../../lib/watson/watsonApiAuth";
+import { legacyRenewalReminderLiveEnabled } from "../../../lib/watson/legacyRenewalReminderLiveFlag";
 
 export const prerender = false;
 
-const REMINDER_PUBLISH_MARKER = "live-flag-1";
+const REMINDER_PUBLISH_MARKER = "live-flag-2";
 
 function reminderLiveEnabled(): boolean {
   const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
     ?.env;
-  return env?.["LEGACY_RENEWAL_REMINDER_LIVE_ENABLED"] === "true";
+  return legacyRenewalReminderLiveEnabled({
+    LEGACY_RENEWAL_REMINDER_LIVE_ENABLED: env?.["LEGACY_RENEWAL_REMINDER_LIVE_ENABLED"],
+  });
 }
 
 /**
