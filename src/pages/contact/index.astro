@@ -1,6 +1,7 @@
 ---
 export const prerender = true;
 import Layout from "../../layouts/Layout.astro";
+import TurnstileWidget from "../../components/TurnstileWidget.astro";
 ---
 
 <Layout title="Contact | Knit it Now" bodyClass="page--tight-header">
@@ -54,6 +55,8 @@ import Layout from "../../layouts/Layout.astro";
         <p id="contact-image-error" class="contact-form__error" hidden role="alert"></p>
         <p id="contact-submit-error" class="contact-form__error" hidden role="alert"></p>
       </div>
+
+      <TurnstileWidget id="turnstile-contact-page" />
 
       <button type="submit" class="contact-form__submit" id="contact-page-submit">Send message</button>
     </form>

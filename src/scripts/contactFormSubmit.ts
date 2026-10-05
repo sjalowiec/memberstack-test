@@ -1,3 +1,5 @@
+import { getTurnstileSlot, resetTurnstileWidget } from "./turnstile";
+
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_THANKS_URL = "/contact/thanks/";
@@ -154,9 +156,11 @@ export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
           return;
         }
 
+        resetTurnstileWidget(getTurnstileSlot(form));
         const serverMessage = (await res.text()).trim();
         showSubmitError(serverMessage || DEFAULT_FALLBACK_ERROR);
       } catch {
+        resetTurnstileWidget(getTurnstileSlot(form));
         showSubmitError(DEFAULT_FALLBACK_ERROR);
       } finally {
         if (submitBtn) {

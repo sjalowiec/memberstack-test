@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleContactPost, handler } from "../contact.js";
+import { TURNSTILE_VERIFY_URL } from "../lib/turnstile.js";
 
 function createMemoryPersistence() {
   const messages = [];
@@ -28,14 +29,27 @@ function createMemoryPersistence() {
   };
 }
 
-function makeContactRequest(fields) {
+function makeContactRequest(fields, headers = {}) {
   const form = new FormData();
-  for (const [key, value] of Object.entries(fields)) {
+  const defaults = {
+    "bot-field": "",
+    "cf-turnstile-response": "valid-turnstile-token",
+  };
+  for (const [key, value] of Object.entries({ ...defaults, ...fields })) {
+    if (value === undefined) continue;
     form.set(key, value);
   }
   return new Request("https://example.com/.netlify/functions/contact", {
     method: "POST",
+    headers,
     body: form,
+  });
+}
+
+function turnstileSuccessResponse() {
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -49,7 +63,12 @@ describe("contact submission handler", () => {
     persistence = createMemoryPersistence();
     clock = 0;
     globalThis.__kbmRateLimit = new Map();
-    fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+    fetchImpl = vi.fn(async (url) => {
+      if (String(url) === TURNSTILE_VERIFY_URL) {
+        return turnstileSuccessResponse();
+      }
+      return new Response("{}", { status: 200 });
+    });
   });
 
   afterEach(() => {
@@ -63,6 +82,7 @@ describe("contact submission handler", () => {
       recordNotification: (id, patch) => persistence.recordNotification(id, patch),
       fetchImpl,
       getResendApiKey: () => "test-resend-key",
+      getTurnstileSecretKey: () => "turnstile_test_secret",
       getFromAddress: () => "Knit It Now <hello@knititnow.com>",
       nowIso: () => {
         clock += 1;
@@ -91,7 +111,10 @@ describe("contact submission handler", () => {
           order.push("storage");
           return persistence.persistMessage(input);
         },
-        fetchImpl: vi.fn(async () => {
+        fetchImpl: vi.fn(async (url) => {
+          if (String(url) === TURNSTILE_VERIFY_URL) {
+            return turnstileSuccessResponse();
+          }
           order.push("email");
           return new Response("{}", { status: 200 });
         }),
@@ -154,11 +177,21 @@ describe("contact submission handler", () => {
     expect(persistence.messages[1].name).toBe("Ada");
     expect(persistence.messages[1].message).toBe("The carriage is jamming");
     expect(persistence.messages[2].pageUrl).toBe("https://example.com/video-search");
-    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(
+      fetchImpl.mock.calls.filter((call) => String(call[0]) === TURNSTILE_VERIFY_URL),
+    ).toHaveLength(3);
+    expect(
+      fetchImpl.mock.calls.filter((call) => String(call[0]) === "https://api.resend.com/emails"),
+    ).toHaveLength(3);
   });
 
   it("keeps the saved message when notification email fails", async () => {
-    fetchImpl = vi.fn(async () => new Response("nope", { status: 500 }));
+    fetchImpl = vi.fn(async (url) => {
+      if (String(url) === TURNSTILE_VERIFY_URL) {
+        return turnstileSuccessResponse();
+      }
+      return new Response("nope", { status: 500 });
+    });
 
     const res = await handleContactPost(
       makeContactRequest({
@@ -189,7 +222,8 @@ describe("contact submission handler", () => {
       deps({ getResendApiKey: () => "" }),
     );
     expect(res.status).toBe(200);
-    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0][0])).toBe(TURNSTILE_VERIFY_URL);
     expect(persistence.messages).toHaveLength(1);
     expect(persistence.messages[0].notificationEmailSent).toBe(false);
     expect(persistence.messages[0].notificationEmailError).toMatch(/RESEND_API_KEY/);
@@ -210,7 +244,8 @@ describe("contact submission handler", () => {
     );
     expect(res.status).toBe(500);
     expect(await res.text()).toMatch(/couldn't save/i);
-    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0][0])).toBe(TURNSTILE_VERIFY_URL);
     expect(persistence.messages).toHaveLength(0);
   });
 
@@ -320,6 +355,10 @@ describe("contact submission handler", () => {
       "",
       "",
       `--${boundary}`,
+      'Content-Disposition: form-data; name="cf-turnstile-response"',
+      "",
+      "valid-turnstile-token",
+      `--${boundary}`,
       'Content-Disposition: form-data; name="form_source"',
       "",
       "contact_page",
@@ -354,6 +393,7 @@ describe("contact submission handler", () => {
     form.set("email", "visitor@example.com");
     form.set("message", "With photo");
     form.set("bot-field", "");
+    form.set("cf-turnstile-response", "valid-turnstile-token");
     form.set(
       "images",
       new File([new Uint8Array([1, 2, 3])], "gauge.jpg", { type: "image/jpeg" }),
@@ -384,5 +424,155 @@ describe("contact submission handler", () => {
       contentType: "image/jpeg",
       filename: "gauge.jpg",
     });
+  });
+
+  it("does not call Turnstile for rate-limited submissions", async () => {
+    const ipHeaders = { "x-nf-client-connection-ip": "203.0.113.99" };
+
+    for (let i = 0; i < 5; i += 1) {
+      const res = await handleContactPost(
+        makeContactRequest(
+          {
+            name: "Sue",
+            email: "visitor@example.com",
+            message: `rate ${i}`,
+          },
+          ipHeaders,
+        ),
+        null,
+        deps(),
+      );
+      expect(res.status).toBe(200);
+    }
+
+    const turnstileCallsBeforeBlock = fetchImpl.mock.calls.filter(
+      (call) => String(call[0]) === TURNSTILE_VERIFY_URL,
+    ).length;
+    expect(turnstileCallsBeforeBlock).toBe(5);
+    expect(persistence.messages).toHaveLength(5);
+
+    const blocked = await handleContactPost(
+      makeContactRequest(
+        {
+          name: "Sue",
+          email: "visitor@example.com",
+          message: "rate blocked",
+        },
+        ipHeaders,
+      ),
+      null,
+      deps(),
+    );
+    expect(blocked.status).toBe(302);
+    expect(blocked.headers.get("Location")).toBe("/contact/thanks/");
+    expect(
+      fetchImpl.mock.calls.filter((call) => String(call[0]) === TURNSTILE_VERIFY_URL),
+    ).toHaveLength(5);
+    expect(persistence.messages).toHaveLength(5);
+    expect(persistence.messages.some((message) => message.message === "rate blocked")).toBe(
+      false,
+    );
+  });
+
+  it("rejects a missing Turnstile token without storing or emailing", async () => {
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Missing token",
+        "cf-turnstile-response": "",
+      }),
+      null,
+      deps(),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.text()).toMatch(/couldn't verify/i);
+    expect(persistence.messages).toHaveLength(0);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid Turnstile token without storing or emailing", async () => {
+    fetchImpl = vi.fn(async (url) => {
+      if (String(url) === TURNSTILE_VERIFY_URL) {
+        return new Response(
+          JSON.stringify({ success: false, "error-codes": ["invalid-input-response"] }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response("{}", { status: 200 });
+    });
+
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Bad token",
+        "cf-turnstile-response": "bad-token",
+      }),
+      null,
+      deps({ fetchImpl }),
+    );
+    expect(res.status).toBe(400);
+    expect(persistence.messages).toHaveLength(0);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0][0])).toBe(TURNSTILE_VERIFY_URL);
+  });
+
+  it("rejects an expired Turnstile token without storing or emailing", async () => {
+    fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({ success: false, "error-codes": ["timeout-or-duplicate"] }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Expired token",
+        "cf-turnstile-response": "expired-token",
+      }),
+      null,
+      deps({ fetchImpl }),
+    );
+    expect(res.status).toBe(400);
+    expect(persistence.messages).toHaveLength(0);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed when TURNSTILE_SECRET_KEY is missing", async () => {
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "No secret",
+      }),
+      null,
+      deps({ getTurnstileSecretKey: () => "" }),
+    );
+    expect(res.status).toBe(500);
+    expect(await res.text()).toMatch(/couldn't send your message/i);
+    expect(persistence.messages).toHaveLength(0);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when Turnstile verification network fails", async () => {
+    fetchImpl = vi.fn(async () => {
+      throw new Error("network down");
+    });
+
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "Network down",
+      }),
+      null,
+      deps({ fetchImpl }),
+    );
+    expect(res.status).toBe(400);
+    expect(persistence.messages).toHaveLength(0);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 });

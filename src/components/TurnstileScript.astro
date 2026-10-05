@@ -1,0 +1,23 @@
+---
+/**
+ * Load Cloudflare Turnstile api.js once per page (explicit render mode).
+ * Include from BaseLayout so Contact Sue modal + page forms share one script.
+ */
+const siteKey = (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "").trim();
+---
+
+{
+  siteKey ? (
+    <>
+      <script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+        async
+        defer
+      />
+      <script>
+        import { initPageTurnstileWidgets } from "../scripts/turnstile";
+        initPageTurnstileWidgets();
+      </script>
+    </>
+  ) : null
+}

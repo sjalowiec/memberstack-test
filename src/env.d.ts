@@ -63,6 +63,10 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY?: string;
   /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
   readonly CONTACT_FROM_EMAIL?: string;
+  /** Public Cloudflare Turnstile site key (contact forms; inlined at build). */
+  readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
+  /** Server-only: Cloudflare Turnstile secret for siteverify. */
+  readonly TURNSTILE_SECRET_KEY?: string;
   /**
    * Server-only: GitHub token for Watson course-content saves on kin-dev.
    * Contents:write on this repository. Never expose to the browser.
