@@ -9,14 +9,26 @@ const siteKey = (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "").trim();
 {
   siteKey ? (
     <>
+      <script is:inline>
+        window.__kbmTurnstileOnLoad = function () {
+          window.__kbmTurnstileLoaded = true;
+          document.dispatchEvent(new CustomEvent("kbm-turnstile-api"));
+        };
+      </script>
       <script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__kbmTurnstileOnLoad"
         async
         defer
       />
       <script>
         import { initPageTurnstileWidgets } from "../scripts/turnstile";
-        initPageTurnstileWidgets();
+        if (window.turnstile || window.__kbmTurnstileLoaded) {
+          initPageTurnstileWidgets();
+        } else {
+          document.addEventListener("kbm-turnstile-api", () => initPageTurnstileWidgets(), {
+            once: true,
+          });
+        }
       </script>
     </>
   ) : null
