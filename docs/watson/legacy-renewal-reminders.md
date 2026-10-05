@@ -53,18 +53,18 @@ For each candidate, in order (first match wins):
 3. **Ambiguous legacy email** (same email on >1 legacy row) ? `skipped_ambiguous`.
 4. **Memberstack re-check**:
    - ambiguous match ? `skipped_ambiguous`
-   - unique + active paid plan ? `skipped_active_paid`
+   - unique + active or trialing paid plan ? `skipped_active_paid`
+   - unique + active complimentary access that lasts past the legacy date, including no end date ? `skipped_complimentary`
    - unique + no paid plan, or not found ? continue (still a legacy annual member).
 5. **Durable dedupe** — if the audit table already has a live `tagged` row for
    `(legacy_memberid, tag_name)` ? `skipped_already_tagged` (no ActiveCampaign call).
-6. **ActiveCampaign contact lookup**:
-   - **Not found** ? create/subscribe/tag (a brand-new contact has no consent conflict).
-   - **Found** ? read list status and protect consent:
-     - `unsubscribed` ? `skipped_unsubscribed`
-     - `bounced` ? `skipped_bounced`
-     - `unconfirmed` ? `skipped_unconfirmed`
-     - already has the tag ? `skipped_already_tagged`
-     - otherwise ? update date field, subscribe if not on list, then tag.
+6. **ActiveCampaign contact lookup**. The job never subscribes or resubscribes:
+   - **Not found**, `not_on_list`, or `unknown` ? `skipped_not_subscribed`
+   - `unsubscribed` ? `skipped_unsubscribed`
+   - `bounced` ? `skipped_bounced`
+   - `unconfirmed` ? `skipped_unconfirmed`
+   - already has the tag ? `skipped_already_tagged`
+   - `active` on the list ? update the date field, then tag.
 
 Before every tag, the Watson paid-through date (`D + windowDays`, `YYYY-MM-DD`) is
 written to the **Legacy Membership Paid Through** ActiveCampaign date field via
@@ -83,9 +83,11 @@ written to the **Legacy Membership Paid Through** ActiveCampaign date field via
 Mirrors `legacy-annual-expiry`:
 
 - **Scheduled** (`netlify.toml`, daily `0 8 * * *`): live **only** when
-  `LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true"`. Otherwise dry-run.
+  `LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true"` **and** the site is production.
+  kin-dev stays dry-run even if that flag is set. Otherwise dry-run.
 - **Manual HTTP** GET/POST: **dry-run by default**. A live manual run requires
-  **both** `?confirm=LIVE` **and** a correct `X-Legacy-Renewal-Secret` header.
+  **both** `?confirm=LIVE` **and** a correct `X-Legacy-Renewal-Secret` header,
+  and it still stays dry-run on kin-dev.
 
 Dry-run performs **read-only** ActiveCampaign calls to produce an accurate
 preview, performs **zero** writes (no `contact/sync`, no list subscribe, no tag),

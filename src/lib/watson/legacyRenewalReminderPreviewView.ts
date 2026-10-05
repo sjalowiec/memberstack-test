@@ -35,6 +35,8 @@ export const REMINDER_STATUS_LABELS: Record<ReminderOutcome, string> = {
   tagged: "Tagged",
   would_tag: "Eligible",
   skipped_active_paid: "Active Paid",
+  skipped_complimentary: "Complimentary",
+  skipped_not_subscribed: "Not Subscribed",
   skipped_ambiguous: "Ambiguous",
   skipped_missing_email: "Missing Email",
   skipped_staff_or_test: "Staff/Test",

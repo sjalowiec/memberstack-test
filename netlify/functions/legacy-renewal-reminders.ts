@@ -30,6 +30,7 @@
  *   - Manual HTTP GET/POST: DRY-RUN by default. A live manual run requires BOTH
  *     ?confirm=LIVE AND a correct X-Legacy-Renewal-Secret header.
  */
+import { isProductionActiveCampaignWriteRuntime } from "../../src/lib/watson/complimentaryCampaignSync";
 import {
   runLegacyRenewalReminders,
   type LegacyRenewalReminderResult,
@@ -74,6 +75,8 @@ export interface ReminderExecutionRequest {
   providedSecret: string | null;
   configuredSecret: string | null;
   liveEnabled: boolean;
+  /** kin-dev shares the ActiveCampaign account and must stay dry-run. */
+  productionWritesAllowed?: boolean;
 }
 
 export type ReminderExecutionDecision =
@@ -87,10 +90,11 @@ export type ReminderExecutionDecision =
 export function resolveReminderExecution(
   request: ReminderExecutionRequest,
 ): ReminderExecutionDecision {
+  const writesAllowed = request.productionWritesAllowed !== false;
   if (request.scheduled) {
     return {
       authorized: true,
-      dryRun: !request.liveEnabled,
+      dryRun: !(request.liveEnabled && writesAllowed),
       triggerSource: "scheduled",
     };
   }
@@ -111,7 +115,7 @@ export function resolveReminderExecution(
     };
   }
 
-  return { authorized: true, dryRun: false, triggerSource: "manual" };
+  return { authorized: true, dryRun: !writesAllowed, triggerSource: "manual" };
 }
 
 function summarize(result: LegacyRenewalReminderResult) {
@@ -142,12 +146,14 @@ export default async (req: Request): Promise<Response> => {
   const configuredSecret = (process.env.LEGACY_RENEWAL_REMINDER_SECRET ?? "").trim();
   const providedSecret = (req.headers.get("x-legacy-renewal-secret") ?? "").trim();
 
+  const productionWritesAllowed = isProductionActiveCampaignWriteRuntime(process.env);
   const decision = resolveReminderExecution({
     scheduled: isScheduledInvocation(bodyText),
     confirmLive: isConfirmedLive(url),
     providedSecret: providedSecret || null,
     configuredSecret: configuredSecret || null,
     liveEnabled: isScheduledLiveEnabled(process.env),
+    productionWritesAllowed,
   });
 
   if (!decision.authorized) {
@@ -158,6 +164,7 @@ export default async (req: Request): Promise<Response> => {
     const result = await runLegacyRenewalReminders({
       dryRun: decision.dryRun,
       triggerSource: decision.triggerSource,
+      productionWritesAllowed,
     });
     console.log("[legacy-renewal-reminders]", summarize(result));
     return json(
