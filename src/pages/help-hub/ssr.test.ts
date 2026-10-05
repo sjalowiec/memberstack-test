@@ -57,6 +57,10 @@ describe("Help Hub public SSR", () => {
     expect(indexSource).not.toContain("pagefind.js");
     expect(indexSource).not.toContain("href={`/help-hub/${item.slug}`}");
     expect(indexSource).not.toContain("href={`/help-hub/${card.slug}`}");
+    expect(indexSource).toContain("data-help-hub-browse");
+    expect(indexSource).toContain("data-help-hub-article-panel");
+    expect(indexSource).toContain("Back to Help Hub questions");
+    expect(indexSource).toContain("data-help-hub-article-title");
   });
 
   it("omits the catalog-only Work with Sue promotion without removing the help form", () => {

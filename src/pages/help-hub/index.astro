@@ -78,6 +78,7 @@ if (debugHelpHubTip) {
         </div>
       </div>
 
+      <div data-help-hub-browse>
       <div class="help-hub-search">
         <label for="help-hub-search-input">Search the Help Hub</label>
         <input
@@ -187,6 +188,28 @@ if (debugHelpHubTip) {
             </div>
           </details>
         ))}
+      </div>
+      </div>
+
+      <div
+        class="help-hub-article-panel"
+        data-help-hub-article-panel
+        role="region"
+        aria-labelledby="help-hub-article-title"
+        hidden
+      >
+        <p class="help-hub-article-panel__nav">
+          <button type="button" class="help-hub-article-back" data-help-hub-article-back>
+            Back to Help Hub questions
+          </button>
+        </p>
+        <h2 id="help-hub-article-title" class="help-hub-article-panel__title" data-help-hub-article-title tabindex="-1"></h2>
+        <div data-help-hub-article-slot></div>
+        <p class="help-hub-article-panel__nav help-hub-article-panel__nav--end">
+          <button type="button" class="help-hub-article-back" data-help-hub-article-back>
+            Back to Help Hub questions
+          </button>
+        </p>
       </div>
 
       <section id="help-request" class="help-hub-footer">
@@ -638,6 +661,90 @@ if (debugHelpHubTip) {
     .fix-category-summary:focus-visible {
       outline: 2px solid var(--kbm-green, #52682d);
       outline-offset: 3px;
+    }
+
+    .knit-fix-hub.is-reading [data-help-hub-browse] {
+      display: none;
+    }
+
+    .help-hub-article-panel {
+      scroll-margin-top: calc(var(--header-height, 7rem) + 0.75rem);
+      margin-top: 1.25rem;
+      padding: 1.15rem 1.25rem 1.35rem;
+      border: 1px solid rgba(82, 104, 45, 0.38);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(36, 48, 21, 0.08);
+    }
+
+    .help-hub-article-panel[hidden] {
+      display: none !important;
+    }
+
+    .help-hub-article-panel__nav {
+      margin: 0;
+    }
+
+    .help-hub-article-panel__nav--end {
+      margin-top: 1.5rem;
+    }
+
+    .help-hub-article-back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.75rem;
+      padding: 0.55rem 1.05rem;
+      border: 1px solid rgba(82, 104, 45, 0.55);
+      border-radius: 999px;
+      background: #f3f6ee;
+      color: var(--kbm-green, #52682d);
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+
+    .help-hub-article-back:hover,
+    .help-hub-article-back:focus-visible {
+      background: #e7efe0;
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 2px;
+    }
+
+    .help-hub-article-panel__title {
+      margin: 0.9rem 0 1rem;
+      color: #243015;
+      font-size: 1.7rem;
+      line-height: 1.25;
+    }
+
+    .help-hub-article-panel__title:focus {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .help-hub-article-panel {
+        padding: 0.9rem 0.85rem 1rem;
+      }
+
+      .help-hub-article-panel__title {
+        font-size: 1.35rem;
+      }
+
+      .help-hub-article-back {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .help-hub-article-panel .fix-bubble-item > summary {
+      display: none;
+    }
+
+    .help-hub-article-panel .help-hub-inline-answer {
+      margin-top: 0;
     }
 
     .help-hub-inline-answer {

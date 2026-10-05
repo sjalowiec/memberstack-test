@@ -43,5 +43,14 @@ describe("Help Hub index client", () => {
     expect(clientSource).toContain("queueSearchCommit");
     expect(clientSource).toContain('event.key !== "Enter"');
     expect(clientSource).toContain("__kinFlushSearchCommit");
+    expect(clientSource).toContain("openHelpHubArticle");
+    expect(clientSource).toContain("closeHelpHubArticle");
+    expect(clientSource).toContain("[data-help-hub-article-back]");
+    expect(clientSource).toContain("data-help-hub-article-title");
+    expect(clientSource).toContain("scrollMarginTop");
+    expect(clientSource).toContain('history.scrollRestoration = "manual"');
+    expect(clientSource).toContain("preventScroll: true");
+    expect(clientSource).toContain("helpHubReading");
+    expect(clientSource).toContain("popstate");
   });
 });
