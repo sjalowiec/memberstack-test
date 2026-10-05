@@ -51,6 +51,7 @@
 [context.production.environment]
   COMPLIMENTARY_EXPIRY_LIVE_ENABLED = "true"
   COMPLIMENTARY_CAMPAIGN_SYNC_LIVE_ENABLED = "true"
+  LEGACY_RENEWAL_REMINDER_LIVE_ENABLED = "true"
 
 # Complimentary ActiveCampaign date sync (daily at 09:30 UTC). Updates the
 # complimentary access-through date and the paid-membership field. Does not
