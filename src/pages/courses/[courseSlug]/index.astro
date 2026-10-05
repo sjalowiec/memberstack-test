@@ -10,6 +10,7 @@ import {
   kinCoursePreviewRequested,
 } from "../../../lib/kinCourse/request";
 import { getCourseLandingBySlug } from "../../../lib/legacy_kin/courseLanding";
+import { publishedAvailablePlayerHref } from "../../../lib/legacy_kin/publishedCoursePlayerHref";
 
 export const prerender = false;
 
@@ -25,7 +26,13 @@ if (courseId && !bundle && !showAdminPreviewBootstrap) {
   return new Response("Course not found", { status: 404 });
 }
 
-const landing = courseId ? null : getCourseLandingBySlug(Astro.params.courseSlug ?? "");
+const landingSlug = courseId ? "" : (Astro.params.courseSlug ?? "");
+const publishedPlayerHref = landingSlug ? publishedAvailablePlayerHref(landingSlug) : undefined;
+if (publishedPlayerHref) {
+  return Astro.redirect(publishedPlayerHref);
+}
+
+const landing = courseId ? null : getCourseLandingBySlug(landingSlug);
 if (!courseId && !landing) {
   return new Response("Course not found", { status: 404 });
 }

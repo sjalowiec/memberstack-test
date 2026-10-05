@@ -1,4 +1,5 @@
 import { getCourseLandingBySlug } from "../legacy_kin/courseLanding";
+import { publishedAvailablePlayerHref } from "../legacy_kin/publishedCoursePlayerHref";
 import {
   isValidEmailAddress,
   normalizeEmailAddress,
@@ -45,6 +46,14 @@ export async function handleCourseReadyNotificationRequest(
 
   if (!courseSlug) {
     return { ok: false, status: 404, error: "Course not found." };
+  }
+
+  if (publishedAvailablePlayerHref(courseSlug)) {
+    return {
+      ok: false,
+      status: 400,
+      error: "This course is already available.",
+    };
   }
 
   const landing = getCourseLandingBySlug(courseSlug);
