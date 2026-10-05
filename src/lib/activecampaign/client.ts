@@ -1,3 +1,12 @@
+import {
+  confirmedRenewalTriggerTags,
+  confirmedStartBlockTriggerTags,
+  LEGACY_RENEWAL_TRIGGER_TAGS,
+  summarizeRenewalAutomationTriggers,
+  triggerPayloadKeys,
+  type LegacyRenewalTriggerTag,
+} from "./renewalAutomationTriggers";
+
 /**
  * Minimal ActiveCampaign v3 Admin API client.
  *
@@ -63,6 +72,20 @@ export interface ActiveCampaignClient {
   findAutomationByExactName?(
     name: string,
   ): Promise<{ name: string; active: boolean; ambiguous: boolean } | null>;
+  /**
+   * Read start triggers for the three legacy renewal tags.
+   * Matches tag fields only. Does not use automation names and does not write.
+   */
+  describeLegacyRenewalTriggers?(): Promise<{
+    truncated: boolean;
+    triggersReadable: boolean;
+    tags: Array<{
+      tag: string;
+      activeAutomations: number;
+      inactiveAutomations: number;
+    }>;
+    triggerKeys: string[];
+  }>;
 }
 
 /** Read AC credentials from the environment (same vars as the signup webhook). */
@@ -351,6 +374,84 @@ export function createActiveCampaignClient(
         name,
         active: status === 1 || status === "1",
         ambiguous: matches.length > 1,
+      };
+    },
+
+    async describeLegacyRenewalTriggers() {
+      async function lookupTagId(tagName: string): Promise<string | null> {
+        const searchResp = await request(`/api/3/tags?search=${encodeURIComponent(tagName)}`);
+        if (!searchResp.ok) return null;
+        const data = (await searchResp.json()) as AcTagsResponse;
+        const existing = (data.tags ?? []).find((tag) => tag.tag === tagName);
+        return existing?.id ? String(existing.id) : null;
+      }
+
+      async function readOptionalJson(path: string): Promise<unknown | "unreadable"> {
+        const resp = await request(path);
+        if (!resp.ok) return "unreadable";
+        try {
+          return (await resp.json()) as unknown;
+        } catch {
+          return "unreadable";
+        }
+      }
+
+      const tagNameById = new Map<string, string>();
+      for (const tagName of LEGACY_RENEWAL_TRIGGER_TAGS) {
+        const tagId = await lookupTagId(tagName);
+        if (tagId) tagNameById.set(String(tagId), tagName);
+      }
+
+      const automations: Array<{ id: string; status?: string | number }> = [];
+      let truncated = false;
+      let offset = 0;
+      for (let page = 0; page < 5; page += 1) {
+        const resp = await request(`/api/3/automations?limit=100&offset=${offset}`);
+        const data = await readJson<{
+          automations?: Array<{ id?: string; status?: string | number }>;
+        }>(resp, "automation list");
+        const batch = data.automations ?? [];
+        for (const automation of batch) {
+          if (automation.id) automations.push({ id: String(automation.id), status: automation.status });
+        }
+        if (batch.length < 100) break;
+        offset += batch.length;
+        if (page === 4) truncated = true;
+      }
+
+      const inspected: Array<{ active: boolean; triggerTags: LegacyRenewalTriggerTag[] }> = [];
+      const triggerKeys = new Set<string>();
+      let triggersReadable = true;
+      for (const automation of automations) {
+        const id = encodeURIComponent(automation.id);
+        const triggers = await readOptionalJson(`/api/3/automations/${id}/triggers`);
+        const triggerTags = new Set<LegacyRenewalTriggerTag>();
+        if (triggers && triggers !== "unreadable") {
+          for (const tag of confirmedRenewalTriggerTags(triggers, tagNameById)) triggerTags.add(tag);
+          for (const key of triggerPayloadKeys(triggers)) triggerKeys.add(key);
+        }
+        if (triggerTags.size === 0) {
+          const blocks = await readOptionalJson(`/api/3/automations/${id}/blocks`);
+          if (triggers === "unreadable" && blocks === "unreadable") triggersReadable = false;
+          if (blocks && blocks !== "unreadable") {
+            for (const tag of confirmedStartBlockTriggerTags(blocks, tagNameById)) triggerTags.add(tag);
+            const serialized = JSON.stringify(blocks);
+            if (LEGACY_RENEWAL_TRIGGER_TAGS.some((tag) => serialized.includes(tag))) {
+              for (const key of triggerPayloadKeys(blocks)) triggerKeys.add(key);
+            }
+          }
+        }
+        inspected.push({
+          active: automation.status === 1 || automation.status === "1",
+          triggerTags: [...triggerTags],
+        });
+      }
+
+      return {
+        truncated,
+        triggersReadable,
+        tags: summarizeRenewalAutomationTriggers(inspected),
+        triggerKeys: [...triggerKeys].sort().slice(0, 40),
       };
     },
 
