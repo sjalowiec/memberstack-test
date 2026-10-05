@@ -19,6 +19,7 @@ export type TurnstileApi = {
 declare global {
   interface Window {
     turnstile?: TurnstileApi;
+    __kbmTurnstileLoaded?: boolean;
   }
 }
 
@@ -37,7 +38,7 @@ function storeWidgetId(slot: HTMLElement, id: string) {
   slot.dataset.widgetId = id;
 }
 
-/** Wait until `window.turnstile` is available (script is async). */
+/** Wait until `window.turnstile` is available (api.js is async). */
 export function whenTurnstileReady(callback: () => void): void {
   if (typeof window === "undefined") return;
 
@@ -48,29 +49,31 @@ export function whenTurnstileReady(callback: () => void): void {
     }
     if (window.turnstile) {
       callback();
-      return;
     }
-
-    let attempts = 0;
-    const timer = window.setInterval(() => {
-      attempts += 1;
-      if (window.turnstile?.ready) {
-        window.clearInterval(timer);
-        window.turnstile.ready(callback);
-        return;
-      }
-      if (window.turnstile) {
-        window.clearInterval(timer);
-        callback();
-        return;
-      }
-      if (attempts >= 40) {
-        window.clearInterval(timer);
-      }
-    }, 50);
   };
 
-  run();
+  if (window.turnstile) {
+    run();
+    return;
+  }
+
+  let settled = false;
+  const finish = () => {
+    if (settled || !window.turnstile) return;
+    settled = true;
+    window.clearInterval(timer);
+    window.clearTimeout(timeout);
+    document.removeEventListener("kbm-turnstile-api", onApi);
+    run();
+  };
+  const onApi = () => finish();
+  const timer = window.setInterval(finish, 100);
+  const timeout = window.setTimeout(() => {
+    settled = true;
+    window.clearInterval(timer);
+    document.removeEventListener("kbm-turnstile-api", onApi);
+  }, 15000);
+  document.addEventListener("kbm-turnstile-api", onApi);
 }
 
 /**
