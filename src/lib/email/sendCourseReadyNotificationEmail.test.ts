@@ -99,10 +99,10 @@ describe("handleCourseReadyNotificationRequest", () => {
     });
   });
 
-  it("uses the server-side course title for a known slug", async () => {
+  it("uses the server-side course title for an unpublished course", async () => {
     const sendEmail = vi.fn(async (payload) => {
-      expect(payload.courseTitle).toBe("LK-150 Quick Start");
-      expect(payload.courseSlug).toBe("lk-150-quick-start");
+      expect(payload.courseTitle).toBe("Set-in Sleeve Perfection");
+      expect(payload.courseSlug).toBe("set-in-sleeve-perfection");
       expect(payload.customerEmail).toBe("customer@example.com");
       return { ok: true as const };
     });
@@ -110,7 +110,7 @@ describe("handleCourseReadyNotificationRequest", () => {
     const result = await handleCourseReadyNotificationRequest(
       {
         email: "customer@example.com",
-        courseSlug: "lk-150-quick-start",
+        courseSlug: "set-in-sleeve-perfection",
         courseTitle: "Ignored Client Title",
       },
       { sendEmail },
@@ -118,5 +118,25 @@ describe("handleCourseReadyNotificationRequest", () => {
 
     expect(result).toEqual({ ok: true, status: 200 });
     expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it("does not email a request for a published available course", async () => {
+    const sendEmail = vi.fn(async () => ({ ok: true as const }));
+
+    const result = await handleCourseReadyNotificationRequest(
+      {
+        email: "customer@example.com",
+        courseSlug: "master-lk-patterning",
+        courseTitle: "Master LK-150 Patterning",
+      },
+      { sendEmail },
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      status: 400,
+      error: "This course is already available.",
+    });
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 });
