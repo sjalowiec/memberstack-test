@@ -108,10 +108,10 @@ describe("legacy renewal diagnostic", () => {
     expect(legacyRenewalLiveEnabled({})).toBe(false);
   });
 
-  it("returns the singular tag names the reminder job writes", () => {
+  it("returns the ActiveCampaign trigger names the reminder job writes", () => {
     expect(renewalTagNamesInDeployedCode()).toEqual([
-      "legacy-renewal-30-day",
-      "legacy-renewal-7-day",
+      "legacy-renewal-30-days",
+      "legacy-renewal-7-days",
       "legacy-renewal-1-day",
     ]);
   });

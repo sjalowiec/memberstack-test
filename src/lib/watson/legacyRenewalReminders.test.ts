@@ -230,7 +230,7 @@ describe("runLegacyRenewalReminders - live tagging", () => {
       fieldValues: [{ field: FIELD_ID, value: "2026-08-27" }],
     });
     expect(ac.spies.subscribeToList).toHaveBeenCalledWith("ac_1");
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-day");
+    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-days");
     expect(recorded).toHaveLength(1);
     expect(recorded[0]?.outcome).toBe("tagged");
   });
@@ -315,7 +315,7 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
       "a@x.com": {
         id: "ac_1",
         listStatus: "active",
-        tags: new Set(["tag_legacy-renewal-30-day"]),
+        tags: new Set(["tag_legacy-renewal-30-days"]),
       },
     });
     const result = await runLegacyRenewalReminders(
@@ -462,8 +462,8 @@ describe("runLegacyRenewalReminders - window tag mapping", () => {
       }),
     );
     expect(result.totals.tagged).toBe(3);
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-day");
-    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_2", "tag_legacy-renewal-7-day");
+    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_1", "tag_legacy-renewal-30-days");
+    expect(ac.spies.addTag).toHaveBeenCalledWith("ac_2", "tag_legacy-renewal-7-days");
     expect(ac.spies.addTag).toHaveBeenCalledWith("ac_3", "tag_legacy-renewal-1-day");
   });
 });
