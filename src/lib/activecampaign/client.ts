@@ -56,6 +56,13 @@ export interface ActiveCampaignClient {
   ): Promise<string | null>;
   /** Read one custom field value for a contact, or null when unset. */
   readFieldValue?(contactId: string, fieldId: string): Promise<string | null>;
+  /**
+   * Read one automation by exact name. Never creates or starts an automation.
+   * Null when no automation has that exact name.
+   */
+  findAutomationByExactName?(
+    name: string,
+  ): Promise<{ name: string; active: boolean; ambiguous: boolean } | null>;
 }
 
 /** Read AC credentials from the environment (same vars as the signup webhook). */
@@ -323,6 +330,28 @@ export function createActiveCampaignClient(
         return selectExactActiveCampaignField(data.fields ?? [], title);
       }
       return null;
+    },
+
+    async findAutomationByExactName(name) {
+      const matches: Array<{ name?: string; status?: string | number }> = [];
+      let offset = 0;
+      for (let page = 0; page < 20; page += 1) {
+        const resp = await request(`/api/3/automations?limit=100&offset=${offset}`);
+        const data = await readJson<{
+          automations?: Array<{ name?: string; status?: string | number }>;
+        }>(resp, "automation list");
+        const batch = data.automations ?? [];
+        matches.push(...batch.filter((automation) => automation.name === name));
+        if (batch.length < 100) break;
+        offset += batch.length;
+      }
+      if (matches.length === 0) return null;
+      const status = matches[0]?.status;
+      return {
+        name,
+        active: status === 1 || status === "1",
+        ambiguous: matches.length > 1,
+      };
     },
 
     async readFieldValue(contactId, fieldId): Promise<string | null> {
