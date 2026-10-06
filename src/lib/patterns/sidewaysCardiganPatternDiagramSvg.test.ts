@@ -10,8 +10,10 @@ import {
   buildSidewaysCardiganPatternDiagramModel,
   buildSidewaysCardiganPatternDiagramSvg,
   sidewaysDiagramEdgeStitchCount,
+  sidewaysKnitVisualY,
   sidewaysPatternDiagramCanvas,
 } from "./sidewaysCardiganPatternDiagramSvg";
+import { cardiganDimLayout } from "./sidewaysCardiganEditMeasurementDiagramSvg";
 import {
   buildSidewaysCardiganShapingNotationDiagramSvg,
   sidewaysCardiganVNeckNotationLines,
@@ -581,5 +583,155 @@ describe("single-diagram print for Sideways body and sleeve", () => {
         }
       }
     }
+  });
+});
+
+describe("Sideways cardigan neck-opening label placement", () => {
+  const sizes: SidewaysCardiganBodyCalcInput[] = [
+    {
+      garmentLengthInches: 16,
+      vNeckDepthInches: 6,
+      finishedBustCircumferenceInches: 30,
+      finishedUpperArmInches: 11,
+      neckOpeningWidthInches: 5.5,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 4,
+    },
+    SAMPLE,
+    {
+      garmentLengthInches: 26,
+      vNeckDepthInches: 9,
+      finishedBustCircumferenceInches: 48,
+      finishedUpperArmInches: 16,
+      neckOpeningWidthInches: 8,
+      backNeckDepthInches: 1.5,
+      stitchesPerInch: 7,
+      rowsPerInch: 10,
+    },
+  ];
+
+  function textBoxes(svg: string) {
+    const attr = (source: string, name: string) => new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(source)?.[1] ?? "";
+    const boxes: Array<{
+      role: string;
+      text: string;
+      anchor: string;
+      left: number;
+      right: number;
+      top: number;
+      bottom: number;
+      x: number;
+    }> = [];
+    for (const match of svg.matchAll(/<text\b([^>]*)>([\s\S]*?)<\/text>/g)) {
+      const attrs = match[1] ?? "";
+      const inner = match[2] ?? "";
+      const role = attr(attrs, "data-role");
+      const anchor = attr(attrs, "text-anchor") || "start";
+      const baseSize = Number(attr(attrs, "font-size")) || 16;
+      const baseX = Number(attr(attrs, "x"));
+      let y = Number(attr(attrs, "y"));
+      const tspans = [...inner.matchAll(/<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g)];
+      const lines = tspans.length
+        ? tspans.map((span) => {
+            const spanAttrs = span[1] ?? "";
+            y += Number(attr(spanAttrs, "dy")) || 0;
+            return {
+              text: (span[2] ?? "").replace(/<[^>]+>/g, "").trim(),
+              x: Number(attr(spanAttrs, "x")) || baseX,
+              y,
+              size: Number(attr(spanAttrs, "font-size")) || baseSize,
+            };
+          })
+        : [{ text: inner.replace(/<[^>]+>/g, "").trim(), x: baseX, y, size: baseSize }];
+      for (const line of lines) {
+        const width = line.text.length * line.size * 0.55;
+        const left = anchor === "end" ? line.x - width : anchor === "middle" ? line.x - width / 2 : line.x;
+        boxes.push({
+          role,
+          text: line.text,
+          anchor,
+          left,
+          right: left + width,
+          top: line.y - line.size * 0.85,
+          bottom: line.y + line.size * 0.25,
+          x: line.x,
+        });
+      }
+    }
+    return boxes;
+  }
+
+  function viewBox(svg: string) {
+    const parts = /viewBox="([^"]+)"/.exec(svg)?.[1]?.trim().split(/[\s,]+/).map(Number) ?? [];
+    return { x: parts[0] ?? 0, y: parts[1] ?? 0, width: parts[2] ?? 0, height: parts[3] ?? 0 };
+  }
+
+  function neckLine(svg: string) {
+    const group = /data-role="dim-neck-opening"[\s\S]*?<\/g>/.exec(svg)?.[0] ?? "";
+    const line = /<line x1="([^"]+)" y1="([^"]+)" x2="([^"]+)" y2="([^"]+)"/.exec(group);
+    return {
+      x1: Number(line?.[1]),
+      y1: Number(line?.[2]),
+      x2: Number(line?.[3]),
+      y2: Number(line?.[4]),
+    };
+  }
+
+  function overlaps(
+    a: { left: number; right: number; top: number; bottom: number },
+    b: { left: number; right: number; top: number; bottom: number },
+  ) {
+    return a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2;
+  }
+
+  it("parks the cardigan neck-opening count to the right of the unchanged dimension line", () => {
+    for (const input of sizes) {
+      const model = modelFor("cardigan", input, { includeSleeve: false });
+      const svg = buildSidewaysCardiganPatternDiagramSvg(model);
+      const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+      const line = neckLine(svg);
+      const neckY1 = sidewaysKnitVisualY(frame, frame.backNeckStartY);
+      const neckY2 = sidewaysKnitVisualY(frame, frame.backNeckEndY);
+      const boxes = textBoxes(svg);
+      const neck = boxes.filter((box) => box.role === "neck-opening-rows");
+      const back = boxes.filter((box) => box.role === "back-rows");
+      const shoulder = boxes.filter((box) => box.role === "shoulder-rows");
+      const box = viewBox(svg);
+      expect(line.x1).toBeCloseTo(cardiganDimLayout(frame).neckDimX, 1);
+      expect(line.x2).toBeCloseTo(line.x1, 1);
+      expect(Math.min(line.y1, line.y2)).toBeCloseTo(Math.min(neckY1, neckY2), 1);
+      expect(Math.max(line.y1, line.y2)).toBeCloseTo(Math.max(neckY1, neckY2), 1);
+      expect(neck.map((label) => label.text)).toEqual([
+        `${model.calc.backNeckOpeningRows} rows`,
+        expect.stringMatching(/\d/),
+      ]);
+      expect(neck[0]?.text.endsWith("rows")).toBe(true);
+      expect(neck[1]?.text).toMatch(/ (?:in|cm)$/);
+      expect(neck[1]!.top).toBeGreaterThan(neck[0]!.top);
+      for (const label of neck) {
+        expect(label.anchor).toBe("start");
+        expect(label.left).toBeGreaterThan(line.x1 + 4);
+        expect(label.top).toBeGreaterThan(box.y);
+        expect(label.bottom).toBeLessThan(box.y + box.height);
+        expect(label.left).toBeGreaterThanOrEqual(box.x);
+        expect(label.right).toBeLessThanOrEqual(box.x + box.width);
+        for (const other of [...back, ...shoulder]) {
+          expect(overlaps(label, other), `"${label.text}" overlaps "${other.text}"`).toBe(false);
+        }
+      }
+    }
+    const example = modelFor("cardigan", sizes[0], { includeSleeve: false });
+    const exampleSvg = buildSidewaysCardiganPatternDiagramSvg(example);
+    const exampleLines = textBoxes(exampleSvg).filter((box) => box.role === "neck-opening-rows");
+    expect(exampleLines.map((label) => label.text)).toEqual([
+      `${example.calc.backNeckOpeningRows} rows`,
+      "5.5 in",
+    ]);
+    const pullover = buildSidewaysCardiganPatternDiagramSvg(modelFor("pullover", SAMPLE));
+    const pulloverNeck = textBoxes(pullover).find((box) => box.role === "neck-opening-rows");
+    const pulloverLine = neckLine(pullover);
+    expect(pulloverNeck).toBeDefined();
+    expect(pulloverNeck!.left).toBeGreaterThan(pulloverLine.x1);
   });
 });
