@@ -52,7 +52,7 @@ describe("applySocksCatalogCardDestination", () => {
     expect(busyOf()).toBe("true");
   });
 
-  it("routes active members and former members with Socks to My Patterns", () => {
+  it("keeps active members on the public Socks landing", () => {
     const { root, hrefOf } = cardRoot();
     applySocksCatalogCardDestination(
       root,
@@ -60,11 +60,15 @@ describe("applySocksCatalogCardDestination", () => {
         loggedIn: true,
         memberId: MEMBER_ID,
         hasActiveAccess: true,
-        hasOwnedPatterns: false,
+        hasOwnedPatterns: true,
+        ownedPatternSystems: ["socks"],
       }),
     );
-    expect(hrefOf()).toBe(MY_PATTERNS_ACCOUNT_HREF);
+    expect(hrefOf()).toBe(SOCKS_CATALOG_DEFAULT_HREF);
+  });
 
+  it("routes former members with saved Socks to My Patterns", () => {
+    const { root, hrefOf } = cardRoot();
     applySocksCatalogCardDestination(
       root,
       resolveSavedPatternAccessState({

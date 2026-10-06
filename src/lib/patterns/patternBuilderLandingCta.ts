@@ -3,8 +3,8 @@
  *
  * Starts pending so the wrong primary action never flashes while Memberstack loads.
  * Visitors and logged-in non-members see membership CTAs.
- * Active members see the pattern-specific builder CTA, except Socks which redirects
- * active members and former members with saved Socks to My Patterns.
+ * Active members see the pattern-specific builder CTA.
+ * Socks sends only former members who still own saved Socks to My Patterns.
  */
 import { hasMemberAccess } from "../memberAccess";
 import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
@@ -53,11 +53,12 @@ async function applySocksLandingPresentation(root: HTMLElement): Promise<void> {
   applyPatternBuilderLandingCtaMode(root, "pending");
   const state = await resolveSavedPatternAccessStateFromSession();
   const action = resolveSocksLandingAction(state);
+  if (action.type === "pending") return;
   if (action.type === "redirect") {
     window.location.replace(action.href);
     return;
   }
-  applyPatternBuilderLandingCtaMode(root, "prospect");
+  applyPatternBuilderLandingCtaMode(root, action.type === "show-member" ? "member" : "prospect");
 }
 
 /** Wires `[data-pattern-builder-landing]`. Defaults to pending (no CTA flash). */

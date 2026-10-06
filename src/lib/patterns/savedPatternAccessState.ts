@@ -198,13 +198,14 @@ export type SocksCatalogDestination = typeof MY_PATTERNS_ACCOUNT_HREF | "/patter
 
 /**
  * Pattern Catalog Socks card and `/patterns/socks` redirect target.
+ * Active members stay on the public landing and start a new pattern there.
+ * Former members who still own Socks go to My Patterns.
  * `loading` callers must not navigate or swap to a prospect CTA.
  */
 export function resolveSocksSavedPatternDestination(
   state: SavedPatternAccessState,
 ): SocksCatalogDestination | null {
   if (state.kind === "loading") return null;
-  if (state.kind === "activeMember") return MY_PATTERNS_ACCOUNT_HREF;
   if (state.kind === "formerMemberWithPatterns" && ownsSavedPatternSystem(state, "socks")) {
     return MY_PATTERNS_ACCOUNT_HREF;
   }
