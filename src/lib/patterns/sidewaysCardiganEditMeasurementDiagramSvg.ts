@@ -7,11 +7,14 @@
  * not at center front.
  */
 
+import {
+  buildDiagramTypographyForViewBox,
+  type BuildDiagramTypography,
+} from "./buildDiagramTypography";
 import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDepth";
 import {
   DS_ARROW,
   DS_FILL,
-  DS_FONT,
   DS_MUTED,
   DS_STROKE,
   DS_VB_H,
@@ -20,6 +23,7 @@ import {
   escapeXml,
   fmtNum,
 } from "./dropShoulderPatternDiagramSvgShared";
+import { diagramMarkupBounds, separateOverlappingDiagramLabels } from "./legoBlocks/patternDiagramFit";
 import {
   buildDropShoulderMeasurementSleeveFrame,
   dropShoulderSleeveBodyPath,
@@ -363,10 +367,23 @@ function derivedValueLabel(
   inches: number,
   unit: MeasurementDisplayUnit,
   role: string,
+  type: BuildDiagramTypography,
   anchor: "start" | "middle" | "end" = "start",
 ): string {
   const value = formatDerivedDisplay(inches, unit);
-  return `<text data-role="${role}" data-derived-inches="${fmtNum(inches)}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="${anchor}" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}"><tspan x="${fmtNum(x)}" dy="0">${escapeXml(title)}</tspan><tspan x="${fmtNum(x)}" dy="13">${escapeXml(value)}</tspan></text>`;
+  const nameWidth = title.length * type.name * 0.55;
+  const valueWidth = value.length * type.value * 0.55;
+  let nameX = x;
+  let valueX = x;
+  if (anchor === "middle") {
+    nameX = x - nameWidth / 2;
+    valueX = x - valueWidth / 2;
+  } else if (anchor === "end") {
+    nameX = x - nameWidth;
+    valueX = x - valueWidth;
+  }
+  const dy = Math.max(type.name + 2, Math.round(type.value * 0.92));
+  return `<text data-role="${role}" data-derived-inches="${fmtNum(inches)}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="start" font-family="${type.fontFamily}" font-size="${type.name}" fill="${DS_MUTED}"><tspan x="${fmtNum(nameX)}" dy="0" data-build-type-role="name" font-size="${type.name}" font-weight="${type.nameWeight}">${escapeXml(title)}</tspan><tspan x="${fmtNum(valueX)}" dy="${fmtNum(dy)}" data-build-type-role="value" font-size="${type.value}" font-weight="${type.valueWeight}" fill="${DS_STROKE}">${escapeXml(value)}</tspan></text>`;
 }
 
 export function cardiganBodyPath(frame: SidewaysCardiganEditMeasurementFrame): string {
@@ -457,16 +474,19 @@ export function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame)
 
 export function drawPulloverMarkers(
   frame: SidewaysCardiganEditMeasurementFrame,
-  options?: { includeStartLabel?: boolean },
+  options?: { includeStartLabel?: boolean; typography?: BuildDiagramTypography },
 ): string {
   const includeStartLabel = options?.includeStartLabel !== false;
   const midX = (frame.hemX + frame.neckX) / 2;
+  const type = includeStartLabel
+    ? (options?.typography ?? buildDiagramTypographyForViewBox(viewBoxFor(frame).width))
+    : null;
   return [
     `<line data-role="underarm-start" data-scrap-on="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.topY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
     `<line data-role="graft-join" data-scrap-off="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.bottomY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
     `<polyline data-role="v-neck" data-closed-front="true" points="${fmtNum(frame.neckX)},${fmtNum(frame.firstArmholeY)} ${fmtNum(frame.vCutX)},${fmtNum(frame.firstVEndY)} ${fmtNum(frame.neckX)},${fmtNum(frame.secondVStartY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.6"/>`,
-    includeStartLabel
-      ? `<text data-role="underarm-start-label" x="${fmtNum(midX)}" y="${fmtNum(frame.topY - 10)}" text-anchor="middle" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}">Start at underarm · scrap on / graft</text>`
+    includeStartLabel && type
+      ? `<text data-role="underarm-start-label" data-build-type-role="support" x="${fmtNum(midX)}" y="${fmtNum(frame.topY - 10 - type.support - Math.max(4, Math.round(type.support * 0.2)))}" text-anchor="middle" font-family="${type.fontFamily}" font-size="${type.support}" font-weight="${type.supportWeight}" fill="${DS_MUTED}"><tspan x="${fmtNum(midX)}" dy="0">Start at underarm</tspan><tspan x="${fmtNum(midX)}" dy="${fmtNum(type.support + Math.max(4, Math.round(type.support * 0.2)))}" data-build-type-role="support">scrap on / graft</tspan></text>`
       : "",
   ].join("");
 }
@@ -488,13 +508,20 @@ export function drawArmholeAndBack(frame: SidewaysCardiganEditMeasurementFrame):
   return parts.join("");
 }
 
-function mutedLabel(x: number, y: number, text: string, role: string): string {
-  return `<text data-role="${role}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="middle" font-family="${DS_FONT}" font-size="11" fill="${DS_MUTED}">${escapeXml(text)}</text>`;
+function mutedLabel(
+  x: number,
+  y: number,
+  text: string,
+  role: string,
+  type: BuildDiagramTypography,
+): string {
+  return `<text data-role="${role}" data-build-type-role="support" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="middle" font-family="${type.fontFamily}" font-size="${type.support}" font-weight="${type.supportWeight}" fill="${DS_MUTED}">${escapeXml(text)}</text>`;
 }
 
 function drawPulloverDimensions(
   frame: SidewaysCardiganEditMeasurementFrame,
   unit: MeasurementDisplayUnit,
+  type: BuildDiagramTypography,
 ): string {
   const derived = frame.derived;
   const bustX = frame.hemX - 36;
@@ -518,7 +545,7 @@ function drawPulloverDimensions(
     vDim(sectionDimX, frame.topY, frame.firstVEndY, "dim-front-section", ` data-side="first"`),
     vDim(sectionDimX, frame.firstVEndY, frame.secondArmholeY, "dim-front-section", ` data-side="second"`),
     vDim(sectionDimX, frame.secondArmholeY, frame.bottomY, "dim-back-section"),
-    mutedLabel((frame.armholeX + frame.neckX) / 2, armholeY - 22, "Armhole depth", SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth),
+    mutedLabel((frame.armholeX + frame.neckX) / 2, armholeY - 22, "Armhole depth", SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth, type),
     derivedValueLabel(
       sectionDimX + 10,
       firstFrontMidY - 4,
@@ -526,6 +553,7 @@ function drawPulloverDimensions(
       derived.frontSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
+      type,
     ),
     derivedValueLabel(
       sectionDimX + 10,
@@ -534,6 +562,7 @@ function drawPulloverDimensions(
       derived.frontSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
+      type,
     ),
     derivedValueLabel(
       (frame.hemX + frame.neckX) / 2,
@@ -542,6 +571,7 @@ function drawPulloverDimensions(
       derived.backSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection,
+      type,
       "middle",
     ),
     derivedValueLabel(
@@ -551,6 +581,7 @@ function drawPulloverDimensions(
       derived.shoulderSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection,
+      type,
     ),
     derivedValueLabel(
       frame.neckX + 48,
@@ -559,6 +590,7 @@ function drawPulloverDimensions(
       derived.halfNeckOpeningInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening,
+      type,
     ),
   ].join("");
 }
@@ -566,6 +598,7 @@ function drawPulloverDimensions(
 function drawCardiganDimensions(
   frame: SidewaysCardiganEditMeasurementFrame,
   unit: MeasurementDisplayUnit,
+  type: BuildDiagramTypography,
 ): string {
   const derived = frame.derived;
   const layout = cardiganDimLayout(frame);
@@ -650,6 +683,7 @@ function drawCardiganDimensions(
       derived.shoulderSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection,
+      type,
     ),
     derivedValueLabel(
       neckLabelX,
@@ -658,6 +692,7 @@ function drawCardiganDimensions(
       derived.halfNeckOpeningInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening,
+      type,
     ),
     derivedValueLabel(
       sectionLabelX,
@@ -666,6 +701,7 @@ function drawCardiganDimensions(
       derived.frontSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
+      type,
     ),
     derivedValueLabel(
       sectionLabelX,
@@ -674,6 +710,7 @@ function drawCardiganDimensions(
       derived.backSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection,
+      type,
     ),
     derivedValueLabel(
       sectionLabelX,
@@ -682,6 +719,7 @@ function drawCardiganDimensions(
       derived.frontSectionInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
+      type,
     ),
   ].join("");
 }
@@ -689,10 +727,11 @@ function drawCardiganDimensions(
 function drawDimensions(
   frame: SidewaysCardiganEditMeasurementFrame,
   unit: MeasurementDisplayUnit,
+  type: BuildDiagramTypography,
 ): string {
   return frame.garmentStyle === "pullover"
-    ? drawPulloverDimensions(frame, unit)
-    : drawCardiganDimensions(frame, unit);
+    ? drawPulloverDimensions(frame, unit, type)
+    : drawCardiganDimensions(frame, unit, type);
 }
 
 function drawPulloverTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
@@ -728,6 +767,32 @@ function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
   return frame.garmentStyle === "pullover"
     ? drawPulloverTargets(frame)
     : drawCardiganTargets(frame);
+}
+
+/**
+ * Grow the geometry viewBox only when label ink would sit outside it.
+ * Font sizes stay resolved against the geometry width. Scaling them up again
+ * to the widened canvas would shrink the words back down on screen.
+ */
+function viewBoxCoveringLabelInk(
+  geometry: { x: number; width: number; height: number },
+  markup: string,
+): { x: number; y: number; width: number; height: number } {
+  const base = { x: geometry.x, y: 0, width: geometry.width, height: geometry.height };
+  const ink = diagramMarkupBounds(markup);
+  if (!ink) return base;
+  const margin = 8;
+  let minX = base.x;
+  let minY = base.y;
+  let maxX = base.x + base.width;
+  let maxY = base.y + base.height;
+  const inkRight = ink.x + ink.width;
+  const inkBottom = ink.y + ink.height;
+  if (ink.x < minX) minX = ink.x - margin;
+  if (ink.y < minY) minY = ink.y - margin;
+  if (inkRight > maxX) maxX = inkRight + margin;
+  if (inkBottom > maxY) maxY = inkBottom + margin;
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
 export function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): {
@@ -844,7 +909,7 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
 ): string {
   const garmentStyle = input.garmentStyle === "pullover" ? "pullover" : "cardigan";
   const frame = buildFrame(input.measurements, garmentStyle);
-  const { x: vbX, width, height } = viewBoxFor(frame);
+  const geometry = viewBoxFor(frame);
   const unit = input.displayUnit === "cm" ? "cm" : "in";
   const start = garmentStyle === "pullover" ? "underarm" : "center-front";
   const bodyD = garmentStyle === "pullover" ? pulloverBodyPath(frame) : cardiganBodyPath(frame);
@@ -856,14 +921,26 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
     garmentStyle === "pullover"
       ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
       : "";
+  const compose = (type: BuildDiagramTypography) =>
+    [
+      `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
+      sleeve,
+      drawArmholeAndBack(frame),
+      garmentStyle === "pullover"
+        ? drawPulloverMarkers(frame, { typography: type })
+        : drawCardiganMarkers(frame),
+      drawDimensions(frame, unit, type),
+      drawTargets(frame),
+    ].join("");
+  // Type is resolved against the drawing width, then the viewBox grows only
+  // enough to keep that ink inside. Rescaling to the wider canvas would put
+  // the words back at the old, too-small on-screen size.
+  const type = buildDiagramTypographyForViewBox(geometry.width);
+  const labels = separateOverlappingDiagramLabels(compose(type), 6);
+  const box = viewBoxCoveringLabelInk(geometry, labels);
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(vbX)} 0 ${fmtNum(width)} ${fmtNum(height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-edit-piece="body" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}">`,
-    `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
-    sleeve,
-    drawArmholeAndBack(frame),
-    garmentStyle === "pullover" ? drawPulloverMarkers(frame) : drawCardiganMarkers(frame),
-    drawDimensions(frame, unit),
-    drawTargets(frame),
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(box.x)} ${fmtNum(box.y)} ${fmtNum(box.width)} ${fmtNum(box.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${garmentStyle}" data-sideways-edit-piece="body" data-sideways-start="${start}" data-cardigan-structure="${garmentStyle === "cardigan" ? "front-back-front" : "underarm-graft"}" data-display-unit="${unit}" data-build-diagram-type-width="${fmtNum(type.viewBoxWidth)}">`,
+    labels,
     `</svg>`,
   ].join("");
 }

@@ -1,8 +1,12 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildDiagramTypographyForViewBox } from "./buildDiagramTypography";
 import {
   buildSidewaysCardiganEditMeasurementDiagramSvg,
+  buildSidewaysCardiganEditMeasurementFrame,
+  drawPulloverMarkers,
+  viewBoxFor,
   derivedSidewaysSummaryInches,
   SIDEWAYS_SUMMARY_DERIVED_ROLES,
   SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS,
@@ -345,6 +349,147 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(Number(target?.[1])).toBeCloseTo((hemX + neckX) / 2, 1);
     expect(Number(target?.[2])).toBeCloseTo(length!.y1, 1);
   });
+
+  it("scales Sideways body labels from the shared Build/Edit typography helper", () => {
+    expect(rendererSrc).not.toContain('font-size="11"');
+    const samples = [
+      { garmentStyle: "cardigan" as const, measurements: BASE },
+      { garmentStyle: "pullover" as const, measurements: BASE },
+      {
+        garmentStyle: "cardigan" as const,
+        measurements: { ...BASE, finishedBustInches: 34, finishedLengthInches: 20 },
+      },
+      {
+        garmentStyle: "cardigan" as const,
+        measurements: { ...BASE, finishedBustInches: 54, finishedLengthInches: 28 },
+      },
+    ];
+    for (const input of samples) {
+      const frame = buildSidewaysCardiganEditMeasurementFrame(input);
+      const geometry = viewBoxFor(frame);
+      const type = buildDiagramTypographyForViewBox(geometry.width);
+      const svg = buildSidewaysCardiganEditMeasurementDiagramSvg(input);
+      const vb = parseViewBox(svg);
+      expect(svg).toContain(`data-build-diagram-type-width="${geometry.width}"`);
+      expect(vb && vb.width).toBeGreaterThanOrEqual(geometry.width);
+      expect(type.value).toBeGreaterThan(type.name);
+      expect(type.name).toBeGreaterThan(type.support);
+      expect(svg).toContain(
+        `data-build-type-role="name" font-size="${type.name}" font-weight="${type.nameWeight}"`,
+      );
+      expect(svg).toContain(
+        `data-build-type-role="value" font-size="${type.value}" font-weight="${type.valueWeight}"`,
+      );
+      expect(svg).not.toContain('font-size="11"');
+      expect(svg).toContain(">Front<");
+      expect(svg).toContain(">Back<");
+      expect(svg).toContain(">Shoulder<");
+      expect(svg).toContain(">½ neck opening<");
+      expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
+      expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedLength}"`);
+      expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.neckOpeningWidth}"`);
+      expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
+      expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.armholeDepth}"`);
+      expect(svg).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    }
+    const pullover = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: BASE,
+    });
+    const pulloverType = buildDiagramTypographyForViewBox(
+      viewBoxFor(buildSidewaysCardiganEditMeasurementFrame({ garmentStyle: "pullover", measurements: BASE })).width,
+    );
+    expect(pullover).toMatch(
+      new RegExp(
+        `data-build-type-role="support"[^>]*font-size="${pulloverType.support}"[^>]*>Armhole depth<`,
+      ),
+    );
+    expect(pullover).toContain(">Start at underarm<");
+    expect(pullover).toContain(">scrap on / graft<");
+    expect(pullover).toMatch(
+      new RegExp(`data-build-type-role="support"[^>]*font-size="${pulloverType.support}"`),
+    );
+    expect(pullover).toContain('data-derived-inches="10.5"');
+  });
+
+  it("keeps finished-pattern pullover markers free of the body measurement caption", () => {
+    const frame = buildSidewaysCardiganEditMeasurementFrame({
+      garmentStyle: "pullover",
+      measurements: BASE,
+    });
+    const markers = drawPulloverMarkers(frame, { includeStartLabel: false });
+    expect(markers).toContain('data-role="underarm-start"');
+    expect(markers).not.toContain("font-size");
+    expect(markers).not.toContain("data-build-type-role");
+    expect(markers).not.toContain("Start at underarm");
+  });
+
+  it("keeps body label ink inside the viewBox at small and large sizes", () => {
+    const samples = [
+      { label: "typical cardigan", garmentStyle: "cardigan" as const, measurements: BASE },
+      { label: "typical pullover", garmentStyle: "pullover" as const, measurements: BASE },
+      {
+        label: "small cardigan",
+        garmentStyle: "cardigan" as const,
+        measurements: { ...BASE, finishedBustInches: 34, finishedLengthInches: 20, neckOpeningWidthInches: 6.5 },
+      },
+      {
+        label: "large cardigan",
+        garmentStyle: "cardigan" as const,
+        measurements: { ...BASE, finishedBustInches: 54, finishedLengthInches: 28, neckOpeningWidthInches: 8 },
+      },
+      {
+        label: "tiny cardigan",
+        garmentStyle: "cardigan" as const,
+        measurements: { ...BASE, finishedBustInches: 18, finishedLengthInches: 10 },
+      },
+      {
+        label: "huge cardigan",
+        garmentStyle: "cardigan" as const,
+        measurements: { ...BASE, finishedBustInches: 70, finishedLengthInches: 40 },
+      },
+      {
+        label: "typical cardigan cm",
+        garmentStyle: "cardigan" as const,
+        measurements: BASE,
+        displayUnit: "cm" as const,
+      },
+    ];
+    const clips: string[] = [];
+    const overlaps: string[] = [];
+    for (const sample of samples) {
+      const svg = buildSidewaysCardiganEditMeasurementDiagramSvg({
+        garmentStyle: sample.garmentStyle,
+        measurements: sample.measurements,
+        displayUnit: sample.displayUnit,
+      });
+      const vb = parseViewBox(svg);
+      expect(vb).not.toBeNull();
+      const boxes = textLineBoxes(svg);
+      for (const box of boxes) {
+        if (
+          box.left < vb!.x - 0.5 ||
+          box.right > vb!.x + vb!.width + 0.5 ||
+          box.top < vb!.y - 0.5 ||
+          box.bottom > vb!.y + vb!.height + 0.5
+        ) {
+          clips.push(`${sample.label}: "${box.text}"`);
+        }
+      }
+      for (let i = 0; i < boxes.length; i += 1) {
+        for (let j = i + 1; j < boxes.length; j += 1) {
+          const a = boxes[i]!;
+          const b = boxes[j]!;
+          if (a.group === b.group) continue;
+          const overlapX = a.left < b.right - 2 && a.right > b.left + 2;
+          const overlapY = a.top < b.bottom - 2 && a.bottom > b.top + 2;
+          if (overlapX && overlapY) overlaps.push(`${sample.label}: "${a.text}" × "${b.text}"`);
+        }
+      }
+    }
+    expect(clips).toEqual([]);
+    expect(overlaps).toEqual([]);
+  });
 });
 
 function parseViewBox(svg: string): { x: number; y: number; width: number; height: number } | null {
@@ -384,6 +529,53 @@ function dimSegment(svg: string, role: string): { length: number } | null {
   const line = dimLineFromGroup(dimGroup(svg, role));
   if (!line) return null;
   return { length: Math.hypot(line.x2 - line.x1, line.y2 - line.y1) };
+}
+
+function textLineBoxes(svg: string): Array<{
+  group: number;
+  text: string;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}> {
+  const boxes = [];
+  let group = 0;
+  for (const match of svg.matchAll(/<text\b([^>]*)>([\s\S]*?)<\/text>/g)) {
+    const attrs = match[1] ?? "";
+    const inner = match[2] ?? "";
+    const anchor = /text-anchor="([^"]+)"/.exec(attrs)?.[1] ?? "start";
+    const baseSize = Number(/font-size="([^"]+)"/.exec(attrs)?.[1]) || 16;
+    const baseX = Number(/\bx="([^"]+)"/.exec(attrs)?.[1]);
+    let y = Number(/\by="([^"]+)"/.exec(attrs)?.[1]);
+    const tspans = [...inner.matchAll(/<tspan\b([^>]*)>([\s\S]*?)<\/tspan>/g)];
+    const lines = tspans.length
+      ? tspans.map((span) => {
+          const spanAttrs = span[1] ?? "";
+          y += Number(/dy="([^"]+)"/.exec(spanAttrs)?.[1]) || 0;
+          return {
+            text: (span[2] ?? "").replace(/<[^>]+>/g, "").trim(),
+            x: Number(/\bx="([^"]+)"/.exec(spanAttrs)?.[1]) || baseX,
+            y,
+            size: Number(/font-size="([^"]+)"/.exec(spanAttrs)?.[1]) || baseSize,
+          };
+        })
+      : [{ text: inner.replace(/<[^>]+>/g, "").trim(), x: baseX, y, size: baseSize }];
+    for (const line of lines) {
+      const width = line.text.length * line.size * 0.55;
+      const left = anchor === "end" ? line.x - width : anchor === "middle" ? line.x - width / 2 : line.x;
+      boxes.push({
+        group,
+        text: line.text,
+        left,
+        right: left + width,
+        top: line.y - line.size * 0.85,
+        bottom: line.y + line.size * 0.25,
+      });
+    }
+    group += 1;
+  }
+  return boxes;
 }
 
 function diagramGeometryStaysInsideViewBox(svg: string): boolean {
