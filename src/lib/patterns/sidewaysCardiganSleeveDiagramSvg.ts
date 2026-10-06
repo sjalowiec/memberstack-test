@@ -1,10 +1,11 @@
 /**
  * Sideways V-Neck sleeve diagrams (Stitches & Rows and Shaping Notation).
  *
- * Geometry, colors, and direction come from the Drop Shoulder sleeve frame.
- * Cuff Up keeps the cuff at the bottom. Top Down uses that frame's Top Down
- * orientation, with the upper arm as the starting edge. Labels stay upright.
- * This module does not recalculate stitches, rows, or shaping.
+ * Both silhouettes use the shared proportional sleeve frame: one garment inch
+ * is the same SVG distance horizontally and vertically. The viewBox grows
+ * around that sleeve plus the labels for this diagram. Stitch counts, row
+ * counts, and shaping notation are drawn from the sleeve calc and are not
+ * recalculated here.
  */
 
 import {
@@ -13,7 +14,6 @@ import {
 } from "./dropShoulderSleeveDiagramModel";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import {
-  buildDropShoulderSleeveFrame,
   dropShoulderSleeveBodyPath,
   drawSleeveCuffDepth,
   drawSleeveCuffJoin,
@@ -25,7 +25,6 @@ import {
 import {
   DS_FILL,
   DS_FONT,
-  DS_FS_MEASURE,
   DS_MUTED,
   DS_FS_SMALL,
   DS_FS_TITLE,
@@ -34,8 +33,12 @@ import {
   escapeXml,
   fmtNum,
   textFont,
-  wrapGeneratedDiagramSvg,
 } from "./dropShoulderPatternDiagramSvgShared";
+import {
+  placeSidewaysProportionalSleeve,
+  sidewaysProportionalSleeveLocalFrame,
+  type SidewaysSleeveAnnotationPadding,
+} from "./sidewaysSleeveProportionalGeometry";
 import {
   DS_FS_NOTATION,
   DS_FS_RC,
@@ -74,6 +77,11 @@ export type SidewaysCardiganSleeveDiagramArgs = {
 };
 
 const MIN_READABLE_FONT = DS_FS_SMALL;
+
+/** Space outside the silhouette for stitch/row dimension labels. Same for both knit directions. */
+const STS_ROWS_PAD: SidewaysSleeveAnnotationPadding = { top: 80, right: 88, bottom: 88, left: 104 };
+/** Space outside the silhouette for shaping tokens and left-side row counters. */
+const SHAPING_PAD: SidewaysSleeveAnnotationPadding = { top: 64, right: 148, bottom: 64, left: 120 };
 
 function diagramText(
   role: string,
@@ -167,9 +175,14 @@ function workingDirectionArrow(
   );
 }
 
-function sleeveFrame(args: SidewaysCardiganSleeveDiagramArgs): {
+function sleeveFrame(
+  args: SidewaysCardiganSleeveDiagramArgs,
+  padding: SidewaysSleeveAnnotationPadding,
+): {
   frame: DropShoulderSleeveDiagramFrame;
   model: DropShoulderSleeveStitchesRowsModel;
+  viewBox: { x: number; y: number; width: number; height: number };
+  pxPerInch: number;
 } | null {
   const { calc } = args;
   if (!(args.stitchesPerInch > 0) || !(args.rowsPerInch > 0)) return null;
@@ -190,7 +203,44 @@ function sleeveFrame(args: SidewaysCardiganSleeveDiagramArgs): {
     "in",
   );
   if (!model) return null;
-  return { frame: buildDropShoulderSleeveFrame(model), model };
+  const sized = sidewaysProportionalSleeveLocalFrame({
+    upperArmInches: calc.finished.upperArmInches,
+    wristInches: calc.finished.wristInches,
+    sleeveLengthInches: calc.finished.sleeveLengthInches,
+    cuffDepthInches: calc.finished.cuffDepthInches,
+    direction: calc.direction,
+  });
+  const placed = placeSidewaysProportionalSleeve(sized.frame, padding);
+  return { frame: placed.frame, model, viewBox: placed.viewBox, pxPerInch: sized.pxPerInch };
+}
+
+function sidewaysSleeveSvg(attrs: {
+  ariaLabel: string;
+  className: string;
+  dataAttrs: Record<string, string | number>;
+  title: string;
+  body: string;
+  viewBox: { x: number; y: number; width: number; height: number };
+  includeTitle: boolean;
+}): string {
+  const data = Object.entries(attrs.dataAttrs)
+    .map(([k, v]) => ` ${k}="${escapeXml(String(v))}"`)
+    .join("");
+  const { viewBox } = attrs;
+  const safeBody = attrs.body.replace(/\bNaN\b/g, "0").replace(/\bInfinity\b/g, "0");
+  const title = attrs.includeTitle ? `<title>${escapeXml(attrs.title)}</title>` : "";
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(viewBox.x)} ${fmtNum(viewBox.y)} ${fmtNum(viewBox.width)} ${fmtNum(viewBox.height)}"` +
+    ` width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img"` +
+    ` aria-label="${escapeXml(attrs.ariaLabel)}"` +
+    ` class="${escapeXml(attrs.className)}"` +
+    data +
+    `>` +
+    title +
+    `<rect x="${fmtNum(viewBox.x)}" y="${fmtNum(viewBox.y)}" width="${fmtNum(viewBox.width)}" height="${fmtNum(viewBox.height)}" fill="#fff"/>` +
+    safeBody +
+    `</svg>`
+  );
 }
 
 function sharedDataAttrs(
@@ -253,9 +303,9 @@ function silhouette(frame: DropShoulderSleeveDiagramFrame): string {
 export function buildSidewaysCardiganSleeveStitchesRowsSvg(
   args: SidewaysCardiganSleeveDiagramArgs,
 ): string | null {
-  const oriented = sleeveFrame(args);
+  const oriented = sleeveFrame(args, STS_ROWS_PAD);
   if (!oriented) return null;
-  const { frame } = oriented;
+  const { frame, viewBox, pxPerInch } = oriented;
   const { calc } = args;
   const unit = args.displayUnit === "cm" ? "cm" : "in";
   const directionLabel = directionChoiceLabel(calc);
@@ -301,11 +351,13 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
     ),
   ].join("");
 
-  const svg = wrapGeneratedDiagramSvg({
+  return sidewaysSleeveSvg({
     ariaLabel: `Sideways sleeve stitches and rows, ${directionLabel}`,
     className: "sleeveless-piece-split__diagram-inline ds-sleeve-diagram ds-sleeve-diagram--generated",
     dataAttrs: {
       ...sharedDataAttrs(args, frame),
+      "data-sleeve-geometry": "proportional",
+      "data-sleeve-px-per-inch": pxPerInch,
       "data-sideways-sleeve-diagram": "sts-rows",
       "data-sideways-sleeve-sts-rows-generated": "true",
       "data-cast-on-y": fmtNum(castOnY),
@@ -313,16 +365,17 @@ export function buildSidewaysCardiganSleeveStitchesRowsSvg(
     },
     title: `Sideways sleeve stitches and rows, ${directionLabel}`,
     body,
+    viewBox,
+    includeTitle: false,
   });
-  return svg.replace(/<title>[\s\S]*?<\/title>/, "");
 }
 
 export function buildSidewaysCardiganSleeveShapingNotationSvg(
   args: SidewaysCardiganSleeveDiagramArgs,
 ): string | null {
-  const oriented = sleeveFrame(args);
+  const oriented = sleeveFrame(args, SHAPING_PAD);
   if (!oriented) return null;
-  const { frame } = oriented;
+  const { frame, viewBox, pxPerInch } = oriented;
   const { calc } = args;
   const directionLabel = directionChoiceLabel(calc);
   const castOnEdge = calc.direction === "top-down" ? "upper-arm" : "wrist";
@@ -344,6 +397,7 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
     bindOffLabel: bindOff,
     workingTokens: notation.split(" ").filter(Boolean),
     fontSize: DS_FS_NOTATION,
+    canvasRight: viewBox.x + viewBox.width,
   })
     .map((label) =>
       diagramText(
@@ -371,15 +425,23 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
       font: DS_FONT,
       escape: escapeXml,
       formatNumber: fmtNum,
+      bounds: {
+        minX: viewBox.x + 8,
+        minY: viewBox.y + 8,
+        maxX: viewBox.x + viewBox.width - 8,
+        maxY: viewBox.y + viewBox.height - 8,
+      },
     }),
   ].join("");
 
-  return wrapGeneratedDiagramSvg({
+  return sidewaysSleeveSvg({
     ariaLabel: `Sideways sleeve shaping notation, ${directionLabel}`,
     className:
       "sleeveless-piece-split__diagram-inline ds-sleeve-diagram ds-sleeve-diagram--generated ds-sleeve-diagram--notation",
     dataAttrs: {
       ...sharedDataAttrs(args, frame),
+      "data-sleeve-geometry": "proportional",
+      "data-sleeve-px-per-inch": pxPerInch,
       "data-sideways-sleeve-diagram": "shaping-notation",
       "data-sideways-sleeve-notation-generated": "true",
       "data-cast-on-y": fmtNum(castOnY),
@@ -391,5 +453,7 @@ export function buildSidewaysCardiganSleeveShapingNotationSvg(
     },
     title: `Sideways Sleeve - Shaping Notation - ${directionLabel}`,
     body,
+    viewBox,
+    includeTitle: true,
   });
 }

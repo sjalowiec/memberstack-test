@@ -49,7 +49,7 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(sleeve).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
     expect(sleeve).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist}"`);
     expect(sleeve).toContain('data-sideways-edit-piece="sleeve"');
-    expect(src).toContain("buildDropShoulderMeasurementSleeveFrame");
+    expect(src).toContain("sidewaysProportionalSleeveLocalFrame");
     expect(src).toContain("dropShoulderSleeveBodyPath");
   });
 
@@ -586,12 +586,21 @@ describe("Sideways sleeve Build/Edit proportional geometry", () => {
       rendererSrc.indexOf("function buildSidewaysSleeveLayout"),
       rendererSrc.indexOf("function sleeveLengthDimX"),
     );
-    expect(sleeveFn).toContain("upperArmInches * pxPerInch");
-    expect(sleeveFn).toContain("wristInches * pxPerInch");
-    expect(sleeveFn).toContain("sleeveLengthInches * pxPerInch");
+    const geometrySrc = readFileSync(
+      resolve("src/lib/patterns/sidewaysSleeveProportionalGeometry.ts"),
+      "utf8",
+    );
+    expect(sleeveFn).toContain("sidewaysProportionalSleeveLocalFrame");
+    expect(geometrySrc).toContain("upperArmInches * SIDEWAYS_SLEEVE_PX_PER_INCH");
+    expect(geometrySrc).toContain("wristInches * SIDEWAYS_SLEEVE_PX_PER_INCH");
+    expect(geometrySrc).toContain("sleeveLengthInches * SIDEWAYS_SLEEVE_PX_PER_INCH");
+    expect(geometrySrc).toContain("cuffDepthInches * SIDEWAYS_SLEEVE_PX_PER_INCH");
     expect(sleeveFn).not.toContain("/ 2");
     expect(sleeveFn).not.toContain("DS_VB_");
     expect(sleeveFn).not.toContain("DS_SLEEVE_REF_");
+    expect(geometrySrc).not.toContain("/ 2");
+    expect(geometrySrc).not.toContain("DS_VB_");
+    expect(geometrySrc).not.toContain("DS_SLEEVE_REF_");
     const shortBox = parseViewBox(sleeveDiagram(SLEEVE_EXAMPLE))!;
     const longBox = parseViewBox(
       sleeveDiagram({ ...SLEEVE_EXAMPLE, sleeveLengthInches: 20.75 }),

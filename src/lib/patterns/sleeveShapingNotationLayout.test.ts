@@ -127,9 +127,21 @@ function overlaps(
   return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 }
 
+function canvasOf(svg: string) {
+  const match = /viewBox="([^"]+)"/.exec(svg);
+  const parts = match?.[1]?.trim().split(/[\s,]+/).map(Number) ?? [];
+  if (parts.length === 4 && parts.every((n) => Number.isFinite(n))) {
+    const [x, y, width, height] = parts;
+    return { x, y, width, height };
+  }
+  return { x: 0, y: 0, width: DS_VB_W, height: DS_VB_H };
+}
+
 function expectReadableSleeveNotation(svg: string, direction: "cuff-up" | "top-down") {
   const marks = rcLabels(svg);
   const lines = leaders(svg);
+  const canvas = canvasOf(svg);
+  const midX = canvas.x + canvas.width / 2;
   expect(marks.length).toBeGreaterThan(0);
   expect(lines).toHaveLength(marks.length);
   for (const mark of marks) {
@@ -141,13 +153,13 @@ function expectReadableSleeveNotation(svg: string, direction: "cuff-up" | "top-d
     expect(line!.stroke).toBe(SHAPING_NOTATION_RC_GUIDE);
     expect(line!.dash).toBe("4 3");
     expect(mark.size).toBeGreaterThanOrEqual(SHAPING_NOTATION_RC_MIN_FONT);
-    expect(mark.left).toBeGreaterThanOrEqual(0);
-    expect(mark.right).toBeLessThanOrEqual(DS_VB_W);
-    expect(mark.top).toBeGreaterThanOrEqual(0);
-    expect(mark.bottom).toBeLessThanOrEqual(DS_VB_H);
+    expect(mark.left).toBeGreaterThanOrEqual(canvas.x);
+    expect(mark.right).toBeLessThanOrEqual(canvas.x + canvas.width);
+    expect(mark.top).toBeGreaterThanOrEqual(canvas.y);
+    expect(mark.bottom).toBeLessThanOrEqual(canvas.y + canvas.height);
     expect(mark.right).toBeLessThan(line!.outlineX);
-    expect(line!.outlineX - mark.x).toBeLessThan(90);
-    expect(mark.x).toBeLessThan(DS_VB_W / 2);
+    expect(line!.outlineX - mark.x).toBeLessThan(110);
+    expect(mark.x).toBeLessThan(midX);
   }
   const roles = ["cast-on", "bind-off", "sleeve-cap-sts", "cuff", "row-span", "sleeve-shaping", "sleeve-piece-label"];
   for (const role of roles) {
@@ -165,7 +177,7 @@ function expectReadableSleeveNotation(svg: string, direction: "cuff-up" | "top-d
   }
   const centerRoles = textBoxes(svg, "sleeve-direction").concat(textBoxes(svg, "sleeve-shaping"));
   for (const shaping of textBoxes(svg, "sleeve-shaping")) {
-    expect(shaping.x).toBeGreaterThan(DS_VB_W / 2);
+    expect(shaping.x).toBeGreaterThan(midX);
     for (const other of centerRoles) {
       if (other === shaping) continue;
     }

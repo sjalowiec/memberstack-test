@@ -23,12 +23,15 @@ import {
 } from "./dropShoulderPatternDiagramSvgShared";
 import { diagramMarkupBounds, separateOverlappingDiagramLabels } from "./legoBlocks/patternDiagramFit";
 import {
-  buildDropShoulderMeasurementSleeveFrame,
   dropShoulderSleeveBodyPath,
   drawSleeveCuffJoin,
   offsetDropShoulderSleeveDiagramFrame,
   type DropShoulderSleeveDiagramFrame,
 } from "./dropShoulderSleeveDiagramSvgShared";
+import {
+  SIDEWAYS_SLEEVE_PX_PER_INCH,
+  sidewaysProportionalSleeveLocalFrame,
+} from "./sidewaysSleeveProportionalGeometry";
 import type { DropShoulderEditPreviewTab } from "./dropShoulderEditMeasurementPreview";
 import {
   formatMeasurementDisplayFromInches,
@@ -826,11 +829,9 @@ export function buildSidewaysCardiganEditMeasurementFrame(
 }
 
 /**
- * One garment inch — upper arm, wrist, and sleeve length — is this many SVG
- * user-units on both axes. The viewBox grows around that silhouette. It is not
- * fitted into the Drop Shoulder 430×520 canvas.
+ * Room for the dimension lines. The silhouette itself comes from
+ * sidewaysProportionalSleeveLocalFrame so one garment inch matches both axes.
  */
-const SIDEWAYS_SLEEVE_PX_PER_INCH = 16;
 const SIDEWAYS_SLEEVE_DIM = {
   upperArm: 28,
   wrist: 36,
@@ -861,16 +862,15 @@ type SidewaysSleeveDiagramLayout = {
 function buildSidewaysSleeveLayout(
   measurements: SidewaysCardiganEditMeasurementInput,
 ): SidewaysSleeveDiagramLayout {
-  const upperArmInches = positive(measurements.finishedUpperArmInches, 12);
-  const wristInches = positive(measurements.wristInches, 7);
-  const sleeveLengthInches = positive(measurements.sleeveLengthInches, 16);
-  const pxPerInch = SIDEWAYS_SLEEVE_PX_PER_INCH;
-  const local = buildDropShoulderMeasurementSleeveFrame({
-    upperArmWidthPx: upperArmInches * pxPerInch,
-    cuffWidthPx: wristInches * pxPerInch,
-    sleeveLengthPx: sleeveLengthInches * pxPerInch,
-    cuffDepthPx: 0,
+  const sized = sidewaysProportionalSleeveLocalFrame({
+    upperArmInches: measurements.finishedUpperArmInches,
+    wristInches: measurements.wristInches,
+    sleeveLengthInches: measurements.sleeveLengthInches,
+    cuffDepthInches: 0,
+    direction: "cuff-up",
   });
+  const { upperArmInches, wristInches, sleeveLengthInches, pxPerInch } = sized;
+  const local = sized.frame;
   const lengthX =
     Math.min(local.wristLeft, local.upperLeft) - SIDEWAYS_SLEEVE_DIM.sleeveLength;
   const leftInk = lengthX - SIDEWAYS_SLEEVE_GUTTER.chipPastLength - SIDEWAYS_SLEEVE_GUTTER.edge;

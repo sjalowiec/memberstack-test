@@ -56,11 +56,17 @@ function outsideEdgeY(
   return y + outward * 22;
 }
 
-function rightLabelX(frame: DropShoulderSleeveDiagramFrame, y: number, text: string, fontSize: number): number {
+function rightLabelX(
+  frame: DropShoulderSleeveDiagramFrame,
+  y: number,
+  text: string,
+  fontSize: number,
+  canvasRight = DS_VB_W,
+): number {
   const outline = dropShoulderSleeveSideXAtY(frame, y, "right");
   const width = Math.max(fontSize, text.length * fontSize * 0.56);
   const preferred = outline + 10;
-  const maxX = DS_VB_W - 8 - width;
+  const maxX = canvasRight - 8 - width;
   return Math.max(outline + 4, Math.min(preferred, maxX));
 }
 
@@ -79,6 +85,8 @@ export function layoutSleeveShapingNotationLabels(args: {
   fontSize: number;
   castOnRole?: string;
   bindOffRole?: string;
+  /** Right edge of the diagram. Defaults to the Drop Shoulder canvas. */
+  canvasRight?: number;
 }): SleeveNotationLabel[] {
   const { frame, direction } = args;
   const fontSize = args.fontSize;
@@ -111,7 +119,7 @@ export function layoutSleeveShapingNotationLabels(args: {
     labels.push({
       role: "cuff",
       text: args.cuffLabel,
-      x: rightLabelX(frame, y, args.cuffLabel, fontSize),
+      x: rightLabelX(frame, y, args.cuffLabel, fontSize, args.canvasRight),
       y,
       anchor: "start",
       extra: ` data-notation="${args.cuffLabel}"`,
@@ -137,7 +145,7 @@ export function layoutSleeveShapingNotationLabels(args: {
       labels.push({
         role: "row-span",
         text: token,
-        x: rightLabelX(frame, y, token, fontSize),
+        x: rightLabelX(frame, y, token, fontSize, args.canvasRight),
         y,
         anchor: "start",
         extra: ` data-span="${span}" data-notation="${token}" data-knit-order="${orderStart + index}"`,
@@ -154,7 +162,7 @@ export function layoutSleeveShapingNotationLabels(args: {
       labels.push({
         role: "sleeve-shaping",
         text: token,
-        x: rightLabelX(frame, y, token, fontSize),
+        x: rightLabelX(frame, y, token, fontSize, args.canvasRight),
         y,
         anchor: "start",
         extra:
@@ -176,6 +184,8 @@ export function renderSleeveShapingRcLandmarks(args: {
   escape: (text: string) => string;
   formatNumber: (n: number) => string;
   obstacles?: { x: number; y: number; w: number; h: number }[];
+  /** Defaults to the Drop Shoulder 430×520 canvas so existing diagrams stay put. */
+  bounds?: { minX: number; minY: number; maxX: number; maxY: number };
 }): string {
   const landmarks = sleeveShapingRcLandmarks(args.input);
   const marks: ShapingNotationRcLeaderLandmark[] = landmarks.map((landmark) => {
@@ -202,7 +212,7 @@ export function renderSleeveShapingRcLandmarks(args: {
     landmarks: marks,
     side: "left",
     fontSize: args.fontSize,
-    bounds: { minX: 4, minY: 8, maxX: DS_VB_W - 4, maxY: DS_VB_H - 8 },
+    bounds: args.bounds ?? { minX: 4, minY: 8, maxX: DS_VB_W - 4, maxY: DS_VB_H - 8 },
     obstacles: args.obstacles,
     labelGap: 36,
   });
