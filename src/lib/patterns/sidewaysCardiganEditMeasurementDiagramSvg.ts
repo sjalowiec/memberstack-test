@@ -382,7 +382,7 @@ function derivedValueLabel(
     nameX = x - nameWidth;
     valueX = x - valueWidth;
   }
-  const dy = Math.max(type.name + 2, Math.round(type.value * 0.92));
+  const dy = type.valueLineGap;
   return `<text data-role="${role}" data-derived-inches="${fmtNum(inches)}" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="start" font-family="${type.fontFamily}" font-size="${type.name}" fill="${DS_MUTED}"><tspan x="${fmtNum(nameX)}" dy="0" data-build-type-role="name" font-size="${type.name}" font-weight="${type.nameWeight}">${escapeXml(title)}</tspan><tspan x="${fmtNum(valueX)}" dy="${fmtNum(dy)}" data-build-type-role="value" font-size="${type.value}" font-weight="${type.valueWeight}" fill="${DS_STROKE}">${escapeXml(value)}</tspan></text>`;
 }
 

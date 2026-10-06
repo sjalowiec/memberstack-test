@@ -47,7 +47,8 @@ describe("build diagram typography", () => {
     expect(atReference.nameWeight).toBeGreaterThan(atReference.supportWeight);
     expect(atReference.value).toBeGreaterThan(atReference.name);
     expect(atReference.name).toBeGreaterThan(atReference.support);
-    expect(atReference.valueLineGap).toBeGreaterThan(atReference.name);
+    const inkStack = atReference.name * 0.25 + atReference.value * 0.74;
+    expect(atReference.valueLineGap).toBeGreaterThan(inkStack);
   });
 
   it("scales each role with the Hat viewBox formula, not Hat's role floors", () => {

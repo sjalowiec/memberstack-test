@@ -67,6 +67,19 @@ export type BuildDiagramTypography = {
   valueLineGap: number;
 };
 
+/**
+ * Open space between a measurement name's descenders and the value's caps,
+ * as a fraction of the value size. Scales with the diagram, same as the type.
+ */
+const BUILD_DIAGRAM_VALUE_AIR = 0.35;
+
+/** Baseline step from a measurement name down to the value beneath it. */
+export function buildDiagramValueLineGap(name: number, value: number): number {
+  const nameDescent = name * 0.25;
+  const valueAscent = value * 0.74;
+  return Math.round(nameDescent + valueAscent + value * BUILD_DIAGRAM_VALUE_AIR);
+}
+
 /** Font size for one Build/Edit role, scaled the same way Hat scales. */
 export function buildDiagramFontSize(role: BuildDiagramTypeRole, viewBoxWidth: number): number {
   const floor = BUILD_DIAGRAM_TYPE_FLOOR[role];
@@ -82,7 +95,7 @@ export function buildDiagramTypographyForViewBox(viewBoxWidth: number): BuildDia
   const name = buildDiagramFontSize("name", viewBoxWidth);
   const support = buildDiagramFontSize("support", viewBoxWidth);
   const section = buildDiagramFontSize("section", viewBoxWidth);
-  const valueLineGap = Math.max(name + 4, Math.round(value * 1.15));
+  const valueLineGap = buildDiagramValueLineGap(name, value);
   return {
     fontFamily: HAT_DIAGRAM_FONT_FAMILY,
     viewBoxWidth,
