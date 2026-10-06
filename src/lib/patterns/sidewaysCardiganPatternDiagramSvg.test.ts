@@ -159,8 +159,11 @@ describe("Sideways Stitches & Rows diagram", () => {
     if (model.sleeveCalc) {
       expect(svg).toContain(`data-wrist-sts="${model.sleeveCalc.wristSts}"`);
       expect(svg).toContain(`data-top-sts="${model.sleeveCalc.topSts}"`);
-      expect(svg).toContain(`${model.sleeveCalc.wristSts} sts`);
     }
+    expect(svg).not.toContain('data-role="sleeve-wrist-sts"');
+    expect(svg).not.toContain('data-role="sleeve-top-sts"');
+    expect(svg).not.toContain('data-role="sleeve-body-rows"');
+    expect(svg).not.toContain('data-role="sleeve-cuff-rows"');
   });
 
   it("reflects sleeve direction and length on the pullover diagram", () => {
@@ -183,7 +186,8 @@ describe("Sideways Stitches & Rows diagram", () => {
       expect(topSvg).toContain(`data-sleeve-body-rows="${topDown.sleeveCalc.sleeveBodyRows}"`);
       expect(cuffSvg).toContain(`data-sleeve-body-rows="${cuffUp.sleeveCalc.sleeveBodyRows}"`);
       expect(cuffSvg).toContain(`data-cuff-rows="${cuffUp.sleeveCalc.cuffRows}"`);
-      expect(cuffSvg).toContain(`${cuffUp.sleeveCalc.cuffRows} rows`);
+      expect(cuffSvg).not.toContain('data-role="sleeve-cuff-rows"');
+      expect(topSvg).not.toContain('data-role="sleeve-body-rows"');
     }
   });
 
@@ -655,15 +659,16 @@ describe("single-diagram print for Sideways body and sleeve", () => {
             /data-role="dim-vneck-depth"[\s\S]*?<line\b[^>]*\sy1="([^"]+)"/.exec(svg)?.[1],
           );
           expect(neckDepthLineY).not.toBeNaN();
-          expect(vNeck!.top).toBeGreaterThan(neckDepthLineY);
-          expect(vNeck!.x).toBeGreaterThan(frame.vCutX);
-          expect(vNeck!.x).toBeLessThan(frame.neckX);
           expect(svg).toContain('data-role="vneck-sts-leader"');
           if (style === "cardigan") {
+            expect(vNeck!.top).toBeGreaterThan(neckDepthLineY);
+            expect(vNeck!.x).toBeGreaterThan(frame.vCutX);
+            expect(vNeck!.x).toBeLessThan(frame.neckX);
             expect(armhole!.x).toBeGreaterThan(frame.neckX);
             expect(backNeck!.x).toBeLessThan(frame.neckX);
           } else {
-            expect(armhole!.right).toBeLessThan(frame.hemX);
+            expect(vNeck!.x).toBeGreaterThan(frame.neckX);
+            expect(armhole!.x).toBeGreaterThan(frame.neckX);
             expect(backNeck!.x).toBeLessThan(frame.neckX);
           }
           for (const label of labels) {
@@ -671,12 +676,10 @@ describe("single-diagram print for Sideways body and sleeve", () => {
             expect(label.left).toBeGreaterThanOrEqual(box.x - 1);
             expect(label.right).toBeLessThanOrEqual(box.x + box.width + 1);
           }
-          const callouts = new Set(["armhole-sts", "back-neck-sts", "vneck-sts", "cast-on-sts", "bind-off-sts"]);
           for (let i = 0; i < labels.length; i += 1) {
             for (let j = i + 1; j < labels.length; j += 1) {
               const a = labels[i]!;
               const b = labels[j]!;
-              if (style === "pullover" && !callouts.has(a.role) && !callouts.has(b.role)) continue;
               const hits = a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2;
               expect(hits, `${style} ${unit} ${a.role} "${a.text}" overlaps ${b.role} "${b.text}"`).toBe(false);
             }
@@ -834,5 +837,54 @@ describe("Sideways cardigan neck-opening label placement", () => {
     const pulloverLine = neckLine(pullover);
     expect(pulloverNeck).toBeDefined();
     expect(pulloverNeck!.left).toBeGreaterThan(pulloverLine.x1);
+  });
+});
+
+describe("Pullover Stitches & Rows annotations", () => {
+  function dimSpan(svg: string, role: string) {
+    const group = new RegExp(`data-role="${role}"[\\s\\S]*?</g>`).exec(svg)?.[0] ?? "";
+    const line = /<line x1="([^"]+)" y1="([^"]+)" x2="([^"]+)" y2="([^"]+)"/.exec(group);
+    return {
+      x1: Number(line?.[1]),
+      y1: Number(line?.[2]),
+      x2: Number(line?.[3]),
+      y2: Number(line?.[4]),
+    };
+  }
+
+  it("drops the half neck and places one full neck opening on the back neck", () => {
+    const model = modelFor("pullover", SAMPLE);
+    const svg = buildSidewaysCardiganPatternDiagramSvg(model);
+    const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+    const cardigan = buildSidewaysCardiganPatternDiagramSvg(modelFor("cardigan", SAMPLE, { includeSleeve: false }));
+    const neck = dimSpan(svg, "dim-neck-opening");
+    const neckTop = sidewaysKnitVisualY(frame, frame.backNeckEndY);
+    const neckBot = sidewaysKnitVisualY(frame, frame.backNeckStartY);
+    expect(svg).not.toContain('data-role="half-neck-rows"');
+    expect(svg).not.toContain('data-role="dim-half-neck-opening"');
+    expect(svg).not.toContain(">½ neck<");
+    expect(svg).toContain('data-half-neck-rows="');
+    expect((svg.match(/data-role="dim-neck-opening"/g) ?? []).length).toBe(1);
+    expect(neck.x1).toBeCloseTo(cardiganDimLayout(frame).neckDimX, 1);
+    expect(Math.min(neck.y1, neck.y2)).toBeCloseTo(Math.min(neckTop, neckBot), 1);
+    expect(Math.max(neck.y1, neck.y2)).toBeCloseTo(Math.max(neckTop, neckBot), 1);
+    expect(svg).toContain(`${model.calc.backNeckOpeningRows} rows`);
+    expect(svg).toContain("7 in");
+    expect(svg).not.toContain(`${model.calc.halfNeckRows} rows`);
+    expect((svg.match(/data-role="front-rows"/g) ?? []).length).toBe(1);
+    expect(svg).toContain(`${model.calc.frontRows * 2} rows`);
+    expect(svg).toContain('data-role="dim-finished-bust"');
+    expect(svg).toContain('data-role="dim-vneck-depth"');
+    expect(svg).toContain('data-role="dim-armhole-depth"');
+    expect(svg).toContain('data-role="dim-shoulder-section"');
+    expect(svg).toContain('data-role="dim-back-section"');
+    expect(svg).toContain('data-role="back-neck-sts"');
+    expect(svg).toContain("Start at underarm");
+    expect(svg).toContain(">scrap on / graft<");
+    expect(cardigan).toContain('data-role="half-neck-rows"');
+    expect(cardigan).toContain('data-role="dim-half-neck-opening"');
+    expect(cardigan).toContain(">½ neck<");
+    expect((cardigan.match(/data-role="front-rows"/g) ?? []).length).toBe(2);
+    expect(cardigan).toContain(`${modelFor("cardigan", SAMPLE).calc.frontRows} rows`);
   });
 });

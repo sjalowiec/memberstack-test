@@ -403,9 +403,8 @@ function drawPulloverStsRows(
   canvas: SidewaysPatternDiagramCanvas,
 ): string {
   const y = (value: number) => sidewaysKnitVisualY(frame, value);
-  const { calc, sleeveCalc } = model;
-  const bustX = frame.hemX - 36;
-  const sectionDimX = frame.hemX + 18;
+  const { calc } = model;
+  const { bustX, sectionDimX, neckDimX, sectionLabelX, neckLabelX } = cardiganDimLayout(frame);
   const edge = sidewaysDiagramEdgeStitchCount(calc);
   const midX = (frame.hemX + frame.neckX) / 2;
   const startEdge = y(frame.topY);
@@ -415,95 +414,105 @@ function drawPulloverStsRows(
   const bindOffY = clampY(endEdge - type.notationGap, type.stitch, canvas);
   const vDepthY = y((frame.firstVEndY + frame.secondVStartY) / 2);
   const armholeY = y(frame.secondArmholeY);
-  const labelClear = Math.round(type.stitch * 1.15);
   const unit = model.displayUnit;
   const sts = (n: number, inches?: number) => spanLabel(n, "sts", inches, unit);
   const rows = (n: number, inches?: number) => spanLabel(n, "rows", inches, unit);
   const lengthIn = model.measurements.finishedLengthInches;
-  const wristY = y(frame.sleeve.attachY);
-  const sleeve = sleeveCalc
-    ? [
-        measureLabel(
-          frame.sleeve.farX + type.row,
-          wristY + type.stitch * 0.2,
-          sts(sleeveCalc.wristSts, sleeveCalc.finished.wristInches),
-          "sleeve-wrist-sts",
-          type.stitch,
-          "start",
-        ),
-        measureLabel(
-          frame.sleeve.farX + type.row,
-          y(frame.sleeve.attachY - frame.sleeve.upperHalf - type.row),
-          sts(sleeveCalc.topSts, sleeveCalc.finished.upperArmInches),
-          "sleeve-top-sts",
-          type.stitch,
-          "start",
-        ),
-        measureLabel(
-          (frame.sleeve.attachX + frame.sleeve.farX) / 2,
-          y(frame.sleeve.attachY + frame.sleeve.upperHalf + type.row),
-          rows(sleeveCalc.sleeveBodyRows),
-          "sleeve-body-rows",
-          type.row,
-        ),
-        ...(sleeveCalc.cuffRows > 0
-          ? [
-              measureLabel(
-                frame.sleeve.farX + type.row,
-                wristY - type.stitch * 1.95,
-                rows(sleeveCalc.cuffRows, sleeveCalc.finished.cuffDepthInches),
-                "sleeve-cuff-rows",
-                type.row,
-                "start",
-              ),
-            ]
-          : []),
-      ]
-    : [];
+  const seamGap = 8;
+  const frontTop = y(frame.secondArmholeY) + seamGap;
+  const frontBot = y(frame.topY);
+  const backTop = y(frame.bottomY);
+  const backBot = y(frame.secondArmholeY) - seamGap;
+  const neckTop = y(frame.backNeckEndY);
+  const neckBot = y(frame.backNeckStartY);
+  const neckMidY = (neckTop + neckBot) / 2;
+  const fullFrontInches =
+    model.sectionInches.front == null ? undefined : model.sectionInches.front * 2;
+  const neckSpanX = (frame.backNeckX + frame.neckX) / 2;
+  const neckSpanY = y(frame.backNeckStartY);
+  const backNeckLabelX = neckSpanX - type.stitch * 0.55;
+  const outsideX = neckLabelX;
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
-    vDim(frame.neckX + type.row, y(frame.firstArmholeY), y(frame.secondVStartY), "dim-neck-opening"),
+    vDim(neckDimX, neckTop, neckBot, "dim-neck-opening"),
+    spanLeader(frame.neckX, neckTop, neckDimX, neckTop, "neck-opening-witness"),
+    spanLeader(frame.neckX, neckBot, neckDimX, neckBot, "neck-opening-witness"),
     hDim(frame.vCutX, frame.neckX, vDepthY, "dim-vneck-depth"),
-    hDim(frame.armholeX, frame.neckX, armholeY + labelClear, "dim-armhole-depth"),
-    vDim(frame.neckX + type.stitch * 0.9, y(frame.topY), y(frame.firstArmholeY), "dim-shoulder-section"),
-    vDim(frame.neckX + type.stitch * 1.7, y(frame.firstArmholeY), y(frame.firstVEndY), "dim-half-neck-opening"),
-    vDim(sectionDimX, y(frame.topY), y(frame.firstVEndY), "dim-front-section", ` data-side="first"`),
-    vDim(sectionDimX, y(frame.firstVEndY), y(frame.secondArmholeY), "dim-front-section", ` data-side="second"`),
-    vDim(sectionDimX, y(frame.secondArmholeY), y(frame.bottomY), "dim-back-section"),
-    countLabel(frame.hemX + type.stitch * 0.15, Math.max(y(frame.topY) - pieceLineGap(type) * 0.55, vDepthY + type.stitch * 4.4), "Front", rows(calc.frontRows, model.sectionInches.front), "front-rows", type, "start"),
-    countLabel(frame.hemX + type.stitch * 0.15, y(frame.secondArmholeY) + pieceLineGap(type) * 0.5, "Front", rows(calc.frontRows, model.sectionInches.front), "front-rows", type, "start"),
-    countLabel(frame.hemX + type.stitch * 0.8, y(frame.bottomY) + pieceLineGap(type) * 1.15, "Back", rows(calc.backRows, model.sectionInches.back), "back-rows", type, "start"),
-    countLabel(frame.neckX + type.stitch * 0.65, y(frame.topY) - pieceLineGap(type) * 1.7, "Shoulder", rows(calc.shoulders.firstFrontRows, model.sectionInches.shoulder), "shoulder-rows", type, "start"),
-    countLabel(frame.neckX + type.stitch * 0.85, y(frame.secondArmholeY) - pieceLineGap(type) * 1.2, "½ neck", rows(calc.halfNeckRows, model.sectionInches.halfNeck), "half-neck-rows", type, "start"),
-    measureLabel(frame.neckX - type.stitch * 0.15, vDepthY + type.stitch * 1.2, sts(calc.vNeckDepthStitches, model.measurements.vNeckDepthInches), "vneck-sts", type.stitch, "end"),
-    spanLeader((frame.vCutX + frame.neckX) / 2, vDepthY, frame.neckX - type.stitch * 0.15, vDepthY + type.stitch * 0.95, "vneck-sts-leader"),
-    measureLabel(frame.hemX - type.row * 0.55, armholeY - type.stitch * 4.2, sts(calc.armholeDepthStitches, calc.armholeDepthInches), "armhole-sts", type.stitch, "end"),
-    spanLeader(frame.armholeX, armholeY, frame.hemX - type.row * 0.4, armholeY - type.stitch * 4.2, "armhole-sts-leader"),
+    hDim(frame.armholeX, frame.neckX, armholeY, "dim-armhole-depth"),
+    vDim(neckDimX, y(frame.topY), y(frame.firstArmholeY), "dim-shoulder-section"),
+    vDim(sectionDimX, frontTop, frontBot, "dim-front-section"),
+    vDim(sectionDimX, backTop, backBot, "dim-back-section"),
+    countLabel(
+      sectionLabelX,
+      (frontTop + frontBot) / 2,
+      "Front",
+      rows(calc.frontRows * 2, fullFrontInches),
+      "front-rows",
+      type,
+      "start",
+    ),
+    countLabel(
+      midX,
+      (backTop + backBot) / 2,
+      "Back",
+      rows(calc.backRows, model.sectionInches.back),
+      "back-rows",
+      type,
+      "middle",
+    ),
+    countLabel(
+      outsideX,
+      (y(frame.topY) + y(frame.firstArmholeY)) / 2,
+      "Shoulder",
+      rows(calc.shoulders.firstFrontRows, model.sectionInches.shoulder),
+      "shoulder-rows",
+      type,
+      "start",
+    ),
+    spanLeader(frame.neckX, vDepthY, outsideX - type.row * 0.35, vDepthY, "vneck-sts-leader"),
     measureLabel(
-      frame.neckX - type.stitch * 0.2,
-      y(frame.backNeckStartY) + type.row * 0.9,
+      outsideX,
+      vDepthY,
+      sts(calc.vNeckDepthStitches, model.measurements.vNeckDepthInches),
+      "vneck-sts",
+      type.stitch,
+      "start",
+    ),
+    spanLeader(frame.neckX, armholeY, outsideX - type.row * 0.35, armholeY, "armhole-sts-leader"),
+    measureLabel(
+      outsideX,
+      armholeY,
+      sts(calc.armholeDepthStitches, calc.armholeDepthInches),
+      "armhole-sts",
+      type.stitch,
+      "start",
+    ),
+    spanLeader(neckSpanX, neckSpanY, backNeckLabelX + type.row * 0.25, neckSpanY, "back-neck-sts-leader"),
+    measureLabel(
+      backNeckLabelX,
+      neckSpanY,
       sts(calc.backNeckDepthStitches, calc.backNeckDepthInches),
       "back-neck-sts",
       type.stitch,
       "end",
     ),
-    spanLeader(
-      (frame.backNeckX + frame.neckX) / 2,
-      y(frame.backNeckStartY),
-      (frame.backNeckX + frame.neckX) / 2 - type.row * 0.3,
-      y(frame.backNeckStartY),
-      "back-neck-sts-leader",
-    ),
     measureLabel(
-      frame.neckX + type.stitch * 2.35,
-      y(frame.secondArmholeY) + pieceLineGap(type) * 1.2,
+      neckDimX + Math.max(8, Math.round(type.row * 0.65)),
+      neckMidY,
       rows(calc.backNeckOpeningRows, model.measurements.neckOpeningWidthInches),
       "neck-opening-rows",
       type.row,
       "start",
     ),
-    measureLabel(Math.max(bustX, type.row * 5.4), (frame.topY + frame.bottomY) / 2, rows(calc.bust.actualTotalBustRows, calc.bust.actualFinishedBustInches), "bust-rows", type.row, "end"),
-    measureLabel(frame.neckX + type.stitch * 0.35, castOnY, `CO ${sts(edge, lengthIn)}`, "cast-on-sts", type.stitch, "start", ` data-knit-edge="start" data-sts="${edge}"`),
+    measureLabel(
+      bustX - type.row,
+      (frame.topY + frame.bottomY) / 2,
+      rows(calc.bust.actualTotalBustRows, calc.bust.actualFinishedBustInches),
+      "bust-rows",
+      type.row,
+      "end",
+    ),
+    measureLabel(midX, castOnY, `CO ${sts(edge, lengthIn)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
     measureLabel(
       midX,
       startNoteY,
@@ -512,7 +521,6 @@ function drawPulloverStsRows(
       type.row,
     ),
     measureLabel(midX, bindOffY, `BO ${sts(edge, lengthIn)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
-    ...sleeve,
   ].join("");
 }
 

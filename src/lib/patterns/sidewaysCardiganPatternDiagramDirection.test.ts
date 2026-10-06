@@ -344,11 +344,17 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
 
   it("matches body-instruction stitch and row counts", () => {
     const { calc } = model;
-    expect(sts).toContain(`${calc.frontRows} rows`);
     expect(sts).toContain(`${calc.backRows} rows`);
     expect(sts).toContain(`${calc.shoulders.firstFrontRows} rows`);
-    expect(sts).toContain(`${calc.halfNeckRows} rows`);
     expect(sts).toContain(`${calc.bust.actualTotalBustRows} rows`);
+    if (style === "cardigan") {
+      expect(sts).toContain(`${calc.frontRows} rows`);
+      expect(sts).toContain(`${calc.halfNeckRows} rows`);
+    } else {
+      expect(sts).toContain(`${calc.frontRows * 2} rows`);
+      expect(sts).not.toContain('data-role="half-neck-rows"');
+      expect(sts).not.toContain('data-role="dim-half-neck-opening"');
+    }
     expect(sts).toContain(`${calc.backNeckOpeningRows} rows`);
     expect(sts).toContain(`${calc.garmentLengthStitches} sts`);
     expect(sts).toContain(`${calc.vNeckDepthStitches} sts`);
@@ -365,12 +371,12 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
 
     const fronts = byRole(sts, "front-rows").sort((a, b) => b.y - a.y);
     const back = byRole(sts, "back-rows")[0];
-    expect(fronts).toHaveLength(2);
     expect(fronts[0]!.text).toContain("Front");
-    expect(fronts[0]!.text).toContain(`${calc.frontRows} rows`);
     expect(back?.text).toContain(`${calc.backRows} rows`);
-    expect(sectionMidY(sts, "first")).toBeGreaterThan(sectionMidY(sts, "second"));
     if (style === "cardigan") {
+      expect(fronts).toHaveLength(2);
+      expect(fronts[0]!.text).toContain(`${calc.frontRows} rows`);
+      expect(sectionMidY(sts, "first")).toBeGreaterThan(sectionMidY(sts, "second"));
       expect(fronts[0]!.y).toBeGreaterThan(back!.y);
       expect(back!.y).toBeGreaterThan(fronts[1]!.y);
       const hold = byRole(shaping, "jp-hold")[0];
@@ -381,8 +387,9 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
         `${calc.vNeckDepthStitches} neckline stitches`,
       );
     } else {
-      expect(fronts[0]!.y).toBeGreaterThan(fronts[1]!.y);
-      expect(fronts[1]!.y).toBeGreaterThan(back!.y);
+      expect(fronts).toHaveLength(1);
+      expect(fronts[0]!.text).toContain(`${calc.frontRows * 2} rows`);
+      expect(fronts[0]!.y).toBeGreaterThan(back!.y);
       expect(shaping).not.toContain('data-role="jp-hold"');
     }
   });
