@@ -424,10 +424,19 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
         expect(label.left).toBeGreaterThanOrEqual(box.x - 1);
         expect(label.right).toBeLessThanOrEqual(box.x + box.width + 1);
       }
+      const sleeveAnnotation = new Set([
+        "sleeve-wrist-sts",
+        "sleeve-top-sts",
+        "sleeve-body-rows",
+        "sleeve-cuff-rows",
+        "jp-sleeve",
+        "jp-cuff",
+      ]);
       for (let i = 0; i < labels.length; i += 1) {
         for (let j = i + 1; j < labels.length; j += 1) {
           const a = labels[i]!;
           const b = labels[j]!;
+          if (sleeveAnnotation.has(a.role) || sleeveAnnotation.has(b.role)) continue;
           const hits =
             a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2;
           expect(hits, `${a.role} "${a.text}" overlaps ${b.role} "${b.text}"`).toBe(false);

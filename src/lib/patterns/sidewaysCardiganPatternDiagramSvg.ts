@@ -519,10 +519,10 @@ function drawPulloverStsRows(
 function silhouetteMarkup(frame: SidewaysCardiganEditMeasurementFrame): string {
   const garmentStyle = frame.garmentStyle;
   const bodyD = garmentStyle === "pullover" ? pulloverBodyPath(frame) : cardiganBodyPath(frame);
-  const sleeve =
-    garmentStyle === "pullover"
-      ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
-      : "";
+  const attachedSleeve = frame.sleeve.farX > frame.neckX;
+  const sleeve = attachedSleeve
+    ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
+    : "";
   const markers =
     garmentStyle === "pullover"
       ? drawPulloverMarkers(frame, { includeStartLabel: false })
@@ -571,7 +571,7 @@ export function sidewaysSilhouetteDiagramRect(frame: SidewaysCardiganEditMeasure
   let top = sidewaysKnitVisualY(frame, frame.bottomY);
   let bottom = sidewaysKnitVisualY(frame, frame.topY);
   let right = frame.neckX;
-  if (frame.garmentStyle === "pullover") {
+  if (frame.garmentStyle === "pullover" && frame.sleeve.farX > frame.neckX) {
     right = frame.sleeve.farX;
     const sleeveHigh = sidewaysKnitVisualY(frame, frame.sleeve.attachY + frame.sleeve.upperHalf);
     const sleeveLow = sidewaysKnitVisualY(frame, frame.sleeve.attachY - frame.sleeve.upperHalf);
@@ -584,10 +584,13 @@ export function sidewaysSilhouetteDiagramRect(frame: SidewaysCardiganEditMeasure
 export function buildSidewaysCardiganPatternDiagramFrame(
   model: SidewaysCardiganPatternDiagramModel,
 ): SidewaysCardiganEditMeasurementFrame {
-  return buildSidewaysCardiganEditMeasurementFrame({
-    measurements: model.measurements,
-    garmentStyle: model.garmentStyle,
-  });
+  return buildSidewaysCardiganEditMeasurementFrame(
+    {
+      measurements: model.measurements,
+      garmentStyle: model.garmentStyle,
+    },
+    { includeAttachedSleeve: false },
+  );
 }
 
 export function buildSidewaysCardiganPatternDiagramSvg(

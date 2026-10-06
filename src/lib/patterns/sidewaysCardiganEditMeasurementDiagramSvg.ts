@@ -97,8 +97,8 @@ export type SidewaysCardiganEditMeasurementDiagramInput = {
 };
 
 /**
- * Finished-pattern pullover keeps an attached sleeve on this frame.
- * The Build/Edit body diagram passes false so the body scales from body inches only.
+ * Pullover body diagrams pass false so the body scales from body inches only.
+ * The sleeve is a separate piece and is not drawn on the body frame.
  */
 export type SidewaysCardiganEditMeasurementFrameOptions = {
   includeAttachedSleeve?: boolean;
@@ -205,8 +205,7 @@ function buildFrame(
   const contentW = 320;
   const contentH = 540;
   const isPullover = garmentStyle === "pullover";
-  // Default keeps the finished-pattern pullover sleeve. Build/Edit body passes false.
-  // Cardigan body never spends horizontal scale on a sleeve.
+  // Pullover body diagrams opt out. Cardigan never spends horizontal scale on a sleeve.
   const includeAttachedSleeve = isPullover && options?.includeAttachedSleeve !== false;
   const sleeveBudget = includeAttachedSleeve ? sleeveLen * 0.85 : 0;
   const pxPerInch = Math.min(

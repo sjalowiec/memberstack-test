@@ -147,13 +147,13 @@ describe("Sideways Stitches & Rows diagram", () => {
     expect(svg).not.toContain('data-role="underarm-start"');
   });
 
-  it("renders Pullover construction starting at the underarm with a sleeve outline", () => {
+  it("renders Pullover construction starting at the underarm without an attached sleeve", () => {
     const model = modelFor("pullover", SAMPLE, { sleeveLengthInches: 18, wristInches: 8 });
     const svg = buildSidewaysCardiganPatternDiagramSvg(model);
     expect(svg).toContain('data-garment-style="pullover"');
     expect(svg).toContain('data-sideways-start="underarm"');
     expect(svg).toContain('data-cardigan-structure="underarm-graft"');
-    expect(svg).toContain('data-role="sleeve-outline"');
+    expect(svg).not.toContain('data-role="sleeve-outline"');
     expect(svg).toContain('data-role="underarm-start"');
     expect(svg).toContain("Start at underarm");
     if (model.sleeveCalc) {
@@ -345,7 +345,7 @@ describe("Sideways Shaping Notation diagram", () => {
     expect(cardiganSvg).toContain('data-role="jp-vneck-first"');
     expect(pulloverSvg).toContain('data-garment-style="pullover"');
     expect(cardiganSvg).toContain(cardiganLines.increase[0]!);
-    expect(pulloverSvg).toContain('data-role="sleeve-outline"');
+    expect(pulloverSvg).not.toContain('data-role="sleeve-outline"');
     expect(cardiganSvg).not.toContain('data-role="sleeve-outline"');
     expect(pulloverSvg.match(/data-role="jp-armhole-slit"/g)).toHaveLength(2);
     expect(pulloverSvg).toContain('data-side="knitted"');
@@ -399,6 +399,105 @@ function printDocument(svg: string): string {
   const label = diagramElement(svg).getAttribute("aria-label") ?? "diagram";
   return buildShapingNotationDiagramPrintDocument(svg, label);
 }
+
+function viewBoxOf(svg: string): { x: number; y: number; width: number; height: number } {
+  const parts = /viewBox="([^"]+)"/.exec(svg)?.[1]?.trim().split(/[\s,]+/).map(Number) ?? [];
+  return { x: parts[0] ?? 0, y: parts[1] ?? 0, width: parts[2] ?? 0, height: parts[3] ?? 0 };
+}
+
+function bodyOutline(svg: string): string {
+  return /data-role="body-outline"[^>]*\bd="([^"]+)"/.exec(svg)?.[1] ?? "";
+}
+
+describe("finished Pullover body diagrams omit the attached sleeve", () => {
+  const shortSleeve = { sleeveLengthInches: 12, wristInches: 6, sleeveDirection: "cuff-up" as const };
+  const longSleeve = { sleeveLengthInches: 28, wristInches: 12, sleeveDirection: "top-down" as const };
+
+  it("draws the Stitches & Rows and Shaping Notation bodies without a sleeve", () => {
+    const model = modelFor("pullover", SAMPLE, longSleeve);
+    const sts = buildSidewaysCardiganPatternDiagramSvg(model);
+    const shaping = buildSidewaysCardiganShapingNotationDiagramSvg(model);
+    const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+    expect(sts).toContain('data-sideways-pattern-diagram="sts-rows"');
+    expect(shaping).toContain('data-sideways-pattern-diagram="shaping-notation"');
+    expect(sts).not.toContain('data-role="sleeve-outline"');
+    expect(shaping).not.toContain('data-role="sleeve-outline"');
+    expect(sts).toContain('data-role="body-outline"');
+    expect(shaping).toContain('data-role="body-outline"');
+    expect(frame.sleeve.farX).toBe(frame.neckX);
+    expect(frame.sleeve.upperHalf).toBe(0);
+    expect(frame.sleeve.wristHalf).toBe(0);
+  });
+
+  it("keeps sleeve length, wrist, upper arm, and direction from changing the body scale or viewBox", () => {
+    const narrow = modelFor("pullover", SAMPLE, shortSleeve);
+    const wide = modelFor("pullover", SAMPLE, longSleeve);
+    const biggerArm = modelFor("pullover", { ...SAMPLE, finishedUpperArmInches: 22 }, longSleeve);
+    const narrowSts = buildSidewaysCardiganPatternDiagramSvg(narrow);
+    const wideSts = buildSidewaysCardiganPatternDiagramSvg(wide);
+    const narrowShaping = buildSidewaysCardiganShapingNotationDiagramSvg(narrow);
+    const wideShaping = buildSidewaysCardiganShapingNotationDiagramSvg(wide);
+    const narrowFrame = buildSidewaysCardiganPatternDiagramFrame(narrow);
+    const wideFrame = buildSidewaysCardiganPatternDiagramFrame(wide);
+    const biggerArmFrame = buildSidewaysCardiganPatternDiagramFrame(biggerArm);
+    expect(narrowFrame.bodyW).toBeCloseTo(wideFrame.bodyW, 4);
+    expect(narrowFrame.bodyW).toBeCloseTo(biggerArmFrame.bodyW, 4);
+    expect(narrowFrame.bottomY - narrowFrame.topY).toBeCloseTo(wideFrame.bottomY - wideFrame.topY, 4);
+    expect(narrowFrame.bottomY - narrowFrame.topY).toBeCloseTo(
+      biggerArmFrame.bottomY - biggerArmFrame.topY,
+      4,
+    );
+    expect(biggerArmFrame.sleeve.farX).toBe(biggerArmFrame.neckX);
+    expect(viewBoxOf(narrowSts)).toEqual(viewBoxOf(wideSts));
+    expect(viewBoxOf(narrowShaping)).toEqual(viewBoxOf(wideShaping));
+    expect(bodyOutline(narrowSts)).toBe(bodyOutline(wideSts));
+    expect(bodyOutline(narrowShaping)).toBe(bodyOutline(wideShaping));
+  });
+
+  it("still draws the separate Pullover sleeve diagrams from the sleeve calc", () => {
+    const short = modelFor("pullover", SAMPLE, shortSleeve);
+    const long = modelFor("pullover", SAMPLE, longSleeve);
+    expect(short.sleeveCalc).not.toBeNull();
+    expect(long.sleeveCalc).not.toBeNull();
+    const sleeveArgs = (model: ReturnType<typeof modelFor>) => ({
+      calc: model.sleeveCalc!,
+      stitchesPerInch: SAMPLE.stitchesPerInch,
+      rowsPerInch: SAMPLE.rowsPerInch,
+    });
+    const shortSts = buildSidewaysCardiganSleeveStitchesRowsSvg(sleeveArgs(short)) ?? "";
+    const longSts = buildSidewaysCardiganSleeveStitchesRowsSvg(sleeveArgs(long)) ?? "";
+    const shortShaping = buildSidewaysCardiganSleeveShapingNotationSvg(sleeveArgs(short)) ?? "";
+    const longShaping = buildSidewaysCardiganSleeveShapingNotationSvg(sleeveArgs(long)) ?? "";
+    for (const svg of [shortSts, longSts, shortShaping, longShaping]) {
+      expect(svg).toContain('class="ds-sleeve-diagram__body"');
+      expect(svg).not.toContain('data-sideways-pattern-diagram=');
+    }
+    expect(longSts).not.toBe(shortSts);
+    expect(longShaping).not.toBe(shortShaping);
+    expect(long.sleeveCalc!.finished.sleeveLengthInches).toBeGreaterThan(
+      short.sleeveCalc!.finished.sleeveLengthInches,
+    );
+  });
+
+  it("leaves Cardigan body diagrams without a sleeve", () => {
+    const cardigan = modelFor("cardigan", SAMPLE, { ...longSleeve, includeSleeve: false });
+    const withSleeveData = modelFor("cardigan", SAMPLE, longSleeve);
+    const sts = buildSidewaysCardiganPatternDiagramSvg(cardigan);
+    const shaping = buildSidewaysCardiganShapingNotationDiagramSvg(cardigan);
+    const stsWithSleeveData = buildSidewaysCardiganPatternDiagramSvg(withSleeveData);
+    const shapingWithSleeveData = buildSidewaysCardiganShapingNotationDiagramSvg(withSleeveData);
+    expect(sts).not.toContain('data-role="sleeve-outline"');
+    expect(shaping).not.toContain('data-role="sleeve-outline"');
+    expect(stsWithSleeveData).not.toContain('data-role="sleeve-outline"');
+    expect(shapingWithSleeveData).not.toContain('data-role="sleeve-outline"');
+    expect(bodyOutline(sts)).toBe(bodyOutline(stsWithSleeveData));
+    expect(bodyOutline(shaping)).toBe(bodyOutline(shapingWithSleeveData));
+    expect(viewBoxOf(sts)).toEqual(viewBoxOf(stsWithSleeveData));
+    expect(viewBoxOf(shaping)).toEqual(viewBoxOf(shapingWithSleeveData));
+    expect(sts).toContain('data-garment-style="cardigan"');
+    expect(shaping).toContain('data-role="center-front-start"');
+  });
+});
 
 describe("single-diagram print for Sideways body and sleeve", () => {
   it("prints only the clicked diagram for cardigan and pullover, both sleeve directions", () => {
