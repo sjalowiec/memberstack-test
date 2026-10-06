@@ -147,16 +147,27 @@ describe("Socks catalog destination", () => {
     ).toBeNull();
   });
 
-  it("sends active members to My Patterns even with no saved Socks", () => {
-    const state = resolveSavedPatternAccessState({
+  it("keeps active members on the Socks landing even when they own saved Socks", () => {
+    const withoutSocks = resolveSavedPatternAccessState({
       loggedIn: true,
       memberId: MEMBER_ID,
       hasActiveAccess: true,
       hasOwnedPatterns: false,
     });
-    expect(resolveSocksSavedPatternDestination(state)).toBe(MY_PATTERNS_ACCOUNT_HREF);
-    expect(shouldRedirectSocksLandingToMyPatterns(state)).toBe(true);
-    expect(shouldShowSocksCreateAction(state)).toBe(true);
+    expect(resolveSocksSavedPatternDestination(withoutSocks)).toBe("/patterns/socks");
+    expect(shouldRedirectSocksLandingToMyPatterns(withoutSocks)).toBe(false);
+    expect(shouldShowSocksCreateAction(withoutSocks)).toBe(true);
+
+    const withSocks = resolveSavedPatternAccessState({
+      loggedIn: true,
+      memberId: MEMBER_ID,
+      hasActiveAccess: true,
+      hasOwnedPatterns: true,
+      ownedPatternSystems: ["socks"],
+    });
+    expect(resolveSocksSavedPatternDestination(withSocks)).toBe("/patterns/socks");
+    expect(shouldRedirectSocksLandingToMyPatterns(withSocks)).toBe(false);
+    expect(shouldShowSocksCreateAction(withSocks)).toBe(true);
   });
 
   it("sends former members with saved Socks to My Patterns and hides Create", () => {

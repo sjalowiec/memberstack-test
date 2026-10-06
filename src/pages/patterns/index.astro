@@ -75,8 +75,8 @@ const sleevelessPattern = {
 
 const socksPattern = {
   title: 'Socks',
-  // Public landing page. Access-aware client routing may send members with saved Socks
-  // to `/account#my-patterns` without flashing a different catalog destination.
+  // Public landing page. Active members stay here and start a new pattern.
+  // Former members who still own saved Socks are sent to `/account#my-patterns`.
   href: '/patterns/socks',
   image: '/images/patterns/socks-v2.png',
   copy: SOCKS_CATALOG_COPY,
