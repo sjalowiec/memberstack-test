@@ -115,8 +115,8 @@ describe("dropShoulderSleeveShaping", () => {
 describe("dropShoulderSleevePreShapingSpan", () => {
   it("derives straight rows before the first shaping RC (cuff-up)", () => {
     expect(dropShoulderSleevePreShapingSpan(CUFF_UP_CHART_INPUT)).toEqual({
-      bodyStartRc: 20,
-      firstShapingRc: 24,
+      bodyStartRc: 0,
+      firstShapingRc: 4,
       straightRows: 4,
     });
   });
@@ -137,7 +137,7 @@ describe("dropShoulderSleevePreShapingSpan", () => {
         wristSts: 40,
       }),
     ).toEqual({
-      bodyStartRc: 20,
+      bodyStartRc: 0,
       firstShapingRc: undefined,
       straightRows: 0,
     });

@@ -138,12 +138,11 @@ export function sleeveShapingRcLandmarks(
     direction,
   );
   const steps = plan.steps.filter((step) => step.times > 0 && step.rows > 0);
+  const sleeveBodyEndRc =
+    direction === "cuff-up" ? Math.max(0, Math.floor(input.sleeveBodyRows)) : total;
   const marks: ShapingNotationRcLandmark[] = [
     mark(0, "cast-on", total, direction, 0),
   ];
-  if (direction === "cuff-up" && input.cuffRows > 0) {
-    marks.push(mark(input.cuffRows, "cuff", total, direction, 1));
-  }
   let index = 0;
   steps.forEach((step, stepIndex) => {
     const rc = sequence[index];
@@ -167,8 +166,14 @@ export function sleeveShapingRcLandmarks(
   if (direction === "top-down" && input.cuffRows > 0) {
     marks.push(mark(input.sleeveBodyRows, "cuff", total, direction, 1));
   }
-  marks.push(mark(total, "bind-off", total, direction, 0));
-  return requireShapingRcLandmarks(dedupeByCounter(marks));
+  marks.push(mark(sleeveBodyEndRc, "bind-off", total, direction, 0));
+  const deduped = dedupeByCounter(marks);
+  if (direction === "cuff-up" && input.cuffRows > 0) {
+    // Same counter as cast-on, but this is the sleeve-body reset at the cuff join.
+    deduped.push(mark(0, "cuff", total, direction, 1));
+    deduped.sort((a, b) => a.rowCounter - b.rowCounter || a.priority - b.priority);
+  }
+  return requireShapingRcLandmarks(deduped);
 }
 
 function phaseMarks(args: {
@@ -324,7 +329,6 @@ export function sleeveRcLandmarkY(args: {
   wristY: number;
   upperArmY: number;
   cuffJoinY: number;
-  cuffRows: number;
   sleeveBodyRows: number;
 }): number {
   const { landmark } = args;
@@ -336,11 +340,10 @@ export function sleeveRcLandmarkY(args: {
   }
   if (landmark.label === "cuff") return args.cuffJoinY;
   const bodyRows = Math.max(1, args.sleeveBodyRows);
+  const t = Math.max(0, Math.min(1, landmark.rowCounter / bodyRows));
   if (args.direction === "top-down") {
-    const t = Math.max(0, Math.min(1, landmark.rowCounter / bodyRows));
     return args.upperArmY + (args.cuffJoinY - args.upperArmY) * t;
   }
-  const t = Math.max(0, Math.min(1, (landmark.rowCounter - args.cuffRows) / bodyRows));
   return args.cuffJoinY + (args.upperArmY - args.cuffJoinY) * t;
 }
 

@@ -195,7 +195,6 @@ export function renderSleeveShapingRcLandmarks(args: {
       wristY: args.frame.wristY,
       upperArmY: args.frame.upperArmY,
       cuffJoinY: args.frame.cuffJoinY,
-      cuffRows: args.input.cuffRows,
       sleeveBodyRows: args.input.sleeveBodyRows,
     });
     return {

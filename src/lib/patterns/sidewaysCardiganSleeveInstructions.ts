@@ -77,11 +77,15 @@ type StepPusher = (
 function createStepPusher(steps: SidewaysCardiganSleeveInstructionStep[]): {
   push: StepPusher;
   live: () => number;
+  resetRowCounter: () => void;
 } {
   let rc = 0;
   let live = 0;
   return {
     live: () => live,
+    resetRowCounter: () => {
+      rc = 0;
+    },
     push: (partial) => {
       const built = step({ ...partial, rowCounterStart: rc });
       steps.push(built);
@@ -111,7 +115,7 @@ function shapingScheduleSummary(calc: SidewaysCardiganSleeveCalc): string {
 
 function buildCuffUpSteps(calc: SidewaysCardiganSleeveCalc): SidewaysCardiganSleeveInstructionStep[] {
   const steps: SidewaysCardiganSleeveInstructionStep[] = [];
-  const { push, live } = createStepPusher(steps);
+  const { push, live, resetRowCounter } = createStepPusher(steps);
   push({
     id: "cast-on-wrist",
     order: 1,
@@ -128,6 +132,7 @@ function buildCuffUpSteps(calc: SidewaysCardiganSleeveCalc): SidewaysCardiganSle
     stitchesBefore: live(),
     stitchesAfter: calc.wristSts,
   });
+  resetRowCounter();
   push({
     id: "sleeve-body",
     order: 3,

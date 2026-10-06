@@ -97,6 +97,7 @@ import {
   dropShoulderFrontShoulderCompletionLocalRc,
 } from "./dropShoulderFrontNeckShapingChart";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
+import { cuffUpSleeveBodyRowCounterResetBlock } from "./legoBlocks/cuffUpSleeveRowCounter";
 import {
   DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
   DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES,
@@ -233,7 +234,7 @@ function knitInPatternLine(rows: number): string {
   return rows === 1 ? "Knit 1 row in pattern." : `Knit ${rows} rows in pattern.`;
 }
 
-/** Cuff-up sleeve: even rows after the last side shaping action, then bind off at total RC. */
+/** Cuff-up sleeve: even rows after the last side shaping action, then bind off at the sleeve-body RC. */
 function knitEvenAfterFinalShapingLine(
   remainderRows: number,
   bindOffRc: number,
@@ -1249,7 +1250,7 @@ export function buildDropShoulderSleeveDisplayRows(
     sleeveBodyRemainderLine(
       rowsAfterShaping,
       args.direction,
-      args.sleeveTotalRows,
+      args.direction === "cuff-up" ? args.sleeveBodyRows : args.sleeveTotalRows,
       shapingPlan.shapingDirection,
       hadShaping,
       args.sleeveBodyRows,
@@ -1382,6 +1383,7 @@ export function buildDropShoulderSleeveDisplayRows(
       : {}),
     stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
   });
+  rows.push(cuffUpSleeveBodyRowCounterResetBlock());
   appendSleeveBodyBlocks(
     stitchesOnNeedlesAtBodyStart > 0 ? stitchesOnNeedlesAtBodyStart : undefined,
   );
@@ -1389,7 +1391,7 @@ export function buildDropShoulderSleeveDisplayRows(
   rows.push({ kind: "section", title: "BIND OFF" });
   rows.push({
     kind: "block",
-    rc: formatRcColon(args.sleeveTotalRows),
+    rc: formatRcColon(args.sleeveBodyRows),
     trustedParagraphs: [
       args.optionalRibbing
         ? SIDEWAYS_CUFF_UP_BIND_OFF_LINE

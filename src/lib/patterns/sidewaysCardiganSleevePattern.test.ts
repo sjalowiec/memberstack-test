@@ -218,8 +218,7 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     };
     const topRcs = dropShoulderSleeveShapingRcSequence(chartInput);
     const cuffRcs = dropShoulderSleeveShapingRcSequence({ ...chartInput, direction: "cuff-up" });
-    const fabricEnd = calc.cuffRows + calc.sleeveBodyRows;
-    expect(topRcs).toEqual([...cuffRcs].map((rc) => fabricEnd - rc).sort((a, b) => a - b));
+    expect(topRcs).toEqual([...cuffRcs].map((rc) => calc.sleeveBodyRows - rc).sort((a, b) => a - b));
     expect(attr(down.notation, "data-shaping-notation")).toBe(
       formatDropShoulderSleeveWorkingNotation(chartInput, { includeRowSpans: true }),
     );

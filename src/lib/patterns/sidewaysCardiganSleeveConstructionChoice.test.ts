@@ -182,7 +182,8 @@ describe("sideways finished sleeve construction choice", () => {
         if (direction === "cuff-up") {
           expect(rendered.html).toContain("transfer the stitches to the main bed, then continue with the sleeve.");
           expect(rendered.html).not.toContain("transfer the stitches to the ribber");
-          expect(rendered.html).toContain(`RC: ${String(calc.sleeveTotalRows).padStart(3, "0")}`);
+          expect(rendered.html).toContain(`RC: ${String(calc.sleeveBodyRows).padStart(3, "0")}`);
+          expect(rendered.html).not.toContain(`RC: ${String(calc.sleeveTotalRows).padStart(3, "0")}`);
         } else {
           expect(rendered.html).toContain("Transfer the stitches to the ribber in the needle arrangement of your choice.");
           expect(rendered.html).not.toContain("cast on in the ribbing needle arrangement");

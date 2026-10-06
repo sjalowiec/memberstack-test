@@ -152,12 +152,12 @@ describe("shared shaping notation RC landmarks", () => {
     const sequence = dropShoulderSleeveShapingRcSequence(input);
     const marks = sleeveShapingRcLandmarks(input);
     expect(marks[0]).toMatchObject({ label: "cast-on", rowCounter: 0 });
-    expect(marks.find((mark) => mark.label === "cuff")?.rowCounter).toBe(14);
+    expect(marks.find((mark) => mark.label === "cuff")?.rowCounter).toBe(0);
     expect(marks.find((mark) => mark.label === "first-shaping")?.rowCounter).toBe(sequence[0]);
     expect(marks.find((mark) => mark.label === "final-shaping")?.rowCounter).toBe(
       sequence[sequence.length - 1],
     );
-    expect(marks.at(-1)).toMatchObject({ label: "bind-off", rowCounter: 84 });
+    expect(marks.at(-1)).toMatchObject({ label: "bind-off", rowCounter: 70 });
     expect(marks.filter((mark) => mark.label === "first-shaping" || mark.label === "final-shaping")).toHaveLength(
       sequence.length > 1 ? 2 : 1,
     );

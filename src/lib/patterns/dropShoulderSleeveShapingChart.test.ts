@@ -164,7 +164,7 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
 
     expect(shapingRows).toHaveLength(20);
     expect(shapingRows[0]).toMatchObject({
-      rc: 24,
+      rc: 4,
       action: "Increase 1 stitch at each side",
       edge: "Both sides",
       stitchesRemaining: 42,
@@ -192,7 +192,7 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
     const topDownBindOff = buildDropShoulderSleeveShapingChartRows(TOP_DOWN_SAMPLE).at(-1);
 
     expect(cuffUpBindOff).toEqual({
-      rc: 120,
+      rc: 100,
       action: "Bind off loosely or scrap off",
       edge: "Top edge",
       stitchesRemaining: 0,
@@ -220,10 +220,8 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
 
   it("reverses unequal even-row spans for top-down knitting order", () => {
     const cuffEvents = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
-    const bodyStart = CUFF_UP_SAMPLE.cuffRows;
-    const bodyEnd = CUFF_UP_SAMPLE.cuffRows + CUFF_UP_SAMPLE.sleeveBodyRows;
-    const rowsFromCuff = cuffEvents[0]! - bodyStart;
-    const rowsAtUpperArm = bodyEnd - cuffEvents[cuffEvents.length - 1]!;
+    const rowsFromCuff = cuffEvents[0]!;
+    const rowsAtUpperArm = CUFF_UP_SAMPLE.sleeveBodyRows - cuffEvents[cuffEvents.length - 1]!;
     expect(rowsFromCuff).not.toBe(rowsAtUpperArm);
     expect(rowsFromCuff).toBeGreaterThan(0);
     expect(rowsAtUpperArm).toBeGreaterThan(0);
@@ -252,10 +250,11 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
     const topText = sleeveInstructionTrustedText(topRows);
     const topRcs = dropShoulderSleeveShapingRcSequence(TOP_DOWN_SAMPLE);
     const cuffRcs = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
-    const fabricEnd = CUFF_UP_SAMPLE.cuffRows + CUFF_UP_SAMPLE.sleeveBodyRows;
-    expect(topRcs).toEqual([...cuffRcs].map((rc) => fabricEnd - rc).sort((a, b) => a - b));
+    expect(topRcs).toEqual(
+      [...cuffRcs].map((rc) => TOP_DOWN_SAMPLE.sleeveBodyRows - rc).sort((a, b) => a - b),
+    );
     expect(topRcs[0]).toBe(rowsAtUpperArm);
-    expect(fabricEnd - topRcs[topRcs.length - 1]!).toBe(cuffRcs[0]);
+    expect(TOP_DOWN_SAMPLE.sleeveBodyRows - topRcs[topRcs.length - 1]!).toBe(cuffRcs[0]);
     expect(topText).toContain(`Knit ${rowsAtUpperArm} rows even.`);
     expect(topText).toContain(
       `After the final decrease, knit ${rowsFromCuff} rows even in pattern, then begin the cuff at RC: ${String(TOP_DOWN_SAMPLE.sleeveBodyRows).padStart(3, "0")}.`,
@@ -284,7 +283,7 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
 
     expect(jpNotation).toBe("1s-4r-20x");
     expect(chartRcs).toEqual(rows.filter((r) => /increase/i.test(r.action)).map((r) => r.rc));
-    expect(chartRcs).toEqual([24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100]);
+    expect(chartRcs).toEqual([4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80]);
   });
 
   it("matches drop-shoulder JP sleeve notation replacements for the same debug values (bottom-up)", () => {
@@ -376,10 +375,10 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     const preShaping = dropShoulderSleevePreShapingSpan(STEEP_CUFF_UP_SAMPLE);
     const bodyBlocks = sleeveBodyBlocks(rows);
 
-    expect(preShaping).toEqual({ bodyStartRc: 10, firstShapingRc: 11, straightRows: 1 });
+    expect(preShaping).toEqual({ bodyStartRc: 0, firstShapingRc: 1, straightRows: 1 });
     expect(bodyBlocks).toHaveLength(2);
     expect(blockParagraphText(bodyBlocks[0]!)).toBe("Knit 1 row even.");
-    expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(11);
+    expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(1);
     expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
   });
 
@@ -453,8 +452,8 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     }
 
     it("shows wrist stitches at RC after cuff when increases later reach upper arm (customer-equivalent)", () => {
-      // Cast on 36 → cuff to RC 012 → 24 even to RC 036 → increases to 42.
-      // sleeveBodyRows 72 → interval 24, count 3 → first increase at cuffRows + 24 = 36.
+      // Finish cuff, reset to RC 000, knit 24 sleeve-body rows, first increase at RC 024.
+      // sleeveBodyRows 72 → interval 24, count 3. Cuff rows are not part of these RCs.
       const input = {
         topSts: 42,
         wristSts: 36,
@@ -471,22 +470,22 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
       const chartRows = sleeveShapingChartRowsFromDisplay(rows);
       const lastIncrease = [...chartRows].reverse().find((r) => /increase/i.test(r.action));
 
-      expect(preShaping).toEqual({ bodyStartRc: 12, firstShapingRc: 36, straightRows: 24 });
+      expect(preShaping).toEqual({ bodyStartRc: 0, firstShapingRc: 24, straightRows: 24 });
       expect(bodyBlocks).toHaveLength(2);
 
       const knitEven = bodyBlocks[0]!;
-      expect(parseRcNumber(knitEven.rc)).toBe(12);
+      expect(parseRcNumber(knitEven.rc)).toBe(0);
       expect(blockParagraphText(knitEven)).toBe("Knit 24 rows even.");
       expect(knitEven.stitchCount).toBe(36);
       expect(knitEven.stitchCount).not.toBe(42);
 
       const beginShaping = bodyBlocks[1]!;
-      expect(parseRcNumber(beginShaping.rc)).toBe(36);
+      expect(parseRcNumber(beginShaping.rc)).toBe(24);
       expect(blockParagraphText(beginShaping)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
       expect(beginShaping.stitchCount).toBe(36);
       expect(beginShaping.stitchCount).not.toBe(42);
 
-      expect(chartRcs).toEqual([36, 60, 84]);
+      expect(chartRcs).toEqual([24, 48, 72]);
       expect(lastIncrease?.stitchesRemaining).toBe(42);
       expect(bindOff?.stitchCount).toBe(42);
     });
@@ -696,7 +695,7 @@ describe("generateDropShoulderPattern sleeve instruction copy", () => {
 
     expect(text).not.toContain("The sleeve top edge matches the armhole opening");
     expect(text).toContain(
-      `After the final increase, knit ${sched.remainderRows} rows even in pattern, then bind off at RC: ${String(d.dropShoulderSleeveTotalRows ?? 0).padStart(3, "0")}.`,
+      `After the final increase, knit ${sched.remainderRows} rows even in pattern, then bind off at RC: ${String(d.dropShoulderSleeveBodyRows ?? 0).padStart(3, "0")}.`,
     );
   });
 
