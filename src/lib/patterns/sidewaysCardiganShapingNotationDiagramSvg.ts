@@ -16,11 +16,16 @@ import {
   textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
 import {
+  formatShapingNotationRcLabel,
   shapingNotationRcText,
   sidewaysGarmentRcLandmarks,
   spreadRcLabelYs,
   type ShapingNotationRcLandmark,
 } from "./shapingNotationRcLandmarks";
+import {
+  placeShapingNotationRcLandmarks,
+  renderShapingNotationRcLeaders,
+} from "./legoBlocks/shapingNotationRcLeaders";
 import {
   dropShoulderSleeveBodyRowSpans,
   formatDropShoulderSleeveWorkingNotation,
@@ -255,12 +260,61 @@ function sidewaysRcKnitY(
   }
 }
 
+/** Visual point where a sideways RC meets the left body edge. */
+export function sidewaysShapingRcVisualPoint(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  landmark: ShapingNotationRcLandmark,
+): { x: number; y: number } {
+  return {
+    x: frame.hemX,
+    y: sidewaysKnitVisualY(frame, sidewaysRcKnitY(frame, landmark)),
+  };
+}
+
+function drawPulloverShapingRcLeaders(
+  landmarks: readonly ShapingNotationRcLandmark[],
+  frame: SidewaysCardiganEditMeasurementFrame,
+  type: SidewaysPatternDiagramType,
+  canvas: { x: number; y: number; width: number; height: number },
+): string {
+  const placed = placeShapingNotationRcLandmarks({
+    landmarks: landmarks.map((landmark) => {
+      const point = sidewaysShapingRcVisualPoint(frame, landmark);
+      return {
+        id: `${landmark.label}-${landmark.rowCounter}`,
+        kind: landmark.label,
+        text: formatShapingNotationRcLabel(landmark.rowCounter),
+        actionY: point.y,
+        outlineX: point.x,
+        priority: landmark.priority,
+        rowCounter: landmark.rowCounter,
+      };
+    }),
+    side: "left",
+    fontSize: type.row,
+    bounds: {
+      minX: canvas.x + 2,
+      minY: canvas.y + type.row,
+      maxX: frame.hemX - 4,
+      maxY: canvas.y + canvas.height - type.row,
+    },
+    labelGap: Math.max(28, Math.round(type.row * 2.2)),
+  });
+  return renderShapingNotationRcLeaders({
+    placed,
+    fill: DS_MUTED,
+    font: DS_FONT,
+    escape: escapeXml,
+    formatNumber: fmtNum,
+  });
+}
+
 function drawSidewaysGarmentRcLandmarks(
   model: SidewaysCardiganPatternDiagramModel,
   frame: SidewaysCardiganEditMeasurementFrame,
   type: SidewaysPatternDiagramType,
   labelX: number,
-  canvas: { y: number; height: number },
+  canvas: { x: number; y: number; width: number; height: number },
 ): string {
   const slope = buildSidewaysVNeckSlopeSequence(
     model.calc.vNeckDepthStitches,
@@ -279,6 +333,9 @@ function drawSidewaysGarmentRcLandmarks(
     increaseSequence: increase,
     decreaseSequence: decrease,
   });
+  if (model.garmentStyle === "pullover") {
+    return drawPulloverShapingRcLeaders(landmarks, frame, type, canvas);
+  }
   const visual = landmarks.map((landmark) =>
     sidewaysKnitVisualY(frame, sidewaysRcKnitY(frame, landmark)),
   );

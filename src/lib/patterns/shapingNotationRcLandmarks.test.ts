@@ -14,8 +14,15 @@ import {
   buildSidewaysCardiganBodyInstructions,
   sidewaysBodyRowLandmarks,
 } from "./sidewaysCardiganBodyInstructions";
-import { buildSidewaysCardiganPatternDiagramModel } from "./sidewaysCardiganPatternDiagramSvg";
-import { buildSidewaysCardiganShapingNotationDiagramSvg } from "./sidewaysCardiganShapingNotationDiagramSvg";
+import {
+  buildSidewaysCardiganPatternDiagramFrame,
+  buildSidewaysCardiganPatternDiagramModel,
+  buildSidewaysCardiganPatternDiagramSvg,
+} from "./sidewaysCardiganPatternDiagramSvg";
+import {
+  buildSidewaysCardiganShapingNotationDiagramSvg,
+  sidewaysShapingRcVisualPoint,
+} from "./sidewaysCardiganShapingNotationDiagramSvg";
 import { calculateSidewaysCardiganSleeve } from "./sidewaysCardiganSleeveCalc";
 import { buildSidewaysCardiganSleeveShapingNotationSvg } from "./sidewaysCardiganSleeveDiagramSvg";
 import {
@@ -318,6 +325,90 @@ describe("shaping notation diagrams show cumulative RC landmarks", () => {
     const back = tryBuildLiveDropShoulderBackNotationSvg(result)!;
     expect(back).toContain('data-role="rc-caston"');
     expect(back).toContain(formatRcNotation(0));
+  });
+
+  it("leads each pullover shaping RC to its calculated row on the body edge", () => {
+    const samples: SidewaysCardiganBodyCalcInput[] = [
+      BODY,
+      { ...BODY, rowsPerInch: 10, finishedBustCircumferenceInches: 48, garmentLengthInches: 24 },
+    ];
+    const leaderRows = samples.map((input) => {
+      const calcResult = calculateSidewaysCardiganBody(input);
+      const instructions = buildSidewaysCardiganBodyInstructions(input, "pullover");
+      if (!calcResult.ok || !instructions.ok) throw new Error("expected a pullover");
+      const model = buildSidewaysCardiganPatternDiagramModel({
+        garmentStyle: "pullover",
+        calc: calcResult.calc,
+        input,
+        vNeckIncreaseSequence: instructions.instructions.increaseSequence,
+        vNeckDecreaseSequence: instructions.instructions.decreaseSequence,
+      });
+      const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+      const svg = buildSidewaysCardiganShapingNotationDiagramSvg(model);
+      const marks = sidewaysGarmentRcLandmarks({
+        garmentStyle: "pullover",
+        calc: calcResult.calc,
+        increaseSequence: instructions.instructions.increaseSequence,
+        decreaseSequence: instructions.instructions.decreaseSequence,
+      });
+      const leaders = [...svg.matchAll(/<line\b[^>]*data-role="rc-leader"[^>]*>/g)].map((match) => {
+        const tag = match[0];
+        const num = (name: string) => Number(new RegExp(`${name}="([^"]+)"`).exec(tag)?.[1]);
+        return {
+          rc: num("data-row-counter"),
+          y1: num("y1"),
+          y2: num("y2"),
+          x1: num("x1"),
+          x2: num("x2"),
+        };
+      });
+      const labels = rcTexts(svg);
+      expect(buildSidewaysCardiganPatternDiagramSvg(model)).not.toContain('data-role="rc-leader"');
+      expect(leaders).toHaveLength(marks.length);
+      expect(labels).toHaveLength(marks.length);
+      for (const mark of marks) {
+        const point = sidewaysShapingRcVisualPoint(frame, mark);
+        const leader = leaders.find((item) => item.rc === mark.rowCounter);
+        const label = labels.find((item) => item.rc === mark.rowCounter);
+        expect(leader, `RC ${mark.rowCounter}`).toBeDefined();
+        expect(label?.rc).toBe(mark.rowCounter);
+        expect(leader!.y1).toBeCloseTo(point.y, 1);
+        expect(leader!.y2).toBeCloseTo(point.y, 1);
+        expect(leader!.x2).toBeCloseTo(point.x, 1);
+        expect(leader!.x2).toBeCloseTo(frame.hemX, 1);
+        expect(leader!.x1).toBeLessThan(frame.hemX);
+        expect(label!.x).toBeLessThan(frame.hemX);
+      }
+      const close = [...marks].sort((a, b) => a.rowCounter - b.rowCounter);
+      for (let i = 1; i < close.length; i += 1) {
+        const prev = close[i - 1]!;
+        const next = close[i]!;
+        if (next.rowCounter - prev.rowCounter > 6) continue;
+        const prevLabel = labels.find((item) => item.rc === prev.rowCounter)!;
+        const nextLabel = labels.find((item) => item.rc === next.rowCounter)!;
+        expect(Math.abs(prevLabel.y - nextLabel.y)).toBeGreaterThan(8);
+        expect(leaders.find((item) => item.rc === prev.rowCounter)!.y1).not.toBeCloseTo(
+          leaders.find((item) => item.rc === next.rowCounter)!.y1,
+          1,
+        );
+      }
+      return leaders.map((leader) => leader.rc);
+    });
+    expect(leaderRows[0]).not.toEqual(leaderRows[1]);
+    expect(leaderRows[0]).not.toEqual([0, 96, 100, 136, 140, 178, 180, 276, 372, 456, 552]);
+
+    const cardigan = bodyModel("cardigan");
+    const cardiganSvg = buildSidewaysCardiganShapingNotationDiagramSvg(
+      buildSidewaysCardiganPatternDiagramModel({
+        garmentStyle: "cardigan",
+        calc: cardigan.calc,
+        input: BODY,
+        vNeckIncreaseSequence: cardigan.instructions.increaseSequence,
+        vNeckDecreaseSequence: cardigan.instructions.decreaseSequence,
+      }),
+    );
+    expect(cardiganSvg).toContain('data-role="rc-landmark"');
+    expect(cardiganSvg).not.toContain('data-role="rc-leader"');
   });
 
   it("keeps Socks on the established rc000 milestones", () => {
