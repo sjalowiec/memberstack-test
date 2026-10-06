@@ -55,6 +55,7 @@ export const SIDEWAYS_SUMMARY_DERIVED_ROLES = {
   armholeDepth: "derived-armhole-depth",
   shoulderSection: "derived-shoulder-section",
   halfNeckOpening: "derived-half-neck-opening",
+  neckOpening: "derived-neck-opening",
   frontSection: "derived-front-section",
   backSection: "derived-back-section",
 } as const;
@@ -485,21 +486,51 @@ export function drawCardiganMarkers(frame: SidewaysCardiganEditMeasurementFrame)
   ].join("");
 }
 
+function pulloverSupportLineGap(type: BuildDiagramTypography): number {
+  return type.support + Math.max(4, Math.round(type.support * 0.2));
+}
+
+/** Room under the cast-on edge for the two-line start caption, then the length dimension. */
+function pulloverCastOnLabelY(bottomY: number, type: BuildDiagramTypography): number {
+  return bottomY + 12 + type.support;
+}
+
+function pulloverBodyLengthDimY(bottomY: number, type: BuildDiagramTypography): number {
+  const lineGap = pulloverSupportLineGap(type);
+  const captionBottom = pulloverCastOnLabelY(bottomY, type) + lineGap + type.support * 0.35;
+  return captionBottom + 18;
+}
+
 export function drawPulloverMarkers(
   frame: SidewaysCardiganEditMeasurementFrame,
-  options?: { includeStartLabel?: boolean; typography?: BuildDiagramTypography },
+  options?: {
+    includeStartLabel?: boolean;
+    typography?: BuildDiagramTypography;
+    /** Build/Edit knits upward, so the cast-on caption and start edge sit on the bottom. */
+    castOnAtBottom?: boolean;
+  },
 ): string {
   const includeStartLabel = options?.includeStartLabel !== false;
+  const castOnAtBottom = options?.castOnAtBottom === true;
   const midX = (frame.hemX + frame.neckX) / 2;
   const type = includeStartLabel
     ? (options?.typography ?? buildDiagramTypographyForViewBox(viewBoxFor(frame).width))
     : null;
+  const startY = castOnAtBottom ? frame.bottomY : frame.topY;
+  const graftY = castOnAtBottom ? frame.topY : frame.bottomY;
+  const lineGap = type ? pulloverSupportLineGap(type) : 0;
+  const labelY =
+    type && castOnAtBottom
+      ? pulloverCastOnLabelY(frame.bottomY, type)
+      : type
+        ? frame.topY - 10 - type.support - lineGap
+        : 0;
   return [
-    `<line data-role="underarm-start" data-scrap-on="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.topY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.topY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
-    `<line data-role="graft-join" data-scrap-off="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(frame.bottomY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(frame.bottomY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
+    `<line data-role="underarm-start" data-scrap-on="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(startY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(startY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
+    `<line data-role="graft-join" data-scrap-off="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(graftY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(graftY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
     `<polyline data-role="v-neck" data-closed-front="true" points="${fmtNum(frame.neckX)},${fmtNum(frame.firstArmholeY)} ${fmtNum(frame.vCutX)},${fmtNum(frame.firstVEndY)} ${fmtNum(frame.neckX)},${fmtNum(frame.secondVStartY)}" fill="none" stroke="${DS_STROKE}" stroke-width="1.6"/>`,
     includeStartLabel && type
-      ? `<text data-role="underarm-start-label" data-build-type-role="support" x="${fmtNum(midX)}" y="${fmtNum(frame.topY - 10 - type.support - Math.max(4, Math.round(type.support * 0.2)))}" text-anchor="middle" font-family="${type.fontFamily}" font-size="${type.support}" font-weight="${type.supportWeight}" fill="${DS_MUTED}"><tspan x="${fmtNum(midX)}" dy="0">Start at underarm</tspan><tspan x="${fmtNum(midX)}" dy="${fmtNum(type.support + Math.max(4, Math.round(type.support * 0.2)))}" data-build-type-role="support">scrap on / graft</tspan></text>`
+      ? `<text data-role="underarm-start-label" data-build-type-role="support" x="${fmtNum(midX)}" y="${fmtNum(labelY)}" text-anchor="middle" font-family="${type.fontFamily}" font-size="${type.support}" font-weight="${type.supportWeight}" fill="${DS_MUTED}"><tspan x="${fmtNum(midX)}" dy="0">Start at underarm</tspan><tspan x="${fmtNum(midX)}" dy="${fmtNum(lineGap)}" data-build-type-role="support">scrap on / graft</tspan></text>`
       : "",
   ].join("");
 }
@@ -521,14 +552,19 @@ export function drawArmholeAndBack(frame: SidewaysCardiganEditMeasurementFrame):
   return parts.join("");
 }
 
-function mutedLabel(
-  x: number,
-  y: number,
-  text: string,
-  role: string,
-  type: BuildDiagramTypography,
+/**
+ * Cardigan back-neck notation: the vertical opening is the full neck width,
+ * with witness lines from the notch corners out to that dimension.
+ */
+function drawBackNeckOpeningNotation(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  neckDimX: number,
 ): string {
-  return `<text data-role="${role}" data-build-type-role="support" x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="middle" font-family="${type.fontFamily}" font-size="${type.support}" font-weight="${type.supportWeight}" fill="${DS_MUTED}">${escapeXml(text)}</text>`;
+  return [
+    vDim(neckDimX, frame.backNeckStartY, frame.backNeckEndY, "dim-neck-opening"),
+    extTowardDim(frame.neckX, frame.backNeckStartY, neckDimX, frame.backNeckStartY),
+    extTowardDim(frame.neckX, frame.backNeckEndY, neckDimX, frame.backNeckEndY),
+  ].join("");
 }
 
 function drawPulloverDimensions(
@@ -537,42 +573,60 @@ function drawPulloverDimensions(
   type: BuildDiagramTypography,
 ): string {
   const derived = frame.derived;
-  const bustX = frame.hemX - 36;
-  const sectionDimX = frame.hemX + 18;
-  const lengthY = frame.bottomY + 28;
+  const { bustX, sectionDimX, neckDimX, sectionLabelX, neckLabelX } = cardiganDimLayout(frame);
+  const lengthY = pulloverBodyLengthDimY(frame.bottomY, type);
   const vDepthY = (frame.firstVEndY + frame.secondVStartY) / 2;
-  const firstFrontMidY = (frame.topY + frame.firstVEndY) / 2;
-  const secondFrontMidY = (frame.firstVEndY + frame.secondArmholeY) / 2;
+  const frontSpan = stackedSectionEnds(frame.topY, frame.secondArmholeY, false, true);
+  const backSpan = stackedSectionEnds(frame.secondArmholeY, frame.bottomY, true, false);
+  const frontMidY = (frame.topY + frame.secondArmholeY) / 2;
   const backMidY = (frame.secondArmholeY + frame.bottomY) / 2;
   const shoulderMidY = (frame.topY + frame.firstArmholeY) / 2;
-  const halfNeckMidY = (frame.firstArmholeY + frame.firstVEndY) / 2;
-  const armholeY = frame.secondArmholeY;
+  const armholeDimY = frame.secondArmholeY - 16;
+  const fullFrontInches = derived.frontSectionInches * 2;
+  const neckOpeningInches = derived.halfNeckOpeningInches * 2;
   return [
     vDim(bustX, frame.topY, frame.bottomY, "dim-finished-bust"),
     hDim(frame.hemX, frame.neckX, lengthY, "dim-finished-back-length"),
-    vDim(frame.neckX + 18, frame.firstArmholeY, frame.secondVStartY, "dim-neck-opening"),
+    drawBackNeckOpeningNotation(frame, neckDimX),
     hDim(frame.vCutX, frame.neckX, vDepthY, "dim-vneck-depth"),
-    hDim(frame.armholeX, frame.neckX, armholeY - 16, "dim-armhole-depth"),
-    vDim(sectionDimX, frame.topY, frame.firstArmholeY, "dim-shoulder-section"),
-    vDim(frame.neckX + 18, frame.firstArmholeY, frame.firstVEndY, "dim-half-neck-opening"),
-    vDim(sectionDimX, frame.topY, frame.firstVEndY, "dim-front-section", ` data-side="first"`),
-    vDim(sectionDimX, frame.firstVEndY, frame.secondArmholeY, "dim-front-section", ` data-side="second"`),
-    vDim(sectionDimX, frame.secondArmholeY, frame.bottomY, "dim-back-section"),
-    mutedLabel((frame.armholeX + frame.neckX) / 2, armholeY - 22, "Armhole depth", SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth, type),
+    hDim(
+      frame.armholeX,
+      frame.neckX,
+      armholeDimY,
+      "dim-armhole-depth",
+      ` data-derived-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.armholeDepth}"`,
+    ),
+    vDim(neckDimX, frame.topY, frame.firstArmholeY, "dim-shoulder-section"),
+    extTowardDim(frame.neckX, frame.topY, neckDimX, frame.topY),
+    extTowardDim(frame.neckX, frame.firstArmholeY, neckDimX, frame.firstArmholeY),
+    vDim(sectionDimX, frontSpan.top, frontSpan.bot, "dim-front-section"),
+    vDim(sectionDimX, backSpan.top, backSpan.bot, "dim-back-section"),
+    extTowardDim(frame.hemX, frame.topY, sectionDimX, frame.topY),
+    extTowardDim(frame.hemX, frame.secondArmholeY, sectionDimX, frame.secondArmholeY),
+    extTowardDim(frame.hemX, frame.bottomY, sectionDimX, frame.bottomY),
     derivedValueLabel(
-      sectionDimX + 10,
-      firstFrontMidY - 4,
-      "Front",
-      derived.frontSectionInches,
+      neckLabelX,
+      shoulderMidY - 4,
+      "Shoulder",
+      derived.shoulderSectionInches,
       unit,
-      SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
+      SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection,
       type,
     ),
     derivedValueLabel(
-      sectionDimX + 10,
-      secondFrontMidY - 4,
+      neckLabelX,
+      frame.backNeckEndY + type.name + 6,
+      "Neck opening",
+      neckOpeningInches,
+      unit,
+      SIDEWAYS_SUMMARY_DERIVED_ROLES.neckOpening,
+      type,
+    ),
+    derivedValueLabel(
+      sectionLabelX,
+      frontMidY - 4,
       "Front",
-      derived.frontSectionInches,
+      fullFrontInches,
       unit,
       SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection,
       type,
@@ -586,24 +640,6 @@ function drawPulloverDimensions(
       SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection,
       type,
       "middle",
-    ),
-    derivedValueLabel(
-      frame.hemX + 32,
-      shoulderMidY - 4,
-      "Shoulder",
-      derived.shoulderSectionInches,
-      unit,
-      SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection,
-      type,
-    ),
-    derivedValueLabel(
-      frame.neckX + 48,
-      halfNeckMidY - 4,
-      "½ neck opening",
-      derived.halfNeckOpeningInches,
-      unit,
-      SIDEWAYS_SUMMARY_DERIVED_ROLES.halfNeckOpening,
-      type,
     ),
   ].join("");
 }
@@ -633,7 +669,7 @@ function drawCardiganDimensions(
     // edge, so this line includes the back-neck depth. Drawn below the body so
     // it cannot read as a seam or section boundary.
     hDim(frame.hemX, frame.neckX, lengthY, "dim-finished-back-length"),
-    vDim(neckDimX, frame.backNeckStartY, frame.backNeckEndY, "dim-neck-opening"),
+    drawBackNeckOpeningNotation(frame, neckDimX),
     hDim(frame.vCutX, frame.neckX, vDepthY, "dim-vneck-depth"),
     hDim(
       frame.armholeX,
@@ -682,8 +718,6 @@ function drawCardiganDimensions(
       frame.neckX,
       lengthY,
     ),
-    extTowardDim(frame.neckX, frame.backNeckStartY, neckDimX, frame.backNeckStartY),
-    extTowardDim(frame.neckX, frame.backNeckEndY, neckDimX, frame.backNeckEndY),
     extTowardDim(frame.neckX, frame.secondArmholeY, neckDimX, frame.secondArmholeY),
     extTowardDim(frame.neckX, frame.secondVStartY, neckDimX, frame.secondVStartY),
     extTowardDim(frame.neckX, frame.bottomY, neckDimX, frame.bottomY),
@@ -747,16 +781,21 @@ function drawDimensions(
     : drawCardiganDimensions(frame, unit, type);
 }
 
-function drawPulloverTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
+function drawPulloverTargets(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  type: BuildDiagramTypography,
+): string {
   const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
-  const armholeY = frame.secondArmholeY;
+  const { bustX, neckDimX } = cardiganDimLayout(frame);
+  const lengthY = pulloverBodyLengthDimY(frame.bottomY, type);
+  const armholeDimY = frame.secondArmholeY - 16;
   return [
     `<g data-role="measurement-targets">`,
-    targetCircle(t.finishedBust, frame.hemX - 36, (frame.topY + frame.bottomY) / 2),
-    targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, frame.bottomY + 28),
-    targetCircle(t.neckOpeningWidth, frame.neckX + 18, (frame.firstArmholeY + frame.secondVStartY) / 2),
+    targetCircle(t.finishedBust, bustX, (frame.topY + frame.bottomY) / 2),
+    targetCircle(t.finishedLength, (frame.hemX + frame.neckX) / 2, lengthY),
+    targetCircle(t.neckOpeningWidth, neckDimX, (frame.backNeckStartY + frame.backNeckEndY) / 2),
     targetCircle(t.vNeckDepth, (frame.vCutX + frame.neckX) / 2, frame.firstVEndY),
-    targetCircle(t.armholeDepth, (frame.armholeX + frame.neckX) / 2, armholeY - 16),
+    targetCircle(t.armholeDepth, (frame.armholeX + frame.neckX) / 2, armholeDimY),
     `</g>`,
   ].join("");
 }
@@ -776,9 +815,12 @@ function drawCardiganTargets(frame: SidewaysCardiganEditMeasurementFrame): strin
   ].join("");
 }
 
-function drawTargets(frame: SidewaysCardiganEditMeasurementFrame): string {
+function drawTargets(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  type: BuildDiagramTypography,
+): string {
   return frame.garmentStyle === "pullover"
-    ? drawPulloverTargets(frame)
+    ? drawPulloverTargets(frame, type)
     : drawCardiganTargets(frame);
 }
 
@@ -979,10 +1021,10 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
       `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
       drawArmholeAndBack(frame),
       garmentStyle === "pullover"
-        ? drawPulloverMarkers(frame, { typography: type })
+        ? drawPulloverMarkers(frame, { typography: type, castOnAtBottom: true })
         : drawCardiganMarkers(frame),
       drawDimensions(frame, unit, type),
-      drawTargets(frame),
+      drawTargets(frame, type),
     ].join("");
   // Type is resolved against the drawing width, then the viewBox grows only
   // enough to keep that ink inside. Rescaling to the wider canvas would put

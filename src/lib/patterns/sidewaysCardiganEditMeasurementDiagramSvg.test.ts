@@ -190,7 +190,8 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.neckOpeningWidth}"`);
     expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
     expect(pullover).toContain(">Shoulder<");
-    expect(pullover).toContain(">½ neck opening<");
+    expect(pullover).toContain(">Neck opening<");
+    expect(pullover).not.toContain(">½ neck opening<");
     expect(pullover).toContain(">Front<");
     expect(pullover).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
     expect(pullover).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
@@ -234,18 +235,127 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       garmentStyle: "pullover",
       measurements,
     });
+    expect(cardigan).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}"`);
+    expect(cardigan).toContain('data-derived-inches="10"');
+    expect(cardigan).toContain('data-derived-inches="20"');
+    expect(cardigan).toContain('data-derived-inches="6.5"');
+    expect(cardigan).toContain(">½ neck opening<");
+    expect((cardigan.match(/data-role="dim-front-section"/g) ?? []).length).toBe(2);
+    expect(pullover).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}"`);
+    expect(pullover).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection}"`);
+    expect(pullover).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"`);
+    expect(pullover).not.toContain('data-derived-inches="10"');
+    expect(pullover).toContain('data-derived-inches="20"');
+    expect(pullover).toContain('data-derived-inches="6.5"');
+    expect((pullover.match(/data-role="derived-front-section"/g) ?? []).length).toBe(1);
+    expect((pullover.match(/>Front</g) ?? []).length).toBe(1);
+    expect(pullover).toContain("dim-front-section");
+    expect(pullover).toContain("dim-back-section");
+    expect(pullover).toContain("dim-shoulder-section");
     for (const svg of [cardigan, pullover]) {
-      expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}"`);
       expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection}"`);
       expect(svg).toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"`);
-      expect(svg).toContain('data-derived-inches="10"');
-      expect(svg).toContain('data-derived-inches="20"');
-      expect(svg).toContain('data-derived-inches="6.5"');
-      expect(svg).toContain("dim-front-section");
-      expect(svg).toContain("dim-back-section");
-      expect(svg).toContain("dim-shoulder-section");
       expect(diagramGeometryStaysInsideViewBox(svg)).toBe(true);
     }
+  });
+
+  it("corrects the Pullover Build/Edit annotations without a sleeve or a changed body outline", () => {
+    const measurements = {
+      ...BASE,
+      finishedBustInches: 52,
+      neckOpeningWidthInches: 8,
+      finishedUpperArmInches: 16,
+    };
+    const derived = derivedSidewaysSummaryInches(measurements);
+    const pullover = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements,
+    });
+    const cardigan = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "cardigan",
+      measurements,
+    });
+    const bodyPath = /data-role="body-outline"[^>]* d="([^"]+)"/.exec(pullover)?.[1] ?? "";
+    expect(bodyPath.startsWith("M ")).toBe(true);
+    expect(pullover).not.toContain('data-role="sleeve-outline"');
+    expect(cardigan).toContain(">½ neck opening<");
+    expect(cardigan).not.toContain(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.neckOpening}"`);
+    expect((cardigan.match(/data-role="dim-front-section"/g) ?? []).length).toBe(2);
+
+    const startY = Number(/data-role="underarm-start"[^>]*y1="([^"]+)"/.exec(pullover)?.[1]);
+    const graftY = Number(/data-role="graft-join"[^>]*y1="([^"]+)"/.exec(pullover)?.[1]);
+    const labelAt = pullover.indexOf('data-role="underarm-start-label"');
+    const labelTag = pullover.slice(labelAt, pullover.indexOf(">", labelAt) + 1);
+    const labelY = Number(/\by="([^"]+)"/.exec(labelTag)?.[1]);
+    expect(startY).toBeGreaterThan(graftY);
+    expect(labelY).toBeGreaterThan(startY);
+    expect(pullover).toContain(">Start at underarm<");
+    expect(pullover).toContain(">scrap on / graft<");
+
+    const neck = dimLineFromGroup(dimGroup(pullover, "dim-neck-opening"));
+    const neckInches = derived.halfNeckOpeningInches * 2;
+    expect(neck).not.toBeNull();
+    expect(neck!.x1).toBe(neck!.x2);
+    expect(neck!.y2 - neck!.y1).toBeGreaterThan(0);
+    expect(pullover).not.toContain("dim-half-neck-opening");
+    expect(pullover).not.toContain(">½ neck opening<");
+    expect((pullover.match(/>Neck opening</g) ?? []).length).toBe(1);
+    expect(pullover).toContain(
+      `data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.neckOpening}" data-derived-inches="${neckInches}"`,
+    );
+    const neckTarget = targetPoint(pullover, SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.neckOpeningWidth);
+    expect(neckTarget.cx).toBeCloseTo(neck!.x1, 1);
+    expect(neckTarget.cy).toBeCloseTo((neck!.y1 + neck!.y2) / 2, 1);
+    const backNeck = /data-role="back-neck"[^>]*y="([^"]+)"[^>]*height="([^"]+)"/.exec(pullover);
+    expect(Number(backNeck?.[1])).toBeCloseTo(neck!.y1, 1);
+    expect(Number(backNeck?.[1]) + Number(backNeck?.[2])).toBeCloseTo(neck!.y2, 1);
+
+    const neckX = Number(/data-role="underarm-start"[^>]*x2="([^"]+)"/.exec(pullover)?.[1]);
+    const shoulder = dimLineFromGroup(dimGroup(pullover, "dim-shoulder-section"));
+    const shoulderLabelX = Number(
+      new RegExp(`data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}"[^>]*x="([^"]+)"`).exec(
+        pullover,
+      )?.[1],
+    );
+    expect(shoulder).not.toBeNull();
+    expect(shoulder!.x1).toBeGreaterThan(neckX);
+    expect(shoulderLabelX).toBeGreaterThan(neckX);
+    expect(pullover).toContain(
+      `data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.shoulderSection}" data-derived-inches="${derived.shoulderSectionInches}"`,
+    );
+
+    const front = dimLineFromGroup(dimGroup(pullover, "dim-front-section"));
+    const hemX = Number(/data-role="underarm-start"[^>]*x1="([^"]+)"/.exec(pullover)?.[1]);
+    expect((pullover.match(/data-role="dim-front-section"/g) ?? []).length).toBe(1);
+    expect((pullover.match(/data-role="derived-front-section"/g) ?? []).length).toBe(1);
+    expect(front).not.toBeNull();
+    expect(front!.x1).toBeLessThan(hemX);
+    expect(pullover).toContain(
+      `data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}" data-derived-inches="${derived.frontSectionInches * 2}"`,
+    );
+    expect(pullover).toContain(
+      `data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.backSection}" data-derived-inches="${derived.backSectionInches}"`,
+    );
+    expect(derived.frontSectionInches * 2).toBe(derived.backSectionInches);
+    const otherBust = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: { ...measurements, finishedBustInches: 40 },
+    });
+    expect(otherBust).toContain(
+      `data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}" data-derived-inches="20"`,
+    );
+    expect(otherBust).not.toContain(
+      `data-role="${SIDEWAYS_SUMMARY_DERIVED_ROLES.frontSection}" data-derived-inches="26"`,
+    );
+
+    expect((pullover.match(/data-role="dim-armhole-depth"/g) ?? []).length).toBe(1);
+    expect((pullover.match(/>Armhole depth</g) ?? []).length).toBe(0);
+    const armhole = dimLineFromGroup(dimGroup(pullover, "dim-armhole-depth"));
+    const armholeTarget = targetPoint(pullover, SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.armholeDepth);
+    expect(armhole).not.toBeNull();
+    expect(armholeTarget.cy).toBeCloseTo(armhole!.y1, 1);
+    expect(pullover).toContain('data-role="dim-extension"');
+    expect(diagramGeometryStaysInsideViewBox(pullover)).toBe(true);
   });
 
   it("keeps Cardigan labels, dimension lines, and chip targets inside the viewBox", () => {
@@ -431,7 +541,12 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       expect(svg).toContain(">Front<");
       expect(svg).toContain(">Back<");
       expect(svg).toContain(">Shoulder<");
-      expect(svg).toContain(">½ neck opening<");
+      if (input.garmentStyle === "pullover") {
+        expect(svg).toContain(">Neck opening<");
+        expect(svg).not.toContain(">½ neck opening<");
+      } else {
+        expect(svg).toContain(">½ neck opening<");
+      }
       expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
       expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedLength}"`);
       expect(svg).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.neckOpeningWidth}"`);
@@ -451,17 +566,16 @@ describe("Sideways Summary/Edit measurement SVG", () => {
         ),
       ).width,
     );
-    expect(pullover).toMatch(
-      new RegExp(
-        `data-build-type-role="support"[^>]*font-size="${pulloverType.support}"[^>]*>Armhole depth<`,
-      ),
-    );
+    expect((pullover.match(/data-role="dim-armhole-depth"/g) ?? []).length).toBe(1);
+    expect(pullover).not.toMatch(/>Armhole depth</);
     expect(pullover).toContain(">Start at underarm<");
     expect(pullover).toContain(">scrap on / graft<");
     expect(pullover).toMatch(
       new RegExp(`data-build-type-role="support"[^>]*font-size="${pulloverType.support}"`),
     );
-    expect(pullover).toContain('data-derived-inches="10.5"');
+    expect(pullover).toContain('data-derived-inches="21"');
+    expect(pullover).toContain('data-derived-inches="7.5"');
+    expect(pullover).not.toContain('data-derived-inches="10.5"');
   });
 
   it("keeps finished-pattern pullover markers free of the body measurement caption", () => {
@@ -474,12 +588,25 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(markers).not.toContain("font-size");
     expect(markers).not.toContain("data-build-type-role");
     expect(markers).not.toContain("Start at underarm");
+    const startY = Number(/data-role="underarm-start"[^>]*y1="([^"]+)"/.exec(markers)?.[1]);
+    const graftY = Number(/data-role="graft-join"[^>]*y1="([^"]+)"/.exec(markers)?.[1]);
+    expect(startY).toBeLessThan(graftY);
   });
 
   it("keeps body label ink inside the viewBox at small and large sizes", () => {
     const samples = [
       { label: "typical cardigan", garmentStyle: "cardigan" as const, measurements: BASE },
       { label: "typical pullover", garmentStyle: "pullover" as const, measurements: BASE },
+      {
+        label: "small pullover",
+        garmentStyle: "pullover" as const,
+        measurements: { ...BASE, finishedBustInches: 34, finishedLengthInches: 20, neckOpeningWidthInches: 6.5 },
+      },
+      {
+        label: "large pullover",
+        garmentStyle: "pullover" as const,
+        measurements: { ...BASE, finishedBustInches: 54, finishedLengthInches: 28, neckOpeningWidthInches: 8 },
+      },
       {
         label: "small cardigan",
         garmentStyle: "cardigan" as const,
