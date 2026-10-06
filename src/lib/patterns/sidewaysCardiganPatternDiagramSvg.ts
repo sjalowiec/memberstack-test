@@ -332,6 +332,10 @@ function drawCardiganStsRows(
   const sts = (n: number, inches?: number) => spanLabel(n, "sts", inches, unit);
   const rows = (n: number, inches?: number) => spanLabel(n, "rows", inches, unit);
   const lengthIn = model.measurements.finishedLengthInches;
+  const finishedLength = formatPatternDiagramMeasurement(lengthIn, unit);
+  // Finished length is hem to shoulder, including the V-neck depth. The cast-on
+  // edge ends at the V, so this dimension must not be centered on that shorter edge.
+  const lengthDimY = castOnY + type.stitch * 2.8;
   const insideX = frame.hemX + type.stitch * 1.05;
   const shoulderDimX = frame.neckX + type.stitch * 0.9;
   const halfDimX = frame.neckX + type.stitch * 2.05;
@@ -376,8 +380,19 @@ function drawCardiganStsRows(
       "start",
     ),
     measureLabel(bustX - type.row, (frame.topY + frame.bottomY) / 2, rows(calc.bust.actualTotalBustRows, calc.bust.actualFinishedBustInches), "bust-rows", type.row, "end"),
-    measureLabel(edgeX, castOnY, `CO ${sts(edge, lengthIn)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
-    measureLabel(edgeX, bindOffY, `BO ${sts(edge, lengthIn)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
+    hDim(frame.hemX, frame.neckX, lengthDimY, "dim-finished-length"),
+    spanLeader(frame.hemX, startEdge, frame.hemX, lengthDimY, "finished-length-hem"),
+    spanLeader(frame.neckX, y(frame.firstVEndY), frame.neckX, lengthDimY, "finished-length-shoulder"),
+    measureLabel(
+      (frame.hemX + frame.neckX) / 2,
+      lengthDimY + type.row * 1.45,
+      finishedLength,
+      "finished-length",
+      type.row,
+      "middle",
+    ),
+    measureLabel(edgeX, castOnY, `CO ${sts(edge)}`, "cast-on-sts", type.stitch, "middle", ` data-knit-edge="start" data-sts="${edge}"`),
+    measureLabel(edgeX, bindOffY, `BO ${sts(edge)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
   ].join("");
 }
 

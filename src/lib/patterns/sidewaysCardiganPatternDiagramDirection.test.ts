@@ -247,8 +247,21 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
     const notationBindOff = byRole(shaping, "jp-final-bo")[0];
     const length = formatPatternDiagramMeasurement(model.measurements.finishedLengthInches, model.displayUnit);
     const edgeLabel = formatStitchesRowsDiagramLabel(edge, "sts", length).replace("\n", "");
-    expect(castOn?.text).toBe(`CO ${edgeLabel}`);
-    expect(bindOff?.text).toBe(`BO ${edgeLabel}`);
+    if (style === "cardigan") {
+      expect(castOn?.text).toBe(`CO ${edge} sts`);
+      expect(bindOff?.text).toBe(`BO ${edge} sts`);
+      expect(byRole(sts, "finished-length")[0]?.text).toBe(length);
+      const dim = /data-role="dim-finished-length"[\s\S]*?<line\b[^>]*>/.exec(sts)?.[0] ?? "";
+      const x1 = Number(/x1="([^"]+)"/.exec(dim)?.[1]);
+      const x2 = Number(/x2="([^"]+)"/.exec(dim)?.[1]);
+      expect(x1).toBeCloseTo(Math.min(frame.hemX, frame.neckX), 1);
+      expect(x2).toBeCloseTo(Math.max(frame.hemX, frame.neckX), 1);
+      expect(x2).toBeGreaterThan(frame.vCutX + 1);
+      expect(byRole(sts, "finished-length")[0]!.x).toBeCloseTo((frame.hemX + frame.neckX) / 2, 1);
+    } else {
+      expect(castOn?.text).toBe(`CO ${edgeLabel}`);
+      expect(bindOff?.text).toBe(`BO ${edgeLabel}`);
+    }
     expect(notationCastOn?.text).toBe(formatCastOnNotation(edge));
     expect(notationBindOff?.text).toBe(formatBindOffNotation(edge));
     expect(castOn!.y).toBeGreaterThan(bindOff!.y);

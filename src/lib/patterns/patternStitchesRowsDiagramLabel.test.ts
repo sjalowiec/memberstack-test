@@ -63,11 +63,17 @@ describe("Sideways Stitches & Rows measurement labels", () => {
     return buildSidewaysCardiganPatternDiagramSvg(model);
   }
 
-  it("places the finished length beside the garment-length stitch count", () => {
+  it("places finished length on the hem-to-shoulder span, not the straight front", () => {
     const diagram = svg("in");
     const length = formatPatternDiagramMeasurement(input.garmentLengthInches, "in");
+    const castOn = /data-role="cast-on-sts"[\s\S]*?<\/text>/.exec(diagram)?.[0] ?? "";
+    const bindOff = /data-role="bind-off-sts"[\s\S]*?<\/text>/.exec(diagram)?.[0] ?? "";
+    const finished = /data-role="finished-length"[\s\S]*?<\/text>/.exec(diagram)?.[0] ?? "";
     expect(diagram).toContain(`sts</tspan><tspan`);
-    expect(diagram).toContain(length);
+    expect(diagram).toContain('data-role="dim-finished-length"');
+    expect(finished).toContain(length);
+    expect(castOn).not.toContain(length);
+    expect(bindOff).not.toContain(length);
     expect(diagram).not.toContain(`sts (${length})`);
     expect(diagram).toContain(`CO `);
     expect(diagram).toContain(`BO `);

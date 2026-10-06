@@ -536,6 +536,8 @@ describe("single-diagram print for Sideways body and sleeve", () => {
           const edge = sidewaysDiagramEdgeStitchCount(model.calc);
           expect(svg).not.toContain('data-role="length-sts"');
           expect(svg).not.toContain('data-role="dim-finished-back-length"');
+          if (style === "cardigan") expect(svg).toContain('data-role="dim-finished-length"');
+          else expect(svg).not.toContain('data-role="dim-finished-length"');
           expect(svg).toContain(`CO ${edge} sts`);
           expect(svg).toContain(`BO ${edge} sts`);
           expect(svg).toContain(unit === "cm" ? "cm" : "in");
