@@ -5,10 +5,9 @@
  * viewBox width so type holds its size when the SVG is `width: 100%`
  * (`screen px = fontSize / viewBoxWidth × art width`).
  *
- * The floors are Build/Edit sizes. They are larger than Hat's role floors
- * because these garment diagrams are much wider than the Hat canvas, and the
- * measurement text has to stay readable at desktop size. Hat's own sizes are
- * not changed.
+ * The floors are Build/Edit sizes, chosen so a Sideways body diagram about
+ * 750px wide shows a 22px value, an 18px name, and a 14–15px note.
+ * Hat's own sizes are not changed.
  */
 import {
   HAT_DIAGRAM_FONT_FAMILY,
@@ -33,10 +32,10 @@ export const BUILD_DIAGRAM_DESKTOP_ART_PX = 750;
  * section matches the name so a structural word does not outrank the number.
  */
 export const BUILD_DIAGRAM_TYPE_FLOOR = {
-  value: 44,
-  name: 32,
-  support: 24,
-  section: 32,
+  value: 13,
+  name: 11,
+  support: 8,
+  section: 11,
 } as const;
 
 export const BUILD_DIAGRAM_TYPE_WEIGHT = {

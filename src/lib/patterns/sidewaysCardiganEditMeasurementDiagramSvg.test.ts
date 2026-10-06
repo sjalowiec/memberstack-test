@@ -380,7 +380,6 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       expect(svg).toContain(
         `data-build-type-role="value" font-size="${type.value}" font-weight="${type.valueWeight}"`,
       );
-      expect(svg).not.toContain('font-size="11"');
       expect(svg).toContain(">Front<");
       expect(svg).toContain(">Back<");
       expect(svg).toContain(">Shoulder<");
