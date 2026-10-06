@@ -3,8 +3,9 @@
  *
  * Finished-garment profile sized from inch measurements — not stitch or row counts.
  * Cardigan: unrolled sideways body (fronts above and below the back, V-neck at each
- * center front). Pullover: closed body that starts at an underarm (scrap-on / graft),
- * not at center front.
+ * center front). Pullover Build/Edit: closed body only, starting at an underarm
+ * (scrap-on / graft) with a V-neck. No sleeve is drawn on that body diagram.
+ * The finished-pattern pullover still attaches a sleeve from the same frame.
  */
 
 import {
@@ -94,6 +95,14 @@ export type SidewaysCardiganEditMeasurementDiagramInput = {
   displayUnit?: MeasurementDisplayUnit;
 };
 
+/**
+ * Finished-pattern pullover keeps an attached sleeve on this frame.
+ * The Build/Edit body diagram passes false so the body scales from body inches only.
+ */
+export type SidewaysCardiganEditMeasurementFrameOptions = {
+  includeAttachedSleeve?: boolean;
+};
+
 export type SidewaysCardiganSummaryDerivedInches = {
   armholeDepthInches: number;
   halfNeckOpeningInches: number;
@@ -175,6 +184,7 @@ function scaled(inches: number, pxPerInch: number): number {
 function buildFrame(
   measurements: SidewaysCardiganEditMeasurementInput,
   garmentStyle: SidewaysCardiganGarmentStyle,
+  options?: SidewaysCardiganEditMeasurementFrameOptions,
 ): SidewaysCardiganEditMeasurementFrame {
   const derived = derivedSidewaysSummaryInches(measurements);
   const bust = positive(measurements.finishedBustInches, 40);
@@ -194,8 +204,10 @@ function buildFrame(
   const contentW = 320;
   const contentH = 540;
   const isPullover = garmentStyle === "pullover";
-  // Cardigan Body has no sleeve silhouette; do not spend horizontal scale on it.
-  const sleeveBudget = isPullover ? sleeveLen * 0.85 : 0;
+  // Default keeps the finished-pattern pullover sleeve. Build/Edit body passes false.
+  // Cardigan body never spends horizontal scale on a sleeve.
+  const includeAttachedSleeve = isPullover && options?.includeAttachedSleeve !== false;
+  const sleeveBudget = includeAttachedSleeve ? sleeveLen * 0.85 : 0;
   const pxPerInch = Math.min(
     contentW / Math.max(length + sleeveBudget, 1),
     contentH / Math.max(bust, 1),
@@ -228,9 +240,9 @@ function buildFrame(
   const resolvedSecondVStartY = isPullover ? pulloverSecondVEndY : secondArmholeY + shoulderH;
   const bottomY = isPullover ? backNeckEndY + shoulderH : resolvedSecondVStartY + vH;
 
-  const sleeveLenPx = isPullover ? Math.max(MIN_SLEEVE_L, scaled(sleeveLen, pxPerInch)) : 0;
-  const upperHalf = isPullover ? Math.max(MIN_SLEEVE_W, scaled(upperFlat, pxPerInch)) : 0;
-  const wristHalf = isPullover ? Math.max(14, scaled(wristFlat, pxPerInch)) : 0;
+  const sleeveLenPx = includeAttachedSleeve ? Math.max(MIN_SLEEVE_L, scaled(sleeveLen, pxPerInch)) : 0;
+  const upperHalf = includeAttachedSleeve ? Math.max(MIN_SLEEVE_W, scaled(upperFlat, pxPerInch)) : 0;
+  const wristHalf = includeAttachedSleeve ? Math.max(14, scaled(wristFlat, pxPerInch)) : 0;
   const attachY = isPullover ? secondArmholeY : firstArmholeY;
 
   return {
@@ -801,7 +813,7 @@ export function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): {
   width: number;
   height: number;
 } {
-  if (frame.garmentStyle === "pullover") {
+  if (frame.garmentStyle === "pullover" && frame.sleeve.farX > frame.neckX) {
     const maxX = frame.sleeve.farX + 40;
     const maxY = frame.bottomY + 48;
     return {
@@ -824,8 +836,9 @@ export function viewBoxFor(frame: SidewaysCardiganEditMeasurementFrame): {
 
 export function buildSidewaysCardiganEditMeasurementFrame(
   input: SidewaysCardiganEditMeasurementDiagramInput,
+  options?: SidewaysCardiganEditMeasurementFrameOptions,
 ): SidewaysCardiganEditMeasurementFrame {
-  return buildFrame(input.measurements, input.garmentStyle);
+  return buildFrame(input.measurements, input.garmentStyle, options);
 }
 
 /**
@@ -952,23 +965,18 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
   input: SidewaysCardiganEditMeasurementDiagramInput,
 ): string {
   const garmentStyle = input.garmentStyle === "pullover" ? "pullover" : "cardigan";
-  const frame = buildFrame(input.measurements, garmentStyle);
+  const frame = buildFrame(input.measurements, garmentStyle, { includeAttachedSleeve: false });
   const geometry = viewBoxFor(frame);
   const unit = input.displayUnit === "cm" ? "cm" : "in";
   const start = garmentStyle === "pullover" ? "underarm" : "center-front";
   const bodyD = garmentStyle === "pullover" ? pulloverBodyPath(frame) : cardiganBodyPath(frame);
   const aria =
     garmentStyle === "pullover"
-      ? "Sideways pullover measurement diagram starting at the underarm"
+      ? "Sideways pullover body measurement diagram starting at the underarm"
       : "Sideways cardigan measurement diagram starting at center front";
-  const sleeve =
-    garmentStyle === "pullover"
-      ? `<path data-role="sleeve-outline" d="${sleevePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`
-      : "";
   const compose = (type: BuildDiagramTypography) =>
     [
       `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
-      sleeve,
       drawArmholeAndBack(frame),
       garmentStyle === "pullover"
         ? drawPulloverMarkers(frame, { typography: type })

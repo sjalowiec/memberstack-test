@@ -170,8 +170,53 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(cardigan).not.toContain('data-role="sleeve-outline"');
     expect(cardigan).not.toContain("dim-sleeve-length");
     expect(cardigan).not.toContain("dim-wrist");
-    expect(pullover).toContain('data-role="sleeve-outline"');
+    expect(pullover).not.toContain('data-role="sleeve-outline"');
+    expect(pullover).not.toContain("dim-sleeve-length");
+    expect(pullover).not.toContain("dim-wrist");
+    expect(pullover).not.toContain("dim-upper-arm");
     expect(pullover).toContain('data-role="underarm-start"');
+    expect(pullover).toContain('data-role="v-neck"');
+    expect(pullover).toContain('data-closed-front="true"');
+  });
+
+  it("scales the Pullover body from bust and length and leaves sleeve measurements off the body diagram", () => {
+    const pullover = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: BASE,
+    });
+    const bodyPath = /data-role="body-outline"[^>]* d="([^"]+)"/;
+    expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
+    expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedLength}"`);
+    expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.neckOpeningWidth}"`);
+    expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
+    expect(pullover).toContain(">Shoulder<");
+    expect(pullover).toContain(">½ neck opening<");
+    expect(pullover).toContain(">Front<");
+    expect(pullover).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength}"`);
+    expect(pullover).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
+    expect(pullover).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist}"`);
+
+    const longerSleeve = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: { ...BASE, sleeveLengthInches: 24, wristInches: 9 },
+    });
+    expect(bodyPath.exec(longerSleeve)?.[1]).toBe(bodyPath.exec(pullover)?.[1]);
+
+    const longerBody = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: { ...BASE, finishedLengthInches: 30 },
+    });
+    expect(bodyPath.exec(longerBody)?.[1]).not.toBe(bodyPath.exec(pullover)?.[1]);
+
+    const bust = dimSegment(pullover, "dim-finished-bust");
+    const length = dimSegment(pullover, "dim-finished-back-length");
+    expect(bust).not.toBeNull();
+    expect(length).not.toBeNull();
+    expect(bust!.length / BASE.finishedBustInches).toBeCloseTo(
+      length!.length / BASE.finishedLengthInches,
+      2,
+    );
+    expect(diagramGeometryStaysInsideViewBox(pullover)).toBe(true);
   });
 
   it("labels front, back, and shoulder sections on both Cardigan and Pullover", () => {
@@ -365,7 +410,9 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       },
     ];
     for (const input of samples) {
-      const frame = buildSidewaysCardiganEditMeasurementFrame(input);
+      const frame = buildSidewaysCardiganEditMeasurementFrame(input, {
+        includeAttachedSleeve: false,
+      });
       const geometry = viewBoxFor(frame);
       const type = buildDiagramTypographyForViewBox(geometry.width);
       const svg = buildSidewaysCardiganEditMeasurementDiagramSvg(input);
@@ -397,7 +444,12 @@ describe("Sideways Summary/Edit measurement SVG", () => {
       measurements: BASE,
     });
     const pulloverType = buildDiagramTypographyForViewBox(
-      viewBoxFor(buildSidewaysCardiganEditMeasurementFrame({ garmentStyle: "pullover", measurements: BASE })).width,
+      viewBoxFor(
+        buildSidewaysCardiganEditMeasurementFrame(
+          { garmentStyle: "pullover", measurements: BASE },
+          { includeAttachedSleeve: false },
+        ),
+      ).width,
     );
     expect(pullover).toMatch(
       new RegExp(

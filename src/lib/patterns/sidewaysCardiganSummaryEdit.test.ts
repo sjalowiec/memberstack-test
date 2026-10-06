@@ -226,7 +226,8 @@ describe("Sideways Summary/Edit Cardigan vs Pullover diagrams", () => {
     expect(cardigan).toContain('data-role="back-panel"');
     expect(cardigan).toContain('data-role="second-front"');
     expect(cardigan).not.toContain('data-role="sleeve-outline"');
-    expect(pullover).toContain('data-role="sleeve-outline"');
+    expect(pullover).not.toContain('data-role="sleeve-outline"');
+    expect(pullover).not.toContain("dim-sleeve-length");
     expect(pullover).toContain('data-cardigan-structure="underarm-graft"');
     expect(cardigan).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
     expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
