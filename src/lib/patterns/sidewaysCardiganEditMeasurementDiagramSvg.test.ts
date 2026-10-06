@@ -492,6 +492,160 @@ describe("Sideways Summary/Edit measurement SVG", () => {
   });
 });
 
+const SLEEVE_EXAMPLE = {
+  ...BASE,
+  finishedUpperArmInches: 18,
+  wristInches: 8.5,
+  sleeveLengthInches: 16.75,
+};
+
+function sleeveDiagram(
+  measurements: typeof SLEEVE_EXAMPLE,
+  garmentStyle: "cardigan" | "pullover" = "cardigan",
+) {
+  return buildSidewaysCardiganEditMeasurementDiagramSvg(
+    { garmentStyle, measurements },
+    "sleeve",
+  );
+}
+
+describe("Sideways sleeve Build/Edit proportional geometry", () => {
+  it("draws 18 in upper arm, 8.5 in wrist, and 16.75 in length on one scale", () => {
+    const svg = sleeveDiagram(SLEEVE_EXAMPLE);
+    const shape = sleeveSilhouette(svg);
+    const vb = parseViewBox(svg);
+    expect(svg).toContain('data-sleeve-geometry="proportional"');
+    expect(svg).toContain('data-finished-upper-arm-inches="18"');
+    expect(svg).toContain('data-wrist-inches="8.5"');
+    expect(svg).toContain('data-sleeve-length-inches="16.75"');
+    expect(svg).not.toContain('viewBox="0 0 430 520"');
+    expect(shape.upperWidth / shape.wristWidth).toBeCloseTo(18 / 8.5, 4);
+    expect(shape.length / shape.upperWidth).toBeCloseTo(16.75 / 18, 4);
+    expect(shape.length / 16.75).toBeCloseTo(shape.upperWidth / 18, 4);
+    expect(shape.wristWidth / 8.5).toBeCloseTo(shape.upperWidth / 18, 4);
+    expect(dimSegment(svg, "dim-upper-arm")!.length).toBeCloseTo(shape.upperWidth, 2);
+    expect(dimSegment(svg, "dim-wrist")!.length).toBeCloseTo(shape.wristWidth, 2);
+    expect(dimSegment(svg, "dim-sleeve-length")!.length).toBeCloseTo(shape.length, 2);
+    expect(vb).not.toBeNull();
+    expect(shape.midX).toBeCloseTo(vb!.x + vb!.width / 2, 2);
+    expect(shape.upperWidth).toBeLessThan(vb!.width);
+    expect(shape.length).toBeLessThan(vb!.height);
+    expect(diagramGeometryStaysInsideViewBox(svg)).toBe(true);
+  });
+
+  it("keeps sleeve-length, upper-arm, and wrist chip targets on their dimension lines", () => {
+    const svg = sleeveDiagram(SLEEVE_EXAMPLE);
+    const vb = parseViewBox(svg)!;
+    const upper = dimLineFromGroup(dimGroup(svg, "dim-upper-arm"))!;
+    const wrist = dimLineFromGroup(dimGroup(svg, "dim-wrist"))!;
+    const length = dimLineFromGroup(dimGroup(svg, "dim-sleeve-length"))!;
+    const upperTarget = targetPoint(svg, SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm);
+    const wristTarget = targetPoint(svg, SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist);
+    const lengthTarget = targetPoint(svg, SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.sleeveLength);
+    expect(upperTarget.cx).toBeCloseTo((upper.x1 + upper.x2) / 2, 2);
+    expect(upperTarget.cy).toBeCloseTo(upper.y1, 2);
+    expect(wristTarget.cx).toBeCloseTo((wrist.x1 + wrist.x2) / 2, 2);
+    expect(wristTarget.cy).toBeCloseTo(wrist.y1, 2);
+    expect(lengthTarget.cx).toBeCloseTo(length.x1, 2);
+    expect(lengthTarget.cy).toBeCloseTo((length.y1 + length.y2) / 2, 2);
+    expect(length.x1 - vb.x).toBeGreaterThanOrEqual(90);
+    expect(vb.x + vb.width - upperTarget.cx).toBeGreaterThanOrEqual(160);
+    expect(upper.y1 - vb.y).toBeGreaterThanOrEqual(40);
+    expect(vb.y + vb.height - wrist.y1).toBeGreaterThanOrEqual(56);
+    expect(svg).toContain('data-role="dim-extension"');
+    expect(svg).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
+  });
+
+  it("changes only the matching edge when upper arm, wrist, or sleeve length changes", () => {
+    const base = sleeveSilhouette(sleeveDiagram(SLEEVE_EXAMPLE));
+    const wider = sleeveSilhouette(
+      sleeveDiagram({ ...SLEEVE_EXAMPLE, finishedUpperArmInches: 22 }),
+    );
+    const tighter = sleeveSilhouette(sleeveDiagram({ ...SLEEVE_EXAMPLE, wristInches: 6.5 }));
+    const longer = sleeveSilhouette(
+      sleeveDiagram({ ...SLEEVE_EXAMPLE, sleeveLengthInches: 20.75 }),
+    );
+    expect(wider.upperWidth / base.upperWidth).toBeCloseTo(22 / 18, 4);
+    expect(wider.wristWidth).toBeCloseTo(base.wristWidth, 2);
+    expect(wider.length).toBeCloseTo(base.length, 2);
+    expect(wider.length / 16.75).toBeCloseTo(wider.upperWidth / 22, 4);
+
+    expect(tighter.wristWidth / base.wristWidth).toBeCloseTo(6.5 / 8.5, 4);
+    expect(tighter.upperWidth).toBeCloseTo(base.upperWidth, 2);
+    expect(tighter.length).toBeCloseTo(base.length, 2);
+    expect(tighter.upperWidth / 18).toBeCloseTo(tighter.wristWidth / 6.5, 4);
+
+    expect(longer.length / base.length).toBeCloseTo(20.75 / 16.75, 4);
+    expect(longer.upperWidth).toBeCloseTo(base.upperWidth, 2);
+    expect(longer.wristWidth).toBeCloseTo(base.wristWidth, 2);
+    expect(longer.upperWidth / 18).toBeCloseTo(longer.length / 20.75, 4);
+  });
+
+  it("grows the viewBox with the sleeve instead of refitting a fixed canvas", () => {
+    const sleeveFn = rendererSrc.slice(
+      rendererSrc.indexOf("function buildSidewaysSleeveLayout"),
+      rendererSrc.indexOf("function sleeveLengthDimX"),
+    );
+    expect(sleeveFn).toContain("upperArmInches * pxPerInch");
+    expect(sleeveFn).toContain("wristInches * pxPerInch");
+    expect(sleeveFn).toContain("sleeveLengthInches * pxPerInch");
+    expect(sleeveFn).not.toContain("/ 2");
+    expect(sleeveFn).not.toContain("DS_VB_");
+    expect(sleeveFn).not.toContain("DS_SLEEVE_REF_");
+    const shortBox = parseViewBox(sleeveDiagram(SLEEVE_EXAMPLE))!;
+    const longBox = parseViewBox(
+      sleeveDiagram({ ...SLEEVE_EXAMPLE, sleeveLengthInches: 20.75 }),
+    )!;
+    const shortShape = sleeveSilhouette(sleeveDiagram(SLEEVE_EXAMPLE));
+    const longShape = sleeveSilhouette(
+      sleeveDiagram({ ...SLEEVE_EXAMPLE, sleeveLengthInches: 20.75 }),
+    );
+    expect(longBox.height - shortBox.height).toBeCloseTo(longShape.length - shortShape.length, 2);
+    expect(longBox.width).toBeCloseTo(shortBox.width, 2);
+    expect(longBox.height / longBox.width).not.toBeCloseTo(shortBox.height / shortBox.width, 2);
+    const cardigan = sleeveSilhouette(sleeveDiagram(SLEEVE_EXAMPLE, "cardigan"));
+    const pullover = sleeveSilhouette(sleeveDiagram(SLEEVE_EXAMPLE, "pullover"));
+    expect(pullover.upperWidth).toBeCloseTo(cardigan.upperWidth, 4);
+    expect(pullover.wristWidth).toBeCloseTo(cardigan.wristWidth, 4);
+    expect(pullover.length).toBeCloseTo(cardigan.length, 4);
+  });
+});
+
+function sleeveSilhouette(svg: string): {
+  upperWidth: number;
+  wristWidth: number;
+  length: number;
+  midX: number;
+} {
+  const d = /data-role="sleeve-outline"[^>]*\bd="([^"]+)"/.exec(svg)?.[1] ?? "";
+  const nums = [...d.matchAll(/-?\d+(?:\.\d+)?/g)].map((match) => Number(match[0]));
+  const points: Array<{ x: number; y: number }> = [];
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    const x = nums[i];
+    const y = nums[i + 1];
+    if (x === undefined || y === undefined) continue;
+    points.push({ x, y });
+  }
+  const ys = points.map((point) => point.y);
+  const top = Math.min(...ys);
+  const bottom = Math.max(...ys);
+  const topPts = points.filter((point) => Math.abs(point.y - top) < 0.05);
+  const bottomPts = points.filter((point) => Math.abs(point.y - bottom) < 0.05);
+  const upperLeft = Math.min(...topPts.map((point) => point.x));
+  const upperRight = Math.max(...topPts.map((point) => point.x));
+  return {
+    upperWidth: upperRight - upperLeft,
+    wristWidth: Math.max(...bottomPts.map((point) => point.x)) - Math.min(...bottomPts.map((point) => point.x)),
+    length: bottom - top,
+    midX: (upperLeft + upperRight) / 2,
+  };
+}
+
+function targetPoint(svg: string, id: string): { cx: number; cy: number } {
+  const match = new RegExp(`<circle id="${id}" cx="([^"]+)" cy="([^"]+)"`).exec(svg);
+  return { cx: Number(match?.[1]), cy: Number(match?.[2]) };
+}
+
 function parseViewBox(svg: string): { x: number; y: number; width: number; height: number } | null {
   const vb = /viewBox="([^"]+)"/.exec(svg);
   if (!vb) return null;

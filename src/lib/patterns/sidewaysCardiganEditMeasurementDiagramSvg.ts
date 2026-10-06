@@ -17,8 +17,6 @@ import {
   DS_FILL,
   DS_MUTED,
   DS_STROKE,
-  DS_VB_H,
-  DS_VB_W,
   endCap,
   escapeXml,
   fmtNum,
@@ -827,64 +825,107 @@ export function buildSidewaysCardiganEditMeasurementFrame(
   return buildFrame(input.measurements, input.garmentStyle);
 }
 
-const DS_SLEEVE_PAD_TOP = 64;
-const DS_SLEEVE_PAD_BOTTOM = 68;
-const DS_SLEEVE_PAD_LEFT = 84;
-const DS_SLEEVE_PAD_RIGHT = 78;
-const DS_SLEEVE_REF_LENGTH_IN = 22;
-const DS_SLEEVE_REF_FLAT_WIDTH_IN = 9;
-const DS_SLEEVE_CONTENT_FILL = 0.78;
-const DS_SLEEVE_DIM = {
-  upperArm: 20,
-  cuffCirc: 24,
-  sleeveLength: 32,
+/**
+ * One garment inch — upper arm, wrist, and sleeve length — is this many SVG
+ * user-units on both axes. The viewBox grows around that silhouette. It is not
+ * fitted into the Drop Shoulder 430×520 canvas.
+ */
+const SIDEWAYS_SLEEVE_PX_PER_INCH = 16;
+const SIDEWAYS_SLEEVE_DIM = {
+  upperArm: 28,
+  wrist: 36,
+  sleeveLength: 56,
+} as const;
+/**
+ * Room past the dimension lines for HTML measurement chips.
+ * Upper arm and wrist chips grow right from the center anchor.
+ * The sleeve-length chip is centered on the length line.
+ */
+const SIDEWAYS_SLEEVE_GUTTER = {
+  chipPastCenter: 168,
+  chipPastLength: 96,
+  top: 48,
+  bottom: 64,
+  edge: 8,
 } as const;
 
-function buildSidewaysSleeveFrame(
+type SidewaysSleeveDiagramLayout = {
+  frame: DropShoulderSleeveDiagramFrame;
+  viewBox: { x: number; y: number; width: number; height: number };
+  pxPerInch: number;
+  upperArmInches: number;
+  wristInches: number;
+  sleeveLengthInches: number;
+};
+
+function buildSidewaysSleeveLayout(
   measurements: SidewaysCardiganEditMeasurementInput,
-): DropShoulderSleeveDiagramFrame {
-  const lengthIn = Math.max(1, measurements.sleeveLengthInches);
-  const upperFlatIn = Math.max(0.5, measurements.finishedUpperArmInches / 2);
-  const cuffFlatIn = Math.max(0.4, measurements.wristInches / 2);
-  const contentW = DS_VB_W - DS_SLEEVE_PAD_LEFT - DS_SLEEVE_PAD_RIGHT;
-  const contentH = DS_VB_H - DS_SLEEVE_PAD_TOP - DS_SLEEVE_PAD_BOTTOM;
-  const envelopeW = Math.max(upperFlatIn, cuffFlatIn, DS_SLEEVE_REF_FLAT_WIDTH_IN);
-  const envelopeH = Math.max(lengthIn, DS_SLEEVE_REF_LENGTH_IN);
-  const pxPerInch =
-    Math.min(contentW / envelopeW, contentH / envelopeH) * DS_SLEEVE_CONTENT_FILL;
+): SidewaysSleeveDiagramLayout {
+  const upperArmInches = positive(measurements.finishedUpperArmInches, 12);
+  const wristInches = positive(measurements.wristInches, 7);
+  const sleeveLengthInches = positive(measurements.sleeveLengthInches, 16);
+  const pxPerInch = SIDEWAYS_SLEEVE_PX_PER_INCH;
   const local = buildDropShoulderMeasurementSleeveFrame({
-    upperArmWidthPx: upperFlatIn * pxPerInch,
-    cuffWidthPx: cuffFlatIn * pxPerInch,
-    sleeveLengthPx: lengthIn * pxPerInch,
+    upperArmWidthPx: upperArmInches * pxPerInch,
+    cuffWidthPx: wristInches * pxPerInch,
+    sleeveLengthPx: sleeveLengthInches * pxPerInch,
     cuffDepthPx: 0,
   });
-  const sleeveH = local.bottom - local.top;
-  const midX = DS_VB_W / 2;
-  const desiredTop = (DS_VB_H - sleeveH) / 2;
-  const top = Math.min(
-    DS_VB_H - DS_SLEEVE_PAD_BOTTOM - sleeveH,
-    Math.max(DS_SLEEVE_PAD_TOP, desiredTop),
-  );
-  return offsetDropShoulderSleeveDiagramFrame(local, midX, top);
+  const lengthX =
+    Math.min(local.wristLeft, local.upperLeft) - SIDEWAYS_SLEEVE_DIM.sleeveLength;
+  const leftInk = lengthX - SIDEWAYS_SLEEVE_GUTTER.chipPastLength - SIDEWAYS_SLEEVE_GUTTER.edge;
+  const rightInk =
+    Math.max(local.upperRight, local.wristRight, local.midX + SIDEWAYS_SLEEVE_GUTTER.chipPastCenter) +
+    SIDEWAYS_SLEEVE_GUTTER.edge;
+  const half = Math.max(local.midX - leftInk, rightInk - local.midX);
+  const top = SIDEWAYS_SLEEVE_DIM.upperArm + SIDEWAYS_SLEEVE_GUTTER.top;
+  const frame = offsetDropShoulderSleeveDiagramFrame(local, half, top);
+  const height = frame.wristY + SIDEWAYS_SLEEVE_DIM.wrist + SIDEWAYS_SLEEVE_GUTTER.bottom;
+  return {
+    frame,
+    viewBox: { x: 0, y: 0, width: half * 2, height },
+    pxPerInch,
+    upperArmInches,
+    wristInches,
+    sleeveLengthInches,
+  };
+}
+
+function sleeveLengthDimX(frame: DropShoulderSleeveDiagramFrame): number {
+  return Math.min(frame.wristLeft, frame.upperLeft) - SIDEWAYS_SLEEVE_DIM.sleeveLength;
 }
 
 function drawSidewaysSleeveTargets(frame: DropShoulderSleeveDiagramFrame): string {
   const t = SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS;
-  const lengthX = Math.min(frame.wristLeft, frame.upperLeft) - DS_SLEEVE_DIM.sleeveLength;
+  const lengthX = sleeveLengthDimX(frame);
   return [
     `<g data-role="measurement-targets">`,
-    targetCircle(t.upperArm, frame.midX, frame.upperArmY - DS_SLEEVE_DIM.upperArm),
+    targetCircle(t.upperArm, frame.midX, frame.upperArmY - SIDEWAYS_SLEEVE_DIM.upperArm),
     targetCircle(t.sleeveLength, lengthX, (frame.top + frame.bottom) / 2),
-    targetCircle(t.wrist, frame.midX, frame.wristY + DS_SLEEVE_DIM.cuffCirc),
+    targetCircle(t.wrist, frame.midX, frame.wristY + SIDEWAYS_SLEEVE_DIM.wrist),
     `</g>`,
   ].join("");
 }
 
-function drawSidewaysSleeveDimensions(frame: DropShoulderSleeveDiagramFrame): string {
-  const lengthX = Math.min(frame.wristLeft, frame.upperLeft) - DS_SLEEVE_DIM.sleeveLength;
+function drawSidewaysSleeveLeaders(frame: DropShoulderSleeveDiagramFrame): string {
+  const lengthX = sleeveLengthDimX(frame);
+  const upperY = frame.upperArmY - SIDEWAYS_SLEEVE_DIM.upperArm;
+  const wristY = frame.wristY + SIDEWAYS_SLEEVE_DIM.wrist;
   return [
-    hDim(frame.upperLeft, frame.upperRight, frame.upperArmY - DS_SLEEVE_DIM.upperArm, "dim-upper-arm"),
-    hDim(frame.wristLeft, frame.wristRight, frame.wristY + DS_SLEEVE_DIM.cuffCirc, "dim-wrist"),
+    extTowardDim(frame.upperLeft, frame.upperArmY, frame.upperLeft, upperY),
+    extTowardDim(frame.upperRight, frame.upperArmY, frame.upperRight, upperY),
+    extTowardDim(frame.wristLeft, frame.wristY, frame.wristLeft, wristY),
+    extTowardDim(frame.wristRight, frame.wristY, frame.wristRight, wristY),
+    extTowardDim(frame.upperLeft, frame.top, lengthX, frame.top),
+    extTowardDim(frame.wristLeft, frame.bottom, lengthX, frame.bottom),
+  ].join("");
+}
+
+function drawSidewaysSleeveDimensions(frame: DropShoulderSleeveDiagramFrame): string {
+  const lengthX = sleeveLengthDimX(frame);
+  return [
+    hDim(frame.upperLeft, frame.upperRight, frame.upperArmY - SIDEWAYS_SLEEVE_DIM.upperArm, "dim-upper-arm"),
+    hDim(frame.wristLeft, frame.wristRight, frame.wristY + SIDEWAYS_SLEEVE_DIM.wrist, "dim-wrist"),
     vDim(lengthX, frame.top, frame.bottom, "dim-sleeve-length"),
   ].join("");
 }
@@ -893,11 +934,14 @@ export function buildSidewaysCardiganEditSleeveMeasurementDiagramSvg(
   input: SidewaysCardiganEditMeasurementDiagramInput,
 ): string {
   const unit = input.displayUnit === "cm" ? "cm" : "in";
-  const frame = buildSidewaysSleeveFrame(input.measurements);
+  const layout = buildSidewaysSleeveLayout(input.measurements);
+  const { frame, viewBox } = layout;
+  const style = input.garmentStyle === "pullover" ? "pullover" : "cardigan";
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sideways sweater sleeve measurement diagram" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${input.garmentStyle === "pullover" ? "pullover" : "cardigan"}" data-sideways-edit-piece="sleeve" data-sleeve-cap="false" data-display-unit="${unit}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(viewBox.x)} ${fmtNum(viewBox.y)} ${fmtNum(viewBox.width)} ${fmtNum(viewBox.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sideways sweater sleeve measurement diagram" focusable="false" class="express-mbp-art" data-sideways-edit-diagram="${style}" data-sideways-edit-piece="sleeve" data-sleeve-cap="false" data-sleeve-geometry="proportional" data-sleeve-px-per-inch="${fmtNum(layout.pxPerInch)}" data-finished-upper-arm-inches="${fmtNum(layout.upperArmInches)}" data-wrist-inches="${fmtNum(layout.wristInches)}" data-sleeve-length-inches="${fmtNum(layout.sleeveLengthInches)}" data-display-unit="${unit}">`,
     `<path data-role="sleeve-outline" data-sleeve-cap="false" d="${dropShoulderSleeveBodyPath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     drawSleeveCuffJoin(frame),
+    drawSidewaysSleeveLeaders(frame),
     drawSidewaysSleeveDimensions(frame),
     drawSidewaysSleeveTargets(frame),
     `</svg>`,
