@@ -16,6 +16,7 @@ import {
   listingGaugeLabel,
   storefrontBrandPanels,
 } from "../../lib/machines/machineSalesListings";
+import { sanitizeMachineSalesShortHtml } from "../../lib/machines/machineSalesShortHtml";
 
 // TEMPORARY: launch hold while shipping/ordering is finalized.
 // Flip MACHINE_SALES_HOLD to false in machineSalesHold.ts to restore the catalog below.
@@ -146,6 +147,7 @@ function formatPrice(value: number | null): string | null {
                                 ? product.specs.filter((_, specIndex) => specIndex !== gaugeIndex)
                                 : product.specs;
                             const lk150CourseBonus = product.id === "silver-reed-lk150";
+                            const shortHtml = sanitizeMachineSalesShortHtml(product.shortHtml);
                             return (
                               <article class="machine-card">
                                 <div class="machine-card-image-wrap">
@@ -181,8 +183,8 @@ function formatPrice(value: number | null): string | null {
                                       ))}
                                     </ul>
                                   )}
-                                  {product.shortHtml && (
-                                    <div class="machine-short" set:html={product.shortHtml} />
+                                  {shortHtml && (
+                                    <div class="machine-short" set:html={shortHtml} />
                                   )}
                                   {priceLabel && <p class="machine-price">{priceLabel}</p>}
                                   {lk150CourseBonus && (
@@ -707,6 +709,25 @@ function formatPrice(value: number | null): string | null {
     color: #5a6b47;
     line-height: 1.55;
     margin: 1rem 0 0;
+  }
+
+  .machine-short :global(p) {
+    margin: 0.75rem 0 0;
+  }
+
+  .machine-short :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .machine-short :global(ul),
+  .machine-short :global(ol) {
+    margin: 0.6rem 0 0;
+    padding-left: 1.25rem;
+  }
+
+  .machine-short :global(a) {
+    color: var(--kbm-green);
+    font-weight: 600;
   }
 
   .machine-price {

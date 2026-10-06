@@ -191,6 +191,9 @@ describe("machine sales hold listings", () => {
       "utf-8"
     );
     expect(page).toContain("getStorefrontHoldListings");
+    expect(page).toContain("sanitizeMachineSalesShortHtml");
+    expect(page).toContain("set:html={shortHtml}");
+    expect(page).not.toContain("set:html={product.shortHtml}");
     expect(page).not.toContain("TEMP_SHOPIFY_PRODUCTS");
     expect(page).toContain("MACHINE_SALES_HOLD");
     expect(page).toContain("storefrontBrandPanels");
