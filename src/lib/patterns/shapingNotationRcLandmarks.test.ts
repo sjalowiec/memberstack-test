@@ -379,19 +379,44 @@ describe("shaping notation diagrams show cumulative RC landmarks", () => {
         expect(leader!.x1).toBeLessThan(frame.hemX);
         expect(label!.x).toBeLessThan(frame.hemX);
       }
-      const close = [...marks].sort((a, b) => a.rowCounter - b.rowCounter);
-      for (let i = 1; i < close.length; i += 1) {
-        const prev = close[i - 1]!;
-        const next = close[i]!;
-        if (next.rowCounter - prev.rowCounter > 6) continue;
-        const prevLabel = labels.find((item) => item.rc === prev.rowCounter)!;
-        const nextLabel = labels.find((item) => item.rc === next.rowCounter)!;
-        expect(Math.abs(prevLabel.y - nextLabel.y)).toBeGreaterThan(8);
-        expect(leaders.find((item) => item.rc === prev.rowCounter)!.y1).not.toBeCloseTo(
-          leaders.find((item) => item.rc === next.rowCounter)!.y1,
-          1,
-        );
+      const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1]?.split(/\s+/).map(Number) ?? [];
+      const labelBox = (rc: number) => {
+        const label = labels.find((item) => item.rc === rc)!;
+        const width = Math.max(label.size, `RC: ${String(rc).padStart(3, "0")}`.length * label.size * 0.55);
+        return {
+          left: label.x - width,
+          right: label.x,
+          top: label.y - label.size * 0.85,
+          bottom: label.y + label.size * 0.25,
+          x: label.x,
+          y: label.y,
+        };
+      };
+      let laneSeparated = 0;
+      for (const mark of marks) {
+        const box = labelBox(mark.rowCounter);
+        const point = sidewaysShapingRcVisualPoint(frame, mark);
+        expect(box.right).toBeLessThan(frame.hemX);
+        expect(box.left).toBeGreaterThan((viewBox[0] ?? 0) - 1);
+        expect(Math.abs(box.y - point.y)).toBeLessThanOrEqual(labels[0]!.size * 2);
       }
+      for (let i = 0; i < marks.length; i += 1) {
+        for (let j = i + 1; j < marks.length; j += 1) {
+          const a = labelBox(marks[i]!.rowCounter);
+          const b = labelBox(marks[j]!.rowCounter);
+          const overlap =
+            a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2;
+          expect(overlap, `RC ${marks[i]!.rowCounter} overlaps RC ${marks[j]!.rowCounter}`).toBe(false);
+          const aPoint = sidewaysShapingRcVisualPoint(frame, marks[i]!);
+          const bPoint = sidewaysShapingRcVisualPoint(frame, marks[j]!);
+          if (Math.abs(aPoint.y - bPoint.y) >= labels[0]!.size) continue;
+          const separated =
+            Math.abs(a.x - b.x) > 8 || Math.abs(a.y - b.y) > labels[0]!.size * 0.7;
+          expect(separated, `RC ${marks[i]!.rowCounter} collides with RC ${marks[j]!.rowCounter}`).toBe(true);
+          if (Math.abs(a.x - b.x) > 8) laneSeparated += 1;
+        }
+      }
+      expect(laneSeparated).toBeGreaterThan(0);
       return leaders.map((leader) => leader.rc);
     });
     expect(leaderRows[0]).not.toEqual(leaderRows[1]);

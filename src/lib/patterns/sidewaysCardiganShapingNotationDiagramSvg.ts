@@ -23,8 +23,9 @@ import {
   type ShapingNotationRcLandmark,
 } from "./shapingNotationRcLandmarks";
 import {
-  placeShapingNotationRcLandmarks,
-  renderShapingNotationRcLeaders,
+  SHAPING_NOTATION_RC_DASH,
+  SHAPING_NOTATION_RC_GUIDE,
+  SHAPING_NOTATION_RC_GUIDE_WIDTH,
 } from "./legoBlocks/shapingNotationRcLeaders";
 import {
   dropShoulderSleeveBodyRowSpans,
@@ -271,42 +272,154 @@ export function sidewaysShapingRcVisualPoint(
   };
 }
 
+type PulloverRcLabel = {
+  kind: string;
+  text: string;
+  rowCounter: number;
+  actionY: number;
+  outlineX: number;
+  width: number;
+  labelX: number;
+  labelY: number;
+};
+
+/**
+ * Close Pullover RC labels share a column and paint on top of each other.
+ * Park a crowded label in the outer left lane on its row, and set its partner
+ * in the inner lane just clear of that leader. Leaders stay on the calculated
+ * row and still end on the body edge.
+ */
+function layoutPulloverRcLabels(
+  landmarks: readonly ShapingNotationRcLandmark[],
+  frame: SidewaysCardiganEditMeasurementFrame,
+  fontSize: number,
+  minX: number,
+): PulloverRcLabel[] {
+  const charW = fontSize * 0.55;
+  const items: PulloverRcLabel[] = landmarks.map((landmark) => {
+    const point = sidewaysShapingRcVisualPoint(frame, landmark);
+    const text = formatShapingNotationRcLabel(landmark.rowCounter);
+    return {
+      kind: landmark.label,
+      text,
+      rowCounter: landmark.rowCounter,
+      actionY: point.y,
+      outlineX: point.x,
+      width: Math.max(fontSize, text.length * charW),
+      labelX: point.x,
+      labelY: point.y,
+    };
+  });
+  const labelWidth = Math.max(fontSize, ...items.map((item) => item.width));
+  let gutter = Math.max(4, Math.round(fontSize * 0.35));
+  let bodyGap = Math.max(4, Math.round(fontSize * 0.3));
+  const laneFits = (gap: number, laneGutter: number, lane: number) =>
+    frame.hemX - gap - lane * (labelWidth + laneGutter) - labelWidth >= minX;
+  while (!laneFits(bodyGap, gutter, 1) && (bodyGap > 4 || gutter > 4)) {
+    if (gutter > 4) gutter -= 1;
+    else bodyGap -= 1;
+  }
+  const maxLane = laneFits(bodyGap, gutter, 1) ? 1 : 0;
+  const lanePitch = labelWidth + gutter;
+  const boxOf = (item: PulloverRcLabel) => ({
+    left: item.labelX - item.width,
+    right: item.labelX,
+    top: item.labelY - fontSize * 0.85,
+    bottom: item.labelY + fontSize * 0.25,
+  });
+  const boxesOverlap = (item: PulloverRcLabel, other: PulloverRcLabel) => {
+    const a = boxOf(item);
+    const b = boxOf(other);
+    return a.left < b.right - 2 && a.right > b.left + 2 && a.top < b.bottom - 2 && a.bottom > b.top + 2;
+  };
+  const leaderHitsLabel = (item: PulloverRcLabel, other: PulloverRcLabel) => {
+    const box = boxOf(other);
+    return (
+      item.actionY > box.top &&
+      item.actionY < box.bottom &&
+      box.left < item.outlineX - 1 &&
+      box.right > item.labelX + 1
+    );
+  };
+  const placed: PulloverRcLabel[] = [];
+  const ordered = [...items].sort((a, b) => a.actionY - b.actionY || a.rowCounter - b.rowCounter);
+  const clearAt = (item: PulloverRcLabel) =>
+    item.labelX - item.width >= minX &&
+    !placed.some((other) => boxesOverlap(item, other) || leaderHitsLabel(item, other) || leaderHitsLabel(other, item));
+  for (const item of ordered) {
+    const crowded =
+      maxLane > 0 &&
+      ordered.some(
+        (other) =>
+          other !== item &&
+          !placed.includes(other) &&
+          Math.abs(other.actionY - item.actionY) < fontSize,
+      );
+    const laneOrder = crowded ? [maxLane, 0] : [0, maxLane];
+    let best: { labelX: number; labelY: number } | null = null;
+    const maxShift = fontSize * 4;
+    for (let shift = 0; shift <= maxShift && !best; shift += 1) {
+      const dirs = shift === 0 ? [0] : [1, -1];
+      for (const dir of dirs) {
+        for (const lane of laneOrder) {
+          item.labelX = frame.hemX - bodyGap - lane * lanePitch;
+          item.labelY = item.actionY + dir * shift;
+          if (!clearAt(item)) continue;
+          best = { labelX: item.labelX, labelY: item.labelY };
+          break;
+        }
+        if (best) break;
+      }
+    }
+    if (best) {
+      item.labelX = best.labelX;
+      item.labelY = best.labelY;
+    } else {
+      item.labelX = frame.hemX - bodyGap;
+      item.labelY = item.actionY;
+    }
+    placed.push(item);
+  }
+  return placed;
+}
+
 function drawPulloverShapingRcLeaders(
   landmarks: readonly ShapingNotationRcLandmark[],
   frame: SidewaysCardiganEditMeasurementFrame,
   type: SidewaysPatternDiagramType,
   canvas: { x: number; y: number; width: number; height: number },
 ): string {
-  const placed = placeShapingNotationRcLandmarks({
-    landmarks: landmarks.map((landmark) => {
-      const point = sidewaysShapingRcVisualPoint(frame, landmark);
-      return {
-        id: `${landmark.label}-${landmark.rowCounter}`,
-        kind: landmark.label,
-        text: formatShapingNotationRcLabel(landmark.rowCounter),
-        actionY: point.y,
-        outlineX: point.x,
-        priority: landmark.priority,
-        rowCounter: landmark.rowCounter,
-      };
-    }),
-    side: "left",
-    fontSize: type.row,
-    bounds: {
-      minX: canvas.x + 2,
-      minY: canvas.y + type.row,
-      maxX: frame.hemX - 4,
-      maxY: canvas.y + canvas.height - type.row,
-    },
-    labelGap: Math.max(28, Math.round(type.row * 2.2)),
-  });
-  return renderShapingNotationRcLeaders({
-    placed,
-    fill: DS_MUTED,
-    font: DS_FONT,
-    escape: escapeXml,
-    formatNumber: fmtNum,
-  });
+  const fontSize = Math.max(12, type.row);
+  const placed = layoutPulloverRcLabels(landmarks, frame, fontSize, canvas.x + 2);
+  return [...placed]
+    .sort((a, b) => a.rowCounter - b.rowCounter)
+    .map((mark) => {
+      const shifted = Math.abs(mark.labelY - mark.actionY) > 0.5;
+      const stem = shifted
+        ? `<line data-role="rc-leader-stem" data-rc-label="${escapeXml(mark.kind)}" ` +
+          `data-row-counter="${mark.rowCounter}" ` +
+          `x1="${fmtNum(mark.labelX)}" y1="${fmtNum(mark.labelY)}" ` +
+          `x2="${fmtNum(mark.labelX)}" y2="${fmtNum(mark.actionY)}" ` +
+          `stroke="${SHAPING_NOTATION_RC_GUIDE}" stroke-width="${SHAPING_NOTATION_RC_GUIDE_WIDTH}" ` +
+          `stroke-dasharray="${SHAPING_NOTATION_RC_DASH}" fill="none"/>`
+        : "";
+      const line =
+        `<line data-role="rc-leader" data-rc-label="${escapeXml(mark.kind)}" ` +
+        `data-row-counter="${mark.rowCounter}" data-action-y="${fmtNum(mark.actionY)}" ` +
+        `data-outline-x="${fmtNum(mark.outlineX)}" ` +
+        `x1="${fmtNum(shifted ? mark.labelX : mark.labelX + 3)}" y1="${fmtNum(mark.actionY)}" ` +
+        `x2="${fmtNum(mark.outlineX)}" y2="${fmtNum(mark.actionY)}" ` +
+        `stroke="${SHAPING_NOTATION_RC_GUIDE}" stroke-width="${SHAPING_NOTATION_RC_GUIDE_WIDTH}" ` +
+        `stroke-dasharray="${SHAPING_NOTATION_RC_DASH}" fill="none"/>`;
+      const text =
+        `<text data-role="rc-landmark" data-stack-order="rc" data-rc-label="${escapeXml(mark.kind)}" ` +
+        `data-rc="${escapeXml(mark.text)}" data-row-counter="${mark.rowCounter}" ` +
+        `x="${fmtNum(mark.labelX)}" y="${fmtNum(mark.labelY)}" ` +
+        `text-anchor="end" dominant-baseline="middle" fill="${DS_MUTED}" ` +
+        `font-family="${DS_FONT}" font-size="${fontSize}">${escapeXml(mark.text)}</text>`;
+      return stem + line + text;
+    })
+    .join("");
 }
 
 function drawSidewaysGarmentRcLandmarks(
