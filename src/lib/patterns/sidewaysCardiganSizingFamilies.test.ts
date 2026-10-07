@@ -8,7 +8,10 @@ import {
   seedExpressSweaterChartsForTests,
   type ChartRow,
 } from "./sleevelessExpressSizeChartClient";
+import { evenRowCountForShortRowShaping } from "./sidewaysCardiganBodyCalc";
 import { readSidewaysCardiganBuilderStateFromDraft } from "./sidewaysCardiganBuilderState";
+import { evenPositiveBodyStitches } from "./sleevelessBodyStitchMath";
+import { inchesToRows } from "./sleevelessRowAccounting";
 import { validateSidewaysCardiganBuilder } from "./sidewaysCardiganBuilderValidation";
 import { renderSidewaysCardiganBandSectionHtml } from "./sidewaysCardiganFinishing";
 import {
@@ -45,22 +48,28 @@ function generate(args: {
   size: string;
   garmentStyle: SidewaysCardiganGarmentStyle;
   availableNeedles?: string;
+  gaugeStitchRaw?: string;
+  gaugeRowRaw?: string;
+  vNeckDepth?: string;
 }) {
   const row = chartRow(args.audience, args.size);
-  const styleMeasurements = defaultSidewaysCardiganStyleMeasurements({
-    row,
-    chartAudience: args.audience,
-    fitPreference: "standard",
-    sleeveLengthChoice: "long",
-  });
+  const styleMeasurements = {
+    ...defaultSidewaysCardiganStyleMeasurements({
+      row,
+      chartAudience: args.audience,
+      fitPreference: "standard",
+      sleeveLengthChoice: "long",
+    }),
+    ...(args.vNeckDepth ? { vNeckDepth: args.vNeckDepth } : {}),
+  };
   syncSidewaysCardiganBuilderToPatternStorage(
     {
       selectedSize: args.size,
       chartAudience: args.audience,
       fit: "standard",
       styleMeasurements,
-      gaugeStitchRaw: "20",
-      gaugeRowRaw: "28",
+      gaugeStitchRaw: args.gaugeStitchRaw ?? "20",
+      gaugeRowRaw: args.gaugeRowRaw ?? "28",
       availableNeedles: args.availableNeedles ?? "200",
       unit: "in",
       sleeveLengthChoice: "long",
@@ -253,5 +262,115 @@ describe("Sideways sizing families", () => {
         finishedBustInches: finishedBustInchesFromChartRow(misses, "standard"),
       }),
     ).toBeNull();
+  });
+
+  it("keeps a saved Baby V depth when the chart default is deeper", () => {
+    const { view } = generate({
+      audience: "baby",
+      size: "3 mo",
+      garmentStyle: "pullover",
+      vNeckDepth: "1.5",
+    });
+    expect(readSidewaysCardiganBuilderStateFromDraft().styleMeasurements.vNeckDepth).toBe("1.5");
+    expect(getCurrentPattern().fit.selectedMeasurements.front_neck_depth).toBe(1.5);
+    expect(view.input.vNeckDepthInches).toBe(1.5);
+    expect(view.summary.rows.find((row) => row.term === "V-neck depth")?.def).toContain("1.5 in");
+  });
+
+  it.each([
+    ["3 mo", 4.5, 1.75, 8.75],
+    ["6 mo", 5, 2, 9.75],
+    ["12 mo", 5.5, 2.25, 10.25],
+    ["18 mo", 5.75, 2.25, 10.75],
+    ["24 mo", 5.75, 2.25, 11.25],
+  ] as const)(
+    "shapes Baby %s every other row at every investigated gauge",
+    (size, neckOpening, vDepth, length) => {
+      const row = chartRow("baby", size);
+      expect(row.neck_opening).toBe(neckOpening);
+      expect(row.front_neck_depth).toBe(vDepth);
+      expect(row.garment_back_length).toBe(length);
+
+      const gauges = [
+        [16, 24],
+        [20, 28],
+        [24, 32],
+        [28, 36],
+        [28, 40],
+        [32, 44],
+        [36, 48],
+      ] as const;
+
+      for (const garmentStyle of ["cardigan", "pullover"] as const) {
+        for (const [stitches, rows] of gauges) {
+          const spi = stitches / 4;
+          const rpi = rows / 4;
+          const { view } = generate({
+            audience: "baby",
+            size,
+            garmentStyle,
+            gaugeStitchRaw: String(stitches),
+            gaugeRowRaw: String(rows),
+          });
+          const { instructions } = view;
+          if (!instructions) throw new Error(`${size} ${garmentStyle} ${stitches}x${rows} missing instructions`);
+
+          expect(view.input.vNeckDepthInches).toBe(vDepth);
+          expect(view.input.neckOpeningWidthInches).toBe(neckOpening);
+          expect(view.calc.vNeckDepthStitches).toBe(evenPositiveBodyStitches(vDepth * spi));
+          expect(view.calc.halfNeckRows).toBe(
+            evenRowCountForShortRowShaping(inchesToRows(neckOpening / 2, rpi)),
+          );
+          expect(view.calc.garmentLengthStitches).toBe(evenPositiveBodyStitches(length * spi));
+          expect(instructions.startingFrontStitches).toBeGreaterThan(0);
+          expect(instructions.startingFrontStitches).toBe(
+            view.calc.garmentLengthStitches - view.calc.vNeckDepthStitches,
+          );
+
+          const increase = instructions.increaseSequence;
+          const decrease = instructions.decreaseSequence;
+          expect(decrease).toEqual([...increase].reverse());
+          expect(increase.length).toBe(instructions.firstV.shapingActions);
+          expect(decrease.length).toBe(instructions.secondV.shapingActions);
+          expect(increase.every((stitchesOnAction) => stitchesOnAction >= 1)).toBe(true);
+          expect(increase.reduce((sum, n) => sum + n, 0)).toBe(view.calc.vNeckDepthStitches);
+          expect(instructions.firstV.rowInterval).toBe(2);
+          expect(instructions.secondV.rowInterval).toBe(2);
+          expect(instructions.firstV.rows).toBe(view.calc.halfNeckRows);
+          expect(instructions.secondV.rows).toBe(view.calc.halfNeckRows);
+
+          const depthLabel = view.summary.rows.find((entry) => entry.term === "V-neck depth")?.def ?? "";
+          expect(depthLabel).toContain(`${vDepth} in`);
+          expect(view.sequenceHtml.length).toBeGreaterThan(0);
+
+          if (garmentStyle === "pullover") {
+            expect(instructions.secondV.rowsBeforeFirstAction).toBe(2);
+            expect(instructions.pulloverCenterV?.castOnNecklineStitches).toBe(
+              view.calc.vNeckDepthStitches,
+            );
+            expect(instructions.pulloverCenterV?.boundOffNecklineStitches).toBe(
+              view.calc.vNeckDepthStitches,
+            );
+          }
+        }
+      }
+    },
+  );
+
+  it("leaves Misses, Women's, Kids', and Men's V depths on their current charts", () => {
+    expect(chartRow("misses", "4").front_neck_depth).toBe(5);
+    expect(chartRow("plus", "X").front_neck_depth).toBe(5);
+    expect(chartRow("kids", "6 yr").front_neck_depth).toBe(3);
+    expect(chartRow("men", "Med").front_neck_depth).toBe(4.25);
+
+    const misses = generate({ audience: "misses", size: "4", garmentStyle: "cardigan" });
+    expect(misses.view.input.vNeckDepthInches).toBe(5);
+    expect(misses.view.instructions?.increaseSequence.every((n) => n >= 1)).toBe(true);
+
+    const plus = generate({ audience: "plus", size: "2x", garmentStyle: "pullover" });
+    expect(plus.view.input.vNeckDepthInches).toBe(5.5);
+    expect(plus.view.instructions?.decreaseSequence).toEqual(
+      [...(plus.view.instructions?.increaseSequence ?? [])].reverse(),
+    );
   });
 });
