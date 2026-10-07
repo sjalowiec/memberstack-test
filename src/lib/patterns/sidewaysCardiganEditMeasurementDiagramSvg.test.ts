@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildDiagramTypographyForViewBox } from "./buildDiagramTypography";
+import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
 import {
+  buildSidewaysCardiganEditBodyMeasurementDiagramSvg,
   buildSidewaysCardiganEditMeasurementDiagramSvg,
   buildSidewaysCardiganEditMeasurementFrame,
   drawPulloverMarkers,
@@ -11,6 +13,12 @@ import {
   SIDEWAYS_SUMMARY_DERIVED_ROLES,
   SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS,
 } from "./sidewaysCardiganEditMeasurementDiagramSvg";
+import {
+  buildSidewaysCardiganPatternDiagramFrame,
+  buildSidewaysCardiganPatternDiagramModel,
+  buildSidewaysCardiganPatternDiagramSvg,
+  sidewaysKnitVisualY,
+} from "./sidewaysCardiganPatternDiagramSvg";
 
 const rendererSrc = readFileSync(
   resolve("src/lib/patterns/sidewaysCardiganEditMeasurementDiagramSvg.ts"),
@@ -669,6 +677,83 @@ describe("Sideways Summary/Edit measurement SVG", () => {
     expect(clips).toEqual([]);
     expect(overlaps).toEqual([]);
   });
+
+  it("orients the Pullover Build/Edit body with the finished Stitches & Rows diagram", () => {
+    const input = {
+      garmentLengthInches: 22,
+      vNeckDepthInches: 8,
+      finishedBustCircumferenceInches: 40,
+      finishedUpperArmInches: 14,
+      neckOpeningWidthInches: 7,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    };
+    const calc = calculateSidewaysCardiganBody(input);
+    expect(calc.ok).toBe(true);
+    if (!calc.ok) return;
+    const model = buildSidewaysCardiganPatternDiagramModel({
+      garmentStyle: "pullover",
+      calc: calc.calc,
+      input,
+      sleeveLengthInches: 18,
+      wristInches: 8,
+    });
+    const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+    const sts = buildSidewaysCardiganPatternDiagramSvg(model);
+    const edit = buildSidewaysCardiganEditBodyMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: model.measurements,
+    });
+    const editV = vNeckPoints(edit);
+    const stsV = vNeckPoints(sts).map((point) => ({
+      x: point.x,
+      y: sidewaysKnitVisualY(frame, point.y),
+    }));
+    expect(editV).toHaveLength(3);
+    expect(stsV).toHaveLength(3);
+    for (let i = 0; i < editV.length; i += 1) {
+      expect(editV[i]!.x).toBeCloseTo(stsV[i]!.x, 1);
+      expect(editV[i]!.y).toBeCloseTo(stsV[i]!.y, 1);
+    }
+
+    const startY = Number(/data-role="underarm-start"[^>]*y1="([^"]+)"/.exec(edit)?.[1]);
+    const graftY = Number(/data-role="graft-join"[^>]*y1="([^"]+)"/.exec(edit)?.[1]);
+    const vMid = editV.reduce((sum, point) => sum + point.y, 0) / editV.length;
+    expect(startY).toBeGreaterThan(graftY);
+    expect(vMid).toBeGreaterThan((startY + graftY) / 2);
+    expect(Math.abs(vMid - startY)).toBeLessThan(Math.abs(vMid - graftY));
+    const backNeckY = Number(/data-role="back-neck"[^>]*\sy="([^"]+)"/.exec(edit)?.[1]);
+    expect(backNeckY).toBeLessThan((startY + graftY) / 2);
+    expect(backNeckY).toBeLessThan(vMid);
+
+    const front = dimLineFromGroup(dimGroup(edit, "dim-front-section"));
+    const back = dimLineFromGroup(dimGroup(edit, "dim-back-section"));
+    const shoulder = dimLineFromGroup(dimGroup(edit, "dim-shoulder-section"));
+    expect(front).not.toBeNull();
+    expect(back).not.toBeNull();
+    expect(shoulder).not.toBeNull();
+    expect((front!.y1 + front!.y2) / 2).toBeGreaterThan((back!.y1 + back!.y2) / 2);
+    expect((shoulder!.y1 + shoulder!.y2) / 2).toBeGreaterThan(vMid);
+    expect(Math.min(shoulder!.y1, shoulder!.y2)).toBeGreaterThan(Math.max(back!.y1, back!.y2));
+    expect(edit).not.toContain("scale(1 -1)");
+    expect(sts).toContain("scale(1 -1)");
+    expect(edit).toContain('data-derived-inches="');
+    expect(edit).toContain(">Front<");
+    expect(edit).toContain(">Back<");
+    expect(edit).toContain(">Shoulder<");
+    expect(edit).toContain(">Neck opening<");
+
+    const cardigan = buildSidewaysCardiganEditMeasurementDiagramSvg({
+      garmentStyle: "cardigan",
+      measurements: model.measurements,
+    });
+    const cardiganStart = Number(/data-role="center-front-start"[^>]*y1="([^"]+)"/.exec(cardigan)?.[1]);
+    const cardiganEnd = Number(/data-role="center-front-end"[^>]*y1="([^"]+)"/.exec(cardigan)?.[1]);
+    expect(cardiganStart).toBeLessThan(cardiganEnd);
+    expect(cardigan).not.toContain('data-role="underarm-start"');
+    expect(cardigan).not.toContain("scale(1 -1)");
+  });
 });
 
 const SLEEVE_EXAMPLE = {
@@ -832,6 +917,17 @@ function sleeveSilhouette(svg: string): {
 function targetPoint(svg: string, id: string): { cx: number; cy: number } {
   const match = new RegExp(`<circle id="${id}" cx="([^"]+)" cy="([^"]+)"`).exec(svg);
   return { cx: Number(match?.[1]), cy: Number(match?.[2]) };
+}
+
+function vNeckPoints(svg: string): Array<{ x: number; y: number }> {
+  const points = /data-role="v-neck"[^>]*points="([^"]+)"/.exec(svg)?.[1] ?? "";
+  return points
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((pair) => {
+      const [x, y] = pair.split(",").map(Number);
+      return { x: x ?? NaN, y: y ?? NaN };
+    });
 }
 
 function parseViewBox(svg: string): { x: number; y: number; width: number; height: number } | null {
