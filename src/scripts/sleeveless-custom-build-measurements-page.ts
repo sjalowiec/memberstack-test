@@ -24,6 +24,7 @@ import {
   loadMeasurementOverrides,
   persistMeasurementOverrides,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
+import { repairHistoricalTenTimesMeasurementOverrides } from "../lib/patterns/historicalTenTimesMeasurementOverrideRepair";
 import {
   prepareCustomBuildPatternGeneration,
 } from "../lib/patterns/prepareCustomBuildPatternGeneration";
@@ -2167,7 +2168,20 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
         }) as Record<DiagramFieldKey, string>;
       } else {
         const defaults = computeDefaultsFromChart(row, fitPref, audience);
-        merged = mergeOverridesWithDefaults(loadMeasurementOverrides(), defaults);
+        const loadedOverrides = loadMeasurementOverrides();
+        const repairedOverrides = repairHistoricalTenTimesMeasurementOverrides(loadedOverrides, {
+          audience,
+          selectedSize: size,
+          fitPreference: fitPref,
+          bodyShape:
+            (typeof pattern.style?.bodyShape === "string" && pattern.style.bodyShape.trim()) ||
+            mapExpressStyleKey(expressValues.style ?? "").bodyShape ||
+            "straight",
+          dropShoulder: isDropShoulderConstruction(),
+          chartRow: row,
+        });
+        if (repairedOverrides !== loadedOverrides) persistMeasurementOverrides(repairedOverrides);
+        merged = mergeOverridesWithDefaults(repairedOverrides, defaults);
       }
 
       if (
