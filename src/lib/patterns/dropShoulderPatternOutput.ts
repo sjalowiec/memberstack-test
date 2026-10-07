@@ -149,6 +149,8 @@ export type BuildDropShoulderSleeveRowsArgs = {
   valid: boolean;
   /** Sideways offers an optional ribbed cuff. Drop Shoulder leaves this unset. */
   optionalRibbing?: boolean;
+  /** Replaces the sideways hand-sew line when optional ribbing is on. */
+  handSewLine?: string;
 };
 
 type Block = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
@@ -161,6 +163,11 @@ function dropShoulderNecklineRowCounterResetBlock(garmentRc: number): Block {
     rowCounterResetGarmentRc: garmentRc,
     paragraphs: [],
   };
+}
+
+function sidewaysOptionalRibbingIntro(args: BuildDropShoulderSleeveRowsArgs): string[] {
+  if (!args.optionalRibbing) return ["Make 2 sleeves."];
+  return ["Make 2 sleeves.", args.handSewLine ?? SIDEWAYS_SLEEVE_HAND_SEW_LINE];
 }
 
 function section(obj: unknown): Record<string, unknown> {
@@ -1321,9 +1328,7 @@ export function buildDropShoulderSleeveDisplayRows(
   if (args.direction === "top-down") {
     rows.push({
       kind: "block",
-      paragraphs: args.optionalRibbing
-        ? ["Make 2 sleeves.", SIDEWAYS_SLEEVE_HAND_SEW_LINE]
-        : ["Make 2 sleeves."],
+      paragraphs: sidewaysOptionalRibbingIntro(args),
     });
     rows.push({
       kind: "block",
@@ -1366,9 +1371,7 @@ export function buildDropShoulderSleeveDisplayRows(
   // cuff-up (bottom-up, default)
   rows.push({
     kind: "block",
-    paragraphs: args.optionalRibbing
-      ? ["Make 2 sleeves.", SIDEWAYS_SLEEVE_HAND_SEW_LINE]
-      : ["Make 2 sleeves."],
+    paragraphs: sidewaysOptionalRibbingIntro(args),
   });
   if (!args.optionalRibbing) {
     rows.push(castOnBlock(args.wristSts, "the sleeve cuff"));

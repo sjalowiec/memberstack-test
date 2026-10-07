@@ -7,7 +7,6 @@ import { getCurrentPattern, getPatternData } from "./patternStorage";
 import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
 import {
   buildSidewaysCardiganBodyInstructions,
-  renderSidewaysCardiganBodySequenceHtml,
   type SidewaysCardiganBodyInstructions,
 } from "./sidewaysCardiganBodyInstructions";
 import { renderSidewaysCardiganBodyDisplayHtml } from "./sidewaysCardiganPatternOutput";
@@ -22,6 +21,7 @@ import {
   hasAuthoritativeSidewaysCardiganConstruction,
   parseSidewaysCardiganSleeveDirection,
   resolveSidewaysCardiganGarmentStyle,
+  type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import {
@@ -104,6 +104,7 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
   pattern: Record<string, unknown>;
   calc: SidewaysCardiganBodyCalc;
   input: SidewaysCardiganBodyCalcInput;
+  garmentStyle: SidewaysCardiganGarmentStyle;
 }): {
   sleeveDirection: SidewaysCardiganSleeveDirection;
   sleeveInstructions: SidewaysCardiganSleeveInstructions | null;
@@ -162,7 +163,7 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
   return {
     sleeveDirection,
     sleeveInstructions: sleeve.instructions,
-    sleeveHtml: renderSidewaysCardiganSleeveSequenceHtml(sleeve.instructions),
+    sleeveHtml: renderSidewaysCardiganSleeveSequenceHtml(sleeve.instructions, args.garmentStyle),
   };
 }
 
@@ -226,6 +227,7 @@ export function loadSidewaysCardiganWorkspaceView(
     pattern,
     calc: result.calc,
     input: inspected.input,
+    garmentStyle,
   });
   const summary = buildSidewaysCardiganWorkspaceSummary({
     calc: result.calc,
@@ -259,16 +261,10 @@ export function loadSidewaysCardiganWorkspaceView(
     instructions: body.instructions,
     summary,
     summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
-    sequenceHtml:
-      body.instructions.garmentStyle === "cardigan"
-        ? renderSidewaysCardiganBodyDisplayHtml(
-            body.instructions,
-            inspected.input.stitchesPerInch,
-          )
-        : renderSidewaysCardiganBodySequenceHtml(
-            body.instructions,
-            inspected.input.stitchesPerInch,
-          ),
+    sequenceHtml: renderSidewaysCardiganBodyDisplayHtml(
+      body.instructions,
+      inspected.input.stitchesPerInch,
+    ),
     ...sleeve,
   };
 }

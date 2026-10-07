@@ -11,6 +11,10 @@ import { sleevelessHelpVideoFromCatalog } from "./sleevelessCatalogHelpVideo";
 export const SIDEWAYS_SLEEVE_HAND_SEW_LINE =
   "Sew the finished sleeve into the armhole by hand. This cardigan has no side seams.";
 
+/** Pullover body still has a side seam, so the cardigan sentence is omitted. */
+export const SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE =
+  "Sew the finished sleeve into the armhole by hand.";
+
 /** Glossary “Hung Hem”. */
 export const SIDEWAYS_HUNG_HEM_GLOSSARY_ID = 284;
 

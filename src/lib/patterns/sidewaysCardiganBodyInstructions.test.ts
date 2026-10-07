@@ -381,7 +381,8 @@ describe("sideways pullover body instruction model", () => {
     expect(castOn?.summary).toMatch(/side seam/i);
     expect(bindOff?.stitchesBefore).toBe(fullWidth);
     expect(bindOff?.stitchesAfter).toBe(0);
-    expect(bindOff?.summary).toMatch(/original side seam/i);
+    expect(bindOff?.summary).toMatch(/Scrap off the remaining \d+ stitches\./i);
+    expect(bindOff?.summary).not.toMatch(/original side seam/i);
     expect(pullover.steps[0]?.id).toBe("cast-on-side-seam");
     expect(pullover.steps.at(-1)?.id).toBe("bind-off-side-seam");
   });
@@ -495,7 +496,8 @@ describe("sideways pullover body instruction model", () => {
     const html = renderSidewaysCardiganBodySequenceHtml(pullover);
     expect(html.match(new RegExp(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`, "g"))).toHaveLength(2);
     expect(html).toContain(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`);
-    expect(html).toMatch(/seam from the hem to the place markers/i);
+    expect(html).toMatch(/seam from the hem to the markers/i);
+    expect(html).not.toMatch(/place markers/i);
     expect(cardigan.steps.some((s) => /Place a marker/i.test(s.summary))).toBe(false);
     expect(renderSidewaysCardiganBodySequenceHtml(cardigan)).not.toContain("Place a marker");
   });

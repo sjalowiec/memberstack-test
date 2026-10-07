@@ -18,7 +18,11 @@ import {
   dropShoulderSleeveShapingRcSequence,
 } from "./dropShoulderSleeveShapingChart";
 import { formatDropShoulderSleeveShapingWrittenLines } from "./dropShoulderSleeveShaping";
-import { type SidewaysCardiganSleeveDirection } from "./sidewaysCardiganConstructionIdentity";
+import {
+  type SidewaysCardiganGarmentStyle,
+  type SidewaysCardiganSleeveDirection,
+} from "./sidewaysCardiganConstructionIdentity";
+import { SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE } from "./sidewaysCardiganSleeveCuffCopy";
 import { buildDropShoulderSleeveDisplayRows } from "./dropShoulderPatternOutput";
 import {
   renderPatternDisplayRowsHtml,
@@ -229,6 +233,7 @@ function escapeHtml(s: string): string {
 /** Drop Shoulder sleeve rows for this calculated cuff-up or top-down sleeve. */
 export function buildSidewaysCardiganSleeveDisplayRows(
   calc: SidewaysCardiganSleeveCalc,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
 ): SleevelessPatternDisplayRow[] {
   return buildDropShoulderSleeveDisplayRows({
     topSts: calc.topSts,
@@ -239,13 +244,17 @@ export function buildSidewaysCardiganSleeveDisplayRows(
     direction: calc.direction,
     valid: true,
     optionalRibbing: true,
+    ...(garmentStyle === "pullover"
+      ? { handSewLine: SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE }
+      : {}),
   });
 }
 
 export function renderSidewaysCardiganSleeveSequenceHtml(
   instructions: SidewaysCardiganSleeveInstructions,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
 ): string {
-  const rows = buildSidewaysCardiganSleeveDisplayRows(instructions.calc);
+  const rows = buildSidewaysCardiganSleeveDisplayRows(instructions.calc, garmentStyle);
   const instructionsHtml = renderPatternDisplayRowsHtml(rows, {
     pieceSectionId: "sleeve",
     omitPieceBanner: true,
@@ -284,13 +293,14 @@ export function resolveSidewaysFinishedSleeveDirection(
 export function renderSidewaysSleeveSequenceForDirection(
   input: SidewaysCardiganSleeveCalcInput,
   direction: SidewaysCardiganConventionalSleeveDirection,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
 ): { ok: true; html: string; instructions: SidewaysCardiganSleeveInstructions } | { ok: false; error: SidewaysCardiganSleeveCalcError } {
   const built = buildSidewaysCardiganSleeveInstructions({ ...input, direction });
   if (!built.ok) return built;
   return {
     ok: true,
     instructions: built.instructions,
-    html: renderSidewaysCardiganSleeveSequenceHtml(built.instructions),
+    html: renderSidewaysCardiganSleeveSequenceHtml(built.instructions, garmentStyle),
   };
 }
 

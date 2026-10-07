@@ -4,7 +4,10 @@
  * Does not recompute measurements or landmarks.
  */
 
-import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
+import {
+  buildGlossaryTooltipPlaceholderHtml,
+  PLACE_MARKER_GLOSSARY_ID,
+} from "../glossary/glossaryTooltipPrint";
 import { formatSidewaysHeldStitchCensus, formatStitchesCount } from "./sidewaysCardiganDisplayFormat";
 import {
   wrapPatternSectionHtml,
@@ -16,11 +19,15 @@ import {
   type SleevelessPatternDisplayRow,
 } from "./sleevelessPatternOutput";
 import type { SleevelessBodyShapingChartRow } from "./sleevelessBodyShapingChartHtml";
-import type {
-  SidewaysCardiganBodyInstructions,
-  SidewaysCardiganBodyInstructionStep,
+import { sidewaysPulloverFirstArmholeSideSeamFromCalc } from "./sidewaysCardiganBodyCalc";
+import {
+  formatSidewaysPulloverNecklineCastOn,
+  formatSidewaysPulloverShortRowBindOff,
+  type SidewaysCardiganBodyInstructions,
+  type SidewaysCardiganBodyInstructionStep,
 } from "./sidewaysCardiganBodyInstructions";
 import { sidewaysFoldedHemCastOnSentence, sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
+import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 
 export { shortRowActionRowCounters } from "./sidewaysCardiganBodyInstructions";
 
@@ -36,6 +43,20 @@ export const CLOSED_CAST_ON_GLOSSARY_ID = 263;
 
 const BODY_PIECE_TITLE = "BODY";
 const SIDEWAYS_COMPLETED_ROWS_LABEL = "Completed rows";
+
+export const SIDEWAYS_PULLOVER_BODY_SECTION_TITLES = [
+  "BEFORE YOU BEGIN",
+  "CAST ON",
+  "FIRST FRONT SHOULDER",
+  "FIRST V-NECK",
+  "SECOND V-NECK",
+  "SECOND FRONT SHOULDER",
+  "ARMHOLE",
+  "FIRST BACK SHOULDER",
+  "BACK NECK",
+  "SECOND BACK SHOULDER",
+  "SCRAP OFF",
+] as const;
 
 export const SIDEWAYS_CARDIGAN_BODY_SECTION_TITLES = [
   "BEFORE YOU BEGIN",
@@ -390,11 +411,225 @@ export function buildSidewaysCardiganBodyDisplayRows(
   ];
 }
 
+function pulloverMarkerSentence(edge: "cast-on" | "bind-off", stitchesFromNeckEdge: number): string {
+  const place = `${g(PLACE_MARKER_GLOSSARY_ID, "Place a marker")} ${stitchesFromNeckEdge} stitches from the neck edge`;
+  if (edge === "cast-on") {
+    return `${place}. This marker is the first-armhole side-seam joining point for finishing.`;
+  }
+  return `${place}, matching the cast-on marker. These two markers are the side-seam joining points used when sewing the side seam.`;
+}
+
+/**
+ * Pullover BODY display rows. Uses the Cardigan section format.
+ * Does not recompute measurements, landmarks, or shaping.
+ */
+export function buildSidewaysPulloverBodyDisplayRows(
+  instructions: SidewaysCardiganBodyInstructions,
+  stitchesPerInch?: number,
+): SleevelessPatternDisplayRow[] {
+  if (instructions.garmentStyle !== "pullover") return [];
+
+  const { calc, firstV, secondV, landmarks, startingFrontStitches, backNeckLiveStitches } =
+    instructions;
+  const fullWidth = calc.garmentLengthStitches;
+  const vSts = calc.vNeckDepthStitches;
+  const armhole = calc.armholeDepthStitches;
+  const backNeck = calc.backNeckDepthStitches;
+  const firstVStep = requireStep(instructions, "first-v-neck");
+  const secondVStep = requireStep(instructions, "second-v-neck");
+  const shoulder = instructions.sectionRowCounts.firstFrontShoulder;
+  const markerFromNeck = sidewaysPulloverFirstArmholeSideSeamFromCalc(calc)?.stitchesFromNeckEdge;
+  const allWorkingCount = `${fullWidth} sts`;
+
+  const increasePh = g(SHORT_ROW_INCREASE_GLOSSARY_ID, "Short-row Increase");
+  const decreasePh = g(SHORT_ROW_DECREASE_GLOSSARY_ID, "Short-row Decrease");
+  const eorPh = g(EVERY_OTHER_ROW_GLOSSARY_ID, "every other row");
+  const wrapPh = g(MANUAL_WRAP_GLOSSARY_ID, "manually wrap");
+  const ravelPh = g(RAVEL_CORD_GLOSSARY_ID, "ravel cord");
+  const closedPh = g(CLOSED_CAST_ON_GLOSSARY_ID, "closed cast-on");
+  const ewrapPh = g(EWRAP_CAST_ON_GLOSSARY_ID, "e-wrap");
+  const ragPh = g(CAST_ON_RAG_GLOSSARY_ID, "cast-on rag");
+  const scrapPh = g(SCRAP_OFF_GLOSSARY_ID, "Scrap off");
+
+  return [
+    { kind: "piece", title: BODY_PIECE_TITLE },
+    block({
+      paragraphs: [
+        "The pullover body is knitted sideways in one piece, beginning at one side seam and ending at the same side seam. One armhole opening is knitted into the body. The beginning and ending edges form the other side seam. Seam from the hem to the markers, leaving the calculated armhole depth open.",
+      ],
+    }),
+    section("BEFORE YOU BEGIN"),
+    block({
+      trustedParagraphs: [
+        `V-neck shaping is worked with ${g(SHORT_ROW_PARTIAL_KNITTING_GLOSSARY_ID, "short rows")} (${increasePh} and ${decreasePh}).`,
+        `Shaping is performed ${eorPh}.`,
+        "Move needles into or out of hold opposite the carriage.",
+        `${g(MANUAL_WRAP_GLOSSARY_ID, "Manually wrap")} at each shaping turn to prevent holes.`,
+        "Keep the row counter running continuously through the body.",
+      ],
+    }),
+    section("CAST ON"),
+    block({
+      rc: landmarks.firstSideSeam,
+      trustedParagraphs: [
+        `Bring ${fullWidth} needles into work.`,
+        `Scrap on across all ${fullWidth} needles to provide fabric for weights.`,
+        `Knit one row of ${ravelPh}.`,
+        `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
+        `Set ${formatRcColon(landmarks.firstSideSeam)}.`,
+        ...(stitchesPerInch && stitchesPerInch > 0
+          ? [sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch))]
+          : []),
+        ...(markerFromNeck
+          ? [pulloverMarkerSentence("cast-on", markerFromNeck)]
+          : []),
+        `Continue with ${allWorkingCount}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("FIRST FRONT SHOULDER"),
+    block({
+      rc: landmarks.firstSideSeam,
+      paragraphs: [
+        `Knit ${shoulder} rows even on ${fullWidth} stitches.`,
+        `End at ${formatRcColon(landmarks.startFinalVShaping)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("FIRST V-NECK"),
+    block({
+      rc: firstVStep.rowCounterStart,
+      trustedParagraphs: [
+        `Begin with all ${fullWidth} stitches in work.`,
+        `Work a ${decreasePh} at the neckline edge over ${firstV.rows} rows:`,
+        ...slopeProseLines(instructions.decreaseSequence, false),
+        `Work each action ${eorPh}.`,
+        `Move needles opposite the carriage and ${wrapPh}.`,
+        `After the final action, ${vSts} neckline stitches are in hold and ${startingFrontStitches} body stitches remain in work.`,
+        `End at ${formatRcColon(landmarks.endFirstVShaping)}.`,
+        `${formatSidewaysPulloverShortRowBindOff(vSts)} The ${startingFrontStitches} body stitches remain on the machine.`,
+      ],
+      stitchCount: fullWidth,
+      bodyShapingChartId: "sideways-pullover-first-v-neck",
+      bodyShapingChartCompletedRowsLabel: SIDEWAYS_COMPLETED_ROWS_LABEL,
+      bodyShapingChartRows: shapingChartRows(
+        firstV.actionRowCounters,
+        firstV.stitchesChangedOnAction,
+        firstV.workingStitchesAfterAction,
+        false,
+      ),
+    }),
+    section("SECOND V-NECK"),
+    block({
+      rc: secondVStep.rowCounterStart,
+      trustedParagraphs: [
+        formatSidewaysPulloverNecklineCastOn({
+          castOnStitches: vSts,
+          bodyStitchesInWork: startingFrontStitches,
+        }),
+        `Begin with ${startingFrontStitches} stitches working and ${vSts} stitches held.`,
+        `Knit ${secondV.rowInterval} rows over the ${startingFrontStitches} working stitches before the first return-to-work action.`,
+        `Work a ${increasePh} over ${secondV.rows} rows:`,
+        ...slopeProseLines(instructions.increaseSequence, true),
+        `Work each action ${eorPh}.`,
+        `Move needles opposite the carriage and ${wrapPh}.`,
+        `After the final action, all ${fullWidth} stitches are in work.`,
+        `End at ${formatRcColon(landmarks.endSecondVShaping)} with ${allWorkingCount}.`,
+      ],
+      stitchCount: startingFrontStitches,
+      ...castOnHelpTip(
+        "sideways-pullover-cast-on-second-neckline",
+        `<p>Recommend an ${ewrapPh}, while allowing the cast-on method of your choice.</p>`,
+      ),
+      bodyShapingChartId: "sideways-pullover-second-v-neck",
+      bodyShapingChartCompletedRowsLabel: SIDEWAYS_COMPLETED_ROWS_LABEL,
+      bodyShapingChartRows: shapingChartRows(
+        secondV.actionRowCounters,
+        secondV.stitchesChangedOnAction,
+        secondV.workingStitchesAfterAction,
+        true,
+      ),
+    }),
+    section("SECOND FRONT SHOULDER"),
+    block({
+      rc: landmarks.endSecondVShaping,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.secondFrontShoulder} rows even on ${fullWidth} stitches.`,
+        `End at ${formatRcColon(landmarks.secondSideSeam)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("ARMHOLE"),
+    block({
+      rc: landmarks.secondSideSeam,
+      trustedParagraphs: [
+        `At ${formatRcColon(landmarks.secondSideSeam)}:`,
+        `At the neck edge, bind off the ${armhole} armhole stitches.`,
+        `Immediately cast on ${armhole} stitches.`,
+        `Continue with ${fullWidth} stitches.`,
+      ],
+      ...castOnHelpTip(
+        "sideways-pullover-cast-on-armhole",
+        `<p>Recommend an ${ewrapPh} cast-on, but you may use the cast-on method of your choice.</p>` +
+          `<p>Use a ${ragPh} as needed to support and weight the new stitches.</p>`,
+      ),
+      stitchCount: fullWidth,
+    }),
+    section("FIRST BACK SHOULDER"),
+    block({
+      rc: landmarks.secondSideSeam,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.firstBackShoulder} rows even on ${fullWidth} stitches.`,
+        `End at ${formatRcColon(landmarks.firstBackNeckEdge)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("BACK NECK"),
+    block({
+      rc: landmarks.firstBackNeckEdge,
+      trustedParagraphs: [
+        "At the neck edge:",
+        `Bind off the ${backNeck} back-neck-depth stitches.`,
+        `Knit ${instructions.sectionRowCounts.backNeckOpening} rows on the remaining ${backNeckLiveStitches} stitches.`,
+        `End at ${formatRcColon(landmarks.secondBackNeckEdge)}.`,
+        `Cast the ${backNeck} stitches back on.`,
+        `Continue knitting over ${fullWidth} stitches.`,
+      ],
+      ...castOnHelpTip(
+        "sideways-pullover-cast-on-back-neck",
+        `<p>Recommend an ${ewrapPh}, while allowing the cast-on method of your choice.</p>`,
+      ),
+      stitchCount: fullWidth,
+    }),
+    section("SECOND BACK SHOULDER"),
+    block({
+      rc: landmarks.secondBackNeckEdge,
+      paragraphs: [
+        `Knit ${instructions.sectionRowCounts.secondBackShoulder} rows even on ${fullWidth} stitches.`,
+        `End at ${formatRcColon(landmarks.finalBindOff)}.`,
+      ],
+      stitchCount: fullWidth,
+    }),
+    section("SCRAP OFF"),
+    block({
+      rc: landmarks.finalBindOff,
+      trustedParagraphs: [
+        `${scrapPh} the remaining ${fullWidth} stitches.`,
+        ...(markerFromNeck ? [pulloverMarkerSentence("bind-off", markerFromNeck)] : []),
+      ],
+      stitchCount: fullWidth,
+    }),
+  ];
+}
+
 export function renderSidewaysCardiganBodyDisplayHtml(
   instructions: SidewaysCardiganBodyInstructions,
   stitchesPerInch?: number,
 ): string {
-  const rows = buildSidewaysCardiganBodyDisplayRows(instructions, stitchesPerInch);
+  const rows =
+    instructions.garmentStyle === "pullover"
+      ? buildSidewaysPulloverBodyDisplayRows(instructions, stitchesPerInch)
+      : buildSidewaysCardiganBodyDisplayRows(instructions, stitchesPerInch);
   if (rows.length === 0) return "";
   const inner = renderPatternDisplayRowsHtml(rows, {
     pieceSectionId: "body",

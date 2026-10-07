@@ -271,9 +271,13 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.instructions?.steps[0]?.id).toBe("cast-on-side-seam");
     expect(view.instructions?.steps.at(-1)?.id).toBe("bind-off-side-seam");
     expect(view.instructions?.steps.filter((s) => /armhole-slit/.test(s.id))).toHaveLength(1);
-    expect(view.sequenceHtml).toMatch(/starts at a side seam/i);
-    expect(view.sequenceHtml).toMatch(/one knitted armhole slit/i);
-    expect(view.sequenceHtml).toMatch(/leaving the calculated armhole depth open/i);
+    expect(view.sequenceHtml).toMatch(/beginning at one side seam/i);
+    expect(view.sequenceHtml).toMatch(/one armhole opening/i);
+    expect(view.sequenceHtml).toMatch(/from the hem to the markers/i);
+    expect(view.sequenceHtml).toContain("FIRST FRONT SHOULDER");
+    expect(view.sequenceHtml).toContain("SCRAP OFF");
+    expect(view.sequenceHtml).not.toContain("sideways-body-landmarks");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sections");
     expect(view.sequenceHtml).not.toMatch(/graft/i);
 
     const restored = readSidewaysCardiganBuilderStateFromDraft();
@@ -286,7 +290,7 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(refreshed.instructions?.steps).toEqual(view.instructions?.steps);
   });
 
-  it("shows numbered Pullover BODY for the Women's chart V-neck depth, not a stitch-vs-row error", () => {
+  it("shows sectioned Pullover BODY for the Women's chart V-neck depth, not a stitch-vs-row error", () => {
     saveFromCreatePattern(
       {
         ...missesValues,
@@ -306,8 +310,10 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.calc.vNeckDepthStitches).toBe(26);
     expect(view.calc.halfNeckRows).toBe(26);
     expect(view.instructions?.garmentStyle).toBe("pullover");
-    expect(view.sequenceHtml).toContain("sideways-body-sequence");
-    expect(view.sequenceHtml).toMatch(/starts at a side seam/i);
+    expect(view.sequenceHtml).toContain("pattern-section");
+    expect(view.sequenceHtml).toContain("FIRST V-NECK");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).toMatch(/beginning at one side seam/i);
     expect(view.sequenceHtml).not.toMatch(/must exceed the even half-neck rows/i);
   });
 

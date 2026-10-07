@@ -92,7 +92,7 @@ function pulloverBodyHtml(): string {
   const result = buildSidewaysCardiganBodyInstructions(BODY_INPUT, "pullover");
   expect(result.ok).toBe(true);
   if (!result.ok) throw new Error(result.error.message);
-  return renderSidewaysCardiganBodySequenceHtml(result.instructions);
+  return renderSidewaysCardiganBodyDisplayHtml(result.instructions, BODY_INPUT.stitchesPerInch);
 }
 
 function sleeveHtml(direction: SidewaysCardiganSleeveCalcInput["direction"] = "cuff-up"): string {
@@ -421,7 +421,7 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
       scope: pullover.scope,
     });
     const pulloverHtml = pulloverBodyHtml();
-    expect(pulloverHtml).not.toContain('<section id="sg-body"');
+    expect(pulloverHtml).toContain('<section id="sg-body"');
     expect(pulloverHtml).not.toContain('id="sg-body-first-armhole"');
     expect(pulloverHtml).not.toContain('id="sg-body-second-armhole"');
     expect(pulloverHtml).not.toContain('id="sg-front-neck-band"');
@@ -503,16 +503,16 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
       }
     }
     expect(html).toContain('id="sg-body-first-front-shoulder"');
-    expect(html).toContain('id="sg-body-knitted-armhole-slit"');
-    expect(html).toContain('id="sg-body-bind-off-back-neck"');
+    expect(html).toContain('id="sg-body-armhole"');
+    expect(html).toContain('id="sg-body-back-neck"');
     expect(html.indexOf('id="sg-body-first-v-neck"')).toBeLessThan(
       html.indexOf('id="sg-body-second-v-neck"'),
     );
     expect(html.indexOf('id="sg-body-second-v-neck"')).toBeLessThan(
-      html.indexOf('id="sg-body-knitted-armhole-slit"'),
+      html.indexOf('id="sg-body-armhole"'),
     );
-    expect(html.indexOf('id="sg-body-knitted-armhole-slit"')).toBeLessThan(
-      html.indexOf('id="sg-body-bind-off-back-neck"'),
+    expect(html.indexOf('id="sg-body-armhole"')).toBeLessThan(
+      html.indexOf('id="sg-body-back-neck"'),
     );
     const cardiganSequence = renderSidewaysCardiganBodySequenceHtml(
       (() => {
@@ -545,9 +545,7 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
     expect(links.filter((link) => link.classes.has("is-active"))).toHaveLength(1);
     expect(links[0]!.dataset.navSectionId).toBe("sg-body-first-front-shoulder");
 
-    const bodyAnchorIds = [
-      ...pulloverBodyHtml().matchAll(/<li id="([^"]+)"/g),
-    ].map((match) => match[1]!);
+    const bodyAnchorIds = sectionIds(pulloverBodyHtml());
     const bodyOnly = installDom(Object.fromEntries(bodyAnchorIds.map((id) => [id, 800])));
     syncPatternInpageNav({
       items: SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS,

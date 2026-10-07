@@ -84,7 +84,11 @@ function sleeveViewForFinishedPattern(
     },
   );
   if (!inspected.input) return view;
-  const rendered = renderSidewaysSleeveSequenceForDirection(inspected.input, direction);
+  const rendered = renderSidewaysSleeveSequenceForDirection(
+    inspected.input,
+    direction,
+    view.instructions?.garmentStyle,
+  );
   if (!rendered.ok) return view;
   return {
     ...view,
@@ -119,7 +123,11 @@ function bindSidewaysSleeveConstructionChoice(
       },
     );
     if (!inspected.input) return;
-    const rendered = renderSidewaysSleeveSequenceForDirection(inspected.input, direction);
+    const rendered = renderSidewaysSleeveSequenceForDirection(
+      inspected.input,
+      direction,
+      view.instructions?.garmentStyle,
+    );
     if (!rendered.ok) return;
     const nextView: Extract<SidewaysCardiganWorkspaceView, { ok: true }> = {
       ...view,

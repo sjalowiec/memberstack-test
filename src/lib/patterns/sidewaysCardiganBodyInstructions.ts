@@ -845,8 +845,8 @@ function buildPulloverSteps(args: {
     id: "bind-off-side-seam",
     order: 14,
     summary: markerFromNeck
-      ? `Bind off ${fullWidth} stitches (original side seam). ${pulloverFirstArmholeMarkerSentence("bind-off", markerFromNeck)}`
-      : `Bind off ${fullWidth} stitches (original side seam)`,
+      ? `Scrap off the remaining ${fullWidth} stitches. ${pulloverFirstArmholeMarkerSentence("bind-off", markerFromNeck)}`
+      : `Scrap off the remaining ${fullWidth} stitches.`,
     rows: 0,
     stitchesBefore: live(),
     stitchesAfter: 0,
@@ -1100,7 +1100,7 @@ export function renderSidewaysCardiganBodySequenceHtml(
   const isPullover = instructions.garmentStyle === "pullover";
   const styleLabel = SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[instructions.garmentStyle];
   const intro = isPullover
-    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem to the place markers, leaving the calculated armhole depth open.`
+    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem to the markers, leaving the calculated armhole depth open.`
     : `${styleLabel}: starts at center front and has two knitted armhole slits.`;
   const items = instructions.steps
     .map((s) => {

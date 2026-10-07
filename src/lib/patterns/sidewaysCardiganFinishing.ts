@@ -29,6 +29,11 @@ export const SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID = 1025;
 
 export const SIDEWAYS_CARDIGAN_FOLD_VIDEO_WATCH_LABEL = "Watch: Crisp, decorative fold";
 
+/** Learning Library content_id for “Kitchener Join (Grafting)”. */
+export const SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID = 927;
+
+export const SIDEWAYS_PULLOVER_GRAFT_VIDEO_WATCH_LABEL = "Watch: Kitchener Join (Grafting)";
+
 export function resolveSidewaysCardiganFoldVideo(
   catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
 ): SleevelessHelpVideoMeta | null {
@@ -48,6 +53,28 @@ export function sidewaysCardiganFoldVideoLinkHtml(
     ` data-sideways-band-fold-video` +
     ` aria-haspopup="dialog">` +
     `${escapeHtml(SIDEWAYS_CARDIGAN_FOLD_VIDEO_WATCH_LABEL)}</button>`
+  );
+}
+
+export function resolveSidewaysPulloverGraftVideo(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): SleevelessHelpVideoMeta | null {
+  return sleevelessHelpVideoFromCatalog(SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID, catalog);
+}
+
+export function sidewaysPulloverGraftVideoLinkHtml(
+  video: SleevelessHelpVideoMeta | null = resolveSidewaysPulloverGraftVideo(),
+): string {
+  if (!video) return "";
+  return (
+    `<button type="button" class="kbm-kin-catalog-video pattern-help-link__button"` +
+    ` data-vimeo-id="${escapeHtml(video.id)}"` +
+    ` data-video-title="${escapeHtml(video.title)}"` +
+    ` data-content-id="${SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID}"` +
+    ` data-video-autoplay="false"` +
+    ` data-sideways-pullover-graft-video` +
+    ` aria-haspopup="dialog">` +
+    `${escapeHtml(SIDEWAYS_PULLOVER_GRAFT_VIDEO_WATCH_LABEL)}</button>`
   );
 }
 
@@ -286,7 +313,8 @@ export function renderSidewaysFinishingSectionHtml(args: {
         ]
       : [
           "Block the piece as desired.",
-          "Join the side seam from the hem to the place markers, leaving the armhole depth open. The neckline is already knitted into the body, so this pullover does not need a separate neck band.",
+          "Join the side seam from the hem to the markers, leaving the armhole depth open.",
+          "Graft the cast-on edge to the final edge that was scrapped off.",
           hem,
           "Join the sleeve seams.",
           "Set the sleeves into the armhole openings.",
@@ -297,7 +325,11 @@ export function renderSidewaysFinishingSectionHtml(args: {
         args.garmentStyle === "cardigan" && step.startsWith("Make and attach the cardigan front and neck band")
           ? ` ${sidewaysCardiganFoldVideoLinkHtml()}`
           : "";
-      return `<li>${escapeHtml(step)}${foldLink}</li>`;
+      const graftLink =
+        args.garmentStyle === "pullover" && step.startsWith("Graft the cast-on edge")
+          ? ` ${sidewaysPulloverGraftVideoLinkHtml()}`
+          : "";
+      return `<li>${escapeHtml(step)}${foldLink}${graftLink}</li>`;
     })
     .join("");
   return (

@@ -16,6 +16,7 @@ import {
   sidewaysFoldedHemTurningNeedle,
   resolveSidewaysCardiganFoldVideo,
   SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID,
+  SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID,
 } from "./sidewaysCardiganFinishing";
 import videosPublic from "../../data/videos-public.json";
 import {
@@ -273,7 +274,13 @@ describe("sideways folded hem and cardigan band", () => {
       garmentStyle: "pullover",
       turningNeedle: sidewaysFoldedHemTurningNeedle(5),
     });
-    expect(finishing).toContain("does not need a separate neck band");
+    expect(finishing).not.toContain("does not need a separate neck band");
+    expect(finishing).toContain("Join the side seam from the hem to the markers, leaving the armhole depth open.");
+    expect(finishing).not.toContain("place markers");
+    expect(finishing).toContain("Graft the cast-on edge to the final edge that was scrapped off.");
+    expect(finishing).toContain("Watch: Kitchener Join (Grafting)");
+    expect(finishing).toContain(`data-content-id="${SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID}"`);
+    expect(finishing).toContain('data-vimeo-id="339846501"');
     expect(finishing).not.toContain("front and neck band");
     expect(finishing).not.toContain("Watch: Crisp, decorative fold");
     expect(finishing).toContain("If you left needle");
@@ -285,6 +292,8 @@ describe("sideways folded hem and cardigan band", () => {
     expect(cardiganFinishing).toContain("front and neck band");
     expect(cardiganFinishing).toContain("Watch: Crisp, decorative fold");
     expect(cardiganFinishing).toContain(`data-content-id="${SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID}"`);
+    expect(cardiganFinishing).not.toContain("Graft the cast-on edge");
+    expect(cardiganFinishing).not.toContain("Kitchener Join");
     expect(cardiganFinishing).toContain("Join the sleeve seams.");
     expect(cardiganFinishing.indexOf("Block")).toBeLessThan(cardiganFinishing.indexOf("shoulder"));
     expect(cardiganFinishing.indexOf("shoulder")).toBeLessThan(cardiganFinishing.indexOf("turning line"));

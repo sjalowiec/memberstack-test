@@ -5,6 +5,8 @@ import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
 import { formatRcColon, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import {
   buildSidewaysCardiganBodyDisplayRows,
+  buildSidewaysPulloverBodyDisplayRows,
+  SIDEWAYS_PULLOVER_BODY_SECTION_TITLES,
   compactSlopeSequence,
   EVERY_OTHER_ROW_GLOSSARY_ID,
   MANUAL_WRAP_GLOSSARY_ID,
@@ -246,14 +248,10 @@ describe("sideways cardigan BODY display adapter", () => {
     expect(html).toContain('id="sg-body"');
   });
 
-  it("leaves pullover output on the numbered sequence renderer", () => {
+  it("leaves the cardigan display builder empty for a pullover model", () => {
     const pullover = pulloverOk();
     expect(buildSidewaysCardiganBodyDisplayRows(pullover)).toEqual([]);
-    expect(renderSidewaysCardiganBodyDisplayHtml(pullover)).toBe("");
-    const pulloverHtml = renderSidewaysCardiganBodySequenceHtml(pullover);
-    expect(pulloverHtml).toContain("sideways-body-sequence");
-    expect(pulloverHtml).toContain("sideways-body-landmarks");
-    expect(pulloverHtml).toMatch(/starts at a side seam/i);
+    expect(buildSidewaysPulloverBodyDisplayRows(cardiganOk())).toEqual([]);
   });
 
   it("renders Cardigan BODY Lego for the Women's 5-inch V / 7.5-inch neck / 5×7 gauge case", () => {
@@ -452,5 +450,87 @@ describe("sideways cardigan BODY display adapter", () => {
     );
     expect(displayText).not.toMatch(/straight back neck/i);
     expect(displayText).not.toContain("48 sts");
+  });
+});
+
+describe("sideways pullover BODY display adapter", () => {
+  const instructions = pulloverOk();
+  const rows = buildSidewaysPulloverBodyDisplayRows(instructions, SAMPLE.stitchesPerInch);
+  const html = renderSidewaysCardiganBodyDisplayHtml(instructions, SAMPLE.stitchesPerInch);
+  const text = allTrustedAndPlain(rows);
+  const { landmarks } = instructions;
+
+  it("uses the pullover section order and the cardigan instruction format", () => {
+    expect(rows[0]).toEqual({ kind: "piece", title: "BODY" });
+    expect(sectionTitles(rows)).toEqual([...SIDEWAYS_PULLOVER_BODY_SECTION_TITLES]);
+    expect(html).toContain('id="sg-body"');
+    expect(html).toContain('id="sg-body-first-front-shoulder"');
+    expect(html).toContain('id="sg-body-armhole"');
+    expect(html).toContain('id="sg-body-back-neck"');
+    expect(html).not.toContain("sideways-body-sequence");
+    expect(html).not.toContain("sideways-body-landmarks");
+    expect(html).not.toContain("sideways-body-sections");
+    expect(html).not.toContain("Total bust rows");
+    expect(html).not.toMatch(/place markers/i);
+    expect(html).not.toMatch(/separate neck band/i);
+    expect(text).toMatch(/from the hem to the markers/i);
+    expect(text).toMatch(/one armhole opening/i);
+  });
+
+  it("puts each landmark RC on the instruction that uses it", () => {
+    expect(blockAfterSection(rows, "CAST ON")?.rc).toBe(formatRcColon(landmarks.firstSideSeam));
+    expect(blockAfterSection(rows, "FIRST FRONT SHOULDER")?.rc).toBe(
+      formatRcColon(landmarks.firstSideSeam),
+    );
+    expect(lastInstruction(blockAfterSection(rows, "FIRST FRONT SHOULDER"))).toContain(
+      formatRcColon(landmarks.startFinalVShaping),
+    );
+    expect(blockAfterSection(rows, "FIRST V-NECK")?.rc).toBe(
+      formatRcColon(landmarks.startFinalVShaping),
+    );
+    expect(text).toContain(`End at ${formatRcColon(landmarks.endFirstVShaping)}.`);
+    expect(blockAfterSection(rows, "SECOND V-NECK")?.rc).toBe(
+      formatRcColon(landmarks.endFirstVShaping),
+    );
+    expect(text).toContain(`End at ${formatRcColon(landmarks.endSecondVShaping)} with`);
+    expect(blockAfterSection(rows, "ARMHOLE")?.rc).toBe(formatRcColon(landmarks.secondSideSeam));
+    expect(blockAfterSection(rows, "FIRST BACK SHOULDER")?.rc).toBe(
+      formatRcColon(landmarks.secondSideSeam),
+    );
+    expect(text).toContain(`End at ${formatRcColon(landmarks.firstBackNeckEdge)}.`);
+    expect(blockAfterSection(rows, "BACK NECK")?.rc).toBe(formatRcColon(landmarks.firstBackNeckEdge));
+    expect(text).toContain(`End at ${formatRcColon(landmarks.secondBackNeckEdge)}.`);
+    expect(blockAfterSection(rows, "SECOND BACK SHOULDER")?.rc).toBe(
+      formatRcColon(landmarks.secondBackNeckEdge),
+    );
+    expect(text).toContain(`End at ${formatRcColon(landmarks.finalBindOff)}.`);
+    expect(blockAfterSection(rows, "SCRAP OFF")?.rc).toBe(formatRcColon(landmarks.finalBindOff));
+    expect(text).toContain("Scrap off");
+    expect(text).toContain(
+      `the remaining ${instructions.calc.garmentLengthStitches} stitches.`,
+    );
+    expect(text).not.toMatch(/Bind off all/i);
+  });
+
+  it("keeps the pullover V-neck construction inside the two V sections", () => {
+    const firstV = blockAfterSection(rows, "FIRST V-NECK");
+    const secondV = blockAfterSection(rows, "SECOND V-NECK");
+    expect(firstV?.bodyShapingChartRows?.map((row) => row.rc)).toEqual(
+      instructions.firstV.actionRowCounters,
+    );
+    expect(secondV?.bodyShapingChartRows?.map((row) => row.rc)).toEqual(
+      instructions.secondV.actionRowCounters,
+    );
+    expect(text).toContain("Place 3 stitches into hold 12 times.");
+    expect(text).toContain("Place 4 stitches into hold once.");
+    expect(text).toContain(
+      `Bind off the ${instructions.calc.vNeckDepthStitches} held neckline stitches.`,
+    );
+    expect(text).toContain("Work a closed cast-on with garment yarn");
+    expect(text).toContain("Return 4 stitches to work once.");
+    expect(text).toContain("Return 3 stitches to work 12 times.");
+    expect(text).not.toContain(
+      "During the final two-row interval, return all held stitches to work",
+    );
   });
 });

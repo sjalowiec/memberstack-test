@@ -25,6 +25,7 @@ import {
   SIDEWAYS_HUNG_HEM_GLOSSARY_ID,
   SIDEWAYS_MOCK_RIB_GLOSSARY_ID,
   SIDEWAYS_REVERSE_HUNG_HEM_VIDEO_ID,
+  SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE,
   SIDEWAYS_SLEEVE_HAND_SEW_LINE,
   SIDEWAYS_TOP_DOWN_CHART_FINISH,
 } from "./sidewaysCardiganSleeveCuffCopy";
@@ -382,6 +383,16 @@ describe("Drop Shoulder and Sleeveless behavior remains unchanged", () => {
 });
 
 describe("sideways sleeve pattern instructions", () => {
+  it("omits the cardigan side-seam sentence from pullover sleeves only", () => {
+    const instructions = sleeveOk();
+    const pullover = renderSidewaysCardiganSleeveSequenceHtml(instructions, "pullover");
+    const cardigan = renderSidewaysCardiganSleeveSequenceHtml(instructions, "cardigan");
+    expect(pullover).toContain(SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE);
+    expect(pullover).not.toContain("This cardigan has no side seams.");
+    expect(cardigan).toContain(SIDEWAYS_SLEEVE_HAND_SEW_LINE);
+    expect(cardigan).toContain("This cardigan has no side seams.");
+  });
+
   it("renders cuff-up instructions from the shared sleeve rows", () => {
     const instructions = sleeveOk();
     const html = renderSidewaysCardiganSleeveSequenceHtml(instructions);
