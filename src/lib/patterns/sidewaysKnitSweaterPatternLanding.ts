@@ -5,9 +5,8 @@
  * Customer-facing name is Sideways Knit Sweater (cardigan and pullover).
  * Internal routes and system IDs remain `sideways-cardigan`.
  *
- * Sleeve copy is limited to generated options: cuff-up and top-down, with
- * long / 3/4 / elbow / short lengths. Sideways sleeve knitting is not yet
- * connected and must not be claimed.
+ * The builder asks for sleeve length only. Cuff-up and top-down instructions
+ * are both on the finished pattern. Sideways sleeve knitting is not offered here.
  *
  * Production hosts still block every `/patterns/sideways-cardigan` route.
  */
@@ -69,7 +68,7 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING: PatternBuilderLandin
       },
       {
         title: "Sleeve style",
-        description: "Choose cuff-up or top-down sleeves, in long, 3/4, elbow, or short lengths.",
+        description: "Choose long, 3/4, elbow, or short sleeves.",
       },
       {
         title: "Your stitch and row gauge",

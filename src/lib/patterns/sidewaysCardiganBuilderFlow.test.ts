@@ -234,10 +234,9 @@ describe("sideways cardigan builder-to-workspace flow", () => {
       "Each V-neck section",
       "Each shoulder section",
       "Total bust rows",
-      "Sleeve direction",
     ]);
     expect(summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
-    expect(summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
+    expect(summary.rows.find((row) => row.term === "Sleeve direction")).toBeUndefined();
     expect(summary.rows.find((row) => row.term === "Garment length")?.def).toMatch(/stitches/);
     expect(JSON.stringify(summary)).not.toMatch(/0\.166666/);
 

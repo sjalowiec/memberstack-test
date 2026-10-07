@@ -214,15 +214,12 @@ export function writeSidewaysCardiganSizingIdentity(args: {
 }
 
 export function isSidewaysCardiganSleeveStepComplete(
-  state: Pick<SidewaysCardiganBuilderDraftState, "sleeveDirection" | "sleeveLengthChoice">,
+  state: Pick<SidewaysCardiganBuilderDraftState, "sleeveLengthChoice">,
 ): boolean {
-  return Boolean(
-    parseSidewaysCardiganSleeveDirection(state.sleeveDirection) &&
-      readSavedSidewaysCardiganSleeveLengthChoice(state.sleeveLengthChoice),
-  );
+  return Boolean(readSavedSidewaysCardiganSleeveLengthChoice(state.sleeveLengthChoice));
 }
 
-/** Apply one Sleeve picker choice. The step stays open until both required selections exist. */
+/** Apply one Sleeve picker choice. Length completes the step. Direction is stored when supplied and is not required. */
 export function applySidewaysCardiganSleeveChoice(
   state: SidewaysCardiganBuilderDraftState,
   field: "sleeveDirection" | "sleeveLength",

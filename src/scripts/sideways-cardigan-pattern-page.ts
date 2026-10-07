@@ -73,7 +73,7 @@ function sleeveViewForFinishedPattern(
   patternId: string,
 ): Extract<SidewaysCardiganWorkspaceView, { ok: true }> {
   const direction = resolveSidewaysFinishedSleeveDirection(view.sleeveDirection, patternId);
-  if (direction === "sideways" || direction === view.sleeveDirection) return view;
+  if (view.sleeveInstructions && direction === view.sleeveDirection) return view;
   const inspected = inspectSidewaysCardiganSleeveCalcInputFromPattern(
     view.pattern,
     view.calc,

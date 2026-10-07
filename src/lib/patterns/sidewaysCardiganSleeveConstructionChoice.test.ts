@@ -69,10 +69,11 @@ describe("sideways finished sleeve construction choice", () => {
     expect(html).toContain('data-tip-id="drop-shoulder-sleeve-construction-choice"');
   });
 
-  it("selects the builder direction until the finished pattern stores a choice", () => {
+  it("opens on cuff-up until the knitter chooses a direction on the finished pattern", () => {
     expect(readStoredDropShoulderSleeveConstruction("pattern-sideways")).toBeNull();
-    expect(resolveSidewaysFinishedSleeveDirection("top-down", "pattern-sideways")).toBe("top-down");
+    expect(resolveSidewaysFinishedSleeveDirection("top-down", "pattern-sideways")).toBe("cuff-up");
     expect(resolveSidewaysFinishedSleeveDirection("cuff-up", "pattern-sideways")).toBe("cuff-up");
+    expect(resolveSidewaysFinishedSleeveDirection("sideways", "pattern-sideways")).toBe("cuff-up");
     const cuff = sleeveHtml("cuff-up").html;
     expect(cuff).toContain('data-drop-shoulder-sleeve-construction="cuff-up" aria-pressed="true"');
     expect(cuff).toContain('data-drop-shoulder-sleeve-construction="top-down" aria-pressed="false"');
@@ -86,7 +87,7 @@ describe("sideways finished sleeve construction choice", () => {
       "top-down",
     );
     expect(resolveSidewaysFinishedSleeveDirection("cuff-up", "pattern-sideways")).toBe("top-down");
-    expect(resolveSidewaysFinishedSleeveDirection("sideways", "pattern-sideways")).toBe("sideways");
+    expect(resolveSidewaysFinishedSleeveDirection("sideways", "pattern-sideways")).toBe("top-down");
   });
 
   it("switches sleeve instructions and both sleeve diagrams without changing the body", () => {

@@ -117,6 +117,12 @@ describe("sideways cardigan builder validation", () => {
     expect(validateSidewaysCardiganBuilder(VALID)).toBeNull();
   });
 
+  it("does not require a sleeve-direction selection", () => {
+    const { sleeveDirection: _direction, ...withoutDirection } = VALID;
+    expect(validateSidewaysCardiganBuilder(withoutDirection)).toBeNull();
+    expect(validateSidewaysCardiganBuilder({ ...VALID, sleeveDirection: "" })).toBeNull();
+  });
+
   it("blocks creation when wrist stitches are not narrower than the upper arm", () => {
     const error = validateSidewaysCardiganBuilder({
       ...VALID,
@@ -135,14 +141,13 @@ describe("sideways cardigan builder validation", () => {
     expect(error?.message).toMatch(/not long enough to distribute/i);
   });
 
-  it("does not run conventional sleeve shaping checks when Sideways is selected", () => {
-    expect(
-      validateSidewaysCardiganBuilder({
-        ...VALID,
-        sleeveDirection: "sideways",
-        wristInches: 16,
-      }),
-    ).toBeNull();
+  it("still checks conventional sleeve shaping when a stored direction is sideways", () => {
+    const error = validateSidewaysCardiganBuilder({
+      ...VALID,
+      sleeveDirection: "sideways",
+      wristInches: 16,
+    });
+    expect(error?.code).toBe("wrist-not-less-than-upper-arm");
   });
 
   it("blocks creation when sleeve stitches exceed available needles even if the body fits", () => {

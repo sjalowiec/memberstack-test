@@ -121,7 +121,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(headerDetails).toContain("Women's");
     expect(headerDetails).toContain("Chart size 8");
     expect(headerDetails).toContain("Standard");
-    expect(headerDetails).toContain("Cuff up · Long");
+    expect(headerDetails).toContain(">Long<");
+    expect(headerDetails).not.toContain("Cuff up");
     expect(headerDetails).toContain("sts /");
     expect(headerDetails).toContain("rows over");
     expect(view.instructions).not.toBeNull();
@@ -139,6 +140,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
     expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
     expect(view.sleeveHtml).toContain("Make 2 sleeves");
+    expect(view.sleeveHtml).toContain(">Cuff Up<");
+    expect(view.sleeveHtml).toContain(">Top Down<");
     expect(view.sleeveHtml).not.toContain("Wrist/Cuff");
     expect(view.sleeveHtml).toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
@@ -153,14 +156,14 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
       sleeveDirection: "sideways",
     });
     expect(view.input.finishedUpperArmInches).toBe(15);
-    expect(view.summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
-    expect(view.sleeveDirection).toBe("sideways");
-    expect(view.sleeveInstructions).toBeNull();
-    expect(view.sleeveHtml).toContain("Sideways sleeve calculations are not yet connected.");
-    expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(wrist\)/);
-    expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(upper arm\)/);
-    expect(view.sleeveHtml).not.toContain("Make 2 sleeves");
-    expect(view.sleeveHtml).not.toContain("data-sideways-sleeve-diagram-tabs-mount");
+    expect(view.summary.rows.find((row) => row.term === "Sleeve direction")).toBeUndefined();
+    expect(view.sleeveDirection).toBe("cuff-up");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
+    expect(view.sleeveHtml).toContain(">Cuff Up<");
+    expect(view.sleeveHtml).toContain(">Top Down<");
+    expect(view.sleeveHtml).not.toContain("Sideways sleeve calculations are not yet connected.");
+    expect(view.sleeveHtml).toContain("Make 2 sleeves");
+    expect(view.sleeveHtml).toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 
   it("keeps user measurement overrides on the workspace", () => {
@@ -187,9 +190,11 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.input.neckOpeningWidthInches).toBe(8);
     expect(view.input.finishedUpperArmInches).toBe(16);
     expect(view.pattern.style).toMatchObject({ sleeveDirection: "top-down" });
-    expect(view.sleeveDirection).toBe("top-down");
-    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-upper-arm");
-    expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-wrist");
+    expect(view.sleeveDirection).toBe("cuff-up");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
+    expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
+    expect(view.sleeveHtml).toContain(">Cuff Up<");
+    expect(view.sleeveHtml).toContain(">Top Down<");
   });
 
   it("persists sleeve direction for workspace refresh", () => {
@@ -205,8 +210,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(refreshed.input).toEqual(first.input);
     expect(refreshed.instructions?.steps).toEqual(first.instructions?.steps);
     expect(refreshed.sleeveInstructions?.steps).toEqual(first.sleeveInstructions?.steps);
-    expect(refreshed.sleeveDirection).toBe("top-down");
-    expect(refreshed.sleeveInstructions?.steps[0]?.id).toBe("cast-on-upper-arm");
+    expect(refreshed.sleeveDirection).toBe("cuff-up");
+    expect(refreshed.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
     expect(refreshed.summary).toEqual(first.summary);
     expect(getCurrentPattern().style.sleeveDirection).toBe("top-down");
   });
@@ -405,11 +410,12 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain("Misses");
     expect(builder).toContain("Women's");
     expect(builder).not.toContain(">Plus<");
-    expect(builder).toContain('data-field="sleeveDirection"');
+    expect(builder).not.toContain('data-field="sleeveDirection"');
+    expect(builder).not.toContain("Sleeve direction");
+    expect(builder).not.toContain('data-value="cuff-up"');
+    expect(builder).not.toContain('data-value="top-down"');
+    expect(builder).not.toContain('data-value="sideways"');
     expect(builder).toContain('data-field="sleeveLength"');
-    expect(builder).toContain('data-value="cuff-up"');
-    expect(builder).toContain('data-value="top-down"');
-    expect(builder).toContain('data-value="sideways"');
     expect(builder).toContain('value: "long"');
     expect(builder).toContain('value: "three-quarter"');
     expect(builder).toContain('value: "elbow"');

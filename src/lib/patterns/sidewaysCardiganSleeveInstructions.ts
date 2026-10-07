@@ -301,17 +301,18 @@ export function renderSidewaysCardiganSleeveSequenceHtml(
 }
 
 /**
- * Builder direction until the knitter changes the finished-pattern choice.
- * That change uses the same localStorage key as Drop Shoulder.
+ * Knitting-time sleeve direction for the finished pattern.
+ * The builder's stored sleeveDirection is ignored. Cuff Up and Top Down stay
+ * available on the finished pattern; a choice made there uses the same
+ * localStorage key as Drop Shoulder. With no knitting-time choice, open on cuff-up.
  */
 export function resolveSidewaysFinishedSleeveDirection(
-  builderDirection: SidewaysCardiganSleeveDirection,
+  _builderDirection: SidewaysCardiganSleeveDirection,
   patternId: string,
-): SidewaysCardiganConventionalSleeveDirection | "sideways" {
-  if (builderDirection === "sideways") return "sideways";
+): SidewaysCardiganConventionalSleeveDirection {
   const stored = readStoredDropShoulderSleeveConstruction(patternId);
-  if (stored) return stored;
-  return builderDirection === "top-down" ? "top-down" : "cuff-up";
+  if (stored === "top-down" || stored === "cuff-up") return stored;
+  return "cuff-up";
 }
 
 export function renderSidewaysSleeveSequenceForDirection(

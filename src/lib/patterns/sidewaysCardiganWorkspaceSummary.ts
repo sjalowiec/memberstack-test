@@ -8,8 +8,6 @@ import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
 import {
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
-  parseSidewaysCardiganSleeveDirection,
   resolveSidewaysCardiganGarmentStyle,
   type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
@@ -85,8 +83,6 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
   const halfNeckInches = rowsToInches(calc.halfNeckRows, input.rowsPerInch) ?? 0;
   const shoulderInches =
     rowsToInches(calc.shoulders.firstFrontRows, input.rowsPerInch) ?? 0;
-  const sleeve =
-    parseSidewaysCardiganSleeveDirection(args.sleeveDirection) ?? "cuff-up";
   const garmentStyle = resolveSidewaysCardiganGarmentStyle({
     garmentStyle: args.garmentStyle,
   });
@@ -151,10 +147,6 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
     {
       term: "Total bust rows",
       def: formatRowsCount(calc.bust.actualTotalBustRows),
-    },
-    {
-      term: "Sleeve direction",
-      def: SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[sleeve],
     },
     ...(args.sleeveCalc
       ? sidewaysCardiganSleeveFinishedMeasurementPairs(args.sleeveCalc)

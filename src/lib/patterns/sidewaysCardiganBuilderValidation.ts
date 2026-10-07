@@ -14,7 +14,6 @@ import {
 import { parsePositiveInchesField } from "./sidewaysCardiganStyleMeasurements";
 import {
   calculateSidewaysCardiganSleeve,
-  isSidewaysCardiganConventionalSleeveDirection,
   type SidewaysCardiganSleeveCalcErrorCode,
 } from "./sidewaysCardiganSleeveCalc";
 
@@ -101,7 +100,6 @@ export function validateSidewaysCardiganBuilder(
     (audience !== "misses" && audience !== "plus") ||
     !size ||
     (fit !== "close" && fit !== "standard" && fit !== "relaxed") ||
-    (sleeve !== "cuff-up" && sleeve !== "top-down" && sleeve !== "sideways") ||
     length === undefined ||
     vNeck === undefined ||
     neckOpening === undefined ||
@@ -160,21 +158,20 @@ export function validateSidewaysCardiganBuilder(
   });
   if (bodyNeedles) return bodyNeedles;
 
-  if (isSidewaysCardiganConventionalSleeveDirection(sleeve)) {
-    const sleeveResult = calculateSidewaysCardiganSleeve({
-      direction: sleeve,
-      finishedUpperArmInches: upperArm,
-      finishedWristInches: wrist,
-      sleeveLengthInches: sleeveLength,
-      stitchesPerInch: spi,
-      rowsPerInch: rpi,
-      cuffDepthInches: getDefaultCuffLengthInches(audience),
-      armholeDepthInches: armholeDepthInches ?? upperArm / 2,
-      availableNeedles,
-    });
-    if (!sleeveResult.ok) {
-      return mapSleeveCalcErrorToBuilderError(sleeveResult.error.code, sleeveResult.error.message);
-    }
+  const sleeveCheckDirection = sleeve === "top-down" ? "top-down" : "cuff-up";
+  const sleeveResult = calculateSidewaysCardiganSleeve({
+    direction: sleeveCheckDirection,
+    finishedUpperArmInches: upperArm,
+    finishedWristInches: wrist,
+    sleeveLengthInches: sleeveLength,
+    stitchesPerInch: spi,
+    rowsPerInch: rpi,
+    cuffDepthInches: getDefaultCuffLengthInches(audience),
+    armholeDepthInches: armholeDepthInches ?? upperArm / 2,
+    availableNeedles,
+  });
+  if (!sleeveResult.ok) {
+    return mapSleeveCalcErrorToBuilderError(sleeveResult.error.code, sleeveResult.error.message);
   }
 
   return null;

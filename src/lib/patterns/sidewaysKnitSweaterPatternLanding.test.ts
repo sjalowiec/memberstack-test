@@ -129,17 +129,17 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
     const sleeveCard = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.choices?.items.find(
       (item) => item.title === "Sleeve style",
     );
-    expect(sleeveCard?.description).toBe(
-      "Choose cuff-up or top-down sleeves, in long, 3/4, elbow, or short lengths.",
-    );
+    expect(sleeveCard?.description).toBe("Choose long, 3/4, elbow, or short sleeves.");
     expect(sleeveCard?.description).not.toMatch(/sideways/i);
     expect(landingCopy()).not.toMatch(/not yet connected/i);
     expect(landingCopy()).toMatch(/not unlimited sizing/);
     expect(builderPage).toContain("Cardigan");
     expect(builderPage).toContain("Pullover");
     expect(builderPage).toContain("Close fit");
-    expect(builderPage).toContain("Cuff up");
-    expect(builderPage).toContain("Top down");
+    expect(builderPage).toContain("Choose your sleeve length");
+    expect(builderPage).not.toContain("Sleeve direction");
+    expect(builderPage).not.toContain("Cuff up");
+    expect(builderPage).not.toContain("Top down");
     expect(builderPage).toContain("Enter your gauge");
   });
 

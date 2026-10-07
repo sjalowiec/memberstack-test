@@ -37,7 +37,6 @@ import {
 import {
   parseSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS,
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
@@ -351,13 +350,10 @@ function refreshUi(state: BuilderState, openStep: number): void {
   setSummary("garmentStyle", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]);
   setSummary("selectedSize", startingSizeSummary(state));
   setSummary("fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)} fit` : "");
-  const sleeveSummary = [
-    state.sleeveDirection ? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection] : "",
+  setSummary(
+    "sleeve",
     state.sleeveLengthChoice ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice] : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  setSummary("sleeve", sleeveSummary);
+  );
 
   document.querySelectorAll<HTMLButtonElement>("[data-choice]").forEach((btn) => {
     const field = btn.getAttribute("data-field");

@@ -229,7 +229,8 @@ describe("Sideways V-Neck five-step builder", () => {
       elbow: "Elbow",
       short: "Short",
     });
-    expect(builderAstro).toContain('data-field="sleeveDirection"');
+    expect(builderAstro).not.toContain('data-field="sleeveDirection"');
+    expect(builderAstro).not.toContain("Sleeve direction");
     expect(builderAstro).toContain('data-field="sleeveLength"');
     expect(builderAstro).toContain('value: "long"');
     expect(builderAstro).not.toContain('{ "is-selected": i === 0 }');
@@ -429,7 +430,7 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     }
   });
 
-  it("does not close the step when length is chosen first", () => {
+  it("closes the step when sleeve length is chosen, without a direction", () => {
     const state = initializeFreshSidewaysCardiganBuilderState();
     expect(state.sleeveLengthChoice).toBe("");
     expect(state.sleeveDirection).toBe("");
@@ -442,12 +443,12 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     expect(state.sleeveLengthChoice).toBe("elbow");
     expect(state.sleeveDirection).toBe("");
     expect(restored.sleeveDirection).toBe("");
-    expect(result.complete).toBe(false);
-    expect(result.openStep).toBe(4);
-    expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(false);
+    expect(result.complete).toBe(true);
+    expect(result.openStep).toBe(5);
+    expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(true);
   });
 
-  it("completes and advances to Gauge and Machine only after both are selected", () => {
+  it("keeps a stored direction without requiring it to finish the sleeve step", () => {
     const state = initializeFreshSidewaysCardiganBuilderState();
     expect(state.sleeveLengthChoice).toBe("");
     const afterDirection = applySidewaysCardiganSleeveChoice(state, "sleeveDirection", "top-down");
@@ -461,7 +462,7 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(true);
   });
 
-  it("reopens a draft with only one sleeve selection as incomplete", () => {
+  it("reopens a length-only draft as complete and a direction-only draft as incomplete", () => {
     syncSidewaysCardiganBuilderToPatternStorage(
       { ...baseValues, sleeveDirection: "sideways", sleeveLengthChoice: "long" },
       missesRow,
@@ -490,7 +491,7 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     const lengthOnly = readSidewaysCardiganBuilderStateFromDraft();
     expect(lengthOnly.sleeveDirection).toBe("");
     expect(lengthOnly.sleeveLengthChoice).toBe("three-quarter");
-    expect(isSidewaysCardiganSleeveStepComplete(lengthOnly)).toBe(false);
+    expect(isSidewaysCardiganSleeveStepComplete(lengthOnly)).toBe(true);
   });
 
   it("restores a draft with both sleeve selections as complete", () => {

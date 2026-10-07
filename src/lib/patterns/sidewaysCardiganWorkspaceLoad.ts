@@ -32,7 +32,7 @@ import {
 import {
   buildSidewaysCardiganSleeveInstructions,
   renderSidewaysCardiganSleeveSequenceHtml,
-  renderSidewaysSleeveNotConnectedHtml,
+  resolveSidewaysFinishedSleeveDirection,
   type SidewaysCardiganSleeveInstructions,
 } from "./sidewaysCardiganSleeveInstructions";
 import {
@@ -120,15 +120,11 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
       rowsPerInch: args.input.rowsPerInch,
     },
   );
-  const sleeveDirection = inspected.sleeveDirection;
-
-  if (sleeveDirection === "sideways") {
-    return {
-      sleeveDirection,
-      sleeveInstructions: null,
-      sleeveHtml: isDev() ? renderSidewaysSleeveNotConnectedHtml() : "",
-    };
-  }
+  const patternId = String(args.pattern.id ?? "").trim() || "default";
+  const sleeveDirection = resolveSidewaysFinishedSleeveDirection(
+    inspected.sleeveDirection,
+    patternId,
+  );
 
   if (!inspected.input) {
     const missing = inspected.missing;
@@ -149,7 +145,10 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
     };
   }
 
-  const sleeve = buildSidewaysCardiganSleeveInstructions(inspected.input);
+  const sleeve = buildSidewaysCardiganSleeveInstructions({
+    ...inspected.input,
+    direction: sleeveDirection,
+  });
   if (!sleeve.ok) {
     const diagnostic = `[DEV] Sleeve calculation failed (${sleeve.error.code}).`;
     return {
