@@ -146,6 +146,17 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS: PatternSummaryMeasurementFie
   },
 ];
 
+/**
+ * Pullover Build/Edit already labels this chip "Armhole depth".
+ * The shared hint overlaps that diagram, so only Pullover hides it.
+ * Cardigan keeps the hint.
+ */
+export function sidewaysArmholeDepthHelperHidden(
+  garmentStyle: SidewaysCardiganGarmentStyle,
+): boolean {
+  return garmentStyle === "pullover";
+}
+
 export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementField[] = [
   {
     ...MEASURE_INPUT,

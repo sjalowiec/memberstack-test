@@ -53,6 +53,7 @@ import {
   emptySidewaysCardiganSummaryMeasurements,
   readSidewaysCardiganSummaryMeasurements,
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
+  sidewaysArmholeDepthHelperHidden,
   summaryMeasurementsToInches,
   type SidewaysCardiganSummaryMeasurementKey,
   type SidewaysCardiganSummaryMeasurements,
@@ -406,7 +407,16 @@ function initWorkspace(root: HTMLElement): void {
     overlayCleanup = bindPatternSummaryOverlayPositioning(stageInner, svg, overlay, anchors);
   }
 
+  function syncArmholeDepthHelper(): void {
+    const secondary = workspace.querySelector<HTMLElement>(
+      "[data-ps-measure-id='armholeDepth'] .ps-measure-chip__secondary",
+    );
+    if (!secondary) return;
+    secondary.hidden = sidewaysArmholeDepthHelperHidden(state.garmentStyle);
+  }
+
   function mountDiagram(): void {
+    syncArmholeDepthHelper();
     if (!diagramHost) return;
     const inspected = inspectSidewaysCardiganBodyCalcInputFromPattern(
       mergeSidewaysCardiganWorkingDraft(),

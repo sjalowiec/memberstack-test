@@ -16,6 +16,7 @@ import {
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS,
   SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS,
+  sidewaysArmholeDepthHelperHidden,
 } from "./sidewaysCardiganSummaryEdit";
 import {
   buildSidewaysCardiganEditMeasurementDiagramSvg,
@@ -325,6 +326,21 @@ describe("Sideways Summary/Edit live measurement edits", () => {
       "sleeveLength",
       "wrist",
     ]);
+  });
+
+  it("hides Sets armhole depth under the Pullover Armhole depth chip only", () => {
+    const armhole = SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.find((field) => field.id === "armholeDepth");
+    expect(armhole?.label).toBe("Armhole depth");
+    expect(armhole?.secondary).toBe("Sets armhole depth");
+    expect(armhole?.transform).toBe("translate(-50%, calc(-100% - 8px))");
+    expect(sidewaysArmholeDepthHelperHidden("pullover")).toBe(true);
+    expect(sidewaysArmholeDepthHelperHidden("cardigan")).toBe(false);
+    expect(
+      SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((field) => field.id === "finishedUpperArm")?.secondary,
+    ).toBe("Sets armhole depth");
+    expect(summaryScript).toContain("syncArmholeDepthHelper");
+    expect(summaryScript).toContain("sidewaysArmholeDepthHelperHidden");
+    expect(summaryScript).toContain("[data-ps-measure-id='armholeDepth'] .ps-measure-chip__secondary");
   });
 
   it("changing one measurement does not reset the other overrides", () => {
