@@ -217,6 +217,9 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
     expect(type.notation / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
     expect(type.row / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_MEASURE / DS_VB_W, 2);
     expect(type.piece / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_TITLE / DS_VB_W, 2);
+    expect(type.note / canvas.type.viewBoxWidth).toBeCloseTo(9 / DS_VB_W, 2);
+    expect(type.note).toBeLessThan(type.piece);
+    expect(type.note).toBeLessThan(type.row);
     expect(type.notationGap / canvas.type.viewBoxWidth).toBeCloseTo(DS_NOTATION_GAP / DS_VB_W, 2);
     expect(type.stitch).toBeGreaterThan(DS_FS_NOTATION);
 
@@ -226,7 +229,10 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
       expect(svg).not.toMatch(/font-size="(?:11|12)"/);
       const labels = diagramTexts(svg);
       expect(labels.every((label) => label.family === DS_FONT || label.family === "")).toBe(true);
-      expect(labels.every((label) => label.size >= type.piece)).toBe(true);
+      const notes = labels.filter((label) => label.role === "side-seam-marker-label");
+      const measurements = labels.filter((label) => label.role !== "side-seam-marker-label");
+      expect(measurements.every((label) => label.size >= type.piece)).toBe(true);
+      expect(notes.every((label) => label.size === type.note && label.size < type.piece)).toBe(true);
     }
 
     const piece = byRole(sts, "front-rows")[0];

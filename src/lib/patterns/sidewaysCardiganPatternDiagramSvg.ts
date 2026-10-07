@@ -172,13 +172,15 @@ export type SidewaysPatternDiagramType = {
   row: number;
   piece: number;
   pieceWeight: number;
+  /** Instruction note, smaller than piece titles and measurement values. */
+  note: number;
   notation: number;
   notationGap: number;
 };
 
 /**
  * Shared finished-pattern type (stitch/notation 17, row/measure 14, piece title 13,
- * notation gap 18 on the 430-wide Drop Shoulder viewBox), scaled so a Sideways SVG
+ * instruction note 9, notation gap 18 on the 430-wide Drop Shoulder viewBox), scaled so a Sideways SVG
  * at `width: 100%` matches that on-screen size. Does not scale the silhouette.
  */
 export function sidewaysPatternDiagramTypography(viewBoxWidth: number): SidewaysPatternDiagramType {
@@ -191,6 +193,7 @@ export function sidewaysPatternDiagramTypography(viewBoxWidth: number): Sideways
     row: px(DS_FS_MEASURE),
     piece: px(DS_FS_TITLE),
     pieceWeight: DS_FW_TITLE,
+    note: px(9),
     notation: px(DS_FS_NOTATION),
     notationGap: px(DS_NOTATION_GAP),
   };
@@ -645,7 +648,7 @@ export function buildSidewaysCardiganPatternDiagramSvg(
       : drawCardiganStsRows(frame, model, canvas.type, canvas);
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline"${svgDataAttrs(model, "sts-rows")}>`,
-    silhouetteMarkup(frame, canvas.type.row),
+    silhouetteMarkup(frame, canvas.type.note),
     labels,
     `</svg>`,
   ].join("");

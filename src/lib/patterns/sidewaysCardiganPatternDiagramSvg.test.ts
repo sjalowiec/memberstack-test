@@ -182,8 +182,13 @@ describe("Sideways Stitches & Rows diagram", () => {
       expect(markers.map((marker) => marker.edge).sort()).toEqual(["bind-off", "cast-on"]);
       expect(markers.every((marker) => marker.sts === String(seam.stitchesFromNeckEdge))).toBe(true);
       expect(markers.every((marker) => marker.x === expectedX)).toBe(true);
-      expect(svg).toContain('data-role="side-seam-marker-span"');
-      expect(svg.match(/data-role="side-seam-marker-label"/g)).toHaveLength(2);
+      expect(svg).not.toContain('data-role="side-seam-marker-span"');
+      expect(svg).not.toContain("stroke-dasharray=\"3 3\"");
+      expect(svg.match(/data-role="place-marker"[\s\S]*?fill="#c62828"/g)).toHaveLength(2);
+      const markerLabels = [...svg.matchAll(/data-role="side-seam-marker-label"[^>]*>/g)];
+      expect(markerLabels).toHaveLength(2);
+      expect(markerLabels.every((label) => label[0].includes('fill="#1a1a1a"'))).toBe(true);
+      expect(markerLabels.every((label) => !label[0].includes('fill="#c62828"'))).toBe(true);
     }
     const editMarkers = placeMarkers(edit);
     const castOn = editMarkers.find((marker) => marker.edge === "cast-on");

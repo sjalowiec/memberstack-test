@@ -547,18 +547,17 @@ export function pulloverFirstArmholeMarkerLayout(
   };
 }
 
+/** Side-seam place-marker dots. The label stays in the diagram's normal text color. */
+const PULLOVER_PLACE_MARKER_DOT = "#c62828";
+
 function drawPulloverSideSeamMarkerGeometry(layout: PulloverFirstArmholeMarkerLayout): string {
   const { x, castOnY, bindOffY, stitchesFromNeck } = layout;
   const dot = (edge: "cast-on" | "bind-off", y: number) =>
     `<g data-role="place-marker" data-edge="${edge}" data-side-seam-join="first-armhole" data-stitches-from-neck="${stitchesFromNeck}" data-x="${fmtNum(x)}" data-y="${fmtNum(y)}">` +
     `<title>Place marker, ${stitchesFromNeck} stitches from the neck edge</title>` +
-    `<circle cx="${fmtNum(x)}" cy="${fmtNum(y)}" r="5" fill="${DS_ARROW}" stroke="#fff" stroke-width="1.4"/>` +
+    `<circle cx="${fmtNum(x)}" cy="${fmtNum(y)}" r="5" fill="${PULLOVER_PLACE_MARKER_DOT}" stroke="#fff" stroke-width="1.4"/>` +
     `</g>`;
-  return [
-    `<line data-role="side-seam-marker-span" data-side-seam-join="first-armhole" data-stitches-from-neck="${stitchesFromNeck}" x1="${fmtNum(x)}" y1="${fmtNum(castOnY)}" x2="${fmtNum(x)}" y2="${fmtNum(bindOffY)}" fill="none" stroke="${DS_ARROW}" stroke-width="1.4" stroke-dasharray="3 3"/>`,
-    dot("cast-on", castOnY),
-    dot("bind-off", bindOffY),
-  ].join("");
+  return [dot("cast-on", castOnY), dot("bind-off", bindOffY)].join("");
 }
 
 /** Labels sit in the caller's coordinate space so a flipped silhouette can pass visual Y. */
@@ -569,7 +568,7 @@ export function drawPulloverSideSeamMarkerLabels(
   if (!layout) return "";
   const label = (edge: "cast-on" | "bind-off", y: number) => {
     const labelY = edge === "cast-on" ? y - fontSize - 4 : y + fontSize + 4;
-    return `<text data-role="side-seam-marker-label" data-edge="${edge}" data-side-seam-join="first-armhole" data-stitches-from-neck="${layout.stitchesFromNeck}" x="${fmtNum(layout.x)}" y="${fmtNum(labelY)}" text-anchor="middle" font-family="${DS_FONT}" font-size="${fontSize}" font-weight="600" fill="${DS_ARROW}">Place marker</text>`;
+    return `<text data-role="side-seam-marker-label" data-edge="${edge}" data-side-seam-join="first-armhole" data-stitches-from-neck="${layout.stitchesFromNeck}" x="${fmtNum(layout.x)}" y="${fmtNum(labelY)}" text-anchor="middle" font-family="${DS_FONT}" font-size="${fontSize}" font-weight="500" fill="${DS_STROKE}">Place marker</text>`;
   };
   return label("cast-on", layout.castOnY) + label("bind-off", layout.bindOffY);
 }
@@ -1104,7 +1103,7 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
       garmentStyle === "pullover"
         ? drawPulloverSideSeamMarkerLabels(
             pulloverFirstArmholeMarkerLayout(frame, true),
-            type.name,
+            type.support,
           )
         : "",
       drawDimensions(frame, unit, type),
