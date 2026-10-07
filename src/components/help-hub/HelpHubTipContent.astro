@@ -34,6 +34,7 @@ const view = prepareHelpHubTipPage(
 const {
   memberResourceCards,
   memberLessonsSectionTitle,
+  watchAndLearnVideos,
   whyBody,
   tipJumpLinks,
   appliesToList,
@@ -59,9 +60,13 @@ const {
 const scope = idPrefix.trim();
 const whyHeadingId = scope ? `${scope}-why` : "help-hub-why-heading";
 const memberHeadingId = scope ? `${scope}-member-lessons` : "member-lessons-heading";
+const watchHeadingId = scope ? `${scope}-watch-and-learn` : "help-hub-watch-heading";
+const watchHasMemberVideo = watchAndLearnVideos.some((video) => video.access === "member");
 const lessonDomId = helpHubToolDomId(
   scope || (typeof tip.slug === "string" ? tip.slug : "") || "entry",
 );
+const watchDialogId = `${lessonDomId}-watch-modal`;
+const watchTitleId = `${watchDialogId}-title`;
 const lessonPanelId = `${lessonDomId}-member-lessons-panel`;
 const lessonDialogId = `${lessonDomId}-lesson-modal`;
 const lessonTitleId = `${lessonDialogId}-title`;
@@ -286,6 +291,103 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
             <p class="try-note" set:html={tip.tryNote}></p>)}
           </div>
         </div>
+      </section>
+    )}
+
+    {watchAndLearnVideos.length > 0 && (
+      <section
+        class="tuesday-tip__section help-hub-watch"
+        aria-labelledby={watchHeadingId}
+        data-help-hub-watch
+        data-help-hub-lessons={watchHasMemberVideo ? "true" : undefined}
+        data-help-hub-lesson-return={watchHasMemberVideo ? lessonLoginReturn || undefined : undefined}
+      >
+        <h2 id={watchHeadingId} class="tuesday-tip__section-heading">
+          Watch and Learn
+        </h2>
+        <ul class="help-hub-watch__list">
+          {watchAndLearnVideos.map((video) => {
+            const titleEnding = lessonTitleEnding(video.title);
+            return (
+              <li class="help-hub-watch__item">
+                <p
+                  class:list={[
+                    "help-hub-watch__access",
+                    video.access === "open"
+                      ? "help-hub-watch__access--open"
+                      : "help-hub-watch__access--member",
+                  ]}
+                >
+                  {video.accessLabel}
+                </p>
+                {video.access === "open" ? (
+                  <a class="help-hub-watch__title" href={video.href}>
+                    {video.title}
+                  </a>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      class="help-hub-member-lessons__lesson help-hub-watch__title"
+                      data-help-hub-lesson-open
+                      data-lesson-title={video.title}
+                      data-content-id={String(video.contentId)}
+                      aria-controls={watchDialogId}
+                      aria-expanded="false"
+                    >
+                      <span class="help-hub-member-lessons__lesson-label">
+                        {titleEnding.lead}
+                        <span class="help-hub-member-lessons__title-end">
+                          {titleEnding.end}
+                          <span class="help-hub-member-lessons__play" aria-hidden="true"></span>
+                        </span>
+                      </span>
+                    </button>
+                    <div class="help-hub-member-lessons__gate" data-hh-lesson-gate hidden>
+                      <div
+                        class="help-hub-member-lessons__cta-mount"
+                        data-hh-lesson-cta
+                        data-lesson-href={video.href}
+                      ></div>
+                      <p class="help-hub-member-lessons__note" data-hh-lesson-note hidden>
+                        Included with Knit it Now membership.
+                      </p>
+                    </div>
+                  </>
+                )}
+                {video.description ? <p class="help-hub-watch__description">{video.description}</p> : null}
+              </li>
+            );
+          })}
+        </ul>
+        {watchHasMemberVideo && (
+          <div
+            id={watchDialogId}
+            class="help-hub-lesson-modal"
+            data-help-hub-lesson-modal
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={watchTitleId}
+            tabindex="-1"
+            hidden
+          >
+            <div class="help-hub-lesson-modal__panel">
+              <div class="help-hub-lesson-modal__header">
+                <h2 id={watchTitleId} class="help-hub-lesson-modal__title" data-help-hub-lesson-modal-title>
+                  Lesson
+                </h2>
+                <button type="button" class="help-hub-lesson-modal__close" data-help-hub-lesson-close>
+                  Close
+                </button>
+              </div>
+              <div class="help-hub-lesson-modal__body">
+                <div class="help-hub-lesson-modal__player" data-help-hub-lesson-player>
+                  <p class="help-hub-lesson-modal__status" data-help-hub-lesson-status aria-live="polite"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     )}
 
@@ -699,6 +801,60 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
 
   .tuesday-tip__try-heading {
     margin: 0 0 0.75rem;
+  }
+
+  .help-hub-watch__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 860px;
+  }
+
+  .help-hub-watch__item {
+    margin: 0;
+    padding: clamp(0.9rem, 2vw, 1.1rem);
+    border: 1px solid rgba(82, 104, 45, 0.25);
+    border-radius: 12px;
+    background: #f7faf4;
+  }
+
+  .help-hub-watch__access {
+    margin: 0 0 0.45rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .help-hub-watch__access--open {
+    color: var(--kbm-green, #52682d);
+  }
+
+  .help-hub-watch__access--member {
+    color: #6b4a2a;
+  }
+
+  .help-hub-watch__title {
+    display: inline-flex;
+    color: #3f4b35;
+    font-size: 1.05rem;
+    font-weight: 650;
+    line-height: 1.35;
+    text-decoration: none;
+  }
+
+  a.help-hub-watch__title:hover,
+  a.help-hub-watch__title:focus-visible {
+    text-decoration: underline;
+  }
+
+  .help-hub-watch__description {
+    margin: 0.55rem 0 0;
+    color: #2f3a25;
+    line-height: 1.55;
   }
 
   .tuesday-tip__try-subhead {

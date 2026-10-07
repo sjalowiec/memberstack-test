@@ -36,6 +36,16 @@
         "Observe the stability of the cut edge"
       ]
     },
+    "watchAndLearn": [
+      {
+        "contentId": 249,
+        "description": "Learn the basics of securing and cutting knitted fabric before trying the technique on your own project."
+      },
+      {
+        "contentId": 857,
+        "description": "Discover how stabilizer can help you achieve clean, professional results when cutting knitted fabric."
+      }
+    ],
     "relatedLessons": [
       "use-stabilizer-for-clean-confident-cut-n-sew-edges"
     ],

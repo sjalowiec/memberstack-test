@@ -17,6 +17,7 @@ import {
 } from "./memberResources";
 import { isMemberOnlyToolPath } from "../tools/toolMembership";
 import { helpHubRelatedToolButton, type HelpHubRelatedToolButton } from "./adminForm";
+import { resolveHelpHubWatchAndLearn, type HelpHubWatchAndLearnVideo } from "./watchAndLearn";
 import {
   helpHubRelatedToolModal,
   type HelpHubRelatedToolModal,
@@ -69,6 +70,8 @@ export type HelpHubPageTip = {
   tryImageCaption?: string;
   relatedLessons?: (string | number)[];
   relatedLibraryVideos?: unknown;
+  /** Related catalog videos shown after Try This. Titles and access come from the catalog. */
+  watchAndLearn?: unknown;
   memberResourceOrder?: unknown;
   relatedToolEyebrow?: string;
   relatedToolTitle?: string;
@@ -181,6 +184,9 @@ export function prepareHelpHubTipPage(
     memberResourceCards,
     memberLessonsSectionTitle:
       memberResourceCards.length === 1 ? "Member Lesson" : "Member Lessons",
+    watchAndLearnVideos: resolveHelpHubWatchAndLearn(tip.watchAndLearn, catalogVideosHelpHub, {
+      tipSlug,
+    }) satisfies HelpHubWatchAndLearnVideo[],
     whyBody: whyBodyRaw,
     tipJumpLinks: Array.isArray(tip.jumpLinks)
       ? tip.jumpLinks.filter(
