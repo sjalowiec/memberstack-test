@@ -31,6 +31,7 @@ import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import { getCurrentPattern, getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 import { overrideRecordsEqual } from "./patternSectionPatch";
 import { sizingIdentityEquals } from "./savedCustomPatternSessionIdentity";
+import { repairHistoricalTenTimesMeasurementOverrides } from "./historicalTenTimesMeasurementOverrideRepair";
 
 export const DROP_SHOULDER_REVIEW_DIAGRAM_DIRTY_KEY = "dropShoulderReviewDiagramDirty";
 export const DROP_SHOULDER_REVIEW_DISPLAY_IDENTITY_KEY = "dropShoulderReviewDisplayIdentity";
@@ -232,7 +233,15 @@ export function buildDropShoulderReviewMergedInches(args: {
     chartAudience: args.audience,
     selectedSize: normalizeChartRowSize(args.row) || args.selectedSize.trim(),
   };
-  const overrides = loadMeasurementOverrides();
+  const loadedOverrides = loadMeasurementOverrides();
+  const overrides = repairHistoricalTenTimesMeasurementOverrides(loadedOverrides, {
+    audience: args.audience,
+    selectedSize: args.selectedSize,
+    fitPreference: args.fitPreference,
+    bodyShape: args.bodyShape,
+    dropShoulder: true,
+    chartRow: args.row,
+  });
   const reconciled = reconcileCustomBuildOverridesForSizingIdentityChange({
     currentIdentity,
     currentRow: args.row,
@@ -242,7 +251,7 @@ export function buildDropShoulderReviewMergedInches(args: {
     dropShoulder: true,
   });
 
-  if (!overrideRecordsEqual(reconciled, overrides)) {
+  if (!overrideRecordsEqual(reconciled, loadedOverrides)) {
     persistMeasurementOverrides(reconciled);
   }
 

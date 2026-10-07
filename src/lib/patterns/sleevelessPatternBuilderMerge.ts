@@ -28,6 +28,7 @@ import {
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveMeasurementDisplayUnitFromPatternData } from "./patternMeasurementDisplayUnit";
 import { authoritativePerInchFromRawSwatchSources } from "./rawSwatchGauge";
+import { repairSavedPatternMeasurementOverrides } from "./historicalTenTimesMeasurementOverrideRepair";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -440,7 +441,9 @@ export function buildGeneratorPatternDataFromSources(
       gaugeRawUnit,
     },
   };
-  const finalGen = applyCustomBuildMeasurementOverridesToGenerator(gen);
+  const finalGen = repairGeneratorMeasurementOverrides(
+    applyCustomBuildMeasurementOverridesToGenerator(gen),
+  );
   if (patternMode === "custom-build" && garmentKind) {
     logSleevelessGarmentKindResolution(
       {
@@ -454,6 +457,18 @@ export function buildGeneratorPatternDataFromSources(
     );
   }
   return finalGen;
+}
+
+/** Historical 10× overrides are normalized before cast-on math and machine-width checks. */
+function repairGeneratorMeasurementOverrides(
+  gen: Record<string, unknown>,
+): Record<string, unknown> {
+  const repaired = repairSavedPatternMeasurementOverrides({
+    style: gen.style,
+    fit: gen.fit,
+  });
+  if (repaired.fit === gen.fit) return gen;
+  return { ...gen, fit: repaired.fit };
 }
 
 /**
