@@ -23,6 +23,9 @@ import {
   type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import { SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE } from "./sidewaysCardiganSleeveCuffCopy";
+import { sleevelessHelpVideoFromCatalog } from "./sleevelessCatalogHelpVideo";
+import type { PublicVideoRow } from "../lessonVideo";
+import videosPublic from "../../data/videos-public.json";
 import { buildDropShoulderSleeveDisplayRows } from "./dropShoulderPatternOutput";
 import {
   renderPatternDisplayRowsHtml,
@@ -230,6 +233,26 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/** Learning Library content_id for “Sleeves in the Round”. */
+export const SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID = 895;
+
+export function sidewaysPulloverRoundSleeveNoteHtml(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): string {
+  const video = sleevelessHelpVideoFromCatalog(SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID, catalog);
+  if (!video) return "";
+  const link =
+    `<button type="button" class="kbm-kin-catalog-video pattern-help-link__button"` +
+    ` data-vimeo-id="${escapeHtml(video.id)}"` +
+    ` data-video-title="${escapeHtml(video.title)}"` +
+    ` data-content-id="${SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID}"` +
+    ` data-video-autoplay="false"` +
+    ` data-sideways-pullover-round-sleeve-video` +
+    ` aria-haspopup="dialog">` +
+    `${escapeHtml(video.title)}</button>`;
+  return `<p class="sleeveless-pattern-line">Optional: Prefer to avoid the sleeve seam? Watch: ${link}</p>`;
+}
+
 /** Drop Shoulder sleeve rows for this calculated cuff-up or top-down sleeve. */
 export function buildSidewaysCardiganSleeveDisplayRows(
   calc: SidewaysCardiganSleeveCalc,
@@ -266,9 +289,10 @@ export function renderSidewaysCardiganSleeveSequenceHtml(
     tipInnerHtml: sidewaysSleeveConstructionChoiceQuickTipInnerHtml(),
     tipId: SIDEWAYS_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
   });
+  const roundSleeveNote = garmentStyle === "pullover" ? sidewaysPulloverRoundSleeveNoteHtml() : "";
   const split =
     `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-sleeve-reading-layout" data-sideways-sleeve-layout>` +
-    `<div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-sleeve-reading-layout__instructions">${choice}${instructionsHtml}</div>` +
+    `<div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-sleeve-reading-layout__instructions">${roundSleeveNote}${choice}${instructionsHtml}</div>` +
     `<aside class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram sideways-sleeve-reading-layout__diagram pattern-print-keep-together" aria-label="Sleeve diagram" data-sideways-sleeve-diagram-tabs-mount></aside>` +
     `</div>`;
   return wrapPatternSectionHtml("sg-sleeve", "SLEEVE", split, {

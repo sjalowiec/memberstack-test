@@ -724,7 +724,7 @@ function buildPulloverSteps(args: {
     id: "cast-on-side-seam",
     order: 1,
     summary: markerFromNeck
-      ? `Cast on ${fullWidth} stitches (side seam). ${pulloverFirstArmholeMarkerSentence("cast-on", markerFromNeck)}`
+      ? `Cast on ${fullWidth} stitches (side seam). ${pulloverFirstArmholeMarkerSentence("cast-on", markerFromNeck, fullWidth - markerFromNeck)}`
       : `Cast on ${fullWidth} stitches (side seam)`,
     rows: 0,
     stitchesBefore: 0,
@@ -845,8 +845,8 @@ function buildPulloverSteps(args: {
     id: "bind-off-side-seam",
     order: 14,
     summary: markerFromNeck
-      ? `Scrap off the remaining ${fullWidth} stitches. ${pulloverFirstArmholeMarkerSentence("bind-off", markerFromNeck)}`
-      : `Scrap off the remaining ${fullWidth} stitches.`,
+      ? `At the neck edge, bind off ${markerFromNeck} armhole stitches. Scrap off the remaining ${fullWidth - markerFromNeck} side-seam stitches.`
+      : `At the neck edge, bind off ${calc.armholeDepthStitches} armhole stitches. Scrap off the remaining ${fullWidth - calc.armholeDepthStitches} side-seam stitches.`,
     rows: 0,
     stitchesBefore: live(),
     stitchesAfter: 0,
@@ -1100,7 +1100,7 @@ export function renderSidewaysCardiganBodySequenceHtml(
   const isPullover = instructions.garmentStyle === "pullover";
   const styleLabel = SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[instructions.garmentStyle];
   const intro = isPullover
-    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem to the markers, leaving the calculated armhole depth open.`
+    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. On the beginning and ending edges, only the stitches from the hem to the markers are the side seam. Seam from the hem to the markers, leaving the calculated armhole depth open.`
     : `${styleLabel}: starts at center front and has two knitted armhole slits.`;
   const items = instructions.steps
     .map((s) => {
@@ -1180,8 +1180,15 @@ function escapeHtml(s: string): string {
 export function pulloverFirstArmholeMarkerSentence(
   edge: "cast-on" | "bind-off",
   stitchesFromNeckEdge: number,
+  sideSeamStitches?: number,
 ): string {
   const place = `Place a marker ${stitchesFromNeckEdge} stitches from the neck edge`;
+  if (edge === "cast-on" && sideSeamStitches !== undefined) {
+    return (
+      `${place}. These ${stitchesFromNeckEdge} stitches, from the neck edge to the marker, form the armhole opening and remain unseamed. ` +
+      `The remaining ${sideSeamStitches} stitches, from the marker to the hem, are the side-seam stitches.`
+    );
+  }
   if (edge === "cast-on") {
     return `${place}. This marker is the first-armhole side-seam joining point for finishing.`;
   }

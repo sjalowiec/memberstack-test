@@ -381,7 +381,8 @@ describe("sideways pullover body instruction model", () => {
     expect(castOn?.summary).toMatch(/side seam/i);
     expect(bindOff?.stitchesBefore).toBe(fullWidth);
     expect(bindOff?.stitchesAfter).toBe(0);
-    expect(bindOff?.summary).toMatch(/Scrap off the remaining \d+ stitches\./i);
+    expect(bindOff?.summary).toMatch(/bind off \d+ armhole stitches/i);
+    expect(bindOff?.summary).toMatch(/Scrap off the remaining \d+ side-seam stitches/i);
     expect(bindOff?.summary).not.toMatch(/original side seam/i);
     expect(pullover.steps[0]?.id).toBe("cast-on-side-seam");
     expect(pullover.steps.at(-1)?.id).toBe("bind-off-side-seam");
@@ -489,12 +490,17 @@ describe("sideways pullover body instruction model", () => {
     const bindOff = pullover.steps.find((s) => s.id === "bind-off-side-seam");
     const place = `Place a marker ${seam?.stitchesFromNeckEdge} stitches from the neck edge`;
     expect(castOn?.summary).toContain(place);
-    expect(castOn?.summary).toMatch(/first-armhole side-seam joining point/i);
-    expect(bindOff?.summary).toContain(place);
-    expect(bindOff?.summary).toMatch(/matching the cast-on marker/i);
-    expect(bindOff?.summary).toMatch(/sewing the side seam/i);
+    expect(castOn?.summary).toMatch(/form the armhole opening and remain unseamed/i);
+    expect(castOn?.summary).toMatch(/are the side-seam stitches/i);
+    expect(bindOff?.summary).toMatch(
+      new RegExp(`bind off ${seam?.stitchesFromNeckEdge} armhole stitches`, "i"),
+    );
+    expect(bindOff?.summary).toMatch(
+      new RegExp(`Scrap off the remaining ${seam?.stitchesFromHemEdge} side-seam stitches`, "i"),
+    );
+    expect(bindOff?.summary).not.toMatch(/Place a marker/i);
     const html = renderSidewaysCardiganBodySequenceHtml(pullover);
-    expect(html.match(new RegExp(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`, "g"))).toHaveLength(2);
+    expect(html.match(new RegExp(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`, "g"))).toHaveLength(1);
     expect(html).toContain(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`);
     expect(html).toMatch(/seam from the hem to the markers/i);
     expect(html).not.toMatch(/place markers/i);

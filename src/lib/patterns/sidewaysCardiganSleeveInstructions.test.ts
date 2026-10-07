@@ -389,8 +389,14 @@ describe("sideways sleeve pattern instructions", () => {
     const cardigan = renderSidewaysCardiganSleeveSequenceHtml(instructions, "cardigan");
     expect(pullover).toContain(SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE);
     expect(pullover).not.toContain("This cardigan has no side seams.");
+    expect(pullover).toContain("Optional: Prefer to avoid the sleeve seam? Watch:");
+    expect(pullover).toContain("Sleeves in the Round");
+    expect(pullover).toContain('data-content-id="895"');
+    expect(pullover).toContain('data-vimeo-id="313480756"');
+    expect(pullover.indexOf("Sleeves in the Round")).toBeLessThan(pullover.indexOf("Make 2 sleeves"));
     expect(cardigan).toContain(SIDEWAYS_SLEEVE_HAND_SEW_LINE);
     expect(cardigan).toContain("This cardigan has no side seams.");
+    expect(cardigan).not.toContain("Sleeves in the Round");
   });
 
   it("renders cuff-up instructions from the shared sleeve rows", () => {

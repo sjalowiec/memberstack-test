@@ -506,8 +506,15 @@ describe("sideways pullover BODY display adapter", () => {
     expect(text).toContain(`End at ${formatRcColon(landmarks.finalBindOff)}.`);
     expect(blockAfterSection(rows, "SCRAP OFF")?.rc).toBe(formatRcColon(landmarks.finalBindOff));
     expect(text).toContain("Scrap off");
+    const sideSeam = instructions.calc.garmentLengthStitches - instructions.calc.armholeDepthStitches;
     expect(text).toContain(
-      `the remaining ${instructions.calc.garmentLengthStitches} stitches.`,
+      `At the neck edge, bind off the ${instructions.calc.armholeDepthStitches} armhole stitches.`,
+    );
+    expect(text).toContain(
+      `the remaining ${sideSeam} side-seam stitches.`,
+    );
+    expect(text).not.toContain(
+      `Scrap off the remaining ${instructions.calc.garmentLengthStitches} stitches.`,
     );
     expect(text).not.toMatch(/Bind off all/i);
   });

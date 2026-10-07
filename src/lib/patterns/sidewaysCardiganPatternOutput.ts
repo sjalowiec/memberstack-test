@@ -411,12 +411,12 @@ export function buildSidewaysCardiganBodyDisplayRows(
   ];
 }
 
-function pulloverMarkerSentence(edge: "cast-on" | "bind-off", stitchesFromNeckEdge: number): string {
+function pulloverMarkerSentence(stitchesFromNeckEdge: number, sideSeamStitches: number): string {
   const place = `${g(PLACE_MARKER_GLOSSARY_ID, "Place a marker")} ${stitchesFromNeckEdge} stitches from the neck edge`;
-  if (edge === "cast-on") {
-    return `${place}. This marker is the first-armhole side-seam joining point for finishing.`;
-  }
-  return `${place}, matching the cast-on marker. These two markers are the side-seam joining points used when sewing the side seam.`;
+  return (
+    `${place}. These ${stitchesFromNeckEdge} stitches, from the neck edge to the marker, form the armhole opening and remain unseamed. ` +
+    `The remaining ${sideSeamStitches} stitches, from the marker to the hem, are the side-seam stitches.`
+  );
 }
 
 /**
@@ -438,7 +438,9 @@ export function buildSidewaysPulloverBodyDisplayRows(
   const firstVStep = requireStep(instructions, "first-v-neck");
   const secondVStep = requireStep(instructions, "second-v-neck");
   const shoulder = instructions.sectionRowCounts.firstFrontShoulder;
-  const markerFromNeck = sidewaysPulloverFirstArmholeSideSeamFromCalc(calc)?.stitchesFromNeckEdge;
+  const firstArmholeSideSeam = sidewaysPulloverFirstArmholeSideSeamFromCalc(calc);
+  const markerFromNeck = firstArmholeSideSeam?.stitchesFromNeckEdge;
+  const sideSeamStitches = firstArmholeSideSeam?.stitchesFromHemEdge;
   const allWorkingCount = `${fullWidth} sts`;
 
   const increasePh = g(SHORT_ROW_INCREASE_GLOSSARY_ID, "Short-row Increase");
@@ -455,7 +457,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
     { kind: "piece", title: BODY_PIECE_TITLE },
     block({
       paragraphs: [
-        "The pullover body is knitted sideways in one piece, beginning at one side seam and ending at the same side seam. One armhole opening is knitted into the body. The beginning and ending edges form the other side seam. Seam from the hem to the markers, leaving the calculated armhole depth open.",
+        "The pullover body is knitted sideways in one piece, beginning at one side seam and ending at the same side seam. One armhole opening is knitted into the body. On the beginning and ending edges, only the stitches from the hem to the markers are the side seam. Leave the armhole opening unseamed.",
       ],
     }),
     section("BEFORE YOU BEGIN"),
@@ -480,8 +482,8 @@ export function buildSidewaysPulloverBodyDisplayRows(
         ...(stitchesPerInch && stitchesPerInch > 0
           ? [sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch))]
           : []),
-        ...(markerFromNeck
-          ? [pulloverMarkerSentence("cast-on", markerFromNeck)]
+        ...(markerFromNeck && sideSeamStitches
+          ? [pulloverMarkerSentence(markerFromNeck, sideSeamStitches)]
           : []),
         `Continue with ${allWorkingCount}.`,
       ],
@@ -614,8 +616,8 @@ export function buildSidewaysPulloverBodyDisplayRows(
     block({
       rc: landmarks.finalBindOff,
       trustedParagraphs: [
-        `${scrapPh} the remaining ${fullWidth} stitches.`,
-        ...(markerFromNeck ? [pulloverMarkerSentence("bind-off", markerFromNeck)] : []),
+        `At the neck edge, bind off the ${armhole} armhole stitches. These stitches form the armhole edge. The sleeve will be set into this armhole.`,
+        `${scrapPh} the remaining ${sideSeamStitches ?? fullWidth - armhole} side-seam stitches. These live stitches form the final side-seam edge.`,
       ],
       stitchCount: fullWidth,
     }),

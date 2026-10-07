@@ -313,8 +313,7 @@ export function renderSidewaysFinishingSectionHtml(args: {
         ]
       : [
           "Block the piece as desired.",
-          "Join the side seam from the hem to the markers, leaving the armhole depth open.",
-          "Graft the cast-on edge to the final edge that was scrapped off.",
+          "Graft only the side-seam stitches from the cast-on edge to the side-seam stitches that were scrapped off at the final edge. Graft from the hem to the marker, leaving the armhole opening unseamed.",
           hem,
           "Join the sleeve seams.",
           "Set the sleeves into the armhole openings.",
@@ -326,7 +325,7 @@ export function renderSidewaysFinishingSectionHtml(args: {
           ? ` ${sidewaysCardiganFoldVideoLinkHtml()}`
           : "";
       const graftLink =
-        args.garmentStyle === "pullover" && step.startsWith("Graft the cast-on edge")
+        args.garmentStyle === "pullover" && step.startsWith("Graft only the side-seam")
           ? ` ${sidewaysPulloverGraftVideoLinkHtml()}`
           : "";
       return `<li>${escapeHtml(step)}${foldLink}${graftLink}</li>`;
