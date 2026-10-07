@@ -1103,7 +1103,11 @@ export function renderSidewaysCardiganBodySequenceHtml(
     ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem to the place markers, leaving the calculated armhole depth open.`
     : `${styleLabel}: starts at center front and has two knitted armhole slits.`;
   const items = instructions.steps
-    .map((s) => `<li>${renderStepSummaryHtml(s.summary)}</li>`)
+    .map((s) => {
+      if (!isPullover) return `<li>${renderStepSummaryHtml(s.summary)}</li>`;
+      const anchorId = `sg-body-${s.id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+      return `<li id="${anchorId}">${renderStepSummaryHtml(s.summary)}</li>`;
+    })
     .join("");
   const marks = isPullover
     ? [

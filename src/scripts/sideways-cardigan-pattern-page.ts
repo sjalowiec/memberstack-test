@@ -5,6 +5,7 @@
 import {
   resolveSidewaysCardiganGarmentStyle,
   stampSidewaysCardiganWorkingDraftFromPage,
+  type SidewaysCardiganGarmentStyle,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
 import {
   loadSidewaysCardiganWorkspaceView,
@@ -50,7 +51,7 @@ import { buildSidewaysCardiganSummaryEditFromPatternHref } from "../lib/patterns
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { bindPatternSectionCollapse } from "../lib/patterns/sleevelessPatternDisplayHtml";
 import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
-import { SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS } from "../lib/patterns/sidewaysCardiganPatternInpageNav";
+import { sidewaysPatternInpageNavItems } from "../lib/patterns/sidewaysCardiganPatternInpageNav";
 import { buildSidewaysCardiganPatternHeaderDetailsHtml } from "../lib/patterns/sidewaysCardiganPatternHeaderDetails";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import { initChartProgressTracking } from "./chartProgressTracker";
@@ -63,8 +64,8 @@ import {
   sidewaysFoldedHemTurningNeedle,
 } from "../lib/patterns/sidewaysCardiganFinishing";
 
-function syncSidewaysPatternInpageNav(): void {
-  syncPatternInpageNav({ items: SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS });
+function syncSidewaysPatternInpageNav(garmentStyle?: SidewaysCardiganGarmentStyle): void {
+  syncPatternInpageNav({ items: sidewaysPatternInpageNavItems(garmentStyle) });
 }
 
 function sleeveViewForFinishedPattern(
@@ -304,7 +305,7 @@ function renderView(): void {
           garmentStyle: view.instructions?.garmentStyle ?? "pullover",
           turningNeedle,
         });
-      syncSidewaysPatternInpageNav();
+      syncSidewaysPatternInpageNav(view.instructions.garmentStyle);
     };
     paintFinishing();
     if (finishingEl.dataset.sidewaysBandGaugeBound !== "true") {
@@ -340,7 +341,10 @@ function renderView(): void {
       });
     }
   }
-  syncSidewaysPatternInpageNav();
+  syncSidewaysPatternInpageNav(
+    view.instructions?.garmentStyle ??
+      resolveSidewaysCardiganGarmentStyle(section(view.pattern.style)),
+  );
 }
 
 function section(obj: unknown): Record<string, unknown> {

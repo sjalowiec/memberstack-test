@@ -16,7 +16,11 @@ import {
   buildSidewaysCardiganPatternDiagramTabsShellHtml,
   buildSidewaysCardiganSleeveDiagramTabsShellHtml,
 } from "./sidewaysCardiganPatternDiagramTabs";
-import { SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS } from "./sidewaysCardiganPatternInpageNav";
+import {
+  SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS,
+  SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS,
+  sidewaysPatternInpageNavItems,
+} from "./sidewaysCardiganPatternInpageNav";
 import {
   buildSidewaysCardiganSleeveInstructions,
   renderSidewaysCardiganSleeveSequenceHtml,
@@ -307,7 +311,14 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
     );
     expect(page).toContain("#pattern-content > [data-sideways-sleeve-host]");
     expect(script).toContain("syncPatternInpageNav");
-    expect(script).toContain("SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS");
+    expect(script).toContain("sidewaysPatternInpageNavItems");
+    expect(script).toContain("view.instructions.garmentStyle");
+    const navModule = readFileSync(
+      resolve("src/lib/patterns/sidewaysCardiganPatternInpageNav.ts"),
+      "utf8",
+    );
+    expect(navModule).toContain("SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS");
+    expect(navModule).toContain("SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS");
     expect(script).toContain("bindSleevelessDiagramZoom");
     expect(script).toContain("fillSidewaysPatternDiagrams");
     expect(script).toContain("fillSidewaysSleeveDiagrams");
@@ -409,7 +420,11 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
       nav: pullover.nav,
       scope: pullover.scope,
     });
-    expect(pulloverBodyHtml()).not.toContain('id="sg-body"');
+    const pulloverHtml = pulloverBodyHtml();
+    expect(pulloverHtml).not.toContain('<section id="sg-body"');
+    expect(pulloverHtml).not.toContain('id="sg-body-first-armhole"');
+    expect(pulloverHtml).not.toContain('id="sg-body-second-armhole"');
+    expect(pulloverHtml).not.toContain('id="sg-front-neck-band"');
     expect(renderSidewaysSleeveNotConnectedHtml()).not.toContain('id="sg-sleeve"');
     expect(pulloverCount).toBe(0);
     expect(pullover.nav.hidden).toBe(true);
@@ -450,5 +465,100 @@ describe("Sideways pattern reuses the shared in-page navigation", () => {
     expect(next[0]!.dataset.navSectionId).toBe("sg-body-first-v-neck");
     expect(next[0]!.getAttribute("aria-current")).toBe("location");
     expect(active[0]!.getAttribute("aria-current")).toBeNull();
+  });
+
+  it("keeps the cardigan catalog when the garment style is not pullover", () => {
+    expect(sidewaysPatternInpageNavItems("cardigan")).toBe(SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS);
+    expect(sidewaysPatternInpageNavItems(undefined)).toBe(SIDEWAYS_CARDIGAN_INPAGE_NAV_ITEMS);
+    expect(sidewaysPatternInpageNavItems("pullover")).toBe(SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS);
+  });
+
+  it("links the pullover sections in knitting order and skips cardigan-only sections", () => {
+    const html = `${pulloverBodyHtml()}${sleeveHtml()}${renderSidewaysFinishingSectionHtml({
+      garmentStyle: "pullover",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(BODY_INPUT.stitchesPerInch),
+    })}`;
+    expect(SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS.map((item) => item.label)).toEqual([
+      "FIRST FRONT SHOULDER",
+      "FIRST V-NECK",
+      "SECOND V-NECK",
+      "SECOND FRONT SHOULDER",
+      "ARMHOLE",
+      "FIRST BACK SHOULDER",
+      "BACK NECK",
+      "SECOND BACK SHOULDER",
+      "SLEEVE",
+      "FINISHING",
+    ]);
+    const labels = SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS.map((item) => item.label);
+    expect(labels).not.toContain("FRONT AND NECK BAND");
+    expect(labels).not.toContain("FIRST ARMHOLE");
+    expect(labels).not.toContain("SECOND ARMHOLE");
+    expect(labels).not.toContain("BODY");
+    for (const item of SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS) {
+      const id = item.ids[0]!;
+      expect(html).toContain(`id="${id}"`);
+      if (id === "sg-sleeve" || id === "sg-finishing") {
+        expect(headingForSection(html, id)).toBe(item.label);
+      }
+    }
+    expect(html).toContain('id="sg-body-first-front-shoulder"');
+    expect(html).toContain('id="sg-body-knitted-armhole-slit"');
+    expect(html).toContain('id="sg-body-bind-off-back-neck"');
+    expect(html.indexOf('id="sg-body-first-v-neck"')).toBeLessThan(
+      html.indexOf('id="sg-body-second-v-neck"'),
+    );
+    expect(html.indexOf('id="sg-body-second-v-neck"')).toBeLessThan(
+      html.indexOf('id="sg-body-knitted-armhole-slit"'),
+    );
+    expect(html.indexOf('id="sg-body-knitted-armhole-slit"')).toBeLessThan(
+      html.indexOf('id="sg-body-bind-off-back-neck"'),
+    );
+    const cardiganSequence = renderSidewaysCardiganBodySequenceHtml(
+      (() => {
+        const result = buildSidewaysCardiganBodyInstructions(BODY_INPUT, "cardigan");
+        if (!result.ok) throw new Error(result.error.message);
+        return result.instructions;
+      })(),
+    );
+    expect(cardiganSequence).not.toContain('id="sg-body-first-front-shoulder"');
+    expect(cardiganSequence).not.toContain('id="sg-body-first-v-neck"');
+  });
+
+  it("renders pullover hash links from the shared nav and omits sections that are not on the page", () => {
+    const ids = SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS.map((item) => item.ids[0]!);
+    const tops = Object.fromEntries(ids.map((id, index) => [id, index === 0 ? 0 : 800]));
+    const { nav, scope } = installDom(tops);
+    const count = syncPatternInpageNav({
+      items: SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS,
+      nav,
+      scope,
+    });
+    const links = anchors(nav);
+    expect(count).toBe(ids.length);
+    expect(links.map((link) => link.textContent)).toEqual(
+      SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS.map((item) => item.label),
+    );
+    for (const link of links) {
+      expect(link.href).toBe(`#${link.dataset.navSectionId}`);
+    }
+    expect(links.filter((link) => link.classes.has("is-active"))).toHaveLength(1);
+    expect(links[0]!.dataset.navSectionId).toBe("sg-body-first-front-shoulder");
+
+    const bodyAnchorIds = [
+      ...pulloverBodyHtml().matchAll(/<li id="([^"]+)"/g),
+    ].map((match) => match[1]!);
+    const bodyOnly = installDom(Object.fromEntries(bodyAnchorIds.map((id) => [id, 800])));
+    syncPatternInpageNav({
+      items: SIDEWAYS_PULLOVER_INPAGE_NAV_ITEMS,
+      nav: bodyOnly.nav,
+      scope: bodyOnly.scope,
+    });
+    const bodyLabels = anchors(bodyOnly.nav).map((anchor) => anchor.textContent);
+    expect(bodyLabels).toContain("FIRST V-NECK");
+    expect(bodyLabels).toContain("ARMHOLE");
+    expect(bodyLabels).not.toContain("SLEEVE");
+    expect(bodyLabels).not.toContain("FINISHING");
+    expect(bodyLabels).not.toContain("FRONT AND NECK BAND");
   });
 });
