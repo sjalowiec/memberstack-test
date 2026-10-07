@@ -28,8 +28,9 @@ import {
 } from "./sidewaysCardiganStyleMeasurements";
 import {
   isSidewaysCardiganSizeInChart,
+  parseSidewaysCardiganChartAudience,
   resolveSidewaysCardiganChartAudienceFromSize,
-  type SidewaysCardiganWomenChartAudience,
+  type SidewaysCardiganChartAudience,
 } from "./sidewaysCardiganSizeCharts";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -44,7 +45,7 @@ function stringField(v: unknown): string {
 
 export type SidewaysCardiganBuilderDraftState = {
   garmentStyle: SidewaysCardiganGarmentStyle;
-  chartAudience: SidewaysCardiganWomenChartAudience | "";
+  chartAudience: SidewaysCardiganChartAudience | "";
   selectedSize: string;
   fit: string;
   sleeveDirection: SidewaysCardiganSleeveDirection | "";
@@ -132,9 +133,9 @@ export function readSidewaysCardiganBuilderStateFromDraft(
   const machine = section(pattern.machine);
   const selectedSize = stringField(fit.selectedSize);
   const ease = stringField(fit.easeChoice ?? fit.fitChoice);
-  const audienceRaw = stringField(style.recipientCategory ?? fit.sizingChart).toLowerCase();
-  let chartAudience: SidewaysCardiganWomenChartAudience | "" =
-    audienceRaw === "plus" || audienceRaw === "misses" ? audienceRaw : "";
+  const audienceRaw = stringField(style.recipientCategory ?? fit.sizingChart);
+  let chartAudience: SidewaysCardiganChartAudience | "" =
+    parseSidewaysCardiganChartAudience(audienceRaw) ?? "";
   if (!chartAudience && selectedSize) {
     chartAudience = resolveSidewaysCardiganChartAudienceFromSize(selectedSize) ?? "";
   }
@@ -172,12 +173,12 @@ export function applySidewaysCardiganDraftToGaugeInputs(
 }
 
 /**
- * Activate Misses or Women's on Starting Size. Clears an incompatible size so the
- * knitter must pick from the newly selected chart. Internal Women's key stays `plus`.
+ * Activate a starting-size chart. Clears an incompatible size so the knitter
+ * must pick from the newly selected chart. Women's stays stored as `plus`.
  */
 export function applySidewaysCardiganStartingChartSelection(
   state: SidewaysCardiganBuilderDraftState,
-  audience: SidewaysCardiganWomenChartAudience,
+  audience: SidewaysCardiganChartAudience,
 ): void {
   const sizeStillValid = isSidewaysCardiganSizeInChart(state.selectedSize, audience);
   if (state.chartAudience !== audience) {
@@ -192,7 +193,7 @@ export function applySidewaysCardiganStartingChartSelection(
 
 /** Write chart + size identity without requiring a chart row (cleared size, chart-only pick). */
 export function writeSidewaysCardiganSizingIdentity(args: {
-  chartAudience: SidewaysCardiganWomenChartAudience | "";
+  chartAudience: SidewaysCardiganChartAudience | "";
   selectedSize: string;
 }): void {
   const current = getCurrentPattern() as unknown as Record<string, unknown>;

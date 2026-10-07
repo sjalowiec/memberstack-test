@@ -11,6 +11,7 @@ import {
   type SidewaysCardiganBodyCalc,
   type SidewaysCardiganBodyCalcInput,
 } from "./sidewaysCardiganBodyCalc";
+import { isSidewaysCardiganChartAudience } from "./sidewaysCardiganSizeCharts";
 import { parsePositiveInchesField } from "./sidewaysCardiganStyleMeasurements";
 import {
   calculateSidewaysCardiganSleeve,
@@ -97,7 +98,7 @@ export function validateSidewaysCardiganBuilder(
   const availableNeedles = Number(String(values.availableNeedles ?? "").trim());
 
   if (
-    (audience !== "misses" && audience !== "plus") ||
+    !isSidewaysCardiganChartAudience(audience) ||
     !size ||
     (fit !== "close" && fit !== "standard" && fit !== "relaxed") ||
     length === undefined ||
@@ -147,7 +148,7 @@ export function validateSidewaysCardiganBuilder(
       code: "non-positive-shoulder-rows",
       message:
         result.error.code === SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS
-          ? "The neck opening is too wide for this bust size, so there is no room left for the shoulders. Make the neck opening narrower or increase the finished bust."
+          ? "The neck opening is too wide for this bust/chest size, so there is no room left for the shoulders. Make the neck opening narrower or increase the finished bust/chest."
           : result.error.message,
     };
   }

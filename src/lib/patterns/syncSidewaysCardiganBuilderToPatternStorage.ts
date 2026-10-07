@@ -25,7 +25,10 @@ import {
   type SidewaysCardiganSleeveDirection,
   type SidewaysCardiganSleeveLengthChoice,
 } from "./sidewaysCardiganConstructionIdentity";
-import type { SidewaysCardiganWomenChartRow } from "./sidewaysCardiganSizeCharts";
+import type {
+  SidewaysCardiganChartAudience,
+  SidewaysCardiganWomenChartRow,
+} from "./sidewaysCardiganSizeCharts";
 import {
   parsePositiveInchesField,
   type SidewaysCardiganStyleMeasurements,
@@ -48,7 +51,7 @@ function formatOverride(n: number | undefined): string | undefined {
 
 export type SidewaysCardiganBuilderValues = {
   selectedSize: string;
-  chartAudience: "misses" | "plus";
+  chartAudience: SidewaysCardiganChartAudience;
   fit: string;
   vNeckDepthInches?: string;
   styleMeasurements?: Partial<SidewaysCardiganStyleMeasurements>;

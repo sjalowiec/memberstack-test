@@ -226,14 +226,14 @@ describe("sideways cardigan builder-to-workspace flow", () => {
       "V-neck depth",
       "Armhole slit depth",
       "Back-neck depth",
-      "Requested finished bust",
-      "Actual finished bust",
+      "Requested finished bust/chest",
+      "Actual finished bust/chest",
       "Each front",
       "Back",
       "Neck-opening width",
       "Each V-neck section",
       "Each shoulder section",
-      "Total bust rows",
+      "Total bust/chest rows",
     ]);
     expect(summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
     expect(summary.rows.find((row) => row.term === "Sleeve direction")).toBeUndefined();

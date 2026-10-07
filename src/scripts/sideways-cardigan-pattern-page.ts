@@ -63,6 +63,7 @@ import {
   renderSidewaysFinishingSectionHtml,
   sidewaysFoldedHemTurningNeedle,
 } from "../lib/patterns/sidewaysCardiganFinishing";
+import { sidewaysCardiganChartAudienceFromPattern } from "../lib/patterns/sidewaysCardiganSizeCharts";
 
 function syncSidewaysPatternInpageNav(garmentStyle?: SidewaysCardiganGarmentStyle): void {
   syncPatternInpageNav({ items: sidewaysPatternInpageNavItems(garmentStyle) });
@@ -296,7 +297,11 @@ function renderView(): void {
   if (finishingEl instanceof HTMLElement && view.instructions) {
     const paintFinishing = (): void => {
       const bandGauge = readSidewaysBandGauge(section(mergeSidewaysCardiganWorkingDraft().style));
-      const turningNeedle = sidewaysFoldedHemTurningNeedle(view.input.stitchesPerInch);
+      const chartAudience = sidewaysCardiganChartAudienceFromPattern(view.pattern);
+      const turningNeedle = sidewaysFoldedHemTurningNeedle(
+        view.input.stitchesPerInch,
+        chartAudience,
+      );
       const band =
         view.instructions && view.instructions.garmentStyle === "cardigan"
           ? renderSidewaysCardiganBandSectionHtml({
@@ -305,6 +310,7 @@ function renderView(): void {
               rowsPerInch: view.input.rowsPerInch,
               bandGauge,
               displayUnit: resolveSavedPatternMeasurementDisplayUnit(),
+              chartAudience,
             })
           : "";
       finishingEl.innerHTML =

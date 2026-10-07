@@ -45,7 +45,7 @@ import { DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT } from "./dropShoulderEditMeasurem
 import {
   findSidewaysCardiganWomenChartRow,
   resolveSidewaysCardiganChartAudienceFromSize,
-  type SidewaysCardiganWomenChartAudience,
+  type SidewaysCardiganChartAudience,
 } from "./sidewaysCardiganSizeCharts";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "./syncSidewaysCardiganBuilderToPatternStorage";
 
@@ -363,7 +363,7 @@ export function applySidewaysCardiganSummaryMeasurementEdits(
 
 export type SidewaysCardiganSummaryQuickEdits = {
   selectedSize?: string;
-  chartAudience?: SidewaysCardiganWomenChartAudience;
+  chartAudience?: SidewaysCardiganChartAudience;
   garmentStyle?: SidewaysCardiganGarmentStyle;
   fit?: string;
   sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice;

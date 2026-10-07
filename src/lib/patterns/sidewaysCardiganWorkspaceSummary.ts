@@ -117,11 +117,11 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
         ]
       : []),
     {
-      term: "Requested finished bust",
+      term: "Requested finished bust/chest",
       def: formatInchesWithUnit(calc.bust.requestedFinishedBustInches),
     },
     {
-      term: "Actual finished bust",
+      term: "Actual finished bust/chest",
       def: formatInchesWithUnit(calc.bust.actualFinishedBustInches),
     },
     {
@@ -145,7 +145,7 @@ export function buildSidewaysCardiganWorkspaceSummary(args: {
       def: inchesAndRows(shoulderInches, calc.shoulders.firstFrontRows),
     },
     {
-      term: "Total bust rows",
+      term: "Total bust/chest rows",
       def: formatRowsCount(calc.bust.actualTotalBustRows),
     },
     ...(args.sleeveCalc

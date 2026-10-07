@@ -20,9 +20,59 @@ import {
 import type { PublicVideoRow } from "../lessonVideo";
 import videosPublic from "../../data/videos-public.json";
 
-export const SIDEWAYS_FOLDED_HEM_OFFSET_INCHES = 1;
-export const SIDEWAYS_CARDIGAN_BAND_FINISHED_WIDTH_INCHES = 2;
-export const SIDEWAYS_CARDIGAN_BAND_CAST_ON_WIDTH_INCHES = 4;
+/**
+ * Finishing depths by size family.
+ * Baby uses a shallower folded hem and a narrower cardigan band.
+ * Misses, Women's (`plus`), Men's, and Kids' keep the original depths.
+ */
+export type SidewaysCardiganFinishingProportions = {
+  foldedHemOffsetInches: number;
+  /** Knitted strip before it is folded in half. */
+  bandKnittedDepthInches: number;
+  /** Finished width after the strip is folded. */
+  bandFinishedWidthInches: number;
+};
+
+const SIDEWAYS_FINISHING_PROPORTIONS_STANDARD: SidewaysCardiganFinishingProportions = {
+  foldedHemOffsetInches: 1,
+  bandKnittedDepthInches: 4,
+  bandFinishedWidthInches: 2,
+};
+
+const SIDEWAYS_FINISHING_PROPORTIONS_BABY: SidewaysCardiganFinishingProportions = {
+  foldedHemOffsetInches: 0.75,
+  bandKnittedDepthInches: 2,
+  bandFinishedWidthInches: 1,
+};
+
+/** Standard folded-hem offset (Misses, Women's, Men's, Kids'). Baby uses {@link sidewaysCardiganFinishingProportions}. */
+export const SIDEWAYS_FOLDED_HEM_OFFSET_INCHES =
+  SIDEWAYS_FINISHING_PROPORTIONS_STANDARD.foldedHemOffsetInches;
+/** Standard finished band width. Baby uses {@link sidewaysCardiganFinishingProportions}. */
+export const SIDEWAYS_CARDIGAN_BAND_FINISHED_WIDTH_INCHES =
+  SIDEWAYS_FINISHING_PROPORTIONS_STANDARD.bandFinishedWidthInches;
+/** Standard knitted band depth. Baby uses {@link sidewaysCardiganFinishingProportions}. */
+export const SIDEWAYS_CARDIGAN_BAND_CAST_ON_WIDTH_INCHES =
+  SIDEWAYS_FINISHING_PROPORTIONS_STANDARD.bandKnittedDepthInches;
+
+export function sidewaysCardiganFinishingProportions(
+  chartAudience: unknown,
+): SidewaysCardiganFinishingProportions {
+  const raw = String(chartAudience ?? "").trim().toLowerCase();
+  return raw === "baby"
+    ? SIDEWAYS_FINISHING_PROPORTIONS_BABY
+    : SIDEWAYS_FINISHING_PROPORTIONS_STANDARD;
+}
+
+/** Knitter-facing depth, including the ¾ inch baby hem. */
+export function formatSidewaysFinishingInches(inches: number): string {
+  if (Math.abs(inches - 0.75) < 0.001) return "¾ inch";
+  const whole = Math.round(inches);
+  if (Math.abs(inches - whole) < 0.001) {
+    return whole === 1 ? "1 inch" : `${whole} inches`;
+  }
+  return `${inches} inches`;
+}
 
 /** Learning Library content_id for “Crisp, Decorative Fold”. */
 export const SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID = 1025;
@@ -141,9 +191,13 @@ export function sidewaysCardiganBandMarkers(
   }));
 }
 
-/** Needle count about 1 inch from the hem edge, using even stitch rounding. */
-export function sidewaysFoldedHemTurningNeedle(stitchesPerInch: number): number {
-  return evenPositiveBodyStitches(SIDEWAYS_FOLDED_HEM_OFFSET_INCHES * stitchesPerInch);
+/** Needle count for the folded-hem turning line, using even stitch rounding. */
+export function sidewaysFoldedHemTurningNeedle(
+  stitchesPerInch: number,
+  chartAudience?: unknown,
+): number {
+  const offset = sidewaysCardiganFinishingProportions(chartAudience).foldedHemOffsetInches;
+  return evenPositiveBodyStitches(offset * stitchesPerInch);
 }
 
 /**
@@ -180,6 +234,7 @@ export function sidewaysCardiganBandNumbers(args: {
   sweaterStitchesPerInch: number;
   sweaterRowsPerInch: number;
   bandGauge?: SidewaysBandGauge;
+  chartAudience?: unknown;
 }): {
   castOnStitches: number;
   rows: number;
@@ -191,9 +246,9 @@ export function sidewaysCardiganBandNumbers(args: {
 } {
   const stitchGauge = positiveGauge(args.bandGauge?.stitchesPerInch, args.sweaterStitchesPerInch);
   const rowGauge = positiveGauge(args.bandGauge?.rowsPerInch, args.sweaterRowsPerInch);
-  const castOnStitches = nearestOddPositiveStitches(
-    SIDEWAYS_CARDIGAN_BAND_CAST_ON_WIDTH_INCHES * stitchGauge,
-  );
+  const knittedDepth =
+    sidewaysCardiganFinishingProportions(args.chartAudience).bandKnittedDepthInches;
+  const castOnStitches = nearestOddPositiveStitches(knittedDepth * stitchGauge);
   return {
     castOnStitches,
     rows: inchesToRows(args.openingInches, rowGauge),
@@ -219,10 +274,16 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function sidewaysFoldedHemCastOnSentence(turningNeedle: number): string {
+export function sidewaysFoldedHemCastOnSentence(
+  turningNeedle: number,
+  chartAudience?: unknown,
+): string {
+  const depth = formatSidewaysFinishingInches(
+    sidewaysCardiganFinishingProportions(chartAudience).foldedHemOffsetInches,
+  );
   return (
     `For an optional folded hem, leave needle ${turningNeedle} out of work. ` +
-    `That needle is about ${SIDEWAYS_FOLDED_HEM_OFFSET_INCHES} inch from the hem edge. ` +
+    `That needle is about ${depth} from the hem edge. ` +
     "Keep it out of work for the entire length of the sweater. This creates the turning line."
   );
 }
@@ -233,13 +294,16 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
   rowsPerInch: number;
   bandGauge?: SidewaysBandGauge;
   displayUnit?: MeasurementDisplayUnit;
+  chartAudience?: unknown;
 }): string {
+  const proportions = sidewaysCardiganFinishingProportions(args.chartAudience);
   const opening = sidewaysCardiganFrontNeckOpeningInches(args);
   const band = sidewaysCardiganBandNumbers({
     openingInches: opening.totalInches,
     sweaterStitchesPerInch: args.stitchesPerInch,
     sweaterRowsPerInch: args.rowsPerInch,
     bandGauge: args.bandGauge,
+    chartAudience: args.chartAudience,
   });
   const markers = sidewaysCardiganBandMarkers(opening, band.rowGauge);
   const markerItems = markers
@@ -272,7 +336,7 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
     `<div class="pattern-section__header"><div class="pattern-section__heading"><h2>FRONT AND NECK BAND</h2></div></div>` +
     `<div class="pattern-section__content">` +
     `<p class="sleeveless-pattern-line">Knit a separate band. Sew it up one front edge, around the V-neck, and down the other front edge. Do not hang or pick up the V-neck edge on the machine.</p>` +
-    `<p class="sleeveless-pattern-line">For an adult sweater, the finished band is about ${SIDEWAYS_CARDIGAN_BAND_FINISHED_WIDTH_INCHES} inches wide. Knit a separate ${SIDEWAYS_CARDIGAN_BAND_CAST_ON_WIDTH_INCHES}-inch strip, then fold it lengthwise and sew it in place.</p>` +
+    `<p class="sleeveless-pattern-line">The finished band is about ${formatSidewaysFinishingInches(proportions.bandFinishedWidthInches)} wide. Knit a separate ${proportions.bandKnittedDepthInches}-inch strip, then fold it lengthwise and sew it in place.</p>` +
     `<p class="sleeveless-pattern-line">${escapeHtml(used)}</p>` +
     `<p class="sleeveless-pattern-line">Optional fold line: Before casting on, leave the center needle out of work. Keep it out of work throughout the strip. ${sidewaysCardiganFoldVideoLinkHtml()}</p>` +
     `<p class="sideways-band-counts">` +

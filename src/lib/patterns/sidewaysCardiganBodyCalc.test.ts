@@ -192,8 +192,8 @@ describe("calculateSidewaysCardiganBody — 40/7/7 garment-section rows", () => 
     expect(summary.rows.find((row) => row.term === "Each shoulder section")?.def).toBe(
       "6.29 in · 44 rows",
     );
-    expect(summary.rows.find((row) => row.term === "Total bust rows")?.def).toBe("280 rows");
-    expect(summary.rows.find((row) => row.term === "Actual finished bust")?.def).toBe("40 in");
+    expect(summary.rows.find((row) => row.term === "Total bust/chest rows")?.def).toBe("280 rows");
+    expect(summary.rows.find((row) => row.term === "Actual finished bust/chest")?.def).toBe("40 in");
     expect(summary.adjustmentMessage).toBeNull();
   });
 });

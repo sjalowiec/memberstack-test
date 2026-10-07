@@ -59,7 +59,7 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING: PatternBuilderLandin
       {
         title: "Your starting size",
         description:
-          "Choose from the available Misses or Women's sizes, then personalize the sweater with your preferred finished fit.",
+          "Choose from Misses, Women's, Men's, Kids', or Baby sizes, then personalize the sweater with your preferred finished fit.",
       },
       {
         title: "Finished fit",
@@ -89,7 +89,7 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING: PatternBuilderLandin
     heading: "What the builder creates",
     body: [
       "The builder creates a custom V-neck cardigan or pullover pattern knitted sideways, with personalized stitch counts, row counts, and knitting instructions.",
-      "Knitting the body sideways changes how the garment uses the needle bed. This can make larger finished bust sizes possible when a traditionally knitted sweater would require more needles than the machine holds.",
+      "Knitting the body sideways changes how the garment uses the needle bed. This can make larger finished bust/chest sizes possible when a traditionally knitted sweater would require more needles than the machine holds.",
       "The advantage is greater flexibility, not unlimited sizing. The builder still checks whether the garment dimensions fit the entered machine capacity.",
       "While your membership is active, you can update the size, yarn, gauge, fit, or style choices and let the builder recalculate the pattern for you.",
     ],

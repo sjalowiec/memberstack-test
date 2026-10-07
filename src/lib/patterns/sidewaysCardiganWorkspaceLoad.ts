@@ -42,6 +42,7 @@ import {
 } from "./sidewaysCardiganWorkspaceSummary";
 import type { SidewaysCardiganBodyCalc } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
+import { sidewaysCardiganChartAudienceFromPattern } from "./sidewaysCardiganSizeCharts";
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
@@ -263,6 +264,7 @@ export function loadSidewaysCardiganWorkspaceView(
     sequenceHtml: renderSidewaysCardiganBodyDisplayHtml(
       body.instructions,
       inspected.input.stitchesPerInch,
+      sidewaysCardiganChartAudienceFromPattern(pattern),
     ),
     ...sleeve,
   };

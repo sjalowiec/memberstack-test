@@ -339,7 +339,7 @@ export function calculateSidewaysCardiganBody(
       error: {
         code: SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS,
         message:
-          "These measurements leave no rows for the four identical shoulder sections. Reduce the neck-opening width or increase the finished bust.",
+          "These measurements leave no rows for the four identical shoulder sections. Reduce the neck-opening width or increase the finished bust/chest.",
         requestedTotalBustRows,
         requestedFinishedBustInches: input.finishedBustCircumferenceInches,
         neckOpeningRows,

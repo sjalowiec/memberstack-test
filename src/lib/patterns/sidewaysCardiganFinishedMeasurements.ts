@@ -17,7 +17,10 @@ import { resolveDropShoulderFinishedUpperArmInches } from "./dropShoulderSleeveE
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
-import type { SidewaysCardiganWomenChartAudience } from "./sidewaysCardiganSizeCharts";
+import {
+  parseSidewaysCardiganChartAudience,
+  type SidewaysCardiganChartAudience,
+} from "./sidewaysCardiganSizeCharts";
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
@@ -32,7 +35,7 @@ function toPositiveNumber(v: unknown): number | undefined {
 }
 
 export function finishedUpperArmInchesForSidewaysCardigan(args: {
-  chartAudience: SidewaysCardiganWomenChartAudience;
+  chartAudience: SidewaysCardiganChartAudience;
   fitPreference: string;
   bodyUpperArmIn: number | undefined;
   overrideUpperArmIn?: number;
@@ -49,7 +52,7 @@ export function finishedUpperArmInchesForSidewaysCardigan(args: {
 
 export function sidewaysCardiganCalcInputFromChartRow(args: {
   row: ChartRow;
-  chartAudience: SidewaysCardiganWomenChartAudience;
+  chartAudience: SidewaysCardiganChartAudience;
   fitPreference: string;
   vNeckDepthInches: number;
   stitchesPerInch: number;
@@ -117,8 +120,7 @@ export function inspectSidewaysCardiganBodyCalcInputFromPattern(
   )
     .trim()
     .toLowerCase();
-  const chartAudience: SidewaysCardiganWomenChartAudience | null =
-    audienceRaw === "plus" ? "plus" : audienceRaw === "misses" ? "misses" : null;
+  const chartAudience = parseSidewaysCardiganChartAudience(audienceRaw);
 
   const garmentLength =
     positiveMeasurementInches(overrides.finishedLength) ??
@@ -148,7 +150,7 @@ export function inspectSidewaysCardiganBodyCalcInputFromPattern(
   if (spi === undefined) missing.push("stitch gauge");
   if (rpi === undefined) missing.push("row gauge");
   if (garmentLength === undefined) missing.push("garment length");
-  if (finishedBust === undefined) missing.push("finished bust");
+  if (finishedBust === undefined) missing.push("finished bust/chest");
   if (vNeckDepth === undefined) missing.push("V-neck depth");
   if (neckOpening === undefined) missing.push("neck-opening width");
   if (finishedUpperArm === undefined) missing.push("finished upper arm");

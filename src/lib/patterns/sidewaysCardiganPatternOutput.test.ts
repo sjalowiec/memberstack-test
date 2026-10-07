@@ -470,7 +470,7 @@ describe("sideways pullover BODY display adapter", () => {
     expect(html).not.toContain("sideways-body-sequence");
     expect(html).not.toContain("sideways-body-landmarks");
     expect(html).not.toContain("sideways-body-sections");
-    expect(html).not.toContain("Total bust rows");
+    expect(html).not.toContain("Total bust/chest rows");
     expect(html).not.toMatch(/place markers/i);
     expect(html).not.toMatch(/separate neck band/i);
     expect(text).toMatch(/from the hem to the markers/i);

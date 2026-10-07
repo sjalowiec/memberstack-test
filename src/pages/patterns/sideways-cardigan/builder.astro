@@ -22,7 +22,7 @@ import {
 } from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
 import { SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS } from "../../../lib/patterns/sidewaysCardiganConstructionIdentity";
-import { SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
+import { SIDEWAYS_CARDIGAN_CHART_GROUPS } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/sideways-cardigan/builder");
 
@@ -52,7 +52,7 @@ const expressNavSteps = [
 
 <Layout
   title="Sideways V-Neck Sweater Pattern Builder"
-  description="Create a sideways-knit V-neck sweater pattern from Misses and Women's sizing charts."
+  description="Create a sideways-knit V-neck sweater pattern from Misses, Women's, Men's, Kids', and Baby sizing charts."
   patternWorkspace={true}
 >
   <SleevelessPatternMemberGate>
@@ -215,7 +215,7 @@ const expressNavSteps = [
                       aria-labelledby="express-step-2-title"
                     >
                       {
-                        SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((group) => (
+                        SIDEWAYS_CARDIGAN_CHART_GROUPS.map((group) => (
                           <button
                             type="button"
                             class="hat-length-picker__option express-who-card"
@@ -247,7 +247,7 @@ const expressNavSteps = [
                       <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
                         <div class="express-size-table-wrap">
                           {
-                            SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((group) => (
+                            SIDEWAYS_CARDIGAN_CHART_GROUPS.map((group) => (
                               <section
                                 class="sideways-size-group"
                                 data-sideways-size-group={group.audience}
@@ -304,7 +304,7 @@ const expressNavSteps = [
                   </p>
                   <div class="express-acc__body" id="express-acc-panel-3" role="region" hidden>
                     <p class="express-size-instruction">
-                      Your selected fit adds ease to the standard body measurements. The finished bust
+                      Your selected fit adds ease to the standard body measurements. The finished bust/chest
                       updates when you choose close, standard, or relaxed.
                     </p>
                     <p class="express-size-instruction" data-sideways-finished-bust hidden></p>

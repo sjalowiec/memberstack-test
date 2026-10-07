@@ -203,6 +203,7 @@ function block(args: {
 export function buildSidewaysCardiganBodyDisplayRows(
   instructions: SidewaysCardiganBodyInstructions,
   stitchesPerInch?: number,
+  chartAudience?: unknown,
 ): SleevelessPatternDisplayRow[] {
   if (instructions.garmentStyle !== "cardigan") return [];
 
@@ -266,7 +267,12 @@ export function buildSidewaysCardiganBodyDisplayRows(
         `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
         `Set ${formatRcColon(0)}.`,
         ...(stitchesPerInch && stitchesPerInch > 0
-          ? [sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch))]
+          ? [
+              sidewaysFoldedHemCastOnSentence(
+                sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience),
+                chartAudience,
+              ),
+            ]
           : []),
         `Place the ${vSts} neckline stitches into hold.`,
         `Leave ${startingFrontStitches} body stitches working.`,
@@ -426,6 +432,7 @@ function pulloverMarkerSentence(stitchesFromNeckEdge: number, sideSeamStitches: 
 export function buildSidewaysPulloverBodyDisplayRows(
   instructions: SidewaysCardiganBodyInstructions,
   stitchesPerInch?: number,
+  chartAudience?: unknown,
 ): SleevelessPatternDisplayRow[] {
   if (instructions.garmentStyle !== "pullover") return [];
 
@@ -480,7 +487,12 @@ export function buildSidewaysPulloverBodyDisplayRows(
         `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
         `Set ${formatRcColon(landmarks.firstSideSeam)}.`,
         ...(stitchesPerInch && stitchesPerInch > 0
-          ? [sidewaysFoldedHemCastOnSentence(sidewaysFoldedHemTurningNeedle(stitchesPerInch))]
+          ? [
+              sidewaysFoldedHemCastOnSentence(
+                sidewaysFoldedHemTurningNeedle(stitchesPerInch, chartAudience),
+                chartAudience,
+              ),
+            ]
           : []),
         ...(markerFromNeck && sideSeamStitches
           ? [pulloverMarkerSentence(markerFromNeck, sideSeamStitches)]
@@ -627,11 +639,12 @@ export function buildSidewaysPulloverBodyDisplayRows(
 export function renderSidewaysCardiganBodyDisplayHtml(
   instructions: SidewaysCardiganBodyInstructions,
   stitchesPerInch?: number,
+  chartAudience?: unknown,
 ): string {
   const rows =
     instructions.garmentStyle === "pullover"
-      ? buildSidewaysPulloverBodyDisplayRows(instructions, stitchesPerInch)
-      : buildSidewaysCardiganBodyDisplayRows(instructions, stitchesPerInch);
+      ? buildSidewaysPulloverBodyDisplayRows(instructions, stitchesPerInch, chartAudience)
+      : buildSidewaysCardiganBodyDisplayRows(instructions, stitchesPerInch, chartAudience);
   if (rows.length === 0) return "";
   const inner = renderPatternDisplayRowsHtml(rows, {
     pieceSectionId: "body",

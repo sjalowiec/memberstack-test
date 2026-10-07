@@ -149,7 +149,7 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       /limited needle-bed width/,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.creates?.body.join(" ")).toMatch(
-      /larger finished bust sizes/,
+      /larger finished bust\/chest sizes/,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.creates?.body.join(" ")).toMatch(
       /not unlimited sizing/,

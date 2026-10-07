@@ -23,7 +23,7 @@ import {
   writeSidewaysCardiganWorkingDraftStamp,
 } from "./sidewaysCardiganConstructionIdentity";
 import { DROP_SHOULDER_SLEEVE_LENGTH_CHOICES } from "./patternConstructionIdentity";
-import { SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS } from "./sidewaysCardiganSizeCharts";
+import { SIDEWAYS_CARDIGAN_CHART_GROUPS } from "./sidewaysCardiganSizeCharts";
 import {
   resetExpressSweaterChartsForTests,
   seedExpressSweaterChartsForTests,
@@ -145,7 +145,7 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toContain('data-express-field="measurements"');
     expect(builderAstro).toContain('data-express-field="selectedSize"');
     expect(builderAstro).toContain("data-sideways-size-group");
-    expect(builderAstro).toContain("SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS");
+    expect(builderAstro).toContain("SIDEWAYS_CARDIGAN_CHART_GROUPS");
     expect(builderAstro).not.toContain('id="express-acc-panel-6"');
     expect(builderScript).toContain("if (step < 1 || step > STEPS) return false");
     expect(builderScript).toContain('header?.setAttribute("tabindex", locked ? "-1" : "0")');
@@ -201,12 +201,27 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderScript).toContain("readSidewaysCardiganBuilderStateFromDraft");
   });
 
-  it("shows Misses and Women's as chart buttons and keeps plus as the internal key", () => {
-    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.audience)).toEqual(["misses", "plus"]);
-    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.heading)).toEqual(["Misses", "Women's"]);
-    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.buttonLabel)).toEqual([
+  it("shows all five sizing families and keeps plus as the Women's key", () => {
+    expect(SIDEWAYS_CARDIGAN_CHART_GROUPS.map((g) => g.audience)).toEqual([
+      "misses",
+      "plus",
+      "men",
+      "kids",
+      "baby",
+    ]);
+    expect(SIDEWAYS_CARDIGAN_CHART_GROUPS.map((g) => g.heading)).toEqual([
+      "Misses",
+      "Women's",
+      "Men's",
+      "Kids'",
+      "Baby",
+    ]);
+    expect(SIDEWAYS_CARDIGAN_CHART_GROUPS.map((g) => g.buttonLabel)).toEqual([
       "Misses (1–8)",
       "Women's (X–6X)",
+      "Men's (Sm–5X)",
+      "Kids' (2–16 yr)",
+      "Baby (3–24 mo)",
     ]);
     expect(builderAstro).toContain("{group.buttonLabel}");
     expect(builderAstro).toContain('data-field="chartAudience"');
@@ -215,7 +230,7 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toMatch(/>Plus</);
     expect(builderAstro).toContain("sideways-chart-picker");
     expect(builderScript).toContain("applySidewaysCardiganStartingChartSelection");
-    expect(builderScript).toContain('"plus"');
+    expect(builderScript).toContain("parseSidewaysCardiganChartAudience");
     expect(builderScript).toContain("section.hidden = state.chartAudience !== group.audience");
     expect(builderScript).toContain("if (state.chartAudience !== group.audience) continue");
     expect(builderAstro).toMatch(/data-express-nested-size hidden/);
@@ -571,6 +586,9 @@ describe("Drop Shoulder and Sleeveless builders stay on their existing flows", (
     expect(dropShoulderBuilder).toContain("View My Pattern");
     expect(dropShoulderBuilder).not.toContain("Misses (1–8)");
     expect(sleevelessBuilder).not.toContain("Women's (X–6X)");
+    expect(dropShoulderBuilder).not.toContain("Men's (Sm–5X)");
+    expect(sleevelessBuilder).not.toContain("Kids' (2–16 yr)");
+    expect(dropShoulderBuilder).not.toContain("Baby (3–24 mo)");
     expect(dropShoulderBuilder).not.toContain("sideways-chart-picker");
     expect(sleevelessBuilder).not.toContain("sideways-chart-picker");
     expect(dropShoulderBuilder).not.toContain("data-sideways-review-panel");

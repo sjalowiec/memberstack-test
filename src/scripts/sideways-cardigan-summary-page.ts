@@ -19,7 +19,7 @@ import {
 import { readSidewaysCardiganBuilderStateFromDraft } from "../lib/patterns/sidewaysCardiganBuilderState";
 import {
   getSidewaysCardiganChartRowsForAudience,
-  SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS,
+  SIDEWAYS_CARDIGAN_CHART_GROUPS,
   sidewaysCardiganChartAudienceDisplayLabel,
 } from "../lib/patterns/sidewaysCardiganSizeCharts";
 import { loadExpressSweaterCharts, normalizeChartRowSize } from "../lib/patterns/sleevelessExpressSizeChartClient";
@@ -309,7 +309,7 @@ function initWorkspace(root: HTMLElement): void {
     placeholder.value = "";
     placeholder.textContent = "Choose a size";
     sizeSelect.append(placeholder);
-    for (const group of SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS) {
+    for (const group of SIDEWAYS_CARDIGAN_CHART_GROUPS) {
       const optgroup = document.createElement("optgroup");
       optgroup.label = group.heading;
       for (const row of getSidewaysCardiganChartRowsForAudience(group.audience)) {
