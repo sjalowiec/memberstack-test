@@ -13,6 +13,7 @@ import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
 import {
   knitAbleInspirationClosingLines,
   knitAbleInspirationDisclosure,
+  knitAbleInspirationIntroParagraphs,
   knitAbleInspirationLessonContentId,
   knitAbleInspirationLessons,
   knitAbleInspirationSwatches,
@@ -29,6 +30,7 @@ interface Props {
 
 const { content, preview, status, publishDate } = Astro.props;
 const paletteSwatches = knitAbleInspirationSwatches(content.palette);
+const introParagraphs = knitAbleInspirationIntroParagraphs(content.intro);
 const paletteLabel = content.palette?.label?.trim() ?? "";
 const paletteCaption = content.palette?.caption?.trim() ?? "";
 const closingLines = knitAbleInspirationClosingLines(content.builder.closing);
@@ -91,7 +93,9 @@ const yarnImage = content.yarn.image;
               </div>
             ) : null
           }
-          <p>{content.intro}</p>
+          {introParagraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
         </div>
       </section>
 

@@ -66,7 +66,8 @@ export type KnitAbleInspirationPageContent = {
     rel?: string;
   };
   tagline: string;
-  intro: string;
+  /** One paragraph, or several paragraphs rendered with the page's normal paragraph spacing. */
+  intro: string | readonly string[];
   palette?: KnitAbleInspirationPalette;
   builder: {
     heading: string;
@@ -105,6 +106,13 @@ export type KnitAbleInspirationPageContent = {
 };
 
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+export function knitAbleInspirationIntroParagraphs(
+  intro: string | readonly string[] | undefined,
+): string[] {
+  const parts = typeof intro === "string" ? [intro] : intro ?? [];
+  return parts.map((paragraph) => paragraph.trim()).filter((paragraph) => paragraph.length > 0);
+}
 
 export function knitAbleInspirationSwatches(
   palette: KnitAbleInspirationPalette | undefined,

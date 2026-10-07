@@ -3,7 +3,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import videosRaw from "../../data/videos-public.json";
 import { findPublicCatalogVideoByContentId } from "../videoPublic";
-import { knitAbleInspirationLessonContentId } from "./inspirationPage";
+import {
+  knitAbleInspirationIntroParagraphs,
+  knitAbleInspirationLessonContentId,
+} from "./inspirationPage";
 import { buildSleevelessBuilderNewPatternHref } from "../patterns/patternStorage";
 import { SLEEVELESS_PATTERN_BUILDER_LANDING } from "../patterns/sleevelessPatternLanding";
 import { KNIT_ABLE_AFFILIATE_REL } from "./links";
@@ -105,9 +108,17 @@ describe("Vest in Show Knit-able page", () => {
       "Simple shape + gorgeous yarn = a great machine knitting project.",
     );
     expect(VEST_IN_SHOW_PAGE.tagline).toBe(VEST_IN_SHOW_TAGLINE);
-    expect(VEST_IN_SHOW_INTRO).toContain("classic V-neck");
-    expect(VEST_IN_SHOW_INTRO).toContain("your own measurements and gauge");
-    expect(VEST_IN_SHOW_PAGE.intro).toBe(VEST_IN_SHOW_INTRO);
+    expect(VEST_IN_SHOW_INTRO).toEqual([
+      "Vest in Show is a classic sleeveless pullover from Sirdar featuring a V-neck, simple stockinette fabric, and ribbed finishing.",
+      "The long color changes in the yarn provide the visual interest while the garment shape stays beautifully simple.",
+      "It's a great candidate for recreating the look on a knitting machine using your own measurements and gauge.",
+    ]);
+    expect(VEST_IN_SHOW_PAGE.intro).toEqual(VEST_IN_SHOW_INTRO);
+    expect(knitAbleInspirationIntroParagraphs(VEST_IN_SHOW_PAGE.intro)).toEqual([
+      ...VEST_IN_SHOW_INTRO,
+    ]);
+    expect(templateSource).toContain("<p>{paragraph}</p>");
+    expect(templateSource).not.toContain("<br");
     expect(VEST_IN_SHOW_BUILDER_HEADING).toBe("Make it on your knitting machine");
     expect(VEST_IN_SHOW_PAGE.builder.heading).toBe(VEST_IN_SHOW_BUILDER_HEADING);
     expect(VEST_IN_SHOW_BUILDER_COPY_BEFORE).toBe("Use the Knit it Now ");

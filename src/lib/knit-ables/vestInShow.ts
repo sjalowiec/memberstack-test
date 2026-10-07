@@ -37,8 +37,11 @@ export const VEST_IN_SHOW_IMAGES = {
 export const VEST_IN_SHOW_TAGLINE =
   "Simple shape + gorgeous yarn = a great machine knitting project.";
 
-export const VEST_IN_SHOW_INTRO =
-  "Vest in Show is a colorful sleeveless pullover from Sirdar featuring a classic V-neck, simple stockinette fabric, and ribbed finishing. The long color changes in the yarn provide the visual interest while the garment shape stays beautifully simple. It's a great candidate for recreating the look on a knitting machine using your own measurements and gauge.";
+export const VEST_IN_SHOW_INTRO = [
+  "Vest in Show is a classic sleeveless pullover from Sirdar featuring a V-neck, simple stockinette fabric, and ribbed finishing.",
+  "The long color changes in the yarn provide the visual interest while the garment shape stays beautifully simple.",
+  "It's a great candidate for recreating the look on a knitting machine using your own measurements and gauge.",
+] as const;
 
 export const VEST_IN_SHOW_BUILDER_HEADING = "Make it on your knitting machine";
 
