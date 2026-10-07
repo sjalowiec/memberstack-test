@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
 import { evenPositiveBodyStitches } from "./sleevelessBodyStitchMath";
 import { calculateSlopeShaping } from "./legoBlocks/slopeShaping";
-import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
+import {
+  calculateSidewaysCardiganBody,
+  sidewaysPulloverFirstArmholeSideSeamFromCalc,
+} from "./sidewaysCardiganBodyCalc";
 import {
   buildSidewaysCardiganBodyInstructions,
   knittedArmholeSlitCount,
@@ -448,6 +452,25 @@ describe("sideways pullover body instruction model", () => {
     const cardiganRows = cardigan.steps.reduce((sum, s) => sum + s.rows, 0);
     expect(pulloverRows).toBe(cardiganRows);
     expect(pulloverRows).toBe(pullover.calc.bust.actualTotalBustRows);
+  });
+
+  it("tells the knitter to place the first-armhole marker on the cast-on and bind-off edges", () => {
+    const seam = sidewaysPulloverFirstArmholeSideSeamFromCalc(pullover.calc);
+    expect(seam?.stitchesFromNeckEdge).toBe(pullover.calc.firstArmholeDepthStitches);
+    const castOn = pullover.steps.find((s) => s.id === "cast-on-side-seam");
+    const bindOff = pullover.steps.find((s) => s.id === "bind-off-side-seam");
+    const place = `Place a marker ${seam?.stitchesFromNeckEdge} stitches from the neck edge`;
+    expect(castOn?.summary).toContain(place);
+    expect(castOn?.summary).toMatch(/first-armhole side-seam joining point/i);
+    expect(bindOff?.summary).toContain(place);
+    expect(bindOff?.summary).toMatch(/matching the cast-on marker/i);
+    expect(bindOff?.summary).toMatch(/sewing the side seam/i);
+    const html = renderSidewaysCardiganBodySequenceHtml(pullover);
+    expect(html.match(new RegExp(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`, "g"))).toHaveLength(2);
+    expect(html).toContain(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`);
+    expect(html).toMatch(/seam from the hem to the place markers/i);
+    expect(cardigan.steps.some((s) => /Place a marker/i.test(s.summary))).toBe(false);
+    expect(renderSidewaysCardiganBodySequenceHtml(cardigan)).not.toContain("Place a marker");
   });
 
   it("does not tell the knitter to graft or seam the center front", () => {

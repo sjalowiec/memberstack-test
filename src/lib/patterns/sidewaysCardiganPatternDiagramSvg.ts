@@ -24,7 +24,12 @@ import {
   textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
 import { DS_FS_NOTATION, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
-import type { SidewaysCardiganBodyCalc, SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
+import {
+  sidewaysPulloverFirstArmholePlaceMarker,
+  sidewaysPulloverFirstArmholeSideSeamFromCalc,
+  type SidewaysCardiganBodyCalc,
+  type SidewaysCardiganBodyCalcInput,
+} from "./sidewaysCardiganBodyCalc";
 import {
   parseSidewaysCardiganGarmentStyle,
   parseSidewaysCardiganSleeveDirection,
@@ -38,7 +43,9 @@ import {
   drawArmholeAndBack,
   drawCardiganMarkers,
   drawPulloverMarkers,
+  drawPulloverSideSeamMarkerLabels,
   pulloverBodyPath,
+  pulloverFirstArmholeMarkerLayout,
   sleevePath,
   type SidewaysCardiganEditMeasurementDiagramInput,
   type SidewaysCardiganEditMeasurementFrame,
@@ -524,7 +531,10 @@ function drawPulloverStsRows(
   ].join("");
 }
 
-function silhouetteMarkup(frame: SidewaysCardiganEditMeasurementFrame): string {
+function silhouetteMarkup(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  markerLabelSize = 14,
+): string {
   const garmentStyle = frame.garmentStyle;
   const bodyD = garmentStyle === "pullover" ? pulloverBodyPath(frame) : cardiganBodyPath(frame);
   const attachedSleeve = frame.sleeve.farX > frame.neckX;
@@ -536,12 +546,24 @@ function silhouetteMarkup(frame: SidewaysCardiganEditMeasurementFrame): string {
       ? drawPulloverMarkers(frame, { includeStartLabel: false })
       : drawCardiganMarkers(frame);
   const pivot = frame.topY + frame.bottomY;
+  const markerLayout =
+    garmentStyle === "pullover" ? pulloverFirstArmholeMarkerLayout(frame, false) : null;
+  const markerLabels = markerLayout
+    ? drawPulloverSideSeamMarkerLabels(
+        {
+          ...markerLayout,
+          castOnY: sidewaysKnitVisualY(frame, markerLayout.castOnY),
+          bindOffY: sidewaysKnitVisualY(frame, markerLayout.bindOffY),
+        },
+        markerLabelSize,
+      )
+    : "";
   return `<g data-knit-flip="vertical" transform="translate(0 ${fmtNum(pivot)}) scale(1 -1)">${[
     `<path data-role="body-outline" data-garment-style="${garmentStyle}" d="${bodyD}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
     sleeve,
     drawArmholeAndBack(frame),
     markers,
-  ].join("")}</g>`;
+  ].join("")}</g>${markerLabels}`;
 }
 
 function svgDataAttrs(model: SidewaysCardiganPatternDiagramModel, mode: "sts-rows" | "shaping-notation"): string {
@@ -592,12 +614,19 @@ export function sidewaysSilhouetteDiagramRect(frame: SidewaysCardiganEditMeasure
 export function buildSidewaysCardiganPatternDiagramFrame(
   model: SidewaysCardiganPatternDiagramModel,
 ): SidewaysCardiganEditMeasurementFrame {
+  const seam =
+    model.garmentStyle === "pullover"
+      ? sidewaysPulloverFirstArmholeSideSeamFromCalc(model.calc)
+      : null;
   return buildSidewaysCardiganEditMeasurementFrame(
     {
       measurements: model.measurements,
       garmentStyle: model.garmentStyle,
     },
-    { includeAttachedSleeve: false },
+    {
+      includeAttachedSleeve: false,
+      firstArmholePlaceMarker: seam ? sidewaysPulloverFirstArmholePlaceMarker(seam) : null,
+    },
   );
 }
 
@@ -616,7 +645,7 @@ export function buildSidewaysCardiganPatternDiagramSvg(
       : drawCardiganStsRows(frame, model, canvas.type, canvas);
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline"${svgDataAttrs(model, "sts-rows")}>`,
-    silhouetteMarkup(frame),
+    silhouetteMarkup(frame, canvas.type.row),
     labels,
     `</svg>`,
   ].join("");
@@ -625,8 +654,9 @@ export function buildSidewaysCardiganPatternDiagramSvg(
 
 export function buildSidewaysCardiganPatternSilhouetteMarkup(
   model: SidewaysCardiganPatternDiagramModel,
+  markerLabelSize?: number,
 ): string {
-  return silhouetteMarkup(buildSidewaysCardiganPatternDiagramFrame(model));
+  return silhouetteMarkup(buildSidewaysCardiganPatternDiagramFrame(model), markerLabelSize);
 }
 
 export { svgDataAttrs as sidewaysCardiganPatternDiagramDataAttrs };

@@ -18,9 +18,11 @@
  * Armhole bind-off/cast-on and back-neck bind-off/cast-on do not add measured row sections.
  */
 
+import { buildGlossaryTooltipPlaceholderHtml, PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
 import { distributeTotalAcrossRows } from "./distributeTotalAcrossRows";
 import {
   calculateSidewaysCardiganBody,
+  sidewaysPulloverFirstArmholeSideSeamFromCalc,
   type SidewaysCardiganBodyCalc,
   type SidewaysCardiganBodyCalcError,
   type SidewaysCardiganBodyCalcInput,
@@ -532,13 +534,16 @@ function buildPulloverSteps(args: {
   const armhole = calc.armholeDepthStitches;
   const backNeck = calc.backNeckDepthStitches;
   const actions = firstV.shapingActions;
+  const markerFromNeck = sidewaysPulloverFirstArmholeSideSeamFromCalc(calc)?.stitchesFromNeckEdge;
   const steps: SidewaysCardiganBodyInstructionStep[] = [];
   const { push, live } = createStepPusher(steps);
 
   push({
     id: "cast-on-side-seam",
     order: 1,
-    summary: `Cast on ${fullWidth} stitches (side seam)`,
+    summary: markerFromNeck
+      ? `Cast on ${fullWidth} stitches (side seam). ${pulloverFirstArmholeMarkerSentence("cast-on", markerFromNeck)}`
+      : `Cast on ${fullWidth} stitches (side seam)`,
     rows: 0,
     stitchesBefore: 0,
     stitchesAfter: fullWidth,
@@ -626,7 +631,9 @@ function buildPulloverSteps(args: {
   push({
     id: "bind-off-side-seam",
     order: 12,
-    summary: `Bind off ${fullWidth} stitches (original side seam)`,
+    summary: markerFromNeck
+      ? `Bind off ${fullWidth} stitches (original side seam). ${pulloverFirstArmholeMarkerSentence("bind-off", markerFromNeck)}`
+      : `Bind off ${fullWidth} stitches (original side seam)`,
     rows: 0,
     stitchesBefore: live(),
     stitchesAfter: 0,
@@ -873,10 +880,10 @@ export function renderSidewaysCardiganBodySequenceHtml(
   const isPullover = instructions.garmentStyle === "pullover";
   const styleLabel = SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[instructions.garmentStyle];
   const intro = isPullover
-    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem toward the underarm, leaving the calculated armhole depth open.`
+    ? `${styleLabel}: starts at a side seam and has one knitted armhole slit. The beginning and ending edges form the other side seam. Seam from the hem to the place markers, leaving the calculated armhole depth open.`
     : `${styleLabel}: starts at center front and has two knitted armhole slits.`;
   const items = instructions.steps
-    .map((s) => `<li>${escapeHtml(s.summary)}</li>`)
+    .map((s) => `<li>${renderStepSummaryHtml(s.summary)}</li>`)
     .join("");
   const marks = isPullover
     ? [
@@ -943,4 +950,27 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** Both edges of the pullover first armhole, counted from the neck edge. */
+export function pulloverFirstArmholeMarkerSentence(
+  edge: "cast-on" | "bind-off",
+  stitchesFromNeckEdge: number,
+): string {
+  const place = `Place a marker ${stitchesFromNeckEdge} stitches from the neck edge`;
+  if (edge === "cast-on") {
+    return `${place}. This marker is the first-armhole side-seam joining point for finishing.`;
+  }
+  return `${place}, matching the cast-on marker. These two markers are the side-seam joining points used when sewing the side seam.`;
+}
+
+function renderStepSummaryHtml(summary: string): string {
+  const phrase = "Place a marker";
+  const idx = summary.indexOf(phrase);
+  if (idx < 0) return escapeHtml(summary);
+  return (
+    escapeHtml(summary.slice(0, idx)) +
+    buildGlossaryTooltipPlaceholderHtml(PLACE_MARKER_GLOSSARY_ID, phrase, escapeHtml, escapeHtml) +
+    escapeHtml(summary.slice(idx + phrase.length))
+  );
 }

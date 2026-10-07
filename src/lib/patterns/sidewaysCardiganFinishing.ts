@@ -286,7 +286,7 @@ export function renderSidewaysFinishingSectionHtml(args: {
         ]
       : [
           "Block the piece as desired.",
-          "Join the side seam from the hem toward the underarm, leaving the armhole depth open. The neckline is already knitted into the body, so this pullover does not need a separate neck band.",
+          "Join the side seam from the hem to the place markers, leaving the armhole depth open. The neckline is already knitted into the body, so this pullover does not need a separate neck band.",
           hem,
           "Join the sleeve seams.",
           "Set the sleeves into the armhole openings.",

@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 import { calculateSlopeShaping } from "./legoBlocks/slopeShaping";
 import { formatDropShoulderSleeveShapingNotation } from "./dropShoulderSleeveShaping";
 import { rowBasedShapingNotation } from "./shapingNotationCompress";
-import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
+import {
+  calculateSidewaysCardiganBody,
+  sidewaysPulloverFirstArmholePlaceMarker,
+  sidewaysPulloverFirstArmholeSideSeamFromCalc,
+  sidewaysPulloverFirstArmholeSideSeamX,
+} from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
+import { fmtNum } from "./dropShoulderPatternDiagramSvgShared";
 import { buildSidewaysVNeckSlopeSequence } from "./sidewaysCardiganBodyInstructions";
 import {
   buildSidewaysCardiganPatternDiagramFrame,
@@ -95,6 +101,14 @@ function modelFor(
   });
 }
 
+function placeMarkers(svg: string): { edge: string; sts: string; x: string; y: string }[] {
+  return [...svg.matchAll(/data-role="place-marker"(?=[ >])([^>]*)>/g)].map((match) => {
+    const attrs = match[1] ?? "";
+    const read = (name: string) => new RegExp(`${name}="([^"]*)"`).exec(attrs)?.[1] ?? "";
+    return { edge: read("data-edge"), sts: read("data-stitches-from-neck"), x: read("data-x"), y: read("data-y") };
+  });
+}
+
 describe("Sideways Stitches & Rows diagram", () => {
   it("feeds calculated Sideways stitch and row values into the diagram", () => {
     const model = modelFor("cardigan", SAMPLE, { includeSleeve: false });
@@ -145,6 +159,64 @@ describe("Sideways Stitches & Rows diagram", () => {
     expect(svg).toContain('data-role="center-front-start"');
     expect(svg).not.toContain('data-role="sleeve-outline"');
     expect(svg).not.toContain('data-role="underarm-start"');
+  });
+
+  it("marks the pullover first-armhole side seam on all three body diagrams from the instruction stitch count", () => {
+    const model = modelFor("pullover", SAMPLE, { includeSleeve: false });
+    const seam = sidewaysPulloverFirstArmholeSideSeamFromCalc(model.calc);
+    expect(seam).not.toBeNull();
+    if (!seam) return;
+    const frame = buildSidewaysCardiganPatternDiagramFrame(model);
+    const expectedX = fmtNum(
+      sidewaysPulloverFirstArmholeSideSeamX(frame.hemX, frame.neckX, seam),
+    );
+    const edit = buildSidewaysCardiganEditBodyMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: model.measurements,
+      placeMarker: sidewaysPulloverFirstArmholePlaceMarker(seam),
+    });
+    const sts = buildSidewaysCardiganPatternDiagramSvg(model);
+    const shaping = buildSidewaysCardiganShapingNotationDiagramSvg(model);
+    for (const svg of [edit, sts, shaping]) {
+      const markers = placeMarkers(svg);
+      expect(markers.map((marker) => marker.edge).sort()).toEqual(["bind-off", "cast-on"]);
+      expect(markers.every((marker) => marker.sts === String(seam.stitchesFromNeckEdge))).toBe(true);
+      expect(markers.every((marker) => marker.x === expectedX)).toBe(true);
+      expect(svg).toContain('data-role="side-seam-marker-span"');
+      expect(svg.match(/data-role="side-seam-marker-label"/g)).toHaveLength(2);
+    }
+    const editMarkers = placeMarkers(edit);
+    const castOn = editMarkers.find((marker) => marker.edge === "cast-on");
+    const bindOff = editMarkers.find((marker) => marker.edge === "bind-off");
+    expect(Number(castOn?.y)).toBeGreaterThan(Number(bindOff?.y));
+    const cardigan = buildSidewaysCardiganPatternDiagramSvg(modelFor("cardigan", SAMPLE));
+    const cardiganEdit = buildSidewaysCardiganEditBodyMeasurementDiagramSvg({
+      garmentStyle: "cardigan",
+      measurements: model.measurements,
+      placeMarker: sidewaysPulloverFirstArmholePlaceMarker(seam),
+    });
+    expect(placeMarkers(cardigan)).toEqual([]);
+    expect(placeMarkers(cardiganEdit)).toEqual([]);
+    expect(buildSidewaysCardiganShapingNotationDiagramSvg(modelFor("cardigan", SAMPLE))).not.toContain(
+      'data-role="place-marker"',
+    );
+    const withoutMarker = buildSidewaysCardiganEditBodyMeasurementDiagramSvg({
+      garmentStyle: "pullover",
+      measurements: model.measurements,
+    });
+    expect(placeMarkers(withoutMarker)).toEqual([]);
+    const deeper = modelFor("pullover", { ...SAMPLE, finishedUpperArmInches: 18 }, { includeSleeve: false });
+    const deeperSeam = sidewaysPulloverFirstArmholeSideSeamFromCalc(deeper.calc);
+    const deeperFrame = buildSidewaysCardiganPatternDiagramFrame(deeper);
+    const deeperX = Number(
+      placeMarkers(buildSidewaysCardiganPatternDiagramSvg(deeper))[0]?.x,
+    );
+    expect(deeperSeam && deeperSeam.stitchesFromNeckEdge).toBeGreaterThan(seam.stitchesFromNeckEdge);
+    expect(deeperX).toBeLessThan(Number(expectedX));
+    expect(deeperX).toBeCloseTo(
+      sidewaysPulloverFirstArmholeSideSeamX(deeperFrame.hemX, deeperFrame.neckX, deeperSeam!),
+      1,
+    );
   });
 
   it("renders Pullover construction starting at the underarm without an attached sleeve", () => {

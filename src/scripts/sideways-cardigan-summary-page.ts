@@ -43,6 +43,7 @@ import {
   sidewaysCardiganSummaryCancelLabel,
   sidewaysCardiganSummaryHint,
 } from "../lib/patterns/sidewaysCardiganPatternNavigation";
+import { sidewaysPulloverFirstArmholePlaceMarker, sidewaysPulloverFirstArmholeSideSeam } from "../lib/patterns/sidewaysCardiganBodyCalc";
 import { inspectSidewaysCardiganBodyCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganFinishedMeasurements";
 import {
   applySidewaysCardiganSummaryMeasurementEdits,
@@ -411,13 +412,24 @@ function initWorkspace(root: HTMLElement): void {
       mergeSidewaysCardiganWorkingDraft(),
     );
     const live = readChipMeasurements();
-    const input = buildSidewaysCardiganSummaryDiagramInput(
+    let input = buildSidewaysCardiganSummaryDiagramInput(
       live,
       state.garmentStyle,
       displayUnit,
       inspected.input?.backNeckDepthInches,
     );
     if (!input) return;
+    const stitchRaw = spiInput?.value.trim() ?? "";
+    const spi = Number(rawSwatchToPerInch(stitchRaw, "", displayUnit).gaugeStitchesPerInch);
+    const seam =
+      input.garmentStyle === "pullover" && Number.isFinite(spi) && spi > 0
+        ? sidewaysPulloverFirstArmholeSideSeam({
+            garmentLengthInches: input.measurements.finishedLengthInches,
+            finishedUpperArmInches: input.measurements.finishedUpperArmInches,
+            stitchesPerInch: spi,
+          })
+        : null;
+    if (seam) input = { ...input, placeMarker: sidewaysPulloverFirstArmholePlaceMarker(seam) };
     diagramHost.innerHTML = buildSidewaysCardiganEditMeasurementDiagramSvg(input, previewTab);
     writeChipMeasurements(live, displayUnit);
     rebindMeasurementOverlay();
@@ -550,7 +562,10 @@ function initWorkspace(root: HTMLElement): void {
     });
   });
 
-  spiInput?.addEventListener("input", renderBuildSummary);
+  spiInput?.addEventListener("input", () => {
+    renderBuildSummary();
+    mountDiagram();
+  });
   rpiInput?.addEventListener("input", renderBuildSummary);
 
   for (const btn of cancelBtns) {

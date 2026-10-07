@@ -604,7 +604,7 @@ export function buildSidewaysCardiganShapingNotationDiagramSvg(
       : [];
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmtNum(canvas.x)} ${fmtNum(canvas.y)} ${fmtNum(canvas.width)} ${fmtNum(canvas.height)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${aria}" focusable="false" class="express-mbp-art sleeveless-piece-split__diagram-inline" data-not-row-based-reason="${escapeXml(ARMHOLE_SLIT_NOT_ROW_BASED)}" data-vneck-rows="${model.calc.halfNeckRows}"${sidewaysCardiganPatternDiagramDataAttrs(model, "shaping-notation")}>`,
-    buildSidewaysCardiganPatternSilhouetteMarkup(model),
+    buildSidewaysCardiganPatternSilhouetteMarkup(model, type.row),
     textAt(
       edgeX,
       clampY(startEdge + type.notationGap),

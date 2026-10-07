@@ -14,6 +14,8 @@ import {
   SIDEWAYS_CARDIGAN_BODY_ROW_SECTION_KEYS,
   SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS,
   shoulderRowCountsMatch,
+  sidewaysPulloverFirstArmholeSideSeam,
+  sidewaysPulloverFirstArmholeSideSeamFromCalc,
   sumBodyRowSections,
   type SidewaysCardiganBodyCalc,
   type SidewaysCardiganBodyCalcInput,
@@ -114,6 +116,23 @@ describe("calculateSidewaysCardiganBody — true drop-shoulder armhole slit", ()
     expect(Object.keys(calc)).not.toContain("armholeOpeningRows");
     expect(Object.keys(calc)).not.toContain("firstArmholeOpeningRows");
     expect(Object.keys(calc)).not.toContain("secondArmholeOpeningRows");
+  });
+
+  it("places the pullover first-armhole side seam at the armhole depth from the neck edge", () => {
+    const seam = sidewaysPulloverFirstArmholeSideSeam({
+      garmentLengthInches: SAMPLE.garmentLengthInches,
+      finishedUpperArmInches: SAMPLE.finishedUpperArmInches,
+      stitchesPerInch: SAMPLE.stitchesPerInch,
+    });
+    const fromCalc = sidewaysPulloverFirstArmholeSideSeamFromCalc(calc);
+    expect(seam).toEqual(fromCalc);
+    expect(fromCalc?.stitchesFromNeckEdge).toBe(calc.firstArmholeDepthStitches);
+    expect(fromCalc?.stitchesFromNeckEdge).toBe(calc.armholeDepthStitches);
+    expect(fromCalc?.stitchesFromHemEdge).toBe(
+      calc.garmentLengthStitches - calc.firstArmholeDepthStitches,
+    );
+    expect(fromCalc?.stitchesFromNeckEdge).toBe(36);
+    expect(fromCalc?.garmentLengthStitches).toBe(110);
   });
 
   it("has no armhole row sections — slits sit at side-seam boundaries", () => {

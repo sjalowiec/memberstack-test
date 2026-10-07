@@ -6,6 +6,9 @@
  * center front). Pullover Build/Edit: closed body only, starting at an underarm
  * (scrap-on / graft) with a V-neck. No sleeve is drawn on that body diagram.
  * The finished-pattern pullover still attaches a sleeve from the same frame.
+ *
+ * Pullover place markers are the exception. They use the first-armhole stitch
+ * location from the body calculation so the diagrams match the written instructions.
  */
 
 import {
@@ -16,12 +19,14 @@ import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDept
 import {
   DS_ARROW,
   DS_FILL,
+  DS_FONT,
   DS_MUTED,
   DS_STROKE,
   endCap,
   escapeXml,
   fmtNum,
 } from "./dropShoulderPatternDiagramSvgShared";
+import { sidewaysFractionFromNeckX } from "./sidewaysCardiganBodyCalc";
 import { diagramMarkupBounds, separateOverlappingDiagramLabels } from "./legoBlocks/patternDiagramFit";
 import {
   dropShoulderSleeveBodyPath,
@@ -94,6 +99,17 @@ export type SidewaysCardiganEditMeasurementDiagramInput = {
   measurements: SidewaysCardiganEditMeasurementInput;
   garmentStyle: SidewaysCardiganGarmentStyle;
   displayUnit?: MeasurementDisplayUnit;
+  /**
+   * Pullover only. Fraction and stitch count already computed by the body calculation
+   * so this drawing does not run a second stitch path.
+   */
+  placeMarker?: SidewaysFirstArmholePlaceMarker | null;
+};
+
+/** Pullover first-armhole side seam, already resolved by the shared body calculation. */
+export type SidewaysFirstArmholePlaceMarker = {
+  fractionFromNeck: number;
+  stitchesFromNeck: number;
 };
 
 /**
@@ -102,6 +118,8 @@ export type SidewaysCardiganEditMeasurementDiagramInput = {
  */
 export type SidewaysCardiganEditMeasurementFrameOptions = {
   includeAttachedSleeve?: boolean;
+  /** Pullover first-armhole side seam. Cardigan frames ignore this. */
+  firstArmholePlaceMarker?: SidewaysFirstArmholePlaceMarker | null;
 };
 
 export type SidewaysCardiganSummaryDerivedInches = {
@@ -136,6 +154,8 @@ export type SidewaysCardiganEditMeasurementFrame = {
     wristHalf: number;
   };
   derived: SidewaysCardiganSummaryDerivedInches;
+  /** Null on cardigan, and on a pullover diagram that has no resolved marker yet. */
+  firstArmholePlaceMarker: SidewaysFirstArmholePlaceMarker | null;
 };
 
 function clamp(n: number, min: number, max: number): number {
@@ -244,6 +264,7 @@ function buildFrame(
   const upperHalf = includeAttachedSleeve ? Math.max(MIN_SLEEVE_W, scaled(upperFlat, pxPerInch)) : 0;
   const wristHalf = includeAttachedSleeve ? Math.max(14, scaled(wristFlat, pxPerInch)) : 0;
   const attachY = isPullover ? secondArmholeY : firstArmholeY;
+  const firstArmholePlaceMarker = isPullover ? (options?.firstArmholePlaceMarker ?? null) : null;
 
   return {
     garmentStyle,
@@ -269,6 +290,7 @@ function buildFrame(
       wristHalf,
     },
     derived,
+    firstArmholePlaceMarker,
   };
 }
 
@@ -500,6 +522,58 @@ function pulloverBodyLengthDimY(bottomY: number, type: BuildDiagramTypography): 
   return captionBottom + 18;
 }
 
+export type PulloverFirstArmholeMarkerLayout = {
+  x: number;
+  castOnY: number;
+  bindOffY: number;
+  stitchesFromNeck: number;
+};
+
+/**
+ * Cast-on and bind-off points for the pullover first-armhole side seam.
+ * X comes from the fraction already resolved by the body calculation.
+ */
+export function pulloverFirstArmholeMarkerLayout(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  castOnAtBottom: boolean,
+): PulloverFirstArmholeMarkerLayout | null {
+  const marker = frame.firstArmholePlaceMarker;
+  if (!marker || !(marker.fractionFromNeck > 0)) return null;
+  return {
+    x: sidewaysFractionFromNeckX(frame.hemX, frame.neckX, marker.fractionFromNeck),
+    castOnY: castOnAtBottom ? frame.bottomY : frame.topY,
+    bindOffY: castOnAtBottom ? frame.topY : frame.bottomY,
+    stitchesFromNeck: marker.stitchesFromNeck,
+  };
+}
+
+function drawPulloverSideSeamMarkerGeometry(layout: PulloverFirstArmholeMarkerLayout): string {
+  const { x, castOnY, bindOffY, stitchesFromNeck } = layout;
+  const dot = (edge: "cast-on" | "bind-off", y: number) =>
+    `<g data-role="place-marker" data-edge="${edge}" data-side-seam-join="first-armhole" data-stitches-from-neck="${stitchesFromNeck}" data-x="${fmtNum(x)}" data-y="${fmtNum(y)}">` +
+    `<title>Place marker, ${stitchesFromNeck} stitches from the neck edge</title>` +
+    `<circle cx="${fmtNum(x)}" cy="${fmtNum(y)}" r="5" fill="${DS_ARROW}" stroke="#fff" stroke-width="1.4"/>` +
+    `</g>`;
+  return [
+    `<line data-role="side-seam-marker-span" data-side-seam-join="first-armhole" data-stitches-from-neck="${stitchesFromNeck}" x1="${fmtNum(x)}" y1="${fmtNum(castOnY)}" x2="${fmtNum(x)}" y2="${fmtNum(bindOffY)}" fill="none" stroke="${DS_ARROW}" stroke-width="1.4" stroke-dasharray="3 3"/>`,
+    dot("cast-on", castOnY),
+    dot("bind-off", bindOffY),
+  ].join("");
+}
+
+/** Labels sit in the caller's coordinate space so a flipped silhouette can pass visual Y. */
+export function drawPulloverSideSeamMarkerLabels(
+  layout: PulloverFirstArmholeMarkerLayout | null,
+  fontSize = 14,
+): string {
+  if (!layout) return "";
+  const label = (edge: "cast-on" | "bind-off", y: number) => {
+    const labelY = edge === "cast-on" ? y - fontSize - 4 : y + fontSize + 4;
+    return `<text data-role="side-seam-marker-label" data-edge="${edge}" data-side-seam-join="first-armhole" data-stitches-from-neck="${layout.stitchesFromNeck}" x="${fmtNum(layout.x)}" y="${fmtNum(labelY)}" text-anchor="middle" font-family="${DS_FONT}" font-size="${fontSize}" font-weight="600" fill="${DS_ARROW}">Place marker</text>`;
+  };
+  return label("cast-on", layout.castOnY) + label("bind-off", layout.bindOffY);
+}
+
 export function drawPulloverMarkers(
   frame: SidewaysCardiganEditMeasurementFrame,
   options?: {
@@ -524,6 +598,7 @@ export function drawPulloverMarkers(
       : type
         ? frame.topY - 10 - type.support - lineGap
         : 0;
+  const markerLayout = pulloverFirstArmholeMarkerLayout(frame, castOnAtBottom);
   return [
     `<line data-role="underarm-start" data-scrap-on="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(startY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(startY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
     `<line data-role="graft-join" data-scrap-off="true" x1="${fmtNum(frame.hemX)}" y1="${fmtNum(graftY)}" x2="${fmtNum(frame.neckX)}" y2="${fmtNum(graftY)}" fill="none" stroke="${DS_STROKE}" stroke-width="2" stroke-dasharray="6 4"/>`,
@@ -531,6 +606,7 @@ export function drawPulloverMarkers(
     includeStartLabel && type
       ? `<text data-role="underarm-start-label" data-build-type-role="support" x="${fmtNum(midX)}" y="${fmtNum(labelY)}" text-anchor="middle" font-family="${type.fontFamily}" font-size="${type.support}" font-weight="${type.supportWeight}" fill="${DS_MUTED}"><tspan x="${fmtNum(midX)}" dy="0">Start at underarm</tspan><tspan x="${fmtNum(midX)}" dy="${fmtNum(lineGap)}" data-build-type-role="support">scrap on / graft</tspan></text>`
       : "",
+    markerLayout ? drawPulloverSideSeamMarkerGeometry(markerLayout) : "",
   ].join("");
 }
 
@@ -1006,7 +1082,10 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
   input: SidewaysCardiganEditMeasurementDiagramInput,
 ): string {
   const garmentStyle = input.garmentStyle === "pullover" ? "pullover" : "cardigan";
-  const frame = buildFrame(input.measurements, garmentStyle, { includeAttachedSleeve: false });
+  const frame = buildFrame(input.measurements, garmentStyle, {
+    includeAttachedSleeve: false,
+    firstArmholePlaceMarker: garmentStyle === "pullover" ? (input.placeMarker ?? null) : null,
+  });
   const geometry = viewBoxFor(frame);
   const unit = input.displayUnit === "cm" ? "cm" : "in";
   const start = garmentStyle === "pullover" ? "underarm" : "center-front";
@@ -1022,6 +1101,12 @@ export function buildSidewaysCardiganEditBodyMeasurementDiagramSvg(
       garmentStyle === "pullover"
         ? drawPulloverMarkers(frame, { typography: type, castOnAtBottom: true })
         : drawCardiganMarkers(frame),
+      garmentStyle === "pullover"
+        ? drawPulloverSideSeamMarkerLabels(
+            pulloverFirstArmholeMarkerLayout(frame, true),
+            type.name,
+          )
+        : "",
       drawDimensions(frame, unit, type),
       drawTargets(frame, type),
     ].join("");
