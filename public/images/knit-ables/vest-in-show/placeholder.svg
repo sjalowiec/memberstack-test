@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1000" viewBox="0 0 750 1000" role="img" aria-label="Photo placeholder for Vest in Show">
+  <rect width="750" height="1000" fill="#f7f8f5"/>
+  <rect x="28" y="28" width="694" height="944" rx="28" fill="#ffffff" stroke="#c7d8a4" stroke-width="4" stroke-dasharray="14 12"/>
+  <path fill="#e4ebd6" stroke="#52682d" stroke-width="6" stroke-linejoin="round" d="M250 250 L375 430 L500 250 L620 340 L560 470 L560 780 L190 780 L190 470 L130 340 Z"/>
+  <text x="375" y="860" text-anchor="middle" fill="#52682d" font-family="Georgia, serif" font-size="42">Vest in Show</text>
+  <text x="375" y="910" text-anchor="middle" fill="#5a6350" font-family="Georgia, serif" font-size="28">Photo placeholder</text>
+</svg>

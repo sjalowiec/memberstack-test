@@ -15,6 +15,12 @@ import {
   TEENAGE_KICKS_SOCKS_PATH,
 } from "./teenageKicksSocks";
 import {
+  VEST_IN_SHOW_CARD_COPY,
+  VEST_IN_SHOW_IMAGES,
+  VEST_IN_SHOW_PATH,
+  VEST_IN_SHOW_TITLE,
+} from "./vestInShow";
+import {
   WORSTED_COLOR_BLOCK_SOCKS_CARD_COPY,
   WORSTED_COLOR_BLOCK_SOCKS_IMAGES,
   WORSTED_COLOR_BLOCK_SOCKS_PATH,
@@ -48,6 +54,12 @@ export type KnitAbleLandingCard = {
 };
 
 export const KNIT_ABLES_CARDS: readonly KnitAbleLandingCard[] = [
+  {
+    href: VEST_IN_SHOW_PATH,
+    title: VEST_IN_SHOW_TITLE,
+    description: VEST_IN_SHOW_CARD_COPY,
+    image: VEST_IN_SHOW_IMAGES.hero,
+  },
   {
     href: COCO_LOCO_TANK_PATH,
     title: COCO_LOCO_TANK_TITLE,
