@@ -27,6 +27,7 @@ import {
 } from "./sleevelessCustomBuildBodyMeasurements";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveMeasurementDisplayUnitFromPatternData } from "./patternMeasurementDisplayUnit";
+import { authoritativePerInchFromRawSwatchSources } from "./rawSwatchGauge";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -414,6 +415,8 @@ export function buildGeneratorPatternDataFromSources(
     },
     { yarnGauge: ygMerged, yarnGaugeMachine: ygm },
   );
+  // Complete raw swatch (count, count, unit) replaces a stale stored per-inch gauge.
+  const derivedPerInch = authoritativePerInchFromRawSwatchSources(ygMerged, ygm);
   const gen = {
     fit,
     style,
@@ -421,10 +424,18 @@ export function buildGeneratorPatternDataFromSources(
     yarnGauge: {
       ...ygMerged,
       gaugeRawUnit,
+      ...(derivedPerInch
+        ? {
+            stitchGauge: derivedPerInch.gaugeStitchesPerInch,
+            rowGauge: derivedPerInch.gaugeRowsPerInch,
+          }
+        : {}),
     },
     yarnGaugeMachine: {
-      gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? ygMerged.stitchGauge,
-      gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? ygMerged.rowGauge,
+      gaugeStitchesPerInch:
+        derivedPerInch?.gaugeStitchesPerInch ?? ygm.gaugeStitchesPerInch ?? ygMerged.stitchGauge,
+      gaugeRowsPerInch:
+        derivedPerInch?.gaugeRowsPerInch ?? ygm.gaugeRowsPerInch ?? ygMerged.rowGauge,
       availableNeedles: ygm.availableNeedles ?? sectionPattern(merged.machine).availableNeedles,
       gaugeRawUnit,
     },

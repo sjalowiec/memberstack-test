@@ -9,6 +9,7 @@
 import { clearActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { resolveAvailableNeedlesFromSources } from "./availableNeedlesMirrors";
 import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
+import { authoritativePerInchFromRawSwatch } from "./rawSwatchGauge";
 import type { SleevelessPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 
 export const PATTERN_STORAGE_KEY = "kbm_current_pattern";
@@ -139,6 +140,18 @@ function savedPatternSection(section: unknown): Record<string, unknown> {
     : {};
 }
 
+function yarnGaugeWithAuthoritativeRawSwatch(
+  yarnGauge: Record<string, unknown>,
+): Record<string, unknown> {
+  const derived = authoritativePerInchFromRawSwatch(yarnGauge);
+  if (!derived) return yarnGauge;
+  return {
+    ...yarnGauge,
+    stitchGauge: derived.gaugeStitchesPerInch,
+    rowGauge: derived.gaugeRowsPerInch,
+  };
+}
+
 function yarnGaugeMachineFromSavedPattern(pattern: SleevelessPatternRecord): Record<string, unknown> {
   const yarnGauge = savedPatternSection(pattern.yarnGauge);
   const machine = savedPatternSection(pattern.machine);
@@ -149,6 +162,11 @@ function yarnGaugeMachineFromSavedPattern(pattern: SleevelessPatternRecord): Rec
   if (yarnGauge.gaugeRowRaw !== undefined) payload.gaugeRowRaw = yarnGauge.gaugeRowRaw;
   if (yarnGauge.gaugeRawUnit === "cm" || yarnGauge.gaugeRawUnit === "in") {
     payload.gaugeRawUnit = yarnGauge.gaugeRawUnit;
+  }
+  const derived = authoritativePerInchFromRawSwatch(yarnGauge);
+  if (derived) {
+    payload.gaugeStitchesPerInch = derived.gaugeStitchesPerInch;
+    payload.gaugeRowsPerInch = derived.gaugeRowsPerInch;
   }
   if (machine.availableNeedles !== undefined) payload.availableNeedles = machine.availableNeedles;
   return payload;
@@ -196,7 +214,8 @@ export function replaceWorkingDraftFromSavedPattern(
 ): SleevelessPatternRecord {
   const current = getCurrentPattern();
   const prevPb = getPatternData();
-  const yarnGaugeMachine = yarnGaugeMachineFromSavedPattern(pattern);
+  const yarnGauge = yarnGaugeWithAuthoritativeRawSwatch(savedPatternSection(pattern.yarnGauge));
+  const yarnGaugeMachine = yarnGaugeMachineFromSavedPattern({ ...pattern, yarnGauge });
 
   let next: SleevelessPatternRecord = {
     ...current,
@@ -209,7 +228,7 @@ export function replaceWorkingDraftFromSavedPattern(
     patternProject: projectMeta,
     style: savedPatternSection(pattern.style),
     fit: savedPatternSection(pattern.fit),
-    yarnGauge: savedPatternSection(pattern.yarnGauge),
+    yarnGauge,
     measurements: savedPatternSection(pattern.measurements),
     machine: savedPatternSection(pattern.machine),
     calculations: savedPatternSection(pattern.calculations),
@@ -224,7 +243,7 @@ export function replaceWorkingDraftFromSavedPattern(
     updatedAt: new Date().toISOString(),
     style: savedPatternSection(pattern.style),
     fit: savedPatternSection(pattern.fit),
-    yarnGauge: savedPatternSection(pattern.yarnGauge),
+    yarnGauge,
     measurements: savedPatternSection(pattern.measurements),
     machine: savedPatternSection(pattern.machine),
     ...(Object.keys(yarnGaugeMachine).length > 0 ? { yarnGaugeMachine } : {}),

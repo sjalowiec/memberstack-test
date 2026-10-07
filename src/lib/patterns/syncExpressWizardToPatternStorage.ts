@@ -45,6 +45,9 @@ import {
   buildSizingIdentityFromExpressValues,
   detachActiveSavedProjectWhenChartAudienceDrifts,
 } from "./savedCustomPatternSessionIdentity";
+import { rawSwatchToPerInch } from "./rawSwatchGauge";
+
+export { rawSwatchToPerInch };
 
 export const EXPRESS_GAUGE_STITCH_INPUT_ID = "express-stitch-gauge";
 export const EXPRESS_GAUGE_ROW_INPUT_ID = "express-row-gauge";
@@ -53,25 +56,6 @@ function isValidPositiveNumber(v: string): boolean {
   if (v === "" || v === null || v === undefined) return false;
   const n = Number(v);
   return !Number.isNaN(n) && n > 0 && Number.isFinite(n);
-}
-
-export function rawSwatchToPerInch(
-  stitchRaw: string,
-  rowRaw: string,
-  unit: "cm" | "in",
-): { gaugeStitchesPerInch: string; gaugeRowsPerInch: string } {
-  const s = parseFloat(String(stitchRaw).trim());
-  const r = parseFloat(String(rowRaw).trim());
-  let gaugeStitchesPerInch = "";
-  let gaugeRowsPerInch = "";
-  if (unit === "cm") {
-    if (Number.isFinite(s) && s > 0) gaugeStitchesPerInch = String((s / 10) * 2.54);
-    if (Number.isFinite(r) && r > 0) gaugeRowsPerInch = String((r / 10) * 2.54);
-  } else {
-    if (Number.isFinite(s) && s > 0) gaugeStitchesPerInch = String(s / 4);
-    if (Number.isFinite(r) && r > 0) gaugeRowsPerInch = String(r / 4);
-  }
-  return { gaugeStitchesPerInch, gaugeRowsPerInch };
 }
 
 export type ExpressGaugeInputSnapshot = {

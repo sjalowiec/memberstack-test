@@ -3,6 +3,7 @@
  * library drawer, manage rows). Sweaters use `yarnGauge`; Hats use `gaugeSlots` on the
  * saved Hat draft. Does not change how either system stores gauge.
  */
+import { authoritativePerInchFromRawSwatch } from "./rawSwatchGauge";
 
 /** Display gauge derived from a saved pattern's `yarnGauge`. */
 export type SavedPatternGauge = {
@@ -22,17 +23,17 @@ function toPositiveNumber(value: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function rawSwatchToPerInch(raw: number, unit: "in" | "cm"): number {
-  // Raw swatch counts are over 4 inches (in) or 10 cm (cm).
+function perInchFromIncompleteRaw(raw: number, unit: "in" | "cm"): number {
   return unit === "cm" ? (raw / 10) * 2.54 : raw / 4;
 }
 
 /**
  * Extracts display gauge from a saved pattern's `yarnGauge` section.
  *
- * When raw swatch counts are stored (`gaugeStitchRaw` / `gaugeRowRaw`), those original
- * entered values are kept for display. Per-inch values remain available for internal use.
- * When only per-inch values exist, display uses those directly.
+ * A complete raw swatch (`gaugeStitchRaw`, `gaugeRowRaw`, and `gaugeRawUnit`) is authoritative:
+ * per-inch numbers are recalculated from it, even when a stored `stitchGauge` disagrees.
+ * Original entered counts stay on `displayStitches` / `displayRows`.
+ * When the raw triple is incomplete, stored per-inch values are used as before.
  */
 export function extractSavedPatternGauge(yarnGauge: unknown): SavedPatternGauge | null {
   if (!yarnGauge || typeof yarnGauge !== "object" || Array.isArray(yarnGauge)) return null;
@@ -44,11 +45,16 @@ export function extractSavedPatternGauge(yarnGauge: unknown): SavedPatternGauge 
 
   const perInchSts = toPositiveNumber(yg.stitchGauge);
   const perInchRows = toPositiveNumber(yg.rowGauge);
+  const derived = authoritativePerInchFromRawSwatch(yg);
 
   if (rawSts !== null && rawRows !== null) {
     return {
-      stitchesPerInch: perInchSts ?? rawSwatchToPerInch(rawSts, unit),
-      rowsPerInch: perInchRows ?? rawSwatchToPerInch(rawRows, unit),
+      stitchesPerInch: derived
+        ? Number(derived.gaugeStitchesPerInch)
+        : (perInchSts ?? perInchFromIncompleteRaw(rawSts, unit)),
+      rowsPerInch: derived
+        ? Number(derived.gaugeRowsPerInch)
+        : (perInchRows ?? perInchFromIncompleteRaw(rawRows, unit)),
       displayStitches: rawSts,
       displayRows: rawRows,
     };
@@ -101,8 +107,8 @@ export function extractSavedHatGauge(pattern: unknown): SavedPatternGauge | null
 
   const swatchUnit: "in" | "cm" = usedUnit === "cm" ? "cm" : "in";
   return {
-    stitchesPerInch: rawSwatchToPerInch(used.stitch, swatchUnit),
-    rowsPerInch: rawSwatchToPerInch(used.row, swatchUnit),
+    stitchesPerInch: perInchFromIncompleteRaw(used.stitch, swatchUnit),
+    rowsPerInch: perInchFromIncompleteRaw(used.row, swatchUnit),
     displayStitches: used.stitch,
     displayRows: used.row,
   };
