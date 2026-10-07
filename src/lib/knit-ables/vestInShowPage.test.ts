@@ -1,6 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import videosRaw from "../../data/videos-public.json";
+import { findPublicCatalogVideoByContentId } from "../videoPublic";
+import { knitAbleInspirationLessonContentId } from "./inspirationPage";
 import { buildSleevelessBuilderNewPatternHref } from "../patterns/patternStorage";
 import { SLEEVELESS_PATTERN_BUILDER_LANDING } from "../patterns/sleevelessPatternLanding";
 import { KNIT_ABLE_AFFILIATE_REL } from "./links";
@@ -23,6 +26,10 @@ import {
   VEST_IN_SHOW_INSPIRED_HEADING,
   VEST_IN_SHOW_INTRO,
   VEST_IN_SHOW_KNITTER_TIP,
+  VEST_IN_SHOW_MEMBER_LESSON_ACCESS_LABEL,
+  VEST_IN_SHOW_MEMBER_LESSONS,
+  VEST_IN_SHOW_MEMBER_LESSONS_HEADING,
+  VEST_IN_SHOW_MEMBER_LESSONS_INTRO,
   VEST_IN_SHOW_ORIGINAL_PATTERN_URL,
   VEST_IN_SHOW_PAGE,
   VEST_IN_SHOW_PATH,
@@ -195,6 +202,47 @@ describe("Vest in Show Knit-able page", () => {
     expect(templateSource).toContain("KNIT_ABLE_AFFILIATE_REL");
     expect(templateSource).toContain('target="_blank"');
     expect(pageSource).not.toContain("awin1.com");
+  });
+
+  it("opens the existing V-Neck Bands member lesson through the shared lesson gate", () => {
+    expect(VEST_IN_SHOW_MEMBER_LESSONS_HEADING).toBe("Finishing Your V-Neck");
+    expect(VEST_IN_SHOW_MEMBER_LESSONS_INTRO).toBe(
+      "Give your vest a professional finish! Learn how to knit and attach a V-neck band for a neat, polished neckline.",
+    );
+    expect(VEST_IN_SHOW_MEMBER_LESSON_ACCESS_LABEL).toBe("Members");
+    expect(VEST_IN_SHOW_MEMBER_LESSONS).toEqual([
+      {
+        title: "V-Neck Bands",
+        description: "Shape a practice neckline and knit a doubled stockinette V-neck band.",
+        href: "/videos/386",
+      },
+    ]);
+    expect(VEST_IN_SHOW_PAGE.lessons).toEqual({
+      heading: VEST_IN_SHOW_MEMBER_LESSONS_HEADING,
+      intro: VEST_IN_SHOW_MEMBER_LESSONS_INTRO,
+      accessLabel: VEST_IN_SHOW_MEMBER_LESSON_ACCESS_LABEL,
+      items: VEST_IN_SHOW_MEMBER_LESSONS,
+    });
+    expect(knitAbleInspirationLessonContentId("/videos/386")).toBe("386");
+    expect(pageSource).not.toContain("/videos/386");
+    expect(pageSource).not.toContain("151857638");
+    expect(templateSource).toContain("bootHelpHubMemberLessonGates");
+    expect(templateSource).toContain("data-hh-lesson-gate");
+    expect(templateSource).toContain("data-help-hub-lesson-open");
+    expect(templateSource).toContain("data-content-id={knitAbleInspirationLessonContentId(lesson.href)}");
+    expect(templateSource).not.toContain("<a href={lesson.href}>");
+
+    const video = findPublicCatalogVideoByContentId(videosRaw, "386") as {
+      title?: string;
+      access_level?: string;
+      vimeo_id?: number;
+    } | null;
+    expect(video?.title).toBe("V-Neck Bands");
+    expect(video?.access_level).toBe("member");
+    expect(video?.vimeo_id).toBe(151857638);
+    expect(VEST_IN_SHOW_PAGE.pattern.href).toBe(VEST_IN_SHOW_ORIGINAL_PATTERN_URL);
+    expect(VEST_IN_SHOW_PAGE.yarn.href).toBe(VEST_IN_SHOW_YARN_URL);
+    expect(VEST_IN_SHOW_PAGE.builder.cta.memberHref).toBe(vestInShowBuilderHref());
   });
 
   it("leaves the earlier Knit-able pages unchanged", () => {

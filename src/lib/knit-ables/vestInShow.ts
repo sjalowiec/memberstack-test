@@ -84,6 +84,23 @@ export const VEST_IN_SHOW_YARN = {
   href: VEST_IN_SHOW_YARN_URL,
 } as const;
 
+export const VEST_IN_SHOW_MEMBER_LESSONS_HEADING = "Finishing Your V-Neck";
+
+export const VEST_IN_SHOW_MEMBER_LESSONS_INTRO =
+  "Give your vest a professional finish! Learn how to knit and attach a V-neck band for a neat, polished neckline.";
+
+/** Same access label the other Knit-able member lessons use. */
+export const VEST_IN_SHOW_MEMBER_LESSON_ACCESS_LABEL = "Members";
+
+/** Existing member lesson. The player loads catalog video 386; this page does not host the file. */
+export const VEST_IN_SHOW_MEMBER_LESSONS = [
+  {
+    title: "V-Neck Bands",
+    description: "Shape a practice neckline and knit a doubled stockinette V-neck band.",
+    href: "/videos/386",
+  },
+] as const;
+
 export const VEST_IN_SHOW_AFFILIATE_DISCLOSURE =
   "These are affiliate links. If you purchase through them, Knit It Now may earn a commission at no additional cost to you.";
 
@@ -152,6 +169,12 @@ export const VEST_IN_SHOW_PAGE: KnitAbleInspirationPageContent = {
     paragraphs: VEST_IN_SHOW_YARN.paragraphs,
     buttonLabel: VEST_IN_SHOW_YARN.buttonLabel,
     href: VEST_IN_SHOW_YARN.href,
+  },
+  lessons: {
+    heading: VEST_IN_SHOW_MEMBER_LESSONS_HEADING,
+    intro: VEST_IN_SHOW_MEMBER_LESSONS_INTRO,
+    accessLabel: VEST_IN_SHOW_MEMBER_LESSON_ACCESS_LABEL,
+    items: VEST_IN_SHOW_MEMBER_LESSONS,
   },
   affiliateDisclosure: VEST_IN_SHOW_AFFILIATE_DISCLOSURE,
 };
