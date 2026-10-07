@@ -18,7 +18,6 @@ import {
   VEST_IN_SHOW_CTA,
   VEST_IN_SHOW_CTA_LABEL,
   VEST_IN_SHOW_DESCRIPTION,
-  VEST_IN_SHOW_HERO_PHOTO,
   VEST_IN_SHOW_IMAGES,
   VEST_IN_SHOW_INSPIRED_COPY,
   VEST_IN_SHOW_INSPIRED_HEADING,
@@ -80,12 +79,12 @@ describe("Vest in Show Knit-able page", () => {
     expect(KNIT_ABLES_CARDS[0]?.description).toBe(VEST_IN_SHOW_CARD_COPY);
   });
 
-  it("uses a local placeholder until a photo is supplied", () => {
-    expect(VEST_IN_SHOW_HERO_PHOTO.src).toBe("/images/knit-ables/vest-in-show/vest-in-show.jpg");
-    expect(VEST_IN_SHOW_HERO_PHOTO.fileName).toBe("vest-in-show.jpg");
-    expect(VEST_IN_SHOW_IMAGES.hero.src).toBe("/images/knit-ables/vest-in-show/placeholder.svg");
-    expect(VEST_IN_SHOW_IMAGES.hero.fileName).toBe("placeholder.svg");
-    expect(VEST_IN_SHOW_IMAGES.hero.alt).toContain("Photo placeholder");
+  it("uses the supplied Vest in Show thumbnail", () => {
+    expect(VEST_IN_SHOW_IMAGES.hero.src).toBe("/images/knit-ables/vest-in-show/vest-in-show.gif");
+    expect(VEST_IN_SHOW_IMAGES.hero.fileName).toBe("vest-in-show.gif");
+    expect(VEST_IN_SHOW_IMAGES.hero.width).toBe(500);
+    expect(VEST_IN_SHOW_IMAGES.hero.height).toBe(638);
+    expect(VEST_IN_SHOW_IMAGES.hero.alt).toContain("V-neck sleeveless pullover");
     expect(VEST_IN_SHOW_PAGE.hero.src).toBe(VEST_IN_SHOW_IMAGES.hero.src);
     expect(VEST_IN_SHOW_PAGE.hero.href).toBe(VEST_IN_SHOW_ORIGINAL_PATTERN_URL);
     expect(existsSync(resolve(`public${VEST_IN_SHOW_IMAGES.hero.src}`))).toBe(true);

@@ -22,25 +22,15 @@ export const VEST_IN_SHOW_ORIGINAL_PATTERN_URL =
 export const VEST_IN_SHOW_YARN_URL =
   "https://www.awin1.com/cread.php?awinmid=101419&awinaffid=2040643&ued=https%3A%2F%2Fsirdar.com%2Fen%2Fproducts%2Fsirdar-jewelspun-ombre-aran-400g";
 
-/**
- * Inspiration photo. There is no compliant remote-image source for Sirdar product photos.
- * Replace the placeholder by adding this file and pointing `VEST_IN_SHOW_IMAGES.hero` at it:
- * public/images/knit-ables/vest-in-show/vest-in-show.jpg
- */
-export const VEST_IN_SHOW_HERO_PHOTO = {
-  src: "/images/knit-ables/vest-in-show/vest-in-show.jpg",
-  fileName: "vest-in-show.jpg",
-} as const;
-
 const IMAGE_DIR = "/images/knit-ables/vest-in-show";
 
 export const VEST_IN_SHOW_IMAGES = {
   hero: {
-    src: `${IMAGE_DIR}/placeholder.svg`,
-    alt: "Photo placeholder for the Vest in Show sleeveless pullover.",
-    width: 750,
-    height: 1000,
-    fileName: "placeholder.svg",
+    src: `${IMAGE_DIR}/vest-in-show.gif`,
+    alt: "A person wearing a gray ombre V-neck sleeveless pullover with ribbed trim at the neckline, armholes, and hem, layered over a white shirt.",
+    width: 500,
+    height: 638,
+    fileName: "vest-in-show.gif",
   },
 } as const;
 
