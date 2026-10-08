@@ -25,7 +25,7 @@
 | 820 | Bobbin  \|  Yarn Bobbin |
 | 710 | Bobbles |
 | 779 | Bodkin  \|  Double Eye Needle |
-| 381 | BouclÃ© |
+| 381 | Bouclé |
 | 885 | Bridging |
 | 647 | Broken Toe Cast On |
 | 414 | Brother  \|  Knit King |
