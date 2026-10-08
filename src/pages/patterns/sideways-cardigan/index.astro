@@ -11,6 +11,8 @@ import SidewaysKnitSweaterRealLife from "../../../components/patterns/SidewaysKn
 import { SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 
 const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
+/** The sizing copy is rendered beside the photograph, so the shared why block is not repeated. */
+const landingPageContent = { ...landing, why: undefined };
 ---
 
 <Layout
@@ -22,7 +24,7 @@ const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
     <link rel="canonical" href={landing.seo.canonicalUrl} />
   </Fragment>
 
-  <PatternBuilderLandingPage content={landing}>
+  <PatternBuilderLandingPage content={landingPageContent}>
     <SidewaysKnitSweaterRealLife slot="after-hero" />
   </PatternBuilderLandingPage>
 </Layout>

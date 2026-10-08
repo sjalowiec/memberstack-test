@@ -1,44 +1,92 @@
 ---
 import GlossaryTooltip from "../common/GlossaryTooltip.astro";
+import type { PatternBuilderLandingCopySection } from "../../lib/patterns/patternBuilderLanding";
 import {
+  SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC,
 } from "../../lib/patterns/sidewaysKnitSweaterPatternLanding";
+
+interface Props {
+  section?: PatternBuilderLandingCopySection;
+  headingId?: string;
+}
+
+const {
+  section = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.why,
+  headingId = "pattern-builder-why-heading",
+} = Astro.props;
 ---
 
-<figure class="sideways-real-life" data-testid="sideways-real-life">
-  <img
-    src={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC}
-    alt={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT}
-    width="500"
-    height="688"
-    loading="lazy"
-    decoding="async"
-  />
-  <figcaption class="sideways-real-life__caption">
-    {
-      SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.map((part) =>
-        part.type === "glossary" ? (
-          <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
-        ) : (
-          part.text
-        )
-      )
-    }
-  </figcaption>
-</figure>
+{
+  section ? (
+    <section class="sideways-why-photo" aria-labelledby={headingId} data-testid="sideways-why-photo">
+      <div class="sideways-why-photo__copy">
+        <h2 id={headingId}>{section.heading}</h2>
+        {section.body.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+      <figure class="sideways-real-life" data-testid="sideways-real-life">
+        <img
+          src={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC}
+          alt={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT}
+          width="500"
+          height="688"
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption class="sideways-real-life__caption">
+          {SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.map((part) =>
+            part.type === "glossary" ? (
+              <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+            ) : (
+              part.text
+            )
+          )}
+        </figcaption>
+      </figure>
+    </section>
+  ) : null
+}
 
 <style>
-  .sideways-real-life {
+  .sideways-why-photo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
     margin: 0 0 1.75rem;
-    max-width: 22rem;
+  }
+
+  .sideways-why-photo__copy h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sideways-why-photo__copy p {
+    margin: 0 0 0.85rem;
+    color: #333;
+    line-height: 1.55;
+  }
+
+  .sideways-why-photo__copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .sideways-real-life {
+    margin: 0;
   }
 
   .sideways-real-life img {
     display: block;
     width: 100%;
     height: auto;
+    max-width: 100%;
+    object-fit: contain;
     border-radius: 12px;
     border: 1px solid #d6dbc9;
   }
@@ -48,5 +96,12 @@ import {
     color: #243015;
     font-size: 0.98rem;
     line-height: 1.45;
+  }
+
+  @media (min-width: 768px) {
+    .sideways-why-photo {
+      grid-template-columns: minmax(0, 60fr) minmax(0, 40fr);
+      gap: 1.75rem;
+    }
   }
 </style>

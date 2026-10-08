@@ -194,7 +194,16 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
     );
     expect(landingPage).toContain("SidewaysKnitSweaterRealLife");
     expect(landingPage).toContain('slot="after-hero"');
+    expect(landingPage).toContain("why: undefined");
     expect(realLifeCaption).toContain("<GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>");
+    expect(realLifeCaption.indexOf("sideways-why-photo__copy")).toBeLessThan(
+      realLifeCaption.indexOf('data-testid="sideways-real-life"'),
+    );
+    expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 1fr);");
+    expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 60fr) minmax(0, 40fr);");
+    expect(realLifeCaption).toContain("align-items: start;");
+    expect(realLifeCaption).toContain("object-fit: contain;");
+    expect(realLifeCaption).toContain("@media (min-width: 768px)");
     const glossaryParts = SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.filter(
       (part) => part.type === "glossary",
     );
