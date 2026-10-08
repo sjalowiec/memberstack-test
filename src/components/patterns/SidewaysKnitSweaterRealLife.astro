@@ -1,0 +1,52 @@
+---
+import GlossaryTooltip from "../common/GlossaryTooltip.astro";
+import {
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC,
+} from "../../lib/patterns/sidewaysKnitSweaterPatternLanding";
+---
+
+<figure class="sideways-real-life" data-testid="sideways-real-life">
+  <img
+    src={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC}
+    alt={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT}
+    width="500"
+    height="688"
+    loading="lazy"
+    decoding="async"
+  />
+  <figcaption class="sideways-real-life__caption">
+    {
+      SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.map((part) =>
+        part.type === "glossary" ? (
+          <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+        ) : (
+          part.text
+        )
+      )
+    }
+  </figcaption>
+</figure>
+
+<style>
+  .sideways-real-life {
+    margin: 0 0 1.75rem;
+    max-width: 22rem;
+  }
+
+  .sideways-real-life img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid #d6dbc9;
+  }
+
+  .sideways-real-life__caption {
+    margin: 0.55rem 0 0;
+    color: #243015;
+    font-size: 0.98rem;
+    line-height: 1.45;
+  }
+</style>

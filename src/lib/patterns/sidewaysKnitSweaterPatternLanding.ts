@@ -21,6 +21,40 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL =
 
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC = "/images/patterns/sideways.png";
 
+/** Finished sweater shown with the real-life caption. Not the catalog or workspace thumbnail. */
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC =
+  "/images/patterns/soft_sideways.png";
+
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT =
+  "Finished sideways cardigan by Sue.";
+
+/** Existing glossary entry "Knit Weave | Lay-In". */
+export const SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID = 349;
+
+/** Existing glossary entry "Bouclé". */
+export const SIDEWAYS_BOUCLE_GLOSSARY_ID = 381;
+
+export type SidewaysRealLifeCaptionPart =
+  | { type: "text"; text: string }
+  | { type: "glossary"; glossaryId: number; text: string };
+
+/**
+ * Visible caption under the real sweater photo.
+ * Glossary parts keep the written term and open the existing entry.
+ */
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION: readonly SidewaysRealLifeCaptionPart[] =
+  [
+    { type: "text", text: "Sideways knitting in real life: " },
+    {
+      type: "glossary",
+      glossaryId: SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID,
+      text: "knit-weave",
+    },
+    { type: "text", text: " in " },
+    { type: "glossary", glossaryId: SIDEWAYS_BOUCLE_GLOSSARY_ID, text: "bouclé" },
+    { type: "text", text: "." },
+  ];
+
 /** Pattern workspace header photo. Stays on the original render. */
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC = "/images/patterns/sideways.png";
 

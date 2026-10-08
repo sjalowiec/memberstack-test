@@ -7,6 +7,7 @@ export const prerender = false;
 
 import Layout from "../../../layouts/Layout.astro";
 import PatternBuilderLandingPage from "../../../components/patterns/PatternBuilderLandingPage.astro";
+import SidewaysKnitSweaterRealLife from "../../../components/patterns/SidewaysKnitSweaterRealLife.astro";
 import { SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 
 const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
@@ -21,5 +22,7 @@ const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
     <link rel="canonical" href={landing.seo.canonicalUrl} />
   </Fragment>
 
-  <PatternBuilderLandingPage content={landing} />
+  <PatternBuilderLandingPage content={landing}>
+    <SidewaysKnitSweaterRealLife slot="after-hero" />
+  </PatternBuilderLandingPage>
 </Layout>
