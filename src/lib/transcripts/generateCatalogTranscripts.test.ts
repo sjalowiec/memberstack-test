@@ -41,7 +41,10 @@ describe("catalog transcript generation", () => {
       "a66776f8a7148e1744abb28a3ff9fcbf7f18b541a866c8cde43d936eaddbb421",
     );
     expect(docs.audit.publicCount).toBe(13);
-    expect(docs.audit.memberCount).toBe(236);
+    expect(docs.audit.memberCount).toBe(237);
+    expect(docs.memberDocument.records.some((record) => record.vimeoId === "1234021892")).toBe(
+      true,
+    );
     // Published, but the source VTTs have no spoken text: content 487
     // (151858276) is a WEBVTT header only, and content 503 (151858332)
     // is that header plus the placeholder "dsfsd".
