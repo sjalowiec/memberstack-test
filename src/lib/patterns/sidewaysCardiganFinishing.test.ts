@@ -8,6 +8,10 @@ import {
   sidewaysBandGaugeFromSwatchInputs,
   renderSidewaysCardiganBandSectionHtml,
   renderSidewaysFinishingSectionHtml,
+  resolveSidewaysPulloverShoulderSeamVideo,
+  sidewaysPulloverShoulderSeamVideoLinkHtml,
+  SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID,
+  SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL,
   nearestOddPositiveStitches,
   sidewaysCardiganBandMarkers,
   sidewaysCardiganBandNumbers,
@@ -303,6 +307,79 @@ describe("sideways folded hem and cardigan band", () => {
       cardiganFinishing.indexOf("sleeve seams"),
     );
     expect(pullover.instructions.calc.garmentLengthStitches).toBe(view.calc.garmentLengthStitches);
+  });
+
+  it("seams the pullover shoulders and finishes the neckline between them", () => {
+    const finishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "pullover",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(5),
+    });
+    const cardiganFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "cardigan",
+      turningNeedle: 6,
+    });
+    const graft = finishing.indexOf("Graft those open stitches");
+    const shoulders = finishing.indexOf("SHOULDER SEAMS AND NECKLINE");
+    const machine = finishing.indexOf("Machine seaming is recommended.");
+    const placeholder = finishing.indexOf(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    const hand = finishing.indexOf("Hand seaming is an alternative.");
+    const neck = finishing.indexOf("Finish the neckline while the opposite shoulder remains open.");
+    const seam2 = finishing.indexOf("Shoulder seam 2. Seam the First Front Shoulder to the Second Back Shoulder.");
+    const hem = finishing.indexOf("turning line");
+    const sleeves = finishing.indexOf("Join the sleeve seams.");
+    expect(finishing).toContain("The shoulder edges are closed selvage edges. Seam them. Do not graft them.");
+    expect(finishing).toContain(
+      "Shoulder seam 1. Seam the Second Front Shoulder to the First Back Shoulder.",
+    );
+    expect(finishing).toContain(
+      "<strong>Machine-knit neckband:</strong> With one shoulder open, pick up stitches around the V-neck and back neckline. Knit the neckband on the machine if enough needles are available.",
+    );
+    expect(finishing).toContain(
+      "Check your available needle count before choosing the machine-knit neckband.",
+    );
+    expect(finishing).toContain(
+      "<strong>Other finishing options:</strong> Hand-knit a neckband, crochet an edging, or work an applied I-cord edging.",
+    );
+    expect(graft).toBeGreaterThan(-1);
+    expect(graft).toBeLessThan(shoulders);
+    expect(shoulders).toBeLessThan(machine);
+    expect(machine).toBeLessThan(placeholder);
+    expect(placeholder).toBeLessThan(hand);
+    expect(hand).toBeLessThan(neck);
+    expect(neck).toBeLessThan(seam2);
+    expect(seam2).toBeLessThan(hem);
+    expect(hem).toBeLessThan(sleeves);
+    expect(finishing.indexOf("Set the sleeves into the armhole openings.")).toBeGreaterThan(sleeves);
+    expect(finishing).toContain('data-sideways-pullover-shoulder-seam-video');
+    expect(finishing).toContain('data-video-pending="true"');
+    expect(finishing).toContain('data-video-title="Machine Seaming Shoulder Edges"');
+    const shoulderHtml = finishing.slice(shoulders, seam2);
+    expect(shoulderHtml).not.toContain("data-vimeo-id");
+    expect(shoulderHtml).not.toContain("player.vimeo.com");
+    expect(shoulderHtml).not.toContain("http");
+    expect(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID).toBeNull();
+    expect(resolveSidewaysPulloverShoulderSeamVideo()).toBeNull();
+    const linked = sidewaysPulloverShoulderSeamVideoLinkHtml(
+      {
+        id: "not-a-real-video",
+        title: "Machine Seaming Shoulder Edges",
+        description: "",
+        jumpLinks: [],
+      },
+      4242,
+    );
+    expect(linked).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(linked).toContain('data-content-id="4242"');
+    expect(linked).toContain('data-vimeo-id="not-a-real-video"');
+    expect(linked).toContain('data-sideways-pullover-shoulder-seam-video');
+    expect(linked).toContain("Watch: Machine Seaming Shoulder Edges");
+    expect(finishing).not.toContain("not-a-real-video");
+    expect(finishing).not.toContain('data-content-id="4242"');
+    expect(cardiganFinishing).not.toContain("SHOULDER SEAMS AND NECKLINE");
+    expect(cardiganFinishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    expect(cardiganFinishing).not.toContain("Machine-knit neckband");
+    expect(cardiganFinishing).not.toContain("data-sideways-pullover-shoulder-seam-video");
+    expect(cardiganFinishing).toContain("Join the shoulder seams.");
   });
 
   it("reloads a saved band gauge from the pattern style", () => {

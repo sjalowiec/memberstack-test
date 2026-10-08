@@ -406,6 +406,67 @@ function drawCardiganStsRows(
   ].join("");
 }
 
+/**
+ * Matching seam numbers on the closed shoulder selvages.
+ * Seam 1 joins Second Front Shoulder to First Back Shoulder.
+ * Seam 2 joins First Front Shoulder to Second Back Shoulder.
+ * Labels sit inside the neck edge and do not move dimensions or counts.
+ */
+function pulloverShoulderSeamLabels(
+  frame: SidewaysCardiganEditMeasurementFrame,
+  type: SidewaysPatternDiagramType,
+): string {
+  const marks: Array<{
+    seam: 1 | 2;
+    section: "first-front" | "second-front" | "first-back" | "second-back";
+    y1: number;
+    y2: number;
+    title: string;
+  }> = [
+    {
+      seam: 2,
+      section: "first-front",
+      y1: frame.topY,
+      y2: frame.firstArmholeY,
+      title: "Shoulder seam 2: First Front Shoulder to Second Back Shoulder",
+    },
+    {
+      seam: 1,
+      section: "second-front",
+      y1: frame.secondVStartY,
+      y2: frame.secondArmholeY,
+      title: "Shoulder seam 1: Second Front Shoulder to First Back Shoulder",
+    },
+    {
+      seam: 1,
+      section: "first-back",
+      y1: frame.secondArmholeY,
+      y2: frame.backNeckStartY,
+      title: "Shoulder seam 1: Second Front Shoulder to First Back Shoulder",
+    },
+    {
+      seam: 2,
+      section: "second-back",
+      y1: frame.backNeckEndY,
+      y2: frame.bottomY,
+      title: "Shoulder seam 2: First Front Shoulder to Second Back Shoulder",
+    },
+  ];
+  return marks
+    .map((mark) => {
+      const y = sidewaysKnitVisualY(frame, (mark.y1 + mark.y2) / 2);
+      const x = frame.neckX - Math.max(8, Math.round(type.piece * 0.45));
+      return (
+        `<g data-role="shoulder-seam-mark" data-seam="${mark.seam}" data-shoulder-section="${mark.section}">` +
+        `<title>${escapeXml(mark.title)}</title>` +
+        `<text data-role="shoulder-seam" data-seam="${mark.seam}" data-shoulder-section="${mark.section}"` +
+        ` x="${fmtNum(x)}" y="${fmtNum(y)}" text-anchor="end" fill="${DS_STROKE}" ${textFont(type.piece, type.pieceWeight)}>` +
+        `Seam ${mark.seam}</text></g>`
+      );
+    })
+    .join("");
+}
+
 function drawPulloverStsRows(
   frame: SidewaysCardiganEditMeasurementFrame,
   model: SidewaysCardiganPatternDiagramModel,
@@ -531,6 +592,7 @@ function drawPulloverStsRows(
       type.row,
     ),
     measureLabel(midX, bindOffY, `BO ${sts(edge, lengthIn)}`, "bind-off-sts", type.stitch, "middle", ` data-knit-edge="end" data-sts="${edge}"`),
+    pulloverShoulderSeamLabels(frame, type),
   ].join("");
 }
 

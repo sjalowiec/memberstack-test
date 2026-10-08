@@ -958,6 +958,36 @@ describe("Pullover Stitches & Rows annotations", () => {
     expect(svg).toContain('data-role="back-neck-sts"');
     expect(svg).toContain("Start at underarm");
     expect(svg).toContain(">scrap on / graft<");
+    const seamLabels = [...svg.matchAll(/<text\b([^>]*\bdata-role="shoulder-seam"[^>]*)>Seam (\d)<\/text>/g)];
+    expect(seamLabels.map((match) => ({
+      seam: match[2],
+      section: /data-shoulder-section="([^"]+)"/.exec(match[1] ?? "")?.[1],
+      y: Number(/ y="([^"]+)"/.exec(match[1] ?? "")?.[1]),
+    }))).toEqual([
+      { seam: "2", section: "first-front", y: expect.any(Number) },
+      { seam: "1", section: "second-front", y: expect.any(Number) },
+      { seam: "1", section: "first-back", y: expect.any(Number) },
+      { seam: "2", section: "second-back", y: expect.any(Number) },
+    ]);
+    const yOf = (section: string) => {
+      const attrs =
+        seamLabels.find((match) => match[1]?.includes(`data-shoulder-section="${section}"`))?.[1] ?? "";
+      return Number(/ y="([^"]+)"/.exec(attrs)?.[1]);
+    };
+    const visualMid = (y1: number, y2: number) => sidewaysKnitVisualY(frame, (y1 + y2) / 2);
+    expect(yOf("first-front")).toBeCloseTo(visualMid(frame.topY, frame.firstArmholeY), 1);
+    expect(yOf("second-front")).toBeCloseTo(visualMid(frame.secondVStartY, frame.secondArmholeY), 1);
+    expect(yOf("first-back")).toBeCloseTo(visualMid(frame.secondArmholeY, frame.backNeckStartY), 1);
+    expect(yOf("second-back")).toBeCloseTo(visualMid(frame.backNeckEndY, frame.bottomY), 1);
+    for (const match of seamLabels) {
+      const x = Number(/ x="([^"]+)"/.exec(match[1] ?? "")?.[1]);
+      expect(x).toBeLessThan(frame.neckX);
+    }
+    expect((svg.match(/data-role="dim-shoulder-section"/g) ?? []).length).toBe(1);
+    expect(svg).toContain(`data-shoulder-rows="${model.calc.shoulders.firstFrontRows}"`);
+    expect(cardigan).not.toContain('data-role="shoulder-seam"');
+    const shaping = buildSidewaysCardiganShapingNotationDiagramSvg(model);
+    expect(shaping).not.toContain('data-role="shoulder-seam"');
     expect(cardigan).toContain('data-role="half-neck-rows"');
     expect(cardigan).toContain('data-role="dim-half-neck-opening"');
     expect(cardigan).toContain(">½ neck<");

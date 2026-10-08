@@ -84,6 +84,22 @@ export const SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID = 927;
 
 export const SIDEWAYS_PULLOVER_GRAFT_VIDEO_WATCH_LABEL = "Watch: Kitchener Join (Grafting)";
 
+/**
+ * Learning Library content_id for “Machine Seaming Shoulder Edges”.
+ * Leave this null while the video is being edited. The pattern then shows a
+ * placeholder and does not invent a Vimeo id or URL. Set the catalog content_id
+ * when the video is published; the link switches to the standard help-video button.
+ */
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID: number | null = null;
+
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_TITLE = "Machine Seaming Shoulder Edges";
+
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL =
+  "VIDEO PLACEHOLDER: Machine Seaming Shoulder Edges";
+
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL =
+  "Watch: Machine Seaming Shoulder Edges";
+
 export function resolveSidewaysCardiganFoldVideo(
   catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
 ): SleevelessHelpVideoMeta | null {
@@ -125,6 +141,65 @@ export function sidewaysPulloverGraftVideoLinkHtml(
     ` data-sideways-pullover-graft-video` +
     ` aria-haspopup="dialog">` +
     `${escapeHtml(SIDEWAYS_PULLOVER_GRAFT_VIDEO_WATCH_LABEL)}</button>`
+  );
+}
+
+export function resolveSidewaysPulloverShoulderSeamVideo(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): SleevelessHelpVideoMeta | null {
+  const contentId = SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID;
+  if (contentId == null) return null;
+  return sleevelessHelpVideoFromCatalog(contentId, catalog);
+}
+
+/**
+ * Standard catalog-video button once a content_id is set.
+ * Until then, a visible placeholder with the same data hook and title.
+ */
+export function sidewaysPulloverShoulderSeamVideoLinkHtml(
+  video: SleevelessHelpVideoMeta | null = resolveSidewaysPulloverShoulderSeamVideo(),
+  contentId: number | null = SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID,
+): string {
+  if (video && contentId != null) {
+    return (
+      `<button type="button" class="kbm-kin-catalog-video pattern-help-link__button"` +
+      ` data-vimeo-id="${escapeHtml(video.id)}"` +
+      ` data-video-title="${escapeHtml(video.title)}"` +
+      ` data-content-id="${contentId}"` +
+      ` data-video-autoplay="false"` +
+      ` data-sideways-pullover-shoulder-seam-video` +
+      ` aria-haspopup="dialog">` +
+      `${escapeHtml(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL)}</button>`
+    );
+  }
+  return (
+    `<span class="pattern-help-link__pending"` +
+    ` data-sideways-pullover-shoulder-seam-video` +
+    ` data-video-pending="true"` +
+    ` data-video-title="${escapeHtml(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_TITLE)}">` +
+    `${escapeHtml(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL)}</span>`
+  );
+}
+
+/** Pullover shoulder selvages are closed edges. Seam them; do not graft them. */
+export function sidewaysPulloverShoulderNecklineFinishingHtml(): string {
+  const video = sidewaysPulloverShoulderSeamVideoLinkHtml();
+  return (
+    `<div class="sideways-finishing-shoulders">` +
+    `<h3 class="sideways-finishing-shoulders__title">SHOULDER SEAMS AND NECKLINE</h3>` +
+    `<p>The shoulder edges are closed selvage edges. Seam them. Do not graft them.</p>` +
+    `<ol>` +
+    `<li>Shoulder seam 1. Seam the Second Front Shoulder to the First Back Shoulder. Machine seaming is recommended. ` +
+    `<p class="pattern-help-link">${video}</p>` +
+    `Hand seaming is an alternative.</li>` +
+    `<li>Finish the neckline while the opposite shoulder remains open.` +
+    `<p><strong>Machine-knit neckband:</strong> With one shoulder open, pick up stitches around the V-neck and back neckline. Knit the neckband on the machine if enough needles are available.</p>` +
+    `<p>Check your available needle count before choosing the machine-knit neckband.</p>` +
+    `<p><strong>Other finishing options:</strong> Hand-knit a neckband, crochet an edging, or work an applied I-cord edging.</p>` +
+    `</li>` +
+    `<li>Shoulder seam 2. Seam the First Front Shoulder to the Second Back Shoulder.</li>` +
+    `</ol>` +
+    `</div>`
   );
 }
 
@@ -365,7 +440,7 @@ export function renderSidewaysFinishingSectionHtml(args: {
   turningNeedle: number;
 }): string {
   const hem = `If you left needle ${args.turningNeedle} out of work as a turning line, fold the hem along that line and secure the hem edge to the inside.`;
-  const steps =
+  const steps: Array<string | { trustedHtml: string }> =
     args.garmentStyle === "cardigan"
       ? [
           "Block the piece as desired.",
@@ -378,12 +453,14 @@ export function renderSidewaysFinishingSectionHtml(args: {
       : [
           "Block the piece as desired.",
           "Remove the waste yarn from the initial side-seam stitches. Graft those open stitches to the corresponding side-seam stitches at the opposite end of the body. Graft from the hem to the marker, leaving the armhole opening unseamed.",
+          { trustedHtml: sidewaysPulloverShoulderNecklineFinishingHtml() },
           hem,
           "Join the sleeve seams.",
           "Set the sleeves into the armhole openings.",
         ];
   const items = steps
     .map((step) => {
+      if (typeof step !== "string") return `<li>${step.trustedHtml}</li>`;
       const foldLink =
         args.garmentStyle === "cardigan" && step.startsWith("Make and attach the cardigan front and neck band")
           ? ` ${sidewaysCardiganFoldVideoLinkHtml()}`
