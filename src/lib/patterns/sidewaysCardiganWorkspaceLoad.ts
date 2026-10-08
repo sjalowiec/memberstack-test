@@ -7,9 +7,13 @@ import { getCurrentPattern, getPatternData } from "./patternStorage";
 import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
 import {
   buildSidewaysCardiganBodyInstructions,
-  renderSidewaysCardiganBodySequenceHtml,
   type SidewaysCardiganBodyInstructions,
 } from "./sidewaysCardiganBodyInstructions";
+import { renderSidewaysCardiganBodyDisplayHtml } from "./sidewaysCardiganPatternOutput";
+import {
+  escapePatternDisplayHtml,
+  wrapPatternSectionHtml,
+} from "./sleevelessPatternDisplayHtml";
 import {
   inspectSidewaysCardiganBodyCalcInputFromPattern,
 } from "./sidewaysCardiganFinishedMeasurements";
@@ -17,6 +21,7 @@ import {
   hasAuthoritativeSidewaysCardiganConstruction,
   parseSidewaysCardiganSleeveDirection,
   resolveSidewaysCardiganGarmentStyle,
+  type SidewaysCardiganGarmentStyle,
   type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
 import {
@@ -27,7 +32,7 @@ import {
 import {
   buildSidewaysCardiganSleeveInstructions,
   renderSidewaysCardiganSleeveSequenceHtml,
-  renderSidewaysSleeveNotConnectedHtml,
+  resolveSidewaysFinishedSleeveDirection,
   type SidewaysCardiganSleeveInstructions,
 } from "./sidewaysCardiganSleeveInstructions";
 import {
@@ -37,6 +42,7 @@ import {
 } from "./sidewaysCardiganWorkspaceSummary";
 import type { SidewaysCardiganBodyCalc } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
+import { sidewaysCardiganChartAudienceFromPattern } from "./sidewaysCardiganSizeCharts";
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
@@ -99,6 +105,7 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
   pattern: Record<string, unknown>;
   calc: SidewaysCardiganBodyCalc;
   input: SidewaysCardiganBodyCalcInput;
+  garmentStyle: SidewaysCardiganGarmentStyle;
 }): {
   sleeveDirection: SidewaysCardiganSleeveDirection;
   sleeveInstructions: SidewaysCardiganSleeveInstructions | null;
@@ -114,15 +121,11 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
       rowsPerInch: args.input.rowsPerInch,
     },
   );
-  const sleeveDirection = inspected.sleeveDirection;
-
-  if (sleeveDirection === "sideways") {
-    return {
-      sleeveDirection,
-      sleeveInstructions: null,
-      sleeveHtml: isDev() ? renderSidewaysSleeveNotConnectedHtml() : "",
-    };
-  }
+  const patternId = String(args.pattern.id ?? "").trim() || "default";
+  const sleeveDirection = resolveSidewaysFinishedSleeveDirection(
+    inspected.sleeveDirection,
+    patternId,
+  );
 
   if (!inspected.input) {
     const missing = inspected.missing;
@@ -143,7 +146,10 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
     };
   }
 
-  const sleeve = buildSidewaysCardiganSleeveInstructions(inspected.input);
+  const sleeve = buildSidewaysCardiganSleeveInstructions({
+    ...inspected.input,
+    direction: sleeveDirection,
+  });
   if (!sleeve.ok) {
     const diagnostic = `[DEV] Sleeve calculation failed (${sleeve.error.code}).`;
     return {
@@ -157,8 +163,15 @@ function resolveSidewaysCardiganSleeveWorkspace(args: {
   return {
     sleeveDirection,
     sleeveInstructions: sleeve.instructions,
-    sleeveHtml: renderSidewaysCardiganSleeveSequenceHtml(sleeve.instructions),
+    sleeveHtml: renderSidewaysCardiganSleeveSequenceHtml(sleeve.instructions, args.garmentStyle),
   };
+}
+
+function renderSidewaysBodyInstructionErrorHtml(message: string): string {
+  const inner = `<p class="sg-fit-size-copy" role="alert">${escapePatternDisplayHtml(message)}</p>`;
+  return wrapPatternSectionHtml("sg-body", "BODY", inner, {
+    sectionClassName: "pattern-section--garment-piece",
+  });
 }
 
 /** Load the workspace view from canonical + patternBuilderData storage. */
@@ -210,16 +223,18 @@ export function loadSidewaysCardiganWorkspaceView(
   const body = buildSidewaysCardiganBodyInstructions(inspected.input, garmentStyle);
   const sleeveDirection =
     parseSidewaysCardiganSleeveDirection(section(pattern.style).sleeveDirection) ?? undefined;
+  const sleeve = resolveSidewaysCardiganSleeveWorkspace({
+    pattern,
+    calc: result.calc,
+    input: inspected.input,
+    garmentStyle,
+  });
   const summary = buildSidewaysCardiganWorkspaceSummary({
     calc: result.calc,
     input: inspected.input,
     sleeveDirection,
     garmentStyle,
-  });
-  const sleeve = resolveSidewaysCardiganSleeveWorkspace({
-    pattern,
-    calc: result.calc,
-    input: inspected.input,
+    sleeveCalc: sleeve.sleeveInstructions?.calc ?? null,
   });
 
   if (!body.ok) {
@@ -232,7 +247,7 @@ export function loadSidewaysCardiganWorkspaceView(
       instructions: null,
       summary,
       summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
-      sequenceHtml: "",
+      sequenceHtml: renderSidewaysBodyInstructionErrorHtml(body.error.message),
       instructionError: withDevDiagnostic(body.error.message, diagnostic),
       ...sleeve,
     };
@@ -246,7 +261,11 @@ export function loadSidewaysCardiganWorkspaceView(
     instructions: body.instructions,
     summary,
     summaryHtml: renderSidewaysCardiganWorkspaceSummaryHtml(summary),
-    sequenceHtml: renderSidewaysCardiganBodySequenceHtml(body.instructions),
+    sequenceHtml: renderSidewaysCardiganBodyDisplayHtml(
+      body.instructions,
+      inspected.input.stitchesPerInch,
+      sidewaysCardiganChartAudienceFromPattern(pattern),
+    ),
     ...sleeve,
   };
 }

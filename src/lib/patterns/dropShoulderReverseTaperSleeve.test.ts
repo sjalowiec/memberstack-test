@@ -125,7 +125,7 @@ describe("Drop Shoulder reverse-taper sleeve (cuff circ > upper arm)", () => {
     expect(text).toContain("Cast on 70 stitches for the sleeve cuff.");
     expect(text).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
     expect(text).toMatch(/Decrease 1 stitch at each side every 20 rows 5 times/i);
-    expect(text).toMatch(/After the final decrease, knit 5 rows even in pattern, then bind off at RC: 119/i);
+    expect(text).toMatch(/After the final decrease, knit 5 rows even in pattern, then bind off at RC: 105/i);
     expect(text).not.toMatch(/Increase 1 stitch at each side/i);
     expect(text).not.toContain(DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_PLAIN);
   });
@@ -170,7 +170,7 @@ describe("Drop Shoulder reverse-taper sleeve (cuff circ > upper arm)", () => {
     expect(dropShoulderSleeveNeedsShapingChart(chartInput)).toBe(true);
     expect(chartRows.filter((r) => /decrease/i.test(r.action))).toHaveLength(5);
     expect(chartRows.filter((r) => /increase/i.test(r.action))).toHaveLength(0);
-    expect(rcs).toEqual([34, 54, 74, 94, 114]);
+    expect(rcs).toEqual([20, 40, 60, 80, 100]);
     expect(chartRows[chartRows.length - 1]?.stitchesRemaining).toBe(0);
   });
 

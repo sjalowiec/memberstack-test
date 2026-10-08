@@ -1,0 +1,484 @@
+import { describe, expect, it, vi } from "vitest";
+import { swatchCountFromPerInchForDisplay } from "./gaugeDisplayFormat";
+import { getPatternData, savePatternData } from "./patternStorage";
+import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
+import { buildSidewaysCardiganBodyInstructions } from "./sidewaysCardiganBodyInstructions";
+import {
+  readSidewaysBandGauge,
+  sidewaysBandGaugeFromSwatchInputs,
+  renderSidewaysCardiganBandSectionHtml,
+  renderSidewaysFinishingSectionHtml,
+  resolveSidewaysPulloverShoulderSeamVideo,
+  sidewaysPulloverShoulderSeamVideoLinkHtml,
+  SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID,
+  SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL,
+  SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL,
+  nearestOddPositiveStitches,
+  sidewaysCardiganBandMarkers,
+  sidewaysCardiganBandNumbers,
+  sidewaysCardiganFrontNeckOpeningInches,
+  sidewaysFoldedHemCastOnSentence,
+  sidewaysFoldedHemTurningNeedle,
+  resolveSidewaysCardiganFoldVideo,
+  SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID,
+  SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID,
+} from "./sidewaysCardiganFinishing";
+import videosPublic from "../../data/videos-public.json";
+import {
+  buildSidewaysCardiganBodyDisplayRows,
+  renderSidewaysCardiganBodyDisplayHtml,
+} from "./sidewaysCardiganPatternOutput";
+import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
+import { evenPositiveBodyStitches } from "./sleevelessBodyStitchMath";
+import { inchesToRows } from "./sleevelessRowAccounting";
+
+const INPUT = {
+  garmentLengthInches: 22,
+  vNeckDepthInches: 8,
+  finishedBustCircumferenceInches: 40,
+  finishedUpperArmInches: 14,
+  neckOpeningWidthInches: 7,
+  backNeckDepthInches: 1,
+  stitchesPerInch: 5,
+  rowsPerInch: 7,
+};
+
+function cardigan() {
+  const calc = calculateSidewaysCardiganBody(INPUT);
+  expect(calc.ok).toBe(true);
+  if (!calc.ok) throw new Error(calc.error.message);
+  const body = buildSidewaysCardiganBodyInstructions(INPUT, "cardigan");
+  expect(body.ok).toBe(true);
+  if (!body.ok) throw new Error(body.error.message);
+  return { calc: calc.calc, instructions: body.instructions };
+}
+
+describe("sideways folded hem and cardigan band", () => {
+  const view = cardigan();
+  const opening = sidewaysCardiganFrontNeckOpeningInches({
+    calc: view.calc,
+    stitchesPerInch: INPUT.stitchesPerInch,
+    rowsPerInch: INPUT.rowsPerInch,
+  });
+
+  it("places the body turning needle with even stitch rounding", () => {
+    const needle = sidewaysFoldedHemTurningNeedle(INPUT.stitchesPerInch);
+    expect(needle).toBe(evenPositiveBodyStitches(INPUT.stitchesPerInch));
+    const html = renderSidewaysCardiganBodyDisplayHtml(view.instructions, INPUT.stitchesPerInch);
+    const print = renderSleevelessPrintPieceHtml(
+      buildSidewaysCardiganBodyDisplayRows(view.instructions, INPUT.stitchesPerInch),
+      "",
+      "body",
+    );
+    expect(print).toContain(sidewaysFoldedHemCastOnSentence(needle));
+    expect(html).toContain(sidewaysFoldedHemCastOnSentence(needle));
+    expect(html).toContain("about 1 inch from the hem edge");
+    expect(html).not.toContain("FRONT AND NECK BAND");
+  });
+
+  it("uses the knitted front and neck opening, not the bust", () => {
+    expect(opening.totalInches).not.toBe(INPUT.finishedBustCircumferenceInches);
+    expect(opening.totalInches).not.toBe(INPUT.garmentLengthInches);
+    expect(opening.frontEdgeInches).toBeCloseTo(
+      (view.calc.garmentLengthStitches - view.calc.vNeckDepthStitches) / INPUT.stitchesPerInch,
+    );
+    const sweater = sidewaysCardiganBandNumbers({
+      openingInches: opening.totalInches,
+      sweaterStitchesPerInch: 5,
+      sweaterRowsPerInch: 7,
+    });
+    expect(sweater.castOnStitches).toBe(nearestOddPositiveStitches(4 * 5));
+    expect(nearestOddPositiveStitches(28)).toBe(29);
+    expect(sweater.rows).toBe(inchesToRows(opening.totalInches, 7));
+    const markers = sidewaysCardiganBandMarkers(opening, 7);
+    expect(markers.map((marker) => marker.inches)).toEqual([
+      opening.frontEdgeInches,
+      opening.frontEdgeInches + opening.vSlopeInches,
+      opening.totalInches - opening.frontEdgeInches - opening.vSlopeInches,
+      opening.totalInches - opening.frontEdgeInches,
+    ]);
+    expect(markers.map((marker) => marker.rows)).toEqual(
+      markers.map((marker) => inchesToRows(marker.inches, 7)),
+    );
+    expect(sweater.stitchGaugeSource).toBe("sweater");
+    const html = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    });
+    expect(html).toContain(`Cast on ${sweater.castOnStitches} stitches`);
+    expect(html).toContain(`sideways-band-counts__action">Cast on ${sweater.castOnStitches} stitches`);
+    expect(html).toContain(`sideways-band-counts__action">Knit approximately ${sweater.rows} rows`);
+    expect(html).toContain(
+      "The following instructions use your sweater gauge (5 stitches and 7 rows per inch).",
+    );
+    expect(html).toContain("Cast on the stated stitches and begin knitting the strip.");
+    expect(html).toContain(
+      "As you knit, place markers at the stated cumulative rows. Label each one: first V-neck start, first shoulder seam, second shoulder seam, and second V-neck start.",
+    );
+    expect(html).toContain(
+      "After reaching the approximate total row count, knit a few extra rows and scrap off the live stitches.",
+    );
+    expect(html).toContain(
+      "Pin the band around the opening, align the four markers, adjust the fit, remove excess rows, finish the end, and sew the band in place.",
+    );
+    expect(html).toContain("update automatically as you enter your gauge");
+    expect(html).not.toContain("Recalculate");
+    expect(html.indexOf("Cast on the stated stitches")).toBeLessThan(
+      html.indexOf("place markers at the stated cumulative rows"),
+    );
+    expect(html.indexOf("place markers at the stated cumulative rows")).toBeLessThan(
+      html.indexOf("scrap off the live stitches"),
+    );
+    expect(html.indexOf("scrap off the live stitches")).toBeLessThan(
+      html.indexOf("sew the band in place"),
+    );
+    const labels = ["first V-neck start", "first shoulder seam", "second shoulder seam", "second V-neck start"];
+    markers.forEach((marker, index) => {
+      expect(html).toContain(`${labels[index]}: approximately row ${marker.rows}`);
+    });
+    expect(markers[0]!.rows).toBeLessThan(markers[1]!.rows);
+    expect(markers[1]!.rows).toBeLessThan(markers[2]!.rows);
+    expect(markers[2]!.rows).toBeLessThan(markers[3]!.rows);
+    expect(markers[3]!.rows).toBeLessThan(sweater.rows);
+    expect(html).toContain(
+      "Optional fold line: Before casting on, leave the center needle out of work. Keep it out of work throughout the strip.",
+    );
+    expect(html.indexOf("Optional fold line:")).toBeLessThan(html.indexOf("Cast on"));
+    expect(html.indexOf("data-sideways-band-fold-video")).toBeLessThan(html.indexOf("<details"));
+    const foldVideo = resolveSidewaysCardiganFoldVideo();
+    const catalogRow = (videosPublic as Array<{ content_id?: number; title?: string; vimeo_id?: number; access_level?: string }>).find(
+      (row) => row.content_id === SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID,
+    );
+    expect(catalogRow?.title).toBe("Crisp, Decorative Fold");
+    expect(catalogRow?.access_level).toBe("member");
+    expect(foldVideo?.id).toBe(String(catalogRow?.vimeo_id));
+    expect(html).toContain(`data-content-id="${SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID}"`);
+    expect(html).toContain(`data-vimeo-id="${foldVideo?.id}"`);
+    expect(html).toContain("Watch: Crisp, decorative fold");
+    expect(html).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(html).toContain('data-video-autoplay="false"');
+    expect(html).not.toContain("about 2 inches from either edge");
+    expect(html).not.toMatch(/leave needle \d+/);
+    expect(html).toContain("sweater gauge");
+    expect(html).toContain("Do not hang or pick up");
+    expect(html).toContain("<summary>Use a different gauge for the band</summary>");
+    expect(nearestOddPositiveStitches(4 * 7)).toBe(29);
+    expect(html).not.toContain("Using a different gauge for your band?");
+    expect(html).not.toMatch(/<details[^>]*\sopen/);
+    expect(html.match(/FRONT AND NECK BAND/g)).toHaveLength(1);
+  });
+
+  it("recalculates from a distinct band gauge", () => {
+    const band = sidewaysCardiganBandNumbers({
+      openingInches: opening.totalInches,
+      sweaterStitchesPerInch: 5,
+      sweaterRowsPerInch: 7,
+      bandGauge: { stitchesPerInch: 4, rowsPerInch: 6 },
+    });
+    expect(band.castOnStitches).toBe(nearestOddPositiveStitches(4 * 4));
+    expect(band.rows).toBe(inchesToRows(opening.totalInches, 6));
+    expect(band.rows).not.toBe(inchesToRows(opening.totalInches, 7));
+    const markers = sidewaysCardiganBandMarkers(opening, 6);
+    expect(markers.map((marker) => marker.rows)).toEqual(
+      markers.map((marker) => inchesToRows(marker.inches, 6)),
+    );
+    expect(markers.map((marker) => marker.rows)).not.toEqual(
+      sidewaysCardiganBandMarkers(opening, 7).map((marker) => marker.rows),
+    );
+    const html = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      bandGauge: { stitchesPerInch: 4, rowsPerInch: 6 },
+    });
+    expect(html).toContain(`Cast on ${band.castOnStitches} stitches`);
+    expect(html).toContain(`Knit approximately ${band.rows} rows`);
+    const labels = ["first V-neck start", "first shoulder seam", "second shoulder seam", "second V-neck start"];
+    markers.forEach((marker, index) => {
+      expect(html).toContain(`${labels[index]}: approximately row ${marker.rows}`);
+    });
+    expect(markers[3]!.rows).toBeLessThan(band.rows);
+    expect(html).toContain(
+      "The following instructions use your band gauge (16 stitches and 24 rows per 4 inches).",
+    );
+    expect(html).toContain("Stitches per 4 inches (10 cm)");
+    expect(html).toContain("Rows per 4 inches (10 cm)");
+    expect(html).toContain(`value="16"`);
+    expect(html).toContain(`value="24"`);
+    expect(html).not.toContain("use your sweater gauge");
+    expect(sidewaysBandGaugeFromSwatchInputs("16", "24", "in")).toEqual({
+      stitchesPerInch: 4,
+      rowsPerInch: 6,
+    });
+    expect(sidewaysBandGaugeFromSwatchInputs("24", "16", "in")).toEqual({
+      stitchesPerInch: 6,
+      rowsPerInch: 4,
+    });
+    expect(sidewaysBandGaugeFromSwatchInputs("16", "", "in")).toEqual({ stitchesPerInch: 4 });
+    expect(sidewaysBandGaugeFromSwatchInputs("", "24", "in")).toEqual({ rowsPerInch: 6 });
+    const stitchesOnly = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      bandGauge: sidewaysBandGaugeFromSwatchInputs("16", "", "in"),
+    });
+    expect(stitchesOnly).toContain(`value="16"`);
+    expect(stitchesOnly).not.toContain(`value="24"`);
+    expect(stitchesOnly).toContain("band gauge (16 stitches per 4 inches)");
+    expect(stitchesOnly).toContain("sweater gauge (7 rows per inch)");
+    const rowsOnly = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      bandGauge: sidewaysBandGaugeFromSwatchInputs("", "24", "in"),
+    });
+    expect(rowsOnly).toContain(`value="24"`);
+    expect(rowsOnly).not.toContain(`value="16"`);
+    expect(rowsOnly).toContain("band gauge (24 rows per 4 inches)");
+    expect(rowsOnly).toContain("sweater gauge (5 stitches per inch)");
+    const cm = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      displayUnit: "cm",
+    });
+    expect(cm).toContain(`Knit approximately ${inchesToRows(opening.totalInches, 7)} rows`);
+    expect(cm).toContain("use your sweater gauge (5 stitches and 7 rows per inch)");
+    const cmBand = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      bandGauge: { stitchesPerInch: 4, rowsPerInch: 6 },
+      displayUnit: "cm",
+    });
+    const cmGauge = sidewaysBandGaugeFromSwatchInputs("16", "24", "cm");
+    expect(cmGauge.stitchesPerInch).toBeCloseTo((16 / 10) * 2.54);
+    expect(cmGauge.rowsPerInch).toBeCloseTo((24 / 10) * 2.54);
+    expect(cmGauge.stitchesPerInch).not.toBeCloseTo(cmGauge.rowsPerInch!);
+    expect(cmBand).toContain("Stitches per 4 inches (10 cm)");
+    expect(cmBand).toContain("Rows per 4 inches (10 cm)");
+    expect(cmBand).toContain(`value="${swatchCountFromPerInchForDisplay(4, "cm")}"`);
+    expect(cmBand).toContain(`value="${swatchCountFromPerInchForDisplay(6, "cm")}"`);
+    expect(cmBand).toContain(
+      `band gauge (${swatchCountFromPerInchForDisplay(4, "cm")} stitches and ${swatchCountFromPerInchForDisplay(6, "cm")} rows per 10 cm)`,
+    );
+    expect(cmBand).toContain("per 10 cm)");
+    expect(readSidewaysBandGauge({ sidewaysBandStitchesPerInch: 4, sidewaysBandRowsPerInch: 6 })).toEqual({
+      stitchesPerInch: 4,
+      rowsPerInch: 6,
+    });
+    expect(readSidewaysBandGauge({})).toEqual({});
+  });
+
+  it("keeps pullover finishing free of the cardigan band", () => {
+    const pullover = buildSidewaysCardiganBodyInstructions(INPUT, "pullover");
+    expect(pullover.ok).toBe(true);
+    if (!pullover.ok) throw new Error(pullover.error.message);
+    const finishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "pullover",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(5),
+    });
+    expect(finishing).not.toContain("does not need a separate neck band");
+    expect(finishing).toContain(
+      "Remove the waste yarn from the initial side-seam stitches. Graft those open stitches to the corresponding side-seam stitches at the opposite end of the body. Graft from the hem to the marker, leaving the armhole opening unseamed.",
+    );
+    expect(finishing).not.toContain("Graft only the side-seam stitches from the cast-on edge");
+    expect(finishing).not.toContain("Graft the cast-on edge to the final edge");
+    expect(finishing).toContain("Watch: Kitchener Join (Grafting)");
+    expect(finishing).toContain(`data-content-id="${SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID}"`);
+    expect(finishing).toContain('data-vimeo-id="339846501"');
+    expect(finishing).not.toContain("front and neck band");
+    expect(finishing).not.toContain("Watch: Crisp, decorative fold");
+    expect(finishing).toContain("If you left needle");
+    const cardiganFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "cardigan",
+      turningNeedle: 6,
+    });
+    expect(cardiganFinishing).toContain("Join the shoulder seams.");
+    expect(cardiganFinishing).toContain("front and neck band");
+    expect(cardiganFinishing).toContain("Watch: Crisp, decorative fold");
+    expect(cardiganFinishing).toContain(`data-content-id="${SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID}"`);
+    expect(cardiganFinishing).not.toContain("Graft the cast-on edge");
+    expect(cardiganFinishing).not.toContain("Kitchener Join");
+    expect(cardiganFinishing).toContain("Join the sleeve seams.");
+    expect(cardiganFinishing.indexOf("Block")).toBeLessThan(cardiganFinishing.indexOf("shoulder"));
+    expect(cardiganFinishing.indexOf("shoulder")).toBeLessThan(cardiganFinishing.indexOf("turning line"));
+    expect(cardiganFinishing.indexOf("front and neck band")).toBeLessThan(
+      cardiganFinishing.indexOf("sleeve seams"),
+    );
+    expect(pullover.instructions.calc.garmentLengthStitches).toBe(view.calc.garmentLengthStitches);
+  });
+
+  it("seams the pullover shoulders and finishes the neckline between them", () => {
+    const finishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "pullover",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(5),
+    });
+    const cardiganFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "cardigan",
+      turningNeedle: 6,
+    });
+    const graft = finishing.indexOf("Graft those open stitches");
+    const shoulders = finishing.indexOf("SHOULDER SEAMS AND NECKLINE");
+    const machine = finishing.indexOf("Machine seaming is recommended.");
+    const watch = finishing.indexOf(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    const hand = finishing.indexOf("Hand seaming is an alternative.");
+    const neck = finishing.indexOf("Finish the neckline while the opposite shoulder remains open.");
+    const seam2 = finishing.indexOf("Shoulder seam 2. Seam the First Front Shoulder to the Second Back Shoulder.");
+    const hem = finishing.indexOf("turning line");
+    const sleeves = finishing.indexOf("Join the sleeve seams.");
+    expect(finishing).toContain("The shoulder edges are closed selvage edges. Seam them. Do not graft them.");
+    expect(finishing).toContain(
+      "Shoulder seam 1. Seam the Second Front Shoulder to the First Back Shoulder.",
+    );
+    expect(finishing).toContain(
+      "<strong>Machine-knit neckband:</strong> With one shoulder open, pick up stitches around the V-neck and back neckline. Knit the neckband on the machine if enough needles are available.",
+    );
+    expect(finishing).toContain(
+      "Check your available needle count before choosing the machine-knit neckband.",
+    );
+    expect(finishing).toContain(
+      "<strong>Other finishing options:</strong> Hand-knit a neckband, crochet an edging, or work an applied I-cord edging.",
+    );
+    expect(graft).toBeGreaterThan(-1);
+    expect(graft).toBeLessThan(shoulders);
+    expect(shoulders).toBeLessThan(machine);
+    expect(machine).toBeLessThan(watch);
+    expect(watch).toBeLessThan(hand);
+    expect(hand).toBeLessThan(neck);
+    expect(neck).toBeLessThan(seam2);
+    expect(seam2).toBeLessThan(hem);
+    expect(hem).toBeLessThan(sleeves);
+    expect(finishing.indexOf("Set the sleeves into the armhole openings.")).toBeGreaterThan(sleeves);
+    expect(finishing).toContain('data-sideways-pullover-shoulder-seam-video');
+    expect(finishing).not.toContain('data-video-pending="true"');
+    expect(finishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    expect(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID).toBe(2215);
+    const seamVideo = resolveSidewaysPulloverShoulderSeamVideo();
+    expect(seamVideo?.id).toBe("1234021892");
+    expect(seamVideo?.title).toBe("Seam on the Machine");
+    const catalogRow = (videosPublic as Array<{ content_id?: number; access_level?: string }>).find(
+      (row) => row.content_id === 2215,
+    );
+    expect(catalogRow?.access_level).toBe("member");
+    const shoulderHtml = finishing.slice(shoulders, seam2);
+    expect(shoulderHtml).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(shoulderHtml).toContain('data-content-id="2215"');
+    expect(shoulderHtml).toContain('data-vimeo-id="1234021892"');
+    expect(shoulderHtml).toContain('data-video-title="Seam on the Machine"');
+    expect(shoulderHtml).toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    expect(shoulderHtml).not.toContain("player.vimeo.com");
+    expect(shoulderHtml).not.toContain("/videos/2215");
+    const linked = sidewaysPulloverShoulderSeamVideoLinkHtml(
+      {
+        id: "not-a-real-video",
+        title: "Seam on the Machine",
+        description: "",
+        jumpLinks: [],
+      },
+      4242,
+    );
+    expect(linked).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(linked).toContain('data-content-id="4242"');
+    expect(linked).toContain('data-vimeo-id="not-a-real-video"');
+    expect(linked).toContain('data-sideways-pullover-shoulder-seam-video');
+    expect(linked).toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    expect(finishing).not.toContain("not-a-real-video");
+    expect(finishing).not.toContain('data-content-id="4242"');
+    expect(cardiganFinishing).not.toContain("SHOULDER SEAMS AND NECKLINE");
+    expect(cardiganFinishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    expect(cardiganFinishing).not.toContain("Machine-knit neckband");
+    expect(cardiganFinishing).not.toContain("Hand seaming is an alternative.");
+    expect(cardiganFinishing).toContain("<strong>Join the shoulder seams.</strong>");
+    expect(finishing).toContain("Hand seaming is an alternative.");
+    expect(finishing).not.toContain("Hand seaming is also an option.");
+  });
+
+  it("recommends machine seaming for the cardigan shoulder seams", () => {
+    const cardiganFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "cardigan",
+      turningNeedle: 6,
+    });
+    const pulloverFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "pullover",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(5),
+    });
+    const join = cardiganFinishing.indexOf("<strong>Join the shoulder seams.</strong>");
+    const machine = cardiganFinishing.indexOf("Machine seaming is recommended.");
+    const watch = cardiganFinishing.indexOf(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    const hand = cardiganFinishing.indexOf("Hand seaming is also an option.");
+    const hem = cardiganFinishing.indexOf("turning line");
+    const band = cardiganFinishing.indexOf("Make and attach the cardigan front and neck band.");
+    const sleeves = cardiganFinishing.indexOf("Join the sleeve seams.");
+    expect(cardiganFinishing.indexOf("Block the piece as desired.")).toBeLessThan(join);
+    expect(join).toBeGreaterThan(-1);
+    expect(join).toBeLessThan(machine);
+    expect(machine).toBeLessThan(watch);
+    expect(watch).toBeLessThan(hand);
+    expect(hand).toBeLessThan(hem);
+    expect(hem).toBeLessThan(band);
+    expect(band).toBeLessThan(sleeves);
+    expect(cardiganFinishing.indexOf("Set the sleeves into the armhole openings.")).toBeGreaterThan(sleeves);
+    const shoulderHtml = cardiganFinishing.slice(join, hand);
+    expect(shoulderHtml).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(shoulderHtml).toContain('data-content-id="2215"');
+    expect(shoulderHtml).toContain('data-vimeo-id="1234021892"');
+    expect(shoulderHtml).toContain('data-video-title="Seam on the Machine"');
+    expect(shoulderHtml).toContain('data-sideways-pullover-shoulder-seam-video');
+    expect(shoulderHtml).toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    expect(shoulderHtml).not.toContain("player.vimeo.com");
+    expect(shoulderHtml).not.toContain("/videos/2215");
+    expect(cardiganFinishing).not.toContain('data-video-pending="true"');
+    expect(cardiganFinishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    expect(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID).toBe(2215);
+    const seamVideo = resolveSidewaysPulloverShoulderSeamVideo();
+    expect(seamVideo?.id).toBe("1234021892");
+    expect(seamVideo?.title).toBe("Seam on the Machine");
+    const catalogRow = (videosPublic as Array<{ content_id?: number; access_level?: string }>).find(
+      (row) => row.content_id === 2215,
+    );
+    expect(catalogRow?.access_level).toBe("member");
+    expect(cardiganFinishing).not.toContain("SHOULDER SEAMS AND NECKLINE");
+    expect(cardiganFinishing).not.toContain("Machine-knit neckband");
+    expect(cardiganFinishing).not.toContain("Hand seaming is an alternative.");
+    expect(cardiganFinishing).toContain("Watch: Crisp, decorative fold");
+    expect(pulloverFinishing).toContain("Hand seaming is an alternative.");
+    expect(pulloverFinishing).not.toContain("Hand seaming is also an option.");
+    expect(pulloverFinishing).toContain(
+      "Shoulder seam 1. Seam the Second Front Shoulder to the First Back Shoulder. Machine seaming is recommended.",
+    );
+  });
+
+  it("reloads a saved band gauge from the pattern style", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        store.set(key, value);
+      },
+      removeItem: (key: string) => {
+        store.delete(key);
+      },
+    });
+    savePatternData("style", {
+      construction: "sideways-cardigan",
+      sidewaysBandStitchesPerInch: 4.5,
+      sidewaysBandRowsPerInch: 8,
+    });
+    const style = (getPatternData().style ?? {}) as Record<string, unknown>;
+    expect(readSidewaysBandGauge(style)).toEqual({ stitchesPerInch: 4.5, rowsPerInch: 8 });
+    const html = renderSidewaysCardiganBandSectionHtml({
+      calc: view.calc,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+      bandGauge: readSidewaysBandGauge(style),
+    });
+    expect(html).toContain(
+      `The following instructions use your band gauge (${swatchCountFromPerInchForDisplay(4.5, "in")} stitches and ${swatchCountFromPerInchForDisplay(8, "in")} rows per 4 inches).`,
+    );
+    expect(html).toContain(`value="${swatchCountFromPerInchForDisplay(4.5, "in")}"`);
+    expect(html).toContain(`value="${swatchCountFromPerInchForDisplay(8, "in")}"`);
+    vi.unstubAllGlobals();
+  });
+});

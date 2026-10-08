@@ -7704,6 +7704,17 @@
     "vimeo_id": 348220717
   },
   {
+    "content_id": 2215,
+    "slug": "seam-on-the-machine",
+    "title": "Seam on the Machine",
+    "access_level": "member",
+    "status": "published",
+    "posterUrl": "https://i.vimeocdn.com/video/2209865792-9952c932001c14c9aa085e9cdf889b9b9bf24a41999ee918d68617eb7105ae4e-d_1280x720?r=pad",
+    "category": "Finishing",
+    "subcategory": "Seams",
+    "vimeo_id": 1234021892
+  },
+  {
     "content_id": 5001,
     "slug": "change-colors-lk150",
     "title": "Changing Colors on the LK150",

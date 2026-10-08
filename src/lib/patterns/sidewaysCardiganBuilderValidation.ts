@@ -11,10 +11,10 @@ import {
   type SidewaysCardiganBodyCalc,
   type SidewaysCardiganBodyCalcInput,
 } from "./sidewaysCardiganBodyCalc";
+import { isSidewaysCardiganChartAudience } from "./sidewaysCardiganSizeCharts";
 import { parsePositiveInchesField } from "./sidewaysCardiganStyleMeasurements";
 import {
   calculateSidewaysCardiganSleeve,
-  isSidewaysCardiganConventionalSleeveDirection,
   type SidewaysCardiganSleeveCalcErrorCode,
 } from "./sidewaysCardiganSleeveCalc";
 
@@ -98,10 +98,9 @@ export function validateSidewaysCardiganBuilder(
   const availableNeedles = Number(String(values.availableNeedles ?? "").trim());
 
   if (
-    (audience !== "misses" && audience !== "plus") ||
+    !isSidewaysCardiganChartAudience(audience) ||
     !size ||
     (fit !== "close" && fit !== "standard" && fit !== "relaxed") ||
-    (sleeve !== "cuff-up" && sleeve !== "top-down" && sleeve !== "sideways") ||
     length === undefined ||
     vNeck === undefined ||
     neckOpening === undefined ||
@@ -149,7 +148,7 @@ export function validateSidewaysCardiganBuilder(
       code: "non-positive-shoulder-rows",
       message:
         result.error.code === SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS
-          ? "The neck opening is too wide for this bust size, so there is no room left for the shoulders. Make the neck opening narrower or increase the finished bust."
+          ? "The neck opening is too wide for this bust/chest size, so there is no room left for the shoulders. Make the neck opening narrower or increase the finished bust/chest."
           : result.error.message,
     };
   }
@@ -160,21 +159,20 @@ export function validateSidewaysCardiganBuilder(
   });
   if (bodyNeedles) return bodyNeedles;
 
-  if (isSidewaysCardiganConventionalSleeveDirection(sleeve)) {
-    const sleeveResult = calculateSidewaysCardiganSleeve({
-      direction: sleeve,
-      finishedUpperArmInches: upperArm,
-      finishedWristInches: wrist,
-      sleeveLengthInches: sleeveLength,
-      stitchesPerInch: spi,
-      rowsPerInch: rpi,
-      cuffDepthInches: getDefaultCuffLengthInches(audience),
-      armholeDepthInches: armholeDepthInches ?? upperArm / 2,
-      availableNeedles,
-    });
-    if (!sleeveResult.ok) {
-      return mapSleeveCalcErrorToBuilderError(sleeveResult.error.code, sleeveResult.error.message);
-    }
+  const sleeveCheckDirection = sleeve === "top-down" ? "top-down" : "cuff-up";
+  const sleeveResult = calculateSidewaysCardiganSleeve({
+    direction: sleeveCheckDirection,
+    finishedUpperArmInches: upperArm,
+    finishedWristInches: wrist,
+    sleeveLengthInches: sleeveLength,
+    stitchesPerInch: spi,
+    rowsPerInch: rpi,
+    cuffDepthInches: getDefaultCuffLengthInches(audience),
+    armholeDepthInches: armholeDepthInches ?? upperArm / 2,
+    availableNeedles,
+  });
+  if (!sleeveResult.ok) {
+    return mapSleeveCalcErrorToBuilderError(sleeveResult.error.code, sleeveResult.error.message);
   }
 
   return null;

@@ -47,7 +47,7 @@ export const PATTERN_SYSTEM_IDS: readonly PatternSystemId[] = [
 export const PATTERN_SYSTEM_DISPLAY_NAMES: Record<PatternSystemId, string> = {
   sleeveless: "Sleeveless",
   "drop-shoulder": "Drop Shoulder",
-  "sideways-cardigan": "Sideways V-Neck Sweater",
+  "sideways-cardigan": "Sideways V-Neck",
   blanket: "Blanket",
   hat: "Hat",
   raglan: "Raglan",

@@ -18,7 +18,7 @@ import {
   parseSidewaysCardiganSleeveLengthChoice,
   type SidewaysCardiganSleeveLengthChoice,
 } from "./sidewaysCardiganConstructionIdentity";
-import type { SidewaysCardiganWomenChartAudience } from "./sidewaysCardiganSizeCharts";
+import type { SidewaysCardiganChartAudience } from "./sidewaysCardiganSizeCharts";
 
 export const SIDEWAYS_CARDIGAN_STYLE_MEASUREMENT_KEYS = [
   "finishedLength",
@@ -70,7 +70,7 @@ export function finishedBustInchesFromChartRow(
 
 export function defaultSidewaysCardiganStyleMeasurements(args: {
   row: ChartRow;
-  chartAudience: SidewaysCardiganWomenChartAudience;
+  chartAudience: SidewaysCardiganChartAudience;
   fitPreference: string;
   sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice | string;
 }): SidewaysCardiganStyleMeasurements {
@@ -112,7 +112,7 @@ export function reseedSidewaysCardiganStyleMeasurements(args: {
   previous: SidewaysCardiganStyleMeasurements;
   userEdited: SidewaysCardiganUserEditedStyle;
   row: ChartRow;
-  chartAudience: SidewaysCardiganWomenChartAudience;
+  chartAudience: SidewaysCardiganChartAudience;
   fitPreference: string;
   sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice | string;
 }): SidewaysCardiganStyleMeasurements {

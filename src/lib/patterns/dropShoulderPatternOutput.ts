@@ -97,11 +97,13 @@ import {
   dropShoulderFrontShoulderCompletionLocalRc,
 } from "./dropShoulderFrontNeckShapingChart";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
+import { cuffUpSleeveBodyRowCounterResetBlock } from "./legoBlocks/cuffUpSleeveRowCounter";
 import {
   DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
   DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES,
   buildDropShoulderSleeveShapingChartRows,
   dropShoulderSleeveNeedsShapingChart,
+  dropShoulderSleeveBodyRowSpans,
   dropShoulderSleevePreShapingSpan,
   dropShoulderSleeveShapingRcSequence,
 } from "./dropShoulderSleeveShapingChart";
@@ -115,6 +117,14 @@ import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import { buildGlossaryTooltipPlaceholderHtml, PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { inlineRcHeadingLine, parseInlineMarkedLine } from "./inlineRcHeading";
+import {
+  SIDEWAYS_CUFF_UP_BIND_OFF_LINE,
+  SIDEWAYS_CUFF_UP_CHART_FINISH,
+  SIDEWAYS_SLEEVE_HAND_SEW_LINE,
+  SIDEWAYS_TOP_DOWN_CHART_FINISH,
+  sidewaysCuffUpCuffChoiceLines,
+  sidewaysTopDownCuffChoiceLines,
+} from "./sidewaysCardiganSleeveCuffCopy";
 
 /** Drop shoulder result reuses the sleeveless contract and adds the sleeve piece. */
 export type DropShoulderPatternResult = SleevelessBackPatternResult & {
@@ -137,6 +147,10 @@ export type BuildDropShoulderSleeveRowsArgs = {
   sleeveTotalRows: number;
   direction: DropShoulderSleeveDirection;
   valid: boolean;
+  /** Sideways offers an optional ribbed cuff. Drop Shoulder leaves this unset. */
+  optionalRibbing?: boolean;
+  /** Replaces the sideways hand-sew line when optional ribbing is on. */
+  handSewLine?: string;
 };
 
 type Block = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
@@ -149,6 +163,11 @@ function dropShoulderNecklineRowCounterResetBlock(garmentRc: number): Block {
     rowCounterResetGarmentRc: garmentRc,
     paragraphs: [],
   };
+}
+
+function sidewaysOptionalRibbingIntro(args: BuildDropShoulderSleeveRowsArgs): string[] {
+  if (!args.optionalRibbing) return ["Make 2 sleeves."];
+  return ["Make 2 sleeves.", args.handSewLine ?? SIDEWAYS_SLEEVE_HAND_SEW_LINE];
 }
 
 function section(obj: unknown): Record<string, unknown> {
@@ -222,7 +241,7 @@ function knitInPatternLine(rows: number): string {
   return rows === 1 ? "Knit 1 row in pattern." : `Knit ${rows} rows in pattern.`;
 }
 
-/** Cuff-up sleeve: even rows after the last side shaping action, then bind off at total RC. */
+/** Cuff-up sleeve: even rows after the last side shaping action, then bind off at the sleeve-body RC. */
 function knitEvenAfterFinalShapingLine(
   remainderRows: number,
   bindOffRc: number,
@@ -235,17 +254,23 @@ function knitEvenAfterFinalShapingLine(
 }
 
 function sleeveBodyRemainderLine(
-  plan: { remainderRows: number; steps: readonly { times: number }[] },
+  rowsAfterShaping: number,
   direction: DropShoulderSleeveDirection,
   sleeveTotalRows: number,
   shapingVerb: "increase" | "decrease" = "increase",
+  hadShaping = false,
+  cuffStartRc?: number,
 ): string {
-  if (plan.remainderRows <= 0) return "";
-  const hadShaping = plan.steps.some((s) => s.times > 0);
+  if (rowsAfterShaping <= 0) return "";
   if (hadShaping && direction === "cuff-up") {
-    return knitEvenAfterFinalShapingLine(plan.remainderRows, sleeveTotalRows, shapingVerb);
+    return knitEvenAfterFinalShapingLine(rowsAfterShaping, sleeveTotalRows, shapingVerb);
   }
-  return knitInPatternLine(plan.remainderRows);
+  if (hadShaping && direction === "top-down" && cuffStartRc !== undefined) {
+    const rowWord = rowsAfterShaping === 1 ? "1 row even" : `${rowsAfterShaping} rows even`;
+    const noun = shapingVerb === "decrease" ? "decrease" : "increase";
+    return `After the final ${noun}, knit ${rowWord} in pattern, then begin the cuff at ${formatRcColon(cuffStartRc)}.`;
+  }
+  return knitInPatternLine(rowsAfterShaping);
 }
 
 function glossaryAttrEscape(s: string): string {
@@ -271,8 +296,9 @@ function bindOffLooselyOrScrapOffTrustedParagraph(edgeLabel?: string): string {
 }
 
 /** No-shaping sleeve note with glossary tooltip on “scrap off”. */
-function dropShoulderSleeveNoShapingNoteTrustedParagraphs(): string[] {
+function dropShoulderSleeveNoShapingNoteTrustedParagraphs(handSewnSleeve = false): string[] {
   return DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES.map((line) => {
+    if (handSewnSleeve && line.includes("scrap off")) return "Knit straight to length.";
     const scrapIdx = line.indexOf("scrap off");
     if (scrapIdx < 0) return line;
     return (
@@ -280,7 +306,7 @@ function dropShoulderSleeveNoShapingNoteTrustedParagraphs(): string[] {
       scrapOffGlossaryPlaceholderHtml() +
       line.slice(scrapIdx + "scrap off".length)
     );
-  });
+  }).filter((line, index, lines) => lines.indexOf(line) === index);
 }
 
 function placeMarkerGlossaryPlaceholderHtml(): string {
@@ -1209,7 +1235,13 @@ export function buildDropShoulderSleeveDisplayRows(
     sleeveTotalRows: args.sleeveTotalRows,
     direction: args.direction,
   };
-  const sleeveShapingChartRows = buildDropShoulderSleeveShapingChartRows(chartInput);
+  const sleeveShapingChartRows = buildDropShoulderSleeveShapingChartRows(chartInput, {
+    finalAction: args.optionalRibbing
+      ? args.direction === "top-down"
+        ? SIDEWAYS_TOP_DOWN_CHART_FINISH
+        : SIDEWAYS_CUFF_UP_CHART_FINISH
+      : undefined,
+  });
   const showSleeveShapingChart = dropShoulderSleeveNeedsShapingChart(chartInput);
   const shapingRcSequence = dropShoulderSleeveShapingRcSequence(chartInput);
   const shapingWrittenLines = formatDropShoulderSleeveShapingWrittenLines(
@@ -1217,8 +1249,19 @@ export function buildDropShoulderSleeveDisplayRows(
     shapingPlan.steps,
     shapingRcSequence,
   );
+  const hadShaping = shapingPlan.steps.some((step) => step.times > 0);
+  const rowsAfterShaping = hadShaping
+    ? dropShoulderSleeveBodyRowSpans(chartInput).rowsAfterShaping
+    : shapingPlan.remainderRows;
   const sleeveBodyTailLines = [
-    sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows, shapingPlan.shapingDirection),
+    sleeveBodyRemainderLine(
+      rowsAfterShaping,
+      args.direction,
+      args.direction === "cuff-up" ? args.sleeveBodyRows : args.sleeveTotalRows,
+      shapingPlan.shapingDirection,
+      hadShaping,
+      args.sleeveBodyRows,
+    ),
   ].filter((p) => p.length > 0);
   const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
   const hasSleeveShaping = shapingWrittenLines.length > 0;
@@ -1277,7 +1320,7 @@ export function buildDropShoulderSleeveDisplayRows(
     } else {
       rows.push({
         kind: "block",
-        trustedParagraphs: dropShoulderSleeveNoShapingNoteTrustedParagraphs(),
+        trustedParagraphs: dropShoulderSleeveNoShapingNoteTrustedParagraphs(args.optionalRibbing),
       });
     }
   }
@@ -1285,12 +1328,16 @@ export function buildDropShoulderSleeveDisplayRows(
   if (args.direction === "top-down") {
     rows.push({
       kind: "block",
-      paragraphs: ["Make 2 sleeves."],
+      paragraphs: sidewaysOptionalRibbingIntro(args),
     });
     rows.push({
       kind: "block",
       rc: formatRcColon(0),
-      paragraphs: [`Cast on or pick up ${args.topSts} stitches.`],
+      paragraphs: [
+        args.optionalRibbing
+          ? `Cast on ${args.topSts} stitches.`
+          : `Cast on or pick up ${args.topSts} stitches.`,
+      ],
       ...(args.topSts > 0
         ? {
             tipHtml: castOnMethodQuickTipInnerHtml(),
@@ -1309,8 +1356,13 @@ export function buildDropShoulderSleeveDisplayRows(
     rows.push({
       kind: "block",
       rc: formatRcColon(args.sleeveBodyRows),
-      paragraphs: [knitEvenLine(args.cuffRows)],
-      trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge")],
+      paragraphs: args.optionalRibbing ? [] : [knitEvenLine(args.cuffRows)],
+      trustedParagraphs: args.optionalRibbing
+        ? sidewaysTopDownCuffChoiceLines(stitchesAfterSleeveBodyShaping, args.cuffRows)
+        : [
+            knitEvenLine(args.cuffRows),
+            bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge"),
+          ].filter((line) => line.length > 0),
       stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
     });
     return rows;
@@ -1319,16 +1371,22 @@ export function buildDropShoulderSleeveDisplayRows(
   // cuff-up (bottom-up, default)
   rows.push({
     kind: "block",
-    paragraphs: ["Make 2 sleeves."],
+    paragraphs: sidewaysOptionalRibbingIntro(args),
   });
-  rows.push(castOnBlock(args.wristSts, "the sleeve cuff"));
+  if (!args.optionalRibbing) {
+    rows.push(castOnBlock(args.wristSts, "the sleeve cuff"));
+  }
   rows.push({ kind: "section", title: "CUFF" });
   rows.push({
     kind: "block",
     rc: formatRcColon(0),
-    paragraphs: [knitEvenLine(args.cuffRows)],
+    paragraphs: args.optionalRibbing ? [] : [knitEvenLine(args.cuffRows)],
+    ...(args.optionalRibbing
+      ? { trustedParagraphs: sidewaysCuffUpCuffChoiceLines(args.wristSts, args.cuffRows) }
+      : {}),
     stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
   });
+  rows.push(cuffUpSleeveBodyRowCounterResetBlock());
   appendSleeveBodyBlocks(
     stitchesOnNeedlesAtBodyStart > 0 ? stitchesOnNeedlesAtBodyStart : undefined,
   );
@@ -1336,8 +1394,12 @@ export function buildDropShoulderSleeveDisplayRows(
   rows.push({ kind: "section", title: "BIND OFF" });
   rows.push({
     kind: "block",
-    rc: formatRcColon(args.sleeveTotalRows),
-    trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("upper-arm/top edge")],
+    rc: formatRcColon(args.sleeveBodyRows),
+    trustedParagraphs: [
+      args.optionalRibbing
+        ? SIDEWAYS_CUFF_UP_BIND_OFF_LINE
+        : bindOffLooselyOrScrapOffTrustedParagraph("upper-arm/top edge"),
+    ],
     stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
   });
   return rows;

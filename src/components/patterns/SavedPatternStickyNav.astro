@@ -1,0 +1,43 @@
+---
+/**
+ * Shared saved-pattern sticky navigation (Pattern System Lego).
+ * Each page supplies its own Edit / Print actions in the default slot.
+ * Section links are filled by syncPatternInpageNav from that pattern's catalog.
+ */
+interface Props {
+  /** Attributes on the action group, so each page can keep its print mount target. */
+  actionsAttrs?: string[];
+}
+
+const { actionsAttrs: actionAttrNames = [] } = Astro.props;
+const actionsAttrs: Record<string, string> = {};
+for (const name of actionAttrNames) actionsAttrs[name] = "";
+---
+
+<nav
+  class="sleeveless-pattern-inpage-nav no-print"
+  data-sleeveless-pattern-inpage-nav
+  data-saved-pattern-sticky-nav
+  aria-label="Jump to pattern section"
+  hidden
+>
+  <a
+    href="#saved-pattern-header"
+    class="sleeveless-pattern-inpage-nav__pill saved-pattern-sticky-nav__top"
+    data-saved-pattern-sticky-nav-top
+  >
+    Top
+  </a>
+  <div
+    class="sleeveless-pattern-inpage-nav__track"
+    data-saved-pattern-sticky-nav-sections
+  >
+  </div>
+  <div
+    class="sleeveless-pattern-inpage-nav__actions"
+    data-saved-pattern-sticky-nav-actions
+    {...actionsAttrs}
+  >
+    <slot />
+  </div>
+</nav>

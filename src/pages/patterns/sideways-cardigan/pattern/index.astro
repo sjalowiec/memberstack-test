@@ -1,26 +1,37 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
+import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
 import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../../components/patterns/PatternBuilderMyPatternsLink.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import SavedPatternHeader from "../../../../components/patterns/SavedPatternHeader.astro";
-import { SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC } from "../../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
+import SavedPatternStickyNav from "../../../../components/patterns/SavedPatternStickyNav.astro";
+import { SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC } from "../../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 import { SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF } from "../../../../lib/patterns/sidewaysCardiganPatternNavigation";
 
 import "../../../../styles/sleeveless-express-wizard-layout.css";
+import "../../../../styles/ns-shaping-chart.css";
+import "../../../../styles/glossary-tooltip.css";
+import "../../../../styles/pattern-tips.css";
+import "../../../../styles/pattern-quick-tip.css";
+import "../../../../styles/pattern-help-card.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-diagram-tabs.css";
 ---
 
 <Layout
   title="Sideways V-Neck Sweater Pattern | Knit it Now"
-  description="Sideways-knit V-neck sweater pattern workspace (body calculations)."
+  description="Sideways-knit V-neck sweater pattern workspace."
+  bodyClass="pattern-print-global-footer"
   patternWorkspace={true}
 >
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/sideways-cardigan" />
   <SleevelessPatternMemberGate>
   <main
     class="wizard-page sleeveless-pattern-page pattern-app-shell sideways-cardigan-pattern-page"
     data-express-construction="sideways-cardigan"
+    data-pattern-print-skip-modal
   >
     <div class="wizard-container scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
@@ -30,7 +41,7 @@ import "../../../../styles/patterns/pattern-app-shell.css";
           title="Sideways V-Neck Sweater"
           titleTag="h1"
           titleAttr="data-sleeveless-pattern-online-heading"
-          thumbnailSrc={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC}
+          thumbnailSrc={SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC}
           thumbnailAlt="A machine-knit sideways sweater"
           tipsStorageKey="sleeveless-show-tips"
           tipsScopeSelector="#sideways-pattern-tips-scope"
@@ -38,15 +49,6 @@ import "../../../../styles/patterns/pattern-app-shell.css";
           printOriginUrl="KnitItNow.com/patterns/sideways-cardigan"
         >
           <PatternBuilderMyPatternsLink slot="actions-start" />
-          <a
-            slot="actions-end"
-            href={SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF}
-            class="sleeveless-pattern-edit-action no-print"
-            data-sideways-edit-open
-            data-testid="button-edit-pattern"
-          >
-            <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
-          </a>
         </SavedPatternHeader>
 
         <p class="sg-fit-size-copy" data-sideways-calc-missing hidden>
@@ -54,20 +56,51 @@ import "../../../../styles/patterns/pattern-app-shell.css";
         </p>
         <p class="sg-fit-size-copy" data-sideways-calc-error hidden role="alert"></p>
         <section class="sideways-calc-host" data-sideways-calc-host hidden>
-          <h2 class="sg-pattern-section-title">Pattern numbers</h2>
-          <div data-sideways-calc-summary></div>
-          <p class="sg-fit-size-copy" data-sideways-calc-adjustment hidden></p>
-          <h2 class="sg-pattern-section-title">Body sequence</h2>
-          <div data-sideways-body-sequence></div>
-          <section data-sideways-sleeve-host hidden>
-            <h2 class="sg-pattern-section-title">Sleeve sequence</h2>
-            <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
-            <div data-sideways-sleeve-sequence></div>
-          </section>
+            <div
+              id="pattern-content"
+              data-pattern-content
+              data-sideways-pattern-reading-layout
+            >
+              <SavedPatternStickyNav actionsAttrs={["data-sideways-pattern-actions"]}>
+                <a
+                  href={SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF}
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-sideways-edit-open
+                  data-testid="button-edit-pattern"
+                >
+                  <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                </a>
+              </SavedPatternStickyNav>
+              <div
+                class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-pattern-reading-layout"
+                data-sideways-body-layout
+              >
+                <div
+                  class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-pattern-reading-layout__instructions"
+                >
+                  <div data-sideways-body-sequence></div>
+                </div>
+                <aside
+                  class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram sideways-pattern-reading-layout__diagram"
+                  aria-label="Garment dimensions"
+                >
+                  <div class="sleeveless-piece-split__diagram-inner sideways-pattern-diagram-panel pattern-print-keep-together">
+                    <h3 class="sideways-pattern-diagram-panel__title no-print">Garment Dimensions</h3>
+                    <div
+                      class="sideways-pattern-diagram-panel__tabs-mount"
+                      id="diagram-content"
+                      data-sideways-diagram-tabs-mount
+                    ></div>
+                  </div>
+                </aside>
+              </div>
+              <section data-sideways-sleeve-host hidden>
+              <p class="sg-fit-size-copy" data-sideways-sleeve-error hidden role="alert"></p>
+              <div data-sideways-sleeve-sequence></div>
+            </section>
+            <div data-sideways-finishing-host></div>
+          </div>
         </section>
-        <p>
-          <a href="/patterns/sideways-cardigan/builder">Back to builder</a>
-        </p>
         </div>
       </div>
     </div>
@@ -79,39 +112,118 @@ import "../../../../styles/patterns/pattern-app-shell.css";
   .sideways-calc-host {
     margin: 1rem 0 1.5rem;
   }
-  .sideways-body-sequence,
-  .sideways-sleeve-sequence {
-    margin: 0.75rem 0 1.25rem;
-    padding-left: 1.4rem;
+
+  /* Body and sleeve each own a reading-layout grid. The page column is not sticky. */
+  #pattern-content > .sleeveless-pattern-inpage-nav {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
-  .sideways-body-sequence li,
-  .sideways-sleeve-sequence li {
-    margin: 0.35rem 0;
+
+  #pattern-content > [data-sideways-sleeve-host] {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    clear: both;
+    position: relative;
   }
-  .sideways-body-landmarks,
-  .sideways-body-sections {
-    margin-top: 1rem;
+
+  #pattern-content > [data-sideways-body-layout] {
+    position: relative;
+    width: 100%;
+    min-width: 0;
   }
-  .sideways-cardigan-pattern-page .print-summary-dl--inline {
-    display: grid;
-    gap: 0.35rem 1.25rem;
-    margin: 0.75rem 0 1.25rem;
-  }
-  .sideways-cardigan-pattern-page .print-summary-dl__pair {
-    display: grid;
-    grid-template-columns: minmax(10rem, 14rem) 1fr;
-    gap: 0.25rem 1rem;
-  }
-  .sideways-cardigan-pattern-page .print-summary-dl__pair dt {
-    font-weight: 600;
-  }
-  .sideways-cardigan-pattern-page .print-summary-dl__pair dd {
+
+  .sideways-pattern-diagram-panel {
     margin: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
+
+  .sideways-pattern-diagram-panel__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  /* Same Print button as the enlarge modal, sitting left of the magnifying glass. */
+  .sideways-pattern-diagram-panel :global([data-sideways-diagram-print]),
+  :global(.sideways-sleeve-reading-layout [data-sideways-diagram-print]) {
+    position: absolute;
+    top: 0.15rem;
+    right: 1.9rem;
+    z-index: 2;
+  }
+
+  .sideways-pattern-diagram-panel__svg,
+  :global(.sideways-pattern-diagram-panel__svg) {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    overflow-x: visible;
+    box-sizing: border-box;
+  }
+
+  .sideways-pattern-diagram-panel__svg :global(svg),
+  :global(.sideways-pattern-diagram-panel__svg svg) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
   @media print {
+    /* Screen details stay in the header for print. Sweater pages hide this block
+       because they print a separate At a glance list. */
     :global(.sg-pattern-intro-metadata),
     :global([data-pattern-generated-description]) {
       display: block !important;
+    }
+
+    #pattern-content > [data-sideways-body-layout],
+    :global(.sideways-sleeve-reading-layout) {
+      display: block !important;
+    }
+  }
+
+  :global(.sideways-pattern-diagram-print-heading) {
+    display: none;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  @media print {
+    :global(.pattern-diagram-tabs__list),
+    :global(.pattern-diagram-shaping-help) {
+      display: none !important;
+    }
+
+    :global(.sideways-pattern-diagram-print-heading) {
+      display: block !important;
+    }
+
+    :global(.sideways-pattern-diagram-tabs__panel),
+    :global(.sideways-pattern-diagram-tabs__panel[hidden]),
+    :global(.pattern-diagram-tabs__panel),
+    :global(.pattern-diagram-tabs__panel[hidden]) {
+      display: block !important;
+      visibility: visible !important;
+      margin-top: 0.85rem;
+    }
+
+    #pattern-content > [data-sideways-body-layout] {
+      display: block !important;
+    }
+
+    .sideways-pattern-reading-layout__diagram,
+    :global(.sideways-sleeve-reading-layout__diagram) {
+      max-width: 4.2in;
+      margin: 0 auto 1rem;
+      position: static !important;
     }
   }
 </style>

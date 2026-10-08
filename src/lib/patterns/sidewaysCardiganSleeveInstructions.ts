@@ -1,8 +1,8 @@
 /**
- * Numeric Sideways V-Neck sleeve instruction model (no written knitting copy).
+ * Sideways V-Neck sleeve instructions for a flat, seamed sleeve.
  *
- * Cuff-up and top-down are reverse constructions of the same Drop Shoulder sleeve
- * dimensions. Sideways-knit sleeves are not generated.
+ * Cuff-up and top-down reuse the Drop Shoulder sleeve display rows, shaping
+ * schedule, and written lines. Sideways-knit sleeves are not generated.
  */
 
 import {
@@ -15,8 +15,31 @@ import {
   type SidewaysCardiganSleeveCalcInput,
 } from "./sidewaysCardiganSleeveCalc";
 import {
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
+  dropShoulderSleeveShapingRcSequence,
+} from "./dropShoulderSleeveShapingChart";
+import { formatDropShoulderSleeveShapingWrittenLines } from "./dropShoulderSleeveShaping";
+import {
+  type SidewaysCardiganGarmentStyle,
+  type SidewaysCardiganSleeveDirection,
 } from "./sidewaysCardiganConstructionIdentity";
+import { SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE } from "./sidewaysCardiganSleeveCuffCopy";
+import { sleevelessHelpVideoFromCatalog } from "./sleevelessCatalogHelpVideo";
+import type { PublicVideoRow } from "../lessonVideo";
+import videosPublic from "../../data/videos-public.json";
+import { buildDropShoulderSleeveDisplayRows } from "./dropShoulderPatternOutput";
+import {
+  renderPatternDisplayRowsHtml,
+  wrapPatternSectionHtml,
+} from "./sleevelessPatternDisplayHtml";
+import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import {
+  readStoredDropShoulderSleeveConstruction,
+  renderSleeveConstructionChoiceHtml,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL,
+  SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
+  sidewaysSleeveConstructionChoiceQuickTipInnerHtml,
+} from "./dropShoulderSleeveConstruction";
 
 export type SidewaysCardiganSleeveInstructionStep = {
   id: string;
@@ -61,11 +84,15 @@ type StepPusher = (
 function createStepPusher(steps: SidewaysCardiganSleeveInstructionStep[]): {
   push: StepPusher;
   live: () => number;
+  resetRowCounter: () => void;
 } {
   let rc = 0;
   let live = 0;
   return {
     live: () => live,
+    resetRowCounter: () => {
+      rc = 0;
+    },
     push: (partial) => {
       const built = step({ ...partial, rowCounterStart: rc });
       steps.push(built);
@@ -76,29 +103,26 @@ function createStepPusher(steps: SidewaysCardiganSleeveInstructionStep[]): {
 }
 
 function shapingScheduleSummary(calc: SidewaysCardiganSleeveCalc): string {
-  const { shapingPlan, topSts, wristSts, sleeveBodyRows } = calc;
-  const delta = Math.abs(topSts - wristSts);
-  if (shapingPlan.noShaping || delta === 0) {
-    return `Knit ${sleeveBodyRows} rows (sleeve body, ${wristSts} stitches)`;
-  }
-  const verb = shapingPlan.shapingDirection === "decrease" ? "Decrease" : "Increase";
-  const start = calc.direction === "top-down" ? topSts : wristSts;
-  const end = calc.direction === "top-down" ? wristSts : topSts;
-  const step0 = shapingPlan.steps[0];
-  const intervalText =
-    step0 && step0.times > 0 && step0.rows > 0
-      ? `; every ${step0.rows} rows ${step0.times} ${step0.times === 1 ? "time" : "times"}`
-      : "";
-  const remainder =
-    shapingPlan.remainderRows > 0
-      ? `, then knit ${shapingPlan.remainderRows} rows even`
-      : "";
-  return `${verb} ${delta} stitches over ${sleeveBodyRows} rows (${start} → ${end})${intervalText}${remainder}`;
+  const chartInput = {
+    topSts: calc.topSts,
+    wristSts: calc.wristSts,
+    cuffRows: calc.cuffRows,
+    sleeveBodyRows: calc.sleeveBodyRows,
+    sleeveTotalRows: calc.sleeveTotalRows,
+    direction: calc.direction,
+  };
+  const lines = formatDropShoulderSleeveShapingWrittenLines(
+    calc.shapingPlan.shapingDirection,
+    calc.shapingPlan.steps,
+    dropShoulderSleeveShapingRcSequence(chartInput),
+  ).map((line) => line.replace(/<[^>]+>/g, ""));
+  if (lines.length > 0) return lines.join(" ");
+  return `Knit ${calc.sleeveBodyRows} rows even (${calc.wristSts} stitches)`;
 }
 
 function buildCuffUpSteps(calc: SidewaysCardiganSleeveCalc): SidewaysCardiganSleeveInstructionStep[] {
   const steps: SidewaysCardiganSleeveInstructionStep[] = [];
-  const { push, live } = createStepPusher(steps);
+  const { push, live, resetRowCounter } = createStepPusher(steps);
   push({
     id: "cast-on-wrist",
     order: 1,
@@ -115,6 +139,7 @@ function buildCuffUpSteps(calc: SidewaysCardiganSleeveCalc): SidewaysCardiganSle
     stitchesBefore: live(),
     stitchesAfter: calc.wristSts,
   });
+  resetRowCounter();
   push({
     id: "sleeve-body",
     order: 3,
@@ -208,15 +233,100 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/** Learning Library content_id for “Sleeves in the Round”. */
+export const SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID = 895;
+
+export function sidewaysPulloverRoundSleeveNoteHtml(
+  catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],
+): string {
+  const video = sleevelessHelpVideoFromCatalog(SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID, catalog);
+  if (!video) return "";
+  const link =
+    `<button type="button" class="kbm-kin-catalog-video pattern-help-link__button"` +
+    ` data-vimeo-id="${escapeHtml(video.id)}"` +
+    ` data-video-title="${escapeHtml(video.title)}"` +
+    ` data-content-id="${SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID}"` +
+    ` data-video-autoplay="false"` +
+    ` data-sideways-pullover-round-sleeve-video` +
+    ` aria-haspopup="dialog">` +
+    `${escapeHtml(video.title)}</button>`;
+  return `<p class="sleeveless-pattern-line">Optional: Prefer to avoid the sleeve seam? Watch: ${link}</p>`;
+}
+
+/** Drop Shoulder sleeve rows for this calculated cuff-up or top-down sleeve. */
+export function buildSidewaysCardiganSleeveDisplayRows(
+  calc: SidewaysCardiganSleeveCalc,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
+): SleevelessPatternDisplayRow[] {
+  return buildDropShoulderSleeveDisplayRows({
+    topSts: calc.topSts,
+    wristSts: calc.wristSts,
+    cuffRows: calc.cuffRows,
+    sleeveBodyRows: calc.sleeveBodyRows,
+    sleeveTotalRows: calc.sleeveTotalRows,
+    direction: calc.direction,
+    valid: true,
+    optionalRibbing: true,
+    ...(garmentStyle === "pullover"
+      ? { handSewLine: SIDEWAYS_PULLOVER_SLEEVE_HAND_SEW_LINE }
+      : {}),
+  });
+}
+
 export function renderSidewaysCardiganSleeveSequenceHtml(
   instructions: SidewaysCardiganSleeveInstructions,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
 ): string {
-  const label = SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[instructions.direction];
-  const intro = `${label} sleeve: temporary numeric sequence (make 2).`;
-  const items = instructions.steps
-    .map((s) => `<li>${escapeHtml(s.summary)}</li>`)
-    .join("");
-  return `<p class="sg-fit-size-copy sideways-sleeve-style-note">${escapeHtml(intro)}</p><ol class="sideways-sleeve-sequence">${items}</ol>`;
+  const rows = buildSidewaysCardiganSleeveDisplayRows(instructions.calc, garmentStyle);
+  const instructionsHtml = renderPatternDisplayRowsHtml(rows, {
+    pieceSectionId: "sleeve",
+    omitPieceBanner: true,
+  });
+  const choice = renderSleeveConstructionChoiceHtml({
+    direction: instructions.direction,
+    cuffUpLabel: SIDEWAYS_SLEEVE_CONSTRUCTION_CUFF_UP_LABEL,
+    topDownLabel: SIDEWAYS_SLEEVE_CONSTRUCTION_TOP_DOWN_LABEL,
+    tipInnerHtml: sidewaysSleeveConstructionChoiceQuickTipInnerHtml(),
+    tipId: SIDEWAYS_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
+  });
+  const roundSleeveNote = garmentStyle === "pullover" ? sidewaysPulloverRoundSleeveNoteHtml() : "";
+  const split =
+    `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split sleeveless-pattern-reading-layout sideways-sleeve-reading-layout" data-sideways-sleeve-layout>` +
+    `<div class="pattern-layout__content sleeveless-piece-split__text sleeveless-pattern-reading-layout__instructions sideways-sleeve-reading-layout__instructions">${roundSleeveNote}${choice}${instructionsHtml}</div>` +
+    `<aside class="pattern-layout__sidebar sleeveless-piece-split__diagram sleeveless-pattern-reading-layout__diagram sideways-sleeve-reading-layout__diagram pattern-print-keep-together" aria-label="Sleeve diagram" data-sideways-sleeve-diagram-tabs-mount></aside>` +
+    `</div>`;
+  return wrapPatternSectionHtml("sg-sleeve", "SLEEVE", split, {
+    sectionClassName: "pattern-section--garment-piece",
+  });
+}
+
+/**
+ * Knitting-time sleeve direction for the finished pattern.
+ * The builder's stored sleeveDirection is ignored. Cuff Up and Top Down stay
+ * available on the finished pattern; a choice made there uses the same
+ * localStorage key as Drop Shoulder. With no knitting-time choice, open on cuff-up.
+ */
+export function resolveSidewaysFinishedSleeveDirection(
+  _builderDirection: SidewaysCardiganSleeveDirection,
+  patternId: string,
+): SidewaysCardiganConventionalSleeveDirection {
+  const stored = readStoredDropShoulderSleeveConstruction(patternId);
+  if (stored === "top-down" || stored === "cuff-up") return stored;
+  return "cuff-up";
+}
+
+export function renderSidewaysSleeveSequenceForDirection(
+  input: SidewaysCardiganSleeveCalcInput,
+  direction: SidewaysCardiganConventionalSleeveDirection,
+  garmentStyle?: SidewaysCardiganGarmentStyle,
+): { ok: true; html: string; instructions: SidewaysCardiganSleeveInstructions } | { ok: false; error: SidewaysCardiganSleeveCalcError } {
+  const built = buildSidewaysCardiganSleeveInstructions({ ...input, direction });
+  if (!built.ok) return built;
+  return {
+    ok: true,
+    instructions: built.instructions,
+    html: renderSidewaysCardiganSleeveSequenceHtml(built.instructions, garmentStyle),
+  };
 }
 
 export function renderSidewaysSleeveNotConnectedHtml(): string {

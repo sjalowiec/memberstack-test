@@ -16,6 +16,7 @@ import {
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_OVERRIDE_KEYS,
   SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS,
+  sidewaysArmholeDepthHelperHidden,
 } from "./sidewaysCardiganSummaryEdit";
 import {
   buildSidewaysCardiganEditMeasurementDiagramSvg,
@@ -163,6 +164,7 @@ describe("Sideways Summary/Edit first-time routing", () => {
     expect(summaryScript).toContain("applySidewaysCardiganSummaryMeasurementEdits");
     expect(summaryScript).toContain("buildSidewaysCardiganSummaryDiagramInput");
     expect(summaryScript).toContain("refreshAutoPatternProjectTitle");
+    expect(summaryScript).toContain("persistSidewaysCardiganSummaryProject");
     expect(summaryScript).toContain("stampSidewaysSummaryMeasureShell");
   });
 
@@ -225,7 +227,8 @@ describe("Sideways Summary/Edit Cardigan vs Pullover diagrams", () => {
     expect(cardigan).toContain('data-role="back-panel"');
     expect(cardigan).toContain('data-role="second-front"');
     expect(cardigan).not.toContain('data-role="sleeve-outline"');
-    expect(pullover).toContain('data-role="sleeve-outline"');
+    expect(pullover).not.toContain('data-role="sleeve-outline"');
+    expect(pullover).not.toContain("dim-sleeve-length");
     expect(pullover).toContain('data-cardigan-structure="underarm-graft"');
     expect(cardigan).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
     expect(pullover).toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
@@ -323,6 +326,21 @@ describe("Sideways Summary/Edit live measurement edits", () => {
       "sleeveLength",
       "wrist",
     ]);
+  });
+
+  it("hides Sets armhole depth under the Pullover Armhole depth chip only", () => {
+    const armhole = SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS.find((field) => field.id === "armholeDepth");
+    expect(armhole?.label).toBe("Armhole depth");
+    expect(armhole?.secondary).toBe("Sets armhole depth");
+    expect(armhole?.transform).toBe("translate(-50%, calc(-100% - 8px))");
+    expect(sidewaysArmholeDepthHelperHidden("pullover")).toBe(true);
+    expect(sidewaysArmholeDepthHelperHidden("cardigan")).toBe(false);
+    expect(
+      SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((field) => field.id === "finishedUpperArm")?.secondary,
+    ).toBe("Sets armhole depth");
+    expect(summaryScript).toContain("syncArmholeDepthHelper");
+    expect(summaryScript).toContain("sidewaysArmholeDepthHelperHidden");
+    expect(summaryScript).toContain("[data-ps-measure-id='armholeDepth'] .ps-measure-chip__secondary");
   });
 
   it("changing one measurement does not reset the other overrides", () => {
@@ -449,6 +467,15 @@ describe("Sideways Summary/Edit shared workspace structure", () => {
     expect(
       SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS.filter((f) => f.previewTab === "sleeve").map((f) => f.id),
     ).toEqual(["finishedUpperArm", "sleeveLength", "wrist"]);
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "wrist")?.label).toBe(
+      "Wrist/Cuff",
+    );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "finishedUpperArm")?.label).toBe(
+      "Upper arm",
+    );
+    expect(SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS.find((f) => f.id === "sleeveLength")?.label).toBe(
+      "Sleeve length",
+    );
   });
 });
 
@@ -524,5 +551,50 @@ describe("Sideways Summary/Edit quick edits and tabs", () => {
     expect(body).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
     expect(sleeve).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.finishedBust}"`);
     expect(sleeve).not.toContain(`id="${SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.vNeckDepth}"`);
+  });
+
+  it("sends a wrist override to the finished sleeve for cardigan and pullover", () => {
+    saveBuild(cardiganValues);
+    const edited = applySidewaysCardiganSummaryMeasurementEdits({ wrist: "8" });
+    expect(edited.ok).toBe(true);
+    const cardigan = loadSidewaysCardiganWorkspaceView();
+    expect(cardigan.ok).toBe(true);
+    if (!cardigan.ok) throw new Error(cardigan.message);
+    expect(cardigan.sleeveInstructions?.calc.finished.wristInches).toBe(8);
+    expect(cardigan.sleeveHtml).not.toContain("Wrist/Cuff");
+    expect(cardigan.sleeveHtml).toContain(`Cast on ${cardigan.sleeveInstructions?.calc.wristSts} stitches`);
+    expect(cardigan.summary.rows.find((row) => row.term === "Wrist/Cuff")?.def).toContain("8 in");
+    expect(cardigan.summaryHtml).toContain("Wrist/Cuff");
+
+    saveBuild(pulloverValues);
+    applySidewaysCardiganSummaryMeasurementEdits({ wrist: "8" });
+    const pullover = loadSidewaysCardiganWorkspaceView();
+    expect(pullover.ok).toBe(true);
+    if (!pullover.ok) throw new Error(pullover.message);
+    expect(pullover.instructions?.garmentStyle).toBe("pullover");
+    expect(pullover.sleeveInstructions?.calc.finished.wristInches).toBe(8);
+    expect(pullover.sleeveInstructions?.calc.wristSts).toBe(cardigan.sleeveInstructions?.calc.wristSts);
+    expect(pullover.sleeveInstructions?.calc.topSts).toBe(cardigan.sleeveInstructions?.calc.topSts);
+    expect(pullover.sleeveHtml).toContain("Make 2 sleeves");
+    expect(pullover.sleeveHtml).toContain(`Cast on ${pullover.sleeveInstructions?.calc.wristSts} stitches`);
+    expect(pullover.sequenceHtml).not.toContain("data-sideways-sleeve-diagram-tabs-mount");
+  });
+
+  it("uses the scaled opening and sleeve length for a shorter sleeve", () => {
+    saveBuild(cardiganValues);
+    const result = applySidewaysCardiganSummaryQuickEdits({ sleeveLengthChoice: "short" });
+    expect(result.ok).toBe(true);
+    const measurements = readSidewaysCardiganSummaryMeasurements();
+    expect(Number(measurements.sleeveLength)).toBeLessThan(17);
+    expect(Number(measurements.wrist)).toBeGreaterThan(7.25);
+    const view = loadSidewaysCardiganWorkspaceView();
+    expect(view.ok).toBe(true);
+    if (!view.ok) throw new Error(view.message);
+    expect(view.sleeveInstructions?.calc.finished.sleeveLengthInches).toBe(
+      Number(measurements.sleeveLength),
+    );
+    expect(view.sleeveInstructions?.calc.finished.wristInches).toBe(Number(measurements.wrist));
+    expect(view.sleeveHtml).toContain(`${view.sleeveInstructions?.calc.wristSts} sts`);
+    expect(view.sleeveHtml).not.toContain(`${measurements.sleeveLength} in`);
   });
 });

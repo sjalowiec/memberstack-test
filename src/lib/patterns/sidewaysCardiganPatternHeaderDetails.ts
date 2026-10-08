@@ -10,10 +10,8 @@ import {
 } from "./patternStorage";
 import {
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS,
   parseSidewaysCardiganGarmentStyle,
-  parseSidewaysCardiganSleeveDirection,
   readSavedSidewaysCardiganSleeveLengthChoice,
 } from "./sidewaysCardiganConstructionIdentity";
 
@@ -52,13 +50,8 @@ function fitLabel(fit: Record<string, unknown>): string {
 }
 
 function sleeveLabel(style: Record<string, unknown>): string {
-  const direction = parseSidewaysCardiganSleeveDirection(style.sleeveDirection);
   const length = readSavedSidewaysCardiganSleeveLengthChoice(style.sleeveLength);
-  const parts = [
-    direction ? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[direction] : "",
-    length ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[length] : "",
-  ].filter(Boolean);
-  return parts.join(" · ");
+  return length ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[length] : "";
 }
 
 /** Inline label/value list for the shared pattern header. Empty when nothing is saved. */

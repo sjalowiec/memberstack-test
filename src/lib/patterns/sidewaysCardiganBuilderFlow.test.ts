@@ -226,25 +226,41 @@ describe("sideways cardigan builder-to-workspace flow", () => {
       "V-neck depth",
       "Armhole slit depth",
       "Back-neck depth",
-      "Requested finished bust",
-      "Actual finished bust",
+      "Requested finished bust/chest",
+      "Actual finished bust/chest",
       "Each front",
       "Back",
       "Neck-opening width",
       "Each V-neck section",
       "Each shoulder section",
-      "Total bust rows",
-      "Sleeve direction",
+      "Total bust/chest rows",
     ]);
     expect(summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
-    expect(summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
+    expect(summary.rows.find((row) => row.term === "Sleeve direction")).toBeUndefined();
     expect(summary.rows.find((row) => row.term === "Garment length")?.def).toMatch(/stitches/);
     expect(JSON.stringify(summary)).not.toMatch(/0\.166666/);
 
     const body = buildSidewaysCardiganBodyInstructions(input!);
     expect(body.ok).toBe(true);
     if (!body.ok) throw new Error(body.error.message);
-    expect(body.instructions.steps).toHaveLength(13);
+    expect(body.instructions.steps.map((step) => step.id)).toEqual([
+      "scrap-on-full-width",
+      "ravel-cord",
+      "closed-cast-on-full-width",
+      "hold-neckline",
+      "first-v-neck",
+      "first-front-shoulder",
+      "first-armhole-slit",
+      "first-back-shoulder",
+      "bind-off-back-neck",
+      "back-neck-opening",
+      "cast-on-back-neck",
+      "second-back-shoulder",
+      "second-armhole-slit",
+      "second-front-shoulder",
+      "second-v-neck",
+      "bind-off-full-width",
+    ]);
     expect(body.instructions.landmarks.finalBindOff).toBe(result.calc.bust.actualTotalBustRows);
   });
 });

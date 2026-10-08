@@ -85,3 +85,66 @@ export function compressStitchDecreasePointsToNotationLines(
     out.map((r) => `${r.stitches}s-${r.rows}r-${r.times}x`),
   );
 }
+
+/**
+ * Row-based shaping notation. Every field is required.
+ * A zero span is stored as `0`; it is not drawn as `0r`.
+ * Sections that are not row intervals must use {@link NotRowBasedShapingNotation}.
+ */
+export type ShapingNotationSegment = {
+  stitches: number;
+  intervalRows: number;
+  times: number;
+};
+
+export type RowBasedShapingNotation = {
+  kind: "row-based";
+  rowsBefore: number;
+  segments: readonly ShapingNotationSegment[];
+  rowsAfter: number;
+  totalRows: number;
+};
+
+export type NotRowBasedShapingNotation = {
+  kind: "not-row-based";
+  /** Why this mark has no row interval. */
+  reason: string;
+  label: string;
+};
+
+export type ShapingNotationModel = RowBasedShapingNotation | NotRowBasedShapingNotation;
+
+export function rowBasedShapingNotation(input: {
+  rowsBefore: number;
+  segments: readonly ShapingNotationSegment[];
+  rowsAfter: number;
+  totalRows: number;
+}): RowBasedShapingNotation {
+  const rowsBefore = Math.round(input.rowsBefore);
+  const rowsAfter = Math.round(input.rowsAfter);
+  const totalRows = Math.round(input.totalRows);
+  if (![rowsBefore, rowsAfter, totalRows].every((n) => Number.isFinite(n) && n >= 0)) {
+    throw new Error("Row-based shaping notation requires non-negative rows before, after, and total.");
+  }
+  if (input.segments.some((segment) => !(segment.intervalRows > 0) || !(segment.times > 0))) {
+    throw new Error("Row-based shaping notation requires an interval and a repeat count for each operation.");
+  }
+  return {
+    kind: "row-based",
+    rowsBefore,
+    segments: input.segments,
+    rowsAfter,
+    totalRows,
+  };
+}
+
+/** Compact knitting-order text. Zero spans stay in the model and are omitted from the drawing. */
+export function formatRowBasedShapingNotation(section: RowBasedShapingNotation): string {
+  const parts: string[] = [];
+  if (section.rowsBefore > 0) parts.push(`${section.rowsBefore}r`);
+  for (const segment of section.segments) {
+    parts.push(formatShapingSegment(segment.stitches, segment.intervalRows, segment.times));
+  }
+  if (section.rowsAfter > 0) parts.push(`${section.rowsAfter}r`);
+  return parts.join(" ");
+}
