@@ -182,7 +182,9 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       "Knit Weave | Lay-In",
     );
     const boucle = glossary.find((entry) => entry.glossaryId === SIDEWAYS_BOUCLE_GLOSSARY_ID);
-    expect(boucle?.english?.replace("Ã©", "é")).toBe("Bouclé");
+    expect(boucle?.english).toBe("Bouclé");
+    expect(boucle?.helpinfo).toContain("Bouclé is a style of yarn");
+    expect(boucle?.helpinfo).toContain("a bouclé can produce");
     expect((boucle as { image?: string } | undefined)?.image).toBe(
       "/images/glossary/boucle-textured-yarn-machine-knitting.jpg",
     );
