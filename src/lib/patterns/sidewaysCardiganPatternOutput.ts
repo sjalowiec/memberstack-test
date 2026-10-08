@@ -454,11 +454,11 @@ export function buildSidewaysPulloverBodyDisplayRows(
   const decreasePh = g(SHORT_ROW_DECREASE_GLOSSARY_ID, "Short-row Decrease");
   const eorPh = g(EVERY_OTHER_ROW_GLOSSARY_ID, "every other row");
   const wrapPh = g(MANUAL_WRAP_GLOSSARY_ID, "manually wrap");
-  const ravelPh = g(RAVEL_CORD_GLOSSARY_ID, "ravel cord");
   const closedPh = g(CLOSED_CAST_ON_GLOSSARY_ID, "closed cast-on");
   const ewrapPh = g(EWRAP_CAST_ON_GLOSSARY_ID, "e-wrap");
   const ragPh = g(CAST_ON_RAG_GLOSSARY_ID, "cast-on rag");
   const scrapPh = g(SCRAP_OFF_GLOSSARY_ID, "Scrap off");
+  const openSideSeamStitches = sideSeamStitches ?? fullWidth - armhole;
 
   return [
     { kind: "piece", title: BODY_PIECE_TITLE },
@@ -482,9 +482,9 @@ export function buildSidewaysPulloverBodyDisplayRows(
       rc: landmarks.firstSideSeam,
       trustedParagraphs: [
         `Bring ${fullWidth} needles into work.`,
-        `Scrap on across all ${fullWidth} needles to provide fabric for weights.`,
-        `Knit one row of ${ravelPh}.`,
-        `Work a ${closedPh} with garment yarn across all ${fullWidth} needles.`,
+        "Work a combination cast-on.",
+        `Scrap on the ${openSideSeamStitches} side-seam stitches. Leave these stitches open for grafting during finishing.`,
+        `Work a ${closedPh} with garment yarn over the ${armhole} armhole stitches.`,
         `Set ${formatRcColon(landmarks.firstSideSeam)}.`,
         ...(stitchesPerInch && stitchesPerInch > 0
           ? [
@@ -629,7 +629,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
       rc: landmarks.finalBindOff,
       trustedParagraphs: [
         `At the neck edge, bind off the ${armhole} armhole stitches. These stitches form the armhole edge. The sleeve will be set into this armhole.`,
-        `${scrapPh} the remaining ${sideSeamStitches ?? fullWidth - armhole} side-seam stitches. These live stitches form the final side-seam edge.`,
+        `${scrapPh} the remaining ${openSideSeamStitches} side-seam stitches. These live stitches form the final side-seam edge.`,
       ],
       stitchCount: fullWidth,
     }),

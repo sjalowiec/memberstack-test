@@ -24,6 +24,7 @@ import {
 import { formatSidewaysHeldStitchCensus } from "./sidewaysCardiganDisplayFormat";
 import { renderPatternDisplayBlockHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSidewaysCardiganBodySequenceHtml } from "./sidewaysCardiganBodyInstructions";
+import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 
 const SAMPLE: SidewaysCardiganBodyCalcInput = {
   garmentLengthInches: 22,
@@ -517,6 +518,62 @@ describe("sideways pullover BODY display adapter", () => {
       `Scrap off the remaining ${instructions.calc.garmentLengthStitches} stitches.`,
     );
     expect(text).not.toMatch(/Bind off all/i);
+  });
+
+  it("uses a combination cast-on and leaves both side-seam edges open", () => {
+    const fullWidth = instructions.calc.garmentLengthStitches;
+    const armhole = instructions.calc.armholeDepthStitches;
+    const sideSeam = fullWidth - armhole;
+    expect(instructions.calc.firstArmholeDepthStitches).toBe(armhole);
+    expect(sideSeam + armhole).toBe(fullWidth);
+
+    const castOn = blockAfterSection(rows, "CAST ON");
+    const castOnLines = castOn?.trustedParagraphs ?? [];
+    const combinationAt = castOnLines.findIndex((line) => line === "Work a combination cast-on.");
+    const scrapAt = castOnLines.findIndex((line) =>
+      line.startsWith(`Scrap on the ${sideSeam} side-seam stitches.`),
+    );
+    const closedAt = castOnLines.findIndex((line) => line.includes("closed cast-on"));
+    expect(combinationAt).toBeGreaterThanOrEqual(0);
+    expect(scrapAt).toBe(combinationAt + 1);
+    expect(closedAt).toBe(scrapAt + 1);
+    expect(castOnLines[scrapAt]).toBe(
+      `Scrap on the ${sideSeam} side-seam stitches. Leave these stitches open for grafting during finishing.`,
+    );
+    expect(castOnLines[closedAt]).toContain(`data-glossary-id="${CLOSED_CAST_ON_GLOSSARY_ID}"`);
+    expect(castOnLines[closedAt]).toContain(
+      `with garment yarn over the ${armhole} armhole stitches.`,
+    );
+    expect(castOnLines[closedAt]).not.toContain(`${fullWidth}`);
+    expect(text).not.toContain(`Scrap on across all ${fullWidth} needles`);
+    expect(text).not.toContain("ravel cord");
+    expect(text).not.toContain(`across all ${fullWidth} needles`);
+
+    expect(castOn?.rc).toBe(formatRcColon(landmarks.firstSideSeam));
+    expect(castOn?.stitchCount).toBe(fullWidth);
+    expect(text).toContain("For an optional folded hem");
+    expect(text).toContain(
+      `These ${armhole} stitches, from the neck edge to the marker, form the armhole opening and remain unseamed.`,
+    );
+    expect(text).toContain(
+      `The remaining ${sideSeam} stitches, from the marker to the hem, are the side-seam stitches.`,
+    );
+    expect(lastInstruction(castOn)).toBe(`Continue with ${fullWidth} sts.`);
+
+    const shoulder = blockAfterSection(rows, "FIRST FRONT SHOULDER");
+    expect(shoulder?.paragraphs[0]).toBe(
+      `Knit ${instructions.sectionRowCounts.firstFrontShoulder} rows even on ${fullWidth} stitches.`,
+    );
+    expect(shoulder?.stitchCount).toBe(fullWidth);
+
+    expect(text).toContain(
+      `the remaining ${sideSeam} side-seam stitches. These live stitches form the final side-seam edge.`,
+    );
+    expect(text).toContain(`data-glossary-id="${SCRAP_OFF_GLOSSARY_ID}"`);
+    expect(text).toContain('data-term="Scrap off"');
+    expect(text).toContain(
+      `At the neck edge, bind off the ${armhole} armhole stitches. These stitches form the armhole edge.`,
+    );
   });
 
   it("keeps the pullover V-neck construction inside the two V sections", () => {

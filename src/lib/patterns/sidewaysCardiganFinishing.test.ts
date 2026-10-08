@@ -276,8 +276,9 @@ describe("sideways folded hem and cardigan band", () => {
     });
     expect(finishing).not.toContain("does not need a separate neck band");
     expect(finishing).toContain(
-      "Graft only the side-seam stitches from the cast-on edge to the side-seam stitches that were scrapped off at the final edge. Graft from the hem to the marker, leaving the armhole opening unseamed.",
+      "Remove the waste yarn from the initial side-seam stitches. Graft those open stitches to the corresponding side-seam stitches at the opposite end of the body. Graft from the hem to the marker, leaving the armhole opening unseamed.",
     );
+    expect(finishing).not.toContain("Graft only the side-seam stitches from the cast-on edge");
     expect(finishing).not.toContain("Graft the cast-on edge to the final edge");
     expect(finishing).toContain("Watch: Kitchener Join (Grafting)");
     expect(finishing).toContain(`data-content-id="${SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID}"`);

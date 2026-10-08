@@ -377,7 +377,7 @@ export function renderSidewaysFinishingSectionHtml(args: {
         ]
       : [
           "Block the piece as desired.",
-          "Graft only the side-seam stitches from the cast-on edge to the side-seam stitches that were scrapped off at the final edge. Graft from the hem to the marker, leaving the armhole opening unseamed.",
+          "Remove the waste yarn from the initial side-seam stitches. Graft those open stitches to the corresponding side-seam stitches at the opposite end of the body. Graft from the hem to the marker, leaving the armhole opening unseamed.",
           hem,
           "Join the sleeve seams.",
           "Set the sleeves into the armhole openings.",
@@ -389,7 +389,8 @@ export function renderSidewaysFinishingSectionHtml(args: {
           ? ` ${sidewaysCardiganFoldVideoLinkHtml()}`
           : "";
       const graftLink =
-        args.garmentStyle === "pullover" && step.startsWith("Graft only the side-seam")
+        args.garmentStyle === "pullover" &&
+        step.startsWith("Remove the waste yarn from the initial side-seam stitches.")
           ? ` ${sidewaysPulloverGraftVideoLinkHtml()}`
           : "";
       return `<li>${escapeHtml(step)}${foldLink}${graftLink}</li>`;
