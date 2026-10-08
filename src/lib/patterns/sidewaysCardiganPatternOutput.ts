@@ -542,7 +542,6 @@ export function buildSidewaysPulloverBodyDisplayRows(
           bodyStitchesInWork: startingFrontStitches,
         }),
         `Begin with ${startingFrontStitches} stitches working and ${vSts} stitches held.`,
-        `Knit ${secondV.rowInterval} rows over the ${startingFrontStitches} working stitches before the first return-to-work action.`,
         `Work a ${increasePh} over ${secondV.rows} rows:`,
         ...slopeProseLines(instructions.increaseSequence, true),
         `Work each action ${eorPh}.`,

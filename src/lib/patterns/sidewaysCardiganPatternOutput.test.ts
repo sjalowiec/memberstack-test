@@ -597,4 +597,60 @@ describe("sideways pullover BODY display adapter", () => {
       "During the final two-row interval, return all held stitches to work",
     );
   });
+
+  it("starts the second V-neck return-to-work immediately, without a lead-in row instruction", () => {
+    const cases: SidewaysCardiganBodyCalcInput[] = [
+      SAMPLE,
+      {
+        garmentLengthInches: 17,
+        vNeckDepthInches: 5,
+        finishedBustCircumferenceInches: 40,
+        finishedUpperArmInches: 14,
+        neckOpeningWidthInches: 7,
+        backNeckDepthInches: 1,
+        stitchesPerInch: 4,
+        rowsPerInch: 6,
+      },
+    ];
+
+    for (const input of cases) {
+      const result = buildSidewaysCardiganBodyInstructions(input, "pullover");
+      expect(result.ok).toBe(true);
+      if (!result.ok) throw new Error(result.error.message);
+      const model = result.instructions;
+      const displayRows = buildSidewaysPulloverBodyDisplayRows(model, input.stitchesPerInch);
+      const secondV = blockAfterSection(displayRows, "SECOND V-NECK");
+      const firstV = blockAfterSection(displayRows, "FIRST V-NECK");
+      const displayText = allTrustedAndPlain(displayRows);
+
+      expect(displayText).not.toMatch(
+        /Knit \d+ rows over the \d+ working stitches before the first return-to-work action\./,
+      );
+      expect(secondV?.trustedParagraphs?.[1]).toBe(
+        `Begin with ${model.startingFrontStitches} stitches working and ${model.calc.vNeckDepthStitches} stitches held.`,
+      );
+      expect(secondV?.trustedParagraphs?.[2]).toMatch(/^Work a .+ over \d+ rows:$/);
+      expect(secondV?.stitchCount).toBe(model.startingFrontStitches);
+      expect(secondV?.bodyShapingChartRows?.map((row) => row.rc)).toEqual(
+        model.secondV.actionRowCounters,
+      );
+      expect(model.secondV.stitchesChangedOnAction).toEqual(model.increaseSequence);
+      expect(model.secondV.rowsBeforeFirstAction).toBe(2);
+      expect(model.secondV.actionRowCounters[0]).toBe(
+        model.landmarks.endFirstVShaping + model.secondV.rowsBeforeFirstAction,
+      );
+      expect(firstV?.trustedParagraphs?.join("\n")).not.toMatch(
+        /before the first return-to-work action/,
+      );
+    }
+
+    const cardigan = cardiganOk();
+    const cardiganText = allTrustedAndPlain(buildSidewaysCardiganBodyDisplayRows(cardigan));
+    expect(cardiganText).toContain(
+      `Knit ${cardigan.firstV.rowInterval} rows over the ${cardigan.startingFrontStitches} working stitches before the first return-to-work action.`,
+    );
+    expect(blockAfterSection(buildSidewaysCardiganBodyDisplayRows(cardigan), "SECOND V-NECK")?.trustedParagraphs).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/before the first return-to-work action/)]),
+    );
+  });
 });
