@@ -436,6 +436,16 @@ export function renderSidewaysCardiganBandSectionHtml(args: {
   );
 }
 
+/** Cardigan shoulders are closed selvages. Same machine-seaming video as the pullover. */
+function sidewaysCardiganShoulderSeamStepHtml(): string {
+  const video = sidewaysPulloverShoulderSeamVideoLinkHtml();
+  return (
+    `<strong>Join the shoulder seams.</strong> Machine seaming is recommended.` +
+    `<p class="pattern-help-link">${video}</p>` +
+    `Hand seaming is also an option.`
+  );
+}
+
 export function renderSidewaysFinishingSectionHtml(args: {
   garmentStyle: SidewaysCardiganGarmentStyle;
   turningNeedle: number;
@@ -445,7 +455,7 @@ export function renderSidewaysFinishingSectionHtml(args: {
     args.garmentStyle === "cardigan"
       ? [
           "Block the piece as desired.",
-          "Join the shoulder seams.",
+          { trustedHtml: sidewaysCardiganShoulderSeamStepHtml() },
           hem,
           "Make and attach the cardigan front and neck band. If you left a turning needle out of work in the band, fold the band lengthwise and secure its inner edge.",
           "Join the sleeve seams.",

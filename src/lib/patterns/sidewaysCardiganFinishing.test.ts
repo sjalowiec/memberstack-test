@@ -389,8 +389,65 @@ describe("sideways folded hem and cardigan band", () => {
     expect(cardiganFinishing).not.toContain("SHOULDER SEAMS AND NECKLINE");
     expect(cardiganFinishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
     expect(cardiganFinishing).not.toContain("Machine-knit neckband");
-    expect(cardiganFinishing).not.toContain("data-sideways-pullover-shoulder-seam-video");
-    expect(cardiganFinishing).toContain("Join the shoulder seams.");
+    expect(cardiganFinishing).not.toContain("Hand seaming is an alternative.");
+    expect(cardiganFinishing).toContain("<strong>Join the shoulder seams.</strong>");
+    expect(finishing).toContain("Hand seaming is an alternative.");
+    expect(finishing).not.toContain("Hand seaming is also an option.");
+  });
+
+  it("recommends machine seaming for the cardigan shoulder seams", () => {
+    const cardiganFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "cardigan",
+      turningNeedle: 6,
+    });
+    const pulloverFinishing = renderSidewaysFinishingSectionHtml({
+      garmentStyle: "pullover",
+      turningNeedle: sidewaysFoldedHemTurningNeedle(5),
+    });
+    const join = cardiganFinishing.indexOf("<strong>Join the shoulder seams.</strong>");
+    const machine = cardiganFinishing.indexOf("Machine seaming is recommended.");
+    const watch = cardiganFinishing.indexOf(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    const hand = cardiganFinishing.indexOf("Hand seaming is also an option.");
+    const hem = cardiganFinishing.indexOf("turning line");
+    const band = cardiganFinishing.indexOf("Make and attach the cardigan front and neck band.");
+    const sleeves = cardiganFinishing.indexOf("Join the sleeve seams.");
+    expect(cardiganFinishing.indexOf("Block the piece as desired.")).toBeLessThan(join);
+    expect(join).toBeGreaterThan(-1);
+    expect(join).toBeLessThan(machine);
+    expect(machine).toBeLessThan(watch);
+    expect(watch).toBeLessThan(hand);
+    expect(hand).toBeLessThan(hem);
+    expect(hem).toBeLessThan(band);
+    expect(band).toBeLessThan(sleeves);
+    expect(cardiganFinishing.indexOf("Set the sleeves into the armhole openings.")).toBeGreaterThan(sleeves);
+    const shoulderHtml = cardiganFinishing.slice(join, hand);
+    expect(shoulderHtml).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(shoulderHtml).toContain('data-content-id="2215"');
+    expect(shoulderHtml).toContain('data-vimeo-id="1234021892"');
+    expect(shoulderHtml).toContain('data-video-title="Seam on the Machine"');
+    expect(shoulderHtml).toContain('data-sideways-pullover-shoulder-seam-video');
+    expect(shoulderHtml).toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
+    expect(shoulderHtml).not.toContain("player.vimeo.com");
+    expect(shoulderHtml).not.toContain("/videos/2215");
+    expect(cardiganFinishing).not.toContain('data-video-pending="true"');
+    expect(cardiganFinishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    expect(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID).toBe(2215);
+    const seamVideo = resolveSidewaysPulloverShoulderSeamVideo();
+    expect(seamVideo?.id).toBe("1234021892");
+    expect(seamVideo?.title).toBe("Seam on the Machine");
+    const catalogRow = (videosPublic as Array<{ content_id?: number; access_level?: string }>).find(
+      (row) => row.content_id === 2215,
+    );
+    expect(catalogRow?.access_level).toBe("member");
+    expect(cardiganFinishing).not.toContain("SHOULDER SEAMS AND NECKLINE");
+    expect(cardiganFinishing).not.toContain("Machine-knit neckband");
+    expect(cardiganFinishing).not.toContain("Hand seaming is an alternative.");
+    expect(cardiganFinishing).toContain("Watch: Crisp, decorative fold");
+    expect(pulloverFinishing).toContain("Hand seaming is an alternative.");
+    expect(pulloverFinishing).not.toContain("Hand seaming is also an option.");
+    expect(pulloverFinishing).toContain(
+      "Shoulder seam 1. Seam the Second Front Shoulder to the First Back Shoulder. Machine seaming is recommended.",
+    );
   });
 
   it("reloads a saved band gauge from the pattern style", () => {
