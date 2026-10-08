@@ -1,5 +1,6 @@
 ---
 import GlossaryTooltip from "../common/GlossaryTooltip.astro";
+import PatternHeaderImage from "./PatternHeaderImage.astro";
 import type { PatternBuilderLandingCopySection } from "../../lib/patterns/patternBuilderLanding";
 import {
   SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING,
@@ -33,13 +34,11 @@ const {
         ))}
       </div>
       <figure class="sideways-real-life" data-testid="sideways-real-life">
-        <img
+        <PatternHeaderImage
           src={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC}
           alt={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT}
-          width="500"
-          height="688"
+          hintStyle="overlay"
           loading="lazy"
-          decoding="async"
         />
         <figcaption class="sideways-real-life__caption">
           {SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.map((part) =>
@@ -87,14 +86,24 @@ const {
     max-width: 190px;
   }
 
-  .sideways-real-life img {
+  .sideways-real-life :global(.pattern-header-image) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sideways-real-life :global(.pattern-header-image__img) {
     display: block;
     width: 100%;
     height: auto;
     max-width: 100%;
+    max-height: none;
     object-fit: contain;
     border-radius: 12px;
     border: 1px solid #d6dbc9;
+  }
+
+  .sideways-real-life :global(.pattern-header-image__frame) {
+    border-radius: 12px;
   }
 
   .sideways-real-life__caption {

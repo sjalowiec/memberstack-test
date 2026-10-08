@@ -208,6 +208,9 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
     expect(realLifeCaption).toContain("max-width: 190px;");
     expect(realLifeCaption).toContain("margin: 0 auto;");
     expect(realLifeCaption).toContain("align-items: start;");
+    expect(realLifeCaption).toContain("PatternHeaderImage");
+    expect(realLifeCaption).toContain('hintStyle="overlay"');
+    expect(realLifeCaption).not.toContain("caption={");
     expect(realLifeCaption).toContain("object-fit: contain;");
     expect(realLifeCaption).toContain("@media (min-width: 768px)");
     const glossaryParts = SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.filter(
