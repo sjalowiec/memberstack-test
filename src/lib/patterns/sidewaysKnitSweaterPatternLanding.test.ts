@@ -193,14 +193,20 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       "Finished sideways cardigan by Sue.",
     );
     expect(landingPage).toContain("SidewaysKnitSweaterRealLife");
-    expect(landingPage).toContain('slot="after-hero"');
-    expect(landingPage).toContain("why: undefined");
+    expect(landingPage).toContain('slot="creates"');
+    expect(landingPage).not.toContain('slot="after-hero"');
+    expect(landingPage).toContain("creates: undefined");
+    expect(landingPage).not.toContain("why: undefined");
     expect(realLifeCaption).toContain("<GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>");
-    expect(realLifeCaption.indexOf("sideways-why-photo__copy")).toBeLessThan(
+    expect(realLifeCaption).toContain("pattern-builder-creates-heading");
+    expect(realLifeCaption).not.toContain("pattern-builder-why-heading");
+    expect(realLifeCaption.indexOf("sideways-creates-photo__copy")).toBeLessThan(
       realLifeCaption.indexOf('data-testid="sideways-real-life"'),
     );
     expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 1fr);");
-    expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 60fr) minmax(0, 40fr);");
+    expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 75fr) minmax(0, 25fr);");
+    expect(realLifeCaption).toContain("max-width: 190px;");
+    expect(realLifeCaption).toContain("margin: 0 auto;");
     expect(realLifeCaption).toContain("align-items: start;");
     expect(realLifeCaption).toContain("object-fit: contain;");
     expect(realLifeCaption).toContain("@media (min-width: 768px)");

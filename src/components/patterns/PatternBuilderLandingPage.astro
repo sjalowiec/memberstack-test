@@ -50,11 +50,12 @@ const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta
   {...(socksSavedPatternRedirect ? { "data-socks-saved-pattern-landing": "" } : {})}
 >
   <PatternBuilderLandingHero content={content} />
-  <slot name="after-hero" />
   {why ? <PatternBuilderLandingWhy section={why} /> : null}
   {choices ? <PatternBuilderLandingChoices section={choices} /> : null}
   {howItWorks ? <PatternBuilderLandingHowItWorks section={howItWorks} /> : null}
-  {creates ? <PatternBuilderLandingCreates section={creates} /> : null}
+  <slot name="creates">
+    {creates ? <PatternBuilderLandingCreates section={creates} /> : null}
+  </slot>
   {anyYarn ? <PatternBuilderLandingAnyYarn section={anyYarn} /> : null}
   {knitAble ? <PatternBuilderLandingKnitAble section={knitAble} /> : null}
   {membership ? <PatternBuilderLandingMembershipCta cta={membership} /> : null}

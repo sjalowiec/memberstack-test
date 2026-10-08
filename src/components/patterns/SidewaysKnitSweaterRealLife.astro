@@ -14,15 +14,19 @@ interface Props {
 }
 
 const {
-  section = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.why,
-  headingId = "pattern-builder-why-heading",
+  section = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.creates,
+  headingId = "pattern-builder-creates-heading",
 } = Astro.props;
 ---
 
 {
   section ? (
-    <section class="sideways-why-photo" aria-labelledby={headingId} data-testid="sideways-why-photo">
-      <div class="sideways-why-photo__copy">
+    <section
+      class="sideways-creates-photo"
+      aria-labelledby={headingId}
+      data-testid="sideways-creates-photo"
+    >
+      <div class="sideways-creates-photo__copy">
         <h2 id={headingId}>{section.heading}</h2>
         {section.body.map((paragraph) => (
           <p>{paragraph}</p>
@@ -52,7 +56,7 @@ const {
 }
 
 <style>
-  .sideways-why-photo {
+  .sideways-creates-photo {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
@@ -60,25 +64,27 @@ const {
     margin: 0 0 1.75rem;
   }
 
-  .sideways-why-photo__copy h2 {
+  .sideways-creates-photo__copy h2 {
     margin: 0 0 0.7rem;
     font-size: 1.2rem;
     font-weight: 600;
     color: var(--kbm-green, #52682d);
   }
 
-  .sideways-why-photo__copy p {
+  .sideways-creates-photo__copy p {
     margin: 0 0 0.85rem;
     color: #333;
     line-height: 1.55;
   }
 
-  .sideways-why-photo__copy p:last-child {
+  .sideways-creates-photo__copy p:last-child {
     margin-bottom: 0;
   }
 
   .sideways-real-life {
-    margin: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 190px;
   }
 
   .sideways-real-life img {
@@ -92,16 +98,21 @@ const {
   }
 
   .sideways-real-life__caption {
-    margin: 0.55rem 0 0;
+    margin: 0.45rem 0 0;
     color: #243015;
-    font-size: 0.98rem;
-    line-height: 1.45;
+    font-size: 0.92rem;
+    line-height: 1.4;
   }
 
   @media (min-width: 768px) {
-    .sideways-why-photo {
-      grid-template-columns: minmax(0, 60fr) minmax(0, 40fr);
+    .sideways-creates-photo {
+      grid-template-columns: minmax(0, 75fr) minmax(0, 25fr);
       gap: 1.75rem;
+    }
+
+    .sideways-real-life {
+      margin: 0;
+      justify-self: start;
     }
   }
 </style>
