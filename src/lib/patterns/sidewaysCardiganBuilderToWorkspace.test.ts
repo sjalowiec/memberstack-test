@@ -121,13 +121,15 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(headerDetails).toContain("Women's");
     expect(headerDetails).toContain("Chart size 8");
     expect(headerDetails).toContain("Standard");
-    expect(headerDetails).toContain("Cuff up · Long");
+    expect(headerDetails).toContain(">Long<");
+    expect(headerDetails).not.toContain("Cuff up");
     expect(headerDetails).toContain("sts /");
     expect(headerDetails).toContain("rows over");
     expect(view.instructions).not.toBeNull();
-    expect(view.instructions?.steps).toHaveLength(13);
-    expect(view.sequenceHtml).toContain("sideways-body-sequence");
-    expect(view.sequenceHtml).toContain("Cast on");
+    expect(view.sequenceHtml).toContain("pattern-section");
+    expect(view.sequenceHtml).toContain("CAST ON");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).not.toContain("sideways-body-landmarks");
     expect(view.input.vNeckDepthInches).toBe(8);
     expect(view.pattern.style).toMatchObject({
       construction: SIDEWAYS_CARDIGAN_CONSTRUCTION,
@@ -137,8 +139,11 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.sleeveDirection).toBe("cuff-up");
     expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
     expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
-    expect(view.sleeveHtml).toContain("sideways-sleeve-sequence");
-    expect(view.sleeveHtml).toContain("Cast on");
+    expect(view.sleeveHtml).toContain("Make 2 sleeves");
+    expect(view.sleeveHtml).toContain(">Cuff Up<");
+    expect(view.sleeveHtml).toContain(">Top Down<");
+    expect(view.sleeveHtml).not.toContain("Wrist/Cuff");
+    expect(view.sleeveHtml).toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 
   it("round-trips a Women’s (plus) pattern", () => {
@@ -151,14 +156,14 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
       sleeveDirection: "sideways",
     });
     expect(view.input.finishedUpperArmInches).toBe(15);
-    expect(view.summary.rows.find((row) => row.term === "Sleeve direction")?.def).toBe("Sideways");
-    expect(view.instructions?.steps).toHaveLength(13);
-    expect(view.sleeveDirection).toBe("sideways");
-    expect(view.sleeveInstructions).toBeNull();
-    expect(view.sleeveHtml).toContain("Sideways sleeve calculations are not yet connected.");
-    expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(wrist\)/);
-    expect(view.sleeveHtml).not.toMatch(/Cast on \d+ stitches \(upper arm\)/);
-    expect(view.sleeveHtml).not.toContain("sideways-sleeve-sequence");
+    expect(view.summary.rows.find((row) => row.term === "Sleeve direction")).toBeUndefined();
+    expect(view.sleeveDirection).toBe("cuff-up");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
+    expect(view.sleeveHtml).toContain(">Cuff Up<");
+    expect(view.sleeveHtml).toContain(">Top Down<");
+    expect(view.sleeveHtml).not.toContain("Sideways sleeve calculations are not yet connected.");
+    expect(view.sleeveHtml).toContain("Make 2 sleeves");
+    expect(view.sleeveHtml).toContain("data-sideways-sleeve-diagram-tabs-mount");
   });
 
   it("keeps user measurement overrides on the workspace", () => {
@@ -185,9 +190,11 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.input.neckOpeningWidthInches).toBe(8);
     expect(view.input.finishedUpperArmInches).toBe(16);
     expect(view.pattern.style).toMatchObject({ sleeveDirection: "top-down" });
-    expect(view.sleeveDirection).toBe("top-down");
-    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-upper-arm");
-    expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-wrist");
+    expect(view.sleeveDirection).toBe("cuff-up");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
+    expect(view.sleeveInstructions?.steps.at(-1)?.id).toBe("bind-off-upper-arm");
+    expect(view.sleeveHtml).toContain(">Cuff Up<");
+    expect(view.sleeveHtml).toContain(">Top Down<");
   });
 
   it("persists sleeve direction for workspace refresh", () => {
@@ -203,8 +210,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(refreshed.input).toEqual(first.input);
     expect(refreshed.instructions?.steps).toEqual(first.instructions?.steps);
     expect(refreshed.sleeveInstructions?.steps).toEqual(first.sleeveInstructions?.steps);
-    expect(refreshed.sleeveDirection).toBe("top-down");
-    expect(refreshed.sleeveInstructions?.steps[0]?.id).toBe("cast-on-upper-arm");
+    expect(refreshed.sleeveDirection).toBe("cuff-up");
+    expect(refreshed.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
     expect(refreshed.summary).toEqual(first.summary);
     expect(getCurrentPattern().style.sleeveDirection).toBe("top-down");
   });
@@ -245,8 +252,8 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     if (!view.ok) throw new Error(view.message);
     expect(view.instructions?.garmentStyle).toBe("cardigan");
     expect(view.summary.rows.find((row) => row.term === "Garment style")?.def).toBe("Cardigan");
-    expect(view.sequenceHtml).toMatch(/starts at center front/i);
-    expect(view.sequenceHtml).toMatch(/two knitted armhole slits/i);
+    expect(view.sequenceHtml).toMatch(/beginning at one center-front edge/i);
+    expect(view.sequenceHtml).toMatch(/two armhole openings are knitted into the body/i);
     expect(view.instructions?.steps.filter((s) => /armhole-slit/.test(s.id))).toHaveLength(2);
   });
 
@@ -269,10 +276,16 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     expect(view.instructions?.steps[0]?.id).toBe("cast-on-side-seam");
     expect(view.instructions?.steps.at(-1)?.id).toBe("bind-off-side-seam");
     expect(view.instructions?.steps.filter((s) => /armhole-slit/.test(s.id))).toHaveLength(1);
-    expect(view.sequenceHtml).toMatch(/starts at a side seam/i);
-    expect(view.sequenceHtml).toMatch(/one knitted armhole slit/i);
-    expect(view.sequenceHtml).toMatch(/leaving the calculated armhole depth open/i);
-    expect(view.sequenceHtml).not.toMatch(/graft/i);
+    expect(view.sequenceHtml).toMatch(/beginning at one side seam/i);
+    expect(view.sequenceHtml).toMatch(/one armhole opening/i);
+    expect(view.sequenceHtml).toMatch(/from the hem to the markers/i);
+    expect(view.sequenceHtml).toContain("FIRST FRONT SHOULDER");
+    expect(view.sequenceHtml).toContain("SCRAP OFF");
+    expect(view.sequenceHtml).not.toContain("sideways-body-landmarks");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sections");
+    expect(view.sequenceHtml).toContain(
+      "Leave these stitches open for grafting during finishing.",
+    );
 
     const restored = readSidewaysCardiganBuilderStateFromDraft();
     expect(restored.garmentStyle).toBe("pullover");
@@ -282,6 +295,68 @@ describe("sideways cardigan builder-to-workspace round-trip", () => {
     if (!refreshed.ok) throw new Error(refreshed.message);
     expect(refreshed.instructions?.garmentStyle).toBe("pullover");
     expect(refreshed.instructions?.steps).toEqual(view.instructions?.steps);
+  });
+
+  it("shows sectioned Pullover BODY for the Women's chart V-neck depth, not a stitch-vs-row error", () => {
+    saveFromCreatePattern(
+      {
+        ...missesValues,
+        garmentStyle: "pullover",
+        styleMeasurements: {
+          ...missesValues.styleMeasurements,
+          vNeckDepth: "5",
+        },
+      },
+      missesRow,
+    );
+    const view = loadSidewaysCardiganWorkspaceView();
+    expect(view.ok).toBe(true);
+    if (!view.ok) throw new Error(view.message);
+    expect(view.instructionError).toBeUndefined();
+    expect(view.input.vNeckDepthInches).toBe(5);
+    expect(view.calc.vNeckDepthStitches).toBe(26);
+    expect(view.calc.halfNeckRows).toBe(26);
+    expect(view.instructions?.garmentStyle).toBe("pullover");
+    expect(view.sequenceHtml).toContain("pattern-section");
+    expect(view.sequenceHtml).toContain("FIRST V-NECK");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).toMatch(/beginning at one side seam/i);
+    expect(view.sequenceHtml).not.toMatch(/must exceed the even half-neck rows/i);
+  });
+
+  it("renders Cardigan BODY Lego and sleeves for the Women's 5-inch V / 7.5-inch neck / 5×7 gauge case", () => {
+    saveFromCreatePattern(
+      {
+        ...missesValues,
+        garmentStyle: "cardigan",
+        styleMeasurements: {
+          ...missesValues.styleMeasurements,
+          vNeckDepth: "5",
+        },
+      },
+      missesRow,
+    );
+    const view = loadSidewaysCardiganWorkspaceView();
+    expect(view.ok).toBe(true);
+    if (!view.ok) throw new Error(view.message);
+    expect(view.instructionError).toBeUndefined();
+    expect(view.instructions?.garmentStyle).toBe("cardigan");
+    expect(view.input.vNeckDepthInches).toBe(5);
+    expect(view.input.neckOpeningWidthInches).toBe(7.5);
+    expect(view.input.stitchesPerInch).toBe(5);
+    expect(view.input.rowsPerInch).toBe(7);
+    expect(view.calc.vNeckDepthStitches).toBe(26);
+    expect(view.calc.halfNeckRows).toBe(26);
+    expect(view.instructions?.firstV.shapingActions).toBe(13);
+    expect(view.instructions?.increaseSequence).toEqual(Array(13).fill(2));
+    expect(view.sequenceHtml).toContain("pattern-section");
+    expect(view.sequenceHtml).toContain("CAST ON");
+    expect(view.sequenceHtml).toContain("FIRST V-NECK");
+    expect(view.sequenceHtml).toContain("Return 2 stitches to work 13 times.");
+    expect(view.sequenceHtml).not.toContain("sideways-body-sequence");
+    expect(view.sequenceHtml).not.toMatch(/must exceed the even half-neck rows/i);
+    expect(view.sleeveHtml).toContain("Make 2 sleeves");
+    expect(view.sleeveInstructions?.steps[0]?.id).toBe("cast-on-wrist");
   });
 
   it("reports a diagnostic when stored data is incomplete", () => {
@@ -307,12 +382,14 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain("Sideways V-Neck Sweater");
     expect(workspace).toContain("Sideways V-Neck Sweater");
     expect(builder).toContain(
-      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a",
+      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.",
     );
     expect(workspace).toContain("SavedPatternHeader");
     expect(workspace).not.toContain(
-      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a",
+      "A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.",
     );
+    expect(builder).not.toContain("straight back neck");
+    expect(workspace).not.toContain("straight back neck");
     expect(builder).not.toContain("Sideways Cardigan");
     expect(workspace).not.toContain("Sideways Cardigan");
     expect(builder).not.toContain("V-neck cardigan");
@@ -335,11 +412,12 @@ describe("sideways V-Neck Sweater customer-facing copy", () => {
     expect(builder).toContain("Misses");
     expect(builder).toContain("Women's");
     expect(builder).not.toContain(">Plus<");
-    expect(builder).toContain('data-field="sleeveDirection"');
+    expect(builder).not.toContain('data-field="sleeveDirection"');
+    expect(builder).not.toContain("Sleeve direction");
+    expect(builder).not.toContain('data-value="cuff-up"');
+    expect(builder).not.toContain('data-value="top-down"');
+    expect(builder).not.toContain('data-value="sideways"');
     expect(builder).toContain('data-field="sleeveLength"');
-    expect(builder).toContain('data-value="cuff-up"');
-    expect(builder).toContain('data-value="top-down"');
-    expect(builder).toContain('data-value="sideways"');
     expect(builder).toContain('value: "long"');
     expect(builder).toContain('value: "three-quarter"');
     expect(builder).toContain('value: "elbow"');
@@ -380,7 +458,8 @@ describe("sideways cardigan workspace is not print-only", () => {
     expect(page).toContain("data-sideways-sleeve-host");
     expect(page).toContain("SavedPatternHeader");
     expect(page).toContain('data-sleeveless-pattern-online-heading');
-    expect(page).toContain("SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC");
+    expect(page).toContain("SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC");
+    expect(page).toContain("SavedPatternStickyNav");
     expect(page).not.toContain("pattern-title");
     expect(page).not.toContain("A V-neck sweater knitted sideways");
     expect(page).toContain('import "/src/scripts/sideways-cardigan-pattern-page.ts"');

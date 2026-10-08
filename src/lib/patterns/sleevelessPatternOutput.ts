@@ -593,6 +593,10 @@ export type SleevelessPatternDisplayRow =
        * (chart id derived from the rendering piece) after this block's paragraphs.
        */
       bodyShapingChartRows?: SleevelessBodyShapingChartRow[];
+      /** Overrides the default body-shaping chart id when more than one chart is on a piece. */
+      bodyShapingChartId?: string;
+      /** Optional completed-rows switch label for this body-shaping chart only. */
+      bodyShapingChartCompletedRowsLabel?: string;
       /**
        * Drop-shoulder sleeve shaping checklist (Done · RC · Action · Edge · Sts Remaining).
        * Generated from the same schedule as sleeve JP notation.
@@ -605,6 +609,17 @@ export type SleevelessPatternDisplayRow =
       }[];
       /** Total stitches on the piece after this block; shown in the right column when defined */
       stitchCount?: number;
+      /**
+       * Working / held / total census for constructions that park stitches.
+       * When `held` is greater than 0, the right column shows all three states
+       * instead of a single “N sts” working-only count.
+       */
+      stitchCensus?: { working: number; held: number; total: number };
+      /**
+       * Optional follow-on working count after a held-stitch section resolves
+       * (e.g. enclosing wraps so every stitch is working again).
+       */
+      stitchCensusFinalWorking?: number;
     };
 
 export type SleevelessBackPatternResult = {

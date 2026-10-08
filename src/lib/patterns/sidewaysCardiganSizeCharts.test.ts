@@ -82,5 +82,15 @@ describe("sideways cardigan women's combined chart", () => {
     expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.find((g) => g.audience === "misses")?.buttonLabel).toBe(
       "Misses (1–8)",
     );
+    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.audience)).toEqual([
+      "misses",
+      "plus",
+      "men",
+      "kids",
+      "baby",
+    ]);
+    expect(sidewaysCardiganChartAudienceDisplayLabel("men")).toBe("Men's");
+    expect(sidewaysCardiganChartAudienceDisplayLabel("kids")).toBe("Kids'");
+    expect(sidewaysCardiganChartAudienceDisplayLabel("baby")).toBe("Baby");
   });
 });

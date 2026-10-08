@@ -35,11 +35,11 @@ describe("isSidewaysCardiganRoute", () => {
 });
 
 describe("isSidewaysCardiganProductionBlocked", () => {
-  it("blocks production custom domains", () => {
-    expect(isSidewaysCardiganProductionBlocked("knititnow.com")).toBe(true);
-    expect(isSidewaysCardiganProductionBlocked("www.knititnow.com")).toBe(true);
-    expect(isSidewaysCardiganProductionBlocked("app.knititnow.com")).toBe(true);
-    expect(isSidewaysCardiganProductionBlocked("app.knitbymachine.com")).toBe(true);
+  it("never blocks now that Sideways has launched", () => {
+    expect(isSidewaysCardiganProductionBlocked("knititnow.com")).toBe(false);
+    expect(isSidewaysCardiganProductionBlocked("www.knititnow.com")).toBe(false);
+    expect(isSidewaysCardiganProductionBlocked("app.knititnow.com")).toBe(false);
+    expect(isSidewaysCardiganProductionBlocked("app.knitbymachine.com")).toBe(false);
   });
 
   it("allows localhost, Astro dev, and Netlify previews", () => {
@@ -53,7 +53,7 @@ describe("isSidewaysCardiganProductionBlocked", () => {
 });
 
 describe("Sideways catalog and route wiring", () => {
-  it("shows Sideways as Coming Soon on production and keeps the live card for DEV", () => {
+  it("keeps the live Sideways catalog card and the retired production gate", () => {
     expect(catalog).toContain("isSidewaysCardiganProductionBlocked");
     expect(catalog).toContain("showSidewaysAsComingSoon");
     expect(catalog).toContain("...(showSidewaysAsComingSoon ? [] : [sidewaysPattern])");

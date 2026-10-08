@@ -29,15 +29,15 @@ import { formatFitEaseApproxLabel } from "../lib/patterns/fitEaseInches";
 import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternStorage";
 import {
   getSidewaysCardiganChartRowsForAudience,
-  SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS,
+  parseSidewaysCardiganChartAudience,
+  SIDEWAYS_CARDIGAN_CHART_GROUPS,
   sidewaysCardiganChartAudienceDisplayLabel,
-  type SidewaysCardiganWomenChartAudience,
-  type SidewaysCardiganWomenChartRow,
+  type SidewaysCardiganChartAudience,
+  type SidewaysCardiganChartRow,
 } from "../lib/patterns/sidewaysCardiganSizeCharts";
 import {
   parseSidewaysCardiganGarmentStyle,
   SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS,
-  SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS,
   SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS,
   stampSidewaysCardiganWorkingDraftFromPage,
 } from "../lib/patterns/sidewaysCardiganConstructionIdentity";
@@ -84,7 +84,7 @@ function clearStaleActiveProjectLink(): void {
   }
 }
 
-function currentChartRow(state: BuilderState): SidewaysCardiganWomenChartRow | null {
+function currentChartRow(state: BuilderState): SidewaysCardiganChartRow | null {
   if (!state.chartAudience || !state.selectedSize) return null;
   const rows = getSidewaysCardiganChartRowsForAudience(state.chartAudience);
   return rows.find((row) => normalizeChartRowSize(row) === state.selectedSize) ?? null;
@@ -153,7 +153,7 @@ function renderSizeTable(state: BuilderState): void {
   const nested = document.querySelector("[data-express-nested-size]");
   if (nested instanceof HTMLElement) nested.hidden = !state.chartAudience;
   const unit = getExpressUiUnit();
-  for (const group of SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS) {
+  for (const group of SIDEWAYS_CARDIGAN_CHART_GROUPS) {
     const section = document.querySelector(`[data-sideways-size-group="${group.audience}"]`);
     if (section instanceof HTMLElement) {
       section.hidden = state.chartAudience !== group.audience;
@@ -247,7 +247,7 @@ function renderFinishedBust(state: BuilderState): void {
     return;
   }
   el.hidden = false;
-  el.textContent = `Finished bust: ${formatInchesWithUnit(bust)}`;
+  el.textContent = `Finished bust/chest: ${formatInchesWithUnit(bust)}`;
 }
 
 function startingSizeSummary(state: BuilderState): string {
@@ -351,13 +351,10 @@ function refreshUi(state: BuilderState, openStep: number): void {
   setSummary("garmentStyle", SIDEWAYS_CARDIGAN_GARMENT_STYLE_LABELS[state.garmentStyle]);
   setSummary("selectedSize", startingSizeSummary(state));
   setSummary("fit", state.fit ? `${state.fit.charAt(0).toUpperCase()}${state.fit.slice(1)} fit` : "");
-  const sleeveSummary = [
-    state.sleeveDirection ? SIDEWAYS_CARDIGAN_SLEEVE_DIRECTION_LABELS[state.sleeveDirection] : "",
+  setSummary(
+    "sleeve",
     state.sleeveLengthChoice ? SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS[state.sleeveLengthChoice] : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  setSummary("sleeve", sleeveSummary);
+  );
 
   document.querySelectorAll<HTMLButtonElement>("[data-choice]").forEach((btn) => {
     const field = btn.getAttribute("data-field");
@@ -398,7 +395,7 @@ function refreshUi(state: BuilderState, openStep: number): void {
   syncExpressNeedleBlockVisibility(document, gaugeOk());
 }
 
-function selectSize(state: BuilderState, sz: string, audience: SidewaysCardiganWomenChartAudience): void {
+function selectSize(state: BuilderState, sz: string, audience: SidewaysCardiganChartAudience): void {
   if (state.chartAudience !== audience) {
     state.userEditedStyle = {};
     state.styleMeasurements = emptySidewaysCardiganStyleMeasurements();
@@ -452,8 +449,9 @@ function init(): void {
     }
     const sz = sizeRow.getAttribute("data-value")?.trim() ?? "";
     const audienceRaw = sizeRow.getAttribute("data-chart-audience");
-    if (!sz || (audienceRaw !== "misses" && audienceRaw !== "plus")) return;
-    selectSize(state, sz, audienceRaw);
+    const audience = parseSidewaysCardiganChartAudience(audienceRaw);
+    if (!sz || !audience) return;
+    selectSize(state, sz, audience);
     persist(state);
     openStep = 3;
     refreshUi(state, openStep);
@@ -479,8 +477,9 @@ function init(): void {
       refreshUi(state, openStep);
       return;
     }
-    if (field === "chartAudience" && (value === "misses" || value === "plus")) {
-      applySidewaysCardiganStartingChartSelection(state, value);
+    const chartAudience = parseSidewaysCardiganChartAudience(value);
+    if (field === "chartAudience" && chartAudience) {
+      applySidewaysCardiganStartingChartSelection(state, chartAudience);
       persist(state);
       openStep = 2;
       refreshUi(state, openStep);

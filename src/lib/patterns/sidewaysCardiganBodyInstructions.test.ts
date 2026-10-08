@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
 import { evenPositiveBodyStitches } from "./sleevelessBodyStitchMath";
-import { distributeTotalAcrossRows } from "./distributeTotalAcrossRows";
-import { calculateSidewaysCardiganBody } from "./sidewaysCardiganBodyCalc";
+import { calculateSlopeShaping } from "./legoBlocks/slopeShaping";
+import {
+  calculateSidewaysCardiganBody,
+  sidewaysPulloverFirstArmholeSideSeamFromCalc,
+} from "./sidewaysCardiganBodyCalc";
 import {
   buildSidewaysCardiganBodyInstructions,
   knittedArmholeSlitCount,
@@ -10,6 +14,15 @@ import {
   SIDEWAYS_CARDIGAN_BACK_NECK_EXCEEDS_LENGTH,
   SIDEWAYS_CARDIGAN_NON_POSITIVE_BACK_NECK_STITCHES,
   SIDEWAYS_CARDIGAN_NON_POSITIVE_STARTING_STITCHES,
+  SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE,
+  SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE,
+  sidewaysVNeckShapingActions,
+  formatSidewaysPulloverHoldContinueSentence,
+  formatSidewaysPulloverHoldGroupsSentence,
+  formatSidewaysPulloverNecklineCastOn,
+  formatSidewaysPulloverReturnGroupsSentence,
+  formatSidewaysPulloverShortRowBindOff,
+  formatSidewaysVNeckEveryOtherRowGroups,
 } from "./sidewaysCardiganBodyInstructions";
 import { SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS } from "./sidewaysCardiganBodyCalc";
 import type { SidewaysCardiganBodyCalcInput } from "./sidewaysCardiganBodyCalc";
@@ -25,6 +38,9 @@ const SAMPLE: SidewaysCardiganBodyCalcInput = {
   rowsPerInch: 7,
 };
 
+const SAMPLE_INCREASE_SEQUENCE = [4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3];
+const SAMPLE_DECREASE_SEQUENCE = [...SAMPLE_INCREASE_SEQUENCE].reverse();
+
 function instructionsOk(input: SidewaysCardiganBodyCalcInput = SAMPLE) {
   const result = buildSidewaysCardiganBodyInstructions(input);
   expect(result.ok).toBe(true);
@@ -36,7 +52,7 @@ describe("sideways cardigan body instruction model", () => {
   const instructions = instructionsOk();
   const { calc, firstV, secondV, landmarks, sectionRowCounts, steps } = instructions;
 
-  it("sets starting stitches to garment length minus V-neck depth", () => {
+  it("sets starting working stitches to garment length minus V-neck depth", () => {
     expect(instructions.startingFrontStitches).toBe(
       calc.garmentLengthStitches - calc.vNeckDepthStitches,
     );
@@ -46,19 +62,36 @@ describe("sideways cardigan body instruction model", () => {
     expect(instructions.startingFrontStitches).toBe(70);
   });
 
-  it("adds exactly the V-neck-depth stitches on the first V", () => {
-    const added = firstV.stitchesChangedOnRow.reduce((sum, n) => sum + n, 0);
-    expect(added).toBe(calc.vNeckDepthStitches);
-    expect(firstV.stitchesChangedOnRow).toEqual(
-      distributeTotalAcrossRows(calc.vNeckDepthStitches, calc.halfNeckRows),
+  it("uses calculateSlopeShaping for the first V and the reverse sequence for the second", () => {
+    const slope = calculateSlopeShaping(calc.vNeckDepthStitches, calc.halfNeckRows);
+    expect(slope.ok).toBe(true);
+    if (!slope.ok) throw new Error(slope.reason);
+    expect(slope.shapingActions).toBe(13);
+    expect(slope.rowInterval).toBe(2);
+    expect(slope.sequence).toEqual(SAMPLE_INCREASE_SEQUENCE);
+    expect(instructions.increaseSequence).toEqual(SAMPLE_INCREASE_SEQUENCE);
+    expect(instructions.decreaseSequence).toEqual(SAMPLE_DECREASE_SEQUENCE);
+    expect(firstV.stitchesChangedOnAction).toEqual(SAMPLE_INCREASE_SEQUENCE);
+    expect(secondV.stitchesChangedOnAction).toEqual(SAMPLE_DECREASE_SEQUENCE);
+    expect(firstV.stitchesChangedOnAction.reduce((sum, n) => sum + n, 0)).toBe(
+      calc.vNeckDepthStitches,
     );
   });
 
-  it("finishes the first V at full garment-length stitches", () => {
-    expect(firstV.startStitches).toBe(instructions.startingFrontStitches);
-    expect(firstV.endStitches).toBe(calc.garmentLengthStitches);
-    expect(firstV.stitchesAfterRow.at(-1)).toBe(calc.garmentLengthStitches);
-    expect(firstV.rows).toBe(calc.halfNeckRows);
+  it("returns held neckline stitches until all 110 needles are working", () => {
+    expect(firstV.startStitches).toBe(70);
+    expect(firstV.endStitches).toBe(110);
+    expect(firstV.rows).toBe(26);
+    expect(firstV.shapingActions).toBe(13);
+    expect(firstV.rowsBeforeFirstAction).toBe(2);
+    expect(firstV.actionRowCounters).toEqual([
+      2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26,
+    ]);
+    expect(firstV.actionRowCounters[0]).toBe(2);
+    expect(firstV.actionRowCounters.at(-1)).toBe(26);
+    expect(firstV.workingStitchesAfterAction.at(-1)).toBe(110);
+    expect(firstV.heldStitchesAfterAction.at(-1)).toBe(0);
+    expect(firstV.encloseHeldStitchesOnFinalRow).toBe(false);
   });
 
   it("keeps the four shoulder sections at identical row counts", () => {
@@ -66,6 +99,7 @@ describe("sideways cardigan body instruction model", () => {
     expect(sectionRowCounts.firstBackShoulder).toBe(sectionRowCounts.secondBackShoulder);
     expect(sectionRowCounts.secondBackShoulder).toBe(sectionRowCounts.secondFrontShoulder);
     expect(sectionRowCounts.firstFrontShoulder).toBe(calc.shoulders.firstFrontRows);
+    expect(sectionRowCounts.firstFrontShoulder).toBe(44);
   });
 
   it("uses stitch bind-off/cast-on for armholes and adds no armhole rows", () => {
@@ -97,29 +131,55 @@ describe("sideways cardigan body instruction model", () => {
     expect(castOn?.summary).toContain(String(calc.backNeckDepthStitches));
   });
 
-  it("uses twice the V-section rows for the straight back neck", () => {
+  it("uses twice the even V-section rows for the straight back neck", () => {
     const opening = steps.find((s) => s.id === "back-neck-opening");
     expect(opening?.rows).toBe(calc.backNeckOpeningRows);
-    expect(sectionRowCounts.backNeckOpening).toBe(calc.backNeckOpeningRows);
+    expect(sectionRowCounts.backNeckOpening).toBe(52);
     expect(sectionRowCounts.backNeckOpening).toBe(2 * sectionRowCounts.firstVNeck);
     expect(opening?.stitchesAfter).toBe(instructions.backNeckLiveStitches);
   });
 
-  it("makes the second V an exact reverse of the first", () => {
-    expect(secondV.stitchesChangedOnRow).toEqual([...firstV.stitchesChangedOnRow].reverse());
-    expect(secondV.startStitches).toBe(firstV.endStitches);
-    expect(secondV.endStitches).toBe(firstV.startStitches);
-    expect(secondV.rows).toBe(firstV.rows);
-    const removed = secondV.stitchesChangedOnRow.reduce((sum, n) => sum + n, 0);
-    expect(removed).toBe(calc.vNeckDepthStitches);
+  it("places the matching V into hold, then encloses wraps on the last two-row interval", () => {
+    expect(secondV.stitchesChangedOnAction).toEqual(SAMPLE_DECREASE_SEQUENCE);
+    expect(secondV.startStitches).toBe(110);
+    expect(secondV.endStitches).toBe(70);
+    expect(secondV.rowsBeforeFirstAction).toBe(0);
+    expect(secondV.actionRowCounters[0]).toBe(landmarks.startFinalVShaping);
+    expect(secondV.actionRowCounters.at(-1)).toBe(landmarks.endSecondVShaping - 2);
+    expect(secondV.actionRowCounters).toEqual([
+      254, 256, 258, 260, 262, 264, 266, 268, 270, 272, 274, 276, 278,
+    ]);
+    expect(secondV.workingStitchesAfterAction.at(-1)).toBe(70);
+    expect(secondV.heldStitchesAfterAction.at(-1)).toBe(40);
+    expect(secondV.encloseHeldStitchesOnFinalRow).toBe(true);
+    const secondVStep = steps.find((s) => s.id === "second-v-neck");
+    expect(secondVStep?.stitchesAfter).toBe(110);
+    expect(secondVStep?.rowCounterEnd).toBe(280);
+    expect(secondVStep?.summary).toMatch(/not RC 281/);
+    expect(secondVStep?.summary).toContain(SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE);
+    const finalBindOff = steps.find((s) => s.id === "bind-off-full-width");
+    expect(finalBindOff?.stitchesBefore).toBe(110);
+    expect(finalBindOff?.stitchesAfter).toBe(0);
+    expect(finalBindOff?.summary).toMatch(/Bind off all 110 stitches loosely/);
   });
 
-  it("ends the second V at the starting-front stitch count", () => {
-    expect(secondV.endStitches).toBe(instructions.startingFrontStitches);
-    expect(secondV.stitchesAfterRow.at(-1)).toBe(instructions.startingFrontStitches);
-    const finalBindOff = steps.find((s) => s.id === "bind-off-starting-front");
-    expect(finalBindOff?.stitchesBefore).toBe(instructions.startingFrontStitches);
-    expect(finalBindOff?.stitchesAfter).toBe(0);
+  it("starts the cardigan with scrap on, ravel cord, closed cast-on, and neckline in hold", () => {
+    expect(steps.map((s) => s.id).slice(0, 4)).toEqual([
+      "scrap-on-full-width",
+      "ravel-cord",
+      "closed-cast-on-full-width",
+      "hold-neckline",
+    ]);
+    expect(steps.find((s) => s.id === "scrap-on-full-width")?.stitchesAfter).toBe(110);
+    expect(steps.find((s) => s.id === "hold-neckline")?.stitchesAfter).toBe(70);
+    expect(steps.find((s) => s.id === "first-v-neck")?.summary).toContain(
+      SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE,
+    );
+    expect(
+      steps.some((s) =>
+        /\bCOL\b|\bCOR\b/.test(s.summary.replaceAll(SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE, "")),
+      ),
+    ).toBe(false);
   });
 
   it("locks the representative SAMPLE stitch counts, landmarks, and section rows", () => {
@@ -129,27 +189,29 @@ describe("sideways cardigan body instruction model", () => {
     expect(calc.backNeckDepthStitches).toBe(6);
     expect(calc.armholeDepthStitches).toBe(36);
     expect(calc.neckOpeningRows).toBe(49);
-    expect(calc.halfNeckRows).toBe(25);
+    expect(calc.rawHalfNeckRows).toBe(25);
+    expect(calc.halfNeckRows).toBe(26);
     expect(calc.frontRows).toBe(70);
     expect(calc.backRows).toBe(140);
-    expect(calc.shoulders.firstFrontRows).toBe(45);
+    expect(calc.shoulders.firstFrontRows).toBe(44);
     expect(calc.bust.actualTotalBustRows).toBe(280);
     expect(sectionRowCounts).toEqual({
-      firstVNeck: 25,
-      firstFrontShoulder: 45,
-      firstBackShoulder: 45,
-      backNeckOpening: 50,
-      secondBackShoulder: 45,
-      secondFrontShoulder: 45,
-      secondVNeck: 25,
+      firstVNeck: 26,
+      firstFrontShoulder: 44,
+      firstBackShoulder: 44,
+      backNeckOpening: 52,
+      secondBackShoulder: 44,
+      secondFrontShoulder: 44,
+      secondVNeck: 26,
     });
     expect(landmarks).toEqual({
-      endFirstVShaping: 25,
+      endFirstVShaping: 26,
       firstSideSeam: 70,
-      firstBackNeckEdge: 115,
-      secondBackNeckEdge: 165,
+      firstBackNeckEdge: 114,
+      secondBackNeckEdge: 166,
       secondSideSeam: 210,
-      startFinalVShaping: 255,
+      startFinalVShaping: 254,
+      endSecondVShaping: 280,
       finalBindOff: 280,
     });
   });
@@ -167,7 +229,7 @@ describe("sideways cardigan body instruction model", () => {
     expect(stepRows).toBe(calc.bust.actualTotalBustRows);
     expect(sectionRows).toBe(calc.bust.actualTotalBustRows);
     expect(landmarks.finalBindOff).toBe(calc.bust.actualTotalBustRows);
-    expect(steps).toHaveLength(13);
+    expect(landmarks.finalBindOff).not.toBe(281);
   });
 
   it("rejects impossible measurement combinations with a clear error", () => {
@@ -211,6 +273,58 @@ describe("sideways cardigan body instruction model", () => {
     expect(noShoulders.ok).toBe(false);
     if (noShoulders.ok) throw new Error("expected shoulder error");
     expect(noShoulders.error.code).toBe(SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS);
+
+    const notSlope = buildSidewaysCardiganBodyInstructions({
+      ...SAMPLE,
+      vNeckDepthInches: 2,
+    });
+    expect(notSlope.ok).toBe(false);
+    if (notSlope.ok) throw new Error("expected slope error");
+    expect(notSlope.error.code).toBe(SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE);
+    if (notSlope.error.code === SIDEWAYS_CARDIGAN_V_NECK_NOT_SLOPE) {
+      expect(notSlope.error.vNeckDepthStitches).toBe(10);
+      expect(notSlope.error.halfNeckRows).toBe(26);
+      expect(notSlope.error.shapingActions).toBe(13);
+    }
+    expect(notSlope.error.message).not.toMatch(/must exceed the even half-neck rows/i);
+  });
+
+  it("knits two First V-Neck rows before the first return-to-work action in the 68-stitch example", () => {
+    const result = buildSidewaysCardiganBodyInstructions({
+      garmentLengthInches: 17,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 40,
+      finishedUpperArmInches: 14,
+      neckOpeningWidthInches: 7,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 4,
+      rowsPerInch: 6,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    const { instructions: model } = result;
+    expect(model.calc.garmentLengthStitches).toBe(68);
+    expect(model.calc.vNeckDepthStitches).toBe(20);
+    expect(model.startingFrontStitches).toBe(48);
+    expect(model.firstV.rows).toBe(22);
+    expect(model.firstV.shapingActions).toBe(11);
+    expect(model.increaseSequence).toEqual([2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1]);
+    expect(model.firstV.rowsBeforeFirstAction).toBe(2);
+    expect(model.firstV.actionRowCounters[0]).toBe(2);
+    expect(model.firstV.actionRowCounters.at(-1)).toBe(22);
+    expect(model.firstV.actionRowCounters).toEqual([
+      2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22,
+    ]);
+    expect(model.firstV.workingStitchesAfterAction.at(-1)).toBe(68);
+    expect(model.firstV.heldStitchesAfterAction.at(-1)).toBe(0);
+    expect(model.landmarks.endFirstVShaping).toBe(22);
+    expect(model.landmarks.endFirstVShaping).toBe(model.sectionRowCounts.firstVNeck);
+    expect(model.landmarks.finalBindOff).toBe(model.calc.bust.actualTotalBustRows);
+    expect(model.steps.find((s) => s.id === "first-v-neck")?.rowCounterEnd).toBe(22);
+    expect(model.steps.find((s) => s.id === "first-front-shoulder")?.rowCounterStart).toBe(22);
+    expect(model.secondV.rowsBeforeFirstAction).toBe(0);
+    expect(model.secondV.actionRowCounters[0]).toBe(model.landmarks.startFinalVShaping);
+    expect(model.secondV.actionRowCounters.at(-1)).toBe(model.landmarks.endSecondVShaping - 2);
   });
 });
 
@@ -240,7 +354,10 @@ describe("sideways pullover body instruction model", () => {
   it("defaults missing garment style to cardigan and keeps the cardigan sequence", () => {
     expect(cardigan.garmentStyle).toBe("cardigan");
     expect(cardigan.steps.map((s) => s.id)).toEqual([
-      "cast-on-starting-front",
+      "scrap-on-full-width",
+      "ravel-cord",
+      "closed-cast-on-full-width",
+      "hold-neckline",
       "first-v-neck",
       "first-front-shoulder",
       "first-armhole-slit",
@@ -252,7 +369,7 @@ describe("sideways pullover body instruction model", () => {
       "second-armhole-slit",
       "second-front-shoulder",
       "second-v-neck",
-      "bind-off-starting-front",
+      "bind-off-full-width",
     ]);
     expect(slitIds(cardigan.steps)).toEqual(["first-armhole-slit", "second-armhole-slit"]);
   });
@@ -264,7 +381,9 @@ describe("sideways pullover body instruction model", () => {
     expect(castOn?.summary).toMatch(/side seam/i);
     expect(bindOff?.stitchesBefore).toBe(fullWidth);
     expect(bindOff?.stitchesAfter).toBe(0);
-    expect(bindOff?.summary).toMatch(/original side seam/i);
+    expect(bindOff?.summary).toMatch(/bind off \d+ armhole stitches/i);
+    expect(bindOff?.summary).toMatch(/Scrap off the remaining \d+ side-seam stitches/i);
+    expect(bindOff?.summary).not.toMatch(/original side seam/i);
     expect(pullover.steps[0]?.id).toBe("cast-on-side-seam");
     expect(pullover.steps.at(-1)?.id).toBe("bind-off-side-seam");
   });
@@ -272,17 +391,47 @@ describe("sideways pullover body instruction model", () => {
   it("shapes the pullover down to the V point and back to full length", () => {
     expect(pullover.firstV.startStitches).toBe(fullWidth);
     expect(pullover.firstV.endStitches).toBe(vPoint);
-    expect(pullover.firstV.stitchesAfterRow.at(-1)).toBe(vPoint);
+    expect(pullover.firstV.workingStitchesAfterAction.at(-1)).toBe(vPoint);
+    expect(pullover.firstV.heldStitchesAfterAction.at(-1)).toBe(40);
     expect(pullover.secondV.startStitches).toBe(vPoint);
     expect(pullover.secondV.endStitches).toBe(fullWidth);
-    expect(pullover.secondV.stitchesAfterRow.at(-1)).toBe(fullWidth);
-    const added = pullover.secondV.stitchesChangedOnRow.reduce((sum, n) => sum + n, 0);
-    const removed = pullover.firstV.stitchesChangedOnRow.reduce((sum, n) => sum + n, 0);
-    expect(removed).toBe(pullover.calc.vNeckDepthStitches);
-    expect(added).toBe(pullover.calc.vNeckDepthStitches);
-    expect(pullover.secondV.stitchesChangedOnRow).toEqual(
-      [...pullover.firstV.stitchesChangedOnRow].reverse(),
+    expect(pullover.secondV.workingStitchesAfterAction.at(-1)).toBe(fullWidth);
+    expect(pullover.secondV.heldStitchesAfterAction.at(-1)).toBe(0);
+    expect(pullover.firstV.encloseHeldStitchesOnFinalRow).toBe(false);
+    expect(pullover.secondV.encloseHeldStitchesOnFinalRow).toBe(false);
+    expect(pullover.increaseSequence).toEqual(SAMPLE_INCREASE_SEQUENCE);
+    expect(pullover.decreaseSequence).toEqual(SAMPLE_DECREASE_SEQUENCE);
+    expect(pullover.firstV.stitchesChangedOnAction).toEqual(SAMPLE_DECREASE_SEQUENCE);
+    expect(pullover.secondV.stitchesChangedOnAction).toEqual(SAMPLE_INCREASE_SEQUENCE);
+    expect(pullover.steps.find((s) => s.id === "first-v-neck")?.stitchesBefore).toBe(fullWidth);
+    expect(pullover.steps.find((s) => s.id === "first-v-neck")?.stitchesAfter).toBe(vPoint);
+    expect(pullover.steps.find((s) => s.id === "second-v-neck")?.stitchesBefore).toBe(vPoint);
+    expect(pullover.steps.find((s) => s.id === "second-v-neck")?.stitchesAfter).toBe(fullWidth);
+    expect(pullover.pulloverCenterV).toEqual({
+      boundOffNecklineStitches: pullover.calc.vNeckDepthStitches,
+      castOnNecklineStitches: pullover.calc.vNeckDepthStitches,
+      bodyStitchesInWork: vPoint,
+      rowsBeforeFirstIncrease: 2,
+    });
+    expect(cardigan.pulloverCenterV).toBeNull();
+    expect(cardigan.secondV.encloseHeldStitchesOnFinalRow).toBe(true);
+    const bindOffNeck = pullover.steps.find((s) => s.id === "bind-off-first-neckline");
+    const castOnNeck = pullover.steps.find((s) => s.id === "cast-on-second-neckline");
+    expect(bindOffNeck?.rows).toBe(0);
+    expect(castOnNeck?.rows).toBe(0);
+    expect(bindOffNeck?.stitchesAfter).toBe(vPoint);
+    expect(castOnNeck?.stitchesAfter).toBe(vPoint);
+    expect(pullover.firstV.rows).toBe(pullover.calc.halfNeckRows);
+    expect(pullover.secondV.rows).toBe(pullover.calc.halfNeckRows);
+    expect(pullover.firstV.rowsBeforeFirstAction).toBe(0);
+    expect(pullover.secondV.rowsBeforeFirstAction).toBe(2);
+    expect(pullover.firstV.actionRowCounters.at(-1)).toBe(
+      pullover.landmarks.endFirstVShaping - pullover.firstV.rowInterval,
     );
+    expect(pullover.secondV.actionRowCounters[0]).toBe(
+      pullover.landmarks.endFirstVShaping + pullover.secondV.rowsBeforeFirstAction,
+    );
+    expect(pullover.secondV.actionRowCounters.at(-1)).toBe(pullover.landmarks.endSecondVShaping);
   });
 
   it("gives the pullover exactly one knitted armhole slit and the cardigan two", () => {
@@ -307,12 +456,13 @@ describe("sideways pullover body instruction model", () => {
   it("locks pullover cumulative RC landmarks for the 40/7/7 example", () => {
     expect(pullover.sectionRowCounts).toEqual(cardigan.sectionRowCounts);
     expect(pullover.landmarks).toEqual({
-      startFinalVShaping: 45,
+      startFinalVShaping: 44,
       endFirstVShaping: 70,
+      endSecondVShaping: 96,
       firstSideSeam: 0,
       secondSideSeam: 140,
-      firstBackNeckEdge: 185,
-      secondBackNeckEdge: 235,
+      firstBackNeckEdge: 184,
+      secondBackNeckEdge: 236,
       finalBindOff: 280,
     });
   });
@@ -333,6 +483,31 @@ describe("sideways pullover body instruction model", () => {
     expect(pulloverRows).toBe(pullover.calc.bust.actualTotalBustRows);
   });
 
+  it("tells the knitter to place the first-armhole marker on the cast-on and bind-off edges", () => {
+    const seam = sidewaysPulloverFirstArmholeSideSeamFromCalc(pullover.calc);
+    expect(seam?.stitchesFromNeckEdge).toBe(pullover.calc.firstArmholeDepthStitches);
+    const castOn = pullover.steps.find((s) => s.id === "cast-on-side-seam");
+    const bindOff = pullover.steps.find((s) => s.id === "bind-off-side-seam");
+    const place = `Place a marker ${seam?.stitchesFromNeckEdge} stitches from the neck edge`;
+    expect(castOn?.summary).toContain(place);
+    expect(castOn?.summary).toMatch(/form the armhole opening and remain unseamed/i);
+    expect(castOn?.summary).toMatch(/are the side-seam stitches/i);
+    expect(bindOff?.summary).toMatch(
+      new RegExp(`bind off ${seam?.stitchesFromNeckEdge} armhole stitches`, "i"),
+    );
+    expect(bindOff?.summary).toMatch(
+      new RegExp(`Scrap off the remaining ${seam?.stitchesFromHemEdge} side-seam stitches`, "i"),
+    );
+    expect(bindOff?.summary).not.toMatch(/Place a marker/i);
+    const html = renderSidewaysCardiganBodySequenceHtml(pullover);
+    expect(html.match(new RegExp(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`, "g"))).toHaveLength(1);
+    expect(html).toContain(`data-glossary-id="${PLACE_MARKER_GLOSSARY_ID}"`);
+    expect(html).toMatch(/seam from the hem to the markers/i);
+    expect(html).not.toMatch(/place markers/i);
+    expect(cardigan.steps.some((s) => /Place a marker/i.test(s.summary))).toBe(false);
+    expect(renderSidewaysCardiganBodySequenceHtml(cardigan)).not.toContain("Place a marker");
+  });
+
   it("does not tell the knitter to graft or seam the center front", () => {
     const html = renderSidewaysCardiganBodySequenceHtml(pullover);
     expect(html).toMatch(/starts at a side seam/i);
@@ -343,5 +518,225 @@ describe("sideways pullover body instruction model", () => {
     const cardiganHtml = renderSidewaysCardiganBodySequenceHtml(cardigan);
     expect(cardiganHtml).toMatch(/starts at center front/i);
     expect(cardiganHtml).toMatch(/two knitted armhole slits/i);
+  });
+
+  it("binds off the first pullover neckline and casts on a new second side", () => {
+    const html = renderSidewaysCardiganBodySequenceHtml(pullover);
+    const held = pullover.firstV.heldStitchesAfterAction.at(-1);
+    const shaped = pullover.decreaseSequence.reduce((sum, stitches) => sum + stitches, 0);
+    const returned = pullover.increaseSequence.reduce((sum, stitches) => sum + stitches, 0);
+    expect(shaped).toBe(pullover.calc.vNeckDepthStitches);
+    expect(returned).toBe(pullover.calc.vNeckDepthStitches);
+    expect(held).toBe(pullover.calc.vNeckDepthStitches);
+    expect(pullover.pulloverCenterV?.castOnNecklineStitches).toBe(pullover.calc.vNeckDepthStitches);
+    expect(pullover.pulloverCenterV?.boundOffNecklineStitches).toBe(held);
+
+    const holdSentence = formatSidewaysPulloverHoldGroupsSentence(pullover.decreaseSequence);
+    const returnSentence = formatSidewaysPulloverReturnGroupsSentence(pullover.increaseSequence);
+    const castOnSentence = formatSidewaysPulloverNecklineCastOn({
+      castOnStitches: pullover.calc.vNeckDepthStitches,
+      bodyStitchesInWork: pullover.firstV.endStitches,
+    });
+    expect(holdSentence).toBe(
+      "Place 3 stitches into hold at the neckline edge every other row 12 times, then 4 stitches into hold once.",
+    );
+    expect(returnSentence).toBe(
+      "Bring 4 stitches into work once, then 3 stitches into work every other row 12 times.",
+    );
+
+    const firstAt = html.indexOf("Start with");
+    const shapeAt = html.indexOf("Shape the V-neck");
+    const bindAt = html.indexOf("Bind off the");
+    const castAt = html.indexOf("Work a closed cast-on");
+    const secondAt = html.indexOf("Knit 2 rows over the");
+    expect(firstAt).toBeGreaterThan(-1);
+    expect(shapeAt).toBeGreaterThan(firstAt);
+    expect(bindAt).toBeGreaterThan(shapeAt);
+    expect(castAt).toBeGreaterThan(bindAt);
+    expect(secondAt).toBeGreaterThan(castAt);
+
+    const firstSide = html.slice(firstAt, bindAt);
+    expect(firstSide).toContain(`Start with ${fullWidth} stitches in work.`);
+    expect(firstSide).toContain(holdSentence);
+    expect(firstSide).toContain("Wrap the yarn at each turn to prevent holes.");
+    expect(firstSide).toContain("The final shaping action includes its 2-row pair.");
+    expect(firstSide).toContain(
+      `At the V point, ${held} neckline stitches are in hold and ${vPoint} body stitches remain in work.`,
+    );
+    expect(firstSide).not.toMatch(/decreas/i);
+    expect(firstSide).not.toMatch(/increas/i);
+    expect(firstSide).not.toContain("Optional");
+
+    expect(html).toContain(formatSidewaysPulloverShortRowBindOff(held!));
+    expect(html).toContain(`The ${vPoint} body stitches remain on the machine.`);
+    expect(html).toContain(castOnSentence);
+    expect(html).toContain(
+      `Knit 2 rows over the ${vPoint} body stitches in work. Wrap at the first turn.`,
+    );
+    expect(html).toContain(returnSentence);
+    expect(html).toContain(
+      `${returned} new neckline stitches have been brought into work. 0 neckline stitches remain in hold, and ${fullWidth} stitches are in work.`,
+    );
+    expect(html).toContain(`Continue with the second front shoulder over all ${fullWidth} stitches.`);
+    expect(html.indexOf(returnSentence)).toBeGreaterThan(secondAt);
+    expect(html).not.toMatch(/increasing at the neckline/i);
+    expect(html).not.toContain("return all held stitches");
+    expect(html).not.toContain("enclose the wraps");
+
+    expect(html).not.toMatch(/\[\d+(?:,\s*\d+)+\]/);
+    expect(html).not.toMatch(/slope sequence/i);
+    expect(html).not.toMatch(/\d+-action/);
+    expect(html).not.toMatch(/\breversed\b/i);
+    expect(html).not.toMatch(/\bCOL\b|\bCOR\b/);
+    expect(html).not.toContain("Do not assume a fixed COL or COR");
+    expect(html).not.toContain(SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE);
+    expect(html).not.toContain("→");
+
+    const cardiganHtml = renderSidewaysCardiganBodySequenceHtml(cardigan);
+    expect(cardiganHtml).toContain("slope sequence");
+    expect(cardiganHtml).toContain(SIDEWAYS_V_NECK_SHAPING_CARRIAGE_NOTE);
+    expect(cardiganHtml).toContain("return all held stitches to work");
+    expect(cardiganHtml).toContain("enclose the wraps");
+    expect(cardiganHtml).not.toContain("Shape the V-neck");
+    expect(cardiganHtml).not.toContain("new neckline stitches");
+  });
+
+  it("keeps a chart-depth Pullover BODY when V-neck stitches are not greater than half-neck rows", () => {
+    const chartDepth: SidewaysCardiganBodyCalcInput = {
+      garmentLengthInches: 25,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 46,
+      finishedUpperArmInches: 14.5,
+      neckOpeningWidthInches: 7.5,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    };
+    const calcResult = calculateSidewaysCardiganBody(chartDepth);
+    expect(calcResult.ok).toBe(true);
+    if (!calcResult.ok) throw new Error(calcResult.error.message);
+    const { calc } = calcResult;
+    expect(calc.vNeckDepthStitches).toBe(26);
+    expect(calc.rawHalfNeckRows).toBe(26);
+    expect(calc.halfNeckRows).toBe(26);
+    expect(sidewaysVNeckShapingActions(calc.halfNeckRows)).toBe(13);
+    expect(calculateSlopeShaping(calc.vNeckDepthStitches, calc.halfNeckRows).ok).toBe(false);
+
+    const result = buildSidewaysCardiganBodyInstructions(chartDepth, "pullover");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.instructions.increaseSequence).toEqual(Array(13).fill(2));
+    expect(result.instructions.decreaseSequence).toEqual(Array(13).fill(2));
+    const html = renderSidewaysCardiganBodySequenceHtml(result.instructions);
+    expect(html).toContain("sideways-body-sequence");
+    expect(html).toMatch(/starts at a side seam/i);
+    expect(html).toContain(
+      "Place 2 stitches into hold at the neckline edge every other row 13 times.",
+    );
+    expect(html).toContain(
+      `At the V point, ${result.instructions.calc.vNeckDepthStitches} neckline stitches are in hold and ${result.instructions.firstV.endStitches} body stitches remain in work.`,
+    );
+    expect(html).toContain(
+      formatSidewaysPulloverShortRowBindOff(result.instructions.calc.vNeckDepthStitches),
+    );
+    expect(html).toContain(
+      formatSidewaysPulloverNecklineCastOn({
+        castOnStitches: result.instructions.calc.vNeckDepthStitches,
+        bodyStitchesInWork: result.instructions.startingFrontStitches,
+      }),
+    );
+    expect(html).toContain("Bring 2 stitches into work every other row 13 times.");
+    expect(html).toContain(
+      `Knit 2 rows over the ${result.instructions.startingFrontStitches} body stitches in work.`,
+    );
+    expect(result.instructions.pulloverCenterV?.castOnNecklineStitches).toBe(26);
+    expect(result.instructions.pulloverCenterV?.bodyStitchesInWork).toBe(
+      result.instructions.startingFrontStitches,
+    );
+    expect(result.instructions.firstV.rowsBeforeFirstAction).toBe(0);
+    expect(result.instructions.secondV.rowsBeforeFirstAction).toBe(2);
+    expect(result.instructions.firstV.encloseHeldStitchesOnFinalRow).toBe(false);
+    expect(result.instructions.secondV.encloseHeldStitchesOnFinalRow).toBe(false);
+    expect(result.instructions.firstV.rows).toBe(26);
+    expect(result.instructions.secondV.rows).toBe(26);
+    expect(result.instructions.secondV.heldStitchesAfterAction.at(-1)).toBe(0);
+    expect(result.instructions.secondV.endStitches).toBe(result.instructions.calc.garmentLengthStitches);
+    expect(result.instructions.firstV.startStitches).toBe(result.instructions.calc.garmentLengthStitches);
+    expect(result.instructions.firstV.endStitches).toBe(result.instructions.startingFrontStitches);
+    expect(result.instructions.secondV.startStitches).toBe(result.instructions.startingFrontStitches);
+    expect(result.instructions.secondV.endStitches).toBe(result.instructions.calc.garmentLengthStitches);
+    expect(html).not.toMatch(/\[\d+(?:,\s*\d+)+\]/);
+    expect(html).not.toMatch(/\bCOL\b|\bCOR\b/);
+  });
+
+  it("builds Cardigan short-row V shaping from 26 stitches across 13 EOR actions, not 26 rows", () => {
+    const sueCardigan: SidewaysCardiganBodyCalcInput = {
+      garmentLengthInches: 25,
+      vNeckDepthInches: 5,
+      finishedBustCircumferenceInches: 46,
+      finishedUpperArmInches: 14.5,
+      neckOpeningWidthInches: 7.5,
+      backNeckDepthInches: 1,
+      stitchesPerInch: 5,
+      rowsPerInch: 7,
+    };
+    const calcResult = calculateSidewaysCardiganBody(sueCardigan);
+    expect(calcResult.ok).toBe(true);
+    if (!calcResult.ok) throw new Error(calcResult.error.message);
+    expect(calcResult.calc.vNeckDepthStitches).toBe(26);
+    expect(calcResult.calc.rawHalfNeckRows).toBe(26);
+    expect(calcResult.calc.halfNeckRows).toBe(26);
+    expect(sidewaysVNeckShapingActions(26)).toBe(13);
+    expect(calculateSlopeShaping(26, 26).ok).toBe(false);
+
+    const result = buildSidewaysCardiganBodyInstructions(sueCardigan, "cardigan");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.instructions.garmentStyle).toBe("cardigan");
+    expect(result.instructions.firstV.shapingActions).toBe(13);
+    expect(result.instructions.increaseSequence).toEqual(Array(13).fill(2));
+    expect(result.instructions.decreaseSequence).toEqual(Array(13).fill(2));
+  });
+
+  it("groups every calculated decrease amount, including amounts other than 1 and 2", () => {
+    expect(formatSidewaysVNeckEveryOtherRowGroups([1, 1, 2, 2, 2, 5])).toEqual([
+      "1 stitch every other row 2 times.",
+      "2 stitches every other row 3 times.",
+      "5 stitches every other row 1 time.",
+    ]);
+    expect(formatSidewaysVNeckEveryOtherRowGroups([2, 1, 2])).toEqual([
+      "2 stitches every other row 1 time.",
+      "1 stitch every other row 1 time.",
+      "2 stitches every other row 1 time.",
+    ]);
+    expect(formatSidewaysVNeckEveryOtherRowGroups([1])).toEqual(["1 stitch every other row 1 time."]);
+    expect(formatSidewaysPulloverHoldGroupsSentence([1, 1, 2, 2, 2, 5])).toBe(
+      "Place 1 stitch into hold at the neckline edge every other row 2 times, then 2 stitches into hold every other row 3 times, then 5 stitches into hold once.",
+    );
+    expect(formatSidewaysPulloverHoldGroupsSentence([2, 1, 2])).toBe(
+      "Place 2 stitches into hold at the neckline edge once, then 1 stitch into hold once, then 2 stitches into hold once.",
+    );
+    expect(formatSidewaysPulloverHoldGroupsSentence([2, 2, 2])).toBe(
+      "Place 2 stitches into hold at the neckline edge every other row 3 times.",
+    );
+    expect(formatSidewaysPulloverReturnGroupsSentence([4, 3, 3, 3])).toBe(
+      "Bring 4 stitches into work once, then 3 stitches into work every other row 3 times.",
+    );
+    expect(formatSidewaysPulloverReturnGroupsSentence([2, 2, 2])).toBe(
+      "Bring 2 stitches into work every other row 3 times.",
+    );
+    expect(
+      formatSidewaysPulloverNecklineCastOn({ castOnStitches: 1, bodyStitchesInWork: 1 }),
+    ).toBe(
+      "Work a closed cast-on with garment yarn for 1 new neckline stitch on the empty neckline needles beside the 1 stitch in work. Put these new stitches into hold before knitting them.",
+    );
+    expect(
+      formatSidewaysPulloverHoldContinueSentence({ heldStitches: 1, stitchesRemaining: 1 }),
+    ).toBe("Continue until 1 neckline stitch is in hold and 1 stitch remains in work.");
+    expect(
+      formatSidewaysPulloverHoldContinueSentence({ heldStitches: 40, stitchesRemaining: 70 }),
+    ).toBe("Continue until 40 neckline stitches are in hold and 70 stitches remain in work.");
+    expect(formatSidewaysPulloverShortRowBindOff(1)).toBe("Bind off the 1 held neckline stitch.");
+    expect(formatSidewaysPulloverShortRowBindOff(40)).toBe("Bind off the 40 held neckline stitches.");
   });
 });

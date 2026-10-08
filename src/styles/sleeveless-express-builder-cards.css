@@ -280,6 +280,17 @@
   margin-top: 0;
 }
 
+/* Sideways starting-size charts: five families. Other builders keep the four-column Who row. */
+.express-page .sideways-chart-picker.express-options--who-text.hat-length-picker__grid {
+  grid-template-columns: repeat(auto-fit, minmax(6.75rem, 1fr));
+}
+
+@media (min-width: 860px) {
+  .express-page .sideways-chart-picker.express-options--who-text.hat-length-picker__grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
 /* Shape row — matches SleevelessGarmentDesignStep .sg-shape-grid behavior */
 .express-page .sg-shape-grid {
   width: 100%;

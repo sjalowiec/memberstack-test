@@ -238,8 +238,10 @@ export type SidewaysCardiganSleeveCalcInputInspection = {
 };
 
 /**
- * Resolve cuff-up / top-down sleeve calc inputs from a working draft.
- * Returns `input: null` when the saved sleeve direction is sideways (not substituted).
+ * Resolve sleeve measurements from a working draft.
+ * A stored sideways direction does not block the input. The calc direction is
+ * cuff-up unless the stored direction is top-down. Finished-pattern display
+ * still applies the knitting-time Cuff Up / Top Down choice on top of this input.
  */
 export function inspectSidewaysCardiganSleeveCalcInputFromPattern(
   patternData: Record<string, unknown>,
@@ -250,9 +252,8 @@ export function inspectSidewaysCardiganSleeveCalcInputFromPattern(
   const style = section(patternData.style);
   const sleeveDirection =
     parseSidewaysCardiganSleeveDirection(style.sleeveDirection) ?? "cuff-up";
-  if (sleeveDirection === "sideways") {
-    return { input: null, missing: [], sleeveDirection };
-  }
+  const calcDirection: SidewaysCardiganConventionalSleeveDirection =
+    sleeveDirection === "top-down" ? "top-down" : "cuff-up";
 
   const fit = section(patternData.fit);
   const sm = section(fit.selectedMeasurements);
@@ -282,13 +283,13 @@ export function inspectSidewaysCardiganSleeveCalcInputFromPattern(
   if (sleeveLength === undefined) missing.push("sleeve length");
   if (finishedWrist === undefined) missing.push("wrist");
 
-  if (missing.length > 0 || !isSidewaysCardiganConventionalSleeveDirection(sleeveDirection)) {
+  if (missing.length > 0) {
     return { input: null, missing, sleeveDirection };
   }
 
   return {
     input: {
-      direction: sleeveDirection,
+      direction: calcDirection,
       finishedUpperArmInches,
       finishedWristInches: finishedWrist,
       sleeveLengthInches: sleeveLength,

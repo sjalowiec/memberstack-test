@@ -320,6 +320,44 @@
     font-size: 1.05em;
   }
 
+  .sideways-band-counts {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #111827;
+  }
+
+  .sideways-band-counts__action {
+    display: block;
+  }
+
+  .sideways-finishing-shoulders__title {
+    margin: 0.15rem 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sideways-finishing-shoulders p,
+  .sideways-finishing-shoulders li {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .sideways-finishing-shoulders ol {
+    margin: 0.35rem 0 0;
+    padding-left: 1.2rem;
+  }
+
+  #pattern-content .pattern-help-link__pending {
+    font-weight: 700;
+    color: #4b5563;
+  }
+
   /*
    * Row Counter Reset — required action marker (NOT a pattern tip).
    * Intentionally distinct from `.pattern-tip`: full accent border, accent
@@ -390,6 +428,18 @@
     white-space: nowrap;
   }
 
+  .sleeveless-pattern-sts--census {
+    white-space: normal;
+    max-width: 12.5rem;
+    line-height: 1.3;
+  }
+
+  .sleeveless-pattern-sts__final {
+    display: block;
+    margin-top: 0.2rem;
+    font-weight: 600;
+  }
+
   @media (max-width: 560px) {
     .sleeveless-pattern-intro {
       grid-template-columns: minmax(0, 1fr);
@@ -446,25 +496,47 @@
     );
   }
 
-  /* Document-outline style section navigation (table of contents, not a button row). */
+  /* Shared sticky pattern navigation: Top + section links + pattern actions. */
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav {
     position: sticky;
     top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 4px);
     z-index: 24;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
     margin: 0 0 0.75rem;
     padding: 0.38rem 0 0.42rem;
     background: #fff;
     border-bottom: 1px solid rgba(82, 104, 45, 0.2);
     box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sleeveless-pattern-page .saved-pattern-sticky-nav__top,
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions {
+    flex: 0 0 auto;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__actions:empty {
+    display: none;
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-inpage-nav__track {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.05rem 0.15rem;
+    min-width: 0;
     max-width: 52rem;
-    margin: 0 auto;
+    margin: 0;
     padding: 0 0.15rem;
   }
 
@@ -726,9 +798,20 @@
     cursor: not-allowed;
   }
 
+  .sleeveless-pattern-page [data-saved-pattern-header] {
+    scroll-margin-top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 8px);
+  }
+
+  html[data-saved-pattern-mode="readonly"] [data-testid="button-edit-pattern"],
+  body[data-saved-pattern-mode="readonly"] [data-testid="button-edit-pattern"] {
+    display: none !important;
+  }
+
   #pattern-content .pattern-section,
   #pattern-content .pattern-subsection,
-  #pattern-content .sock-pattern-section {
+  #pattern-content .sock-pattern-section,
+  #pattern-content .hat-pattern-section,
+  #pattern-content .sideways-body-sequence > li[id] {
     scroll-margin-top: calc(
       var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + var(--pattern-inpage-nav-height, 3.35rem)
     );

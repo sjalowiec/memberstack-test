@@ -22,7 +22,7 @@ import {
 } from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
 import { SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_LABELS } from "../../../lib/patterns/sidewaysCardiganConstructionIdentity";
-import { SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
+import { SIDEWAYS_CARDIGAN_CHART_GROUPS } from "../../../lib/patterns/sidewaysCardiganSizeCharts";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/sideways-cardigan/builder");
 
@@ -52,7 +52,7 @@ const expressNavSteps = [
 
 <Layout
   title="Sideways V-Neck Sweater Pattern Builder"
-  description="Create a sideways-knit V-neck sweater pattern from Misses and Women's sizing charts."
+  description="Create a sideways-knit V-neck sweater pattern from Misses, Women's, Men's, Kids', and Baby sizing charts."
   patternWorkspace={true}
 >
   <SleevelessPatternMemberGate>
@@ -119,8 +119,7 @@ const expressNavSteps = [
             </div>
             <p class="pattern-subtext">{EXPRESS_BUILDER_INTRO_SUBTEXT}</p>
             <p class="pattern-subtext">
-              A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and a
-              straight back neck.
+              A V-neck sweater knitted sideways in one piece, with drop-shoulder armholes and shaped front and back necklines.
             </p>
           </header>
 
@@ -216,7 +215,7 @@ const expressNavSteps = [
                       aria-labelledby="express-step-2-title"
                     >
                       {
-                        SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((group) => (
+                        SIDEWAYS_CARDIGAN_CHART_GROUPS.map((group) => (
                           <button
                             type="button"
                             class="hat-length-picker__option express-who-card"
@@ -248,7 +247,7 @@ const expressNavSteps = [
                       <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
                         <div class="express-size-table-wrap">
                           {
-                            SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((group) => (
+                            SIDEWAYS_CARDIGAN_CHART_GROUPS.map((group) => (
                               <section
                                 class="sideways-size-group"
                                 data-sideways-size-group={group.audience}
@@ -305,7 +304,7 @@ const expressNavSteps = [
                   </p>
                   <div class="express-acc__body" id="express-acc-panel-3" role="region" hidden>
                     <p class="express-size-instruction">
-                      Your selected fit adds ease to the standard body measurements. The finished bust
+                      Your selected fit adds ease to the standard body measurements. The finished bust/chest
                       updates when you choose close, standard, or relaxed.
                     </p>
                     <p class="express-size-instruction" data-sideways-finished-bust hidden></p>
@@ -335,7 +334,7 @@ const expressNavSteps = [
                   </div>
                 </section>
 
-                <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="sleeveDirection sleeveLength">
+                <section class="express-acc express-acc--locked" data-express-step="4" data-express-field="sleeveLength">
                   <div
                     class="express-acc__header"
                     data-express-header
@@ -347,7 +346,7 @@ const expressNavSteps = [
                     <button type="button" class="express-acc__chevron" data-express-chevron tabindex="-1">▾</button>
                     <div class="express-acc__header-main">
                       <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                      <h2 class="express-acc__title" id="express-step-4-title">Choose your sleeves</h2>
+                      <h2 class="express-acc__title" id="express-step-4-title">Choose your sleeve length</h2>
                       <span class="express-acc__value" data-express-summary="sleeve"></span>
                     </div>
                   </div>
@@ -356,24 +355,6 @@ const expressNavSteps = [
                     <span class="express-acc__locked-msg">Finish the previous step to continue.</span>
                   </p>
                   <div class="express-acc__body" id="express-acc-panel-4" role="region" hidden>
-                    <div class="express-style-group">
-                      <h3 class="express-style-sublabel" id="express-sleeve-direction-label">Sleeve direction</h3>
-                      <p class="express-size-instruction">
-                        Saved for later sleeve instructions. Sideways sleeves keep self-striping yarn
-                        vertical, matching the body.
-                      </p>
-                      <div class="hat-length-picker__grid sg-fit-preference-grid" role="group" aria-labelledby="express-sleeve-direction-label">
-                        <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="cuff-up" aria-pressed="false">
-                          <span class="hat-length-picker__option-label">Cuff up</span>
-                        </button>
-                        <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="top-down" aria-pressed="false">
-                          <span class="hat-length-picker__option-label">Top down</span>
-                        </button>
-                        <button type="button" class="hat-length-picker__option sg-fit-preference-option" data-choice data-field="sleeveDirection" data-value="sideways" aria-pressed="false">
-                          <span class="hat-length-picker__option-label">Sideways</span>
-                        </button>
-                      </div>
-                    </div>
                     <div class="express-style-group ds-sleeve-length" data-sideways-sleeve-length>
                       <h3 class="express-style-sublabel" id="express-sleeve-length-label">Sleeve length</h3>
                       <div class="ds-sleeve-length__grid hat-length-picker__grid hat-brim-picker__grid" role="group" aria-labelledby="express-sleeve-length-label">

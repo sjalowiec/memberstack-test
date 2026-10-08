@@ -5,11 +5,10 @@
  * Customer-facing name is Sideways Knit Sweater (cardigan and pullover).
  * Internal routes and system IDs remain `sideways-cardigan`.
  *
- * Sleeve copy is limited to generated options: cuff-up and top-down, with
- * long / 3/4 / elbow / short lengths. Sideways sleeve knitting is not yet
- * connected and must not be claimed.
+ * The builder asks for sleeve length only. Cuff-up and top-down instructions
+ * are both on the finished pattern. Sideways sleeve knitting is not offered here.
  *
- * Production hosts still block every `/patterns/sideways-cardigan` route.
+ * Production hosts serve every `/patterns/sideways-cardigan` route.
  */
 
 import { PATTERNS_LANDING_BECOME_MEMBER_HREF } from "./patternsLandingCta";
@@ -21,6 +20,43 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL =
   "https://knititnow.com/patterns/sideways-cardigan";
 
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC = "/images/patterns/sideways.png";
+
+/** Finished sweater shown with the real-life caption. Not the catalog or workspace thumbnail. */
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC =
+  "/images/patterns/soft_sideways.png";
+
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT =
+  "Finished sideways cardigan by Sue.";
+
+/** Existing glossary entry "Knit Weave | Lay-In". */
+export const SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID = 349;
+
+/** Existing glossary entry "Bouclé". */
+export const SIDEWAYS_BOUCLE_GLOSSARY_ID = 381;
+
+export type SidewaysRealLifeCaptionPart =
+  | { type: "text"; text: string }
+  | { type: "glossary"; glossaryId: number; text: string };
+
+/**
+ * Visible caption under the real sweater photo.
+ * Glossary parts keep the written term and open the existing entry.
+ */
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION: readonly SidewaysRealLifeCaptionPart[] =
+  [
+    { type: "text", text: "Sideways knitting in real life: " },
+    {
+      type: "glossary",
+      glossaryId: SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID,
+      text: "knit-weave",
+    },
+    { type: "text", text: " in " },
+    { type: "glossary", glossaryId: SIDEWAYS_BOUCLE_GLOSSARY_ID, text: "bouclé" },
+    { type: "text", text: "." },
+  ];
+
+/** Pattern workspace header photo. Stays on the original render. */
+export const SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC = "/images/patterns/sideways.png";
 
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_MEMBER_CTA_LABEL = "Create My Pattern";
 export const SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_SIGN_IN_LABEL = "Already a member? Sign in";
@@ -57,7 +93,7 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING: PatternBuilderLandin
       {
         title: "Your starting size",
         description:
-          "Choose from the available Misses or Women's sizes, then personalize the sweater with your preferred finished fit.",
+          "Choose from Misses, Women's, Men's, Kids', or Baby sizes, then personalize the sweater with your preferred finished fit.",
       },
       {
         title: "Finished fit",
@@ -66,7 +102,7 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING: PatternBuilderLandin
       },
       {
         title: "Sleeve style",
-        description: "Choose cuff-up or top-down sleeves, in long, 3/4, elbow, or short lengths.",
+        description: "Choose long, 3/4, elbow, or short sleeves.",
       },
       {
         title: "Your stitch and row gauge",
@@ -87,7 +123,7 @@ export const SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING: PatternBuilderLandin
     heading: "What the builder creates",
     body: [
       "The builder creates a custom V-neck cardigan or pullover pattern knitted sideways, with personalized stitch counts, row counts, and knitting instructions.",
-      "Knitting the body sideways changes how the garment uses the needle bed. This can make larger finished bust sizes possible when a traditionally knitted sweater would require more needles than the machine holds.",
+      "Knitting the body sideways changes how the garment uses the needle bed. This can make larger finished bust/chest sizes possible when a traditionally knitted sweater would require more needles than the machine holds.",
       "The advantage is greater flexibility, not unlimited sizing. The builder still checks whether the garment dimensions fit the entered machine capacity.",
       "While your membership is active, you can update the size, yarn, gauge, fit, or style choices and let the builder recalculate the pattern for you.",
     ],

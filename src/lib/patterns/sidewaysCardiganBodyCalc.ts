@@ -13,8 +13,10 @@
  *
  * Garment sections are the primary row calculations:
  *   frontRows = round((finishedBust / 4) × rowsPerInch)
+ *   rawHalfNeckRows = round((neckOpening / 2) × rowsPerInch)
+ *   halfNeckRows = rawHalfNeckRows, or the next even integer when raw is odd
+ *     (short-row V shaping is every other row, so each V must occupy an even row count)
  *   backRows = 2 × frontRows
- *   halfNeckRows = round((neckOpening / 2) × rowsPerInch)
  *   backNeckRows = 2 × halfNeckRows
  *   shoulderRows = frontRows − halfNeckRows
  *   actualTotalBustRows = 4 × frontRows
@@ -28,6 +30,8 @@
  *
  * The two slits sit at the side-seam boundaries (between the front and back shoulders).
  * A pullover knits only one slit; the cast-on / bind-off edges form the other.
+ * That unsewn first armhole is marked on both edges, {@link firstArmholeDepthStitches}
+ * in from the neck edge — the side-seam joining point used when finishing.
  */
 
 import { computeDropShoulderArmholeDepthInches } from "./dropShoulderArmholeDepth";
@@ -107,6 +111,7 @@ export type SidewaysCardiganBodyCalcError = {
   requestedTotalBustRows: number;
   requestedFinishedBustInches: number;
   neckOpeningRows: number;
+  rawHalfNeckRows: number;
   halfNeckRows: number;
   frontRows: number;
   remainingRowsForShoulders: number;
@@ -128,6 +133,12 @@ export type SidewaysCardiganBodyCalc = {
   };
   frontRows: number;
   backRows: number;
+  /**
+   * Raw half-neck rows: round((neckOpening / 2) × rowsPerInch). May be odd.
+   * Short-row V shaping uses {@link halfNeckRows}, which rounds an odd raw value up to even.
+   */
+  rawHalfNeckRows: number;
+  /** Even half-neck rows used for V shaping, back neck, and shoulders. */
   halfNeckRows: number;
   /** Raw full-neck rows: round(neckOpening × rowsPerInch). May be odd. */
   neckOpeningRows: number;
@@ -151,8 +162,122 @@ function stitchesAlongLength(inches: number, stitchesPerInch: number): number {
   return evenPositiveBodyStitches(inches * stitchesPerInch);
 }
 
+export function sidewaysGarmentLengthStitches(
+  garmentLengthInches: number,
+  stitchesPerInch: number,
+): number {
+  return stitchesAlongLength(garmentLengthInches, stitchesPerInch);
+}
+
+/** Armhole-slit depth in inches and stitches. Both come from half the finished upper arm. */
+export function sidewaysArmholeDepth(
+  finishedUpperArmInches: number,
+  stitchesPerInch: number,
+): { inches: number; stitches: number } {
+  const inches = computeDropShoulderArmholeDepthInches(finishedUpperArmInches) ?? 0;
+  return { inches, stitches: stitchesAlongLength(inches, stitchesPerInch) };
+}
+
+/**
+ * Pullover first-armhole side seam: the cast-on edge and the final bind-off edge.
+ * Both place markers sit {@link SidewaysPulloverFirstArmholeSideSeam.stitchesFromNeckEdge}
+ * in from the neck edge. That count is {@link SidewaysCardiganBodyCalc.firstArmholeDepthStitches}.
+ */
+export type SidewaysPulloverFirstArmholeSideSeam = {
+  garmentLengthStitches: number;
+  /** Stitches from the neck/shoulder edge to the side-seam joining point. */
+  stitchesFromNeckEdge: number;
+  /** The same point counted from the hem edge. */
+  stitchesFromHemEdge: number;
+};
+
+function sidewaysPulloverFirstArmholeSideSeamFromCounts(
+  garmentLengthStitches: number,
+  stitchesFromNeckEdge: number,
+): SidewaysPulloverFirstArmholeSideSeam | null {
+  if (
+    !(garmentLengthStitches > 0) ||
+    !(stitchesFromNeckEdge > 0) ||
+    stitchesFromNeckEdge >= garmentLengthStitches
+  ) {
+    return null;
+  }
+  return {
+    garmentLengthStitches,
+    stitchesFromNeckEdge,
+    stitchesFromHemEdge: garmentLengthStitches - stitchesFromNeckEdge,
+  };
+}
+
+/** Same location {@link calculateSidewaysCardiganBody} stores on the calc. */
+export function sidewaysPulloverFirstArmholeSideSeam(args: {
+  garmentLengthInches: number;
+  finishedUpperArmInches: number;
+  stitchesPerInch: number;
+}): SidewaysPulloverFirstArmholeSideSeam | null {
+  return sidewaysPulloverFirstArmholeSideSeamFromCounts(
+    sidewaysGarmentLengthStitches(args.garmentLengthInches, args.stitchesPerInch),
+    sidewaysArmholeDepth(args.finishedUpperArmInches, args.stitchesPerInch).stitches,
+  );
+}
+
+/** Reads the first-armhole stitch count the written instructions use. */
+export function sidewaysPulloverFirstArmholeSideSeamFromCalc(
+  calc: Pick<SidewaysCardiganBodyCalc, "garmentLengthStitches" | "firstArmholeDepthStitches">,
+): SidewaysPulloverFirstArmholeSideSeam | null {
+  return sidewaysPulloverFirstArmholeSideSeamFromCounts(
+    calc.garmentLengthStitches,
+    calc.firstArmholeDepthStitches,
+  );
+}
+
+/** Diagram X for a fraction of garment length measured from the neck edge. */
+export function sidewaysFractionFromNeckX(
+  hemX: number,
+  neckX: number,
+  fractionFromNeck: number,
+): number {
+  const width = neckX - hemX;
+  if (!(width > 0)) return neckX;
+  const fraction = Math.min(1, Math.max(0, fractionFromNeck));
+  return neckX - fraction * width;
+}
+
+/** Diagram X of the shared side-seam point. Neck is at `neckX`; hem is at `hemX`. */
+export function sidewaysPulloverFirstArmholeSideSeamX(
+  hemX: number,
+  neckX: number,
+  seam: Pick<SidewaysPulloverFirstArmholeSideSeam, "garmentLengthStitches" | "stitchesFromNeckEdge">,
+): number {
+  if (!(seam.garmentLengthStitches > 0)) return neckX;
+  return sidewaysFractionFromNeckX(
+    hemX,
+    neckX,
+    seam.stitchesFromNeckEdge / seam.garmentLengthStitches,
+  );
+}
+
+export function sidewaysPulloverFirstArmholePlaceMarker(
+  seam: SidewaysPulloverFirstArmholeSideSeam,
+): { fractionFromNeck: number; stitchesFromNeck: number } {
+  return {
+    fractionFromNeck: seam.stitchesFromNeckEdge / seam.garmentLengthStitches,
+    stitchesFromNeck: seam.stitchesFromNeckEdge,
+  };
+}
+
 function rowsAlongCircumference(inches: number, rowsPerInch: number): number {
   return inchesToRows(inches, rowsPerInch);
+}
+
+/**
+ * Short-row V shaping is every other row. An odd raw half-neck row count cannot
+ * complete the last two-row interval, so it rounds up to the next even integer.
+ */
+export function evenRowCountForShortRowShaping(rawRows: number): number {
+  const n = Math.max(0, Math.trunc(rawRows));
+  if (n === 0) return 0;
+  return n % 2 === 0 ? n : n + 1;
 }
 
 function identicalShoulders(rows: number): SidewaysCardiganShoulderRows {
@@ -174,7 +299,7 @@ function identicalFronts(panel: SidewaysCardiganFrontPanel): {
 export function calculateSidewaysCardiganBody(
   input: SidewaysCardiganBodyCalcInput,
 ): SidewaysCardiganBodyCalcResult {
-  const garmentLengthStitches = stitchesAlongLength(
+  const garmentLengthStitches = sidewaysGarmentLengthStitches(
     input.garmentLengthInches,
     input.stitchesPerInch,
   );
@@ -196,19 +321,17 @@ export function calculateSidewaysCardiganBody(
     input.finishedBustCircumferenceInches / 4,
     input.rowsPerInch,
   );
-  const halfNeckRows = rowsAlongCircumference(
+  const rawHalfNeckRows = rowsAlongCircumference(
     input.neckOpeningWidthInches / 2,
     input.rowsPerInch,
   );
+  const halfNeckRows = evenRowCountForShortRowShaping(rawHalfNeckRows);
   const backRows = 2 * frontRows;
   const backNeckRows = 2 * halfNeckRows;
   const shoulderRows = frontRows - halfNeckRows;
-  const armholeDepthInches =
-    computeDropShoulderArmholeDepthInches(input.finishedUpperArmInches) ?? 0;
-  const armholeDepthStitches = stitchesAlongLength(
-    armholeDepthInches,
-    input.stitchesPerInch,
-  );
+  const armhole = sidewaysArmholeDepth(input.finishedUpperArmInches, input.stitchesPerInch);
+  const armholeDepthInches = armhole.inches;
+  const armholeDepthStitches = armhole.stitches;
 
   if (shoulderRows <= 0) {
     return {
@@ -216,10 +339,11 @@ export function calculateSidewaysCardiganBody(
       error: {
         code: SIDEWAYS_CARDIGAN_NON_POSITIVE_SHOULDER_ROWS,
         message:
-          "These measurements leave no rows for the four identical shoulder sections. Reduce the neck-opening width or increase the finished bust.",
+          "These measurements leave no rows for the four identical shoulder sections. Reduce the neck-opening width or increase the finished bust/chest.",
         requestedTotalBustRows,
         requestedFinishedBustInches: input.finishedBustCircumferenceInches,
         neckOpeningRows,
+        rawHalfNeckRows,
         halfNeckRows,
         frontRows,
         remainingRowsForShoulders: shoulderRows,
@@ -276,6 +400,7 @@ export function calculateSidewaysCardiganBody(
       },
       frontRows,
       backRows,
+      rawHalfNeckRows,
       halfNeckRows,
       neckOpeningRows,
       frontNeckOpeningRows: halfNeckRows,

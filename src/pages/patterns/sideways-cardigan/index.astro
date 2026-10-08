@@ -7,9 +7,12 @@ export const prerender = false;
 
 import Layout from "../../../layouts/Layout.astro";
 import PatternBuilderLandingPage from "../../../components/patterns/PatternBuilderLandingPage.astro";
+import SidewaysKnitSweaterRealLife from "../../../components/patterns/SidewaysKnitSweaterRealLife.astro";
 import { SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/sidewaysKnitSweaterPatternLanding";
 
 const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
+/** The creates copy is rendered beside the photograph, so the shared creates block is not repeated. */
+const landingPageContent = { ...landing, creates: undefined };
 ---
 
 <Layout
@@ -21,5 +24,7 @@ const landing = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING;
     <link rel="canonical" href={landing.seo.canonicalUrl} />
   </Fragment>
 
-  <PatternBuilderLandingPage content={landing} />
+  <PatternBuilderLandingPage content={landingPageContent}>
+    <SidewaysKnitSweaterRealLife slot="creates" />
+  </PatternBuilderLandingPage>
 </Layout>

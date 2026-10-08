@@ -5,8 +5,8 @@
  */
 
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
-import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
 import { logGeneratedPatternOnce } from "../lib/patterns/patternGenerationActivity";
+import { persistSidewaysCardiganSummaryProject } from "../lib/patterns/sidewaysCardiganSummarySave";
 import { applySavedPatternUnavailableMessage, ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import { SAVED_PATTERN_UNAVAILABLE_BODY } from "../lib/patterns/savedPatternAccessState";
 import {
@@ -19,7 +19,7 @@ import {
 import { readSidewaysCardiganBuilderStateFromDraft } from "../lib/patterns/sidewaysCardiganBuilderState";
 import {
   getSidewaysCardiganChartRowsForAudience,
-  SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS,
+  SIDEWAYS_CARDIGAN_CHART_GROUPS,
   sidewaysCardiganChartAudienceDisplayLabel,
 } from "../lib/patterns/sidewaysCardiganSizeCharts";
 import { loadExpressSweaterCharts, normalizeChartRowSize } from "../lib/patterns/sleevelessExpressSizeChartClient";
@@ -42,8 +42,8 @@ import {
   sidewaysCardiganSummaryCancelHref,
   sidewaysCardiganSummaryCancelLabel,
   sidewaysCardiganSummaryHint,
-  sidewaysCardiganSummaryPrimarySuccessHref,
 } from "../lib/patterns/sidewaysCardiganPatternNavigation";
+import { sidewaysPulloverFirstArmholePlaceMarker, sidewaysPulloverFirstArmholeSideSeam } from "../lib/patterns/sidewaysCardiganBodyCalc";
 import { inspectSidewaysCardiganBodyCalcInputFromPattern } from "../lib/patterns/sidewaysCardiganFinishedMeasurements";
 import {
   applySidewaysCardiganSummaryMeasurementEdits,
@@ -53,6 +53,7 @@ import {
   emptySidewaysCardiganSummaryMeasurements,
   readSidewaysCardiganSummaryMeasurements,
   SIDEWAYS_CARDIGAN_SUMMARY_MEASUREMENT_FIELDS,
+  sidewaysArmholeDepthHelperHidden,
   summaryMeasurementsToInches,
   type SidewaysCardiganSummaryMeasurementKey,
   type SidewaysCardiganSummaryMeasurements,
@@ -308,7 +309,7 @@ function initWorkspace(root: HTMLElement): void {
     placeholder.value = "";
     placeholder.textContent = "Choose a size";
     sizeSelect.append(placeholder);
-    for (const group of SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS) {
+    for (const group of SIDEWAYS_CARDIGAN_CHART_GROUPS) {
       const optgroup = document.createElement("optgroup");
       optgroup.label = group.heading;
       for (const row of getSidewaysCardiganChartRowsForAudience(group.audience)) {
@@ -406,19 +407,39 @@ function initWorkspace(root: HTMLElement): void {
     overlayCleanup = bindPatternSummaryOverlayPositioning(stageInner, svg, overlay, anchors);
   }
 
+  function syncArmholeDepthHelper(): void {
+    const secondary = workspace.querySelector<HTMLElement>(
+      "[data-ps-measure-id='armholeDepth'] .ps-measure-chip__secondary",
+    );
+    if (!secondary) return;
+    secondary.hidden = sidewaysArmholeDepthHelperHidden(state.garmentStyle);
+  }
+
   function mountDiagram(): void {
+    syncArmholeDepthHelper();
     if (!diagramHost) return;
     const inspected = inspectSidewaysCardiganBodyCalcInputFromPattern(
       mergeSidewaysCardiganWorkingDraft(),
     );
     const live = readChipMeasurements();
-    const input = buildSidewaysCardiganSummaryDiagramInput(
+    let input = buildSidewaysCardiganSummaryDiagramInput(
       live,
       state.garmentStyle,
       displayUnit,
       inspected.input?.backNeckDepthInches,
     );
     if (!input) return;
+    const stitchRaw = spiInput?.value.trim() ?? "";
+    const spi = Number(rawSwatchToPerInch(stitchRaw, "", displayUnit).gaugeStitchesPerInch);
+    const seam =
+      input.garmentStyle === "pullover" && Number.isFinite(spi) && spi > 0
+        ? sidewaysPulloverFirstArmholeSideSeam({
+            garmentLengthInches: input.measurements.finishedLengthInches,
+            finishedUpperArmInches: input.measurements.finishedUpperArmInches,
+            stitchesPerInch: spi,
+          })
+        : null;
+    if (seam) input = { ...input, placeMarker: sidewaysPulloverFirstArmholePlaceMarker(seam) };
     diagramHost.innerHTML = buildSidewaysCardiganEditMeasurementDiagramSvg(input, previewTab);
     writeChipMeasurements(live, displayUnit);
     rebindMeasurementOverlay();
@@ -551,7 +572,10 @@ function initWorkspace(root: HTMLElement): void {
     });
   });
 
-  spiInput?.addEventListener("input", renderBuildSummary);
+  spiInput?.addEventListener("input", () => {
+    renderBuildSummary();
+    mountDiagram();
+  });
   rpiInput?.addEventListener("input", renderBuildSummary);
 
   for (const btn of cancelBtns) {
@@ -596,18 +620,12 @@ function initWorkspace(root: HTMLElement): void {
         titleCustomized: enteredTitle ? true : prevMeta.titleCustomized,
       });
       persistSummaryGauge(displayUnit, spiInput?.value.trim() ?? "", rpiInput?.value.trim() ?? "", needlesInput?.value.trim() ?? "");
-      const activeId = readActiveCustomPatternProjectId();
-      if (activeId) {
-        const saveRes = await runSaveCustomPatternFromWorkspace(undefined, {
-          skipPreSavePrepare: true,
-          activeProjectId: activeId,
-        });
-        if (!saveRes.ok) {
-          showEditError(saveRes.error);
-          return;
-        }
+      const saveRes = await persistSidewaysCardiganSummaryProject(workspace);
+      if (!saveRes.ok) {
+        showEditError(saveRes.error);
+        return;
       }
-      window.location.assign(sidewaysCardiganSummaryPrimarySuccessHref(activeId));
+      window.location.assign(saveRes.href);
     })();
   });
 }

@@ -1,0 +1,127 @@
+---
+import GlossaryTooltip from "../common/GlossaryTooltip.astro";
+import PatternHeaderImage from "./PatternHeaderImage.astro";
+import type { PatternBuilderLandingCopySection } from "../../lib/patterns/patternBuilderLanding";
+import {
+  SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC,
+} from "../../lib/patterns/sidewaysKnitSweaterPatternLanding";
+
+interface Props {
+  section?: PatternBuilderLandingCopySection;
+  headingId?: string;
+}
+
+const {
+  section = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.creates,
+  headingId = "pattern-builder-creates-heading",
+} = Astro.props;
+---
+
+{
+  section ? (
+    <section
+      class="sideways-creates-photo"
+      aria-labelledby={headingId}
+      data-testid="sideways-creates-photo"
+    >
+      <div class="sideways-creates-photo__copy">
+        <h2 id={headingId}>{section.heading}</h2>
+        {section.body.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+      <figure class="sideways-real-life" data-testid="sideways-real-life">
+        <PatternHeaderImage
+          src={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC}
+          alt={SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT}
+          hintStyle="overlay"
+          loading="lazy"
+        />
+        <figcaption class="sideways-real-life__caption">
+          {SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.map((part) =>
+            part.type === "glossary" ? (
+              <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+            ) : (
+              part.text
+            )
+          )}
+        </figcaption>
+      </figure>
+    </section>
+  ) : null
+}
+
+<style>
+  .sideways-creates-photo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+    margin: 0 0 1.75rem;
+  }
+
+  .sideways-creates-photo__copy h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sideways-creates-photo__copy p {
+    margin: 0 0 0.85rem;
+    color: #333;
+    line-height: 1.55;
+  }
+
+  .sideways-creates-photo__copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .sideways-real-life {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 190px;
+  }
+
+  .sideways-real-life :global(.pattern-header-image) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sideways-real-life :global(.pattern-header-image__img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid #d6dbc9;
+  }
+
+  .sideways-real-life :global(.pattern-header-image__frame) {
+    border-radius: 12px;
+  }
+
+  .sideways-real-life__caption {
+    margin: 0.45rem 0 0;
+    color: #243015;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  @media (min-width: 768px) {
+    .sideways-creates-photo {
+      grid-template-columns: minmax(0, 75fr) minmax(0, 25fr);
+      gap: 1.75rem;
+    }
+
+    .sideways-real-life {
+      margin: 0;
+      justify-self: start;
+    }
+  }
+</style>

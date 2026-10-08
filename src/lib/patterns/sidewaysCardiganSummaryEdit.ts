@@ -45,7 +45,7 @@ import { DROP_SHOULDER_UPPER_ARM_ARMHOLE_HINT } from "./dropShoulderEditMeasurem
 import {
   findSidewaysCardiganWomenChartRow,
   resolveSidewaysCardiganChartAudienceFromSize,
-  type SidewaysCardiganWomenChartAudience,
+  type SidewaysCardiganChartAudience,
 } from "./sidewaysCardiganSizeCharts";
 import { syncSidewaysCardiganBuilderToPatternStorage } from "./syncSidewaysCardiganBuilderToPatternStorage";
 
@@ -146,6 +146,17 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_BODY_FIELDS: PatternSummaryMeasurementFie
   },
 ];
 
+/**
+ * Pullover Build/Edit already labels this chip "Armhole depth".
+ * The shared hint overlaps that diagram, so only Pullover hides it.
+ * Cardigan keeps the hint.
+ */
+export function sidewaysArmholeDepthHelperHidden(
+  garmentStyle: SidewaysCardiganGarmentStyle,
+): boolean {
+  return garmentStyle === "pullover";
+}
+
 export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementField[] = [
   {
     ...MEASURE_INPUT,
@@ -176,7 +187,7 @@ export const SIDEWAYS_CARDIGAN_SUMMARY_SLEEVE_FIELDS: PatternSummaryMeasurementF
   {
     ...MEASURE_INPUT,
     id: "wrist",
-    label: "Wrist",
+    label: "Wrist/Cuff",
     previewTab: "sleeve",
     targetId: SIDEWAYS_SUMMARY_MEASUREMENT_TARGETS.wrist,
     transform: "translate(8px, -50%)",
@@ -352,7 +363,7 @@ export function applySidewaysCardiganSummaryMeasurementEdits(
 
 export type SidewaysCardiganSummaryQuickEdits = {
   selectedSize?: string;
-  chartAudience?: SidewaysCardiganWomenChartAudience;
+  chartAudience?: SidewaysCardiganChartAudience;
   garmentStyle?: SidewaysCardiganGarmentStyle;
   fit?: string;
   sleeveLengthChoice?: SidewaysCardiganSleeveLengthChoice;

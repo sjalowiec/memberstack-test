@@ -22,7 +22,8 @@ describe("buildSidewaysCardiganPatternHeaderDetailsHtml", () => {
     expect(html).toContain("Women's");
     expect(html).toContain("Chart size 8");
     expect(html).toContain("Standard");
-    expect(html).toContain("Cuff up · Long");
+    expect(html).toContain(">Long<");
+    expect(html).not.toContain("Cuff up");
     expect(html).toContain("20 sts / 28 rows over 4&quot;");
     expect(html).not.toContain("bust rows");
     expect(html).not.toContain("Garment length");

@@ -2,13 +2,20 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildSidewaysCardiganBuilderNewPatternHref } from "./patternStorage";
+import glossaryJson from "../../data/glossary.json";
 import {
+  SIDEWAYS_BOUCLE_GLOSSARY_ID,
   SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_MEMBER_CTA_LABEL,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC,
+  SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_PATH,
   SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_SIGN_IN_LABEL,
+  SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID,
 } from "./sidewaysKnitSweaterPatternLanding";
 import { SLEEVELESS_PATTERN_BUILDER_LANDING } from "./sleevelessPatternLanding";
 import { DROP_SHOULDER_PATTERN_BUILDER_LANDING } from "./dropShoulderPatternLanding";
@@ -20,6 +27,10 @@ import {
 import { isSidewaysCardiganProductionBlocked, isSidewaysCardiganRoute } from "./sidewaysCardiganProductionAccess";
 
 const landingPage = readFileSync(resolve("src/pages/patterns/sideways-cardigan/index.astro"), "utf8");
+const realLifeCaption = readFileSync(
+  resolve("src/components/patterns/SidewaysKnitSweaterRealLife.astro"),
+  "utf8",
+);
 const builderPage = readFileSync(resolve("src/pages/patterns/sideways-cardigan/builder.astro"), "utf8");
 const catalog = readFileSync(resolve("src/pages/patterns/index.astro"), "utf8");
 const middleware = readFileSync(resolve("src/middleware.ts"), "utf8");
@@ -59,6 +70,15 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       true,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC).toBe("/images/patterns/sideways.png");
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.image.src).toBe(
+      SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_IMAGE_SRC,
+    );
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.image.alt).toBe(
+      "A machine-knit sideways sweater",
+    );
+    expect(existsSync(resolve("public/images/patterns/soft_sideways.png"))).toBe(true);
+    expect(existsSync(resolve(`public${SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC}`))).toBe(true);
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_THUMBNAIL_SRC).toBe("/images/patterns/sideways.png");
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.seo.canonicalUrl).toBe(
       SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_CANONICAL_URL,
     );
@@ -119,17 +139,17 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
     const sleeveCard = SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.choices?.items.find(
       (item) => item.title === "Sleeve style",
     );
-    expect(sleeveCard?.description).toBe(
-      "Choose cuff-up or top-down sleeves, in long, 3/4, elbow, or short lengths.",
-    );
+    expect(sleeveCard?.description).toBe("Choose long, 3/4, elbow, or short sleeves.");
     expect(sleeveCard?.description).not.toMatch(/sideways/i);
     expect(landingCopy()).not.toMatch(/not yet connected/i);
     expect(landingCopy()).toMatch(/not unlimited sizing/);
     expect(builderPage).toContain("Cardigan");
     expect(builderPage).toContain("Pullover");
     expect(builderPage).toContain("Close fit");
-    expect(builderPage).toContain("Cuff up");
-    expect(builderPage).toContain("Top down");
+    expect(builderPage).toContain("Choose your sleeve length");
+    expect(builderPage).not.toContain("Sleeve direction");
+    expect(builderPage).not.toContain("Cuff up");
+    expect(builderPage).not.toContain("Top down");
     expect(builderPage).toContain("Enter your gauge");
   });
 
@@ -139,7 +159,7 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       /limited needle-bed width/,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.creates?.body.join(" ")).toMatch(
-      /larger finished bust sizes/,
+      /larger finished bust\/chest sizes/,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.creates?.body.join(" ")).toMatch(
       /not unlimited sizing/,
@@ -148,6 +168,64 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
       /machine capacity/,
     );
     expect(SIDEWAYS_KNIT_SWEATER_PATTERN_BUILDER_LANDING.knitAble).toBeUndefined();
+  });
+
+  it("links knit-weave and bouclé in the real-life caption without changing the written terms", () => {
+    const visible = SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.map((part) => part.text).join(
+      "",
+    );
+    expect(visible).toBe("Sideways knitting in real life: knit-weave in bouclé.");
+    expect(SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID).toBe(349);
+    expect(SIDEWAYS_BOUCLE_GLOSSARY_ID).toBe(381);
+    const glossary = glossaryJson as Array<{ glossaryId?: number; english?: string }>;
+    expect(glossary.find((entry) => entry.glossaryId === SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID)?.english).toBe(
+      "Knit Weave | Lay-In",
+    );
+    const boucle = glossary.find((entry) => entry.glossaryId === SIDEWAYS_BOUCLE_GLOSSARY_ID);
+    expect(boucle?.english).toBe("Bouclé");
+    expect(boucle?.helpinfo).toContain("Bouclé is a style of yarn");
+    expect(boucle?.helpinfo).toContain("a bouclé can produce");
+    expect((boucle as { image?: string } | undefined)?.image).toBe(
+      "/images/glossary/boucle-textured-yarn-machine-knitting.jpg",
+    );
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_IMAGE_SRC).toBe(
+      "/images/patterns/soft_sideways.png",
+    );
+    expect(SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_ALT).toBe(
+      "Finished sideways cardigan by Sue.",
+    );
+    expect(landingPage).toContain("SidewaysKnitSweaterRealLife");
+    expect(landingPage).toContain('slot="creates"');
+    expect(landingPage).not.toContain('slot="after-hero"');
+    expect(landingPage).toContain("creates: undefined");
+    expect(landingPage).not.toContain("why: undefined");
+    expect(realLifeCaption).toContain("<GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>");
+    expect(realLifeCaption).toContain("pattern-builder-creates-heading");
+    expect(realLifeCaption).not.toContain("pattern-builder-why-heading");
+    expect(realLifeCaption.indexOf("sideways-creates-photo__copy")).toBeLessThan(
+      realLifeCaption.indexOf('data-testid="sideways-real-life"'),
+    );
+    expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 1fr);");
+    expect(realLifeCaption).toContain("grid-template-columns: minmax(0, 75fr) minmax(0, 25fr);");
+    expect(realLifeCaption).toContain("max-width: 190px;");
+    expect(realLifeCaption).toContain("margin: 0 auto;");
+    expect(realLifeCaption).toContain("align-items: start;");
+    expect(realLifeCaption).toContain("PatternHeaderImage");
+    expect(realLifeCaption).toContain('hintStyle="overlay"');
+    expect(realLifeCaption).not.toContain("caption={");
+    expect(realLifeCaption).toContain("object-fit: contain;");
+    expect(realLifeCaption).toContain("@media (min-width: 768px)");
+    const glossaryParts = SIDEWAYS_KNIT_SWEATER_PATTERN_LANDING_REAL_LIFE_CAPTION.filter(
+      (part) => part.type === "glossary",
+    );
+    expect(glossaryParts.map((part) => part.text)).toEqual(["knit-weave", "bouclé"]);
+    expect(glossaryParts.map((part) => part.glossaryId)).toEqual([
+      SIDEWAYS_KNIT_WEAVE_GLOSSARY_ID,
+      SIDEWAYS_BOUCLE_GLOSSARY_ID,
+    ]);
+    expect(sleevelessLandingPage).not.toContain("SidewaysKnitSweaterRealLife");
+    expect(dropShoulderLandingPage).not.toContain("SidewaysKnitSweaterRealLife");
+    expect(socksLandingPage).not.toContain("SidewaysKnitSweaterRealLife");
   });
 
   it("does not change Sleeveless, Drop Shoulder, or Socks landing pages", () => {
@@ -168,9 +246,9 @@ describe("Sideways Knit Sweater Pattern Builder landing page", () => {
 });
 
 describe("Sideways landing production safety", () => {
-  it("keeps production hosts blocked and middleware redirecting the landing path", () => {
-    expect(isSidewaysCardiganProductionBlocked("knititnow.com")).toBe(true);
-    expect(isSidewaysCardiganProductionBlocked("www.knititnow.com")).toBe(true);
+  it("keeps production hosts open and leaves the retired gate in middleware", () => {
+    expect(isSidewaysCardiganProductionBlocked("knititnow.com")).toBe(false);
+    expect(isSidewaysCardiganProductionBlocked("www.knititnow.com")).toBe(false);
     expect(isSidewaysCardiganProductionBlocked("localhost", { isViteDev: true })).toBe(false);
     expect(middleware).toContain("isSidewaysCardiganRoute");
     expect(middleware).toContain("isSidewaysCardiganProductionBlocked");

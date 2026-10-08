@@ -23,7 +23,7 @@ import {
   writeSidewaysCardiganWorkingDraftStamp,
 } from "./sidewaysCardiganConstructionIdentity";
 import { DROP_SHOULDER_SLEEVE_LENGTH_CHOICES } from "./patternConstructionIdentity";
-import { SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS } from "./sidewaysCardiganSizeCharts";
+import { SIDEWAYS_CARDIGAN_CHART_GROUPS } from "./sidewaysCardiganSizeCharts";
 import {
   resetExpressSweaterChartsForTests,
   seedExpressSweaterChartsForTests,
@@ -145,7 +145,7 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toContain('data-express-field="measurements"');
     expect(builderAstro).toContain('data-express-field="selectedSize"');
     expect(builderAstro).toContain("data-sideways-size-group");
-    expect(builderAstro).toContain("SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS");
+    expect(builderAstro).toContain("SIDEWAYS_CARDIGAN_CHART_GROUPS");
     expect(builderAstro).not.toContain('id="express-acc-panel-6"');
     expect(builderScript).toContain("if (step < 1 || step > STEPS) return false");
     expect(builderScript).toContain('header?.setAttribute("tabindex", locked ? "-1" : "0")');
@@ -187,8 +187,8 @@ describe("Sideways V-Neck five-step builder", () => {
       resolve("src/pages/patterns/sideways-cardigan/summary/index.astro"),
       "utf8",
     );
-    expect(patternPage).toContain("Back to builder");
-    expect(patternPage).toContain('href="/patterns/sideways-cardigan/builder"');
+    expect(patternPage).not.toContain("Back to builder");
+    expect(patternPage).toContain("data-sideways-finishing-host");
     expect(patternPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_EDIT_FROM_PATTERN_HREF");
     expect(summaryPage).toContain("SIDEWAYS_CARDIGAN_SUMMARY_CANCEL_FROM_EDIT_LABEL");
     expect(builderAstro).not.toContain("data-sideways-review-summary");
@@ -201,12 +201,27 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderScript).toContain("readSidewaysCardiganBuilderStateFromDraft");
   });
 
-  it("shows Misses and Women's as chart buttons and keeps plus as the internal key", () => {
-    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.audience)).toEqual(["misses", "plus"]);
-    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.heading)).toEqual(["Misses", "Women's"]);
-    expect(SIDEWAYS_CARDIGAN_WOMEN_CHART_GROUPS.map((g) => g.buttonLabel)).toEqual([
+  it("shows all five sizing families and keeps plus as the Women's key", () => {
+    expect(SIDEWAYS_CARDIGAN_CHART_GROUPS.map((g) => g.audience)).toEqual([
+      "misses",
+      "plus",
+      "men",
+      "kids",
+      "baby",
+    ]);
+    expect(SIDEWAYS_CARDIGAN_CHART_GROUPS.map((g) => g.heading)).toEqual([
+      "Misses",
+      "Women's",
+      "Men's",
+      "Kids'",
+      "Baby",
+    ]);
+    expect(SIDEWAYS_CARDIGAN_CHART_GROUPS.map((g) => g.buttonLabel)).toEqual([
       "Misses (1–8)",
       "Women's (X–6X)",
+      "Men's (Sm–5X)",
+      "Kids' (2–16 yr)",
+      "Baby (3–24 mo)",
     ]);
     expect(builderAstro).toContain("{group.buttonLabel}");
     expect(builderAstro).toContain('data-field="chartAudience"');
@@ -215,7 +230,7 @@ describe("Sideways V-Neck five-step builder", () => {
     expect(builderAstro).not.toMatch(/>Plus</);
     expect(builderAstro).toContain("sideways-chart-picker");
     expect(builderScript).toContain("applySidewaysCardiganStartingChartSelection");
-    expect(builderScript).toContain('"plus"');
+    expect(builderScript).toContain("parseSidewaysCardiganChartAudience");
     expect(builderScript).toContain("section.hidden = state.chartAudience !== group.audience");
     expect(builderScript).toContain("if (state.chartAudience !== group.audience) continue");
     expect(builderAstro).toMatch(/data-express-nested-size hidden/);
@@ -229,7 +244,8 @@ describe("Sideways V-Neck five-step builder", () => {
       elbow: "Elbow",
       short: "Short",
     });
-    expect(builderAstro).toContain('data-field="sleeveDirection"');
+    expect(builderAstro).not.toContain('data-field="sleeveDirection"');
+    expect(builderAstro).not.toContain("Sleeve direction");
     expect(builderAstro).toContain('data-field="sleeveLength"');
     expect(builderAstro).toContain('value: "long"');
     expect(builderAstro).not.toContain('{ "is-selected": i === 0 }');
@@ -429,7 +445,7 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     }
   });
 
-  it("does not close the step when length is chosen first", () => {
+  it("closes the step when sleeve length is chosen, without a direction", () => {
     const state = initializeFreshSidewaysCardiganBuilderState();
     expect(state.sleeveLengthChoice).toBe("");
     expect(state.sleeveDirection).toBe("");
@@ -442,12 +458,12 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     expect(state.sleeveLengthChoice).toBe("elbow");
     expect(state.sleeveDirection).toBe("");
     expect(restored.sleeveDirection).toBe("");
-    expect(result.complete).toBe(false);
-    expect(result.openStep).toBe(4);
-    expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(false);
+    expect(result.complete).toBe(true);
+    expect(result.openStep).toBe(5);
+    expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(true);
   });
 
-  it("completes and advances to Gauge and Machine only after both are selected", () => {
+  it("keeps a stored direction without requiring it to finish the sleeve step", () => {
     const state = initializeFreshSidewaysCardiganBuilderState();
     expect(state.sleeveLengthChoice).toBe("");
     const afterDirection = applySidewaysCardiganSleeveChoice(state, "sleeveDirection", "top-down");
@@ -461,7 +477,7 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     expect(isSidewaysCardiganSleeveStepComplete(state)).toBe(true);
   });
 
-  it("reopens a draft with only one sleeve selection as incomplete", () => {
+  it("reopens a length-only draft as complete and a direction-only draft as incomplete", () => {
     syncSidewaysCardiganBuilderToPatternStorage(
       { ...baseValues, sleeveDirection: "sideways", sleeveLengthChoice: "long" },
       missesRow,
@@ -490,7 +506,7 @@ describe("Sideways V-Neck Sleeve step completion", () => {
     const lengthOnly = readSidewaysCardiganBuilderStateFromDraft();
     expect(lengthOnly.sleeveDirection).toBe("");
     expect(lengthOnly.sleeveLengthChoice).toBe("three-quarter");
-    expect(isSidewaysCardiganSleeveStepComplete(lengthOnly)).toBe(false);
+    expect(isSidewaysCardiganSleeveStepComplete(lengthOnly)).toBe(true);
   });
 
   it("restores a draft with both sleeve selections as complete", () => {
@@ -570,6 +586,9 @@ describe("Drop Shoulder and Sleeveless builders stay on their existing flows", (
     expect(dropShoulderBuilder).toContain("View My Pattern");
     expect(dropShoulderBuilder).not.toContain("Misses (1–8)");
     expect(sleevelessBuilder).not.toContain("Women's (X–6X)");
+    expect(dropShoulderBuilder).not.toContain("Men's (Sm–5X)");
+    expect(sleevelessBuilder).not.toContain("Kids' (2–16 yr)");
+    expect(dropShoulderBuilder).not.toContain("Baby (3–24 mo)");
     expect(dropShoulderBuilder).not.toContain("sideways-chart-picker");
     expect(sleevelessBuilder).not.toContain("sideways-chart-picker");
     expect(dropShoulderBuilder).not.toContain("data-sideways-review-panel");

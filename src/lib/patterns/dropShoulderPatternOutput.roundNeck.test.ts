@@ -309,7 +309,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(sleeveText).toMatch(/Increase 1 stitch at each side every 14 rows 5 times\./);
     expect(sleeveText).toContain(formatParentheticalShapingRowNumbers(sleeveShapingRcs));
     expect(sleeveText).toMatch(
-      /After the final increase, knit 2 rows even in pattern, then bind off at RC: 094\./,
+      /After the final increase, knit 2 rows even in pattern, then bind off at RC: 072\./,
     );
 
     const sleeveRepl = buildDropShoulderSleeveDiagramReplacements(result, "in", "cuff-up");
