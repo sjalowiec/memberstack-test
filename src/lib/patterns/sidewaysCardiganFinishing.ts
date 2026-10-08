@@ -85,20 +85,21 @@ export const SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID = 927;
 export const SIDEWAYS_PULLOVER_GRAFT_VIDEO_WATCH_LABEL = "Watch: Kitchener Join (Grafting)";
 
 /**
- * Learning Library content_id for “Machine Seaming Shoulder Edges”.
- * Leave this null while the video is being edited. The pattern then shows a
- * placeholder and does not invent a Vimeo id or URL. Set the catalog content_id
- * when the video is published; the link switches to the standard help-video button.
+ * Learning Library content_id for “Seam on the Machine” (Vimeo 1234021892).
+ * The pattern button resolves this id to the catalog Vimeo id and opens
+ * KinCatalogVideoModal. That modal plays `data-vimeo-id` directly, so someone
+ * who can already see the finished pattern is not sent through the catalog
+ * membership gate (`catalog-video-embed` / GatedVimeoEmbed). The catalog row
+ * stays `access_level: member`; this does not unlock the library page.
  */
-export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID: number | null = null;
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID: number | null = 2215;
 
-export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_TITLE = "Machine Seaming Shoulder Edges";
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_TITLE = "Seam on the Machine";
 
 export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL =
-  "VIDEO PLACEHOLDER: Machine Seaming Shoulder Edges";
+  "VIDEO PLACEHOLDER: Seam on the Machine";
 
-export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL =
-  "Watch: Machine Seaming Shoulder Edges";
+export const SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL = "Watch: Seam on the Machine";
 
 export function resolveSidewaysCardiganFoldVideo(
   catalog: PublicVideoRow[] = videosPublic as PublicVideoRow[],

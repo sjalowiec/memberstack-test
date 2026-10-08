@@ -12,6 +12,7 @@ import {
   sidewaysPulloverShoulderSeamVideoLinkHtml,
   SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID,
   SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL,
+  SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL,
   nearestOddPositiveStitches,
   sidewaysCardiganBandMarkers,
   sidewaysCardiganBandNumbers,
@@ -321,7 +322,7 @@ describe("sideways folded hem and cardigan band", () => {
     const graft = finishing.indexOf("Graft those open stitches");
     const shoulders = finishing.indexOf("SHOULDER SEAMS AND NECKLINE");
     const machine = finishing.indexOf("Machine seaming is recommended.");
-    const placeholder = finishing.indexOf(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    const watch = finishing.indexOf(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
     const hand = finishing.indexOf("Hand seaming is an alternative.");
     const neck = finishing.indexOf("Finish the neckline while the opposite shoulder remains open.");
     const seam2 = finishing.indexOf("Shoulder seam 2. Seam the First Front Shoulder to the Second Back Shoulder.");
@@ -343,26 +344,36 @@ describe("sideways folded hem and cardigan band", () => {
     expect(graft).toBeGreaterThan(-1);
     expect(graft).toBeLessThan(shoulders);
     expect(shoulders).toBeLessThan(machine);
-    expect(machine).toBeLessThan(placeholder);
-    expect(placeholder).toBeLessThan(hand);
+    expect(machine).toBeLessThan(watch);
+    expect(watch).toBeLessThan(hand);
     expect(hand).toBeLessThan(neck);
     expect(neck).toBeLessThan(seam2);
     expect(seam2).toBeLessThan(hem);
     expect(hem).toBeLessThan(sleeves);
     expect(finishing.indexOf("Set the sleeves into the armhole openings.")).toBeGreaterThan(sleeves);
     expect(finishing).toContain('data-sideways-pullover-shoulder-seam-video');
-    expect(finishing).toContain('data-video-pending="true"');
-    expect(finishing).toContain('data-video-title="Machine Seaming Shoulder Edges"');
+    expect(finishing).not.toContain('data-video-pending="true"');
+    expect(finishing).not.toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_PLACEHOLDER_LABEL);
+    expect(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID).toBe(2215);
+    const seamVideo = resolveSidewaysPulloverShoulderSeamVideo();
+    expect(seamVideo?.id).toBe("1234021892");
+    expect(seamVideo?.title).toBe("Seam on the Machine");
+    const catalogRow = (videosPublic as Array<{ content_id?: number; access_level?: string }>).find(
+      (row) => row.content_id === 2215,
+    );
+    expect(catalogRow?.access_level).toBe("member");
     const shoulderHtml = finishing.slice(shoulders, seam2);
-    expect(shoulderHtml).not.toContain("data-vimeo-id");
+    expect(shoulderHtml).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+    expect(shoulderHtml).toContain('data-content-id="2215"');
+    expect(shoulderHtml).toContain('data-vimeo-id="1234021892"');
+    expect(shoulderHtml).toContain('data-video-title="Seam on the Machine"');
+    expect(shoulderHtml).toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
     expect(shoulderHtml).not.toContain("player.vimeo.com");
-    expect(shoulderHtml).not.toContain("http");
-    expect(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_CONTENT_ID).toBeNull();
-    expect(resolveSidewaysPulloverShoulderSeamVideo()).toBeNull();
+    expect(shoulderHtml).not.toContain("/videos/2215");
     const linked = sidewaysPulloverShoulderSeamVideoLinkHtml(
       {
         id: "not-a-real-video",
-        title: "Machine Seaming Shoulder Edges",
+        title: "Seam on the Machine",
         description: "",
         jumpLinks: [],
       },
@@ -372,7 +383,7 @@ describe("sideways folded hem and cardigan band", () => {
     expect(linked).toContain('data-content-id="4242"');
     expect(linked).toContain('data-vimeo-id="not-a-real-video"');
     expect(linked).toContain('data-sideways-pullover-shoulder-seam-video');
-    expect(linked).toContain("Watch: Machine Seaming Shoulder Edges");
+    expect(linked).toContain(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL);
     expect(finishing).not.toContain("not-a-real-video");
     expect(finishing).not.toContain('data-content-id="4242"');
     expect(cardiganFinishing).not.toContain("SHOULDER SEAMS AND NECKLINE");
