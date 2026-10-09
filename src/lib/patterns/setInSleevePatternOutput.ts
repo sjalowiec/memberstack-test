@@ -6,7 +6,10 @@
  * the drop-shoulder sleeve taper through the upper arm, then the approved sleeve cap.
  */
 
-import { calculateDropShoulderSleevePieceNumbers } from "./dropShoulderSleevePieceNumbers";
+import {
+  calculateDropShoulderSleevePieceNumbers,
+  type DropShoulderSleevePieceNumbers,
+} from "./dropShoulderSleevePieceNumbers";
 import {
   resolveDropShoulderSleeveInches,
 } from "./dropShoulderSleeveMeasurementOverrides";
@@ -40,6 +43,8 @@ export type SetInSleevePatternResult = SleevelessBackPatternResult & {
   sleeveDisplayRows: SleevelessPatternDisplayRow[];
   overviewRows: SleevelessPatternDisplayRow[];
   sleeveCap: SetInSleeveCapSuccess | null;
+  /** Cuff-up sleeve counts already used for the written sleeve. Null when the cap could not be calculated. */
+  sleevePiece: DropShoulderSleevePieceNumbers | null;
 };
 
 const SLEEVELESS_ARMHOLE_PROSE =
@@ -232,6 +237,7 @@ export function generateSetInSleevePattern(
       : null;
 
   let sleeveCap: SetInSleeveCapSuccess | null = null;
+  let sleevePiece: DropShoulderSleevePieceNumbers | null = null;
   let sleeveDisplayRows: SleevelessPatternDisplayRow[] = [];
   if (!cap || !cap.ok) {
     warnings.push(cap && !cap.ok ? cap.message : "Sleeve cap could not be calculated.");
@@ -265,7 +271,7 @@ export function generateSetInSleevePattern(
       userEdited: { upperArm: false, sleeveLength: false, cuffCircumference: false },
     });
     const cuffInches = getDefaultCuffLengthInches(chartAudience);
-    const piece = calculateDropShoulderSleevePieceNumbers({
+    sleevePiece = calculateDropShoulderSleevePieceNumbers({
       finishedUpperArmInches: cap.sleeve.finishedUpperArmInches,
       finishedWristInches: sleeveInches.wristIn,
       sleeveLengthInches: sleeveInches.sleeveLengthIn,
@@ -273,6 +279,7 @@ export function generateSetInSleevePattern(
       rowsPerInch: debug.rowsPerInch,
       cuffDepthInches: cuffInches,
     });
+    const piece = sleevePiece;
     if (piece.topSts !== cap.sleeve.upperArmStitches) {
       warnings.push("Sleeve stitches at the upper arm do not match the sleeve-cap starting stitches.");
     }
@@ -328,5 +335,6 @@ export function generateSetInSleevePattern(
     sleeveDisplayRows,
     overviewRows,
     sleeveCap,
+    sleevePiece,
   };
 }

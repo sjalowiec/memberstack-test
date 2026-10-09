@@ -8,11 +8,11 @@
  * {@link sleevelessFrontBodySidePoints}. Notation is a presentation layer on
  * that garment, not a second silhouette system.
  *
- * Labels come from the front neck/shoulder timeline and `pulloverArmholeEvents`.
+ * Labels come from the front neck/shoulder timeline and the shared armhole events.
  * Chart-cell parsing is not used.
  */
 
-import { pulloverArmholeEvents } from "./frontArmholeNecklineComposition";
+import { resolveArmholeDiagramShaping } from "./setInSleeve/setInSleeveDiagramArmhole";
 import {
   armholeBindOffDecreaseFromEachSide,
   formatBindOffNotation,
@@ -259,15 +259,17 @@ export function pulloverRoundFrontArmholeDecreasePoints(
   const d = result.debug;
   const armholeStart = Math.max(0, Math.floor(garmentRcAtArmholeStart(d) ?? d.armholeStartRow ?? 0));
   const eachSide = d.armholeStitchesEachSide;
-  const { bindOffSts, decreaseSts } =
+  const sleevelessSplit =
     eachSide !== undefined
       ? armholeBindOffDecreaseFromEachSide(eachSide)
       : { bindOffSts: 0, decreaseSts: 0 };
-  return pulloverArmholeEvents({
-    firstArmholeGarmentRc: armholeStart,
-    bindOffSts,
-    decreaseSts,
-  })
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
+  });
+  return armholeShaping.events
     .filter((ev) => ev.kind === "decrease" && ev.side === "right")
     .map((ev) => ({
       row: Math.max(0, ev.garmentRc - armholeStart),

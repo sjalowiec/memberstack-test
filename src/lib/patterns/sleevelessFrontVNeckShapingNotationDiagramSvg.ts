@@ -9,9 +9,9 @@
  * construction labels, NaN sanitization). Geometry is Sleeveless-specific.
  */
 
+import { resolveArmholeDiagramShaping } from "./setInSleeve/setInSleeveDiagramArmhole";
 import {
   displayRcFromGarmentRc,
-  pulloverArmholeEvents,
 } from "./frontArmholeNecklineComposition";
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
 import {
@@ -414,15 +414,19 @@ function buildFrame(
     ),
   );
   const eachSide = d.armholeStitchesEachSide;
-  const { bindOffSts, decreaseSts } =
+  const sleevelessSplit =
     eachSide !== undefined
       ? armholeBindOffDecreaseFromEachSide(eachSide)
       : { bindOffSts: 0, decreaseSts: 0 };
-  const armholeEvents = pulloverArmholeEvents({
-    firstArmholeGarmentRc: armholeStart,
-    bindOffSts,
-    decreaseSts,
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
   });
+  const bindOffSts = armholeShaping.bindOffSts;
+  const decreaseSts = armholeShaping.decreaseSts;
+  const armholeEvents = armholeShaping.events;
   const lastDecrease = [...armholeEvents]
     .filter((ev) => ev.kind === "decrease")
     .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);
@@ -677,15 +681,17 @@ export function buildSleevelessFrontVNeckShapingNotationDiagramSvg(
   const shoulderSts = shoulderPasses.reduce((sum, p) => sum + Math.max(0, p.amount), 0);
   const armholeStart = Math.max(0, Math.floor(finiteOr(rcModel.armholeBoGarmentRc, 0)));
   const eachSide = d.armholeStitchesEachSide;
-  const { decreaseSts } =
+  const sleevelessSplit =
     eachSide !== undefined
       ? armholeBindOffDecreaseFromEachSide(eachSide)
-      : { decreaseSts: 0 };
-  const armholeEvents = pulloverArmholeEvents({
-    firstArmholeGarmentRc: armholeStart,
-    bindOffSts,
-    decreaseSts,
-  }).filter((ev) => ev.side === "right");
+      : { bindOffSts: 0, decreaseSts: 0 };
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart,
+    sleevelessBindOffSts: bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
+  });
+  const armholeEvents = armholeShaping.events.filter((ev) => ev.side === "right");
   const timeline =
     result.frontNeckShoulderTimeline ??
     result.frontNeckShoulderShapingChart.timeline ??

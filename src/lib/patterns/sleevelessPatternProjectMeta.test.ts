@@ -8,6 +8,7 @@ import {
   withDropShoulderConstructionAuthored,
 } from "./patternConstructionIdentity";
 import { withSidewaysCardiganConstructionAuthored } from "./sidewaysCardiganConstructionIdentity";
+import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionIdentity";
 import { saveCurrentPattern } from "./patternStorage";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
@@ -234,6 +235,49 @@ describe("resolvePatternProjectSaveName", () => {
     });
     expect(refreshAutoPatternProjectTitle().title).toBe("Women's Sideways V-Neck");
     expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Sideways V-Neck");
+  });
+
+  it("uses Set-In Sleeve Sweater in the auto title and leaves size and garment options out", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "7" },
+      style: withSetInSleeveConstructionAuthored({
+        garmentStyle: "cardigan",
+        neckline: "v",
+        sleeveLength: "three-quarter",
+      }),
+      patternProject: { title: "", notes: "" },
+    });
+    expect(resolvePatternDisplayName()).toBe("Women's Set-In Sleeve Sweater");
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Set-In Sleeve Sweater");
+    expect(refreshAutoPatternProjectTitle().title).toBe("Women's Set-In Sleeve Sweater");
+    expect(getSleevelessPatternOnlineHeading(getPatternProjectMeta())).toBe(
+      "Women's Set-In Sleeve Sweater",
+    );
+    expect(resolvePatternPrintDocumentTitle(getPatternProjectPrintFields().title, "fallback")).toBe(
+      "Women's Set-In Sleeve Sweater",
+    );
+  });
+
+  it("uses Men's Set-In Sleeve Sweater for a men's set-in draft", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "men", selectedSize: "4X" },
+      style: withSetInSleeveConstructionAuthored({ garmentStyle: "pullover" }),
+      patternProject: { title: "", notes: "" },
+    });
+    expect(refreshAutoPatternProjectTitle().title).toBe("Men's Set-In Sleeve Sweater");
+  });
+
+  it("replaces a leftover Sleeveless auto title when the draft is a set-in sleeve", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "7" },
+      style: withSetInSleeveConstructionAuthored({ garmentStyle: "pullover" }),
+      patternProject: { title: "Women's Sleeveless", notes: "", titleCustomized: true },
+    });
+    expect(refreshAutoPatternProjectTitle().title).toBe("Women's Set-In Sleeve Sweater");
+    expect(getPatternProjectPrintFields().title).toBe("Women's Set-In Sleeve Sweater");
+    expect(getSleevelessPatternOnlineHeading({ title: "", notes: "" })).toBe(
+      "Set-in sleeve sweater · Pattern instructions",
+    );
   });
 
   it("prefers a non-empty edit drawer title over state fallbacks", () => {

@@ -8,9 +8,7 @@
 
 import { collectInnerNeckDecreasePointsFromTimeline } from "./notationOverlaySvg";
 import { isSleevelessShapedBodyShape } from "./sleevelessAlineShaping";
-import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import {
-  armholeBindOffDecreaseFromEachSide,
   buildBackJapaneseNotationReplacements,
   formatRcNotation,
   garmentRcAtArmholeStart,
@@ -124,13 +122,6 @@ type NotationLabels = {
   rcShoulderStart: string;
 };
 
-type BackArmholeEvent = {
-  kind: "bindOff" | "decrease";
-  garmentRc: number;
-  localRc: number;
-  amount: number;
-};
-
 function rightBodyOutlineXAtY(frame: NotationFrame, y: number): number {
   if (frame.bodyDirection === "straight") return frame.right;
   if (y >= frame.bodyShapeStartY - 0.01) return frame.hemRight;
@@ -206,18 +197,6 @@ export function sleevelessBackShoulderNotationLines(
 
 function displayRcAfterArmholeReset(garmentRc: number, armholeStart: number): number {
   return Math.max(0, Math.floor(garmentRc) - Math.floor(armholeStart));
-}
-
-function backArmholeDecreaseEvents(
-  armholeStart: number,
-  decreaseSts: number,
-): BackArmholeEvent[] {
-  return shapingActionRowNumbers(2, decreaseSts, 2).map((localRc) => ({
-    kind: "decrease" as const,
-    garmentRc: armholeStart + localRc,
-    localRc,
-    amount: 1,
-  }));
 }
 
 function buildFrame(
@@ -381,7 +360,15 @@ export function buildSleevelessBackShapingNotationDiagramSvg(
   const tapered =
     usesSleevelessBackAlineBodySilhouette(model) || frame.bodyDirection !== "straight";
   const shoulderSts = shoulderPasses.reduce((sum, p) => sum + Math.max(0, p.amount), 0);
-  const decreaseEvents = backArmholeDecreaseEvents(armholeStart, decreaseSts);
+  const rightArmholeEvents = model.armhole.events.filter((event) => event.side === "right");
+  const decreaseEvents = rightArmholeEvents
+    .filter((event) => event.kind === "decrease")
+    .map((event) => ({
+      kind: "decrease" as const,
+      garmentRc: event.garmentRc,
+      localRc: event.garmentRc - armholeStart,
+      amount: event.amount,
+    }));
   const timeline = backTimeline(result);
   const neckPointsTimeline = collectInnerNeckDecreasePointsFromTimeline(timeline, "right");
   const gutterX = Math.max(8, Math.min(frame.left, frame.hemLeft) - 10);
@@ -486,8 +473,15 @@ export function buildSleevelessBackShapingNotationDiagramSvg(
     );
   }
 
-  if (bindOffSts > 0) {
-    parts.push(eventHook("armhole-event", 0, armholeStart, frame.armholeStartY));
+  for (const event of rightArmholeEvents.filter((item) => item.kind === "bindOff")) {
+    parts.push(
+      eventHook(
+        "armhole-event",
+        event.garmentRc - armholeStart,
+        event.garmentRc,
+        sleevelessBackYAtRc(event.garmentRc, bands),
+      ),
+    );
   }
   for (const ev of decreaseEvents) {
     parts.push(eventHook("armhole-event", ev.localRc, ev.garmentRc, sleevelessBackYAtRc(ev.garmentRc, bands)));

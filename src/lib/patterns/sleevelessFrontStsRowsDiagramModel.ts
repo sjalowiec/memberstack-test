@@ -6,7 +6,8 @@
  * No pattern math, no SVG.
  */
 
-import { pulloverArmholeEvents, type FrontArmholeEvent } from "./frontArmholeNecklineComposition";
+import type { FrontArmholeEvent } from "./frontArmholeNecklineComposition";
+import { resolveArmholeDiagramShaping } from "./setInSleeve/setInSleeveDiagramArmhole";
 import { resolveEffectiveFrontNeckDepthInches } from "./customBuildEffectiveNeckDepth";
 import {
   sleevelessPieceFinishedSpans,
@@ -310,15 +311,6 @@ function isCardiganAlineFront(
   );
 }
 
-/** Armhole-edge events only — cardigan CF has no bind-off (band is added later). */
-function cardiganLeftFrontArmholeEvents(args: {
-  firstArmholeGarmentRc: number;
-  bindOffSts: number;
-  decreaseSts: number;
-}): FrontArmholeEvent[] {
-  return pulloverArmholeEvents(args).filter((ev) => ev.side === "right");
-}
-
 function cardiganLeftFrontWidths(
   result: SleevelessBackPatternResult,
 ): SleevelessFrontStsRowsDiagramWidths | null {
@@ -470,12 +462,16 @@ export function buildSleevelessFrontStsRowsDiagramModel(
   const eachSide = d.armholeStitchesEachSide;
   if (!isFiniteNumber(eachSide) || eachSide <= 0) return null;
   const stitchesEachSide = Math.round(eachSide);
-  const { bindOffSts, decreaseSts } = armholeBindOffDecreaseFromEachSide(stitchesEachSide);
-  const events = pulloverArmholeEvents({
-    firstArmholeGarmentRc: armholeStart,
-    bindOffSts,
-    decreaseSts,
+  const sleevelessSplit = armholeBindOffDecreaseFromEachSide(stitchesEachSide);
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
   });
+  const bindOffSts = armholeShaping.bindOffSts;
+  const decreaseSts = armholeShaping.decreaseSts;
+  const events = armholeShaping.events;
   const lastDecrease = events
     .filter((ev) => ev.kind === "decrease")
     .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);
@@ -656,17 +652,21 @@ function buildCardiganFrontStsRowsDiagramModel(
   const eachSide = d.armholeStitchesEachSide;
   if (!isFiniteNumber(eachSide) || eachSide <= 0) return null;
   const stitchesEachSide = Math.round(eachSide);
-  const { bindOffSts, decreaseSts } = armholeBindOffDecreaseFromEachSide(stitchesEachSide);
   const armholeStart = Math.max(0, Math.floor(finiteOr(d.armholeStartRow, 0)));
   const neckStartGarmentRc = Math.max(
     0,
     Math.floor(finiteOr(d.frontNecklineStartRC, armholeStart)),
   );
-  const events = cardiganLeftFrontArmholeEvents({
-    firstArmholeGarmentRc: armholeStart,
-    bindOffSts,
-    decreaseSts,
+  const sleevelessSplit = armholeBindOffDecreaseFromEachSide(stitchesEachSide);
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
   });
+  const bindOffSts = armholeShaping.bindOffSts;
+  const decreaseSts = armholeShaping.decreaseSts;
+  const events = armholeShaping.events.filter((event) => event.side === "right");
   const lastDecrease = events
     .filter((ev) => ev.kind === "decrease")
     .reduce((max, ev) => Math.max(max, ev.garmentRc), armholeStart);

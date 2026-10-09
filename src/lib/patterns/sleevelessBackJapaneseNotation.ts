@@ -10,6 +10,7 @@ import {
   roundNeckPlanOneSideBackNeckEdgeJpLines,
 } from "./roundNeckPlanPresentation";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
+import { resolveArmholeDiagramShaping } from "./setInSleeve/setInSleeveDiagramArmhole";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import {
   compressStitchDecreasePointsToNotationLines,
@@ -321,11 +322,25 @@ export function buildBackJapaneseNotationReplacements(
   const bodyRows = d.bodyRows;
 
   const eachSide = d.armholeStitchesEachSide;
-  const { bindOffSts, decreaseSts } =
+  const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
+  const sleevelessSplit =
     eachSide !== undefined ? armholeBindOffDecreaseFromEachSide(eachSide) : { bindOffSts: 0, decreaseSts: 0 };
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart: armholeStartGarmentRc ?? 0,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
+  });
+  const { bindOffSts, decreaseSts } = armholeShaping;
 
-  const armholeDecreasePoints: StitchDecreasePoint[] =
-    decreaseSts > 0
+  const armholeDecreasePoints: StitchDecreasePoint[] = armholeShaping.notationLines
+    ? armholeShaping.events
+        .filter((event) => event.kind === "decrease" && event.side === "right")
+        .map((event) => ({
+          row: Math.max(0, event.garmentRc - (armholeStartGarmentRc ?? 0)),
+          amount: event.amount,
+        }))
+    : decreaseSts > 0
       ? Array.from({ length: decreaseSts }, (_, i) => ({ row: i * 2, amount: 1 }))
       : [];
 
@@ -362,7 +377,6 @@ export function buildBackJapaneseNotationReplacements(
 
   const hemRows = d.hemRows;
   const necklineLocalRc = d.backNecklineStartLocalRC;
-  const armholeStartGarmentRc = garmentRcAtArmholeStart(d);
   const rcCaston = formatRcNotation(0);
   const rcHem = formatRcNotation(hemRows);
   const rcArmholeBo =
@@ -384,8 +398,10 @@ export function buildBackJapaneseNotationReplacements(
     "jp-caston": formatCastOnNotation(castOnSts),
     "jp-body-rows": formatBodyRowsNotation(bodyRows),
     "jp-body-shaping": bodyShapingLines,
-    "jp-armhole-bo": formatBindOffNotation(bindOffSts),
-    "jp-armhole-shaping": joinNotationLines(armholeShapingLines),
+    "jp-armhole-bo": armholeShaping.notationLines?.[0] ?? formatBindOffNotation(bindOffSts),
+    "jp-armhole-shaping": armholeShaping.notationLines
+      ? joinNotationLines(armholeShaping.notationLines.slice(1))
+      : joinNotationLines(armholeShapingLines),
     "jp-neckline-bo":
       backRoundNeckPlan !== null
         ? formatHoldNotation(centerNeckBindOff ?? 0)

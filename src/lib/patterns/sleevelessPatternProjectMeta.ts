@@ -3,6 +3,7 @@
  * Canonical store: `kbm_current_pattern.patternProject` ({@link SleevelessPatternProjectMeta}).
  */
 import { readActiveCustomPatternProjectLinkedName } from "./customPatternProjectActiveId";
+import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
 import {
   getCurrentPattern,
   getSleevelessChartAudience,
@@ -46,6 +47,9 @@ export const DROP_SHOULDER_PATTERN_FAMILY_NAME = "Drop Shoulder";
 /** Family name used for Sideways V-Neck construction patterns. */
 export const SIDEWAYS_V_NECK_PATTERN_FAMILY_NAME = "Sideways V-Neck";
 
+/** Family name used for set-in sleeve construction patterns. */
+export const SET_IN_SLEEVE_PATTERN_FAMILY_NAME = "Set-In Sleeve Sweater";
+
 /** True when the pattern's style is a drop-shoulder construction. */
 function isDropShoulderPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): boolean {
   return hasAuthoritativeDropShoulderConstruction(
@@ -62,9 +66,17 @@ function isSidewaysCardiganPattern(pattern: SleevelessPatternRecord = getCurrent
   );
 }
 
+/** True when the working draft is an authored set-in sleeve construction. */
+function isSetInSleevePattern(pattern: SleevelessPatternRecord = getCurrentPattern()): boolean {
+  return hasAuthoritativeSetInSleeveConstruction(
+    pattern.style as Record<string, unknown> | undefined,
+  );
+}
+
 /** Family name for auto-titles, by construction. */
 function patternFamilyNameForPattern(pattern: SleevelessPatternRecord = getCurrentPattern()): string {
   if (isSidewaysCardiganPattern(pattern)) return SIDEWAYS_V_NECK_PATTERN_FAMILY_NAME;
+  if (isSetInSleevePattern(pattern)) return SET_IN_SLEEVE_PATTERN_FAMILY_NAME;
   return isDropShoulderPattern(pattern)
     ? DROP_SHOULDER_PATTERN_FAMILY_NAME
     : SLEEVELESS_PATTERN_FAMILY_NAME;
@@ -285,6 +297,7 @@ export function refreshAutoPatternProjectTitle(
       SLEEVELESS_PATTERN_FAMILY_NAME,
       DROP_SHOULDER_PATTERN_FAMILY_NAME,
       SIDEWAYS_V_NECK_PATTERN_FAMILY_NAME,
+      SET_IN_SLEEVE_PATTERN_FAMILY_NAME,
     ]
       .filter((other) => other !== family)
       .some((other) => current.title.trim() === buildDefaultSleevelessPatternTitle(ctx, other));
@@ -336,6 +349,9 @@ export const DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK =
 export const SIDEWAYS_V_NECK_PATTERN_ONLINE_HEADING_FALLBACK =
   "Sideways V-Neck sweater · Pattern instructions";
 
+export const SET_IN_SLEEVE_PATTERN_ONLINE_HEADING_FALLBACK =
+  "Set-in sleeve sweater · Pattern instructions";
+
 /**
  * Online pattern tab heading from draft/linked user name, or construction-aware generic fallback.
  * Does not use the Astro page title — that is only a last resort for browser PDF Save-as when
@@ -353,6 +369,7 @@ export function getSleevelessPatternOnlineHeading(
 
   if (fallback !== undefined) return fallback;
   if (isSidewaysCardiganPattern()) return SIDEWAYS_V_NECK_PATTERN_ONLINE_HEADING_FALLBACK;
+  if (isSetInSleevePattern()) return SET_IN_SLEEVE_PATTERN_ONLINE_HEADING_FALLBACK;
   return isDropShoulderPattern()
     ? DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK
     : SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK;

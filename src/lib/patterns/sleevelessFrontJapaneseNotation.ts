@@ -17,6 +17,7 @@ import {
   shoulderShapingBeginLocalRCForDiagram,
   type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
+import { resolveArmholeDiagramShaping } from "./setInSleeve/setInSleeveDiagramArmhole";
 import { scaleAlineBodyShapingPlanForCardiganHalf } from "./sleevelessAlineShaping";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import { isSleevelessCardiganFrontNeckShoulderChart } from "./neckShoulderShapingChart";
@@ -70,7 +71,6 @@ import {
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import {
   displayRcFromGarmentRc,
-  pulloverArmholeEvents,
   resolveFrontVNeckRowCounterDisplayPolicy,
   sleevelessPulloverVNeckBeginDisplayRc,
   type FrontVNeckRowCounterDisplayPolicy,
@@ -313,18 +313,21 @@ export function resolveFrontVNeckNotationRcModel(
   const policy = resolveFrontVNeckRowCounterDisplayPolicy(overlap);
   const armholeBoGarmentRc = garmentRcAtArmholeStart(d);
   const eachSide = d.armholeStitchesEachSide;
-  const { bindOffSts, decreaseSts } =
+  const sleevelessSplit =
     eachSide !== undefined
       ? armholeBindOffDecreaseFromEachSide(eachSide)
       : { bindOffSts: 0, decreaseSts: 0 };
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart: armholeBoGarmentRc ?? 0,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
+  });
+  const { bindOffSts, decreaseSts } = armholeShaping;
 
   const armholeDecreasePoints: StitchDecreasePoint[] =
     decreaseSts > 0 && armholeBoGarmentRc !== undefined
-      ? pulloverArmholeEvents({
-          firstArmholeGarmentRc: armholeBoGarmentRc,
-          bindOffSts,
-          decreaseSts,
-        })
+      ? armholeShaping.events
           .filter((ev) => ev.kind === "decrease" && ev.side === "right")
           .map((ev) => ({
             row: displayRcFromGarmentRc(ev.garmentRc, armholeBoGarmentRc, policy),
@@ -413,8 +416,16 @@ export function buildFrontJapaneseNotationReplacements(
   const bodyRows = d.bodyRows;
 
   const eachSide = d.armholeStitchesEachSide;
-  const { bindOffSts, decreaseSts } =
+  const armholeShapingStart = garmentRcAtArmholeStart(d) ?? 0;
+  const sleevelessSplit =
     eachSide !== undefined ? armholeBindOffDecreaseFromEachSide(eachSide) : { bindOffSts: 0, decreaseSts: 0 };
+  const armholeShaping = resolveArmholeDiagramShaping({
+    plan: result.setInArmholePlan,
+    armholeStart: armholeShapingStart,
+    sleevelessBindOffSts: sleevelessSplit.bindOffSts,
+    sleevelessDecreaseSts: sleevelessSplit.decreaseSts,
+  });
+  const { bindOffSts, decreaseSts } = armholeShaping;
 
   const frontChart = result.frontNeckShoulderShapingChart;
   const isPulloverVNeckFront = isSleevelessPulloverVNeckFrontNotation(result, patternData);
@@ -505,8 +516,10 @@ export function buildFrontJapaneseNotationReplacements(
     "jp-caston": formatCastOnNotation(castOnSts),
     "jp-body-rows": formatBodyRowsNotation(bodyRows),
     "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
-    "jp-armhole-bo": formatBindOffNotation(bindOffSts),
-    "jp-armhole-shaping": joinNotationLines(formatDecreaseNotationLines(armholeDecreasePoints)),
+    "jp-armhole-bo": armholeShaping.notationLines?.[0] ?? formatBindOffNotation(bindOffSts),
+    "jp-armhole-shaping": armholeShaping.notationLines
+      ? joinNotationLines(armholeShaping.notationLines.slice(1))
+      : joinNotationLines(formatDecreaseNotationLines(armholeDecreasePoints)),
     "jp-neckline-bo": isVNeckFront ? "" : formatBindOffNotation(centerNeckBindOff ?? 0),
     "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
     "jp-shoulder-shaping": joinNotationLines(shoulderShapingLines),
