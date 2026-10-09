@@ -269,7 +269,7 @@ describe("Coco Loco Tank Knit-able page", () => {
     expect(templateSource).toContain("Hide lessons");
     const leadAt = templateSource.indexOf("knit-able-lead");
     const paletteAt = templateSource.indexOf('class="knit-able-palette"');
-    const introAt = templateSource.indexOf("<p>{content.intro}</p>");
+    const introAt = templateSource.indexOf("<p>{paragraph}</p>");
     const paletteSource = templateSource.slice(paletteAt, introAt);
     expect(leadAt).toBeGreaterThan(-1);
     expect(paletteAt).toBeGreaterThan(leadAt);

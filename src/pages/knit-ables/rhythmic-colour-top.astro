@@ -1,0 +1,42 @@
+---
+// Request-time schedule. A build-time date check would stay cached until the next deploy.
+export const prerender = false;
+
+import KnitAbleInspirationPage from "../../components/knit-ables/KnitAbleInspirationPage.astro";
+import KnitAbleUnavailable from "../../components/knit-ables/KnitAbleUnavailable.astro";
+import SiteNotFound from "../../components/SiteNotFound.astro";
+import {
+  RHYTHMIC_COLOUR_TOP_PAGE,
+  RHYTHMIC_COLOUR_TOP_PATH,
+} from "../../lib/knit-ables/rhythmicColourTop";
+import {
+  applyKnitAbleCacheHeaders,
+  loadKnitAblePageAccess,
+} from "../../lib/knit-ables/pageAccess";
+
+const knitAbleAccess = await loadKnitAblePageAccess({
+  path: RHYTHMIC_COLOUR_TOP_PATH,
+  url: Astro.url,
+  cookies: Astro.cookies,
+});
+applyKnitAbleCacheHeaders(Astro.response.headers);
+if (!knitAbleAccess.visible) {
+  Astro.response.status = knitAbleAccess.httpStatus;
+}
+const knitAblePreview = knitAbleAccess.visible && knitAbleAccess.preview;
+const knitAbleStatus = knitAbleAccess.visible ? knitAbleAccess.status : "unpublished";
+const knitAblePublishDate = knitAbleAccess.visible ? knitAbleAccess.publishDate : null;
+---
+
+{knitAbleAccess.visible ? (
+  <KnitAbleInspirationPage
+    content={RHYTHMIC_COLOUR_TOP_PAGE}
+    preview={knitAblePreview}
+    status={knitAbleStatus}
+    publishDate={knitAblePublishDate}
+  />
+) : knitAbleAccess.httpStatus === 404 ? (
+  <SiteNotFound />
+) : (
+  <KnitAbleUnavailable />
+)}

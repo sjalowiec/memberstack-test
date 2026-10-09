@@ -24,7 +24,7 @@ Branch Out Tank, Teenage Kicks Socks, and Worsted Color-Block Socks keep their o
 | `intro` | Introduction under the tagline. |
 | `builder.heading` | Soft green panel heading. |
 | `builder.introduction` | Panel introduction. `before` is required. Add `link` and `after` when the builder name sits in the middle of the sentence. |
-| `builder.steps` | Compact indented bullets. An empty list omits the bullets. |
+| `builder.steps` | Compact indented bullets. An empty list omits the bullets. A step can be a string, or `{ lead, text }` when the opening phrase should be bold. |
 | `builder.cta` | Member and visitor actions. Pass the pattern landing page `cta`. The layout shows the checking state, the member button, and the visitor membership and sign-in links. |
 | `pattern` | Original pattern heading, copy, button label, and URL. |
 | `yarn` | Yarn section heading, card heading, paragraphs, button label, and URL. |
@@ -38,7 +38,7 @@ Omit the field, or leave a list empty, and the layout drops that piece.
 | Field | Use |
 | --- | --- |
 | `palette` | Color inspiration. `colors` are hex values (`#e56b93` or `#fff`). Set `bordered: true` on a near-white swatch. `label` and `caption` are optional. These colors can come from the suggested yarn rather than the photographed garment. |
-| `builder.closing` | Paragraphs after the bullets. Set `emphasis: true` on the bold closing line. |
+| `builder.closing` | Paragraphs after the bullets. Set `emphasis: true` on the bold green closing line. Set `heading: true` for a subheading in the panel, or `strong: true` for a bold sentence. |
 | `hero.href` / `hero.rel` | Override the photo link. The default is the original pattern link with the affiliate `rel`. |
 | `pattern.rel` / `yarn.rel` | Override the affiliate `rel` for a non-affiliate link. |
 | `yarn.image` | Optional yarn photo. `featured` and `imagePlacement` (`above` or `beside`) match `KnitAbleYarnCard`. |
