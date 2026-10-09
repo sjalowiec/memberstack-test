@@ -149,9 +149,80 @@ function syncPatternInpageNavOffset(nav: HTMLElement): void {
   }
 }
 
+/** Show or hide the shared Print control without leaving a second copy in the nav. */
+export function setPatternPrintActionVisible(
+  button: Element | null,
+  visible: boolean,
+): void {
+  if (!(button instanceof HTMLElement)) return;
+  button.hidden = !visible;
+  button.style.display = visible ? "inline-flex" : "none";
+}
+
+/**
+ * Bind the shared Print button. Pages that already render it pass their actions host;
+ * a missing button is created once so older markup still prints.
+ */
+export function mountPatternPrintAction(options: {
+  host: Element | null;
+  visible?: boolean;
+  onPrint: (button: HTMLButtonElement) => void;
+}): HTMLButtonElement | null {
+  if (!(options.host instanceof HTMLElement)) return null;
+  let printBtn = options.host.querySelector("#print-btn");
+  if (!(printBtn instanceof HTMLButtonElement)) {
+    printBtn = document.createElement("button");
+    printBtn.type = "button";
+    printBtn.id = "print-btn";
+    printBtn.className = "sleeveless-pattern-print-action no-print";
+    printBtn.setAttribute("data-testid", "button-print");
+    printBtn.setAttribute("aria-label", "Print pattern");
+    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
+    options.host.appendChild(printBtn);
+  }
+  if (printBtn.dataset.patternPrintBound !== "true") {
+    printBtn.dataset.patternPrintBound = "true";
+    const button = printBtn;
+    printBtn.addEventListener("click", () => {
+      options.onPrint(button);
+    });
+  }
+  if (options.visible !== undefined) {
+    setPatternPrintActionVisible(printBtn, options.visible);
+  }
+  return printBtn;
+}
+
+function scrollSavedPatternToTop(target: HTMLElement): void {
+  const reduce =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const styles = getComputedStyle(document.documentElement);
+  const headerOffset = parseFloat(styles.getPropertyValue("--header-offset")) || 170;
+  const banner = parseFloat(styles.getPropertyValue("--kbm-env-banner-h")) || 0;
+  const top =
+    target.getBoundingClientRect().top + window.scrollY - banner - headerOffset - 8;
+  window.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+}
+
+/** Smooth-scroll Top to the pattern header. Native hash navigation remains if the header is missing. */
+export function bindPatternStickyNavTop(nav: ParentNode): void {
+  const top = nav.querySelector("[data-saved-pattern-sticky-nav-top]");
+  if (!(top instanceof HTMLElement) || typeof top.addEventListener !== "function") return;
+  if (top.dataset.patternNavTopBound === "true") return;
+  top.dataset.patternNavTopBound = "true";
+  top.addEventListener("click", (event) => {
+    const target = document.getElementById(SAVED_PATTERN_HEADER_ID);
+    if (!(target instanceof HTMLElement)) return;
+    event.preventDefault();
+    scrollSavedPatternToTop(target);
+  });
+}
+
 export function syncPatternInpageNav(options: SyncPatternInpageNavOptions): number {
   const nav = options.nav ?? document.querySelector(`[${PATTERN_INPAGE_NAV_ATTR}]`);
   if (!(nav instanceof HTMLElement)) return 0;
+  bindPatternStickyNavTop(nav);
   const scope = options.scope ?? document.getElementById("pattern-content");
   const track = patternStickyNavSectionsHost(nav);
   track.className = PATTERN_INPAGE_NAV_TRACK_CLASS;

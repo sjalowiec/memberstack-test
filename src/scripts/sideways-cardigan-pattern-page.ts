@@ -50,7 +50,7 @@ import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternP
 import { buildSidewaysCardiganSummaryEditFromPatternHref } from "../lib/patterns/sidewaysCardiganPatternNavigation";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { bindPatternSectionCollapse } from "../lib/patterns/sleevelessPatternDisplayHtml";
-import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
+import { mountPatternPrintAction, syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
 import { sidewaysPatternInpageNavItems } from "../lib/patterns/sidewaysCardiganPatternInpageNav";
 import { buildSidewaysCardiganPatternHeaderDetailsHtml } from "../lib/patterns/sidewaysCardiganPatternHeaderDetails";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
@@ -374,27 +374,13 @@ function markSidewaysDiagramForEnlarge(host: HTMLElement): void {
 
 /** Header Print prints the whole pattern. Diagram Print prints one shaping diagram. */
 function mountSidewaysPrintAction(visible: boolean): void {
-  const actions = document.querySelector("[data-sideways-pattern-actions]");
-  if (!(actions instanceof HTMLElement)) return;
-  let printBtn = actions.querySelector("#print-btn");
-  if (!(printBtn instanceof HTMLButtonElement)) {
-    printBtn = document.createElement("button");
-    printBtn.type = "button";
-    printBtn.id = "print-btn";
-    printBtn.className = "sleeveless-pattern-print-action no-print";
-    printBtn.setAttribute("data-testid", "button-print");
-    printBtn.setAttribute("aria-label", "Print pattern");
-    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
-    actions.appendChild(printBtn);
-  }
-  if (printBtn.dataset.sidewaysPrintBound !== "true") {
-    printBtn.dataset.sidewaysPrintBound = "true";
-    printBtn.addEventListener("click", () => {
-      triggerPatternPrint(printBtn, {});
-    });
-  }
-  printBtn.hidden = !visible;
-  printBtn.style.display = visible ? "inline-flex" : "none";
+  mountPatternPrintAction({
+    host: document.querySelector("[data-sideways-pattern-actions]"),
+    visible,
+    onPrint: (button) => {
+      triggerPatternPrint(button, {});
+    },
+  });
 }
 
 function bindSidewaysDiagramPrint(root: HTMLElement): void {

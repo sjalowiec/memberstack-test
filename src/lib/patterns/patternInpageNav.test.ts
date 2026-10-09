@@ -54,13 +54,42 @@ describe("sweater in-page navigation remains unchanged", () => {
     expect(stickyNav).toContain('aria-label="Jump to pattern section"');
     expect(stickyNav).toContain("sleeveless-pattern-inpage-nav no-print");
     expect(stickyNav).toContain('href="#saved-pattern-header"');
+    expect(stickyNav).toContain('aria-label="Back to top."');
+    expect(stickyNav).toContain("fa-arrow-up");
     expect(stickyNav).toContain("data-saved-pattern-sticky-nav-sections");
     expect(stickyNav).toContain("data-saved-pattern-sticky-nav-actions");
+    expect(stickyNav).toContain('aria-label="Print pattern"');
+    expect(stickyNav).toContain("includePrint");
 
     for (const pagePath of SWEATER_NAV_PAGES) {
       const page = readFileSync(resolve(pagePath), "utf8");
       expect(page).toContain("SavedPatternStickyNav");
       expect(page).not.toContain("<!-- Print button");
     }
+  });
+
+  it("uses one sticky nav for every generated pattern workspace", () => {
+    const generated = [
+      "src/pages/patterns/sideways-cardigan/pattern/index.astro",
+      "src/pages/patterns/sleeveless/pattern/index.astro",
+      "src/pages/patterns/drop-shoulder/pattern/index.astro",
+      "src/pages/patterns/set-in-sleeve/pattern/index.astro",
+      "src/pages/patterns/hat/pattern.astro",
+      "src/pages/patterns/socks/pattern.astro",
+    ];
+    for (const pagePath of generated) {
+      const page = readFileSync(resolve(pagePath), "utf8");
+      expect(page).toContain("<SavedPatternStickyNav");
+      expect(page).toContain("includePrint");
+      expect(page).toContain('data-testid="button-edit-pattern"');
+      expect(page.match(/<SavedPatternStickyNav/g)).toHaveLength(1);
+    }
+
+    const beta = readFileSync(
+      resolve("src/pages/patterns/sleeveless/beta-pattern.astro"),
+      "utf8",
+    );
+    expect(beta).toContain("<SavedPatternStickyNav");
+    expect(beta).not.toContain("includePrint");
   });
 });

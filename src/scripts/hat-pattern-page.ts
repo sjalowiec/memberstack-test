@@ -55,7 +55,11 @@ import {
   applyPatternPrintPersonalizationToDom,
   triggerPatternPrint,
 } from "./patternPrintPersonalization.ts";
-import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
+import {
+  mountPatternPrintAction,
+  setPatternPrintActionVisible,
+  syncPatternInpageNav,
+} from "../lib/patterns/patternInpageNav";
 import { HAT_PATTERN_INPAGE_NAV_ITEMS } from "../lib/patterns/hat/hatPatternInpageNav";
 import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import hatSizingRows from "../data/sizing_hats.json";
@@ -231,24 +235,13 @@ function mountPrintAction() {
   if (!(host instanceof HTMLElement)) return;
   mountEditAction();
   mountYarnAction();
-  let printBtn = host.querySelector("#print-btn");
-  if (!(printBtn instanceof HTMLButtonElement)) {
-    printBtn = document.createElement("button");
-    printBtn.type = "button";
-    printBtn.id = "print-btn";
-    printBtn.className = "sleeveless-pattern-print-action no-print";
-    printBtn.setAttribute("data-testid", "button-print");
-    printBtn.setAttribute("aria-label", "Print pattern");
-    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
-    host.appendChild(printBtn);
-  }
-  if (printBtn.dataset.hatPrintBound !== "true") {
-    printBtn.dataset.hatPrintBound = "true";
-    printBtn.addEventListener("click", () => {
-      runHatPatternPrint(printBtn);
-    });
-  }
-  printBtn.style.display = "inline-flex";
+  mountPatternPrintAction({
+    host,
+    visible: true,
+    onPrint: (button) => {
+      runHatPatternPrint(button);
+    },
+  });
 }
 
 function bindInlinePrintLink() {
@@ -274,8 +267,7 @@ function showEmptyState(message: string) {
   setHatLeadCaptureVisible(document, false);
   setVisible(empty, true);
   setVisible(results, false);
-  const printBtn = document.querySelector("#print-btn");
-  if (printBtn instanceof HTMLElement) printBtn.style.display = "none";
+  setPatternPrintActionVisible(document.querySelector("#print-btn"), false);
   const editBtn = document.querySelector("[data-hat-edit-open]");
   if (editBtn instanceof HTMLElement) {
     editBtn.hidden = true;
@@ -298,8 +290,7 @@ function showHatPatternLeadGate() {
   const results = document.querySelector("[data-hat-pattern-results]");
   setVisible(empty, false);
   setVisible(results, false);
-  const printBtn = document.querySelector("#print-btn");
-  if (printBtn instanceof HTMLElement) printBtn.style.display = "none";
+  setPatternPrintActionVisible(document.querySelector("#print-btn"), false);
   const editBtn = document.querySelector("[data-hat-edit-open]");
   if (editBtn instanceof HTMLElement) {
     editBtn.hidden = true;

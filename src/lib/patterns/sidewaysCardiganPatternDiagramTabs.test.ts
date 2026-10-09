@@ -266,7 +266,10 @@ describe("Sideways diagram tabs", () => {
     expect(pageScript).toContain("triggerPatternPrint");
     expect(pageScript).toContain("printShapingNotationDiagramDocument");
     expect(pageScript).toContain("isPrintablePatternDiagramSvg");
-    expect(pageScript).toContain('aria-label", "Print pattern"');
+    expect(pageScript).toContain("mountPatternPrintAction");
+    expect(
+      readFileSync(join(srcRoot, "components/patterns/SavedPatternStickyNav.astro"), "utf8"),
+    ).toContain('aria-label="Print pattern"');
     const page = readFileSync(
       join(srcRoot, "pages/patterns/sideways-cardigan/pattern/index.astro"),
       "utf8",
