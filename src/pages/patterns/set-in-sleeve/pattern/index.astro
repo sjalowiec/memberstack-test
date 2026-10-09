@@ -1,0 +1,878 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
+import PatternPrintFooter from "../../../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
+import SavedPatternHeader from "../../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../../components/patterns/SavedPatternStickyNav.astro";
+import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
+import PatternProjectDetails from "../../../../components/patterns/PatternProjectDetails.astro";
+import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import EditWorkspaceGaugeFields from "../../../../components/patterns/EditWorkspaceGaugeFields.astro";
+import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
+import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
+import PatternEditingUnlockModal from "../../../../components/patterns/PatternEditingUnlockModal.astro";
+import PatternAutoSaveSuccessDialog from "../../../../components/patterns/PatternAutoSaveSuccessDialog.astro";
+import BustDartPatternModal from "../../../../components/patterns/BustDartPatternModal.astro";
+import GarmentPatternYarnDrawer from "../../../../components/patterns/GarmentPatternYarnDrawer.astro";
+import FloatingInput from "../../../../components/lego/FloatingInput.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../../../lib/patterns/sleevelessExpressAvailableNeedles";
+
+import "../../../../styles/ns-shaping-chart.css";
+import "../../../../styles/shaping-map.css";
+import "../../../../styles/wizard.css";
+import "../../../../styles/glossary-tooltip.css";
+import "../../../../styles/pattern-tips.css";
+import "../../../../styles/pattern-quick-tip.css";
+import "../../../../styles/pattern-help-card.css";
+
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-diagram-tabs.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-editable-pencil.css";
+import "../../../../styles/tools/yarn-requirement-drawer-shell.css";
+
+// Reused measurement editor styling (same diagram/overlay as Custom Build → Measurements).
+import "../../../../styles/sleeveless-express-measurements-confirm.css";
+import "../../../../styles/sleeveless-custom-build-measurements.css";
+import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
+import "../../../../styles/patterns/pattern-errata-notice.css";
+---
+
+<Layout
+  title="Set-In Sleeve Sweater Pattern | Knit it Now"
+  description="Generated set-in sleeve sweater pattern instructions from your saved builder choices."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/set-in-sleeve" />
+  <SleevelessPatternMemberGate>
+  <main class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell" data-pattern-print-skip-modal>
+    <div id="sleeveless-pattern-top" class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <SavedPatternHeader part="actions">
+          <Fragment slot="actions-start">
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-pattern-workspace-library-trigger
+              data-testid="pattern-workspace-library-trigger"
+              aria-haspopup="dialog"
+              aria-controls="pattern-workspace-library-drawer-panel"
+              aria-expanded="false"
+            >
+              <i class="fa-solid fa-folder-open" aria-hidden="true"></i> My Patterns
+            </button>
+            <button
+              type="button"
+              class="sleeveless-pattern-edit-action no-print"
+              data-pattern-workspace-new-pattern-trigger
+              data-testid="pattern-workspace-new-pattern-trigger"
+            >
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> New Pattern
+            </button>
+          </Fragment>
+          <Fragment slot="actions-end">
+            <button
+              type="button"
+              id="express-yarn-drawer-open"
+              class="sleeveless-pattern-edit-action no-print"
+              data-garment-yarn-open
+              data-testid="garment-pattern-how-much-yarn"
+              hidden
+              aria-haspopup="dialog"
+              aria-controls="express-yarn-drawer-panel"
+              aria-expanded="false"
+            >
+              How Much Yarn?
+            </button>
+          </Fragment>
+        </SavedPatternHeader>
+
+        <div id="sg-sleeveless-results" class="sg-sleeveless-results">
+          <div id="sleeveless-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
+            <SleevelessPatternPrintNotice />
+            <SavedPatternHeader
+              part="intro"
+              title="Set-in sleeve sweater · Pattern instructions"
+              titleAttr="data-sleeveless-pattern-online-heading"
+              hideTitleOnPrint
+              thumbnailSrc="/images/patterns/drop_shoulder.webp"
+              thumbnailAlt="Set-in sleeve sweater pattern preview"
+              thumbnailWidth={1536}
+              thumbnailHeight={1024}
+              tipsStorageKey="sleeveless-show-tips"
+              tipsScopeSelector="#sleeveless-pattern-tips-scope"
+              printOriginLabel="Created with the Knit It Now Set-In Sleeve Pattern Builder"
+              printOriginUrl="KnitItNow.com/set-in-sleeve"
+            >
+              <PatternPrintPersonalization slot="print-personalization">
+                <div slot="print-summary" class="sg-pattern-print-at-a-glance" data-sg-pattern-print-at-a-glance>
+                  <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
+                  <div data-sg-pattern-print-basics-body></div>
+                </div>
+              </PatternPrintPersonalization>
+            </SavedPatternHeader>
+
+            <div id="pattern-content" data-pattern-content>
+              <SavedPatternStickyNav actionsAttrs={["data-sleeveless-pattern-actions"]}>
+                <button
+                  type="button"
+                  class="sleeveless-pattern-edit-action no-print"
+                  data-sl-edit-open
+                  data-testid="button-edit-pattern"
+                  aria-haspopup="dialog"
+                  aria-controls="sl-edit-drawer-panel"
+                >
+                  <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+                </button>
+              </SavedPatternStickyNav>
+              <div class="sleeveless-pattern-mount" data-sleeveless-mount>
+                <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <noscript>
+          <div class="pattern-section">
+            <h2 class="pattern-noscript-heading">Pattern</h2>
+            <p>Turn on JavaScript to view this pattern.</p>
+          </div>
+        </noscript>
+      </div>
+    </div>
+
+    <!--
+      Edit Pattern workspace — ONE combined editing surface (full-width app shell).
+      Left column: quick edits (Size, Front Style, Neckline, Gauge, Needles).
+      Right column: the reused Custom Build measurement editor SVG — visible immediately,
+      no separate "Edit Measurements" click.
+    -->
+    <div class="sl-edit-drawer sl-edit-drawer--workspace no-print" data-sl-edit-drawer aria-hidden="true">
+      <div class="sl-edit-drawer__backdrop" data-sl-edit-close aria-hidden="true"></div>
+      <section
+        id="sl-edit-drawer-panel"
+        class="sl-edit-drawer__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Edit pattern"
+        tabindex="-1"
+      >
+        <PatternPhoneWorkspaceNotice />
+        <PatternSummaryEditWorkspace
+          headingClass="pattern-editable-heading"
+          measurePaneAttr="data-sl-measure-pane"
+          actionsAttr="data-sl-edit-actions"
+        >
+          <Fragment slot="quick">
+              <PatternProjectDetails titlePlaceholder="Set-in sleeve sweater" />
+
+              <section class="sl-edit-section sl-edit-units-section" aria-labelledby="sl-edit-units-heading">
+                <h3 class="sl-edit-section__title" id="sl-edit-units-heading">Units</h3>
+                <div
+                  class="sl-edit-units-toggle"
+                  role="group"
+                  aria-labelledby="sl-edit-units-heading"
+                  data-sl-edit-units
+                >
+                  <button
+                    type="button"
+                    class="sl-edit-unit-btn is-active"
+                    data-sl-edit-unit="in"
+                    aria-pressed="true"
+                  >
+                    Inches
+                  </button>
+                  <button
+                    type="button"
+                    class="sl-edit-unit-btn"
+                    data-sl-edit-unit="cm"
+                    aria-pressed="false"
+                  >
+                    Centimeters
+                  </button>
+                </div>
+                <p class="sl-edit-ease">
+                  Switch how measurements and gauge are shown. Your pattern's measurements don't change.
+                </p>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="sl-edit-setup-heading">
+                <h3 class="sl-edit-section__title pattern-editable-heading" id="sl-edit-setup-heading">
+                  Quick edits
+                  <PatternEditablePencilIcon />
+                </h3>
+
+                <div class="sl-edit-field">
+                  <label class="sl-edit-sublabel" for="sl-edit-size">Size</label>
+                  <select id="sl-edit-size" class="sl-edit-input sl-edit-select" data-sl-edit-size>
+                    <option value="">Loading sizes…</option>
+                  </select>
+                  <p class="sl-edit-ease">
+                    Changing the size updates the pattern measurements automatically.
+                  </p>
+                </div>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Front style</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Front style">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-garment" value="pullover" checked />
+                      <span class="sl-edit-segment__pill">Pullover</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-garment" value="cardigan" />
+                      <span class="sl-edit-segment__pill">Cardigan</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Neckline</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Neckline">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-neckline" value="round" checked />
+                      <span class="sl-edit-segment__pill">Round Neck</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-neckline" value="v-neck" />
+                      <span class="sl-edit-segment__pill">V-Neck</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset">
+                  <legend class="sl-edit-sublabel">Choose your sleeve length</legend>
+                  <div class="sl-edit-segment" role="radiogroup" aria-label="Choose your sleeve length">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="long" checked />
+                      <span class="sl-edit-segment__pill">Long</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="three-quarter" />
+                      <span class="sl-edit-segment__pill">3/4</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="elbow" />
+                      <span class="sl-edit-segment__pill">Elbow</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="short" />
+                      <span class="sl-edit-segment__pill">Short</span>
+                    </label>
+                  </div>
+                </fieldset>
+              </section>
+
+              <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
+                <h3 class="sl-edit-section__title pattern-editable-heading" id="sl-edit-gauge-heading">
+                  Gauge
+                  <PatternEditablePencilIcon />
+                </h3>
+                <EditWorkspaceGaugeFields />
+                <div class="sl-edit-needles-field">
+                  <FloatingInput
+                    id="sl-edit-needles"
+                    label={AVAILABLE_NEEDLES_LABEL}
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    required
+                    errorId="sl-edit-needles-error"
+                    errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+                  />
+                  <p class="sl-edit-needles-help" id="sl-edit-needles-help">
+                    {AVAILABLE_NEEDLES_HELPER_TEXT}
+                  </p>
+                </div>
+              </section>
+          </Fragment>
+
+          <Fragment slot="heading">
+            Measurements
+            <PatternEditablePencilIcon />
+          </Fragment>
+          <Fragment slot="notes">
+            <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
+            <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
+              Pattern updated.
+            </p>
+          </Fragment>
+          <Fragment slot="actions">
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--ghost"
+              data-sl-edit-close
+              data-testid="button-edit-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--primary"
+              data-sl-edit-apply
+              data-testid="button-edit-apply"
+            >
+              Save Changes
+            </button>
+          </Fragment>
+          <Fragment slot="hint">
+            Make your changes, then click Save Changes to update your pattern.
+          </Fragment>
+          <Fragment slot="diagram">
+            <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
+              <div
+                class="sl-measure-workspace__editor"
+                data-cb-measure-root
+                data-sleeveless-review-managed
+                data-express-construction="set-in-sleeve"
+                data-set-in-sleeve-workspace-measure-summary
+              >
+                <div class="sleeveless-measure-review-body">
+                  <div
+                    class="sleeveless-measure-project-summary"
+                    data-cb-build-summary
+                    aria-label="Current build summary"
+                  ></div>
+                  <p class="cb-measure-missing" data-cb-measure-missing hidden>
+                    Complete Foundation and Style &amp; Shaping to load measurements.
+                  </p>
+                  <div
+                    class="sleeveless-measure-diagram-host cb-measure-diagram-host"
+                    data-cb-measure-diagram
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </Fragment>
+        </PatternSummaryEditWorkspace>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- How Much Yarn? — page-level drawer outside Edit Pattern; body + sleeve area from rendered pattern. -->
+  <GarmentPatternYarnDrawer lede="Quick estimate from a weighed swatch using this set-in sleeve sweater’s finished size and sleeves." />
+
+  <PatternEditingUnlockModal />
+  <BustDartPatternModal />
+  <PatternAutoSaveSuccessDialog />
+  </SleevelessPatternMemberGate>
+</Layout>
+
+<style>
+  @media print {
+    :global(#pattern-content .pattern-section),
+    :global(#pattern-content .pattern-section--garment-piece),
+    :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
+    :global(#pattern-content .sleeveless-piece-split) {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    :global(#pattern-content .pattern-section) {
+      break-before: auto !important;
+      page-break-before: auto !important;
+    }
+
+    :global(#pattern-content .pattern-section__heading),
+    :global(#pattern-content .pattern-subsection__heading),
+    :global(#pattern-content .sleeveless-piece-split__diagram) {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
+    :global(#pattern-content .sleeveless-piece-split) {
+      --garment-print-diagram-track: 2.6in;
+      --garment-print-column-gap: 0.35in;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
+      column-gap: var(--garment-print-column-gap) !important;
+      row-gap: 0 !important;
+      align-items: start !important;
+    }
+
+    :global(#pattern-content .pattern-layout__content),
+    :global(#pattern-content .sleeveless-piece-split__text) {
+      min-width: 0 !important;
+      order: 0 !important;
+    }
+
+    :global(#pattern-content .pattern-layout__sidebar),
+    :global(#pattern-content .sleeveless-piece-split__diagram) {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      top: auto !important;
+      inset: auto !important;
+      order: 0 !important;
+      align-self: start !important;
+      justify-self: end !important;
+      width: auto !important;
+      max-width: 2.6in !important;
+      overflow: visible !important;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram-inner),
+    :global(#pattern-content .sleeveless-piece-split__diagram-trigger) {
+      display: block !important;
+      visibility: visible !important;
+      position: static !important;
+      cursor: default !important;
+      width: 100% !important;
+      max-width: 2.6in !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    :global(#pattern-content .sleeveless-piece-split__diagram-svg),
+    :global(#pattern-content .sleeveless-piece-split__diagram-inline),
+    :global(#pattern-content .sleeveless-piece-split__diagram-svg > svg),
+    :global(#pattern-content .sleeveless-piece-split__diagram img),
+    :global(#pattern-content .sleeveless-piece-split__diagram svg) {
+      display: block !important;
+      visibility: visible !important;
+      width: 100% !important;
+      max-width: 2.6in !important;
+      height: auto !important;
+      opacity: 1 !important;
+      overflow: visible !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+
+  /*
+   * Edit Pattern drawer.
+   */
+  .sl-edit-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 1450;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  .sl-edit-drawer.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.2s ease;
+  }
+
+  .sl-edit-drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+  }
+
+  .sl-edit-drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    width: clamp(360px, 34vw, 480px);
+    max-width: 100%;
+    background: #fff;
+    box-shadow: -10px 0 32px rgba(17, 24, 39, 0.18);
+    transform: translateX(100%);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sl-edit-drawer.is-open .sl-edit-drawer__panel {
+    transform: translateX(0);
+  }
+
+  .sl-edit-drawer__panel:focus {
+    outline: none;
+  }
+
+  .sl-edit-drawer__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .sl-edit-field {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .sl-edit-fieldset {
+    min-width: 0;
+  }
+
+  .sl-edit-section {
+    margin: 0;
+    padding: 1.3rem 0 0;
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e5e7eb);
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+  }
+
+  .sl-edit-section__title {
+    margin: 0;
+    padding: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sl-edit-locked {
+    padding: 0.8rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 4%, #f9faf6);
+  }
+
+  .sl-edit-locked__value {
+    margin: 0.15rem 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .sl-edit-locked__note {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sl-edit-locked__note .fa-lock {
+    margin-right: 0.3rem;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #6b7280);
+  }
+
+  .sl-edit-segment--three,
+  .sl-edit-segment--four {
+    flex-wrap: wrap;
+  }
+
+  .sl-edit-ease {
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #9ca3af;
+  }
+
+  .sl-edit-error-note {
+    margin: 0 0 0.6rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #991b1b;
+    background: #fff4f4;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+  }
+
+  .sl-edit-error-note[hidden] {
+    display: none;
+  }
+
+  .sl-edit-saved-note {
+    margin: 0 0 0.6rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #14532d;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+  }
+
+  .sl-edit-saved-note[hidden] {
+    display: none;
+  }
+
+  .sl-edit-label {
+    display: block;
+    margin: 0 0 0.4rem;
+    padding: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  }
+
+  .sl-edit-label .pattern-editable-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+  }
+
+  .sl-edit-sublabel {
+    display: block;
+    margin: 0 0 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #6b7280;
+  }
+
+  .sl-edit-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #1f2937;
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .sl-edit-input.sl-edit-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 14px;
+    padding-right: 2.65rem;
+    cursor: pointer;
+  }
+
+  .sl-edit-textarea {
+    min-height: 5.5rem;
+    resize: vertical;
+  }
+
+  /*
+   * Collapsible Notes: defaults collapsed to a single compact header row so the Quick edits
+   * section sits higher on the panel. The header button reuses the eyebrow label styling and
+   * shows an inline preview of any saved note; the chevron rotates when open.
+   */
+  .sl-edit-notes-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .sl-edit-notes-toggle__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  }
+
+  .sl-edit-notes-toggle__preview {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #6b7280;
+  }
+
+  .sl-edit-notes-toggle__preview[hidden] {
+    display: none;
+  }
+
+  .sl-edit-notes-toggle__chevron {
+    flex: 0 0 auto;
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+    transition: transform 0.15s ease;
+  }
+
+  .sl-edit-notes-field[data-collapsed="false"] .sl-edit-notes-toggle__chevron {
+    transform: rotate(180deg);
+  }
+
+  .sl-edit-notes-toggle:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .sl-edit-notes-region {
+    margin-top: 0.5rem;
+  }
+
+  .sl-edit-notes-region[hidden] {
+    display: none;
+  }
+
+  #sl-edit-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding-block: 0.7rem;
+  }
+
+  .sl-edit-input:focus {
+    outline: none;
+    border-color: var(--kbm-green, #52682d);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green, #52682d) 18%, transparent);
+  }
+
+  .sl-edit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  @media (min-width: 420px) {
+    .sl-edit-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .sl-edit-subfield {
+    min-width: 0;
+  }
+
+  .sl-edit-needles-field {
+    margin-top: 0.9rem;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .sl-edit-needles-field :global(.floating-input) {
+    max-width: 18rem;
+  }
+
+  @media (max-width: 480px) {
+    .sl-edit-needles-field :global(.floating-input) {
+      max-width: 100%;
+    }
+  }
+
+  .sl-edit-needles-help {
+    margin: 0.4rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  .sl-edit-segment {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .sl-edit-segment__option {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .sl-edit-segment__option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sl-edit-segment__pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+
+  .sl-edit-segment__option:hover .sl-edit-segment__pill {
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 45%, #d1d5db);
+  }
+
+  .sl-edit-segment__option input:checked + .sl-edit-segment__pill {
+    color: var(--kbm-green, #52682d);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 10%, #fff);
+    border-color: var(--kbm-green, #52682d);
+  }
+
+  .sl-edit-segment__option input:focus-visible + .sl-edit-segment__pill {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  /* Combined Edit Pattern workspace (full-width app shell). */
+  .sl-edit-drawer--workspace .sl-edit-drawer__panel {
+    position: absolute;
+    inset: var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) 0 0 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: none;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, #fdfcf7);
+    transform: translateY(14px);
+    transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sl-edit-drawer--workspace.is-open .sl-edit-drawer__panel {
+    transform: translateY(0);
+  }
+
+  /* Aspect ratio is pattern-specific; layout lives in pattern-summary-edit-workspace.css. */
+  .sl-measure-workspace__body.express-measurements-confirm-page {
+    --pattern-summary-aspect-ratio: 228.87 / 423.24;
+  }
+
+</style>
+
+<script>
+  import "/src/scripts/sleevelessPatternOnlineProjectHeader.ts";
+  import "/src/scripts/sleevelessPatternBuilderPage.ts";
+  import "/src/scripts/sleevelessPatternEditDrawerPrototype.ts";
+</script>

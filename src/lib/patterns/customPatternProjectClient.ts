@@ -17,6 +17,10 @@ import {
   sanitizeSavedProjectForHydration,
   withDropShoulderConstructionFamily,
 } from "./patternConstructionIdentity";
+import {
+  isActiveSetInSleeveConstruction,
+  withSetInSleeveConstructionFamily,
+} from "./setInSleeveConstructionIdentity";
 import { normalizePatternRecordNeckWidth } from "./customBuildEffectiveNeckOpeningWidth";
 import { repairSavedPatternMeasurementOverrides } from "./historicalTenTimesMeasurementOverrideRepair";
 import {
@@ -278,9 +282,12 @@ export function buildSavePayloadFromWorkingDraft(
       ? { ...fitWithoutCb, cbMeasurementOverrides: { ...measurementOverrides } }
       : fitWithoutCb;
 
-  const allowDropShoulder = isActiveDropShoulderConstruction();
+  const allowSetInSleeve = isActiveSetInSleeveConstruction();
+  const allowDropShoulder = !allowSetInSleeve && isActiveDropShoulderConstruction();
   let customOverrides = options.customOverrides ?? {};
-  if (allowDropShoulder) {
+  if (allowSetInSleeve) {
+    customOverrides = withSetInSleeveConstructionFamily(customOverrides);
+  } else if (allowDropShoulder) {
     customOverrides = withDropShoulderConstructionFamily(customOverrides);
   }
 

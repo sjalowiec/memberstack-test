@@ -5,6 +5,7 @@ import {
 } from "./legoBlocks/neckbandPickup";
 import { approximatePickupStitchesFromRows } from "./machineKnittingPickupRatio";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -58,7 +59,16 @@ export type SleevelessFinishingStepOptions = {
   isCardigan: boolean;
   /** Drop shoulder has no shaped armhole finishing step. */
   isDropShoulder?: boolean;
+  /** Set-in sleeve replaces the sleeveless armhole finish with setting in the sleeve. */
+  isSetInSleeve?: boolean;
 };
+
+function isSetInSleeveFinishingPattern(patternData: unknown): boolean {
+  if (!patternData || typeof patternData !== "object") return false;
+  const style = (patternData as { style?: unknown }).style;
+  if (!style || typeof style !== "object") return false;
+  return hasAuthoritativeSetInSleeveConstruction(style as Record<string, unknown>);
+}
 
 function isDropShoulderFinishingPattern(patternData: unknown): boolean {
   if (!patternData || typeof patternData !== "object") return false;
@@ -70,10 +80,10 @@ function isDropShoulderFinishingPattern(patternData: unknown): boolean {
 /** Ordered finishing steps; core assembly order matches pattern instructions. */
 export function buildSleevelessFinishingStepIds(opts: SleevelessFinishingStepOptions): SleevelessFinishingStepId[] {
   const core: SleevelessFinishingStepId[] = ["joinShoulders"];
-  if (!opts.isDropShoulder) core.push("finishArmholes");
+  if (!opts.isDropShoulder && !opts.isSetInSleeve) core.push("finishArmholes");
   if (opts.isCardigan) core.push("finishFrontEdges");
   core.push("finishNeckline");
-  if (opts.isDropShoulder) core.push("attachSleeves");
+  if (opts.isDropShoulder || opts.isSetInSleeve) core.push("attachSleeves");
   core.push("joinSideSeams");
   return ["blockPieces", ...core, "finalPressing"];
 }
@@ -136,13 +146,15 @@ export function sleevelessFinishingFromPattern(
 ): {
   isCardigan: boolean;
   isDropShoulder: boolean;
+  isSetInSleeve: boolean;
   cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined;
   frontEdgePickupSts: number | undefined;
   neckbandPickup: NeckbandPickupInstructionViewModel | null;
   steps: ReturnType<typeof numberedSleevelessFinishingSteps>;
 } {
   const isCardigan = isSleevelessCardiganPattern(patternData);
-  const isDropShoulder = isDropShoulderFinishingPattern(patternData);
+  const isSetInSleeve = isSetInSleeveFinishingPattern(patternData);
+  const isDropShoulder = !isSetInSleeve && isDropShoulderFinishingPattern(patternData);
   const cardiganFrontEdgeFinishingMode = sleevelessCardiganFrontEdgeFinishingMode(patternData);
   const frontEdgePickupSts =
     isCardigan && cardiganFrontEdgeFinishingMode === "pickup"
@@ -156,9 +168,10 @@ export function sleevelessFinishingFromPattern(
   return {
     isCardigan,
     isDropShoulder,
+    isSetInSleeve,
     cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts,
     neckbandPickup,
-    steps: numberedSleevelessFinishingSteps({ isCardigan, isDropShoulder }),
+    steps: numberedSleevelessFinishingSteps({ isCardigan, isDropShoulder, isSetInSleeve }),
   };
 }

@@ -41,6 +41,10 @@ import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatt
 import { isSavedPatternReadOnlyDocument } from "../lib/patterns/savedPatternReadOnlyChrome";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
 import {
+  isSetInSleeveWorkspaceMeasurementSummaryPage,
+  withSetInSleeveConstructionAuthored,
+} from "../lib/patterns/setInSleeveConstructionIdentity";
+import {
   markDropShoulderSleeveFieldUserEdited,
   readEffectiveDropShoulderUserEditedSleeveFields,
   writeDropShoulderUserEditedSleeveFields,
@@ -264,6 +268,14 @@ function writeLocalStorageString(key: string, value: string): void {
   } catch {
     /* quota */
   }
+}
+
+function persistSetInSleeveEditSleeveLengthChoice(sleeveLength: string): void {
+  const canonicalStyle = section(getCurrentPattern().style);
+  const pbStyle = section(getPatternData().style);
+  const style = withSetInSleeveConstructionAuthored({ ...canonicalStyle, ...pbStyle }, sleeveLength);
+  saveCurrentPattern({ style });
+  savePatternData("style", style);
 }
 
 function persistDropShoulderEditSleeveLengthChoice(sleeveLength: string): void {
@@ -551,7 +563,10 @@ function initSleevelessPatternEditDrawer(): void {
     const neckline = savedNeckline || readCustomBuildWizardNeckline() || "round";
     setRadio("sl-edit-neckline", neckline === "v" ? "v-neck" : neckline);
 
-    if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+    if (
+      isDropShoulderWorkspaceMeasurementSummaryPage() ||
+      isSetInSleeveWorkspaceMeasurementSummaryPage()
+    ) {
       setRadio(
         "sl-edit-sleeve-length",
         normalizeDropShoulderSleeveLengthChoice(readDropShoulderSleeveLengthChoice()),
@@ -841,7 +856,9 @@ function initSleevelessPatternEditDrawer(): void {
       const measureFlushRoot = resolveCustomBuildSaveMeasureFlushRoot(
         measureBody ?? measurePane ?? drawer ?? undefined,
       );
-      if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+      if (isSetInSleeveWorkspaceMeasurementSummaryPage()) {
+        persistSetInSleeveEditSleeveLengthChoice(radioValue("sl-edit-sleeve-length"));
+      } else if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
         persistDropShoulderEditSleeveLengthChoice(radioValue("sl-edit-sleeve-length"));
       }
       // Pass the workspace's active unit explicitly so cm entries convert to canonical inches once
@@ -1070,7 +1087,8 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   function wireQuickEditSleeveLengthChangeHandler(): void {
-    if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    const setInSleeve = isSetInSleeveWorkspaceMeasurementSummaryPage();
+    if (!setInSleeve && !isDropShoulderWorkspaceMeasurementSummaryPage()) return;
     const radios = drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-sleeve-length"]');
     if (radios.length === 0) return;
     radios.forEach((radio) => {
@@ -1078,6 +1096,11 @@ function initSleevelessPatternEditDrawer(): void {
       radio.dataset.slQuickEditSleeveLengthWired = "1";
       radio.addEventListener("change", () => {
         if (!radio.checked) return;
+        if (setInSleeve) {
+          persistSetInSleeveEditSleeveLengthChoice(radio.value);
+          window.kbmInvalidateSleevelessPatternRender?.();
+          return;
+        }
         ensureDropShoulderMeasurementEditorReady();
         void handleDropShoulderQuickEditSleeveLengthChanged();
       });

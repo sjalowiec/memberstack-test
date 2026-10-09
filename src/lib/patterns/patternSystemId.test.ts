@@ -5,6 +5,10 @@ import {
   withDropShoulderConstructionAuthored,
 } from "./patternConstructionIdentity";
 import {
+  SET_IN_SLEEVE_CONSTRUCTION,
+  stampSetInSleeveWorkingDraftFromPage,
+} from "./setInSleeveConstructionIdentity";
+import {
   resolvePatternSystemForBuilderGate,
   resolvePatternSystemForEntitlement,
   resolvePatternSystemFromPage,
@@ -22,8 +26,8 @@ import { stubLocalStorage, stubSessionStorage } from "./test/stubLocalStorage";
 import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 
-function stubPathname(pathname: string): Document {
-  const doc = stubDocument(pathname);
+function stubPathname(pathname: string, expressConstruction?: string): Document {
+  const doc = stubDocument(pathname, expressConstruction);
   vi.stubGlobal("window", { location: { pathname, href: `http://localhost${pathname}` } });
   vi.stubGlobal("document", doc);
   return doc;
@@ -119,6 +123,27 @@ describe("resolvePatternSystemForBuilderGate", () => {
   it("uses drop-shoulder pathname for the drop-shoulder builder", () => {
     const doc = stubPathname("/patterns/drop-shoulder/builder");
     expect(resolvePatternSystemForBuilderGate(doc)).toBe("drop-shoulder");
+  });
+
+  it("uses the set-in sleeve pathname and does not keep a stale drop-shoulder draft", () => {
+    seedDropShoulderWorkingDraft();
+    const doc = stubPathname("/patterns/set-in-sleeve/builder");
+    expect(resolvePatternSystemForBuilderGate(doc)).toBe("set-in-sleeve");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/set-in-sleeve/pattern/"))).toBe(
+      "set-in-sleeve",
+    );
+  });
+
+  it("stamps a cuff-up set-in draft from the builder page", () => {
+    seedDropShoulderWorkingDraft();
+    stubPathname("/patterns/set-in-sleeve/builder", SET_IN_SLEEVE_CONSTRUCTION);
+    stampSetInSleeveWorkingDraftFromPage("elbow");
+    const style = getCurrentPattern().style as Record<string, unknown>;
+    expect(style.construction).toBe(SET_IN_SLEEVE_CONSTRUCTION);
+    expect(style[CONSTRUCTION_AUTHORED_KEY]).toBe(SET_IN_SLEEVE_CONSTRUCTION);
+    expect(style.sleeveDirection).toBe("cuff-up");
+    expect(style.sleeveLength).toBe("elbow");
+    expect(resolvePatternSystemFromWorkingSession()).toBe("set-in-sleeve");
   });
 
   it("uses data-express-construction without falling back to a stale sleeveless draft", () => {

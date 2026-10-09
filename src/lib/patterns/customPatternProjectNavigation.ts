@@ -1,6 +1,7 @@
 import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
 import { hasAuthoritativeSidewaysCardiganConstruction } from "./sidewaysCardiganConstructionIdentity";
 import { isHatCustomPatternProject, isSockCustomPatternProject } from "./patternSystemId";
 import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
@@ -16,6 +17,7 @@ export const PATTERN_CATALOG_HREF = "/patterns";
 
 export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 export const DROP_SHOULDER_OPEN_PATTERN_HREF = "/patterns/drop-shoulder/pattern/";
+export const SET_IN_SLEEVE_OPEN_PATTERN_HREF = "/patterns/set-in-sleeve/pattern/";
 export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF = "/patterns/sideways-cardigan/pattern/";
 export const SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF = "/patterns/sideways-cardigan/summary/";
 export const HAT_OPEN_PATTERN_HREF = "/patterns/hat/pattern/";
@@ -36,6 +38,9 @@ export const OPEN_PATTERN_EDIT_WORKSPACE_HREF = `${OPEN_PATTERN_HREF}?${PATTERN_
 /** Drop-shoulder saved pattern page with Edit Pattern Workspace auto-opened. */
 export const DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
+
+export const SET_IN_SLEEVE_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
+  `${SET_IN_SLEEVE_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
 export const SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${SIDEWAYS_CARDIGAN_SUMMARY_EDIT_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
@@ -58,6 +63,9 @@ export const SLEEVELESS_PATTERN_WORKSPACE_GENERATED_HREF =
 /** Drop-shoulder pattern workspace opened immediately after builder completion. */
 export const DROP_SHOULDER_PATTERN_WORKSPACE_GENERATED_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
+
+export const SET_IN_SLEEVE_PATTERN_WORKSPACE_GENERATED_HREF =
+  `${SET_IN_SLEEVE_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
 
 export const SIDEWAYS_CARDIGAN_PATTERN_WORKSPACE_GENERATED_HREF =
   `${SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
@@ -129,6 +137,9 @@ export function getContinueEditingHref(
       ? withSavedPatternProjectId(SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
       : SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
+  if (project && isSetInSleeveCustomPatternProject(project)) {
+    return SET_IN_SLEEVE_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+  }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_CONTINUE_EDITING_HREF;
   }
@@ -143,6 +154,16 @@ export function isSidewaysCardiganCustomPatternProject(
       ? (project.pattern.style as Record<string, unknown>)
       : undefined;
   return hasAuthoritativeSidewaysCardiganConstruction(style, project.customOverrides);
+}
+
+export function isSetInSleeveCustomPatternProject(
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
+): boolean {
+  const style =
+    project.pattern?.style && typeof project.pattern.style === "object" && !Array.isArray(project.pattern.style)
+      ? (project.pattern.style as Record<string, unknown>)
+      : undefined;
+  return hasAuthoritativeSetInSleeveConstruction(style, project.customOverrides);
 }
 
 export function isDropShoulderCustomPatternProject(
@@ -162,6 +183,7 @@ export function getOpenPatternHrefForProject(
   if (isHatCustomPatternProject(project)) return HAT_OPEN_PATTERN_HREF;
   if (isSockCustomPatternProject(project)) return SOCK_OPEN_PATTERN_HREF;
   if (isSidewaysCardiganCustomPatternProject(project)) return SIDEWAYS_CARDIGAN_OPEN_PATTERN_HREF;
+  if (isSetInSleeveCustomPatternProject(project)) return SET_IN_SLEEVE_OPEN_PATTERN_HREF;
   return isDropShoulderCustomPatternProject(project)
     ? DROP_SHOULDER_OPEN_PATTERN_HREF
     : OPEN_PATTERN_HREF;
@@ -199,6 +221,9 @@ export function getSavedCustomPatternOpenHref(
     return id
       ? withSavedPatternProjectId(SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF, id)
       : SIDEWAYS_CARDIGAN_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+  }
+  if (project && isSetInSleeveCustomPatternProject(project)) {
+    return SET_IN_SLEEVE_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
   if (project && isDropShoulderCustomPatternProject(project)) {
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;

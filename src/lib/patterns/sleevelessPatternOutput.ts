@@ -5,6 +5,10 @@
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
 import {
+  calculateSetInArmhole,
+  type SetInArmholePlan,
+} from "./setInSleeve/setInArmhole";
+import {
   insertBustDartIntoFrontBodyDisplayRows,
   resolveBustDartForSweaterFront,
 } from "./legoBlocks/bustDart";
@@ -87,6 +91,7 @@ import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline"
 import {
   composeFrontVNeckTimelineWithArmholeOverlap,
   displayRcFromGarmentRc,
+  pulloverArmholeEventsFromSteps,
   FRONT_VNECK_HANDOFF_AFTER_ARMHOLE,
   FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE,
   FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
@@ -535,6 +540,14 @@ export type SleevelessBackPatternDebug = {
   frontVNeckShapingTimingCase?: FrontVNeckShapingTimingCase;
 };
 
+export type SleevelessPatternGenerationOptions = {
+  /**
+   * Replace the sleeveless armhole event list used by V-neck overlap with the approved
+   * set-in armhole. Neckline and shoulder formulas stay on the same stitch and row budget.
+   */
+  useSetInArmhole?: boolean;
+};
+
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
 export type SleevelessPatternDisplayRow =
   | { kind: "piece"; title: string }
@@ -624,6 +637,8 @@ export type SleevelessPatternDisplayRow =
 
 export type SleevelessBackPatternResult = {
   warnings: string[];
+  /** Present when generation was asked to use the set-in armhole and the plan succeeded. */
+  setInArmholePlan?: SetInArmholePlan;
   /** Plain lines derived from {@link displayRows} (debug / console). */
   lines: string[];
   /** Structured back instructions for two-column rendering. */
@@ -2756,7 +2771,8 @@ function makePlaceholderNeckShoulderExecution(startRC: number) {
  * Demo uses overlapping RC for neck + shoulder; real data can separate them.
  */
 export function generateSleevelessBackPattern(
-  patternData: Record<string, unknown>
+  patternData: Record<string, unknown>,
+  options?: SleevelessPatternGenerationOptions,
 ): SleevelessBackPatternResult {
   const warnings: string[] = [];
 
@@ -3037,6 +3053,24 @@ export function generateSleevelessBackPattern(
   let firstArmholeRCNum: number | null = null;
 
   const stitchesAtArmholeStart = alineBodyShaping ? bustBodySts : castOnSts;
+
+  const setInArmholeResult =
+    options?.useSetInArmhole === true &&
+    stitchesAtArmholeStart > 0 &&
+    stitchesAfterArmhole !== undefined &&
+    stitchesAfterArmhole > 0 &&
+    stitchesAfterArmhole < stitchesAtArmholeStart &&
+    armholeDepthRows > 0
+      ? calculateSetInArmhole({
+          startingStitches: stitchesAtArmholeStart,
+          targetStitches: stitchesAfterArmhole,
+          totalRows: armholeDepthRows,
+        })
+      : null;
+  const setInArmholePlan = setInArmholeResult && setInArmholeResult.ok ? setInArmholeResult : null;
+  if (setInArmholeResult && !setInArmholeResult.ok) {
+    warnings.push(setInArmholeResult.message);
+  }
 
   if (
     stitchesAtArmholeStart > 0 &&
@@ -3453,12 +3487,24 @@ export function generateSleevelessBackPattern(
       frontTimeline.length > 0 &&
       (!isCardiganHalfFrontBody || frontNecklineStartRC < firstArmholeRCNum)
     ) {
+      const setInArmholeEvents =
+        setInArmholePlan && firstArmholeRCNum !== null
+          ? pulloverArmholeEventsFromSteps({
+              firstArmholeGarmentRc: firstArmholeRCNum,
+              bindOffStepsEachSide: [
+                setInArmholePlan.initialBindOffStitchesEachSide,
+                ...setInArmholePlan.stairStepBindOffsEachSide,
+              ],
+              decreaseStitchesEachSide: setInArmholePlan.decreaseStitchesEachSide,
+            })
+          : undefined;
       const composed = composeFrontVNeckTimelineWithArmholeOverlap(frontTimeline, {
         firstArmholeGarmentRc: firstArmholeRCNum,
         armholeStartSts: stitchesAtArmholeStart,
         bindOffSts: armholeMathResult.bindOffSts,
         decreaseSts: armholeMathResult.decreaseSts,
         stitchesAfterArmhole,
+        ...(setInArmholeEvents ? { armholeEvents: setInArmholeEvents } : {}),
       });
       if (composed.overlap) {
         frontArmholeNecklineOverlap = composed.overlap;
@@ -4137,6 +4183,7 @@ export function generateSleevelessBackPattern(
 
   return {
     warnings,
+    ...(setInArmholePlan ? { setInArmholePlan } : {}),
     lines,
     displayRows,
     frontDisplayRows,

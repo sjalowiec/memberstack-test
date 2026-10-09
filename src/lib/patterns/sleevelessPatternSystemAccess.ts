@@ -165,7 +165,8 @@ export function hasPatternSystemAccess(
 function hasAnyPatternBuilderSystemAccess(access: SleevelessUserAccess): boolean {
   return (
     hasPatternSystemAccess(access, "sleeveless") ||
-    hasPatternSystemAccess(access, "drop-shoulder")
+    hasPatternSystemAccess(access, "drop-shoulder") ||
+    hasPatternSystemAccess(access, "set-in-sleeve")
   );
 }
 

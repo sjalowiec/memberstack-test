@@ -12,6 +12,7 @@ import {
   resolveExpressAvailableNeedlesForValidationWithSource,
   resolveExpressNeedleFailSafeActivation,
   resolveExpressRequiredNeedlesFromPattern,
+  resolveExpressRequiredNeedlesFromPatternWithSource,
   validateExpressPatternNeedles,
   validateExpressPatternNeedlesFromSources,
 } from "./sleevelessExpressAvailableNeedles";
@@ -337,5 +338,20 @@ describe("buildExpressNeedleHardStopHtml — Go Back and Adjust destination", ()
   it("falls back to the builder href when passed an empty href", () => {
     const html = buildExpressNeedleHardStopHtml(validation, "");
     expect(html).toContain(`href="${EXPRESS_BUILDER_ADJUST_HREF}"`);
+  });
+});
+
+describe("set-in sleeve needle scan", () => {
+  it("counts sleeve stitches when they are wider than the body", () => {
+    const result = generateSleevelessBackPattern(expressPatternData({ availableNeedles: 300 }));
+    const body = resolveExpressRequiredNeedlesFromPattern(result);
+    const withSleeve = resolveExpressRequiredNeedlesFromPatternWithSource({
+      ...result,
+      sleeveDisplayRows: [
+        { kind: "block", paragraphs: ["Cast on 40 stitches for the sleeve cuff."], stitchCount: body + 25 },
+      ],
+    });
+    expect(withSleeve.value).toBe(body + 25);
+    expect(withSleeve.source).toContain("sleeveDisplayRows");
   });
 });

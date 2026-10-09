@@ -49,6 +49,12 @@ import {
   patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
+import { generateSetInSleevePattern } from "../lib/patterns/setInSleevePatternOutput.ts";
+import {
+  hasAuthoritativeSetInSleeveConstruction,
+  isActiveSetInSleeveConstruction,
+  withSetInSleeveConstructionFamily,
+} from "../lib/patterns/setInSleeveConstructionIdentity.ts";
 import {
   renderPatternDisplayBlockHtml,
   wrapPatternSectionHtml,
@@ -415,6 +421,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   /** True when the saved draft is a drop-shoulder construction (uses the drop-shoulder generator + layout). */
   function isDropShoulderGeneratorInput(genInput) {
     return hasAuthoritativeDropShoulderConstruction(section(genInput?.style));
+  }
+
+  function isSetInSleeveGeneratorInput(genInput) {
+    return hasAuthoritativeSetInSleeveConstruction(section(genInput?.style));
   }
 
   function audienceLabelFromPattern(st, ft) {
@@ -2695,6 +2705,7 @@ table {
     return buildSleevelessFinishingStepsHtml({
       isCardigan: finishing.isCardigan,
       isDropShoulder: finishing.isDropShoulder,
+      isSetInSleeve: finishing.isSetInSleeve,
       dropShoulderSleeveDirection: finishing.isDropShoulder ? dropShoulderSleeveDirection : undefined,
       cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
       frontEdgePickupSts: finishing.frontEdgePickupSts,
@@ -4026,7 +4037,77 @@ table {
     syncSleevelessPatternInpageNav();
   }
 
+  async function renderSetInSleeveMount(patternMerged, result, generatorPatternData) {
+    const mount = document.querySelector("[data-sleeveless-mount]");
+    if (!mount) return;
+    if (tryExpressNeedleFailSafeBlock(result, patternMerged, generatorPatternData)) return;
+
+    const patternIntroSentence = buildPatternIntroSentence(patternMerged, generatorPatternData);
+    const renderPiece = (rows, pieceId, chartTableMountId, neckChartStartRow) =>
+      renderSleevelessDisplayHtml(
+        rows ?? [],
+        chartTableMountId ?? "",
+        pieceId,
+        patternIntroSentence,
+        neckChartStartRow,
+        { omitPieceBanner: true },
+      );
+    const overview = renderPiece(result.overviewRows, "overview", "", undefined);
+    const back = renderPiece(result.displayRows, "back", "sg-neck-shoulder-chart-table-back", result?.neckShoulderShapingChart?.rows?.[0]?.row);
+    const front = renderPiece(
+      result.frontDisplayRows,
+      "front",
+      "sg-neck-shoulder-chart-table-front",
+      result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+    );
+    const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve", "", undefined);
+    mount.innerHTML =
+      wrapPatternSection("sg-overview", "Overview", overview.splitInner + overview.postSplit, {
+        defaultCollapsed: false,
+      }) +
+      wrapPatternSection("sg-back", "BACK", back.splitInner + back.postSplit, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
+      wrapPatternSection("sg-front", "FRONT", front.splitInner + front.postSplit, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
+      wrapPatternSection("sg-sleeve", "SLEEVES", sleeve.splitInner + sleeve.postSplit, {
+        defaultCollapsed: false,
+        sectionClassName: "pattern-section--garment-piece",
+      }) +
+      wrapPatternSection("sg-finishing", "Finishing", buildFinishingHtml(patternMerged, result.debug), {
+        defaultCollapsed: true,
+      });
+
+    hydrateGlossaryTooltipPlaceholders(mount);
+    ensureSleevelessVideoModal();
+    const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
+    bindSleevelessVideoHelp(videoHelpRoot);
+    setupNecklineChartPrint(
+      "neckline-shoulder-chart-print-btn",
+      "neckline-shoulder-chart-print-area",
+      "Back Neckline / Shoulder Shaping Chart",
+    );
+    setupNecklineChartPrint(
+      "front-neckline-shoulder-chart-print-btn",
+      "front-neckline-shoulder-chart-print-area",
+      "Front Neckline / Shoulder Shaping Chart",
+    );
+    bindSecondShoulderChecklistToggles(mount);
+    bindNeckShoulderShoulderTabs(mount);
+    initChartProgressTracking({ patternId: getCurrentPattern().id, root: mount });
+    applyPatternSectionCollapseState(mount);
+    bindPatternSectionCollapsePersistence(mount);
+    syncSleevelessPatternInpageNav();
+  }
+
   async function renderMount(patternMerged, result, unit, generatorPatternData, dropShoulderSleeveDirection) {
+    if (result && result.isSetInSleeve) {
+      await renderSetInSleeveMount(patternMerged, result, generatorPatternData);
+      return;
+    }
     if (result && result.isDropShoulder) {
       await renderDropShoulderMount(
         patternMerged,
@@ -4415,9 +4496,14 @@ table {
     try {
       const pattern = getCurrentPattern();
       const dropShoulder = isActiveDropShoulderConstruction();
+      const setInSleeve = isActiveSetInSleeveConstruction();
       const project = {
         pattern,
-        customOverrides: dropShoulder ? withDropShoulderConstructionFamily({}) : {},
+        customOverrides: setInSleeve
+          ? withSetInSleeveConstructionFamily({})
+          : dropShoulder
+            ? withDropShoulderConstructionFamily({})
+            : {},
       };
       return getSavedPatternNeedleAdjustHref(
         readActiveCustomPatternProjectId(),
@@ -4516,9 +4602,11 @@ table {
       genInput = buildGeneratorPatternData(effectivePatternMerged);
       const patternId = String(getCurrentPattern().id || "").trim();
       const dropShoulderSleeveDirection = readDropShoulderSleeveConstruction(patternId);
-      result = isDropShoulderGeneratorInput(genInput)
-        ? generateDropShoulderPattern(genInput, { sleeveDirection: dropShoulderSleeveDirection })
-        : generateSleevelessBackPattern(genInput);
+      result = isSetInSleeveGeneratorInput(genInput)
+        ? generateSetInSleevePattern(genInput)
+        : isDropShoulderGeneratorInput(genInput)
+          ? generateDropShoulderPattern(genInput, { sleeveDirection: dropShoulderSleeveDirection })
+          : generateSleevelessBackPattern(genInput);
     } catch (err) {
       if (!allowSavedDraftFallback) throw err;
       // Fallback: ignore `patternBuilderData` entirely; render from canonical draft only.
@@ -4526,9 +4614,11 @@ table {
       genInput = buildCustomBuildEffectivePatternInput({ patternBuilderData: {} });
       const patternId = String(getCurrentPattern().id || "").trim();
       const dropShoulderSleeveDirection = readDropShoulderSleeveConstruction(patternId);
-      result = isDropShoulderGeneratorInput(genInput)
-        ? generateDropShoulderPattern(genInput, { sleeveDirection: dropShoulderSleeveDirection })
-        : generateSleevelessBackPattern(genInput);
+      result = isSetInSleeveGeneratorInput(genInput)
+        ? generateSetInSleevePattern(genInput)
+        : isDropShoulderGeneratorInput(genInput)
+          ? generateDropShoulderPattern(genInput, { sleeveDirection: dropShoulderSleeveDirection })
+          : generateSleevelessBackPattern(genInput);
     }
 
     setPatternTabsReadiness(tabsRoot, true);

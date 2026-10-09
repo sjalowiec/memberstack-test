@@ -20,6 +20,11 @@ import {
   hasAuthoritativeSidewaysCardiganConstruction,
   isActiveSidewaysCardiganConstruction,
 } from "./sidewaysCardiganConstructionIdentity";
+import {
+  SET_IN_SLEEVE_CONSTRUCTION,
+  hasAuthoritativeSetInSleeveConstruction,
+  isActiveSetInSleeveConstruction,
+} from "./setInSleeveConstructionIdentity";
 import type { SleevelessPatternRecord } from "./patternStorage";
 import { getCurrentPattern } from "./patternStorage";
 
@@ -27,6 +32,7 @@ import { getCurrentPattern } from "./patternStorage";
 export type PatternSystemId =
   | "sleeveless"
   | "drop-shoulder"
+  | "set-in-sleeve"
   | "sideways-cardigan"
   | "blanket"
   | "hat"
@@ -36,6 +42,7 @@ export type PatternSystemId =
 export const PATTERN_SYSTEM_IDS: readonly PatternSystemId[] = [
   "sleeveless",
   "drop-shoulder",
+  "set-in-sleeve",
   "sideways-cardigan",
   "blanket",
   "hat",
@@ -47,6 +54,7 @@ export const PATTERN_SYSTEM_IDS: readonly PatternSystemId[] = [
 export const PATTERN_SYSTEM_DISPLAY_NAMES: Record<PatternSystemId, string> = {
   sleeveless: "Sleeveless",
   "drop-shoulder": "Drop Shoulder",
+  "set-in-sleeve": "Set-In Sleeve",
   "sideways-cardigan": "Sideways V-Neck",
   blanket: "Blanket",
   hat: "Hat",
@@ -103,6 +111,14 @@ export function resolvePatternSystemFromProject(
     return "sideways-cardigan";
   }
   if (
+    hasAuthoritativeSetInSleeveConstruction(
+      section(project.pattern?.style),
+      section(project.customOverrides),
+    )
+  ) {
+    return "set-in-sleeve";
+  }
+  if (
     hasAuthoritativeDropShoulderConstruction(
       section(project.pattern?.style),
       section(project.customOverrides),
@@ -122,6 +138,9 @@ export function resolvePatternSystemFromPatternRecord(
   if (isSockPatternBlob(pattern)) return "socks";
   if (hasAuthoritativeSidewaysCardiganConstruction(section(pattern.style), customOverrides)) {
     return "sideways-cardigan";
+  }
+  if (hasAuthoritativeSetInSleeveConstruction(section(pattern.style), customOverrides)) {
+    return "set-in-sleeve";
   }
   if (hasAuthoritativeDropShoulderConstruction(section(pattern.style), customOverrides)) {
     return "drop-shoulder";
@@ -150,6 +169,9 @@ function resolvePatternSystemFromPageUrlAndDom(doc?: Document): PatternSystemId 
   if (/\/patterns\/drop-shoulder(?:\/|$)/.test(pathname)) {
     return "drop-shoulder";
   }
+  if (/\/patterns\/set-in-sleeve(?:\/|$)/.test(pathname)) {
+    return "set-in-sleeve";
+  }
   if (/\/patterns\/sideways-cardigan(?:\/|$)/.test(pathname)) {
     return "sideways-cardigan";
   }
@@ -174,6 +196,9 @@ function resolvePatternSystemFromPageUrlAndDom(doc?: Document): PatternSystemId 
       ?.trim();
     if (expressConstruction === DROP_SHOULDER_CONSTRUCTION) {
       return "drop-shoulder";
+    }
+    if (expressConstruction === SET_IN_SLEEVE_CONSTRUCTION) {
+      return "set-in-sleeve";
     }
     if (expressConstruction === SIDEWAYS_CARDIGAN_CONSTRUCTION) {
       return "sideways-cardigan";
@@ -202,6 +227,9 @@ export function resolvePatternSystemFromPage(doc?: Document): PatternSystemId {
   if (isActiveSidewaysCardiganConstruction()) {
     return "sideways-cardigan";
   }
+  if (isActiveSetInSleeveConstruction()) {
+    return "set-in-sleeve";
+  }
   if (isActiveDropShoulderConstruction()) {
     return "drop-shoulder";
   }
@@ -222,6 +250,7 @@ export function resolvePatternSystemFromWorkingSession(): PatternSystemId {
     try {
       const fromDraft = resolvePatternSystemFromPatternRecord(getCurrentPattern());
       if (fromDraft === "sideways-cardigan") return "sideways-cardigan";
+      if (fromDraft === "set-in-sleeve") return "set-in-sleeve";
       if (fromDraft === "drop-shoulder") return "drop-shoulder";
     } catch {
       /* ignore */
@@ -232,6 +261,9 @@ export function resolvePatternSystemFromWorkingSession(): PatternSystemId {
   }
   if (isActiveSidewaysCardiganConstruction()) {
     return "sideways-cardigan";
+  }
+  if (isActiveSetInSleeveConstruction()) {
+    return "set-in-sleeve";
   }
   if (isActiveDropShoulderConstruction()) {
     return "drop-shoulder";
@@ -255,6 +287,9 @@ export function resolvePatternSystemFromStylePayload(
   if (hasAuthoritativeSidewaysCardiganConstruction(style, customOverrides)) {
     return "sideways-cardigan";
   }
+  if (hasAuthoritativeSetInSleeveConstruction(style, customOverrides)) {
+    return "set-in-sleeve";
+  }
   if (hasAuthoritativeDropShoulderConstruction(style, customOverrides)) {
     return "drop-shoulder";
   }
@@ -266,4 +301,5 @@ export {
   CONSTRUCTION_AUTHORED_KEY,
   CONSTRUCTION_FAMILY_OVERRIDE_KEY,
   SIDEWAYS_CARDIGAN_CONSTRUCTION,
+  SET_IN_SLEEVE_CONSTRUCTION,
 };

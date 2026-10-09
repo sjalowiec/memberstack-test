@@ -311,7 +311,9 @@ function stitchCountsFromDisplayRowsWithSource(
 
 /** Widest stitch count from generated output about to render (debug + row counts + visible text). */
 export function resolveExpressRequiredNeedlesFromPatternWithSource(
-  result: Pick<SleevelessBackPatternResult, "debug" | "displayRows" | "frontDisplayRows">,
+  result: Pick<SleevelessBackPatternResult, "debug" | "displayRows" | "frontDisplayRows"> & {
+    sleeveDisplayRows?: SleevelessBackPatternResult["displayRows"];
+  },
 ): ExpressNeedleResolvedRequired {
   const d = result.debug;
   const candidates: Array<{ value: number; source: string }> = [];
@@ -331,6 +333,9 @@ export function resolveExpressRequiredNeedlesFromPatternWithSource(
   candidates.push(...stitchCountsFromDisplayRowsWithSource(result.displayRows ?? [], "displayRows"));
   candidates.push(
     ...stitchCountsFromDisplayRowsWithSource(result.frontDisplayRows ?? [], "frontDisplayRows"),
+  );
+  candidates.push(
+    ...stitchCountsFromDisplayRowsWithSource(result.sleeveDisplayRows ?? [], "sleeveDisplayRows"),
   );
 
   if (candidates.length === 0) return { value: 0, source: "none" };

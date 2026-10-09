@@ -160,7 +160,17 @@ function dropShoulderSleeveArmholeAttachStepsHtml(): string {
     </ul>`;
 }
 
-function attachSleevesBody(sleeveDirection: DropShoulderSleeveDirection): string {
+function setInSleeveAttachBody(): string {
+  return `<ul>
+      <li>Seam each sleeve.</li>
+      <li>Match the sleeve underarm seam to the body underarm seam.</li>
+      <li>Match the center of the sleeve cap to the shoulder seam.</li>
+      <li>Set the sleeve into the armhole.</li>
+    </ul>`;
+}
+
+function attachSleevesBody(sleeveDirection: DropShoulderSleeveDirection, isSetInSleeve: boolean): string {
+  if (isSetInSleeve) return setInSleeveAttachBody();
   if (sleeveDirection === "top-down") {
     return `<p>If you picked up stitches from the armhole, your sleeve is already attached.</p>
     <p>If you began the sleeve with a scrap cast-on, attach the sleeve to the armhole as follows:</p>
@@ -174,7 +184,11 @@ function attachSleevesBody(sleeveDirection: DropShoulderSleeveDirection): string
 function attachSleevesPrintLine(
   stepNumber: number,
   sleeveDirection: DropShoulderSleeveDirection,
+  isSetInSleeve: boolean,
 ): string {
+  if (isSetInSleeve) {
+    return `${stepNumber}. Set in the sleeves: seam each sleeve, match the underarm seams, match the center of the sleeve cap to the shoulder seam, and set the sleeve into the armhole.`;
+  }
   const attachSteps =
     "hang the armhole edge with the right side facing; hang the live sleeve stitches; pull the sleeve stitches through the armhole edge; knit 1 row; bind off";
   if (sleeveDirection === "top-down") {
@@ -220,6 +234,7 @@ function stepBodyHtml(
   isDropShoulder: boolean,
   dropShoulderSleeveDirection: DropShoulderSleeveDirection,
   neckbandPickup: NeckbandPickupInstructionViewModel | null | undefined,
+  isSetInSleeve: boolean,
 ): string {
   switch (id) {
     case "blockPieces":
@@ -237,7 +252,7 @@ function stepBodyHtml(
     case "finishNeckline":
       return finishNecklineBody(deps, neckbandPickup);
     case "attachSleeves":
-      return attachSleevesBody(dropShoulderSleeveDirection);
+      return attachSleevesBody(dropShoulderSleeveDirection, isSetInSleeve);
     case "joinSideSeams":
       return joinSideSeamsBody(isDropShoulder);
     case "finalPressing":
@@ -250,16 +265,22 @@ function stepBodyHtml(
 export function buildSleevelessFinishingStepsHtml(options: {
   isCardigan: boolean;
   isDropShoulder?: boolean;
+  isSetInSleeve?: boolean;
   dropShoulderSleeveDirection?: DropShoulderSleeveDirection;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   neckbandPickup?: NeckbandPickupInstructionViewModel | null;
   deps: SleevelessFinishingHtmlDeps;
 }): string {
-  const isDropShoulder = options.isDropShoulder === true;
+  const isSetInSleeve = options.isSetInSleeve === true;
+  const isDropShoulder = options.isDropShoulder === true && !isSetInSleeve;
   const dropShoulderSleeveDirection =
     options.dropShoulderSleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
-  const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan, isDropShoulder });
+  const ids = buildSleevelessFinishingStepIds({
+    isCardigan: options.isCardigan,
+    isDropShoulder,
+    isSetInSleeve,
+  });
   const frontEdgeMode =
     options.isCardigan ? (options.cardiganFrontEdgeFinishingMode ?? "pickup") : undefined;
   const sections = ids.map((id, index) =>
@@ -275,6 +296,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
         isDropShoulder,
         dropShoulderSleeveDirection,
         options.neckbandPickup,
+        isSetInSleeve,
       ),
     ),
   );
@@ -316,15 +338,21 @@ function finishNecklinePrintLine(
 export function buildSleevelessFinishingPrintListHtml(options: {
   isCardigan: boolean;
   isDropShoulder?: boolean;
+  isSetInSleeve?: boolean;
   dropShoulderSleeveDirection?: DropShoulderSleeveDirection;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   neckbandPickup?: NeckbandPickupInstructionViewModel | null;
 }): string {
-  const isDropShoulder = options.isDropShoulder === true;
+  const isSetInSleeve = options.isSetInSleeve === true;
+  const isDropShoulder = options.isDropShoulder === true && !isSetInSleeve;
   const dropShoulderSleeveDirection =
     options.dropShoulderSleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
-  const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan, isDropShoulder });
+  const ids = buildSleevelessFinishingStepIds({
+    isCardigan: options.isCardigan,
+    isDropShoulder,
+    isSetInSleeve,
+  });
   const items: string[] = [];
 
   for (let i = 0; i < ids.length; i++) {
@@ -355,7 +383,7 @@ export function buildSleevelessFinishingPrintListHtml(options: {
         items.push(finishNecklinePrintLine(n, options.neckbandPickup));
         break;
       case "attachSleeves":
-        items.push(attachSleevesPrintLine(n, dropShoulderSleeveDirection));
+        items.push(attachSleevesPrintLine(n, dropShoulderSleeveDirection, isSetInSleeve));
         break;
       case "joinSideSeams":
         items.push(
