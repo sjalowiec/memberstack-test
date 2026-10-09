@@ -200,7 +200,7 @@ import { resolveEffectiveFinishedBustInches } from "../lib/patterns/customBuildE
 import { resolveDiagramFinishedHipInches } from "../lib/patterns/customBuildEffectiveFinishedHip.ts";
 import { resolveEffectiveSleevelessBodyShapeKind, resolveEffectiveSleevelessBodyShapePhrase } from "../lib/patterns/sleevelessAlineShaping.ts";
 import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx.ts";
-import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav.ts";
+import { mountPatternPrintAction, syncPatternInpageNav } from "../lib/patterns/patternInpageNav.ts";
 
 // DEV-only cardigan half-front schematic: sessionStorage or localStorage key `kbmDevCardiganHalfFrontLeft` = "1" (vite dev).
 
@@ -325,7 +325,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   const resultsVisibilityConfig = {
     resultsSelector: "#sg-sleeveless-results",
     actionBarSelector: "#action-bar",
-    printButtonSelector: "#print-btn",
+    printButtonSelector: "#action-bar #print-btn",
     printFooterSelector: "#print-footer",
   };
 
@@ -334,26 +334,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
   function mountSleevelessPrintAction() {
     if (!isSleevelessWorkspacePatternPage()) return;
-    const host = document.querySelector("[data-sleeveless-pattern-actions]");
-    if (!(host instanceof HTMLElement)) return;
-    let printBtn = host.querySelector("#print-btn");
-    if (!(printBtn instanceof HTMLButtonElement)) {
-      printBtn = document.createElement("button");
-      printBtn.type = "button";
-      printBtn.id = "print-btn";
-      printBtn.className = "sleeveless-pattern-print-action no-print";
-      printBtn.setAttribute("data-testid", "button-print");
-      printBtn.setAttribute("aria-label", "Print pattern");
-      printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
-      host.appendChild(printBtn);
-    }
-    if (printBtn.dataset.sleevelessPrintBound !== "true") {
-      printBtn.dataset.sleevelessPrintBound = "true";
-      printBtn.addEventListener("click", () => {
-        triggerPatternPrint(printBtn, {});
-      });
-    }
-    printBtn.style.display = "inline-flex";
+    mountPatternPrintAction({
+      host: document.querySelector("[data-sleeveless-pattern-actions]"),
+      visible: true,
+      onPrint: (button) => {
+        triggerPatternPrint(button, {});
+      },
+    });
   }
 
   /** Last successful yarn payload — re-pushed when the drawer opens. */

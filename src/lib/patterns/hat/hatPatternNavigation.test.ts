@@ -151,7 +151,11 @@ describe("hat finished-pattern navigation markup", () => {
     expect(
       readFileSync(resolve("src/components/patterns/SavedPatternHeader.astro"), "utf8"),
     ).toContain("pattern-action-bar__group--end");
-    expect(pageScript).toContain("button-print");
+    expect(patternPage).toContain("includePrint");
+    expect(
+      readFileSync(resolve("src/components/patterns/SavedPatternStickyNav.astro"), "utf8"),
+    ).toContain('data-testid="button-print"');
+    expect(pageScript).toContain("mountPatternPrintAction");
     expect(pageScript).toContain("data-hat-edit-open");
     expect(pageScript).not.toContain("initHatPatternEditDrawer");
   });

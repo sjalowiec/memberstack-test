@@ -1,15 +1,21 @@
 ---
 /**
  * Shared saved-pattern sticky navigation (Pattern System Lego).
- * Each page supplies its own Edit / Print actions in the default slot.
  * Section links are filled by syncPatternInpageNav from that pattern's catalog.
+ * Top and Print live here. Each page supplies its own Edit Pattern action in the slot
+ * so the builder or edit workspace keeps that pattern's saved settings.
  */
 interface Props {
   /** Attributes on the action group, so each page can keep its print mount target. */
   actionsAttrs?: string[];
+  /**
+   * Pattern Print control. Omitted on the published beta preview, which still
+   * prints from the legacy action bar.
+   */
+  includePrint?: boolean;
 }
 
-const { actionsAttrs: actionAttrNames = [] } = Astro.props;
+const { actionsAttrs: actionAttrNames = [], includePrint = false } = Astro.props;
 const actionsAttrs: Record<string, string> = {};
 for (const name of actionAttrNames) actionsAttrs[name] = "";
 ---
@@ -25,8 +31,9 @@ for (const name of actionAttrNames) actionsAttrs[name] = "";
     href="#saved-pattern-header"
     class="sleeveless-pattern-inpage-nav__pill saved-pattern-sticky-nav__top"
     data-saved-pattern-sticky-nav-top
+    aria-label="Back to top."
   >
-    Top
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </a>
   <div
     class="sleeveless-pattern-inpage-nav__track"
@@ -39,5 +46,19 @@ for (const name of actionAttrNames) actionsAttrs[name] = "";
     {...actionsAttrs}
   >
     <slot />
+    {
+      includePrint && (
+        <button
+          type="button"
+          id="print-btn"
+          class="sleeveless-pattern-print-action no-print"
+          data-testid="button-print"
+          aria-label="Print pattern"
+          hidden
+        >
+          <i class="fas fa-print" aria-hidden="true"></i> Print
+        </button>
+      )
+    }
   </div>
 </nav>

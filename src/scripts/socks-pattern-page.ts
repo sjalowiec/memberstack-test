@@ -15,7 +15,11 @@ import {
   initSockPairInstructionTabs,
   selectedSockPairTab,
 } from "../lib/patterns/sock/sockPairInstructionTabs";
-import { syncPatternInpageNav } from "../lib/patterns/patternInpageNav";
+import {
+  mountPatternPrintAction,
+  setPatternPrintActionVisible,
+  syncPatternInpageNav,
+} from "../lib/patterns/patternInpageNav";
 import { sockPatternInpageNavItems } from "../lib/patterns/sock/sockPatternInpageNav";
 import type { SockInstructionDocument } from "../lib/patterns/sock/sockInstructions";
 import {
@@ -63,8 +67,7 @@ function showEmptyState(message: string): void {
   if (msg) msg.textContent = message;
   setVisible(empty, true);
   setVisible(results, false);
-  const printBtn = document.querySelector("#print-btn");
-  if (printBtn instanceof HTMLElement) printBtn.style.display = "none";
+  setPatternPrintActionVisible(document.querySelector("#print-btn"), false);
   const editBtn = document.querySelector("[data-socks-edit-open]");
   if (editBtn instanceof HTMLElement) {
     editBtn.hidden = true;
@@ -88,24 +91,13 @@ function mountPrintAction(): void {
       editBtn.style.display = "inline-flex";
     }
   }
-  let printBtn = host.querySelector("#print-btn");
-  if (!(printBtn instanceof HTMLButtonElement)) {
-    printBtn = document.createElement("button");
-    printBtn.type = "button";
-    printBtn.id = "print-btn";
-    printBtn.className = "sleeveless-pattern-print-action no-print";
-    printBtn.setAttribute("data-testid", "button-print");
-    printBtn.setAttribute("aria-label", "Print pattern");
-    printBtn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i> Print`;
-    host.appendChild(printBtn);
-  }
-  if (printBtn.dataset.socksPrintBound !== "true") {
-    printBtn.dataset.socksPrintBound = "true";
-    printBtn.addEventListener("click", () => {
-      triggerPatternPrint(printBtn, {});
-    });
-  }
-  printBtn.style.display = "inline-flex";
+  mountPatternPrintAction({
+    host,
+    visible: true,
+    onPrint: (button) => {
+      triggerPatternPrint(button, {});
+    },
+  });
 }
 
 function showResultsShell(): void {
