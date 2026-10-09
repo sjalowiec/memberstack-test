@@ -1,6 +1,7 @@
 /**
  * Execution-layer instructions for neckline + shoulder shaping on a flat machine-knit piece.
- * Carriage position, needle ranges, side order, and "AT THE SAME TIME" when RC ranges overlap.
+ * The timeline may list both shoulders at one row-counter reading. Those readings are worked
+ * on one shoulder, then repeated on the other shoulder. They are not one carriage pass.
  * Does not compute neckline or shoulder math — callers supply actions and needle labels.
  */
 
@@ -130,22 +131,40 @@ function mergeShapingSpans(
   return spans;
 }
 
+/**
+ * One shoulder is in work. The other shoulder repeats these readings later.
+ * A shared reading is the two ends of that one row, not both shoulders at once.
+ */
+export const ONE_SHOULDER_AT_A_TIME_NOTE =
+  "Work the right shoulder and right neck edge first. Leave the left shoulder and left neck edge in hold. Each reading below is one row on the shoulder in work. A reading that names one edge starts with the carriage at that edge. When a reading lists both a neck-edge action and a shoulder bind-off, shape the carriage-side edge first, knit across, and shape the other edge before you turn. On an odd reading that shapes both edges, the carriage starts at the neck edge. On an even reading that shapes both edges, the carriage starts at the armhole edge. If the carriage is not already at the named edge, move it there without knitting a row. After the right shoulder is finished, return the left shoulder and left neck edge to working position and repeat the same readings with the carriage at the matching edge. Do not shape both shoulders on one carriage pass.";
+
 function spanToInstructionLines(span: MergedSpan): string[] {
   const { fromRC, toRC, neckTexts, shoulderTexts } = span;
-  const rcStr =
-    fromRC === toRC ? formatRC(fromRC) : formatRC(fromRC, toRC);
+  const rcStr = fromRC === toRC ? formatRC(fromRC) : formatRC(fromRC, toRC);
   const hasNeck = neckTexts.length > 0;
   const hasShoulder = shoulderTexts.length > 0;
+  const neck = neckTexts.join(" ");
+  const shoulder = shoulderTexts.join(" ");
 
+  if (hasNeck && !hasShoulder && neckTexts.every(isCenterDivideText)) {
+    return [`${rcStr}. ${neck}`];
+  }
   if (hasNeck && hasShoulder) {
-    const combined = [...neckTexts, ...shoulderTexts].join(" ");
-    return [`${rcStr}. AT THE SAME TIME: ${combined}`];
+    if (fromRC !== toRC) {
+      return [
+        `${rcStr}. On the shoulder in work, shape the carriage-side edge first, knit across, then shape the other edge. ${neck} ${shoulder}`,
+      ];
+    }
+    if (fromRC % 2 === 1) {
+      return [`${rcStr}. Carriage at the neck edge. ${neck} Knit across. ${shoulder}`];
+    }
+    return [`${rcStr}. Carriage at the armhole edge. ${shoulder} Knit across. ${neck}`];
   }
   if (hasNeck) {
-    return neckTexts.map((t) => `${rcStr}. ${t}`);
+    return [`${rcStr}. Carriage at the neck edge. ${neck} Knit across.`];
   }
   if (hasShoulder) {
-    return shoulderTexts.map((t) => `${rcStr}. ${t}`);
+    return [`${rcStr}. Carriage at the armhole edge. ${shoulder} Knit across.`];
   }
   return [];
 }
@@ -160,6 +179,22 @@ function emitShapingSchedule(
     out.push(...spanToInstructionLines(span));
   }
   return out;
+}
+
+function isCenterDivideText(text: string): boolean {
+  return /^(Place the center|Bind off the center|Knit to center\.)/.test(text.trim());
+}
+
+function holdStitchPhrase(n: number): string {
+  return n === 1 ? "1 stitch" : `${n} stitches`;
+}
+
+/** One neck-edge hold on the shoulder in work. Unequal counts name each shoulder. */
+function neckEdgeHoldText(left: number, right: number): string {
+  if (left === right) {
+    return `Put ${holdStitchPhrase(left)} in hold at the neck edge. Shoulder stitches continue in work.`;
+  }
+  return `Put ${holdStitchPhrase(right)} in hold at the neck edge of the right shoulder. On the left shoulder, at this same reading, put ${holdStitchPhrase(left)} in hold at the neck edge. Shoulder stitches continue in work.`;
 }
 
 /**
@@ -244,28 +279,11 @@ export function shapingActionsFromTimeline(
       entry.events.some((ev) => ev.kind === "bindOff" && ev.edge === "inner");
     if (neckInnerLeft > 0 || neckInnerRight > 0) {
       if (hasInnerHold) {
-        if (neckInnerRight > 0) {
-          const n = neckInnerRight;
-          neckActions.push({
-            startRC: rc,
-            endRC: rc,
-            text:
-              n === 1
-                ? "At the right neck edge, put 1 stitch in hold (shoulder stitches continue in work)."
-                : `At the right neck edge, put ${n} stitches in hold (shoulder stitches continue in work).`,
-          });
-        }
-        if (neckInnerLeft > 0) {
-          const n = neckInnerLeft;
-          neckActions.push({
-            startRC: rc,
-            endRC: rc,
-            text:
-              n === 1
-                ? "At the left neck edge, put 1 stitch in hold (shoulder stitches continue in work)."
-                : `At the left neck edge, put ${n} stitches in hold (shoulder stitches continue in work).`,
-          });
-        }
+        neckActions.push({
+          startRC: rc,
+          endRC: rc,
+          text: neckEdgeHoldText(neckInnerLeft, neckInnerRight),
+        });
       } else if (neckSym) {
         const n = neckInnerLeft;
         neckActions.push({
@@ -273,8 +291,8 @@ export function shapingActionsFromTimeline(
           endRC: rc,
           text:
             n === 1
-              ? "At neck edge, bind off 1 stitch on each side."
-              : `At neck edge, bind off ${n} stitches on each side.`,
+              ? "Bind off 1 stitch at the neck edge."
+              : `Bind off ${n} stitches at the neck edge.`,
         });
       } else if (neckInnerLeft === neckInnerRight && neckInnerLeft > 0) {
         const n = neckInnerLeft;
@@ -283,14 +301,14 @@ export function shapingActionsFromTimeline(
           endRC: rc,
           text:
             n === 1
-              ? "At neck edge, decrease 1 stitch toward center on each side."
-              : `At neck edge, decrease ${n} stitches toward center on each side.`,
+              ? "Decrease 1 stitch at the neck edge, toward the center."
+              : `Decrease ${n} stitches at the neck edge, toward the center.`,
         });
       } else {
         neckActions.push({
           startRC: rc,
           endRC: rc,
-          text: `At neck edge: left −${neckInnerLeft}, right −${neckInnerRight} (toward center).`,
+          text: `Neck edge on the right shoulder: remove ${neckInnerRight}. On the left shoulder, at this same reading, remove ${neckInnerLeft}.`,
         });
       }
     }
@@ -312,8 +330,8 @@ export function shapingActionsFromTimeline(
             endRC: rc,
             text:
               n === 1
-                ? "At armhole edge, bind off 1 stitch on each shoulder."
-                : `At armhole edge, bind off ${n} stitches on each shoulder.`,
+                ? "Bind off 1 stitch at the armhole edge."
+                : `Bind off ${n} stitches at the armhole edge.`,
           });
         } else {
           shoulderActions.push({
@@ -329,8 +347,8 @@ export function shapingActionsFromTimeline(
           endRC: rc,
           text:
             n === 1
-              ? "At armhole edge, decrease 1 stitch on each shoulder."
-              : `At armhole edge, decrease ${n} stitches on each shoulder.`,
+              ? "Decrease 1 stitch at the armhole edge."
+              : `Decrease ${n} stitches at the armhole edge.`,
         });
       } else {
         shoulderActions.push({

@@ -79,6 +79,10 @@ function blockLines(sectionText: string, heading: string): string[] {
   return body.split("\n").filter((line) => line.trim().length > 0);
 }
 
+function sumHoldGroups(side: { holdGroups: number[] }): number {
+  return side.holdGroups.reduce((sum, count) => sum + count, 0);
+}
+
 function remainCounts(text: string): number[] {
   return [...text.matchAll(/(-?\d+) stitches remain/g)].map((match) => Number(match[1]));
 }
@@ -127,13 +131,28 @@ describe("set-in sleeve written instructions", () => {
     expect(back).toContain("Decrease 1 stitch at each armhole edge on RC: 008, RC: 010, RC: 012, RC: 014, RC: 016, RC: 018, RC: 020.");
     expect(back).toContain("Knit these rows even: RC: 009, RC: 011, RC: 013, RC: 015, RC: 017, RC: 019, RC: 021.");
     expect(back).toContain("finishes the armhole at RC: 070.");
-    expect(back).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
-    expect(back).toContain("Place the center 21 stitches in hold.");
-    expect(back).toContain("At armhole edge, bind off 5 stitches on each shoulder.");
+    expect(back).toContain("Work the right shoulder and right neck edge first.");
+    expect(back).toContain("Do not shape both shoulders on one carriage pass.");
+    expect(back).not.toContain("AT THE SAME TIME");
+    expect(back).toContain("Place the center 20 stitches in hold.");
+    expect(back).toContain("32 stitches total");
+    expect(back).not.toContain("31 stitches");
+    expect(back).toContain("Carriage at the neck edge. Put 3 stitches in hold at the neck edge.");
+    expect(back).toContain("Knit across. Bind off 5 stitches at the armhole edge.");
+    expect(alternate.body.neckline.back.centerBindOff).toBe(20);
+    expect(sumHoldGroups(alternate.body.neckline.back.left)).toBe(11);
+    expect(sumHoldGroups(alternate.body.neckline.back.right)).toBe(11);
+    expect(alternate.body.neckline.shoulderBindOff.leftChunks.reduce((a, b) => a + b, 0)).toBe(21);
+    expect(alternate.body.neckline.shoulderBindOff.rightChunks.reduce((a, b) => a + b, 0)).toBe(21);
+    expect(alternate.body.neckline.openingStitches).toBe(42);
+    expect(alternate.body.stitchesAtShoulder).toBe(84);
     const front = setInSleeveInstructionSection(alternateDoc, "front");
     expect(front).toContain("Bind off the center 14 stitches");
     expect(front).toContain("Work each side separately.");
-    expect(front).toContain("At armhole edge, bind off 5 stitches on each shoulder.");
+    expect(front).toContain("7 stitches on L needles and 7 on R needles");
+    expect(front).toContain("35 stitches on each side");
+    expect(front).not.toContain("AT THE SAME TIME");
+    expect(front).toContain("Bind off 5 stitches at the armhole edge.");
     expect(sleeves).toContain("Cast on");
     expect(sleeves).toContain("Reset row counter to RC 000.");
     expect(sleeves).toContain("before knitting that row");
@@ -196,6 +215,21 @@ describe("set-in sleeve written instructions", () => {
       );
       expect(remainCounts(`${back.join("\n")}\n${sleeves}`).every((count) => count >= 0)).toBe(true);
       expect(setInSleeveInstructionsPlainText(doc)).not.toContain("NaN");
+      expect(setInSleeveInstructionsPlainText(doc)).not.toContain("AT THE SAME TIME");
+      const backNeck = sweater.body.neckline.back;
+      expect(backNeck.centerBindOff + sumHoldGroups(backNeck.left) + sumHoldGroups(backNeck.right)).toBe(
+        sweater.body.neckline.openingStitches,
+      );
+      if (sweater.body.neckline.openingStitches % 4 === 2) {
+        expect(backNeck.centerBindOff % 2).toBe(0);
+        expect(sumHoldGroups(backNeck.left)).toBe(sumHoldGroups(backNeck.right));
+      }
+      const shoulder = sweater.body.neckline.shoulderBindOff;
+      const leftShoulder = shoulder.leftChunks.reduce((a, b) => a + b, 0);
+      const rightShoulder = shoulder.rightChunks.reduce((a, b) => a + b, 0);
+      const shoulderBand = sweater.body.stitchesAtShoulder - sweater.body.neckline.openingStitches;
+      expect(leftShoulder + rightShoulder).toBe(shoulderBand);
+      if (shoulderBand % 2 === 0) expect(leftShoulder).toBe(rightShoulder);
     }
   });
 

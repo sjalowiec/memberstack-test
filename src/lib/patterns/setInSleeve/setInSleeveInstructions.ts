@@ -15,6 +15,7 @@ import {
 } from "../legoBlocks/neckbandPickup";
 import {
   mergedShapingInstructionLines,
+  ONE_SHOULDER_AT_A_TIME_NOTE,
   shapingActionsFromTimeline,
 } from "../legoBlocks/neckShoulderExecution";
 import { isShallowHoldRoundPlan, type RoundNecklinePlanResult } from "../legoBlocks/roundNeckline";
@@ -259,9 +260,10 @@ function necklineInstructionLines(
   const summary = roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
     bodyWidthStitches: result.body.stitchesAtShoulder,
     necklineStartRcLabel: formatRcColon(necklineStartRc),
-  });
+  }).filter((line) => !/checklist below/i.test(line));
   return [
     ...summary,
+    ONE_SHOULDER_AT_A_TIME_NOTE,
     ...mergedShapingInstructionLines(actions.neckActions, actions.shoulderActions),
     KNIT_OTHER_ROWS,
   ];

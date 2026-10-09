@@ -199,9 +199,23 @@ export function distributeStairGroups(sts: number): number[] {
 }
 
 /**
+ * Shallow center hold. Exact half of an even opening is kept when that half is even.
+ * When the opening is even and half of it is odd, the center is the next lower even
+ * count so the two neck edges match. An odd opening keeps floor(N/2); the leftover
+ * stitch stays on one edge because the opening itself is not even.
+ */
+export function shallowRoundCenterHoldStitches(necklineStitches: number): number {
+  const N = Math.max(0, Math.round(necklineStitches));
+  const half = Math.floor(N / 2);
+  if (N % 2 === 0 && half % 2 === 1) return half - 1;
+  return half;
+}
+
+/**
  * Documented shallow round neck stitch budget (machine-knit): center ≈ 50% of N,
  * remaining stitches removed as single decreases at each neck edge every other row
- * (no stair bind-offs).
+ * (no stair bind-offs). An even opening whose exact half is odd uses the next lower
+ * even center so both neck edges have the same stitch count.
  */
 export function calculateDocumentedShallowRoundNecklineShaping(inputs: {
   necklineStitches: number;
@@ -230,7 +244,7 @@ export function calculateDocumentedShallowRoundNecklineShaping(inputs: {
     };
   }
 
-  const center = Math.floor(N / 2);
+  const center = shallowRoundCenterHoldStitches(N);
   const remaining = N - center;
   const [leftR, rightR] = splitBalancedPair(remaining);
   const depthNorm =

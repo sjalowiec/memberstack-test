@@ -283,6 +283,46 @@ describe("calculateDocumentedShallowRoundNecklineShaping", () => {
     expect(rowsRequiredForShallowPlan(p)).toBe(12);
   });
 
+  it("rounds an even opening with an odd half down to an even center", () => {
+    const misses = calculateDocumentedShallowRoundNecklineShaping({
+      necklineStitches: 42,
+      necklineDepthRows: 10,
+    });
+    expect(misses.centerBindOff).toBe(20);
+    expect(sumHold(misses.left)).toBe(11);
+    expect(sumHold(misses.right)).toBe(11);
+    expect(misses.left.holdGroups).toEqual(misses.right.holdGroups);
+    expect(misses.totalCheck).toBe(42);
+    expect(rowsRequiredForShallowPlan(misses)).toBe(10);
+
+    const six = calculateDocumentedShallowRoundNecklineShaping({ necklineStitches: 6 });
+    expect(six.centerBindOff).toBe(2);
+    expect(sumHold(six.left)).toBe(2);
+    expect(sumHold(six.right)).toBe(2);
+
+    const oddOpening = calculateDocumentedShallowRoundNecklineShaping({ necklineStitches: 53 });
+    expect(oddOpening.centerBindOff).toBe(26);
+    expect(sumHold(oddOpening.left)).not.toBe(sumHold(oddOpening.right));
+    expect(oddOpening.totalCheck).toBe(53);
+  });
+
+  it("sleeveless back summary uses the even center and matching shoulder ranges", () => {
+    const plan = calculateBackRoundNecklinePlan({
+      necklineStitches: 42,
+      necklineDepthRows: 10,
+    });
+    expect(plan.centerBindOff).toBe(20);
+    expect(initialBackCenterNeckStitches(42)).toBe(20);
+    const lines = roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
+      bodyWidthStitches: 84,
+      necklineStartRcLabel: "RC: 060",
+    });
+    const text = lines.join("\n");
+    expect(text).toContain("20 stitches total");
+    expect(text).toContain("32 stitches total");
+    expect(text).not.toContain("31 stitches");
+  });
+
   it("depth-constrained shaping uses hold groups (never 1s-1r)", () => {
     const p = calculateDocumentedShallowRoundNecklineShaping({
       necklineStitches: 36,

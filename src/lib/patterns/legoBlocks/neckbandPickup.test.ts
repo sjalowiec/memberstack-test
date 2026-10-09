@@ -149,7 +149,7 @@ describe("neckbandPickup — audited round-pullover regression (4.5in / 3in / 1i
     expect(d.rowsPerInch).toBe(7);
     expect(d.necklineStitches).toBe(22);
     expect(d.frontCenterNeckBindOffStitches).toBe(6);
-    expect(d.centerNeckBindOffStitches).toBe(11);
+    expect(d.centerNeckBindOffStitches).toBe(10);
     expect(d.frontNeckDepthRows).toBe(22);
     expect(d.backNeckDepthRows).toBe(8);
 
@@ -166,8 +166,8 @@ describe("neckbandPickup — audited round-pullover regression (4.5in / 3in / 1i
     expect(frontPlan.right.stairSteps).toEqual([2, 2]);
     expect(frontPlan.left.singleDecreaseCount).toBe(4);
     expect(frontPlan.right.singleDecreaseCount).toBe(4);
-    expect(backPlan.centerBindOff).toBe(11);
-    expect(backPlan.left.holdGroups).toEqual([2, 1, 1, 1]);
+    expect(backPlan.centerBindOff).toBe(10);
+    expect(backPlan.left.holdGroups).toEqual([2, 2, 1, 1]);
     expect(backPlan.right.holdGroups).toEqual([2, 2, 1, 1]);
 
     const result = calculateNeckbandPickup({
