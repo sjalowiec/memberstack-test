@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   knitAbleInspirationClosingLines,
   knitAbleInspirationDisclosure,
+  knitAbleInspirationIntroParagraphs,
   knitAbleInspirationLessonContentId,
   knitAbleInspirationLessons,
   knitAbleInspirationSwatches,
@@ -54,6 +55,17 @@ describe("Knit-able inspiration template", () => {
     ).toEqual([{ text: "Keep going.", emphasis: true }]);
     expect(templateSource).toContain("knitAbleInspirationLessons(content.lessons)");
     expect(templateSource).toContain("knitAbleInspirationDisclosure");
+  });
+
+  it("renders one intro string as one paragraph and keeps separate paragraphs", () => {
+    expect(knitAbleInspirationIntroParagraphs("  One paragraph. ")).toEqual(["One paragraph."]);
+    expect(knitAbleInspirationIntroParagraphs([" First. ", "", "  Second. "])).toEqual([
+      "First.",
+      "Second.",
+    ]);
+    expect(knitAbleInspirationIntroParagraphs(undefined)).toEqual([]);
+    expect(templateSource).toContain("knitAbleInspirationIntroParagraphs(content.intro)");
+    expect(templateSource).toContain("<p>{paragraph}</p>");
   });
 
   it("reads the lesson catalog id from the video path", () => {

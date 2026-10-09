@@ -24,10 +24,22 @@ export type KnitAbleInspirationPalette = {
   colors: readonly KnitAbleInspirationSwatch[];
 };
 
+/** Plain bullet, or a bold opening phrase plus the rest of the line. */
+export type KnitAbleInspirationStep =
+  | string
+  | {
+      lead: string;
+      text: string;
+    };
+
 export type KnitAbleInspirationClosingLine = {
   text: string;
   /** Bold green line under the builder steps. */
   emphasis?: boolean;
+  /** Subheading inside the builder panel. */
+  heading?: boolean;
+  /** Bold sentence that is not the green brand line. */
+  strong?: boolean;
 };
 
 /** Fields the Knit-able builder panel shows. A pattern-landing CTA object is assignable. */
@@ -66,7 +78,8 @@ export type KnitAbleInspirationPageContent = {
     rel?: string;
   };
   tagline: string;
-  intro: string;
+  /** One paragraph, or several paragraphs rendered with the page's normal paragraph spacing. */
+  intro: string | readonly string[];
   palette?: KnitAbleInspirationPalette;
   builder: {
     heading: string;
@@ -78,7 +91,7 @@ export type KnitAbleInspirationPageContent = {
       };
       after?: string;
     };
-    steps: readonly string[];
+    steps: readonly KnitAbleInspirationStep[];
     closing?: readonly KnitAbleInspirationClosingLine[];
     cta: KnitAbleInspirationCta;
   };
@@ -105,6 +118,13 @@ export type KnitAbleInspirationPageContent = {
 };
 
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+export function knitAbleInspirationIntroParagraphs(
+  intro: string | readonly string[] | undefined,
+): string[] {
+  const parts = typeof intro === "string" ? [intro] : intro ?? [];
+  return parts.map((paragraph) => paragraph.trim()).filter((paragraph) => paragraph.length > 0);
+}
 
 export function knitAbleInspirationSwatches(
   palette: KnitAbleInspirationPalette | undefined,

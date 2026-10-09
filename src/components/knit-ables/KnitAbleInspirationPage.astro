@@ -13,6 +13,7 @@ import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
 import {
   knitAbleInspirationClosingLines,
   knitAbleInspirationDisclosure,
+  knitAbleInspirationIntroParagraphs,
   knitAbleInspirationLessonContentId,
   knitAbleInspirationLessons,
   knitAbleInspirationSwatches,
@@ -29,6 +30,7 @@ interface Props {
 
 const { content, preview, status, publishDate } = Astro.props;
 const paletteSwatches = knitAbleInspirationSwatches(content.palette);
+const introParagraphs = knitAbleInspirationIntroParagraphs(content.intro);
 const paletteLabel = content.palette?.label?.trim() ?? "";
 const paletteCaption = content.palette?.caption?.trim() ?? "";
 const closingLines = knitAbleInspirationClosingLines(content.builder.closing);
@@ -91,7 +93,9 @@ const yarnImage = content.yarn.image;
               </div>
             ) : null
           }
-          <p>{content.intro}</p>
+          {introParagraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
         </div>
       </section>
 
@@ -109,16 +113,33 @@ const yarnImage = content.yarn.image;
         {
           content.builder.steps.length > 0 ? (
             <ul class="knit-able-steps">
-              {content.builder.steps.map((item) => (
-                <li>{item}</li>
-              ))}
+              {content.builder.steps.map((item) =>
+                typeof item === "string" ? (
+                  <li>{item}</li>
+                ) : (
+                  <li>
+                    <strong>{item.lead}</strong> {item.text}
+                  </li>
+                )
+              )}
             </ul>
           ) : null
         }
         {
-          closingLines.map((line) => (
-            <p class={line.emphasis ? "knit-able-any-yarn" : undefined}>{line.text}</p>
-          ))
+          closingLines.map((line) =>
+            line.heading ? (
+              <h3 class="knit-able-builder-subhead">{line.text}</h3>
+            ) : (
+              <p
+                class:list={[
+                  line.emphasis && "knit-able-any-yarn",
+                  line.strong && "knit-able-strong",
+                ]}
+              >
+                {line.text}
+              </p>
+            )
+          )
         }
         <div class="knit-able-builder-cta" data-pattern-builder-landing data-cta-mode="pending">
           <p
@@ -436,6 +457,20 @@ const yarnImage = content.yarn.image;
 
   .knit-able-steps li:last-child {
     margin-bottom: 0;
+  }
+
+  .knit-able-steps strong {
+    font-weight: 700;
+  }
+
+  .knit-able-builder-subhead {
+    margin: 1.15rem 0 0.55rem;
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
+  .knit-able-strong {
+    font-weight: 700;
   }
 
   .knit-able-lessons-panel {
