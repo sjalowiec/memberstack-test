@@ -297,6 +297,10 @@ describe("set-in sleeve saved patterns, print, and membership", () => {
     expect(catalog).toContain("title: 'Set-In Sleeve Sweater'");
     expect(catalog).toContain("const comingSoonPatterns");
     const patternPage = readFileSync("src/pages/patterns/set-in-sleeve/pattern/index.astro", "utf8");
+    expect(patternPage).toContain("thumbnailSrc={SET_IN_SLEEVE_PATTERN_LANDING_IMAGE_SRC}");
+    expect(patternPage).toContain("thumbnailWidth={1536}");
+    expect(patternPage).toContain("thumbnailHeight={1024}");
+    expect(patternPage).not.toContain("drop_shoulder.webp");
     expect(patternPage).toContain('data-express-construction="set-in-sleeve"');
     expect(patternPage).toContain("data-pattern-print-skip-modal");
     expect(patternPage).toContain("PatternPrintFooter");
