@@ -61,9 +61,11 @@ describe("Knit-able Pacific publish dates", () => {
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["cap-sleeve-tank"]).toBe("2026-10-01");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["coco-loco-tank"]).toBeUndefined();
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["vest-in-show"]).toBeUndefined();
+    expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["rhythmic-colour-top"]).toBeUndefined();
 
     const rows = buildKnitAbleAdminRows(KNIT_ABLE_INITIAL_PUBLISH_DATES, SEP_29_NOON_PACIFIC);
     expect(rows.map((row) => [row.slug, row.status])).toEqual([
+      ["rhythmic-colour-top", "unpublished"],
       ["vest-in-show", "unpublished"],
       ["coco-loco-tank", "unpublished"],
       ["cap-sleeve-tank", "scheduled"],
@@ -155,8 +157,10 @@ describe("Knit-able Pacific publish dates", () => {
     expect(knitAbleScheduleSeedSql()).toContain("ON CONFLICT (slug) DO NOTHING");
     expect(knitAbleScheduleSeedSql()).not.toContain("coco-loco-tank");
     expect(knitAbleScheduleSeedSql()).not.toContain("vest-in-show");
+    expect(knitAbleScheduleSeedSql()).not.toContain("rhythmic-colour-top");
     expect(sql).not.toContain("coco-loco-tank");
     expect(sql).not.toContain("vest-in-show");
+    expect(sql).not.toContain("rhythmic-colour-top");
     expect(sql).toContain("Do not apply this on production until the scheduler release is approved");
   });
 });
@@ -281,6 +285,109 @@ describe("Knit-able request access", () => {
     if (!saved.ok) return;
     expect(saved.value.status).toBe("scheduled");
     expect(saved.value.message).toContain("October 1, 2026");
+  });
+
+  it("keeps Rhythmic Colour Top unpublished until Watson saves a date", async () => {
+    const path = "/knit-ables/rhythmic-colour-top";
+    const publicUrl = new URL(`http://localhost${path}`);
+    const previewUrl = new URL(`http://localhost${path}?preview=1`);
+    expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["rhythmic-colour-top"]).toBeUndefined();
+
+    const blank = buildKnitAbleAdminRows({}, SEP_29_NOON_PACIFIC).find(
+      (row) => row.slug === "rhythmic-colour-top",
+    );
+    expect(blank).toMatchObject({
+      title: "Rhythmic Colour Top",
+      path,
+      publishDate: null,
+      status: "unpublished",
+      statusLabel: "Unpublished",
+    });
+    expect(selectPublishedKnitAbleCards({}, SEP_29_NOON_PACIFIC).map((card) => card.href)).not.toContain(
+      path,
+    );
+    expect(knitAblePreviewPath(path)).toBe(`${path}?preview=1`);
+
+    const hidden = await loadKnitAblePageAccess({
+      path,
+      url: publicUrl,
+      cookies,
+      now: SEP_29_NOON_PACIFIC,
+      queryFn: async () => [],
+      isAuthenticated: false,
+    });
+    const adminPreview = await loadKnitAblePageAccess({
+      path,
+      url: previewUrl,
+      cookies,
+      now: SEP_29_NOON_PACIFIC,
+      queryFn: async () => [],
+      isAuthenticated: true,
+    });
+    expect(hidden).toMatchObject({ visible: false, httpStatus: 404 });
+    expect(adminPreview).toMatchObject({
+      visible: true,
+      preview: true,
+      status: "unpublished",
+    });
+
+    const calls: { sql: string; params: unknown[] }[] = [];
+    const queryFn = async (sql: string, params?: unknown[]) => {
+      calls.push({ sql, params: params ?? [] });
+      return [{ slug: params?.[0], publish_date: params?.[1] ?? null }];
+    };
+    const scheduled = await updateKnitAblePublishDate(
+      "rhythmic-colour-top",
+      "2026-12-01",
+      queryFn,
+      SEP_29_NOON_PACIFIC,
+    );
+    const published = await updateKnitAblePublishDate(
+      "rhythmic-colour-top",
+      "2026-09-01",
+      queryFn,
+      SEP_29_NOON_PACIFIC,
+    );
+    const cleared = await updateKnitAblePublishDate(
+      "rhythmic-colour-top",
+      null,
+      queryFn,
+      SEP_29_NOON_PACIFIC,
+    );
+    expect(calls.map((call) => call.params)).toEqual([
+      ["rhythmic-colour-top", "2026-12-01"],
+      ["rhythmic-colour-top", "2026-09-01"],
+      ["rhythmic-colour-top", null],
+    ]);
+    expect(calls.every((call) => call.sql.includes("ON CONFLICT"))).toBe(true);
+    expect(scheduled.ok && scheduled.value.status).toBe("scheduled");
+    expect(published.ok && published.value.status).toBe("published");
+    expect(cleared.ok && cleared.value).toMatchObject({
+      status: "unpublished",
+      publishDate: null,
+    });
+    expect(
+      selectPublishedKnitAbleCards(
+        { "rhythmic-colour-top": "2026-12-01" },
+        SEP_29_NOON_PACIFIC,
+      ).map((card) => card.href),
+    ).not.toContain(path);
+    expect(
+      selectPublishedKnitAbleCards(
+        { "rhythmic-colour-top": "2026-09-01" },
+        SEP_29_NOON_PACIFIC,
+      ).map((card) => card.href),
+    ).toContain(path);
+
+    const live = await loadKnitAblePageAccess({
+      path,
+      url: publicUrl,
+      cookies,
+      now: SEP_29_NOON_PACIFIC,
+      queryFn: async () => [{ slug: "rhythmic-colour-top", publish_date: "2026-09-01" }],
+      isAuthenticated: false,
+    });
+    expect(live).toMatchObject({ visible: true, preview: false, status: "published" });
   });
 
   it("sends no-store cache headers so a CDN cannot freeze publication", () => {

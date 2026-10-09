@@ -24,10 +24,22 @@ export type KnitAbleInspirationPalette = {
   colors: readonly KnitAbleInspirationSwatch[];
 };
 
+/** Plain bullet, or a bold opening phrase plus the rest of the line. */
+export type KnitAbleInspirationStep =
+  | string
+  | {
+      lead: string;
+      text: string;
+    };
+
 export type KnitAbleInspirationClosingLine = {
   text: string;
   /** Bold green line under the builder steps. */
   emphasis?: boolean;
+  /** Subheading inside the builder panel. */
+  heading?: boolean;
+  /** Bold sentence that is not the green brand line. */
+  strong?: boolean;
 };
 
 /** Fields the Knit-able builder panel shows. A pattern-landing CTA object is assignable. */
@@ -79,7 +91,7 @@ export type KnitAbleInspirationPageContent = {
       };
       after?: string;
     };
-    steps: readonly string[];
+    steps: readonly KnitAbleInspirationStep[];
     closing?: readonly KnitAbleInspirationClosingLine[];
     cta: KnitAbleInspirationCta;
   };

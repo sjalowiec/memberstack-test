@@ -21,6 +21,12 @@ import {
 } from "./cocoLocoTank";
 import { TEENAGE_KICKS_IMAGES, TEENAGE_KICKS_SOCKS_PATH } from "./teenageKicksSocks";
 import {
+  RHYTHMIC_COLOUR_TOP_CARD_COPY,
+  RHYTHMIC_COLOUR_TOP_IMAGES,
+  RHYTHMIC_COLOUR_TOP_PATH,
+  RHYTHMIC_COLOUR_TOP_TITLE,
+} from "./rhythmicColourTop";
+import {
   VEST_IN_SHOW_CARD_COPY,
   VEST_IN_SHOW_IMAGES,
   VEST_IN_SHOW_PATH,
@@ -87,9 +93,19 @@ describe("Knit-ables landing page cards", () => {
     expect(landingSource).toContain("publicCards.map");
     expect(landingSource).toContain("knit-ables-card-list");
     expect(landingSource).toContain("knit-ables-feature-card");
-    expect(KNIT_ABLES_CARDS).toHaveLength(5);
+    expect(KNIT_ABLES_CARDS).toHaveLength(6);
 
-    const vestInShow = KNIT_ABLES_CARDS[0];
+    const rhythmicColourTop = KNIT_ABLES_CARDS[0];
+    expect(rhythmicColourTop?.href).toBe(RHYTHMIC_COLOUR_TOP_PATH);
+    expect(rhythmicColourTop?.href).toBe("/knit-ables/rhythmic-colour-top");
+    expect(rhythmicColourTop?.title).toBe(RHYTHMIC_COLOUR_TOP_TITLE);
+    expect(rhythmicColourTop?.title).toBe("Rhythmic Colour Top");
+    expect(rhythmicColourTop?.description).toBe(RHYTHMIC_COLOUR_TOP_CARD_COPY);
+    expect(rhythmicColourTop?.image.src).toBe(RHYTHMIC_COLOUR_TOP_IMAGES.hero.src);
+    expect(rhythmicColourTop?.image.src).toBe("/images/knit-ables/rhythmic-color.jpg");
+    expect(existsSync(resolve(`public${RHYTHMIC_COLOUR_TOP_IMAGES.hero.src}`))).toBe(true);
+
+    const vestInShow = KNIT_ABLES_CARDS[1];
     expect(vestInShow?.href).toBe(VEST_IN_SHOW_PATH);
     expect(vestInShow?.href).toBe("/knit-ables/vest-in-show");
     expect(vestInShow?.title).toBe(VEST_IN_SHOW_TITLE);
@@ -98,7 +114,7 @@ describe("Knit-ables landing page cards", () => {
     expect(vestInShow?.image.src).toBe(VEST_IN_SHOW_IMAGES.hero.src);
     expect(existsSync(resolve(`public${VEST_IN_SHOW_IMAGES.hero.src}`))).toBe(true);
 
-    const cocoLocoTank = KNIT_ABLES_CARDS[1];
+    const cocoLocoTank = KNIT_ABLES_CARDS[2];
     expect(cocoLocoTank?.href).toBe(COCO_LOCO_TANK_PATH);
     expect(cocoLocoTank?.href).toBe("/knit-ables/coco-loco-tank");
     expect(cocoLocoTank?.title).toBe(COCO_LOCO_TANK_TITLE);
@@ -108,7 +124,7 @@ describe("Knit-ables landing page cards", () => {
     expect(cocoLocoTank?.image.src).toBe("/images/knit-ables/coco-loco-tank.jpg");
     expect(existsSync(resolve(`public${COCO_LOCO_TANK_IMAGES.hero.src}`))).toBe(true);
 
-    const capSleeveTank = KNIT_ABLES_CARDS[2];
+    const capSleeveTank = KNIT_ABLES_CARDS[3];
     expect(capSleeveTank?.href).toBe(CAP_SLEEVE_TANK_PATH);
     expect(capSleeveTank?.href).toBe("/knit-ables/cap-sleeve-tank");
     expect(capSleeveTank?.title).toBe(CAP_SLEEVE_TANK_TITLE);
@@ -116,7 +132,7 @@ describe("Knit-ables landing page cards", () => {
     expect(capSleeveTank?.image.src).toBe(CAP_SLEEVE_TANK_IMAGES.hero.src);
     expect(existsSync(resolve(`public${CAP_SLEEVE_TANK_IMAGES.hero.src}`))).toBe(true);
 
-    const teenageKicks = KNIT_ABLES_CARDS[3];
+    const teenageKicks = KNIT_ABLES_CARDS[4];
     expect(teenageKicks?.href).toBe(TEENAGE_KICKS_SOCKS_PATH);
     expect(teenageKicks?.href).toBe("/knit-ables/teenage-kicks-socks");
     expect(teenageKicks?.title).toBe("Colorful Self-Striping Socks");
@@ -126,7 +142,7 @@ describe("Knit-ables landing page cards", () => {
     expect(teenageKicks?.image.src).toBe(TEENAGE_KICKS_IMAGES.hero.src);
     expect(existsSync(resolve(`public${TEENAGE_KICKS_IMAGES.hero.src}`))).toBe(true);
 
-    const worstedSocks = KNIT_ABLES_CARDS[4];
+    const worstedSocks = KNIT_ABLES_CARDS[5];
     expect(worstedSocks?.href).toBe(WORSTED_COLOR_BLOCK_SOCKS_PATH);
     expect(worstedSocks?.href).toBe("/knit-ables/worsted-color-block-socks");
     expect(worstedSocks?.title).toBe(WORSTED_COLOR_BLOCK_SOCKS_TITLE);

@@ -84,9 +84,9 @@ describe("Vest in Show Knit-able page", () => {
     expect(templateSource).toContain("`${content.title} | Knit it Now`");
     expect(templateSource).toContain("description={content.description}");
     expect(KNIT_ABLE_INITIAL_PUBLISH_DATES["vest-in-show"]).toBeUndefined();
-    expect(KNIT_ABLES_CARDS[0]?.href).toBe(VEST_IN_SHOW_PATH);
-    expect(KNIT_ABLES_CARDS[0]?.title).toBe(VEST_IN_SHOW_TITLE);
-    expect(KNIT_ABLES_CARDS[0]?.description).toBe(VEST_IN_SHOW_CARD_COPY);
+    expect(KNIT_ABLES_CARDS[1]?.href).toBe(VEST_IN_SHOW_PATH);
+    expect(KNIT_ABLES_CARDS[1]?.title).toBe(VEST_IN_SHOW_TITLE);
+    expect(KNIT_ABLES_CARDS[1]?.description).toBe(VEST_IN_SHOW_CARD_COPY);
   });
 
   it("uses the supplied Vest in Show thumbnail", () => {

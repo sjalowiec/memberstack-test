@@ -5,6 +5,12 @@ import {
   CAP_SLEEVE_TANK_TITLE,
 } from "./capSleeveTank";
 import {
+  RHYTHMIC_COLOUR_TOP_CARD_COPY,
+  RHYTHMIC_COLOUR_TOP_IMAGES,
+  RHYTHMIC_COLOUR_TOP_PATH,
+  RHYTHMIC_COLOUR_TOP_TITLE,
+} from "./rhythmicColourTop";
+import {
   COCO_LOCO_TANK_CARD_COPY,
   COCO_LOCO_TANK_IMAGES,
   COCO_LOCO_TANK_PATH,
@@ -54,6 +60,12 @@ export type KnitAbleLandingCard = {
 };
 
 export const KNIT_ABLES_CARDS: readonly KnitAbleLandingCard[] = [
+  {
+    href: RHYTHMIC_COLOUR_TOP_PATH,
+    title: RHYTHMIC_COLOUR_TOP_TITLE,
+    description: RHYTHMIC_COLOUR_TOP_CARD_COPY,
+    image: RHYTHMIC_COLOUR_TOP_IMAGES.hero,
+  },
   {
     href: VEST_IN_SHOW_PATH,
     title: VEST_IN_SHOW_TITLE,
