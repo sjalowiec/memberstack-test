@@ -103,7 +103,8 @@ describe("set-in sleeve written instructions", () => {
     expect(text).toContain("Front");
     expect(text).toContain("Sleeves");
     expect(text).toContain("Finishing");
-    expect(text).toContain("Join the shoulder seams. Machine seaming is recommended.");
+    expect(text).toContain("Join one shoulder using your preferred method: linker, crochet slip stitch, or the machine bind-off method.");
+    expect(text).toContain("Set the sleeves into the armholes.");
     expect(text).toContain("Cardigan fronts are not written");
     expect(text).toContain("V-necklines are not written");
   });
@@ -120,28 +121,27 @@ describe("set-in sleeve written instructions", () => {
     expect(alternateDoc.checks.ok, alternateDoc.checks.errors.join(" ")).toBe(true);
     const back = setInSleeveInstructionSection(alternateDoc, "back");
     const sleeves = setInSleeveInstructionSection(alternateDoc, "sleeves");
-    expect(back).toContain("Cast on 122 stitches.");
-    expect(back).toContain("RC: 000 Bind off 6 stitches at the carriage-side armhole edge.");
-    expect(back).toContain("RC: 001 Bind off 6 stitches at the opposite armhole edge.");
-    expect(back).toContain("RC: 002 Bind off 2 stitches at the carriage-side armhole edge.");
-    expect(back).toContain("RC: 007 Bind off 2 stitches at the opposite armhole edge.");
-    expect(back).toContain("Decrease 1 stitch at each armhole edge every other row 7 times.");
+    expect(back).toContain("Cast on 122 stitches for the back.");
+    expect(back).toContain("RC: 000 Bind off 6 stitches at the beginning of each of the next 2 rows.");
+    expect(back).toContain("RC: 002 Bind off 2 stitches at the beginning of each of the next 6 rows.");
+    expect(back).toContain("Decrease 1 stitch at each armhole edge on RC: 008, RC: 010, RC: 012, RC: 014, RC: 016, RC: 018, RC: 020.");
+    expect(back).toContain("Knit these rows even: RC: 009, RC: 011, RC: 013, RC: 015, RC: 017, RC: 019, RC: 021.");
     expect(back).toContain("finishes the armhole at RC: 070.");
+    expect(back).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
     expect(back).toContain("Place the center 21 stitches in hold.");
-    expect(back).toContain("Bind off the right shoulder on the shaping row, then bind off the left shoulder on the return row.");
+    expect(back).toContain("At armhole edge, bind off 5 stitches on each shoulder.");
     const front = setInSleeveInstructionSection(alternateDoc, "front");
-    expect(front).toContain("Place the opposite shoulder stitches on hold. Work one shoulder at a time.");
-    expect(front).toContain(
-      "Return the held shoulder stitches to the needles and repeat the neckline shaping for the second shoulder",
-    );
+    expect(front).toContain("Bind off the center 14 stitches");
+    expect(front).toContain("Work each side separately.");
+    expect(front).toContain("At armhole edge, bind off 5 stitches on each shoulder.");
     expect(sleeves).toContain("Cast on");
     expect(sleeves).toContain("Reset row counter to RC 000.");
-    expect(sleeves).toContain("Increase 1 stitch at each side");
+    expect(sleeves).toContain("before knitting that row");
     expect(sleeves).toContain("82 stitches remain.");
     expect(sleeves).toContain(
-      `${formatRcColon(alternate.sleeve.rowsCuffToUpperArm)} Bind off 6 stitches at the carriage-side sleeve-cap edge.`,
+      `${formatRcColon(alternate.sleeve.rowsCuffToUpperArm)} Bind off 6 stitches at the beginning of each of the next 2 rows.`,
     );
-    expect(sleeves).toContain("Bind off 2 stitches at the carriage-side sleeve-cap edge.");
+    expect(sleeves).toContain("Bind off 2 stitches at the beginning of each of the next 6 rows.");
     expect(sleeves).toContain("Lower cap:");
     expect(sleeves).toContain("Middle cap:");
     expect(sleeves).toContain("Upper cap:");
@@ -155,12 +155,11 @@ describe("set-in sleeve written instructions", () => {
     expect(standard.body.armhole.method).toBe("standard");
     const back = setInSleeveInstructionSection(standardDoc, "back");
     const sleeves = setInSleeveInstructionSection(standardDoc, "sleeves");
-    expect(back).toContain("RC: 000 Bind off 5 stitches at the carriage-side armhole edge.");
-    expect(back).toContain("RC: 001 Bind off 5 stitches at the opposite armhole edge.");
-    expect(back).not.toContain("RC: 002 Bind off");
-    expect(back).toContain("Decrease 1 stitch at each armhole edge every other row 4 times.");
+    expect(back).toContain("RC: 000 Bind off 5 stitches at the beginning of each of the next 2 rows.");
+    expect(back).not.toContain("Bind off 2 stitches at the beginning");
+    expect(back).toContain("Decrease 1 stitch at each armhole edge on RC: 002, RC: 004, RC: 006, RC: 008.");
     expect(sleeves).toContain(
-      `${formatRcColon(standard.sleeve.rowsCuffToUpperArm)} Bind off 5 stitches at the carriage-side sleeve-cap edge.`,
+      `${formatRcColon(standard.sleeve.rowsCuffToUpperArm)} Bind off 5 stitches at the beginning of each of the next 2 rows.`,
     );
     expect(sleeves).toContain("Bind off the remaining 22 stitches.");
     expect(sleeves).toContain("88 stitches remain.");
@@ -187,10 +186,10 @@ describe("set-in sleeve written instructions", () => {
         `Bind off the remaining ${sweater.sleeveCap.totals.finalStitches} stitches.`,
       );
       expect(sleeves).toContain(`${sweater.sleeve.upperArmStitches} stitches remain.`);
-      const firstBodyBindOff = back.find((line) => line.includes("carriage-side armhole edge"));
+      const firstBodyBindOff = back.find((line) => line.includes("at the beginning of"));
       const firstSleeveBindOff = sleeves
         .split("\n")
-        .find((line) => line.includes("carriage-side sleeve-cap edge"));
+        .find((line) => line.includes("Begin the sleeve cap") === false && line.includes("at the beginning of"));
       expect(firstBodyBindOff).toContain(`Bind off ${sweater.body.armhole.bindOffStitchesEachSide} stitches`);
       expect(firstSleeveBindOff).toContain(
         `Bind off ${sweater.sleeveCap.sleeve.initialBindOffStitchesEachSide} stitches`,
@@ -206,8 +205,8 @@ describe("set-in sleeve written instructions", () => {
     expect(doc.checks.ok, doc.checks.errors.join(" ")).toBe(true);
     const back = setInSleeveInstructionSection(doc, "back");
     const armholeRc = sweater.body.hemRows + sweater.body.rowsToArmhole;
-    expect(back).toContain(`Decrease 1 stitch at each side on ${formatRcColon(sweater.body.bodyBlock.shapingRowNumbers[0]!)}`);
-    expect(back).toContain(`The row counter will read ${formatRcColon(armholeRc)}.`);
+    expect(back).toContain(`when the counter reads ${formatRcColon(sweater.body.bodyBlock.shapingRowNumbers[0]!)}`);
+    expect(back).toContain(`Knit in pattern to ${formatRcColon(armholeRc)}.`);
     expect(back).toContain(`${sweater.body.stitchesAtUnderarm} stitches remain.`);
   });
 });

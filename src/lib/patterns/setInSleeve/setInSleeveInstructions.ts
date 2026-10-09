@@ -1,29 +1,36 @@
 /**
  * Written instructions for an adult set-in sleeve pullover.
  *
- * Numbers come from the approved sweater and sleeve-cap calculations.
- * Wording follows the existing row-counter, bind-off, neckline, and cuff-up
- * sleeve conventions. Cardigan fronts, V-necklines, and top-down sleeve
+ * Armhole and sleeve-cap numbers come from the approved Step 4 calculations.
+ * Neckline and shoulder lines come from the sleeveless timeline and its
+ * instruction functions. Hem, cuff, and finishing wording follow the existing
+ * sweater pattern lines. Cardigan fronts, V-necklines, and top-down sleeve
  * wording are not written here.
  */
 
 import { CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET } from "../legoBlocks/cuffUpSleeveRowCounter";
 import {
-  dropShoulderSleeveBodyRowSpans,
+  NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE,
+  neckbandPickupInstructionFromDebug,
+} from "../legoBlocks/neckbandPickup";
+import {
+  mergedShapingInstructionLines,
+  shapingActionsFromTimeline,
+} from "../legoBlocks/neckShoulderExecution";
+import { isShallowHoldRoundPlan, type RoundNecklinePlanResult } from "../legoBlocks/roundNeckline";
+import {
   dropShoulderSleeveShapingRcSequence,
 } from "../dropShoulderSleeveShapingChart";
-import {
-  dropShoulderSleeveShapingPlan,
-  formatDropShoulderSleeveShapingWrittenLines,
-} from "../dropShoulderSleeveShaping";
+import { dropShoulderSleeveShapingPlan } from "../dropShoulderSleeveShaping";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
+import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
+import { roundNeckBackShallowSleevelessSummaryWrittenLines } from "../roundNeckPlanPresentation";
 import {
-  roundNeckPlanCenterWrittenLine,
-  roundNeckPlanFinishHeldStitchesLine,
-  roundNeckPlanOneSideNeckEdgeWrittenLines,
-} from "../roundNeckPlanPresentation";
-import { ARMHOLE_RC_FROM_RESET_NOTE, formatRcColon } from "../sleevelessPatternOutput";
-import type { RoundNecklinePlanResult } from "../legoBlocks/roundNeckline";
+  ARMHOLE_RC_FROM_RESET_NOTE,
+  formatCenterNecklineBindOffShapingExecution,
+  formatCenterNecklineHoldShapingExecution,
+  formatRcColon,
+} from "../sleevelessPatternOutput";
 import type { SetInSleeveCapSuccess } from "./sleeveCapMath";
 import type { SetInSleeveSweaterSuccess } from "./setInSleeveSweaterMath";
 
@@ -53,9 +60,7 @@ export type SetInSleevePatternInstructions = {
 
 type CountLine = {
   text: string;
-  /** Stitches on the needle after this line. Omitted when the line does not change or report them. */
   stitches?: number;
-  /** Rows consumed by this line. */
   rows?: number;
 };
 
@@ -65,16 +70,15 @@ const UNSUPPORTED = [
   "Top-down sleeve wording is not written in this step. These sleeve instructions are cuff-up.",
 ] as const;
 
+const KNIT_OTHER_ROWS =
+  "Knit in pattern at all other rows in this section.";
+
 function stitchWord(n: number): string {
   return n === 1 ? "stitch" : "stitches";
 }
 
 function rowWord(n: number): string {
   return n === 1 ? "row" : "rows";
-}
-
-function timeWord(n: number): string {
-  return n === 1 ? "time" : "times";
 }
 
 function inches(n: number): string {
@@ -111,40 +115,73 @@ export function setInSleeveInstructionSection(
   return section ? sectionPlain(section) : "";
 }
 
-function bindOffPairLines(
-  startRc: number,
-  startStitches: number,
-  stitchesEachSide: number,
-  edge: "armhole" | "sleeve-cap",
-): { lines: string[]; rc: number; stitches: number; rows: number } {
-  const afterFirst = startStitches - stitchesEachSide;
-  const afterSecond = afterFirst - stitchesEachSide;
-  const lines = [
-    `${formatRcColon(startRc)} Bind off ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at the carriage-side ${edge} edge. Knit across. ${remain(afterFirst)}`,
-    `${formatRcColon(startRc + 1)} Bind off ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at the opposite ${edge} edge. Knit across. ${remain(afterSecond)}`,
-  ];
-  return { lines, rc: startRc + 2, stitches: afterSecond, rows: 2 };
+function knitInPatternTo(startRc: number, rowCount: number): string {
+  return `${formatRcColon(startRc)} Knit in pattern to ${formatRcColon(startRc + rowCount)}.`;
 }
 
-function armholeDecreaseLines(
+function groupEqualRows(amounts: readonly number[]): { stitches: number; rows: number }[] {
+  const groups: { stitches: number; rows: number }[] = [];
+  for (const stitches of amounts) {
+    const last = groups[groups.length - 1];
+    if (last && last.stitches === stitches) last.rows += 1;
+    else groups.push({ stitches, rows: 1 });
+  }
+  return groups;
+}
+
+function bothEdgeBindOffRows(stitchesEachSide: readonly number[]): number[] {
+  const rows: number[] = [];
+  for (const stitches of stitchesEachSide) rows.push(stitches, stitches);
+  return rows;
+}
+
+function groupedBindOffLines(
+  startRc: number,
+  startStitches: number,
+  stitchesEachSide: readonly number[],
+): { lines: string[]; rc: number; stitches: number; rows: number } {
+  const lines: string[] = [];
+  let rc = startRc;
+  let stitches = startStitches;
+  let rows = 0;
+  for (const group of groupEqualRows(bothEdgeBindOffRows(stitchesEachSide))) {
+    const where =
+      group.rows === 1 ? "the next row" : `each of the next ${group.rows} ${rowWord(group.rows)}`;
+    stitches -= group.stitches * group.rows;
+    lines.push(
+      `${formatRcColon(rc)} Bind off ${group.stitches} ${stitchWord(group.stitches)} at the beginning of ${where}. ${remain(stitches)}`,
+    );
+    rc += group.rows;
+    rows += group.rows;
+  }
+  return { lines, rc, stitches, rows };
+}
+
+function pairedDecreaseLine(
   startRc: number,
   startStitches: number,
   stitchesEachSide: number,
-  decreaseRows: number,
-): { lines: string[]; rc: number; stitches: number; rows: number } {
-  if (stitchesEachSide === 0) {
-    return { lines: [], rc: startRc, stitches: startStitches, rows: 0 };
+  everyRows: number,
+  times: number,
+  edge: "armhole" | "sleeve-cap",
+): { text: string; rc: number; stitches: number; rows: number } {
+  const actionRows = shapingActionRowNumbers(startRc, times, everyRows);
+  const evenRows: number[] = [];
+  for (const action of actionRows) {
+    for (let offset = 1; offset < everyRows; offset += 1) evenRows.push(action + offset);
   }
-  const actionRows = shapingActionRowNumbers(startRc, stitchesEachSide, 2);
-  const removed = stitchesEachSide * 2;
+  const removed = times * stitchesEachSide * 2;
   const stitches = startStitches - removed;
-  const lines = [
-    `${formatRcColon(startRc)} Decrease 1 stitch at each armhole edge every other row ${stitchesEachSide} ${timeWord(stitchesEachSide)}. One stitch is decreased at each edge on the same row. Decrease on ${rcList(actionRows)}. ${remain(stitches)}`,
-  ];
-  if (actionRows.length !== stitchesEachSide || decreaseRows !== stitchesEachSide * 2) {
-    lines.push("Armhole decrease rows do not match the every-other-row schedule.");
-  }
-  return { lines, rc: startRc + decreaseRows, stitches, rows: decreaseRows };
+  const rows = times * everyRows;
+  const place = edge === "armhole" ? "each armhole edge" : "each sleeve-cap edge";
+  const even =
+    evenRows.length > 0 ? ` Knit these rows even: ${rcList(evenRows)}.` : "";
+  return {
+    text: `${formatRcColon(startRc)} Decrease ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at ${place} on ${rcList(actionRows)}. Each listed RC is the counter reading before that decrease row.${even} ${remain(stitches)}`,
+    rc: startRc + rows,
+    stitches,
+    rows,
+  };
 }
 
 /** Shared front and back armhole text, from the armhole row-counter reset. */
@@ -156,163 +193,97 @@ export function setInArmholeInstructionLines(
     "Reset row counter to RC 000.",
     ARMHOLE_RC_FROM_RESET_NOTE,
   ];
-  let rc = 0;
-  let stitches = stitchesAtUnderarm;
-  const first = bindOffPairLines(rc, stitches, armhole.bindOffStitchesEachSide, "armhole");
-  lines.push(...first.lines);
-  rc = first.rc;
-  stitches = first.stitches;
-  for (const stair of armhole.stairStepBindOffsEachSide) {
-    const step = bindOffPairLines(rc, stitches, stair, "armhole");
-    lines.push(...step.lines);
-    rc = step.rc;
-    stitches = step.stitches;
+  const bindOffs = groupedBindOffLines(0, stitchesAtUnderarm, [
+    armhole.bindOffStitchesEachSide,
+    ...armhole.stairStepBindOffsEachSide,
+  ]);
+  lines.push(...bindOffs.lines);
+  let rc = bindOffs.rc;
+  let stitches = bindOffs.stitches;
+  if (armhole.decreaseStitchesEachSide > 0) {
+    const decreases = pairedDecreaseLine(
+      rc,
+      stitches,
+      1,
+      2,
+      armhole.decreaseStitchesEachSide,
+      "armhole",
+    );
+    lines.push(decreases.text);
+    rc = decreases.rc;
+    stitches = decreases.stitches;
+    if (decreases.rows !== armhole.decreaseRows) {
+      lines.push("Armhole decrease rows do not match the every-other-row schedule.");
+    }
   }
-  const decreases = armholeDecreaseLines(
-    rc,
-    stitches,
-    armhole.decreaseStitchesEachSide,
-    armhole.decreaseRows,
-  );
-  lines.push(...decreases.lines);
-  rc = decreases.rc;
-  stitches = decreases.stitches;
   lines.push(
-    `${formatRcColon(rc)} Armhole decreases are complete. ${remain(stitches)} Knit even from here to the neckline. Those rows are part of the armhole depth.`,
+    `${formatRcColon(rc)} Armhole decreases are complete. ${remain(stitches)}`,
   );
   return lines;
 }
 
-function shoulderShapingRcs(
-  necklineStartRc: number,
-  necklineDepthRows: number,
-  placementRows: number,
-  chunkCount: number,
-): number[] {
-  const workRows = Math.max(0, necklineDepthRows - 1);
-  const rowsUsed = Math.min(Math.max(placementRows, 0), workRows);
-  const startI = Math.max(0, workRows - rowsUsed);
-  const rows: number[] = [];
-  for (let index = 0; index < chunkCount; index += 1) {
-    const rowIndex = startI + index * 2;
-    if (rowIndex >= workRows) break;
-    rows.push(necklineStartRc + rowIndex);
-  }
-  return rows;
-}
-
-function labeledNeckEdgeLines(
-  plan: RoundNecklinePlanResult,
-  necklineStartRc: number,
-  bothEdges: boolean,
-): string[] {
-  const left = roundNeckPlanOneSideNeckEdgeWrittenLines(plan, "left", { necklineStartRc });
-  const right = roundNeckPlanOneSideNeckEdgeWrittenLines(plan, "right", { necklineStartRc });
-  if (!bothEdges) return right;
-  if (left.join("\n") === right.join("\n")) {
-    return left.map((line) => line.replace("At the neck edge", "At each neck edge"));
-  }
-  return [
-    ...left.map((line) => line.replace("At the neck edge", "At the left neck edge")),
-    ...right.map((line) => line.replace("At the neck edge", "At the right neck edge")),
-  ];
-}
-
-function shoulderBindOffSentence(label: string, chunks: number[], rows: number[]): string[] {
-  if (chunks.length === 0) return [];
-  const fitted = chunks.slice(0, rows.length);
-  const omitted = chunks.slice(rows.length);
-  const lines = [
-    `Work the ${label} shoulder at the armhole edge. Bind off on alternate rows: ${fitted.join(", then ")} ${stitchWord(fitted[0] ?? 0)}. Bind off on ${rcList(rows.slice(0, fitted.length))}.`,
-  ];
-  if (omitted.length > 0) {
-    lines.push(
-      `The remaining ${label} shoulder stitches (${omitted.join(", ")}) do not fit in the neckline rows.`,
-    );
-  }
-  return lines;
-}
-
-function necklineLines(
-  plan: RoundNecklinePlanResult,
-  shoulderChunks: { left: number[]; right: number[] },
-  necklineStartRc: number,
-  necklineDepthRows: number,
-  shoulderPlacementRows: number,
-  stitchesAtShoulder: number,
+function necklineInstructionLines(
+  result: SetInSleeveSweaterSuccess,
   piece: "back" | "front",
+  necklineStartRc: number,
 ): string[] {
-  const center = roundNeckPlanCenterWrittenLine(plan);
-  const rightRows = shoulderShapingRcs(
-    necklineStartRc,
-    necklineDepthRows,
-    shoulderPlacementRows,
-    shoulderChunks.right.length,
+  const plan: RoundNecklinePlanResult = result.body.neckline[piece];
+  const schedule = result.body.neckline.shoulderBindOff;
+  const built = buildNeckShoulderTimelineAndChartRows(
+    {
+      firstShapingRow: necklineStartRc,
+      shoulderStitchesPerSide: result.body.neckline.shoulderStitchesPerSide,
+      centerNeckBindOff: result.body.neckline.openingStitches,
+      neckDepthRows: plan.necklineDepthRows,
+      neckProfile: piece,
+      stitchesAfterArmhole: result.body.stitchesAtShoulder,
+      shoulderBindoffRows: schedule.placementRows,
+    },
+    { shoulderSchedule: schedule },
   );
-  const lines = [
-    `${formatRcColon(necklineStartRc)} Begin the neckline. ${stitchesAtShoulder} ${stitchWord(stitchesAtShoulder)} are on the needle.`,
+  const row0 = built.chartRows[0];
+  const centerLine = isShallowHoldRoundPlan(plan)
+    ? formatCenterNecklineHoldShapingExecution({
+        totalCenterHold: plan.centerBindOff,
+        stitchesLeftAfter: row0?.leftStitchCount ?? 0,
+        stitchesRightAfter: row0?.rightStitchCount ?? 0,
+      })
+    : formatCenterNecklineBindOffShapingExecution({
+        totalCenterBindOff: plan.centerBindOff,
+        stitchesLeftAfter: row0?.leftStitchCount ?? 0,
+        stitchesRightAfter: row0?.rightStitchCount ?? 0,
+      });
+  const actions = shapingActionsFromTimeline(built.timeline, {
+    centerBindOffShapingLine: centerLine,
+  });
+  const summary = roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
+    bodyWidthStitches: result.body.stitchesAtShoulder,
+    necklineStartRcLabel: formatRcColon(necklineStartRc),
+  });
+  return [
+    ...summary,
+    ...mergedShapingInstructionLines(actions.neckActions, actions.shoulderActions),
+    KNIT_OTHER_ROWS,
   ];
-
-  if (piece === "front") {
-    lines.push("Place the opposite shoulder stitches on hold. Work one shoulder at a time.");
-    if (center) lines.push(center);
-    lines.push(...labeledNeckEdgeLines(plan, necklineStartRc, false));
-    lines.push(...shoulderBindOffSentence("working", shoulderChunks.right, rightRows));
-    const leftMatchesRight =
-      shoulderChunks.left.join(",") === shoulderChunks.right.join(",");
-    lines.push(
-      leftMatchesRight
-        ? "Return the held shoulder stitches to the needles and repeat the neckline shaping for the second shoulder, matching the first side."
-        : `Return the held shoulder stitches to the needles and repeat the neckline shaping for the second shoulder. Bind off that shoulder on alternate rows: ${shoulderChunks.left.join(", then ")} ${stitchWord(shoulderChunks.left[0] ?? 0)}, on the same shaping rows.`,
-    );
-  } else {
-    if (center) lines.push(center);
-    lines.push(...labeledNeckEdgeLines(plan, necklineStartRc, true));
-    const leftRows = rightRows
-      .map((row) => row + 1)
-      .filter((row) => row < necklineStartRc + necklineDepthRows);
-    lines.push(...shoulderBindOffSentence("right", shoulderChunks.right, rightRows));
-    lines.push(...shoulderBindOffSentence("left", shoulderChunks.left, leftRows));
-    lines.push(
-      "Bind off the right shoulder on the shaping row, then bind off the left shoulder on the return row. Do not bind off both shoulders on the same pass.",
-    );
-  }
-
-  if (center?.includes("in hold")) {
-    lines.push(roundNeckPlanFinishHeldStitchesLine());
-  }
-  return lines;
 }
 
-function bodyLines(result: SetInSleeveSweaterSuccess): CountLine[] {
+function bodyLines(result: SetInSleeveSweaterSuccess, piece: "back" | "front"): string[] {
   const { body } = result;
-  const lines: CountLine[] = [
-    {
-      text: `${formatRcColon(0)} Cast on ${body.bodyBlock.hemStitches} ${stitchWord(body.bodyBlock.hemStitches)}.`,
-      stitches: body.bodyBlock.hemStitches,
-      rows: 0,
-    },
-    {
-      text: `${formatRcColon(0)} Knit ${body.hemRows} ${rowWord(body.hemRows)} even for the hem (${inches(body.hemInches)}). The row counter will read ${formatRcColon(body.hemRows)}.`,
-      stitches: body.bodyBlock.hemStitches,
-      rows: body.hemRows,
-    },
+  const pieceName = piece === "back" ? "the back" : "the front";
+  const lines = [
+    `${formatRcColon(0)} Cast on ${body.bodyBlock.hemStitches} ${stitchWord(body.bodyBlock.hemStitches)} for ${pieceName}.`,
+    knitInPatternTo(0, body.hemRows) + ` Hem, ${inches(body.hemInches)}.`,
   ];
-  const armholeRc = body.hemRows + body.rowsToArmhole;
   if (body.bodyBlock.shapingDirection === "none" || body.bodyBlock.shapingRowNumbers.length === 0) {
-    lines.push({
-      text: `${formatRcColon(body.hemRows)} Knit ${body.rowsToArmhole} ${rowWord(body.rowsToArmhole)} even to the armhole. The row counter will read ${formatRcColon(armholeRc)}. ${remain(body.stitchesAtUnderarm)}`,
-      stitches: body.stitchesAtUnderarm,
-      rows: body.rowsToArmhole,
-    });
+    lines.push(
+      `${knitInPatternTo(body.hemRows, body.rowsToArmhole)} ${remain(body.stitchesAtUnderarm)}`,
+    );
     return lines;
   }
   const verb = body.bodyBlock.shapingDirection === "decrease" ? "Decrease" : "Increase";
-  lines.push({
-    text: `${formatRcColon(body.hemRows)} Knit ${body.rowsToArmhole} ${rowWord(body.rowsToArmhole)} to the armhole. ${verb} 1 stitch at each side on ${rcList(body.bodyBlock.shapingRowNumbers)}. The row counter will read ${formatRcColon(armholeRc)}. ${remain(body.stitchesAtUnderarm)}`,
-    stitches: body.stitchesAtUnderarm,
-    rows: body.rowsToArmhole,
-  });
+  lines.push(
+    `${knitInPatternTo(body.hemRows, body.rowsToArmhole)} ${verb} 1 stitch at each side when the counter reads ${rcList(body.bodyBlock.shapingRowNumbers)}, before knitting that row. ${remain(body.stitchesAtUnderarm)}`,
+    );
   return lines;
 }
 
@@ -321,22 +292,23 @@ function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLi
   let rc = capStartRc;
   let stitches = cap.sleeve.upperArmStitches;
   lines.push({
-    text: `${formatRcColon(rc)} Begin the sleeve cap. ${remain(stitches)}`,
+    text: `${formatRcColon(rc)} Begin the sleeve cap. The counter reads ${formatRcColon(rc)} before the next row. ${remain(stitches)}`,
     stitches,
     rows: 0,
   });
 
-  const pushBindOff = (stitchesEachSide: number) => {
-    const pair = bindOffPairLines(rc, stitches, stitchesEachSide, "sleeve-cap");
-    for (const text of pair.lines) lines.push({ text, rows: 1 });
-    rc = pair.rc;
-    stitches = pair.stitches;
-    const last = lines[lines.length - 1];
-    if (last) last.stitches = stitches;
-  };
-
-  pushBindOff(cap.sleeve.initialBindOffStitchesEachSide);
-  for (const stair of cap.sleeve.stairStepBindOffsEachSide) pushBindOff(stair);
+  const bindOffs = groupedBindOffLines(rc, stitches, [
+    cap.sleeve.initialBindOffStitchesEachSide,
+    ...cap.sleeve.stairStepBindOffsEachSide,
+  ]);
+  for (const text of bindOffs.lines) lines.push({ text, rows: 0 });
+  const bindOffRowTotal = bindOffs.rows;
+  if (lines.length > 1) {
+    lines[lines.length - 1]!.rows = bindOffRowTotal;
+    lines[lines.length - 1]!.stitches = bindOffs.stitches;
+  }
+  rc = bindOffs.rc;
+  stitches = bindOffs.stitches;
 
   for (const zone of [
     cap.workingCap.zones.lower,
@@ -344,51 +316,61 @@ function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLi
     cap.workingCap.zones.upper,
   ]) {
     for (const step of zone.steps) {
-      const stepStart = rc;
-      const actionRows = shapingActionRowNumbers(rc, step.times, step.everyRows);
-      const removed = step.times * step.stitchesEachSide * 2;
-      stitches -= removed;
-      const interval =
-        step.everyRows <= 1 ? "every row" : `every ${step.everyRows} ${rowWord(step.everyRows)}`;
-      const zoneLabel = `${zone.name[0]!.toUpperCase()}${zone.name.slice(1)}`;
-      lines.push({
-        text: `${formatRcColon(stepStart)} ${zoneLabel} cap: decrease ${step.stitchesEachSide} ${stitchWord(step.stitchesEachSide)} at each edge ${interval} ${step.times} ${timeWord(step.times)}. One decrease is worked at each edge on the same row. Decrease on ${rcList(actionRows)}. ${remain(stitches)}`,
+      const written = pairedDecreaseLine(
+        rc,
         stitches,
-        rows: step.times * step.everyRows,
+        step.stitchesEachSide,
+        step.everyRows,
+        step.times,
+        "sleeve-cap",
+      );
+      const zoneLabel = `${zone.name[0]!.toUpperCase()}${zone.name.slice(1)} cap`;
+      lines.push({
+        text: written.text.replace("Decrease", `${zoneLabel}: decrease`),
+        stitches: written.stitches,
+        rows: written.rows,
       });
-      rc += step.times * step.everyRows;
+      rc = written.rc;
+      stitches = written.stitches;
     }
   }
 
-  for (const step of cap.upperSlope.steps) {
-    const pair = bindOffPairLines(rc, stitches, step.stitchesEachSide, "sleeve-cap");
-    lines.push({
-      text: `${pair.lines[0]} Upper slope.`,
-      rows: 1,
-    });
-    lines.push({
-      text: pair.lines[1] ?? "",
-      stitches: pair.stitches,
-      rows: 1,
-    });
-    rc = pair.rc;
-    stitches = pair.stitches;
+  const slopeAmounts: number[] = [];
+  for (const step of cap.upperSlope.steps) slopeAmounts.push(step.stitchesEachSide);
+  if (slopeAmounts.length > 0) {
+    const slope = groupedBindOffLines(rc, stitches, slopeAmounts);
+    slope.lines[0] = `${slope.lines[0]} Upper slope.`;
+    for (const text of slope.lines) lines.push({ text, rows: 0 });
+    lines[lines.length - 1]!.rows = slope.rows;
+    lines[lines.length - 1]!.stitches = slope.stitches;
+    rc = slope.rc;
+    stitches = slope.stitches;
   }
   if (cap.upperSlope.plainRows > 0) {
-    const endRc = rc + cap.upperSlope.plainRows;
     lines.push({
-      text: `${formatRcColon(rc)} Knit ${cap.upperSlope.plainRows} ${rowWord(cap.upperSlope.plainRows)} even. The row counter will read ${formatRcColon(endRc)}. ${remain(stitches)}`,
+      text: `${knitInPatternTo(rc, cap.upperSlope.plainRows)} ${remain(stitches)}`,
       stitches,
       rows: cap.upperSlope.plainRows,
     });
     rc += cap.upperSlope.plainRows;
   }
   lines.push({
-    text: `${formatRcColon(rc)} Bind off the remaining ${cap.totals.finalStitches} ${stitchWord(cap.totals.finalStitches)}.`,
+    text: `${formatRcColon(rc)} Bind off the remaining ${cap.totals.finalStitches} ${stitchWord(cap.totals.finalStitches)}. This bind-off does not add a knitted row.`,
     stitches: 0,
     rows: 0,
   });
   return lines;
+}
+
+function sleeveBodyRowAccount(endRc: number, shapingRcs: readonly number[]): number {
+  if (shapingRcs.length === 0) return endRc;
+  const first = shapingRcs[0]!;
+  const last = shapingRcs[shapingRcs.length - 1]!;
+  let between = 0;
+  for (let index = 1; index < shapingRcs.length; index += 1) {
+    between += shapingRcs[index]! - shapingRcs[index - 1]! - 1;
+  }
+  return first + shapingRcs.length + between + (endRc - (last + 1));
 }
 
 function checkWhole(label: string, value: number, errors: string[]): void {
@@ -401,18 +383,17 @@ function validate(
   result: SetInSleeveSweaterSuccess,
   armholeLines: string[],
   capLineRecords: CountLine[],
+  sleeveBodyRows: number,
 ): SetInInstructionCheck {
   const errors: string[] = [];
   const limitations: string[] = [...UNSUPPORTED.slice(0, 2)];
   if (result.sleeveDirection !== "cuff-up") limitations.push(UNSUPPORTED[2]);
 
   const armhole = result.body.armhole;
-  const backNeckRows = result.body.neckline.back.necklineDepthRows;
-  const frontNeckRows = result.body.neckline.front.necklineDepthRows;
-  if (backNeckRows > armhole.straightRows) {
+  if (result.body.neckline.back.necklineDepthRows > armhole.straightRows) {
     errors.push("The back neckline is deeper than the straight armhole rows.");
   }
-  if (frontNeckRows > armhole.straightRows) {
+  if (result.body.neckline.front.necklineDepthRows > armhole.straightRows) {
     errors.push("The front neckline is deeper than the straight armhole rows.");
   }
 
@@ -441,17 +422,21 @@ function validate(
   if (capStitches !== 0) {
     errors.push(`Sleeve-cap instructions end with ${capStitches} stitches on the needle.`);
   }
-  const bindOffCount = (armhole.stairStepBindOffsEachSide.length + 1) * 2;
-  const decreaseMention = armhole.decreaseStitchesEachSide === 0
-    ? true
-    : armholeLines.some((line) => line.includes("Decrease 1 stitch at each armhole edge every other row"));
-  if (!decreaseMention) errors.push("Armhole decrease instructions are missing.");
-  const carriageLines = armholeLines.filter((line) => line.includes("carriage-side armhole edge"));
-  if (carriageLines.length !== armhole.stairStepBindOffsEachSide.length + 1) {
-    errors.push("Each armhole bind-off is not written as its own pair of rows.");
+  if (sleeveBodyRows !== result.sleeve.rowsCuffToUpperArm) {
+    errors.push(
+      `Sleeve-body instructions use ${sleeveBodyRows} rows and the calculation uses ${result.sleeve.rowsCuffToUpperArm}.`,
+    );
   }
-  if (bindOffCount !== armhole.bindOffRows) {
-    errors.push("Armhole bind-off rows do not match the calculation.");
+
+  const carriageGroups = armholeLines.filter((line) => line.includes("Bind off"));
+  const expectedGroups = groupEqualRows(
+    bothEdgeBindOffRows([armhole.bindOffStitchesEachSide, ...armhole.stairStepBindOffsEachSide]),
+  ).length;
+  if (carriageGroups.length !== expectedGroups) {
+    errors.push("Armhole bind-off groups do not match the calculated bind-off rows.");
+  }
+  if (!armholeLines.some((line) => line.includes("Decrease 1 stitch at each armhole edge"))) {
+    if (armhole.decreaseStitchesEachSide > 0) errors.push("Armhole decrease instructions are missing.");
   }
 
   checkWhole("Body stitches at the underarm", result.body.stitchesAtUnderarm, errors);
@@ -467,6 +452,33 @@ function validate(
   return { ok: errors.length === 0, errors, limitations };
 }
 
+function finishingLines(result: SetInSleeveSweaterSuccess): string[] {
+  const spi = result.body.neckline.openingStitches / result.finished.neckWidthInches;
+  const rpi = result.body.neckline.back.necklineDepthRows / result.finished.backNeckDepthInches;
+  const pickup = neckbandPickupInstructionFromDebug("round", {
+    stitchesPerInch: spi,
+    rowsPerInch: rpi,
+    necklineStitches: result.body.neckline.openingStitches,
+    frontNeckDepthRows: result.body.neckline.front.necklineDepthRows,
+    backNeckDepthRows: result.body.neckline.back.necklineDepthRows,
+    frontCenterNeckBindOffStitches: result.body.neckline.front.centerBindOff,
+    centerNeckBindOffStitches: result.body.neckline.back.centerBindOff,
+  });
+  return [
+    "Block the pieces if you want to set the measurements before seaming.",
+    "Lightly steam the pieces to the finished measurements. Allow the pieces to dry completely before assembly.",
+    "Join one shoulder using your preferred method: linker, crochet slip stitch, or the machine bind-off method.",
+    ...(pickup ? [pickup.primaryText, NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE] : []),
+    "Work the neckline trim or neckband.",
+    "Finish the neckband as desired.",
+    "Join the remaining shoulder seam and neckband seam.",
+    "Seam each sleeve.",
+    "Set the sleeves into the armholes. Match each underarm bind-off to the sleeve-cap bind-off, and match the top of the sleeve cap to the shoulder seam.",
+    "Match the armhole edges and the hem. Seam from the hem to the underarm.",
+    "Lightly steam the seams if needed. Weave in the ends. Allow the garment to rest before wearing.",
+  ];
+}
+
 export function generateSetInSleeveInstructions(
   result: SetInSleeveSweaterSuccess,
 ): SetInSleevePatternInstructions {
@@ -474,43 +486,21 @@ export function generateSetInSleeveInstructions(
   const armholeText = setInArmholeInstructionLines(armhole, result.body.stitchesAtUnderarm);
   const necklineStartBack = armhole.totalRows - result.body.neckline.back.necklineDepthRows;
   const necklineStartFront = armhole.totalRows - result.body.neckline.front.necklineDepthRows;
-  const shoulderChunks = {
-    left: result.body.neckline.shoulderBindOff.leftChunks,
-    right: result.body.neckline.shoulderBindOff.rightChunks,
-  };
-  const backNeck = necklineLines(
-    result.body.neckline.back,
-    shoulderChunks,
-    necklineStartBack,
-    result.body.neckline.back.necklineDepthRows,
-    result.body.neckline.shoulderBindOff.placementRows,
-    result.body.stitchesAtShoulder,
-    "back",
-  );
-  const frontNeck = necklineLines(
-    result.body.neckline.front,
-    shoulderChunks,
-    necklineStartFront,
-    result.body.neckline.front.necklineDepthRows,
-    result.body.neckline.shoulderBindOff.placementRows,
-    result.body.stitchesAtShoulder,
-    "front",
-  );
-
-  const evenBeforeBackNeck = armhole.straightRows - result.body.neckline.back.necklineDepthRows;
-  const evenBeforeFrontNeck = armhole.straightRows - result.body.neckline.front.necklineDepthRows;
-  const backArmhole = [...armholeText];
-  const frontArmhole = [...armholeText];
-  if (evenBeforeBackNeck >= 0) {
-    backNeck.unshift(
-      `After the armhole decreases, knit ${evenBeforeBackNeck} ${rowWord(evenBeforeBackNeck)} even. Begin the back neckline at ${formatRcColon(necklineStartBack)}. The neckline uses ${result.body.neckline.back.necklineDepthRows} ${rowWord(result.body.neckline.back.necklineDepthRows)} and finishes the armhole at ${formatRcColon(armhole.totalRows)}.`,
-    );
-  }
-  if (evenBeforeFrontNeck >= 0) {
-    frontNeck.unshift(
-      `After the armhole decreases, knit ${evenBeforeFrontNeck} ${rowWord(evenBeforeFrontNeck)} even. Begin the front neckline at ${formatRcColon(necklineStartFront)}. The neckline uses ${result.body.neckline.front.necklineDepthRows} ${rowWord(result.body.neckline.front.necklineDepthRows)} and finishes the armhole at ${formatRcColon(armhole.totalRows)}.`,
-    );
-  }
+  const decreaseCompleteRc = armhole.bindOffRows + armhole.decreaseRows;
+  const backNeck = [
+    ...(necklineStartBack > decreaseCompleteRc
+      ? [knitInPatternTo(decreaseCompleteRc, necklineStartBack - decreaseCompleteRc)]
+      : []),
+    `${formatRcColon(necklineStartBack)} Begin the back neckline. The neckline uses ${result.body.neckline.back.necklineDepthRows} ${rowWord(result.body.neckline.back.necklineDepthRows)} and finishes the armhole at ${formatRcColon(armhole.totalRows)}.`,
+    ...necklineInstructionLines(result, "back", necklineStartBack),
+  ];
+  const frontNeck = [
+    ...(necklineStartFront > decreaseCompleteRc
+      ? [knitInPatternTo(decreaseCompleteRc, necklineStartFront - decreaseCompleteRc)]
+      : []),
+    `${formatRcColon(necklineStartFront)} Begin the front neckline. The neckline uses ${result.body.neckline.front.necklineDepthRows} ${rowWord(result.body.neckline.front.necklineDepthRows)} and finishes the armhole at ${formatRcColon(armhole.totalRows)}.`,
+    ...necklineInstructionLines(result, "front", necklineStartFront),
+  ];
 
   const cuffUp = dropShoulderSleeveShapingPlan({
     topSts: result.sleeve.upperArmStitches,
@@ -526,21 +516,16 @@ export function generateSetInSleeveInstructions(
     direction: "cuff-up" as const,
   };
   const shapingRcs = dropShoulderSleeveShapingRcSequence(sleeveChartInput);
-  const shapingLines = formatDropShoulderSleeveShapingWrittenLines(
-    "increase",
-    cuffUp.steps,
-    shapingRcs,
-  );
-  const spans = dropShoulderSleeveBodyRowSpans(sleeveChartInput);
   const capRecords = sleeveCapLines(result.sleeveCap, result.sleeve.rowsCuffToUpperArm);
-  const checks = validate(result, armholeText, capRecords);
+  const sleeveBodyRows = sleeveBodyRowAccount(result.sleeve.rowsCuffToUpperArm, shapingRcs);
+  const checks = validate(result, armholeText, capRecords, sleeveBodyRows);
   const finalCapLine = capRecords[capRecords.length - 1]?.text ?? "";
   if (!finalCapLine.includes(`Bind off the remaining ${result.sleeveCap.totals.finalStitches}`)) {
     checks.errors.push("The final sleeve-cap bind-off does not match the calculation.");
     checks.ok = false;
   }
-  if ([...backNeck, ...frontNeck].some((line) => line.includes("do not fit in the neckline rows"))) {
-    checks.errors.push("Shoulder bind-offs do not fit in the neckline rows.");
+  if (cuffUp.steps.reduce((sum, step) => sum + step.times, 0) * 2 + result.sleeve.wristStitches !== result.sleeve.upperArmStitches) {
+    checks.errors.push("Sleeve increases do not reach the upper-arm stitch count.");
     checks.ok = false;
   }
 
@@ -569,8 +554,8 @@ export function generateSetInSleeveInstructions(
     id: "back",
     title: "Back",
     blocks: [
-      { heading: "HEM AND BODY", lines: bodyLines(result).map((line) => line.text) },
-      { heading: "ARMHOLE", lines: backArmhole },
+      { heading: "HEM", lines: bodyLines(result, "back") },
+      { heading: "ARMHOLE", lines: armholeText },
       { heading: "NECKLINE AND SHOULDERS", lines: backNeck },
     ],
   };
@@ -578,8 +563,8 @@ export function generateSetInSleeveInstructions(
     id: "front",
     title: "Front",
     blocks: [
-      { heading: "HEM AND BODY", lines: bodyLines(result).map((line) => line.text) },
-      { heading: "ARMHOLE", lines: frontArmhole },
+      { heading: "HEM", lines: bodyLines(result, "front") },
+      { heading: "ARMHOLE", lines: [...armholeText] },
       { heading: "NECKLINE AND SHOULDERS", lines: frontNeck },
     ],
   };
@@ -587,31 +572,47 @@ export function generateSetInSleeveInstructions(
   const sleeveBodyLines = [
     "Make 2.",
     `${formatRcColon(0)} Cast on ${result.sleeve.wristStitches} ${stitchWord(result.sleeve.wristStitches)} for the sleeve cuff.`,
-    `${formatRcColon(0)} Knit ${result.sleeve.cuffRows} ${rowWord(result.sleeve.cuffRows)} even for the cuff (${inches(result.sleeve.cuffInches)}).`,
+    knitInPatternTo(0, result.sleeve.cuffRows) + ` Cuff, ${inches(result.sleeve.cuffInches)}.`,
     CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
-    `${formatRcColon(0)} Sleeve body. ${result.sleeve.wristStitches} ${stitchWord(result.sleeve.wristStitches)} remain.`,
+    `${formatRcColon(0)} Sleeve body. ${remain(result.sleeve.wristStitches)}`,
   ];
-  if (spans.rowsBeforeShaping > 0) {
+  if (shapingRcs.length === 0) {
     sleeveBodyLines.push(
-      `${formatRcColon(0)} Knit ${spans.rowsBeforeShaping} ${rowWord(spans.rowsBeforeShaping)} even.`,
-    );
-  }
-  sleeveBodyLines.push(...shapingLines);
-  if (spans.rowsAfterShaping > 0) {
-    sleeveBodyLines.push(
-      `After the final increase, knit ${spans.rowsAfterShaping} ${rowWord(spans.rowsAfterShaping)} even. The sleeve-body row counter will read ${formatRcColon(result.sleeve.rowsCuffToUpperArm)}. ${remain(result.sleeve.upperArmStitches)}`,
+      `${knitInPatternTo(0, result.sleeve.rowsCuffToUpperArm)} ${remain(result.sleeve.upperArmStitches)}`,
     );
   } else {
+    const first = shapingRcs[0]!;
+    const last = shapingRcs[shapingRcs.length - 1]!;
+    if (first > 0) {
+      sleeveBodyLines.push(
+        `${knitInPatternTo(0, first)} The counter reads ${formatRcColon(first)} before the next row.`,
+      );
+    }
+    const stepPhrase = cuffUp.steps
+      .filter((step) => step.times > 0 && step.rows > 0)
+      .map((step) => `every ${step.rows} ${rowWord(step.rows)} ${step.times} ${step.times === 1 ? "time" : "times"}`)
+      .join(", then ");
     sleeveBodyLines.push(
-      `${formatRcColon(result.sleeve.rowsCuffToUpperArm)} ${remain(result.sleeve.upperArmStitches)}`,
+      `${formatRcColon(first)} Increase 1 stitch at each side ${stepPhrase}. Work each increase when the counter reads ${rcList(shapingRcs)}, before knitting that row. Knit the rows between those readings even.`,
     );
+    const afterStart = last + 1;
+    const afterRows = result.sleeve.rowsCuffToUpperArm - afterStart;
+    if (afterRows > 0) {
+      sleeveBodyLines.push(
+        `${knitInPatternTo(afterStart, afterRows)} ${remain(result.sleeve.upperArmStitches)}`,
+      );
+    } else {
+      sleeveBodyLines.push(
+        `${formatRcColon(result.sleeve.rowsCuffToUpperArm)} ${remain(result.sleeve.upperArmStitches)}`,
+      );
+    }
   }
 
   const sleeves: SetInInstructionSection = {
     id: "sleeves",
     title: "Sleeves",
     blocks: [
-      { heading: "CUFF AND SLEEVE BODY", lines: sleeveBodyLines },
+      { heading: "CUFF", lines: sleeveBodyLines },
       { heading: "SLEEVE CAP", lines: capRecords.map((line) => line.text) },
     ],
   };
@@ -619,18 +620,7 @@ export function generateSetInSleeveInstructions(
   const finishing: SetInInstructionSection = {
     id: "finishing",
     title: "Finishing",
-    blocks: [
-      {
-        lines: [
-          "Block the pieces if you want to set the measurements before seaming.",
-          "Join the shoulder seams. Machine seaming is recommended.",
-          `Finish the round neckline from the ${result.body.neckline.openingStitches}-stitch neck opening.`,
-          "Set the sleeves into the armholes. Match the underarm bind-offs and match the top of the sleeve cap to the shoulder seam.",
-          "Join the side seams and the sleeve seams.",
-          "Give the sweater a final press.",
-        ],
-      },
-    ],
+    blocks: [{ lines: finishingLines(result) }],
   };
 
   return {
