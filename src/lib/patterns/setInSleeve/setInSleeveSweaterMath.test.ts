@@ -8,7 +8,6 @@ import {
 import { sleeveShapingPerSide } from "../evenShapingSchedule";
 import { fitEaseInchesForChoice } from "../fitEaseInches";
 import { calculateHemRowsFromInches, getDefaultHemLengthInches } from "../hemDefaults";
-import { calculateArmholeShaping } from "../legoBlocks/armholeShaping";
 import { DROP_SHOULDER_SLEEVE_LENGTH_CHOICES } from "../patternConstructionIdentity";
 import type { ChartRow } from "../sleevelessExpressSizeChartTypes";
 import { SLEEVE_CAP_SEAM_TOLERANCE_INCHES } from "./sleeveCapMath";
@@ -64,7 +63,7 @@ const SIZES: SizeFixture[] = [
     row: {
       bust_or_chest: 43,
       hip: 45,
-      garment_back_length: 17,
+      garment_back_length: 25.5,
       armhole_depth: 10,
       shoulder_width: 16.37,
       neck_opening: 7.25,
@@ -81,7 +80,7 @@ const SIZES: SizeFixture[] = [
     row: {
       bust_or_chest: 63,
       hip: 65,
-      garment_back_length: 18.25,
+      garment_back_length: 28,
       armhole_depth: 12,
       shoulder_width: 19,
       neck_opening: 8.5,
@@ -97,7 +96,7 @@ const SIZES: SizeFixture[] = [
     name: "Men Sm",
     row: {
       bust_or_chest: 34,
-      hip: 18.25,
+      hip: 36.5,
       garment_back_length: 25.5,
       armhole_depth: 8.5,
       shoulder_width: 15,
@@ -114,7 +113,7 @@ const SIZES: SizeFixture[] = [
     name: "Men 4X",
     row: {
       bust_or_chest: 48,
-      hip: 26.25,
+      hip: 52.5,
       garment_back_length: 29,
       armhole_depth: 12,
       shoulder_width: 21,
@@ -168,13 +167,14 @@ function assertIntegrated(
   const armhole = result.body.armhole;
   expect(armhole.appliesTo).toBe("front-and-back");
   expect(armhole.totalRows).toBe(Math.round(armholeDepth * rowsPerInch));
-  expect(armhole.straightRows).toBe(armhole.totalRows - 2 - armhole.decreaseRows);
-  const internal = calculateArmholeShaping({
-    startingStitches: armhole.bodyStitchesAtUnderarm,
-    targetStitches: armhole.bodyStitchesAtShoulder,
-    totalRows: armhole.totalRows,
-  });
-  expect(armhole.straightRows).toBe(internal.evenRows - 2);
+  expect(armhole.straightRows).toBe(
+    armhole.totalRows - armhole.bindOffRows - armhole.decreaseRows,
+  );
+  expect(
+    armhole.bindOffStitchesEachSide +
+      armhole.stairStepStitchesEachSide +
+      armhole.decreaseStitchesEachSide,
+  ).toBe(armhole.shapingStitchesEachSide);
   expect(result.body.stitchesAtUnderarm).toBe(armhole.bodyStitchesAtUnderarm);
   expect(result.body.stitchesAtShoulder).toBe(armhole.bodyStitchesAtShoulder);
   expect(result.body.bodyBlock.armholeStartStitches).toBe(armhole.bodyStitchesAtUnderarm);
@@ -191,6 +191,9 @@ function assertIntegrated(
   expect(result.sleeveCap.sleeve.initialBindOffStitchesEachSide).toBe(
     armhole.bindOffStitchesEachSide,
   );
+  expect(result.sleeveCap.sleeve.stairStepBindOffsEachSide).toEqual(
+    armhole.stairStepBindOffsEachSide,
+  );
   expect(result.finished.sleeveLengthInches).toBe(
     scaleDropShoulderSleeveLengthInches(Number(size.row.sleeve_length), "long"),
   );
@@ -202,7 +205,9 @@ function assertIntegrated(
   expect(result.finished.sleeveLengthInches).not.toBe(result.sleeveCap.totals.capHeightInches);
   expect(result.sleeve.rowsToUpperArm).toBeGreaterThan(0);
   expect(result.sleeveCap.totals.capRows).toBe(
-    2 + result.sleeveCap.workingCap.rows + result.sleeveCap.upperSlope.rows,
+    result.sleeveCap.sleeve.matchedBindOffRows +
+      result.sleeveCap.workingCap.rows +
+      result.sleeveCap.upperSlope.rows,
   );
 
   const perSide = sleeveShapingPerSide(result.sleeve.upperArmStitches, result.sleeve.wristStitches);
@@ -457,7 +462,7 @@ describe("set-in sleeve sweater calculation", () => {
     }
   });
 
-  it("keeps a front neck that is deeper than the straight armhole rows", () => {
+  it("keeps the chart front neck depth independent of the armhole method", () => {
     const size = SIZES[1]!;
     const result = calculateSetInSleeveSweater({
       chartAudience: size.audience,
@@ -469,10 +474,9 @@ describe("set-in sleeve sweater calculation", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.body.neckline.front.necklineDepthRows).toBe(50);
-    expect(result.body.armhole.straightRows).toBe(48);
-    expect(result.body.neckline.front.necklineDepthRows).toBeGreaterThan(
-      result.body.armhole.straightRows,
-    );
+    expect(result.body.armhole.straightRows).toBe(50);
+    expect(result.body.armhole.method).toBe("alternate");
+    expect(result.finished.lengthInches).toBe(24.5);
   });
 
   it("reports required needles when the machine size is not supplied", () => {

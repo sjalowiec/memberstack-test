@@ -47,7 +47,6 @@ import {
 } from "../shapingTimeline";
 import {
   calculateSetInSleeveCap,
-  UNDERARM_BIND_OFF_ROWS,
   type SetInSleeveCapFailure,
   type SetInSleeveCapSuccess,
 } from "./sleeveCapMath";
@@ -291,7 +290,7 @@ export function calculateSetInSleeveSweater(
   if (!cap.ok) return cap;
 
   const correctedStraightRows =
-    cap.armhole.totalRows - UNDERARM_BIND_OFF_ROWS - cap.armhole.decreaseRows;
+    cap.armhole.totalRows - cap.armhole.bindOffRows - cap.armhole.decreaseRows;
   if (
     cap.armhole.straightRows !== correctedStraightRows ||
     cap.armhole.totalRows !== Math.round(armholeDepth * rowsPerInch)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateArmholeShaping } from "../legoBlocks/armholeShaping";
+import { calculateSetInArmhole } from "./setInArmhole";
 import {
   resolveDropShoulderFinishedUpperArmInches,
   resolveDropShoulderUpperArmEaseInches,
@@ -126,8 +126,12 @@ function assertValidCap(result: SetInSleeveCapSuccess, gauge: { stitchesPerInch:
   const { stitchesPerInch, rowsPerInch } = gauge;
   const integers = [
     result.armhole.totalRows,
+    result.armhole.shapingStitchesEachSide,
     result.armhole.bindOffStitchesEachSide,
     result.armhole.bindOffRows,
+    result.armhole.stairStepStitchesEachSide,
+    result.armhole.stairStepRows,
+    result.armhole.matchedBindOffStitchesEachSide,
     result.armhole.decreaseStitchesEachSide,
     result.armhole.decreaseRows,
     result.armhole.straightRows,
@@ -136,6 +140,8 @@ function assertValidCap(result: SetInSleeveCapSuccess, gauge: { stitchesPerInch:
     result.sleeve.upperArmStitches,
     result.sleeve.initialBindOffStitchesEachSide,
     result.sleeve.initialBindOffRows,
+    result.sleeve.matchedBindOffStitchesEachSide,
+    result.sleeve.matchedBindOffRows,
     result.top.stitches,
     result.upperSlope.stitchesEachSide,
     result.upperSlope.rows,
@@ -159,21 +165,51 @@ function assertValidCap(result: SetInSleeveCapSuccess, gauge: { stitchesPerInch:
   expect(result.intentionalCapEaseInches).toBe(0);
   expect(result.armhole.appliesTo).toBe("front-and-back");
   expect(result.armhole.straightRows).toBe(
-    result.armhole.totalRows - 2 - result.armhole.decreaseRows,
+    result.armhole.totalRows - result.armhole.bindOffRows - result.armhole.decreaseRows,
   );
   expect(result.armhole.decreaseRows).toBe(result.armhole.decreaseStitchesEachSide * 2);
-  expect(result.armhole.bindOffRows).toBe(2);
+  expect(result.armhole.bindOffRows).toBe(2 * (1 + result.armhole.stairStepBindOffsEachSide.length));
+  expect(
+    result.armhole.bindOffStitchesEachSide +
+      result.armhole.stairStepStitchesEachSide +
+      result.armhole.decreaseStitchesEachSide,
+  ).toBe(result.armhole.shapingStitchesEachSide);
+  expect(result.armhole.stairStepBindOffsEachSide.reduce((sum, stitches) => sum + stitches, 0)).toBe(
+    result.armhole.stairStepStitchesEachSide,
+  );
+  if (result.armhole.method === "alternate") {
+    expect(result.armhole.stairStepStitchesEachSide).toBeGreaterThanOrEqual(4);
+    expect(result.armhole.stairStepBindOffsEachSide.length).toBeGreaterThanOrEqual(2);
+    expect(result.armhole.stairStepBindOffsEachSide.length).toBeLessThanOrEqual(3);
+    for (const stitches of result.armhole.stairStepBindOffsEachSide) {
+      expect(stitches).toBeGreaterThanOrEqual(2);
+    }
+  } else {
+    expect(result.armhole.stairStepBindOffsEachSide).toEqual([]);
+    expect(result.armhole.bindOffStitchesEachSide).toBe(
+      Math.round(result.armhole.shapingStitchesEachSide / 2),
+    );
+  }
 
-  const internal = calculateArmholeShaping({
+  const internal = calculateSetInArmhole({
     startingStitches: result.armhole.bodyStitchesAtUnderarm,
     targetStitches: result.armhole.bodyStitchesAtShoulder,
     totalRows: result.armhole.totalRows,
   });
-  expect(result.armhole.bindOffStitchesEachSide).toBe(internal.bindOffSts);
-  expect(result.armhole.decreaseStitchesEachSide).toBe(internal.decreaseSts);
-  expect(result.armhole.straightRows).toBe(internal.evenRows - 2);
+  expect(internal.ok).toBe(true);
+  if (!internal.ok) return;
+  expect(result.armhole.method).toBe(internal.method);
+  expect(result.armhole.bindOffStitchesEachSide).toBe(internal.initialBindOffStitchesEachSide);
+  expect(result.armhole.stairStepBindOffsEachSide).toEqual(internal.stairStepBindOffsEachSide);
+  expect(result.armhole.decreaseStitchesEachSide).toBe(internal.decreaseStitchesEachSide);
+  expect(result.armhole.straightRows).toBe(internal.straightRows);
 
   expect(result.sleeve.initialBindOffStitchesEachSide).toBe(result.armhole.bindOffStitchesEachSide);
+  expect(result.sleeve.stairStepBindOffsEachSide).toEqual(result.armhole.stairStepBindOffsEachSide);
+  expect(result.sleeve.matchedBindOffStitchesEachSide).toBe(
+    result.armhole.matchedBindOffStitchesEachSide,
+  );
+  expect(result.sleeve.matchedBindOffRows).toBe(result.armhole.bindOffRows);
   expect(result.top.widthInches).toBeCloseTo(result.sleeve.finishedUpperArmInches / 4 - 0.25, 10);
   expect(result.top.widthInches).toBe(topOfCapWidthInches(result.sleeve.finishedUpperArmInches));
   expect(result.totals.finalStitches).toBe(result.top.stitches);
@@ -228,7 +264,9 @@ function assertValidCap(result: SetInSleeveCapSuccess, gauge: { stitchesPerInch:
     Math.hypot(result.workingCap.widthInches, result.workingCap.geometricHeightInches),
   ).toBeCloseTo(result.workingCap.seamInches, 6);
 
-  expect(result.totals.capRows).toBe(2 + result.workingCap.rows + result.upperSlope.rows);
+  expect(result.totals.capRows).toBe(
+    result.sleeve.matchedBindOffRows + result.workingCap.rows + result.upperSlope.rows,
+  );
   expect(result.totals.capHeightInches).toBeCloseTo(result.totals.capRows / rowsPerInch, 8);
   expect(result.totals.capHeightInches).toBeGreaterThan(result.workingCap.knittedHeightInches);
   expect(result.totals.capHeightInches).toBeGreaterThan(result.upperSlope.heightInches);
@@ -241,6 +279,7 @@ function assertValidCap(result: SetInSleeveCapSuccess, gauge: { stitchesPerInch:
   );
   expect(result.seam.armholeEdgeInches).toBeCloseTo(
     result.seam.underarmBindOffInches +
+      result.seam.stairStepInches +
       result.seam.lowerCapInches +
       result.seam.middleCapInches +
       result.seam.upperCapInches +
@@ -252,8 +291,10 @@ function assertValidCap(result: SetInSleeveCapSuccess, gauge: { stitchesPerInch:
 
   const top = result.phases[result.phases.length - 1];
   expect(top).toEqual({ kind: "top-bind-off", stitches: result.top.stitches });
+  const stairCount = result.armhole.stairStepBindOffsEachSide.length;
   expect(result.phases.map((phase) => phase.kind)).toEqual([
     "underarm-bind-off",
+    ...Array.from({ length: stairCount }, () => "stair-step-bind-off" as const),
     "decrease-zone",
     "decrease-zone",
     "decrease-zone",
@@ -303,41 +344,48 @@ describe("Misses 1 at 7 stitches and 10 rows", () => {
     expect(result.sleeve.upperArmEaseInches).toBe(2);
     expect(result.sleeve.finishedUpperArmInches).toBe(11.75);
     expect(result.sleeve.upperArmStitches).toBe(82);
+    expect(result.armhole.method).toBe("alternate");
     expect(result.armhole.totalRows).toBe(70);
     expect(result.armhole.bodyStitchesAtUnderarm).toBe(122);
     expect(result.armhole.bodyStitchesAtShoulder).toBe(84);
-    expect(result.armhole.bindOffStitchesEachSide).toBe(10);
-    expect(result.armhole.decreaseStitchesEachSide).toBe(9);
-    expect(result.armhole.decreaseRows).toBe(18);
-    expect(result.armhole.straightRows).toBe(50);
+    expect(result.armhole.shapingStitchesEachSide).toBe(19);
+    expect(result.armhole.bindOffStitchesEachSide).toBe(6);
+    expect(result.armhole.stairStepBindOffsEachSide).toEqual([2, 2, 2]);
+    expect(result.armhole.decreaseStitchesEachSide).toBe(7);
+    expect(result.armhole.decreaseRows).toBe(14);
+    expect(result.armhole.bindOffRows).toBe(8);
+    expect(result.armhole.straightRows).toBe(48);
 
-    const bindOffEdge = 10 / 7;
-    const decreaseEdge = Math.hypot(9 / 7, 18 / 10);
-    const straightEdge = 5;
-    expect(result.armhole.edgeInches).toBeCloseTo(bindOffEdge + decreaseEdge + straightEdge, 6);
+    const bindOffEdge = 6 / 7;
+    const stairEdge = 6 / 7;
+    const decreaseEdge = Math.hypot(7 / 7, 14 / 10);
+    const straightEdge = 4.8;
+    expect(result.armhole.edgeInches).toBeCloseTo(bindOffEdge + stairEdge + decreaseEdge + straightEdge, 6);
 
     expect(result.top.widthInches).toBe(2.6875);
     expect(result.top.stitches).toBe(18);
     expect(result.upperSlope.stitchesEachSide).toBe(7);
     expect(result.upperSlope.rows).toBe(6);
     expect(result.upperSlope.steps.map((step) => step.stitchesEachSide)).toEqual([2, 2, 3]);
-    expect(result.workingCap.stitchesEachSide).toBe(15);
+    expect(result.sleeve.matchedBindOffStitchesEachSide).toBe(12);
+    expect(result.workingCap.stitchesEachSide).toBe(13);
 
     const slopeEdge = Math.hypot(1, 0.6);
     const halfTop = 18 / 7 / 2;
-    const workingSeam = result.armhole.edgeInches - bindOffEdge - slopeEdge - halfTop;
-    const workingWidth = 15 / 7;
+    const workingSeam = result.armhole.edgeInches - bindOffEdge - stairEdge - slopeEdge - halfTop;
+    const workingWidth = 13 / 7;
     const height = Math.sqrt(workingSeam * workingSeam - workingWidth * workingWidth);
     expect(result.workingCap.seamInches).toBeCloseTo(workingSeam, 6);
     expect(result.workingCap.widthInches).toBeCloseTo(workingWidth, 6);
     expect(result.workingCap.geometricHeightInches).toBeCloseTo(height, 6);
     expect(result.workingCap.rows).toBe(Math.round(height * 10));
     expect(result.workingCap.stitchDivision).toBe("thirds");
-    expect(result.workingCap.zones.lower.stitchesEachSide).toBe(5);
+    expect(result.workingCap.zones.lower.stitchesEachSide).toBe(4);
     expect(result.workingCap.zones.middle.stitchesEachSide).toBe(5);
-    expect(result.workingCap.zones.upper.stitchesEachSide).toBe(5);
+    expect(result.workingCap.zones.upper.stitchesEachSide).toBe(4);
     expect(result.totals.finalStitches).toBe(18);
-    expect(result.totals.capRows).toBe(2 + result.workingCap.rows + 6);
+    expect(result.totals.capRows).toBe(8 + result.workingCap.rows + 6);
+    expect(result.seam.differenceInches).toBeCloseTo(0.004, 3);
   });
 
   it("satisfies the cap checks", () => {
@@ -396,12 +444,41 @@ describe("wide-shoulder men's cap", () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
+    expect(result.armhole.method).toBe("alternate");
     expect(result.workingCap.stitchDivision).toBe("adjusted");
-    expect(result.workingCap.rows).toBe(38);
-    expect(result.workingCap.zones.lower).toMatchObject({ stitchesEachSide: 9, rows: 9 });
-    expect(result.workingCap.zones.middle).toMatchObject({ stitchesEachSide: 13, rows: 20 });
-    expect(result.workingCap.zones.upper).toMatchObject({ stitchesEachSide: 9, rows: 9 });
+    expect(result.workingCap.rows).toBe(34);
+    expect(result.workingCap.zones.lower).toMatchObject({ stitchesEachSide: 8, rows: 8 });
+    expect(result.workingCap.zones.middle).toMatchObject({ stitchesEachSide: 13, rows: 18 });
+    expect(result.workingCap.zones.upper).toMatchObject({ stitchesEachSide: 8, rows: 8 });
     assertValidCap(result, { stitchesPerInch: 5, rowsPerInch: 7 });
+  });
+});
+
+describe("standard armhole on a wide-shoulder cap", () => {
+  it("binds off about half the shaping stitches and does not add stair steps", () => {
+    const men4x = SIZES.find((size) => size.name === "Men 4X");
+    expect(men4x).toBeDefined();
+    if (!men4x) return;
+    const gauge = { stitchesPerInch: 4, rowsPerInch: 6 };
+    const result = calculateSetInSleeveCap(inputFor(men4x, gauge));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.armhole.method).toBe("standard");
+    expect(result.armhole.shapingStitchesEachSide).toBe(9);
+    expect(result.armhole.bindOffStitchesEachSide).toBe(5);
+    expect(result.armhole.stairStepBindOffsEachSide).toEqual([]);
+    expect(result.armhole.decreaseStitchesEachSide).toBe(4);
+    expect(result.armhole.decreaseRows).toBe(8);
+    expect(result.armhole.straightRows).toBe(62);
+    expect(result.sleeve.initialBindOffStitchesEachSide).toBe(5);
+    expect(result.sleeve.stairStepBindOffsEachSide).toEqual([]);
+    expect(result.sleeve.upperArmStitches).toBe(88);
+    expect(result.workingCap.stitchesEachSide).toBe(24);
+    expect(result.totals.finalStitches).toBe(22);
+    expect(result.seam.armholeEdgeInches).toBeCloseTo(13.25, 2);
+    expect(result.seam.sleeveCapEdgeInches).toBeCloseTo(13.343, 2);
+    expect(result.seam.differenceInches).toBeCloseTo(0.093, 3);
+    assertValidCap(result, gauge);
   });
 });
 

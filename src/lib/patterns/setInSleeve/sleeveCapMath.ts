@@ -5,9 +5,10 @@
  * underarm bind-off matches that plan. Finished upper-arm width comes from the
  * Drop Shoulder ease table. There is no extra sleeve-cap ease.
  *
- * Armhole rows = round(depth × row gauge). That total includes the two underarm
- * bind-off rows. Straight rows = armhole rows − 2 − decrease rows. This is the
- * knitted armhole, two rows shorter than `calculateArmholeShaping`'s `evenRows`.
+ * The armhole plan comes from `calculateSetInArmhole`. Front and back share it.
+ * The sleeve starts with that same bind-off sequence, including stair steps.
+ * Armhole rows = round(depth × row gauge). Straight rows are what remain after
+ * the bind-off rows and the every-other-row decreases.
  *
  * Top-of-cap width = finished upper arm ÷ 4 − ¼ inch.
  * Upper slope = 1 inch wide and about ½ inch tall.
@@ -16,7 +17,11 @@
  */
 
 import { magicFormulaIntervals } from "../../shaping/autoShaping";
-import { calculateArmholeShaping } from "../legoBlocks/armholeShaping";
+import {
+  calculateSetInArmhole,
+  SET_IN_ARMHOLE_BIND_OFF_ROWS,
+  type SetInArmholeMethod,
+} from "./setInArmhole";
 import {
   dropShoulderSleeveEaseGroupForChartAudience,
   normalizeSleeveEaseFit,
@@ -32,7 +37,8 @@ export const TOP_OF_CAP_WIDTH_DIVISOR = 4;
 export const TOP_OF_CAP_WIDTH_REDUCTION_INCHES = 0.25;
 export const UPPER_SLOPE_WIDTH_INCHES = 1;
 export const UPPER_SLOPE_HEIGHT_INCHES = 0.5;
-export const UNDERARM_BIND_OFF_ROWS = 2;
+/** Rows used by one bind-off action, one row on each side. */
+export const UNDERARM_BIND_OFF_ROWS = SET_IN_ARMHOLE_BIND_OFF_ROWS;
 /** A sleeve-cap seam this close to the armhole edge is accepted. */
 export const SLEEVE_CAP_SEAM_TOLERANCE_INCHES = 0.5;
 
@@ -102,6 +108,12 @@ export type SleeveCapPhase =
       stitchesAfter: number;
     }
   | {
+      kind: "stair-step-bind-off";
+      stitchesEachSide: number;
+      rows: number;
+      stitchesAfter: number;
+    }
+  | {
       kind: "decrease-zone";
       zone: SleeveCapZoneName;
       pace: SleeveCapPace;
@@ -130,9 +142,17 @@ export type SetInSleeveCapSuccess = {
   armhole: {
     /** This plan is used for both the front and the back. */
     appliesTo: "front-and-back";
+    method: SetInArmholeMethod;
     totalRows: number;
+    shapingStitchesEachSide: number;
+    /** First underarm bind-off. */
     bindOffStitchesEachSide: number;
+    /** All bind-off rows: the first bind-off plus any stair steps. */
     bindOffRows: number;
+    stairStepBindOffsEachSide: number[];
+    stairStepStitchesEachSide: number;
+    stairStepRows: number;
+    matchedBindOffStitchesEachSide: number;
     decreaseStitchesEachSide: number;
     decreaseRows: number;
     straightRows: number;
@@ -140,6 +160,7 @@ export type SetInSleeveCapSuccess = {
     bodyStitchesAtShoulder: number;
     edgeInches: number;
     underarmBindOffInches: number;
+    stairStepInches: number;
     decreaseEdgeInches: number;
     straightEdgeInches: number;
   };
@@ -150,6 +171,9 @@ export type SetInSleeveCapSuccess = {
     upperArmStitches: number;
     initialBindOffStitchesEachSide: number;
     initialBindOffRows: number;
+    stairStepBindOffsEachSide: number[];
+    matchedBindOffStitchesEachSide: number;
+    matchedBindOffRows: number;
   };
   top: {
     /** Exact inch width from the approved formula, before stitch rounding. */
@@ -199,6 +223,7 @@ export type SetInSleeveCapSuccess = {
     differenceInches: number;
     toleranceInches: number;
     underarmBindOffInches: number;
+    stairStepInches: number;
     lowerCapInches: number;
     middleCapInches: number;
     upperCapInches: number;
@@ -466,44 +491,31 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
     );
   }
 
-  let armhole: ReturnType<typeof calculateArmholeShaping>;
-  try {
-    armhole = calculateArmholeShaping({
-      startingStitches: bodyStitchesAtUnderarm,
-      targetStitches: bodyStitchesAtShoulder,
-      totalRows: totalArmholeRows,
-    });
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error);
-    return fail(
-      "armhole-shaping",
-      `The body armhole cannot be shaped from these measurements. ${detail}`,
-    );
-  }
+  const armhole = calculateSetInArmhole({
+    startingStitches: bodyStitchesAtUnderarm,
+    targetStitches: bodyStitchesAtShoulder,
+    totalRows: totalArmholeRows,
+  });
+  if (!armhole.ok) return armhole;
 
-  if (armhole.decreaseRows !== armhole.decreaseSts * 2) {
-    return fail(
-      "armhole-shaping",
-      "Armhole decreases are not every other row, so the sleeve cap cannot match that armhole.",
-    );
-  }
-
-  const straightRows = totalArmholeRows - UNDERARM_BIND_OFF_ROWS - armhole.decreaseRows;
-  if (straightRows < 0) {
-    return fail(
-      "armhole-too-shallow",
-      `This armhole is ${totalArmholeRows} rows deep, and the underarm bind-off plus decreases need ${UNDERARM_BIND_OFF_ROWS + armhole.decreaseRows} rows. There are not enough rows to finish the armhole.`,
-    );
-  }
-
-  const bindOffStitchesEachSide = armhole.bindOffSts;
+  const straightRows = armhole.straightRows;
+  const bindOffStitchesEachSide = armhole.initialBindOffStitchesEachSide;
+  const stairStepBindOffsEachSide = armhole.stairStepBindOffsEachSide;
+  const matchedBindOffStitchesEachSide = armhole.matchedBindOffStitchesEachSide;
   const underarmBindOffInches = bindOffStitchesEachSide / stitchesPerInch;
+  const stairStepInches = armhole.stairStepStitchesEachSide / stitchesPerInch;
   const decreaseEdgeInches =
-    armhole.decreaseSts === 0
+    armhole.decreaseStitchesEachSide === 0
       ? 0
-      : zoneEdgeInches(armhole.decreaseSts, armhole.decreaseRows, stitchesPerInch, rowsPerInch);
+      : zoneEdgeInches(
+          armhole.decreaseStitchesEachSide,
+          armhole.decreaseRows,
+          stitchesPerInch,
+          rowsPerInch,
+        );
   const straightEdgeInches = straightRows / rowsPerInch;
-  const armholeEdgeInches = underarmBindOffInches + decreaseEdgeInches + straightEdgeInches;
+  const armholeEdgeInches =
+    underarmBindOffInches + stairStepInches + decreaseEdgeInches + straightEdgeInches;
 
   const topWidthInches = topOfCapWidthInches(finishedUpperArmInches);
   if (!(topWidthInches > 0)) {
@@ -556,17 +568,20 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
   const halfTopBindOffInches = topStitches / stitchesPerInch / 2;
 
   const workingStitchesEachSide =
-    upperArmStitches / 2 - bindOffStitchesEachSide - slopeStitchesEachSide - topStitches / 2;
+    upperArmStitches / 2 -
+    matchedBindOffStitchesEachSide -
+    slopeStitchesEachSide -
+    topStitches / 2;
   if (!Number.isInteger(workingStitchesEachSide) || workingStitchesEachSide < 3) {
     return fail(
       "working-width",
-      `The sleeve is ${upperArmStitches} stitches wide. After the underarm bind-off (${bindOffStitchesEachSide} each side), the 1-inch upper slope (${slopeStitchesEachSide} each side), and the top of the cap (${topStitches} stitches), ${workingStitchesEachSide} stitches remain on each side for the curve. The curve needs at least 3 stitches on each side.`,
+      `The sleeve is ${upperArmStitches} stitches wide. After the armhole bind-offs (${matchedBindOffStitchesEachSide} each side), the 1-inch upper slope (${slopeStitchesEachSide} each side), and the top of the cap (${topStitches} stitches), ${workingStitchesEachSide} stitches remain on each side for the curve. The curve needs at least 3 stitches on each side.`,
     );
   }
 
   const workingWidthInches = workingStitchesEachSide / stitchesPerInch;
   const workingSeamInches =
-    armholeEdgeInches - underarmBindOffInches - slopeEdgeInches - halfTopBindOffInches;
+    armholeEdgeInches - underarmBindOffInches - stairStepInches - slopeEdgeInches - halfTopBindOffInches;
   const heightSquared = workingSeamInches * workingSeamInches - workingWidthInches * workingWidthInches;
   if (!(workingSeamInches > workingWidthInches) || !(heightSquared > 0)) {
     return fail(
@@ -651,6 +666,15 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
     rows: UNDERARM_BIND_OFF_ROWS,
     stitchesAfter: stitchesOnNeedle,
   });
+  for (const stairStitches of stairStepBindOffsEachSide) {
+    stitchesOnNeedle -= 2 * stairStitches;
+    phases.push({
+      kind: "stair-step-bind-off",
+      stitchesEachSide: stairStitches,
+      rows: UNDERARM_BIND_OFF_ROWS,
+      stitchesAfter: stitchesOnNeedle,
+    });
+  }
   for (const zone of [zones.lower, zones.middle, zones.upper]) {
     stitchesOnNeedle -= 2 * zone.stitchesEachSide;
     phases.push({
@@ -700,6 +724,7 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
   );
   const sleeveCapEdgeInches =
     underarmBindOffInches +
+    stairStepInches +
     lowerCapInches +
     middleCapInches +
     upperCapInches +
@@ -713,11 +738,14 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
     );
   }
 
-  const capRows = UNDERARM_BIND_OFF_ROWS + workingRows + slopeRows;
+  const capRows = armhole.matchedBindOffRows + workingRows + slopeRows;
   const wholeNumberCounts = [
     totalArmholeRows,
     bindOffStitchesEachSide,
-    armhole.decreaseSts,
+    armhole.stairStepStitchesEachSide,
+    armhole.matchedBindOffStitchesEachSide,
+    armhole.matchedBindOffRows,
+    armhole.decreaseStitchesEachSide,
     armhole.decreaseRows,
     straightRows,
     bodyStitchesAtUnderarm,
@@ -750,16 +778,23 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
     intentionalCapEaseInches: 0,
     armhole: {
       appliesTo: "front-and-back",
+      method: armhole.method,
       totalRows: totalArmholeRows,
+      shapingStitchesEachSide: armhole.shapingStitchesEachSide,
       bindOffStitchesEachSide,
-      bindOffRows: UNDERARM_BIND_OFF_ROWS,
-      decreaseStitchesEachSide: armhole.decreaseSts,
+      bindOffRows: armhole.matchedBindOffRows,
+      stairStepBindOffsEachSide,
+      stairStepStitchesEachSide: armhole.stairStepStitchesEachSide,
+      stairStepRows: armhole.stairStepRows,
+      matchedBindOffStitchesEachSide,
+      decreaseStitchesEachSide: armhole.decreaseStitchesEachSide,
       decreaseRows: armhole.decreaseRows,
       straightRows,
       bodyStitchesAtUnderarm,
       bodyStitchesAtShoulder,
       edgeInches: armholeEdgeInches,
       underarmBindOffInches,
+      stairStepInches,
       decreaseEdgeInches,
       straightEdgeInches,
     },
@@ -770,6 +805,9 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
       upperArmStitches,
       initialBindOffStitchesEachSide: bindOffStitchesEachSide,
       initialBindOffRows: UNDERARM_BIND_OFF_ROWS,
+      stairStepBindOffsEachSide,
+      matchedBindOffStitchesEachSide,
+      matchedBindOffRows: armhole.matchedBindOffRows,
     },
     top: {
       widthInches: topWidthInches,
@@ -810,6 +848,7 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
       differenceInches,
       toleranceInches: SLEEVE_CAP_SEAM_TOLERANCE_INCHES,
       underarmBindOffInches,
+      stairStepInches,
       lowerCapInches,
       middleCapInches,
       upperCapInches,
