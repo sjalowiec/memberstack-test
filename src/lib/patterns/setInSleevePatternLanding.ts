@@ -11,7 +11,7 @@ export const SET_IN_SLEEVE_PATTERN_LANDING_PATH = "/patterns/set-in-sleeve";
 export const SET_IN_SLEEVE_PATTERN_LANDING_CANONICAL_URL =
   "https://knititnow.com/patterns/set-in-sleeve";
 
-export const SET_IN_SLEEVE_PATTERN_LANDING_IMAGE_SRC = "/images/patterns/set-in.webp";
+export const SET_IN_SLEEVE_PATTERN_LANDING_IMAGE_SRC = "/images/patterns/set-in.png";
 
 export const SET_IN_SLEEVE_PATTERN_BUILDER_LANDING: PatternBuilderLandingContent = {
   patternName: "Set-In Sleeve Sweater Pattern Builder",

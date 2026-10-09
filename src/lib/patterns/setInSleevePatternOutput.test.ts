@@ -304,9 +304,13 @@ describe("set-in sleeve saved patterns, print, and membership", () => {
     expect(readFileSync("src/pages/patterns/set-in-sleeve/builder.astro", "utf8")).toContain(
       'data-express-review-href="/patterns/set-in-sleeve/pattern/?generated=1"',
     );
-    expect(readFileSync("src/lib/patterns/setInSleevePatternLanding.ts", "utf8")).toContain(
-      "/images/patterns/set-in.webp",
-    );
+    expect(catalog).toContain("'/images/patterns/set-in.png'");
+    expect(catalog).toContain("'/images/patterns/raglan.png'");
+    expect(catalog).not.toContain("set-in.webp");
+    expect(catalog).not.toContain("raglan.webp");
+    const landing = readFileSync("src/lib/patterns/setInSleevePatternLanding.ts", "utf8");
+    expect(landing).toContain("/images/patterns/set-in.png");
+    expect(landing).not.toContain("set-in.webp");
     expect(readFileSync("src/pages/patterns/set-in-sleeve/index.astro", "utf8")).toContain(
       "SET_IN_SLEEVE_PATTERN_BUILDER_LANDING",
     );
