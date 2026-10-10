@@ -101,6 +101,8 @@ export type SleevelessPatternTabFrontChartRenderOptions = {
   /** Optional machine-help card (no-print) appended after the intro. */
   introSuffix?: string;
   secondShoulderExtraHtml?: string;
+  /** Set-in sleeve: reset the row counter to the second shoulder or second side's first RC. */
+  resetRowCounterForSecondShoulder?: boolean;
 };
 
 /**
@@ -126,7 +128,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
   result: SleevelessPatternTabFrontResult,
   options?: Pick<
     SleevelessPatternTabFrontChartRenderOptions,
-    "secondShoulderExtraHtml" | "relocateIntro"
+    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder"
   >,
 ): NeckShoulderChartRenderOptions {
   const chart = result.frontNeckShoulderShapingChart;
@@ -146,6 +148,9 @@ export function sleevelessPatternTabFrontChartTableOptions(
     hideCenterNecklineSetupRow: false,
     ...(options?.secondShoulderExtraHtml
       ? { secondShoulderExtraHtml: options.secondShoulderExtraHtml }
+      : {}),
+    ...(options?.resetRowCounterForSecondShoulder === true
+      ? { resetRowCounterForSecondShoulder: true }
       : {}),
     suppressCarriagePositionTip: relocateIntro,
     ...(frontUsesShoulderTabs

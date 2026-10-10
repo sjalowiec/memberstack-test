@@ -494,7 +494,21 @@ function backChecklistHtml(result: ReturnType<typeof generateSetInSleevePattern>
     hideCenterNecklineSetupRow: true,
     tableHeading: "First Shoulder Checklist",
     collapsibleDefaultOpen: false,
+    resetRowCounterForSecondShoulder: true,
   });
+}
+
+function firstChecklistCounter(html: string, marker: string): { rc: string; side: string } {
+  const start = html.indexOf(marker);
+  expect(start).toBeGreaterThanOrEqual(0);
+  const match = html
+    .slice(start)
+    .match(
+      /ns-shaping-chart__row-counter-number">([^<]+)<\/span>(?:\s*<span class="ns-shaping-chart__row-counter-side">\(([^)]+)\)<\/span>)?/,
+    );
+  expect(match?.[1]).toBeTruthy();
+  const rc = match![1].split(/\u2013|-/)[0] ?? "";
+  return { rc, side: match?.[2] ?? "" };
 }
 
 describe("set-in back neckline and shoulder checklist", () => {
@@ -601,6 +615,50 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(html.split(firstPair[1].action).length - 1).toBeGreaterThanOrEqual(2);
   });
 
+  it("tells the knitter to reset the row counter to the second shoulder's first row", () => {
+    const startRcs = cases.map(({ options }) => {
+      const result = generateSetInSleevePattern(pattern(options));
+      const html = backChecklistHtml(result);
+      const first = firstChecklistCounter(html, "First Shoulder Checklist");
+      const second = firstChecklistCounter(html, "ns-shaping-chart--second-shoulder");
+      expect(second.rc).toBe(first.rc);
+      expect(second.side).not.toBe(first.side);
+      expect(html).toContain(
+        `Set the row counter to RC ${second.rc} before you begin the second shoulder.`,
+      );
+      expect(html).toContain("cut yarn and return the");
+      expect(html).toContain("held stitches for the second shoulder to working position");
+      expect(html).toContain(
+        "neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge",
+      );
+      expect(html).toContain("Follow the second shoulder checklist below.");
+      return second.rc;
+    });
+    expect(new Set(startRcs).size).toBeGreaterThan(1);
+  });
+
+  it("leaves the sleeveless transition without a row-counter reset", () => {
+    const data = pattern({});
+    const style = { ...(data.style as Record<string, unknown>) };
+    delete style.construction;
+    delete style.constructionAuthored;
+    delete style.sleeveDirection;
+    const sleeveless = generateSleevelessBackPattern({ ...data, style });
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      sleeveless.neckShoulderShapingChart!,
+      "ns-shaping-chart-back",
+      "",
+      {
+        activeSideOnly: true,
+        includeCenterNecklineSetupRow: true,
+        hideCenterNecklineSetupRow: true,
+        tableHeading: "First Shoulder Checklist",
+      },
+    );
+    expect(html).toContain("cut yarn and return the");
+    expect(html).not.toContain("Set the row counter");
+  });
+
   it("keeps the sleeveless back summary on the combined hold range", () => {
     const data = pattern({});
     const style = { ...(data.style as Record<string, unknown>) };
@@ -629,9 +687,11 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(setIn).toContain("renderSleevelessPatternTabFrontChartTableHtml");
     expect(setIn).toContain("buildSleevelessRoundNeckShapingMapData");
     expect(setIn).toContain("front-neckline-shoulder-chart-print-btn");
+    expect(setIn).toContain("resetRowCounterForSecondShoulder: true");
     const printCss = readFileSync("src/styles/ns-shaping-chart.css", "utf8");
     expect(printCss).toContain(".ns-shaping-chart__tabpanel[hidden]");
     expect(printCss).toContain(".ns-shaping-chart--second-shoulder[hidden]");
+    expect(printCss).toContain("display: none !important;");
     expect(printCss).toContain("display: block !important;");
   });
 });
@@ -663,6 +723,7 @@ describe("set-in front neckline and shoulder checklist", () => {
     expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
     const html = renderSleevelessPatternTabFrontChartTableHtml(result, {
       relocateIntro: options.neckline === "round",
+      resetRowCounterForSecondShoulder: true,
     });
     expect(html).toContain("Show Completed Rows");
     expect(html).toContain("Reset Checklist");
@@ -679,12 +740,32 @@ describe("set-in front neckline and shoulder checklist", () => {
       expect(html).toContain("First Shoulder Checklist");
       expect(html).toContain("Second Shoulder Checklist");
       expect(html).toContain("ns-shaping-chart--second-shoulder");
+      const first = firstChecklistCounter(html, "First Shoulder Checklist");
+      const second = firstChecklistCounter(html, "ns-shaping-chart--second-shoulder");
+      expect(second.rc).toBe(first.rc);
+      expect(second.side).not.toBe(first.side);
+      expect(html).toContain(
+        `Set the row counter to RC ${second.rc} before you begin the second shoulder.`,
+      );
+      expect(html).toContain("cut yarn and return the");
+      expect(html).toContain(
+        "neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge",
+      );
       expect(map).not.toBeNull();
     } else {
       expect(html).toContain("First Side");
       expect(html).toContain("Second Side");
       expect(html).toContain('data-ns-shoulder-panel="first"');
       expect(html).toContain('data-ns-shoulder-panel="second"');
+      const first = firstChecklistCounter(html, 'data-ns-shoulder-panel="first"');
+      const second = firstChecklistCounter(html, 'data-ns-shoulder-panel="second"');
+      expect(second.rc).toBe(first.rc);
+      expect(html).toContain(`Set the row counter to RC ${second.rc} before you begin the second side.`);
+      expect(html).toContain(
+        "Neckline shaping remains at the neck edge and shoulder shaping remains at the shoulder edge.",
+      );
+      const secondPanel = html.slice(html.indexOf('data-ns-shoulder-panel="second"'));
+      expect(secondPanel).not.toContain("cut yarn");
       expect(map).toBeNull();
     }
     const rows = buildActiveSideInstructionTableRows(result.frontNeckShoulderShapingChart, 0, {

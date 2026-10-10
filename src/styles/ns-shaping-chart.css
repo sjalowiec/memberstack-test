@@ -417,6 +417,15 @@
   display: none !important;
 }
 
+/*
+ * `.ns-shaping-chart--collapsible { display: block }` beats the user-agent `[hidden]`
+ * rule, so the second checklist stayed on screen with the toggle off. This screen rule
+ * restores the toggle. The print rule below still shows both checklists.
+ */
+.ns-shaping-chart--second-shoulder[hidden] {
+  display: none !important;
+}
+
 @media print {
   .ns-shaping-chart {
     font-size: 9pt;

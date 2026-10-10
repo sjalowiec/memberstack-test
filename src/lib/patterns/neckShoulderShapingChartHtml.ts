@@ -749,23 +749,41 @@ export function renderNeckShoulderChartIntroBlockHtml(
   return `${help}${renderActiveShoulderChartIntroHtml(introOpts)}`;
 }
 
+function secondShoulderRowCounterSentence(startRc: number, checklist: "shoulder" | "side"): string {
+  const name = checklist === "side" ? "second side" : "second shoulder";
+  return `Set the row counter to RC ${formatActiveSideRc(startRc)} before you begin the ${name}.`;
+}
+
 function instructionWithHeldStitches(
   heldShoulderStitches: number,
   showChecklist: boolean,
   isCardiganFront: boolean,
   shouldersShaped = true,
+  secondShoulderStartRc?: number,
 ): string {
   if (isCardiganFront) {
     return CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE;
   }
   const held = Math.max(0, Math.floor(heldShoulderStitches));
-  const suffix = showChecklist
-    ? SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX
-    : shouldersShaped
-      ? SECOND_SIDE_INSTRUCTION_SUFFIX
-      : SECOND_SIDE_INSTRUCTION_SUFFIX_NECKLINE_ONLY;
+  const edgeSuffix = shouldersShaped
+    ? SECOND_SIDE_INSTRUCTION_SUFFIX
+    : SECOND_SIDE_INSTRUCTION_SUFFIX_NECKLINE_ONLY;
   const cutPhrase = shouldersShaped ? "cut yarn" : "cut the yarn";
-  return `Once this side is complete, ${cutPhrase} and return the ${held} held stitches for the second shoulder to working position. ${suffix}`;
+  const setup = `Once this side is complete, ${cutPhrase} and return the ${held} held stitches for the second shoulder to working position.`;
+  if (secondShoulderStartRc === undefined) {
+    const suffix = showChecklist ? SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX : edgeSuffix;
+    return `${setup} ${suffix}`;
+  }
+  const follow = showChecklist ? ` ${SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX}` : "";
+  return `${setup} ${secondShoulderRowCounterSentence(secondShoulderStartRc, "shoulder")} ${edgeSuffix}${follow}`;
+}
+
+/** V-neck First Side → Second Side. The checklist rows already mirror the schedule. */
+function secondSideRowCounterTransition(startRc: number, shouldersShaped: boolean): string {
+  const edge = shouldersShaped
+    ? "Neckline shaping remains at the neck edge and shoulder shaping remains at the shoulder edge."
+    : "Neckline shaping remains at the neck edge.";
+  return `${secondShoulderRowCounterSentence(startRc, "side")} ${edge}`;
 }
 
 /**
@@ -779,9 +797,16 @@ function instructionWithHeldStitchesHtml(
   showChecklist: boolean,
   isCardiganFront: boolean,
   shouldersShaped = true,
+  secondShoulderStartRc?: number,
 ): string {
   return escapeHtmlWithEmphasis(
-    instructionWithHeldStitches(heldShoulderStitches, showChecklist, isCardiganFront, shouldersShaped),
+    instructionWithHeldStitches(
+      heldShoulderStitches,
+      showChecklist,
+      isCardiganFront,
+      shouldersShaped,
+      secondShoulderStartRc,
+    ),
     activeShoulderReverseShapingEmphasis(shouldersShaped),
   );
 }
@@ -1003,6 +1028,12 @@ export type NeckShoulderChartRenderOptions = {
    * even when this is set — they knit one neck edge per piece.
    */
   shoulderTabs?: boolean;
+  /**
+   * Set-in sleeve only. Tell the knitter to set the row counter to the first RC of the
+   * second shoulder or second side checklist. That number is read from the checklist
+   * schedule already being rendered. Sleeveless and drop shoulder leave this unset.
+   */
+  resetRowCounterForSecondShoulder?: boolean;
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
@@ -1361,6 +1392,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     options?.hideCenterNecklineSetupRow === true
       ? oppositeRowsPrepRaw.filter((r) => !isCenterNecklineSetupChecklistRow(r))
       : oppositeRowsPrepRaw;
+  const secondChecklistStartRc =
+    options?.resetRowCounterForSecondShoulder === true ? oppositeRowsPrep[0]?.rc : undefined;
   const oppositeRowsHtml = activeSideOnly
     ? renderActiveSideInstructionRowsTrHtml(
         vNeckStyleOneRowPerRc
@@ -1489,12 +1522,14 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     false,
     false,
     shouldersShaped,
+    secondChecklistStartRc,
   )}</p>
 <p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--expanded" data-second-shoulder-checked-instruction hidden>${instructionWithHeldStitchesHtml(
     heldShoulderStitches,
     true,
     false,
     shouldersShaped,
+    secondChecklistStartRc,
   )}</p>
 <div class="ns-shaping-chart__second-shoulder-toggle no-print">
   <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a ready-made checklist for the second shoulder.</p>
@@ -1557,6 +1592,12 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
   const firstBindoffHtml = activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : "";
 
   if (useShoulderTabs) {
+    const secondSideLeadHtml =
+      secondChecklistStartRc !== undefined
+        ? `<p class="ns-shaping-chart__active-side-note" data-second-side-row-counter>${escapeHtml(
+            secondSideRowCounterTransition(secondChecklistStartRc, shouldersShaped),
+          )}</p>`
+        : "";
     return renderShoulderTabsHtml({
       sectionClass,
       idPrefix,
@@ -1564,7 +1605,7 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
       primaryTableHtml,
       firstBindoffHtml,
       secondExtraHtml: secondShoulderExtra,
-      secondTableHtml: secondShoulderTableHtml,
+      secondTableHtml: `${secondSideLeadHtml}${secondShoulderTableHtml}`,
     });
   }
 
