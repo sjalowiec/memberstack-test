@@ -4114,6 +4114,14 @@ table {
     );
     const backNotationSupported = isBackJapaneseNotationSupported(diagramPatternData, result);
     const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
+    const frontShapingMapData = buildSleevelessRoundNeckShapingMapData(
+      result?.frontNeckShoulderTimeline,
+      { firstArmholeRc: result?.debug?.armholeStartRow },
+    );
+    const frontIsRoundNeck = !!frontShapingMapData;
+    const frontVNeckWrittenPath = sleevelessFrontVNeckWrittenPathPresentation(
+      result?.debug?.frontArmholeNecklineOverlap,
+    );
     const frontDiagramResolution = resolveSleevelessFrontDiagram(diagramPatternData, {
       devForceCardiganHalfLeft: false,
     });
@@ -4137,11 +4145,29 @@ table {
       );
     const overview = renderPiece(result.overviewRows, "overview", "", undefined);
     const back = renderPiece(result.displayRows, "back", "sg-neck-shoulder-chart-table-back", result?.neckShoulderShapingChart?.rows?.[0]?.row);
-    const front = renderPiece(
-      result.frontDisplayRows,
-      "front",
+    const front = renderSleevelessDisplayHtml(
+      result.frontDisplayRows ?? [],
       "sg-neck-shoulder-chart-table-front",
+      "front",
+      patternIntroSentence,
       result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+      {
+        omitPieceBanner: true,
+        visualGuides: frontShapingMapData
+          ? {
+              enabled: true,
+              piece: "front",
+              notationSupported: false,
+              construction: "sleeveless",
+              patternData: diagramPatternData,
+              shapingMapData: frontShapingMapData,
+              frontRoundNeckLayout: frontIsRoundNeck,
+              checklistBeforeVisualGuides:
+                result?.debug?.frontVNeckShapingTimingCase != null ||
+                frontVNeckWrittenPath.visualGuidesAfterChecklist,
+            }
+          : undefined,
+      },
     );
     const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve", "", undefined);
     const backWrapped = wrapSleevelessPieceSplit(
@@ -4283,6 +4309,41 @@ table {
         backChecklistTableOptions,
       );
     }
+    const frontUsesShoulderTabs = isSleevelessPulloverVNeckFrontChart(
+      result.frontNeckShoulderShapingChart,
+    );
+    const frontSecondSideLabel = frontUsesShoulderTabs ? "side" : "shoulder";
+    const frontSecondShoulderMapHtml = frontShapingMapData
+      ? `<div class="shaping-map shaping-map--second-shoulder">
+      <p class="shaping-map__note">Second ${frontSecondSideLabel}: same shaping schedule, mirror-image orientation (worked in the opposite carriage direction).</p>
+      <div class="shaping-map__scroll">${renderShapingMapSvg(frontShapingMapData, { mirror: false })}</div>
+      <div class="ns-visual-guides__actions no-print">
+        <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge second ${frontSecondSideLabel} shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
+      </div>
+    </div>`
+      : "";
+    const frontHelpCardHtml = necklineChartMachineHelpCardHtml();
+    const frontWrittenIntroHtml = renderSleevelessPatternTabFrontWrittenIntroHtml(
+      result,
+      frontHelpCardHtml,
+    );
+    const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
+    if (frontChartTableHost && result.frontNeckShoulderShapingChart) {
+      frontChartTableHost.innerHTML = renderSleevelessPatternTabFrontChartTableHtml(result, {
+        relocateIntro: frontIsRoundNeck,
+        introSuffix: frontHelpCardHtml,
+        secondShoulderExtraHtml: frontSecondShoulderMapHtml,
+      });
+    }
+    if (frontIsRoundNeck) {
+      const frontWrittenIntroHost = mount.querySelector("#sg-front-ns-written-intro");
+      if (frontWrittenIntroHost instanceof HTMLElement) {
+        const frontCarriageTip = renderCarriagePositionPatternTipHtml({ activeSideOnly: true });
+        frontWrittenIntroHost.innerHTML = `${frontWrittenIntroHtml}${
+          frontCarriageTip ? `\n${frontCarriageTip}` : ""
+        }`;
+      }
+    }
     window.kbmNeckShoulderChartPrintContext = {
       back: {
         chart: result.neckShoulderShapingChart,
@@ -4290,11 +4351,24 @@ table {
         introHtml: neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back"),
         options: backChecklistTableOptions,
       },
+      front: {
+        chart: result.frontNeckShoulderShapingChart,
+        idPrefix: "ns-shaping-chart-front",
+        introHtml: frontWrittenIntroHtml,
+        options: sleevelessPatternTabFrontChartTableOptions(result, {
+          relocateIntro: frontIsRoundNeck,
+          secondShoulderExtraHtml: frontSecondShoulderMapHtml,
+        }),
+      },
     };
     hydrateGlossaryTooltipPlaceholders(mount);
     mountNecklineChartPrintInHeader(
       "neckline-shoulder-chart-print-area",
       "neckline-shoulder-chart-print-btn",
+    );
+    mountNecklineChartPrintInHeader(
+      "front-neckline-shoulder-chart-print-area",
+      "front-neckline-shoulder-chart-print-btn",
     );
     setupNecklineChartPrint(
       "neckline-shoulder-chart-print-btn",

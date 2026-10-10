@@ -33,6 +33,8 @@ import {
   buildActiveSideInstructionTableRows,
 } from "./neckShoulderActiveSideChecklist";
 import { renderNeckShoulderShapingChartTableOnlyHtml } from "./neckShoulderShapingChartHtml";
+import { renderSleevelessPatternTabFrontChartTableHtml } from "./sleevelessFrontChartIntroHtml";
+import { buildSleevelessRoundNeckShapingMapData } from "./sleevelessRoundNeckShapingSchedule";
 import {
   SET_IN_SLEEVE_CONSTRUCTION,
   SET_IN_SLEEVE_DIRECTION,
@@ -623,8 +625,72 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(setIn).toContain("window.kbmNeckShoulderChartPrintContext");
     expect(setIn).toContain("bindSecondShoulderChecklistToggles(mount)");
     expect(setIn).toContain("initChartProgressTracking");
+    expect(setIn).toContain('mount.querySelector("#sg-neck-shoulder-chart-table-front")');
+    expect(setIn).toContain("renderSleevelessPatternTabFrontChartTableHtml");
+    expect(setIn).toContain("buildSleevelessRoundNeckShapingMapData");
+    expect(setIn).toContain("front-neckline-shoulder-chart-print-btn");
     const printCss = readFileSync("src/styles/ns-shaping-chart.css", "utf8");
+    expect(printCss).toContain(".ns-shaping-chart__tabpanel[hidden]");
     expect(printCss).toContain(".ns-shaping-chart--second-shoulder[hidden]");
     expect(printCss).toContain("display: block !important;");
+  });
+});
+
+describe("set-in front neckline and shoulder checklist", () => {
+  const cases = [
+    { label: "misses 7 round", options: { row: MISSES_7, neckline: "round" as const } },
+    { label: "misses 7 v-neck", options: { row: MISSES_7, neckline: "v-neck" as const } },
+    {
+      label: "men 4x finer gauge",
+      options: { row: MEN_4X, audience: "men", stitchesPerInch: 4, rowsPerInch: 6, neckline: "round" as const },
+    },
+    {
+      label: "plus 6x high row gauge",
+      options: {
+        row: (plusSizes as ChartRow[]).find((row) => String(row.size) === "6x"),
+        audience: "plus",
+        stitchesPerInch: 6,
+        rowsPerInch: 8,
+        neckline: "v-neck" as const,
+      },
+    },
+  ];
+
+  it.each(cases)("renders the shared front checklist for $label", ({ options }) => {
+    const result = generateSetInSleevePattern(pattern(options));
+    expect(result.frontDisplayRows.some((row) => row.kind === "section" && row.title === "FRONT NECKLINE & SHOULDERS")).toBe(true);
+    expect(result.frontDisplayRows.some((row) => row.kind === "neckShoulderChartTableMount")).toBe(true);
+    expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
+    const html = renderSleevelessPatternTabFrontChartTableHtml(result, {
+      relocateIntro: options.neckline === "round",
+    });
+    expect(html).toContain("Show Completed Rows");
+    expect(html).toContain("Reset Checklist");
+    expect(html).toContain("Done");
+    expect(html).toContain(">RC");
+    expect(html).toContain("Action");
+    expect(html).toContain("Edge");
+    expect(html).toContain("Sts Remaining");
+    expect(html).toContain('type="checkbox"');
+    const map = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
+      firstArmholeRc: result.debug.armholeStartRow,
+    });
+    if (options.neckline === "round") {
+      expect(html).toContain("First Shoulder Checklist");
+      expect(html).toContain("Second Shoulder Checklist");
+      expect(html).toContain("ns-shaping-chart--second-shoulder");
+      expect(map).not.toBeNull();
+    } else {
+      expect(html).toContain("First Side");
+      expect(html).toContain("Second Side");
+      expect(html).toContain('data-ns-shoulder-panel="first"');
+      expect(html).toContain('data-ns-shoulder-panel="second"');
+      expect(map).toBeNull();
+    }
+    const rows = buildActiveSideInstructionTableRows(result.frontNeckShoulderShapingChart, 0, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(rows.some((row) => row.edge === "Neck")).toBe(true);
+    expect(rows.some((row) => row.edge === "Shoulder" || row.edge === "Armhole")).toBe(true);
   });
 });
