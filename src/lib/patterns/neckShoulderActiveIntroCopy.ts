@@ -41,6 +41,14 @@ export const DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE =
 export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
   `Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
 
+/** Set-in round neck: checklist intro uses First Shoulder / Second Shoulder, not garment Right/Left. */
+export const SET_IN_ROUND_NECK_SHOULDER_INTRO_SENTENCE =
+  `Follow the checklist row by row for the First Shoulder. Then return the held stitches to the machine and work the Second Shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
+
+/** Set-in V-neck: checklist intro keeps First Side / Second Side. */
+export const SET_IN_VNECK_SIDE_INTRO_SENTENCE =
+  `Follow the checklist row by row for the First Side. Then return the held stitches to the machine and work the Second Side, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
+
 /** Drop-shoulder variant of {@link ACTIVE_SHOULDER_CHART_INTRO_SENTENCE} (straight shoulders, neckline shaping only). */
 export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE_NECKLINE_ONLY =
   `Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS} so it remains on the neck edge.`;

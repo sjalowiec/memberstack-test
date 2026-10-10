@@ -69,7 +69,9 @@ export type SleevelessFrontChartIntroVariant = "page" | "print";
  * (`page`) or dedicated print route (`print`).
  */
 export function renderSleevelessFrontChartIntroHtml(
-  result: Pick<SleevelessBackPatternResult, "debug" | "frontNeckShoulderShapingChart">,
+  result: Pick<SleevelessBackPatternResult, "debug" | "frontNeckShoulderShapingChart"> & {
+    isSetInSleeve?: boolean;
+  },
   variant: SleevelessFrontChartIntroVariant = "page",
 ): string {
   const chart = result.frontNeckShoulderShapingChart;
@@ -84,6 +86,7 @@ export function renderSleevelessFrontChartIntroHtml(
     wrapperClass: variant === "print" ? "print-chart-intro" : "pattern-shaping-intro",
     layout: variant === "print" ? "compact" : "labeled",
     includeWorkflowSteps: variant === "page",
+    omitRepeatedNecklineSetup: result.isSetInSleeve === true,
   });
 }
 

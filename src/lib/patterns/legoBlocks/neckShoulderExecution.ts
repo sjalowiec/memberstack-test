@@ -136,7 +136,7 @@ function mergeShapingSpans(
  * A shared reading is the two ends of that one row, not both shoulders at once.
  */
 export const ONE_SHOULDER_AT_A_TIME_NOTE =
-  "Work the right shoulder and right neck edge first. Leave the left shoulder and left neck edge in hold. Each reading below is one row on the shoulder in work. A reading that names one edge starts with the carriage at that edge. When a reading lists both a neck-edge action and a shoulder bind-off, shape the carriage-side edge first, knit across, and shape the other edge before you turn. On an odd reading that shapes both edges, the carriage starts at the neck edge. On an even reading that shapes both edges, the carriage starts at the armhole edge. If the carriage is not already at the named edge, move it there without knitting a row. After the right shoulder is finished, return the left shoulder and left neck edge to working position and repeat the same readings with the carriage at the matching edge. Do not shape both shoulders on one carriage pass.";
+  "Work the First Shoulder and the neck edge first. Leave the Second Shoulder in hold. Each reading below is one row on the shoulder in work. A reading that names one edge starts with the carriage at that edge. When a reading lists both a neck-edge action and a shoulder bind-off, shape the carriage-side edge first, knit across, and shape the other edge before you turn. On an odd reading that shapes both edges, the carriage starts at the neck edge. On an even reading that shapes both edges, the carriage starts at the shoulder edge. If the carriage is not already at the named edge, move it there without knitting a row. After the First Shoulder is finished, return the Second Shoulder to working position and repeat the same readings with the carriage at the matching edge. When both shoulders are complete, scrap off or bind off the held center neckline stitches. Do not shape both shoulders on one carriage pass.";
 
 function spanToInstructionLines(span: MergedSpan): string[] {
   const { fromRC, toRC, neckTexts, shoulderTexts } = span;
@@ -158,13 +158,13 @@ function spanToInstructionLines(span: MergedSpan): string[] {
     if (fromRC % 2 === 1) {
       return [`${rcStr}. Carriage at the neck edge. ${neck} Knit across. ${shoulder}`];
     }
-    return [`${rcStr}. Carriage at the armhole edge. ${shoulder} Knit across. ${neck}`];
+    return [`${rcStr}. Carriage at the shoulder edge. ${shoulder} Knit across. ${neck}`];
   }
   if (hasNeck) {
     return [`${rcStr}. Carriage at the neck edge. ${neck} Knit across.`];
   }
   if (hasShoulder) {
-    return [`${rcStr}. Carriage at the armhole edge. ${shoulder} Knit across.`];
+    return [`${rcStr}. Carriage at the shoulder edge. ${shoulder} Knit across.`];
   }
   return [];
 }
@@ -194,7 +194,7 @@ function neckEdgeHoldText(left: number, right: number): string {
   if (left === right) {
     return `Put ${holdStitchPhrase(left)} in hold at the neck edge. Shoulder stitches continue in work.`;
   }
-  return `Put ${holdStitchPhrase(right)} in hold at the neck edge of the right shoulder. On the left shoulder, at this same reading, put ${holdStitchPhrase(left)} in hold at the neck edge. Shoulder stitches continue in work.`;
+  return `Put ${holdStitchPhrase(right)} in hold at the neck edge of the First Shoulder. On the Second Shoulder, at this same reading, put ${holdStitchPhrase(left)} in hold at the neck edge. Shoulder stitches continue in work.`;
 }
 
 /**
@@ -308,7 +308,7 @@ export function shapingActionsFromTimeline(
         neckActions.push({
           startRC: rc,
           endRC: rc,
-          text: `Neck edge on the right shoulder: remove ${neckInnerRight}. On the left shoulder, at this same reading, remove ${neckInnerLeft}.`,
+          text: `Neck edge on the First Shoulder: remove ${neckInnerRight}. On the Second Shoulder, at this same reading, remove ${neckInnerLeft}.`,
         });
       }
     }
@@ -330,14 +330,14 @@ export function shapingActionsFromTimeline(
             endRC: rc,
             text:
               n === 1
-                ? "Bind off 1 stitch at the armhole edge."
-                : `Bind off ${n} stitches at the armhole edge.`,
+                ? "Bind off 1 stitch at the shoulder edge."
+                : `Bind off ${n} stitches at the shoulder edge.`,
           });
         } else {
           shoulderActions.push({
             startRC: rc,
             endRC: rc,
-            text: `At armhole edge: bind off left −${shoulderOuterLeft}, right −${shoulderOuterRight}.`,
+            text: `At the shoulder edge: bind off Second Shoulder −${shoulderOuterLeft}, First Shoulder −${shoulderOuterRight}.`,
           });
         }
       } else if (shoulderOuterLeft === shoulderOuterRight && shoulderOuterLeft > 0) {
@@ -347,14 +347,14 @@ export function shapingActionsFromTimeline(
           endRC: rc,
           text:
             n === 1
-              ? "Decrease 1 stitch at the armhole edge."
-              : `Decrease ${n} stitches at the armhole edge.`,
+              ? "Decrease 1 stitch at the shoulder edge."
+              : `Decrease ${n} stitches at the shoulder edge.`,
         });
       } else {
         shoulderActions.push({
           startRC: rc,
           endRC: rc,
-          text: `At armhole edge: left shoulder −${shoulderOuterLeft}, right shoulder −${shoulderOuterRight}.`,
+          text: `At the shoulder edge: Second Shoulder −${shoulderOuterLeft}, First Shoulder −${shoulderOuterRight}.`,
         });
       }
     }

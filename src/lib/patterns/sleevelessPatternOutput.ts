@@ -129,6 +129,7 @@ import {
 } from "./roundNeckNotation";
 import {
   roundNeckBackShallowSleevelessSummaryWrittenLines,
+  roundNeckFrontSetInSetupWrittenLines,
   type RoundNecklinePlanResult,
 } from "./roundNeckPlanPresentation";
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
@@ -1565,9 +1566,9 @@ export function formatShallowBackHoldCenterDivideExecution(args: {
   const centerWord = N === 1 ? "stitch" : "stitches";
   const parts = [
     `Place the center ${N} ${centerWord} in hold.`,
-    "Place the opposite (left) shoulder stitches in hold.",
-    "Place the opposite (left) neckline stitches in hold.",
-    `Work the right shoulder (${stitchCountPhrase(R)}) and right neck edge; left shoulder (${stitchCountPhrase(L)}) remains parked.`,
+    "Place the Second Shoulder stitches in hold.",
+    "Place the Second Shoulder neckline stitches in hold.",
+    `Work the First Shoulder (${stitchCountPhrase(R)}) and the neck edge. The Second Shoulder (${stitchCountPhrase(L)}) stays in hold.`,
   ];
   return parts.join(" ");
 }
@@ -1701,6 +1702,8 @@ function backNecklineShoulderSummaryParagraphs(args: {
   includeLifelineReminder?: boolean;
   /** Set-in sleeve: center and opposite-shoulder holds are named separately. */
   disjointHoldRanges?: boolean;
+  /** Set-in pullover front: First Shoulder / Second Shoulder needle setup. */
+  setInFrontRoundNeckPlan?: RoundNecklinePlanResult | null;
 }): string[] | null {
   let leftS: number | undefined;
   let rightS: number | undefined;
@@ -1750,6 +1753,12 @@ function backNecklineShoulderSummaryParagraphs(args: {
       : undefined;
 
   const includeLifeline = args.includeLifelineReminder !== false;
+  if (args.setInFrontRoundNeckPlan && (args.stitchesAfterArmhole ?? 0) > 0) {
+    return insertLifelineReminderAfterOpening(
+      roundNeckFrontSetInSetupWrittenLines(args.setInFrontRoundNeckPlan, args.stitchesAfterArmhole ?? 0),
+      includeLifeline,
+    );
+  }
   let lines: string[];
   if (args.backRoundNeckPlan?.strategy === "shallow-round") {
     lines = roundNeckBackShallowSleevelessSummaryWrittenLines(args.backRoundNeckPlan, {
@@ -2566,6 +2575,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   armholeBindOffSts?: number;
   armholeDecreaseSts?: number;
   stitchesAfterArmhole?: number;
+  /** Set-in pullover round neck: needle setup for First Shoulder and Second Shoulder. */
+  setInFrontRoundNeckPlan?: RoundNecklinePlanResult | null;
 }): SleevelessPatternDisplayRow[] {
   const sharedRows: SleevelessPatternDisplayRow[] = [];
   let inBackNecklineSection = false;
@@ -2710,7 +2721,10 @@ export function buildSleevelessFrontDisplayRows(args: {
         necklineStitches: args.necklineStitches,
         fullNecklineStitches: args.fullNecklineStitches,
         shoulderStitches: args.shoulderStitches,
+        stitchesAfterArmhole: args.stitchesAfterArmhole,
         includeLifelineReminder: !args.introIsCardiganHalf,
+        setInFrontRoundNeckPlan:
+          args.isVNeck || args.introIsCardiganHalf ? undefined : args.setInFrontRoundNeckPlan,
       });
       if (summary) {
         rows.push({
@@ -4152,6 +4166,10 @@ export function generateSleevelessBackPattern(
       armholeBindOffSts: armholeMathResult?.bindOffSts,
       armholeDecreaseSts: armholeMathResult?.decreaseSts,
       stitchesAfterArmhole: stitchesAfterArmhole,
+      setInFrontRoundNeckPlan:
+        options?.useSetInArmhole === true && !isCardigan && !isFrontVNeck
+          ? frontRoundNeckPlan
+          : undefined,
     })
   );
 

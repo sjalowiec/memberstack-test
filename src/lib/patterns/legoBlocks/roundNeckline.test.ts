@@ -434,8 +434,10 @@ describe("shallow round-neck written instructions", () => {
     });
     const plain = lines.join("\n").replace(/<[^>]+>/g, "");
     expect(plain).toMatch(/Place center neckline needles L9 through R9 in hold \(18 stitches total\)/);
-    expect(plain).toMatch(/Put the opposite shoulder needles L50 through L10 into hold \(41 stitches total\)/);
-    expect(plain).toMatch(/Work the first shoulder on needles R10 through R50 \(41 stitches total\)/);
+    expect(plain).toMatch(/Put the Second Shoulder needles L50 through L10 into hold \(41 stitches total\)/);
+    expect(plain).toMatch(/Work the First Shoulder on needles R10 through R50 \(41 stitches total\)/);
+    expect(plain).toContain("Scrap off or bind off all remaining held neckline stitches.");
+    expect(plain).not.toMatch(/right shoulder|left shoulder|Stage [123]/i);
     expect(plain).not.toMatch(/Put needles L\d+ through R\d+ into hold/);
     expect(plain).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
     expect(plain).not.toMatch(/^RIGHT SIDE$/im);

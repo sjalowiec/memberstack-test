@@ -309,9 +309,10 @@ export function roundNeckBackShallowSleevelessSummaryWrittenLines(
     return [
       ...(rcLine ? [rcLine] : []),
       `Place center neckline needles ${centerRangeHtml} in hold${formatStitchCountValidation(counts.center)}.`,
-      `Put the opposite shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
-      `Work the first shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
+      `Put the Second Shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
+      `Work the First Shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
       checklistLine,
+      roundNeckPlanFinishHeldStitchesLine(),
     ];
   }
 
@@ -321,6 +322,40 @@ export function roundNeckBackShallowSleevelessSummaryWrittenLines(
     `Put needles ${formatFirstSideHoldPhraseHtml(layout)} into hold${formatStitchCountValidation(counts.firstSideHold)}.`,
     `Work needles ${rightWorkRangeHtml} first${formatStitchCountValidation(counts.rightShoulder)}.`,
     checklistLine,
+  ];
+}
+
+/**
+ * Set-in sleeve front setup. Needle ranges come from the same bed layout as the back.
+ * Round-neck sides are First Shoulder and Second Shoulder. This does not change stitch counts.
+ */
+export function roundNeckFrontSetInSetupWrittenLines(
+  plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
+  bodyWidthStitches: number,
+): string[] {
+  const checklistLine = SLEEVELESS_BACK_NECK_CHECKLIST_LINE;
+  if (bodyWidthStitches <= 0 || plan.centerBindOff <= 0) {
+    return ["Begin front neckline and shoulder shaping.", checklistLine];
+  }
+  const layout = computeShallowBackNeckNeedleLayout(bodyWidthStitches, plan.centerBindOff);
+  const { stitchCounts: counts } = layout;
+  const centerRangeHtml = formatCenterNeedleHoldPhraseHtml(layout);
+  const rightWorkRangeHtml = formatNeedleRangeHtml(
+    formatNeedleRangeThrough(layout.rightShoulder.start, layout.rightShoulder.end),
+  );
+  const leftShoulderRangeHtml = formatNeedleRangeHtml(
+    formatNeedleRangeThrough(layout.leftShoulder.start, layout.leftShoulder.end),
+  );
+  const centerLine = isShallowHoldRoundPlan(plan)
+    ? `Place center neckline needles ${centerRangeHtml} in hold${formatStitchCountValidation(counts.center)}.`
+    : `Remove center neckline needles ${centerRangeHtml} from work${formatStitchCountValidation(counts.center)}. Scrap off, bind off, or place these stitches on hold.`;
+  return [
+    "Begin front neckline and shoulder shaping.",
+    centerLine,
+    `Put the Second Shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
+    `Work the First Shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
+    checklistLine,
+    roundNeckPlanFinishHeldStitchesLine(),
   ];
 }
 

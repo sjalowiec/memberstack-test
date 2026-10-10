@@ -36,7 +36,10 @@ import {
 } from "../dropShoulderSleeveShaping";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
-import { roundNeckBackShallowSleevelessSummaryWrittenLines } from "../roundNeckPlanPresentation";
+import {
+  roundNeckBackShallowSleevelessSummaryWrittenLines,
+  roundNeckFrontSetInSetupWrittenLines,
+} from "../roundNeckPlanPresentation";
 import {
   ARMHOLE_RC_FROM_RESET_NOTE,
   castOnMethodQuickTipInnerHtml,
@@ -595,10 +598,15 @@ function necklineInstructionLines(
   const actions = shapingActionsFromTimeline(built.timeline, {
     centerBindOffShapingLine: centerLine,
   });
-  const summary = roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
-    bodyWidthStitches: result.body.stitchesAtShoulder,
-    necklineStartRcLabel: formatRcColon(necklineStartRc),
-  }).filter((line) => !/checklist below/i.test(line));
+  const summary = (
+    piece === "front"
+      ? roundNeckFrontSetInSetupWrittenLines(plan, result.body.stitchesAtShoulder)
+      : roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
+          bodyWidthStitches: result.body.stitchesAtShoulder,
+          necklineStartRcLabel: formatRcColon(necklineStartRc),
+          disjointHoldRanges: true,
+        })
+  ).filter((line) => !/checklist below/i.test(line));
   return [
     ...summary,
     ONE_SHOULDER_AT_A_TIME_NOTE,

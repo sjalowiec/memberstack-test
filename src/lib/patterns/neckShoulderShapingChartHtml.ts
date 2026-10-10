@@ -21,6 +21,8 @@ import { PATTERN_PRINT_ESSENTIAL_DISCLOSURE_CLASS } from "./patternEssentialDisc
 import {
   ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
+  SET_IN_ROUND_NECK_SHOULDER_INTRO_SENTENCE,
+  SET_IN_VNECK_SIDE_INTRO_SENTENCE,
   ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE,
   ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
   ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS,
@@ -102,11 +104,21 @@ function escapeHtmlWithEmphasis(text: string, phrase: string): string {
  * The plain-text constant is unchanged for print/non-HTML consumers. Drop shoulder
  * (`shouldersShaped: false`) reverses only the neckline shaping (straight shoulders).
  */
-function activeShoulderChartIntroSentenceHtml(shouldersShaped = true): string {
-  return escapeHtmlWithEmphasis(
-    activeShoulderChartIntroSentence(shouldersShaped),
-    activeShoulderReverseShapingEmphasis(shouldersShaped),
-  );
+function activeShoulderChartIntroSentenceHtml(
+  shouldersShaped = true,
+  identity: "default" | "first-second-shoulder" | "first-second-side" = "default",
+): string {
+  const sentence =
+    identity === "first-second-shoulder"
+      ? SET_IN_ROUND_NECK_SHOULDER_INTRO_SENTENCE
+      : identity === "first-second-side"
+        ? SET_IN_VNECK_SIDE_INTRO_SENTENCE
+        : activeShoulderChartIntroSentence(shouldersShaped);
+  const emphasis =
+    identity === "default"
+      ? activeShoulderReverseShapingEmphasis(shouldersShaped)
+      : ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS;
+  return escapeHtmlWithEmphasis(sentence, emphasis);
 }
 
 /**
@@ -319,6 +331,13 @@ export type ActiveShoulderChartIntroOptions = {
    * rendering are unchanged (no calculations, row/stitch counts, or table behavior change).
    */
   includeWorkflowSteps?: boolean;
+  /**
+   * Set-in sleeve only. The written neckline setup already names which needles are held
+   * and which shoulder is worked first, so the checklist intro does not repeat those holds
+   * or the Stage 1 / Stage 2 / Stage 3 list. Round neck uses First Shoulder and Second Shoulder.
+   * V-neck keeps First Side and Second Side. Sleeveless leaves this unset.
+   */
+  omitRepeatedNecklineSetup?: boolean;
   /**
    * Online front/back chart only. When set to `"front"` or `"back"`, a quiet "Japanese Notation
    * Quick Reference" preview card is placed beside the intro instructions. Clicking it opens that
@@ -656,8 +675,27 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
             atRcPrefix: useAtRcPrefix,
           })
         : "";
+  const omitRepeatedSetup = options.omitRepeatedNecklineSetup === true;
+  const introIdentity = omitRepeatedSetup
+    ? vNeckDivide
+      ? "first-second-side"
+      : "first-second-shoulder"
+    : "default";
   const innerParts: string[] = [];
-  if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
+  if (omitRepeatedSetup && !vNeckDivide) {
+    const divideRc = divideRcDisplayLabel(options.localStartRcLabel);
+    const knitUntil = divideRc ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.` : "";
+    if (knitUntil) {
+      if (options.includeWorkflowSteps === true) {
+        innerParts.push(
+          `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
+          `<ul class="pattern-shaping-step-list"><li>${knitUntil}</li></ul>`,
+        );
+      } else {
+        innerParts.push(`<p>${knitUntil}</p>`);
+      }
+    }
+  } else if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
     const divideRc = divideRcDisplayLabel(vNeckDivide ? vNeckDivideLabel : options.localStartRcLabel);
     const knitUntilBullet =
       vNeckDivide || vNeckBeforeArmhole
@@ -667,7 +705,9 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
           : `Knit to the neckline shaping row.`;
     const afterDivideBullets = shallowHoldBackDivide
       ? `<li>Stage 1 — work the right shoulder and right neck edge (checklist below). Stage 2 — return held stitches and mirror for the left side.</li><li>Stage 3 — scrap off or bind off all held neckline stitches when both sides are complete.</li>`
-      : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;
+      : omitRepeatedSetup
+        ? ""
+        : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;
     if (knitUntilBullet) {
       innerParts.push(
         `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
@@ -684,6 +724,8 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       innerParts.push(
         `<p>Stage 1 — right shoulder and right neck edge. Stage 2 — left side (mirror). Stage 3 — scrap or bind off held neckline stitches.</p>`,
       );
+    } else if (omitRepeatedSetup && vNeckDivide) {
+      innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
     } else {
       innerParts.push(`<p><strong>Center Neckline:</strong><br>${centerHtml}</p>`);
       innerParts.push(
@@ -691,7 +733,9 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       );
     }
   }
-  innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false)}</p>`);
+  innerParts.push(
+    `<p>${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false, introIdentity)}</p>`,
+  );
   const inner = innerParts.join("\n  ");
 
   return wrapActiveShoulderChartIntroHtml(

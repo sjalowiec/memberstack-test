@@ -578,7 +578,14 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {boolean} [shouldersShaped=true] When false (drop shoulder: straight shoulders), the
    *   reverse-shaping intro copy mentions only the neckline shaping.
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview, shouldersShaped = true) {
+  function neckShoulderChartHelpRowHtml(
+    startRowLabel,
+    chart,
+    _piece,
+    showNotationPreview,
+    shouldersShaped = true,
+    omitRepeatedNecklineSetup = false,
+  ) {
     const notationPreviewPiece =
       showNotationPreview === true && (_piece === "front" || _piece === "back")
         ? _piece
@@ -591,6 +598,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
       includeWorkflowSteps: true,
+      omitRepeatedNecklineSetup,
       notationPreview: notationPreviewPiece,
       notationPreviewConstruction: "sleeveless",
     });
@@ -4306,7 +4314,7 @@ table {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back", false),
+        neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back", false, true, true),
         backChecklistTableOptions,
       );
     }
@@ -4350,7 +4358,14 @@ table {
       back: {
         chart: result.neckShoulderShapingChart,
         idPrefix: "ns-shaping-chart-back",
-        introHtml: neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back"),
+        introHtml: neckShoulderChartHelpRowHtml(
+          backChartStartLabel,
+          result.neckShoulderShapingChart,
+          "back",
+          false,
+          true,
+          true,
+        ),
         options: backChecklistTableOptions,
       },
       front: {
