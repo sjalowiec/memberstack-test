@@ -3,6 +3,7 @@
  */
 
 export const DROP_SHOULDER_CONSTRUCTION = "drop-shoulder";
+export const SET_IN_SLEEVE_CONSTRUCTION = "set-in-sleeve";
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION = "sideways-cardigan";
 export const CONSTRUCTION_AUTHORED_KEY = "constructionAuthored";
 export const CONSTRUCTION_FAMILY_OVERRIDE_KEY = "constructionFamily";
@@ -24,6 +25,16 @@ export function hasAuthoritativeSidewaysCardiganConstruction(style, customOverri
   if (st.construction !== SIDEWAYS_CARDIGAN_CONSTRUCTION) return false;
   if (st[CONSTRUCTION_AUTHORED_KEY] === SIDEWAYS_CARDIGAN_CONSTRUCTION) return true;
   if (asRecord(customOverrides)[CONSTRUCTION_FAMILY_OVERRIDE_KEY] === SIDEWAYS_CARDIGAN_CONSTRUCTION) {
+    return true;
+  }
+  return false;
+}
+
+export function hasAuthoritativeSetInSleeveConstruction(style, customOverrides) {
+  const st = asRecord(style);
+  if (st.construction !== SET_IN_SLEEVE_CONSTRUCTION) return false;
+  if (st[CONSTRUCTION_AUTHORED_KEY] === SET_IN_SLEEVE_CONSTRUCTION) return true;
+  if (asRecord(customOverrides)[CONSTRUCTION_FAMILY_OVERRIDE_KEY] === SET_IN_SLEEVE_CONSTRUCTION) {
     return true;
   }
   return false;
@@ -57,7 +68,7 @@ function isSockPatternBlob(pattern) {
 
 /**
  * @param {{ pattern?: unknown, customOverrides?: unknown }} project
- * @returns {"sleeveless" | "drop-shoulder" | "sideways-cardigan" | "hat" | "socks"}
+ * @returns {"sleeveless" | "drop-shoulder" | "set-in-sleeve" | "sideways-cardigan" | "hat" | "socks"}
  */
 export function resolvePatternSystemFromProject(project) {
   const pattern = asRecord(project?.pattern);
@@ -72,6 +83,9 @@ export function resolvePatternSystemFromProject(project) {
   if (hasAuthoritativeSidewaysCardiganConstruction(style, customOverrides)) {
     return "sideways-cardigan";
   }
+  if (hasAuthoritativeSetInSleeveConstruction(style, customOverrides)) {
+    return "set-in-sleeve";
+  }
   if (hasAuthoritativeDropShoulderConstruction(style, customOverrides)) {
     return "drop-shoulder";
   }
@@ -82,6 +96,7 @@ export function resolvePatternSystemFromProject(project) {
 export const PATTERN_SYSTEM_DISPLAY_NAMES = {
   sleeveless: "Sleeveless",
   "drop-shoulder": "Drop Shoulder",
+  "set-in-sleeve": "Set-In Sleeve",
   "sideways-cardigan": "Sideways V-Neck",
   blanket: "Blanket",
   hat: "Hat",

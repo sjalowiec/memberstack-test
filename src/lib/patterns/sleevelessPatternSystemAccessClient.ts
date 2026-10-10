@@ -16,6 +16,14 @@ import {
 } from "./patternSystemFreeClaim";
 import type { PatternSystemId } from "./patternSystemId";
 import {
+  isLocalPatternTestingEnabled,
+  localPatternTestingAccess,
+} from "./localPatternTesting";
+import {
+  isHostedSetInSleeveDevTesting,
+  setInSleeveDevTestingAccess,
+} from "./setInSleeveDevTesting";
+import {
   computeHasSystemAccessFlag,
   LOGGED_OUT_SLEEVELESS_ACCESS,
   readSleevelessSystemUnlockFromMemberJson,
@@ -27,7 +35,9 @@ type MemberstackDom = NonNullable<Window["$memberstackDom"]>;
 export type SleevelessAccessSource =
   | "memberstack-plan"
   | "free"
-  | "logged-out";
+  | "logged-out"
+  | "local-pattern-testing"
+  | "set-in-sleeve-dev-testing";
 
 export interface SleevelessAccessDebug {
   source: SleevelessAccessSource;
@@ -143,6 +153,38 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
 }
 
 async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
+  if (isLocalPatternTestingEnabled()) {
+    const access = localPatternTestingAccess();
+    recordAccessDebug({
+      source: "local-pattern-testing",
+      loggedIn: access.loggedIn,
+      hasSystemAccess: access.hasSystemAccess,
+      freeClaimsBySystem: access.freeClaimsBySystem,
+      memberId: access.memberId,
+      planIds: [],
+      unlockedViaJson: false,
+      reason: "local-pattern-testing",
+      at: Date.now(),
+    });
+    return access;
+  }
+
+  if (isHostedSetInSleeveDevTesting()) {
+    const access = setInSleeveDevTestingAccess();
+    recordAccessDebug({
+      source: "set-in-sleeve-dev-testing",
+      loggedIn: access.loggedIn,
+      hasSystemAccess: access.hasSystemAccess,
+      freeClaimsBySystem: access.freeClaimsBySystem,
+      memberId: access.memberId,
+      planIds: [],
+      unlockedViaJson: false,
+      reason: "set-in-sleeve-dev-testing",
+      at: Date.now(),
+    });
+    return access;
+  }
+
   if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
 
   // Wait for Memberstack before resolving so a real session is not mis-read as logged-out.
@@ -158,7 +200,6 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
     if (memberAccess) return memberAccess;
   }
 
-  // No localhost/dev bypass: pattern access always requires active membership.
   if (!ms?.getCurrentMember) return loggedOutAccessSnapshot("memberstack-dom-unavailable");
   return loggedOutAccessSnapshot("no-member-id");
 }

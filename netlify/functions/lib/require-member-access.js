@@ -17,6 +17,7 @@ import {
   resolveDevPatternUserId,
   sanitizeKeySegment,
 } from "./custom-pattern-projects-store.js";
+import { kinDevSetInSleeveTestIdentity } from "./kin-dev-set-in-sleeve-testing.js";
 
 const UNAVAILABLE = "Pattern projects are unavailable in this environment.";
 const MEMBERSHIP_REQUIRED = "An active Knit it Now membership is required.";
@@ -42,6 +43,13 @@ export async function requirePatternProjectIdentity(req) {
       userId: resolveDevPatternUserId(req),
       mode: "dev",
     };
+  }
+
+  // Hosted kin-dev Set-In Sleeve testing. The user id is fixed here; the
+  // client cannot choose another member's id. Production site identity never matches.
+  if (!token) {
+    const setInDev = kinDevSetInSleeveTestIdentity(req);
+    if (setInDev) return setInDev;
   }
 
   const auth = await requireMember(req);

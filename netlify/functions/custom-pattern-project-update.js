@@ -17,6 +17,7 @@ import {
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
 import { requirePatternProjectAccess } from "./lib/require-member-access.js";
+import { setInSleeveDevTestWriteError } from "./lib/kin-dev-set-in-sleeve-testing.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -55,6 +56,10 @@ export default async (req) => {
   const existing = await readProjectJson(store, key);
   if (!existing) {
     return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
+  }
+  const existingSetInError = setInSleeveDevTestWriteError(access, existing);
+  if (existingSetInError) {
+    return withCors(jsonResponse({ ok: false, error: existingSetInError }, 403));
   }
 
   if (body.data.workflowOnly === true) {
@@ -107,6 +112,10 @@ export default async (req) => {
   }
 
   const project = built.project;
+  const setInDevError = setInSleeveDevTestWriteError(access, project);
+  if (setInDevError) {
+    return withCors(jsonResponse({ ok: false, error: setInDevError }, 403));
+  }
 
   try {
     await store.set(key, JSON.stringify(publicProject(project)), {

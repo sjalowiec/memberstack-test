@@ -5,6 +5,7 @@
  *   - memberstack-plan → active membership plan id in MEMBER_PLAN_IDS
  *   - free             → logged-in without active membership (no pattern access)
  *   - logged-out       → no Memberstack member
+ *   - local-pattern-testing → Astro dev on localhost, not a Memberstack member
  *
  * Diagnostic only. Lifetime / JSON unlock metadata may appear in the detail text but never
  * grant access.
@@ -65,6 +66,16 @@ const SOURCE_STYLES: Record<SleevelessAccessSource, SourceStyle> = {
     label: "LOGGED OUT",
     bg: "#b91c1c",
     note: "No Memberstack member detected.",
+  },
+  "local-pattern-testing": {
+    label: "LOCAL PATTERN TESTING",
+    bg: "#1d4ed8",
+    note: "Astro dev on localhost. Not a Memberstack member and not a membership plan.",
+  },
+  "set-in-sleeve-dev-testing": {
+    label: "SET-IN DEV TESTING",
+    bg: "#1d4ed8",
+    note: "Hosted kin-dev Set-In Sleeve testing. Not a Memberstack member.",
   },
 };
 

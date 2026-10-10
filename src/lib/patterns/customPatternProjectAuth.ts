@@ -5,11 +5,23 @@
  * The server verifies the token and derives membership from Admin API + MEMBER_PLAN_IDS.
  * Never sends `X-KBM-Member-Id` as authoritative identity.
  *
+ * Local Pattern Testing (`isLocalPatternTestingEnabled`): Astro dev on localhost
+ * uses the existing local dev user and does not send a Memberstack token, even
+ * when a test account is signed in. That helper is false in production builds
+ * and off localhost. The server still requires a paid membership whenever a
+ * Bearer token is present.
+ *
  * Dev fallback: `X-KBM-Dev-User-Id` when Astro/Netlify local-dev allow anonymous pattern user.
  */
 
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectStoreKeys";
+import { isLocalPatternTestingEnabled } from "./localPatternTesting";
+import {
+  isHostedSetInSleeveDevTesting,
+  KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID,
+  SET_IN_DEV_TEST_HEADER,
+} from "./setInSleeveDevTesting";
 import { memberstackReadinessSnapshot, perfEnd, perfStart } from "./savedPatternsPerfLog";
 
 const DEV_USER_STORAGE_KEY = "kbm_dev_pattern_user_id";
@@ -119,6 +131,28 @@ export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternPr
   }
 
   const readiness = memberstackReadinessSnapshot();
+
+  // Localhost Astro dev only. A signed-in test account must not be sent through
+  // the paid-membership save gate. Production builds never take this branch.
+  if (isLocalPatternTestingEnabled()) {
+    const devUserId = getOrCreateDevPatternUserId();
+    perfEnd("2-member-auth total", authStart, {
+      mode: "dev",
+      reason: "local-pattern-testing",
+      ...readiness,
+    });
+    return { mode: "dev", devUserId };
+  }
+
+  if (isHostedSetInSleeveDevTesting()) {
+    perfEnd("2-member-auth total", authStart, {
+      mode: "dev",
+      reason: "set-in-sleeve-dev-testing",
+      ...readiness,
+    });
+    return { mode: "dev", devUserId: KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID };
+  }
+
   const ms = await waitForMemberstackDom();
   if (ms?.getCurrentMember) {
     const memberStart = perfStart();
@@ -176,6 +210,9 @@ export function authHeadersForCustomPatternProjects(
 ): Record<string, string> {
   if (auth.mode === "member" && auth.bearerToken) {
     return { Authorization: `Bearer ${auth.bearerToken}` };
+  }
+  if (auth.mode === "dev" && auth.devUserId === KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID) {
+    return { [SET_IN_DEV_TEST_HEADER]: "1" };
   }
   if (auth.mode === "dev" && auth.devUserId) {
     return { "X-KBM-Dev-User-Id": auth.devUserId };

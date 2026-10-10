@@ -12,6 +12,7 @@ import {
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
 import { requirePatternProjectIdentity } from "./lib/require-member-access.js";
+import { setInSleeveDevTestWriteError } from "./lib/kin-dev-set-in-sleeve-testing.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,6 +39,10 @@ export default async (req) => {
     const key = projectBlobKey(family, access.userId, id);
     const project = await readProjectJson(store, key);
     if (!project) {
+      return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
+    }
+    const setInDevError = setInSleeveDevTestWriteError(access, project);
+    if (setInDevError) {
       return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
     }
     return withCors(

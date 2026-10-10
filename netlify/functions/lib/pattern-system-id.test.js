@@ -3,6 +3,7 @@ import {
   CONSTRUCTION_AUTHORED_KEY,
   CONSTRUCTION_FAMILY_OVERRIDE_KEY,
   DROP_SHOULDER_CONSTRUCTION,
+  SET_IN_SLEEVE_CONSTRUCTION,
   patternSystemDisplayName,
   resolvePatternSystemFromProject,
   SIDEWAYS_CARDIGAN_CONSTRUCTION,
@@ -124,6 +125,22 @@ describe("resolvePatternSystemFromProject (server index classifier)", () => {
         customOverrides: {},
       }),
     ).toBe("sleeveless");
+  });
+
+  it("classifies an authored set-in sleeve separately from sleeveless and drop shoulder", () => {
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: {
+          patternType: "sleeveless",
+          style: {
+            construction: SET_IN_SLEEVE_CONSTRUCTION,
+            [CONSTRUCTION_AUTHORED_KEY]: SET_IN_SLEEVE_CONSTRUCTION,
+          },
+        },
+        customOverrides: {},
+      }),
+    ).toBe("set-in-sleeve");
   });
 
   it("keeps Drop Shoulder classification unchanged", () => {

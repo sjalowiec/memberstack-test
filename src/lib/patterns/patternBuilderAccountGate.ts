@@ -9,6 +9,7 @@
  * already signed in without access). No free-account signup path.
  */
 import { getViewerAccessState, hasMemberAccess, type ViewerAccessState } from "../memberAccess";
+import { isLocalPatternTestingEnabled } from "./localPatternTesting";
 import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { openMemberstackLoginModal } from "../memberstackLogin";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
@@ -52,6 +53,7 @@ async function resolveViewerAccessState(): Promise<ViewerAccessState> {
 }
 
 async function hasPatternBuilderMembershipAccess(): Promise<boolean> {
+  if (isLocalPatternTestingEnabled()) return true;
   if (typeof window === "undefined") return false;
   await waitForMemberstackDom();
   const ms = window.$memberstackDom;

@@ -11,9 +11,11 @@ import {
   jsonResponse,
   parseJsonBody,
   projectBlobKey,
+  readProjectJson,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
 import { requirePatternProjectIdentity } from "./lib/require-member-access.js";
+import { setInSleeveDevTestWriteError } from "./lib/kin-dev-set-in-sleeve-testing.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -54,6 +56,13 @@ export default async (req) => {
     const meta = await store.getMetadata(key);
     if (!meta) {
       return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
+    }
+    if (access.devTest === "set-in-sleeve") {
+      const project = await readProjectJson(store, key);
+      const setInDevError = setInSleeveDevTestWriteError(access, project);
+      if (setInDevError) {
+        return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
+      }
     }
 
     await deleteProjectAndUpdateIndex(store, family, access.userId, id);

@@ -7,6 +7,14 @@
  * Content stays hidden until access is confirmed.
  */
 import { getViewerAccessState, type ViewerAccessState } from "../memberAccess";
+import {
+  isLocalPatternTestingEnabled,
+  localPatternTestingAccess,
+} from "./localPatternTesting";
+import {
+  isHostedSetInSleeveDevTesting,
+  setInSleeveDevTestingAccess,
+} from "./setInSleeveDevTesting";
 import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { loadCustomPatternProject } from "./customPatternProjectClient";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
@@ -102,6 +110,14 @@ export async function applyFormerMemberReadOnlyException(
 export async function resolvePatternMembershipGateDecision(
   deps: ApplyFormerMemberReadOnlyDeps = {},
 ): Promise<PatternMembershipGateDecision> {
+  if (isLocalPatternTestingEnabled()) {
+    return decidePatternMembershipGate(localPatternTestingAccess());
+  }
+
+  if (isHostedSetInSleeveDevTesting()) {
+    return decidePatternMembershipGate(setInSleeveDevTestingAccess());
+  }
+
   if (typeof window === "undefined") {
     return decidePatternMembershipGate(
       {

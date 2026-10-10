@@ -29,7 +29,11 @@ export default async (req) => {
 
   try {
     const store = getProjectsStore();
-    const projects = await listProjectSummaries(store, family, access.userId);
+    const listed = await listProjectSummaries(store, family, access.userId);
+    const projects =
+      access.devTest === "set-in-sleeve"
+        ? listed.filter((project) => project?.patternSystem === "set-in-sleeve")
+        : listed;
     return withCors(
       jsonResponse({
         ok: true,
