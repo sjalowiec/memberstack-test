@@ -4255,6 +4255,47 @@ table {
     ensureSleevelessVideoModal();
     const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
     bindSleevelessVideoHelp(videoHelpRoot);
+
+    const backArmholeLocalChartStartRc = Number.isFinite(result?.debug?.backNecklineStartLocalRC)
+      ? Math.max(0, Math.floor(result.debug.backNecklineStartLocalRC))
+      : 0;
+    const backChecklistOptions = { includeCenterNecklineSetupRow: true };
+    const backActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
+      result.neckShoulderShapingChart,
+      result?.debug?.armholeStartRow,
+      backChecklistOptions,
+    );
+    const backChecklistTableOptions = {
+      activeSideOnly: true,
+      activeSideRcStart: backActiveSideRcStart,
+      includeCenterNecklineSetupRow: true,
+      hideCenterNecklineSetupRow: true,
+      tableHeading: "First Shoulder Checklist",
+      collapsibleDefaultOpen: false,
+    };
+    const backChartStartLabel = `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`;
+    const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
+    if (backChartTableHost && result.neckShoulderShapingChart) {
+      backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
+        result.neckShoulderShapingChart,
+        "ns-shaping-chart-back",
+        neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back", false),
+        backChecklistTableOptions,
+      );
+    }
+    window.kbmNeckShoulderChartPrintContext = {
+      back: {
+        chart: result.neckShoulderShapingChart,
+        idPrefix: "ns-shaping-chart-back",
+        introHtml: neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back"),
+        options: backChecklistTableOptions,
+      },
+    };
+    hydrateGlossaryTooltipPlaceholders(mount);
+    mountNecklineChartPrintInHeader(
+      "neckline-shoulder-chart-print-area",
+      "neckline-shoulder-chart-print-btn",
+    );
     setupNecklineChartPrint(
       "neckline-shoulder-chart-print-btn",
       "neckline-shoulder-chart-print-area",

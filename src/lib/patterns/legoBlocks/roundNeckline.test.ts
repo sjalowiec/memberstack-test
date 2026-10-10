@@ -422,6 +422,26 @@ describe("shallow round-neck written instructions", () => {
     );
   });
 
+  it("set-in setup names the center and the opposite shoulder as separate ranges", () => {
+    const plan = calculateBackRoundNecklinePlan({
+      necklineStitches: 36,
+      necklineDepthRows: 10,
+    });
+    const lines = roundNeckBackShallowSleevelessSummaryWrittenLines(plan, {
+      bodyWidthStitches: 100,
+      necklineStartRcLabel: "RC:049",
+      disjointHoldRanges: true,
+    });
+    const plain = lines.join("\n").replace(/<[^>]+>/g, "");
+    expect(plain).toMatch(/Place center neckline needles L9 through R9 in hold \(18 stitches total\)/);
+    expect(plain).toMatch(/Put the opposite shoulder needles L50 through L10 into hold \(41 stitches total\)/);
+    expect(plain).toMatch(/Work the first shoulder on needles R10 through R50 \(41 stitches total\)/);
+    expect(plain).not.toMatch(/Put needles L\d+ through R\d+ into hold/);
+    expect(plain).toContain("Use the checklist below for row-by-row neckline and shoulder shaping.");
+    expect(plain).not.toMatch(/^RIGHT SIDE$/im);
+    expect(plain).not.toMatch(/Scrap off or bind off the remaining (right|left) shoulder stitches/i);
+  });
+
   it("roundNeckBackBothEdgesWrittenLines summarizes symmetric hold per edge", () => {
     const plan = calculateBackRoundNecklinePlan({
       necklineStitches: 36,

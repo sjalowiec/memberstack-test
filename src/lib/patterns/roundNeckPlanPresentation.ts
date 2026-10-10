@@ -259,6 +259,12 @@ function roundNeckBackShallowNeedleExecutionLines(
 /** Armhole-local RC label for sleeveless back-neck summary (e.g. `RC:049`). */
 export type RoundNeckBackShallowSleevelessSummaryOptions = RoundNeckBackShallowExecutionOptions & {
   necklineStartRcLabel?: string;
+  /**
+   * Set-in sleeve only. State the center hold and the opposite shoulder as two ranges that do
+   * not include each other. The combined first-side hold used by the sleeveless summary includes
+   * the center needles already named in the previous sentence.
+   */
+  disjointHoldRanges?: boolean;
 };
 
 const SLEEVELESS_BACK_NECK_CHECKLIST_LINE =
@@ -295,6 +301,19 @@ export function roundNeckBackShallowSleevelessSummaryWrittenLines(
   const rightWorkRangeHtml = formatNeedleRangeHtml(
     formatNeedleRangeThrough(layout.rightShoulder.start, layout.rightShoulder.end),
   );
+  const leftShoulderRangeHtml = formatNeedleRangeHtml(
+    formatNeedleRangeThrough(layout.leftShoulder.start, layout.leftShoulder.end),
+  );
+
+  if (options?.disjointHoldRanges === true) {
+    return [
+      ...(rcLine ? [rcLine] : []),
+      `Place center neckline needles ${centerRangeHtml} in hold${formatStitchCountValidation(counts.center)}.`,
+      `Put the opposite shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
+      `Work the first shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
+      checklistLine,
+    ];
+  }
 
   return [
     ...(rcLine ? [rcLine] : []),

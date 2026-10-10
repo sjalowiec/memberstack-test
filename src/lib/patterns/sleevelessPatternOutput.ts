@@ -1694,6 +1694,8 @@ function backNecklineShoulderSummaryParagraphs(args: {
   firstArmholeRC?: number | null;
   /** When false, omit the lifeline reminder (cardigan half fronts). Defaults to true. */
   includeLifelineReminder?: boolean;
+  /** Set-in sleeve: center and opposite-shoulder holds are named separately. */
+  disjointHoldRanges?: boolean;
 }): string[] | null {
   let leftS: number | undefined;
   let rightS: number | undefined;
@@ -1748,6 +1750,7 @@ function backNecklineShoulderSummaryParagraphs(args: {
     lines = roundNeckBackShallowSleevelessSummaryWrittenLines(args.backRoundNeckPlan, {
       bodyWidthStitches: args.stitchesAfterArmhole ?? 0,
       necklineStartRcLabel,
+      disjointHoldRanges: args.disjointHoldRanges,
     });
   } else {
     lines = ["Use the checklist below for row-by-row neckline and shoulder shaping."];
@@ -1888,6 +1891,8 @@ export function buildSleevelessBackDisplayRows(args: {
   alineBodyShaping?: SleevelessAlineBodyShapingPlan | null;
   /** Cardigan left front: one armhole edge only; back/pullover use both side edges. */
   alineShapingEdgeScope?: SleevelessAlineShapingEdgeScope;
+  /** Set-in sleeve back: do not repeat the center needles inside the opposite-shoulder hold. */
+  disjointHoldRanges?: boolean;
 }): SleevelessPatternDisplayRow[] {
   const rows: SleevelessPatternDisplayRow[] = [];
   rows.push({ kind: "piece", title: "BACK" });
@@ -2321,6 +2326,7 @@ export function buildSleevelessBackDisplayRows(args: {
       backRoundNeckPlan: args.backRoundNeckPlan,
       backNecklineStartRC: args.backNecklineStartRC,
       firstArmholeRC: args.firstArmholeRC,
+      disjointHoldRanges: args.disjointHoldRanges,
     });
     rows.push(
       ...sleevelessBackNecklineSummaryWithVideoTipRows({
@@ -2348,6 +2354,7 @@ export function buildSleevelessBackDisplayRows(args: {
       backRoundNeckPlan: args.backRoundNeckPlan,
       backNecklineStartRC: args.backNecklineStartRC,
       firstArmholeRC: args.firstArmholeRC,
+      disjointHoldRanges: args.disjointHoldRanges,
     });
     rows.push(
       ...sleevelessBackNecklineSummaryWithVideoTipRows({
@@ -4053,6 +4060,7 @@ export function generateSleevelessBackPattern(
     shoulderStitches,
     alineBodyShaping,
     backRoundNeckPlan,
+    disjointHoldRanges: options?.useSetInArmhole === true,
   });
 
   const cardiganFrontAlineShaping =
