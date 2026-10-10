@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { MEMBERSHIPS } from "../../config/memberships";
 import { getOpenPatternHrefForProject } from "./customPatternProjectNavigation";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
+import { buildDropShoulderSleeveShapingChartRows } from "./dropShoulderSleeveShapingChart";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { withDropShoulderConstructionAuthored } from "./patternConstructionIdentity";
 import {
@@ -17,6 +18,8 @@ import {
 } from "./sleevelessPatternFinishingHtml";
 import { sleevelessFinishingFromPattern } from "./sleevelessPatternFinishing";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
+import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import {
   canCreatePatternForSystem,
   canEditPatternSettingsForSystem,
@@ -155,9 +158,86 @@ describe("set-in sleeve pattern choices", () => {
     expect(overview).toContain("separate from the cuff-to-upper-arm length");
     expect(back).toContain("Bind off");
     expect(back).not.toMatch(/decrease 1 stitch at each armhole edge every other row/i);
-    expect(sleeve).toContain("Make 2.");
-    expect(sleeve).toContain("Increase 1 stitch at each side");
+    expect(sleeve).toContain("Make 2 sleeves.");
+    expect(sleeve).toContain("Increase 1 stitch at each side every");
+    expect(sleeve).toMatch(/\(RC:/);
     expect(sleeve).toContain("Sleeve-cap height");
+    expect(result.sleeveDisplayRows.map((row) => (row.kind === "section" ? row.title : ""))).toEqual(
+      expect.arrayContaining(["CUFF", "SLEEVE BODY", "SLEEVE SHAPING CHART", "SLEEVE CAP"]),
+    );
+    const sectionTitles = result.sleeveDisplayRows
+      .filter((row) => row.kind === "section")
+      .map((row) => (row.kind === "section" ? row.title : ""));
+    expect(sectionTitles).toEqual([
+      "CUFF",
+      "SLEEVE BODY",
+      "SLEEVE SHAPING CHART",
+      "SLEEVE CAP",
+      "SLEEVE CAP SHAPING CHART",
+    ]);
+    const chartBlock = result.sleeveDisplayRows.find(
+      (row) => row.kind === "block" && row.sleeveShapingChartRows && row.sleeveShapingChartRows.length > 0,
+    );
+    expect(chartBlock && chartBlock.kind === "block" ? chartBlock.sleeveShapingChartRows : []).toEqual(
+      buildDropShoulderSleeveShapingChartRows({
+        topSts: result.sleevePiece!.topSts,
+        wristSts: result.sleevePiece!.wristSts,
+        cuffRows: result.sleevePiece!.cuffRows,
+        sleeveBodyRows: result.sleevePiece!.sleeveBodyRows,
+        sleeveTotalRows: result.sleevePiece!.sleeveTotalRows,
+        direction: "cuff-up",
+      }).filter((row) => row.stitchesRemaining > 0),
+    );
+    const cuffBlock = result.sleeveDisplayRows.find(
+      (row, index) =>
+        row.kind === "block" &&
+        result.sleeveDisplayRows
+          .slice(0, index)
+          .some((earlier) => earlier.kind === "section" && earlier.title === "CUFF") &&
+        !result.sleeveDisplayRows
+          .slice(0, index)
+          .some((earlier) => earlier.kind === "section" && earlier.title === "SLEEVE BODY"),
+    );
+    expect(cuffBlock && cuffBlock.kind === "block" ? cuffBlock.stitchCount : 0).toBe(
+      result.sleevePiece?.wristSts,
+    );
+    const capStart = result.sleeveDisplayRows.findIndex(
+      (row) => row.kind === "section" && row.title === "SLEEVE CAP",
+    );
+    const capStitchBlock = result.sleeveDisplayRows
+      .slice(capStart + 1)
+      .find((row) => row.kind === "block" && row.stitchCount !== undefined);
+    expect(capStitchBlock && capStitchBlock.kind === "block" ? capStitchBlock.stitchCount : 0).toBe(
+      result.sleevePiece?.topSts,
+    );
+    const html = renderPatternDisplayRowsHtml(result.sleeveDisplayRows, { pieceSectionId: "sleeve" });
+    expect(html).toContain("ns-shaping-chart__row-check");
+    expect(html).toContain("SLEEVE SHAPING CHART");
+    expect(html).toContain("SLEEVE CAP SHAPING CHART");
+    expect(html).toContain('data-chart-id="drop-shoulder-sleeve-shaping-chart-sleeve"');
+    expect(html).toContain('data-chart-id="set-in-sleeve-cap-shaping-chart-sleeve"');
+    expect(html).toContain("data-chart-progress-show-completed");
+    expect(html).toContain("data-chart-progress-reset");
+    expect(html).not.toContain("Bind off loosely or scrap off");
+    expect(html).not.toContain("Knit these rows even");
+    const printHtml = renderSleevelessPrintPieceHtml(result.sleeveDisplayRows, "", "sleeve");
+    expect(printHtml).toContain("ns-shaping-chart__row-check");
+    expect(printHtml).toContain('data-chart-id="set-in-sleeve-cap-shaping-chart-sleeve"');
+    expect(printHtml).toContain('type="checkbox"');
+    const capChart = result.sleeveDisplayRows.find(
+      (row) => row.kind === "block" && row.sleeveShapingChartId === "set-in-sleeve-cap-shaping-chart",
+    );
+    const capRows = capChart && capChart.kind === "block" ? capChart.sleeveShapingChartRows ?? [] : [];
+    const cap = result.sleeveCap;
+    expect(capRows.length).toBeGreaterThan(0);
+    expect(cap).not.toBeNull();
+    expect(capRows[capRows.length - 1]).toMatchObject({
+      rc: (result.sleevePiece?.sleeveBodyRows ?? 0) + (cap?.totals.capRows ?? -1),
+      stitchesRemaining: 0,
+    });
+    expect(capRows[capRows.length - 1]?.action).toBe(
+      `Bind off the remaining ${cap?.totals.finalStitches ?? 0} stitches`,
+    );
     expect(result.sleeveCap?.ok).toBe(true);
     expect(result.warnings.join(" ")).not.toMatch(/bind-off does not match/i);
     expect(result.setInArmholePlan?.appliesTo).toBe("front-and-back");
@@ -548,4 +628,3 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(printCss).toContain("display: block !important;");
   });
 });
-

@@ -88,7 +88,9 @@ function renderPrintBlockRow(
   if (row.sleeveShapingChartRows && row.sleeveShapingChartRows.length > 0) {
     leftBits.push(
       renderDropShoulderSleeveShapingChartHtml(row.sleeveShapingChartRows, {
-        chartId: `drop-shoulder-sleeve-shaping-chart-${pieceKey}`,
+        chartId: row.sleeveShapingChartId
+          ? `${row.sleeveShapingChartId}-${pieceKey}`
+          : `drop-shoulder-sleeve-shaping-chart-${pieceKey}`,
         showTitle: false,
       }),
     );

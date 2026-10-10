@@ -620,6 +620,11 @@ export type SleevelessPatternDisplayRow =
         edge: string;
         stitchesRemaining: number;
       }[];
+      /**
+       * When set, the checklist id is `${sleeveShapingChartId}-${piece}`.
+       * Omit it to keep the Drop Shoulder sleeve chart id.
+       */
+      sleeveShapingChartId?: string;
       /** Total stitches on the piece after this block; shown in the right column when defined */
       stitchCount?: number;
       /**

@@ -93,7 +93,9 @@ export function renderPatternDisplayBlockHtml(
   if (row.sleeveShapingChartRows && row.sleeveShapingChartRows.length > 0) {
     leftBits.push(
       renderDropShoulderSleeveShapingChartHtml(row.sleeveShapingChartRows, {
-        chartId: `drop-shoulder-sleeve-shaping-chart-${pieceSectionId}`,
+        chartId: row.sleeveShapingChartId
+          ? `${row.sleeveShapingChartId}-${pieceSectionId}`
+          : `drop-shoulder-sleeve-shaping-chart-${pieceSectionId}`,
         showTitle: false,
       }),
     );

@@ -31,8 +31,8 @@ import {
 } from "./sleevelessFrontDiagramSrc";
 import { calculateSetInSleeveCap, type SetInSleeveCapSuccess } from "./setInSleeve/sleeveCapMath";
 import {
+  buildSetInCuffUpSleevePresentation,
   setInArmholeInstructionLines,
-  setInCuffUpSleeveInstructionLines,
   setInOneEdgeArmholeInstructionLines,
 } from "./setInSleeve/setInSleeveInstructions";
 import type { SetInArmholePlan } from "./setInSleeve/setInArmhole";
@@ -283,25 +283,14 @@ export function generateSetInSleevePattern(
     if (piece.topSts !== cap.sleeve.upperArmStitches) {
       warnings.push("Sleeve stitches at the upper arm do not match the sleeve-cap starting stitches.");
     }
-    const sleeveLines = setInCuffUpSleeveInstructionLines({
+    sleeveDisplayRows = buildSetInCuffUpSleevePresentation({
       wristStitches: piece.wristSts,
       upperArmStitches: piece.topSts,
       cuffRows: piece.cuffRows,
       cuffInches,
       rowsCuffToUpperArm: piece.sleeveBodyRows,
       cap,
-    });
-    sleeveDisplayRows = sleeveLines.map((line) => ({
-      kind: "block" as const,
-      paragraphs: [line],
-      stitchCount: line.includes("upper") || /stitches remain/.test(line) ? piece.topSts : undefined,
-    }));
-    sleeveDisplayRows.push({
-      kind: "block",
-      paragraphs: [
-        `Sleeve-cap height is ${cap.totals.capHeightInches.toFixed(2)} in and is not included in the cuff-to-upper-arm length.`,
-      ],
-    });
+    }).displayRows;
   }
 
   const available = positive(section(stamped.yarnGaugeMachine).availableNeedles);

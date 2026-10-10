@@ -8,7 +8,10 @@
  * wording are not written here.
  */
 
-import { CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET } from "../legoBlocks/cuffUpSleeveRowCounter";
+import {
+  CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
+  cuffUpSleeveBodyRowCounterResetBlock,
+} from "../legoBlocks/cuffUpSleeveRowCounter";
 import {
   NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE,
   neckbandPickupInstructionFromDebug,
@@ -20,19 +23,28 @@ import {
 } from "../legoBlocks/neckShoulderExecution";
 import { isShallowHoldRoundPlan, type RoundNecklinePlanResult } from "../legoBlocks/roundNeckline";
 import {
+  DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
+  buildDropShoulderSleeveShapingChartRows,
+  dropShoulderSleevePreShapingSpan,
   dropShoulderSleeveShapingRcSequence,
+  type DropShoulderSleeveShapingChartRow,
 } from "../dropShoulderSleeveShapingChart";
-import { dropShoulderSleeveShapingPlan } from "../dropShoulderSleeveShaping";
+import {
+  dropShoulderSleeveShapingPlan,
+  dropShoulderSleeveShapingPlanForDirection,
+  formatDropShoulderSleeveShapingWrittenLines,
+} from "../dropShoulderSleeveShaping";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
 import { roundNeckBackShallowSleevelessSummaryWrittenLines } from "../roundNeckPlanPresentation";
 import {
   ARMHOLE_RC_FROM_RESET_NOTE,
+  castOnMethodQuickTipInnerHtml,
   formatCenterNecklineBindOffShapingExecution,
   formatCenterNecklineHoldShapingExecution,
   formatRcColon,
+  type SleevelessPatternDisplayRow,
 } from "../sleevelessPatternOutput";
-import type { SetInArmholePlan } from "./setInArmhole";
 import type { SetInArmholePlan } from "./setInArmhole";
 import type { SetInSleeveCapSuccess } from "./sleeveCapMath";
 import type { SetInSleeveSweaterSuccess } from "./setInSleeveSweaterMath";
@@ -65,6 +77,17 @@ type CountLine = {
   text: string;
   stitches?: number;
   rows?: number;
+  /** Counter reading shown in the instruction column. */
+  displayRc?: number;
+};
+
+export const SET_IN_SLEEVE_CAP_SHAPING_CHART_ID = "set-in-sleeve-cap-shaping-chart";
+
+export type SetInSleeveCapChartRow = {
+  rc: number;
+  action: string;
+  edge: string;
+  stitchesRemaining: number;
 };
 
 const UNSUPPORTED = [
@@ -271,20 +294,53 @@ export function setInOneEdgeArmholeInstructionLines(
   return lines;
 }
 
-export function setInCuffUpSleeveInstructionLines(input: {
+type SetInCuffUpSleeveInput = {
   wristStitches: number;
   upperArmStitches: number;
   cuffRows: number;
   cuffInches: number;
   rowsCuffToUpperArm: number;
   cap: SetInSleeveCapSuccess;
-}): string[] {
-  const cuffUp = dropShoulderSleeveShapingPlan({
-    topSts: input.upperArmStitches,
-    wristSts: input.wristStitches,
-    sleeveBodyRows: input.rowsCuffToUpperArm,
-  });
-  const shapingRcs = dropShoulderSleeveShapingRcSequence({
+};
+
+type SetInCuffUpSleevePresentation = {
+  blocks: SetInInstructionBlock[];
+  displayRows: SleevelessPatternDisplayRow[];
+  shapingRcs: number[];
+};
+
+function knitEvenSentence(rows: number): string {
+  if (rows <= 0) return "";
+  return rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
+}
+
+function stripInstructionTags(line: string): string {
+  return line.replace(/<[^>]+>/g, "");
+}
+
+/** Even rows after the last shaping RC. The cap still begins at the sleeve-body end RC. */
+function rowsAfterLastSleeveShaping(endRc: number, lastShapingRc: number): number {
+  return endRc - (lastShapingRc + 1);
+}
+
+function afterFinalSleeveShapingLine(
+  verb: "increase" | "decrease",
+  afterRows: number,
+  endRc: number,
+): string {
+  if (afterRows <= 0) return "";
+  const span = afterRows === 1 ? "1 row even" : `${afterRows} rows even`;
+  return `After the final ${verb}, knit ${span} in pattern to ${formatRcColon(endRc)}.`;
+}
+
+/**
+ * Drop-shoulder taper checklist without the upper-arm bind-off row.
+ * Set-in sleeves continue into the sleeve cap at that RC.
+ */
+function setInSleeveTaperChartRows(
+  input: SetInCuffUpSleeveInput,
+): DropShoulderSleeveShapingChartRow[] {
+  const rows = buildDropShoulderSleeveShapingChartRows({
     topSts: input.upperArmStitches,
     wristSts: input.wristStitches,
     cuffRows: input.cuffRows,
@@ -292,42 +348,217 @@ export function setInCuffUpSleeveInstructionLines(input: {
     sleeveTotalRows: input.cuffRows + input.rowsCuffToUpperArm,
     direction: "cuff-up",
   });
-  const lines = [
-    "Make 2.",
+  const last = rows[rows.length - 1];
+  if (last && last.stitchesRemaining === 0 && /bind off/i.test(last.action)) {
+    return rows.slice(0, -1);
+  }
+  return rows;
+}
+
+function chartLine(row: DropShoulderSleeveShapingChartRow): string {
+  return `${formatRcColon(row.rc)} ${row.action}. ${row.edge}. ${row.stitchesRemaining} ${stitchWord(row.stitchesRemaining)}.`;
+}
+
+function capDisplayBlock(line: CountLine): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
+  const rcMatch = /^RC:\s*(\d+)\s+([\s\S]+)$/.exec(line.text.trim());
+  const remainMatch = /(-?\d+) stitches remain/.exec(line.text);
+  const rc = line.displayRc ?? (rcMatch ? Number(rcMatch[1]) : undefined);
+  const stitchCount = remainMatch
+    ? Number(remainMatch[1])
+    : line.stitches !== undefined && line.stitches > 0
+      ? line.stitches
+      : undefined;
+  return {
+    kind: "block",
+    ...(rc !== undefined ? { rc: formatRcColon(rc) } : {}),
+    paragraphs: [rcMatch ? rcMatch[2]! : line.text],
+    ...(stitchCount !== undefined ? { stitchCount } : {}),
+  };
+}
+
+/**
+ * Cuff-up sleeve presentation in the Drop Shoulder section order.
+ * Increase and decrease row-counter readings stay on the shared cuff-up schedule.
+ */
+export function buildSetInCuffUpSleevePresentation(
+  input: SetInCuffUpSleeveInput,
+): SetInCuffUpSleevePresentation {
+  const chartInput = {
+    topSts: input.upperArmStitches,
+    wristSts: input.wristStitches,
+    cuffRows: input.cuffRows,
+    sleeveBodyRows: input.rowsCuffToUpperArm,
+    sleeveTotalRows: input.cuffRows + input.rowsCuffToUpperArm,
+    direction: "cuff-up" as const,
+  };
+  const plan = dropShoulderSleeveShapingPlanForDirection(
+    {
+      topSts: input.upperArmStitches,
+      wristSts: input.wristStitches,
+      sleeveBodyRows: input.rowsCuffToUpperArm,
+    },
+    "cuff-up",
+  );
+  const shapingRcs = dropShoulderSleeveShapingRcSequence(chartInput);
+  const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
+  const writtenShaping = formatDropShoulderSleeveShapingWrittenLines(
+    plan.shapingDirection,
+    plan.steps,
+    shapingRcs,
+  );
+  const plainShaping = writtenShaping.map(stripInstructionTags);
+  const taperRows = setInSleeveTaperChartRows(input);
+  const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm);
+  const capLines = capModel.lines.map((line) => line.text);
+  const cuffEven = knitEvenSentence(input.cuffRows);
+  const cuffDepth = `Cuff, ${inches(input.cuffInches)}.`;
+  const cuffSentence = cuffEven ? `${cuffEven} ${cuffDepth}` : cuffDepth;
+
+  const cuffLines = [
+    "Make 2 sleeves.",
     `${formatRcColon(0)} Cast on ${input.wristStitches} ${stitchWord(input.wristStitches)} for the sleeve cuff.`,
-    knitInPatternTo(0, input.cuffRows) + ` Cuff, ${inches(input.cuffInches)}.`,
+    `${formatRcColon(0)} ${cuffSentence}`,
     CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
-    `${formatRcColon(0)} Sleeve body. ${remain(input.wristStitches)}`,
   ];
+
+  const sleeveBodyLines: string[] = [];
+  const lastShapingRc = shapingRcs[shapingRcs.length - 1];
+  const afterLine =
+    lastShapingRc === undefined
+      ? ""
+      : afterFinalSleeveShapingLine(
+          plan.shapingDirection,
+          rowsAfterLastSleeveShaping(input.rowsCuffToUpperArm, lastShapingRc),
+          input.rowsCuffToUpperArm,
+        );
   if (shapingRcs.length === 0) {
-    lines.push(
-      `${knitInPatternTo(0, input.rowsCuffToUpperArm)} ${remain(input.upperArmStitches)}`,
+    const straight = knitEvenSentence(input.rowsCuffToUpperArm);
+    sleeveBodyLines.push(
+      `${formatRcColon(0)} ${straight ? `${straight} ` : ""}${remain(input.upperArmStitches)}`.trim(),
     );
   } else {
-    const first = shapingRcs[0]!;
-    const last = shapingRcs[shapingRcs.length - 1]!;
-    if (first > 0) {
-      lines.push(
-        `${knitInPatternTo(0, first)} The counter reads ${formatRcColon(first)} before the next row.`,
-      );
+    if (preShaping.straightRows > 0) {
+      sleeveBodyLines.push(`${formatRcColon(preShaping.bodyStartRc)} ${knitEvenSentence(preShaping.straightRows)}`);
     }
-    const stepPhrase = cuffUp.steps
-      .filter((step) => step.times > 0 && step.rows > 0)
-      .map((step) => `every ${step.rows} ${rowWord(step.rows)} ${step.times} ${step.times === 1 ? "time" : "times"}`)
-      .join(", then ");
-    lines.push(
-      `${formatRcColon(first)} Increase 1 stitch at each side ${stepPhrase}. Work each increase when the counter reads ${rcList(shapingRcs)}, before knitting that row. Knit the rows between those readings even.`,
+    sleeveBodyLines.push(
+      `${formatRcColon(preShaping.firstShapingRc ?? 0)} ${DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE}`,
     );
-    const afterStart = last + 1;
-    const afterRows = input.rowsCuffToUpperArm - afterStart;
-    if (afterRows > 0) {
-      lines.push(`${knitInPatternTo(afterStart, afterRows)} ${remain(input.upperArmStitches)}`);
-    } else {
-      lines.push(`${formatRcColon(input.rowsCuffToUpperArm)} ${remain(input.upperArmStitches)}`);
-    }
+    sleeveBodyLines.push(...plainShaping);
+    if (afterLine) sleeveBodyLines.push(`${afterLine} ${remain(input.upperArmStitches)}`);
+    else sleeveBodyLines.push(`${formatRcColon(input.rowsCuffToUpperArm)} ${remain(input.upperArmStitches)}`);
   }
-  lines.push(...sleeveCapLines(input.cap, input.rowsCuffToUpperArm).map((line) => line.text));
-  return lines;
+
+  const chartLines =
+    taperRows.length > 0
+      ? taperRows.map(chartLine)
+      : ["There is no side shaping on this sleeve. Continue to the sleeve cap."];
+
+  const blocks: SetInInstructionBlock[] = [
+    { heading: "CUFF", lines: cuffLines },
+    { heading: "SLEEVE BODY", lines: sleeveBodyLines },
+    { heading: "SLEEVE SHAPING CHART", lines: chartLines },
+    { heading: "SLEEVE CAP", lines: capLines },
+    { heading: "SLEEVE CAP SHAPING CHART", lines: capModel.chartRows.map(chartLine) },
+  ];
+
+  const displayRows: SleevelessPatternDisplayRow[] = [
+    { kind: "piece", title: "SLEEVE" },
+    { kind: "block", paragraphs: ["Make 2 sleeves."] },
+    {
+      kind: "block",
+      rc: formatRcColon(0),
+      paragraphs: [`Cast on ${input.wristStitches} stitches for the sleeve cuff.`],
+      stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+      ...(input.wristStitches > 0
+        ? {
+            tipHtml: castOnMethodQuickTipInnerHtml(),
+            tipHtmlIsFull: true,
+            tipPresentation: "quick-tip" as const,
+            tipId: "set-in-sleeve-cast-on-cuff",
+          }
+        : {}),
+    },
+    { kind: "section", title: "CUFF" },
+    {
+      kind: "block",
+      rc: formatRcColon(0),
+      paragraphs: [cuffSentence],
+      stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+    },
+    cuffUpSleeveBodyRowCounterResetBlock(),
+    { kind: "section", title: "SLEEVE BODY" },
+  ];
+
+  if (shapingRcs.length === 0) {
+    const straight = knitEvenSentence(input.rowsCuffToUpperArm);
+    displayRows.push({
+      kind: "block",
+      rc: formatRcColon(0),
+      paragraphs: [straight, remain(input.upperArmStitches)].filter((line) => line.length > 0),
+      stitchCount: input.upperArmStitches > 0 ? input.upperArmStitches : undefined,
+    });
+  } else {
+    if (preShaping.straightRows > 0) {
+      displayRows.push({
+        kind: "block",
+        rc: formatRcColon(preShaping.bodyStartRc),
+        paragraphs: [knitEvenSentence(preShaping.straightRows)],
+        stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+      });
+    }
+    displayRows.push({
+      kind: "block",
+      rc: formatRcColon(preShaping.firstShapingRc ?? 0),
+      paragraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...plainShaping],
+      trustedParagraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...writtenShaping],
+      stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
+    });
+    displayRows.push({
+      kind: "block",
+      rc: formatRcColon(afterLine ? (lastShapingRc ?? 0) + 1 : input.rowsCuffToUpperArm),
+      paragraphs: [afterLine, remain(input.upperArmStitches)].filter((line) => line.length > 0),
+      stitchCount: input.upperArmStitches > 0 ? input.upperArmStitches : undefined,
+    });
+  }
+
+  displayRows.push({ kind: "section", title: "SLEEVE SHAPING CHART" });
+  if (taperRows.length > 0) {
+    displayRows.push({
+      kind: "block",
+      paragraphs: [],
+      sleeveShapingChartRows: taperRows,
+    });
+  } else {
+    displayRows.push({
+      kind: "block",
+      paragraphs: ["There is no side shaping on this sleeve. Continue to the sleeve cap."],
+    });
+  }
+
+  displayRows.push({ kind: "section", title: "SLEEVE CAP" });
+  displayRows.push(...capModel.lines.map(capDisplayBlock));
+  displayRows.push({
+    kind: "block",
+    paragraphs: [
+      `Sleeve-cap height is ${input.cap.totals.capHeightInches.toFixed(2)} in and is not included in the cuff-to-upper-arm length.`,
+    ],
+  });
+  displayRows.push({ kind: "section", title: "SLEEVE CAP SHAPING CHART" });
+  displayRows.push({
+    kind: "block",
+    paragraphs: [],
+    sleeveShapingChartRows: capModel.chartRows,
+    sleeveShapingChartId: SET_IN_SLEEVE_CAP_SHAPING_CHART_ID,
+  });
+
+  return { blocks, displayRows, shapingRcs };
+}
+
+export function setInCuffUpSleeveInstructionLines(input: SetInCuffUpSleeveInput): string[] {
+  return buildSetInCuffUpSleevePresentation(input).blocks.flatMap((block) => [
+    ...(block.heading ? [block.heading] : []),
+    ...block.lines,
+  ]);
 }
 
 function necklineInstructionLines(
@@ -396,26 +627,86 @@ function bodyLines(result: SetInSleeveSweaterSuccess, piece: "back" | "front"): 
   return lines;
 }
 
-function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLine[] {
+function padRc(rc: number): string {
+  return String(Math.max(0, Math.floor(rc))).padStart(3, "0");
+}
+
+function parentheticalRcReadings(rows: readonly number[]): string {
+  return `(RC: ${rows.map(padRc).join(", ")})`;
+}
+
+function zoneLabel(name: string): string {
+  return `${name[0]!.toUpperCase()}${name.slice(1)} cap`;
+}
+
+/**
+ * One underarm or slope bind-off is worked at the beginning of a row, first one side, then the other.
+ * The calculation does not name a carriage side.
+ */
+function recordBindOffRows(
+  chartRows: SetInSleeveCapChartRow[],
+  startRc: number,
+  startStitches: number,
+  stitchesEachSide: readonly number[],
+): void {
+  let rc = startRc;
+  let stitches = startStitches;
+  bothEdgeBindOffRows(stitchesEachSide).forEach((amount, index) => {
+    stitches -= amount;
+    chartRows.push({
+      rc,
+      action: `Bind off ${amount} ${stitchWord(amount)}`,
+      edge: index % 2 === 0 ? "One side" : "Other side",
+      stitchesRemaining: stitches,
+    });
+    rc += 1;
+  });
+}
+
+function sleeveCapDecreaseSentence(
+  label: string,
+  stitchesEachSide: number,
+  everyRows: number,
+  times: number,
+  actionRows: readonly number[],
+): string {
+  const interval = everyRows <= 1 ? "every row" : `every ${everyRows} rows`;
+  const timesLabel = times === 1 ? "time" : "times";
+  return `${label}: Decrease ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at each end ${interval}, ${times} ${timesLabel}. ${parentheticalRcReadings(actionRows)}`;
+}
+
+/**
+ * Sleeve-cap wording and checklist from the approved cap schedule.
+ * Decrease RC readings are the counter before that decrease row.
+ * The final bind-off is recorded at that same counter and does not add a knitted row.
+ */
+function buildSleeveCapInstructionModel(
+  cap: SetInSleeveCapSuccess,
+  capStartRc: number,
+): { lines: CountLine[]; chartRows: SetInSleeveCapChartRow[] } {
   const lines: CountLine[] = [];
+  const chartRows: SetInSleeveCapChartRow[] = [];
   let rc = capStartRc;
   let stitches = cap.sleeve.upperArmStitches;
   lines.push({
-    text: `${formatRcColon(rc)} Begin the sleeve cap. The counter reads ${formatRcColon(rc)} before the next row. ${remain(stitches)}`,
+    text: `${formatRcColon(rc)} Begin the sleeve cap. ${remain(stitches)}`,
     stitches,
     rows: 0,
   });
 
-  const bindOffs = groupedBindOffLines(rc, stitches, [
+  const underarmAmounts = [
     cap.sleeve.initialBindOffStitchesEachSide,
     ...cap.sleeve.stairStepBindOffsEachSide,
-  ]);
-  for (const text of bindOffs.lines) lines.push({ text, rows: 0 });
-  const bindOffRowTotal = bindOffs.rows;
-  if (lines.length > 1) {
-    lines[lines.length - 1]!.rows = bindOffRowTotal;
-    lines[lines.length - 1]!.stitches = bindOffs.stitches;
-  }
+  ];
+  const bindOffs = groupedBindOffLines(rc, stitches, underarmAmounts);
+  recordBindOffRows(chartRows, rc, stitches, underarmAmounts);
+  bindOffs.lines.forEach((text, index) => {
+    lines.push({
+      text,
+      rows: index === bindOffs.lines.length - 1 ? bindOffs.rows : 0,
+      stitches: index === bindOffs.lines.length - 1 ? bindOffs.stitches : undefined,
+    });
+  });
   rc = bindOffs.rc;
   stitches = bindOffs.stitches;
 
@@ -424,23 +715,29 @@ function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLi
     cap.workingCap.zones.middle,
     cap.workingCap.zones.upper,
   ]) {
+    const label = zoneLabel(zone.name);
     for (const step of zone.steps) {
-      const written = pairedDecreaseLine(
-        rc,
-        stitches,
-        step.stitchesEachSide,
-        step.everyRows,
-        step.times,
-        "sleeve-cap",
-      );
-      const zoneLabel = `${zone.name[0]!.toUpperCase()}${zone.name.slice(1)} cap`;
+      if (step.times <= 0 || step.everyRows <= 0 || step.stitchesEachSide <= 0) continue;
+      const actionRows = shapingActionRowNumbers(rc, step.times, step.everyRows);
+      let after = stitches;
+      for (const actionRc of actionRows) {
+        after -= step.stitchesEachSide * 2;
+        chartRows.push({
+          rc: actionRc,
+          action: `Decrease ${step.stitchesEachSide} ${stitchWord(step.stitchesEachSide)} at each end`,
+          edge: "Each end",
+          stitchesRemaining: after,
+        });
+      }
+      const rows = step.times * step.everyRows;
       lines.push({
-        text: written.text.replace("Decrease", `${zoneLabel}: decrease`),
-        stitches: written.stitches,
-        rows: written.rows,
+        text: sleeveCapDecreaseSentence(label, step.stitchesEachSide, step.everyRows, step.times, actionRows),
+        stitches: after,
+        rows,
+        displayRc: actionRows[0] ?? rc,
       });
-      rc = written.rc;
-      stitches = written.stitches;
+      rc += rows;
+      stitches = after;
     }
   }
 
@@ -448,10 +745,15 @@ function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLi
   for (const step of cap.upperSlope.steps) slopeAmounts.push(step.stitchesEachSide);
   if (slopeAmounts.length > 0) {
     const slope = groupedBindOffLines(rc, stitches, slopeAmounts);
+    recordBindOffRows(chartRows, rc, stitches, slopeAmounts);
     slope.lines[0] = `${slope.lines[0]} Upper slope.`;
-    for (const text of slope.lines) lines.push({ text, rows: 0 });
-    lines[lines.length - 1]!.rows = slope.rows;
-    lines[lines.length - 1]!.stitches = slope.stitches;
+    slope.lines.forEach((text, index) => {
+      lines.push({
+        text,
+        rows: index === slope.lines.length - 1 ? slope.rows : 0,
+        stitches: index === slope.lines.length - 1 ? slope.stitches : undefined,
+      });
+    });
     rc = slope.rc;
     stitches = slope.stitches;
   }
@@ -468,7 +770,17 @@ function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLi
     stitches: 0,
     rows: 0,
   });
-  return lines;
+  chartRows.push({
+    rc,
+    action: `Bind off the remaining ${cap.totals.finalStitches} ${stitchWord(cap.totals.finalStitches)}`,
+    edge: "All stitches",
+    stitchesRemaining: 0,
+  });
+  return { lines, chartRows };
+}
+
+function sleeveCapLines(cap: SetInSleeveCapSuccess, capStartRc: number): CountLine[] {
+  return buildSleeveCapInstructionModel(cap, capStartRc).lines;
 }
 
 function sleeveBodyRowAccount(endRc: number, shapingRcs: readonly number[]): number {
@@ -678,52 +990,23 @@ export function generateSetInSleeveInstructions(
     ],
   };
 
-  const sleeveBodyLines = [
-    "Make 2.",
-    `${formatRcColon(0)} Cast on ${result.sleeve.wristStitches} ${stitchWord(result.sleeve.wristStitches)} for the sleeve cuff.`,
-    knitInPatternTo(0, result.sleeve.cuffRows) + ` Cuff, ${inches(result.sleeve.cuffInches)}.`,
-    CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
-    `${formatRcColon(0)} Sleeve body. ${remain(result.sleeve.wristStitches)}`,
-  ];
-  if (shapingRcs.length === 0) {
-    sleeveBodyLines.push(
-      `${knitInPatternTo(0, result.sleeve.rowsCuffToUpperArm)} ${remain(result.sleeve.upperArmStitches)}`,
-    );
-  } else {
-    const first = shapingRcs[0]!;
-    const last = shapingRcs[shapingRcs.length - 1]!;
-    if (first > 0) {
-      sleeveBodyLines.push(
-        `${knitInPatternTo(0, first)} The counter reads ${formatRcColon(first)} before the next row.`,
-      );
-    }
-    const stepPhrase = cuffUp.steps
-      .filter((step) => step.times > 0 && step.rows > 0)
-      .map((step) => `every ${step.rows} ${rowWord(step.rows)} ${step.times} ${step.times === 1 ? "time" : "times"}`)
-      .join(", then ");
-    sleeveBodyLines.push(
-      `${formatRcColon(first)} Increase 1 stitch at each side ${stepPhrase}. Work each increase when the counter reads ${rcList(shapingRcs)}, before knitting that row. Knit the rows between those readings even.`,
-    );
-    const afterStart = last + 1;
-    const afterRows = result.sleeve.rowsCuffToUpperArm - afterStart;
-    if (afterRows > 0) {
-      sleeveBodyLines.push(
-        `${knitInPatternTo(afterStart, afterRows)} ${remain(result.sleeve.upperArmStitches)}`,
-      );
-    } else {
-      sleeveBodyLines.push(
-        `${formatRcColon(result.sleeve.rowsCuffToUpperArm)} ${remain(result.sleeve.upperArmStitches)}`,
-      );
-    }
+  const sleevePresentation = buildSetInCuffUpSleevePresentation({
+    wristStitches: result.sleeve.wristStitches,
+    upperArmStitches: result.sleeve.upperArmStitches,
+    cuffRows: result.sleeve.cuffRows,
+    cuffInches: result.sleeve.cuffInches,
+    rowsCuffToUpperArm: result.sleeve.rowsCuffToUpperArm,
+    cap: result.sleeveCap,
+  });
+  if (sleevePresentation.shapingRcs.join(",") !== shapingRcs.join(",")) {
+    checks.errors.push("Sleeve increase row-counter readings do not match the cuff-up schedule.");
+    checks.ok = false;
   }
 
   const sleeves: SetInInstructionSection = {
     id: "sleeves",
     title: "Sleeves",
-    blocks: [
-      { heading: "CUFF", lines: sleeveBodyLines },
-      { heading: "SLEEVE CAP", lines: capRecords.map((line) => line.text) },
-    ],
+    blocks: sleevePresentation.blocks,
   };
 
   const finishing: SetInInstructionSection = {

@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { dropShoulderSleeveShapingRcSequence } from "../dropShoulderSleeveShapingChart";
+import { formatParentheticalShapingRowNumbers } from "../evenShapingSchedule";
+import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
 import { formatRcColon } from "../sleevelessPatternOutput";
+import { renderSleevelessPrintPieceHtml } from "../sleevelessPatternPrintRender";
 import type { ChartRow } from "../sleevelessExpressSizeChartTypes";
 import {
+  buildSetInCuffUpSleevePresentation,
   generateSetInSleeveInstructions,
   setInSleeveInstructionSection,
   setInSleeveInstructionsPlainText,
 } from "./setInSleeveInstructions";
+import type { SetInSleeveCapSuccess } from "./sleeveCapMath";
 import { calculateSetInSleeveSweater, type SetInSleeveSweaterSuccess } from "./setInSleeveSweaterMath";
 
 const MISSES_1: ChartRow = {
@@ -87,6 +93,79 @@ function remainCounts(text: string): number[] {
   return [...text.matchAll(/(-?\d+) stitches remain/g)].map((match) => Number(match[1]));
 }
 
+function stitchWord(n: number): string {
+  return n === 1 ? "stitch" : "stitches";
+}
+
+/** Rebuild the cap checklist from the calculation, without using the instruction builder. */
+function expectedSleeveCapChart(cap: SetInSleeveCapSuccess, startRc: number) {
+  const rows: { rc: number; action: string; edge: string; stitchesRemaining: number }[] = [];
+  let rc = startRc;
+  let stitches = cap.sleeve.upperArmStitches;
+  const bindOff = (amount: number, side: "One side" | "Other side") => {
+    stitches -= amount;
+    rows.push({
+      rc,
+      action: `Bind off ${amount} ${stitchWord(amount)}`,
+      edge: side,
+      stitchesRemaining: stitches,
+    });
+    rc += 1;
+  };
+  for (const amount of [
+    cap.sleeve.initialBindOffStitchesEachSide,
+    ...cap.sleeve.stairStepBindOffsEachSide,
+  ]) {
+    bindOff(amount, "One side");
+    bindOff(amount, "Other side");
+  }
+  for (const zone of [
+    cap.workingCap.zones.lower,
+    cap.workingCap.zones.middle,
+    cap.workingCap.zones.upper,
+  ]) {
+    for (const step of zone.steps) {
+      for (let index = 0; index < step.times; index += 1) {
+        stitches -= step.stitchesEachSide * 2;
+        rows.push({
+          rc: rc + index * step.everyRows,
+          action: `Decrease ${step.stitchesEachSide} ${stitchWord(step.stitchesEachSide)} at each end`,
+          edge: "Each end",
+          stitchesRemaining: stitches,
+        });
+      }
+      rc += step.times * step.everyRows;
+    }
+  }
+  for (const step of cap.upperSlope.steps) {
+    bindOff(step.stitchesEachSide, "One side");
+    bindOff(step.stitchesEachSide, "Other side");
+  }
+  rc += cap.upperSlope.plainRows;
+  const stitchesBeforeFinal = stitches;
+  rows.push({
+    rc,
+    action: `Bind off the remaining ${cap.totals.finalStitches} ${stitchWord(cap.totals.finalStitches)}`,
+    edge: "All stitches",
+    stitchesRemaining: 0,
+  });
+  return { rows, finalRc: rc, stitchesBeforeFinal };
+}
+
+function parseCapChartLines(lines: string[]) {
+  return lines.map((line) => {
+    const match =
+      /^RC: (\d+) (.+)\. (One side|Other side|Each end|All stitches)\. (\d+) stitch(?:es)?\.$/.exec(line);
+    expect(match, line).not.toBeNull();
+    return {
+      rc: Number(match?.[1]),
+      action: match?.[2] ?? "",
+      edge: match?.[3] ?? "",
+      stitchesRemaining: Number(match?.[4]),
+    };
+  });
+}
+
 describe("set-in sleeve written instructions", () => {
   const alternate = pattern("misses", MISSES_1, 7, 10);
   const standard = pattern("men", MEN_4X, 4, 6);
@@ -153,9 +232,25 @@ describe("set-in sleeve written instructions", () => {
     expect(front).toContain("35 stitches on each side");
     expect(front).not.toContain("AT THE SAME TIME");
     expect(front).toContain("Bind off 5 stitches at the armhole edge.");
+    expect(sleeves).toContain("CUFF");
+    expect(sleeves).toContain("SLEEVE BODY");
+    expect(sleeves).toContain("SLEEVE SHAPING CHART");
+    expect(sleeves).toContain("SLEEVE CAP");
     expect(sleeves).toContain("Cast on");
     expect(sleeves).toContain("Reset row counter to RC 000.");
-    expect(sleeves).toContain("before knitting that row");
+    expect(sleeves).not.toContain("before knitting that row");
+    expect(sleeves).not.toContain("top-down");
+    const taperRcs = dropShoulderSleeveShapingRcSequence({
+      topSts: alternate.sleeve.upperArmStitches,
+      wristSts: alternate.sleeve.wristStitches,
+      cuffRows: alternate.sleeve.cuffRows,
+      sleeveBodyRows: alternate.sleeve.rowsCuffToUpperArm,
+      sleeveTotalRows: alternate.sleeve.rowsToUpperArm,
+      direction: "cuff-up",
+    });
+    expect(sleeves).toContain(formatParentheticalShapingRowNumbers(taperRcs).replace(/<[^>]+>/g, ""));
+    expect(sleeves).toMatch(/Increase 1 stitch at each side every \d+ rows \d+ times\./);
+    expect(sleeves).toContain(`Both sides. ${alternate.sleeve.upperArmStitches} stitches.`);
     expect(sleeves).toContain("82 stitches remain.");
     expect(sleeves).toContain(
       `${formatRcColon(alternate.sleeve.rowsCuffToUpperArm)} Bind off 6 stitches at the beginning of each of the next 2 rows.`,
@@ -231,6 +326,85 @@ describe("set-in sleeve written instructions", () => {
       expect(leftShoulder + rightShoulder).toBe(shoulderBand);
       if (shoulderBand % 2 === 0) expect(leftShoulder).toBe(rightShoulder);
     }
+  });
+
+  it("keeps sleeve-cap wording, checklist, stitch counts, and the final counter together", () => {
+    const cases = [
+      ["misses", MISSES_1, 7, 10],
+      ["misses", MISSES_1, 5, 7],
+      ["plus", PLUS_6X, 5, 7],
+      ["plus", PLUS_6X, 7, 10],
+      ["men", MEN_4X, 4, 6],
+      ["men", MEN_4X, 6, 8],
+    ] as const;
+    const schedules = new Set<string>();
+    for (const [audience, row, spi, rpi] of cases) {
+      const sweater = pattern(audience, row, spi, rpi);
+      const label = `${audience} ${spi}/${rpi}`;
+      const doc = generateSetInSleeveInstructions(sweater);
+      const sleeves = setInSleeveInstructionSection(doc, "sleeves");
+      const capText = blockLines(sleeves, "SLEEVE CAP").join("\n");
+      const chartLines = blockLines(sleeves, "SLEEVE CAP SHAPING CHART");
+      const expected = expectedSleeveCapChart(sweater.sleeveCap, sweater.sleeve.rowsCuffToUpperArm);
+      const parsed = parseCapChartLines(chartLines);
+      expect(parsed, label).toEqual(expected.rows);
+      expect(expected.finalRc, label).toBe(
+        sweater.sleeve.rowsCuffToUpperArm + sweater.sleeveCap.totals.capRows,
+      );
+      expect(expected.stitchesBeforeFinal, label).toBe(sweater.sleeveCap.totals.finalStitches);
+      expect(parsed[parsed.length - 1]?.rc, label).toBe(expected.finalRc);
+      expect(parsed.filter((chartRow) => chartRow.rc === expected.finalRc)).toHaveLength(1);
+      expect(capText, label).not.toContain("Knit these rows even");
+      expect(capText, label).not.toContain("before knitting that row");
+
+      const writtenDecreaseRcs = [
+        ...capText.matchAll(
+          /(?:Lower|Middle|Upper) cap: Decrease (\d+) stitch(?:es)? at each end (?:every row|every (\d+) rows), (\d+) time(?:s)?\. \(RC: ([0-9, ]+)\)/g,
+        ),
+      ];
+      const writtenActions = writtenDecreaseRcs.flatMap((match) => {
+        const everyRows = match[2] ? Number(match[2]) : 1;
+        const times = Number(match[3]);
+        const readings = match[4]!.split(",").map((part) => Number(part.trim()));
+        expect(readings, label).toHaveLength(times);
+        for (let index = 1; index < readings.length; index += 1) {
+          expect(readings[index]! - readings[index - 1]!, label).toBe(everyRows);
+        }
+        return readings;
+      });
+      expect(
+        parsed.filter((chartRow) => chartRow.action.startsWith("Decrease")).map((chartRow) => chartRow.rc),
+        label,
+      ).toEqual(writtenActions);
+      schedules.add(
+        sweater.sleeveCap.workingCap.zones.middle.steps.map((step) => `${step.everyRows}x${step.times}`).join("+"),
+      );
+
+      const presentation = buildSetInCuffUpSleevePresentation({
+        wristStitches: sweater.sleeve.wristStitches,
+        upperArmStitches: sweater.sleeve.upperArmStitches,
+        cuffRows: sweater.sleeve.cuffRows,
+        cuffInches: sweater.sleeve.cuffInches,
+        rowsCuffToUpperArm: sweater.sleeve.rowsCuffToUpperArm,
+        cap: sweater.sleeveCap,
+      });
+      const chartBlock = presentation.displayRows.find(
+        (displayRow) =>
+          displayRow.kind === "block" && displayRow.sleeveShapingChartId === "set-in-sleeve-cap-shaping-chart",
+      );
+      expect(chartBlock && chartBlock.kind === "block" ? chartBlock.sleeveShapingChartRows : [], label).toEqual(
+        expected.rows,
+      );
+      const html = renderPatternDisplayRowsHtml(presentation.displayRows, { pieceSectionId: "sleeve" });
+      const printHtml = renderSleevelessPrintPieceHtml(presentation.displayRows, "", "sleeve");
+      expect(html, label).toContain('data-chart-id="set-in-sleeve-cap-shaping-chart-sleeve"');
+      expect(html, label).toContain('data-chart-id="drop-shoulder-sleeve-shaping-chart-sleeve"');
+      expect(html, label).toContain("data-chart-progress-show-completed");
+      expect(html, label).toContain("Reset Checklist");
+      expect(printHtml, label).toContain('type="checkbox"');
+      expect(printHtml, label).toContain('data-chart-id="set-in-sleeve-cap-shaping-chart-sleeve"');
+    }
+    expect(schedules.size).toBeGreaterThan(1);
   });
 
   it("writes A-line body shaping on the calculated rows without adding rows", () => {
