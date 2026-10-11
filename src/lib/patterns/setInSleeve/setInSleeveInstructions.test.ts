@@ -186,7 +186,13 @@ describe("set-in sleeve written instructions", () => {
     expect(text).toContain("Sleeves");
     expect(text).toContain("Finishing");
     expect(text).toContain("Join one shoulder using your preferred method: linker, crochet slip stitch, or the machine bind-off method.");
-    expect(text).toContain("Set the sleeves into the armholes.");
+    expect(text).toContain("Lay the front and back flat with the shoulder seams joined and the side seams open.");
+    expect(text).toContain("Seam the sleeve cap into the armhole.");
+    expect(text).toContain(
+      "Starting at the sleeve cuff, seam along the sleeve underarm to the body underarm, then continue down the body side seam to the hem.",
+    );
+    expect(text).not.toContain("Seam each sleeve.");
+    expect(text).not.toContain("Set the sleeves into the armholes.");
     expect(text).toContain("Cardigan fronts are not written");
     expect(text).toContain("V-necklines are not written");
   });

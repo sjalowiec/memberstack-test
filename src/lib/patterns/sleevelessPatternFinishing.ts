@@ -88,13 +88,22 @@ export function buildSleevelessFinishingStepIds(opts: SleevelessFinishingStepOpt
   return ["blockPieces", ...core, "finalPressing"];
 }
 
+/** Set-in sleeves are sewn in flat, then the side and sleeve seams are closed together. */
+export function sleevelessFinishingStepTitle(
+  id: SleevelessFinishingStepId,
+  opts: { isSetInSleeve?: boolean } = {},
+): string {
+  if (opts.isSetInSleeve && id === "joinSideSeams") return "Join Side and Sleeve Seams";
+  return SLEEVELESS_FINISHING_STEP_TITLES[id];
+}
+
 export function numberedSleevelessFinishingSteps(
   opts: SleevelessFinishingStepOptions,
 ): { stepNumber: number; id: SleevelessFinishingStepId; title: string }[] {
   return buildSleevelessFinishingStepIds(opts).map((id, index) => ({
     stepNumber: index + 1,
     id,
-    title: SLEEVELESS_FINISHING_STEP_TITLES[id],
+    title: sleevelessFinishingStepTitle(id, opts),
   }));
 }
 

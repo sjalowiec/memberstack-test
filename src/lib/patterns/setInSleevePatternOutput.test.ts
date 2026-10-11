@@ -269,9 +269,16 @@ describe("set-in sleeve pattern choices", () => {
       isSetInSleeve: true,
       deps: finishingDeps,
     });
-    expect(html).toContain("Seam each sleeve.");
+    expect(html).toContain("Lay the front and back flat with the shoulder seams joined and the side seams open.");
     expect(html).toContain("Match the center of the sleeve cap to the shoulder seam.");
-    expect(html).toContain("Seam from hem to underarm.");
+    expect(html).toContain("Seam the sleeve cap into the armhole.");
+    expect(html).toContain("5. Attach Sleeves");
+    expect(html).toContain("6. Join Side and Sleeve Seams");
+    expect(html).toContain(
+      "Starting at the sleeve cuff, seam along the sleeve underarm to the body underarm, then continue down the body side seam to the hem.",
+    );
+    expect(html).not.toContain("Seam each sleeve.");
+    expect(html).not.toContain("Seam from hem to underarm.");
     expect(html).not.toContain("Hang the live sleeve stitches.");
     expect(html).toContain("Finish Front Edges");
   });
@@ -292,13 +299,18 @@ describe("set-in sleeve pattern choices", () => {
       deps: { ...finishingDeps, neckFinishingVideoKey: "vNeckBandFinishing" },
     });
     expect(finishing.isCardigan).toBe(false);
-    expect(html).toContain("Set the sleeve into the armhole.");
+    expect(html).toContain("4. Attach Sleeves");
+    expect(html).toContain("5. Join Side and Sleeve Seams");
+    expect(html).toContain("Seam the sleeve cap into the armhole.");
+    expect(html).not.toContain("Seam each sleeve.");
     expect(html).not.toContain("Finish Front Edges");
     const print = buildSleevelessFinishingPrintListHtml({
       isCardigan: true,
       isSetInSleeve: true,
     });
-    expect(print).toContain("match the center of the sleeve cap to the shoulder seam");
+    expect(print).toContain("side seams open");
+    expect(print).toContain("Join side and sleeve seams:");
+    expect(print).not.toContain("seam each sleeve");
     expect(print).not.toContain("hang the live sleeve stitches");
   });
 

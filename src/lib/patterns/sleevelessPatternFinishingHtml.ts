@@ -1,6 +1,6 @@
 import {
   buildSleevelessFinishingStepIds,
-  SLEEVELESS_FINISHING_STEP_TITLES,
+  sleevelessFinishingStepTitle,
   type SleevelessCardiganFrontEdgeFinishingMode,
   type SleevelessFinishingStepId,
 } from "./sleevelessPatternFinishing";
@@ -170,10 +170,12 @@ function dropShoulderSleeveArmholeAttachStepsHtml(): string {
 
 function setInSleeveAttachBody(): string {
   return `<ul>
-      <li>Seam each sleeve.</li>
-      <li>Match the sleeve underarm seam to the body underarm seam.</li>
+      <li>Lay the front and back flat with the shoulder seams joined and the side seams open.</li>
       <li>Match the center of the sleeve cap to the shoulder seam.</li>
-      <li>Set the sleeve into the armhole.</li>
+      <li>Match the sleeve-cap underarm edges to the corresponding armhole underarm edges.</li>
+      <li>Pin or clip the sleeve cap evenly around the armhole, matching shaping points.</li>
+      <li>Seam the sleeve cap into the armhole.</li>
+      <li>Repeat for the second sleeve.</li>
     </ul>`;
 }
 
@@ -195,7 +197,7 @@ function attachSleevesPrintLine(
   isSetInSleeve: boolean,
 ): string {
   if (isSetInSleeve) {
-    return `${stepNumber}. Set in the sleeves: seam each sleeve, match the underarm seams, match the center of the sleeve cap to the shoulder seam, and set the sleeve into the armhole.`;
+    return `${stepNumber}. Attach sleeves: lay the front and back flat with the shoulder seams joined and the side seams open; match the center of the sleeve cap to the shoulder seam; match the sleeve-cap underarm edges to the corresponding armhole underarm edges; pin or clip the sleeve cap evenly around the armhole, matching shaping points; seam the sleeve cap into the armhole; repeat for the second sleeve.`;
   }
   const attachSteps =
     "hang the armhole edge with the right side facing; hang the live sleeve stitches; pull the sleeve stitches through the armhole edge; knit 1 row; bind off";
@@ -205,7 +207,25 @@ function attachSleevesPrintLine(
   return `${stepNumber}. Attach sleeves: if you bound off the sleeve, sew it into the armhole; if the sleeve stitches are on waste yarn, ${attachSteps}.`;
 }
 
-function joinSideSeamsBody(isDropShoulder: boolean): string {
+function seamingVideoHelp(): string {
+  return `<p class="pattern-finishing-video-help pattern-help-link no-print">
+      <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for seaming:</span>
+      <span class="pattern-finishing-video-help__links">
+        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="seamingPuttingItAllTogether" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</button>
+      </span>
+    </p>`;
+}
+
+function joinSideSeamsBody(isDropShoulder: boolean, isSetInSleeve: boolean): string {
+  if (isSetInSleeve) {
+    return `<ul>
+      <li>Fold the sweater with right sides together, matching the front and back edges and sleeve underarm edges.</li>
+      <li>Match any markers placed during knitting.</li>
+      <li>Starting at the sleeve cuff, seam along the sleeve underarm to the body underarm, then continue down the body side seam to the hem.</li>
+      <li>Repeat for the other side.</li>
+    </ul>
+    ${seamingVideoHelp()}`;
+  }
   if (isDropShoulder) {
     return `<ul>
       <li>Match armhole edges and hem.</li>
@@ -218,12 +238,7 @@ function joinSideSeamsBody(isDropShoulder: boolean): string {
       <li>Match markers (if added).</li>
       <li>Seam from hem to underarm.</li>
     </ul>
-    <p class="pattern-finishing-video-help pattern-help-link no-print">
-      <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for seaming:</span>
-      <span class="pattern-finishing-video-help__links">
-        <button type="button" class="pattern-help-link__button" data-sleeveless-help-video="seamingPuttingItAllTogether" aria-haspopup="dialog"><i class="fa-solid fa-play"></i> Seaming – Putting It All Together</button>
-      </span>
-    </p>`;
+    ${seamingVideoHelp()}`;
 }
 
 function finalPressingBody(): string {
@@ -262,7 +277,7 @@ function stepBodyHtml(
     case "attachSleeves":
       return attachSleevesBody(dropShoulderSleeveDirection, isSetInSleeve);
     case "joinSideSeams":
-      return joinSideSeamsBody(isDropShoulder);
+      return joinSideSeamsBody(isDropShoulder, isSetInSleeve);
     case "finalPressing":
       return finalPressingBody();
     default:
@@ -295,7 +310,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
     stepSection(
       index + 1,
       id,
-      SLEEVELESS_FINISHING_STEP_TITLES[id],
+      sleevelessFinishingStepTitle(id, { isSetInSleeve }),
       stepBodyHtml(
         id,
         options.deps,
@@ -395,9 +410,11 @@ export function buildSleevelessFinishingPrintListHtml(options: {
         break;
       case "joinSideSeams":
         items.push(
-          isDropShoulder
-            ? `${n}. Join side seams: match armhole edges and hem; match markers (if added); join side seams from cuff to hem.`
-            : `${n}. Join side seams from hem toward underarm, matching edges.`,
+          isSetInSleeve
+            ? `${n}. Join side and sleeve seams: fold the sweater with right sides together, matching the front and back edges and sleeve underarm edges; match any markers placed during knitting; starting at the sleeve cuff, seam along the sleeve underarm to the body underarm, then continue down the body side seam to the hem; repeat for the other side.`
+            : isDropShoulder
+              ? `${n}. Join side seams: match armhole edges and hem; match markers (if added); join side seams from cuff to hem.`
+              : `${n}. Join side seams from hem toward underarm, matching edges.`,
         );
         break;
       case "finalPressing":

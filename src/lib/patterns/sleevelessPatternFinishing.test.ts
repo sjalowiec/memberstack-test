@@ -350,6 +350,104 @@ describe("buildSleevelessFinishingStepsHtml", () => {
   });
 });
 
+describe("set-in sleeve flat sleeve insertion", () => {
+  const deps = {
+    escapeHtml: (s: string) => s,
+    glossaryTooltip: (_id: number, term: string) => term,
+    neckFinishingVideoKey: "onePieceBand",
+    neckFinishingButtonLabel: "One-piece neckband",
+    neckFinishingLeadHtml: "",
+  };
+  const flatSleevePhrases = [
+    "Lay the front and back flat with the shoulder seams joined and the side seams open.",
+    "Match the center of the sleeve cap to the shoulder seam.",
+    "Match the sleeve-cap underarm edges to the corresponding armhole underarm edges.",
+    "Pin or clip the sleeve cap evenly around the armhole, matching shaping points.",
+    "Seam the sleeve cap into the armhole.",
+    "Repeat for the second sleeve.",
+    "Fold the sweater with right sides together, matching the front and back edges and sleeve underarm edges.",
+    "Match any markers placed during knitting.",
+    "Starting at the sleeve cuff, seam along the sleeve underarm to the body underarm, then continue down the body side seam to the hem.",
+    "Repeat for the other side.",
+  ];
+
+  function expectFlatSleeveInsertion(html: string, label: string) {
+    for (const phrase of flatSleevePhrases) {
+      expect(html, `${label}: ${phrase}`).toContain(phrase);
+    }
+    expect(html, label).not.toContain("Seam each sleeve.");
+    expect(html, label).not.toMatch(/Set the sleeves? into the armhole/i);
+    expect(html, label).not.toContain("Match the sleeve underarm seam to the body underarm seam.");
+    expect(html, label).not.toContain("Seam from hem to underarm.");
+    expect(html, label).toContain('data-sleeveless-help-video="seamingPuttingItAllTogether"');
+    expect(html, label).toContain("Linker");
+  }
+
+  it("pullover round neck and V-neck use steps 4 and 5 for flat insertion", () => {
+    for (const neckFinishingVideoKey of ["onePieceBand", "vNeckBandFinishing"] as const) {
+      const html = buildSleevelessFinishingStepsHtml({
+        isCardigan: false,
+        isSetInSleeve: true,
+        deps: { ...deps, neckFinishingVideoKey },
+      });
+      expectFlatSleeveInsertion(html, neckFinishingVideoKey);
+      expect(html).toMatch(/1\. Block Pieces \(Optional\)/);
+      expect(html).toMatch(/2\. Join Shoulders/);
+      expect(html).toMatch(/3\. Finish Neckline/);
+      expect(html).toMatch(/4\. Attach Sleeves/);
+      expect(html).toMatch(/5\. Join Side and Sleeve Seams/);
+      expect(html).toMatch(/6\. Final Pressing/);
+      expect(html).not.toContain("Finish Front Edges");
+      expect(html).not.toContain("Finish Armholes");
+    }
+  });
+
+  it("cardigan round neck and V-neck keep front-edge finishing and insert the sleeves flat", () => {
+    for (const mode of ["pickup", "verticalBand"] as const) {
+      const html = buildSleevelessFinishingStepsHtml({
+        isCardigan: true,
+        isSetInSleeve: true,
+        cardiganFrontEdgeFinishingMode: mode,
+        frontEdgePickupSts: 99,
+        deps,
+      });
+      expectFlatSleeveInsertion(html, mode);
+      expect(html).toMatch(/3\. Finish Front Edges/);
+      expect(html).toMatch(/4\. Finish Neckline/);
+      expect(html).toMatch(/5\. Attach Sleeves/);
+      expect(html).toMatch(/6\. Join Side and Sleeve Seams/);
+      expect(html).toMatch(/7\. Final Pressing/);
+      if (mode === "pickup") expect(html).toContain("Pick up approximately 99 stitches");
+      else expect(html).toContain("vertical front band");
+    }
+  });
+
+  it("prints the flat insertion and leaves drop-shoulder and sleeveless side seams unchanged", () => {
+    const setInPrint = buildSleevelessFinishingPrintListHtml({
+      isCardigan: false,
+      isSetInSleeve: true,
+    });
+    expect(setInPrint).toContain("4. Attach sleeves: lay the front and back flat");
+    expect(setInPrint).toContain("5. Join side and sleeve seams:");
+    expect(setInPrint).toContain("side seams open");
+    expect(setInPrint).not.toContain("seam each sleeve");
+
+    const sleeveless = buildSleevelessFinishingStepsHtml({ isCardigan: false, deps });
+    expect(sleeveless).toMatch(/5\. Join Side Seams/);
+    expect(sleeveless).toContain("Seam from hem to underarm.");
+    expect(sleeveless).not.toContain("side seams open");
+
+    const dropShoulder = buildSleevelessFinishingStepsHtml({
+      isCardigan: false,
+      isDropShoulder: true,
+      deps,
+    });
+    expect(dropShoulder).toMatch(/5\. Join Side Seams/);
+    expect(dropShoulder).toContain("Join side seams from cuff to hem.");
+    expect(dropShoulder).not.toContain("side seams open");
+  });
+});
+
 describe("buildSleevelessFinishingPrintListHtml", () => {
   it("round-neck cardigan print line includes pickup stitch count", () => {
     const html = buildSleevelessFinishingPrintListHtml({

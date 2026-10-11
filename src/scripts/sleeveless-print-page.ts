@@ -95,6 +95,7 @@ function printFinishingSectionHtml(
   const listItems = buildSleevelessFinishingPrintListHtml({
     isCardigan: finishing.isCardigan,
     isDropShoulder: finishing.isDropShoulder,
+    isSetInSleeve: finishing.isSetInSleeve,
     cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts: finishing.frontEdgePickupSts,
     neckbandPickup: finishing.neckbandPickup,
