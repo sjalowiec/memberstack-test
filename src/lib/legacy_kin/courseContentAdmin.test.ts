@@ -9,6 +9,7 @@ import {
   isAllowedCourseId,
   listAdminCourseSummaries,
   publishedBundleReplacesImplicitOverlay,
+  reviewDraftReplacesStaleOverlay,
   readCourseContentFile,
   readCourseContentStatus,
   removeEmptyBlocksFromLesson,
@@ -434,5 +435,31 @@ describe("publishedBundleReplacesImplicitOverlay", () => {
     bundled.course.status = "published";
     bundled.course.published = true;
     expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
+  });
+});
+
+describe("reviewDraftReplacesStaleOverlay", () => {
+  function course33(revision: number, published: boolean): CoursePreviewData {
+    const course = sampleCourse();
+    course.course.legacyChallengeId = 33;
+    course.course.status = published ? "published" : "draft";
+    course.course.published = published;
+    course.course.legacy = { ...course.course.legacy, contentRevision: revision };
+    return course;
+  }
+
+  it("replaces the older published Beginner Workshop overlay with the newer draft", () => {
+    expect(reviewDraftReplacesStaleOverlay(course33(0, true), course33(1, false))).toBe(true);
+  });
+
+  it("keeps an editor save that is already at the deployed revision", () => {
+    expect(reviewDraftReplacesStaleOverlay(course33(1, false), course33(1, false))).toBe(false);
+  });
+
+  it("does not replace another course or a published git copy", () => {
+    const other = course33(0, true);
+    other.course.legacyChallengeId = 15;
+    expect(reviewDraftReplacesStaleOverlay(other, course33(1, false))).toBe(false);
+    expect(reviewDraftReplacesStaleOverlay(course33(0, true), course33(1, true))).toBe(false);
   });
 });

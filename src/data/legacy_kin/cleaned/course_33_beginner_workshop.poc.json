@@ -13,6 +13,7 @@
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
       "migratedAt": "2026-06-25T10:16:09+00:00",
       "preparedForReviewAt": "2026-10-10",
+      "contentRevision": 1,
       "draftReview": {
         "note": "Unpublished local review copy. The three legacy hat projects are now one lesson that opens the Hat Pattern Builder. Not for customers.",
         "couldNotConvert": [],

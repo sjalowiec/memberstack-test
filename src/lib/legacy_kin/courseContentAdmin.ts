@@ -267,6 +267,21 @@ export function publishedBundleReplacesImplicitOverlay(
 }
 
 /**
+ * Beginner Workshop's DEV blob can keep the older published copy after this
+ * git draft is deployed. A higher contentRevision replaces that overlay once.
+ * A later editor save keeps the same revision, so it is left in place.
+ */
+export function reviewDraftReplacesStaleOverlay(
+  overlay: CoursePreviewData,
+  bundled: CoursePreviewData,
+): boolean {
+  if (Number(bundled.course.legacyChallengeId) !== 33) return false;
+  if (Number(overlay.course.legacyChallengeId) !== 33) return false;
+  if (isExplicitlyPublished(bundled.course)) return false;
+  return contentRevision(bundled) > contentRevision(overlay);
+}
+
+/**
  * Editorial + player source of truth: live overlay when DEV uses blobs,
  * otherwise the bundled/cleaned POC file on disk.
  */
@@ -285,7 +300,10 @@ export async function loadCourseContentDocument(
       const overlay = await readCourseContentOverlay(courseId);
       if (overlay) {
         const bundled = readCourseContentFile(courseId);
-        if (publishedBundleReplacesImplicitOverlay(overlay, bundled)) {
+        if (
+          publishedBundleReplacesImplicitOverlay(overlay, bundled) ||
+          reviewDraftReplacesStaleOverlay(overlay, bundled)
+        ) {
           const writer = options.writeCourseContentOverlay ?? writeCourseContentOverlay;
           try {
             await writer(courseId, bundled);
