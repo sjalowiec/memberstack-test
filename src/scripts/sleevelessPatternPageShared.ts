@@ -55,6 +55,7 @@ import {
   isActiveSetInSleeveConstruction,
   withSetInSleeveConstructionFamily,
 } from "../lib/patterns/setInSleeveConstructionIdentity.ts";
+import { setInSleeveAdultChartLabel } from "../lib/patterns/setInSleeveSizeCharts.ts";
 import {
   renderPatternDisplayBlockHtml,
   wrapPatternSectionHtml,
@@ -424,6 +425,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       (typeof ft.sizingChart === "string" && ft.sizingChart.trim()) ||
       "";
     const key = raw.toLowerCase();
+    if (hasAuthoritativeSetInSleeveConstruction(st)) {
+      const setInLabel = setInSleeveAdultChartLabel(key);
+      if (setInLabel) return setInLabel;
+    }
     if (key && AUDIENCE_LABELS[key]) return AUDIENCE_LABELS[key];
     if (raw) return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
     return "";

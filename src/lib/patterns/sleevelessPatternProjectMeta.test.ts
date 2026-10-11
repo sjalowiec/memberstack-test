@@ -247,14 +247,14 @@ describe("resolvePatternProjectSaveName", () => {
       }),
       patternProject: { title: "", notes: "" },
     });
-    expect(resolvePatternDisplayName()).toBe("Women's Set-In Sleeve Sweater");
-    expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Set-In Sleeve Sweater");
-    expect(refreshAutoPatternProjectTitle().title).toBe("Women's Set-In Sleeve Sweater");
+    expect(resolvePatternDisplayName()).toBe("Misses Set-In Sleeve Sweater");
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Misses Set-In Sleeve Sweater");
+    expect(refreshAutoPatternProjectTitle().title).toBe("Misses Set-In Sleeve Sweater");
     expect(getSleevelessPatternOnlineHeading(getPatternProjectMeta())).toBe(
-      "Women's Set-In Sleeve Sweater",
+      "Misses Set-In Sleeve Sweater",
     );
     expect(resolvePatternPrintDocumentTitle(getPatternProjectPrintFields().title, "fallback")).toBe(
-      "Women's Set-In Sleeve Sweater",
+      "Misses Set-In Sleeve Sweater",
     );
   });
 
@@ -267,14 +267,23 @@ describe("resolvePatternProjectSaveName", () => {
     expect(refreshAutoPatternProjectTitle().title).toBe("Men's Set-In Sleeve Sweater");
   });
 
+  it("uses Women's Set-In Sleeve Sweater only for the Women's plus chart", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "plus", selectedSize: "X" },
+      style: withSetInSleeveConstructionAuthored({ garmentStyle: "pullover" }),
+      patternProject: { title: "", notes: "" },
+    });
+    expect(refreshAutoPatternProjectTitle().title).toBe("Women's Set-In Sleeve Sweater");
+  });
+
   it("replaces a leftover Sleeveless auto title when the draft is a set-in sleeve", () => {
     saveCurrentPattern({
       fit: { sizingChart: "misses", selectedSize: "7" },
       style: withSetInSleeveConstructionAuthored({ garmentStyle: "pullover" }),
       patternProject: { title: "Women's Sleeveless", notes: "", titleCustomized: true },
     });
-    expect(refreshAutoPatternProjectTitle().title).toBe("Women's Set-In Sleeve Sweater");
-    expect(getPatternProjectPrintFields().title).toBe("Women's Set-In Sleeve Sweater");
+    expect(refreshAutoPatternProjectTitle().title).toBe("Misses Set-In Sleeve Sweater");
+    expect(getPatternProjectPrintFields().title).toBe("Misses Set-In Sleeve Sweater");
     expect(getSleevelessPatternOnlineHeading({ title: "", notes: "" })).toBe(
       "Set-in sleeve sweater · Pattern instructions",
     );

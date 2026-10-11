@@ -31,6 +31,21 @@ export function setInSleeveAdultChartLabel(audience: string): string {
   return "";
 }
 
+/**
+ * Auto-title prefix for Set-In Sleeve. The stored chart key wins, so a Misses
+ * chart (`misses`, Express who `women`) is never labeled Women's.
+ * Empty for Baby and Kids so those saved projects keep their existing names.
+ */
+export function setInSleeveAudiencePrefixLabel(who: unknown, chartAudience?: unknown): string {
+  const fromChart = setInSleeveAdultChartLabel(String(chartAudience ?? ""));
+  if (fromChart) return fromChart;
+  const key = String(who ?? "").trim().toLowerCase();
+  if (key === "plus") return "Women's";
+  if (key === "men" || key === "man" || key === "male") return "Men's";
+  if (key === "women" || key === "woman" || key === "misses") return "Misses";
+  return "";
+}
+
 /** Who values that select Misses, Women's, or Men's. Kids and Baby are not included. */
 export function setInSleeveWhoIsSupported(who: unknown): boolean {
   const key = String(who ?? "").trim().toLowerCase();

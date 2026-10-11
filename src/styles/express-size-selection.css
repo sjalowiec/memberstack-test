@@ -14,6 +14,28 @@
   border-top: 1px solid rgba(82, 104, 45, 0.12);
 }
 
+.sleeveless-express-page .express-set-in-child-size-note {
+  margin: 0.85rem 0 0;
+  max-width: 40rem;
+  color: #374151;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.sleeveless-express-page .express-set-in-child-size-note summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #26351f;
+}
+
+.sleeveless-express-page .express-set-in-child-size-note summary:hover {
+  color: var(--sg-accent, #c2614e);
+}
+
+.sleeveless-express-page .express-set-in-child-size-note p {
+  margin: 0.45rem 0 0;
+}
+
 .sleeveless-express-page .express-size-instruction {
   margin: 0 0 0.65rem;
   color: #374151;

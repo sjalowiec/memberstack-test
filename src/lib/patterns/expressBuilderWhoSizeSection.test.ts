@@ -259,6 +259,13 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
     expect(setInCharts).toContain('{ value: "men", label: "Men\'s" }');
     expect(setInCharts).not.toContain('label: "Kids"');
     expect(setInCharts).not.toContain('label: "Baby"');
+    expect(setInBuilderAstro).toContain("Why no Baby or Children's sizes?");
+    expect(setInBuilderAstro).toContain('href="/patterns"');
+    expect(setInBuilderAstro).toContain("Pattern Builders");
+    expect(setInBuilderAstro).not.toMatch(/<details[^>]*open[^>]*data-set-in-child-size-note/);
+    expect(setInBuilderAstro).not.toMatch(/data-set-in-child-size-note[^>]*open/);
+    expect(sleevelessBuilderAstro).not.toContain("Why no Baby or Children's sizes?");
+    expect(dropShoulderBuilderAstro).not.toContain("Why no Baby or Children's sizes?");
   });
 
   it("reuses the shared text who picker in Custom Build Design", () => {

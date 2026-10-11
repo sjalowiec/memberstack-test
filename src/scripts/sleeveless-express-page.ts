@@ -97,6 +97,7 @@ import {
 import { DROP_SHOULDER_CONSTRUCTION } from "../lib/patterns/patternConstructionIdentity";
 import {
   omitUnsupportedSetInSleeveWho,
+  setInSleeveAdultChartLabel,
   setInSleeveWhoIsSupported,
 } from "../lib/patterns/setInSleeveSizeCharts";
 import { SET_IN_SLEEVE_CONSTRUCTION } from "../lib/patterns/setInSleeveConstructionIdentity";
@@ -400,6 +401,10 @@ function initExpressPage() {
         : null;
       const fromButton = labelEl?.textContent?.trim() ?? "";
       if (fromButton) return fromButton;
+      if (expressPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION && whoKey) {
+        const chartLabel = setInSleeveAdultChartLabel(expressWhoToChartAudience(whoKey));
+        if (chartLabel) return chartLabel;
+      }
       const whoLabel =
         whoKey && LABELS.who[whoKey] ? LABELS.who[whoKey] : whoKey ? String(whoKey) : "";
       return whoLabel || "";

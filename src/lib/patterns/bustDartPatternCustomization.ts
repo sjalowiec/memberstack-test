@@ -6,6 +6,8 @@
  */
 import { buildCustomBuildEffectivePatternInput } from "./buildCustomBuildEffectivePatternInput";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
+import { setInSleeveAdultChartLabel } from "./setInSleeveSizeCharts";
 import {
   formatMeasurementDisplayFromInches,
   resolveMeasurementDisplayUnitFromPatternData,
@@ -89,13 +91,17 @@ export function buildBustDartModalSummaryLine(args: {
   sizeGroup: string;
   finishedBustInches?: number | null;
   unit?: DartFormulaUnit;
+  /** Set-In Sleeve passes Misses / Women's / Men's. Other builders keep the shared labels. */
+  audienceLabel?: string;
 }): string {
   const patternStyle = [args.constructionLabel, args.garmentLabel]
     .map((s) => String(s || "").trim())
     .filter(Boolean)
     .join(" ");
   const audienceKey = normalizeSleevelessAudience(args.sizeGroup) || String(args.sizeGroup || "").trim();
-  const audience = audienceKey ? getSleevelessChartAudienceLabel(audienceKey) : "";
+  const audience =
+    String(args.audienceLabel ?? "").trim() ||
+    (audienceKey ? getSleevelessChartAudienceLabel(audienceKey) : "");
   const bustIn = args.finishedBustInches;
   let audienceSize = audience;
   if (audience && bustIn != null && Number.isFinite(bustIn) && bustIn > 0) {
@@ -160,6 +166,9 @@ export function buildBustDartPatternContext(
     sizeGroup,
   );
   const isDrop = hasAuthoritativeDropShoulderConstruction(style);
+  const setInAudienceLabel = hasAuthoritativeSetInSleeveConstruction(style)
+    ? setInSleeveAdultChartLabel(sizeGroup)
+    : "";
   const isCardigan = isCardiganStyle(style);
   const frontConstruction: BustDartFrontConstruction = isCardigan ? "cardigan" : "pullover";
 
@@ -194,6 +203,7 @@ export function buildBustDartPatternContext(
         sizeGroup,
         finishedBustInches,
         unit,
+        audienceLabel: setInAudienceLabel,
       }),
       gaugeLabel: "",
       placementLabel: `${formatBustDartPlacementDistanceLabel(unit)} below the armhole opening (front only)`,
@@ -252,6 +262,7 @@ export function buildBustDartPatternContext(
         sizeGroup,
         finishedBustInches,
         unit,
+        audienceLabel: setInAudienceLabel,
       }),
       gaugeLabel,
       placementLabel: `${formatBustDartPlacementDistanceLabel(unit)} below the armhole opening (front only)`,

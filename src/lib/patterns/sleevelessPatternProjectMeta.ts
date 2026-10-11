@@ -4,6 +4,7 @@
  */
 import { readActiveCustomPatternProjectLinkedName } from "./customPatternProjectActiveId";
 import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
+import { setInSleeveAudiencePrefixLabel } from "./setInSleeveSizeCharts";
 import {
   getCurrentPattern,
   getSleevelessChartAudience,
@@ -144,7 +145,11 @@ export function buildDefaultSleevelessPatternTitle(
   ctx: SleevelessPatternTitleContext,
   patternFamily: string = SLEEVELESS_PATTERN_FAMILY_NAME,
 ): string {
-  const audience = audiencePrefixLabel(ctx.who ?? "", ctx.chartAudience);
+  const audience =
+    patternFamily === SET_IN_SLEEVE_PATTERN_FAMILY_NAME
+      ? setInSleeveAudiencePrefixLabel(ctx.who, ctx.chartAudience) ||
+        audiencePrefixLabel(ctx.who ?? "", ctx.chartAudience)
+      : audiencePrefixLabel(ctx.who ?? "", ctx.chartAudience);
   return audience ? `${audience} ${patternFamily}` : patternFamily;
 }
 

@@ -9,6 +9,7 @@ import {
 import { expressWhoToChartAudience } from "./syncSleevelessExpressDesignToStorage";
 import {
   omitUnsupportedSetInSleeveWho,
+  setInSleeveAudiencePrefixLabel,
   setInSleeveWhoIsSupported,
 } from "./setInSleeveSizeCharts";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
@@ -48,6 +49,10 @@ describe("Set-In Sleeve adult size charts", () => {
     expect(setInSleeveWhoIsSupported("men")).toBe(true);
     expect(setInSleeveWhoIsSupported("kids")).toBe(false);
     expect(setInSleeveWhoIsSupported("baby")).toBe(false);
+    expect(setInSleeveAudiencePrefixLabel("women", "misses")).toBe("Misses");
+    expect(setInSleeveAudiencePrefixLabel("plus", "plus")).toBe("Women's");
+    expect(setInSleeveAudiencePrefixLabel("men", "men")).toBe("Men's");
+    expect(setInSleeveAudiencePrefixLabel("women", "")).toBe("Misses");
   });
 
   it("accepts a size from each adult chart and rejects a kids size on those charts", () => {
