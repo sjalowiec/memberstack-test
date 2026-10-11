@@ -1,17 +1,57 @@
 import { hydrateGlossaryTooltipPlaceholders } from "./glossaryTooltipHydrate";
 
-const GLOSSARY_TERM_LINK_SELECTOR =
-  'a.glossary-link[href^="/glossary/"], a[href^="/glossary/"].glossary-link';
+const COURSE_GLOSSARY_ROOT_SELECTOR = ".legacy-course, .course-preview, .legacy-content";
 
 let modalListenersBound = false;
 let linkClickBound = false;
+let returnFocus: HTMLElement | null = null;
 
-export function glossarySlugFromTermHref(href: string): string | null {
+function glossaryPathname(href: string): string | null {
   const trimmed = (href ?? "").trim();
-  if (!trimmed) return null;
-  const match = trimmed.match(/^\/glossary\/([^/?#]+)/i);
+  if (!trimmed || trimmed.startsWith("#")) return null;
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      const host = url.hostname.replace(/^www\./i, "");
+      if (!/knititnow\.com$/i.test(host)) return null;
+      return url.pathname;
+    } catch {
+      return null;
+    }
+  }
+  if (!trimmed.startsWith("/")) return null;
+  return trimmed.split(/[?#]/, 1)[0] ?? null;
+}
+
+/** Term slug for a glossary href, including legacy /glossary/id/slug/term addresses. */
+export function glossarySlugFromTermHref(href: string): string | null {
+  const pathname = glossaryPathname(href);
+  if (!pathname) return null;
+  const match = pathname.match(/^\/glossary\/(.+?)\/?$/i);
   if (!match?.[1]) return null;
-  return decodeURIComponent(match[1].replace(/\/$/, ""));
+  const parts = match[1]
+    .split("/")
+    .filter(Boolean)
+    .map((part) => decodeURIComponent(part));
+  if (parts.length === 0 || parts[0]!.toLowerCase() === "modal") return null;
+  if (parts.length === 1) return parts[0]!;
+  const slug = parts.find(
+    (part, index) => index > 0 && !/^\d+$/.test(part) && part.toLowerCase() !== "term",
+  );
+  return slug ?? null;
+}
+
+/**
+ * Classed glossary links open the modal anywhere the shared script is loaded.
+ * Inside a course, a plain glossary-term address does too. The glossary index
+ * and other links stay normal navigation.
+ */
+export function glossaryModalSlugForLink(
+  href: string,
+  options: { classed?: boolean; inCourse?: boolean },
+): string | null {
+  if (!options.classed && !options.inCourse) return null;
+  return glossarySlugFromTermHref(href);
 }
 
 function getModalElements() {
@@ -26,14 +66,19 @@ function getModalElements() {
 function closeGlossaryTermModal() {
   const { modalRoot } = getModalElements();
   if (!modalRoot) return;
+  const wasOpen = modalRoot.classList.contains("is-open");
   modalRoot.classList.remove("is-open");
   modalRoot.hidden = true;
   document.body.style.overflow = "";
+  const focusTarget = returnFocus;
+  returnFocus = null;
+  if (wasOpen && focusTarget && document.contains(focusTarget)) focusTarget.focus();
 }
 
-export function openGlossaryTermModal(slug: string) {
+export function openGlossaryTermModal(slug: string, opener?: HTMLElement | null) {
   const normalizedSlug = (slug ?? "").trim().replace(/\/$/, "");
   if (!normalizedSlug) return;
+  if (opener) returnFocus = opener;
 
   const { modalRoot, modalBody, modalTitleEl, closeBtn } = getModalElements();
   if (!modalRoot || !modalBody) return;
@@ -49,7 +94,13 @@ export function openGlossaryTermModal(slug: string) {
     openGlossaryTermModal;
 
   void fetch(`/glossary/modal/${encodeURIComponent(normalizedSlug)}/`)
-    .then((res) => res.text())
+    .then((res) => {
+      const finalPath = new URL(res.url, window.location.origin).pathname.replace(/\/$/, "");
+      if (!res.ok || finalPath === "/glossary") {
+        throw new Error("Glossary entry was not found.");
+      }
+      return res.text();
+    })
     .then((html) => {
       const doc = new DOMParser().parseFromString(html, "text/html");
       const container =
@@ -101,17 +152,22 @@ export function bindGlossaryTermLinks(root: ParentNode = document) {
   root.addEventListener(
     "click",
     (event) => {
+      if (event.defaultPrevented) return;
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const target = event.target;
       if (!(target instanceof Element)) return;
-      const anchor = target.closest(GLOSSARY_TERM_LINK_SELECTOR);
+      const anchor = target.closest("a");
       if (!(anchor instanceof HTMLAnchorElement)) return;
 
-      const slug = glossarySlugFromTermHref(anchor.getAttribute("href") ?? "");
+      const slug = glossaryModalSlugForLink(anchor.getAttribute("href") ?? "", {
+        classed: anchor.classList.contains("glossary-link"),
+        inCourse: Boolean(anchor.closest(COURSE_GLOSSARY_ROOT_SELECTOR)),
+      });
       if (!slug) return;
 
       event.preventDefault();
       event.stopPropagation();
-      openGlossaryTermModal(slug);
+      openGlossaryTermModal(slug, anchor);
     },
     true,
   );

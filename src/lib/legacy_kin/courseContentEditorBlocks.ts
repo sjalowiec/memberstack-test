@@ -1,5 +1,5 @@
 import type { CourseLesson } from "./coursePreviewPoc";
-import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
+import { sortedBlocks } from "./coursePreviewPoc";
 import { maxLegacyComponentIdFromLessons } from "./courseContentSplitIds";
 import { isAccordionLayoutBlock } from "./courseAccordionLayout";
 import { isEmbeddedToolLayoutBlock } from "./courseEmbeddedToolLayout";
@@ -46,6 +46,79 @@ export function nextBlockOrderInLesson(lesson: LessonRecord): number {
   return max + 1;
 }
 
+function numericOrder(value: unknown): number {
+  const order = Number(value);
+  return Number.isFinite(order) ? order : 0;
+}
+
+function compareStoredOrder(
+  orderA: number,
+  orderB: number,
+  slotA: number,
+  slotB: number,
+  indexA: number,
+  indexB: number,
+): number {
+  if (orderA !== orderB) return orderA - orderB;
+  if (slotA !== slotB) return slotA - slotB;
+  return indexA - indexB;
+}
+
+/**
+ * Make the stored arrays match the order students and the editor already
+ * display. Order fields win. Equal orders keep their current relative
+ * position, then legacy slot.
+ */
+export function syncLessonArraysToStoredOrder(lesson: CourseLesson): void {
+  const blocks = Array.isArray(lesson.blocks) ? lesson.blocks : [];
+  const orderedBlocks = blocks
+    .map((block, index) => ({ block, index }))
+    .sort((a, b) =>
+      compareStoredOrder(
+        numericOrder(a.block.order),
+        numericOrder(b.block.order),
+        0,
+        0,
+        a.index,
+        b.index,
+      ),
+    )
+    .map((entry) => entry.block);
+
+  for (const block of orderedBlocks) {
+    const components = Array.isArray(block.components) ? block.components : [];
+    block.components = components
+      .map((component, index) => ({ component, index }))
+      .sort((a, b) =>
+        compareStoredOrder(
+          numericOrder(a.component.order),
+          numericOrder(b.component.order),
+          numericOrder(
+            (a.component as { legacySlot?: unknown }).legacySlot,
+          ),
+          numericOrder(
+            (b.component as { legacySlot?: unknown }).legacySlot,
+          ),
+          a.index,
+          b.index,
+        ),
+      )
+      .map((entry) => entry.component);
+  }
+
+  lesson.blocks = orderedBlocks;
+}
+
+/** Write unique 1-based orders from the arrays' current positions. */
+export function assignLessonOrdersFromArrayPosition(lesson: CourseLesson): void {
+  lesson.blocks.forEach((block, blockIndex) => {
+    block.order = blockIndex + 1;
+    block.components.forEach((component, componentIndex) => {
+      component.order = componentIndex + 1;
+    });
+  });
+}
+
 /** Insert a new single-component block before or after `targetBlockSlug`. */
 export function insertStandaloneComponentBlockRelative(
   lesson: LessonRecord,
@@ -54,10 +127,13 @@ export function insertStandaloneComponentBlockRelative(
   after: boolean,
   timestamp = Date.now(),
 ): LessonRecord {
+  const typed = lesson as unknown as CourseLesson;
+  syncLessonArraysToStoredOrder(typed);
+
   const newBlock: LessonRecord = {
     title: "Content",
     slug: `content-${timestamp}`,
-    order: nextBlockOrderInLesson(lesson),
+    order: 1,
     legacy: { assignId: nextAssignIdInLesson(lesson), blockType: "HTML" },
     components: [{ ...component, order: 1 }],
   };
@@ -71,9 +147,7 @@ export function insertStandaloneComponentBlockRelative(
     targetIndex === -1 ? blocks.length : after ? targetIndex + 1 : targetIndex;
   blocks.splice(insertAt, 0, newBlock);
   lesson.blocks = blocks;
-  blocks.forEach((block, index) => {
-    block.order = index + 1;
-  });
+  assignLessonOrdersFromArrayPosition(typed);
   return newBlock;
 }
 
@@ -164,10 +238,12 @@ export function moveSectionAtIndex(
   sectionIndex: number,
   delta: -1 | 1,
 ): boolean {
+  const typed = lesson as unknown as CourseLesson;
+  syncLessonArraysToStoredOrder(typed);
   if (!Array.isArray(lesson.blocks)) return false;
   if (!Number.isInteger(sectionIndex)) return false;
 
-  const ordered = sortedBlocks(lesson as CourseLesson);
+  const ordered = lesson.blocks as CourseLesson["blocks"];
   if (sectionIndex < 0 || sectionIndex >= ordered.length) return false;
 
   const toIndex = sectionIndex + delta;
@@ -177,10 +253,7 @@ export function moveSectionAtIndex(
   if (!moved) return false;
   ordered.splice(toIndex, 0, moved);
 
-  ordered.forEach((block, index) => {
-    block.order = index + 1;
-  });
-  lesson.blocks = ordered as LessonRecord[];
+  assignLessonOrdersFromArrayPosition(typed);
   return true;
 }
 
@@ -190,6 +263,8 @@ export function moveBlockRelativeToTarget(
   targetBlockSlug: string,
   moveDown: boolean,
 ) {
+  const typed = lesson as unknown as CourseLesson;
+  syncLessonArraysToStoredOrder(typed);
   if (!Array.isArray(lesson.blocks)) return;
   const blocks = lesson.blocks as LessonRecord[];
   const fromIndex = blocks.findIndex((block) => block.slug === blockSlug);
@@ -205,9 +280,7 @@ export function moveBlockRelativeToTarget(
     blocks.splice(targetIndex, 0, moved);
   }
 
-  blocks.forEach((block, index) => {
-    block.order = index + 1;
-  });
+  assignLessonOrdersFromArrayPosition(typed);
 }
 
 function removeComponentFromBlockRecord(
@@ -236,13 +309,13 @@ export function pruneEmptyBlocks(lesson: CourseLesson) {
   lesson.blocks = lesson.blocks.filter((block) => block.components.length > 0);
 }
 
+/**
+ * Compact every section and block onto unique orders without changing the
+ * sequence already stored in the order fields.
+ */
 export function reassignAllContentOrders(lesson: CourseLesson) {
-  let order = 1;
-  for (const block of sortedBlocks(lesson)) {
-    for (const component of sortedComponents(block)) {
-      component.order = order++;
-    }
-  }
+  syncLessonArraysToStoredOrder(lesson);
+  assignLessonOrdersFromArrayPosition(lesson);
 }
 
 /**
@@ -256,13 +329,13 @@ export function movePlainContentComponent(
   moveDown: boolean,
   timestamp = Date.now(),
 ): MovedComponentRef | null {
+  syncLessonArraysToStoredOrder(lesson);
   if (
     isPlainStandaloneBlock(lesson, current.blockSlug) &&
     isPlainStandaloneBlock(lesson, target.blockSlug) &&
     current.blockSlug !== target.blockSlug
   ) {
     moveBlockRelativeToTarget(lesson, current.blockSlug, target.blockSlug, moveDown);
-    reassignAllContentOrders(lesson);
     return { ...current };
   }
 
@@ -287,7 +360,7 @@ export function movePlainContentComponent(
     if (targetIdx === -1) return null;
     const insertAt = moveDown ? targetIdx + 1 : targetIdx;
     block.components.splice(insertAt, 0, comp as (typeof block.components)[number]);
-    reassignAllContentOrders(lesson);
+    assignLessonOrdersFromArrayPosition(lesson);
     return { ...current };
   }
 
@@ -298,7 +371,6 @@ export function movePlainContentComponent(
     moveDown,
     timestamp,
   );
-  reassignAllContentOrders(lesson);
   return {
     blockSlug: String(newBlock.slug),
     legacyComponentId: Number(comp.legacyComponentId),
@@ -329,7 +401,6 @@ export function moveComponentBesideBlock(
     moveDown,
     timestamp,
   );
-  reassignAllContentOrders(lesson);
   return {
     blockSlug: String(newBlock.slug),
     legacyComponentId: Number(comp.legacyComponentId),
@@ -346,6 +417,7 @@ export function splitBlockIntoStandaloneSections(
   blockSlug: string,
   lessonsForIdScope: LessonRecord[],
 ): boolean {
+  syncLessonArraysToStoredOrder(lesson);
   const blockIndex = lesson.blocks.findIndex((block) => block.slug === blockSlug);
   if (blockIndex === -1) return false;
 
@@ -397,10 +469,41 @@ export function splitBlockIntoStandaloneSections(
   });
 
   lesson.blocks.splice(blockIndex, 1, ...replacementBlocks);
-  lesson.blocks.forEach((block, index) => {
-    block.order = index + 1;
-  });
-  reassignAllContentOrders(lesson);
+  assignLessonOrdersFromArrayPosition(lesson);
+  return true;
+}
+
+/**
+ * Insert a component into a plain section.
+ * With an anchor, it is placed immediately after that component.
+ * Without an anchor, it is placed at the end of the section.
+ */
+export function insertComponentIntoBlockRelative(
+  lesson: CourseLesson,
+  blockSlug: string,
+  component: Record<string, unknown>,
+  afterLegacyComponentId: number | null = null,
+  afterType: string | null = null,
+): boolean {
+  syncLessonArraysToStoredOrder(lesson);
+  const block = lesson.blocks.find((entry) => entry.slug === blockSlug);
+  if (!block || isEditorLayoutBlock(block as LessonRecord)) return false;
+
+  let insertAt = block.components.length;
+  if (afterLegacyComponentId != null && afterType) {
+    const anchor = block.components.findIndex(
+      (entry) =>
+        entry.legacyComponentId === afterLegacyComponentId && entry.type === afterType,
+    );
+    if (anchor !== -1) insertAt = anchor + 1;
+  }
+
+  block.components.splice(
+    insertAt,
+    0,
+    component as (typeof block.components)[number],
+  );
+  assignLessonOrdersFromArrayPosition(lesson);
   return true;
 }
 
@@ -410,16 +513,5 @@ export function appendComponentToBlock(
   blockSlug: string,
   component: Record<string, unknown>,
 ): boolean {
-  const block = lesson.blocks.find((entry) => entry.slug === blockSlug);
-  if (!block || isEditorLayoutBlock(block as LessonRecord)) return false;
-
-  let maxOrder = 0;
-  for (const existing of block.components) {
-    const order = Number(existing.order);
-    if (Number.isFinite(order) && order > maxOrder) maxOrder = order;
-  }
-  component.order = maxOrder + 1;
-  block.components.push(component as (typeof block.components)[number]);
-  reassignAllContentOrders(lesson);
-  return true;
+  return insertComponentIntoBlockRelative(lesson, blockSlug, component, null, null);
 }

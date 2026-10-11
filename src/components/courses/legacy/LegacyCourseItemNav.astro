@@ -83,9 +83,19 @@ function stepLabel(step: CourseContentItemStep): string {
   }
 
   .legacy-course__item-nav--bottom {
+    position: sticky;
+    /* Keeps the bar above the home indicator while it is stuck. Desktop inset is 0. */
+    bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 40;
+    flex-wrap: nowrap;
     margin-top: 2rem;
     padding-top: 1.25rem;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
     border-top: 1px solid #e0e6d8;
+    background: var(--page-bg, #f7f8f7);
+    box-shadow: 0 -6px 10px -6px rgba(36, 48, 21, 0.12);
   }
 
   .legacy-course__item-nav-link {
@@ -142,6 +152,26 @@ function stepLabel(step: CourseContentItemStep): string {
 
     .legacy-course__item-nav-link--next {
       margin-left: auto;
+    }
+
+    .legacy-course__item-nav--bottom .legacy-course__item-nav-link {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: calc(50% - 0.5rem);
+    }
+
+    .legacy-course__item-nav--bottom .legacy-course__item-nav-label {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+  }
+
+  @media print {
+    .legacy-course__item-nav--bottom {
+      position: static;
+      box-shadow: none;
     }
   }
 </style>

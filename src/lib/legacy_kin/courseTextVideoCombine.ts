@@ -7,8 +7,8 @@ import {
   contentItemMatchesRef,
   flattenLessonContent,
 } from "./courseLessonContentItems";
+import { reassignAllContentOrders } from "./courseContentEditorBlocks";
 import type { CourseBlock, CourseLesson } from "./coursePreviewPoc";
-import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
 import {
   getTextVideoLayoutParts,
   isTextVideoLayoutBlock,
@@ -68,15 +68,6 @@ function removeStandaloneRichTextItem(lesson: CourseLesson, item: FlatContentIte
     lesson.blocks.splice(blockIndex, 1);
   }
   return true;
-}
-
-function reassignAllContentOrders(lesson: CourseLesson) {
-  let order = 1;
-  for (const block of sortedBlocks(lesson)) {
-    for (const component of sortedComponents(block)) {
-      component.order = order++;
-    }
-  }
 }
 
 /** Merge the next plain Text item into this Text + Video block's bottom text column. */

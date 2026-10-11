@@ -152,6 +152,7 @@ describe("getCourseCatalogEntries href", () => {
 describe("resolveCatalogStatus", () => {
   it("shows in-progress for active draft courses with contentStatus in_progress", () => {
     expect(resolveCatalogStatus("nothing-fits-draft", "coming-soon")).toBe("in-progress");
+    expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("in-progress");
   });
 
   it("keeps a published production catalog course available even while contentStatus is in_progress", () => {
@@ -165,7 +166,6 @@ describe("resolveCatalogStatus", () => {
     () => {
       expect(resolveCatalogStatus("not-enough-needles", "coming-soon")).toBe("available");
       expect(resolveCatalogStatus("ribber-basic-bootcamp", "coming-soon")).toBe("available");
-      expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("available");
     },
     20_000,
   );

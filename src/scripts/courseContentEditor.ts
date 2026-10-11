@@ -77,10 +77,11 @@ import {
   type EditorRichTextTab,
 } from "../lib/legacy_kin/courseContentEditorNavigation";
 import {
-  appendComponentToBlock,
   appendStandaloneComponentBlock,
   findBlockContainingComponent,
+  insertComponentIntoBlockRelative,
   insertStandaloneComponentBlockRelative,
+  reassignAllContentOrders as commitLessonContentOrder,
   isEditorLayoutBlock,
   moveBlockRelativeToTarget as moveBlockRelativeToTargetInLesson,
   movePlainContentComponent,
@@ -1737,7 +1738,17 @@ function appendBlockToSection(blockSlug: string, kind: string) {
   if (!block || isEditorLayoutBlock(block)) return;
 
   const component = createComponent(kind);
-  const added = appendComponentToBlock(lesson as CourseLesson, blockSlug, component);
+  const anchor =
+    contentEditingRef && contentEditingRef.blockSlug === blockSlug
+      ? contentEditingRef
+      : null;
+  const added = insertComponentIntoBlockRelative(
+    lesson as CourseLesson,
+    blockSlug,
+    component,
+    anchor?.legacyComponentId ?? null,
+    anchor?.type ?? null,
+  );
   if (!added) return;
 
   setLessonDraft(selectedLessonSlug, lesson);
@@ -2263,12 +2274,7 @@ function createComponent(kind: string): Record<string, unknown> {
 }
 
 function reassignAllContentOrders(lesson: LessonRecord) {
-  let order = 1;
-  for (const block of sortedBlocks(lesson)) {
-    for (const component of sortedComponents(block)) {
-      component.order = order++;
-    }
-  }
+  commitLessonContentOrder(lesson as CourseLesson);
 }
 
 function pruneEmptyBlocks(lesson: LessonRecord) {

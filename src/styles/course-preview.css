@@ -456,12 +456,40 @@ main.site-content:has(.course-preview--reader) {
 
 .course-preview__embedded-tool {
   margin-top: 0.25rem;
+  container-type: inline-size;
+  container-name: course-embedded-tool;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .course-preview__embedded-tool .maxwidth-panel--embedded,
 .course-preview__embedded-tool .ye-panel--embedded {
   border-color: #e2e8f0;
   background: #fcfdfb;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/*
+ * The estimator's desktop layout is two columns once the viewport is 768px.
+ * A course lesson column is often narrower than that, which crushes the fields.
+ * Stack the embedded calculator from the lesson width, not the window width.
+ */
+@container course-embedded-tool (max-width: 44rem) {
+  .course-preview__embedded-tool .ye-panel--embedded .ye-step-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .course-preview__embedded-tool .ye-panel--embedded .ye-step-inputs {
+    max-width: none;
+  }
+
+  .course-preview__embedded-tool .ye-panel--embedded .ye-step-visual {
+    width: 100%;
+    max-width: 22rem;
+    margin: 0 auto;
+    justify-self: center;
+  }
 }
 
 .course-preview__richtext {
