@@ -51,6 +51,10 @@ import {
 import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
 import { generateSetInSleevePattern } from "../lib/patterns/setInSleevePatternOutput.ts";
 import {
+  setInBackNecklineMachineHelpCardHtml,
+  setInFrontNecklineMachineHelpCardHtml,
+} from "../lib/patterns/setInSleeveLearningResources.ts";
+import {
   hasAuthoritativeSetInSleeveConstruction,
   isActiveSetInSleeveConstruction,
   withSetInSleeveConstructionFamily,
@@ -590,6 +594,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     showNotationPreview,
     shouldersShaped = true,
     omitRepeatedNecklineSetup = false,
+    machineHelpCardHtml,
   ) {
     const notationPreviewPiece =
       showNotationPreview === true && (_piece === "front" || _piece === "back")
@@ -607,7 +612,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       notationPreview: notationPreviewPiece,
       notationPreviewConstruction: "sleeveless",
     });
-    return `${intro}\n${necklineChartMachineHelpCardHtml()}`;
+    const card =
+      typeof machineHelpCardHtml === "string" ? machineHelpCardHtml : necklineChartMachineHelpCardHtml();
+    return card ? `${intro}\n${card}` : intro;
   }
 
   /**
@@ -4312,12 +4319,24 @@ table {
         result?.debug?.backNeckRoundNecklineStrategy === "shallow-round",
     };
     const backChartStartLabel = `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`;
+    const setInFrontIsVNeck =
+      isSleevelessVNeckChoice(patternMerged) || isSleevelessVNeckChoice(generatorPatternData);
+    const setInBackNeckHelpCard = setInBackNecklineMachineHelpCardHtml();
+    const setInFrontNeckHelpCard = setInFrontNecklineMachineHelpCardHtml(setInFrontIsVNeck);
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
     if (backChartTableHost && result.neckShoulderShapingChart) {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(backChartStartLabel, result.neckShoulderShapingChart, "back", false, true, true),
+        neckShoulderChartHelpRowHtml(
+          backChartStartLabel,
+          result.neckShoulderShapingChart,
+          "back",
+          false,
+          true,
+          true,
+          setInBackNeckHelpCard,
+        ),
         backChecklistTableOptions,
       );
     }
@@ -4334,7 +4353,7 @@ table {
       </div>
     </div>`
       : "";
-    const frontHelpCardHtml = necklineChartMachineHelpCardHtml();
+    const frontHelpCardHtml = setInFrontNeckHelpCard;
     const frontWrittenIntroHtml = renderSleevelessPatternTabFrontWrittenIntroHtml(
       result,
       frontHelpCardHtml,
@@ -4370,6 +4389,7 @@ table {
           false,
           true,
           true,
+          setInBackNeckHelpCard,
         ),
         options: backChecklistTableOptions,
       },

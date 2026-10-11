@@ -323,16 +323,33 @@ describe("buildSleevelessFinishingStepsHtml", () => {
           },
         });
 
-        expect(html, `${family.name} ${neck.neckline}`).toContain("Need help finishing the neckline?");
-        expect(html, `${family.name} ${neck.neckline}`).toContain(`href="${neck.href}"`);
-        expect(html, `${family.name} ${neck.neckline}`).toContain(neck.label);
-        expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.otherHref}"`);
-        expect(html, `${family.name} ${neck.neckline}`).not.toContain(neck.otherLabel);
-        expect(html, `${family.name} ${neck.neckline}`).not.toContain("app.knititnow.com");
-        expect(html, `${family.name} ${neck.neckline}`).toContain('target="_blank"');
         expect(html, `${family.name} ${neck.neckline}`).toContain(
           `data-sleeveless-help-video="${videoKey}"`,
         );
+        if (family.name === "Set-in Sleeve") {
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain("Need help finishing the neckline?");
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.href}"`);
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.otherHref}"`);
+          expect(html, `${family.name} ${neck.neckline}`).toContain('href="/videos/580"');
+          expect(html, `${family.name} ${neck.neckline}`).toContain("Set In Sleeve Perfection");
+          expect(html.match(/\/videos\/580/g), `${family.name} ${neck.neckline}`).toHaveLength(1);
+        } else {
+          expect(html, `${family.name} ${neck.neckline}`).toContain("Need help finishing the neckline?");
+          expect(html, `${family.name} ${neck.neckline}`).toContain(`href="${neck.href}"`);
+          expect(html, `${family.name} ${neck.neckline}`).toContain(neck.label);
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.otherHref}"`);
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain(neck.otherLabel);
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain("app.knititnow.com");
+          expect(html, `${family.name} ${neck.neckline}`).toContain('target="_blank"');
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain("/videos/580");
+        }
+        const printHtml = buildSleevelessFinishingPrintListHtml({
+          isCardigan: false,
+          ...family.options,
+        });
+        expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("/videos/580");
+        expect(printHtml, `${family.name} ${neck.neckline} print`).not.toContain("Need help finishing the neckline?");
+
         expect(html, `${family.name} ${neck.neckline}`).toContain(neck.buttonLabel);
         expect(html, `${family.name} ${neck.neckline}`).toContain("Work the neckline trim or neckband.");
         expect(html, `${family.name} ${neck.neckline}`).toContain("Finish the neckband as desired.");

@@ -38,6 +38,11 @@ import {
 } from "./setInSleeve/setInSleeveInstructions";
 import type { SetInArmholePlan } from "./setInSleeve/setInArmhole";
 import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionIdentity";
+import {
+  SET_IN_NECKLINE_ORIENTATION_TIP_ID,
+  setInBackArmholeBindOffTrickTip,
+  setInNecklineOrientationTipBlock,
+} from "./setInSleeveLearningResources";
 
 export type SetInSleevePatternResult = SleevelessBackPatternResult & {
   isSetInSleeve: true;
@@ -76,6 +81,47 @@ function fitOf(patternData: Record<string, unknown>): string {
 
 function linesToBlocks(lines: readonly string[]): SleevelessPatternDisplayRow[] {
   return lines.filter((line) => line.trim().length > 0).map((line) => ({ kind: "block" as const, paragraphs: [line] }));
+}
+
+/** First back bind-off only. Front and sleeve-cap bind-offs stay plain. */
+function backArmholeBlocksFromLines(lines: readonly string[]): SleevelessPatternDisplayRow[] {
+  const tip = setInBackArmholeBindOffTrickTip();
+  let tipped = false;
+  return lines
+    .filter((line) => line.trim().length > 0)
+    .map((line) => {
+      if (!tipped && /\bbind off\b/i.test(line)) {
+        tipped = true;
+        return { kind: "block" as const, paragraphs: [line], ...tip };
+      }
+      return { kind: "block" as const, paragraphs: [line] };
+    });
+}
+
+/**
+ * Pullover V-necks skip the shared orientation card. Cardigan V-necks and round
+ * necks already include it, so this does not add a second copy.
+ */
+function withSetInVNeckPulloverOrientationTip(
+  rows: readonly SleevelessPatternDisplayRow[],
+  patternData: Record<string, unknown>,
+): SleevelessPatternDisplayRow[] {
+  if (!isSleevelessVNeckChoice(patternData) || isSleevelessCardiganGarmentStyle(patternData)) {
+    return [...rows];
+  }
+  if (rows.some((row) => row.kind === "block" && row.tipId === SET_IN_NECKLINE_ORIENTATION_TIP_ID)) {
+    return [...rows];
+  }
+  const out: SleevelessPatternDisplayRow[] = [];
+  let inserted = false;
+  for (const row of rows) {
+    out.push(row);
+    if (!inserted && row.kind === "section" && /NECKLINE\s*&\s*SHOULDERS/i.test(row.title ?? "")) {
+      out.push(setInNecklineOrientationTipBlock());
+      inserted = true;
+    }
+  }
+  return out;
 }
 
 /** Written Set-In instructions use `RC: 039`. Checklist cells and diagram `rc039` labels are left alone. */
@@ -213,7 +259,7 @@ export function generateSetInSleevePattern(
   const duringArmhole = divideLocal !== null && overlap && overlap.divideGarmentRc >= overlap.firstArmholeGarmentRc;
 
   const backArmholeBlocks = plan
-    ? linesToBlocks(
+    ? backArmholeBlocksFromLines(
         armholeLinesForPiece(
           plan,
           debug.bustBodyStitches && debug.bustBodyStitches > 0
@@ -246,8 +292,9 @@ export function generateSetInSleevePattern(
     : backArmholeBlocks;
 
   const displayRows = replaceArmholeSection(body.displayRows, backArmholeBlocks);
-  const frontDisplayRows = stripSleevelessArmholeProse(
-    replaceArmholeSection(body.frontDisplayRows, frontArmholeBlocks),
+  const frontDisplayRows = withSetInVNeckPulloverOrientationTip(
+    stripSleevelessArmholeProse(replaceArmholeSection(body.frontDisplayRows, frontArmholeBlocks)),
+    stamped,
   );
 
   const measurements = section(section(stamped.fit).selectedMeasurements);

@@ -17,7 +17,16 @@ import {
   buildSleevelessFinishingStepsHtml,
 } from "./sleevelessPatternFinishingHtml";
 import { sleevelessFinishingFromPattern } from "./sleevelessPatternFinishing";
-import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import {
+  EWRAP_CAST_ON_GLOSSARY_ID,
+  generateSleevelessBackPattern,
+  LIFELINE_GLOSSARY_ID,
+} from "./sleevelessPatternOutput";
+import { ROUND_BACK_NECKLINE_SHAPING_VIDEO_TIP_ID } from "./roundBackNecklineShapingVideoTip";
+import {
+  SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID,
+  SET_IN_NECKLINE_ORIENTATION_TIP_ID,
+} from "./setInSleeveLearningResources";
 import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import {
@@ -768,7 +777,8 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(setIn).toContain("buildSleevelessRoundNeckShapingMapData");
     expect(setIn).toContain("front-neckline-shoulder-chart-print-btn");
     expect(setIn).toContain("resetRowCounterForSecondShoulder: true");
-    expect(setIn).toContain("false, true, true");
+    expect(setIn).toMatch(/false,\s+true,\s+true,\s+setInBackNeckHelpCard/);
+    expect(setIn).toContain("const frontHelpCardHtml = setInFrontNeckHelpCard;");
     expect(source).toContain("omitRepeatedNecklineSetup");
     const printCss = readFileSync("src/styles/ns-shaping-chart.css", "utf8");
     expect(printCss).toContain(".ns-shaping-chart__tabpanel[hidden]");
@@ -887,5 +897,80 @@ describe("set-in front neckline and shoulder checklist", () => {
     });
     expect(rows.some((row) => row.edge === "Neck")).toBe(true);
     expect(rows.some((row) => row.edge === "Shoulder" || row.edge === "Armhole")).toBe(true);
+  });
+});
+
+describe("set-in learning resources", () => {
+  function tipCount(
+    rows: ReadonlyArray<{ kind: string; tipId?: string }>,
+    tipId: string,
+  ): number {
+    return rows.filter((row) => row.kind === "block" && row.tipId === tipId).length;
+  }
+
+  function armholeBindOffHosts(rows: ReturnType<typeof generateSetInSleevePattern>["displayRows"]) {
+    let inArmhole = false;
+    const hosts: typeof rows = [];
+    for (const row of rows) {
+      if (row.kind === "section" && row.title === "ARMHOLE") {
+        inArmhole = true;
+        continue;
+      }
+      if (inArmhole && row.kind === "section") break;
+      if (inArmhole && row.kind === "block" && row.tipId === SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID) {
+        hosts.push(row);
+      }
+    }
+    return hosts;
+  }
+
+  const variations = [
+    { label: "misses round pullover", options: { row: MISSES_7, neckline: "round" as const, garmentStyle: "pullover" as const } },
+    { label: "misses round cardigan", options: { row: MISSES_7, neckline: "round" as const, garmentStyle: "cardigan" as const } },
+    { label: "misses v-neck pullover", options: { row: MISSES_7, neckline: "v-neck" as const, garmentStyle: "pullover" as const } },
+    { label: "misses v-neck cardigan", options: { row: MISSES_7, neckline: "v-neck" as const, garmentStyle: "cardigan" as const } },
+    { label: "men round pullover", options: { row: MEN_4X, audience: "men", neckline: "round" as const, garmentStyle: "pullover" as const } },
+    { label: "men round cardigan", options: { row: MEN_4X, audience: "men", neckline: "round" as const, garmentStyle: "cardigan" as const } },
+    { label: "men v-neck pullover", options: { row: MEN_4X, audience: "men", neckline: "v-neck" as const, garmentStyle: "pullover" as const } },
+    { label: "men v-neck cardigan", options: { row: MEN_4X, audience: "men", neckline: "v-neck" as const, garmentStyle: "cardigan" as const } },
+  ];
+
+  it.each(variations)("places the bind-off tip once on the back armhole for $label", ({ options }) => {
+    const result = generateSetInSleevePattern(pattern(options));
+    const hosts = armholeBindOffHosts(result.displayRows);
+    expect(hosts).toHaveLength(1);
+    expect(hosts[0]?.paragraphs?.[0]).toMatch(/\bbind off\b/i);
+    expect(tipCount(result.displayRows, SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID)).toBe(1);
+    expect(tipCount(result.frontDisplayRows, SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID)).toBe(0);
+    expect(tipCount(result.sleeveDisplayRows, SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID)).toBe(0);
+    expect(tipCount(result.displayRows, ROUND_BACK_NECKLINE_SHAPING_VIDEO_TIP_ID)).toBe(1);
+    expect(tipCount(result.frontDisplayRows, ROUND_BACK_NECKLINE_SHAPING_VIDEO_TIP_ID)).toBe(0);
+
+    const backHtml = renderPatternDisplayRowsHtml(result.displayRows, { pieceSectionId: "back" });
+    const printHtml = renderSleevelessPrintPieceHtml(result.displayRows, "", "back");
+    expect(backHtml).toContain(`data-tip-id="${SET_IN_BACK_ARMHOLE_BIND_OFF_TIP_ID}"`);
+    expect(backHtml).toContain('data-content-id="5002"');
+    expect(printHtml).toContain("Bind Off Trick");
+    expect(printHtml).toContain("optional transfer trick");
+    expect(printHtml).toContain('class="pattern-finishing-video-help pattern-help-link no-print"');
+    expect(printHtml).toContain("<details open ");
+    expect(backHtml).toContain(`data-glossary-id="${EWRAP_CAST_ON_GLOSSARY_ID}"`);
+    expect(backHtml).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
+    expect(backHtml).not.toContain("hold stitches or use short-row shaping");
+  });
+
+  it.each(variations)("keeps one orientation card on the front for $label", ({ label, options }) => {
+    const result = generateSetInSleevePattern(pattern(options));
+    expect(tipCount(result.frontDisplayRows, SET_IN_NECKLINE_ORIENTATION_TIP_ID), label).toBe(1);
+    const html = renderPatternDisplayRowsHtml(result.frontDisplayRows, { pieceSectionId: "front" });
+    expect(html).toContain("Understanding Left, Right & Diagram Orientation");
+    expect(html).toContain(`data-tip-id="${SET_IN_NECKLINE_ORIENTATION_TIP_ID}"`);
+  });
+
+  it("does not add the orientation card to a sleeveless V-neck pullover", () => {
+    const sleeveless = generateSleevelessBackPattern(
+      pattern({ row: MISSES_7, neckline: "v-neck", garmentStyle: "pullover" }),
+    );
+    expect(tipCount(sleeveless.frontDisplayRows, SET_IN_NECKLINE_ORIENTATION_TIP_ID)).toBe(0);
   });
 });

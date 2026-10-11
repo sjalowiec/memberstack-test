@@ -7,6 +7,7 @@ import {
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
 import type { NeckbandPickupInstructionViewModel } from "./legoBlocks/neckbandPickup";
+import { setInSleevePerfectionVideoHelpHtml } from "./setInSleeveLearningResources";
 
 export type SleevelessFinishingHtmlDeps = {
   escapeHtml: (s: string) => string;
@@ -132,6 +133,7 @@ function necklineFinishingHelpBody(deps: SleevelessFinishingHtmlDeps): string {
 function finishNecklineBody(
   deps: SleevelessFinishingHtmlDeps,
   neckbandPickup: NeckbandPickupInstructionViewModel | null | undefined,
+  isSetInSleeve = false,
 ): string {
   const listItems: string[] = [];
   if (neckbandPickup) {
@@ -155,7 +157,7 @@ function finishNecklineBody(
         )}</button>
       </span>
     </p>
-    ${necklineFinishingHelpBody(deps)}`;
+    ${isSetInSleeve ? "" : necklineFinishingHelpBody(deps)}`;
 }
 
 function dropShoulderSleeveArmholeAttachStepsHtml(): string {
@@ -176,7 +178,8 @@ function setInSleeveAttachBody(): string {
       <li>Pin or clip the sleeve cap evenly around the armhole, matching shaping points.</li>
       <li>Seam the sleeve cap into the armhole.</li>
       <li>Repeat for the second sleeve.</li>
-    </ul>`;
+    </ul>
+    ${setInSleevePerfectionVideoHelpHtml()}`;
 }
 
 function attachSleevesBody(sleeveDirection: DropShoulderSleeveDirection, isSetInSleeve: boolean): string {
@@ -273,7 +276,7 @@ function stepBodyHtml(
         deps,
       );
     case "finishNeckline":
-      return finishNecklineBody(deps, neckbandPickup);
+      return finishNecklineBody(deps, neckbandPickup, isSetInSleeve);
     case "attachSleeves":
       return attachSleevesBody(dropShoulderSleeveDirection, isSetInSleeve);
     case "joinSideSeams":
