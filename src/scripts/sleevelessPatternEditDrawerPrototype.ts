@@ -110,6 +110,8 @@ import {
   type SleevelessGarmentType,
 } from "../lib/patterns/writeSleevelessGarmentSelection";
 import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternStorage";
+import { isActiveSetInSleeveConstruction } from "../lib/patterns/setInSleeveConstructionIdentity";
+import { setInSleeveAdultChartLabel } from "../lib/patterns/setInSleeveSizeCharts";
 import { convertGaugeSwatchDisplayBetweenUnits, editWorkspaceGaugeUnitDescription } from "../lib/patterns/editWorkspaceGaugeUnitDisplay";
 import {
   formatSwatchCountForGaugeInput,
@@ -155,6 +157,14 @@ const AUDIENCE_DISPLAY_LABELS: Record<string, string> = {
   kids: "Kids",
   baby: "Babies",
 };
+
+function audienceDisplayLabel(audience: string): string {
+  if (isActiveSetInSleeveConstruction()) {
+    const setInLabel = setInSleeveAdultChartLabel(audience);
+    if (setInLabel) return setInLabel;
+  }
+  return AUDIENCE_DISPLAY_LABELS[audience] ?? "Women";
+}
 
 type StorageSnapshot = Map<string, string | null>;
 
@@ -549,7 +559,7 @@ function initSleevelessPatternEditDrawer(): void {
     }
 
     const audience = resolveAudience();
-    if (audienceEl) audienceEl.textContent = AUDIENCE_DISPLAY_LABELS[audience] ?? "Women";
+    if (audienceEl) audienceEl.textContent = audienceDisplayLabel(audience);
 
     populateSizeOptions(audience, typeof ft.selectedSize === "string" ? ft.selectedSize : "");
     lastQuickEditSize = sizeSelect?.value.trim() ?? "";

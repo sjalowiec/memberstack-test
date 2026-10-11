@@ -8,14 +8,21 @@ import {
   EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
 } from "../../lib/patterns/expressBuilderCopy";
 
-interface Props {
-  sweaterSizingChartHref: string;
+interface WhoOption {
+  value: string;
+  label: string;
 }
 
-const { sweaterSizingChartHref } = Astro.props;
+interface Props {
+  sweaterSizingChartHref: string;
+  /** Omitted on Sleeveless and Drop Shoulder so they keep Women / Men / Kids / Baby. */
+  whoOptions?: readonly WhoOption[];
+}
+
+const { sweaterSizingChartHref, whoOptions } = Astro.props;
 ---
 
-<ExpressBuilderWhoPicker labelledBy="express-step-1-title" />
+<ExpressBuilderWhoPicker labelledBy="express-step-1-title" whoOptions={whoOptions} />
 <div class="express-who-size-intro">
   <h3 class="express-size-heading">{EXPRESS_BUILDER_SIZE_HEADING}</h3>
   <p class="express-size-instruction" id="express-size-helper-text">

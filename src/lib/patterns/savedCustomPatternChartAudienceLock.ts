@@ -9,6 +9,7 @@ import {
   readSavedSizingIdentityBaseline,
   type SavedCustomPatternSizingIdentity,
 } from "./savedCustomPatternSessionIdentity";
+import { isSetInSleeveBuilderPage, setInSleeveAdultChartLabel } from "./setInSleeveSizeCharts";
 import { expressWhoToChartAudience } from "./syncSleevelessExpressDesignToStorage";
 
 export const SAVED_PATTERN_AUDIENCE_LOCK_NOTICE_SELECTOR =
@@ -35,6 +36,10 @@ const CHART_AUDIENCE_SIZING_LABEL: Record<string, string> = {
 
 export function chartAudienceSizingChartLabel(chartAudience: string): string {
   const key = String(chartAudience ?? "").trim().toLowerCase();
+  if (isSetInSleeveBuilderPage()) {
+    const setInLabel = setInSleeveAdultChartLabel(key);
+    if (setInLabel) return setInLabel;
+  }
   return CHART_AUDIENCE_SIZING_LABEL[key] ?? (key || "this");
 }
 

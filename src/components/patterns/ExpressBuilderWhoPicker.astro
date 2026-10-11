@@ -1,19 +1,26 @@
 ---
 /** Shared Women / Men / Kids / Baby text buttons for sweater Pattern Builders. */
 
-interface Props {
-  labelledBy: string;
+interface WhoOption {
+  value: string;
+  label: string;
 }
 
-const { labelledBy } = Astro.props;
+interface Props {
+  labelledBy: string;
+  /** Set-In Sleeve passes Misses / Women's / Men's. Other builders keep the default four. */
+  whoOptions?: readonly WhoOption[];
+}
 
-/** Presentation-only labels. Values stay `women` / `men` / `kids` / `baby` for sizing. */
-const whoOptions = [
+/** Presentation-only labels. Default values stay `women` / `men` / `kids` / `baby` for sizing. */
+const defaultWhoOptions = [
   { value: "women", label: "Women" },
   { value: "men", label: "Men" },
   { value: "kids", label: "Kids" },
   { value: "baby", label: "Baby" },
 ] as const;
+
+const { labelledBy, whoOptions = defaultWhoOptions } = Astro.props;
 ---
 
 <div

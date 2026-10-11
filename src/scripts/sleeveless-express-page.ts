@@ -96,6 +96,11 @@ import {
 } from "../lib/patterns/syncExpressWizardToPatternStorage";
 import { DROP_SHOULDER_CONSTRUCTION } from "../lib/patterns/patternConstructionIdentity";
 import {
+  omitUnsupportedSetInSleeveWho,
+  setInSleeveWhoIsSupported,
+} from "../lib/patterns/setInSleeveSizeCharts";
+import { SET_IN_SLEEVE_CONSTRUCTION } from "../lib/patterns/setInSleeveConstructionIdentity";
+import {
   buildDropShoulderReviewDisplayIdentity,
   markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged,
 } from "../lib/patterns/dropShoulderReviewDiagramRefresh";
@@ -261,6 +266,9 @@ function initExpressPage() {
     ensureExpressStyleDefaults(values);
   }
   enforceLockedExpressWhoInWizardValues(values);
+  omitUnsupportedSetInSleeveWho(values, {
+    editingSavedProject: isEditingSavedCustomPatternProject(),
+  });
 
   let openStepCandidate =
     typeof persisted?.openStep === "number" && Number.isFinite(persisted.openStep)
@@ -384,6 +392,14 @@ function initExpressPage() {
     }
     if (field === "who") {
       const whoKey = values.who;
+      const root = resolveExpressBuilderRoot() ?? document;
+      const labelEl = whoKey
+        ? root.querySelector(
+            `[data-choice][data-field="who"][data-value="${whoKey}"] .hat-length-picker__option-label`,
+          )
+        : null;
+      const fromButton = labelEl?.textContent?.trim() ?? "";
+      if (fromButton) return fromButton;
       const whoLabel =
         whoKey && LABELS.who[whoKey] ? LABELS.who[whoKey] : whoKey ? String(whoKey) : "";
       return whoLabel || "";
@@ -1064,6 +1080,15 @@ function initExpressPage() {
         !values.fit
       ) {
         window.alert("Please complete all Express steps before generating your pattern.");
+        return;
+      }
+
+      if (
+        expressPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION &&
+        !isEditingSavedCustomPatternProject() &&
+        !setInSleeveWhoIsSupported(values.who)
+      ) {
+        window.alert("Please choose a valid size for this wearer.");
         return;
       }
 

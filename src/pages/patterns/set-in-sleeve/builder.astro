@@ -19,6 +19,7 @@ import {
   EXPRESS_BUILDER_SIZE_RANGE_HEADING,
 } from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
+import { SET_IN_SLEEVE_WHO_OPTIONS } from "../../../lib/patterns/setInSleeveSizeCharts";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/set-in-sleeve/builder");
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
@@ -173,7 +174,10 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
               role="region"
               aria-labelledby="express-step-1-title"
             >
-              <ExpressBuilderWhoSizeSection sweaterSizingChartHref={sweaterSizingChartHref} />
+              <ExpressBuilderWhoSizeSection
+                sweaterSizingChartHref={sweaterSizingChartHref}
+                whoOptions={SET_IN_SLEEVE_WHO_OPTIONS}
+              />
             </div>
           </section>
 

@@ -241,6 +241,24 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
     expect(dropShoulderBuilderAstro).not.toContain('data-field="who"');
     expect(sleevelessBuilderAstro).not.toContain("sleeveless-woman-pullover-round-neck.webp");
     expect(dropShoulderBuilderAstro).not.toContain("drop-woman-pullover-round.webp");
+    expect(sleevelessBuilderAstro).not.toContain("SET_IN_SLEEVE_WHO_OPTIONS");
+    expect(dropShoulderBuilderAstro).not.toContain("SET_IN_SLEEVE_WHO_OPTIONS");
+  });
+
+  it("limits Set-In Sleeve to Misses, Women's, and Men's chart choices", () => {
+    const setInBuilderAstro = readFileSync(
+      resolve("src/pages/patterns/set-in-sleeve/builder.astro"),
+      "utf8",
+    );
+    const setInCharts = readFileSync(resolve("src/lib/patterns/setInSleeveSizeCharts.ts"), "utf8");
+    expect(setInBuilderAstro).toContain("whoOptions={SET_IN_SLEEVE_WHO_OPTIONS}");
+    expect(setInBuilderAstro).not.toContain('data-value="kids"');
+    expect(setInBuilderAstro).not.toContain('data-value="baby"');
+    expect(setInCharts).toContain('{ value: "women", label: "Misses" }');
+    expect(setInCharts).toContain('{ value: "plus", label: "Women\'s" }');
+    expect(setInCharts).toContain('{ value: "men", label: "Men\'s" }');
+    expect(setInCharts).not.toContain('label: "Kids"');
+    expect(setInCharts).not.toContain('label: "Baby"');
   });
 
   it("reuses the shared text who picker in Custom Build Design", () => {

@@ -38,6 +38,7 @@ import { syncExpressWizardToPatternStorage } from "./syncExpressWizardToPatternS
 import { CUSTOM_BUILD_GARMENT_TYPE_KEY, CUSTOM_BUILD_NECKLINE_STYLE_KEY } from "./sleevelessCustomBuildWizardNeckline";
 import { CUSTOM_BUILD_STYLE_STORAGE_KEYS } from "./sleevelessCustomBuildStyleKeys";
 import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
+import { isSetInSleeveBuilderPage } from "./setInSleeveSizeCharts";
 
 export const SLEEVELESS_EXPRESS_EDIT_CHOICES_PARAM = "edit";
 export const SLEEVELESS_EXPRESS_EDIT_CHOICES_VALUE = "choices";
@@ -49,6 +50,9 @@ export function chartAudienceToExpressWho(chartAudience: string): string {
   if (a === "men" || a === "male") return "men";
   if (a === "kids" || a === "kid") return "kids";
   if (a === "baby") return "baby";
+  // Women's is the existing `plus` chart. Only the Set-In Sleeve builder offers it
+  // as its own choice. Sleeveless still folds stored plus sessions back to Women.
+  if (a === "plus" && isSetInSleeveBuilderPage()) return "plus";
   return "women";
 }
 
