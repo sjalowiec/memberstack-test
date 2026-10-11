@@ -13,15 +13,13 @@
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
       "migratedAt": "2026-06-25T10:16:09+00:00",
       "preparedForReviewAt": "2026-10-10",
-      "contentRevision": 1,
+      "contentRevision": 2,
       "draftReview": {
         "note": "Unpublished local review copy. The three legacy hat projects are now one lesson that opens the Hat Pattern Builder. Not for customers.",
         "couldNotConvert": [],
         "missingFiles": [
           "/images/blog/34/yarn_ribber21.jpg",
-          "/images/blog/34/yarn_ribber12.jpg",
-          "/downloads/Machine_Knitting_Abbreviations.pdf",
-          "/downloads/merged1-12.pdf"
+          "/images/blog/34/yarn_ribber12.jpg"
         ],
         "recoveredImages": [
           "/images/course-content/33/Dont_skip.gif",
@@ -39,7 +37,7 @@
           "/images/course-content/33/dont-practice.gif"
         ],
         "decisions": [
-          "Confirm whether public/downloads/beginner_worksheets.pdf replaces merged1-12.pdf.",
+          "beginner_worksheets.pdf is the 12-page packet previously linked as merged1-12.pdf.",
           "The {First} greeting token is still in the first two lessons.",
           "No separate course description was in the content export."
         ]
@@ -929,7 +927,7 @@
             {
               "type": "download",
               "label": "Print all Worksheets",
-              "filename": "/downloads/merged1-12.pdf",
+              "filename": "/downloads/beginner_worksheets.pdf",
               "showInline": false,
               "legacy": {
                 "assignId": "3335",
@@ -1175,7 +1173,7 @@
         "blockSlug": "basic-increasing-and-decreasing"
       },
       {
-        "filename": "/downloads/merged1-12.pdf",
+        "filename": "/downloads/beginner_worksheets.pdf",
         "label": "Print all Worksheets",
         "lessonSlug": "finishing",
         "blockSlug": "print-the-worksheets"

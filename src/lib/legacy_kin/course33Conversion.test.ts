@@ -128,8 +128,12 @@ describe("Course 33 Beginner Workshop review conversion", () => {
     expect(existsSync(join(process.cwd(), "public/downloads/cast_on_exercises1.pdf"))).toBe(true);
     expect(serialized).toContain("/images/blog/34/yarn_ribber21.jpg");
     expect(serialized).toContain("/downloads/Machine_Knitting_Abbreviations.pdf");
-    expect(serialized).toContain("/downloads/merged1-12.pdf");
-    expect(existsSync(join(process.cwd(), "public/downloads/merged1-12.pdf"))).toBe(false);
+    expect(existsSync(join(process.cwd(), "public/downloads/Machine_Knitting_Abbreviations.pdf"))).toBe(
+      true,
+    );
+    expect(serialized).toContain("/downloads/beginner_worksheets.pdf");
+    expect(serialized).not.toContain("/downloads/merged1-12.pdf");
+    expect(existsSync(join(process.cwd(), "public/downloads/beginner_worksheets.pdf"))).toBe(true);
   });
 
   it("drops the obsolete hat-project steps and keeps the other lessons", () => {
