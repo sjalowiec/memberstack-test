@@ -12,6 +12,7 @@ import {
 } from "./sleevelessExpressResume";
 import {
   DROP_SHOULDER_BUILDER_FALLBACK_LABEL,
+  SET_IN_SLEEVE_BUILDER_FALLBACK_LABEL,
   syncSleevelessBuilderHeaderTitle,
   resolveSleevelessBuilderHeaderTitle,
 } from "./sleevelessBuilderHeaderUx";
@@ -132,6 +133,51 @@ describe("sleevelessBuilderHeaderUx", () => {
     syncSleevelessBuilderHeaderTitle();
     expect(headerEl.textContent).toBe(DROP_SHOULDER_BUILDER_FALLBACK_LABEL);
     expect(resolveSleevelessBuilderHeaderTitle()).toBe(DROP_SHOULDER_BUILDER_FALLBACK_LABEL);
+  });
+
+  it("brand-new set-in sleeve builder draft keeps the set-in sleeve heading", () => {
+    const headerEl = makeHeaderEl("Set-In Sleeve Sweater");
+    vi.stubGlobal("document", {
+      querySelector: (selector: string) => {
+        if (selector === "[data-express-construction]") {
+          return { getAttribute: () => "set-in-sleeve" };
+        }
+        if (selector === ".sleeveless-express-page .pattern-title") {
+          return headerEl;
+        }
+        return null;
+      },
+    });
+
+    clearActiveCustomPatternProjectId();
+    saveCurrentPattern({ patternProject: { title: "", notes: "" } });
+
+    syncSleevelessBuilderHeaderTitle();
+    expect(headerEl.textContent).toBe(SET_IN_SLEEVE_BUILDER_FALLBACK_LABEL);
+    expect(resolveSleevelessBuilderHeaderTitle()).toBe("Set-In Sleeve Sweater");
+  });
+
+  it("a named set-in sleeve project still uses the saved name as the heading", () => {
+    const headerEl = makeHeaderEl("Set-In Sleeve Sweater");
+    vi.stubGlobal("document", {
+      querySelector: (selector: string) => {
+        if (selector === "[data-express-construction]") {
+          return { getAttribute: () => "set-in-sleeve" };
+        }
+        if (selector === ".sleeveless-express-page .pattern-title") {
+          return headerEl;
+        }
+        return null;
+      },
+    });
+
+    saveCurrentPattern({
+      patternProject: { title: SUES_PATTERN, notes: "", titleCustomized: true },
+    });
+    writeActiveCustomPatternProjectId("proj-sue", SUES_PATTERN);
+
+    syncSleevelessBuilderHeaderTitle();
+    expect(headerEl.textContent).toBe(SUES_PATTERN);
   });
 
   it("falls back to kbm_custom_pattern_active_project_name when the draft title is empty", () => {

@@ -4,8 +4,13 @@ import {
   DROP_SHOULDER_CONSTRUCTION,
   readDropShoulderBuilderPageConstruction,
 } from "./patternConstructionIdentity";
+import {
+  readSetInSleeveBuilderPageConstruction,
+  SET_IN_SLEEVE_CONSTRUCTION,
+} from "./setInSleeveConstructionIdentity";
 
 export const DROP_SHOULDER_BUILDER_FALLBACK_LABEL = "Drop Shoulder Sweater";
+export const SET_IN_SLEEVE_BUILDER_FALLBACK_LABEL = "Set-In Sleeve Sweater";
 
 /**
  * Client-side header sync for the Express “Build/Create” page (`/patterns/sleeveless/builder`).
@@ -16,6 +21,9 @@ export function resolveSleevelessBuilderHeaderTitle(): string {
   if (named) return named;
   if (readDropShoulderBuilderPageConstruction() === DROP_SHOULDER_CONSTRUCTION) {
     return DROP_SHOULDER_BUILDER_FALLBACK_LABEL;
+  }
+  if (readSetInSleeveBuilderPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION) {
+    return SET_IN_SLEEVE_BUILDER_FALLBACK_LABEL;
   }
   return EXPRESS_EDITING_FALLBACK_LABEL;
 }
