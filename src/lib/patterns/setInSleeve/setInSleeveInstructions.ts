@@ -32,6 +32,7 @@ import {
 } from "../dropShoulderSleeveShapingChart";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
+import { sweaterBodyHemChoiceLines } from "../sweaterBodyHemInstructions";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
 import {
   roundNeckBackShallowSleevelessSummaryWrittenLines,
@@ -619,7 +620,11 @@ function bodyLines(result: SetInSleeveSweaterSuccess, piece: "back" | "front"): 
   const pieceName = piece === "back" ? "the back" : "the front";
   const lines = [
     `${formatRcColon(0)} Cast on ${body.bodyBlock.hemStitches} ${stitchWord(body.bodyBlock.hemStitches)} for ${pieceName}.`,
-    knitInPatternTo(0, body.hemRows) + ` Hem, ${inches(body.hemInches)}.`,
+    ...sweaterBodyHemChoiceLines(body.bodyBlock.hemStitches, body.hemRows, {
+      plainText: true,
+      rcPrefix: formatRcColon(0),
+      finishedDepthLabel: inches(body.hemInches),
+    }),
   ];
   if (body.bodyBlock.shapingDirection === "none" || body.bodyBlock.shapingRowNumbers.length === 0) {
     lines.push(

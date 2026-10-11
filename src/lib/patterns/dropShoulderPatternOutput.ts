@@ -83,6 +83,7 @@ import {
   type SleevelessBackPatternDebug,
 } from "./sleevelessPatternOutput";
 import { hemSectionRow } from "./legoBlocks/hem";
+import { sweaterBodyHemChoiceDisplay } from "./sweaterBodyHemInstructions";
 import {
   insertBustDartIntoFrontBodyDisplayRows,
   resolveBustDartForSweaterFront,
@@ -373,16 +374,18 @@ function castOnBlock(sts: number, label?: string, alineHipNote = false): Block {
 }
 
 function hemBlocks(hemRows: number, hemRowsValid: boolean, sts: number): SleevelessPatternDisplayRow[] {
+  const choices = hemRowsValid ? sweaterBodyHemChoiceDisplay(sts, hemRows) : null;
   return [
     hemSectionRow(),
     {
       kind: "block",
       rc: formatRcColon(0),
-      paragraphs: hemRowsValid
-        ? [knitEvenLine(hemRows)]
+      paragraphs: choices
+        ? choices.paragraphs
         : [
             "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
           ],
+      ...(choices ? { trustedParagraphs: choices.trustedParagraphs } : {}),
       stitchCount: sts > 0 ? sts : undefined,
     },
   ];

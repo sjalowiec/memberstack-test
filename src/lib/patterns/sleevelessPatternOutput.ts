@@ -14,6 +14,7 @@ import {
 } from "./legoBlocks/bustDart";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import { hemSectionRow } from "./legoBlocks/hem";
+import { sweaterBodyHemChoiceDisplay } from "./sweaterBodyHemInstructions";
 import { formatRowCounterResetGarmentRcLabel, RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
 import {
@@ -1950,14 +1951,16 @@ export function buildSleevelessBackDisplayRows(args: {
   });
 
   rows.push(hemSectionRow());
+  const hemChoices = args.hemRowsValid ? sweaterBodyHemChoiceDisplay(A, ribs) : null;
   rows.push({
     kind: "block",
     rc: hemRcLabel,
-    paragraphs: args.hemRowsValid
-      ? plainKnitSpanParagraphs(ribs, 0)
+    paragraphs: hemChoices
+      ? hemChoices.paragraphs
       : [
           "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
         ],
+    ...(hemChoices ? { trustedParagraphs: hemChoices.trustedParagraphs } : {}),
     stitchCount: A > 0 ? A : undefined,
   });
 
