@@ -14,6 +14,7 @@ import { authHeadersForCustomPatternProjects, resolveCustomPatternProjectAuth } 
 import { resolvePatternMembershipGateDecision } from "./patternMembershipPageGate";
 import { invalidateSleevelessUserAccessCache, resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 import {
+  hostedSetInSleeveDraftOwnerId,
   isHostedSetInSleeveDevTesting,
   KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID,
   SET_IN_DEV_TEST_HEADER,
@@ -108,5 +109,35 @@ describe("hosted Set-In Sleeve dev testing", () => {
     expect(authHeadersForCustomPatternProjects(auth)).toEqual({
       [SET_IN_DEV_TEST_HEADER]: "1",
     });
+  });
+
+  it("keeps the set-in draft owner on the test identity when a member is also signed in", () => {
+    expect(
+      hostedSetInSleeveDraftOwnerId({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/set-in-sleeve/builder",
+      }),
+    ).toBe(KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID);
+    expect(
+      hostedSetInSleeveDraftOwnerId({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/set-in-sleeve/pattern/",
+      }),
+    ).toBe(KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID);
+  });
+
+  it("does not override draft ownership for other builders or production", () => {
+    expect(
+      hostedSetInSleeveDraftOwnerId({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/sleeveless/builder",
+      }),
+    ).toBeNull();
+    expect(
+      hostedSetInSleeveDraftOwnerId({
+        hostname: "knititnow.com",
+        pathname: "/patterns/set-in-sleeve/pattern/",
+      }),
+    ).toBeNull();
   });
 });

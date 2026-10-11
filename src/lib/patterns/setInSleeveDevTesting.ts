@@ -70,3 +70,15 @@ export function setInSleeveDevTestingAccess(): SleevelessUserAccess {
     freeClaimsBySystem: {},
   };
 }
+
+/**
+ * Draft-owner id for hosted Set-In Sleeve testing.
+ * A signed-in Memberstack member on kin-dev must not be treated as a different
+ * owner of this draft — that clears the selected size and the loaded pattern.
+ * Returns null everywhere else so production membership ownership is unchanged.
+ */
+export function hostedSetInSleeveDraftOwnerId(
+  options?: HostedSetInSleeveDevTestingOptions,
+): string | null {
+  return isHostedSetInSleeveDevTesting(options) ? KIN_DEV_SET_IN_SLEEVE_TEST_USER_ID : null;
+}

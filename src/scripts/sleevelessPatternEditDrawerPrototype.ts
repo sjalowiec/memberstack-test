@@ -96,6 +96,7 @@ import {
   isValidExpressSizeForAudience,
   loadExpressSweaterCharts,
   normalizeChartRowSize,
+  resolveExpressSizeForEditSave,
 } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import {
   readCustomBuildWizardGarmentType,
@@ -514,6 +515,14 @@ function initSleevelessPatternEditDrawer(): void {
       currentSize && isValidExpressSizeForAudience(audience, currentSize) ? currentSize : "";
   }
 
+  /** Size already on the pattern, including the Express builder snapshot. */
+  function storedExpressSelectedSize(): string {
+    const fitSize = section(getCurrentPattern().fit).selectedSize;
+    if (typeof fitSize === "string" && fitSize.trim()) return fitSize.trim();
+    const fromExpress = readExpressBuilderValues().selectedSize;
+    return typeof fromExpress === "string" ? fromExpress.trim() : "";
+  }
+
   /** Fill every drawer control from the current pattern storage (source of truth). */
   function populateFromStorage(): void {
     const pattern = getCurrentPattern();
@@ -773,7 +782,7 @@ function initSleevelessPatternEditDrawer(): void {
     logPatternEditGateDebug("applyChanges.proceeding", { drawerAllowed: true });
 
     const audience = resolveAudience();
-    const size = sizeSelect?.value.trim() ?? "";
+    let size = sizeSelect?.value.trim() ?? "";
     const garment = (radioValue("sl-edit-garment") || "pullover") as SleevelessGarmentType;
     const neckline = radioValue("sl-edit-neckline") === "v-neck" ? "v-neck" : "round";
     const fit = readStoredFitPreference();
@@ -788,7 +797,22 @@ function initSleevelessPatternEditDrawer(): void {
 
     const errors: string[] = [];
     if (!size || !isValidExpressSizeForAudience(audience, size)) {
-      errors.push("Choose a size.");
+      const storedSize = storedExpressSelectedSize();
+      try {
+        await loadExpressSweaterCharts();
+        chartsLoaded = true;
+      } catch {
+        chartsLoaded = false;
+      }
+      populateSizeOptions(audience, size || storedSize);
+      size = resolveExpressSizeForEditSave(sizeSelect?.value ?? "", storedSize, audience);
+      if (!size) {
+        errors.push(
+          storedSize && !chartsLoaded
+            ? "Could not load sizes — refresh and try again."
+            : "Choose a size.",
+        );
+      }
     }
     if (!isPositiveNumericMeasurement(stitchSwatch)) errors.push("Enter a stitch gauge greater than 0.");
     if (!isPositiveNumericMeasurement(rowSwatch)) errors.push("Enter a row gauge greater than 0.");

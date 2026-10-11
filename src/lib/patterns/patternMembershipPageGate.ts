@@ -12,6 +12,7 @@ import {
   localPatternTestingAccess,
 } from "./localPatternTesting";
 import {
+  hostedSetInSleeveDraftOwnerId,
   isHostedSetInSleeveDevTesting,
   setInSleeveDevTestingAccess,
 } from "./setInSleeveDevTesting";
@@ -205,13 +206,23 @@ function setGateState(root: HTMLElement, state: PatternMembershipGateState): voi
   }
 }
 
+/**
+ * On hosted Set-In Sleeve testing the draft belongs to the fixed test identity,
+ * even when a Memberstack session is also present. Using the Memberstack id
+ * here clears the test draft (selected size and loaded pattern).
+ */
+async function enforceDraftOwnerForCurrentPage(): Promise<void> {
+  const hostedOwner = hostedSetInSleeveDraftOwnerId();
+  enforcePatternDraftOwner(hostedOwner ?? (await resolveCurrentMemberIdForDraftGuard()));
+}
+
 /** Wires `[data-sleeveless-pattern-gate]`. Fail closed while pending. */
 export async function initPatternMembershipPageGate(root: HTMLElement): Promise<void> {
   setGateState(root, "pending");
 
   const decision = await resolvePatternMembershipGateDecision();
   setGateState(root, decision.state);
-  enforcePatternDraftOwner(await resolveCurrentMemberIdForDraftGuard());
+  await enforceDraftOwnerForCurrentPage();
 
   const ms = window.$memberstackDom;
   if (ms && typeof ms.on === "function") {
@@ -219,9 +230,7 @@ export async function initPatternMembershipPageGate(root: HTMLElement): Promise<
       void resolvePatternMembershipGateDecision().then((next) => {
         setGateState(root, next.state);
       });
-      void resolveCurrentMemberIdForDraftGuard().then((memberId) => {
-        enforcePatternDraftOwner(memberId);
-      });
+      void enforceDraftOwnerForCurrentPage();
     };
     ms.on("member.login", refresh);
     ms.on("member.logout", refresh);

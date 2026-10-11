@@ -9,6 +9,10 @@
 import { hasMemberAccess } from "../memberAccess";
 import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { resolveSavedPatternAccessStateFromSession } from "./savedPatternAccessStateClient";
+import {
+  isHostedSetInSleeveDevTesting,
+  type HostedSetInSleeveDevTestingOptions,
+} from "./setInSleeveDevTesting";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
 import {
   resolveSocksLandingAction,
@@ -23,6 +27,13 @@ export function resolvePatternBuilderLandingCtaMode(
   memberOrPayload: unknown,
 ): Exclude<PatternBuilderLandingCtaMode, "pending"> {
   return hasMemberAccess(memberOrPayload) ? "member" : "prospect";
+}
+
+/** Member CTA on hosted Set-In Sleeve testing. Null on every other page and host. */
+export function resolveHostedSetInLandingCtaMode(
+  options?: HostedSetInSleeveDevTestingOptions,
+): Exclude<PatternBuilderLandingCtaMode, "pending"> | null {
+  return isHostedSetInSleeveDevTesting(options) ? "member" : null;
 }
 
 export function applyPatternBuilderLandingCtaMode(
@@ -64,6 +75,12 @@ async function applySocksLandingPresentation(root: HTMLElement): Promise<void> {
 /** Wires `[data-pattern-builder-landing]`. Defaults to pending (no CTA flash). */
 export async function initPatternBuilderLandingCta(root: HTMLElement): Promise<void> {
   applyPatternBuilderLandingCtaMode(root, "pending");
+
+  const hostedMode = resolveHostedSetInLandingCtaMode();
+  if (hostedMode) {
+    applyPatternBuilderLandingCtaMode(root, hostedMode);
+    return;
+  }
 
   if (isSocksSavedPatternLanding(root)) {
     await applySocksLandingPresentation(root);

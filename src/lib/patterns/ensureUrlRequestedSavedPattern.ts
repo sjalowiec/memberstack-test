@@ -72,7 +72,7 @@ export function applySavedPatternUnavailableMessage(root: ParentNode = document)
       "[data-socks-edit-empty-message]",
       "[data-hat-pattern-empty-message]",
       "[data-hat-summary-empty-message]",
-      "[data-sleeveless-pattern-boot-msg]",
+      "[data-sleeveless-pattern-boot-msg], .sleeveless-pattern-boot-msg",
       "[data-sideways-calc-missing]",
     ].join(","),
   );

@@ -205,6 +205,24 @@ export function isValidExpressSizeForAudience(audience: string, size: unknown): 
   return set instanceof Set && set.has(String(size));
 }
 
+/**
+ * Size to persist from the edit drawer.
+ * The size `<select>` is empty while charts are still loading ("Loading sizes…")
+ * even when the pattern already has a size. Prefer the select once it is valid,
+ * otherwise the size already stored on the pattern.
+ */
+export function resolveExpressSizeForEditSave(
+  selectValue: string,
+  storedSize: string,
+  audience: string,
+): string {
+  const selected = String(selectValue ?? "").trim();
+  if (selected && isValidExpressSizeForAudience(audience, selected)) return selected;
+  const stored = String(storedSize ?? "").trim();
+  if (stored && isValidExpressSizeForAudience(audience, stored)) return stored;
+  return "";
+}
+
 /** Loads all sweater charts once (same URLs as Fit step). */
 export function loadExpressSweaterCharts(): Promise<void> {
   if (expressChartsLoadPromise) return expressChartsLoadPromise;

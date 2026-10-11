@@ -11,6 +11,7 @@ import {
 } from "./patternBuilderLanding";
 import {
   applyPatternBuilderLandingCtaMode,
+  resolveHostedSetInLandingCtaMode,
   resolvePatternBuilderLandingCtaMode,
 } from "./patternBuilderLandingCta";
 import { MEMBERSHIPS } from "../../config/memberships";
@@ -282,5 +283,28 @@ describe("pattern builder landing CTA mode", () => {
     expect(member.hidden).toBe(false);
     expect(prospect.hidden).toBe(true);
     expect(membership.hidden).toBe(true);
+  });
+});
+
+describe("hosted Set-In Sleeve landing CTA", () => {
+  it("shows the member CTA only on kin-dev Set-In Sleeve pages", () => {
+    expect(
+      resolveHostedSetInLandingCtaMode({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/set-in-sleeve",
+      }),
+    ).toBe("member");
+    expect(
+      resolveHostedSetInLandingCtaMode({
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/sleeveless",
+      }),
+    ).toBeNull();
+    expect(
+      resolveHostedSetInLandingCtaMode({
+        hostname: "knititnow.com",
+        pathname: "/patterns/set-in-sleeve",
+      }),
+    ).toBeNull();
   });
 });

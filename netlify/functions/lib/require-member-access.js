@@ -33,6 +33,13 @@ const MEMBERSHIP_REQUIRED = "An active Knit it Now membership is required.";
  * >}
  */
 export async function requirePatternProjectIdentity(req) {
+  // Hosted kin-dev Set-In Sleeve testing. Checked before any bearer token so a
+  // signed-in member on kin-dev still reads and writes the isolated test store.
+  // Otherwise the token wins, the test project 404s, and the pattern page stays
+  // on "Loading pattern…". Production site identity never matches.
+  const setInDev = kinDevSetInSleeveTestIdentity(req);
+  if (setInDev) return setInDev;
+
   const token = bearerTokenFromRequest(req);
 
   // Local/dev only: stable pattern-user storage without a Memberstack session.
@@ -43,13 +50,6 @@ export async function requirePatternProjectIdentity(req) {
       userId: resolveDevPatternUserId(req),
       mode: "dev",
     };
-  }
-
-  // Hosted kin-dev Set-In Sleeve testing. The user id is fixed here; the
-  // client cannot choose another member's id. Production site identity never matches.
-  if (!token) {
-    const setInDev = kinDevSetInSleeveTestIdentity(req);
-    if (setInDev) return setInDev;
   }
 
   const auth = await requireMember(req);

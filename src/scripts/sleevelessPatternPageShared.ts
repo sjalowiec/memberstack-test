@@ -4890,7 +4890,15 @@ table {
       updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
       if (resultsEl) resultsEl.style.display = "none";
       const mount = document.querySelector("[data-sleeveless-mount]");
-      if (mount) mount.innerHTML = "";
+      const bootMsg = mount?.querySelector(":scope > .sleeveless-pattern-boot-msg");
+      if (bootMsg) {
+        const labels = validation.missingItems.map((item) => item.label).filter(Boolean);
+        bootMsg.textContent = labels.length
+          ? `${labels.join(". ")}.`
+          : "Pattern data is incomplete.";
+      } else if (mount) {
+        mount.innerHTML = "";
+      }
       syncSleevelessPatternInpageNav();
       setPatternTabsReadiness(tabsRoot, false);
       clearGarmentPatternYarnAction();

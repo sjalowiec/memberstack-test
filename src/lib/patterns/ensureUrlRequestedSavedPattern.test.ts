@@ -76,7 +76,9 @@ vi.mock("./customPatternProjectClient", async (importOriginal) => {
   };
 });
 
+import { SAVED_PATTERN_UNAVAILABLE_BODY } from "./savedPatternAccessState";
 import {
+  applySavedPatternUnavailableMessage,
   ensureUrlRequestedSavedPatternHydrated,
   didAuthoritativeSavedPatternLoadFail,
   resetAuthoritativeSavedPatternLoadFlagForTests,
@@ -243,5 +245,21 @@ describe("ensureUrlRequestedSavedPatternHydrated", () => {
     expect(stripUrlProjectId).not.toHaveBeenCalled();
     expect(getCurrentPattern().patternProject?.title).toBe("Kids Pattern A");
     expect(didAuthoritativeSavedPatternLoadFail()).toBe(true);
+  });
+});
+
+describe("applySavedPatternUnavailableMessage", () => {
+  it("replaces the class-only Loading pattern boot message", () => {
+    const boot = { textContent: "Loading pattern…" };
+    const root = {
+      querySelector: () => null,
+      querySelectorAll: (selector: string) =>
+        selector.includes(".sleeveless-pattern-boot-msg") ? [boot] : [],
+    } as unknown as ParentNode;
+
+    applySavedPatternUnavailableMessage(root);
+
+    expect(boot.textContent).toBe(SAVED_PATTERN_UNAVAILABLE_BODY);
+    expect(boot.textContent).not.toContain("Loading pattern");
   });
 });

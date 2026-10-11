@@ -9,6 +9,7 @@ vi.mock("./memberstack-admin.js", () => ({
   getMemberstackAdminClient: vi.fn(),
   getMemberstackSecretKey: vi.fn(() => "sk_test_secret"),
   logMemberstackEnvironmentMismatch: vi.fn(() => false),
+  isKinDevMemberstackRuntime: vi.fn(() => false),
 }));
 
 vi.mock("./custom-pattern-projects-store.js", async (importOriginal) => {
@@ -28,7 +29,7 @@ vi.mock("../../../src/lib/memberAccessServer.ts", async (importOriginal) => {
 });
 
 import { requirePatternProjectAccess, requirePatternProjectIdentity, resolveVerifiedProjectUserId } from "./require-member-access.js";
-import { getMemberstackAdminClient } from "./memberstack-admin.js";
+import { getMemberstackAdminClient, isKinDevMemberstackRuntime } from "./memberstack-admin.js";
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
 import { loadLegacyPaidThroughYmdForEmail } from "../../../src/lib/memberAccessServer.ts";
 
@@ -58,6 +59,7 @@ function memberRecord(planId, { status = "ACTIVE", active = true, email = "owner
 
 beforeEach(() => {
   vi.mocked(isAllowDevPatternUser).mockReturnValue(false);
+  vi.mocked(isKinDevMemberstackRuntime).mockReturnValue(false);
   vi.mocked(loadLegacyPaidThroughYmdForEmail).mockResolvedValue(null);
   vi.mocked(getMemberstackAdminClient).mockReturnValue({
     verifyMemberToken: vi.fn(async (token) => (token === "good-token" ? { id: MEMBER_ID } : null)),
@@ -93,6 +95,76 @@ describe("requirePatternProjectIdentity", () => {
     if (result.ok) {
       expect(result.userId).toBe(MEMBER_ID);
       expect(result.userId).not.toBe(OTHER_ID);
+    }
+  });
+
+  it("uses the kin-dev set-in test identity even when a bearer token is present", async () => {
+    const previous = {
+      SITE_NAME: process.env.SITE_NAME,
+      SITE_ID: process.env.SITE_ID,
+      URL: process.env.URL,
+      CONTEXT: process.env.CONTEXT,
+      NODE_ENV: process.env.NODE_ENV,
+    };
+    process.env.SITE_NAME = "kin-dev";
+    process.env.SITE_ID = "3196ab5e-c5a1-4cd4-a13a-980523087e9a";
+    process.env.URL = "https://kin-dev.netlify.app";
+    process.env.CONTEXT = "production";
+    process.env.NODE_ENV = "production";
+    vi.mocked(isKinDevMemberstackRuntime).mockReturnValue(true);
+    const verifyMemberToken = vi.fn(async () => ({ id: MEMBER_ID }));
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken,
+      getMember: vi.fn(async () => memberRecord(ACTIVE_PLAN)),
+    });
+    try {
+      const result = await requirePatternProjectIdentity(
+        makeRequest("good-token", {
+          host: "kin-dev.netlify.app",
+          "x-kbm-set-in-dev-test": "1",
+        }),
+      );
+      expect(result).toEqual({
+        ok: true,
+        userId: "kin-dev-set-in-sleeve-testing",
+        mode: "dev",
+        devTest: "set-in-sleeve",
+      });
+      expect(verifyMemberToken).not.toHaveBeenCalled();
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
+
+  it("keeps production membership identity when the set-in header is sent with a token", async () => {
+    const previous = {
+      SITE_NAME: process.env.SITE_NAME,
+      SITE_ID: process.env.SITE_ID,
+      URL: process.env.URL,
+      CONTEXT: process.env.CONTEXT,
+      NODE_ENV: process.env.NODE_ENV,
+    };
+    process.env.SITE_NAME = "knititnow";
+    process.env.SITE_ID = "production-site-id";
+    process.env.URL = "https://knititnow.com";
+    process.env.CONTEXT = "production";
+    process.env.NODE_ENV = "production";
+    try {
+      const result = await requirePatternProjectIdentity(
+        makeRequest("good-token", {
+          host: "kin-dev.netlify.app",
+          "x-kbm-set-in-dev-test": "1",
+        }),
+      );
+      expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
     }
   });
 });

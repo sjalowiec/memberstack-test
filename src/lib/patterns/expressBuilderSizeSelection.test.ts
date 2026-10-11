@@ -8,6 +8,7 @@ import {
 import {
   refreshExpressSizePanel,
   resetExpressSweaterChartsForTests,
+  resolveExpressSizeForEditSave,
   seedExpressSweaterChartsForTests,
 } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
@@ -304,5 +305,25 @@ describe("Express builder size-selection parity", () => {
     expect(readFileSync(resolve("src/scripts/sleeveless-builder-page.ts"), "utf8")).toContain(
       'import "/src/scripts/sleeveless-express-page.ts"',
     );
+  });
+});
+
+describe("resolveExpressSizeForEditSave", () => {
+  afterEach(() => {
+    resetExpressSweaterChartsForTests();
+  });
+
+  it("uses the stored size when the select is still empty", () => {
+    seedExpressSweaterChartsForTests("misses", [
+      { size: "1", bust: 34 },
+      { size: "6", bust: 41 },
+    ] as ChartRow[]);
+    expect(resolveExpressSizeForEditSave("", "6", "misses")).toBe("6");
+    expect(resolveExpressSizeForEditSave("1", "6", "misses")).toBe("1");
+  });
+
+  it("does not invent a size when charts are not loaded and nothing is stored", () => {
+    expect(resolveExpressSizeForEditSave("", "6", "misses")).toBe("");
+    expect(resolveExpressSizeForEditSave("", "", "misses")).toBe("");
   });
 });
