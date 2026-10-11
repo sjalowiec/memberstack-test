@@ -517,6 +517,7 @@ function backChecklistHtml(result: ReturnType<typeof generateSetInSleevePattern>
     tableHeading: "First Shoulder Checklist",
     collapsibleDefaultOpen: false,
     resetRowCounterForSecondShoulder: true,
+    finishHeldNecklineAfterSecondShoulder: true,
   });
 }
 
@@ -559,7 +560,7 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(summary).toMatch(/Place center neckline needles L\d+ through R\d+ in hold/i);
     expect(summary).toMatch(/Put the Second Shoulder needles L\d+ through L\d+ into hold/i);
     expect(summary).toMatch(/Work the First Shoulder on needles R\d+ through R\d+/i);
-    expect(summary).toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
+    expect(summary).not.toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
     expect(summary).toMatch(/Use the checklist below for row-by-row neckline and shoulder shaping/i);
     expect(summary).not.toMatch(/Put needles L\d+ through R\d+ into hold/i);
     expect(summary).not.toMatch(/right shoulder|left shoulder|Stage [123]/i);
@@ -590,7 +591,7 @@ describe("set-in back neckline and shoulder checklist", () => {
       expect(intro).toContain("Second Shoulder");
       expect(intro).toContain("neck edge");
       expect(intro).toContain("shoulder edge");
-      expect(intro).toMatch(/Knit until Armhole RC reaches/);
+      expect(intro).toMatch(/Knit until the armhole row counter reads RC: \d{3}/);
       expect(intro).not.toMatch(/right shoulder|left shoulder|Stage [123]|three stages/i);
       expect(intro).not.toMatch(/place the center \d+ neckline stitches in hold/i);
     }
@@ -604,12 +605,20 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(html).toContain("Reset Checklist");
     expect(html).toContain("Done");
     expect(html).toContain(">RC");
+    expect(html).not.toMatch(/ns-shaping-chart__row-counter-number">RC/);
     expect(html).toContain("Action");
     expect(html).toContain("Edge");
     expect(html).toContain("Sts Remaining");
     expect(html).toContain('type="checkbox"');
     expect(html).toContain("ns-shaping-chart--second-shoulder");
     expect(html).toContain("data-second-shoulder-content");
+    const secondHeading = html.indexOf("Second Shoulder Checklist");
+    const finish = html.indexOf("Scrap off or bind off all remaining held neckline stitches.");
+    expect(secondHeading).toBeGreaterThanOrEqual(0);
+    expect(finish).toBeGreaterThan(secondHeading);
+    expect(html.slice(0, secondHeading)).not.toContain(
+      "Scrap off or bind off all remaining held neckline stitches.",
+    );
     expect(html).not.toMatch(/right shoulder|left shoulder|Stage [123]/i);
 
     const rows = buildActiveSideInstructionTableRows(result.neckShoulderShapingChart!, 0, {
@@ -680,7 +689,7 @@ describe("set-in back neckline and shoulder checklist", () => {
       expect(second.rc).toBe(first.rc);
       expect(second.side).not.toBe(first.side);
       expect(html).toContain(
-        `Set the row counter to RC ${second.rc} before you begin the second shoulder.`,
+        `Set the row counter to RC: ${second.rc} before beginning the Second Shoulder.`,
       );
       expect(html).toContain("cut yarn and return the");
       expect(html).toContain("held stitches for the second shoulder to working position");
@@ -782,11 +791,13 @@ describe("set-in front neckline and shoulder checklist", () => {
     const html = renderSleevelessPatternTabFrontChartTableHtml(result, {
       relocateIntro: options.neckline === "round",
       resetRowCounterForSecondShoulder: true,
+      finishHeldNecklineAfterSecondShoulder: options.neckline === "round",
     });
     expect(html).toContain("Show Completed Rows");
     expect(html).toContain("Reset Checklist");
     expect(html).toContain("Done");
     expect(html).toContain(">RC");
+    expect(html).not.toMatch(/ns-shaping-chart__row-counter-number">RC/);
     expect(html).toContain("Action");
     expect(html).toContain("Edge");
     expect(html).toContain("Sts Remaining");
@@ -813,12 +824,16 @@ describe("set-in front neckline and shoulder checklist", () => {
       expect(html).toContain("First Shoulder Checklist");
       expect(html).toContain("Second Shoulder Checklist");
       expect(html).toContain("ns-shaping-chart--second-shoulder");
+      const secondHeading = html.indexOf("Second Shoulder Checklist");
+      const finish = html.indexOf("Scrap off or bind off all remaining held neckline stitches.");
+      expect(finish).toBeGreaterThan(secondHeading);
+      expect(frontSummary).not.toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
       const first = firstChecklistCounter(html, "First Shoulder Checklist");
       const second = firstChecklistCounter(html, "ns-shaping-chart--second-shoulder");
       expect(second.rc).toBe(first.rc);
       expect(second.side).not.toBe(first.side);
       expect(html).toContain(
-        `Set the row counter to RC ${second.rc} before you begin the second shoulder.`,
+        `Set the row counter to RC: ${second.rc} before beginning the Second Shoulder.`,
       );
       expect(html).toContain("cut yarn and return the");
       expect(html).toContain(
@@ -833,7 +848,7 @@ describe("set-in front neckline and shoulder checklist", () => {
       const first = firstChecklistCounter(html, 'data-ns-shoulder-panel="first"');
       const second = firstChecklistCounter(html, 'data-ns-shoulder-panel="second"');
       expect(second.rc).toBe(first.rc);
-      expect(html).toContain(`Set the row counter to RC ${second.rc} before you begin the second side.`);
+      expect(html).toContain(`Set the row counter to RC: ${second.rc} before beginning the Second Side.`);
       expect(html).toContain(
         "Neckline shaping remains at the neck edge and shoulder shaping remains at the shoulder edge.",
       );
@@ -847,6 +862,8 @@ describe("set-in front neckline and shoulder checklist", () => {
         expect(intro).toContain("First Side");
         expect(intro).toContain("Second Side");
         expect(intro).toContain("neck edge");
+        expect(intro).toMatch(/At RC: \d{3},/);
+        expect(intro).not.toMatch(/At RC \d{3},/);
         expect(intro).not.toMatch(/First Shoulder|Second Shoulder|right shoulder|left shoulder|Stage [123]/i);
       }
     }

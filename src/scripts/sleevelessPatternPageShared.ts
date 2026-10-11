@@ -4312,6 +4312,8 @@ table {
       tableHeading: "First Shoulder Checklist",
       collapsibleDefaultOpen: false,
       resetRowCounterForSecondShoulder: true,
+      finishHeldNecklineAfterSecondShoulder:
+        result?.debug?.backNeckRoundNecklineStrategy === "shallow-round",
     };
     const backChartStartLabel = `RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`;
     const backChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-back");
@@ -4348,6 +4350,8 @@ table {
         introSuffix: frontHelpCardHtml,
         secondShoulderExtraHtml: frontSecondShoulderMapHtml,
         resetRowCounterForSecondShoulder: true,
+        finishHeldNecklineAfterSecondShoulder:
+          frontIsRoundNeck && Number(result?.debug?.frontCenterNeckBindOffStitches) > 0,
       });
     }
     if (frontIsRoundNeck) {
@@ -4381,6 +4385,8 @@ table {
           relocateIntro: frontIsRoundNeck,
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
           resetRowCounterForSecondShoulder: true,
+          finishHeldNecklineAfterSecondShoulder:
+            frontIsRoundNeck && Number(result?.debug?.frontCenterNeckBindOffStitches) > 0,
         }),
       },
     };

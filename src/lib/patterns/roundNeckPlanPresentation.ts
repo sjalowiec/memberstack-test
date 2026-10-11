@@ -312,7 +312,6 @@ export function roundNeckBackShallowSleevelessSummaryWrittenLines(
       `Put the Second Shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
       `Work the First Shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
       checklistLine,
-      roundNeckPlanFinishHeldStitchesLine(),
     ];
   }
 
@@ -355,7 +354,6 @@ export function roundNeckFrontSetInSetupWrittenLines(
     `Put the Second Shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
     `Work the First Shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
     checklistLine,
-    roundNeckPlanFinishHeldStitchesLine(),
   ];
 }
 

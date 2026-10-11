@@ -22,6 +22,7 @@ import { getDefaultCuffLengthInches } from "./hemDefaults";
 import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
 import {
   generateSleevelessBackPattern,
+  formatRcColon,
   type SleevelessBackPatternResult,
   type SleevelessPatternDisplayRow,
 } from "./sleevelessPatternOutput";
@@ -75,6 +76,42 @@ function fitOf(patternData: Record<string, unknown>): string {
 
 function linesToBlocks(lines: readonly string[]): SleevelessPatternDisplayRow[] {
   return lines.filter((line) => line.trim().length > 0).map((line) => ({ kind: "block" as const, paragraphs: [line] }));
+}
+
+/** Written Set-In instructions use `RC: 039`. Checklist cells and diagram `rc039` labels are left alone. */
+function rewriteSetInWrittenRc(text: string): string {
+  let next = text.replace(
+    /Knit until Armhole RC reaches\s+(?:RC:\s*)?(\d{1,4})/gi,
+    (_match, n: string) => `Knit until the armhole row counter reads ${formatRcColon(Number(n))}`,
+  );
+  next = next.replace(/Armhole RC:\s*(\d{1,4})/gi, (_match, n: string) => formatRcColon(Number(n)));
+  next = next.replace(/\bRC:(\d{1,4})\b/g, (_match, n: string) => formatRcColon(Number(n)));
+  next = next.replace(/\bRC\s+(\d{1,4})\b/g, (_match, n: string) => formatRcColon(Number(n)));
+  next = next.replace(/\(RC:\s*([0-9,\s]+)\)/g, (match, list: string) => {
+    const parts = list
+      .split(",")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
+    if (parts.length === 0 || parts.some((part) => !/^\d+$/.test(part))) return match;
+    return `(${parts.map((part) => formatRcColon(Number(part))).join(", ")})`;
+  });
+  return next;
+}
+
+function rewriteSetInDisplayRows(
+  rows: readonly SleevelessPatternDisplayRow[],
+): SleevelessPatternDisplayRow[] {
+  return rows.map((row) => {
+    if (row.kind !== "block") return row;
+    const paragraphs = row.paragraphs?.map(rewriteSetInWrittenRc);
+    const trustedParagraphs = row.trustedParagraphs?.map(rewriteSetInWrittenRc);
+    if (paragraphs === row.paragraphs && trustedParagraphs === row.trustedParagraphs) return row;
+    return {
+      ...row,
+      ...(paragraphs ? { paragraphs } : {}),
+      ...(trustedParagraphs ? { trustedParagraphs } : {}),
+    };
+  });
 }
 
 function replaceArmholeSection(
@@ -318,10 +355,10 @@ export function generateSetInSleevePattern(
   return {
     ...body,
     warnings,
-    displayRows,
-    frontDisplayRows,
+    displayRows: rewriteSetInDisplayRows(displayRows),
+    frontDisplayRows: rewriteSetInDisplayRows(frontDisplayRows),
     isSetInSleeve: true,
-    sleeveDisplayRows,
+    sleeveDisplayRows: rewriteSetInDisplayRows(sleeveDisplayRows),
     overviewRows,
     sleeveCap,
     sleevePiece,

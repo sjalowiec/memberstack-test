@@ -492,6 +492,22 @@ function divideRcDisplayLabel(localStartRcLabel?: string | undefined): string {
   return localStartLabel;
 }
 
+/** Set-in written instructions: `RC: 039`. Checklist cells stay a bare three-digit number. */
+function setInWrittenRcLabel(raw: string | undefined): string {
+  const label = String(raw ?? "").trim();
+  const match = label.match(/^(?:RC:\s*)?(\d{1,4})$/i);
+  if (!match) return "";
+  return `RC: ${String(Math.max(0, parseInt(match[1], 10))).padStart(3, "0")}`;
+}
+
+const SET_IN_HELD_NECKLINE_FINISH_SENTENCE =
+  "Scrap off or bind off all remaining held neckline stitches.";
+
+function heldNecklineFinishHtml(enabled: boolean): string {
+  if (!enabled) return "";
+  return `<p class="ns-shaping-chart__held-neckline-finish" data-held-neckline-finish>${escapeHtml(SET_IN_HELD_NECKLINE_FINISH_SENTENCE)}</p>`;
+}
+
 /** HTML shallow back hold divide at the neckline row (three-stage workflow setup). */
 function formatActiveShoulderShallowHoldBackCenterNecklineHtml(args: {
   localStartRcLabel?: string | undefined;
@@ -563,14 +579,20 @@ function formatActiveShoulderVNeckCenterNecklineHtml(args: {
   localStartRcLabel?: string | undefined;
   /** When true, the milestone reads “At RC NNN, …” (online workflow steps) instead of “When Armhole RC reaches NNN, …”. */
   atRcPrefix?: boolean | undefined;
+  /** Set-in written form: `RC: 039` instead of `RC 039`. */
+  writtenRcColon?: boolean | undefined;
 }): string {
   const localStartLabel = String(args.localStartRcLabel ?? "").trim();
   const tail = escapeHtml(ACTIVE_VNECK_CENTER_DIVIDE_TAIL);
-  const rcColon = localStartLabel.match(/^RC:(\d{1,4})$/i);
+  const rcColon = localStartLabel.match(/^RC:\s*(\d{1,4})$/i);
   if (rcColon) {
     const n = String(Math.max(0, parseInt(rcColon[1], 10))).padStart(3, "0");
     if (args.atRcPrefix) {
-      return `At RC ${escapeHtml(n)}, ${tail}.`;
+      const label = args.writtenRcColon ? `RC: ${n}` : `RC ${n}`;
+      return `At ${escapeHtml(label)}, ${tail}.`;
+    }
+    if (args.writtenRcColon) {
+      return `Knit until the armhole row counter reads RC: ${escapeHtml(n)}. ${tail}.`;
     }
     return `When Armhole RC reaches ${escapeHtml(n)}, ${tail}.`;
   }
@@ -661,6 +683,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
     ? formatActiveShoulderVNeckCenterNecklineHtml({
         localStartRcLabel: vNeckDivideLabel,
         atRcPrefix: useAtRcPrefix,
+        writtenRcColon: options.omitRepeatedNecklineSetup === true,
       })
     : shallowHoldBackDivide
       ? formatActiveShoulderShallowHoldBackCenterNecklineHtml({
@@ -683,8 +706,10 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
     : "default";
   const innerParts: string[] = [];
   if (omitRepeatedSetup && !vNeckDivide) {
-    const divideRc = divideRcDisplayLabel(options.localStartRcLabel);
-    const knitUntil = divideRc ? `Knit until Armhole RC reaches ${escapeHtml(divideRc)}.` : "";
+    const divideRc = setInWrittenRcLabel(divideRcDisplayLabel(options.localStartRcLabel));
+    const knitUntil = divideRc
+      ? `Knit until the armhole row counter reads ${escapeHtml(divideRc)}.`
+      : "";
     if (knitUntil) {
       if (options.includeWorkflowSteps === true) {
         innerParts.push(
@@ -794,8 +819,8 @@ export function renderNeckShoulderChartIntroBlockHtml(
 }
 
 function secondShoulderRowCounterSentence(startRc: number, checklist: "shoulder" | "side"): string {
-  const name = checklist === "side" ? "second side" : "second shoulder";
-  return `Set the row counter to RC ${formatActiveSideRc(startRc)} before you begin the ${name}.`;
+  const name = checklist === "side" ? "Second Side" : "Second Shoulder";
+  return `Set the row counter to RC: ${formatActiveSideRc(startRc)} before beginning the ${name}.`;
 }
 
 function instructionWithHeldStitches(
@@ -1078,6 +1103,11 @@ export type NeckShoulderChartRenderOptions = {
    * schedule already being rendered. Sleeveless and drop shoulder leave this unset.
    */
   resetRowCounterForSecondShoulder?: boolean;
+  /**
+   * Set-in sleeve round neck only. The center neckline stays in hold while both
+   * shoulders are worked, so this sentence follows the Second Shoulder checklist.
+   */
+  finishHeldNecklineAfterSecondShoulder?: boolean;
 };
 
 const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
@@ -1586,6 +1616,9 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const secondShoulderHeadingId = `${idPrefix}-second-heading`;
   const secondShoulderExtra =
     typeof options?.secondShoulderExtraHtml === "string" ? options.secondShoulderExtraHtml : "";
+  const heldNecklineFinish = heldNecklineFinishHtml(
+    options?.finishHeldNecklineAfterSecondShoulder === true && !useShoulderTabs,
+  );
 
   const secondShoulderCollapsibleHtml = collapsible
     ? (() => {
@@ -1606,7 +1639,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     SECOND_SHOULDER_CHECKLIST_HEADING,
     secondShoulderHeadingId,
     `${secondShoulderExtra}
-  ${secondShoulderTableHtml}`,
+  ${secondShoulderTableHtml}
+  ${heldNecklineFinish}`,
   )}
 ${shell.close}`;
       })()
@@ -1617,6 +1651,7 @@ ${shell.close}`;
   <h3 class="ns-shaping-chart__preview-title">${SECOND_SHOULDER_CHECKLIST_HEADING}</h3>
   ${secondShoulderExtra}
   ${secondShoulderTableHtml}
+  ${heldNecklineFinish}
 </div>`
     : "";
 

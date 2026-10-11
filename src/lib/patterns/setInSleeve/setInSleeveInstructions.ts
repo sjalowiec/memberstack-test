@@ -9,9 +9,10 @@
  */
 
 import {
-  CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
-  cuffUpSleeveBodyRowCounterResetBlock,
-} from "../legoBlocks/cuffUpSleeveRowCounter";
+  dropShoulderSleeveShapingPlan,
+  dropShoulderSleeveShapingPlanForDirection,
+  formatDropShoulderSleeveShapingWrittenLines,
+} from "../dropShoulderSleeveShaping";
 import {
   NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE,
   neckbandPickupInstructionFromDebug,
@@ -29,16 +30,12 @@ import {
   dropShoulderSleeveShapingRcSequence,
   type DropShoulderSleeveShapingChartRow,
 } from "../dropShoulderSleeveShapingChart";
-import {
-  dropShoulderSleeveShapingPlan,
-  dropShoulderSleeveShapingPlanForDirection,
-  formatDropShoulderSleeveShapingWrittenLines,
-} from "../dropShoulderSleeveShaping";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
 import {
   roundNeckBackShallowSleevelessSummaryWrittenLines,
   roundNeckFrontSetInSetupWrittenLines,
+  roundNeckPlanFinishHeldStitchesLine,
 } from "../roundNeckPlanPresentation";
 import {
   ARMHOLE_RC_FROM_RESET_NOTE,
@@ -101,6 +98,9 @@ const UNSUPPORTED = [
 
 const KNIT_OTHER_ROWS =
   "Knit in pattern at all other rows in this section.";
+
+/** Set-in written row counter. Sleeveless and drop shoulder keep their own reset sentence. */
+const SET_IN_ROW_COUNTER_RESET = "Reset row counter to RC: 000.";
 
 function stitchWord(n: number): string {
   return n === 1 ? "stitch" : "stitches";
@@ -225,7 +225,7 @@ export function setInArmholeInstructionLines(
   stitchesAtUnderarm: number,
 ): string[] {
   const lines: string[] = [
-    "Reset row counter to RC 000.",
+    SET_IN_ROW_COUNTER_RESET,
     ARMHOLE_RC_FROM_RESET_NOTE,
   ];
   const bindOffs = groupedBindOffLines(0, stitchesAtUnderarm, [
@@ -271,7 +271,7 @@ export function setInOneEdgeArmholeInstructionLines(
   >,
   stitchesAtArmhole: number,
 ): string[] {
-  const lines: string[] = ["Reset row counter to RC 000.", ARMHOLE_RC_FROM_RESET_NOTE];
+  const lines: string[] = [SET_IN_ROW_COUNTER_RESET, ARMHOLE_RC_FROM_RESET_NOTE];
   let rc = 0;
   let stitches = stitchesAtArmhole;
   const steps = [armhole.initialBindOffStitchesEachSide, ...armhole.stairStepBindOffsEachSide];
@@ -409,7 +409,10 @@ export function buildSetInCuffUpSleevePresentation(
     plan.steps,
     shapingRcs,
   );
-  const plainShaping = writtenShaping.map(stripInstructionTags);
+  const plainShaping = writtenShaping.map((line) =>
+    standardizeSetInRcParenthetical(stripInstructionTags(line)),
+  );
+  const trustedShaping = writtenShaping.map(standardizeSetInRcParenthetical);
   const taperRows = setInSleeveTaperChartRows(input);
   const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm);
   const capLines = capModel.lines.map((line) => line.text);
@@ -421,7 +424,7 @@ export function buildSetInCuffUpSleevePresentation(
     "Make 2 sleeves.",
     `${formatRcColon(0)} Cast on ${input.wristStitches} ${stitchWord(input.wristStitches)} for the sleeve cuff.`,
     `${formatRcColon(0)} ${cuffSentence}`,
-    CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
+    SET_IN_ROW_COUNTER_RESET,
   ];
 
   const sleeveBodyLines: string[] = [];
@@ -488,7 +491,10 @@ export function buildSetInCuffUpSleevePresentation(
       paragraphs: [cuffSentence],
       stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
     },
-    cuffUpSleeveBodyRowCounterResetBlock(),
+    {
+      kind: "block",
+      paragraphs: [SET_IN_ROW_COUNTER_RESET],
+    },
     { kind: "section", title: "SLEEVE BODY" },
   ];
 
@@ -513,7 +519,7 @@ export function buildSetInCuffUpSleevePresentation(
       kind: "block",
       rc: formatRcColon(preShaping.firstShapingRc ?? 0),
       paragraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...plainShaping],
-      trustedParagraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...writtenShaping],
+      trustedParagraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...trustedShaping],
       stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
     });
     displayRows.push({
@@ -607,11 +613,15 @@ function necklineInstructionLines(
           disjointHoldRanges: true,
         })
   ).filter((line) => !/checklist below/i.test(line));
+  const finishHeldNeckline =
+    (piece === "back" && isShallowHoldRoundPlan(plan)) ||
+    (piece === "front" && plan.centerBindOff > 0);
   return [
     ...summary,
     ONE_SHOULDER_AT_A_TIME_NOTE,
     ...mergedShapingInstructionLines(actions.neckActions, actions.shoulderActions),
     KNIT_OTHER_ROWS,
+    ...(finishHeldNeckline ? [roundNeckPlanFinishHeldStitchesLine()] : []),
   ];
 }
 
@@ -635,12 +645,20 @@ function bodyLines(result: SetInSleeveSweaterSuccess, piece: "back" | "front"): 
   return lines;
 }
 
-function padRc(rc: number): string {
-  return String(Math.max(0, Math.floor(rc))).padStart(3, "0");
+function parentheticalRcReadings(rows: readonly number[]): string {
+  return `(${rows.map((rc) => formatRcColon(rc)).join(", ")})`;
 }
 
-function parentheticalRcReadings(rows: readonly number[]): string {
-  return `(RC: ${rows.map(padRc).join(", ")})`;
+/** Turn a shared `(RC: 8, 14)` list into `RC: 008, RC: 014` without changing the row numbers. */
+function standardizeSetInRcParenthetical(line: string): string {
+  return line.replace(/\(RC:\s*([0-9,\s]+)\)/g, (match, list: string) => {
+    const parts = list
+      .split(",")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
+    if (parts.length === 0 || parts.some((part) => !/^\d+$/.test(part))) return match;
+    return `(${parts.map((part) => formatRcColon(Number(part))).join(", ")})`;
+  });
 }
 
 function zoneLabel(name: string): string {

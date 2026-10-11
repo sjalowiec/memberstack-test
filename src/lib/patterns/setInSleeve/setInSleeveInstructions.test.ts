@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { dropShoulderSleeveShapingRcSequence } from "../dropShoulderSleeveShapingChart";
-import { formatParentheticalShapingRowNumbers } from "../evenShapingSchedule";
 import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
 import { formatRcColon } from "../sleevelessPatternOutput";
 import { renderSleevelessPrintPieceHtml } from "../sleevelessPatternPrintRender";
@@ -241,7 +240,7 @@ describe("set-in sleeve written instructions", () => {
     expect(sleeves).toContain("SLEEVE SHAPING CHART");
     expect(sleeves).toContain("SLEEVE CAP");
     expect(sleeves).toContain("Cast on");
-    expect(sleeves).toContain("Reset row counter to RC 000.");
+    expect(sleeves).toContain("Reset row counter to RC: 000.");
     expect(sleeves).not.toContain("before knitting that row");
     expect(sleeves).not.toContain("top-down");
     const taperRcs = dropShoulderSleeveShapingRcSequence({
@@ -252,7 +251,7 @@ describe("set-in sleeve written instructions", () => {
       sleeveTotalRows: alternate.sleeve.rowsToUpperArm,
       direction: "cuff-up",
     });
-    expect(sleeves).toContain(formatParentheticalShapingRowNumbers(taperRcs).replace(/<[^>]+>/g, ""));
+    expect(sleeves).toContain(`(${taperRcs.map((rc) => formatRcColon(rc)).join(", ")})`);
     expect(sleeves).toMatch(/Increase 1 stitch at each side every \d+ rows \d+ times\./);
     expect(sleeves).toContain(`Both sides. ${alternate.sleeve.upperArmStitches} stitches.`);
     expect(sleeves).toContain("82 stitches remain.");
@@ -363,13 +362,13 @@ describe("set-in sleeve written instructions", () => {
 
       const writtenDecreaseRcs = [
         ...capText.matchAll(
-          /(?:Lower|Middle|Upper) cap: Decrease (\d+) stitch(?:es)? at each end (?:every row|every (\d+) rows), (\d+) time(?:s)?\. \(RC: ([0-9, ]+)\)/g,
+          /(?:Lower|Middle|Upper) cap: Decrease (\d+) stitch(?:es)? at each end (?:every row|every (\d+) rows), (\d+) time(?:s)?\. \((RC: \d{3}(?:, RC: \d{3})*)\)/g,
         ),
       ];
       const writtenActions = writtenDecreaseRcs.flatMap((match) => {
         const everyRows = match[2] ? Number(match[2]) : 1;
         const times = Number(match[3]);
-        const readings = match[4]!.split(",").map((part) => Number(part.trim()));
+        const readings = match[4]!.split(",").map((part) => Number(part.replace(/RC:\s*/i, "").trim()));
         expect(readings, label).toHaveLength(times);
         for (let index = 1; index < readings.length; index += 1) {
           expect(readings[index]! - readings[index - 1]!, label).toBe(everyRows);

@@ -106,6 +106,8 @@ export type SleevelessPatternTabFrontChartRenderOptions = {
   secondShoulderExtraHtml?: string;
   /** Set-in sleeve: reset the row counter to the second shoulder or second side's first RC. */
   resetRowCounterForSecondShoulder?: boolean;
+  /** Set-in round neck: scrap off the held center neckline after the Second Shoulder checklist. */
+  finishHeldNecklineAfterSecondShoulder?: boolean;
 };
 
 /**
@@ -131,7 +133,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
   result: SleevelessPatternTabFrontResult,
   options?: Pick<
     SleevelessPatternTabFrontChartRenderOptions,
-    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder"
+    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder"
   >,
 ): NeckShoulderChartRenderOptions {
   const chart = result.frontNeckShoulderShapingChart;
@@ -154,6 +156,9 @@ export function sleevelessPatternTabFrontChartTableOptions(
       : {}),
     ...(options?.resetRowCounterForSecondShoulder === true
       ? { resetRowCounterForSecondShoulder: true }
+      : {}),
+    ...(options?.finishHeldNecklineAfterSecondShoulder === true
+      ? { finishHeldNecklineAfterSecondShoulder: true }
       : {}),
     suppressCarriagePositionTip: relocateIntro,
     ...(frontUsesShoulderTabs
