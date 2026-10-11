@@ -8,6 +8,7 @@ import {
   SET_IN_SLEEVE_CONSTRUCTION,
   stampSetInSleeveWorkingDraftFromPage,
 } from "./setInSleeveConstructionIdentity";
+import { buildFreshPatternHrefForPage } from "./startNewCustomPatternWorkflow";
 import {
   resolvePatternSystemForBuilderGate,
   resolvePatternSystemForEntitlement,
@@ -123,6 +124,23 @@ describe("resolvePatternSystemForBuilderGate", () => {
   it("uses drop-shoulder pathname for the drop-shoulder builder", () => {
     const doc = stubPathname("/patterns/drop-shoulder/builder");
     expect(resolvePatternSystemForBuilderGate(doc)).toBe("drop-shoulder");
+  });
+
+  it("opens a new Set-In Sleeve pattern on the set-in builder", () => {
+    const doc = stubPathname("/patterns/set-in-sleeve/pattern/");
+    expect(buildFreshPatternHrefForPage(doc)).toBe("/patterns/set-in-sleeve/builder?new=1");
+  });
+
+  it("keeps New Pattern on the sleeveless, drop-shoulder, and sideways builders", () => {
+    expect(buildFreshPatternHrefForPage(stubPathname("/patterns/sleeveless/pattern/"))).toBe(
+      "/patterns/sleeveless-express?new=1",
+    );
+    expect(buildFreshPatternHrefForPage(stubPathname("/patterns/drop-shoulder/pattern/"))).toBe(
+      "/patterns/drop-shoulder/builder?new=1",
+    );
+    expect(buildFreshPatternHrefForPage(stubPathname("/patterns/sideways-cardigan/pattern/"))).toBe(
+      "/patterns/sideways-cardigan/builder?new=1",
+    );
   });
 
   it("uses the set-in sleeve pathname and does not keep a stale drop-shoulder draft", () => {

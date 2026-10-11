@@ -111,6 +111,27 @@
     display: none !important;
   }
 
+  /*
+   * Shaping-checklist boxes are marks on the printed pattern, not form fields.
+   * Draw an empty square so the Done column stays usable after inputs are hidden.
+   */
+  input.ns-shaping-chart__row-check[type="checkbox"] {
+    display: inline-block !important;
+    box-sizing: border-box !important;
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: #fff !important;
+    border: 1px solid #111 !important;
+    border-radius: 2px !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
   /* ========================================
      HIDE: Buttons & Interactive Controls
      ======================================== */

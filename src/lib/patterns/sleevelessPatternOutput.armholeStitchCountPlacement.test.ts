@@ -208,3 +208,21 @@ describe("sleeveless armhole stitch-count placement", () => {
     }
   });
 });
+
+describe("cardigan front introduction", () => {
+  it("describes the half front as worked from the hem up", () => {
+    const rows = buildSleevelessFrontDisplayRows({
+      frontNecklineStartRC: 10,
+      sharedExecutionRows: [],
+      useNeckChartRows: false,
+      neckChartRows: [],
+      introIsCardiganHalf: true,
+    });
+    const text = rows
+      .flatMap((row) => (row.kind === "block" ? row.paragraphs : []))
+      .join(" ");
+    expect(text).toContain("Work the front from the hem up");
+    expect(text).toContain("cast on, knit the hem and body, shape the armhole");
+    expect(text).not.toContain("from the top");
+  });
+});

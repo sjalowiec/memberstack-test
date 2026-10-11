@@ -3,6 +3,7 @@
  */
 import {
   buildDropShoulderBuilderNewPatternHref,
+  buildSetInSleeveBuilderNewPatternHref,
   buildSidewaysCardiganBuilderNewPatternHref,
   buildSleevelessExpressNewPatternHref,
 } from "./patternStorage";
@@ -82,6 +83,7 @@ export function buildFreshPatternHrefForPage(doc?: Document): string {
   const system = resolvePatternSystemForBuilderGate(doc);
   if (system === "drop-shoulder") return buildDropShoulderBuilderNewPatternHref();
   if (system === "sideways-cardigan") return buildSidewaysCardiganBuilderNewPatternHref();
+  if (system === "set-in-sleeve") return buildSetInSleeveBuilderNewPatternHref();
   return buildSleevelessExpressNewPatternHref();
 }
 

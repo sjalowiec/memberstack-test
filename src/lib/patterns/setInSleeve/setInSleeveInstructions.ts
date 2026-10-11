@@ -510,7 +510,6 @@ export function buildSetInCuffUpSleevePresentation(
       rc: formatRcColon(preShaping.firstShapingRc ?? 0),
       paragraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...plainShaping],
       trustedParagraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...trustedShaping],
-      stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
     });
     displayRows.push({
       kind: "block",

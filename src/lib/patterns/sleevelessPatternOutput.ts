@@ -2676,7 +2676,7 @@ export function buildSleevelessFrontDisplayRows(args: {
   // and shaping checklist already provide the needed context, so instructions begin directly.
   if (args.introIsCardiganHalf) {
     const introParagraphs = [
-      "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
+      "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the hem up — cast on, knit the hem and body, shape the armhole, then continue into the front neckline. Body/side shaping on the front is worked only on the armhole edge.",
     ];
     if (!cardiganBeforeArmhole) {
       introParagraphs.push("After the armhole reset, use Armhole RC — not the body row counter.");

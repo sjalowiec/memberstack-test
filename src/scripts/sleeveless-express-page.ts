@@ -427,7 +427,7 @@ function initExpressPage() {
     if (field === "who") return !!values.who && nonEmptyTrimmed(values.selectedSize);
     if (field === "front") return nonEmptyTrimmed(values.front);
     if (field === "gauge") return gaugeStepOk();
-    // Sleeve length always carries a valid default (drop-shoulder only), so it never blocks.
+    // Sleeve length lives on the option buttons. Start Over clears the default, so a later click must count.
     if (field === "sleeveLength") {
       return !!document.querySelector(
         "[data-ds-sleeve-length-option].is-selected, [data-ds-sleeve-length-option][aria-pressed='true']",
@@ -795,6 +795,19 @@ function initExpressPage() {
     refreshBuilderState();
   }
 
+  /**
+   * Sleeve length is marked on the button by the page script, not stored in `values`.
+   * That script listens closer to the button, so this ancestor handler runs after the
+   * selected class is set and can unlock Gauge.
+   */
+  function onSleeveLengthOptionClick(ev: Event) {
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest("[data-ds-sleeve-length-option]")) return;
+    clearAllLockedFeedback();
+    refreshBuilderState();
+  }
+
   /** Size picker — single source of truth: `values.selectedSize`. Unlocks Front (step 2)+ when set; does not auto-open neckline. */
   function selectExpressSize(sizeValue: string): void {
     const trimmed = String(sizeValue).trim();
@@ -1019,6 +1032,7 @@ function initExpressPage() {
   const root = document.getElementById("express-accordions");
   if (root) {
     root.addEventListener("click", onChoiceClick);
+    root.addEventListener("click", onSleeveLengthOptionClick);
     root.addEventListener("click", onExpressSizeRowActivate);
     root.addEventListener("keydown", onExpressSizeRowActivate);
     root.addEventListener("change", onExpressSizeSelectChange);

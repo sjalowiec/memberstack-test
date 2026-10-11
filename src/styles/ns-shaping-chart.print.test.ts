@@ -90,6 +90,16 @@ describe("ns-shaping-chart print layout regression", () => {
     expect(printCss).toMatch(/\.ns-shaping-chart__tabpanel\[hidden\][\s\S]*display:\s*block\s*!important/);
   });
 
+  it("prints an empty checkbox in each shaping-checklist Done cell", () => {
+    const printCss = printBlock(readWorkspaceFile("src/styles/print.css"));
+    expect(printCss).toMatch(
+      /input\.ns-shaping-chart__row-check\[type="checkbox"\][\s\S]*display:\s*inline-block\s*!important/,
+    );
+    expect(printCss).toMatch(
+      /input\.ns-shaping-chart__row-check\[type="checkbox"\][\s\S]*border:\s*1px solid #111\s*!important/,
+    );
+  });
+
   it("keeps screen accordion disclosure headers visible outside print", () => {
     const screenCss = nsShapingChartCss.replace(printBlock(nsShapingChartCss), "");
     expect(screenCss).toMatch(/\.ns-shaping-chart__disclosure-header[\s\S]*cursor:\s*pointer/);

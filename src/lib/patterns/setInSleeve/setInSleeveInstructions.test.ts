@@ -416,6 +416,30 @@ describe("set-in sleeve written instructions", () => {
     expect(schedules.size).toBeGreaterThan(1);
   });
 
+  it("keeps the cuff stitch count off the sleeve increase list", () => {
+    const sweater = pattern("men", MEN_4X, 5, 7);
+    const presentation = buildSetInCuffUpSleevePresentation({
+      wristStitches: sweater.sleeve.wristStitches,
+      upperArmStitches: sweater.sleeve.upperArmStitches,
+      cuffRows: sweater.sleeve.cuffRows,
+      cuffInches: sweater.sleeve.cuffInches,
+      rowsCuffToUpperArm: sweater.sleeve.rowsCuffToUpperArm,
+      cap: sweater.sleeveCap,
+    });
+    const shaping = presentation.displayRows.find(
+      (row) => row.kind === "block" && row.paragraphs.includes("Begin sleeve shaping."),
+    );
+    expect(shaping?.kind).toBe("block");
+    if (shaping?.kind === "block") expect(shaping.stitchCount).toBeUndefined();
+    const remain = presentation.displayRows.find(
+      (row) =>
+        row.kind === "block" &&
+        row.paragraphs.some((line) => line.includes(`${sweater.sleeve.upperArmStitches} stitches remain`)),
+    );
+    expect(remain?.kind).toBe("block");
+    if (remain?.kind === "block") expect(remain.stitchCount).toBe(sweater.sleeve.upperArmStitches);
+  });
+
   it("writes A-line body shaping on the calculated rows without adding rows", () => {
     const sweater = pattern("misses", MISSES_1, 7, 10, "aline");
     const doc = generateSetInSleeveInstructions(sweater);
