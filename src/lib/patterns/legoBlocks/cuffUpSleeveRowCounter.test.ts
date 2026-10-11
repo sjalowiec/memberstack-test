@@ -178,13 +178,13 @@ describe("cuff-up sleeve body row counter", () => {
           CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
         );
       }
-      const plainText = sample.rows
+      const cuffText = sample.rows
         .filter((row) => row.kind === "block")
-        .flatMap((row) => (row.kind === "block" ? row.paragraphs : []))
+        .flatMap((row) => (row.kind === "block" ? (row.trustedParagraphs ?? []) : []))
         .join("\n");
-      expect(plainText.indexOf(`Knit ${sample.cuffRows} rows even.`)).toBeLessThan(
-        plainText.indexOf(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET),
-      );
+      expect(cuffText).toContain(`knit ${sample.cuffRows} rows of ribbing`);
+      expect(cuffText).toContain(`${sample.cuffRows * 2} rows so the hem can be folded`);
+      expect(cuffText).not.toContain(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET);
       const choiceText = sample.choiceRows
         .filter((row) => row.kind === "block")
         .flatMap((row) => (row.kind === "block" ? (row.trustedParagraphs ?? []) : []))

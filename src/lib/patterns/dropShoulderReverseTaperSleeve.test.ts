@@ -122,7 +122,7 @@ describe("Drop Shoulder reverse-taper sleeve (cuff circ > upper arm)", () => {
     expect(d.dropShoulderUpperArmInches).toBe(12);
     assertAllDebugFinite(d);
 
-    expect(text).toContain("Cast on 70 stitches for the sleeve cuff.");
+    expect(text).toContain("Cast on 70 stitches in the ribbing needle arrangement of your choice");
     expect(text).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
     expect(text).toMatch(/Decrease 1 stitch at each side every 20 rows 5 times/i);
     expect(text).toMatch(/After the final decrease, knit 5 rows even in pattern, then bind off at RC: 105/i);

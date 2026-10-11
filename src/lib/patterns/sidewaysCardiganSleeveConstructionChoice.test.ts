@@ -146,18 +146,18 @@ describe("sideways finished sleeve construction choice", () => {
     expect(cuffInstructions).not.toContain("Choose the method that is most comfortable.");
     expect(cuffInstructions).toContain("Either construction produces the same finished sleeve.");
     expect(cuffInstructions).toContain(
-      `Knit ${cuffRows} rows of ribbing, transfer the stitches to the main bed`,
+      `knit ${cuffRows} rows of ribbing, then transfer the stitches to the main bed`,
     );
-    expect(cuffInstructions).toContain("instead of knitting them plain");
+    expect(cuffInstructions).toContain("Choose one way to begin:");
     expect(cuffInstructions).not.toContain("transfer the stitches to the ribber");
     expect(topInstructions).toContain(
-      `Knit ${topRendered.instructions.calc.cuffRows} rows of ribbing, then`,
+      `knit ${topRendered.instructions.calc.cuffRows} rows of ribbing in the needle arrangement of your choice, then bind off.`,
     );
-    expect(topInstructions).toContain("Transfer the stitches to the ribber in the needle arrangement of your choice.");
+    expect(topInstructions).toContain("Transfer the live stitches to the ribber");
     expect(topInstructions).not.toContain("cast on in the ribbing needle arrangement");
     expect(cuffInstructions).toContain("Knit");
-    expect(cuffInstructions.indexOf("For a ribbed cuff")).toBeLessThan(cuffInstructions.indexOf("SLEEVE BODY"));
-    expect(topInstructions.indexOf("SLEEVE BODY")).toBeLessThan(topInstructions.indexOf("For a ribbed cuff"));
+    expect(cuffInstructions.indexOf("Choose one way to begin:")).toBeLessThan(cuffInstructions.indexOf("SLEEVE BODY"));
+    expect(topInstructions.indexOf("SLEEVE BODY")).toBeLessThan(topInstructions.indexOf("Choose one way to finish:"));
     expect(cuff.indexOf(">Cuff Up<")).toBeLessThan(cuff.indexOf("Increase 1 stitch at each side"));
     expect(cuff.indexOf("no-print")).toBeLessThan(cuff.indexOf(">Cuff Up<"));
   });
@@ -176,17 +176,16 @@ describe("sideways finished sleeve construction choice", () => {
         const { calc } = rendered.instructions;
         cuffCounts.push(calc.cuffRows);
         expect(calc.sleeveTotalRows).toBe(calc.sleeveBodyRows + calc.cuffRows);
-        expect(rendered.html).toContain(`Knit ${calc.cuffRows} rows even.`);
-        expect(rendered.html).toContain(`Knit ${calc.cuffRows} rows of ribbing`);
-        expect(rendered.html).toContain("instead of knitting them plain");
-        expect(rendered.html).not.toContain(`Knit ${calc.cuffRows + calc.sleeveBodyRows} rows of ribbing`);
+        expect(rendered.html).toContain(`knit ${calc.cuffRows} rows of ribbing`);
+        expect(rendered.html).toContain(`${calc.cuffRows * 2} rows so the hem can be folded`);
+        expect(rendered.html).not.toContain(`knit ${calc.cuffRows + calc.sleeveBodyRows} rows of ribbing`);
         if (direction === "cuff-up") {
-          expect(rendered.html).toContain("transfer the stitches to the main bed, then continue with the sleeve.");
+          expect(rendered.html).toContain("transfer the stitches to the main bed to continue the sleeve.");
           expect(rendered.html).not.toContain("transfer the stitches to the ribber");
           expect(rendered.html).toContain(`RC: ${String(calc.sleeveBodyRows).padStart(3, "0")}`);
           expect(rendered.html).not.toContain(`RC: ${String(calc.sleeveTotalRows).padStart(3, "0")}`);
         } else {
-          expect(rendered.html).toContain("Transfer the stitches to the ribber in the needle arrangement of your choice.");
+          expect(rendered.html).toContain("Transfer the live stitches to the ribber");
           expect(rendered.html).not.toContain("cast on in the ribbing needle arrangement");
           expect(rendered.html).toContain(`RC: ${String(calc.sleeveBodyRows).padStart(3, "0")}`);
         }

@@ -1,12 +1,23 @@
 /**
- * Sideways cardigan sleeve cuff copy.
- * The body has no side seams, so the sleeve is sewn in by hand.
+ * Shared sweater sleeve cuff copy.
+ * Sideways, Drop Shoulder, and Set-In Sleeve all use these choice lines.
  * Cuff methods are choices: one cast-on or finish, never a default plus a second method.
+ * The hand-sew sentences below are Sideways only.
  */
 
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { sleevelessHelpVideoFromCatalog } from "./sleevelessCatalogHelpVideo";
+
+export type SleeveCuffChoiceOptions = {
+  /**
+   * Prepended to every cuff line. Set-In Sleeve plain-text instructions use
+   * `RC: 000`. Screen blocks leave this unset and show the counter as the block heading.
+   */
+  rcPrefix?: string;
+  /** Strip glossary and video markup for plain-text instruction documents. */
+  plainText?: boolean;
+};
 
 export const SIDEWAYS_SLEEVE_HAND_SEW_LINE =
   "Sew the finished sleeve into the armhole by hand. This cardigan has no side seams.";
@@ -74,7 +85,22 @@ function foldedHemRowPhrase(cuffRows: number): string {
 
 const HAND_KNIT_CUFF_DEPTH = "to the desired finished cuff depth";
 
-export function sidewaysTopDownCuffChoiceLines(wristSts: number, cuffRows: number): string[] {
+function stripCuffMarkup(line: string): string {
+  return line.replace(/<[^>]+>/g, "");
+}
+
+function presentCuffChoiceLines(lines: string[], options?: SleeveCuffChoiceOptions): string[] {
+  const text = options?.plainText ? lines.map(stripCuffMarkup) : lines;
+  const prefix = options?.rcPrefix?.trim();
+  if (!prefix) return text;
+  return text.map((line) => `${prefix} ${line}`);
+}
+
+export function sidewaysTopDownCuffChoiceLines(
+  wristSts: number,
+  cuffRows: number,
+  options?: SleeveCuffChoiceOptions,
+): string[] {
   const scrap = glossary(SCRAP_OFF_GLOSSARY_ID, "Scrap off", "Learn about scrap off");
   const mockRib = glossary(
     SIDEWAYS_MOCK_RIB_GLOSSARY_ID,
@@ -83,7 +109,7 @@ export function sidewaysTopDownCuffChoiceLines(wristSts: number, cuffRows: numbe
   );
   const rows = cuffRowPhrase(cuffRows);
   const foldedRows = foldedHemRowPhrase(cuffRows);
-  return [
+  const lines = [
     `The finished cuff is ${wristSts} stitches and ${rows} deep. Choose one way to finish:`,
     `1. Transfer the live stitches to the ribber and knit ${rows} of ribbing in the needle arrangement of your choice, then bind off.`,
     `2. ${scrap} the stitches, then pick them up to hand knit ribbing ${HAND_KNIT_CUFF_DEPTH}.`,
@@ -91,9 +117,14 @@ export function sidewaysTopDownCuffChoiceLines(wristSts: number, cuffRows: numbe
     `4. Work a ${reverseHungHemVideoHtml()} for ${foldedRows} so the hem can be folded.`,
     "5. Bind off and work a crochet edging.",
   ];
+  return presentCuffChoiceLines(lines, options);
 }
 
-export function sidewaysCuffUpCuffChoiceLines(wristSts: number, cuffRows: number): string[] {
+export function sidewaysCuffUpCuffChoiceLines(
+  wristSts: number,
+  cuffRows: number,
+  options?: SleeveCuffChoiceOptions,
+): string[] {
   const hungHem = glossary(SIDEWAYS_HUNG_HEM_GLOSSARY_ID, "hung hem", "Learn about hung hems");
   const mockRib = glossary(
     SIDEWAYS_MOCK_RIB_GLOSSARY_ID,
@@ -102,11 +133,12 @@ export function sidewaysCuffUpCuffChoiceLines(wristSts: number, cuffRows: number
   );
   const rows = cuffRowPhrase(cuffRows);
   const foldedRows = foldedHemRowPhrase(cuffRows);
-  return [
+  const lines = [
     `The finished cuff is ${wristSts} stitches and ${rows} deep. Choose one way to begin:`,
     `1. Cast on ${wristSts} stitches in the ribbing needle arrangement of your choice and knit ${rows} of ribbing, then transfer the stitches to the main bed to continue the sleeve.`,
     `2. Knit a ${hungHem} for ${foldedRows} so the hem can be folded.`,
     `3. Knit ${mockRib} for ${foldedRows} so the hem can be folded.`,
     `4. Hand knit ribbing ${HAND_KNIT_CUFF_DEPTH}, then hang its stitches on the machine to continue the sleeve.`,
   ];
+  return presentCuffChoiceLines(lines, options);
 }

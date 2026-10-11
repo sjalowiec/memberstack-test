@@ -330,7 +330,9 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
       .flatMap((r) => r.trustedParagraphs ?? [])
       .find((p) => /Increase 1 stitch at each side/i.test(p));
 
-    expect(text).toContain("Cast on 40 stitches for the sleeve cuff.");
+    expect(text).toContain("Cast on 40 stitches in the ribbing needle arrangement of your choice");
+    expect(text).toContain("knit 20 rows of ribbing, then transfer");
+    expect(text).toContain("for 40 rows so the hem can be folded.");
     expect(preShaping.straightRows).toBe(4);
     expect(bodyBlocks).toHaveLength(2);
     expect(blockParagraphText(bodyBlocks[0]!)).toContain("Knit 4 rows even.");
@@ -367,7 +369,10 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
     expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("according to the sleeve shaping sequence");
-    expect(text).toContain("cuff/wrist edge");
+    expect(text).toContain("Choose one way to finish:");
+    expect(text).toContain("knit 20 rows of ribbing in the needle arrangement of your choice, then bind off.");
+    expect(text).toContain("for 40 rows so the hem can be folded.");
+    expect(text).not.toContain("Reset row counter to RC 000.");
   });
 
   it("states one straight row before shaping when the schedule interval is 1", () => {

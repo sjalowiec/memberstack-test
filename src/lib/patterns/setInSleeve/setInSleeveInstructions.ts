@@ -31,6 +31,7 @@ import {
   type DropShoulderSleeveShapingChartRow,
 } from "../dropShoulderSleeveShapingChart";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
+import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
 import {
   roundNeckBackShallowSleevelessSummaryWrittenLines,
@@ -39,7 +40,6 @@ import {
 } from "../roundNeckPlanPresentation";
 import {
   ARMHOLE_RC_FROM_RESET_NOTE,
-  castOnMethodQuickTipInnerHtml,
   formatCenterNecklineBindOffShapingExecution,
   formatCenterNecklineHoldShapingExecution,
   formatRcColon,
@@ -416,14 +416,16 @@ export function buildSetInCuffUpSleevePresentation(
   const taperRows = setInSleeveTaperChartRows(input);
   const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm);
   const capLines = capModel.lines.map((line) => line.text);
-  const cuffEven = knitEvenSentence(input.cuffRows);
-  const cuffDepth = `Cuff, ${inches(input.cuffInches)}.`;
-  const cuffSentence = cuffEven ? `${cuffEven} ${cuffDepth}` : cuffDepth;
-
+  const cuffChoiceHtml = sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows);
+  const cuffChoicePlain = sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
+    plainText: true,
+  });
   const cuffLines = [
     "Make 2 sleeves.",
-    `${formatRcColon(0)} Cast on ${input.wristStitches} ${stitchWord(input.wristStitches)} for the sleeve cuff.`,
-    `${formatRcColon(0)} ${cuffSentence}`,
+    ...sidewaysCuffUpCuffChoiceLines(input.wristStitches, input.cuffRows, {
+      plainText: true,
+      rcPrefix: formatRcColon(0),
+    }),
     SET_IN_ROW_COUNTER_RESET,
   ];
 
@@ -470,25 +472,12 @@ export function buildSetInCuffUpSleevePresentation(
   const displayRows: SleevelessPatternDisplayRow[] = [
     { kind: "piece", title: "SLEEVE" },
     { kind: "block", paragraphs: ["Make 2 sleeves."] },
-    {
-      kind: "block",
-      rc: formatRcColon(0),
-      paragraphs: [`Cast on ${input.wristStitches} stitches for the sleeve cuff.`],
-      stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
-      ...(input.wristStitches > 0
-        ? {
-            tipHtml: castOnMethodQuickTipInnerHtml(),
-            tipHtmlIsFull: true,
-            tipPresentation: "quick-tip" as const,
-            tipId: "set-in-sleeve-cast-on-cuff",
-          }
-        : {}),
-    },
     { kind: "section", title: "CUFF" },
     {
       kind: "block",
       rc: formatRcColon(0),
-      paragraphs: [cuffSentence],
+      paragraphs: cuffChoicePlain,
+      trustedParagraphs: cuffChoiceHtml,
       stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
     },
     {
