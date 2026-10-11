@@ -7,6 +7,8 @@ import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinish
 import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveSleevelessBodyShapePhrase } from "./sleevelessAlineShaping";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
+import { setInSleeveAdultChartLabel } from "./setInSleeveSizeCharts";
 import { SLEEVELESS_CHART_AUDIENCE_LABELS } from "./patternStorage.ts";
 import { normalizeBustDartSavedConfig, BUST_DART_STYLE_KEY } from "./legoBlocks/bustDart";
 
@@ -14,6 +16,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
 const SLEEVELESS_FAMILY_LABEL = "Sleeveless";
 const DROP_SHOULDER_FAMILY_LABEL = "Drop Shoulder";
+const SET_IN_SLEEVE_FAMILY_LABEL = "Set-In Sleeve";
 
 /**
  * Extra saved-project metadata for the summary. These come from the saved project record / working
@@ -109,6 +112,10 @@ function audienceLabelFromPattern(st: Record<string, unknown>, ft: Record<string
     (typeof ft.sizingChart === "string" && ft.sizingChart.trim()) ||
     "";
   const key = raw.toLowerCase();
+  if (hasAuthoritativeSetInSleeveConstruction(st)) {
+    const setInLabel = setInSleeveAdultChartLabel(key);
+    if (setInLabel) return setInLabel;
+  }
   if (key && key in AUDIENCE_LABELS) {
     return AUDIENCE_LABELS[key as keyof typeof AUDIENCE_LABELS];
   }
@@ -151,9 +158,9 @@ function garmentShapeLengthPhrase(
 
 /** Pattern family/type label from the stored construction identity. */
 function patternFamilyLabel(st: Record<string, unknown>): string {
-  return hasAuthoritativeDropShoulderConstruction(st)
-    ? DROP_SHOULDER_FAMILY_LABEL
-    : SLEEVELESS_FAMILY_LABEL;
+  if (hasAuthoritativeDropShoulderConstruction(st)) return DROP_SHOULDER_FAMILY_LABEL;
+  if (hasAuthoritativeSetInSleeveConstruction(st)) return SET_IN_SLEEVE_FAMILY_LABEL;
+  return SLEEVELESS_FAMILY_LABEL;
 }
 
 /** Garment style label (Pullover / Cardigan) from garmentStyle, falling back to frontStyle. */

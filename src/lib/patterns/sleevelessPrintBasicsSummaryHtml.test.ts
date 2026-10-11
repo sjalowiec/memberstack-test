@@ -89,3 +89,32 @@ describe("sleeveless basics summary — Fit row", () => {
     expect(html).toContain("<dt>Neckline</dt>");
   });
 });
+
+describe("set-in sleeve basics summary labels", () => {
+  function setInPattern(audience: string): Record<string, unknown> {
+    const pattern = mergedPattern({ sizingChart: audience, selectedSize: "X" });
+    const style = pattern.style as Record<string, unknown>;
+    style.recipientCategory = audience;
+    style.construction = "set-in-sleeve";
+    style.constructionAuthored = "set-in-sleeve";
+    return pattern;
+  }
+
+  it("names Misses, Women's, and Men's without renaming the stored chart keys", () => {
+    const misses = buildSleevelessScreenBasicsSummaryDlHtml(setInPattern("misses"), patternData());
+    const womens = buildSleevelessScreenBasicsSummaryDlHtml(setInPattern("plus"), patternData());
+    const mens = buildSleevelessScreenBasicsSummaryDlHtml(setInPattern("men"), patternData());
+    expect(misses).toContain("<dt>Pattern</dt><dd>Set-In Sleeve</dd>");
+    expect(misses).toContain("<dt>Audience</dt><dd>Misses</dd>");
+    expect(womens).toContain("<dt>Audience</dt><dd>Women's</dd>");
+    expect(mens).toContain("<dt>Audience</dt><dd>Men's</dd>");
+  });
+
+  it("keeps Sleeveless labels for the shared charts", () => {
+    const pattern = mergedPattern({ sizingChart: "plus" });
+    (pattern.style as Record<string, unknown>).recipientCategory = "plus";
+    const html = buildSleevelessScreenBasicsSummaryDlHtml(pattern, patternData());
+    expect(html).toContain("<dt>Pattern</dt><dd>Sleeveless</dd>");
+    expect(html).toContain("<dt>Audience</dt><dd>Plus Size</dd>");
+  });
+});
