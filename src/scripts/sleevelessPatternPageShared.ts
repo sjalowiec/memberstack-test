@@ -4156,7 +4156,6 @@ table {
         neckChartStartRow,
         { omitPieceBanner: true },
       );
-    const overview = renderPiece(result.overviewRows, "overview", "", undefined);
     const back = renderPiece(result.displayRows, "back", "sg-neck-shoulder-chart-table-back", result?.neckShoulderShapingChart?.rows?.[0]?.row);
     const front = renderSleevelessDisplayHtml(
       result.frontDisplayRows ?? [],
@@ -4229,9 +4228,6 @@ table {
       },
     );
     mount.innerHTML =
-      wrapPatternSection("sg-overview", "Overview", overview.splitInner + overview.postSplit, {
-        defaultCollapsed: false,
-      }) +
       wrapPatternSection("sg-back", "BACK", backWrapped, {
         defaultCollapsed: false,
         sectionClassName: "pattern-section--garment-piece",

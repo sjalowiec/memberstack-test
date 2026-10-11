@@ -742,6 +742,9 @@ describe("set-in back neckline and shoulder checklist", () => {
       source.indexOf("async function renderSetInSleeveMount"),
       source.indexOf("async function renderMount"),
     );
+    expect(setIn).not.toContain("sg-overview");
+    expect(setIn).not.toContain('"Overview"');
+    expect(setIn).toContain('wrapPatternSection("sg-back", "BACK"');
     expect(setIn).toContain('mount.querySelector("#sg-neck-shoulder-chart-table-back")');
     expect(setIn).toContain("renderNeckShoulderShapingChartTableOnlyHtml");
     expect(setIn).toContain('tableHeading: "First Shoulder Checklist"');
