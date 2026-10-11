@@ -11,6 +11,7 @@ import {
   buildSleevelessFinishingPrintListHtml,
   buildSleevelessFinishingStepsHtml,
 } from "./sleevelessPatternFinishingHtml";
+import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 
 function baseMeasurements() {
   return {
@@ -279,23 +280,72 @@ describe("buildSleevelessFinishingStepsHtml", () => {
     expect(finishing.steps.find((s) => s.id === "joinSideSeams")?.stepNumber).toBe(5);
   });
 
-  it("includes neckline finishing help video links for pullover and cardigan", () => {
-    for (const isCardigan of [false, true]) {
-      const html = buildSleevelessFinishingStepsHtml({
-        isCardigan,
-        cardiganFrontEdgeFinishingMode: isCardigan ? "pickup" : undefined,
-        deps,
-      });
-      expect(html).toContain("Need help finishing the neckline?");
-      expect(html).toContain(
-        'href="https://app.knititnow.com/videos/386/?q=v-neck"',
-      );
-      expect(html).toContain("V-Neck Finishing Instructions");
-      expect(html).toContain(
-        'href="https://app.knititnow.com/videos/695/?q=band"',
-      );
-      expect(html).toContain("Round Neck Finishing Instructions");
-      expect(html).toContain('target="_blank"');
+  it("shows only the catalog finishing video that matches the selected neckline", () => {
+    const families = [
+      { name: "Sleeveless", options: {} },
+      { name: "Drop Shoulder", options: { isDropShoulder: true } },
+      { name: "Set-in Sleeve", options: { isSetInSleeve: true } },
+    ] as const;
+    const necklines = [
+      {
+        neckline: "round",
+        href: "/videos/695",
+        label: "Round Neck Finishing Instructions",
+        otherHref: "/videos/386",
+        otherLabel: "V-Neck Finishing Instructions",
+        videoKey: "onePieceBand",
+        buttonLabel: "One-piece neckband",
+      },
+      {
+        neckline: "v-neck",
+        href: "/videos/386",
+        label: "V-Neck Finishing Instructions",
+        otherHref: "/videos/695",
+        otherLabel: "Round Neck Finishing Instructions",
+        videoKey: "vNeckBandFinishing",
+        buttonLabel: "Optional V-Neck Band Tutorial",
+      },
+    ] as const;
+
+    for (const family of families) {
+      for (const neck of necklines) {
+        const pattern = { style: { neckline: neck.neckline } };
+        const videoKey = isSleevelessVNeckChoice(pattern) ? "vNeckBandFinishing" : "onePieceBand";
+        expect(videoKey, `${family.name} ${neck.neckline}`).toBe(neck.videoKey);
+
+        const html = buildSleevelessFinishingStepsHtml({
+          isCardigan: false,
+          ...family.options,
+          deps: {
+            ...deps,
+            neckFinishingVideoKey: videoKey,
+            neckFinishingButtonLabel: neck.buttonLabel,
+          },
+        });
+
+        expect(html, `${family.name} ${neck.neckline}`).toContain("Need help finishing the neckline?");
+        expect(html, `${family.name} ${neck.neckline}`).toContain(`href="${neck.href}"`);
+        expect(html, `${family.name} ${neck.neckline}`).toContain(neck.label);
+        expect(html, `${family.name} ${neck.neckline}`).not.toContain(`href="${neck.otherHref}"`);
+        expect(html, `${family.name} ${neck.neckline}`).not.toContain(neck.otherLabel);
+        expect(html, `${family.name} ${neck.neckline}`).not.toContain("app.knititnow.com");
+        expect(html, `${family.name} ${neck.neckline}`).toContain('target="_blank"');
+        expect(html, `${family.name} ${neck.neckline}`).toContain(
+          `data-sleeveless-help-video="${videoKey}"`,
+        );
+        expect(html, `${family.name} ${neck.neckline}`).toContain(neck.buttonLabel);
+        expect(html, `${family.name} ${neck.neckline}`).toContain("Work the neckline trim or neckband.");
+        expect(html, `${family.name} ${neck.neckline}`).toContain("Finish the neckband as desired.");
+
+        if (family.name === "Drop Shoulder") {
+          expect(html, `${family.name} ${neck.neckline}`).not.toContain("seamingPuttingItAllTogether");
+        } else {
+          expect(html, `${family.name} ${neck.neckline}`).toContain(
+            'data-sleeveless-help-video="seamingPuttingItAllTogether"',
+          );
+          expect(html, `${family.name} ${neck.neckline}`).toContain("Seaming – Putting It All Together");
+        }
+      }
     }
   });
 });

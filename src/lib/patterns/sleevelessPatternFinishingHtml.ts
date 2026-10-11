@@ -110,13 +110,21 @@ function finishFrontEdgesBody(
   return finishFrontEdgesPickupBody(pickupSts, deps);
 }
 
-function necklineFinishingHelpBody(): string {
+/** Catalog pages for the neckline help links. Chosen from the same key as the modal button. */
+function necklineFinishingCatalogLink(deps: SleevelessFinishingHtmlDeps): { href: string; label: string } {
+  if (deps.neckFinishingVideoKey === "vNeckBandFinishing") {
+    return { href: "/videos/386", label: "V-Neck Finishing Instructions" };
+  }
+  return { href: "/videos/695", label: "Round Neck Finishing Instructions" };
+}
+
+function necklineFinishingHelpBody(deps: SleevelessFinishingHtmlDeps): string {
+  const link = necklineFinishingCatalogLink(deps);
   return `<aside class="pattern-finishing-neck-help pattern-finishing-video-help no-print" aria-label="Need help finishing the neckline?">
       <p class="pattern-finishing-neck-help__title"><i class="fa-solid fa-circle-question"></i> Need help finishing the neckline?</p>
       <p class="pattern-finishing-neck-help__lead">Watch the video that matches your pattern:</p>
       <ul class="pattern-finishing-neck-help__links">
-        <li><a class="pattern-help-link__anchor" href="https://app.knititnow.com/videos/386/?q=v-neck" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-play"></i> V-Neck Finishing Instructions</a></li>
-        <li><a class="pattern-help-link__anchor" href="https://app.knititnow.com/videos/695/?q=band" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-play"></i> Round Neck Finishing Instructions</a></li>
+        <li><a class="pattern-help-link__anchor" href="${link.href}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-play"></i> ${link.label}</a></li>
       </ul>
     </aside>`;
 }
@@ -147,7 +155,7 @@ function finishNecklineBody(
         )}</button>
       </span>
     </p>
-    ${necklineFinishingHelpBody()}`;
+    ${necklineFinishingHelpBody(deps)}`;
 }
 
 function dropShoulderSleeveArmholeAttachStepsHtml(): string {
