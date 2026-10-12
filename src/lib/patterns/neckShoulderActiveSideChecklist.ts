@@ -100,6 +100,13 @@ function timelineHasCenterDivideRow(timeline: readonly RowEntry[]): boolean {
   );
 }
 
+function outerEdgeAmount(entry: RowEntry, side: "left" | "right"): number {
+  return entry.events.reduce((sum, event) => {
+    if (event.side === side && event.edge === "outer") return sum + event.amount;
+    return sum;
+  }, 0);
+}
+
 /** @deprecated Use {@link timelineHasCenterDivideRow}. */
 function timelineHasCenterBindOffRow(timeline: readonly RowEntry[]): boolean {
   return timelineHasCenterDivideRow(timeline);
@@ -122,8 +129,8 @@ function centerNecklineDivideInfo(chart: NeckShoulderShapingChart): CenterNeckli
     return {
       garmentRc: center.row,
       centerBindOff,
-      stitchesLeftAfter: Math.max(0, Math.floor(center.stitchesL)),
-      stitchesRightAfter: Math.max(0, Math.floor(center.stitchesR)),
+      stitchesLeftAfter: Math.max(0, Math.floor(center.stitchesL + outerEdgeAmount(center, "left"))),
+      stitchesRightAfter: Math.max(0, Math.floor(center.stitchesR + outerEdgeAmount(center, "right"))),
     };
   }
 
@@ -435,12 +442,13 @@ function buildActiveSideActionsFromTimeline(
   const center = hasCenterDivide ? first : null;
   const shapingEntries = hasCenterDivide ? sorted.slice(1) : sorted;
   /**
-   * Align checklist RCs to timeline/written row numbers when shaping may fall on consecutive
-   * rows (V-neck evenShapingSchedule, or deep round center bind-off schedules).
-   * Legacy odd/even carriage padding must not apply — it infinite-pads every-row Neck decreases.
+   * Align checklist RCs to timeline rows when shaping can fall on consecutive rows.
+   * Set-in cardigan fronts share that timeline with the armhole, so legacy odd/even
+   * padding must not move an armhole bind-off onto a later row.
    */
   const alignDisplayRcToTimeline =
     vNeckFront ||
+    (cardiganFront && chart?.finishShoulderInsideRowBudget === true) ||
     (hasCenterDivide && !cardiganFront && timelineHasDeepRoundCenterBindOff(timeline));
 
   const relativeOriginRow =
@@ -452,6 +460,19 @@ function buildActiveSideActionsFromTimeline(
 
   const actions: ActiveSideScheduledAction[] = [];
   let finalSourceRelativeRow = 0;
+  if (center) {
+    for (const event of center.events) {
+      const action = activeSideActionFromTimelineEvent(
+        center,
+        event,
+        relativeOriginRow,
+        alignDisplayRcToTimeline,
+        side,
+        lastArmholeGarmentRcForChecklist(chart, timeline),
+      );
+      if (action && action.edge !== "Neck") actions.push(action);
+    }
+  }
   for (const entry of shapingEntries) {
     const rel = alignDisplayRcToTimeline
       ? Math.max(0, Math.floor(entry.row - relativeOriginRow))
@@ -470,7 +491,8 @@ function buildActiveSideActionsFromTimeline(
     }
   }
   const remainder = finalShoulderRemainderStitches(timeline, side);
-  if (remainder > 0) {
+  const keepRemainderOnLastRow = chart?.finishShoulderInsideRowBudget === true;
+  if (remainder > 0 && !keepRemainderOnLastRow) {
     actions.push({
       sourceRelativeRow: finalSourceRelativeRow + 1,
       edge: "Shoulder",
@@ -482,7 +504,12 @@ function buildActiveSideActionsFromTimeline(
 
   const initialStitches =
     hasCenterDivide && center
-      ? Math.max(0, Math.floor(side === "left" ? center.stitchesL : center.stitchesR))
+      ? Math.max(
+          0,
+          Math.floor(
+            (side === "left" ? center.stitchesL : center.stitchesR) + outerEdgeAmount(center, side),
+          ),
+        )
       : Math.max(
           0,
           Math.floor(
@@ -726,7 +753,7 @@ function buildSideInstructionTableRows(
     checklistIdx += 1;
   }
 
-  if (stitchesRemaining > 0) {
+  if (stitchesRemaining > 0 && chart.finishShoulderInsideRowBudget !== true) {
     let displayRc = toDisplay(checklistIdx);
     const leftoverEdge: ActiveSideEdge = "Shoulder";
     while (displayRc % 2 !== requiredParityForActiveSideEdge(leftoverEdge)) {

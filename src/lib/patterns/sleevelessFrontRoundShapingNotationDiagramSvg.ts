@@ -230,7 +230,8 @@ export function pulloverRoundFrontShoulderPoints(
   const timeline = frontTimeline(result);
   if (timeline.length === 0) return [];
   const budget = shoulderStitchesPerSideForDiagram(result.debug);
-  const points = collectCompleteShoulderShapingPoints(timeline, "right", undefined, {
+  const shoulderChart = result.setInArmholePlan?.ok ? result.frontNeckShoulderShapingChart : undefined;
+  const points = collectCompleteShoulderShapingPoints(timeline, "right", shoulderChart, {
     shoulderStitchesBudget: budget,
   });
   const shoulderStart = result.debug.shoulderStartRow;
@@ -246,7 +247,8 @@ export function pulloverRoundFrontShoulderNotationLines(
   const timeline = frontTimeline(result);
   if (timeline.length === 0) return [];
   const budget = shoulderStitchesPerSideForDiagram(result.debug);
-  const lines = shoulderShapingNotationLinesFromTimeline(timeline, "right", undefined, {
+  const shoulderChart = result.setInArmholePlan?.ok ? result.frontNeckShoulderShapingChart : undefined;
+  const lines = shoulderShapingNotationLinesFromTimeline(timeline, "right", shoulderChart, {
     shoulderStitchesBudget: budget,
   });
   if (lines.length > 0) return lines;

@@ -169,20 +169,27 @@ function groupedBindOffLines(
   startRc: number,
   startStitches: number,
   stitchesEachSide: readonly number[],
+  stopBeforeLocalRc?: number,
 ): { lines: string[]; rc: number; stitches: number; rows: number } {
   const lines: string[] = [];
   let rc = startRc;
   let stitches = startStitches;
   let rows = 0;
   for (const group of groupEqualRows(bothEdgeBindOffRows(stitchesEachSide))) {
+    if (stopBeforeLocalRc !== undefined && rc >= stopBeforeLocalRc) break;
+    let groupRows = group.rows;
+    if (stopBeforeLocalRc !== undefined && rc + groupRows > stopBeforeLocalRc) {
+      groupRows = stopBeforeLocalRc - rc;
+    }
+    if (groupRows <= 0) break;
     const where =
-      group.rows === 1 ? "the next row" : `each of the next ${group.rows} ${rowWord(group.rows)}`;
-    stitches -= group.stitches * group.rows;
+      groupRows === 1 ? "the next row" : `each of the next ${groupRows} ${rowWord(groupRows)}`;
+    stitches -= group.stitches * groupRows;
     lines.push(
       `${formatRcColon(rc)} Bind off ${group.stitches} ${stitchWord(group.stitches)} at the beginning of ${where}. ${remain(stitches)}`,
     );
-    rc += group.rows;
-    rows += group.rows;
+    rc += groupRows;
+    rows += groupRows;
   }
   return { lines, rc, stitches, rows };
 }
@@ -194,20 +201,36 @@ function pairedDecreaseLine(
   everyRows: number,
   times: number,
   edge: "armhole" | "sleeve-cap",
+  stopBeforeLocalRc?: number,
 ): { text: string; rc: number; stitches: number; rows: number } {
-  const actionRows = shapingActionRowNumbers(startRc, times, everyRows);
+  let actionRows = shapingActionRowNumbers(startRc, times, everyRows);
+  if (stopBeforeLocalRc !== undefined) {
+    actionRows = actionRows.filter((rc) => rc < stopBeforeLocalRc);
+  }
   const evenRows: number[] = [];
   for (const action of actionRows) {
-    for (let offset = 1; offset < everyRows; offset += 1) evenRows.push(action + offset);
+    for (let offset = 1; offset < everyRows; offset += 1) {
+      const even = action + offset;
+      if (stopBeforeLocalRc !== undefined && even >= stopBeforeLocalRc) continue;
+      evenRows.push(even);
+    }
   }
-  const removed = times * stitchesEachSide * 2;
+  const removed = actionRows.length * stitchesEachSide * 2;
   const stitches = startStitches - removed;
-  const rows = times * everyRows;
+  const fullRows = times * everyRows;
+  const rows =
+    stopBeforeLocalRc !== undefined
+      ? Math.max(0, Math.min(fullRows, stopBeforeLocalRc - startRc))
+      : fullRows;
   const place = edge === "armhole" ? "each armhole edge" : "each sleeve-cap edge";
   const even =
     evenRows.length > 0 ? ` Knit these rows even: ${rcList(evenRows)}.` : "";
+  const text =
+    actionRows.length === 0
+      ? ""
+      : `${formatRcColon(startRc)} Decrease ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at ${place} on ${rcList(actionRows)}. Each listed RC is the counter reading before that decrease row.${even} ${remain(stitches)}`;
   return {
-    text: `${formatRcColon(startRc)} Decrease ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at ${place} on ${rcList(actionRows)}. Each listed RC is the counter reading before that decrease row.${even} ${remain(stitches)}`,
+    text,
     rc: startRc + rows,
     stitches,
     rows,
@@ -224,19 +247,23 @@ export function setInArmholeInstructionLines(
     | "decreaseRows"
   >,
   stitchesAtUnderarm: number,
+  stopBeforeLocalRc?: number,
 ): string[] {
   const lines: string[] = [
     SET_IN_ROW_COUNTER_RESET,
     ARMHOLE_RC_FROM_RESET_NOTE,
   ];
-  const bindOffs = groupedBindOffLines(0, stitchesAtUnderarm, [
-    armhole.bindOffStitchesEachSide,
-    ...armhole.stairStepBindOffsEachSide,
-  ]);
+  const bindOffs = groupedBindOffLines(
+    0,
+    stitchesAtUnderarm,
+    [armhole.bindOffStitchesEachSide, ...armhole.stairStepBindOffsEachSide],
+    stopBeforeLocalRc,
+  );
   lines.push(...bindOffs.lines);
   let rc = bindOffs.rc;
   let stitches = bindOffs.stitches;
-  if (armhole.decreaseStitchesEachSide > 0) {
+  const stopped = stopBeforeLocalRc !== undefined && rc >= stopBeforeLocalRc;
+  if (!stopped && armhole.decreaseStitchesEachSide > 0) {
     const decreases = pairedDecreaseLine(
       rc,
       stitches,
@@ -244,17 +271,20 @@ export function setInArmholeInstructionLines(
       2,
       armhole.decreaseStitchesEachSide,
       "armhole",
+      stopBeforeLocalRc,
     );
-    lines.push(decreases.text);
+    if (decreases.text) lines.push(decreases.text);
     rc = decreases.rc;
     stitches = decreases.stitches;
-    if (decreases.rows !== armhole.decreaseRows) {
+    if (stopBeforeLocalRc === undefined && decreases.rows !== armhole.decreaseRows) {
       lines.push("Armhole decrease rows do not match the every-other-row schedule.");
     }
   }
-  lines.push(
-    `${formatRcColon(rc)} Armhole decreases are complete. ${remain(stitches)}`,
-  );
+  if (stopBeforeLocalRc === undefined || rc < stopBeforeLocalRc) {
+    lines.push(
+      `${formatRcColon(rc)} Armhole decreases are complete. ${remain(stitches)}`,
+    );
+  }
   return lines;
 }
 
@@ -271,30 +301,51 @@ export function setInOneEdgeArmholeInstructionLines(
     | "decreaseRows"
   >,
   stitchesAtArmhole: number,
+  stopBeforeLocalRc?: number,
 ): string[] {
   const lines: string[] = [SET_IN_ROW_COUNTER_RESET, ARMHOLE_RC_FROM_RESET_NOTE];
   let rc = 0;
   let stitches = stitchesAtArmhole;
   const steps = [armhole.initialBindOffStitchesEachSide, ...armhole.stairStepBindOffsEachSide];
+  let stopped = false;
   for (const amount of steps) {
     if (amount <= 0) continue;
+    if (stopBeforeLocalRc !== undefined && rc >= stopBeforeLocalRc) {
+      stopped = true;
+      break;
+    }
     stitches -= amount;
     lines.push(
       `${formatRcColon(rc)} Bind off ${amount} ${stitchWord(amount)} at the armhole edge. Knit across. ${remain(stitches)}`,
     );
     rc += 2;
   }
-  if (armhole.decreaseStitchesEachSide > 0) {
-    const actionRows = shapingActionRowNumbers(rc, armhole.decreaseStitchesEachSide, 2);
+  if (!stopped && armhole.decreaseStitchesEachSide > 0 && (stopBeforeLocalRc === undefined || rc < stopBeforeLocalRc)) {
+    let actionRows = shapingActionRowNumbers(rc, armhole.decreaseStitchesEachSide, 2);
+    if (stopBeforeLocalRc !== undefined) actionRows = actionRows.filter((row) => row < stopBeforeLocalRc);
     const evenRows: number[] = [];
-    for (const action of actionRows) evenRows.push(action + 1);
-    stitches -= armhole.decreaseStitchesEachSide;
-    lines.push(
-      `${formatRcColon(rc)} Decrease 1 stitch at the armhole edge on ${rcList(actionRows)}. Knit these rows even: ${rcList(evenRows)}. ${remain(stitches)}`,
-    );
-    rc += armhole.decreaseRows;
+    for (const action of actionRows) {
+      const even = action + 1;
+      if (stopBeforeLocalRc === undefined || even < stopBeforeLocalRc) evenRows.push(even);
+    }
+    if (actionRows.length > 0) {
+      stitches -= actionRows.length;
+      const even =
+        evenRows.length > 0 ? ` Knit these rows even: ${rcList(evenRows)}.` : "";
+      lines.push(
+        `${formatRcColon(rc)} Decrease 1 stitch at the armhole edge on ${rcList(actionRows)}.${even} ${remain(stitches)}`,
+      );
+    }
+    const fullRows = armhole.decreaseRows;
+    rc +=
+      stopBeforeLocalRc !== undefined
+        ? Math.max(0, Math.min(fullRows, stopBeforeLocalRc - rc))
+        : fullRows;
   }
-  lines.push(`${formatRcColon(rc)} Armhole decreases are complete. ${remain(stitches)}`);
+  if (stopBeforeLocalRc !== undefined && rc >= stopBeforeLocalRc) stopped = true;
+  if (!stopped) {
+    lines.push(`${formatRcColon(rc)} Armhole decreases are complete. ${remain(stitches)}`);
+  }
   return lines;
 }
 

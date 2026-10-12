@@ -362,15 +362,16 @@ export function buildBackJapaneseNotationReplacements(
       ? roundNeckPlanOneSideBackNeckEdgeJpLines(backRoundNeckPlan, BACK_NOTATION_DIAGRAM_SIDE)
       : formatDecreaseNotationLines(necklineDecreasePoints);
 
+  const shoulderChart = result.setInArmholePlan?.ok ? result.neckShoulderShapingChart : undefined;
   const shoulderBindOffPoints =
     timeline.length > 0
-      ? collectCompleteShoulderShapingPoints(timeline, BACK_NOTATION_DIAGRAM_SIDE)
+      ? collectCompleteShoulderShapingPoints(timeline, BACK_NOTATION_DIAGRAM_SIDE, shoulderChart)
       : [];
 
   const armholeShapingLines = formatDecreaseNotationLines(armholeDecreasePoints);
   const shoulderShapingLines =
     timeline.length > 0
-      ? shoulderShapingNotationLinesFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE, undefined, {
+      ? shoulderShapingNotationLinesFromTimeline(timeline, BACK_NOTATION_DIAGRAM_SIDE, shoulderChart, {
           shoulderStitchesBudget: shoulderStitchesPerSideForDiagram(d),
         })
       : [];

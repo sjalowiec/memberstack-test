@@ -83,7 +83,10 @@ export function collectCompleteShoulderShapingPoints(
   _chart?: NeckShoulderShapingChart,
   options?: ShoulderShapingNotationOptions,
 ): StitchDecreasePoint[] {
-  const points = collectOuterShoulderBindOffPoints(timeline, side);
+  const lastArmhole = _chart?.frontVNeckArmholeComposition?.lastArmholeGarmentRc;
+  const points = collectOuterShoulderBindOffPoints(timeline, side).filter(
+    (point) => lastArmhole === undefined || point.row > lastArmhole,
+  );
   const remainder = finalShoulderRemainderStitches(timeline, side);
   if (remainder <= 0) return points;
 

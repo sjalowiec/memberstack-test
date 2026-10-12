@@ -13,6 +13,7 @@ import {
   collapsePlainKnitChartRowsForDisplay,
   getNeckShoulderChartRowHighlightFromRow,
   isFullWidthVNeckFrontStyleChart,
+  usesVNeckHeldSideChecklist,
   isSleevelessCardiganFrontNeckShoulderChart,
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
   plainKnitSpanCarriageEdgeDisplay,
@@ -88,6 +89,19 @@ function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** Glossary id for Free Pass (reposition the carriage without knitting a row). */
+export const FREE_PASS_GLOSSARY_ID = 355;
+
+function withFreePassGlossaryLink(html: string): string {
+  const placeholder = buildGlossaryTooltipPlaceholderHtml(
+    FREE_PASS_GLOSSARY_ID,
+    "Free Pass",
+    escapeHtml,
+    escapeHtml,
+  );
+  return html.replace("Free Pass", placeholder);
 }
 
 /** Escape `text` for HTML, wrapping the first occurrence of `phrase` (if present) in `<strong>`. */
@@ -820,7 +834,7 @@ export function renderNeckShoulderChartIntroBlockHtml(
 
 function secondShoulderRowCounterSentence(startRc: number, checklist: "shoulder" | "side"): string {
   const name = checklist === "side" ? "Second Side" : "Second Shoulder";
-  return `Set the row counter to RC: ${formatActiveSideRc(startRc)} before beginning the ${name}.`;
+  return `Free Pass the carriage to the side with the working yarn. This does not add a knitted row. Set the row counter to RC: ${formatActiveSideRc(startRc)} before beginning the ${name}.`;
 }
 
 function instructionWithHeldStitches(
@@ -868,15 +882,17 @@ function instructionWithHeldStitchesHtml(
   shouldersShaped = true,
   secondShoulderStartRc?: number,
 ): string {
-  return escapeHtmlWithEmphasis(
-    instructionWithHeldStitches(
-      heldShoulderStitches,
-      showChecklist,
-      isCardiganFront,
-      shouldersShaped,
-      secondShoulderStartRc,
+  return withFreePassGlossaryLink(
+    escapeHtmlWithEmphasis(
+      instructionWithHeldStitches(
+        heldShoulderStitches,
+        showChecklist,
+        isCardiganFront,
+        shouldersShaped,
+        secondShoulderStartRc,
+      ),
+      activeShoulderReverseShapingEmphasis(shouldersShaped),
     ),
-    activeShoulderReverseShapingEmphasis(shouldersShaped),
   );
 }
 
@@ -1455,7 +1471,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     options?.hideCenterNecklineSetupRow === true
       ? activeRowsBuilt.filter((r) => !isCenterNecklineSetupChecklistRow(r))
       : activeRowsBuilt;
-  const oppositeRowsPrepRaw = chart.frontVNeckArmholeComposition
+  const heldSideOpposite = usesVNeckHeldSideChecklist(chart);
+  const oppositeRowsPrepRaw = heldSideOpposite
     ? buildHeldSideInstructionTableRows(
         chart,
         activeSideRcStart,
@@ -1473,7 +1490,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
         vNeckStyleOneRowPerRc
           ? oppositeRowsPrep
           : compactActiveSideInstructionRowsForPrint(oppositeRowsPrep, {
-              invertCarriageParity: !chart.frontVNeckArmholeComposition,
+              invertCarriageParity: !heldSideOpposite,
             }),
         progressChartIdSecondary,
       )
@@ -1482,7 +1499,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     0,
     Math.floor(
       Number(
-        chart.frontVNeckArmholeComposition?.heldAfterDivideRow ??
+        (heldSideOpposite ? chart.frontVNeckArmholeComposition?.heldAfterDivideRow : undefined) ??
           chart.rows[0]?.leftStitchCount ??
           0,
       ),
@@ -1673,9 +1690,9 @@ ${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
   if (useShoulderTabs) {
     const secondSideLeadHtml =
       secondChecklistStartRc !== undefined
-        ? `<p class="ns-shaping-chart__active-side-note" data-second-side-row-counter>${escapeHtml(
+        ? `<p class="ns-shaping-chart__active-side-note" data-second-side-row-counter>${withFreePassGlossaryLink(escapeHtml(
             secondSideRowCounterTransition(secondChecklistStartRc, shouldersShaped),
-          )}</p>`
+          ))}</p>`
         : "";
     return renderShoulderTabsHtml({
       sectionClass,
@@ -1771,7 +1788,8 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
       ? SECOND_SIDE_PRINT_HEADING
       : SECOND_SHOULDER_PRINT_HEADING
     : "Second Shoulder Checklist";
-  const oppositePrintRowsRaw = chart.frontVNeckArmholeComposition
+  const heldSideOpposite = usesVNeckHeldSideChecklist(chart);
+  const oppositePrintRowsRaw = heldSideOpposite
     ? buildHeldSideInstructionTableRows(
         chart,
         activeSideRcStart,
@@ -1783,13 +1801,13 @@ export function renderNeckShoulderShapingPrintInstructionTableHtml(
   const oppositePrintRows = vNeckStyleOneRowPerRc
     ? oppositePrintRowsRaw
     : compactActiveSideInstructionRowsForPrint(oppositePrintRowsRaw, {
-        invertCarriageParity: !chart.frontVNeckArmholeComposition,
+        invertCarriageParity: !heldSideOpposite,
       });
   const heldShoulderStitches = Math.max(
     0,
     Math.floor(
       Number(
-        chart.frontVNeckArmholeComposition?.heldAfterDivideRow ??
+        (heldSideOpposite ? chart.frontVNeckArmholeComposition?.heldAfterDivideRow : undefined) ??
           chart.rows[0]?.leftStitchCount ??
           0,
       ),

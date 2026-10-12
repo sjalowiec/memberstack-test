@@ -338,7 +338,8 @@ export function buildCardiganHalfFrontTimeline(
     return [];
   }
 
-  const workRows = neckDepthRows - 1;
+  const workRows =
+    options?.cardiganMatchesPulloverShoulderLine === true ? neckDepthRows : neckDepthRows - 1;
   if (workRows < 0) {
     return [];
   }
@@ -467,6 +468,15 @@ export function buildCardiganHalfFrontTimeline(
     const maxShoulderBoR = Math.max(0, rightCount - protectedRightStitches);
     shoulderBoR = Math.min(capShoulderR, maxShoulderBoR);
     shoulderRemR -= shoulderBoR;
+    const spilledRight = absorbUnplacedShoulderOnLastRow(
+      options?.finishShoulderOnLastRow === true,
+      i === workRows - 1,
+      shoulderBoR,
+      shoulderRemR,
+      rightCount,
+    );
+    shoulderBoR = spilledRight.shoulderBo;
+    shoulderRemR = spilledRight.shoulderRem;
     carryShoulderR =
       shoulderBoR < wantShoulderR && shoulderBoR === rightCount && rightCount < capShoulderR
         ? wantShoulderR - shoulderBoR
@@ -557,7 +567,35 @@ export type BuildTimelineOptions = {
    * shoulder stitches stay straight until the final bind-off row appended by the drop-shoulder chart builder.
    */
   straightShoulders?: boolean;
+  /**
+   * Place any shoulder stitches that did not fit an earlier action row on the last in-budget row.
+   * Keeps the shoulder from gaining a row past the armhole.
+   */
+  finishShoulderOnLastRow?: boolean;
+  /**
+   * Cardigan half fronts have no separate center-divide row. Set-in sleeves need the same
+   * last RC as a pullover timeline with the same neck depth, so the shoulder line matches the back.
+   */
+  cardiganMatchesPulloverShoulderLine?: boolean;
 };
+
+/**
+ * Scheduled shoulder stitches that the row caps could not place are worked on the last
+ * in-budget row. Stitches beyond the shoulder total are left alone.
+ */
+export function absorbUnplacedShoulderOnLastRow(
+  enabled: boolean,
+  isLastRow: boolean,
+  shoulderBo: number,
+  shoulderRem: number,
+  liveCount: number,
+): { shoulderBo: number; shoulderRem: number } {
+  if (!enabled || !isLastRow) return { shoulderBo, shoulderRem };
+  const room = Math.max(0, liveCount - shoulderBo);
+  const spill = Math.min(Math.max(0, shoulderRem), room);
+  if (spill <= 0) return { shoulderBo, shoulderRem };
+  return { shoulderBo: shoulderBo + spill, shoulderRem: shoulderRem - spill };
+}
 
 /**
  * Unified neckline + shoulder scheduler: one row budget ({@link ShapingTimelineInputs.neckDepthRows}),
@@ -799,6 +837,24 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
     shoulderBoR = Math.min(capShoulderR, maxShoulderBoR);
     shoulderRemL -= shoulderBoL;
     shoulderRemR -= shoulderBoR;
+    const spilledLeft = absorbUnplacedShoulderOnLastRow(
+      options?.finishShoulderOnLastRow === true,
+      i === workRows - 1,
+      shoulderBoL,
+      shoulderRemL,
+      leftCount,
+    );
+    const spilledRight = absorbUnplacedShoulderOnLastRow(
+      options?.finishShoulderOnLastRow === true,
+      i === workRows - 1,
+      shoulderBoR,
+      shoulderRemR,
+      rightCount,
+    );
+    shoulderBoL = spilledLeft.shoulderBo;
+    shoulderRemL = spilledLeft.shoulderRem;
+    shoulderBoR = spilledRight.shoulderBo;
+    shoulderRemR = spilledRight.shoulderRem;
     carryShoulderL =
       shoulderBoL < wantShoulderL && shoulderBoL === leftCount && leftCount < capShoulderL
         ? wantShoulderL - shoulderBoL

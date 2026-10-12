@@ -10,8 +10,14 @@ import {
   vNeckNeckDecreasesForSide,
   vNeckPlanToInnerEdgeEventsByRow,
 } from "./legoBlocks/vNeckline";
-import type { BuildTimelineOptions, RowEntry, ShapingEvent, ShapingTimelineInputs } from "./shapingTimeline";
-import { distributeTotalAcrossRows } from "./shapingTimeline";
+import {
+  absorbUnplacedShoulderOnLastRow,
+  distributeTotalAcrossRows,
+  type BuildTimelineOptions,
+  type RowEntry,
+  type ShapingEvent,
+  type ShapingTimelineInputs,
+} from "./shapingTimeline";
 
 function innerDecreaseAmountAtRc(
   eventsByRow: Map<number, ShapingEvent[]>,
@@ -234,6 +240,24 @@ export function buildVNeckFrontFullWidthTimeline(
       shoulderBoR = Math.min(capShoulderR, maxShoulderBoR);
       shoulderRemL -= shoulderBoL;
       shoulderRemR -= shoulderBoR;
+      const spilledLeft = absorbUnplacedShoulderOnLastRow(
+        options?.finishShoulderOnLastRow === true,
+        rowIdx === neckDepthRows - 1,
+        shoulderBoL,
+        shoulderRemL,
+        leftCount,
+      );
+      const spilledRight = absorbUnplacedShoulderOnLastRow(
+        options?.finishShoulderOnLastRow === true,
+        rowIdx === neckDepthRows - 1,
+        shoulderBoR,
+        shoulderRemR,
+        rightCount,
+      );
+      shoulderBoL = spilledLeft.shoulderBo;
+      shoulderRemL = spilledLeft.shoulderRem;
+      shoulderBoR = spilledRight.shoulderBo;
+      shoulderRemR = spilledRight.shoulderRem;
       carryShoulderL =
         shoulderBoL < wantShoulderL && shoulderBoL === leftCount && leftCount < capShoulderL
           ? wantShoulderL - shoulderBoL

@@ -90,7 +90,9 @@ import {
 } from "./sleevelessPatternFinishing";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 import {
+  cardiganArmholeEventsFromSteps,
   composeFrontVNeckTimelineWithArmholeOverlap,
+  composeNecklineTimelineWithArmholeOverlay,
   displayRcFromGarmentRc,
   pulloverArmholeEventsFromSteps,
   FRONT_VNECK_HANDOFF_AFTER_ARMHOLE,
@@ -2406,6 +2408,8 @@ function applyFrontArmholeOverlapSummary(
   summary?: {
     bindOffSts?: number;
     decreaseSts?: number;
+    /** Set-in keeps the armhole heading so its coordinated lines can replace the sleeveless prose. */
+    preserveArmholeSection?: boolean;
   },
 ): SleevelessPatternDisplayRow[] {
   if (!overlap) {
@@ -2414,7 +2418,7 @@ function applyFrontArmholeOverlapSummary(
 
   const timing = resolveFrontVNeckShapingTimingCase(overlap);
   if (timing === "before-armhole") {
-    return dropFrontArmholeSection(rows);
+    return summary?.preserveArmholeSection ? [...rows] : dropFrontArmholeSection(rows);
   }
 
   const completed = overlap.completedDecreaseSts;
@@ -2580,6 +2584,8 @@ export function buildSleevelessFrontDisplayRows(args: {
   stitchesAfterArmhole?: number;
   /** Set-in pullover round neck: needle setup for First Shoulder and Second Shoulder. */
   setInFrontRoundNeckPlan?: RoundNecklinePlanResult | null;
+  /** Set-in keeps the front ARMHOLE heading when the neckline begins first. */
+  setInPreserveArmholeSection?: boolean;
 }): SleevelessPatternDisplayRow[] {
   const sharedRows: SleevelessPatternDisplayRow[] = [];
   let inBackNecklineSection = false;
@@ -2662,6 +2668,7 @@ export function buildSleevelessFrontDisplayRows(args: {
     applyFrontArmholeOverlapSummary(sharedRowsWithCase1Milestone, args.armholeNecklineOverlap, {
       bindOffSts: args.armholeBindOffSts,
       decreaseSts: args.armholeDecreaseSts,
+      preserveArmholeSection: args.setInPreserveArmholeSection === true,
     }),
     knitterFacingVNeckRc,
   );
@@ -2739,6 +2746,15 @@ export function buildSleevelessFrontDisplayRows(args: {
           tipId: "sleeveless-neckline-orientation",
         });
       }
+    } else if (args.introIsCardiganHalf && overlapVNeck) {
+      rows.push({
+        kind: "block",
+        paragraphs: ["Follow the checklist below for the exact row-by-row sequence."],
+        tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
+        tipHtmlIsFull: true,
+        tipPresentation: "help-card",
+        tipId: "sleeveless-neckline-orientation",
+      });
     }
   } else {
     rows.push({
@@ -3432,7 +3448,10 @@ export function generateSleevelessBackPattern(
     };
     /** Shoulder bind-off chunks from **back** neck depth / opening math only — never from the front neckline choice. */
     const shoulderSchedule = computeShoulderBindoffSchedule(patternNumbers);
-    const shoulderTimelineOpts = shoulderSchedule !== null ? { shoulderSchedule } : undefined;
+    const shoulderTimelineOpts = {
+      ...(shoulderSchedule !== null ? { shoulderSchedule } : {}),
+      ...(options?.useSetInArmhole === true ? { finishShoulderOnLastRow: true as const } : {}),
+    };
 
     /**
      * Provisional back pass (no minFinal) seeds minFinal for the front pass; the front's final
@@ -3499,41 +3518,91 @@ export function generateSleevelessBackPattern(
       : buildNeckShoulderTimelineAndChartRows(frontPatternNumbers, {
           ...shoulderTimelineOpts,
           ...(isCardiganRoundHalfFront ? {} : provisionalMinFinalOpts),
+          ...(options?.useSetInArmhole === true && isCardiganRoundHalfFront
+            ? { cardiganMatchesPulloverShoulderLine: true as const }
+            : {}),
         });
     frontTimeline = builtFront.timeline;
     frontLiveRows = builtFront.chartRows;
 
     /**
-     * Overlay leftover armhole events onto the full-width V timeline.
-     * Pullover: every timing case. Cardigan V: only when the V begins before the armhole
-     * (Case 4 continuous garment RC). Other cardigan V timings keep the existing reset path.
+     * Overlay leftover armhole events onto the neckline timeline.
+     * Sleeveless pullover V: every timing. Sleeveless cardigan V: only before the armhole.
+     * Set-in pullover V uses that same divide composer. Set-in round necks and cardigan
+     * fronts overlay the existing neckline timeline; a cardigan is already a separate piece.
      */
-    if (
-      isFrontVNeck &&
+    const setInArmholeEvents =
+      setInArmholePlan && firstArmholeRCNum !== null
+        ? pulloverArmholeEventsFromSteps({
+            firstArmholeGarmentRc: firstArmholeRCNum,
+            bindOffStepsEachSide: [
+              setInArmholePlan.initialBindOffStitchesEachSide,
+              ...setInArmholePlan.stairStepBindOffsEachSide,
+            ],
+            decreaseStitchesEachSide: setInArmholePlan.decreaseStitchesEachSide,
+          })
+        : undefined;
+    const canComposeArmhole =
       armholeMathResult !== null &&
       firstArmholeRCNum !== null &&
       stitchesAfterArmhole !== undefined &&
-      frontTimeline.length > 0 &&
-      (!isCardiganHalfFrontBody || frontNecklineStartRC < firstArmholeRCNum)
-    ) {
-      const setInArmholeEvents =
-        setInArmholePlan && firstArmholeRCNum !== null
-          ? pulloverArmholeEventsFromSteps({
-              firstArmholeGarmentRc: firstArmholeRCNum,
-              bindOffStepsEachSide: [
-                setInArmholePlan.initialBindOffStitchesEachSide,
-                ...setInArmholePlan.stairStepBindOffsEachSide,
-              ],
-              decreaseStitchesEachSide: setInArmholePlan.decreaseStitchesEachSide,
-            })
-          : undefined;
+      frontTimeline.length > 0;
+    const sleevelessVCompose =
+      options?.useSetInArmhole !== true &&
+      isFrontVNeck &&
+      canComposeArmhole &&
+      (!isCardiganHalfFrontBody || frontNecklineStartRC < firstArmholeRCNum);
+    const setInPulloverVCompose =
+      options?.useSetInArmhole === true &&
+      isFrontVNeck &&
+      !isCardiganHalfFrontBody &&
+      canComposeArmhole;
+    const setInNecklineOverlay =
+      options?.useSetInArmhole === true &&
+      canComposeArmhole &&
+      setInArmholePlan !== null &&
+      (!isFrontVNeck || isCardiganHalfFrontBody);
+
+    if (sleevelessVCompose || setInPulloverVCompose) {
       const composed = composeFrontVNeckTimelineWithArmholeOverlap(frontTimeline, {
-        firstArmholeGarmentRc: firstArmholeRCNum,
+        firstArmholeGarmentRc: firstArmholeRCNum!,
         armholeStartSts: stitchesAtArmholeStart,
-        bindOffSts: armholeMathResult.bindOffSts,
-        decreaseSts: armholeMathResult.decreaseSts,
-        stitchesAfterArmhole,
+        bindOffSts: armholeMathResult!.bindOffSts,
+        decreaseSts: armholeMathResult!.decreaseSts,
+        stitchesAfterArmhole: stitchesAfterArmhole!,
         ...(setInArmholeEvents ? { armholeEvents: setInArmholeEvents } : {}),
+      });
+      if (composed.overlap) {
+        frontArmholeNecklineOverlap = composed.overlap;
+        frontTimeline = composed.timeline;
+        frontLiveRows = neckShoulderChartRowsFromTimeline(frontTimeline, {
+          lastArmholeGarmentRc: composed.overlap.lastArmholeGarmentRc,
+        });
+      }
+    } else if (setInNecklineOverlay && setInArmholeEvents) {
+      const cardiganEvents = isCardiganHalfFrontBody
+        ? cardiganArmholeEventsFromSteps({
+            firstArmholeGarmentRc: firstArmholeRCNum!,
+            bindOffStepsEachSide: [
+              setInArmholePlan!.initialBindOffStitchesEachSide,
+              ...setInArmholePlan!.stairStepBindOffsEachSide,
+            ],
+            decreaseStitchesEachSide: setInArmholePlan!.decreaseStitchesEachSide,
+          })
+        : setInArmholeEvents;
+      const composed = composeNecklineTimelineWithArmholeOverlay(frontTimeline, {
+        firstArmholeGarmentRc: firstArmholeRCNum!,
+        armholeStartSts: isCardiganHalfFrontBody
+          ? (cardiganHalfLeftBustBodySts ?? stitchesAtArmholeStart)
+          : stitchesAtArmholeStart,
+        bindOffSts: armholeMathResult!.bindOffSts,
+        decreaseSts: armholeMathResult!.decreaseSts,
+        stitchesAfterArmhole: isCardiganHalfFrontBody
+          ? (cardiganFrontPostArmholeSts ??
+            cardiganHalfLeftStitchesAfterArmhole ??
+            stitchesAfterArmhole!)
+          : stitchesAfterArmhole!,
+        armholeEvents: cardiganEvents,
       });
       if (composed.overlap) {
         frontArmholeNecklineOverlap = composed.overlap;
@@ -3602,7 +3671,10 @@ export function generateSleevelessBackPattern(
             frontRightChunks.length > 0 ? frontRightChunks : shoulderSchedule.rightChunks,
           placementRows: shoulderSchedule.placementRows,
         };
-        alignedShoulderTimelineOpts = { shoulderSchedule: alignedSchedule };
+        alignedShoulderTimelineOpts = {
+          ...alignedShoulderTimelineOpts,
+          shoulderSchedule: alignedSchedule,
+        };
       }
     }
 
@@ -3625,20 +3697,44 @@ export function generateSleevelessBackPattern(
         ? rawLiveRows
         : neckShoulderChartRowsFromTimeline(timeline);
 
-    if (liveRows.length > 0) {
-      backNeckShoulderTimeline = timeline;
-      neckShoulderShapingChart = neckShoulderShapingChartFromRows(liveRows, {
-        timeline,
-        sleevelessFullWidthVNeckFront: false,
-      });
+    const backTimelineForChart =
+      options?.useSetInArmhole === true &&
+      setInArmholePlan &&
+      firstArmholeRCNum !== null &&
+      armholeMathResult !== null &&
+      stitchesAfterArmhole !== undefined &&
+      setInArmholeEvents
+        ? composeNecklineTimelineWithArmholeOverlay(timeline, {
+            firstArmholeGarmentRc: firstArmholeRCNum,
+            armholeStartSts: stitchesAtArmholeStart,
+            bindOffSts: armholeMathResult.bindOffSts,
+            decreaseSts: armholeMathResult.decreaseSts,
+            stitchesAfterArmhole,
+            armholeEvents: setInArmholeEvents,
+          }).timeline
+        : timeline;
+    const backRowsForChart =
+      backTimelineForChart === timeline
+        ? liveRows
+        : neckShoulderChartRowsFromTimeline(backTimelineForChart);
+
+    if (backRowsForChart.length > 0) {
+      backNeckShoulderTimeline = backTimelineForChart;
+      neckShoulderShapingChart = {
+        ...neckShoulderShapingChartFromRows(backRowsForChart, {
+          timeline: backTimelineForChart,
+          sleevelessFullWidthVNeckFront: false,
+        }),
+        ...(options?.useSetInArmhole === true ? { finishShoulderInsideRowBudget: true } : {}),
+      };
       neckShoulderChartUsesLiveRows = true;
 
-      const backCenterExec = centerBindOffExecutionTextFromChartRow(timeline, liveRows[0]);
-      const backDerived = shapingActionsFromTimeline(timeline, {
+      const backCenterExec = centerBindOffExecutionTextFromChartRow(backTimelineForChart, backRowsForChart[0]);
+      const backDerived = shapingActionsFromTimeline(backTimelineForChart, {
         centerBindOffShapingLine: backCenterExec?.shapingAtRcLine,
       });
       neckExec = generateNeckShoulderExecution({
-        startRC: preambleStartRcBeforeFirstShapingRow(timeline[0]?.row ?? neckStartRC),
+        startRC: preambleStartRcBeforeFirstShapingRow(backTimelineForChart[0]?.row ?? neckStartRC),
         centerNeck: center,
         leftShoulder: todoNeedle("left shoulder stitches"),
         rightShoulder: todoNeedle("right shoulder stitches"),
@@ -3650,14 +3746,17 @@ export function generateSleevelessBackPattern(
 
     if (frontLiveRows.length > 0) {
       frontNeckShoulderTimeline = frontTimeline;
-      frontNeckShoulderShapingChart = neckShoulderShapingChartFromRows(frontLiveRows, {
-        timeline: frontTimeline,
-        sleevelessFullWidthVNeckFront: isFrontVNeck,
-        ...(isSleevelessCardiganGarmentStyle(patternData) ? { sleevelessCardiganFront: true } : {}),
-        ...(frontArmholeNecklineOverlap
-          ? { frontVNeckArmholeComposition: frontArmholeNecklineOverlap }
-          : {}),
-      });
+      frontNeckShoulderShapingChart = {
+        ...neckShoulderShapingChartFromRows(frontLiveRows, {
+          timeline: frontTimeline,
+          sleevelessFullWidthVNeckFront: isFrontVNeck,
+          ...(isSleevelessCardiganGarmentStyle(patternData) ? { sleevelessCardiganFront: true } : {}),
+          ...(frontArmholeNecklineOverlap
+            ? { frontVNeckArmholeComposition: frontArmholeNecklineOverlap }
+            : {}),
+        }),
+        ...(options?.useSetInArmhole === true ? { finishShoulderInsideRowBudget: true } : {}),
+      };
       frontNeckShoulderChartUsesLiveRows = true;
 
       const firstRowCenterBo = centerBindOffAmountFirstTimelineRow(frontTimeline);
@@ -3790,13 +3889,13 @@ export function generateSleevelessBackPattern(
       const backShoulderLines = shoulderShapingNotationLinesFromTimeline(
         backNeckShoulderTimeline,
         shoulderNotationSide,
-        undefined,
+        neckShoulderShapingChart,
         { shoulderStitchesBudget: shoulderStitches },
       );
       const frontShoulderLines = shoulderShapingNotationLinesFromTimeline(
         frontNeckShoulderTimeline,
         shoulderNotationSide,
-        undefined,
+        frontNeckShoulderShapingChart,
         { shoulderStitchesBudget: frontShoulderBudget },
       );
       if (backShoulderLines.join("\n") !== frontShoulderLines.join("\n")) {
@@ -4173,6 +4272,7 @@ export function generateSleevelessBackPattern(
         options?.useSetInArmhole === true && !isCardigan && !isFrontVNeck
           ? frontRoundNeckPlan
           : undefined,
+      setInPreserveArmholeSection: options?.useSetInArmhole === true,
     })
   );
 

@@ -263,7 +263,12 @@ function canonicalShoulderShapingNotationLines(
       []);
   if (timeline.length === 0) return [];
   const budget = shoulderStitchesPerSideForDiagram(result.debug);
-  return shoulderShapingNotationLinesFromTimeline(timeline, side, undefined, {
+  const shoulderChart = result.setInArmholePlan?.ok
+    ? isCardiganRoundHalfFront
+      ? result.neckShoulderShapingChart
+      : frontChart
+    : undefined;
+  return shoulderShapingNotationLinesFromTimeline(timeline, side, shoulderChart, {
     shoulderStitchesBudget: budget,
   });
 }

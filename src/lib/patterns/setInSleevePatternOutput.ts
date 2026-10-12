@@ -15,9 +15,8 @@ import {
 } from "./dropShoulderSleeveMeasurementOverrides";
 import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import {
-  FRONT_VNECK_HANDOFF_DURING_ARMHOLE,
-  FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST,
-  FRONT_VNECK_HANDOFF_WITH_ARMHOLE,
+  coordinatedShapingHandoffLines,
+  resolveFrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
 import { getDefaultCuffLengthInches } from "./hemDefaults";
 import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
@@ -224,7 +223,7 @@ function stripSleevelessArmholeProse(
     const source = row.paragraphs ?? [];
     const paragraphs = source.filter((paragraph) => !SLEEVELESS_ARMHOLE_PROSE.test(paragraph));
     if (paragraphs.length === source.length) return row;
-    if (paragraphs.length === 0) return { ...row, paragraphs: [FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST] };
+    if (paragraphs.length === 0) return { ...row, paragraphs: ["Follow the checklist below for the exact row-by-row sequence."] };
     return { ...row, paragraphs };
   });
 }
@@ -234,15 +233,37 @@ function localRc(line: string): number | null {
   return match ? Number(match[1]) : null;
 }
 
+function shapingEndLocalRc(plan: SetInArmholePlan): number {
+  return plan.matchedBindOffRows + plan.decreaseRows;
+}
+
+function stitchesAfterSetInShaping(start: number, plan: SetInArmholePlan, edge: "both" | "one"): number {
+  const perEdge = plan.matchedBindOffStitchesEachSide + plan.decreaseStitchesEachSide;
+  return Math.max(0, edge === "one" ? start - perEdge : start - perEdge * 2);
+}
+
+function knitEvenBridge(fromRc: number, untilRc: number, stitches: number): string | null {
+  const rows = untilRc - fromRc;
+  if (rows <= 0) return null;
+  const knit = rows === 1 ? "Knit 1 row even" : `Knit ${rows} rows even`;
+  const noun = stitches === 1 ? "stitch" : "stitches";
+  return `${formatRcColon(fromRc)} ${knit}. ${stitches} ${noun} remain.`;
+}
+
 function armholeLinesForPiece(
   plan: SetInArmholePlan,
   stitches: number,
   edge: "both" | "one",
-  divideLocalRc: number | null,
+  necklineLocalRc: number | null,
+  handoff: { timing: ReturnType<typeof resolveFrontVNeckShapingTimingCase>; neckline: "round" | "v-neck"; cardigan: boolean } | null,
 ): string[] {
-  const full =
+  const stopBefore =
+    handoff && necklineLocalRc !== null && handoff.timing !== "after-armhole"
+      ? necklineLocalRc
+      : undefined;
+  let lines =
     edge === "one"
-      ? setInOneEdgeArmholeInstructionLines(plan, stitches)
+      ? setInOneEdgeArmholeInstructionLines(plan, stitches, stopBefore)
       : setInArmholeInstructionLines(
           {
             bindOffStitchesEachSide: plan.initialBindOffStitchesEachSide,
@@ -251,15 +272,20 @@ function armholeLinesForPiece(
             decreaseRows: plan.decreaseRows,
           },
           stitches,
+          stopBefore,
         );
-  if (divideLocalRc === null) return full;
-  const kept = full.filter((line) => {
-    const rc = localRc(line);
-    return rc === null || rc < divideLocalRc;
-  });
-  const handoff =
-    divideLocalRc <= 0 ? FRONT_VNECK_HANDOFF_WITH_ARMHOLE : FRONT_VNECK_HANDOFF_DURING_ARMHOLE;
-  return [...kept, handoff, FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST];
+  if (handoff && handoff.timing === "before-armhole") {
+    lines = lines.filter((line) => localRc(line) === null && !/reset row counter/i.test(line) && !/armhole reset/i.test(line));
+  }
+  if (handoff && handoff.timing !== "after-armhole") {
+    return [...lines, ...coordinatedShapingHandoffLines(handoff)];
+  }
+  const bridge = knitEvenBridge(
+    shapingEndLocalRc(plan),
+    necklineLocalRc ?? shapingEndLocalRc(plan),
+    stitchesAfterSetInShaping(stitches, plan, edge),
+  );
+  return bridge ? [...lines, bridge] : lines;
 }
 
 function styleSentence(patternData: Record<string, unknown>): string {
@@ -278,12 +304,25 @@ export function generateSetInSleevePattern(
   const plan = body.setInArmholePlan ?? null;
   const debug = body.debug;
   const cardigan = isSleevelessCardiganGarmentStyle(stamped);
+  const vNeck = isSleevelessVNeckChoice(stamped);
   const overlap = debug.frontArmholeNecklineOverlap;
-  const divideLocal =
-    overlap && debug.armholeStartRow !== undefined
-      ? overlap.divideGarmentRc - overlap.firstArmholeGarmentRc
+  const frontTiming = overlap ? resolveFrontVNeckShapingTimingCase(overlap) : null;
+  const backNeckLocal =
+    debug.backNecklineStartLocalRC !== undefined ? Math.floor(debug.backNecklineStartLocalRC) : null;
+  const frontNeckLocal =
+    debug.frontNecklineStartLocalRC !== undefined ? Math.floor(debug.frontNecklineStartLocalRC) : null;
+  const backHandoff =
+    plan && backNeckLocal !== null && backNeckLocal < shapingEndLocalRc(plan)
+      ? {
+          timing: (backNeckLocal < 0
+            ? "before-armhole"
+            : backNeckLocal === 0
+              ? "with-armhole"
+              : "during-armhole") as "before-armhole" | "with-armhole" | "during-armhole",
+          neckline: "round" as const,
+          cardigan: false,
+        }
       : null;
-  const duringArmhole = divideLocal !== null && overlap && overlap.divideGarmentRc >= overlap.firstArmholeGarmentRc;
 
   const backArmholeBlocks = plan
     ? backArmholeBlocksFromLines(
@@ -293,7 +332,8 @@ export function generateSetInSleevePattern(
             ? debug.bustBodyStitches
             : debug.backStitches,
           "both",
-          null,
+          backNeckLocal,
+          backHandoff,
         ),
       )
     : linesToBlocks([
@@ -313,7 +353,10 @@ export function generateSetInSleevePattern(
           plan,
           frontStart,
           cardigan ? "one" : "both",
-          duringArmhole ? divideLocal : null,
+          frontNeckLocal,
+          frontTiming && frontTiming !== "after-armhole"
+            ? { timing: frontTiming, neckline: vNeck ? "v-neck" : "round", cardigan }
+            : null,
         ),
       )
     : backArmholeBlocks;

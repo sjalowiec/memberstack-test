@@ -64,6 +64,11 @@ export type NeckShoulderShapingChart = {
   sleevelessCardiganFront?: boolean;
   /** Pullover V-neck Front: garment-RC armhole/neckline composition metadata. */
   frontVNeckArmholeComposition?: FrontArmholeNecklineOverlap;
+  /**
+   * Set-in sleeve: the last shoulder bind-off stays on the last in-budget row.
+   * Leftover stitches use the closing bind-off sentence, which does not add a knitted row.
+   */
+  finishShoulderInsideRowBudget?: boolean;
 };
 
 export type NeckShoulderShapingChartDisplayRow = {
@@ -257,6 +262,14 @@ export function collapsePlainKnitChartRowsForDisplay(
  */
 export function isFullWidthVNeckFrontStyleChart(chart: NeckShoulderShapingChart): boolean {
   return chart.sleevelessFullWidthVNeckFront === true;
+}
+
+/**
+ * The opposite checklist is the held side only for a full-width V-neck front.
+ * A round neck that shares the armhole timeline still mirrors the second shoulder.
+ */
+export function usesVNeckHeldSideChecklist(chart: NeckShoulderShapingChart): boolean {
+  return isFullWidthVNeckFrontStyleChart(chart) && chart.frontVNeckArmholeComposition != null;
 }
 
 /**

@@ -244,6 +244,19 @@ export function pulloverArmholeEventsFromSteps(args: {
   return out;
 }
 
+/**
+ * Cardigan front: the armhole edge only. Row numbers match the right-edge events of
+ * {@link pulloverArmholeEventsFromSteps} (bind off, knit across, then every-other-row decreases).
+ * The center front is already a separate piece, so there is no second-edge bind-off.
+ */
+export function cardiganArmholeEventsFromSteps(args: {
+  firstArmholeGarmentRc: number;
+  bindOffStepsEachSide: readonly number[];
+  decreaseStitchesEachSide: number;
+}): FrontArmholeEvent[] {
+  return pulloverArmholeEventsFromSteps(args).filter((event) => event.side === "right");
+}
+
 function liveStitchesBeforeEvents(
   armholeStartSts: number,
   events: readonly FrontArmholeEvent[],
@@ -441,6 +454,143 @@ export function composeFrontVNeckTimelineWithArmholeOverlap(
       stitchesAfterArmhole: Math.round(input.stitchesAfterArmhole),
     },
   };
+}
+
+/**
+ * Round necks and cardigan fronts already have a neckline timeline. Overlay the armhole
+ * events that are still to come so both edges are one schedule. A pullover V-neck divide
+ * stays on {@link composeFrontVNeckTimelineWithArmholeOverlap}.
+ * A cardigan front is already a separate piece: pass one-edge {@link cardiganArmholeEventsFromSteps}.
+ */
+export function composeNecklineTimelineWithArmholeOverlay(
+  timeline: readonly RowEntry[],
+  input: ComposeFrontVNeckArmholeOverlapInput,
+): { timeline: RowEntry[]; overlap: FrontArmholeNecklineOverlap | null } {
+  if (timeline.length === 0) return { timeline: [...timeline], overlap: null };
+  const firstArmhole = Math.floor(input.firstArmholeGarmentRc);
+  const first = [...timeline].sort((a, b) => a.row - b.row)[0];
+  if (!first || !Number.isFinite(firstArmhole)) return { timeline: [...timeline], overlap: null };
+
+  const necklineGarmentRc = Math.floor(first.row);
+  const allArmhole =
+    input.armholeEvents && input.armholeEvents.length > 0
+      ? [...input.armholeEvents].sort((a, b) => a.garmentRc - b.garmentRc)
+      : pulloverArmholeEvents({
+          firstArmholeGarmentRc: firstArmhole,
+          bindOffSts: input.bindOffSts,
+          decreaseSts: input.decreaseSts,
+        });
+  const remainingArmhole = allArmhole.filter((event) => event.garmentRc >= necklineGarmentRc);
+  if (remainingArmhole.length === 0) return { timeline: [...timeline], overlap: null };
+
+  const withRows = insertMissingGarmentRows(
+    timeline,
+    remainingArmhole.map((event) => event.garmentRc),
+  );
+  let pendingL = 0;
+  let pendingR = 0;
+  for (const event of remainingArmhole) {
+    if (event.side === "left") pendingL += event.amount;
+    else pendingR += event.amount;
+  }
+  const composed = withRows.map((entry) => {
+    const here = remainingArmhole.filter((event) => event.garmentRc === entry.row);
+    let removeL = 0;
+    let removeR = 0;
+    const events = entry.events.map((event) => ({ ...event }));
+    for (const event of here) {
+      events.push({ kind: event.kind, side: event.side, edge: "outer", amount: event.amount });
+      if (event.side === "left") removeL += event.amount;
+      else removeR += event.amount;
+    }
+    const stitchesL = Math.max(0, entry.stitchesL + pendingL - removeL);
+    const stitchesR = Math.max(0, entry.stitchesR + pendingR - removeR);
+    pendingL -= removeL;
+    pendingR -= removeR;
+    return {
+      ...entry,
+      events,
+      stitchesL,
+      stitchesR,
+      netChangeL: entry.netChangeL - removeL,
+      netChangeR: entry.netChangeR - removeR,
+      leftOuterEdge: entry.leftOuterEdge - pendingL,
+      rightOuterEdge: entry.rightOuterEdge + pendingR,
+    };
+  });
+  const divideRow = composed.find((entry) => entry.row === necklineGarmentRc) ?? composed[0]!;
+  const decreaseLocals = [
+    ...new Set(
+      allArmhole
+        .filter((event) => event.kind === "decrease" && event.side === "right")
+        .map((event) => event.garmentRc - firstArmhole),
+    ),
+  ].sort((a, b) => a - b);
+  const completedDecreaseLocalRcs = decreaseLocals.filter((rc) => firstArmhole + rc < necklineGarmentRc);
+  const remainingDecreaseLocalRcs = decreaseLocals.filter((rc) => firstArmhole + rc >= necklineGarmentRc);
+  const liveBefore = input.armholeEvents
+    ? liveStitchesBeforeEvents(input.armholeStartSts, allArmhole, necklineGarmentRc)
+    : liveFrontStitchesBeforeGarmentRc({
+        armholeStartSts: input.armholeStartSts,
+        bindOffSts: input.bindOffSts,
+        decreaseSts: input.decreaseSts,
+        firstArmholeGarmentRc: firstArmhole,
+        beforeGarmentRc: necklineGarmentRc,
+      });
+
+  return {
+    timeline: composed,
+    overlap: {
+      divideGarmentRc: necklineGarmentRc,
+      firstArmholeGarmentRc: firstArmhole,
+      necklineBeginsBeforeArmhole: necklineGarmentRc < firstArmhole,
+      liveTotalAtDivide: liveBefore,
+      leftAtDivide: Math.max(0, Math.floor(divideRow.stitchesL)),
+      rightAtDivide: Math.max(0, Math.floor(divideRow.stitchesR)),
+      heldAfterDivideRow: Math.max(0, Math.floor(divideRow.stitchesL)),
+      activeAfterDivideRow: Math.max(0, Math.floor(divideRow.stitchesR)),
+      completedDecreaseLocalRcs,
+      remainingDecreaseLocalRcs,
+      completedDecreaseSts: completedDecreaseLocalRcs.length,
+      remainingDecreaseSts: remainingDecreaseLocalRcs.length,
+      lastArmholeGarmentRc: Math.max(...remainingArmhole.map((event) => event.garmentRc)),
+      stitchesAfterArmhole: Math.round(input.stitchesAfterArmhole),
+    },
+  };
+}
+
+/** Written handoff when armhole and neckline share one checklist. */
+export function coordinatedShapingHandoffLines(args: {
+  timing: FrontVNeckShapingTimingCase;
+  neckline: "round" | "v-neck";
+  cardigan: boolean;
+}): string[] {
+  const follow = args.cardigan
+    ? "Follow the checklist below for the exact row-by-row sequence."
+    : args.neckline === "v-neck"
+      ? FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST
+      : "Follow the First Shoulder and Second Shoulder instructions below for the exact row-by-row sequence.";
+  if (args.neckline === "v-neck" && !args.cardigan) {
+    const lead =
+      args.timing === "with-armhole"
+        ? FRONT_VNECK_HANDOFF_WITH_ARMHOLE
+        : args.timing === "before-armhole"
+          ? FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE
+          : args.timing === "during-armhole"
+            ? FRONT_VNECK_HANDOFF_DURING_ARMHOLE
+            : FRONT_VNECK_HANDOFF_AFTER_ARMHOLE;
+    return [lead, follow];
+  }
+  const neck = args.neckline === "v-neck" ? "V-neck" : "neckline";
+  const lead =
+    args.timing === "with-armhole"
+      ? `Begin ${neck} and armhole shaping.`
+      : args.timing === "before-armhole"
+        ? `Begin armhole shaping. Continue ${neck === "V-neck" ? "V-neck" : "the neckline"} shaping.`
+        : args.timing === "during-armhole"
+          ? `Begin ${neck} shaping. Continue the armhole shaping.`
+          : `Begin ${neck} shaping.`;
+  return [lead, follow];
 }
 
 function insertMissingGarmentRows(
