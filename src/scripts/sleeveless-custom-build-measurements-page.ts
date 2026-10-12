@@ -123,6 +123,7 @@ import {
   SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL,
 } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { isSetInSleeveWorkspaceMeasurementSummaryPage } from "../lib/patterns/setInSleeveConstructionIdentity";
+import { buildSetInSleeveEditSleeveMeasurementDiagramSvg } from "../lib/patterns/setInSleeve/setInSleeveEditMeasurementDiagramSvg";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   markDropShoulderSleeveOverrideKeyUserEdited,
@@ -318,9 +319,9 @@ export type CustomBuildMeasurementsInitOptions = {
 };
 
 /**
- * Diagram fields (inches, stored as decimal strings). The first 8 are the shared sleeveless body
- * fields; the trailing 3 are Drop Shoulder–only sleeve fields (rendered only when the active
- * construction is drop-shoulder — see {@link getActiveDiagramFields}).
+ * Diagram fields (inches, stored as decimal strings). The first 8 are the shared body
+ * fields. The sleeve fields render for Drop Shoulder and Set-In Sleeve (see
+ * {@link getActiveDiagramFields}). Set-In Sleeve omits cuff depth.
  */
 const DIAGRAM_FIELD_KEYS = [
   "finishedNeckOpeningWidth",
@@ -743,7 +744,6 @@ function sleevelessEditDiagramInput(
     patternData: getCurrentPattern(),
     liveNeckline: readLiveSleevelessEditNeckline(),
     liveGarmentStyle: readLiveSleevelessEditGarmentStyle(),
-    includeSetInSleeveMeasurements: isSetInSleeveWorkspaceMeasurementSummaryPage(),
   };
 }
 
@@ -802,6 +802,45 @@ function adoptSleevelessGeneratedMeasurementArt(
   return adopted;
 }
 
+function usesBodySleeveEditPreview(): boolean {
+  return isDropShoulderConstruction() || isSetInSleeveWorkspaceMeasurementSummaryPage();
+}
+
+function adoptSetInSleeveGeneratedMeasurementArt(
+  merged: Record<DiagramFieldKey, string>,
+  piece: DropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
+): SVGSVGElement | null {
+  const svgText =
+    piece === "sleeve"
+      ? buildSetInSleeveEditSleeveMeasurementDiagramSvg({
+          upperArmInches: parseMergedInches(merged.upperArm, 12),
+          cuffCircumferenceInches: parseMergedInches(merged.wrist, 8),
+          sleeveLengthInches: parseMergedInches(merged.sleeveLength, 18),
+        })
+      : buildSleevelessEditMeasurementDiagramSvg({
+          ...sleevelessEditDiagramInput(merged),
+          includeSetInSleeveMeasurements: false,
+        });
+  const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  const root = parsed.documentElement;
+  if (!(root instanceof SVGSVGElement)) return null;
+  const adopted = adoptGeneratedMeasurementSvg(root, document);
+  adopted.setAttribute("role", "img");
+  adopted.setAttribute("width", "100%");
+  adopted.setAttribute("height", "auto");
+  adopted.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  adopted.setAttribute("data-set-in-sleeve-edit-diagram", "true");
+  adopted.setAttribute("data-set-in-sleeve-edit-piece", piece);
+  adopted.setAttribute(
+    "aria-label",
+    piece === "sleeve"
+      ? "Set-in sleeve sleeve measurement diagram"
+      : "Set-in sleeve body measurement diagram",
+  );
+  adopted.setAttribute("focusable", "false");
+  return adopted;
+}
+
 function adoptDropShoulderGeneratedMeasurementArt(
   merged: Record<DiagramFieldKey, string>,
   displayUnit: MeasurementDisplayUnit = "in",
@@ -838,6 +877,9 @@ async function createMeasurementBlueprintArt(
         unit,
         dropShoulderEditPreviewTab,
       );
+      if (generated) return generated;
+    } else if (isSetInSleeveWorkspaceMeasurementSummaryPage()) {
+      const generated = adoptSetInSleeveGeneratedMeasurementArt(merged, dropShoulderEditPreviewTab);
       if (generated) return generated;
     } else {
       const generated = adoptSleevelessGeneratedMeasurementArt(merged);
@@ -970,13 +1012,13 @@ function renderBuildSummary(
 }
 
 function stampDropShoulderPreviewTab(box: HTMLElement, field: DiagramFieldDef): void {
-  if (!isDropShoulderConstruction()) return;
+  if (!usesBodySleeveEditPreview()) return;
   box.dataset.dsPreviewTab = dropShoulderEditPreviewTabForField(field.key);
 }
 
 function visibleOverlayAnchorsForCurrentPreview(overlay: HTMLElement) {
   const anchors = collectOverlayAnchors(overlay);
-  if (!isDropShoulderConstruction()) return anchors;
+  if (!usesBodySleeveEditPreview()) return anchors;
   return anchors.filter((anchor) => !anchor.box.hidden);
 }
 
@@ -1173,6 +1215,15 @@ function stampDropShoulderMeasurementPageShell(root: HTMLElement): void {
       "--pattern-summary-aspect-ratio",
       DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS,
     );
+  }
+}
+
+function stampSetInSleeveMeasurementPageShell(root: HTMLElement): void {
+  if (!isSetInSleeveWorkspaceMeasurementSummaryPage()) return;
+  root.setAttribute("data-express-construction", "set-in-sleeve");
+  const pageShell = root.closest(".express-measurements-confirm-page");
+  if (pageShell instanceof HTMLElement) {
+    pageShell.setAttribute("data-express-construction", "set-in-sleeve");
   }
 }
 
@@ -1711,7 +1762,7 @@ async function renderDiagram(
   } else {
     wrap.append(validationOverlay, rootMbp);
   }
-  if (dropShoulder) {
+  if (dropShoulder || isSetInSleeveWorkspaceMeasurementSummaryPage()) {
     applyDropShoulderEditPreviewChipVisibility(overlay, dropShoulderEditPreviewTab);
     const tablist = createDropShoulderEditPreviewTablist(document);
     applyDropShoulderEditPreviewTabSelection(tablist, dropShoulderEditPreviewTab);
@@ -1722,7 +1773,9 @@ async function renderDiagram(
       setDropShoulderEditPreviewTab(tablist, overlay, nextTab);
     });
     wrap.prepend(tablist);
-    if (!readOnly) wireDropShoulderArmholeDepthHelp(wrap);
+    if (dropShoulder) {
+      if (!readOnly) wireDropShoulderArmholeDepthHelp(wrap);
+    }
   }
   diagramHost.appendChild(wrap);
 
@@ -1744,6 +1797,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   root.dataset.cbMeasurePageInit = "true";
   dropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB;
   stampDropShoulderMeasurementPageShell(root);
+  stampSetInSleeveMeasurementPageShell(root);
 
   const readOnly = options?.readOnly === true;
   // `preserveUnitsHost` keeps the summary unit-toggle host AND wires the live unit-switch
@@ -1922,9 +1976,45 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     );
   };
 
+  const refreshSetInSleeveEditPreviewArt = (): void => {
+    if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
+    if (!(diagramHost instanceof HTMLElement)) return;
+    const inner = diagramHost.querySelector<HTMLElement>(".express-mbp-stage__inner");
+    if (!(inner instanceof HTMLElement)) return;
+    const overlay = inner.querySelector<HTMLElement>(".express-mbp-overlay");
+    if (!(overlay instanceof HTMLElement)) return;
+    const displayUnit = getDisplayUnit();
+    const collected = collectValues(root, { displayUnit: displayUnit ?? undefined });
+    const next = adoptSetInSleeveGeneratedMeasurementArt(
+      dropShoulderEditWorkspaceMergedForDiagram({
+        ...diagramInches,
+        ...Object.fromEntries(
+          Object.entries(collected).filter(([, value]) => String(value).trim() !== ""),
+        ),
+      }),
+      dropShoulderEditPreviewTab,
+    );
+    if (!next) return;
+    const swapped = replaceSleevelessMeasurementArtOnly(inner, next);
+    if (!swapped || !(swapped.overlay instanceof HTMLElement)) return;
+    applyMeasurementBlueprintViewBoxAspect(next, inner);
+    applyDropShoulderEditPreviewChipVisibility(swapped.overlay, dropShoulderEditPreviewTab);
+    diagramOverlayPositionCleanup?.();
+    diagramOverlayPositionCleanup = bindPatternSummaryOverlayPositioning(
+      inner,
+      next,
+      swapped.overlay,
+      visibleOverlayAnchorsForCurrentPreview(swapped.overlay),
+    );
+  };
+
   const refreshSleevelessMeasurementArt = (): void => {
     if (isDropShoulderConstruction()) {
       refreshDropShoulderEditPreviewArt();
+      return;
+    }
+    if (isSetInSleeveWorkspaceMeasurementSummaryPage()) {
+      refreshSetInSleeveEditPreviewArt();
       return;
     }
     if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());

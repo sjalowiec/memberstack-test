@@ -23,6 +23,7 @@
 }
 
 .cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs,
+.cb-measure-page[data-express-construction="set-in-sleeve"] .ds-edit-preview-tabs,
 .cb-measure-page[data-express-construction="sideways-cardigan"] .ds-edit-preview-tabs {
   display: flex;
   gap: 0.35rem;
@@ -31,6 +32,7 @@
 }
 
 .cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs [role="tab"],
+.cb-measure-page[data-express-construction="set-in-sleeve"] .ds-edit-preview-tabs [role="tab"],
 .cb-measure-page[data-express-construction="sideways-cardigan"] .ds-edit-preview-tabs [role="tab"] {
   appearance: none;
   flex: 1 1 0;
@@ -51,6 +53,10 @@
 .cb-measure-page[data-express-construction="drop-shoulder"]
   .ds-edit-preview-tabs
   [role="tab"][aria-selected="true"],
+.cb-measure-page[data-express-construction="set-in-sleeve"] .ds-edit-preview-tabs [role="tab"].is-active,
+.cb-measure-page[data-express-construction="set-in-sleeve"]
+  .ds-edit-preview-tabs
+  [role="tab"][aria-selected="true"],
 .cb-measure-page[data-express-construction="sideways-cardigan"] .ds-edit-preview-tabs [role="tab"].is-active,
 .cb-measure-page[data-express-construction="sideways-cardigan"]
   .ds-edit-preview-tabs
@@ -61,6 +67,7 @@
 }
 
 .cb-measure-page[data-express-construction="drop-shoulder"] .ds-edit-preview-tabs [role="tab"]:focus-visible,
+.cb-measure-page[data-express-construction="set-in-sleeve"] .ds-edit-preview-tabs [role="tab"]:focus-visible,
 .cb-measure-page[data-express-construction="sideways-cardigan"] .ds-edit-preview-tabs [role="tab"]:focus-visible {
   outline: 2px solid var(--kbm-green, #52682d);
   outline-offset: 2px;
@@ -108,6 +115,7 @@
  * Make [hidden] actually hide the inactive tab's measurement chips.
  */
 .cb-measure-page[data-express-construction="drop-shoulder"] .express-mbp-box[hidden],
+.cb-measure-page[data-express-construction="set-in-sleeve"] .express-mbp-box[hidden],
 .cb-measure-page[data-express-construction="sideways-cardigan"] .ps-measure-chip[hidden] {
   display: none !important;
 }
