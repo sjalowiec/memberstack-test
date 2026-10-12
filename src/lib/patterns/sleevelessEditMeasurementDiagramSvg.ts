@@ -34,6 +34,9 @@ export const SLEEVELESS_EDIT_MEASUREMENT_VIEWBOX = {
   height: SLEEVELESS_FRONT_GARMENT_VB_H,
 } as const;
 
+/** Extra width so the set-in sleeve chips sit beside the body, not on top of it. */
+export const SET_IN_SLEEVE_EDIT_MEASUREMENT_EXTRA_WIDTH = 170;
+
 /** Stable chip anchors — same IDs the overlay already binds on pattern_summary.svg. */
 export const SLEEVELESS_EDIT_MEASUREMENT_TARGET_IDS = [
   PATTERN_SUMMARY_MEASUREMENT_TARGETS.neckOpening,
@@ -130,6 +133,8 @@ export type SleevelessEditMeasurementDiagramInput = {
   patternData?: unknown;
   liveNeckline?: string;
   liveGarmentStyle?: string;
+  /** Adds finished upper arm, cuff circumference, and sleeve length anchors. */
+  includeSetInSleeveMeasurements?: boolean;
 };
 
 export type SleevelessEditMeasurementDiagramModel = {
@@ -258,6 +263,30 @@ function targetCircle(id: string, x: number, y: number): string {
   return `<circle id="${id}" cx="${f(x)}" cy="${f(y)}" r="2.5" fill="none"/>`;
 }
 
+function drawSetInSleeveMeasurements(): string {
+  const f = sleevelessFrontGarmentFmtNum;
+  const topY = 78;
+  const cuffY = 400;
+  const topLeft = SLEEVELESS_FRONT_GARMENT_VB_W + 28;
+  const topRight = topLeft + 96;
+  const cuffLeft = topLeft + 24;
+  const cuffRight = topRight - 24;
+  const lengthX = topRight + 18;
+  return [
+    `<g data-role="set-in-sleeve-measurements">`,
+    `<path data-role="sleeve-outline" d="M ${f(topLeft)} ${f(topY)} L ${f(topRight)} ${f(topY)} L ${f(cuffRight)} ${f(cuffY)} L ${f(cuffLeft)} ${f(cuffY)} Z" fill="${FILL}" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    `<g data-role="set-in-sleeve-guides" fill="none" stroke="${GUIDE}" stroke-width="0.8" stroke-dasharray="4 3">`,
+    `<line data-role="line-upper-arm" x1="${f(topLeft)}" y1="${f(topY)}" x2="${f(topRight)}" y2="${f(topY)}"/>`,
+    `<line data-role="line-sleeve-length" x1="${f(lengthX)}" y1="${f(topY)}" x2="${f(lengthX)}" y2="${f(cuffY)}"/>`,
+    `<line data-role="line-cuff" x1="${f(cuffLeft)}" y1="${f(cuffY)}" x2="${f(cuffRight)}" y2="${f(cuffY)}"/>`,
+    `</g>`,
+    targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.upperArm, (topLeft + topRight) / 2, topY),
+    targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength, lengthX, (topY + cuffY) / 2),
+    targetCircle(PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffCircumference, (cuffLeft + cuffRight) / 2, cuffY),
+    `</g>`,
+  ].join("");
+}
+
 function drawTargets(frame: SleevelessFrontGarmentFrame): string {
   const bustY = frame.armholeStartY + 8;
   const hipY = frame.hemY + (frame.bottomY - frame.hemY) * 0.35;
@@ -282,12 +311,20 @@ export function buildSleevelessEditMeasurementDiagramSvg(
   input: SleevelessEditMeasurementDiagramInput,
 ): string {
   const model = buildSleevelessEditMeasurementDiagramModel(input);
-  const { width, height } = SLEEVELESS_EDIT_MEASUREMENT_VIEWBOX;
+  const includeSleeve = input.includeSetInSleeveMeasurements === true;
+  const width =
+    SLEEVELESS_EDIT_MEASUREMENT_VIEWBOX.width +
+    (includeSleeve ? SET_IN_SLEEVE_EDIT_MEASUREMENT_EXTRA_WIDTH : 0);
+  const { height } = SLEEVELESS_EDIT_MEASUREMENT_VIEWBOX;
+  const label = includeSleeve
+    ? "Set-in sleeve sweater measurement diagram"
+    : "Sleeveless sweater body measurement diagram";
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Sleeveless sweater body measurement diagram" focusable="false" class="express-mbp-art" data-sleeveless-edit-diagram="true" data-sleeveless-edit-neckline="${model.isVNeck ? "v-neck" : "round"}" data-sleeveless-edit-garment="${model.isCardigan ? "cardigan" : "pullover"}" data-sleeveless-edit-body-shape="${model.bodyShapeKind}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${label}" focusable="false" class="express-mbp-art" data-sleeveless-edit-diagram="true" data-sleeveless-edit-neckline="${model.isVNeck ? "v-neck" : "round"}" data-sleeveless-edit-garment="${model.isCardigan ? "cardigan" : "pullover"}" data-sleeveless-edit-body-shape="${model.bodyShapeKind}"${includeSleeve ? ' data-set-in-sleeve-measurements="true"' : ""}>`,
     drawSilhouette(model),
     drawGuides(model.frame),
     drawTargets(model.frame),
+    includeSleeve ? drawSetInSleeveMeasurements() : "",
     `</svg>`,
   ].join("");
 }

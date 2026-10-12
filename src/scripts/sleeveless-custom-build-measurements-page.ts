@@ -122,6 +122,7 @@ import {
   DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS,
   SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL,
 } from "../lib/patterns/measurementBlueprintSvgUrl";
+import { isSetInSleeveWorkspaceMeasurementSummaryPage } from "../lib/patterns/setInSleeveConstructionIdentity";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   markDropShoulderSleeveOverrideKeyUserEdited,
@@ -503,8 +504,14 @@ function isDropShoulderEditWorkspace(): boolean {
   return isDropShoulderWorkspaceMeasurementSummaryPage();
 }
 
-function dropShoulderDiagramFieldPolicyOptions(): { dropShoulderEditWorkspace: boolean } {
-  return { dropShoulderEditWorkspace: isDropShoulderEditWorkspace() };
+function dropShoulderDiagramFieldPolicyOptions(): {
+  dropShoulderEditWorkspace: boolean;
+  setInSleeve: boolean;
+} {
+  return {
+    dropShoulderEditWorkspace: isDropShoulderEditWorkspace(),
+    setInSleeve: isSetInSleeveWorkspaceMeasurementSummaryPage(),
+  };
 }
 
 /**
@@ -525,7 +532,7 @@ function getActiveDiagramFields(): DiagramFieldDef[] {
 function dropShoulderEditWorkspaceMergedForDiagram(
   merged: Record<DiagramFieldKey, string>,
 ): Record<DiagramFieldKey, string> {
-  if (!isDropShoulderEditWorkspace()) return merged;
+  if (!isDropShoulderEditWorkspace() && !isSetInSleeveWorkspaceMeasurementSummaryPage()) return merged;
   const userEdited = readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit);
   const sleeveLengthChoice = readDropShoulderSleeveLengthChoice();
   let out = merged;
@@ -736,6 +743,7 @@ function sleevelessEditDiagramInput(
     patternData: getCurrentPattern(),
     liveNeckline: readLiveSleevelessEditNeckline(),
     liveGarmentStyle: readLiveSleevelessEditGarmentStyle(),
+    includeSetInSleeveMeasurements: isSetInSleeveWorkspaceMeasurementSummaryPage(),
   };
 }
 
@@ -784,7 +792,12 @@ function adoptSleevelessGeneratedMeasurementArt(
   if (!generated) return null;
   const adopted = adoptGeneratedMeasurementSvg(generated, document);
   adopted.setAttribute("role", "img");
-  adopted.setAttribute("aria-label", "Sleeveless sweater body measurement diagram");
+  adopted.setAttribute(
+    "aria-label",
+    isSetInSleeveWorkspaceMeasurementSummaryPage()
+      ? "Set-in sleeve sweater measurement diagram"
+      : "Sleeveless sweater body measurement diagram",
+  );
   adopted.setAttribute("focusable", "false");
   return adopted;
 }
@@ -1265,6 +1278,21 @@ function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): v
       }),
     );
   }
+  if (isSetInSleeveWorkspaceMeasurementSummaryPage()) {
+    const edited = readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit);
+    Object.assign(
+      toStore,
+      mergeDropShoulderEditSleeveOverridesWithoutScalingPickerValues({
+        incoming: toStore,
+        stored,
+        sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+        userEdited: edited,
+      }),
+    );
+    if (edited.upperArm !== true) delete toStore.upperArm;
+    if (edited.sleeveLength !== true && !stored.sleeveLength?.trim()) delete toStore.sleeveLength;
+    if (edited.cuffCircumference !== true && !stored.wrist?.trim()) delete toStore.wrist;
+  }
   persistMeasurementOverrides(toStore);
 }
 
@@ -1382,12 +1410,17 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     }
     setFieldError(root, key, null);
     el.closest(".express-mbp-box")?.classList.remove("express-mbp-box--invalid");
-    if (
+    const trackSetInSleeveEdit =
+      isSetInSleeveWorkspaceMeasurementSummaryPage() &&
+      (key === "upperArm" || key === "wrist" || key === "sleeveLength");
+    const trackDropShoulderSleeveEdit =
       isDropShoulderConstruction() &&
-      !suppressDropShoulderSleeveUserEditTracking &&
       (key === "upperArm" ||
         key === "wrist" ||
-        (key === "sleeveLength" && isDropShoulderEditWorkspace()))
+        (key === "sleeveLength" && isDropShoulderEditWorkspace()));
+    if (
+      !suppressDropShoulderSleeveUserEditTracking &&
+      (trackSetInSleeveEdit || trackDropShoulderSleeveEdit)
     ) {
       markDropShoulderSleeveOverrideKeyUserEdited(key);
     }
@@ -1517,9 +1550,13 @@ function applyDiagramUnitDisplay(
     const inches = parseStoredInchesForDisplay(inchesRaw);
     if (input) {
       input.value = formatMeasurementDisplayFromInches(inches, unit);
+      const fieldLabel =
+        isSetInSleeveWorkspaceMeasurementSummaryPage() && field.key === "wrist"
+          ? "Cuff circumference"
+          : field.label;
       input.setAttribute(
         "aria-label",
-        `${field.label} in ${unit === "cm" ? "centimeters" : "inches"}`,
+        `${fieldLabel} in ${unit === "cm" ? "centimeters" : "inches"}`,
       );
       valuesUpdated += 1;
     }
@@ -1627,7 +1664,13 @@ async function renderDiagram(
   const dropShoulder = isDropShoulderConstruction();
   const policyOptions = dropShoulderDiagramFieldPolicyOptions();
   for (const field of DIAGRAM_FIELDS) {
-    if (!isCustomBuildDiagramFieldRenderedOnSummary(field, dropShoulder)) continue;
+    if (
+      !isCustomBuildDiagramFieldRenderedOnSummary(field, dropShoulder, {
+        setInSleeve: policyOptions.setInSleeve,
+      })
+    ) {
+      continue;
+    }
 
     if (dropShoulder && isDropShoulderDisplayOnlySummaryField(field.key, policyOptions)) {
       overlay.appendChild(
@@ -1647,11 +1690,15 @@ async function renderDiagram(
 
     if (!getActiveDiagramFields().some((active) => active.key === field.key)) continue;
 
-    const boxOpts = { axis: field.axis, labelLines: field.labelLines };
+    const displayField =
+      policyOptions.setInSleeve && field.key === "wrist"
+        ? { ...field, label: "Cuff circumference", labelLines: ["Cuff", "circumference"] }
+        : field;
+    const boxOpts = { axis: displayField.axis, labelLines: displayField.labelLines };
     overlay.appendChild(
       readOnly
-        ? createDiagramReadonlyFieldBox(field, merged[field.key] ?? "", unitForBoxes, boxOpts)
-        : createDiagramFieldBox(field, merged[field.key] ?? "", unitForBoxes, boxOpts),
+        ? createDiagramReadonlyFieldBox(displayField, merged[field.key] ?? "", unitForBoxes, boxOpts)
+        : createDiagramFieldBox(displayField, merged[field.key] ?? "", unitForBoxes, boxOpts),
     );
   }
 
@@ -2182,6 +2229,21 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
         });
         if (repairedOverrides !== loadedOverrides) persistMeasurementOverrides(repairedOverrides);
         merged = mergeOverridesWithDefaults(repairedOverrides, defaults);
+        if (isSetInSleeveWorkspaceMeasurementSummaryPage()) {
+          const sleeveStrings = resolveDropShoulderSleeveOverrideStrings({
+            overrides: repairedOverrides,
+            chartRow: row,
+            fitPreference: fitPref,
+            chartAudience: audience,
+            bodyShape:
+              (typeof pattern.style?.bodyShape === "string" && pattern.style.bodyShape.trim()) ||
+              "straight",
+            userEdited: readEffectiveDropShoulderUserEditedSleeveFields(pattern.fit),
+          });
+          if (sleeveStrings.upperArm) merged.upperArm = sleeveStrings.upperArm;
+          if (sleeveStrings.sleeveLength) merged.sleeveLength = sleeveStrings.sleeveLength;
+          if (sleeveStrings.wrist) merged.wrist = sleeveStrings.wrist;
+        }
       }
 
       if (

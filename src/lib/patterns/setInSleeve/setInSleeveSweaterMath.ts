@@ -50,6 +50,8 @@ import {
   type SetInSleeveCapFailure,
   type SetInSleeveCapSuccess,
 } from "./sleeveCapMath";
+import { setInSleeveTaperProblem } from "./setInSleeveTaper";
+import type { DropShoulderUserEditedSleeveFields } from "../dropShoulderUserEditedSleeveFields";
 
 const NO_SLEEVE_EDITS = {
   upperArm: false,
@@ -62,7 +64,8 @@ export type SetInSleeveSweaterFailureReason =
   | "body-length"
   | "body-shaping"
   | "neckline"
-  | "sleeve-width";
+  | "sleeve-width"
+  | "sleeve-taper";
 
 export type SetInSleeveSweaterFailure = {
   ok: false;
@@ -87,6 +90,14 @@ export type SetInSleeveSweaterInput = {
   sleeveDirection?: DropShoulderSleeveDirection;
   /** Straight is the sweater default. A-line uses the sleeveless hip-to-bust body block. */
   bodyShape?: "straight" | "aline";
+  /**
+   * Diagram overrides. A custom finished upper arm, cuff, or sleeve length is used only
+   * when the matching `userEditedSleeveFields` flag is true.
+   */
+  measurementOverrides?: Record<string, string>;
+  userEditedSleeveFields?: DropShoulderUserEditedSleeveFields;
+  /** Independent of the upper arm. Omit to use the chart armhole depth. */
+  armholeDepthInches?: number;
 };
 
 export type SetInSleeveNeedleCheck = {
@@ -246,7 +257,8 @@ export function calculateSetInSleeveSweater(
   const finishedBust = positiveNumber(measurements.finished_bust_chest);
   const finishedHip = positiveNumber(measurements.finished_hip);
   const garmentLength = positiveNumber(measurements.back_neck_to_hem);
-  const armholeDepth = positiveNumber(measurements.armhole_depth);
+  const armholeDepth =
+    positiveNumber(input.armholeDepthInches) ?? positiveNumber(measurements.armhole_depth);
   const shoulderWidth = positiveNumber(measurements.shoulder_width);
   const neckWidth = positiveNumber(measurements.neck_width);
   const frontNeckDepth = positiveNumber(measurements.front_neck_depth);
@@ -277,11 +289,30 @@ export function calculateSetInSleeveSweater(
     return fail("neckline", "Back neck depth could not be resolved.");
   }
 
+  const userEdited = input.userEditedSleeveFields ?? NO_SLEEVE_EDITS;
+  const sleeveInches = resolveDropShoulderSleeveInches({
+    chartRow: input.chartRow,
+    fitPreference: fit,
+    chartAudience,
+    bodyShape,
+    sleeveLengthChoice,
+    overrides: input.measurementOverrides ?? {},
+    userEdited,
+  });
+  if (
+    sleeveInches.upperArmIn === undefined ||
+    sleeveInches.wristIn === undefined ||
+    sleeveInches.sleeveLengthIn === undefined
+  ) {
+    return fail("sleeve-width", "Sleeve length, upper arm, or cuff could not be resolved.");
+  }
+
   const cap = calculateSetInSleeveCap({
     finishedBustInches: finishedBust,
     shoulderWidthInches: shoulderWidth,
     armholeDepthInches: armholeDepth,
     bodyUpperArmInches: bodyUpperArm,
+    ...(userEdited.upperArm === true ? { finishedUpperArmInches: sleeveInches.upperArmIn } : {}),
     chartAudience,
     fit,
     stitchesPerInch,
@@ -301,22 +332,6 @@ export function calculateSetInSleeveSweater(
     );
   }
 
-  const sleeveInches = resolveDropShoulderSleeveInches({
-    chartRow: input.chartRow,
-    fitPreference: fit,
-    chartAudience,
-    bodyShape,
-    sleeveLengthChoice,
-    overrides: {},
-    userEdited: NO_SLEEVE_EDITS,
-  });
-  if (
-    sleeveInches.upperArmIn === undefined ||
-    sleeveInches.wristIn === undefined ||
-    sleeveInches.sleeveLengthIn === undefined
-  ) {
-    return fail("sleeve-width", "Sleeve length, upper arm, or cuff could not be resolved.");
-  }
   if (sleeveInches.upperArmIn !== cap.sleeve.finishedUpperArmInches) {
     return fail(
       "sleeve-width",
@@ -324,16 +339,18 @@ export function calculateSetInSleeveSweater(
     );
   }
 
-  const finishedUpperArm = resolveDropShoulderFinishedUpperArmInches({
-    chartAudience,
-    fit,
-    bodyUpperArmIn: bodyUpperArm,
-  });
-  if (finishedUpperArm !== cap.sleeve.finishedUpperArmInches) {
-    return fail(
-      "sleeve-width",
-      "Upper-arm ease did not match the sleeve-cap finished width.",
-    );
+  if (userEdited.upperArm !== true) {
+    const finishedUpperArm = resolveDropShoulderFinishedUpperArmInches({
+      chartAudience,
+      fit,
+      bodyUpperArmIn: bodyUpperArm,
+    });
+    if (finishedUpperArm !== cap.sleeve.finishedUpperArmInches) {
+      return fail(
+        "sleeve-width",
+        "Upper-arm ease did not match the sleeve-cap finished width.",
+      );
+    }
   }
 
   const cuffInches = getDefaultCuffLengthInches(chartAudience);
@@ -351,6 +368,12 @@ export function calculateSetInSleeveSweater(
       "Sleeve stitches at the upper arm do not match the sleeve-cap starting stitches.",
     );
   }
+  const taperProblem = setInSleeveTaperProblem({
+    topStitches: sleevePiece.topSts,
+    cuffStitches: sleevePiece.wristSts,
+    sleeveBodyRows: sleevePiece.sleeveBodyRows,
+  });
+  if (taperProblem) return fail("sleeve-taper", taperProblem);
 
   const hemInches = getDefaultHemLengthInches(chartAudience);
   const hemRows = calculateHemRowsFromInches(rowsPerInch, hemInches);

@@ -57,6 +57,17 @@ describe("customBuildDiagramFieldPolicy", () => {
     expect(isCustomBuildDiagramFieldActiveForConstruction(shoulder, false)).toBe(true);
     expect(isCustomBuildDiagramFieldRenderedOnSummary(shoulder, false)).toBe(true);
   });
+
+  it("shows upper arm, cuff circumference, and sleeve length on set-in edit, and keeps armhole depth editable", () => {
+    const options = { setInSleeve: true };
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "upperArm", dropShoulderOnly: true }, false, options)).toBe(true);
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "wrist", dropShoulderOnly: true }, false, options)).toBe(true);
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "sleeveLength", dropShoulderOnly: true }, false, options)).toBe(true);
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "cuffDepth", dropShoulderOnly: true }, false, options)).toBe(false);
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "armholeDepth" }, false, options)).toBe(true);
+    expect(isCustomBuildDiagramFieldRenderedOnSummary({ key: "wrist", dropShoulderOnly: true }, false, options)).toBe(true);
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "upperArm", dropShoulderOnly: true }, false)).toBe(false);
+  });
 });
 
 describe("drop-shoulder cross-shoulder diagram math", () => {

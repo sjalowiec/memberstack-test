@@ -39,9 +39,10 @@ export function isDropShoulderSleeveLengthEditableOnEditWorkspace(
 export function isCustomBuildDiagramFieldActiveForConstruction(
   field: { key: string; dropShoulderOnly?: boolean },
   isDropShoulder: boolean,
-  options?: { dropShoulderEditWorkspace?: boolean },
+  options?: { dropShoulderEditWorkspace?: boolean; setInSleeve?: boolean },
 ): boolean {
-  if (field.dropShoulderOnly && !isDropShoulder) return false;
+  if (options?.setInSleeve && field.key === "cuffDepth") return false;
+  if (field.dropShoulderOnly && !isDropShoulder && !options?.setInSleeve) return false;
   if (isDropShoulder && isDropShoulderHiddenSummaryField(field.key)) return false;
   if (isDropShoulder && isDropShoulderDisplayOnlySummaryField(field.key, options)) return false;
   return true;
@@ -51,8 +52,10 @@ export function isCustomBuildDiagramFieldActiveForConstruction(
 export function isCustomBuildDiagramFieldRenderedOnSummary(
   field: { key: string; dropShoulderOnly?: boolean },
   isDropShoulder: boolean,
+  options?: { setInSleeve?: boolean },
 ): boolean {
-  if (field.dropShoulderOnly && !isDropShoulder) return false;
+  if (options?.setInSleeve && field.key === "cuffDepth") return false;
+  if (field.dropShoulderOnly && !isDropShoulder && !options?.setInSleeve) return false;
   if (isDropShoulder && isDropShoulderHiddenSummaryField(field.key)) return false;
   return true;
 }

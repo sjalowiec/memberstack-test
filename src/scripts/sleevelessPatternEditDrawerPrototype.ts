@@ -111,7 +111,14 @@ import {
 } from "../lib/patterns/writeSleevelessGarmentSelection";
 import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternStorage";
 import { isActiveSetInSleeveConstruction } from "../lib/patterns/setInSleeveConstructionIdentity";
+import { setInSleeveSleeveStateAfterLengthPreset } from "../lib/patterns/setInSleeve/setInSleeveLengthPreset";
+import { generateSetInSleevePattern } from "../lib/patterns/setInSleevePatternOutput";
+import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput";
 import { setInSleeveAdultChartLabel } from "../lib/patterns/setInSleeveSizeCharts";
+import {
+  expressWhoForSetInSleeveChart,
+  reassertSetInSleeveSizeLockOnEditSave,
+} from "../lib/patterns/setInSleeveSizeLock";
 import { convertGaugeSwatchDisplayBetweenUnits, editWorkspaceGaugeUnitDescription } from "../lib/patterns/editWorkspaceGaugeUnitDisplay";
 import {
   formatSwatchCountForGaugeInput,
@@ -792,7 +799,14 @@ function initSleevelessPatternEditDrawer(): void {
     logPatternEditGateDebug("applyChanges.proceeding", { drawerAllowed: true });
 
     const audience = resolveAudience();
-    let size = sizeSelect?.value.trim() ?? "";
+    const setInSleeveEdit = isSetInSleeveWorkspaceMeasurementSummaryPage();
+    let size = setInSleeveEdit
+      ? storedExpressSelectedSize()
+      : (sizeSelect?.value.trim() ?? "");
+    if (setInSleeveEdit && size) {
+      const who = expressWhoForSetInSleeveChart(audience);
+      if (who) patchExpressValues({ who, selectedSize: size });
+    }
     const garment = (radioValue("sl-edit-garment") || "pullover") as SleevelessGarmentType;
     const neckline = radioValue("sl-edit-neckline") === "v-neck" ? "v-neck" : "round";
     const fit = readStoredFitPreference();
@@ -904,33 +918,43 @@ function initSleevelessPatternEditDrawer(): void {
       const wristInput = (measureFlushRoot ?? measurePane ?? drawer)?.querySelector<HTMLInputElement>(
         '[data-cb-measure-input="wrist"]',
       );
+      const sleeveMeasurementWorkspace =
+        isDropShoulderWorkspaceMeasurementSummaryPage() ||
+        isSetInSleeveWorkspaceMeasurementSummaryPage();
       const displayedSleeve =
-        sleeveInput && isDropShoulderWorkspaceMeasurementSummaryPage()
+        sleeveInput && sleeveMeasurementWorkspace
           ? parseMeasurementInputToInches(sleeveInput.value, editDisplayUnit)
           : undefined;
       const displayedWrist =
-        wristInput && isDropShoulderWorkspaceMeasurementSummaryPage()
+        wristInput && sleeveMeasurementWorkspace
           ? parseMeasurementInputToInches(wristInput.value, editDisplayUnit)
           : undefined;
-      const sleeveDiffers =
-        isDropShoulderWorkspaceMeasurementSummaryPage()
-          ? dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker({
-              displayedSleeveLengthInches:
-                displayedSleeve !== undefined ? String(displayedSleeve) : "",
-              displayedWristInches: displayedWrist !== undefined ? String(displayedWrist) : "",
-              storedOverrides: storedBeforeFlush,
-              sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
-            })
-          : { sleeveLength: false, cuffCircumference: false };
+      const sleeveDiffers = sleeveMeasurementWorkspace
+        ? dropShoulderEditWorkspaceDisplayedSleeveDiffersFromPicker({
+            displayedSleeveLengthInches:
+              displayedSleeve !== undefined ? String(displayedSleeve) : "",
+            displayedWristInches: displayedWrist !== undefined ? String(displayedWrist) : "",
+            storedOverrides: storedBeforeFlush,
+            sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+          })
+        : { sleeveLength: false, cuffCircumference: false };
       flushCustomBuildMeasurementOverridesToCanonical({
         root: measureFlushRoot ?? undefined,
         displayUnit: editDisplayUnit,
       });
-      if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+      if (sleeveMeasurementWorkspace) {
         if (sleeveDiffers.sleeveLength) markDropShoulderSleeveFieldUserEdited("sleeveLength");
         if (sleeveDiffers.cuffCircumference) markDropShoulderSleeveFieldUserEdited("cuffCircumference");
       }
       syncCustomBuildToPatternStorage({ awaitCharts: false });
+      if (setInSleeveEdit) {
+        reassertSetInSleeveSizeLockOnEditSave();
+        const generated = generateSetInSleevePattern(buildCustomBuildEffectivePatternInput());
+        if (generated.sleeveSaveBlocker) {
+          showErrors([generated.sleeveSaveBlocker]);
+          return;
+        }
+      }
 
       // 3) Gauge → same canonical + patternBuilderData sections the gauge step / Express write.
       // Convert the swatch counts the user sees (28 / 44 over 4") into the per-inch values the
@@ -1067,6 +1091,38 @@ function initSleevelessPatternEditDrawer(): void {
     if (refreshed) lastQuickEditSize = sizing.selectedSize;
   }
 
+  async function handleSetInSleeveQuickEditSleeveLengthChanged(): Promise<void> {
+    if (!isSetInSleeveWorkspaceMeasurementSummaryPage()) return;
+    const choice = normalizeDropShoulderSleeveLengthChoice(radioValue("sl-edit-sleeve-length"));
+    persistSetInSleeveEditSleeveLengthChoice(choice);
+    const currentFlags = readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit);
+    let next = {
+      overrides: loadMeasurementOverrides(),
+      userEdited: { ...currentFlags, sleeveLength: false as const },
+    };
+    const audience = resolveAudience();
+    const size = storedExpressSelectedSize();
+    if (audience && size) {
+      await loadExpressSweaterCharts();
+      const row = findExpressChartRow(audience, size);
+      if (row) {
+        next = setInSleeveSleeveStateAfterLengthPreset({
+          overrides: loadMeasurementOverrides(),
+          userEdited: currentFlags,
+          chartRow: row,
+          fitPreference: readStoredFitPreference(),
+          chartAudience: audience,
+          bodyShape: readCurrentBodyShape(),
+        });
+      }
+    }
+    writeDropShoulderUserEditedSleeveFields(next.userEdited);
+    writeDropShoulderEditUserEditedSleeveFlagsToFit(next.userEdited);
+    persistMeasurementOverrides(next.overrides);
+    await rehydratePatternWorkspaceMeasurementDiagram();
+    window.kbmInvalidateSleevelessPatternRender?.();
+  }
+
   async function handleDropShoulderQuickEditSleeveLengthChanged(): Promise<void> {
     if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
     ensureDropShoulderMeasurementEditorReady();
@@ -1101,6 +1157,7 @@ function initSleevelessPatternEditDrawer(): void {
 
   async function handleSleevelessQuickEditSizeChanged(oldSize: string): Promise<void> {
     if (isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    if (isSetInSleeveWorkspaceMeasurementSummaryPage()) return;
     if (!measureInitialized && measurePane) {
       measureInitialized = true;
       initCustomBuildMeasurementsPage({
@@ -1131,8 +1188,7 @@ function initSleevelessPatternEditDrawer(): void {
       radio.addEventListener("change", () => {
         if (!radio.checked) return;
         if (setInSleeve) {
-          persistSetInSleeveEditSleeveLengthChoice(radio.value);
-          window.kbmInvalidateSleevelessPatternRender?.();
+          void handleSetInSleeveQuickEditSleeveLengthChanged();
           return;
         }
         ensureDropShoulderMeasurementEditorReady();

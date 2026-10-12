@@ -13,6 +13,7 @@ import {
 import {
   resolveDropShoulderSleeveInches,
 } from "./dropShoulderSleeveMeasurementOverrides";
+import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import {
   FRONT_VNECK_HANDOFF_DURING_ARMHOLE,
   FRONT_VNECK_HANDOFF_FOLLOW_CHECKLIST,
@@ -31,6 +32,7 @@ import {
   isSleevelessVNeckChoice,
 } from "./sleevelessFrontDiagramSrc";
 import { calculateSetInSleeveCap, type SetInSleeveCapSuccess } from "./setInSleeve/sleeveCapMath";
+import { setInSleeveTaperProblem } from "./setInSleeve/setInSleeveTaper";
 import {
   buildSetInCuffUpSleevePresentation,
   setInArmholeInstructionLines,
@@ -51,6 +53,11 @@ export type SetInSleevePatternResult = SleevelessBackPatternResult & {
   sleeveCap: SetInSleeveCapSuccess | null;
   /** Cuff-up sleeve counts already used for the written sleeve. Null when the cap could not be calculated. */
   sleevePiece: DropShoulderSleevePieceNumbers | null;
+  /**
+   * Set when the armhole, sleeve cap, or sleeve taper cannot be knitted.
+   * A body/cap bind-off mismatch stays a warning and does not set this.
+   */
+  sleeveSaveBlocker: string | null;
 };
 
 const SLEEVELESS_ARMHOLE_PROSE =
@@ -64,6 +71,16 @@ function positive(value: unknown): number | undefined {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n) || n <= 0) return undefined;
   return n;
+}
+
+function measurementOverrideStrings(fit: Record<string, unknown>): Record<string, string> {
+  const overrides = section(fit.cbMeasurementOverrides);
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(overrides)) {
+    if (typeof value === "string" && value.trim()) out[key] = value.trim();
+    else if (typeof value === "number" && Number.isFinite(value) && value > 0) out[key] = String(value);
+  }
+  return out;
 }
 
 function audienceOf(patternData: Record<string, unknown>): string {
@@ -297,10 +314,28 @@ export function generateSetInSleevePattern(
     stamped,
   );
 
-  const measurements = section(section(stamped.fit).selectedMeasurements);
+  const fitSection = section(stamped.fit);
+  const measurements = section(fitSection.selectedMeasurements);
   const chartAudience = audienceOf(stamped);
   const fit = fitOf(stamped);
   const bodyUpperArm = positive(measurements.upper_arm);
+  const userEdited = readEffectiveDropShoulderUserEditedSleeveFields(fitSection);
+  const sleeveInches =
+    bodyUpperArm !== undefined
+      ? resolveDropShoulderSleeveInches({
+          overrides: measurementOverrideStrings(fitSection),
+          chartRow: {
+            upper_arm: bodyUpperArm,
+            wrist: positive(measurements.wrist),
+            sleeve_length: positive(measurements.sleeve_length),
+          },
+          fitPreference: fit,
+          chartAudience,
+          bodyShape: typeof style.bodyShape === "string" ? style.bodyShape : "straight",
+          sleeveLengthChoice: normalizeDropShoulderSleeveLengthChoice(style.sleeveLength),
+          userEdited,
+        })
+      : {};
   const cap =
     debug.finishedBustChest &&
     debug.shoulderWidthInches &&
@@ -313,6 +348,9 @@ export function generateSetInSleevePattern(
           shoulderWidthInches: debug.shoulderWidthInches,
           armholeDepthInches: debug.armholeDepth,
           bodyUpperArmInches: bodyUpperArm,
+          ...(userEdited.upperArm === true && sleeveInches.upperArmIn
+            ? { finishedUpperArmInches: sleeveInches.upperArmIn }
+            : {}),
           chartAudience,
           fit,
           stitchesPerInch: debug.stitchesPerInch,
@@ -323,11 +361,15 @@ export function generateSetInSleevePattern(
   let sleeveCap: SetInSleeveCapSuccess | null = null;
   let sleevePiece: DropShoulderSleevePieceNumbers | null = null;
   let sleeveDisplayRows: SleevelessPatternDisplayRow[] = [];
+  let sleeveSaveBlocker: string | null = plan
+    ? null
+    : (warnings.find((warning) => /armhole/i.test(warning)) ??
+      "The set-in armhole could not be calculated from these measurements.");
   if (!cap || !cap.ok) {
-    warnings.push(cap && !cap.ok ? cap.message : "Sleeve cap could not be calculated.");
-    sleeveDisplayRows = linesToBlocks([
-      warnings[warnings.length - 1] ?? "Sleeve instructions are not available.",
-    ]);
+    const message = cap && !cap.ok ? cap.message : "Sleeve cap could not be calculated.";
+    warnings.push(message);
+    sleeveSaveBlocker = message;
+    sleeveDisplayRows = linesToBlocks([message]);
   } else {
     sleeveCap = cap;
     if (plan) {
@@ -341,19 +383,6 @@ export function generateSetInSleevePattern(
         );
       }
     }
-    const sleeveInches = resolveDropShoulderSleeveInches({
-      overrides: {},
-      chartRow: {
-        upper_arm: bodyUpperArm,
-        wrist: positive(measurements.wrist),
-        sleeve_length: positive(measurements.sleeve_length),
-      },
-      fitPreference: fit,
-      chartAudience,
-      bodyShape: typeof style.bodyShape === "string" ? style.bodyShape : "straight",
-      sleeveLengthChoice: normalizeDropShoulderSleeveLengthChoice(style.sleeveLength),
-      userEdited: { upperArm: false, sleeveLength: false, cuffCircumference: false },
-    });
     const cuffInches = getDefaultCuffLengthInches(chartAudience);
     sleevePiece = calculateDropShoulderSleevePieceNumbers({
       finishedUpperArmInches: cap.sleeve.finishedUpperArmInches,
@@ -365,16 +394,31 @@ export function generateSetInSleevePattern(
     });
     const piece = sleevePiece;
     if (piece.topSts !== cap.sleeve.upperArmStitches) {
-      warnings.push("Sleeve stitches at the upper arm do not match the sleeve-cap starting stitches.");
+      const message = "Sleeve stitches at the upper arm do not match the sleeve-cap starting stitches.";
+      warnings.push(message);
+      sleeveSaveBlocker = message;
     }
-    sleeveDisplayRows = buildSetInCuffUpSleevePresentation({
-      wristStitches: piece.wristSts,
-      upperArmStitches: piece.topSts,
-      cuffRows: piece.cuffRows,
-      cuffInches,
-      rowsCuffToUpperArm: piece.sleeveBodyRows,
-      cap,
-    }).displayRows;
+    const taperProblem = setInSleeveTaperProblem({
+      topStitches: piece.topSts,
+      cuffStitches: piece.wristSts,
+      sleeveBodyRows: piece.sleeveBodyRows,
+    });
+    if (taperProblem) {
+      warnings.push(taperProblem);
+      sleeveSaveBlocker = taperProblem;
+      sleeveDisplayRows = linesToBlocks([taperProblem]);
+    } else if (sleeveSaveBlocker) {
+      sleeveDisplayRows = linesToBlocks([sleeveSaveBlocker]);
+    } else {
+      sleeveDisplayRows = buildSetInCuffUpSleevePresentation({
+        wristStitches: piece.wristSts,
+        upperArmStitches: piece.topSts,
+        cuffRows: piece.cuffRows,
+        cuffInches,
+        rowsCuffToUpperArm: piece.sleeveBodyRows,
+        cap,
+      }).displayRows;
+    }
   }
 
   const available = positive(section(stamped.yarnGaugeMachine).availableNeedles);
@@ -409,5 +453,6 @@ export function generateSetInSleevePattern(
     overviewRows,
     sleeveCap,
     sleevePiece,
+    sleeveSaveBlocker,
   };
 }

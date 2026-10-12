@@ -70,6 +70,11 @@ export type SetInSleeveCapInput = {
   armholeDepthInches: number;
   /** Body upper-arm circumference before sleeve ease, inches. */
   bodyUpperArmInches: number;
+  /**
+   * Finished upper-arm circumference, inches. When set, sleeve ease is not added.
+   * Omit it to keep the chart path: body upper arm plus Drop Shoulder ease.
+   */
+  finishedUpperArmInches?: number;
   /** Sizing audience. Adults only: misses, plus, men. */
   chartAudience: string;
   /** Upper-arm ease fit. Defaults to standard (2 inches for adults). */
@@ -420,6 +425,7 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
     shoulderWidthInches,
     armholeDepthInches,
     bodyUpperArmInches,
+    finishedUpperArmInches: finishedUpperArmOverride,
     chartAudience,
     stitchesPerInch,
     rowsPerInch,
@@ -450,18 +456,30 @@ export function calculateSetInSleeveCap(input: SetInSleeveCapInput): SetInSleeve
   }
 
   const fit = normalizeSleeveEaseFit(input.fit);
-  const upperArmEaseInches = resolveDropShoulderUpperArmEaseInches({ chartAudience, fit });
-  const finishedUpperArmInches = resolveDropShoulderFinishedUpperArmInches({
+  const customFinishedUpperArm =
+    finishedUpperArmOverride !== undefined && positiveFinite(finishedUpperArmOverride);
+  if (finishedUpperArmOverride !== undefined && !customFinishedUpperArm) {
+    return fail("upper-arm", "Finished upper arm must be greater than zero.");
+  }
+  const chartUpperArmEaseInches = resolveDropShoulderUpperArmEaseInches({ chartAudience, fit });
+  const chartFinishedUpperArmInches = resolveDropShoulderFinishedUpperArmInches({
     chartAudience,
     fit,
     bodyUpperArmIn: bodyUpperArmInches,
   });
-  if (upperArmEaseInches === undefined || finishedUpperArmInches === undefined) {
+  if (
+    !customFinishedUpperArm &&
+    (chartUpperArmEaseInches === undefined || chartFinishedUpperArmInches === undefined)
+  ) {
     return fail(
       "upper-arm",
       "Finished upper-arm width could not be calculated from the body upper arm and Drop Shoulder ease.",
     );
   }
+  const upperArmEaseInches = customFinishedUpperArm ? 0 : chartUpperArmEaseInches!;
+  const finishedUpperArmInches = customFinishedUpperArm
+    ? finishedUpperArmOverride!
+    : chartFinishedUpperArmInches!;
 
   const upperArmStitches = evenPositiveBodyStitches(finishedUpperArmInches * stitchesPerInch);
   if (upperArmStitches < 4) {

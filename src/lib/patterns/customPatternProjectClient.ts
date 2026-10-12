@@ -291,10 +291,10 @@ export function buildSavePayloadFromWorkingDraft(
     customOverrides = withDropShoulderConstructionFamily(customOverrides);
   }
 
-  // Persist Drop Shoulder user-edited sleeve-field state with the project so a manual upper-arm/wrist
-  // value stays protected after reopen (the flags otherwise live only in the Express-builder blob).
+  // Persist sleeve-field edit flags with the project so a custom upper arm, cuff, or length
+  // stays protected after reopen. Drop Shoulder and Set-In Sleeve share this metadata.
   // The live builder state is the source of truth at save time; an unedited pattern removes the key.
-  if (allowDropShoulder) {
+  if (allowDropShoulder || allowSetInSleeve) {
     const editedFlags = readDropShoulderUserEditedSleeveFields();
     if (hasAnyDropShoulderUserEditedSleeveField(editedFlags)) {
       fitForSave[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY] =

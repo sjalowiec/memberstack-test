@@ -394,6 +394,53 @@ describe("Sleeveless edit measurement diagram — armhole silhouette", () => {
     }
   });
 
+  it("places Shoulder width on the full span between the armhole edges", () => {
+    const model = modelFor({ bust: 40, hip: 40, neckline: "round" });
+    const { frame } = model;
+    const f = sleevelessFrontGarmentFmtNum;
+    const svg = svgFor({ bust: 40, hip: 40, neckline: "round" });
+    const span = frame.afterRight - frame.afterLeft;
+
+    expect(span).toBeCloseTo(frame.afterWidth);
+    expect(span).toBeGreaterThan(frame.neckRight - frame.neckLeft);
+    expect(frame.boRight - frame.boLeft).toBeGreaterThan(span);
+    expect(frame.afterLeft).toBeLessThan(frame.neckLeft);
+    expect(frame.afterRight).toBeGreaterThan(frame.neckRight);
+    expect(frame.lastArmholeY).toBeGreaterThan(frame.shoulderY);
+    expect(frame.lastArmholeY).toBeLessThan(frame.armholeStartY);
+
+    expect(svg).toContain(
+      `data-role="line-shoulder" x1="${f(frame.afterLeft)}" y1="${f(frame.lastArmholeY)}" x2="${f(frame.afterRight)}" y2="${f(frame.lastArmholeY)}"`,
+    );
+    expect(svg).toContain('data-role="line-shoulder-cap" data-side="left"');
+    expect(svg).toContain('data-role="line-shoulder-cap" data-side="right"');
+    expect(svg).not.toContain(
+      `data-role="line-shoulder" x1="${f(frame.afterLeft)}" y1="${f((frame.shoulderY + frame.neckCornerY) / 2)}" x2="${f(frame.neckLeft)}"`,
+    );
+    expect(svg).toContain(
+      `id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.chest}" cx="${f(frame.cx)}" cy="${f(frame.lastArmholeY)}"`,
+    );
+  });
+
+  it("moves only the shoulder-width span when shoulderWidthInches changes", () => {
+    const narrow = buildSleevelessEditMeasurementDiagramModel({
+      measurements: { ...BASE, bustInches: 40, hipInches: 40, shoulderWidthInches: 10 },
+      patternData: { style: { neckline: "round", garmentStyle: "pullover" } },
+    });
+    const wide = buildSleevelessEditMeasurementDiagramModel({
+      measurements: { ...BASE, bustInches: 40, hipInches: 40, shoulderWidthInches: 14 },
+      patternData: { style: { neckline: "round", garmentStyle: "pullover" } },
+    });
+
+    expect(wide.frame.afterRight - wide.frame.afterLeft).toBeGreaterThan(
+      narrow.frame.afterRight - narrow.frame.afterLeft,
+    );
+    expect(wide.frame.left).toBe(narrow.frame.left);
+    expect(wide.frame.right).toBe(narrow.frame.right);
+    expect(wide.frame.armholeStartY).toBe(narrow.frame.armholeStartY);
+    expect(wide.frame.lastArmholeY).toBe(narrow.frame.lastArmholeY);
+  });
+
   it("keeps target_armhole_depth and the armhole-depth guide", () => {
     const svg = svgFor({ bust: 40, hip: 40, neckline: "round" });
     expect(svg).toContain(`id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.armholeDepth}"`);
@@ -438,5 +485,30 @@ describe("Sleeveless edit measurement diagram — armhole silhouette", () => {
         `id="${id}"`,
       );
     }
+  });
+});
+
+describe("set-in sleeve measurement anchors", () => {
+  const measurements = {
+    ...BASE,
+    bustInches: 40,
+    hipInches: 40,
+  };
+
+  it("adds upper arm, cuff circumference, and sleeve length targets beside the body", () => {
+    const svg = buildSleevelessEditMeasurementDiagramSvg({
+      measurements,
+      includeSetInSleeveMeasurements: true,
+    });
+    expect(svg).toContain('data-set-in-sleeve-measurements="true"');
+    expect(svg).toContain(`id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
+    expect(svg).toContain(`id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffCircumference}"`);
+    expect(svg).toContain(`id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength}"`);
+  });
+
+  it("leaves the sleeveless body diagram without sleeve targets", () => {
+    const svg = buildSleevelessEditMeasurementDiagramSvg({ measurements });
+    expect(svg).not.toContain('data-set-in-sleeve-measurements="true"');
+    expect(svg).not.toContain(`id="${PATTERN_SUMMARY_MEASUREMENT_TARGETS.upperArm}"`);
   });
 });

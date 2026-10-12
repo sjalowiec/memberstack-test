@@ -505,6 +505,20 @@ describe("sleeve ease and rejected measurements", () => {
     }
   });
 
+  it("uses a finished upper arm as given and does not add sleeve ease again", () => {
+    const chart = calculateSetInSleeveCap(misses7);
+    const custom = calculateSetInSleeveCap({ ...misses7, finishedUpperArmInches: 16 });
+    expect(chart.ok).toBe(true);
+    expect(custom.ok).toBe(true);
+    if (!chart.ok || !custom.ok) return;
+    expect(custom.sleeve.finishedUpperArmInches).toBe(16);
+    expect(custom.sleeve.upperArmEaseInches).toBe(0);
+    expect(custom.sleeve.upperArmStitches).toBe(112);
+    expect(custom.sleeve.upperArmStitches).not.toBe(chart.sleeve.upperArmStitches);
+    expect(custom.armhole.bodyStitchesAtUnderarm).toBe(chart.armhole.bodyStitchesAtUnderarm);
+    expect(custom.totals.capRows).not.toBe(chart.totals.capRows);
+  });
+
   it("rejects children and babies", () => {
     for (const chartAudience of ["kids", "baby"]) {
       const result = calculateSetInSleeveCap({ ...misses7, chartAudience });

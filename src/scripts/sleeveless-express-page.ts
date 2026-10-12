@@ -102,6 +102,14 @@ import {
 } from "../lib/patterns/setInSleeveSizeCharts";
 import { SET_IN_SLEEVE_CONSTRUCTION } from "../lib/patterns/setInSleeveConstructionIdentity";
 import {
+  expressWhoForSetInSleeveChart,
+  pinSetInSleeveWizardValuesToLockedSize,
+  readSetInSleeveGeneratedSizeLockFromDraft,
+  setInSleeveLockedSizeChangeAllowed,
+  stampSetInSleeveGeneratedSizeLock,
+  syncSetInSleeveGeneratedSizeLockUi,
+} from "../lib/patterns/setInSleeveSizeLock";
+import {
   buildDropShoulderReviewDisplayIdentity,
   markDropShoulderReviewDiagramDirtyIfDisplayIdentityChanged,
 } from "../lib/patterns/dropShoulderReviewDiagramRefresh";
@@ -270,6 +278,9 @@ function initExpressPage() {
   omitUnsupportedSetInSleeveWho(values, {
     editingSavedProject: isEditingSavedCustomPatternProject(),
   });
+  if (expressPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION) {
+    pinSetInSleeveWizardValuesToLockedSize(values);
+  }
 
   let openStepCandidate =
     typeof persisted?.openStep === "number" && Number.isFinite(persisted.openStep)
@@ -676,8 +687,14 @@ function initExpressPage() {
     return true;
   }
 
+  function setInSleeveGeneratedSizeIsLocked(): boolean {
+    if (expressPageConstruction() !== SET_IN_SLEEVE_CONSTRUCTION) return false;
+    return readSetInSleeveGeneratedSizeLockFromDraft().locked;
+  }
+
   /** Size list/select is interactive on step 1 after a Who choice. */
   function canInteractWithSizeStep(): boolean {
+    if (setInSleeveGeneratedSizeIsLocked()) return false;
     if (editChoicesReopen && openStep === 1 && values.who) return true;
     return keepWhoSizeClusterExpanded();
   }
@@ -701,11 +718,19 @@ function initExpressPage() {
   function refreshExpressWhoSizePanel(): void {
     const root = resolveExpressBuilderRoot();
     if (!root) return;
+    if (expressPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION) {
+      pinSetInSleeveWizardValuesToLockedSize(values);
+    }
     refreshExpressSizePanel(root, values, canInteractWithSizeStep());
+    if (expressPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION) {
+      pinSetInSleeveWizardValuesToLockedSize(values);
+      syncSetInSleeveGeneratedSizeLockUi(root);
+    }
   }
 
   /** Clears size only — uses same {@link maxReachableFromChoices} / accordion unlock rules as {@link selectExpressSize}. */
   function clearExpressSelectedSize(): void {
+    if (setInSleeveGeneratedSizeIsLocked()) return;
     if (!nonEmptyTrimmed(values.selectedSize)) return;
     delete values.selectedSize;
     clearAllLockedFeedback();
@@ -753,6 +778,14 @@ function initExpressPage() {
     if (!field || value == null) return;
 
     if (field === "who") {
+      if (setInSleeveGeneratedSizeIsLocked()) {
+        const lock = readSetInSleeveGeneratedSizeLockFromDraft();
+        const currentWho = expressWhoForSetInSleeveChart(lock.chartAudience) || values.who || "";
+        if (value.trim().toLowerCase() !== currentWho.trim().toLowerCase()) {
+          refreshExpressWhoSizePanel();
+          return;
+        }
+      }
       if (
         interceptBlockedExpressWhoChange(
           audienceLockHost instanceof HTMLElement ? audienceLockHost : null,
@@ -812,6 +845,13 @@ function initExpressPage() {
   function selectExpressSize(sizeValue: string): void {
     const trimmed = String(sizeValue).trim();
     if (!trimmed) return;
+    if (setInSleeveGeneratedSizeIsLocked()) {
+      const lock = readSetInSleeveGeneratedSizeLockFromDraft();
+      if (!setInSleeveLockedSizeChangeAllowed(lock.selectedSize, trimmed)) {
+        refreshExpressWhoSizePanel();
+        return;
+      }
+    }
     if (!canInteractWithSizeStep()) return;
     const aud = expressWhoToChartAudience(values.who);
     if (!isValidExpressSizeForAudience(aud, trimmed)) return;
@@ -1137,6 +1177,9 @@ function initExpressPage() {
         persistExpressSession();
         persistExpressBuilderState(values, chartFit);
         persistExpressSession();
+        if (expressPageConstruction() === SET_IN_SLEEVE_CONSTRUCTION) {
+          stampSetInSleeveGeneratedSizeLock();
+        }
 
         const baseWorkspaceHref =
           document

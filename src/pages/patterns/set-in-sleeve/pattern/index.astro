@@ -150,7 +150,7 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
 
     <!--
       Edit Pattern workspace — ONE combined editing surface (full-width app shell).
-      Left column: quick edits (Size, Front Style, Neckline, Gauge, Needles).
+      Left column: quick edits (Front Style, Neckline, Gauge, Needles). Size stays in the pattern summary.
       Right column: the reused Custom Build measurement editor SVG — visible immediately,
       no separate "Edit Measurements" click.
     -->
@@ -208,16 +208,6 @@ import "../../../../styles/patterns/pattern-errata-notice.css";
                   Quick edits
                   <PatternEditablePencilIcon />
                 </h3>
-
-                <div class="sl-edit-field">
-                  <label class="sl-edit-sublabel" for="sl-edit-size">Size</label>
-                  <select id="sl-edit-size" class="sl-edit-input sl-edit-select" data-sl-edit-size>
-                    <option value="">Loading sizes…</option>
-                  </select>
-                  <p class="sl-edit-ease">
-                    Changing the size updates the pattern measurements automatically.
-                  </p>
-                </div>
 
                 <fieldset class="sl-edit-field sl-edit-fieldset">
                   <legend class="sl-edit-sublabel">Front style</legend>

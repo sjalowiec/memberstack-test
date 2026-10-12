@@ -16,9 +16,7 @@ import {
 import {
   CONSTRUCTION_AUTHORED_KEY,
   CONSTRUCTION_FAMILY_OVERRIDE_KEY,
-  DROP_SHOULDER_SLEEVE_LENGTH_CHOICES,
   normalizeDropShoulderSleeveLengthChoice,
-  type DropShoulderSleeveLengthChoice,
 } from "./patternConstructionIdentity";
 
 export const SET_IN_SLEEVE_CONSTRUCTION = "set-in-sleeve";
@@ -26,8 +24,18 @@ export const SET_IN_SLEEVE_CONSTRUCTION = "set-in-sleeve";
 /** Permanent sleeve direction for this builder. Not a knitter-facing choice. */
 export const SET_IN_SLEEVE_DIRECTION = "cuff-up" as const;
 
-export const SET_IN_SLEEVE_LENGTH_CHOICES = DROP_SHOULDER_SLEEVE_LENGTH_CHOICES;
-export type SetInSleeveLengthChoice = DropShoulderSleeveLengthChoice;
+/**
+ * Same choices as Drop Shoulder's sleeve-length picker. Copied here so this
+ * module can finish loading while `patternConstructionIdentity` is still
+ * initializing (Vite dev hits that cycle).
+ */
+export const SET_IN_SLEEVE_LENGTH_CHOICES = [
+  "long",
+  "three-quarter",
+  "elbow",
+  "short",
+] as const;
+export type SetInSleeveLengthChoice = (typeof SET_IN_SLEEVE_LENGTH_CHOICES)[number];
 
 export function withSetInSleeveConstructionAuthored(
   style: Record<string, unknown>,
