@@ -174,7 +174,7 @@ describe("Drop Shoulder sleeve diagram presentation", () => {
       "utf8",
     );
     const mountStart = pageScript.indexOf("async function renderDropShoulderMount");
-    const mountEnd = pageScript.indexOf("async function renderMount(");
+    const mountEnd = pageScript.indexOf("function setInSleeveDiagramAltForMode");
     const mount = pageScript.slice(
       mountStart,
       mountEnd > mountStart ? mountEnd : mountStart + 12000,

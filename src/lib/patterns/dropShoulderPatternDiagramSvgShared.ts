@@ -872,20 +872,23 @@ export function wrapGeneratedDiagramSvg(attrs: {
   dataAttrs: Record<string, string | number>;
   title: string;
   body: string;
+  /** Defaults to the Drop Shoulder canvas. Set-in sleeve grows this when the cap has more labels. */
+  viewBoxHeight?: number;
 }): string {
+  const height = attrs.viewBoxHeight && attrs.viewBoxHeight > 0 ? attrs.viewBoxHeight : DS_VB_H;
   const data = Object.entries(attrs.dataAttrs)
     .map(([k, v]) => ` ${k}="${escapeXml(String(v))}"`)
     .join("");
   const safeBody = attrs.body.replace(/\bNaN\b/g, "0").replace(/\bInfinity\b/g, "0");
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${DS_VB_H}"` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${DS_VB_W} ${fmtNum(height)}"` +
     ` width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img"` +
     ` aria-label="${escapeXml(attrs.ariaLabel)}"` +
     ` class="${escapeXml(attrs.className)}"` +
     data +
     `>` +
     `<title>${escapeXml(attrs.title)}</title>` +
-    `<rect x="0" y="0" width="${DS_VB_W}" height="${DS_VB_H}" fill="#fff"/>` +
+    `<rect x="0" y="0" width="${DS_VB_W}" height="${fmtNum(height)}" fill="#fff"/>` +
     safeBody +
     `</svg>`
   );

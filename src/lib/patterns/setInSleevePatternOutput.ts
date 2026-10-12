@@ -54,6 +54,16 @@ export type SetInSleevePatternResult = SleevelessBackPatternResult & {
   /** Cuff-up sleeve counts already used for the written sleeve. Null when the cap could not be calculated. */
   sleevePiece: DropShoulderSleevePieceNumbers | null;
   /**
+   * Finished inches already used to build the sleeve piece. Diagram labels only.
+   * Null when the sleeve could not be calculated.
+   */
+  sleeveFinishedInches: {
+    wristInches?: number;
+    cuffDepthInches?: number;
+    /** Cuff-to-upper-arm length. Sleeve-cap height is not included. */
+    sleeveLengthInches?: number;
+  } | null;
+  /**
    * Set when the armhole, sleeve cap, or sleeve taper cannot be knitted.
    * A body/cap bind-off mismatch stays a warning and does not set this.
    */
@@ -360,6 +370,7 @@ export function generateSetInSleevePattern(
 
   let sleeveCap: SetInSleeveCapSuccess | null = null;
   let sleevePiece: DropShoulderSleevePieceNumbers | null = null;
+  let sleeveFinishedInches: SetInSleevePatternResult["sleeveFinishedInches"] = null;
   let sleeveDisplayRows: SleevelessPatternDisplayRow[] = [];
   let sleeveSaveBlocker: string | null = plan
     ? null
@@ -384,6 +395,13 @@ export function generateSetInSleevePattern(
       }
     }
     const cuffInches = getDefaultCuffLengthInches(chartAudience);
+    sleeveFinishedInches = {
+      ...(typeof sleeveInches.wristIn === "number" ? { wristInches: sleeveInches.wristIn } : {}),
+      cuffDepthInches: cuffInches,
+      ...(typeof sleeveInches.sleeveLengthIn === "number"
+        ? { sleeveLengthInches: sleeveInches.sleeveLengthIn }
+        : {}),
+    };
     sleevePiece = calculateDropShoulderSleevePieceNumbers({
       finishedUpperArmInches: cap.sleeve.finishedUpperArmInches,
       finishedWristInches: sleeveInches.wristIn,
@@ -453,6 +471,7 @@ export function generateSetInSleevePattern(
     overviewRows,
     sleeveCap,
     sleevePiece,
+    sleeveFinishedInches,
     sleeveSaveBlocker,
   };
 }

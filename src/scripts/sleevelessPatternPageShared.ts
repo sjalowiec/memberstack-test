@@ -4084,16 +4084,19 @@ table {
     const hydrateGen =
       hydrateGeneration === undefined || hydrateGeneration === null ? null : String(hydrateGeneration);
     if (hydrateGen) host.dataset.sleevelessHydrateGen = hydrateGen;
+    const finished = result?.sleeveFinishedInches;
+    const diagramInput = {
+      sleevePiece: result?.sleevePiece,
+      sleeveCap: result?.sleeveCap,
+      unit: setInSleeveDiagramHydrateContext?.unit === "cm" ? "cm" : "in",
+      wristInches: finished?.wristInches,
+      cuffDepthInches: finished?.cuffDepthInches,
+      sleeveLengthInches: finished?.sleeveLengthInches,
+    };
     const svg =
       mode === "shaping-notation"
-        ? tryBuildSetInSleeveShapingNotationSvg({
-            sleevePiece: result?.sleevePiece,
-            sleeveCap: result?.sleeveCap,
-          })
-        : tryBuildSetInSleeveStitchesRowsSvg({
-            sleevePiece: result?.sleevePiece,
-            sleeveCap: result?.sleeveCap,
-          });
+        ? tryBuildSetInSleeveShapingNotationSvg(diagramInput)
+        : tryBuildSetInSleeveStitchesRowsSvg(diagramInput);
     const alt = setInSleeveDiagramAltForMode(mode);
     if (svg && mountDropShoulderStsRowsSvgMarkup(host, svg, hydrateGen, alt)) return;
     if (hydrateGen && host.dataset.sleevelessHydrateGen !== hydrateGen) return;
