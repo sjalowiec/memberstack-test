@@ -215,8 +215,9 @@ export function setInSleeveCapNotationLines(cap: SetInSleeveCapSuccess): string[
 }
 
 /**
- * Cap outline widths. A phase is subdivided only when its stored steps add up
- * to that phase's stored row count and stitch count.
+ * Cap outline in knitting order. Bind-offs step in at the current row, then
+ * rise. Decrease zones slope across their stored steps. The last point is the
+ * final top width.
  */
 export function setInSleeveCapOutlineMarks(
   cap: SetInSleeveCapSuccess,
@@ -224,25 +225,55 @@ export function setInSleeveCapOutlineMarks(
   const marks = [{ rowsFromCapStart: 0, stitches: cap.sleeve.upperArmStitches }];
   let rows = 0;
   let stitches = cap.sleeve.upperArmStitches;
+  const inset = (nextStitches: number) => {
+    if (nextStitches === stitches) return;
+    stitches = nextStitches;
+    marks.push({ rowsFromCapStart: rows, stitches });
+  };
+  const rise = (nextRows: number) => {
+    if (nextRows === rows) return;
+    rows = nextRows;
+    marks.push({ rowsFromCapStart: rows, stitches });
+  };
+  const slope = (nextRows: number, nextStitches: number) => {
+    if (nextRows === rows && nextStitches === stitches) return;
+    rows = nextRows;
+    stitches = nextStitches;
+    marks.push({ rowsFromCapStart: rows, stitches });
+  };
   for (const phase of cap.phases) {
     if (phase.kind === "top-bind-off") {
-      marks.push({ rowsFromCapStart: rows, stitches: phase.stitches });
+      inset(phase.stitches);
+      continue;
+    }
+    if (phase.kind === "underarm-bind-off" || phase.kind === "stair-step-bind-off") {
+      inset(phase.stitchesAfter);
+      rise(rows + phase.rows);
+      continue;
+    }
+    if (phase.kind === "decrease-zone") {
+      const steps = subdividedPhase(phase, stitches);
+      const stepRows = steps.reduce((sum, step) => sum + step.rows, 0);
+      const endStitches = steps.length > 0 ? steps[steps.length - 1]!.stitches : stitches;
+      if (steps.length > 0 && stepRows === phase.rows && endStitches === phase.stitchesAfter) {
+        for (const step of steps) slope(rows + step.rows, step.stitches);
+        continue;
+      }
+      slope(rows + phase.rows, phase.stitchesAfter);
       continue;
     }
     const steps = subdividedPhase(phase, stitches);
     const stepRows = steps.reduce((sum, step) => sum + step.rows, 0);
     const endStitches = steps.length > 0 ? steps[steps.length - 1]!.stitches : stitches;
     if (steps.length > 0 && stepRows === phase.rows && endStitches === phase.stitchesAfter) {
-      for (const step of steps) {
-        rows += step.rows;
-        stitches = step.stitches;
-        marks.push({ rowsFromCapStart: rows, stitches });
+      for (const step of phase.steps) {
+        inset(stitches - 2 * step.stitchesEachSide);
+        rise(rows + step.rows);
       }
+      rise(rows + phase.plainRows);
       continue;
     }
-    rows += phase.rows;
-    stitches = phase.stitchesAfter;
-    marks.push({ rowsFromCapStart: rows, stitches });
+    slope(rows + phase.rows, phase.stitchesAfter);
   }
   return marks;
 }
@@ -375,6 +406,8 @@ type SleeveFrame = {
   upperRight: number;
   topLeft: number;
   topRight: number;
+  /** Cap edge from the underarm upward, including bind-off steps and decrease slopes. */
+  capEdge: { y: number; left: number; right: number }[];
 };
 
 function sleeveCanvas(model: SetInSleeveDiagramModel): { height: number; cuffH: number; bodyH: number; capH: number } {
@@ -408,32 +441,52 @@ function buildSleeveFrame(model: SetInSleeveDiagramModel): SleeveFrame {
   const wristW = widthForStitches(model.wristStitches, maxSts);
   const upperW = widthForStitches(model.upperArmStitches, maxSts);
   const topW = widthForStitches(model.topStitches, maxSts);
+  const capStartY = wristY - cuffH - bodyH;
+  const capTopY = capStartY - capH;
+  const capRows = Math.max(1, model.capRows);
+  const capEdge = model.capMarks.map((mark) => {
+    const t = Math.max(0, Math.min(1, mark.rowsFromCapStart / capRows));
+    const width = widthForStitches(mark.stitches, maxSts);
+    return {
+      y: capStartY - t * (capStartY - capTopY),
+      left: midX - width / 2,
+      right: midX + width / 2,
+    };
+  });
   return {
     midX,
     wristY,
     cuffJoinY: wristY - cuffH,
-    capStartY: wristY - cuffH - bodyH,
-    capTopY: wristY - cuffH - bodyH - capH,
+    capStartY,
+    capTopY,
     wristLeft: midX - wristW / 2,
     wristRight: midX + wristW / 2,
     upperLeft: midX - upperW / 2,
     upperRight: midX + upperW / 2,
     topLeft: midX - topW / 2,
     topRight: midX + topW / 2,
+    capEdge,
     canvasHeight: canvas.height,
   };
 }
 
-/** Overview silhouette: cuff, tapered body, and cap. Not every shaping step. */
+/** Cuff, tapered body, and the calculated cap. No shaping tokens. */
 function sleeveOutlinePath(frame: SleeveFrame): string {
+  const edge = frame.capEdge.length > 0 ? frame.capEdge : [{
+    y: frame.capStartY,
+    left: frame.upperLeft,
+    right: frame.upperRight,
+  }, {
+    y: frame.capTopY,
+    left: frame.topLeft,
+    right: frame.topRight,
+  }];
   const pts: Pt[] = [
     { x: frame.wristLeft, y: frame.wristY },
     { x: frame.wristRight, y: frame.wristY },
     { x: frame.wristRight, y: frame.cuffJoinY },
-    { x: frame.upperRight, y: frame.capStartY },
-    { x: frame.topRight, y: frame.capTopY },
-    { x: frame.topLeft, y: frame.capTopY },
-    { x: frame.upperLeft, y: frame.capStartY },
+    ...edge.map((point) => ({ x: point.right, y: point.y })),
+    ...[...edge].reverse().map((point) => ({ x: point.left, y: point.y })),
     { x: frame.wristLeft, y: frame.cuffJoinY },
   ];
   return `${pts
@@ -454,12 +507,30 @@ function sideX(frame: SleeveFrame, y: number, side: "left" | "right"): number {
       frame.wristRight + (frame.upperRight - frame.wristRight) * t,
     );
   }
-  const span = frame.capStartY - frame.capTopY || 1;
-  const t = Math.max(0, Math.min(1, (frame.capStartY - y) / span));
-  return pick(
-    frame.upperLeft + (frame.topLeft - frame.upperLeft) * t,
-    frame.upperRight + (frame.topRight - frame.upperRight) * t,
-  );
+  return capEdgeX(frame, y, side);
+}
+
+function capEdgeX(frame: SleeveFrame, y: number, side: "left" | "right"): number {
+  const edge = frame.capEdge;
+  if (edge.length === 0) return side === "left" ? frame.topLeft : frame.topRight;
+  const xOf = (point: { left: number; right: number }) => (side === "left" ? point.left : point.right);
+  const outermost = (a: number, b: number) => (side === "right" ? Math.max(a, b) : Math.min(a, b));
+  if (y >= edge[0]!.y) return xOf(edge[0]!);
+  const last = edge[edge.length - 1]!;
+  if (y <= last.y) return xOf(last);
+  for (let index = 0; index < edge.length - 1; index += 1) {
+    const start = edge[index]!;
+    const end = edge[index + 1]!;
+    const high = Math.max(start.y, end.y);
+    const low = Math.min(start.y, end.y);
+    if (y > high + 0.01 || y < low - 0.01) continue;
+    if (Math.abs(start.y - end.y) < 0.01) return outermost(xOf(start), xOf(end));
+    const t = (high - y) / (high - low);
+    const highPoint = start.y >= end.y ? start : end;
+    const lowPoint = start.y >= end.y ? end : start;
+    return xOf(highPoint) + (xOf(lowPoint) - xOf(highPoint)) * t;
+  }
+  return xOf(last);
 }
 
 function bodyNotationFrame(frame: SleeveFrame): DropShoulderSleeveDiagramFrame {
@@ -777,7 +848,7 @@ function capNotationLabels(model: SetInSleeveDiagramModel, frame: SleeveFrame): 
       event.placement === "each-edge" ? ["left", "right"] : ["right"];
     for (const side of sides) {
       const at = outsideLabel(frame, y, event.text, side);
-      const both = event.placement === "both-edges" ? ` data-both-edges="true" data-edge-scope="both"` : "";
+      const both = event.placement === "both-edges" ? ` data-both-edges="true"` : "";
       labels.push({
         role: event.kind === "upper-slope" && event.text.endsWith("r") ? "cap-row-span" : "cap-shaping",
         text: event.text,

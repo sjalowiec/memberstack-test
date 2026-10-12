@@ -206,6 +206,14 @@ type DiagramText = {
   rowCounter: number | null;
 };
 
+function expectUniqueAttributes(svg: string) {
+  const tags = svg.match(/<[^>]+>/g) ?? [];
+  for (const tag of tags) {
+    const names = [...tag.matchAll(/\s([A-Za-z_:][\w:.-]*)=/g)].map((match) => match[1]!);
+    expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([]);
+  }
+}
+
 function diagramAttr(svg: string, name: string): string {
   return svg.match(new RegExp(`${name}="([^"]*)"`))?.[1] ?? "";
 }
@@ -307,6 +315,37 @@ describe("set-in sleeve diagram presentation", () => {
     expect(sts).toContain('width="100%"');
     expect(sts).toContain('preserveAspectRatio="xMidYMid meet"');
     expect(sts).not.toMatch(/\bNaN\b/);
+    expectUniqueAttributes(sts);
+    expectUniqueAttributes(shaping);
+  });
+
+  it("draws the calculated cap steps instead of a straight trapezoid", () => {
+    const result = generateSetInSleevePattern(
+      pattern({ audience: "misses", row: MISSES_7, stitchesPerInch: 5, rowsPerInch: 7 }),
+    );
+    const model = buildSetInSleeveDiagramModel(diagramInputFor(result))!;
+    const cap = result.sleeveCap!;
+    const underarm = cap.phases[0]!;
+    expect(underarm.kind).toBe("underarm-bind-off");
+    expect(model.capMarks[0]).toEqual({ rowsFromCapStart: 0, stitches: cap.sleeve.upperArmStitches });
+    expect(model.capMarks[1]).toEqual({
+      rowsFromCapStart: 0,
+      stitches: underarm.kind === "underarm-bind-off" ? underarm.stitchesAfter : 0,
+    });
+    expect(model.capMarks[model.capMarks.length - 1]).toEqual({
+      rowsFromCapStart: cap.totals.capRows,
+      stitches: cap.totals.finalStitches,
+    });
+    const sts = tryBuildSetInSleeveStitchesRowsSvg(diagramInputFor(result))!;
+    const path = sts.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1] ?? "";
+    const points = [...path.matchAll(/[ML] ([-\d.]+) ([-\d.]+)/g)].map((match) => ({
+      x: Number(match[1]),
+      y: Number(match[2]),
+    }));
+    const capStartY = Number(diagramAttr(sts, "data-cap-start-y"));
+    const atUnderarm = points.filter((point) => Math.abs(point.y - capStartY) < 0.05 && point.x > 215);
+    expect(new Set(atUnderarm.map((point) => point.x)).size).toBeGreaterThan(1);
+    expect(diagramTexts(sts).some((node) => /^(?:bo\d+|1s-)/.test(node.text))).toBe(false);
   });
 
   it("places Japanese notation from the underarm bind-off upward to the final bind-off", () => {
