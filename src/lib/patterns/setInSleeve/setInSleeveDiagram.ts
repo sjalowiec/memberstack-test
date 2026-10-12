@@ -5,6 +5,10 @@
  * Shaping Notation places the same cuff-up schedule from the wrist upward.
  * Widths, row spans, and notation text come from those results. This module
  * does not size the sleeve or change the written instructions.
+ *
+ * The outline uses one scale for width and height, taken from the finished
+ * inches: cuff depth, cuff-to-upper-arm body (sleeve length minus cuff), and
+ * sleeve-cap height. Labels sit outside that shape.
  */
 
 import type { DropShoulderSleevePieceNumbers } from "../dropShoulderSleevePieceNumbers";
@@ -20,18 +24,16 @@ import {
 import type { DropShoulderSleeveDiagramFrame } from "../dropShoulderSleeveDiagramSvgShared";
 import {
   DS_ARROW,
-  DS_BODY_MAX_H,
   DS_BODY_MAX_W,
   DS_FILL,
   DS_FONT,
   DS_FS_TITLE,
   DS_FW_TITLE,
-  DS_MIN_SECTION,
   DS_MUTED,
   DS_PAD_BOTTOM,
+  DS_PAD_LEFT,
   DS_PAD_TOP,
   DS_STROKE,
-  DS_VB_H,
   DS_VB_W,
   endCap,
   escapeXml,
@@ -45,11 +47,12 @@ import {
   dropShoulderNotationFontFace,
 } from "../dropShoulderShapingNotationDiagramShared";
 
-/** One column of cap labels. 17px type needs this much baseline room so the ink boxes clear. */
-const CAP_NOTATION_GAP = DS_FS_NOTATION + 7;
+/** Same-side notation needs this much baseline room. Extra columns sit outside the sleeve. */
+const NOTATION_GAP = DS_FS_NOTATION + 7;
 import {
   placeShapingNotationRcLandmarks,
   renderShapingNotationRcLeaders,
+  type PlacedShapingNotationRcLeader,
   type ShapingNotationRcLeaderBox,
   type ShapingNotationRcLeaderLandmark,
 } from "../legoBlocks/shapingNotationRcLeaders";
@@ -85,6 +88,11 @@ export type SetInSleeveDiagramModel = {
   capRows: number;
   capHeightInches: number;
   upperArmInches: number;
+  /** Finished inches that set the outline. Body length excludes the cuff. */
+  wristInches: number;
+  topWidthInches: number;
+  cuffDepthInches: number;
+  sleeveBodyInches: number;
   wristWidthLabel: string;
   upperArmWidthLabel: string;
   topWidthLabel: string;
@@ -336,9 +344,18 @@ export function buildSetInSleeveDiagramModel(input: {
   const steps = plan.steps
     .filter((step) => step.times > 0 && step.rows > 0)
     .map((step) => ({ stitches: step.sts, rows: step.rows, times: step.times }));
-  const wristInches = storedInches(input.wristInches);
-  const cuffDepthInches = storedInches(input.cuffDepthInches);
-  const bodyInches = sleeveBodyLengthInches(input.sleeveLengthInches, input.cuffDepthInches);
+  const upperArmInches = storedInches(cap.sleeve.finishedUpperArmInches) ?? 1;
+  const capHeightInches = storedInches(cap.totals.capHeightInches) ?? 1;
+  const stitchesPerInch = piece.topSts / upperArmInches;
+  const rowsPerInch = cap.totals.capRows / capHeightInches;
+  const wristInches = storedInches(input.wristInches) ?? piece.wristSts / stitchesPerInch;
+  const cuffDepthInches =
+    storedInches(input.cuffDepthInches) ?? (rowsPerInch > 0 ? piece.cuffRows / rowsPerInch : 0);
+  const bodyInches =
+    sleeveBodyLengthInches(input.sleeveLengthInches, cuffDepthInches) ??
+    (rowsPerInch > 0 ? piece.sleeveBodyRows / rowsPerInch : 1);
+  const topWidthInches =
+    storedInches(cap.totals.finalWidthInches) ?? cap.totals.finalStitches / stitchesPerInch;
   return {
     unit,
     wristStitches: piece.wristSts,
@@ -347,8 +364,12 @@ export function buildSetInSleeveDiagramModel(input: {
     cuffRows: piece.cuffRows,
     sleeveBodyRows: piece.sleeveBodyRows,
     capRows: cap.totals.capRows,
-    capHeightInches: cap.totals.capHeightInches,
-    upperArmInches: cap.sleeve.finishedUpperArmInches,
+    capHeightInches,
+    upperArmInches,
+    wristInches,
+    topWidthInches,
+    cuffDepthInches,
+    sleeveBodyInches: bodyInches,
     wristWidthLabel: formatStitchesRowsDiagramLabel(
       piece.wristSts,
       "sts",
@@ -410,45 +431,51 @@ type SleeveFrame = {
   capEdge: { y: number; left: number; right: number }[];
 };
 
-function sleeveCanvas(model: SetInSleeveDiagramModel): { height: number; cuffH: number; bodyH: number; capH: number } {
-  const cuff = Math.max(0, model.cuffRows);
-  const body = Math.max(1, model.sleeveBodyRows);
-  const cap = Math.max(1, model.capRows);
-  const total = cuff + body + cap;
-  const raw = (rows: number) => (rows / total) * DS_BODY_MAX_H;
-  const sideLabels = model.capEvents.filter((event) => event.placement !== "center").length;
-  const cuffH = cuff > 0 ? Math.max(DS_MIN_SECTION * 2.4, raw(cuff)) : 0;
-  const bodyH = Math.max(DS_MIN_SECTION * 5, raw(body));
-  const capH = Math.max(DS_MIN_SECTION * 6.5, raw(cap), sideLabels * CAP_NOTATION_GAP + 44);
-  const height = Math.max(DS_VB_H, Math.ceil(DS_PAD_TOP + cuffH + bodyH + capH + DS_PAD_BOTTOM));
-  return { height, cuffH, bodyH, capH };
+/**
+ * One pixel scale for every finished inch. The upper arm fills the drawing
+ * column; cuff, body, and cap then take their own inch heights. Sleeve length
+ * is the cuff plus the body, so the cuff is not added again.
+ */
+function sleeveScale(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): {
+  pxPerInch: number;
+  cuffH: number;
+  bodyH: number;
+  capH: number;
+  height: number;
+} {
+  const pxPerInch = DS_BODY_MAX_W / Math.max(model.upperArmInches, 0.25);
+  const cuffH = Math.max(0, model.cuffDepthInches) * pxPerInch;
+  const bodyH = Math.max(model.sleeveBodyInches, 0.25) * pxPerInch;
+  const capH = Math.max(model.capHeightInches, 0.25) * pxPerInch;
+  const height = Math.ceil(padTop + capH + bodyH + cuffH + DS_PAD_BOTTOM);
+  return { pxPerInch, cuffH, bodyH, capH, height };
 }
 
-function widthForStitches(stitches: number, maxStitches: number): number {
-  const minW = DS_BODY_MAX_W * 0.32;
-  const maxW = DS_BODY_MAX_W;
-  if (!(maxStitches > 0)) return maxW;
-  const t = Math.max(0, Math.min(1, stitches / maxStitches));
-  return minW + (maxW - minW) * t;
+/** Width between the upper arm and the top of the cap, in finished inches. */
+function widthInchesForStitches(model: SetInSleeveDiagramModel, stitches: number): number {
+  const span = model.upperArmStitches - model.topStitches;
+  if (Math.abs(span) < 0.001) return model.topWidthInches;
+  const t = (model.upperArmStitches - stitches) / span;
+  const clamped = Math.max(0, Math.min(1, t));
+  return model.upperArmInches + (model.topWidthInches - model.upperArmInches) * clamped;
 }
 
-function buildSleeveFrame(model: SetInSleeveDiagramModel): SleeveFrame {
-  const midX = DS_VB_W / 2;
-  const canvas = sleeveCanvas(model);
-  const { cuffH, bodyH, capH } = canvas;
-  const wristY = canvas.height - DS_PAD_BOTTOM;
-  const maxSts = Math.max(model.wristStitches, model.upperArmStitches, model.topStitches, 1);
-  const wristW = widthForStitches(model.wristStitches, maxSts);
-  const upperW = widthForStitches(model.upperArmStitches, maxSts);
-  const topW = widthForStitches(model.topStitches, maxSts);
+function buildSleeveFrame(model: SetInSleeveDiagramModel, padTop = DS_PAD_TOP): SleeveFrame {
+  const midX = DS_PAD_LEFT + DS_BODY_MAX_W / 2;
+  const scale = sleeveScale(model, padTop);
+  const { cuffH, bodyH, capH, pxPerInch } = scale;
+  const wristY = scale.height - DS_PAD_BOTTOM;
+  const wristW = model.wristInches * pxPerInch;
+  const upperW = model.upperArmInches * pxPerInch;
+  const topW = model.topWidthInches * pxPerInch;
   const capStartY = wristY - cuffH - bodyH;
   const capTopY = capStartY - capH;
   const capRows = Math.max(1, model.capRows);
   const capEdge = model.capMarks.map((mark) => {
-    const t = Math.max(0, Math.min(1, mark.rowsFromCapStart / capRows));
-    const width = widthForStitches(mark.stitches, maxSts);
+    const rowsUp = Math.max(0, Math.min(capRows, mark.rowsFromCapStart));
+    const width = widthInchesForStitches(model, mark.stitches) * pxPerInch;
     return {
-      y: capStartY - t * (capStartY - capTopY),
+      y: capStartY - (rowsUp / capRows) * capH,
       left: midX - width / 2,
       right: midX + width / 2,
     };
@@ -466,7 +493,7 @@ function buildSleeveFrame(model: SetInSleeveDiagramModel): SleeveFrame {
     topLeft: midX - topW / 2,
     topRight: midX + topW / 2,
     capEdge,
-    canvasHeight: canvas.height,
+    canvasHeight: scale.height,
   };
 }
 
@@ -623,7 +650,8 @@ function verticalLength(
 }
 
 function drawOverview(frame: SleeveFrame): string {
-  const titleY = frame.capStartY + (frame.cuffJoinY - frame.capStartY) * 0.72;
+  const bodyH = frame.cuffJoinY - frame.capStartY;
+  const titleY = bodyH >= 70 ? frame.capStartY + bodyH * 0.58 : (frame.cuffJoinY + frame.wristY) / 2;
   return [
     `<path class="ds-sleeve-diagram__body" data-role="sleeve-outline" d="${sleeveOutlinePath(frame)}" fill="${DS_FILL}" stroke="${DS_STROKE}" stroke-width="1.75" stroke-linejoin="round"/>`,
     `<line data-role="cuff-join" x1="${fmtNum(frame.wristLeft)}" y1="${fmtNum(frame.cuffJoinY)}" x2="${fmtNum(frame.wristRight)}" y2="${fmtNum(frame.cuffJoinY)}" stroke="${DS_STROKE}" stroke-width="1.1" fill="none"/>`,
@@ -635,7 +663,8 @@ function drawOverview(frame: SleeveFrame): string {
 function drawStitchesRowsDimensions(frame: SleeveFrame, model: SetInSleeveDiagramModel): string {
   const wristLineY = frame.wristY + 20;
   const topLineY = frame.capTopY - 18;
-  const upperLineY = frame.capStartY + 28;
+  const bodyH = frame.cuffJoinY - frame.capStartY;
+  const upperLineY = frame.capStartY + Math.min(22, Math.max(8, bodyH * 0.18));
   const lengthX = frame.upperRight + 18;
   return [
     horizontalWidth(frame.wristLeft, frame.wristRight, wristLineY, wristLineY + 16, model.wristWidthLabel, "wrist-width"),
@@ -756,6 +785,18 @@ function dedupeRcMarks(marks: ShapingNotationRcLeaderLandmark[]): ShapingNotatio
   return kept;
 }
 
+function separateCloseRcLabels(placed: PlacedShapingNotationRcLeader[]): void {
+  const sorted = [...placed].sort((a, b) => a.labelY - b.labelY || a.priority - b.priority);
+  for (let index = 1; index < sorted.length; index += 1) {
+    const previous = sorted[index - 1]!;
+    const label = sorted[index]!;
+    if (Math.abs(label.labelX - previous.labelX) > 48) continue;
+    if (label.labelY - previous.labelY >= 22) continue;
+    label.labelY = previous.labelY + 22;
+    label.stacked = true;
+  }
+}
+
 function drawRcLandmarks(
   model: SetInSleeveDiagramModel,
   frame: SleeveFrame,
@@ -770,6 +811,7 @@ function drawRcLandmarks(
     obstacles,
     labelGap: 28,
   });
+  separateCloseRcLabels(placed);
   return renderShapingNotationRcLeaders({
     placed,
     fill: DS_MUTED,
@@ -805,29 +847,50 @@ function outsideLabel(
   return { x: Math.min(outline - 4, Math.max(preferred, minX)), anchor: "end" };
 }
 
-function spreadUpward(items: { y: number }[], minY: number, maxY: number, gap: number): void {
-  const sorted = [...items].sort((a, b) => b.y - a.y);
-  const n = sorted.length;
-  if (n === 0) return;
-  const room = Math.max(0, maxY - minY);
-  const useGap = n === 1 ? 0 : Math.min(gap, room / (n - 1));
-  sorted[0]!.y = Math.min(maxY, Math.max(minY, sorted[0]!.y));
-  for (let i = 1; i < n; i++) {
-    sorted[i]!.y = Math.min(sorted[i]!.y, sorted[i - 1]!.y - useGap);
+/**
+ * Keep tokens in knitting order beside the sleeve. A token stays on its row
+ * when there is room. Crowded cap tokens step upward, outside the outline,
+ * instead of stretching the sleeve.
+ */
+function notationOrder(label: SleeveNotationLabel): string {
+  return `${label.role}:${label.extra.match(/data-knit-order="(\d+)"/)?.[1] ?? ""}`;
+}
+
+function stackSide(list: SleeveNotationLabel[]): void {
+  list.sort((a, b) => b.y - a.y);
+  let cursor = list[0]?.y ?? 0;
+  for (let index = 1; index < list.length; index += 1) {
+    const label = list[index]!;
+    label.y = Math.min(label.y, cursor - NOTATION_GAP);
+    cursor = label.y;
   }
-  const top = sorted[n - 1]!;
-  if (top.y < minY) {
-    const shift = minY - top.y;
-    for (const item of sorted) item.y += shift;
+}
+
+function stackNotationBaselines(labels: SleeveNotationLabel[]): void {
+  const right = labels.filter((label) => label.anchor === "start");
+  const left = labels.filter((label) => label.anchor === "end");
+  stackSide(right);
+  const rightY = new Map<string, number>();
+  for (const label of right) {
+    const order = notationOrder(label);
+    if (order) rightY.set(order, label.y);
   }
-  if (sorted[0]!.y > maxY + 0.1 && n > 1) {
-    for (let i = 0; i < n; i++) sorted[i]!.y = maxY - (room * i) / (n - 1);
+  for (const label of left) {
+    const match = rightY.get(notationOrder(label));
+    if (match !== undefined) label.y = match;
+  }
+  const unmatched = left.filter((label) => !rightY.has(notationOrder(label)));
+  stackSide(unmatched);
+  const sideTop = Math.min(
+    ...labels.filter((label) => label.anchor !== "middle").map((label) => label.y),
+  );
+  for (const label of labels) {
+    if (label.role !== "cap-bind-off") continue;
+    label.y = Math.min(label.y, sideTop - NOTATION_GAP);
   }
 }
 
 function capNotationLabels(model: SetInSleeveDiagramModel, frame: SleeveFrame): SleeveNotationLabel[] {
-  const bandMin = frame.capTopY + 16;
-  const bandMax = frame.capStartY - 20;
   const sideEvents = model.capEvents
     .map((event, order) => ({ event, order }))
     .filter((item) => item.event.placement !== "center");
@@ -839,7 +902,6 @@ function capNotationLabels(model: SetInSleeveDiagramModel, frame: SleeveFrame): 
       y: frame.capStartY - t * (frame.capStartY - frame.capTopY),
     };
   });
-  spreadUpward(placed, bandMin, Math.max(bandMin, bandMax), CAP_NOTATION_GAP);
   const labels: SleeveNotationLabel[] = [];
   for (const item of placed) {
     const { event, order, y } = item;
@@ -913,9 +975,23 @@ function leftNotationObstacles(labels: readonly SleeveNotationLabel[]): ShapingN
     });
 }
 
+function notationLabelsFor(model: SetInSleeveDiagramModel, frame: SleeveFrame): SleeveNotationLabel[] {
+  const labels = [...bodyNotationLabels(model, frame), ...capNotationLabels(model, frame)];
+  stackNotationBaselines(labels);
+  return labels;
+}
+
+function frameForSleeve(model: SetInSleeveDiagramModel): SleeveFrame {
+  const probe = buildSleeveFrame(model);
+  const labels = notationLabelsFor(model, probe);
+  const top = Math.min(...labels.map((label) => label.y));
+  const overflow = Math.max(0, 18 - top);
+  return overflow > 0 ? buildSleeveFrame(model, DS_PAD_TOP + overflow) : probe;
+}
+
 function drawSleeveSvg(model: SetInSleeveDiagramModel, mode: "sts-rows" | "shaping-notation"): string {
-  const frame = buildSleeveFrame(model);
-  const notationLabels = mode === "shaping-notation" ? [...bodyNotationLabels(model, frame), ...capNotationLabels(model, frame)] : [];
+  const frame = frameForSleeve(model);
+  const notationLabels = mode === "shaping-notation" ? notationLabelsFor(model, frame) : [];
   const parts = [
     mode === "shaping-notation" ? dropShoulderNotationFontFace() : "",
     drawOverview(frame),
@@ -947,6 +1023,12 @@ function drawSleeveSvg(model: SetInSleeveDiagramModel, mode: "sts-rows" | "shapi
       "data-cuff-join-y": fmtNum(frame.cuffJoinY),
       "data-cap-start-y": fmtNum(frame.capStartY),
       "data-cap-top-y": fmtNum(frame.capTopY),
+      "data-cuff-depth-inches": fmtNum(model.cuffDepthInches),
+      "data-sleeve-body-inches": fmtNum(model.sleeveBodyInches),
+      "data-cap-height-inches": fmtNum(model.capHeightInches),
+      "data-wrist-inches": fmtNum(model.wristInches),
+      "data-upper-arm-inches": fmtNum(model.upperArmInches),
+      "data-top-width-inches": fmtNum(model.topWidthInches),
     },
     title,
     viewBoxHeight: frame.canvasHeight,

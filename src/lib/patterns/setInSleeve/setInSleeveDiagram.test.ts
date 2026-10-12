@@ -55,6 +55,7 @@ function pattern(options: {
   row: ChartRow;
   stitchesPerInch: number;
   rowsPerInch: number;
+  sleeveLength?: string;
 }): Record<string, unknown> {
   const measurements = computeDefaultMeasurementsFromChartRow(options.row, "standard", {
     bodyShape: "straight",
@@ -72,7 +73,7 @@ function pattern(options: {
         neckline: "round",
         bodyShape: "straight",
       },
-      "long",
+      options.sleeveLength ?? "long",
     ),
     yarnGaugeMachine: {
       gaugeStitchesPerInch: options.stitchesPerInch,
@@ -378,8 +379,16 @@ describe("set-in sleeve diagram presentation", () => {
       const group = byOrder.get(order)!;
       const y = group[0]!.y;
       expect(Math.max(...group.map((node) => node.y)) - Math.min(...group.map((node) => node.y))).toBeLessThan(0.05);
-      expect(previousY - y).toBeGreaterThanOrEqual(22);
+      expect(previousY).toBeGreaterThan(y);
       previousY = y;
+    }
+    for (const side of ["left", "right"]) {
+      const column = capNodes.filter((node) => node.side === side).sort((a, b) => b.y - a.y);
+      for (let i = 1; i < column.length; i++) {
+        const below = column[i - 1]!;
+        const above = column[i]!;
+        if (below.y - above.y < 20) expect(Math.abs(below.x - above.x)).toBeGreaterThan(12);
+      }
     }
 
     const left = capNodes.find((node) => node.kind === "underarm-bind-off" && node.side === "left")!;
@@ -457,5 +466,96 @@ describe("set-in sleeve diagram presentation", () => {
     expect(diagramTexts(shaping).find((node) => node.kind === "top-bind-off")?.y).toBeLessThan(
       diagramTexts(shaping).find((node) => node.kind === "underarm-bind-off")!.y,
     );
+    expectProportionalSleeve(sts, result);
+    expect(diagramAttr(sts, "data-sleeve-outline") || sts).toContain("sleeve-outline");
+    expect(sts.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1]).toBe(
+      shaping.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1],
+    );
+  });
+
+  it("draws a 17 inch sleeve body about 3.4 times a 5 inch cap, and keeps short sleeves in proportion", () => {
+    const longBody = generateSetInSleevePattern({
+      ...pattern({ audience: "misses", row: MISSES_7, stitchesPerInch: 5, rowsPerInch: 7 }),
+      fit: {
+        sizingChart: "misses",
+        easeChoice: "standard",
+        selectedMeasurements: computeDefaultMeasurementsFromChartRow(MISSES_7, "standard", {
+          bodyShape: "straight",
+        }),
+        cbMeasurementOverrides: { sleeveLength: "19" },
+        [DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]: { sleeveLength: true },
+      },
+    });
+    const bodyIn = longBody.sleeveFinishedInches!.sleeveLengthInches! - longBody.sleeveFinishedInches!.cuffDepthInches!;
+    const capIn = longBody.sleeveCap!.totals.capHeightInches;
+    expect(bodyIn).toBeCloseTo(17, 5);
+    const sts = tryBuildSetInSleeveStitchesRowsSvg(diagramInputFor(longBody))!;
+    const sections = sleeveSections(sts);
+    expect(sections.body / sections.cap).toBeCloseTo(bodyIn / capIn, 2);
+    expect(sections.body / sections.cap).toBeCloseTo((17 / 5) * (5 / capIn), 2);
+    expect(17 / 5).toBeCloseTo(3.4, 5);
+
+    const samples = [
+      pattern({ audience: "misses", row: MISSES_7, stitchesPerInch: 5, rowsPerInch: 7, sleeveLength: "long" }),
+      pattern({ audience: "misses", row: MISSES_7, stitchesPerInch: 5, rowsPerInch: 7, sleeveLength: "short" }),
+      pattern({ audience: "misses", row: MISSES_7, stitchesPerInch: 4, rowsPerInch: 6, sleeveLength: "long" }),
+      pattern({ audience: "men", row: MEN_4X, stitchesPerInch: 6, rowsPerInch: 8, sleeveLength: "short" }),
+      customSleevePattern(),
+    ];
+    for (const data of samples) {
+      const result = generateSetInSleevePattern(data);
+      const diagram = tryBuildSetInSleeveStitchesRowsSvg(diagramInputFor(result))!;
+      const shaping = tryBuildSetInSleeveShapingNotationSvg(diagramInputFor(result))!;
+      expectProportionalSleeve(diagram, result);
+      expect(diagram.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1]).toBe(
+        shaping.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1],
+      );
+    }
   });
 });
+
+function sleeveSections(svg: string) {
+  const wristY = Number(diagramAttr(svg, "data-wrist-y"));
+  const cuffJoinY = Number(diagramAttr(svg, "data-cuff-join-y"));
+  const capStartY = Number(diagramAttr(svg, "data-cap-start-y"));
+  const capTopY = Number(diagramAttr(svg, "data-cap-top-y"));
+  return {
+    cuff: wristY - cuffJoinY,
+    body: cuffJoinY - capStartY,
+    cap: capStartY - capTopY,
+  };
+}
+
+function groupWidth(svg: string, attr: string): number {
+  const group = svg.match(new RegExp(`data-${attr}="true">([\\s\\S]*?)</g>`));
+  const lines = [...(group?.[1] ?? "").matchAll(/<line\b[^>]*\bx1="([^"]+)"[^>]*\bx2="([^"]+)"/g)];
+  const widths = lines.map((line) => Math.abs(Number(line[2]) - Number(line[1])));
+  return Math.max(0, ...widths);
+}
+
+function expectProportionalSleeve(svg: string, result: ReturnType<typeof generateSetInSleevePattern>) {
+  const finished = result.sleeveFinishedInches!;
+  const cap = result.sleeveCap!;
+  const cuffIn = finished.cuffDepthInches!;
+  const bodyIn = finished.sleeveLengthInches! - cuffIn;
+  const capIn = cap.totals.capHeightInches;
+  const sections = sleeveSections(svg);
+  const pxPerInch = sections.body / bodyIn;
+  expect(sections.cuff / cuffIn).toBeCloseTo(pxPerInch, 1);
+  expect(sections.cap / capIn).toBeCloseTo(pxPerInch, 1);
+  expect(sections.cuff + sections.body).toBeCloseTo((cuffIn + bodyIn) * pxPerInch, 1);
+  const upperW = groupWidth(svg, "upper-arm-width");
+  const wristW = groupWidth(svg, "wrist-width");
+  const topW = groupWidth(svg, "cap-top-width");
+  expect(upperW / cap.sleeve.finishedUpperArmInches).toBeCloseTo(pxPerInch, 1);
+  expect(wristW / finished.wristInches!).toBeCloseTo(pxPerInch, 1);
+  expect(topW / cap.totals.finalWidthInches).toBeCloseTo(pxPerInch, 1);
+  const capStartY = Number(diagramAttr(svg, "data-cap-start-y"));
+  const path = svg.match(/data-role="sleeve-outline" d="([^"]+)"/)?.[1] ?? "";
+  const points = [...path.matchAll(/[ML] ([-\d.]+) ([-\d.]+)/g)].map((match) => ({
+    x: Number(match[1]),
+    y: Number(match[2]),
+  }));
+  const capRight = points.filter((point) => point.x > 220 && point.y <= capStartY + 0.2);
+  expect(new Set(capRight.map((point) => point.x.toFixed(1))).size).toBeGreaterThan(2);
+}
