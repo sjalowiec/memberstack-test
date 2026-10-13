@@ -62,6 +62,8 @@ export interface PlanRow {
   timeSource: string | null;
   timePreserved: boolean;
   eventAt: string | null;
+  previousTitle?: string | null;
+  emailSubject?: string | null;
   adminUrl: string | null;
   reason: string;
 }
@@ -96,10 +98,10 @@ function adminUrl(baseUrl: string, campaignId: string): string {
 }
 
 export function eventTitle(subject: string | null | undefined, name: string, id: string): string {
-  const subjectText = subject?.replace(/\s+/g, " ").trim();
-  if (subjectText) return subjectText;
   const nameText = name.replace(/\s+/g, " ").trim();
   if (nameText) return nameText;
+  const subjectText = subject?.replace(/\s+/g, " ").trim();
+  if (subjectText) return subjectText;
   return `Campaign ${id}`;
 }
 
@@ -388,10 +390,12 @@ export function buildSyncPlan(input: {
     const sameClock =
       existing?.start != null && Math.abs(existing.start.getTime() - decision.instant.getTime()) < 1000;
     const sameDay = existing?.startText?.slice(0, 10) === when.date;
+    const titleChanged = Boolean(existing) && existing?.summary !== title;
+    const timeChanged = Boolean(existing) && !sameClock && !sameDay;
     const changed =
       !existing ||
-      (!sameClock && !sameDay) ||
-      existing.summary !== title ||
+      timeChanged ||
+      titleChanged ||
       existing.colorId !== decision.colorId ||
       existing.description !== description;
     const row = {
@@ -405,8 +409,10 @@ export function buildSyncPlan(input: {
       timeSource: decision.timeSource,
       timePreserved: false,
       eventAt: when.eventAt,
+      previousTitle: existing?.summary ?? null,
+      emailSubject: subject,
       adminUrl: link,
-      reason: existing ? "status-or-time" : "new-campaign",
+      reason: !existing ? "new-campaign" : titleChanged && !timeChanged ? "campaign-name" : "status-or-time",
     };
     if (existing && !changed) {
       add({ action: "unchanged", ...row, reason: "unchanged" });
