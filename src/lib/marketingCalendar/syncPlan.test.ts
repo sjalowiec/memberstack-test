@@ -74,6 +74,73 @@ describe("sync plan", () => {
     expect(plan.writes[0]?.description).toContain("Scheduled or sent: 2026-10-15 9:00:00 AM Pacific");
   });
 
+  it("creates from sdate once and leaves manual events and reminders alone on a repeat", () => {
+    const snapshot = campaign({
+      id: "2417",
+      name: "TOW: Bust Darts",
+      scheduledDate: null,
+      sendDate: "2026-10-24T08:00:00-05:00",
+      messageId: "17",
+    });
+    const first = planFor([snapshot], [], { "17": "A sweater knit sideways?" });
+    expect(first.counts).toMatchObject({ create: 1, update: 0, delete: 0 });
+    expect(first.writes[0]).toMatchObject({
+      action: "create",
+      timeSource: "sdate",
+      allDay: true,
+      start: "2026-10-24",
+      end: "2026-10-25",
+      eventAt: "2026-10-24T06:00:00-07:00",
+    });
+    expect(first.writes[0]?.description).toContain("Exact time: 2026-10-24T06:00:00-07:00");
+    expect(first.writes[0]?.description).not.toContain("cdate");
+    expect(first.writes[0]?.description).not.toContain("mdate");
+
+    const created = first.writes[0];
+    const second = planFor(
+      [snapshot],
+      [
+        owned({
+          id: "bust-darts-event",
+          summary: created?.title,
+          description: created?.description,
+          colorId: created?.colorId,
+          start: new Date("2026-10-24T13:00:00.000Z"),
+          startText: "2026-10-24",
+          campaignId: "2417",
+        }),
+      ],
+      { "17": "A sweater knit sideways?" },
+    );
+    expect(second.counts).toMatchObject({ create: 0, update: 0, delete: 0, unchanged: 1 });
+    expect(second.writes).toEqual([]);
+
+    const conflicts = findPossibleConflicts(first.rows, [
+      {
+        id: "manual-1",
+        summary: "Order yarn",
+        start: null,
+        startText: "2026-10-24",
+        recurringEventId: null,
+        recurring: false,
+        campaignId: null,
+      },
+      {
+        id: "reminder-1",
+        summary: "Weekly social post",
+        start: null,
+        startText: "2026-10-24",
+        recurringEventId: "series-1",
+        recurring: true,
+        campaignId: null,
+      },
+    ]);
+    expect(conflicts).toEqual([]);
+    expect(second.rows.some((row) => row.googleEventId === "manual-1" || row.googleEventId === "reminder-1")).toBe(
+      false,
+    );
+  });
+
   it("renames an imported event to the campaign name instead of creating a duplicate", () => {
     const plan = planFor([campaign()], [owned({ summary: "What's New — October" })]);
     expect(plan.counts).toMatchObject({ create: 0, update: 1, delete: 0, conflict: 0 });
