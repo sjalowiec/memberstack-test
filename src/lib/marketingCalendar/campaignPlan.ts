@@ -206,9 +206,10 @@ export function decideCampaign(
 
   if (status === "scheduled") {
     if (scheduled.kind === "instant") return upsert(scheduled.instant, "scheduleddate");
-    return preserve(
-      scheduled.kind === "unparsed" ? `scheduled-date-${scheduled.reason}` : "scheduled-date-missing",
-    );
+    if (scheduled.kind === "unparsed") return preserve(`scheduled-date-${scheduled.reason}`);
+    if (sent.kind === "instant") return upsert(sent.instant, "sdate");
+    if (sent.kind === "unparsed") return preserve(`send-date-${sent.reason}`);
+    return preserve("scheduled-date-missing");
   }
 
   if (status === "completed") {
