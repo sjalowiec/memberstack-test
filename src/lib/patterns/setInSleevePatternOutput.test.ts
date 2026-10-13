@@ -650,55 +650,29 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(rows.some((row) => row.edge === "Shoulder" && /Bind off/.test(row.action))).toBe(true);
   });
 
-  it("shows neckline and shoulder actions that fall on the same row", () => {
-    const overlapping = cases
-      .map(({ options }) => generateSetInSleevePattern(pattern(options)))
-      .find((result) =>
-        (result.neckShoulderShapingChart?.timeline ?? []).some((entry) => {
-          const neck = entry.events.some((event) => event.edge === "inner" && event.side === "right");
-          const shoulder = entry.events.some(
-            (event) => event.edge === "outer" && event.side === "right" && event.kind !== "decrease",
-          );
-          return neck && shoulder;
-        }),
-      );
-    expect(overlapping).toBeTruthy();
-    const sharedTimeline = (overlapping!.neckShoulderShapingChart?.timeline ?? []).filter((entry) => {
-      const neck = entry.events.some((event) => event.edge === "inner" && event.side === "right");
-      const shoulder = entry.events.some(
-        (event) => event.edge === "outer" && event.side === "right" && event.kind !== "decrease",
-      );
-      return neck && shoulder;
-    });
-    expect(sharedTimeline.length).toBeGreaterThan(0);
-    const rows = buildActiveSideInstructionTableRows(overlapping!.neckShoulderShapingChart!, 0, {
-      includeCenterNecklineSetupRow: true,
-      hideCenterNecklineSetupRow: true,
-    });
-    const shaping = rows.filter((row) => row.edge === "Neck" || row.edge === "Shoulder");
-    const pairs: Array<[typeof shaping[number], typeof shaping[number]]> = [];
-    for (let i = 0; i < shaping.length - 1; i += 1) {
-      const neck = shaping[i];
-      const shoulder = shaping[i + 1];
-      if (neck?.edge === "Neck" && shoulder?.edge === "Shoulder") pairs.push([neck, shoulder]);
+  it("keeps neckline and shoulder bind-offs on opposite carriage sides", () => {
+    for (const { options } of cases) {
+      const result = generateSetInSleevePattern(pattern(options));
+      const timeline = result.neckShoulderShapingChart?.timeline ?? [];
+      for (const entry of timeline) {
+        const neck = entry.events.some((event) => event.edge === "inner" && event.side === "right");
+        const shoulder = entry.events.some(
+          (event) => event.edge === "outer" && event.side === "right" && event.kind !== "decrease",
+        );
+        expect(neck && shoulder).toBe(false);
+      }
+      const rows = buildActiveSideInstructionTableRows(result.neckShoulderShapingChart!, 0, {
+        includeCenterNecklineSetupRow: true,
+        hideCenterNecklineSetupRow: true,
+      }).filter((row) => row.edge === "Neck" || row.edge === "Shoulder");
+      for (let index = 0; index < rows.length - 1; index += 1) {
+        const neck = rows[index];
+        const shoulder = rows[index + 1];
+        if (neck?.edge !== "Neck" || shoulder?.edge !== "Shoulder") continue;
+        expect(shoulder.rc).toBe(neck.rc + 1);
+        expect(neck.carriagePosition).not.toBe(shoulder.carriagePosition);
+      }
     }
-    expect(pairs.length).toBe(sharedTimeline.length);
-    sharedTimeline.forEach((entry, index) => {
-      const neckAmount = entry.events.find((event) => event.edge === "inner" && event.side === "right")?.amount;
-      const shoulderAmount = entry.events.find(
-        (event) => event.edge === "outer" && event.side === "right" && event.kind !== "decrease",
-      )?.amount;
-      const [neck, shoulder] = pairs[index]!;
-      expect(neck.action).toContain(String(neckAmount));
-      expect(shoulder.action).toContain(String(shoulderAmount));
-      expect(shoulder.rc).toBe(neck.rc + 1);
-      expect(neck.carriagePosition).not.toBe(shoulder.carriagePosition);
-      expect(neck.stitchesRemaining - (shoulderAmount ?? 0)).toBe(shoulder.stitchesRemaining);
-    });
-    const html = backChecklistHtml(overlapping!);
-    const firstPair = pairs[0]!;
-    expect(html.split(firstPair[0].action).length - 1).toBeGreaterThanOrEqual(2);
-    expect(html.split(firstPair[1].action).length - 1).toBeGreaterThanOrEqual(2);
   });
 
   it("tells the knitter to reset the row counter to the second shoulder's first row", () => {

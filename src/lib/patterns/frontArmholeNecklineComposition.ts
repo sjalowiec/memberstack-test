@@ -593,6 +593,179 @@ export function coordinatedShapingHandoffLines(args: {
   return [lead, follow];
 }
 
+/**
+ * Move inner-edge shaping onto neck-side rows and outer-edge shaping onto
+ * armhole-side rows. Even display RC is the armhole side; odd display RC is
+ * the neck side. Rows already in the timeline are reused, so the piece does
+ * not gain a knitted row.
+ */
+export function phaseLockTimelineToCarriageSide(
+  timeline: readonly RowEntry[],
+  firstArmholeGarmentRc: number,
+  policy?: FrontVNeckRowCounterDisplayPolicy,
+): RowEntry[] {
+  const sorted = [...timeline].sort((a, b) => a.row - b.row);
+  const first = sorted[0];
+  if (!first) return [];
+  const rowNumbers = sorted.map((entry) => entry.row);
+  const armholeSide = (row: number) =>
+    displayRcFromGarmentRc(row, firstArmholeGarmentRc, policy) % 2 === 0;
+  const eventsByRow = new Map<number, ShapingEvent[]>(
+    sorted.map((entry) => [entry.row, entry.events.map((event) => ({ ...event }))]),
+  );
+
+  const neighbor = (row: number, wantArmholeSide: boolean, direction: 1 | -1): number | undefined => {
+    const start = rowNumbers.indexOf(row);
+    for (let index = start + direction; index >= 0 && index < rowNumbers.length; index += direction) {
+      const candidate = rowNumbers[index]!;
+      if (armholeSide(candidate) === wantArmholeSide) return candidate;
+    }
+    return undefined;
+  };
+
+  const neckSideRowIsOpen = (row: number): boolean => {
+    const start = rowNumbers.indexOf(row);
+    for (let index = start; index < rowNumbers.length; index += 1) {
+      const candidate = rowNumbers[index]!;
+      if (armholeSide(candidate)) continue;
+      if (!(eventsByRow.get(candidate) ?? []).some((event) => event.edge === "inner")) return true;
+    }
+    return false;
+  };
+
+  const takeEdge = (row: number, edge: "inner" | "outer"): ShapingEvent[] => {
+    const events = eventsByRow.get(row) ?? [];
+    const taken = events.filter((event) => event.edge === edge && event.side !== "center" && event.amount > 0);
+    eventsByRow.set(
+      row,
+      events.filter((event) => !(event.edge === edge && event.side !== "center" && event.amount > 0)),
+    );
+    return taken;
+  };
+
+  const cascadeInners = (row: number, seen: Set<number>) => {
+    if (seen.has(row)) return;
+    seen.add(row);
+    const moving = takeEdge(row, "inner");
+    if (moving.length === 0) return;
+    const forward = neighbor(row, false, 1);
+    const target = forward ?? neighbor(row, false, -1);
+    if (target === undefined) {
+      eventsByRow.set(row, [...(eventsByRow.get(row) ?? []), ...moving]);
+      return;
+    }
+    const occupants = (eventsByRow.get(target) ?? []).some((event) => event.edge === "inner");
+    if (forward !== undefined && occupants && neckSideRowIsOpen(forward)) {
+      cascadeInners(forward, seen);
+    }
+    eventsByRow.set(target, coalesceCarriageEvents([...(eventsByRow.get(target) ?? []), ...moving]));
+  };
+
+  for (const row of rowNumbers) {
+    if (!armholeSide(row)) continue;
+    if ((eventsByRow.get(row) ?? []).some((event) => event.edge === "inner")) {
+      cascadeInners(row, new Set());
+    }
+  }
+
+  for (const row of [...rowNumbers].reverse()) {
+    if (armholeSide(row)) continue;
+    const moving = takeEdge(row, "outer");
+    if (moving.length === 0) continue;
+    const backward = neighbor(row, true, -1);
+    const forward = neighbor(row, true, 1);
+    const backwardBusy =
+      backward !== undefined && (eventsByRow.get(backward) ?? []).some((event) => event.edge === "outer");
+    const target = backward === undefined || backwardBusy ? (forward ?? backward) : backward;
+    if (target === undefined) {
+      eventsByRow.set(row, [...(eventsByRow.get(row) ?? []), ...moving]);
+      continue;
+    }
+    eventsByRow.set(target, coalesceCarriageEvents([...(eventsByRow.get(target) ?? []), ...moving]));
+  }
+
+  for (const row of rowNumbers) {
+    eventsByRow.set(row, coalesceCarriageEvents(eventsByRow.get(row) ?? []));
+  }
+
+  const state = reverseEvents(edgeStateFrom(first), first.events);
+  return sorted.map((entry) => {
+    const before = { ...state };
+    for (const event of eventsByRow.get(entry.row) ?? []) applyCarriageEvent(state, event, 1);
+    state.leftCount = Math.max(0, state.leftCount);
+    state.rightCount = Math.max(0, state.rightCount);
+    return {
+      ...entry,
+      events: eventsByRow.get(entry.row) ?? [],
+      stitchesL: state.leftCount,
+      stitchesR: state.rightCount,
+      netChangeL: state.leftCount - before.leftCount,
+      netChangeR: state.rightCount - before.rightCount,
+      centerWidth: state.rightInnerEdge - state.leftInnerEdge - 1,
+      leftOuterEdge: state.leftOuterEdge,
+      leftInnerEdge: state.leftInnerEdge,
+      rightInnerEdge: state.rightInnerEdge,
+      rightOuterEdge: state.rightOuterEdge,
+    };
+  });
+}
+
+function coalesceCarriageEvents(events: readonly ShapingEvent[]): ShapingEvent[] {
+  const combined: ShapingEvent[] = [];
+  for (const event of events) {
+    const match = combined.find(
+      (existing) =>
+        existing.side === event.side && existing.edge === event.edge && existing.kind === event.kind,
+    );
+    if (match) match.amount += event.amount;
+    else combined.push({ ...event });
+  }
+  return combined;
+}
+
+type CarriageEdgeState = {
+  leftCount: number;
+  rightCount: number;
+  leftOuterEdge: number;
+  leftInnerEdge: number;
+  rightInnerEdge: number;
+  rightOuterEdge: number;
+};
+
+function edgeStateFrom(row: RowEntry): CarriageEdgeState {
+  return {
+    leftCount: row.stitchesL,
+    rightCount: row.stitchesR,
+    leftOuterEdge: row.leftOuterEdge,
+    leftInnerEdge: row.leftInnerEdge,
+    rightInnerEdge: row.rightInnerEdge,
+    rightOuterEdge: row.rightOuterEdge,
+  };
+}
+
+function applyCarriageEvent(state: CarriageEdgeState, event: ShapingEvent, direction: 1 | -1): void {
+  if (event.edge === "center" || event.side === "center" || event.amount <= 0) return;
+  const amount = event.amount * direction;
+  if (event.side === "right" && event.edge === "inner") {
+    state.rightInnerEdge += amount;
+    state.rightCount -= amount;
+  } else if (event.side === "right" && event.edge === "outer") {
+    state.rightOuterEdge -= amount;
+    state.rightCount -= amount;
+  } else if (event.side === "left" && event.edge === "inner") {
+    state.leftInnerEdge -= amount;
+    state.leftCount -= amount;
+  } else if (event.side === "left" && event.edge === "outer") {
+    state.leftOuterEdge += amount;
+    state.leftCount -= amount;
+  }
+}
+
+function reverseEvents(state: CarriageEdgeState, events: readonly ShapingEvent[]): CarriageEdgeState {
+  for (const event of [...events].reverse()) applyCarriageEvent(state, event, -1);
+  return state;
+}
+
 function insertMissingGarmentRows(
   timeline: readonly RowEntry[],
   garmentRcs: readonly number[],

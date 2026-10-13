@@ -94,6 +94,8 @@ import {
   composeFrontVNeckTimelineWithArmholeOverlap,
   composeNecklineTimelineWithArmholeOverlay,
   displayRcFromGarmentRc,
+  phaseLockTimelineToCarriageSide,
+  resolveFrontVNeckRowCounterDisplayPolicy,
   pulloverArmholeEventsFromSteps,
   FRONT_VNECK_HANDOFF_AFTER_ARMHOLE,
   FRONT_VNECK_HANDOFF_BEFORE_ARMHOLE,
@@ -3613,6 +3615,19 @@ export function generateSleevelessBackPattern(
       }
     }
 
+    if (options?.useSetInArmhole === true && firstArmholeRCNum !== null && frontTimeline.length > 0) {
+      frontTimeline = phaseLockTimelineToCarriageSide(
+        frontTimeline,
+        firstArmholeRCNum,
+        resolveFrontVNeckRowCounterDisplayPolicy(frontArmholeNecklineOverlap),
+      );
+      frontLiveRows = neckShoulderChartRowsFromTimeline(frontTimeline, {
+        ...(frontArmholeNecklineOverlap
+          ? { lastArmholeGarmentRc: frontArmholeNecklineOverlap.lastArmholeGarmentRc }
+          : {}),
+      });
+    }
+
     const shoulderReferenceFrontTimeline =
       fullWidthFrontShoulderReference?.timeline ?? frontTimeline;
     const shoulderReferenceFrontRows =
@@ -3697,7 +3712,7 @@ export function generateSleevelessBackPattern(
         ? rawLiveRows
         : neckShoulderChartRowsFromTimeline(timeline);
 
-    const backTimelineForChart =
+    const backTimelineWithArmhole =
       options?.useSetInArmhole === true &&
       setInArmholePlan &&
       firstArmholeRCNum !== null &&
@@ -3713,6 +3728,14 @@ export function generateSleevelessBackPattern(
             armholeEvents: setInArmholeEvents,
           }).timeline
         : timeline;
+    const backTimelineForChart =
+      options?.useSetInArmhole === true && firstArmholeRCNum !== null && backTimelineWithArmhole.length > 0
+        ? phaseLockTimelineToCarriageSide(
+            backTimelineWithArmhole,
+            firstArmholeRCNum,
+            resolveFrontVNeckRowCounterDisplayPolicy(frontArmholeNecklineOverlap),
+          )
+        : backTimelineWithArmhole;
     const backRowsForChart =
       backTimelineForChart === timeline
         ? liveRows
