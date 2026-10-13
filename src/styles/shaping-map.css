@@ -378,33 +378,31 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
 
 /* Enlarged map inside the shared diagram modal.
    The shared modal sizes every SVG to min(90vw, 900px) and centers it in a grid.
-   A tall shaping map then overflows, and that centering clips the top edge label.
-   Fit this chart inside the dialog instead, and scroll from the top if it is still taller. */
+   A tall shaping map then overflows, and that centering clips the edge labels.
+   Give this dialog a definite width and let the viewBox meet inside the viewport. */
 .sleeveless-diagram-modal__dialog:has(.shaping-map__svg--enlarged) {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  max-height: 95vh;
-  overflow: hidden;
+  width: min(92vw, 760px);
+  max-height: 92vh;
+  overflow: auto;
 }
 
 .sleeveless-diagram-modal__content:has(.shaping-map__svg--enlarged) {
   display: block;
-  flex: 1 1 auto;
   min-height: 0;
-  max-height: calc(95vh - 3.5rem);
-  overflow: auto;
-  place-items: start center;
+  max-height: none;
+  overflow: visible;
 }
 
 .sleeveless-diagram-modal__content .shaping-map__svg--enlarged {
   display: block;
-  width: auto;
+  width: 100%;
   height: auto;
   min-width: 0;
-  max-width: min(88vw, 720px);
-  max-height: calc(90vh - 4.5rem);
-  margin-inline: auto;
+  max-width: 100%;
+  max-height: calc(92vh - 4.5rem);
 }
 
 @media print {
