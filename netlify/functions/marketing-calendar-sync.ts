@@ -10,7 +10,9 @@ import { MANUAL_SECRET_HEADER } from "../../src/lib/marketingCalendar/constants"
 import { MarketingCalendarError } from "../../src/lib/marketingCalendar/errors";
 import {
   importApprovedCampaigns,
+  updateApprovedTitles,
   type ImportReport,
+  type TitleUpdateReport,
 } from "../../src/lib/marketingCalendar/importApproved";
 import {
   runMarketingCalendarDryRun,
@@ -18,6 +20,7 @@ import {
 } from "../../src/lib/marketingCalendar/runDryRun";
 
 const APPROVED_IMPORT_BODY = "approved-eight-all-day";
+const APPROVED_TITLE_BODY = "approved-eight-titles";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -43,6 +46,16 @@ function isApprovedImport(bodyText: string): boolean {
   }
 }
 
+function isApprovedTitleUpdate(bodyText: string): boolean {
+  if (!bodyText) return false;
+  try {
+    const parsed = JSON.parse(bodyText) as { import?: unknown };
+    return Object.keys(parsed).length === 1 && parsed.import === APPROVED_TITLE_BODY;
+  } catch {
+    return false;
+  }
+}
+
 function isScheduledBody(bodyText: string): boolean {
   if (!bodyText) return false;
   try {
@@ -59,6 +72,7 @@ export async function handleMarketingCalendarRequest(
     env?: NodeJS.ProcessEnv;
     run?: (input: { env: NodeJS.ProcessEnv }) => Promise<DryRunReport>;
     importApproved?: (input: { env: NodeJS.ProcessEnv }) => Promise<ImportReport>;
+    updateTitles?: (input: { env: NodeJS.ProcessEnv }) => Promise<TitleUpdateReport>;
   } = {},
 ): Promise<Response> {
   if (req.method !== "GET" && req.method !== "POST") {
@@ -104,8 +118,22 @@ export async function handleMarketingCalendarRequest(
   const liveRequestIgnored = (url.searchParams.get("confirm") ?? "").trim().toUpperCase() === "LIVE";
   const automaticSyncIgnored = isScheduledBody(bodyText);
   const approvedImport = req.method === "POST" && isApprovedImport(bodyText) && !automaticSyncIgnored;
+  const approvedTitleUpdate = req.method === "POST" && isApprovedTitleUpdate(bodyText) && !automaticSyncIgnored;
 
   try {
+    if (approvedTitleUpdate) {
+      const renamed = await (deps.updateTitles ?? updateApprovedTitles)({ env });
+      console.log("[marketing-calendar-sync]", {
+        oneTimeTitleUpdate: true,
+        created: renamed.created,
+        updated: renamed.updated,
+        deleted: renamed.deleted,
+        otherEventsChanged: renamed.otherEventsChanged.length,
+        otherEventsMissing: renamed.otherEventsMissing.length,
+      });
+      return json({ ...renamed, liveRequestIgnored, automaticSyncIgnored, automaticSyncEnabled: false });
+    }
+
     if (approvedImport) {
       const imported = await (deps.importApproved ?? importApprovedCampaigns)({ env });
       console.log("[marketing-calendar-sync]", {
