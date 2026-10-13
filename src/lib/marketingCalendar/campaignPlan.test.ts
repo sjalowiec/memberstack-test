@@ -20,16 +20,29 @@ function campaign(overrides: Partial<CampaignSnapshot> = {}): CampaignSnapshot {
 }
 
 describe("campaign decisions", () => {
-  it("schedules a one-off campaign on its scheduled date in peacock", () => {
-    const decision = decideCampaign(
+  it("colors a future scheduled campaign basil and a past one peacock", () => {
+    const now = new Date("2026-10-13T22:00:00.000Z");
+    const future = decideCampaign(
       campaign({ sendDate: "2026-10-20T08:00:00-05:00" }),
       "America/Los_Angeles",
+      now,
     );
-    expect(decision.kind).toBe("upsert");
-    if (decision.kind !== "upsert") return;
-    expect(decision.colorId).toBe(EVENT_COLOR.scheduled);
-    expect(decision.timeSource).toBe("scheduleddate");
-    expect(decision.instant.toISOString()).toBe("2026-10-15T16:00:00.000Z");
+    expect(future.kind).toBe("upsert");
+    if (future.kind !== "upsert") return;
+    expect(future.colorId).toBe("10");
+    expect(future.colorId).toBe(EVENT_COLOR.scheduledFuture);
+    expect(future.timeSource).toBe("scheduleddate");
+    expect(future.instant.toISOString()).toBe("2026-10-15T16:00:00.000Z");
+
+    const past = decideCampaign(
+      campaign({ scheduledDate: "2026-10-02T09:00:00-07:00", sendDate: null }),
+      "America/Los_Angeles",
+      now,
+    );
+    expect(past.kind).toBe("upsert");
+    if (past.kind !== "upsert") return;
+    expect(past.colorId).toBe(EVENT_COLOR.scheduled);
+    expect(past.colorId).toBe("7");
   });
 
   it("uses sdate when a scheduled campaign has an empty scheduleddate", () => {
@@ -41,10 +54,12 @@ describe("campaign decisions", () => {
         sendDate: "2026-10-24T08:00:00-05:00",
       }),
       null,
+      new Date("2026-10-13T22:00:00.000Z"),
     );
     expect(decision.kind).toBe("upsert");
     if (decision.kind !== "upsert") return;
     expect(decision.timeSource).toBe("sdate");
+    expect(decision.colorId).toBe("10");
     expect(decision.instant.toISOString()).toBe("2026-10-24T13:00:00.000Z");
   });
 
@@ -96,6 +111,7 @@ describe("campaign decisions", () => {
     );
     expect(sent.kind).toBe("upsert");
     if (sent.kind === "upsert") {
+      expect(sent.colorId).toBe("8");
       expect(sent.colorId).toBe(EVENT_COLOR.completed);
       expect(sent.timeSource).toBe("sdate");
     }

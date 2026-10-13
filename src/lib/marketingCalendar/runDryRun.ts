@@ -132,7 +132,7 @@ export async function collectMarketingCalendar(input: {
   const zone = await loadAccountTimeZone(config, { fetchImpl: input.fetchImpl, sleep: input.sleep });
   if (zone.warning) warnings.push(zone.warning);
   const campaigns = await listCampaigns(config, { fetchImpl: input.fetchImpl, sleep: input.sleep });
-  const decisions = campaigns.map((campaign) => decideCampaign(campaign, zone.timeZone));
+  const decisions = campaigns.map((campaign) => decideCampaign(campaign, zone.timeZone, input.now ?? new Date()));
   const messageIds = decisions
     .filter((decision) => needsSubject(decision, ownedIds))
     .map((decision) => decision.campaign.messageId ?? "");

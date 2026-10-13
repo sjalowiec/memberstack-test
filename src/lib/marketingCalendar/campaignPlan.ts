@@ -159,6 +159,7 @@ function colorFor(status: CampaignStatusName): string {
 export function decideCampaign(
   campaign: CampaignSnapshot,
   accountTimeZone: string | null,
+  now: Date = new Date(),
 ): CampaignDecision {
   const broadcast = isBroadcast(campaign);
   if (!broadcast.ok) return { kind: "skip", campaign, reason: broadcast.reason };
@@ -176,7 +177,8 @@ export function decideCampaign(
     kind: "upsert",
     campaign,
     status,
-    colorId,
+    colorId:
+      status === "scheduled" && instant.getTime() > now.getTime() ? EVENT_COLOR.scheduledFuture : colorId,
     instant,
     timeSource,
   });

@@ -35,13 +35,15 @@ function owned(overrides: Partial<OwnedCalendarEvent> = {}): OwnedCalendarEvent 
   };
 }
 
+const planNow = new Date("2026-10-13T22:00:00.000Z");
+
 function planFor(
   snapshots: CampaignSnapshot[],
   ownedEvents: OwnedCalendarEvent[] = [],
   subjects: Record<string, string | null> = { "9": "What's New — October" },
 ) {
   return buildSyncPlan({
-    decisions: snapshots.map((snapshot) => decideCampaign(snapshot, "America/Los_Angeles")),
+    decisions: snapshots.map((snapshot) => decideCampaign(snapshot, "America/Los_Angeles", planNow)),
     subjects: new Map(Object.entries(subjects)),
     ownedEvents,
     baseUrl: "https://knitbymachine.activehosted.com",
@@ -56,9 +58,11 @@ describe("sync plan", () => {
     expect(plan.writes[0]).toMatchObject({
       action: "create",
       title: "October What's New",
-      colorId: EVENT_COLOR.scheduled,
+      colorId: "10",
       timeSource: "scheduleddate",
     });
+    expect(plan.writes.map((write) => write.colorId)).not.toContain("5");
+    expect(plan.writes.map((write) => write.colorId)).not.toContain("6");
     expect(plan.writes[0]?.description).toContain("Subject: What's New — October");
     expect(plan.writes[0]?.description).toContain("Campaign ID: 42");
     expect(plan.writes[0]?.description).toContain(
