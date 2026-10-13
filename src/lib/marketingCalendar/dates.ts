@@ -175,6 +175,28 @@ function normalizeOffset(offset: string): string {
   return `${match[1]}${match[2]}:${match[3]}`;
 }
 
+export function nextIsoDate(isoDate: string): string {
+  const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    throw new Error(`Invalid calendar date ${isoDate}.`);
+  }
+  const utc = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + 1));
+  return utc.toISOString().slice(0, 10);
+}
+
+export function allDaySpan(
+  instant: Date,
+  timeZone: string,
+): { date: string; endDate: string; eventAt: string; display: string } {
+  const formatted = formatGoogleDateTime(instant, timeZone);
+  const date = formatted.dateTime.slice(0, 10);
+  const wall = wallTime(instant, timeZone);
+  const hour12 = wall.hour % 12 || 12;
+  const suffix = wall.hour < 12 ? "AM" : "PM";
+  const display = `${pad(wall.year, 4)}-${pad(wall.month)}-${pad(wall.day)} ${hour12}:${pad(wall.minute)}:${pad(wall.second)} ${suffix} Pacific`;
+  return { date, endDate: nextIsoDate(date), eventAt: formatted.dateTime, display };
+}
+
 export function formatGoogleDateTime(
   instant: Date,
   timeZone: string,

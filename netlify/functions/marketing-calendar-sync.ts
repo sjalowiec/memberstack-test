@@ -9,9 +9,15 @@ import { timingSafeEqual } from "node:crypto";
 import { MANUAL_SECRET_HEADER } from "../../src/lib/marketingCalendar/constants";
 import { MarketingCalendarError } from "../../src/lib/marketingCalendar/errors";
 import {
+  importApprovedCampaigns,
+  type ImportReport,
+} from "../../src/lib/marketingCalendar/importApproved";
+import {
   runMarketingCalendarDryRun,
   type DryRunReport,
 } from "../../src/lib/marketingCalendar/runDryRun";
+
+const APPROVED_IMPORT_BODY = "approved-eight-all-day";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -25,6 +31,16 @@ function secretsMatch(provided: string, configured: string): boolean {
   const right = Buffer.from(configured);
   if (left.length !== right.length || left.length === 0) return false;
   return timingSafeEqual(left, right);
+}
+
+function isApprovedImport(bodyText: string): boolean {
+  if (!bodyText) return false;
+  try {
+    const parsed = JSON.parse(bodyText) as { import?: unknown };
+    return Object.keys(parsed).length === 1 && parsed.import === APPROVED_IMPORT_BODY;
+  } catch {
+    return false;
+  }
 }
 
 function isScheduledBody(bodyText: string): boolean {
@@ -42,6 +58,7 @@ export async function handleMarketingCalendarRequest(
   deps: {
     env?: NodeJS.ProcessEnv;
     run?: (input: { env: NodeJS.ProcessEnv }) => Promise<DryRunReport>;
+    importApproved?: (input: { env: NodeJS.ProcessEnv }) => Promise<ImportReport>;
   } = {},
 ): Promise<Response> {
   if (req.method !== "GET" && req.method !== "POST") {
@@ -86,8 +103,22 @@ export async function handleMarketingCalendarRequest(
   const url = new URL(req.url);
   const liveRequestIgnored = (url.searchParams.get("confirm") ?? "").trim().toUpperCase() === "LIVE";
   const automaticSyncIgnored = isScheduledBody(bodyText);
+  const approvedImport = req.method === "POST" && isApprovedImport(bodyText) && !automaticSyncIgnored;
 
   try {
+    if (approvedImport) {
+      const imported = await (deps.importApproved ?? importApprovedCampaigns)({ env });
+      console.log("[marketing-calendar-sync]", {
+        oneTimeImport: true,
+        writesPerformed: imported.writesPerformed,
+        updated: imported.updated,
+        deleted: imported.deleted,
+        existingEventsChanged: imported.existingEventsChanged.length,
+        existingEventsMissing: imported.existingEventsMissing.length,
+      });
+      return json({ ...imported, liveRequestIgnored, automaticSyncIgnored, automaticSyncEnabled: false });
+    }
+
     const run = deps.run ?? runMarketingCalendarDryRun;
     const result = await run({ env });
     console.log("[marketing-calendar-sync]", {

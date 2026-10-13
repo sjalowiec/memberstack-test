@@ -1,4 +1,4 @@
-import { EVENT_DURATION_MS, PROP_CAMPAIGN_ID, PROP_SOURCE, PROP_SYNC, SYNC_MARKER, SYNC_SOURCE } from "./constants";
+import { PROP_CAMPAIGN_ID, PROP_EVENT_AT, PROP_SOURCE, PROP_SYNC, SYNC_MARKER, SYNC_SOURCE } from "./constants";
 import {
   statusLabel,
   statusName,
@@ -6,7 +6,7 @@ import {
   type CampaignSnapshot,
   type CampaignStatusName,
 } from "./campaignPlan";
-import { formatGoogleDateTime, isOnOrAfterImportStart } from "./dates";
+import { allDaySpan, isOnOrAfterImportStart } from "./dates";
 
 export interface OwnedCalendarEvent {
   id: string;
@@ -43,6 +43,8 @@ export interface PlannedWrite {
   timeZone: string | null;
   timeSource: string | null;
   timePreserved: boolean;
+  allDay: boolean;
+  eventAt: string | null;
   description: string;
   adminUrl: string;
   reason: string;
@@ -59,6 +61,7 @@ export interface PlanRow {
   start: string | null;
   timeSource: string | null;
   timePreserved: boolean;
+  eventAt: string | null;
   adminUrl: string | null;
   reason: string;
 }
@@ -107,6 +110,8 @@ export function eventDescription(input: {
   name: string;
   timeSource: string;
   adminUrl: string;
+  scheduledOrSent?: string | null;
+  exactTime?: string | null;
   note?: string;
 }): string {
   const lines = [
@@ -116,6 +121,8 @@ export function eventDescription(input: {
     `Subject: ${input.subject?.trim() || "(none)"}`,
     `Campaign name: ${input.name || "(none)"}`,
     `Time source: ${input.timeSource}`,
+    `Scheduled or sent: ${input.scheduledOrSent || "(none)"}`,
+    `Exact time: ${input.exactTime || "(none)"}`,
     `ActiveCampaign: ${input.adminUrl}`,
   ];
   if (input.note) lines.push(input.note);
@@ -158,11 +165,6 @@ function groupOwned(events: OwnedCalendarEvent[]): {
   return { byCampaign, malformed };
 }
 
-function timed(instant: Date, timeZone: string): { start: string; end: string; timeZone: string } {
-  const start = formatGoogleDateTime(instant, timeZone);
-  const end = formatGoogleDateTime(new Date(instant.getTime() + EVENT_DURATION_MS), timeZone);
-  return { start: start.dateTime, end: end.dateTime, timeZone };
-}
 
 export function buildSyncPlan(input: {
   decisions: CampaignDecision[];
@@ -205,6 +207,7 @@ export function buildSyncPlan(input: {
       start: event.startText,
       timeSource: null,
       timePreserved: true,
+      eventAt: null,
       adminUrl: null,
       reason: "owned-event-missing-campaign-id",
     });
@@ -230,6 +233,7 @@ export function buildSyncPlan(input: {
         start: null,
         timeSource: null,
         timePreserved: true,
+        eventAt: null,
         adminUrl: link,
         reason: "duplicate-owned-events",
       });
@@ -265,6 +269,8 @@ export function buildSyncPlan(input: {
           timeZone: null,
           timeSource: null,
           timePreserved: false,
+          allDay: false,
+          eventAt: null,
           description: "",
           adminUrl: link,
           reason: "schedule-cleared",
@@ -281,6 +287,7 @@ export function buildSyncPlan(input: {
             start: existing.startText,
             timeSource: null,
             timePreserved: false,
+            eventAt: null,
             adminUrl: link,
             reason: "schedule-cleared",
           },
@@ -300,6 +307,7 @@ export function buildSyncPlan(input: {
         continue;
       }
       const reason = decision.kind === "preserve" ? decision.reason : "existing-event-kept";
+      const keptSpan = decision.kind === "upsert" ? allDaySpan(decision.instant, input.calendarTimeZone) : null;
       const description = eventDescription({
         campaignId: campaign.id,
         status: decision.status,
@@ -307,6 +315,8 @@ export function buildSyncPlan(input: {
         name: campaign.name,
         timeSource: decision.kind === "upsert" ? decision.timeSource : "existing-event",
         adminUrl: link,
+        scheduledOrSent: keptSpan?.display,
+        exactTime: keptSpan?.eventAt,
         note:
           decision.kind === "preserve"
             ? "Event time kept because ActiveCampaign did not return a usable send or scheduled date."
@@ -326,6 +336,7 @@ export function buildSyncPlan(input: {
         start: existing.startText,
         timeSource: decision.kind === "upsert" ? decision.timeSource : "existing-event",
         timePreserved: true,
+        eventAt: keptSpan?.eventAt ?? null,
         adminUrl: link,
         reason,
       };
@@ -352,6 +363,8 @@ export function buildSyncPlan(input: {
           timeZone: input.calendarTimeZone,
           timeSource: rowBase.timeSource,
           timePreserved: true,
+          allDay: false,
+          eventAt: keptSpan?.eventAt ?? null,
           description,
           adminUrl: link,
           reason,
@@ -361,7 +374,7 @@ export function buildSyncPlan(input: {
     }
 
     if (decision.kind !== "upsert") continue;
-    const when = timed(decision.instant, input.calendarTimeZone);
+    const when = allDaySpan(decision.instant, input.calendarTimeZone);
     const description = eventDescription({
       campaignId: campaign.id,
       status: decision.status,
@@ -369,12 +382,15 @@ export function buildSyncPlan(input: {
       name: campaign.name,
       timeSource: decision.timeSource,
       adminUrl: link,
+      scheduledOrSent: when.display,
+      exactTime: when.eventAt,
     });
-    const sameTime =
+    const sameClock =
       existing?.start != null && Math.abs(existing.start.getTime() - decision.instant.getTime()) < 1000;
+    const sameDay = existing?.startText?.slice(0, 10) === when.date;
     const changed =
       !existing ||
-      !sameTime ||
+      (!sameClock && !sameDay) ||
       existing.summary !== title ||
       existing.colorId !== decision.colorId ||
       existing.description !== description;
@@ -385,9 +401,10 @@ export function buildSyncPlan(input: {
       campaignName: campaign.name,
       status: statusLabel(decision.status),
       colorId: decision.colorId,
-      start: when.start,
+      start: when.date,
       timeSource: decision.timeSource,
       timePreserved: false,
+      eventAt: when.eventAt,
       adminUrl: link,
       reason: existing ? "status-or-time" : "new-campaign",
     };
@@ -406,11 +423,13 @@ export function buildSyncPlan(input: {
         campaignName: campaign.name,
         status: decision.status,
         colorId: decision.colorId,
-        start: when.start,
-        end: when.end,
-        timeZone: when.timeZone,
+        start: when.date,
+        end: when.endDate,
+        timeZone: input.calendarTimeZone,
         timeSource: decision.timeSource,
         timePreserved: false,
+        allDay: true,
+        eventAt: when.eventAt,
         description,
         adminUrl: link,
         reason: row.reason,
@@ -432,6 +451,7 @@ export function buildSyncPlan(input: {
       start: existing.startText,
       timeSource: "existing-event",
       timePreserved: true,
+      eventAt: null,
       adminUrl: null,
       reason: "owned-event-campaign-missing",
     });
@@ -450,6 +470,7 @@ export function buildSyncPlan(input: {
       start: null,
       timeSource: null,
       timePreserved: true,
+      eventAt: null,
       adminUrl: null,
       reason: "duplicate-owned-events",
     });
@@ -470,6 +491,7 @@ function skipRow(campaign: CampaignSnapshot, title: string, reason: string): Pla
     start: null,
     timeSource: null,
     timePreserved: false,
+    eventAt: null,
     adminUrl: null,
     reason,
   };
@@ -493,6 +515,7 @@ function preserveRow(
     start: existing.startText,
     timeSource: "existing-event",
     timePreserved: true,
+    eventAt: null,
     adminUrl: link,
     reason,
   };
@@ -510,7 +533,7 @@ export function findPossibleConflicts(
   const seen = new Set<string>();
   for (const row of rows) {
     if (row.action !== "create" && row.action !== "update") continue;
-    const plannedStart = row.start ? Date.parse(row.start) : NaN;
+      const plannedStart = Date.parse(row.eventAt || row.start || "");
     for (const manual of manualEvents) {
       if (manual.campaignId && manual.campaignId === row.campaignId) continue;
       const titleMatch =
@@ -540,10 +563,12 @@ export function findPossibleConflicts(
   return conflicts;
 }
 
-export function ownedProperties(campaignId: string): Record<string, string> {
-  return {
+export function ownedProperties(campaignId: string, eventAt?: string | null): Record<string, string> {
+  const properties: Record<string, string> = {
     [PROP_CAMPAIGN_ID]: campaignId,
     [PROP_SOURCE]: SYNC_SOURCE,
     [PROP_SYNC]: SYNC_MARKER,
   };
+  if (eventAt) properties[PROP_EVENT_AT] = eventAt;
+  return properties;
 }

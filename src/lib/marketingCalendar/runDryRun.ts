@@ -27,6 +27,7 @@ import {
   findPossibleConflicts,
   type ManualCalendarEvent,
   type OwnedCalendarEvent,
+  type PlannedWrite,
   type PlanRow,
   type PossibleConflict,
 } from "./syncPlan";
@@ -76,6 +77,15 @@ export async function runMarketingCalendarDryRun(input: {
   sleep?: Sleep;
   now?: Date;
 }): Promise<DryRunReport> {
+  return (await collectMarketingCalendar(input)).report;
+}
+
+export async function collectMarketingCalendar(input: {
+  env: NodeJS.ProcessEnv;
+  fetchImpl?: typeof fetch;
+  sleep?: Sleep;
+  now?: Date;
+}): Promise<{ report: DryRunReport; writes: PlannedWrite[] }> {
   const config = getActiveCampaignConfig(input.env);
   if (isMaskedNetlifySecret(input.env.ACTIVECAMPAIGN_API_KEY || "")) {
     throw new MarketingCalendarError(MASKED_SECRET_MESSAGE, { code: "masked-secret" });
@@ -151,7 +161,7 @@ export async function runMarketingCalendarDryRun(input: {
     .map(toManual);
   const untouched = summarizeUntouched(manual);
 
-  return {
+  const report: DryRunReport = {
     ok: true,
     dryRun: true,
     writesEnabled: false,
@@ -175,6 +185,7 @@ export async function runMarketingCalendarDryRun(input: {
     possibleConflicts: findPossibleConflicts(plan.rows, manual),
     warnings,
   };
+  return { report, writes: plan.writes };
 }
 
 function needsSubject(

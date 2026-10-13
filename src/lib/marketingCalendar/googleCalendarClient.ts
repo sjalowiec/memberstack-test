@@ -27,6 +27,9 @@ export interface ListedEvent {
   startText: string | null;
   recurringEventId: string | null;
   recurring: boolean;
+  allDay: boolean;
+  etag: string | null;
+  updated: string | null;
   privateProps: Record<string, string>;
 }
 
@@ -34,8 +37,8 @@ export interface GoogleEventResource {
   summary?: string;
   description?: string;
   colorId?: string;
-  start?: { dateTime: string; timeZone: string };
-  end?: { dateTime: string; timeZone: string };
+  start?: { date?: string; dateTime?: string; timeZone?: string };
+  end?: { date?: string; dateTime?: string; timeZone?: string };
   extendedProperties: { private: Record<string, string> };
 }
 
@@ -56,10 +59,13 @@ export function toGoogleEventResource(write: PlannedWrite): GoogleEventResource 
   const resource: GoogleEventResource = {
     summary: write.title,
     description: write.description,
-    extendedProperties: { private: ownedProperties(write.campaignId) },
+    extendedProperties: { private: ownedProperties(write.campaignId, write.eventAt) },
   };
   if (write.colorId) resource.colorId = write.colorId;
-  if (!write.timePreserved && write.start && write.end && write.timeZone) {
+  if (!write.timePreserved && write.allDay && write.start && write.end) {
+    resource.start = { date: write.start };
+    resource.end = { date: write.end };
+  } else if (!write.timePreserved && write.start && write.end && write.timeZone) {
     resource.start = { dateTime: write.start, timeZone: write.timeZone };
     resource.end = { dateTime: write.end, timeZone: write.timeZone };
   }
@@ -111,6 +117,9 @@ export function mapListedEvent(raw: unknown): ListedEvent | null {
     startText,
     recurringEventId,
     recurring: Boolean(recurringEventId) || Array.isArray(record.recurrence),
+    allDay: typeof startRecord.date === "string" && typeof startRecord.dateTime !== "string",
+    etag: typeof record.etag === "string" ? record.etag : null,
+    updated: typeof record.updated === "string" ? record.updated : null,
     privateProps: privateProps(record),
   };
 }

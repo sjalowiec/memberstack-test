@@ -8,8 +8,6 @@ export const KIN_MARKETING_CALENDAR_NAME = "KIN marketing";
 export const IMPORT_START_DATE = "2026-10-01";
 export const IMPORT_TIME_ZONE = "America/Los_Angeles";
 
-export const EVENT_DURATION_MS = 30 * 60 * 1000;
-
 /** Google Calendar event color IDs. Orange (6) and yellow (5) stay manual. */
 export const EVENT_COLOR = {
   draft: "9",
@@ -26,5 +24,6 @@ export const SYNC_MARKER = "kin-marketing";
 export const PROP_SOURCE = "kinSource";
 export const PROP_SYNC = "kinSync";
 export const PROP_CAMPAIGN_ID = "kinCampaignId";
+export const PROP_EVENT_AT = "kinEventAt";
 
 export const MANUAL_SECRET_HEADER = "x-marketing-calendar-secret";
