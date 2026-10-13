@@ -90,7 +90,7 @@ describe("back active-shoulder checklist center neckline setup row", () => {
     const setup = rows.find(isCenterNecklineSetupChecklistRow);
     expect(setup).toBeDefined();
     expect(setup!.rc).toBe(rcStart);
-    expect(setup!.action).toMatch(/place center 7 neckline stitches in hold/i);
+    expect(setup!.action).toMatch(/place center 6 neckline stitches in hold/i);
     expect(setup!.action).toMatch(/opposite shoulder/i);
     expect(setup!.stitchesRemaining).toBe(timeline![0]!.stitchesR);
   });
@@ -140,7 +140,7 @@ describe("back active-shoulder checklist center neckline setup row", () => {
 
     const withoutSetup = buildActiveSideInstructionTableRows(
       r.neckShoulderShapingChart,
-      firstPostCenterGarmentRc - armholeStart,
+      centerGarmentRc - armholeStart,
     );
     const withSetup = buildActiveSideInstructionTableRows(
       r.neckShoulderShapingChart,
@@ -172,7 +172,7 @@ describe("back active-shoulder checklist center neckline setup row", () => {
     expect(frontRows.some(isCenterNecklineSetupChecklistRow)).toBe(false);
 
     const timeline = r.frontNeckShoulderTimeline!;
-    const expectedStart = timeline[1]!.row - armholeStart!;
+    const expectedStart = timeline[0]!.row - armholeStart!;
     expect(frontRcStart).toBe(expectedStart);
   });
 

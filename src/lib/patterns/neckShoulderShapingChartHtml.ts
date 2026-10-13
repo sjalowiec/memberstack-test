@@ -1022,9 +1022,11 @@ function renderActiveSideInstructionRowsTrHtml(
       const rcSideHtml = carriage
         ? ` <span class="ns-shaping-chart__row-counter-side">(${escapeHtml(carriage)})</span>`
         : "";
-      return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-rc">${rcNumberHtml}${rcSideHtml}</td><td>${formatActionCellHtml(
-        r.action
-      )}</td><td>${escapeHtml(
+      const passNote = String(r.passNote ?? "").trim();
+      const actionHtml = passNote
+        ? `${formatActionCellHtml(r.action)}<div class="ns-shaping-chart__pass-note">${escapeHtml(passNote)}</div>`
+        : formatActionCellHtml(r.action);
+      return `<tr class="ns-shaping-chart__tr" data-row-id="${escapeHtml(rowId)}" data-rc="${escapeHtml(rcAttr)}">${doneCell}<td class="ns-shaping-chart__td-rc">${rcNumberHtml}${rcSideHtml}</td><td>${actionHtml}</td><td>${escapeHtml(
         r.edge
       )}</td><td class="ns-shaping-chart__td-num">${activeSideStsRemainingCellHtml(r)}</td></tr>`;
     })

@@ -593,6 +593,127 @@ export function coordinatedShapingHandoffLines(args: {
   return [lead, follow];
 }
 
+function isShoulderBindOff(event: ShapingEvent): boolean {
+  return event.edge === "outer" && event.kind === "bindOff" && event.side !== "center" && event.amount > 0;
+}
+
+function isNeckBindOffOrDecrease(event: ShapingEvent): boolean {
+  return (
+    event.edge === "inner" &&
+    (event.kind === "bindOff" || event.kind === "decrease") &&
+    event.side !== "center" &&
+    event.amount > 0
+  );
+}
+
+function isNeckHold(event: ShapingEvent): boolean {
+  return event.edge === "inner" && event.kind === "hold" && event.side !== "center" && event.amount > 0;
+}
+
+/**
+ * Put sleeveless neck and shoulder actions on a carriage pass that can start them.
+ * Even armhole RC is the shoulder side. Odd armhole RC is the neck side.
+ * Rows already in the timeline are reused, so the piece does not gain a knitted row
+ * and the stitch totals stay the same.
+ *
+ * A neckline hold that already shares a shoulder-side row with a shoulder bind-off
+ * stays there. On that pass the knitter binds off or holds the shoulder stitches
+ * at the start, then holds the neckline stitches when the carriage arrives.
+ * A shoulder bind-off on a neck-side row moves to a shoulder-side row that does
+ * not already have one. A neckline bind-off, decrease, or hold that is not part
+ * of that combined pass moves to a neck-side row.
+ */
+export function alignSleevelessNeckShoulderTimelineToCarriageSide(
+  timeline: readonly RowEntry[],
+  firstArmholeGarmentRc: number,
+): RowEntry[] {
+  const sorted = [...timeline].sort((a, b) => a.row - b.row);
+  const first = sorted[0];
+  if (!first) return [];
+  const rowNumbers = sorted.map((entry) => entry.row);
+  const armholeSide = (row: number) =>
+    displayRcFromGarmentRc(row, firstArmholeGarmentRc) % 2 === 0;
+  const eventsByRow = new Map<number, ShapingEvent[]>(
+    sorted.map((entry) => [entry.row, entry.events.map((event) => ({ ...event }))]),
+  );
+
+  const openRow = (
+    from: number,
+    wantArmholeSide: boolean,
+    direction: 1 | -1,
+    occupied: (row: number) => boolean,
+  ): number | undefined => {
+    const start = rowNumbers.indexOf(from);
+    for (let index = start + direction; index >= 0 && index < rowNumbers.length; index += direction) {
+      const candidate = rowNumbers[index]!;
+      if (armholeSide(candidate) !== wantArmholeSide) continue;
+      if (occupied(candidate)) continue;
+      return candidate;
+    }
+    return undefined;
+  };
+
+  const take = (row: number, match: (event: ShapingEvent) => boolean): ShapingEvent[] => {
+    const events = eventsByRow.get(row) ?? [];
+    const moving = events.filter(match);
+    if (moving.length === 0) return [];
+    eventsByRow.set(
+      row,
+      events.filter((event) => !match(event)),
+    );
+    return moving;
+  };
+
+  const place = (row: number, moving: readonly ShapingEvent[]): void => {
+    eventsByRow.set(row, [...(eventsByRow.get(row) ?? []), ...moving.map((event) => ({ ...event }))]);
+  };
+
+  for (const row of rowNumbers) {
+    if (!armholeSide(row)) continue;
+    const events = eventsByRow.get(row) ?? [];
+    const sharesShoulderBindOff = events.some(isShoulderBindOff);
+    const moving = take(
+      row,
+      (event) => isNeckBindOffOrDecrease(event) || (isNeckHold(event) && !sharesShoulderBindOff),
+    );
+    if (moving.length === 0) continue;
+    const target =
+      openRow(row, false, 1, (candidate) => (eventsByRow.get(candidate) ?? []).some((event) => event.edge === "inner" && event.side !== "center")) ??
+      openRow(row, false, -1, (candidate) => (eventsByRow.get(candidate) ?? []).some((event) => event.edge === "inner" && event.side !== "center"));
+    place(target ?? row, moving);
+  }
+
+  for (const row of [...rowNumbers].reverse()) {
+    if (armholeSide(row)) continue;
+    const moving = take(row, isShoulderBindOff);
+    if (moving.length === 0) continue;
+    const occupied = (candidate: number) => (eventsByRow.get(candidate) ?? []).some(isShoulderBindOff);
+    const target = openRow(row, true, -1, occupied) ?? openRow(row, true, 1, occupied);
+    place(target ?? row, moving);
+  }
+
+  const state = reverseEvents(edgeStateFrom(first), first.events);
+  return sorted.map((entry) => {
+    const before = { ...state };
+    for (const event of eventsByRow.get(entry.row) ?? []) applyCarriageEvent(state, event, 1);
+    state.leftCount = Math.max(0, state.leftCount);
+    state.rightCount = Math.max(0, state.rightCount);
+    return {
+      ...entry,
+      events: eventsByRow.get(entry.row) ?? [],
+      stitchesL: state.leftCount,
+      stitchesR: state.rightCount,
+      netChangeL: state.leftCount - before.leftCount,
+      netChangeR: state.rightCount - before.rightCount,
+      centerWidth: state.rightInnerEdge - state.leftInnerEdge - 1,
+      leftOuterEdge: state.leftOuterEdge,
+      leftInnerEdge: state.leftInnerEdge,
+      rightInnerEdge: state.rightInnerEdge,
+      rightOuterEdge: state.rightOuterEdge,
+    };
+  });
+}
+
 /**
  * Move inner-edge shaping onto neck-side rows and outer-edge shaping onto
  * armhole-side rows. Even display RC is the armhole side; odd display RC is

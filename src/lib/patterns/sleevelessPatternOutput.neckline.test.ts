@@ -222,8 +222,9 @@ describe("sleeveless round-neck back neckline summary prose", () => {
     const text = backNeckSummaryPlainText(r);
     expect(text).toMatch(/begin back neckline and shoulder shaping/i);
     expect(text).toMatch(/Place center neckline needles/i);
-    expect(text).toMatch(/Put needles L\d+ through R\d+ into hold/i);
-    expect(text).toMatch(/Work needles R\d+ through R\d+ first/i);
+    expect(text).toMatch(/Put the Second Shoulder needles L\d+ through L\d+ into hold/i);
+    expect(text).toMatch(/Work the First Shoulder on needles R\d+ through R\d+/i);
+    expect(text).not.toMatch(/Put needles L\d+ through R\d+ into hold/i);
     expect(text).toMatch(/Use the checklist below for row-by-row neckline and shoulder shaping/i);
     expect(text).not.toMatch(/RIGHT SIDE/i);
     expect(text).not.toMatch(/LEFT SIDE/i);

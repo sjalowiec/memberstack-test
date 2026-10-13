@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  alignSleevelessNeckShoulderTimelineToCarriageSide,
   armholeDecreaseLocalRcs,
   composeFrontVNeckTimelineWithArmholeOverlap,
   displayRcFromGarmentRc,
@@ -8,6 +9,7 @@ import {
   resolveFrontVNeckShapingTimingCase,
   sleevelessPulloverVNeckBeginDisplayRc,
 } from "./frontArmholeNecklineComposition";
+import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 
 const AMANDA = {
@@ -424,5 +426,98 @@ describe("sleevelessPulloverVNeckBeginDisplayRc", () => {
         frontNecklineStartLocalRC: 44,
       }),
     ).toBe(44);
+  });
+});
+
+function carriageRow(local: number, events: ShapingEvent[]): RowEntry {
+  return {
+    row: 100 + local,
+    events,
+    stitchesL: 20,
+    stitchesR: 20,
+    netChangeL: 0,
+    netChangeR: 0,
+    isSplit: true,
+    centerWidth: 10,
+    leftOuterEdge: 1,
+    leftInnerEdge: 20,
+    rightInnerEdge: 21,
+    rightOuterEdge: 40,
+  };
+}
+
+describe("alignSleevelessNeckShoulderTimelineToCarriageSide", () => {
+  const armhole = 100;
+
+  it("keeps a neck hold that already shares a shoulder-side row with the shoulder bind-off", () => {
+    const timeline = [
+      carriageRow(42, [{ kind: "hold", side: "center", edge: "center", amount: 14 }]),
+      carriageRow(44, [
+        { kind: "hold", side: "right", edge: "inner", amount: 3 },
+        { kind: "bindOff", side: "right", edge: "outer", amount: 4 },
+        { kind: "hold", side: "left", edge: "inner", amount: 3 },
+        { kind: "bindOff", side: "left", edge: "outer", amount: 4 },
+      ]),
+      carriageRow(46, [
+        { kind: "hold", side: "right", edge: "inner", amount: 2 },
+        { kind: "bindOff", side: "right", edge: "outer", amount: 4 },
+      ]),
+    ];
+    const aligned = alignSleevelessNeckShoulderTimelineToCarriageSide(timeline, armhole);
+    expect(aligned.map((entry) => entry.events)).toEqual(timeline.map((entry) => entry.events));
+    expect(aligned.map((entry) => entry.row)).toEqual([142, 144, 146]);
+  });
+
+  it("moves a shoulder bind-off off a neck-side row and leaves the neck hold", () => {
+    const timeline = [
+      carriageRow(42, [{ kind: "hold", side: "center", edge: "center", amount: 14 }]),
+      carriageRow(43, [
+        { kind: "hold", side: "right", edge: "inner", amount: 2 },
+        { kind: "bindOff", side: "right", edge: "outer", amount: 4 },
+        { kind: "hold", side: "left", edge: "inner", amount: 2 },
+        { kind: "bindOff", side: "left", edge: "outer", amount: 4 },
+      ]),
+      carriageRow(44, []),
+      carriageRow(45, [
+        { kind: "hold", side: "right", edge: "inner", amount: 2 },
+        { kind: "bindOff", side: "right", edge: "outer", amount: 3 },
+      ]),
+    ];
+    const aligned = alignSleevelessNeckShoulderTimelineToCarriageSide(timeline, armhole);
+    const at = (local: number) => aligned.find((entry) => entry.row === 100 + local)!.events;
+    expect(at(42)).toEqual([
+      { kind: "hold", side: "center", edge: "center", amount: 14 },
+      { kind: "bindOff", side: "right", edge: "outer", amount: 4 },
+      { kind: "bindOff", side: "left", edge: "outer", amount: 4 },
+    ]);
+    expect(at(43)).toEqual([
+      { kind: "hold", side: "right", edge: "inner", amount: 2 },
+      { kind: "hold", side: "left", edge: "inner", amount: 2 },
+    ]);
+    expect(at(44)).toEqual([{ kind: "bindOff", side: "right", edge: "outer", amount: 3 }]);
+    expect(at(45)).toEqual([{ kind: "hold", side: "right", edge: "inner", amount: 2 }]);
+    expect(aligned).toHaveLength(timeline.length);
+  });
+
+  it("moves a neckline bind-off off a shoulder-side row without merging amounts", () => {
+    const timeline = [
+      carriageRow(20, [{ kind: "bindOff", side: "center", edge: "center", amount: 10 }]),
+      carriageRow(22, [
+        { kind: "bindOff", side: "right", edge: "inner", amount: 3 },
+        { kind: "bindOff", side: "left", edge: "inner", amount: 3 },
+      ]),
+      carriageRow(23, []),
+      carriageRow(24, [{ kind: "decrease", side: "right", edge: "inner", amount: 1 }]),
+      carriageRow(25, []),
+    ];
+    const aligned = alignSleevelessNeckShoulderTimelineToCarriageSide(timeline, armhole);
+    const at = (local: number) => aligned.find((entry) => entry.row === 100 + local)!.events;
+    expect(at(22)).toEqual([]);
+    expect(at(23)).toEqual([
+      { kind: "bindOff", side: "right", edge: "inner", amount: 3 },
+      { kind: "bindOff", side: "left", edge: "inner", amount: 3 },
+    ]);
+    expect(at(24)).toEqual([]);
+    expect(at(25)).toEqual([{ kind: "decrease", side: "right", edge: "inner", amount: 1 }]);
   });
 });

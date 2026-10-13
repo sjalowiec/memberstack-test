@@ -19,6 +19,8 @@ export type BuildPatternVisualGuidesOpts = {
   shapingMapData?: ShapingMapData | null;
   /** Passed to `renderShapingMapSvg` (default true — first-shoulder front map is mirrored). */
   shapingMapMirror?: boolean;
+  /** Short reading note shown with the map. */
+  shapingMapNote?: string;
 };
 
 function escapeHtml(text: string): string {
@@ -54,9 +56,14 @@ function shapingNotationCardHtml(opts: BuildPatternVisualGuidesOpts): string {
 function shapingMapCardHtml(
   shapingMapData: ShapingMapData,
   mirror: boolean,
+  note?: string,
 ): string {
+  const noteHtml = note?.trim()
+    ? `<p class="shaping-map__note">${escapeHtml(note.trim())}</p>`
+    : "";
   return `<section class="ns-visual-guides__card ns-visual-guides__card--map">
     <h4 class="ns-visual-guides__card-title">Shaping Map</h4>
+    ${noteHtml}
     <div class="ns-visual-guides__preview ns-visual-guides__preview--map">${renderShapingMapSvg(shapingMapData, { mirror })}</div>
     <div class="ns-visual-guides__actions no-print">
       <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
@@ -72,7 +79,7 @@ export function buildPatternVisualGuidesHtml(opts: BuildPatternVisualGuidesOpts)
   const notationCard = shapingNotationCardHtml(opts);
   const shapingMapData = opts.shapingMapData ?? null;
   const mapCard = shapingMapData
-    ? shapingMapCardHtml(shapingMapData, opts.shapingMapMirror !== false)
+    ? shapingMapCardHtml(shapingMapData, opts.shapingMapMirror !== false, opts.shapingMapNote)
     : "";
   if (!notationCard && !mapCard) return "";
 

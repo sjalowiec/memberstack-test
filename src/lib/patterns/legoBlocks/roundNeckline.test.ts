@@ -411,8 +411,11 @@ describe("shallow round-neck written instructions", () => {
     });
     expect(lines[0]).toBe("Begin back neckline and shoulder shaping.");
     expect(lines.some((l) => /Place center neckline needles .*L9 through R9/i.test(l))).toBe(true);
-    expect(lines.some((l) => /Put needles .*L50 through R9.*into hold/i.test(l))).toBe(true);
-    expect(lines.some((l) => /Work needles .*R10 through R50.*first/i.test(l))).toBe(true);
+    expect(lines.some((l) => /Put the Second Shoulder needles .*L50 through L10.*into hold/i.test(l))).toBe(
+      true,
+    );
+    expect(lines.some((l) => /Work the First Shoulder on needles .*R10 through R50/i.test(l))).toBe(true);
+    expect(lines.some((l) => /Put needles .*L\d+ through R\d+.*into hold/i.test(l))).toBe(false);
     expect(lines.at(-1)).toBe(
       "Use the checklist below for row-by-row neckline and shoulder shaping.",
     );

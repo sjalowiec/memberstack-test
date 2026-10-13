@@ -650,27 +650,37 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(rows.some((row) => row.edge === "Shoulder" && /Bind off/.test(row.action))).toBe(true);
   });
 
-  it("keeps neckline and shoulder bind-offs on opposite carriage sides", () => {
+  it("keeps checklist neckline and shoulder rows on the timeline rows", () => {
     for (const { options } of cases) {
       const result = generateSetInSleevePattern(pattern(options));
+      const armholeStart = result.debug.armholeStartRow ?? 0;
       const timeline = result.neckShoulderShapingChart?.timeline ?? [];
-      for (const entry of timeline) {
-        const neck = entry.events.some((event) => event.edge === "inner" && event.side === "right");
-        const shoulder = entry.events.some(
-          (event) => event.edge === "outer" && event.side === "right" && event.kind !== "decrease",
-        );
-        expect(neck && shoulder).toBe(false);
-      }
-      const rows = buildActiveSideInstructionTableRows(result.neckShoulderShapingChart!, 0, {
+      const rcStart = armholeLocalRcActiveShoulderChecklistStart(
+        result.neckShoulderShapingChart!,
+        armholeStart,
+        { includeCenterNecklineSetupRow: true },
+      );
+      const rows = buildActiveSideInstructionTableRows(result.neckShoulderShapingChart!, rcStart, {
         includeCenterNecklineSetupRow: true,
-        hideCenterNecklineSetupRow: true,
       }).filter((row) => row.edge === "Neck" || row.edge === "Shoulder");
-      for (let index = 0; index < rows.length - 1; index += 1) {
-        const neck = rows[index];
-        const shoulder = rows[index + 1];
-        if (neck?.edge !== "Neck" || shoulder?.edge !== "Shoulder") continue;
-        expect(shoulder.rc).toBe(neck.rc + 1);
-        expect(neck.carriagePosition).not.toBe(shoulder.carriagePosition);
+      const expected: { rc: number; edge: "Neck" | "Shoulder" }[] = [];
+      for (const entry of timeline) {
+        for (const event of entry.events) {
+          if (event.side !== "right" || event.amount <= 0) continue;
+          if (event.edge === "inner") expected.push({ rc: entry.row - armholeStart, edge: "Neck" });
+          else if (event.edge === "outer" && event.kind !== "decrease") {
+            expected.push({ rc: entry.row - armholeStart, edge: "Shoulder" });
+          }
+        }
+      }
+      expect(expected.length).toBeGreaterThan(0);
+      const actual = rows.map((row) => `${row.edge}@${row.rc}`);
+      for (const event of expected) {
+        expect(actual).toContain(`${event.edge}@${event.rc}`);
+      }
+      const lastTimelineRc = Math.max(...timeline.map((entry) => entry.row - armholeStart));
+      for (const row of rows) {
+        expect(row.rc).toBeLessThanOrEqual(lastTimelineRc);
       }
     }
   });
@@ -719,7 +729,7 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(html).not.toContain("Set the row counter");
   });
 
-  it("keeps the sleeveless back summary on the combined hold range", () => {
+  it("keeps the sleeveless back summary on separate center and shoulder ranges", () => {
     const data = pattern({});
     const style = { ...(data.style as Record<string, unknown>) };
     delete style.construction;
@@ -727,8 +737,9 @@ describe("set-in back neckline and shoulder checklist", () => {
     delete style.sleeveDirection;
     const sleeveless = generateSleevelessBackPattern({ ...data, style });
     const summary = backNeckSummaryPlainText(sleeveless);
-    expect(summary).toMatch(/Put needles L\d+ through R\d+ into hold/i);
-    expect(summary).not.toMatch(/Put the opposite shoulder needles/i);
+    expect(summary).toMatch(/Put the Second Shoulder needles L\d+ through L\d+ into hold/i);
+    expect(summary).toMatch(/Work the First Shoulder on needles R\d+ through R\d+/i);
+    expect(summary).not.toMatch(/Put needles L\d+ through R\d+ into hold/i);
   });
 
   it("connects the shared checklist renderer on the set-in pattern page", () => {
@@ -749,6 +760,9 @@ describe("set-in back neckline and shoulder checklist", () => {
     expect(setIn).toContain('mount.querySelector("#sg-neck-shoulder-chart-table-front")');
     expect(setIn).toContain("renderSleevelessPatternTabFrontChartTableHtml");
     expect(setIn).toContain("buildSleevelessRoundNeckShapingMapData");
+    expect(setIn).toContain("buildSleevelessRoundNeckBackShapingMapData");
+    expect(setIn).toContain("shapingMapData: backShapingMapData");
+    expect(setIn).toContain("shapingMapNote: frontShapingMapNote");
     expect(setIn).toContain("front-neckline-shoulder-chart-print-btn");
     expect(setIn).toContain("resetRowCounterForSecondShoulder: true");
     expect(setIn).toMatch(/false,\s+true,\s+true,\s+setInBackNeckHelpCard/);

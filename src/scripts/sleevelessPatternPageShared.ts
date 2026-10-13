@@ -4142,6 +4142,15 @@ table {
       { firstArmholeRc: result?.debug?.armholeStartRow },
     );
     const frontIsRoundNeck = !!frontShapingMapData;
+    const frontShapingMapNote =
+      "The shoulder is at the top of this map. Neckline steps continue down to the center. The checklist uses the same row numbers, starting at the center neckline and working upward.";
+    const backShapingMapData = buildSleevelessRoundNeckBackShapingMapData(
+      result?.backNeckShoulderTimeline,
+      {
+        firstArmholeRc: result?.debug?.armholeStartRow,
+        patternData: diagramPatternData,
+      },
+    );
     const frontVNeckWrittenPath = sleevelessFrontVNeckWrittenPathPresentation(
       result?.debug?.frontArmholeNecklineOverlap,
     );
@@ -4166,7 +4175,26 @@ table {
         neckChartStartRow,
         { omitPieceBanner: true },
       );
-    const back = renderPiece(result.displayRows, "back", "sg-neck-shoulder-chart-table-back", result?.neckShoulderShapingChart?.rows?.[0]?.row);
+    const back = renderSleevelessDisplayHtml(
+      result.displayRows,
+      "sg-neck-shoulder-chart-table-back",
+      "back",
+      patternIntroSentence,
+      result?.neckShoulderShapingChart?.rows?.[0]?.row,
+      {
+        omitPieceBanner: true,
+        visualGuides: backShapingMapData
+          ? {
+              enabled: true,
+              piece: "back",
+              notationSupported: false,
+              construction: "sleeveless",
+              patternData: diagramPatternData,
+              shapingMapData: backShapingMapData,
+            }
+          : undefined,
+      },
+    );
     const front = renderSleevelessDisplayHtml(
       result.frontDisplayRows ?? [],
       "sg-neck-shoulder-chart-table-front",
@@ -4183,6 +4211,7 @@ table {
               construction: "sleeveless",
               patternData: diagramPatternData,
               shapingMapData: frontShapingMapData,
+              shapingMapNote: frontShapingMapNote,
               frontRoundNeckLayout: frontIsRoundNeck,
               checklistBeforeVisualGuides:
                 result?.debug?.frontVNeckShapingTimingCase != null ||

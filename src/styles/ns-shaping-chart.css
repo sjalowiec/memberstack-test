@@ -120,6 +120,14 @@
   color: #9ca3af;
 }
 
+.ns-shaping-chart__pass-note {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #4b5563;
+  line-height: 1.3;
+}
+
 .ns-shaping-chart__table-wrap {
   overflow-x: auto;
   margin: 0 0 0.6rem;

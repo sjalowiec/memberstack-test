@@ -94,6 +94,7 @@ import {
   composeFrontVNeckTimelineWithArmholeOverlap,
   composeNecklineTimelineWithArmholeOverlay,
   displayRcFromGarmentRc,
+  alignSleevelessNeckShoulderTimelineToCarriageSide,
   phaseLockTimelineToCarriageSide,
   resolveFrontVNeckRowCounterDisplayPolicy,
   pulloverArmholeEventsFromSteps,
@@ -3626,6 +3627,17 @@ export function generateSleevelessBackPattern(
           ? { lastArmholeGarmentRc: frontArmholeNecklineOverlap.lastArmholeGarmentRc }
           : {}),
       });
+    } else if (
+      !isFrontVNeck &&
+      !isCardiganHalfFrontBody &&
+      firstArmholeRCNum !== null &&
+      frontTimeline.length > 0
+    ) {
+      frontTimeline = alignSleevelessNeckShoulderTimelineToCarriageSide(
+        frontTimeline,
+        firstArmholeRCNum,
+      );
+      frontLiveRows = neckShoulderChartRowsFromTimeline(frontTimeline);
     }
 
     const shoulderReferenceFrontTimeline =
@@ -3735,7 +3747,12 @@ export function generateSleevelessBackPattern(
             firstArmholeRCNum,
             resolveFrontVNeckRowCounterDisplayPolicy(frontArmholeNecklineOverlap),
           )
-        : backTimelineWithArmhole;
+        : firstArmholeRCNum !== null && backTimelineWithArmhole.length > 0
+          ? alignSleevelessNeckShoulderTimelineToCarriageSide(
+              backTimelineWithArmhole,
+              firstArmholeRCNum,
+            )
+          : backTimelineWithArmhole;
     const backRowsForChart =
       backTimelineForChart === timeline
         ? liveRows
@@ -4204,7 +4221,7 @@ export function generateSleevelessBackPattern(
     shoulderStitches,
     alineBodyShaping,
     backRoundNeckPlan,
-    disjointHoldRanges: options?.useSetInArmhole === true,
+    disjointHoldRanges: true,
   });
 
   const cardiganFrontAlineShaping =
@@ -4292,9 +4309,7 @@ export function generateSleevelessBackPattern(
       armholeDecreaseSts: armholeMathResult?.decreaseSts,
       stitchesAfterArmhole: stitchesAfterArmhole,
       setInFrontRoundNeckPlan:
-        options?.useSetInArmhole === true && !isCardigan && !isFrontVNeck
-          ? frontRoundNeckPlan
-          : undefined,
+        !isCardigan && !isFrontVNeck ? frontRoundNeckPlan : undefined,
       setInPreserveArmholeSection: options?.useSetInArmhole === true,
     })
   );

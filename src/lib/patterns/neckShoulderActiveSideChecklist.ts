@@ -33,9 +33,8 @@ type ActiveSideActionSource = {
   finalSourceRelativeRow: number;
   actions: ActiveSideScheduledAction[];
   /**
-   * When true, checklist RCs follow the timeline/written deep-round schedule
-   * (center BO at local 000, neck-edge actions at 002, 004, …) without Neck-odd padding.
-   * Cardigan, V-neck, shallow-front, and back-neck keep the legacy parity path.
+   * When true, checklist RCs are the timeline rows. Neck and shoulder actions that share
+   * a timeline row stay on that row. The odd/even carriage pad is not applied.
    */
   alignDisplayRcToTimeline: boolean;
 };
@@ -54,6 +53,11 @@ export type ActiveSideInstructionTableRow = {
    * `stitchesRemaining` still tracks the active-shoulder count so downstream rows and bind-off math are unaffected.
    */
   stitchesRemainingDisplay?: string;
+  /**
+   * Extra sentence for a second shaping action on a row the timeline already used.
+   * Kept off {@link action} so stitch-count wording stays a single verb phrase.
+   */
+  passNote?: string;
   /** Presentation-only: insert the armhole row-counter reset in a Case 4 (neckline-first) checklist. */
   rowCounterReset?: boolean;
   rowCounterResetGarmentRc?: number;
@@ -291,9 +295,8 @@ export function armholeLocalRcActiveShoulderChecklistStart(
     if (divideInfo) {
       return Math.max(0, Math.floor(divideInfo.garmentRc) - fh);
     }
-    const second = sorted[1];
-    const startGarment = second !== undefined ? second.row : center.row + 1;
-    return Math.max(0, Math.floor(startGarment) - fh);
+    // Relative row 0 is the center divide, whether or not that setup line is printed.
+    return Math.max(0, Math.floor(center.row) - fh);
   }
 
   const rows = [...chart.rows].sort((a, b) => a.row - b.row);
@@ -303,7 +306,9 @@ export function armholeLocalRcActiveShoulderChecklistStart(
   if (divideInfo && centerBo) {
     return Math.max(0, Math.floor(divideInfo.garmentRc) - fh);
   }
-  const sourceBaseRow = centerBo ? first.row + 1 : first.row;
+  const second = rows[1];
+  const deepFromCenter = centerBo && second !== undefined && second.row >= first.row + 2;
+  const sourceBaseRow = deepFromCenter || !centerBo ? first.row : first.row + 1;
   return Math.max(0, Math.floor(sourceBaseRow) - fh);
 }
 
@@ -318,6 +323,37 @@ function edgeForActiveSideCarriagePosition(position: "Right" | "Left"): ActiveSi
 /** Legacy carriage parity: Armhole/Shoulder on even RC, Neck on odd RC. */
 function requiredParityForActiveSideEdge(edge: ActiveSideEdge): 0 | 1 {
   return edge === "Neck" ? 1 : 0;
+}
+
+function carriageStartsAtOuterEdge(rc: number, side: "left" | "right"): boolean {
+  const position =
+    side === "left" ? carriagePositionForSecondShoulderRc(rc) : carriagePositionForActiveSideRc(rc);
+  return side === "right" ? position === "Right" : position === "Left";
+}
+
+/**
+ * One timeline row that shapes both the neck edge and the shoulder edge is one carriage pass.
+ * The carriage has to start at the shoulder edge so the bind-off or decrease begins the row.
+ * The neck edge is shaped when the carriage arrives. A row whose carriage already sits at the
+ * neck cannot start a shoulder bind-off.
+ */
+export function simultaneousShapingPassNote(args: {
+  localRc: number;
+  side: "left" | "right";
+  outerKind: "bindOff" | "decrease" | "hold" | null;
+  innerKind: "bindOff" | "decrease" | "hold" | null;
+  role: "outer" | "inner";
+}): string | null {
+  if (!args.outerKind || !args.innerKind) return null;
+  const atOuter = carriageStartsAtOuterEdge(args.localRc, args.side);
+  if (atOuter) {
+    return args.role === "outer"
+      ? "Start of this row, at the shoulder edge."
+      : "Same row. Shape the neck edge when the carriage reaches it.";
+  }
+  return args.role === "inner"
+    ? "The carriage is at the neck edge on this row."
+    : "Same row as the neckline shaping. The carriage is at the neck edge, so this shoulder bind-off cannot start the pass.";
 }
 
 /** Deep round pullover: center stitches are bound off (not held). */
@@ -449,7 +485,7 @@ function buildActiveSideActionsFromTimeline(
   const alignDisplayRcToTimeline =
     vNeckFront ||
     (cardiganFront && chart?.finishShoulderInsideRowBudget === true) ||
-    (hasCenterDivide && !cardiganFront && timelineHasDeepRoundCenterBindOff(timeline));
+    (hasCenterDivide && !cardiganFront);
 
   const relativeOriginRow =
     hasCenterDivide && center
@@ -492,6 +528,8 @@ function buildActiveSideActionsFromTimeline(
   }
   const remainder = finalShoulderRemainderStitches(timeline, side);
   const keepRemainderOnLastRow = chart?.finishShoulderInsideRowBudget === true;
+  // Stitches the timeline still has in work at the last row are bound off on the next
+  // source row. This is the shoulder completion, not a carriage-parity shift.
   if (remainder > 0 && !keepRemainderOnLastRow) {
     actions.push({
       sourceRelativeRow: finalSourceRelativeRow + 1,
@@ -702,7 +740,15 @@ function buildSideInstructionTableRows(
     const dr = a.sourceRelativeRow - b.sourceRelativeRow;
     if (dr !== 0) return dr;
     if (a.edge === b.edge) return 0;
-    return a.edge === "Neck" ? -1 : 1;
+    if (!source.alignDisplayRcToTimeline) {
+      return a.edge === "Neck" ? -1 : 1;
+    }
+    const startsAtOuter = carriageStartsAtOuterEdge(toDisplay(a.sourceRelativeRow), side);
+    const aOuter = a.edge !== "Neck";
+    const bOuter = b.edge !== "Neck";
+    if (aOuter === bOuter) return 0;
+    if (startsAtOuter) return aOuter ? -1 : 1;
+    return aOuter ? 1 : -1;
   });
 
   for (const action of actions) {
@@ -731,12 +777,36 @@ function buildSideInstructionTableRows(
       stitchesRemaining,
     );
     stitchesRemaining = Math.max(0, stitchesRemaining - action.amount);
+    const sameRowPartner = source.actions.find(
+      (other) =>
+        other !== action &&
+        other.sourceRelativeRow === action.sourceRelativeRow &&
+        other.edge !== action.edge &&
+        (other.edge === "Neck" || action.edge === "Neck"),
+    );
+    const passNote =
+      source.alignDisplayRcToTimeline && sameRowPartner
+        ? simultaneousShapingPassNote({
+            localRc: displayRc,
+            side,
+            outerKind: (action.edge === "Neck" ? sameRowPartner.kind : action.kind) as
+              | "bindOff"
+              | "decrease"
+              | "hold",
+            innerKind: (action.edge === "Neck" ? action.kind : sameRowPartner.kind) as
+              | "bindOff"
+              | "decrease"
+              | "hold",
+            role: action.edge === "Neck" ? "inner" : "outer",
+          })
+        : null;
     out.push({
       rc: displayRc,
       carriagePosition: carriageFor(displayRc),
       action: activeSideActionText(action),
       edge: action.edge,
       stitchesRemaining,
+      ...(passNote ? { passNote } : {}),
     });
     checklistIdx = source.alignDisplayRcToTimeline
       ? Math.max(checklistIdx, action.sourceRelativeRow + 1)
@@ -753,7 +823,11 @@ function buildSideInstructionTableRows(
     checklistIdx += 1;
   }
 
-  if (stitchesRemaining > 0 && chart.finishShoulderInsideRowBudget !== true) {
+  if (
+    stitchesRemaining > 0 &&
+    chart.finishShoulderInsideRowBudget !== true &&
+    !source.alignDisplayRcToTimeline
+  ) {
     let displayRc = toDisplay(checklistIdx);
     const leftoverEdge: ActiveSideEdge = "Shoulder";
     while (displayRc % 2 !== requiredParityForActiveSideEdge(leftoverEdge)) {

@@ -236,12 +236,12 @@ describe("backShapingScheduleToMapData", () => {
     expect(svg).toContain(">Armhole Edge<");
     expect(svg).not.toContain("Shoulder Edge");
     expect(svg).toContain(">Neck Edge<");
-    expect(svg).toContain(">Bind off 8 center stitches<");
+    expect(svg).toContain(">Hold 8 center stitches<");
     expect(svg).not.toContain("Center Stitches");
   });
 });
 
-describe("integration  real Sleeveless Round Neck back timeline", () => {
+describe("integration Â real Sleeveless Round Neck back timeline", () => {
   it("builds a schedule from the calculated back timeline with matching center + real rows", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const timeline = r.backNeckShoulderTimeline;
@@ -329,7 +329,7 @@ describe("integration  real Sleeveless Round Neck back timeline", () => {
   });
 });
 
-describe("integration  back without shoulder shaping", () => {
+describe("integration Â back without shoulder shaping", () => {
   it("produces a neck-only map when the timeline has no outer-edge bind-offs", () => {
     const timeline = [
       mkRow(200, [centerHold(18)]),

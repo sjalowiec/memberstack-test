@@ -101,6 +101,49 @@ function sidePlan(
   return side === "right" ? plan.right : plan.left;
 }
 
+function neckEdgeStitchTotal(side: RoundNecklineSidePlan): number {
+  return (
+    side.holdGroups.reduce((sum, n) => sum + n, 0) +
+    side.stairSteps.reduce((sum, n) => sum + n, 0) +
+    side.singleDecreaseCount
+  );
+}
+
+function stitchWord(n: number): string {
+  return n === 1 ? "stitch" : "stitches";
+}
+
+/**
+ * Initial shoulder-section count (needles in work at the divide, including neckline
+ * stitches still to shape) versus the finished shoulder left after that shaping.
+ */
+export function shoulderSectionBreakdownLines(
+  leftSectionStitches: number,
+  rightSectionStitches: number,
+  leftNeckEdgeStitches: number,
+  rightNeckEdgeStitches: number,
+): string[] {
+  const describe = (label: string, section: number, neck: number): string | null => {
+    const finished = section - neck;
+    if (section <= 0 || neck <= 0 || finished <= 0) return null;
+    return `The ${label} has ${section} ${stitchWord(section)} in work. Shape ${neck} ${stitchWord(neck)} at the neckline edge. The finished shoulder is ${finished} ${stitchWord(finished)}.`;
+  };
+  if (
+    leftSectionStitches === rightSectionStitches &&
+    leftNeckEdgeStitches === rightNeckEdgeStitches
+  ) {
+    const finished = leftSectionStitches - leftNeckEdgeStitches;
+    if (leftSectionStitches <= 0 || leftNeckEdgeStitches <= 0 || finished <= 0) return [];
+    return [
+      `Each shoulder section has ${leftSectionStitches} ${stitchWord(leftSectionStitches)} in work. Shape ${leftNeckEdgeStitches} ${stitchWord(leftNeckEdgeStitches)} at the neckline edge. The finished shoulder is ${finished} ${stitchWord(finished)}.`,
+    ];
+  }
+  return [
+    describe("First Shoulder section", rightSectionStitches, rightNeckEdgeStitches),
+    describe("Second Shoulder section", leftSectionStitches, leftNeckEdgeStitches),
+  ].filter((line): line is string => Boolean(line));
+}
+
 /** Shallow machine-knit plan: short-row hold groups every other row (no stair bind-offs). */
 export function isShallowSinglesOnlyPlan(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
@@ -260,9 +303,10 @@ function roundNeckBackShallowNeedleExecutionLines(
 export type RoundNeckBackShallowSleevelessSummaryOptions = RoundNeckBackShallowExecutionOptions & {
   necklineStartRcLabel?: string;
   /**
-   * Set-in sleeve only. State the center hold and the opposite shoulder as two ranges that do
-   * not include each other. The combined first-side hold used by the sleeveless summary includes
-   * the center needles already named in the previous sentence.
+   * Name the center, the Second Shoulder, and the First Shoulder as three ranges that do not
+   * include each other. Sleeveless and Set-In Sleeve both use this. Pass `false` only for a
+   * caller that still wants the older combined hold (that range crosses the center and repeats
+   * the center stitches).
    */
   disjointHoldRanges?: boolean;
 };
@@ -305,12 +349,18 @@ export function roundNeckBackShallowSleevelessSummaryWrittenLines(
     formatNeedleRangeThrough(layout.leftShoulder.start, layout.leftShoulder.end),
   );
 
-  if (options?.disjointHoldRanges === true) {
+  if (options?.disjointHoldRanges !== false) {
     return [
       ...(rcLine ? [rcLine] : []),
       `Place center neckline needles ${centerRangeHtml} in hold${formatStitchCountValidation(counts.center)}.`,
       `Put the Second Shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
       `Work the First Shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
+      ...shoulderSectionBreakdownLines(
+        counts.leftShoulder,
+        counts.rightShoulder,
+        neckEdgeStitchTotal(plan.left),
+        neckEdgeStitchTotal(plan.right),
+      ),
       checklistLine,
     ];
   }
@@ -353,6 +403,12 @@ export function roundNeckFrontSetInSetupWrittenLines(
     centerLine,
     `Put the Second Shoulder needles ${leftShoulderRangeHtml} into hold${formatStitchCountValidation(counts.leftShoulder)}.`,
     `Work the First Shoulder on needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
+    ...shoulderSectionBreakdownLines(
+      counts.leftShoulder,
+      counts.rightShoulder,
+      neckEdgeStitchTotal(plan.left),
+      neckEdgeStitchTotal(plan.right),
+    ),
     checklistLine,
   ];
 }

@@ -355,11 +355,19 @@ export function backShapingScheduleToMapData(
     });
   }
 
+  const centerCount = Math.max(0, Math.floor(schedule.centerStitches));
+  const centerLabel = schedule.centerHeld
+    ? centerCount === 1
+      ? "Hold 1 center stitch"
+      : `Hold ${centerCount} center stitches`
+    : undefined;
+
   return {
     title: options?.title ?? "Back neckline shaping map",
     rowMin: localStart,
     rowMax: localEnd,
     centerStitches: schedule.centerStitches,
+    ...(centerLabel ? { centerLabel } : {}),
     paths,
     edgeLabels: { shoulder: "Armhole Edge", neck: "Neck Edge" },
   };

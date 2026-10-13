@@ -231,7 +231,7 @@ describe("drop-shoulder back round-neck shaping map", () => {
     expect(svg).toContain(">Neck Edge<");
     expect(svg).toContain(">Armhole Edge<");
     expect(svg).not.toContain("Shoulder Edge");
-    expect(svg).toMatch(/>Bind off \d+ center stitch(?:es)?</);
+    expect(svg).toMatch(/>Hold \d+ center stitch(?:es)?</);
     expect(svg).not.toContain("Center Stitches");
   });
 
