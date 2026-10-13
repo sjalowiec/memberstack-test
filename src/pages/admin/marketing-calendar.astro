@@ -1,0 +1,112 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Marketing calendar" description="Sync ActiveCampaign campaigns to the KIN marketing calendar.">
+  <main class="marketing-sync">
+    <h1>Marketing calendar</h1>
+    <p>
+      Sync scheduled and sent ActiveCampaign campaigns onto the KIN marketing calendar.
+      Event titles use the campaign name. Existing manual events and repeating reminders stay as they are.
+    </p>
+    <button id="marketing-sync-now" type="button">Sync now</button>
+    <p id="marketing-sync-status" role="status"></p>
+    <ul id="marketing-sync-results"></ul>
+  </main>
+</BaseLayout>
+
+<script>
+  import { fetchAdminJson } from "../../lib/admin/adminAuthClient";
+
+  const button = document.querySelector<HTMLButtonElement>("#marketing-sync-now");
+  const status = document.querySelector<HTMLParagraphElement>("#marketing-sync-status");
+  const results = document.querySelector<HTMLUListElement>("#marketing-sync-results");
+
+  type SyncChange = { action: string; title: string; date: string | null; campaignId: string };
+  type SyncBody = {
+    created?: number;
+    updated?: number;
+    deleted?: number;
+    changes?: SyncChange[];
+    proposedDeletions?: Array<{ title: string; campaignId: string }>;
+    skippedConflicts?: Array<{ title: string; manualSummary: string }>;
+  };
+
+  button?.addEventListener("click", async () => {
+    if (!button || !status || !results) return;
+    button.disabled = true;
+    status.textContent = "Syncing…";
+    results.replaceChildren();
+    const response = await fetchAdminJson<SyncBody>("/api/admin/marketing-calendar/sync", {
+      method: "POST",
+      body: {},
+    });
+    button.disabled = false;
+    if (!response.ok) {
+      status.textContent = response.error || "Sync failed.";
+      return;
+    }
+    const data = response.data;
+    const created = data.created ?? 0;
+    const updated = data.updated ?? 0;
+    status.textContent = `Added ${created}, updated ${updated}, deleted 0.`;
+    for (const change of data.changes ?? []) {
+      const item = document.createElement("li");
+      item.textContent = `${change.action === "create" ? "Added" : "Updated"}: ${change.title} (${change.date || "no date"})`;
+      results.append(item);
+    }
+    for (const deletion of data.proposedDeletions ?? []) {
+      const item = document.createElement("li");
+      item.textContent = `Not deleted: ${deletion.title} (campaign ${deletion.campaignId})`;
+      results.append(item);
+    }
+    for (const conflict of data.skippedConflicts ?? []) {
+      const item = document.createElement("li");
+      item.textContent = `Left alone because it matches “${conflict.manualSummary}”: ${conflict.title}`;
+      results.append(item);
+    }
+  });
+</script>
+
+<style>
+  .marketing-sync {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .marketing-sync h1 {
+    margin: 0 0 0.75rem;
+    font-size: 1.6rem;
+  }
+
+  .marketing-sync p {
+    margin: 0 0 1rem;
+    line-height: 1.45;
+  }
+
+  #marketing-sync-now {
+    width: 100%;
+    min-height: 3rem;
+    border: 0;
+    border-radius: 999px;
+    background: #3f6212;
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  #marketing-sync-now:disabled {
+    opacity: 0.7;
+  }
+
+  #marketing-sync-results {
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+  }
+
+  #marketing-sync-results li {
+    margin: 0.35rem 0;
+  }
+</style>

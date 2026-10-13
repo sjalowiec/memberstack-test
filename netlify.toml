@@ -72,6 +72,14 @@
 [functions."legacy-renewal-reminders"]
   schedule = "0 8 * * *"
 
+# Marketing calendar sync. 04:00 UTC is 9:00pm Pacific Daylight Time and
+# 8:00pm Pacific Standard Time. The schedule is present for the development
+# branch, but a scheduled run does not write unless
+# MARKETING_CALENDAR_SYNC_LIVE_ENABLED is exactly "true". That flag stays unset
+# until the production deployment is approved. Manual sync is the admin page.
+[functions."marketing-calendar-sync"]
+  schedule = "0 4 * * *"
+
 # Former beta domain → canonical production host (path-preserving).
 # Does not affect legacy.knititnow.com (separate host, not matched here).
 [[redirects]]
