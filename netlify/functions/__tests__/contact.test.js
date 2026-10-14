@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleContactPost, handler } from "../contact.js";
 import { TURNSTILE_VERIFY_URL } from "../lib/turnstile.js";
+import {
+  MAX_CONTACT_IMAGE_BYTES,
+  MAX_CONTACT_IMAGES,
+  contactImageCountError,
+  contactImageTooLargeError,
+  contactImageTotalError,
+  contactImageTypeError,
+} from "../../../src/lib/contact/contactImages.ts";
 
 function createMemoryPersistence() {
   const messages = [];
@@ -29,7 +37,7 @@ function createMemoryPersistence() {
   };
 }
 
-function makeContactRequest(fields, headers = {}) {
+function makeContactRequest(fields, headers = {}, images = []) {
   const form = new FormData();
   const defaults = {
     "bot-field": "",
@@ -39,11 +47,26 @@ function makeContactRequest(fields, headers = {}) {
     if (value === undefined) continue;
     form.set(key, value);
   }
+  for (const image of images) {
+    form.append("images", image);
+  }
   return new Request("https://example.com/.netlify/functions/contact", {
     method: "POST",
     headers,
     body: form,
   });
+}
+
+function contactImage(name, bytes, type = "image/jpeg") {
+  return new File([bytes], name, { type });
+}
+
+function resendPayload(fetchMock) {
+  const call = fetchMock.mock.calls.find(
+    (entry) => String(entry[0]) === "https://api.resend.com/emails",
+  );
+  expect(call).toBeTruthy();
+  return JSON.parse(call[1].body);
 }
 
 function turnstileSuccessResponse() {
@@ -203,7 +226,9 @@ describe("contact submission handler", () => {
       null,
       deps({ fetchImpl }),
     );
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(502);
+    expect(await res.text()).toMatch(/couldn't send your message/i);
+    expect(String(res.headers.get("content-type"))).toMatch(/text\/plain/);
     expect(persistence.messages).toHaveLength(1);
     expect(persistence.messages[0].notificationEmailSent).toBe(false);
     expect(persistence.messages[0].notificationEmailError).toMatch(/Resend API error 500/);
@@ -221,7 +246,8 @@ describe("contact submission handler", () => {
       null,
       deps({ getResendApiKey: () => "" }),
     );
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(502);
+    expect(await res.text()).toMatch(/couldn't send your message/i);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(String(fetchImpl.mock.calls[0][0])).toBe(TURNSTILE_VERIFY_URL);
     expect(persistence.messages).toHaveLength(1);
@@ -555,6 +581,121 @@ describe("contact submission handler", () => {
     expect(await res.text()).toMatch(/couldn't send your message/i);
     expect(persistence.messages).toHaveLength(0);
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("sends a message with no images and does not add email attachments", async () => {
+    const res = await handleContactPost(
+      makeContactRequest({
+        name: "Sue",
+        email: "visitor@example.com",
+        message: "No photo this time",
+      }),
+      null,
+      deps(),
+    );
+    expect(res.status).toBe(200);
+    expect(persistence.messages[0].attachment).toBeUndefined();
+    expect(resendPayload(fetchImpl).attachments).toBeUndefined();
+  });
+
+  it("attaches every accepted image to the contact email", async () => {
+    const first = contactImage("gauge.jpg", new Uint8Array([1, 2, 3]));
+    const second = contactImage("carriage.png", new Uint8Array([4, 5]), "image/png");
+    const third = contactImage("gauge.jpg", new Uint8Array([6, 7, 8]));
+    const persistImage = vi.fn(async (image) => ({
+      link: `https://example.com/images/${encodeURIComponent(image.name)}`,
+      warning: null,
+      blobKey: `contact/${image.name}`,
+      accessToken: "tok",
+      contentType: image.type,
+      originalFilename: image.name,
+    }));
+
+    const res = await handleContactPost(
+      makeContactRequest(
+        {
+          name: "Sue",
+          email: "visitor@example.com",
+          message: "Three photos",
+        },
+        {},
+        [first, second, third],
+      ),
+      null,
+      deps({ persistImage }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(persistImage).toHaveBeenCalledTimes(1);
+    expect(persistence.messages[0].attachment.filename).toBe("gauge.jpg");
+    const payload = resendPayload(fetchImpl);
+    expect(payload.attachments.map((item) => item.filename)).toEqual([
+      "gauge.jpg",
+      "carriage.png",
+      "gauge-2.jpg",
+    ]);
+    expect(payload.attachments[0].content).toBe(Buffer.from(await first.arrayBuffer()).toString("base64"));
+    expect(payload.attachments[1].content).toBe(Buffer.from(await second.arrayBuffer()).toString("base64"));
+    expect(payload.attachments[2].content).toBe(Buffer.from(await third.arrayBuffer()).toString("base64"));
+    expect(payload.attachments[1].content_type).toBe("image/png");
+    expect(payload.text).toContain("gauge.jpg");
+    expect(payload.text).toContain("carriage.png");
+    expect(payload.text).toContain("gauge-2.jpg");
+    expect(payload.html).toContain("carriage.png");
+  });
+
+  it("rejects too many images, an oversized image, a combined upload over 4MB, and a disallowed type", async () => {
+    const fields = {
+      name: "Sue",
+      email: "visitor@example.com",
+      message: "Photos",
+    };
+    const tooMany = await handleContactPost(
+      makeContactRequest(
+        fields,
+        {},
+        Array.from({ length: MAX_CONTACT_IMAGES + 1 }, (_, index) =>
+          contactImage(`photo-${index}.jpg`, new Uint8Array([index + 1])),
+        ),
+      ),
+      null,
+      deps(),
+    );
+    const tooLarge = await handleContactPost(
+      makeContactRequest(fields, {}, [
+        contactImage("big.jpg", new Uint8Array(MAX_CONTACT_IMAGE_BYTES + 1)),
+      ]),
+      null,
+      deps(),
+    );
+    const tooBigTogether = await handleContactPost(
+      makeContactRequest(fields, {}, [
+        contactImage("a.jpg", new Uint8Array(MAX_CONTACT_IMAGE_BYTES - 10)),
+        contactImage("b.png", new Uint8Array(20), "image/png"),
+      ]),
+      null,
+      deps(),
+    );
+    const wrongType = await handleContactPost(
+      makeContactRequest(fields, {}, [
+        contactImage("notes.gif", new Uint8Array([1, 2]), "image/gif"),
+      ]),
+      null,
+      deps(),
+    );
+
+    expect(tooMany.status).toBe(400);
+    expect(await tooMany.text()).toBe(contactImageCountError());
+    expect(tooLarge.status).toBe(400);
+    expect(await tooLarge.text()).toBe(contactImageTooLargeError());
+    expect(tooBigTogether.status).toBe(400);
+    expect(await tooBigTogether.text()).toBe(contactImageTotalError());
+    expect(wrongType.status).toBe(400);
+    expect(await wrongType.text()).toBe(contactImageTypeError());
+    expect(persistence.messages).toHaveLength(0);
+    expect(
+      fetchImpl.mock.calls.filter((call) => String(call[0]) === "https://api.resend.com/emails"),
+    ).toHaveLength(0);
   });
 
   it("fails closed when Turnstile verification network fails", async () => {

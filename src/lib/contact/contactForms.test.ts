@@ -7,14 +7,14 @@ const forms = [
   {
     name: "contact page",
     file: "src/pages/contact/index.astro",
-    fields: ['name="name"', 'name="email"', 'name="message"', 'name="images"'],
+    fields: ['name="name"', 'name="email"', 'name="message"', 'name="images"', "multiple", "data-contact-image-list"],
     source: 'name="form_source" value="contact_page"',
     submit: "wireContactFormSubmit",
   },
   {
     name: "contact modal",
     file: "src/components/ContactModal.astro",
-    fields: ['name="name"', 'name="email"', 'name="message"', 'name="images"'],
+    fields: ['name="name"', 'name="email"', 'name="message"', 'name="images"', "multiple", "data-contact-image-list"],
     source: 'name="form_source"',
     submit: "initContactModal",
   },
@@ -46,10 +46,26 @@ describe("public contact forms", () => {
     }
   });
 
+  it("leaves the Help Hub and video search forms without an image field", () => {
+    for (const file of ["src/pages/help-hub/index.astro", "src/pages/video-search.astro"]) {
+      const source = fs.readFileSync(path.resolve(file), "utf8");
+      expect(source).not.toContain('name="images"');
+      expect(source).not.toContain("data-contact-image-list");
+    }
+  });
+
   it("shows the thanks page only after the shared submit helper accepts a 2xx response", () => {
     const helper = fs.readFileSync(path.resolve("src/scripts/contactFormSubmit.ts"), "utf8");
     expect(helper).toContain("res.status >= 200 && res.status < 300");
     expect(helper).toContain("window.location.href = thanksUrl");
     expect(helper).toContain("showSubmitError");
+    expect(helper).not.toContain("form.reset(");
+    const submitHandler = helper.slice(helper.lastIndexOf('"submit"'));
+    expect(submitHandler).toContain("window.location.href = thanksUrl");
+    expect(submitHandler).toContain("showSubmitError");
+    expect(submitHandler.indexOf("window.location.href = thanksUrl")).toBeLessThan(
+      submitHandler.indexOf("showSubmitError"),
+    );
+    expect(submitHandler).not.toContain("selectedFiles = []");
   });
 });

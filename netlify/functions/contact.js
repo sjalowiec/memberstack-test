@@ -14,6 +14,10 @@ import {
   getTurnstileSecretKey,
   verifyTurnstileToken,
 } from "./lib/turnstile.js";
+import {
+  contactImageTypeError,
+  validateContactImageBatch,
+} from "../../src/lib/contact/contactImages.ts";
 
 const CONTACT_UPLOADS_STORE = "contact-uploads";
 
@@ -153,19 +157,21 @@ export async function handleContactPost(req, event, deps = {}) {
       return formParseErrorResponse();
     }
 
-    const imageField = formData.get("images");
-    const hasImage =
-      imageField != null &&
-      imageField !== "" &&
-      typeof imageField !== "string" &&
-      imageField instanceof Blob &&
-      imageField.size > 0;
+    const imageEntryCount = formData.getAll("images").filter((value) => {
+      return (
+        value != null &&
+        value !== "" &&
+        typeof value !== "string" &&
+        value instanceof Blob &&
+        value.size > 0
+      );
+    }).length;
 
     console.info("[contact] Form parsed successfully", {
       hasName: !!(formData.get("name") || formData.get("firstName")),
       hasEmail: !!formData.get("email"),
       hasMessage: !!(formData.get("message") || formData.get("question")),
-      hasImage,
+      imageCount: imageEntryCount,
       formSource: (formData.get("form_source") || "").toString().trim() || null,
     });
 
@@ -272,32 +278,32 @@ export async function handleContactPost(req, event, deps = {}) {
       );
     }
 
-    // --- Optional image (contact page: field name "images") ---
-    const imageResult = validateContactImage(formData.get("images"));
+    // --- Optional images (contact page and Contact Sue modal: field name "images") ---
+    const imageResult = collectSubmittedImages(formData);
     if (!imageResult.ok) {
-      return imageValidationErrorResponse(imageResult.error);
+      return validationErrorResponse(imageResult.error);
     }
-    const submittedImage = imageResult.image;
+    const submittedImages = imageResult.images;
 
     const persistImage = deps.persistImage || persistContactImage;
-    /** @type {{
-     *   link: string | null,
-     *   warning: string | null,
-     *   blobKey: string | null,
-     *   accessToken: string | null,
-     *   contentType: string | null,
-     *   originalFilename: string | null,
-     * }} */
-    const imageStorage = submittedImage
-      ? await persistImage(submittedImage, req)
-      : {
-          link: null,
-          warning: null,
-          blobKey: null,
-          accessToken: null,
-          contentType: null,
-          originalFilename: null,
-        };
+    const emptyImageStorage = {
+      link: null,
+      warning: null,
+      blobKey: null,
+      accessToken: null,
+      contentType: null,
+      originalFilename: null,
+    };
+    // The message table stores one attachment. Save the first image for Watson
+    // and attach every accepted image to the notification email.
+    const imageStorages = submittedImages.length
+      ? [await persistImage(submittedImages[0], req)]
+      : [];
+    for (let index = 1; index < submittedImages.length; index += 1) {
+      imageStorages.push({ ...emptyImageStorage });
+    }
+    const storedAttachment =
+      imageStorages.find((item) => item.blobKey && item.accessToken) || null;
 
     const persistMessage = deps.persistMessage || insertContactMessage;
     const recordNotification =
@@ -316,13 +322,13 @@ export async function handleContactPost(req, event, deps = {}) {
         source: formSource,
         pageUrl,
         now: nowIso(),
-        ...(imageStorage.blobKey && imageStorage.accessToken
+        ...(storedAttachment
           ? {
               attachment: {
-                blobKey: imageStorage.blobKey,
-                accessToken: imageStorage.accessToken,
-                contentType: imageStorage.contentType,
-                filename: imageStorage.originalFilename,
+                blobKey: storedAttachment.blobKey,
+                accessToken: storedAttachment.accessToken,
+                contentType: storedAttachment.contentType,
+                filename: storedAttachment.originalFilename,
               },
             }
           : {}),
@@ -336,7 +342,8 @@ export async function handleContactPost(req, event, deps = {}) {
 
     console.info("[contact] Contact message saved", {
       id: savedMessage.id,
-      hasAttachment: !!(imageStorage.blobKey && imageStorage.accessToken),
+      hasAttachment: !!storedAttachment,
+      imageCount: submittedImages.length,
       formSource: formSource || null,
     });
 
@@ -351,6 +358,7 @@ export async function handleContactPost(req, event, deps = {}) {
       formSource === "help-hub"
         ? "New Help Hub Question – Knit it Now"
         : "New Contact Message – Knit it Now";
+    const attachmentNames = uniqueAttachmentFilenames(submittedImages);
     const textBody =
 `New contact form submission
 
@@ -364,7 +372,7 @@ Submitted: ${submittedAt}
 
 Message:
 ${message}
-${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
+${submittedImages.length > 0 ? imagesTextSection(submittedImages, imageStorages, attachmentNames) : ""}
 `;
 
     const htmlBody = `
@@ -378,7 +386,7 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
       ${submittedAt ? `<p><strong>Submitted:</strong> ${escapeHtml(submittedAt)}</p>` : ""}
       <hr />
       <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
-      ${submittedImage ? imageHtmlSection(submittedImage, imageStorage) : ""}
+      ${submittedImages.length > 0 ? imagesHtmlSection(submittedImages, imageStorages, attachmentNames) : ""}
     `;
 
     const to = "sue@knititnow.com";
@@ -399,55 +407,83 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
         { id: savedMessage.id },
       );
     } else {
-      console.info("[contact] Sending email via Resend", {
-        from: contactFrom,
-        to,
-        hasImage: !!submittedImage,
-        imageStored: !!imageStorage.link,
-        messageId: savedMessage.id,
-      });
-
+      let emailAttachments = [];
+      let attachmentsReady = submittedImages.length === 0;
       try {
-        const resendResp = await fetchImpl("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        emailAttachments = await buildContactEmailAttachments(submittedImages, attachmentNames);
+        attachmentsReady = emailAttachments.length === submittedImages.length;
+      } catch (attachmentError) {
+        const attachmentMessage =
+          attachmentError instanceof Error
+            ? attachmentError.message
+            : "Could not prepare attachments";
+        console.error("[contact] Could not prepare email attachments:", attachmentMessage, {
+          messageId: savedMessage.id,
+        });
+      }
+
+      if (!attachmentsReady) {
+        notificationError = "Could not attach every image";
+        console.error("[contact] Refusing to send without every image attached", {
+          messageId: savedMessage.id,
+          imageCount: submittedImages.length,
+          attachmentCount: emailAttachments.length,
+        });
+      } else {
+        console.info("[contact] Sending email via Resend", {
+          from: contactFrom,
+          to,
+          imageCount: submittedImages.length,
+          attachmentCount: emailAttachments.length,
+          messageId: savedMessage.id,
+        });
+
+        try {
+          /** @type {Record<string, unknown>} */
+          const emailPayload = {
             from: contactFrom,
             to,
             subject: emailSubject,
             text: textBody,
             html: htmlBody,
             reply_to: email || undefined,
-          }),
-        });
-
-        if (!resendResp.ok) {
-          const errText = await resendResp.text();
-          notificationError = `Resend API error ${resendResp.status}`;
-          console.error("[contact] Resend API error:", resendResp.status, {
-            messageId: savedMessage.id,
-            // Do not log full Resend body (may include PII).
-          });
-          // Keep a short safe detail for the stored record only.
-          if (errText && errText.length < 200) {
-            notificationError = `${notificationError}: ${errText.slice(0, 180)}`;
+          };
+          if (emailAttachments.length > 0) {
+            emailPayload.attachments = emailAttachments;
           }
-        } else {
-          notificationSent = true;
-          console.info("[contact] Resend email accepted", {
-            to,
+
+          const resendResp = await fetchImpl("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailPayload),
+          });
+
+          if (!resendResp.ok) {
+            const errText = await resendResp.text();
+            notificationError = `Resend API error ${resendResp.status}`;
+            console.error("[contact] Resend API error:", resendResp.status, {
+              messageId: savedMessage.id,
+            });
+            if (errText && errText.length < 200) {
+              notificationError = `${notificationError}: ${errText.slice(0, 180)}`;
+            }
+          } else {
+            notificationSent = true;
+            console.info("[contact] Resend email accepted", {
+              to,
+              messageId: savedMessage.id,
+            });
+          }
+        } catch (sendError) {
+          notificationError =
+            sendError instanceof Error ? sendError.message : "Resend request failed";
+          console.error("[contact] Resend request failed:", notificationError, {
             messageId: savedMessage.id,
           });
         }
-      } catch (sendError) {
-        notificationError =
-          sendError instanceof Error ? sendError.message : "Resend request failed";
-        console.error("[contact] Resend request failed:", notificationError, {
-          messageId: savedMessage.id,
-        });
       }
     }
 
@@ -467,13 +503,26 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
       );
     }
 
-    // Visitor success whenever the message was stored, even if notification failed.
+    if (!notificationSent) {
+      return emailDeliveryFailureResponse();
+    }
+
     return successRedirectResponse();
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : String(error);
     console.error("[contact] Unhandled error in contact handler:", errMessage, error);
     return new Response("Internal server error", { status: 500 });
   }
+}
+
+function emailDeliveryFailureResponse() {
+  return new Response(
+    "We couldn't send your message right now. Please try again in a moment.",
+    {
+      status: 502,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    },
+  );
 }
 
 function successRedirectResponse() {
@@ -530,57 +579,29 @@ function validationErrorResponse(message) {
   );
 }
 
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
 /**
- * @param {FormDataEntryValue | null} value
- * @returns {{ ok: true, image: File | null } | { ok: false, error: string }}
+ * Read every `images` part. Empty parts are ignored. A non-file value is rejected.
+ * @param {FormData} formData
+ * @returns {{ ok: true, images: File[] } | { ok: false, error: string }}
  */
-function validateContactImage(value) {
-  if (value == null || value === "") {
-    return { ok: true, image: null };
-  }
-
-  if (typeof value === "string") {
-    return {
-      ok: false,
-      error: "Please choose a JPG, PNG, or WEBP image.",
-    };
-  }
-
-  if (!(value instanceof File) && !(value instanceof Blob)) {
-    return {
-      ok: false,
-      error: "Please choose a JPG, PNG, or WEBP image.",
-    };
-  }
-
-  if (value.size === 0) {
-    return { ok: true, image: null };
-  }
-
-  if (!ALLOWED_IMAGE_TYPES.has(value.type)) {
-    return {
-      ok: false,
-      error: "Please choose a JPG, PNG, or WEBP image.",
-    };
+function collectSubmittedImages(formData) {
+  /** @type {File[]} */
+  const files = [];
+  for (const value of formData.getAll("images")) {
+    if (value == null || value === "") continue;
+    if (typeof value === "string" || !(value instanceof Blob)) {
+      return { ok: false, error: contactImageTypeError() };
+    }
+    if (value.size === 0) continue;
+    files.push(
+      value instanceof File
+        ? value
+        : new File([value], "upload", { type: value.type }),
+    );
   }
 
   // TODO: Verify file content with magic-byte checks, not only Content-Type.
-
-  if (value.size > MAX_IMAGE_BYTES) {
-    return {
-      ok: false,
-      error: "Please choose an image smaller than 5MB.",
-    };
-  }
-
-  return { ok: true, image: value };
+  return validateContactImageBatch(files);
 }
 
 function formatImageSize(bytes) {
@@ -713,76 +734,112 @@ function sanitizeOriginalFilename(name) {
 }
 
 /**
- * @param {File | Blob} image
- * @param {{ link: string | null, warning: string | null }} storage
+ * @param {File[]} images
+ * @returns {string[]}
  */
-function imageTextSection(image, storage) {
-  const filename = sanitizeOriginalFilename(image.name);
-  let section = `
-Image submitted:
-- ${filename}
-- ${image.type}
-- ${formatImageSize(image.size)}`;
-  if (storage.link) {
-    section += `\n- View: ${storage.link}`;
+function uniqueAttachmentFilenames(images) {
+  /** @type {Set<string>} */
+  const usedNames = new Set();
+  return images.map((image) => uniqueAttachmentFilename(image.name, usedNames));
+}
+
+/**
+ * @param {File[]} images
+ * @param {string[]} filenames
+ * @returns {Promise<{ filename: string, content: string, content_type: string }[]>}
+ */
+async function buildContactEmailAttachments(images, filenames) {
+  /** @type {{ filename: string, content: string, content_type: string }[]} */
+  const attachments = [];
+  for (let index = 0; index < images.length; index += 1) {
+    const image = images[index];
+    const bytes = Buffer.from(await image.arrayBuffer());
+    attachments.push({
+      filename: filenames[index] || sanitizeOriginalFilename(image.name),
+      content: bytes.toString("base64"),
+      content_type: image.type,
+    });
   }
-  if (storage.warning) {
-    section += `\n\nNote: ${storage.warning}`;
+  return attachments;
+}
+
+/**
+ * @param {string | undefined} name
+ * @param {Set<string>} usedNames
+ */
+function uniqueAttachmentFilename(name, usedNames) {
+  const safe = sanitizeOriginalFilename(name);
+  if (!usedNames.has(safe.toLowerCase())) {
+    usedNames.add(safe.toLowerCase());
+    return safe;
   }
+  const dot = safe.lastIndexOf(".");
+  const base = dot > 0 ? safe.slice(0, dot) : safe;
+  const ext = dot > 0 ? safe.slice(dot) : "";
+  let count = 2;
+  let candidate = `${base}-${count}${ext}`;
+  while (usedNames.has(candidate.toLowerCase())) {
+    count += 1;
+    candidate = `${base}-${count}${ext}`;
+  }
+  usedNames.add(candidate.toLowerCase());
+  return candidate;
+}
+
+/**
+ * @param {File[]} images
+ * @param {{ link: string | null, warning: string | null }[]} storages
+ * @param {string[]} filenames
+ */
+function imagesTextSection(images, storages, filenames) {
+  let section = "\nImages submitted:";
+  images.forEach((image, index) => {
+    const storage = storages[index] || { link: null, warning: null };
+    const filename = filenames[index] || sanitizeOriginalFilename(image.name);
+    section += `\n- ${filename} (${image.type}, ${formatImageSize(image.size)})`;
+    if (storage.link) {
+      section += `\n  View: ${storage.link}`;
+    }
+    if (storage.warning) {
+      section += `\n  Note: ${storage.warning}`;
+    }
+  });
   return `${section}\n`;
 }
 
 /**
- * @param {File | Blob} image
- * @param {{ link: string | null, warning: string | null }} storage
+ * @param {File[]} images
+ * @param {{ link: string | null, warning: string | null }[]} storages
+ * @param {string[]} filenames
  */
-function imageHtmlSection(image, storage) {
-  const filename = sanitizeOriginalFilename(image.name);
-  const linkRow = storage.link
-    ? `<li><a href="${escapeHtml(storage.link)}">View image</a></li>`
-    : "";
-  const warningBlock = storage.warning
-    ? `<p><strong>Note:</strong> ${escapeHtml(storage.warning)}</p>`
-    : "";
+function imagesHtmlSection(images, storages, filenames) {
+  const items = images
+    .map((image, index) => {
+      const storage = storages[index] || { link: null, warning: null };
+      const filename = filenames[index] || sanitizeOriginalFilename(image.name);
+      const linkRow = storage.link
+        ? `<li><a href="${escapeHtml(storage.link)}">View image</a></li>`
+        : "";
+      const warningBlock = storage.warning
+        ? `<li>${escapeHtml(storage.warning)}</li>`
+        : "";
+      return `
+        <li>
+          <p>${escapeHtml(filename)} (${escapeHtml(image.type)}, ${escapeHtml(formatImageSize(image.size))})</p>
+          <ul>
+            ${linkRow}
+            ${warningBlock}
+          </ul>
+        </li>`;
+    })
+    .join("");
   return `
       <hr />
-      <p><strong>Image submitted:</strong></p>
+      <p><strong>Images submitted:</strong></p>
       <ul>
-        <li>${escapeHtml(filename)}</li>
-        <li>${escapeHtml(image.type)}</li>
-        <li>${escapeHtml(formatImageSize(image.size))}</li>
-        ${linkRow}
+        ${items}
       </ul>
-      ${warningBlock}
     `;
-}
-
-function imageValidationErrorResponse(message) {
-  const safeMessage = escapeHtml(message);
-  return new Response(
-    `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Image could not be sent</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 32rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; color: #1f2937; }
-      h1 { font-size: 1.25rem; }
-      a { color: #52682d; }
-    </style>
-  </head>
-  <body>
-    <h1>We couldn’t send your message</h1>
-    <p>${safeMessage}</p>
-    <p><a href="/contact/">← Back to Contact</a></p>
-  </body>
-</html>`,
-    {
-      status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    },
-  );
 }
 
 function escapeHtml(str) {

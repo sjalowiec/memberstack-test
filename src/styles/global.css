@@ -2296,6 +2296,45 @@ p {
   transform: scale(0.98);
 }
 
+.contact-form__files {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.contact-form__files[hidden] {
+  display: none;
+}
+
+.contact-form__file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #1f2937;
+}
+
+.contact-form__file-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.contact-form__file-remove {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #52682d;
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .contact-modal-container {

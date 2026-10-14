@@ -1,5 +1,9 @@
 ---
 import TurnstileWidget from "./TurnstileWidget.astro";
+import {
+  CONTACT_IMAGE_ACCEPT,
+  CONTACT_IMAGE_LIMIT_NOTE,
+} from "../lib/contact/contactImages";
 ---
 <!-- Contact Modal -->
 <div
@@ -75,16 +79,18 @@ import TurnstileWidget from "./TurnstileWidget.astro";
       </label>
 
       <div class="contact-form__field">
-        <span>Add a photo of your knitting or machine (optional)</span>
+        <span>Add photos of your knitting or machine (optional)</span>
         <p class="contact-form__hint">A photo can help us see what’s happening.</p>
         <input
           type="file"
           name="images"
           id="contactImagesModal"
-          accept="image/jpeg,image/png,image/webp"
+          accept={CONTACT_IMAGE_ACCEPT}
+          multiple
           class="contact-form__file"
         />
-        <p class="contact-form__note">JPG, PNG, or WEBP • max 5MB</p>
+        <ul class="contact-form__files" data-contact-image-list hidden></ul>
+        <p class="contact-form__note">{CONTACT_IMAGE_LIMIT_NOTE}</p>
         <p id="contact-image-error-modal" class="contact-form__error" hidden role="alert"></p>
         <p id="contact-submit-error-modal" class="contact-form__error" hidden role="alert"></p>
       </div>
