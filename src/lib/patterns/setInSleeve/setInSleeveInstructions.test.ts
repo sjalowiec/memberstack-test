@@ -213,7 +213,7 @@ describe("set-in sleeve written instructions", () => {
     expect(back).toContain("RC: 000 Bind off 6 stitches at the beginning of each of the next 2 rows.");
     expect(back).toContain("RC: 002 Bind off 2 stitches at the beginning of each of the next 6 rows.");
     expect(back).toContain(
-      "Decrease 1 stitch at each armhole edge every other row, 7 times (RC: 008, RC: 010, RC: 012, RC: 014, RC: 016, RC: 018, RC: 020).",
+      "Decrease 1 stitch at each armhole edge every other row, 7 times (RC: 008, 010, 012, 014, 016, 018, 020).",
     );
     expect(back).not.toContain("Knit these rows even");
     expect(back).toContain("finishes the armhole at RC: 070.");
@@ -283,7 +283,7 @@ describe("set-in sleeve written instructions", () => {
     expect(back).toContain("RC: 000 Bind off 5 stitches at the beginning of each of the next 2 rows.");
     expect(back).not.toContain("Bind off 2 stitches at the beginning");
     expect(back).toContain(
-      "Decrease 1 stitch at each armhole edge every other row, 4 times (RC: 002, RC: 004, RC: 006, RC: 008).",
+      "Decrease 1 stitch at each armhole edge every other row, 4 times (RC: 002, 004, 006, 008).",
     );
     expect(back).not.toContain("Knit these rows even");
     expect(sleeves).toContain(

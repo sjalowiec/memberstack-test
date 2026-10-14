@@ -291,9 +291,10 @@ describe("set-in sleeve pattern choices", () => {
     expect(reset && reset.kind === "block" ? reset.paragraphs : ["filled"]).toEqual([]);
     expect(decrease && decrease.kind === "block" ? decrease.rc : "").toMatch(/^RC: \d{3}$/);
     expect(decrease && decrease.kind === "block" ? decrease.stitchCount : 0).toBeGreaterThan(0);
-    expect(decrease && decrease.kind === "block" ? decrease.paragraphs.join(" ") : "").not.toMatch(
-      /Knit these rows even|stitches remain/,
-    );
+    const decreaseText = decrease && decrease.kind === "block" ? decrease.paragraphs.join(" ") : "";
+    expect(decreaseText).toMatch(/\(RC: \d{3}(?:, \d{3})+\)/);
+    expect(decreaseText).not.toMatch(/RC: \d{3}, RC:/);
+    expect(decreaseText).not.toMatch(/Knit these rows even|stitches remain/);
 
     const screen = renderPatternDisplayRowsHtml(armholeRows, { pieceSectionId: "back" });
     const printHtml = renderSleevelessPrintPieceHtml(armholeRows, "", "back");
@@ -306,6 +307,8 @@ describe("set-in sleeve pattern choices", () => {
         ),
       );
       expect(html).toContain("Decrease 1 stitch at each armhole edge every other row");
+      expect(html).toMatch(/\(RC: \d{3}(?:, \d{3})+\)/);
+      expect(html).not.toMatch(/RC: \d{3}, RC:/);
       expect(html).not.toContain("Knit these rows even");
       expect(html).not.toContain("Reset row counter to RC: 000.");
     }

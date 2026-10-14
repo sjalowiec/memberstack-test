@@ -18,6 +18,7 @@ import {
   coordinatedShapingHandoffLines,
   resolveFrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
+import { formatParentheticalRcList } from "./legoBlocks/repeatedShapingInstruction";
 import { getDefaultCuffLengthInches } from "./hemDefaults";
 import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
 import {
@@ -185,7 +186,7 @@ function rewriteSetInWrittenRc(text: string): string {
       .map((part) => part.trim())
       .filter((part) => part.length > 0);
     if (parts.length === 0 || parts.some((part) => !/^\d+$/.test(part))) return match;
-    return `(${parts.map((part) => formatRcColon(Number(part))).join(", ")})`;
+    return formatParentheticalRcList(parts.map((part) => Number(part)));
   });
   return next;
 }

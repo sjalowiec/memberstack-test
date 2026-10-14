@@ -52,9 +52,15 @@ function actionClause(action: RepeatedShapingAction, stitches: number, edgePhras
   return `Put ${stitches} ${stitchWord} in hold ${at}`;
 }
 
+/** `(RC: 006, 008, 010, 012)` — the label appears once; each reading stays three digits. */
+export function formatParentheticalRcList(rows: readonly number[]): string {
+  const digits = rows.map((rc) => formatRcColon(rc).replace(/^RC:\s*/, ""));
+  return `(RC: ${digits.join(", ")})`;
+}
+
 /**
  * Concise repeated-shaping sentence, or null when the readings are not one uniform interval.
- * Example: `Decrease 1 stitch at each armhole edge every other row, 4 times (RC: 006, RC: 008, RC: 010, RC: 012).`
+ * Example: `Decrease 1 stitch at each armhole edge every other row, 4 times (RC: 006, 008, 010, 012).`
  */
 export function formatRepeatedShapingInstruction(input: RepeatedShapingInstruction): string | null {
   const edge = input.edgePhrase.trim();
@@ -62,6 +68,5 @@ export function formatRepeatedShapingInstruction(input: RepeatedShapingInstructi
   if (!edge || !positiveWhole(input.stitchesPerAction) || !positiveWhole(input.interval)) return null;
   if (!rowsMatchInterval(rows, input.interval)) return null;
   const times = rows.length === 1 ? "time" : "times";
-  const listed = rows.map((rc) => formatRcColon(rc)).join(", ");
-  return `${actionClause(input.action, input.stitchesPerAction, edge)} ${intervalPhrase(input.interval)}, ${rows.length} ${times} (${listed}).`;
+  return `${actionClause(input.action, input.stitchesPerAction, edge)} ${intervalPhrase(input.interval)}, ${rows.length} ${times} ${formatParentheticalRcList(rows)}.`;
 }
