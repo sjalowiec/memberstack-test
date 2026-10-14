@@ -29,6 +29,7 @@ import {
 } from "./setInSleeveLearningResources";
 import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
+import { RESET_ROW_COUNTER_TEXT, formatRowCounterResetGarmentRcLabel } from "./rowCounterReset";
 import {
   canCreatePatternForSystem,
   canEditPatternSettingsForSystem,
@@ -138,6 +139,17 @@ function pattern(options: {
   };
 }
 
+function sectionRows<T extends { kind: string; title?: string }>(rows: readonly T[], title: string): T[] {
+  const start = rows.findIndex((row) => row.kind === "section" && row.title === title);
+  if (start < 0) return [];
+  const out: T[] = [];
+  for (const row of rows.slice(start + 1)) {
+    if (row.kind === "section") break;
+    out.push(row);
+  }
+  return out;
+}
+
 function textOf(rows: ReadonlyArray<{ kind: string; paragraphs?: string[]; title?: string }>): string {
   return rows
     .map((row) => (row.kind === "block" ? (row.paragraphs ?? []).join(" ") : row.title ?? ""))
@@ -175,7 +187,9 @@ describe("set-in sleeve pattern choices", () => {
     expect(overview).toMatch(/Finished bust 4\d/);
     expect(overview).toContain("separate from the cuff-to-upper-arm length");
     expect(back).toContain("Bind off");
-    expect(back).not.toMatch(/decrease 1 stitch at each armhole edge every other row/i);
+    expect(back).toMatch(/Decrease 1 stitch at each armhole edge every other row, \d+ times \(RC:/);
+    expect(back).not.toContain("Knit these rows even");
+    expect(back).not.toMatch(/removed total/);
     expect(sleeve).toContain("Make 2 sleeves.");
     expect(sleeve).toContain("Increase 1 stitch at each side every");
     expect(sleeve).toMatch(/\(RC:/);
@@ -261,6 +275,54 @@ describe("set-in sleeve pattern choices", () => {
     expect(result.setInArmholePlan?.appliesTo).toBe("front-and-back");
   });
 
+  it("places the armhole reset marker, row counter, and stitch count on screen and in print", () => {
+    const result = generateSetInSleevePattern(pattern({}));
+    const armholeRows = sectionRows(result.displayRows, "ARMHOLE");
+    const reset = armholeRows.find((row) => row.kind === "block" && row.rowCounterReset === true);
+    const decrease = armholeRows.find(
+      (row) =>
+        row.kind === "block" &&
+        row.paragraphs.some((paragraph) => /Decrease 1 stitch at each armhole edge every other row/.test(paragraph)),
+    );
+    expect(reset && reset.kind === "block" ? reset.rowCounterResetGarmentRc : undefined).toBe(
+      result.debug.armholeStartRow,
+    );
+    expect(reset && reset.kind === "block" ? reset.stitchCount : 0).toBeUndefined();
+    expect(reset && reset.kind === "block" ? reset.paragraphs : ["filled"]).toEqual([]);
+    expect(decrease && decrease.kind === "block" ? decrease.rc : "").toMatch(/^RC: \d{3}$/);
+    expect(decrease && decrease.kind === "block" ? decrease.stitchCount : 0).toBeGreaterThan(0);
+    expect(decrease && decrease.kind === "block" ? decrease.paragraphs.join(" ") : "").not.toMatch(
+      /Knit these rows even|stitches remain/,
+    );
+
+    const screen = renderPatternDisplayRowsHtml(armholeRows, { pieceSectionId: "back" });
+    const printHtml = renderSleevelessPrintPieceHtml(armholeRows, "", "back");
+    for (const html of [screen, printHtml]) {
+      expect(html).toContain("row-counter-reset");
+      expect(html).toContain(RESET_ROW_COUNTER_TEXT);
+      expect(html).toContain(
+        formatRowCounterResetGarmentRcLabel(
+          reset && reset.kind === "block" ? (reset.rowCounterResetGarmentRc ?? 0) : 0,
+        ),
+      );
+      expect(html).toContain("Decrease 1 stitch at each armhole edge every other row");
+      expect(html).not.toContain("Knit these rows even");
+      expect(html).not.toContain("Reset row counter to RC: 000.");
+    }
+    const decreaseSentence =
+      decrease && decrease.kind === "block" ? decrease.paragraphs[0] ?? "" : "";
+    const screenDecrease = screen.slice(Math.max(0, screen.indexOf(decreaseSentence) - 160));
+    expect(screenDecrease).toContain(`class="sleeveless-pattern-rc">${decrease && decrease.kind === "block" ? decrease.rc : ""}`);
+    expect(screen).toContain(
+      `class="sleeveless-pattern-sts">${decrease && decrease.kind === "block" ? decrease.stitchCount : ""} sts`,
+    );
+    expect(printHtml).toContain(
+      `class="print-inst-sts">${decrease && decrease.kind === "block" ? decrease.stitchCount : ""} sts`,
+    );
+    const resetScreen = screen.slice(0, screen.indexOf(RESET_ROW_COUNTER_TEXT) + RESET_ROW_COUNTER_TEXT.length);
+    expect(resetScreen).not.toContain("sleeveless-pattern-sts");
+  });
+
   it("writes cardigan armhole and finishing, not pullover sleeve hanging", () => {
     const data = pattern({ garmentStyle: "cardigan", neckline: "round" });
     const result = generateSetInSleevePattern(data);
@@ -296,9 +358,10 @@ describe("set-in sleeve pattern choices", () => {
     const round = generateSetInSleevePattern(pattern({ neckline: "round" }));
     const vNeck = generateSetInSleevePattern(pattern({ neckline: "v-neck", garmentStyle: "cardigan" }));
     expect(textOf(vNeck.overviewRows)).toContain("cardigan, V-neck");
-    expect(textOf(vNeck.frontDisplayRows)).not.toMatch(
-      /decrease 1 stitch at (each |the )?armhole edge every other row/i,
+    expect(textOf(vNeck.frontDisplayRows)).toMatch(
+      /Decrease 1 stitch at the armhole edge every other row, \d+ times \(RC:/,
     );
+    expect(textOf(vNeck.frontDisplayRows)).not.toMatch(/removed total|Knit these rows even|bind off or hold/i);
     expect(textOf(round.frontDisplayRows)).not.toContain("V-neck");
     const vData = pattern({ neckline: "v-neck", garmentStyle: "pullover" });
     const finishing = sleevelessFinishingFromPattern(vData, vNeck.debug);

@@ -212,8 +212,10 @@ describe("set-in sleeve written instructions", () => {
     expect(back).toContain("Cast on 122 stitches for the back.");
     expect(back).toContain("RC: 000 Bind off 6 stitches at the beginning of each of the next 2 rows.");
     expect(back).toContain("RC: 002 Bind off 2 stitches at the beginning of each of the next 6 rows.");
-    expect(back).toContain("Decrease 1 stitch at each armhole edge on RC: 008, RC: 010, RC: 012, RC: 014, RC: 016, RC: 018, RC: 020.");
-    expect(back).toContain("Knit these rows even: RC: 009, RC: 011, RC: 013, RC: 015, RC: 017, RC: 019, RC: 021.");
+    expect(back).toContain(
+      "Decrease 1 stitch at each armhole edge every other row, 7 times (RC: 008, RC: 010, RC: 012, RC: 014, RC: 016, RC: 018, RC: 020).",
+    );
+    expect(back).not.toContain("Knit these rows even");
     expect(back).toContain("finishes the armhole at RC: 070.");
     expect(back).toContain("Work the First Shoulder and the neck edge first.");
     expect(back).toContain("Second Shoulder");
@@ -280,7 +282,10 @@ describe("set-in sleeve written instructions", () => {
     const sleeves = setInSleeveInstructionSection(standardDoc, "sleeves");
     expect(back).toContain("RC: 000 Bind off 5 stitches at the beginning of each of the next 2 rows.");
     expect(back).not.toContain("Bind off 2 stitches at the beginning");
-    expect(back).toContain("Decrease 1 stitch at each armhole edge on RC: 002, RC: 004, RC: 006, RC: 008.");
+    expect(back).toContain(
+      "Decrease 1 stitch at each armhole edge every other row, 4 times (RC: 002, RC: 004, RC: 006, RC: 008).",
+    );
+    expect(back).not.toContain("Knit these rows even");
     expect(sleeves).toContain(
       `${formatRcColon(standard.sleeve.rowsCuffToUpperArm)} Bind off 5 stitches at the beginning of each of the next 2 rows.`,
     );

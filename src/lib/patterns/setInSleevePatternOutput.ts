@@ -34,8 +34,9 @@ import { calculateSetInSleeveCap, type SetInSleeveCapSuccess } from "./setInSlee
 import { setInSleeveTaperProblem } from "./setInSleeve/setInSleeveTaper";
 import {
   buildSetInCuffUpSleevePresentation,
-  setInArmholeInstructionLines,
-  setInOneEdgeArmholeInstructionLines,
+  setInArmholeInstructionBlocks,
+  setInOneEdgeArmholeInstructionBlocks,
+  type SetInArmholeDisplayBlock,
 } from "./setInSleeve/setInSleeveInstructions";
 import type { SetInArmholePlan } from "./setInSleeve/setInArmhole";
 import { withSetInSleeveConstructionAuthored } from "./setInSleeveConstructionIdentity";
@@ -69,8 +70,13 @@ export type SetInSleevePatternResult = SleevelessBackPatternResult & {
   sleeveSaveBlocker: string | null;
 };
 
+/**
+ * Leftover sleeveless armhole copy in neckline summaries.
+ * The set-in decrease sentence also says "every other row", so this must not match it.
+ * Sleeveless decreases end with "removed"; sleeveless bind-offs say "bind off or hold".
+ */
 const SLEEVELESS_ARMHOLE_PROSE =
-  /bind off or hold|decrease 1 stitch at (each |the )?armhole edge every other row/i;
+  /bind off or hold|decrease 1 stitch at (each |the )?armhole edge every other row,[^\n]*\bremoved\b/i;
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj) ? (obj as Record<string, unknown>) : {};
@@ -110,18 +116,32 @@ function linesToBlocks(lines: readonly string[]): SleevelessPatternDisplayRow[] 
 }
 
 /** First back bind-off only. Front and sleeve-cap bind-offs stay plain. */
-function backArmholeBlocksFromLines(lines: readonly string[]): SleevelessPatternDisplayRow[] {
+function armholeBlocksToDisplayRows(
+  blocks: readonly SetInArmholeDisplayBlock[],
+  garmentRc: number | undefined,
+  bindOffTip: boolean,
+): SleevelessPatternDisplayRow[] {
   const tip = setInBackArmholeBindOffTrickTip();
   let tipped = false;
-  return lines
-    .filter((line) => line.trim().length > 0)
-    .map((line) => {
-      if (!tipped && /\bbind off\b/i.test(line)) {
-        tipped = true;
-        return { kind: "block" as const, paragraphs: [line], ...tip };
-      }
-      return { kind: "block" as const, paragraphs: [line] };
-    });
+  return blocks.map((block) => {
+    const row: Extract<SleevelessPatternDisplayRow, { kind: "block" }> = {
+      kind: "block",
+      paragraphs: block.paragraphs,
+      ...(block.rowCounterReset
+        ? {
+            rowCounterReset: true,
+            ...(garmentRc !== undefined ? { rowCounterResetGarmentRc: garmentRc } : {}),
+          }
+        : {}),
+      ...(block.rc !== undefined ? { rc: formatRcColon(block.rc) } : {}),
+      ...(block.stitchCount !== undefined && block.stitchCount >= 0 ? { stitchCount: block.stitchCount } : {}),
+    };
+    if (bindOffTip && !tipped && block.paragraphs.some((paragraph) => /\bbind off\b/i.test(paragraph))) {
+      tipped = true;
+      return { ...row, ...tip };
+    }
+    return row;
+  });
 }
 
 /**
@@ -218,19 +238,32 @@ function replaceArmholeSection(
 function stripSleevelessArmholeProse(
   rows: readonly SleevelessPatternDisplayRow[],
 ): SleevelessPatternDisplayRow[] {
-  return rows.map((row) => {
-    if (row.kind !== "block") return row;
+  const out: SleevelessPatternDisplayRow[] = [];
+  let inArmhole = false;
+  for (const row of rows) {
+    if (row.kind === "section") {
+      inArmhole = row.title === "ARMHOLE";
+      out.push(row);
+      continue;
+    }
+    // The replaced armhole section owns its decrease wording, including "every other row".
+    if (inArmhole || row.kind !== "block") {
+      out.push(row);
+      continue;
+    }
     const source = row.paragraphs ?? [];
     const paragraphs = source.filter((paragraph) => !SLEEVELESS_ARMHOLE_PROSE.test(paragraph));
-    if (paragraphs.length === source.length) return row;
-    if (paragraphs.length === 0) return { ...row, paragraphs: ["Follow the checklist below for the exact row-by-row sequence."] };
-    return { ...row, paragraphs };
-  });
-}
-
-function localRc(line: string): number | null {
-  const match = /^RC:\s*(\d+)/.exec(line.trim());
-  return match ? Number(match[1]) : null;
+    if (paragraphs.length === source.length) {
+      out.push(row);
+      continue;
+    }
+    if (paragraphs.length === 0) {
+      out.push({ ...row, paragraphs: ["Follow the checklist below for the exact row-by-row sequence."] });
+      continue;
+    }
+    out.push({ ...row, paragraphs });
+  }
+  return out;
 }
 
 function shapingEndLocalRc(plan: SetInArmholePlan): number {
@@ -242,29 +275,34 @@ function stitchesAfterSetInShaping(start: number, plan: SetInArmholePlan, edge: 
   return Math.max(0, edge === "one" ? start - perEdge : start - perEdge * 2);
 }
 
-function knitEvenBridge(fromRc: number, untilRc: number, stitches: number): string | null {
+function knitEvenBridgeBlock(fromRc: number, untilRc: number, stitches: number): SetInArmholeDisplayBlock | null {
   const rows = untilRc - fromRc;
   if (rows <= 0) return null;
-  const knit = rows === 1 ? "Knit 1 row even" : `Knit ${rows} rows even`;
+  const knit = rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
   const noun = stitches === 1 ? "stitch" : "stitches";
-  return `${formatRcColon(fromRc)} ${knit}. ${stitches} ${noun} remain.`;
+  return {
+    rc: fromRc,
+    paragraphs: [knit],
+    stitchCount: stitches,
+    plainText: `${formatRcColon(fromRc)} ${knit} ${stitches} ${noun} remain.`,
+  };
 }
 
-function armholeLinesForPiece(
+function armholeBlocksForPiece(
   plan: SetInArmholePlan,
   stitches: number,
   edge: "both" | "one",
   necklineLocalRc: number | null,
   handoff: { timing: ReturnType<typeof resolveFrontVNeckShapingTimingCase>; neckline: "round" | "v-neck"; cardigan: boolean } | null,
-): string[] {
+): SetInArmholeDisplayBlock[] {
   const stopBefore =
     handoff && necklineLocalRc !== null && handoff.timing !== "after-armhole"
       ? necklineLocalRc
       : undefined;
-  let lines =
+  let blocks =
     edge === "one"
-      ? setInOneEdgeArmholeInstructionLines(plan, stitches, stopBefore)
-      : setInArmholeInstructionLines(
+      ? setInOneEdgeArmholeInstructionBlocks(plan, stitches, stopBefore)
+      : setInArmholeInstructionBlocks(
           {
             bindOffStitchesEachSide: plan.initialBindOffStitchesEachSide,
             stairStepBindOffsEachSide: plan.stairStepBindOffsEachSide,
@@ -275,17 +313,27 @@ function armholeLinesForPiece(
           stopBefore,
         );
   if (handoff && handoff.timing === "before-armhole") {
-    lines = lines.filter((line) => localRc(line) === null && !/reset row counter/i.test(line) && !/armhole reset/i.test(line));
+    blocks = blocks.filter((block) => {
+      if (block.rowCounterReset || block.rc !== undefined) return false;
+      const text = `${block.plainText}\n${block.paragraphs.join("\n")}`;
+      return !/reset row counter/i.test(text) && !/armhole reset/i.test(text);
+    });
   }
   if (handoff && handoff.timing !== "after-armhole") {
-    return [...lines, ...coordinatedShapingHandoffLines(handoff)];
+    return [
+      ...blocks,
+      ...coordinatedShapingHandoffLines(handoff).map((line) => ({
+        paragraphs: [line],
+        plainText: line,
+      })),
+    ];
   }
-  const bridge = knitEvenBridge(
+  const bridge = knitEvenBridgeBlock(
     shapingEndLocalRc(plan),
     necklineLocalRc ?? shapingEndLocalRc(plan),
     stitchesAfterSetInShaping(stitches, plan, edge),
   );
-  return bridge ? [...lines, bridge] : lines;
+  return bridge ? [...blocks, bridge] : blocks;
 }
 
 function styleSentence(patternData: Record<string, unknown>): string {
@@ -324,9 +372,13 @@ export function generateSetInSleevePattern(
         }
       : null;
 
+  const garmentArmholeRc =
+    typeof debug.armholeStartRow === "number" && Number.isFinite(debug.armholeStartRow)
+      ? Math.max(0, Math.floor(debug.armholeStartRow))
+      : undefined;
   const backArmholeBlocks = plan
-    ? backArmholeBlocksFromLines(
-        armholeLinesForPiece(
+    ? armholeBlocksToDisplayRows(
+        armholeBlocksForPiece(
           plan,
           debug.bustBodyStitches && debug.bustBodyStitches > 0
             ? debug.bustBodyStitches
@@ -335,6 +387,8 @@ export function generateSetInSleevePattern(
           backNeckLocal,
           backHandoff,
         ),
+        garmentArmholeRc,
+        true,
       )
     : linesToBlocks([
         warnings.find((warning) => /armhole/i.test(warning)) ??
@@ -348,8 +402,8 @@ export function generateSetInSleevePattern(
         ? debug.bustBodyStitches
         : debug.backStitches;
   const frontArmholeBlocks = plan
-    ? linesToBlocks(
-        armholeLinesForPiece(
+    ? armholeBlocksToDisplayRows(
+        armholeBlocksForPiece(
           plan,
           frontStart,
           cardigan ? "one" : "both",
@@ -358,6 +412,8 @@ export function generateSetInSleevePattern(
             ? { timing: frontTiming, neckline: vNeck ? "v-neck" : "round", cardigan }
             : null,
         ),
+        garmentArmholeRc,
+        false,
       )
     : backArmholeBlocks;
 
