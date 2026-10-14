@@ -1,7 +1,9 @@
+import {
+  mergeContactImageSelection,
+  validateContactImageBatch,
+} from "../lib/contact/contactImages";
 import { getTurnstileSlot, resetTurnstileWidget } from "./turnstile";
 
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_THANKS_URL = "/contact/thanks/";
 const DEFAULT_FALLBACK_ERROR =
   "Something went wrong sending your message. Please try again in a moment.";
@@ -31,26 +33,6 @@ export function formatContactSubmittedAtLocale(): string {
   return `${date} – ${time}`;
 }
 
-/** @param {File | undefined} file */
-export function validateContactImage(file: File | undefined) {
-  if (!file || file.size === 0) {
-    return { ok: true as const };
-  }
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return {
-      ok: false as const,
-      message: "Please choose a JPG, PNG, or WEBP image.",
-    };
-  }
-  if (file.size > MAX_IMAGE_BYTES) {
-    return {
-      ok: false as const,
-      message: "Please choose an image smaller than 5MB.",
-    };
-  }
-  return { ok: true as const };
-}
-
 /**
  * POST via fetch (multipart FormData) to the contact Netlify function.
  * Redirects to thanks only after a 2xx response (message stored server-side).
@@ -74,6 +56,8 @@ export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
   const submittedAtInput =
     submittedAtInputOption ??
     (form.querySelector('input[name="submitted_at"]') as HTMLInputElement | null);
+  const imageListEl = form.querySelector("[data-contact-image-list]");
+  let selectedFiles: File[] = [];
 
   function showImageError(message: string) {
     if (!imageErrorEl) return;
@@ -100,21 +84,60 @@ export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
     submitErrorEl.hidden = true;
   }
 
+  function renderSelectedFiles() {
+    if (!(imageListEl instanceof HTMLElement)) return;
+    imageListEl.replaceChildren();
+    if (selectedFiles.length === 0) {
+      imageListEl.hidden = true;
+      return;
+    }
+
+    imageListEl.hidden = false;
+    selectedFiles.forEach((file, index) => {
+      const item = document.createElement("li");
+      item.className = "contact-form__file-item";
+
+      const name = document.createElement("span");
+      name.className = "contact-form__file-name";
+      name.textContent = file.name;
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "contact-form__file-remove";
+      remove.textContent = "Remove";
+      remove.setAttribute("aria-label", `Remove ${file.name}`);
+      remove.addEventListener("click", () => {
+        selectedFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
+        renderSelectedFiles();
+        clearImageError();
+      });
+
+      item.append(name, remove);
+      imageListEl.append(item);
+    });
+  }
+
   if (fileInput) {
     fileInput.addEventListener("change", () => {
-      const file = fileInput.files?.[0];
-      if (!file) {
-        clearImageError();
-        return;
-      }
-      const result = validateContactImage(file);
-      if (!result.ok) {
-        showImageError(result.message);
+      const incoming = Array.from(fileInput.files || []);
+      if (incoming.length === 0) return;
+      const result = mergeContactImageSelection(selectedFiles, incoming);
+      selectedFiles = result.files;
+      renderSelectedFiles();
+      if (result.error) {
+        showImageError(result.error);
       } else {
         clearImageError();
       }
+      fileInput.value = "";
     });
   }
+
+  form.addEventListener("reset", () => {
+    selectedFiles = [];
+    renderSelectedFiles();
+    clearImageError();
+  });
 
   form.addEventListener(
     "submit",
@@ -123,10 +146,9 @@ export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
       e.stopImmediatePropagation();
       clearSubmitError();
 
-      const file = fileInput?.files?.[0];
-      const imageResult = validateContactImage(file);
+      const imageResult = validateContactImageBatch(selectedFiles);
       if (!imageResult.ok) {
-        showImageError(imageResult.message);
+        showImageError(imageResult.error);
         fileInput?.focus();
         return;
       }
@@ -146,9 +168,15 @@ export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
       }
 
       try {
+        const body = new FormData(form);
+        body.delete("images");
+        for (const file of selectedFiles) {
+          body.append("images", file, file.name);
+        }
+
         const res = await fetch(form.action, {
           method: "POST",
-          body: new FormData(form),
+          body,
         });
 
         if (res.status >= 200 && res.status < 300) {
