@@ -89,9 +89,15 @@ export type SetInSleevePatternResult = SleevelessBackPatternResult & {
     backHem?: number;
     backBust?: number;
     backAfter?: number;
+    backRightHem?: number;
+    backRightBust?: number;
+    backRightAfter?: number;
     frontHem?: number;
     frontBust?: number;
     frontAfter?: number;
+    frontRightHem?: number;
+    frontRightBust?: number;
+    frontRightAfter?: number;
   };
 };
 
@@ -558,10 +564,11 @@ function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>
   let frontChart = base.frontNeckShoulderShapingChart;
   let frontTimeline = base.frontNeckShoulderTimeline;
   let leftFront: SetInSleevePatternResult | null = null;
+  let rightFront: SetInSleevePatternResult | null = null;
   if (!cardigan) {
     const frontPattern = withCardiganHalfStyle(patternData);
     leftFront = generateSetInSleevePattern(frontPattern, { halfPiece: { side: "left", seamStitch: true } });
-    const rightFront = generateSetInSleevePattern(frontPattern, { halfPiece: { side: "right", seamStitch: true } });
+    rightFront = generateSetInSleevePattern(frontPattern, { halfPiece: { side: "right", seamStitch: true } });
     frontRows = [
       ...prepareCenterSeamHalf(leftFront, "front", "left", vNeck, fullNeck),
       ...prepareCenterSeamHalf(rightFront, "front", "right", vNeck, fullNeck),
@@ -618,11 +625,17 @@ function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>
       backHem: leftBack.debug.cardiganHalfLeftCastOnSts,
       backBust: leftBack.debug.cardiganHalfLeftBustBodySts,
       backAfter: leftBack.debug.cardiganHalfLeftStitchesAfterArmhole,
-      ...(!cardigan && leftFront
+      backRightHem: rightBack.debug.cardiganHalfLeftCastOnSts,
+      backRightBust: rightBack.debug.cardiganHalfLeftBustBodySts,
+      backRightAfter: rightBack.debug.cardiganHalfLeftStitchesAfterArmhole,
+      ...(!cardigan && leftFront && rightFront
         ? {
             frontHem: leftFront.debug.cardiganHalfLeftCastOnSts,
             frontBust: leftFront.debug.cardiganHalfLeftBustBodySts,
             frontAfter: leftFront.debug.cardiganHalfLeftStitchesAfterArmhole,
+            frontRightHem: rightFront.debug.cardiganHalfLeftCastOnSts,
+            frontRightBust: rightFront.debug.cardiganHalfLeftBustBodySts,
+            frontRightAfter: rightFront.debug.cardiganHalfLeftStitchesAfterArmhole,
           }
         : {}),
     },

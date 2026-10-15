@@ -6,7 +6,7 @@ import {
   savePatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
-import { loadExpressPersisted } from "./sleevelessExpressResume";
+import { loadExpressPersisted, writeExpressPersistedSnapshot } from "./sleevelessExpressResume";
 
 function sectionRecord(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj) ? { ...(obj as Record<string, unknown>) } : {};
@@ -119,4 +119,29 @@ export function syncAvailableNeedlesMirrorsFromAllSources(): AvailableNeedlesMir
   }
 
   return { source, resolved: value, ...snapshotAvailableNeedlesMirrors() };
+}
+
+/**
+ * Write one needle count into every store the pattern page reads.
+ * Call this with the value just entered. Do not copy the first existing source:
+ * that source can still be the count from before this edit.
+ */
+export function persistAvailableNeedlesEverywhere(
+  availableNeedles: number | string,
+): AvailableNeedlesMirrorSnapshot | null {
+  const raw = typeof availableNeedles === "number" ? String(availableNeedles) : String(availableNeedles).trim();
+  if (!isPositiveNumericMeasurement(raw)) return null;
+
+  const pattern = getCurrentPattern();
+  const patternData = getPatternData();
+  const ygm = sectionRecord(patternData.yarnGaugeMachine);
+  const pbMachine = sectionRecord(patternData.machine);
+  const canonMachine = sectionRecord(pattern.machine);
+
+  saveCurrentPattern({ machine: { ...canonMachine, availableNeedles: raw } });
+  savePatternData("machine", { ...pbMachine, availableNeedles: raw });
+  savePatternData("yarnGaugeMachine", { ...ygm, availableNeedles: raw });
+  writeExpressPersistedSnapshot({ availableNeedles: raw });
+
+  return { source: "edit", resolved: raw, ...snapshotAvailableNeedlesMirrors() };
 }

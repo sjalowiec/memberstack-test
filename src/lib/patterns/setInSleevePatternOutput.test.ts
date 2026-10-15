@@ -10,6 +10,7 @@ import {
   patternSystemDisplayName,
   resolvePatternSystemFromProject,
 } from "./patternSystemId";
+import { centerSeamHalfStitches } from "./centerSeamConstruction";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import {
@@ -1118,16 +1119,25 @@ describe("set-in sleeve center seams", () => {
   });
 
   it("writes a V-neck pullover half from the center edge", () => {
+    const full = generateSetInSleevePattern(pattern({ neckline: "v-neck", availableNeedles: 200 }));
     const seamed = generateSetInSleevePattern(
       withCenterSeams(pattern({ neckline: "v-neck", availableNeedles: 80 })),
     );
     const front = textOf(seamed.frontDisplayRows);
     expect(front).toContain("LEFT FRONT");
     expect(front).toContain("RIGHT FRONT");
-    expect(front).toContain("center edge");
-    expect(front).toContain("seam stitch");
+    expect(front).toContain("The first center-edge decrease removes that seam stitch.");
     expect(front).not.toContain("could not be scheduled");
     expect(front).not.toMatch(/exceed/i);
+    const shoulders = [...front.matchAll(/(\d+) shoulder stitches remain/g)].map((match) => Number(match[1]));
+    expect(shoulders).toEqual([full.debug.shoulderStitches, full.debug.shoulderStitches]);
+    const expectedDecreases = Math.round((full.debug.necklineStitches ?? 0) / 2) + 1;
+    const left = front.slice(0, front.indexOf("RIGHT FRONT"));
+    const right = front.slice(front.indexOf("RIGHT FRONT"));
+    for (const half of [left, right]) {
+      const line = half.match(/Decrease 1 stitch at the center edge on row ([^.]+)\./);
+      expect(line?.[1]?.split(",").filter((part) => part.trim()).length).toBe(expectedDecreases);
+    }
   });
 
   it("keeps A-line shaping on the armhole edge of each half", () => {
@@ -1154,6 +1164,39 @@ describe("set-in sleeve center seams", () => {
     const result = generateSetInSleevePattern(pattern({ audience: "plus", row, availableNeedles: 400 }));
     expect(result.debug.backNeckToHem).toBe(28);
     expect(result.centerSeams).toBeUndefined();
+  });
+
+  it("splits an even body into equal halves and keeps an odd width's extra stitch on the left", () => {
+    const full = generateSetInSleevePattern(pattern({ availableNeedles: 400 }));
+    const hem = full.debug.hemCastOnStitches ?? 0;
+    expect(hem % 2).toBe(0);
+    const seamed = generateSetInSleevePattern(withCenterSeams(pattern({ availableNeedles: 80 })));
+    expect(castOnNumbers(seamed.displayRows)).toEqual([hem / 2 + 1, hem / 2 + 1]);
+    expect(centerSeamHalfStitches(101, "left", true)).toBe(52);
+    expect(centerSeamHalfStitches(101, "right", true)).toBe(51);
+  });
+
+  it("fits at the written needle count and blocks one needle below a seamed half", () => {
+    const wide = generateSetInSleevePattern(pattern({ availableNeedles: 400 }));
+    const backNeed = wide.needleCapacity?.pieces.find((piece) => piece.id === "back")?.requiredNeedles ?? 0;
+    const exact = generateSetInSleevePattern(pattern({ availableNeedles: backNeed }));
+    expect(exact.needleCapacity?.fitsAsWritten).toBe(true);
+    expect(exact.needleCapacity?.offerSeams).toBe(false);
+    const oneUnder = generateSetInSleevePattern(pattern({ availableNeedles: backNeed - 1 }));
+    expect(oneUnder.needleCapacity?.fitsAsWritten).toBe(false);
+    expect(oneUnder.needleCapacity?.offerSeams).toBe(true);
+    const seamedNeed = Math.max(
+      ...(oneUnder.needleCapacity?.seamedPieces ?? []).map((piece) => piece.requiredNeedles),
+    );
+    expect(seamedNeed).toBeGreaterThan(0);
+    expect(seamedNeed).toBeLessThan(backNeed);
+    const atHalf = generateSetInSleevePattern(withCenterSeams(pattern({ availableNeedles: seamedNeed })));
+    expect(atHalf.centerSeams?.applied).toBe(true);
+    const belowHalf = generateSetInSleevePattern(
+      withCenterSeams(pattern({ availableNeedles: seamedNeed - 1 })),
+    );
+    expect(belowHalf.centerSeams?.applied).toBe(false);
+    expect(belowHalf.needleCapacity?.offerSeams).toBe(false);
   });
 
   it("repeats the same halves when the saved center-seam choice is reopened", () => {

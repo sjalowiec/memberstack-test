@@ -616,14 +616,88 @@ export function tryBuildSleevelessFrontStsRowsDiagramSvg(
  * {@link tryBuildSleevelessFrontStsRowsDiagramSvg}. Returns `null` so
  * screen/print hydration keep the Illustrator SVG.
  */
+export type CenterSeamDiagramLabel = {
+  /** Visible name, such as "LEFT BACK" or "RIGHT FRONT". */
+  pieceLabel: string;
+  /**
+   * Side of the drawing where the center seam sits.
+   * A left half hangs the center edge on the right of the needle bed.
+   */
+  centerEdge: "left" | "right";
+};
+
+function reflectPathData(d: string, width: number): string {
+  const flip = (n: number) => Math.round((width - n) * 100) / 100;
+  return d.replace(/([MLC])([^MLCZ]*)/g, (_match, command: string, rest: string) => {
+    const nums = rest
+      .trim()
+      .split(/[\s,]+/)
+      .filter((part) => part.length > 0)
+      .map(Number);
+    const reflected: number[] = [];
+    const step = command === "C" ? 6 : 2;
+    for (let i = 0; i < nums.length; i += step) {
+      reflected.push(flip(nums[i] ?? 0), nums[i + 1] ?? 0);
+      if (step === 6) {
+        reflected.push(flip(nums[i + 2] ?? 0), nums[i + 3] ?? 0, flip(nums[i + 4] ?? 0), nums[i + 5] ?? 0);
+      }
+    }
+    return `${command} ${reflected.join(" ")} `;
+  }).replace(/\s+/g, " ").trim();
+}
+
+/** Flip a finished schematic so the center edge and armhole edge trade sides. Text stays readable. */
+export function mirrorStsRowsDiagramHorizontally(svg: string, width = VB_W): string {
+  const flip = (raw: string) => {
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return raw;
+    return String(Math.round((width - value) * 100) / 100);
+  };
+  const rects: string[] = [];
+  let out = svg.replace(/<rect\b[^>]*\/?>/g, (rect) => {
+    rects.push(rect);
+    return `__RECT_${rects.length - 1}__`;
+  });
+  out = out.replace(/\bd="([^"]*)"/g, (_match, d: string) => `d="${reflectPathData(d, width)}"`);
+  out = out.replace(
+    /\b(x|x1|x2|data-x)="(-?\d+(?:\.\d+)?)"/g,
+    (_match, name: string, n: string) => `${name}="${flip(n)}"`,
+  );
+  out = out.replace(/__RECT_(\d+)__/g, (_match, index: string) => rects[Number(index)] ?? "");
+  out = out
+    .replace(/text-anchor="start"/g, 'text-anchor="__END__"')
+    .replace(/text-anchor="end"/g, 'text-anchor="start"')
+    .replace(/text-anchor="__END__"/g, 'text-anchor="end"');
+  out = out
+    .replace(/data-side="left"/g, 'data-side="__RIGHT__"')
+    .replace(/data-side="right"/g, 'data-side="left"')
+    .replace(/data-side="__RIGHT__"/g, 'data-side="right"');
+  return out;
+}
+
+function withCenterSeamDiagramLabel(svg: string, label: CenterSeamDiagramLabel): string {
+  const armholeEdge = label.centerEdge === "right" ? "left" : "right";
+  const title = `${label.pieceLabel}. Center edge on the ${label.centerEdge}. Armhole edge on the ${armholeEdge}.`;
+  const labeled = svg.replace(
+    /<title[^>]*>[\s\S]*?<\/title>/,
+    `<title id="sleeveless-front-sts-rows-title">${escapeXml(title)}</title>`,
+  );
+  const name = `<text data-role="piece-label" data-center-edge="${label.centerEdge}" x="${fmtNum(VB_W / 2)}" y="${fmtNum(VB_H / 2)}" text-anchor="middle" fill="#243126" font-size="18" font-weight="700">${escapeXml(label.pieceLabel)}</text>`;
+  const withName = labeled.replace("</svg>", `${name}</svg>`);
+  return label.centerEdge === "right" ? mirrorStsRowsDiagramHorizontally(withName) : withName;
+}
+
 export function tryBuildLiveSleevelessFrontStsRowsDiagramSvg(
   result: SleevelessBackPatternResult,
   patternData?: unknown,
   unit?: MeasurementDisplayUnit,
+  centerSeam?: CenterSeamDiagramLabel,
 ): string | null {
   const model = buildSleevelessFrontStsRowsDiagramModel(result, patternData);
   if (model && unit === "cm") {
     model.finished = { ...model.finished, unit: "cm" };
   }
-  return tryBuildSleevelessFrontStsRowsDiagramSvg(model);
+  const svg = tryBuildSleevelessFrontStsRowsDiagramSvg(model);
+  if (!svg || !centerSeam) return svg;
+  return withCenterSeamDiagramLabel(svg, centerSeam);
 }

@@ -869,7 +869,15 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       ? ' data-sleeveless-front-diagram data-sleeveless-front-diagram-mode="sts-rows"'
       : "";
     const diagramModeAttrs = `${backDiagramAttrs}${frontDiagramAttrs}`;
-    const diagramTriggerHtml = `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
+    const centerSeamDiagramKey =
+      typeof diagramOpts?.centerSeamDiagramKey === "string" ? diagramOpts.centerSeamDiagramKey : "";
+    const diagramTriggerHtml = centerSeamDiagramKey
+      ? `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
+        <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-center-seam-diagram="${escapeHtml(centerSeamDiagramKey)}" data-alt="${alt}">
+          <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
+        </div>
+      </button>`
+      : `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
         <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}${diagramModeAttrs}>
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
         </div>
@@ -1302,7 +1310,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? null
         : String(hydrateGeneration);
     if (hydrateGen) el.dataset.sleevelessHydrateGen = hydrateGen;
-    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, patternData, unit);
+    const generatedSvg = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(
+      result,
+      patternData,
+      unit,
+      guideOpts?.centerSeamLabel,
+    );
     if (generatedSvg) {
       mountFrontStsRowsSvgMarkup(el, generatedSvg, hydrateGen);
       return;
@@ -4137,6 +4150,116 @@ table {
     });
   }
 
+  function centerSeamHalfKey(title) {
+    const match = /^(LEFT|RIGHT) (BACK|FRONT)$/.exec(String(title || "").trim());
+    if (!match) return "";
+    return `${match[1].toLowerCase()}-${match[2].toLowerCase()}`;
+  }
+
+  function wrapCenterSeamHalfLayouts(
+    rows,
+    pieceSectionId,
+    chartTableMountId,
+    patternIntroSentence,
+    neckChartStartRow,
+  ) {
+    const chunks = [];
+    let current = null;
+    for (const row of Array.isArray(rows) ? rows : []) {
+      const key = row && row.kind === "section" ? centerSeamHalfKey(row.title) : "";
+      if (key) {
+        if (current) chunks.push(current);
+        current = { key, title: row.title, rows: [row] };
+      } else if (current) {
+        current.rows.push(row);
+      }
+    }
+    if (current) chunks.push(current);
+    return chunks
+      .map((chunk) => {
+        const rendered = renderSleevelessDisplayHtml(
+          chunk.rows,
+          chartTableMountId,
+          pieceSectionId,
+          patternIntroSentence,
+          neckChartStartRow,
+          { omitPieceBanner: true },
+        );
+        return wrapSleevelessPieceSplit(rendered.splitInner, "", chunk.title, rendered.postSplit, {
+          centerSeamDiagramKey: chunk.key,
+        });
+      })
+      .join("");
+  }
+
+  function centerSeamHalfCounts(seams, key) {
+    if (key === "left-back") return { hem: seams.backHem, bust: seams.backBust, after: seams.backAfter };
+    if (key === "right-back") {
+      return { hem: seams.backRightHem, bust: seams.backRightBust, after: seams.backRightAfter };
+    }
+    if (key === "left-front") return { hem: seams.frontHem, bust: seams.frontBust, after: seams.frontAfter };
+    if (key === "right-front") {
+      return { hem: seams.frontRightHem, bust: seams.frontRightBust, after: seams.frontRightAfter };
+    }
+    return null;
+  }
+
+  async function hydrateCenterSeamHalfDiagrams(mount, result, unit, diagramPatternData, renderSeq) {
+    const seams = result?.centerSeams;
+    if (!seams?.applied || !mount) return;
+    const hosts = mount.querySelectorAll("[data-center-seam-diagram]");
+    if (!hosts.length) return;
+    const fit = diagramPatternData.fit && typeof diagramPatternData.fit === "object" ? diagramPatternData.fit : {};
+    const measurements =
+      fit.selectedMeasurements && typeof fit.selectedMeasurements === "object" ? fit.selectedMeasurements : {};
+    const backDepth = measurements.back_neck_depth ?? measurements.backNeckDepth;
+    const backPatternData = {
+      ...diagramPatternData,
+      style: {
+        ...(diagramPatternData.style && typeof diagramPatternData.style === "object"
+          ? diagramPatternData.style
+          : {}),
+        garmentStyle: "cardigan",
+        frontStyle: "open",
+        neckline: "round",
+      },
+      fit: {
+        ...fit,
+        selectedMeasurements: {
+          ...measurements,
+          ...(backDepth !== undefined ? { front_neck_depth: backDepth, frontNeckDepth: backDepth } : {}),
+        },
+      },
+    };
+    const fullNeck = Number(result.debug?.necklineStitches) || 0;
+    const seamNeck = (Math.round(fullNeck / 2) + 1) * 2;
+    for (const host of hosts) {
+      if (!(host instanceof HTMLElement)) continue;
+      const key = host.dataset.centerSeamDiagram || "";
+      const counts = centerSeamHalfCounts(seams, key);
+      if (!counts?.hem) continue;
+      const piece = key.endsWith("front") ? "front" : "back";
+      const side = key.startsWith("right") ? "right" : "left";
+      const diagramResult = {
+        ...result,
+        debug: {
+          ...result.debug,
+          cardiganHalfLeftCastOnSts: counts.hem,
+          cardiganHalfLeftBustBodySts: counts.bust,
+          cardiganHalfLeftStitchesAfterArmhole: counts.after,
+          cardiganFrontPostArmholeSts: counts.after,
+          necklineStitches: seamNeck,
+        },
+      };
+      await hydrateSleevelessFrontDiagram(host, "sts-rows", diagramResult, unit, piece === "back" ? backPatternData : diagramPatternData, renderSeq, {
+        centerSeamLabel: {
+          pieceLabel: `${side.toUpperCase()} ${piece.toUpperCase()}`,
+          centerEdge: side === "left" ? "right" : "left",
+        },
+      });
+    }
+  }
+
   async function renderSetInSleeveMount(patternMerged, result, unit, generatorPatternData) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (!mount) return;
@@ -4249,41 +4372,56 @@ table {
       },
     );
     const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve", "", undefined);
-    const backWrapped = wrapSleevelessPieceSplit(
-      back.splitInner,
-      resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData),
-      "Set-in sleeve back stitches and rows",
-      back.postSplit,
-      centerSeamApplied
-        ? { centerSeamBackHost: true, cardiganHalfSide: "left" }
-        : backNotationSupported
-          ? {
-              backDiagramModeToggle: true,
-              enableVisualWorkspace: true,
-              shapingSrc: resolveSleevelessBackDiagramSrc("shaping-notation", diagramPatternData),
-              shapingAlt: "Set-in sleeve back shaping notation",
-            }
-          : undefined,
-    );
-    const frontWrapped = wrapSleevelessPieceSplit(
-      front.splitInner,
-      frontNotationSupported
-        ? resolveSleevelessFrontDiagramSrc("sts-rows", diagramPatternData)
-        : frontDiagramResolution.src,
-      "Set-in sleeve front stitches and rows",
-      front.postSplit,
-      frontNotationSupported
-        ? {
-            frontDiagramModeToggle: true,
-            enableVisualWorkspace: true,
-            shapingSrc: resolveSleevelessFrontDiagramSrc("shaping-notation", diagramPatternData),
-            shapingAlt: "Set-in sleeve front shaping notation",
-            cardiganHalfSide: frontCardiganHalfSide,
-          }
-        : frontCardiganHalfSide
-          ? { cardiganHalfSide: frontCardiganHalfSide }
-          : undefined,
-    );
+    const backWrapped = centerSeamApplied
+      ? wrapCenterSeamHalfLayouts(
+          result.displayRows,
+          "back",
+          "sg-neck-shoulder-chart-table-back",
+          patternIntroSentence,
+          result?.neckShoulderShapingChart?.rows?.[0]?.row,
+        )
+      : wrapSleevelessPieceSplit(
+          back.splitInner,
+          resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData),
+          "Set-in sleeve back stitches and rows",
+          back.postSplit,
+          backNotationSupported
+            ? {
+                backDiagramModeToggle: true,
+                enableVisualWorkspace: true,
+                shapingSrc: resolveSleevelessBackDiagramSrc("shaping-notation", diagramPatternData),
+                shapingAlt: "Set-in sleeve back shaping notation",
+              }
+            : undefined,
+        );
+    const frontWrapped =
+      centerSeamApplied && result.centerSeams?.splitFront
+        ? wrapCenterSeamHalfLayouts(
+            result.frontDisplayRows ?? [],
+            "front",
+            "sg-neck-shoulder-chart-table-front",
+            patternIntroSentence,
+            result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+          )
+        : wrapSleevelessPieceSplit(
+            front.splitInner,
+            frontNotationSupported
+              ? resolveSleevelessFrontDiagramSrc("sts-rows", diagramPatternData)
+              : frontDiagramResolution.src,
+            "Set-in sleeve front stitches and rows",
+            front.postSplit,
+            frontNotationSupported
+              ? {
+                  frontDiagramModeToggle: true,
+                  enableVisualWorkspace: true,
+                  shapingSrc: resolveSleevelessFrontDiagramSrc("shaping-notation", diagramPatternData),
+                  shapingAlt: "Set-in sleeve front shaping notation",
+                  cardiganHalfSide: frontCardiganHalfSide,
+                }
+              : frontCardiganHalfSide
+                ? { cardiganHalfSide: frontCardiganHalfSide }
+                : undefined,
+          );
     const sleeveWrapped = wrapSleevelessPieceSplit(
       sleeve.splitInner,
       "/images/patterns/set-in-sleeve-diagram.svg",
@@ -4344,83 +4482,8 @@ table {
         host.dataset.sleevelessSleeveDiagramMode === "shaping-notation" ? "shaping-notation" : "sts-rows";
       hydrateSetInSleeveDiagram(host, mode, result, renderSeq);
     });
-    if (centerSeamApplied && result.centerSeams.backHem) {
-      const backHost = mount.querySelector("[data-sleeveless-back-diagram]");
-      const fit = diagramPatternData.fit && typeof diagramPatternData.fit === "object" ? diagramPatternData.fit : {};
-      const measurements =
-        fit.selectedMeasurements && typeof fit.selectedMeasurements === "object"
-          ? fit.selectedMeasurements
-          : {};
-      const backDepth = measurements.back_neck_depth ?? measurements.backNeckDepth;
-      const backPatternData = {
-        ...diagramPatternData,
-        style: {
-          ...(diagramPatternData.style && typeof diagramPatternData.style === "object"
-            ? diagramPatternData.style
-            : {}),
-          garmentStyle: "cardigan",
-          frontStyle: "open",
-          neckline: "round",
-        },
-        fit: {
-          ...fit,
-          selectedMeasurements: {
-            ...measurements,
-            ...(backDepth !== undefined ? { front_neck_depth: backDepth, frontNeckDepth: backDepth } : {}),
-          },
-        },
-      };
-      const backDiagramResult = {
-        ...result,
-        debug: {
-          ...result.debug,
-          cardiganHalfLeftCastOnSts: result.centerSeams.backHem,
-          cardiganHalfLeftBustBodySts: result.centerSeams.backBust,
-          cardiganHalfLeftStitchesAfterArmhole: result.centerSeams.backAfter,
-        },
-      };
-      if (backHost instanceof HTMLElement) {
-        await hydrateSleevelessFrontDiagram(
-          backHost,
-          "sts-rows",
-          backDiagramResult,
-          unit,
-          backPatternData,
-          renderSeq,
-          { cardiganHalfSide: "left", layout: "front" },
-        );
-      }
-    }
-    if (centerSeamApplied && result.centerSeams?.splitFront && result.centerSeams.frontHem) {
-      const frontDiagramResult = {
-        ...result,
-        debug: {
-          ...result.debug,
-          cardiganHalfLeftCastOnSts: result.centerSeams.frontHem,
-          cardiganHalfLeftBustBodySts: result.centerSeams.frontBust,
-          cardiganHalfLeftStitchesAfterArmhole: result.centerSeams.frontAfter,
-        },
-      };
-      const frontSection = mount.querySelector('[data-section-id="sg-front"]');
-      const frontHosts = frontSection
-        ? frontSection.querySelectorAll("[data-sleeveless-front-diagram]")
-        : [];
-      for (const host of frontHosts) {
-        if (!(host instanceof HTMLElement)) continue;
-        const mode =
-          host.dataset.sleevelessFrontDiagramMode === "shaping-notation"
-            ? "shaping-notation"
-            : "sts-rows";
-        await hydrateSleevelessFrontDiagram(
-          host,
-          mode,
-          frontDiagramResult,
-          unit,
-          diagramPatternData,
-          renderSeq,
-          { cardiganHalfSide: "left", layout: "front" },
-        );
-      }
+    if (centerSeamApplied) {
+      await hydrateCenterSeamHalfDiagrams(mount, result, unit, diagramPatternData, renderSeq);
     }
 
     hydrateGlossaryTooltipPlaceholders(mount);
