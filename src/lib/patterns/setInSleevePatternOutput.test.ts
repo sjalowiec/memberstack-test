@@ -821,7 +821,7 @@ describe("set-in back neckline and shoulder checklist", () => {
     );
     expect(setIn).not.toContain("sg-overview");
     expect(setIn).not.toContain('"Overview"');
-    expect(setIn).toContain('wrapPatternSection("sg-back", "BACK"');
+    expect(setIn).toContain('wrapPatternSection("sg-back", centerSeamApplied ? "BACK HALVES" : "BACK"');
     expect(setIn).toContain('mount.querySelector("#sg-neck-shoulder-chart-table-back")');
     expect(setIn).toContain("renderNeckShoulderShapingChartTableOnlyHtml");
     expect(setIn).toContain('tableHeading: "First Shoulder Checklist"');
@@ -1031,5 +1031,136 @@ describe("set-in learning resources", () => {
       pattern({ row: MISSES_7, neckline: "v-neck", garmentStyle: "pullover" }),
     );
     expect(tipCount(sleeveless.frontDisplayRows, SET_IN_NECKLINE_ORIENTATION_TIP_ID)).toBe(0);
+  });
+});
+
+describe("set-in sleeve center seams", () => {
+  function withCenterSeams(data: Record<string, unknown>): Record<string, unknown> {
+    return { ...data, style: { ...(data.style as object), centerSeams: true } };
+  }
+
+  function castOnNumbers(rows: ReadonlyArray<{ kind: string; paragraphs?: string[] }>): number[] {
+    return rows
+      .flatMap((row) => row.paragraphs ?? [])
+      .map((line) => line.match(/Cast on (\d+) stitches/))
+      .filter((match): match is RegExpMatchArray => match !== null)
+      .map((match) => Number(match[1]));
+  }
+
+  it("keeps a fitting pattern as one full back and one full front", () => {
+    const result = generateSetInSleevePattern(pattern({}));
+    expect(result.centerSeams).toBeUndefined();
+    expect(textOf(result.displayRows)).not.toContain("LEFT BACK");
+    expect(textOf(result.displayRows)).toContain("Bind off");
+    expect(result.needleCapacity?.fitsAsWritten).toBe(true);
+    expect(result.needleCapacity?.offerSeams).toBe(false);
+  });
+
+  it("offers seams when the body is too wide and the halves fit", () => {
+    const result = generateSetInSleevePattern(pattern({ availableNeedles: 80 }));
+    expect(result.needleCapacity?.shouldBlock).toBe(true);
+    expect(result.needleCapacity?.offerSeams).toBe(true);
+    expect(textOf(result.displayRows)).toContain("Bind off");
+  });
+
+  it("splits a round pullover into four halves and keeps the sleeve", () => {
+    const full = generateSetInSleevePattern(pattern({ availableNeedles: 80 }));
+    const seamed = generateSetInSleevePattern(withCenterSeams(pattern({ availableNeedles: 80 })));
+    expect(seamed.centerSeams?.applied).toBe(true);
+    expect(seamed.centerSeams?.splitFront).toBe(true);
+    const back = textOf(seamed.displayRows);
+    const front = textOf(seamed.frontDisplayRows);
+    expect(back).toContain("LEFT BACK");
+    expect(back).toContain("RIGHT BACK");
+    expect(front).toContain("LEFT FRONT");
+    expect(front).toContain("RIGHT FRONT");
+    expect(back).toContain("seam stitch");
+    const rightBack = back.slice(back.indexOf("RIGHT BACK"));
+    expect(back.slice(0, back.indexOf("RIGHT BACK"))).toContain("the left back only");
+    expect(back.slice(0, back.indexOf("RIGHT BACK"))).toContain("center edge on the right");
+    expect(rightBack).toContain("the right back only");
+    expect(rightBack).toContain("center edge on the left");
+    expect(back).toContain("BACK NECKLINE");
+    expect(back).not.toContain("FRONT NECKLINE");
+    const rightFront = front.slice(front.indexOf("RIGHT FRONT"));
+    expect(front.slice(0, front.indexOf("RIGHT FRONT"))).toContain("the left front only");
+    expect(rightFront).toContain("the right front only");
+    expect(textOf(seamed.sleeveDisplayRows)).toContain("Bind off");
+    const fullHem = full.debug.hemCastOnStitches ?? 0;
+    const halves = castOnNumbers(seamed.displayRows);
+    expect(halves).toHaveLength(2);
+    expect(halves[0]! + halves[1]! - 2).toBe(fullHem);
+    expect(halves[0]!).toBeGreaterThanOrEqual(halves[1]!);
+    const print = renderSleevelessPrintPieceHtml(seamed.displayRows, "", "back");
+    expect(print).toContain("LEFT BACK");
+    const finishing = sleevelessFinishingFromPattern(withCenterSeams(pattern({})), seamed.debug);
+    const html = buildSleevelessFinishingStepsHtml({ ...finishing, deps: finishingDeps });
+    expect(html).toContain("center-front seam");
+    expect(html).toContain("center-back seam");
+  });
+
+  it("keeps cardigan fronts and splits only the back", () => {
+    const full = generateSetInSleevePattern(pattern({ garmentStyle: "cardigan", availableNeedles: 80 }));
+    const seamed = generateSetInSleevePattern(
+      withCenterSeams(pattern({ garmentStyle: "cardigan", availableNeedles: 80 })),
+    );
+    expect(seamed.centerSeams?.splitFront).toBe(false);
+    expect(textOf(seamed.frontDisplayRows)).toBe(textOf(full.frontDisplayRows));
+    expect(textOf(seamed.displayRows)).toContain("LEFT BACK");
+    expect(textOf(seamed.displayRows)).toContain("RIGHT BACK");
+    expect(textOf(seamed.displayRows)).toContain("seam stitch");
+    const finishing = sleevelessFinishingFromPattern(
+      withCenterSeams(pattern({ garmentStyle: "cardigan" })),
+      seamed.debug,
+    );
+    expect(buildSleevelessFinishingPrintListHtml(finishing)).toContain("center-back seam");
+    expect(buildSleevelessFinishingPrintListHtml(finishing)).not.toContain("center-front seam");
+  });
+
+  it("writes a V-neck pullover half from the center edge", () => {
+    const seamed = generateSetInSleevePattern(
+      withCenterSeams(pattern({ neckline: "v-neck", availableNeedles: 80 })),
+    );
+    const front = textOf(seamed.frontDisplayRows);
+    expect(front).toContain("LEFT FRONT");
+    expect(front).toContain("RIGHT FRONT");
+    expect(front).toContain("center edge");
+    expect(front).toContain("seam stitch");
+    expect(front).not.toContain("could not be scheduled");
+    expect(front).not.toMatch(/exceed/i);
+  });
+
+  it("keeps A-line shaping on the armhole edge of each half", () => {
+    const seamed = generateSetInSleevePattern(
+      withCenterSeams(pattern({ bodyShape: "aline", availableNeedles: 90 })),
+    );
+    expect(seamed.centerSeams?.applied).toBe(true);
+    expect(textOf(seamed.displayRows)).toContain("armhole edge");
+    expect(textOf(seamed.displayRows)).not.toContain("at each side edge");
+  });
+
+  it("does not render a pattern when the sleeve is wider than the machine", () => {
+    const row = { ...MISSES_7, upper_arm: 40 };
+    const seamed = generateSetInSleevePattern(
+      withCenterSeams(pattern({ row, availableNeedles: 80 })),
+    );
+    expect(seamed.centerSeams?.applied).toBe(false);
+    expect(textOf(seamed.displayRows)).not.toContain("Cast on");
+    expect(seamed.sleeveDisplayRows).toEqual([]);
+  });
+
+  it("uses the Women's 6X garment length from the chart", () => {
+    const row = (plusSizes as ChartRow[]).find((item) => String(item.size) === "6x");
+    const result = generateSetInSleevePattern(pattern({ audience: "plus", row, availableNeedles: 400 }));
+    expect(result.debug.backNeckToHem).toBe(28);
+    expect(result.centerSeams).toBeUndefined();
+  });
+
+  it("repeats the same halves when the saved center-seam choice is reopened", () => {
+    const saved = withCenterSeams(pattern({ availableNeedles: 80 }));
+    const first = textOf(generateSetInSleevePattern(saved).displayRows);
+    const second = textOf(generateSetInSleevePattern(saved).displayRows);
+    expect(second).toBe(first);
+    expect(first).toContain("LEFT BACK");
   });
 });

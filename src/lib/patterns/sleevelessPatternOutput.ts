@@ -553,6 +553,15 @@ export type SleevelessPatternGenerationOptions = {
    * set-in armhole. Neckline and shoulder formulas stay on the same stitch and row budget.
    */
   useSetInArmhole?: boolean;
+  /**
+   * Which cardigan half to write. Default left. Sleeveless and Drop Shoulder do not set this.
+   */
+  cardiganHalfSide?: "left" | "right";
+  /**
+   * Add one seam stitch on the center edge of this half. Default false, so existing
+   * cardigan fronts stay unchanged. Set-In Sleeve sets this only for a new center seam.
+   */
+  centerSeamStitch?: boolean;
 };
 
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
@@ -2573,8 +2582,12 @@ export function buildSleevelessFrontDisplayRows(args: {
   shoulderStitches?: number;
   /** Piece banner (default `FRONT`; round cardigan uses `LEFT FRONT`). */
   pieceTitle?: string;
+  /** Cast-on sentence only, e.g. `"the left front"` or `"the right front"`. */
+  castOnForPieceLabel?: string;
   /** When true, intro explains half-body cast-on vs full pullover front. */
   introIsCardiganHalf?: boolean;
+  /** One seam stitch was added on the center edge of this half. */
+  centerSeamStitch?: boolean;
   /** Garment RC where armhole shaping begins — required to clamp post-armhole rows without touching BODY. */
   garmentArmholeStartRC?: number;
   /** When true, armhole checkpoint copy names V-neck and the armhole reset explicitly. */
@@ -2685,8 +2698,20 @@ export function buildSleevelessFrontDisplayRows(args: {
   // The full-width (pullover) front has no introductory paragraph: the headings, row-counter labels,
   // and shaping checklist already provide the needed context, so instructions begin directly.
   if (args.introIsCardiganHalf) {
+    const rightHalf = args.castOnForPieceLabel === "the right front";
+    const seam = args.centerSeamStitch === true;
     const introParagraphs = [
-      "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the hem up — cast on, knit the hem and body, shape the armhole, then continue into the front neckline. Body/side shaping on the front is worked only on the armhole edge.",
+      !seam && !rightHalf
+        ? "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the hem up — cast on, knit the hem and body, shape the armhole, then continue into the front neckline. Body/side shaping on the front is worked only on the armhole edge."
+        : [
+            `This piece is half the body width. Cast-on and armhole counts below are for ${args.castOnForPieceLabel ?? "the left front"} only.`,
+            seam
+              ? `One seam stitch is included on the center edge. It stays on that edge through the body and armhole, and it is bound off at the start of the center neckline. Hang the center edge on the ${rightHalf ? "left" : "right"} side of the needle bed and the armhole edge on the ${rightHalf ? "right" : "left"}. Bind off the center edge with the carriage on the ${rightHalf ? "left" : "right"}. Bind off the armhole edge with the carriage on the ${rightHalf ? "right" : "left"}.`
+              : "",
+            "Work the piece from the hem up — cast on, knit the hem and body, shape the armhole, then continue into the neckline. Body shaping is worked only on the armhole edge.",
+          ]
+            .filter((line) => line.length > 0)
+            .join(" "),
     ];
     if (!cardiganBeforeArmhole) {
       introParagraphs.push("After the armhole reset, use Armhole RC — not the body row counter.");
@@ -3041,6 +3066,8 @@ export function generateSleevelessBackPattern(
   }
   /* --- end body block --- */
 
+  const cardiganHalfSide = options?.cardiganHalfSide === "right" ? "right" : "left";
+  const centerSeamStitch = options?.centerSeamStitch === true ? 1 : 0;
   const cardiganLeftHalfWidths =
     isCardiganHalfFrontBody &&
     castOnSts > 0 &&
@@ -3053,12 +3080,19 @@ export function generateSleevelessBackPattern(
             bustBodySts,
             stitchesAfterArmhole,
           },
-          "left",
+          cardiganHalfSide,
         )
       : null;
-  const cardiganHalfLeftCastOnSts = cardiganLeftHalfWidths?.hemCastOnSts;
-  const cardiganHalfLeftBustBodySts = cardiganLeftHalfWidths?.bustBodySts;
-  const cardiganHalfLeftStitchesAfterArmhole = cardiganLeftHalfWidths?.stitchesAfterArmhole;
+  let cardiganHalfLeftCastOnSts = cardiganLeftHalfWidths?.hemCastOnSts;
+  let cardiganHalfLeftBustBodySts = cardiganLeftHalfWidths?.bustBodySts;
+  let cardiganHalfLeftStitchesAfterArmhole = cardiganLeftHalfWidths?.stitchesAfterArmhole;
+  if (centerSeamStitch > 0) {
+    if (cardiganHalfLeftCastOnSts !== undefined) cardiganHalfLeftCastOnSts += centerSeamStitch;
+    if (cardiganHalfLeftBustBodySts !== undefined) cardiganHalfLeftBustBodySts += centerSeamStitch;
+    if (cardiganHalfLeftStitchesAfterArmhole !== undefined) {
+      cardiganHalfLeftStitchesAfterArmhole += centerSeamStitch;
+    }
+  }
 
   if (
     isCardiganHalfFrontBody &&
@@ -3366,18 +3400,20 @@ export function generateSleevelessBackPattern(
   ) {
     const shoulderSts = shoulderStitches;
     const initialCenterSts = initialBackCenterNeckStitches(necklineStitches);
-    const necklineOpeningStsForFrontPiece = isCardiganRoundHalfFront
-      ? Math.max(1, Math.round(necklineStitches / 2))
+    const useHalfFrontCounts =
+      isCardiganRoundHalfFront || (isFrontVNeck && centerSeamStitch > 0 && isCardiganHalfFrontBody);
+    const necklineOpeningStsForFrontPiece = useHalfFrontCounts
+      ? Math.max(1, Math.round(necklineStitches / 2)) + centerSeamStitch
       : necklineStitches;
     const initialCenterStsFrontPiece = initialCenterNeckStitches(necklineOpeningStsForFrontPiece);
     const stitchesAfterArmholeForFrontPiece =
-      isCardiganRoundHalfFront
+      useHalfFrontCounts
         ? (cardiganFrontPostArmholeSts ??
           cardiganHalfLeftStitchesAfterArmhole ??
           stitchesAfterArmhole!)
         : stitchesAfterArmhole!;
 
-    const shoulderStsForFrontPiece = isCardiganRoundHalfFront
+    const shoulderStsForFrontPiece = useHalfFrontCounts
       ? Math.max(1, stitchesAfterArmholeForFrontPiece - necklineOpeningStsForFrontPiece)
       : shoulderSts;
 
@@ -3408,10 +3444,11 @@ export function generateSleevelessBackPattern(
       centerNeckBindOff: necklineOpeningStsForFrontPiece,
       ...(isCardiganRoundHalfFront
         ? {
-            cardiganCfInitialBindOff: cardiganFrontInitialNeckBindOffStitches(
-              necklineStitches,
-              effectiveFrontNeckDepthRows,
-            ),
+            cardiganCfInitialBindOff:
+              cardiganFrontInitialNeckBindOffStitches(
+                necklineStitches,
+                effectiveFrontNeckDepthRows,
+              ) + centerSeamStitch,
           }
         : {}),
       neckDepthRows:
@@ -4263,7 +4300,7 @@ export function generateSleevelessBackPattern(
           necklineStitches,
           shoulderStitches,
           armholeInstructionStyle: "cardiganHalfLeftFront",
-          castOnForPieceLabel: "the left front",
+          castOnForPieceLabel: cardiganHalfSide === "right" ? "the right front" : "the left front",
           alineBodyShaping: cardiganFrontAlineShaping,
           alineShapingEdgeScope: "armholeEdgeOnly",
         })
@@ -4274,8 +4311,8 @@ export function generateSleevelessBackPattern(
   const necklineStitchesForFrontSummary =
     necklineStitches === undefined
       ? undefined
-      : isCardiganRoundHalfFront
-        ? Math.max(1, Math.round(necklineStitches / 2))
+      : isCardiganRoundHalfFront || centerSeamStitch > 0
+        ? Math.max(1, Math.round(necklineStitches / 2)) + centerSeamStitch
         : necklineStitches;
 
   const displayRows = mergeAdjacentPlainKnitBlocks(backDisplayRowsRaw);
@@ -4291,7 +4328,7 @@ export function generateSleevelessBackPattern(
       neckChartRows: frontNeckShoulderShapingChart.rows,
       necklineStitches: necklineStitchesForFrontSummary,
       fullNecklineStitches: necklineStitches,
-      shoulderStitches: isCardiganRoundHalfFront
+      shoulderStitches: isCardiganRoundHalfFront || centerSeamStitch > 0
         ? Math.max(
             1,
             (cardiganFrontPostArmholeSts ??
@@ -4300,8 +4337,18 @@ export function generateSleevelessBackPattern(
               0) - (necklineStitchesForFrontSummary ?? 0),
           )
         : shoulderStitches,
-      pieceTitle: isCardiganHalfFrontBody ? "LEFT FRONT" : undefined,
+      pieceTitle: isCardiganHalfFrontBody
+        ? cardiganHalfSide === "right"
+          ? "RIGHT FRONT"
+          : "LEFT FRONT"
+        : undefined,
+      castOnForPieceLabel: isCardiganHalfFrontBody
+        ? cardiganHalfSide === "right"
+          ? "the right front"
+          : "the left front"
+        : undefined,
       introIsCardiganHalf: isCardiganHalfFrontBody,
+      centerSeamStitch: centerSeamStitch > 0,
       garmentArmholeStartRC: armholeStartRC,
       isVNeck: isSleevelessVNeckChoice(patternData),
       armholeNecklineOverlap: frontArmholeNecklineOverlap,

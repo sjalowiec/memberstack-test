@@ -1,9 +1,8 @@
 /**
  * Set-In Sleeve size charts offered for a new pattern.
- * Misses → `misses` (Express who `women`). Men's → `men`.
- * Women's (`plus`) stays in the chart data for saved patterns, but it is not
- * offered when creating a new Set-In Sleeve pattern.
- * Baby and Kids are not offered. Sleeveless and Drop Shoulder keep their own pickers.
+ * Misses → `misses` (Express who `women`). Women's → `plus` (X through 6X).
+ * Men's → `men`. Baby and Kids are not offered.
+ * Sleeveless and Drop Shoulder keep their own pickers.
  */
 
 import {
@@ -13,6 +12,7 @@ import {
 
 export const SET_IN_SLEEVE_WHO_OPTIONS = [
   { value: "women", label: "Misses" },
+  { value: "plus", label: "Women's" },
   { value: "men", label: "Men's" },
 ] as const;
 
@@ -46,17 +46,18 @@ export function setInSleeveAudiencePrefixLabel(who: unknown, chartAudience?: unk
   return "";
 }
 
-/** Who values offered for a new Set-In Sleeve pattern. Women's (`plus`) is not included. */
+/** Who values offered for a new Set-In Sleeve pattern. */
 export function setInSleeveWhoIsSupported(who: unknown): boolean {
   const key = String(who ?? "").trim().toLowerCase();
   if (key === "women" || key === "woman" || key === "misses") return true;
+  if (key === "plus") return true;
   if (key === "men" || key === "man" || key === "male") return true;
   return false;
 }
 
 /**
- * Drop Baby, Kids, or Women's on a new Set-In Sleeve session.
- * Saved projects keep their stored chart, including Women's (`plus`).
+ * Drop Baby or Kids on a new Set-In Sleeve session.
+ * Saved projects keep their stored chart.
  */
 export function omitUnsupportedSetInSleeveWho(
   values: Record<string, string>,

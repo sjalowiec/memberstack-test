@@ -252,6 +252,20 @@ function finalPressingBody(): string {
     </ul>`;
 }
 
+function joinCenterSeamsBody(centerSeams: "pullover" | "cardigan" | undefined): string {
+  if (centerSeams === "cardigan") {
+    return `<ul>
+      <li>Sew the left back and the right back together along the center-back seam. The seam stitch on each edge is the seam allowance.</li>
+      <li>Leave the fronts open for the front bands.</li>
+    </ul>`;
+  }
+  return `<ul>
+      <li>Sew the left front and the right front together along the center-front seam.</li>
+      <li>Sew the left back and the right back together along the center-back seam.</li>
+      <li>The seam stitch on each edge is the seam allowance.</li>
+    </ul>`;
+}
+
 function stepBodyHtml(
   id: SleevelessFinishingStepId,
   deps: SleevelessFinishingHtmlDeps,
@@ -261,10 +275,13 @@ function stepBodyHtml(
   dropShoulderSleeveDirection: DropShoulderSleeveDirection,
   neckbandPickup: NeckbandPickupInstructionViewModel | null | undefined,
   isSetInSleeve: boolean,
+  centerSeams: "pullover" | "cardigan" | undefined,
 ): string {
   switch (id) {
     case "blockPieces":
       return blockPiecesBody(deps);
+    case "joinCenterSeams":
+      return joinCenterSeamsBody(centerSeams);
     case "joinShoulders":
       return joinShouldersBody(deps);
     case "finishArmholes":
@@ -296,6 +313,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   neckbandPickup?: NeckbandPickupInstructionViewModel | null;
+  centerSeams?: "pullover" | "cardigan";
   deps: SleevelessFinishingHtmlDeps;
 }): string {
   const isSetInSleeve = options.isSetInSleeve === true;
@@ -306,6 +324,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
     isCardigan: options.isCardigan,
     isDropShoulder,
     isSetInSleeve,
+    centerSeams: options.centerSeams,
   });
   const frontEdgeMode =
     options.isCardigan ? (options.cardiganFrontEdgeFinishingMode ?? "pickup") : undefined;
@@ -323,6 +342,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
         dropShoulderSleeveDirection,
         options.neckbandPickup,
         isSetInSleeve,
+        options.centerSeams,
       ),
     ),
   );
@@ -369,6 +389,7 @@ export function buildSleevelessFinishingPrintListHtml(options: {
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   neckbandPickup?: NeckbandPickupInstructionViewModel | null;
+  centerSeams?: "pullover" | "cardigan";
 }): string {
   const isSetInSleeve = options.isSetInSleeve === true;
   const isDropShoulder = options.isDropShoulder === true && !isSetInSleeve;
@@ -378,6 +399,7 @@ export function buildSleevelessFinishingPrintListHtml(options: {
     isCardigan: options.isCardigan,
     isDropShoulder,
     isSetInSleeve,
+    centerSeams: options.centerSeams,
   });
   const items: string[] = [];
 
@@ -387,6 +409,13 @@ export function buildSleevelessFinishingPrintListHtml(options: {
     switch (id) {
       case "blockPieces":
         items.push(`${n}. Optional: block pieces to measurements; allow to dry.`);
+        break;
+      case "joinCenterSeams":
+        items.push(
+          options.centerSeams === "cardigan"
+            ? `${n}. Join center seams: sew the left and right backs together along the center-back seam. The seam stitch on each edge is the seam allowance. Leave the fronts open for the bands.`
+            : `${n}. Join center seams: sew the left and right fronts together along the center-front seam, and the left and right backs together along the center-back seam. The seam stitch on each edge is the seam allowance.`,
+        );
         break;
       case "joinShoulders":
         items.push(`${n}. Join shoulders with your preferred method.`);
