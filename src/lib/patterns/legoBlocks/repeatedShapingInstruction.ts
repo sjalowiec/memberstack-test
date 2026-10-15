@@ -9,7 +9,9 @@
  * keep its own wording.
  */
 
-import { formatRcColon } from "../sleevelessPatternOutput";
+import { formatParentheticalRcList } from "../parentheticalRcList";
+
+export { formatParentheticalRcList };
 
 export type RepeatedShapingAction = "increase" | "decrease" | "bind-off" | "hold";
 
@@ -50,12 +52,6 @@ function actionClause(action: RepeatedShapingAction, stitches: number, edgePhras
   if (action === "decrease") return `Decrease ${stitches} ${stitchWord} ${at}`;
   if (action === "bind-off") return `Bind off ${stitches} ${stitchWord} ${at}`;
   return `Put ${stitches} ${stitchWord} in hold ${at}`;
-}
-
-/** `(RC: 006, 008, 010, 012)` — the label appears once; each reading stays three digits. */
-export function formatParentheticalRcList(rows: readonly number[]): string {
-  const digits = rows.map((rc) => formatRcColon(rc).replace(/^RC:\s*/, ""));
-  return `(RC: ${digits.join(", ")})`;
 }
 
 /**

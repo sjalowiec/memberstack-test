@@ -11,6 +11,7 @@ import {
   formatDropShoulderSleeveShapingWrittenLines,
 } from "./dropShoulderSleeveShaping";
 import { sleeveEvenShapingSchedule, sleeveShapingPerSide } from "./evenShapingSchedule";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import { scaleDropShoulderCuffCircumferenceInches } from "./dropShoulderSleeveMeasurementOverrides";
 import { evenPositiveBodyStitches } from "./sleevelessBodyStitchMath";
 import { formatBindOffNotation, formatCastOnNotation } from "./sleevelessBackJapaneseNotation";
@@ -222,7 +223,8 @@ describe("sideways sleeve instructions, diagrams, and measurements agree", () =>
     expect(attr(down.notation, "data-shaping-notation")).toBe(
       formatDropShoulderSleeveWorkingNotation(chartInput, { includeRowSpans: true }),
     );
-    expect(html).toContain(`(RC: ${topRcs.join(", ")})`);
+    expect(html).toContain(formatParentheticalRcList(topRcs));
+    expect(html).not.toMatch(/\(RC: \d+, RC:/);
     expect(html).toContain(`Knit ${topRcs[0]} rows even.`);
     expect(html).toContain("Finish the cuff");
     expect(html).toContain("Cuff edge");

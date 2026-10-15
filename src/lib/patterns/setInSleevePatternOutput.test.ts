@@ -192,7 +192,8 @@ describe("set-in sleeve pattern choices", () => {
     expect(back).not.toMatch(/removed total/);
     expect(sleeve).toContain("Make 2 sleeves.");
     expect(sleeve).toContain("Increase 1 stitch at each side every");
-    expect(sleeve).toMatch(/\(RC:/);
+    expect(sleeve).toMatch(/\(RC: \d{3}(?:, \d{3})+\)/);
+    expect(sleeve).not.toMatch(/\(RC: \d{3}, RC:/);
     expect(sleeve).toContain("Sleeve-cap height");
     expect(result.sleeveDisplayRows.map((row) => (row.kind === "section" ? row.title : ""))).toEqual(
       expect.arrayContaining(["CUFF", "SLEEVE BODY", "SLEEVE SHAPING CHART", "SLEEVE CAP"]),
@@ -252,7 +253,11 @@ describe("set-in sleeve pattern choices", () => {
     expect(html).toContain("data-chart-progress-reset");
     expect(html).not.toContain("Bind off loosely or scrap off");
     expect(html).not.toContain("Knit these rows even");
+    expect(html).toMatch(/\(RC: \d{3}(?:, \d{3})+\)/);
+    expect(html).not.toMatch(/\(RC: \d{3}, RC:/);
     const printHtml = renderSleevelessPrintPieceHtml(result.sleeveDisplayRows, "", "sleeve");
+    expect(printHtml).toMatch(/\(RC: \d{3}(?:, \d{3})+\)/);
+    expect(printHtml).not.toMatch(/\(RC: \d{3}, RC:/);
     expect(printHtml).toContain("ns-shaping-chart__row-check");
     expect(printHtml).toContain('data-chart-id="set-in-sleeve-cap-shaping-chart-sleeve"');
     expect(printHtml).toContain('type="checkbox"');

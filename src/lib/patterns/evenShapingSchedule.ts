@@ -2,6 +2,8 @@
  * Even shaping schedule shared by drop-shoulder sleeve written instructions and JP notation.
  */
 
+import { formatParentheticalRcList } from "./parentheticalRcList";
+
 export type EvenShapingSchedule = {
   interval: number;
   count: number;
@@ -58,10 +60,10 @@ export function shapingActionRowNumbers(
   return Array.from({ length: n }, (_, i) => start + i * step);
 }
 
-/** Italic parenthetical shaping RC list: <em>(RC: 168, 170)</em> — trusted HTML only. */
+/** Italic parenthetical shaping RC list: <em>(RC: 006, 012)</em> — trusted HTML only. */
 export function formatParentheticalShapingRowNumbers(rows: readonly number[]): string {
   if (rows.length === 0) return "";
-  return `<em>(RC: ${rows.join(", ")})</em>`;
+  return `<em>${formatParentheticalRcList(rows)}</em>`;
 }
 
 /**

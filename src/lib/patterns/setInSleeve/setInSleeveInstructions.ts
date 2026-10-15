@@ -32,6 +32,7 @@ import {
 } from "../dropShoulderSleeveShapingChart";
 import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { formatRepeatedShapingInstruction } from "../legoBlocks/repeatedShapingInstruction";
+import { formatParentheticalRcList, normalizeParentheticalRcLists } from "../parentheticalRcList";
 import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
 import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
 import { sweaterBodyHemChoiceLines } from "../sweaterBodyHemInstructions";
@@ -540,9 +541,9 @@ export function buildSetInCuffUpSleevePresentation(
     shapingRcs,
   );
   const plainShaping = writtenShaping.map((line) =>
-    standardizeSetInRcParenthetical(stripInstructionTags(line)),
+    normalizeParentheticalRcLists(stripInstructionTags(line)),
   );
-  const trustedShaping = writtenShaping.map(standardizeSetInRcParenthetical);
+  const trustedShaping = writtenShaping.map(normalizeParentheticalRcLists);
   const taperRows = setInSleeveTaperChartRows(input);
   const capModel = buildSleeveCapInstructionModel(input.cap, input.rowsCuffToUpperArm);
   const capLines = capModel.lines.map((line) => line.text);
@@ -767,21 +768,6 @@ function bodyLines(result: SetInSleeveSweaterSuccess, piece: "back" | "front"): 
   return lines;
 }
 
-function parentheticalRcReadings(rows: readonly number[]): string {
-  return `(${rows.map((rc) => formatRcColon(rc)).join(", ")})`;
-}
-
-/** Turn a shared `(RC: 8, 14)` list into `RC: 008, RC: 014` without changing the row numbers. */
-function standardizeSetInRcParenthetical(line: string): string {
-  return line.replace(/\(RC:\s*([0-9,\s]+)\)/g, (match, list: string) => {
-    const parts = list
-      .split(",")
-      .map((part) => part.trim())
-      .filter((part) => part.length > 0);
-    if (parts.length === 0 || parts.some((part) => !/^\d+$/.test(part))) return match;
-    return `(${parts.map((part) => formatRcColon(Number(part))).join(", ")})`;
-  });
-}
 
 function zoneLabel(name: string): string {
   return `${name[0]!.toUpperCase()}${name.slice(1)} cap`;
@@ -820,7 +806,7 @@ function sleeveCapDecreaseSentence(
 ): string {
   const interval = everyRows <= 1 ? "every row" : `every ${everyRows} rows`;
   const timesLabel = times === 1 ? "time" : "times";
-  return `${label}: Decrease ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at each end ${interval}, ${times} ${timesLabel}. ${parentheticalRcReadings(actionRows)}`;
+  return `${label}: Decrease ${stitchesEachSide} ${stitchWord(stitchesEachSide)} at each end ${interval}, ${times} ${timesLabel}. ${formatParentheticalRcList(actionRows)}`;
 }
 
 /**

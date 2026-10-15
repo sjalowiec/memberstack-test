@@ -30,6 +30,7 @@ import {
 } from "./neckShoulderActiveSideChecklist";
 import { calculateRoundNecklinePlan } from "./legoBlocks/roundNeckline";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import { roundNeckPlanOneSideNeckEdgeWrittenLines } from "./roundNeckPlanPresentation";
 import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
 
@@ -121,14 +122,15 @@ describe("drop-shoulder front neckline shaping chart", () => {
     );
     const expectedNeckRcs = [...expectedStairRcs, ...expectedSingleRcs];
 
-    expect(writtenLines.some((line) => line.includes(`RC: ${expectedStairRcs.join(", ")}`))).toBe(
+    expect(writtenLines.some((line) => line.includes(formatParentheticalRcList(expectedStairRcs)))).toBe(
       true,
     );
     if (expectedSingleRcs.length > 0) {
       expect(
-        writtenLines.some((line) => line.includes(`RC: ${expectedSingleRcs.join(", ")}`)),
+        writtenLines.some((line) => line.includes(formatParentheticalRcList(expectedSingleRcs))),
       ).toBe(true);
     }
+    expect(writtenLines.join("\n")).not.toMatch(/\(RC: \d+, RC:/);
 
     const neckStart = result.debug.frontNecklineStartRC!;
     const timelineNeckLocals = (result.frontNeckShoulderTimeline ?? [])

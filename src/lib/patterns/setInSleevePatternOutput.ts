@@ -18,7 +18,7 @@ import {
   coordinatedShapingHandoffLines,
   resolveFrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
-import { formatParentheticalRcList } from "./legoBlocks/repeatedShapingInstruction";
+import { normalizeParentheticalRcLists } from "./parentheticalRcList";
 import { getDefaultCuffLengthInches } from "./hemDefaults";
 import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
 import {
@@ -180,15 +180,7 @@ function rewriteSetInWrittenRc(text: string): string {
   next = next.replace(/Armhole RC:\s*(\d{1,4})/gi, (_match, n: string) => formatRcColon(Number(n)));
   next = next.replace(/\bRC:(\d{1,4})\b/g, (_match, n: string) => formatRcColon(Number(n)));
   next = next.replace(/\bRC\s+(\d{1,4})\b/g, (_match, n: string) => formatRcColon(Number(n)));
-  next = next.replace(/\(RC:\s*([0-9,\s]+)\)/g, (match, list: string) => {
-    const parts = list
-      .split(",")
-      .map((part) => part.trim())
-      .filter((part) => part.length > 0);
-    if (parts.length === 0 || parts.some((part) => !/^\d+$/.test(part))) return match;
-    return formatParentheticalRcList(parts.map((part) => Number(part)));
-  });
-  return next;
+  return normalizeParentheticalRcLists(next);
 }
 
 function rewriteSetInDisplayRows(

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import { formatParentheticalRcList } from "./parentheticalRcList";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
 import {
   buildDropShoulderBackStitchesRowsModel,
@@ -82,8 +83,9 @@ describe("Baby 3 mo cardigan front instructions and chart", () => {
     expect(chart[0]?.rightStitchCount).toBe(25);
     expect(neckRemoved).toBe(14);
     expect(prose).toContain("Bind off 4 stitches at the center-front (neck) edge.");
-    expect(prose).toContain("(RC: 2, 4)");
-    expect(prose).toContain("(RC: 6, 8, 10, 12, 14)");
+    expect(prose).toContain(formatParentheticalRcList([2, 4]));
+    expect(prose).toContain(formatParentheticalRcList([6, 8, 10, 12, 14]));
+    expect(prose).not.toMatch(/\(RC: \d+, RC:/);
     expect(shoulderBindOff).toBe(15);
     expect(prose).toContain("bind off 15 stitches for the shoulder at RC: 014");
     expect(result.debug.shoulderStitches).toBe(15);
@@ -202,7 +204,7 @@ describe("Baby 3 mo standard V-neck cardigan at the customer gauge", () => {
     expect(prose).toContain("Begin the V-neck shaping at the center-front edge.");
     expect(prose).toContain("Cast on 29 stitches for the left front.");
     expect(prose).toContain(
-      "Decrease 1 stitch at the center-front (neck) edge every row 14 times <em>(RC: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)</em> (14 stitches removed).",
+      `Decrease 1 stitch at the center-front (neck) edge every row 14 times <em>${formatParentheticalRcList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])}</em> (14 stitches removed).`,
     );
     expect(prose).toContain(
       "When 15 stitches remain, bind off 15 stitches for the shoulder at RC: 014.",

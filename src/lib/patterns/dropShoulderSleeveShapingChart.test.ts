@@ -18,6 +18,7 @@ import {
   generateDropShoulderPattern,
 } from "./dropShoulderPatternOutput";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import { renderPatternDisplayRowsHtml } from "./sleevelessPatternDisplayHtml";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { sleeveEvenShapingSchedule } from "./evenShapingSchedule";
@@ -424,14 +425,18 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     const rows = buildDropShoulderSleeveDisplayRows({ ...CUFF_UP_SAMPLE, valid: true });
     const preShaping = dropShoulderSleevePreShapingSpan(CUFF_UP_SAMPLE);
     const chartRcs = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
+    const screen = renderPatternDisplayRowsHtml(rows, { pieceSectionId: "sleeve" });
     const printHtml = renderSleevelessPrintPieceHtml(rows, "", "sleeve");
 
-    expect(printHtml).toContain(`RC: ${String(preShaping.bodyStartRc).padStart(3, "0")}`);
-    expect(printHtml).toContain(`RC: ${String(preShaping.firstShapingRc).padStart(3, "0")}`);
-    expect(printHtml).toContain(`Knit ${preShaping.straightRows} rows even.`);
-    expect(printHtml).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
-    expect(printHtml).toContain(formatParentheticalShapingRowNumbers(chartRcs));
-    expect(printHtml).not.toContain("Knit 0 rows even.");
+    for (const html of [screen, printHtml]) {
+      expect(html).toContain(`RC: ${String(preShaping.bodyStartRc).padStart(3, "0")}`);
+      expect(html).toContain(`RC: ${String(preShaping.firstShapingRc).padStart(3, "0")}`);
+      expect(html).toContain(`Knit ${preShaping.straightRows} rows even.`);
+      expect(html).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+      expect(html).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+      expect(html).not.toMatch(/\(RC: \d+, RC:/);
+      expect(html).not.toContain("Knit 0 rows even.");
+    }
   });
 
   /**

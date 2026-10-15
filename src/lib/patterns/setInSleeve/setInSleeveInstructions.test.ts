@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dropShoulderSleeveShapingRcSequence } from "../dropShoulderSleeveShapingChart";
+import { formatParentheticalRcList } from "../parentheticalRcList";
 import { renderPatternDisplayRowsHtml } from "../sleevelessPatternDisplayHtml";
 import { formatRcColon } from "../sleevelessPatternOutput";
 import { renderSleevelessPrintPieceHtml } from "../sleevelessPatternPrintRender";
@@ -259,7 +260,8 @@ describe("set-in sleeve written instructions", () => {
       sleeveTotalRows: alternate.sleeve.rowsToUpperArm,
       direction: "cuff-up",
     });
-    expect(sleeves).toContain(`(${taperRcs.map((rc) => formatRcColon(rc)).join(", ")})`);
+    expect(sleeves).toContain(formatParentheticalRcList(taperRcs));
+    expect(sleeves).not.toMatch(/\(RC: \d{3}, RC:/);
     expect(sleeves).toMatch(/Increase 1 stitch at each side every \d+ rows \d+ times\./);
     expect(sleeves).toContain(`Both sides. ${alternate.sleeve.upperArmStitches} stitches.`);
     expect(sleeves).toContain("82 stitches remain.");
@@ -373,7 +375,7 @@ describe("set-in sleeve written instructions", () => {
 
       const writtenDecreaseRcs = [
         ...capText.matchAll(
-          /(?:Lower|Middle|Upper) cap: Decrease (\d+) stitch(?:es)? at each end (?:every row|every (\d+) rows), (\d+) time(?:s)?\. \((RC: \d{3}(?:, RC: \d{3})*)\)/g,
+          /(?:Lower|Middle|Upper) cap: Decrease (\d+) stitch(?:es)? at each end (?:every row|every (\d+) rows), (\d+) time(?:s)?\. \((RC: \d{3}(?:, \d{3})*)\)/g,
         ),
       ];
       const writtenActions = writtenDecreaseRcs.flatMap((match) => {
@@ -417,6 +419,15 @@ describe("set-in sleeve written instructions", () => {
       expect(html, label).toContain("Reset Checklist");
       expect(printHtml, label).toContain('type="checkbox"');
       expect(printHtml, label).toContain('data-chart-id="set-in-sleeve-cap-shaping-chart-sleeve"');
+      expect(html, label).not.toMatch(/\(RC: \d{3}, RC:/);
+      expect(printHtml, label).not.toMatch(/\(RC: \d{3}, RC:/);
+      if (presentation.shapingRcs.length > 0) {
+        const taperList = formatParentheticalRcList(presentation.shapingRcs);
+        expect(html, label).toContain(taperList);
+        expect(printHtml, label).toContain(taperList);
+      }
+      expect(html, label).toContain(`class="sleeveless-pattern-rc">${formatRcColon(0)}`);
+      expect(printHtml, label).toContain(`class="print-rc">${formatRcColon(0)}`);
     }
     expect(schedules.size).toBeGreaterThan(1);
   });

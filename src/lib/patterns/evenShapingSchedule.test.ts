@@ -43,6 +43,9 @@ describe("shapingActionRowNumbers", () => {
     expect(formatParentheticalShapingRowNumbers([113, 115, 117, 119, 121])).toBe(
       "<em>(RC: 113, 115, 117, 119, 121)</em>",
     );
+    expect(formatParentheticalShapingRowNumbers([6, 12, 18])).toBe("<em>(RC: 006, 012, 018)</em>");
+    expect(formatParentheticalShapingRowNumbers([6, 12, 18])).not.toMatch(/RC: \d+, RC:/);
+    expect(formatParentheticalShapingRowNumbers([])).toBe("");
   });
 });
 
