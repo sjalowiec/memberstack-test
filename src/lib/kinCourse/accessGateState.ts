@@ -5,6 +5,7 @@
  * and do not show the unauthorized card until the SDK has finished loading.
  */
 import {
+  BEGINNER_WORKSHOP_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_SK840_COURSE_SLUG,
@@ -49,7 +50,13 @@ export function kinCourseNoAccessPlanPhrase(courseSlug: string): string {
   if (slug === LK150_QUICK_START_COURSE_SLUG || slug === "50") {
     return "the LK-150 Quick Start course plan";
   }
-  return "the SK840 course plan";
+  if (slug === BEGINNER_WORKSHOP_COURSE_SLUG || slug === "33") {
+    return "the Beginner Workshop course plan";
+  }
+  if (slug === LEGACY_SK840_COURSE_SLUG || slug === "111") {
+    return "the SK840 course plan";
+  }
+  return "access to this course";
 }
 
 function offersStandalonePurchase(courseSlug: string): boolean {

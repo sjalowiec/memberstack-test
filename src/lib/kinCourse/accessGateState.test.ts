@@ -63,6 +63,13 @@ describe("KIN course gate copy", () => {
     expect(kinCourseNoAccessMessage("lk-150-quick-start")).toContain("LK-150 Quick Start course plan");
     expect(kinCourseNoAccessMessage("50")).not.toContain("purchase this course on its own");
     expect(kinCourseNoAccessMessage("50")).not.toContain("SK840");
+    expect(kinCourseNoAccessMessage("beginner-workshop")).toContain("Beginner Workshop course plan");
+    expect(kinCourseNoAccessMessage("33")).not.toContain("purchase this course on its own");
+    expect(kinCourseNoAccessMessage("33")).not.toContain("SK840");
+    expect(kinCourseNoAccessMessage("some-other-course")).toBe(
+      "You are signed in, but this course needs an active Knit It Now membership or access to this course.",
+    );
+    expect(kinCourseNoAccessMessage("some-other-course")).not.toContain("SK840");
   });
 });
 
