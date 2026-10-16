@@ -284,5 +284,7 @@ function rewriteExerciseDetails(html: string): string {
 
 <script>
   import { bindLegacyCollapse } from "../../lib/kinCourse/legacyCollapse";
+  import { bindLegacyLessonTabs } from "../../lib/kinCourse/legacyTabs";
   bindLegacyCollapse(document, window.location.hash);
+  bindLegacyLessonTabs(document);
 </script>
