@@ -2,6 +2,11 @@
  * Pure admin-report helpers for Pattern Activity: date ranges, filters, sort.
  */
 import {
+  addCivilDays,
+  laCivilDateOf,
+  laCivilMidnightUtc,
+} from "../watson/salesReportDates";
+import {
   PATTERN_SYSTEM_DISPLAY_NAMES,
   type PatternSystemId,
 } from "./patternSystemId";
@@ -99,6 +104,36 @@ function parseLocalDateInput(value: string | undefined): Date | null {
     return null;
   }
   return date;
+}
+
+/**
+ * Inclusive America/Los_Angeles calendar range: midnight on the first day of
+ * the current month through the end of today. DST-aware, independent of the
+ * viewer's local timezone.
+ */
+export function losAngelesCurrentMonthRange(now: Date = new Date()): PatternActivityDateRange {
+  const today = laCivilDateOf(now);
+  const from = laCivilMidnightUtc({ year: today.year, month: today.month, day: 1 });
+  const endExclusive = laCivilMidnightUtc(addCivilDays(today, 1));
+  return {
+    fromIso: from.toISOString(),
+    toIso: new Date(endExclusive.getTime() - 1).toISOString(),
+  };
+}
+
+/**
+ * Date bounds for the Watson Pattern Activity report.
+ * Current month uses America/Los_Angeles. Other presets keep their existing bounds.
+ * An empty preset is the initial report: current month.
+ */
+export function watsonPatternActivityDateRange(
+  preset: PatternActivityDatePreset | "",
+  now: Date = new Date(),
+  custom?: { from?: string; to?: string },
+): PatternActivityDateRange {
+  const resolved = preset || "month";
+  if (resolved === "month") return losAngelesCurrentMonthRange(now);
+  return dateRangeForPreset(resolved, now, custom);
 }
 
 export function dateRangeForPreset(

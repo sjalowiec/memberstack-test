@@ -32,8 +32,8 @@ const defaultSource =
         <select data-pa-date>
           <option value="week">This week</option>
           <option value="today">Today</option>
-          <option value="month">This month</option>
-          <option value="all" selected>All stored events</option>
+          <option value="month" selected>Current month</option>
+          <option value="all">All stored events</option>
           <option value="custom">Custom range</option>
         </select>
       </label>
@@ -52,8 +52,8 @@ const defaultSource =
         </select>
       </label>
       <label class="pa-check">
-        <input type="checkbox" data-pa-exclude-sue />
-        Exclude Sue’s account from member totals
+        <input type="checkbox" data-pa-include-sue />
+        Include Sue’s activity
       </label>
       <button type="button" class="watson__button" data-pa-apply>Show activity</button>
     </div>
@@ -93,7 +93,7 @@ const defaultSource =
     patternActivityEventLabel,
     patternActivitySystemLabel,
     patternActivitySystemFilterOptions,
-    dateRangeForPreset,
+    watsonPatternActivityDateRange,
     patternActivityErrorMessage,
     patternActivityReadyMessage,
     PATTERN_ACTIVITY_ERROR_LIST_MESSAGE,
@@ -101,7 +101,10 @@ const defaultSource =
     type PatternActivityDatePreset,
     type PatternActivityLoadState,
   } from "../../lib/patterns/patternActivityReport";
-  import { buildPatternActivityUsage, type PatternActivityPersonUsage } from "../../lib/patterns/patternActivityUsage";
+  import {
+    buildWatsonPatternActivityReport,
+    type PatternActivityPersonUsage,
+  } from "../../lib/patterns/patternActivityUsage";
 
   const statusEl = document.querySelector("[data-pa-status]");
   const sourceEl = document.querySelector("[data-pa-source]");
@@ -172,10 +175,13 @@ const defaultSource =
     clearTotals();
     document.querySelector("[data-pa-people-list]")?.replaceChildren();
     document.querySelector("[data-pa-anon-list]")?.replaceChildren();
-    const preset = (selected("[data-pa-date]") || "all") as PatternActivityDatePreset;
-    const range = dateRangeForPreset(preset, new Date(), {
-      from: selected("[data-pa-from]"),
-      to: selected("[data-pa-to]"),
+    const preset = (selected("[data-pa-date]") || "month") as PatternActivityDatePreset;
+    const customFrom = selected("[data-pa-from]");
+    const customTo = selected("[data-pa-to]");
+    const now = new Date();
+    const range = watsonPatternActivityDateRange(preset, now, {
+      from: customFrom,
+      to: customTo,
     });
     const params = new URLSearchParams({ environment });
     if (range.fromIso) params.set("from", range.fromIso);
@@ -217,11 +223,20 @@ const defaultSource =
       }
       if ([...select.options].some((option) => option.value === system)) select.value = system;
     }
-    const report = buildPatternActivityUsage(data.events, {
-      datePreset: "all",
-      patternSystem: selected("[data-pa-system]"),
-      excludeSue: document.querySelector<HTMLInputElement>("[data-pa-exclude-sue]")?.checked === true,
-    });
+    // Include Sue is only changed by its checkbox. Date, pattern, and environment do not reset it.
+    const includeSue =
+      document.querySelector<HTMLInputElement>("[data-pa-include-sue]")?.checked === true;
+    const { report } = buildWatsonPatternActivityReport(
+      data.events,
+      {
+        datePreset: preset,
+        customFrom,
+        customTo,
+        patternSystem: selected("[data-pa-system]"),
+        includeSue,
+      },
+      now,
+    );
     const set = (selector: string, value: number) => {
       const el = document.querySelector(selector);
       if (el) el.textContent = String(value);
@@ -234,11 +249,13 @@ const defaultSource =
     set("[data-pa-prints]", report.prints);
     renderPeople(document.querySelector("[data-pa-people-list]"), report.people);
     renderPeople(document.querySelector("[data-pa-anon-list]"), report.anonymous);
-    const loaded = data.events.length;
-    const filteredOut = loaded > 0 && report.people.length === 0 && report.anonymous.length === 0;
+    const shown = [...report.people, ...report.anonymous].reduce(
+      (sum, person) => sum + person.actions.length,
+      0,
+    );
     setStatus(
-      patternActivityReadyMessage(filteredOut ? 0 : loaded, environmentLabel(environment)),
-      loaded === 0 || filteredOut ? "empty" : "ready",
+      patternActivityReadyMessage(shown, environmentLabel(environment)),
+      shown === 0 ? "empty" : "ready",
     );
   }
 

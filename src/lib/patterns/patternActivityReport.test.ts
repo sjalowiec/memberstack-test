@@ -6,6 +6,8 @@ import {
   activityMembershipDisplay,
   dateRangeForPreset,
   filterPatternActivityEvents,
+  losAngelesCurrentMonthRange,
+  watsonPatternActivityDateRange,
   PATTERN_ACTIVITY_EMPTY_MESSAGE,
   PATTERN_ACTIVITY_ERROR_LIST_MESSAGE,
   PATTERN_ACTIVITY_FILTER_SYSTEMS,
@@ -70,6 +72,36 @@ describe("patternActivityReport", () => {
     expect(month.fromIso).toBe(new Date(2026, 7, 1, 0, 0, 0, 0).toISOString());
 
     expect(dateRangeForPreset("all", now)).toEqual({});
+  });
+
+  it("uses America/Los_Angeles for the current month, through today", () => {
+    const october = losAngelesCurrentMonthRange(new Date("2026-10-16T17:00:00.000Z"));
+    expect(october).toEqual({
+      fromIso: "2026-10-01T07:00:00.000Z",
+      toIso: "2026-10-17T06:59:59.999Z",
+    });
+
+    const stillSeptember = losAngelesCurrentMonthRange(new Date("2026-10-01T06:00:00.000Z"));
+    expect(stillSeptember).toEqual({
+      fromIso: "2026-09-01T07:00:00.000Z",
+      toIso: "2026-10-01T06:59:59.999Z",
+    });
+
+    const january = losAngelesCurrentMonthRange(new Date("2026-01-20T12:00:00.000Z"));
+    expect(january).toEqual({
+      fromIso: "2026-01-01T08:00:00.000Z",
+      toIso: "2026-01-21T07:59:59.999Z",
+    });
+  });
+
+  it("defaults an empty Watson date preset to the current Los Angeles month", () => {
+    const now = new Date("2026-10-16T17:00:00.000Z");
+    expect(watsonPatternActivityDateRange("", now)).toEqual(losAngelesCurrentMonthRange(now));
+    expect(watsonPatternActivityDateRange("month", now)).toEqual(losAngelesCurrentMonthRange(now));
+    expect(watsonPatternActivityDateRange("all", now)).toEqual({});
+    expect(watsonPatternActivityDateRange("custom", now, { from: "2026-08-01", to: "2026-08-02" })).toEqual(
+      dateRangeForPreset("custom", now, { from: "2026-08-01", to: "2026-08-02" }),
+    );
   });
 
   it("supports a custom date range", () => {
@@ -188,6 +220,18 @@ describe("patternActivityReport", () => {
     expect(page).toContain("patternActivityReadyMessage");
     expect(page).toContain("void loadActivity()");
     expect(page).not.toContain("Choose Show activity to load events.");
+    expect(page).toContain('value="month" selected>Current month');
+    expect(page).toContain("All stored events");
+    expect(page).toContain('value="custom"');
+    expect(page).not.toContain('value="all" selected');
+    expect(page).toContain("Include Sue’s activity");
+    expect(page).toContain('<input type="checkbox" data-pa-include-sue />');
+    expect(page).not.toContain("Exclude Sue");
+    expect(page).not.toContain("data-pa-exclude-sue");
+    expect(page).toContain('selected("[data-pa-date]") || "month"');
+    expect(page).toContain("watsonPatternActivityDateRange");
+    expect(page).toContain("buildWatsonPatternActivityReport");
+    expect(page).not.toMatch(/\.checked\s*=(?!=)/);
   });
 
   it("displays historical membership as Unknown", () => {
