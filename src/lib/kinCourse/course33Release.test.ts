@@ -106,8 +106,18 @@ describe("published Beginner Workshop", () => {
       ownedCoursesForAccount(payloadWithPlan(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID, "CANCELED")),
     ).toEqual([]);
 
-    expect(getCourseCatalogEntries({ hostname: "knititnow.com" }).map((course) => course.slug)).not.toContain(
-      BEGINNER_WORKSHOP_COURSE_SLUG,
+    const catalog = getCourseCatalogEntries({ hostname: "knititnow.com" }).find(
+      (course) => course.slug === BEGINNER_WORKSHOP_COURSE_SLUG,
     );
+    expect(catalog).toMatchObject({
+      title: "Beginner Workshop",
+      category: "Getting Started",
+      status: "available",
+      access: "member",
+      href: "/courses/33",
+      description: "A guided start-to-finish path for new machine knitters.",
+      thumbnail: "/images/courses/beginner.webp",
+      buttonLabel: "View Course",
+    });
   });
 });

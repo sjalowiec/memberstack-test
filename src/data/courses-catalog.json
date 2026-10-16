@@ -1,5 +1,6 @@
 {
   "categories": [
+    "Getting Started",
     "Silver Reed",
     "Taitexma",
     "Brother",
@@ -81,10 +82,13 @@
     },
     {
       "slug": "beginner-workshop",
+      "title": "Beginner Workshop",
       "category": "Getting Started",
-      "catalogStatus": "coming-soon",
+      "catalogStatus": "available",
       "access": "member",
-      "description": "A guided start-to-finish path for new machine knitters."
+      "description": "A guided start-to-finish path for new machine knitters.",
+      "href": "/courses/33",
+      "buttonLabel": "View Course"
     },
     {
       "slug": "not-enough-needles",
