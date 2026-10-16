@@ -12,11 +12,18 @@ import {
   dateRangeForPreset,
   eventMatchesDateRange,
   patternActivitySystemLabel,
+  watsonPatternActivityDateRange,
   type PatternActivityDatePreset,
+  type PatternActivityDateRange,
 } from "./patternActivityReport";
 
-/** Live owner account. Excluded only when the Watson viewer turns the option on. */
+/**
+ * Verified live Memberstack id for Sue’s account.
+ * The Watson report excludes this id unless “Include Sue’s activity” is checked.
+ * Match this account id only — never a display name, pattern title, or email label.
+ */
 export const SUE_PATTERN_ACTIVITY_MEMBER_ID = "mem_cms4tl24v00eb0sqx143i4a9r";
+/** Account email. Not used to decide exclusion. */
 export const SUE_PATTERN_ACTIVITY_EMAIL = "sue@knititnow.com";
 
 export interface PatternActivityUsageFilters {
@@ -59,10 +66,15 @@ export interface PatternActivityUsageReport {
 }
 
 export function isSuePatternActivityEvent(
-  event: Pick<PatternActivityEvent, "userId" | "userEmail">,
+  event: Pick<PatternActivityEvent, "userId" | "metadata">,
 ): boolean {
   if (event.userId === SUE_PATTERN_ACTIVITY_MEMBER_ID) return true;
-  return (event.userEmail ?? "").trim().toLowerCase() === SUE_PATTERN_ACTIVITY_EMAIL;
+  return event.metadata?.memberId === SUE_PATTERN_ACTIVITY_MEMBER_ID;
+}
+
+/** Unchecked “Include Sue’s activity” excludes her account before any totals. */
+export function excludeSuePatternActivity(includeSue: boolean): boolean {
+  return includeSue !== true;
 }
 
 export function isAnonymousPatternActivityUser(userId: string): boolean {
@@ -179,6 +191,42 @@ export function buildPatternActivityUsage(
     people,
     anonymous,
   };
+}
+
+export interface WatsonPatternActivityViewInput {
+  datePreset: PatternActivityDatePreset | "";
+  customFrom?: string;
+  customTo?: string;
+  patternSystem: string;
+  /** Checkbox state. Unchecked is the initial report and excludes Sue’s account id. */
+  includeSue: boolean;
+}
+
+/**
+ * Date range plus usage totals for the Watson report.
+ * The range is applied first, then Sue’s account id is removed when includeSue
+ * is not checked, and only then are counts and member lists calculated.
+ * includeSue is independent of the date and pattern filters.
+ */
+export function buildWatsonPatternActivityReport(
+  events: readonly PatternActivityEvent[],
+  input: WatsonPatternActivityViewInput,
+  now: Date = new Date(),
+): { range: PatternActivityDateRange; report: PatternActivityUsageReport } {
+  const range = watsonPatternActivityDateRange(input.datePreset, now, {
+    from: input.customFrom,
+    to: input.customTo,
+  });
+  const report = buildPatternActivityUsage(
+    events.filter((event) => eventMatchesDateRange(event, range)),
+    {
+      datePreset: "all",
+      patternSystem: input.patternSystem,
+      excludeSue: excludeSuePatternActivity(input.includeSue),
+    },
+    now,
+  );
+  return { range, report };
 }
 
 export function activityMembershipNote(

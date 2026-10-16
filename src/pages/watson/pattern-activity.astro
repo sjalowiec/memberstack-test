@@ -32,8 +32,8 @@ const defaultSource =
         <select data-pa-date>
           <option value="week">This week</option>
           <option value="today">Today</option>
-          <option value="month">This month</option>
-          <option value="all" selected>All stored events</option>
+          <option value="month" selected>Current month</option>
+          <option value="all">All stored events</option>
           <option value="custom">Custom range</option>
         </select>
       </label>
@@ -46,8 +46,8 @@ const defaultSource =
         <input type="date" data-pa-to />
       </label>
       <label class="pa-check">
-        <input type="checkbox" data-pa-exclude-sue />
-        Exclude Sue’s account
+        <input type="checkbox" data-pa-include-sue />
+        Include Sue’s activity
       </label>
       <button type="button" class="watson__button" data-pa-apply>Show activity</button>
     </div>
@@ -114,7 +114,8 @@ const defaultSource =
 <script>
   import type { PatternActivityEvent } from "../../lib/patterns/patternActivityLog";
   import {
-    dateRangeForPreset,
+    eventMatchesDateRange,
+    watsonPatternActivityDateRange,
     patternActivityErrorMessage,
     patternActivityReadyMessage,
     PATTERN_ACTIVITY_EMPTY_MESSAGE,
@@ -125,6 +126,8 @@ const defaultSource =
   } from "../../lib/patterns/patternActivityReport";
   import {
     buildPatternBuildReport,
+    excludeSuePatternActivity,
+    filterPatternActivityUsageEvents,
     type PatternBuildReport,
     type PatternBuildRow,
   } from "../../lib/patterns/patternActivityUsage";
@@ -216,10 +219,13 @@ const defaultSource =
     setStatus(PATTERN_ACTIVITY_LOADING_MESSAGE, "loading");
     clearNumbers();
     renderNotice("");
-    const preset = (selected("[data-pa-date]") || "all") as PatternActivityDatePreset;
-    const range = dateRangeForPreset(preset, new Date(), {
-      from: selected("[data-pa-from]"),
-      to: selected("[data-pa-to]"),
+    const preset = (selected("[data-pa-date]") || "month") as PatternActivityDatePreset;
+    const customFrom = selected("[data-pa-from]");
+    const customTo = selected("[data-pa-to]");
+    const now = new Date();
+    const range = watsonPatternActivityDateRange(preset, now, {
+      from: customFrom,
+      to: customTo,
     });
     const params = new URLSearchParams({ environment });
     if (range.fromIso) params.set("from", range.fromIso);
@@ -260,17 +266,29 @@ const defaultSource =
       showLoadError("Could not load pattern activity. The request did not finish.");
       return;
     }
-    const report = buildPatternBuildReport(events, {
-      datePreset: "all",
-      patternSystem: "",
-      excludeSue: document.querySelector<HTMLInputElement>("[data-pa-exclude-sue]")?.checked === true,
-    });
+    // Include Sue is only changed by its checkbox. Date and environment do not reset it.
+    const includeSue =
+      document.querySelector<HTMLInputElement>("[data-pa-include-sue]")?.checked === true;
+    const ranged = events.filter((event) => eventMatchesDateRange(event, range));
+    const filtered = filterPatternActivityUsageEvents(
+      ranged,
+      {
+        datePreset: "all",
+        patternSystem: "",
+        excludeSue: excludeSuePatternActivity(includeSue),
+      },
+      now,
+    );
+    const report = buildPatternBuildReport(
+      filtered,
+      { datePreset: "all", patternSystem: "", excludeSue: false },
+      now,
+    );
     renderReport(report);
-    const loaded = events.length;
-    renderNotice(loaded === 0 ? PATTERN_ACTIVITY_EMPTY_MESSAGE : "");
+    renderNotice(filtered.length === 0 ? PATTERN_ACTIVITY_EMPTY_MESSAGE : "");
     setStatus(
-      patternActivityReadyMessage(loaded, environmentLabel(environment)),
-      loaded === 0 ? "empty" : "ready",
+      patternActivityReadyMessage(filtered.length, environmentLabel(environment)),
+      filtered.length === 0 ? "empty" : "ready",
     );
   }
 
