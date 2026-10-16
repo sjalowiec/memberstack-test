@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   KIN_TAITEXMA_160_COURSE_SLUG,
+  BEGINNER_WORKSHOP_COURSE_SLUG,
   BROTHER_KH260_COURSE_SLUG,
+  LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
   LK150_FUN_COURSE_PLAN_ID,
   LK150_FUN_COURSE_SLUG,
@@ -170,6 +172,8 @@ describe("hasCourseMembershipAccess", () => {
       PAID_TH160_COURSE_PLAN_ID,
       LEGACY_BROTHER_260_COURSE_PLAN_ID,
       LK150_PATTERNING_COURSE_PLAN_ID,
+      LK150_FUN_COURSE_PLAN_ID,
+      LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
     ]) {
       expect(MEMBER_PLAN_IDS).not.toContain(planId);
       expect(COURSE_ACCESS_PLAN_IDS).not.toContain(planId);
@@ -264,6 +268,40 @@ describe("canAccessCourse", () => {
     expect(
       hasIndividualCoursePurchase(LEGACY_SK840_COURSE_SLUG, sk840Buyer),
     ).toBe(true);
+  });
+
+  it("legacy Beginner Workshop plan holders access only Course 33", () => {
+    const buyer = payloadWithPlan(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
+    expect(
+      canAccessCourse("member", buyer, { courseSlug: BEGINNER_WORKSHOP_COURSE_SLUG }),
+    ).toBe(true);
+    expect(canAccessCourse("member", buyer, { courseSlug: "33" })).toBe(true);
+    expect(hasIndividualCoursePurchase(BEGINNER_WORKSHOP_COURSE_SLUG, buyer)).toBe(true);
+    expect(hasIndividualCoursePurchase("33", buyer)).toBe(true);
+    expect(canAccessCourse("member", buyer, { courseSlug: BROTHER_KH260_COURSE_SLUG })).toBe(
+      false,
+    );
+    expect(canAccessCourse("member", buyer, { courseSlug: LK150_FUN_COURSE_SLUG })).toBe(false);
+    expect(canAccessCourse("member", buyer, { courseSlug: "ribber-basic-bootcamp" })).toBe(false);
+    expect(hasIndividualCoursePurchase(BROTHER_KH260_COURSE_SLUG, buyer)).toBe(false);
+    expect(hasIndividualCoursePurchase(LK150_FUN_COURSE_SLUG, buyer)).toBe(false);
+    expect(hasCourseMembershipAccess(buyer)).toBe(false);
+    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
+    expect(COURSE_ACCESS_PLAN_IDS).not.toContain(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
+    const member = payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId);
+    expect(
+      canAccessCourse("member", member, { courseSlug: BEGINNER_WORKSHOP_COURSE_SLUG }),
+    ).toBe(true);
+    expect(hasIndividualCoursePurchase(BEGINNER_WORKSHOP_COURSE_SLUG, member)).toBe(false);
+    const canceled = {
+      data: {
+        id: "ms_member",
+        planConnections: [{ planId: LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID, status: "CANCELED" }],
+      },
+    };
+    expect(
+      canAccessCourse("member", canceled, { courseSlug: BEGINNER_WORKSHOP_COURSE_SLUG }),
+    ).toBe(false);
   });
 
   it("legacy Brother 260 plan holders access only Course 87", () => {

@@ -6,6 +6,8 @@ import {
   COURSE_INDIVIDUAL_SALES,
   KIN_TAITEXMA_160_COURSE_SLUG,
   LEGACY_BROTHER_260_COURSE_PLAN_ID,
+  BEGINNER_WORKSHOP_COURSE_SLUG,
+  LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
   LK150_FUN_COURSE_PLAN_ID,
   LK150_FUN_COURSE_SLUG,
   LK150_PATTERNING_COURSE_PLAN_ID,
@@ -107,6 +109,13 @@ describe("account ownable catalog cards", () => {
         href: "/courses/51",
         planIds: [COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId],
       },
+      {
+        courseId: 33,
+        slug: BEGINNER_WORKSHOP_COURSE_SLUG,
+        title: "Beginner Workshop",
+        href: "/courses/33",
+        planIds: [COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId],
+      },
     ]);
   });
 
@@ -193,6 +202,30 @@ describe("ownedCoursesForAccount", () => {
     expect(COURSE_INDIVIDUAL_SALES.lk150Patterning.legacyPlanId).toBe(
       "pln_course-lk150-patterning-nw00gk6",
     );
+  });
+
+  it("Beginner Workshop legacy plan displays Course 33 only and has no checkout price", () => {
+    const course33 = catalogCards.find((card) => card.slug === BEGINNER_WORKSHOP_COURSE_SLUG);
+    const courses = ownedCoursesForAccount(
+      payloadWithPlan(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID),
+      catalogCards,
+    );
+    expect(ownedCourseSlugsFromMember(payloadWithPlan(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID))).toEqual([
+      BEGINNER_WORKSHOP_COURSE_SLUG,
+    ]);
+    expect(courses).toEqual([course33]);
+    expect(shouldShowAccountMyCourses(courses)).toBe(true);
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.paidPlanId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.priceId).toBeUndefined();
+    expect(COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId).toBe(
+      "pln_course-beginner-workshop-legacy-wzr70hsx",
+    );
+    expect(MEMBER_PLAN_IDS).not.toContain(LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID);
+    expect(
+      ownedCoursesForAccount(payloadWithPlan(LK150_FUN_COURSE_PLAN_ID), catalogCards).map(
+        (card) => card.slug,
+      ),
+    ).not.toContain(BEGINNER_WORKSHOP_COURSE_SLUG);
   });
 
   it("LK150 Fun legacy plan displays Course 51 only and has no checkout price", () => {

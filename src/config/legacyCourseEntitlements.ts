@@ -37,11 +37,23 @@ export const LK150_QUICK_START_COURSE_SLUG = "lk-150-quick-start" as const;
 /** Permanent plan for verified LK-150 Quick Start owners. Active membership also opens the course. No checkout price is configured here. */
 export const LK150_QUICK_START_COURSE_PLAN_ID = "pln_kin-lk150-quickstart-7h8i0oxj" as const;
 
-export type IndividualCourseSaleKey = "th160" | "sk840" | "brother260" | "lk150Patterning" | "lk150QuickStart" | "lk150Fun";
+export const BEGINNER_WORKSHOP_COURSE_SLUG = "beginner-workshop" as const;
+/** Free plan for verified Beginner Workshop owners. No checkout price is configured here. */
+export const LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID =
+  "pln_course-beginner-workshop-legacy-wzr70hsx" as const;
+
+export type IndividualCourseSaleKey =
+  | "th160"
+  | "sk840"
+  | "brother260"
+  | "lk150Patterning"
+  | "lk150QuickStart"
+  | "lk150Fun"
+  | "beginnerWorkshop";
 
 export type IndividualCourseSale = {
   key: IndividualCourseSaleKey;
-  courseId: 86 | 111 | 87 | 34 | 50 | 51;
+  courseId: 86 | 111 | 87 | 34 | 50 | 51 | 33;
   slug: string;
   aliases: readonly string[];
   legacyPlanId: string;
@@ -101,6 +113,13 @@ export const COURSE_INDIVIDUAL_SALES = {
     aliases: ["51"],
     legacyPlanId: LK150_FUN_COURSE_PLAN_ID,
   },
+  beginnerWorkshop: {
+    key: "beginnerWorkshop",
+    courseId: 33,
+    slug: BEGINNER_WORKSHOP_COURSE_SLUG,
+    aliases: ["33"],
+    legacyPlanId: LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID,
+  },
 } as const satisfies Record<IndividualCourseSaleKey, IndividualCourseSale>;
 
 /** Plan ID → course slugs that plan unlocks (Legacy and Paid). */
@@ -113,6 +132,7 @@ export const LEGACY_COURSE_PLAN_SLUGS: Readonly<Record<string, readonly string[]
   [LK150_PATTERNING_COURSE_PLAN_ID]: [LK150_PATTERNING_COURSE_SLUG],
   [LK150_QUICK_START_COURSE_PLAN_ID]: [LK150_QUICK_START_COURSE_SLUG],
   [LK150_FUN_COURSE_PLAN_ID]: [LK150_FUN_COURSE_SLUG],
+  [LEGACY_BEGINNER_WORKSHOP_COURSE_PLAN_ID]: [BEGINNER_WORKSHOP_COURSE_SLUG],
 };
 
 /** Map numeric player ids (`86`, `111`) to catalog slugs used by entitlement checks. */
