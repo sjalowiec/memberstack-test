@@ -107,6 +107,13 @@ describe("account ownable catalog cards", () => {
         href: "/courses/51",
         planIds: [COURSE_INDIVIDUAL_SALES.lk150Fun.legacyPlanId],
       },
+      {
+        courseId: 33,
+        slug: "beginner-workshop",
+        title: "Beginner Workshop",
+        href: "/courses/33",
+        planIds: [COURSE_INDIVIDUAL_SALES.beginnerWorkshop.legacyPlanId],
+      },
     ]);
   });
 
