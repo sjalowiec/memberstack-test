@@ -7,6 +7,7 @@ import KinCourse86Sales from "../components/courses/KinCourse86Sales.astro";
 import KinCourse111Sales from "../components/courses/KinCourse111Sales.astro";
 import "../styles/kin-course/course-shell.css";
 import "../styles/kin-course/legacy-special.css";
+import "../styles/kin-course/legacy-lesson-compat.css";
 import "../styles/kin-course/site-chrome.css";
 import type { KinCourseGlossaryEntry } from "../lib/kinCourse/htmlPresent";
 import { kinCourseNoAccessMessage } from "../lib/kinCourse/accessGateState";
@@ -68,12 +69,6 @@ const purchaseCopy =
         <meta name="description" content={courseSalesDescription} />
       ) : null
     }
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-      crossorigin="anonymous"
-    />
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -291,12 +286,37 @@ const purchaseCopy =
 </html>
 
 <style is:global>
+  /*
+    Bootstrap 3 set html { font-size: 10px }, so lesson rem sizes rendered at
+    about 55% of the size used on the rest of the site. BaseLayout uses
+    112.5% (18px). Course 33 lesson 1079 is the visible case: the table titles
+    are inline 1.3rem, Common Machine Knitting Terms is 1rem, and Yarn by Machine Pitch
+    is 0.95rem. Beside the 18px lesson text those were 13px,
+    10px, and 9.5px. An 18px root restores them to 23.4px, 18px, and 17.1px.
+    The course wordmark is 1.35rem, the same token as the small site header,
+    so it renders at 24.3px instead of 13.5px. Leave stored rem alone.
+  */
+  html {
+    font-size: 112.5% !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    margin: 0;
     background: #f7f7f7;
     color: #222;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1rem;
   }
 
   .course-111-gate {
@@ -465,18 +485,6 @@ const purchaseCopy =
     border: 1px solid #e3e3e3;
     font-size: 18px;
     line-height: 1.55;
-  }
-
-  /*
-    Bootstrap 3 sets html { font-size: 10px }, so an inline font-size:1rem
-    on lesson HTML is 10px next to this 18px text. 1em follows the lesson size.
-    Stored course HTML is left unchanged.
-  */
-  .legacy-content ul[style*="font-size:1rem"],
-  .legacy-content ol[style*="font-size:1rem"],
-  .legacy-content ul[style*="font-size: 1rem"],
-  .legacy-content ol[style*="font-size: 1rem"] {
-    font-size: 1em !important;
   }
 
   .legacy-content p {
