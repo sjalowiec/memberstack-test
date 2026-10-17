@@ -265,6 +265,7 @@ export async function fetchAdminHtml(
     fetchImpl?: typeof fetch;
     getHeaders?: typeof getAdminAuthHeaders;
     allowMissingToken?: boolean;
+    credentials?: RequestCredentials;
   },
 ): Promise<AdminHtmlResult> {
   const fetchImpl = init.fetchImpl ?? fetch;
@@ -290,7 +291,7 @@ export async function fetchAdminHtml(
   const res = await fetchImpl(url, {
     method: init.method,
     headers,
-    credentials: "same-origin",
+    credentials: init.credentials ?? "same-origin",
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   });
 

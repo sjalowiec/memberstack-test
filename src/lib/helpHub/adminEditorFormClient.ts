@@ -1,14 +1,20 @@
 import { installHelpHubAdminBrowser } from "./adminEditorClient";
+import { editorTargetForPreviewSection, htmlForHelpHubEditorFrame } from "./adminLivePreview";
 import {
   applyAdminFormToDocument,
   helpHubAdminEditorCanInit,
+  helpHubChooserPlacement,
+  helpHubSaveActionLabel,
+  isHelpHubImageUrl,
   missingRequiredAdminFields,
   sanitizeHelpHubSlug,
-  saveButtonLabelForStatus,
   shouldAutofillSlug,
   slugFromQuestion,
+  statusForHelpHubSave,
   type HelpHubAdminFormValues,
+  type HelpHubSaveIntent,
 } from "./adminForm";
+import { openerPreviewBaseHref, requestHelpHubPreview } from "./adminEditorClient";
 import {
   addMemberResource,
   describeSelectedMemberResources,
@@ -57,6 +63,16 @@ function splitLines(text: string): string[] {
     .filter((s) => s && s !== "...");
 }
 
+function readTrySteps(form: HTMLFormElement): string[] {
+  const list = form.querySelector("[data-try-step-list]");
+  if (list) {
+    return Array.from(list.querySelectorAll<HTMLTextAreaElement>("[data-try-step]"))
+      .map((row) => row.value.trim())
+      .filter((step) => step && step !== "...");
+  }
+  return splitLines(fieldValue(form, "trySteps"));
+}
+
 function readFormValues(
   form: HTMLFormElement,
   selection: MemberResourceSelection,
@@ -70,8 +86,10 @@ function readFormValues(
     hook: fieldValue(form, "hook").trim(),
     aboutTitle: fieldValue(form, "aboutTitle").trim(),
     solutionText: fieldValue(form, "solutionText").trim(),
+    publicVideoUrl: fieldValue(form, "publicVideoUrl").trim(),
+    publicVideoTitle: fieldValue(form, "publicVideoTitle").trim(),
     tryThis: fieldValue(form, "tryThis").trim(),
-    trySteps: splitLines(fieldValue(form, "trySteps")),
+    trySteps: readTrySteps(form),
     tryNote: fieldValue(form, "tryNote").trim(),
     tryImage: fieldValue(form, "tryImage").trim(),
     tryImageAlt: fieldValue(form, "tryImageAlt").trim(),
@@ -135,10 +153,49 @@ function setSaveStatus(message: string, kind: "ok" | "err" | "signin" | null): v
   });
 }
 
+function storedHelpHubStatus(): string {
+  const status = window.currentHelpHub?.status;
+  return typeof status === "string" && status.trim() ? status : "draft";
+}
+
 function updateSaveButtonLabel(form: HTMLFormElement): void {
+  const selected = fieldValue(form, "status");
+  const stored = storedHelpHubStatus();
   const saveBtn = document.getElementById("saveHelpHubBtn");
-  if (!saveBtn) return;
-  saveBtn.textContent = saveButtonLabelForStatus(fieldValue(form, "status"));
+  const publishBtn = document.getElementById("publishHelpHubBtn");
+  if (saveBtn) {
+    saveBtn.textContent = helpHubSaveActionLabel({
+      intent: "keep",
+      selectedStatus: selected,
+      storedStatus: stored,
+    });
+  }
+  if (publishBtn) {
+    publishBtn.textContent = helpHubSaveActionLabel({
+      intent: "publish",
+      selectedStatus: selected,
+      storedStatus: stored,
+    });
+  }
+  const hint = document.getElementById("helpHubSaveHint");
+  if (hint) {
+    hint.textContent =
+      stored.trim().toLowerCase() === "published"
+        ? "Update keeps this published entry public unless you change Status. Publish also saves it as published."
+        : "Save draft keeps this private. Publish makes it public. Neither runs on its own.";
+  }
+}
+
+const REQUIRED_FIELD_LABELS: Record<string, string> = {
+  question: "Question",
+  slug: "URL name",
+  status: "Status",
+  category: "Category",
+};
+
+function missingFieldsMessage(missing: string[]): string {
+  const labels = missing.map((name) => REQUIRED_FIELD_LABELS[name] || name);
+  return `Add ${labels.join(", ")} before saving. The rest of your text is still here.`;
 }
 
 function renderSelectedResources(
@@ -247,6 +304,118 @@ function resourceKey(source: string, id: number): string {
   return `${source}:${id}`;
 }
 
+function helpHubEditHref(slug: string): string {
+  return `/admin/help-hub-edit?slug=${encodeURIComponent(slug)}`;
+}
+
+function findChooserItem(root: ParentNode, slug: string): HTMLElement | null {
+  const wanted = slug.trim();
+  for (const item of root.querySelectorAll<HTMLElement>("[data-entry-slug]")) {
+    if ((item.dataset.entrySlug || "") === wanted) return item;
+  }
+  return null;
+}
+
+function setChooserItemAction(item: HTMLElement, slug: string, status: string, current: boolean): void {
+  const placement = helpHubChooserPlacement(status);
+  const existing = item.querySelector("[data-chooser-action]");
+  if (current) {
+    const marker = document.createElement("span");
+    marker.className = "help-hub-edit__chooser-current";
+    marker.dataset.chooserAction = "current";
+    marker.textContent = "Open now";
+    if (existing) existing.replaceWith(marker);
+    else item.appendChild(marker);
+    item.classList.add("is-current");
+    item.setAttribute("aria-current", "true");
+    return;
+  }
+  const link = document.createElement("a");
+  link.className = "kbm-btn kbm-btn-outline help-hub-edit__chooser-action";
+  link.dataset.chooserAction = "link";
+  link.href = helpHubEditHref(slug);
+  link.textContent = placement.action;
+  if (existing) existing.replaceWith(link);
+  else item.appendChild(link);
+  item.classList.remove("is-current");
+  item.removeAttribute("aria-current");
+}
+
+function buildChooserItem(slug: string, label: string, status: string): HTMLLIElement {
+  const placement = helpHubChooserPlacement(status);
+  const item = document.createElement("li");
+  item.className = "help-hub-edit__chooser-item";
+  item.dataset.entrySlug = slug;
+  item.dataset.entryStatus = placement.key;
+  const main = document.createElement("div");
+  main.className = "help-hub-edit__chooser-main";
+  const title = document.createElement("span");
+  title.className = "help-hub-edit__chooser-label";
+  title.textContent = label;
+  const badge = document.createElement("span");
+  badge.className = "help-hub-edit__chooser-badge";
+  badge.textContent = "Needs review";
+  badge.hidden = placement.key !== "review";
+  main.append(title, badge);
+  item.append(main);
+  setChooserItemAction(item, slug, status, false);
+  return item;
+}
+
+function refreshChooserEmpty(chooser: ParentNode): void {
+  chooser.querySelectorAll<HTMLElement>("[data-chooser-box]").forEach((box) => {
+    const list = box.querySelector("[data-chooser-list]");
+    const empty = box.querySelector<HTMLElement>("[data-chooser-empty]");
+    if (!list || !empty) return;
+    empty.hidden = list.querySelectorAll("[data-entry-slug]").length > 0;
+  });
+}
+
+function setOpenEntryBanner(label: string, status: string): void {
+  const placement = helpHubChooserPlacement(status);
+  const title = document.getElementById("helpHubCurrentTitle");
+  const pill = document.getElementById("helpHubCurrentStatus");
+  const context = document.getElementById("helpHubEditingContext");
+  if (title) title.textContent = label;
+  if (pill) {
+    pill.textContent = placement.statusLabel;
+    pill.dataset.status = placement.key;
+  }
+  if (context) context.textContent = `Editing: ${label} — ${placement.statusLabel}`;
+}
+
+/** Move a saved entry into the Draft or Published box and keep it marked open. */
+export function syncOpenHelpHubChooser(entry: { slug: string; label: string; status: string }): void {
+  const chooser = document.querySelector<HTMLElement>('[data-help-hub-chooser="split"]');
+  if (!chooser) return;
+  const slug = entry.slug.trim();
+  if (!slug) return;
+  const placement = helpHubChooserPlacement(entry.status);
+  const list = chooser.querySelector<HTMLElement>(`[data-chooser-list="${placement.box}"]`);
+  if (!list) return;
+
+  let item = findChooserItem(chooser, slug);
+  if (!item) {
+    item = chooser.querySelector<HTMLElement>(".help-hub-edit__chooser-item.is-current");
+  }
+  if (!item) item = buildChooserItem(slug, entry.label, entry.status);
+
+  item.dataset.entrySlug = slug;
+  item.dataset.entryStatus = placement.key;
+  item.hidden = false;
+  const labelEl = item.querySelector(".help-hub-edit__chooser-label");
+  if (labelEl) labelEl.textContent = entry.label || slug;
+  const badge = item.querySelector<HTMLElement>(".help-hub-edit__chooser-badge");
+  if (badge) badge.hidden = placement.key !== "review";
+  list.appendChild(item);
+
+  chooser.querySelectorAll<HTMLElement>(".help-hub-edit__chooser-item").forEach((row) => {
+    setChooserItemAction(row, row.dataset.entrySlug || "", row.dataset.entryStatus || "draft", row === item);
+  });
+  refreshChooserEmpty(chooser);
+  setOpenEntryBanner(entry.label || slug, entry.status);
+}
+
 export function initHelpHubAdminEditor(): boolean {
   installHelpHubAdminBrowser();
 
@@ -305,12 +474,12 @@ export function initHelpHubAdminEditor(): boolean {
     return `${base}new`;
   })();
 
-  function writeHidden(): void {
+  function writeHidden(notify = true): void {
     const serialized = serializeMemberResources(selection);
     if (hiddenLessons) hiddenLessons.value = JSON.stringify(serialized.relatedLessons);
     if (hiddenLibrary) hiddenLibrary.value = JSON.stringify(serialized.relatedLibraryVideos);
     if (hiddenOrder) hiddenOrder.value = JSON.stringify(serialized.memberResourceOrder);
-    form.dispatchEvent(new Event("input", { bubbles: true }));
+    if (notify) form.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   function renderPicker(): void {
@@ -349,10 +518,223 @@ export function initHelpHubAdminEditor(): boolean {
     });
   }
 
-  function payloadFromForm() {
+  function payloadFromForm(statusOverride?: string) {
     const values = readFormValues(form, selection);
+    if (statusOverride) values.status = statusOverride;
     return applyAdminFormToDocument(window.currentHelpHub, values);
   }
+
+  const stepList = form.querySelector<HTMLElement>("[data-try-step-list]");
+  const addStepBtn = document.getElementById("helpHubAddStep");
+  const previewFrame = document.getElementById("helpHubLivePreview");
+  const previewPlaceholder = document.getElementById("helpHubPreviewPlaceholder");
+  const previewStatus = document.getElementById("helpHubPreviewStatus");
+  const publishBtn = document.getElementById("publishHelpHubBtn");
+  const workspace = document.querySelector<HTMLElement>(".help-hub-edit__workspace");
+  let previewAudience: "member" | "visitor" = "visitor";
+  let previewTimer = 0;
+  let previewRequest = 0;
+  let promptedPreviewSignIn = false;
+
+  function syncTryStepsStore(): void {
+    const store = form.querySelector<HTMLTextAreaElement>('[name="trySteps"]');
+    if (!store || !stepList) return;
+    store.value = Array.from(stepList.querySelectorAll<HTMLTextAreaElement>("[data-try-step]"))
+      .map((row) => row.value.replace(/\r?\n/g, " ").trim())
+      .filter((step) => step && step !== "...")
+      .join("\n");
+  }
+
+  function renumberSteps(): void {
+    if (!stepList) return;
+    const rows = Array.from(stepList.querySelectorAll<HTMLElement>("[data-try-step-row]"));
+    rows.forEach((row, index) => {
+      const label = row.querySelector(".help-hub-edit__step-label");
+      if (label) label.textContent = `Step ${index + 1}`;
+      const up = row.querySelector<HTMLButtonElement>('[data-step-action="up"]');
+      const down = row.querySelector<HTMLButtonElement>('[data-step-action="down"]');
+      if (up) up.disabled = index === 0;
+      if (down) down.disabled = index === rows.length - 1;
+    });
+  }
+
+  function createStepRow(value: string): HTMLElement {
+    const row = document.createElement("div");
+    row.className = "help-hub-edit__step";
+    row.dataset.tryStepRow = "true";
+    const label = document.createElement("span");
+    label.className = "help-hub-edit__step-label";
+    const area = document.createElement("textarea");
+    area.className = "help-hub-edit__textarea";
+    area.dataset.tryStep = "true";
+    area.rows = 2;
+    area.value = value;
+    const actions = document.createElement("div");
+    actions.className = "help-hub-edit__step-actions";
+    for (const [action, text] of [
+      ["up", "Move up"],
+      ["down", "Move down"],
+      ["remove", "Remove"],
+    ] as const) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.stepAction = action;
+      button.textContent = text;
+      actions.appendChild(button);
+    }
+    row.append(label, area, actions);
+    return row;
+  }
+
+  function rebuildStepsFromStore(): void {
+    if (!stepList) return;
+    const store = form.querySelector<HTMLTextAreaElement>('[name="trySteps"]');
+    const lines = splitLines(store?.value || "");
+    stepList.replaceChildren();
+    lines.forEach((line) => stepList.appendChild(createStepRow(line)));
+    renumberSteps();
+  }
+
+  function syncImageFields(root: ParentNode = form): void {
+    root.querySelectorAll<HTMLElement>("[data-image-fields]").forEach((group) => {
+      const urlInput = group.querySelector<HTMLInputElement>("[data-image-url]");
+      const altInput = group.querySelector<HTMLInputElement>("[data-image-alt]");
+      const thumb = group.querySelector<HTMLElement>("[data-image-thumb]");
+      const img = thumb?.querySelector("img");
+      if (!urlInput || !thumb || !(img instanceof HTMLImageElement)) return;
+      const url = urlInput.value.trim();
+      if (!isHelpHubImageUrl(url)) {
+        thumb.hidden = true;
+        img.removeAttribute("src");
+        return;
+      }
+      img.src = url;
+      img.alt = altInput?.value.trim() || "";
+      thumb.hidden = false;
+    });
+  }
+
+  function setPreviewStatus(message: string, kind: "ok" | "err" | null): void {
+    if (!previewStatus) return;
+    previewStatus.textContent = message;
+    previewStatus.classList.toggle("is-error", kind === "err");
+    previewStatus.classList.toggle("is-ok", kind === "ok");
+  }
+
+  function showPreviewFrame(html: string): void {
+    if (!(previewFrame instanceof HTMLIFrameElement)) return;
+    previewFrame.srcdoc = htmlForHelpHubEditorFrame(html, openerPreviewBaseHref());
+    previewFrame.hidden = false;
+    if (previewPlaceholder) previewPlaceholder.hidden = true;
+  }
+
+  function bindPreviewFrame(frame: HTMLIFrameElement): void {
+    const doc = frame.contentDocument;
+    if (!doc || doc.documentElement.dataset.editorBound === "true") return;
+    doc.documentElement.dataset.editorBound = "true";
+    doc.addEventListener(
+      "click",
+      (event) => {
+        const target = event.target;
+        if (!target || typeof (target as Element).closest !== "function") return;
+        const link = (target as Element).closest("a");
+        if (link) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        const sectionEl = target.closest("[data-help-hub-section]");
+        const section = sectionEl?.getAttribute("data-help-hub-section") || "";
+        if (!section) return;
+        doc.querySelectorAll("[data-help-hub-section].is-editor-selected").forEach((el) => {
+          el.classList.remove("is-editor-selected");
+        });
+        doc.querySelectorAll(`[data-help-hub-section="${CSS.escape(section)}"]`).forEach((el) => {
+          el.classList.add("is-editor-selected");
+        });
+        focusEditorSection(section);
+      },
+      true,
+    );
+    doc.addEventListener("submit", (event) => event.preventDefault(), true);
+    const frameWindow = frame.contentWindow;
+    if (frameWindow) {
+      frameWindow.open = (() => null) as typeof frameWindow.open;
+    }
+  }
+
+  function focusEditorSection(section: string): void {
+    const target = editorTargetForPreviewSection(section);
+    if (!target) return;
+    if (workspace && window.matchMedia("(max-width: 1099px)").matches) {
+      setEditorMode("edit");
+    }
+    const group = form.querySelector(`[data-editor-group="${target.group}"]`);
+    if (group instanceof HTMLDetailsElement) group.open = true;
+    const field = document.getElementById(target.fieldId);
+    window.setTimeout(() => {
+      field?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (field instanceof HTMLElement) field.focus({ preventScroll: true });
+    }, 0);
+  }
+
+  function setEditorMode(mode: "edit" | "preview"): void {
+    if (workspace) workspace.dataset.mode = mode;
+    document.getElementById("helpHubModeEdit")?.setAttribute("aria-selected", mode === "edit" ? "true" : "false");
+    document
+      .getElementById("helpHubModePreview")
+      ?.setAttribute("aria-selected", mode === "preview" ? "true" : "false");
+  }
+
+  async function refreshLivePreview(): Promise<void> {
+    const requestId = ++previewRequest;
+    const values = readFormValues(form, selection);
+    if (!values.question.trim() || !values.slug.trim()) {
+      setPreviewStatus("", null);
+      if (previewPlaceholder) {
+        previewPlaceholder.hidden = false;
+        previewPlaceholder.textContent = "Add a question to see the public page.";
+      }
+      if (previewFrame instanceof HTMLIFrameElement) previewFrame.hidden = true;
+      return;
+    }
+    setPreviewStatus("Updating preview…", null);
+    try {
+      const result = await requestHelpHubPreview({
+        document: payloadFromForm(),
+        audience: previewAudience,
+      });
+      if (requestId !== previewRequest) return;
+      if (result.needsSignIn) {
+        setPreviewStatus(result.error || "Sign in to preview this draft.", "err");
+        if (!promptedPreviewSignIn) {
+          promptedPreviewSignIn = true;
+          window.kbmHelpHubAdmin?.promptSignIn?.();
+        }
+        return;
+      }
+      if (!result.ok || !result.html) {
+        setPreviewStatus(result.error || "The preview could not be updated. Your text is still in the editor.", "err");
+        return;
+      }
+      showPreviewFrame(result.html);
+      setPreviewStatus("Preview updated", "ok");
+    } catch {
+      if (requestId !== previewRequest) return;
+      setPreviewStatus("The preview could not be updated because of a network problem. Your text is still in the editor.", "err");
+    }
+  }
+
+  function schedulePreview(): void {
+    window.clearTimeout(previewTimer);
+    previewTimer = window.setTimeout(() => {
+      void refreshLivePreview();
+    }, 400);
+  }
+
+  writeHidden(false);
+  renumberSteps();
+  syncTryStepsStore();
+  syncImageFields();
 
   const baselineSnapshot = JSON.stringify(snapshotForm(form));
   let savedSnapshot = baselineSnapshot;
@@ -393,16 +775,125 @@ export function initHelpHubAdminEditor(): boolean {
     ) {
       (slugEl as HTMLInputElement).value = slugFromQuestion(t.value);
     }
+    if (t instanceof HTMLTextAreaElement && t.hasAttribute("data-try-step")) syncTryStepsStore();
+    syncImageFields();
     updateSaveButtonLabel(form);
     saveDraft();
+    schedulePreview();
   }
 
   form.addEventListener("input", onFormActivity);
   form.addEventListener("change", onFormActivity);
   search?.addEventListener("input", () => renderPicker());
-  writeHidden();
   renderPicker();
   updateSaveButtonLabel(form);
+  schedulePreview();
+
+  stepList?.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("[data-step-action]") : null;
+    const row = button?.closest<HTMLElement>("[data-try-step-row]");
+    if (!button || !row || !stepList) return;
+    const action = button.dataset.stepAction;
+    if (action === "remove") row.remove();
+    if (action === "up" && row.previousElementSibling) stepList.insertBefore(row, row.previousElementSibling);
+    if (action === "down" && row.nextElementSibling) stepList.insertBefore(row.nextElementSibling, row);
+    renumberSteps();
+    syncTryStepsStore();
+    form.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  addStepBtn?.addEventListener("click", () => {
+    if (!stepList) return;
+    const tryGroup = form.querySelector('[data-editor-group="try"]');
+    if (tryGroup instanceof HTMLDetailsElement) tryGroup.open = true;
+    const row = createStepRow("");
+    stepList.appendChild(row);
+    renumberSteps();
+    row.querySelector("textarea")?.focus();
+  });
+  form.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("[data-image-remove]") : null;
+    const group = button?.closest<HTMLElement>("[data-image-fields]");
+    if (!button || !group) return;
+    group.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("[data-image-url], [data-image-alt], [data-image-caption]").forEach((field) => {
+      field.value = "";
+    });
+    syncImageFields(group);
+    form.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  if (previewFrame instanceof HTMLIFrameElement) {
+    previewFrame.addEventListener("load", () => bindPreviewFrame(previewFrame));
+  }
+  document.getElementById("helpHubModeEdit")?.addEventListener("click", () => setEditorMode("edit"));
+  document.getElementById("helpHubModePreview")?.addEventListener("click", () => setEditorMode("preview"));
+  document.querySelectorAll<HTMLButtonElement>("[data-preview-audience]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const next = button.dataset.previewAudience === "member" ? "member" : "visitor";
+      previewAudience = next;
+      document.querySelectorAll<HTMLButtonElement>("[data-preview-audience]").forEach((other) => {
+        other.setAttribute("aria-pressed", other === button ? "true" : "false");
+      });
+      void refreshLivePreview();
+    });
+  });
+  const entrySelect = document.getElementById("helpHubOpenEntry");
+  const entrySearch = document.getElementById("helpHubEntrySearch");
+  if (entrySearch instanceof HTMLInputElement && entrySelect instanceof HTMLSelectElement) {
+    entrySearch.addEventListener("input", () => {
+      const query = entrySearch.value.trim().toLowerCase();
+      entrySelect.querySelectorAll("optgroup").forEach((group) => {
+        let visible = 0;
+        group.querySelectorAll("option").forEach((option) => {
+          const show =
+            !query ||
+            (option.textContent || "").toLowerCase().includes(query) ||
+            option.value.toLowerCase().includes(query);
+          option.hidden = !show;
+          if (show) visible += 1;
+        });
+        (group as HTMLOptGroupElement).hidden = visible === 0;
+      });
+    });
+  }
+  if (entrySearch instanceof HTMLInputElement && !(entrySelect instanceof HTMLSelectElement)) {
+    entrySearch.addEventListener("input", () => {
+      const query = entrySearch.value.trim().toLowerCase();
+      document.querySelectorAll<HTMLElement>("[data-entry-slug]").forEach((item) => {
+        const text = (item.textContent || "").toLowerCase();
+        const itemSlug = (item.dataset.entrySlug || "").toLowerCase();
+        item.hidden = Boolean(query) && !text.includes(query) && !itemSlug.includes(query);
+      });
+    });
+  }
+  if (entrySelect instanceof HTMLSelectElement) {
+    const currentSlug = new URL(window.location.href).searchParams.get("slug")?.trim() || "";
+    entrySelect.addEventListener("change", () => {
+      const next = entrySelect.value.trim();
+      if (next === currentSlug) return;
+      if (JSON.stringify(snapshotForm(form)) !== savedSnapshot) {
+        if (!window.confirm("You have unsaved changes. Leave this page without saving?")) {
+          entrySelect.value = currentSlug;
+          return;
+        }
+      }
+      suppressUnload = true;
+      window.location.href = next
+        ? `/admin/help-hub-edit?slug=${encodeURIComponent(next)}`
+        : "/admin/help-hub-edit";
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+    if (!(link instanceof HTMLAnchorElement)) return;
+    const href = link.getAttribute("href") || "";
+    if (!href || href.startsWith("#")) return;
+    if (JSON.stringify(snapshotForm(form)) === savedSnapshot) return;
+    if (!window.confirm("You have unsaved changes. Leave this page without saving?")) {
+      event.preventDefault();
+      return;
+    }
+    suppressUnload = true;
+  });
 
   if (pendingDraft && JSON.stringify(pendingDraft) !== baselineSnapshot) {
     if (recovery) recovery.hidden = false;
@@ -417,8 +908,11 @@ export function initHelpHubAdminEditor(): boolean {
   restoreBtn?.addEventListener("click", () => {
     if (pendingDraft) {
       applySnapshot(form, pendingDraft);
+      rebuildStepsFromStore();
+      syncImageFields();
       updateSaveButtonLabel(form);
       saveDraft();
+      schedulePreview();
     }
     if (recovery) recovery.hidden = true;
   });
@@ -439,14 +933,31 @@ export function initHelpHubAdminEditor(): boolean {
     }
   });
 
-  async function saveEntry(): Promise<boolean> {
+  function setSaving(disabled: boolean): void {
+    if (disabled) {
+      saveBtn.setAttribute("disabled", "true");
+      publishBtn?.setAttribute("disabled", "true");
+    } else {
+      saveBtn.removeAttribute("disabled");
+      publishBtn?.removeAttribute("disabled");
+    }
+  }
+
+  async function saveEntry(intent: HelpHubSaveIntent): Promise<boolean> {
+    syncTryStepsStore();
+    const nextStatus = statusForHelpHubSave({
+      intent,
+      selectedStatus: fieldValue(form, "status"),
+      storedStatus: storedHelpHubStatus(),
+    });
     const values = readFormValues(form, selection);
+    values.status = nextStatus;
     const missing = missingRequiredAdminFields(values);
     if (missing.length) {
-      setSaveStatus(`Missing required fields: ${missing.join(", ")}`, "err");
+      setSaveStatus(missingFieldsMessage(missing), "err");
       return false;
     }
-    const payload = payloadFromForm();
+    const payload = payloadFromForm(nextStatus);
     const id =
       window.currentHelpHub && window.currentHelpHub.id != null ? window.currentHelpHub.id : null;
     const url =
@@ -459,17 +970,23 @@ export function initHelpHubAdminEditor(): boolean {
       setSaveStatus("Help Hub admin is still loading. Try Save again.", "err");
       return false;
     }
-    saveBtn.setAttribute("disabled", "true");
+    setSaving(true);
     setSaveStatus("Saving…", null);
     try {
       const result = await admin.request(url, { method, body: payload });
       if (result.needsSignIn) {
-        setSaveStatus(result.error || "Sign in with your Knit it Now account to save.", "signin");
+        setSaveStatus(
+          `${result.error || "Sign in with your Knit it Now account to save."} Your text is still in the editor.`,
+          "signin",
+        );
         admin.promptSignIn?.();
         return false;
       }
       if (!admin.saveSucceeded(result)) {
-        setSaveStatus(result.error || `Save failed (${result.status})`, "err");
+        setSaveStatus(
+          `${result.error || `Save failed (${result.status})`} Your text is still in the editor.`,
+          "err",
+        );
         return false;
       }
       const data = result.data || {};
@@ -477,13 +994,25 @@ export function initHelpHubAdminEditor(): boolean {
       if (tip && typeof tip === "object") {
         window.currentHelpHub = JSON.parse(JSON.stringify(tip));
       }
+      const statusEl = form.elements.namedItem("status");
+      if (statusEl && "value" in statusEl) (statusEl as HTMLSelectElement).value = nextStatus;
+      if (window.currentHelpHub && typeof window.currentHelpHub === "object") {
+        window.currentHelpHub.status = nextStatus;
+      }
       try {
         localStorage.removeItem(draftKey);
       } catch {
         /* ignore */
       }
-      setSaveStatus("Saved", "ok");
+      updateSaveButtonLabel(form);
+      setSaveStatus(nextStatus === "published" ? "Published" : "Saved", "ok");
       savedSnapshot = JSON.stringify(snapshotForm(form));
+      const savedSlug =
+        tip && typeof tip.slug === "string" && tip.slug.trim()
+          ? tip.slug.trim()
+          : fieldValue(form, "slug").trim();
+      const savedLabel = fieldValue(form, "question").trim() || savedSlug;
+      syncOpenHelpHubChooser({ slug: savedSlug, label: savedLabel, status: nextStatus });
       if (method === "POST" && tip?.slug) {
         suppressUnload = true;
         window.setTimeout(() => {
@@ -492,22 +1021,24 @@ export function initHelpHubAdminEditor(): boolean {
       }
       return true;
     } catch {
-      setSaveStatus("Save failed — network error", "err");
+      setSaveStatus("Could not save because of a network problem. Your text is still in the editor.", "err");
       return false;
     } finally {
-      saveBtn.removeAttribute("disabled");
+      setSaving(false);
     }
   }
 
   saveBtn.addEventListener("click", () => {
-    void saveEntry();
+    void saveEntry("keep");
+  });
+  publishBtn?.addEventListener("click", () => {
+    void saveEntry("publish");
   });
 
   previewBtn?.addEventListener("click", async () => {
     const values = readFormValues(form, selection);
-    const missing = missingRequiredAdminFields(values);
-    if (missing.length) {
-      setSaveStatus(`Missing required fields: ${missing.join(", ")}`, "err");
+    if (!values.question.trim() || !values.slug.trim()) {
+      setSaveStatus("Add a question before opening the full page. Your text is still in the editor.", "err");
       return;
     }
     const admin = window.kbmHelpHubAdmin;
@@ -519,7 +1050,7 @@ export function initHelpHubAdminEditor(): boolean {
     setSaveStatus("Opening preview…", null);
     try {
       const result = await admin.openPreview(
-        { document: payloadFromForm() },
+        { document: payloadFromForm(), audience: previewAudience },
         { previewWindow },
       );
       if (result.needsSignIn) {

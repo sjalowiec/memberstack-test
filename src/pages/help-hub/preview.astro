@@ -1,6 +1,8 @@
 ---
 import HelpHubTipPage from "../../components/help-hub/HelpHubTipPage.astro";
 import { requireAdminForRequest, adminAuthErrorBody } from "../../lib/admin/requireAdminRequest";
+import { helpHubPreviewAuthRequest } from "../../lib/helpHub/localDevPreviewAuth";
+import { helpHubPreviewAudienceFromBody } from "../../lib/helpHub/previewAudience";
 import { resolveHelpHubPreviewTip } from "../../lib/helpHub/previewDocument";
 import { loadHelpHubTipBySlug } from "../../lib/helpHub/loadTips";
 import { loadPublicLessons } from "../../lib/lessons/loadLessons";
@@ -23,7 +25,11 @@ if (Astro.request.method !== "POST") {
   return jsonError(405, "Preview requires an authenticated POST.");
 }
 
-const auth = await requireAdminForRequest(Astro.request, Astro.cookies);
+const previewAuth = helpHubPreviewAuthRequest(Astro.request);
+const auth = await requireAdminForRequest(
+  previewAuth.request,
+  previewAuth.ignoreCookieStore ? undefined : Astro.cookies,
+);
 if (!auth.ok) {
   return new Response(JSON.stringify(adminAuthErrorBody(auth)), {
     status: auth.status,
@@ -42,6 +48,8 @@ try {
   return jsonError(400, "Invalid JSON body");
 }
 
+const previewAudience = helpHubPreviewAudienceFromBody(body);
+
 const resolved = await resolveHelpHubPreviewTip(body, async (slug) => {
   const saved = await loadHelpHubTipBySlug(slug);
   return saved;
@@ -56,4 +64,4 @@ const lessons = await loadPublicLessons();
 Astro.response.headers.set("Cache-Control", "no-store");
 ---
 
-<HelpHubTipPage tip={tip} preview={true} lessons={lessons} />
+<HelpHubTipPage tip={tip} preview={true} lessons={lessons} previewAudience={previewAudience} />
