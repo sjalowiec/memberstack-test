@@ -17,6 +17,7 @@ import {
 } from "./memberResources";
 import { isMemberOnlyToolPath } from "../tools/toolMembership";
 import { helpHubRelatedToolButton, type HelpHubRelatedToolButton } from "./adminForm";
+import { resolveHelpHubPublicVideo } from "./publicVideo";
 import {
   helpHubRelatedToolModal,
   type HelpHubRelatedToolModal,
@@ -59,6 +60,8 @@ export type HelpHubPageTip = {
   thumbnailAlt?: string;
   aboutTitle?: string;
   solutionText?: string;
+  publicVideoUrl?: string;
+  publicVideoTitle?: string;
   bridge?: string;
   tryThisTitle?: string;
   tryThis?: HelpHubTryThis | string;
@@ -77,6 +80,23 @@ export type HelpHubPageTip = {
   relatedToolUrl?: string;
   jumpLinks?: { label: string; href: string }[];
 };
+
+/**
+ * Display-only repair. An unquoted image address that ends with a quotation
+ * mark is requested as `file.png%22` and never loads. Stored Help Hub text is
+ * left unchanged.
+ */
+export function solutionHtmlWithLoadableImages(html: string): string {
+  return html.replace(
+    /(<img\b[^>]*?\bsrc\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
+    (full, prefix: string, doubleQuoted?: string, singleQuoted?: string, unquoted?: string) => {
+      const raw = doubleQuoted ?? singleQuoted ?? unquoted ?? "";
+      const cleaned = raw.replace(/(?:&quot;|%22|")+$/i, "");
+      if (!cleaned || cleaned === raw) return full;
+      return `${prefix}"${cleaned}"`;
+    },
+  );
+}
 
 function helpHubRelatedToolView(tip: HelpHubPageTip): HelpHubRelatedToolView | null {
   const button = helpHubRelatedToolButton(tip);
@@ -121,12 +141,13 @@ export function prepareHelpHubTipPage(
     tip.memberResourceOrder,
   );
   const tryObj = tryThisObject(tip.tryThis);
-  const whyBodyRaw =
+  const whyBodySource =
     typeof tip.solutionText === "string" && tip.solutionText.trim() !== ""
       ? tip.solutionText.trim()
       : typeof tip.bridge === "string" && tip.bridge.trim() !== ""
         ? tip.bridge.trim()
         : "";
+  const whyBodyRaw = solutionHtmlWithLoadableImages(whyBodySource);
   const appliesToList = Array.isArray(tip.appliesTo)
     ? tip.appliesTo.map((item) => (typeof item === "string" ? item.trim() : "")).filter(Boolean)
     : [];
@@ -182,6 +203,7 @@ export function prepareHelpHubTipPage(
     memberLessonsSectionTitle:
       memberResourceCards.length === 1 ? "Member Lesson" : "Member Lessons",
     whyBody: whyBodyRaw,
+    publicVideo: resolveHelpHubPublicVideo(tip),
     tipJumpLinks: Array.isArray(tip.jumpLinks)
       ? tip.jumpLinks.filter(
           (j): j is { label: string; href: string } =>
@@ -205,7 +227,10 @@ export function prepareHelpHubTipPage(
         : "",
     hasTrySection:
       quickSteps.length > 0 ||
-      (typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== ""),
+      (typeof tryObj?.quickActionTitle === "string" && tryObj.quickActionTitle.trim() !== "") ||
+      (typeof tryObj?.quickActionNote === "string" && tryObj.quickActionNote.trim() !== "") ||
+      (typeof tip.tryNote === "string" && tip.tryNote.trim() !== "") ||
+      (typeof tip.tryImage === "string" && tip.tryImage.trim() !== ""),
     mediaType: typeof tip.mediaType === "string" ? tip.mediaType : "",
     mediaUrl: typeof tip.mediaUrl === "string" ? tip.mediaUrl.trim() : "",
     mediaPoster: typeof tip.mediaPoster === "string" ? tip.mediaPoster.trim() : "",

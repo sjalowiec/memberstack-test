@@ -11,6 +11,7 @@ import {
 } from "../lib/memberAccess";
 import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
 import { helpHubMemberLessonCtaSpec } from "../lib/helpHubMemberLessonCta";
+import { helpHubPreviewAudienceState } from "../lib/helpHub/previewAudience";
 import {
   closeActiveHelpHubLessonModal,
   initHelpHubLessonModals,
@@ -398,8 +399,25 @@ function bindMemberLessonGateRefresh(onRefresh: () => void): void {
   }
 }
 
+function revealHelpHubPreviewAudience(state: ViewerAccessState): void {
+  document.querySelectorAll<HTMLDetailsElement>("[data-help-hub-lessons] details").forEach((details) => {
+    details.open = true;
+  });
+  if (state === "memberAccess") return;
+  document.querySelectorAll<HTMLElement>("[data-help-hub-lessons] [data-hh-lesson-gate]").forEach((gate) => {
+    gate.hidden = false;
+    gate.removeAttribute("hidden");
+  });
+}
+
 export function runHelpHubMemberLessonCtaGate(): void {
   initHelpHubLessonModals();
+  const previewAudience = helpHubPreviewAudienceState(document);
+  if (previewAudience) {
+    syncHelpHubMemberLessonCtas(previewAudience);
+    revealHelpHubPreviewAudience(previewAudience);
+    return;
+  }
   clearHelpHubMemberLessonCtas();
 
   async function refresh(): Promise<void> {

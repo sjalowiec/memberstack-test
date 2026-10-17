@@ -15,9 +15,15 @@ interface Props {
   tip: HelpHubPageTip;
   preview?: boolean;
   lessons: HelpHubLessonRecord[];
+  /** Admin preview only. Does not change membership or who can open the saved page. */
+  previewAudience?: "member" | "visitor";
 }
 
-const { tip, preview = false, lessons } = Astro.props;
+const { tip, preview = false, lessons, previewAudience } = Astro.props;
+const audience =
+  preview && (previewAudience === "member" || previewAudience === "visitor")
+    ? previewAudience
+    : undefined;
 
 const view = prepareHelpHubTipPage(
   tip,
@@ -41,14 +47,17 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
   )}
   <PageHead title="Help Hub" subhead={undefined} hideTitle={true} />
 
-  <section class="container py-5 tips-page-section">
+  <section
+    class="container py-5 tips-page-section"
+    data-help-hub-preview-audience={audience}
+  >
     {preview && (
       <p class="help-hub-preview-banner">
         Preview — saved {typeof tip.status === "string" ? tip.status : "draft"} (not public)
       </p>
     )}
     <PageBackLink href="/help-hub" text="Back to Help Hub" />
-    <HelpHubTipContent tip={tip} lessons={lessons} />
+    <HelpHubTipContent tip={tip} lessons={lessons} markSections={preview} />
   </section>
   <script>
     import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";

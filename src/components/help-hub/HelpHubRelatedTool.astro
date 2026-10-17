@@ -11,9 +11,11 @@ interface Props {
   relatedTool: HelpHubRelatedToolView;
   instanceId: string;
   entrySlug?: string;
+  /** Admin preview only. Omitted on the published page. */
+  sectionMarker?: string;
 }
 
-const { relatedTool, instanceId, entrySlug = "" } = Astro.props;
+const { relatedTool, instanceId, entrySlug = "", sectionMarker = "" } = Astro.props;
 const modal = relatedTool.modal;
 const domId = helpHubToolDomId(instanceId);
 const dialogId = `${domId}-tool-modal`;
@@ -29,6 +31,7 @@ const showCard = Boolean(relatedTool.eyebrow || relatedTool.title || relatedTool
     showCard && "help-hub-related-tool--card",
   ]}
   data-help-hub-tool={modal ? "true" : undefined}
+  data-help-hub-section={sectionMarker || undefined}
 >
   {relatedTool.eyebrow ? (
     <p class="help-hub-related-tool__eyebrow">{relatedTool.eyebrow}</p>
