@@ -21,9 +21,16 @@ interface Props {
   deferMedia?: boolean;
   /** Unique prefix so several answers on one page do not share heading ids. */
   idPrefix?: string;
+  /** Admin preview only. Marks public sections so the editor can focus the matching field. */
+  markSections?: boolean;
 }
 
-const { tip, lessons, embedded = false, deferMedia = false, idPrefix = "" } = Astro.props;
+const { tip, lessons, embedded = false, deferMedia = false, idPrefix = "", markSections = false } =
+  Astro.props;
+
+function sectionAttr(id: string): string | undefined {
+  return markSections ? id : undefined;
+}
 
 const view = prepareHelpHubTipPage(
   tip,
@@ -54,10 +61,12 @@ const {
   relatedTool,
   aboutHeading,
   tryHeading,
+  publicVideo,
 } = view;
 
 const scope = idPrefix.trim();
 const whyHeadingId = scope ? `${scope}-why` : "help-hub-why-heading";
+const publicVideoHeadingId = scope ? `${scope}-public-video` : "help-hub-public-video-heading";
 const memberHeadingId = scope ? `${scope}-member-lessons` : "member-lessons-heading";
 const lessonDomId = helpHubToolDomId(
   scope || (typeof tip.slug === "string" ? tip.slug : "") || "entry",
@@ -70,11 +79,6 @@ const lessonLoginReturn = helpHubToolLoginReturnPath(
 );
 const showLessonsLabel = memberResourceCards.length === 1 ? "Show lesson" : "Show lessons";
 const hideLessonsLabel = memberResourceCards.length === 1 ? "Hide lesson" : "Hide lessons";
-const standaloneHref =
-  embedded && typeof tip.slug === "string" && tip.slug.trim() !== ""
-    ? `/help-hub/${tip.slug.trim()}`
-    : "";
-
 function liveMediaSrc(url: string): string | undefined {
   if (deferMedia || !url) return undefined;
   return url;
@@ -98,14 +102,13 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
   class:list={["help-hub-tip-body", embedded && "help-hub-tip-body--embedded"]}
   data-pagefind-ignore={embedded ? true : undefined}
 >
-    {embedded && standaloneHref && (
-      <p class="help-hub-standalone-link">
-        <a href={standaloneHref}>Open this page</a>
-      </p>
-    )}
     <div class="tuesday-tip-hero">
       {typeof tip.hook === "string" && tip.hook.trim() !== "" && (
-        <p class="bubble-hook tuesday-tip-hero__hook" data-placeholder="short subtitle/supporting sentence">
+        <p
+          class="bubble-hook tuesday-tip-hero__hook"
+          data-placeholder="short subtitle/supporting sentence"
+          data-help-hub-section={sectionAttr("hook")}
+        >
           {tip.hook}
         </p>
       )}
@@ -127,7 +130,11 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
           <div class="tuesday-tip-bubbles">
             {!embedded && (tip.question || tip.title) && (
               <div class="talk-row talk-left tuesday-tip-bubble-row">
-                <h1 class="talk-bubble bubble-bl bubble-question tuesday-tip__question" data-placeholder="title">
+                <h1
+                  class="talk-bubble bubble-bl bubble-question tuesday-tip__question"
+                  data-placeholder="title"
+                  data-help-hub-section={sectionAttr("question")}
+                >
                   {tip.question || tip.title || "Help Hub"}
                 </h1>
               </div>
@@ -135,7 +142,11 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
 
             {typeof tip.bubbleAnswer === "string" &&
               tip.bubbleAnswer.trim() !== "" && (
-                <div class="talk-row talk-right tuesday-tip-bubble-row" aria-label="Quick answer">
+                <div
+                  class="talk-row talk-right tuesday-tip-bubble-row"
+                  aria-label="Quick answer"
+                  data-help-hub-section={sectionAttr("answer")}
+                >
                   <div class="talk-bubble bubble-br bubble-answer tuesday-tip__answer">
                     <div class="tuesday-tip__answer-inner">
                       <img
@@ -158,7 +169,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
         </div>
 
         {hasHeroMedia && (
-        <div class="tuesday-tip-hero__media" aria-label="Free visual">
+        <div class="tuesday-tip-hero__media" aria-label="Free visual" data-help-hub-section={sectionAttr("image")}>
         <div class="tuesday-tip-video-shell" data-placeholder="hero media">
           <div class="tuesday-tip-video-aspect">
             {catalogVimeoEmbedUrl ? (
@@ -220,9 +231,11 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
       </div>
     </div>
 
+    {(whyBody || tipJumpLinks.length > 0) && (
     <section
       class="tuesday-tip__section tuesday-tip__section--why"
       aria-labelledby={whyHeadingId}
+      data-help-hub-section={sectionAttr("explanation")}
     >
       <h2 id={whyHeadingId} class="tuesday-tip__section-heading">
         {aboutHeading}
@@ -234,12 +247,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
             data-placeholder="why this works text"
             set:html={whyBody}
           ></div>
-        ) : (
-          <p class="tuesday-tip__description" data-placeholder="why this works text">
-            More detail for this tip will appear here when the Help Hub record includes a
-            bridge.
-          </p>
-        )}
+        ) : null}
         {tipJumpLinks.length > 0 && (
           <nav class="tuesday-tip__jump-links" aria-label="Jump to sections on this page">
             <ul class="tuesday-tip__jump-links-list">
@@ -254,9 +262,54 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
         <section class="tuesday-tip__transcript" data-placeholder="transcript"></section>
       </div>
     </section>
+    )}
 
-    {hasTrySection && quickSteps.length > 0 && (
-      <section class="tuesday-tip__section tuesday-tip__try-section">
+    {publicVideo && (
+      <section
+        class="tuesday-tip__section help-hub-public-video"
+        aria-labelledby={publicVideo.title ? publicVideoHeadingId : undefined}
+        aria-label={publicVideo.title ? undefined : "Video"}
+        data-help-hub-public-video
+        data-help-hub-section={sectionAttr("video")}
+        data-public-vimeo-id={publicVideo.vimeoId}
+      >
+        {publicVideo.title ? (
+          <h2 id={publicVideoHeadingId} class="tuesday-tip__section-heading">
+            {publicVideo.title}
+          </h2>
+        ) : null}
+        <div class="tuesday-tip-video-shell">
+          <div class="tuesday-tip-video-aspect">
+            <div class="help-hub-media">
+              <iframe
+                src={liveMediaSrc(publicVideo.embedUrl)}
+                data-src={deferredMediaSrc(publicVideo.embedUrl)}
+                data-help-hub-deferred-media={deferMedia ? "true" : undefined}
+                class="tuesday-tip-video-iframe"
+                title={publicVideo.title || "Help Hub video"}
+                frameborder="0"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="kbm-kin-catalog-video help-hub-public-video__enlarge"
+          data-vimeo-id={publicVideo.vimeoId}
+          data-video-title={publicVideo.title || "Video"}
+        >
+          Watch larger
+        </button>
+      </section>
+    )}
+
+    {hasTrySection && (
+      <section
+        class="tuesday-tip__section tuesday-tip__try-section"
+        data-help-hub-section={sectionAttr("try")}
+      >
         <div class="tuesday-tip__try-card">
           <h2 class="tuesday-tip__section-heading tuesday-tip__try-heading">{tryHeading}</h2>
           {typeof tryObj?.quickActionTitle === "string" &&
@@ -269,18 +322,26 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
               tryImageUrl && "tuesday-tip__try-body--with-image",
             ]}
           >
+            {(quickSteps.length > 0 || tryObj?.quickActionNote) && (
             <div class="tuesday-tip__try-checklist">
+              {quickSteps.length > 0 && (
               <ul data-placeholder="try this checklist">
                 {quickSteps.map((step) => (
                   <li set:html={step} />
                 ))}
               </ul>
+              )}
               {tryObj?.quickActionNote && (
-                <div class="try-this-note" set:html={tryObj.quickActionNote}></div>
+                <div
+                  class="try-this-note"
+                  data-help-hub-section={sectionAttr("note")}
+                  set:html={tryObj.quickActionNote}
+                ></div>
               )}
             </div>
+            )}
             {tryImageUrl && (
-              <div class="tuesday-tip__try-image-wrap">
+              <div class="tuesday-tip__try-image-wrap" data-help-hub-section={sectionAttr("image-support")}>
                 <img
                   src={tip.tryImage}
                   alt={tip.tryImageAlt || ""}
@@ -293,7 +354,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
               </div>
             )}
             {tip.tryNote && (
-            <p class="try-note" set:html={tip.tryNote}></p>)}
+            <p class="try-note" data-help-hub-section={sectionAttr("note")} set:html={tip.tryNote}></p>)}
           </div>
         </div>
       </section>
@@ -304,6 +365,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
         relatedTool={relatedTool}
         instanceId={scope || "entry"}
         entrySlug={typeof tip.slug === "string" ? tip.slug : ""}
+        sectionMarker={sectionAttr("cta")}
       />
     )}
 
@@ -312,6 +374,7 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
       class="help-hub-member-lessons"
       aria-labelledby={memberHeadingId}
       data-help-hub-lessons
+      data-help-hub-section={sectionAttr("lessons")}
       data-help-hub-lesson-return={lessonLoginReturn || undefined}
     >
       <div class="help-hub-member-lessons__header">
@@ -409,22 +472,6 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     min-width: 0;
     max-width: 100%;
     overflow-wrap: break-word;
-  }
-
-  .help-hub-standalone-link {
-    margin: 0 0 0.75rem;
-    text-align: right;
-    font-size: 0.92rem;
-    line-height: 1.4;
-  }
-
-  .help-hub-standalone-link a {
-    color: var(--kbm-green, #52682d);
-  }
-
-  .help-hub-standalone-link a:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 3px;
   }
 
   .tuesday-tip-hero {
@@ -654,6 +701,27 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     margin-top: 0.75rem;
   }
 
+  .help-hub-public-video__enlarge {
+    margin-top: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid rgba(82, 104, 45, 0.45);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--kbm-green, #52682d);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .help-hub-public-video__enlarge:hover,
+  .help-hub-public-video__enlarge:focus-visible {
+    background: #f3f6ee;
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
   .tuesday-tip__section-heading {
     margin: 0 0 0.7rem;
     font-size: clamp(1.12rem, 2.1vw, 1.32rem);
@@ -675,6 +743,13 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     font-size: 1rem;
     line-height: 1.65;
     color: #2f3a25;
+  }
+
+  .tuesday-tip__description :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
   }
 
   .tuesday-tip__jump-links {
