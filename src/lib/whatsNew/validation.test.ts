@@ -138,6 +138,72 @@ describe("validateWhatsNewCardInput", () => {
       );
     }
   });
+
+  it("stores a popup audience and optional expiration, and can leave the popup off", () => {
+    const off = validateWhatsNewCardInput(
+      {
+        title: "Title",
+        description: "Desc",
+        category: "tool",
+        boardColumn: "just_added",
+      },
+      now,
+    );
+    expect(off.ok).toBe(true);
+    if (off.ok) {
+      expect(off.value.popupEnabled).toBe(false);
+      expect(off.value.popupAudience).toBe("everyone");
+      expect(off.value.popupExpiresOn).toBeNull();
+    }
+
+    const on = validateWhatsNewCardInput(
+      {
+        title: "Title",
+        description: "Desc",
+        category: "tool",
+        boardColumn: "just_added",
+        publishDate: "2026-08-01",
+        popupEnabled: true,
+        popupAudience: "members",
+        popupExpiresOn: "2026-08-31",
+      },
+      now,
+    );
+    expect(on.ok).toBe(true);
+    if (on.ok) {
+      expect(on.value.popupEnabled).toBe(true);
+      expect(on.value.popupAudience).toBe("members");
+      expect(on.value.popupExpiresOn).toBe("2026-08-31");
+    }
+  });
+
+  it("rejects a popup expiration before the publish date and an unknown audience", () => {
+    expect(
+      validateWhatsNewCardInput(
+        {
+          title: "Title",
+          description: "Desc",
+          category: "tool",
+          boardColumn: "just_added",
+          publishDate: "2026-08-10",
+          popupExpiresOn: "2026-08-01",
+        },
+        now,
+      ).ok,
+    ).toBe(false);
+    expect(
+      validateWhatsNewCardInput(
+        {
+          title: "Title",
+          description: "Desc",
+          category: "tool",
+          boardColumn: "just_added",
+          popupAudience: "friends",
+        },
+        now,
+      ).ok,
+    ).toBe(false);
+  });
 });
 
 describe("validateBillboardInput", () => {

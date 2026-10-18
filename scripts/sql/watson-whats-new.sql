@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS watson_whats_new_cards (
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
   display_order INTEGER NOT NULL DEFAULT 0,
   archived BOOLEAN NOT NULL DEFAULT FALSE,
+  popup_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  popup_audience TEXT NOT NULL DEFAULT 'everyone',
+  popup_expires_on DATE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
