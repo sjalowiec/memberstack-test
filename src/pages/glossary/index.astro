@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import glossaryRaw from "../../data/glossary.json";
+import { loadPublicGlossaryEntries } from "../../lib/glossary/loadGlossaryEntries";
 import { slugify } from "../../lib/slugify";
 import PageHead from "../../components/PageHead.astro";
 import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
@@ -8,7 +8,10 @@ import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro"
 import "../../styles/favorites.css";
 import "../../styles/glossary-tooltip.css";
 
-export const prerender = true;
+export const prerender = false;
+
+const glossaryRaw = await loadPublicGlossaryEntries();
+Astro.response.headers.set("Cache-Control", "private, no-store");
 
 const glossary = Array.isArray(glossaryRaw) ? glossaryRaw : (glossaryRaw as { Glossary?: unknown[] })?.Glossary ?? [];
 const glossaryList = Array.isArray(glossary) ? glossary : [];
