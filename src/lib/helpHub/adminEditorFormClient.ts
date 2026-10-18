@@ -810,7 +810,63 @@ export function initHelpHubAdminEditor(): boolean {
     renumberSteps();
     row.querySelector("textarea")?.focus();
   });
+  function readImageFile(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Could not read that image."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadImageFile(group: HTMLElement, file: File): Promise<void> {
+    const status = group.querySelector<HTMLElement>("[data-image-upload-status]");
+    const urlInput = group.querySelector<HTMLInputElement>("[data-image-url]");
+    const setStatus = (message: string) => {
+      if (status) status.textContent = message;
+    };
+    if (!urlInput) return;
+    const admin = window.kbmHelpHubAdmin;
+    if (!admin?.request) {
+      setStatus("Help Hub admin is still loading. Try Choose image again.");
+      return;
+    }
+    setStatus("Uploading image…");
+    try {
+      const dataBase64 = await readImageFile(file);
+      const result = await admin.request("/api/admin/help-hub/images", {
+        method: "POST",
+        body: { filename: file.name, mimeType: file.type || "", dataBase64 },
+      });
+      if (result.needsSignIn) {
+        setStatus(result.error || "Sign in with your Knit it Now account to upload an image.");
+        admin.promptSignIn?.();
+        return;
+      }
+      if (!admin.saveSucceeded(result)) {
+        setStatus(result.error || "Could not upload that image. The other fields are unchanged.");
+        return;
+      }
+      const url = typeof result.data.url === "string" ? result.data.url.trim() : "";
+      if (!url) {
+        setStatus("Upload did not return an image address. The other fields are unchanged.");
+        return;
+      }
+      urlInput.value = url;
+      setStatus("Image address filled in. Save the draft to keep it on this entry.");
+      syncImageFields(group);
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch {
+      setStatus("Could not upload that image. The other fields are unchanged.");
+    }
+  }
+
   form.addEventListener("click", (event) => {
+    const choose = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("[data-image-choose]") : null;
+    if (choose) {
+      choose.closest("[data-image-fields]")?.querySelector<HTMLInputElement>("[data-image-file]")?.click();
+      return;
+    }
     const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("[data-image-remove]") : null;
     const group = button?.closest<HTMLElement>("[data-image-fields]");
     if (!button || !group) return;
@@ -819,6 +875,15 @@ export function initHelpHubAdminEditor(): boolean {
     });
     syncImageFields(group);
     form.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  form.addEventListener("change", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || !input.matches("[data-image-file]")) return;
+    const file = input.files?.[0];
+    const group = input.closest<HTMLElement>("[data-image-fields]");
+    input.value = "";
+    if (!file || !group) return;
+    void uploadImageFile(group, file);
   });
   if (previewFrame instanceof HTMLIFrameElement) {
     previewFrame.addEventListener("load", () => bindPreviewFrame(previewFrame));

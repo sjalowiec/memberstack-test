@@ -402,6 +402,21 @@ const chooserBoxes = [
                     <p class="help-hub-edit__hint">
                       A site path such as /images/help-hub/photo.jpg.
                     </p>
+                    <div class="help-hub-edit__upload">
+                      <button type="button" class="kbm-btn kbm-btn-outline" data-image-choose>
+                        Choose image
+                      </button>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                        data-image-file
+                        hidden
+                      />
+                      <p class="help-hub-edit__hint" data-image-upload-status></p>
+                    </div>
+                    <p class="help-hub-edit__hint">
+                      JPG, PNG, or WebP from your computer. The address is filled in after the upload.
+                    </p>
                   </div>
                   <div class="help-hub-edit__field">
                     <label for="help-hub-top-image-alt" class="help-hub-edit__label">Alt text</label>
@@ -611,6 +626,21 @@ const chooserBoxes = [
                       data-image-url
                       value={supportImage}
                     />
+                    <div class="help-hub-edit__upload">
+                      <button type="button" class="kbm-btn kbm-btn-outline" data-image-choose>
+                        Choose image
+                      </button>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                        data-image-file
+                        hidden
+                      />
+                      <p class="help-hub-edit__hint" data-image-upload-status></p>
+                    </div>
+                    <p class="help-hub-edit__hint">
+                      JPG, PNG, or WebP from your computer. The address is filled in after the upload.
+                    </p>
                   </div>
                   <div class="help-hub-edit__field">
                     <label for="help-hub-try-image-alt" class="help-hub-edit__label">Alt text</label>
@@ -1506,6 +1536,17 @@ const chooserBoxes = [
       font-size: 0.85rem;
       color: #64748b;
       line-height: 1.4;
+    }
+
+    .help-hub-edit__upload {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+    }
+
+    .help-hub-edit__upload [data-image-upload-status]:empty {
+      display: none;
     }
 
     .help-hub-edit__save-status {

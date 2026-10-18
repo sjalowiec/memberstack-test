@@ -129,6 +129,14 @@
   status = 301
   force = true
 
+# Help Hub uploads live in the shared database and are served at /media/help-hub.
+# Files already in public/images/help-hub keep their Git copies. A missing file,
+# including double_high.png, is read from that database instead.
+[[redirects]]
+  from = "/images/help-hub/*"
+  to = "/media/help-hub/:splat"
+  status = 200
+
 # Legacy repairs URL → References repairs guide.
 [[redirects]]
   from = "/repairs"
