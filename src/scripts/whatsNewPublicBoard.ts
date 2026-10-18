@@ -136,10 +136,43 @@ export function initWhatsNewColumnToggles(
   });
 }
 
+const ENTRY_HASH_PREFIX = "#whats-new-entry-";
+
+/**
+ * Open the What's New card targeted by a Read more link.
+ * Removes the column "show more" hide and expands that card.
+ */
+export function revealWhatsNewEntryFromHash(
+  root: Pick<ParentNode, "querySelector">,
+  hash: string,
+): boolean {
+  if (!hash.startsWith(ENTRY_HASH_PREFIX)) return false;
+  const id = hash.slice(1);
+  if (!/^whats-new-entry-[A-Za-z0-9_-]+$/.test(id)) return false;
+  const item = root.querySelector(`#${id}`);
+  if (!item) return false;
+  item.removeAttribute("hidden");
+  const toggle = item.querySelector("[data-wn-stack-toggle]");
+  if (toggle && typeof (toggle as { click?: () => void }).click === "function") {
+    (toggle as { click: () => void }).click();
+  }
+  const scroller = item as { scrollIntoView?: (options?: ScrollIntoViewOptions) => void };
+  if (typeof scroller.scrollIntoView === "function") {
+    scroller.scrollIntoView({ block: "start" });
+  }
+  return true;
+}
+
+function currentLocationHash(): string {
+  const loc = (globalThis as { location?: { hash?: string } }).location;
+  return typeof loc?.hash === "string" ? loc.hash : "";
+}
+
 /** Wire all public What's New board interactions. */
 export function initWhatsNewPublicBoard(
   root: Pick<ParentNode, "querySelector" | "querySelectorAll"> = document,
 ): void {
   initWhatsNewCardStacks(root);
   initWhatsNewColumnToggles(root);
+  revealWhatsNewEntryFromHash(root, currentLocationHash());
 }

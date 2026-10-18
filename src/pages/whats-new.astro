@@ -15,11 +15,13 @@ import {
   splitPublicColumnCards,
 } from "../lib/whatsNew/public";
 import {
+  ensureWhatsNewAnnouncementSchema,
   getPublicBillboardSettings,
   getPublicWhatsNewBoard,
 } from "../lib/whatsNew/store";
 import { sanitizeCardDescriptionHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
 import { resolveWhatsNewToolIcon } from "../lib/whatsNew/toolIcon";
+import { whatsNewEntryAnchorId } from "../lib/whatsNew/announcement";
 
 const themeStyle = whatsNewThemeStyle();
 
@@ -36,6 +38,7 @@ let board = {
 let billboard: Awaited<ReturnType<typeof getPublicBillboardSettings>> = null;
 
 try {
+  await ensureWhatsNewAnnouncementSchema();
   board = await getPublicWhatsNewBoard();
 } catch (error) {
   loadError =
@@ -161,6 +164,7 @@ const description =
             const zIndex = expanded ? total + 1 : total - index;
             return (
               <li
+                id={whatsNewEntryAnchorId(card.id)}
                 class={`whats-new__card kbm-card${card.featured ? " whats-new__card--featured" : ""}${expanded ? " whats-new__card--expanded" : ""}`}
                 style={`${whatsNewCategoryCardStyle(card.category)}; z-index: ${zIndex}`}
                 data-wn-stack-item
@@ -485,6 +489,7 @@ const description =
   }
 
   .whats-new__card {
+    scroll-margin-top: 6rem;
     display: block;
     padding: 1rem 1rem 1.1rem;
     border-left: 5px solid var(--wn-accent);

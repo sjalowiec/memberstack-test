@@ -6,11 +6,13 @@ import {
   WHATS_NEW_DEFAULT_BUTTON_TEXT,
   WHATS_NEW_NEW_BADGE_DAYS,
   WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+  WHATS_NEW_POPUP_AUDIENCES,
   WHATS_NEW_STATUSES,
   type WhatsNewBoardColumn,
   type WhatsNewCard,
   type WhatsNewCardRow,
   type WhatsNewCategory,
+  type WhatsNewPopupAudience,
   type WhatsNewStatus,
 } from "./types";
 
@@ -32,6 +34,10 @@ export function isWhatsNewBoardColumn(value: string): value is WhatsNewBoardColu
 
 export function isWhatsNewStatus(value: string): value is WhatsNewStatus {
   return (WHATS_NEW_STATUSES as readonly string[]).includes(value);
+}
+
+export function isWhatsNewPopupAudience(value: string): value is WhatsNewPopupAudience {
+  return (WHATS_NEW_POPUP_AUDIENCES as readonly string[]).includes(value);
 }
 
 export function whatsNewStatusLabel(status: WhatsNewStatus): "Draft" | "Published" {
@@ -126,6 +132,9 @@ export function buildWhatsNewCard(
       ? row.button_text.trim()
       : null;
 
+  const audienceRaw =
+    typeof row.popup_audience === "string" ? row.popup_audience.trim() : "";
+
   return {
     id: row.id,
     title: row.title,
@@ -142,6 +151,9 @@ export function buildWhatsNewCard(
     status: row.status,
     displayOrder: Number(row.display_order) || 0,
     archived: Boolean(row.archived),
+    popupEnabled: Boolean(row.popup_enabled),
+    popupAudience: isWhatsNewPopupAudience(audienceRaw) ? audienceRaw : "everyone",
+    popupExpiresOn: toIsoDateOnly(row.popup_expires_on),
     createdAt: toIsoTimestamp(row.created_at),
     updatedAt: toIsoTimestamp(row.updated_at),
     isNew: row.status === "published" && !row.archived && isWithinNewBadgeWindow(publishDate, now),

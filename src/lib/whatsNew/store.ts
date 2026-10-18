@@ -1,6 +1,23 @@
-import { queryWatson } from "../watson/db";
+import { randomUUID } from "node:crypto";
+
+import { getWatsonPool, queryWatson } from "../watson/db";
+import {
+  applySchemaStatements,
+  getWatsonNativeSchemaStatements,
+} from "../watson/schema";
 import type { WatsonQueryFn } from "../watson/memberSearch";
 import { normalizeVimeoUrl } from "../videoReplies/vimeoUrl";
+import type { WhatsNewAnnouncement } from "./announcement";
+import {
+  buildPopupAnnouncement,
+  isPopupAnnouncementActive,
+  POPUP_ANNOUNCEMENT_KEY,
+  shouldMintAnnouncementId,
+  validatePopupAnnouncementInput,
+  type WhatsNewPopupAnnouncement,
+  type WhatsNewPopupAnnouncementRow,
+} from "./popupAnnouncement";
+import type { WhatsNewAnnouncementActivityEvent } from "./announcementActivity";
 import {
   buildBillboardSettings,
   getPublicBillboard,
@@ -39,6 +56,9 @@ const CARD_SELECT = `
   status,
   display_order,
   archived,
+  popup_enabled,
+  popup_audience,
+  popup_expires_on,
   created_at,
   updated_at
 `;
@@ -81,6 +101,51 @@ export const WHATS_NEW_SETTINGS_SQL = `
   WHERE key = $1
   LIMIT 1
 `;
+
+const ANNOUNCEMENT_SCHEMA_LABELS = [
+  "alter watson_whats_new_cards announcement columns",
+  "constraint watson_whats_new_cards popup audience",
+  "table watson_whats_new_announcement_events",
+  "index idx_watson_whats_new_announcement_events_card",
+  "table watson_whats_new_popup_announcement",
+];
+
+let announcementSchemaReady: Promise<void> | null = null;
+
+/**
+ * Adds popup columns on the database this site is using.
+ * Kin-dev's live database URL is a secret, so the first What's New request applies
+ * the same statements as scripts/sql/watson-whats-new-announcements.sql.
+ */
+export function ensureWhatsNewAnnouncementSchema(): Promise<void> {
+  if (!announcementSchemaReady) {
+    announcementSchemaReady = ensureWhatsNewAnnouncementSchemaOnce().catch((error) => {
+      announcementSchemaReady = null;
+      throw error;
+    });
+  }
+  return announcementSchemaReady;
+}
+
+async function ensureWhatsNewAnnouncementSchemaOnce(): Promise<void> {
+  try {
+    await queryWatson("SELECT popup_enabled, popup_audience, popup_expires_on FROM watson_whats_new_cards LIMIT 1");
+    await queryWatson("SELECT id FROM watson_whats_new_announcement_events LIMIT 1");
+    await queryWatson("SELECT announcement_id FROM watson_whats_new_popup_announcement LIMIT 1");
+    return;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/popup_|watson_whats_new_announcement_events|watson_whats_new_popup_announcement/i.test(message)) {
+      throw error;
+    }
+  }
+
+  const statements = getWatsonNativeSchemaStatements().filter((statement) =>
+    ANNOUNCEMENT_SCHEMA_LABELS.includes(statement.label),
+  );
+  const pool = await getWatsonPool();
+  await applySchemaStatements(pool, statements);
+}
 
 function mapRows(rows: WhatsNewCardRow[], now: Date = new Date()): WhatsNewCard[] {
   const cards: WhatsNewCard[] = [];
@@ -146,9 +211,12 @@ async function insertCard(
         status,
         display_order,
         archived,
+        popup_enabled,
+        popup_audience,
+        popup_expires_on,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8, $9, $10, $11, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7::date, $8, $9, $10, $11, $12, $13, $14::date, NOW())
       RETURNING ${CARD_SELECT}
     `,
     [
@@ -163,6 +231,9 @@ async function insertCard(
       value.status,
       value.displayOrder,
       value.archived,
+      value.popupEnabled,
+      value.popupAudience,
+      value.popupExpiresOn,
     ],
   );
   const card = rows[0] ? buildWhatsNewCard(rows[0], now) : null;
@@ -191,6 +262,9 @@ async function updateCardRow(
         status = $10,
         display_order = $11,
         archived = $12,
+        popup_enabled = $13,
+        popup_audience = $14,
+        popup_expires_on = $15::date,
         updated_at = NOW()
       WHERE id = $1
       RETURNING ${CARD_SELECT}
@@ -208,6 +282,9 @@ async function updateCardRow(
       value.status,
       value.displayOrder,
       value.archived,
+      value.popupEnabled,
+      value.popupAudience,
+      value.popupExpiresOn,
     ],
   );
   const card = rows[0] ? buildWhatsNewCard(rows[0], now) : null;
@@ -264,6 +341,19 @@ export async function updateWhatsNewCard(
           ? input.display_order
           : existing.displayOrder,
     archived: input.archived !== undefined ? input.archived : existing.archived,
+    popupEnabled:
+      input.popupEnabled !== undefined
+        ? input.popupEnabled
+        : input.popup_enabled !== undefined
+          ? input.popup_enabled
+          : existing.popupEnabled,
+    popupAudience: input.popupAudience ?? input.popup_audience ?? existing.popupAudience,
+    popupExpiresOn:
+      input.popupExpiresOn !== undefined
+        ? input.popupExpiresOn
+        : input.popup_expires_on !== undefined
+          ? input.popup_expires_on
+          : existing.popupExpiresOn,
   };
 
   const validated = validateWhatsNewCardInput(merged, now);
@@ -302,6 +392,186 @@ export async function deleteWhatsNewCard(
 
   await queryFn(`DELETE FROM watson_whats_new_cards WHERE id = $1`, [trimmed]);
   return { ok: true, value: existing };
+}
+
+const POPUP_ANNOUNCEMENT_SQL = `
+  SELECT
+    announcement_id,
+    source_card_id,
+    title,
+    introduction,
+    audience,
+    expires_at,
+    enabled,
+    updated_at
+  FROM watson_whats_new_popup_announcement
+  WHERE key = $1
+  LIMIT 1
+`;
+
+async function readPopupAnnouncementRow(
+  queryFn: WatsonQueryFn,
+): Promise<WhatsNewPopupAnnouncementRow | null> {
+  const rows = await queryFn<WhatsNewPopupAnnouncementRow>(POPUP_ANNOUNCEMENT_SQL, [
+    POPUP_ANNOUNCEMENT_KEY,
+  ]);
+  return rows[0] ?? null;
+}
+
+/** The one saved pop-up, including a disabled or expired one. Does not change What's New entries. */
+export async function getWhatsNewPopupAnnouncement(
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<WhatsNewPopupAnnouncement | null> {
+  const row = await readPopupAnnouncementRow(queryFn);
+  return buildPopupAnnouncement(row);
+}
+
+/** The pop-up visitors can see right now. Disabled and expired announcements are omitted. */
+export async function getPublicWhatsNewAnnouncement(
+  queryFn: WatsonQueryFn = queryWatson,
+  now: Date = new Date(),
+): Promise<WhatsNewAnnouncement | null> {
+  const saved = await getWhatsNewPopupAnnouncement(queryFn);
+  if (!saved || !isPopupAnnouncementActive(saved, now)) return null;
+  return {
+    id: saved.id,
+    title: saved.title.trim(),
+    introductionHtml: saved.introductionHtml,
+    href: saved.href,
+    audience: saved.audience,
+  };
+}
+
+/** @deprecated Use getPublicWhatsNewAnnouncement. Kept so older imports still resolve. */
+export async function getPublicWhatsNewAnnouncements(
+  queryFn: WatsonQueryFn = queryWatson,
+  now: Date = new Date(),
+): Promise<{ everyone: WhatsNewAnnouncement | null; members: WhatsNewAnnouncement | null }> {
+  const announcement = await getPublicWhatsNewAnnouncement(queryFn, now);
+  if (!announcement) return { everyone: null, members: null };
+  return {
+    everyone: announcement.audience === "everyone" ? announcement : null,
+    members: announcement,
+  };
+}
+
+export async function upsertWhatsNewPopupAnnouncement(
+  input: Record<string, unknown>,
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<WhatsNewValidationResult<WhatsNewPopupAnnouncement>> {
+  const validated = validatePopupAnnouncementInput(input);
+  if (!validated.ok) return validated;
+  const existing = await getWhatsNewPopupAnnouncement(queryFn);
+  const id = shouldMintAnnouncementId(existing, validated.value.sourceCardId)
+    ? randomUUID()
+    : existing!.id;
+  const rows = await queryFn<WhatsNewPopupAnnouncementRow>(
+    `
+      INSERT INTO watson_whats_new_popup_announcement (
+        key,
+        announcement_id,
+        source_card_id,
+        title,
+        introduction,
+        audience,
+        expires_at,
+        enabled,
+        updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7::timestamptz, $8, NOW())
+      ON CONFLICT (key) DO UPDATE SET
+        announcement_id = EXCLUDED.announcement_id,
+        source_card_id = EXCLUDED.source_card_id,
+        title = EXCLUDED.title,
+        introduction = EXCLUDED.introduction,
+        audience = EXCLUDED.audience,
+        expires_at = EXCLUDED.expires_at,
+        enabled = EXCLUDED.enabled,
+        updated_at = NOW()
+      RETURNING
+        announcement_id,
+        source_card_id,
+        title,
+        introduction,
+        audience,
+        expires_at,
+        enabled,
+        updated_at
+    `,
+    [
+      POPUP_ANNOUNCEMENT_KEY,
+      id,
+      validated.value.sourceCardId,
+      validated.value.title,
+      validated.value.introductionHtml,
+      validated.value.audience,
+      validated.value.expiresAt,
+      validated.value.enabled,
+    ],
+  );
+  const saved = buildPopupAnnouncement(rows[0] ?? null);
+  if (!saved) return { ok: false, error: "Unable to save the pop-up announcement." };
+  return { ok: true, value: saved };
+}
+
+export type WhatsNewAnnouncementActivityCounts = {
+  displayed: number;
+  readMore: number;
+};
+
+export async function listWhatsNewAnnouncementActivityCounts(
+  environment: string,
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<Record<string, WhatsNewAnnouncementActivityCounts>> {
+  const rows = await queryFn<{ card_id: string; event_type: string; count: number | string }>(
+    `
+      SELECT card_id, event_type, COUNT(*)::int AS count
+      FROM watson_whats_new_announcement_events
+      WHERE environment = $1
+      GROUP BY card_id, event_type
+    `,
+    [environment],
+  );
+  const counts: Record<string, WhatsNewAnnouncementActivityCounts> = {};
+  for (const row of rows) {
+    const bucket = counts[row.card_id] ?? { displayed: 0, readMore: 0 };
+    const count = Number(row.count) || 0;
+    if (row.event_type === "displayed") bucket.displayed = count;
+    if (row.event_type === "read_more") bucket.readMore = count;
+    counts[row.card_id] = bucket;
+  }
+  return counts;
+}
+
+export async function insertWhatsNewAnnouncementActivity(
+  event: WhatsNewAnnouncementActivityEvent,
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<void> {
+  await queryFn(
+    `
+      INSERT INTO watson_whats_new_announcement_events (
+        id,
+        card_id,
+        event_type,
+        identity,
+        member_id,
+        environment,
+        source_page,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::timestamptz)
+    `,
+    [
+      event.id,
+      event.cardId,
+      event.eventType,
+      event.identity,
+      event.memberId ?? null,
+      event.environment,
+      event.sourcePage ?? null,
+      event.createdAt,
+    ],
+  );
 }
 
 export async function getWhatsNewBillboardSettings(

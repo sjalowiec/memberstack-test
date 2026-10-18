@@ -5,6 +5,7 @@ import {
   WHATS_NEW_CATEGORIES,
   WHATS_NEW_CATEGORY_LABELS,
   WHATS_NEW_DEFAULT_BUTTON_TEXT,
+  WHATS_NEW_POPUP_AUDIENCES,
 } from "../../lib/whatsNew/types";
 import {
   WHATS_NEW_COLUMN_ACCENTS,
@@ -18,9 +19,18 @@ import {
   whatsNewStatusLabel,
 } from "../../lib/whatsNew/public";
 import {
+  ensureWhatsNewAnnouncementSchema,
   getWhatsNewBillboardSettings,
+  getWhatsNewPopupAnnouncement,
   listAllWhatsNewCards,
+  listWhatsNewAnnouncementActivityCounts,
+  type WhatsNewAnnouncementActivityCounts,
 } from "../../lib/whatsNew/store";
+import {
+  formatLosAngelesDateTime,
+  POPUP_ANNOUNCEMENT_AUDIENCE_LABELS,
+} from "../../lib/whatsNew/popupAnnouncement";
+import { resolveSearchActivityEnvironment } from "../../lib/searchActivity";
 import { cardDescriptionPlainText } from "../../lib/whatsNew/sanitizeBillboardHtml";
 import { resolveWhatsNewToolIcon } from "../../lib/whatsNew/toolIcon";
 
@@ -36,6 +46,7 @@ let archivedCards: Awaited<ReturnType<typeof listAllWhatsNewCards>> = [];
 let billboard: Awaited<ReturnType<typeof getWhatsNewBillboardSettings>> = null;
 
 try {
+  await ensureWhatsNewAnnouncementSchema();
   const allCards = await listAllWhatsNewCards();
   activeCards = allCards.filter((card) => !card.archived);
   archivedCards = allCards.filter((card) => card.archived);
@@ -54,9 +65,54 @@ if (!loadError) {
   }
 }
 
+let popupAnnouncement: Awaited<ReturnType<typeof getWhatsNewPopupAnnouncement>> = null;
+let popupLoadError: string | null = null;
+if (!loadError) {
+  try {
+    popupAnnouncement = await getWhatsNewPopupAnnouncement();
+  } catch (error) {
+    popupLoadError =
+      error instanceof Error ? error.message : "Unable to load the pop-up announcement.";
+  }
+}
+
+const popupEntriesJson = JSON.stringify(
+  activeCards.map((card) => ({
+    id: card.id,
+    title: card.title,
+    description: card.description,
+    status: card.status,
+  })),
+).replace(/</g, "\\u003c");
+
+const popupTitle = popupAnnouncement?.title.trim()
+  ? popupAnnouncement.title.trim()
+  : "No announcement selected.";
+const popupAudienceLabel = popupAnnouncement
+  ? POPUP_ANNOUNCEMENT_AUDIENCE_LABELS[popupAnnouncement.audience]
+  : "—";
+const popupExpirationLabel = popupAnnouncement?.expiresAt
+  ? formatLosAngelesDateTime(popupAnnouncement.expiresAt)
+  : popupAnnouncement
+    ? "No expiration"
+    : "—";
 const board = groupWhatsNewCardsByColumn(activeCards);
 const draftCount = activeCards.filter((card) => card.status === "draft").length;
 const today = new Date().toISOString().slice(0, 10);
+
+let activityCounts: Record<string, WhatsNewAnnouncementActivityCounts> = {};
+let activityCountsUnavailable = false;
+if (!loadError) {
+  try {
+    activityCounts = await listWhatsNewAnnouncementActivityCounts(
+      resolveSearchActivityEnvironment(),
+    );
+  } catch {
+    activityCountsUnavailable = true;
+  }
+}
+
+const popupActivity = popupAnnouncement ? activityCounts[popupAnnouncement.id] : undefined;
 
 function cardDataAttr(card: (typeof activeCards)[number]): string {
   return encodeURIComponent(
@@ -73,6 +129,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
       status: card.status,
       displayOrder: card.displayOrder,
       archived: card.archived,
+      popupEnabled: card.popupEnabled,
+      popupAudience: card.popupAudience,
+      popupExpiresOn: card.popupExpiresOn ?? "",
     }),
   );
 }
@@ -80,9 +139,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
 
 <WatsonPageShell
   title="What's New | Watson"
-  description="Manage the public What's New board and the What's New Billboard."
+  description="Manage the public What's New board, the Pop-up Announcement, and the What's New Billboard."
   heading="What's New"
-  intro="Add updates, organize the public board, and manage the What's New Billboard."
+  intro="Add updates, organize the public board, and manage the Pop-up Announcement and the What's New Billboard."
 >
   <div data-whats-new-admin class="watson-wn" style={themeStyle}>
     <div class="watson-wn__toolbar">
@@ -101,6 +160,159 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         </p>
       ) : null
     }
+
+    <section class="watson__panel watson-wn__announce" data-wn-popup-panel aria-labelledby="wn-popup-heading">
+      <h2 id="wn-popup-heading" class="watson__panel-title">Pop-up Announcement</h2>
+      <p class="watson-wn__hint">
+        The message displayed over the website. This is separate from the What's New Billboard,
+        which is the banner on the What's New page. Editing this pop-up does not change the
+        What's New entry it was copied from.
+      </p>
+      {
+        popupLoadError ? (
+          <p class="watson__status watson__status--error" role="alert">
+            {popupLoadError}
+          </p>
+        ) : null
+      }
+      <dl class="watson-wn__announce-summary">
+        <div>
+          <dt>Title</dt>
+          <dd>{popupTitle}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{popupAnnouncement?.enabled ? "Enabled" : "Disabled"}</dd>
+        </div>
+        <div>
+          <dt>Audience</dt>
+          <dd>{popupAudienceLabel}</dd>
+        </div>
+        <div>
+          <dt>Expiration (America/Los_Angeles)</dt>
+          <dd>{popupExpirationLabel}</dd>
+        </div>
+      </dl>
+      {
+        popupActivity ? (
+          <p class="watson-wn__quiet">
+            {popupActivity.displayed} displays · {popupActivity.readMore} Read more
+          </p>
+        ) : null
+      }
+      <div class="watson-wn__actions">
+        <button type="button" class="watson__button" data-wn-popup-edit>Edit</button>
+        <button type="button" class="watson__button watson__button--secondary" data-wn-popup-preview>
+          Preview
+        </button>
+      </div>
+      <label class="watson-wn__field watson-wn__field--full">
+        <span>Choose a What's New entry</span>
+        <input
+          class="watson__search-input"
+          type="search"
+          data-wn-popup-search
+          placeholder="Search by title"
+          autocomplete="off"
+        />
+      </label>
+      <ul class="watson-wn__announce-results" data-wn-popup-results hidden></ul>
+      <script id="wn-popup-entries" type="application/json" is:inline set:html={popupEntriesJson}></script>
+      <form class="watson-wn__form" data-wn-popup-form hidden>
+        <input type="hidden" name="announcementId" value={popupAnnouncement?.id ?? ""} />
+        <input type="hidden" name="sourceCardId" value={popupAnnouncement?.sourceCardId ?? ""} />
+        <input type="hidden" name="enabled" value={popupAnnouncement?.enabled ? "true" : "false"} />
+        <div class="watson-wn__grid">
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Title</span>
+            <input
+              class="watson__search-input"
+              name="title"
+              type="text"
+              maxlength="160"
+              value={popupAnnouncement?.title ?? ""}
+            />
+          </label>
+          <div class="watson-wn__field watson-wn__field--full">
+            <span id="wn-popup-message-label">Message</span>
+            <div class="watson-wn__rte watson-wn__rte--compact" data-wn-popup-rte>
+              <div
+                class="watson-wn__rte-toolbar"
+                data-wn-rte-toolbar
+                role="toolbar"
+                aria-label="Pop-up message formatting"
+              >
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="bold" title="Bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="italic" title="Italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ul" title="Bulleted list">
+                  List
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ol" title="Numbered list">
+                  1. List
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="clear" title="Clear formatting">
+                  Clear
+                </button>
+              </div>
+              <div
+                class="watson-wn__rte-editor"
+                data-wn-rte-editor
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+                aria-labelledby="wn-popup-message-label"
+              ></div>
+              <textarea
+                class="watson-wn__rte-input"
+                data-wn-rte-input
+                name="introduction"
+                hidden
+                tabindex="-1"
+                aria-hidden="true">{popupAnnouncement?.introductionHtml ?? ""}</textarea>
+            </div>
+          </div>
+          <label class="watson-wn__field">
+            <span>Audience</span>
+            <select class="watson__search-input" name="audience">
+              {
+                WHATS_NEW_POPUP_AUDIENCES.map((audience) => (
+                  <option value={audience} selected={audience === (popupAnnouncement?.audience ?? "everyone")}>
+                    {POPUP_ANNOUNCEMENT_AUDIENCE_LABELS[audience]}
+                  </option>
+                ))
+              }
+            </select>
+          </label>
+          <label class="watson-wn__field">
+            <span>Expiration (America/Los_Angeles)</span>
+            <input
+              class="watson__search-input"
+              name="expiresAtLocal"
+              type="datetime-local"
+              value={popupAnnouncement?.expiresAtLocal ?? ""}
+            />
+          </label>
+        </div>
+        <p class="watson-wn__hint">
+          Leave the expiration blank to keep the pop-up up until you disable it. It stops when that
+          Pacific time is reached. Save stores this draft and keeps it enabled or disabled. Enable
+          shows it. Disable hides it. Preview does not publish it and does not change who has already
+          closed it.
+        </p>
+        <div class="watson-wn__actions">
+          <button type="submit" class="watson__button">Save</button>
+          <button type="button" class="watson__button" data-wn-popup-enable>Enable</button>
+          <button type="button" class="watson__button watson__button--secondary" data-wn-popup-disable>
+            Disable
+          </button>
+          <p class="watson__status" data-wn-popup-status role="status" hidden></p>
+        </div>
+      </form>
+    </section>
 
     <details class="watson__panel watson-wn__billboard" data-wn-billboard-panel>
       <summary class="watson-wn__billboard-summary">
@@ -423,6 +635,14 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
         Showing published and draft cards. Drafts stay hidden on the public page.
         {draftCount === 1 ? " 1 draft on this board." : ` ${draftCount} drafts on this board.`}
       </p>
+      {
+        activityCountsUnavailable ? (
+          <p class="watson-wn__hint">
+            Pop-up display and Read more counts are not available yet. Apply
+            scripts/sql/watson-whats-new-announcements.sql, then refresh.
+          </p>
+        ) : null
+      }
 
       <div class="watson-wn__board">
         {
@@ -613,9 +833,11 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
 <script>
   import { initWatsonBillboardRichText } from "../../scripts/watsonBillboardRichText";
   import { initWatsonCardRichText } from "../../scripts/watsonCardRichText";
+  import { initWatsonPopupAnnouncement } from "../../scripts/watsonPopupAnnouncement";
   import { initWatsonWhatsNew } from "../../scripts/watsonWhatsNew";
   initWatsonBillboardRichText(document);
   initWatsonCardRichText(document);
+  initWatsonPopupAnnouncement(document);
   initWatsonWhatsNew(document);
 </script>
 
@@ -797,9 +1019,96 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
     width: 100%;
   }
 
+  .watson-wn__announce {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .watson-wn__announce-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem 1.25rem;
+    margin: 0;
+  }
+
+  .watson-wn__announce-summary div {
+    margin: 0;
+  }
+
+  .watson-wn__announce-summary dt {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .watson-wn__announce-summary dd {
+    margin: 0.2rem 0 0;
+  }
+
+  .watson-wn__announce-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .watson-wn__announce-result {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 0;
+    border-bottom: 1px solid #e4eadc;
+    padding: 0.65rem 0.8rem;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .watson-wn__announce-result:hover,
+  .watson-wn__announce-result:focus-visible {
+    background: #f4f7f1;
+  }
+
   .watson-wn__field--full,
-  .watson-wn__grid .watson-wn__check {
+  .watson-wn__grid .watson-wn__check,
+  .watson-wn__popup {
     grid-column: 1 / -1;
+  }
+
+  .watson-wn__popup {
+    margin: 0;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem 0.9rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-wn__popup legend {
+    font-weight: 600;
+    padding: 0 0.25rem;
+  }
+
+  .watson-wn__popup-save {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+  }
+
+  .watson-wn__popup-save .watson__status {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .watson-wn__badge--popup {
+    background: #e7efe0 !important;
+    color: #2f4a28 !important;
   }
 
   .watson-wn__check {
