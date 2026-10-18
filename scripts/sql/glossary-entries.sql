@@ -7,9 +7,12 @@
 --   psql "$WATSON_DATABASE_URL" -f scripts/sql/glossary-entries.sql
 
 CREATE TABLE IF NOT EXISTS public.glossary_entries (
-  glossary_id INTEGER PRIMARY KEY,
+  glossary_id BIGINT PRIMARY KEY,
   document JSONB NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE public.glossary_entries
+  ALTER COLUMN glossary_id TYPE BIGINT;
 
 ALTER TABLE public.glossary_entries ENABLE ROW LEVEL SECURITY;
