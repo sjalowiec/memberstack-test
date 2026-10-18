@@ -34,6 +34,9 @@ describe("Help Hub index client", () => {
   it("filters in place, keeps one answer open, and defers media", () => {
     expect(clientSource).toContain("applyHelpHubIndexQuery");
     expect(clientSource).toContain("[data-help-hub-new]");
+    expect(clientSource).toContain("newSection.open = false");
+    expect(clientSource).toContain("[data-help-hub-favorites]");
+    expect(clientSource).toContain("favoritesSection.hidden = queryActive");
     expect(clientSource).toContain("details[data-help-hub-answer]");
     expect(clientSource).toContain("activateHelpHubDeferredMedia");
     expect(clientSource).toContain("stopHelpHubInlineMedia");
@@ -52,5 +55,10 @@ describe("Help Hub index client", () => {
     expect(clientSource).toContain("preventScroll: true");
     expect(clientSource).toContain("helpHubReading");
     expect(clientSource).toContain("popstate");
+    expect(clientSource).toContain('reportHelpHubAction("discovery_open", slug, "accordion")');
+    expect(clientSource).toContain("a.help-hub-question-permalink");
+    expect(clientSource).toContain("event.preventDefault()");
+    expect(clientSource).toContain("event.metaKey || event.ctrlKey || event.shiftKey || event.altKey");
+    expect(clientSource).toContain("suppressAnswerOpenTracking");
   });
 });

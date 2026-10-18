@@ -5,6 +5,7 @@ import {
   helpHubIndexCardCopy,
   helpHubIndexCategorySections,
   helpHubIndexNewCards,
+  helpHubPublishedPermalinks,
 } from "./publicIndex";
 import type { HelpHubTipRecord } from "../helpHubPublic";
 import { searchPublicHelpHubTips } from "../helpHubPublic";
@@ -357,5 +358,30 @@ describe("Help Hub public index search text", () => {
       "lk150-cast-on",
     ]);
     expect(searchPublicHelpHubTips([{ ...lk150CatalogTip, status: "draft" }], "LK150")).toEqual([]);
+  });
+});
+
+describe("helpHubPublishedPermalinks", () => {
+  it("links every published tip and leaves drafts and reviews out", () => {
+    const titleOnly: HelpHubTipRecord = {
+      id: 3,
+      slug: "title-only-tip",
+      status: "published",
+      title: "A published tip without a question",
+      sortOrder: 1,
+    };
+    const links = helpHubPublishedPermalinks([
+      draftTip,
+      reviewTip,
+      titleOnly,
+      sandwichBand,
+      { ...sandwichBand, slug: "Sandwich-Neckband-Finish" },
+    ]);
+    expect(links.map((link) => link.slug)).toEqual([
+      "title-only-tip",
+      "sandwich-neckband-finish",
+    ]);
+    expect(links[0]?.heading).toBe("A published tip without a question");
+    expect(links[1]?.heading).toBe(sandwichBand.question);
   });
 });

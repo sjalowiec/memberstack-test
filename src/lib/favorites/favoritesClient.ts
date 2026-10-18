@@ -7,11 +7,17 @@ import { memberIdFromMemberstackPayload } from "../patterns/memberstackMember";
 import { normalizeFavoriteContentId, type FavoriteContentType, type FavoriteRecord } from "./favoriteContentTypes";
 
 export const FAVORITES_CHANGE_EVENT = "kin-favorites-change";
+/** Fired only after the favorite API accepts the change. Optimistic updates use the change event. */
+export const FAVORITE_COMMITTED_EVENT = "kin-favorite-committed";
 
 export type FavoritesChangeDetail = {
   contentType: FavoriteContentType;
   contentId: string;
   isFavorite: boolean;
+};
+
+export type FavoriteCommittedDetail = FavoritesChangeDetail & {
+  source: EventTarget | null;
 };
 
 const API_PATH = "/.netlify/functions/favorites";
@@ -169,6 +175,19 @@ export function emitFavoritesChange(detail: FavoritesChangeDetail): void {
   if (typeof window === "undefined") return;
   try {
     window.dispatchEvent(new CustomEvent(FAVORITES_CHANGE_EVENT, { detail }));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function emitFavoriteCommitted(
+  detail: FavoritesChangeDetail,
+  source: EventTarget | null = null,
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const committed: FavoriteCommittedDetail = { ...detail, source };
+    window.dispatchEvent(new CustomEvent(FAVORITE_COMMITTED_EVENT, { detail: committed }));
   } catch {
     /* ignore */
   }

@@ -1,5 +1,6 @@
 /** In-page Help Hub landing search. This does not call Pagefind or site search. */
 
+import { reportHelpHubAction } from "../lib/analytics/helpHubGa";
 import { queueSearchCommit } from "../lib/searchActivityClient";
 
 export function helpHubEntryVisibleForQuery(searchText: string, query: string): boolean {
@@ -48,7 +49,16 @@ export function applyHelpHubIndexQuery(root: ParentNode, query: string): number 
   const q = query.trim();
   const queryActive = q.length > 0;
   const newSection = root.querySelector("[data-help-hub-new]");
-  if (newSection instanceof HTMLElement) newSection.hidden = queryActive;
+  if (newSection instanceof HTMLElement) {
+    newSection.hidden = queryActive;
+    if (isDetails(newSection)) newSection.open = false;
+  }
+
+  const favoritesSection = root.querySelector("[data-help-hub-favorites]");
+  if (favoritesSection instanceof HTMLElement) {
+    favoritesSection.hidden = queryActive;
+    if (queryActive && isDetails(favoritesSection)) favoritesSection.open = false;
+  }
 
   let matchCount = 0;
   root.querySelectorAll("[data-help-hub-category]").forEach((section) => {
@@ -100,6 +110,7 @@ type ReadingSession = {
 let readingSession: ReadingSession | null = null;
 let lastOpenedEntry: HTMLDetailsElement | null = null;
 let ignoreAnswerToggle = false;
+let suppressAnswerOpenTracking = false;
 
 function readingHistoryActive(): boolean {
   try {
@@ -228,6 +239,11 @@ function onAnswerToggle(root: ParentNode, entry: HTMLDetailsElement): void {
     if (readingSession?.entry === entry) closeHelpHubArticle(root);
     return;
   }
+  if (!suppressAnswerOpenTracking) {
+    const row = entry.closest("[data-help-hub-entry]");
+    const slug = row instanceof HTMLElement ? row.dataset.helpHubSlug ?? "" : "";
+    if (slug) reportHelpHubAction("discovery_open", slug, "accordion");
+  }
   closeOtherAnswers(root, entry);
   activateHelpHubDeferredMedia(entry);
   openHelpHubArticle(root, entry);
@@ -241,6 +257,19 @@ export function initHelpHubIndex(root: ParentNode): void {
   root.querySelectorAll("details[data-help-hub-answer]").forEach((node) => {
     if (!isDetails(node)) return;
     node.addEventListener("toggle", () => onAnswerToggle(root, node));
+  });
+
+  // The question is a real tip URL. A plain click still opens the answer here.
+  // Modified clicks follow the link (new tab, copy, and crawlers use the href).
+  root.querySelectorAll("a.help-hub-question-permalink").forEach((node) => {
+    if (!(node instanceof HTMLAnchorElement)) return;
+    node.addEventListener("click", (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const details = node.closest("details[data-help-hub-answer]");
+      if (!(details instanceof HTMLDetailsElement)) return;
+      event.preventDefault();
+      details.open = !details.open;
+    });
   });
 
   root.querySelectorAll("details[data-help-hub-category]").forEach((node) => {
@@ -285,7 +314,9 @@ export function initHelpHubIndex(root: ParentNode): void {
   window.addEventListener("popstate", () => {
     if (readingHistoryActive()) {
       if (!readingSession && lastOpenedEntry && !lastOpenedEntry.open) {
+        suppressAnswerOpenTracking = true;
         lastOpenedEntry.open = true;
+        suppressAnswerOpenTracking = false;
       }
       return;
     }
