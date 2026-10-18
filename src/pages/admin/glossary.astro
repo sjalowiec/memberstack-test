@@ -39,7 +39,7 @@ import Layout from "../../layouts/Layout.astro";
 
     <div class="ga-main">
       <p class="ga-note">
-        Edits <code>src/data/glossary.json</code> on save. On read-only hosts, download from repo and deploy instead.
+        Saves to glossary storage. The project file is only the fallback and does not replace saved edits.
       </p>
 
       <div class="ga-cards-column">
@@ -562,7 +562,7 @@ import Layout from "../../layouts/Layout.astro";
       setStatus("Loading…");
       lastFocusedGlossaryId = null;
       try {
-        const res = await fetch("/api/admin/glossary");
+        const res = await fetch("/admin/glossary-data");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error("Expected a JSON array");
@@ -609,14 +609,20 @@ import Layout from "../../layouts/Layout.astro";
       }
       setStatus("Saving…");
       try {
-        const res = await fetch("/api/admin/glossary", {
+        const res = await fetch("/admin/glossary-data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(glossary),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          throw new Error(typeof data.error === "string" ? data.error : `HTTP ${res.status}`);
+          const detail = typeof data.error === "string" && data.error.trim()
+            ? data.error
+            : `Could not save glossary (HTTP ${res.status}).`;
+          const retained = detail.includes("Your changes are still in the editor.")
+            ? detail
+            : `${detail} Your changes are still in the editor.`;
+          throw new Error(retained);
         }
         lastSavedSnapshot = snapshot();
         updateDirtyState();
@@ -638,7 +644,7 @@ import Layout from "../../layouts/Layout.astro";
         } catch {
           /* ignore */
         }
-        const msg = err instanceof Error ? err.message : "Save failed";
+        const msg = err instanceof Error ? err.message : "Could not save glossary. Your changes are still in the editor.";
         setStatus(msg, "err");
       }
     });
