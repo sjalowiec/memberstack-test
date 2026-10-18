@@ -172,6 +172,9 @@ async function resolveSearchSender(): Promise<{
   }
 }
 
+/** Help Hub discovery reuses the same signed-out sender as site search. */
+export { resolveSearchSender as resolveActivitySender };
+
 let installed = false;
 
 /** Binds the page-wide commit logger. Safe to call once per page. */
