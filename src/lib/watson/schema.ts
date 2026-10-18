@@ -383,7 +383,57 @@ WHERE outcome = 'tagged' AND dry_run = FALSE`,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
   display_order INTEGER NOT NULL DEFAULT 0,
   archived BOOLEAN NOT NULL DEFAULT FALSE,
+  popup_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  popup_audience TEXT NOT NULL DEFAULT 'everyone',
+  popup_expires_on DATE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "alter watson_whats_new_cards announcement columns",
+      sql: `ALTER TABLE watson_whats_new_cards
+  ADD COLUMN IF NOT EXISTS popup_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS popup_audience TEXT NOT NULL DEFAULT 'everyone',
+  ADD COLUMN IF NOT EXISTS popup_expires_on DATE`,
+    },
+    {
+      label: "constraint watson_whats_new_cards popup audience",
+      sql: `ALTER TABLE watson_whats_new_cards
+  DROP CONSTRAINT IF EXISTS watson_whats_new_cards_popup_audience_check,
+  ADD CONSTRAINT watson_whats_new_cards_popup_audience_check
+    CHECK (popup_audience IN ('everyone', 'members'))`,
+    },
+    {
+      label: "table watson_whats_new_announcement_events",
+      sql: `CREATE TABLE IF NOT EXISTS watson_whats_new_announcement_events (
+  id TEXT PRIMARY KEY,
+  card_id TEXT NOT NULL,
+  event_type TEXT NOT NULL CHECK (event_type IN ('displayed', 'read_more')),
+  identity TEXT NOT NULL CHECK (identity IN ('member', 'guest', 'unknown')),
+  member_id TEXT,
+  environment TEXT NOT NULL,
+  source_page TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "index idx_watson_whats_new_announcement_events_card",
+      sql: `CREATE INDEX IF NOT EXISTS idx_watson_whats_new_announcement_events_card
+ON watson_whats_new_announcement_events (environment, card_id, event_type)`,
+    },
+    {
+      label: "table watson_whats_new_popup_announcement",
+      sql: `CREATE TABLE IF NOT EXISTS watson_whats_new_popup_announcement (
+  key TEXT PRIMARY KEY,
+  announcement_id TEXT NOT NULL,
+  source_card_id TEXT,
+  title TEXT NOT NULL DEFAULT '',
+  introduction TEXT NOT NULL DEFAULT '',
+  audience TEXT NOT NULL DEFAULT 'everyone'
+    CHECK (audience IN ('everyone', 'members')),
+  expires_at TIMESTAMPTZ,
+  enabled BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
     },

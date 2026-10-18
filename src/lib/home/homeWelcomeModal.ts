@@ -1,6 +1,7 @@
 /**
- * One-time homepage welcome modal for the rebuilt Knit It Now site.
- * Mount only from `src/pages/index.astro` ù never from Layout/BaseLayout.
+ * Homepage welcome modal for the rebuilt Knit It Now site.
+ * It stays closed. The What's New popup is the automatic announcement.
+ * Mount only from src/pages/index.astro. Do not mount it from Layout or BaseLayout.
  */
 
 export const HOME_WELCOME_MODAL_STORAGE_KEY = "kin-home-welcome-modal-dismissed";
@@ -40,8 +41,9 @@ export function dismissHomeWelcomeModal(): void {
   }
 }
 
+/** Automatic display is retired, including for visitors who never dismissed it. */
 export function shouldShowHomeWelcomeModal(): boolean {
-  return !hasDismissedHomeWelcomeModal();
+  return false;
 }
 
 function getRoot(scope: ParentNode = document): HTMLElement | null {
@@ -106,13 +108,13 @@ export function closeHomeWelcomeModal(options?: {
   }
 }
 
-/** Open on first homepage visit when the dismiss flag is not set. */
+/** Kept for callers. Automatic display is off, so this does not open the modal. */
 export function maybeOpenHomeWelcomeModal(root?: ParentNode): boolean {
   if (!shouldShowHomeWelcomeModal()) return false;
   return openHomeWelcomeModal(root);
 }
 
-/** Wire controls once; auto-opens when not previously dismissed. */
+/** Wire controls once. Does not open the modal. */
 export function initHomeWelcomeModal(root: ParentNode = document): void {
   const modalRoot = getRoot(root);
   if (!modalRoot || modalRoot.getAttribute(BOUND_ATTR) === "true") return;
@@ -146,6 +148,4 @@ export function initHomeWelcomeModal(root: ParentNode = document): void {
       dismissAndClose();
     }
   });
-
-  maybeOpenHomeWelcomeModal(root);
 }
