@@ -140,6 +140,11 @@ describe("Help Hub admin CMS", () => {
     expect(editSource).toContain('name="mediaUrl"');
     expect(editSource).toContain('name="mediaAlt"');
     expect(editSource).toContain('name="mediaCaption"');
+    expect(editSource).toContain("Choose image");
+    expect(editSource).toContain("data-image-choose");
+    expect(editSource).toContain("data-image-file");
+    expect(formClientSource).toContain('"/api/admin/help-hub/images"');
+    expect(formClientSource).toContain("Image address filled in.");
     expect(editSource).toContain("Button label");
     expect(editSource).toContain("Call to action");
     expect(editSource).toContain('name="relatedToolEyebrow"');
