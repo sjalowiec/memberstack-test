@@ -11,6 +11,7 @@ import EnvBanner from "../components/EnvBanner.astro";
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
 import RobotsMeta from "../components/seo/RobotsMeta.astro";
 import TurnstileScript from "../components/TurnstileScript.astro";
+import WhatsNewAnnouncementPopup from "../components/whatsNew/WhatsNewAnnouncementPopup.astro";
 
 interface Props {
   title?: string;
@@ -294,6 +295,7 @@ const isProduction =
 
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
 
+    <WhatsNewAnnouncementPopup auto={!isWatsonPage && !isAdminPage} />
     <ContactModal />
     <TurnstileScript />
     <AccountPasswordResetModal />

@@ -94,6 +94,37 @@ describe("whatsNew store", () => {
     expect(cards[0]?.status).toBe("published");
   });
 
+  it("keeps popup settings when a card is updated another way, and can turn the popup off", async () => {
+    const existing = cardRow({
+      status: "published",
+      popup_enabled: true,
+      popup_audience: "members",
+      popup_expires_on: "2026-09-01",
+    });
+    const updated = cardRow({
+      status: "draft",
+      popup_enabled: true,
+      popup_audience: "members",
+      popup_expires_on: "2026-09-01",
+    });
+    const queryFn = vi.fn().mockResolvedValueOnce([existing]).mockResolvedValueOnce([updated]);
+    const result = await updateWhatsNewCard("card-1", { status: "draft" }, queryFn, now);
+    expect(result.ok).toBe(true);
+    const params = queryFn.mock.calls[1]?.[1] as unknown[];
+    expect(params[9]).toBe("draft");
+    expect(params[12]).toBe(true);
+    expect(params[13]).toBe("members");
+    expect(params[14]).toBe("2026-09-01");
+
+    const offQuery = vi
+      .fn()
+      .mockResolvedValueOnce([updated])
+      .mockResolvedValueOnce([cardRow({ status: "draft", popup_enabled: false })]);
+    const off = await updateWhatsNewCard("card-1", { popupEnabled: false }, offQuery, now);
+    expect(off.ok).toBe(true);
+    expect(offQuery.mock.calls[1]?.[1]?.[12]).toBe(false);
+  });
+
   it("creates a card with validated fields", async () => {
     const queryFn = vi.fn().mockResolvedValueOnce([cardRow()]);
     const result = await createWhatsNewCard(
