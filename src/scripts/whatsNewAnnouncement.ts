@@ -149,11 +149,11 @@ async function fetchAnnouncement(): Promise<WhatsNewAnnouncement | null> {
 
 const trackedActivity = new Set<string>();
 
-function track(eventType: "displayed" | "read_more", cardId: string): void {
+function track(eventType: "displayed" | "read_more", cardId: string): Promise<void> {
   const key = `${eventType}:${cardId}`;
-  if (trackedActivity.has(key)) return;
+  if (trackedActivity.has(key)) return Promise.resolve();
   trackedActivity.add(key);
-  void (async () => {
+  return (async () => {
     try {
       const sender = await resolveActivitySender();
       const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -268,10 +268,17 @@ function wireAnnouncement(host: HTMLElement): void {
   host.querySelector("[data-wn-announcement-backdrop]")?.addEventListener("click", () => {
     close();
   });
-  link.addEventListener("click", () => {
+  link.addEventListener("click", (event) => {
     if (host.dataset.preview === "true") return;
     const cardId = link.dataset.cardId;
-    if (cardId) track("read_more", cardId);
+    if (!cardId) return;
+    // The next page replaces this one immediately, which drops the tracking
+    // request before it is sent. Save the click, then open the announcement.
+    event.preventDefault();
+    const href = link.href;
+    void track("read_more", cardId).finally(() => {
+      if (href) window.location.assign(href);
+    });
   });
 
   openPreviewImpl = (input) => {
