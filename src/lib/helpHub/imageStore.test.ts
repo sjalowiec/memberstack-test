@@ -21,7 +21,7 @@ describe("Help Hub image uploads", () => {
     expect(prepared.contentType).toBe("image/png");
     expect(prepared.filename).toBe("double-high.png");
     expect(sniffHelpHubImage(prepared.bytes)).toBe("image/png");
-    expect(helpHubImagePublicPath(prepared.filename)).toBe("/images/help-hub/double-high.png");
+    expect(helpHubImagePublicPath(prepared.filename)).toBe("/media/help-hub/double-high.png");
     expect(isHelpHubImageFilename("double_high.png")).toBe(true);
     expect(isHelpHubImageFilename("../secret.png")).toBe(false);
   });
@@ -53,7 +53,7 @@ describe("Help Hub image uploads", () => {
     );
     expect(saved).toEqual({
       filename: "double-high-2.png",
-      url: "/images/help-hub/double-high-2.png",
+      url: "/media/help-hub/double-high-2.png",
     });
     expect(sanitizeHelpHubImageFilename("My Photo", "image/jpeg")).toBe("my-photo.jpg");
   });

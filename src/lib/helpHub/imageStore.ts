@@ -42,7 +42,7 @@ export function isHelpHubImageFilename(value: string): boolean {
 }
 
 export function helpHubImagePublicPath(filename: string): string {
-  return `/images/help-hub/${filename}`;
+  return `/media/help-hub/${filename}`;
 }
 
 export function sniffHelpHubImage(bytes: Buffer): HelpHubImageContentType | null {

@@ -129,13 +129,14 @@
   status = 301
   force = true
 
-# Help Hub uploads live in the shared database and are served at /media/help-hub.
-# Files already in public/images/help-hub keep their Git copies. A missing file,
-# including double_high.png, is read from that database instead.
+# The saved Double High draft already points at this path. Force the rewrite so the
+# picture is served from the shared database even though other files in this folder
+# are static copies from Git.
 [[redirects]]
-  from = "/images/help-hub/*"
-  to = "/media/help-hub/:splat"
+  from = "/images/help-hub/double_high.png"
+  to = "/media/help-hub/double_high.png"
   status = 200
+  force = true
 
 # Legacy repairs URL → References repairs guide.
 [[redirects]]
