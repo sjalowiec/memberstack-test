@@ -22,6 +22,11 @@ export function favoriteAriaLabel(title: string, isFavorite: boolean): string {
   return isFavorite ? favoriteRemoveLabel(title) : favoriteSaveLabel(title);
 }
 
+/** Short visual tooltip for an opted-in star. Does not replace the accessible name. */
+export function favoriteActionTooltip(isFavorite: boolean): string {
+  return isFavorite ? "Remove from favorites" : "Add to favorites";
+}
+
 /** Escape text for safe insertion into HTML text/attribute contexts. */
 export function escapeHtml(value: string): string {
   return String(value)
@@ -46,6 +51,8 @@ export type FavoriteStarButtonOptions = {
   title: string;
   isFavorite: boolean;
   extraClass?: string;
+  /** Short hover/focus tooltip. The accessible name stays the full save/remove label. */
+  actionTooltip?: boolean;
 };
 
 /** Safe HTML for a favorite star button (catalog string rendering). */
@@ -58,6 +65,9 @@ export function favoriteStarButtonHtml(options: FavoriteStarButtonOptions): stri
   const label = escapeHtml(favoriteAriaLabel(title, options.isFavorite));
   const extra = options.extraClass ? ` ${escapeHtml(options.extraClass)}` : "";
   const savedClass = options.isFavorite ? " is-favorite" : "";
+  const tooltip = options.actionTooltip
+    ? ` data-favorite-action-tooltip="true" data-tooltip="${escapeHtml(favoriteActionTooltip(options.isFavorite))}"`
+    : "";
 
   return (
     `<button type="button"` +
@@ -66,6 +76,7 @@ export function favoriteStarButtonHtml(options: FavoriteStarButtonOptions): stri
     ` data-content-type="${escapeHtml(options.contentType)}"` +
     ` data-content-id="${escapeHtml(contentId)}"` +
     ` data-favorite-title="${escapeHtml(title)}"` +
+    tooltip +
     ` aria-pressed="${pressed}"` +
     ` aria-label="${label}"` +
     `>` +
@@ -85,6 +96,9 @@ export function applyFavoriteStarState(
   button.setAttribute("data-favorite-title", resolvedTitle);
   button.setAttribute("aria-pressed", isFavorite ? "true" : "false");
   button.setAttribute("aria-label", favoriteAriaLabel(resolvedTitle, isFavorite));
+  if (button.getAttribute("data-favorite-action-tooltip") != null) {
+    button.setAttribute("data-tooltip", favoriteActionTooltip(isFavorite));
+  }
   button.classList.toggle("is-favorite", isFavorite);
 
   const icon = button.querySelector(`.${FAVORITE_STAR_ICON_CLASS}`);

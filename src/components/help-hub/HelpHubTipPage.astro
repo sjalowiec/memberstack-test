@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import PageBackLink from "../common/PageBackLink.astro";
 import PageHead from "../PageHead.astro";
+import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
 import HelpHubTipContent from "./HelpHubTipContent.astro";
 import videosPublic from "../../data/videos-public.json";
 import {
@@ -34,6 +35,7 @@ const view = prepareHelpHubTipPage(
 const { layoutTitle, pageDescription, faqJsonLd } = view;
 
 const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origin) : "";
+const articleSlug = !preview && typeof tip.slug === "string" ? tip.slug.trim() : "";
 ---
 
 <Layout
@@ -50,6 +52,7 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
   <section
     class="container py-5 tips-page-section"
     data-help-hub-preview-audience={audience}
+    data-help-hub-article-slug={articleSlug || undefined}
   >
     {preview && (
       <p class="help-hub-preview-banner">
@@ -58,9 +61,14 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
     )}
     <PageBackLink href="/help-hub" text="Back to Help Hub" />
     <HelpHubTipContent tip={tip} lessons={lessons} markSections={preview} />
+    <FavoritesRuntime contentType="reference" />
   </section>
   <script>
     import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";
+    import { initHelpHubArticleReturn } from "../../scripts/helpHubLandingReturnClient";
+
+    const article = document.querySelector("[data-help-hub-article-slug]");
+    if (article instanceof HTMLElement) initHelpHubArticleReturn(article);
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", bootHelpHubMemberLessonGates);

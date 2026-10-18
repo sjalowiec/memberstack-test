@@ -1,5 +1,6 @@
 /** In-page Help Hub landing search. This does not call Pagefind or site search. */
 
+import { reportHelpHubAction } from "../lib/analytics/helpHubGa";
 import { queueSearchCommit } from "../lib/searchActivityClient";
 
 export function helpHubEntryVisibleForQuery(searchText: string, query: string): boolean {
@@ -48,7 +49,16 @@ export function applyHelpHubIndexQuery(root: ParentNode, query: string): number 
   const q = query.trim();
   const queryActive = q.length > 0;
   const newSection = root.querySelector("[data-help-hub-new]");
-  if (newSection instanceof HTMLElement) newSection.hidden = queryActive;
+  if (newSection instanceof HTMLElement) {
+    newSection.hidden = queryActive;
+    if (isDetails(newSection)) newSection.open = false;
+  }
+
+  const favoritesSection = root.querySelector("[data-help-hub-favorites]");
+  if (favoritesSection instanceof HTMLElement) {
+    favoritesSection.hidden = queryActive;
+    if (queryActive && isDetails(favoritesSection)) favoritesSection.open = false;
+  }
 
   let matchCount = 0;
   root.querySelectorAll("[data-help-hub-category]").forEach((section) => {
@@ -87,19 +97,179 @@ export function applyHelpHubIndexQuery(root: ParentNode, query: string): number 
   return matchCount;
 }
 
+const READING_HISTORY_KEY = "helpHubReading";
+
+type ReadingSession = {
+  entry: HTMLDetailsElement;
+  summary: HTMLElement;
+  parent: Node;
+  next: ChildNode | null;
+  scrollY: number;
+};
+
+let readingSession: ReadingSession | null = null;
+let lastOpenedEntry: HTMLDetailsElement | null = null;
+let ignoreAnswerToggle = false;
+let suppressAnswerOpenTracking = false;
+
+function readingHistoryActive(): boolean {
+  try {
+    return history.state?.[READING_HISTORY_KEY] === true;
+  } catch {
+    return false;
+  }
+}
+
+function articleTitle(entry: HTMLDetailsElement): string {
+  const summary = entry.querySelector("summary");
+  const text = summary?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  return text || "Help Hub";
+}
+
+function articlePanel(root: ParentNode): HTMLElement | null {
+  const panel = root.querySelector("[data-help-hub-article-panel]");
+  return panel instanceof HTMLElement ? panel : null;
+}
+
+function articleHeading(root: ParentNode): HTMLElement | null {
+  const heading = root.querySelector("[data-help-hub-article-title]");
+  return heading instanceof HTMLElement ? heading : null;
+}
+
+function scrollWindowTo(top: number): void {
+  const y = Math.max(0, top);
+  const scroller = document.scrollingElement;
+  if (scroller) scroller.scrollTop = y;
+  window.scrollTo(0, y);
+}
+
+function focusWithoutMoving(el: HTMLElement): void {
+  if (typeof el.focus !== "function") return;
+  try {
+    el.focus({ preventScroll: true });
+  } catch {
+    el.focus();
+  }
+}
+
+/** Show one article apart from the question browser and move to its heading. */
+export function openHelpHubArticle(root: ParentNode, entry: HTMLDetailsElement): void {
+  if (readingSession?.entry === entry) return;
+  const panel = articlePanel(root);
+  const heading = articleHeading(root);
+  const slot = root.querySelector("[data-help-hub-article-slot]");
+  const summary = entry.querySelector("summary");
+  if (!panel || !heading || !(slot instanceof HTMLElement) || !(summary instanceof HTMLElement)) return;
+  if (!entry.parentNode) return;
+
+  if (readingSession) closeHelpHubArticle(root, { restoreFocus: false });
+
+  const scrollY = window.scrollY;
+  const parent = entry.parentNode;
+  const next = entry.nextSibling;
+  heading.textContent = articleTitle(entry);
+  if (!readingHistoryActive()) {
+    try {
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      history.pushState({ [READING_HISTORY_KEY]: true }, "");
+    } catch {
+      /* History can reject the extra entry; the in-page Back button still closes. */
+    }
+  }
+  slot.replaceChildren(entry);
+  panel.hidden = false;
+  if (root instanceof HTMLElement) root.classList.add("is-reading");
+  readingSession = { entry, summary, parent, next, scrollY };
+  lastOpenedEntry = entry;
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      void panel.offsetHeight;
+      const margin = Number.parseFloat(getComputedStyle(panel).scrollMarginTop) || 0;
+      const top = panel.getBoundingClientRect().top + window.scrollY - margin;
+      scrollWindowTo(top);
+      focusWithoutMoving(heading);
+    });
+  });
+}
+
+/** Return to the question lists without clearing search, open categories, or scroll. */
+export function closeHelpHubArticle(
+  root: ParentNode,
+  options: { restoreFocus?: boolean } = {},
+): void {
+  const session = readingSession;
+  if (!session) return;
+  readingSession = null;
+  stopHelpHubInlineMedia(session.entry);
+  ignoreAnswerToggle = true;
+  session.entry.open = false;
+  ignoreAnswerToggle = false;
+  if (session.next && session.next.parentNode === session.parent) {
+    session.parent.insertBefore(session.entry, session.next);
+  } else {
+    session.parent.appendChild(session.entry);
+  }
+
+  const panel = articlePanel(root);
+  const heading = articleHeading(root);
+  if (panel) panel.hidden = true;
+  if (heading) heading.textContent = "";
+  if (root instanceof HTMLElement) root.classList.remove("is-reading");
+
+  const restoreFocus = options.restoreFocus !== false;
+  scrollWindowTo(session.scrollY);
+  if ("scrollRestoration" in history) history.scrollRestoration = "auto";
+  if (restoreFocus) focusWithoutMoving(session.summary);
+}
+
+function requestCloseHelpHubArticle(root: ParentNode): void {
+  if (!readingSession) return;
+  if (readingHistoryActive()) {
+    history.back();
+    return;
+  }
+  closeHelpHubArticle(root);
+}
+
 function onAnswerToggle(root: ParentNode, entry: HTMLDetailsElement): void {
+  if (ignoreAnswerToggle) return;
   if (!entry.open) {
     stopHelpHubInlineMedia(entry);
+    if (readingSession?.entry === entry) closeHelpHubArticle(root);
     return;
+  }
+  if (!suppressAnswerOpenTracking) {
+    const row = entry.closest("[data-help-hub-entry]");
+    const slug = row instanceof HTMLElement ? row.dataset.helpHubSlug ?? "" : "";
+    if (slug) reportHelpHubAction("discovery_open", slug, "accordion");
   }
   closeOtherAnswers(root, entry);
   activateHelpHubDeferredMedia(entry);
+  openHelpHubArticle(root, entry);
 }
 
 export function initHelpHubIndex(root: ParentNode): void {
+  if (root instanceof HTMLElement) {
+    if (root.dataset.helpHubIndexBound === "true") return;
+    root.dataset.helpHubIndexBound = "true";
+  }
   root.querySelectorAll("details[data-help-hub-answer]").forEach((node) => {
     if (!isDetails(node)) return;
     node.addEventListener("toggle", () => onAnswerToggle(root, node));
+  });
+
+  // The question is a real tip URL. A plain click still opens the answer here.
+  // Modified clicks follow the link (new tab, copy, and crawlers use the href).
+  root.querySelectorAll("a.help-hub-question-permalink").forEach((node) => {
+    if (!(node instanceof HTMLAnchorElement)) return;
+    node.addEventListener("click", (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const details = node.closest("details[data-help-hub-answer]");
+      if (!(details instanceof HTMLDetailsElement)) return;
+      event.preventDefault();
+      details.open = !details.open;
+    });
   });
 
   root.querySelectorAll("details[data-help-hub-category]").forEach((node) => {
@@ -135,5 +305,21 @@ export function initHelpHubIndex(root: ParentNode): void {
   siteSearch?.addEventListener("click", () => {
     const trigger = document.querySelector("[data-open-search-modal]");
     if (trigger instanceof HTMLElement) trigger.click();
+  });
+
+  root.querySelectorAll("[data-help-hub-article-back]").forEach((button) => {
+    button.addEventListener("click", () => requestCloseHelpHubArticle(root));
+  });
+
+  window.addEventListener("popstate", () => {
+    if (readingHistoryActive()) {
+      if (!readingSession && lastOpenedEntry && !lastOpenedEntry.open) {
+        suppressAnswerOpenTracking = true;
+        lastOpenedEntry.open = true;
+        suppressAnswerOpenTracking = false;
+      }
+      return;
+    }
+    if (readingSession) closeHelpHubArticle(root);
   });
 }

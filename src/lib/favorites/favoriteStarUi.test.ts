@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  favoriteActionTooltip,
   favoriteAriaLabel,
   favoriteStarButtonHtml,
   filterVideosByFavoriteIds,
@@ -14,6 +15,8 @@ describe("favoriteStarUi", () => {
     expect(favoriteAriaLabel("10 Ways to Manage Floats", true)).toBe(
       "Remove 10 Ways to Manage Floats from favorites",
     );
+    expect(favoriteActionTooltip(false)).toBe("Add to favorites");
+    expect(favoriteActionTooltip(true)).toBe("Remove from favorites");
   });
 
   it("renders a real button with aria-pressed and escaped attributes", () => {
@@ -30,6 +33,8 @@ describe("favoriteStarUi", () => {
     expect(html).toContain('data-content-id="42"');
     expect(html).toContain("fa-regular fa-star");
     expect(html).toContain('aria-hidden="true"');
+    expect(html).not.toContain("data-tooltip");
+    expect(html).not.toContain("data-favorite-action-tooltip");
   });
 
   it("marks saved state on the button markup", () => {
@@ -42,6 +47,20 @@ describe("favoriteStarUi", () => {
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("is-favorite");
     expect(html).toContain("fa-solid fa-star");
+    expect(html).not.toContain("data-tooltip");
+  });
+
+  it("adds the short action tooltip only when requested", () => {
+    const html = favoriteStarButtonHtml({
+      contentType: "reference",
+      contentId: "/help-hub/sponge-bar",
+      title: "Why is the carriage sticking?",
+      isFavorite: true,
+      actionTooltip: true,
+    });
+    expect(html).toContain('data-favorite-action-tooltip="true"');
+    expect(html).toContain('data-tooltip="Remove from favorites"');
+    expect(html).toContain("Remove Why is the carriage sticking? from favorites");
   });
 
   it("applies pressed state to a button-like element", () => {
@@ -88,8 +107,47 @@ describe("favoriteStarUi", () => {
     applyFavoriteStarState(button as unknown as HTMLButtonElement, true);
     expect(button.getAttribute("aria-pressed")).toBe("true");
     expect(button.getAttribute("aria-label")).toBe("Remove Demo from favorites");
+    expect(button.getAttribute("data-tooltip")).toBeNull();
     expect(button.classList.contains("is-favorite")).toBe(true);
     expect(iconClasses.has("fa-solid")).toBe(true);
+  });
+
+  it("updates the short tooltip without replacing the accessible name", () => {
+    const attrs = new Map<string, string>([
+      ["data-favorite-title", "Demo"],
+      ["data-favorite-action-tooltip", "true"],
+      ["data-tooltip", "Add to favorites"],
+      ["aria-pressed", "false"],
+      ["aria-label", "Save Demo to favorites"],
+    ]);
+    const button = {
+      classList: {
+        toggle() {},
+        contains() {
+          return false;
+        },
+      },
+      getAttribute(name: string) {
+        return attrs.get(name) ?? null;
+      },
+      setAttribute(name: string, value: string) {
+        attrs.set(name, value);
+      },
+      querySelector() {
+        return {
+          classList: { remove() {}, add() {} },
+          setAttribute() {},
+        };
+      },
+    };
+
+    applyFavoriteStarState(button as unknown as HTMLButtonElement, true);
+    expect(button.getAttribute("data-tooltip")).toBe("Remove from favorites");
+    expect(button.getAttribute("aria-label")).toBe("Remove Demo from favorites");
+
+    applyFavoriteStarState(button as unknown as HTMLButtonElement, false);
+    expect(button.getAttribute("data-tooltip")).toBe("Add to favorites");
+    expect(button.getAttribute("aria-label")).toBe("Save Demo to favorites");
   });
 
   it("filters catalog videos by hydrated favorite ids", () => {

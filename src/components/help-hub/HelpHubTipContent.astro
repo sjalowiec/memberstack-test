@@ -6,7 +6,9 @@ import {
   type HelpHubPageTip,
 } from "../../lib/helpHub/prepareTipPage";
 import HelpHubRelatedTool from "./HelpHubRelatedTool.astro";
+import FavoriteStar from "../favorites/FavoriteStar.astro";
 import type { HelpHubLessonRecord } from "../../lib/helpHubMemberLesson";
+import { helpHubFavoriteContentId } from "../../lib/helpHub/discovery";
 import {
   helpHubToolDomId,
   helpHubToolLoginReturnPath,
@@ -27,6 +29,9 @@ interface Props {
 
 const { tip, lessons, embedded = false, deferMedia = false, idPrefix = "", markSections = false } =
   Astro.props;
+const articleQuestion = (tip.question || tip.title || "Help Hub").trim() || "Help Hub";
+const articleFavoriteId =
+  !embedded && typeof tip.slug === "string" ? helpHubFavoriteContentId(tip.slug) : "";
 
 function sectionAttr(id: string): string | undefined {
   return markSections ? id : undefined;
@@ -103,6 +108,24 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
   data-pagefind-ignore={embedded ? true : undefined}
 >
     <div class="tuesday-tip-hero">
+      {!embedded && (tip.question || tip.title) && (
+        <div class="talk-row talk-left tuesday-tip-bubble-row help-hub-article-question">
+          <h1
+            class="talk-bubble bubble-bl bubble-question tuesday-tip__question"
+            data-placeholder="title"
+            data-help-hub-section={sectionAttr("question")}
+          >
+            {tip.question || tip.title || "Help Hub"}
+          </h1>
+          {articleFavoriteId && (
+            <FavoriteStar
+              contentType="reference"
+              contentId={articleFavoriteId}
+              title={articleQuestion}
+            />
+          )}
+        </div>
+      )}
       {typeof tip.hook === "string" && tip.hook.trim() !== "" && (
         <p
           class="bubble-hook tuesday-tip-hero__hook"
@@ -128,18 +151,6 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
       <div class:list={["tuesday-tip-hero__columns", !hasHeroMedia && "tuesday-tip-hero__columns--no-media"]}>
         <div class="tuesday-tip-hero__content">
           <div class="tuesday-tip-bubbles">
-            {!embedded && (tip.question || tip.title) && (
-              <div class="talk-row talk-left tuesday-tip-bubble-row">
-                <h1
-                  class="talk-bubble bubble-bl bubble-question tuesday-tip__question"
-                  data-placeholder="title"
-                  data-help-hub-section={sectionAttr("question")}
-                >
-                  {tip.question || tip.title || "Help Hub"}
-                </h1>
-              </div>
-            )}
-
             {typeof tip.bubbleAnswer === "string" &&
               tip.bubbleAnswer.trim() !== "" && (
                 <div
@@ -586,6 +597,27 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     line-height: 1.16;
     margin: 0;
     color: #6f8550;
+  }
+
+  .tuesday-tip-hero > .help-hub-article-question {
+    order: 0;
+    width: 100%;
+    margin: 0 0 0.9rem;
+  }
+
+  .help-hub-article-question {
+    align-items: flex-start;
+    gap: 0.2rem 0.35rem;
+  }
+
+  .help-hub-article-question .tuesday-tip__question {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: min(40rem, calc(100% - 3.25rem));
+  }
+
+  :global(.help-hub-article-question .favorite-star) {
+    margin-top: 0.15rem;
   }
 
   .talk-bubble.tuesday-tip__answer {
