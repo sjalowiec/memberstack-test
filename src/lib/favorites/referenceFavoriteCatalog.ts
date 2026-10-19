@@ -19,7 +19,7 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
   { title: "Abbreviations", href: "/reference/abbreviations" },
   { title: "Machine Database", href: "/reference/machines" },
   {
-    title: "It's Not You, It Might Be Your Machine",
+    title: "Machine Troubleshooting Checklist",
     href: "/troubleshoot",
   },
   {
