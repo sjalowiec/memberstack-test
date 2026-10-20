@@ -333,6 +333,10 @@ async function initHatBuilderPage(): Promise<void> {
   function applyFitChoiceUi(): void {
     const fit = readSelectValue(fitSelect);
     syncChoiceButtons("fit", fit === "custom" ? "" : fit);
+    const customBtn = el<HTMLButtonElement>("hat-length-custom-btn");
+    const customSelected = fit === "custom";
+    customBtn?.classList.toggle("is-selected", customSelected);
+    customBtn?.setAttribute("aria-pressed", customSelected ? "true" : "false");
     syncCustomLengthVisibility();
   }
 

@@ -1,0 +1,127 @@
+/* ========================================
+   Pattern Builder Lego: selected choices
+   ========================================
+   Default selected-state treatment for Express Pattern Builders.
+
+   Imported by sleeveless-express-wizard-layout.css, so every current builder
+   and any future builder that uses that shell gets this without a new design.
+
+   Applies wherever these existing controls appear:
+   - Option cards: .hat-length-picker__option.is-selected or [aria-pressed="true"]
+   - Custom choice buttons: .hat-length-picker__custom.is-selected
+   - Completed native selects: .hat-select-wrap.is-complete
+   - Section summaries: .express-acc__value (non-empty)
+   - Keyboard focus: :focus-visible on those cards, custom buttons, and selects
+
+   Does not change choice values, illustrations, saved drafts, or calculations.
+   Locked and disabled cards keep their quiet treatment.
+*/
+
+.express-page .hat-length-picker__option,
+.express-page .hat-length-picker__custom {
+  position: relative;
+}
+
+.express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"]),
+.express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"]):hover,
+.express-page .hat-length-picker__option[aria-pressed="true"]:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"]),
+.express-page .hat-length-picker__option[aria-pressed="true"]:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"]):hover,
+.express-page .hat-length-picker__custom.is-selected,
+.express-page .hat-length-picker__custom.is-selected:hover,
+.express-page .hat-length-picker__custom[aria-pressed="true"],
+.express-page .hat-length-picker__custom[aria-pressed="true"]:hover {
+  border-color: var(--sg-accent, #c2614e) !important;
+  border-style: solid !important;
+  border-width: 3px !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 1px var(--sg-accent, #c2614e) !important;
+}
+
+.express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"])::after,
+.express-page .hat-length-picker__option[aria-pressed="true"]:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"])::after,
+.express-page .hat-length-picker__custom.is-selected::after,
+.express-page .hat-length-picker__custom[aria-pressed="true"]::after {
+  content: "✓";
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--sg-accent, #c2614e);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.express-page .hat-length-picker__custom.is-selected,
+.express-page .hat-length-picker__custom[aria-pressed="true"] {
+  padding-right: 2.6rem;
+}
+
+/* Compact text cards have no empty corner, so keep the label clear of the badge. */
+.express-page .express-options--who .hat-length-picker__option.is-selected,
+.express-page .express-options--who .hat-length-picker__option[aria-pressed="true"],
+.express-page .express-options--who-text .hat-length-picker__option.is-selected,
+.express-page .express-options--who-text .hat-length-picker__option[aria-pressed="true"] {
+  padding-right: 2.45rem;
+}
+
+.express-page .hat-length-picker__custom.is-selected::after,
+.express-page .hat-length-picker__custom[aria-pressed="true"]::after {
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+}
+
+/* Corner badge replaces the older inline title check so a card has one mark. */
+.express-page .sg-fit-preference-grid .hat-length-picker__option.is-selected .sg-fit-option-check,
+.express-page .sg-fit-preference-grid .hat-length-picker__option[aria-pressed="true"] .sg-fit-option-check,
+.express-page .sg-shape-grid .hat-length-picker__option.is-selected .sg-shape-option-check,
+.express-page .sg-shape-grid .hat-length-picker__option[aria-pressed="true"] .sg-shape-option-check {
+  display: none !important;
+}
+
+.express-page .hat-length-picker__option:focus-visible,
+.express-page .express-options--who .hat-length-picker__option:focus-visible,
+.express-page .hat-length-picker__custom:focus-visible,
+.express-page .input-group .hat-select-wrap select:focus-visible {
+  outline: 3px solid var(--kbm-green, #52682d) !important;
+  outline-offset: 3px !important;
+}
+
+.express-page .input-group .hat-select-wrap.is-complete select,
+.express-page .input-group .hat-select-wrap.is-complete select:focus {
+  border-color: var(--sg-accent, #c2614e) !important;
+  box-shadow: 0 0 0 3px rgba(194, 97, 78, 0.28) !important;
+}
+
+.express-page .express-acc__value:not(:empty) {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--sg-accent, #c2614e);
+  border-radius: 999px;
+  background: #f8ebe8;
+  color: #8c3428;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .express-page .hat-length-picker__option.is-selected:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"])::after,
+  .express-page .hat-length-picker__option[aria-pressed="true"]:not(.sg-express-kin-locked):not(.express-front-card--disabled):not(.cb-style-option--disabled):not([aria-disabled="true"])::after {
+    top: 0.28rem;
+    right: 0.28rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    font-size: 0.85rem;
+  }
+}
