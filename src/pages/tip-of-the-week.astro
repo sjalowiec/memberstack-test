@@ -9,6 +9,7 @@ import GlossaryTooltip from "../components/common/GlossaryTooltip.astro";
 import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
 import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
 import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
+import { loadPublicVideoPosterOverrides } from "../lib/videos/videoPosterStore";
 import { tipOfTheWeekIntroParts } from "../lib/tipOfTheWeek/introGlossary";
 import { tipPublicCta } from "../lib/tipOfTheWeek/map";
 import {
@@ -37,7 +38,13 @@ const pageState =
 const featured = pageState.kind === "featured" ? pageState.model : null;
 const isPreview = Boolean(featured?.isPreview);
 const tip = featured?.tip ?? null;
-const video = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId }) : null;
+const resolvedVideo = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId }) : null;
+const posterOverrides = await loadPublicVideoPosterOverrides();
+const storedPoster = resolvedVideo ? posterOverrides.get(resolvedVideo.contentId) : undefined;
+const video =
+  resolvedVideo && storedPoster !== undefined
+    ? { ...resolvedVideo, posterUrl: storedPoster }
+    : resolvedVideo;
 const relatedLinks = featured?.relatedLinks ?? [];
 const availableThroughDisplay = featured?.availableThroughDisplay ?? "";
 const availabilityFooter = featured?.availabilityFooter ?? "";
