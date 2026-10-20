@@ -6,9 +6,17 @@ import { getPreviewMember } from "../../lib/getPreviewMember";
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 import { videoCatalogClientCards } from "../../lib/videos/videoCatalogClientCards";
+import { applyVideoPosterOverrides } from "../../lib/videos/videoPosterOverrides";
+import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStore";
 import "../../styles/favorites.css";
 
-const publicVideos = filterPublicCatalogVideos(Array.isArray(videosRaw) ? videosRaw : []);
+const posterOverrides = await loadPublicVideoPosterOverrides();
+const catalogWithPosters = applyVideoPosterOverrides(
+  Array.isArray(videosRaw) ? videosRaw : [],
+  posterOverrides,
+);
+const publicVideos = filterPublicCatalogVideos(catalogWithPosters);
+Astro.response.headers.set("Cache-Control", "private, no-store");
 const catalogVideosForClient = videoCatalogClientCards(publicVideos);
 
 // --- Featured tip (Tuesday Tip / Weekly Quick Win) ---

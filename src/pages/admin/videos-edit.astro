@@ -54,10 +54,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
               <option value="archived">archived</option>
             </select>
           </label>
-          <label class="field-full">
-            <span>posterUrl</span>
-            <input type="text" name="posterUrl" id="field-posterUrl" />
-          </label>
+          <div class="field-full poster-field">
+            <label for="field-posterUrl">
+              <span>posterUrl</span>
+              <input type="text" name="posterUrl" id="field-posterUrl" />
+            </label>
+            <button type="button" id="btn-refresh-vimeo-thumbnail" class="kbm-btn kbm-btn-outline">
+              Refresh thumbnail from Vimeo
+            </button>
+            <span class="field-hint">
+              Uses this form's Vimeo ID. Save afterward so the library, video page, and Tip of the Week share the new picture.
+            </span>
+            <img id="poster-preview" class="poster-preview" alt="" hidden />
+          </div>
           <label>
             <span>category</span>
             <input type="text" name="category" id="field-category" />
@@ -241,6 +250,23 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       font-weight: 400;
       color: #64748b;
       line-height: 1.45;
+    }
+    .poster-field {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .poster-field label {
+      width: 100%;
+    }
+    .poster-preview {
+      display: block;
+      width: min(100%, 320px);
+      height: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f8fafc;
     }
     .help-hub-admin__form input,
     .help-hub-admin__form select,
@@ -606,11 +632,69 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       updateTipVisualState();
     }
 
+    function updatePosterPreview() {
+      const img = document.getElementById("poster-preview");
+      if (!(img instanceof HTMLImageElement)) return;
+      const url = textVal("posterUrl");
+      if (!url) {
+        img.hidden = true;
+        img.removeAttribute("src");
+        img.alt = "";
+        return;
+      }
+      img.hidden = false;
+      img.alt = "Current video thumbnail";
+      if (img.getAttribute("src") !== url) img.src = url;
+    }
+
     function refreshJsonPreview() {
       if (!jsonPreviewEl) return;
       const row = buildVideoFromForm({ silent: true });
       if (row) jsonPreviewEl.textContent = JSON.stringify(row, null, 2);
       else jsonPreviewEl.textContent = "// Fix validation errors to see full JSON.";
+      updatePosterPreview();
+    }
+
+    async function refreshVimeoThumbnail() {
+      const button = document.getElementById("btn-refresh-vimeo-thumbnail");
+      const vimeoRaw = textVal("vimeo_id");
+      const vimeoId = parseInt(vimeoRaw, 10);
+      if (!/^\d+$/.test(vimeoRaw) || !Number.isFinite(vimeoId) || vimeoId <= 0) {
+        setStatus("Enter a Vimeo ID before refreshing the thumbnail.", "err");
+        return;
+      }
+
+      const params = new URLSearchParams({ vimeo_id: String(vimeoId) });
+      const baselineId = baseline && typeof baseline.vimeo_id === "number" ? baseline.vimeo_id : null;
+      const baselineHash =
+        baseline && typeof baseline.vimeo_hash === "string" ? baseline.vimeo_hash.trim() : "";
+      if (baselineId === vimeoId && /^[A-Za-z0-9]+$/.test(baselineHash)) {
+        params.set("vimeo_hash", baselineHash);
+      }
+
+      if (button instanceof HTMLButtonElement) button.disabled = true;
+      setStatus("Loading the current Vimeo thumbnail…");
+      try {
+        const res = await fetch(`/api/admin/videos/vimeo-thumbnail?${params.toString()}`);
+        const data = await res.json();
+        const posterUrl = typeof data?.posterUrl === "string" ? data.posterUrl.trim() : "";
+        if (!res.ok || !data?.ok || !posterUrl) {
+          setStatus(data?.error || "Vimeo did not return a thumbnail for that video.", "err");
+          return;
+        }
+        const previous = textVal("posterUrl");
+        setField("posterUrl", posterUrl);
+        refreshJsonPreview();
+        if (previous === posterUrl) {
+          setStatus("This video already has the current Vimeo thumbnail. Save if you still need to store it.", "ok");
+        } else {
+          setStatus("Thumbnail updated in the form. Save to store it for every page that uses this video.", "ok");
+        }
+      } catch {
+        setStatus("Could not reach Vimeo to refresh the thumbnail.", "err");
+      } finally {
+        if (button instanceof HTMLButtonElement) button.disabled = false;
+      }
     }
 
     function buildVideoFromForm(options?: { silent?: boolean }): VideoRow | null {
@@ -810,10 +894,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       const data = await res.json();
       if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
         setStatus(data?.error || `Save failed (${res.status})`, "err");
-        return false;
+        return null;
       }
       videos = data.videos as VideoRow[];
-      return true;
+      return data as { ok: true; message?: string };
     }
 
     async function save() {
@@ -850,9 +934,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       }
 
       setStatus("Saving…");
-      const ok = await postVideos(next);
-      if (!ok) return;
-      setStatus("Saved.", "ok");
+      const saved = await postVideos(next);
+      if (!saved) return;
+      setStatus(
+        saved.message ||
+          "Saved. The thumbnail is stored and will show on the video page, Video Library, and Tip of the Week.",
+        "ok",
+      );
       baseline = deepClone(row);
       editingKey = newKey;
       if (btnDelete) btnDelete.hidden = false;
@@ -893,8 +981,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
       if (keyParam) {
         const row = videos.find((v) => stableVideoKey(v) === keyParam);
-        if (row) loadRowToForm(row);
-        else {
+        if (row) {
+          loadRowToForm(row);
+          setStatus("");
+        } else {
           clearFormNew();
           setStatus(`No video found for key "${keyParam}".`, "err");
         }
@@ -908,6 +998,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       });
       btnDelete?.addEventListener("click", () => void deleteRow());
       document.getElementById("btn-refresh-video-json-preview")?.addEventListener("click", refreshJsonPreview);
+      document.getElementById("btn-refresh-vimeo-thumbnail")?.addEventListener("click", () => {
+        void refreshVimeoThumbnail();
+      });
       form?.addEventListener("input", refreshJsonPreview);
       form?.addEventListener("change", refreshJsonPreview);
       form?.addEventListener("change", updateTipVisualState);
