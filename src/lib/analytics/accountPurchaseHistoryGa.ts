@@ -5,8 +5,9 @@
  * Local review, the dev server, and *.netlify.app do not send these events.
  *
  * The view event records whether the section loaded orders, was empty, or
- * failed. The tracking event records that a tracking link was used. Neither
- * event includes an email, order number, tracking number, or tracking URL.
+ * failed. The open event records that Purchase History was expanded. The
+ * tracking event records that a tracking link was used. None of these events
+ * include an email, order number, tracking number, or tracking URL.
  *
  * Looker Studio can break results down by outcome only after this parameter
  * is registered as an event-scoped custom dimension:
@@ -15,11 +16,13 @@
 import { detectSiteEnvironment } from "../env/siteEnvironment";
 
 export const ACCOUNT_PURCHASE_HISTORY_VIEW_EVENT = "account_purchase_history_view";
+export const ACCOUNT_PURCHASE_HISTORY_OPEN_EVENT = "account_purchase_history_open";
 export const ACCOUNT_PURCHASE_TRACKING_CLICK_EVENT = "account_purchase_tracking_click";
 export const ACCOUNT_PURCHASE_HISTORY_RESULT_PARAM = "purchase_history_result";
 
 export const ACCOUNT_PURCHASE_HISTORY_GA_EVENTS = [
   ACCOUNT_PURCHASE_HISTORY_VIEW_EVENT,
+  ACCOUNT_PURCHASE_HISTORY_OPEN_EVENT,
   ACCOUNT_PURCHASE_TRACKING_CLICK_EVENT,
 ] as const;
 
@@ -126,6 +129,12 @@ export function reportAccountPurchaseHistoryView(
     { [ACCOUNT_PURCHASE_HISTORY_RESULT_PARAM]: result },
     context,
   );
+}
+
+export function reportAccountPurchaseHistoryOpen(
+  context?: AccountPurchaseHistoryGaContext,
+): boolean {
+  return sendAccountPurchaseEvent(ACCOUNT_PURCHASE_HISTORY_OPEN_EVENT, {}, context);
 }
 
 export function reportAccountPurchaseTrackingClick(

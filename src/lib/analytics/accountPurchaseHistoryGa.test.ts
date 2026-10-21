@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ACCOUNT_PURCHASE_HISTORY_OPEN_EVENT,
   ACCOUNT_PURCHASE_HISTORY_RESULT_PARAM,
   ACCOUNT_PURCHASE_HISTORY_VIEW_EVENT,
   ACCOUNT_PURCHASE_TRACKING_CLICK_EVENT,
+  reportAccountPurchaseHistoryOpen,
   reportAccountPurchaseHistoryView,
   reportAccountPurchaseTrackingClick,
   resetAccountPurchaseHistoryGaForTests,
@@ -56,6 +58,24 @@ describe("account purchase history analytics", () => {
         ACCOUNT_PURCHASE_HISTORY_VIEW_EVENT,
         {
           [ACCOUNT_PURCHASE_HISTORY_RESULT_PARAM]: "orders",
+          transport_type: "beacon",
+        },
+      ],
+    ]);
+    expect(JSON.stringify(calls)).not.toMatch(/@|https?:|1Z/i);
+  });
+
+  it("records an accordion open without an email, order number, or tracking url", () => {
+    resetAccountPurchaseHistoryGaForTests();
+    const { calls, context } = productionContext();
+    expect(reportAccountPurchaseHistoryOpen(context)).toBe(true);
+    expect(reportAccountPurchaseHistoryOpen({ ...context, now: 1_100 })).toBe(false);
+
+    expect(calls).toEqual([
+      [
+        "event",
+        ACCOUNT_PURCHASE_HISTORY_OPEN_EVENT,
+        {
           transport_type: "beacon",
         },
       ],

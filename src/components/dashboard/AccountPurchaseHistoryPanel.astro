@@ -8,42 +8,124 @@
   aria-labelledby="purchase-history-heading"
   data-kbm-account-purchases
 >
-  <h2 id="purchase-history-heading" class="dashboard-card__title">Purchase History</h2>
-  <p class="dashboard-card__subtitle">
-    Machines, accessories, and other shop purchases for this account. Membership billing stays in
-    Current Membership.
-  </p>
+  <details class="account-purchases__accordion" data-kbm-account-purchases-accordion>
+    <summary class="account-purchases__summary">
+      <h2 id="purchase-history-heading" class="dashboard-card__title account-purchases__heading">
+        Purchase History
+      </h2>
+      <span class="account-purchases__chevron" aria-hidden="true"></span>
+    </summary>
 
-  <p
-    class="dashboard-muted account-purchases__loading"
-    data-kbm-account-purchases-status
-    role="status"
-    aria-live="polite"
-  >
-    Loading your purchases…
-  </p>
+    <div class="account-purchases__panel" id="purchase-history-panel">
+      <p class="dashboard-card__subtitle">
+        Machines, accessories, and other shop purchases for this account. Membership billing stays in
+        Current Membership.
+      </p>
 
-  <p class="account-purchases__sync" data-kbm-account-purchases-sync hidden></p>
-  <p class="account-purchases__legacy" data-kbm-account-purchases-legacy hidden></p>
+      <p
+        class="dashboard-muted account-purchases__loading"
+        data-kbm-account-purchases-status
+        role="status"
+        aria-live="polite"
+      >
+        Loading your purchases…
+      </p>
 
-  <div class="account-purchases__list" data-kbm-account-purchases-list hidden></div>
+      <p class="account-purchases__sync" data-kbm-account-purchases-sync hidden></p>
+      <p class="account-purchases__legacy" data-kbm-account-purchases-legacy hidden></p>
 
-  <div class="account-purchases__empty" data-kbm-account-purchases-empty hidden>
-    <p class="account-purchases__empty-text">No shop purchases were found for this account email yet.</p>
-  </div>
+      <div class="account-purchases__list" data-kbm-account-purchases-list hidden></div>
 
-  <p class="account-purchases__email-note" data-kbm-account-purchases-email hidden></p>
+      <div class="account-purchases__empty" data-kbm-account-purchases-empty hidden>
+        <p class="account-purchases__empty-text">No shop purchases were found for this account email yet.</p>
+      </div>
+
+      <p class="account-purchases__email-note" data-kbm-account-purchases-email hidden></p>
+    </div>
+  </details>
 </section>
 
 <style>
-  .dashboard-card--purchases {
+  .dashboard-card.dashboard-card--purchases {
     grid-column: 1 / -1;
     scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
     min-width: 0;
+    padding: 0;
+  }
+
+  .account-purchases__accordion {
+    margin: 0;
+  }
+
+  .account-purchases__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.15rem 1.5rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .account-purchases__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .account-purchases__summary::marker {
+    content: "";
+  }
+
+  .account-purchases__summary:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    border-radius: 12px;
+  }
+
+  .account-purchases__heading {
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .account-purchases__chevron {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1;
+    background: #fff;
+  }
+
+  .account-purchases__chevron::after {
+    content: "+";
+  }
+
+  .account-purchases__accordion[open] .account-purchases__chevron::after {
+    content: "−";
+  }
+
+  .account-purchases__panel {
+    padding: 0 1.5rem 1.5rem;
   }
 
   .dashboard-card--purchases .dashboard-card__subtitle {
     margin-bottom: 0.85rem;
+  }
+
+  @media (max-width: 640px) {
+    .account-purchases__summary,
+    .account-purchases__panel {
+      padding-left: 1.15rem;
+      padding-right: 1.15rem;
+    }
   }
 
   .account-purchases__loading,
