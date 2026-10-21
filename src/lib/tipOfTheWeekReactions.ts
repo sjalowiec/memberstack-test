@@ -46,8 +46,10 @@ export type TipReactionId = (typeof TIP_REACTIONS)[number]["id"];
 export const TIP_REACTION_THANKS =
   "Thanks! Your response helps me choose future tips.";
 
-export const TIP_TOPIC_PROMPT = "What topic would you like us to cover?";
-export const TIP_TOPIC_SUBMIT_LABEL = "Submit";
+export const TIP_TOPIC_PROMPT = "Suggest a topic for a future tip";
+export const TIP_TOPIC_HINT =
+  "I read every suggestion to help plan future tips. Individual replies aren’t provided.";
+export const TIP_TOPIC_SUBMIT_LABEL = "Send suggestion";
 export const TIP_TOPIC_THANKS = "Thanks. We saved your topic idea.";
 export const TIP_TOPIC_EMPTY = "You can leave this blank.";
 

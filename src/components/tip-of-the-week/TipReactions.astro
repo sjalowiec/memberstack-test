@@ -1,13 +1,14 @@
 ---
 /**
  * Tip of the Week feedback (client-hydrated).
- * The choice is saved immediately. The topic field is optional and has its own Submit.
+ * The choice is saved immediately. The topic field is optional and has its own submit.
  * Selection is local + best-effort upsert via log-tip-reaction.
  */
 import {
   TIP_FEEDBACK_CHOICES,
   TIP_REACTION_THANKS,
   TIP_TOPIC_EMPTY,
+  TIP_TOPIC_HINT,
   TIP_TOPIC_PROMPT,
   TIP_TOPIC_SUBMIT_LABEL,
   TIP_TOPIC_THANKS,
@@ -59,7 +60,11 @@ const topicInputId = `totw-topic-${tipId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
         name="topicSuggestion"
         maxlength="500"
         rows="3"
+        aria-describedby={`${topicInputId}-hint`}
       ></textarea>
+      <p class="totw-reactions__topic-hint" id={`${topicInputId}-hint`}>
+        {TIP_TOPIC_HINT}
+      </p>
       <button type="submit" class="totw-reactions__topic-submit">
         {TIP_TOPIC_SUBMIT_LABEL}
       </button>
@@ -246,12 +251,20 @@ const topicInputId = `totw-topic-${tipId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
     outline-offset: 2px;
   }
 
+  .totw-reactions__topic-hint {
+    max-width: 36rem;
+    margin: 0.45rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--text-muted, #6b7280);
+  }
+
   .totw-reactions__topic-submit {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    margin-top: 0.65rem;
+    margin-top: 0.7rem;
     padding: 0.55rem 1.05rem;
     border: 0;
     border-radius: 8px;

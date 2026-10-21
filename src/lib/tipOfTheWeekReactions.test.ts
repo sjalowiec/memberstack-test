@@ -151,7 +151,7 @@ describe("tipOfTheWeekReactions", () => {
     expect(thanks.hidden).toBe(false);
     expect(thanks.textContent).toBe(TIP_REACTION_THANKS);
     expect(followup.hidden).toBe(false);
-    expect(TIP_TOPIC_PROMPT).toBe("What topic would you like us to cover?");
+    expect(TIP_TOPIC_PROMPT).toBe("Suggest a topic for a future tip");
   });
 
   it("updates selection when the visitor changes their choice", () => {
