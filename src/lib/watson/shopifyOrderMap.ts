@@ -1,4 +1,9 @@
 import {
+  mapShopifyFulfillmentTracking,
+  type OrderTrackingLink,
+  type ShopifyFulfillmentTrackingSource,
+} from "./orderTrackingLinks";
+import {
   classifyShopifyOrder,
   type ShopifySiteBrand,
 } from "./shopifyOrderClassify";
@@ -32,6 +37,8 @@ export interface ShopifyRestOrder {
   name?: string | null;
   order_number?: number | string | null;
   email?: string | null;
+  /** Checkout contact email. Guest orders often have this when `email` is blank. */
+  contact_email?: string | null;
   created_at?: string | null;
   processed_at?: string | null;
   cancelled_at?: string | null;
@@ -49,6 +56,11 @@ export interface ShopifyRestOrder {
   customer?: ShopifyRestCustomer | null;
   line_items?: ShopifyRestLineItem[] | null;
   billing_address?: { first_name?: string | null; last_name?: string | null } | null;
+  /**
+   * Tracking only. Do not read destination, phone, or shipping address fields
+   * from fulfillments — they are not part of this type and must not be stored.
+   */
+  fulfillments?: ShopifyFulfillmentTrackingSource[] | null;
 }
 
 export interface MappedShopifyOrderItem {
@@ -73,6 +85,9 @@ export interface MappedShopifyOrder {
   customerFirstName: string | null;
   customerLastName: string | null;
   customerEmail: string | null;
+  /** Email entered at checkout, including guest checkout. Null when Shopify omitted it. */
+  checkoutEmail: string | null;
+  trackingLinks: OrderTrackingLink[];
   currency: string;
   subtotalAmount: number;
   totalDiscounts: number;
@@ -105,6 +120,24 @@ function textOrNull(value: string | null | undefined): string | null {
 
 function moneyFromSet(set: ShopifyRestMoneySet | null | undefined): number {
   return parseMoney(set?.shop_money?.amount);
+}
+
+/**
+ * Guest checkout stores the address the customer typed on `contact_email` or
+ * `email`. A Shopify customer record can carry a different address. Keep both
+ * so Account history can match the verified account email to either one.
+ */
+export function resolveShopifyOrderEmails(order: {
+  email?: string | null;
+  contact_email?: string | null;
+  customer?: { email?: string | null } | null;
+}): { customerEmail: string | null; checkoutEmail: string | null } {
+  const checkoutEmail = textOrNull(order.contact_email) ?? textOrNull(order.email);
+  const customerRecordEmail = textOrNull(order.customer?.email);
+  return {
+    checkoutEmail,
+    customerEmail: customerRecordEmail ?? checkoutEmail,
+  };
 }
 
 /** Normalize Shopify order name/number for storage and search (#1234 ? 1234). */
@@ -157,8 +190,7 @@ export function mapShopifyRestOrder(order: ShopifyRestOrder): MappedShopifyOrder
   const customerLast =
     textOrNull(order.customer?.last_name) ??
     textOrNull(order.billing_address?.last_name);
-  const customerEmail =
-    textOrNull(order.email) ?? textOrNull(order.customer?.email);
+  const emails = resolveShopifyOrderEmails(order);
 
   return {
     shopifyOrderId,
@@ -169,7 +201,9 @@ export function mapShopifyRestOrder(order: ShopifyRestOrder): MappedShopifyOrder
     createdAtShopify: textOrNull(order.created_at),
     customerFirstName: customerFirst,
     customerLastName: customerLast,
-    customerEmail,
+    customerEmail: emails.customerEmail,
+    checkoutEmail: emails.checkoutEmail,
+    trackingLinks: mapShopifyFulfillmentTracking(order.fulfillments),
     currency: textOrNull(order.currency) ?? "USD",
     subtotalAmount: parseMoney(order.subtotal_price),
     totalDiscounts: parseMoney(order.total_discounts),

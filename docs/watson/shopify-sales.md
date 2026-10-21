@@ -82,6 +82,12 @@ Tokens and secrets stay server-side only. Never expose them to the browser.
 
 Sync upserts by `shopify_order_id` (and replaces line items for that order), so re-runs do not duplicate orders.
 
+The scheduled function runs every 6 hours. A purchase can take that long to show on the customer Account page and in Watson. Each run requests orders created in the last 90 days (`DEFAULT_SHOPIFY_LOOKBACK_DAYS`). Older Shopify orders stay in Postgres only when an earlier sync already stored them. Orders that aged out of that window before the first successful sync are not imported.
+
+Guest checkout is linked by the checkout email (`contact_email`, otherwise `email`) as well as the Shopify customer email. The mapper stores tracking links from fulfillments and discards shipping addresses.
+
+Customers see their own rows on **Account ? Purchase History**, matched to the verified Memberstack email. That section is separate from membership billing.
+
 ## UI
 
 | Path | Purpose |

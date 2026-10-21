@@ -2,6 +2,11 @@ import { loadEnvFile } from "./env";
 
 export const DEFAULT_SHOPIFY_API_VERSION = "2025-01";
 export const DEFAULT_SHOPIFY_LOOKBACK_DAYS = 90;
+/**
+ * Scheduled import cadence for watson-shopify-sync in netlify.toml (every 6 hours).
+ * A new order can stay hidden until the next run.
+ */
+export const SHOPIFY_SYNC_INTERVAL_HOURS = 6;
 
 /** Legacy custom-app static token, or Dev Dashboard client credentials. */
 export type ShopifyAdminAuth =

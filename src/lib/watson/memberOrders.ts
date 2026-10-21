@@ -1,6 +1,7 @@
 import { joinWatsonDisplayParts } from "./displayFormat";
 import { getLegacyMemberById, hasDisplayValue } from "./memberDetail";
 import { formatMemberJoinedDateDisplay, type WatsonQueryFn } from "./memberSearch";
+import { dedupeTrackingLinks, legacyItemTrackingLink, type OrderTrackingLink } from "./orderTrackingLinks";
 import { queryWatson } from "./db";
 import {
   getShopifyOrderCountForEmails,
@@ -16,6 +17,7 @@ export interface LegacyStoreTransactionRow {
   transactionmethod: string | null;
   fulfillment_status_current: string | null;
   fulfillment_status: string | null;
+  fulfillment_ordernumber?: string | null;
   paid: number | null;
 }
 
@@ -29,11 +31,15 @@ export interface LegacyStoreTransactionItemRow {
   product: string | null;
   saledescripton: string | null;
   color: string | null;
+  trackingnumber?: string | null;
+  carrier?: string | null;
 }
 
 export interface MemberOrderItemDisplay {
   transactionItemId: string;
   description: string;
+  /** Customer-facing item name. Omits SKUs and staff sale notes. */
+  customerLabel?: string | null;
   quantity: string | null;
   itemPrice: string | null;
   lineTotal: string | null;
@@ -56,6 +62,11 @@ export interface MemberOrderDisplay {
   shopifyOrderId?: string | null;
   shopifyOrderNumber?: string | null;
   shopifyOrderHref?: string | null;
+  /** Customer-facing order number. Separate from Watson's internal transaction id. */
+  accountOrderNumber?: string | null;
+  paymentStatusLabel?: string | null;
+  fulfillmentStatusLabel?: string | null;
+  trackingLinks?: OrderTrackingLink[];
 }
 
 export const MEMBER_ORDERS_SQL = `
@@ -67,6 +78,7 @@ export const MEMBER_ORDERS_SQL = `
     transactionmethod,
     fulfillment_status_current,
     fulfillment_status,
+    fulfillment_ordernumber,
     paid
   FROM legacy_store_transactions
   WHERE memberid_fk = $1
@@ -89,7 +101,9 @@ export const MEMBER_ORDER_ITEMS_SQL = `
     totalprice,
     product,
     saledescripton,
-    color
+    color,
+    trackingnumber,
+    carrier
   FROM legacy_store_transaction_items
   WHERE storetransactionid = ANY($1::bigint[])
   ORDER BY storetransactionid, transaction_itemid
@@ -135,6 +149,25 @@ export function formatLegacyAverageOrderValue(totalRevenue: number, orderCount: 
   });
 }
 
+export function formatLegacyPaymentStatus(paid: number | null | undefined): string | null {
+  if (paid === 1) return "Paid";
+  if (paid === 0) return "Unpaid";
+  return null;
+}
+
+export function formatLegacyFulfillmentStatus(row: Pick<
+  LegacyStoreTransactionRow,
+  "fulfillment_status_current" | "fulfillment_status"
+>): string | null {
+  if (hasDisplayValue(row.fulfillment_status_current)) {
+    return String(row.fulfillment_status_current).trim();
+  }
+  if (hasDisplayValue(row.fulfillment_status)) {
+    return String(row.fulfillment_status).trim();
+  }
+  return null;
+}
+
 export function formatLegacyOrderStatus(row: Pick<
   LegacyStoreTransactionRow,
   "fulfillment_status_current" | "fulfillment_status" | "paid"
@@ -171,10 +204,24 @@ export function buildOrderItemDescription(item: LegacyStoreTransactionItemRow): 
   return parts.length > 0 ? joinWatsonDisplayParts(parts) : "";
 }
 
+export function buildLegacyCustomerItemLabel(item: LegacyStoreTransactionItemRow): string {
+  const parts: string[] = [];
+  if (hasDisplayValue(item.itemname)) {
+    parts.push(String(item.itemname).trim());
+  } else if (hasDisplayValue(item.product)) {
+    parts.push(String(item.product).trim());
+  }
+  if (hasDisplayValue(item.color)) {
+    parts.push(String(item.color).trim());
+  }
+  return parts.join(" · ");
+}
+
 export function buildOrderItemDisplay(item: LegacyStoreTransactionItemRow): MemberOrderItemDisplay {
   return {
     transactionItemId: String(item.transaction_itemid),
     description: buildOrderItemDescription(item),
+    customerLabel: buildLegacyCustomerItemLabel(item),
     quantity: item.quantity != null ? String(item.quantity) : null,
     itemPrice: formatLegacyMoney(item.priceperitem),
     lineTotal: formatLegacyMoney(item.totalprice),
@@ -193,6 +240,9 @@ export function buildOrderDisplay(
     : "";
 
   const orderTotal = formatLegacyMoney(order.totalcost);
+  const fulfillmentOrderNumber = hasDisplayValue(order.fulfillment_ordernumber)
+    ? String(order.fulfillment_ordernumber).trim()
+    : "";
 
   return {
     storeTransactionId: String(order.storetransactionid),
@@ -211,6 +261,17 @@ export function buildOrderDisplay(
     shopifyOrderId: null,
     shopifyOrderNumber: null,
     shopifyOrderHref: null,
+    accountOrderNumber: fulfillmentOrderNumber || order.transactionid,
+    paymentStatusLabel: formatLegacyPaymentStatus(order.paid),
+    fulfillmentStatusLabel: formatLegacyFulfillmentStatus(order),
+    trackingLinks: dedupeTrackingLinks(
+      items.map((item) =>
+        legacyItemTrackingLink({
+          trackingNumber: item.trackingnumber,
+          carrier: item.carrier,
+        }),
+      ),
+    ),
   };
 }
 

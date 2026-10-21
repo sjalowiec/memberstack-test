@@ -1,0 +1,194 @@
+---
+/** Account Purchase History — shop orders for the signed-in member. */
+---
+
+<section
+  id="purchase-history"
+  class="dashboard-card dashboard-card--purchases"
+  aria-labelledby="purchase-history-heading"
+  data-kbm-account-purchases
+>
+  <h2 id="purchase-history-heading" class="dashboard-card__title">Purchase History</h2>
+  <p class="dashboard-card__subtitle">
+    Machines, accessories, and other shop purchases for this account. Membership billing stays in
+    Current Membership.
+  </p>
+
+  <p
+    class="dashboard-muted account-purchases__loading"
+    data-kbm-account-purchases-status
+    role="status"
+    aria-live="polite"
+  >
+    Loading your purchases…
+  </p>
+
+  <p class="account-purchases__sync" data-kbm-account-purchases-sync hidden></p>
+  <p class="account-purchases__legacy" data-kbm-account-purchases-legacy hidden></p>
+
+  <div class="account-purchases__list" data-kbm-account-purchases-list hidden></div>
+
+  <div class="account-purchases__empty" data-kbm-account-purchases-empty hidden>
+    <p class="account-purchases__empty-text">No shop purchases were found for this account email yet.</p>
+  </div>
+
+  <p class="account-purchases__email-note" data-kbm-account-purchases-email hidden></p>
+</section>
+
+<style>
+  .dashboard-card--purchases {
+    grid-column: 1 / -1;
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+    min-width: 0;
+  }
+
+  .dashboard-card--purchases .dashboard-card__subtitle {
+    margin-bottom: 0.85rem;
+  }
+
+  .account-purchases__loading,
+  .account-purchases__sync,
+  .account-purchases__legacy,
+  .account-purchases__email-note {
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  .account-purchases__sync,
+  .account-purchases__email-note,
+  .account-purchases__legacy {
+    font-size: 0.92rem;
+    color: #6b7280;
+  }
+
+  .account-purchases__legacy {
+    color: #4b5563;
+  }
+
+  .account-purchases__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .account-purchases__empty-text {
+    margin: 0;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+
+  :global(.account-purchases__order) {
+    padding: 0.85rem 0.9rem;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    background: #fafbfa;
+    min-width: 0;
+  }
+
+  :global(.account-purchases__order-header) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+    margin-bottom: 0.65rem;
+  }
+
+  :global(.account-purchases__order-number) {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  :global(.account-purchases__date) {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.92rem;
+  }
+
+  :global(.account-purchases__status) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    margin: 0 0 0.75rem;
+  }
+
+  :global(.account-purchases__status div) {
+    min-width: 8rem;
+  }
+
+  :global(.account-purchases__status dt) {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  :global(.account-purchases__status dd) {
+    margin: 0.15rem 0 0;
+    color: #2c3a57;
+    font-weight: 600;
+  }
+
+  :global(.account-purchases__items) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  :global(.account-purchases__item) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    color: #374151;
+  }
+
+  :global(.account-purchases__item-title) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.account-purchases__qty) {
+    color: #6b7280;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :global(.account-purchases__items-empty) {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  :global(.account-purchases__tracking) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+  }
+
+  :global(.account-purchases__tracking-link) {
+    font-weight: 600;
+    color: #2c3a57;
+    text-underline-offset: 0.15em;
+  }
+
+  :global(.account-purchases__tracking-link:hover) {
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(.account-purchases__tracking-number),
+  :global(.account-purchases__tracking-text) {
+    color: #4b5563;
+    font-size: 0.92rem;
+  }
+
+  :global(.account-purchases__tracking-number) {
+    font-variant-numeric: tabular-nums;
+  }
+</style>

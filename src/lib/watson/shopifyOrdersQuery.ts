@@ -1,4 +1,5 @@
 import { queryWatson } from "./db";
+import { ensureShopifyOrderPurchaseColumns } from "./shopifyPurchaseSchema";
 import type { WatsonQueryFn } from "./memberSearch";
 import { siteBrandLabel, type ShopifySiteBrand } from "./shopifyOrderClassify";
 import {
@@ -80,6 +81,9 @@ export async function listShopifyOrders(
   filters: ShopifyOrderListFilters = {},
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<ShopifyOrderListRow[]> {
+  if (queryFn === queryWatson) {
+    await ensureShopifyOrderPurchaseColumns();
+  }
   const params: unknown[] = [];
   const where: string[] = [`o.source = 'shopify'`];
 
@@ -89,6 +93,7 @@ export async function listShopifyOrders(
     const idx = params.length;
     where.push(`(
       lower(coalesce(o.customer_email, '')) LIKE $${idx}
+      OR lower(coalesce(o.checkout_email, '')) LIKE $${idx}
       OR lower(coalesce(o.customer_first_name, '')) LIKE $${idx}
       OR lower(coalesce(o.customer_last_name, '')) LIKE $${idx}
       OR lower(coalesce(o.order_number, '')) LIKE $${idx}

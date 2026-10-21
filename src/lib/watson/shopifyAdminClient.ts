@@ -15,6 +15,7 @@ const ORDER_FIELDS = [
   "name",
   "order_number",
   "email",
+  "contact_email",
   "created_at",
   "processed_at",
   "cancelled_at",
@@ -32,6 +33,7 @@ const ORDER_FIELDS = [
   "customer",
   "billing_address",
   "line_items",
+  "fulfillments",
 ].join(",");
 
 export interface FetchShopifyOrdersOptions {
@@ -146,6 +148,8 @@ function shopifyListParams(extra: Record<string, string>): URLSearchParams {
 /**
  * Fetch orders created on/after createdAtMin (ISO), including cancelled/refunded.
  * Paginates via Shopify Link headers. Does not request shipping address fields.
+ * Fulfillments are requested so tracking links can be stored; destination
+ * addresses on those objects are discarded by the mapper.
  */
 export async function fetchShopifyOrdersSince(
   options: FetchShopifyOrdersOptions,
