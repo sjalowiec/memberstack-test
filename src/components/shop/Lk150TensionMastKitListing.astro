@@ -1,0 +1,110 @@
+---
+/**
+ * Shop listing for the LK150 Second Tension Mast Kit.
+ * Renders nothing while the product is unpublished.
+ */
+import { LK150_SECOND_TENSION_MAST_KIT } from "../../data/shop/lk150SecondTensionMastKit";
+
+const kit = LK150_SECOND_TENSION_MAST_KIT;
+const photo = kit.photos.find((item) => item.placement === "product") ?? null;
+---
+
+{
+  kit.published && (
+    <article class="kit-shop-card">
+      {
+        photo && (
+          <a href={kit.path} class="kit-shop-photo-link">
+            <img
+              src={photo.src}
+              alt={photo.alt}
+              class="kit-shop-photo"
+              width={photo.width}
+              height={photo.height}
+            />
+          </a>
+        )
+      }
+      <div class="kit-shop-body">
+        <h2 class="kit-shop-name">
+          <a href={kit.path}>{kit.name}</a>
+        </h2>
+        <p class="kit-shop-price">
+          {kit.priceLabel} {kit.shippingLabel}
+        </p>
+        <p class="kit-shop-note">U.S. sales only. All sales are final.</p>
+        <a href={kit.path} class="kit-shop-details">View Details</a>
+      </div>
+    </article>
+  )
+}
+
+<style>
+  .kit-shop-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .kit-shop-photo-link {
+    display: block;
+    background: #f7faf0;
+  }
+
+  .kit-shop-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .kit-shop-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.25rem;
+  }
+
+  .kit-shop-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .kit-shop-name a {
+    color: var(--kbm-green);
+    text-decoration: none;
+  }
+
+  .kit-shop-name a:hover {
+    text-decoration: underline;
+  }
+
+  .kit-shop-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0.75rem 0 0;
+  }
+
+  .kit-shop-note {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.5;
+    margin: 0.4rem 0 0;
+  }
+
+  .kit-shop-details {
+    display: inline-block;
+    margin-top: 1rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .kit-shop-details:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+</style>
