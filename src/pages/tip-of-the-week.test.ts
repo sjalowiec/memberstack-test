@@ -4,7 +4,13 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import tipConfig from "../data/tip-of-the-week.json";
 import { resolveTipCatalogVideo, tipOfTheWeek } from "../lib/tipOfTheWeek";
-import { TIP_FEEDBACK_CHOICES, TIP_REACTION_HISTORY, TIP_TOPIC_PROMPT, TIP_TOPIC_SUBMIT_LABEL } from "../lib/tipOfTheWeekReactions";
+import {
+  TIP_FEEDBACK_CHOICES,
+  TIP_REACTION_HISTORY,
+  TIP_TOPIC_HINT,
+  TIP_TOPIC_PROMPT,
+  TIP_TOPIC_SUBMIT_LABEL,
+} from "../lib/tipOfTheWeekReactions";
 import { formatTipAvailabilityDate } from "../lib/tipOfTheWeek/map";
 
 const pageDir = dirname(fileURLToPath(import.meta.url));
@@ -270,10 +276,14 @@ describe("Tip of the Week reactions", () => {
     expect(reactionsIdx).toBeGreaterThan(videoIdx);
     expect(relatedIdx).toBeGreaterThan(reactionsIdx);
     expect(reactionsSource).toContain("TIP_TOPIC_PROMPT");
-    expect(TIP_TOPIC_PROMPT).toBe("What topic would you like us to cover?");
+    expect(TIP_TOPIC_PROMPT).toBe("Suggest a topic for a future tip");
+    expect(reactionsSource).toContain("TIP_TOPIC_HINT");
+    expect(TIP_TOPIC_HINT).toBe(
+      "I read every suggestion to help plan future tips. Individual replies aren’t provided.",
+    );
     expect(reactionsSource).toContain("data-tip-topic-form");
     expect(reactionsSource).toContain("TIP_TOPIC_SUBMIT_LABEL");
-    expect(TIP_TOPIC_SUBMIT_LABEL).toBe("Submit");
+    expect(TIP_TOPIC_SUBMIT_LABEL).toBe("Send suggestion");
     expect(reactionsSource).toContain("selectTipReaction");
     expect(reactionsSource).toContain("submitTipTopic");
     expect(reactionsSource).toContain("hydrateTipReactions");
