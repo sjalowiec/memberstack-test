@@ -12,7 +12,7 @@ import {
   isSkillBuilderFeedbackId,
   isSkillBuilderReactionId,
 } from "./skillBuilderFeedback";
-import { TIP_REACTIONS, TIP_REACTION_ENDPOINT } from "../tipOfTheWeekReactions";
+import { TIP_FEEDBACK_CHOICES, TIP_REACTIONS, TIP_REACTION_ENDPOINT } from "../tipOfTheWeekReactions";
 import { SKILL_BUILDER_REACTION_ENDPOINT } from "./skillBuilderReactions";
 import {
   SKILL_BUILDER_REACTION_BLOB_STORE,
@@ -54,12 +54,14 @@ describe("Skill Builder feedback catalog", () => {
     expect(isSkillBuilderFeedbackId("taming-the-curl-2026-08")).toBe(false);
   });
 
-  it("keeps Skill Builder reaction options distinct from Tip of the Week except the shared will_try id", () => {
+  it("keeps Skill Builder reaction options distinct from current Tip of the Week choices", () => {
     expect(SKILL_BUILDER_REACTIONS.map((r) => r.id)).toEqual(["did_it", "will_try", "need_help"]);
-    expect(TIP_REACTIONS.map((r) => r.id)).toEqual(["helped", "will_try", "more_like_this"]);
+    expect(TIP_FEEDBACK_CHOICES.map((r) => r.id)).toEqual(["helped", "not_for_me"]);
+    expect(TIP_REACTIONS.map((r) => r.id)).toContain("will_try");
     expect(isSkillBuilderReactionId("did_it")).toBe(true);
     expect(isSkillBuilderReactionId("need_help")).toBe(true);
     expect(isSkillBuilderReactionId("helped")).toBe(false);
+    expect(isSkillBuilderReactionId("not_for_me")).toBe(false);
     expect(isSkillBuilderReactionId("more_like_this")).toBe(false);
     expect(SKILL_BUILDER_FEEDBACK_HEADING).toBe("How did this practice go?");
   });

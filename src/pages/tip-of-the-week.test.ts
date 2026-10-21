@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import tipConfig from "../data/tip-of-the-week.json";
 import { resolveTipCatalogVideo, tipOfTheWeek } from "../lib/tipOfTheWeek";
-import { TIP_REACTIONS } from "../lib/tipOfTheWeekReactions";
+import { TIP_FEEDBACK_CHOICES, TIP_REACTION_HISTORY, TIP_TOPIC_PROMPT, TIP_TOPIC_SUBMIT_LABEL } from "../lib/tipOfTheWeekReactions";
 import { formatTipAvailabilityDate } from "../lib/tipOfTheWeek/map";
 
 const pageDir = dirname(fileURLToPath(import.meta.url));
@@ -243,19 +243,42 @@ describe("Tip of the Week page route", () => {
 });
 
 describe("Tip of the Week reactions", () => {
-  it("keeps the will_try key and uses the smiling-face emoji", () => {
-    const willTry = TIP_REACTIONS.find((r) => r.id === "will_try");
+  it("keeps retired reaction ids available for historical reports", () => {
+    const willTry = TIP_REACTION_HISTORY.find((r) => r.id === "will_try");
     expect(willTry?.id).toBe("will_try");
     expect(willTry?.emoji).toBe("🙂");
     expect(willTry?.emoji).not.toBe("🧶");
     expect(willTry?.label).toContain("going to try it");
+    expect(TIP_FEEDBACK_CHOICES.map((choice) => choice.id)).toEqual(["helped", "not_for_me"]);
+    expect(TIP_FEEDBACK_CHOICES.map((choice) => choice.label)).toEqual([
+      "Helpful",
+      "Not for me",
+    ]);
   });
 
   it("keeps reaction markup accessible and wired", () => {
     expect(reactionsSource).toContain("Was this tip helpful?");
-    expect(reactionsSource).toContain("TIP_REACTIONS.map");
+    expect(reactionsSource).toContain("data-tip-reaction-followup hidden");
+    expect(reactionsSource).toContain("background: #f6f7f3");
+    expect(reactionsSource).toContain("border: 1px solid #c5cdb8");
+    expect(reactionsSource).toContain("padding: 1rem 1.15rem 1.1rem");
+    expect(reactionsSource).toContain("min-height: 48px");
+    expect(reactionsSource).toContain("TIP_FEEDBACK_CHOICES.map");
+    const videoIdx = pageSource.indexOf('class="totw-video"');
+    const reactionsIdx = pageSource.indexOf("<TipReactions");
+    const relatedIdx = pageSource.indexOf('id="totw-related-heading"');
+    expect(reactionsIdx).toBeGreaterThan(videoIdx);
+    expect(relatedIdx).toBeGreaterThan(reactionsIdx);
+    expect(reactionsSource).toContain("TIP_TOPIC_PROMPT");
+    expect(TIP_TOPIC_PROMPT).toBe("What topic would you like us to cover?");
+    expect(reactionsSource).toContain("data-tip-topic-form");
+    expect(reactionsSource).toContain("TIP_TOPIC_SUBMIT_LABEL");
+    expect(TIP_TOPIC_SUBMIT_LABEL).toBe("Submit");
     expect(reactionsSource).toContain("selectTipReaction");
+    expect(reactionsSource).toContain("submitTipTopic");
     expect(reactionsSource).toContain("hydrateTipReactions");
+    expect(reactionsSource).not.toContain("This helped");
+    expect(reactionsSource).not.toContain("Show me more like this");
   });
 });
 
