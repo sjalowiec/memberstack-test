@@ -1,0 +1,485 @@
+---
+/**
+ * Sales page for the LK150 Second Tension Mast Kit.
+ * Production returns 404 until `published` is true.
+ * Buy Now opens the verified Shopify product while `checkoutEnabled` is true.
+ * Installation video and printable instructions render only after their fields
+ * in src/data/shop/lk150SecondTensionMastKit.ts are filled in.
+ */
+export const prerender = false;
+
+import Layout from "../../../layouts/Layout.astro";
+import VimeoEmbed from "../../../components/media/VimeoEmbed.astro";
+import {
+  LK150_SECOND_TENSION_MAST_KIT,
+  TENSION_MAST_BENEFITS,
+  TENSION_MAST_INCLUDED,
+  TENSION_MAST_INSTALLATION,
+  TENSION_MAST_LK150_ONLY,
+  TENSION_MAST_NOT_INCLUDED,
+  TENSION_MAST_US_SALES_ONLY,
+} from "../../../data/shop/lk150SecondTensionMastKit";
+import {
+  isLk150TensionMastProductionBlocked,
+  tensionMastCheckoutHref,
+  tensionMastInstructionsHtml,
+  tensionMastPhotos,
+  tensionMastVimeoId,
+  tensionMastVimeoPrivacyHash,
+  tensionMastYoutubeUrl,
+} from "../../../lib/shop/lk150TensionMastKit";
+
+const kit = LK150_SECOND_TENSION_MAST_KIT;
+
+if (
+  isLk150TensionMastProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+if (!kit.published) {
+  Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+}
+
+const checkoutHref = tensionMastCheckoutHref(kit);
+const photos = tensionMastPhotos(kit);
+const productPhoto = photos.find((photo) => photo.placement === "product") ?? null;
+const installedPhoto = photos.find((photo) => photo.placement === "installed") ?? null;
+const vimeoId = tensionMastVimeoId(kit);
+const vimeoPrivacyHash = tensionMastVimeoPrivacyHash(kit);
+const youtubeUrl = tensionMastYoutubeUrl(kit);
+const instructionsHtml = tensionMastInstructionsHtml(kit);
+const showVideo = Boolean(vimeoId || youtubeUrl);
+
+const title = `${kit.name} | Knit it Now`;
+const description = kit.introduction;
+---
+
+<Layout {title} {description} skipAnalytics={!kit.published}>
+  {
+    !kit.published && (
+      <Fragment slot="head">
+        <meta name="robots" content="noindex, nofollow" />
+      </Fragment>
+    )
+  }
+
+  <div
+    class="kit-page"
+    {...(kit.published ? {} : { "data-pagefind-ignore": true })}
+    data-shop-product-analytics
+    data-shop-product-slug={kit.slug}
+    data-shopify-product-id={kit.shopifyProductId}
+    data-shop-published={kit.published ? "true" : "false"}
+    data-shop-checkout={checkoutHref ? "true" : "false"}
+  >
+    {
+      !kit.published && (
+        <p class="kit-draft" role="status">
+          Draft preview. This page is hidden from the shop until it is published.
+        </p>
+      )
+    }
+
+    <nav class="machine-breadcrumb" aria-label="Breadcrumb">
+      <a href="/shop" class="back-link">← Back to Shop</a>
+    </nav>
+
+    <div class="kit-product">
+      <h1 class="machine-name">{kit.name}</h1>
+
+      {
+        productPhoto && (
+          <figure class="kit-figure kit-product-photo">
+            <img
+              src={productPhoto.src}
+              alt={productPhoto.alt}
+              class="kit-photo"
+              width={productPhoto.width}
+              height={productPhoto.height}
+            />
+          </figure>
+        )
+      }
+
+      <div class="kit-product-details">
+        {kit.headline && <p class="kit-headline">{kit.headline}</p>}
+        <p class="kit-intro">{kit.introduction}</p>
+
+        <section class="machine-purchase" aria-label="Purchase">
+          <div class="machine-purchase-main">
+            <p class="machine-price">
+              {kit.priceLabel}
+              <span class="kit-price-note">{kit.shippingLabel}</span>
+            </p>
+            <div class="machine-buy-row">
+              {
+                checkoutHref ? (
+                  <a
+                    href={checkoutHref}
+                    class="machine-buy"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    data-shop-shopify-click
+                  >
+                    Buy Now
+                  </a>
+                ) : (
+                  <button type="button" class="machine-buy" disabled>Buy Now</button>
+                )
+              }
+            </div>
+          </div>
+          <div class="kit-policy">
+            <p>{TENSION_MAST_US_SALES_ONLY}</p>
+            <p>
+              All sales are final. If any parts arrive damaged or missing, please
+              <a
+                href="/contact/"
+                class="contact-modal-trigger"
+                data-contact-source="lk150-second-tension-mast-kit"
+              >
+                contact us
+              </a>
+              so we can make it right.
+            </p>
+            <p>{TENSION_MAST_LK150_ONLY}</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="machine-section" aria-labelledby="kit-benefits-heading">
+      <h2 id="kit-benefits-heading" class="section-title">Benefits</h2>
+      <ul class="kit-list">
+        {TENSION_MAST_BENEFITS.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="machine-section" aria-labelledby="kit-included-heading">
+      <h2 id="kit-included-heading" class="section-title">What’s included</h2>
+      <p class="kit-copy">The five components shown in the kit photo:</p>
+      <ul class="kit-list">
+        {TENSION_MAST_INCLUDED.map((item) => <li>{item}</li>)}
+      </ul>
+      <p class="kit-copy kit-after-list">{TENSION_MAST_NOT_INCLUDED}</p>
+    </section>
+
+    {
+      installedPhoto && (
+        <section class="machine-section" aria-labelledby="kit-installed-heading">
+          <h2 id="kit-installed-heading" class="section-title">See it installed</h2>
+          <figure class="kit-figure kit-installed">
+            <img
+              src={installedPhoto.src}
+              alt={installedPhoto.alt}
+              class="kit-photo"
+              width={installedPhoto.width}
+              height={installedPhoto.height}
+              loading="lazy"
+            />
+            {
+              installedPhoto.caption && (
+                <figcaption class="kit-caption">{installedPhoto.caption}</figcaption>
+              )
+            }
+          </figure>
+        </section>
+      )
+    }
+
+    <section class="machine-section" aria-labelledby="kit-install-heading">
+      <h2 id="kit-install-heading" class="section-title">Installation</h2>
+      <p class="kit-copy">{TENSION_MAST_INSTALLATION}</p>
+    </section>
+
+    {
+      instructionsHtml && (
+        <section class="machine-section" aria-labelledby="kit-instructions-heading">
+          <h2 id="kit-instructions-heading" class="section-title">Installation instructions</h2>
+          <div class="kit-instructions" set:html={instructionsHtml} />
+        </section>
+      )
+    }
+
+    {
+      showVideo && (
+        <section class="machine-section" aria-labelledby="kit-video-heading">
+          <h2 id="kit-video-heading" class="section-title">Installation video</h2>
+          <p class="kit-copy">The installation video is free to watch.</p>
+          {
+            vimeoId && (
+              <div class="kit-video">
+                <VimeoEmbed
+                  vimeoId={vimeoId}
+                  title={`${kit.name} installation`}
+                  privacyHash={vimeoPrivacyHash}
+                />
+              </div>
+            )
+          }
+          {
+            youtubeUrl && (
+              <p class="kit-copy">
+                <a href={youtubeUrl} rel="noopener noreferrer" target="_blank">Watch on YouTube</a>
+              </p>
+            )
+          }
+        </section>
+      )
+    }
+  </div>
+  <script>
+    import { bootShopProductAnalytics } from "../../../scripts/shop-product-analytics";
+    bootShopProductAnalytics();
+  </script>
+</Layout>
+
+<style>
+  .kit-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 4rem;
+  }
+
+  .kit-draft {
+    margin: 0 0 1rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #9a3412;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .machine-breadcrumb {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .back-link {
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .back-link:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .kit-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 1.5rem;
+    align-items: start;
+    margin: 0 0 2rem;
+  }
+
+  .kit-figure.kit-product-photo {
+    margin: 0;
+    width: min(100%, 600px);
+  }
+
+  .kit-product .machine-purchase {
+    max-width: none;
+    margin-bottom: 0;
+  }
+
+  .machine-name {
+    font-size: var(--text-xxl);
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+  }
+
+  .kit-headline {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #3d4e21;
+    line-height: 1.4;
+    margin: 0 0 0.75rem;
+  }
+
+  .kit-intro,
+  .kit-copy {
+    font-size: 1.05rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .kit-after-list {
+    margin-top: 1rem;
+  }
+
+  .machine-purchase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.25rem;
+    width: 100%;
+    max-width: 40rem;
+    padding: 0.85rem 1.15rem;
+    margin: 0 0 1.75rem;
+    background: #f7faf0;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+  }
+
+  .machine-purchase-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+  }
+
+  .machine-price {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 0;
+  }
+
+  .kit-price-note {
+    display: inline-block;
+    margin-left: 0.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #5a6b47;
+  }
+
+  .machine-buy {
+    display: inline-block;
+    padding: 0.7rem 1.75rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    border: 0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .machine-buy:hover {
+    background: var(--kbm-green-hover, #445626);
+    color: #ffffff;
+  }
+
+  .machine-buy:disabled {
+    background: #8a9a6e;
+    cursor: not-allowed;
+  }
+
+  .kit-policy {
+    flex-basis: 100%;
+    max-width: 38rem;
+  }
+
+  .kit-policy p {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3d4e21;
+    line-height: 1.5;
+  }
+
+  .kit-policy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .kit-policy a,
+  .kit-copy a {
+    color: var(--kbm-green);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .machine-section {
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0 0 0.75rem;
+  }
+
+  .kit-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: #5a6b47;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .kit-list li + li {
+    margin-top: 0.35rem;
+  }
+
+  .kit-instructions {
+    font-size: 1.05rem;
+    color: #5a6b47;
+    line-height: 1.6;
+  }
+
+  .kit-instructions :global(a) {
+    color: var(--kbm-green);
+  }
+
+  .kit-video {
+    margin-top: 0.5rem;
+  }
+
+  .kit-figure {
+    margin: 0 0 1.5rem;
+    max-width: 100%;
+  }
+
+  .kit-installed {
+    width: min(100%, 28rem);
+    margin-bottom: 0;
+  }
+
+  @media (min-width: 720px) {
+    .kit-product {
+      grid-template-columns: minmax(200px, 380px) minmax(0, 1fr);
+      grid-template-areas:
+        "photo name"
+        "photo details";
+    }
+
+    .kit-product-photo {
+      grid-area: photo;
+    }
+
+    .kit-product .machine-name {
+      grid-area: name;
+    }
+
+    .kit-product-details {
+      grid-area: details;
+    }
+  }
+
+  .kit-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid #dbe6c5;
+    background: #f7faf0;
+  }
+
+  .kit-caption {
+    margin: 0.55rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #5a6b47;
+  }
+</style>

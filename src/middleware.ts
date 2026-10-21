@@ -20,6 +20,10 @@ import {
   isSidewaysCardiganRoute,
 } from "./lib/patterns/sidewaysCardiganProductionAccess";
 import {
+  isLk150TensionMastKitRoute,
+  isLk150TensionMastProductionBlocked,
+} from "./lib/shop/lk150TensionMastKit";
+import {
   isWatsonApiRoute,
   isWatsonRoute,
   watsonApiUnauthorizedResponse,
@@ -93,6 +97,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isCoursePreviewProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/courses/", 302);
+  }
+
+  if (
+    isLk150TensionMastKitRoute(u.pathname) &&
+    isLk150TensionMastProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
   }
 
   const isWatsonPage = isWatsonRoute(u.pathname);
