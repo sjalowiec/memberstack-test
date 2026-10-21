@@ -1,15 +1,19 @@
 /**
  * Columns the Account purchase history reads from live Shopify orders.
- * Sync applies the full native schema; the first account or sales read applies
- * just these statements when an older database has not been migrated yet.
+ * Sync applies the full native schema. The first account or sales read applies
+ * the same two statements when an older database has not been migrated yet.
+ *
+ * This file must not import schema.ts. Watson pages already pull the Shopify
+ * query modules into the browser bundle, and schema.ts uses Node's url API.
  */
-import { queryWatson, getWatsonPool } from "./db";
-import { applySchemaStatements, getWatsonNativeSchemaStatements } from "./schema";
+import { queryWatson } from "./db";
 
-export const SHOPIFY_PURCHASE_SCHEMA_LABELS = [
-  "alter watson_shopify_orders purchase columns",
-  "index idx_watson_shopify_orders_checkout_email",
-] as const;
+const PURCHASE_COLUMN_SQL = `ALTER TABLE watson_shopify_orders
+  ADD COLUMN IF NOT EXISTS checkout_email TEXT,
+  ADD COLUMN IF NOT EXISTS tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb`;
+
+const CHECKOUT_EMAIL_INDEX_SQL =
+  "CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_checkout_email ON watson_shopify_orders (lower(checkout_email))";
 
 let ready: Promise<void> | null = null;
 
@@ -40,9 +44,6 @@ async function ensureShopifyOrderPurchaseColumnsOnce(): Promise<void> {
     }
   }
 
-  const statements = getWatsonNativeSchemaStatements().filter((statement) =>
-    (SHOPIFY_PURCHASE_SCHEMA_LABELS as readonly string[]).includes(statement.label),
-  );
-  const pool = await getWatsonPool();
-  await applySchemaStatements(pool, statements);
+  await queryWatson(PURCHASE_COLUMN_SQL);
+  await queryWatson(CHECKOUT_EMAIL_INDEX_SQL);
 }
