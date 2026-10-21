@@ -30,7 +30,7 @@ const photo = kit.photos.find((item) => item.placement === "product") ?? null;
           <a href={kit.path}>{kit.name}</a>
         </h2>
         <p class="kit-shop-price">
-          {kit.priceLabel} {kit.shippingLabel}
+          {kit.priceLabel}{" "}{kit.shippingLabel}
         </p>
         <p class="kit-shop-note">U.S. sales only. All sales are final.</p>
         <a href={kit.path} class="kit-shop-details">View Details</a>
