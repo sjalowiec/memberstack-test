@@ -19,6 +19,11 @@ import {
 } from "./popupAnnouncement";
 import type { WhatsNewAnnouncementActivityEvent } from "./announcementActivity";
 import {
+  WHATS_NEW_POPUP_SCAN_ANNOUNCEMENT_ID,
+  WHATS_NEW_POPUP_SCAN_MEMBER_ID,
+  whatsNewSqlProbePathPattern,
+} from "./announcementActivityReport";
+import {
   buildBillboardSettings,
   getPublicBillboard,
 } from "./billboard";
@@ -528,9 +533,20 @@ export async function listWhatsNewAnnouncementActivityCounts(
       SELECT card_id, event_type, COUNT(*)::int AS count
       FROM watson_whats_new_announcement_events
       WHERE environment = $1
+        -- IS DISTINCT FROM keeps signed-out rows. NULL = $2 would drop them.
+        AND (
+          member_id IS DISTINCT FROM $2
+          OR card_id IS DISTINCT FROM $3
+        )
+        AND COALESCE(source_page, '') !~* $4
       GROUP BY card_id, event_type
     `,
-    [environment],
+    [
+      environment,
+      WHATS_NEW_POPUP_SCAN_MEMBER_ID,
+      WHATS_NEW_POPUP_SCAN_ANNOUNCEMENT_ID,
+      whatsNewSqlProbePathPattern(),
+    ],
   );
   const counts: Record<string, WhatsNewAnnouncementActivityCounts> = {};
   for (const row of rows) {
