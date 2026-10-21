@@ -7,6 +7,7 @@ import {
   renderAccountPurchaseOrders,
 } from "../lib/account/accountPurchaseHistoryView";
 import {
+  reportAccountPurchaseHistoryOpen,
   reportAccountPurchaseHistoryView,
   reportAccountPurchaseTrackingClick,
 } from "../lib/analytics/accountPurchaseHistoryGa";
@@ -80,10 +81,21 @@ async function hydrate(root: HTMLElement): Promise<void> {
   }
 }
 
+function bindPurchaseAccordion(root: HTMLElement): void {
+  const accordion = root.querySelector<HTMLDetailsElement>("[data-kbm-account-purchases-accordion]");
+  if (!accordion || accordion.dataset.accountPurchasesAccordionBound === "true") return;
+  accordion.dataset.accountPurchasesAccordionBound = "true";
+  accordion.addEventListener("toggle", () => {
+    if (accordion.open) reportAccountPurchaseHistoryOpen();
+  });
+}
+
 export function bootAccountPurchaseHistory(): void {
   const root = document.querySelector<HTMLElement>("[data-kbm-account-purchases]");
   if (!root || root.dataset.accountPurchasesReady === "true") return;
   root.dataset.accountPurchasesReady = "true";
+
+  bindPurchaseAccordion(root);
 
   root.addEventListener("click", (event) => {
     const target = event.target;
