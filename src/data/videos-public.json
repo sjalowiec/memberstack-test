@@ -7746,5 +7746,17 @@
         "time": 88
       }
     ]
+  },
+  {
+    "content_id": 2216,
+    "slug": "lk150-second-tension-mast-assembly",
+    "title": "LK150 Second Tension Mast Assembly",
+    "description": "Assemble and install a second tension mast on the Silver Reed LK150.",
+    "access_level": "public",
+    "status": "published",
+    "posterUrl": "https://i.vimeocdn.com/video/2215184988-ac012a780470fb11edc7280d5490d2882194be82564cdb281d194a36d5b58289-d_1280x720?r=pad",
+    "category": "Machine Maintenance",
+    "subcategory": "General Information",
+    "vimeo_id": 1238151241
   }
 ]
