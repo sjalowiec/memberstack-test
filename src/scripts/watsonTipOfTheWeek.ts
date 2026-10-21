@@ -572,6 +572,15 @@ async function refreshReactions(tipId: string) {
       return;
     }
     const rows = Array.isArray(data.rows) ? data.rows : [];
+    const topics = Array.isArray(data.topicSuggestions)
+      ? data.topicSuggestions.filter((topic: unknown) => typeof topic === "string" && topic.trim())
+      : [];
+    const topicItems = topics
+      .map(
+        (topic: string) =>
+          `<li class="watson-totw__topic-item">${escapeHtml(topic)}</li>`,
+      )
+      .join("");
     box.innerHTML = `
       <ul class="watson-totw__reaction-list">
         ${rows
@@ -582,6 +591,12 @@ async function refreshReactions(tipId: string) {
           .join("")}
       </ul>
       <p class="watson-totw__muted">Total responses: ${data.total ?? 0} (one per visitor)</p>
+      <h4 class="watson-totw__topic-heading">Topic suggestions</h4>
+      ${
+        topicItems
+          ? `<ul class="watson-totw__topic-list">${topicItems}</ul>`
+          : `<p class="watson-totw__muted">No topic suggestions yet.</p>`
+      }
     `;
   } catch {
     box.innerHTML = "<p>Unable to load reactions.</p>";

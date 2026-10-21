@@ -1,11 +1,16 @@
 ---
 /**
- * One-click Tip of the Week reactions (client-hydrated).
- * Selection is local + best-effort upsert to Netlify Blobs via log-tip-reaction.
+ * Tip of the Week feedback (client-hydrated).
+ * The choice is saved immediately. The topic field is optional and has its own Submit.
+ * Selection is local + best-effort upsert via log-tip-reaction.
  */
 import {
-  TIP_REACTIONS,
+  TIP_FEEDBACK_CHOICES,
   TIP_REACTION_THANKS,
+  TIP_TOPIC_EMPTY,
+  TIP_TOPIC_PROMPT,
+  TIP_TOPIC_SUBMIT_LABEL,
+  TIP_TOPIC_THANKS,
 } from "../../lib/tipOfTheWeekReactions";
 
 interface Props {
@@ -13,6 +18,7 @@ interface Props {
 }
 
 const { tipId } = Astro.props;
+const topicInputId = `totw-topic-${tipId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 ---
 
 <section
@@ -24,38 +30,53 @@ const { tipId } = Astro.props;
   <h2 id="totw-reactions-heading" class="totw-reactions__prompt">
     Was this tip helpful?
   </h2>
-  <div class="totw-reactions__buttons" role="group" aria-label="Tip reactions">
+  <div class="totw-reactions__buttons" role="group" aria-label="Tip feedback">
     {
-      TIP_REACTIONS.map((reaction) => (
+      TIP_FEEDBACK_CHOICES.map((reaction) => (
         <button
           type="button"
           class="totw-reactions__btn"
           data-tip-reaction={reaction.id}
           aria-pressed="false"
         >
-          <span class="totw-reactions__emoji" aria-hidden="true">
-            {reaction.emoji}
-          </span>
           <span class="totw-reactions__label">{reaction.label}</span>
         </button>
       ))
     }
   </div>
-  <p
-    class="totw-reactions__thanks"
-    data-tip-reaction-thanks
-    hidden
-    aria-live="polite"
-  >
-    {TIP_REACTION_THANKS}
-  </p>
+  <div class="totw-reactions__followup" data-tip-reaction-followup hidden>
+    <p class="totw-reactions__thanks" data-tip-reaction-thanks aria-live="polite">
+      {TIP_REACTION_THANKS}
+    </p>
+    <form class="totw-reactions__topic" data-tip-topic-form>
+      <label class="totw-reactions__topic-label" for={topicInputId}>
+        {TIP_TOPIC_PROMPT}
+      </label>
+      <textarea
+        id={topicInputId}
+        class="totw-reactions__topic-input"
+        data-tip-topic-input
+        name="topicSuggestion"
+        maxlength="500"
+        rows="3"
+      ></textarea>
+      <button type="submit" class="totw-reactions__topic-submit">
+        {TIP_TOPIC_SUBMIT_LABEL}
+      </button>
+      <p class="totw-reactions__topic-status" data-tip-topic-status hidden aria-live="polite"></p>
+    </form>
+  </div>
 </section>
 
 <script>
   import {
+    TIP_TOPIC_EMPTY,
+    TIP_TOPIC_THANKS,
     hydrateTipReactions,
-    isTipReactionId,
+    isTipFeedbackChoice,
+    readStoredTipTopic,
     selectTipReaction,
+    submitTipTopic,
   } from "../../lib/tipOfTheWeekReactions";
 
   function boot() {
@@ -66,12 +87,35 @@ const { tipId } = Astro.props;
 
     hydrateTipReactions(root, tipId);
 
+    const topicInput = root.querySelector<HTMLTextAreaElement>("[data-tip-topic-input]");
+    const topicStatus = root.querySelector<HTMLElement>("[data-tip-topic-status]");
+    const storedTopic = readStoredTipTopic(tipId);
+    if (storedTopic && topicInput) {
+      topicInput.value = storedTopic;
+      if (topicStatus) {
+        topicStatus.hidden = false;
+        topicStatus.textContent = TIP_TOPIC_THANKS;
+      }
+    }
+
     root.querySelectorAll<HTMLButtonElement>("[data-tip-reaction]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const reaction = btn.getAttribute("data-tip-reaction");
-        if (!isTipReactionId(reaction)) return;
+        if (!isTipFeedbackChoice(reaction)) return;
         selectTipReaction(root, tipId, reaction);
       });
+    });
+
+    const form = root.querySelector<HTMLFormElement>("[data-tip-topic-form]");
+    form?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const result = submitTipTopic({
+        tipId,
+        topic: topicInput?.value ?? "",
+      });
+      if (!topicStatus) return;
+      topicStatus.hidden = false;
+      topicStatus.textContent = result === "empty" ? TIP_TOPIC_EMPTY : TIP_TOPIC_THANKS;
     });
   }
 
@@ -84,37 +128,45 @@ const { tipId } = Astro.props;
 
 <style>
   .totw-reactions {
-    margin: 1.25rem 0 0;
+    box-sizing: border-box;
+    max-width: 860px;
+    margin: 0.85rem 0 0;
+    padding: 1rem 1.15rem 1.1rem;
+    background: #f6f7f3;
+    border: 1px solid #c5cdb8;
+    border-radius: 12px;
   }
 
   .totw-reactions__prompt {
-    margin: 0 0 0.85rem;
+    margin: 0 0 0.75rem;
     font-size: 1.05rem;
-    font-weight: 600;
-    color: #374151;
+    font-weight: 650;
+    color: #243015;
   }
 
   .totw-reactions__buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.65rem;
+    gap: 0.7rem;
   }
 
   .totw-reactions__btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.45rem;
-    min-height: 44px;
-    padding: 0.65rem 1rem;
-    border: 2px solid var(--ring, #e5e8e0);
+    min-width: 9.5rem;
+    min-height: 48px;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #52682d;
     border-radius: 10px;
     background: #fff;
-    color: #1f2937;
+    color: #243015;
     font: inherit;
-    font-size: 0.95rem;
-    font-weight: 550;
+    font-size: 1rem;
+    font-weight: 650;
     cursor: pointer;
-    text-align: left;
+    text-align: center;
     transition:
       border-color 0.15s ease,
       background-color 0.15s ease,
@@ -133,34 +185,116 @@ const { tipId } = Astro.props;
 
   .totw-reactions__btn.is-selected {
     border-color: var(--kbm-green, #52682d);
-    background: #eef2e6;
-    box-shadow: inset 0 0 0 1px var(--kbm-green, #52682d);
+    background: #dfe8cf;
+    box-shadow: inset 0 0 0 2px var(--kbm-green, #52682d);
+    font-weight: 700;
   }
 
-  .totw-reactions__emoji {
-    font-size: 1.15rem;
-    line-height: 1;
+  .totw-reactions__btn.is-selected .totw-reactions__label::after {
+    content: " · Selected";
   }
 
   .totw-reactions__label {
     line-height: 1.25;
   }
 
+  .totw-reactions__followup {
+    margin-top: 0.85rem;
+  }
+
+  .totw-reactions__followup[hidden] {
+    display: none;
+  }
+
   .totw-reactions__thanks {
-    margin: 0.85rem 0 0;
+    margin: 0;
     font-size: 0.95rem;
     color: var(--kbm-green, #52682d);
     font-weight: 550;
   }
 
+  .totw-reactions__topic {
+    margin-top: 0.85rem;
+  }
+
+  .totw-reactions__topic-label {
+    display: block;
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .totw-reactions__topic-input {
+    display: block;
+    width: 100%;
+    max-width: 36rem;
+    min-height: 5.5rem;
+    padding: 0.65rem 0.75rem;
+    border: 2px solid var(--ring, #e5e8e0);
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    resize: vertical;
+  }
+
+  .totw-reactions__topic-input:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .totw-reactions__topic-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin-top: 0.65rem;
+    padding: 0.55rem 1.05rem;
+    border: 0;
+    border-radius: 8px;
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .totw-reactions__topic-submit:hover,
+  .totw-reactions__topic-submit:focus-visible {
+    background: #445626;
+    outline: 2px solid var(--kbm-green-2, #738c52);
+    outline-offset: 2px;
+  }
+
+  .totw-reactions__topic-status {
+    margin: 0.65rem 0 0;
+    font-size: 0.95rem;
+    color: var(--kbm-green, #52682d);
+    font-weight: 550;
+  }
+
+  .totw-reactions__topic-status[hidden] {
+    display: none;
+  }
+
   @media (max-width: 640px) {
+    .totw-reactions {
+      padding: 0.95rem 0.9rem 1rem;
+    }
+
     .totw-reactions__buttons {
       flex-direction: column;
     }
 
     .totw-reactions__btn {
       width: 100%;
-      justify-content: flex-start;
+      min-height: 48px;
+      padding: 0.85rem 1rem;
+      font-size: 1.05rem;
     }
   }
 </style>

@@ -27,6 +27,8 @@ export const GET: APIRoute = async (context) => {
       total: totals.total,
       byReaction: totals.byReaction,
       rows: tipReactionDisplayRows(totals),
+      topicCount: totals.topicCount,
+      topicSuggestions: totals.topicSuggestions,
     });
   } catch (error) {
     const message =
