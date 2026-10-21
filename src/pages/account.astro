@@ -3,6 +3,7 @@ export const prerender = true;
 import Layout from "../layouts/Layout.astro";
 import DashboardShell from "../components/dashboard/DashboardShell.astro";
 import AccountMembershipPanel from "../components/dashboard/AccountMembershipPanel.astro";
+import AccountPurchaseHistoryPanel from "../components/dashboard/AccountPurchaseHistoryPanel.astro";
 import MyPatternsPanel from "../components/dashboard/MyPatternsPanel.astro";
 import MyFavoritesPanel from "../components/dashboard/MyFavoritesPanel.astro";
 import MyDownloadsPanel from "../components/dashboard/MyDownloadsPanel.astro";
@@ -112,6 +113,7 @@ const description =
         <div class="account-dashboard-grid">
           <AccountMembershipPanel />
           <AccountSettingsPanel />
+          <AccountPurchaseHistoryPanel />
           <MyFavoritesPanel />
           <MyDownloadsPanel />
           <MyCoursesPanel />
@@ -131,6 +133,7 @@ const description =
   import "/src/scripts/account-my-courses.ts";
   import "/src/scripts/account-welcome.ts";
   import "/src/scripts/account-membership.ts";
+  import "/src/scripts/account-purchase-history.ts";
   import "/src/scripts/account-membership-history.ts";
   import "/src/scripts/account-password-change.ts";
   import "/src/scripts/account-email-subscription.ts";
@@ -242,6 +245,7 @@ const description =
   :global(#my-downloads),
   :global(#my-courses),
   :global(#membership),
+  :global(#purchase-history),
   :global(#account-settings),
   :global(#account),
   :global(#my-patterns) {

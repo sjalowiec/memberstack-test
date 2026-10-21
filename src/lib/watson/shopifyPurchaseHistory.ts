@@ -10,7 +10,15 @@ import type {
   MemberOrderSource,
 } from "./memberOrders";
 import { formatMemberJoinedDateDisplay, type WatsonQueryFn } from "./memberSearch";
+import { parseStoredTrackingLinks } from "./orderTrackingLinks";
+import { ensureShopifyOrderPurchaseColumns } from "./shopifyPurchaseSchema";
 import { formatShopifyMoney } from "./shopifySalesTotals";
+
+/** Match the Shopify customer record or the checkout email (guest checkout). */
+export const SHOPIFY_ORDER_EMAIL_MATCH_SQL = `
+  lower(trim(coalesce(customer_email, ''))) = ANY($1::text[])
+  OR lower(trim(coalesce(checkout_email, ''))) = ANY($1::text[])
+`;
 
 export const SHOPIFY_ORDERS_BY_EMAILS_SQL = `
   SELECT
@@ -19,6 +27,8 @@ export const SHOPIFY_ORDERS_BY_EMAILS_SQL = `
     order_name,
     processed_at,
     customer_email,
+    checkout_email,
+    tracking_links,
     currency,
     total_price,
     total_refunded,
@@ -29,7 +39,7 @@ export const SHOPIFY_ORDERS_BY_EMAILS_SQL = `
     source
   FROM watson_shopify_orders
   WHERE source = 'shopify'
-    AND lower(trim(coalesce(customer_email, ''))) = ANY($1::text[])
+    AND (${SHOPIFY_ORDER_EMAIL_MATCH_SQL})
   ORDER BY processed_at DESC NULLS LAST, shopify_order_id DESC
 `;
 
@@ -37,7 +47,7 @@ export const SHOPIFY_ORDER_COUNT_BY_EMAILS_SQL = `
   SELECT COUNT(*)::text AS order_count
   FROM watson_shopify_orders
   WHERE source = 'shopify'
-    AND lower(trim(coalesce(customer_email, ''))) = ANY($1::text[])
+    AND (${SHOPIFY_ORDER_EMAIL_MATCH_SQL})
 `;
 
 export const SHOPIFY_ORDER_ITEMS_BY_ORDER_IDS_SQL = `
@@ -60,6 +70,8 @@ export interface ShopifyOrderHistoryRow {
   order_name: string | null;
   processed_at: Date | string | null;
   customer_email: string | null;
+  checkout_email?: string | null;
+  tracking_links?: unknown;
   currency: string;
   total_price: string | number;
   total_refunded: string | number;
@@ -86,13 +98,32 @@ function toNumber(value: string | number | null | undefined): number {
   return Number.isFinite(amount) ? amount : 0;
 }
 
-function humanizeStatus(value: string | null | undefined): string | null {
+export function humanizeShopifyStatus(value: string | null | undefined): string | null {
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
   return trimmed
     .replace(/_/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function humanizeStatus(value: string | null | undefined): string | null {
+  return humanizeShopifyStatus(value);
+}
+
+export function formatShopifyPaymentStatus(row: {
+  financial_status: string | null;
+  cancelled_at: Date | string | null;
+}): string | null {
+  return humanizeStatus(row.financial_status) ?? (row.cancelled_at ? "Cancelled" : null);
+}
+
+export function formatShopifyFulfillmentStatus(row: {
+  fulfillment_status: string | null;
+  cancelled_at: Date | string | null;
+}): string | null {
+  if (row.cancelled_at) return "Cancelled";
+  return humanizeStatus(row.fulfillment_status);
 }
 
 export function collectEmailLookupKeys(
@@ -149,9 +180,13 @@ export function buildShopifyOrderItemDisplay(
 ): MemberOrderItemDisplay {
   const quantity = Number.isFinite(item.quantity) ? item.quantity : 1;
   const unitPrice = toNumber(item.unit_price);
+  const customerParts = [item.title?.trim(), item.variant_title?.trim()].filter(
+    (part): part is string => Boolean(part),
+  );
   return {
     transactionItemId: item.shopify_line_item_id,
     description: buildShopifyOrderItemDescription(item) || "(untitled item)",
+    customerLabel: customerParts.join(" · ") || "(untitled item)",
     quantity: String(quantity),
     itemPrice: formatShopifyMoney(unitPrice, currency),
     lineTotal: formatShopifyMoney(unitPrice * quantity, currency),
@@ -197,6 +232,10 @@ export function buildShopifyOrderDisplay(
     shopifyOrderId: order.shopify_order_id,
     shopifyOrderNumber: order.order_number,
     shopifyOrderHref: shopifyOrderDetailHref(order.shopify_order_id),
+    accountOrderNumber: orderName,
+    paymentStatusLabel: formatShopifyPaymentStatus(order),
+    fulfillmentStatusLabel: formatShopifyFulfillmentStatus(order),
+    trackingLinks: parseStoredTrackingLinks(order.tracking_links),
   };
 }
 
@@ -265,10 +304,17 @@ function groupShopifyItems(
   return grouped;
 }
 
+async function ensureLiveShopifyPurchaseColumns(queryFn: WatsonQueryFn): Promise<void> {
+  if (queryFn === queryWatson) {
+    await ensureShopifyOrderPurchaseColumns();
+  }
+}
+
 export async function getShopifyOrdersForEmails(
   emails: Array<string | null | undefined>,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<MemberOrderDisplay[]> {
+  await ensureLiveShopifyPurchaseColumns(queryFn);
   const keys = collectEmailLookupKeys(emails);
   if (keys.length === 0) {
     return [];
@@ -294,6 +340,7 @@ export async function getShopifyOrderCountForEmails(
   emails: Array<string | null | undefined>,
   queryFn: WatsonQueryFn = queryWatson,
 ): Promise<number> {
+  await ensureLiveShopifyPurchaseColumns(queryFn);
   const keys = collectEmailLookupKeys(emails);
   if (keys.length === 0) {
     return 0;

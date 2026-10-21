@@ -47,6 +47,8 @@ describe("shopifyOrderMap", () => {
     expect(mapped?.isDesignaknit).toBe(true);
     expect(mapped?.siteBrand).toBe("designaknit");
     expect(mapped?.customerEmail).toBe("buyer@example.com");
+    expect(mapped?.checkoutEmail).toBe("buyer@example.com");
+    expect(mapped?.trackingLinks).toEqual([]);
     expect(mapped?.totalShipping).toBe(0);
     expect(mapped?.totalDiscounts).toBe(10);
     expect(mapped?.fulfillmentStatus).toBe("unfulfilled");
@@ -66,10 +68,54 @@ describe("shopifyOrderMap", () => {
       currency: "USD",
     });
 
+    expect(mapped?.customerEmail).toBe("guest@example.com");
+    expect(mapped?.checkoutEmail).toBe("guest@example.com");
     expect(mapped?.customerFirstName).toBe("Guest");
     expect(mapped?.customerLastName).toBe("Buyer");
     expect(mapped?.isDesignaknit).toBe(false);
     expect(mapped?.siteBrand).toBe("knit_it_now");
+  });
+
+  it("links a guest checkout that only has contact_email and keeps tracking", () => {
+    const mapped = mapShopifyRestOrder({
+      id: 88,
+      order_number: 88,
+      name: "#88",
+      email: null,
+      contact_email: "member@example.com",
+      customer: null,
+      line_items: [{ id: 3, title: "Standard Gauge Knitting Machine", quantity: 1, price: "1899.00" }],
+      fulfillments: [
+        {
+          status: "success",
+          tracking_company: "UPS",
+          tracking_number: "1Z999AA10123456784",
+          tracking_url: "https://www.ups.com/track?tracknum=1Z999AA10123456784",
+          destination: { address1: "123 Secret Street" },
+        } as never,
+      ],
+    });
+
+    expect(mapped?.customerEmail).toBe("member@example.com");
+    expect(mapped?.checkoutEmail).toBe("member@example.com");
+    expect(mapped?.trackingLinks[0]?.url).toContain("ups.com");
+    expect(JSON.stringify(mapped)).not.toContain("Secret Street");
+    expect(JSON.stringify(mapped?.trackingLinks)).not.toContain("destination");
+  });
+
+  it("keeps a different Shopify customer email and checkout email", () => {
+    const mapped = mapShopifyRestOrder({
+      id: 89,
+      order_number: 89,
+      name: "#89",
+      email: "checkout@example.com",
+      contact_email: "checkout@example.com",
+      customer: { email: "shopify-account@example.com" },
+      line_items: [{ id: 4, title: "LK150 Mast Kit", quantity: 1, price: "48.00" }],
+    });
+
+    expect(mapped?.checkoutEmail).toBe("checkout@example.com");
+    expect(mapped?.customerEmail).toBe("shopify-account@example.com");
   });
 
   it("returns null without order id", () => {

@@ -37,6 +37,8 @@ describe("schema", () => {
     expect(nativeStatements[0]?.sql).toContain("CREATE TABLE IF NOT EXISTS watson_notes");
     expect(labels).toContain("table watson_store_fulfillments");
     expect(labels).toContain("table watson_shopify_orders");
+    expect(labels).toContain("alter watson_shopify_orders purchase columns");
+    expect(labels).toContain("index idx_watson_shopify_orders_checkout_email");
     expect(labels).toContain("table watson_shopify_order_items");
     expect(labels).toContain("table watson_shopify_sync_runs");
     expect(labels).toContain("table watson_dak_licenses");

@@ -40,6 +40,8 @@ describe("shopifyPurchaseHistory", () => {
   it("loads refunded and cancelled Shopify orders for a customer instead of dropping them", async () => {
     expect(SHOPIFY_ORDERS_BY_EMAILS_SQL).not.toMatch(/WHERE[\s\S]*financial_status\s*=/i);
     expect(SHOPIFY_ORDERS_BY_EMAILS_SQL).not.toMatch(/cancelled_at IS NULL/);
+    expect(SHOPIFY_ORDERS_BY_EMAILS_SQL).toContain("checkout_email");
+    expect(SHOPIFY_ORDERS_BY_EMAILS_SQL).not.toMatch(/site_brand\s*=/);
 
     const queryFn = vi.fn(async (sql: string, params?: unknown[]) => {
       if (sql === SHOPIFY_ORDERS_BY_EMAILS_SQL) {
@@ -125,6 +127,10 @@ describe("shopifyPurchaseHistory", () => {
     expect(shopify.shopifyOrderNumber).toBe("1042");
     expect(shopify.shopifyOrderHref).toBe("/watson/sales/555");
     expect(shopify.items[0]?.description).toContain("SKU CABLE");
+    expect(shopify.items[0]?.customerLabel).toBe("Cable · Black");
+    expect(shopify.items[0]?.customerLabel).not.toContain("SKU");
+    expect(shopify.paymentStatusLabel).toBe("Paid");
+    expect(shopify.fulfillmentStatusLabel).toBe("Fulfilled");
     expect(shopify.items[0]?.lineTotal).toBe("$12.00");
 
     const merged = mergeMemberOrders(

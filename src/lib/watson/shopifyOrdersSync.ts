@@ -59,6 +59,8 @@ async function upsertMappedOrder(
       customer_first_name,
       customer_last_name,
       customer_email,
+      checkout_email,
+      tracking_links,
       currency,
       subtotal_amount,
       total_discounts,
@@ -79,7 +81,7 @@ async function upsertMappedOrder(
     ) VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
       $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
-      $21,$22,$23,'shopify',NOW(),NOW()
+      $21,$22,$23,$24,$25::jsonb,'shopify',NOW(),NOW()
     )
     ON CONFLICT (shopify_order_id) DO UPDATE SET
       shopify_order_gid = EXCLUDED.shopify_order_gid,
@@ -90,6 +92,8 @@ async function upsertMappedOrder(
       customer_first_name = EXCLUDED.customer_first_name,
       customer_last_name = EXCLUDED.customer_last_name,
       customer_email = EXCLUDED.customer_email,
+      checkout_email = EXCLUDED.checkout_email,
+      tracking_links = EXCLUDED.tracking_links,
       currency = EXCLUDED.currency,
       subtotal_amount = EXCLUDED.subtotal_amount,
       total_discounts = EXCLUDED.total_discounts,
@@ -118,6 +122,8 @@ async function upsertMappedOrder(
       order.customerFirstName,
       order.customerLastName,
       order.customerEmail,
+      order.checkoutEmail,
+      JSON.stringify(order.trackingLinks),
       order.currency,
       order.subtotalAmount,
       order.totalDiscounts,

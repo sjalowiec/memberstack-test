@@ -154,6 +154,8 @@ WHERE tracking_number IS NOT NULL AND BTRIM(tracking_number) <> ''`,
   customer_first_name TEXT,
   customer_last_name TEXT,
   customer_email TEXT,
+  checkout_email TEXT,
+  tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb,
   currency TEXT NOT NULL DEFAULT 'USD',
   subtotal_amount NUMERIC(12, 4) NOT NULL DEFAULT 0,
   total_discounts NUMERIC(12, 4) NOT NULL DEFAULT 0,
@@ -188,6 +190,16 @@ WHERE tracking_number IS NOT NULL AND BTRIM(tracking_number) <> ''`,
     {
       label: "index idx_watson_shopify_orders_site_brand",
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_site_brand ON watson_shopify_orders (site_brand)",
+    },
+    {
+      label: "alter watson_shopify_orders purchase columns",
+      sql: `ALTER TABLE watson_shopify_orders
+  ADD COLUMN IF NOT EXISTS checkout_email TEXT,
+  ADD COLUMN IF NOT EXISTS tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb`,
+    },
+    {
+      label: "index idx_watson_shopify_orders_checkout_email",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_checkout_email ON watson_shopify_orders (lower(checkout_email))",
     },
     {
       label: "table watson_shopify_order_items",

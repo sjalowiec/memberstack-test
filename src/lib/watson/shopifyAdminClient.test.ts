@@ -26,5 +26,9 @@ describe("fetchShopifyOrdersProcessedInRange", () => {
     expect(params.get("processed_at_min")).toBe("2026-08-25T07:00:00.000Z");
     expect(params.get("processed_at_max")).toBe("2026-08-26T07:00:00.000Z");
     expect(params.get("status")).toBe("any");
+    const fields = params.get("fields") ?? "";
+    expect(fields).toContain("contact_email");
+    expect(fields).toContain("fulfillments");
+    expect(fields).not.toContain("shipping_address");
   });
 });
