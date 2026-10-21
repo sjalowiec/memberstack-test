@@ -91,10 +91,10 @@ describe("LK150 tension mast kit", () => {
     ]);
     expect(existsSync(resolve("public/images/shop/lk150-second-mast.png"))).toBe(true);
     expect(existsSync(resolve("public/images/shop/lk150-mast-kit.jpg"))).toBe(true);
-    expect(LK150_SECOND_TENSION_MAST_KIT.vimeoId).toBe("");
+    expect(LK150_SECOND_TENSION_MAST_KIT.vimeoId).toBe("1238151241");
     expect(LK150_SECOND_TENSION_MAST_KIT.youtubeUrl).toBe("");
     expect(LK150_SECOND_TENSION_MAST_KIT.installationInstructionsHtml).toBe("");
-    expect(tensionMastVimeoId(LK150_SECOND_TENSION_MAST_KIT)).toBeNull();
+    expect(tensionMastVimeoId(LK150_SECOND_TENSION_MAST_KIT)).toBe("1238151241");
     expect(tensionMastVimeoId({ vimeoId: "not-a-video" })).toBeNull();
     expect(tensionMastVimeoId({ vimeoId: "12345" })).toBe("12345");
     expect(tensionMastYoutubeUrl(LK150_SECOND_TENSION_MAST_KIT)).toBeNull();
@@ -128,6 +128,10 @@ describe("LK150 tension mast kit", () => {
     expect(page).toContain("All sales are final.");
     expect(page).toContain('class="kit-photo"');
     expect(page).toContain("See it installed");
+    expect(page).toContain("VimeoEmbed");
+    expect(page).toContain("autoplay={false}");
+    expect(page).toContain("Watch in the Learning Library");
+    expect(page).toContain('href="https://knititnow.com/videos/2216"');
     expect(page).toContain('placement === "product"');
     expect(page).toContain('placement === "installed"');
     expect(page).not.toContain('placement === "included"');
