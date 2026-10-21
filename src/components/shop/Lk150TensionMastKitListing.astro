@@ -4,27 +4,38 @@
  * Renders nothing while the product is unpublished.
  */
 import { LK150_SECOND_TENSION_MAST_KIT } from "../../data/shop/lk150SecondTensionMastKit";
+import { tensionMastCatalogAvailability } from "../../lib/shop/lk150TensionMastKit";
 
 const kit = LK150_SECOND_TENSION_MAST_KIT;
 const photo = kit.photos.find((item) => item.placement === "product") ?? null;
+const availability = kit.published ? await tensionMastCatalogAvailability(kit) : null;
 ---
 
 {
   kit.published && (
     <article class="kit-shop-card">
-      {
-        photo && (
-          <a href={kit.path} class="kit-shop-photo-link">
-            <img
-              src={photo.src}
-              alt={photo.alt}
-              class="kit-shop-photo"
-              width={photo.width}
-              height={photo.height}
-            />
-          </a>
-        )
-      }
+      <div class="kit-shop-media">
+        {
+          photo && (
+            <a href={kit.path} class="kit-shop-photo-link">
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                class="kit-shop-photo"
+                width={photo.width}
+                height={photo.height}
+              />
+            </a>
+          )
+        }
+        {
+          availability && (
+            <span class={`machine-status machine-status--${availability.status}`}>
+              {availability.label}
+            </span>
+          )
+        }
+      </div>
       <div class="kit-shop-body">
         <h2 class="kit-shop-name">
           <a href={kit.path}>{kit.name}</a>
@@ -49,9 +60,41 @@ const photo = kit.photos.find((item) => item.placement === "product") ?? null;
     overflow: hidden;
   }
 
+  .kit-shop-media {
+    position: relative;
+    width: 100%;
+    background: #f7faf0;
+  }
+
   .kit-shop-photo-link {
     display: block;
     background: #f7faf0;
+  }
+
+  .machine-status {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    color: #fff;
+    background: #52682d;
+  }
+
+  .machine-status--available {
+    background: #3f6212;
+  }
+
+  .machine-status--backorder {
+    background: #b45309;
+  }
+
+  .machine-status--unavailable {
+    background: #475569;
   }
 
   .kit-shop-photo {

@@ -24,9 +24,12 @@ import {
   LK150_TENSION_MAST_KIT_PATH,
   isLk150TensionMastKitRoute,
   isLk150TensionMastProductionBlocked,
+  resetTensionMastAvailabilityCacheForTests,
+  tensionMastCatalogAvailability,
   tensionMastCheckoutHref,
   tensionMastInstructionsHtml,
   tensionMastPhotos,
+  tensionMastShopifyProductJsonUrl,
   tensionMastVimeoId,
   tensionMastYoutubeUrl,
 } from "./lk150TensionMastKit";
@@ -170,9 +173,16 @@ describe("LK150 tension mast kit", () => {
     expect(LK150_SECOND_TENSION_MAST_KIT.published).toBe(true);
     expect(page).toContain("!kit.published");
     expect(LK150_SECOND_TENSION_MAST_KIT.path).toBe("/shop/accessories/lk150-second-tension-mast-kit");
-    expect(readFileSync(resolve("src/components/shop/Lk150TensionMastKitListing.astro"), "utf8")).toContain(
-      "href={kit.path}",
+    const listingSource = readFileSync(
+      resolve("src/components/shop/Lk150TensionMastKitListing.astro"),
+      "utf8",
     );
+    expect(listingSource).toContain("href={kit.path}");
+    expect(listingSource).toContain("tensionMastCatalogAvailability");
+    expect(listingSource).toContain("machine-status machine-status--${availability.status}");
+    expect(listingSource).toContain("{kit.priceLabel}");
+    expect(listingSource).toContain("{kit.shippingLabel}");
+    expect(listingSource).toContain("View Details");
 
     for (const listing of ["src/pages/shop/index.astro", "src/pages/shop/accessories/index.astro"]) {
       expect(readFileSync(resolve(listing), "utf8")).toContain("Lk150TensionMastKitListing");
@@ -185,6 +195,59 @@ describe("LK150 tension mast kit", () => {
     ]) {
       expect(readFileSync(resolve(listing), "utf8")).not.toContain("lk150-second-tension-mast-kit");
     }
+  });
+
+  it("uses the accessory catalog badge and Shopify stock", async () => {
+    resetTensionMastAvailabilityCacheForTests();
+    const productUrl = tensionMastShopifyProductJsonUrl(LK150_SECOND_TENSION_MAST_KIT.shopifyUrl);
+    expect(productUrl).toBe(
+      "https://vjzu11-86.myshopify.com/products/lk150-second-tension-mast-kit.js",
+    );
+    expect(tensionMastShopifyProductJsonUrl("http://example.com/products/kit")).toBeNull();
+    expect(tensionMastShopifyProductJsonUrl("not a url")).toBeNull();
+
+    const fetchAvailable = async () =>
+      new Response(JSON.stringify({ available: true }), { status: 200 });
+    const inStock = await tensionMastCatalogAvailability(
+      LK150_SECOND_TENSION_MAST_KIT,
+      fetchAvailable,
+      1_000,
+    );
+    expect(inStock).toEqual({ status: "available", label: "Available" });
+
+    const cached = await tensionMastCatalogAvailability(
+      LK150_SECOND_TENSION_MAST_KIT,
+      async () => {
+        throw new Error("cache should skip Shopify");
+      },
+      1_000 + 1_000,
+    );
+    expect(cached.status).toBe("available");
+
+    resetTensionMastAvailabilityCacheForTests();
+    const soldOut = await tensionMastCatalogAvailability(
+      LK150_SECOND_TENSION_MAST_KIT,
+      async () => new Response(JSON.stringify({ available: false }), { status: 200 }),
+      5_000,
+    );
+    expect(soldOut).toEqual({ status: "unavailable", label: "Unavailable" });
+
+    resetTensionMastAvailabilityCacheForTests();
+    const fallback = await tensionMastCatalogAvailability(
+      { ...LK150_SECOND_TENSION_MAST_KIT, checkoutEnabled: false },
+      async () => {
+        throw new Error("shopify down");
+      },
+      9_000,
+    );
+    expect(fallback).toEqual({ status: "unavailable", label: "Unavailable" });
+
+    const sellingFallback = await tensionMastCatalogAvailability(
+      LK150_SECOND_TENSION_MAST_KIT,
+      async () => new Response("nope", { status: 500 }),
+      9_000,
+    );
+    expect(sellingFallback).toEqual({ status: "available", label: "Available" });
   });
 });
 
