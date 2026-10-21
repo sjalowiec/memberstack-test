@@ -78,7 +78,7 @@ export const LK150_SECOND_TENSION_MAST_KIT: TensionMastKitContent = {
       height: 1447,
     },
   ],
-  vimeoId: "",
+  vimeoId: "1238151241",
   vimeoPrivacyHash: "",
   youtubeUrl: "",
   installationInstructionsHtml: "",

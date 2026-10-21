@@ -52,7 +52,6 @@ const vimeoId = tensionMastVimeoId(kit);
 const vimeoPrivacyHash = tensionMastVimeoPrivacyHash(kit);
 const youtubeUrl = tensionMastYoutubeUrl(kit);
 const instructionsHtml = tensionMastInstructionsHtml(kit);
-const showVideo = Boolean(vimeoId || youtubeUrl);
 
 const title = `${kit.name} | Knit it Now`;
 const description = kit.introduction;
@@ -169,24 +168,42 @@ const description = kit.introduction;
     </section>
 
     {
-      installedPhoto && (
+      (vimeoId || installedPhoto) && (
         <section class="machine-section" aria-labelledby="kit-installed-heading">
           <h2 id="kit-installed-heading" class="section-title">See it installed</h2>
-          <figure class="kit-figure kit-installed">
-            <img
-              src={installedPhoto.src}
-              alt={installedPhoto.alt}
-              class="kit-photo"
-              width={installedPhoto.width}
-              height={installedPhoto.height}
-              loading="lazy"
-            />
-            {
-              installedPhoto.caption && (
-                <figcaption class="kit-caption">{installedPhoto.caption}</figcaption>
+          {
+            vimeoId ? (
+              <div class="kit-installed-video">
+                <VimeoEmbed
+                  vimeoId={vimeoId}
+                  title="LK150 Second Tension Mast Assembly"
+                  autoplay={false}
+                  privacyHash={vimeoPrivacyHash}
+                />
+                <p class="kit-library-link">
+                  <a href="https://knititnow.com/videos/2216">Watch in the Learning Library</a>
+                </p>
+              </div>
+            ) : (
+              installedPhoto && (
+                <figure class="kit-figure kit-installed">
+                  <img
+                    src={installedPhoto.src}
+                    alt={installedPhoto.alt}
+                    class="kit-photo"
+                    width={installedPhoto.width}
+                    height={installedPhoto.height}
+                    loading="lazy"
+                  />
+                  {
+                    installedPhoto.caption && (
+                      <figcaption class="kit-caption">{installedPhoto.caption}</figcaption>
+                    )
+                  }
+                </figure>
               )
-            }
-          </figure>
+            )
+          }
         </section>
       )
     }
@@ -206,28 +223,12 @@ const description = kit.introduction;
     }
 
     {
-      showVideo && (
+      youtubeUrl && (
         <section class="machine-section" aria-labelledby="kit-video-heading">
           <h2 id="kit-video-heading" class="section-title">Installation video</h2>
-          <p class="kit-copy">The installation video is free to watch.</p>
-          {
-            vimeoId && (
-              <div class="kit-video">
-                <VimeoEmbed
-                  vimeoId={vimeoId}
-                  title={`${kit.name} installation`}
-                  privacyHash={vimeoPrivacyHash}
-                />
-              </div>
-            )
-          }
-          {
-            youtubeUrl && (
-              <p class="kit-copy">
-                <a href={youtubeUrl} rel="noopener noreferrer" target="_blank">Watch on YouTube</a>
-              </p>
-            )
-          }
+          <p class="kit-copy">
+            <a href={youtubeUrl} rel="noopener noreferrer" target="_blank">Watch on YouTube</a>
+          </p>
         </section>
       )
     }
@@ -433,8 +434,24 @@ const description = kit.introduction;
     color: var(--kbm-green);
   }
 
-  .kit-video {
-    margin-top: 0.5rem;
+  .kit-installed-video {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .kit-installed-video :global(.vimeo-embed-wrapper) {
+    margin-top: 0;
+  }
+
+  .kit-library-link {
+    margin: 0.75rem 0 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+
+  .kit-library-link a {
+    color: var(--kbm-green);
+    font-weight: 600;
   }
 
   .kit-figure {
