@@ -92,8 +92,29 @@ function stripCuffMarkup(line: string): string {
 function presentCuffChoiceLines(lines: string[], options?: SleeveCuffChoiceOptions): string[] {
   const text = options?.plainText ? lines.map(stripCuffMarkup) : lines;
   const prefix = options?.rcPrefix?.trim();
-  if (!prefix) return text;
-  return text.map((line) => `${prefix} ${line}`);
+  if (prefix) return text.map((line) => `${prefix} ${line}`);
+  if (options?.plainText) return text;
+  return cuffChoiceScreenLines(text);
+}
+
+/**
+ * Intro sentence, then a numbered list. Markers stay in the markup so wrapped
+ * lines can hang under the words after each number.
+ */
+function cuffChoiceScreenLines(lines: string[]): string[] {
+  const [intro, ...options] = lines;
+  const items = options.map((line) => {
+    const match = line.match(/^(\d+\.\s+)([\s\S]*)$/);
+    const marker = match?.[1] ?? "";
+    const text = match?.[2] ?? line;
+    return (
+      `<li class="sleeve-cuff-option">` +
+      `<span class="sleeve-cuff-option__marker">${marker}</span>` +
+      `<span class="sleeve-cuff-option__text">${text}</span>` +
+      `</li>`
+    );
+  });
+  return [intro ?? "", `<ol class="sleeve-cuff-options">${items.join("")}</ol>`];
 }
 
 export function sidewaysTopDownCuffChoiceLines(

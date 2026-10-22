@@ -116,16 +116,15 @@ describe("pattern catalog possibility counts", () => {
     expect(SOCKS_PATTERN_POSSIBILITIES).toBe(SOCK_CONSTRUCTION_DIRECTIONS.length);
     expect(SOCKS_CATALOG_PILL_REST).toBe("Socks in 1 Builder");
     expect(SOCKS_CATALOG_COPY).toBe(
-      "Knit socks that actually fit with cuff-to-toe or toe-up construction, short-row heel and toe, custom sizing, and machine-friendly instructions.",
+      "Socks in your size, cuff-to-toe or toe-up, with a short-row heel and machine-knitting instructions.",
     );
   });
 
-  it("shows compact count pills on available cards and leaves Coming soon unchanged", () => {
-    expect(catalog).toContain("pattern.pillCount");
-    expect(catalog).toContain("pattern.pillRest");
-    expect(catalog).toContain("catalog-card__status-count");
-    expect(catalog).toContain("catalog-card__status-rest");
-    expect(catalog).toContain("font-size: 1.6em");
+  it("does not advertise variation counts on catalog cards and leaves Coming soon unchanged", () => {
+    expect(catalog).not.toContain("pattern.pillCount");
+    expect(catalog).not.toContain("pattern.pillRest");
+    expect(catalog).not.toContain("catalog-card__status-count");
+    expect(catalog).not.toContain("catalog-card__status-rest");
     expect(catalog).not.toContain("Pattern Possibilities");
     expect(catalog).not.toContain("PATTERN POSSIBILITIES");
     expect(catalog).not.toContain("possibilitiesHelper");

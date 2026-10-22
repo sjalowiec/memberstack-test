@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "node scripts/generate-public-manifests.mjs && vite-node scripts/generate-catalog-transcripts.ts --check",
+    "prebuild": "node scripts/write-legacy-renewal-live-flag.mjs && node scripts/generate-public-manifests.mjs && vite-node scripts/generate-catalog-transcripts.ts --check",
     "transcripts:generate": "vite-node scripts/generate-catalog-transcripts.ts",
     "transcripts:check": "vite-node scripts/generate-catalog-transcripts.ts --check",
     "build": "astro build && pagefind --site dist",
@@ -27,7 +27,8 @@
     "watson:generate-schema": "vite-node scripts/watson-generate-schema.ts",
     "help-hub:import": "vite-node scripts/import-help-hub.ts",
     "lessons:migrate": "vite-node scripts/apply-member-lessons.ts",
-    "lessons:import": "vite-node scripts/import-lessons.ts"
+    "lessons:import": "vite-node scripts/import-lessons.ts",
+    "marketing-calendar:dry-run": "vite-node scripts/marketing-calendar-dry-run.ts"
   },
   "dependencies": {
     "@astrojs/netlify": "^6.6.4",

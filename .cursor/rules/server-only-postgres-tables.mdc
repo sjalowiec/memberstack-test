@@ -1,0 +1,34 @@
+---
+description: Connection model and privilege rule for new server-only Postgres tables
+globs:
+  - supabase/migrations/**/*.sql
+  - scripts/sql/**/*.sql
+  - src/lib/watson/schema.ts
+alwaysApply: false
+---
+
+# New server-only Postgres tables
+
+## Connection model
+
+The app reads and writes Postgres directly with `pg` through `WATSON_DATABASE_URL` and `queryWatson`. It does not use the Supabase Data API (`anon`, `authenticated`, `service_role`, PostgREST, or GraphQL).
+
+The connection role is `postgres`, the table owner, and it has `BYPASSRLS`. Owner privileges are enough for app access. That role does not need a `GRANT`.
+
+On 30 October 2026, new tables in `public` stop receiving automatic Data API grants. Existing tables keep the grants they already have. Row level security is a separate layer.
+
+## Rule for new tables only
+
+When a change creates a new server-only table, put these statements in that new migration, next to the `CREATE TABLE`:
+
+```sql
+ALTER TABLE public.your_table ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE public.your_table FROM anon, authenticated, service_role;
+```
+
+Leave row level security unforced. Add no `CREATE POLICY`. Grant nothing to `anon`, `authenticated`, or `service_role`. `service_role` bypasses row level security, so withholding the grant is what keeps the Data API off the table.
+
+Apply this only to tables created in that new change. Leave existing migrations, `src/lib/watson/schema.ts`, `src/lib/watson/schema.sql`, runtime schema helpers, and live database privileges unchanged.
+
+Schema rebuild gaps and questions about existing tables are a separate task in `docs/maintenance/postgres-public-schema-privileges.md`.

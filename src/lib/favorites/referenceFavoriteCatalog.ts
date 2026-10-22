@@ -37,6 +37,7 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
   { title: "DAK Cables for Brother Machines", href: "/reference/DAK-brother-cables" },
   { title: "DesignaKnit Basics", href: "/reference/designaknit-basics" },
   { title: "Stitch Symbols", href: "/reference/stitch-symbols" },
+  { title: "Stitch Pattern Variations", href: "/reference/stitch-pattern-variations" },
   { title: "Sizing Charts", href: "/reference/sizing-charts" },
   { title: "Yarn Weight Reference", href: "/reference/yarn-weight" },
   { title: "Yarn Standards", href: "/reference/yarn-standards" },

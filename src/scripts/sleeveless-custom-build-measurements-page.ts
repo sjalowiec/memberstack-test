@@ -122,8 +122,11 @@ import {
   DROP_SHOULDER_SUMMARY_ASPECT_RATIO_CSS,
   SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL,
 } from "../lib/patterns/measurementBlueprintSvgUrl";
+import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput";
 import { isSetInSleeveWorkspaceMeasurementSummaryPage } from "../lib/patterns/setInSleeveConstructionIdentity";
 import { buildSetInSleeveEditSleeveMeasurementDiagramSvg } from "../lib/patterns/setInSleeve/setInSleeveEditMeasurementDiagramSvg";
+import { generateSetInSleevePattern } from "../lib/patterns/setInSleevePatternOutput";
+import type { SetInSleeveCapSuccess } from "../lib/patterns/setInSleeve/sleeveCapMath";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import {
   markDropShoulderSleeveOverrideKeyUserEdited,
@@ -321,7 +324,7 @@ export type CustomBuildMeasurementsInitOptions = {
 /**
  * Diagram fields (inches, stored as decimal strings). The first 8 are the shared body
  * fields. The sleeve fields render for Drop Shoulder and Set-In Sleeve (see
- * {@link getActiveDiagramFields}). Set-In Sleeve omits cuff depth.
+ * {@link getActiveDiagramFields}), including the shared cuff length.
  */
 const DIAGRAM_FIELD_KEYS = [
   "finishedNeckOpeningWidth",
@@ -485,7 +488,7 @@ const DIAGRAM_FIELDS: DiagramFieldDef[] = [
   {
     key: "cuffDepth",
     positionMod: "cuff-length",
-    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.armLength,
+    targetId: PATTERN_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
     dropShoulderTargetId: DROP_SHOULDER_SUMMARY_MEASUREMENT_TARGETS.cuffDepth,
     label: "Cuff length",
     axis: "vertical",
@@ -806,6 +809,34 @@ function usesBodySleeveEditPreview(): boolean {
   return isDropShoulderConstruction() || isSetInSleeveWorkspaceMeasurementSummaryPage();
 }
 
+function recordSection(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? { ...(value as Record<string, unknown>) } : {};
+}
+
+/** Reads the existing cap so the edit diagram can draw it. Does not change the calculation. */
+function setInSleeveCapForEditDiagram(
+  merged: Record<DiagramFieldKey, string>,
+): SetInSleeveCapSuccess | null {
+  try {
+    const base = buildCustomBuildEffectivePatternInput();
+    const fit = recordSection(base.fit);
+    const style = recordSection(base.style);
+    const overrides = recordSection(fit.cbMeasurementOverrides);
+    for (const key of ["upperArm", "wrist", "sleeveLength", "cuffDepth"] as const) {
+      const value = merged[key]?.trim();
+      if (value) overrides[key] = value;
+    }
+    const generated = generateSetInSleevePattern({
+      ...base,
+      style: { ...style, patternMode: "custom-build" },
+      fit: { ...fit, cbMeasurementOverrides: overrides },
+    });
+    return generated.sleeveCap?.ok ? generated.sleeveCap : null;
+  } catch {
+    return null;
+  }
+}
+
 function adoptSetInSleeveGeneratedMeasurementArt(
   merged: Record<DiagramFieldKey, string>,
   piece: DropShoulderEditPreviewTab = DROP_SHOULDER_EDIT_PREVIEW_DEFAULT_TAB,
@@ -816,6 +847,8 @@ function adoptSetInSleeveGeneratedMeasurementArt(
           upperArmInches: parseMergedInches(merged.upperArm, 12),
           cuffCircumferenceInches: parseMergedInches(merged.wrist, 8),
           sleeveLengthInches: parseMergedInches(merged.sleeveLength, 18),
+          cuffDepthInches: parseMergedInches(merged.cuffDepth, 2),
+          cap: setInSleeveCapForEditDiagram(merged),
         })
       : buildSleevelessEditMeasurementDiagramSvg({
           ...sleevelessEditDiagramInput(merged),
@@ -2075,6 +2108,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       oldSize: meta?.oldSize,
       overrides: loadMeasurementOverrides(),
       persist: true,
+      setInSleeve: isSetInSleeveWorkspaceMeasurementSummaryPage(),
     });
 
     const normalizedSize = normalizeChartRowSize(row) || sizing.selectedSize;

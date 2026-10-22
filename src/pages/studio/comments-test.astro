@@ -1,0 +1,159 @@
+---
+/**
+ * Temporary Sue's Studio FastComments proof.
+ * Route: /studio/comments-test
+ * kin-dev and localhost only. Production hosts 404.
+ */
+import Layout from "../../layouts/Layout.astro";
+import PageBackLink from "../../components/common/PageBackLink.astro";
+import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
+import {
+  STUDIO_COMMENTS_POC_PAGE,
+  STUDIO_LOCAL_TEST_POST_TITLE,
+  STUDIO_LOCAL_TEST_VIMEO_ID,
+  isStudioCommentsPocProductionBlocked,
+  studioPrivateMessageHref,
+} from "../../lib/studio/fastcommentsPocAccess";
+
+const privateMessageHref = studioPrivateMessageHref({
+  title: STUDIO_LOCAL_TEST_POST_TITLE,
+  path: STUDIO_COMMENTS_POC_PAGE,
+});
+
+export const prerender = false;
+
+if (
+  isStudioCommentsPocProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+---
+
+<Layout title="Sue's Studio comments test">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="studio-comments-poc" data-pagefind-ignore>
+    <PageBackLink href="/" text="Back to Home" />
+    <p class="studio-comments-poc__flag">Local test</p>
+    <div class="studio-comments-poc__heading">
+      <img class="studio-comments-poc__logo" src="/images/sues-studio.svg" alt="Sue's Studio" width="120" height="117" />
+      <p class="studio-comments-poc__lead">
+        A local Studio post. Its discussion stays with this post when the video is replaced.
+        Log in with your Knit it Now account to post. Logging out of comments also logs out of Knit it Now.
+      </p>
+    </div>
+    <VimeoEmbed vimeoId={STUDIO_LOCAL_TEST_VIMEO_ID} title="Sue's Studio" />
+    <p class="studio-comments-poc__status" data-studio-comments-status role="status">
+      Loading comments…
+    </p>
+    <div class="studio-comments-poc__actions">
+      <button type="button" class="kbm-btn kbm-btn-primary" data-studio-comments-login>
+        Log in to comment
+      </button>
+      <a class="studio-comments-poc__contact" href={privateMessageHref} data-studio-contact>
+        Prefer to send me a private message?
+      </a>
+    </div>
+    <div class="studio-comments-poc__mount" data-studio-comments-mount></div>
+  </section>
+</Layout>
+
+<script>
+  import { mountStudioFastcomments } from "../../lib/studio/fastcommentsWidgetClient";
+
+  void mountStudioFastcomments();
+</script>
+
+<style>
+  .studio-comments-poc {
+    box-sizing: border-box;
+    width: min(42rem, 100%);
+    margin: 0 auto;
+    padding: 0.35rem 1rem 2rem;
+  }
+
+  .studio-comments-poc :global(.page-back-link) {
+    margin-bottom: 0.35rem;
+  }
+
+  .studio-comments-poc :global(.vimeo-embed-wrapper) {
+    margin: 0.35rem 0 0.5rem;
+  }
+
+  .studio-comments-poc__flag {
+    margin: 0 0 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #3d5216;
+  }
+
+  .studio-comments-poc__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0 0 0.35rem;
+  }
+
+  .studio-comments-poc__logo {
+    display: block;
+    width: 120px;
+    height: auto;
+    flex: 0 0 120px;
+  }
+
+  .studio-comments-poc__lead,
+  .studio-comments-poc__status {
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .studio-comments-poc__status {
+    margin-bottom: 0.5rem;
+  }
+
+  .studio-comments-poc__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.85rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .studio-comments-poc__contact {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .studio-comments-poc [data-studio-comments-login][hidden] {
+    display: none;
+  }
+
+  .studio-comments-poc__mount {
+    width: 100%;
+    max-width: 100%;
+    min-height: 12rem;
+  }
+
+  .studio-comments-poc__mount :global(#fastcomments-widget) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    .studio-comments-poc {
+      padding: 0.25rem 0.75rem max(1.5rem, env(safe-area-inset-bottom));
+    }
+
+    .studio-comments-poc__heading {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+  }
+</style>

@@ -98,3 +98,22 @@ describe("short-row increase and decrease glossary entries", () => {
     );
   });
 });
+
+describe("cast off glossary entry", () => {
+  const entries = glossary as GlossaryRow[];
+  const bindOff = entries.find((row) => row.glossaryId === 804);
+  const castOff = entries.find((row) => row.glossaryId === 805);
+
+  it("keeps Cast off / Bind Off as a short cross-reference without the bind-off video", () => {
+    expect(entries.filter((row) => row.glossaryId === 805)).toHaveLength(1);
+    expect(castOff?.active).toBe(true);
+    expect(castOff?.english).toBe("Cast off / Bind Off");
+    expect(bindOff?.english).toBe("Bind off / Cast Off");
+    expect(castOff?.vimeoIds).toEqual([]);
+    expect(bindOff?.vimeoIds).toEqual(["151858975"]);
+    expect(getGlossaryTooltipPayload(805)?.cleanHtml).toContain('data-glossary-id="804"');
+    expect(getGlossaryTooltipPayload(804)?.cleanHtml).toContain('data-glossary-id="805"');
+    expect(getGlossaryTooltipPayload(805)?.cleanHtml).not.toContain("151858975");
+    expect(glossarySlugForId(805)).toBe("cast-off-bind-off");
+  });
+});

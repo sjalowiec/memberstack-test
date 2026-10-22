@@ -27,8 +27,10 @@ import {
         <label>Don't fill this out: <input name="bot-field" /></label>
       </p>
       <input type="hidden" name="form_source" value="contact_page" />
+      <input type="hidden" name="subject" id="contactSubject" value="" />
       <input type="hidden" name="page_url" id="contactPageURL" />
       <input type="hidden" name="submitted_at" id="contactSubmittedAt" />
+      <p class="contact-form__about" data-contact-inquiry-about hidden></p>
 
       <label class="contact-form__field">
         <span>Name *</span>
@@ -69,6 +71,17 @@ import {
   </main>
 
   <style>
+    .contact-form__about {
+      margin: 0 0 1rem;
+      font-size: 0.95rem;
+      color: #3d5216;
+      line-height: 1.45;
+    }
+
+    .contact-form__about[hidden] {
+      display: none;
+    }
+
     .contact-form__hint {
       margin: 0 0 0.5rem;
       font-size: 0.95rem;
@@ -100,10 +113,12 @@ import {
   </style>
 
   <script>
+    import { applyContactInquiryPrefill } from "../../lib/contact/contactInquiryPrefill";
     import { wireContactFormSubmit } from "../../scripts/contactFormSubmit";
 
     const form = document.getElementById("contact-page-form");
     if (form instanceof HTMLFormElement) {
+      applyContactInquiryPrefill(form, window.location.search);
       wireContactFormSubmit({
         form,
         fileInput: document.getElementById("contactImages") as HTMLInputElement | null,

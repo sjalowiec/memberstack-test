@@ -36,6 +36,11 @@ interface Props {
    */
   hideMembershipCorner?: boolean;
   documentBaseHref?: string;
+  /**
+   * Skip the site analytics tag. Used by unpublished draft pages so local
+   * review does not record a production page view.
+   */
+  skipAnalytics?: boolean;
 }
 
 const {
@@ -49,6 +54,7 @@ const {
   patternWorkspace = false,
   hideMembershipCorner: hideMembershipCornerProp,
   documentBaseHref = "",
+  skipAnalytics = false,
 } = Astro.props;
 
 /** Pattern workspaces hide the corner CTA by default (SSR — no flash). */
@@ -75,6 +81,7 @@ const resolvedBodyClass = [
   skipGlobalPinterest={skipGlobalPinterest}
   hideMembershipCorner={hideMembershipCorner}
   documentBaseHref={documentBaseHref}
+  skipAnalytics={skipAnalytics}
 >
   <slot name="head" slot="head" />
   <Header onboarding={onboarding} marketing={marketing} patternWorkspace={patternWorkspace} />

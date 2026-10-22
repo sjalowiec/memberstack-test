@@ -106,4 +106,4 @@ export const SOCKS_CATALOG_PILL_REST = "Socks in 1 Builder";
 
 /** Pattern Catalog card copy for Socks. */
 export const SOCKS_CATALOG_COPY =
-  "Knit socks that actually fit with cuff-to-toe or toe-up construction, short-row heel and toe, custom sizing, and machine-friendly instructions.";
+  "Socks in your size, cuff-to-toe or toe-up, with a short-row heel and machine-knitting instructions.";

@@ -1,6 +1,8 @@
 import { basename } from "node:path";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { applyLessonUpdate } from "./courseContentAdmin";
+import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import {
   addCourse111Block,
   adjacentCourseOriginalLesson,
@@ -486,6 +488,55 @@ describe("course111Admin original lesson components", () => {
     expect(remaining.map((item) => item.legacyComponentId)).toEqual([9332]);
     expect(remaining[0]?.order).toBe(1);
     expect(found.block.components).toHaveLength(1);
+  });
+
+  it("removes a one-component lesson when Delete component is used, and save keeps every other block", () => {
+    const lesson = {
+      title: "What's Next?",
+      slug: "what-s-next",
+      displayOrder: 10,
+      blocks: [
+        {
+          title: "Your Next Steps",
+          slug: "your-next-steps",
+          order: 1,
+          components: [
+            {
+              type: "richText",
+              html: "<p>Stay</p>",
+              legacyComponentId: 4871,
+              order: 1,
+            },
+          ],
+        },
+        {
+          title: "One Piece Baby Sweater",
+          slug: "one-piece-baby-sweater",
+          order: 2,
+          legacy: { assignId: 3491, blockType: "HTML" },
+          components: [
+            {
+              type: "imageGallery",
+              legacyComponentId: 4967,
+              order: 1,
+              slides: [{ src: "/images/a.jpg", caption: "A" }],
+            },
+          ],
+        },
+      ],
+    } as CourseLesson;
+
+    expect(deleteCourse111Component(lesson, "one-piece-baby-sweater", 0)).toBe(true);
+    expect(lesson.blocks.map((block) => block.slug)).toEqual(["your-next-steps"]);
+    expect(lesson.blocks[0]?.components[0]?.legacyComponentId).toBe(4871);
+
+    const data = { lessons: [structuredClone(lesson)] } as CoursePreviewData;
+    const applied = applyLessonUpdate(data, "what-s-next", structuredClone(lesson));
+    const saved = applied.data.lessons[0]!;
+    expect(saved.blocks.map((block) => block.slug)).toEqual(["your-next-steps"]);
+    expect(JSON.stringify(saved)).not.toContain("one-piece-baby-sweater");
+    expect(JSON.stringify(saved)).not.toContain("4967");
+    expect(saved.blocks[0]?.components).toHaveLength(1);
   });
 
   it("represents every component type in a mixed lesson for Watson", () => {

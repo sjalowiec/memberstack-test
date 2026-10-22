@@ -8,6 +8,7 @@ import {
   getLegacyMetadataSchemaStatements,
   getLegacySchemaStatements,
   getLegacyTableSchemaStatements,
+  getWatsonKnitAbleScheduleSchemaStatements,
   getWatsonNativeSchemaStatements,
   getWatsonLegacyHistorySchemaStatements,
   getWatsonLegacyGarmentsSchemaStatements,
@@ -137,6 +138,17 @@ describe("schema", () => {
       nativeStatements.find((statement) => statement.label === "table watson_knit_able_schedules")
         ?.sql,
     ).toContain("publish_date DATE");
+    expect(labels).toContain("rls watson_knit_able_schedules");
+    const knitAbleRls = nativeStatements.find(
+      (statement) => statement.label === "rls watson_knit_able_schedules",
+    )?.sql;
+    expect(knitAbleRls).toContain("ENABLE ROW LEVEL SECURITY");
+    expect(knitAbleRls).not.toMatch(/FORCE ROW LEVEL SECURITY/i);
+    expect(knitAbleRls).not.toContain("CREATE POLICY");
+    expect(getWatsonKnitAbleScheduleSchemaStatements().map((statement) => statement.label)).toEqual([
+      "table watson_knit_able_schedules",
+      "rls watson_knit_able_schedules",
+    ]);
     expect(labels).toContain("index pattern_errata_public_idx");
     const errataSql = nativeStatements.find(
       (statement) => statement.label === "table pattern_errata",

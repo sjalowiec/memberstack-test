@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET } from "./legoBlocks/cuffUpSleeveRowCounter";
+import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import {
   buildDropShoulderSleeveDisplayRows,
   generateDropShoulderPattern,
@@ -139,23 +140,24 @@ describe("shared sweater cuff instructions", () => {
         direction: "cuff-up",
         valid: true,
       });
-      const cuff = cuffSectionText(rows).replace(/<[^>]+>/g, "");
+      const cuffSource = cuffSectionText(rows);
+      const cuff = cuffSource.replace(/<[^>]+>/g, "");
       const folded = sample.cuffRows === 1 ? "2 rows" : `${sample.cuffRows * 2} rows`;
       const depth = sample.cuffRows === 1 ? "1 row" : `${sample.cuffRows} rows`;
       expect(cuff).toContain(`The finished cuff is ${sample.wristSts} stitches and ${depth} deep.`);
-      expect(cuff).toContain(
-        `1. Cast on ${sample.wristSts} stitches in the ribbing needle arrangement of your choice and knit ${depth} of ribbing, then transfer the stitches to the main bed to continue the sleeve.`,
-      );
+      expect(cuff).toContain(`Cast on ${sample.wristSts} stitches in the ribbing needle arrangement of your choice and knit ${depth} of ribbing, then transfer the stitches to the main bed to continue the sleeve.`);
+      expect(cuffSource).toContain("sleeve-cuff-options");
       expect(cuff).toContain(`2. Knit a hung hem for ${folded} so the hem can be folded.`);
       expect(cuff).toContain(`3. Knit mock ribbing for ${folded} so the hem can be folded.`);
       expect(cuff).toContain(
         "4. Hand knit ribbing to the desired finished cuff depth, then hang its stitches on the machine to continue the sleeve.",
       );
       expect(cuff).not.toContain("for the sleeve cuff");
-      expect(blockText(rows)).toContain(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET);
-      expect(blockText(rows).indexOf("Choose one way to begin")).toBeLessThan(
-        blockText(rows).indexOf(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET),
-      );
+      expect(rows.some((row) => row.kind === "block" && row.rowCounterReset === true)).toBe(true);
+      const chooseAt = blockText(rows).indexOf("Choose one way to begin");
+      const resetAt = rows.findIndex((row) => row.kind === "block" && row.rowCounterReset === true);
+      expect(chooseAt).toBeGreaterThanOrEqual(0);
+      expect(resetAt).toBeGreaterThan(rows.findIndex((row) => row.kind === "block" && (row.trustedParagraphs ?? []).some((line) => line.includes("Choose one way to begin"))));
     }
   });
 
@@ -224,20 +226,23 @@ describe("shared sweater cuff instructions", () => {
         const cuffRows = result.debug.dropShoulderSleeveCuffRows ?? 0;
         const wrist = result.debug.dropShoulderSleeveWristStitches ?? 0;
         const text = blockText(result.sleeveDisplayRows);
+        const screen = visible(renderPatternDisplayRowsHtml(result.sleeveDisplayRows, { pieceSectionId: "sleeve" }));
+        const screenHtml = renderPatternDisplayRowsHtml(result.sleeveDisplayRows, { pieceSectionId: "sleeve" });
+        const print = visible(renderSleevelessPrintPieceHtml(result.sleeveDisplayRows, "", "sleeve"));
         expect(cuffRows, `${audience} ${spi}/${rpi} ${direction}`).toBeGreaterThan(0);
         expect(text).toContain(`and ${cuffRows === 1 ? "1 row" : `${cuffRows} rows`} deep`);
         expect(text).toContain(`${cuffRows * 2} rows so the hem can be folded`);
         expect(text).toContain(`${wrist} stitches`);
         if (direction === "cuff-up") {
-          expect(text).toContain(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET);
+          expect(result.sleeveDisplayRows.some((row) => row.kind === "block" && row.rowCounterReset === true)).toBe(true);
+          expect(screenHtml).toContain(RESET_ROW_COUNTER_TEXT);
+          expect(screenHtml).toContain("RC: 000");
           expect(text).toContain("Cast on");
           expect(text).toContain("upper-arm/top edge");
         } else {
           expect(text).not.toContain(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET);
           expect(text).toContain("Cast on or pick up");
         }
-        const screen = visible(renderPatternDisplayRowsHtml(result.sleeveDisplayRows, { pieceSectionId: "sleeve" }));
-        const print = visible(renderSleevelessPrintPieceHtml(result.sleeveDisplayRows, "", "sleeve"));
         expect(screen).toContain("Choose one way");
         expect(print).toContain("Choose one way");
         expect(print).toContain(`${cuffRows * 2} rows so the hem can be folded`);
@@ -335,15 +340,20 @@ describe("shared sweater cuff instructions", () => {
         ),
         yarnGaugeMachine: { gaugeStitchesPerInch: spi, gaugeRowsPerInch: rpi, availableNeedles: 400 },
       });
-      const screen = visible(renderPatternDisplayRowsHtml(pattern.sleeveDisplayRows, { pieceSectionId: "sleeve" }));
-      const print = visible(renderSleevelessPrintPieceHtml(pattern.sleeveDisplayRows, "", "sleeve"));
+      const screen = renderPatternDisplayRowsHtml(pattern.sleeveDisplayRows, { pieceSectionId: "sleeve" });
+      const print = renderSleevelessPrintPieceHtml(pattern.sleeveDisplayRows, "", "sleeve");
       for (const html of [screen, print]) {
-        expect(html, label).toContain("Choose one way to begin");
-        expect(html, label).toContain(
+        const text = visible(html);
+        expect(text, label).toContain("Choose one way to begin");
+        expect(text, label).toContain(
           `for ${(pattern.sleevePiece?.cuffRows ?? 0) * 2} rows so the hem can be folded`,
         );
-        expect(html, label).toContain("Reset row counter to RC: 000.");
-        expect(html, label).toContain("SLEEVE CAP SHAPING CHART");
+        expect(html, label).toContain("sleeve-cuff-options");
+        expect(html, label).toContain("row-counter-reset");
+        expect(html, label).toContain(RESET_ROW_COUNTER_TEXT);
+        expect(html, label).toContain("RC: 000");
+        expect(html, label).not.toContain("Reset row counter to RC: 000.");
+        expect(text, label).toContain("SLEEVE CAP SHAPING CHART");
       }
     }
   });

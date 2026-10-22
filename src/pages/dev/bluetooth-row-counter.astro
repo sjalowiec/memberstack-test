@@ -1,0 +1,264 @@
+---
+/**
+ * DEV-only Bluetooth page-turner row counter.
+ * Route: /dev/bluetooth-row-counter
+ *
+ * Ungated: no Memberstack, no membership checks, no site chrome.
+ * Production hosts 404 via middleware and this page.
+ * Does not read or write pattern builders, saved patterns, or instructions.
+ */
+import { isBluetoothRowCounterProductionBlocked } from "../../lib/dev/bluetoothRowCounterAccess";
+
+export const prerender = false;
+
+if (
+  isBluetoothRowCounterProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>DEV: Bluetooth row counter</title>
+  <style is:global>
+  :root {
+    color-scheme: light;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+    font-family: Arial, Helvetica, sans-serif;
+    color: #1a1a1a;
+    background: #f8faf8;
+  }
+  .wrap {
+    max-width: 36rem;
+    margin: 0 auto;
+  }
+  .wrap:focus {
+    outline: none;
+  }
+  .banner {
+    margin: 0 0 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #3d5216;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+  }
+  h2,
+  h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+  h3 {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+  .lede,
+  .help p,
+  .status {
+    margin: 0 0 16px;
+    color: #4b5563;
+    line-height: 1.45;
+  }
+  .status {
+    margin-bottom: 8px;
+    color: #3d5216;
+    font-weight: 700;
+  }
+  .count {
+    margin: 12px 0 0;
+    font-size: clamp(5rem, 24vw, 8.5rem);
+    font-weight: 700;
+    line-height: 0.9;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .count-caption {
+    margin: 0 0 18px;
+    text-align: center;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4b5563;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+  }
+  button {
+    min-height: 56px;
+    padding: 12px 16px;
+    border: 2px solid #2f4a1c;
+    border-radius: 10px;
+    background: #fff;
+    color: #1a1a1a;
+    font: inherit;
+    font-size: 1.25rem;
+    font-weight: 700;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .actions button {
+    flex: 1 1 0;
+  }
+  button.primary {
+    background: #2f4a1c;
+    color: #fff;
+  }
+  button.reset {
+    width: 100%;
+    margin-top: 12px;
+    font-size: 1.05rem;
+  }
+  .panel,
+  .help,
+  .notes {
+    margin-top: 22px;
+  }
+  .panel {
+    padding: 14px 16px;
+    border: 1px solid #d5ddd0;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .command {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .detail {
+    margin: 6px 0 0;
+    min-height: 1.2em;
+    color: #4b5563;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+  }
+  .log,
+  .empty-log {
+    margin: 0;
+    color: #1a1a1a;
+  }
+  .log {
+    padding-left: 1.2rem;
+  }
+  .empty-log {
+    color: #4b5563;
+  }
+  .notes {
+    display: block;
+    font-weight: 700;
+  }
+  .notes input {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 2px solid #d5ddd0;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 400;
+  }
+  .help ul {
+    margin: 0 0 10px;
+    padding-left: 1.2rem;
+  }
+  .help li + li {
+    margin-top: 4px;
+  }
+</style>
+  </head>
+  <body>
+    <main class="wrap" data-row-counter tabindex="-1">
+      <p class="banner">DEV experiment · not for production</p>
+      <h1>Bluetooth row counter</h1>
+      <p class="lede">
+        Proof of concept for a wireless carriage sensor. A Bluetooth page-turner pedal that types
+        arrow keys can move this counter. Knit It Now patterns are not connected to this page.
+      </p>
+      <p class="status" data-pedal-status role="status">
+        Click or tap the page once so this browser can receive the pedal.
+      </p>
+
+      <p class="count" data-row-count aria-live="polite" aria-atomic="true">0</p>
+      <p class="count-caption">Row</p>
+
+      <div class="actions">
+        <button type="button" data-row-minus disabled>− Row</button>
+        <button type="button" class="primary" data-row-plus>+ Row</button>
+      </div>
+      <button type="button" class="reset" data-row-reset>Reset</button>
+
+      <section class="panel" aria-labelledby="last-command-heading">
+        <h2 id="last-command-heading">Last keyboard command</h2>
+        <p class="command" data-last-command>None yet</p>
+        <p class="detail" data-last-command-detail></p>
+        <h3>Recent keys</h3>
+        <p class="empty-log" data-command-empty>No keys yet</p>
+        <ol class="log" data-command-log hidden></ol>
+      </section>
+
+      <label class="notes">
+        Notes
+        <input
+          type="text"
+          data-notes
+          autocomplete="off"
+          placeholder="Typing here does not change the row"
+        />
+      </label>
+
+      <section class="help">
+        <h2>What the pedal sends</h2>
+        <ul>
+          <li>Right Arrow or Down Arrow: advance one row.</li>
+          <li>Left Arrow or Up Arrow: reverse one row. The counter stops at zero.</li>
+        </ul>
+        <p>
+          Sky Turner Mode 1 sends Left Arrow for one press and Right Arrow for two presses. Mode 2
+          sends Up Arrow for one press and Down Arrow for two presses. This page counts each arrow
+          the browser receives. It does not decide whether a press was single or double. Other keys
+          are shown above and do not change the row. A held key is not counted again.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      import { mountBluetoothRowCounter } from "../../scripts/bluetoothRowCounterPage";
+
+      mountBluetoothRowCounter(document);
+    </script>
+  </body>
+</html>
+

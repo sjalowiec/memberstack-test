@@ -684,6 +684,15 @@ function bindEvents() {
       );
       if (!confirmed) return;
       if (deleteCourse111Component(parent, slug, index)) {
+        if (!parent.blocks.some((entry) => entry.slug === slug)) {
+          const remaining = listCourse111OriginalLessons(course);
+          const next =
+            remaining.find((lesson) => lesson.parentSlug === parent.slug) ??
+            remaining[0] ??
+            null;
+          selectedParentSlug = next?.parentSlug ?? null;
+          selectedBlockSlug = next?.blockSlug ?? null;
+        }
         setDirty(true);
         renderAll();
       }

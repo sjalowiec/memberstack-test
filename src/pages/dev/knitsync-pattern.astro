@@ -1,0 +1,320 @@
+---
+/**
+ * DEV-only KnitSync interactive pattern.
+ * Route: /dev/knitsync-pattern
+ *
+ * Ungated: no Memberstack, no membership checks, no site chrome.
+ * Production hosts 404 via middleware and this page.
+ * Does not read or write pattern builders, saved patterns, or instructions.
+ */
+import { isKnitSyncPatternProductionBlocked } from "../../lib/dev/knitsyncPatternAccess";
+
+export const prerender = false;
+
+if (
+  isKnitSyncPatternProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>DEV: KnitSync pattern</title>
+    <style is:global>
+      :root {
+        color-scheme: light;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+        font-family: Arial, Helvetica, sans-serif;
+        color: #1a1a1a;
+        background: #f8faf8;
+      }
+      .wrap {
+        max-width: 40rem;
+        margin: 0 auto;
+      }
+      .wrap:focus {
+        outline: none;
+      }
+      .banner {
+        margin: 0 0 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #3d5216;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+      }
+      h2 {
+        margin: 0 0 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #4b5563;
+      }
+      .lede,
+      .status,
+      .meta,
+      .slot p {
+        margin: 0;
+        color: #4b5563;
+        line-height: 1.45;
+      }
+      .lede {
+        margin-bottom: 16px;
+      }
+      .status {
+        margin-bottom: 12px;
+        color: #3d5216;
+        font-weight: 700;
+      }
+      .sound-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 16px;
+      }
+      button.sound {
+        min-height: 44px;
+        margin: 0;
+        padding: 8px 14px;
+        font-size: 1rem;
+        flex: 0 0 auto;
+      }
+      .volume {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+      .volume input {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 44px;
+        accent-color: #2f4a1c;
+      }
+      .volume span {
+        flex: 0 0 auto;
+        min-width: 3rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .progress {
+        margin: 0;
+        font-size: clamp(2.4rem, 10vw, 3.4rem);
+        font-weight: 700;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .now {
+        margin-top: 16px;
+        padding: 16px;
+        border: 2px solid #2f4a1c;
+        border-radius: 12px;
+        background: #fff;
+      }
+      .wrap[data-phase="complete"] .now {
+        border-color: #9aaf86;
+        background: #f3f7ef;
+      }
+      .now[data-shaping="true"] {
+        border-color: #b45309;
+        background: #fff7ed;
+        box-shadow: inset 4px 0 0 #b45309;
+      }
+      .shaping-flag {
+        display: inline-block;
+        margin: 0 0 8px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #b45309;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .shaping-flag[hidden] {
+        display: none;
+      }
+      .heading {
+        margin: 0 0 6px;
+        font-size: 1.35rem;
+      }
+      .meta {
+        margin-bottom: 12px;
+      }
+      .current {
+        margin: 0;
+        font-size: 1.2rem;
+        line-height: 1.4;
+        font-weight: 700;
+      }
+      .slot {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border: 1px solid #d5ddd0;
+        border-radius: 12px;
+        background: #fff;
+      }
+      .slot p {
+        color: #1a1a1a;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+      }
+      button {
+        min-height: 56px;
+        padding: 12px 16px;
+        border: 2px solid #2f4a1c;
+        border-radius: 10px;
+        background: #fff;
+        color: #1a1a1a;
+        font: inherit;
+        font-size: 1.15rem;
+        font-weight: 700;
+        touch-action: manipulation;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 3px solid #1d4ed8;
+        outline-offset: 2px;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .actions button {
+        flex: 1 1 0;
+      }
+      button.primary {
+        background: #2f4a1c;
+        color: #fff;
+      }
+      button.reset {
+        width: 100%;
+        margin-top: 12px;
+        font-size: 1.05rem;
+      }
+      .debug {
+        margin-top: 22px;
+        padding-top: 8px;
+      }
+      .command {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+      .detail,
+      .empty-log {
+        margin: 4px 0 0;
+        color: #4b5563;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 0.85rem;
+      }
+      .log {
+        margin: 8px 0 0;
+        padding-left: 1.2rem;
+        color: #1a1a1a;
+        font-size: 0.92rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap" data-knitsync data-phase="knitting" tabindex="-1">
+      <p class="banner">DEV experiment · not for production</p>
+      <h1>KnitSync pattern</h1>
+      <p class="lede">
+        Fixed 20-row swatch, cast on 40 stitches. Advance after you knit the row on screen.
+        Decreases and increases are one stitch on the carriage-side edge, worked before that row.
+        A beep sounds when that next row is shaping. A short tune plays once when the swatch is finished.
+      </p>
+      <p class="status" data-pedal-status role="status">
+        Click or tap the page once so this browser can receive the pedal.
+      </p>
+      <div class="sound-controls">
+        <button type="button" class="sound" data-sound-toggle aria-pressed="true">Sound on</button>
+        <label class="volume">
+          Volume
+          <input
+            type="range"
+            data-volume
+            min="0"
+            max="100"
+            value="75"
+            step="1"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="75"
+          />
+          <span data-volume-readout>75%</span>
+        </label>
+      </div>
+
+      <p class="progress" data-progress>0 rows completed</p>
+
+      <section class="now" data-now data-shaping="false" aria-labelledby="now-heading">
+        <p class="shaping-flag" data-shaping-flag hidden>Shaping row</p>
+        <h2 id="now-heading" data-now-label>Next row to knit</h2>
+        <p class="heading" data-heading>Row 1 of 20</p>
+        <p class="meta" data-meta></p>
+        <p class="current" data-current aria-live="polite" aria-atomic="true"></p>
+      </section>
+
+      <section class="slot" aria-labelledby="previous-heading">
+        <h2 id="previous-heading">Previous</h2>
+        <p data-previous></p>
+      </section>
+
+      <section class="slot" aria-labelledby="upcoming-heading">
+        <h2 id="upcoming-heading">Upcoming</h2>
+        <p data-upcoming></p>
+      </section>
+
+      <div class="actions">
+        <button type="button" data-row-minus disabled>− Row</button>
+        <button type="button" class="primary" data-row-plus>+ Row</button>
+      </div>
+      <button type="button" class="reset" data-row-reset>Reset</button>
+
+      <section class="debug" aria-labelledby="last-command-heading">
+        <h2 id="last-command-heading">Last keyboard command</h2>
+        <p class="command" data-last-command>None yet</p>
+        <p class="detail" data-last-command-detail></p>
+        <p class="empty-log" data-command-empty>No keys yet</p>
+        <ol class="log" data-command-log hidden></ol>
+      </section>
+    </main>
+
+    <script>
+      import { mountKnitSyncPattern } from "../../scripts/knitsyncPatternPage";
+
+      mountKnitSyncPattern(document);
+    </script>
+  </body>
+</html>

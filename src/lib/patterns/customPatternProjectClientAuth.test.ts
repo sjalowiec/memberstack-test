@@ -25,10 +25,12 @@ vi.mock("./sleevelessPatternSystemAccessClient", async (importOriginal) => {
 });
 
 import {
+  createCustomPatternProject,
   listCustomPatternProjects,
   SESSION_EXPIRED_SAVE_MESSAGE,
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
+import { DEFAULT_DEV_PATTERN_USER_ID } from "./customPatternProjectAuth";
 import type {
   SaveCustomPatternProjectRequest,
   UpdateCustomPatternProjectRequest,
@@ -206,6 +208,37 @@ describe("customPatternProjectClient authentication", () => {
 
     expect(res.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("local pattern testing saves, lists, and updates as the same dev user and omits the Memberstack token", async () => {
+    vi.stubGlobal("window", {
+      location: { hostname: "localhost", search: "" },
+      $memberstackDom: loggedInMemberstack("jwt-should-not-be-sent"),
+    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, savedProjectResponseBody()));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const created = await createCustomPatternProject({
+      name: "Local set-in",
+      notes: "",
+      family: "sleeveless",
+      source: "express",
+      pattern: samplePattern(),
+      customOverrides: {},
+    });
+    const listed = await listCustomPatternProjects();
+    const updated = await updateCustomPatternProject(updatePayload());
+
+    expect(created.ok).toBe(true);
+    expect(listed.ok).toBe(true);
+    expect(updated.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    for (const [, init] of fetchMock.mock.calls) {
+      const headers = (init as RequestInit).headers as Record<string, string>;
+      expect(headers.Authorization).toBeUndefined();
+      expect(headers["X-KBM-Member-Id"]).toBeUndefined();
+      expect(headers["X-KBM-Dev-User-Id"]).toBe(DEFAULT_DEV_PATTERN_USER_ID);
+    }
   });
 
   it("5. a failed update preserves the draft edit and never falls back to create (no duplicate)", async () => {

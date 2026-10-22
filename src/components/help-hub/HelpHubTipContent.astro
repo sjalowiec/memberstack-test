@@ -722,6 +722,51 @@ function lessonTitleEnding(title: string): { lead: string; end: string } {
     margin-top: 0.15rem;
   }
 
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip]) {
+    position: relative;
+  }
+
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip][data-tooltip]::after) {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 30;
+    width: max-content;
+    max-width: 16rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 6px;
+    background: #52682d;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip][data-tooltip]::before) {
+    content: "";
+    position: absolute;
+    left: 0.85rem;
+    bottom: calc(100% + 2px);
+    z-index: 31;
+    border: 6px solid transparent;
+    border-top-color: #52682d;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip][data-tooltip]:hover::after),
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip][data-tooltip]:hover::before),
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip][data-tooltip]:focus-visible::after),
+  :global(.help-hub-article-question .favorite-star[data-favorite-action-tooltip][data-tooltip]:focus-visible::before) {
+    opacity: 1;
+  }
+
   .talk-bubble.tuesday-tip__answer {
     font-size: 1rem;
     font-weight: 500;

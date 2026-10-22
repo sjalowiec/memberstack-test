@@ -34,7 +34,7 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).not.toContain("HAT_PATTERN_HERO_IMAGE_SRC");
     expect(catalog).not.toContain("/images/patterns/Hat_builder.png");
     expect(catalog).toContain(
-      "copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.'",
+      "copy: 'A hat in your gauge, with brim and crown choices and machine-knitting instructions.'",
     );
     expect(catalog).toContain("button: 'Create your hat'");
     expect(catalog).not.toContain("title: 'Hat Pattern Builder'");
@@ -42,7 +42,8 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).not.toContain("Hat Pattern Builder — POSTPONED");
     expect(catalog).toContain("object-fit: contain");
     expect(catalog).not.toContain("object-fit: cover");
-    expect(catalog).toContain("Choose a pattern to get started");
+    expect(catalog).toContain("Your Gauge. Your Size. Your Style. Your Pattern.");
+    expect(catalog).toContain("Stop searching for a pattern that might work. Build one that works for you.");
     expect(catalog).not.toContain("Pick a sweater builder");
     expect(catalog).not.toContain("Pattern Builders home");
     expect(catalog).not.toContain("patterns-intro__home-link");
@@ -54,8 +55,9 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("PATTERN_CATALOG_MEMBERSHIP_BODY");
     expect(catalog).toContain("PATTERNS_LANDING_BECOME_MEMBER_LABEL");
     expect(catalog).toContain("PATTERNS_LANDING_LOGIN_LABEL");
-    expect(PATTERN_CATALOG_MEMBERSHIP_BODY).toMatch(/Sweater pattern builders are included/);
-    expect(PATTERN_CATALOG_MORE_HEADING).toBe("More Pattern Builders");
+    expect(PATTERN_CATALOG_MEMBERSHIP_BODY).toMatch(/The Hat builder is free to try/);
+    expect(PATTERN_CATALOG_MEMBERSHIP_BODY).toMatch(/other Pattern Builders are included/);
+    expect(PATTERN_CATALOG_MORE_HEADING).toBe("Choose a Project");
     expect(catalog).toContain("title: 'Hat'");
     expect(catalog).toContain("title: 'Sleeveless Sweater'");
     expect(catalog).toContain("title: 'Drop Shoulder Sweater'");
@@ -75,11 +77,11 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).not.toMatch(/href:\s*['"]\/patterns\/hat['"]/);
   });
 
-  it("Create your hat and the guest featured CTA start a new Hat session, not a draft resume", () => {
+  it("Create your hat starts a new Hat session, not a draft resume", () => {
     expect(catalog).toContain("href: '/patterns/hat/builder?new=1'");
     expect(catalog).toContain("button: 'Create your hat'");
-    expect(catalog).toContain("{hatPattern.href}");
-    expect(catalog).toContain("CREATE MY FREE HAT PATTERN");
+    expect(catalog).toContain("hatPattern,");
+    expect(catalog).toContain("free: true");
     expect(catalog).toContain("href: '/patterns/sleeveless'");
     expect(catalog).toContain("href: '/patterns/drop-shoulder'");
   });
@@ -121,53 +123,58 @@ describe("pattern catalog Hat card", () => {
     expect(catalog).toContain("socksPattern");
   });
 
-  it("features the free Hat for guests and keeps the standard card catalog for members", () => {
+  it("features the free Hat inside the guest library and keeps a project library for members", () => {
     const guest = catalogSlice('data-patterns-catalog="guest"', 'data-patterns-catalog="member"');
     const member = catalogSlice('data-patterns-catalog="member"', 'id="patterns-coming-heading"');
 
-    expect(guest).toContain("patterns-featured");
-    expect(guest).toContain("Try a Pattern Builder Free");
-    expect(guest).toContain("Create Your Custom Hat Pattern");
-    expect(guest).toContain(
-      "Enter your gauge, choose your size and style, and create custom knitting instructions for your machine and yarn.",
-    );
-    expect(guest).toContain(">Free</span>");
-    expect(guest).toContain("CREATE MY FREE HAT PATTERN");
+    expect(guest).toContain("guestPatterns.map");
+    expect(guest).toContain("data-testid={pattern.free ? \"patterns-featured-hat\" : undefined}");
+    expect(guest).toContain(">Free. No account or password needed.</span>");
     expect(guest).toContain("Free. No account or password needed.");
-    expect(guest).toContain("{hatPattern.href}");
-    expect(guest).toContain("{featuredHatImageSrc}");
-    expect(guest).not.toContain("{hatPattern.image}");
-    expect(catalog).toContain("const featuredHatImageSrc = '/images/patterns/hat.webp'");
+    expect(guest).toContain("{pattern.image}");
+    expect(guest).toContain("{pattern.button}");
     expect(catalog).toContain("image: '/images/patterns/hat.webp'");
-    expect(member).toContain("{pattern.image}");
     expect(catalog).not.toContain("HAT_PATTERN_HERO_IMAGE_SRC");
     expect(guest).toContain("PATTERN_CATALOG_MORE_HEADING");
-    expect(guest).toContain('id="sweater-patterns"');
+    expect(guest).toContain("The Hat builder is free. Open a project and build it in your gauge.");
     expect(guest).toMatch(
-      /id="sweater-patterns"[\s\S]*class="patterns-catalog patterns-catalog--more"[\s\S]*PATTERN_CATALOG_MORE_HEADING/,
-    );
-    expect(guest).toContain("PATTERN_CATALOG_MEMBERSHIP_BODY");
-    expect(guest).toContain("sweaterPatterns.map");
-    expect(guest).toMatch(
-      /PATTERN_CATALOG_MORE_HEADING[\s\S]*PATTERN_CATALOG_MEMBERSHIP_BODY[\s\S]*sweaterPatterns\.map/,
+      /PATTERN_CATALOG_MORE_HEADING[\s\S]*The Hat builder is free[\s\S]*guestPatterns\.map/,
     );
     expect(guest).not.toContain("availablePatterns.map");
-    expect(guest).not.toContain("Create your hat");
+    expect(guest).not.toContain("Become a Member");
 
     expect(member).toContain("availablePatterns.map");
     expect(member).toContain('id="patterns-available-heading"');
-    expect(member).toContain("Available now");
-    expect(member).toContain("pattern.pillCount");
-    expect(member).toContain("pattern.pillRest");
+    expect(member).toContain("PATTERN_CATALOG_MORE_HEADING");
+    expect(member).toContain("Open a builder and start with your gauge.");
     expect(member).toContain("catalog-card");
+    expect(member).not.toContain("pattern.pillCount");
+    expect(member).not.toContain("pattern.pillRest");
     expect(member).not.toContain("patterns-featured");
-    expect(member).not.toContain("Try a Pattern Builder Free");
-    expect(member).not.toContain("CREATE MY FREE HAT PATTERN");
-    expect(member).not.toContain("More Pattern Builders");
+    expect(member).not.toContain("Free. No account or password needed.");
+    expect(member).not.toContain("PATTERNS_LANDING_BECOME_MEMBER_LABEL");
     expect(member).toMatch(/data-patterns-catalog="member" hidden/);
 
     expect(catalog).toContain('data-patterns-catalog="guest"');
     expect(catalog).toContain("initPatternsLandingCta");
     expect(catalog).toContain("data-patterns-page");
+    expect(catalog).toMatch(
+      /id="patterns-membership-heading"[\s\S]*Included with membership[\s\S]*PATTERN_CATALOG_MEMBERSHIP_BODY[\s\S]*PATTERNS_LANDING_BECOME_MEMBER_LABEL/,
+    );
+    expect(catalog).toContain('data-patterns-audience="loggedOut"');
+    expect(catalog).toContain('data-patterns-audience="loggedInNoAccess" hidden');
+    expect(catalog).toContain("PATTERN_CATALOG_SIGNED_IN_MEMBERSHIP_BODY");
+    expect(catalog).toContain("PATTERNS_LANDING_JOIN_OR_RENEW_LABEL");
+    const signedInActions = catalog.slice(
+      catalog.lastIndexOf('data-patterns-audience="loggedInNoAccess"'),
+      catalog.lastIndexOf("PATTERNS_LANDING_JOIN_OR_RENEW_LABEL") +
+        "PATTERNS_LANDING_JOIN_OR_RENEW_LABEL".length,
+    );
+    expect(signedInActions).toContain("hidden");
+    expect(signedInActions).not.toContain("PATTERNS_LANDING_LOGIN_LABEL");
+    expect(catalog).toContain("Choose Your Project");
+    expect(catalog).toContain("Make It Yours");
+    expect(catalog).toContain("Create Your Pattern");
+    expect(catalog).toContain("Made for machine knitters");
   });
 });

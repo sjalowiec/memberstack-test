@@ -1,4 +1,4 @@
-# Watson — Live Shopify Recent Sales
+# Watson â€” Live Shopify Recent Sales
 
 Watson can sync **live Shopify orders** into Postgres and show them on **Recent Sales**. This path is separate from legacy ColdFusion CSV imports (`legacy_store_transactions`).
 
@@ -21,7 +21,7 @@ This installation uses **one Shopify store** (`vjzu11-86.myshopify.com` in curre
 
 | `site_brand` | Meaning |
 |---|---|
-| `designaknit` | Order contains DesignaKnit software (handle/title/tags) — needs license ops |
+| `designaknit` | Order contains DesignaKnit software (handle/title/tags) â€” needs license ops |
 | `knit_it_now` | Everything else on the Shopify store |
 
 Classification rules live in `src/lib/watson/shopifyOrderClassify.ts` (known handles from `src/data/designaknit-products.json`, plus title/vendor/tag cues).
@@ -57,7 +57,7 @@ Create a Shopify app on the store with Admin API scope:
 
 with form body `grant_type=client_credentials`, `client_id`, and `client_secret`. The token is sent as `X-Shopify-Access-Token`, cached in memory, and refreshed shortly before `expires_in` (~24 hours).
 
-**Legacy custom apps** may still use a static Admin API access token (`shpat_…`). If `SHOPIFY_ADMIN_ACCESS_TOKEN` is set, Watson uses it and does not call the client-credentials endpoint.
+**Legacy custom apps** may still use a static Admin API access token (`shpat_â€¦`). If `SHOPIFY_ADMIN_ACCESS_TOKEN` is set, Watson uses it and does not call the client-credentials endpoint.
 
 Set Netlify / `.env` (see `.env.example`):
 
@@ -67,7 +67,7 @@ Set Netlify / `.env` (see `.env.example`):
 | `SHOPIFY_STORE_DOMAIN` | Yes | e.g. `vjzu11-86.myshopify.com` |
 | `SHOPIFY_CLIENT_ID` | Yes* | Dev Dashboard Client ID |
 | `SHOPIFY_CLIENT_SECRET` | Yes* | Dev Dashboard Client secret |
-| `SHOPIFY_ADMIN_ACCESS_TOKEN` | Yes* | Legacy static Admin API token (`shpat_…`); preferred when set |
+| `SHOPIFY_ADMIN_ACCESS_TOKEN` | Yes* | Legacy static Admin API token (`shpat_â€¦`); preferred when set |
 | `SHOPIFY_API_VERSION` | No | Default `2025-01` |
 | `WATSON_SHOPIFY_SYNC_SECRET` | No | If set, scheduled function requires `X-Watson-Sync-Secret` |
 
@@ -78,7 +78,7 @@ Tokens and secrets stay server-side only. Never expose them to the browser.
 ## Sync
 
 - **Manual:** Watson ? Recent Sales ? **Sync Shopify Orders** ? `POST /api/watson/shopify/sync` (Watson session).
-- **Scheduled:** Netlify function `watson-shopify-sync` every 6 hours (`netlify.toml`). Needs the same env vars on the Netlify site. There was no prior scheduled-function pattern in this repo; this uses Netlify’s supported `[functions."name"].schedule` cron.
+- **Scheduled:** Netlify function `watson-shopify-sync` every 6 hours (`netlify.toml`). Needs the same env vars on the Netlify site. There was no prior scheduled-function pattern in this repo; this uses Netlifyâ€™s supported `[functions."name"].schedule` cron.
 
 Sync upserts by `shopify_order_id` (and replaces line items for that order), so re-runs do not duplicate orders.
 
@@ -86,7 +86,7 @@ The scheduled function runs every 6 hours. A purchase can take that long to show
 
 Guest checkout is linked by the checkout email (`contact_email`, otherwise `email`) as well as the Shopify customer email. The mapper stores tracking links from fulfillments and discards shipping addresses.
 
-Customers see their own rows on **Account ? Purchase History**, matched to the verified Memberstack email. That section is separate from membership billing.
+Customers see their own rows on **Account â†’ Purchase History**, matched to the verified Memberstack email. That section is separate from membership billing.
 
 ## UI
 

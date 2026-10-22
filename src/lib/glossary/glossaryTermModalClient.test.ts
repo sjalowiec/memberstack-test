@@ -12,7 +12,11 @@ describe("glossarySlugFromTermHref", () => {
     expect(glossarySlugFromTermHref("/glossary/japanese-notation-traditional/")).toBe(
       "japanese-notation-traditional",
     );
-    expect(glossarySlugFromTermHref("/glossary/283/cast-on-comb/term")).toBe("cast-on-comb");
+    expect(glossarySlugFromTermHref("/glossary/needle-pitch")).toBe("needle-pitch");
+    expect(glossarySlugFromTermHref("/glossary/needle-pitch/")).toBe("needle-pitch");
+    expect(glossaryModalSlugForLink("/glossary/needle-pitch/", { classed: true, inCourse: true })).toBe(
+      "needle-pitch",
+    );
     expect(glossarySlugFromTermHref("https://www.knititnow.com/glossary/249/ravel-cord/term")).toBe(
       "ravel-cord",
     );

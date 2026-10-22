@@ -6,10 +6,7 @@
  * the drop-shoulder sleeve taper through the upper arm, then the approved sleeve cap.
  */
 
-import {
-  calculateDropShoulderSleevePieceNumbers,
-  type DropShoulderSleevePieceNumbers,
-} from "./dropShoulderSleevePieceNumbers";
+import { type DropShoulderSleevePieceNumbers } from "./dropShoulderSleevePieceNumbers";
 import {
   resolveDropShoulderSleeveInches,
 } from "./dropShoulderSleeveMeasurementOverrides";
@@ -19,7 +16,7 @@ import {
   resolveFrontVNeckShapingTimingCase,
 } from "./frontArmholeNecklineComposition";
 import { normalizeParentheticalRcLists } from "./parentheticalRcList";
-import { getDefaultCuffLengthInches } from "./hemDefaults";
+import { resolveCuffUpSweaterSleevePiece } from "./legoBlocks/sweaterSleeveCuff";
 import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
 import {
   generateSleevelessBackPattern,
@@ -486,7 +483,17 @@ export function generateSetInSleevePattern(
         );
       }
     }
-    const cuffInches = getDefaultCuffLengthInches(chartAudience);
+    sleevePiece = resolveCuffUpSweaterSleevePiece({
+      patternData: stamped,
+      audience: chartAudience,
+      finishedUpperArmInches: cap.sleeve.finishedUpperArmInches,
+      finishedWristInches: sleeveInches.wristIn,
+      sleeveLengthInches: sleeveInches.sleeveLengthIn,
+      stitchesPerInch: debug.stitchesPerInch,
+      rowsPerInch: debug.rowsPerInch,
+      keepRequestedSleeveLength: true,
+    });
+    const cuffInches = sleevePiece.cuffDepthInches;
     sleeveFinishedInches = {
       ...(typeof sleeveInches.wristIn === "number" ? { wristInches: sleeveInches.wristIn } : {}),
       cuffDepthInches: cuffInches,
@@ -494,14 +501,6 @@ export function generateSetInSleevePattern(
         ? { sleeveLengthInches: sleeveInches.sleeveLengthIn }
         : {}),
     };
-    sleevePiece = calculateDropShoulderSleevePieceNumbers({
-      finishedUpperArmInches: cap.sleeve.finishedUpperArmInches,
-      finishedWristInches: sleeveInches.wristIn,
-      sleeveLengthInches: sleeveInches.sleeveLengthIn,
-      stitchesPerInch: debug.stitchesPerInch,
-      rowsPerInch: debug.rowsPerInch,
-      cuffDepthInches: cuffInches,
-    });
     const piece = sleevePiece;
     if (piece.topSts !== cap.sleeve.upperArmStitches) {
       const message = "Sleeve stitches at the upper arm do not match the sleeve-cap starting stitches.";

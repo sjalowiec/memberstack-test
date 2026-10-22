@@ -16,6 +16,7 @@ import {
   CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
   cuffUpSleeveBodyRowCounter,
 } from "./cuffUpSleeveRowCounter";
+import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
 
 const SHARED_SLEEVE = {
   topSts: 42,
@@ -51,11 +52,7 @@ function sectionIndex(rows: readonly SleevelessPatternDisplayRow[], title: strin
 }
 
 function resetIndex(rows: readonly SleevelessPatternDisplayRow[]): number {
-  return rows.findIndex(
-    (row) =>
-      row.kind === "block" &&
-      (row.paragraphs ?? []).includes(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET),
-  );
+  return rows.findIndex((row) => row.kind === "block" && row.rowCounterReset === true);
 }
 
 function shapingRcList(rows: readonly SleevelessPatternDisplayRow[]): number[] {
@@ -92,8 +89,10 @@ describe("cuff-up sleeve body row counter", () => {
     expect(built.instructions.steps.find((step) => step.id === "sleeve-body")?.rowCounterStart).toBe(0);
 
     const html = renderSidewaysCardiganSleeveSequenceHtml(built.instructions);
-    const resetAt = html.indexOf(CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET);
+    const resetAt = html.indexOf(RESET_ROW_COUNTER_TEXT);
     const bodyAt = html.indexOf("SLEEVE BODY");
+    expect(html).toContain("row-counter-reset");
+    expect(html).toContain("RC: 000");
     expect(resetAt).toBeGreaterThan(html.indexOf("Choose one way to begin"));
     expect(resetAt).toBeGreaterThan(html.indexOf(`${calc.cuffRows} rows of ribbing`));
     expect(resetAt).toBeGreaterThan(html.indexOf(`${calc.cuffRows * 2} rows so the hem can be folded`));
@@ -174,9 +173,8 @@ describe("cuff-up sleeve body row counter", () => {
         expect(cuffAt).toBeGreaterThanOrEqual(0);
         expect(resetAt).toBeGreaterThan(cuffAt);
         expect(bodyAt).toBeGreaterThan(resetAt);
-        expect(renderSleevelessPrintPieceHtml(rows, "", "sleeve")).toContain(
-          CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET,
-        );
+        expect(renderSleevelessPrintPieceHtml(rows, "", "sleeve")).toContain(RESET_ROW_COUNTER_TEXT);
+        expect(renderSleevelessPrintPieceHtml(rows, "", "sleeve")).toContain("RC: 000");
       }
       const cuffText = sample.rows
         .filter((row) => row.kind === "block")

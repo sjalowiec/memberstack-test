@@ -1,0 +1,438 @@
+---
+import {
+  GAUGE_DEMO_SAMPLES,
+  GAUGE_DEMO_SLEEVE_MEASUREMENTS,
+  gaugeDemoSleeveFrame,
+  gaugeDemoSleeveInstructions,
+  gaugeDemoSleeveKnitTile,
+} from "../../lib/patterns/patternGaugeDemo";
+
+const sleeve = gaugeDemoSleeveInstructions(20, 28);
+const frame = gaugeDemoSleeveFrame();
+const tile = gaugeDemoSleeveKnitTile(sleeve.stitchesPer4, sleeve.rowsPer4);
+---
+
+<section class="gauge-demo" data-gauge-demo aria-labelledby="gauge-demo-heading">
+  <div class="gauge-demo__panel">
+    <h2 id="gauge-demo-heading" class="gauge-demo__title">See Your Pattern Take Shape</h2>
+    <div class="gauge-demo__body">
+      <p class="gauge-demo__lead">Same finished sleeve. Different gauge. Watch the pattern change.</p>
+      <div class="gauge-demo__layout">
+        <div class="gauge-demo__controls">
+          <p id="gauge-demo-choose" class="gauge-demo__choose">Choose a sample gauge</p>
+          <div class="gauge-demo__samples" role="radiogroup" aria-labelledby="gauge-demo-choose">
+            {GAUGE_DEMO_SAMPLES.map((sample) => {
+              const selected = sample.stitches === 20 && sample.rows === 28;
+              return (
+                <button
+                  type="button"
+                  class="gauge-demo__sample"
+                  role="radio"
+                  data-gauge-demo-sample
+                  data-stitches={sample.stitches}
+                  data-rows={sample.rows}
+                  aria-checked={selected ? "true" : "false"}
+                  tabindex={selected ? 0 : -1}
+                >
+                  {sample.label}
+                </button>
+              );
+            })}
+          </div>
+          <p class="gauge-demo__measure">
+            Gauge measured over 4" <small class="gauge-demo__metric">(10 cm)</small>.
+          </p>
+        </div>
+
+        <div class="gauge-demo__fabric">
+            <svg
+              data-gauge-demo-svg
+              viewBox={`0 0 ${frame.width} ${frame.height}`}
+              role="img"
+              aria-labelledby="gauge-demo-fabric-title"
+            >
+              <title id="gauge-demo-fabric-title">
+                {`Tapered sweater sleeve, ${GAUGE_DEMO_SLEEVE_MEASUREMENTS.sleeveLengthInches} inches long, ${GAUGE_DEMO_SLEEVE_MEASUREMENTS.wristInches} inches at the wrist, ${GAUGE_DEMO_SLEEVE_MEASUREMENTS.upperArmInches} inches at the upper arm. Cast on ${sleeve.castOn} stitches. ${sleeve.increaseCountPerSide} increases at each edge. ${sleeve.totalRows} rows.`}
+              </title>
+              <defs>
+                <clipPath id="gauge-demo-sleeve-clip">
+                  <path d={frame.path} />
+                </clipPath>
+                <pattern
+                  id="gauge-demo-knit"
+                  data-gauge-demo-pattern
+                  patternUnits="userSpaceOnUse"
+                  width={tile.patternWidth}
+                  height={tile.patternHeight}
+                >
+                  <path
+                    data-gauge-demo-stitch
+                    d={tile.stitchPath}
+                    fill="none"
+                    stroke="#52682d"
+                    stroke-width={tile.strokeWidth}
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </pattern>
+              </defs>
+              <rect
+                data-gauge-demo-sleeve-fill
+                width={frame.width}
+                height={frame.height}
+                fill="#f6f1e6"
+                clip-path="url(#gauge-demo-sleeve-clip)"
+              />
+              <rect
+                width={frame.width}
+                height={frame.height}
+                fill="url(#gauge-demo-knit)"
+                clip-path="url(#gauge-demo-sleeve-clip)"
+              />
+              <path data-gauge-demo-sleeve-outline d={frame.path} fill="none" stroke="#52682d" stroke-width="2.5" />
+              <g data-gauge-demo-measures set:html={frame.measurements} />
+            </svg>
+        </div>
+
+        <div class="gauge-demo__instructions">
+            <h3>Your Sleeve Pattern</h3>
+            <div data-gauge-sleeve-lines>
+              {sleeve.lines.map((line) => (
+                <p class:list={["gauge-demo__instruction", `gauge-demo__instruction--${line.role}`]}>{line.text}</p>
+              ))}
+            </div>
+          </div>
+          <p class="gauge-demo__live" data-gauge-demo-live aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="gauge-demo__closer">
+    That's just one sleeve. Imagine how much time you'll save when your entire sweater pattern calculates itself using your gauge, your measurements, and your knitting machine.
+  </p>
+</section>
+
+<script>
+  import {
+    gaugeDemoSleeveInstructions,
+    gaugeDemoSleeveKnitTile,
+    resolveGaugeDemoState,
+    type GaugeDemoState,
+  } from "../../lib/patterns/patternGaugeDemo";
+
+  function initGaugeDemo(root: HTMLElement): void {
+    const samples = [...root.querySelectorAll<HTMLButtonElement>("[data-gauge-demo-sample]")];
+    const linesEl = root.querySelector("[data-gauge-sleeve-lines]");
+    const pattern = root.querySelector("[data-gauge-demo-pattern]");
+    const stitch = root.querySelector("[data-gauge-demo-stitch]");
+    const title = root.querySelector("#gauge-demo-fabric-title");
+    const live = root.querySelector("[data-gauge-demo-live]");
+    const group = root.querySelector(".gauge-demo__samples");
+
+    if (
+      samples.length !== 3 ||
+      !(linesEl instanceof HTMLElement) ||
+      !(pattern instanceof SVGPatternElement) ||
+      !(stitch instanceof SVGPathElement) ||
+      !(title instanceof SVGTitleElement) ||
+      !(live instanceof HTMLElement) ||
+      !(group instanceof HTMLElement)
+    ) {
+      return;
+    }
+
+    const selected = samples.find((sample) => sample.getAttribute("aria-checked") === "true") ?? samples[1];
+    const instructions = root.querySelector(".gauge-demo__instructions");
+    let state: GaugeDemoState = resolveGaugeDemoState(selected.dataset.stitches, selected.dataset.rows);
+    let frame = 0;
+    let announceOnPaint = false;
+    let highlightTimer = 0;
+
+    function highlightPattern(): void {
+      if (!(instructions instanceof HTMLElement)) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      instructions.classList.add("is-recalculated");
+      window.clearTimeout(highlightTimer);
+      highlightTimer = window.setTimeout(() => {
+        instructions.classList.remove("is-recalculated");
+      }, 1000);
+    }
+
+    function paint(announce: boolean): void {
+      const sleeve = gaugeDemoSleeveInstructions(state.stitchesPer4, state.rowsPer4);
+      const tile = gaugeDemoSleeveKnitTile(sleeve.stitchesPer4, sleeve.rowsPer4);
+      linesEl.replaceChildren(
+        ...sleeve.lines.map((line) => {
+          const paragraph = document.createElement("p");
+          paragraph.className = `gauge-demo__instruction gauge-demo__instruction--${line.role}`;
+          paragraph.textContent = line.text;
+          return paragraph;
+        }),
+      );
+      pattern.setAttribute("width", String(tile.patternWidth));
+      pattern.setAttribute("height", String(tile.patternHeight));
+      stitch.setAttribute("d", tile.stitchPath);
+      stitch.setAttribute("stroke-width", String(tile.strokeWidth));
+      title.textContent = `Tapered sweater sleeve, 17 inches long, 6.75 inches at the wrist, 14 inches at the upper arm. Cast on ${sleeve.castOn} stitches. ${sleeve.increaseCountPerSide} increases at each edge. ${sleeve.totalRows} rows.`;
+      for (const sample of samples) {
+        const on =
+          Number(sample.dataset.stitches) === state.stitchesPer4 &&
+          Number(sample.dataset.rows) === state.rowsPer4;
+        sample.setAttribute("aria-checked", on ? "true" : "false");
+        sample.tabIndex = on ? 0 : -1;
+      }
+      if (announce) {
+        live.textContent = sleeve.lines
+          .filter((line) => line.role === "text")
+          .map((line) => line.text)
+          .join(" ");
+      }
+    }
+
+    function schedule(announce: boolean): void {
+      announceOnPaint = announceOnPaint || announce;
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const tell = announceOnPaint;
+        announceOnPaint = false;
+        paint(tell);
+      });
+    }
+
+    function choose(sample: HTMLButtonElement, announce: boolean): void {
+      const next = resolveGaugeDemoState(sample.dataset.stitches, sample.dataset.rows);
+      if (next.stitchesPer4 === state.stitchesPer4 && next.rowsPer4 === state.rowsPer4) {
+        sample.focus();
+        return;
+      }
+      state = next;
+      for (const item of samples) {
+        const on = item === sample;
+        item.setAttribute("aria-checked", on ? "true" : "false");
+        item.tabIndex = on ? 0 : -1;
+      }
+      highlightPattern();
+      schedule(announce);
+    }
+
+    for (const sample of samples) {
+      sample.addEventListener("click", () => choose(sample, true));
+    }
+
+    group.addEventListener("keydown", (event) => {
+      const key = event.key;
+      const forward = key === "ArrowDown" || key === "ArrowRight";
+      const backward = key === "ArrowUp" || key === "ArrowLeft";
+      if (!forward && !backward && key !== "Home" && key !== "End") return;
+      event.preventDefault();
+      const current = samples.findIndex((sample) => sample.getAttribute("aria-checked") === "true");
+      const nextIndex =
+        key === "Home" ? 0 : key === "End" ? samples.length - 1 : (current + (forward ? 1 : -1) + samples.length) % samples.length;
+      const next = samples[nextIndex];
+      next.focus();
+      choose(next, true);
+    });
+
+    paint(false);
+  }
+
+  const demoRoot = document.querySelector("[data-gauge-demo]");
+  if (demoRoot instanceof HTMLElement) initGaugeDemo(demoRoot);
+</script>
+
+<style>
+  .gauge-demo {
+    margin: 0 0 22px;
+  }
+
+  .gauge-demo__panel {
+    border: 1px solid #d6dbc9;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(36, 48, 21, 0.05);
+    padding: 16px 18px 18px;
+  }
+
+  .gauge-demo__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .gauge-demo__body {
+    padding-top: 8px;
+  }
+
+  .gauge-demo__lead {
+    margin: 0 0 14px;
+    font-size: 1.02rem;
+    line-height: 1.45;
+    color: #243015;
+  }
+
+  .gauge-demo__layout {
+    display: grid;
+    grid-template-columns: minmax(12.5rem, 15rem) minmax(200px, 250px) minmax(16rem, 1fr);
+    gap: 12px 18px;
+    align-items: start;
+  }
+
+  .gauge-demo__choose {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #243015;
+  }
+
+  .gauge-demo__samples {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .gauge-demo__sample {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid #c7d8a4;
+    border-radius: 10px;
+    background: #f7f8f3;
+    color: #243015;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .gauge-demo__sample[aria-checked="true"] {
+    background: #52682d;
+    border-color: #52682d;
+    color: #fff;
+  }
+
+  .gauge-demo__sample:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .gauge-demo__measure {
+    margin: 10px 0 0;
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: #4d5a48;
+  }
+
+  .gauge-demo__metric {
+    font-size: 0.78em;
+    font-style: italic;
+    font-weight: 500;
+    color: #5c6a58;
+    white-space: nowrap;
+  }
+
+  .gauge-demo__fabric {
+    width: 100%;
+    max-width: 260px;
+    min-width: 0;
+  }
+
+  .gauge-demo__fabric svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .gauge-demo__closer {
+    margin: 16px 0 0;
+    max-width: 40rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: #243015;
+  }
+
+  .gauge-demo__instructions {
+    min-width: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background-color: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
+    border: 1px solid #c7d8a4;
+    transition: background-color 1s ease;
+  }
+
+  .gauge-demo__instructions.is-recalculated {
+    background-color: rgb(194 97 78 / 10%);
+    transition: background-color 0.15s ease;
+  }
+
+  .gauge-demo__instructions h3 {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #52682d;
+  }
+
+  .gauge-demo__instruction {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: #243015;
+  }
+
+  .gauge-demo__instruction--section {
+    margin-top: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #52682d;
+  }
+
+  .gauge-demo__instruction--rc {
+    margin-bottom: 2px;
+    font-variant-numeric: tabular-nums;
+    color: #52682d;
+  }
+
+  .gauge-demo__live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 860px) {
+    .gauge-demo__layout {
+      grid-template-columns: 1fr;
+    }
+
+    .gauge-demo__fabric {
+      width: min(100%, 260px);
+    }
+
+    .gauge-demo__panel {
+      padding-right: 14px;
+      padding-left: 14px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gauge-demo *,
+    .gauge-demo *::before,
+    .gauge-demo *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>

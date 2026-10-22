@@ -1,5 +1,18 @@
 import { defineMiddleware } from "astro:middleware";
 import {
+  isBluetoothRowCounterProductionBlocked,
+  isBluetoothRowCounterRoute,
+} from "./lib/dev/bluetoothRowCounterAccess";
+import {
+  isKnitSyncPatternProductionBlocked,
+  isKnitSyncPatternRoute,
+} from "./lib/dev/knitsyncPatternAccess";
+import {
+  isManagedStudioSessionRoute,
+  isStudioCommentsPocProductionBlocked,
+  isStudioCommentsPocRoute,
+} from "./lib/studio/fastcommentsPocAccess";
+import {
   isDropShoulderDiagramReviewProductionBlocked,
   isDropShoulderDiagramReviewRoute,
 } from "./lib/dev/dropShoulderDiagramReviewAccess";
@@ -76,6 +89,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isSidewaysCardiganProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/patterns/", 302);
+  }
+
+  if (
+    isBluetoothRowCounterRoute(u.pathname) &&
+    isBluetoothRowCounterProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    isKnitSyncPatternRoute(u.pathname) &&
+    isKnitSyncPatternProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    (isStudioCommentsPocRoute(u.pathname) || isManagedStudioSessionRoute(u.pathname)) &&
+    isStudioCommentsPocProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
   }
 
   if (

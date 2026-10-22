@@ -84,6 +84,44 @@ function closeOtherAnswers(root: ParentNode, current: HTMLDetailsElement): void 
   });
 }
 
+function directHelpHubEntries(list: Element): HTMLElement[] {
+  return [...list.children].filter(
+    (node): node is HTMLElement =>
+      node instanceof HTMLElement && node.hasAttribute("data-help-hub-entry"),
+  );
+}
+
+function stampHelpHubOrder(entries: HTMLElement[]): void {
+  let max = -1;
+  for (const entry of entries) {
+    if (entry.dataset.helpHubOrder == null || entry.dataset.helpHubOrder === "") continue;
+    const current = Number(entry.dataset.helpHubOrder);
+    if (Number.isFinite(current) && current > max) max = current;
+  }
+  for (const entry of entries) {
+    if (entry.dataset.helpHubOrder != null && entry.dataset.helpHubOrder !== "") continue;
+    max += 1;
+    entry.dataset.helpHubOrder = String(max);
+  }
+}
+
+/** Exact phrase matches stay ahead of synonym matches. Clearing search restores the original order. */
+function orderHelpHubEntries(section: HTMLElement, query: string, queryActive: boolean): void {
+  section.querySelectorAll(".help-hub-question-list").forEach((list) => {
+    const entries = directHelpHubEntries(list);
+    stampHelpHubOrder(entries);
+    const sorted = [...entries].sort((a, b) => {
+      const origin = Number(a.dataset.helpHubOrder) - Number(b.dataset.helpHubOrder);
+      if (!queryActive) return origin;
+      const rank =
+        rankSearchText(b.dataset.helpHubSearch ?? "", query) -
+        rankSearchText(a.dataset.helpHubSearch ?? "", query);
+      return rank || origin;
+    });
+    for (const entry of sorted) list.appendChild(entry);
+  });
+}
+
 export function applyHelpHubIndexQuery(root: ParentNode, query: string): number {
   const q = query.trim();
   const queryActive = q.length > 0;

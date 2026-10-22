@@ -68,6 +68,10 @@ function renderPrintBlockRow(
       }
       const plain = stripTrustedPatternHtmlToPlain(t);
       if (isOmittedTipParagraph(plain)) continue;
+      if (/^<(ol|ul|div)\b/i.test(t)) {
+        leftBits.push(t);
+        continue;
+      }
       leftBits.push(`<p class="print-line">${p}</p>`);
     }
   } else {

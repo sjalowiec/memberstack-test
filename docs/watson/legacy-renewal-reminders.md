@@ -25,7 +25,7 @@ date. Per-tag ActiveCampaign automations send the actual emails.
 
 Legacy annual members were imported into Memberstack on the **free** legacy
 membership plan. When they continue, they buy a **new paid** Knit It Now
-membership in Memberstack — they do **not** advance their Watson
+membership in Memberstack ï¿½ they do **not** advance their Watson
 `subscriptionexpiring` date. So the unchanged legacy date can never prove they
 have not repurchased. Every reminder window re-checks Memberstack
 (`memberHasActivePaidMembership`) and skips anyone with an active paid plan.
@@ -56,7 +56,7 @@ For each candidate, in order (first match wins):
    - unique + active or trialing paid plan ? `skipped_active_paid`
    - unique + active complimentary access that lasts past the legacy date, including no end date ? `skipped_complimentary`
    - unique + no paid plan, or not found ? continue (still a legacy annual member).
-5. **Durable dedupe** — if the audit table already has a live `tagged` row for
+5. **Durable dedupe** ï¿½ if the audit table already has a live `tagged` row for
    `(legacy_memberid, tag_name)` ? `skipped_already_tagged` (no ActiveCampaign call).
 6. **ActiveCampaign contact lookup**. The job never subscribes or resubscribes:
    - **Not found**, `not_on_list`, or `unknown` ? `skipped_not_subscribed`
@@ -72,11 +72,11 @@ written to the **Legacy Membership Paid Through** ActiveCampaign date field via
 
 ## Duplicate protection (layered)
 
-1. **Watson audit** — a partial `UNIQUE INDEX (legacy_memberid, tag_name) WHERE
+1. **Watson audit** ï¿½ a partial `UNIQUE INDEX (legacy_memberid, tag_name) WHERE
    outcome = 'tagged' AND dry_run = FALSE` plus a pre-write lookup.
-2. **ActiveCampaign** — `contactTags` is checked before tagging; the API is also
+2. **ActiveCampaign** ï¿½ `contactTags` is checked before tagging; the API is also
    idempotent for repeated tag assignment.
-3. **Automation** — configure each per-tag automation to run **once per contact**.
+3. **Automation** ï¿½ configure each per-tag automation to run **once per contact**.
 
 ## Dry-run vs live
 
@@ -109,14 +109,14 @@ logs. The audit table is reserved for **live** attempts and outcomes.
 
 ## ActiveCampaign dashboard setup
 
-1. **List** — note the numeric id of the existing Knit It Now list
+1. **List** ï¿½ note the numeric id of the existing Knit It Now list
    (Lists ? the list ? id in the URL) and set `ACTIVECAMPAIGN_KIN_LIST_ID`.
-2. **Custom field** — create (or reuse) a **Date** field named
+2. **Custom field** ï¿½ create (or reuse) a **Date** field named
    *Legacy Membership Paid Through*; set `ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID`
    to its numeric id.
-3. **Tags** — the three tags are auto-created on first live use, or create them
+3. **Tags** ï¿½ the three tags are auto-created on first live use, or create them
    manually: `legacy-renewal-30-days`, `legacy-renewal-7-days`, `legacy-renewal-1-day`.
-4. **Automations** — build one automation per tag ("when tag is added ? send
+4. **Automations** ï¿½ build one automation per tag ("when tag is added ? send
    email"), each set to run **once per contact**.
 
 ## Running it
@@ -147,7 +147,7 @@ regenerate `schema.sql` with `npm run watson:generate-schema`).
 
 ## Tests
 
-- `src/lib/watson/legacyRenewalReminders.test.ts` — window/tag mapping, dry-run
+- `src/lib/watson/legacyRenewalReminders.test.ts` ï¿½ window/tag mapping, dry-run
   safety (no writes, no audit), live tagging, and every skip/protection path.
-- `netlify/functions/__tests__/legacy-renewal-reminders.test.ts` — scheduled vs
+- `netlify/functions/__tests__/legacy-renewal-reminders.test.ts` ï¿½ scheduled vs
   manual dry-run/live authorization and request parsing.

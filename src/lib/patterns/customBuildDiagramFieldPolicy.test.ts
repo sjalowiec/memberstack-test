@@ -63,7 +63,8 @@ describe("customBuildDiagramFieldPolicy", () => {
     expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "upperArm", dropShoulderOnly: true }, false, options)).toBe(true);
     expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "wrist", dropShoulderOnly: true }, false, options)).toBe(true);
     expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "sleeveLength", dropShoulderOnly: true }, false, options)).toBe(true);
-    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "cuffDepth", dropShoulderOnly: true }, false, options)).toBe(false);
+    expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "cuffDepth", dropShoulderOnly: true }, false, options)).toBe(true);
+    expect(isCustomBuildDiagramFieldRenderedOnSummary({ key: "cuffDepth", dropShoulderOnly: true }, false, options)).toBe(true);
     expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "armholeDepth" }, false, options)).toBe(true);
     expect(isCustomBuildDiagramFieldRenderedOnSummary({ key: "wrist", dropShoulderOnly: true }, false, options)).toBe(true);
     expect(isCustomBuildDiagramFieldActiveForConstruction({ key: "upperArm", dropShoulderOnly: true }, false)).toBe(false);

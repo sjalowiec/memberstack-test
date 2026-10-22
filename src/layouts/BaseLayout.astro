@@ -31,6 +31,8 @@ interface Props {
    * is written into a same-origin about:blank tab.
    */
   documentBaseHref?: string;
+  /** Skip the site analytics tag for unpublished draft review. */
+  skipAnalytics?: boolean;
 }
 
 const {
@@ -41,6 +43,7 @@ const {
   toolPrintTitle,
   hideMembershipCorner = false,
   documentBaseHref = "",
+  skipAnalytics = false,
 } = Astro.props;
 
 const hostname =
@@ -96,7 +99,7 @@ const isProduction =
 
   
     <!-- Google Analytics -->
-{import.meta.env.PUBLIC_GA4_ID && (
+{import.meta.env.PUBLIC_GA4_ID && !skipAnalytics && (
   <>
     <script
       async

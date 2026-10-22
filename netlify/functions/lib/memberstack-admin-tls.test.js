@@ -5,6 +5,7 @@ vi.mock("./local-dotenv.js", () => ({
   clearLocalDotEnvCache: vi.fn(),
 }));
 
+import { readDotEnvValue } from "./local-dotenv.js";
 import {
   applyMemberstackLocalTlsInsecureIfRequested,
   createMemberstackAdminClient,
@@ -27,6 +28,8 @@ beforeEach(() => {
     delete process.env[key];
   }
   resetMemberstackTlsInsecureStateForTests();
+  readDotEnvValue.mockReset();
+  readDotEnvValue.mockImplementation(() => null);
 });
 
 afterEach(() => {
@@ -45,6 +48,27 @@ describe("Memberstack Admin local TLS opt-in", () => {
     expect(resolved.tlsInsecure).toBe(false);
     expect(resolved.source).toBe("default");
     expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined();
+  });
+
+  it("reads MEMBERSTACK_TLS_INSECURE from .env when the function process env is unset", () => {
+    delete process.env.MEMBERSTACK_TLS_INSECURE;
+    delete process.env.NODE_ENV;
+    delete process.env.CONTEXT;
+    readDotEnvValue.mockReturnValue("1");
+
+    expect(shouldUseMemberstackTlsInsecure()).toBe(true);
+    const resolved = resolveMemberstackAdminFetchImpl(undefined);
+    expect(resolved.tlsInsecure).toBe(true);
+    expect(resolved.source).toBe("insecure-local");
+  });
+
+  it("does not read MEMBERSTACK_TLS_INSECURE from .env in production", () => {
+    delete process.env.MEMBERSTACK_TLS_INSECURE;
+    process.env.CONTEXT = "production";
+    delete process.env.NODE_ENV;
+    readDotEnvValue.mockReturnValue("1");
+
+    expect(shouldUseMemberstackTlsInsecure()).toBe(false);
   });
 
   it("enables client-scoped insecure TLS when MEMBERSTACK_TLS_INSECURE=1 outside production", () => {

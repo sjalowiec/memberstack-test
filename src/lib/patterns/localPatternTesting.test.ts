@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PAID_MEMBER_ACCESS_PLAN_IDS } from "../memberAccess";
 import { PATTERN_SYSTEM_IDS } from "./patternSystemId";
 
@@ -19,8 +19,13 @@ import {
   isLocalPatternTestingEnabled,
   LOCAL_PATTERN_TESTING_ID,
   localPatternTestingAccess,
+  localPatternTestingDraftOwnerId,
 } from "./localPatternTesting";
-import { resolvePatternMembershipGateDecision } from "./patternMembershipPageGate";
+import { enforceDraftOwnerForCurrentPage, resolvePatternMembershipGateDecision } from "./patternMembershipPageGate";
+import { PATTERN_DRAFT_OWNER_KEY } from "./patternDraftOwnerGuard";
+import { PATTERN_STORAGE_KEY } from "./patternStorage";
+import { resolveCurrentMemberIdForDraftGuard } from "./sleevelessPatternLoginGate";
+import { stubLocalStorage } from "./test/stubLocalStorage";
 import { hasPatternSystemAccess } from "./sleevelessPatternSystemAccess";
 import {
   getSleevelessAccessDebug,
@@ -202,6 +207,59 @@ describe("client resolvers", () => {
     });
     await expect(ensurePatternBuilderAccount({ openAccountPrompt })).resolves.toBe(false);
     expect(openAccountPrompt).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("local draft ownership", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("keeps browser edits on localhost when a Memberstack member is also signed in", async () => {
+    const edited = JSON.stringify({ id: "pattern-1", edited: "chestBust=41" });
+    localStorage.setItem(PATTERN_DRAFT_OWNER_KEY, LOCAL_PATTERN_TESTING_ID);
+    localStorage.setItem(PATTERN_STORAGE_KEY, edited);
+    vi.mocked(resolveCurrentMemberIdForDraftGuard).mockResolvedValue("mem_sb_signed_in");
+    stubHostname("localhost");
+
+    await enforceDraftOwnerForCurrentPage();
+
+    expect(localPatternTestingDraftOwnerId()).toBe(LOCAL_PATTERN_TESTING_ID);
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toBe(edited);
+    expect(localStorage.getItem(PATTERN_DRAFT_OWNER_KEY)).toBe(LOCAL_PATTERN_TESTING_ID);
+  });
+
+  it("still clears another member's draft on production", async () => {
+    localStorage.setItem(PATTERN_DRAFT_OWNER_KEY, "mem_sb_other");
+    localStorage.setItem(PATTERN_STORAGE_KEY, JSON.stringify({ edited: "chestBust=41" }));
+    vi.mocked(resolveCurrentMemberIdForDraftGuard).mockResolvedValue("mem_sb_signed_in");
+    stubHostname("knititnow.com");
+
+    await enforceDraftOwnerForCurrentPage();
+
+    expect(localPatternTestingDraftOwnerId()).toBeNull();
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(PATTERN_DRAFT_OWNER_KEY)).toBe("mem_sb_signed_in");
+  });
+
+  it("does not use the local testing owner on hosted DEV", async () => {
+    const edited = JSON.stringify({ id: "pattern-1", edited: "chestBust=41" });
+    localStorage.setItem(PATTERN_DRAFT_OWNER_KEY, "kin-dev-set-in-sleeve-testing");
+    localStorage.setItem(PATTERN_STORAGE_KEY, edited);
+    vi.mocked(resolveCurrentMemberIdForDraftGuard).mockResolvedValue("mem_sb_signed_in");
+    vi.stubGlobal("window", {
+      location: {
+        hostname: "kin-dev.netlify.app",
+        pathname: "/patterns/set-in-sleeve/builder",
+      },
+    });
+
+    await enforceDraftOwnerForCurrentPage();
+
+    expect(localPatternTestingDraftOwnerId()).toBeNull();
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toBe(edited);
+    expect(localStorage.getItem(PATTERN_DRAFT_OWNER_KEY)).toBe("kin-dev-set-in-sleeve-testing");
   });
 });
 

@@ -162,6 +162,30 @@ describe("Knit-able Pacific publish dates", () => {
     expect(sql).not.toContain("vest-in-show");
     expect(sql).not.toContain("rhythmic-colour-top");
     expect(sql).toContain("Do not apply this on production until the scheduler release is approved");
+    const executableSql = sql
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n");
+    expect(executableSql).toContain(
+      "ALTER TABLE watson_knit_able_schedules ENABLE ROW LEVEL SECURITY",
+    );
+    expect(executableSql).not.toContain("CREATE POLICY");
+    expect(executableSql).not.toMatch(/FORCE ROW LEVEL SECURITY/i);
+
+    const migration = readFileSync(
+      resolve("supabase/migrations/20261013140000_enable_rls_watson_knit_able_schedules.sql"),
+      "utf8",
+    ).replace(/\r\n/g, "\n");
+    const migrationSql = migration
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n");
+    expect(migrationSql).toContain(
+      "ALTER TABLE public.watson_knit_able_schedules ENABLE ROW LEVEL SECURITY",
+    );
+    expect(migrationSql).not.toContain("CREATE POLICY");
+    expect(migrationSql).not.toMatch(/FORCE ROW LEVEL SECURITY/i);
+    expect(migrationSql).not.toMatch(/\b(INSERT|UPDATE|DELETE|TRUNCATE|DROP)\b/i);
   });
 });
 

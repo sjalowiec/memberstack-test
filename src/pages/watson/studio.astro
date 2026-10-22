@@ -1,0 +1,276 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  listStudioSessions,
+  splitStudioSessions,
+  studioSessionStatusLabel,
+} from "../../lib/studio/sessionStore";
+import {
+  studioSessionPath,
+  studioSessionPreviewHref,
+  type StudioSessionRecord,
+} from "../../lib/studio/sessions";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+let loadError: string | null = null;
+let sessions: StudioSessionRecord[] = [];
+
+try {
+  sessions = await listStudioSessions();
+} catch (error) {
+  console.error(
+    "[watson studio]",
+    error instanceof Error ? error.message : "Unable to load Sue's Studio.",
+  );
+  loadError = "unavailable";
+}
+
+const { drafts, published } = splitStudioSessions(sessions);
+const sessionsJson = JSON.stringify(sessions).replace(/</g, "\\u003c");
+
+const groups = [
+  { key: "draft", title: "Drafts", items: drafts },
+  { key: "published", title: "Published", items: published },
+];
+---
+
+<WatsonPageShell
+  title="Sue's Studio | Watson"
+  heading="Sue's Studio"
+  intro="Create a session, write the introduction, and attach its Vimeo video. Comments stay on the permanent ID when the title, introduction, video, or URL changes. This stays off production until you publish the site."
+>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        Sue’s Studio sessions could not be loaded. Refresh this page. If they still do not
+        appear, the Studio database setup needs to be finished.
+      </p>
+    ) : null
+  }
+
+  <p class="watson-studio__toolbar">
+    <button type="button" class="watson__button" data-studio-new>New session</button>
+  </p>
+  <p class="watson__status" data-studio-form-status hidden></p>
+
+  <div class="watson-studio__layout">
+    <div class="watson-studio__lists">
+      {
+        groups.map((group) => (
+          <section class="watson__panel" aria-labelledby={`studio-group-${group.key}`}>
+            <h2 id={`studio-group-${group.key}`} class="watson__panel-title">
+              {group.title}
+            </h2>
+            {group.items.length === 0 ? (
+              <p class="watson-studio__empty">None</p>
+            ) : (
+              <ul class="watson-studio__cards">
+                {group.items.map((session) => (
+                  <li class="watson-studio__card">
+                    <div class="watson-studio__card-top">
+                      <h3>{session.title}</h3>
+                      <span class:list={["watson-studio__badge", `watson-studio__badge--${session.status}`]}>
+                        {studioSessionStatusLabel(session.status)}
+                      </span>
+                    </div>
+                    <p class="watson-studio__meta">
+                      <code>{studioSessionPath(session.slug)}</code>
+                    </p>
+                    <p class="watson-studio__meta">
+                      Permanent ID <code>{session.id}</code>
+                    </p>
+                    <div class="watson-studio__card-actions">
+                      <button
+                        type="button"
+                        class="watson__button watson__button--secondary"
+                        data-studio-edit={session.id}
+                      >
+                        Edit
+                      </button>
+                      <a
+                        class="watson__button watson__button--secondary"
+                        href={studioSessionPreviewHref(session)}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        Preview
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))
+      }
+    </div>
+
+    <form class="watson__panel watson-studio__form" data-studio-form data-status="draft">
+      <h2 class="watson__panel-title">Session</h2>
+      <p class="watson-studio__permanent" data-studio-permanent-id hidden>
+        Permanent ID <code data-studio-permanent-id-value></code>. Comments stay attached to this ID.
+      </p>
+
+      <label class="watson-studio__field">
+        <span>Session title</span>
+        <input class="watson__search-input" name="title" type="text" maxlength="120" required />
+      </label>
+
+      <label class="watson-studio__field">
+        <span>Introduction</span>
+        <textarea
+          class="watson-studio__textarea"
+          name="introduction"
+          rows="6"
+          maxlength="8000"
+          placeholder="Shown above the video."
+        ></textarea>
+      </label>
+
+      <label class="watson-studio__field">
+        <span>Vimeo URL or ID</span>
+        <input
+          class="watson__search-input"
+          name="video"
+          type="text"
+          maxlength="500"
+          placeholder="https://vimeo.com/123456789 or 123456789"
+        />
+      </label>
+
+      <label class="watson-studio__field">
+        <span>Public URL</span>
+        <span class="watson-studio__url">
+          <span>/studio/</span>
+          <input class="watson__search-input" name="slug" type="text" maxlength="80" spellcheck="false" />
+        </span>
+      </label>
+
+      <div class="watson-studio__actions">
+        <button type="button" class="watson__button watson__button--secondary" data-studio-save="draft">
+          Save Draft
+        </button>
+        <button type="button" class="watson__button watson__button--secondary" data-studio-preview>
+          Preview
+        </button>
+        <button type="button" class="watson__button" data-studio-save="published">
+          Publish
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script id="studio-sessions-data" type="application/json" set:html={sessionsJson}></script>
+</WatsonPageShell>
+
+<script>
+  import { initWatsonStudioSessions } from "../../scripts/watsonStudioSessions";
+
+  initWatsonStudioSessions();
+</script>
+
+<style>
+  .watson-studio__toolbar,
+  .watson-studio__actions,
+  .watson-studio__card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .watson-studio__layout {
+    display: grid;
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .watson-studio__lists {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .watson-studio__cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-studio__card {
+    border: 1px solid #d9e0cc;
+    border-radius: 8px;
+    padding: 0.75rem;
+  }
+
+  .watson-studio__card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  .watson-studio__card h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .watson-studio__badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .watson-studio__badge--draft {
+    color: #6b5420;
+  }
+
+  .watson-studio__badge--published {
+    color: #3d5216;
+  }
+
+  .watson-studio__meta,
+  .watson-studio__permanent,
+  .watson-studio__empty {
+    margin: 0.35rem 0 0;
+    color: #4b5563;
+    line-height: 1.4;
+  }
+
+  .watson-studio__field {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0 0 0.9rem;
+  }
+
+  .watson-studio__textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #c5cdb6;
+    border-radius: 6px;
+  }
+
+  .watson-studio__url {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .watson-studio__url input {
+    flex: 1;
+  }
+
+  @media (max-width: 800px) {
+    .watson-studio__layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

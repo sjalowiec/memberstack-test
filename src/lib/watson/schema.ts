@@ -735,6 +735,10 @@ WHERE revoked_at IS NULL AND memberstack_id IS NULL`,
 )`,
     },
     {
+      label: "rls watson_knit_able_schedules",
+      sql: "ALTER TABLE watson_knit_able_schedules ENABLE ROW LEVEL SECURITY",
+    },
+    {
       label: "table watson_complimentary_access",
       sql: `CREATE TABLE IF NOT EXISTS watson_complimentary_access (
   memberstack_id TEXT PRIMARY KEY,
@@ -978,7 +982,9 @@ export function getWatsonEbookEntitlementsSchemaStatements(): SchemaStatement[] 
 
 export function getWatsonKnitAbleScheduleSchemaStatements(): SchemaStatement[] {
   return getWatsonNativeSchemaStatements().filter(
-    (statement) => statement.label === "table watson_knit_able_schedules",
+    (statement) =>
+      statement.label === "table watson_knit_able_schedules" ||
+      statement.label === "rls watson_knit_able_schedules",
   );
 }
 

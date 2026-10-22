@@ -1117,6 +1117,18 @@
   line-height: 1.5;
 }
 
+.watson-report__section-title {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.watson-report__card-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
 .watson-report__meta {
   margin: 0 0 1rem;
   font-size: 0.9rem;

@@ -80,7 +80,7 @@ export function diagramOverrideDefaultsFromChartRow(
   row: ChartRow,
   fitPreference: string,
   audience: string,
-  options?: { bodyShape?: string; dropShoulder?: boolean },
+  options?: { bodyShape?: string; dropShoulder?: boolean; setInSleeve?: boolean },
 ): Record<string, string> {
   const computed = computeDefaultMeasurementsFromChartRow(row, fitPreference, {
     bodyShape: options?.bodyShape,
@@ -126,8 +126,10 @@ export function diagramOverrideDefaultsFromChartRow(
   );
   set("hemDepth", getDefaultHemLengthInches(audience));
 
-  if (options?.dropShoulder) {
+  if (options?.dropShoulder || options?.setInSleeve) {
     set("cuffDepth", getDefaultCuffLengthInches(audience));
+  }
+  if (options?.dropShoulder) {
     Object.assign(
       out,
       dropShoulderSleeveDefaultsFromChartRow(row, fitPreference, {

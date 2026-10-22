@@ -75,7 +75,7 @@ export function createSearchCommitScheduler(options: {
     pending = null;
     if (lastSent.get(current.area) === current.key) return;
     lastSent.set(current.area, current.key);
-    const sender = await resolveSearchSender();
+    const sender = await resolveActivitySender();
     const body: Record<string, unknown> = {
       area: current.area,
       resultCount: current.resultCount,
@@ -145,7 +145,7 @@ async function readMemberCookie(): Promise<string | null> {
  * is logged in. A signed-in id is never taken from the page; the server
  * verifies the session token.
  */
-async function resolveSearchSender(): Promise<{
+export async function resolveActivitySender(): Promise<{
   identity: "guest" | "unknown";
   token: string | null;
 }> {
@@ -171,9 +171,6 @@ async function resolveSearchSender(): Promise<{
     return { identity: "unknown", token: null };
   }
 }
-
-/** Help Hub discovery reuses the same signed-out sender as site search. */
-export { resolveSearchSender as resolveActivitySender };
 
 let installed = false;
 

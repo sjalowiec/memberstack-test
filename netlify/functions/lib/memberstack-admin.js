@@ -80,13 +80,29 @@ export function isMemberstackProductionRuntime(env = process.env) {
 }
 
 /**
+ * Explicit MEMBERSTACK_TLS_INSECURE value (1/true/yes/0/false/no), or "".
+ * Astro dev functions often do not copy `.env` into `process.env`. Outside
+ * production, fall back to the project `.env` the same way Admin secrets do.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+function memberstackTlsInsecureFlagValue(env = process.env) {
+  const fromEnv = String(env.MEMBERSTACK_TLS_INSECURE ?? "")
+    .trim()
+    .toLowerCase();
+  if (fromEnv) return fromEnv;
+  if (env !== process.env) return "";
+  if (isMemberstackProductionRuntime(env)) return "";
+  return String(readDotEnvValue("MEMBERSTACK_TLS_INSECURE") || "")
+    .trim()
+    .toLowerCase();
+}
+
+/**
  * True when MEMBERSTACK_TLS_INSECURE is an explicit opt-in value (1/true/yes).
  * @param {NodeJS.ProcessEnv} [env]
  */
 export function isMemberstackTlsInsecureFlagEnabled(env = process.env) {
-  const value = String(env.MEMBERSTACK_TLS_INSECURE ?? "")
-    .trim()
-    .toLowerCase();
+  const value = memberstackTlsInsecureFlagValue(env);
   return value === "1" || value === "true" || value === "yes";
 }
 
@@ -894,6 +910,31 @@ export function createMemberstackAdminClient({
   }
 
   /**
+   * Adds a FREE plan connection (`POST /members/:id/add-plan`, body `{ planId }`).
+   * Paid plans cannot be granted this way. Callers must confirm the member does
+   * not already have the plan; this does not remove or replace other plans.
+   * @param {string} memberId
+   * @param {string} planId free plan id (starts with `pln_`)
+   * @returns {Promise<Record<string, unknown> | null>}
+   */
+  async function addPlan(memberId, planId) {
+    const res = await request(
+      "POST",
+      `${baseUrl}/members/${encodeURIComponent(memberId)}/add-plan`,
+      { body: JSON.stringify({ planId }) },
+      "addPlan",
+    );
+    try {
+      const text = await res.text();
+      if (!text) return null;
+      const body = JSON.parse(text);
+      return body && typeof body === "object" && "data" in body ? body.data : body ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Removes a FREE plan connection from a member via the Admin REST API
    * (`POST /members/:id/remove-plan`, body `{ planId }`). Only free plans
    * (e.g. the legacy membership access plan) can be removed this way. Paid plans
@@ -1009,6 +1050,7 @@ export function createMemberstackAdminClient({
     getMember,
     updateMember,
     updateMemberJson,
+    addPlan,
     removePlan,
     createMember,
     listMembers,

@@ -69,7 +69,7 @@ const MENS_MED_CHART_ROW: ChartRow = {
   size: "Med",
   bust_or_chest: 36,
   waist: 30,
-  hip: 19.25,
+  hip: 38.5,
   garment_back_length: 26,
   armhole_depth: 9,
   shoulder_width: 16.5,

@@ -17,7 +17,6 @@ import {
   calculateHemRowsFromInches,
   roundUpToEvenRows,
 } from "./hemDefaults";
-import { resolveEffectiveCuffDepthInches } from "./customBuildEffectiveCuffDepth";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveEffectiveFinishedLengthInches } from "./customBuildEffectiveFinishedLength";
 import { resolveEffectiveShoulderWidthInches } from "./customBuildEffectiveShoulderWidth";
@@ -48,7 +47,7 @@ import {
 } from "./customBuildEffectiveArmholeDepth";
 import { isDropShoulderPatternData } from "./dropShoulderSleeveMeasurementOverrides";
 import { resolveDropShoulderSleeveInches } from "./dropShoulderSleeveMeasurementOverrides";
-import { calculateDropShoulderSleevePieceNumbers } from "./dropShoulderSleevePieceNumbers";
+import { resolveCuffUpSweaterSleevePiece } from "./legoBlocks/sweaterSleeveCuff";
 import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
 import {
@@ -1442,7 +1441,6 @@ export function generateDropShoulderPattern(
   const backNeckDepthIn = resolveEffectiveBackNeckDepthInches(patternData);
   const frontNeckDepthIn = resolveEffectiveFrontNeckDepthInches(patternData);
   const hemDepthIn = resolveEffectiveHemDepthInches(patternData, audience);
-  const cuffDepthIn = resolveEffectiveCuffDepthInches(patternData, audience);
 
   const sm = selectedMeasurements(patternData);
   const fitSection = section(patternData.fit);
@@ -1601,14 +1599,16 @@ export function generateDropShoulderPattern(
   const backNeckSts = Math.max(0, bustBodySts - 2 * shoulderStsEach);
 
   // ---- Sleeve math (flat piece width = circumference; top edge = upper arm) ----
-  const sleevePiece = calculateDropShoulderSleevePieceNumbers({
+  const sleevePiece = resolveCuffUpSweaterSleevePiece({
+    patternData,
+    audience,
     finishedUpperArmInches: upperArmIn,
     finishedWristInches: wristIn,
     sleeveLengthInches: sleeveLengthIn,
     stitchesPerInch: spi,
     rowsPerInch: rpi,
-    cuffDepthInches: cuffDepthIn,
   });
+  const cuffDepthIn = sleevePiece.cuffDepthInches;
   const { topSts, wristSts, cuffRows, sleeveBodyRows, sleeveTotalRows } = sleevePiece;
   const sleeveValid = topSts > 0 && wristSts > 0 && sleeveTotalRows > 0;
 

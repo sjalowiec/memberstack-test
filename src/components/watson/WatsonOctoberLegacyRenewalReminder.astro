@@ -1,0 +1,270 @@
+---
+import {
+  OCTOBER_REMINDER_CSV_HEADERS,
+  octoberReminderRowToCsvCells,
+  type OctoberLegacyRenewalReminderReport,
+} from "../../lib/watson/octoberLegacyRenewalReminder";
+
+interface Props {
+  report: OctoberLegacyRenewalReminderReport;
+}
+
+const { report } = Astro.props;
+const { reminderRows, reviewRows, summary, note, todayDisplay } = report;
+---
+
+<section
+  class="watson__panel watson--report-wide"
+  aria-labelledby="october-renewal-reminder-heading"
+  data-october-reminder
+  data-csv-headers={JSON.stringify(OCTOBER_REMINDER_CSV_HEADERS)}
+>
+  <h2 id="october-renewal-reminder-heading" class="watson__panel-title">
+    October 2026 renewal reminders
+  </h2>
+  <p class="watson-report__note">{note}</p>
+  <p class="watson-report__meta">
+    Today is {todayDisplay} in America/Los_Angeles. Paid-through October 1–31, 2026.
+    {
+      report.memberstackCheck === "complete"
+        ? "Current paid membership was checked against Memberstack."
+        : report.memberstackCheckDetail
+    }
+  </p>
+
+  <div class="watson-report__cards">
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Reminder-ready</h3>
+      <p class="watson-report__card-value" data-october-summary="ready">
+        {summary.reminderReady.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Ready, already expired</h3>
+      <p class="watson-report__card-value">{summary.reminderExpired.toLocaleString("en-US")}</p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Ready, still upcoming</h3>
+      <p class="watson-report__card-value">{summary.reminderUpcoming.toLocaleString("en-US")}</p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Review</h3>
+      <p class="watson-report__card-value" data-october-summary="review">
+        {summary.review.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Excluded, paid past legacy date</h3>
+      <p class="watson-report__card-value">{summary.excludedPaidCoverage.toLocaleString("en-US")}</p>
+      <p class="watson-report__card-note">
+        {summary.excludedPaidRenewing.toLocaleString("en-US")} continuing,
+        {summary.excludedPaidEndAfterLegacy.toLocaleString("en-US")} ending later
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Excluded, legacy monthly</h3>
+      <p class="watson-report__card-value">{summary.excludedMonthly.toLocaleString("en-US")}</p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Excluded, test or internal</h3>
+      <p class="watson-report__card-value">{summary.excludedTest.toLocaleString("en-US")}</p>
+    </article>
+  </div>
+
+  <h3 class="watson-report__section-title">Reminder-ready</h3>
+  <div class="watson-report__filters">
+    <div class="watson-report__filter">
+      <label for="october-reminder-status">Status</label>
+      <select id="october-reminder-status" data-october-filter="status">
+        <option value="">All reminder-ready</option>
+        <option value="expired">Expired</option>
+        <option value="upcoming">Upcoming</option>
+      </select>
+    </div>
+    <div class="watson-report__filter">
+      <label for="october-reminder-search">Search</label>
+      <input
+        id="october-reminder-search"
+        type="search"
+        placeholder="Name, email, ID"
+        data-october-filter="search"
+      />
+    </div>
+    <div class="watson-report__actions">
+      <button
+        type="button"
+        class="watson-report__button watson-report__button--secondary"
+        data-october-action="reset"
+      >
+        Reset filters
+      </button>
+      <button type="button" class="watson-report__button" data-october-action="csv">
+        Export reminder CSV
+      </button>
+    </div>
+  </div>
+  <p class="watson-report__count">
+    Showing <span data-october-visible-count>{reminderRows.length}</span> of {reminderRows.length} reminder-ready
+    members. The CSV matches these rows and does not include Review.
+  </p>
+
+  {
+    reminderRows.length === 0 ? (
+      <p class="watson__placeholder">No reminder-ready October members.</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table data-october-reminder-table>
+          <thead>
+            <tr>
+              <th scope="col" data-sort-key="name" data-sort-type="string" tabindex="0">Name</th>
+              <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">Email</th>
+              <th
+                scope="col"
+                data-sort-key="paidThrough"
+                data-sort-type="string"
+                data-sort-default="true"
+                data-sort-default-direction="asc"
+                tabindex="0"
+              >
+                Legacy paid-through date
+              </th>
+              <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">Status</th>
+              <th scope="col">Evidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              reminderRows.map((row) => (
+                <tr
+                  data-reminder-row
+                  data-status={row.status}
+                  data-search={`${row.name} ${row.email} ${row.memberid}`.toLowerCase()}
+                  data-csv={JSON.stringify(octoberReminderRowToCsvCells(row))}
+                >
+                  <td data-sort-value={row.name}>
+                    <a href={row.profileHref}>{row.name}</a>
+                  </td>
+                  <td data-sort-value={row.email}>{row.email}</td>
+                  <td data-sort-value={row.paidThroughYmd}>{row.paidThroughDisplay}</td>
+                  <td data-sort-value={row.statusLabel}>{row.statusLabel}</td>
+                  <td class="watson-report__exceptions">{row.evidence}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  <h3 class="watson-report__section-title">Review</h3>
+  <p class="watson-report__note">
+    These people are not in the reminder CSV. Check them before anyone is contacted.
+  </p>
+  {
+    summary.reviewByReason.length > 0 ? (
+      <ul class="watson-report__type-list">
+        {summary.reviewByReason.map((entry) => (
+          <li>
+            {entry.label}: {entry.count.toLocaleString("en-US")}
+          </li>
+        ))}
+      </ul>
+    ) : null
+  }
+  {
+    reviewRows.length === 0 ? (
+      <p class="watson__placeholder">No October records need review.</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table>
+          <thead>
+            <tr>
+              <th scope="col" data-sort-key="name" data-sort-type="string" tabindex="0">Name</th>
+              <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">Email</th>
+              <th
+                scope="col"
+                data-sort-key="paidThrough"
+                data-sort-type="string"
+                tabindex="0"
+              >
+                Legacy paid-through date
+              </th>
+              <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">Status</th>
+              <th scope="col" data-sort-key="reason" data-sort-type="string" tabindex="0">
+                Why this is in review
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              reviewRows.map((row) => (
+                <tr data-review-row>
+                  <td data-sort-value={row.name}>
+                    <a href={row.profileHref}>{row.name}</a>
+                  </td>
+                  <td data-sort-value={row.email ?? ""}>{row.email ?? ""}</td>
+                  <td data-sort-value={row.paidThroughYmd}>{row.paidThroughDisplay}</td>
+                  <td data-sort-value={row.statusLabel}>{row.statusLabel}</td>
+                  <td class="watson-report__exceptions" data-sort-value={row.reviewReasonLabel}>
+                    {row.evidence}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  import { buildCsv, downloadCsv } from "../../lib/watson/reportClientFilters";
+
+  const root = document.querySelector("[data-october-reminder]");
+  if (root instanceof HTMLElement) {
+    const statusSelect = root.querySelector<HTMLSelectElement>('[data-october-filter="status"]');
+    const searchInput = root.querySelector<HTMLInputElement>('[data-october-filter="search"]');
+    const rows = [...root.querySelectorAll<HTMLTableRowElement>("[data-reminder-row]")];
+    const visibleCount = root.querySelector("[data-october-visible-count]");
+
+    function applyFilters() {
+      const status = statusSelect?.value ?? "";
+      const search = searchInput?.value.trim().toLowerCase() ?? "";
+      let visible = 0;
+      for (const row of rows) {
+        const rowStatus = row.dataset.status ?? "";
+        const haystack = row.dataset.search ?? "";
+        let show = true;
+        if (status && rowStatus !== status) show = false;
+        if (search && !haystack.includes(search)) show = false;
+        row.hidden = !show;
+        if (show) visible += 1;
+      }
+      if (visibleCount) visibleCount.textContent = String(visible);
+    }
+
+    root.querySelector('[data-october-action="reset"]')?.addEventListener("click", () => {
+      if (statusSelect) statusSelect.value = "";
+      if (searchInput) searchInput.value = "";
+      applyFilters();
+    });
+
+    root.querySelector('[data-october-action="csv"]')?.addEventListener("click", () => {
+      const visibleRows = rows
+        .filter((row) => !row.hidden)
+        .map((row) => JSON.parse(row.dataset.csv ?? "[]") as string[]);
+      const headers = JSON.parse(root.dataset.csvHeaders ?? "[]") as string[];
+      downloadCsv(
+        "october-2026-legacy-renewal-reminders.csv",
+        buildCsv(headers, visibleRows),
+      );
+    });
+
+    for (const el of [statusSelect, searchInput]) {
+      el?.addEventListener("change", applyFilters);
+      el?.addEventListener("input", applyFilters);
+    }
+  }
+</script>

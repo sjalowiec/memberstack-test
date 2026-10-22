@@ -174,6 +174,7 @@ describe("Watson member search pages", () => {
     expect(currentMembers).toContain("loadCurrentLegacyMembersReport");
     expect(currentMembers).toContain('export const prerender = false');
     expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
+    expect(annualAccess).toContain("loadOctoberLegacyRenewalReminder");
     expect(annualAccess).toContain('export const prerender = false');
     expect(formerNoMemberstack).toContain("loadFormerMembersNoMemberstackReport");
     expect(formerNoMemberstack).toContain('export const prerender = false');

@@ -1,0 +1,203 @@
+---
+/**
+ * Managed Sue's Studio session.
+ * Local and kin-dev only. Production hosts 404.
+ * Comments use the session's permanent id, not the slug or Vimeo id.
+ */
+import Layout from "../../layouts/Layout.astro";
+import PageBackLink from "../../components/common/PageBackLink.astro";
+import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
+import { isStudioCommentsPocProductionBlocked } from "../../lib/studio/fastcommentsPocAccess";
+import { getStudioSessionBySlug } from "../../lib/studio/sessionStore";
+import {
+  resolveStudioVideo,
+  studioSessionDiscussionId,
+  studioSessionIsVisible,
+  studioSessionPrivateMessageHref,
+  type StudioSessionRecord,
+} from "../../lib/studio/sessions";
+import { isWatsonSessionAuthenticated } from "../../lib/watson/watsonAuth";
+
+export const prerender = false;
+
+if (
+  isStudioCommentsPocProductionBlocked(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return new Response("Not found", { status: 404 });
+}
+
+const slug = typeof Astro.params.slug === "string" ? Astro.params.slug.trim().toLowerCase() : "";
+let session: StudioSessionRecord | null = null;
+try {
+  session = slug ? await getStudioSessionBySlug(slug) : null;
+} catch {
+  return new Response("Studio sessions are not available yet.", { status: 503 });
+}
+
+const previewId = Astro.url.searchParams.get("preview")?.trim() || "";
+const visible =
+  session !== null &&
+  studioSessionIsVisible(session, {
+    previewId,
+    watsonAuthed: isWatsonSessionAuthenticated(Astro.cookies),
+  });
+
+if (!session || !visible) {
+  return new Response("Not found", { status: 404 });
+}
+
+const studioSession = session;
+
+const video = studioSession.video ? resolveStudioVideo(studioSession.video) : null;
+const discussionId = studioSessionDiscussionId(studioSession);
+const privateMessageHref = studioSessionPrivateMessageHref(studioSession);
+const isPreview = studioSession.status !== "published";
+
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout title={`${isPreview ? "Preview: " : ""}${studioSession.title}`}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <section class="studio-session" data-pagefind-ignore>
+    <PageBackLink href="/" text="Back to Home" />
+    {
+      isPreview ? (
+        <p class="studio-session__preview" role="status">
+          Watson preview. This session is still a draft.
+        </p>
+      ) : null
+    }
+    <h1>{studioSession.title}</h1>
+    <div class="studio-session__heading">
+      <img class="studio-session__logo" src="/images/sues-studio.svg" alt="Sue's Studio" width="120" height="117" />
+      {studioSession.introduction ? <div class="studio-session__intro">{studioSession.introduction}</div> : null}
+    </div>
+    {
+      video ? (
+        <VimeoEmbed
+          vimeoId={video.vimeoId}
+          title={studioSession.title}
+          privacyHash={video.privacyHash}
+        />
+      ) : (
+        <p class="studio-session__novideo">No video yet.</p>
+      )
+    }
+    <p class="studio-session__status" data-studio-comments-status role="status">Loading comments…</p>
+    <div class="studio-session__actions">
+      <button type="button" class="kbm-btn kbm-btn-primary" data-studio-comments-login>
+        Log in to comment
+      </button>
+      <a class="studio-session__contact" href={privateMessageHref}>Prefer to send me a private message?</a>
+    </div>
+    <div
+      class="studio-session__mount"
+      data-studio-comments-mount
+      data-studio-discussion-id={discussionId}
+    >
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { mountStudioFastcomments } from "../../lib/studio/fastcommentsWidgetClient";
+
+  void mountStudioFastcomments();
+</script>
+
+<style>
+  .studio-session {
+    box-sizing: border-box;
+    width: min(42rem, 100%);
+    margin: 0 auto;
+    padding: 0.35rem 1rem 2rem;
+  }
+
+  .studio-session :global(.page-back-link) {
+    margin-bottom: 0.35rem;
+  }
+
+  .studio-session :global(.vimeo-embed-wrapper) {
+    margin: 0.35rem 0 0.5rem;
+  }
+
+  .studio-session h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.45rem;
+  }
+
+  .studio-session__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0 0 0.35rem;
+  }
+
+  .studio-session__logo {
+    display: block;
+    width: 120px;
+    height: auto;
+    flex: 0 0 120px;
+  }
+
+  .studio-session__preview,
+  .studio-session__novideo,
+  .studio-session__status {
+    margin: 0 0 0.5rem;
+    line-height: 1.4;
+  }
+
+  .studio-session__preview {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #6b5420;
+  }
+
+  .studio-session__intro {
+    margin: 0;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  .studio-session__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.85rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .studio-session__contact {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .studio-session [data-studio-comments-login][hidden] {
+    display: none;
+  }
+
+  .studio-session__mount {
+    width: 100%;
+    min-height: 12rem;
+  }
+
+  .studio-session__mount :global(#fastcomments-widget) {
+    width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    .studio-session {
+      padding: 0.25rem 0.75rem max(1.5rem, env(safe-area-inset-bottom));
+    }
+
+    .studio-session__heading {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+  }
+</style>

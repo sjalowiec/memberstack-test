@@ -41,7 +41,6 @@ export function isCustomBuildDiagramFieldActiveForConstruction(
   isDropShoulder: boolean,
   options?: { dropShoulderEditWorkspace?: boolean; setInSleeve?: boolean },
 ): boolean {
-  if (options?.setInSleeve && field.key === "cuffDepth") return false;
   if (field.dropShoulderOnly && !isDropShoulder && !options?.setInSleeve) return false;
   if (isDropShoulder && isDropShoulderHiddenSummaryField(field.key)) return false;
   if (isDropShoulder && isDropShoulderDisplayOnlySummaryField(field.key, options)) return false;
@@ -54,7 +53,6 @@ export function isCustomBuildDiagramFieldRenderedOnSummary(
   isDropShoulder: boolean,
   options?: { setInSleeve?: boolean },
 ): boolean {
-  if (options?.setInSleeve && field.key === "cuffDepth") return false;
   if (field.dropShoulderOnly && !isDropShoulder && !options?.setInSleeve) return false;
   if (isDropShoulder && isDropShoulderHiddenSummaryField(field.key)) return false;
   return true;
