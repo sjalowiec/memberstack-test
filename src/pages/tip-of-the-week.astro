@@ -5,6 +5,8 @@
  * dev-only fallback when TIP_OF_THE_WEEK_DEV_JSON=true.
  */
 import Layout from "../layouts/Layout.astro";
+import FavoriteStar from "../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../components/favorites/FavoritesRuntime.astro";
 import GlossaryTooltip from "../components/common/GlossaryTooltip.astro";
 import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
 import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
@@ -13,9 +15,13 @@ import { loadPublicVideoPosterOverrides } from "../lib/videos/videoPosterStore";
 import { tipOfTheWeekIntroParts } from "../lib/tipOfTheWeek/introGlossary";
 import { tipPublicCta } from "../lib/tipOfTheWeek/map";
 import {
+  loadMemberVisibleTip,
+  loadPublicTipArchive,
   loadPublicTipOfTheWeekPage,
   loadTipOfTheWeekPreview,
+  publicTipPageFromRecord,
 } from "../lib/tipOfTheWeek/publicPage";
+import type { SavedContentMeta } from "../lib/favorites/savedContentCatalog";
 import { isWatsonSessionAuthenticated } from "../lib/watson/watsonAuth";
 import {
   billboardMessageHasText,
@@ -29,11 +35,22 @@ Astro.response.headers.set("Cache-Control", "no-store");
 
 const previewId = Astro.url.searchParams.get("preview")?.trim() || "";
 const watsonAuthed = isWatsonSessionAuthenticated(Astro.cookies);
+const requestedTipId =
+  previewId && watsonAuthed ? "" : Astro.url.searchParams.get("tip")?.trim() || "";
 
-const pageState =
+let pageState =
   previewId && watsonAuthed
     ? await loadTipOfTheWeekPreview(previewId)
     : await loadPublicTipOfTheWeekPage();
+
+if (requestedTipId) {
+  try {
+    const requested = await loadMemberVisibleTip(requestedTipId);
+    if (requested) pageState = publicTipPageFromRecord(requested);
+  } catch {
+    /* Keep the featured tip when a saved tip cannot be loaded. */
+  }
+}
 
 const featured = pageState.kind === "featured" ? pageState.model : null;
 const isPreview = Boolean(featured?.isPreview);
@@ -69,6 +86,15 @@ const introParts =
     ? tipOfTheWeekIntroParts(introPlain || tip.intro, tip.introGlossarySlug)
     : [];
 const cta = tipPublicCta(tip);
+
+let archiveTips: SavedContentMeta[] = [];
+if (!isPreview) {
+  try {
+    archiveTips = await loadPublicTipArchive(tip?.tipId ?? "");
+  } catch {
+    archiveTips = [];
+  }
+}
 ---
 
 <Layout
@@ -116,7 +142,16 @@ const cta = tipPublicCta(tip);
                   Free to watch through {availableThroughDisplay}
                 </span>
               </p>
-              <h1 class="totw-title">{tip.title}</h1>
+              <div class="totw-title-row">
+                <h1 class="totw-title">{tip.title}</h1>
+                <FavoriteStar
+                  contentType="tip-of-the-week"
+                  contentId={tip.tipId}
+                  title={tip.title}
+                  source="tip-page"
+                  actionTooltip
+                />
+              </div>
               {introHasRichMarkup ? (
                 <div class="totw-lede" set:html={introHtml} />
               ) : (
@@ -326,6 +361,31 @@ const cta = tipPublicCta(tip);
       </article>
     )
   }
+  {
+    archiveTips.length > 0 ? (
+      <section class="totw-archive page-wrap" aria-labelledby="totw-archive-heading">
+        <h2 id="totw-archive-heading" class="totw-section__title">Earlier tips</h2>
+        <ul class="totw-archive__list">
+          {
+            archiveTips.map((item) => (
+              <li class="totw-archive__item">
+                <a class="totw-archive__link" href={item.href}>{item.title}</a>
+                <FavoriteStar
+                  contentType="tip-of-the-week"
+                  contentId={item.contentId}
+                  title={item.title}
+                  class="favorite-star--compact"
+                  source="tip-archive"
+                  actionTooltip
+                />
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    ) : null
+  }
+  {tip || archiveTips.length > 0 ? <FavoritesRuntime contentType="tip-of-the-week" /> : null}
 </Layout>
 
 <style>
@@ -406,12 +466,47 @@ const cta = tipPublicCta(tip);
     text-transform: none;
   }
 
-  .totw-title {
+  .totw-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
     margin: 0 0 0.75rem;
+  }
+
+  .totw-title {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: clamp(1.45rem, 3.5vw, 1.85rem);
     line-height: 1.25;
     color: #1f2937;
     font-weight: 650;
+  }
+
+  .totw-archive {
+    margin-top: 0.5rem;
+  }
+
+  .totw-archive__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .totw-archive__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .totw-archive__link {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .totw-lede {
@@ -787,9 +882,13 @@ const cta = tipPublicCta(tip);
       width: 48px;
     }
 
+    .totw-title-row {
+      margin-bottom: 0.55rem;
+    }
+
     .totw-title {
       font-size: 1.35rem;
-      margin-bottom: 0.55rem;
+      margin-bottom: 0;
     }
 
     .totw-lede {

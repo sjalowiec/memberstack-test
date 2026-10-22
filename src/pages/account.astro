@@ -4,6 +4,7 @@ import Layout from "../layouts/Layout.astro";
 import DashboardShell from "../components/dashboard/DashboardShell.astro";
 import AccountMembershipPanel from "../components/dashboard/AccountMembershipPanel.astro";
 import AccountPurchaseHistoryPanel from "../components/dashboard/AccountPurchaseHistoryPanel.astro";
+import AccountSavedFavoritesPanel from "../components/dashboard/AccountSavedFavoritesPanel.astro";
 import MyPatternsPanel from "../components/dashboard/MyPatternsPanel.astro";
 import MyFavoritesPanel from "../components/dashboard/MyFavoritesPanel.astro";
 import MyDownloadsPanel from "../components/dashboard/MyDownloadsPanel.astro";
@@ -114,6 +115,7 @@ const description =
           <AccountMembershipPanel />
           <AccountSettingsPanel />
           <AccountPurchaseHistoryPanel />
+          <AccountSavedFavoritesPanel />
           <MyFavoritesPanel />
           <MyDownloadsPanel />
           <MyCoursesPanel />
@@ -129,6 +131,7 @@ const description =
   import "/src/scripts/account-login-redirect.ts";
   import "/src/scripts/account-my-patterns.ts";
   import "/src/scripts/account-favorites.ts";
+  import "/src/scripts/account-saved-favorites.ts";
   import "/src/scripts/account-my-downloads.ts";
   import "/src/scripts/account-my-courses.ts";
   import "/src/scripts/account-welcome.ts";
