@@ -21,6 +21,8 @@ export const FAVORITE_GROUP_ORDER: readonly {
   { contentType: "stitch", label: "Stitches" },
   { contentType: "reference", label: "Reference Pages" },
   { contentType: "tool", label: "Tools" },
+  { contentType: "tip-of-the-week", label: "Tips of the Week" },
+  { contentType: "knit-able", label: "Knit-ables" },
 ] as const;
 
 export function hrefForFavorite(
