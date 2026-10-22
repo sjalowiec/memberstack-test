@@ -1,3 +1,5 @@
+import { rankSearchText } from "./searchSynonyms.ts";
+
 export function highlightMatch(text, query) {
   if (!query) return text;
 
@@ -8,25 +10,26 @@ export function highlightMatch(text, query) {
 }
 
 export function searchVideos(videos, query) {
-    if (!query) return [];
-  
-    const q = query.toLowerCase();
-  
-    let results = [];
-  
-    videos.forEach(video => {
-      video.chunks.forEach(chunk => {
-        if (chunk.text.toLowerCase().includes(q)) {
+    if (!query || !String(query).trim()) return [];
+
+    const results = [];
+
+    videos.forEach((video) => {
+      video.chunks.forEach((chunk) => {
+        const rank = rankSearchText(chunk.text || "", query);
+        if (rank > 0) {
           results.push({
+            rank,
             videoId: video.vimeoId,
             title: video.title,
             start: chunk.start,
             timestamp: chunk.timestamp,
-            text: chunk.text
+            text: chunk.text,
           });
         }
       });
     });
-  
-    return results;
+
+    results.sort((a, b) => b.rank - a.rank);
+    return results.map(({ rank, ...hit }) => hit);
   }

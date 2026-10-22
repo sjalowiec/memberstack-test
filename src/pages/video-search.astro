@@ -881,16 +881,25 @@ const allData = videos.flatMap(video =>
             return;
           }
 
-          const matches = data.filter((item) => {
-            const haystack = [
-              item?.title || '',
-              item?.snippet || '',
-              item?.transcript || '',
-              item?.text || ''
-            ].join(' ').toLowerCase();
-
-            return haystack.includes(query);
-          });
+          const matches = data
+            .map((item, index) => {
+              const haystack = [
+                item?.title || "",
+                item?.snippet || "",
+                item?.transcript || "",
+                item?.text || "",
+              ].join(" ");
+              const rank =
+                typeof window.__kinRankSearchText === "function"
+                  ? window.__kinRankSearchText(haystack, queryRaw)
+                  : haystack.toLowerCase().includes(query)
+                    ? 2
+                    : 0;
+              return { item, index, rank };
+            })
+            .filter((row) => row.rank > 0)
+            .sort((a, b) => b.rank - a.rank || a.index - b.index)
+            .map((row) => row.item);
           const topMatches = matches.slice(0, 20);
           queueVideoSearchCommit(queryRaw, topMatches.length, reason);
 
