@@ -3,6 +3,11 @@
  * Accordion exclusivity matches My Patterns (`name` + toggle handler).
  */
 import {
+  reportContentFavoriteOpen,
+  reportContentFavoritesOpen,
+  trackSavedContentFavoriteChange,
+} from "../lib/analytics/contentFavoritesGa";
+import {
   formatFavoriteGroupHeading,
   sortFavoriteIdsByTitle,
 } from "../lib/favorites/accountFavoritesPreview";
@@ -16,7 +21,14 @@ import { favoriteStarButtonHtml, escapeHtml } from "../lib/favorites/favoriteSta
 import { initFavoriteStarController } from "../lib/favorites/favoriteStarController";
 import type { FavoriteContentType, FavoriteRecord } from "../lib/favorites/favoriteContentTypes";
 import { FAVORITE_CONTENT_TYPES } from "../lib/favorites/favoriteContentTypes";
-import { FavoritesAuthError, listFavorites } from "../lib/favorites/favoritesClient";
+import { FavoritesAuthError, listFavorites, removeFavorite } from "../lib/favorites/favoritesClient";
+
+const CATALOG_TYPES = new Set<FavoriteContentType>(["tip-of-the-week", "knit-able"]);
+const CATALOG_UNAVAILABLE: Partial<Record<FavoriteContentType, string>> = {
+  "tip-of-the-week": "This tip is no longer available.",
+  "knit-able": "This Knit-able is no longer available.",
+};
+const CONTENT_META_URL = "/api/content-favorites/meta";
 
 type MetaByType = Record<FavoriteContentType, Map<string, FavoriteItemMeta>>;
 
@@ -57,6 +69,68 @@ function readMeta(): MetaByType {
     /* ignore */
   }
   return maps;
+}
+
+async function loadCatalogMeta(maps: MetaByType): Promise<void> {
+  try {
+    const response = await fetch(CONTENT_META_URL, { credentials: "same-origin" });
+    if (!response.ok) return;
+    const body = (await response.json()) as Partial<
+      Record<FavoriteContentType, { contentId?: string; title?: string; href?: string }[]>
+    >;
+    for (const contentType of CATALOG_TYPES) {
+      const rows = body[contentType];
+      if (!Array.isArray(rows)) continue;
+      for (const row of rows) {
+        const id = String(row?.contentId ?? "").trim();
+        if (!id) continue;
+        maps[contentType].set(id, {
+          content_id: id,
+          title: typeof row.title === "string" ? row.title.trim() : "",
+          href: typeof row.href === "string" ? row.href.trim() : "",
+        });
+      }
+    }
+  } catch {
+    /* Saved rows still render with an unavailable title. */
+  }
+}
+
+function newestIds(rows: readonly FavoriteRecord[]): string[] {
+  return rows
+    .slice()
+    .sort((a, b) => {
+      const aAt = String(a.created_at ?? "");
+      const bAt = String(b.created_at ?? "");
+      if (aAt !== bAt) return aAt < bAt ? 1 : -1;
+      return String(a.content_id) < String(b.content_id) ? -1 : 1;
+    })
+    .map((row) => String(row.content_id || "").trim())
+    .filter(Boolean);
+}
+
+function catalogItemHtml(
+  contentType: FavoriteContentType,
+  id: string,
+  meta: FavoriteItemMeta | null,
+): string {
+  const unavailable = CATALOG_UNAVAILABLE[contentType] || "This item is no longer available.";
+  const title = meta?.title?.trim() || unavailable;
+  const href = meta?.href?.trim() || "";
+  const note =
+    meta?.title?.trim() && !href
+      ? `<span class="account-favorites__note">Not available right now.</span>`
+      : "";
+  const titleHtml = href
+    ? `<a class="account-favorites__title-link" href="${escapeHtml(href)}" data-kbm-saved-favorite-link data-content-type="${escapeHtml(contentType)}" data-content-id="${escapeHtml(id)}">${escapeHtml(title)}</a>`
+    : `<span class="account-favorites__title-link">${escapeHtml(title)}</span>`;
+  const label = meta?.title?.trim() ? `Remove ${meta.title.trim()} from favorites` : "Remove this favorite";
+  return (
+    `<li class="account-favorites__item" data-favorite-content-id="${escapeHtml(id)}" data-favorite-content-type="${escapeHtml(contentType)}">` +
+    `<div class="account-favorites__body">${titleHtml}${note}</div>` +
+    `<button type="button" class="account-favorites__remove" data-kbm-saved-favorite-remove data-content-type="${escapeHtml(contentType)}" data-content-id="${escapeHtml(id)}" aria-label="${escapeHtml(label)}">Remove</button>` +
+    `</li>`
+  );
 }
 
 function thumbHtml(
@@ -120,6 +194,7 @@ function renderGroup(options: {
   listEl.innerHTML = ids
     .map((id) => {
       const info = meta.get(id) ?? null;
+      if (CATALOG_TYPES.has(contentType)) return catalogItemHtml(contentType, id, info);
       const title = titleForFavorite(contentType, id, info);
       const href = hrefForFavorite(contentType, id, info);
       const poster = thumbHtml(contentType, href, info?.posterUrl);
@@ -175,6 +250,64 @@ async function boot(): Promise<void> {
 
   wireExclusiveAccordionGroups(root);
 
+  const accordion = root.querySelector<HTMLDetailsElement>("[data-kbm-my-favorites-accordion]");
+  let openedTracked = false;
+  accordion?.addEventListener("toggle", (event) => {
+    if (event.target !== accordion) return;
+    if (!accordion.open || openedTracked) return;
+    openedTracked = true;
+    reportContentFavoritesOpen();
+  });
+
+  const removing = new Set<string>();
+  root.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const link = target.closest<HTMLAnchorElement>("[data-kbm-saved-favorite-link]");
+    if (link && root.contains(link)) {
+      reportContentFavoriteOpen({
+        contentType: link.getAttribute("data-content-type") || "",
+        contentId: link.getAttribute("data-content-id") || "",
+        source: "account",
+      });
+      return;
+    }
+
+    const button = target.closest<HTMLButtonElement>("[data-kbm-saved-favorite-remove]");
+    if (!button || !root.contains(button)) return;
+    event.preventDefault();
+    const contentType = button.getAttribute("data-content-type") || "";
+    const contentId = button.getAttribute("data-content-id") || "";
+    if (!CATALOG_TYPES.has(contentType as FavoriteContentType)) return;
+    const savedType = contentType as FavoriteContentType;
+    const key = `${savedType}\0${contentId}`;
+    if (removing.has(key)) return;
+    removing.add(key);
+    button.disabled = true;
+    const previous = favoritesByType[savedType]?.slice() ?? [];
+    favoritesByType[savedType] = previous.filter((row) => row.content_id !== contentId);
+    paint();
+    statusEl.textContent = "";
+    void removeFavorite(savedType, contentId)
+      .then(() => {
+        trackSavedContentFavoriteChange({
+          contentType: savedType,
+          contentId,
+          isFavorite: false,
+          source: "account",
+        });
+      })
+      .catch(() => {
+        favoritesByType[savedType] = previous;
+        paint();
+        statusEl.textContent = "Could not remove that favorite. It is still saved.";
+      })
+      .finally(() => {
+        removing.delete(key);
+      });
+  });
+
   const paint = () => {
     let total = 0;
 
@@ -192,10 +325,12 @@ async function boot(): Promise<void> {
 
       const rows = favoritesByType[group.contentType] ?? [];
       const meta = metaByType[group.contentType];
-      const ids = sortFavoriteIdsByTitle(
-        rows.map((f) => f.content_id).filter(Boolean),
-        (id) => titleForFavorite(group.contentType, id, meta.get(id) ?? null),
-      );
+      const ids = CATALOG_TYPES.has(group.contentType)
+        ? newestIds(rows)
+        : sortFavoriteIdsByTitle(
+            rows.map((f) => f.content_id).filter(Boolean),
+            (id) => titleForFavorite(group.contentType, id, meta.get(id) ?? null),
+          );
 
       total += ids.length;
       renderGroup({
@@ -243,7 +378,8 @@ async function boot(): Promise<void> {
   });
 
   try {
-    favoritesByType = await loadAllFavorites();
+    const [loaded] = await Promise.all([loadAllFavorites(), loadCatalogMeta(metaByType)]);
+    favoritesByType = loaded;
     paint();
   } catch (error) {
     if (error instanceof FavoritesAuthError) {
