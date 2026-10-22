@@ -319,24 +319,39 @@ const glossaryJson = JSON.stringify(
           return `${term} ${alt}`.toLowerCase();
         }
 
+        function glossarySearchRank(text, query) {
+          if (!query) return 2;
+          if (typeof window.__kinRankSearchText === "function") {
+            return window.__kinRankSearchText(text, query);
+          }
+          return text.toLowerCase().indexOf(String(query).toLowerCase()) !== -1 ? 2 : 0;
+        }
+
         function runFilter(query) {
-          var q = query.toLowerCase();
+          var q = query.trim();
           var sections = document.querySelectorAll(".glossary__letter-section");
           var anyVisible = false;
 
           sections.forEach(function (section) {
-            var buttons = section.querySelectorAll(".glossary__term-btn");
+            var grid = section.querySelector(".glossary__grid");
+            var buttons = Array.prototype.slice.call(section.querySelectorAll(".glossary__term-btn"));
+            buttons.forEach(function (btn, index) {
+              if (!btn.hasAttribute("data-glossary-order")) {
+                btn.setAttribute("data-glossary-order", String(index));
+              }
+            });
             var sectionVisible = false;
             buttons.forEach(function (btn) {
               var term = btn.getAttribute("data-term");
               var entry = termMap.get(term);
-              var show = false;
+              var rank = 0;
               if (!q) {
-                show = true;
+                rank = 2;
               } else if (entry) {
-                show = getSearchableText(entry).toLowerCase().indexOf(q) !== -1;
+                rank = glossarySearchRank(getSearchableText(entry), q);
               }
-              if (show) {
+              btn.setAttribute("data-search-rank", String(rank));
+              if (rank > 0) {
                 btn.classList.remove("is-hidden");
                 sectionVisible = true;
                 anyVisible = true;
@@ -344,6 +359,16 @@ const glossaryJson = JSON.stringify(
                 btn.classList.add("is-hidden");
               }
             });
+            buttons.sort(function (a, b) {
+              var origin = Number(a.getAttribute("data-glossary-order")) - Number(b.getAttribute("data-glossary-order"));
+              if (!q) return origin;
+              return Number(b.getAttribute("data-search-rank")) - Number(a.getAttribute("data-search-rank")) || origin;
+            });
+            if (grid) {
+              buttons.forEach(function (btn) {
+                grid.appendChild(btn);
+              });
+            }
             if (sectionVisible) {
               section.classList.remove("is-hidden");
             } else {

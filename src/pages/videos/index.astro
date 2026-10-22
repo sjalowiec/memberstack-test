@@ -247,6 +247,7 @@ const forceMemberView =
       queueSearchCommit,
       rememberSearchCommit,
     } from "../../lib/searchActivityClient";
+    import { rankSearchText } from "../../lib/searchSynonyms";
     import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
 
     installSearchCommitLogger();
@@ -458,6 +459,10 @@ const forceMemberView =
       el.textContent = msg;
     }
 
+    function videoCatalogHaystack(video) {
+      return [video?.title, video?.description, video?.summary].filter(Boolean).join(" ");
+    }
+
     function render(cat) {
 
       currentCategory = cat || "";
@@ -471,21 +476,25 @@ const forceMemberView =
         : videos;
 
       if (currentSearch) {
-        const q = currentSearch.toLowerCase();
-        filtered = filtered.filter(v =>
-          (v.title || "").toLowerCase().includes(q) ||
-          (v.description || "").toLowerCase().includes(q) ||
-          (v.summary || "").toLowerCase().includes(q)
-        );
+        filtered = filtered.filter((v) => rankSearchText(videoCatalogHaystack(v), currentSearch) > 0);
       }
 
       // Non-members: free/open videos first; members keep alphabetical order only.
+      // Within each access group, the visitor's own words rank ahead of synonyms.
       const preferFreeFirst =
         ACCESS_STATE === "logged_out" || ACCESS_STATE === "no_access";
       filtered = sortWithFreeContentFirst(filtered, {
         isFree: isVideoFree,
         preferFreeFirst,
-        compare: (a, b) => (a.title || "").localeCompare(b.title || ""),
+        compare: (a, b) => {
+          if (currentSearch) {
+            const rank =
+              rankSearchText(videoCatalogHaystack(b), currentSearch) -
+              rankSearchText(videoCatalogHaystack(a), currentSearch);
+            if (rank) return rank;
+          }
+          return (a.title || "").localeCompare(b.title || "");
+        },
       });
 
       updateResultsSummary(filtered.length);

@@ -2,11 +2,12 @@
 
 import { reportHelpHubAction } from "../lib/analytics/helpHubGa";
 import { queueSearchCommit } from "../lib/searchActivityClient";
+import { rankSearchText } from "../lib/searchSynonyms";
 
 export function helpHubEntryVisibleForQuery(searchText: string, query: string): boolean {
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   if (!q) return true;
-  return searchText.toLowerCase().includes(q);
+  return rankSearchText(searchText, q) > 0;
 }
 
 function isDetails(node: Element): node is HTMLDetailsElement {
@@ -32,6 +33,44 @@ function stopHelpHubInlineMedia(root: ParentNode): void {
     if (!(frame instanceof HTMLIFrameElement)) return;
     if (!frame.getAttribute("src")) return;
     frame.removeAttribute("src");
+  });
+}
+
+function directHelpHubEntries(list: Element): HTMLElement[] {
+  return [...list.children].filter(
+    (node): node is HTMLElement =>
+      node instanceof HTMLElement && node.hasAttribute("data-help-hub-entry"),
+  );
+}
+
+function stampHelpHubOrder(entries: HTMLElement[]): void {
+  let max = -1;
+  for (const entry of entries) {
+    if (entry.dataset.helpHubOrder == null || entry.dataset.helpHubOrder === "") continue;
+    const current = Number(entry.dataset.helpHubOrder);
+    if (Number.isFinite(current) && current > max) max = current;
+  }
+  for (const entry of entries) {
+    if (entry.dataset.helpHubOrder != null && entry.dataset.helpHubOrder !== "") continue;
+    max += 1;
+    entry.dataset.helpHubOrder = String(max);
+  }
+}
+
+/** Exact phrase matches stay ahead of synonym matches. Clearing search restores the original order. */
+function orderHelpHubEntries(section: HTMLElement, query: string, queryActive: boolean): void {
+  section.querySelectorAll(".help-hub-question-list").forEach((list) => {
+    const entries = directHelpHubEntries(list);
+    stampHelpHubOrder(entries);
+    const sorted = [...entries].sort((a, b) => {
+      const origin = Number(a.dataset.helpHubOrder) - Number(b.dataset.helpHubOrder);
+      if (!queryActive) return origin;
+      const rank =
+        rankSearchText(b.dataset.helpHubSearch ?? "", query) -
+        rankSearchText(a.dataset.helpHubSearch ?? "", query);
+      return rank || origin;
+    });
+    for (const entry of sorted) list.appendChild(entry);
   });
 }
 
@@ -76,6 +115,7 @@ export function applyHelpHubIndexQuery(root: ParentNode, query: string): number 
       if (!queryActive) section.open = false;
     }
     if (queryActive) matchCount += visible;
+    orderHelpHubEntries(section, q, queryActive);
   });
 
   root.querySelectorAll("details[data-help-hub-answer]").forEach((node) => {

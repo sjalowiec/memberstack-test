@@ -28,6 +28,14 @@ describe("helpHubEntryVisibleForQuery", () => {
     expect(helpHubEntryVisibleForQuery(sponge, "LK150")).toBe(true);
     expect(helpHubEntryVisibleForQuery(sponge, "fair isle")).toBe(false);
   });
+
+  it("matches bind-off content when the visitor searches cast off", () => {
+    const latch = "Latch tool bind off. A popular way to finish the last row.";
+    expect(helpHubEntryVisibleForQuery(latch, "cast off")).toBe(true);
+    expect(helpHubEntryVisibleForQuery(latch, "latch tool cast off")).toBe(true);
+    expect(helpHubEntryVisibleForQuery("Bind off the neckline.", "latch tool cast off")).toBe(false);
+    expect(helpHubEntryVisibleForQuery(sponge, "gauge")).toBe(false);
+  });
 });
 
 describe("Help Hub index client", () => {
