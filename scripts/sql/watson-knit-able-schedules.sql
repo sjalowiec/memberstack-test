@@ -13,6 +13,7 @@
 --
 -- Sock dates preserve pages that are already public. cap-sleeve-tank is the
 -- Branch Out Tank and stays scheduled until October 1, 2026.
+-- Vest in Show is public on October 22, 2026.
 
 CREATE TABLE IF NOT EXISTS watson_knit_able_schedules (
   slug TEXT PRIMARY KEY,
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS watson_knit_able_schedules (
 
 INSERT INTO watson_knit_able_schedules (slug, publish_date)
 VALUES
+  ('vest-in-show', DATE '2026-10-22'),
   ('cap-sleeve-tank', DATE '2026-10-01'),
   ('teenage-kicks-socks', DATE '2026-09-14'),
   ('worsted-color-block-socks', DATE '2026-09-21')
