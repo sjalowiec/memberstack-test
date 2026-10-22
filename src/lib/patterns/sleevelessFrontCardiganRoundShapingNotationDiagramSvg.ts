@@ -12,6 +12,7 @@
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { cardiganArmholeNotationYs } from "./sleevelessFrontCardiganArmholeNotationLayout";
 import { formatRcNotation } from "./sleevelessBackJapaneseNotation";
+import { compressStitchDecreasePointsToNotationLines } from "./shapingNotationCompress";
 import { shoulderShapingNotationLinesFromTimeline } from "./shoulderShapingNotation";
 import { isSleevelessShapedBodyShape } from "./sleevelessAlineShaping";
 import {
@@ -215,6 +216,29 @@ function stackYs(lastBaselineY: number, count: number, gap: number, direction: "
   );
 }
 
+/** Neck-edge notation for a center-seam half, taken from the same timeline as the checklist. */
+function centerSeamHalfNeckNotation(
+  result: SleevelessBackPatternResult,
+): { bo: string; shaping: string[] } | null {
+  if (result.debug.centerSeamHalf !== true) return null;
+  const points: { row: number; amount: number }[] = [];
+  for (const row of frontTimeline(result)) {
+    let amount = 0;
+    for (const event of row.events) {
+      if (event.edge === "outer") continue;
+      if (event.kind !== "bindOff" && event.kind !== "decrease") continue;
+      if (event.amount > 0) amount += event.amount;
+    }
+    if (amount > 0) points.push({ row: row.row, amount });
+  }
+  const first = points[0];
+  if (!first) return null;
+  return {
+    bo: `bo${first.amount}`,
+    shaping: compressStitchDecreasePointsToNotationLines(points.slice(1)),
+  };
+}
+
 function buildLabels(
   result: SleevelessBackPatternResult,
   patternData: unknown,
@@ -262,6 +286,13 @@ function resolveCardiganCfNeckBindOffSts(
   result: SleevelessBackPatternResult,
   model: SleevelessFrontStsRowsDiagramModel,
 ): number {
+  if (
+    result.debug.centerSeamHalf === true &&
+    isSleevelessFrontStsRowsRoundNeckline(model.neckline) &&
+    model.neckline.centerBindOffStitches > 0
+  ) {
+    return Math.round(model.neckline.centerBindOffStitches);
+  }
   const fromDebug = result.debug.cardiganFrontInitialNeckBindOffStitches;
   if (typeof fromDebug === "number" && Number.isFinite(fromDebug) && fromDebug > 0) {
     return Math.round(fromDebug);
@@ -336,6 +367,11 @@ export function buildSleevelessFrontCardiganRoundShapingNotationDiagramSvg(
   const tapered = usesSleevelessFrontAlineBodySilhouette(model);
   const frontShoulderLines = cardiganRoundFrontShoulderNotationLines(result, model);
   const labels = buildLabels(result, patternData ?? {}, frontShoulderLines.join("\n"));
+  const centerNeck = centerSeamHalfNeckNotation(result);
+  if (centerNeck) {
+    labels.neckBo = centerNeck.bo;
+    labels.neckShaping = centerNeck.shaping.join("\n");
+  }
   const armholeStart = model.armhole.startGarmentRc;
   const neckStartGarmentRc = model.neckline.startGarmentRc;
   const timeline = frontTimeline(result);

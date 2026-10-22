@@ -16,6 +16,7 @@ import {
   buildSleevelessFrontStsRowsDiagramSvg,
   SLEEVELESS_FRONT_STS_ROWS_VIEWBOX,
   SLEEVELESS_FRONT_STS_ROWS_VISUAL,
+  mirrorStsRowsDiagramHorizontally,
   tryBuildLiveSleevelessFrontStsRowsDiagramSvg,
   tryBuildSleevelessFrontStsRowsDiagramSvg,
 } from "./sleevelessFrontStsRowsDiagramSvg";
@@ -1899,5 +1900,42 @@ describe("live Pullover V-neck Front Stitches & Rows cutover", () => {
     const printPage = readFileSync(join(srcRoot, "scripts/sleeveless-print-page.ts"), "utf8");
     expect(printPage).toContain("loadSleevelessFrontDiagramSvgMarkup");
     expect(printPage).toContain("loadSleevelessBackDiagramSvgMarkup");
+  });
+});
+
+describe("center-seam half diagram orientation", () => {
+  it("moves the center edge to the right for a left half and keeps the name readable", () => {
+    const pattern = amandaVNeckPattern();
+    const result = generateSleevelessBackPattern(pattern);
+    const right = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern, undefined, {
+      pieceLabel: "RIGHT FRONT",
+      centerEdge: "left",
+    });
+    const left = tryBuildLiveSleevelessFrontStsRowsDiagramSvg(result, pattern, undefined, {
+      pieceLabel: "LEFT FRONT",
+      centerEdge: "right",
+    });
+    expect(right).toContain(">RIGHT FRONT<");
+    expect(right).toContain('data-center-edge="left"');
+    expect(right).toContain("Center edge: left");
+    expect(right).toContain("Side seam / armhole edge: right");
+    expect(left).toContain(">LEFT FRONT<");
+    expect(left).toContain('data-center-edge="right"');
+    expect(left).toContain("Center edge: right");
+    expect(left).toContain("Side seam / armhole edge: left");
+    const startX = (svg: string | null) => Number(svg?.match(/<path[^>]*\bd="M ([0-9.]+)/)?.[1]);
+    expect(startX(left)).not.toBe(startX(right));
+    expect(startX(left)).toBeGreaterThan(startX(right));
+  });
+
+  it("reflects path and text positions without reversing the letters", () => {
+    const svg = `<svg viewBox="0 0 400 500"><rect x="0" y="0" width="400" height="500" fill="#fff"/><path d="M 10 20 L 30 40 C 10 20 30 40 50 60"/><text x="10" text-anchor="start" data-side="left">CF</text></svg>`;
+    const out = mirrorStsRowsDiagramHorizontally(svg, 400);
+    expect(out).toContain('d="M 390 20 L 370 40 C 390 20 370 40 350 60"');
+    expect(out).toContain('<rect x="0" y="0" width="400" height="500" fill="#fff"/>');
+    expect(out).toContain('x="390"');
+    expect(out).toContain('text-anchor="end"');
+    expect(out).toContain('data-side="right"');
+    expect(out).toContain(">CF<");
   });
 });

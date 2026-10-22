@@ -44,7 +44,12 @@ export function sleevelessBodyShapingActionLabel(
   edgeScope: SleevelessAlineShapingEdgeScope,
 ): string {
   const verb = shapingType === "increase-to-bust" ? "Inc" : "Dec";
-  const edge = edgeScope === "armholeEdgeOnly" ? "armhole edge" : "each side edge";
+  const edge =
+    edgeScope === "sideSeamEdgeOnly"
+      ? "the side seam edge"
+      : edgeScope === "armholeEdgeOnly"
+        ? "armhole edge"
+        : "each side edge";
   return `${verb} 1 stitch at ${edge}`;
 }
 
@@ -52,7 +57,7 @@ function bodyShapingStitchChangePerRow(
   shapingType: SleevelessAlineShapingType,
   edgeScope: SleevelessAlineShapingEdgeScope,
 ): number {
-  const edges = edgeScope === "armholeEdgeOnly" ? 1 : 2;
+  const edges = edgeScope === "symmetricSides" ? 2 : 1;
   const sign = shapingType === "increase-to-bust" ? 1 : -1;
   return sign * edges;
 }

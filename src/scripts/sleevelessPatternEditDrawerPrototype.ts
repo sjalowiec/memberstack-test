@@ -30,6 +30,7 @@ import {
   readSleevelessEditWorkspaceQuickEditSizingFromDom,
 } from "./sleeveless-custom-build-measurements-page";
 import {
+  persistAvailableNeedlesEverywhere,
   readAvailableNeedlesFromAllSources,
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
@@ -763,6 +764,13 @@ function initSleevelessPatternEditDrawer(): void {
       // Discard any measurement edits made while the workspace was open.
       restoreMeasureFieldBaseline();
       restoreMeasureStorage(measureStorageBaseline);
+      // A save may already have regenerated the pattern. Put that view back with the restored stores.
+      const invalidateRender = (
+        window as unknown as { kbmInvalidateSleevelessPatternRender?: () => void }
+      ).kbmInvalidateSleevelessPatternRender;
+      if (typeof invalidateRender === "function") invalidateRender();
+      const refresh = getRequestRefresh();
+      if (refresh) void refresh();
     }
     drawerSnapshot = null;
     drawer!.classList.remove("is-open");
@@ -998,6 +1006,7 @@ function initSleevelessPatternEditDrawer(): void {
       // source for needle validation and mirror sync. Editing needles here (not in the wizard) must
       // update it too, or a stale snapshot value would clobber the edit on regenerate/reopen.
       writeExpressPersistedSnapshot({ availableNeedles: needles });
+      persistAvailableNeedlesEverywhere(needles);
 
       // Defensive: confirm the shared validator agrees before persisting.
       const validation = validatePatternBuilderRequired(getPatternData());
@@ -1005,6 +1014,13 @@ function initSleevelessPatternEditDrawer(): void {
         showErrors(validation.missingItems.map((m) => m.label));
         return;
       }
+
+      const invalidateRender = (
+        window as unknown as { kbmInvalidateSleevelessPatternRender?: () => void }
+      ).kbmInvalidateSleevelessPatternRender;
+      if (typeof invalidateRender === "function") invalidateRender();
+      const refreshBeforeSave = getRequestRefresh();
+      if (refreshBeforeSave) await refreshBeforeSave();
 
       const pinnedSavedProjectId = readActiveCustomPatternProjectId();
       logSavedPatternUpdateFlowDiagnostics("edit-drawer-before-save", {
@@ -1021,6 +1037,8 @@ function initSleevelessPatternEditDrawer(): void {
       });
       if (!saveRes.ok) {
         showErrors([saveRes.error]);
+        const refreshAfterFailedSave = getRequestRefresh();
+        if (refreshAfterFailedSave) await refreshAfterFailedSave();
         return;
       }
       logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-save", {

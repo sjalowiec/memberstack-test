@@ -45,6 +45,13 @@ export async function loadPublicGlossaryEntries(): Promise<GlossaryEntry[]> {
   }
 }
 
+/** One active public entry. Saved rows win; the source file is only the fallback catalog. */
+export async function loadPublicGlossaryEntry(glossaryId: number): Promise<GlossaryEntry | null> {
+  if (!Number.isInteger(glossaryId)) return null;
+  const entries = await loadPublicGlossaryEntries();
+  return entries.find((entry) => entry.glossaryId === glossaryId && entry.active === true) ?? null;
+}
+
 /**
  * Store only entries that differ from the source file, including brand-new ids.
  * Unchanged source entries are not written, so a later source update can still appear.

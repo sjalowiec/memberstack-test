@@ -311,6 +311,41 @@ function isCardiganAlineFront(
   );
 }
 
+/**
+ * Neck-edge and shoulder-edge stitches this half actually shapes.
+ * A center-seam half's neck is half the opening plus its seam stitch.
+ */
+function centerSeamHalfShapedWidths(
+  result: SleevelessBackPatternResult,
+  stitchesAfterArmhole: number,
+): { neck: number; shoulder: number } | null {
+  if (result.debug.centerSeamHalf !== true || stitchesAfterArmhole <= 0) return null;
+  let neck = 0;
+  let shoulder = 0;
+  for (const row of frontTimeline(result)) {
+    for (const event of row.events) {
+      if (event.kind !== "bindOff" && event.kind !== "decrease") continue;
+      if (!Number.isFinite(event.amount) || event.amount <= 0) continue;
+      if (event.edge === "outer") shoulder += event.amount;
+      else neck += event.amount;
+    }
+  }
+  if (neck <= 0 || shoulder <= 0 || neck + shoulder !== stitchesAfterArmhole) return null;
+  return { neck, shoulder };
+}
+
+/** First center-edge bind-off on a center-seam half, including its seam stitch. */
+function centerSeamHalfInitialNeckBindOff(result: SleevelessBackPatternResult): number | undefined {
+  if (result.debug.centerSeamHalf !== true) return undefined;
+  for (const row of frontTimeline(result)) {
+    for (const event of row.events) {
+      if (event.kind !== "bindOff" || event.edge === "outer") continue;
+      if (Number.isFinite(event.amount) && event.amount > 0) return Math.round(event.amount);
+    }
+  }
+  return undefined;
+}
+
 function cardiganLeftFrontWidths(
   result: SleevelessBackPatternResult,
 ): SleevelessFrontStsRowsDiagramWidths | null {
@@ -321,8 +356,9 @@ function cardiganLeftFrontWidths(
     finiteOr(d.cardiganFrontPostArmholeSts, finiteOr(d.cardiganHalfLeftStitchesAfterArmhole, 0)),
   );
   const fullNeck = Math.max(0, Math.round(finiteOr(d.necklineStitches, 0)));
-  const necklineStitches = cardiganFrontNeckOpeningStitches(fullNeck);
-  const shoulderStitchesPerSide = Math.max(1, stitchesAfterArmhole - necklineStitches);
+  const shaped = centerSeamHalfShapedWidths(result, stitchesAfterArmhole);
+  const necklineStitches = shaped?.neck ?? cardiganFrontNeckOpeningStitches(fullNeck);
+  const shoulderStitchesPerSide = shaped?.shoulder ?? Math.max(1, stitchesAfterArmhole - necklineStitches);
   if (
     !(hemStitches > 0) ||
     !(bustStitches > 0) ||
@@ -692,15 +728,17 @@ function buildCardiganFrontStsRowsDiagramModel(
         depthRows: rows.frontNeckDepthRows,
         necklineStitches: widths.necklineStitches,
         construction: "half-front-cf",
-        centerBindOffStitches: Math.round(
-          finiteOr(
-            d.cardiganFrontInitialNeckBindOffStitches,
-            cardiganFrontInitialNeckBindOffStitches(
-              finiteOr(d.necklineStitches, 0),
-              rows.frontNeckDepthRows,
+        centerBindOffStitches:
+          centerSeamHalfInitialNeckBindOff(result) ??
+          Math.round(
+            finiteOr(
+              d.cardiganFrontInitialNeckBindOffStitches,
+              cardiganFrontInitialNeckBindOffStitches(
+                finiteOr(d.necklineStitches, 0),
+                rows.frontNeckDepthRows,
+              ),
             ),
           ),
-        ),
       });
 
   return {
@@ -727,12 +765,29 @@ function buildCardiganFrontStsRowsDiagramModel(
     },
     bodyShaping,
     frontBand: cardiganFrontBand(result, patternData),
-    finished: frontFinishedSpans(
-      result,
-      patternData,
-      "cardigan",
-      widths.hemStitches,
-      widths.bustStitches,
-    ),
+    finished: centerSeamFinishedSpans(result, patternData, widths),
+  };
+}
+
+function centerSeamFinishedSpans(
+  result: SleevelessBackPatternResult,
+  patternData: unknown,
+  widths: SleevelessFrontStsRowsDiagramWidths,
+) {
+  const finished = frontFinishedSpans(
+    result,
+    patternData,
+    "cardigan",
+    widths.hemStitches,
+    widths.bustStitches,
+  );
+  if (result.debug.centerSeamHalf !== true || !(widths.stitchesPerInch > 0)) return finished;
+  const generatedNeckDepth = result.debug.frontNeckDepth;
+  return {
+    ...finished,
+    neckWidthInches: widths.necklineStitches / widths.stitchesPerInch,
+    ...(typeof generatedNeckDepth === "number" && Number.isFinite(generatedNeckDepth)
+      ? { neckDepthInches: generatedNeckDepth }
+      : {}),
   };
 }

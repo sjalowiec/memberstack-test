@@ -6,6 +6,7 @@ import {
 import { approximatePickupStitchesFromRows } from "./machineKnittingPickupRatio";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import { hasAuthoritativeSetInSleeveConstruction } from "./setInSleeveConstructionIdentity";
+import { readCenterSeams } from "./centerSeamConstruction";
 import {
   isSleevelessCardiganGarmentStyle,
   isSleevelessVNeckChoice,
@@ -16,6 +17,7 @@ export type SleevelessCardiganFrontEdgeFinishingMode = "pickup" | "verticalBand"
 
 export type SleevelessFinishingStepId =
   | "blockPieces"
+  | "joinCenterSeams"
   | "joinShoulders"
   | "finishArmholes"
   | "finishFrontEdges"
@@ -26,6 +28,7 @@ export type SleevelessFinishingStepId =
 
 export const SLEEVELESS_FINISHING_STEP_TITLES: Record<SleevelessFinishingStepId, string> = {
   blockPieces: "Block Pieces (Optional)",
+  joinCenterSeams: "Join Center Seams",
   joinShoulders: "Join Shoulders",
   finishArmholes: "Finish Armholes",
   finishFrontEdges: "Finish Front Edges",
@@ -61,6 +64,8 @@ export type SleevelessFinishingStepOptions = {
   isDropShoulder?: boolean;
   /** Set-in sleeve replaces the sleeveless armhole finish with setting in the sleeve. */
   isSetInSleeve?: boolean;
+  /** Set-in only. Pullover joins center front and center back. Cardigan joins center back. */
+  centerSeams?: "pullover" | "cardigan";
 };
 
 function isSetInSleeveFinishingPattern(patternData: unknown): boolean {
@@ -79,7 +84,9 @@ function isDropShoulderFinishingPattern(patternData: unknown): boolean {
 
 /** Ordered finishing steps; core assembly order matches pattern instructions. */
 export function buildSleevelessFinishingStepIds(opts: SleevelessFinishingStepOptions): SleevelessFinishingStepId[] {
-  const core: SleevelessFinishingStepId[] = ["joinShoulders"];
+  const core: SleevelessFinishingStepId[] = [];
+  if (opts.isSetInSleeve && opts.centerSeams) core.push("joinCenterSeams");
+  core.push("joinShoulders");
   if (!opts.isDropShoulder && !opts.isSetInSleeve) core.push("finishArmholes");
   if (opts.isCardigan) core.push("finishFrontEdges");
   core.push("finishNeckline");
@@ -159,6 +166,7 @@ export function sleevelessFinishingFromPattern(
   cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined;
   frontEdgePickupSts: number | undefined;
   neckbandPickup: NeckbandPickupInstructionViewModel | null;
+  centerSeams: "pullover" | "cardigan" | undefined;
   steps: ReturnType<typeof numberedSleevelessFinishingSteps>;
 } {
   const isCardigan = isSleevelessCardiganPattern(patternData);
@@ -174,6 +182,12 @@ export function sleevelessFinishingFromPattern(
     debug,
     isCardigan ? "cardigan" : "pullover",
   );
+  const style =
+    patternData && typeof patternData === "object"
+      ? (patternData as { style?: unknown }).style
+      : undefined;
+  const centerSeams =
+    isSetInSleeve && readCenterSeams(style) ? (isCardigan ? "cardigan" : "pullover") : undefined;
   return {
     isCardigan,
     isDropShoulder,
@@ -181,6 +195,7 @@ export function sleevelessFinishingFromPattern(
     cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts,
     neckbandPickup,
-    steps: numberedSleevelessFinishingSteps({ isCardigan, isDropShoulder, isSetInSleeve }),
+    centerSeams,
+    steps: numberedSleevelessFinishingSteps({ isCardigan, isDropShoulder, isSetInSleeve, centerSeams }),
   };
 }

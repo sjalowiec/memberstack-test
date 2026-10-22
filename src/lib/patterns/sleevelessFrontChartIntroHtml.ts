@@ -108,6 +108,8 @@ export type SleevelessPatternTabFrontChartRenderOptions = {
   resetRowCounterForSecondShoulder?: boolean;
   /** Set-in round neck: scrap off the held center neckline after the Second Shoulder checklist. */
   finishHeldNecklineAfterSecondShoulder?: boolean;
+  /** Replaces the default "First Shoulder Checklist" heading. */
+  tableHeading?: string;
 };
 
 /**
@@ -133,7 +135,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
   result: SleevelessPatternTabFrontResult,
   options?: Pick<
     SleevelessPatternTabFrontChartRenderOptions,
-    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder"
+    "secondShoulderExtraHtml" | "relocateIntro" | "resetRowCounterForSecondShoulder" | "finishHeldNecklineAfterSecondShoulder" | "tableHeading"
   >,
 ): NeckShoulderChartRenderOptions {
   const chart = result.frontNeckShoulderShapingChart;
@@ -164,7 +166,7 @@ export function sleevelessPatternTabFrontChartTableOptions(
     ...(frontUsesShoulderTabs
       ? necklineShapingTwoSideTabPresentation()
       : {
-          tableHeading: "First Shoulder Checklist",
+          tableHeading: options?.tableHeading || "First Shoulder Checklist",
           collapsible: true,
           collapsibleDefaultOpen: frontVNeckWrittenPath.checklistDefaultOpen,
         }),

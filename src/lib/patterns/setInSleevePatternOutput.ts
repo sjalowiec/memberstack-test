@@ -6,6 +6,13 @@
  * the drop-shoulder sleeve taper through the upper arm, then the approved sleeve cap.
  */
 
+import { buildVNecklinePlan } from "./legoBlocks/vNeckline";
+import { resolveEffectiveBackNeckDepthInches } from "./customBuildEffectiveNeckDepth";
+import {
+  assessSetInSleeveNeedleCapacity,
+  readCenterSeams,
+  type CenterSeamCapacity,
+} from "./centerSeamConstruction";
 import { type DropShoulderSleevePieceNumbers } from "./dropShoulderSleevePieceNumbers";
 import {
   resolveDropShoulderSleeveInches,
@@ -18,7 +25,11 @@ import {
 import { normalizeParentheticalRcLists } from "./parentheticalRcList";
 import { resolveCuffUpSweaterSleevePiece } from "./legoBlocks/sweaterSleeveCuff";
 import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
+import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
+import { inlineSubheadingLine } from "./inlineRcHeading";
+import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
 import {
+  ARMHOLE_RC_FROM_RESET_NOTE,
   generateSleevelessBackPattern,
   formatRcColon,
   type SleevelessBackPatternResult,
@@ -66,6 +77,29 @@ export type SetInSleevePatternResult = SleevelessBackPatternResult & {
    * A body/cap bind-off mismatch stays a warning and does not set this.
    */
   sleeveSaveBlocker: string | null;
+  /** Per-piece needle check. Set-In Sleeve uses this instead of the shared text scan. */
+  needleCapacity?: CenterSeamCapacity;
+  /**
+   * Present when the knitter accepted added center seams.
+   * `applied` is false when a half or the sleeve still does not fit.
+   */
+  centerSeams?: {
+    applied: boolean;
+    splitFront: boolean;
+    splitBack: boolean;
+    backHem?: number;
+    backBust?: number;
+    backAfter?: number;
+    backRightHem?: number;
+    backRightBust?: number;
+    backRightAfter?: number;
+    frontHem?: number;
+    frontBust?: number;
+    frontAfter?: number;
+    frontRightHem?: number;
+    frontRightBust?: number;
+    frontRightAfter?: number;
+  };
 };
 
 /**
@@ -332,12 +366,510 @@ function styleSentence(patternData: Record<string, unknown>): string {
   return `Set-in sleeve sweater, ${garment}, ${neck}. Sleeves are knitted cuff-up.`;
 }
 
+function patternWithoutCenterSeams(patternData: Record<string, unknown>): Record<string, unknown> {
+  const style = { ...section(patternData.style) };
+  delete style.centerSeams;
+  return { ...patternData, style };
+}
+
+function withCardiganHalfStyle(patternData: Record<string, unknown>, neckline?: "round"): Record<string, unknown> {
+  const style = { ...section(patternData.style), garmentStyle: "cardigan", frontStyle: "open" };
+  delete style.centerSeams;
+  if (neckline) style.neckline = neckline;
+  return { ...patternData, style };
+}
+
+function withBackNeckDepthOnFront(patternData: Record<string, unknown>): Record<string, unknown> {
+  const next = withCardiganHalfStyle(patternData, "round");
+  const fit = { ...section(next.fit) };
+  const measurements = { ...section(fit.selectedMeasurements) };
+  const backDepth = resolveEffectiveBackNeckDepthInches(patternData);
+  if (backDepth !== undefined) {
+    measurements.front_neck_depth = backDepth;
+    measurements.frontNeckDepth = backDepth;
+    // Custom Build reads neck depth from the override before the chart value.
+    // Copy the back depth there too, or this half keeps the front scoop.
+    const overrides = { ...section(fit.cbMeasurementOverrides) };
+    overrides.neckDepth = String(backDepth);
+    fit.cbMeasurementOverrides = overrides;
+  }
+  fit.selectedMeasurements = measurements;
+  return { ...next, fit };
+}
+
+function needleCapacityFor(
+  result: SetInSleevePatternResult,
+  patternData: Record<string, unknown>,
+  centerSeamsAccepted: boolean,
+): CenterSeamCapacity {
+  const cardigan = isSleevelessCardiganGarmentStyle(patternData);
+  return assessSetInSleeveNeedleCapacity({
+    availableNeedles: positive(section(patternData.yarnGaugeMachine).availableNeedles) ?? null,
+    cardigan,
+    centerSeamsAccepted,
+    backHem: result.debug.hemCastOnStitches ?? 0,
+    backBust: Math.max(result.debug.bustBodyStitches ?? 0, result.debug.backStitches ?? 0),
+    cardiganFrontHem: result.debug.cardiganHalfLeftCastOnSts,
+    cardiganFrontBust: result.debug.cardiganHalfLeftBustBodySts,
+    sleeveNeedles: result.sleeveCap?.sleeve.upperArmStitches ?? 0,
+  });
+}
+
+function maxBlockStitches(rows: readonly SleevelessPatternDisplayRow[]): number {
+  let max = 0;
+  for (const row of rows) {
+    if (row.kind === "block" && typeof row.stitchCount === "number") {
+      max = Math.max(max, row.stitchCount);
+    }
+  }
+  return max;
+}
+
+/** Shown once, on the existing armhole reset, for a center-seam body half. */
+export const CENTER_SEAM_ARMHOLE_RC_REMINDER =
+  "Reset the row counter to 000. From this point, follow the Armhole RC numbers.";
+
+export function centerSeamHalfTitle(piece: "front" | "back", side: "left" | "right"): string {
+  const order = side === "left" ? "First" : "Second";
+  const name = piece === "back" ? "Back" : "Front";
+  return `${order} ${name} Half`;
+}
+
+function rewriteCenterSeamHalfText(text: string, piece: "front" | "back"): string {
+  let next = text === ARMHOLE_RC_FROM_RESET_NOTE ? CENTER_SEAM_ARMHOLE_RC_REMINDER : text;
+  next = next.replaceAll("the left front", "this half").replaceAll("the right front", "this half");
+  if (piece === "back") {
+    next = next
+      .replaceAll("center-front", "center-back")
+      .replaceAll("center front", "center back")
+      .replaceAll("front neckline", "back neckline");
+  }
+  return next;
+}
+
+function labelHalfRows(
+  rows: readonly SleevelessPatternDisplayRow[],
+  piece: "front" | "back",
+  side: "left" | "right",
+): SleevelessPatternDisplayRow[] {
+  const title = centerSeamHalfTitle(piece, side);
+  const labeled = rows
+    .filter((row) => row.kind !== "piece")
+    .map((row) => {
+      if (piece === "back" && row.kind === "section" && row.title.includes("FRONT") && !row.title.endsWith("Half")) {
+        return { ...row, title: row.title.replaceAll("FRONT", "BACK") };
+      }
+      if (row.kind !== "block") return row;
+      return {
+        ...row,
+        paragraphs: row.paragraphs.map((paragraph) => rewriteCenterSeamHalfText(paragraph, piece)),
+        ...(row.trustedParagraphs
+          ? {
+              trustedParagraphs: row.trustedParagraphs.map((paragraph) =>
+                rewriteCenterSeamHalfText(paragraph, piece),
+              ),
+            }
+          : {}),
+      };
+    });
+  return [{ kind: "section", title }, ...labeled];
+}
+
+function withoutChartMount(rows: readonly SleevelessPatternDisplayRow[]): SleevelessPatternDisplayRow[] {
+  return rows.filter((row) => row.kind !== "neckShoulderChartTableMount");
+}
+
+function vNeckHalfLines(
+  half: SetInSleevePatternResult,
+  side: "left" | "right",
+  fullNeckStitches: number,
+): string[] {
+  const after = half.debug.cardiganHalfLeftStitchesAfterArmhole ?? 0;
+  const remove = Math.max(1, Math.round(fullNeckStitches / 2)) + 1;
+  const start = Math.floor(half.debug.frontNecklineStartRC ?? 0);
+  const depth = Math.max(1, Math.floor(half.debug.frontNeckDepthRows ?? 1));
+  const plan = buildVNecklinePlan({
+    stitchesAfterArmhole: after,
+    neckWidthSts: remove * 2,
+    neckDepthRows: depth,
+    side,
+    firstShapingRow: start,
+    lastShapingRow: start + depth - 1,
+  });
+  const rows = plan.decreaseRows;
+  const shoulder = Math.max(0, after - remove);
+  return [
+    "Decrease at the center front edge only. The armhole edge is the shoulder.",
+    "The center front edge includes 1 seam stitch. The first decrease at the center front edge removes that seam stitch.",
+    rows.length > 0
+      ? `Decrease 1 stitch at the center front edge on row ${rows.join(", ")}.`
+      : "The V-neck decreases could not be scheduled for this half.",
+    shoulder > 0
+      ? `${shoulder} shoulder stitches remain at the armhole edge. Bind them off on the armhole edge.`
+      : "No shoulder stitches remain after the center front edge decreases.",
+    ...plan.warnings,
+  ];
+}
+
+function replaceNecklineSection(
+  rows: readonly SleevelessPatternDisplayRow[],
+  lines: readonly string[],
+): SleevelessPatternDisplayRow[] {
+  const out: SleevelessPatternDisplayRow[] = [];
+  let skipping = false;
+  let inserted = false;
+  for (const row of rows) {
+    if (row.kind === "section" && /NECKLINE/i.test(row.title)) {
+      skipping = true;
+      if (!inserted) {
+        out.push(row, { kind: "block", paragraphs: [...lines] });
+        inserted = true;
+      }
+      continue;
+    }
+    if (skipping) {
+      if (row.kind === "section") {
+        skipping = false;
+        out.push(row);
+      }
+      continue;
+    }
+    out.push(row);
+  }
+  if (!inserted) {
+    out.push({ kind: "section", title: "NECKLINE" }, { kind: "block", paragraphs: [...lines] });
+  }
+  return out;
+}
+
+/** Glossary “Seaming Stitches”. Linked only on the first mention in each half’s introduction. */
+const SEAMING_STITCH_GLOSSARY_ID = 605;
+
+function glossaryPlaceholderAttrEscape(s: string): string {
+  return String(s).replace(/"/g, "&quot;");
+}
+
+const SEAMING_STITCH_LINK = buildGlossaryTooltipPlaceholderHtml(
+  SEAMING_STITCH_GLOSSARY_ID,
+  "seaming stitch",
+  glossaryPlaceholderAttrEscape,
+  (s) => s,
+);
+
+function centerSeamOpening(piece: "front" | "back"): { plain: string; trusted: string } {
+  const pieceName = piece === "back" ? "back" : "front";
+  const plain = `Knit the ${pieceName} in two pieces and join them with a center seam. The stitch counts below are for this half only and include one extra seaming stitch for the center seam.`;
+  return { plain, trusted: plain.replace("seaming stitch", SEAMING_STITCH_LINK) };
+}
+
+function centerSeamHalfIntro(
+  piece: "front" | "back",
+  side: "left" | "right",
+  vNeck: boolean,
+): { paragraphs: string[]; trustedParagraphs: string[] } {
+  const centerSide = side === "left" ? "right" : "left";
+  const outerSide = side === "left" ? "left" : "right";
+  const centerEdge = piece === "back" ? "Center back edge" : "Center front edge";
+  const opening = centerSeamOpening(piece);
+  const lines: Array<{ text: string; trusted?: string; subhead?: boolean }> = [
+    { text: opening.plain, trusted: opening.trusted },
+    { text: "Position on the needle bed", subhead: true },
+    { text: `• ${centerEdge}: ${centerSide}` },
+    { text: `• Side seam / armhole edge: ${outerSide}` },
+    { text: "Knit from the hem up", subhead: true },
+    {
+      text:
+        piece === "back"
+          ? "Follow the instructions below for the hem, body, armhole, and neckline. Work any body shaping at the side seam edge only."
+          : "Follow the instructions below for the hem, body, armhole, and front neckline. Work any body shaping at the side seam edge only.",
+    },
+    { text: "Center seam stitch", subhead: true },
+    {
+      text:
+        piece === "back"
+          ? "Keep the extra center seam stitch until the back neckline begins. It is included in the first neckline bind-off."
+          : vNeck
+            ? "Keep the extra center seam stitch until the front neckline decreases begin. The first decrease at the center front edge removes that stitch."
+            : "Keep the extra center seam stitch until the front neckline begins. It is included in the first front neckline bind-off.",
+    },
+    {
+      text: vNeck && piece === "front" ? "Bind-off and decrease carriage positions" : "Bind-off carriage positions",
+      subhead: true,
+    },
+    vNeck && piece === "front"
+      ? { text: `• Center front edge decreases: carriage on the ${centerSide}` }
+      : {
+          text: `• ${piece === "back" ? "Center back neckline" : "Center front neckline"}: carriage on the ${centerSide}`,
+        },
+    { text: `• Armhole: carriage on the ${outerSide}` },
+  ];
+  return {
+    paragraphs: lines.map((line) => line.text),
+    trustedParagraphs: lines.map((line) =>
+      line.subhead ? inlineSubheadingLine(line.text) : (line.trusted ?? line.text),
+    ),
+  };
+}
+
+function withCenterSeamHalfIntro(
+  rows: readonly SleevelessPatternDisplayRow[],
+  piece: "front" | "back",
+  side: "left" | "right",
+  vNeck: boolean,
+): SleevelessPatternDisplayRow[] {
+  const intro = centerSeamHalfIntro(piece, side, vNeck);
+  let replaced = false;
+  return rows.map((row) => {
+    if (replaced || row.kind !== "block") return row;
+    const text = row.paragraphs.join(" ");
+    if (!text.includes("half the body width") && !text.includes("After the armhole reset")) return row;
+    replaced = true;
+    return { kind: "block", paragraphs: intro.paragraphs, trustedParagraphs: intro.trustedParagraphs };
+  });
+}
+
+const CENTER_SEAM_STITCH_PATTERN_HEADING = "Stitch pattern placement";
+const CENTER_SEAM_STITCH_PATTERN_NOTE =
+  "If using automatic patterning, check the position of your stitch pattern on each garment piece so the repeats match across the seams.";
+
+const CENTER_SEAM_POSITION_HEADING = "Position on the needle bed";
+
+function centerSeamStitchPatternTipId(piece: "front" | "back"): string {
+  return `set-in-center-seam-stitch-pattern-${piece}`;
+}
+
+/** Reminder only. Quick Tip so Show/Hide Tips and print follow the shared tip component. */
+function centerSeamStitchPatternTipRow(
+  piece: "front" | "back",
+): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
+  return {
+    kind: "block",
+    paragraphs: [],
+    tipHtml: buildPatternQuickTipInnerHtml({
+      summaryLabel: CENTER_SEAM_STITCH_PATTERN_HEADING,
+      bodyHtml: `<p>${CENTER_SEAM_STITCH_PATTERN_NOTE}</p>`,
+    }),
+    tipHtmlIsFull: true,
+    tipPresentation: "quick-tip",
+    tipId: centerSeamStitchPatternTipId(piece),
+  };
+}
+
+/**
+ * First half only. Sits immediately above “Position on the needle bed”, not before cast-on
+ * and not on the second half.
+ */
+function withCenterSeamStitchPatternTip(
+  rows: readonly SleevelessPatternDisplayRow[],
+  piece: "front" | "back",
+): SleevelessPatternDisplayRow[] {
+  const out: SleevelessPatternDisplayRow[] = [];
+  let inserted = false;
+  for (const row of rows) {
+    if (inserted || row.kind !== "block") {
+      out.push(row);
+      continue;
+    }
+    const index = row.paragraphs.indexOf(CENTER_SEAM_POSITION_HEADING);
+    if (index < 0) {
+      out.push(row);
+      continue;
+    }
+    const trusted = row.trustedParagraphs;
+    if (index > 0) {
+      out.push({
+        kind: "block",
+        paragraphs: row.paragraphs.slice(0, index),
+        ...(trusted ? { trustedParagraphs: trusted.slice(0, index) } : {}),
+      });
+    }
+    out.push(centerSeamStitchPatternTipRow(piece));
+    out.push({
+      kind: "block",
+      paragraphs: row.paragraphs.slice(index),
+      ...(trusted ? { trustedParagraphs: trusted.slice(index) } : {}),
+    });
+    inserted = true;
+  }
+  return out;
+}
+
+function prepareCenterSeamHalf(
+  half: SetInSleevePatternResult,
+  piece: "front" | "back",
+  side: "left" | "right",
+  vNeck: boolean,
+  fullNeckStitches: number,
+): SleevelessPatternDisplayRow[] {
+  let rows = withCenterSeamHalfIntro(labelHalfRows(half.frontDisplayRows, piece, side), piece, side, vNeck);
+  if (side === "right" || vNeck) rows = withoutChartMount(rows);
+  if (vNeck && piece === "front") {
+    rows = replaceNecklineSection(rows, vNeckHalfLines(half, side, fullNeckStitches));
+  }
+  if (side === "left") rows = withCenterSeamStitchPatternTip(rows, piece);
+  return rows;
+}
+
+function generateSetInSleeveWithCenterSeams(patternData: Record<string, unknown>): SetInSleevePatternResult {
+  const base = generateSetInSleevePattern(patternWithoutCenterSeams(patternData));
+  const cardigan = isSleevelessCardiganGarmentStyle(patternData);
+  const vNeck = isSleevelessVNeckChoice(patternData);
+  const capacity = needleCapacityFor(base, patternData, true);
+  const blocked = (reason: string): SetInSleevePatternResult => ({
+    ...base,
+    displayRows: linesToBlocks([reason]),
+    frontDisplayRows: [],
+    sleeveDisplayRows: [],
+    overviewRows: linesToBlocks([reason]),
+    needleCapacity: { ...capacity, shouldBlock: true, seamsFit: false, offerSeams: false, seamBlockReason: reason },
+    centerSeams: { applied: false, splitFront: false, splitBack: false },
+  });
+  if (base.sleeveSaveBlocker) {
+    return blocked(base.sleeveSaveBlocker);
+  }
+  if (!capacity.seamsFit) {
+    return blocked(capacity.seamBlockReason ?? "Added center seams still do not fit on this machine.");
+  }
+
+  const fullNeck = base.debug.necklineStitches ?? 0;
+  const backPattern = withBackNeckDepthOnFront(patternData);
+  const leftBack = generateSetInSleevePattern(backPattern, {
+    halfPiece: { side: "left", seamStitch: true, neck: "back" },
+  });
+  const rightBack = generateSetInSleevePattern(backPattern, {
+    halfPiece: { side: "right", seamStitch: true, neck: "back" },
+  });
+  const backRows = [
+    ...prepareCenterSeamHalf(leftBack, "back", "left", false, fullNeck),
+    ...prepareCenterSeamHalf(rightBack, "back", "right", false, fullNeck),
+  ];
+
+  let frontRows = base.frontDisplayRows;
+  let frontChart = base.frontNeckShoulderShapingChart;
+  let frontTimeline = base.frontNeckShoulderTimeline;
+  let leftFront: SetInSleevePatternResult | null = null;
+  let rightFront: SetInSleevePatternResult | null = null;
+  if (!cardigan) {
+    const frontPattern = withCardiganHalfStyle(patternData);
+    leftFront = generateSetInSleevePattern(frontPattern, {
+      halfPiece: { side: "left", seamStitch: true, neck: "front" },
+    });
+    rightFront = generateSetInSleevePattern(frontPattern, {
+      halfPiece: { side: "right", seamStitch: true, neck: "front" },
+    });
+    frontRows = [
+      ...prepareCenterSeamHalf(leftFront, "front", "left", vNeck, fullNeck),
+      ...prepareCenterSeamHalf(rightFront, "front", "right", vNeck, fullNeck),
+    ];
+    frontChart = leftFront.frontNeckShoulderShapingChart;
+    frontTimeline = leftFront.frontNeckShoulderTimeline;
+  }
+
+  const available = capacity.availableNeedles;
+  if (available !== null) {
+    const piecePeaks = [
+      { label: "First Back Half", needles: maxBlockStitches(backRows) },
+      {
+        label: "Second Back Half",
+        needles: maxBlockStitches(
+          backRows.slice(
+            backRows.findIndex(
+              (row, index) => index > 0 && row.kind === "section" && row.title === "Second Back Half",
+            ),
+          ),
+        ),
+      },
+      { label: cardigan ? "Front" : "Front halves", needles: maxBlockStitches(frontRows) },
+      { label: "Sleeve", needles: maxBlockStitches(base.sleeveDisplayRows) },
+    ];
+    const over = piecePeaks.filter((piece) => piece.needles > available);
+    if (over.length > 0) {
+      const list = over.map((piece) => `${piece.label} requires ${piece.needles} needles`).join("; ");
+      return blocked(`${list}. This machine has ${available} available, so this pattern is not rendered.`);
+    }
+  }
+
+  const overviewRows = base.overviewRows.map((row) => {
+    if (row.kind !== "block" || !row.paragraphs) return row;
+    return {
+      ...row,
+      paragraphs: row.paragraphs.filter((paragraph) => !paragraph.includes("Panel seams are not added")),
+    };
+  });
+  overviewRows.push({
+    kind: "block",
+    paragraphs: [
+      cardigan
+        ? "The back is knitted as the First Back Half and the Second Back Half, with one seam stitch on each center back edge. The fronts stay as written."
+        : "The back is knitted as the First Back Half and the Second Back Half. The front is knitted as the First Front Half and the Second Front Half. Each half includes one seam stitch on its center edge.",
+    ],
+  });
+
+  return {
+    ...base,
+    displayRows: backRows,
+    frontDisplayRows: frontRows,
+    neckShoulderShapingChart: leftBack.frontNeckShoulderShapingChart,
+    frontNeckShoulderShapingChart: frontChart,
+    backNeckShoulderTimeline: leftBack.frontNeckShoulderTimeline,
+    frontNeckShoulderTimeline: frontTimeline,
+    overviewRows,
+    needleCapacity: capacity,
+    centerSeams: {
+      applied: true,
+      splitFront: !cardigan,
+      splitBack: true,
+      backHem: leftBack.debug.cardiganHalfLeftCastOnSts,
+      backBust: leftBack.debug.cardiganHalfLeftBustBodySts,
+      backAfter: leftBack.debug.cardiganHalfLeftStitchesAfterArmhole,
+      backRightHem: rightBack.debug.cardiganHalfLeftCastOnSts,
+      backRightBust: rightBack.debug.cardiganHalfLeftBustBodySts,
+      backRightAfter: rightBack.debug.cardiganHalfLeftStitchesAfterArmhole,
+      ...(!cardigan && leftFront && rightFront
+        ? {
+            frontHem: leftFront.debug.cardiganHalfLeftCastOnSts,
+            frontBust: leftFront.debug.cardiganHalfLeftBustBodySts,
+            frontAfter: leftFront.debug.cardiganHalfLeftStitchesAfterArmhole,
+            frontRightHem: rightFront.debug.cardiganHalfLeftCastOnSts,
+            frontRightBust: rightFront.debug.cardiganHalfLeftBustBodySts,
+            frontRightAfter: rightFront.debug.cardiganHalfLeftStitchesAfterArmhole,
+          }
+        : {}),
+    },
+  };
+}
+
+/** One center-seam body half, using the same inputs as the written half instructions. */
+export function generateSetInSleeveCenterSeamHalf(
+  patternData: Record<string, unknown>,
+  piece: "back" | "front",
+  side: "left" | "right",
+): SetInSleevePatternResult {
+  const stamped = piece === "back" ? withBackNeckDepthOnFront(patternData) : withCardiganHalfStyle(patternData);
+  return generateSetInSleevePattern(stamped, {
+    halfPiece: { side, seamStitch: true, neck: piece },
+  });
+}
+
 export function generateSetInSleevePattern(
   patternData: Record<string, unknown>,
+  options?: { halfPiece?: { side: "left" | "right"; seamStitch: boolean; neck?: "back" | "front" } },
 ): SetInSleevePatternResult {
+  if (readCenterSeams(section(patternData.style)) && !options?.halfPiece) {
+    return generateSetInSleeveWithCenterSeams(patternData);
+  }
   const style = withSetInSleeveConstructionAuthored(section(patternData.style), section(patternData.style).sleeveLength);
   const stamped: Record<string, unknown> = { ...patternData, style };
-  const body = generateSleevelessBackPattern(stamped, { useSetInArmhole: true });
+  const body = generateSleevelessBackPattern(stamped, {
+    useSetInArmhole: true,
+    ...(options?.halfPiece
+      ? {
+          cardiganHalfSide: options.halfPiece.side,
+          centerSeamStitch: options.halfPiece.seamStitch,
+          ...(options.halfPiece.neck ? { centerSeamNeck: options.halfPiece.neck } : {}),
+        }
+      : {}),
+  });
   const warnings = [...body.warnings];
   const plan = body.setInArmholePlan ?? null;
   const debug = body.debug;
@@ -552,6 +1084,21 @@ export function generateSetInSleevePattern(
     ...needleLines,
   ]);
 
+  const needleCapacity = needleCapacityFor(
+    {
+      ...body,
+      isSetInSleeve: true,
+      sleeveDisplayRows,
+      overviewRows: [],
+      sleeveCap,
+      sleevePiece,
+      sleeveFinishedInches,
+      sleeveSaveBlocker,
+    },
+    stamped,
+    false,
+  );
+
   return {
     ...body,
     warnings,
@@ -564,5 +1111,6 @@ export function generateSetInSleevePattern(
     sleevePiece,
     sleeveFinishedInches,
     sleeveSaveBlocker,
+    needleCapacity,
   };
 }

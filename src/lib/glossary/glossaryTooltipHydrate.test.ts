@@ -9,5 +9,7 @@ describe("glossaryTooltipHydrate", () => {
     expect(src).not.toMatch(/\(placeholder\.textContent/);
     expect(src).not.toContain("ensureGlossaryWrapPrintNote");
     expect(src).not.toContain("tooltip-print-note");
+    expect(src).toContain("fetch(`/api/glossary/entries/${glossaryId}`");
+    expect(src).toContain('cache: "no-store"');
   });
 });

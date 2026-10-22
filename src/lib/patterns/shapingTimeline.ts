@@ -26,6 +26,11 @@ export type ShapingTimelineInputs = {
    */
   cardiganCfInitialBindOff?: number;
   /**
+   * Center-seam back half: one side of the full back neck, after the first center-edge bind-off.
+   * These replace both edges of the half-opening plan so a shallow back is not stacked on a deep scoop.
+   */
+  cardiganCfEdgeAmounts?: readonly number[];
+  /**
    * Total RC rows for this neckline/shoulder section, including the center bind-off row.
    * Post-center shaping rows = neckDepthRows − 1 (must match piece neck-depth budget).
    */
@@ -413,18 +418,38 @@ export function buildCardiganHalfFrontTimeline(
   let leftCount = 0;
   let rightCount = B;
 
+  const edgeAmounts = (inputs.cardiganCfEdgeAmounts ?? []).filter((amount) => amount > 0);
+  const useBackEdgeAmounts = edgeAmounts.length > 0;
+  const plannedCfInner = (i: number): { events: ShapingEvent[]; innerNetR: number } => {
+    if (!useBackEdgeAmounts) {
+      return cardiganCfInnerNeckRow(
+        i,
+        neckPlan,
+        stairRowCount,
+        neckInnerRowSpan,
+        cfInitialBindOff,
+        shallowHold,
+      );
+    }
+    if (i === 0 && cfInitialBindOff > 0) {
+      return {
+        events: [{ kind: "bindOff", side: "right", edge: "inner", amount: cfInitialBindOff }],
+        innerNetR: cfInitialBindOff,
+      };
+    }
+    if (i <= 0 || i % 2 !== 1) return { events: [], innerNetR: 0 };
+    const amount = edgeAmounts[(i - 1) / 2] ?? 0;
+    if (amount <= 0) return { events: [], innerNetR: 0 };
+    return {
+      events: [{ kind: "bindOff", side: "right", edge: "inner", amount }],
+      innerNetR: amount,
+    };
+  };
+
   const rows: RowEntry[] = [];
   const plannedInnerRPerRow: number[] = [];
   for (let i = 0; i < workRows; i++) {
-    const planned = cardiganCfInnerNeckRow(
-      i,
-      neckPlan,
-      stairRowCount,
-      neckInnerRowSpan,
-      cfInitialBindOff,
-      shallowHold,
-    );
-    plannedInnerRPerRow.push(Math.max(0, planned.innerNetR));
+    plannedInnerRPerRow.push(Math.max(0, plannedCfInner(i).innerNetR));
   }
   const futureInnerRAfterRow = Array(workRows).fill(0);
   let suffixR = 0;
@@ -439,19 +464,12 @@ export function buildCardiganHalfFrontTimeline(
     let shoulderBoR = 0;
     let innerNetR = 0;
 
-    const inner = cardiganCfInnerNeckRow(
-      i,
-      neckPlan,
-      stairRowCount,
-      neckInnerRowSpan,
-      cfInitialBindOff,
-      shallowHold,
-    );
+    const inner = plannedCfInner(i);
     events.push(...inner.events);
     innerNetR = inner.innerNetR;
     if (innerNetR > 0) {
       const stairIndex = cfInitialBindOff > 0 ? i - 1 : i;
-      if (stairIndex >= 0 && stairIndex < stairRowCount) {
+      if (!useBackEdgeAmounts && stairIndex >= 0 && stairIndex < stairRowCount) {
         const rb = (neckPlan.right.stairSteps[stairIndex] ?? 0) + (neckPlan.left.stairSteps[stairIndex] ?? 0);
         if (rb > 0) {
           rightInnerEdge += rb;

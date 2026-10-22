@@ -284,8 +284,14 @@ function withIncreaseGlossaryTooltip(line: string): string {
   );
 }
 
-/** Back uses both side edges; one cardigan front panel shapes only at the armhole edge. */
-export type SleevelessAlineShapingEdgeScope = "symmetricSides" | "armholeEdgeOnly";
+/** Back uses both side edges; one cardigan front panel shapes only at the armhole edge. Center-seam halves shape at the side seam edge. */
+export type SleevelessAlineShapingEdgeScope = "symmetricSides" | "armholeEdgeOnly" | "sideSeamEdgeOnly";
+
+function alineShapingEdgePhrase(edgeScope: SleevelessAlineShapingEdgeScope): string {
+  if (edgeScope === "sideSeamEdgeOnly") return "at the side seam edge";
+  if (edgeScope === "armholeEdgeOnly") return "at the armhole edge";
+  return "at each side edge";
+}
 
 /** Written pattern lines for one continuous A-line shaping span. */
 export function formatSleevelessAlineBodyShapingInstructionLines(
@@ -301,8 +307,7 @@ export function formatSleevelessAlineBodyShapingInstructionLines(
   const span =
     shapingSpanRows !== undefined && shapingSpanRows > 0 ? shapingSpanRows : undefined;
   const list = rowNumbers.map((r) => formatRcColon(r)).join(", ");
-  const edgePhrase =
-    edgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
+  const edgePhrase = alineShapingEdgePhrase(edgeScope);
   const lines: string[] = [];
   if (span !== undefined) {
     const decreaseLine = `${verb} 1 stitch ${edgePhrase} ${times} time${times === 1 ? "" : "s"} evenly across the next ${span} row${span === 1 ? "" : "s"}.`;
@@ -338,8 +343,7 @@ export function formatSleevelessAlineBodyShapingSummaryLine(
 ): string {
   if (shapingType === "straight" || times <= 0) return "";
   const verb = shapingType === "decrease-to-bust" ? "Decrease" : "Increase";
-  const edgePhrase =
-    edgeScope === "armholeEdgeOnly" ? "at the armhole edge" : "at each side edge";
+  const edgePhrase = alineShapingEdgePhrase(edgeScope);
   const span =
     shapingSpanRows !== undefined && shapingSpanRows > 0 ? shapingSpanRows : undefined;
   const line =

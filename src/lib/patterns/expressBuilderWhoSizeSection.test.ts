@@ -245,7 +245,7 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
     expect(dropShoulderBuilderAstro).not.toContain("SET_IN_SLEEVE_WHO_OPTIONS");
   });
 
-  it("limits new Set-In Sleeve patterns to Misses and Men's chart choices", () => {
+  it("offers Misses, Women's, and Men's for a new Set-In Sleeve pattern", () => {
     const setInBuilderAstro = readFileSync(
       resolve("src/pages/patterns/set-in-sleeve/builder.astro"),
       "utf8",
@@ -256,7 +256,7 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
     expect(setInBuilderAstro).not.toContain('data-value="baby"');
     expect(setInCharts).toContain('{ value: "women", label: "Misses" }');
     expect(setInCharts).toContain('{ value: "men", label: "Men\'s" }');
-    expect(setInCharts).not.toContain('{ value: "plus", label: "Women\'s" }');
+    expect(setInCharts).toContain('{ value: "plus", label: "Women\'s" }');
     expect(setInCharts).toContain('if (key === "plus") return "Women\'s"');
     expect(setInCharts).not.toContain('label: "Kids"');
     expect(setInCharts).not.toContain('label: "Baby"');

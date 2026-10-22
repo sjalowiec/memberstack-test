@@ -1088,6 +1088,12 @@
     white-space: normal;
   }
 
+  @media (min-width: 768px) {
+    #pattern-content .sleeveless-center-seam-diagrams {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
   @media (max-width: 767px) {
     #pattern-content .sleeveless-pattern-diagram-shaping-help__btn.kbm-btn {
       width: 100%;
@@ -1160,6 +1166,10 @@
     #pattern-content .sleeveless-pattern-diagram-panel__svg {
       max-width: 100%;
       margin-inline: auto;
+    }
+
+    #pattern-content .pattern-layout.pattern-layout--garment-columns.sleeveless-piece-split.sleeveless-pattern-reading-layout:has(.sleeveless-center-seam-diagrams) {
+      grid-template-columns: minmax(0, 1fr) minmax(22rem, 1fr);
     }
   }
 
@@ -1265,6 +1275,29 @@
     max-width: 100%;
     height: auto;
     overflow: visible;
+  }
+
+  #pattern-content .sleeveless-center-seam-diagrams {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem 1rem;
+    align-items: start;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #d1d5db);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
+    box-sizing: border-box;
+  }
+
+  #pattern-content .sleeveless-center-seam-diagrams__item {
+    min-width: 0;
+  }
+
+  #pattern-content .sleeveless-center-seam-diagrams__item .sleeveless-pattern-diagram-panel__title {
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
   }
 
   /* Back diagram panel: compact toggle + white diagram well (pullover round-neck only). */
@@ -2692,6 +2725,21 @@
       display: block !important;
       visibility: visible !important;
       overflow: visible !important;
+    }
+
+    #pattern-content .sleeveless-piece-split__diagram:has(.sleeveless-center-seam-diagrams) {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+
+    #pattern-content .sleeveless-center-seam-diagrams {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+    }
+
+    #pattern-content .sleeveless-center-seam-diagrams__item {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     #pattern-content .sleeveless-pattern-diagram-tabs__list,

@@ -27,6 +27,42 @@ type GlossaryRow = {
 };
 
 const glossary: GlossaryRow[] = Array.isArray(glossaryData) ? (glossaryData as GlossaryRow[]) : [];
+const savedGlossaryById = new Map<number, GlossaryRow>();
+const savedGlossaryLoads = new Map<number, Promise<GlossaryRow | null>>();
+
+function bundledGlossaryEntry(glossaryId: number): GlossaryRow | undefined {
+  return glossary.find((entry) => entry.glossaryId === glossaryId);
+}
+
+/** Saved catalog when it has loaded; otherwise the bundled source file. */
+function glossaryEntryForTooltip(glossaryId: number): GlossaryRow | undefined {
+  return savedGlossaryById.get(glossaryId) ?? bundledGlossaryEntry(glossaryId);
+}
+
+/**
+ * Read one entry from the public glossary catalog (saved rows over the source file).
+ * The request is not cached. A failed read leaves the bundled entry in place.
+ */
+function loadSavedGlossaryEntry(glossaryId: number): Promise<GlossaryRow | null> {
+  const cached = savedGlossaryById.get(glossaryId);
+  if (cached) return Promise.resolve(cached);
+  const pending = savedGlossaryLoads.get(glossaryId);
+  if (pending) return pending;
+  const load = fetch(`/api/glossary/entries/${glossaryId}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  })
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const data = (await res.json()) as GlossaryRow;
+      if (!data || Number(data.glossaryId) !== glossaryId || data.active !== true) return null;
+      savedGlossaryById.set(glossaryId, data);
+      return data;
+    })
+    .catch(() => null);
+  savedGlossaryLoads.set(glossaryId, load);
+  return load;
+}
 const glossaryCatalogVideos: PublicVideoRow[] = filterPublicCatalogVideos(
   Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
 );
@@ -142,8 +178,8 @@ function collectGlossaryHydrationTargets(root: ParentNode): HTMLElement[] {
 
 /** Resolve a glossary entry slug for full-page / modal navigation. */
 export function glossarySlugForId(glossaryId: number): string | null {
-  const entry = glossary.find((e) => e.glossaryId === glossaryId && e.active === true);
-  if (!entry) return null;
+  const entry = glossaryEntryForTooltip(glossaryId);
+  if (!entry || entry.active !== true) return null;
   return slugify(stripHtml(entry.english ?? ""));
 }
 
@@ -152,7 +188,8 @@ function isOpenGlossaryModal(el: Element): boolean {
   return modal instanceof HTMLElement && !modal.hidden;
 }
 
-function swapGlossaryPopupContent(popup: HTMLElement, glossaryId: number) {
+async function swapGlossaryPopupContent(popup: HTMLElement, glossaryId: number) {
+  await loadSavedGlossaryEntry(glossaryId);
   const payload = getGlossaryTooltipPayload(glossaryId);
   if (!payload) return;
 
@@ -232,7 +269,7 @@ export function getGlossaryTooltipPayload(glossaryId: number): {
   cleanHtml: string;
   titlePlain: string;
 } | null {
-  const entry = glossary.find((e) => e.glossaryId === glossaryId);
+  const entry = glossaryEntryForTooltip(glossaryId);
   if (!entry || entry.active !== true) return null;
   return {
     cleanHtml: buildGlossaryContentHtml(entry),
@@ -419,18 +456,9 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
   const fallbackTerm = placeholder.getAttribute("data-term") ?? "";
   const visibleLabel = getGlossaryPlaceholderVisibleText(placeholder) || fallbackTerm;
 
-  const entry = Number.isFinite(glossaryId) ? glossary.find((e) => e.glossaryId === glossaryId) : undefined;
+  const entry = Number.isFinite(glossaryId) ? bundledGlossaryEntry(glossaryId) : undefined;
 
   if (!entry || entry.active !== true) {
-    const fb = document.createElement("span");
-    fb.className = "glossary-tooltip-fallback glossary-tooltip";
-    fb.textContent = visibleLabel;
-    placeholder.replaceWith(fb);
-    return;
-  }
-
-  const payload = getGlossaryTooltipPayload(entry.glossaryId);
-  if (!payload) {
     const fb = document.createElement("span");
     fb.className = "glossary-tooltip-fallback glossary-tooltip";
     fb.textContent = visibleLabel;
@@ -487,7 +515,7 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
     const srH = document.createElement("h2");
     srH.className = "glossary-popup-sr-title";
     srH.id = titleId;
-    srH.textContent = payload.titlePlain;
+    srH.textContent = stripHtml(entry.english ?? "");
 
     const closeB = document.createElement("button");
     closeB.type = "button";
@@ -498,11 +526,19 @@ function replacePlaceholderWithTooltip(placeholder: HTMLElement) {
 
     const contentEl = document.createElement("div");
     contentEl.className = "glossary-content";
-    contentEl.innerHTML = payload.cleanHtml;
-    bindGlossaryCrossLinksInHelp(contentEl, new Set([entry.glossaryId]));
+    contentEl.innerHTML = `<p class="glossary-popup-help">Loading…</p>`;
 
     popup.append(srH, closeB, contentEl);
     document.body.appendChild(popup);
+
+    void loadSavedGlossaryEntry(entry.glossaryId).then(() => {
+      if (!contentEl.isConnected) return;
+      const payload = getGlossaryTooltipPayload(entry.glossaryId);
+      if (!payload) return;
+      srH.textContent = payload.titlePlain;
+      contentEl.innerHTML = payload.cleanHtml;
+      bindGlossaryCrossLinksInHelp(contentEl, new Set([entry.glossaryId]));
+    });
   }
 
   placeholder.replaceWith(wrap);
