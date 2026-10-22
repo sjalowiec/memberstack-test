@@ -10,6 +10,8 @@ describe("favoriteContentTypes", () => {
     expect(isFavoriteContentType("stitch")).toBe(true);
     expect(isFavoriteContentType("reference")).toBe(true);
     expect(isFavoriteContentType("tool")).toBe(true);
+    expect(isFavoriteContentType("tip-of-the-week")).toBe(true);
+    expect(isFavoriteContentType("knit-able")).toBe(true);
     expect(isFavoriteContentType("stitches")).toBe(false);
     expect(isFavoriteContentType("skill-builder")).toBe(false);
   });

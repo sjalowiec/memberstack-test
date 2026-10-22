@@ -7,6 +7,7 @@
 import Layout from "../../layouts/Layout.astro";
 import KnitAbleLinkedImage from "./KnitAbleLinkedImage.astro";
 import KnitAblePageHeader from "./KnitAblePageHeader.astro";
+import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
 import KnitAblePreviewBanner from "./KnitAblePreviewBanner.astro";
 import KnitAbleYarnCard from "./KnitAbleYarnCard.astro";
 import { KNIT_ABLE_AFFILIATE_REL } from "../../lib/knit-ables/links";
@@ -19,6 +20,7 @@ import {
   knitAbleInspirationSwatches,
   type KnitAbleInspirationPageContent,
 } from "../../lib/knit-ables/inspirationPage";
+import { knitAbleSlugFromPath } from "../../lib/knit-ables/schedule";
 import type { KnitAblePublicationStatus } from "../../lib/knit-ables/schedule";
 
 interface Props {
@@ -29,6 +31,7 @@ interface Props {
 }
 
 const { content, preview, status, publishDate } = Astro.props;
+const favoriteContentId = knitAbleSlugFromPath(content.path) ?? "";
 const paletteSwatches = knitAbleInspirationSwatches(content.palette);
 const introParagraphs = knitAbleInspirationIntroParagraphs(content.intro);
 const paletteLabel = content.palette?.label?.trim() ?? "";
@@ -72,7 +75,11 @@ const yarnImage = content.yarn.image;
           />
         </figure>
         <div class="knit-able-hero__copy">
-          <KnitAblePageHeader title={content.title} headingId="knit-able-hero-heading" />
+          <KnitAblePageHeader
+            title={content.title}
+            headingId="knit-able-hero-heading"
+            favoriteContentId={favoriteContentId}
+          />
           <p class="knit-able-lead">{content.tagline}</p>
           {
             paletteSwatches.length > 0 ? (
@@ -293,6 +300,7 @@ const yarnImage = content.yarn.image;
       }
       {disclosure ? <p class="knit-able-affiliate" role="note">{disclosure}</p> : null}
     </article>
+    {favoriteContentId ? <FavoritesRuntime contentType="knit-able" /> : null}
   </div>
 </Layout>
 

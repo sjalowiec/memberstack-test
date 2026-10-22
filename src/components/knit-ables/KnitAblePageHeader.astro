@@ -1,4 +1,5 @@
 ---
+import FavoriteStar from "../favorites/FavoriteStar.astro";
 import {
   KNIT_ABLES_LOGO,
   KNIT_ABLES_PAGE_LOGO_ALT,
@@ -9,12 +10,14 @@ interface Props {
   title: string;
   headingId: string;
   eyebrow?: string;
+  favoriteContentId?: string;
 }
 
 const {
   title,
   headingId,
   eyebrow = "Knit-able Inspiration",
+  favoriteContentId = "",
 } = Astro.props;
 ---
 
@@ -37,6 +40,17 @@ const {
       />
     </a>
     <h1 id={headingId} class="knit-able-page-header__title">{title}</h1>
+    {
+      favoriteContentId ? (
+        <FavoriteStar
+          contentType="knit-able"
+          contentId={favoriteContentId}
+          title={title}
+          source="knit-able-page"
+          actionTooltip
+        />
+      ) : null
+    }
   </div>
 </div>
 

@@ -10,7 +10,7 @@ import {
   isFavoritesMemberLoggedIn,
   listFavorites,
 } from "./favoritesClient";
-import type { FavoriteContentType } from "./favoriteContentTypes";
+import { isFavoriteContentType, type FavoriteContentType } from "./favoriteContentTypes";
 
 let controllerBound = false;
 
@@ -56,9 +56,7 @@ export async function bootFavoriteStarsFromDom(root: ParentNode = document): Pro
   const types = new Set<FavoriteContentType>();
   markers.forEach((el) => {
     const t = el.getAttribute("data-favorites-boot");
-    if (t === "video" || t === "stitch" || t === "reference" || t === "tool") {
-      types.add(t);
-    }
+    if (isFavoriteContentType(t)) types.add(t);
   });
   for (const contentType of types) {
     await bootFavoriteStars({ contentType, root });

@@ -123,6 +123,12 @@
   --favorite-star-size: 22px;
 }
 
+.favorite-star--compact {
+  width: 36px;
+  height: 36px;
+  --favorite-star-size: 18px;
+}
+
 .glossary-after-title {
   display: inline-flex;
   align-items: center;

@@ -15,8 +15,13 @@ import {
   tipAvailabilityFooterFromRecord,
 } from "./map";
 import { tipIsPubliclyFeatured, tipLosAngelesCalendarDate } from "./schedule";
-import { getPublicFeaturedTip, getTipOfTheWeekById } from "./store";
+import { getPublicFeaturedTip, getTipOfTheWeekById, listAllTipOfTheWeek } from "./store";
 import type { TipOfTheWeekRecord, TipRelatedPublicLink } from "./types";
+import {
+  isMemberVisibleTip,
+  tipSavedMeta,
+  type SavedContentMeta,
+} from "../favorites/savedContentCatalog";
 
 export type PublicTipPageModel = {
   source: "watson" | "dev-json" | "watson-preview";
@@ -140,3 +145,38 @@ export async function loadPublicTipOfTheWeekPage(
 }
 
 export { formatTipAvailabilityDate, tipAvailabilityFooterFromRecord };
+
+/** Public page state for one member-visible tip, including an archived tip. */
+export function publicTipPageFromRecord(tip: TipOfTheWeekRecord): PublicTipPageState {
+  return { kind: "featured", model: featuredModelFromRecord(tip, "watson") };
+}
+
+/**
+ * Load one public tip by its stable tip id.
+ * Drafts and future scheduled tips are not returned.
+ */
+export async function loadMemberVisibleTip(
+  tipId: string,
+  now: Date = new Date(),
+): Promise<TipOfTheWeekRecord | null> {
+  const id = tipId.trim();
+  if (!id || useDevJsonFallback()) return null;
+  const tips = await listAllTipOfTheWeek();
+  const today = tipLosAngelesCalendarDate(now);
+  const match = tips.find((tip) => tip.tipId.trim() === id) ?? null;
+  if (!match || !isMemberVisibleTip(match, today)) return null;
+  return match;
+}
+
+/** Earlier public tips, newest first, excluding the tip already on the page. */
+export async function loadPublicTipArchive(
+  excludeTipId = "",
+  now: Date = new Date(),
+): Promise<SavedContentMeta[]> {
+  if (useDevJsonFallback()) return [];
+  const tips = await listAllTipOfTheWeek();
+  const exclude = excludeTipId.trim();
+  return tipSavedMeta(tips, tipLosAngelesCalendarDate(now)).filter(
+    (row) => row.contentId !== exclude,
+  );
+}

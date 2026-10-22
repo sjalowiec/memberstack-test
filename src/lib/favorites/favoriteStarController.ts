@@ -2,6 +2,7 @@
  * Shared click / keyboard handling for favorite star buttons.
  */
 
+import { trackSavedContentFavoriteChange } from "../analytics/contentFavoritesGa";
 import { openMemberstackLoginModal } from "../memberstackLogin";
 import { getMemberstackReturnPath } from "../memberstackReturnUrl";
 import {
@@ -80,6 +81,12 @@ export function initFavoriteStarController(options: FavoriteStarControllerOption
           syncFavoriteStarsInDocument(state.contentType, state.contentId, previous);
         },
         onSuccess: (next) => {
+          trackSavedContentFavoriteChange({
+            contentType: state.contentType,
+            contentId: state.contentId,
+            isFavorite: next,
+            source: button.getAttribute("data-favorite-source"),
+          });
           const detail: FavoritesChangeDetail = {
             contentType: state.contentType,
             contentId: state.contentId,

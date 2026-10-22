@@ -168,4 +168,60 @@ describe("favorites Netlify function", () => {
     expect(body.ok).toBe(false);
     expect(body.error).toMatch(/failed/i);
   });
+
+  it("persists a tip favorite once and ignores a client member id", async () => {
+    const first = await handler(
+      makeRequest("POST", {
+        body: { content_type: "tip-of-the-week", content_id: "cast-on", member_id: MEMBER_B },
+      }),
+    );
+    expect(first.status).toBe(200);
+    const firstBody = await first.json();
+    expect(firstBody.created).toBe(true);
+    expect(firstBody.favorite.member_id).toBe(MEMBER_A);
+    expect(firstBody.favorite.content_id).toBe("cast-on");
+
+    const second = await handler(
+      makeRequest("POST", {
+        body: { content_type: "tip-of-the-week", content_id: "cast-on", member_id: MEMBER_B },
+      }),
+    );
+    const secondBody = await second.json();
+    expect(secondBody.created).toBe(false);
+
+    const listed = await handler(
+      makeRequest("GET", {
+        url: "https://example.com/.netlify/functions/favorites?content_type=tip-of-the-week",
+      }),
+    );
+    const listedBody = await listed.json();
+    expect(listedBody.favorites).toHaveLength(1);
+    expect(storeData.has(favoritesBlobKey(MEMBER_B, "tip-of-the-week"))).toBe(false);
+  });
+
+  it("does not remove another member's knit-able favorite", async () => {
+    storeData.set(favoritesBlobKey(MEMBER_B, "knit-able"), {
+      version: 1,
+      favorites: [
+        {
+          id: "secret",
+          member_id: MEMBER_B,
+          content_type: "knit-able",
+          content_id: "vest-in-show",
+          created_at: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    const removed = await handler(
+      makeRequest("DELETE", { body: { content_type: "knit-able", content_id: "vest-in-show" } }),
+    );
+    const body = await removed.json();
+    expect(body.ok).toBe(true);
+    expect(body.removed).toBe(false);
+
+    const other = storeData.get(favoritesBlobKey(MEMBER_B, "knit-able"));
+    expect(other.favorites).toHaveLength(1);
+    expect(other.favorites[0].content_id).toBe("vest-in-show");
+  });
 });
