@@ -2,7 +2,10 @@
 // Request-time schedule. A build-time date check would stay cached until the next deploy.
 export const prerender = false;
 
+import { knitAbleSlugFromPath } from "../../lib/knit-ables/schedule";
 import Layout from "../../layouts/Layout.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import { applyKnitAbleCacheHeaders } from "../../lib/knit-ables/pageAccess";
 import {
   KNIT_ABLES_CANONICAL_URL,
@@ -69,21 +72,37 @@ try {
             <p>New Knit-ables show up here when they are published.</p>
           ) : (
             <div class="knit-ables-card-list">
-              {publicCards.map((card) => (
-            <a class="kbm-card knit-ables-feature-card" href={card.href}>
-              <img
-                src={card.image.src}
-                alt={card.image.alt}
-                width={card.image.width}
-                height={card.image.height}
-                loading="lazy"
-                decoding="async"
-              />
-              <h3 class="kbm-card__title">{card.title}</h3>
-              <p class="kbm-card__desc">{card.description}</p>
-            </a>
-              ))}
+              {publicCards.map((card) => {
+                const slug = knitAbleSlugFromPath(card.href);
+                return (
+                  <div class="knit-ables-card-wrap">
+                    <a class="kbm-card knit-ables-feature-card" href={card.href}>
+                      <img
+                        src={card.image.src}
+                        alt={card.image.alt}
+                        width={card.image.width}
+                        height={card.image.height}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <h3 class="kbm-card__title">{card.title}</h3>
+                      <p class="kbm-card__desc">{card.description}</p>
+                    </a>
+                    {slug ? (
+                      <FavoriteStar
+                        contentType="knit-able"
+                        contentId={slug}
+                        title={card.title}
+                        class="favorite-star--compact"
+                        source="knit-able-card"
+                        actionTooltip
+                      />
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
+            <FavoritesRuntime contentType="knit-able" />
           )}
         </section>
       )
@@ -172,6 +191,18 @@ try {
   .knit-ables-feature-card .kbm-card__desc {
     margin: 0;
     font-weight: 400;
+  }
+
+  .knit-ables-card-wrap {
+    position: relative;
+    min-width: 0;
+  }
+
+  .knit-ables-card-wrap :global(.favorite-star) {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    z-index: 2;
   }
 
   @media (min-width: 768px) {

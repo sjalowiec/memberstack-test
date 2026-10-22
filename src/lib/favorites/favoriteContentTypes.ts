@@ -3,7 +3,14 @@
  * Add new literals here (and in the Netlify store allowlist) when extending.
  */
 
-export const FAVORITE_CONTENT_TYPES = ["video", "stitch", "reference", "tool"] as const;
+export const FAVORITE_CONTENT_TYPES = [
+  "video",
+  "stitch",
+  "reference",
+  "tool",
+  "tip-of-the-week",
+  "knit-able",
+] as const;
 
 export type FavoriteContentType = (typeof FAVORITE_CONTENT_TYPES)[number];
 

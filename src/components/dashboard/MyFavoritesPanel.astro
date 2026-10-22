@@ -58,7 +58,14 @@ const ACCORDION_NAME = "account-my-favorites-groups";
   aria-labelledby="my-favorites-heading"
   data-kbm-my-favorites
 >
-  <h2 id="my-favorites-heading" class="dashboard-card__title">My Favorites</h2>
+  <details class="account-favorites__accordion" data-kbm-my-favorites-accordion>
+    <summary class="account-favorites__summary">
+      <h2 id="my-favorites-heading" class="dashboard-card__title account-favorites__heading">
+        My Favorites
+      </h2>
+      <span class="account-favorites__chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="account-favorites__panel">
   <p class="dashboard-card__subtitle">
     Items you have starred. Open a category to browse, open any title to view it, or remove it from favorites here.
   </p>
@@ -116,8 +123,12 @@ const ACCORDION_NAME = "account-my-favorites-groups";
       <a href="/stitch" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Stitches</a>
       <a href="/reference" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Reference</a>
       <a href="/tools" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Tools</a>
+      <a href="/tip-of-the-week" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Tips of the Week</a>
+      <a href="/knit-ables" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Knit-ables</a>
     </div>
   </div>
+    </div>
+  </details>
 
   <script
     id="account-favorites-meta"
@@ -127,9 +138,74 @@ const ACCORDION_NAME = "account-my-favorites-groups";
 </section>
 
 <style>
-  .dashboard-card--favorites {
+  .dashboard-card.dashboard-card--favorites {
+    grid-column: 1 / -1;
     scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
     min-width: 0;
+    padding: 0;
+  }
+
+  .account-favorites__accordion {
+    margin: 0;
+  }
+
+  .account-favorites__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.15rem 1.5rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .account-favorites__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .account-favorites__summary::marker {
+    content: "";
+  }
+
+  .account-favorites__summary:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    border-radius: 12px;
+  }
+
+  .account-favorites__heading {
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .account-favorites__chevron {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1;
+    background: #fff;
+  }
+
+  .account-favorites__chevron::after {
+    content: "+";
+  }
+
+  .account-favorites__accordion[open] > .account-favorites__summary .account-favorites__chevron::after {
+    content: "-";
+  }
+
+  .account-favorites__panel {
+    padding: 0 1.5rem 1.5rem;
   }
 
   .dashboard-card--favorites .dashboard-card__subtitle {
@@ -146,6 +222,8 @@ const ACCORDION_NAME = "account-my-favorites-groups";
     gap: 0.55rem;
     margin-top: 0.25rem;
     min-width: 0;
+    max-height: min(24rem, 70vh);
+    overflow: auto;
   }
 
   .account-favorites__group {
@@ -245,6 +323,37 @@ const ACCORDION_NAME = "account-my-favorites-groups";
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  :global(.account-favorites__remove) {
+    flex: 0 0 auto;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+
+  :global(.account-favorites__remove:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  :global(.account-favorites__note) {
+    display: block;
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 640px) {
+    .account-favorites__summary,
+    .account-favorites__panel {
+      padding-left: 1.15rem;
+      padding-right: 1.15rem;
+    }
   }
 
   :global(.account-favorites__item) {

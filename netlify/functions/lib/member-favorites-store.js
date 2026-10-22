@@ -7,7 +7,14 @@ import { randomUUID } from "node:crypto";
 
 export const MEMBER_FAVORITES_BLOB_STORE = "member-favorites";
 
-export const FAVORITE_CONTENT_TYPES = ["video", "stitch", "reference", "tool"];
+export const FAVORITE_CONTENT_TYPES = [
+  "video",
+  "stitch",
+  "reference",
+  "tool",
+  "tip-of-the-week",
+  "knit-able",
+];
 
 /**
  * @param {string} segment
@@ -29,7 +36,7 @@ export function favoritesBlobKey(memberId, contentType) {
 
 /**
  * @param {unknown} value
- * @returns {value is "video" | "stitch" | "reference" | "tool"}
+ * @returns {value is "video" | "stitch" | "reference" | "tool" | "tip-of-the-week" | "knit-able"}
  */
 export function isFavoriteContentType(value) {
   return typeof value === "string" && FAVORITE_CONTENT_TYPES.includes(value);

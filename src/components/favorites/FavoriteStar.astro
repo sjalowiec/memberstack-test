@@ -20,6 +20,8 @@ interface Props {
   class?: string;
   /** Short hover/focus tooltip. The accessible name stays the full save/remove label. */
   actionTooltip?: boolean;
+  /** Where the star sits, for analytics. Example: tip-page, knit-able-card. */
+  source?: string;
 }
 
 const {
@@ -29,6 +31,7 @@ const {
   isFavorite = false,
   class: className,
   actionTooltip = false,
+  source,
 } = Astro.props;
 const id = normalizeFavoriteContentId(contentId) ?? "";
 const label = favoriteAriaLabel(title, isFavorite);
@@ -44,6 +47,7 @@ const iconClass = isFavorite ? "fa-solid fa-star" : "fa-regular fa-star";
       data-content-type={contentType}
       data-content-id={id}
       data-favorite-title={title.trim() || "this item"}
+      data-favorite-source={source || undefined}
       data-favorite-action-tooltip={actionTooltip ? "true" : undefined}
       data-tooltip={actionTooltip ? favoriteActionTooltip(isFavorite) : undefined}
       aria-pressed={isFavorite ? "true" : "false"}

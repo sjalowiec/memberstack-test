@@ -21,6 +21,8 @@ export const FAVORITE_GROUP_ORDER: readonly {
   { contentType: "stitch", label: "Stitches" },
   { contentType: "reference", label: "Reference Pages" },
   { contentType: "tool", label: "Tools" },
+  { contentType: "tip-of-the-week", label: "Tips of the Week" },
+  { contentType: "knit-able", label: "Knit-ables" },
 ] as const;
 
 export function hrefForFavorite(
@@ -38,6 +40,10 @@ export function hrefForFavorite(
       return "/tools";
     case "reference":
       return normalizeFavoriteHref(contentId) || "/reference";
+    case "tip-of-the-week":
+      return `/tip-of-the-week?tip=${encodeURIComponent(contentId)}`;
+    case "knit-able":
+      return `/knit-ables/${encodeURIComponent(contentId)}`;
     default:
       return "/";
   }
@@ -58,6 +64,10 @@ export function titleForFavorite(
       return "Tool";
     case "reference":
       return titleFromFavoriteHref(contentId);
+    case "tip-of-the-week":
+      return "Tip of the Week";
+    case "knit-able":
+      return "Knit-able";
     default:
       return "Favorite";
   }

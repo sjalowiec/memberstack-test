@@ -36,6 +36,8 @@ describe("member-favorites-store helpers", () => {
   it("accepts only known content types", () => {
     expect(isFavoriteContentType("video")).toBe(true);
     expect(isFavoriteContentType("help-hub")).toBe(false);
+    expect(isFavoriteContentType("tip-of-the-week")).toBe(true);
+    expect(isFavoriteContentType("knit-able")).toBe(true);
     expect(isFavoriteContentType("")).toBe(false);
   });
 
@@ -109,5 +111,23 @@ describe("member favorites CRUD", () => {
     expect(b.map((row) => row.content_id)).toEqual(["2"]);
     expect(store.data.has(favoritesBlobKey("mem_a", "video"))).toBe(true);
     expect(store.data.has(favoritesBlobKey("mem_b", "video"))).toBe(true);
+  });
+
+  it("saves tip and knit-able favorites without duplicates and keeps them separate", async () => {
+    const first = await addFavorite(store, "mem_a", "tip-of-the-week", "cast-on");
+    const again = await addFavorite(store, "mem_a", "tip-of-the-week", "cast-on");
+    await addFavorite(store, "mem_a", "knit-able", "vest-in-show");
+    expect(first.ok && first.created).toBe(true);
+    expect(again.ok && again.created).toBe(false);
+    expect(await listFavorites(store, "mem_a", "tip-of-the-week")).toHaveLength(1);
+    expect((await listFavorites(store, "mem_a", "knit-able")).map((row) => row.content_id)).toEqual([
+      "vest-in-show",
+    ]);
+    expect(await listFavorites(store, "mem_a", "video")).toHaveLength(0);
+
+    const removed = await removeFavorite(store, "mem_a", "tip-of-the-week", "cast-on");
+    expect(removed.ok && removed.removed).toBe(true);
+    expect(await listFavorites(store, "mem_a", "tip-of-the-week")).toHaveLength(0);
+    expect(await listFavorites(store, "mem_a", "knit-able")).toHaveLength(1);
   });
 });
