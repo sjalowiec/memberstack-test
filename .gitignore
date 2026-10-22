@@ -86,6 +86,9 @@ public/challenge/
 legacy-data/exports/
 legacy-data/import-errors/
 legacy-data/cleaned/
+# Customer entitlement lists. Outside src/ and public/ so they are not committed
+# and are not traced into the Netlify SSR bundle.
+legacy-data/private/
 legacy_customers_*.csv
 legacy_history*.csv
 legacy_garments*.csv
@@ -93,3 +96,6 @@ legacy-garments.csv
 docs/launch/*.csv
 
 legacy-expiry-*.json
+
+# Copyrighted reference material — keep local only
+/docs/research/sleeve_calcs.pdf

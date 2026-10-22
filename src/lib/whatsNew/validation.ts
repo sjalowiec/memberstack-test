@@ -3,6 +3,7 @@ import {
   defaultButtonTextForCategory,
   isWhatsNewBoardColumn,
   isWhatsNewCategory,
+  isWhatsNewPopupAudience,
   isWhatsNewStatus,
   toIsoDateOnly,
 } from "./public";
@@ -20,6 +21,7 @@ import {
   WHATS_NEW_TITLE_MAX_LENGTH,
   type WhatsNewBoardColumn,
   type WhatsNewCategory,
+  type WhatsNewPopupAudience,
   type WhatsNewStatus,
   type WhatsNewValidationResult,
 } from "./types";
@@ -36,6 +38,9 @@ export type ValidatedWhatsNewCardInput = {
   status: WhatsNewStatus;
   displayOrder: number;
   archived: boolean;
+  popupEnabled: boolean;
+  popupAudience: WhatsNewPopupAudience;
+  popupExpiresOn: string | null;
 };
 
 export type ValidatedBillboardInput = {
@@ -211,6 +216,30 @@ export function validateWhatsNewCardInput(
     return { ok: false, error: "Display order must be an integer." };
   }
 
+  const popupEnabled = Boolean(input.popupEnabled ?? input.popup_enabled);
+  const audienceRaw = input.popupAudience ?? input.popup_audience ?? "everyone";
+  const audienceText = typeof audienceRaw === "string" ? audienceRaw.trim() : "";
+  if (!audienceText || !isWhatsNewPopupAudience(audienceText)) {
+    return {
+      ok: false,
+      error: "Popup audience must be everyone or members.",
+    };
+  }
+
+  let popupExpiresOn: string | null = null;
+  const expiresRaw = input.popupExpiresOn ?? input.popup_expires_on;
+  if (expiresRaw != null && expiresRaw !== "") {
+    const validated = validatePublishDate(expiresRaw, false);
+    if (!validated.ok) return { ok: false, error: "Popup expiration date is invalid." };
+    popupExpiresOn = validated.value;
+  }
+  if (popupExpiresOn && popupExpiresOn < publishDate.value) {
+    return {
+      ok: false,
+      error: "Popup expiration date must be on or after the publish date.",
+    };
+  }
+
   return {
     ok: true,
     value: {
@@ -225,6 +254,9 @@ export function validateWhatsNewCardInput(
       status: statusRaw,
       displayOrder,
       archived: Boolean(input.archived),
+      popupEnabled,
+      popupAudience: audienceText,
+      popupExpiresOn,
     },
   };
 }

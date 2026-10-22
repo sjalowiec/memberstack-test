@@ -9,7 +9,12 @@
 -- Do not apply this on production until the scheduler release is approved.
 -- Apply against the dev Watson Postgres database (WATSON_DATABASE_URL), e.g.:
 --   psql "$WATSON_DATABASE_URL" -f scripts/sql/watson-knit-able-schedules.sql
--- The running app also creates this table and seed on first use.
+-- The running app also creates this table, enables row level security, and
+-- seeds it on first use.
+--
+-- RLS is enabled with no policies. anon and authenticated get no rows and
+-- cannot write. Do not FORCE row level security: the postgres role Watson
+-- uses has BYPASSRLS and must keep reading and writing publish dates.
 --
 -- Sock dates preserve pages that are already public. cap-sleeve-tank is the
 -- Branch Out Tank and stays scheduled until October 1, 2026.
@@ -19,6 +24,8 @@ CREATE TABLE IF NOT EXISTS watson_knit_able_schedules (
   publish_date DATE,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE watson_knit_able_schedules ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO watson_knit_able_schedules (slug, publish_date)
 VALUES

@@ -80,6 +80,13 @@ export default async (req: Request): Promise<Response> => {
     return withCors(jsonResponse({ ok: false, error: auth.error }, auth.status));
   }
 
+  // Local dev preview identity (ALLOW_DEV_PATTERN_USER). Never returned in production.
+  if (auth.mode === "dev") {
+    return withCors(
+      jsonResponse(authorizedEmbedBody(resolved, contentId, memberTranscriptFor(contentId))),
+    );
+  }
+
   const client = getMemberstackAdminClient();
   if (!client?.getMember) {
     return withCors(

@@ -154,7 +154,7 @@ export function wireContactFormSubmit(options: ContactFormSubmitOptions) {
       }
       clearImageError();
 
-      if (pageUrlInput) {
+      if (pageUrlInput && pageUrlInput.dataset.preserve !== "true") {
         pageUrlInput.value = window.location.href;
       }
       if (submittedAtInput) {

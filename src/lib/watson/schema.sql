@@ -295,6 +295,8 @@ CREATE TABLE IF NOT EXISTS watson_shopify_orders (
   customer_first_name TEXT,
   customer_last_name TEXT,
   customer_email TEXT,
+  checkout_email TEXT,
+  tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb,
   currency TEXT NOT NULL DEFAULT 'USD',
   subtotal_amount NUMERIC(12, 4) NOT NULL DEFAULT 0,
   total_discounts NUMERIC(12, 4) NOT NULL DEFAULT 0,
@@ -321,6 +323,12 @@ CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_email ON watson_shopify_ord
 CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_order_number ON watson_shopify_orders (order_number);
 
 CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_site_brand ON watson_shopify_orders (site_brand);
+
+ALTER TABLE watson_shopify_orders
+  ADD COLUMN IF NOT EXISTS checkout_email TEXT,
+  ADD COLUMN IF NOT EXISTS tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_checkout_email ON watson_shopify_orders (lower(checkout_email));
 
 CREATE TABLE IF NOT EXISTS watson_shopify_order_items (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,

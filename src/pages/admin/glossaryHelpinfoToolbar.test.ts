@@ -36,11 +36,13 @@ describe("glossary Helpinfo formatting toolbar", () => {
     expect(formatClick).not.toBe(saveClick);
   });
 
-  it("still saves glossary.json as a JSON array of entries", () => {
-    expect(adminSource).toContain('fetch("/api/admin/glossary"');
+  it("saves the glossary list without writing the source file", () => {
+    expect(adminSource).toContain('fetch("/admin/glossary-data"');
     expect(adminSource).toContain("JSON.stringify(glossary)");
-    expect(apiSource).toContain("src/data/glossary.json");
-    expect(apiSource).toContain("JSON.stringify(body, null, 2)");
+    expect(adminSource).toContain("Your changes are still in the editor.");
+    expect(apiSource).not.toContain("writeFileSync");
+    expect(apiSource).not.toContain("src/data/glossary.json");
+    expect(apiSource).toContain("Nothing was saved");
   });
 
   it("leaves public modal rendering as HTML helpinfo", () => {

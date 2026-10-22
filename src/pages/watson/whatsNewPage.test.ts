@@ -43,6 +43,24 @@ describe("Watson What's New page", () => {
     expect(page).toContain('value="published"');
     expect(page).toContain("data-wn-status-select");
     expect(page).toContain("data-wn-edit");
+    expect(page).toContain("Pop-up Announcement");
+    expect(page).toContain("No announcement selected.");
+    expect(page).toContain("POPUP_ANNOUNCEMENT_AUDIENCE_LABELS");
+    expect(page).toContain('name="audience"');
+    expect(page).toContain('name="expiresAtLocal"');
+    expect(page).toContain("Expiration (America/Los_Angeles)");
+    expect(page).toContain("data-wn-popup-edit");
+    expect(page).toContain("data-wn-popup-preview");
+    expect(page).toContain("data-wn-popup-enable");
+    expect(page).toContain("data-wn-popup-disable");
+    expect(page).toContain("data-wn-popup-search");
+    expect(page).toContain("What's New Billboard");
+    const popupIdx = page.indexOf("data-wn-popup-panel");
+    const boardIdx = page.indexOf("wn-board-heading");
+    expect(popupIdx).toBeGreaterThan(-1);
+    expect(boardIdx).toBeGreaterThan(popupIdx);
+    expect(page).not.toContain("Show as popup announcement");
+    expect(page).not.toContain("Turn popup off");
     expect(publicPage).toContain("getPublicWhatsNewBoard");
     expect(publicPage).not.toContain("listAllWhatsNewCards");
   });
@@ -61,7 +79,20 @@ describe("Watson What's New page", () => {
     expect(script).toContain("/api/watson/whats-new");
     expect(script).toContain("archive");
     expect(script).toContain("restore");
+    expect(script).not.toContain('action === "popup-off"');
+    expect(script).toContain("openWhatsNewAnnouncementPreview");
+    expect(script).toContain("Saving…");
+    expect(script).toContain("Your changes are still here.");
     expect(script).toContain("/api/watson/whats-new/settings");
+    const popupScript = fs.readFileSync(
+      path.resolve("src/scripts/watsonPopupAnnouncement.ts"),
+      "utf8",
+    );
+    expect(popupScript).toContain("/api/watson/whats-new/announcement");
+    expect(popupScript).toContain("openWhatsNewAnnouncementPreview");
+    expect(popupScript).toContain("data-wn-popup-enable");
+    expect(popupScript).toContain("data-wn-popup-disable");
+    expect(popupScript).not.toContain("updateWhatsNewCard");
   });
 
   it("offers permanent delete only for draft or archived cards", () => {

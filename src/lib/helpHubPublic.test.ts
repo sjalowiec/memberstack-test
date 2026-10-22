@@ -145,6 +145,34 @@ describe("searchPublicHelpHubTips", () => {
     expect(searchPublicHelpHubTips([lk150Tip, draftTip], "LK150")).toEqual([lk150Tip]);
     expect(searchPublicHelpHubTips([lk150Tip], "lk150")).toEqual([lk150Tip]);
   });
+
+  it("ranks a cast-off phrase ahead of a bind-off synonym and keeps extra words", () => {
+    const castTip: HelpHubTipRecord = {
+      slug: "cast-off-edge",
+      status: "published",
+      title: "Cast off the edge",
+      question: "How do I cast off?",
+    };
+    const latchTip: HelpHubTipRecord = {
+      slug: "latch-bind",
+      status: "published",
+      title: "Latch tool bind off",
+      question: "How do I finish with a latch tool?",
+    };
+    const neckTip: HelpHubTipRecord = {
+      slug: "neck-bind",
+      status: "published",
+      title: "Neckline",
+      question: "Bind off the neckline.",
+    };
+    expect(searchPublicHelpHubTips([latchTip, castTip], "cast off").map((tip) => tip.slug)).toEqual([
+      "cast-off-edge",
+      "latch-bind",
+    ]);
+    expect(searchPublicHelpHubTips([neckTip, latchTip], "latch tool cast off").map((tip) => tip.slug)).toEqual([
+      "latch-bind",
+    ]);
+  });
 });
 
 describe("findPublicHelpHubTipsForVideo", () => {

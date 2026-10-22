@@ -26,7 +26,7 @@ describe("isScheduledLiveEnabled", () => {
   });
 });
 
-describe("resolveReminderExecution — scheduled runs", () => {
+describe("resolveReminderExecution ï¿½ scheduled runs", () => {
   it("defaults to dry-run when the live variable is absent", () => {
     expect(
       resolveReminderExecution({
@@ -54,7 +54,7 @@ describe("resolveReminderExecution — scheduled runs", () => {
   });
 });
 
-describe("resolveReminderExecution — manual runs", () => {
+describe("resolveReminderExecution ï¿½ manual runs", () => {
   it("defaults a plain manual request to dry-run", () => {
     expect(
       resolveReminderExecution({

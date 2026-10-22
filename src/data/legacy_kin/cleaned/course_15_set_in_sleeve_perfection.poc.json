@@ -29,12 +29,12 @@
           "components": [
             {
               "type": "richText",
-              "html": "Do you hesitate to knit sweaters with set in sleeves?  Have struggled with them in the past?<br>\r\n\r\n\r\n<div class=\"lead\">Get some practice setting in sleeves.</div>\r\nOver the next few days, we will get laser focused. Here's what to expect:<br>\r\n\r\n\r\n<ul class=\"li_10px\">\r\n<li>Using the Knit it Now Practice pattern you will knit a sample armhole and sleeve</li>\r\n<li>You will explore different shaping methods to perfect your knitting</li>\r\n<li>You will learn multiple techniques for setting in the sleeves to the armhole</li>\r\n<li>We will explore knitting and joining sleeves from the top down.</li>\r\n</ul>\r\nAfter all that practice, you will no longer hesitate to knit sweaters with set in sleeves AND you'll knit sweaters that you can be proud to wear.<br><div class=\"lead\">How does this work?</div>\r\n<ul class=\"li_10px\">\r\n<li>Watch the How-To video on each topic</li>\r\n<li>Spend time working the exercise for the topic</li>\r\n<li>Invest at least 30 minutes of knitting time each day to learn/practice new techniques</li>\r\n<li>Take notes as you practice</li>\r\n<li>Take photos and share your success</li>\r\n<li><mark><b>Practice! Practice! Practice!</b></mark></li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/sleeve_practice/knit_the_sleeve.jpg\">\r\n\r\n\r\n",
+              "html": "Do you hesitate to knit sweaters with set in sleeves?  Have struggled with them in the past?<br>\r\n\r\n\r\n<div class=\"lead\">Get some practice setting in sleeves.</div>\r\nOver the next few days, we will get laser focused. Here's what to expect:<br>\r\n\r\n\r\n<ul class=\"li_10px\">\r\n<li>Using the Knit it Now Practice pattern you will knit a sample armhole and sleeve</li>\r\n<li>You will explore different shaping methods to perfect your knitting</li>\r\n<li>You will learn multiple techniques for setting in the sleeves to the armhole</li>\r\n<li>We will explore knitting and joining sleeves from the top down.</li>\r\n</ul>\r\nAfter all that practice, you will no longer hesitate to knit sweaters with set in sleeves AND you'll knit sweaters that you can be proud to wear.<br><div class=\"lead\">How does this work?</div>\r\n<ul class=\"li_10px\">\r\n<li>Watch the How-To video on each topic</li>\r\n<li>Spend time working the exercise for the topic</li>\r\n<li>Invest at least 30 minutes of knitting time each day to learn/practice new techniques</li>\r\n<li>Take notes as you practice</li>\r\n<li>Take photos and share your success</li>\r\n<li><mark><b>Practice! Practice! Practice!</b></mark></li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/15/sleeve_practice/knit_the_sleeve.jpg\">\r\n\r\n\r\n",
               "legacyComponentId": 1295,
               "order": 1
             }
           ],
-          "title": "Welcome {first}! Start Here",
+          "title": "Welcome! Start Here",
           "slug": "welcome-first-start-here",
           "order": 1,
           "legacy": {
@@ -45,35 +45,17 @@
         {
           "components": [
             {
-              "type": "video",
-              "vimeoId": "221120492",
-              "title": "Machine Knitting Courses",
-              "legacyComponentId": 1477,
-              "order": 1
-            }
-          ],
-          "title": "Lesson 1: New to Knit it Now Courses?",
-          "slug": "lesson-1-new-to-knit-it-now-courses",
-          "order": 2,
-          "legacy": {
-            "assignId": 467,
-            "blockType": "Video"
-          }
-        },
-        {
-          "components": [
-            {
               "type": "richText",
-              "html": "\r\n\r\nEven though we are knitting practice pieces, Swatching is critical to establish YOUR gauge.  Guessing at your gauge will only lead to tears, because the sleeves won't fit into the armholes.<br>\r\n\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n<img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/15/gauge_swatch_tension/swatching_is_not_optional.jpg\">\r\n\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<BR>\r\n\r\n",
+              "html": "\r\n\r\nEven though we are knitting practice pieces, Swatching is critical to establish YOUR gauge.  Guessing at your gauge will only lead to tears, because the sleeves won't fit into the armholes.<br>\r\n\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n<img class=\"img-thumbnail\" width=\"300\" src=\"/images/course-content/15/gauge_swatch_tension/swatching_is_not_optional.jpg\">\r\n\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<BR>\r\n\r\n",
               "legacyComponentId": 1283,
-              "order": 1
+              "order": 2
             },
             {
               "type": "video",
               "vimeoId": "178357273",
               "title": "Even though we are knitting samples - take time to swatch.",
               "legacyComponentId": 1284,
-              "order": 2
+              "order": 3
             }
           ],
           "title": "Lesson 2: Swatching is NOT Optional!",
@@ -90,25 +72,25 @@
               "type": "richText",
               "html": "<small>Instructions are for suggestions for <b>standard gauge</b><em> (mid-gauge, bulky)</em> and for using gauge rulers.</small><br>\r\n<blockquote class=\"smallblock\"><em>  Remember, you can knit swatches any size (as long as they are at least 5-6\" square.) Be sure to be consistent and establish a template for yourself for every time you knit a swatch.</em></blockquote>",
               "legacyComponentId": 1285,
-              "order": 1
+              "order": 4
             },
             {
               "type": "richText",
-              "html": "<img src=\"/challenge/images/v2/15/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/challenge/images/v2/15/gauge_swatch_tension/swatch_info1.jpg\">\r\n</div>\r\n",
+              "html": "<img src=\"/images/course-content/15/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/images/course-content/15/gauge_swatch_tension/swatch_info1.jpg\">\r\n</div>\r\n",
               "legacyComponentId": 1289,
-              "order": 2
+              "order": 5
             },
             {
               "type": "richText",
               "html": "\r\n\r\n<br><ol class=\"instruction-list\">\r\n          <li>According to the chart above, cast on enough stitches so you can isolate the center stitches as shown for your machine. You want to be able to measure in the CENTER of the knitting. </li>\r\n           <li>Knit a few rows in pattern</li>\r\n          <li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n          <li>Set row counter to 000</li>\r\n           <li>Knit the center section<br><div style=\"margin-left:30px\">\r\n<b>Standard gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n         <li>Knit 20 rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n         <li>Knit 20 more rows</li>\r\n    </ul >\r\n<b>Mid-Gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n       <li>Knit 20 rows and knit in a yarn marker isolating the center 30 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n    </ul >\r\n<b>Bulky</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n          <li>Knit 15 rows and knit in a yarn marker isolating the center 20 stitches</li>\r\n            <li>Knit 15 more rows</li>\r\n</ul>\r\n</div>\r\n<li>Confirm and record the total number of rows you knit for the center <b>60</b><em>(40, 30)</em></li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Knit a few rows and bind off <small><em>(or drop the work from the machine)</em></small></li>\r\n</ol>\r\nLet the swatch rest<br>\r\n<ol>\r\n<li>Dress the swatch as you will treat the finished item</li>\r\n<li>Measure the size of the <b>40</b><em>(30, 20)</em> stitches in the center of the swatch (between the yarn markers)</li>\r\n<li>Measure the size of the <b>60</b><em>(40,30)</em> rows between the waste yarn (or marker rows)</li>\r\n<li>The math\r\n<ul><li>Divide the stitches in the middle by your measurement to get <b>Stitches Per Inch/cm</b></li>\r\n<li>Divide the rows in the middle by your measurement to get <b>Rows Per Inch/cm</b></li>\r\n<li>Multiply your stitches/rows per inch/cm times 4 to calculate stitches per 4\" (10cm)</li>\r\n</ul>\r\n</ol>\r\n\r\n\r\n\r\n",
               "legacyComponentId": 1287,
-              "order": 4
+              "order": 6
             },
             {
               "type": "richText",
-              "html": "<div>\r\n<img src=\"/challenge/images/v2/15/sleeve_practice/measure_stitches.jpg\"></div\r\n<img src=\"/challenge/images/v2/15/sleeve_practice/measure_rows.jpg\">\r\n",
+              "html": "<div>\n<img src=\"/images/course-content/15/sleeve_practice/measure_stitches.jpg\" style=\"display:block; width:100%; max-width:600px; height:auto;\"></div>\n",
               "legacyComponentId": 1571,
-              "order": 6
+              "order": 7
             }
           ],
           "title": "Lesson 3: Knit Your Swatch",
@@ -123,9 +105,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/15/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
               "legacyComponentId": 1290,
-              "order": 1
+              "order": 8
             },
             {
               "type": "migrationPending",
@@ -146,7 +128,7 @@
                 "REMOVEALERT": "0"
               },
               "legacyComponentId": 1291,
-              "order": 2
+              "order": 9
             },
             {
               "type": "migrationPending",
@@ -167,19 +149,19 @@
                 "REMOVEALERT": "0"
               },
               "legacyComponentId": 1292,
-              "order": 3
+              "order": 10
             },
             {
               "type": "richText",
               "html": "<blockquote class=\"smallblock\"><em><b>TIP:</b> attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>",
               "legacyComponentId": 1293,
-              "order": 4
+              "order": 11
             },
             {
               "type": "richText",
               "html": "<div class=\"lead\"> <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Hate Math?<br>  Use the calculator below to determine YOUR gauge in 4\"/10cm</div>",
               "legacyComponentId": 1508,
-              "order": 6
+              "order": 12
             },
             {
               "type": "migrationPending",
@@ -195,7 +177,7 @@
                 "TYPEOF": "CustomCFM"
               },
               "legacyComponentId": 1505,
-              "order": 8
+              "order": 13
             }
           ],
           "title": "Lesson 4: Today's Challenge: Your Swatch",
@@ -220,7 +202,7 @@
                 "icon": "fa fa-download"
               },
               "legacyComponentId": 1473,
-              "order": 1
+              "order": 14
             },
             {
               "type": "migrationPending",
@@ -241,7 +223,7 @@
                 "TYPEOF": "Pattern"
               },
               "legacyComponentId": 1323,
-              "order": 2
+              "order": 15
             },
             {
               "type": "migrationPending",
@@ -254,14 +236,14 @@
                 "TYPEOF": "HRline"
               },
               "legacyComponentId": 1525,
-              "order": 3
+              "order": 16
             },
             {
               "type": "video",
               "vimeoId": "772256112",
               "title": "Building Knit it Now Custom Patterns",
               "legacyComponentId": 1524,
-              "order": 4
+              "order": 17
             }
           ],
           "title": "Lesson 5: Create your Practice Sleeve Pattern",
@@ -290,7 +272,7 @@
                 "TYPEOF": "DataValidation"
               },
               "legacyComponentId": 1474,
-              "order": 1
+              "order": 18
             },
             {
               "type": "migrationPending",
@@ -309,7 +291,7 @@
                 "VIEWHEIGHT": "600"
               },
               "legacyComponentId": 1301,
-              "order": 2
+              "order": 19
             }
           ],
           "title": "Lesson 6: View Your Pattern",
@@ -327,7 +309,7 @@
               "vimeoId": "249303939",
               "title": "Tips for Understanding Sleeve Construction",
               "legacyComponentId": 1475,
-              "order": 1
+              "order": 20
             }
           ],
           "title": "Lesson 7: Does your Pattern look \"wonky\"? Tips for understanding sleeve construction",
@@ -344,7 +326,7 @@
               "type": "richText",
               "html": "Upload your images here to share with the workshop members.  Your image will be added to a gallery for inspiration.",
               "legacyComponentId": 1542,
-              "order": 1
+              "order": 21
             },
             {
               "type": "migrationPending",
@@ -361,7 +343,7 @@
                 "TYPEOF": "ImageUpload"
               },
               "legacyComponentId": 1543,
-              "order": 2
+              "order": 22
             }
           ],
           "title": "Share your progress!",
@@ -387,7 +369,7 @@
                 "WORKSHOPONLY": "1"
               },
               "legacyComponentId": 1544,
-              "order": 1
+              "order": 23
             }
           ],
           "title": "Shared Gallery | Swatches",
@@ -492,7 +474,7 @@
             },
             {
               "type": "richText",
-              "html": "<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\nPicking up those \"teeny-tiny\" stitches difficult?\r\n<ul>\r\n<li>Use a highly contrasting color, smooth yarn for your waste yarn</li>\r\n<li>You will be picking up the garment yarn loop.(green)</li>\r\n<li>All of the white stitches (and loops) will eventually be discarded. Be sure to pick up the GARMENT YARN loops</li>\r\n</uL>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/sleeve_practice/rehang1.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/sleeve_practice/rehang2.jpg\">>\r\n\r\n\r\n",
+              "html": "<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\nPicking up those \"teeny-tiny\" stitches difficult?\r\n<ul>\r\n<li>Use a highly contrasting color, smooth yarn for your waste yarn</li>\r\n<li>You will be picking up the garment yarn loop.(green)</li>\r\n<li>All of the white stitches (and loops) will eventually be discarded. Be sure to pick up the GARMENT YARN loops</li>\r\n</uL>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/15/sleeve_practice/rehang1.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/images/course-content/15/sleeve_practice/rehang2.jpg\">>\r\n\r\n\r\n",
               "legacyComponentId": 1529,
               "order": 3
             }
@@ -638,51 +620,51 @@
               "type": "imageGallery",
               "slides": [
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite1.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite1.jpg",
                   "caption": "If you are right handed, end your knitting on the right."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite2.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite2.jpg",
                   "caption": "Pull out a few (or all) of the needles to hold position and open the latches."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite3.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite3.jpg",
                   "caption": "Needles out and latches open ..."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite4.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite4.jpg",
                   "caption": "Remove the working yarn from the carriage and carefully lay it in the hooks of the needles."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite5.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite5.jpg",
                   "caption": "Carefully pull the needles back, keeping the working yarn in the hooks.<br>\r\nNotice that I've put some tension on the working yarn to keep it in the hooks until the next step."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite6.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite6.jpg",
                   "caption": "\"Hand knit\" each stitch loosely. <br>This takes PRACTICE, not too tight, not too loose ... .just right!<br>\r\nThe size of the hand knit stitches depends on your yarn and how this bind off edge will be finished."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite7.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite7.jpg",
                   "caption": "Continue across the entire bind off edge.  The idea is to keep the hand-formed stitches uniform and under control."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite8.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite8.jpg",
                   "caption": "Break the working and and carefully pull all the needles out again."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite9.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite9.jpg",
                   "caption": "Working from the right, with the latch tool, carefully pull stitch through stitch to bind off."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite12.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite12.jpg",
                   "caption": "Work across the bind off edge, being careful not to drop any stitches on the left."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite14.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite14.jpg",
                   "caption": "Pull the tail of yarn through the last stitch."
                 },
                 {
-                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite15.jpg",
+                  "src": "/images/course-content/15/sleeve_practice/caston_favorite15.jpg",
                   "caption": "The result: A nice chained edge that is stretchy and just right!"
                 }
               ],
@@ -994,7 +976,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "\r\nThere are a number of ways you can set in a sleeve. Try different methods to get a feel for the pros and cons of each.\r\n<ul>\r\n<li>Backstitch</li>\r\n<li>Slip Stich crochet</li>\r\n<li>Mattress Stitch (along the rows to rows edges)</li>\r\n<li>Use your sewing machine or serger</li>\r\n<li>Join on the machine or with a linker</li>\r\n</ul>\r\n\r\n<img src=\"/challenge/images/v2/15/sleeve_practice/sleeve_pinned.jpg\">\r\n<br>Use your sample pieces and try some different methods of setting in your sleeves.  If you already have a favorite method, try something new ... you may be surprised!\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Don't forget ... it's ok to mix 'n match techniques.   Mattress stitch along the rows to rows area and use something else for the \"hard parts\". ",
+              "html": "\r\nThere are a number of ways you can set in a sleeve. Try different methods to get a feel for the pros and cons of each.\r\n<ul>\r\n<li>Backstitch</li>\r\n<li>Slip Stich crochet</li>\r\n<li>Mattress Stitch (along the rows to rows edges)</li>\r\n<li>Use your sewing machine or serger</li>\r\n<li>Join on the machine or with a linker</li>\r\n</ul>\r\n\r\n<img src=\"/images/course-content/15/sleeve_practice/sleeve_pinned.jpg\">\r\n<br>Use your sample pieces and try some different methods of setting in your sleeves.  If you already have a favorite method, try something new ... you may be surprised!\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Don't forget ... it's ok to mix 'n match techniques.   Mattress stitch along the rows to rows area and use something else for the \"hard parts\". ",
               "legacyComponentId": 1465,
               "order": 1
             }

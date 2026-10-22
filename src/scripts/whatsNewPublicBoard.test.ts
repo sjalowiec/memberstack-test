@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   initWhatsNewCardStacks,
   initWhatsNewPublicBoard,
+  revealWhatsNewEntryFromHash,
 } from "./whatsNewPublicBoard";
 import { WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT } from "../lib/whatsNew/types";
 
@@ -424,5 +425,18 @@ describe("whatsNewPublicBoard stacked columns", () => {
     expect(colA.items.filter((item) => !item.hasAttribute("hidden"))).toHaveLength(5);
     expect(colB.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
     expect(colC.items.every((item) => !item.hasAttribute("hidden"))).toBe(true);
+  });
+
+  it("opens the What's New entry targeted by a Read more hash", () => {
+    const col = buildStackDom(8, "whats-new-cards-just_added", { initialVisible: 5 });
+    const target = col.items[6]!;
+    target.id = "whats-new-entry-card-late";
+    initWhatsNewPublicBoard(col.column);
+
+    expect(target.hasAttribute("hidden")).toBe(true);
+    expect(revealWhatsNewEntryFromHash(col.column, "#whats-new-entry-card-late")).toBe(true);
+    expect(target.hasAttribute("hidden")).toBe(false);
+    expect(target.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(col.items[0]!.classList.contains("whats-new__card--expanded")).toBe(false);
   });
 });

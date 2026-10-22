@@ -72,6 +72,10 @@ export function renderPatternDisplayBlockHtml(
         leftBits.push(`<p class="${cls}">${escapePatternDisplayHtml(marked.text)}</p>`);
         continue;
       }
+      if (/^<(ol|ul|div)\b/i.test(t)) {
+        leftBits.push(t);
+        continue;
+      }
       leftBits.push(`<p class="sleeveless-pattern-line">${p}</p>`);
     }
   } else {

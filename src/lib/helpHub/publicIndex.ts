@@ -89,6 +89,28 @@ function helpHubIndexCardFromTip(tip: HelpHubTipRecord): HelpHubIndexCard | null
   return { slug, heading: copy.heading };
 }
 
+/**
+ * One crawlable address for every published tip.
+ * Drafts and reviews are omitted. A stored question is the link text; a title
+ * is used only when that tip has no question.
+ */
+export function helpHubPublishedPermalinks(tips: HelpHubTipRecord[]): HelpHubIndexCard[] {
+  const seen = new Set<string>();
+  const links: HelpHubIndexCard[] = [];
+  for (const tip of sortHelpHubIndexTips(filterPublicHelpHubTips(tips))) {
+    const slug = typeof tip.slug === "string" ? tip.slug.trim() : "";
+    const key = slug.toLowerCase();
+    if (!slug || seen.has(key)) continue;
+    const card = helpHubIndexCardFromTip(tip);
+    const title = typeof tip.title === "string" ? tip.title.trim() : "";
+    const heading = card?.heading || title;
+    if (!heading) continue;
+    seen.add(key);
+    links.push({ slug, heading });
+  }
+  return links;
+}
+
 export function helpHubIndexNewCards(tips: HelpHubTipRecord[]): HelpHubIndexCard[] {
   return filterPublicHelpHubTips(tips)
     .filter((tip) => tip.isNew === true)

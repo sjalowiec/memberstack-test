@@ -10,6 +10,7 @@ import { getViewerAccessState, type ViewerAccessState } from "../memberAccess";
 import {
   isLocalPatternTestingEnabled,
   localPatternTestingAccess,
+  localPatternTestingDraftOwnerId,
 } from "./localPatternTesting";
 import {
   hostedSetInSleeveDraftOwnerId,
@@ -207,11 +208,17 @@ function setGateState(root: HTMLElement, state: PatternMembershipGateState): voi
 }
 
 /**
- * On hosted Set-In Sleeve testing the draft belongs to the fixed test identity,
- * even when a Memberstack session is also present. Using the Memberstack id
- * here clears the test draft (selected size and loaded pattern).
+ * Local pattern testing and hosted Set-In Sleeve testing keep one fixed draft
+ * owner, even when a Memberstack session is also present. Using the Memberstack
+ * id clears the selected size and the loaded pattern. Everywhere else the
+ * verified member id still owns the draft.
  */
-async function enforceDraftOwnerForCurrentPage(): Promise<void> {
+export async function enforceDraftOwnerForCurrentPage(): Promise<void> {
+  const localOwner = localPatternTestingDraftOwnerId();
+  if (localOwner) {
+    enforcePatternDraftOwner(localOwner);
+    return;
+  }
   const hostedOwner = hostedSetInSleeveDraftOwnerId();
   enforcePatternDraftOwner(hostedOwner ?? (await resolveCurrentMemberIdForDraftGuard()));
 }

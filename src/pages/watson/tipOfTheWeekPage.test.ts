@@ -42,6 +42,8 @@ describe("Watson Tip of the Week page", () => {
     expect(page).toContain("loadTipReactionTotals");
     expect(apiReactions).toContain("loadTipReactionTotals");
     expect(apiReactions).toContain("tipReactionDisplayRows");
+    expect(apiReactions).toContain("topicSuggestions");
+    expect(script).toContain("topicSuggestions");
     expect(apiReactions).not.toContain("visitorId");
   });
 

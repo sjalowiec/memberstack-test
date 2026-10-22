@@ -161,6 +161,10 @@ describe("memberOrders", () => {
   it("builds item descriptions from imported columns", () => {
     expect(buildOrderItemDescription(itemRow)).toContain("Angora (3/10)");
     expect(buildOrderItemDescription(itemRow)).toContain("Black");
+    const display = buildOrderDisplay(orderRow, [itemRow]);
+    expect(display.items[0]?.customerLabel).toBe("Angora (3/10) · Black");
+    expect(display.items[0]?.customerLabel).not.toContain("10% off");
+    expect(display.paymentStatusLabel).toBe("Paid");
   });
 
   it("groups items by storetransactionid", () => {

@@ -63,7 +63,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<img src=\"/path/images/93/what_is_ribber3.jpg\">\n<p>\n\nPicture this:<br><ul>\n<li>You have a knitting machine with 100+ needles.</li><br>\n<li>You use a carriage to quickly knit 100+ needles with the pass of the carriage</li><br>\n<li>Imagine cloning that needlebed, turning it 180° and positioning the needles facing each other.</li><br></ul>\nNow you have a setup that can not only create purl stitches, but knit stitches as well.<br>That the basic idea of a knitting machine ribber.<br>Imagine being able to knit k1, p1 ribbing with the pass of the carriage ... but wait!  There's so much more!</p>\n\n\n\n",
+              "html": "<img src=\"/images/course-content/66/what_is_ribber3.jpg\">\n<p>\n\nPicture this:<br></p><ul>\n<li>You have a knitting machine with 100+ needles.</li><br>\n<li>You use a carriage to quickly knit 100+ needles with the pass of the carriage</li><br>\n<li>Imagine cloning that needlebed, turning it 180° and positioning the needles facing each other.</li><br></ul>\nNow you have a setup that can not only create purl stitches, but knit stitches as well.<br>That the basic idea of a knitting machine ribber.<br>Imagine being able to knit k1, p1 ribbing with the pass of the carriage ... but wait!  There's so much more!<p></p>\n\n\n\n",
               "legacyComponentId": 5720,
               "order": 3,
               "layoutRole": "textVideoLeft"

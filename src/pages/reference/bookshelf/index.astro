@@ -250,7 +250,11 @@ const introText =
 
       var visible = 0;
       getCards().forEach(function (card) {
-        var matchesSearch = !q || (card.getAttribute("data-search") || "").indexOf(q) !== -1;
+        var matchesSearch =
+          !q ||
+          (typeof window.__kinRankSearchText === "function"
+            ? window.__kinRankSearchText(card.getAttribute("data-search") || "", q) > 0
+            : (card.getAttribute("data-search") || "").indexOf(q) !== -1);
         var matchesTopic = !topic || (card.getAttribute("data-topic") || "") === topic;
         var cardTags = (card.getAttribute("data-tags") || "").split("|");
         var matchesTag = !tag || cardTags.indexOf(tag) !== -1;

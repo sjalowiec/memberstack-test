@@ -12,11 +12,7 @@ import {
   savePatternData,
   type SleevelessPatternRecord,
 } from "./patternStorage";
-import {
-  DROP_SHOULDER_SLEEVE_LENGTH_CHOICES,
-  normalizeDropShoulderSleeveLengthChoice,
-  type DropShoulderSleeveLengthChoice,
-} from "./patternConstructionIdentity";
+import { normalizeDropShoulderSleeveLengthChoice } from "./patternConstructionIdentity";
 
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION = "sideways-cardigan";
 export const SIDEWAYS_CARDIGAN_CONSTRUCTION_AUTHORED_KEY = "constructionAuthored";
@@ -48,9 +44,19 @@ export function parseSidewaysCardiganSleeveDirection(
     : null;
 }
 
-/** Same categorical sleeve-length choices as Drop Shoulder. Stored on `style.sleeveLength`. */
-export const SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES = DROP_SHOULDER_SLEEVE_LENGTH_CHOICES;
-export type SidewaysCardiganSleeveLengthChoice = DropShoulderSleeveLengthChoice;
+/**
+ * Same categorical sleeve-length choices as Drop Shoulder. Stored on `style.sleeveLength`.
+ * Copied so this module can finish loading while `patternConstructionIdentity` is still
+ * initializing (Vite dev hits that cycle).
+ */
+export const SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES = [
+  "long",
+  "three-quarter",
+  "elbow",
+  "short",
+] as const;
+export type SidewaysCardiganSleeveLengthChoice =
+  (typeof SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_CHOICES)[number];
 
 export const SIDEWAYS_CARDIGAN_SLEEVE_LENGTH_DEFAULT: SidewaysCardiganSleeveLengthChoice =
   "long";

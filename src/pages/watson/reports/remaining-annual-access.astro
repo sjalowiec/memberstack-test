@@ -1,6 +1,11 @@
 ---
+import WatsonOctoberLegacyRenewalReminder from "../../../components/watson/WatsonOctoberLegacyRenewalReminder.astro";
 import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
 import WatsonRemainingAnnualAccessReport from "../../../components/watson/WatsonRemainingAnnualAccessReport.astro";
+import {
+  loadOctoberLegacyRenewalReminder,
+  type OctoberLegacyRenewalReminderReport,
+} from "../../../lib/watson/octoberLegacyRenewalReminder";
 import {
   loadRemainingAnnualAccessReport,
   type RemainingAnnualAccessReport,
@@ -8,8 +13,17 @@ import {
 
 export const prerender = false;
 
+let octoberError: string | null = null;
+let october: OctoberLegacyRenewalReminderReport | null = null;
 let reportError: string | null = null;
 let report: RemainingAnnualAccessReport | null = null;
+
+try {
+  october = await loadOctoberLegacyRenewalReminder();
+} catch (error) {
+  octoberError =
+    error instanceof Error ? error.message : "October renewal reminder list failed to load.";
+}
 
 try {
   report = await loadRemainingAnnualAccessReport();
@@ -21,13 +35,22 @@ try {
 
 <WatsonPageShell
   title="Remaining Annual Access | Watson Reports"
-  description="Current non-monthly legacy members who may have annual or installment paid-through access."
+  description="October 2026 legacy renewal reminders, plus the migration classification of current non-monthly members."
   heading="Remaining Annual Access"
-  intro="Read-only classification of current members with possible annual or installment access for migration handling."
+  intro="October 2026 renewal reminders are the list to use for outreach. The classification table below is the separate migration view and is not the reminder list."
 >
   <p class="watson-report__meta">
     <a href="/watson/reports">? All reports</a>
   </p>
+  {
+    octoberError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {octoberError}
+      </p>
+    ) : october ? (
+      <WatsonOctoberLegacyRenewalReminder report={october} />
+    ) : null
+  }
   {
     reportError ? (
       <p class="watson__status watson__status--error" role="alert">

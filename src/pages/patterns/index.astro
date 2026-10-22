@@ -1,31 +1,36 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
+import PatternGaugeDemo from '../../components/patterns/PatternGaugeDemo.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { isSidewaysCardiganProductionBlocked } from '../../lib/patterns/sidewaysCardiganProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
 import {
+  PATTERN_CATALOG_MEMBER_HEADLINE,
+  PATTERN_CATALOG_MEMBER_LEAD,
   PATTERN_CATALOG_MEMBERSHIP_BODY,
   PATTERN_CATALOG_MORE_HEADING,
+  PATTERN_CATALOG_SIGNED_IN_MEMBERSHIP_BODY,
   PATTERNS_LANDING_BECOME_MEMBER_HREF,
   PATTERNS_LANDING_BECOME_MEMBER_LABEL,
+  PATTERNS_LANDING_JOIN_OR_RENEW_LABEL,
   PATTERNS_LANDING_LOGIN_LABEL,
 } from '../../lib/patterns/patternsLandingCta';
-import {
-  DROP_SHOULDER_CATALOG_PILL_REST,
-  DROP_SHOULDER_PATTERN_POSSIBILITIES,
-  HAT_CATALOG_PILL_REST,
-  HAT_PATTERN_POSSIBILITIES,
-  SLEEVELESS_CATALOG_PILL_REST,
-  SLEEVELESS_PATTERN_POSSIBILITIES,
-  SOCKS_CATALOG_COPY,
-  SOCKS_CATALOG_PILL_REST,
-  SOCKS_PATTERN_POSSIBILITIES,
-} from '../../lib/patterns/patternCatalogPossibilities';
+import { SOCKS_CATALOG_COPY } from '../../lib/patterns/patternCatalogPossibilities';
 
-// Marketing hero and feature grid live on {@link PATTERN_BUILDERS_HOME_HREF}.
-// This page is the public pattern catalog — pick a builder to start.
-// Membership CTA is informational only; sweater builders enforce their own gates.
+// Public Pattern Builders showcase. One library array feeds every audience.
+// Logged-out and signed-in visitors without member access see the free Hat.
+// Active members, including legacy paid-through, see the same builders without that offer.
+// Sweater, sock, and sideways builders enforce their own membership gates.
+
+type CatalogCard = {
+  title: string;
+  href: string;
+  image: string;
+  copy: string;
+  button: string;
+  free?: boolean;
+};
 
 const hideDropShoulderInCatalog = isDropShoulderProductionBlocked(Astro.url.hostname, {
   isViteDev: import.meta.env.DEV,
@@ -37,43 +42,35 @@ const showSidewaysAsComingSoon = isSidewaysCardiganProductionBlocked(Astro.url.h
   publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
 });
 
-const dropShoulderPattern = {
+const dropShoulderPattern: CatalogCard = {
   title: 'Drop Shoulder Sweater',
   // Public landing page. The landing CTA starts a fresh builder session with `?new=1`.
   href: '/patterns/drop-shoulder',
   image: '/images/patterns/drop_shoulder.webp',
-  copy: 'A relaxed sweater with drop-shoulder sleeves (cuff-up or top-down), pullover or cardigan fronts, round or V-neck, and printable row-by-row instructions.',
+  copy: 'A relaxed drop-shoulder sweater, cuff-up or top-down, in your size and style.',
   button: 'Create drop shoulder sweater',
-  pillCount: DROP_SHOULDER_PATTERN_POSSIBILITIES,
-  pillRest: DROP_SHOULDER_CATALOG_PILL_REST,
 };
 
-const featuredHatImageSrc = '/images/patterns/hat.webp';
-
-const hatPattern = {
+const hatPattern: CatalogCard = {
   title: 'Hat',
   // `?new=1` clears any leftover kbm_hat_draft / saved-project identity on boot so
   // catalog “Create your hat” always starts a new Hat (mirrors sleeveless / drop-shoulder).
   href: '/patterns/hat/builder?new=1',
   image: '/images/patterns/hat.webp',
-  copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
+  copy: 'A hat in your gauge, with brim and crown choices and machine-knitting instructions.',
   button: 'Create your hat',
-  pillCount: HAT_PATTERN_POSSIBILITIES,
-  pillRest: HAT_CATALOG_PILL_REST,
 };
 
-const sleevelessPattern = {
+const sleevelessPattern: CatalogCard = {
   title: 'Sleeveless Sweater',
   // Public landing page. The landing CTA starts a fresh builder session with `?new=1`.
   href: '/patterns/sleeveless',
   image: '/images/patterns/sleeveless.webp',
-  copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
+  copy: 'A sleeveless pullover or cardigan in your gauge, with the neckline and front you choose.',
   button: 'Create sleeveless sweater',
-  pillCount: SLEEVELESS_PATTERN_POSSIBILITIES,
-  pillRest: SLEEVELESS_CATALOG_PILL_REST,
 };
 
-const socksPattern = {
+const socksPattern: CatalogCard = {
   title: 'Socks',
   // Public landing page. Active members stay here and start a new pattern.
   // Former members who still own saved Socks are sent to `/account#my-patterns`.
@@ -81,31 +78,20 @@ const socksPattern = {
   image: '/images/patterns/socks-v2.png',
   copy: SOCKS_CATALOG_COPY,
   button: 'Create your socks',
-  pillCount: SOCKS_PATTERN_POSSIBILITIES,
-  pillRest: SOCKS_CATALOG_PILL_REST,
 };
 
-const sidewaysPattern = {
+const sidewaysPattern: CatalogCard = {
   title: 'Sideways Knit Sweater',
   // Public landing page on DEV. Production still hides this live card.
   href: '/patterns/sideways-cardigan',
   image: '/images/patterns/sideways.png',
-  copy: 'Custom cardigan or pullover knitted sideways, with flexible sizing that works especially well for larger sizes and limited needle-bed widths.',
+  copy: 'A cardigan or pullover knitted sideways, sized for your gauge and needle bed.',
   button: 'Create sideways knit sweater',
-  pillCount: 2,
-  pillRest: 'Styles in 1 Builder',
 };
 
-const sweaterPatterns = [
-  sleevelessPattern,
-  socksPattern,
-  ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
-  ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
-];
-
-const availablePatterns = [
-  sleevelessPattern,
+const availablePatterns: CatalogCard[] = [
   hatPattern,
+  sleevelessPattern,
   socksPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
@@ -122,6 +108,10 @@ const availablePatterns = [
   // },
 ];
 
+const guestPatterns: CatalogCard[] = availablePatterns.map((pattern) =>
+  pattern.title === 'Hat' ? { ...pattern, free: true } : pattern,
+);
+
 const comingSoonPatterns = [
   ...(showSidewaysAsComingSoon
     ? [{
@@ -133,26 +123,47 @@ const comingSoonPatterns = [
   {
     title: 'Raglan Sweater',
     image: '/images/patterns/raglan.png',
-    copy: 'A flexible raglan sweater system with custom fit and clear shaping guidance.',
+    copy: 'A raglan sweater shaped from your gauge, with the fit you choose.',
   },
   {
     title: 'Set-In Sleeve Sweater',
     image: '/images/patterns/set-in.png',
-    copy: 'A classic sweater system designed for custom fit, sleeve shaping, and polished finishing.',
+    copy: 'A set-in sleeve sweater with custom sizing and sleeve shaping.',
   },
+];
+
+const benefits = [
+  { label: 'Your gauge', text: 'Knit using your gauge, not someone else\'s.' },
+  { label: 'Your size', text: 'Choose the size and fit you want.' },
+  { label: 'Your style', text: 'Customize the options that builder offers.' },
+  { label: 'Your machine', text: 'Generate instructions for your knitting machine.' },
+  { label: 'Your patterns', text: 'Save a completed pattern and return to it.' },
 ];
 ---
 
-<Layout title="Choose a Pattern">
+<Layout
+  title="Pattern Builders"
+  description="Build machine-knitting instructions from your gauge, size, and style. Pattern Builders are included with Knit It Now membership. The Hat builder is free to try."
+>
 
   <div class="patterns-page" data-patterns-page>
+    <script is:inline>
+      document.currentScript.parentElement.setAttribute("data-patterns-access", "pending");
+    </script>
 
     <header class="patterns-hero">
       <div class="patterns-hero__text">
-        <h1 class="patterns-intro__title">Choose a Pattern</h1>
-        <p class="patterns-intro__subtitle">
-          Choose a pattern to get started
-        </p>
+        <p class="patterns-hero__eyebrow">Pattern Builders</p>
+        <div data-patterns-sales>
+          <h1 class="patterns-intro__title">Your Gauge. Your Size. Your Style. Your Pattern.</h1>
+          <p class="patterns-intro__lead">
+            Stop searching for a pattern that might work. Build one that works for you.
+          </p>
+        </div>
+        <div data-patterns-member-intro hidden>
+          <h1 class="patterns-intro__title">{PATTERN_CATALOG_MEMBER_HEADLINE}</h1>
+          <p class="patterns-intro__lead">{PATTERN_CATALOG_MEMBER_LEAD}</p>
+        </div>
       </div>
       <div class="patterns-hero__actions">
         <div data-ms-content="!members">
@@ -170,55 +181,40 @@ const comingSoonPatterns = [
       </div>
     </header>
 
-    <div class="patterns-catalog-group" data-patterns-catalog="guest">
-      <section class="patterns-featured" aria-labelledby="patterns-featured-hat-heading">
-        <a
-          href={hatPattern.href}
-          class="patterns-featured__panel"
-          data-testid="patterns-featured-hat"
-        >
-          <div class="patterns-featured__visual">
-            <img src={featuredHatImageSrc} alt={hatPattern.title} />
-          </div>
-          <div class="patterns-featured__body">
-            <div class="patterns-featured__top">
-              <h2 class="patterns-featured__eyebrow">Try a Pattern Builder Free</h2>
-              <span class="patterns-featured__badge">Free</span>
-            </div>
-            <h3 id="patterns-featured-hat-heading" class="patterns-featured__title">
-              Create Your Custom Hat Pattern
-            </h3>
-            <p class="patterns-featured__copy">
-              Enter your gauge, choose your size and style, and create custom knitting instructions for your machine and yarn.
-            </p>
-            <span class="patterns-featured__cta">CREATE MY FREE HAT PATTERN</span>
-            <p class="patterns-featured__reassurance">Free. No account or password needed.</p>
-          </div>
-        </a>
-      </section>
+    <div data-patterns-sales>
+      <PatternGaugeDemo />
 
-      <section
-        id="sweater-patterns"
-        class="patterns-catalog patterns-catalog--more"
-        aria-labelledby="patterns-more-heading"
-      >
-        <h2 id="patterns-more-heading" class="patterns-section-title">{PATTERN_CATALOG_MORE_HEADING}</h2>
-        <p class="patterns-section-note">{PATTERN_CATALOG_MEMBERSHIP_BODY}</p>
+      <p class="patterns-intro__subtitle">
+        Pattern Builders create personalized machine-knitting instructions from your gauge, your measurements, your machine's capacity, and the design choices you make.
+      </p>
+
+      <ul class="patterns-benefits">
+        {benefits.map((benefit) => (
+          <li>
+            <strong>{benefit.label}</strong>
+            <span>{benefit.text}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="patterns-catalog-group" data-patterns-catalog="guest">
+      <section class="patterns-catalog" aria-labelledby="patterns-library-heading">
+        <h2 id="patterns-library-heading" class="patterns-section-title">{PATTERN_CATALOG_MORE_HEADING}</h2>
+        <p class="patterns-section-note">The Hat builder is free. Open a project and build it in your gauge.</p>
         <div class="patterns-grid">
-          {sweaterPatterns.map((pattern) => (
+          {guestPatterns.map((pattern) => (
             <a
               href={pattern.href}
-              class="catalog-card"
+              class:list={["catalog-card", pattern.free && "catalog-card--free"]}
+              data-testid={pattern.free ? "patterns-featured-hat" : undefined}
               {...(pattern.title === "Socks" ? { "data-socks-catalog-card": "" } : {})}
             >
               <div class="catalog-card__media">
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
               </div>
               <div class="catalog-card__body">
-                <span class="catalog-card__status catalog-card__status--available">
-                  <span class="catalog-card__status-count">{pattern.pillCount}</span>
-                  <span class="catalog-card__status-rest">{pattern.pillRest}</span>
-                </span>
+                {pattern.free && <span class="catalog-card__badge">Free. No account or password needed.</span>}
                 <h3 class="catalog-card__title">{pattern.title}</h3>
                 <p class="catalog-card__copy">{pattern.copy}</p>
                 <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
@@ -226,37 +222,13 @@ const comingSoonPatterns = [
             </a>
           ))}
         </div>
-        <nav
-          class="patterns-action-bar"
-          aria-label="Pattern builder actions"
-          data-patterns-landing-cta
-          data-cta-mode="prospect"
-        >
-          <div class="patterns-action-bar__prospect" data-patterns-landing-cta-prospect>
-            <div class="patterns-action-bar__prospect-actions">
-              <a
-                href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
-                class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
-              >
-                {PATTERNS_LANDING_BECOME_MEMBER_LABEL}
-              </a>
-              <a
-                href="#"
-                class="patterns-action-bar__login kbm-btn kbm-btn-outline"
-                data-ms-modal="login"
-                data-ms-redirect="current-url"
-              >
-                {PATTERNS_LANDING_LOGIN_LABEL}
-              </a>
-            </div>
-          </div>
-        </nav>
       </section>
     </div>
 
     <div class="patterns-catalog-group" data-patterns-catalog="member" hidden>
       <section class="patterns-catalog" aria-labelledby="patterns-available-heading">
-        <h2 id="patterns-available-heading" class="patterns-section-title">Available now</h2>
+        <h2 id="patterns-available-heading" class="patterns-section-title">{PATTERN_CATALOG_MORE_HEADING}</h2>
+        <p class="patterns-section-note">Open a builder and start with your gauge.</p>
         <div class="patterns-grid">
           {availablePatterns.map((pattern) => (
             <a
@@ -268,10 +240,6 @@ const comingSoonPatterns = [
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
               </div>
               <div class="catalog-card__body">
-                <span class="catalog-card__status catalog-card__status--available">
-                  <span class="catalog-card__status-count">{pattern.pillCount}</span>
-                  <span class="catalog-card__status-rest">{pattern.pillRest}</span>
-                </span>
                 <h3 class="catalog-card__title">{pattern.title}</h3>
                 <p class="catalog-card__copy">{pattern.copy}</p>
                 <span class="catalog-card__cta kbm-btn kbm-btn-accent">{pattern.button}</span>
@@ -282,7 +250,7 @@ const comingSoonPatterns = [
       </section>
     </div>
 
-    <section class="patterns-catalog" aria-labelledby="patterns-coming-heading">
+    <section class="patterns-catalog patterns-catalog--soon" aria-labelledby="patterns-coming-heading">
       <h2 id="patterns-coming-heading" class="patterns-section-title">Coming soon</h2>
       <div class="patterns-grid">
         {comingSoonPatterns.map((pattern) => (
@@ -301,6 +269,84 @@ const comingSoonPatterns = [
         ))}
       </div>
     </section>
+
+    <div data-patterns-sales>
+    <section class="patterns-steps-section" aria-labelledby="patterns-steps-heading">
+      <h2 id="patterns-steps-heading" class="patterns-section-title">How it works</h2>
+      <ol class="patterns-steps">
+        <li>
+          <span class="patterns-step__num" aria-hidden="true">1</span>
+          <h3>Choose Your Project</h3>
+          <p>Select the garment or accessory you want to knit.</p>
+        </li>
+        <li>
+          <span class="patterns-step__num" aria-hidden="true">2</span>
+          <h3>Make It Yours</h3>
+          <p>Enter your gauge, choose your size, and customize the options that builder offers.</p>
+        </li>
+        <li>
+          <span class="patterns-step__num" aria-hidden="true">3</span>
+          <h3>Create Your Pattern</h3>
+          <p>Generate knitting instructions tailored to your choices.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section
+      class="patterns-membership patterns-catalog-group"
+      data-patterns-catalog="guest"
+      aria-labelledby="patterns-membership-heading"
+    >
+      <div class="patterns-membership__panel">
+        <h2 id="patterns-membership-heading" class="patterns-section-title">Included with membership</h2>
+        <p class="patterns-membership__body" data-patterns-audience="loggedOut">{PATTERN_CATALOG_MEMBERSHIP_BODY}</p>
+        <p class="patterns-membership__body" data-patterns-audience="loggedInNoAccess" hidden>{PATTERN_CATALOG_SIGNED_IN_MEMBERSHIP_BODY}</p>
+        <nav
+          class="patterns-action-bar"
+          aria-label="Pattern builder actions"
+          data-patterns-landing-cta
+          data-cta-mode="prospect"
+        >
+          <div class="patterns-action-bar__prospect" data-patterns-landing-cta-prospect>
+            <div class="patterns-action-bar__prospect-actions" data-patterns-audience="loggedOut">
+              <a
+                href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
+                class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
+              >
+                {PATTERNS_LANDING_BECOME_MEMBER_LABEL}
+              </a>
+              <a
+                href="#"
+                class="patterns-action-bar__login kbm-btn kbm-btn-outline"
+                data-ms-modal="login"
+                data-ms-redirect="current-url"
+              >
+                {PATTERNS_LANDING_LOGIN_LABEL}
+              </a>
+            </div>
+            <div class="patterns-action-bar__prospect-actions" data-patterns-audience="loggedInNoAccess" hidden>
+              <a
+                href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
+                class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
+              >
+                {PATTERNS_LANDING_JOIN_OR_RENEW_LABEL}
+              </a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </section>
+
+    <section class="patterns-trust" aria-labelledby="patterns-trust-heading">
+      <h2 id="patterns-trust-heading" class="patterns-section-title">Made for machine knitters</h2>
+      <p>
+        Pattern Builders are written for machine knitting. You get practical instructions you can follow at the machine — shaping, row counts, and the choices you selected — rather than a generic hand-knitting pattern.
+      </p>
+      <p>
+        Each builder includes the options it was designed for, and the instructions follow the gauge and measurements you enter.
+      </p>
+    </section>
+    </div>
 
   </div>
 
@@ -327,68 +373,24 @@ const comingSoonPatterns = [
 
 <style>
 .patterns-page {
-  max-width: 1000px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 12px 20px 36px;
 }
 
-/* A class-level display value would beat the UA [hidden] rule. */
-.patterns-catalog-group[hidden] {
+.patterns-catalog-group[hidden],
+.patterns-page [data-patterns-audience][hidden],
+.patterns-page[data-patterns-access="pending"] [data-patterns-sales],
+.patterns-page[data-patterns-access="member"] [data-patterns-sales] {
   display: none !important;
 }
 
-/* Membership CTAs sit under More Pattern Builders for guests only. */
-.patterns-action-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 20px 0 0;
-}
-
-.patterns-action-bar[data-cta-mode="member"] {
-  display: none;
-}
-
-.patterns-action-bar__prospect {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  width: 100%;
-}
-
-.patterns-action-bar__prospect-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  width: 100%;
-}
-
-.patterns-action-bar__primary,
-.patterns-action-bar__login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1 1 14rem;
-  min-height: 3.25rem;
-  padding: 0.85rem 1.25rem;
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-}
-
-/* Hero / header */
 .patterns-hero {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  margin: 0 0 28px;
+  margin: 0 0 22px;
 }
 
 .patterns-hero__text {
@@ -396,16 +398,34 @@ const comingSoonPatterns = [
   min-width: 0;
 }
 
-.patterns-intro__title {
+.patterns-hero__eyebrow {
   margin: 0 0 8px;
-  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kbm-accent, #c2614e);
+}
+
+.patterns-intro__title {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 3.2vw, 2.35rem);
   font-weight: 600;
   color: #52682d;
-  line-height: 1.2;
+  line-height: 1.15;
+}
+
+.patterns-intro__lead {
+  margin: 0 0 10px;
+  max-width: 40rem;
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #243015;
 }
 
 .patterns-intro__subtitle {
-  margin: 0;
+  margin: 0 0 18px;
   max-width: 42rem;
   font-size: 1.02rem;
   line-height: 1.55;
@@ -414,6 +434,7 @@ const comingSoonPatterns = [
 
 .patterns-hero__actions {
   flex: 0 0 auto;
+  padding-top: 1.6rem;
 }
 
 .patterns-hero__btn {
@@ -421,195 +442,80 @@ const comingSoonPatterns = [
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  min-height: 3.25rem;
-  padding: 0.85rem 1.5rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
 }
 
-/* Catalog sections */
-.patterns-catalog {
-  margin: 0 0 32px;
-}
-
-.patterns-section-title {
-  margin: 0 0 16px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #52682d;
-}
-
-.patterns-catalog--more .patterns-section-title {
-  padding-bottom: 0.4rem;
-  border-bottom: 2px solid #c7d8a4;
-}
-
-.patterns-section-note {
-  margin: -0.35rem 0 1rem;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #4d5a48;
-}
-
-.patterns-featured {
-  margin: 0 0 2.15rem;
-}
-
-.patterns-featured__panel {
+.patterns-benefits {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: stretch;
-  width: 100%;
-  text-decoration: none;
-  color: inherit;
-  box-sizing: border-box;
-  padding: 1.45rem 1.5rem 1.5rem;
-  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
-  border: 1px solid #c7d8a4;
-  border-left: 6px solid var(--kbm-accent, #C2614E);
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(36, 48, 21, 0.07);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
+  gap: 10px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
 }
 
-.patterns-featured__panel:hover,
-.patterns-featured__panel:focus-visible {
-  border-color: var(--kbm-green, #52682d);
-  border-left-color: var(--kbm-accent, #C2614E);
-  box-shadow: 0 4px 16px rgba(82, 104, 45, 0.12);
-  outline: none;
-}
-
-.patterns-featured__visual {
-  position: relative;
-  min-height: 12.5rem;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: transparent;
-  background-image: url("/images/patterns/background.webp");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.patterns-featured__visual img {
-  display: block;
-  width: 100%;
-  height: 12.5rem;
-  object-fit: contain;
-  object-position: center;
-}
-
-@media (min-width: 40rem) {
-  .patterns-featured__panel {
-    grid-template-columns: minmax(16rem, 1.15fr) minmax(0, 0.95fr);
-  }
-
-  .patterns-featured__visual {
-    min-height: 18rem;
-    align-self: stretch;
-  }
-
-  .patterns-featured__visual img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.patterns-featured__body {
+.patterns-benefits li {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.7rem;
-  min-width: 0;
-}
-
-.patterns-featured__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.patterns-featured__eyebrow {
+  gap: 4px;
   margin: 0;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--kbm-green, #52682d);
+  padding: 12px 14px;
+  background: #f7f8f3;
+  border: 1px solid #e3e8d6;
+  border-radius: 10px;
 }
 
-.patterns-featured__badge {
-  flex-shrink: 0;
+.patterns-benefits strong {
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
   color: #52682d;
-  background: #f0f4eb;
-  border: 1px solid #c7d8a4;
-  border-radius: 999px;
-  padding: 0.2rem 0.55rem;
 }
 
-.patterns-featured__title {
-  margin: 0;
-  font-size: clamp(1.28rem, 2.6vw, 1.5rem);
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--kbm-green, #52682d);
-}
-
-.patterns-featured__copy {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.55;
+.patterns-benefits span {
+  font-size: 0.92rem;
+  line-height: 1.4;
   color: #243015;
 }
 
-.patterns-featured__cta {
-  display: inline-block;
-  margin-top: 0.35rem;
-  padding: 0.7rem 1.2rem;
-  font-size: 0.88rem;
+.patterns-catalog {
+  margin: 0 0 28px;
+}
+
+.patterns-section-title {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #fff;
-  background: var(--kbm-accent, #C2614E);
-  border-radius: 8px;
+  color: #52682d;
 }
 
-.patterns-featured__panel:hover .patterns-featured__cta,
-.patterns-featured__panel:focus-visible .patterns-featured__cta {
-  background: var(--kbm-accent-hover, #a94e3d);
-}
-
-.patterns-featured__reassurance {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.45;
+.patterns-section-note {
+  margin: 0 0 14px;
+  max-width: 44rem;
+  font-size: 0.98rem;
+  line-height: 1.5;
   color: #4d5a48;
 }
 
 .patterns-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+  gap: 14px;
 }
 
-/* Catalog card */
 .catalog-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 7.75rem minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 8.75rem;
   border-radius: 12px;
   background: #fff;
   border: 1px solid #d6dbc9;
@@ -617,14 +523,12 @@ const comingSoonPatterns = [
   text-decoration: none;
   color: inherit;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 a.catalog-card:hover,
 a.catalog-card:focus-visible {
   border-color: #52682d;
   box-shadow: 0 6px 16px rgba(82, 104, 45, 0.14);
-  transform: translateY(-2px);
 }
 
 a.catalog-card:focus-visible {
@@ -632,18 +536,26 @@ a.catalog-card:focus-visible {
   outline-offset: 2px;
 }
 
+.catalog-card--free {
+  border-left: 4px solid var(--kbm-accent, #c2614e);
+}
+
 .catalog-card__media {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  position: relative;
+  align-self: stretch;
+  overflow: hidden;
+  min-height: 8.75rem;
   background-color: transparent;
   background-image: url("/images/patterns/background.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-bottom: 1px solid #eef0e6;
+  border-right: 1px solid #eef0e6;
 }
 
 .catalog-card__media img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
@@ -653,6 +565,7 @@ a.catalog-card:focus-visible {
 .catalog-card__placeholder {
   width: 100%;
   height: 100%;
+  min-height: 8.75rem;
   background:
     repeating-linear-gradient(
       135deg,
@@ -666,42 +579,27 @@ a.catalog-card:focus-visible {
 .catalog-card__body {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  padding: 18px 18px 20px;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 14px 14px;
 }
 
+.catalog-card__badge,
 .catalog-card__status {
   display: inline-block;
-  align-self: flex-start;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 3px 9px;
   border-radius: 999px;
-  margin-bottom: 10px;
 }
 
-.catalog-card__status--available {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.3em;
-  padding: 0.28em 0.7em 0.3em;
+.catalog-card__badge {
   color: #52682d;
   background: #eef2e3;
-}
-
-.catalog-card__status-count {
-  font-size: 1.6em;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  line-height: 1;
-}
-
-.catalog-card__status-rest {
-  font-size: 1em;
-  font-weight: 700;
-  line-height: 1.2;
+  border: 1px solid #c7d8a4;
 }
 
 .catalog-card__status--soon {
@@ -710,26 +608,33 @@ a.catalog-card:focus-visible {
 }
 
 .catalog-card__title {
-  margin: 0 0 8px;
-  font-size: 1.1rem;
+  margin: 0;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #333;
+  line-height: 1.25;
+  color: #243015;
 }
 
-.catalog-card__copy {
-  margin: 0 0 16px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #555;
-  flex: 1;
+.catalog-card__copy,
+.catalog-card__note {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #3d4a38;
+}
+
+.catalog-card__note {
+  color: #52682d;
+  font-weight: 600;
 }
 
 .catalog-card__cta {
   margin-top: auto;
+  padding: 8px 12px;
+  font-size: 0.92rem;
   text-align: center;
 }
 
-/* Coming soon variant */
 .catalog-card--soon {
   cursor: default;
 }
@@ -738,10 +643,130 @@ a.catalog-card:focus-visible {
   opacity: 0.75;
 }
 
-/* Responsive: tablet 2-up, mobile 1-up */
-@media (max-width: 900px) {
-  .patterns-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.patterns-steps-section {
+  margin: 8px 0 28px;
+}
+
+.patterns-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.patterns-steps li {
+  margin: 0;
+  padding: 16px 16px 18px;
+  background: #fff;
+  border: 1px solid #d6dbc9;
+  border-radius: 12px;
+}
+
+.patterns-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: #eef2e3;
+  color: #52682d;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.patterns-steps h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #52682d;
+}
+
+.patterns-steps p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #243015;
+}
+
+.patterns-membership {
+  margin: 0 0 28px;
+}
+
+.patterns-membership__panel {
+  padding: 20px 22px;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #ffffff);
+  border: 1px solid #c7d8a4;
+  border-radius: 12px;
+}
+
+.patterns-membership__body {
+  margin: 0 0 14px;
+  max-width: 40rem;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: #243015;
+}
+
+.patterns-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+}
+
+.patterns-action-bar[data-cta-mode="member"] {
+  display: none;
+}
+
+.patterns-action-bar__prospect,
+.patterns-action-bar__prospect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.patterns-action-bar__primary,
+.patterns-action-bar__login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 14rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.patterns-trust {
+  margin: 0;
+  padding: 4px 0 8px;
+}
+
+.patterns-trust p {
+  margin: 0 0 10px;
+  max-width: 44rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #243015;
+}
+
+.patterns-trust p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 800px) {
+  .patterns-steps {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -754,6 +779,7 @@ a.catalog-card:focus-visible {
 
   .patterns-hero__actions {
     width: 100%;
+    padding-top: 0;
   }
 
   .patterns-hero__btn {
@@ -762,6 +788,17 @@ a.catalog-card:focus-visible {
 
   .patterns-grid {
     grid-template-columns: 1fr;
+  }
+
+  .catalog-card {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-card__media {
+    height: 9rem;
+    min-height: 9rem;
+    border-right: none;
+    border-bottom: 1px solid #eef0e6;
   }
 }
 </style>

@@ -314,6 +314,36 @@
     color: #374151;
   }
 
+  /* Numbered cuff choices: slight indent, hanging lines, space between options. */
+  .sleeve-cuff-options {
+    margin: 0.35rem 0 1rem 0.85rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sleeve-cuff-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45em;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .sleeve-cuff-option + .sleeve-cuff-option {
+    margin-top: 8px;
+  }
+
+  .sleeve-cuff-option__marker {
+    flex: 0 0 auto;
+  }
+
+  .sleeve-cuff-option__text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .sleeveless-pattern-line .needle-range,
   .print-line .needle-range {
     font-weight: 700;

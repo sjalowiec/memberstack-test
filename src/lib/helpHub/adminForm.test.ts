@@ -3,7 +3,13 @@ import {
   applyAdminFormToDocument,
   explanationForAdminForm,
   helpHubAdminEditorCanInit,
+  helpHubChooserPlacement,
+  helpHubEditorEntryChoices,
+  helpHubSaveActionLabel,
+  helpHubSplitEntryChooserEnabled,
+  noteForAdminForm,
   slugFromQuestion,
+  statusForHelpHubSave,
   topImageFieldsForAdminForm,
   type HelpHubAdminFormValues,
 } from "./adminForm";
@@ -30,6 +36,8 @@ const form = (overrides: Partial<HelpHubAdminFormValues> = {}): HelpHubAdminForm
   relatedToolNote: "",
   relatedToolLabel: "",
   relatedToolUrl: "",
+  publicVideoUrl: "",
+  publicVideoTitle: "",
   relatedLessons: [],
   relatedLibraryVideos: [],
   category: "getting-started",
@@ -204,12 +212,167 @@ describe("applyAdminFormToDocument", () => {
     expect(next.relatedToolLabel).toBe("Find Repair Help");
     expect(next.relatedToolUrl).toBe("https://knititnow.com/reference/repairs");
   });
+
+  it("stores an optional public video without changing related lessons", () => {
+    const existing = {
+      status: "published",
+      relatedLessons: [5002],
+      relatedLibraryVideos: [{ type: "library", contentId: 1027 }],
+    };
+    const next = applyAdminFormToDocument(
+      existing,
+      form({
+        relatedLessons: [5002],
+        relatedLibraryVideos: [{ type: "library", contentId: 1027 }],
+        publicVideoUrl: "https://vimeo.com/527759119",
+        publicVideoTitle: "Yarn for Knitting Machines",
+      }),
+    );
+    expect(next.publicVideoUrl).toBe("https://vimeo.com/527759119");
+    expect(next.publicVideoTitle).toBe("Yarn for Knitting Machines");
+    expect(next.relatedLessons).toEqual([5002]);
+    expect(next.relatedLibraryVideos).toEqual([{ type: "library", contentId: 1027 }]);
+  });
+
+  it("removes a main image from this entry without touching a stored video", () => {
+    const cleared = applyAdminFormToDocument(
+      {
+        mediaType: "image",
+        mediaUrl: "/images/help-hub/every-other-needle.jpg",
+        mediaAlt: "Swatch",
+        mediaCaption: "Caption",
+      },
+      form({ mediaUrl: "", mediaAlt: "", mediaCaption: "" }),
+    );
+    expect(cleared).not.toHaveProperty("mediaUrl");
+    expect(cleared).not.toHaveProperty("mediaAlt");
+    expect(cleared).not.toHaveProperty("mediaCaption");
+
+    const video = applyAdminFormToDocument(
+      { mediaType: "vimeo", mediaUrl: "1175910961", mediaAlt: "Sue demonstrating Cut 'n Sew" },
+      form({ mediaUrl: "" }),
+    );
+    expect(video.mediaType).toBe("vimeo");
+    expect(video.mediaUrl).toBe("1175910961");
+  });
+
+  it("moves a legacy quick-action note into the important note field once", () => {
+    expect(noteForAdminForm({ tryThis: { quickActionNote: "Watch the yarn tension." } })).toBe(
+      "Watch the yarn tension.",
+    );
+    const next = applyAdminFormToDocument(
+      { tryThis: { quickActionTitle: "Try this", quickActionNote: "Watch the yarn tension." } },
+      form({ tryNote: "Watch the yarn tension." }),
+    );
+    expect(next.tryNote).toBe("Watch the yarn tension.");
+    expect(next.tryThis).toEqual({ quickActionTitle: "Try this" });
+  });
+
+  it("keeps a published entry published unless status is changed, and does not publish a draft from Save draft", () => {
+    expect(
+      statusForHelpHubSave({
+        intent: "keep",
+        selectedStatus: "published",
+        storedStatus: "published",
+      }),
+    ).toBe("published");
+    expect(
+      statusForHelpHubSave({
+        intent: "keep",
+        selectedStatus: "published",
+        storedStatus: "draft",
+      }),
+    ).toBe("draft");
+    expect(
+      statusForHelpHubSave({
+        intent: "keep",
+        selectedStatus: "draft",
+        storedStatus: "published",
+      }),
+    ).toBe("draft");
+    expect(
+      statusForHelpHubSave({ intent: "publish", selectedStatus: "draft", storedStatus: "draft" }),
+    ).toBe("published");
+    expect(
+      helpHubSaveActionLabel({
+        intent: "keep",
+        selectedStatus: "published",
+        storedStatus: "published",
+      }),
+    ).toBe("Update");
+    expect(
+      helpHubSaveActionLabel({
+        intent: "keep",
+        selectedStatus: "draft",
+        storedStatus: "draft",
+      }),
+    ).toBe("Save draft");
+  });
+
+  it("removes a public video when both fields are cleared", () => {
+    const next = applyAdminFormToDocument(
+      {
+        publicVideoUrl: "527759119",
+        publicVideoTitle: "Yarn for Knitting Machines",
+        relatedLessons: [5002],
+      },
+      form({ relatedLessons: [5002], publicVideoUrl: "  ", publicVideoTitle: "" }),
+    );
+    expect(next).not.toHaveProperty("publicVideoUrl");
+    expect(next).not.toHaveProperty("publicVideoTitle");
+    expect(next.relatedLessons).toEqual([5002]);
+  });
 });
 
 describe("helpHubAdminEditorCanInit", () => {
   it("does not require a JSON Preview element", () => {
     expect(helpHubAdminEditorCanInit({ form: {}, saveButton: {} })).toBe(true);
     expect(helpHubAdminEditorCanInit({ form: null, saveButton: {} })).toBe(false);
+  });
+});
+
+describe("helpHubEditorEntryChoices", () => {
+  it("keeps published and draft entries, and puts an unknown status with drafts", () => {
+    const groups = helpHubEditorEntryChoices([
+      { slug: "published-one", question: "Why does the edge curl?", status: "published" },
+      { slug: "draft-one", question: "How long should my sweater be?", status: "draft" },
+      { slug: "review-one", title: "Needs a look", status: "review" },
+      { slug: "", question: "Missing address", status: "draft" },
+      { slug: "mystery", question: "Not labeled", status: "archived" },
+    ]);
+    expect(groups.published.map((entry) => entry.slug)).toEqual(["published-one"]);
+    expect(groups.draft.map((entry) => entry.slug)).toEqual(["draft-one", "mystery"]);
+    expect(groups.review.map((entry) => entry.label)).toEqual(["Needs a look"]);
+  });
+});
+
+describe("helpHub split entry chooser", () => {
+  it("stays off the production site", () => {
+    expect(helpHubSplitEntryChooserEnabled("localhost")).toBe(true);
+    expect(helpHubSplitEntryChooserEnabled("dev")).toBe(true);
+    expect(helpHubSplitEntryChooserEnabled("production")).toBe(false);
+  });
+
+  it("puts drafts and needs-review entries in the draft box, and published entries in the published box", () => {
+    expect(helpHubChooserPlacement("draft")).toEqual({
+      box: "draft",
+      key: "draft",
+      statusLabel: "Draft",
+      action: "Open",
+    });
+    expect(helpHubChooserPlacement("review")).toEqual({
+      box: "draft",
+      key: "review",
+      statusLabel: "Needs review",
+      action: "Open",
+    });
+    expect(helpHubChooserPlacement("published")).toEqual({
+      box: "published",
+      key: "published",
+      statusLabel: "Published",
+      action: "Edit",
+    });
+    expect(helpHubChooserPlacement("archived").box).toBe("draft");
   });
 });
 

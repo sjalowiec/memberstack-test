@@ -128,14 +128,14 @@
   {
     "id": "3",
     "title": "ABC of Perfect Knitting: Patterns, Pockets, Collars, Hints.",
-    "author": "1",
+    "author": "",
     "year": null,
     "topic": "Passap",
-    "description": "555",
-    "descriptionText": "555",
+    "description": "",
+    "descriptionText": "",
     "thumbnail": "/images/books/abc.jpg",
     "image": "/images/books/abc.jpg",
-    "url": "1",
+    "url": "",
     "tags": [
       "Charting",
       "General Reference"
@@ -573,7 +573,7 @@
     "descriptionText": "NULL",
     "thumbnail": "/images/books/needs_image9.jpg",
     "image": "/images/books/needs_image9.jpg",
-    "url": "NULL",
+    "url": "",
     "tags": [
       "General Reference"
     ],
@@ -1805,7 +1805,7 @@
     "descriptionText": "NULL",
     "thumbnail": "/images/books/needs_image5.jpg",
     "image": "/images/books/needs_image5.jpg",
-    "url": "NULL",
+    "url": "",
     "tags": [
       "Techniques"
     ],
@@ -1822,7 +1822,7 @@
     "descriptionText": "NULL",
     "thumbnail": "/images/books/dm80.png",
     "image": "/images/books/dm80.png",
-    "url": "NULL",
+    "url": "",
     "tags": [
       "Machine Manual"
     ],
@@ -1839,7 +1839,7 @@
     "descriptionText": "NULL",
     "thumbnail": "/images/books/passap_e6000_manual.png",
     "image": "/images/books/passap_e6000_manual.png",
-    "url": "NULL",
+    "url": "",
     "tags": [
       "Machine Manual"
     ],

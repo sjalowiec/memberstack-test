@@ -1,8 +1,15 @@
 import type { APIRoute } from "astro";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { normalizeVideoForSave } from "../../../lib/videosPublicRecord";
 import { stableVideoKey } from "../../../lib/lessonVideo";
+import { applyVideoPosterOverrides, planVideoPosterSave } from "../../../lib/videos/videoPosterOverrides";
+import {
+  isMissingVideoPosterTable,
+  listVideoPosterOverrides,
+  replaceVideoPosterOverrides,
+  videoPosterErrorMessage,
+} from "../../../lib/videos/videoPosterStore";
 
 export const prerender = false;
 
@@ -27,7 +34,19 @@ function readVideosArray(): unknown[] {
 export const GET: APIRoute = async () => {
   try {
     const data = readVideosArray();
-    return jsonResponse({ ok: true, videos: data });
+    let videos = data;
+    try {
+      const overrides = await listVideoPosterOverrides();
+      videos = applyVideoPosterOverrides(data, overrides);
+    } catch (error) {
+      if (!isMissingVideoPosterTable(error)) {
+        return jsonResponse(
+          { ok: false, error: "Saved thumbnails could not be loaded. Nothing was changed." },
+          500,
+        );
+      }
+    }
+    return jsonResponse({ ok: true, videos });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not read videos-public.json";
     return jsonResponse({ ok: false, error: message }, 500);
@@ -73,12 +92,33 @@ export const POST: APIRoute = async ({ request }) => {
     videos.push(n.video);
   }
 
+  let source: unknown[];
   try {
-    writeFileSync(VIDEOS_JSON_PATH, JSON.stringify(videos, null, 2) + "\n", "utf-8");
+    source = readVideosArray();
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not write videos-public.json";
+    const message = e instanceof Error ? e.message : "Could not read videos-public.json";
     return jsonResponse({ ok: false, error: message }, 500);
   }
 
-  return jsonResponse({ ok: true, videos });
+  const plan = planVideoPosterSave(source, videos);
+  if (!plan.ok) return jsonResponse({ ok: false, error: plan.error }, 400);
+
+  try {
+    await replaceVideoPosterOverrides(plan.overrides);
+  } catch (error) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: videoPosterErrorMessage(error, "The thumbnail could not be stored. Nothing was saved."),
+      },
+      500,
+    );
+  }
+
+  const overrides = new Map(plan.overrides.map((override) => [override.contentId, override.posterUrl]));
+  return jsonResponse({
+    ok: true,
+    videos: applyVideoPosterOverrides(source, overrides),
+    message: plan.message,
+  });
 };

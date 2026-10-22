@@ -5,9 +5,9 @@
  * (cuff through upper arm), and the approved sleeve-cap module. This file does
  * not emit instructions, charts, or diagrams.
  *
- * Sleeve length is the cuff-to-upper-arm length from the drop-shoulder length
- * options. Sleeve-cap height is a separate measurement and is not folded into
- * that length.
+ * Sleeve length is the finished cuff-to-upper-arm length. The cuff is part of
+ * that length, so a deeper cuff shortens the sleeve body instead of adding
+ * length. Sleeve-cap height is a separate measurement and is not folded in.
  */
 
 import { buildSleevelessBodyBlockPlan } from "../bodyBlock/sleevelessBodyBlock";
@@ -29,6 +29,7 @@ import {
   getDefaultCuffLengthInches,
   getDefaultHemLengthInches,
 } from "../hemDefaults";
+import { cuffDepthInchesThatFitFinishedSleeveLength } from "../legoBlocks/sweaterSleeveCuff";
 import {
   calculateBackRoundNecklinePlan,
   calculateRoundNecklinePlan,
@@ -98,6 +99,11 @@ export type SetInSleeveSweaterInput = {
   userEditedSleeveFields?: DropShoulderUserEditedSleeveFields;
   /** Independent of the upper arm. Omit to use the chart armhole depth. */
   armholeDepthInches?: number;
+  /**
+   * Finished cuff depth. Omit to use the audience default. A deep cuff is
+   * shortened so the finished sleeve stays at the requested length.
+   */
+  cuffDepthInches?: number;
 };
 
 export type SetInSleeveNeedleCheck = {
@@ -353,7 +359,11 @@ export function calculateSetInSleeveSweater(
     }
   }
 
-  const cuffInches = getDefaultCuffLengthInches(chartAudience);
+  const cuffInches = cuffDepthInchesThatFitFinishedSleeveLength(
+    positiveNumber(input.cuffDepthInches) ?? getDefaultCuffLengthInches(chartAudience),
+    sleeveInches.sleeveLengthIn,
+    rowsPerInch,
+  );
   const sleevePiece = calculateDropShoulderSleevePieceNumbers({
     finishedUpperArmInches: cap.sleeve.finishedUpperArmInches,
     finishedWristInches: sleeveInches.wristIn,

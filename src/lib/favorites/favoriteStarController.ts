@@ -5,6 +5,7 @@
 import { openMemberstackLoginModal } from "../memberstackLogin";
 import { getMemberstackReturnPath } from "../memberstackReturnUrl";
 import {
+  emitFavoriteCommitted,
   FavoritesAuthError,
   FAVORITES_CHANGE_EVENT,
   isFavoritesMemberLoggedIn,
@@ -79,11 +80,13 @@ export function initFavoriteStarController(options: FavoriteStarControllerOption
           syncFavoriteStarsInDocument(state.contentType, state.contentId, previous);
         },
         onSuccess: (next) => {
-          options.onChanged?.({
+          const detail: FavoritesChangeDetail = {
             contentType: state.contentType,
             contentId: state.contentId,
             isFavorite: next,
-          });
+          };
+          options.onChanged?.(detail);
+          emitFavoriteCommitted(detail, button);
         },
         onError: (error) => {
           if (error instanceof FavoritesAuthError) {

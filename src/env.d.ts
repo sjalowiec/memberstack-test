@@ -10,6 +10,11 @@ interface ImportMetaEnv {
    * Remove or set "false" at launch and redeploy.
    */
   readonly PUBLIC_NOINDEX?: string;
+  /**
+   * GA4 measurement id (G-...). When set, BaseLayout loads the site gtag tag.
+   * Help Hub events use that tag and are not sent when this is empty.
+   */
+  readonly PUBLIC_GA4_ID?: string;
   /** Server-only: Watson owner password for private admin access. */
   readonly WATSON_ADMIN_PASSWORD?: string;
   /**
@@ -81,6 +86,11 @@ interface ImportMetaEnv {
    * Must be `main`. Defaults to `main`.
    */
   readonly MACHINE_SALES_GITHUB_BRANCH?: string;
+  /**
+   * Server-only: FastComments API secret used to sign Secure SSO for the
+   * kin-dev Studio comment proof. Never expose to the browser.
+   */
+  readonly FASTCOMMENTS_API_SECRET?: string;
 }
 
 declare global {

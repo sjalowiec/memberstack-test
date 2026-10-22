@@ -1,5 +1,18 @@
 import { defineMiddleware } from "astro:middleware";
 import {
+  isBluetoothRowCounterProductionBlocked,
+  isBluetoothRowCounterRoute,
+} from "./lib/dev/bluetoothRowCounterAccess";
+import {
+  isKnitSyncPatternProductionBlocked,
+  isKnitSyncPatternRoute,
+} from "./lib/dev/knitsyncPatternAccess";
+import {
+  isManagedStudioSessionRoute,
+  isStudioCommentsPocProductionBlocked,
+  isStudioCommentsPocRoute,
+} from "./lib/studio/fastcommentsPocAccess";
+import {
   isDropShoulderDiagramReviewProductionBlocked,
   isDropShoulderDiagramReviewRoute,
 } from "./lib/dev/dropShoulderDiagramReviewAccess";
@@ -19,6 +32,10 @@ import {
   isSidewaysCardiganProductionBlocked,
   isSidewaysCardiganRoute,
 } from "./lib/patterns/sidewaysCardiganProductionAccess";
+import {
+  isLk150TensionMastKitRoute,
+  isLk150TensionMastProductionBlocked,
+} from "./lib/shop/lk150TensionMastKit";
 import {
   isWatsonApiRoute,
   isWatsonRoute,
@@ -75,6 +92,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   if (
+    isBluetoothRowCounterRoute(u.pathname) &&
+    isBluetoothRowCounterProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    isKnitSyncPatternRoute(u.pathname) &&
+    isKnitSyncPatternProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
+    (isStudioCommentsPocRoute(u.pathname) || isManagedStudioSessionRoute(u.pathname)) &&
+    isStudioCommentsPocProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  if (
     isDropShoulderDiagramReviewRoute(u.pathname) &&
     isDropShoulderDiagramReviewProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
@@ -93,6 +131,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isCoursePreviewProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/courses/", 302);
+  }
+
+  if (
+    isLk150TensionMastKitRoute(u.pathname) &&
+    isLk150TensionMastProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return new Response("Not found", { status: 404 });
   }
 
   const isWatsonPage = isWatsonRoute(u.pathname);

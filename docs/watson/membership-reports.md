@@ -137,6 +137,21 @@ Shown separately (never collapsed into one approximate annual total):
 - Unresolved non-monthly
 - Expiring within 30 / 60 / 90 days
 
+The classification table is a migration view. It is not the October reminder list.
+
+### October 2026 renewal reminders
+
+The same page leads with a read-only reminder view.
+
+- Paid-through dates are America/Los_Angeles calendar days from October 1 through October 31, 2026, including days that have already passed.
+- Reminder-ready rows are verified annual single payments (known annual rate and $129 / $144 / $199 / $228), one legacy person, and no live Memberstack paid plan that lasts past that legacy date.
+- A Memberstack account, a sandbox admin key, or the free legacy plan is not treated as paid coverage. The paid check uses the live admin key only.
+- If the paid-plan check cannot be completed, the person stays in Review.
+- Installment, probable, unresolved, manual, and complimentary records stay in Review. An installment amount alone is not annual entitlement.
+- The same email on more than one legacy member, or one Memberstack person matched to more than one legacy record, stays in Review.
+- Known test and internal emails, beta records, and legacy monthly records are excluded from both lists.
+- Export reminder CSV downloads only the reminder-ready rows currently shown.
+
 ## Former Members - No Memberstack Account
 
 **Route:** `/watson/reports/former-members-no-memberstack`
@@ -203,6 +218,7 @@ The Former Members - No Memberstack report exports CSV for the **strict email li
 | Shared query / helpers | `src/lib/watson/legacyMembershipReportsShared.ts` |
 | Current members report | `src/lib/watson/currentLegacyMembersReport.ts` |
 | Remaining annual report | `src/lib/watson/remainingAnnualAccessReport.ts` |
+| October renewal reminder | `src/lib/watson/octoberLegacyRenewalReminder.ts` |
 | Former members (no Memberstack) | `src/lib/watson/formerMembersNoMemberstackReport.ts` |
 | UI | `src/components/watson/WatsonCurrentLegacyMembersReport.astro`, `WatsonRemainingAnnualAccessReport.astro`, `WatsonFormerMembersNoMemberstackReport.astro` |
 | Pages | `src/pages/watson/reports/current-legacy-members.astro`, `remaining-annual-access.astro`, `former-members-no-memberstack.astro` |

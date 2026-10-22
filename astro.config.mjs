@@ -24,12 +24,15 @@ export default defineConfig({
 
   server: {
     port: 4321,
-    strictPort: true,
     open: "/videos" // or "/tips" or true
   },
 
   vite: {
     server: {
+      // Astro's `server.strictPort` is not forwarded to Vite (Astro 5 only
+      // passes host, headers, open, and allowedHosts). Without this, a second
+      // `astro dev` silently moves to 4322, 4323, and so on.
+      strictPort: true,
       watch: {
         // Course editor backups should not trigger dev-server reloads.
         ignored: [

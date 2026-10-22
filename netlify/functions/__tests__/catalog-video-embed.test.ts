@@ -80,6 +80,20 @@ describe("catalog-video-embed", () => {
     expect(body).not.toHaveProperty("iframeSrc");
   });
 
+  it("returns a member-only embed for the local dev preview identity", async () => {
+    vi.mocked(requireMember).mockResolvedValue({
+      ok: true,
+      member: { id: "dev_local_favorites_member", email: "dev-favorites@local" },
+      mode: "dev",
+    });
+    const res = await handler(makeRequest("551"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.iframeSrc).toContain("player.vimeo.com/video/");
+    expect(getMemberstackAdminClient).not.toHaveBeenCalled();
+  });
+
   it("returns a member-only embed after hasMemberAccess is confirmed", async () => {
     vi.mocked(evaluateMemberAccessForRecord).mockResolvedValue({
       hasMemberAccess: true,

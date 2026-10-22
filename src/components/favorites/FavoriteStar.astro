@@ -1,9 +1,10 @@
 ---
 /**
- * Reusable favorite star button — place immediately beside an item title.
+ * Reusable favorite star button ï¿½ place immediately beside an item title.
  */
 import "../../styles/favorites.css";
 import {
+  favoriteActionTooltip,
   favoriteAriaLabel,
   FAVORITE_STAR_CLASS,
   FAVORITE_STAR_ICON_CLASS,
@@ -17,9 +18,18 @@ interface Props {
   title: string;
   isFavorite?: boolean;
   class?: string;
+  /** Short hover/focus tooltip. The accessible name stays the full save/remove label. */
+  actionTooltip?: boolean;
 }
 
-const { contentType, contentId, title, isFavorite = false, class: className } = Astro.props;
+const {
+  contentType,
+  contentId,
+  title,
+  isFavorite = false,
+  class: className,
+  actionTooltip = false,
+} = Astro.props;
 const id = normalizeFavoriteContentId(contentId) ?? "";
 const label = favoriteAriaLabel(title, isFavorite);
 const iconClass = isFavorite ? "fa-solid fa-star" : "fa-regular fa-star";
@@ -34,6 +44,8 @@ const iconClass = isFavorite ? "fa-solid fa-star" : "fa-regular fa-star";
       data-content-type={contentType}
       data-content-id={id}
       data-favorite-title={title.trim() || "this item"}
+      data-favorite-action-tooltip={actionTooltip ? "true" : undefined}
+      data-tooltip={actionTooltip ? favoriteActionTooltip(isFavorite) : undefined}
       aria-pressed={isFavorite ? "true" : "false"}
       aria-label={label}
     >

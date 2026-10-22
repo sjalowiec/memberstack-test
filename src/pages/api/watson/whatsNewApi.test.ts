@@ -3,7 +3,7 @@ import path from "path";
 
 import { describe, expect, it } from "vitest";
 
-describe("Watson Whats New API routes", () => {
+describe("Watson Whatï¿½s New API routes", () => {
   const listCreate = fs.readFileSync(
     path.resolve("src/pages/api/watson/whats-new/index.ts"),
     "utf8",
@@ -49,5 +49,28 @@ describe("Watson Whats New API routes", () => {
     expect(publicApi).not.toContain("createWhatsNewCard");
     expect(publicApi).not.toContain("updateWhatsNewCard");
     expect(publicApi).not.toContain("requireWatsonSessionJson");
+  });
+
+  it("exposes the current announcement without a Watson session", () => {
+    const announcement = fs.readFileSync(
+      path.resolve("src/pages/api/whats-new/announcement.ts"),
+      "utf8",
+    );
+    const activity = fs.readFileSync(
+      path.resolve("src/pages/api/whats-new/announcement-activity.ts"),
+      "utf8",
+    );
+    expect(announcement).toContain("getPublicWhatsNewAnnouncement");
+    expect(announcement).not.toContain("requireWatsonSessionJson");
+    expect(activity).toContain("verifyMemberToken");
+    expect(activity).toContain("insertWhatsNewAnnouncementActivity");
+    expect(activity).toContain("getPublicWhatsNewAnnouncement");
+    const adminAnnouncement = fs.readFileSync(
+      path.resolve("src/pages/api/watson/whats-new/announcement.ts"),
+      "utf8",
+    );
+    expect(adminAnnouncement).toContain("requireWatsonSessionJson");
+    expect(adminAnnouncement).toContain("upsertWhatsNewPopupAnnouncement");
+    expect(adminAnnouncement).not.toContain("updateWhatsNewCard");
   });
 });

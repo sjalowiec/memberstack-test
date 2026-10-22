@@ -519,4 +519,26 @@ describe("set-in sleeve sweater calculation", () => {
     if (result.ok) return;
     expect(result.reason).toBe("invalid-input");
   });
+
+  it("keeps the sleeve cap and requested length when the cuff gets deeper", () => {
+    const size = SIZES[0]!;
+    const shared = {
+      chartAudience: size.audience,
+      chartRow: size.row,
+      stitchesPerInch: 7,
+      rowsPerInch: 10,
+      availableNeedles: 400,
+    };
+    const baseline = calculateSetInSleeveSweater(shared);
+    const deeper = calculateSetInSleeveSweater({ ...shared, cuffDepthInches: 3.5 });
+    expect(baseline.ok && deeper.ok).toBe(true);
+    if (!baseline.ok || !deeper.ok) return;
+    expect(deeper.finished.sleeveLengthInches).toBe(baseline.finished.sleeveLengthInches);
+    expect(deeper.sleeve.cuffInches).toBe(3.5);
+    expect(deeper.sleeve.cuffRows).toBeGreaterThan(baseline.sleeve.cuffRows);
+    expect(deeper.sleeve.rowsToUpperArm).toBe(baseline.sleeve.rowsToUpperArm);
+    expect(deeper.sleeve.rowsCuffToUpperArm).toBe(deeper.sleeve.rowsToUpperArm - deeper.sleeve.cuffRows);
+    expect(deeper.sleeveCap).toEqual(baseline.sleeveCap);
+    expect(deeper.body.armhole).toEqual(baseline.body.armhole);
+  });
 });

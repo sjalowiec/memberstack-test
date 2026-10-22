@@ -1,17 +1,13 @@
 ---
 import GlossaryEntry from "../../../components/GlossaryEntry.astro";
-import glossary from "../../../data/glossary.json";
+import { loadPublicGlossaryEntries } from "../../../lib/glossary/loadGlossaryEntries";
 import { slugify } from "../../../lib/slugify";
 
-const { slug } = Astro.params;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  return glossary
-    .filter((t: any) => t.active === true && (t.english ?? "").toString().trim().length > 0)
-    .map((t: any) => ({
-      params: { slug: slugify((t.english ?? "").toString().replace(/<[^>]*>/g, "").trim()) },
-    }));
-}
+const { slug } = Astro.params;
+const glossary = await loadPublicGlossaryEntries();
+Astro.response.headers.set("Cache-Control", "private, no-store");
 
 const entry = glossary.find(
   (t: any) =>

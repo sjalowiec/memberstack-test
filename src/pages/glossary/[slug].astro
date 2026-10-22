@@ -1,11 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import GlossaryEntry from "../../components/GlossaryEntry.astro";
-import glossary from "../../data/glossary.json";
+import { loadPublicGlossaryEntries } from "../../lib/glossary/loadGlossaryEntries";
 import { slugify } from "../../lib/slugify";
 import PageHead from "../../components/PageHead.astro";
 
-export const prerender = true;
+export const prerender = false;
 
 function cleanTerm(v: any) {
   return (v ?? "").toString().replace(/<[^>]*>/g, "").trim();
@@ -13,17 +13,8 @@ function cleanTerm(v: any) {
 
 const { slug } = Astro.params;
 const normalizedSlug = (slug ?? "").toString().trim().toLowerCase();
-
-export async function getStaticPaths() {
-  function cleanTerm(v: any) {
-    return (v ?? "").toString().replace(/<[^>]*>/g, "").trim();
-  }
-  return glossary
-    .filter((t: any) => t.active === true && cleanTerm(t.english).length > 0)
-    .map((t: any) => ({
-      params: { slug: slugify(cleanTerm(t.english)) },
-    }));
-}
+const glossary = await loadPublicGlossaryEntries();
+Astro.response.headers.set("Cache-Control", "private, no-store");
 
 const entry = glossary.find(
   (t: any) =>

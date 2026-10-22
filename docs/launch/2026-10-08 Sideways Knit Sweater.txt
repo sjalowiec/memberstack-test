@@ -1,0 +1,20 @@
+Sideways Knit Sweater production release
+
+Feature: Sideways Knit Sweater (Cardigan and Pullover)
+Release date: October 8, 2026
+Production commit: dfa04a005e0081def0683705a643b0f59c6cb2ba
+Release branch: release/sideways-sweater-production
+Approved release commit: 86807ce0
+Pull request: #7
+Production URL: https://knititnow.com/patterns/sideways-cardigan
+Deployment: Netlify, successful
+Tests: 1,511 passed, 1 pre-existing unrelated Hat test failure
+Production build: Passed
+
+Both Cardigan and Pullover are available in one builder.
+All five size families are supported.
+Membership restrictions and saved-pattern access were preserved.
+Shoulder-seaming video uses Vimeo 1234021892, content 2215.
+Related Drop Shoulder sleeve, baby V-neck sizing, navigation, and glossary updates were included.
+DEV was not merged into production.
+Live verification passed, except actual video playback inside a completed member pattern was not tested.

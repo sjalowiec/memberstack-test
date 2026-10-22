@@ -1,7 +1,9 @@
+import { whatsNewEntryHref } from "../lib/whatsNew/announcement";
 import {
   sanitizeBillboardHtml,
   sanitizeCardDescriptionHtml,
 } from "../lib/whatsNew/sanitizeBillboardHtml";
+import { openWhatsNewAnnouncementPreview } from "./whatsNewAnnouncement";
 
 const DEFAULT_BUTTON_TEXT: Record<string, string> = {
   tool: "Try It",
@@ -31,7 +33,8 @@ function setStatus(el: HTMLElement | null, message: string, isError = false): vo
   if (!el) return;
   el.textContent = message;
   el.hidden = !message;
-  el.classList.toggle("watson__status--error", isError);
+  el.classList.toggle("watson__status--error", Boolean(message) && isError);
+  el.classList.toggle("watson__status--success", Boolean(message) && !isError && message.startsWith("Saved"));
 }
 
 function queueFlash(message: string, isError = false): void {
@@ -209,6 +212,37 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
     formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function previewAnnouncement(card: Record<string, unknown>): void {
+    const title = String(card.title || "").trim();
+    if (!title) {
+      setStatus(formStatus, "Add a title before previewing the popup.", true);
+      return;
+    }
+    const id = String(card.id || "").trim();
+    openWhatsNewAnnouncementPreview({
+      id: id || "preview",
+      title,
+      introductionHtml: String(card.description || ""),
+      href: id ? whatsNewEntryHref(id) : "/whats-new",
+    });
+  }
+
+  function previewSavedCard(cardPayload: string): void {
+    try {
+      previewAnnouncement(JSON.parse(decodeURIComponent(cardPayload)) as Record<string, unknown>);
+    } catch {
+      setStatus(flash, "Unable to preview this popup.", true);
+    }
+  }
+
+  function previewForm(source: HTMLFormElement): void {
+    syncCardDescription(source);
+    const idInput = source.elements.namedItem("id");
+    const id = idInput instanceof HTMLInputElement ? idInput.value.trim() : "";
+    const payload = readForm(source);
+    previewAnnouncement({ ...payload, id });
+  }
+
   function showEditForm(cardPayload: string): void {
     if (!form || !formPanel) return;
     try {
@@ -256,17 +290,26 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
     const payload = readForm(form);
     const idInput = form.elements.namedItem("id");
     const id = idInput instanceof HTMLInputElement ? idInput.value.trim() : "";
+    const submitButtons = form.querySelectorAll<HTMLButtonElement>('button[type="submit"]');
+    for (const button of submitButtons) button.disabled = true;
 
-    setStatus(formStatus, id ? "Saving?" : "Publishing?");
+    const savingMessage = "Saving…";
+    setStatus(formStatus, savingMessage);
     const result = id
       ? await jsonFetch(`/api/watson/whats-new/${encodeURIComponent(id)}`, "PATCH", payload)
       : await jsonFetch("/api/watson/whats-new", "POST", payload);
 
     if (!result.ok) {
-      setStatus(formStatus, result.error || "Unable to save.", true);
+      for (const button of submitButtons) button.disabled = false;
+      const message = result.error || "Unable to save. Your changes are still here.";
+      setStatus(formStatus, message, true);
       return;
     }
-    window.location.reload();
+    setStatus(formStatus, "Saved");
+    queueFlash("Saved.");
+    window.setTimeout(() => {
+      window.location.reload();
+    }, 600);
   });
 
   page.addEventListener("click", async (event) => {
@@ -276,6 +319,17 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
     const editBtn = target.closest<HTMLButtonElement>("[data-wn-edit]");
     if (editBtn) {
       showEditForm(editBtn.getAttribute("data-wn-edit") || "{}");
+      return;
+    }
+
+    const previewBtn = target.closest<HTMLButtonElement>("[data-wn-preview]");
+    if (previewBtn) {
+      previewSavedCard(previewBtn.getAttribute("data-wn-preview") || "{}");
+      return;
+    }
+
+    if (target.closest("[data-wn-preview-form]")) {
+      if (form) previewForm(form);
       return;
     }
 

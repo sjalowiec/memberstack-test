@@ -20,6 +20,16 @@ export const WHATS_NEW_STATUSES = ["draft", "published"] as const;
 
 export type WhatsNewStatus = (typeof WHATS_NEW_STATUSES)[number];
 
+/** Who can see a What's New entry as a popup. */
+export const WHATS_NEW_POPUP_AUDIENCES = ["everyone", "members"] as const;
+
+export type WhatsNewPopupAudience = (typeof WHATS_NEW_POPUP_AUDIENCES)[number];
+
+export const WHATS_NEW_POPUP_AUDIENCE_LABELS: Record<WhatsNewPopupAudience, string> = {
+  everyone: "Everyone",
+  members: "Signed-in members",
+};
+
 export const WHATS_NEW_CATEGORY_LABELS: Record<WhatsNewCategory, string> = {
   tool: "Tool",
   pattern: "Pattern",
@@ -82,6 +92,10 @@ export type WhatsNewCardRow = {
   status: string;
   display_order: number;
   archived: boolean;
+  /** Absent on older rows until the announcement columns are selected. */
+  popup_enabled?: boolean | null;
+  popup_audience?: string | null;
+  popup_expires_on?: Date | string | null;
   created_at: Date | string;
   updated_at: Date | string;
 };
@@ -100,6 +114,10 @@ export type WhatsNewCard = {
   status: WhatsNewStatus;
   displayOrder: number;
   archived: boolean;
+  popupEnabled: boolean;
+  popupAudience: WhatsNewPopupAudience;
+  /** Inclusive last day the popup may appear, or null when it stays on until turned off. */
+  popupExpiresOn: string | null;
   createdAt: string;
   updatedAt: string;
   isNew: boolean;

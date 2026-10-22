@@ -155,9 +155,9 @@ afterEach(() => {
 });
 
 describe("homeWelcomeModal storage", () => {
-  it("starts undismissed and should show", () => {
+  it("does not auto-show, even when the visitor has never dismissed it", () => {
     expect(hasDismissedHomeWelcomeModal()).toBe(false);
-    expect(shouldShowHomeWelcomeModal()).toBe(true);
+    expect(shouldShowHomeWelcomeModal()).toBe(false);
   });
 
   it("records dismiss in localStorage and stops showing", () => {
@@ -169,15 +169,15 @@ describe("homeWelcomeModal storage", () => {
 });
 
 describe("homeWelcomeModal open/close", () => {
-  it("opens only when not previously dismissed", () => {
+  it("does not open automatically", () => {
     const { root } = makeModalTree();
-    expect(maybeOpenHomeWelcomeModal()).toBe(true);
-    expect(root.classList.contains("is-open")).toBe(true);
-    expect(root.getAttribute("aria-hidden")).toBe("false");
-
-    closeHomeWelcomeModal({ dismiss: true });
-    expect(root.classList.contains("is-open")).toBe(false);
     expect(maybeOpenHomeWelcomeModal()).toBe(false);
+    expect(root.classList.contains("is-open")).toBe(false);
+    expect(root.getAttribute("aria-hidden")).toBe("true");
+
+    initHomeWelcomeModal();
+    expect(root.classList.contains("is-open")).toBe(false);
+    expect(hasDismissedHomeWelcomeModal()).toBe(false);
   });
 
   it("moves focus into the modal on open and restores on close", () => {
@@ -192,6 +192,7 @@ describe("homeWelcomeModal open/close", () => {
   it("Escape dismisses and closes after init", () => {
     const { root, fakeDocument } = makeModalTree();
     initHomeWelcomeModal();
+    openHomeWelcomeModal();
     expect(root.classList.contains("is-open")).toBe(true);
 
     fakeDocument.dispatchKeydown("Escape");
@@ -202,6 +203,7 @@ describe("homeWelcomeModal open/close", () => {
   it("Continue button dismisses and closes", () => {
     const { root, secondary } = makeModalTree();
     initHomeWelcomeModal();
+    openHomeWelcomeModal();
     secondary.dispatch("click", { target: secondary });
     expect(root.classList.contains("is-open")).toBe(false);
     expect(hasDismissedHomeWelcomeModal()).toBe(true);
@@ -210,6 +212,7 @@ describe("homeWelcomeModal open/close", () => {
   it("primary link click sets dismiss flag", () => {
     const { primary } = makeModalTree();
     initHomeWelcomeModal();
+    openHomeWelcomeModal();
     primary.dispatch("click", { target: primary });
     expect(hasDismissedHomeWelcomeModal()).toBe(true);
   });
@@ -223,9 +226,9 @@ describe("homeWelcomeModal open/close", () => {
 });
 
 describe("homeWelcomeModal markup integration", () => {
-  it("is mounted only from the homepage", () => {
-    expect(indexAstro).toContain('import HomeWelcomeModal from "../components/home/HomeWelcomeModal.astro"');
-    expect(indexAstro).toContain("<HomeWelcomeModal />");
+  it("is not mounted on the homepage", () => {
+    expect(indexAstro).not.toContain("HomeWelcomeModal");
+    expect(indexAstro).not.toContain("data-home-welcome-modal");
   });
 
   it("exposes accessible dialog markup and required copy", () => {

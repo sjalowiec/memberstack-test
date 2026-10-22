@@ -154,6 +154,8 @@ WHERE tracking_number IS NOT NULL AND BTRIM(tracking_number) <> ''`,
   customer_first_name TEXT,
   customer_last_name TEXT,
   customer_email TEXT,
+  checkout_email TEXT,
+  tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb,
   currency TEXT NOT NULL DEFAULT 'USD',
   subtotal_amount NUMERIC(12, 4) NOT NULL DEFAULT 0,
   total_discounts NUMERIC(12, 4) NOT NULL DEFAULT 0,
@@ -188,6 +190,16 @@ WHERE tracking_number IS NOT NULL AND BTRIM(tracking_number) <> ''`,
     {
       label: "index idx_watson_shopify_orders_site_brand",
       sql: "CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_site_brand ON watson_shopify_orders (site_brand)",
+    },
+    {
+      label: "alter watson_shopify_orders purchase columns",
+      sql: `ALTER TABLE watson_shopify_orders
+  ADD COLUMN IF NOT EXISTS checkout_email TEXT,
+  ADD COLUMN IF NOT EXISTS tracking_links JSONB NOT NULL DEFAULT '[]'::jsonb`,
+    },
+    {
+      label: "index idx_watson_shopify_orders_checkout_email",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_shopify_orders_checkout_email ON watson_shopify_orders (lower(checkout_email))",
     },
     {
       label: "table watson_shopify_order_items",
@@ -383,7 +395,57 @@ WHERE outcome = 'tagged' AND dry_run = FALSE`,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
   display_order INTEGER NOT NULL DEFAULT 0,
   archived BOOLEAN NOT NULL DEFAULT FALSE,
+  popup_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  popup_audience TEXT NOT NULL DEFAULT 'everyone',
+  popup_expires_on DATE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "alter watson_whats_new_cards announcement columns",
+      sql: `ALTER TABLE watson_whats_new_cards
+  ADD COLUMN IF NOT EXISTS popup_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS popup_audience TEXT NOT NULL DEFAULT 'everyone',
+  ADD COLUMN IF NOT EXISTS popup_expires_on DATE`,
+    },
+    {
+      label: "constraint watson_whats_new_cards popup audience",
+      sql: `ALTER TABLE watson_whats_new_cards
+  DROP CONSTRAINT IF EXISTS watson_whats_new_cards_popup_audience_check,
+  ADD CONSTRAINT watson_whats_new_cards_popup_audience_check
+    CHECK (popup_audience IN ('everyone', 'members'))`,
+    },
+    {
+      label: "table watson_whats_new_announcement_events",
+      sql: `CREATE TABLE IF NOT EXISTS watson_whats_new_announcement_events (
+  id TEXT PRIMARY KEY,
+  card_id TEXT NOT NULL,
+  event_type TEXT NOT NULL CHECK (event_type IN ('displayed', 'read_more')),
+  identity TEXT NOT NULL CHECK (identity IN ('member', 'guest', 'unknown')),
+  member_id TEXT,
+  environment TEXT NOT NULL,
+  source_page TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "index idx_watson_whats_new_announcement_events_card",
+      sql: `CREATE INDEX IF NOT EXISTS idx_watson_whats_new_announcement_events_card
+ON watson_whats_new_announcement_events (environment, card_id, event_type)`,
+    },
+    {
+      label: "table watson_whats_new_popup_announcement",
+      sql: `CREATE TABLE IF NOT EXISTS watson_whats_new_popup_announcement (
+  key TEXT PRIMARY KEY,
+  announcement_id TEXT NOT NULL,
+  source_card_id TEXT,
+  title TEXT NOT NULL DEFAULT '',
+  introduction TEXT NOT NULL DEFAULT '',
+  audience TEXT NOT NULL DEFAULT 'everyone'
+    CHECK (audience IN ('everyone', 'members')),
+  expires_at TIMESTAMPTZ,
+  enabled BOOLEAN NOT NULL DEFAULT FALSE,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
     },
@@ -673,6 +735,10 @@ WHERE revoked_at IS NULL AND memberstack_id IS NULL`,
 )`,
     },
     {
+      label: "rls watson_knit_able_schedules",
+      sql: "ALTER TABLE watson_knit_able_schedules ENABLE ROW LEVEL SECURITY",
+    },
+    {
       label: "table watson_complimentary_access",
       sql: `CREATE TABLE IF NOT EXISTS watson_complimentary_access (
   memberstack_id TEXT PRIMARY KEY,
@@ -916,7 +982,9 @@ export function getWatsonEbookEntitlementsSchemaStatements(): SchemaStatement[] 
 
 export function getWatsonKnitAbleScheduleSchemaStatements(): SchemaStatement[] {
   return getWatsonNativeSchemaStatements().filter(
-    (statement) => statement.label === "table watson_knit_able_schedules",
+    (statement) =>
+      statement.label === "table watson_knit_able_schedules" ||
+      statement.label === "rls watson_knit_able_schedules",
   );
 }
 

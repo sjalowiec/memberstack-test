@@ -5052,7 +5052,7 @@
     "glossaryId": 804,
     "english": "Bind off / Cast Off",
     "example": "Securing stitches at the ends of the knitting.",
-    "helpinfo": "Due to the nature of their formation, knitting stitches will unravel or \"run\" if left unfinished.Binding off (also known as casting off) is the process of creating a finished, secure edge to prevent the knitting from unraveling.Many Binding off or Casting off techniques and methods are available for machine knitters.   ",
+    "helpinfo": "Due to the nature of their formation, knitting stitches will unravel or \"run\" if left unfinished.Binding off (also known as casting off) is the process of creating a finished, secure edge to prevent the knitting from unraveling.Many Binding off or Casting off techniques and methods are available for machine knitters.<br><br>See: <a href=\"#\" data-glossary-id=\"805\">Cast off / Bind Off</a>",
     "image": "",
     "image_alt": "",
     "image_description": "",
@@ -5066,17 +5066,15 @@
   {
     "glossaryId": 805,
     "english": "Cast off / Bind Off",
-    "example": "Securing stitches at the ends of the knitting.",
-    "helpinfo": "Due to the nature of their formation, knitting stitches will unravel or \"run\" if left unfinished.Binding off (also known as casting off) is the process of creating a finished, secure edge to prevent the knitting from unraveling.Many Binding off or Casting off techniques and methods are available for machine knitters.   ",
+    "example": "Another term for bind off.",
+    "helpinfo": "Cast off is another term for bind off. It means securing the final row of stitches so the knitting does not unravel.<br><br>See: <a href=\"#\" data-glossary-id=\"804\">Bind off / Cast Off</a>",
     "image": "/images/glossary/cast-off-bind-off-machine-knitting.jpg",
-    "image_alt": "Example of Knitting bind off in machine Knitting",
+    "image_alt": "Example of cast off in machine knitting",
     "image_description": "Example of Cast Off in Machine Knitting",
-    "metaTitle": "Cast Off / Bind Off – Machine Knitting Technique",
-    "metaDescription": "In machine knitting, 'cast off' or 'bind off' refers to the technique used to secure the final row of stitches, preventing unraveling and creating a finished edge.",
+    "metaTitle": "Cast Off / Bind Off – Another Term for Bind Off",
+    "metaDescription": "Cast off is another machine knitting term for bind off: securing the final row of stitches so the knitting does not unravel.",
     "active": true,
-    "vimeoIds": [
-      "151858975"
-    ]
+    "vimeoIds": []
   },
   {
     "glossaryId": 806,

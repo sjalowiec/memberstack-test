@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import videosPublic from "../../data/videos-public.json";
-import { prepareHelpHubTipPage } from "./prepareTipPage";
+import { prepareHelpHubTipPage, solutionHtmlWithLoadableImages } from "./prepareTipPage";
 import {
   addMemberResource,
   libraryVideosForPicker,
@@ -87,6 +87,30 @@ describe("prepareHelpHubTipPage member resources", () => {
     expect(view.mediaType).toBe("image");
     expect(view.mediaUrl).toBe("/images/help-hub/tuck-example.jpg");
     expect(view.whyBody).toBe("Tuck stitch on the LK150");
+  });
+
+  it("loads an explanation image whose address was closed with a stray quote", () => {
+    const stored = `<figure style="margin: 20px 0;">
+  <img
+    src=/images/help-hub/oiling-your-knitting-machine.png"
+    alt="Applying sewing machine oil to a cloth, then wiping the front and back rails of a knitting machine."
+    style="display: block; width: 100%; height: auto; border-radius: 6px;"
+  >
+</figure>`;
+    expect(solutionHtmlWithLoadableImages(stored)).toContain(
+      'src="/images/help-hub/oiling-your-knitting-machine.png"',
+    );
+    expect(solutionHtmlWithLoadableImages(stored)).not.toContain("png%22");
+    const quoted = '<img src="/images/help-hub/try.jpg" alt="">';
+    expect(solutionHtmlWithLoadableImages(quoted)).toBe(quoted);
+    const tip = {
+      slug: "what-type-of-oil-should-i-use-for-my-machine",
+      status: "published",
+      solutionText: stored,
+    };
+    const view = prepareHelpHubTipPage(tip, lessons, videosPublic);
+    expect(view.whyBody).toContain('src="/images/help-hub/oiling-your-knitting-machine.png"');
+    expect(tip.solutionText).toBe(stored);
   });
 
   it("still uses legacy bridge text when solutionText is empty", () => {
@@ -288,5 +312,40 @@ describe("Help Hub membership CTA for library resources", () => {
   it("shows membership CTA for logged-in non-members", () => {
     const spec = helpHubMemberLessonCtaSpec("loggedInNoAccess", href);
     expect(spec.buttons.map((b) => b.action)).toEqual(["membership"]);
+  });
+});
+
+describe("prepareHelpHubTipPage optional sections", () => {
+  it("hides an empty Try This block and keeps a note or image that stands alone", () => {
+    const empty = prepareHelpHubTipPage(
+      { slug: "empty", question: "Question?", solutionText: "" },
+      lessons,
+      videosPublic,
+    );
+    expect(empty.hasTrySection).toBe(false);
+    expect(empty.whyBody).toBe("");
+    expect(empty.memberResourceCards).toEqual([]);
+    expect(empty.relatedTool).toBeNull();
+
+    const noteOnly = prepareHelpHubTipPage(
+      { slug: "note", question: "Question?", tryNote: "Do not pull the yarn." },
+      lessons,
+      videosPublic,
+    );
+    expect(noteOnly.hasTrySection).toBe(true);
+
+    const imageOnly = prepareHelpHubTipPage(
+      {
+        slug: "image",
+        question: "Question?",
+        tryImage: "/images/help-hub/swatch.jpg",
+        tryImageCaption: "Marked swatch",
+      },
+      lessons,
+      videosPublic,
+    );
+    expect(imageOnly.hasTrySection).toBe(true);
+    expect(imageOnly.tryImageUrl).toBe("/images/help-hub/swatch.jpg");
+    expect(imageOnly.tryImageCaptionResolved).toBe("Marked swatch");
   });
 });

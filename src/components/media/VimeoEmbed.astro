@@ -10,6 +10,8 @@ interface Props {
   muted?: boolean;
   /** When set, chapter buttons on this page can seek this player. */
   playerKey?: string;
+  /** Optional Vimeo privacy hash from a private video URL. */
+  privacyHash?: string;
 }
 
 const { 
@@ -20,7 +22,10 @@ const {
   loop = false,
   muted = false,
   playerKey = "",
+  privacyHash = "",
 } = Astro.props;
+
+const safePrivacyHash = /^[a-zA-Z0-9]+$/.test(privacyHash) ? privacyHash : "";
 
 const params = new URLSearchParams({
   ...(autoplay && { autoplay: '1' }),
@@ -28,6 +33,7 @@ const params = new URLSearchParams({
   ...(muted && { muted: '1' }),
   byline: '0',
   portrait: '0',
+  ...(safePrivacyHash ? { h: safePrivacyHash } : {}),
 });
 
 const vimeoUrl = `https://player.vimeo.com/video/${vimeoId}?${params.toString()}`;

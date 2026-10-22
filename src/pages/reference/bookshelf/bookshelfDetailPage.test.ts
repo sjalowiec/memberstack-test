@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { getAllBooks, getBookById, hasRating } from "../../../lib/bookshelf";
+import { bookFindUrl, getAllBooks, getBookById, hasRating } from "../../../lib/bookshelf";
 
 const pageDir = dirname(fileURLToPath(import.meta.url));
 const pageSource = readFileSync(join(pageDir, "[id].astro"), "utf8");
@@ -35,8 +35,54 @@ describe("bookshelf detail page", () => {
     expect(pageSource).toContain("About this book");
     expect(pageSource).toContain("book-detail__cover");
     expect(pageSource).toContain("Find this book");
+    expect(pageSource).toContain("bookFindUrl");
+    expect(pageSource).toContain("findBookHref");
+    expect(pageSource).toContain("{findBookHref && (");
+    expect(pageSource).not.toContain("{resolved.url && (");
     expect(pageSource).toContain("getAllBooks");
     expect(pageSource).toContain("getBookById");
+  });
+
+  it("omits Find this book unless the stored url is an absolute http(s) link", () => {
+    expect(getBookById("145")?.url).toBe("");
+    expect(bookFindUrl(getBookById("145")?.url)).toBeNull();
+
+    // Legacy UrlLink "1" and "NULL" are placeholders, not destinations.
+    expect(bookFindUrl("1")).toBeNull();
+    expect(bookFindUrl("NULL")).toBeNull();
+    expect(bookFindUrl("null")).toBeNull();
+    expect(bookFindUrl("")).toBeNull();
+    expect(bookFindUrl("/store/product/502/")).toBeNull();
+
+    const book3 = getBookById("3");
+    expect(book3?.title).toContain("ABC of Perfect Knitting");
+    expect(book3?.author).toBe("");
+    expect(book3?.description).toBe("");
+    expect(book3?.descriptionText).toBe("");
+    expect(book3?.url).toBe("");
+    expect(bookFindUrl(book3?.url)).toBeNull();
+    expect(bookFindUrl(getBookById("31")?.url)).toBeNull();
+    expect(bookFindUrl(getBookById("45")?.url)).toBeNull();
+    expect(bookFindUrl(getBookById("46")?.url)).toBeNull();
+    expect(bookFindUrl(getBookById("47")?.url)).toBeNull();
+
+    const amazon = "https://amzn.to/3kzaxlu";
+    expect(getBookById("42")?.url).toBe(amazon);
+    expect(bookFindUrl(getBookById("42")?.url)).toBe(amazon);
+
+    const store =
+      "https://www.knititnow.com/store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload";
+    expect(getBookById("77")?.url).toBe(store);
+    expect(bookFindUrl(getBookById("77")?.url)).toBe(store);
+
+    for (const book of getAllBooks()) {
+      if (!book.url) {
+        expect(bookFindUrl(book.url)).toBeNull();
+      } else {
+        expect(bookFindUrl(book.url)).toBe(book.url);
+        expect(book.url.startsWith("https://") || book.url.startsWith("http://")).toBe(true);
+      }
+    }
   });
 
   it("hides rating markup when no current rating data is available", () => {

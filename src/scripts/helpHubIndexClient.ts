@@ -1,11 +1,13 @@
 /** In-page Help Hub landing search. This does not call Pagefind or site search. */
 
+import { reportHelpHubAction } from "../lib/analytics/helpHubGa";
 import { queueSearchCommit } from "../lib/searchActivityClient";
+import { rankSearchText } from "../lib/searchSynonyms";
 
 export function helpHubEntryVisibleForQuery(searchText: string, query: string): boolean {
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   if (!q) return true;
-  return searchText.toLowerCase().includes(q);
+  return rankSearchText(searchText, q) > 0;
 }
 
 function isDetails(node: Element): node is HTMLDetailsElement {
@@ -44,11 +46,58 @@ function closeOtherAnswers(root: ParentNode, current: HTMLDetailsElement): void 
   });
 }
 
+function directHelpHubEntries(list: Element): HTMLElement[] {
+  return [...list.children].filter(
+    (node): node is HTMLElement =>
+      node instanceof HTMLElement && node.hasAttribute("data-help-hub-entry"),
+  );
+}
+
+function stampHelpHubOrder(entries: HTMLElement[]): void {
+  let max = -1;
+  for (const entry of entries) {
+    if (entry.dataset.helpHubOrder == null || entry.dataset.helpHubOrder === "") continue;
+    const current = Number(entry.dataset.helpHubOrder);
+    if (Number.isFinite(current) && current > max) max = current;
+  }
+  for (const entry of entries) {
+    if (entry.dataset.helpHubOrder != null && entry.dataset.helpHubOrder !== "") continue;
+    max += 1;
+    entry.dataset.helpHubOrder = String(max);
+  }
+}
+
+/** Exact phrase matches stay ahead of synonym matches. Clearing search restores the original order. */
+function orderHelpHubEntries(section: HTMLElement, query: string, queryActive: boolean): void {
+  section.querySelectorAll(".help-hub-question-list").forEach((list) => {
+    const entries = directHelpHubEntries(list);
+    stampHelpHubOrder(entries);
+    const sorted = [...entries].sort((a, b) => {
+      const origin = Number(a.dataset.helpHubOrder) - Number(b.dataset.helpHubOrder);
+      if (!queryActive) return origin;
+      const rank =
+        rankSearchText(b.dataset.helpHubSearch ?? "", query) -
+        rankSearchText(a.dataset.helpHubSearch ?? "", query);
+      return rank || origin;
+    });
+    for (const entry of sorted) list.appendChild(entry);
+  });
+}
+
 export function applyHelpHubIndexQuery(root: ParentNode, query: string): number {
   const q = query.trim();
   const queryActive = q.length > 0;
   const newSection = root.querySelector("[data-help-hub-new]");
-  if (newSection instanceof HTMLElement) newSection.hidden = queryActive;
+  if (newSection instanceof HTMLElement) {
+    newSection.hidden = queryActive;
+    if (isDetails(newSection)) newSection.open = false;
+  }
+
+  const favoritesSection = root.querySelector("[data-help-hub-favorites]");
+  if (favoritesSection instanceof HTMLElement) {
+    favoritesSection.hidden = queryActive;
+    if (queryActive && isDetails(favoritesSection)) favoritesSection.open = false;
+  }
 
   let matchCount = 0;
   root.querySelectorAll("[data-help-hub-category]").forEach((section) => {
@@ -66,6 +115,7 @@ export function applyHelpHubIndexQuery(root: ParentNode, query: string): number 
       if (!queryActive) section.open = false;
     }
     if (queryActive) matchCount += visible;
+    orderHelpHubEntries(section, q, queryActive);
   });
 
   root.querySelectorAll("details[data-help-hub-answer]").forEach((node) => {
@@ -100,6 +150,7 @@ type ReadingSession = {
 let readingSession: ReadingSession | null = null;
 let lastOpenedEntry: HTMLDetailsElement | null = null;
 let ignoreAnswerToggle = false;
+let suppressAnswerOpenTracking = false;
 
 function readingHistoryActive(): boolean {
   try {
@@ -228,6 +279,11 @@ function onAnswerToggle(root: ParentNode, entry: HTMLDetailsElement): void {
     if (readingSession?.entry === entry) closeHelpHubArticle(root);
     return;
   }
+  if (!suppressAnswerOpenTracking) {
+    const row = entry.closest("[data-help-hub-entry]");
+    const slug = row instanceof HTMLElement ? row.dataset.helpHubSlug ?? "" : "";
+    if (slug) reportHelpHubAction("discovery_open", slug, "accordion");
+  }
   closeOtherAnswers(root, entry);
   activateHelpHubDeferredMedia(entry);
   openHelpHubArticle(root, entry);
@@ -241,6 +297,19 @@ export function initHelpHubIndex(root: ParentNode): void {
   root.querySelectorAll("details[data-help-hub-answer]").forEach((node) => {
     if (!isDetails(node)) return;
     node.addEventListener("toggle", () => onAnswerToggle(root, node));
+  });
+
+  // The question is a real tip URL. A plain click still opens the answer here.
+  // Modified clicks follow the link (new tab, copy, and crawlers use the href).
+  root.querySelectorAll("a.help-hub-question-permalink").forEach((node) => {
+    if (!(node instanceof HTMLAnchorElement)) return;
+    node.addEventListener("click", (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const details = node.closest("details[data-help-hub-answer]");
+      if (!(details instanceof HTMLDetailsElement)) return;
+      event.preventDefault();
+      details.open = !details.open;
+    });
   });
 
   root.querySelectorAll("details[data-help-hub-category]").forEach((node) => {
@@ -285,7 +354,9 @@ export function initHelpHubIndex(root: ParentNode): void {
   window.addEventListener("popstate", () => {
     if (readingHistoryActive()) {
       if (!readingSession && lastOpenedEntry && !lastOpenedEntry.open) {
+        suppressAnswerOpenTracking = true;
         lastOpenedEntry.open = true;
+        suppressAnswerOpenTracking = false;
       }
       return;
     }

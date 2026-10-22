@@ -10,14 +10,22 @@
 /** Exact instruction at the cuff-complete → sleeve-body transition. */
 export const CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET = "Reset row counter to RC 000.";
 
-/** Display block inserted once, after every cuff option and before the sleeve body. */
+/**
+ * Display block inserted once, after every cuff option and before the sleeve body.
+ * Screen and print use the shared Reset Row Counter marker at RC 000.
+ * {@link CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET} remains the plain-text sentence.
+ */
 export function cuffUpSleeveBodyRowCounterResetBlock(): {
   kind: "block";
   paragraphs: string[];
+  rowCounterReset: true;
+  rowCounterResetGarmentRc: 0;
 } {
   return {
     kind: "block",
-    paragraphs: [CUFF_UP_SLEEVE_BODY_ROW_COUNTER_RESET],
+    paragraphs: [],
+    rowCounterReset: true,
+    rowCounterResetGarmentRc: 0,
   };
 }
 

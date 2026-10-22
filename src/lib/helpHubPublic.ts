@@ -1,6 +1,7 @@
 import { helpHubCategoryLabel, helpHubJsonSeedCategories } from "./helpHub/categories";
 import type { HelpHubManagedCategory } from "./helpHub/categoryTypes";
 import { stripHtmlToText } from "./helpHubFaqSchema";
+import { rankSearchText } from "./searchSynonyms";
 
 /** Minimal Help Hub tip fields used for public visibility and search. */
 export type HelpHubTipRecord = {
@@ -169,9 +170,17 @@ export function searchPublicHelpHubTips<T extends HelpHubTipRecord>(
   query: string,
   categories: HelpHubManagedCategory[] = helpHubJsonSeedCategories(),
 ): T[] {
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   if (!q) return [];
-  return filterPublicHelpHubTips(tips).filter((t) => helpHubTipSearchText(t, categories).includes(q));
+  return filterPublicHelpHubTips(tips)
+    .map((tip, index) => ({
+      tip,
+      index,
+      rank: rankSearchText(helpHubTipSearchText(tip, categories), q),
+    }))
+    .filter((row) => row.rank > 0)
+    .sort((a, b) => b.rank - a.rank || a.index - b.index)
+    .map((row) => row.tip);
 }
 
 export function publicHelpHubTipsForClientSearch(

@@ -2235,7 +2235,7 @@
     "title": "Knitting Curved Hems",
     "description": "Add a soft, flattering touch to the hems of your sweaters. Curve the sides with short row shaping. Work the hem finish of your choice, then shape the sides for a designer touch. NOTE: Short row shaping works best for graceful, shallow curves. For deep curves standard increases work best.",
     "access_level": "member",
-    "posterUrl": "https://i.vimeocdn.com/video/551703321-ef896027687c2a3a91b8450cdd19059d38c1cafd1447dd9e94d91a1f9e8a0683-d_1280x720?r=pad",
+    "posterUrl": "https://i.vimeocdn.com/video/2214184278-99c863ffbba5df5cf08fab006baa6b775faf5a42fb8aa1b21913900feaea997f-d_1280x720?r=pad",
     "category": "Hems",
     "subcategory": "Basics",
     "vimeo_id": 151859522
@@ -5206,7 +5206,7 @@
   },
   {
     "content_id": 938,
-    "slug": "favorite-bind-off",
+    "slug": "stitch-thru-stitch-bind-off",
     "title": "Favorite Bind Off",
     "description": "Stitch thru stitch bind off that is worked so YOU control the size of the bind off stitches and the tension of the bind off edge. Make it as firm or loose as you like. No guesswork",
     "access_level": "member",
@@ -6182,7 +6182,7 @@
   },
   {
     "content_id": 237,
-    "slug": "cut-n-sew-template",
+    "slug": "cut-n-sew-neckline-template",
     "title": "Cut 'n Sew Template",
     "description": "Using the Knit it Now Cut 'n Sew Templates for beautiful neckines every time.",
     "access_level": "member",
@@ -6849,7 +6849,7 @@
   },
   {
     "content_id": 2106,
-    "slug": "ribber-cast-on-comb-for-single-bed-knitting",
+    "slug": "ribber-cast-on-comb-even-weight",
     "title": "Ribber cast on Comb for Single Bed Knitting",
     "description": "Add even weight across your knitting by using a ribber cast on comb. Use your ribber for this technique",
     "access_level": "member",
@@ -7746,5 +7746,17 @@
         "time": 88
       }
     ]
+  },
+  {
+    "content_id": 2216,
+    "slug": "lk150-second-tension-mast-assembly",
+    "title": "LK150 Second Tension Mast Assembly",
+    "description": "Assemble and install a second tension mast on the Silver Reed LK150.",
+    "access_level": "public",
+    "status": "published",
+    "posterUrl": "https://i.vimeocdn.com/video/2215184988-ac012a780470fb11edc7280d5490d2882194be82564cdb281d194a36d5b58289-d_1280x720?r=pad",
+    "category": "Machine Maintenance",
+    "subcategory": "General Information",
+    "vimeo_id": 1238151241
   }
 ]

@@ -3,7 +3,7 @@ export const prerender = true;
 
 import Layout from "../../../layouts/Layout.astro";
 import ReferencePageShell from "../../../components/ReferencePageShell.astro";
-import { getAllBooks, getBookById, hasRating } from "../../../lib/bookshelf";
+import { bookFindUrl, getAllBooks, getBookById, hasRating } from "../../../lib/bookshelf";
 
 export async function getStaticPaths() {
   return getAllBooks().map((book) => ({
@@ -22,6 +22,7 @@ if (!resolved) {
 
 const showRating = hasRating(resolved);
 const ratingRounded = Math.round(resolved.avgRating);
+const findBookHref = bookFindUrl(resolved.url);
 
 const metaDescription =
   resolved.descriptionText?.slice(0, 155) ||
@@ -87,10 +88,10 @@ const metaDescription =
           )}
 
           <div class="book-detail__actions">
-            {resolved.url && (
+            {findBookHref && (
               <a
                 class="book-detail__findlink"
-                href={resolved.url}
+                href={findBookHref}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -96,6 +96,97 @@ describe("log-tip-reaction", () => {
     expect(storeData.size).toBe(2);
   });
 
+  it("accepts the new Not for me choice and retired choices", async () => {
+    const notForMe = await handler(
+      makeRequest("POST", {
+        body: { tipId: "tip-a", reaction: "not_for_me", visitorId: "v1" },
+      }),
+    );
+    expect(notForMe.status).toBe(200);
+
+    const historical = await handler(
+      makeRequest("POST", {
+        body: { tipId: "tip-b", reaction: "will_try", visitorId: "v1" },
+      }),
+    );
+    expect(historical.status).toBe(200);
+    const stored = [...storeData.values()].map((value) => JSON.parse(value).reaction);
+    expect(stored.sort()).toEqual(["not_for_me", "will_try"]);
+  });
+
+  it("saves a reaction without a topic, then upserts the topic on its own key", async () => {
+    const reaction = await handler(
+      makeRequest("POST", {
+        body: {
+          tipId: "tip-a",
+          reaction: "helped",
+          visitorId: "v1",
+          topicSuggestion: "should not ride along",
+        },
+      }),
+    );
+    expect(reaction.status).toBe(200);
+    expect(storeData.size).toBe(1);
+    const reactionRecord = JSON.parse([...storeData.values()][0]);
+    expect(reactionRecord.reaction).toBe("helped");
+    expect(reactionRecord.topicSuggestion).toBeUndefined();
+
+    const topic = await handler(
+      makeRequest("POST", {
+        body: {
+          tipId: "tip-a",
+          visitorId: "v1",
+          topicSuggestion: "  Button bands  ",
+          createdAt: "2026-10-21T12:00:00.000Z",
+        },
+      }),
+    );
+    expect(topic.status).toBe(200);
+    expect(storeData.size).toBe(2);
+
+    const repeat = await handler(
+      makeRequest("POST", {
+        body: {
+          tipId: "tip-a",
+          visitorId: "v1",
+          topicSuggestion: "Ribbing",
+        },
+      }),
+    );
+    expect(repeat.status).toBe(200);
+    expect(storeData.size).toBe(2);
+
+    const topicRecord = JSON.parse(
+      storeData.get([...storeData.keys()].find((key) => String(key).startsWith("topics/"))),
+    );
+    expect(topicRecord.topicSuggestion).toBe("Ribbing");
+    expect(topicRecord.createdAt).toBe("2026-10-21T12:00:00.000Z");
+    expect(topicRecord.reaction).toBeUndefined();
+
+    const changedChoice = await handler(
+      makeRequest("POST", {
+        body: { tipId: "tip-a", reaction: "not_for_me", visitorId: "v1" },
+      }),
+    );
+    expect(changedChoice.status).toBe(200);
+    expect(storeData.size).toBe(2);
+    const reactionAfter = JSON.parse(
+      storeData.get([...storeData.keys()].find((key) => String(key).startsWith("reactions/"))),
+    );
+    expect(reactionAfter.reaction).toBe("not_for_me");
+    expect(reactionAfter.topicSuggestion).toBeUndefined();
+  });
+
+  it("does not create a topic record for a blank suggestion", async () => {
+    const res = await handler(
+      makeRequest("POST", {
+        body: { tipId: "tip-a", visitorId: "v1", topicSuggestion: "   " },
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(storeData.size).toBe(0);
+  });
+
   it("blocks GET listing outside local dev", async () => {
     vi.stubEnv("ALLOW_DEV_PATTERN_USER", "false");
     const res = await handler(makeRequest("GET"));

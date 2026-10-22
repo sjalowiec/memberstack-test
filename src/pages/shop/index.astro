@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 
 import PageHead from "../../components/PageHead.astro";
+import Lk150TensionMastKitListing from "../../components/shop/Lk150TensionMastKitListing.astro";
 import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
 
 const title = "Shop | Knit it Now";
@@ -59,6 +60,10 @@ const categories = [
       <p class="page-intro">Tools, machines, and guidance — chosen specifically for machine knitters.</p>
     </header>
 
+    <div class="shop-kit-listing">
+      <Lk150TensionMastKitListing />
+    </div>
+
     <div class="categories-grid">
       {categories.map((category, index) => (
         <div class="category-card" data-testid={`card-category-${index}`}>
@@ -95,6 +100,11 @@ const categories = [
     font-size: 1.125rem;
     color: #5a6b47;
     margin: 0;
+  }
+
+  .shop-kit-listing {
+    max-width: 22rem;
+    margin: 0 auto 2rem;
   }
 
   .categories-grid {

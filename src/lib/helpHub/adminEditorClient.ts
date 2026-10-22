@@ -6,6 +6,7 @@ import {
   type AdminHtmlResult,
   type AdminJsonResult,
 } from "../admin/adminAuthClient";
+import { isLocalPatternTestingEnabled } from "../patterns/localPatternTesting";
 import {
   HELP_HUB_PREVIEW_PATH,
   helpHubPreviewBaseHref,
@@ -20,8 +21,8 @@ export type HelpHubAdminRequestInit = {
 };
 
 export type HelpHubPreviewPayload =
-  | { document: Record<string, unknown> }
-  | { slug: string };
+  | { document: Record<string, unknown>; audience?: "member" | "visitor" }
+  | { slug: string; audience?: "member" | "visitor" };
 
 export function helpHubPreviewRequestUrl(): string {
   return HELP_HUB_PREVIEW_PATH;
@@ -71,7 +72,18 @@ export async function requestHelpHubPreview(
 ): Promise<AdminHtmlResult> {
   const fetchHtml = options.fetchHtml ?? fetchAdminHtml;
   const url = options.previewUrl ?? helpHubPreviewRequestUrl();
-  return fetchHtml(url, { method: "POST", body: payload });
+  const localPreview = !options.fetchHtml && isLocalPatternTestingEnabled();
+  return fetchHtml(url, {
+    method: "POST",
+    body: payload,
+    ...(localPreview
+      ? {
+          getHeaders: async () => ({}),
+          allowMissingToken: true,
+          credentials: "omit" as const,
+        }
+      : {}),
+  });
 }
 
 export async function openHelpHubPreview(

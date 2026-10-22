@@ -87,3 +87,13 @@ export function localPatternTestingAccess(): SleevelessUserAccess {
     freeClaimsBySystem: {},
   };
 }
+
+/**
+ * Draft owner while local pattern testing is on.
+ * A signed-in Memberstack member on localhost must not be treated as a different
+ * owner — that clears the selected size and the loaded pattern. Returns null
+ * off localhost and in production builds, so membership draft ownership is unchanged.
+ */
+export function localPatternTestingDraftOwnerId(): string | null {
+  return isLocalPatternTestingEnabled() ? LOCAL_PATTERN_TESTING_ID : null;
+}

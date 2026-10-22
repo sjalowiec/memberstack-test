@@ -524,6 +524,16 @@ export function deleteCourse111Component(
   const actualIndex = block.components.indexOf(target);
   if (actualIndex === -1) return false;
   block.components.splice(actualIndex, 1);
+  if (block.components.length === 0) {
+    const blockIndex = lesson.blocks.findIndex((entry) => entry.slug === blockSlug);
+    if (blockIndex !== -1) lesson.blocks.splice(blockIndex, 1);
+    const orderedBlocks = sortedBlocks(lesson);
+    orderedBlocks.forEach((entry, orderIndex) => {
+      entry.order = orderIndex + 1;
+    });
+    lesson.blocks = orderedBlocks;
+    return true;
+  }
   sortedComponents(block).forEach((entry, orderIndex) => {
     entry.order = orderIndex + 1;
   });

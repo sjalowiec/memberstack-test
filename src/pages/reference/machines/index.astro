@@ -352,7 +352,10 @@ const introText =
       var visible = 0;
       getCards().forEach(function (card) {
         var matchesSearch =
-          !q || (card.getAttribute("data-search") || "").indexOf(q) !== -1;
+          !q ||
+          (typeof window.__kinRankSearchText === "function"
+            ? window.__kinRankSearchText(card.getAttribute("data-search") || "", q) > 0
+            : (card.getAttribute("data-search") || "").indexOf(q) !== -1);
         var matchesBrand = !brand || (card.getAttribute("data-brand") || "") === brand;
         var matchesGauge = !gauge || (card.getAttribute("data-gauge") || "") === gauge;
         var matchesType = !type || (card.getAttribute("data-style") || "") === type;

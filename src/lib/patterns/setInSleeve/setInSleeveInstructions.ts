@@ -34,6 +34,7 @@ import { shapingActionRowNumbers } from "../evenShapingSchedule";
 import { formatRepeatedShapingInstruction } from "../legoBlocks/repeatedShapingInstruction";
 import { formatParentheticalRcList, normalizeParentheticalRcLists } from "../parentheticalRcList";
 import { RESET_ROW_COUNTER_TEXT } from "../rowCounterReset";
+import { cuffUpSleeveBodyRowCounterResetBlock } from "../legoBlocks/cuffUpSleeveRowCounter";
 import { sidewaysCuffUpCuffChoiceLines } from "../sidewaysCardiganSleeveCuffCopy";
 import { sweaterBodyHemChoiceLines } from "../sweaterBodyHemInstructions";
 import { buildNeckShoulderTimelineAndChartRows } from "../neckShoulderShapingChartRows";
@@ -611,10 +612,7 @@ export function buildSetInCuffUpSleevePresentation(
       trustedParagraphs: cuffChoiceHtml,
       stitchCount: input.wristStitches > 0 ? input.wristStitches : undefined,
     },
-    {
-      kind: "block",
-      paragraphs: [SET_IN_ROW_COUNTER_RESET],
-    },
+    cuffUpSleeveBodyRowCounterResetBlock(),
     { kind: "section", title: "SLEEVE BODY" },
   ];
 

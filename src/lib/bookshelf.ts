@@ -27,7 +27,10 @@ export interface Book {
   /** Public path, e.g. /images/books/foo.jpg (same value as `image`). */
   thumbnail: string;
   image: string;
-  /** Optional informational outbound link (where the book can be found). */
+  /**
+   * Optional absolute http(s) purchase or info link. Legacy placeholders
+   * ("", "NULL", "1") are stored blank and are not shown as "Find this book".
+   */
   url: string;
   tags: string[];
   avgRating: number;
@@ -74,6 +77,27 @@ export function getAllTags(): string[] {
 /** Whether a book has any usable rating data. */
 export function hasRating(book: Book): boolean {
   return book.ratingCount > 0 && book.avgRating > 0;
+}
+
+/**
+ * Destination for the public "Find this book" link.
+ *
+ * Legacy UrlLink values were copied through as-is. Blank, "NULL", and other
+ * non-URLs such as "1" are not purchase links. A relative href resolves against
+ * the book page and lands on the site 404. Only an absolute http(s) URL is returned,
+ * unchanged, so working purchase links stay exact.
+ */
+export function bookFindUrl(url: string | null | undefined): string | null {
+  const value = String(url ?? "").trim();
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    if (!parsed.hostname) return null;
+  } catch {
+    return null;
+  }
+  return value;
 }
 
 /** Combined lowercase string used for instant client-side search matching. */

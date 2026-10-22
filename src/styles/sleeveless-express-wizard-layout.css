@@ -2,7 +2,12 @@
  * Shared Express / Custom Build wizard shell: page tokens, header, panel padding,
  * builder toolbar, and accordion cards. Imported by `/patterns/sleeveless-express`
  * and Custom Build design step.
+ *
+ * Selected choice cards, checks, summary chips, and keyboard focus come from
+ * the Pattern Builder selection lego so every builder that uses this shell
+ * gets the same treatment.
  */
+@import "./lego/pattern-builder-selection.css";
 
 .express-page {
   --express-terracotta: #c2614e;

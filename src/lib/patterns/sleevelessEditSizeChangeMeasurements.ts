@@ -97,6 +97,8 @@ export function buildSleevelessEditSizeChangeMergedInches(args: {
   oldSize?: string;
   overrides: Record<string, string>;
   persist?: boolean;
+  /** Include the shared cuff-length default so a size change does not clear the cuff chip. */
+  setInSleeve?: boolean;
 }): SleevelessEditSizeChangeMergedResult {
   const selectedSize = normalizeChartRowSize(args.row) || args.selectedSize.trim();
   ensureSleevelessSizeChangeOverrideSeed({
@@ -122,7 +124,7 @@ export function buildSleevelessEditSizeChangeMergedInches(args: {
     args.row,
     args.fitPreference,
     args.audience,
-    { bodyShape: args.bodyShape, dropShoulder: false },
+    { bodyShape: args.bodyShape, dropShoulder: false, setInSleeve: args.setInSleeve },
   );
 
   const merged: Record<string, string> = { ...defaults };

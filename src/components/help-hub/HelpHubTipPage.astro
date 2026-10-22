@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import PageBackLink from "../common/PageBackLink.astro";
 import PageHead from "../PageHead.astro";
+import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
 import HelpHubTipContent from "./HelpHubTipContent.astro";
 import videosPublic from "../../data/videos-public.json";
 import {
@@ -15,9 +16,15 @@ interface Props {
   tip: HelpHubPageTip;
   preview?: boolean;
   lessons: HelpHubLessonRecord[];
+  /** Admin preview only. Does not change membership or who can open the saved page. */
+  previewAudience?: "member" | "visitor";
 }
 
-const { tip, preview = false, lessons } = Astro.props;
+const { tip, preview = false, lessons, previewAudience } = Astro.props;
+const audience =
+  preview && (previewAudience === "member" || previewAudience === "visitor")
+    ? previewAudience
+    : undefined;
 
 const view = prepareHelpHubTipPage(
   tip,
@@ -28,6 +35,7 @@ const view = prepareHelpHubTipPage(
 const { layoutTitle, pageDescription, faqJsonLd } = view;
 
 const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origin) : "";
+const articleSlug = !preview && typeof tip.slug === "string" ? tip.slug.trim() : "";
 ---
 
 <Layout
@@ -41,17 +49,26 @@ const previewDocumentBaseHref = preview ? helpHubPreviewBaseHref(Astro.url.origi
   )}
   <PageHead title="Help Hub" subhead={undefined} hideTitle={true} />
 
-  <section class="container py-5 tips-page-section">
+  <section
+    class="container py-5 tips-page-section"
+    data-help-hub-preview-audience={audience}
+    data-help-hub-article-slug={articleSlug || undefined}
+  >
     {preview && (
       <p class="help-hub-preview-banner">
         Preview — saved {typeof tip.status === "string" ? tip.status : "draft"} (not public)
       </p>
     )}
     <PageBackLink href="/help-hub" text="Back to Help Hub" />
-    <HelpHubTipContent tip={tip} lessons={lessons} />
+    <HelpHubTipContent tip={tip} lessons={lessons} markSections={preview} />
+    <FavoritesRuntime contentType="reference" />
   </section>
   <script>
     import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";
+    import { initHelpHubArticleReturn } from "../../scripts/helpHubLandingReturnClient";
+
+    const article = document.querySelector("[data-help-hub-article-slug]");
+    if (article instanceof HTMLElement) initHelpHubArticleReturn(article);
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", bootHelpHubMemberLessonGates);

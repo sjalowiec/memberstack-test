@@ -11,17 +11,16 @@ import { catalogVimeoIframePlayerId } from "../../lib/videos/catalogVideoEmbedSr
 import publicCatalogTranscripts from "../../data/transcripts/generated/public.json";
 import { paragraphsForVimeoId } from "../../lib/transcripts/catalogTranscriptData";
 import { catalogVideoPlaybackAccess } from "../../lib/videos/catalogVideoPlaybackAccess";
-import { filterPublicCatalogVideos, findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
-export const prerender = true;
-
-export function getStaticPaths() {
-  return filterPublicCatalogVideos(videosRaw).map((v) => ({
-    params: { id: String(v.content_id) },
-  }));
-}
+import { findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
+import { applyVideoPosterOverrides } from "../../lib/videos/videoPosterOverrides";
+import { loadPublicVideoPosterOverrides } from "../../lib/videos/videoPosterStore";
+export const prerender = false;
 
 const id = String(Astro.params.id);
-const video = findPublicCatalogVideoByContentId(videosRaw, id);
+const posterOverrides = await loadPublicVideoPosterOverrides();
+const catalog = applyVideoPosterOverrides(Array.isArray(videosRaw) ? videosRaw : [], posterOverrides);
+const video = findPublicCatalogVideoByContentId(catalog, id);
+Astro.response.headers.set("Cache-Control", "private, no-store");
 
 const contentIdForJumplinks = Number((video as any)?.content_id ?? Astro.params?.id ?? NaN);
 const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdForJumplinks) : "";

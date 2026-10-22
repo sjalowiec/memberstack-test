@@ -42,16 +42,22 @@ const archived = tips.filter(
 
 const reactionSummaries = new Map<
   string,
-  Awaited<ReturnType<typeof tipReactionDisplayRows>>
+  {
+    rows: Awaited<ReturnType<typeof tipReactionDisplayRows>>;
+    topicCount: number;
+  }
 >();
 
 if (!loadError) {
   for (const tip of tips) {
     try {
       const totals = await loadTipReactionTotals(tip.tipId);
-      reactionSummaries.set(tip.tipId, tipReactionDisplayRows(totals));
+      reactionSummaries.set(tip.tipId, {
+        rows: tipReactionDisplayRows(totals),
+        topicCount: totals.topicCount,
+      });
     } catch {
-      reactionSummaries.set(tip.tipId, []);
+      reactionSummaries.set(tip.tipId, { rows: [], topicCount: 0 });
     }
   }
 }
@@ -63,7 +69,7 @@ function tipDataAttr(tip: TipOfTheWeekRecord): string {
 function renderTipCard(tip: TipOfTheWeekRecord) {
   const video = resolveVideoForTip(tip);
   const bucket = tipScheduleBucket(tip, todayLa);
-  const reactions = reactionSummaries.get(tip.tipId) || [];
+  const reactions = reactionSummaries.get(tip.tipId) || { rows: [], topicCount: 0 };
   return {
     tip,
     video,
@@ -152,14 +158,19 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
                     <p class="watson-totw__meta">
                       {card.fromLabel} → {card.throughLabel}
                     </p>
-                    {card.reactions.length > 0 ? (
+                    {card.reactions.rows.length > 0 ? (
                       <ul class="watson-totw__mini-reactions">
-                        {card.reactions.map((row) => (
+                        {card.reactions.rows.map((row) => (
                           <li>
                             {row.label}: <strong>{row.count}</strong>
                           </li>
                         ))}
                       </ul>
+                    ) : null}
+                    {card.reactions.topicCount > 0 ? (
+                      <p class="watson-totw__meta">
+                        Topic suggestions: <strong>{card.reactions.topicCount}</strong>
+                      </p>
                     ) : null}
                     <div class="watson-totw__card-actions">
                       <button
@@ -1010,6 +1021,21 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
     justify-content: space-between;
     gap: 1rem;
     padding: 0.25rem 0;
+  }
+
+  .watson-totw__topic-heading {
+    margin: 0.85rem 0 0.35rem;
+    font-size: 0.92rem;
+  }
+
+  .watson-totw__topic-list {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .watson-totw__topic-item {
+    margin: 0.25rem 0;
+    white-space: pre-wrap;
   }
 
   .watson-totw__muted {
