@@ -1,0 +1,207 @@
+/** Collapsed Account list of saved Tips of the Week and Knit-ables. */
+---
+
+<section
+  id="my-saved-favorites"
+  class="dashboard-card dashboard-card--saved-favorites"
+  aria-labelledby="my-saved-favorites-heading"
+  data-kbm-saved-favorites
+>
+  <details class="account-saved-favorites__accordion" data-kbm-saved-favorites-accordion>
+    <summary class="account-saved-favorites__summary">
+      <h2 id="my-saved-favorites-heading" class="dashboard-card__title account-saved-favorites__heading">
+        My Favorites
+      </h2>
+      <span class="account-saved-favorites__chevron" aria-hidden="true"></span>
+    </summary>
+
+    <div class="account-saved-favorites__panel" id="my-saved-favorites-panel">
+      <p class="dashboard-card__subtitle">
+        Tips of the Week and Knit-ables saved to this account.
+      </p>
+      <p
+        class="dashboard-muted account-saved-favorites__status"
+        data-kbm-saved-favorites-status
+        role="status"
+        aria-live="polite"
+      >
+        Loading your favorites…
+      </p>
+      <div class="account-saved-favorites__groups" data-kbm-saved-favorites-groups hidden></div>
+      <div class="account-saved-favorites__empty" data-kbm-saved-favorites-empty hidden>
+        <p class="account-saved-favorites__empty-text">
+          You haven't saved a Tip of the Week or a Knit-able yet.
+        </p>
+        <div class="account-saved-favorites__empty-actions">
+          <a href="/tip-of-the-week" class="kbm-btn kbm-btn-outline account-saved-favorites__browse">
+            Browse Tips of the Week
+          </a>
+          <a href="/knit-ables" class="kbm-btn kbm-btn-outline account-saved-favorites__browse">
+            Browse Knit-ables
+          </a>
+        </div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<style>
+  .dashboard-card.dashboard-card--saved-favorites {
+    grid-column: 1 / -1;
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+    min-width: 0;
+    padding: 0;
+  }
+
+  .account-saved-favorites__accordion {
+    margin: 0;
+  }
+
+  .account-saved-favorites__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.15rem 1.5rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .account-saved-favorites__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .account-saved-favorites__summary::marker {
+    content: "";
+  }
+
+  .account-saved-favorites__summary:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+    border-radius: 12px;
+  }
+
+  .account-saved-favorites__heading {
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .account-saved-favorites__chevron {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1;
+    background: #fff;
+  }
+
+  .account-saved-favorites__chevron::after {
+    content: "+";
+  }
+
+  .account-saved-favorites__accordion[open] .account-saved-favorites__chevron::after {
+    content: "−";
+  }
+
+  .account-saved-favorites__panel {
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .account-saved-favorites__status {
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  .account-saved-favorites__groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+    max-height: min(24rem, 70vh);
+    overflow: auto;
+    padding-right: 0.15rem;
+  }
+
+  .account-saved-favorites__group-title {
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+  }
+
+  .account-saved-favorites__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .account-saved-favorites__item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .account-saved-favorites__link,
+  .account-saved-favorites__title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
+
+  .account-saved-favorites__note {
+    display: block;
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+
+  .account-saved-favorites__remove {
+    flex: 0 0 auto;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+
+  .account-saved-favorites__remove:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .account-saved-favorites__empty-text {
+    margin: 0 0 0.75rem;
+  }
+
+  .account-saved-favorites__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .account-saved-favorites__summary,
+    .account-saved-favorites__panel {
+      padding-left: 1.15rem;
+      padding-right: 1.15rem;
+    }
+
+    .account-saved-favorites__item {
+      gap: 0.5rem;
+    }
+  }
+</style>

@@ -27,6 +27,8 @@ function readMeta(): MetaByType {
       stitch: new Map(),
       reference: new Map(),
       tool: new Map(),
+      "tip-of-the-week": new Map(),
+      "knit-able": new Map(),
     }) satisfies MetaByType;
 
   const el = document.getElementById("account-favorites-meta");
@@ -143,8 +145,9 @@ function renderGroup(options: {
 }
 
 async function loadAllFavorites(): Promise<Record<FavoriteContentType, FavoriteRecord[]>> {
+  const legacyTypes = FAVORITE_GROUP_ORDER.map((group) => group.contentType);
   const entries = await Promise.all(
-    FAVORITE_CONTENT_TYPES.map(async (contentType) => {
+    legacyTypes.map(async (contentType) => {
       try {
         const favorites = await listFavorites(contentType);
         return [contentType, favorites] as const;
