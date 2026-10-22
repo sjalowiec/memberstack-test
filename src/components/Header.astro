@@ -1607,6 +1607,18 @@ const minimalHeader = onboarding || marketing;
   width: 18px;
   height: 18px;
 }
+.kin-result__type {
+  flex: 0 0 auto;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #3d4634;
+  background: rgba(82, 104, 45, 0.1);
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+}
 
 .kin-result__title {
   min-width: 0;
@@ -2490,11 +2502,12 @@ div[data-ms-modal-overlay] {
     let lastSearchTrigger = null;
 
     // Custom site-wide search results (presentation only).
-    // We drive Pagefind's own JS API (/pagefind/pagefind.js) so we can render a
-    // clean, scannable layout with category icons/labels + filter chips, instead
-    // of the generic default PagefindUI. The index/search logic is unchanged.
-    // The /pagefind/ assets only exist after `pagefind --site dist` runs
-    // post-build, so we load on demand and fail gracefully on pages/dev.
+    // Pagefind still searches the built index for prerendered pages. Videos,
+    // glossary, and Help Hub are rendered on request, so those results come
+    // from /api/header-search (the same published catalogs those sections use).
+    // Shared synonyms apply to both. Title matches outrank body matches, the
+    // same URL is shown once, and a tied rank rotates by section. Pagefind assets exist only after
+    // `pagefind --site dist`, so that half is skipped until the index exists.
     let pagefindRequested = false;
     function loadPagefind() {
       if (pagefindRequested) return;
@@ -2774,9 +2787,10 @@ div[data-ms-modal-overlay] {
             return '<li class="kin-result"><a class="kin-result__link" href="' + escapeHtml(r.url) + '">' +
               '<span class="kin-result__title-row">' +
               '<span class="kin-result__icon kin-result__icon--' + r.cat + '">' + cat.icon + "</span>" +
+              '<span class="kin-result__type">' + escapeHtml(cat.label) + "</span>" +
               '<span class="kin-result__title">' + escapeHtml(r.title) + "</span>" +
               "</span>" +
-              '<span class="kin-result__excerpt">' + (r.excerpt || "") + "</span>" +
+              '<span class="kin-result__excerpt">' + (r.excerptHtml ? (r.excerpt || "") : escapeHtml(r.excerpt || "")) + "</span>" +
               "</a></li>";
           })
           .join("");
@@ -2799,6 +2813,136 @@ div[data-ms-modal-overlay] {
         window.__kinSearchCommitQueue.push(detail);
       }
 
+      async function collectSearch(pf, query, tier) {
+        const search = await pf.search(query);
+        return {
+          tier,
+          hits: (search && search.results ? search.results : []).map((result, index) => ({
+            key: result && result.id != null && String(result.id) !== ""
+              ? String(result.id)
+              : tier + "-" + index,
+            item: result,
+            score: result.score,
+          })),
+        };
+      }
+
+      async function fetchCatalogResults(term) {
+        try {
+          const response = await fetch("/api/header-search?q=" + encodeURIComponent(term), {
+            headers: { Accept: "application/json" },
+          });
+          if (!response.ok) return null;
+          const body = await response.json();
+          const rows = body && Array.isArray(body.results) ? body.results : [];
+          return rows
+            .map((hit) => ({
+              url: String((hit && hit.url) || ""),
+              title: String((hit && hit.title) || ""),
+              excerpt: String((hit && hit.excerpt) || ""),
+              excerptHtml: false,
+              cat: hit && CATEGORIES[hit.cat] ? hit.cat : categorize(hit && hit.url),
+              rank: Number(hit && hit.rank) || 0,
+            }))
+            .filter((hit) => hit.url && hit.title && hit.rank > 0);
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function pagefindMatchRank(term, title, excerpt) {
+        if (typeof window.__kinScorePagefindHit === "function") {
+          return window.__kinScorePagefindHit(term, title, excerpt);
+        }
+        return 0;
+      }
+
+      function mergeCatalogAndPagefind(catalog, pagefindResults) {
+        if (typeof window.__kinMergeHeaderSearch === "function") {
+          return window.__kinMergeHeaderSearch(catalog, pagefindResults, 30);
+        }
+        const seen = new Set();
+        return catalog.concat(pagefindResults)
+          .sort((a, b) => (b.rank - a.rank) || String(a.title).localeCompare(String(b.title)))
+          .filter((hit) => {
+            const key = String(hit.url || "").split(/[?#]/)[0].toLowerCase().replace(/\/+$/, "");
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .slice(0, 30);
+      }
+
+      async function pagefindResultsFor(pf, term) {
+        const plan =
+          typeof window.__kinBuildSearchQueryPlan === "function"
+            ? window.__kinBuildSearchQueryPlan(term)
+            : { exact: [term.trim()], synonym: [] };
+        const exactQueries = plan.exact && plan.exact.length ? plan.exact : [term.trim()];
+        const synonymQueries = plan.synonym || [];
+        const primary = await pf.debouncedSearch(exactQueries[0], {}, 200);
+        if (primary === null) return null;
+        if (term !== currentTerm) return null;
+
+        const groups = [
+          {
+            tier: 2,
+            hits: (primary.results || []).map((result, index) => ({
+              key: result && result.id != null && String(result.id) !== ""
+                ? String(result.id)
+                : "exact-" + index,
+              item: result,
+              score: result.score,
+            })),
+          },
+        ];
+        const followups = exactQueries.slice(1).map((query) => collectSearch(pf, query, 2))
+          .concat(synonymQueries.map((query) => collectSearch(pf, query, 1)));
+        if (followups.length) {
+          try {
+            groups.push(...(await Promise.all(followups)));
+          } catch (err) {
+            /* The literal search still stands when a synonym lookup fails. */
+          }
+        }
+        if (term !== currentTerm) return null;
+
+        const ranked = typeof window.__kinMergeSearchHits === "function"
+          ? window.__kinMergeSearchHits(groups)
+          : groups[0].hits.map((hit) => hit.item);
+        const visible = ranked.slice(0, 30);
+        const topScore = visible.reduce(
+          (max, result) => Math.max(max, Number(result && result.score) || 0),
+          0,
+        );
+        const data = await Promise.all(visible.map((result) => result.data()));
+        if (term !== currentTerm) return null;
+
+        // Pagefind quality gate stays on the built index only. Catalog matches
+        // are judged separately and still show when this index has nothing useful.
+        if (!hasGoodMatchedTerm(data) || !(topScore >= MIN_GOOD_RESULT_SCORE)) {
+          return [];
+        }
+
+        const seenUrls = new Set();
+        const results = [];
+        data.forEach((d) => {
+          if (!d || !d.url || seenUrls.has(d.url)) return;
+          seenUrls.add(d.url);
+          const title = (d.meta && d.meta.title) || titleFromUrl(d.url);
+          results.push({
+            url: d.url,
+            title,
+            excerpt: cleanExcerpt(d.excerpt, title),
+            excerptHtml: true,
+            cat: categorize(d.url),
+            rank: pagefindMatchRank(term, title, d.excerpt),
+          });
+          if (!results[results.length - 1].rank) results.pop();
+        });
+        return results;
+      }
+
       async function runSearch(term) {
         currentTerm = term;
         if (!term.trim()) {
@@ -2810,52 +2954,45 @@ div[data-ms-modal-overlay] {
           return;
         }
         setStatusText("Searching\u2026");
-        let pf;
+        let pf = null;
         try {
           pf = await getPagefind();
         } catch (err) {
-          showUnavailable();
-          return;
+          pf = null;
         }
-        let search;
-        try {
-          search = await pf.debouncedSearch(term, {}, 200);
-        } catch (err) {
-          showUnavailable();
-          return;
-        }
-        if (search === null) return; // superseded by a newer keystroke
-        if (term !== currentTerm) return; // stale
-
-        const data = await Promise.all(search.results.slice(0, 30).map((r) => r.data()));
         if (term !== currentTerm) return;
 
-        // UX quality gate (presentation-only): judge quality from the ACTUAL
-        // matched terms Pagefind returned (not the raw query). Require at least
-        // one matched token of 3+ chars that isn't a generic UI word, plus a
-        // conservative relevance-score guard. If it's all single letters or
-        // generic words, show the empty state instead of noisy cards/counts.
-        // The Pagefind index/query are untouched — we just don't show noise.
-        const topScore = search.results.length ? search.results[0].score : 0;
-        if (!hasGoodMatchedTerm(data) || !(topScore >= MIN_GOOD_RESULT_SCORE)) {
+        let indexed = [];
+        if (pf) {
+          try {
+            const found = await pagefindResultsFor(pf, term);
+            if (found === null) return;
+            indexed = found;
+          } catch (err) {
+            indexed = [];
+            pf = null;
+          }
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          if (term !== currentTerm) return;
+        }
+
+        const catalog = await fetchCatalogResults(term);
+        if (term !== currentTerm) return;
+        if (catalog === null && !pf) {
+          showUnavailable();
+          return;
+        }
+
+        allResults = mergeCatalogAndPagefind(catalog || [], indexed);
+        activeFilter = "all";
+        if (!allResults.length) {
           showNoGoodMatches(term);
           noteGlobalSearchCommit(term, 0);
           return;
         }
-
-        allResults = data.map((d) => {
-          const title = (d.meta && d.meta.title) || titleFromUrl(d.url);
-          return {
-            url: d.url,
-            title,
-            excerpt: cleanExcerpt(d.excerpt, title),
-            cat: categorize(d.url),
-          };
-        });
         render();
-        setStatusText(
-          allResults.length ? "" : "No results for \u201C" + term + "\u201D. Try a different word."
-        );
+        setStatusText("");
         noteGlobalSearchCommit(term, allResults.length);
       }
 
@@ -2908,10 +3045,14 @@ div[data-ms-modal-overlay] {
   })();
 </script>
 <script>
+  import { installHeaderSearchMerge } from "../lib/headerSearchMerge";
   import { installSearchCommitLogger } from "../lib/searchActivityClient";
+  import { installSearchSynonymHelpers } from "../lib/searchSynonyms";
   import { openSiteSearchFromUrlIfRequested } from "../lib/siteSearchOpenFromUrl";
 
   installSearchCommitLogger();
+  installSearchSynonymHelpers();
+  installHeaderSearchMerge();
 
   // Same open path as the header magnifying-glass: click an existing trigger.
   openSiteSearchFromUrlIfRequested({
