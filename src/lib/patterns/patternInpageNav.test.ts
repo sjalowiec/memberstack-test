@@ -92,4 +92,24 @@ describe("sweater in-page navigation remains unchanged", () => {
     expect(beta).toContain("<SavedPatternStickyNav");
     expect(beta).not.toContain("includePrint");
   });
+
+  it("sticks finished-pattern diagrams below the measured sticky nav", () => {
+    const css = readFileSync(
+      resolve("src/styles/patterns/sleeveless-pattern-shared.css"),
+      "utf8",
+    );
+    const nav = readFileSync(resolve("src/lib/patterns/patternInpageNav.ts"), "utf8");
+    const hat = readFileSync(resolve("src/pages/patterns/hat/pattern.astro"), "utf8");
+    expect(css).toContain("--pattern-sticky-diagram-gap: 0.75rem;");
+    expect(css).toContain(
+      "var(--pattern-sticky-nav-bar-height, var(--pattern-inpage-nav-height, 3.35rem))",
+    );
+    expect(css).toContain("top: var(--pattern-sticky-diagram-top);");
+    expect(css).not.toContain("--fixed-header-offset");
+    expect(hat).toContain("top: var(--pattern-sticky-diagram-top);");
+    expect(hat).not.toContain("--fixed-header-offset");
+    expect(nav).toContain("--pattern-sticky-nav-bar-height");
+    expect(nav).toContain("ResizeObserver");
+    expect(nav).toContain('nav.closest(".sleeveless-pattern-page")');
+  });
 });

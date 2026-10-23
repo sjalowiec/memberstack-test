@@ -2,6 +2,17 @@
     --sg-accent: #c2614e;
     /* Sticky in-page nav bar height (single-row mobile; ~two rows when pills wrap on desktop). */
     --pattern-inpage-nav-height: 3.35rem;
+    /*
+     * Finished-pattern diagrams stick below the site header and the full sticky
+     * nav (section links + actions). --pattern-sticky-nav-bar-height is the
+     * measured nav height and updates when buttons wrap or the viewport changes.
+     */
+    --pattern-sticky-diagram-gap: 0.75rem;
+    --pattern-sticky-diagram-top: calc(
+      var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 4px +
+        var(--pattern-sticky-nav-bar-height, var(--pattern-inpage-nav-height, 3.35rem)) +
+        var(--pattern-sticky-diagram-gap, 0.75rem)
+    );
     padding-bottom: 2rem;
   }
 
@@ -1112,7 +1123,7 @@
     #pattern-content .pattern-layout.sleeveless-pattern-reading-layout > .sleeveless-pattern-reading-layout__diagram {
       order: 0;
       position: sticky;
-      top: var(--fixed-header-offset, 90px);
+      top: var(--pattern-sticky-diagram-top);
       align-self: start;
       justify-self: stretch;
       width: auto;
@@ -2295,7 +2306,7 @@
       max-width: none;
       min-width: 0;
       position: sticky;
-      top: var(--fixed-header-offset, 90px);
+      top: var(--pattern-sticky-diagram-top);
       align-self: start;
       justify-self: stretch;
     }

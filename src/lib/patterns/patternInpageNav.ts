@@ -141,11 +141,42 @@ function patternStickyNavHasVisibleActions(nav: HTMLElement): boolean {
 
 /** Keep a jumped-to heading below the site header and this sticky bar. */
 function syncPatternInpageNavOffset(nav: HTMLElement): void {
+  ensurePatternStickyNavBarObserver(nav);
+  writePatternNavOffsetVars(nav);
+}
+
+/**
+ * Publish the sticky nav's border-box height so diagram `top` can sit below it.
+ * The page element gets an inline value so the stylesheet fallback cannot freeze it.
+ */
+function writePatternNavOffsetVars(nav: HTMLElement): void {
   const root = document.documentElement;
   if (!(root instanceof HTMLElement) || !root.style?.setProperty) return;
   const height = nav.offsetHeight;
-  if (height > 0) {
-    root.style.setProperty("--pattern-inpage-nav-height", `${height + 8}px`);
+  if (!(height > 0)) return;
+  root.style.setProperty("--pattern-inpage-nav-height", `${height + 8}px`);
+  const barHeight = `${height}px`;
+  root.style.setProperty("--pattern-sticky-nav-bar-height", barHeight);
+  const page =
+    typeof nav.closest === "function" ? nav.closest(".sleeveless-pattern-page") : null;
+  if (page instanceof HTMLElement && page !== root && page.style?.setProperty) {
+    page.style.setProperty("--pattern-sticky-nav-bar-height", barHeight);
+  }
+}
+
+/** Remeasure when the nav wraps, actions show, or the viewport changes its height. */
+function ensurePatternStickyNavBarObserver(nav: HTMLElement): void {
+  if (nav.dataset?.patternNavOffsetBound === "true") return;
+  if (!nav.dataset) return;
+  nav.dataset.patternNavOffsetBound = "true";
+  const measure = () => writePatternNavOffsetVars(nav);
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(nav);
+    return;
+  }
+  if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    window.addEventListener("resize", measure, { passive: true });
   }
 }
 
