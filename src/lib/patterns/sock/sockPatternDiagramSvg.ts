@@ -111,7 +111,13 @@ function sockLabelWidth(text: string, size: number): number {
 export const SOCK_DIAGRAM_RC_X =
   MEASURE_LABEL_X + sockLabelWidth("0000 rows", SOCK_DIAGRAM_TYPE.stitch) + 8;
 
-export type SockDiagramRcMilestoneId = "rc-leg" | "rc-ankle" | "rc-heel" | "rc-foot" | "rc-toe";
+export type SockDiagramRcMilestoneId =
+  | "rc-leg"
+  | "rc-ankle"
+  | "rc-heel"
+  | "rc-foot"
+  | "rc-toe"
+  | "rc-bind-off";
 
 export type SockDiagramRcMilestone = {
   id: SockDiagramRcMilestoneId;
@@ -143,8 +149,9 @@ export function sockDiagramShowsSplitAnkle(
  * Row-counter labels at the boundaries the written instructions mark.
  * Cuff-down continues through the ankle and stops at the heel on the full leg
  * count, restarts the foot at 000, and stops the toe at the foot ending RC.
- * Toe-up resets at the toe and the foot, stops the heel at the foot ending RC,
- * then shows 000 at the ankle and resets again at the leg.
+ * Toe-up resets at the toe, the foot, and the ankle. After the ankle rows the
+ * counter reads that ankle total at the leg boundary. The leg then resets and
+ * is knit to its own ending RC, labeled on the top bind-off edge.
  */
 export function sockDiagramRcMilestones(
   calc: BasicSockCalc,
@@ -158,13 +165,22 @@ export function sockDiagramRcMilestones(
       { id: "rc-heel", rc: calc.straightFootRows, canonicalY: OUTLINE.heelBottom },
     ];
     if (showsAnkle && calc.ankleStraightRows > 0) {
-      marks.push(
-        { id: "rc-ankle", rc: 0, canonicalY: OUTLINE.heelTop },
-        { id: "rc-leg", rc: 0, canonicalY: OUTLINE.ankleY },
-      );
+      marks.push({ id: "rc-ankle", rc: 0, canonicalY: OUTLINE.heelTop });
+      if (calc.legShapingRowsAvailable > 0) {
+        marks.push({
+          id: "rc-leg",
+          rc: calc.ankleStraightRows,
+          canonicalY: OUTLINE.ankleY,
+        });
+      }
     } else {
       marks.push({ id: "rc-leg", rc: 0, canonicalY: OUTLINE.heelTop });
     }
+    marks.push({
+      id: "rc-bind-off",
+      rc: calc.legShapingRowsAvailable > 0 ? calc.legShapingRowsAvailable : calc.ankleStraightRows,
+      canonicalY: OUTLINE.top,
+    });
     return marks;
   }
   return [
