@@ -198,7 +198,13 @@ describe("Socks Shaping Notation from approved calc", () => {
     const cuffLines = buildSockShapingNotationLines(cuff);
     const toeUpLines = buildSockShapingNotationLines(toeUp);
     expect(cuffLines.castOn).toBe(formatCastOnNotation(cuff.legStitches));
-    expect(toeUpLines.castOn).toBe(formatCastOnNotation(toeUp.totalSockStitches));
+    expect(toeUp.toe.workingStitches).toBeLessThan(toeUp.totalSockStitches);
+    expect(toeUpLines.castOn).toBe(formatCastOnNotation(toeUp.toe.workingStitches));
+    expect(toeUpLines.castOn).not.toBe(formatCastOnNotation(toeUp.totalSockStitches));
+    expect(
+      buildBasicSockInstructions(toeUp, 1).sections.find((section) => section.id === "cast-on")
+        ?.endStitches,
+    ).toBe(toeUp.toe.workingStitches);
     expect(cuffLines.order).toBe("cuff-to-toe");
     expect(toeUpLines.order).toBe("toe-up");
     const cuffSvg = buildSockShapingNotationDiagramSvg(cuff);
@@ -217,6 +223,27 @@ describe("Socks Shaping Notation from approved calc", () => {
     expect(Number(labelXY(cuffSvg, "castOnCuff").y)).toBeGreaterThan(Number(labelXY(cuffSvg, "sectionLeg").y));
     expect(Number(labelXY(toeUpSvg, "castOnToe").y)).toBeGreaterThan(Number(labelXY(toeUpSvg, "sectionToe").y));
     expect(Number(labelXY(cuffSvg, "finish").y)).toBeLessThan(Number(labelXY(cuffSvg, "sectionToe").y));
+    const stocking = calculateChristmasStockingPattern({
+      direction: "toe-up",
+      legLengthInches: 8,
+      footCircumferenceInches: 10,
+      footLengthInches: 7,
+      stitchGaugeDisplay: 16,
+      rowGaugeDisplay: 24,
+      displayUnit: "inches",
+    });
+    expect(stocking.ok, stocking.ok ? "" : stocking.errors.join("; ")).toBe(true);
+    if (!stocking.ok) return;
+    const stockingLines = buildSockShapingNotationLines(stocking.calc, {
+      family: "christmas-stocking",
+    });
+    expect(stocking.calc.toe.workingStitches).toBeLessThan(stocking.calc.totalSockStitches);
+    expect(stockingLines.castOn).toBe(formatCastOnNotation(stocking.calc.toe.workingStitches));
+    expect(
+      buildChristmasStockingInstructions(stocking.calc).sections.find(
+        (section) => section.id === "cast-on",
+      )?.endStitches,
+    ).toBe(stocking.calc.toe.workingStitches);
     expect(Number(labelXY(toeUpSvg, "finish").y)).toBeLessThan(Number(labelXY(toeUpSvg, "sectionLeg").y));
   });
 
