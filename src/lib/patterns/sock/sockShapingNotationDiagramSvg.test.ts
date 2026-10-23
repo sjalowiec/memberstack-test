@@ -124,10 +124,17 @@ describe("Socks Shaping Notation from approved calc", () => {
     expect(svg).toContain(`+${formatShapingSegment(1, 1, calc.heel.shortRowOutSteps)}`);
     expect(svg).toContain(`-${formatShapingSegment(1, 1, calc.heel.shortRowInSteps)}`);
     expect(svg).toContain(remainingStitchLabel(calc.heel.remainingStitches));
+    expect(svg).toContain(formatShapingNotationRcLabel(calc.legShapingRowsAvailable));
     expect(svg).toContain(formatShapingNotationRcLabel(calc.legRows));
     expect(svg).toContain(formatShapingNotationRcLabel(calc.straightFootRows));
     expect(labelsGroup(svg)).not.toMatch(/>\d+r</);
-    expect(rcLabelIds(labelsGroup(svg))).toEqual(["rc-leg", "rc-heel", "rc-foot", "rc-toe"]);
+    expect(rcLabelIds(labelsGroup(svg))).toEqual([
+      "rc-leg",
+      "rc-ankle",
+      "rc-heel",
+      "rc-foot",
+      "rc-toe",
+    ]);
     expect(svg).not.toMatch(/hold\d/);
     expect(svg).not.toContain("hold ");
     expect(svg).not.toContain('data-sock-shape="heel-hourglass"');
@@ -365,16 +372,19 @@ describe("Shaping Notation RC milestones", () => {
     expect(sockShapingNotationRcMilestones(calc)).toEqual(shared);
     expect(shared).toEqual([
       { id: "rc-leg", rc: 0, canonicalY: 8 },
+      { id: "rc-ankle", rc: calc.legShapingRowsAvailable, canonicalY: 184 },
       { id: "rc-heel", rc: calc.legRows, canonicalY: 216 },
       { id: "rc-foot", rc: 0, canonicalY: 264 },
       { id: "rc-toe", rc: calc.straightFootRows, canonicalY: 424 },
     ]);
     expect(attr(svg, "data-sock-rc-leg")).toBe("0");
+    expect(attr(svg, "data-sock-rc-ankle")).toBe(String(calc.legShapingRowsAvailable));
     expect(attr(svg, "data-sock-rc-heel")).toBe(String(calc.legRows));
     expect(attr(svg, "data-sock-rc-foot")).toBe("0");
     expect(attr(svg, "data-sock-rc-toe")).toBe(String(calc.straightFootRows));
     assertSharedRcLabels(svg, calc);
-    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
+    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-ankle").y));
+    expect(Number(labelXY(svg, "rc-ankle").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
     expect(Number(labelXY(svg, "rc-heel").y)).toBeGreaterThan(Number(labelXY(svg, "rc-foot").y));
     expect(Number(labelXY(svg, "rc-foot").y)).toBeGreaterThan(Number(labelXY(svg, "rc-toe").y));
     expect(stackedShapeTexts(svg, "heel-shape")).not.toMatch(/rc\d/);
