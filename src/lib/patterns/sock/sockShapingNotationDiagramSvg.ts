@@ -222,7 +222,7 @@ export function buildSockShapingNotationLines(
   order: BasicSockCalc["constructionDirection"];
 } {
   const knitStart =
-    calc.constructionDirection === "cuff-to-toe" ? calc.legStitches : calc.totalSockStitches;
+    calc.constructionDirection === "cuff-to-toe" ? calc.legStitches : calc.toe.workingStitches;
   const combinedLeg = !sockDiagramShowsSplitAnkle(calc, options?.family ?? "socks");
   const leg = combinedLeg
     ? [formatBodyRowsNotation(calc.legRows)]
