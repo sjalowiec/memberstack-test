@@ -247,6 +247,71 @@ describe("Socks Shaping Notation from approved calc", () => {
     expect(Number(labelXY(toeUpSvg, "finish").y)).toBeLessThan(Number(labelXY(toeUpSvg, "sectionLeg").y));
   });
 
+  it("labels the toe-up cast-on with the written initial toe count for both families", () => {
+    function writtenToeCastOn(calc: BasicSockCalc, family: "socks" | "christmas-stocking"): number {
+      const doc =
+        family === "christmas-stocking"
+          ? buildChristmasStockingInstructions(calc)
+          : buildBasicSockInstructions(calc, 1);
+      const step = doc.sections
+        .find((section) => section.id === "cast-on")
+        ?.steps.find((item) => item.type === "cast-on" && item.role === "toe");
+      expect(step, family).toBeTruthy();
+      if (!step || step.type !== "cast-on") throw new Error("missing toe cast-on");
+      return step.stitches;
+    }
+
+    const fortyStitchFoot = mustCalc({
+      constructionDirection: "toe-up",
+      footCircumferenceInches: 40 / 7,
+      footLengthInches: 9,
+      legCircumferenceInches: 8.5,
+      legLengthInches: 6,
+    });
+    const widerFoot = mustCalc({
+      constructionDirection: "toe-up",
+      footCircumferenceInches: 8.5,
+      footLengthInches: 9,
+      legCircumferenceInches: 10,
+      legLengthInches: 6,
+    });
+    expect(fortyStitchFoot.totalSockStitches).toBe(40);
+    expect(fortyStitchFoot.toe.workingStitches).toBe(20);
+    expect(widerFoot.totalSockStitches).not.toBe(40);
+    expect(widerFoot.toe.workingStitches).not.toBe(20);
+    expect(widerFoot.legStitches).not.toBe(widerFoot.totalSockStitches);
+
+    for (const calc of [fortyStitchFoot, widerFoot]) {
+      for (const family of ["socks", "christmas-stocking"] as const) {
+        const written = writtenToeCastOn(calc, family);
+        expect(written).toBe(calc.toe.workingStitches);
+        const lines = buildSockShapingNotationLines(calc, { family });
+        const svg = buildSockShapingNotationDiagramSvg(calc, { family });
+        const token = formatCastOnNotation(written);
+        expect(lines.castOn).toBe(token);
+        expect(attr(svg, "data-sock-cast-on")).toBe(token);
+        expect(labelText(svg, "castOnToe")).toBe(token);
+        expect(labelText(svg, "castOnToe")).not.toBe(formatCastOnNotation(calc.totalSockStitches));
+        expect(labelText(svg, "castOnToe")).not.toBe(formatCastOnNotation(calc.legStitches));
+      }
+    }
+
+    const cuffDown = mustCalc({
+      constructionDirection: "cuff-to-toe",
+      footCircumferenceInches: 40 / 7,
+      footLengthInches: 9,
+      legCircumferenceInches: 8.5,
+      legLengthInches: 6,
+    });
+    expect(cuffDown.totalSockStitches).toBe(40);
+    expect(cuffDown.legStitches).not.toBe(cuffDown.toe.workingStitches);
+    for (const family of ["socks", "christmas-stocking"] as const) {
+      const svg = buildSockShapingNotationDiagramSvg(cuffDown, { family });
+      expect(labelText(svg, "castOnCuff")).toBe(formatCastOnNotation(cuffDown.legStitches));
+      expect(labelText(svg, "castOnCuff")).not.toBe(formatCastOnNotation(cuffDown.toe.workingStitches));
+    }
+  });
+
   it("mirrors Sock 2 orientation without new notation tokens or reversed text", () => {
     const calc = mustCalc();
     const sock1 = buildSockShapingNotationDiagramSvg(calc);
