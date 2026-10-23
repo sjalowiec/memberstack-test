@@ -30,7 +30,11 @@ import {
   sockDiagramRcMilestones,
   sockDiagramSectionLabels,
   sockDiagramShowsSplitAnkle,
+  OUTLINE,
+  sockDiagramStackStep,
   sockFinishedDiagramTypography,
+  sockGlyphAbove,
+  sockGlyphBelow,
   type SockDiagramFamily,
   type SockDiagramRcMilestone,
 } from "./sockPatternDiagramSvg";
@@ -42,15 +46,25 @@ const MUTED = "#4b5563";
  * Center a notation stack inside the section, using the shared line gap.
  * `direction` is +1 toward larger Y and -1 toward smaller Y.
  */
+const STACK_CLEAR = 8;
+
+function stackStep(type: SidewaysPatternDiagramType): number {
+  return sockDiagramStackStep(type.notation);
+}
+
+/** Center of a stack whose first line sits `clear` past `edge` in `direction`. */
 function notationStackCenter(
-  sectionY: number,
+  edge: number,
   lineCount: number,
   type: SidewaysPatternDiagramType,
   direction = 1,
 ): number {
-  const span = Math.max(0, lineCount - 1) * type.notationGap;
-  const first = sectionY + direction * (type.piece / 2 + type.notationGap);
-  return first + (direction * span) / 2;
+  const step = stackStep(type);
+  const first =
+    direction > 0
+      ? edge + STACK_CLEAR + sockGlyphAbove(type.notation)
+      : edge - STACK_CLEAR - sockGlyphBelow(type.notation);
+  return first + (direction * Math.max(0, lineCount - 1) * step) / 2;
 }
 
 function notationStackEnd(
@@ -60,22 +74,23 @@ function notationStackEnd(
   direction: number,
   edge: "inner" | "outer",
 ): number {
-  const span = Math.max(0, lineCount - 1) * type.notationGap;
+  const span = Math.max(0, lineCount - 1) * stackStep(type);
   const first = center - (direction * span) / 2;
   const last = center + (direction * span) / 2;
   return edge === "outer" ? last : first;
 }
 
-/** Push an edge label outward when a notation stack would land on it. */
-function clearEdgeLabel(
-  anchorY: number,
-  stackY: number,
+/** Next middle-baseline label beyond the outer line of a stack. */
+function labelBeyondStack(
+  stackOuterY: number,
+  stackDirection: number,
   type: SidewaysPatternDiagramType,
-  outward: "down" | "up",
+  labelSize: number,
 ): number {
-  const gap = type.notation * 0.6 + type.notationGap * 0.5;
-  if (outward === "down") return Math.max(anchorY, stackY + gap);
-  return Math.min(anchorY, stackY - gap);
+  if (stackDirection > 0) {
+    return stackOuterY + sockGlyphBelow(type.notation) + STACK_CLEAR + sockGlyphAbove(labelSize);
+  }
+  return stackOuterY - sockGlyphAbove(type.notation) - STACK_CLEAR - sockGlyphBelow(labelSize);
 }
 
 function magicFormulaLines(calc: BasicSockCalc): string[] {
@@ -168,20 +183,29 @@ export function buildSockShapingNotationDiagramSvg(
   const notation = buildSockShapingNotationLines(calc, { family });
   const type = sockFinishedDiagramTypography();
   const labels: string[] = [];
+  const yAt = (canonicalY: number) => sockCanonicalMapY(canonicalY, flipVertical);
   const directionX = point("direction", mirror, false).x;
   const castOnAnchor = flipVertical ? "castOnCuff" : "castOnToe";
-  const finishAnchor = flipVertical ? "castOnToe" : "castOnCuff";
-  const castOn = point(castOnAnchor, mirror, flipVertical);
-  const finish = point(finishAnchor, mirror, flipVertical);
-  const finishText = flipVertical
-    ? "waste yarn"
-    : formatBindOffNotation(calc.legStitches);
+  const finishText = flipVertical ? "waste yarn" : formatBindOffNotation(calc.legStitches);
+  const step = stackStep(type);
+  const heelStackY = notationStackCenter(OUTLINE.heelBottom, notation.heel.length, type, 1);
+  const toeStackY = notationStackCenter(OUTLINE.toeBottom, notation.toe.length, type, 1);
+  const cuffEdgeY = OUTLINE.top - STACK_CLEAR - sockGlyphBelow(type.notation);
+  const toeOuter = notation.toe.length
+    ? notationStackEnd(toeStackY, notation.toe.length, type, 1, "outer")
+    : OUTLINE.toeBottom;
+  const toeEdgeY = labelBeyondStack(toeOuter, 1, type, type.notation);
+  const castOnY = yAt(flipVertical ? cuffEdgeY : toeEdgeY);
+  const finishY = yAt(flipVertical ? toeEdgeY : cuffEdgeY);
+  const upperEdge = Math.min(castOnY, finishY);
+  const directionY =
+    upperEdge - sockGlyphAbove(type.notation) - STACK_CLEAR - sockGlyphBelow(type.piece);
 
   labels.push(
     sockCanonicalText({
       id: "direction",
       x: directionX,
-      y: -18,
+      y: directionY,
       text: calc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up",
       size: type.piece,
       fill: MUTED,
@@ -191,8 +215,8 @@ export function buildSockShapingNotationDiagramSvg(
   labels.push(
     sockCanonicalText({
       id: castOnAnchor,
-      x: castOn.x,
-      y: castOn.y,
+      x: directionX,
+      y: castOnY,
       text: notation.castOn,
       size: type.notation,
       weight: "700",
@@ -201,8 +225,8 @@ export function buildSockShapingNotationDiagramSvg(
   labels.push(
     sockCanonicalText({
       id: "finish",
-      x: finish.x,
-      y: finish.y,
+      x: directionX,
+      y: finishY,
       text: finishText,
       size: type.notation,
       fill: MUTED,
@@ -223,84 +247,43 @@ export function buildSockShapingNotationDiagramSvg(
     );
   }
 
-  const sectionAt = (id: "sectionHeel" | "sectionToe" | "sectionLeg" | "sectionAnkle" | "sectionFoot") =>
-    sections.find((section) => section.id === id)?.y ?? point(id, mirror, flipVertical).y;
-  const interior = (sectionId: "sectionHeel" | "sectionToe", centerId: "heelCenter" | "toeCenter") =>
-    Math.sign(point(centerId, mirror, flipVertical).y - sectionAt(sectionId)) || 1;
-  const toeDir = interior("sectionToe", "toeCenter");
-  const heelDir = interior("sectionHeel", "heelCenter");
-  const toeStackY = notationStackCenter(sectionAt("sectionToe"), notation.toe.length, type, toeDir);
-  const castOnNearToe = Math.abs(castOn.y - toeStackY) <= Math.abs(finish.y - toeStackY);
-  const toeAnchorY = castOnNearToe ? castOn.y : finish.y;
-  const toeOutward = toeAnchorY >= toeStackY ? "down" : "up";
-  const toeEdge = notation.toe.length
-    ? notationStackEnd(toeStackY, notation.toe.length, type, toeDir, "outer")
-    : toeAnchorY;
-  const clearedToeY = clearEdgeLabel(toeAnchorY, toeEdge, type, toeOutward);
-  const castOnY = castOnNearToe ? clearedToeY : castOn.y;
-  const finishY = castOnNearToe ? finish.y : clearedToeY;
-  const directionY =
-    Math.min(castOnY, finishY) - (type.notation + type.piece) / 2 - type.notationGap * 0.65;
-  labels[0] = sockCanonicalText({
-    id: "direction",
-    x: directionX,
-    y: directionY,
-    text: calc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up",
-    size: type.piece,
-    fill: MUTED,
-    weight: String(type.pieceWeight),
-  });
-  labels[1] = sockCanonicalText({
-    id: castOnAnchor,
-    x: castOn.x,
-    y: castOnY,
-    text: notation.castOn,
-    size: type.notation,
-    weight: "700",
-  });
-  labels[2] = sockCanonicalText({
-    id: "finish",
-    x: finish.x,
-    y: finishY,
-    text: finishText,
-    size: type.notation,
-    fill: MUTED,
-  });
   labels.push(
     sockCanonicalStacked({
       id: "heel-shape",
       x: point("heelCenter", mirror, flipVertical).x,
-      y: notationStackCenter(sectionAt("sectionHeel"), notation.heel.length, type, heelDir),
+      y: yAt(heelStackY),
       lines: notation.heel,
       size: type.notation,
-      lineGap: type.notationGap,
+      lineGap: step,
     }),
   );
   labels.push(
     sockCanonicalStacked({
       id: "toe-shape",
       x: point("toeCenter", mirror, flipVertical).x,
-      y: toeStackY,
+      y: yAt(toeStackY),
       lines: notation.toe,
       size: type.notation,
-      lineGap: type.notationGap,
+      lineGap: step,
     }),
   );
 
   if (showsAnkle && calc.legShapingSchedule.knitOrder.direction !== "none") {
-    const legAt = point("sectionLeg", mirror, flipVertical);
-    const legToward = sections.some((section) => section.id === "sectionAnkle")
-      ? sectionAt("sectionAnkle")
-      : sectionAt("sectionHeel");
-    const legDir = Math.sign(legToward - legAt.y) || 1;
+    const legNameY = OUTLINE.ankleY > 0 ? 90 : (OUTLINE.top + OUTLINE.heelTop) / 2;
+    const legCenter = notationStackCenter(
+      legNameY + sockGlyphBelow(type.piece),
+      notation.leg.length,
+      type,
+      1,
+    );
     labels.push(
       sockCanonicalStacked({
         id: "leg-shape",
-        x: legAt.x,
-        y: notationStackCenter(legAt.y, notation.leg.length, type, legDir),
+        x: point("sectionLeg", mirror, flipVertical).x,
+        y: yAt(legCenter),
         lines: notation.leg,
         size: type.notation,
-        lineGap: type.notationGap,
+        lineGap: step,
       }),
     );
   }

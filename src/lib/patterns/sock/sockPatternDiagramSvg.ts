@@ -14,6 +14,7 @@ import {
 import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import type { BasicSockCalc } from "./sockMath";
 import {
+  SOCK_CANONICAL_ANCHORS,
   SOCK_CANONICAL_SVG_HREF,
   SOCK_CANONICAL_VB_W,
   SOCK_STS_ROWS_PAD_RIGHT,
@@ -43,7 +44,7 @@ export type SockDiagramBuildOptions = {
 };
 
 /** Outline extrema from socks-summary.svg polygon — overlay placement only. */
-const OUTLINE = {
+export const OUTLINE = {
   left: 12,
   right: 276,
   top: 8,
@@ -66,12 +67,30 @@ const DIM_CAP = 7;
 const DIM_CAP_T = 1.4;
 const DIM_GAP = 18;
 const DIM_LABEL_GAP = 10;
-const DIM_ABOVE = 8;
-const CUFF_DIM_Y = OUTLINE.top - 14;
 const V_DIM_X = OUTLINE.right + DIM_GAP;
-const WORK_STS_INSET = 28;
 /** Approximate em width used to keep the row counter clear of the measurement. */
 const SOCK_LABEL_EM = 0.6;
+/**
+ * Poppins glyph box around a middle-baseline label, as a fraction of font size.
+ * Measured in the finished-pattern sidebar (ink above the anchor, ink below it).
+ */
+const GLYPH_ABOVE = 0.85;
+const GLYPH_BELOW = 0.53;
+/** Clear space between a label and the next label or dimension line. */
+const LABEL_CLEAR = 8;
+
+export function sockGlyphAbove(size: number): number {
+  return size * GLYPH_ABOVE;
+}
+
+export function sockGlyphBelow(size: number): number {
+  return size * GLYPH_BELOW;
+}
+
+/** Center-to-center step that keeps middle-baseline lines from touching. */
+export function sockDiagramStackStep(size: number): number {
+  return Math.ceil(sockGlyphAbove(size) + sockGlyphBelow(size) + LABEL_CLEAR);
+}
 
 /**
  * Both sock diagrams share one viewBox, so they share one resolved type.
@@ -226,6 +245,20 @@ const SECTION_NAMES = [
   ["sectionToe", "Toe"],
 ] as const satisfies ReadonlyArray<readonly [SockCanonicalAnchorId, string]>;
 
+/**
+ * Section titles stay inside the outline.
+ * Heel and Toe sit in the open center of the diamond, off the width lines.
+ * Sole and Instep sits toward the toe so the foot side of the heel can hold
+ * the heel stitch counts and the shaping stack.
+ */
+function sectionNameCanonicalY(id: SockCanonicalAnchorId, showsAnkle: boolean): number {
+  if (id === "sectionLeg" && !showsAnkle) return (OUTLINE.top + OUTLINE.heelTop) / 2;
+  if (id === "sectionHeel") return (OUTLINE.heelTop + OUTLINE.heelBottom) / 2;
+  if (id === "sectionToe") return (OUTLINE.toeTop + OUTLINE.toeBottom) / 2;
+  if (id === "sectionFoot") return OUTLINE.toeTop - 18;
+  return SOCK_CANONICAL_ANCHORS[id].y;
+}
+
 export function sockDiagramSectionLabels(args: {
   showsAnkle: boolean;
   mirror: boolean;
@@ -233,10 +266,7 @@ export function sockDiagramSectionLabels(args: {
 }): Array<{ id: SockCanonicalAnchorId; name: string; x: number; y: number }> {
   return SECTION_NAMES.filter(([id]) => args.showsAnkle || id !== "sectionAnkle").map(([id, name]) => {
     const at = sockCanonicalLabelPoint(id, args.mirror, args.flipVertical);
-    const y =
-      id === "sectionLeg" && !args.showsAnkle
-        ? sockCanonicalMapY((OUTLINE.top + OUTLINE.heelTop) / 2, args.flipVertical)
-        : at.y;
+    const y = sockCanonicalMapY(sectionNameCanonicalY(id, args.showsAnkle), args.flipVertical);
     return { id, name, x: at.x, y };
   });
 }
@@ -253,15 +283,51 @@ export function sockDiagramRcLabelMarkup(milestone: SockDiagramRcMilestone, y: n
   });
 }
 
-function sockSectionMeasureMarkup(span: SockDiagramMeasureSpan, x: number, midY: number): string {
+function measureAnchorY(midY: number): number {
+  const gap = Math.round(SOCK_DIAGRAM_TYPE.stitch * 0.95);
+  return midY - gap / 2;
+}
+
+function measureBlock(anchorY: number): { top: number; bottom: number } {
+  const gap = Math.round(SOCK_DIAGRAM_TYPE.stitch * 0.95);
+  return {
+    top: anchorY - SOCK_DIAGRAM_TYPE.stitch * 1.1,
+    bottom: anchorY + gap + SOCK_DIAGRAM_TYPE.row * 0.27,
+  };
+}
+
+/**
+ * Short sections (ankle, heel, toe) are shorter than a two-line measurement.
+ * Keep each block on its span when it fits, and walk the rest down the column
+ * so the shared sweater label does not cover its neighbor.
+ */
+function spreadMeasureAnchors(
+  spans: ReadonlyArray<{ id: string; midY: number }>,
+): Map<string, number> {
+  const ordered = [...spans].sort((a, b) => a.midY - b.midY);
+  const placed = new Map<string, number>();
+  let previousBottom = Number.NEGATIVE_INFINITY;
+  for (const span of ordered) {
+    let anchor = measureAnchorY(span.midY);
+    let block = measureBlock(anchor);
+    if (block.top < previousBottom + LABEL_CLEAR) {
+      anchor += previousBottom + LABEL_CLEAR - block.top;
+      block = measureBlock(anchor);
+    }
+    placed.set(span.id, anchor);
+    previousBottom = block.bottom;
+  }
+  return placed;
+}
+
+function sockSectionMeasureMarkup(span: SockDiagramMeasureSpan, x: number, anchorY: number): string {
   const measurement =
     span.inches > 0 ? formatPatternDiagramMeasurement(span.inches, "in") : "";
   const label = formatStitchesRowsDiagramLabel(span.rows, "rows", measurement);
-  const gap = Math.round(SOCK_DIAGRAM_TYPE.stitch * 0.95);
   return stitchesRowsLabelMarkup({
     label,
     x,
-    y: label.includes("\n") ? midY - gap / 2 : midY,
+    y: label.includes("\n") ? anchorY : anchorY + Math.round(SOCK_DIAGRAM_TYPE.stitch * 0.95) / 2,
     anchor: "start",
     fill: DIM_MUTED,
     countSize: SOCK_DIAGRAM_TYPE.stitch,
@@ -350,12 +416,26 @@ export function buildSockPatternDiagramSvg(
   const yAt = (canonicalY: number) => sockCanonicalMapY(canonicalY, flipVertical);
   const labels: string[] = [];
   const dims: string[] = [];
+  const stitch = SOCK_DIAGRAM_TYPE.stitch;
+  const notation = SOCK_DIAGRAM_TYPE.notation;
+  const cuffLine = OUTLINE.top - 6;
+  const cuffStsY = cuffLine - LABEL_CLEAR - sockGlyphBelow(stitch);
+  const cuffEdgeY = cuffStsY - sockGlyphAbove(stitch) - LABEL_CLEAR - sockGlyphBelow(notation);
+  const heelLine = OUTLINE.heelBottom + 4;
+  const heelCountY = heelLine + LABEL_CLEAR + sockGlyphAbove(stitch);
+  const heelCenterY =
+    heelCountY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(stitch);
+  const toeLine = OUTLINE.toeBottom + 4;
+  const toeCountY = toeLine + LABEL_CLEAR + sockGlyphAbove(stitch);
+  const toeCenterY = toeCountY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(stitch);
+  const toeEdgeY = toeCenterY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(notation);
+  const workStsX = outlineX(OUTLINE.right - 46, mirror);
 
-  dims.push(sockHDim("cuff-width", left, right, yAt(CUFF_DIM_Y)));
-  dims.push(sockHDim("heel-held-width", left, split, yAt(OUTLINE.heelMid)));
-  dims.push(sockHDim("heel-work-width", split, right, yAt(OUTLINE.heelMid)));
-  dims.push(sockHDim("toe-held-width", left, split, yAt(OUTLINE.toeMid)));
-  dims.push(sockHDim("toe-work-width", split, right, yAt(OUTLINE.toeMid)));
+  dims.push(sockHDim("cuff-width", left, right, yAt(cuffLine)));
+  dims.push(sockHDim("heel-held-width", left, split, yAt(heelLine)));
+  dims.push(sockHDim("heel-work-width", split, right, yAt(heelLine)));
+  dims.push(sockHDim("toe-held-width", left, split, yAt(toeLine)));
+  dims.push(sockHDim("toe-work-width", split, right, yAt(toeLine)));
   const measures = sockDiagramMeasureSpans(calc, family);
   for (const span of measures) {
     dims.push(sockVDim(span.dim, V_DIM_X, yAt(span.y1), yAt(span.y2)));
@@ -365,46 +445,47 @@ export function buildSockPatternDiagramSvg(
     sockCanonicalText({
       id: "cuff",
       x: cuffMidX,
-      y: yAt(CUFF_DIM_Y - DIM_ABOVE),
+      y: yAt(cuffStsY),
       text: fields.cuffStsLabel,
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
       fill: DIM_MUTED,
     }),
   );
   if (fields.cuffStitches !== fields.tubeStitches) {
     const tube = point("tube", mirror, flipVertical);
+    const ankleTop = sectionNameCanonicalY("sectionAnkle", true) - sockGlyphAbove(SOCK_DIAGRAM_TYPE.piece);
+    const tubeY = showsAnkle
+      ? ankleTop - LABEL_CLEAR - sockGlyphBelow(stitch)
+      : SOCK_CANONICAL_ANCHORS.tube.y;
     labels.push(
       sockCanonicalText({
         id: "tube",
         x: tube.x,
-        y: tube.y,
+        y: yAt(tubeY),
         text: fields.tubeStsLabel,
-        size: SOCK_DIAGRAM_TYPE.stitch,
+        size: stitch,
       }),
     );
   }
 
-  const startEdge = flipVertical ? "castOnCuff" : "castOnToe";
-  const finishEdge = flipVertical ? "castOnToe" : "castOnCuff";
-  const castOn = point(startEdge, mirror, flipVertical);
-  const finish = point(finishEdge, mirror, flipVertical);
+  const castOnAtCuff = flipVertical;
   labels.push(
     sockCanonicalText({
       id: "cast-on",
-      x: castOn.x,
-      y: castOn.y,
+      x: cuffMidX,
+      y: yAt(castOnAtCuff ? cuffEdgeY : toeEdgeY),
       text: "cast on",
-      size: SOCK_DIAGRAM_TYPE.notation,
+      size: notation,
       fill: DIM_MUTED,
     }),
   );
   labels.push(
     sockCanonicalText({
       id: "finish",
-      x: finish.x,
-      y: finish.y,
+      x: cuffMidX,
+      y: yAt(castOnAtCuff ? toeEdgeY : cuffEdgeY),
       text: flipVertical ? "waste yarn" : "bind off",
-      size: SOCK_DIAGRAM_TYPE.notation,
+      size: notation,
       fill: DIM_MUTED,
     }),
   );
@@ -424,23 +505,22 @@ export function buildSockPatternDiagramSvg(
 
   const heelCenter = point("heelCenter", mirror, flipVertical);
   const toeCenter = point("toeCenter", mirror, flipVertical);
-  const workStsX = outlineX(OUTLINE.right - WORK_STS_INSET, mirror);
   labels.push(
     sockCanonicalText({
       id: "heel-center",
       x: heelCenter.x,
-      y: heelCenter.y,
+      y: yAt(heelCenterY),
       text: fields.heelCenterLabel,
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
     }),
   );
   labels.push(
     sockCanonicalText({
       id: "heel-work",
       x: workStsX,
-      y: yAt(OUTLINE.heelMid - DIM_ABOVE),
+      y: yAt(heelCountY),
       text: fields.heelWorkLabel,
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -448,18 +528,18 @@ export function buildSockPatternDiagramSvg(
     sockCanonicalText({
       id: "toe-center",
       x: toeCenter.x,
-      y: toeCenter.y,
+      y: yAt(toeCenterY),
       text: fields.toeCenterLabel,
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
     }),
   );
   labels.push(
     sockCanonicalText({
       id: "toe-work",
       x: workStsX,
-      y: yAt(OUTLINE.toeMid - DIM_ABOVE),
+      y: yAt(toeCountY),
       text: fields.toeWorkLabel,
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -468,9 +548,9 @@ export function buildSockPatternDiagramSvg(
     sockCanonicalText({
       id: "heel-held",
       x: heldMidX,
-      y: yAt(OUTLINE.heelMid - DIM_ABOVE),
+      y: yAt(heelCountY),
       text: stitchCountLabel(fields.heelHeldStitches),
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -478,15 +558,29 @@ export function buildSockPatternDiagramSvg(
     sockCanonicalText({
       id: "toe-held",
       x: heldMidX,
-      y: yAt(OUTLINE.toeMid - DIM_ABOVE),
+      y: yAt(toeCountY),
       text: stitchCountLabel(fields.toeHeldStitches),
-      size: SOCK_DIAGRAM_TYPE.stitch,
+      size: stitch,
       fill: DIM_MUTED,
     }),
   );
 
+  const measureAnchors = spreadMeasureAnchors(
+    measures.map((span) => ({
+      id: span.id,
+      midY: (yAt(span.y1) + yAt(span.y2)) / 2,
+    })),
+  );
   for (const span of measures) {
-    labels.push(sockSectionMeasureMarkup(span, MEASURE_LABEL_X, (yAt(span.y1) + yAt(span.y2)) / 2));
+    const midY = (yAt(span.y1) + yAt(span.y2)) / 2;
+    const anchorY = measureAnchors.get(span.id) ?? measureAnchorY(midY);
+    const gap = Math.round(stitch * 0.95);
+    if (Math.abs(anchorY - measureAnchorY(midY)) > 1) {
+      dims.push(
+        `<line data-sock-label-leader="${span.id}" x1="${fmtSockSvg(V_DIM_X)}" y1="${fmtSockSvg(midY)}" x2="${fmtSockSvg(MEASURE_LABEL_X - 4)}" y2="${fmtSockSvg(anchorY + gap / 2)}" stroke="${DIM_STROKE}" stroke-width="1" fill="none"/>`,
+      );
+    }
+    labels.push(sockSectionMeasureMarkup(span, MEASURE_LABEL_X, anchorY));
   }
 
   const rcMilestones = sockDiagramRcMilestones(calc, { family });

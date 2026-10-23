@@ -20,8 +20,13 @@ export const SOCK_CANONICAL_VB_W = 284;
 export const SOCK_CANONICAL_VB_H = 480;
 const PAD_LEFT = 18;
 const PAD_RIGHT = 72;
-const PAD_TOP = 116;
-const PAD_BOTTOM = 84;
+/**
+ * Vertical margin for labels parked outside the silhouette.
+ * The knitting outline stays 284×480; this only adds room for the shared type size.
+ * Both ends are equal because Cuff-to-Toe flips the same canvas.
+ */
+const PAD_TOP = 220;
+const PAD_BOTTOM = 220;
 
 /**
  * Extra right gutter so section measurements and RC labels at the shared
