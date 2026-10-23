@@ -92,7 +92,7 @@ function labelText(svg: string, id: string): string {
 }
 
 function rcLabelIds(svg: string): string[] {
-  return [...svg.matchAll(/data-sock-label="(rc-(?:leg|ankle|heel|foot|toe))"/g)].map(
+  return [...svg.matchAll(/data-sock-label="(rc-(?:leg|ankle|heel|foot|toe|bind-off))"/g)].map(
     (match) => match[1]!,
   );
 }
@@ -339,18 +339,21 @@ describe("Shaping Notation RC milestones", () => {
       { id: "rc-foot", rc: 0, canonicalY: 424 },
       { id: "rc-heel", rc: calc.straightFootRows, canonicalY: 264 },
       { id: "rc-ankle", rc: 0, canonicalY: 216 },
-      { id: "rc-leg", rc: 0, canonicalY: 184 },
+      { id: "rc-leg", rc: calc.ankleStraightRows, canonicalY: 184 },
+      { id: "rc-bind-off", rc: calc.legShapingRowsAvailable, canonicalY: 8 },
     ]);
     expect(attr(svg, "data-sock-rc-toe")).toBe("0");
     expect(attr(svg, "data-sock-rc-foot")).toBe("0");
     expect(attr(svg, "data-sock-rc-heel")).toBe(String(calc.straightFootRows));
     expect(attr(svg, "data-sock-rc-ankle")).toBe("0");
-    expect(attr(svg, "data-sock-rc-leg")).toBe("0");
+    expect(attr(svg, "data-sock-rc-leg")).toBe(String(calc.ankleStraightRows));
+    expect(attr(svg, "data-sock-rc-bind-off")).toBe(String(calc.legShapingRowsAvailable));
     assertSharedRcLabels(svg, calc);
     expect(Number(labelXY(svg, "rc-toe").y)).toBeGreaterThan(Number(labelXY(svg, "rc-foot").y));
     expect(Number(labelXY(svg, "rc-foot").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
     expect(Number(labelXY(svg, "rc-heel").y)).toBeGreaterThan(Number(labelXY(svg, "rc-ankle").y));
     expect(Number(labelXY(svg, "rc-ankle").y)).toBeGreaterThan(Number(labelXY(svg, "rc-leg").y));
+    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-bind-off").y));
     expect(stackedShapeTexts(svg, "heel-shape")).not.toMatch(/rc\d/);
     expect(stackedShapeTexts(svg, "toe-shape")).not.toMatch(/rc\d/);
   });

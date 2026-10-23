@@ -10,6 +10,8 @@ import {
   formatStitchesRowsDiagramLabel,
 } from "../legoBlocks/stitchesRowsDiagramLabel";
 import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
+import { buildChristmasStockingInstructions } from "../christmasStocking/christmasStockingInstructions";
+import { buildBasicSockInstructions } from "./sockInstructionBuild";
 import { calculateBasicSockPattern, type BasicSockCalc, type BasicSockCalcInput } from "./sockMath";
 import {
   SOCK_CANONICAL_ANCHORS,
@@ -28,6 +30,31 @@ import {
   sockFinishedDiagramTypography,
 } from "./sockPatternDiagramSvg";
 import { buildSockShapingNotationDiagramSvg } from "./sockShapingNotationDiagramSvg";
+
+function expectToeUpCountersMatchInstructions(
+  calc: BasicSockCalc,
+  family: "socks" | "christmas-stocking" = "socks",
+): void {
+  const documents =
+    family === "christmas-stocking"
+      ? [buildChristmasStockingInstructions(calc)]
+      : [buildBasicSockInstructions(calc, 1), buildBasicSockInstructions(calc, 2)];
+  const milestones = sockDiagramRcMilestones(calc, { family });
+  const byId = Object.fromEntries(milestones.map((milestone) => [milestone.id, milestone.rc]));
+  for (const doc of documents) {
+    const ankle = doc.sections.find((section) => section.id === "ankle");
+    const leg = doc.sections.find((section) => section.id === "leg");
+    expect(ankle, "ankle section").toBeTruthy();
+    expect(leg, "leg section").toBeTruthy();
+    expect(ankle!.rc.resetAtStart).toBe(true);
+    expect(ankle!.rc.startRc).toBe(0);
+    expect(leg!.steps.some((step) => step.type === "reset-rc")).toBe(true);
+    expect(byId["rc-ankle"]).toBe(ankle!.rc.startRc);
+    expect(byId["rc-leg"]).toBe(ankle!.rc.endRc);
+    expect(byId["rc-leg"]).not.toBe(leg!.rc.startRc);
+    expect(byId["rc-bind-off"]).toBe(leg!.rc.endRc);
+  }
+}
 
 function mustCalc(overrides: Partial<BasicSockCalcInput> = {}): BasicSockCalc {
   const result = calculateBasicSockPattern({
@@ -613,22 +640,29 @@ describe("Stitches & Rows RC milestones and shared reading arrow", () => {
       { id: "rc-foot", rc: 0, canonicalY: 424 },
       { id: "rc-heel", rc: calc.straightFootRows, canonicalY: 264 },
       { id: "rc-ankle", rc: 0, canonicalY: 216 },
-      { id: "rc-leg", rc: 0, canonicalY: 184 },
+      { id: "rc-leg", rc: calc.ankleStraightRows, canonicalY: 184 },
+      { id: "rc-bind-off", rc: calc.legShapingRowsAvailable, canonicalY: 8 },
     ]);
     expect(attr(svg, "data-sock-rc-toe")).toBe("0");
     expect(attr(svg, "data-sock-rc-foot")).toBe("0");
     expect(attr(svg, "data-sock-rc-heel")).toBe(String(calc.straightFootRows));
     expect(attr(svg, "data-sock-rc-ankle")).toBe("0");
-    expect(attr(svg, "data-sock-rc-leg")).toBe("0");
+    expect(attr(svg, "data-sock-rc-leg")).toBe(String(calc.ankleStraightRows));
+    expect(attr(svg, "data-sock-rc-bind-off")).toBe(String(calc.legShapingRowsAvailable));
     expect(labelText(svg, "rc-toe")).toBe(formatShapingNotationRcLabel(0));
     expect(labelText(svg, "rc-foot")).toBe(formatShapingNotationRcLabel(0));
     expect(labelText(svg, "rc-heel")).toBe(formatShapingNotationRcLabel(calc.straightFootRows));
     expect(labelText(svg, "rc-ankle")).toBe(formatShapingNotationRcLabel(0));
-    expect(labelText(svg, "rc-leg")).toBe(formatShapingNotationRcLabel(0));
+    expect(labelText(svg, "rc-leg")).toBe(formatShapingNotationRcLabel(calc.ankleStraightRows));
+    expect(labelText(svg, "rc-bind-off")).toBe(
+      formatShapingNotationRcLabel(calc.legShapingRowsAvailable),
+    );
     expect(Number(labelXY(svg, "rc-toe").y)).toBeGreaterThan(Number(labelXY(svg, "rc-foot").y));
     expect(Number(labelXY(svg, "rc-foot").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
     expect(Number(labelXY(svg, "rc-heel").y)).toBeGreaterThan(Number(labelXY(svg, "rc-ankle").y));
     expect(Number(labelXY(svg, "rc-ankle").y)).toBeGreaterThan(Number(labelXY(svg, "rc-leg").y));
+    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-bind-off").y));
+    expectToeUpCountersMatchInstructions(calc);
     expect(labelsGroup(svg)).not.toContain(
       `${calc.heel.shortRowInSteps} / ${calc.heel.shortRowOutSteps} rows`,
     );
@@ -714,6 +748,7 @@ describe("Christmas Stocking uses the shared diagram with its own sections", () 
     expect(sockDiagramRcMilestones(toeUp, { family: "christmas-stocking" })).toEqual(
       sockDiagramRcMilestones(toeUp),
     );
+    expectToeUpCountersMatchInstructions(toeUp, "christmas-stocking");
   });
 });
 
