@@ -20,11 +20,19 @@ export const SOCK_CANONICAL_VB_W = 284;
 export const SOCK_CANONICAL_VB_H = 480;
 const PAD_LEFT = 18;
 const PAD_RIGHT = 72;
-const PAD_TOP = 22;
-const PAD_BOTTOM = 18;
+const PAD_TOP = 116;
+const PAD_BOTTOM = 84;
 
-/** Extra right gutter so section measurements and RC labels are not clipped. */
-export const SOCK_STS_ROWS_PAD_RIGHT = 176;
+/**
+ * Extra right gutter so section measurements and RC labels at the shared
+ * finished-pattern type size are not clipped.
+ */
+export const SOCK_STS_ROWS_PAD_RIGHT = 260;
+
+/** Full SVG viewBox width, including the left pad and the right label gutter. */
+export function sockDiagramCanvasWidth(padRight: number = SOCK_STS_ROWS_PAD_RIGHT): number {
+  return SOCK_CANONICAL_VB_W + PAD_LEFT + padRight;
+}
 
 /** Screen-left X for the shared bottom→top reading arrow (viewBox space, not mirrored). */
 const READING_ARROW_X = -8;
@@ -214,20 +222,23 @@ export function sockCanonicalStacked(options: {
   y: number;
   lines: string[];
   size?: number;
+  /** Baseline step. Defaults to the old tight stack when a caller has no shared gap. */
+  lineGap?: number;
   weight?: string;
   anchor?: "start" | "middle" | "end";
   fill?: string;
 }): string {
   const size = options.size ?? 11;
+  const lineGap = options.lineGap ?? size + 2;
   const usable = options.lines.filter((line) => line.length > 0);
   if (!usable.length) return "";
-  const startY = options.y - ((usable.length - 1) * (size + 2)) / 2;
+  const startY = options.y - ((usable.length - 1) * lineGap) / 2;
   return usable
     .map((line, index) =>
       sockCanonicalText({
         ...options,
         id: usable.length === 1 ? options.id : `${options.id}-${index}`,
-        y: startY + index * (size + 2),
+        y: startY + index * lineGap,
         text: line,
         size,
       }),
