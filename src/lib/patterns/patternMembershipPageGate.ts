@@ -6,20 +6,15 @@
  * Lifetime plans, JSON unlock flags, and free claims never unlock. Login alone never unlocks.
  * Content stays hidden until access is confirmed.
  */
-import { getViewerAccessState, type ViewerAccessState } from "../memberAccess";
-import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
+import { type ViewerAccessState } from "../memberAccess";
 import { loadCustomPatternProject } from "./customPatternProjectClient";
-import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { enforcePatternDraftOwner } from "./patternDraftOwnerGuard";
 import {
+  invalidateSleevelessUserAccessCache,
   resolveSleevelessUserAccess,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
-import {
-  resolveCurrentMemberIdForDraftGuard,
-  waitForMemberstackDom,
-  waitForMemberstackReady,
-} from "./sleevelessPatternLoginGate";
+import { resolveCurrentMemberIdForDraftGuard } from "./sleevelessPatternLoginGate";
 import {
   isPaidPatternMutationRoute,
   isPaidSavedPatternReadOnlyCandidate,
@@ -114,22 +109,18 @@ export async function resolvePatternMembershipGateDecision(
     );
   }
 
-  await waitForMemberstackDom();
-  const ms = window.$memberstackDom;
-  let viewer: ViewerAccessState = "loggedOut";
-  if (ms?.getCurrentMember) {
-    try {
-      await waitForMemberstackReady(ms);
-      const res = await ms.getCurrentMember();
-      await ensureLegacyPaidThroughContext(res);
-      viewer = getViewerAccessState(res);
-      enforcePatternDraftOwner(memberIdFromMemberstackPayload(res));
-    } catch {
-      viewer = "loggedOut";
-    }
+  const access = await resolveSleevelessUserAccess();
+  const viewer: ViewerAccessState = access.hasSystemAccess
+    ? "memberAccess"
+    : access.loggedIn
+      ? "loggedInNoAccess"
+      : "loggedOut";
+  try {
+    enforcePatternDraftOwner(access.loggedIn ? access.memberId ?? null : null);
+  } catch {
+    /* Draft cleanup must not turn a confirmed member into the login panel. */
   }
 
-  const access = await resolveSleevelessUserAccess();
   const membership = decidePatternMembershipGate(access, viewer);
   return applyFormerMemberReadOnlyException(membership, deps);
 }
@@ -193,21 +184,38 @@ function setGateState(root: HTMLElement, state: PatternMembershipGateState): voi
 export async function initPatternMembershipPageGate(root: HTMLElement): Promise<void> {
   setGateState(root, "pending");
 
+  let generation = 0;
+  const refresh = (): void => {
+    const token = ++generation;
+    invalidateSleevelessUserAccessCache();
+    void resolvePatternMembershipGateDecision().then((next) => {
+      if (token !== generation) return;
+      setGateState(root, next.state);
+    });
+    void resolveCurrentMemberIdForDraftGuard().then((memberId) => {
+      enforcePatternDraftOwner(memberId);
+    });
+  };
+
+  const token = ++generation;
   const decision = await resolvePatternMembershipGateDecision();
-  setGateState(root, decision.state);
+  if (token === generation) {
+    setGateState(root, decision.state);
+  }
   enforcePatternDraftOwner(await resolveCurrentMemberIdForDraftGuard());
 
   const ms = window.$memberstackDom;
   if (ms && typeof ms.on === "function") {
-    const refresh = (): void => {
-      void resolvePatternMembershipGateDecision().then((next) => {
-        setGateState(root, next.state);
-      });
-      void resolveCurrentMemberIdForDraftGuard().then((memberId) => {
-        enforcePatternDraftOwner(memberId);
-      });
-    };
     ms.on("member.login", refresh);
     ms.on("member.logout", refresh);
   }
+
+  // BaseLayout publishes this after getAppAndMember settles. Session restore does not
+  // fire member.login, so a gate that read an empty session stays on Log In unless it
+  // listens here. Membership rules are unchanged: the refresh re-reads the session.
+  window.addEventListener("kin:member-access", () => {
+    const state = root.dataset.gateState;
+    if (state === "member" || state === "readonly") return;
+    refresh();
+  });
 }

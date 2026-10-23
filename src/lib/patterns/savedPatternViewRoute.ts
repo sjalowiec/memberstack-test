@@ -5,6 +5,7 @@
 import { readSavedPatternProjectIdFromUrl } from "./savedPatternViewUrl";
 
 const PAID_VIEW_PATHS = [
+  /^\/patterns\/christmas-stocking\/pattern\/?$/,
   /^\/patterns\/socks\/pattern\/?$/,
   /^\/patterns\/sleeveless\/pattern\/?$/,
   /^\/patterns\/sleeveless\/print\/?$/,
@@ -13,6 +14,9 @@ const PAID_VIEW_PATHS = [
 ];
 
 const PAID_MUTATION_PATHS = [
+  /^\/patterns\/christmas-stocking\/builder\/?$/,
+  /^\/patterns\/christmas-stocking\/summary\/?$/,
+  /^\/patterns\/christmas-stocking\/edit\/?$/,
   /^\/patterns\/socks\/builder\/?$/,
   /^\/patterns\/socks\/summary\/?$/,
   /^\/patterns\/socks\/edit\/?$/,

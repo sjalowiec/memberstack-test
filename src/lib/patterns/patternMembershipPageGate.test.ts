@@ -84,4 +84,19 @@ describe("decidePatternMembershipGate", () => {
     });
     expect(edit.state).toBe("locked-no-access");
   });
+
+  it("uses the same former-member rule for Christmas Stocking as for Socks", async () => {
+    const membership = decidePatternMembershipGate(nosub, "loggedInNoAccess");
+    const readonly = await applyFormerMemberReadOnlyException(membership, {
+      href: "https://kin-dev.netlify.app/patterns/christmas-stocking/pattern/?project=proj-1",
+      loadOwnedProject: async () => ({ ok: true }),
+    });
+    expect(readonly.state).toBe("readonly");
+
+    const summary = await applyFormerMemberReadOnlyException(membership, {
+      href: "https://kin-dev.netlify.app/patterns/christmas-stocking/summary/?generated=1",
+      loadOwnedProject: async () => ({ ok: true }),
+    });
+    expect(summary.state).toBe("locked-no-access");
+  });
 });
