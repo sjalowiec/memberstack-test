@@ -118,6 +118,49 @@ function stopHeelAtLegRows(
   };
 }
 
+/**
+ * Toe-up: after the heel, one Leg. The sock ankle rows are already inside
+ * `calc.legRows`, so they are knit on this counter and are not a second section.
+ */
+function continuousToeUpLeg(
+  doc: SockInstructionDocument,
+  calc: BasicSockCalc,
+): SockInstructionSection {
+  const rows = finishedLegRows(calc);
+  const ankle = doc.sections.find((section) => section.id === "ankle");
+  const leg = doc.sections.find((section) => section.id === "leg");
+  const stitches = ankle?.startStitches ?? leg?.startStitches ?? calc.legStitches;
+  return {
+    id: "leg",
+    title: "Leg",
+    constructionDirection: "toe-up",
+    sock: doc.sock,
+    startStitches: stitches,
+    endStitches: leg?.endStitches ?? stitches,
+    rowsToKnit: rows,
+    rc: { resetAtStart: true, startRc: 0, endRc: rows },
+    steps: [
+      { type: "reset-rc" },
+      { type: "knit-even", rows, stitches },
+    ],
+    notes: [STOCKING_LEG_LENGTH_NOTE],
+  };
+}
+
+function withContinuousToeUpLeg(
+  doc: SockInstructionDocument,
+  calc: BasicSockCalc,
+): SockInstructionDocument {
+  const leg = continuousToeUpLeg(doc, calc);
+  const rest = doc.sections.filter((section) => section.id !== "leg" && section.id !== "ankle");
+  const heelAt = rest.findIndex((section) => section.id === "heel");
+  const sections =
+    heelAt >= 0
+      ? [...rest.slice(0, heelAt + 1), leg, ...rest.slice(heelAt + 1)]
+      : [...rest, leg];
+  return { ...doc, sections };
+}
+
 /** Cuff-down: cast on, edging, and the full leg are one section, then Heel. */
 function withContinuousCuffDownLeg(
   doc: SockInstructionDocument,
@@ -163,14 +206,14 @@ export function buildChristmasStockingInstructions(calc: BasicSockCalc): SockIns
         .map(withoutPairStep)
         .filter((step): step is SockInstructionStep => step != null),
       notes: [
-        ...(section.id === "leg" && !cuffDown ? [STOCKING_LEG_LENGTH_NOTE] : []),
-        ...(section.id === "ankle" && !cuffDown ? [STOCKING_ANKLE_INCLUDED_NOTE] : []),
         ...(section.id === "finishing" ? [STOCKING_HANGING_LOOP_NOTE] : []),
         ...section.notes,
       ],
     })),
   };
-  return cuffDown ? withContinuousCuffDownLeg(withNotes, calc) : withNotes;
+  return cuffDown
+    ? withContinuousCuffDownLeg(withNotes, calc)
+    : withContinuousToeUpLeg(withNotes, calc);
 }
 
 export function renderChristmasStockingInstructionsHtml(calc: BasicSockCalc): string {

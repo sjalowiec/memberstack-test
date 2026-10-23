@@ -390,7 +390,7 @@ export function buildSockShapingNotationDiagramSvg(
     rcMilestones.map((milestone) => `data-sock-${milestone.id}="${milestone.rc}"`).join(" ") +
     ` ` +
     `width="100%" height="auto">` +
-    sockCanonicalGeometryMarkup({ mirror, flipVertical }) +
+    sockCanonicalGeometryMarkup({ mirror, flipVertical, omitAnkleBoundary: !showsAnkle }) +
     sockCanonicalReadingDirectionArrowMarkup() +
     `<g data-sock-diagram-rc-leaders>` +
     sockShapingRcLeaderMarkup(rcMilestones, mirror, flipVertical) +

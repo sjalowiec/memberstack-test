@@ -34,7 +34,7 @@ import {
 
 export type SockPatternDiagramMode = "pattern";
 
-/** Basic Socks keeps the ankle band. Cuff-down Christmas Stocking uses one Leg. */
+/** Basic Socks keeps the ankle band. Christmas Stocking is one Leg in both directions. */
 export type SockDiagramFamily = "socks" | "christmas-stocking";
 
 export type SockDiagramBuildOptions = {
@@ -135,23 +135,25 @@ type SockDiagramMeasureSpan = {
 };
 
 /**
- * Cuff-down Christmas Stocking writes one Leg from the top edge to the heel.
- * Basic Socks, and toe-up stockings, keep the ankle band.
+ * Basic Socks keeps the ankle band. A Christmas Stocking is one Leg in both
+ * directions: the sock ankle rows are already inside the finished leg length.
  */
 export function sockDiagramShowsSplitAnkle(
-  calc: BasicSockCalc,
+  _calc: BasicSockCalc,
   family: SockDiagramFamily = "socks",
 ): boolean {
-  return !(family === "christmas-stocking" && calc.constructionDirection === "cuff-to-toe");
+  return family !== "christmas-stocking";
 }
 
 /**
  * Row-counter labels at the boundaries the written instructions mark.
  * Cuff-down continues through the ankle and stops at the heel on the full leg
  * count, restarts the foot at 000, and stops the toe at the foot ending RC.
- * Toe-up resets at the toe, the foot, and the ankle. After the ankle rows the
- * counter reads that ankle total at the leg boundary. The leg then resets and
- * is knit to its own ending RC, labeled on the top bind-off edge.
+ * Toe-up socks reset at the toe, the foot, and the ankle. After the ankle rows
+ * the counter reads that ankle total at the leg boundary. The leg then resets
+ * and is knit to its own ending RC, labeled on the top bind-off edge.
+ * A toe-up stocking resets once after the heel and knits the finished leg on
+ * that counter, so the bind-off edge reads the full leg total.
  */
 export function sockDiagramRcMilestones(
   calc: BasicSockCalc,
@@ -178,7 +180,11 @@ export function sockDiagramRcMilestones(
     }
     marks.push({
       id: "rc-bind-off",
-      rc: calc.legShapingRowsAvailable > 0 ? calc.legShapingRowsAvailable : calc.ankleStraightRows,
+      rc: showsAnkle
+        ? calc.legShapingRowsAvailable > 0
+          ? calc.legShapingRowsAvailable
+          : calc.ankleStraightRows
+        : calc.legRows,
       canonicalY: OUTLINE.top,
     });
     return marks;
@@ -634,7 +640,7 @@ export function buildSockPatternDiagramSvg(
     `data-sock-foot-in="${fields.footInches}" ` +
     `data-sock-toe-in="${fields.toeInches}" ` +
     `width="100%" height="auto">` +
-    sockCanonicalGeometryMarkup({ mirror, flipVertical }) +
+    sockCanonicalGeometryMarkup({ mirror, flipVertical, omitAnkleBoundary: !showsAnkle }) +
     sockCanonicalReadingDirectionArrowMarkup() +
     `<g data-sock-diagram-dims>` +
     dims.join("") +
