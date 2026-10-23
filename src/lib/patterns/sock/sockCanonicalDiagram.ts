@@ -137,11 +137,28 @@ export function sockCanonicalInnerMarkup(raw: string = canonicalSvgRaw): string 
     .trim();
 }
 
+/** The sock silhouette draws the ankle division at this canonical Y. Stockings omit it. */
+const SOCK_CANONICAL_ANKLE_BOUNDARY_Y = 184;
+
+function withoutSockAnkleBoundary(inner: string): string {
+  return inner.replace(
+    new RegExp(
+      `<line\\b[^>]*\\by1="${SOCK_CANONICAL_ANKLE_BOUNDARY_Y}"[^>]*\\by2="${SOCK_CANONICAL_ANKLE_BOUNDARY_Y}"[^>]*/>`,
+      "g",
+    ),
+    "",
+  );
+}
+
 export function sockCanonicalGeometryMarkup(options?: {
   mirror?: boolean;
   flipVertical?: boolean;
+  /** Christmas Stocking has no separate ankle, so the sock division line is left out. */
+  omitAnkleBoundary?: boolean;
 }): string {
-  const inner = sockCanonicalInnerMarkup();
+  const inner = options?.omitAnkleBoundary
+    ? withoutSockAnkleBoundary(sockCanonicalInnerMarkup())
+    : sockCanonicalInnerMarkup();
   const mirror = options?.mirror === true;
   const flipVertical = options?.flipVertical === true;
   const sx = mirror ? -1 : 1;

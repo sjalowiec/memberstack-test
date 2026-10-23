@@ -212,11 +212,11 @@ describe("Christmas stocking instructions", () => {
       if (direction === "toe-up") {
         expect(html).toContain(STOCKING_LEG_LENGTH_NOTE);
         expect(html).toContain("Do not knit extra rows for the edging");
-        expect(html).toContain(STOCKING_ANKLE_INCLUDED_NOTE);
-        expect(html).toContain('data-section-id="ankle"');
-        const legRows = doc.sections.find((section) => section.id === "leg")?.rowsToKnit ?? 0;
-        const ankleRows = doc.sections.find((section) => section.id === "ankle")?.rowsToKnit ?? 0;
-        expect(legRows + ankleRows).toBe(result.calc.legRows);
+        expect(html).not.toContain(STOCKING_ANKLE_INCLUDED_NOTE);
+        expect(html).not.toContain('data-section-id="ankle"');
+        const leg = doc.sections.find((section) => section.id === "leg");
+        expect(leg?.rowsToKnit).toBe(result.calc.legRows);
+        expect(leg?.rc).toEqual({ resetAtStart: true, startRc: 0, endRc: result.calc.legRows });
       }
       expect(html).not.toContain("stretch over the heel");
       expect(html).toContain("i-cord or twisted cord");
@@ -290,6 +290,66 @@ describe("Christmas stocking instructions", () => {
       html.indexOf('data-section-id="leg"'),
       html.indexOf('data-section-id="heel"'),
     )).not.toContain('data-section-id="ankle"');
+  });
+
+  it("knits toe-up as one leg after the heel, reset to 000, through the finished total", () => {
+    const legLengthInches = 12;
+    const rowGaugeDisplay = 44;
+    const result = calculateChristmasStockingPattern({
+      direction: "toe-up",
+      legLengthInches,
+      footCircumferenceInches: 10,
+      footLengthInches: 9,
+      stitchGaugeDisplay: 28,
+      rowGaugeDisplay,
+      displayUnit: "inches",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const finishedLegRows = roundToEvenPreferUp(
+      legLengthInches * sockGaugeToPerInch(rowGaugeDisplay, "inches"),
+    );
+    expect(result.calc.legRows).toBe(finishedLegRows);
+    expect(result.calc.ankleStraightRows).toBeGreaterThan(0);
+    expect(result.calc.ankleStraightRows + result.calc.legShapingRowsAvailable).toBe(finishedLegRows);
+
+    const doc = buildChristmasStockingInstructions(result.calc);
+    const html = renderChristmasStockingInstructionsHtml(result.calc);
+    const leg = doc.sections.find((section) => section.id === "leg");
+    expect(doc.sections.map((section) => section.id)).toEqual([
+      "cast-on",
+      "toe",
+      "foot",
+      "heel",
+      "leg",
+      "finishing",
+    ]);
+    expect(leg?.rowsToKnit).toBe(finishedLegRows);
+    expect(leg?.rc).toEqual({ resetAtStart: true, startRc: 0, endRc: finishedLegRows });
+    expect(leg?.steps.map((step) => step.type)).toEqual(["reset-rc", "knit-even"]);
+    expect(leg?.notes).toEqual([STOCKING_LEG_LENGTH_NOTE]);
+    expect(sockPatternInpageNavItems(doc).map((item) => item.label)).toEqual([
+      "Scrap On",
+      "Toe",
+      "Foot",
+      "Heel",
+      "Leg",
+      "Finishing",
+    ]);
+
+    const legHtml = sectionHtml(html, "leg");
+    expect(legHtml).toContain(STOCKING_LEG_LENGTH_NOTE);
+    expect(legHtml).toContain(`Knit ${finishedLegRows} rows even`);
+    expect(legHtml).toContain("RESET ROW COUNTER TO 000");
+    expect(legHtml).not.toContain(`Knit ${result.calc.ankleStraightRows} rows`);
+    expect(legHtml).not.toContain(`Knit ${result.calc.legShapingRowsAvailable} rows`);
+    expect(html).not.toContain('data-section-id="ankle"');
+    expect(html).not.toContain(STOCKING_ANKLE_INCLUDED_NOTE);
+    expect(html).not.toContain(SOCK_ANKLE_VIDEO_TIP_ID);
+    expect(html.indexOf('data-section-id="leg"')).toBeGreaterThan(
+      html.indexOf('data-section-id="heel"'),
+    );
   });
 
   it("uses the finished leg total when the sock split would leave only an ankle", () => {
