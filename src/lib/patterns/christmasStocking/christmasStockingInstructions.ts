@@ -3,11 +3,21 @@
  * Sock pair, mirrored-sock, and extra cuff-length wording stay in the sock renderer.
  */
 
+import { buildPatternExplainerVideoBodyHtml } from "../patternExplainerVideoTip";
+import { buildPatternQuickTipInnerHtml } from "../patternQuickTip";
+import { formatRowCounterResetGarmentRcLabel } from "../rowCounterReset";
 import { buildBasicSockInstructions } from "../sock/sockInstructionBuild";
-import type { SockInstructionDocument, SockInstructionStep } from "../sock/sockInstructionModel";
+import type {
+  SockInstructionDocument,
+  SockInstructionSection,
+  SockInstructionStep,
+} from "../sock/sockInstructionModel";
 import {
   renderBasicSockInstructionsHtml,
   SOCK_BICKFORD_SEAM_VIDEO_COPY,
+  SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_TITLE,
+  SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
   SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY,
   SOCK_FOLD_RIGHT_SIDES_INSTRUCTION,
   SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
@@ -23,6 +33,12 @@ export const STOCKING_LEG_LENGTH_NOTE =
 
 export const STOCKING_ANKLE_INCLUDED_NOTE =
   "These ankle rows are part of the leg length above. They are not added after it.";
+
+/** Cuff-down only. Edging rows already on the counter count toward this reading. */
+export function stockingCuffDownLegTargetNote(legRows: number): string {
+  const target = formatRowCounterResetGarmentRcLabel(legRows);
+  return `Work the selected top edging — ribbing, a rolled edge, or another finish. Knit even to ${target}, counting the edging rows already knitted.`;
+}
 
 export const STOCKING_TOP_EDGE_WITHIN_LEG =
   "The rows already knit include the top edging. Work ribbing, a rolled edge, or another finish within that leg length. Do not knit extra rows for the edging. Bind off loosely.";
@@ -42,9 +58,104 @@ function withoutPairStep(step: SockInstructionStep): SockInstructionStep | null 
   return step;
 }
 
-export function buildChristmasStockingInstructions(calc: BasicSockCalc): SockInstructionDocument {
-  const doc = buildBasicSockInstructions(calc, 1);
+function cuffCastOnVideoHtml(): string {
+  const inner = buildPatternQuickTipInnerHtml({
+    summaryLabel: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
+    bodyHtml: buildPatternExplainerVideoBodyHtml({
+      video: {
+        vimeoId: SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+        title: SOCK_CUFF_CAST_ON_VIDEO_TITLE,
+      },
+      explainerKey: SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+    }),
+  });
+  return (
+    `<div class="pattern-tip pattern-quick-tip" data-tip data-tip-id="${SOCK_CUFF_CAST_ON_VIDEO_TIP_ID}">` +
+    inner +
+    `</div>`
+  );
+}
+
+/**
+ * Finished cuff-down leg rows. `calc.legRows` is already length × row gauge,
+ * even-upped. The sock upper-leg / ankle split is not added or removed here.
+ */
+function finishedLegRows(calc: BasicSockCalc): number {
+  return calc.legRows;
+}
+
+function continuousCuffDownLeg(
+  doc: SockInstructionDocument,
+  calc: BasicSockCalc,
+): SockInstructionSection {
+  const rows = finishedLegRows(calc);
+  const castOn = doc.sections.find((section) => section.id === "cast-on");
+  const stitches = castOn?.endStitches ?? calc.legStitches;
   return {
+    id: "leg",
+    title: "Leg",
+    constructionDirection: "cuff-to-toe",
+    sock: doc.sock,
+    startStitches: stitches,
+    endStitches: stitches,
+    rowsToKnit: rows,
+    rc: { resetAtStart: false, startRc: 0, endRc: rows },
+    steps: [{ type: "cast-on", stitches, role: "top-leg" }],
+    notes: [stockingCuffDownLegTargetNote(rows)],
+  };
+}
+
+function stopHeelAtLegRows(
+  section: SockInstructionSection,
+  legRows: number,
+): SockInstructionSection {
+  return {
+    ...section,
+    rc: { ...section.rc, resetAtStart: false, startRc: legRows },
+    steps: section.steps.map((step) =>
+      step.type === "stop-rc" ? { ...step, garmentRc: legRows } : step,
+    ),
+  };
+}
+
+/** Cuff-down: cast on, edging, and the full leg are one section, then Heel. */
+function withContinuousCuffDownLeg(
+  doc: SockInstructionDocument,
+  calc: BasicSockCalc,
+): SockInstructionDocument {
+  const rows = finishedLegRows(calc);
+  const leg = continuousCuffDownLeg(doc, calc);
+  const rest = doc.sections.filter(
+    (section) => section.id !== "cast-on" && section.id !== "leg" && section.id !== "ankle",
+  );
+  const heelAt = rest.findIndex((section) => section.id === "heel");
+  const sections =
+    heelAt >= 0
+      ? [...rest.slice(0, heelAt), leg, ...rest.slice(heelAt)]
+      : [leg, ...rest];
+  return {
+    ...doc,
+    sections: sections.map((section) =>
+      section.id === "heel" ? stopHeelAtLegRows(section, rows) : section,
+    ),
+  };
+}
+
+function insertCuffCastOnVideo(html: string): string {
+  const marker = 'data-section-id="leg"';
+  const content = '<div class="sock-pattern-section__content">';
+  const sectionStart = html.indexOf(marker);
+  if (sectionStart < 0) return html;
+  const contentAt = html.indexOf(content, sectionStart);
+  if (contentAt < 0) return html;
+  const insertAt = contentAt + content.length;
+  return html.slice(0, insertAt) + cuffCastOnVideoHtml() + html.slice(insertAt);
+}
+
+export function buildChristmasStockingInstructions(calc: BasicSockCalc): SockInstructionDocument {
+  const cuffDown = calc.constructionDirection === "cuff-to-toe";
+  const doc = buildBasicSockInstructions(calc, 1);
+  const withNotes: SockInstructionDocument = {
     ...doc,
     sections: doc.sections.map((section) => ({
       ...section,
@@ -52,18 +163,21 @@ export function buildChristmasStockingInstructions(calc: BasicSockCalc): SockIns
         .map(withoutPairStep)
         .filter((step): step is SockInstructionStep => step != null),
       notes: [
-        ...(section.id === "leg" ? [STOCKING_LEG_LENGTH_NOTE] : []),
-        ...(section.id === "ankle" ? [STOCKING_ANKLE_INCLUDED_NOTE] : []),
+        ...(section.id === "leg" && !cuffDown ? [STOCKING_LEG_LENGTH_NOTE] : []),
+        ...(section.id === "ankle" && !cuffDown ? [STOCKING_ANKLE_INCLUDED_NOTE] : []),
         ...(section.id === "finishing" ? [STOCKING_HANGING_LOOP_NOTE] : []),
         ...section.notes,
       ],
     })),
   };
+  return cuffDown ? withContinuousCuffDownLeg(withNotes, calc) : withNotes;
 }
 
 export function renderChristmasStockingInstructionsHtml(calc: BasicSockCalc): string {
   const html = renderBasicSockInstructionsHtml(buildChristmasStockingInstructions(calc));
-  return html
+  const withVideo =
+    calc.constructionDirection === "cuff-to-toe" ? insertCuffCastOnVideo(html) : html;
+  return withVideo
     .replace("Sock 1 — Cuff to Toe", "Christmas Stocking — Cuff down")
     .replace("Sock 1 — Toe Up", "Christmas Stocking — Toe up")
     .replaceAll(SOCK_TOE_UP_FINISH_CUFF, STOCKING_TOP_EDGE_WITHIN_LEG)
