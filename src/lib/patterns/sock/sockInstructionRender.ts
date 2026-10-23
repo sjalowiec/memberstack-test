@@ -205,41 +205,6 @@ function magicIntervalPhrase(rows: number): string {
   return `every ${rows} rows`;
 }
 
-function formatSockShortRowPassCount(passes: number): string {
-  return `${passes} short-row passes`;
-}
-
-function formatSockShortRowShapingSummary(
-  decreasePasses: number,
-  increasePasses: number,
-): string {
-  const total = decreasePasses + increasePasses;
-  return `Short-row shaping: ${total} passes total — ${decreasePasses} decreasing and ${increasePasses} increasing.`;
-}
-
-function shortRowShapingPassCounts(
-  section: SockInstructionSection,
-): { decrease: number; increase: number } | null {
-  let decrease: number | undefined;
-  let increase: number | undefined;
-  for (const step of section.steps) {
-    if (step.type === "short-row-in") decrease = step.rows;
-    if (step.type === "short-row-out") increase = step.rows;
-  }
-  if (decrease == null || increase == null) return null;
-  return { decrease, increase };
-}
-
-function shortRowShapingSummaryAfterOut(
-  step: SockInstructionStep,
-  section: SockInstructionSection,
-): string {
-  if (step.type !== "short-row-out") return "";
-  const counts = shortRowShapingPassCounts(section);
-  if (!counts) return "";
-  return formatSockShortRowShapingSummary(counts.decrease, counts.increase);
-}
-
 export function wrapSockPatternSection(
   sectionId: string,
   titleHtml: string,
@@ -594,9 +559,9 @@ function renderStep(step: SockInstructionStep): string {
     case "ensure-carriage":
       return `<p>${escapeHtml(sockEnsureCarriageInstruction(step.part, step.side))}</p>`;
     case "short-row-in":
-      return `<p>On the carriage side, put 1 needle into hold, ${automaticWrapGlossaryHtml()}, and knit across. Repeat every row until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})</p>`;
+      return `<p>On the carriage side, put 1 needle into hold, ${automaticWrapGlossaryHtml()}, and knit across. Repeat every row until ${step.remainingStitches} center stitches remain.</p>`;
     case "short-row-out":
-      return `<p>Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all ${step.endWorkingStitches} working stitches are back in work. (${formatSockShortRowPassCount(step.rows)})</p>`;
+      return `<p>Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all ${step.endWorkingStitches} working stitches are back in work.</p>`;
     case "cancel-hold-return":
       return `<p>Cancel HOLD. Return the previously held half (${step.heldStitches} stitches) to working position. (${step.tubeStitches} stitches)</p>`;
     case "scrap-off-heel":
@@ -685,9 +650,7 @@ function renderSection(
       i += DEFAULT_TOE_FINISHING_GROUP_LENGTH;
       continue;
     }
-    const step = steps[i]!;
-    const summary = shortRowShapingSummaryAfterOut(step, section);
-    body += renderStep(step) + (summary ? `<p>${escapeHtml(summary)}</p>` : "");
+    body += renderStep(steps[i]!);
     i += 1;
   }
   if (shouldShowRcLabelWithoutResetControl(section)) {
@@ -755,9 +718,9 @@ function outlineStep(step: SockInstructionStep): string {
     case "ensure-carriage":
       return sockEnsureCarriageInstruction(step.part, step.side);
     case "short-row-in":
-      return `On the carriage side, put 1 needle into hold, ${AUTOMATIC_WRAP_GLOSSARY_TERM}, and knit across, every row, until ${step.remainingStitches} center stitches remain. (${formatSockShortRowPassCount(step.rows)})`;
+      return `On the carriage side, put 1 needle into hold, ${AUTOMATIC_WRAP_GLOSSARY_TERM}, and knit across, every row, until ${step.remainingStitches} center stitches remain.`;
     case "short-row-out":
-      return `Opposite the carriage, return 1 needle to work and knit across, every row, until ${step.endWorkingStitches} working stitches are back. (${formatSockShortRowPassCount(step.rows)})`;
+      return `Opposite the carriage, return 1 needle to work and knit across, every row, until ${step.endWorkingStitches} working stitches are back.`;
     case "cancel-hold-return":
       return `Cancel HOLD; return previously held half (${step.heldStitches} sts; ${step.tubeStitches} tube stitches).`;
     case "scrap-off-heel":
@@ -831,10 +794,7 @@ export function formatSockInstructionOutline(doc: SockInstructionDocument): stri
         i += DEFAULT_TOE_FINISHING_GROUP_LENGTH;
         continue;
       }
-      const step = steps[i]!;
-      lines.push(`  ${outlineStep(step)}`);
-      const summary = shortRowShapingSummaryAfterOut(step, section);
-      if (summary) lines.push(`  ${summary}`);
+      lines.push(`  ${outlineStep(steps[i]!)}`);
       i += 1;
     }
   }

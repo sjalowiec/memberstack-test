@@ -294,15 +294,11 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     expect(labelText(svg, "measureAnkle")).toBe(
       sectionMeasureLabel(calc.ankleStraightRows, fields.ankleInches),
     );
-    expect(labelText(svg, "measureHeel")).toBe(
-      sectionMeasureLabel(calc.heel.shortRowDepthRows, fields.heelInches),
-    );
+    expect(labelText(svg, "measureHeel")).toBe(pocketDepthMeasureLabel(fields.heelInches));
     expect(labelText(svg, "measureFoot")).toBe(
       sectionMeasureLabel(calc.straightFootRows, fields.footInches),
     );
-    expect(labelText(svg, "measureToe")).toBe(
-      sectionMeasureLabel(calc.toe.shortRowDepthRows, fields.toeInches),
-    );
+    expect(labelText(svg, "measureToe")).toBe(pocketDepthMeasureLabel(fields.toeInches));
     expect(labels).not.toContain(
       `${calc.heel.shortRowInSteps} / ${calc.heel.shortRowOutSteps} rows`,
     );
@@ -313,10 +309,11 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     expect(Number(labelXY(svg, "measureLeg").x)).toBeGreaterThan(dimLineX(svg, "leg-length"));
   });
 
-  it("shows physical one-way heel/toe inches without short-row in/out row counts", () => {
+  it("shows finished heel and toe depth without a short-row row count", () => {
     const calc = mustCalc();
     const fields = sockCanonicalCalcLabelFields(calc);
     const svg = buildSockPatternDiagramSvg(calc, { mode: "pattern" });
+    const mirrored = buildSockPatternDiagramSvg(calc, { mode: "pattern", mirror: true });
     const jp = buildSockShapingNotationDiagramSvg(calc);
     const heelPhase = `${calc.heel.shortRowInSteps} / ${calc.heel.shortRowOutSteps} rows`;
     const toePhase = `${calc.toe.shortRowInSteps} / ${calc.toe.shortRowOutSteps} rows`;
@@ -326,18 +323,34 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     expect(calc.toe.shortRowKnittingRows).toBe(
       calc.toe.shortRowInSteps + calc.toe.shortRowOutSteps,
     );
+    expect(calc.heelDepthInches).toBeCloseTo(
+      calc.heel.shortRowDepthRows / calc.rowGaugePerInch,
+      5,
+    );
+    expect(calc.toeDepthInches).toBeCloseTo(calc.toe.shortRowDepthRows / calc.rowGaugePerInch, 5);
+    expect(calc.heelDepthInches).not.toBeCloseTo(
+      calc.heel.shortRowKnittingRows / calc.rowGaugePerInch,
+      5,
+    );
     expect(Number(attr(svg, "data-sock-heel-in"))).toBeCloseTo(calc.heelDepthInches, 5);
     expect(Number(attr(svg, "data-sock-toe-in"))).toBeCloseTo(calc.toeDepthInches, 5);
-    expect(labelText(svg, "measureHeel")).toBe(
-      sectionMeasureLabel(calc.heel.shortRowDepthRows, fields.heelInches),
+    expect(labelText(svg, "measureHeel")).toBe(pocketDepthMeasureLabel(fields.heelInches));
+    expect(labelText(svg, "measureToe")).toBe(pocketDepthMeasureLabel(fields.toeInches));
+    expect(labelText(mirrored, "measureHeel")).toBe(labelText(svg, "measureHeel"));
+    expect(labelText(mirrored, "measureToe")).toBe(labelText(svg, "measureToe"));
+    const toeUp = buildSockPatternDiagramSvg(
+      mustCalc({ constructionDirection: "toe-up" }),
+      { mode: "pattern" },
     );
-    expect(labelText(svg, "measureToe")).toBe(
-      sectionMeasureLabel(calc.toe.shortRowDepthRows, fields.toeInches),
-    );
+    expect(labelText(toeUp, "measureHeel")).toBe(labelText(svg, "measureHeel"));
+    expect(labelText(toeUp, "measureToe")).toBe(labelText(svg, "measureToe"));
+    expect(toeUp).toContain('data-sock-label="sectionAnkle"');
     expect(labelsGroup(svg)).not.toContain(heelPhase);
     expect(labelsGroup(svg)).not.toContain(toePhase);
     expect(labelsGroup(svg)).not.toContain(`${calc.heel.shortRowKnittingRows} rows`);
-    expect(labelsGroup(svg)).toContain(`${calc.heel.shortRowDepthRows} rows`);
+    expect(labelsGroup(svg)).not.toContain(`${calc.heel.shortRowDepthRows} rows`);
+    expect(labelsGroup(svg)).not.toContain(`${calc.toe.shortRowDepthRows} rows`);
+    expect(labelsGroup(svg)).toContain(pocketDepthMeasureLabel(fields.heelInches));
     expect(calc.footLengthInches).toBeCloseTo(
       calc.heelDepthInches + calc.straightFootLengthInches + calc.toeDepthInches,
       5,
@@ -365,15 +378,11 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     expect(labelText(svg, "measureAnkle")).toBe(
       sectionMeasureLabel(calc.ankleStraightRows, fields.ankleInches),
     );
-    expect(labelText(svg, "measureHeel")).toBe(
-      sectionMeasureLabel(calc.heel.shortRowDepthRows, fields.heelInches),
-    );
+    expect(labelText(svg, "measureHeel")).toBe(pocketDepthMeasureLabel(fields.heelInches));
     expect(labelText(svg, "measureFoot")).toBe(
       sectionMeasureLabel(calc.straightFootRows, fields.footInches),
     );
-    expect(labelText(svg, "measureToe")).toBe(
-      sectionMeasureLabel(calc.toe.shortRowDepthRows, fields.toeInches),
-    );
+    expect(labelText(svg, "measureToe")).toBe(pocketDepthMeasureLabel(fields.toeInches));
     expect(geometryGroup(svg)).toContain(SOCK_CANONICAL_POLYGON_POINTS);
     const page = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
     expect(page).toContain("overflow-x: visible");
@@ -397,6 +406,8 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     expect(labelFontSize(svg, "cast-on")).toBe(type.notation);
     expect(labelFontSize(svg, "rc-leg")).toBe(type.rc);
     expect(measureFontSizes(svg, "measureLeg")).toEqual([type.stitch, type.stitch, type.row]);
+    expect(measureFontSizes(svg, "measureHeel")).toEqual([type.row, type.row]);
+    expect(measureFontSizes(svg, "measureToe")).toEqual([type.row, type.row]);
     expect(labelFontSize(jp, "sectionHeel")).toBe(type.piece);
     expect(labelFontSize(jp, "heel-shape-0")).toBe(type.notation);
     expect(labelFontSize(jp, "rc-toe")).toBe(type.rc);
@@ -766,6 +777,17 @@ describe("Christmas Stocking uses the shared diagram with its own sections", () 
     expectToeUpCountersMatchInstructions(toeUp);
 
     for (const svg of [cuffSvg, toeSvg, cuffNotation, toeNotation]) assertNoAnkleSplit(svg);
+    for (const [svg, calc] of [
+      [cuffSvg, cuff],
+      [toeSvg, toeUp],
+    ] as const) {
+      expect(labelText(svg, "measureHeel")).toBe(pocketDepthMeasureLabel(calc.heelDepthInches));
+      expect(labelText(svg, "measureToe")).toBe(pocketDepthMeasureLabel(calc.toeDepthInches));
+      expect(labelText(svg, "measureHeel")).not.toMatch(/rows/);
+      expect(labelText(svg, "measureToe")).not.toMatch(/rows/);
+      expect(labelText(svg, "measureLeg")).toContain("rows");
+      expect(labelText(svg, "measureFoot")).toContain(`${calc.straightFootRows} rows`);
+    }
 
     const cuffDoc = buildChristmasStockingInstructions(cuff);
     const cuffLeg = cuffDoc.sections.find((section) => section.id === "leg");
@@ -883,6 +905,11 @@ function sectionMeasureLabel(rows: number, inches: number): string {
     "rows",
     inches > 0 ? formatPatternDiagramMeasurement(inches, "in") : "",
   );
+}
+
+/** Finished heel/toe depth only. The one-way row count is not a knitting label. */
+function pocketDepthMeasureLabel(inches: number): string {
+  return formatPatternDiagramMeasurement(inches, "in");
 }
 
 function sectionYs(svg: string): {

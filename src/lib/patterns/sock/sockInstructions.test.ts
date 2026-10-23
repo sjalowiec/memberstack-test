@@ -1081,7 +1081,7 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
     expect(formatSockInstructionOutline(doc)).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
   });
 
-  it("labels heel/toe short-row halves as passes and summarizes the complete sequence", () => {
+  it("keeps heel and toe short-row directions without pass totals", () => {
     const shaping = calculateShortRowShaping(26);
     expect(shaping).toMatchObject({
       workingStitches: 13,
@@ -1108,14 +1108,14 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
       sections: [heel],
     });
     expect(html).toContain(
-      `On the carriage side, put 1 needle into hold, <span class="glossary-tooltip-placeholder" data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}" data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}" data-aria-label="${AUTOMATIC_WRAP_GLOSSARY_TERM}">${AUTOMATIC_WRAP_GLOSSARY_TERM}</span>, and knit across. Repeat every row until 5 center stitches remain. (8 short-row passes)`,
+      `On the carriage side, put 1 needle into hold, <span class="glossary-tooltip-placeholder" data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}" data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}" data-aria-label="${AUTOMATIC_WRAP_GLOSSARY_TERM}">${AUTOMATIC_WRAP_GLOSSARY_TERM}</span>, and knit across. Repeat every row until 5 center stitches remain.`,
     );
     expect(html).toContain(
-      "Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all 13 working stitches are back in work. (8 short-row passes)",
+      "Opposite the carriage, return 1 needle to work and knit across. Repeat every row until all 13 working stitches are back in work.",
     );
-    expect(html).toContain(
-      "Short-row shaping: 16 passes total — 8 decreasing and 8 increasing.",
-    );
+    expect(html).not.toContain("short-row passes");
+    expect(html).not.toContain("passes total");
+    expect(html).not.toContain("Short-row shaping:");
     expect(html).not.toContain("(8 rows)");
     expect(html).not.toContain(SHORT_ROW_RETURN_DEPTH_SENTENCE);
     expect(html).not.toContain("Working on the remaining");
@@ -1129,23 +1129,31 @@ describe("Cuff-to-Toe instruction copy corrections", () => {
       for (const doc of [pair.sock1, pair.sock2]) {
         const rendered = renderBasicSockInstructionsHtml(doc);
         const outline = formatSockInstructionOutline(doc);
+        expect(rendered).not.toContain("short-row passes");
+        expect(rendered).not.toContain("passes total");
+        expect(outline).not.toContain("short-row passes");
+        expect(outline).not.toContain("passes total");
         for (const id of ["heel", "toe"] as const) {
           const part = section(doc, id);
-          const decrease = shortRowIn(part).rows;
-          const increase = shortRowOut(part).rows;
-          const total = decrease + increase;
-          const halfLabel = `${decrease} short-row passes`;
-          const increaseLabel = `${increase} short-row passes`;
-          const summary = `Short-row shaping: ${total} passes total — ${decrease} decreasing and ${increase} increasing.`;
+          const decrease = shortRowIn(part);
+          const increase = shortRowOut(part);
           const partHtml = sectionHtml(rendered, id);
-          expect(partHtml).toContain(`(${halfLabel})`);
-          expect(partHtml).toContain(`(${increaseLabel})`);
-          expect(partHtml).toContain(summary);
-          expect(partHtml).not.toContain(`(${decrease} rows)`);
-          expect(partHtml).not.toContain(`(${increase} rows)`);
-          expect(outline).toContain(summary);
-          expect(decrease).toBe(part.physicalDepthRows);
-          expect(total).toBe(part.shortRowKnittingRows);
+          expect(partHtml).toContain(
+            `Repeat every row until ${decrease.remainingStitches} center stitches remain.`,
+          );
+          expect(partHtml).toContain(
+            `Repeat every row until all ${increase.endWorkingStitches} working stitches are back in work.`,
+          );
+          expect(partHtml).toContain("On the carriage side, put 1 needle into hold");
+          expect(partHtml).toContain("Opposite the carriage, return 1 needle to work");
+          expect(outline).toContain(
+            `until ${decrease.remainingStitches} center stitches remain.`,
+          );
+          expect(outline).toContain(
+            `until ${increase.endWorkingStitches} working stitches are back.`,
+          );
+          expect(decrease.rows).toBe(part.physicalDepthRows);
+          expect(decrease.rows + increase.rows).toBe(part.shortRowKnittingRows);
         }
       }
     }
@@ -1857,7 +1865,7 @@ describe("scrap-off short-row remaining-stitch orientation", () => {
     expect(html).toContain("<p>Scrap off 18 stitches.</p>");
     expect(html).toContain("<p>Working on the remaining 18 stitches:</p>");
     expect(html).toContain(
-      `On the carriage side, put 1 needle into hold, <span class="glossary-tooltip-placeholder" data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}" data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}" data-aria-label="${AUTOMATIC_WRAP_GLOSSARY_TERM}">${AUTOMATIC_WRAP_GLOSSARY_TERM}</span>, and knit across. Repeat every row until 6 center stitches remain. (12 short-row passes)`,
+      `On the carriage side, put 1 needle into hold, <span class="glossary-tooltip-placeholder" data-glossary-id="${AUTOMATIC_WRAP_GLOSSARY_ID}" data-term="${AUTOMATIC_WRAP_GLOSSARY_TERM}" data-aria-label="${AUTOMATIC_WRAP_GLOSSARY_TERM}">${AUTOMATIC_WRAP_GLOSSARY_TERM}</span>, and knit across. Repeat every row until 6 center stitches remain.`,
     );
     const scrapAt = html.indexOf("Scrap off 18 stitches.");
     const remainingAt = html.indexOf("Working on the remaining 18 stitches:");
@@ -1924,8 +1932,8 @@ describe("scrap-off short-row remaining-stitch orientation", () => {
     expect(toeUp.toe).toEqual(cuff.toe);
     const cuffHtml = renderBasicSockInstructionsHtml(buildBasicSockInstructions(cuff, 1));
     const toeUpHtml = renderBasicSockInstructionsHtml(buildBasicSockInstructions(toeUp, 1));
-    const decrease = `Repeat every row until ${cuff.heel.remainingStitches} center stitches remain. (${cuff.heel.shortRowInSteps} short-row passes)`;
-    const increase = `Repeat every row until all ${cuff.heel.workingStitches} working stitches are back in work. (${cuff.heel.shortRowOutSteps} short-row passes)`;
+    const decrease = `Repeat every row until ${cuff.heel.remainingStitches} center stitches remain.`;
+    const increase = `Repeat every row until all ${cuff.heel.workingStitches} working stitches are back in work.`;
     for (const html of [cuffHtml, toeUpHtml]) {
       expect(html).toContain(decrease);
       expect(html).toContain(increase);
