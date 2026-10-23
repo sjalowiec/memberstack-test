@@ -116,6 +116,7 @@ export type SockDiagramRcMilestoneId =
   | "rc-ankle"
   | "rc-heel"
   | "rc-foot"
+  | "rc-foot-end"
   | "rc-toe"
   | "rc-bind-off";
 
@@ -146,15 +147,27 @@ export function sockDiagramShowsSplitAnkle(
 }
 
 /**
+ * Toe-up foot-ending RC. Counted foot rows stop where the straight foot meets
+ * the heel. The label is that boundary. Heel and toe short-row passes are never
+ * row-counter labels, and the shaping stack is drawn below this mark.
+ */
+export function sockToeUpFootEndingCanonicalY(): number {
+  return OUTLINE.heelBottom;
+}
+
+/**
  * Row-counter labels at the boundaries the written instructions mark.
+ * Short-row heel and toe passes are not counted and never become an RC label.
  * Cuff-down starts the leg at 000. The ankle continues that counter, so the
- * dashed boundary shows the leg ending RC. The heel starts at the full leg
- * count. The foot restarts at 000, and the toe stops at the foot ending RC.
- * Toe-up socks reset at the toe, the foot, and the ankle. After the ankle rows
- * the counter reads that ankle total at the leg boundary. The leg then resets
- * and is knit to its own ending RC, labeled on the top bind-off edge.
- * A toe-up stocking resets once after the heel and knits the finished leg on
- * that counter, so the bind-off edge reads the full leg total.
+ * dashed boundary shows the leg ending RC. The full counted leg total is marked
+ * where straight knitting stops before the heel. The foot restarts at 000, and
+ * the toe boundary shows the foot ending RC.
+ * Toe-up resets at the toe and again at the foot. The foot ending RC is the
+ * counted foot total where the foot meets the heel. After the heel the counter
+ * resets to 000 before the ankle or, on a stocking, before the single leg. A sock then
+ * marks the ankle total at the leg boundary and the leg's own ending RC on the
+ * bind-off edge. A toe-up stocking knits the finished leg on that reset counter,
+ * so the bind-off edge reads the full leg total.
  */
 export function sockDiagramRcMilestones(
   calc: BasicSockCalc,
@@ -165,7 +178,11 @@ export function sockDiagramRcMilestones(
     const marks: SockDiagramRcMilestone[] = [
       { id: "rc-toe", rc: 0, canonicalY: OUTLINE.toeBottom },
       { id: "rc-foot", rc: 0, canonicalY: OUTLINE.toeTop },
-      { id: "rc-heel", rc: calc.straightFootRows, canonicalY: OUTLINE.heelBottom },
+      {
+        id: "rc-foot-end",
+        rc: calc.straightFootRows,
+        canonicalY: sockToeUpFootEndingCanonicalY(),
+      },
     ];
     if (showsAnkle && calc.ankleStraightRows > 0) {
       marks.push({ id: "rc-ankle", rc: 0, canonicalY: OUTLINE.heelTop });
@@ -288,7 +305,7 @@ function sectionNameCanonicalY(id: SockCanonicalAnchorId, showsAnkle: boolean): 
   if (id === "sectionLeg" && !showsAnkle) return (OUTLINE.top + OUTLINE.heelTop) / 2;
   if (id === "sectionHeel") return (OUTLINE.heelTop + OUTLINE.heelBottom) / 2;
   if (id === "sectionToe") return (OUTLINE.toeTop + OUTLINE.toeBottom) / 2;
-  if (id === "sectionFoot") return OUTLINE.toeTop - 18;
+  if (id === "sectionFoot") return OUTLINE.toeTop - 10;
   return SOCK_CANONICAL_ANCHORS[id].y;
 }
 
