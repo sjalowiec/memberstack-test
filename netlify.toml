@@ -3,11 +3,6 @@
 [build.environment]
   PUBLIC_NOINDEX = "false"
 
-[[headers]]
-  for = "/admin/*"
-  [headers.values]
-    Basic-Auth = "admin:knit741"
-
 # Local dev: proxy to Astro (port 4321) and run functions in one process.
 # Prefer `netlify dev` over running `netlify dev --framework=#static` beside `npm run dev`.
 [dev]

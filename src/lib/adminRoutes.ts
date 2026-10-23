@@ -12,8 +12,8 @@ export const ADMIN_ROUTES = {
 };
 
 /**
- * Watson nav Admin href. Non-localhost (including production) keeps `/admin`.
- * Localhost uses `/admin/` so the path matches Netlify Basic-Auth `/admin/*`.
+ * Watson nav Admin href. Hosted sites use `/admin`.
+ * Localhost keeps a trailing slash for the local dev server.
  */
 export function watsonAdminNavHref(
   hostname: string | null | undefined,
