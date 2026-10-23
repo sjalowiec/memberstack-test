@@ -43,6 +43,7 @@ import {
   sockFinishedDiagramTypography,
   sockGlyphAbove,
   sockGlyphBelow,
+  sockToeUpFootEndingCanonicalY,
   type SockDiagramFamily,
   type SockDiagramRcMilestone,
 } from "./sockPatternDiagramSvg";
@@ -260,7 +261,16 @@ export function buildSockShapingNotationDiagramSvg(
   const castOnAnchor = flipVertical ? "castOnCuff" : "castOnToe";
   const finishText = flipVertical ? "waste yarn" : formatBindOffNotation(calc.legStitches);
   const step = stackStep(type);
-  const heelStackY = notationStackCenter(OUTLINE.heelBottom, notation.heel.length, type, 1);
+  /**
+   * Toe-up marks the counted foot total on the foot/heel boundary.
+   * Start the heel short-row stack below that label so a matching repeat
+   * (for example 14x) is not read as the RC.
+   */
+  const heelStackEdge =
+    calc.constructionDirection === "toe-up"
+      ? sockToeUpFootEndingCanonicalY() + sockGlyphBelow(type.rc)
+      : OUTLINE.heelBottom;
+  const heelStackY = notationStackCenter(heelStackEdge, notation.heel.length, type, 1);
   const toeStackY = notationStackCenter(OUTLINE.toeBottom, notation.toe.length, type, 1);
   const cuffEdgeY = OUTLINE.top - STACK_CLEAR - sockGlyphBelow(type.notation);
   const toeOuter = notation.toe.length
