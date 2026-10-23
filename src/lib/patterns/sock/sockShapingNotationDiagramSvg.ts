@@ -10,12 +10,19 @@ import {
   formatBindOffNotation,
   formatCastOnNotation,
 } from "../sleevelessBackJapaneseNotation";
+import { DS_FONT } from "../dropShoulderPatternDiagramSvgShared";
+import { renderShapingNotationRcLeaders } from "../legoBlocks/shapingNotationRcLeaders";
+import type { PlacedShapingNotationRcLeader } from "../legoBlocks/shapingNotationRcLeaders";
+import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import type { BasicSockCalc } from "./sockMath";
 import {
+  SOCK_CANONICAL_POLYGON_POINTS,
   SOCK_CANONICAL_SVG_HREF,
+  SOCK_CANONICAL_VB_W,
   SOCK_STS_ROWS_PAD_RIGHT,
   escapeSockSvgText,
+  fmtSockSvg,
   sockCanonicalDiagramFrame,
   sockCanonicalFlipVertical,
   sockCanonicalGeometryMarkup,
@@ -26,6 +33,7 @@ import {
   sockCanonicalText,
 } from "./sockCanonicalDiagram";
 import {
+  SOCK_DIAGRAM_RC_X,
   sockDiagramRcLabelMarkup,
   sockDiagramRcMilestones,
   sockDiagramSectionLabels,
@@ -134,6 +142,70 @@ function point(
   flipVertical: boolean,
 ): { x: number; y: number } {
   return sockCanonicalLabelPoint(id, mirror, flipVertical);
+}
+
+/**
+ * Dotted leader from the silhouette edge at the instruction boundary to the
+ * existing RC label. Positions stay on the boundary; only the shared sweater
+ * leader stroke is added.
+ */
+/** Screen-right silhouette X at a canonical boundary, after Sock 2's mirror. */
+export function sockShapingRcOutlineX(canonicalY: number, mirror: boolean): number {
+  const values = SOCK_CANONICAL_POLYGON_POINTS.trim().split(/\s+/).map(Number);
+  const points: { x: number; y: number }[] = [];
+  for (let i = 0; i < values.length; i += 2) {
+    points.push({ x: values[i]!, y: values[i + 1]! });
+  }
+  const hits: number[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i]!;
+    const b = points[i + 1]!;
+    if (canonicalY < Math.min(a.y, b.y) || canonicalY > Math.max(a.y, b.y)) continue;
+    if (a.y === b.y) {
+      hits.push(a.x, b.x);
+      continue;
+    }
+    const t = (canonicalY - a.y) / (b.y - a.y);
+    hits.push(a.x + t * (b.x - a.x));
+  }
+  const edge = mirror ? Math.min(...hits) : Math.max(...hits);
+  return mirror ? SOCK_CANONICAL_VB_W - edge : edge;
+}
+
+function sockShapingRcLeaderMarkup(
+  milestones: readonly SockDiagramRcMilestone[],
+  mirror: boolean,
+  flipVertical: boolean,
+): string {
+  const fontSize = sockFinishedDiagramTypography().rc;
+  const placed: PlacedShapingNotationRcLeader[] = milestones.map((milestone, index) => {
+    const y = sockCanonicalMapY(milestone.canonicalY, flipVertical);
+    const outlineX = sockShapingRcOutlineX(milestone.canonicalY, mirror);
+    return {
+      id: milestone.id,
+      kind: milestone.id,
+      text: formatShapingNotationRcLabel(milestone.rc),
+      actionY: y,
+      outlineX,
+      labelX: SOCK_DIAGRAM_RC_X,
+      labelY: y,
+      anchor: "start",
+      leaderX1: SOCK_DIAGRAM_RC_X - 3,
+      leaderY: y,
+      leaderX2: outlineX,
+      fontSize,
+      stacked: false,
+      priority: index,
+      rowCounter: milestone.rc,
+    };
+  });
+  return renderShapingNotationRcLeaders({
+    placed,
+    fill: MUTED,
+    font: DS_FONT,
+    escape: escapeSockSvgText,
+    formatNumber: fmtSockSvg,
+  }).replace(/<text\b[^>]*>[\s\S]*?<\/text>/g, "");
 }
 
 export function buildSockShapingNotationLines(
@@ -320,6 +392,9 @@ export function buildSockShapingNotationDiagramSvg(
     `width="100%" height="auto">` +
     sockCanonicalGeometryMarkup({ mirror, flipVertical }) +
     sockCanonicalReadingDirectionArrowMarkup() +
+    `<g data-sock-diagram-rc-leaders>` +
+    sockShapingRcLeaderMarkup(rcMilestones, mirror, flipVertical) +
+    `</g>` +
     `<g data-sock-diagram-labels data-sock-text-unmirrored="true">` +
     labels.join("") +
     `</g>` +

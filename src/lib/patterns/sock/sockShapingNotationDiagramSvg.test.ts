@@ -9,17 +9,20 @@ import {
 import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import { calculateBasicSockPattern, type BasicSockCalc, type BasicSockCalcInput } from "./sockMath";
+import { SHAPING_NOTATION_RC_DASH, SHAPING_NOTATION_RC_GUIDE, SHAPING_NOTATION_RC_GUIDE_WIDTH } from "../legoBlocks/shapingNotationRcLeaders";
 import {
   SOCK_CANONICAL_POLYGON_POINTS,
   SOCK_CANONICAL_SVG_HREF,
+  SOCK_CANONICAL_VB_W,
   sockCanonicalFlipVertical,
   sockCanonicalMapY,
 } from "./sockCanonicalDiagram";
-import { SOCK_DIAGRAM_RC_X, sockDiagramRcMilestones } from "./sockPatternDiagramSvg";
+import { OUTLINE, SOCK_DIAGRAM_RC_X, buildSockPatternDiagramSvg, sockDiagramRcMilestones } from "./sockPatternDiagramSvg";
 import {
   buildSockShapingNotationDiagramSvg,
   buildSockShapingNotationLines,
   sockShapingNotationRcMilestones,
+  sockShapingRcOutlineX,
 } from "./sockShapingNotationDiagramSvg";
 
 function mustCalc(overrides: Partial<BasicSockCalcInput> = {}): BasicSockCalc {
@@ -295,6 +298,36 @@ describe("Shaping Notation RC milestones", () => {
         sockCanonicalMapY(milestone.canonicalY, flipVertical),
       );
     }
+    assertRcLeaders(svg, calc);
+  }
+
+  function assertRcLeaders(
+    svg: string,
+    calc: BasicSockCalc,
+    options?: { mirror?: boolean; family?: "socks" | "christmas-stocking" },
+  ): void {
+    const milestones = sockShapingNotationRcMilestones(calc, { family: options?.family });
+    const flipVertical = sockCanonicalFlipVertical(calc.constructionDirection);
+    const outlineXFor = (canonicalY: number) =>
+      sockShapingRcOutlineX(canonicalY, options?.mirror === true);
+    expect(svg.match(/data-role="rc-leader"/g)?.length).toBe(milestones.length);
+    for (const milestone of milestones) {
+      const match = svg.match(
+        new RegExp(
+          `<line\\b[^>]*data-role="rc-leader"[^>]*data-rc-label="${milestone.id}"[^>]*x1="([^"]+)" y1="([^"]+)" x2="([^"]+)" y2="([^"]+)"`,
+        ),
+      );
+      expect(match, milestone.id).toBeTruthy();
+      const y = sockCanonicalMapY(milestone.canonicalY, flipVertical);
+      expect(Number(match![1])).toBe(SOCK_DIAGRAM_RC_X - 3);
+      expect(Number(match![2])).toBe(y);
+      expect(Number(match![3])).toBe(outlineXFor(milestone.canonicalY));
+      expect(Number(match![4])).toBe(y);
+      expect(Number(labelXY(svg, milestone.id).y)).toBe(y);
+    }
+    expect(svg).toContain(`stroke="${SHAPING_NOTATION_RC_GUIDE}"`);
+    expect(svg).toContain(`stroke-width="${SHAPING_NOTATION_RC_GUIDE_WIDTH}"`);
+    expect(svg).toContain(`stroke-dasharray="${SHAPING_NOTATION_RC_DASH}"`);
   }
 
   it("places Toe-Up RC labels on the same written boundaries as Stitches & Rows", () => {
@@ -344,6 +377,23 @@ describe("Shaping Notation RC milestones", () => {
     expect(stackedShapeTexts(svg, "heel-shape")).not.toMatch(/rc\d/);
     expect(stackedShapeTexts(svg, "toe-shape")).not.toMatch(/rc\d/);
   });
+
+  it("draws a shared leader from each boundary for both directions, both families, and the mirrored sock", () => {
+    expect(sockShapingRcOutlineX(472, false)).toBe(OUTLINE.right);
+    expect(sockShapingRcOutlineX(472, true)).toBe(SOCK_CANONICAL_VB_W - 148);
+    expect(sockShapingRcOutlineX(216, true)).toBe(SOCK_CANONICAL_VB_W - OUTLINE.left);
+    expect(sockShapingRcOutlineX(8, false)).toBe(OUTLINE.right);
+    for (const constructionDirection of ["cuff-to-toe", "toe-up"] as const) {
+      for (const family of ["socks", "christmas-stocking"] as const) {
+        const calc = mustCalc({ constructionDirection });
+        const svg = buildSockShapingNotationDiagramSvg(calc, { family });
+        assertRcLeaders(svg, calc, { family });
+        const mirrored = buildSockShapingNotationDiagramSvg(calc, { family, mirror: true });
+        assertRcLeaders(mirrored, calc, { family, mirror: true });
+        expect(buildSockPatternDiagramSvg(calc, { family })).not.toContain('data-role="rc-leader"');
+      }
+    }
+  });
 });
 
 describe("notation does not recreate Socks geometry", () => {
@@ -362,6 +412,7 @@ describe("notation does not recreate Socks geometry", () => {
     expect(src).toContain("formatCastOnNotation");
     expect(src).toContain("formatBodyRowsNotation");
     expect(src).toContain("sockDiagramRcLabelMarkup");
+    expect(src).toContain("renderShapingNotationRcLeaders");
     expect(src).toContain("sockFinishedDiagramTypography");
     expect(src).not.toMatch(/size:\s*1\d/);
     expect(src).not.toContain("formatHoldNotation");
