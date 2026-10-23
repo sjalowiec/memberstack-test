@@ -3,7 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { patternSystemFromPathname } from "../patternGenerationActivity";
 import { evaluateSockBuilderNeedleCapacity } from "./sockBuilderValidation";
-import { createEmptySockDraft } from "./sockDraft";
+import { createEmptySockDraft, writeSockDraft } from "./sockDraft";
+import { SOCK_SUMMARY_ART_SRC, SOCK_SUMMARY_MEASUREMENT_FIELDS } from "./sockPatternEditTargets";
+import { applySockSummaryMeasurementsToDraft, sockSummaryMeasureFieldsFromDraft } from "./sockSummaryEdit";
 import {
   buildChristmasStockingInstructions,
   renderChristmasStockingInstructionsHtml,
@@ -224,6 +226,26 @@ describe("Christmas stocking saved pattern values", () => {
     if (!page.ok) return;
     expect(page.calc.legCircumferenceInches).toBe(page.calc.footCircumferenceInches);
     expect(page.calc.footCircumferenceInches).toBe(15);
+    expect(draft.footCircumference).toBe("15");
+    expect(draft.legCircumference).toBe("15");
+    const reopened = sockSummaryMeasureFieldsFromDraft(draft);
+    expect(reopened.footCircumference).toBe("15");
+    expect(reopened.legCircumference).toBe("15");
+    const saved = applySockSummaryMeasurementsToDraft(draft, {
+      ...reopened,
+      footCircumference: "16",
+      legCircumference: "11",
+    });
+    expect(saved.footCircumference).toBe("16");
+    expect(saved.legCircumference).toBe("16");
+    let stored = "";
+    writeSockDraft(
+      { ...saved, footCircumference: "16", legCircumference: "11" },
+      { setItem: (_key, value) => { stored = value; } },
+    );
+    const persisted = JSON.parse(stored) as { footCircumference: string; legCircumference: string };
+    expect(persisted.footCircumference).toBe("16");
+    expect(persisted.legCircumference).toBe("16");
     expect(page.view.footLength).toContain("9");
     expect(page.instructionsHtml).toContain("Christmas Stocking — Cuff down");
   });
@@ -259,6 +281,32 @@ describe("Christmas stocking saved pattern values", () => {
       "inches",
     );
     expect(enough.ok).toBe(true);
+  });
+});
+
+describe("Christmas stocking edit diagram", () => {
+  it("uses the single-sock drawing and one shared circumference chip", () => {
+    expect(SOCK_SUMMARY_ART_SRC).toBe("/images/patterns/socks-pattern-summary-transparent.webp");
+    const workspace = readFileSync(
+      resolve("src/components/patterns/ChristmasStockingPatternEditWorkspace.astro"),
+      "utf8",
+    );
+    expect(workspace).toContain("SOCK_SUMMARY_ART_SRC");
+    expect(workspace).not.toContain("/images/patterns/christmas-stocking-builder.png");
+    const circumference = SOCK_SUMMARY_MEASUREMENT_FIELDS.find(
+      (field) => field.id === "footCircumference",
+    );
+    expect(circumference?.label).toBe("Foot and Leg Circumference");
+    expect(SOCK_SUMMARY_MEASUREMENT_FIELDS.map((field) => field.id)).toEqual([
+      "legLength",
+      "footLength",
+      "footCircumference",
+    ]);
+    const landing = readFileSync(
+      resolve("src/lib/patterns/christmasStockingPatternLanding.ts"),
+      "utf8",
+    );
+    expect(landing).toContain("/images/patterns/christmas-stocking-builder.png");
   });
 });
 

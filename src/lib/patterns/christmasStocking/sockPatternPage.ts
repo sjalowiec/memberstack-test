@@ -50,7 +50,7 @@ export function buildSockPatternSummaryDlHtml(
     ["Size", view.sizeLabel],
     ["Construction", view.constructionLabel],
     ["Leg Length", view.legLength],
-    ["Foot Circumference", view.footCircumference],
+    ["Foot and Leg Circumference", view.footCircumference],
     ["Foot Length", view.footLength],
     ["Gauge", view.gaugeLabel],
   ];

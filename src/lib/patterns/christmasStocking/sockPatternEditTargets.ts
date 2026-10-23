@@ -1,12 +1,16 @@
 /**
- * SVG measurement-target ids for the Socks Summary/Edit static sock image.
- * Invisible circles sit over {@link SOCK_SUMMARY_ART_SRC}; chips use the shared
- * {@link PatternSummaryMeasurementField} overlay — not a Socks-specific chip system.
+ * SVG measurement-target ids for the Christmas Stocking Summary/Edit diagram.
+ * Invisible circles sit over the same single-sock drawing Basic Socks uses.
+ * The decorative stocking thumbnail stays on cards and marketing.
+ * Chips use the shared {@link PatternSummaryMeasurementField} overlay.
  */
 import type { PatternSummaryMeasurementField } from "../patternSummaryMeasurementField";
 
-/** Static Summary/Edit art. Distinct from the catalog thumbnail. */
-export const SOCK_SUMMARY_ART_SRC = "/images/patterns/christmas-stocking-builder.png";
+/**
+ * Single-sock drawing behind the measurement chips.
+ * Same asset and placement approach as Basic Socks Summary/Edit.
+ */
+export const SOCK_SUMMARY_ART_SRC = "/images/patterns/socks-pattern-summary-transparent.webp";
 
 export const SOCK_EDIT_MEASUREMENT_TARGETS = {
   legLength: "target_sock_leg_length",
@@ -20,10 +24,10 @@ export const SOCK_EDIT_MEASUREMENT_TARGETS = {
  * Placed beside the sock, not on the ribbing or toe.
  */
 export const SOCK_SUMMARY_CHIP_TARGET_POINTS = {
-  legLength: { x: 28, y: 32 },
+  legLength: { x: 30, y: 34 },
   legCircumference: { x: 48, y: 12 },
-  footLength: { x: 52, y: 92 },
-  footCircumference: { x: 86, y: 64 },
+  footLength: { x: 58, y: 88 },
+  footCircumference: { x: 78, y: 56 },
 } as const;
 
 /**
@@ -85,7 +89,7 @@ export const SOCK_SUMMARY_MEASUREMENT_FIELDS: PatternSummaryMeasurementField[] =
   {
     ...SOCK_MEASURE_INPUT,
     id: "footCircumference",
-    label: "Foot Circumference",
+    label: "Foot and Leg Circumference",
     targetId: SOCK_EDIT_MEASUREMENT_TARGETS.footCircumference,
     transform: SOCK_EDIT_MEASUREMENT_TRANSFORMS.footCircumference,
     inputId: "christmas-stocking-edit-foot-circ",

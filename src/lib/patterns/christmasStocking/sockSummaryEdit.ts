@@ -5,7 +5,7 @@
  */
 
 import type { SockDraft, SockDraftUnit } from "./sockDraft";
-import { createEmptySockDraft } from "./sockDraft";
+import { createEmptySockDraft, sharedChristmasStockingCircumference } from "./sockDraft";
 import { convertSockMeasurementDisplay } from "../sock/sockBuilderUnits";
 import {
   buildSockSummaryFromDraft,
@@ -25,10 +25,14 @@ export function sockSummaryUnitSuffix(unit: SockDraftUnit): string {
 }
 
 export function sockSummaryMeasureFieldsFromDraft(draft: SockDraft): SockSummaryMeasureFields {
+  const circumference = sharedChristmasStockingCircumference(
+    draft.footCircumference,
+    draft.legCircumference,
+  );
   return {
-    footCircumference: String(draft.footCircumference ?? "").trim(),
+    footCircumference: circumference,
     footLength: String(draft.footLength ?? "").trim(),
-    legCircumference: String(draft.legCircumference ?? "").trim(),
+    legCircumference: circumference,
     legLength: String(draft.legLength ?? "").trim(),
   };
 }
@@ -38,10 +42,15 @@ export function convertSockSummaryMeasurements(
   fromUnit: SockDraftUnit,
   toUnit: SockDraftUnit,
 ): SockSummaryMeasureFields {
+  const circumference = convertSockMeasurementDisplay(
+    sharedChristmasStockingCircumference(measures.footCircumference, measures.legCircumference),
+    fromUnit,
+    toUnit,
+  );
   return {
-    footCircumference: convertSockMeasurementDisplay(measures.footCircumference, fromUnit, toUnit),
+    footCircumference: circumference,
     footLength: convertSockMeasurementDisplay(measures.footLength, fromUnit, toUnit),
-    legCircumference: convertSockMeasurementDisplay(measures.legCircumference, fromUnit, toUnit),
+    legCircumference: circumference,
     legLength: convertSockMeasurementDisplay(measures.legLength, fromUnit, toUnit),
   };
 }
@@ -54,9 +63,15 @@ export function applySockSummaryMeasurementsToDraft(
   return createEmptySockDraft({
     ...previous,
     unit,
-    footCircumference: String(measures.footCircumference ?? "").trim(),
+    footCircumference: sharedChristmasStockingCircumference(
+      measures.footCircumference,
+      measures.legCircumference,
+    ),
     footLength: String(measures.footLength ?? "").trim(),
-    legCircumference: String(measures.footCircumference ?? "").trim(),
+    legCircumference: sharedChristmasStockingCircumference(
+      measures.footCircumference,
+      measures.legCircumference,
+    ),
     legLength: String(measures.legLength ?? "").trim(),
   });
 }
