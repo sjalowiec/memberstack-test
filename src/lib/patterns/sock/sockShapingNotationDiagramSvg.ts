@@ -30,12 +30,53 @@ import {
   sockDiagramRcMilestones,
   sockDiagramSectionLabels,
   sockDiagramShowsSplitAnkle,
+  sockFinishedDiagramTypography,
   type SockDiagramFamily,
   type SockDiagramRcMilestone,
 } from "./sockPatternDiagramSvg";
+import type { SidewaysPatternDiagramType } from "../legoBlocks/patternDiagramTypography";
 
 const MUTED = "#4b5563";
-const LEG_SHAPE_OFFSET = 18;
+
+/**
+ * Center a notation stack inside the section, using the shared line gap.
+ * `direction` is +1 toward larger Y and -1 toward smaller Y.
+ */
+function notationStackCenter(
+  sectionY: number,
+  lineCount: number,
+  type: SidewaysPatternDiagramType,
+  direction = 1,
+): number {
+  const span = Math.max(0, lineCount - 1) * type.notationGap;
+  const first = sectionY + direction * (type.piece / 2 + type.notationGap);
+  return first + (direction * span) / 2;
+}
+
+function notationStackEnd(
+  center: number,
+  lineCount: number,
+  type: SidewaysPatternDiagramType,
+  direction: number,
+  edge: "inner" | "outer",
+): number {
+  const span = Math.max(0, lineCount - 1) * type.notationGap;
+  const first = center - (direction * span) / 2;
+  const last = center + (direction * span) / 2;
+  return edge === "outer" ? last : first;
+}
+
+/** Push an edge label outward when a notation stack would land on it. */
+function clearEdgeLabel(
+  anchorY: number,
+  stackY: number,
+  type: SidewaysPatternDiagramType,
+  outward: "down" | "up",
+): number {
+  const gap = type.notation * 0.6 + type.notationGap * 0.5;
+  if (outward === "down") return Math.max(anchorY, stackY + gap);
+  return Math.min(anchorY, stackY - gap);
+}
 
 function magicFormulaLines(calc: BasicSockCalc): string[] {
   return calc.legShapingSchedule.steps.map((step) =>
@@ -125,6 +166,7 @@ export function buildSockShapingNotationDiagramSvg(
     padRight: SOCK_STS_ROWS_PAD_RIGHT,
   });
   const notation = buildSockShapingNotationLines(calc, { family });
+  const type = sockFinishedDiagramTypography();
   const labels: string[] = [];
   const directionX = point("direction", mirror, false).x;
   const castOnAnchor = flipVertical ? "castOnCuff" : "castOnToe";
@@ -141,9 +183,9 @@ export function buildSockShapingNotationDiagramSvg(
       x: directionX,
       y: -18,
       text: calc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up",
-      size: 11,
+      size: type.piece,
       fill: MUTED,
-      weight: "600",
+      weight: String(type.pieceWeight),
     }),
   );
   labels.push(
@@ -152,7 +194,7 @@ export function buildSockShapingNotationDiagramSvg(
       x: castOn.x,
       y: castOn.y,
       text: notation.castOn,
-      size: 13,
+      size: type.notation,
       weight: "700",
     }),
   );
@@ -162,53 +204,103 @@ export function buildSockShapingNotationDiagramSvg(
       x: finish.x,
       y: finish.y,
       text: finishText,
-      size: 11,
+      size: type.notation,
       fill: MUTED,
     }),
   );
 
-  for (const section of sockDiagramSectionLabels({ showsAnkle, mirror, flipVertical })) {
+  const sections = sockDiagramSectionLabels({ showsAnkle, mirror, flipVertical });
+  for (const section of sections) {
     labels.push(
       sockCanonicalText({
         id: section.id,
         x: section.x,
         y: section.y,
         text: section.name,
-        size: 12,
+        size: type.piece,
+        weight: String(type.pieceWeight),
       }),
     );
   }
 
-  const heelShape = point("heelCenter", mirror, flipVertical);
-  const toeShape = point("toeCenter", mirror, flipVertical);
+  const sectionAt = (id: "sectionHeel" | "sectionToe" | "sectionLeg" | "sectionAnkle" | "sectionFoot") =>
+    sections.find((section) => section.id === id)?.y ?? point(id, mirror, flipVertical).y;
+  const interior = (sectionId: "sectionHeel" | "sectionToe", centerId: "heelCenter" | "toeCenter") =>
+    Math.sign(point(centerId, mirror, flipVertical).y - sectionAt(sectionId)) || 1;
+  const toeDir = interior("sectionToe", "toeCenter");
+  const heelDir = interior("sectionHeel", "heelCenter");
+  const toeStackY = notationStackCenter(sectionAt("sectionToe"), notation.toe.length, type, toeDir);
+  const castOnNearToe = Math.abs(castOn.y - toeStackY) <= Math.abs(finish.y - toeStackY);
+  const toeAnchorY = castOnNearToe ? castOn.y : finish.y;
+  const toeOutward = toeAnchorY >= toeStackY ? "down" : "up";
+  const toeEdge = notation.toe.length
+    ? notationStackEnd(toeStackY, notation.toe.length, type, toeDir, "outer")
+    : toeAnchorY;
+  const clearedToeY = clearEdgeLabel(toeAnchorY, toeEdge, type, toeOutward);
+  const castOnY = castOnNearToe ? clearedToeY : castOn.y;
+  const finishY = castOnNearToe ? finish.y : clearedToeY;
+  const directionY =
+    Math.min(castOnY, finishY) - (type.notation + type.piece) / 2 - type.notationGap * 0.65;
+  labels[0] = sockCanonicalText({
+    id: "direction",
+    x: directionX,
+    y: directionY,
+    text: calc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up",
+    size: type.piece,
+    fill: MUTED,
+    weight: String(type.pieceWeight),
+  });
+  labels[1] = sockCanonicalText({
+    id: castOnAnchor,
+    x: castOn.x,
+    y: castOnY,
+    text: notation.castOn,
+    size: type.notation,
+    weight: "700",
+  });
+  labels[2] = sockCanonicalText({
+    id: "finish",
+    x: finish.x,
+    y: finishY,
+    text: finishText,
+    size: type.notation,
+    fill: MUTED,
+  });
   labels.push(
     sockCanonicalStacked({
       id: "heel-shape",
-      x: heelShape.x,
-      y: heelShape.y,
+      x: point("heelCenter", mirror, flipVertical).x,
+      y: notationStackCenter(sectionAt("sectionHeel"), notation.heel.length, type, heelDir),
       lines: notation.heel,
-      size: 10,
+      size: type.notation,
+      lineGap: type.notationGap,
     }),
   );
   labels.push(
     sockCanonicalStacked({
       id: "toe-shape",
-      x: toeShape.x,
-      y: toeShape.y,
+      x: point("toeCenter", mirror, flipVertical).x,
+      y: toeStackY,
       lines: notation.toe,
-      size: 10,
+      size: type.notation,
+      lineGap: type.notationGap,
     }),
   );
 
   if (showsAnkle && calc.legShapingSchedule.knitOrder.direction !== "none") {
     const legAt = point("sectionLeg", mirror, flipVertical);
+    const legToward = sections.some((section) => section.id === "sectionAnkle")
+      ? sectionAt("sectionAnkle")
+      : sectionAt("sectionHeel");
+    const legDir = Math.sign(legToward - legAt.y) || 1;
     labels.push(
       sockCanonicalStacked({
         id: "leg-shape",
         x: legAt.x,
-        y: legAt.y + LEG_SHAPE_OFFSET,
+        y: notationStackCenter(legAt.y, notation.leg.length, type, legDir),
         lines: notation.leg,
-        size: 10,
+        size: type.notation,
+        lineGap: type.notationGap,
       }),
     );
   }

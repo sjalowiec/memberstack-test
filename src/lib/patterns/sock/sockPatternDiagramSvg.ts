@@ -4,6 +4,8 @@
  * Dimension lines follow Drop Shoulder Stitches & Rows (thin stroke + perpendicular end caps).
  */
 
+import { DS_FONT } from "../dropShoulderPatternDiagramSvgShared";
+import { sidewaysPatternDiagramTypography } from "../legoBlocks/patternDiagramTypography";
 import {
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
@@ -15,6 +17,7 @@ import {
   SOCK_CANONICAL_SVG_HREF,
   SOCK_CANONICAL_VB_W,
   SOCK_STS_ROWS_PAD_RIGHT,
+  sockDiagramCanvasWidth,
   escapeSockSvgText,
   fmtSockSvg,
   sockCanonicalCalcLabelFields,
@@ -38,10 +41,6 @@ export type SockDiagramBuildOptions = {
   mirror?: boolean;
   family?: SockDiagramFamily;
 };
-
-const DIAGRAM_FONT = "Poppins, system-ui, Arial, sans-serif";
-const MEASURE_COUNT_SIZE = 13;
-const MEASURE_SIZE = 11;
 
 /** Outline extrema from socks-summary.svg polygon — overlay placement only. */
 const OUTLINE = {
@@ -71,8 +70,27 @@ const DIM_ABOVE = 8;
 const CUFF_DIM_Y = OUTLINE.top - 14;
 const V_DIM_X = OUTLINE.right + DIM_GAP;
 const WORK_STS_INSET = 28;
+/** Approximate em width used to keep the row counter clear of the measurement. */
+const SOCK_LABEL_EM = 0.6;
+
+/**
+ * Both sock diagrams share one viewBox, so they share one resolved type.
+ * Sizes come from the sweater diagram scale, not from local font-size numbers.
+ */
+export function sockFinishedDiagramTypography() {
+  return sidewaysPatternDiagramTypography(sockDiagramCanvasWidth(SOCK_STS_ROWS_PAD_RIGHT));
+}
+
+const SOCK_DIAGRAM_TYPE = sockFinishedDiagramTypography();
+const MEASURE_LABEL_X = V_DIM_X + DIM_LABEL_GAP;
+
+function sockLabelWidth(text: string, size: number): number {
+  return Math.ceil(text.length * size * SOCK_LABEL_EM);
+}
+
 /** Right of the two-line measurement so the counter stays on its boundary row. */
-export const SOCK_DIAGRAM_RC_X = V_DIM_X + DIM_LABEL_GAP + 72;
+export const SOCK_DIAGRAM_RC_X =
+  MEASURE_LABEL_X + sockLabelWidth("0000 rows", SOCK_DIAGRAM_TYPE.stitch) + 8;
 
 export type SockDiagramRcMilestoneId = "rc-leg" | "rc-ankle" | "rc-heel" | "rc-foot" | "rc-toe";
 
@@ -229,7 +247,7 @@ export function sockDiagramRcLabelMarkup(milestone: SockDiagramRcMilestone, y: n
     x: SOCK_DIAGRAM_RC_X,
     y,
     text: formatShapingNotationRcLabel(milestone.rc),
-    size: 12,
+    size: SOCK_DIAGRAM_TYPE.rc,
     anchor: "start",
     fill: DIM_MUTED,
   });
@@ -239,16 +257,16 @@ function sockSectionMeasureMarkup(span: SockDiagramMeasureSpan, x: number, midY:
   const measurement =
     span.inches > 0 ? formatPatternDiagramMeasurement(span.inches, "in") : "";
   const label = formatStitchesRowsDiagramLabel(span.rows, "rows", measurement);
-  const gap = Math.round(MEASURE_COUNT_SIZE * 0.95);
+  const gap = Math.round(SOCK_DIAGRAM_TYPE.stitch * 0.95);
   return stitchesRowsLabelMarkup({
     label,
     x,
     y: label.includes("\n") ? midY - gap / 2 : midY,
     anchor: "start",
     fill: DIM_MUTED,
-    countSize: MEASURE_COUNT_SIZE,
-    measureSize: MEASURE_SIZE,
-    fontFamily: DIAGRAM_FONT,
+    countSize: SOCK_DIAGRAM_TYPE.stitch,
+    measureSize: SOCK_DIAGRAM_TYPE.row,
+    fontFamily: DS_FONT,
     extra: ` data-sock-label="${span.id}"`,
     fmt: fmtSockSvg,
   });
@@ -349,7 +367,7 @@ export function buildSockPatternDiagramSvg(
       x: cuffMidX,
       y: yAt(CUFF_DIM_Y - DIM_ABOVE),
       text: fields.cuffStsLabel,
-      size: 12,
+      size: SOCK_DIAGRAM_TYPE.stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -361,7 +379,7 @@ export function buildSockPatternDiagramSvg(
         x: tube.x,
         y: tube.y,
         text: fields.tubeStsLabel,
-        size: 12,
+        size: SOCK_DIAGRAM_TYPE.stitch,
       }),
     );
   }
@@ -376,7 +394,7 @@ export function buildSockPatternDiagramSvg(
       x: castOn.x,
       y: castOn.y,
       text: "cast on",
-      size: 11,
+      size: SOCK_DIAGRAM_TYPE.notation,
       fill: DIM_MUTED,
     }),
   );
@@ -386,7 +404,7 @@ export function buildSockPatternDiagramSvg(
       x: finish.x,
       y: finish.y,
       text: flipVertical ? "waste yarn" : "bind off",
-      size: 11,
+      size: SOCK_DIAGRAM_TYPE.notation,
       fill: DIM_MUTED,
     }),
   );
@@ -398,7 +416,8 @@ export function buildSockPatternDiagramSvg(
         x: section.x,
         y: section.y,
         text: section.name,
-        size: 12,
+        size: SOCK_DIAGRAM_TYPE.piece,
+        weight: String(SOCK_DIAGRAM_TYPE.pieceWeight),
       }),
     );
   }
@@ -412,7 +431,7 @@ export function buildSockPatternDiagramSvg(
       x: heelCenter.x,
       y: heelCenter.y,
       text: fields.heelCenterLabel,
-      size: 11,
+      size: SOCK_DIAGRAM_TYPE.stitch,
     }),
   );
   labels.push(
@@ -421,7 +440,7 @@ export function buildSockPatternDiagramSvg(
       x: workStsX,
       y: yAt(OUTLINE.heelMid - DIM_ABOVE),
       text: fields.heelWorkLabel,
-      size: 11,
+      size: SOCK_DIAGRAM_TYPE.stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -431,7 +450,7 @@ export function buildSockPatternDiagramSvg(
       x: toeCenter.x,
       y: toeCenter.y,
       text: fields.toeCenterLabel,
-      size: 11,
+      size: SOCK_DIAGRAM_TYPE.stitch,
     }),
   );
   labels.push(
@@ -440,7 +459,7 @@ export function buildSockPatternDiagramSvg(
       x: workStsX,
       y: yAt(OUTLINE.toeMid - DIM_ABOVE),
       text: fields.toeWorkLabel,
-      size: 11,
+      size: SOCK_DIAGRAM_TYPE.stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -451,7 +470,7 @@ export function buildSockPatternDiagramSvg(
       x: heldMidX,
       y: yAt(OUTLINE.heelMid - DIM_ABOVE),
       text: stitchCountLabel(fields.heelHeldStitches),
-      size: 12,
+      size: SOCK_DIAGRAM_TYPE.stitch,
       fill: DIM_MUTED,
     }),
   );
@@ -461,14 +480,13 @@ export function buildSockPatternDiagramSvg(
       x: heldMidX,
       y: yAt(OUTLINE.toeMid - DIM_ABOVE),
       text: stitchCountLabel(fields.toeHeldStitches),
-      size: 12,
+      size: SOCK_DIAGRAM_TYPE.stitch,
       fill: DIM_MUTED,
     }),
   );
 
-  const measureX = V_DIM_X + DIM_LABEL_GAP;
   for (const span of measures) {
-    labels.push(sockSectionMeasureMarkup(span, measureX, (yAt(span.y1) + yAt(span.y2)) / 2));
+    labels.push(sockSectionMeasureMarkup(span, MEASURE_LABEL_X, (yAt(span.y1) + yAt(span.y2)) / 2));
   }
 
   const rcMilestones = sockDiagramRcMilestones(calc, { family });

@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { DS_FS_MEASURE, DS_FS_TITLE, DS_VB_W } from "../dropShoulderPatternDiagramSvgShared";
+import { DS_FS_NOTATION, DS_FS_RC } from "../dropShoulderShapingNotationDiagramShared";
+import { sidewaysPatternDiagramTypography } from "../legoBlocks/patternDiagramTypography";
 import {
   formatPatternDiagramMeasurement,
   formatStitchesRowsDiagramLabel,
@@ -22,6 +25,7 @@ import {
   SOCK_DIAGRAM_RC_X,
   buildSockPatternDiagramSvg,
   sockDiagramRcMilestones,
+  sockFinishedDiagramTypography,
 } from "./sockPatternDiagramSvg";
 import { buildSockShapingNotationDiagramSvg } from "./sockShapingNotationDiagramSvg";
 
@@ -347,6 +351,32 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     const page = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
     expect(page).toContain("overflow-x: visible");
     expect(page).toMatch(/@media print[\s\S]*overflow: visible/);
+  });
+
+  it("uses the shared finished-pattern type, scaled to the sock viewBox", () => {
+    const calc = mustCalc();
+    const svg = buildSockPatternDiagramSvg(calc, { mode: "pattern" });
+    const jp = buildSockShapingNotationDiagramSvg(calc);
+    const width = Number(attr(svg, "viewBox").trim().split(/\s+/)[2]);
+    const type = sidewaysPatternDiagramTypography(width);
+    expect(sockFinishedDiagramTypography()).toEqual(type);
+    expect(type.notation / width).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
+    expect(type.stitch / width).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
+    expect(type.row / width).toBeCloseTo(DS_FS_MEASURE / DS_VB_W, 2);
+    expect(type.piece / width).toBeCloseTo(DS_FS_TITLE / DS_VB_W, 2);
+    expect(type.rc / width).toBeCloseTo(DS_FS_RC / DS_VB_W, 2);
+    expect(labelFontSize(svg, "sectionLeg")).toBe(type.piece);
+    expect(labelFontSize(svg, "cuff")).toBe(type.stitch);
+    expect(labelFontSize(svg, "cast-on")).toBe(type.notation);
+    expect(labelFontSize(svg, "rc-leg")).toBe(type.rc);
+    expect(measureFontSizes(svg, "measureLeg")).toEqual([type.stitch, type.stitch, type.row]);
+    expect(labelFontSize(jp, "sectionHeel")).toBe(type.piece);
+    expect(labelFontSize(jp, "heel-shape-0")).toBe(type.notation);
+    expect(labelFontSize(jp, "rc-toe")).toBe(type.rc);
+    expect(svg).not.toMatch(/font-size="(?:10|11|12|13)"/);
+    expect(jp).not.toMatch(/font-size="(?:10|11|12|13)"/);
+    const rcRight = SOCK_DIAGRAM_RC_X + "RC: 000".length * type.rc * 0.6;
+    expect(rcRight).toBeLessThanOrEqual(viewBoxRight(svg) - 4);
   });
 
   it("uses the same overlay anchors for Stitches & Rows and Shaping Notation", () => {
@@ -716,6 +746,18 @@ function labelCount(svg: string, id: string): number {
 
 function textCount(svg: string, text: string): number {
   return svg.split(`>${text}<`).length - 1;
+}
+
+function labelFontSize(svg: string, id: string): number {
+  const match = svg.match(new RegExp(`data-sock-label="${id}"[^>]*font-size="([^"]+)"`));
+  expect(match, id).toBeTruthy();
+  return Number(match![1]);
+}
+
+function measureFontSizes(svg: string, id: string): number[] {
+  const match = svg.match(new RegExp(`data-sock-label="${id}"[\\s\\S]*?</text>`));
+  expect(match, id).toBeTruthy();
+  return [...match![0].matchAll(/font-size="([^"]+)"/g)].map((item) => Number(item[1]));
 }
 
 function labelXY(svg: string, id: string): { x: string; y: string } {

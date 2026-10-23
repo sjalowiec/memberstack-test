@@ -362,6 +362,8 @@ describe("notation does not recreate Socks geometry", () => {
     expect(src).toContain("formatCastOnNotation");
     expect(src).toContain("formatBodyRowsNotation");
     expect(src).toContain("sockDiagramRcLabelMarkup");
+    expect(src).toContain("sockFinishedDiagramTypography");
+    expect(src).not.toMatch(/size:\s*1\d/);
     expect(src).not.toContain("formatHoldNotation");
     expect(src).toContain("formatShapingSegment");
     expect(src).toContain("formatBindOffNotation");
