@@ -15,6 +15,7 @@ export function patternSystemFromPathname(pathname: string): string {
   if (path.includes("/patterns/drop-shoulder")) return "drop-shoulder";
   if (path.includes("/patterns/sideways-cardigan")) return "sideways-cardigan";
   if (path.includes("/patterns/hat")) return "hat";
+  if (path.includes("/patterns/christmas-stocking")) return "christmas-stocking";
   if (path.includes("/patterns/socks")) return "socks";
   return "sleeveless";
 }

@@ -85,6 +85,16 @@ const socksPattern = {
   pillRest: SOCKS_CATALOG_PILL_REST,
 };
 
+const christmasStockingPattern = {
+  title: 'Christmas Stocking',
+  href: '/patterns/christmas-stocking',
+  image: '/images/patterns/christmas-stocking-builder.png',
+  copy: 'One stocking in your gauge, cuff down or toe up, with a short-row heel and toe. The drawing is decorative — stitch patterns are up to you.',
+  button: 'Create your stocking',
+  pillCount: 2,
+  pillRest: 'Stocking in 1 Builder',
+};
+
 const sidewaysPattern = {
   title: 'Sideways Knit Sweater',
   // Public landing page on DEV. Production still hides this live card.
@@ -99,6 +109,7 @@ const sidewaysPattern = {
 const sweaterPatterns = [
   sleevelessPattern,
   socksPattern,
+  christmasStockingPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
 ];
@@ -107,6 +118,7 @@ const availablePatterns = [
   sleevelessPattern,
   hatPattern,
   socksPattern,
+  christmasStockingPattern,
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
@@ -210,6 +222,7 @@ const comingSoonPatterns = [
               href={pattern.href}
               class="catalog-card"
               {...(pattern.title === "Socks" ? { "data-socks-catalog-card": "" } : {})}
+              {...(pattern.title === "Christmas Stocking" ? { "data-christmas-stocking-catalog-card": "" } : {})}
             >
               <div class="catalog-card__media">
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
@@ -263,6 +276,7 @@ const comingSoonPatterns = [
               href={pattern.href}
               class="catalog-card"
               {...(pattern.title === "Socks" ? { "data-socks-catalog-card": "" } : {})}
+              {...(pattern.title === "Christmas Stocking" ? { "data-christmas-stocking-catalog-card": "" } : {})}
             >
               <div class="catalog-card__media">
                 <img src={pattern.image} alt={pattern.title} loading="lazy" decoding="async" />
@@ -309,6 +323,7 @@ const comingSoonPatterns = [
 <script>
   import { initPatternsLandingCta } from "../../lib/patterns/patternsLandingCta";
   import { initSocksCatalogCardRouting } from "../../lib/patterns/socksCatalogCardAccess";
+  import { initChristmasStockingCatalogCardRouting } from "../../lib/patterns/christmasStockingCatalogCardAccess";
 
   function boot(): void {
     const root = document.querySelector("[data-patterns-landing-cta]");
@@ -316,6 +331,7 @@ const comingSoonPatterns = [
       void initPatternsLandingCta(root);
     }
     void initSocksCatalogCardRouting(document);
+    void initChristmasStockingCatalogCardRouting(document);
   }
 
   if (document.readyState === "loading") {

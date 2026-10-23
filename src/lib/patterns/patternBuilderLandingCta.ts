@@ -18,6 +18,10 @@ import {
   resolveSocksLandingAction,
   SOCKS_SAVED_PATTERN_LANDING_ATTR,
 } from "./socksPatternLandingAccess";
+import {
+  CHRISTMAS_STOCKING_SAVED_PATTERN_LANDING_ATTR,
+  resolveChristmasStockingLandingAction,
+} from "./christmasStockingPatternLandingAccess";
 
 export type PatternBuilderLandingCtaMode = "pending" | "member" | "prospect";
 
@@ -60,10 +64,26 @@ function isSocksSavedPatternLanding(root: HTMLElement): boolean {
   return root.hasAttribute(SOCKS_SAVED_PATTERN_LANDING_ATTR);
 }
 
+function isChristmasStockingSavedPatternLanding(root: HTMLElement): boolean {
+  return root.hasAttribute(CHRISTMAS_STOCKING_SAVED_PATTERN_LANDING_ATTR);
+}
+
 async function applySocksLandingPresentation(root: HTMLElement): Promise<void> {
   applyPatternBuilderLandingCtaMode(root, "pending");
   const state = await resolveSavedPatternAccessStateFromSession();
   const action = resolveSocksLandingAction(state);
+  if (action.type === "pending") return;
+  if (action.type === "redirect") {
+    window.location.replace(action.href);
+    return;
+  }
+  applyPatternBuilderLandingCtaMode(root, action.type === "show-member" ? "member" : "prospect");
+}
+
+async function applyChristmasStockingLandingPresentation(root: HTMLElement): Promise<void> {
+  applyPatternBuilderLandingCtaMode(root, "pending");
+  const state = await resolveSavedPatternAccessStateFromSession();
+  const action = resolveChristmasStockingLandingAction(state);
   if (action.type === "pending") return;
   if (action.type === "redirect") {
     window.location.replace(action.href);
@@ -88,6 +108,20 @@ export async function initPatternBuilderLandingCta(root: HTMLElement): Promise<v
     if (ms && typeof ms.on === "function") {
       ms.on("member.login", () => {
         void applySocksLandingPresentation(root);
+      });
+      ms.on("member.logout", () => {
+        applyPatternBuilderLandingCtaMode(root, "prospect");
+      });
+    }
+    return;
+  }
+
+  if (isChristmasStockingSavedPatternLanding(root)) {
+    await applyChristmasStockingLandingPresentation(root);
+    const ms = window.$memberstackDom;
+    if (ms && typeof ms.on === "function") {
+      ms.on("member.login", () => {
+        void applyChristmasStockingLandingPresentation(root);
       });
       ms.on("member.logout", () => {
         applyPatternBuilderLandingCtaMode(root, "prospect");

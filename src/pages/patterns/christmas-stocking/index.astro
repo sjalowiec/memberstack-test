@@ -1,0 +1,24 @@
+---
+export const prerender = false;
+
+import Layout from "../../../layouts/Layout.astro";
+import PatternBuilderLandingPage from "../../../components/patterns/PatternBuilderLandingPage.astro";
+import { applyKnitAbleCacheHeaders } from "../../../lib/knit-ables/pageAccess";
+import { CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING } from "../../../lib/patterns/christmasStockingPatternLanding";
+
+applyKnitAbleCacheHeaders(Astro.response.headers);
+
+const landing = CHRISTMAS_STOCKING_PATTERN_BUILDER_LANDING;
+---
+
+<Layout
+  title={landing.seo.title}
+  description={landing.seo.description}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={landing.seo.canonicalUrl} />
+  </Fragment>
+
+  <PatternBuilderLandingPage content={landing} christmasStockingSavedPatternRedirect />
+</Layout>

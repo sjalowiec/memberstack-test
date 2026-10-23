@@ -1,0 +1,42 @@
+---
+/**
+ * Christmas Stocking Summary — checkpoint between Builder inputs and finished knitting instructions.
+ * Reuses the shared Socks Edit workspace so knitters can review and fine-tune here.
+ * Membership-gated (same SleevelessPatternMemberGate as Sleeveless / Drop Shoulder).
+ * Draft: kbm_socks_draft. Update Pattern opens the finished Pattern page.
+ */
+import Layout from "../../../../layouts/Layout.astro";
+import SleevelessPatternMemberGate from "../../../../components/patterns/SleevelessPatternMemberGate.astro";
+import ChristmasStockingPatternEditWorkspace from "../../../../components/patterns/ChristmasStockingPatternEditWorkspace.astro";
+
+import "../../../../styles/wizard.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-editable-pencil.css";
+---
+
+<Layout
+  title="Christmas Stocking Summary | Knit it Now"
+  description="Review and fine-tune your Christmas Stocking pattern choices, measurements, and gauge."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <SleevelessPatternMemberGate>
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell christmas-stocking-edit-page christmas-stocking-summary-page"
+    data-christmas-stocking-summary-page
+    data-christmas-stocking-edit-page
+    data-testid="christmas-stocking-summary-page"
+  >
+    <div class="wizard-container">
+      <div class="calculator-card hat-builder-inputs">
+        <ChristmasStockingPatternEditWorkspace />
+      </div>
+    </div>
+  </main>
+  </SleevelessPatternMemberGate>
+</Layout>
+
+<script>
+  import "/src/scripts/christmas-stocking-summary-page.ts";
+</script>

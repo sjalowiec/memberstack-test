@@ -19,9 +19,14 @@ import { isKnitAblePathPublic } from "../../lib/knit-ables/scheduleStore";
 interface Props {
   content: PatternBuilderLandingContent;
   socksSavedPatternRedirect?: boolean;
+  christmasStockingSavedPatternRedirect?: boolean;
 }
 
-const { content, socksSavedPatternRedirect = false } = Astro.props;
+const {
+  content,
+  socksSavedPatternRedirect = false,
+  christmasStockingSavedPatternRedirect = false,
+} = Astro.props;
 const why = hasPatternBuilderLandingCopy(content.why) ? content.why : null;
 const choices = hasPatternBuilderLandingChoices(content.choices) ? content.choices : null;
 const howItWorks = hasPatternBuilderLandingCopy(content.howItWorks) ? content.howItWorks : null;
@@ -48,6 +53,7 @@ const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta
   data-pattern-builder-landing
   data-cta-mode="pending"
   {...(socksSavedPatternRedirect ? { "data-socks-saved-pattern-landing": "" } : {})}
+  {...(christmasStockingSavedPatternRedirect ? { "data-christmas-stocking-saved-pattern-landing": "" } : {})}
 >
   <PatternBuilderLandingHero content={content} />
   {why ? <PatternBuilderLandingWhy section={why} /> : null}

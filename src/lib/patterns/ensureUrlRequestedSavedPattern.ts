@@ -70,6 +70,8 @@ export function applySavedPatternUnavailableMessage(root: ParentNode = document)
     [
       "[data-socks-pattern-empty-message]",
       "[data-socks-edit-empty-message]",
+      "[data-christmas-stocking-pattern-empty-message]",
+      "[data-christmas-stocking-edit-empty-message]",
       "[data-hat-pattern-empty-message]",
       "[data-hat-summary-empty-message]",
       "[data-sleeveless-pattern-boot-msg], .sleeveless-pattern-boot-msg",
