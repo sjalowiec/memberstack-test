@@ -59,7 +59,9 @@ function readBuilder(pattern: Record<string, unknown>, customOverrides: Record<s
     patternSystem === "hat" ||
     patternType === "socks" ||
     patternType === "sock" ||
-    patternSystem === "socks"
+    patternSystem === "socks" ||
+    patternType === "christmas-stocking" ||
+    patternSystem === "christmas-stocking"
   ) {
     return { status: "other" };
   }

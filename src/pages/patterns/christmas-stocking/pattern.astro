@@ -1,0 +1,327 @@
+---
+/**
+ * Finished Christmas Stocking Pattern page (membership-gated).
+ * Reads kbm_christmas_stocking_draft → sock calc → one-stocking instructions.
+ * Edit Pattern opens the dedicated Socks Edit workspace without clearing the draft.
+ */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import Layout from "../../../layouts/Layout.astro";
+import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
+import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
+import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
+import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
+import {
+  SOCK_EDIT_HREF,
+  SOCK_PATTERN_BUILDER_HREF,
+} from "../../../lib/patterns/christmasStocking/sockPatternNavigation";
+import { SOCK_FINISHED_PATTERN_MISSING_DRAFT_MESSAGE } from "../../../lib/patterns/christmasStocking/sockPatternPage";
+import { BASIC_SOCK_PATTERN_NAME } from "../../../lib/patterns/christmasStocking/sockDraft";
+
+import "../../../styles/wizard.css";
+import "../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../styles/patterns/pattern-app-shell.css";
+import "../../../styles/patterns/pattern-diagram-tabs.css";
+import "../../../styles/glossary-tooltip.css";
+import "../../../styles/pattern-tips.css";
+import "../../../styles/pattern-quick-tip.css";
+
+const sockSizingJson = JSON.parse(
+  readFileSync(resolve("public/data/sizing_xmas_stockings.json"), "utf8"),
+) as unknown;
+---
+
+<Layout
+  title="Christmas Stocking Pattern | Knit it Now"
+  description="Your custom machine-knit Christmas Stocking pattern instructions from the Christmas Stocking Builder."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/patterns/christmas-stocking" />
+  <SleevelessPatternMemberGate>
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell christmas-stocking-pattern-page"
+    data-pattern-print-skip-modal
+    data-christmas-stocking-pattern-page
+    data-testid="christmas-stocking-pattern-page"
+  >
+    <div id="christmas-stocking-pattern-top" class="wizard-container scroll-mt-[96px]">
+      <div class="calculator-card hat-builder-inputs">
+        <div class="hat-pattern-empty" data-christmas-stocking-pattern-empty role="status" hidden>
+          <h1 class="hat-pattern-empty__title">{BASIC_SOCK_PATTERN_NAME}</h1>
+          <p class="hat-pattern-empty__message" data-christmas-stocking-pattern-empty-message>
+            {SOCK_FINISHED_PATTERN_MISSING_DRAFT_MESSAGE}
+          </p>
+          <a
+            href={SOCK_PATTERN_BUILDER_HREF}
+            class="kbm-btn kbm-btn-accent"
+            data-testid="christmas-stocking-pattern-empty-cta"
+          >
+            Go to Christmas Stocking Builder
+          </a>
+        </div>
+
+        <div id="sg-christmas-stocking-results" class="sg-sleeveless-results" data-christmas-stocking-pattern-results>
+          <div id="christmas-stocking-pattern-tips-scope" class="pattern-tips-scope" data-show-tips="true">
+          <SavedPatternHeader
+            part="intro"
+            title="Christmas Stocking · Pattern instructions"
+            titleAttr="data-christmas-stocking-pattern-online-heading"
+            showNotes={false}
+            hideTitleOnPrint
+            thumbnailSrc="/images/patterns/christmas-stocking-builder.png"
+            thumbnailAlt="Line drawing of Christmas stockings. The tree and snowflake are decorative, not stitch charts."
+            thumbnailWidth={360}
+            thumbnailHeight={360}
+            tipsStorageKey="christmas-stocking-show-tips"
+            tipsScopeSelector="#christmas-stocking-pattern-tips-scope"
+            printOriginLabel="Created with the Knit It Now Christmas Stocking Pattern Builder"
+            printOriginUrl="KnitItNow.com/patterns/christmas-stocking"
+          />
+
+          <SleevelessPatternPrintNotice />
+
+          <div id="pattern-content" data-pattern-content>
+            <SavedPatternStickyNav actionsAttrs={["data-christmas-stocking-pattern-actions", "data-sleeveless-pattern-actions"]} includePrint>
+              <a
+                href={SOCK_EDIT_HREF}
+                class="sleeveless-pattern-edit-action no-print"
+                data-christmas-stocking-edit-open
+                data-testid="button-edit-pattern"
+                hidden
+              >
+                <i class="fas fa-pen" aria-hidden="true"></i> Edit Pattern
+              </a>
+            </SavedPatternStickyNav>
+            <div
+              class="pattern-layout pattern-layout--garment-columns christmas-stocking-pattern-reading-layout"
+              data-christmas-stocking-pattern-reading-layout
+            >
+              <div
+                class="pattern-layout__content christmas-stocking-pattern-reading-layout__instructions"
+                data-christmas-stocking-pattern-mount
+              >
+                <p class="sleeveless-pattern-boot-msg">Loading pattern…</p>
+              </div>
+              <aside
+                class="pattern-layout__sidebar christmas-stocking-pattern-reading-layout__diagram"
+                aria-label="Stocking diagram"
+              >
+                <div class="sock-pattern-diagram-panel pattern-print-keep-together">
+                  <h3 class="sock-pattern-diagram-panel__title no-print">Stocking Dimensions</h3>
+                  <div
+                    class="sock-pattern-diagram-panel__tabs-mount"
+                    id="diagram-content"
+                    data-sock-diagram-tabs-mount
+                  ></div>
+                </div>
+              </aside>
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <noscript>
+          <div class="pattern-section">
+            <h2 class="pattern-noscript-heading">Pattern</h2>
+            <p>Turn on JavaScript to view this pattern.</p>
+          </div>
+        </noscript>
+      </div>
+    </div>
+  </main>
+
+  <script
+    type="application/json"
+    id="christmas-stocking-sizing-chart"
+    set:html={JSON.stringify(sockSizingJson)}
+  />
+  </SleevelessPatternMemberGate>
+</Layout>
+
+<script>
+  import "/src/scripts/christmas-stocking-pattern-page.ts";
+</script>
+
+<style>
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .christmas-stocking-pattern-reading-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .christmas-stocking-pattern-reading-layout__diagram {
+    order: 0;
+    min-width: 0;
+  }
+
+  .christmas-stocking-pattern-reading-layout__instructions {
+    order: 1;
+    min-width: 0;
+  }
+
+  .sock-pattern-diagram-panel {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .sock-pattern-diagram-panel__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .sock-pattern-diagram-panel__svg,
+  :global(.sock-pattern-diagram-panel__svg) {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    overflow-x: visible;
+    box-sizing: border-box;
+  }
+
+  .sock-pattern-diagram-panel__svg :global(svg),
+  :global(.sock-pattern-diagram-panel__svg svg) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (min-width: 1100px) {
+    #pattern-content .pattern-layout.christmas-stocking-pattern-reading-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+      gap: clamp(1.25rem, 2.5vw, 2rem);
+      align-items: start;
+    }
+
+    .christmas-stocking-pattern-reading-layout__instructions {
+      order: 0;
+    }
+
+    .christmas-stocking-pattern-reading-layout__diagram {
+      order: 0;
+    }
+  }
+
+  :global(#pattern-content .sock-instructions) {
+    margin: 0 0 1.75rem;
+  }
+
+  :global(#pattern-content .sock-instructions__label) {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(#pattern-content .sock-pattern-section) {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    background: #fff;
+  }
+
+  :global(#pattern-content .sock-pattern-section__header) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(82, 104, 45, 0.07);
+  }
+
+  :global(#pattern-content .sock-pattern-section__heading h4) {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  :global(#pattern-content .sock-pattern-section__content) {
+    padding: 0.5rem 0.85rem 1rem;
+  }
+
+  :global(#pattern-content .sock-pattern-tip) {
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid var(--kbm-accent, #c2614e);
+    background: color-mix(in srgb, var(--kbm-accent, #c2614e) 8%, #fff);
+  }
+
+  :global(.christmas-stocking-pair-print-heading),
+  :global(.sock-pattern-diagram-print-heading) {
+    display: none;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  @media print {
+    :global(#pattern-content .sock-pattern-section) {
+      break-inside: avoid;
+    }
+
+    :global(.christmas-stocking-pair-tabs__list),
+    :global(.pattern-diagram-tabs__list),
+    :global(.pattern-diagram-shaping-help) {
+      display: none !important;
+    }
+
+    :global(.christmas-stocking-pair-print-heading),
+    :global(.sock-pattern-diagram-print-heading) {
+      display: block !important;
+    }
+
+    :global(.christmas-stocking-pair-tabs__panel),
+    :global(.christmas-stocking-pair-tabs__panel[hidden]),
+    :global(.sock-pattern-diagram-tabs__panel),
+    :global(.sock-pattern-diagram-tabs__panel[hidden]),
+    :global(.pattern-diagram-tabs__panel),
+    :global(.pattern-diagram-tabs__panel[hidden]) {
+      display: block !important;
+      visibility: visible !important;
+      margin-top: 0.85rem;
+    }
+
+    #pattern-content .pattern-layout.christmas-stocking-pattern-reading-layout {
+      display: block !important;
+    }
+
+    .christmas-stocking-pattern-reading-layout__diagram {
+      max-width: 4.2in;
+      margin: 0 auto 1rem;
+    }
+
+    .sock-pattern-diagram-panel__svg,
+    :global(.sock-pattern-diagram-panel__svg) {
+      overflow: visible;
+    }
+  }
+</style>
