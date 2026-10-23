@@ -201,12 +201,15 @@ describe("Help Hub admin CMS", () => {
     expect(categoryClient).not.toContain("This cannot be undone.");
   });
 
-  it("keeps Help Hub admin pages behind the same /admin Basic Auth used by the dashboard", () => {
+  it("keeps Help Hub admin pages behind the server admin gate used by the dashboard", () => {
     const netlifyToml = readFileSync(join(here, "..", "..", "..", "netlify.toml"), "utf8");
+    const middleware = readFileSync(join(here, "..", "..", "middleware.ts"), "utf8");
     const adminIndex = readFileSync(join(here, "index.astro"), "utf8");
     const lessonsAdmin = readFileSync(join(here, "lessons.astro"), "utf8");
-    expect(netlifyToml).toMatch(/for = "\/admin\/\*"/);
-    expect(netlifyToml).toContain("Basic-Auth");
+    expect(netlifyToml).not.toContain("Basic-Auth");
+    expect(netlifyToml).not.toMatch(/for = "\/admin\/\*"/);
+    expect(middleware).toContain("isAdminProtectedPath");
+    expect(middleware).toContain("requireAdminForRequest");
     expect(adminIndex).not.toContain("requireAdminForRequest");
     expect(lessonsAdmin).not.toContain("requireAdminForRequest");
     expect(listSource).not.toContain("requireAdminForRequest");

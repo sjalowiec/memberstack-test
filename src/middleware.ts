@@ -33,6 +33,8 @@ import {
   isWatsonSessionAuthenticated,
   sanitizeWatsonLoginNextPath,
 } from "./lib/watson/watsonAuth";
+import { adminGateResponse, isAdminProtectedPath } from "./lib/admin/adminPageGate";
+import { requireAdminForRequest } from "./lib/admin/requireAdminRequest";
 
 const devOnlyRouteEnv = {
   isViteDev: import.meta.env.DEV,
@@ -51,6 +53,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const normalizedPathname = u.pathname.replace(/\/{2,}/g, "/");
   if (normalizedPathname !== u.pathname) {
     return context.redirect(`${normalizedPathname}${u.search}`, 301);
+  }
+
+  if (isAdminProtectedPath(normalizedPathname)) {
+    const auth = await requireAdminForRequest(request, context.cookies);
+    const denied = adminGateResponse(auth, normalizedPathname);
+    if (denied) return denied;
   }
 
   // Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
