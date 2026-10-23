@@ -673,20 +673,49 @@ describe("Stitches & Rows RC milestones and shared reading arrow", () => {
     const calc = mustCalc({ constructionDirection: "cuff-to-toe" });
     const svg = buildSockPatternDiagramSvg(calc, { mode: "pattern" });
     const milestones = sockDiagramRcMilestones(calc);
+    expect(calc.legShapingRowsAvailable).toBeGreaterThan(0);
+    expect(calc.ankleStraightRows).toBeGreaterThan(0);
     expect(milestones).toEqual([
       { id: "rc-leg", rc: 0, canonicalY: 8 },
+      { id: "rc-ankle", rc: calc.legShapingRowsAvailable, canonicalY: 184 },
       { id: "rc-heel", rc: calc.legRows, canonicalY: 216 },
       { id: "rc-foot", rc: 0, canonicalY: 264 },
       { id: "rc-toe", rc: calc.straightFootRows, canonicalY: 424 },
     ]);
     expect(labelText(svg, "rc-leg")).toBe(formatShapingNotationRcLabel(0));
+    expect(labelText(svg, "rc-ankle")).toBe(formatShapingNotationRcLabel(calc.legShapingRowsAvailable));
     expect(labelText(svg, "rc-heel")).toBe(formatShapingNotationRcLabel(calc.legRows));
     expect(labelText(svg, "rc-foot")).toBe(formatShapingNotationRcLabel(0));
     expect(labelText(svg, "rc-toe")).toBe(formatShapingNotationRcLabel(calc.straightFootRows));
-    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
+    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-ankle").y));
+    expect(Number(labelXY(svg, "rc-ankle").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
     expect(Number(labelXY(svg, "rc-heel").y)).toBeGreaterThan(Number(labelXY(svg, "rc-foot").y));
     expect(Number(labelXY(svg, "rc-foot").y)).toBeGreaterThan(Number(labelXY(svg, "rc-toe").y));
-    expect(svg).not.toContain('data-sock-label="rc-ankle"');
+    for (const sample of [
+      calc,
+      mustCalc({
+        constructionDirection: "cuff-to-toe",
+        legCircumferenceInches: 10,
+        legLengthInches: 6,
+      }),
+    ]) {
+      const sampleMarks = sockDiagramRcMilestones(sample);
+      for (const sock of [1, 2] as const) {
+        const doc = buildBasicSockInstructions(sample, sock);
+        const leg = doc.sections.find((section) => section.id === "leg");
+        const ankle = doc.sections.find((section) => section.id === "ankle");
+        expect(leg!.rc.resetAtStart).toBe(true);
+        expect(leg!.rc.startRc).toBe(0);
+        expect(ankle!.rc.resetAtStart).toBe(false);
+        expect(leg!.rc.endRc + ankle!.rowsToKnit).toBe(sample.legRows);
+        expect(sampleMarks.find((mark) => mark.id === "rc-ankle")!.rc).toBe(leg!.rc.endRc);
+        expect(sampleMarks.find((mark) => mark.id === "rc-heel")!.rc).toBe(sample.legRows);
+        expect(sampleMarks.find((mark) => mark.id === "rc-ankle")!.rc).not.toBe(0);
+      }
+    }
+    const mirrored = buildSockShapingNotationDiagramSvg(calc, { mirror: true });
+    expect(attr(mirrored, "data-sock-rc-ankle")).toBe(String(calc.legShapingRowsAvailable));
+    expect(attr(mirrored, "data-sock-rc-heel")).toBe(String(calc.legRows));
     assertUpArrow(svg);
   });
 
