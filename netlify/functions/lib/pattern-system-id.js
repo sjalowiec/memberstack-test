@@ -61,6 +61,11 @@ function isHatPatternBlob(pattern) {
 /**
  * @param {unknown} pattern
  */
+function isChristmasStockingPatternBlob(pattern) {
+  const o = asRecord(pattern);
+  return o.patternType === "christmas-stocking" || o.patternSystem === "christmas-stocking";
+}
+
 function isSockPatternBlob(pattern) {
   const o = asRecord(pattern);
   return o.patternType === "socks" || o.patternType === "sock" || o.patternSystem === "socks";
@@ -68,12 +73,15 @@ function isSockPatternBlob(pattern) {
 
 /**
  * @param {{ pattern?: unknown, customOverrides?: unknown }} project
- * @returns {"sleeveless" | "drop-shoulder" | "set-in-sleeve" | "sideways-cardigan" | "hat" | "socks"}
+ * @returns {"sleeveless" | "drop-shoulder" | "set-in-sleeve" | "sideways-cardigan" | "hat" | "socks" | "christmas-stocking"}
  */
 export function resolvePatternSystemFromProject(project) {
   const pattern = asRecord(project?.pattern);
   if (isHatPatternBlob(pattern)) {
     return "hat";
+  }
+  if (isChristmasStockingPatternBlob(pattern)) {
+    return "christmas-stocking";
   }
   if (isSockPatternBlob(pattern)) {
     return "socks";
@@ -102,6 +110,7 @@ export const PATTERN_SYSTEM_DISPLAY_NAMES = {
   hat: "Hat",
   raglan: "Raglan",
   socks: "Socks",
+  "christmas-stocking": "Christmas Stocking",
 };
 
 /** @param {string} systemId */

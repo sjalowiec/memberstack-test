@@ -74,10 +74,13 @@ export function gaugeFromProject(project) {
     pattern.patternType === "socks" ||
     pattern.patternType === "sock" ||
     pattern.patternSystem === "socks";
+  const isChristmasStocking =
+    pattern.patternType === "christmas-stocking" ||
+    pattern.patternSystem === "christmas-stocking";
   if (isHat) {
     return gaugeFromHatPattern(nestedHat && !pattern.gaugeSlots ? nestedHat : pattern);
   }
-  if (isSocks) {
+  if (isSocks || isChristmasStocking) {
     return gaugeFromHatPattern(pattern);
   }
 
@@ -513,8 +516,8 @@ export function parseJsonBody(body) {
 }
 
 /**
- * Phase-supported saved-project types. Hats and Socks are identified the same way as
- * {@link resolvePatternSystemFromProject} (`patternType` or `patternSystem`).
+ * Phase-supported saved-project types. Hats, Socks, and Christmas Stockings are identified
+ * the same way as {@link resolvePatternSystemFromProject} (`patternType` or `patternSystem`).
  * Drop-shoulder stays allowed because those blobs keep `patternType: "sleeveless"`.
  *
  * @param {unknown} pattern
@@ -523,13 +526,13 @@ export function isSupportedCustomPatternProjectType(pattern) {
   if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) return false;
   if (pattern.patternType === "hat" || pattern.patternSystem === "hat") return true;
   const system = resolvePatternSystemFromProject({ pattern });
-  if (system === "hat" || system === "socks") return true;
+  if (system === "hat" || system === "socks" || system === "christmas-stocking") return true;
   return pattern.patternType === "sleeveless";
 }
 
-/** Rejected types only — never shown for sleeveless, hat, or socks saves. */
+/** Rejected types only — never shown for sleeveless, hat, socks, or Christmas stocking saves. */
 export const UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR =
-  "Only sleeveless, hat, and socks pattern projects are supported in this phase.";
+  "Only sleeveless, hat, socks, and Christmas stocking pattern projects are supported in this phase.";
 
 /**
  * @param {Record<string, unknown>} data

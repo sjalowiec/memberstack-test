@@ -7,6 +7,11 @@ import {
 
 describe("savedPatternViewRoute", () => {
   it("treats paid builders and edit query flags as mutation routes", () => {
+    expect(isPaidPatternMutationRoute("/patterns/christmas-stocking/builder")).toBe(true);
+    expect(isPaidPatternMutationRoute("/patterns/christmas-stocking/summary/")).toBe(true);
+    expect(isPaidPatternMutationRoute("/patterns/christmas-stocking/edit/?edit=1&project=abc")).toBe(
+      true,
+    );
     expect(isPaidPatternMutationRoute("/patterns/socks/builder?new=1")).toBe(true);
     expect(isPaidPatternMutationRoute("/patterns/socks/edit/?edit=1&project=abc")).toBe(true);
     expect(isPaidPatternMutationRoute("/patterns/sleeveless/builder?edit=choices")).toBe(true);
@@ -17,6 +22,7 @@ describe("savedPatternViewRoute", () => {
   });
 
   it("treats completed pattern pages as view routes", () => {
+    expect(isPaidSavedPatternViewPath("/patterns/christmas-stocking/pattern/")).toBe(true);
     expect(isPaidSavedPatternViewPath("/patterns/socks/pattern/")).toBe(true);
     expect(isPaidSavedPatternViewPath("/patterns/sleeveless/pattern/")).toBe(true);
     expect(isPaidSavedPatternViewPath("/patterns/sleeveless/print")).toBe(true);
@@ -31,6 +37,14 @@ describe("savedPatternViewRoute", () => {
     expect(isPaidSavedPatternReadOnlyCandidate("/patterns/socks/pattern/?project=proj-1")).toBe(
       true,
     );
+    expect(
+      isPaidSavedPatternReadOnlyCandidate(
+        "/patterns/christmas-stocking/pattern/?project=proj-1",
+      ),
+    ).toBe(true);
+    expect(
+      isPaidSavedPatternReadOnlyCandidate("/patterns/christmas-stocking/summary/?project=proj-1"),
+    ).toBe(false);
     expect(
       isPaidSavedPatternReadOnlyCandidate("/patterns/socks/pattern/?project=proj-1&edit=1"),
     ).toBe(false);

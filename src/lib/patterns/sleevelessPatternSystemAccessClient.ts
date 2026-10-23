@@ -7,6 +7,7 @@
 import { getActivePlanIds, hasMemberAccess, rememberedLegacyPaidThroughYmdForMember } from "../memberAccess";
 import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
+import { isSharedMemberstackPayloadResolved } from "../sharedMemberAccessPublish";
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
 import {
@@ -105,14 +106,49 @@ function resolveAccessSource(memberPayload: unknown): SleevelessAccessSource {
   return hasMemberAccess(memberPayload) ? "memberstack-plan" : "free";
 }
 
-async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessUserAccess | null> {
-  let memberPayload: unknown;
-  try {
-    memberPayload = await ms.getCurrentMember();
-  } catch {
-    return null;
+/**
+ * Header membership uses `getAppAndMember()` and treats a null payload as still loading.
+ * `getCurrentMember()` can return a logged-out payload before that session is restored, and
+ * `member.login` does not fire on a reload, so the pattern gate would stay on Log In.
+ * Prefer the same app-and-member read, and keep reading until the payload is settled.
+ */
+export async function readSettledMemberstackPayload(
+  ms: MemberstackDom,
+  options: { attempts?: number; intervalMs?: number } = {},
+): Promise<unknown> {
+  const attempts = options.attempts ?? 30;
+  const intervalMs = options.intervalMs ?? 200;
+  const readMember = ms.getAppAndMember ?? ms.getCurrentMember;
+  let last: unknown = null;
+  if (typeof readMember !== "function") return last;
+
+  let sessionReady = !ms.onReady || typeof (ms.onReady as Promise<unknown>).then !== "function";
+  if (!sessionReady) {
+    void Promise.resolve(ms.onReady)
+      .then(() => {
+        sessionReady = true;
+      })
+      .catch(() => {
+        sessionReady = true;
+      });
   }
 
+  for (let i = 0; i < attempts; i++) {
+    try {
+      last = await readMember.call(ms);
+    } catch {
+      last = null;
+    }
+    if (isSharedMemberstackPayloadResolved(last, sessionReady)) return last;
+    if (i < attempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+  }
+  return last;
+}
+
+async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessUserAccess | null> {
+  const memberPayload = await readSettledMemberstackPayload(ms);
   const memberId = memberIdFromMemberstackPayload(memberPayload);
   if (!memberId) return null;
 
@@ -191,7 +227,7 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
   await waitForMemberstackDom();
 
   const ms = window.$memberstackDom;
-  if (ms?.getCurrentMember) {
+  if (ms?.getCurrentMember || ms?.getAppAndMember) {
     // Also wait for the session to be RESTORED (not just the method to exist) so a member
     // returning right after a login reload — when `member.login` does not fire — is not read as
     // logged-out and cached that way.
@@ -200,7 +236,9 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
     if (memberAccess) return memberAccess;
   }
 
-  if (!ms?.getCurrentMember) return loggedOutAccessSnapshot("memberstack-dom-unavailable");
+  if (!ms?.getCurrentMember && !ms?.getAppAndMember) {
+    return loggedOutAccessSnapshot("memberstack-dom-unavailable");
+  }
   return loggedOutAccessSnapshot("no-member-id");
 }
 
@@ -211,10 +249,13 @@ export function resolveSleevelessUserAccessSnapshot(): Promise<SleevelessUserAcc
 export function resolveSleevelessUserAccess(): Promise<SleevelessUserAccess> {
   if (typeof window === "undefined") return resolveAccessUncached();
   if (!window.__KBM_SLEEVELESS_ACCESS_PROMISE__) {
-    window.__KBM_SLEEVELESS_ACCESS_PROMISE__ = resolveAccessUncached().then((access) => {
-      window.__KBM_SLEEVELESS_ACCESS__ = access;
+    const pending = resolveAccessUncached().then((access) => {
+      if (window.__KBM_SLEEVELESS_ACCESS_PROMISE__ === pending) {
+        window.__KBM_SLEEVELESS_ACCESS__ = access;
+      }
       return access;
     });
+    window.__KBM_SLEEVELESS_ACCESS_PROMISE__ = pending;
     wireMemberstackAccessCacheInvalidation();
   }
   return window.__KBM_SLEEVELESS_ACCESS_PROMISE__;
