@@ -54,8 +54,8 @@ export function formatShapingNotationRcLabel(rc: number): string {
 }
 
 /**
- * Sleeveless and Socks already draw cumulative counters with {@link formatRcNotation}
- * (`rc000`). That is the same zero-padded counter, kept on those diagrams.
+ * Sleeveless diagrams draw cumulative counters with {@link formatRcNotation}
+ * (`rc000`). Sock diagrams use {@link formatShapingNotationRcLabel} (`RC: 000`).
  */
 export function formatEstablishedDiagramRcLabel(rc: number): string {
   return formatRcNotation(rc);

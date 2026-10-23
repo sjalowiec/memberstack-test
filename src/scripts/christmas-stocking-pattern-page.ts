@@ -111,7 +111,11 @@ function fillSockDiagrams(calc: BasicSockCalc, mirror: boolean): void {
   closeSleevelessDiagramModal();
   const stsHost = document.querySelector("[data-sock-diagram-sts-rows-host]");
   if (stsHost instanceof HTMLElement) {
-    stsHost.innerHTML = buildSockPatternDiagramSvg(calc, { mode: "pattern", mirror }).replace(
+    stsHost.innerHTML = buildSockPatternDiagramSvg(calc, {
+      mode: "pattern",
+      mirror,
+      family: "christmas-stocking",
+    }).replace(
       'aria-label="Basic Socks stitches and rows"',
       'aria-label="Christmas Stocking stitches and rows"',
     );
@@ -119,7 +123,10 @@ function fillSockDiagrams(calc: BasicSockCalc, mirror: boolean): void {
   }
   const shapingHost = document.querySelector("[data-sock-diagram-shaping-host]");
   if (shapingHost instanceof HTMLElement) {
-    shapingHost.innerHTML = buildSockShapingNotationDiagramSvg(calc, { mirror }).replace(
+    shapingHost.innerHTML = buildSockShapingNotationDiagramSvg(calc, {
+      mirror,
+      family: "christmas-stocking",
+    }).replace(
       'aria-label="Basic Socks shaping notation"',
       'aria-label="Christmas Stocking shaping notation"',
     );

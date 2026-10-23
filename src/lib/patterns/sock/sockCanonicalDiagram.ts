@@ -23,8 +23,8 @@ const PAD_RIGHT = 72;
 const PAD_TOP = 22;
 const PAD_BOTTOM = 18;
 
-/** Extra right gutter so Stitches & Rows RC milestone labels are not clipped. */
-export const SOCK_STS_ROWS_PAD_RIGHT = 136;
+/** Extra right gutter so section measurements and RC labels are not clipped. */
+export const SOCK_STS_ROWS_PAD_RIGHT = 176;
 
 /** Screen-left X for the shared bottom→top reading arrow (viewBox space, not mirrored). */
 const READING_ARROW_X = -8;
