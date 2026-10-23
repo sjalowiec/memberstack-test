@@ -293,6 +293,7 @@ describe("Christmas stocking edit diagram", () => {
     );
     expect(workspace).toContain("SOCK_SUMMARY_ART_SRC");
     expect(workspace).not.toContain("/images/patterns/christmas-stocking-builder.png");
+    expect(workspace).not.toContain("snowflake");
     const circumference = SOCK_SUMMARY_MEASUREMENT_FIELDS.find(
       (field) => field.id === "footCircumference",
     );
