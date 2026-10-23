@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Layout from "../../../layouts/Layout.astro";
 import PatternPrintFooter from "../../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../../components/common/PatternPrintPersonalization.astro";
 import SavedPatternHeader from "../../../components/patterns/SavedPatternHeader.astro";
 import SavedPatternStickyNav from "../../../components/patterns/SavedPatternStickyNav.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
@@ -78,7 +79,18 @@ const sockSizingJson = JSON.parse(
             tipsScopeSelector="#christmas-stocking-pattern-tips-scope"
             printOriginLabel="Created with the Knit It Now Christmas Stocking Pattern Builder"
             printOriginUrl="KnitItNow.com/patterns/christmas-stocking"
-          />
+          >
+            <PatternPrintPersonalization slot="print-personalization">
+              <div
+                slot="print-summary"
+                class="sg-pattern-print-at-a-glance"
+                data-sg-pattern-print-at-a-glance
+              >
+                <h2 class="print-heading-major print-heading-major--hero">At a glance</h2>
+                <div data-sg-pattern-print-basics-body></div>
+              </div>
+            </PatternPrintPersonalization>
+          </SavedPatternHeader>
 
           <SleevelessPatternPrintNotice />
 

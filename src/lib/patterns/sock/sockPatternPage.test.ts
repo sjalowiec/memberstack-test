@@ -131,6 +131,10 @@ describe("Summary Update Pattern → Pattern route", () => {
     expect(patternPage).toContain('data-testid="socks-pattern-empty-cta"');
     expect(patternScript).toContain("buildSockPatternFromDraft");
     expect(patternScript).toContain("renderSockPatternPairHtml");
+    expect(patternPage).toContain('slot="print-summary"');
+    expect(patternPage).toContain("data-sg-pattern-print-basics-body");
+    expect(patternPage).toContain("sg-pattern-print-at-a-glance");
+    expect(patternScript).toContain("buildSockPatternSummaryDlHtml(result.view)");
     expect(patternScript).toContain("initSockPairInstructionTabs");
     expect(patternScript).toContain("syncPatternInpageNav");
     expect(patternScript).toContain("sockPatternInpageNavItems");
@@ -422,6 +426,13 @@ describe("short-row rendering and header measurements", () => {
     expect(dl).not.toContain("Heel depth");
     expect(dl).not.toContain("derived");
     expect(dl).not.toContain("10%");
+
+    const printed = buildSockPatternSummaryDlHtml(result.view);
+    expect(printed).toContain('class="print-summary-dl print-summary-dl--basics"');
+    expect(printed).toContain("<dt>Construction</dt><dd>Cuff to Toe</dd>");
+    expect(printed).not.toContain("print-summary-dl__pair");
+    const toeUp = mustPattern(completeDraft({ constructionDirection: "toe-up" }));
+    expect(buildSockPatternSummaryDlHtml(toeUp.view)).toContain("<dt>Construction</dt><dd>Toe Up</dd>");
   });
 });
 
