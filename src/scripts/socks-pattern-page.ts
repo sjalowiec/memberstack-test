@@ -141,6 +141,10 @@ export async function renderSocksPattern(): Promise<void> {
   if (introEl instanceof HTMLElement) {
     introEl.innerHTML = buildSockPatternSummaryDlHtml(result.view, { inline: true });
   }
+  const printBasics = document.querySelector("[data-sg-pattern-print-basics-body]");
+  if (printBasics instanceof HTMLElement) {
+    printBasics.innerHTML = buildSockPatternSummaryDlHtml(result.view);
+  }
 
   const heading = document.querySelector("[data-socks-pattern-online-heading]");
   if (heading instanceof HTMLElement) {

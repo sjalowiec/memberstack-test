@@ -55,16 +55,20 @@ export function buildSockPatternSummaryDlHtml(
     ["Leg Length", view.legLength],
     ["Gauge", view.gaugeLabel],
   ];
-  const cls = opts?.inline
-    ? "print-summary-dl print-summary-dl--inline"
-    : "print-summary-dl";
-  const pairs = rows
-    .map(
-      ([term, def]) =>
-        `<div class="print-summary-dl__pair"><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(def)}</dd></div>`,
-    )
+  if (opts?.inline) {
+    const pairs = rows
+      .map(
+        ([term, def]) =>
+          `<div class="print-summary-dl__pair"><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(def)}</dd></div>`,
+      )
+      .join("");
+    return `<dl class="print-summary-dl print-summary-dl--inline">${pairs}</dl>`;
+  }
+  // Same print list as the shared At a glance block: direct dt/dd so the print grid applies.
+  const dtdd = rows
+    .map(([term, def]) => `<dt>${escapeHtml(term)}</dt><dd>${escapeHtml(def)}</dd>`)
     .join("");
-  return `<dl class="${cls}">${pairs}</dl>`;
+  return `<dl class="print-summary-dl print-summary-dl--basics">${dtdd}</dl>`;
 }
 
 export function renderSockPatternPairHtml(
