@@ -356,14 +356,24 @@ function spreadMeasureAnchors(
 function sockSectionMeasureMarkup(span: SockDiagramMeasureSpan, x: number, anchorY: number): string {
   const measurement =
     span.inches > 0 ? formatPatternDiagramMeasurement(span.inches, "in") : "";
-  const label = formatStitchesRowsDiagramLabel(span.rows, "rows", measurement);
+  /**
+   * Heel and toe spans are finished pocket depth. That depth is one short-row
+   * direction divided by row gauge, then subtracted from foot length. The
+   * matching row count is not a full-width knitting instruction and is not the
+   * narrowing-plus-widening carriage-pass total, so it is not labeled here.
+   */
+  const pocketDepthOnly = span.id === "measureHeel" || span.id === "measureToe";
+  const label = pocketDepthOnly
+    ? measurement
+    : formatStitchesRowsDiagramLabel(span.rows, "rows", measurement);
+  if (!label) return "";
   return stitchesRowsLabelMarkup({
     label,
     x,
     y: label.includes("\n") ? anchorY : anchorY + Math.round(SOCK_DIAGRAM_TYPE.stitch * 0.95) / 2,
     anchor: "start",
     fill: DIM_MUTED,
-    countSize: SOCK_DIAGRAM_TYPE.stitch,
+    countSize: pocketDepthOnly ? SOCK_DIAGRAM_TYPE.row : SOCK_DIAGRAM_TYPE.stitch,
     measureSize: SOCK_DIAGRAM_TYPE.row,
     fontFamily: DS_FONT,
     extra: ` data-sock-label="${span.id}"`,

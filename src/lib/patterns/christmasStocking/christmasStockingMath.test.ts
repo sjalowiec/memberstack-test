@@ -221,6 +221,22 @@ describe("Christmas stocking instructions", () => {
       expect(html).not.toContain("stretch over the heel");
       expect(html).toContain("i-cord or twisted cord");
       expect(doc.sections.some((section) => section.steps.some((step) => step.type === "mirror-second-sock"))).toBe(false);
+      expect(doc.sections.some((section) => section.id === "ankle")).toBe(false);
+      expect(html).not.toContain("short-row passes");
+      expect(html).not.toContain("passes total");
+      for (const id of ["heel", "toe"] as const) {
+        const part = sectionHtml(html, id);
+        const shaping = result.calc[id];
+        expect(part).toContain("On the carriage side, put 1 needle into hold");
+        expect(part).toContain(
+          `Repeat every row until ${shaping.remainingStitches} center stitches remain.`,
+        );
+        expect(part).toContain("Opposite the carriage, return 1 needle to work");
+        expect(part).toContain(
+          `Repeat every row until all ${shaping.workingStitches} working stitches are back in work.`,
+        );
+        expect(part).toContain("Automatic Wrap");
+      }
     }
   });
 
