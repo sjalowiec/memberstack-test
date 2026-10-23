@@ -267,7 +267,7 @@ describe("sleeve shaping notation RC leaders", () => {
     });
     if (!sock.ok) throw new Error(sock.errors.join("; "));
     const sockSvg = buildSockShapingNotationDiagramSvg(sock.calc);
-    expect(sockSvg).toContain('data-sock-label="rc-start"');
+    expect(sockSvg).toContain('data-sock-label="rc-leg"');
     expect(sockSvg).not.toContain('data-role="rc-leader"');
   });
 });

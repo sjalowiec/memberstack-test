@@ -4,6 +4,12 @@
  * Dimension lines follow Drop Shoulder Stitches & Rows (thin stroke + perpendicular end caps).
  */
 
+import {
+  formatPatternDiagramMeasurement,
+  formatStitchesRowsDiagramLabel,
+  stitchesRowsLabelMarkup,
+} from "../legoBlocks/stitchesRowsDiagramLabel";
+import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import type { BasicSockCalc } from "./sockMath";
 import {
   SOCK_CANONICAL_SVG_HREF,
@@ -18,11 +24,24 @@ import {
   sockCanonicalLabelPoint,
   sockCanonicalMapY,
   sockCanonicalReadingDirectionArrowMarkup,
-  sockCanonicalStacked,
   sockCanonicalText,
+  type SockCanonicalAnchorId,
 } from "./sockCanonicalDiagram";
 
 export type SockPatternDiagramMode = "pattern";
+
+/** Basic Socks keeps the ankle band. Cuff-down Christmas Stocking uses one Leg. */
+export type SockDiagramFamily = "socks" | "christmas-stocking";
+
+export type SockDiagramBuildOptions = {
+  mode?: SockPatternDiagramMode;
+  mirror?: boolean;
+  family?: SockDiagramFamily;
+};
+
+const DIAGRAM_FONT = "Poppins, system-ui, Arial, sans-serif";
+const MEASURE_COUNT_SIZE = 13;
+const MEASURE_SIZE = 11;
 
 /** Outline extrema from socks-summary.svg polygon — overlay placement only. */
 const OUTLINE = {
@@ -52,12 +71,10 @@ const DIM_ABOVE = 8;
 const CUFF_DIM_Y = OUTLINE.top - 14;
 const V_DIM_X = OUTLINE.right + DIM_GAP;
 const WORK_STS_INSET = 28;
+/** Right of the two-line measurement so the counter stays on its boundary row. */
+export const SOCK_DIAGRAM_RC_X = V_DIM_X + DIM_LABEL_GAP + 72;
 
-export type SockDiagramRcMilestoneId =
-  | "rc-start"
-  | "rc-after-first"
-  | "rc-after-second"
-  | "rc-finish";
+export type SockDiagramRcMilestoneId = "rc-leg" | "rc-ankle" | "rc-heel" | "rc-foot" | "rc-toe";
 
 export type SockDiagramRcMilestone = {
   id: SockDiagramRcMilestoneId;
@@ -65,32 +82,176 @@ export type SockDiagramRcMilestone = {
   canonicalY: number;
 };
 
-function formatSockDiagramRc(rc: number): string {
-  const n = Math.max(0, Math.floor(rc));
-  return `RC: ${String(n).padStart(3, "0")}`;
+type SockDiagramMeasureSpan = {
+  id: "measureLeg" | "measureAnkle" | "measureHeel" | "measureFoot" | "measureToe";
+  dim: "leg-length" | "ankle-length" | "heel-length" | "foot-length" | "toe-length";
+  y1: number;
+  y2: number;
+  rows: number;
+  inches: number;
+};
+
+/**
+ * Cuff-down Christmas Stocking writes one Leg from the top edge to the heel.
+ * Basic Socks, and toe-up stockings, keep the ankle band.
+ */
+export function sockDiagramShowsSplitAnkle(
+  calc: BasicSockCalc,
+  family: SockDiagramFamily = "socks",
+): boolean {
+  return !(family === "christmas-stocking" && calc.constructionDirection === "cuff-to-toe");
 }
 
 /**
- * Stitches & Rows RC labels at construction milestones (not per-section row counts).
- * Values are the pattern's local row-counter at that boundary.
+ * Row-counter labels at the boundaries the written instructions mark.
+ * Cuff-down continues through the ankle and stops at the heel on the full leg
+ * count, restarts the foot at 000, and stops the toe at the foot ending RC.
+ * Toe-up resets at the toe and the foot, stops the heel at the foot ending RC,
+ * then shows 000 at the ankle and resets again at the leg.
  */
-export function sockDiagramRcMilestones(calc: BasicSockCalc): SockDiagramRcMilestone[] {
+export function sockDiagramRcMilestones(
+  calc: BasicSockCalc,
+  options?: { family?: SockDiagramFamily },
+): SockDiagramRcMilestone[] {
+  const showsAnkle = sockDiagramShowsSplitAnkle(calc, options?.family ?? "socks");
   if (calc.constructionDirection === "toe-up") {
-    const finishRc =
-      calc.legShapingRowsAvailable > 0 ? calc.legShapingRowsAvailable : calc.ankleStraightRows;
-    return [
-      { id: "rc-start", rc: 0, canonicalY: OUTLINE.toeBottom },
-      { id: "rc-after-first", rc: 0, canonicalY: OUTLINE.toeTop },
-      { id: "rc-after-second", rc: calc.straightFootRows, canonicalY: OUTLINE.heelBottom },
-      { id: "rc-finish", rc: finishRc, canonicalY: OUTLINE.top },
+    const marks: SockDiagramRcMilestone[] = [
+      { id: "rc-toe", rc: 0, canonicalY: OUTLINE.toeBottom },
+      { id: "rc-foot", rc: 0, canonicalY: OUTLINE.toeTop },
+      { id: "rc-heel", rc: calc.straightFootRows, canonicalY: OUTLINE.heelBottom },
     ];
+    if (showsAnkle && calc.ankleStraightRows > 0) {
+      marks.push(
+        { id: "rc-ankle", rc: 0, canonicalY: OUTLINE.heelTop },
+        { id: "rc-leg", rc: 0, canonicalY: OUTLINE.ankleY },
+      );
+    } else {
+      marks.push({ id: "rc-leg", rc: 0, canonicalY: OUTLINE.heelTop });
+    }
+    return marks;
   }
   return [
-    { id: "rc-start", rc: 0, canonicalY: OUTLINE.top },
-    { id: "rc-after-first", rc: calc.legRows, canonicalY: OUTLINE.heelTop },
-    { id: "rc-after-second", rc: 0, canonicalY: OUTLINE.heelBottom },
-    { id: "rc-finish", rc: calc.straightFootRows, canonicalY: OUTLINE.toeBottom },
+    { id: "rc-leg", rc: 0, canonicalY: OUTLINE.top },
+    { id: "rc-heel", rc: calc.legRows, canonicalY: OUTLINE.heelTop },
+    { id: "rc-foot", rc: 0, canonicalY: OUTLINE.heelBottom },
+    { id: "rc-toe", rc: calc.straightFootRows, canonicalY: OUTLINE.toeTop },
   ];
+}
+
+export function sockDiagramMeasureSpans(
+  calc: BasicSockCalc,
+  family: SockDiagramFamily = "socks",
+): SockDiagramMeasureSpan[] {
+  const showsAnkle = sockDiagramShowsSplitAnkle(calc, family);
+  const spans: SockDiagramMeasureSpan[] = [];
+  if (showsAnkle) {
+    spans.push({
+      id: "measureLeg",
+      dim: "leg-length",
+      y1: OUTLINE.top,
+      y2: OUTLINE.ankleY,
+      rows: Math.max(0, calc.legShapingRowsAvailable),
+      inches: Math.max(0, calc.legLengthInches - calc.ankleStraightLengthInches),
+    });
+    spans.push({
+      id: "measureAnkle",
+      dim: "ankle-length",
+      y1: OUTLINE.ankleY,
+      y2: OUTLINE.heelTop,
+      rows: Math.max(0, calc.ankleStraightRows),
+      inches: calc.ankleStraightLengthInches,
+    });
+  } else {
+    spans.push({
+      id: "measureLeg",
+      dim: "leg-length",
+      y1: OUTLINE.top,
+      y2: OUTLINE.heelTop,
+      rows: calc.legRows,
+      inches: calc.legLengthInches,
+    });
+  }
+  spans.push(
+    {
+      id: "measureHeel",
+      dim: "heel-length",
+      y1: OUTLINE.heelTop,
+      y2: OUTLINE.heelBottom,
+      rows: calc.heel.shortRowDepthRows,
+      inches: calc.heelDepthInches,
+    },
+    {
+      id: "measureFoot",
+      dim: "foot-length",
+      y1: OUTLINE.heelBottom,
+      y2: OUTLINE.toeTop,
+      rows: Math.max(0, calc.straightFootRows),
+      inches: calc.straightFootLengthInches,
+    },
+    {
+      id: "measureToe",
+      dim: "toe-length",
+      y1: OUTLINE.toeTop,
+      y2: OUTLINE.toeBottom,
+      rows: calc.toe.shortRowDepthRows,
+      inches: calc.toeDepthInches,
+    },
+  );
+  return spans;
+}
+
+const SECTION_NAMES = [
+  ["sectionLeg", "Leg"],
+  ["sectionAnkle", "Ankle"],
+  ["sectionHeel", "Heel"],
+  ["sectionFoot", "Sole and Instep"],
+  ["sectionToe", "Toe"],
+] as const satisfies ReadonlyArray<readonly [SockCanonicalAnchorId, string]>;
+
+export function sockDiagramSectionLabels(args: {
+  showsAnkle: boolean;
+  mirror: boolean;
+  flipVertical: boolean;
+}): Array<{ id: SockCanonicalAnchorId; name: string; x: number; y: number }> {
+  return SECTION_NAMES.filter(([id]) => args.showsAnkle || id !== "sectionAnkle").map(([id, name]) => {
+    const at = sockCanonicalLabelPoint(id, args.mirror, args.flipVertical);
+    const y =
+      id === "sectionLeg" && !args.showsAnkle
+        ? sockCanonicalMapY((OUTLINE.top + OUTLINE.heelTop) / 2, args.flipVertical)
+        : at.y;
+    return { id, name, x: at.x, y };
+  });
+}
+
+export function sockDiagramRcLabelMarkup(milestone: SockDiagramRcMilestone, y: number): string {
+  return sockCanonicalText({
+    id: milestone.id,
+    x: SOCK_DIAGRAM_RC_X,
+    y,
+    text: formatShapingNotationRcLabel(milestone.rc),
+    size: 12,
+    anchor: "start",
+    fill: DIM_MUTED,
+  });
+}
+
+function sockSectionMeasureMarkup(span: SockDiagramMeasureSpan, x: number, midY: number): string {
+  const measurement =
+    span.inches > 0 ? formatPatternDiagramMeasurement(span.inches, "in") : "";
+  const label = formatStitchesRowsDiagramLabel(span.rows, "rows", measurement);
+  const gap = Math.round(MEASURE_COUNT_SIZE * 0.95);
+  return stitchesRowsLabelMarkup({
+    label,
+    x,
+    y: label.includes("\n") ? midY - gap / 2 : midY,
+    anchor: "start",
+    fill: DIM_MUTED,
+    countSize: MEASURE_COUNT_SIZE,
+    measureSize: MEASURE_SIZE,
+    fontFamily: DIAGRAM_FONT,
+    extra: ` data-sock-label="${span.id}"`,
+    fmt: fmtSockSvg,
+  });
 }
 
 function point(
@@ -151,9 +312,11 @@ function sockVDim(role: string, x: number, y1: number, y2: number): string {
 
 export function buildSockPatternDiagramSvg(
   calc: BasicSockCalc,
-  options?: { mode?: SockPatternDiagramMode; mirror?: boolean },
+  options?: SockDiagramBuildOptions,
 ): string {
   const mirror = options?.mirror === true;
+  const family = options?.family ?? "socks";
+  const showsAnkle = sockDiagramShowsSplitAnkle(calc, family);
   const flipVertical = sockCanonicalFlipVertical(calc.constructionDirection);
   const frame = sockCanonicalDiagramFrame({
     mirror,
@@ -175,11 +338,10 @@ export function buildSockPatternDiagramSvg(
   dims.push(sockHDim("heel-work-width", split, right, yAt(OUTLINE.heelMid)));
   dims.push(sockHDim("toe-held-width", left, split, yAt(OUTLINE.toeMid)));
   dims.push(sockHDim("toe-work-width", split, right, yAt(OUTLINE.toeMid)));
-  dims.push(sockVDim("leg-length", V_DIM_X, yAt(OUTLINE.top), yAt(OUTLINE.ankleY)));
-  dims.push(sockVDim("ankle-length", V_DIM_X, yAt(OUTLINE.ankleY), yAt(OUTLINE.heelTop)));
-  dims.push(sockVDim("heel-length", V_DIM_X, yAt(OUTLINE.heelTop), yAt(OUTLINE.heelBottom)));
-  dims.push(sockVDim("foot-length", V_DIM_X, yAt(OUTLINE.heelBottom), yAt(OUTLINE.toeTop)));
-  dims.push(sockVDim("toe-length", V_DIM_X, yAt(OUTLINE.toeTop), yAt(OUTLINE.toeBottom)));
+  const measures = sockDiagramMeasureSpans(calc, family);
+  for (const span of measures) {
+    dims.push(sockVDim(span.dim, V_DIM_X, yAt(span.y1), yAt(span.y2)));
+  }
 
   labels.push(
     sockCanonicalText({
@@ -229,15 +391,16 @@ export function buildSockPatternDiagramSvg(
     }),
   );
 
-  for (const [id, name] of [
-    ["sectionLeg", "Leg"],
-    ["sectionAnkle", "Ankle"],
-    ["sectionHeel", "Heel"],
-    ["sectionFoot", "Sole and Instep"],
-    ["sectionToe", "Toe"],
-  ] as const) {
-    const at = point(id, mirror, flipVertical);
-    labels.push(sockCanonicalText({ id, x: at.x, y: at.y, text: name, size: 12 }));
+  for (const section of sockDiagramSectionLabels({ showsAnkle, mirror, flipVertical })) {
+    labels.push(
+      sockCanonicalText({
+        id: section.id,
+        x: section.x,
+        y: section.y,
+        text: section.name,
+        size: 12,
+      }),
+    );
   }
 
   const heelCenter = point("heelCenter", mirror, flipVertical);
@@ -304,40 +467,16 @@ export function buildSockPatternDiagramSvg(
   );
 
   const measureX = V_DIM_X + DIM_LABEL_GAP;
-  for (const [id, lines, y1, y2] of [
-    ["measureLeg", fields.measureLeg, OUTLINE.top, OUTLINE.ankleY],
-    ["measureAnkle", fields.measureAnkle, OUTLINE.ankleY, OUTLINE.heelTop],
-    ["measureHeel", fields.measureHeel, OUTLINE.heelTop, OUTLINE.heelBottom],
-    ["measureFoot", fields.measureFoot, OUTLINE.heelBottom, OUTLINE.toeTop],
-    ["measureToe", fields.measureToe, OUTLINE.toeTop, OUTLINE.toeBottom],
-  ] as const) {
-    labels.push(
-      sockCanonicalStacked({
-        id,
-        x: measureX,
-        y: (yAt(y1) + yAt(y2)) / 2,
-        lines: [...lines],
-        size: 11,
-        anchor: "start",
-        fill: DIM_MUTED,
-      }),
-    );
+  for (const span of measures) {
+    labels.push(sockSectionMeasureMarkup(span, measureX, (yAt(span.y1) + yAt(span.y2)) / 2));
   }
 
-  const rcMilestones = sockDiagramRcMilestones(calc);
+  const rcMilestones = sockDiagramRcMilestones(calc, { family });
   for (const milestone of rcMilestones) {
-    labels.push(
-      sockCanonicalText({
-        id: milestone.id,
-        x: measureX,
-        y: yAt(milestone.canonicalY),
-        text: formatSockDiagramRc(milestone.rc),
-        size: 11,
-        anchor: "start",
-        fill: DIM_MUTED,
-      }),
-    );
+    labels.push(sockDiagramRcLabelMarkup(milestone, yAt(milestone.canonicalY)));
   }
+  const legMeasure = measures.find((span) => span.id === "measureLeg");
+  const ankleMeasure = measures.find((span) => span.id === "measureAnkle");
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${frame.viewBox}" ` +
@@ -348,22 +487,21 @@ export function buildSockPatternDiagramSvg(
     `data-sock-work-half="${frame.workHalf}" ` +
     `data-sock-of-pair="${mirror ? "2" : "1"}" ` +
     `data-sock-knit-order="${calc.constructionDirection}" ` +
+    `data-sock-diagram-family="${family}" ` +
     `data-sock-flip-vertical="${flipVertical ? "true" : "false"}" ` +
     `data-sock-reading-direction="bottom-to-top" ` +
-    `data-sock-rc-start="${rcMilestones[0]!.rc}" ` +
-    `data-sock-rc-after-first="${rcMilestones[1]!.rc}" ` +
-    `data-sock-rc-after-second="${rcMilestones[2]!.rc}" ` +
-    `data-sock-rc-finish="${rcMilestones[3]!.rc}" ` +
+    rcMilestones.map((milestone) => `data-sock-${milestone.id}="${milestone.rc}"`).join(" ") +
+    ` ` +
     `data-sock-cuff-sts="${fields.cuffStitches}" data-sock-tube-sts="${fields.tubeStitches}" ` +
-    `data-sock-leg-rows="${fields.upperLegRows}" data-sock-ankle-rows="${fields.ankleRows}" ` +
+    `data-sock-leg-rows="${legMeasure?.rows ?? 0}" data-sock-ankle-rows="${ankleMeasure?.rows ?? 0}" ` +
     `data-sock-foot-rows="${fields.footRows}" data-sock-heel-short-row="${fields.heelShortRow}" ` +
     `data-sock-toe-short-row="${fields.toeShortRow}" ` +
     `data-sock-heel-work="${fields.heelWorkingStitches}" data-sock-heel-hold="${fields.heelHeldStitches}" ` +
     `data-sock-heel-center="${fields.heelRemainingStitches}" ` +
     `data-sock-toe-work="${fields.toeWorkingStitches}" data-sock-toe-hold="${fields.toeHeldStitches}" ` +
     `data-sock-toe-center="${fields.toeRemainingStitches}" ` +
-    `data-sock-leg-in="${fields.upperLegInches}" ` +
-    `data-sock-ankle-in="${fields.ankleInches}" ` +
+    `data-sock-leg-in="${legMeasure?.inches ?? 0}" ` +
+    `data-sock-ankle-in="${ankleMeasure?.inches ?? 0}" ` +
     `data-sock-heel-in="${fields.heelInches}" ` +
     `data-sock-foot-in="${fields.footInches}" ` +
     `data-sock-toe-in="${fields.toeInches}" ` +

@@ -436,7 +436,7 @@ describe("shaping notation diagrams show cumulative RC landmarks", () => {
     expect(cardiganSvg).not.toContain('data-role="rc-leader"');
   });
 
-  it("keeps Socks on the established rc000 milestones", () => {
+  it("draws Socks row counters with the sweater RC: 000 label", () => {
     const result = calculateBasicSockPattern({
       footCircumferenceInches: 8.5,
       footLengthInches: 9,
@@ -449,9 +449,9 @@ describe("shaping notation diagrams show cumulative RC landmarks", () => {
     });
     if (!result.ok) throw new Error(result.errors.join("; "));
     const svg = buildSockShapingNotationDiagramSvg(result.calc);
-    expect(svg).toContain(formatRcNotation(0));
-    expect(svg).toContain('data-sock-label="rc-start"');
-    expect(svg).toContain('data-sock-label="rc-finish"');
+    expect(svg).toContain(formatShapingNotationRcLabel(0));
+    expect(svg).toContain('data-sock-label="rc-leg"');
+    expect(svg).toContain('data-sock-label="rc-toe"');
     expect(svg).toContain('width="100%"');
   });
 });

@@ -5,18 +5,17 @@ import { describe, expect, it } from "vitest";
 import {
   formatBodyRowsNotation,
   formatCastOnNotation,
-  formatRcNotation,
 } from "../sleevelessBackJapaneseNotation";
+import { formatShapingNotationRcLabel } from "../shapingNotationRcLandmarks";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import { calculateBasicSockPattern, type BasicSockCalc, type BasicSockCalcInput } from "./sockMath";
 import {
-  SOCK_CANONICAL_ANCHORS,
   SOCK_CANONICAL_POLYGON_POINTS,
   SOCK_CANONICAL_SVG_HREF,
   sockCanonicalFlipVertical,
   sockCanonicalMapY,
 } from "./sockCanonicalDiagram";
-import { sockDiagramRcMilestones } from "./sockPatternDiagramSvg";
+import { SOCK_DIAGRAM_RC_X, sockDiagramRcMilestones } from "./sockPatternDiagramSvg";
 import {
   buildSockShapingNotationDiagramSvg,
   buildSockShapingNotationLines,
@@ -90,7 +89,7 @@ function labelText(svg: string, id: string): string {
 }
 
 function rcLabelIds(svg: string): string[] {
-  return [...svg.matchAll(/data-sock-label="(rc-(?:start|after-first|after-second|finish))"/g)].map(
+  return [...svg.matchAll(/data-sock-label="(rc-(?:leg|ankle|heel|foot|toe))"/g)].map(
     (match) => match[1]!,
   );
 }
@@ -122,15 +121,10 @@ describe("Socks Shaping Notation from approved calc", () => {
     expect(svg).toContain(`+${formatShapingSegment(1, 1, calc.heel.shortRowOutSteps)}`);
     expect(svg).toContain(`-${formatShapingSegment(1, 1, calc.heel.shortRowInSteps)}`);
     expect(svg).toContain(remainingStitchLabel(calc.heel.remainingStitches));
-    expect(svg).toContain(formatRcNotation(calc.legRows));
-    expect(svg).toContain(formatRcNotation(calc.straightFootRows));
+    expect(svg).toContain(formatShapingNotationRcLabel(calc.legRows));
+    expect(svg).toContain(formatShapingNotationRcLabel(calc.straightFootRows));
     expect(labelsGroup(svg)).not.toMatch(/>\d+r</);
-    expect(rcLabelIds(labelsGroup(svg))).toEqual([
-      "rc-start",
-      "rc-after-first",
-      "rc-after-second",
-      "rc-finish",
-    ]);
+    expect(rcLabelIds(labelsGroup(svg))).toEqual(["rc-leg", "rc-heel", "rc-foot", "rc-toe"]);
     expect(svg).not.toMatch(/hold\d/);
     expect(svg).not.toContain("hold ");
     expect(svg).not.toContain('data-sock-shape="heel-hourglass"');
@@ -289,74 +283,64 @@ describe("Socks Shaping Notation from approved calc", () => {
 });
 
 describe("Shaping Notation RC milestones", () => {
-  const RC_IDS = ["rc-start", "rc-after-first", "rc-after-second", "rc-finish"] as const;
-
-  function assertFourRightSideRcLabels(svg: string, calc: BasicSockCalc): void {
+  function assertSharedRcLabels(svg: string, calc: BasicSockCalc): void {
     const milestones = sockShapingNotationRcMilestones(calc);
-    expect(milestones).toHaveLength(4);
-    expect(rcLabelIds(labelsGroup(svg))).toEqual([...RC_IDS]);
+    expect(milestones).toEqual(sockDiagramRcMilestones(calc));
+    expect(rcLabelIds(labelsGroup(svg))).toEqual(milestones.map((milestone) => milestone.id));
     const flipVertical = sockCanonicalFlipVertical(calc.constructionDirection);
     for (const milestone of milestones) {
-      expect(labelText(svg, milestone.id)).toBe(formatRcNotation(milestone.rc));
-      expect(Number(labelXY(svg, milestone.id).x)).toBe(SOCK_CANONICAL_ANCHORS.measureLeg.x);
+      expect(labelText(svg, milestone.id)).toBe(formatShapingNotationRcLabel(milestone.rc));
+      expect(Number(labelXY(svg, milestone.id).x)).toBe(SOCK_DIAGRAM_RC_X);
       expect(Number(labelXY(svg, milestone.id).y)).toBe(
         sockCanonicalMapY(milestone.canonicalY, flipVertical),
       );
     }
   }
 
-  it("places exactly four Toe-Up RC milestones on the right from construction values", () => {
+  it("places Toe-Up RC labels on the same written boundaries as Stitches & Rows", () => {
     const calc = mustCalc({ constructionDirection: "toe-up" });
     const svg = buildSockShapingNotationDiagramSvg(calc);
-    const shared = sockDiagramRcMilestones(calc);
-    const finishRc =
-      calc.legShapingRowsAvailable > 0 ? calc.legShapingRowsAvailable : calc.ankleStraightRows;
-    const ankleHeelY = sockDiagramRcMilestones({
-      ...calc,
-      constructionDirection: "cuff-to-toe",
-    }).find((milestone) => milestone.id === "rc-after-first")!.canonicalY;
+    expect(calc.ankleStraightRows).toBeGreaterThan(0);
     expect(sockShapingNotationRcMilestones(calc)).toEqual([
-      { id: "rc-start", rc: 0, canonicalY: 472 },
-      { id: "rc-after-first", rc: 0, canonicalY: ankleHeelY },
-      { id: "rc-after-second", rc: calc.straightFootRows, canonicalY: 264 },
-      { id: "rc-finish", rc: finishRc, canonicalY: 8 },
+      { id: "rc-toe", rc: 0, canonicalY: 472 },
+      { id: "rc-foot", rc: 0, canonicalY: 424 },
+      { id: "rc-heel", rc: calc.straightFootRows, canonicalY: 264 },
+      { id: "rc-ankle", rc: 0, canonicalY: 216 },
+      { id: "rc-leg", rc: 0, canonicalY: 184 },
     ]);
-    expect(shared.map((milestone) => milestone.rc)).toEqual([0, 0, calc.straightFootRows, finishRc]);
-    expect(attr(svg, "data-sock-rc-start")).toBe("0");
-    expect(attr(svg, "data-sock-rc-after-first")).toBe("0");
-    expect(attr(svg, "data-sock-rc-after-second")).toBe(String(calc.straightFootRows));
-    expect(attr(svg, "data-sock-rc-finish")).toBe(String(finishRc));
-    assertFourRightSideRcLabels(svg, calc);
-    expect(Number(labelXY(svg, "rc-start").y)).toBeGreaterThan(Number(labelXY(svg, "rc-after-second").y));
-    expect(Number(labelXY(svg, "rc-after-second").y)).toBeGreaterThan(
-      Number(labelXY(svg, "rc-after-first").y),
-    );
-    expect(Number(labelXY(svg, "rc-after-first").y)).toBeGreaterThan(Number(labelXY(svg, "rc-finish").y));
+    expect(attr(svg, "data-sock-rc-toe")).toBe("0");
+    expect(attr(svg, "data-sock-rc-foot")).toBe("0");
+    expect(attr(svg, "data-sock-rc-heel")).toBe(String(calc.straightFootRows));
+    expect(attr(svg, "data-sock-rc-ankle")).toBe("0");
+    expect(attr(svg, "data-sock-rc-leg")).toBe("0");
+    assertSharedRcLabels(svg, calc);
+    expect(Number(labelXY(svg, "rc-toe").y)).toBeGreaterThan(Number(labelXY(svg, "rc-foot").y));
+    expect(Number(labelXY(svg, "rc-foot").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
+    expect(Number(labelXY(svg, "rc-heel").y)).toBeGreaterThan(Number(labelXY(svg, "rc-ankle").y));
+    expect(Number(labelXY(svg, "rc-ankle").y)).toBeGreaterThan(Number(labelXY(svg, "rc-leg").y));
     expect(stackedShapeTexts(svg, "heel-shape")).not.toMatch(/rc\d/);
     expect(stackedShapeTexts(svg, "toe-shape")).not.toMatch(/rc\d/);
   });
 
-  it("places exactly four Cuff-to-Toe RC milestones on the right from construction values", () => {
+  it("places Cuff-to-Toe RC labels on the same written boundaries as Stitches & Rows", () => {
     const calc = mustCalc({ constructionDirection: "cuff-to-toe" });
     const svg = buildSockShapingNotationDiagramSvg(calc);
     const shared = sockDiagramRcMilestones(calc);
     expect(sockShapingNotationRcMilestones(calc)).toEqual(shared);
     expect(shared).toEqual([
-      { id: "rc-start", rc: 0, canonicalY: 8 },
-      { id: "rc-after-first", rc: calc.legRows, canonicalY: 216 },
-      { id: "rc-after-second", rc: 0, canonicalY: 264 },
-      { id: "rc-finish", rc: calc.straightFootRows, canonicalY: 472 },
+      { id: "rc-leg", rc: 0, canonicalY: 8 },
+      { id: "rc-heel", rc: calc.legRows, canonicalY: 216 },
+      { id: "rc-foot", rc: 0, canonicalY: 264 },
+      { id: "rc-toe", rc: calc.straightFootRows, canonicalY: 424 },
     ]);
-    expect(attr(svg, "data-sock-rc-start")).toBe("0");
-    expect(attr(svg, "data-sock-rc-after-first")).toBe(String(calc.legRows));
-    expect(attr(svg, "data-sock-rc-after-second")).toBe("0");
-    expect(attr(svg, "data-sock-rc-finish")).toBe(String(calc.straightFootRows));
-    assertFourRightSideRcLabels(svg, calc);
-    expect(Number(labelXY(svg, "rc-start").y)).toBeGreaterThan(Number(labelXY(svg, "rc-after-first").y));
-    expect(Number(labelXY(svg, "rc-after-first").y)).toBeGreaterThan(
-      Number(labelXY(svg, "rc-after-second").y),
-    );
-    expect(Number(labelXY(svg, "rc-finish").y)).toBeLessThan(Number(labelXY(svg, "rc-after-second").y));
+    expect(attr(svg, "data-sock-rc-leg")).toBe("0");
+    expect(attr(svg, "data-sock-rc-heel")).toBe(String(calc.legRows));
+    expect(attr(svg, "data-sock-rc-foot")).toBe("0");
+    expect(attr(svg, "data-sock-rc-toe")).toBe(String(calc.straightFootRows));
+    assertSharedRcLabels(svg, calc);
+    expect(Number(labelXY(svg, "rc-leg").y)).toBeGreaterThan(Number(labelXY(svg, "rc-heel").y));
+    expect(Number(labelXY(svg, "rc-heel").y)).toBeGreaterThan(Number(labelXY(svg, "rc-foot").y));
+    expect(Number(labelXY(svg, "rc-foot").y)).toBeGreaterThan(Number(labelXY(svg, "rc-toe").y));
     expect(stackedShapeTexts(svg, "heel-shape")).not.toMatch(/rc\d/);
     expect(stackedShapeTexts(svg, "toe-shape")).not.toMatch(/rc\d/);
   });
@@ -377,7 +361,7 @@ describe("notation does not recreate Socks geometry", () => {
     expect(src).toContain("sockDiagramRcMilestones");
     expect(src).toContain("formatCastOnNotation");
     expect(src).toContain("formatBodyRowsNotation");
-    expect(src).toContain("formatRcNotation");
+    expect(src).toContain("sockDiagramRcLabelMarkup");
     expect(src).not.toContain("formatHoldNotation");
     expect(src).toContain("formatShapingSegment");
     expect(src).toContain("formatBindOffNotation");
