@@ -125,7 +125,7 @@ function fieldErrorsFromSnapshot(
   }
   if (!isSockBuilderMeasurementsComplete(fields)) {
     if (!positiveNumber(fields.footCircumference)) {
-      errors.footCircumference = "Enter a foot circumference greater than zero.";
+      errors.footCircumference = "Enter a foot and leg circumference greater than zero.";
     }
     if (!positiveNumber(fields.footLength)) {
       errors.footLength = "Enter a foot length greater than zero.";

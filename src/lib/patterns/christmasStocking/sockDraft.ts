@@ -89,9 +89,20 @@ function withDefaultSockPatternName(
   };
 }
 
+/** One circumference controls the foot and the leg. Prefer the foot value when both are present. */
+export function sharedChristmasStockingCircumference(foot: unknown, leg: unknown): string {
+  const footValue = normalizeString(foot).trim();
+  if (footValue) return footValue;
+  return normalizeString(leg).trim();
+}
+
 export function createEmptySockDraft(partial?: Partial<SockDraft>): SockDraft {
   const patternProject = withDefaultSockPatternName(
     normalizeSockPatternProject(partial?.patternProject),
+  );
+  const circumference = sharedChristmasStockingCircumference(
+    partial?.footCircumference,
+    partial?.legCircumference,
   );
   return {
     version: SOCK_DRAFT_VERSION,
@@ -100,14 +111,14 @@ export function createEmptySockDraft(partial?: Partial<SockDraft>): SockDraft {
     unit: "inches",
     sizeSel: "",
     constructionDirection: "",
-    footCircumference: "",
     footLength: "",
-    legCircumference: "",
     legLength: "",
     gaugeSlots: emptySockGaugeSlots(),
     availableNeedles: "",
     updatedAt: new Date().toISOString(),
     ...partial,
+    footCircumference: circumference,
+    legCircumference: circumference,
     patternProject,
   };
 }
@@ -192,8 +203,14 @@ export function writeSockDraft(
     ? localStorage
     : { setItem: () => undefined },
 ): void {
+  const circumference = sharedChristmasStockingCircumference(
+    draft.footCircumference,
+    draft.legCircumference,
+  );
   const next: SockDraft = {
     ...draft,
+    footCircumference: circumference,
+    legCircumference: circumference,
     version: SOCK_DRAFT_VERSION,
     patternType: "christmas-stocking",
     patternSystem: "christmas-stocking",
