@@ -19,10 +19,14 @@
 import {
   clearRememberedComplimentaryThroughForAccess,
   clearRememberedLegacyPaidThroughForAccess,
+  complimentaryThroughYmdForAccess,
   getViewerAccessState,
   hasComplimentaryMemberAccess,
+  hasCurrentComplimentaryAccess,
   hasPaidMemberAccess,
+  isLegacyPaidThroughCurrentlyValid,
   isMemberLoggedIn,
+  memberAccessCalendarYmdForNow,
   memberAccessYmdFromDateOnlyValue,
   needsLegacyPaidThroughForAccess,
   rememberComplimentaryThroughForAccess,
@@ -83,6 +87,13 @@ export type CachedMemberAccess = {
   memberId: string;
   viewer: ViewerAccessState;
   verifiedAt: number;
+  /**
+   * Last America/Los_Angeles day a dated grant (legacy or complimentary) covers.
+   * Null when the grant is not date-bound (paid plan, open complimentary).
+   * A cached member result is ignored after this day, even inside the
+   * freshness window.
+   */
+  accessThroughYmd?: string | null;
   /** Present only when the Watson legacy date was loaded successfully. */
   legacyPaidThroughYmd?: string | null;
   /** Present only when the complimentary date was loaded successfully. */
@@ -183,12 +194,42 @@ export function currentMemberstackMemberIdHint(): string | null {
 /**
  * A recently verified snapshot for the member Memberstack currently reports
  * (by cookie/localStorage id). Use only to choose the first paint; always
- * follow with {@link resolveVerifiedMemberAccess}.
+ * follow with {@link resolveVerifiedMemberAccess}. A member result whose
+ * legacy/complimentary access-through day has passed is not returned.
  */
-export function readFreshVerifiedMemberAccess(): CachedMemberAccess | null {
+export function readFreshVerifiedMemberAccess(now: Date = new Date()): CachedMemberAccess | null {
   const memberId = currentMemberstackMemberIdHint();
   if (!memberId) return null;
-  return freshCachedEntryForMember(memberId);
+  const entry = freshCachedEntryForMember(memberId);
+  if (!entry) return null;
+  if (
+    entry.viewer === "memberAccess" &&
+    typeof entry.accessThroughYmd === "string" &&
+    entry.accessThroughYmd < memberAccessCalendarYmdForNow(now)
+  ) {
+    return null;
+  }
+  return entry;
+}
+
+/**
+ * The day a current grant ends, or null when it is not date-bound. Uses the
+ * same rules as {@link hasMemberAccess}: paid plans and an open complimentary
+ * plan are unbounded; otherwise the later of the valid complimentary and
+ * legacy dates.
+ */
+function accessThroughYmdForGrant(payload: unknown, memberId: string): string | null {
+  if (hasPaidMemberAccess(payload)) return null;
+  const dates: string[] = [];
+  if (hasCurrentComplimentaryAccess(payload)) {
+    const complimentary = complimentaryThroughYmdForAccess(payload);
+    if (complimentary == null) return null;
+    dates.push(complimentary);
+  }
+  const legacy = rememberedLegacyPaidThroughYmdForMember(memberId);
+  if (legacy && isLegacyPaidThroughCurrentlyValid(legacy)) dates.push(legacy);
+  dates.sort();
+  return dates.length ? dates[dates.length - 1] : null;
 }
 
 /** Forget verified status and remembered dates (logout, login, account switch). */
@@ -480,6 +521,8 @@ async function resolveVerifiedMemberAccessUncached(
       ...(dates ?? {}),
       memberId,
       viewer,
+      accessThroughYmd:
+        viewer === "memberAccess" ? accessThroughYmdForGrant(payload, memberId) : null,
       verifiedAt: Date.now(),
     });
   }

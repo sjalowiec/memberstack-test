@@ -384,3 +384,105 @@ describe("resolveVerifiedMemberAccess while the session restores", () => {
     });
   });
 });
+describe("cached access never outlives a known access-through day", () => {
+  // 23:55 and 00:01 America/Los_Angeles (PDT, UTC-7): six minutes apart,
+  // inside the freshness window, but on different calendar days.
+  const BEFORE_MIDNIGHT = new Date("2026-10-25T06:55:00Z"); // Oct 24, 23:55 LA
+  const AFTER_MIDNIGHT = new Date("2026-10-25T07:01:00Z"); // Oct 25, 00:01 LA
+  const LAST_DAY = "2026-10-24";
+  const fast = { memberstackDeadlineMs: 300, pollIntervalMs: 10 };
+
+  afterEach(() => {
+    vi.useRealTimers();
+    clearVerifiedMemberAccessCache();
+  });
+
+  it("drops a cached legacy member after the paid-through day ends", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(BEFORE_MIDNIGHT);
+    stubBrowser({ memberId: "mem_legacy", getAppAndMember: async () => legacyOnly() });
+    const ensureContext = vi.fn(async (res: unknown) =>
+      ensureLegacyPaidThroughContext(res, {
+        fetchAccessDates: async () => ({
+          legacyPaidThroughYmd: LAST_DAY,
+          complimentaryThroughYmd: null,
+        }),
+      }),
+    );
+    await expect(resolveVerifiedMemberAccess({ ...fast, ensureContext })).resolves.toMatchObject({
+      viewer: "memberAccess",
+    });
+    expect(readFreshVerifiedMemberAccess()).toMatchObject({
+      viewer: "memberAccess",
+      accessThroughYmd: LAST_DAY,
+    });
+
+    vi.setSystemTime(AFTER_MIDNIGHT);
+    expect(readFreshVerifiedMemberAccess()).toBeNull();
+
+    // The background re-check reuses the cached date (no refetch) and denies.
+    clearRememberedLegacyPaidThroughForAccess();
+    const fetchAccessDates = vi.fn();
+    const recheck = await resolveVerifiedMemberAccess({
+      ...fast,
+      force: true,
+      ensureContext: (res) => ensureLegacyPaidThroughContext(res, { fetchAccessDates }),
+    });
+    expect(fetchAccessDates).not.toHaveBeenCalled();
+    expect(recheck).toMatchObject({ status: "verified", viewer: "loggedInNoAccess" });
+  });
+
+  it("drops a cached complimentary member after the access-through day ends", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(BEFORE_MIDNIGHT);
+    const comp = payload(COMPLIMENTARY_PLAN, "mem_comp");
+    stubBrowser({ memberId: "mem_comp", getAppAndMember: async () => comp });
+    const ensureContext = vi.fn(async (res: unknown) =>
+      ensureLegacyPaidThroughContext(res, {
+        fetchAccessDates: async () => ({
+          legacyPaidThroughYmd: null,
+          complimentaryThroughYmd: LAST_DAY,
+        }),
+      }),
+    );
+    await resolveVerifiedMemberAccess({ ...fast, ensureContext });
+    expect(readFreshVerifiedMemberAccess()).toMatchObject({ accessThroughYmd: LAST_DAY });
+
+    vi.setSystemTime(AFTER_MIDNIGHT);
+    expect(readFreshVerifiedMemberAccess()).toBeNull();
+  });
+
+  it("keeps the later date when complimentary and legacy both grant", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(BEFORE_MIDNIGHT);
+    const comp = payload(COMPLIMENTARY_PLAN, "mem_both");
+    stubBrowser({ memberId: "mem_both", getAppAndMember: async () => comp });
+    await resolveVerifiedMemberAccess({
+      ...fast,
+      ensureContext: (res) =>
+        ensureLegacyPaidThroughContext(res, {
+          fetchAccessDates: async () => ({
+            legacyPaidThroughYmd: "2026-12-31",
+            complimentaryThroughYmd: LAST_DAY,
+          }),
+        }),
+    });
+    vi.setSystemTime(AFTER_MIDNIGHT);
+    expect(readFreshVerifiedMemberAccess()).toMatchObject({
+      viewer: "memberAccess",
+      accessThroughYmd: "2026-12-31",
+    });
+  });
+
+  it("does not date-bound a paid member", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(BEFORE_MIDNIGHT);
+    stubBrowser({ memberId: "mem_paid", getAppAndMember: async () => payload(PAID, "mem_paid") });
+    await resolveVerifiedMemberAccess(fast);
+    vi.setSystemTime(AFTER_MIDNIGHT);
+    expect(readFreshVerifiedMemberAccess()).toMatchObject({
+      viewer: "memberAccess",
+      accessThroughYmd: null,
+    });
+  });
+});
