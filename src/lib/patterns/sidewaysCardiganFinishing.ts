@@ -117,6 +117,7 @@ export function sidewaysCardiganFoldVideoLinkHtml(
     ` data-video-title="${escapeHtml(video.title)}"` +
     ` data-content-id="${SIDEWAYS_CARDIGAN_FOLD_VIDEO_CONTENT_ID}"` +
     ` data-video-autoplay="false"` +
+    ` data-vimeo-defer` +
     ` data-sideways-band-fold-video` +
     ` aria-haspopup="dialog">` +
     `${escapeHtml(SIDEWAYS_CARDIGAN_FOLD_VIDEO_WATCH_LABEL)}</button>`
@@ -139,6 +140,7 @@ export function sidewaysPulloverGraftVideoLinkHtml(
     ` data-video-title="${escapeHtml(video.title)}"` +
     ` data-content-id="${SIDEWAYS_PULLOVER_GRAFT_VIDEO_CONTENT_ID}"` +
     ` data-video-autoplay="false"` +
+    ` data-vimeo-defer` +
     ` data-sideways-pullover-graft-video` +
     ` aria-haspopup="dialog">` +
     `${escapeHtml(SIDEWAYS_PULLOVER_GRAFT_VIDEO_WATCH_LABEL)}</button>`
@@ -168,6 +170,7 @@ export function sidewaysPulloverShoulderSeamVideoLinkHtml(
       ` data-video-title="${escapeHtml(video.title)}"` +
       ` data-content-id="${contentId}"` +
       ` data-video-autoplay="false"` +
+      ` data-vimeo-defer` +
       ` data-sideways-pullover-shoulder-seam-video` +
       ` aria-haspopup="dialog">` +
       `${escapeHtml(SIDEWAYS_PULLOVER_SHOULDER_SEAM_VIDEO_WATCH_LABEL)}</button>`

@@ -59,6 +59,7 @@ const SLEEVE_INPUT: SidewaysCardiganSleeveCalcInput = {
 /** Headings the body and sleeve render that are not pattern-level jumps. */
 const UNLINKED_VISIBLE_HEADINGS = [
   "BEFORE YOU BEGIN",
+  "OPTIONAL TECHNIQUES",
   "CAST ON",
   "FIRST FRONT SHOULDER",
   "FIRST BACK SHOULDER",

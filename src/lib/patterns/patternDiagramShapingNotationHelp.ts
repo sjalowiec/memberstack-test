@@ -33,6 +33,7 @@ export function buildPatternDiagramShapingNotationHelpHtml(): string {
     `<p class="${PATTERN_DIAGRAM_SHAPING_NOTATION_HELP_CLASS} no-print" data-pattern-diagram-shaping-help>` +
     `<button type="button" class="kbm-btn kbm-btn-outline kbm-kin-catalog-video ${PATTERN_DIAGRAM_SHAPING_NOTATION_HELP_BTN_CLASS}"` +
     ` data-vimeo-id="${vimeoId}"` +
+    ` data-vimeo-defer` +
     ` data-video-title="${label}"` +
     ` data-testid="pattern-diagram-shaping-notation-help"` +
     ` aria-haspopup="dialog">` +

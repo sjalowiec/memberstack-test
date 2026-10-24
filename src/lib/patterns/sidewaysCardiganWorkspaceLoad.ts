@@ -265,6 +265,7 @@ export function loadSidewaysCardiganWorkspaceView(
       body.instructions,
       inspected.input.stitchesPerInch,
       sidewaysCardiganChartAudienceFromPattern(pattern),
+      section(pattern.style).neckline,
     ),
     ...sleeve,
   };
