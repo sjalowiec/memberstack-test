@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { applyFormerMemberReadOnlyException, decidePatternMembershipGate } from "./patternMembershipPageGate";
-import { LOGGED_OUT_SLEEVELESS_ACCESS, type SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
+import { COMPLIMENTARY_MEMBER_PLAN_IDS, MEMBERSHIPS } from "../../config/memberships";
+import {
+  applyFormerMemberReadOnlyException,
+  decidePatternMembershipGate,
+  nextPatternMembershipGateState,
+} from "./patternMembershipPageGate";
+import {
+  computeHasSystemAccessFlag,
+  hasPatternSystemAccess,
+  LOGGED_OUT_SLEEVELESS_ACCESS,
+  type SleevelessUserAccess,
+} from "./sleevelessPatternSystemAccess";
 
 const nosub: SleevelessUserAccess = {
   loggedIn: true,
@@ -98,5 +108,98 @@ describe("decidePatternMembershipGate", () => {
       loadOwnedProject: async () => ({ ok: true }),
     });
     expect(summary.state).toBe("locked-no-access");
+  });
+});
+
+describe("nextPatternMembershipGateState", () => {
+  it("shows Retry (not a sales prompt) when verification fails from pending", () => {
+    expect(nextPatternMembershipGateState("pending", "error", false)).toBe("error");
+  });
+
+  it("keeps a member view from a fresh verified cache through a transient failure", () => {
+    expect(nextPatternMembershipGateState("member", "error", true)).toBe("member");
+  });
+
+  it("does not keep a member view once the cached verification is stale", () => {
+    expect(nextPatternMembershipGateState("member", "error", false)).toBe("error");
+  });
+
+  it("applies confirmed results over an optimistic member view", () => {
+    expect(nextPatternMembershipGateState("member", "locked", true)).toBe("locked");
+    expect(nextPatternMembershipGateState("member", "locked-no-access", true)).toBe(
+      "locked-no-access",
+    );
+    expect(nextPatternMembershipGateState("member", "readonly", true)).toBe("readonly");
+  });
+});
+
+describe("complimentary access-through date in the pattern builders", () => {
+  const COMPLIMENTARY = COMPLIMENTARY_MEMBER_PLAN_IDS[0];
+  const PAID = MEMBERSHIPS.membership.memberstackPlanId;
+  const EXPIRED = "2020-01-01";
+  const VALID = "2099-12-31";
+
+  /** Builds the snapshot the client resolver produces (flag computed from the same rule). */
+  function access(
+    fields: Omit<SleevelessUserAccess, "loggedIn" | "hasSystemAccess" | "freeClaimsBySystem">,
+  ): SleevelessUserAccess {
+    const base = { loggedIn: true, freeClaimsBySystem: {}, ...fields };
+    return { ...base, hasSystemAccess: computeHasSystemAccessFlag(base) };
+  }
+
+  it("locks the builder when the saved complimentary date has expired and nothing else grants", () => {
+    const expired = access({
+      memberId: "ms_comp_expired",
+      activePlanIds: [COMPLIMENTARY],
+      legacyPaidThroughYmd: null,
+      complimentaryThroughYmd: EXPIRED,
+    });
+    expect(expired.hasSystemAccess).toBe(false);
+    expect(hasPatternSystemAccess(expired, "sleeveless")).toBe(false);
+    expect(hasPatternSystemAccess(expired, "drop-shoulder")).toBe(false);
+    expect(decidePatternMembershipGate(expired, "loggedInNoAccess").state).toBe(
+      "locked-no-access",
+    );
+  });
+
+  it("keeps an open complimentary plan (no saved date, or date not loaded) unlocked", () => {
+    const noDate = access({
+      memberId: "ms_comp_open",
+      activePlanIds: [COMPLIMENTARY],
+      complimentaryThroughYmd: null,
+    });
+    const notLoaded = access({ memberId: "ms_comp_unknown", activePlanIds: [COMPLIMENTARY] });
+    expect(hasPatternSystemAccess(noDate, "sleeveless")).toBe(true);
+    expect(hasPatternSystemAccess(notLoaded, "sleeveless")).toBe(true);
+  });
+
+  it("allows a complimentary date that has not yet passed", () => {
+    const valid = access({
+      memberId: "ms_comp_valid",
+      activePlanIds: [COMPLIMENTARY],
+      complimentaryThroughYmd: VALID,
+    });
+    expect(hasPatternSystemAccess(valid, "sleeveless")).toBe(true);
+  });
+
+  it("still allows an active paid plan alongside an expired complimentary date", () => {
+    const paid = access({
+      memberId: "ms_paid_comp_expired",
+      activePlanIds: [PAID, COMPLIMENTARY],
+      complimentaryThroughYmd: EXPIRED,
+    });
+    expect(hasPatternSystemAccess(paid, "sleeveless")).toBe(true);
+    expect(decidePatternMembershipGate(paid, "memberAccess").state).toBe("member");
+  });
+
+  it("still allows a valid legacy paid-through date alongside an expired complimentary date", () => {
+    const legacy = access({
+      memberId: "ms_legacy_comp_expired",
+      activePlanIds: [COMPLIMENTARY],
+      legacyPaidThroughYmd: VALID,
+      complimentaryThroughYmd: EXPIRED,
+    });
+    expect(hasPatternSystemAccess(legacy, "sleeveless")).toBe(true);
+    expect(decidePatternMembershipGate(legacy, "memberAccess").state).toBe("member");
   });
 });

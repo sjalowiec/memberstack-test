@@ -6,6 +6,8 @@
  * Auth: requireMember (Bearer JWT). Combines Admin plan connections with Watson
  * paid-through for logged-in members without an active paid plan. Paid members
  * skip Watson. The free Memberstack legacy plan is not required.
+ * A failed Watson lookup sets `legacyLookupFailed` (unconfirmed), never a
+ * plain "no access" answer.
  */
 import { requireMember } from "./lib/member-auth.js";
 import { jsonResponse, withCors } from "./lib/custom-pattern-projects-store.js";
@@ -65,18 +67,15 @@ export default async (req: Request): Promise<Response> => {
         viewerAccessState: evaluated.viewerAccessState,
         legacyPaidThroughYmd: evaluated.legacyPaidThroughYmd,
         complimentaryThroughYmd: evaluated.complimentaryThroughYmd,
+        // Watson was unreachable for the paid-through date: membership is
+        // unconfirmed (not "no membership"). The browser offers Try again.
+        legacyLookupFailed: evaluated.legacyLookupFailed,
       }),
     );
   } catch (err) {
     console.error("member-access failed:", err);
     return withCors(
-      jsonResponse({
-        ok: true,
-        hasMemberAccess: false,
-        viewerAccessState: "loggedInNoAccess",
-        legacyPaidThroughYmd: null,
-        complimentaryThroughYmd: null,
-      }),
+      jsonResponse({ ok: false, error: "Membership access is unavailable right now." }, 503),
     );
   }
 };

@@ -181,6 +181,16 @@ describe("evaluateMemberAccessForRecord", () => {
     });
     expect(result.hasMemberAccess).toBe(false);
     expect(result.legacyPaidThroughYmd).toBe(null);
+    expect(result.legacyLookupFailed).toBe(true);
+  });
+
+  it("does not flag a successful lookup that finds no record", async () => {
+    const result = await evaluateMemberAccessForRecord(record(LEGACY_FREE), {
+      loadPaidThroughYmd: async () => null,
+      todayYmd: TODAY,
+    });
+    expect(result.hasMemberAccess).toBe(false);
+    expect(result.legacyLookupFailed).toBe(false);
   });
 
   it("fails closed on Watson lookup failure even without the free legacy plan", async () => {

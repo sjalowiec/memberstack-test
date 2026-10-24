@@ -59,3 +59,27 @@ describe("denied video membership actions", () => {
     );
   });
 });
+
+describe("member video loading state", () => {
+  const embed = readFileSync(
+    join(process.cwd(), "src", "components", "videos", "GatedVimeoEmbed.astro"),
+    "utf8",
+  );
+  const client = readFileSync(
+    join(process.cwd(), "src", "scripts", "gatedVimeoEmbedClient.ts"),
+    "utf8",
+  );
+
+  it("renders a neutral checking placeholder, with the denied panel only in noscript", () => {
+    expect(embed).toContain('class="kbm-video__checking"');
+    expect(embed).toMatch(/<noscript><Fragment set:html=\{deniedPanelHtml\} \/><\/noscript>/);
+    const outsideNoscript = embed.replace(/<noscript>[\s\S]*?<\/noscript>/g, "");
+    expect(outsideNoscript).not.toContain("set:html={deniedPanelHtml}");
+  });
+
+  it("uses the shared verification and shows Retry on failures", () => {
+    expect(client).toContain("resolveVerifiedMemberAccess");
+    expect(client).toContain("showVerificationError");
+    expect(client).not.toContain("ensureLegacyPaidThroughContext");
+  });
+});

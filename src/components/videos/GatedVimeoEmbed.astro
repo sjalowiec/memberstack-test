@@ -91,7 +91,15 @@ const deniedPanelHtml = delivery.renderIframe
           allowfullscreen
         />
       ) : (
-        <Fragment set:html={deniedPanelHtml} />
+        <>
+          {/* Neutral placeholder while membership is checked. The denied panel is
+              rendered by the client only after a verified non-member result, so
+              members never see a sales/login flash. */}
+          <div class="kbm-video__checking" role="status">
+            <span>Checking membership…</span>
+          </div>
+          <noscript><Fragment set:html={deniedPanelHtml} /></noscript>
+        </>
       )}
     </div>
   </div>
@@ -106,6 +114,19 @@ const deniedPanelHtml = delivery.renderIframe
 
 
 <style>
+  :global(.kbm-video__checking) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    text-align: center;
+    color: #4d5a48;
+    font-size: 0.95rem;
+  }
   .kbm-video__frame [data-state="loading"] {
     position: absolute;
     inset: 0;

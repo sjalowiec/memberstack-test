@@ -4,12 +4,19 @@
  * Starts pending so the wrong primary action never flashes while Memberstack loads.
  * Visitors and logged-in non-members see membership CTAs.
  * Active members see the pattern-specific builder CTA.
+ * A failed verification shows Try again, never the membership sales CTA.
+ * A member verified within the freshness window sees the member CTA at once.
  * Socks sends only former members who still own saved Socks to My Patterns.
  */
-import { hasMemberAccess } from "../memberAccess";
-import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
+import { hasMemberAccess, type ViewerAccessState } from "../memberAccess";
+import {
+  invalidateVerifiedMemberAccess,
+  readFreshVerifiedMemberAccess,
+  resolveVerifiedMemberAccess,
+  type VerifiedMemberAccess,
+} from "../memberAccessClient";
 import { resolveSavedPatternAccessStateFromSession } from "./savedPatternAccessStateClient";
-import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
+import { waitForMemberstackDom } from "./sleevelessPatternLoginGate";
 import {
   resolveSocksLandingAction,
   SOCKS_SAVED_PATTERN_LANDING_ATTR,
@@ -19,14 +26,28 @@ import {
   resolveChristmasStockingLandingAction,
 } from "./christmasStockingPatternLandingAccess";
 
-export type PatternBuilderLandingCtaMode = "pending" | "member" | "prospect";
+export type PatternBuilderLandingCtaMode = "pending" | "member" | "prospect" | "error";
 
 export const PATTERN_BUILDER_LANDING_CTA_ROOT = "[data-pattern-builder-landing]";
 
 export function resolvePatternBuilderLandingCtaMode(
   memberOrPayload: unknown,
-): Exclude<PatternBuilderLandingCtaMode, "pending"> {
+): Exclude<PatternBuilderLandingCtaMode, "pending" | "error"> {
   return hasMemberAccess(memberOrPayload) ? "member" : "prospect";
+}
+
+/** CTA mode from the shared verification result. Errors are not prospects. */
+export function landingCtaModeForVerifiedAccess(
+  result: VerifiedMemberAccess,
+): Exclude<PatternBuilderLandingCtaMode, "pending"> {
+  if (result.status === "error") return "error";
+  return landingCtaModeForViewer(result.viewer);
+}
+
+export function landingCtaModeForViewer(
+  viewer: ViewerAccessState,
+): Exclude<PatternBuilderLandingCtaMode, "pending" | "error"> {
+  return viewer === "memberAccess" ? "member" : "prospect";
 }
 
 export function applyPatternBuilderLandingCtaMode(
@@ -46,6 +67,9 @@ export function applyPatternBuilderLandingCtaMode(
   });
   root.querySelectorAll<HTMLElement>("[data-pattern-builder-landing-membership]").forEach((el) => {
     el.hidden = mode !== "prospect";
+  });
+  root.querySelectorAll<HTMLElement>("[data-pattern-builder-landing-cta-error]").forEach((el) => {
+    el.hidden = mode !== "error";
   });
 }
 
@@ -113,32 +137,47 @@ export async function initPatternBuilderLandingCta(root: HTMLElement): Promise<v
     return;
   }
 
-  await waitForMemberstackDom();
-  const ms = window.$memberstackDom;
-  if (!ms?.getCurrentMember) {
-    applyPatternBuilderLandingCtaMode(root, "prospect");
-    return;
+  if (readFreshVerifiedMemberAccess()?.viewer === "memberAccess") {
+    applyPatternBuilderLandingCtaMode(root, "member");
   }
 
-  const refresh = async (): Promise<void> => {
-    try {
-      await waitForMemberstackReady(ms);
-      const res = await ms.getCurrentMember();
-      await ensureLegacyPaidThroughContext(res);
-      applyPatternBuilderLandingCtaMode(root, resolvePatternBuilderLandingCtaMode(res));
-    } catch {
-      applyPatternBuilderLandingCtaMode(root, "prospect");
+  let generation = 0;
+  const refresh = async (force: boolean): Promise<void> => {
+    const mine = ++generation;
+    const result = await resolveVerifiedMemberAccess({ force });
+    if (mine !== generation) return;
+    const mode = landingCtaModeForVerifiedAccess(result);
+    // Keep a fresh verified member CTA through a transient failure; the
+    // builder itself re-verifies and the server authorizes saves.
+    if (
+      mode === "error" &&
+      root.dataset.ctaMode === "member" &&
+      readFreshVerifiedMemberAccess()?.viewer === "memberAccess"
+    ) {
+      return;
     }
+    applyPatternBuilderLandingCtaMode(root, mode);
   };
 
-  await refresh();
+  root.querySelectorAll<HTMLElement>("[data-pattern-builder-landing-cta-retry]").forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      applyPatternBuilderLandingCtaMode(root, "pending");
+      void refresh(true);
+    });
+  });
 
-  if (typeof ms.on === "function") {
-    ms.on("member.login", () => {
-      void refresh();
-    });
-    ms.on("member.logout", () => {
-      applyPatternBuilderLandingCtaMode(root, "prospect");
-    });
+  await refresh(false);
+
+  await waitForMemberstackDom();
+  const ms = window.$memberstackDom;
+  if (ms && typeof ms.on === "function") {
+    const onAuthChange = (): void => {
+      invalidateVerifiedMemberAccess();
+      applyPatternBuilderLandingCtaMode(root, "pending");
+      void refresh(true);
+    };
+    ms.on("member.login", onAuthChange);
+    ms.on("member.logout", onAuthChange);
   }
 }

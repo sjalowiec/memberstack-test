@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
-import { getActivePlanIds } from "../memberAccess";
+import { COMPLIMENTARY_MEMBER_PLAN_IDS } from "../../config/memberships";
+import {
+  clearRememberedComplimentaryThroughForAccess,
+  clearRememberedLegacyPaidThroughForAccess,
+  getActivePlanIds,
+} from "../memberAccess";
 
 vi.mock("../devBypass", () => ({ devBypass: false }));
 vi.mock("./sleevelessPatternLoginGate", () => ({
@@ -32,8 +37,25 @@ type MsMock = {
   onReady?: Promise<unknown>;
 };
 
+/** Watson lookup via /member-access: confirmed "no legacy date" unless overridden. */
+function stubMemberAccessApi(response: { ok: boolean; body?: unknown } = {
+  ok: true,
+  body: { ok: true, legacyPaidThroughYmd: null, complimentaryThroughYmd: null },
+}): ReturnType<typeof vi.fn> {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: response.ok,
+    json: async () => response.body ?? { ok: false },
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
 function stubMemberstack(ms: Partial<MsMock>): void {
-  vi.stubGlobal("window", { ...globalThis.window, $memberstackDom: ms });
+  vi.stubGlobal("window", {
+    ...globalThis.window,
+    $memberstackDom: { getMemberCookie: () => "test-jwt", ...ms },
+  });
+  stubMemberAccessApi();
 }
 
 beforeEach(() => {
@@ -254,6 +276,23 @@ describe("resolveSleevelessUserAccess", () => {
   });
 });
 
+describe("resolveSleevelessUserAccess when membership cannot be confirmed", () => {
+  it("keeps the member logged in without access and does not cache the result", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_unconfirmed", planConnections: [] } }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+    stubMemberAccessApi({ ok: false });
+
+    await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
+      loggedIn: true,
+      memberId: "ms_unconfirmed",
+      hasSystemAccess: false,
+    });
+    expect(getCachedSleevelessUserAccess()).toBeNull();
+  });
+});
+
 describe("markFreeSleevelessPatternClaimed", () => {
   it("writes a merged claim to member JSON and updates the cache", async () => {
     const updateMemberJSON = vi.fn().mockResolvedValue({ data: { json: {} } });
@@ -344,5 +383,39 @@ describe("resetFreeSleevelessPatternClaimForCurrentMember", () => {
       ok: false,
       reason: "no-member-id",
     });
+  });
+});
+
+describe("resolveSleevelessUserAccess with an expired complimentary date", () => {
+  afterEach(() => {
+    clearRememberedComplimentaryThroughForAccess();
+    clearRememberedLegacyPaidThroughForAccess();
+  });
+
+  it("does not grant builder access when Watson reports an expired complimentary date", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({
+        data: {
+          id: "ms_comp_expired",
+          planConnections: [
+            { planId: COMPLIMENTARY_MEMBER_PLAN_IDS[0], status: "ACTIVE", active: true },
+          ],
+        },
+      }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+    stubMemberAccessApi({
+      ok: true,
+      body: { ok: true, legacyPaidThroughYmd: null, complimentaryThroughYmd: "2020-01-01" },
+    });
+
+    const resolved = await resolveSleevelessUserAccess();
+    expect(resolved).toMatchObject({
+      loggedIn: true,
+      memberId: "ms_comp_expired",
+      complimentaryThroughYmd: "2020-01-01",
+      hasSystemAccess: false,
+    });
+    expect(canCreatePatternForSystem(resolved, "sleeveless")).toBe(false);
   });
 });

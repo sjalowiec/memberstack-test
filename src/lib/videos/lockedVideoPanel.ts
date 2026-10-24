@@ -43,3 +43,16 @@ export function lockedVideoPanelHtml(options: {
   const lockedClass = thumbUrl ? "kbm-video__locked kbm-video__locked--thumb" : "kbm-video__locked";
   return `<div class="${lockedClass}">${thumb}<div class="kbm-video__overlay"><div class="kbm-video__lockline"><strong>Members only</strong></div><p class="kbm-video__msg">This video is available with membership.</p><div class="kbm-video__actions">${membershipCta}${loginBtn}</div></div></div>`;
 }
+
+/**
+ * Shown when membership (or the authorized embed) could not be verified.
+ * Never a sales or login prompt: a network failure is not a non-member result.
+ */
+export function videoAccessErrorPanelHtml(options: { thumbUrl?: string | null } = {}): string {
+  const thumbUrl = permittedCatalogThumbnailUrl(options.thumbUrl);
+  const thumb = thumbUrl
+    ? `<img class="kbm-video__thumb" src="${escapeHtml(thumbUrl)}" alt="" />`
+    : "";
+  const lockedClass = thumbUrl ? "kbm-video__locked kbm-video__locked--thumb" : "kbm-video__locked";
+  return `<div class="${lockedClass}" role="alert">${thumb}<div class="kbm-video__overlay"><div class="kbm-video__lockline"><strong>We couldn't load this video</strong></div><p class="kbm-video__msg">We couldn't confirm your membership just now. Please try again.</p><div class="kbm-video__actions"><button type="button" class="kbm-video__cta" data-kbm-video-retry>Try again</button></div></div></div>`;
+}
