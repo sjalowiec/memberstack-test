@@ -705,6 +705,8 @@ const purchaseCopy =
 </style>
 
 <script>
+  import { openGlossaryTermModal } from "../lib/glossary/glossaryTermModalClient";
+  import { courseGlossaryClick } from "../lib/kinCourse/glossaryModalClick";
   import { parseLegacyGlossaryHref } from "../lib/kinCourse/legacyGlossaryHrefs";
 
   function hrefExtension(href: string): string {
@@ -742,15 +744,24 @@ const purchaseCopy =
     helpinfo: string;
   };
 
-  const glossaryCatalog: GlossaryEntry[] = (() => {
+  function readCourseGlossaryCatalog(): GlossaryEntry[] {
     const node = document.getElementById('course-111-glossary-data');
     if (!node?.textContent) return [];
     try {
-      return JSON.parse(node.textContent) as GlossaryEntry[];
+      const parsed = JSON.parse(node.textContent) as GlossaryEntry[];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
-  })();
+  }
+
+  let glossaryCatalog: GlossaryEntry[] = readCourseGlossaryCatalog();
+
+  function currentGlossaryCatalog(): GlossaryEntry[] {
+    const fresh = readCourseGlossaryCatalog();
+    if (fresh.length) glossaryCatalog = fresh;
+    return glossaryCatalog;
+  }
 
   const lightbox = document.getElementById('legacy-vimeo-lightbox');
   const player = document.getElementById('legacy-vimeo-lightbox-player');
@@ -878,12 +889,22 @@ const purchaseCopy =
     }
 
     const glossaryLink = target.closest<HTMLAnchorElement>('a');
-    if (glossaryLink && glossaryLink.closest('.legacy-content')) {
+    if (
+      glossaryLink &&
+      glossaryLink.closest('.legacy-content, .legacy-html, [data-gated="content"]')
+    ) {
       const glossaryId = glossaryIdFromLink(glossaryLink);
-      if (glossaryId && glossaryCatalog.some((item) => item.glossaryId === glossaryId)) {
+      const action = courseGlossaryClick(glossaryId, currentGlossaryCatalog());
+      if (action.type === "course") {
         event.preventDefault();
         event.stopPropagation();
-        openLegacyGlossary(glossaryId, glossaryLink);
+        openLegacyGlossary(action.glossaryId, glossaryLink);
+        return;
+      }
+      if (action.type === "site") {
+        event.preventDefault();
+        event.stopPropagation();
+        openGlossaryTermModal(action.slug, glossaryLink);
         return;
       }
     }
