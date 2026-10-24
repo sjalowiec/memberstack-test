@@ -626,10 +626,12 @@ describe("sideways pullover BODY display adapter", () => {
       expect(displayText).not.toMatch(
         /Knit \d+ rows over the \d+ working stitches before the first return-to-work action\./,
       );
-      expect(secondV?.trustedParagraphs?.[1]).toBe(
+      expect(secondV?.trustedParagraphs?.[0]).toContain('data-content-id="5003"');
+      expect(secondV?.trustedParagraphs?.[1]).toContain("closed cast-on");
+      expect(secondV?.trustedParagraphs?.[2]).toBe(
         `Begin with ${model.startingFrontStitches} stitches working and ${model.calc.vNeckDepthStitches} stitches held.`,
       );
-      expect(secondV?.trustedParagraphs?.[2]).toMatch(/^Work a .+ over \d+ rows:$/);
+      expect(secondV?.trustedParagraphs?.[3]).toMatch(/^Work a .+ over \d+ rows:$/);
       expect(secondV?.stitchCount).toBe(model.startingFrontStitches);
       expect(secondV?.bodyShapingChartRows?.map((row) => row.rc)).toEqual(
         model.secondV.actionRowCounters,
