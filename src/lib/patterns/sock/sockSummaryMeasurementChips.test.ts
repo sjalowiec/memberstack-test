@@ -209,7 +209,7 @@ describe("Socks Summary/Edit measurement chips", () => {
     expect(patternScript).toContain("buildSockShapingNotationDiagramSvg");
     expect(patternScript).toContain('mode: "pattern"');
     expect(patternPage).not.toContain("socks-pattern-summary.webp");
-    expect(patternPage).toContain('src="/images/patterns/socks-v2.png"');
+    expect(patternPage).toContain('thumbnailSrc="/images/patterns/socks-v2.png"');
   });
 
   it("does not alter Sweater or Hat chip wiring", () => {

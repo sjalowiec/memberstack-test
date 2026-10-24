@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONSTRUCTION_AUTHORED_KEY,
   DROP_SHOULDER_CONSTRUCTION,
+  patternSystemDisplayName,
   resolvePatternSystemFromProject,
 } from "./pattern-system-id.js";
 import {
