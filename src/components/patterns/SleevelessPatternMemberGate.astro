@@ -6,6 +6,7 @@
  *
  * Logged-out: Become a Member + Log In
  * Logged-in without access: Become a Member + View Membership
+ * Verification failed (network): Try again — never a sales prompt
  * Former member read-only: completed pattern + quiet renew notice
  */
 ---
@@ -84,6 +85,27 @@
         This saved pattern could not be opened. It may have been deleted, or it does not belong to
         this account.
       </p>
+    </div>
+    <div
+      class="sleeveless-pattern-gate__signin"
+      data-sleeveless-pattern-gate-error
+      role="alert"
+      hidden
+    >
+      <h2 class="sleeveless-pattern-gate__title">We couldn't confirm your membership</h2>
+      <p class="sleeveless-pattern-gate__lead">
+        This is usually a temporary connection problem. Please try again. If it keeps happening,
+        contact us and we'll help.
+      </p>
+      <div class="sleeveless-pattern-gate__actions">
+        <button
+          type="button"
+          class="kbm-btn kbm-btn-primary"
+          data-sleeveless-pattern-gate-retry
+        >
+          Try again
+        </button>
+      </div>
     </div>
   </section>
 

@@ -5,7 +5,10 @@
  * `updateMemberJSON`) — account-tied, not localStorage.
  */
 import { getActivePlanIds, hasMemberAccess, rememberedLegacyPaidThroughYmdForMember } from "../memberAccess";
-import { ensureLegacyPaidThroughContext } from "../memberAccessClient";
+import {
+  invalidateVerifiedMemberAccess,
+  resolveVerifiedMemberAccess,
+} from "../memberAccessClient";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { isSharedMemberstackPayloadResolved } from "../sharedMemberAccessPublish";
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
@@ -138,11 +141,22 @@ export async function readSettledMemberstackPayload(
 }
 
 async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessUserAccess | null> {
-  const memberPayload = await readSettledMemberstackPayload(ms);
+  // Shared verification: the same settled app-and-member read as
+  // readSettledMemberstackPayload, plus Watson dates once per page and a
+  // distinct error result when membership cannot be confirmed.
+  const verified = await resolveVerifiedMemberAccess();
+  let memberPayload: unknown;
+  if (verified.status === "verified") {
+    memberPayload = verified.payload;
+  } else {
+    // Unconfirmed: keep the logged-in identity but no access (fail closed), and
+    // do not cache it so the next read retries.
+    lastResolveUnverified = true;
+    if (verified.payload === undefined) return null;
+    memberPayload = verified.payload;
+  }
   const memberId = memberIdFromMemberstackPayload(memberPayload);
   if (!memberId) return null;
-
-  await ensureLegacyPaidThroughContext(memberPayload);
 
   const activePlanIds = getActivePlanIds(memberPayload);
   const memberJson = await readMemberJson(ms);
@@ -178,8 +192,12 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
   };
 }
 
+/** Set when membership could not be verified; that snapshot is not cached. */
+let lastResolveUnverified = false;
+
 async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
   if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
+  lastResolveUnverified = false;
 
   // Wait for Memberstack before resolving so a real session is not mis-read as logged-out.
   await waitForMemberstackDom();
@@ -209,9 +227,13 @@ export function resolveSleevelessUserAccess(): Promise<SleevelessUserAccess> {
   if (typeof window === "undefined") return resolveAccessUncached();
   if (!window.__KBM_SLEEVELESS_ACCESS_PROMISE__) {
     const pending = resolveAccessUncached().then((access) => {
-      if (window.__KBM_SLEEVELESS_ACCESS_PROMISE__ === pending) {
-        window.__KBM_SLEEVELESS_ACCESS__ = access;
+      if (window.__KBM_SLEEVELESS_ACCESS_PROMISE__ !== pending) return access;
+      if (lastResolveUnverified) {
+        // Verification failed (not a confirmed result): let the next caller retry.
+        window.__KBM_SLEEVELESS_ACCESS_PROMISE__ = undefined;
+        return access;
       }
+      window.__KBM_SLEEVELESS_ACCESS__ = access;
       return access;
     });
     window.__KBM_SLEEVELESS_ACCESS_PROMISE__ = pending;
@@ -227,6 +249,7 @@ function wireMemberstackAccessCacheInvalidation(): void {
   memberstackAccessInvalidationWired = true;
 
   const rebind = (): void => {
+    invalidateVerifiedMemberAccess();
     invalidateSleevelessUserAccessCache();
     logPatternEditGateDebug("access-cache.invalidated", {
       extra: { reason: "memberstack-auth-change" },

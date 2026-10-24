@@ -17,7 +17,13 @@ async function waitForMemberstackDom(maxAttempts = 35, intervalMs = 200) {
   for (let i = 0; i < maxAttempts; i++) {
     const ms = window.$memberstackDom;
     if (ms?.getCurrentMember) {
-      if (ms.onReady) await ms.onReady;
+      // Bounded: an onReady that never settles must not hang membership checks.
+      if (ms.onReady) {
+        await Promise.race([
+          Promise.resolve(ms.onReady).catch(() => undefined),
+          new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+        ]);
+      }
       return ms;
     }
     await new Promise((resolve) => setTimeout(resolve, intervalMs));

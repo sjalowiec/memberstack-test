@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { applyFormerMemberReadOnlyException, decidePatternMembershipGate } from "./patternMembershipPageGate";
+import {
+  applyFormerMemberReadOnlyException,
+  decidePatternMembershipGate,
+  nextPatternMembershipGateState,
+} from "./patternMembershipPageGate";
 import { LOGGED_OUT_SLEEVELESS_ACCESS, type SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 const nosub: SleevelessUserAccess = {
@@ -98,5 +102,27 @@ describe("decidePatternMembershipGate", () => {
       loadOwnedProject: async () => ({ ok: true }),
     });
     expect(summary.state).toBe("locked-no-access");
+  });
+});
+
+describe("nextPatternMembershipGateState", () => {
+  it("shows Retry (not a sales prompt) when verification fails from pending", () => {
+    expect(nextPatternMembershipGateState("pending", "error", false)).toBe("error");
+  });
+
+  it("keeps a member view from a fresh verified cache through a transient failure", () => {
+    expect(nextPatternMembershipGateState("member", "error", true)).toBe("member");
+  });
+
+  it("does not keep a member view once the cached verification is stale", () => {
+    expect(nextPatternMembershipGateState("member", "error", false)).toBe("error");
+  });
+
+  it("applies confirmed results over an optimistic member view", () => {
+    expect(nextPatternMembershipGateState("member", "locked", true)).toBe("locked");
+    expect(nextPatternMembershipGateState("member", "locked-no-access", true)).toBe(
+      "locked-no-access",
+    );
+    expect(nextPatternMembershipGateState("member", "readonly", true)).toBe("readonly");
   });
 });
