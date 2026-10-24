@@ -36,21 +36,42 @@ export const SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID = "1222662401";
 export const SOCK_CUFF_CAST_ON_VIDEO_TITLE = "Cuff Cast On Options";
 export const SOCK_CUFF_CAST_ON_VIDEO_TIP_ID = "socks-cuff-cast-on-video";
 
-/** Toe-Up overview / technique video (Scrap On — start of knitting from the toe). */
-export const SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID = "1222865852";
-export const SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE = "Knitting Toe-Up Socks";
+/**
+ * Toe-Up “toe-to-cuff” clip at Scrap On.
+ * Replaces the earlier 48-second “toe to cuff - toe” clip (1222865852).
+ * Vimeo title is “toe-to-cuff”. Not a Learning Library row — same direct embed as the other construction clips.
+ */
+export const SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID = "1222682761";
+export const SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE = "Toe to Cuff";
 export const SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID = "socks-toe-up-overview-video";
 
 /**
  * Complete Toe-Up walkthrough. Direct Vimeo embed on the Toe-Up pattern only.
- * Not Learning Library content 2088 — no catalog lookup or extra entitlement gate.
+ * Reuses Learning Library content 2088 (Vimeo 755126615) without a catalog lookup or extra entitlement gate.
  */
 export const SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID = "755126615";
 export const SOCK_TOE_UP_COMPLETE_VIDEO_TITLE = "Complete Toe-Up Sock";
+export const SOCK_TOE_UP_COMPLETE_VIDEO_DURATION = "5:30";
 export const SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID = "socks-toe-up-complete-video";
 export const SOCK_TOE_UP_COMPLETE_VIDEO_HEADING = "New to toe-up socks?";
 export const SOCK_TOE_UP_COMPLETE_VIDEO_COPY =
   "Watch the complete Toe-Up Sock video before you begin. It walks you through the entire process from start to finish.";
+
+/**
+ * Optional parts overview for both construction directions.
+ * Reuses Learning Library content 332 (“Anatomy of a Sock”, Vimeo 151857395). Direct embed — no second catalog row.
+ */
+export const SOCK_ANATOMY_VIDEO_VIMEO_ID = "151857395";
+export const SOCK_ANATOMY_VIDEO_TITLE = "Anatomy of a Sock";
+export const SOCK_ANATOMY_VIDEO_DURATION = "2:50";
+export const SOCK_ANATOMY_VIDEO_TIP_ID = "socks-anatomy-video";
+export const SOCK_ANATOMY_VIDEO_COPY =
+  "Optional help for understanding the parts of a sock before you begin.";
+
+/** Toe-Up Foot and Heel only. Vimeo title is “toe-up_foot_and_heel”. Not a catalog row. */
+export const SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID = "1222871920";
+export const SOCK_TOE_UP_FOOT_HEEL_VIDEO_TITLE = "Toe-Up Foot and Heel";
+export const SOCK_TOE_UP_FOOT_HEEL_VIDEO_TIP_ID = "socks-toe-up-foot-heel-video";
 
 /** Ankle section help video (both construction directions). */
 export const SOCK_ANKLE_VIDEO_VIMEO_ID = "1222664135";
@@ -332,6 +353,7 @@ function buildSockPatternVideoTipHtml(options: {
   explainerKey: string;
   privacyHash?: string;
   videoTitle?: string;
+  duration?: string;
   introHtml?: string;
 }): string {
   const inner = buildPatternQuickTipInnerHtml({
@@ -340,6 +362,7 @@ function buildSockPatternVideoTipHtml(options: {
       video: {
         vimeoId: options.vimeoId,
         title: options.videoTitle ?? options.title,
+        ...(options.duration ? { duration: options.duration } : {}),
         ...(options.privacyHash ? { privacyHash: options.privacyHash } : {}),
       },
       explainerKey: options.explainerKey,
@@ -391,8 +414,24 @@ function toeUpCompleteVideoCalloutHtml(): string {
       title: SOCK_TOE_UP_COMPLETE_VIDEO_HEADING,
       videoTitle: SOCK_TOE_UP_COMPLETE_VIDEO_TITLE,
       vimeoId: SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID,
+      duration: SOCK_TOE_UP_COMPLETE_VIDEO_DURATION,
       explainerKey: SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID,
       introHtml: `<p>${escapeHtml(SOCK_TOE_UP_COMPLETE_VIDEO_COPY)}</p>`,
+    }) +
+    `</div>`
+  );
+}
+
+function anatomyVideoCalloutHtml(): string {
+  return (
+    `<div data-socks-anatomy-video>` +
+    buildSockPatternVideoTipHtml({
+      tipId: SOCK_ANATOMY_VIDEO_TIP_ID,
+      title: SOCK_ANATOMY_VIDEO_TITLE,
+      vimeoId: SOCK_ANATOMY_VIDEO_VIMEO_ID,
+      duration: SOCK_ANATOMY_VIDEO_DURATION,
+      explainerKey: SOCK_ANATOMY_VIDEO_TIP_ID,
+      introHtml: `<p>${escapeHtml(SOCK_ANATOMY_VIDEO_COPY)}</p>`,
     }) +
     `</div>`
   );
@@ -457,6 +496,16 @@ function sectionTipsHtml(
         title: SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
         vimeoId: SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
         explainerKey: SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
+      }),
+    );
+  }
+  if (section.id === "foot" && !cuffToToe) {
+    tips.push(
+      buildSockPatternVideoTipHtml({
+        tipId: SOCK_TOE_UP_FOOT_HEEL_VIDEO_TIP_ID,
+        title: SOCK_TOE_UP_FOOT_HEEL_VIDEO_TITLE,
+        vimeoId: SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID,
+        explainerKey: SOCK_TOE_UP_FOOT_HEEL_VIDEO_TIP_ID,
       }),
     );
   }
@@ -672,7 +721,8 @@ export function renderBasicSockInstructionsHtml(doc: SockInstructionDocument): s
   const direction =
     doc.constructionDirection === "cuff-to-toe" ? "Cuff to Toe" : "Toe Up";
   const intro =
-    doc.constructionDirection === "toe-up" ? toeUpCompleteVideoCalloutHtml() : "";
+    anatomyVideoCalloutHtml() +
+    (doc.constructionDirection === "toe-up" ? toeUpCompleteVideoCalloutHtml() : "");
   const firstShortRowId = firstShortRowSectionId(doc);
   return `<div class="sock-instructions" data-sock="${doc.sock}" data-construction="${doc.constructionDirection}">
   <p class="sock-instructions__label">${escapeHtml(sockLabel)} — ${escapeHtml(direction)}</p>

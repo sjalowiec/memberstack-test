@@ -24,7 +24,6 @@ import {
   SOCK_TOE_UP_COMPLETE_VIDEO_HEADING,
   SOCK_TOE_UP_COMPLETE_VIDEO_TITLE,
   SOCK_TOE_UP_FINISH_CUFF,
-  SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
 } from "../sock/sockInstructionRender";
 import type { BasicSockCalc } from "../sock/sockMath";
 
@@ -228,7 +227,6 @@ export function renderChristmasStockingInstructionsHtml(calc: BasicSockCalc): st
     .replaceAll(SOCK_FIGURE_8_BIND_OFF_VIDEO_COPY, "The Figure 8 Bind Off is a stretchy option for the top edge.")
     .replaceAll(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING, "New to toe-up knitting?")
     .replaceAll(SOCK_TOE_UP_COMPLETE_VIDEO_TITLE, "Complete toe-up construction")
-    .replaceAll(SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE, "Knitting toe up")
     .replaceAll(
       SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
       "Watch the complete toe-up video before you begin. It walks through this construction from start to finish.",

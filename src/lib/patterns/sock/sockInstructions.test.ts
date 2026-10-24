@@ -29,7 +29,16 @@ import {
   SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
   SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
   SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_FOOT_HEEL_VIDEO_TIP_ID,
+  SOCK_TOE_UP_FOOT_HEEL_VIDEO_TITLE,
+  SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID,
+  SOCK_ANATOMY_VIDEO_COPY,
+  SOCK_ANATOMY_VIDEO_DURATION,
+  SOCK_ANATOMY_VIDEO_TIP_ID,
+  SOCK_ANATOMY_VIDEO_TITLE,
+  SOCK_ANATOMY_VIDEO_VIMEO_ID,
   SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
+  SOCK_TOE_UP_COMPLETE_VIDEO_DURATION,
   SOCK_TOE_UP_COMPLETE_VIDEO_HEADING,
   SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID,
   SOCK_TOE_UP_COMPLETE_VIDEO_TITLE,
@@ -797,6 +806,13 @@ describe("pair helper, renderer, and architecture", () => {
     expect(toeUp).toContain(`data-tip-id="${SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID}"`);
     expect(toeUp).toContain(SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE);
     expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID}`);
+    expect(toeUp).not.toContain("1222865852");
+    expect(sectionHtml(toeUp, "foot")).toContain(
+      `player.vimeo.com/video/${SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID}`,
+    );
+    expect(sectionHtml(toeUp, "heel")).not.toContain(
+      `player.vimeo.com/video/${SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID}`,
+    );
     expect(toeUp).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING);
     expect(toeUp).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_COPY);
     expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
@@ -1392,6 +1408,7 @@ describe("Toe-Up complete walkthrough callout", () => {
     expect(toeUp).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_HEADING);
     expect(toeUp).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_COPY);
     expect(toeUp).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID}`);
+    expect(toeUp).toContain(SOCK_TOE_UP_COMPLETE_VIDEO_DURATION);
     expect(SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID).toBe("755126615");
     expect(toeUp).toContain(`data-tip-id="${SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID}"`);
     expect(toeUp).toContain('data-socks-toe-up-complete-video');
@@ -1418,6 +1435,86 @@ describe("Toe-Up complete walkthrough callout", () => {
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID}`);
     expect(cuffToToe).toContain(`data-tip-id="${SOCK_HEEL_VIDEO_TIP_ID}"`);
     expect(cuffToToe).toContain(`player.vimeo.com/video/${SOCK_HEEL_VIDEO_VIMEO_ID}`);
+  });
+});
+
+describe("Construction videos stay with the matching instructions", () => {
+  function videoCount(html: string, vimeoId: string): number {
+    return html.split(`player.vimeo.com/video/${vimeoId}`).length - 1;
+  }
+
+  const replacedToeUpClip = "1222865852";
+
+  it("reuses catalog rows for anatomy and the complete toe-up walkthrough and does not register the construction clips", () => {
+    const catalog = JSON.parse(
+      readFileSync(resolve("src/data/videos-public.json"), "utf8"),
+    ) as Array<{ content_id?: number; title?: string; vimeo_id?: number }>;
+    const rowsFor = (vimeoId: number) => catalog.filter((row) => row.vimeo_id === vimeoId);
+
+    expect(rowsFor(151857395)).toEqual([
+      expect.objectContaining({ content_id: 332, title: "Anatomy of a Sock", vimeo_id: 151857395 }),
+    ]);
+    expect(rowsFor(755126615)).toEqual([
+      expect.objectContaining({ content_id: 2088, title: "Toe Up Basic Socks", vimeo_id: 755126615 }),
+    ]);
+    for (const vimeoId of [1222662401, 1222667612, 1222668781, 1222676437, 1222682761, 1222871920, 1222664135]) {
+      expect(rowsFor(vimeoId)).toEqual([]);
+    }
+  });
+
+  it("places anatomy once at the start of both directions and keeps each later video in one section", () => {
+    const cuff = renderBasicSockInstructionsHtml(buildBasicSockInstructions(mustCalc(typicalMachine), 1));
+    const cuffSecond = renderBasicSockInstructionsHtml(buildBasicSockInstructions(mustCalc(typicalMachine), 2));
+    const toeUp = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 1),
+    );
+    const toeUpSecond = renderBasicSockInstructionsHtml(
+      buildBasicSockInstructions(mustCalc({ ...typicalMachine, constructionDirection: "toe-up" }), 2),
+    );
+
+    for (const html of [cuff, cuffSecond, toeUp, toeUpSecond]) {
+      expect(videoCount(html, SOCK_ANATOMY_VIDEO_VIMEO_ID)).toBe(1);
+      expect(html).toContain(SOCK_ANATOMY_VIDEO_TITLE);
+      expect(html).toContain(SOCK_ANATOMY_VIDEO_COPY);
+      expect(html).toContain(SOCK_ANATOMY_VIDEO_DURATION);
+      expect(html).toContain(`data-tip-id="${SOCK_ANATOMY_VIDEO_TIP_ID}"`);
+      expect(html.indexOf(`data-socks-anatomy-video`)).toBeLessThan(html.indexOf('class="sock-pattern-section"'));
+      expect(html).not.toContain(replacedToeUpClip);
+    }
+
+    expect(videoCount(cuff, SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID)).toBe(1);
+    expect(videoCount(cuff, SOCK_HEEL_VIDEO_VIMEO_ID)).toBe(1);
+    expect(videoCount(cuff, SOCK_TOE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(videoCount(cuff, SOCK_TOE_FINISHING_VIDEO_VIMEO_ID)).toBe(1);
+    expect(videoCount(cuff, SOCK_ANKLE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(videoCount(cuffSecond, SOCK_ANKLE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(sectionHtml(cuff, "ankle")).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(sectionHtml(cuff, "cast-on")).not.toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(videoCount(cuff, SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID)).toBe(0);
+    expect(videoCount(cuff, SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID)).toBe(0);
+    expect(videoCount(cuff, SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID)).toBe(0);
+
+    expect(SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID).toBe("1222682761");
+    expect(SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE).toBe("Toe to Cuff");
+    expect(videoCount(toeUp, SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID)).toBe(1);
+    expect(videoCount(toeUpSecond, SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID)).toBe(1);
+    expect(sectionHtml(toeUp, "cast-on")).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID}`);
+    expect(SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID).toBe("1222871920");
+    expect(videoCount(toeUp, SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID)).toBe(1);
+    expect(sectionHtml(toeUp, "foot")).toContain(`data-tip-id="${SOCK_TOE_UP_FOOT_HEEL_VIDEO_TIP_ID}"`);
+    expect(sectionHtml(toeUp, "foot")).toContain(SOCK_TOE_UP_FOOT_HEEL_VIDEO_TITLE);
+    expect(sectionHtml(toeUp, "heel")).not.toContain(`player.vimeo.com/video/${SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID}`);
+    expect(sectionHtml(toeUp, "toe")).not.toContain(`player.vimeo.com/video/${SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID}`);
+    expect(videoCount(toeUp, SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(toeUp.indexOf(`data-socks-anatomy-video`)).toBeLessThan(
+      toeUp.indexOf(`data-socks-toe-up-complete-video`),
+    );
+    expect(videoCount(toeUp, SOCK_ANKLE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(sectionHtml(toeUp, "ankle")).toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
+    expect(videoCount(toeUp, SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID)).toBe(0);
+    expect(videoCount(toeUp, SOCK_HEEL_VIDEO_VIMEO_ID)).toBe(0);
+    expect(videoCount(toeUp, SOCK_TOE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(videoCount(toeUp, SOCK_TOE_FINISHING_VIDEO_VIMEO_ID)).toBe(0);
   });
 });
 
