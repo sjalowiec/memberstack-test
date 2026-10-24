@@ -43,6 +43,8 @@ import {
   SOCK_TOE_UP_OVERVIEW_VIDEO_TIP_ID,
   SOCK_TOE_UP_OVERVIEW_VIDEO_TITLE,
   SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID,
+  SOCK_ANATOMY_VIDEO_VIMEO_ID,
   SOCK_TOE_UP_COMPLETE_VIDEO_COPY,
   SOCK_TOE_UP_COMPLETE_VIDEO_HEADING,
   SOCK_TOE_UP_COMPLETE_VIDEO_TIP_ID,
@@ -322,6 +324,50 @@ describe("Cuff-to-Toe and Toe-Up rendering", () => {
       holdHalf: "left",
       workHalf: "right",
     });
+  });
+
+  it("shows each direction's videos once on Sock 1 and once on mirrored Sock 2", () => {
+    const count = (html: string, vimeoId: string) =>
+      html.split(`player.vimeo.com/video/${vimeoId}`).length - 1;
+    const cuff = renderSockPatternPairHtml(
+      mustPattern(completeDraft()).sock1,
+      mustPattern(completeDraft()).sock2,
+    );
+    const toeUpResult = mustPattern(completeDraft({ constructionDirection: "toe-up" }));
+    const toeUp = renderSockPatternPairHtml(toeUpResult.sock1, toeUpResult.sock2);
+
+    for (const id of [
+      SOCK_ANATOMY_VIDEO_VIMEO_ID,
+      SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+      SOCK_HEEL_VIDEO_VIMEO_ID,
+      SOCK_TOE_VIDEO_VIMEO_ID,
+      SOCK_TOE_FINISHING_VIDEO_VIMEO_ID,
+      SOCK_ANKLE_VIDEO_VIMEO_ID,
+    ]) {
+      expect(count(cuff, id)).toBe(2);
+    }
+    expect(count(cuff, SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(cuff, SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(cuff, SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(cuff).not.toContain("1222865852");
+
+    for (const id of [
+      SOCK_ANATOMY_VIDEO_VIMEO_ID,
+      SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID,
+      SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+      SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID,
+      SOCK_ANKLE_VIDEO_VIMEO_ID,
+    ]) {
+      expect(count(toeUp, id)).toBe(2);
+    }
+    expect(count(toeUp, SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_HEEL_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_TOE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_TOE_FINISHING_VIDEO_VIMEO_ID)).toBe(0);
+    expect(toeUp).not.toContain("1222865852");
+    expect(toeUp.indexOf("data-socks-anatomy-video")).toBeLessThan(
+      toeUp.indexOf("data-socks-toe-up-complete-video"),
+    );
   });
 });
 

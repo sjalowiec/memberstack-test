@@ -7,7 +7,19 @@ import { createEmptySockDraft, writeSockDraft } from "./sockDraft";
 import { SOCK_SUMMARY_ART_SRC, SOCK_SUMMARY_MEASUREMENT_FIELDS } from "./sockPatternEditTargets";
 import { applySockSummaryMeasurementsToDraft, sockSummaryMeasureFieldsFromDraft } from "./sockSummaryEdit";
 import { formatRowCounterResetGarmentRcLabel } from "../rowCounterReset";
-import { SOCK_ANKLE_VIDEO_TIP_ID, SOCK_CUFF_CAST_ON_VIDEO_TIP_ID } from "../sock/sockInstructionRender";
+import {
+  SOCK_ANKLE_VIDEO_TIP_ID,
+  SOCK_ANKLE_VIDEO_VIMEO_ID,
+  SOCK_ANATOMY_VIDEO_VIMEO_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_TIP_ID,
+  SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID,
+  SOCK_HEEL_VIDEO_VIMEO_ID,
+  SOCK_TOE_FINISHING_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID,
+  SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID,
+  SOCK_TOE_VIDEO_VIMEO_ID,
+} from "../sock/sockInstructionRender";
 import { roundToEvenPreferUp, sockGaugeToPerInch } from "../sock/sockMath";
 import {
   buildChristmasStockingInstructions,
@@ -363,8 +375,64 @@ describe("Christmas stocking instructions", () => {
     expect(html).not.toContain('data-section-id="ankle"');
     expect(html).not.toContain(STOCKING_ANKLE_INCLUDED_NOTE);
     expect(html).not.toContain(SOCK_ANKLE_VIDEO_TIP_ID);
+    expect(html).not.toContain(`player.vimeo.com/video/${SOCK_ANKLE_VIDEO_VIMEO_ID}`);
     expect(html.indexOf('data-section-id="leg"')).toBeGreaterThan(
       html.indexOf('data-section-id="heel"'),
+    );
+  });
+
+  it("shares the sock videos except the ankle clip, once in each direction", () => {
+    const count = (html: string, vimeoId: string) =>
+      html.split(`player.vimeo.com/video/${vimeoId}`).length - 1;
+    const cuff = renderChristmasStockingInstructionsHtml(
+      (calculateChristmasStockingPattern({
+        direction: "cuff-down",
+        legLengthInches: 8,
+        footCircumferenceInches: 10,
+        footLengthInches: 7,
+        stitchGaugeDisplay: 28,
+        rowGaugeDisplay: 44,
+        displayUnit: "inches",
+      }) as { ok: true; calc: Parameters<typeof renderChristmasStockingInstructionsHtml>[0] }).calc,
+    );
+    const toeUp = renderChristmasStockingInstructionsHtml(
+      (calculateChristmasStockingPattern({
+        direction: "toe-up",
+        legLengthInches: 12,
+        footCircumferenceInches: 10,
+        footLengthInches: 9,
+        stitchGaugeDisplay: 28,
+        rowGaugeDisplay: 44,
+        displayUnit: "inches",
+      }) as { ok: true; calc: Parameters<typeof renderChristmasStockingInstructionsHtml>[0] }).calc,
+    );
+
+    expect(count(cuff, SOCK_ANATOMY_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(cuff, SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(cuff, SOCK_HEEL_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(cuff, SOCK_TOE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(cuff, SOCK_TOE_FINISHING_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(cuff, SOCK_ANKLE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(cuff, SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(cuff, SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(cuff, SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(cuff).not.toContain('data-section-id="ankle"');
+
+    expect(count(toeUp, SOCK_ANATOMY_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(toeUp, SOCK_TOE_UP_COMPLETE_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(toeUp, SOCK_TOE_UP_OVERVIEW_VIDEO_VIMEO_ID)).toBe(1);
+    expect(count(toeUp, SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID)).toBe(1);
+    expect(sectionHtml(toeUp, "foot")).toContain(`player.vimeo.com/video/${SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID}`);
+    expect(sectionHtml(toeUp, "heel")).not.toContain(`player.vimeo.com/video/${SOCK_TOE_UP_FOOT_HEEL_VIDEO_VIMEO_ID}`);
+    expect(count(toeUp, SOCK_ANKLE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_CUFF_CAST_ON_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_HEEL_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_TOE_VIDEO_VIMEO_ID)).toBe(0);
+    expect(count(toeUp, SOCK_TOE_FINISHING_VIDEO_VIMEO_ID)).toBe(0);
+    expect(toeUp).not.toContain('data-section-id="ankle"');
+    expect(toeUp).not.toContain("1222865852");
+    expect(toeUp.indexOf("data-socks-anatomy-video")).toBeLessThan(
+      toeUp.indexOf("data-socks-toe-up-complete-video"),
     );
   });
 
