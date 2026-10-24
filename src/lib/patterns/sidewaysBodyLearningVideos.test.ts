@@ -15,7 +15,7 @@ import {
   SIDEWAYS_V_NECK_SHAPING_VIDEO_CONTENT_ID,
   SIDEWAYS_WAIST_SHAPING_VIDEO_CONTENT_ID,
   sidewaysOptionalShapingParagraphs,
-  sidewaysPulloverVNeckShapingParagraph,
+  sidewaysPulloverVNeckShapingLines,
 } from "./sidewaysBodyLearningVideos";
 
 const SAMPLE: SidewaysCardiganBodyCalcInput = {
@@ -40,6 +40,22 @@ function instructions(style: "pullover" | "cardigan") {
   expect(result.ok).toBe(true);
   if (!result.ok) throw new Error(result.error.message);
   return result.instructions;
+}
+
+function expectCompactModalButton(html: string, contentId: number, vimeoId: number): void {
+  expect(html).toContain(`data-content-id="${contentId}"`);
+  expect(html).toContain(`data-vimeo-id="${vimeoId}"`);
+  expect(html).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
+  expect(html).toContain('aria-haspopup="dialog"');
+  expect(html).toContain("data-vimeo-defer");
+  expect(html).toContain('class="pattern-help-link"');
+  expect(html).toContain("fa-solid fa-play");
+  expect(html).not.toMatch(/<iframe\b/i);
+  expect(html).not.toMatch(/<img\b/i);
+  expect(html).not.toContain("player.vimeo.com");
+  expect(html).not.toContain("poster");
+  expect(html).not.toContain("catalog-video-embed");
+  expect(html).not.toContain(`/videos/${contentId}`);
 }
 
 function sectionHtml(html: string, sectionId: string): string {
@@ -71,9 +87,9 @@ describe("Sideways Learning Library videos", () => {
     const withoutVNeck = catalog.filter(
       (row) => String(row.content_id) !== String(SIDEWAYS_V_NECK_SHAPING_VIDEO_CONTENT_ID),
     );
-    expect(sidewaysPulloverVNeckShapingParagraph("v", withoutVNeck)).toBe("");
-    expect(sidewaysPulloverVNeckShapingParagraph("v", withoutVNeck)).not.toContain("454539776");
-    expect(sidewaysPulloverVNeckShapingParagraph("v", withoutVNeck)).not.toContain("373265681");
+    expect(sidewaysPulloverVNeckShapingLines("v", withoutVNeck)).toEqual([]);
+    expect(sidewaysPulloverVNeckShapingLines("v", withoutVNeck).join("")).not.toContain("454539776");
+    expect(sidewaysPulloverVNeckShapingLines("v", withoutVNeck).join("")).not.toContain("373265681");
 
     const withoutOptional = catalog.filter(
       (row) =>
@@ -95,12 +111,10 @@ describe("Sideways Learning Library videos", () => {
     const secondV = sectionHtml(pullover, "sg-body-second-v-neck");
     const optional = sectionHtml(pullover, "sg-body-optional-techniques");
 
-    expect(firstV).toContain('data-content-id="5003"');
-    expect(firstV).toContain('data-vimeo-id="1239125400"');
-    expect(firstV).toContain('data-sideways-v-neck-shaping-video');
+    expectCompactModalButton(firstV, 5003, 1239125400);
+    expect(firstV).toContain("data-sideways-v-neck-shaping-video");
     expect(firstV).toContain("Watch: Shaping a Sideways V-Neck");
     expect(firstV).toContain("sideways V-neck shaping used in these instructions");
-    expect(firstV).toContain('class="kbm-kin-catalog-video pattern-help-link__button"');
     expect(firstV.match(/data-content-id="5003"/g)).toHaveLength(1);
     expect(secondV).toContain('data-content-id="5003"');
     expect(secondV).toContain('data-vimeo-id="1239125400"');
@@ -119,11 +133,11 @@ describe("Sideways Learning Library videos", () => {
     for (const style of ["pullover", "cardigan"] as const) {
       const html = renderSidewaysCardiganBodyDisplayHtml(instructions(style));
       const optional = sectionHtml(html, "sg-body-optional-techniques");
-      expect(optional).toContain('data-content-id="1012"');
-      expect(optional).toContain('data-vimeo-id="454539776"');
+      expectCompactModalButton(optional, 1012, 454539776);
+      expect(optional).toContain("data-sideways-bust-darts-video");
       expect(optional).toContain("Watch: Sideways Bust Darts");
-      expect(optional).toContain('data-content-id="960"');
-      expect(optional).toContain('data-vimeo-id="373265681"');
+      expectCompactModalButton(optional, 960, 373265681);
+      expect(optional).toContain("data-sideways-waist-shaping-video");
       expect(optional).toContain("Watch: Sideways Sweater Waist Shaping");
       expect(optional).toContain("Optional technique: Sideways bust darts.");
       expect(optional).toContain("Optional technique: Sideways waist shaping.");
@@ -144,7 +158,13 @@ describe("Sideways Learning Library videos", () => {
     );
     expect(firstV?.kind).toBe("block");
     if (firstV?.kind !== "block") return;
-    expect(firstV.trustedParagraphs?.[1]).toBe(
+    expect(firstV.trustedParagraphs?.[0]).toContain(
+      "sideways V-neck shaping used in these instructions",
+    );
+    expect(firstV.trustedParagraphs?.[0]).not.toContain("<button");
+    expect(firstV.trustedParagraphs?.[1]).toContain('data-content-id="5003"');
+    expect(firstV.trustedParagraphs?.[1]).not.toMatch(/<iframe\b/i);
+    expect(firstV.trustedParagraphs?.[2]).toBe(
       `Begin with all ${pullover.calc.garmentLengthStitches} stitches in work.`,
     );
     expect(firstV.bodyShapingChartRows?.map((row) => row.rc)).toEqual(

@@ -29,7 +29,7 @@ import {
 import { sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
 import {
   sidewaysOptionalShapingParagraphs,
-  sidewaysPulloverVNeckShapingParagraph,
+  sidewaysPulloverVNeckShapingLines,
 } from "./sidewaysBodyLearningVideos";
 import { sidewaysBodyHemChoiceLines } from "./sweaterBodyHemInstructions";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
@@ -475,7 +475,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
   const ragPh = g(CAST_ON_RAG_GLOSSARY_ID, "cast-on rag");
   const scrapPh = g(SCRAP_OFF_GLOSSARY_ID, "Scrap off");
   const openSideSeamStitches = sideSeamStitches ?? fullWidth - armhole;
-  const vNeckVideoParagraph = sidewaysPulloverVNeckShapingParagraph(neckline);
+  const vNeckVideoLines = sidewaysPulloverVNeckShapingLines(neckline);
 
   return [
     { kind: "piece", title: BODY_PIECE_TITLE },
@@ -525,7 +525,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
     block({
       rc: firstVStep.rowCounterStart,
       trustedParagraphs: [
-        ...(vNeckVideoParagraph ? [vNeckVideoParagraph] : []),
+        ...vNeckVideoLines,
         `Begin with all ${fullWidth} stitches in work.`,
         `Work a ${decreasePh} at the neckline edge over ${firstV.rows} rows:`,
         ...slopeProseLines(instructions.decreaseSequence, false),
@@ -549,7 +549,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
     block({
       rc: secondVStep.rowCounterStart,
       trustedParagraphs: [
-        ...(vNeckVideoParagraph ? [vNeckVideoParagraph] : []),
+        ...vNeckVideoLines,
         formatSidewaysPulloverNecklineCastOn({
           castOnStitches: vSts,
           bodyStitchesInWork: startingFrontStitches,

@@ -67,6 +67,7 @@ function reverseHungHemVideoHtml(): string {
     ` data-vimeo-id="${escapeHtml(video.id)}"` +
     ` data-video-title="${escapeHtml(video.title)}"` +
     ` data-content-id="${SIDEWAYS_REVERSE_HUNG_HEM_VIDEO_ID}"` +
+    ` data-vimeo-defer` +
     ` aria-label="Watch Reverse Hung Hem"` +
     `>` +
     `<span class="glossary-tooltip-label">${escapeHtml(label)}</span>` +

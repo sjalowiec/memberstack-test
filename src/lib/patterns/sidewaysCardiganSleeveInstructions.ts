@@ -247,6 +247,7 @@ export function sidewaysPulloverRoundSleeveNoteHtml(
     ` data-video-title="${escapeHtml(video.title)}"` +
     ` data-content-id="${SIDEWAYS_PULLOVER_ROUND_SLEEVE_VIDEO_CONTENT_ID}"` +
     ` data-video-autoplay="false"` +
+    ` data-vimeo-defer` +
     ` data-sideways-pullover-round-sleeve-video` +
     ` aria-haspopup="dialog">` +
     `${escapeHtml(video.title)}</button>`;
