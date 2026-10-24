@@ -12,6 +12,7 @@ import {
 import {
   applyPatternBuilderLandingCtaMode,
   resolveHostedSetInLandingCtaMode,
+  landingCtaModeForVerifiedAccess,
   resolvePatternBuilderLandingCtaMode,
 } from "./patternBuilderLandingCta";
 import { MEMBERSHIPS } from "../../config/memberships";
@@ -306,5 +307,63 @@ describe("hosted Set-In Sleeve landing CTA", () => {
         pathname: "/patterns/set-in-sleeve",
       }),
     ).toBeNull();
+  });
+});
+
+describe("pattern builder landing CTA verification states", () => {
+  it("maps verification errors to Try again, never to the prospect CTA", () => {
+    expect(
+      landingCtaModeForVerifiedAccess({ status: "error", reason: "access-lookup-unavailable" }),
+    ).toBe("error");
+    expect(
+      landingCtaModeForVerifiedAccess({ status: "error", reason: "memberstack-unavailable" }),
+    ).toBe("error");
+  });
+
+  it("maps verified viewers to member or prospect", () => {
+    const base = { status: "verified" as const, memberId: null, payload: null };
+    expect(landingCtaModeForVerifiedAccess({ ...base, viewer: "memberAccess" })).toBe("member");
+    expect(landingCtaModeForVerifiedAccess({ ...base, viewer: "loggedInNoAccess" })).toBe(
+      "prospect",
+    );
+    expect(landingCtaModeForVerifiedAccess({ ...base, viewer: "loggedOut" })).toBe("prospect");
+  });
+
+  it("error mode hides membership sales sections and shows only Try again", () => {
+    const loading = mockHiddenEl(false);
+    const member = mockHiddenEl(true);
+    const prospect = mockHiddenEl(true);
+    const membership = mockHiddenEl(true);
+    const error = mockHiddenEl(true);
+    const root = {
+      dataset: {} as Record<string, string>,
+      querySelectorAll(selector: string) {
+        if (selector === "[data-pattern-builder-landing-cta-loading]") return [loading];
+        if (selector === "[data-pattern-builder-landing-cta-member]") return [member];
+        if (selector === "[data-pattern-builder-landing-cta-prospect]") return [prospect];
+        if (selector === "[data-pattern-builder-landing-membership]") return [membership];
+        if (selector === "[data-pattern-builder-landing-cta-error]") return [error];
+        return [];
+      },
+    } as unknown as HTMLElement;
+
+    applyPatternBuilderLandingCtaMode(root, "error");
+    expect(error.hidden).toBe(false);
+    expect(loading.hidden).toBe(true);
+    expect(member.hidden).toBe(true);
+    expect(prospect.hidden).toBe(true);
+    expect(membership.hidden).toBe(true);
+
+    applyPatternBuilderLandingCtaMode(root, "member");
+    expect(error.hidden).toBe(true);
+  });
+
+  it("hero renders a Try again control for the error state", () => {
+    const hero = readFileSync(
+      resolve("src/components/patterns/PatternBuilderLandingHero.astro"),
+      "utf8",
+    );
+    expect(hero).toContain("data-pattern-builder-landing-cta-error");
+    expect(hero).toContain("data-pattern-builder-landing-cta-retry");
   });
 });

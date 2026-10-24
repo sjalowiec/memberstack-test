@@ -13,6 +13,8 @@ describe("protected pattern markup (no flash / fail closed)", () => {
     expect(gate).toMatch(/data-gate-pending/);
     expect(gate).toMatch(/data-sleeveless-pattern-gate-content hidden/);
     expect(gate).toMatch(/Checking membership/);
+    expect(gate).toMatch(/data-sleeveless-pattern-gate-error/);
+    expect(gate).toMatch(/data-sleeveless-pattern-gate-retry/);
     expect(gate).not.toMatch(/Create a free account/i);
     expect(gate).not.toMatch(/Sign up free/i);
   });

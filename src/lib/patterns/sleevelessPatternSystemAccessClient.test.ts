@@ -32,8 +32,25 @@ type MsMock = {
   onReady?: Promise<unknown>;
 };
 
+/** Watson lookup via /member-access: confirmed "no legacy date" unless overridden. */
+function stubMemberAccessApi(response: { ok: boolean; body?: unknown } = {
+  ok: true,
+  body: { ok: true, legacyPaidThroughYmd: null, complimentaryThroughYmd: null },
+}): ReturnType<typeof vi.fn> {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: response.ok,
+    json: async () => response.body ?? { ok: false },
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
 function stubMemberstack(ms: Partial<MsMock>): void {
-  vi.stubGlobal("window", { ...globalThis.window, $memberstackDom: ms });
+  vi.stubGlobal("window", {
+    ...globalThis.window,
+    $memberstackDom: { getMemberCookie: () => "test-jwt", ...ms },
+  });
+  stubMemberAccessApi();
 }
 
 beforeEach(() => {
@@ -251,6 +268,23 @@ describe("resolveSleevelessUserAccess", () => {
     });
     expect(hasPatternSystemAccess(access, "sleeveless")).toBe(false);
     expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
+  });
+});
+
+describe("resolveSleevelessUserAccess when membership cannot be confirmed", () => {
+  it("keeps the member logged in without access and does not cache the result", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_unconfirmed", planConnections: [] } }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+    stubMemberAccessApi({ ok: false });
+
+    await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
+      loggedIn: true,
+      memberId: "ms_unconfirmed",
+      hasSystemAccess: false,
+    });
+    expect(getCachedSleevelessUserAccess()).toBeNull();
   });
 });
 

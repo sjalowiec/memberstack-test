@@ -1,30 +1,22 @@
-import { hasMemberAccess, getViewerAccessState } from "../lib/memberAccess";
-import { ensureLegacyPaidThroughContext } from "../lib/memberAccessClient";
+import {
+  invalidateVerifiedMemberAccess,
+  readFreshVerifiedMemberAccess,
+  resolveVerifiedMemberAccess,
+} from "../lib/memberAccessClient";
 import { getMembershipStatusAuthHeaders } from "../lib/membership/membershipStatusClient";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { getMemberstackReturnPath } from "../lib/memberstackReturnUrl";
 import { catalogVideoPlaybackAccess } from "../lib/videos/catalogVideoPlaybackAccess";
 import { buildCatalogVimeoEmbedSrc, catalogVimeoIframePlayerId } from "../lib/videos/catalogVideoEmbedSrc";
 import { decideGatedVimeoPlayback } from "../lib/videos/gatedVimeoEmbedDelivery";
-import { lockedVideoPanelHtml } from "../lib/videos/lockedVideoPanel";
+import { lockedVideoPanelHtml, videoAccessErrorPanelHtml } from "../lib/videos/lockedVideoPanel";
 import { parseAuthorizedJumpLinks } from "../lib/jumplinks/videoJumpLinkButtons";
 import { parseAuthorizedTranscript } from "../lib/transcripts/videoGatedTranscript";
 import type { CatalogChapterRow } from "../lib/catalogVideoChapters";
 
 export const CATALOG_VIDEO_EMBED_API_PATH = "/.netlify/functions/catalog-video-embed";
 
-async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const api = window.$memberstackDom?.getAppAndMember;
-      if (typeof api === "function") return await api();
-    } catch {
-      /* keep polling until Memberstack is ready */
-    }
-    await new Promise((r) => setTimeout(r, delayMs));
-  }
-  return null;
-}
+const CATALOG_EMBED_FETCH_TIMEOUT_MS = 10_000;
 
 function readConfig(root: HTMLElement) {
   const contentId = (root.dataset.contentId ?? "").trim();
@@ -61,11 +53,23 @@ async function fetchCatalogEmbed(
   const headers = await getMembershipStatusAuthHeaders();
   const params = new URLSearchParams({ contentId });
   if (enableVimeoPlayerApi) params.set("playerApi", "1");
-  const res = await fetch(`${CATALOG_VIDEO_EMBED_API_PATH}?${params.toString()}`, {
-    method: "GET",
-    headers,
-    credentials: "same-origin",
-  });
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timer = controller
+    ? setTimeout(() => controller.abort(), CATALOG_EMBED_FETCH_TIMEOUT_MS)
+    : null;
+  let res: Response;
+  try {
+    res = await fetch(`${CATALOG_VIDEO_EMBED_API_PATH}?${params.toString()}`, {
+      method: "GET",
+      headers,
+      credentials: "same-origin",
+      signal: controller?.signal,
+    });
+  } catch {
+    return null;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
   if (!res.ok) return null;
   let body: { ok?: boolean; iframeSrc?: string; jumplinks?: unknown; transcript?: unknown } | null = null;
   try {
@@ -157,6 +161,24 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     slot.setAttribute("data-state", "ready");
   }
 
+  /** Verification failed: offer Retry, never a membership sales/login prompt. */
+  function showVerificationError() {
+    // Keep a playing video; a background re-check failure must not interrupt it.
+    if (renderedSrc && slot.querySelector("iframe")) return;
+    renderedSrc = null;
+    slot.innerHTML = videoAccessErrorPanelHtml({ thumbUrl });
+    slot.setAttribute("data-state", "error");
+    const btn = slot.querySelector("[data-kbm-video-retry]");
+    if (btn instanceof HTMLElement) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        slot.innerHTML = `<div class="kbm-video__checking" role="status"><span>Checking membership\u2026</span></div>`;
+        slot.setAttribute("data-state", "loading");
+        void resolveAccessAndRender(true);
+      });
+    }
+  }
+
   function showUnlockedIframe(src: string) {
     if (renderedSrc === src && slot.querySelector("iframe")) {
       slot.setAttribute("data-state", "ready");
@@ -196,7 +218,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     return null;
   }
 
-  async function resolveAccessAndRender() {
+  async function resolveAccessAndRender(force = false) {
     try {
       if (accessLevel === "open") {
         const src = deliveredIframeSrc || (await resolveEmbedSrc(false));
@@ -228,12 +250,42 @@ function initGatedVimeoEmbed(root: HTMLElement) {
         }
       }
 
-      const res = await waitForMemberstackReady();
-      await ensureLegacyPaidThroughContext(res);
-      const viewerState = getViewerAccessState(res);
-      const isLoggedIn = viewerState !== "loggedOut";
-      const memberAccess = hasMemberAccess(res);
-      const embedSrc = await resolveEmbedSrc(memberAccess);
+      // A member verified within the freshness window can request the embed
+      // right away. The embed endpoint authorizes with the member JWT, so this
+      // only removes waiting; it does not bypass access control.
+      const earlyEmbed =
+        contentId && !force && readFreshVerifiedMemberAccess()?.viewer === "memberAccess"
+          ? fetchCatalogEmbed(contentId, enableVimeoPlayerApi)
+          : null;
+
+      const verified = await resolveVerifiedMemberAccess({ force });
+      if (verified.status === "error") {
+        const early = earlyEmbed ? await earlyEmbed : null;
+        if (early) {
+          announceCatalogVideoEmbed(contentId, early.jumplinks, early.transcript);
+          showUnlockedIframe(early.iframeSrc);
+          return;
+        }
+        showVerificationError();
+        return;
+      }
+
+      const isLoggedIn = verified.viewer !== "loggedOut";
+      const memberAccess = verified.viewer === "memberAccess";
+      let embedSrc: string | null = null;
+      if (memberAccess && earlyEmbed) {
+        const early = await earlyEmbed;
+        if (early) {
+          announceCatalogVideoEmbed(contentId, early.jumplinks, early.transcript);
+          embedSrc = early.iframeSrc;
+        }
+      }
+      if (!embedSrc) embedSrc = await resolveEmbedSrc(memberAccess);
+      if (memberAccess && !embedSrc) {
+        // A member whose embed could not load is an error, not a non-member.
+        showVerificationError();
+        return;
+      }
       const decision = decideGatedVimeoPlayback({
         accessLevel,
         videoDevBypass: false,
@@ -253,7 +305,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
       }
     } catch (error) {
       console.error("GatedVimeoEmbed resolveAccessAndRender failed:", error);
-      showLocked(true);
+      showVerificationError();
     }
   }
 
@@ -263,10 +315,12 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     if (!ms || typeof ms.on !== "function") return;
     authListenersBound = true;
     ms.on("member.login", () => {
-      void resolveAccessAndRender();
+      invalidateVerifiedMemberAccess();
+      void resolveAccessAndRender(true);
     });
     ms.on("member.logout", () => {
-      void resolveAccessAndRender();
+      invalidateVerifiedMemberAccess();
+      void resolveAccessAndRender(true);
     });
   }
 

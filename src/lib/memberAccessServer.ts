@@ -29,6 +29,12 @@ export type EvaluatedMemberAccess = {
   legacyPaidThroughYmd: string | null;
   /** Saved complimentary date, or null when none is saved or the plan is absent. */
   complimentaryThroughYmd: string | null;
+  /**
+   * True when the Watson legacy lookup threw. Access is still denied (fail
+   * closed); callers that report status should say "could not confirm"
+   * rather than "no membership".
+   */
+  legacyLookupFailed: boolean;
 };
 
 export type LoadComplimentaryThroughYmd = (
@@ -85,11 +91,13 @@ export async function evaluateMemberAccessForRecord(
   }
 
   let legacyPaidThroughYmd: string | null = null;
+  let legacyLookupFailed = false;
   if (needsLegacyPaidThroughForAccess(record, options)) {
     try {
       legacyPaidThroughYmd = await loadLegacy(memberEmailFromMemberstackPayload(record) ?? null);
     } catch {
       legacyPaidThroughYmd = null;
+      legacyLookupFailed = true;
     }
   }
   options.legacyPaidThroughYmd = legacyPaidThroughYmd;
@@ -100,5 +108,6 @@ export async function evaluateMemberAccessForRecord(
     viewerAccessState: getViewerAccessState(record, options),
     legacyPaidThroughYmd,
     complimentaryThroughYmd,
+    legacyLookupFailed: legacyLookupFailed && !granted,
   };
 }

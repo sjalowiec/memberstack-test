@@ -117,3 +117,16 @@ describe("denied video thumbnail panel", () => {
     expect(embed).not.toContain("player.vimeo.com");
   });
 });
+
+describe("videoAccessErrorPanelHtml", () => {
+  it("offers Try again without membership sales or login prompts", async () => {
+    const { videoAccessErrorPanelHtml } = await import("./lockedVideoPanel");
+    const html = videoAccessErrorPanelHtml();
+    expect(html).toContain("data-kbm-video-retry");
+    expect(html).toContain("Try again");
+    expect(html).not.toContain("Members only");
+    expect(html).not.toContain("Become a Member");
+    expect(html).not.toContain("Log in");
+    expect(html).not.toContain("/membership");
+  });
+});
