@@ -37,8 +37,14 @@ const DEPLOYED_HOSTS = [
   "www.knititnow.com",
 ];
 
+/** A visitor with Memberstack loaded and no session (the real signed-out state). */
+const signedOutMemberstack = () => ({
+  getAppAndMember: async () => ({ data: { app: {}, member: null } }),
+  getCurrentMember: async () => ({ data: null }),
+});
+
 function stubHostname(hostname: string): void {
-  vi.stubGlobal("window", { location: { hostname } });
+  vi.stubGlobal("window", { location: { hostname }, $memberstackDom: signedOutMemberstack() });
   invalidateSleevelessUserAccessCache();
 }
 

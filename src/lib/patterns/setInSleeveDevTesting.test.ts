@@ -20,9 +20,16 @@ import {
   SET_IN_DEV_TEST_HEADER,
 } from "./setInSleeveDevTesting";
 
+/** A visitor with Memberstack loaded and no session (the real signed-out state). */
+const signedOutMemberstack = () => ({
+  getAppAndMember: async () => ({ data: { app: {}, member: null } }),
+  getCurrentMember: async () => ({ data: null }),
+});
+
 function stubPage(hostname: string, pathname: string): void {
   vi.stubGlobal("window", {
     location: { hostname, pathname, search: "?allowDev=1&setInDevTest=1" },
+    $memberstackDom: signedOutMemberstack(),
   });
   invalidateSleevelessUserAccessCache();
 }
