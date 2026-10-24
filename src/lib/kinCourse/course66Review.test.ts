@@ -1,11 +1,12 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { verifiedHomeStudyPlaybackCourse } from "../../config/homeStudyCourseMap";
+import { homeStudyPlaybackHref, verifiedHomeStudyPlaybackCourse } from "../../config/homeStudyCourseMap";
 import { getCourseAccessBySlug } from "../coursesCatalogAccess";
 import { readCourseContentFile } from "../legacy_kin/courseContentAdmin";
 import { publishedAvailablePlayerHref } from "../legacy_kin/publishedCoursePlayerHref";
 import { courseCheckoutPriceId } from "./coursePurchase";
+import { presentKinCourseHtml } from "./htmlPresent";
 import { kinCourseLessonHref } from "./hrefs";
 import { loadKinCourseBundle } from "./load";
 import { findLesson, flattenLessons, getLessonContext } from "./player";
@@ -37,15 +38,18 @@ describe("Course 66 Ribber Basic Bootcamp review", () => {
     expect(poc.course.status).toBe("published");
     expect(poc.course.published).toBe(true);
     expect(poc.course.contentStatus).toBe("cleaned");
-    expect(poc.course.legacy.contentRevision).toBe(1);
+    expect(poc.course.legacy.contentRevision).toBe(2);
     expect(poc.lessons.map((lesson) => lesson.title)).toEqual(LESSON_TITLES);
 
     expect(getCourseAccessBySlug("ribber-basic-bootcamp")).toBe("member");
     expect(courseCheckoutPriceId("ribber-basic-bootcamp")).toBeNull();
     expect(courseCheckoutPriceId("66")).toBeNull();
     expect(publishedAvailablePlayerHref("ribber-basic-bootcamp")).toBe("/courses/66");
-    expect(verifiedHomeStudyPlaybackCourse(26)).toBeNull();
-    expect(verifiedHomeStudyPlaybackCourse(66)).toBeNull();
+    expect(verifiedHomeStudyPlaybackCourse(26)?.courseId).toBe(66);
+    expect(verifiedHomeStudyPlaybackCourse(66)?.courseId).toBe(66);
+    expect(verifiedHomeStudyPlaybackCourse("ribber-basic-bootcamp")?.courseId).toBe(66);
+    expect(homeStudyPlaybackHref(26)).toBe("/courses/66");
+    expect(JSON.stringify(poc)).not.toContain("DataEntryOptions");
 
     const bundle = await loadKinCourseBundle(COURSE_ID);
     expect(bundle?.course.id).toBe(66);
@@ -92,5 +96,25 @@ describe("Course 66 Ribber Basic Bootcamp review", () => {
     ]) {
       expect(existsSync(join(process.cwd(), path))).toBe(true);
     }
+  });
+
+  it("opens the four glossary terms in the player and keeps the Get Started prompts as text", async () => {
+    const bundle = await loadKinCourseBundle(COURSE_ID);
+    const lessons = flattenLessons(bundle!.course);
+    const started = lessons.find((lesson) => lesson.id === 3908);
+    const startedHtml = started?.components.map((component) => component.html ?? "").join("\n") ?? "";
+    expect(startedHtml).toContain("Do you have the manual for your machine and ribber?");
+    expect(startedHtml).toContain("What is your current confidence in your ribber skills?");
+    expect(startedHtml).not.toMatch(/<input|<select|<textarea/i);
+
+    const html = lessons.map((lesson) => lesson.components.map((component) => component.html ?? "").join("\n")).join("\n");
+    const presented = presentKinCourseHtml(html, 3914, bundle!.presentation, bundle!.glossary);
+    for (const id of [184, 267, 381, 382]) {
+      expect(presented).toContain(`href="#glossary-${id}"`);
+      expect(presented).toContain(`data-GlossaryId="${id}"`);
+    }
+    expect(bundle!.glossary.map((entry) => entry.glossaryId).sort((a, b) => a - b)).toEqual([
+      184, 267, 381, 382,
+    ]);
   });
 });

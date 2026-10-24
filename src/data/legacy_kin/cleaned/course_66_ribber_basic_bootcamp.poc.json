@@ -12,7 +12,7 @@
       "sourceExport": "course_66_ribber_basic_bootcamp.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
       "migratedAt": "2026-06-25T10:16:09+00:00",
-      "contentRevision": 1,
+      "contentRevision": 2,
       "preparedForReviewAt": "2026-10-24",
       "draftReview": {
         "note": "Original challenge 66 lesson order restored for DEV review at /courses/66. Teaching text and videos come from the legacy export. No Memberstack plan, checkout price, or email change.",
@@ -39,10 +39,9 @@
           "/downloads/flat_rib_challenges.pdf"
         ],
         "needsDecision": [
-          "Home Study course id 26 is Ribber Basic Bootcamp (226 credit entries, none subscriber-free, inactive, $49.95). The player is challenge 66. Challenge 26 is Dragon Shawl. Purchaser playback is not wired.",
-          "Two Get Started questions (manual on hand, ribber confidence) are still legacy DataEntryOptions and are not a working form.",
-          "Glossary links for full needle rib, garter carriage, tuck lace, and boucle are not mapped to the in-player glossary.",
-          "The kerchief lesson describes the old no-math dimension tool. The export has the instructions and a missing tool image, not an embedded tool.",
+          "Home Study 26 purchases map to player 66. Challenge 26 remains Dragon Shawl. No accounts or plans have been granted, and credit evidence is not loaded on DEV.",
+          "The kerchief lesson still describes the old no-math dimension tool. The current Rectangle / Square Calculator is the proposed replacement, and that lesson has not been edited.",
+          "Six lesson images are still missing. They are listed for a replace-or-remove decision.",
           "The public /courses grid does not list this course. Ribber is not one of the catalog category headings."
         ]
       }
@@ -69,42 +68,14 @@
               "order": 1
             },
             {
-              "type": "migrationPending",
-              "legacyType": "DataEntryOptions",
-              "notes": [
-                "Unmapped legacy component type: DataEntryOptions"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "3908",
-                "CHALLENGE_COMPONENTID": "5837",
-                "DATAMODEL_ELEMENT": "have_manual",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "1",
-                "DATAMODEL_OPTIONLIST": "Yes,No",
-                "DATAMODEL_REQEST_TEXT": "Do you have the manual for your machine and ribber?<br> <a href='http://www.knititnow.com/ManualAndDocuments/' target='_blank'>Download a copy here</a>",
-                "DATAMODEL_TYPE": "Radio",
-                "REMOVEALERT": "0"
-              },
+              "type": "richText",
+              "html": "<p><strong>Do you have the manual for your machine and ribber?</strong></p>\n<p>Check before you start. If you need a copy, free machine and ribber manuals are listed on the <a href=\"/manuals\">Knitting Machine Manuals</a> page.</p>",
               "legacyComponentId": 5837,
               "order": 2
             },
             {
-              "type": "migrationPending",
-              "legacyType": "DataEntryOptions",
-              "notes": [
-                "Unmapped legacy component type: DataEntryOptions"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "3908",
-                "DATAMODEL_ELEMENT": "Initial_confidence",
-                "DATAMODEL_ICON": "fa fa-pencil",
-                "DATAMODEL_MANDITORY": "1",
-                "DATAMODEL_OPTIONLIST": "1. Just getting started,2,3,4,5 Used it a bit and want to learn more",
-                "DATAMODEL_REQEST_TEXT": "What is your current confidence in your ribber skills?",
-                "DATAMODEL_TYPE": "Radio",
-                "REMOVEALERT": "0",
-                "TYPEOF": "DataEntryOptions"
-              },
+              "type": "richText",
+              "html": "<p><strong>What is your current confidence in your ribber skills?</strong></p>\n<p>Pause and notice where you are, from just getting started to having used the ribber a bit and wanting to learn more. There is nothing to submit. The lessons ahead are practice.</p>",
               "legacyComponentId": 5838,
               "order": 3
             }

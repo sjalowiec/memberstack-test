@@ -7,6 +7,7 @@
  */
 import {
   HOME_STUDY_COURSE_ID_CONFLICTS,
+  homeStudyLibraryIdForPlayer,
   isUnresolvedHomeStudyCourseId,
   verifiedHomeStudyPlaybackCourse,
 } from "../../config/homeStudyCourseMap";
@@ -60,26 +61,31 @@ function rowForPlayer(
   counts: readonly HomeStudyLibraryCourseCounts[],
 ): HomeStudyCourseAccessReportRow {
   const conflict = isUnresolvedHomeStudyCourseId(course.id);
-  const mapped = verifiedHomeStudyPlaybackCourse(course.id);
-  const playbackReady = Boolean(mapped) && course.isPublic && !conflict;
+  const libraryId = homeStudyLibraryIdForPlayer(course.id);
+  const mapped = libraryId != null;
+  const playbackReady = mapped && course.isPublic && !conflict;
   let mapping: HomeStudyCourseAccessReportRow["mapping"] = "unmapped_player";
   let needed = `Player content exists under legacyChallengeId ${course.id}. That id is not confirmed as a Home Study course id. Needed: compare the Home Study course title for this id with the player title before adding it to the verified map. ${NO_DOWNLOAD}`;
   if (conflict) {
     mapping = "unresolved_title_conflict";
     needed = `Title conflict for id ${course.id}. ${NO_DOWNLOAD}`;
-  } else if (mapped) {
+  } else if (mapped && libraryId != null) {
     mapping = "verified_site_product";
+    const crossId =
+      libraryId === 26 && course.id === 66
+        ? `Verified purchases of Home Study course 26 can open player 66. Challenge 26 is Dragon Shawl and is not this player. `
+        : "Verified purchases of this Home Study course id can open the existing course page. ";
     needed = playbackReady
-      ? "Verified purchases of this Home Study course id can open the existing course page. Credit evidence must still be imported on DEV before any customer is granted that purchase."
+      ? `${crossId}Credit evidence must still be imported on DEV before any customer is granted that purchase.`
       : `Mapped, but the player is not public. ${NO_DOWNLOAD}`;
   }
   return {
-    homeStudyCourseId: mapped || conflict ? course.id : null,
+    homeStudyCourseId: libraryId ?? (conflict ? course.id : null),
     sitePlayerId: course.id,
     sitePlayerTitle: course.title,
     mapping,
     playback: playbackReady ? "available" : "not_available",
-    ...countsFor(mapped || conflict ? course.id : null, counts),
+    ...countsFor(libraryId ?? (conflict ? course.id : null), counts),
     needed,
   };
 }

@@ -1,0 +1,30 @@
+[
+  {
+    "glossaryId": 184,
+    "slug": "full-needle-rib",
+    "term": "Full Needle Rib",
+    "example": "Using all needles on the ribber and main bed at the same time.  Used to create beautiful reversible fabrics and often used to create multi-color double bed jacquard",
+    "helpinfo": "For success with this technique, it is CRITICAL that you understand the concept of Full vs Half pitch (the position of the needles of both beds)."
+  },
+  {
+    "glossaryId": 267,
+    "slug": "garter-carriage",
+    "term": "Garter Carriage",
+    "example": "A motorized accessory to form both knit and purl stitches across a row. Brother standard gauge machines only | G-Carriage | Garter Carriage",
+    "helpinfo": "Also known as \"the turtle\" (because it's slow) this fabulous accessory can add even more design opportunities for Brother standard gauge knitters. This accessory has also called Automatic Knitting Carriage, G-Carriage and Garter Carriage."
+  },
+  {
+    "glossaryId": 381,
+    "slug": "boucl",
+    "term": "Bouclé",
+    "example": "A textured yarn created in the spinning process.",
+    "helpinfo": "Bouclé is a style of yarn that is textured in the spinning process. Multiply plies of yarn are spun where one of the plies is held more loosely as the yarn is spun, forming loops or gimps. The yarn is often held together with a binder. Because the yarn is textured, even plain knitting can be interesting. Mixing a smooth yarn and a bouclé can produce beautiful results."
+  },
+  {
+    "glossaryId": 382,
+    "slug": "tuck-lace",
+    "term": "Tuck Lace",
+    "example": "Stitch pattern combining tuck stitch with needles out of work (both single and double bed)",
+    "helpinfo": "Want open texture without stitch transfers or a lace carriage? Think Tuck Lace! Want a beautiful all-over texture on any machine? Think Tuck Lace! Combine tuck with needles out of work and the possibilities are endless."
+  }
+]
