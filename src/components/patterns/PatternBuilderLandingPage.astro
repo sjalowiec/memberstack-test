@@ -14,6 +14,7 @@ import PatternBuilderLandingCreates from "./PatternBuilderLandingCreates.astro";
 import PatternBuilderLandingAnyYarn from "./PatternBuilderLandingAnyYarn.astro";
 import PatternBuilderLandingKnitAble from "./PatternBuilderLandingKnitAble.astro";
 import PatternBuilderLandingMembershipCta from "./PatternBuilderLandingMembershipCta.astro";
+import AccessScriptStallWatch from "./AccessScriptStallWatch.astro";
 import { isKnitAblePathPublic } from "../../lib/knit-ables/scheduleStore";
 
 interface Props {
@@ -52,6 +53,7 @@ const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta
   class="pattern-builder-landing page-wrap"
   data-pattern-builder-landing
   data-cta-mode="pending"
+  data-access-stall-root
   {...(socksSavedPatternRedirect ? { "data-socks-saved-pattern-landing": "" } : {})}
   {...(christmasStockingSavedPatternRedirect ? { "data-christmas-stocking-saved-pattern-landing": "" } : {})}
 >
@@ -66,6 +68,8 @@ const membership = hasPatternBuilderLandingMembership(content.cta) ? content.cta
   {knitAble ? <PatternBuilderLandingKnitAble section={knitAble} /> : null}
   {membership ? <PatternBuilderLandingMembershipCta cta={membership} /> : null}
 </div>
+
+<AccessScriptStallWatch />
 
 <script>
   import { initPatternBuilderLandingCta } from "../../lib/patterns/patternBuilderLandingCta";

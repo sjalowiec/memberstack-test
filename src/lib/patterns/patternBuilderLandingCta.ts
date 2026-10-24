@@ -25,6 +25,7 @@ import {
   CHRISTMAS_STOCKING_SAVED_PATTERN_LANDING_ATTR,
   resolveChristmasStockingLandingAction,
 } from "./christmasStockingPatternLandingAccess";
+import { markAccessScriptReady } from "./accessScriptStall";
 
 export type PatternBuilderLandingCtaMode = "pending" | "member" | "prospect" | "error";
 
@@ -107,6 +108,7 @@ async function applyChristmasStockingLandingPresentation(root: HTMLElement): Pro
 
 /** Wires `[data-pattern-builder-landing]`. Defaults to pending (no CTA flash). */
 export async function initPatternBuilderLandingCta(root: HTMLElement): Promise<void> {
+  markAccessScriptReady(root);
   applyPatternBuilderLandingCtaMode(root, "pending");
 
   if (isSocksSavedPatternLanding(root)) {

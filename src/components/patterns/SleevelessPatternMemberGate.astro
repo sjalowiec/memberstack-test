@@ -7,19 +7,42 @@
  * Logged-out: Become a Member + Log In
  * Logged-in without access: Become a Member + View Membership
  * Verification failed (network): Try again — never a sales prompt
+ * Access script never started (failed download/blocked): Reload notice after 20s
  * Former member read-only: completed pattern + quiet renew notice
  */
+import AccessScriptStallWatch from "./AccessScriptStallWatch.astro";
 ---
 
-<div class="sleeveless-pattern-gate" data-sleeveless-pattern-gate data-gate-pending>
+<div
+  class="sleeveless-pattern-gate"
+  data-sleeveless-pattern-gate
+  data-gate-pending
+  data-access-stall-root
+>
   <section
     class="sleeveless-pattern-gate__locked"
     data-sleeveless-pattern-gate-locked
     aria-labelledby="sleeveless-pattern-gate-heading"
   >
-    <p class="sleeveless-pattern-gate__loading" data-sleeveless-pattern-gate-loading>
+    <p
+      class="sleeveless-pattern-gate__loading"
+      data-sleeveless-pattern-gate-loading
+      data-access-stall-checking
+    >
       Checking membership…
     </p>
+
+    <div class="sleeveless-pattern-gate__stalled" data-access-stall-notice role="alert" hidden>
+      <h2 class="sleeveless-pattern-gate__title">This page didn't finish loading</h2>
+      <p class="sleeveless-pattern-gate__lead">
+        Part of the page did not load, so we couldn't check your membership. Please reload the
+        page. If this keeps happening, contact us and tell us which device and browser you use.
+      </p>
+      <div class="sleeveless-pattern-gate__actions">
+        <a href="" class="kbm-btn kbm-btn-primary">Reload page</a>
+        <a href="/contact/" class="kbm-btn kbm-btn-outline">Contact us</a>
+      </div>
+    </div>
 
     <div class="sleeveless-pattern-gate__signin" data-sleeveless-pattern-gate-signin hidden>
       <h2 id="sleeveless-pattern-gate-heading" class="sleeveless-pattern-gate__title">
@@ -126,6 +149,8 @@
     <slot />
   </div>
 </div>
+
+<AccessScriptStallWatch />
 
 <script>
   import "/src/scripts/sleeveless-pattern-login-gate.ts";

@@ -1,0 +1,12 @@
+---
+/**
+ * Classic inline watcher (no module dependencies) that reveals a "didn't finish
+ * loading" notice when a membership access script never starts. See
+ * src/lib/patterns/accessScriptStall.ts.
+ */
+import { accessScriptStallWatchSource } from "../../lib/patterns/accessScriptStall";
+
+const source = accessScriptStallWatchSource();
+---
+
+<script is:inline set:html={source}></script>

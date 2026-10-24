@@ -45,10 +45,17 @@ const catalogBadge = hasPatternBuilderLandingCatalogBadge(content.catalogBadge)
       <p
         class="pattern-builder-hero__loading"
         data-pattern-builder-landing-cta-loading
+        data-access-stall-checking
         role="status"
       >
         {cta.checkingLabel}
       </p>
+      <div class="pattern-builder-hero__prospect" data-access-stall-notice role="alert" hidden>
+        <p class="pattern-builder-hero__loading">
+          This page didn't finish loading. Please reload the page.
+        </p>
+        <a class="kbm-btn kbm-btn-accent" href="">Reload page</a>
+      </div>
       <div data-pattern-builder-landing-cta-member hidden>
         <a
           class="kbm-btn kbm-btn-accent"

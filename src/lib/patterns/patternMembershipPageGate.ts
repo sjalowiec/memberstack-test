@@ -25,6 +25,7 @@ import {
   isPaidSavedPatternReadOnlyCandidate,
 } from "./savedPatternViewRoute";
 import { readSavedPatternProjectIdFromUrl } from "./savedPatternViewUrl";
+import { markAccessScriptReady } from "./accessScriptStall";
 import {
   applySavedPatternReadOnlyChrome,
   setSavedPatternReadOnlyDocument,
@@ -239,6 +240,7 @@ export function nextPatternMembershipGateState(
  * while the check re-runs in the background.
  */
 export async function initPatternMembershipPageGate(root: HTMLElement): Promise<void> {
+  markAccessScriptReady(root);
   const cached = readFreshVerifiedMemberAccess();
   setGateState(root, cached?.viewer === "memberAccess" ? "member" : "pending");
 
