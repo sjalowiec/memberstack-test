@@ -406,6 +406,130 @@ function point(
   return sockCanonicalLabelPoint(id, mirror, flipVertical);
 }
 
+type SockDiagramInkBox = { left: number; right: number; top: number; bottom: number };
+
+function textInkBox(x: number, y: number, text: string, size: number): SockDiagramInkBox {
+  const width = Math.ceil(text.length * size * SOCK_LABEL_EM);
+  return {
+    left: x - width / 2,
+    right: x + width / 2,
+    top: y - sockGlyphAbove(size),
+    bottom: y + sockGlyphBelow(size),
+  };
+}
+
+function inkBoxesClear(a: SockDiagramInkBox, b: SockDiagramInkBox, gap = LABEL_CLEAR): boolean {
+  return (
+    a.right + gap <= b.left ||
+    b.right + gap <= a.left ||
+    a.bottom + gap <= b.top ||
+    b.bottom + gap <= a.top
+  );
+}
+
+function hLineInk(x1: number, x2: number, y: number): SockDiagramInkBox {
+  return {
+    left: Math.min(x1, x2),
+    right: Math.max(x1, x2),
+    top: y - DIM_SW / 2,
+    bottom: y + DIM_SW / 2,
+  };
+}
+
+/** Screen Y change that moves `box` off `hit` in `direction` (+1 down, -1 up). */
+function yShiftAway(
+  box: SockDiagramInkBox,
+  hit: SockDiagramInkBox,
+  direction: number,
+  gap = LABEL_CLEAR,
+): number {
+  if (inkBoxesClear(box, hit, gap)) return 0;
+  if (direction > 0) return Math.max(0, hit.bottom + gap - box.top);
+  return Math.max(0, box.bottom + gap - hit.top);
+}
+
+/**
+ * Minimum-stitch count, one clear line under the section name.
+ * Screen Y grows downward, so the count stays under the word in both
+ * knitting directions. The width line stays on the foot side of the diamond;
+ * when that line is below the word, the pair shifts up until the line is clear.
+ */
+function placeMinimumStitchStack(args: {
+  waistY: number;
+  x: number;
+  name: string;
+  count: string;
+  dimLines: readonly SockDiagramInkBox[];
+  cuffSign: number;
+}): { nameY: number; countY: number } {
+  const piece = SOCK_DIAGRAM_TYPE.piece;
+  const stitch = SOCK_DIAGRAM_TYPE.stitch;
+  const step = sockGlyphBelow(piece) + LABEL_CLEAR + sockGlyphAbove(stitch);
+  let nameY = args.waistY;
+  let countY = nameY + step;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const nameBox = textInkBox(args.x, nameY, args.name, piece);
+    const countBox = textInkBox(args.x, countY, args.count, stitch);
+    let shift = 0;
+    for (const line of args.dimLines) {
+      shift = Math.max(
+        shift,
+        yShiftAway(nameBox, line, args.cuffSign),
+        yShiftAway(countBox, line, args.cuffSign),
+      );
+    }
+    if (shift <= 0) break;
+    nameY += args.cuffSign * shift;
+    countY += args.cuffSign * shift;
+  }
+  return { nameY, countY };
+}
+
+/** Extra room so a neighbor title does not sit on the same line as the minimum count. */
+const MINIMUM_STITCH_NEIGHBOR_GAP = 18;
+
+/**
+ * Neighboring section titles move along the cuff side of the diamond when the
+ * minimum-stitch stack needs that room. Heel and Toe stay with the stack.
+ */
+function clearSectionLabelsForMinimumStitch(args: {
+  sections: ReadonlyArray<{ id: SockCanonicalAnchorId; name: string; x: number; y: number }>;
+  yOf: Map<SockCanonicalAnchorId, number>;
+  /** Heel/Toe name and minimum-stitch count. */
+  stack: readonly SockDiagramInkBox[];
+  fixed: readonly SockDiagramInkBox[];
+  cuffSign: number;
+}): void {
+  const piece = SOCK_DIAGRAM_TYPE.piece;
+  const movable: SockCanonicalAnchorId[] = ["sectionFoot", "sectionAnkle", "sectionLeg"];
+  for (let pass = 0; pass < 6; pass++) {
+    let moved = false;
+    for (const id of movable) {
+      const section = args.sections.find((item) => item.id === id);
+      if (!section) continue;
+      let y = args.yOf.get(id) ?? section.y;
+      const others = args.sections
+        .filter((item) => item.id !== id)
+        .map((item) => textInkBox(item.x, args.yOf.get(item.id) ?? item.y, item.name, piece));
+      for (let step = 0; step < 8; step++) {
+        const box = textInkBox(section.x, y, section.name, piece);
+        let shift = 0;
+        for (const hit of args.stack) {
+          shift = Math.max(shift, yShiftAway(box, hit, args.cuffSign, MINIMUM_STITCH_NEIGHBOR_GAP));
+        }
+        for (const hit of [...args.fixed, ...others]) {
+          shift = Math.max(shift, yShiftAway(box, hit, args.cuffSign));
+        }
+        if (shift <= 0) break;
+        y += args.cuffSign * shift;
+        moved = true;
+      }
+      args.yOf.set(id, y);
+    }
+    if (!moved) break;
+  }
+}
+
 function outlineX(x: number, mirror: boolean): number {
   return mirror ? SOCK_CANONICAL_VB_W - x : x;
 }
@@ -483,12 +607,9 @@ export function buildSockPatternDiagramSvg(
   const cuffEdgeY = cuffStsY - sockGlyphAbove(stitch) - LABEL_CLEAR - sockGlyphBelow(notation);
   const heelLine = OUTLINE.heelBottom + 4;
   const heelCountY = heelLine + LABEL_CLEAR + sockGlyphAbove(stitch);
-  const heelCenterY =
-    heelCountY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(stitch);
   const toeLine = OUTLINE.toeBottom + 4;
   const toeCountY = toeLine + LABEL_CLEAR + sockGlyphAbove(stitch);
-  const toeCenterY = toeCountY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(stitch);
-  const toeEdgeY = toeCenterY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(notation);
+  const toeEdgeY = toeCountY + sockGlyphBelow(stitch) + LABEL_CLEAR + sockGlyphAbove(notation);
   const workStsX = outlineX(OUTLINE.right - 46, mirror);
 
   dims.push(sockHDim("cuff-width", left, right, yAt(cuffLine)));
@@ -500,6 +621,54 @@ export function buildSockPatternDiagramSvg(
   for (const span of measures) {
     dims.push(sockVDim(span.dim, V_DIM_X, yAt(span.y1), yAt(span.y2)));
   }
+
+  const sections = sockDiagramSectionLabels({ showsAnkle, mirror, flipVertical });
+  const sectionY = new Map(sections.map((section) => [section.id, section.y]));
+  const cuffSign = flipVertical ? 1 : -1;
+  const heelSection = sections.find((section) => section.id === "sectionHeel");
+  const toeSection = sections.find((section) => section.id === "sectionToe");
+  const heelDimY = yAt(heelLine);
+  const toeDimY = yAt(toeLine);
+  const heelStack = placeMinimumStitchStack({
+    waistY: heelSection?.y ?? yAt(sectionNameCanonicalY("sectionHeel", showsAnkle)),
+    x: heelSection?.x ?? cuffMidX,
+    name: heelSection?.name ?? "Heel",
+    count: fields.heelCenterLabel,
+    dimLines: [hLineInk(left, split, heelDimY), hLineInk(split, right, heelDimY)],
+    cuffSign,
+  });
+  const toeStack = placeMinimumStitchStack({
+    waistY: toeSection?.y ?? yAt(sectionNameCanonicalY("sectionToe", showsAnkle)),
+    x: toeSection?.x ?? cuffMidX,
+    name: toeSection?.name ?? "Toe",
+    count: fields.toeCenterLabel,
+    dimLines: [hLineInk(left, split, toeDimY), hLineInk(split, right, toeDimY)],
+    cuffSign,
+  });
+  sectionY.set("sectionHeel", heelStack.nameY);
+  sectionY.set("sectionToe", toeStack.nameY);
+  const piece = SOCK_DIAGRAM_TYPE.piece;
+  clearSectionLabelsForMinimumStitch({
+    sections,
+    yOf: sectionY,
+    cuffSign,
+    stack: [
+      textInkBox(heelSection?.x ?? cuffMidX, heelStack.nameY, heelSection?.name ?? "Heel", piece),
+      textInkBox(heelSection?.x ?? cuffMidX, heelStack.countY, fields.heelCenterLabel, stitch),
+      textInkBox(toeSection?.x ?? cuffMidX, toeStack.nameY, toeSection?.name ?? "Toe", piece),
+      textInkBox(toeSection?.x ?? cuffMidX, toeStack.countY, fields.toeCenterLabel, stitch),
+    ],
+    fixed: [
+      textInkBox(workStsX, yAt(heelCountY), fields.heelWorkLabel, stitch),
+      textInkBox(heldMidX, yAt(heelCountY), stitchCountLabel(fields.heelHeldStitches), stitch),
+      textInkBox(workStsX, yAt(toeCountY), fields.toeWorkLabel, stitch),
+      textInkBox(heldMidX, yAt(toeCountY), stitchCountLabel(fields.toeHeldStitches), stitch),
+      hLineInk(left, split, heelDimY),
+      hLineInk(split, right, heelDimY),
+      hLineInk(left, split, toeDimY),
+      hLineInk(split, right, toeDimY),
+    ],
+  });
 
   labels.push(
     sockCanonicalText({
@@ -514,14 +683,16 @@ export function buildSockPatternDiagramSvg(
   if (fields.cuffStitches !== fields.tubeStitches) {
     const tube = point("tube", mirror, flipVertical);
     const ankleTop = sectionNameCanonicalY("sectionAnkle", true) - sockGlyphAbove(SOCK_DIAGRAM_TYPE.piece);
-    const tubeY = showsAnkle
+    const tubeCanonicalY = showsAnkle
       ? ankleTop - LABEL_CLEAR - sockGlyphBelow(stitch)
       : SOCK_CANONICAL_ANCHORS.tube.y;
+    const ankleSection = sections.find((section) => section.id === "sectionAnkle");
+    const ankleShift = ankleSection ? (sectionY.get("sectionAnkle") ?? ankleSection.y) - ankleSection.y : 0;
     labels.push(
       sockCanonicalText({
         id: "tube",
         x: tube.x,
-        y: yAt(tubeY),
+        y: yAt(tubeCanonicalY) + ankleShift,
         text: fields.tubeStsLabel,
         size: stitch,
       }),
@@ -550,12 +721,12 @@ export function buildSockPatternDiagramSvg(
     }),
   );
 
-  for (const section of sockDiagramSectionLabels({ showsAnkle, mirror, flipVertical })) {
+  for (const section of sections) {
     labels.push(
       sockCanonicalText({
         id: section.id,
         x: section.x,
-        y: section.y,
+        y: sectionY.get(section.id) ?? section.y,
         text: section.name,
         size: SOCK_DIAGRAM_TYPE.piece,
         weight: String(SOCK_DIAGRAM_TYPE.pieceWeight),
@@ -563,13 +734,11 @@ export function buildSockPatternDiagramSvg(
     );
   }
 
-  const heelCenter = point("heelCenter", mirror, flipVertical);
-  const toeCenter = point("toeCenter", mirror, flipVertical);
   labels.push(
     sockCanonicalText({
       id: "heel-center",
-      x: heelCenter.x,
-      y: yAt(heelCenterY),
+      x: heelSection?.x ?? cuffMidX,
+      y: heelStack.countY,
       text: fields.heelCenterLabel,
       size: stitch,
     }),
@@ -587,8 +756,8 @@ export function buildSockPatternDiagramSvg(
   labels.push(
     sockCanonicalText({
       id: "toe-center",
-      x: toeCenter.x,
-      y: yAt(toeCenterY),
+      x: toeSection?.x ?? cuffMidX,
+      y: toeStack.countY,
       text: fields.toeCenterLabel,
       size: stitch,
     }),

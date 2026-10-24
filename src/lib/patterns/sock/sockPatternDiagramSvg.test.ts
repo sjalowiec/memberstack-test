@@ -28,6 +28,8 @@ import {
   buildSockPatternDiagramSvg,
   sockDiagramRcMilestones,
   sockFinishedDiagramTypography,
+  sockGlyphAbove,
+  sockGlyphBelow,
   sockToeUpFootEndingCanonicalY,
 } from "./sockPatternDiagramSvg";
 import { buildSockShapingNotationDiagramSvg } from "./sockShapingNotationDiagramSvg";
@@ -422,9 +424,11 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
     const calc = mustCalc();
     const sts = buildSockPatternDiagramSvg(calc, { mode: "pattern" });
     const jp = buildSockShapingNotationDiagramSvg(calc);
-    for (const id of ["sectionLeg", "sectionAnkle", "sectionHeel", "sectionFoot", "sectionToe"] as const) {
+    for (const id of ["sectionLeg", "sectionHeel", "sectionToe"] as const) {
       expect(labelXY(sts, id)).toEqual(labelXY(jp, id));
     }
+    expect(Number(labelXY(sts, "heel-center").y)).toBeGreaterThan(Number(labelXY(sts, "sectionHeel").y));
+    expect(Number(labelXY(sts, "toe-center").y)).toBeGreaterThan(Number(labelXY(sts, "sectionToe").y));
     expect(labelXY(sts, "rc-leg")).toEqual(labelXY(jp, "rc-leg"));
     expect(Number(labelXY(sts, "rc-leg").x)).toBeGreaterThan(Number(labelXY(sts, "measureLeg").x));
     expect(labelsGroup(jp)).not.toContain('data-sock-label="heel-rc"');
@@ -537,6 +541,71 @@ describe("overlay placement has no duplicate heel/toe blocks", () => {
   });
 });
 
+describe("minimum stitch count sits under Heel and Toe", () => {
+  function inkOverlapsLine(labelY: number, size: number, lineY: number): boolean {
+    const top = labelY - size * 0.85;
+    const bottom = labelY + size * 0.53;
+    return top < lineY + 4 && bottom > lineY - 4;
+  }
+
+  it("places the calculated count below the section name in both directions, both families, and Sock 2", () => {
+    const source = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), "sockPatternDiagramSvg.ts"),
+      "utf8",
+    );
+    expect(source).not.toMatch(/["']\d+ sts["']/);
+    for (const family of ["socks", "christmas-stocking"] as const) {
+      for (const direction of ["cuff-to-toe", "toe-up"] as const) {
+        for (const mirror of [false, true]) {
+          const calc = mustCalc({
+            constructionDirection: direction,
+            footCircumferenceInches: 5,
+            legCircumferenceInches: 5,
+          });
+          const wider = mustCalc({
+            constructionDirection: direction,
+            footCircumferenceInches: 8.5,
+            legCircumferenceInches: 8.5,
+          });
+          expect(calc.heel.remainingStitches).toBe(6);
+          expect(wider.heel.remainingStitches).not.toBe(6);
+          for (const sample of [calc, wider]) {
+            const svg = buildSockPatternDiagramSvg(sample, { mode: "pattern", family, mirror });
+            const fields = sockCanonicalCalcLabelFields(sample);
+            const type = sockFinishedDiagramTypography();
+            expect(labelText(svg, "heel-center")).toBe(fields.heelCenterLabel);
+            expect(labelText(svg, "toe-center")).toBe(fields.toeCenterLabel);
+            if (sample === wider) {
+              expect(labelText(svg, "heel-center")).not.toBe("6 sts");
+              expect(labelText(svg, "toe-center")).not.toBe("6 sts");
+            }
+            expect(labelFontSize(svg, "heel-center")).toBe(type.stitch);
+            expect(labelFontSize(svg, "toe-center")).toBe(type.stitch);
+            expect(labelFontSize(svg, "sectionHeel")).toBe(type.piece);
+            expect(labelXY(svg, "heel-center").x).toBe(labelXY(svg, "sectionHeel").x);
+            expect(labelXY(svg, "toe-center").x).toBe(labelXY(svg, "sectionToe").x);
+            const heelNameY = Number(labelXY(svg, "sectionHeel").y);
+            const toeNameY = Number(labelXY(svg, "sectionToe").y);
+            const heelCountY = Number(labelXY(svg, "heel-center").y);
+            const toeCountY = Number(labelXY(svg, "toe-center").y);
+            expect(heelCountY).toBeGreaterThan(heelNameY);
+            expect(toeCountY).toBeGreaterThan(toeNameY);
+            const gap = sockGlyphBelow(type.piece) + sockGlyphAbove(type.stitch);
+            expect(heelCountY - heelNameY).toBeGreaterThanOrEqual(gap);
+            expect(toeCountY - toeNameY).toBeGreaterThanOrEqual(gap);
+            expect(inkOverlapsLine(heelCountY, type.stitch, dimLineY(svg, "heel-work-width"))).toBe(false);
+            expect(inkOverlapsLine(toeCountY, type.stitch, dimLineY(svg, "toe-work-width"))).toBe(false);
+            expect(inkOverlapsLine(heelNameY, type.piece, dimLineY(svg, "heel-work-width"))).toBe(false);
+            expect(inkOverlapsLine(toeNameY, type.piece, dimLineY(svg, "toe-work-width"))).toBe(false);
+            expect(labelText(svg, "heel-work")).toBe(fields.heelWorkLabel);
+            expect(labelText(svg, "toe-work")).toBe(fields.toeWorkLabel);
+          }
+        }
+      }
+    }
+  });
+});
+
 describe("knitting-order orientation is independent of Sock 1 / Sock 2 mirror", () => {
   it("Cuff to Toe reads bottom-up from cuff/leg to toe with cast-on at the bottom", () => {
     const calc = mustCalc({ constructionDirection: "cuff-to-toe" });
@@ -550,7 +619,10 @@ describe("knitting-order orientation is independent of Sock 1 / Sock 2 mirror", 
     expect(ys.ankle).toBeGreaterThan(ys.heel);
     expect(ys.heel).toBeGreaterThan(ys.foot);
     expect(ys.foot).toBeGreaterThan(ys.toe);
-    expect(jpYs).toEqual(ys);
+    expect(jpYs.leg).toBeGreaterThan(jpYs.ankle);
+    expect(jpYs.ankle).toBeGreaterThan(jpYs.heel);
+    expect(jpYs.heel).toBeGreaterThan(jpYs.foot);
+    expect(jpYs.foot).toBeGreaterThan(jpYs.toe);
     expect(Number(labelXY(svg, "cast-on").y)).toBeGreaterThan(ys.leg);
     expect(Number(labelXY(svg, "finish").y)).toBeLessThan(ys.toe);
     expect(labelsGroup(svg)).toContain("cast on");
@@ -579,7 +651,10 @@ describe("knitting-order orientation is independent of Sock 1 / Sock 2 mirror", 
     expect(ys.foot).toBeGreaterThan(ys.heel);
     expect(ys.heel).toBeGreaterThan(ys.ankle);
     expect(ys.ankle).toBeGreaterThan(ys.leg);
-    expect(jpYs).toEqual(ys);
+    expect(jpYs.toe).toBeGreaterThan(jpYs.foot);
+    expect(jpYs.foot).toBeGreaterThan(jpYs.heel);
+    expect(jpYs.heel).toBeGreaterThan(jpYs.ankle);
+    expect(jpYs.ankle).toBeGreaterThan(jpYs.leg);
     expect(Number(labelXY(svg, "cast-on").y)).toBeGreaterThan(ys.toe);
     expect(Number(labelXY(svg, "finish").y)).toBeLessThan(ys.leg);
     expect(labelsGroup(svg)).toContain("cast on");
@@ -604,8 +679,7 @@ describe("knitting-order orientation is independent of Sock 1 / Sock 2 mirror", 
       const jp1 = buildSockShapingNotationDiagramSvg(calc);
       const jp2 = buildSockShapingNotationDiagramSvg(calc, { mirror: true });
       expect(sectionYs(sock1)).toEqual(sectionYs(sock2));
-      expect(sectionYs(jp1)).toEqual(sectionYs(sock1));
-      expect(sectionYs(jp2)).toEqual(sectionYs(sock1));
+      expect(sectionYs(jp1)).toEqual(sectionYs(jp2));
       expect(Number(labelXY(sock1, "sectionHeel").x)).toBeGreaterThan(144);
       expect(Number(labelXY(sock2, "sectionHeel").x)).toBeLessThan(144);
       expect(Number(labelXY(sock1, "cast-on").y)).toBe(Number(labelXY(sock2, "cast-on").y));
