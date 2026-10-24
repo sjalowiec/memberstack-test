@@ -57,6 +57,11 @@ export interface SleevelessUserAccess {
    * Required for {@link hasPatternSystemAccess} to grant legacy access.
    */
   legacyPaidThroughYmd?: string | null;
+  /**
+   * Watson complimentary access-through YYYY-MM-DD. `null` = loaded, no saved
+   * date (open). Omitted = not loaded (open, matching hasMemberAccess).
+   */
+  complimentaryThroughYmd?: string | null;
   /** Per-system one-time free pattern claims (canonical). */
   freeClaimsBySystem: FreeClaimsBySystem;
 }
@@ -125,6 +130,7 @@ export interface ResolvePatternSystemAccessParams {
   activePlanIds: readonly string[];
   patternSystemId: PatternSystemId;
   legacyPaidThroughYmd?: string | null;
+  complimentaryThroughYmd?: string | null;
   /** @deprecated Ignored — JSON unlock no longer grants access. */
   sleevelessUnlockedViaJson?: boolean;
 }
@@ -138,6 +144,11 @@ export function resolvePatternSystemAccess(params: ResolvePatternSystemAccessPar
   if (
     hasMemberAccessFromActivePlanIds(params.activePlanIds, {
       legacyPaidThroughYmd: params.legacyPaidThroughYmd,
+      // A saved complimentary date must limit builder access the same way it
+      // limits hasMemberAccess. Leave it out when not loaded (open plan).
+      ...(params.complimentaryThroughYmd !== undefined
+        ? { complimentaryThroughYmd: params.complimentaryThroughYmd }
+        : {}),
     })
   ) {
     return { hasSystemAccess: true };
@@ -156,6 +167,7 @@ export function hasPatternSystemAccess(
       activePlanIds: access.activePlanIds,
       patternSystemId: systemId,
       legacyPaidThroughYmd: access.legacyPaidThroughYmd,
+      complimentaryThroughYmd: access.complimentaryThroughYmd,
     }).hasSystemAccess;
   }
   // Legacy/test snapshots without plan ids: honor the boolean only when no plan data exists.
