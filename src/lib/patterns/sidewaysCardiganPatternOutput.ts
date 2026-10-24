@@ -27,6 +27,10 @@ import {
   type SidewaysCardiganBodyInstructionStep,
 } from "./sidewaysCardiganBodyInstructions";
 import { sidewaysFoldedHemCastOnSentence, sidewaysFoldedHemTurningNeedle } from "./sidewaysCardiganFinishing";
+import {
+  sidewaysOptionalShapingParagraphs,
+  sidewaysPulloverVNeckShapingLines,
+} from "./sidewaysBodyLearningVideos";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 
 export { shortRowActionRowCounters } from "./sidewaysCardiganBodyInstructions";
@@ -46,6 +50,7 @@ const SIDEWAYS_COMPLETED_ROWS_LABEL = "Completed rows";
 
 export const SIDEWAYS_PULLOVER_BODY_SECTION_TITLES = [
   "BEFORE YOU BEGIN",
+  "OPTIONAL TECHNIQUES",
   "CAST ON",
   "FIRST FRONT SHOULDER",
   "FIRST V-NECK",
@@ -60,6 +65,7 @@ export const SIDEWAYS_PULLOVER_BODY_SECTION_TITLES = [
 
 export const SIDEWAYS_CARDIGAN_BODY_SECTION_TITLES = [
   "BEFORE YOU BEGIN",
+  "OPTIONAL TECHNIQUES",
   "CAST ON",
   "FIRST V-NECK",
   "FIRST FRONT SHOULDER",
@@ -133,6 +139,12 @@ function shapingChartRows(
     action: `${actionVerb} ${formatStitchesCount(deltas[i] ?? 0)} ${prep}`,
     stitchesRemaining: workingAfter[i] ?? 0,
   }));
+}
+
+function optionalShapingSection(): SleevelessPatternDisplayRow[] {
+  const paragraphs = sidewaysOptionalShapingParagraphs();
+  if (paragraphs.length === 0) return [];
+  return [section("OPTIONAL TECHNIQUES"), block({ trustedParagraphs: paragraphs })];
 }
 
 function section(title: string): Extract<SleevelessPatternDisplayRow, { kind: "section" }> {
@@ -257,6 +269,7 @@ export function buildSidewaysCardiganBodyDisplayRows(
         "Keep the row counter running continuously through the body.",
       ],
     }),
+    ...optionalShapingSection(),
     section("CAST ON"),
     block({
       rc: 0,
@@ -433,6 +446,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
   instructions: SidewaysCardiganBodyInstructions,
   stitchesPerInch?: number,
   chartAudience?: unknown,
+  neckline?: unknown,
 ): SleevelessPatternDisplayRow[] {
   if (instructions.garmentStyle !== "pullover") return [];
 
@@ -459,6 +473,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
   const ragPh = g(CAST_ON_RAG_GLOSSARY_ID, "cast-on rag");
   const scrapPh = g(SCRAP_OFF_GLOSSARY_ID, "Scrap off");
   const openSideSeamStitches = sideSeamStitches ?? fullWidth - armhole;
+  const vNeckVideoLines = sidewaysPulloverVNeckShapingLines(neckline);
 
   return [
     { kind: "piece", title: BODY_PIECE_TITLE },
@@ -477,6 +492,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
         "Keep the row counter running continuously through the body.",
       ],
     }),
+    ...optionalShapingSection(),
     section("CAST ON"),
     block({
       rc: landmarks.firstSideSeam,
@@ -514,6 +530,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
     block({
       rc: firstVStep.rowCounterStart,
       trustedParagraphs: [
+        ...vNeckVideoLines,
         `Begin with all ${fullWidth} stitches in work.`,
         `Work a ${decreasePh} at the neckline edge over ${firstV.rows} rows:`,
         ...slopeProseLines(instructions.decreaseSequence, false),
@@ -537,6 +554,7 @@ export function buildSidewaysPulloverBodyDisplayRows(
     block({
       rc: secondVStep.rowCounterStart,
       trustedParagraphs: [
+        ...vNeckVideoLines,
         formatSidewaysPulloverNecklineCastOn({
           castOnStitches: vSts,
           bodyStitchesInWork: startingFrontStitches,
@@ -639,10 +657,16 @@ export function renderSidewaysCardiganBodyDisplayHtml(
   instructions: SidewaysCardiganBodyInstructions,
   stitchesPerInch?: number,
   chartAudience?: unknown,
+  neckline?: unknown,
 ): string {
   const rows =
     instructions.garmentStyle === "pullover"
-      ? buildSidewaysPulloverBodyDisplayRows(instructions, stitchesPerInch, chartAudience)
+      ? buildSidewaysPulloverBodyDisplayRows(
+          instructions,
+          stitchesPerInch,
+          chartAudience,
+          neckline,
+        )
       : buildSidewaysCardiganBodyDisplayRows(instructions, stitchesPerInch, chartAudience);
   if (rows.length === 0) return "";
   const inner = renderPatternDisplayRowsHtml(rows, {
