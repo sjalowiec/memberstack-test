@@ -4,7 +4,11 @@
  */
 
 import { createSockSizingAdapter } from "../lib/patterns/christmasStocking/sockSizing";
-import { readSockDraft } from "../lib/patterns/christmasStocking/sockDraft";
+import {
+  BASIC_SOCK_PATTERN_NAME,
+  readSockDraft,
+  SOCK_PATTERN_FAMILY_NAME,
+} from "../lib/patterns/christmasStocking/sockDraft";
 import { SOCK_EDIT_HREF } from "../lib/patterns/christmasStocking/sockPatternNavigation";
 import {
   buildSockPatternFromDraft,
@@ -38,6 +42,11 @@ import {
 } from "../lib/patterns/savedPatternReadOnlyChrome";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
+import {
+  printStitchPlanner,
+  setStitchPlannerActionVisible,
+  stitchPlannerProjectName,
+} from "../lib/patterns/stitchPlanner/stitchPlannerPrint";
 
 function loadSizingAdapterFromPage() {
   const node = document.getElementById("christmas-stocking-sizing-chart");
@@ -62,6 +71,7 @@ function showEmptyState(message: string): void {
   setVisible(empty, true);
   setVisible(results, false);
   setPatternPrintActionVisible(document.querySelector("#print-btn"), false);
+  setStitchPlannerActionVisible(document, false);
   const editBtn = document.querySelector("[data-christmas-stocking-edit-open]");
   if (editBtn instanceof HTMLElement) {
     editBtn.hidden = true;
@@ -143,6 +153,25 @@ export async function renderSocksPattern(): Promise<void> {
   }
 
   showResultsShell();
+  setStitchPlannerActionVisible(document, true);
+  const plannerButton = document.querySelector("[data-stitch-planner-print]");
+  if (plannerButton instanceof HTMLButtonElement) {
+    plannerButton.onclick = () => {
+      printStitchPlanner(result.calc, {
+        family: "christmas-stocking",
+        patternName: BASIC_SOCK_PATTERN_NAME,
+        projectName: stitchPlannerProjectName(result.view.patternName, [
+          SOCK_PATTERN_FAMILY_NAME,
+          BASIC_SOCK_PATTERN_NAME,
+        ]),
+        sizeLabel: result.view.sizeLabel,
+        constructionLabel: result.view.constructionLabel,
+        gaugeLabel: result.view.gaugeLabel,
+        displayUnit: result.view.unit,
+        sock: 1,
+      });
+    };
+  }
 
   const introEl = document.querySelector("[data-sg-pattern-intro]");
   if (introEl instanceof HTMLElement) {
