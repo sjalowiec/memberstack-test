@@ -9,6 +9,7 @@ import { logPatternActivity } from "../lib/patterns/patternActivityLog";
 import { patternSystemFromPathname } from "../lib/patterns/patternGenerationActivity";
 import { shouldRecordPatternPrint } from "../lib/patterns/patternPrintActivity";
 import {
+  isChristmasStockingPatternPrintPage,
   isHatPatternPrintPage,
   isSockPatternPrintPage,
   resolvePatternPrintPersonalizationFields,
@@ -90,6 +91,13 @@ function readStoredPrintPersonalization(): { title: string; notes: string } {
   if (isHatPatternPrintPage(document)) {
     return resolvePatternPrintPersonalizationFields({
       isHatPatternPage: true,
+      sleevelessFields: { title: "", notes: "" },
+    });
+  }
+  if (isChristmasStockingPatternPrintPage(document)) {
+    return resolvePatternPrintPersonalizationFields({
+      isHatPatternPage: false,
+      isChristmasStockingPatternPage: true,
       sleevelessFields: { title: "", notes: "" },
     });
   }

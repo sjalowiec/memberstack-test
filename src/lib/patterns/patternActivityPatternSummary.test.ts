@@ -33,6 +33,11 @@ describe("pattern activity pattern summary", () => {
         event({ eventType: "pattern_generated", userId: "mem_drop", patternSystem: "drop-shoulder" }),
         event({ eventType: "pattern_saved", userId: "mem_blanket", patternSystem: "blanket", patternId: "b1" }),
         event({ eventType: "pattern_opened", userId: "mem_socks", patternSystem: "socks" }),
+        event({
+          eventType: "pattern_opened",
+          userId: "mem_stocking",
+          patternSystem: "christmas-stocking",
+        }),
         event({ eventType: "pattern_updated", userId: "mem_sleeve", patternSystem: "sleeveless" }),
         event({ eventType: "pattern_printed", userId: "mem_side", patternSystem: "sideways-cardigan" }),
         event({ eventType: "pattern_generated", userId: "mem_rag", patternSystem: "raglan" }),

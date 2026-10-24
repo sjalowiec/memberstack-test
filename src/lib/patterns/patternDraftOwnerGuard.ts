@@ -16,6 +16,8 @@ import { clearHatSavedProjectIdentity } from "./hat/hatSavedProject";
 import { clearSleevelessExpressSession } from "./patternStorage";
 import { clearSockDraftStorage } from "./sock/sockDraft";
 import { clearSockSavedProjectIdentity } from "./sock/sockSavedProject";
+import { clearSockDraftStorage as clearChristmasStockingDraftStorage } from "./christmasStocking/sockDraft";
+import { clearSockSavedProjectIdentity as clearChristmasStockingSavedProjectIdentity } from "./christmasStocking/sockSavedProject";
 import {
   getCachedSleevelessUserAccess,
   resolveSleevelessUserAccess,
@@ -82,6 +84,8 @@ export function enforcePatternDraftOwner(
   clearHatSavedProjectIdentity();
   clearSockDraftStorage();
   clearSockSavedProjectIdentity();
+  clearChristmasStockingDraftStorage();
+  clearChristmasStockingSavedProjectIdentity();
   writePatternDraftOwnerId(current);
   return "cleared";
 }

@@ -12,18 +12,17 @@
 import {
   DS_ARROW,
   DS_FILL,
-  DS_FS_MEASURE,
-  DS_FS_TITLE,
-  DS_FW_TITLE,
   DS_MUTED,
   DS_STROKE,
-  DS_VB_W,
   endCap,
   escapeXml,
   fmtNum,
   textFont,
 } from "./dropShoulderPatternDiagramSvgShared";
-import { DS_FS_NOTATION, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
+import {
+  sidewaysPatternDiagramTypography,
+  type SidewaysPatternDiagramType,
+} from "./legoBlocks/patternDiagramTypography";
 import {
   sidewaysPulloverFirstArmholePlaceMarker,
   sidewaysPulloverFirstArmholeSideSeamFromCalc,
@@ -64,6 +63,8 @@ import {
   type DiagramRect,
 } from "./legoBlocks/patternDiagramFit";
 import type { SidewaysCardiganSleeveCalc } from "./sidewaysCardiganSleeveCalc";
+
+export { sidewaysPatternDiagramTypography, type SidewaysPatternDiagramType };
 
 export type SidewaysCardiganPatternDiagramModel = {
   garmentStyle: SidewaysCardiganGarmentStyle;
@@ -163,40 +164,6 @@ export function sidewaysDiagramEdgeStitchCount(
   calc: Pick<SidewaysCardiganBodyCalc, "garmentLengthStitches">,
 ): number {
   return Math.max(0, Math.round(calc.garmentLengthStitches));
-}
-
-export type SidewaysPatternDiagramType = {
-  /** Width the sizes were resolved against. Vertical padding is not included. */
-  viewBoxWidth: number;
-  stitch: number;
-  row: number;
-  piece: number;
-  pieceWeight: number;
-  /** Instruction note, smaller than piece titles and measurement values. */
-  note: number;
-  notation: number;
-  notationGap: number;
-};
-
-/**
- * Shared finished-pattern type (stitch/notation 17, row/measure 14, piece title 13,
- * instruction note 9, notation gap 18 on the 430-wide Drop Shoulder viewBox), scaled so a Sideways SVG
- * at `width: 100%` matches that on-screen size. Does not scale the silhouette.
- */
-export function sidewaysPatternDiagramTypography(viewBoxWidth: number): SidewaysPatternDiagramType {
-  const width = viewBoxWidth > 0 ? viewBoxWidth : DS_VB_W;
-  const scale = width / DS_VB_W;
-  const px = (canonical: number) => Math.max(1, Math.round(canonical * scale));
-  return {
-    viewBoxWidth: width,
-    stitch: px(DS_FS_NOTATION),
-    row: px(DS_FS_MEASURE),
-    piece: px(DS_FS_TITLE),
-    pieceWeight: DS_FW_TITLE,
-    note: px(9),
-    notation: px(DS_FS_NOTATION),
-    notationGap: px(DS_NOTATION_GAP),
-  };
 }
 
 /** Knitting-sequence Y (small = cast-on) drawn with cast-on at the bottom. */

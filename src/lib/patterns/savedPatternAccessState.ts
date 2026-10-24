@@ -216,6 +216,30 @@ export function shouldRedirectSocksLandingToMyPatterns(state: SavedPatternAccess
   return resolveSocksSavedPatternDestination(state) === MY_PATTERNS_ACCOUNT_HREF;
 }
 
+export type ChristmasStockingCatalogDestination =
+  | typeof MY_PATTERNS_ACCOUNT_HREF
+  | "/patterns/christmas-stocking";
+
+/** Same saved-pattern rule as Socks, for the Christmas Stocking landing and catalog card. */
+export function resolveChristmasStockingSavedPatternDestination(
+  state: SavedPatternAccessState,
+): ChristmasStockingCatalogDestination | null {
+  if (state.kind === "loading") return null;
+  if (
+    state.kind === "formerMemberWithPatterns" &&
+    ownsSavedPatternSystem(state, "christmas-stocking")
+  ) {
+    return MY_PATTERNS_ACCOUNT_HREF;
+  }
+  return "/patterns/christmas-stocking";
+}
+
+export function shouldRedirectChristmasStockingLandingToMyPatterns(
+  state: SavedPatternAccessState,
+): boolean {
+  return resolveChristmasStockingSavedPatternDestination(state) === MY_PATTERNS_ACCOUNT_HREF;
+}
+
 export function shouldShowSocksCreateAction(state: SavedPatternAccessState): boolean {
   return state.kind === "activeMember";
 }

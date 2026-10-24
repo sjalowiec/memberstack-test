@@ -28,6 +28,8 @@ type MsMock = {
   getCurrentMember: ReturnType<typeof vi.fn>;
   getMemberJSON: ReturnType<typeof vi.fn>;
   updateMemberJSON: ReturnType<typeof vi.fn>;
+  getAppAndMember?: ReturnType<typeof vi.fn>;
+  onReady?: Promise<unknown>;
 };
 
 function stubMemberstack(ms: Partial<MsMock>): void {
@@ -80,6 +82,81 @@ describe("getActivePlanIds (via resolver)", () => {
 });
 
 describe("resolveSleevelessUserAccess", () => {
+  it("waits for getAppAndMember when getCurrentMember is still logged out", async () => {
+    let calls = 0;
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({ data: null }),
+      getAppAndMember: vi.fn(async () => {
+        calls += 1;
+        if (calls < 3) return null;
+        return {
+          data: {
+            member: {
+              id: "ms_member",
+              planConnections: [
+                {
+                  planId: SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS[0],
+                  status: "ACTIVE",
+                  active: true,
+                },
+              ],
+            },
+          },
+        };
+      }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+
+    const access = await resolveSleevelessUserAccess();
+    expect(access).toMatchObject({
+      loggedIn: true,
+      hasSystemAccess: true,
+      memberId: "ms_member",
+    });
+    expect(calls).toBe(3);
+  });
+
+  it("keeps reading a logged-out payload until Memberstack onReady settles", async () => {
+    let resolveReady: () => void = () => {};
+    const onReady = new Promise<void>((resolve) => {
+      resolveReady = resolve;
+    });
+    let calls = 0;
+    stubMemberstack({
+      onReady,
+      getAppAndMember: vi.fn(async () => {
+        calls += 1;
+        if (calls === 1) return { data: null };
+        return {
+          data: {
+            member: {
+              id: "ms_member",
+              planConnections: [
+                {
+                  planId: SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS[0],
+                  status: "ACTIVE",
+                  active: true,
+                },
+              ],
+            },
+          },
+        };
+      }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+
+    const pending = resolveSleevelessUserAccess();
+    await vi.waitFor(() => {
+      expect(calls).toBeGreaterThanOrEqual(1);
+    });
+    resolveReady();
+    await expect(pending).resolves.toMatchObject({
+      loggedIn: true,
+      hasSystemAccess: true,
+      memberId: "ms_member",
+    });
+  });
+
   it("reports logged-out when Memberstack has no member", async () => {
     stubMemberstack({ getCurrentMember: vi.fn().mockResolvedValue({ data: null }) });
     await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({

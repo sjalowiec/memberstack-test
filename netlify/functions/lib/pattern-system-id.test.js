@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONSTRUCTION_AUTHORED_KEY,
   DROP_SHOULDER_CONSTRUCTION,
+  patternSystemDisplayName,
   resolvePatternSystemFromProject,
 } from "./pattern-system-id.js";
 import {
@@ -65,6 +66,24 @@ describe("resolvePatternSystemFromProject (server index classifier)", () => {
         customOverrides: {},
       }),
     ).toBe("sleeveless");
+  });
+
+  it("classifies Christmas Stockings before Socks and does not call them socks", () => {
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternType: "christmas-stocking", patternSystem: "christmas-stocking" },
+        customOverrides: {},
+      }),
+    ).toBe("christmas-stocking");
+    expect(
+      resolvePatternSystemFromProject({
+        family: "sleeveless",
+        pattern: { patternSystem: "christmas-stocking" },
+        customOverrides: {},
+      }),
+    ).toBe("christmas-stocking");
+    expect(patternSystemDisplayName("christmas-stocking")).toBe("Christmas Stocking");
   });
 
   it("classifies Socks stored under family sleeveless by patternType/patternSystem", () => {

@@ -20,11 +20,24 @@ export const SOCK_CANONICAL_VB_W = 284;
 export const SOCK_CANONICAL_VB_H = 480;
 const PAD_LEFT = 18;
 const PAD_RIGHT = 72;
-const PAD_TOP = 22;
-const PAD_BOTTOM = 18;
+/**
+ * Vertical margin for labels parked outside the silhouette.
+ * The knitting outline stays 284×480; this only adds room for the shared type size.
+ * Both ends are equal because Cuff-to-Toe flips the same canvas.
+ */
+const PAD_TOP = 220;
+const PAD_BOTTOM = 220;
 
-/** Extra right gutter so Stitches & Rows RC milestone labels are not clipped. */
-export const SOCK_STS_ROWS_PAD_RIGHT = 136;
+/**
+ * Extra right gutter so section measurements and RC labels at the shared
+ * finished-pattern type size are not clipped.
+ */
+export const SOCK_STS_ROWS_PAD_RIGHT = 260;
+
+/** Full SVG viewBox width, including the left pad and the right label gutter. */
+export function sockDiagramCanvasWidth(padRight: number = SOCK_STS_ROWS_PAD_RIGHT): number {
+  return SOCK_CANONICAL_VB_W + PAD_LEFT + padRight;
+}
 
 /** Screen-left X for the shared bottom→top reading arrow (viewBox space, not mirrored). */
 const READING_ARROW_X = -8;
@@ -124,11 +137,28 @@ export function sockCanonicalInnerMarkup(raw: string = canonicalSvgRaw): string 
     .trim();
 }
 
+/** The sock silhouette draws the ankle division at this canonical Y. Stockings omit it. */
+const SOCK_CANONICAL_ANKLE_BOUNDARY_Y = 184;
+
+function withoutSockAnkleBoundary(inner: string): string {
+  return inner.replace(
+    new RegExp(
+      `<line\\b[^>]*\\by1="${SOCK_CANONICAL_ANKLE_BOUNDARY_Y}"[^>]*\\by2="${SOCK_CANONICAL_ANKLE_BOUNDARY_Y}"[^>]*/>`,
+      "g",
+    ),
+    "",
+  );
+}
+
 export function sockCanonicalGeometryMarkup(options?: {
   mirror?: boolean;
   flipVertical?: boolean;
+  /** Christmas Stocking has no separate ankle, so the sock division line is left out. */
+  omitAnkleBoundary?: boolean;
 }): string {
-  const inner = sockCanonicalInnerMarkup();
+  const inner = options?.omitAnkleBoundary
+    ? withoutSockAnkleBoundary(sockCanonicalInnerMarkup())
+    : sockCanonicalInnerMarkup();
   const mirror = options?.mirror === true;
   const flipVertical = options?.flipVertical === true;
   const sx = mirror ? -1 : 1;
@@ -214,20 +244,23 @@ export function sockCanonicalStacked(options: {
   y: number;
   lines: string[];
   size?: number;
+  /** Baseline step. Defaults to the old tight stack when a caller has no shared gap. */
+  lineGap?: number;
   weight?: string;
   anchor?: "start" | "middle" | "end";
   fill?: string;
 }): string {
   const size = options.size ?? 11;
+  const lineGap = options.lineGap ?? size + 2;
   const usable = options.lines.filter((line) => line.length > 0);
   if (!usable.length) return "";
-  const startY = options.y - ((usable.length - 1) * (size + 2)) / 2;
+  const startY = options.y - ((usable.length - 1) * lineGap) / 2;
   return usable
     .map((line, index) =>
       sockCanonicalText({
         ...options,
         id: usable.length === 1 ? options.id : `${options.id}-${index}`,
-        y: startY + index * (size + 2),
+        y: startY + index * lineGap,
         text: line,
         size,
       }),

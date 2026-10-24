@@ -5,6 +5,7 @@ import {
   isSupportedCustomPatternProjectType,
   UNSUPPORTED_CUSTOM_PATTERN_TYPE_ERROR,
 } from "./custom-pattern-projects-store.js";
+import { resolvePatternSystemFromProject } from "./pattern-system-id.js";
 
 const SLEEVELESS_ONLY_WARNING = "Only sleeveless pattern projects are supported in this phase.";
 
@@ -24,6 +25,14 @@ describe("isSupportedCustomPatternProjectType", () => {
     expect(isSupportedCustomPatternProjectType({ patternType: "sleeveless" })).toBe(true);
     expect(isSupportedCustomPatternProjectType({ patternType: "hat" })).toBe(true);
     expect(isSupportedCustomPatternProjectType({ patternSystem: "hat" })).toBe(true);
+    expect(isSupportedCustomPatternProjectType({ patternType: "christmas-stocking" })).toBe(true);
+    expect(
+      isSupportedCustomPatternProjectType({
+        patternType: "christmas-stocking",
+        patternSystem: "christmas-stocking",
+      }),
+    ).toBe(true);
+    expect(isSupportedCustomPatternProjectType({ patternSystem: "christmas-stocking" })).toBe(true);
     expect(isSupportedCustomPatternProjectType({ patternType: "socks" })).toBe(true);
     expect(isSupportedCustomPatternProjectType({ patternType: "socks", patternSystem: "socks" })).toBe(
       true,
@@ -102,6 +111,22 @@ describe("buildProjectRecord pattern-type gate", () => {
   it("saves a Socks project identified only by patternSystem", () => {
     const built = buildProjectRecord(projectInput({ patternSystem: "socks" }), "user-1");
     expect(built.ok).toBe(true);
+  });
+
+  it("saves a Christmas Stocking project without classifying it as socks", () => {
+    const built = buildProjectRecord(
+      projectInput({
+        patternType: "christmas-stocking",
+        patternSystem: "christmas-stocking",
+        gaugeSlots: { inches: { stitch: "7", row: "10" }, cm: { stitch: "", row: "" } },
+      }),
+      "user-1",
+    );
+    expect(built.ok).toBe(true);
+    if (!built.ok) return;
+    expect(built.project.pattern.patternType).toBe("christmas-stocking");
+    expect(built.project.pattern.patternSystem).toBe("christmas-stocking");
+    expect(resolvePatternSystemFromProject(built.project)).toBe("christmas-stocking");
   });
 
   it("updates an existing Socks project in place instead of minting a new id", () => {

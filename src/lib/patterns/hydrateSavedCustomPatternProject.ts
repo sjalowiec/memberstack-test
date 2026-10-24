@@ -5,6 +5,10 @@
 import { hydrateHatSavedProject, isHatCustomPatternProject } from "./hat/hatSavedProject";
 import { hydrateSockSavedProject, isSockCustomPatternProject } from "./sock/sockSavedProject";
 import {
+  hydrateSockSavedProject as hydrateChristmasStockingSavedProject,
+  isChristmasStockingCustomPatternProject,
+} from "./christmasStocking/sockSavedProject";
+import {
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "./availableNeedlesMirrors";
 import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
@@ -117,6 +121,10 @@ export function hydrateSavedCustomPatternProjectSession(
 ): void {
   if (isHatCustomPatternProject(project)) {
     hydrateHatSavedProject(project);
+    return;
+  }
+  if (isChristmasStockingCustomPatternProject(project)) {
+    hydrateChristmasStockingSavedProject(project);
     return;
   }
   if (isSockCustomPatternProject(project)) {

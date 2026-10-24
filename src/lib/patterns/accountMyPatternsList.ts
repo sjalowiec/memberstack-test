@@ -313,7 +313,7 @@ function syncMyPatternsCopyAccess(root: HTMLElement): void {
 
 /** Hats and Socks expose the shared Rename action; sweater rows stay without a Rename button. */
 export function shouldOfferSavedPatternRename(patternSystem: PatternSystemId): boolean {
-  return patternSystem === "hat" || patternSystem === "socks";
+  return patternSystem === "hat" || patternSystem === "socks" || patternSystem === "christmas-stocking";
 }
 
 function syncMyPatternsRenameAccess(root: HTMLElement): void {

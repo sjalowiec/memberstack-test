@@ -9,7 +9,7 @@ import {
   DS_FW_TITLE,
   DS_VB_W,
 } from "./dropShoulderPatternDiagramSvgShared";
-import { DS_FS_NOTATION, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
+import { DS_FS_NOTATION, DS_FS_RC, DS_NOTATION_GAP } from "./dropShoulderShapingNotationDiagramShared";
 import { SLEEVELESS_DIAGRAM_INLINE_CLASS } from "./sleevelessDiagramModal";
 import {
   diagramSilhouettePanelHeightShare,
@@ -215,6 +215,7 @@ describe.each(["cardigan", "pullover"] as const)("Sideways %s diagram direction 
     expect(type.pieceWeight).toBe(DS_FW_TITLE);
     expect(type.stitch / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
     expect(type.notation / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_NOTATION / DS_VB_W, 2);
+    expect(type.rc / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_RC / DS_VB_W, 2);
     expect(type.row / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_MEASURE / DS_VB_W, 2);
     expect(type.piece / canvas.type.viewBoxWidth).toBeCloseTo(DS_FS_TITLE / DS_VB_W, 2);
     expect(type.note / canvas.type.viewBoxWidth).toBeCloseTo(9 / DS_VB_W, 2);

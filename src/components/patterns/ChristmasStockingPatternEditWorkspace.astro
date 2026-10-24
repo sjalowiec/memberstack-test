@@ -1,0 +1,395 @@
+---
+/**
+ * Shared Christmas Stocking Summary/Edit workspace.
+ * Compact choices + gauge; finished measurements are chips on the sock image.
+ * Used by `/patterns/christmas-stocking/edit/` and `/patterns/christmas-stocking/summary/`.
+ * Draft: kbm_socks_draft. Update Pattern returns to the finished Pattern page.
+ */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import PatternSummaryEditWorkspace from "./PatternSummaryEditWorkspace.astro";
+import PatternSummaryDiagramStage from "./PatternSummaryDiagramStage.astro";
+import PatternSummaryMeasurementChip from "./PatternSummaryMeasurementChip.astro";
+import PatternProjectDetails from "./PatternProjectDetails.astro";
+import GlossaryTermModal from "../glossary/GlossaryTermModal.astro";
+import {
+  SOCK_SUMMARY_ART_SRC,
+  SOCK_SUMMARY_CHIP_TARGET_POINTS,
+  SOCK_SUMMARY_MEASUREMENT_FIELDS,
+  SOCK_EDIT_MEASUREMENT_TARGETS,
+} from "../../lib/patterns/christmasStocking/sockPatternEditTargets";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+} from "../../lib/patterns/sock/sockAvailableNeedles";
+import {
+  createSockSizingAdapter,
+  listSockSizingOptions,
+} from "../../lib/patterns/christmasStocking/sockSizing";
+import {
+  SOCK_EDIT_CANCEL_LABEL,
+  SOCK_EDIT_PRIMARY_LABEL,
+  SOCK_PATTERN_BUILDER_HREF,
+  SOCK_PATTERN_HREF,
+} from "../../lib/patterns/christmasStocking/sockPatternNavigation";
+import {
+  SOCK_CONSTRUCTION_DIRECTION_LABELS,
+  SOCK_PATTERN_MISSING_DRAFT_MESSAGE,
+} from "../../lib/patterns/christmasStocking/sockPatternFromDraft";
+import { SOCK_PATTERN_SYSTEM_DISPLAY_NAME } from "../../lib/patterns/christmasStocking/sockDraft";
+
+const sockSizingJson = JSON.parse(
+  readFileSync(resolve("public/data/sizing_xmas_stockings.json"), "utf8"),
+) as unknown;
+const sockSizingRows = listSockSizingOptions(createSockSizingAdapter(sockSizingJson), "inches");
+---
+
+<div class="hat-pattern-empty" data-christmas-stocking-edit-empty role="status" hidden>
+  <h1 class="hat-pattern-empty__title">{SOCK_PATTERN_SYSTEM_DISPLAY_NAME}</h1>
+  <p class="hat-pattern-empty__message" data-christmas-stocking-edit-empty-message>
+    {SOCK_PATTERN_MISSING_DRAFT_MESSAGE}
+  </p>
+  <a
+    href={SOCK_PATTERN_BUILDER_HREF}
+    class="kbm-btn kbm-btn-accent"
+    data-testid="christmas-stocking-edit-empty-cta"
+  >
+    Go to Christmas Stocking Builder
+  </a>
+</div>
+
+<div
+  class="christmas-stocking-edit-workspace"
+  data-christmas-stocking-edit-workspace
+  data-testid="christmas-stocking-edit-workspace"
+  hidden
+>
+  <PatternSummaryEditWorkspace
+    measurePaneAttr="data-christmas-stocking-edit-measure-pane"
+    actionsAttr="data-christmas-stocking-edit-actions"
+  >
+    <Fragment slot="quick">
+      <PatternProjectDetails
+        titleId="christmas-stocking-edit-title"
+        notesId="christmas-stocking-edit-notes"
+        notesRegionId="christmas-stocking-edit-notes-region"
+        titlePlaceholder="Christmas Stocking"
+        titleFieldAttr="data-christmas-stocking-edit-title-field"
+        titleInputAttr="data-christmas-stocking-edit-title"
+        titleTestId="christmas-stocking-edit-title"
+        notesInputAttr="data-christmas-stocking-edit-notes"
+        notesTestId="christmas-stocking-edit-notes"
+      />
+
+      <section class="sl-edit-section sl-edit-units-section" aria-labelledby="christmas-stocking-edit-units-heading">
+        <h3 class="sl-edit-section__title" id="christmas-stocking-edit-units-heading">Units</h3>
+        <div
+          class="sl-edit-units-toggle"
+          role="group"
+          aria-labelledby="christmas-stocking-edit-units-heading"
+          data-christmas-stocking-edit-units
+        >
+          <button
+            type="button"
+            class="sl-edit-unit-btn is-active"
+            data-christmas-stocking-edit-unit="inches"
+            aria-pressed="true"
+          >
+            Inches
+          </button>
+          <button
+            type="button"
+            class="sl-edit-unit-btn"
+            data-christmas-stocking-edit-unit="cm"
+            aria-pressed="false"
+          >
+            Centimeters
+          </button>
+        </div>
+      </section>
+
+      <section class="sl-edit-section" aria-labelledby="christmas-stocking-edit-choices-heading">
+        <h3 class="sl-edit-section__title" id="christmas-stocking-edit-choices-heading">
+          Pattern choices
+        </h3>
+
+        <div class="sl-edit-field">
+          <label class="sl-edit-sublabel" for="christmas-stocking-edit-size">Stocking size</label>
+          <select
+            id="christmas-stocking-edit-size"
+            class="sl-edit-input sl-edit-select"
+            data-christmas-stocking-edit-size
+            data-testid="christmas-stocking-edit-size"
+          >
+            <option value="">Choose a finished stocking size…</option>
+            {
+              sockSizingRows.map((row) => (
+                <option value={row.size}>{row.optionLabel}</option>
+              ))
+            }
+          </select>
+          <p class="sl-edit-field-error" data-christmas-stocking-edit-error="sizeSel" hidden role="alert"></p>
+        </div>
+
+        <div class="sl-edit-field">
+          <label class="sl-edit-sublabel" for="christmas-stocking-edit-construction">
+            Construction direction
+          </label>
+          <select
+            id="christmas-stocking-edit-construction"
+            class="sl-edit-input sl-edit-select"
+            data-christmas-stocking-edit-construction
+            data-testid="christmas-stocking-edit-construction"
+          >
+            <option value="">Choose construction direction</option>
+            <option value="cuff-to-toe">{SOCK_CONSTRUCTION_DIRECTION_LABELS["cuff-to-toe"]}</option>
+            <option value="toe-up">{SOCK_CONSTRUCTION_DIRECTION_LABELS["toe-up"]}</option>
+          </select>
+          <p
+            class="sl-edit-field-error"
+            data-christmas-stocking-edit-error="constructionDirection"
+            hidden
+            role="alert"
+          >
+          </p>
+        </div>
+      </section>
+
+      <section class="sl-edit-section" aria-labelledby="christmas-stocking-edit-gauge-heading">
+        <h3 class="sl-edit-section__title" id="christmas-stocking-edit-gauge-heading">
+          Gauge / machine
+        </h3>
+        <p class="sl-edit-ease" data-christmas-stocking-edit-gauge-help>stitches / rows over 4 inches</p>
+        <div class="christmas-stocking-edit-gauge-grid">
+          <div class="sl-edit-field">
+            <label class="sl-edit-sublabel" for="christmas-stocking-edit-stitch-gauge">Stitch gauge</label>
+            <input
+              id="christmas-stocking-edit-stitch-gauge"
+              class="sl-edit-input"
+              type="number"
+              inputmode="decimal"
+              step="0.1"
+              min="0"
+              data-christmas-stocking-edit-stitch-gauge
+              data-testid="christmas-stocking-edit-stitch-gauge"
+            />
+            <p
+              class="sl-edit-field-error"
+              data-christmas-stocking-edit-error="stitchGauge"
+              hidden
+              role="alert"
+            >
+            </p>
+          </div>
+          <div class="sl-edit-field">
+            <label class="sl-edit-sublabel" for="christmas-stocking-edit-row-gauge">Row gauge</label>
+            <input
+              id="christmas-stocking-edit-row-gauge"
+              class="sl-edit-input"
+              type="number"
+              inputmode="decimal"
+              step="0.1"
+              min="0"
+              data-christmas-stocking-edit-row-gauge
+              data-testid="christmas-stocking-edit-row-gauge"
+            />
+            <p class="sl-edit-field-error" data-christmas-stocking-edit-error="rowGauge" hidden role="alert"></p>
+          </div>
+        </div>
+        <div class="sl-edit-field christmas-stocking-edit-needles-field">
+          <label class="sl-edit-sublabel" for="christmas-stocking-edit-available-needles"
+            >{AVAILABLE_NEEDLES_LABEL}</label
+          >
+          <input
+            id="christmas-stocking-edit-available-needles"
+            class="sl-edit-input"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            step="1"
+            data-christmas-stocking-edit-available-needles
+            data-testid="christmas-stocking-edit-available-needles"
+          />
+          <p class="sl-edit-ease">{AVAILABLE_NEEDLES_HELPER_TEXT}</p>
+          <p
+            class="sl-edit-field-error"
+            data-christmas-stocking-edit-error="availableNeedles"
+            hidden
+            role="alert"
+          >
+          </p>
+        </div>
+      </section>
+    </Fragment>
+
+    <Fragment slot="hint">
+      The leg is the same circumference as the foot. Top edging is included in the leg length.
+    </Fragment>
+
+    <Fragment slot="notes">
+      <p class="sl-edit-error-note" data-christmas-stocking-edit-form-error hidden role="alert"></p>
+    </Fragment>
+
+    <Fragment slot="actions">
+      <a
+        href={SOCK_PATTERN_HREF}
+        class="sl-edit-btn sl-edit-btn--ghost"
+        data-christmas-stocking-edit-cancel
+        data-testid="button-edit-cancel"
+      >
+        {SOCK_EDIT_CANCEL_LABEL}
+      </a>
+      <button
+        type="button"
+        class="sl-edit-btn sl-edit-btn--primary"
+        data-christmas-stocking-edit-update
+        data-testid="button-edit-update"
+      >
+        {SOCK_EDIT_PRIMARY_LABEL}
+      </button>
+    </Fragment>
+
+    <Fragment slot="diagram">
+      <PatternSummaryDiagramStage
+        stageTestId="christmas-stocking-edit-diagram-area"
+        diagramAttr="data-christmas-stocking-edit-diagram"
+        overlayAttr="data-christmas-stocking-edit-overlay"
+        stageInnerAttr="data-christmas-stocking-edit-stage"
+      >
+        <Fragment slot="art">
+          <img
+            class="christmas-stocking-edit-art"
+            src={SOCK_SUMMARY_ART_SRC}
+            alt="Single sock outline for Christmas stocking measurements."
+            width="640"
+            height="800"
+            decoding="async"
+            data-christmas-stocking-edit-art
+          />
+          <svg
+            class="christmas-stocking-edit-chip-targets"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+            focusable="false"
+            data-christmas-stocking-edit-chip-targets
+          >
+            <circle
+              id={SOCK_EDIT_MEASUREMENT_TARGETS.legLength}
+              cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.legLength.x}
+              cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.legLength.y}
+              r="2"
+              fill="none"
+            />
+            <circle
+              id={SOCK_EDIT_MEASUREMENT_TARGETS.footLength}
+              cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.footLength.x}
+              cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.footLength.y}
+              r="2"
+              fill="none"
+            />
+            <circle
+              id={SOCK_EDIT_MEASUREMENT_TARGETS.footCircumference}
+              cx={SOCK_SUMMARY_CHIP_TARGET_POINTS.footCircumference.x}
+              cy={SOCK_SUMMARY_CHIP_TARGET_POINTS.footCircumference.y}
+              r="2"
+              fill="none"
+            />
+          </svg>
+        </Fragment>
+        {SOCK_SUMMARY_MEASUREMENT_FIELDS.map((field) => (
+          <PatternSummaryMeasurementChip field={field} />
+        ))}
+      </PatternSummaryDiagramStage>
+    </Fragment>
+  </PatternSummaryEditWorkspace>
+</div>
+
+<script
+  type="application/json"
+  id="christmas-stocking-sizing-chart"
+  set:html={JSON.stringify(sockSizingJson)}
+/>
+
+<GlossaryTermModal />
+
+<style>
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  .christmas-stocking-edit-workspace[hidden] {
+    display: none;
+  }
+
+  :global(.christmas-stocking-edit-page .sl-edit-btn--ghost),
+  :global(.christmas-stocking-edit-page .sl-edit-btn--primary) {
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  :global(.christmas-stocking-edit-page .sl-edit-workspace__measure-hint) {
+    max-width: 28rem;
+  }
+
+  :global(.christmas-stocking-edit-page .sl-edit-workspace__quick) {
+    max-width: 22rem;
+  }
+
+  .christmas-stocking-edit-gauge-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .christmas-stocking-edit-needles-field {
+    max-width: 14rem;
+  }
+
+  :global(.christmas-stocking-edit-page .ps-measure) {
+    margin: 0 0 0.75rem;
+  }
+
+  :global(.christmas-stocking-edit-page .ps-measure-art) {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  :global(.christmas-stocking-edit-page .christmas-stocking-edit-art) {
+    display: block;
+    width: 100%;
+    max-width: 18rem;
+    height: auto;
+  }
+
+  :global(.christmas-stocking-edit-page .christmas-stocking-edit-chip-targets) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  :global(.christmas-stocking-edit-page .ps-measure-stage__inner[data-measurement-overlay-mode="desktop"]) {
+    padding: 2.75rem 11rem 3.25rem 6.75rem;
+  }
+</style>
