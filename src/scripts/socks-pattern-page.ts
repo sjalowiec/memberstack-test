@@ -4,7 +4,7 @@
  */
 
 import { createSockSizingAdapter } from "../lib/patterns/sock/sockSizing";
-import { BASIC_SOCK_PATTERN_NAME, readSockDraft, SOCK_PATTERN_FAMILY_NAME } from "../lib/patterns/sock/sockDraft";
+import { readSockDraft } from "../lib/patterns/sock/sockDraft";
 import { SOCK_EDIT_HREF } from "../lib/patterns/sock/sockPatternNavigation";
 import {
   buildSockPatternFromDraft,
@@ -44,11 +44,6 @@ import {
 } from "../lib/patterns/savedPatternReadOnlyChrome";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
-import {
-  printStitchPlanner,
-  setStitchPlannerActionVisible,
-  stitchPlannerProjectName,
-} from "../lib/patterns/stitchPlanner/stitchPlannerPrint";
 
 function loadSizingAdapterFromPage() {
   const node = document.getElementById("socks-sizing-chart");
@@ -73,7 +68,6 @@ function showEmptyState(message: string): void {
   setVisible(empty, true);
   setVisible(results, false);
   setPatternPrintActionVisible(document.querySelector("#print-btn"), false);
-  setStitchPlannerActionVisible(document, false);
   const editBtn = document.querySelector("[data-socks-edit-open]");
   if (editBtn instanceof HTMLElement) {
     editBtn.hidden = true;
@@ -142,28 +136,6 @@ export async function renderSocksPattern(): Promise<void> {
   }
 
   showResultsShell();
-  setStitchPlannerActionVisible(document, true);
-  const plannerButton = document.querySelector("[data-stitch-planner-print]");
-  if (plannerButton instanceof HTMLButtonElement) {
-    plannerButton.onclick = () => {
-      const pairRoot = document.querySelector("[data-socks-pair-tabs]");
-      const sock =
-        pairRoot instanceof HTMLElement && selectedSockPairTab(pairRoot) === "sock-2" ? 2 : 1;
-      printStitchPlanner(result.calc, {
-        family: "socks",
-        patternName: BASIC_SOCK_PATTERN_NAME,
-        projectName: stitchPlannerProjectName(result.view.patternName, [
-          SOCK_PATTERN_FAMILY_NAME,
-          BASIC_SOCK_PATTERN_NAME,
-        ]),
-        sizeLabel: result.view.sizeLabel,
-        constructionLabel: result.view.constructionLabel,
-        gaugeLabel: result.view.gaugeLabel,
-        displayUnit: result.view.unit,
-        sock,
-      });
-    };
-  }
 
   const introEl = document.querySelector("[data-sg-pattern-intro]");
   if (introEl instanceof HTMLElement) {

@@ -412,7 +412,7 @@ describe("stitch planner print document", () => {
 });
 
 describe("stitch planner pattern-page actions", () => {
-  it("adds Print Stitch Planner to both pattern pages without changing the diagram builders", () => {
+  it("keeps the planner off both pattern pages and leaves normal printing in place", () => {
     const socksPage = readFileSync(resolve("src/pages/patterns/socks/pattern.astro"), "utf8");
     const stockingPage = readFileSync(
       resolve("src/pages/patterns/christmas-stocking/pattern.astro"),
@@ -425,12 +425,16 @@ describe("stitch planner pattern-page actions", () => {
     );
     const diagram = readFileSync(resolve("src/lib/patterns/sock/sockPatternDiagramSvg.ts"), "utf8");
     for (const source of [socksPage, stockingPage]) {
-      expect(source).toContain("Print Stitch Planner");
-      expect(source).toContain("data-stitch-planner-print");
-      expect(source).toContain("sleeveless-pattern-print-action");
+      expect(source).not.toContain("Print Stitch Planner");
+      expect(source).not.toContain("data-stitch-planner-print");
+      expect(source).toContain("includePrint");
     }
-    expect(socksScript).toContain("printStitchPlanner(result.calc");
-    expect(stockingScript).toContain("printStitchPlanner(result.calc");
+    expect(socksScript).not.toContain("printStitchPlanner");
+    expect(stockingScript).not.toContain("printStitchPlanner");
+    expect(socksScript).toContain("triggerPatternPrint");
+    expect(stockingScript).toContain("triggerPatternPrint");
+    expect(socksScript).toContain('document.querySelector("#print-btn")');
+    expect(stockingScript).toContain('document.querySelector("#print-btn")');
     expect(socksScript).not.toContain("calculateBasicSockPattern");
     expect(diagram).not.toContain("stitchPlanner");
     expect(diagram).not.toContain("Print Stitch Planner");
