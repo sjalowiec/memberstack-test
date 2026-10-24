@@ -426,6 +426,19 @@ describe("publishedBundleReplacesImplicitOverlay", () => {
     expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(false);
   });
 
+  it("replaces a published Course 66 overlay when the restored git course is newer", () => {
+    const overlay = sampleCourse();
+    overlay.course.legacyChallengeId = 66;
+    overlay.course.status = "published";
+    overlay.course.published = true;
+    const bundled = sampleCourse();
+    bundled.course.legacyChallengeId = 66;
+    bundled.course.status = "published";
+    bundled.course.published = true;
+    bundled.course.legacy = { ...bundled.course.legacy, contentRevision: 1 };
+    expect(publishedBundleReplacesImplicitOverlay(overlay, bundled)).toBe(true);
+  });
+
   it("does not replace another course", () => {
     const overlay = sampleCourse();
     delete overlay.course.status;

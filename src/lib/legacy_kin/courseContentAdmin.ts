@@ -249,16 +249,21 @@ function contentRevision(data: CoursePreviewData): number {
 }
 
 /**
- * Course 50's DEV blob can hide a newer published git course. Replace an
- * implicit public copy, and replace a published copy when the git course
- * has a higher contentRevision. A draft overlay, or a published overlay at
- * the same or newer revision, is left alone so a later editor save sticks.
+ * Courses 50 and 66 can have a DEV blob that hides a newer published git
+ * course. Replace an implicit public copy, and replace a published copy when
+ * the git course has a higher contentRevision. A draft overlay, or a published
+ * overlay at the same or newer revision, is left alone so a later editor save
+ * sticks.
  */
+const PUBLISHED_BUNDLE_REPLACES_OVERLAY_IDS = new Set([50, 66]);
+
 export function publishedBundleReplacesImplicitOverlay(
   overlay: CoursePreviewData,
   bundled: CoursePreviewData,
 ): boolean {
-  if (Number(bundled.course.legacyChallengeId) !== 50) return false;
+  if (!PUBLISHED_BUNDLE_REPLACES_OVERLAY_IDS.has(Number(bundled.course.legacyChallengeId))) {
+    return false;
+  }
   if (!isExplicitlyPublished(bundled.course)) return false;
   if (overlay.course.status === "draft" || overlay.course.published === false) return false;
   if (contentRevision(bundled) > contentRevision(overlay)) return true;

@@ -74,10 +74,14 @@
     },
     {
       "slug": "ribber-basic-bootcamp",
+      "title": "Ribber Basic Bootcamp",
       "category": "Ribber",
       "catalogStatus": "available",
       "access": "member",
-      "description": "Get comfortable with your ribber through hands-on practice: cast on, bind off, needle arrangements, and double-bed fabrics."
+      "description": "Get comfortable with your ribber through hands-on practice: cast on, bind off, needle arrangements, and double-bed fabrics.",
+      "href": "/courses/66",
+      "buttonLabel": "View Course",
+      "thumbnail": "/images/courses/ribber.webp"
     },
     {
       "slug": "beginner-workshop",

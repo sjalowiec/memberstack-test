@@ -12,12 +12,12 @@ describe("publishedAvailablePlayerHref", () => {
       publishedAvailablePlayerHref("mastering-the-silver-reed-sk840-a-comprehensive-course"),
     ).toBe("/courses/111");
     expect(publishedAvailablePlayerHref("lk-150-fun")).toBe("/courses/51");
+    expect(publishedAvailablePlayerHref("ribber-basic-bootcamp")).toBe("/courses/66");
   });
 
   it("leaves unpublished and not-yet-available courses on the named landing", () => {
     expect(publishedAvailablePlayerHref("set-in-sleeve-perfection")).toBeUndefined();
     expect(publishedAvailablePlayerHref("not-enough-needles")).toBeUndefined();
-    expect(publishedAvailablePlayerHref("ribber-basic-bootcamp")).toBeUndefined();
     expect(publishedAvailablePlayerHref("beginner-workshop")).toBeUndefined();
     expect(publishedAvailablePlayerHref("not-a-real-course-slug")).toBeUndefined();
     expect(publishedAvailablePlayerHref("34")).toBeUndefined();
