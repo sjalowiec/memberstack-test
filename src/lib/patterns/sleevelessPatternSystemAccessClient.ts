@@ -4,7 +4,12 @@
  * Per-system free claims are stored on Memberstack member JSON (`getMemberJSON` /
  * `updateMemberJSON`) — account-tied, not localStorage.
  */
-import { getActivePlanIds, hasMemberAccess, rememberedLegacyPaidThroughYmdForMember } from "../memberAccess";
+import {
+  getActivePlanIds,
+  hasMemberAccess,
+  rememberedComplimentaryThroughYmdForMember,
+  rememberedLegacyPaidThroughYmdForMember,
+} from "../memberAccess";
 import {
   invalidateVerifiedMemberAccess,
   resolveVerifiedMemberAccess,
@@ -164,6 +169,7 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
   const sleevelessUnlockedViaJson = readSleevelessSystemUnlockFromMemberJson(memberJson);
   const freeClaimsBySystem = readFreeClaimsBySystemFromMemberJson(memberJson);
   const legacyPaidThroughYmd = rememberedLegacyPaidThroughYmdForMember(memberId) ?? null;
+  const complimentaryThroughYmd = rememberedComplimentaryThroughYmdForMember(memberId);
 
   const base = {
     loggedIn: true as const,
@@ -172,6 +178,7 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
     sleevelessUnlockedViaJson,
     freeClaimsBySystem,
     legacyPaidThroughYmd,
+    ...(complimentaryThroughYmd !== undefined ? { complimentaryThroughYmd } : {}),
   };
   const hasSystemAccess = computeHasSystemAccessFlag(base);
 
