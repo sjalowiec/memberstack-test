@@ -1,3 +1,4 @@
+import { adminSignInPageDocument } from "./adminSignInPage";
 import { adminAuthErrorBody, type RequireAdminResult } from "./requireAdminRequest";
 
 /**
@@ -19,7 +20,9 @@ function isAdminApiPath(pathname: string): boolean {
 
 /**
  * Server response for a failed admin check. `null` means the request may continue.
- * Page responses stay plain text so a denied visitor does not receive admin HTML.
+ * Signed-out page requests get a sign-in document and no admin HTML. Signed-in
+ * non-admins stay on a plain denial. Admin APIs stay JSON. An allowlisted owner
+ * is not handled here — `requireAdmin` must return ok before the page renders.
  */
 export function adminGateResponse(
   auth: RequireAdminResult,
@@ -38,12 +41,14 @@ export function adminGateResponse(
     });
   }
 
-  const message =
-    status === 403
-      ? "Admin access required."
-      : status === 500
-        ? "Admin access is unavailable."
-        : "Sign in required.";
+  if (status === 401) {
+    return new Response(adminSignInPageDocument(), {
+      status,
+      headers: { ...headers, "Content-Type": "text/html; charset=utf-8" },
+    });
+  }
+
+  const message = status === 403 ? "Admin access required." : "Admin access is unavailable.";
   return new Response(message, {
     status,
     headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" },
