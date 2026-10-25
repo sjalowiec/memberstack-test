@@ -17,41 +17,52 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </p>
     </header>
 
+    <p id="videos-edit-save-target" class="videos-edit-save-target" hidden></p>
     <p id="videos-edit-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    <section id="videos-edit-result" class="videos-edit-result" hidden aria-live="polite" aria-labelledby="videos-edit-result-title">
+      <h2 id="videos-edit-result-title" class="videos-edit-result__title">Save result</h2>
+      <ol id="videos-edit-steps" class="videos-edit-steps"></ol>
+      <p class="videos-edit-result__actions">
+        <button type="button" id="btn-check-live" class="kbm-btn kbm-btn-outline" hidden>Check live</button>
+        <a id="videos-edit-result-preview" class="kbm-btn kbm-btn-outline" href="#" hidden target="_blank" rel="noopener">Open preview</a>
+        <a id="videos-edit-result-public" class="kbm-btn kbm-btn-outline" href="#" hidden target="_blank" rel="noopener">Open video page</a>
+      </p>
+    </section>
 
     <section class="admin-panel help-hub-admin__form-panel" aria-labelledby="form-heading">
       <h2 id="form-heading">Edit video</h2>
       <p id="videos-edit-mode" class="help-hub-admin__mode">Loading…</p>
+      <p id="videos-edit-state" class="videos-edit-state" hidden></p>
 
       <form id="videos-edit-form" class="help-hub-admin__form" autocomplete="off">
         <div class="field-grid">
           <label>
-            <span>content_id <em class="req">*</em></span>
-            <input type="text" name="content_id" id="field-content_id" required />
-            <span class="field-hint">Knit It Now video number. Use the next unused number for a new video, or keep the existing number when editing.</span>
-          </label>
-          <label class="field-full">
-            <span>slug <em class="req">*</em></span>
-            <input type="text" name="slug" id="field-slug" required />
+            <span>Video number</span>
+            <input type="text" name="content_id" id="field-content_id" readonly aria-readonly="true" />
+            <span id="field-content_id-hint" class="field-hint">Assigned automatically. Video numbers never change.</span>
           </label>
           <label class="field-full">
             <span>title <em class="req">*</em></span>
             <input type="text" name="title" id="field-title" required />
           </label>
+          <div class="field-full slug-field">
+            <label for="field-slug">
+              <span>slug <em class="req">*</em></span>
+              <input type="text" name="slug" id="field-slug" required spellcheck="false" />
+            </label>
+            <button type="button" id="btn-slug-from-title" class="kbm-btn kbm-btn-outline">Make from title</button>
+            <span id="field-slug-hint" class="field-hint">Lowercase words joined by hyphens. Filled in from the title until you edit it.</span>
+          </div>
           <label class="field-full">
             <span>description</span>
             <textarea name="description" id="field-description" rows="4"></textarea>
           </label>
           <label>
-            <span>access_level</span>
-            <input type="text" name="access_level" id="field-access_level" placeholder="member" />
-          </label>
-          <label>
-            <span>status</span>
-            <select name="status" id="field-status">
-              <option value="published">published</option>
-              <option value="draft">draft</option>
-              <option value="archived">archived</option>
+            <span>Access</span>
+            <select name="access_level" id="field-access_level">
+              <option value="member">Members only</option>
+              <option value="public">Free for everyone</option>
             </select>
           </label>
           <div class="field-full poster-field">
@@ -110,15 +121,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <span>clips (one content_id per line)</span>
             <textarea name="clips" id="field-clips" rows="3" placeholder="249-1&#10;249-2"></textarea>
           </label>
-          <label class="field-full">
-            <span>transcript_json (JSON, optional)</span>
-            <textarea name="transcript_json" id="field-transcript_json" rows="4" placeholder='{}'></textarea>
-            <span class="field-hint">Leave empty until transcript pipeline is ready. Must be valid JSON if set.</span>
-          </label>
-          <label class="field-full">
-            <span>vtt_url</span>
-            <input type="text" name="vtt_url" id="field-vtt_url" placeholder="https://…" />
-          </label>
+          <div class="field-full vtt-field">
+            <label for="field-vtt">
+              <span>English transcript (VTT file)</span>
+              <input type="file" id="field-vtt" accept=".vtt,text/vtt" />
+            </label>
+            <p id="vtt-current" class="field-hint">No transcript uploaded yet.</p>
+            <p id="vtt-selected" class="vtt-selected" hidden></p>
+            <button type="button" id="btn-clear-vtt" class="kbm-btn kbm-btn-outline" hidden>Don't upload this file</button>
+            <span class="field-hint">
+              Uploading replaces the current transcript when you save. Draft transcripts appear on the video page once the video is published.
+              Member videos keep their transcript for members only.
+            </span>
+          </div>
           <label class="checkbox-label field-full">
             <input type="checkbox" name="search_ready" id="field-search_ready" />
             <span>search_ready (future indexing)</span>
@@ -138,9 +153,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         </section>
 
         <div class="help-hub-admin__form-actions help-hub-admin__form-actions--sticky">
-          <button type="button" id="btn-save-video" class="kbm-btn kbm-btn-primary">Save</button>
-          <button type="button" id="btn-cancel-video" class="kbm-btn kbm-btn-outline">Cancel</button>
-          <button type="button" id="btn-delete-video" class="kbm-btn kbm-btn-accent" hidden>Delete</button>
+          <button type="button" id="btn-save-draft" class="kbm-btn kbm-btn-outline" data-save-status="draft">Save draft</button>
+          <button type="button" id="btn-publish" class="kbm-btn kbm-btn-primary" data-save-status="published">Publish</button>
+          <button type="button" id="btn-save-published" class="kbm-btn kbm-btn-primary" data-save-status="published" hidden>Save changes</button>
+          <button type="button" id="btn-unpublish" class="kbm-btn kbm-btn-outline" data-save-status="draft" hidden>Move to draft</button>
+          <button type="button" id="btn-archive" class="kbm-btn kbm-btn-accent" data-save-status="archived" hidden>Archive</button>
+          <a id="btn-preview-video" class="kbm-btn kbm-btn-outline" href="#" target="_blank" rel="noopener" hidden>Preview</a>
+          <button type="button" id="btn-cancel-video" class="kbm-btn kbm-btn-outline">Back to list</button>
           <button type="button" id="btn-refresh-video-json-preview" class="kbm-btn kbm-btn-outline">Refresh JSON preview</button>
         </div>
       </form>
@@ -234,6 +253,95 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     }
     .vimeo-id-field label {
       width: 100%;
+    }
+    .slug-field,
+    .vtt-field {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+    .slug-field label,
+    .vtt-field label {
+      width: 100%;
+    }
+    .slug-field .field-hint.is-warning {
+      color: #92400e;
+      font-weight: 600;
+    }
+    .vtt-selected {
+      margin: 0;
+      font-weight: 600;
+      color: #3f6212;
+    }
+    .vtt-selected.is-error {
+      color: #b91c1c;
+    }
+    input[readonly] {
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .videos-edit-save-target {
+      margin: 0 0 0.75rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: 8px;
+      background: #f6f9f1;
+      border: 1px solid #d6e0c8;
+      color: #243015;
+      font-size: 0.95rem;
+    }
+    .videos-edit-save-target.is-warning {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #7f1d1d;
+    }
+    .videos-edit-state {
+      margin: -0.25rem 0 0.75rem;
+      font-weight: 700;
+      color: #243015;
+    }
+    .videos-edit-result {
+      margin: 0 0 1rem;
+      padding: 1rem 1.1rem;
+      background: #fff;
+      border: 2px solid #5d7340;
+      border-radius: 12px;
+    }
+    .videos-edit-result.is-error {
+      border-color: #b91c1c;
+    }
+    .videos-edit-result__title {
+      margin: 0 0 0.5rem;
+      font-size: 1.15rem;
+      color: #243015;
+    }
+    .videos-edit-steps {
+      margin: 0;
+      padding-left: 1.4rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .videos-edit-steps li.is-done::marker {
+      color: #3f6212;
+    }
+    .videos-edit-steps li.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .videos-edit-steps li.is-waiting {
+      color: #92400e;
+    }
+    .videos-edit-steps code {
+      font-size: 0.9em;
+      background: #f1f5f9;
+      padding: 0.05rem 0.3rem;
+      border-radius: 4px;
+    }
+    .videos-edit-result__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.75rem 0 0;
     }
     .help-hub-admin__form label {
       display: flex;
@@ -426,14 +534,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   <script>
     import { fetchAdminJson, promptAdminSignIn } from "../../lib/admin/adminAuthClient";
 
+    import { slugFromTitle, uniqueVideoSlug } from "../../lib/videos/videoSlug";
+
     const API_BASE = "/api/admin/videos";
+    const SAVE_API = "/api/admin/videos/save";
+    const STATUS_API = "/api/admin/videos/status";
     type VideoRow = Record<string, unknown>;
     type TipHistoryEntry = { date: string; headline?: string; note?: string };
+    type SaveStatus = "draft" | "published" | "archived";
+    type TranscriptState = "published" | "draft" | "none";
+    type SaveInfo = { canSave: boolean; mode?: string; branch?: string; warning?: string };
 
     let videos: VideoRow[] = [];
+    let transcripts: Record<string, TranscriptState> = {};
+    let saveInfo: SaveInfo = { canSave: false };
+    let nextContentId = 0;
     let baseline: VideoRow | null = null;
     /** Stable key (slug or content_id) when editing; null when creating */
     let editingKey: string | null = null;
+    /** True once the slug was typed by hand, so title edits stop replacing it. */
+    let slugTouched = false;
+    let pendingVtt: { filename: string; text: string } | null = null;
+    let saving = false;
+    let liveTimer: number | null = null;
 
     const params = new URLSearchParams(window.location.search);
     const keyParam = params.get("key")?.trim() ?? "";
@@ -441,7 +564,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     const statusEl = document.getElementById("videos-edit-status");
     const modeEl = document.getElementById("videos-edit-mode");
     const form = document.getElementById("videos-edit-form") as HTMLFormElement | null;
-    const btnDelete = document.getElementById("btn-delete-video") as HTMLButtonElement | null;
     const jsonPreviewEl = document.getElementById("videos-json-preview");
     const tipHistoryListEl = document.getElementById("tip-history-list");
     const tipHistorySummaryEl = document.getElementById("tip-history-summary");
@@ -716,42 +838,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
     function buildVideoFromForm(options?: { silent?: boolean }): VideoRow | null {
       const silent = options?.silent === true;
-      const cidRaw = textVal("content_id");
-      const content_id = parseContentIdField(cidRaw);
-      if (content_id === "") {
-        if (!silent) setStatus("content_id is required.", "err");
-        return null;
-      }
-
       const slug = textVal("slug");
       const title = textVal("title");
       if (!slug || !title) {
-        if (!silent) setStatus("slug and title are required.", "err");
+        if (!silent) setStatus("Title and slug are required.", "err");
         return null;
       }
 
       const vimeoRaw = textVal("vimeo_id");
       const vimeo_id = parseInt(vimeoRaw, 10);
-      if (!Number.isFinite(vimeo_id)) {
-        if (!silent) setStatus("vimeo_id must be a number.", "err");
+      if (!/^\d+$/.test(vimeoRaw) || !Number.isFinite(vimeo_id) || vimeo_id <= 0) {
+        if (!silent) setStatus("Enter the Vimeo ID (numbers only).", "err");
         return null;
-      }
-
-      const transcriptRaw = textVal("transcript_json");
-      let transcript_json: unknown = undefined;
-      if (transcriptRaw) {
-        try {
-          transcript_json = JSON.parse(transcriptRaw) as unknown;
-        } catch {
-          if (!silent) setStatus("transcript_json must be valid JSON.", "err");
-          return null;
-        }
       }
 
       const base = baseline ? deepClone(baseline) : {};
       const row: VideoRow = { ...base };
 
-      row.content_id = content_id;
+      if (baseline) row.content_id = baseline.content_id;
+      else delete row.content_id;
       row.slug = slug;
       row.title = title;
       row.vimeo_id = vimeo_id;
@@ -763,13 +868,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       const al = textVal("access_level");
       if (al) row.access_level = al;
       else delete row.access_level;
-
-      const status = textVal("status").toLowerCase();
-      if (status === "draft" || status === "published" || status === "archived") {
-        row.status = status;
-      } else {
-        delete row.status;
-      }
 
       const poster = textVal("posterUrl");
       if (poster) row.posterUrl = poster;
@@ -797,13 +895,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       const clipLines = linesFromTextarea("clips");
       if (clipLines.length) row.clips = clipLines;
       else delete row.clips;
-
-      if (transcript_json !== undefined) row.transcript_json = transcript_json;
-      else delete row.transcript_json;
-
-      const vtt = textVal("vtt_url");
-      if (vtt) row.vtt_url = vtt;
-      else delete row.vtt_url;
 
       row.search_ready = Boolean(
         (form?.elements?.namedItem("search_ready") as HTMLInputElement | null)?.checked
@@ -834,20 +925,156 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       return row;
     }
 
+    function currentStatus(): SaveStatus | null {
+      if (!baseline) return null;
+      const raw = typeof baseline.status === "string" ? baseline.status.trim().toLowerCase() : "";
+      if (raw === "draft" || raw === "archived") return raw;
+      return "published";
+    }
+
+    function contentIdOf(row: VideoRow | null): string {
+      return row ? String(row.content_id ?? "").trim() : "";
+    }
+
+    function setAccessField(value: string) {
+      const select = document.getElementById("field-access_level");
+      if (!(select instanceof HTMLSelectElement)) return;
+      const normalized = value.trim().toLowerCase() || "member";
+      select.querySelectorAll("option[data-stored]").forEach((option) => option.remove());
+      if (!Array.from(select.options).some((option) => option.value === normalized)) {
+        // Keep a stored value the editor does not offer (for example "draft") until it is changed.
+        const option = document.createElement("option");
+        option.value = normalized;
+        option.textContent = `${normalized} (current, members only)`;
+        option.dataset.stored = "true";
+        select.appendChild(option);
+      }
+      select.value = normalized;
+    }
+
+    const TRANSCRIPT_TEXT: Record<TranscriptState, string> = {
+      published: "A transcript is saved and shows on the video page.",
+      draft: "A transcript is saved. It will show on the video page once the video is published.",
+      none: "No transcript uploaded yet.",
+    };
+
+    /** Show the buttons that fit this video's current status. */
+    function renderState() {
+      const status = currentStatus();
+      const show = (id: string, visible: boolean) => {
+        const el = document.getElementById(id);
+        if (el) el.hidden = !visible;
+      };
+      show("btn-save-draft", status === null || status === "draft");
+      show("btn-publish", status !== "published");
+      show("btn-save-published", status === "published");
+      show("btn-unpublish", status === "published");
+      show("btn-archive", status === "draft" || status === "published");
+      const publishBtn = document.getElementById("btn-publish");
+      if (publishBtn) publishBtn.textContent = status === null ? "Save and publish" : "Publish";
+
+      const id = contentIdOf(baseline);
+      const preview = document.getElementById("btn-preview-video");
+      if (preview instanceof HTMLAnchorElement) {
+        preview.hidden = !id;
+        if (id) preview.href = `/admin/videos-preview/${encodeURIComponent(id)}`;
+      }
+
+      const stateEl = document.getElementById("videos-edit-state");
+      if (stateEl) {
+        stateEl.hidden = status === null;
+        stateEl.textContent =
+          status === "published"
+            ? "Status: Published. Visitors can see this video."
+            : status === "draft"
+              ? "Status: Draft. Hidden from the Learning Library, search, and the video page."
+              : status === "archived"
+                ? "Status: Archived. Hidden everywhere. Publish to bring it back."
+                : "";
+      }
+
+      const vttCurrent = document.getElementById("vtt-current");
+      if (vttCurrent) vttCurrent.textContent = TRANSCRIPT_TEXT[transcripts[id] ?? "none"];
+
+      for (const button of document.querySelectorAll<HTMLButtonElement>("[data-save-status]")) {
+        button.disabled = saving || !saveInfo.canSave;
+      }
+      updateSlugHint();
+    }
+
+    function updateSlugHint() {
+      const hint = document.getElementById("field-slug-hint");
+      if (!hint) return;
+      const stored = typeof baseline?.slug === "string" ? baseline.slug : "";
+      const changedPublished = currentStatus() === "published" && stored && textVal("slug") !== stored;
+      hint.classList.toggle("is-warning", Boolean(changedPublished));
+      hint.textContent = changedPublished
+        ? `Changing the slug of a published video can break links that use “${stored}”. Keep it unless you are sure.`
+        : baseline
+          ? "Lowercase words joined by hyphens."
+          : "Lowercase words joined by hyphens. Filled in from the title until you edit it.";
+    }
+
+    function fillSlugFromTitle(force: boolean) {
+      if (!force && (slugTouched || baseline)) return;
+      const base = slugFromTitle(textVal("title"));
+      if (!base) return;
+      setField("slug", uniqueVideoSlug(base, videos, contentIdOf(baseline) || undefined));
+      if (force) slugTouched = true;
+      updateSlugHint();
+      refreshJsonPreview();
+    }
+
+    function clearPendingVtt() {
+      pendingVtt = null;
+      const input = document.getElementById("field-vtt");
+      if (input instanceof HTMLInputElement) input.value = "";
+      const selected = document.getElementById("vtt-selected");
+      if (selected) {
+        selected.hidden = true;
+        selected.textContent = "";
+        selected.classList.remove("is-error");
+      }
+      const clear = document.getElementById("btn-clear-vtt");
+      if (clear) clear.hidden = true;
+    }
+
+    async function readVttFile(file: File) {
+      const selected = document.getElementById("vtt-selected");
+      const clear = document.getElementById("btn-clear-vtt");
+      pendingVtt = null;
+      const fail = (message: string) => {
+        if (selected) {
+          selected.hidden = false;
+          selected.textContent = message;
+          selected.classList.add("is-error");
+        }
+        if (clear) clear.hidden = false;
+      };
+      if (file.size > 2 * 1024 * 1024) return fail(`${file.name} is larger than 2 MB.`);
+      const text = await file.text();
+      if (!/^﻿?WEBVTT/.test(text)) return fail(`${file.name} does not start with WEBVTT, so it is not a caption file.`);
+      pendingVtt = { filename: file.name, text };
+      if (selected) {
+        selected.hidden = false;
+        selected.classList.remove("is-error");
+        selected.textContent = `Ready to upload ${file.name}. It is processed when you save.`;
+      }
+      if (clear) clear.hidden = false;
+    }
+
     function loadRowToForm(row: VideoRow) {
       baseline = deepClone(row);
       editingKey = stableVideoKey(row);
+      slugTouched = true;
 
       setField("content_id", String(row.content_id ?? ""));
+      const hint = document.getElementById("field-content_id-hint");
+      if (hint) hint.textContent = "Video numbers never change.";
       setField("slug", typeof row.slug === "string" ? row.slug : "");
       setField("title", typeof row.title === "string" ? row.title : "");
       setField("description", typeof row.description === "string" ? row.description : "");
-      setField("access_level", typeof row.access_level === "string" ? row.access_level : "");
-      const statusRaw = typeof row.status === "string" ? row.status.trim().toLowerCase() : "";
-      setField(
-        "status",
-        statusRaw === "draft" || statusRaw === "archived" ? statusRaw : "published",
-      );
+      setAccessField(typeof row.access_level === "string" ? row.access_level : "member");
       setField("posterUrl", typeof row.posterUrl === "string" ? row.posterUrl : "");
       setField("category", typeof row.category === "string" ? row.category : "");
       setField("subcategory", typeof row.subcategory === "string" ? row.subcategory : "");
@@ -863,25 +1090,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         row.sourceVideoId !== undefined && row.sourceVideoId !== null ? String(row.sourceVideoId) : ""
       );
       setField("clips", linesToText(row.clips));
-      const tj = row.transcript_json;
-      setField("transcript_json", tj !== undefined ? JSON.stringify(tj, null, 2) : "");
-      setField("vtt_url", typeof row.vtt_url === "string" ? row.vtt_url : "");
       setCheckbox("search_ready", Boolean(row.search_ready));
 
-      if (modeEl) modeEl.textContent = `Editing: ${editingKey}`;
-      if (btnDelete) btnDelete.hidden = false;
+      if (modeEl) modeEl.textContent = `Editing video ${String(row.content_id ?? "")}: ${String(row.title ?? editingKey)}`;
+      clearPendingVtt();
+      renderState();
       refreshJsonPreview();
     }
 
     function clearFormNew() {
       baseline = null;
       editingKey = null;
-      setField("content_id", "");
+      slugTouched = false;
+      setField("content_id", nextContentId ? `${nextContentId} (assigned when you save)` : "Assigned when you save");
+      const hint = document.getElementById("field-content_id-hint");
+      if (hint) hint.textContent = "The next unused number is assigned when you save, even if someone else adds a video first.";
       setField("slug", "");
       setField("title", "");
       setField("description", "");
-      setField("access_level", "member");
-      setField("status", "draft");
+      setAccessField("member");
       setField("posterUrl", "");
       setField("category", "");
       setField("subcategory", "");
@@ -894,105 +1121,183 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("videoType", "");
       setField("sourceVideoId", "");
       setField("clips", "");
-      setField("transcript_json", "");
-      setField("vtt_url", "");
       setCheckbox("search_ready", false);
-      const nextNumber = nextVideoNumber(videos);
-      setField("content_id", String(nextNumber));
-      if (modeEl) modeEl.textContent = `New video — video number ${nextNumber} is the next unused number. Change it if this video already has one.`;
-      if (btnDelete) btnDelete.hidden = true;
+      if (modeEl) modeEl.textContent = "New video. Fill in the details, then save a draft or publish.";
+      clearPendingVtt();
+      renderState();
       refreshJsonPreview();
     }
 
-    function nextVideoNumber(list: VideoRow[]): number {
-      let max = 0;
-      for (const video of list) {
-        const value = video.content_id;
-        const numeric =
-          typeof value === "number" && Number.isInteger(value)
-            ? value
-            : typeof value === "string" && /^\d+$/.test(value.trim())
-              ? parseInt(value, 10)
-              : null;
-        if (numeric !== null && numeric > max) max = numeric;
+    type StepKind = "done" | "error" | "waiting";
+    function renderSteps(steps: Array<{ text: string; kind: StepKind }>, failed = false) {
+      const panel = document.getElementById("videos-edit-result");
+      const list = document.getElementById("videos-edit-steps");
+      if (!panel || !list) return;
+      panel.hidden = false;
+      panel.classList.toggle("is-error", failed);
+      list.innerHTML = "";
+      for (const step of steps) {
+        const item = document.createElement("li");
+        item.className = `is-${step.kind}`;
+        item.textContent = step.text;
+        list.appendChild(item);
       }
-      return max + 1;
     }
 
-    async function postVideos(next: VideoRow[]) {
-      const result = await fetchAdminJson<{ videos?: VideoRow[]; message?: string }>(API_BASE, {
-        method: "POST",
-        body: next,
-      });
-      if (!result.ok || !Array.isArray(result.data.videos)) {
-        if (result.needsSignIn) promptAdminSignIn(window.location.pathname + window.location.search);
-        setStatus(result.error || "Save failed.", "err");
-        return null;
-      }
-      videos = result.data.videos;
-      return { ok: true as const, message: result.data.message };
+    let lastSaveSteps: Array<{ text: string; kind: StepKind }> = [];
+
+    function stopLiveChecks() {
+      if (liveTimer !== null) window.clearInterval(liveTimer);
+      liveTimer = null;
     }
 
-    async function save() {
+    /** Ask the site whether this deploy serves the saved version yet. */
+    async function checkLive(contentId: string, options: { quiet?: boolean } = {}) {
+      const result = await fetchAdminJson<{ live?: boolean; record?: string; transcriptLive?: boolean }>(
+        `${STATUS_API}?content_id=${encodeURIComponent(contentId)}`,
+        { method: "GET" },
+      );
+      const steps = lastSaveSteps.slice(0, -1);
+      if (!result.ok) {
+        if (!options.quiet) renderSteps([...steps, { text: result.error || "Could not check the site.", kind: "error" }], true);
+        return false;
+      }
+      const status = currentStatus();
+      if (result.data.live) {
+        stopLiveChecks();
+        const text =
+          status === "published"
+            ? "Live. The Learning Library, search, and video page now show this version."
+            : "Done. The site has rebuilt with this change, and the video stays hidden from visitors.";
+        lastSaveSteps = [...steps, { text, kind: "done" }];
+        renderSteps(lastSaveSteps);
+        const publicLink = document.getElementById("videos-edit-result-public");
+        if (publicLink instanceof HTMLAnchorElement && status === "published") {
+          publicLink.hidden = false;
+          publicLink.href = `/videos/${encodeURIComponent(contentId)}`;
+        }
+        return true;
+      }
+      const waiting = `Site rebuilding. Last checked ${new Date().toLocaleTimeString()}. This usually takes a few minutes.`;
+      lastSaveSteps = [...steps, { text: waiting, kind: "waiting" }];
+      renderSteps(lastSaveSteps);
+      return false;
+    }
+
+    function startLiveChecks(contentId: string) {
+      stopLiveChecks();
+      const started = Date.now();
+      liveTimer = window.setInterval(() => {
+        if (Date.now() - started > 20 * 60 * 1000) {
+          stopLiveChecks();
+          return;
+        }
+        void checkLive(contentId, { quiet: true });
+      }, 30 * 1000);
+    }
+
+    async function saveVideo(status: SaveStatus) {
+      if (saving) return;
+      if (!saveInfo.canSave) {
+        setStatus(saveInfo.warning || "Saving is turned off on this site.", "err");
+        return;
+      }
       const row = buildVideoFromForm();
       if (!row) return;
-      const newKey = stableVideoKey(row);
-      if (!newKey) {
-        setStatus("Could not derive key from slug/content_id.", "err");
+      if (status === "archived" && !confirm("Archive this video? It disappears from the Learning Library, search, and its video page until you publish it again.")) {
+        return;
+      }
+      const previous = currentStatus();
+      if (previous === "published" && status === "draft" && !confirm("Move this video to draft? Visitors will no longer see it.")) {
         return;
       }
 
-      let next = [...videos];
-      if (editingKey !== null) {
-        const idx = next.findIndex((v) => stableVideoKey(v) === editingKey);
-        if (idx < 0) {
-          setStatus("Original row not found; reload the page.", "err");
+      saving = true;
+      stopLiveChecks();
+      renderState();
+      const isNew = baseline === null;
+      setStatus(isNew ? "Saving the new video…" : "Saving…");
+      renderSteps([{ text: pendingVtt ? "Checking the details and processing the transcript…" : "Checking the details…", kind: "waiting" }]);
+
+      try {
+        const result = await fetchAdminJson<{
+          contentId?: string;
+          video?: VideoRow;
+          transcript?: TranscriptState;
+          summary?: string[];
+          persistedVia?: string;
+          branch?: string | null;
+          commitSha?: string | null;
+          posterWarning?: string;
+          step?: string;
+        }>(SAVE_API, {
+          method: "POST",
+          body: {
+            action: isNew ? "create" : "update",
+            contentId: isNew ? undefined : baseline?.content_id,
+            status,
+            video: row,
+            vtt: pendingVtt,
+          },
+        });
+        if (!result.ok || !result.data.video || !result.data.contentId) {
+          if (result.needsSignIn) promptAdminSignIn(window.location.pathname + window.location.search);
+          const stage = result.data.step === "check" ? "Not saved: " : "Save failed: ";
+          renderSteps([{ text: `${stage}${result.error || "unknown error"}`, kind: "error" }], true);
+          setStatus(result.error || "Save failed.", "err");
           return;
         }
-        if (newKey !== editingKey) {
-          const clash = next.some((v, i) => i !== idx && stableVideoKey(v) === newKey);
-          if (clash) {
-            setStatus(`Another video already uses key "${newKey}".`, "err");
-            return;
-          }
+
+        const data = result.data;
+        const saved = data.video!;
+        const contentId = data.contentId!;
+        const index = videos.findIndex((video) => contentIdOf(video) === contentId);
+        if (index >= 0) videos[index] = saved;
+        else videos.push(saved);
+        transcripts[contentId] = data.transcript ?? "none";
+        if (isNew) nextContentId = Math.max(nextContentId, Number(contentId) + 1 || 0);
+        loadRowToForm(saved);
+
+        const where =
+          data.persistedVia === "github"
+            ? `Saved to GitHub (${data.branch ?? "branch"}), commit ${String(data.commitSha ?? "").slice(0, 7)}.`
+            : "Saved to the local catalog files.";
+        const statusWord = status === "published" ? "published" : status === "draft" ? "a draft" : "archived";
+        lastSaveSteps = [
+          { text: `${isNew ? `Created video ${contentId}` : `Updated video ${contentId}`} as ${statusWord}.`, kind: "done" },
+          ...(data.summary ?? []).map((text) => ({ text, kind: "done" as StepKind })),
+          { text: where, kind: "done" },
+        ];
+        if (data.posterWarning) lastSaveSteps.push({ text: data.posterWarning, kind: "error" });
+        lastSaveSteps.push({ text: "Site rebuilding. This usually takes a few minutes.", kind: "waiting" });
+        renderSteps(lastSaveSteps);
+        setStatus(`Saved video ${contentId}.`, "ok");
+
+        const checkBtn = document.getElementById("btn-check-live");
+        if (checkBtn) {
+          checkBtn.hidden = false;
+          checkBtn.dataset.contentId = contentId;
         }
-        next[idx] = row;
-      } else {
-        const clash = next.some((v) => stableVideoKey(v) === newKey);
-        if (clash) {
-          setStatus(`A video with key "${newKey}" already exists. Edit that row or change slug/content_id.`, "err");
-          return;
+        const previewLink = document.getElementById("videos-edit-result-preview");
+        if (previewLink instanceof HTMLAnchorElement) {
+          previewLink.hidden = false;
+          previewLink.href = `/admin/videos-preview/${encodeURIComponent(contentId)}`;
         }
-        next.push(row);
+        const publicLink = document.getElementById("videos-edit-result-public");
+        if (publicLink) publicLink.hidden = true;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("key", stableVideoKey(saved));
+        window.history.replaceState({}, "", url.toString());
+        if (data.persistedVia === "github") startLiveChecks(contentId);
+        else void checkLive(contentId, { quiet: true });
+      } catch {
+        renderSteps([{ text: "Save failed: the site could not be reached. Nothing was saved.", kind: "error" }], true);
+        setStatus("Network error. Nothing was saved.", "err");
+      } finally {
+        saving = false;
+        renderState();
       }
-
-      setStatus("Saving…");
-      const saved = await postVideos(next);
-      if (!saved) return;
-      setStatus(
-        saved.message ||
-          "Saved. The thumbnail is stored and will show on the video page, Video Library, and Tip of the Week.",
-        "ok",
-      );
-      baseline = deepClone(row);
-      editingKey = newKey;
-      if (btnDelete) btnDelete.hidden = false;
-      if (modeEl) modeEl.textContent = `Editing: ${editingKey}`;
-      const url = new URL(window.location.href);
-      url.searchParams.set("key", newKey);
-      window.history.replaceState({}, "", url.toString());
-      refreshJsonPreview();
-    }
-
-    async function deleteRow() {
-      if (editingKey === null) return;
-      if (!confirm(`Delete video "${editingKey}" from the catalog? This cannot be undone.`)) return;
-      const next = videos.filter((v) => stableVideoKey(v) !== editingKey);
-      setStatus("Deleting…");
-      const ok = await postVideos(next);
-      if (!ok) return;
-      setStatus("Deleted.", "ok");
-      window.location.href = "/admin/videos-admin";
     }
 
     async function copyVimeoId() {
@@ -1022,10 +1327,27 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setStatus(`Copied Vimeo ID ${value}.`, "ok");
     }
 
+    function renderSaveTarget() {
+      const el = document.getElementById("videos-edit-save-target");
+      if (!el) return;
+      el.hidden = false;
+      el.classList.toggle("is-warning", !saveInfo.canSave);
+      el.textContent = !saveInfo.canSave
+        ? saveInfo.warning || "Saving is turned off on this site."
+        : saveInfo.mode === "github"
+          ? `Saves are committed to GitHub (${saveInfo.branch ?? "branch"}). The site then rebuilds, usually within a few minutes.`
+          : "Local workspace: saves update the catalog files in this checkout.";
+    }
+
     async function init() {
       setStatus("Loading catalog…");
       try {
-        const result = await fetchAdminJson<{ videos?: VideoRow[] }>(API_BASE, { method: "GET" });
+        const result = await fetchAdminJson<{
+          videos?: VideoRow[];
+          transcripts?: Record<string, TranscriptState>;
+          nextContentId?: number;
+          save?: SaveInfo;
+        }>(API_BASE, { method: "GET" });
         if (!result.ok || !Array.isArray(result.data.videos)) {
           if (result.needsSignIn) promptAdminSignIn(window.location.pathname + window.location.search);
           setStatus(result.error || "Load failed.", "err");
@@ -1033,14 +1355,18 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           return;
         }
         videos = result.data.videos;
+        transcripts = result.data.transcripts ?? {};
+        nextContentId = Number(result.data.nextContentId) || 0;
+        saveInfo = result.data.save ?? { canSave: false };
       } catch {
         setStatus("Network error.", "err");
         if (modeEl) modeEl.textContent = "Error";
         return;
       }
+      renderSaveTarget();
 
       if (keyParam) {
-        const row = videos.find((v) => stableVideoKey(v) === keyParam);
+        const row = videos.find((v) => stableVideoKey(v) === keyParam || contentIdOf(v) === keyParam);
         if (row) {
           loadRowToForm(row);
           setStatus("");
@@ -1053,12 +1379,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         setStatus("");
       }
 
-      document.getElementById("btn-save-video")?.addEventListener("click", () => void save());
+      for (const button of document.querySelectorAll<HTMLButtonElement>("[data-save-status]")) {
+        button.addEventListener("click", () => void saveVideo(button.dataset.saveStatus as SaveStatus));
+      }
+      document.getElementById("btn-check-live")?.addEventListener("click", (event) => {
+        const id = (event.currentTarget as HTMLElement).dataset.contentId;
+        if (id) void checkLive(id);
+      });
       document.getElementById("btn-copy-vimeo")?.addEventListener("click", () => void copyVimeoId());
       document.getElementById("btn-cancel-video")?.addEventListener("click", () => {
         window.location.href = "/admin/videos-admin";
       });
-      btnDelete?.addEventListener("click", () => void deleteRow());
+      document.getElementById("btn-slug-from-title")?.addEventListener("click", () => fillSlugFromTitle(true));
+      document.getElementById("field-title")?.addEventListener("input", () => fillSlugFromTitle(false));
+      document.getElementById("field-slug")?.addEventListener("input", () => {
+        slugTouched = true;
+        updateSlugHint();
+      });
+      document.getElementById("field-vtt")?.addEventListener("change", (event) => {
+        const file = (event.currentTarget as HTMLInputElement).files?.[0];
+        if (file) void readVttFile(file);
+        else clearPendingVtt();
+      });
+      document.getElementById("btn-clear-vtt")?.addEventListener("click", clearPendingVtt);
       document.getElementById("btn-refresh-video-json-preview")?.addEventListener("click", refreshJsonPreview);
       document.getElementById("btn-refresh-vimeo-thumbnail")?.addEventListener("click", () => {
         void refreshVimeoThumbnail();

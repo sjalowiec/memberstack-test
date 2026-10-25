@@ -1,0 +1,162 @@
+---
+/**
+ * Admin-only preview of the latest saved version of a video, including drafts
+ * and changes saved since the last deploy. Reads the saved catalog and VTT
+ * (GitHub on hosted sites) at request time. The /admin gate protects it.
+ */
+import Layout from "../../../layouts/Layout.astro";
+import PageHead from "../../../components/PageHead.astro";
+import Transcript from "../../../components/media/Transcript.astro";
+import type { PublicVideoRow } from "../../../lib/lessonVideo";
+import { catalogTranscriptVimeoId } from "../../../lib/transcripts/generateCatalogTranscripts";
+import { normalizeVideoCatalogStatus } from "../../../lib/videoPublic";
+import { catalogVideoPlaybackAccess } from "../../../lib/videos/catalogVideoPlaybackAccess";
+import { videoCatalogRepoForHost } from "../../../lib/videos/videoCatalogRepo";
+import {
+  parseVideoCatalog,
+  readableVttParagraphs,
+  transcriptFilesForVimeoId,
+} from "../../../lib/videos/videoCatalogSave";
+import { videoContentIdKey } from "../../../lib/videos/videoPosterOverrides";
+import {
+  VIDEO_DRAFT_TRANSCRIPT_REPO_DIR,
+  VIDEO_TRANSCRIPT_REPO_DIR,
+} from "../../../lib/videos/videoCatalogGithub";
+
+export const prerender = false;
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const key = videoContentIdKey(Astro.params.id);
+let video: Record<string, unknown> | undefined;
+let error = "";
+let paragraphs: string[] = [];
+let transcriptNote = "";
+
+try {
+  const repo = videoCatalogRepoForHost(Astro.url.hostname);
+  const snapshot = await repo.readSnapshot();
+  video = parseVideoCatalog(snapshot.catalogRaw).find((row) => videoContentIdKey(row.content_id) === key);
+  if (video) {
+    const vimeoId = catalogTranscriptVimeoId(video as PublicVideoRow);
+    const files = transcriptFilesForVimeoId(snapshot, vimeoId);
+    const stored = files.published[0]
+      ? `${VIDEO_TRANSCRIPT_REPO_DIR}/${files.published[0].name}`
+      : files.drafts[0]
+        ? `${VIDEO_DRAFT_TRANSCRIPT_REPO_DIR}/${files.drafts[0].name}`
+        : "";
+    if (stored) {
+      const bytes = await repo.readFile(stored, snapshot.ref);
+      try {
+        paragraphs = bytes ? readableVttParagraphs(bytes, "The saved VTT") : [];
+      } catch (vttError) {
+        transcriptNote = vttError instanceof Error ? vttError.message : "The saved VTT could not be read.";
+      }
+    } else {
+      transcriptNote = "No English transcript has been uploaded for this video yet.";
+    }
+  }
+} catch (readError) {
+  error = readError instanceof Error ? readError.message : "The saved catalog could not be read.";
+}
+
+const title = typeof video?.title === "string" ? video.title : "Video preview";
+const description = typeof video?.description === "string" ? video.description : "";
+const status = normalizeVideoCatalogStatus(video?.status);
+const access = video
+  ? catalogVideoPlaybackAccess({
+      access_level: String(video.access_level ?? "member").trim().toLowerCase(),
+      isTipOfWeek: video.isTipOfWeek === true,
+      tipOfWeek: video.tipOfWeek === true,
+    })
+  : "member";
+const vimeoId = video ? catalogTranscriptVimeoId(video as PublicVideoRow) : "";
+const hash = typeof video?.vimeo_hash === "string" && /^[A-Za-z0-9]+$/.test(video.vimeo_hash) ? video.vimeo_hash : "";
+const playerSrc = vimeoId
+  ? `https://player.vimeo.com/video/${vimeoId}${hash ? `?h=${hash}&` : "?"}dnt=1`
+  : "";
+const posterUrl = typeof video?.posterUrl === "string" ? video.posterUrl : "";
+const category = [video?.category, video?.subcategory].filter((part) => typeof part === "string" && part).join(" › ");
+const statusLabel =
+  status === "published"
+    ? "Published. Visitors see this version once the site finishes rebuilding."
+    : status === "draft"
+      ? "Draft. Only admins can see this preview; it is hidden from the Learning Library, search, and the video page."
+      : "Archived. Hidden from the Learning Library, search, and the video page.";
+---
+
+<Layout title={`Preview: ${title}`} description="Admin preview of a saved video.">
+  <div class="page-wrap video-preview-wrap">
+    <p class="video-preview-back">
+      <a href={video ? `/admin/videos-edit?key=${encodeURIComponent(String(video.slug ?? key))}` : "/admin/videos-admin"}>← Back to the editor</a>
+    </p>
+    {error ? (
+      <p class="video-preview-banner is-error">{error}</p>
+    ) : !video ? (
+      <p class="video-preview-banner is-error">Video {key} is not in the saved catalog.</p>
+    ) : (
+      <>
+        <p class={`video-preview-banner is-${status}`} data-testid="video-preview-status">
+          <strong>Preview of video {key}.</strong> {statusLabel}
+          {" "}Access: {access === "open" ? "free for everyone" : "members only"}.
+        </p>
+        <PageHead title={title} />
+        <article class="video-detail">
+          <section class="video-preview-player">
+            {playerSrc ? (
+              <iframe
+                src={playerSrc}
+                title={title}
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+                loading="lazy"
+              ></iframe>
+            ) : posterUrl ? (
+              <img src={posterUrl} alt="" />
+            ) : null}
+          </section>
+          {category ? <p class="video-preview-category">{category}</p> : null}
+          <section class="video-description">
+            {description ? <div class="video-desc-text">{description}</div> : null}
+          </section>
+          {posterUrl ? (
+            <figure class="video-preview-thumb">
+              <img src={posterUrl} alt="" loading="lazy" />
+              <figcaption>Thumbnail shown in the Learning Library</figcaption>
+            </figure>
+          ) : null}
+          {paragraphs.length > 0 ? (
+            <div class="video-english-transcript" data-testid="video-preview-transcript">
+              <Transcript title="Read transcript" sections={paragraphs.map((text) => ({ text }))} />
+            </div>
+          ) : (
+            <p class="video-preview-note">{transcriptNote}</p>
+          )}
+        </article>
+      </>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .video-preview-wrap.page-wrap { padding-top: 8px; }
+  .video-preview-back { margin: 0 0 0.75rem; }
+  .video-preview-banner {
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #d6e0c8;
+    background: #f6f9f1;
+    color: #243015;
+  }
+  .video-preview-banner.is-draft,
+  .video-preview-banner.is-archived { background: #fff7e6; border-color: #f2c66d; }
+  .video-preview-banner.is-error { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+  .video-preview-player { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #0f172a; border-radius: 8px; overflow: hidden; }
+  .video-preview-player iframe,
+  .video-preview-player img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+  .video-preview-category { margin: 0.75rem 0 0; color: #475569; font-size: 0.95rem; }
+  .video-preview-thumb { margin: 1.25rem 0; max-width: 320px; }
+  .video-preview-thumb img { width: 100%; border-radius: 6px; display: block; }
+  .video-preview-thumb figcaption { font-size: 0.85rem; color: #64748b; margin-top: 0.35rem; }
+  .video-preview-note { color: #64748b; font-style: italic; }
+</style>

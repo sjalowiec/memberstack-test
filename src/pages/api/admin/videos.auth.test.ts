@@ -10,8 +10,11 @@ vi.mock("../../../lib/admin/requireAdminRequest", async (importOriginal) => {
   return { ...actual, requireAdminForRequest };
 });
 
+import { isAdminProtectedPath } from "../../../lib/admin/adminPageGate";
 import { GET, POST } from "./videos";
 import { POST as saveAccessLevels } from "./videos/access-levels";
+import { POST as saveVideo } from "./videos/save";
+import { GET as videoStatus } from "./videos/status";
 import { GET as vimeoThumbnail } from "./videos/vimeo-thumbnail";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -30,14 +33,21 @@ describe("video admin authorization", () => {
     requireAdminForRequest.mockReset();
   });
 
-  it("keeps the admin page behind the existing /admin Basic Auth gate", () => {
-    const netlifyToml = readFileSync(join(here, "..", "..", "..", "..", "netlify.toml"), "utf8");
-    const page = readFileSync(join(here, "..", "..", "admin", "videos-admin.astro"), "utf8");
+  it("keeps the admin pages, preview, and APIs behind the existing admin allowlist gate", () => {
+    for (const path of [
+      "/admin/videos-admin",
+      "/admin/videos-edit",
+      "/admin/videos-preview/5003",
+      "/api/admin/videos",
+      "/api/admin/videos/save",
+      "/api/admin/videos/status",
+    ]) {
+      expect(isAdminProtectedPath(path)).toBe(true);
+    }
     const editPage = readFileSync(join(here, "..", "..", "admin", "videos-edit.astro"), "utf8");
-    expect(netlifyToml).toMatch(/for = "\/admin\/\*"/);
-    expect(netlifyToml).toContain("Basic-Auth");
-    expect(page).not.toContain("requireAdminForRequest");
-    expect(editPage).not.toContain("requireAdminForRequest");
+    // GitHub credentials stay on the server.
+    expect(editPage).not.toContain("GITHUB_TOKEN");
+    expect(editPage).not.toContain("videoCatalogGithub");
   });
 
   it("rejects an unsigned catalog read and does not return videos", async () => {
@@ -69,9 +79,24 @@ describe("video admin authorization", () => {
       cookies,
       url: new URL("https://kin-dev.netlify.app/api/admin/videos/vimeo-thumbnail?vimeo_id=151859846"),
     } as never);
+    const record = await saveVideo({
+      request: jsonRequest("https://kin-dev.netlify.app/api/admin/videos/save", "POST", {
+        action: "create",
+        status: "draft",
+        video: { title: "x" },
+      }),
+      cookies,
+    } as never);
+    const status = await videoStatus({
+      request: jsonRequest("https://kin-dev.netlify.app/api/admin/videos/status?content_id=5003", "GET"),
+      cookies,
+      url: new URL("https://kin-dev.netlify.app/api/admin/videos/status?content_id=5003"),
+    } as never);
     expect(save.status).toBe(401);
     expect(access.status).toBe(401);
     expect(thumbnail.status).toBe(401);
+    expect(record.status).toBe(401);
+    expect(status.status).toBe(401);
     expect((await save.json()).videos).toBeUndefined();
   });
 });

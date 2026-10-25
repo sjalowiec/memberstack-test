@@ -3,8 +3,20 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { adminAuthErrorBody, requireAdminForRequest } from "../../../lib/admin/requireAdminRequest";
 import { normalizeVideoForSave } from "../../../lib/videosPublicRecord";
-import { stableVideoKey } from "../../../lib/lessonVideo";
-import { applyVideoPosterOverrides, planVideoPosterSave } from "../../../lib/videos/videoPosterOverrides";
+import { stableVideoKey, type PublicVideoRow } from "../../../lib/lessonVideo";
+import { catalogTranscriptVimeoId } from "../../../lib/transcripts/generateCatalogTranscripts";
+import {
+  applyVideoPosterOverrides,
+  planVideoPosterSave,
+  videoContentIdKey,
+} from "../../../lib/videos/videoPosterOverrides";
+import { videoCatalogRepoForHost, type VideoCatalogSnapshot } from "../../../lib/videos/videoCatalogRepo";
+import {
+  nextVideoContentId,
+  parseVideoCatalog,
+  transcriptStateForVimeoId,
+  type VideoTranscriptState,
+} from "../../../lib/videos/videoCatalogSave";
 import {
   catalogSaveMessage,
   updateCatalogText,
@@ -24,7 +36,7 @@ const VIDEOS_JSON_PATH = join(process.cwd(), "src", "data", "videos-public.json"
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
@@ -42,7 +54,22 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
 
   try {
-    const data = readVideosFile().videos;
+    // The latest saved catalog (GitHub on hosted sites), so drafts saved since
+    // the last deploy show up. Falls back to this deploy's copy, read-only.
+    let data: unknown[];
+    let snapshot: VideoCatalogSnapshot | null = null;
+    let save: { canSave: boolean; mode?: string; branch?: string; warning?: string };
+    try {
+      const repo = videoCatalogRepoForHost(new URL(request.url).hostname);
+      snapshot = await repo.readSnapshot();
+      data = parseVideoCatalog(snapshot.catalogRaw);
+      save = { canSave: true, mode: repo.mode, branch: repo.branch };
+    } catch (error) {
+      data = readVideosFile().videos;
+      const reason = error instanceof Error ? error.message : "The saved catalog could not be read.";
+      save = { canSave: false, warning: `${reason} Showing this deploy's copy; saving is turned off.` };
+    }
+
     let videos = data;
     try {
       const overrides = await listVideoPosterOverrides();
@@ -55,7 +82,21 @@ export const GET: APIRoute = async ({ request, cookies }) => {
         );
       }
     }
-    return jsonResponse({ ok: true, videos });
+
+    const transcripts: Record<string, VideoTranscriptState> = {};
+    if (snapshot) {
+      for (const video of data as Record<string, unknown>[]) {
+        const key = videoContentIdKey(video.content_id);
+        if (key) transcripts[key] = transcriptStateForVimeoId(snapshot, catalogTranscriptVimeoId(video as PublicVideoRow));
+      }
+    }
+    return jsonResponse({
+      ok: true,
+      videos,
+      transcripts,
+      nextContentId: nextVideoContentId(data as Record<string, unknown>[]),
+      save,
+    });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Could not read videos-public.json";
     return jsonResponse({ ok: false, error: message }, 500);

@@ -30,6 +30,7 @@ import { gitBlobSha } from "../machines/machineSalesGithub";
 import { normalizeVideoForSave } from "../videosPublicRecord";
 import { catalogRecordToStore, upsertCatalogRecordText } from "./videoCatalogFile";
 import { videoContentIdKey } from "./videoPosterOverrides";
+import { slugFromTitle, uniqueVideoSlug, videoSlugKey } from "./videoSlug";
 import {
   VIDEO_CATALOG_REPO_PATH,
   VIDEO_DRAFT_TRANSCRIPT_REPO_DIR,
@@ -116,41 +117,8 @@ export function nextVideoContentId(catalog: Record<string, unknown>[]): number {
   return max + 1;
 }
 
-export function slugFromTitle(title: string): string {
-  return title
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/['’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80)
-    .replace(/-+$/g, "");
-}
-
-function slugKey(video: Record<string, unknown>): string {
-  return typeof video.slug === "string" ? video.slug.trim().toLowerCase() : "";
-}
-
-/** `base`, or `base-2`, `base-3`, … when another video already uses it. */
-export function uniqueVideoSlug(
-  base: string,
-  catalog: Record<string, unknown>[],
-  exceptContentId?: string,
-): string {
-  const taken = new Set(
-    catalog
-      .filter((video) => videoContentIdKey(video.content_id) !== exceptContentId)
-      .map(slugKey),
-  );
-  const root = base || "video";
-  if (!taken.has(root)) return root;
-  for (let n = 2; ; n += 1) {
-    const candidate = `${root}-${n}`;
-    if (!taken.has(candidate)) return candidate;
-  }
-}
+export { slugFromTitle, uniqueVideoSlug };
+const slugKey = videoSlugKey;
 
 function vimeoKey(video: Record<string, unknown>): string {
   return catalogTranscriptVimeoId(video as PublicVideoRow);

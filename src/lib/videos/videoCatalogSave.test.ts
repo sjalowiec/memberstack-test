@@ -41,7 +41,9 @@ const seedCatalog = [
 
 /** In-memory repo whose files change only through commit, like GitHub. */
 function memoryRepo(initial: Record<string, string>) {
-  const files = new Map(Object.entries(initial).map(([path, body]) => [path, Buffer.from(body, "utf8")]));
+  const files = new Map<string, Buffer>(
+    Object.entries(initial).map(([path, body]) => [path, Buffer.from(body, "utf8")]),
+  );
   let head = 1;
   const commits: string[] = [];
   const list = (dir: string) =>

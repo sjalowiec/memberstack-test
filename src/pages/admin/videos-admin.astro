@@ -15,8 +15,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <header class="help-hub-admin__head">
       <h1 class="help-hub-admin__title">Videos Admin</h1>
       <p class="help-hub-admin__sub">
-        The catalog is <code>src/data/videos-public.json</code>. Search by Knit It Now video number, title, or Vimeo ID.
-        Add and edit write that same file from the workspace admin. Lessons still use the video key (<code>slug</code>, or <code>content_id</code>).
+        Search by Knit It Now video number, title, slug, or Vimeo ID. Saves from this admin are published through GitHub,
+        and the site rebuilds within a few minutes. Lessons still use the video key (<code>slug</code>, or <code>content_id</code>).
       </p>
     </header>
 
@@ -84,6 +84,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
               <th scope="col">Title</th>
               <th scope="col">Vimeo ID</th>
               <th scope="col">Category</th>
+              <th scope="col">Status</th>
+              <th scope="col">Transcript</th>
               <th scope="col" class="help-hub-admin__th-actions">Actions</th>
             </tr>
           </thead>
@@ -396,6 +398,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     type VideoRow = Record<string, unknown>;
 
     let videos: VideoRow[] = [];
+    let transcripts: Record<string, string> = {};
 
     function stableVideoKey(v: VideoRow): string {
       const s = typeof v.slug === "string" ? v.slug.trim() : "";
@@ -525,7 +528,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       matchTitleEl.textContent = asString(v.title) || key;
       matchNumberEl.textContent = asString(v.content_id);
       matchVimeoEl.textContent = vimeoId || "None";
-      matchEditEl.href = `/admin/videos-edit?key=${encodeURIComponent(key)}`;
+      matchEditEl.setAttribute("href", `/admin/videos-edit?key=${encodeURIComponent(key)}`);
       const copyButton = document.getElementById("videos-admin-copy-vimeo");
       if (copyButton instanceof HTMLButtonElement) copyButton.disabled = !vimeoId;
       matchEl.hidden = false;
@@ -560,6 +563,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <td class="col-title">${escapeHtml(asString(v.title))}</td>
             <td><div class="videos-admin__vimeo-cell"><span>${escapeHtml(idStr)}</span>${copy}</div></td>
             <td>${escapeHtml(asString(v.category))}</td>
+            <td>${escapeHtml(statusLabel(v))}</td>
+            <td>${escapeHtml(TRANSCRIPT_LABEL[transcripts[asString(v.content_id)] ?? "none"])}</td>
             <td class="help-hub-admin__actions">
               <a class="kbm-btn kbm-btn-outline" href="${href}">Edit</a>
             </td>
@@ -567,6 +572,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         })
         .join("");
       refreshTableSorter();
+    }
+
+    const TRANSCRIPT_LABEL: Record<string, string> = {
+      published: "Yes",
+      draft: "Waiting for publish",
+      none: "",
+    };
+
+    function statusLabel(v: VideoRow) {
+      const raw = asString(v.status).trim().toLowerCase();
+      if (raw === "draft") return "Draft";
+      if (raw === "archived") return "Archived";
+      return "Published";
     }
 
     function escapeHtml(s: string) {
@@ -596,13 +614,17 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     async function load() {
       setStatus("Loading catalog…");
       try {
-        const result = await fetchAdminJson<{ videos?: VideoRow[] }>(API_BASE, { method: "GET" });
+        const result = await fetchAdminJson<{ videos?: VideoRow[]; transcripts?: Record<string, string> }>(
+          API_BASE,
+          { method: "GET" },
+        );
         if (!result.ok || !Array.isArray(result.data.videos)) {
           if (result.needsSignIn) promptAdminSignIn("/admin/videos-admin");
           setStatus(result.error || "Load failed.", "err");
           return;
         }
         videos = result.data.videos;
+        transcripts = result.data.transcripts ?? {};
         reportSearch();
         renderTable();
       } catch {
