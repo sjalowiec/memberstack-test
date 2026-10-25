@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
+import { isChristmasStockingProductionBlocked } from '../../lib/patterns/christmasStockingProductionAccess';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { isSidewaysCardiganProductionBlocked } from '../../lib/patterns/sidewaysCardiganProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
@@ -33,6 +34,11 @@ const hideDropShoulderInCatalog = isDropShoulderProductionBlocked(Astro.url.host
 });
 
 const showSidewaysAsComingSoon = isSidewaysCardiganProductionBlocked(Astro.url.hostname, {
+  isViteDev: import.meta.env.DEV,
+  publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+});
+
+const hideChristmasStockingInCatalog = isChristmasStockingProductionBlocked(Astro.url.hostname, {
   isViteDev: import.meta.env.DEV,
   publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
 });
@@ -109,7 +115,7 @@ const sidewaysPattern = {
 const sweaterPatterns = [
   sleevelessPattern,
   socksPattern,
-  christmasStockingPattern,
+  ...(hideChristmasStockingInCatalog ? [] : [christmasStockingPattern]),
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
 ];
@@ -118,7 +124,7 @@ const availablePatterns = [
   sleevelessPattern,
   hatPattern,
   socksPattern,
-  christmasStockingPattern,
+  ...(hideChristmasStockingInCatalog ? [] : [christmasStockingPattern]),
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
   ...(showSidewaysAsComingSoon ? [] : [sidewaysPattern]),
   // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the

@@ -20,6 +20,11 @@ import {
   isSidewaysCardiganRoute,
 } from "./lib/patterns/sidewaysCardiganProductionAccess";
 import {
+  christmasStockingTemporarilyUnavailableResponse,
+  isChristmasStockingProductionBlocked,
+  isChristmasStockingRoute,
+} from "./lib/patterns/christmasStockingProductionAccess";
+import {
   isLk150TensionMastKitRoute,
   isLk150TensionMastProductionBlocked,
 } from "./lib/shop/lk150TensionMastKit";
@@ -84,6 +89,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isSidewaysCardiganProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/patterns/", 302);
+  }
+
+  if (
+    isChristmasStockingRoute(u.pathname) &&
+    isChristmasStockingProductionBlocked(u.hostname, devOnlyRouteEnv)
+  ) {
+    return christmasStockingTemporarilyUnavailableResponse();
   }
 
   if (
