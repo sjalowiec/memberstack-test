@@ -3491,6 +3491,14 @@
       ]
     },
     {
+      "vimeoId": "999999001",
+      "sourceFile": "999999001.vtt",
+      "sourceSha256": "f8f9b32386b26df41de4877a15c67c6089ab011f6b0dc279197b6b7dc57828fb",
+      "paragraphs": [
+        "Hosted admin test transcript, first version. This line checks the upload."
+      ]
+    },
+    {
       "vimeoId": "1002439068",
       "sourceFile": "1002439068.vtt",
       "sourceSha256": "f52a698fd300b4d5b8fe9dbb7a65c293648b23ece320b9aa1e19cb2cb587b2f6",

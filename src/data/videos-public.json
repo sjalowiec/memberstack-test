@@ -7765,7 +7765,7 @@
     "title": "Admin Test Video (delete me)",
     "description": "Throwaway test for the hosted video admin. Safe to archive.",
     "access_level": "member",
-    "status": "draft",
+    "status": "published",
     "category": "Testing",
     "vimeo_id": 999999001
   }
