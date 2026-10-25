@@ -74,6 +74,11 @@ function functionLookupId(row: PublicVideoRow): string {
   return vimeoNumericIdFromPublicVideo(row) ?? pageLookupId(row);
 }
 
+/** The Vimeo ID a catalog row's transcript is stored under, or "" when it has none. */
+export function catalogTranscriptVimeoId(row: PublicVideoRow): string {
+  return functionLookupId(row) || pageLookupId(row);
+}
+
 function contentId(row: PublicVideoRow): string {
   return String(row.content_id ?? "").trim();
 }
