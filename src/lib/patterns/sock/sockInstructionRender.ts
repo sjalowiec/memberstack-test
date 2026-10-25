@@ -22,6 +22,7 @@ import {
   type SockNeedleHalf,
   type SockOfPair,
 } from "./sockInstructionModel";
+import { heelToeShapingMapHtmlForDocument } from "../heelToeShapingMap";
 import { sockPatternSectionAnchorId } from "./sockPatternInpageNav";
 
 /**
@@ -689,8 +690,10 @@ function shouldShowRcLabelWithoutResetControl(section: SockInstructionSection): 
 function renderSection(
   section: SockInstructionSection,
   firstShortRowId: SockInstructionSection["id"] | null,
+  shapingMapHtml: string,
 ): string {
   let body = "";
+  let mapPlaced = false;
   const steps = section.steps;
   for (let i = 0; i < steps.length; ) {
     const grouped = defaultToeFinishingGroup(steps, i);
@@ -698,6 +701,15 @@ function renderSection(
       body += renderDefaultToeFinishingChoiceHtml(grouped.stitches);
       i += DEFAULT_TOE_FINISHING_GROUP_LENGTH;
       continue;
+    }
+    if (
+      !mapPlaced &&
+      shapingMapHtml &&
+      section.id === firstShortRowId &&
+      steps[i]?.type === "short-row-in"
+    ) {
+      body += shapingMapHtml;
+      mapPlaced = true;
     }
     body += renderStep(steps[i]!);
     i += 1;
@@ -724,10 +736,11 @@ export function renderBasicSockInstructionsHtml(doc: SockInstructionDocument): s
     anatomyVideoCalloutHtml() +
     (doc.constructionDirection === "toe-up" ? toeUpCompleteVideoCalloutHtml() : "");
   const firstShortRowId = firstShortRowSectionId(doc);
+  const shapingMapHtml = heelToeShapingMapHtmlForDocument(doc);
   return `<div class="sock-instructions" data-sock="${doc.sock}" data-construction="${doc.constructionDirection}">
   <p class="sock-instructions__label">${escapeHtml(sockLabel)} — ${escapeHtml(direction)}</p>
   ${intro}
-  ${doc.sections.map((section) => renderSection(section, firstShortRowId)).join("\n")}
+  ${doc.sections.map((section) => renderSection(section, firstShortRowId, shapingMapHtml)).join("\n")}
 </div>`;
 }
 
