@@ -7758,5 +7758,15 @@
     "category": "Shaping",
     "subcategory": "Garment Pieces",
     "vimeo_id": 1239125400
+  },
+  {
+    "content_id": 5004,
+    "slug": "admin-test-video-delete-me",
+    "title": "Admin Test Video (delete me)",
+    "description": "Throwaway test for the hosted video admin. Safe to archive.",
+    "access_level": "member",
+    "status": "draft",
+    "category": "Testing",
+    "vimeo_id": 999999001
   }
 ]
