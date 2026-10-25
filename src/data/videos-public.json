@@ -7765,7 +7765,7 @@
     "title": "Admin Test Video Edited (delete me)",
     "description": "Edited throwaway test. Safe to archive.",
     "access_level": "public",
-    "status": "published",
+    "status": "archived",
     "category": "Testing",
     "vimeo_id": 999999001
   }
