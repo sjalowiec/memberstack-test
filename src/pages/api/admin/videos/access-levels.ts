@@ -1,10 +1,12 @@
 import type { APIRoute } from "astro";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { adminAuthErrorBody, requireAdminForRequest } from "../../../../lib/admin/requireAdminRequest";
 import {
   applyVideoAccessLevelPatches,
   type VideoAccessLevelUpdate,
 } from "../../../../lib/videoAccessLevelPatch";
+import { videoCatalogFileSaveBlocker } from "../../../../lib/videos/videoCatalogFile";
 
 export const prerender = false;
 
@@ -27,7 +29,10 @@ function readVideosArray(): unknown[] {
 }
 
 /** Patch only `access_level` by unique `content_id` - does not re-validate full catalog keys. */
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const auth = await requireAdminForRequest(request, cookies);
+  if (!auth.ok) return jsonResponse(adminAuthErrorBody(auth), auth.status);
+
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);
   }
@@ -71,6 +76,9 @@ export const POST: APIRoute = async ({ request }) => {
   if (!result.ok) {
     return jsonResponse({ ok: false, error: result.error }, 400);
   }
+
+  const hostedBlocker = videoCatalogFileSaveBlocker();
+  if (hostedBlocker) return jsonResponse({ ok: false, error: hostedBlocker }, 409);
 
   try {
     writeFileSync(VIDEOS_JSON_PATH, JSON.stringify(videos, null, 2) + "\n", "utf-8");

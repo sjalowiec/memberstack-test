@@ -28,7 +28,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <label>
             <span>content_id <em class="req">*</em></span>
             <input type="text" name="content_id" id="field-content_id" required />
-            <span class="field-hint">String or number (e.g. 249 or 249-1).</span>
+            <span class="field-hint">Knit It Now video number. Use the next unused number for a new video, or keep the existing number when editing.</span>
           </label>
           <label class="field-full">
             <span>slug <em class="req">*</em></span>
@@ -75,20 +75,23 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             <span>subcategory</span>
             <input type="text" name="subcategory" id="field-subcategory" />
           </label>
-          <label>
-            <span>vimeo_id <em class="req">*</em></span>
-            <input type="number" name="vimeo_id" id="field-vimeo_id" required min="1" step="1" />
-          </label>
+          <div class="vimeo-id-field">
+            <label for="field-vimeo_id">
+              <span>vimeo_id <em class="req">*</em></span>
+              <input type="number" name="vimeo_id" id="field-vimeo_id" required min="1" step="1" />
+            </label>
+            <button type="button" id="btn-copy-vimeo" class="kbm-btn kbm-btn-outline">Copy Vimeo ID</button>
+          </div>
           <label class="checkbox-label field-full tip-current-wrap">
             <input type="checkbox" name="tipOfWeek" id="field-tipOfWeek" />
-            <span>Current Tuesday Tip</span>
+            <span>Current Tip of the Week</span>
           </label>
           <label class="field-full">
-            <span>Tuesday Tip Headline</span>
+            <span>Tip of the Week Headline</span>
             <input type="text" name="tipHeadline" id="field-tipHeadline" />
           </label>
           <label class="field-full">
-            <span>Tuesday Tip Note</span>
+            <span>Tip of the Week Note</span>
             <textarea name="tipNote" id="field-tipNote" rows="3"></textarea>
           </label>
           <label>
@@ -124,11 +127,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
         <section class="field-full tip-history-panel" aria-labelledby="tip-history-heading">
           <div class="tip-history-head">
-            <h3 id="tip-history-heading">Tuesday Tip History</h3>
+            <h3 id="tip-history-heading">Tip of the Week History</h3>
             <p id="tip-history-summary" class="tip-history-summary">Used 0 times</p>
           </div>
-          <p id="tip-history-badge" class="tip-history-badge" hidden>Used as Tuesday Tip before</p>
-          <p id="tip-current-badge" class="tip-current-badge" hidden>Currently featured as Tuesday Tip</p>
+          <p id="tip-history-badge" class="tip-history-badge" hidden>Used as Tip of the Week before</p>
+          <p id="tip-current-badge" class="tip-current-badge" hidden>Currently featured as Tip of the Week</p>
           <p id="tip-multi-warning" class="tip-multi-warning" hidden></p>
           <div id="tip-history-list" class="tip-history-list"></div>
           <button type="button" id="btn-add-tip-history" class="kbm-btn kbm-btn-outline">Add history entry</button>
@@ -222,6 +225,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     }
     .field-full {
       grid-column: 1 / -1;
+    }
+    .vimeo-id-field {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+    .vimeo-id-field label {
+      width: 100%;
     }
     .help-hub-admin__form label {
       display: flex;
@@ -412,6 +424,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   </style>
 
   <script>
+    import { fetchAdminJson, promptAdminSignIn } from "../../lib/admin/adminAuthClient";
+
     const API_BASE = "/api/admin/videos";
     type VideoRow = Record<string, unknown>;
     type TipHistoryEntry = { date: string; headline?: string; note?: string };
@@ -534,7 +548,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         }, 0);
         if (editingKey === null && currentChecked) trueCount += 1;
         if (trueCount > 1) {
-          tipMultiWarningEl.textContent = `Warning: ${trueCount} videos are marked as Current Tuesday Tip.`;
+          tipMultiWarningEl.textContent = `Warning: ${trueCount} videos are marked as Current Tip of the Week.`;
           tipMultiWarningEl.hidden = false;
         } else {
           tipMultiWarningEl.textContent = "";
@@ -675,11 +689,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       if (button instanceof HTMLButtonElement) button.disabled = true;
       setStatus("Loading the current Vimeo thumbnail…");
       try {
-        const res = await fetch(`/api/admin/videos/vimeo-thumbnail?${params.toString()}`);
-        const data = await res.json();
-        const posterUrl = typeof data?.posterUrl === "string" ? data.posterUrl.trim() : "";
-        if (!res.ok || !data?.ok || !posterUrl) {
-          setStatus(data?.error || "Vimeo did not return a thumbnail for that video.", "err");
+        const result = await fetchAdminJson<{ posterUrl?: string }>(
+          `/api/admin/videos/vimeo-thumbnail?${params.toString()}`,
+          { method: "GET" },
+        );
+        const posterUrl = typeof result.data.posterUrl === "string" ? result.data.posterUrl.trim() : "";
+        if (!result.ok || !posterUrl) {
+          if (result.needsSignIn) promptAdminSignIn(window.location.pathname + window.location.search);
+          setStatus(result.error || "Vimeo did not return a thumbnail for that video.", "err");
           return;
         }
         const previous = textVal("posterUrl");
@@ -807,7 +824,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       if (!silent) {
         const badEntry = tipHistoryDraft.find((entry) => !entry.date);
         if (badEntry) {
-          setStatus("Every Tuesday Tip history entry must include a date.", "err");
+          setStatus("Every Tip of the Week History entry must include a date.", "err");
           return null;
         }
       }
@@ -880,24 +897,40 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       setField("transcript_json", "");
       setField("vtt_url", "");
       setCheckbox("search_ready", false);
-      if (modeEl) modeEl.textContent = "New video — fill required fields and save";
+      const nextNumber = nextVideoNumber(videos);
+      setField("content_id", String(nextNumber));
+      if (modeEl) modeEl.textContent = `New video — video number ${nextNumber} is the next unused number. Change it if this video already has one.`;
       if (btnDelete) btnDelete.hidden = true;
       refreshJsonPreview();
     }
 
+    function nextVideoNumber(list: VideoRow[]): number {
+      let max = 0;
+      for (const video of list) {
+        const value = video.content_id;
+        const numeric =
+          typeof value === "number" && Number.isInteger(value)
+            ? value
+            : typeof value === "string" && /^\d+$/.test(value.trim())
+              ? parseInt(value, 10)
+              : null;
+        if (numeric !== null && numeric > max) max = numeric;
+      }
+      return max + 1;
+    }
+
     async function postVideos(next: VideoRow[]) {
-      const res = await fetch(API_BASE, {
+      const result = await fetchAdminJson<{ videos?: VideoRow[]; message?: string }>(API_BASE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
+        body: next,
       });
-      const data = await res.json();
-      if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
-        setStatus(data?.error || `Save failed (${res.status})`, "err");
+      if (!result.ok || !Array.isArray(result.data.videos)) {
+        if (result.needsSignIn) promptAdminSignIn(window.location.pathname + window.location.search);
+        setStatus(result.error || "Save failed.", "err");
         return null;
       }
-      videos = data.videos as VideoRow[];
-      return data as { ok: true; message?: string };
+      videos = result.data.videos;
+      return { ok: true as const, message: result.data.message };
     }
 
     async function save() {
@@ -962,17 +995,44 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       window.location.href = "/admin/videos-admin";
     }
 
+    async function copyVimeoId() {
+      const value = textVal("vimeo_id");
+      const button = document.getElementById("btn-copy-vimeo");
+      if (!/^\d+$/.test(value)) {
+        setStatus("Enter a Vimeo ID to copy.", "err");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = value;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      if (button instanceof HTMLButtonElement) {
+        const previous = button.textContent;
+        button.textContent = "Copied";
+        window.setTimeout(() => {
+          button.textContent = previous;
+        }, 1600);
+      }
+      setStatus(`Copied Vimeo ID ${value}.`, "ok");
+    }
+
     async function init() {
       setStatus("Loading catalog…");
       try {
-        const res = await fetch(API_BASE);
-        const data = await res.json();
-        if (!res.ok || !data?.ok || !Array.isArray(data.videos)) {
-          setStatus(data?.error || "Load failed.", "err");
+        const result = await fetchAdminJson<{ videos?: VideoRow[] }>(API_BASE, { method: "GET" });
+        if (!result.ok || !Array.isArray(result.data.videos)) {
+          if (result.needsSignIn) promptAdminSignIn(window.location.pathname + window.location.search);
+          setStatus(result.error || "Load failed.", "err");
           if (modeEl) modeEl.textContent = "Error";
           return;
         }
-        videos = data.videos as VideoRow[];
+        videos = result.data.videos;
       } catch {
         setStatus("Network error.", "err");
         if (modeEl) modeEl.textContent = "Error";
@@ -990,9 +1050,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         }
       } else {
         clearFormNew();
+        setStatus("");
       }
 
       document.getElementById("btn-save-video")?.addEventListener("click", () => void save());
+      document.getElementById("btn-copy-vimeo")?.addEventListener("click", () => void copyVimeoId());
       document.getElementById("btn-cancel-video")?.addEventListener("click", () => {
         window.location.href = "/admin/videos-admin";
       });
