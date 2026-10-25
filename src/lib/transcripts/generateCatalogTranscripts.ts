@@ -104,8 +104,17 @@ function canonicalTranscriptSource(bytes: Buffer): { text: string; sha256: strin
   };
 }
 
-function readSourceGroups(sourceDir: string): SourceGroup[] {
-  const byId = new Map<string, SourceGroup[]>();
+/** LF-only bytes of a VTT, the same bytes the generator hashes. */
+export function canonicalTranscriptBytes(bytes: Buffer): Buffer {
+  return Buffer.from(canonicalTranscriptSource(bytes).text, "utf8");
+}
+
+export type TranscriptSourceFile = {
+  name: string;
+  bytes: Buffer;
+};
+
+function readSourceFiles(sourceDir: string): TranscriptSourceFile[] {
   let names: string[];
   try {
     names = readdirSync(sourceDir);
@@ -113,13 +122,21 @@ function readSourceGroups(sourceDir: string): SourceGroup[] {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(`Cannot read transcript source directory ${sourceDir}: ${message}`);
   }
-  for (const name of names.slice().sort((a, b) => a.localeCompare(b))) {
+  return names
+    .filter((name) => name.toLowerCase().endsWith(".vtt"))
+    .map((name) => ({ name, bytes: readFileSync(join(sourceDir, name)) }));
+}
+
+function groupSourceFiles(files: TranscriptSourceFile[]): SourceGroup[] {
+  const byId = new Map<string, SourceGroup[]>();
+  for (const file of files.slice().sort((a, b) => a.name.localeCompare(b.name))) {
+    const name = file.name;
     if (!name.toLowerCase().endsWith(".vtt")) continue;
     const vimeoId = vimeoIdFromTranscriptFilename(name);
     if (!vimeoId) {
       throw new Error(`Unusable transcript filename ${name}. Expected <vimeoId>.vtt or <vimeoId>_en.vtt.`);
     }
-    const source = canonicalTranscriptSource(readFileSync(join(sourceDir, name)));
+    const source = canonicalTranscriptSource(file.bytes);
     const group = byId.get(vimeoId) ?? [];
     group.push({
       vimeoId,
@@ -147,12 +164,9 @@ function readSourceGroups(sourceDir: string): SourceGroup[] {
   return chosen;
 }
 
-export function buildCatalogTranscriptDocuments(input: {
-  sourceDir: string;
-  catalog: PublicVideoRow[];
-  sourceDirectoryLabel?: string;
-}): CatalogTranscriptDocuments {
-  const published = input.catalog.filter((row) => catalogVideoIsPublic(row));
+/** Published catalog rows grouped by the Vimeo ID the generator keys on. */
+function publishedRowsByVimeoId(catalog: PublicVideoRow[]): Map<string, PublicVideoRow[]> {
+  const published = catalog.filter((row) => catalogVideoIsPublic(row));
   const rowsById = new Map<string, PublicVideoRow[]>();
   for (const row of published) {
     const pageId = pageLookupId(row);
@@ -168,48 +182,66 @@ export function buildCatalogTranscriptDocuments(input: {
     list.push(row);
     rowsById.set(id, list);
   }
+  return rowsById;
+}
 
-  const publicRecords: CatalogTranscriptRecord[] = [];
-  const memberRecords: CatalogTranscriptRecord[] = [];
-  const auditRecords: CatalogTranscriptAuditRecord[] = [];
+type TranscriptEntry = {
+  access: CatalogTranscriptAccess;
+  record: CatalogTranscriptRecord;
+  audit: CatalogTranscriptAuditRecord;
+};
 
-  for (const source of readSourceGroups(input.sourceDir)) {
-    const readable = readableEnglishTranscriptForVimeoId(source.vimeoId, {
-      [source.name]: source.text,
-    });
-    const paragraphs = englishTranscriptParagraphs(readable);
-    if (!readable || paragraphs.length === 0) {
-      throw new Error(`Unusable transcript ${source.name} for Vimeo ${source.vimeoId}.`);
-    }
-    const rows = rowsById.get(source.vimeoId) ?? [];
-    if (rows.length === 0) {
-      throw new Error(
-        `Vimeo ${source.vimeoId} (${source.name}) is not a published catalog video.`,
-      );
-    }
-    const accesses = new Set(rows.map((row) => catalogVideoPlaybackAccess(row)));
-    if (accesses.size !== 1) {
-      throw new Error(`Vimeo ${source.vimeoId} is both public and member in the published catalog.`);
-    }
-    const access: CatalogTranscriptAccess = accesses.has("open") ? "public" : "member";
-    const contentIds = rows.map(contentId).filter(Boolean).sort(compareIds);
-    const record: CatalogTranscriptRecord = {
-      vimeoId: source.vimeoId,
-      sourceFile: basename(source.name),
-      sourceSha256: source.sha256,
-      paragraphs,
-    };
-    if (access === "public") publicRecords.push(record);
-    else memberRecords.push(record);
-    auditRecords.push({
+function transcriptEntryForSource(
+  source: SourceGroup,
+  rowsById: Map<string, PublicVideoRow[]>,
+): TranscriptEntry {
+  const readable = readableEnglishTranscriptForVimeoId(source.vimeoId, {
+    [source.name]: source.text,
+  });
+  const paragraphs = englishTranscriptParagraphs(readable);
+  if (!readable || paragraphs.length === 0) {
+    throw new Error(`Unusable transcript ${source.name} for Vimeo ${source.vimeoId}.`);
+  }
+  const rows = rowsById.get(source.vimeoId) ?? [];
+  if (rows.length === 0) {
+    throw new Error(
+      `Vimeo ${source.vimeoId} (${source.name}) is not a published catalog video.`,
+    );
+  }
+  const accesses = new Set(rows.map((row) => catalogVideoPlaybackAccess(row)));
+  if (accesses.size !== 1) {
+    throw new Error(`Vimeo ${source.vimeoId} is both public and member in the published catalog.`);
+  }
+  const access: CatalogTranscriptAccess = accesses.has("open") ? "public" : "member";
+  const contentIds = rows.map(contentId).filter(Boolean).sort(compareIds);
+  const record: CatalogTranscriptRecord = {
+    vimeoId: source.vimeoId,
+    sourceFile: basename(source.name),
+    sourceSha256: source.sha256,
+    paragraphs,
+  };
+  return {
+    access,
+    record,
+    audit: {
       vimeoId: source.vimeoId,
       access,
       sourceFile: record.sourceFile,
       sourceSha256: record.sourceSha256,
       paragraphCount: paragraphs.length,
       contentIds,
-    });
-  }
+    },
+  };
+}
+
+function assembleDocuments(
+  entries: TranscriptEntry[],
+  sourceDirectoryLabel: string,
+): CatalogTranscriptDocuments {
+  const sorted = entries.slice().sort((a, b) => compareIds(a.record.vimeoId, b.record.vimeoId));
+  const publicRecords = sorted.filter((entry) => entry.access === "public").map((entry) => entry.record);
+  const memberRecords = sorted.filter((entry) => entry.access === "member").map((entry) => entry.record);
+  const auditRecords = sorted.map((entry) => entry.audit);
 
   const duplicatePublishedRows = auditRecords
     .filter((record) => record.contentIds.length > 1)
@@ -229,13 +261,66 @@ export function buildCatalogTranscriptDocuments(input: {
     audit: {
       generator: CATALOG_TRANSCRIPT_GENERATOR,
       kind: "audit",
-      sourceDirectory: input.sourceDirectoryLabel ?? "src/data/transcripts/en",
+      sourceDirectory: sourceDirectoryLabel,
       publicCount: publicRecords.length,
       memberCount: memberRecords.length,
       records: auditRecords,
       duplicatePublishedRows,
     },
   };
+}
+
+export function buildCatalogTranscriptDocuments(input: {
+  sourceDir?: string;
+  /** Source files in place of `sourceDir`, for callers without a checkout. */
+  sources?: TranscriptSourceFile[];
+  catalog: PublicVideoRow[];
+  sourceDirectoryLabel?: string;
+}): CatalogTranscriptDocuments {
+  const rowsById = publishedRowsByVimeoId(input.catalog);
+  const files = input.sources ?? readSourceFiles(input.sourceDir ?? "");
+  const entries = groupSourceFiles(files).map((source) => transcriptEntryForSource(source, rowsById));
+  return assembleDocuments(entries, input.sourceDirectoryLabel ?? "src/data/transcripts/en");
+}
+
+/**
+ * Rebuild only the given Vimeo IDs inside existing generated documents.
+ * `affected` maps each Vimeo ID to its English source files after the change
+ * (an empty list removes that ID). Every other record is kept as is, so the
+ * result matches a full run when the other sources did not change.
+ */
+export function updateCatalogTranscriptDocuments(input: {
+  documents: CatalogTranscriptDocuments;
+  catalog: PublicVideoRow[];
+  affected: Map<string, TranscriptSourceFile[]>;
+}): CatalogTranscriptDocuments {
+  const rowsById = publishedRowsByVimeoId(input.catalog);
+  const { publicDocument, memberDocument, audit } = input.documents;
+  const recordsById = new Map<string, CatalogTranscriptRecord>();
+  for (const record of [...publicDocument.records, ...memberDocument.records]) {
+    recordsById.set(record.vimeoId, record);
+  }
+
+  const entries: TranscriptEntry[] = [];
+  for (const auditRecord of audit.records) {
+    if (input.affected.has(auditRecord.vimeoId)) continue;
+    const record = recordsById.get(auditRecord.vimeoId);
+    if (!record) {
+      throw new Error(`Generated transcripts are missing Vimeo ${auditRecord.vimeoId}. Regenerate them first.`);
+    }
+    entries.push({ access: auditRecord.access, record, audit: auditRecord });
+  }
+
+  for (const [vimeoId, files] of input.affected) {
+    for (const source of groupSourceFiles(files)) {
+      if (source.vimeoId !== vimeoId) {
+        throw new Error(`Transcript ${source.name} does not belong to Vimeo ${vimeoId}.`);
+      }
+      entries.push(transcriptEntryForSource(source, rowsById));
+    }
+  }
+
+  return assembleDocuments(entries, audit.sourceDirectory);
 }
 
 export function serializeCatalogTranscriptJson(value: unknown): string {

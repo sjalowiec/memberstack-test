@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,6 +9,7 @@ import {
   assertSafeTranscriptOverwrite,
   buildCatalogTranscriptDocuments,
   serializeCatalogTranscriptJson,
+  updateCatalogTranscriptDocuments,
 } from "./generateCatalogTranscripts";
 
 const repo = process.cwd();
@@ -41,7 +42,7 @@ describe("catalog transcript generation", () => {
       "a66776f8a7148e1744abb28a3ff9fcbf7f18b541a866c8cde43d936eaddbb421",
     );
     expect(docs.audit.publicCount).toBe(13);
-    expect(docs.audit.memberCount).toBe(237);
+    expect(docs.audit.memberCount).toBe(238);
     expect(docs.memberDocument.records.some((record) => record.vimeoId === "1234021892")).toBe(
       true,
     );
@@ -128,5 +129,85 @@ describe("catalog transcript generation", () => {
       /unexpected Vimeo IDs \(999\)/,
     );
     expect(() => assertSafeTranscriptOverwrite("member.json", existing, ["151857129", "999"])).not.toThrow();
+  });
+});
+
+describe("rebuilding one video's transcript", () => {
+  const catalog = JSON.parse(
+    readFileSync(join(repo, "src", "data", "videos-public.json"), "utf8"),
+  ) as PublicVideoRow[];
+  const sourceDir = join(repo, "src", "data", "transcripts", "en");
+  const allSources = readdirSync(sourceDir)
+    .filter((name) => name.toLowerCase().endsWith(".vtt"))
+    .map((name) => ({ name, bytes: readFileSync(join(sourceDir, name)) }));
+  const full = buildCatalogTranscriptDocuments({ sourceDir, catalog });
+
+  function serialized(docs: typeof full) {
+    return [docs.publicDocument, docs.memberDocument, docs.audit].map(serializeCatalogTranscriptJson);
+  }
+
+  it("adds one VTT and matches a full run byte for byte", () => {
+    const vimeoId = "1239125400";
+    const without = buildCatalogTranscriptDocuments({
+      sources: allSources.filter((file) => !file.name.startsWith(vimeoId)),
+      catalog,
+    });
+    const updated = updateCatalogTranscriptDocuments({
+      documents: without,
+      catalog,
+      affected: new Map([[vimeoId, allSources.filter((file) => file.name.startsWith(vimeoId))]]),
+    });
+    expect(serialized(updated)).toEqual(serialized(full));
+  });
+
+  it("moves a transcript between public and member when access changes", () => {
+    const vimeoId = "151857129";
+    const opened = catalog.map((row) =>
+      String(row.vimeo_id) === vimeoId ? { ...row, access_level: "public" } : row,
+    );
+    const updated = updateCatalogTranscriptDocuments({
+      documents: full,
+      catalog: opened,
+      affected: new Map([[vimeoId, allSources.filter((file) => file.name.startsWith(vimeoId))]]),
+    });
+    expect(serialized(updated)).toEqual(
+      serialized(buildCatalogTranscriptDocuments({ sources: allSources, catalog: opened })),
+    );
+    expect(updated.memberDocument.records.some((record) => record.vimeoId === vimeoId)).toBe(false);
+    expect(updated.publicDocument.records.some((record) => record.vimeoId === vimeoId)).toBe(true);
+  });
+
+  it("removes a transcript when its video leaves the published catalog", () => {
+    const vimeoId = "1239125400";
+    const drafted = catalog.map((row) =>
+      String(row.vimeo_id) === vimeoId ? { ...row, status: "draft" } : row,
+    );
+    const updated = updateCatalogTranscriptDocuments({
+      documents: full,
+      catalog: drafted,
+      affected: new Map([[vimeoId, []]]),
+    });
+    expect(serialized(updated)).toEqual(
+      serialized(
+        buildCatalogTranscriptDocuments({
+          sources: allSources.filter((file) => !file.name.startsWith(vimeoId)),
+          catalog: drafted,
+        }),
+      ),
+    );
+  });
+
+  it("refuses a VTT for a video that is not published", () => {
+    expect(() =>
+      updateCatalogTranscriptDocuments({
+        documents: full,
+        catalog: catalog.map((row) =>
+          String(row.vimeo_id) === "1239125400" ? { ...row, status: "draft" } : row,
+        ),
+        affected: new Map([
+          ["1239125400", allSources.filter((file) => file.name.startsWith("1239125400"))],
+        ]),
+      }),
+    ).toThrow(/not a published catalog video/);
   });
 });
